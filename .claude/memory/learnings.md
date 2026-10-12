@@ -11,6 +11,11 @@ Rules learned the hard way. Follow them; add one line per new lesson.
 - Project skills appear in the `/` menu only in Claude Code opened on the repo (terminal, desktop Code tab, IDE).
 - A project skill named `verify` replaces the bundled `/verify` and Claude Code runs it before each commit.
 - Test install loops in an isolated config: `CLAUDE_CONFIG_DIR=$(mktemp -d) claude plugin marketplace add ./`.
+- Reading a file inside an installed plugin (cache under `~/.claude/plugins/cache/`) is a read outside the working directory: in default mode it needs permission, from the main session and from subagents. Pre-approve a skill's own files with `allowed-tools: Read(/${CLAUDE_SKILL_DIR}/**)` (the leading `/` makes the expanded path absolute, `//…`); the grant also covers subagents launched in that turn. Verified 2.1.296, 2026-10-11.
+- Hand a plugin agent its files as absolute paths in the delegation message (the skill body expands `${CLAUDE_SKILL_DIR}`) instead of relying on `skills:` preloading, whose name resolution for plugin skills is undocumented; verified working with the Read grant above.
+- Plugin `PostToolUse` hooks with `if: "Write(**/SKILL.md)"` fire when `skill-creator` writes a skill (it uses the Write tool) and inside `claude plugin eval` runs. Verified 2.1.296, 2026-10-11.
+- In `claude plugin eval`, the agent can't write under `.claude/` even with `--allow-tools Write` (protected path, denied in dontAsk mode): eval prompts must target paths like `skills/<name>/`. Scaffold scripts run as the user and may write anywhere in the workspace.
+- A copied (cached) install for local testing: a local marketplace whose entry uses `{"source":"git-subdir","url":"file:///abs/repo.git","path":"plugins/<name>"}`; a relative-path source loads in place instead. Isolate with `HOME=<tmp>` or `CLAUDE_CONFIG_DIR`.
 
 ## GitHub
 
