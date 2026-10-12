@@ -92,7 +92,7 @@ Requires Claude Code v2.1.275+. With the marketplace already added, `/plugin ins
 /plugin-test-bench:test-install plugins/my-plugin
 ```
 
-**Result:** Claude installs `my-plugin` from your last commit into a throwaway configuration and lists any file your folder has that the installed copy lacks. It asks you to sign that configuration in once, checks that the plugin loads with no errors, and, after telling you the number of runs, runs your eval suite once per case against the copy. It ends with a report: verdict, files missing from the copy, the load result, each case's score with the reason for every failure, the cost estimate and what was not tested. Everything it created is then removed.
+**Result:** Claude installs `my-plugin` from your last commit into a throwaway configuration, lists any file your folder has that the installed copy lacks, and checks that the plugin loads with no errors, all for free. It then tells you the paid runs it proposes, your eval suite once per case or a few real requests, and only after your go-ahead asks you to sign that configuration in. It ends with a report: verdict, files missing from the copy, the load result, each case's score with the reason for every failure, the cost estimate and what was not tested. Everything it created is then removed.
 
 ### Ask in your own words
 
