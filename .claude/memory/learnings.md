@@ -50,6 +50,11 @@ Rules learned the hard way. Follow them; add one line per new lesson.
 - `claude plugin eval` authenticates with `CLAUDE_CODE_OAUTH_TOKEN` (a `claude setup-token` subscription token) in CI: verified on the first full run, 2026-10-12.
 - Re-running a GitHub Actions job reuses the run's original commit; to evaluate a fix, start a new run (draft then ready, or workflow_dispatch once the workflow is on `main`).
 - Write report graders for content, not layout: the model nests a template line as a list ("- **Verification:**" then sub-bullets) and a same-line regex fails a correct report.
+- `claude plugin eval` in CI keeps no traces (no `--keep-temp`), and the result JSON holds scores and grader explanations only: to see why a case failed, rerun it locally with `--keep-temp` and read `out/trace.jsonl`.
+- Opening a PR that changes a `plugin.json` of a plugin with `evals/` starts `evals.yml` on Nery's plan; say so before opening such a PR.
+- Squash-merging two PRs back to back cancels the first merge's Validate run on `main` (concurrency), so its Release is skipped; the next Validate's Release still tags every untagged version.
+- `compgen -G "${dir}/*.md"` treats the whole path as a pattern: brackets or backslashes in the project path hide every file. Quote the directory and glob only the file name (`"${dir}"/[0-9]*.md` plus a `-f` check).
+- The Claude app's plugin labels (claude.com/docs/plugins/overview): **Add** → **Add marketplace**, **Discover** → **Add**, the plugin's menu → **Remove**, **Check for updates**; not "Install" or "Uninstall".
 - A copied (cached) install for local testing: a local marketplace whose entry uses `{"source":"git-subdir","url":"file:///abs/repo.git","path":"plugins/<name>"}`; a relative-path source loads in place instead. Isolate with `HOME=<tmp>` or `CLAUDE_CONFIG_DIR`.
 
 ## GitHub

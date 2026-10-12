@@ -2,6 +2,15 @@
 
 Newest first. One entry per session: what changed, commits, what's next.
 
+## 2026-10-12 — Unified Claude app, three releases, per-plugin evals
+
+- Surface model moved to Claude Code + the Claude app (chat and Cowork one app); `check-repo.mjs` enforces the directory's portability rules; skill-diagnostics lost its scripts and `allowed-tools`; `/test-installed-plugin` added (squashed into PR #1).
+- Released skill-diagnostics 0.1.0 (PR #1, `809cf90`) and 0.1.1 (PR #3, `b829490`, `@claude` review fixes), and session-handoff 0.1.0 (PR #5, `e1aa8dd`) after a plugin-reviewer and docs-auditor pass (hook path-glob bug, synced-copy claim, Claude app labels fixed repo-wide).
+- `evals.yml` now evaluates only changed plugins that ship `evals/`, one matrix job each (PR #4, `5b61124`); evals are optional per plugin.
+- Rule from Nery: PRs only for plugin changes; everything else by direct push or PR as Nery decides (`8c1e476`).
+- Full CI eval of skill-diagnostics 0.1.1: 8/10; the audit skips the changelog check and sometimes the lens agents (regression from the refactor).
+- Next: fix the skill-diagnostics regression (Stop prompt hook, local `--keep-temp` smoke test, 0.1.2); test session-handoff in Cowork and chat; `/release marketplace` 0.2.0 and `sync-labels.mjs`.
+
 ## 2026-10-11/12 — skill-diagnostics build (phases 0–9)
 
 - Audited claude-essentials `skills-engineering`; rebuilt it as `skill-diagnostics` (audit-only skill, conformance + executability agents, `check_skill.py`, `PostToolUse` hook). Plan and audit live in claude.ai artifacts (see project-state).
