@@ -24,7 +24,7 @@ Check what changed in the last 15 days, counted back from today, in:
 - Claude apps release notes (Claude, Cowork): <https://support.claude.com/en/articles/12138966-release-notes>
 - Agent Skills specification and best practices, which have no changelog: <https://agentskills.io/specification> and <https://agentskills.io/skill-creation/best-practices>
 
-Record each source as checked, with its date range, or unreachable (a fetch you tried that failed), never guessed.
+When a fetch says part of a page went unread, fetch the rest until the 15 days are covered. Record each source as checked, with its date range, or unreachable (a fetch you tried that failed), never guessed.
 
 For each finding, note whether a recent change confirms it, changes it or makes it obsolete, and correct it.
 

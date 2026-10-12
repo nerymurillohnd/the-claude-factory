@@ -45,6 +45,9 @@ Rules learned the hard way. Follow them; add one line per new lesson.
 - Local eval smoke tests follow the docs: `--case … --runs 1 --ablation none` (one arm, one run); the full two-arm, three-run suite belongs in CI.
 - Instructions alone don't hold every time: smoke tests showed the audit skipping the 15-day change check (0/4, then 2/4 sources) despite "never skip it". A `Stop` hook in the skill's `hooks` frontmatter fixed it in an installed run; `${CLAUDE_PLUGIN_ROOT}` resolves there (2.1.296).
 - In `claude -p` without grants, Claude invoking a skill by itself (the Skill tool) is denied; a prompt that starts with the slash command is not. Headless tests of natural triggering need `--allowedTools Skill`.
+- `claude plugin eval` authenticates with `CLAUDE_CODE_OAUTH_TOKEN` (a `claude setup-token` subscription token) in CI: verified on the first full run, 2026-10-12.
+- Re-running a GitHub Actions job reuses the run's original commit; to evaluate a fix, start a new run (draft then ready, or workflow_dispatch once the workflow is on `main`).
+- Write report graders for content, not layout: the model nests a template line as a list ("- **Verification:**" then sub-bullets) and a same-line regex fails a correct report.
 - A copied (cached) install for local testing: a local marketplace whose entry uses `{"source":"git-subdir","url":"file:///abs/repo.git","path":"plugins/<name>"}`; a relative-path source loads in place instead. Isolate with `HOME=<tmp>` or `CLAUDE_CONFIG_DIR`.
 
 ## GitHub
