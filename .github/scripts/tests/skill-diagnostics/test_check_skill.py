@@ -1,7 +1,7 @@
+#!/usr/bin/env python3
 """Tests for skill-diagnostics' check_skill.py.
 
 Run: python3 -m unittest discover -s .github/scripts/tests/skill-diagnostics -v
-Set CHECK_SKILL to test another checker build (for example the claude-essentials one).
 Standard library only; runs on Python 3.9+ on Linux, macOS and Windows.
 """
 
@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import json
 import os
+from pathlib import Path
 import re
 import stat
 import subprocess
@@ -16,20 +17,14 @@ import sys
 import tempfile
 import textwrap
 import unittest
-from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[4]
-CHECKER = Path(
-    os.environ.get(
-        "CHECK_SKILL",
-        REPO / "plugins" / "skill-diagnostics" / "skills" / "audit" / "scripts" / "check_skill.py",
-    )
-)
+CHECKER = REPO / "plugins" / "skill-diagnostics" / "skills" / "audit" / "scripts" / "check_skill.py"
 IS_WINDOWS = os.name == "nt"
 
 
-def run(skill_dir: Path, *args: str) -> tuple[int, dict]:
-    """Run the checker on a directory; return its exit code and parsed JSON."""
+def run(skill_dir: Path, *args: str, surface: str = "code") -> tuple[int, dict]:
+    """Run the checker on a directory; return its exit code and one surface's report."""
     proc = subprocess.run(
         [sys.executable, str(CHECKER), "--format", "json", *args, str(skill_dir)],
         capture_output=True,
@@ -41,6 +36,8 @@ def run(skill_dir: Path, *args: str) -> tuple[int, dict]:
         report = json.loads(proc.stdout) if proc.stdout.strip() else {}
     except json.JSONDecodeError:
         report = {}
+    if "surfaces" in report:
+        report = report["surfaces"][surface]
     return proc.returncode, report
 
 
@@ -56,7 +53,7 @@ def has(
     rule: str | None = None,
     file: str = "SKILL.md",
 ) -> bool:
-    """True when a finding matches. A finding without a 'rule' key (older checkers) matches any rule."""
+    """True when a finding matches every given field."""
     for f in findings(report):
         if f.get("file") != file:
             continue
@@ -64,9 +61,7 @@ def has(
             continue
         if line is not None and f.get("line") != line:
             continue
-        if rule and "rule" in f and f["rule"] != rule:
-            continue
-        if rule and "rule" not in f and severity is None and line is None:
+        if rule and f.get("rule") != rule:
             continue
         return True
     return False
@@ -84,7 +79,7 @@ class SkillCase(unittest.TestCase):
     def tearDown(self) -> None:
         self._tmp.cleanup()
 
-    def write(self, rel: str, text: str, executable: bool = False) -> Path:
+    def write(self, rel: str, text: str, *, executable: bool = False) -> Path:
         path = self.skill / rel
         path.parent.mkdir(parents=True, exist_ok=True)
         with path.open("w", encoding="utf-8", newline="\n") as handle:  # LF on every OS
@@ -94,7 +89,9 @@ class SkillCase(unittest.TestCase):
         return path
 
     def skill_md(self, frontmatter: str, body: str = "Do the task.\n") -> None:
-        self.write("SKILL.md", "---\n" + textwrap.dedent(frontmatter).strip("\n") + "\n---\n\n" + body)
+        self.write(
+            "SKILL.md", "---\n" + textwrap.dedent(frontmatter).strip("\n") + "\n---\n\n" + body
+        )
 
 
 GOOD = """
@@ -107,63 +104,63 @@ class CleanSkill(SkillCase):
     def test_clean_skill_exits_zero_without_errors(self) -> None:
         self.skill_md(GOOD)
         code, report = run(self.skill)
-        self.assertEqual(code, 0, report)
-        self.assertFalse([f for f in findings(report) if f["severity"] == "error"], report)
+        assert code == 0, report
+        assert not [f for f in findings(report) if f["severity"] == "error"], report
 
     def test_bad_path_exits_two(self) -> None:
         code, _ = run(self.root / "missing")
-        self.assertEqual(code, 2)
+        assert code == 2
 
 
 class Frontmatter(SkillCase):
     def test_missing_opening_marker_is_error(self) -> None:
         self.write("SKILL.md", "name: demo-skill\n---\nBody\n")
         code, report = run(self.skill)
-        self.assertEqual((code, report["summary"]["error"] > 0), (0, True), report)
-        self.assertTrue(has(report, severity="error", line=1, rule="frontmatter-start"))
+        assert (code, report["summary"]["error"] > 0) == (0, True), report
+        assert has(report, severity="error", line=1, rule="frontmatter-start")
 
     def test_unknown_field_warns_with_suggestion(self) -> None:
         self.skill_md(GOOD + "disable_model_invocation: true\n")
         _, report = run(self.skill)
         hit = [f for f in findings(report) if f.get("rule") == "field-unknown"]
-        self.assertTrue(hit, report)
-        self.assertIn("disable-model-invocation", hit[0]["message"])
+        assert hit, report
+        assert "disable-model-invocation" in hit[0]["message"]
 
     def test_invalid_effort_value_is_error(self) -> None:
         self.skill_md(GOOD + "effort: extreme\n")
         code, report = run(self.skill)
-        self.assertEqual((code, report["summary"]["error"] > 0), (0, True), report)
-        self.assertTrue(has(report, severity="error", rule="field-value"))
+        assert (code, report["summary"]["error"] > 0) == (0, True), report
+        assert has(report, severity="error", rule="field-value")
 
     def test_upload_target_rejects_claude_code_only_fields(self) -> None:
         self.skill_md(GOOD + 'argument-hint: "[tag]"\n')
-        code, report = run(self.skill, "--target", "upload")
-        self.assertEqual((code, report["summary"]["error"] > 0), (0, True), report)
-        self.assertTrue(has(report, severity="error", rule="field-unknown"))
-        code, _ = run(self.skill, "--target", "code")
-        self.assertEqual(code, 0)
+        code, report = run(self.skill, surface="upload")
+        assert (code, report["summary"]["error"] > 0) == (0, True), report
+        assert has(report, severity="error", rule="field-unknown")
+        code, _ = run(self.skill, surface="code")
+        assert code == 0
 
 
 class Name(SkillCase):
     def test_name_over_64_chars_is_error(self) -> None:
         self.skill_md("name: " + "a" * 65 + "\ndescription: Does a thing. Use when asked.\n")
         code, report = run(self.skill)
-        self.assertEqual((code, report["summary"]["error"] > 0), (0, True), report)
-        self.assertTrue(has(report, severity="error", rule="name-length"))
+        assert (code, report["summary"]["error"] > 0) == (0, True), report
+        assert has(report, severity="error", rule="name-length")
 
     def test_double_hyphen_is_error(self) -> None:
         self.skill_md("name: demo--skill\ndescription: Does a thing. Use when asked.\n")
         _, report = run(self.skill)
-        self.assertTrue(has(report, severity="error", rule="name-format"))
+        assert has(report, severity="error", rule="name-format")
 
     def test_reserved_word_is_error_for_upload(self) -> None:
         """Regression: the claude-essentials checker only warned."""
         self.skill = self.root / "claude-helper"
         self.skill.mkdir()
         self.skill_md("name: claude-helper\ndescription: Does a thing. Use when asked.\n")
-        code, report = run(self.skill, "--target", "upload")
-        self.assertEqual((code, report["summary"]["error"] > 0), (0, True), report)
-        self.assertTrue(has(report, severity="error", line=2, rule="name-reserved"))
+        code, report = run(self.skill, surface="upload")
+        assert (code, report["summary"]["error"] > 0) == (0, True), report
+        assert has(report, severity="error", line=2, rule="name-reserved")
 
     def test_reserved_word_is_info_for_claude_code(self) -> None:
         """Claude Code accepts the word, so a valid Claude Code skill must not fail."""
@@ -171,39 +168,39 @@ class Name(SkillCase):
         self.skill.mkdir()
         self.skill_md("name: claude-helper\ndescription: Does a thing. Use when asked.\n")
         code, report = run(self.skill)
-        self.assertEqual(code, 0, report)
-        self.assertTrue(has(report, severity="info", line=2, rule="name-reserved"))
+        assert code == 0, report
+        assert has(report, severity="info", line=2, rule="name-reserved")
 
     def test_missing_name_is_a_note_for_claude_code(self) -> None:
         """All fields are optional in Claude Code; only uploads and the API require `name`."""
         self.skill_md("description: Does a thing. Use when asked.\n")
         _, report = run(self.skill)
-        self.assertEqual(report["summary"]["warning"] + report["summary"]["error"], 0, report)
-        self.assertTrue(has(report, severity="info", rule="name-missing"))
-        _, report = run(self.skill, "--target", "upload")
-        self.assertTrue(has(report, severity="error", rule="name-missing"))
+        assert report["summary"]["warning"] + report["summary"]["error"] == 0, report
+        assert has(report, severity="info", rule="name-missing")
+        _, report = run(self.skill, surface="upload")
+        assert has(report, severity="error", rule="name-missing")
 
     def test_name_must_match_directory(self) -> None:
         self.skill_md("name: other-name\ndescription: Does a thing. Use when asked.\n")
         _, report = run(self.skill)
-        self.assertTrue(has(report, severity="warning", rule="name-directory"))
-        _, report = run(self.skill, "--target", "upload")
-        self.assertTrue(has(report, severity="error", rule="name-directory"))
+        assert has(report, severity="warning", rule="name-directory")
+        _, report = run(self.skill, surface="upload")
+        assert has(report, severity="error", rule="name-directory")
 
     def test_synced_directory_is_error_for_claude_code(self) -> None:
         self.skill = self.root / "synced"
         self.skill.mkdir()
         self.skill_md("name: synced\ndescription: Does a thing. Use when asked.\n")
         code, report = run(self.skill)
-        self.assertEqual((code, report["summary"]["error"] > 0), (0, True), report)
-        self.assertTrue(has(report, severity="error", rule="name-reserved-local"))
-        _, report = run(self.skill, "--target", "upload")
-        self.assertFalse(has(report, rule="name-reserved-local"), report)
+        assert (code, report["summary"]["error"] > 0) == (0, True), report
+        assert has(report, severity="error", rule="name-reserved-local")
+        _, report = run(self.skill, surface="upload")
+        assert not has(report, rule="name-reserved-local"), report
 
     def test_anthropic_skills_name_is_error_for_claude_code(self) -> None:
         self.skill_md("name: anthropic-skills\ndescription: Does a thing. Use when asked.\n")
         _, report = run(self.skill)
-        self.assertTrue(has(report, severity="error", rule="name-reserved-local"))
+        assert has(report, severity="error", rule="name-reserved-local")
 
 
 class Description(SkillCase):
@@ -211,62 +208,64 @@ class Description(SkillCase):
         """Regression: the claude-essentials checker skipped every check for `>` descriptions."""
         self.skill_md("name: demo-skill\ndescription: >\n  I can help you with notes.\n")
         _, report = run(self.skill)
-        self.assertTrue(has(report, severity="warning", line=3, rule="description-one-line"), report)
-        self.assertTrue(has(report, severity="warning", line=3, rule="description-person"), report)
+        assert has(report, severity="warning", line=3, rule="description-one-line"), report
+        assert has(report, severity="warning", line=3, rule="description-person"), report
 
     def test_unquoted_colon_space_is_error_with_reword_hint(self) -> None:
         self.skill_md("name: demo-skill\ndescription: Formats notes. Use when: the user asks.\n")
         code, report = run(self.skill)
-        self.assertEqual((code, report["summary"]["error"] > 0), (0, True), report)
+        assert (code, report["summary"]["error"] > 0) == (0, True), report
         hit = [f for f in findings(report) if f.get("rule") == "yaml-quoting"]
-        self.assertTrue(hit, report)
-        self.assertIn("reword", hit[0].get("hint", "").lower())
+        assert hit, report
+        assert "reword" in hit[0].get("hint", "").lower()
 
     def test_unquoted_space_hash_truncates_and_is_error(self) -> None:
-        self.skill_md("name: demo-skill\ndescription: Tracks issue #12 and others. Use when asked.\n")
+        self.skill_md(
+            "name: demo-skill\ndescription: Tracks issue #12 and others. Use when asked.\n"
+        )
         code, report = run(self.skill)
-        self.assertEqual((code, report["summary"]["error"] > 0), (0, True), report)
-        self.assertTrue(has(report, severity="error", rule="yaml-quoting"))
+        assert (code, report["summary"]["error"] > 0) == (0, True), report
+        assert has(report, severity="error", rule="yaml-quoting")
 
     def test_unneeded_quotes_are_info(self) -> None:
         self.skill_md('name: demo-skill\ndescription: "Formats notes. Use when asked."\n')
         code, report = run(self.skill)
-        self.assertEqual(code, 0)
-        self.assertTrue(has(report, severity="info", rule="yaml-quoting"))
+        assert code == 0
+        assert has(report, severity="info", rule="yaml-quoting")
 
     def test_needed_quotes_are_not_reported(self) -> None:
         self.skill_md('name: demo-skill\ndescription: "Formats notes. Use when: asked."\n')
         _, report = run(self.skill)
-        self.assertFalse([f for f in findings(report) if f.get("rule") == "yaml-quoting"], report)
+        assert not [f for f in findings(report) if f.get("rule") == "yaml-quoting"], report
 
     def test_listing_cap_warns_by_default_and_respects_flag(self) -> None:
         text = "Formats notes. Use when asked. " + "x" * 1600
         self.skill_md(f"name: demo-skill\ndescription: {text}\n")
         code, report = run(self.skill)
-        self.assertEqual(code, 0, report)
-        self.assertTrue(has(report, severity="warning", rule="description-listing-cap"))
+        assert code == 0, report
+        assert has(report, severity="warning", rule="description-listing-cap")
         _, report = run(self.skill, "--listing-cap", "2048")
-        self.assertFalse(has(report, rule="description-listing-cap"), report)
+        assert not has(report, rule="description-listing-cap"), report
 
     def test_upload_target_limits_description_to_1024(self) -> None:
         text = "Formats notes. Use when asked. " + "x" * 1100
         self.skill_md(f"name: demo-skill\ndescription: {text}\n")
-        code, report = run(self.skill, "--target", "upload")
-        self.assertEqual((code, report["summary"]["error"] > 0), (0, True), report)
-        self.assertTrue(has(report, severity="error", rule="description-length"))
+        code, report = run(self.skill, surface="upload")
+        assert (code, report["summary"]["error"] > 0) == (0, True), report
+        assert has(report, severity="error", rule="description-length")
 
     def test_angle_bracket_tag_is_error_for_upload_only(self) -> None:
         self.skill_md("name: demo-skill\ndescription: Formats <b>notes</b>. Use when asked.\n")
-        _, report = run(self.skill, "--target", "upload")
-        self.assertTrue(has(report, severity="error", rule="description-tags"))
+        _, report = run(self.skill, surface="upload")
+        assert has(report, severity="error", rule="description-tags")
         code, report = run(self.skill)
-        self.assertEqual(code, 0, report)
-        self.assertTrue(has(report, severity="info", rule="description-tags"))
+        assert code == 0, report
+        assert has(report, severity="info", rule="description-tags")
 
     def test_missing_trigger_clause_warns(self) -> None:
         self.skill_md("name: demo-skill\ndescription: Formats notes.\n")
         _, report = run(self.skill)
-        self.assertTrue(has(report, severity="warning", rule="description-trigger"))
+        assert has(report, severity="warning", rule="description-trigger")
 
 
 class Arguments(SkillCase):
@@ -274,13 +273,14 @@ class Arguments(SkillCase):
         """Regression: the claude-essentials checker did not detect argument placeholders."""
         self.skill_md(GOOD, "Charge $1.00 per report.\n")
         _, report = run(self.skill)
-        self.assertTrue(has(report, severity="warning", line=6), report)
+        assert has(report, severity="warning", line=6), report
 
     def test_declared_argument_never_used_warns(self) -> None:
         self.skill_md(GOOD + "arguments: [tag, branch]\n", "Start from $tag.\n")
         _, report = run(self.skill)
         hit = [f for f in findings(report) if f.get("rule") == "arguments-unused"]
-        self.assertTrue(hit and "branch" in hit[0]["message"], report)
+        assert hit, report
+        assert "branch" in hit[0]["message"], report
 
 
 class Body(SkillCase):
@@ -288,91 +288,103 @@ class Body(SkillCase):
         """Regression: the claude-essentials checker failed (exit 1) at 500 lines."""
         self.skill_md(GOOD, "line\n" * 520)
         code, report = run(self.skill)
-        self.assertEqual(code, 0, report)
-        self.assertTrue(has(report, severity="warning", rule="body-lines"))
+        assert code == 0, report
+        assert has(report, severity="warning", rule="body-lines")
 
     def test_dynamic_context_is_error_for_upload_and_warning_for_cowork(self) -> None:
         self.skill_md(GOOD, "!`git status`\n")
-        _, report = run(self.skill, "--target", "upload")
-        self.assertTrue(has(report, severity="error", rule="dynamic-context"))
-        _, report = run(self.skill, "--target", "cowork")
-        self.assertTrue(has(report, severity="warning", rule="dynamic-context"))
+        _, report = run(self.skill, surface="upload")
+        assert has(report, severity="error", rule="dynamic-context")
+        _, report = run(self.skill, surface="cowork")
+        assert has(report, severity="warning", rule="dynamic-context")
 
 
 class Files(SkillCase):
     def test_broken_link_is_error(self) -> None:
         self.skill_md(GOOD, "Read [guide](references/guide.md) first.\n")
         code, report = run(self.skill)
-        self.assertEqual((code, report["summary"]["error"] > 0), (0, True), report)
-        self.assertTrue(has(report, severity="error", rule="link-broken"))
+        assert (code, report["summary"]["error"] > 0) == (0, True), report
+        assert has(report, severity="error", rule="link-broken")
 
     def test_link_with_spaces_is_checked(self) -> None:
-        self.skill_md(GOOD, "Read [a](<references/my guide.md>) and [b](references/my%20notes.md).\n")
+        self.skill_md(
+            GOOD, "Read [a](<references/my guide.md>) and [b](references/my%20notes.md).\n"
+        )
         self.write("references/my guide.md", "# Guide\n")
         _, report = run(self.skill)
         broken = [f["message"] for f in findings(report) if f.get("rule") == "link-broken"]
-        self.assertEqual(broken, ["broken link: references/my notes.md"], report)  # the spaced guide resolves
+        assert broken == ["broken link: references/my notes.md"], (
+            report
+        )  # the spaced guide resolves
 
     def test_fence_inside_a_longer_fence_stays_code(self) -> None:
-        body = "````markdown\n```bash\nRead [x](missing.md)\n```\n````\n\nRead [y](missing-too.md).\n"
+        body = (
+            "````markdown\n```bash\nRead [x](missing.md)\n```\n````\n\nRead [y](missing-too.md).\n"
+        )
         self.skill_md(GOOD, body)
         _, report = run(self.skill)
         broken = [f["message"] for f in findings(report) if f.get("rule") == "link-broken"]
-        self.assertEqual(broken, ["broken link: missing-too.md"], report)
+        assert broken == ["broken link: missing-too.md"], report
 
     def test_broken_link_inside_assets_is_error(self) -> None:
         self.skill_md(GOOD)
         self.write("assets/template.md", "See [spec](missing.md).\n")
         _, report = run(self.skill)
-        self.assertTrue(has(report, severity="error", rule="link-broken", file="assets/template.md"))
+        assert has(report, severity="error", rule="link-broken", file="assets/template.md")
 
     def test_nested_reference_link_warns(self) -> None:
         self.skill_md(GOOD, "Read [a](references/a.md).\n")
         self.write("references/a.md", "# A\n\nSee [b](b.md).\n")
         self.write("references/b.md", "# B\n")
         _, report = run(self.skill)
-        self.assertTrue(has(report, severity="warning", rule="reference-nested", file="references/a.md"))
+        assert has(report, severity="warning", rule="reference-nested", file="references/a.md")
 
     def test_long_reference_without_contents_warns(self) -> None:
         self.skill_md(GOOD, "Read [a](references/a.md).\n")
         self.write("references/a.md", "# A\n\n## Intro\n" + "text\n" * 120)
         _, report = run(self.skill)
-        self.assertTrue(has(report, severity="warning", rule="reference-contents", file="references/a.md"))
+        assert has(report, severity="warning", rule="reference-contents", file="references/a.md")
 
     def test_relative_script_call_warns(self) -> None:
         self.skill_md(GOOD, "Run `scripts/build.py data.csv`.\n")
         self.write("scripts/build.py", "#!/usr/bin/env python3\nprint('ok')\n", executable=True)
         _, report = run(self.skill)
-        self.assertTrue(has(report, severity="warning", rule="script-path"))
+        assert has(report, severity="warning", rule="script-path")
 
     def test_upload_skill_dir_path_reported_once_per_line(self) -> None:
-        self.skill_md(GOOD, "Read `${CLAUDE_SKILL_DIR}/references/a.md` and `${CLAUDE_SKILL_DIR}/references/b.md`.\n")
+        self.skill_md(
+            GOOD,
+            (
+                "Read `${CLAUDE_SKILL_DIR}/references/a.md`"
+                " and `${CLAUDE_SKILL_DIR}/references/b.md`.\n"
+            ),
+        )
         self.write("references/a.md", "# A\n")
         self.write("references/b.md", "# B\n")
-        _, report = run(self.skill, "--target", "upload")
+        _, report = run(self.skill, surface="upload")
         hits = [f for f in findings(report) if f.get("rule") == "script-path"]
-        self.assertEqual(len(hits), 1, report)
-        self.assertEqual(hits[0]["severity"], "warning", report)  # undocumented there, not proven broken
-        self.assertNotIn("interpreter", json.dumps(hits[0]))
+        assert len(hits) == 1, report
+        assert hits[0]["severity"] == "warning", report  # undocumented there, not proven broken
+        assert "interpreter" not in json.dumps(hits[0])
 
     def test_bare_script_file_mention_is_not_a_command(self) -> None:
         self.skill_md(GOOD, "| `scripts/build.py` | Run it, do not read it |\n")
         self.write("scripts/build.py", "#!/usr/bin/env python3\nprint('ok')\n", executable=True)
         _, report = run(self.skill)
-        self.assertFalse(has(report, rule="script-path"), report)
+        assert not has(report, rule="script-path"), report
 
     def test_script_without_env_shebang_warns(self) -> None:
         self.skill_md(GOOD, "Run `${CLAUDE_SKILL_DIR}/scripts/build.py`.\n")
         self.write("scripts/build.py", "print('ok')\n", executable=True)
         _, report = run(self.skill)
-        self.assertTrue(has(report, severity="warning", rule="script-shebang", file="scripts/build.py"))
+        assert has(report, severity="warning", rule="script-shebang", file="scripts/build.py")
 
     @unittest.skipIf(IS_WINDOWS, "the executable bit does not exist on Windows")
     def test_script_without_executable_bit_warns(self) -> None:
         self.skill_md(GOOD, "Run `${CLAUDE_SKILL_DIR}/scripts/build.py`.\n")
         self.write("scripts/build.py", "#!/usr/bin/env python3\nprint('ok')\n")
         _, report = run(self.skill)
-        self.assertTrue(has(report, severity="warning", rule="script-executable", file="scripts/build.py"))
+        assert has(report, severity="warning", rule="script-executable", file="scripts/build.py")
 
     def test_helper_module_not_run_by_path_is_not_reported(self) -> None:
         self.skill_md(GOOD, "Run `${CLAUDE_SKILL_DIR}/scripts/build.py`.\n")
@@ -380,7 +392,7 @@ class Files(SkillCase):
         self.write("scripts/helpers.py", "VALUE = 1\n")
         self.write("scripts/__init__.py", "")
         _, report = run(self.skill)
-        self.assertFalse([f for f in findings(report) if f["file"].startswith("scripts/")], report)
+        assert not [f for f in findings(report) if f["file"].startswith("scripts/")], report
 
 
 class Inventory(SkillCase):
@@ -394,37 +406,34 @@ class Inventory(SkillCase):
         self.write("build/out.txt", "x\n")
         self.write("references/deep/a/b.md", "# B\n")
         code, report = run(self.skill, "--list")
-        self.assertEqual(code, 0, report)
+        assert code == 0, report
         paths = [f["path"] for f in report["files"]]
-        self.assertEqual(
-            paths,
-            sorted(
-                [
-                    ".env.example",
-                    ".gitignore",
-                    ".hidden/notes.md",
-                    "SKILL.md",
-                    "build/out.txt",
-                    "references/deep/a/b.md",
-                ]
-            ),
+        assert paths == sorted(
+            [
+                ".env.example",
+                ".gitignore",
+                ".hidden/notes.md",
+                "SKILL.md",
+                "build/out.txt",
+                "references/deep/a/b.md",
+            ]
         )
-        self.assertEqual(report["count"], 6)
-        self.assertEqual(report["not_listed"], [])
+        assert report["count"] == 6
+        assert report["not_listed"] == []
 
     def test_no_cap_on_the_number_of_files(self) -> None:
         self.skill_md(GOOD)
         for i in range(150):
             self.write(f"assets/f{i:03}.txt", "x\n")
         _, report = run(self.skill, "--list")
-        self.assertEqual(report["count"], 151)
+        assert report["count"] == 151
 
     def test_reports_sizes_without_checking(self) -> None:
         self.skill_md(GOOD, "Read [missing](references/none.md).\n")
         code, report = run(self.skill, "--list")
-        self.assertEqual(code, 0, report)  # a broken link is not an inventory error
-        self.assertNotIn("findings", report)
-        self.assertGreater(report["files"][0]["bytes"], 0)
+        assert code == 0, report  # a broken link is not an inventory error
+        assert "findings" not in report
+        assert report["files"][0]["bytes"] > 0
 
     @unittest.skipIf(IS_WINDOWS, "symlinks need extra privileges on Windows")
     def test_alias_to_a_folder_inside_the_skill_is_not_a_gap(self) -> None:
@@ -433,8 +442,8 @@ class Inventory(SkillCase):
         (self.skill / "alias").symlink_to(self.skill / "references", target_is_directory=True)
         _, report = run(self.skill, "--list")
         paths = [f["path"] for f in report["files"]]
-        self.assertEqual(paths.count("references/a.md") + paths.count("alias/a.md"), 1, report)
-        self.assertEqual(report["not_listed"], [], report)
+        assert paths.count("references/a.md") + paths.count("alias/a.md") == 1, report
+        assert report["not_listed"] == [], report
 
     @unittest.skipIf(IS_WINDOWS, "symlinks need extra privileges on Windows")
     def test_symlink_loop_is_reported_but_not_a_gap(self) -> None:
@@ -442,9 +451,9 @@ class Inventory(SkillCase):
         self.write("deep/x.md", "# X\n")
         (self.skill / "deep" / "back").symlink_to(self.skill, target_is_directory=True)
         _, report = run(self.skill, "--list")
-        self.assertIn("deep/x.md", [f["path"] for f in report["files"]])
-        self.assertEqual([lp["path"] for lp in report["loops"]], ["deep/back"], report)
-        self.assertEqual(report["not_listed"], [], report)  # a loop is not a gap
+        assert "deep/x.md" in [f["path"] for f in report["files"]]
+        assert [lp["path"] for lp in report["loops"]] == ["deep/back"], report
+        assert report["not_listed"] == [], report  # a loop is not a gap
 
     @unittest.skipIf(IS_WINDOWS, "symlinks need extra privileges on Windows")
     def test_links_leaving_the_skill_are_not_followed(self) -> None:
@@ -455,22 +464,22 @@ class Inventory(SkillCase):
         (self.skill / "up").symlink_to(self.root, target_is_directory=True)
         (self.skill / "host.md").symlink_to(outside / "secret.txt")
         _, report = run(self.skill, "--list")
-        self.assertEqual([f["path"] for f in report["files"]], ["SKILL.md"], report)
-        self.assertEqual(sorted(o["path"] for o in report["outside"]), ["host.md", "up"], report)
-        self.assertTrue(all(o["exists"] for o in report["outside"]), report)
-        self.assertEqual(report["not_listed"], [], report)
+        assert [f["path"] for f in report["files"]] == ["SKILL.md"], report
+        assert sorted(o["path"] for o in report["outside"]) == ["host.md", "up"], report
+        assert all(o["exists"] for o in report["outside"]), report
+        assert report["not_listed"] == [], report
 
     @unittest.skipIf(IS_WINDOWS, "symlinks need extra privileges on Windows")
     def test_broken_link_leaving_the_skill_is_marked_missing(self) -> None:
         self.skill_md(GOOD)
         (self.skill / "gone.md").symlink_to(self.root / "deleted.md")
         _, report = run(self.skill, "--list")
-        self.assertEqual([(o["path"], o["exists"]) for o in report["outside"]], [("gone.md", False)], report)
-        self.assertEqual(report["not_listed"], [], report)
+        assert [(o["path"], o["exists"]) for o in report["outside"]] == [("gone.md", False)], report
+        assert report["not_listed"] == [], report
 
     def test_no_skill_md_is_bad_input(self) -> None:
         code, _ = run(self.root, "--list")
-        self.assertEqual(code, 2)
+        assert code == 2
 
 
 class RuleCoverage(SkillCase):
@@ -479,55 +488,59 @@ class RuleCoverage(SkillCase):
     def test_description_missing_is_error(self) -> None:
         self.skill_md("name: demo-skill\n")
         code, report = run(self.skill)
-        self.assertEqual((code, report["summary"]["error"] > 0), (0, True), report)
-        self.assertTrue(has(report, severity="error", rule="description-missing"))
+        assert (code, report["summary"]["error"] > 0) == (0, True), report
+        assert has(report, severity="error", rule="description-missing")
 
     def test_money_amount_is_escaped(self) -> None:
         self.skill_md(GOOD, "Charge $10.50 per seat.\n")
         _, report = run(self.skill)
-        self.assertTrue(has(report, severity="warning", rule="arguments-escape"))
+        assert has(report, severity="warning", rule="arguments-escape")
 
     def test_placeholder_in_code_block_expands(self) -> None:
         self.skill_md(GOOD, "Example:\n\n```bash\necho $1\n```\n")
         _, report = run(self.skill)
-        self.assertTrue(has(report, severity="warning", rule="arguments-escape"))
+        assert has(report, severity="warning", rule="arguments-escape")
 
     def test_long_body_warns_on_tokens(self) -> None:
         self.skill_md(GOOD, ("word " * 16 + "\n") * 300)  # about 6,000 tokens in 300 lines
         _, report = run(self.skill)
-        self.assertTrue(has(report, severity="warning", rule="body-tokens"))
-        self.assertFalse(has(report, rule="body-lines"), report)
+        assert has(report, severity="warning", rule="body-tokens")
+        assert not has(report, rule="body-lines"), report
 
     def test_backslash_link_is_error(self) -> None:
         self.skill_md(GOOD, "Read [a](references\\\\a.md).\n")
         self.write("references/a.md", "# A\n")
         _, report = run(self.skill)
-        self.assertTrue(has(report, severity="error", rule="link-backslash"))
+        assert has(report, severity="error", rule="link-backslash")
 
     def test_unreadable_markdown_is_error(self) -> None:
         self.skill_md(GOOD)
         (self.skill / "notes.md").write_bytes(b"caf\xe9\n")  # Latin-1, not UTF-8
         code, report = run(self.skill)
-        self.assertEqual(code, 0, report)
-        self.assertTrue(has(report, severity="error", rule="read", file="notes.md"))
+        assert code == 0, report
+        assert has(report, severity="error", rule="read", file="notes.md")
 
     def test_skill_dir_variable_in_prose_warns(self) -> None:
         self.skill_md(GOOD, "Files live under ${CLAUDE_SKILL_DIR} next to this file.\n")
         _, report = run(self.skill)
-        self.assertTrue(has(report, severity="warning", rule="render-variable"))
+        assert has(report, severity="warning", rule="render-variable")
 
     def test_missing_script_is_error(self) -> None:
         self.skill_md(GOOD, "Run `${CLAUDE_SKILL_DIR}/scripts/gone.py`.\n")
         _, report = run(self.skill)
-        self.assertTrue(has(report, severity="error", rule="script-missing"))
+        assert has(report, severity="error", rule="script-missing")
 
     def test_every_rule_has_a_test(self) -> None:
         """A new rule without a test fails here, so every check the checker makes is proven."""
-        rules = set(re.findall(r'self\.add\(\s*"([a-z0-9-]+)"', CHECKER.read_text(encoding="utf-8")))
+        rules = set(
+            re.findall(r'self\.add\(\s*"([a-z0-9-]+)"', CHECKER.read_text(encoding="utf-8"))
+        )
         tests = Path(__file__).read_text(encoding="utf-8")
-        self.assertGreater(len(rules), 20)
-        untested = sorted(r for r in rules if f'rule="{r}"' not in tests and f'"rule") == "{r}"' not in tests)
-        self.assertEqual(untested, [])
+        assert len(rules) > 20
+        untested = sorted(
+            r for r in rules if f'rule="{r}"' not in tests and f'"rule") == "{r}"' not in tests
+        )
+        assert untested == []
 
 
 class Output(SkillCase):
@@ -540,8 +553,49 @@ class Output(SkillCase):
             encoding="utf-8",
             check=False,
         )
-        self.assertEqual(proc.returncode, 0, proc.stderr)
-        self.assertIn("Summary:", proc.stdout)
+        assert proc.returncode == 0, proc.stderr
+        assert "Summary:" in proc.stdout
+
+
+EXAMPLES = CHECKER.parent.parent / "assets" / "examples"
+
+
+class Examples(unittest.TestCase):
+    """The audit's passing examples stay passing: each one, run as a real skill."""
+
+    def test_every_example_passes_where_claude_code_runs_it(self) -> None:
+        files = sorted(EXAMPLES.glob("*.md"))
+        assert files, f"no examples in {EXAMPLES}"
+        with tempfile.TemporaryDirectory() as tmp:
+            for example in files:
+                text = example.read_text(encoding="utf-8")
+                name = re.search(r"^name: (\S+)$", text, re.MULTILINE)
+                assert name, f"{example.name} has no name"
+                skill = Path(tmp) / name.group(1)
+                skill.mkdir()
+                (skill / "SKILL.md").write_text(text, encoding="utf-8")
+                for script in re.findall(r"\$\{CLAUDE_SKILL_DIR\}/(scripts/[\w.-]+)", text):
+                    path = skill / script
+                    path.parent.mkdir(exist_ok=True)
+                    path.write_text("#!/usr/bin/env python3\n", encoding="utf-8")
+                    path.chmod(0o755)
+                for surface in ("code", "cowork"):
+                    code, report = run(skill, surface=surface)
+                    assert code == 0, (example.name, surface)
+                    errors = report["summary"]["error"]
+                    assert errors == 0, (example.name, surface, findings(report))
+                _, report = run(skill, surface="code")
+                assert report["summary"]["warning"] == 0, (example.name, findings(report))
+
+    def test_examples_md_names_every_example(self) -> None:
+        # The conformance agent has only Read and can't list a folder: it finds the
+        # examples through the names examples.md gives, so an unnamed file is never read.
+        doc = (CHECKER.parent.parent / "references" / "examples.md").read_text(encoding="utf-8")
+        listed = re.search(r"in `assets/examples/`: (.+)$", doc, re.MULTILINE)
+        assert listed, "examples.md has no list of assets/examples/"
+        named = set(re.findall(r"`([\w.-]+\.md)`", listed.group(1)))
+        on_disk = {p.name for p in EXAMPLES.glob("*.md")}
+        assert named == on_disk, {"not named": on_disk - named, "missing": named - on_disk}
 
 
 if __name__ == "__main__":

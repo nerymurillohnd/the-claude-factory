@@ -13,9 +13,9 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+from pathlib import Path
 import sys
 import time
-from pathlib import Path
 
 MODES = ("suggest", "run", "off")
 DEFAULT_MODE = "suggest"
@@ -23,6 +23,7 @@ STATE_MAX_AGE = 30 * 24 * 3600  # seconds; older per-session state files are rem
 
 
 def message(mode: str, skill_dir: str) -> str:
+    """Return the context Claude gets for a written skill, by mode (run or suggest)."""
     command = f'/skill-diagnostics:audit "{skill_dir}"'
     if mode == "run":
         return (
@@ -59,9 +60,10 @@ def already_notified(data_dir: str, session: str, skill_dir: str) -> bool:
         return False
     folder = Path(data_dir) / "notified"
     folder.mkdir(parents=True, exist_ok=True)
-    prune(folder)
     key = hashlib.sha256(session.encode("utf-8")).hexdigest()[:32]
     log = folder / f"{key}.txt"
+    if not log.exists():
+        prune(folder)  # once per session, when its state file is created
     seen = log.read_text(encoding="utf-8").splitlines() if log.exists() else []
     if skill_dir in seen:
         return True
@@ -71,6 +73,7 @@ def already_notified(data_dir: str, session: str, skill_dir: str) -> bool:
 
 
 def main() -> int:
+    """Handle one PostToolUse event from stdin; always returns 0."""
     mode = os.environ.get("CLAUDE_PLUGIN_OPTION_ON_SKILL_WRITE", DEFAULT_MODE).strip().lower()
     if mode not in MODES:
         mode = DEFAULT_MODE
@@ -78,19 +81,30 @@ def main() -> int:
         return 0
     event = json.load(sys.stdin)
     file_path = str(event.get("tool_input", {}).get("file_path", ""))
-    if os.path.basename(file_path) != "SKILL.md":
+    path = Path(file_path)
+    if path.name != "SKILL.md":
         return 0
-    skill_dir = os.path.dirname(os.path.abspath(file_path))
+    skill_dir = str(Path(os.path.normpath(path.absolute())).parent)
     normalized = skill_dir.replace("\\", "/")
     plugin_root = os.environ.get("CLAUDE_PLUGIN_ROOT", "").replace("\\", "/")
-    config_dir = os.environ.get("CLAUDE_CONFIG_DIR") or os.path.join(os.path.expanduser("~"), ".claude")
-    managed = [os.path.join(config_dir, *parts).replace("\\", "/") for parts in (("plugins",), ("skills", "synced"))]
+    config_dir = os.environ.get("CLAUDE_CONFIG_DIR") or str(Path("~").expanduser() / ".claude")
+    managed = [
+        str(Path(config_dir).joinpath(*parts)).replace("\\", "/")
+        for parts in (("plugins",), ("skills", "synced"))
+    ]
     # Claude Code overwrites files in these folders, so an audit offer there is useless.
     if any(inside(normalized, folder) for folder in managed) or inside(normalized, plugin_root):
         return 0
-    if already_notified(os.environ.get("CLAUDE_PLUGIN_DATA", ""), str(event.get("session_id", "")), skill_dir):
+    if already_notified(
+        os.environ.get("CLAUDE_PLUGIN_DATA", ""), str(event.get("session_id", "")), skill_dir
+    ):
         return 0
-    output = {"hookSpecificOutput": {"hookEventName": "PostToolUse", "additionalContext": message(mode, skill_dir)}}
+    output = {
+        "hookSpecificOutput": {
+            "hookEventName": "PostToolUse",
+            "additionalContext": message(mode, skill_dir),
+        }
+    }
     sys.stdout.write(json.dumps(output) + "\n")
     return 0
 
@@ -98,5 +112,7 @@ def main() -> int:
 if __name__ == "__main__":
     try:
         sys.exit(main())
-    except Exception:  # never block the user's work
+    # Never block the user's work: bad input (ValueError covers JSON and Unicode errors),
+    # an unexpected event shape, file system errors and an unknown home directory all end here.
+    except (OSError, ValueError, LookupError, TypeError, AttributeError, RuntimeError):
         sys.exit(0)

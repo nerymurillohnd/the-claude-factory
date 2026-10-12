@@ -1,31 +1,29 @@
 # Where a skill runs
 
-What changes for a skill on each surface. The conformance lens uses this to judge portability; the checker's `--target` option applies the same rules. Labels as in `fields.md`: **[req]**, **[rec]**, **[spec]**, **[default]**, **[observed]**.
+What changes for a skill on each surface. The conformance lens uses this to judge portability; the checker applies the same rules to all four surfaces. Labels as in `fields.md`: **[req]**, **[rec]**, **[spec]**, **[default]**, **[observed]**.
 
 Sources, checked 2026-10-12: [Claude Code skills](https://code.claude.com/docs/en/skills) (Where skills live, Skills in Cowork and cloud sessions, Using skill frontmatter outside Claude Code), [plugin platform support](https://claude.com/docs/plugins/platform-support), [skill authoring best practices](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices) (Runtime environment, Package dependencies).
 
 ## Contents
 
-- Pick the target
+- Where the skill comes from
 - What each surface accepts
 - How a skill reaches each surface
 - Scripts and dependencies
 - Portability findings
 
-## Pick the target
+## Where the skill comes from
 
-The first row that matches wins.
+Every skill is checked on all four surfaces. Its origin sets which surfaces it reaches today and where its fixes belong. The first row that matches is the origin.
 
-| The skill is | Target | Checker option |
-| :-- | :-- | :-- |
-| A synced copy of an account skill (`~/.claude/skills/synced/`) | claude.ai upload; fixes are made on claude.ai, since a sync overwrites local edits | `--target upload` |
-| Uploaded to claude.ai, or enabled on the account so it reaches Cowork and cloud sessions | claude.ai upload | `--target upload` |
-| Inside a plugin (an ancestor folder holds `.claude-plugin/plugin.json`) | Claude Code and Cowork | `--target code` and `--target cowork`, one run each |
-| Personal (`~/.claude/skills/`) or project (`.claude/skills/`) | Claude Code | `--target code` (default) |
-| Sent through the Skills API | API | `--target api` |
-| Anywhere else (a loose folder, a `skills/` folder outside `.claude/`) | Claude Code | `--target code`, stated as assumed |
-
-Without `--target`, the three location rules in `SKILL.md` (Input → Target) decide; the other rows apply when the request names that surface. Say which targets you assumed. A plugin installs in both Claude Code and Cowork, so its skills are checked for both unless the request names one.
+| Origin | How to tell | Reaches | Fixes go |
+| :-- | :-- | :-- | :-- |
+| Web | A URL the user gives, audited before installing | Whatever its README or plugin manifest says it targets | Upstream; tell the user before installing |
+| Synced account skill | Under `~/.claude/skills/synced/` | claude.ai upload rules, Cowork, Claude Code | On claude.ai: a sync overwrites local edits |
+| Plugin | An ancestor folder holds `.claude-plugin/plugin.json`, or the user names a plugin root without one (the manifest is optional) | Claude Code and Cowork | In the plugin's source |
+| Personal | Under `~/.claude/skills/` | Claude Code on that machine | Locally |
+| Project | Under a repository's `.claude/skills/` | Claude Code, cloud sessions | In the repository |
+| Loose folder | Anywhere else | Claude Code once installed | Locally |
 
 ## What each surface accepts
 
@@ -54,6 +52,7 @@ Without `--target`, the three location rules in `SKILL.md` (Input → Target) de
 ## Scripts and dependencies
 
 - [req] In Claude Code, commands run in the session's directory, never the skill's: call bundled scripts as `${CLAUDE_SKILL_DIR}/scripts/<file>`.
+- [req] In Claude Code, a command that fails (any non-zero exit, except exit 1 from search and comparison commands) reaches Claude cut to about 10,000 characters, with no file path; a valid result over about 30,000 characters arrives as a file path and a preview ([tools reference](https://code.claude.com/docs/en/tools-reference), Output limits). A script that reports problems inside its output exits 0.
 - [default] In Claude Code and Cowork, a script starts with `#!/usr/bin/env <interpreter>` (no version), is executable (committed as `100755`) and is called by its path; the user's first interpreter on `PATH` runs it. The skill's README lists the interpreter and minimum version under requirements.
 - [default] For an upload or the API, call scripts through their interpreter with a path relative to the skill (`python3 scripts/<file>`): a zip upload can lose the executable bit, and the platform documentation shows only relative paths, never the path variables.
 - [req] The Skills API has no network access and installs nothing at run time; claude.ai can install packages from npm and PyPI. Use only preinstalled packages for the API.
@@ -61,11 +60,12 @@ Without `--target`, the three location rules in `SKILL.md` (Input → Target) de
 
 ## Portability findings
 
-Report a portability problem only for a target the skill is meant for. Severity:
+Report every portability problem on every surface. Severity depends on whether the skill reaches that surface:
 
 | Problem | Severity |
 | :-- | :-- |
-| A field, limit or feature the target rejects (upload or API) | high |
-| A feature the target silently skips (a `!` line in Cowork, a path variable in a synced skill) that an instruction depends on | high |
+| A field, limit or feature a surface the skill reaches rejects | high |
+| A feature a surface the skill reaches silently skips (a `!` line in Cowork, a path variable in a synced skill) that an instruction depends on | high |
 | The same, when no instruction depends on it | low |
 | A requirement the skill needs but does not state (interpreter, network, a tool on `PATH`) | medium |
+| Any of these on a surface the skill does not reach today | low: "breaks if you move it to <surface>" |

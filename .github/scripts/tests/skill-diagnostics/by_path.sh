@@ -4,52 +4,51 @@
 # Linux, macOS and Windows (Git Bash). Exits non-zero on the first failure.
 set -euo pipefail
 root=$(cd "$(dirname "$0")/../../../.." && pwd)
-plugin="$root/plugins/skill-diagnostics"
-checker="$plugin/skills/audit/scripts/check_skill.py"
-hook="$plugin/hooks/skill_written.py"
-gate="$plugin/skills/audit/scripts/verification_gate.py"
+plugin="${root}/plugins/skill-diagnostics"
+checker="${plugin}/skills/audit/scripts/check_skill.py"
+hook="${plugin}/hooks/skill_written.py"
 work=$(mktemp -d)
 trap 'rm -rf "$work"' EXIT
 
-echo "python3: $(command -v python3) ($(python3 --version))"
+python=$(command -v python3)
+version=$(python3 --version)
+echo "python3: ${python} (${version})"
 
 # 1. Committed as executable, so it runs by path after a clone or install.
-for script in "$checker" "$hook" "$gate"; do
-  mode=$(git -C "$root" ls-files -s -- "${script#"$root"/}" | cut -d' ' -f1)
-  [ "$mode" = 100755 ] || { echo "FAIL: ${script#"$root"/} is $mode, not 100755"; exit 1; }
+for script in "${checker}" "${hook}"; do
+  mode=$(git -C "${root}" ls-files -s -- "${script#"${root}"/}" | cut -d' ' -f1)
+  [[ ${mode} == 100755 ]] || {
+    echo "FAIL: ${script#"${root}"/} is ${mode}, not 100755"
+    exit 1
+  }
 done
 
 # 2. The checker, by path: inventory and check of a real skill, valid JSON, exit 0.
-"$checker" --list "$plugin/skills/audit" >"$work/list.json"
-"$checker" --target code "$plugin/skills/audit" >"$work/check.json"
-python3 - "$work/list.json" "$work/check.json" <<'PY'
+"${checker}" --list "${plugin}/skills/audit" > "${work}/list.json"
+"${checker}" "${plugin}/skills/audit" > "${work}/check.json"
+python3 - "${work}/list.json" "${work}/check.json" << 'PY'
 import json, sys
 inventory = json.load(open(sys.argv[1], encoding="utf-8"))
 report = json.load(open(sys.argv[2], encoding="utf-8"))
 assert inventory["count"] >= 9 and not inventory["not_listed"], inventory
-assert report["summary"]["error"] == 0, report["summary"]
-print(f"checker: {inventory['count']} files listed, {report['summary']} on its own skill")
+surfaces = report["surfaces"]
+assert set(surfaces) == {"code", "cowork", "upload", "api"}, surfaces.keys()
+for surface in ("code", "cowork"):  # where a plugin skill runs
+    assert surfaces[surface]["summary"]["error"] == 0, (surface, surfaces[surface]["summary"])
+print(f"checker: {inventory['count']} files listed, {surfaces['code']['summary']} on its own skill (code)")
 PY
 
 # 3. The hook, by path: a SKILL.md write gets the audit offer.
-mkdir -p "$work/skills/demo"
-printf -- '---\nname: demo\ndescription: Demo. Use when asked.\n---\n\nDo it.\n' >"$work/skills/demo/SKILL.md"
-native=$(cd "$work" && (pwd -W 2>/dev/null || pwd))  # Windows path on Git Bash, as Claude Code sends it
-event=$(printf '{"session_id":"ci","hook_event_name":"PostToolUse","tool_name":"Write","tool_input":{"file_path":"%s/skills/demo/SKILL.md"}}' "$native")
-out=$(printf '%s' "$event" | env -u CLAUDE_PLUGIN_OPTION_ON_SKILL_WRITE \
-  CLAUDE_PLUGIN_ROOT="$plugin" CLAUDE_PLUGIN_DATA="$work/data" CLAUDE_CONFIG_DIR="$work/cfg" "$hook")
-case "$out" in
+mkdir -p "${work}/skills/demo"
+printf -- '---\nname: demo\ndescription: Demo. Use when asked.\n---\n\nDo it.\n' > "${work}/skills/demo/SKILL.md"
+native=$(cd "${work}" && (pwd -W 2> /dev/null || pwd) ) # Windows path on Git Bash, as Claude Code sends it
+event=$(printf '{"session_id":"ci","hook_event_name":"PostToolUse","tool_name":"Write","tool_input":{"file_path":"%s/skills/demo/SKILL.md"}}' "${native}")
+out=$(printf '%s' "${event}" | env -u CLAUDE_PLUGIN_OPTION_ON_SKILL_WRITE \
+  CLAUDE_PLUGIN_ROOT="${plugin}" CLAUDE_PLUGIN_DATA="${work}/data" CLAUDE_CONFIG_DIR="${work}/cfg" "${hook}")
+case "${out}" in
   *"/skill-diagnostics:audit"*) echo "hook: offers the audit" ;;
-  *) echo "FAIL: hook output: $out"; exit 1 ;;
-esac
-
-# 4. The verification gate, by path: an audit turn with no fetch is sent back.
-printf '%s\n' '{"type":"user","message":{"role":"user","content":"check skills/demo"}}' \
-  '{"type":"assistant","message":{"content":[{"type":"tool_use","id":"t1","name":"Skill","input":{"skill":"skill-diagnostics:audit"}}]}}' \
-  >"$work/session.jsonl"
-transcript=$(cd "$work" && (pwd -W 2>/dev/null || pwd))/session.jsonl
-out=$(printf '{"transcript_path":"%s","stop_hook_active":false,"last_assistant_message":"Verdict: pass"}' "$transcript" | "$gate")
-case "$out" in
-  *"step 5 of the audit is not complete"*) echo "gate: sends an unverified audit back" ;;
-  *) echo "FAIL: gate output: $out"; exit 1 ;;
+  *)
+    echo "FAIL: hook output: ${out}"
+    exit 1
+    ;;
 esac

@@ -2,7 +2,7 @@
 
 Facts the conformance lens checks a skill against. Each line is labelled: **[req]** documented behavior, **[rec]** official recommendation, **[spec]** Agent Skills specification, **[default]** this plugin's recommended default (an alternative is acceptable when the skill states why), **[observed]** seen in testing but not documented.
 
-Sources, checked 2026-10-11: [Claude Code skills](https://code.claude.com/docs/en/skills), [settings reference](https://code.claude.com/docs/en/settings-reference), [Agent Skills specification](https://agentskills.io/specification), [skill authoring best practices](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices), [best practices for skill creators](https://agentskills.io/skill-creation/best-practices) (checked 2026-10-12). When a live page disagrees with this file, the live page wins: report the difference.
+Sources, checked 2026-10-11: [Claude Code skills](https://code.claude.com/docs/en/skills), [settings reference](https://code.claude.com/docs/en/settings-reference), [Agent Skills specification](https://agentskills.io/specification), [skill authoring best practices](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices), [best practices for skill creators](https://agentskills.io/skill-creation/best-practices) (checked 2026-10-12), [hooks](https://code.claude.com/docs/en/hooks) (Reference scripts by path, Block the action when a hook fails) [features overview](https://code.claude.com/docs/en/features-overview) (Subagents) and [Agent Skills overview](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview) (Security considerations, Runtime environment constraints) (checked 2026-10-12). When a live page disagrees with this file, the live page wins: report the difference.
 
 ## Contents
 
@@ -13,6 +13,7 @@ Sources, checked 2026-10-11: [Claude Code skills](https://code.claude.com/docs/e
 - Arguments and substitutions
 - Body and loading
 - Invocation control
+- Hooks in a skill
 
 ## Frontmatter syntax
 
@@ -38,7 +39,7 @@ Sources, checked 2026-10-11: [Claude Code skills](https://code.claude.com/docs/e
 | `model` | Model for the rest of the current turn (`inherit` keeps the session's) |
 | `effort` | `low`, `medium`, `high`, `xhigh` or `max` while the skill is active |
 | `context` | `fork` runs the skill in a subagent |
-| `agent` | Subagent type used with `context: fork` |
+| `agent` | Subagent type used with `context: fork`; the built-in `Explore` and `Plan` load no CLAUDE.md [req] |
 | `background` | With `context: fork`: `false` waits for the result in the invoking turn; default `true` (2.1.218+) |
 | `hooks` | Hooks registered when the skill is invoked, kept for the rest of the session |
 | `paths` | Globs that limit automatic activation to matching files |
@@ -51,7 +52,7 @@ All 20 fields are optional in Claude Code [req]. Set `name` and `description` an
 ## Name
 
 - [spec] 1–64 characters; lowercase letters, digits and hyphens; no hyphen at the start or end; no two hyphens in a row; equal to the directory name.
-- [req] claude.ai uploads and the Skills API also reject the words `anthropic` and `claude` in `name`. Claude Code accepts them: report it only for an upload or API target.
+- [req] claude.ai uploads and the Skills API also reject the words `anthropic` and `claude` in `name`. Claude Code accepts them: report it only for the upload or API surface.
 - [req] Claude Code never loads a skill whose directory is named `synced` (any capitalization), or whose directory or `name` is `anthropic-skills` or starts with `anthropic-skills:`; both are reserved for skills synced from claude.ai.
 - [rec] Prefer a name that says the activity (`processing-invoices`) over a vague one (`helper`, `utils`).
 
@@ -93,6 +94,7 @@ Claude Code replaces these in `SKILL.md` before Claude reads it [req]:
 - [spec] Aim for under about 5,000 tokens of body.
 - [rec] Link every supporting file from `SKILL.md`, one level deep; a reference that links to another may be read only partially. Open references longer than 100 lines with a contents list.
 - [req] A line starting with `!` and a backticked command (or a block opened with three backticks and `!`) runs before Claude reads the skill; its output replaces the line. A non-zero exit, or a permission result other than allow outside auto mode, aborts the whole skill.
+- [observed] Argument placeholders are substituted into a dynamic-context command as text before the shell runs it, even inside quotes: with `$ARGUMENTS` in the command, an argument `$(echo INJECTED)` was executed (Claude Code 2.1.296, 2026-10-12). A user argument in that command runs as shell code.
 
 ## Invocation control
 
@@ -104,3 +106,9 @@ Claude Code replaces these in `SKILL.md` before Claude reads it [req]:
 
 - [req] Setting both `disable-model-invocation: true` and `user-invocable: false` leaves nobody able to run the skill.
 - [req] A plugin skill runs as `/<plugin>:<skill>`.
+
+## Hooks in a skill
+
+- [req] Hook commands resolve `${CLAUDE_PROJECT_DIR}`, `${CLAUDE_PLUGIN_ROOT}` and `${CLAUDE_PLUGIN_DATA}`; `${CLAUDE_SKILL_DIR}` is not documented for hooks. A plugin skill reaches its own script through the plugin root.
+- [req] A hook that references a path placeholder prefers exec form; in shell form, each placeholder is wrapped in double quotes, or a path with a space breaks.
+- [req] `onFailure: "block"` makes a `command` or `http` hook block when it can't start, times out or exits with an unexpected code; it has no effect on `Stop`, `SubagentStop`, `TaskCompleted` and `TeammateIdle` hooks.
