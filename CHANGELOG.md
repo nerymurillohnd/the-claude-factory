@@ -2,7 +2,7 @@
 
 All notable changes to **The Claude Factory** marketplace are documented here: plugins added, updated, renamed or retired, and changes to the catalog itself. Each plugin keeps its own detailed changelog in `plugins/<name>/CHANGELOG.md`.
 
-The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the marketplace adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html):
+The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and the marketplace adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html):
 
 - **Major** — a plugin is removed or renamed.
 - **Minor** — a plugin is added, or a plugin ships a new major or minor version.

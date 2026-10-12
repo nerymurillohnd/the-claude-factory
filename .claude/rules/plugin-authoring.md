@@ -38,7 +38,9 @@ paths:
 ## Hooks and scripts
 
 - Fail safe: a hook error must never block the user without a clear message.
-- Scripts are POSIX-compatible or Node/Python with no install step unless declared in Requirements.
+- Scripts start with `#!/usr/bin/env <interpreter>` (no version), are committed as `100755`, and are called by path (`${CLAUDE_SKILL_DIR}` or `${CLAUDE_PLUGIN_ROOT}`). The user's first interpreter on `PATH` runs them.
+- No per-OS fallbacks: every runtime a script needs (interpreter, minimum version, POSIX shell or Git for Windows) is declared in the README **Requirements** section.
+- Standard library only, no install step, unless declared in Requirements.
 - Never exfiltrate data; network calls only when the plugin's purpose requires them and the README discloses them.
 
 ## Done means

@@ -38,7 +38,7 @@ Verified 2026-10-11 against <https://claude.com/docs/plugins/platform-support>, 
 3. Integrate services through remote MCP servers; local MCP only when unavoidable, documented as "Cowork: only on your computer".
 4. Every `userConfig` option has a default, so the plugin works in Cowork without prompts. Secrets: `sensitive: true`.
 5. LSP, output styles, themes, monitors, workflows, mods and `dependencies` are enhancements; the plugin must still deliver its core value in Cowork without them.
-6. Scripts and hooks use only common system tools (`bash`, `python3`, `node`), install nothing, and fail safe with a clear message — the Cowork runtime's available interpreters are **not documented** (unverified), so never assume more.
+6. Scripts and hooks use only common system tools (`bash`, `python3`, `node`), install nothing, and fail safe with a clear message. Every runtime they need is declared in the README **Requirements** section — the Cowork runtime's available interpreters are **not documented** (unverified), so never assume more.
 7. Test on both before every release:
    - Claude Code: `claude --plugin-dir plugins/<name>` (or local marketplace install).
    - Cowork: add the marketplace (or **Customize → Plugins → Add → Upload plugin** with a zip), start a task, confirm skills/agents/hooks load and connectors connect.

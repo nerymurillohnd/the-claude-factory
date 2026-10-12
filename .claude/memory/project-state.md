@@ -17,6 +17,13 @@
 | 2026-10-11 | Surfaces declared in `plugin.json` `metadata.surfaces`; README badge, catalog column and `check-repo.mjs` derive from it | One source of truth, enforced |
 | 2026-10-11 | Maintenance skills invocable by Claude on Nery's explicit request (no `disable-model-invocation`) | Nery works mostly from the Claude app, whose menus don't show repo skills |
 | 2026-10-11 | Plugins must be generic: no Forestal MT references, no forced conversation language | Public audience |
+| 2026-10-11 | First plugin: `skill-diagnostics` (skill `audit`, agents `conformance-auditor` + `executability-auditor`), rebuilt from claude-essentials `skills-engineering` | Audit found it duplicated `skill-creator`; the executability audit and the checker are the unique value |
+| 2026-10-11 | `skill-diagnostics` only audits; creating skills is left to `skill-creator` (scope guard in description and body) | Avoid competing with Anthropic's own tooling and mis-triggering |
+| 2026-10-11 | One audit skill, two lens agents in parallel, one merged report and verdict; a PostToolUse hook on `SKILL.md` writes suggests the audit (`userConfig.on_skill_write`: suggest/run/off) | One entry point, no reviewer/auditor ambiguity |
+| 2026-10-11 | All plugin content 100% original; facts cited by link | Clean MIT; no unlicensed third-party examples |
+| 2026-10-11 | Scripts: `#!/usr/bin/env` shebang, `100755`, called by path; runtimes declared in README Requirements, no per-OS fallbacks | Simplicity; requirements are what READMEs are for |
+| 2026-10-11 | Evals: Sonnet runs, Opus judges; only differentiating cases; uncapped local pilot, capped full run in CI (`.claude/rules/evals.md`) | Objective, cost-controlled evidence |
+| 2026-10-11 | Keep a Changelog 2.0.0 (published 2026-06-07) | Current version of the format |
 
 ## Status
 
@@ -27,12 +34,13 @@
 ## Open items
 
 - GitHub's default labels (`bug`, `enhancement`, `documentation`, `duplicate`, `good first issue`, `help wanted`, `invalid`, `question`, `wontfix`, `accessibility`) still exist next to ours — Nery decides whether to delete them.
-- First plugin: not chosen yet. Candidates mentioned in past work: `project-records`, `skills-engineering` (skill auditor + best practices), `live-docs-research`.
+- `skill-diagnostics` build in progress: plan and phases in Nery's "Plan: skill-diagnostics" doc (claude.ai artifact 3d3dfddc-5aad-4e92-8ad1-ac636b8db2fe); audit of the source plugin in artifact 268a085a-e5fb-4f8f-998a-863888641ff0.
+- Evals in CI need Nery's decision: `ANTHROPIC_API_KEY` secret (billed to the API console) and trigger (recommended: plugin version change + manual).
 
 ## Plugin ideas backlog
 
 | Idea | Origin | Status |
 | :-- | :-- | :-- |
 | `project-records` — decision records, debt ledgers, session handoffs (handoffs gitignored) | Nery, earlier sessions | idea |
-| `skills-engineering` — create/audit/improve skills grounded in live docs | Nery, earlier sessions | idea |
+| `skill-diagnostics` — audit skills: conformance + executability (was `skills-engineering`) | Nery, earlier sessions | building |
 | `live-docs-research` — research from live official sources + changelog checks | Nery, earlier sessions | idea |

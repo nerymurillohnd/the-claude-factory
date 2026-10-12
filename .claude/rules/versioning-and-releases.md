@@ -27,10 +27,11 @@ paths:
 | **minor** | Plugin added, or a plugin releases a major/minor |
 | **patch** | Plugin releases a patch, or catalog/root-doc metadata changes |
 
-## Changelogs (Keep a Changelog 1.1.0)
+## Changelogs (Keep a Changelog 2.0.0)
 
 - Write entries under `## [Unreleased]` as you work, grouped: `Added`, `Changed`, `Deprecated`, `Removed`, `Fixed`, `Security`.
 - User-facing language: what changed for the user, not implementation detail. Reference issues as `(#12)`.
+- Mark breaking entries with a leading `**Breaking:**` inside their change type (they force a major bump).
 - Release with `node .github/scripts/bump-version.mjs <plugin|marketplace> <level>`; it dates the section and fixes link references. Never edit versions by hand.
 - Root `CHANGELOG.md` gets one line per plugin release: `- **plugin-name** 1.2.0 — one-line summary.`
 
