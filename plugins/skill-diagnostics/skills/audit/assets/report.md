@@ -26,5 +26,5 @@ No findings: replace the table with `No findings.` and leave out the Evidence se
 - Checker: <ran (target …) | not run: reason>
 - Lenses: <conformance, executability; agent or inline>
 - Order and flow: <the executability lens's line, or not checked: executability lens not selected>
-- Not verified live: <items, or none>
-- External dependencies: <names or paths, found or unverified, or none>
+- Not verified live: <items, or none, or not checked: conformance lens not selected>
+- External dependencies: <names or paths, found or unverified, or none, or not checked: executability lens not selected>
