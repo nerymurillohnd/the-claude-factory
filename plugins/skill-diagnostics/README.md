@@ -70,7 +70,7 @@ claude plugin install skill-diagnostics --marketplace nerymurillohnd/the-claude-
 claude plugin install skill-diagnostics@the-claude-factory
 ```
 
-Add `--scope project` to enable it for everyone working in the current repository.
+Add `--scope project` to enable it for everyone working in the current repository; each collaborator still installs it once on their own machine.
 
 </details>
 
@@ -89,8 +89,8 @@ Requires Claude Code v2.1.275+. With the marketplace already added, `/plugin ins
 <summary><b>🖥️ Claude app (web and desktop)</b></summary>
 
 1. Open **Customize** in the sidebar, then **Plugins**.
-2. Select **Add marketplace** and enter `nerymurillohnd/the-claude-factory`.
-3. Find **Skill Diagnostics** and click **Install**.
+2. Select **Add** → **Add marketplace** and enter `nerymurillohnd/the-claude-factory`.
+3. Find **Skill Diagnostics** in **Discover** and select **Add**.
 
 In the desktop app's **Code** tab you can also click **+** → **Plugins** → **Add plugin**.
 
@@ -168,7 +168,7 @@ claude plugin uninstall skill-diagnostics@the-claude-factory
 
 Installed with `--scope project`? Add `--scope project` here too.
 
-In a session: `/plugin` → **Installed** → **Skill Diagnostics** → **Uninstall**. In the Claude app: **Customize** → **Plugins** → **Skill Diagnostics** → **Uninstall**.
+In a session: `/plugin` → **Installed** → **Skill Diagnostics** → **Uninstall**. In the Claude app: **Customize** → **Plugins** → **Skill Diagnostics** → its menu → **Remove**.
 
 ## 🧭 Compatibility
 

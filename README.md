@@ -11,7 +11,7 @@
 <br>
 
 <!-- plugin-count:start -->
-[![Plugins](https://img.shields.io/badge/plugins-1-D97757?style=for-the-badge)](#-catalog)
+[![Plugins](https://img.shields.io/badge/plugins-2-D97757?style=for-the-badge)](#-catalog)
 <!-- plugin-count:end -->
 [![Validate](https://img.shields.io/github/actions/workflow/status/nerymurillohnd/the-claude-factory/validate.yml?branch=main&label=validate&style=for-the-badge)](https://github.com/nerymurillohnd/the-claude-factory/actions/workflows/validate.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-22C55E?style=for-the-badge)](./LICENSE)
@@ -69,7 +69,7 @@ claude plugin marketplace add nerymurillohnd/the-claude-factory
 <summary><b>🖥️ Claude app (web and desktop)</b></summary>
 
 1. Open **Customize** in the sidebar, then **Plugins**.
-2. Select **Add marketplace**.
+2. Select **Add** → **Add marketplace**.
 3. Enter `nerymurillohnd/the-claude-factory` (or `https://github.com/nerymurillohnd/the-claude-factory`).
 
 </details>
@@ -84,7 +84,7 @@ Pick one from the [catalog](#-catalog), then:
 | 💬 Claude Code session | `/plugin install <plugin>@the-claude-factory` — or browse `/plugin` → **Discover** |
 | 🖥️ Desktop app, Code tab | **+** → **Plugins** → **Add plugin** |
 | 🧩 VS Code | Type `/plugins` → **Plugins** tab → **Install** |
-| 🖥️ Claude app | **Customize** → **Plugins** → **Discover** → select the plugin and add it |
+| 🖥️ Claude app | **Customize** → **Plugins** → **Discover** → select the plugin → **Add** |
 
 > [!TIP]
 > **Skip step 1.** Add the marketplace and install in one go:
@@ -104,7 +104,16 @@ Plugin skills are namespaced, so they never collide with yours: type `/<plugin>:
 <!-- catalog:start -->
 | Category | Plugins |
 | :-- | :--: |
+| [⚡ Productivity](#-productivity) | 1 |
 | [🧪 Testing & Quality](#-testing--quality) | 1 |
+
+### ⚡ Productivity
+
+*Everyday workflows, planning and knowledge work.*
+
+| Plugin | What it does | Works in | Version | Includes |
+| :-- | :-- | :-- | :--: | :-- |
+| [**Session Handoff**](./plugins/session-handoff#readme)<br>`session-handoff@the-claude-factory` | Carries a project's working state from one session to the next: write a handoff when you stop, and the next session reads it, reports what is still open and asks you where to start. | 💻 Code · 🖥️ Claude app | `0.1.0` | 🎯 Skills · 🪝 Hooks |
 
 ### 🧪 Testing & Quality
 
@@ -132,7 +141,7 @@ Plugin skills are namespaced, so they never collide with yours: type `/<plugin>:
 > [!TIP]
 > 🔄 **Get updates automatically.** Third-party marketplaces start with auto-update **off**. Turn it on once: `/plugin` → **Marketplaces** → **the-claude-factory** → **Enable auto-update**.
 
-In the **Claude app**, manage everything from **Customize** → **Plugins**: click **Update** on the marketplace to pull new versions, or open a plugin and click **Uninstall**. Full details: [Managing plugins](./docs/managing-plugins.md).
+In the **Claude app**, manage everything from **Customize** → **Plugins**: select **Check for updates** to pull new versions now, or open a plugin, open its menu and select **Remove**. Full details: [Managing plugins](./docs/managing-plugins.md).
 
 > [!WARNING]
 > Removing the marketplace **uninstalls every plugin** you installed from it.

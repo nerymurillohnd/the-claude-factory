@@ -80,8 +80,8 @@ The JetBrains plugin runs Claude Code in the IDE's terminal, so follow the [Term
 ## 🖥️ Claude app
 
 1. Open **Customize** in the sidebar, then **Plugins**.
-2. Select **Add marketplace** and enter `nerymurillohnd/the-claude-factory` (the full `https://github.com/nerymurillohnd/the-claude-factory` URL also works).
-3. Plugins from The Claude Factory now appear alongside other marketplaces. Select one and add it to your account.
+2. Select **Add** → **Add marketplace** and enter `nerymurillohnd/the-claude-factory` (the full `https://github.com/nerymurillohnd/the-claude-factory` URL also works).
+3. Plugins from The Claude Factory now appear in **Discover** alongside other marketplaces. Select one, then select **Add**.
 
 A plugin you install on your claude.ai account in the Claude app also appears in Claude Code as a synced plugin (`<plugin>@synced`) at your next session start (Claude Code v2.1.273+, signed in with the same claude.ai account); if it says *Plugins changed*, run `/reload-plugins`. If you also install the same plugin in Claude Code, Claude Code loads that copy and reports the synced one as not loaded; disable your terminal copy to use the one from the app.
 

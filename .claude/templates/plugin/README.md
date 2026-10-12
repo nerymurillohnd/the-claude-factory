@@ -67,7 +67,7 @@ claude plugin install {{name}} --marketplace nerymurillohnd/the-claude-factory
 claude plugin install {{name}}@the-claude-factory
 ```
 
-Add `--scope project` to enable it for everyone working in the current repository.
+Add `--scope project` to enable it for everyone working in the current repository; each collaborator still installs it once on their own machine.
 
 </details>
 
@@ -86,8 +86,8 @@ Requires Claude Code v2.1.275+. With the marketplace already added, `/plugin ins
 <summary><b>🖥️ Claude app (web and desktop)</b></summary>
 
 1. Open **Customize** in the sidebar, then **Plugins**.
-2. Select **Add marketplace** and enter `nerymurillohnd/the-claude-factory`.
-3. Find **{{displayName}}** and click **Install**.
+2. Select **Add** → **Add marketplace** and enter `nerymurillohnd/the-claude-factory`.
+3. Find **{{displayName}}** in **Discover** and select **Add**.
 
 In the desktop app's **Code** tab you can also click **+** → **Plugins** → **Add plugin**.
 
@@ -135,7 +135,7 @@ Installed from the Claude app? In Claude Code (v2.1.273+, signed in with that cl
 claude plugin uninstall {{name}}@the-claude-factory
 ```
 
-In a session: `/plugin` → **Installed** → **{{displayName}}** → **Uninstall**. In the Claude app: **Customize** → **Plugins** → **{{displayName}}** → **Uninstall**.
+In a session: `/plugin` → **Installed** → **{{displayName}}** → **Uninstall**. In the Claude app: **Customize** → **Plugins** → **{{displayName}}** → its menu → **Remove**.
 
 ## 🧭 Compatibility
 
