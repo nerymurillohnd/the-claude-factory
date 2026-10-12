@@ -7,8 +7,7 @@
       "WebFetch(domain:claude.com)",
       "WebFetch(domain:platform.claude.com)",
       "WebFetch(domain:support.claude.com)",
-      "WebFetch(domain:agentskills.io)",
-      "WebFetch(domain:github.com)"
+      "WebFetch(domain:agentskills.io)"
     ],
     "max_cost_usd": 10,
     "cost_basis": "2026-10-12 smoke tests, one arm, one run: $1.74; baseline arm about 40% of that; x3 runs x1.25"

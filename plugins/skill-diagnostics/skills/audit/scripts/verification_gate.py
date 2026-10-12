@@ -23,8 +23,7 @@ from typing import Any
 Entry = dict[str, Any]
 
 AUDIT_SKILL = "skill-diagnostics:audit"
-# Change sources step 5 must try (references/verification.md, Recent official changes). The
-# anthropics/skills history is left out: GitHub refuses automated fetches, so demanding it adds nothing.
+# Change sources step 5 must try (references/verification.md, Recent official changes).
 SOURCES = {
     "the Claude Code changelog (https://code.claude.com/docs/en/changelog)": "code.claude.com/docs/en/changelog",
     "the Claude apps release notes (https://support.claude.com/en/articles/12138966-release-notes)": (

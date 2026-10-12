@@ -16,7 +16,6 @@ ALL_SOURCES = [
     "https://code.claude.com/docs/en/changelog",
     "https://support.claude.com/en/articles/12138966-release-notes",
     "https://agentskills.io/specification",
-    "https://github.com/anthropics/skills/commits/main",  # tried in practice, not required
 ]
 REPORT = "# Skill audit: demo\n\n- **Verdict:** **fail**\n\n## Coverage\n\n- Verification: 2 verified; changes checked"
 
@@ -83,7 +82,6 @@ class Gate(unittest.TestCase):
             "agentskills.io",
         ):
             self.assertIn(marker, context)
-        self.assertNotIn("anthropics/skills", context)  # GitHub refuses automated fetches
 
     def test_partial_verification_names_only_what_is_missing(self) -> None:
         entries = [prompt("check skills/demo"), skill_call(), result(), *fetches(ALL_SOURCES[:2])]
