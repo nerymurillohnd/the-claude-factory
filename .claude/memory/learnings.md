@@ -28,6 +28,10 @@ Rules learned the hard way. Follow them; add one line per new lesson.
 - On macOS, Linux and WSL the main session has no Glob or Grep (Claude uses embedded `bfs`/`ugrep` through Bash); a subagent that lists Glob/Grep and omits Bash gets them. Glob stops at 100 results and lists gitignored files; Grep skips them. Never make a skill depend on Glob for an inventory: use a bundled script.
 - Terminal sessions sync claude.ai plugins once, in the background, at startup; a session can start on the old synced copy until "Plugins changed. Run /reload-plugins" appears (docs: plugins/loading, synced plugins). On 2026-10-12 a terminal audit ran the old copy right after a re-upload. For synced tests, stamp the test zip with a unique pre-release version, wait for the notice and run `/reload-plugins`.
 - Synced skills (`~/.claude/skills/synced/`) re-sync every ~10 min in a running terminal session; synced plugins (`<plugin>@synced`, `~/.claude/plugins/synced/`) only at startup. Local edits to either are overwritten. With a same-named plugin from a marketplace (or --plugin-dir), Claude Code loads that one and reports the synced copy as not loaded (docs: plugins/loading, Name conflicts) — verify such claims before writing them.
+- Synced plugins in the terminal need Claude Code v2.1.273+ and a claude.ai sign-in (not an API key or token); `/plugin` can enable or disable `<name>@synced` but not update or uninstall it (that happens on claude.ai).
+- Use `$ARGUMENTS` in a skill body: Claude Code appends an `ARGUMENTS:` line only when no placeholder receives the input.
+- `context: fork` skills get no conversation history and run as subagents, which can't launch subagents: wrong for orchestrators like `audit`.
+- Verify every user-doc claim against the docs before writing it: "a duplicate install loads twice" was wrong (a same-named install wins over the synced copy).
 - A copied (cached) install for local testing: a local marketplace whose entry uses `{"source":"git-subdir","url":"file:///abs/repo.git","path":"plugins/<name>"}`; a relative-path source loads in place instead. Isolate with `HOME=<tmp>` or `CLAUDE_CONFIG_DIR`.
 
 ## GitHub

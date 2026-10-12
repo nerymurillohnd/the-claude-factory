@@ -77,7 +77,7 @@ Everything lives under **Customize** → **Plugins**:
 - **Turn components on or off** — open the installed plugin and toggle its skills, connectors, agents or hooks.
 - **Uninstall** — open the plugin and click **Uninstall**.
 
-In Claude Code, these plugins appear as `<plugin>@synced`. Update and uninstall them here; in `/plugin` you can only disable them. Claude Code picks up changes when it starts; if it says *Plugins changed*, run `/reload-plugins`.
+In Claude Code (v2.1.273+, signed in with the same claude.ai account), these plugins appear as `<plugin>@synced`. Update and uninstall them here; in `/plugin` you can only turn them on or off, unless your organization requires them. Claude Code picks up changes when it starts; if it says *Plugins changed*, run `/reload-plugins`.
 
 ---
 

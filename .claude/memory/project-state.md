@@ -25,11 +25,14 @@
 | 2026-10-11 | Evals: Sonnet runs, Opus judges; only differentiating cases; uncapped local pilot, capped full run in CI (`.claude/rules/evals.md`) | Objective, cost-controlled evidence |
 | 2026-10-11 | Keep a Changelog 2.0.0 (published 2026-06-07) | Current version of the format |
 | 2026-10-12 | Plugins never limit their own file coverage (no git-ignored or similar exclusions); the user's settings and hooks set the limits, and blocked files are reported, never worked around | Users choose their own coverage; a plugin must not decide it for them |
+| 2026-10-12 | Executability findings are high only when they change a verdict, findings or produced files; layout and rare cases are left to the model's judgment, and skills are never asked to cover every edge case | Agent Skills "moderate detail" practice; the self-audit loop had bloated `SKILL.md` 66% |
+| 2026-10-12 | skill-diagnostics `SKILL.md` keeps only the fragile core (~880 words); rare paths live in `references/fallbacks.md` | Progressive disclosure |
+| 2026-10-12 | User docs and the plugin README template explain `<plugin>@synced` (installed from the Claude app/Cowork): update/uninstall in the app, v2.1.273+ and claude.ai sign-in, a same-named Claude Code install wins | Users installing from the app saw only terminal instructions |
 | 2026-10-12 | skill-diagnostics auditors read every file end to end: inventory from `check_skill.py --list`, auditors get only Read (+ WebFetch), no search tools; a mod was considered and rejected (Claude Code-only, high-trust) | A real audit reads everything; works the same in Claude Code and Cowork |
 
 ## Status
 
-- Marketplace `0.1.0` released (`marketplace--v0.1.0`). Catalog empty — no plugins yet.
+- Marketplace `0.1.0` released (`marketplace--v0.1.0`). Catalog on `main` empty; `skill-diagnostics` 0.1.0 lives on `feat/skill-diagnostics` (draft PR #1), merged only into Nery's local `main` (not pushed).
 - CI green: Validate (policy + script tests, `claude plugin validate`, markdownlint + actionlint) and Release.
 - GitHub settings done: PRs Collaborators only, private vulnerability reporting, topics, 20 custom labels.
 
@@ -37,7 +40,7 @@
 
 - GitHub's default labels (`bug`, `enhancement`, `documentation`, `duplicate`, `good first issue`, `help wanted`, `invalid`, `question`, `wontfix`, `accessibility`) still exist next to ours — Nery decides whether to delete them.
 - `skill-diagnostics` eval pilot done (phase 7): hook-suggests Δ+1.00, portability-traps Δ+1.00, parallel-lenses Δ+0.50; cross-file-gaps and clean-skill-passes are guardrails, create-does-not-trigger the negative. Pilot cost per full single run ≈ $1.37 → CI cap `--max-cost-usd 5.50` (3 runs × 1.25).
-- `skill-diagnostics` 0.1.0 is built through phase 9 on branch `feat/skill-diagnostics` (draft PR #1): docs-auditor and plugin-reviewer findings fixed, isolated cached install verified, hook verified for a SKILL.md outside cwd, installed self-audit pass with warnings with 0 permission denials. Nery tested the synced copy from Claude Code (macOS) and inside a Cowork task (checker and both agents ran in both); their findings are fixed. Pending: the skill-creator → hook offer step, then phase 10 (CI evals + `/release`; re-date the 0.1.0 CHANGELOG entry and run `sync-labels.mjs` at release). Build in progress: plan and phases in Nery's "Plan: skill-diagnostics" doc (claude.ai artifact 3d3dfddc-5aad-4e92-8ad1-ac636b8db2fe); audit of the source plugin in artifact 268a085a-e5fb-4f8f-998a-863888641ff0.
+- `skill-diagnostics` 0.1.0 is built through phase 9 on branch `feat/skill-diagnostics` (draft PR #1): docs-auditor and plugin-reviewer findings fixed, isolated cached install verified, hook verified for a SKILL.md outside cwd, Nery tested synced copies in Claude Code (macOS) and Cowork; the PR review findings are fixed; the 2026-10-12 slimming refactor passed an installed audit (pass with warnings, 0 denials). Test zips are stamped `0.1.0-test.<sha>`. Pending: Nery's test of the latest zip, the skill-creator → hook offer step, re-running the eval pilot after the refactor, then phase 10 (CI evals + `/release`; re-date the 0.1.0 CHANGELOG entry and run `sync-labels.mjs` at release). Build in progress: plan and phases in Nery's "Plan: skill-diagnostics" doc (claude.ai artifact 3d3dfddc-5aad-4e92-8ad1-ac636b8db2fe); audit of the source plugin in artifact 268a085a-e5fb-4f8f-998a-863888641ff0.
 - Evals in CI need Nery's decision: `ANTHROPIC_API_KEY` secret (billed to the API console) and trigger (recommended: plugin version change + manual).
 
 ## Plugin ideas backlog

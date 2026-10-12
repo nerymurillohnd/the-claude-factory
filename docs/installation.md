@@ -83,7 +83,7 @@ The JetBrains plugin runs Claude Code in the IDE's terminal, so follow the [Term
 2. Select **Add marketplace** and enter `nerymurillohnd/the-claude-factory` (the full `https://github.com/nerymurillohnd/the-claude-factory` URL also works).
 3. Plugins from The Claude Factory now appear alongside other marketplaces. Select one and click **Install**.
 
-A plugin you install on your claude.ai account in Cowork also appears in Claude Code as a synced plugin (`<plugin>@synced`) at your next session start. If you also install the same plugin from the terminal, Claude Code loads that copy and reports the synced one as not loaded; disable your terminal copy to use the one from the app.
+A plugin you install on your claude.ai account in Cowork also appears in Claude Code as a synced plugin (`<plugin>@synced`) at your next session start (Claude Code v2.1.273+, signed in with the same claude.ai account). If you also install the same plugin in Claude Code, Claude Code loads that copy and reports the synced one as not loaded; disable your terminal copy to use the one from the app.
 
 > [!IMPORTANT]
 > Not every component loads in Cowork. Check the plugin's **Compatibility** table first — see [Compatibility](./compatibility.md).

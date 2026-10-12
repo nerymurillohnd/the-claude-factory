@@ -96,7 +96,7 @@ In the desktop app's **Code** tab you can also click **+** → **Plugins** → *
 </details>
 
 > [!NOTE]
-> New to this marketplace? The [installation guide](../../docs/installation.md) covers every surface step by step. Installed both in the Claude app and from the terminal, Claude Code uses the terminal copy and skips the synced one, so update the copy you use.
+> New to this marketplace? The [installation guide](../../docs/installation.md) covers every surface step by step. If you install it both in the Claude app and in Claude Code, Claude Code loads its own copy and reports the synced one as not loaded, so update the copy you use.
 
 ## 🚀 Usage
 
@@ -126,7 +126,7 @@ You can also pass a file inside the skill, or several paths at once.
 
 **Result:** the same audit, judged by upload rules: only the six fields claude.ai accepts, a description of at most 1,024 characters, no load-time commands, scripts called through their interpreter. Use `--target cowork` or `--target api` for those surfaces, and repeat the option for several (`--target code --target upload`).
 
-Without `--target`, the audit picks the surfaces from where the skill lives: Claude Code for your personal and project skills, Claude Code and Cowork for skills inside a plugin. The report says which surfaces it assumed.
+Without `--target`, the audit picks the surfaces from where the skill lives: Claude Code for your personal and project skills, Claude Code and Cowork for skills inside a plugin, and claude.ai upload rules for skills synced from your claude.ai account. The report says which surfaces it assumed.
 
 ### Run one lens only
 
@@ -156,7 +156,7 @@ claude plugin update skill-diagnostics@the-claude-factory
 
 Or in a session: `/plugin` → **Installed** → **Skill Diagnostics** → **Update now**. Then run `/reload-plugins`.
 
-Installed from the Claude app or Cowork? In Claude Code it appears as `skill-diagnostics@synced`: update and uninstall it in the app (**Customize** → **Plugins**); in `/plugin` you can only disable it.
+Installed from the Claude app or Cowork? In Claude Code (v2.1.273+, signed in with that claude.ai account) it appears as `skill-diagnostics@synced`: update and uninstall it in the app (**Customize** → **Plugins**); in `/plugin` you can only turn it on or off.
 
 > [!TIP]
 > Turn on auto-update once for the whole marketplace: `/plugin` → **Marketplaces** → **the-claude-factory** → **Enable auto-update**.
@@ -222,7 +222,7 @@ These prompts are expected, and the audit only reads:
 <details>
 <summary><b>The report lists files as "not inspected".</b></summary>
 
-Both auditors read every file of the skill from its first line to its last, scripts and hidden files included, and exclude nothing on their own. A file is listed as not inspected only when it can't be opened as text or an image (a binary), or when your settings or hooks block it, for example a `Read` deny rule; the audit respects the block and gives the reason.
+Both auditors read every file of the skill from its first line to its last, scripts and hidden files included, and exclude nothing on their own. A file is listed as not inspected only when it can't be opened as text or an image (a binary), when a folder can't be listed, or when your settings or hooks block it, for example a `Read` deny rule; the audit respects the block and gives the reason.
 
 </details>
 

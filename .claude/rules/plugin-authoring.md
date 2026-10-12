@@ -31,8 +31,14 @@ paths:
 ## Skills inside plugins
 
 - Description: what it does + when to use it, third person, ≤ ~500 characters, specific trigger phrases.
-- Body: headers, numbered steps, bullets; under 500 lines; move detail to `references/`.
-- Knowledge-first: teach options and label recommendations; don't force one way.
+- Body: headers, numbered steps, bullets; under 500 lines and ~5,000 tokens. Follow [agentskills.io best practices](https://agentskills.io/skill-creation/best-practices):
+  - Moderate detail: each line must be something the model would get wrong without it. The main path stays in `SKILL.md`; situational paths go to `references/` with a "read when …" trigger, one level deep. Leave layout and rare cases to the model.
+  - Prescriptive only where the task is fragile (exact commands, sequences, formats); elsewhere state the goal and why.
+  - Defaults, not menus: one default with a short escape hatch.
+  - A short input/output example; a template for output that must keep its shape.
+  - Read arguments with `$ARGUMENTS` (or `$N`) rather than relying on the appended `ARGUMENTS:` line.
+- Audit our own skills with `/skill-diagnostics:audit`; fix only findings that change a verdict, findings or produced files. Re-audit after any rewrite: slimming can drop a load-bearing rule.
+- `context: fork` only for a self-contained task that needs no conversation history and launches no subagents.
 - Generic for any user: no personal, company or language-specific assumptions.
 
 ## Hooks and scripts
