@@ -9,6 +9,7 @@ Newest first. One entry per session: what changed, commits, what's next.
 - Design changes from testing: full-read auditors with only Read and a `check_skill.py --list` inventory (Glob is absent on macOS/Linux and caps at 100); coverage left to user settings; hook fires anywhere (`//**/SKILL.md`) and skips Claude Code-managed folders; synced-install docs.
 - Course correction: the self-audit loop had grown `SKILL.md` 66%; refactored to moderate detail with `references/fallbacks.md`, recalibrated "decides output", updated `plugin-authoring.md`.
 - Commits `caacfa4`…`HEAD` on `feat/skill-diagnostics`; CI green; Nery's local `main` holds a merge (not pushed).
+- Verification gate (Nery's design): auditors report everything; the orchestrator verifies each finding against the files, live official docs and the last 15 days of official changes, sends disputes back, closes with a checklist. Two audits of `8afed00` from Nery's sessions fixed in `41c3c6e`, `4c62e1a`, `87ac3fe` (Files read line, dispute protocol, merge rule, provisional threshold, WebFetch pre-approval, `--list` `exists` flag, plugin-root expansion per the manifest docs).
 - Next: Nery tests the latest zip and the skill-creator → hook offer; re-run the eval pilot; decide the CI eval key and trigger; `/release` (marketplace 0.2.0, tag `skill-diagnostics--v0.1.0`).
 
 ## 2026-10-11 — Bootstrap and publication

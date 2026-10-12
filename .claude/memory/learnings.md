@@ -33,8 +33,11 @@ Rules learned the hard way. Follow them; add one line per new lesson.
 - `context: fork` skills get no conversation history: wrong for skills that act on what was just discussed, like `audit` after a hook offer. (Subagents can spawn subagents up to three levels; docs: sub-agents, depth limit.)
 - Verify every user-doc claim against the docs before writing it: "a duplicate install loads twice" was wrong (a same-named install wins over the synced copy).
 - Following symlinks in an inventory: stay inside the skill (a link out is an external dependency, never read), and tell a duplicate path (alias to a listed folder) from a loop (link to an ancestor); otherwise coverage fixes create false "not determinable" verdicts and out-of-scope reads.
-- Audit verdicts are not stable across runs: the same `19279f6` gave pass with warnings (1 medium) and fail (5 high) in two runs. Never treat one audit as proof; measure stability with repeated runs on a fixed fixture.
+- Audit verdicts are not stable across runs: the same `19279f6` gave pass with warnings (1 medium) and fail (5 high) in two runs. Never treat one audit as proof; measure stability with repeated runs on a fixed fixture. After the verification gate (`87ac3fe` and its parents), 4 consecutive installed runs all gave pass with warnings, 0 high.
 - Never suppress findings to tame an auditor: a rule like "report only what a model would plausibly get wrong" also hides real defects. Report everything, classify by impact and path (normal vs rare), and verify each finding against live official sources instead.
+- A skill's `allowed-tools` can pre-approve web sources with `WebFetch(domain:host)`; headless audits fetched 4–9 official pages with 0 denials (2026-10-12). `code.claude.com` and `claude.com` are also in Claude Code's built-in preapproved docs set.
+- WebFetch can't read GitHub commit history or rendered files (robots.txt / 403, and the CHANGELOG blob page has no content): treat GitHub sources as possibly unreachable and use the docs' own changelog pages instead.
+- Make a verifier's "provisional" rule depend on what stayed unverified, not on any source being down; otherwise one always-blocked source makes every verdict provisional.
 - A copied (cached) install for local testing: a local marketplace whose entry uses `{"source":"git-subdir","url":"file:///abs/repo.git","path":"plugins/<name>"}`; a relative-path source loads in place instead. Isolate with `HOME=<tmp>` or `CLAUDE_CONFIG_DIR`.
 
 ## GitHub
