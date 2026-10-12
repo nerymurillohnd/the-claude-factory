@@ -95,7 +95,7 @@ Targets: <targets> · Checker: ran | not run (<reason>)
 | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- |
 | C1 | high | SKILL.md:3 | req | <one line> | "<verbatim quote>" | <what goes wrong, for whom> | <one line> |
 
-Not inspected: <each file, why, and "needed by <file:line>" or "unreferenced"; or none>
+Not inspected: <each file, why, and "needed by <file:line>", "run, not read" (a script the skill says to run without reading) or "unreferenced"; or none>
 Not verified live: <items, or none>
 ```
 
