@@ -19,7 +19,8 @@ Take everything from the arguments (an `ARGUMENTS:` line after this skill) or fr
 
 - **Paths.** A skill directory; a file inside one (use the nearest directory at or above it that holds `SKILL.md`); a folder whose direct subfolders hold a `SKILL.md` (each subfolder is one skill), such as a plugin's `skills/`; a plugin root (it holds `.claude-plugin/plugin.json`): use the paths its `skills` field declares, plus its `skills/` folder, each one a skill directory or a folder of skills as above, and audit each skill once; with neither, report `no skills in plugin: <path>`. Resolve relative paths against the working directory. No path: ask for it. A path that resolves to no skill: report `path not found: <path>` and go on with the rest.
 - **Lens.** `--lens conformance` or `--lens executability` runs one lens; the default is both.
-- **Target.** `--target code|cowork|upload|api`; repeat the option for several (`--target code --target cowork`). When not given, infer it from where the skill lives (table in [surfaces.md](references/surfaces.md), Pick the target): a skill inside a plugin (a `.claude-plugin/plugin.json` in an ancestor folder) is checked for both `code` and `cowork`. Say which targets you assumed. With `--lens executability` only, targets do not apply: write `not applicable: conformance lens not selected`.
+- **Invalid options.** A `--lens` or `--target` value not listed in this section, or an unknown option: stop before step 1 and report it with the accepted values.
+- **Target.** `--target code|cowork|upload|api`; repeat the option for several (`--target code --target cowork`). When not given, infer it from where the skill lives (table in [surfaces.md](references/surfaces.md), Pick the target): a skill inside a plugin (a `.claude-plugin/plugin.json` in an ancestor folder) is checked for both `code` and `cowork`. Say which targets you assumed. With `--lens executability` only, targets do not apply: write `not applicable: conformance lens not selected` on the report's Targets line.
 
 ## Steps
 
@@ -54,8 +55,8 @@ Copy and tick:
    3. **pass with warnings:** medium or low findings only.
    4. **pass:** no findings.
 
-   The coverage line uses the file count from step 1 and the files each lens reports as not inspected.
-6. **Report** each skill in your reply, with [report.md](assets/report.md) filled in order; write no file. A coverage line whose lens did not run says `not checked: <lens> lens not selected`. For several skills, end with one table: Skill | Path | Verdict | High | Medium | Low; a path not found gets that text in the verdict column.
+   The coverage line uses the file count from step 1, the files each lens reports as not inspected, and the git-ignored note from the executability lens's `Files read:` line (without that lens, `not visible to the tools`).
+6. **Report** each skill in your reply, with [report.md](assets/report.md) filled in order; write no file. A coverage line whose lens did not run says `not checked: <lens> lens not selected`. For several skills, end with one table: Skill | Path | Verdict | High | Medium | Low; a path not found or a plugin with no skills gets no per-skill report, only a row with that text in the verdict column.
 
 Done when every skill has a verdict, every finding carries a verbatim quote with `file:line` (or, for something absent, where it is needed and the files searched), and the report lists what was not checked.
 
