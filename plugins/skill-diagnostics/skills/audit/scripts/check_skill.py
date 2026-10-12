@@ -8,7 +8,8 @@ Usage: check_skill.py [--format json|text] [--target code|cowork|upload|api]
 --list prints the skill's full file inventory instead of checking it: every
 file at any depth, hidden files included, symlinked folders inside the skill
 followed, nothing excluded, names and sizes only (no file is opened). Links
-whose target lies outside the skill are listed under "outside", not followed.
+whose target lies outside the skill are listed under "outside" (with whether the
+target exists), not followed.
 
 Checks what `claude plugin validate` does not: frontmatter syntax and quoting,
 known fields and values, name and description limits per target surface,
@@ -821,12 +822,13 @@ def inventory(skill: Path) -> dict[str, object]:
     it links back to an ancestor; either way its files are already listed, so neither
     is a gap. not_listed holds only what could not be read (permissions, errors).
     A link whose target lies outside the skill is not followed: it goes to `outside`,
-    so the audit never reads files that do not belong to the skill.
+    with whether its target exists, so the audit never reads files that do not belong
+    to the skill and still sees a broken link.
     """
     root_real = os.path.realpath(skill)
     files: list[dict[str, object]] = []
     not_listed: list[dict[str, str]] = []
-    outside: list[dict[str, str]] = []
+    outside: list[dict[str, object]] = []
     loops: list[dict[str, str]] = []
     seen: set[str] = set()
 
@@ -848,7 +850,7 @@ def inventory(skill: Path) -> dict[str, object]:
         for name in sorted(dirs, key=lambda d: (base / d).is_symlink()):  # real folders before aliases
             target = os.path.realpath(base / name)
             if not within(target):
-                outside.append({"path": rel(base / name), "target": target})
+                outside.append({"path": rel(base / name), "target": target, "exists": os.path.exists(target)})
             elif target in seen or any(target == os.path.realpath(base / k) for k in keep):
                 if within(real) and (real == target or real.startswith(target.rstrip(os.sep) + os.sep)):
                     loops.append({"path": rel(base / name), "target": target})  # its files are already listed
@@ -860,7 +862,7 @@ def inventory(skill: Path) -> dict[str, object]:
             path = base / name
             target = os.path.realpath(path)
             if not within(target):
-                outside.append({"path": rel(path), "target": target})
+                outside.append({"path": rel(path), "target": target, "exists": os.path.exists(target)})
                 continue
             try:
                 size = path.stat().st_size
@@ -870,7 +872,7 @@ def inventory(skill: Path) -> dict[str, object]:
             files.append({"path": rel(path), "bytes": size})
     files.sort(key=lambda f: str(f["path"]))
     not_listed.sort(key=lambda f: f["path"])
-    outside.sort(key=lambda f: f["path"])
+    outside.sort(key=lambda f: str(f["path"]))
     loops.sort(key=lambda f: f["path"])
     return {
         "skill": skill.as_posix(),
@@ -893,7 +895,7 @@ def render_inventory(data: dict[str, object], fmt: str) -> str:
     rows += [f"not listed  {f['path']}  ({f['reason']})" for f in not_listed]
     outside = data["outside"]
     assert isinstance(outside, list)
-    rows += [f"outside     {f['path']} -> {f['target']}" for f in outside]
+    rows += [f"outside     {f['path']} -> {f['target']}{'' if f['exists'] else '  (missing)'}" for f in outside]
     return "\n".join(rows)
 
 

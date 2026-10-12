@@ -1,8 +1,8 @@
 ---
 name: audit
-description: Audits existing skills for conformance with official best practices and portability, and for whether a model can run them without guessing; returns one report with file and line evidence and a verdict. Use when the user asks to audit, review, check or diagnose a skill or a plugin's skills, or after a SKILL.md was created or changed. Not for creating or writing skills.
+description: Audits existing skills for conformance with official best practices and portability, and for whether a model can run them without guessing; returns one report with file and line evidence and a verdict. Use when the user asks to audit, review, check or diagnose a skill or a plugin's skills, or when a skill-diagnostics hook message asks for an audit. Not for creating or writing skills.
 argument-hint: "[skill-path ...] [--lens conformance|executability] [--target code|cowork|upload|api ...]"
-allowed-tools: Read(/${CLAUDE_SKILL_DIR}/**) Bash(${CLAUDE_SKILL_DIR}/scripts/check_skill.py *)
+allowed-tools: Read(/${CLAUDE_SKILL_DIR}/**) Bash(${CLAUDE_SKILL_DIR}/scripts/check_skill.py *) WebFetch(domain:code.claude.com) WebFetch(domain:claude.com) WebFetch(domain:platform.claude.com) WebFetch(domain:support.claude.com) WebFetch(domain:agentskills.io) WebFetch(domain:github.com)
 ---
 
 # Skill audit
@@ -19,8 +19,8 @@ Arguments: $ARGUMENTS
 
 From those arguments, or from the request when there are none:
 
-- **Paths:** a skill folder, a file or folder inside one (audit the nearest folder above it that holds `SKILL.md`), a folder of skills (such as `skills/`), or a plugin root (its `skills/` folder plus any paths its `plugin.json` `skills` field declares). Expand a folder of skills with `find -L "<folder>" -name SKILL.md` (for a plugin root, run it on `skills/` and each declared path, never on the root); each parent folder is one skill, and a `SKILL.md` inside another skill's folder belongs to that skill. Audit each skill once.
-- **No path:** audit the skills whose `SKILL.md` was just written in this conversation (a hook message may name them). If there are none, ask for the path, then invoke this skill again with it: the user's reply ends this skill's pre-approval, and a new invocation restores it.
+- **Paths:** a skill folder, a file or folder inside one (audit the nearest folder above it that holds `SKILL.md`, or the outer skill when that folder sits inside another skill's folder), a folder of skills (such as `skills/`), or a plugin root (its `skills/` folder plus any paths its `plugin.json` `skills` field declares). Expand a folder of skills with `find -L "<folder>" -name SKILL.md` (for a plugin root, run it on `skills/` and each declared path, never on the root); each parent folder is one skill, and a `SKILL.md` inside another skill's folder belongs to that skill. Audit each skill once.
+- **No path:** audit every skill whose `SKILL.md` was created or edited in this conversation and not audited since (a hook message may name them). If there are none, ask for the path, then invoke this skill again with it: the user's reply ends this skill's pre-approval, and a new invocation restores it.
 - **Lens:** `--lens conformance` or `--lens executability` runs one; default both.
 - **Unknown option or value:** stop before step 1 and list the accepted ones.
 - **Target:** `--target code|cowork|upload|api`, repeatable. Without it, the first match wins, and say which you assumed:
@@ -28,7 +28,7 @@ From those arguments, or from the request when there are none:
   2. inside a plugin (an ancestor holds `.claude-plugin/plugin.json`) → `code` and `cowork`;
   3. anywhere else → `code`.
 
-Example: `/skill-diagnostics:audit ./plugins/notes --target upload` audits every skill in that plugin against claude.ai upload rules and ends with the summary table.
+Example: `/skill-diagnostics:audit ./plugins/notes --target upload` audits every skill in that plugin against claude.ai upload rules, and ends with the summary table when the plugin holds several skills.
 
 ## Steps
 
@@ -60,7 +60,7 @@ Example: `/skill-diagnostics:audit ./plugins/notes --target upload` audits every
 3. **Lenses.** In one message, launch the agent of every selected lens (`skill-diagnostics:conformance-auditor`, `skill-diagnostics:executability-auditor`) for every skill, even a short one. Pass absolute paths:
    - conformance: skill path, inventory (with its `outside` entries), targets, checker JSON per target, and `${CLAUDE_SKILL_DIR}/references/` `conformance.md`, `fields.md`, `surfaces.md`;
    - executability: skill path, inventory (with its `outside` entries), and `${CLAUDE_SKILL_DIR}/references/executability.md`.
-4. **Merge** each skill's reports into one table, keeping every finding. Executability severity: *decides output* on a *normal* path → high; on a *rare* path, or not deciding output → medium. One root defect at one location is one row, naming every lens that flagged it, with the highest severity. Highest severity first.
+4. **Merge** each skill's reports into one table, keeping every finding. Executability severity: *decides output* on a *normal* path → high; on a *rare* path, or not deciding output → medium. One root defect is one row, listing every location and every lens that flagged it, with the highest severity; it counts once in the totals. Highest severity first.
 5. **Verify** every finding before it counts: read [verification.md](references/verification.md) and follow it. It checks each quote against the files, each rule or platform claim against the live official page, and the official changes of the last 15 days; false, partly false or off-focus findings go back to the lens that produced them.
 6. **Verdict**, first rule that matches:
    1. **fail:** any high finding.
@@ -74,14 +74,14 @@ Example: `/skill-diagnostics:audit ./plugins/notes --target upload` audits every
    - each lens agent returned its report block, with `Files read: n of n` covering the inventory;
    - every finding has a verbatim quote with `file:line` (or where something absent is needed);
    - every finding went through step 5: rule and platform findings carry an official URL and quote; the last 15 days of changes were checked; disputed findings were sent back;
-   - the verdict follows step 6, marked provisional if live sources were unreachable;
+   - the verdict follows step 6, marked provisional when [verification.md](references/verification.md) (Unreachable sources) says so;
    - the report fills every section of the template.
 
 If the checker cannot run, a path resolves to no skill, the inventory is incomplete, or an agent is unavailable or fails: read [fallbacks.md](references/fallbacks.md) and follow it for that case.
 
 ## Gotchas
 
-- **Keep the checker commands exactly as written:** no quotes around the script path, no `cd`, no loop, nothing appended such as `; echo $?`. Any change stops the `allowed-tools` pre-approval from matching and makes Claude Code ask the user. Quote `<skill-dir>` if it has spaces.
+- **Keep the checker commands exactly as written:** no quotes around the script path, no `cd`, no loop, nothing appended such as `; echo $?`. Any change stops the `allowed-tools` pre-approval from matching and makes Claude Code ask the user. Quote `<skill-dir>` if it has spaces. The one exception, a script path with a space, is in [fallbacks.md](references/fallbacks.md).
 - **A skill outside the working directory** (for example in `~/.claude/skills/`) makes Claude Code ask once to read it; that is expected.
 
 ## Files

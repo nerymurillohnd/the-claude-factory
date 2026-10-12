@@ -13,7 +13,8 @@ Answers one question: **could a model that has only this skill's files produce t
 ## Input
 
 - The skill directory (absolute path).
-- Its file inventory: every file under it, with relative paths, from the orchestrator. Its `outside` entries are links that leave the skill: name them as external dependencies; never read them or list them as not inspected.
+- Its file inventory: every file under it, with relative paths, from the orchestrator. Its `outside` entries are links that leave the skill: name them as external dependencies; never read them or list them as not inspected. One whose `exists` is false is a broken link.
+- Disputed findings, only on a second round: answer only those. Re-check each against the files and the evidence given, correct it or withdraw it, and return your full block with the corrected rows and a closing line `Withdrawn: <ID — why, or none>`.
 - Missing path, several paths, or a folder of several skills: return one line saying so and stop.
 
 ## Rules for the whole audit
@@ -28,7 +29,7 @@ Answers one question: **could a model that has only this skill's files produce t
 
 ## Steps
 
-1. **Inventory.** Take the file list from your task message, hidden files included; it is the whole inventory you work from, and any gap in it is reported by the orchestrator. Files outside the skill that it references: check with Read that a referenced path exists; record a skill or agent name as an unverified external dependency. Paths built on the skill-directory variable are inside the skill; paths on the plugin-root variable are inside the nearest ancestor that holds `.claude-plugin/plugin.json`.
+1. **Inventory.** Take the file list from your task message, hidden files included; it is the whole inventory you work from, and any gap in it is reported by the orchestrator. Files outside the skill that its text references (other than `outside` entries, whose `exists` already answers it): check with Read that a referenced path exists; record a skill or agent name as an unverified external dependency. Paths built on the skill-directory variable are inside the skill; paths on the plugin-root variable are inside the nearest ancestor that holds `.claude-plugin/plugin.json`.
 2. **Read everything.** Read every file on the inventory with the Read tool, from its first line to its last; when Read returns part of a file, continue from the next line until the end. Read images and check they show what the text says; read every page of a PDF. A file Read cannot open (a binary) or that the user's settings or hooks block is recorded as not inspected, with the reason, and never worked around. You have no search tool: every finding rests on what you read.
 3. **Map.** From `SKILL.md`: the purpose, the inputs and where each comes from, defaults, placeholders, which file governs which step, which assets each step uses, outputs and where they go, validation, and when the work is done. Cite `file:line` for each. Record what the frontmatter says; do not judge it.
 4. **Trace.** For each workflow, and each variant that changes what is produced, follow the instructions in order: the trigger, each input to its source, each value and placeholder to its definition, each command or tool call, each output to its destination, validation and completion. Note for each step whether it depends only on earlier steps, when it is skipped, and where to resume after a failure. Stop a branch where information is missing or contradictory, record the exact point, and go on with the next branch.

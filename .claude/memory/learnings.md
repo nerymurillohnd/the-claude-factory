@@ -54,4 +54,5 @@ Rules learned the hard way. Follow them; add one line per new lesson.
 - A `.gitignore` fix never untracks committed files: after widening a pattern, `git rm -r --cached` what it now covers (plugin eval results once shipped this way).
 - A Bash command that exits non-zero counts as a failed tool call (`PostToolUseFailure`, not `PostToolUse`), and a failed command's output is cut to ~10,000 characters with no file path: skill-diagnostics' checker lost JSON that way until it exited 0 with the error count inside. `FileChanged` only watches literal filenames in the cwd and can't pass context to Claude.
 - The device shell's delete permission does not survive between turns: re-request it before git commands on Nery's Mac, then clear the `.lock` files the failed command left.
+- Run ruff and mypy exactly as `validate.yml` does (pinned versions, `--config .github/scripts/ruff.toml`); a bare `uvx ruff` uses another version and the default rules, and reports false errors.
 - Moving files from a cloud session to Nery's Mac: tar in the cloud → `device_commit_files` → extract with the device shell.

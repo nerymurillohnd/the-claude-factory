@@ -25,7 +25,7 @@ The first row that matches wins.
 | Sent through the Skills API | API | `--target api` |
 | Anywhere else (a loose folder, a `skills/` folder outside `.claude/`) | Claude Code | `--target code`, stated as assumed |
 
-When the request does not say, infer it from where the skill lives with this table and say which targets you assumed. A plugin installs in both Claude Code and Cowork, so its skills are checked for both unless the request names one.
+Without `--target`, the three location rules in `SKILL.md` (Input → Target) decide; the other rows apply when the request names that surface. Say which targets you assumed. A plugin installs in both Claude Code and Cowork, so its skills are checked for both unless the request names one.
 
 ## What each surface accepts
 

@@ -19,7 +19,7 @@ Any exit other than 0, no valid JSON, an error trace, no `python3` 3.9+ on `PATH
 
 ## A path resolves to no skill
 
-- A file or folder with no `SKILL.md` at or above it, or a plugin root with no skills: report `path not found: <path>` or `no skills in plugin: <path>`, and go on with the other paths.
+- A path that does not exist: report `path not found: <path>`. A file or folder with no `SKILL.md` at, above or below it: `no skills in: <path>`. A plugin root with no skills: `no skills in plugin: <path>`. Go on with the other paths.
 - In the summary table, give it a row with that text as the verdict.
 
 ## An agent is unavailable or fails

@@ -15,9 +15,10 @@ Facts live in `fields.md` and `surfaces.md`, next to this file. Read both before
 ## Input
 
 - The skill directory (absolute path) and its target surfaces.
-- Its file inventory: every file under it, with relative paths, from the orchestrator. Its `outside` entries are links that leave the skill: name them as external dependencies; never read them or list them as not inspected.
+- Its file inventory: every file under it, with relative paths, from the orchestrator. Its `outside` entries are links that leave the skill: name them as external dependencies; never read them or list them as not inspected. One whose `exists` is false is a broken link.
 - The checker's JSON report for each target, or the line `checker not run: <reason>`.
 - The paths of `fields.md` and `surfaces.md`.
+- Disputed findings, only on a second round: answer only those. Re-check each against the files and the evidence given, correct it or withdraw it, and return your full block with the corrected rows and a closing line `Withdrawn: <ID — why, or none>`.
 
 Missing skill path: return one line saying so. Missing checker report: run the checklist without it and note `checker not run` in the output.
 
@@ -94,6 +95,7 @@ Return exactly this as your final message; the orchestrator merges it:
 ```markdown
 ### Conformance — <skill name> (<absolute path>)
 Targets: <targets> · Checker: ran | not run (<reason>)
+Files read: <n> of <n>
 
 | ID | Severity | Location | Label | Finding | Evidence | Consequence | Fix |
 | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- |

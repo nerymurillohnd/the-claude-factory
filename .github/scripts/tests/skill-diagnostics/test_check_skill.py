@@ -446,6 +446,15 @@ class Inventory(SkillCase):
         _, report = run(self.skill, "--list")
         self.assertEqual([f["path"] for f in report["files"]], ["SKILL.md"], report)
         self.assertEqual(sorted(o["path"] for o in report["outside"]), ["host.md", "up"], report)
+        self.assertTrue(all(o["exists"] for o in report["outside"]), report)
+        self.assertEqual(report["not_listed"], [], report)
+
+    @unittest.skipIf(IS_WINDOWS, "symlinks need extra privileges on Windows")
+    def test_broken_link_leaving_the_skill_is_marked_missing(self) -> None:
+        self.skill_md(GOOD)
+        (self.skill / "gone.md").symlink_to(self.root / "deleted.md")
+        _, report = run(self.skill, "--list")
+        self.assertEqual([(o["path"], o["exists"]) for o in report["outside"]], [("gone.md", False)], report)
         self.assertEqual(report["not_listed"], [], report)
 
     def test_no_skill_md_is_bad_input(self) -> None:
