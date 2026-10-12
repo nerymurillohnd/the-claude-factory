@@ -17,7 +17,7 @@ Agree on, in Spanish:
 - **Name** — kebab-case, permanent, no `claude-`/`anthropic-` prefix. **Display name** and an emoji.
 - **Category** — an `id` from `.github/scripts/categories.json`.
 - **Components** — skills, agents, hooks, MCP, LSP, output styles, monitors, scripts. Justify each.
-- **Surfaces** — Claude Code, Cowork, Claude chat; consequences (e.g. `bin/` blocks Cowork).
+- **Surfaces** — default Claude Code + Cowork. Check every component against `.claude/rules/cross-surface-compatibility.md`; if any part forces Claude Code-only, say why and get Nery's OK.
 - **Requirements** — CLIs, accounts, API keys (`userConfig`), minimum Claude Code version.
 
 Research current official docs for every component type used (Claude Code Docs MCP). Note version-gated features.
@@ -60,7 +60,7 @@ Follow `.claude/rules/plugin-authoring.md`. Add `keywords` to `plugin.json`. Kee
    claude plugin details <name>
    ```
 
-3. Exercise each component in a session (`claude --plugin-dir plugins/<name>` is fine for iteration).
+3. Exercise each component in Claude Code (`claude --plugin-dir plugins/<name>`) and in Cowork (add the marketplace or upload a zip, run a task), unless the plugin is declared Claude Code-only.
 4. Delegate an independent review to the `plugin-reviewer` agent; fix every confirmed finding.
 
 ## 7. Hand off

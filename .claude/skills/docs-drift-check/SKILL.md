@@ -22,7 +22,7 @@ Goal: find everything in this repository that no longer matches official sources
 | Area | Files |
 | :-- | :-- |
 | Commands, flags, UI paths, min versions | `README.md`, `docs/*.md`, `.claude/templates/plugin/README.md` |
-| Compatibility matrix | `README.md`, `docs/compatibility.md`, `.claude/rules/plugin-authoring.md` |
+| Compatibility matrix | `.claude/rules/cross-surface-compatibility.md`, `README.md`, `docs/compatibility.md` |
 | Manifest / marketplace fields, reserved names | `.github/scripts/lib.mjs`, `check-repo.mjs`, templates |
 | Pinned versions | `.github/workflows/*.yml`, `.claude/CLAUDE.md`, `verify` skill |
 | New capabilities worth adopting | e.g. new manifest fields, `relevance`, evals, new component types |

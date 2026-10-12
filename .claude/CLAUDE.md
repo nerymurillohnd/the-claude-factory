@@ -33,7 +33,8 @@ Two maintainers: Nery (owner) and Claude. No external pull requests; users contr
 4. **Never hand-edit generated blocks** in `README.md` (`<!-- catalog:* -->`, `<!-- plugin-count:* -->`). Run `catalog.mjs`.
 5. **User docs sell and teach; they never mention maintenance**, internal tooling, `.claude/`, scripts or our workflow.
 6. **Verify against live official docs** before stating Claude Code behavior, commands, versions or UI paths. Use the Claude Code Docs MCP or code.claude.com / claude.com docs. Live docs beat this repo's files; flag conflicts.
-7. **Every gate passes before commit.** Fix root causes; never weaken a check to make it pass.
+7. **Plugins target Claude Code and Cowork.** Claude Code-only only when a plugin's nature requires it, declared in its README. The verified component matrix and design rules are in `.claude/rules/cross-surface-compatibility.md` (always loaded) — use it instead of re-researching.
+8. **Every gate passes before commit.** Fix root causes; never weaken a check to make it pass.
 
 ## Quality gates
 

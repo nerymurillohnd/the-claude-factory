@@ -9,4 +9,5 @@ Newest first. One entry per session: what changed, commits, what's next.
 - Verified: all gates green locally and in CI; end-to-end install of a throwaway plugin from a local marketplace; independent docs audit (fixed the findings that held up).
 - Created the public GitHub repo from Nery's browser, pushed `c441921`, Release published `marketplace--v0.1.0`; set PRs to Collaborators only, topics, labels.
 - Moved `CLAUDE.md` to `.claude/CLAUDE.md` and created committed project memory in `.claude/memory/`.
+- Settled the cross-surface standard (Claude Code + Cowork) and saved the verified component matrix in `.claude/rules/cross-surface-compatibility.md`.
 - Next: choose and build the first plugin with `/new-plugin`.

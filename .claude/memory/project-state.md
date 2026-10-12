@@ -13,6 +13,7 @@
 | 2026-10-11 | Monorepo with relative sources `./plugins/<name>`; README catalog generated from `marketplace.json` | Single source of truth; plugin metadata visible before install |
 | 2026-10-11 | Maintenance lives only in `.claude/` and `.github/scripts/`; `CLAUDE.md` moved to `.claude/CLAUDE.md` | Keep the public root a clean showcase |
 | 2026-10-11 | Project memory committed in `.claude/memory/` | Auto memory is machine-local; this repo is worked on from Nery's Mac and cloud sessions |
+| 2026-10-11 | Plugins target Claude Code **and** Cowork; Claude Code-only only when unavoidable and declared in the README | Reach both audiences with one package |
 | 2026-10-11 | Plugins must be generic: no Forestal MT references, no forced conversation language | Public audience |
 
 ## Status

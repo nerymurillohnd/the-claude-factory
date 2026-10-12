@@ -26,10 +26,7 @@ paths:
 
 ## Cross-surface behavior
 
-- Cowork and Claude chat refuse plugins with a top-level `bin/`. Avoid `bin/` unless the plugin is Claude Code-only, and say so in the README.
-- LSP, output styles, themes and `settings` load only in Claude Code. Agents and hooks don't load in Claude chat.
-- MCP servers using `${user_config.*}` need defaults to work in Cowork.
-- Fill the README **Compatibility** table from <https://claude.com/docs/plugins/platform-support>.
+- Follow `.claude/rules/cross-surface-compatibility.md` (component matrix, design rules, README obligations). Default target: Claude Code **and** Cowork.
 
 ## Skills inside plugins
 
@@ -48,4 +45,4 @@ paths:
 
 - README: every required section filled, no TODO/TEMPLATE comments, real usage examples.
 - `claude plugin validate --strict plugins/<name>` passes.
-- Installed from a local marketplace (`claude plugin marketplace add ./`) and exercised.
+- Installed from a local marketplace (`claude plugin marketplace add ./`) and exercised in Claude Code **and** Cowork (unless declared Claude Code-only).
