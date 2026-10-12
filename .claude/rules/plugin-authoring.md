@@ -38,7 +38,7 @@ paths:
   - A short input/output example; a template for output that must keep its shape.
   - Read arguments with `$ARGUMENTS` (or `$N`) rather than relying on the appended `ARGUMENTS:` line.
 - Audit our own skills with `/skill-diagnostics:audit`; fix only findings that change a verdict, findings or produced files. Re-audit after any rewrite: slimming can drop a load-bearing rule.
-- `context: fork` only for a self-contained task that needs no conversation history and launches no subagents.
+- `context: fork` only for a self-contained task that needs no conversation history (the forked subagent doesn't see it).
 - Generic for any user: no personal, company or language-specific assumptions.
 
 ## Hooks and scripts

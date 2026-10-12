@@ -416,17 +416,36 @@ class Inventory(SkillCase):
         self.assertGreater(report["files"][0]["bytes"], 0)
 
     @unittest.skipIf(IS_WINDOWS, "symlinks need extra privileges on Windows")
-    def test_follows_symlinked_folders_and_reports_loops(self) -> None:
+    def test_alias_to_a_folder_inside_the_skill_is_not_a_gap(self) -> None:
         self.skill_md(GOOD)
-        outside = self.root / "shared"
-        (outside / "deep").mkdir(parents=True)
-        (outside / "deep" / "x.md").write_text("# X\n", encoding="utf-8")
-        (self.skill / "linked").symlink_to(outside, target_is_directory=True)
-        (outside / "deep" / "back").symlink_to(outside, target_is_directory=True)
+        self.write("references/a.md", "# A\n")
+        (self.skill / "alias").symlink_to(self.skill / "references", target_is_directory=True)
         _, report = run(self.skill, "--list")
         paths = [f["path"] for f in report["files"]]
-        self.assertIn("linked/deep/x.md", paths)
+        self.assertEqual(paths.count("references/a.md") + paths.count("alias/a.md"), 1, report)
+        self.assertEqual(report["not_listed"], [], report)
+
+    @unittest.skipIf(IS_WINDOWS, "symlinks need extra privileges on Windows")
+    def test_symlink_loop_inside_the_skill_is_reported(self) -> None:
+        self.skill_md(GOOD)
+        self.write("deep/x.md", "# X\n")
+        (self.skill / "deep" / "back").symlink_to(self.skill, target_is_directory=True)
+        _, report = run(self.skill, "--list")
+        self.assertIn("deep/x.md", [f["path"] for f in report["files"]])
         self.assertIn("symlink loop", [n["reason"] for n in report["not_listed"]])
+
+    @unittest.skipIf(IS_WINDOWS, "symlinks need extra privileges on Windows")
+    def test_links_leaving_the_skill_are_not_followed(self) -> None:
+        self.skill_md(GOOD)
+        outside = self.root / "personal"
+        outside.mkdir()
+        (outside / "secret.txt").write_text("x\n", encoding="utf-8")
+        (self.skill / "up").symlink_to(self.root, target_is_directory=True)
+        (self.skill / "host.md").symlink_to(outside / "secret.txt")
+        _, report = run(self.skill, "--list")
+        self.assertEqual([f["path"] for f in report["files"]], ["SKILL.md"], report)
+        self.assertEqual(sorted(o["path"] for o in report["outside"]), ["host.md", "up"], report)
+        self.assertEqual(report["not_listed"], [], report)
 
     def test_no_skill_md_is_bad_input(self) -> None:
         code, _ = run(self.root, "--list")

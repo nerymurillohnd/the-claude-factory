@@ -22,6 +22,7 @@ From those arguments, or from the request when there are none:
 - **Paths:** a skill folder, a file or folder inside one (audit the nearest folder above it that holds `SKILL.md`), a folder of skills (such as `skills/`), or a plugin root (its `skills/` folder plus any paths its `plugin.json` `skills` field declares). Expand a folder of skills with `find -L "<folder>" -name SKILL.md` (for a plugin root, run it on `skills/` and each declared path, never on the root); each parent folder is one skill, and a `SKILL.md` inside another skill's folder belongs to that skill. Audit each skill once.
 - **No path:** audit the skills whose `SKILL.md` was just written in this conversation (a hook message may name them). If there are none, ask for the path, then invoke this skill again with it: the user's reply ends this skill's pre-approval, and a new invocation restores it.
 - **Lens:** `--lens conformance` or `--lens executability` runs one; default both.
+- **Unknown option or value:** stop before step 1 and list the accepted ones.
 - **Target:** `--target code|cowork|upload|api`, repeatable. Default: infer it with the table in [surfaces.md](references/surfaces.md) (Pick the target) and say which you assumed.
 
 Example: `/skill-diagnostics:audit ./plugins/notes --target upload` audits every skill in that plugin against claude.ai upload rules and ends with the summary table.
@@ -43,7 +44,7 @@ Example: `/skill-diagnostics:audit ./plugins/notes --target upload` audits every
    ${CLAUDE_SKILL_DIR}/scripts/check_skill.py --list <skill-dir>
    ```
 
-   It prints JSON with every file (`files`, `count`) and any folder it could not enter (`not_listed`). Exclude nothing yourself; what the user's settings or hooks block is reported as not inspected, never worked around.
+   It prints JSON with every file (`files`, `count`), any folder it could not enter (`not_listed`), and links that leave the skill (`outside`): those are external dependencies, not gaps, and are not read. Exclude nothing yourself; what the user's settings or hooks block is reported as not inspected, never worked around.
 2. **Checker**, only with the conformance lens, per skill and target:
 
    ```bash

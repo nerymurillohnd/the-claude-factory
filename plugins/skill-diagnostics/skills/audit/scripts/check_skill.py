@@ -6,8 +6,9 @@ Usage: check_skill.py [--format json|text] [--target code|cowork|upload|api]
        check_skill.py --list [--format json|text] SKILL_DIR
 
 --list prints the skill's full file inventory instead of checking it: every
-file at any depth, hidden files included, symlinked folders followed, nothing
-excluded, names and sizes only (no file is opened).
+file at any depth, hidden files included, symlinked folders inside the skill
+followed, nothing excluded, names and sizes only (no file is opened). Links
+whose target lies outside the skill are listed under "outside", not followed.
 
 Checks what `claude plugin validate` does not: frontmatter syntax and quoting,
 known fields and values, name and description limits per target surface,
@@ -813,15 +814,23 @@ def render(skill: Path, target: str, findings: list[Finding], fmt: str) -> str:
 def inventory(skill: Path) -> dict[str, object]:
     """Every file under the skill, hidden ones included; nothing is opened or excluded.
 
-    Symlinked folders are followed (like `find -L`); a folder already visited through
-    another path (a symlink loop) is reported in not_listed instead of being entered again.
+    Symlinked folders inside the skill are followed (like `find -L`). A folder reached a
+    second time is skipped silently when it is a duplicate path (its files are already
+    listed) and reported in not_listed when it is a loop (a link back to an ancestor).
+    A link whose target lies outside the skill is not followed: it goes to `outside`,
+    so the audit never reads files that do not belong to the skill.
     """
+    root_real = os.path.realpath(skill)
     files: list[dict[str, object]] = []
     not_listed: list[dict[str, str]] = []
+    outside: list[dict[str, str]] = []
     seen: set[str] = set()
 
     def rel(path: Path) -> str:
         return path.relative_to(skill).as_posix() if path != skill else "."
+
+    def within(real: str) -> bool:
+        return real == root_real or real.startswith(root_real.rstrip(os.sep) + os.sep)
 
     def failed(error: OSError) -> None:
         where = rel(Path(error.filename)) if error.filename else "?"
@@ -830,13 +839,25 @@ def inventory(skill: Path) -> dict[str, object]:
     for root, dirs, names in os.walk(skill, onerror=failed, followlinks=True):
         base = Path(root)
         real = os.path.realpath(base)
-        if real in seen:
-            dirs[:] = []
-            not_listed.append({"path": rel(base), "reason": "symlink loop"})
-            continue
         seen.add(real)
+        keep: list[str] = []
+        for name in sorted(dirs, key=lambda d: (base / d).is_symlink()):  # real folders before aliases
+            target = os.path.realpath(base / name)
+            if not within(target):
+                outside.append({"path": rel(base / name), "target": target})
+            elif target in seen or any(target == os.path.realpath(base / k) for k in keep):
+                if within(real) and (real == target or real.startswith(target.rstrip(os.sep) + os.sep)):
+                    not_listed.append({"path": rel(base / name), "reason": "symlink loop"})
+                # otherwise a duplicate path to a folder already listed: nothing is missing
+            else:
+                keep.append(name)
+        dirs[:] = keep
         for name in names:
             path = base / name
+            target = os.path.realpath(path)
+            if not within(target):
+                outside.append({"path": rel(path), "target": target})
+                continue
             try:
                 size = path.stat().st_size
             except OSError as error:
@@ -845,7 +866,14 @@ def inventory(skill: Path) -> dict[str, object]:
             files.append({"path": rel(path), "bytes": size})
     files.sort(key=lambda f: str(f["path"]))
     not_listed.sort(key=lambda f: f["path"])
-    return {"skill": skill.as_posix(), "count": len(files), "files": files, "not_listed": not_listed}
+    outside.sort(key=lambda f: f["path"])
+    return {
+        "skill": skill.as_posix(),
+        "count": len(files),
+        "files": files,
+        "not_listed": not_listed,
+        "outside": outside,
+    }
 
 
 def render_inventory(data: dict[str, object], fmt: str) -> str:
@@ -857,6 +885,9 @@ def render_inventory(data: dict[str, object], fmt: str) -> str:
     rows = [f"Skill: {data['skill']}  ({data['count']} files)"]
     rows += [f"{f['bytes']:>9}  {f['path']}" for f in files]
     rows += [f"not listed  {f['path']}  ({f['reason']})" for f in not_listed]
+    outside = data["outside"]
+    assert isinstance(outside, list)
+    rows += [f"outside     {f['path']} -> {f['target']}" for f in outside]
     return "\n".join(rows)
 
 

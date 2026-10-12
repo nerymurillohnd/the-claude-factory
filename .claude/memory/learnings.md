@@ -30,8 +30,9 @@ Rules learned the hard way. Follow them; add one line per new lesson.
 - Synced skills (`~/.claude/skills/synced/`) re-sync every ~10 min in a running terminal session; synced plugins (`<plugin>@synced`, `~/.claude/plugins/synced/`) only at startup. Local edits to either are overwritten. With a same-named plugin from a marketplace (or --plugin-dir), Claude Code loads that one and reports the synced copy as not loaded (docs: plugins/loading, Name conflicts) — verify such claims before writing them.
 - Synced plugins in the terminal need Claude Code v2.1.273+ and a claude.ai sign-in (not an API key or token); `/plugin` can enable or disable `<name>@synced` but not update or uninstall it (that happens on claude.ai).
 - Use `$ARGUMENTS` in a skill body: Claude Code appends an `ARGUMENTS:` line only when no placeholder receives the input.
-- `context: fork` skills get no conversation history and run as subagents, which can't launch subagents: wrong for orchestrators like `audit`.
+- `context: fork` skills get no conversation history: wrong for skills that act on what was just discussed, like `audit` after a hook offer. (Subagents can spawn subagents up to three levels; docs: sub-agents, depth limit.)
 - Verify every user-doc claim against the docs before writing it: "a duplicate install loads twice" was wrong (a same-named install wins over the synced copy).
+- Following symlinks in an inventory: stay inside the skill (a link out is an external dependency, never read), and tell a duplicate path (alias to a listed folder) from a loop (link to an ancestor); otherwise coverage fixes create false "not determinable" verdicts and out-of-scope reads.
 - A copied (cached) install for local testing: a local marketplace whose entry uses `{"source":"git-subdir","url":"file:///abs/repo.git","path":"plugins/<name>"}`; a relative-path source loads in place instead. Isolate with `HOME=<tmp>` or `CLAUDE_CONFIG_DIR`.
 
 ## GitHub

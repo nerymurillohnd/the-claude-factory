@@ -6,9 +6,9 @@ Read the section for the case at hand; the main path in `SKILL.md` covers everyt
 
 Any exit other than 0 or 1, an error trace, no `python3` 3.9+ on `PATH`, or no shell.
 
-- Record `checker not run: <reason, with the first error line>` and continue; the lenses still run.
-- Inventory: list the files with this session's own tool, `find -L "<skill-dir>" -type f` by default (Glob with `**/*` and `**/.*` stops at 100 results). Name the tool on the report's Files line.
-- If the path of this audit skill's own folder (the start of the script path) contains a space, quote the script path: the command then needs the user's approval, which is safe to give.
+- First, if the path of this audit skill's own folder (the start of the script path) contains a space, retry once with the script path quoted; the command then needs the user's approval, which is safe to give.
+- Still failing: record `checker not run: <reason, with the first error line>` and continue; the lenses still run.
+- Inventory: list the files with this session's own tool, `find -L "<skill-dir>" -type f` by default (Glob with `**/*` and `**/.*` stops at 100 results). Drop entries whose real path is outside the skill and report them as external dependencies. Name the tool on the report's Files line.
 
 ## The inventory is incomplete
 
