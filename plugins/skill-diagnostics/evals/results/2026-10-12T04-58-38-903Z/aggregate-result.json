@@ -1,0 +1,101 @@
+{
+  "schemaVersion": 1,
+  "claudeVersion": "2.1.296",
+  "startedAt": "2026-10-12T04:58:38.903Z",
+  "durationSeconds": 10,
+  "costUsd": 0.0745229,
+  "partial": true,
+  "partialReason": "interrupted",
+  "suite": {
+    "root": "/home/claude/the-claude-factory/plugins/skill-diagnostics",
+    "ablation": "with-without",
+    "modelOverride": "sonnet",
+    "judgeModel": "opus",
+    "caseFilter": "portability-traps",
+    "threshold": 1,
+    "concurrency": 1,
+    "plugins": [
+      {
+        "name": "skill-diagnostics",
+        "version": "0.1.0",
+        "path": "/home/claude/the-claude-factory/plugins/skill-diagnostics"
+      }
+    ]
+  },
+  "cases": [
+    {
+      "name": "portability-traps",
+      "dir": "evals/portability-traps",
+      "source": "mixed",
+      "promptMarkdown": "I'm about to upload skills/claude-notes to claude.ai so I can use it in Cowork. Check it first and tell me everything that will break or misbehave there.",
+      "runsPerCase": 3,
+      "timeoutSeconds": 900,
+      "maxTurns": 40,
+      "graders": [
+        {
+          "name": "result",
+          "type": "llm",
+          "weight": 1,
+          "graderMarkdown": "The skill has four planted upload problems:\n(a) `when_to_use` is not one of the six fields an upload accepts, so the upload fails;\n(b) `name` contains the reserved word `claude`, which uploads reject;\n(c) the unquoted description contains ` #owner`, which strict YAML reads as a comment, cutting the description at that point;\n(d) the body runs the script through the skill-directory variable and by its path, which does not work in an uploaded skill (the variable is not substituted there, and the script should be called through its interpreter).\n\nPASS if the reply identifies at least three of (a), (b), (c), (d) as problems for the upload.\nFAIL if it identifies fewer than three.",
+          "config": {
+            "criteria": "The skill has four planted upload problems:\n(a) `when_to_use` is not one of the six fields an upload accepts, so the upload fails;\n(b) `name` contains the reserved word `claude`, which uploads reject;\n(c) the unquoted description contains ` #owner`, which strict YAML reads as a comment, cutting the description at that point;\n(d) the body runs the script through the skill-directory variable and by its path, which does not work in an uploaded skill (the variable is not substituted there, and the script should be called through its interpreter).\n\nPASS if the reply identifies at least three of (a), (b), (c), (d) as problems for the upload.\nFAIL if it identifies fewer than three.",
+            "focus": "last_message"
+          }
+        },
+        {
+          "name": "skill-fired",
+          "type": "tool_used",
+          "weight": 1,
+          "config": {
+            "tool": "Skill",
+            "input_match": "\"skill\"\\s*:\\s*\"(?:[\\w-]+:)?audit\""
+          }
+        }
+      ],
+      "arms": {
+        "with": [
+          {
+            "score": 0,
+            "passed": false,
+            "turns": 4,
+            "costUsd": 0.0745229,
+            "judgeCostUsd": 0,
+            "durationSeconds": 10,
+            "startedAt": "2026-10-12T04:58:38.934Z",
+            "error": "interrupted",
+            "tracePath": "/tmp/claude-eval-wApdPn/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "result",
+                "passed": false,
+                "weight": 1,
+                "explanation": "grader threw: Request was aborted.",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "skill-fired",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 1x (expected 1..∞)",
+                "withOnly": true,
+                "scored": false
+              }
+            ]
+          }
+        ]
+      },
+      "aggregates": {
+        "score": 0,
+        "passRate": 0
+      }
+    }
+  ],
+  "aggregates": {
+    "casesTotal": 1,
+    "casesPassed": 0,
+    "overallScore": 0,
+    "overallPassRate": 0
+  }
+}

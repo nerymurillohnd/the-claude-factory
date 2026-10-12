@@ -1,0 +1,140 @@
+{
+  "schemaVersion": 1,
+  "claudeVersion": "2.1.296",
+  "startedAt": "2026-10-12T04:57:38.211Z",
+  "durationSeconds": 60,
+  "costUsd": 0.323926,
+  "partial": false,
+  "suite": {
+    "root": "/home/claude/the-claude-factory/plugins/skill-diagnostics",
+    "ablation": "with-without",
+    "modelOverride": "sonnet",
+    "judgeModel": "opus",
+    "caseFilter": "cross-file-gaps",
+    "threshold": 1,
+    "concurrency": 1,
+    "plugins": [
+      {
+        "name": "skill-diagnostics",
+        "version": "0.1.0",
+        "path": "/home/claude/the-claude-factory/plugins/skill-diagnostics"
+      }
+    ]
+  },
+  "cases": [
+    {
+      "name": "cross-file-gaps",
+      "dir": "evals/cross-file-gaps",
+      "source": "mixed",
+      "promptMarkdown": "Is the skill in skills/invoice-note ready to use? Could a model follow it without guessing anything?",
+      "runsPerCase": 3,
+      "timeoutSeconds": 900,
+      "maxTurns": 40,
+      "graders": [
+        {
+          "name": "result",
+          "type": "llm",
+          "weight": 1,
+          "graderMarkdown": "The skill has three planted defects:\n(a) assets/template.md uses `{{grace_date}}` but references/fields.md defines `grace-date` (hyphen), so the value has no matching definition;\n(b) SKILL.md step 3 calls `scripts/amount.py --format csv`, but the script only accepts `json` or `text`, so the step always fails;\n(c) SKILL.md step 2 fills `reminder_id`, but that value is produced only by `scripts/log.py` in step 4.\n\nPASS if the reply says the skill is not ready AND correctly identifies at least two of (a), (b), (c), each tied to a file.\nFAIL if it calls the skill ready, or identifies fewer than two of them.",
+          "config": {
+            "criteria": "The skill has three planted defects:\n(a) assets/template.md uses `{{grace_date}}` but references/fields.md defines `grace-date` (hyphen), so the value has no matching definition;\n(b) SKILL.md step 3 calls `scripts/amount.py --format csv`, but the script only accepts `json` or `text`, so the step always fails;\n(c) SKILL.md step 2 fills `reminder_id`, but that value is produced only by `scripts/log.py` in step 4.\n\nPASS if the reply says the skill is not ready AND correctly identifies at least two of (a), (b), (c), each tied to a file.\nFAIL if it calls the skill ready, or identifies fewer than two of them.",
+            "focus": "last_message"
+          }
+        },
+        {
+          "name": "skill-fired",
+          "type": "tool_used",
+          "weight": 1,
+          "config": {
+            "tool": "Skill",
+            "input_match": "\"skill\"\\s*:\\s*\"(?:[\\w-]+:)?audit\""
+          }
+        }
+      ],
+      "arms": {
+        "with": [
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 10,
+            "costUsd": 0.2357912,
+            "judgeCostUsd": 0.019824,
+            "durationSeconds": 44,
+            "startedAt": "2026-10-12T04:57:38.244Z",
+            "error": null,
+            "tracePath": "/tmp/claude-eval-bCZX7v/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "result",
+                "passed": true,
+                "weight": 1,
+                "explanation": "judge votes: PASS PASS PASS",
+                "withOnly": false,
+                "scored": true,
+                "judgeVotes": [
+                  true,
+                  true,
+                  true
+                ],
+                "evidence": "**Verdict: fail. The skill is not ready, and a model could not follow it without guessing.**\n\nStep 3 fails on every run, so no note is ever saved or logged. I checked it for Claude Code, which I assumed because the folder is loose. The automated checker found nothing, so every finding below comes from reading the files. All 5 files were read.\n\n| # | Severity | Location | Finding | Evidence |\n| :-- | :-- | :-- | :-- | :-- |\n| 1 | high | SKILL.md:12 | The command uses `--format csv`, but `amount.py` accepts only `json` or `text`. argparse exits with code 2, and step 3 says to stop on a non-zero exit. | `amount.py --format csv <amount>` vs `choices=(\"json\", \"text\")` (scripts/amount.py:5) |\n| 2 | high | SKILL.md:11 and 13 | Step 2 needs `reminder_id` for the subject line, but step 4 (`log.py`) is what creates it. The model must invent an ID or log early, before the note exists. `fields.md` has no row for `reminder_id`. | \"include the `reminder_id` in the subject line\" vs \"which prints the new `reminder_id`\" |\n| 3 | high | references/fields.md:9 | `fields.md` names the placeholder `grace-date` (hyphen), but the template uses `{{grace_date}}`. The model can't match the rule to the placeholder. | `grace-date` vs `{{grace_date}}` (assets/template.md:5) |\n| 4 | high | references/fields.md:7 | The `days_late` rule is ambiguous. It can mean (today − issue) − 30 or today − (issue − 30). The 30 is unexplained, \"Today\" has no source, and a zero or negative result isn't covered. | \"Today minus the issue date minus 30\" |\n| 5 | high | SKILL.md:13, scripts/log.py:5 | `log.py` takes no arguments. It writes only `R<timestamp>` to `./reminders.log`, so a log entry can't be traced to an invoice. The log's location depends on the working directory. | `open(\"reminders.log\", \"a\"` |\n| 6 | medium | SKILL.md:13 | `outbox/` is never created or located. A repeat reminder for the same invoice would overwrite the earlier note. | \"Save the note as `outbox/<invoice_id>.md`\" |\n| 7 | medium | scripts/amount.py:8 | The amount check is weaker than the \"two decimals\" rule. \"100\" and \"100.5\" pass. There is no guidance for currency symbols or commas. | `a.amount.replace(\".\", \"\", 1).isdigit()` |\n| 8 | medium | SKILL.md:8 | The issue-date format isn't given, and nothing says what to do when an input is missing. | \"(number, client, issue date, amount)\" |\n| 9 | low | SKILL.md:13 | The skill doesn't say whether it only saves the note or also sends it. It has no `allowed-tools`, so each script run prompts for permission. | \"Save the note as `outbox/<invoice_id>.md` and log it\" |\n\n**Fix order:**\n1. Change `--format csv` to `--format text` or `json`.\n2. Reorder the steps: validate the amount, run `log.py` for the ID, fill the template, then save.\n3. Add a `reminder_id` row to `fields.md` and rename `grace-date` to `grace_date`.\n4. Write the `days_late` formula explicitly, with the source of today's date and the zero-or-negative case.\n5. Pass `invoice_id` to `log.py`, and state where the log and `outbox/` live.\n\n**Not checked:** whether the script files have the executable bit, since my tools can't show it. Git-ignored files also can't be seen, so there could be more.\n\nI haven't changed anything. Want me to apply these fixes?"
+              },
+              {
+                "name": "skill-fired",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 1x (expected 1..∞)",
+                "withOnly": true,
+                "scored": false
+              }
+            ]
+          }
+        ],
+        "without": [
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 7,
+            "costUsd": 0.0881348,
+            "judgeCostUsd": 0.015444,
+            "durationSeconds": 16,
+            "startedAt": "2026-10-12T04:58:22.092Z",
+            "error": null,
+            "tracePath": "/tmp/claude-eval-KnDMyl/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "result",
+                "passed": true,
+                "weight": 1,
+                "explanation": "judge votes: PASS PASS PASS",
+                "withOnly": false,
+                "scored": true,
+                "judgeVotes": [
+                  true,
+                  true,
+                  true
+                ],
+                "evidence": "No, it isn't ready. A model would have to guess in several places, and one step would fail outright.\n\n**Blocking problems**\n\n1. **`--format csv` fails.** `amount.py` accepts only `json` or `text`, so argparse exits with code 2 on `csv`. Step 3 says to stop on a non-zero exit, so the skill would halt every time. The step should use `--format text` or `--format json`.\n\n2. **Step order is circular.** Step 2 needs `reminder_id` for the subject line, but `reminder_id` only exists after `log.py` runs in step 4. `log.py` also logs the reminder when it generates the ID. A model has to choose between inventing an ID, running the log early (before the amount check), or editing the subject afterward. The skill should run the amount check, then `log.py`, then fill the template and save.\n\n3. **`grace_date` doesn't match `grace-date`.** The template placeholder is `{{grace_date}}` but `fields.md` lists `grace-date`. A model could reasonably leave the placeholder unfilled or treat the two as different fields.\n\n4. **`reminder_id` is missing from `fields.md`.** The skill says that file explains \"how each template value is computed\", but it has no row for `reminder_id`.\n\n**Ambiguities**\n\n- **`days_late` formula.** \"Today minus the issue date minus 30\" assumes 30-day payment terms without saying so. It also doesn't say what to do if the result is zero or negative, which means the invoice isn't overdue yet. The skill should say whether to stop or still write the note.\n- **\"Today\".** There's no stated timezone or source for the date.\n- **Amount format.** \"Two decimals\" doesn't say whether to include a currency symbol or thousands separators. The input has no currency field.\n- **Validation is weak.** `amount.py` accepts `\".\"` as valid, because `\".\"` with one dot removed leaves an empty string, and `\"\".isdigit()` is False, so it actually rejects it. It also rejects negatives and amounts with commas such as `1,200.00`. The skill doesn't say whether to strip commas first.\n- **Working directory.** `log.py` writes `reminders.log` to the current directory, and the note goes to `outbox/`. The skill doesn't say that `outbox/` must already exist or that the commands should run from the project root.\n- **Missing input.** If the user leaves out a field, such as the issue date, the skill doesn't say whether to ask or stop.\n- **Wording.** \"Log has its line\" is vague, since the log line is only the bare ID and not tied to the invoice. This is minor.\n\nI can fix these if you want. I'd reorder the steps, correct the format flag, align the field names, add the missing rows and edge-case rules, and state the 30-day terms and `outbox/` assumptions."
+              }
+            ]
+          }
+        ]
+      },
+      "aggregates": {
+        "score": 1,
+        "passRate": 1,
+        "scoreWithout": 1,
+        "passRateWithout": 1,
+        "delta": 0
+      }
+    }
+  ],
+  "aggregates": {
+    "casesTotal": 1,
+    "casesPassed": 1,
+    "overallScore": 1,
+    "overallPassRate": 1,
+    "meanDelta": 0
+  }
+}
