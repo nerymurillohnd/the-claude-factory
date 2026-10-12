@@ -22,7 +22,7 @@ Two maintainers: Nery (owner) and Claude. No external pull requests; users contr
 | `SECURITY.md`, `SUPPORT.md`, `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md` | Community files | Users |
 | `.github/ISSUE_TEMPLATE/`, `.github/labels.json` | Issue forms and labels | Users / maintainers |
 | `.github/scripts/` | Zero-dependency Node tooling + tests, and each plugin's Python tests | Maintainers, CI |
-| `.github/workflows/` | `validate.yml` (gates), `release.yml` (tags + releases), `evals.yml` (full plugin eval suites; they use Nery's plan) | CI |
+| `.github/workflows/` | `validate.yml` (gates), `release.yml` (tags + releases), `evals.yml` (full eval suites of the changed plugins that ship one; they use Nery's plan) | CI |
 | `.claude/` | This file, memory, rules, skills, agents, templates | Maintainers only |
 
 ## Golden rules

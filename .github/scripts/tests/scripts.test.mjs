@@ -432,6 +432,70 @@ describe('check-version-bump', () => {
   })
 })
 
+describe('eval-targets', () => {
+  const git = (...args) => execFileSync('git', args, { cwd: root, encoding: 'utf8' })
+  const touchManifest = (name) => {
+    const p = `plugins/${name}/.claude-plugin/plugin.json`
+    write(p, `${read(p).trimEnd()}\n\n`)
+  }
+  function commitAll(message) {
+    git('add', '-A')
+    git('commit', '-qm', message)
+  }
+  function initRepo() {
+    git('init', '-q', '-b', 'main')
+    git('config', 'user.email', 'test@example.com')
+    git('config', 'user.name', 'Test')
+    commitAll('base')
+  }
+  const changed = () => run('eval-targets.mjs', ['--changed', 'HEAD~1', 'HEAD'])
+
+  test('selects only changed plugins that ship evals; plugins without evals never count', () => {
+    scaffold()
+    initRepo()
+    touchManifest('skill-diagnostics')
+    touchManifest('demo-tool')
+    commitAll('both manifests')
+    const r = changed()
+    assert.equal(r.code, 0, r.out)
+    assert.deepEqual(JSON.parse(r.out), ['skill-diagnostics'])
+  })
+
+  test('selects nothing when no manifest changed, even if other plugin files did', () => {
+    initRepo()
+    write(
+      'plugins/skill-diagnostics/README.md',
+      `${read('plugins/skill-diagnostics/README.md')}\nx\n`,
+    )
+    commitAll('readme')
+    assert.deepEqual(JSON.parse(changed().out), [])
+  })
+
+  test('picks up a plugin once it ships evals, and leaves unchanged ones out', () => {
+    scaffold()
+    initRepo()
+    mkdirSync(join(root, 'plugins/demo-tool/evals/case'), { recursive: true })
+    write('plugins/demo-tool/evals/case/prompt.md', 'Do it.\n')
+    touchManifest('demo-tool')
+    commitAll('demo evals')
+    assert.deepEqual(JSON.parse(changed().out), ['demo-tool'])
+  })
+
+  test('manual runs: all plugins with evals, or one that has them', () => {
+    scaffold()
+    assert.deepEqual(JSON.parse(run('eval-targets.mjs', ['--only', 'all']).out), [
+      'skill-diagnostics',
+    ])
+    assert.deepEqual(JSON.parse(run('eval-targets.mjs', ['--only', 'skill-diagnostics']).out), [
+      'skill-diagnostics',
+    ])
+    const none = run('eval-targets.mjs', ['--only', 'demo-tool'])
+    assert.equal(none.code, 1)
+    assert.match(none.out, /demo-tool has no evals\/ folder/)
+    assert.match(run('eval-targets.mjs', ['--only', 'nope']).out, /no plugin named "nope"/)
+  })
+})
+
 describe('portability rules', () => {
   const entry = (path, size = 10, symlink = false) => ({ path, size, symlink })
 
