@@ -14,8 +14,8 @@ Any exit other than 0 or 1, an error trace, no `python3` 3.9+ on `PATH`, or no s
 
 `not_listed` has an entry, `find` printed an error, or Glob returned 100 results.
 
-- List what is missing as not inspected; the verdict is not determinable.
-- If no inventory can be made at all, skip the checker and the lenses for that skill, give it not determinable, and say why in place of the findings.
+- List what is missing as not inspected; step 5 of `SKILL.md` decides the verdict.
+- If no inventory can be made at all, skip the checker and the lenses for that skill, give it the verdict not determinable, and say why in place of the findings.
 
 ## A path resolves to no skill
 
