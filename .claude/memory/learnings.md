@@ -84,4 +84,4 @@ Rules learned the hard way. Follow them; add one line per new lesson.
 - Biome config is the root `biome.json` (Nery's standard from claude-essentials) with `json.formatter.expand: "always"`, so `writeJson` (`JSON.stringify(…, 2)`) output stays formatted; templates with `{{…}}` placeholders aren't JSON and are excluded. Without a repo config Biome silently uses its defaults (tabs, double quotes, 80 columns).
 - Nery's shell sets `SHELLCHECK_OPTS=-o all -S style`, so local `actionlint` reports style findings that CI (default shellcheck) doesn't.
 - The github-ops hook can't parse a Bash command that mixes a heredoc with `git`: write the message to a file in one call, then `git commit -F <file>` alone.
-- markdownlint-cli2 lints untracked files too (`.git/info/exclude` doesn't stop it): plan files and scratch workspaces in the tree turn `/verify` red locally while CI stays green.
+- markdownlint-cli2 lints untracked files unless its config sets `"gitignore": true` (`.git/info/exclude` alone doesn't stop it): local plans and scratch workspaces go in `.gitignore`, and the config skips them, so a local run lints what CI lints.

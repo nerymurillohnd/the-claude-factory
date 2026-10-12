@@ -45,6 +45,8 @@
 | 2026-10-12 | session-handoff ships no evals; its `write-handoff` skill is model-invocable (no `disable-model-invocation`) | Nery; the Claude app documents slash commands for plugin commands only, so a manual-only skill may not be startable in Cowork |
 | 2026-10-12 | `plugin-test-bench`: skills `test-install` and `review-evals`, Claude Code only (`metadata.surfaces: ["claude-code"]`), minimum Claude Code 2.1.293, ships no evals | It drives the `claude` CLI and git in a terminal; Nery decides evals per plugin |
 | 2026-10-12 | Audits of our skills run in-session: one skill-creator agent plus the conformance and executability lenses as hand-built agents from skill-diagnostics' references, then the orchestrator's live verification and changelog read; fix only findings a user would realistically hit | Nery: not a `--plugin-dir` terminal session; stay objective, don't chase a clean report with remote edge cases |
+| 2026-10-12 | `.nvmrc` (26.11.1) is the one Node version: CI reads it with `node-version-file`; no `NODE_VERSION` in workflows | Local and CI ran different Node (26 vs 24); Nery's rule is latest stable via nvm |
+| 2026-10-12 | Every workflow action pinned by SHA, the Claude workflows included; Linux jobs on `ubuntu-24.04`, not `ubuntu-latest` | `ubuntu-latest` moves to 26.04 from 2026-10-19 (runner-images #14748) and the evals job installs `bubblewrap`; move with `/docs-drift-check`, not by surprise |
 
 ## Status
 

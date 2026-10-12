@@ -9,7 +9,11 @@ npm-debug.log*
 # Local Claude Code state (personal, never committed)
 .claude/settings.local.json
 .claude/worktrees/
+.claude/plans/
 CLAUDE.local.md
+
+# Agent scratch workspaces (superpowers plans and ledgers)
+.superpowers/
 
 # Scratch
 tmp/
@@ -22,4 +26,6 @@ actionlint
 # Python
 __pycache__/
 *.pyc
+.ruff_cache/
+.mypy_cache/
 eval-results/

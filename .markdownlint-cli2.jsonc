@@ -18,6 +18,8 @@
     },
     "MD060": false
   },
+  // Skip what git ignores (local plans, scratch workspaces), so a local run lints what CI lints.
+  "gitignore": true,
   "globs": [
     "**/*.md"
   ],

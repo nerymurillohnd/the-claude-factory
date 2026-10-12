@@ -27,7 +27,6 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  NODE_VERSION: "24"
   CLAUDE_CODE_VERSION: "2.1.296"
   # Full model IDs, never aliases, so a model rollout isn't read as a plugin regression.
   EVAL_MODEL: ${{ vars.EVAL_MODEL || 'claude-sonnet-5-5' }}
@@ -38,7 +37,7 @@ jobs:
   # token exists and the eval job shows as skipped, not passed, without it.
   token:
     name: Eval token present
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       present: ${{ steps.check.outputs.present }}
     steps:
@@ -52,7 +51,7 @@ jobs:
   # The plugins to evaluate, as a JSON array; empty when no plugin with evals changed.
   targets:
     name: Plugins to evaluate
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       plugins: ${{ steps.pick.outputs.plugins }}
     steps:
@@ -61,7 +60,7 @@ jobs:
           fetch-depth: 0
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version-file: .nvmrc
       - id: pick
         env:
           BASE: ${{ github.event.pull_request.base.sha }}
@@ -81,7 +80,7 @@ jobs:
     name: Plugin evals (${{ matrix.plugin }})
     needs: [token, targets]
     if: needs.token.outputs.present == 'true' && needs.targets.outputs.plugins != '[]'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 120
     strategy:
       fail-fast: false
@@ -93,7 +92,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version-file: .nvmrc
       - name: Install Claude Code and the shell sandbox
         run: |
           sudo apt-get update -qq

@@ -1,0 +1,19 @@
+# ==============================================================================
+# STRICT CONFIGURATION for this repository — ShellCheck >= 0.10.0
+# ==============================================================================
+# Valid rc keys (Parser.hs): disable, enable, source, source-path, shell,
+# extended-analysis, external-sources. Unknown keys are silently ignored.
+# -S style and -a have NO rc equivalent: CI and the verify gates pass them on the command line.
+
+# -o all: enable every optional check.
+enable=all
+
+# -x: follow `source` statements even when the file is not given as input.
+external-sources=true
+
+# Resolve relative `source` paths from the script's directory. One path per line;
+# `SCRIPTDIR:.` on a single line is read as one literal path and breaks resolution.
+source-path=SCRIPTDIR
+
+# Dataflow analysis (default since 0.10.0); explicit for self-documentation.
+extended-analysis=true
