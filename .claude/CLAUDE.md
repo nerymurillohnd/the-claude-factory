@@ -1,6 +1,6 @@
 # The Claude Factory — maintainer instructions
 
-Public Claude Code / Cowork plugin marketplace at `github.com/nerymurillohnd/the-claude-factory`.
+Public Claude Code / Claude app plugin marketplace at `github.com/nerymurillohnd/the-claude-factory`.
 Two maintainers: Nery (owner) and Claude. No external pull requests; users contribute through issues.
 
 ## Working with Nery
@@ -33,7 +33,7 @@ Two maintainers: Nery (owner) and Claude. No external pull requests; users contr
 4. **Never hand-edit generated blocks** in `README.md` (`<!-- catalog:* -->`, `<!-- plugin-count:* -->`). Run `catalog.mjs`.
 5. **User docs sell and teach; they never mention maintenance**, internal tooling, `.claude/`, scripts or our workflow.
 6. **Verify against live official docs** before stating Claude Code behavior, commands, versions or UI paths. Use the Claude Code Docs MCP or code.claude.com / claude.com docs. Live docs beat this repo's files; flag conflicts.
-7. **Plugins target Claude Code and Cowork.** Claude Code-only only when a plugin's nature requires it, declared in its README. The verified component matrix and design rules are in `.claude/rules/cross-surface-compatibility.md` (always loaded) — use it instead of re-researching.
+7. **Plugins target Claude Code and the Claude app** (chat and Cowork are one app). Claude Code-only only when a plugin's nature requires it, declared in its README. The verified component matrix and design rules are in `.claude/rules/cross-surface-compatibility.md` (always loaded) — use it instead of re-researching.
 8. **Every gate passes before commit.** Fix root causes; never weaken a check to make it pass.
 
 ## Quality gates
@@ -56,7 +56,7 @@ npx --yes markdownlint-cli2@0.23.3
 | Task | Skill |
 | :-- | :-- |
 | Create a plugin | `/new-plugin` |
-| Test a plugin as users install it (copied install, session, evals, Cowork zip) | `/install-test` |
+| Test a plugin as users install it (copied install, load check, evals, Claude app zip) | `/test-installed-plugin` |
 | Release a plugin or the marketplace | `/release` |
 | Triage and answer issues | `/triage-issues` |
 | Run all gates | `/verify` |

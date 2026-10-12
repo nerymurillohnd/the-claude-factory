@@ -26,7 +26,7 @@ paths:
 
 ## Cross-surface behavior
 
-- Follow `.claude/rules/cross-surface-compatibility.md` (component matrix, design rules, README obligations). Default target: Claude Code **and** Cowork.
+- Follow `.claude/rules/cross-surface-compatibility.md` (component matrix, design rules, README obligations). Default target: Claude Code **and** the Claude app.
 
 ## Skills inside plugins
 
@@ -60,4 +60,4 @@ paths:
 
 - README: every required section filled, no TODO/TEMPLATE comments, real usage examples.
 - `claude plugin validate --strict plugins/<name>` passes.
-- Installed from a local marketplace (`claude plugin marketplace add ./`) and exercised in Claude Code **and** Cowork (unless declared Claude Code-only).
+- Tested with `/test-installed-plugin <name>` (copied install, load check, eval suite) and exercised in the Claude app, in a Cowork session and a chat conversation (unless declared Claude Code-only).

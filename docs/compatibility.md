@@ -1,33 +1,37 @@
 # 🧭 Compatibility
 
-> Which parts of a plugin load in **Claude Code**, **Cowork** and **Claude chat** — so you know what you'll get before you install.
+> Which parts of a plugin load in **Claude Code** and in the **Claude app** — so you know what you'll get before you install.
 
-Claude Code, Cowork and Claude chat can all install the same plugin, but each one loads a different subset of what it contains. A surface silently skips components it doesn't support, so a plugin can feel complete in one place and partial in another. **Every plugin README has a Compatibility table** that applies these rules to that plugin.
+Claude Code and the Claude app (web, desktop and mobile) can both install the same plugin, but each one loads a different subset of what it contains. A surface silently skips components it doesn't support, so a plugin can feel complete in one place and partial in another. **Every plugin README has a Compatibility table** that applies these rules to that plugin.
 
 ---
 
 ## 🧩 Components by surface
 
-| Component | Claude Code | Cowork | Claude chat |
-| :-- | :--: | :--: | :--: |
-| 🎯 **Skills** (`skills/<name>/SKILL.md`) | ✅ | ✅ | ✅ |
-| ⌨️ **Commands** (`commands/*.md`) | ✅ | ✅ run as `/plugin:command` | ⚠️ loaded as a skill |
-| 🤖 **Agents** (`agents/*.md`) | ✅ | ✅ | ➖ |
-| 🪝 **Hooks** (`hooks/hooks.json`) | ✅ | ✅ | ➖ |
-| 🔌 **Remote MCP server** (`http`/`sse`, fixed URL) | ✅ | ✅ connect from the plugin's **Connectors** tab | 🔗 add or connect it on the **Connectors** tab |
-| 🖥️ **Local MCP server** (a command, incl. `.mcpb`) | ✅ | ✅ when the session runs on your computer | ➖ |
-| 🔐 **MCP server using `${user_config.*}`** | ✅ prompts you for values | ⚠️ only options with defaults | ➖ when the URL uses them |
-| 🧠 **LSP servers** | ✅ | ➖ | ➖ |
-| 🎨 **Output styles** · 🌈 **Themes** · ⚙️ **`settings`** | ✅ | ➖ | ➖ |
-| ⚙️ **Executables** in a top-level `bin/` | ✅ | ❌ | ❌ |
+| Component | Claude Code | Claude app |
+| :-- | :--: | :--: |
+| 🎯 **Skills** (`skills/<name>/SKILL.md`) | ✅ | ✅ |
+| ⌨️ **Commands** (`commands/*.md`) | ✅ | ✅ run as `/plugin:command`; loaded as a skill in a chat conversation |
+| 🤖 **Agents** (`agents/*.md`) | ✅ | ⚠️ in Cowork sessions, not in a chat conversation |
+| 🪝 **Hooks** (`hooks/hooks.json`) | ✅ | ⚠️ in Cowork sessions, not in a chat conversation |
+| 🔌 **Remote MCP server** (`http`/`sse`, fixed URL) | ✅ | 🔗 add or connect it on the plugin's **Connectors** tab |
+| 🖥️ **Local MCP server** (a command, incl. `.mcpb`) | ✅ | ⚠️ only in Cowork sessions on your computer |
+| 🔐 **MCP server using `${user_config.*}`** | ✅ prompts you for values | ⚠️ only options with defaults |
+| 🧠 **LSP servers** | ✅ | ➖ |
+| 🎨 **Output styles** · 🌈 **Themes** · ⚙️ **`settings`** | ✅ | ➖ |
+| ⚙️ **Executables** in a top-level `bin/` | ✅ | ❌ |
 
 **Legend:** ✅ loads · ⚠️ partial · 🔗 needs a manual step · ➖ ignored on that surface · ❌ the whole plugin can't be installed there
 
-<sub>Source: Anthropic, [Plugin feature support across platforms](https://claude.com/docs/plugins/platform-support).</sub>
+## 💬 Cowork sessions and chat conversations
+
+Chat and Cowork are now one Claude app. When you send a message, the app runs it as a **Cowork session** when it can, with the full set of plugin components above, and as a **chat conversation** otherwise: for example on a device that can't run Cowork, or in the separate **Chat** mode that Team and Enterprise plans keep for now. In a chat conversation, a plugin's skills, commands and remote connectors work, but its agents, hooks and local MCP servers don't run.
+
+<sub>Sources: Anthropic, [Use plugins in Claude](https://support.claude.com/en/articles/13837440-use-plugins-in-claude), [Claude Cowork and chat are one Claude](https://support.claude.com/en/articles/16761823), [Plugin feature support across platforms](https://claude.com/docs/plugins/platform-support).</sub>
 
 ## 🗺️ Where you add plugins
 
-| | Cowork & Claude chat | Claude Code |
+| | Claude app | Claude Code |
 | :-- | :-- | :-- |
 | **Where** | **Customize** → **Plugins** | `/plugin` in a session, or `claude plugin install` |
 | **Install attaches to** | Your claude.ai account | The machine (user, project or local scope) |
@@ -37,8 +41,7 @@ Claude Code, Cowork and Claude chat can all install the same plugin, but each on
 ## 💡 What this means for you
 
 - 🧑‍💻 **Using Claude Code?** Everything in a plugin works.
-- 🤝 **Using Cowork?** Skills, agents, hooks and MCP servers work. LSP servers, output styles and themes are skipped. Plugins with a `bin/` folder can't be installed — their README says so up front.
-- 💬 **Using Claude chat?** Skills work. Agents and hooks are skipped; remote MCP servers need to be connected by hand.
+- 🖥️ **Using the Claude app?** Skills, commands and remote MCP servers work everywhere. Agents, hooks and local MCP servers work in Cowork sessions, not in a chat conversation. LSP servers, output styles and themes are skipped. Plugins with a `bin/` folder can't be installed — their README says so up front.
 
 ---
 

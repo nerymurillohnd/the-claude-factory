@@ -33,7 +33,7 @@ body:
     id: claude-version
     attributes:
       label: Claude Code version
-      description: Output of `claude --version`. In Cowork only, write "Cowork" and your desktop app version.
+      description: Output of `claude --version`. Only in the Claude app, write "Claude app" and your desktop app version or "web" / "mobile".
       placeholder: e.g. 2.1.296 (Claude Code)
     validations:
       required: true
@@ -48,8 +48,8 @@ body:
         - Claude desktop app — Code tab
         - VS Code extension
         - JetBrains
-        - Cowork
-        - Claude chat (claude.ai / apps)
+        - Claude app — Cowork session (web, desktop or mobile)
+        - Claude app — chat conversation
         - Non-interactive (claude -p / Agent SDK / CI)
     validations:
       required: true

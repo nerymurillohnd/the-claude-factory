@@ -2,7 +2,7 @@
 // Scaffolds a plugin from .claude/templates/plugin and registers it in marketplace.json.
 //   node .github/scripts/new-plugin.mjs --name my-plugin --category development \
 //     --description "One sentence." [--display-name "My Plugin"] [--emoji 🧰] [--min-claude-code 2.1.292]
-//     [--claude-code-only]   (default: works in Claude Code and Cowork)
+//     [--claude-code-only]   (default: works in Claude Code and the Claude app)
 
 import { cpSync, existsSync, mkdirSync, readdirSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'

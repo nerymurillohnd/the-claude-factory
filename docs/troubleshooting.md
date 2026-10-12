@@ -72,9 +72,9 @@ The first message comes from `/plugin install` in a session, the second from `cl
 </details>
 
 <details>
-<summary>Cowork refuses to install the plugin</summary>
+<summary>The Claude app refuses to install the plugin</summary>
 
-The plugin ships executables in a `bin/` folder, which Cowork and Claude chat can't install. Use it from Claude Code instead — the plugin's **Compatibility** table says so.
+The plugin ships executables in a `bin/` folder, which the Claude app can't install. Use it from Claude Code instead — the plugin's **Compatibility** table says so.
 
 </details>
 

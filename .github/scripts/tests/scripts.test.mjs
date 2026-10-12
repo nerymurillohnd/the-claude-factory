@@ -12,21 +12,46 @@ import {
   mkdtempSync,
   readFileSync,
   rmSync,
+  symlinkSync,
   writeFileSync,
 } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { dirname, join, resolve } from 'node:path'
+import { dirname, join, resolve, sep } from 'node:path'
 import { afterEach, beforeEach, describe, test } from 'node:test'
 import { fileURLToPath } from 'node:url'
 
 const REAL_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..', '..')
 let root
 
+// The files a clone would hold: tracked plus new untracked ones, never git-ignored ones (such as a
+// local .DS_Store), so the copy matches what CI checks out.
+const CLONE_FILES = new Set(
+  execFileSync('git', ['-C', REAL_ROOT, 'ls-files', '-co', '--exclude-standard', '-z'], {
+    encoding: 'utf8',
+  })
+    .split('\0')
+    .filter(Boolean),
+)
+const CLONE_DIRS = new Set(
+  [...CLONE_FILES].flatMap((f) =>
+    f
+      .split('/')
+      .slice(0, -1)
+      .map((_, i, a) => a.slice(0, i + 1).join('/')),
+  ),
+)
+
 function copyRepo() {
   const dir = mkdtempSync(join(tmpdir(), 'tcf-'))
   cpSync(REAL_ROOT, dir, {
     recursive: true,
-    filter: (src) => !/[/\\](\.git|node_modules)([/\\]|$)/.test(src.slice(REAL_ROOT.length)),
+    filter: (src) => {
+      const rel = src
+        .slice(REAL_ROOT.length + 1)
+        .split(sep)
+        .join('/')
+      return rel === '' || CLONE_FILES.has(rel) || CLONE_DIRS.has(rel)
+    },
   })
   return dir
 }
@@ -155,11 +180,28 @@ describe('check-repo', () => {
     resolveTodos()
     const p = 'plugins/demo-tool/.claude-plugin/plugin.json'
     const m = json(p)
-    m.metadata.surfaces = ['cowork']
+    m.metadata.surfaces = ['claude-app']
     write(p, `${JSON.stringify(m, null, 2)}\n`)
     const r = run('check-repo.mjs')
     assert.equal(r.code, 1)
     assert.match(r.out, /metadata\.surfaces must be one of/)
+  })
+
+  test('rejects the retired cowork surface value', () => {
+    scaffold()
+    resolveTodos()
+    const p = 'plugins/demo-tool/.claude-plugin/plugin.json'
+    const m = json(p)
+    assert.deepEqual(m.metadata.surfaces, ['claude-code', 'claude-app'])
+    assert.match(
+      read('plugins/demo-tool/README.md'),
+      /works%20in-Claude%20Code%20%C2%B7%20Claude%20app-/,
+    )
+    m.metadata.surfaces = ['claude-code', 'cowork']
+    write(p, `${JSON.stringify(m, null, 2)}\n`)
+    const r = run('check-repo.mjs')
+    assert.equal(r.code, 1)
+    assert.match(r.out, /metadata\.surfaces must be one of: \["claude-code","claude-app"\]/)
   })
 
   test('a bin/ plugin must be declared Claude Code-only', () => {
@@ -169,7 +211,7 @@ describe('check-repo', () => {
     write('plugins/demo-tool/bin/tool', '#!/bin/sh\necho hi\n')
     const r = run('check-repo.mjs')
     assert.equal(r.code, 1)
-    assert.match(r.out, /bin\/, which makes Cowork refuse the plugin/)
+    assert.match(r.out, /bin\/, which makes the Claude app refuse the plugin/)
     assert.match(r.out, /no row for Executables/)
   })
 
@@ -194,10 +236,23 @@ describe('check-repo', () => {
     scaffold()
     resolveTodos()
     const p = 'plugins/demo-tool/README.md'
-    write(p, read(p).replace('| 🎯 Skills |', '| 🤖 Agents | ✅ | ✅ | ➖ |\n| 🎯 Skills |'))
+    write(p, read(p).replace('| 🎯 Skills |', '| 🤖 Agents | ✅ | ⚠️ |\n| 🎯 Skills |'))
     const r = run('check-repo.mjs')
     assert.equal(r.code, 1)
     assert.match(r.out, /lists Agents, which the plugin doesn't ship/)
+  })
+
+  test('flags system files, symlinks and oversized files in a plugin', () => {
+    scaffold()
+    resolveTodos()
+    write('plugins/demo-tool/.DS_Store', 'x')
+    write('plugins/demo-tool/skills/big.md', 'a'.repeat(300 * 1024))
+    symlinkSync('../README.md', join(root, 'plugins/demo-tool/skills/link.md'))
+    const r = run('check-repo.mjs')
+    assert.equal(r.code, 1)
+    assert.match(r.out, /\.DS_Store is a macOS or Windows system file/)
+    assert.match(r.out, /skills\/big\.md is over 256 KiB/)
+    assert.match(r.out, /skills\/link\.md is a symbolic link/)
   })
 
   test('flags a stale README catalog', () => {
@@ -359,6 +414,40 @@ describe('check-version-bump', () => {
     git('commit', '-qam', 'docs')
     const r = run('check-version-bump.mjs', ['HEAD~1'])
     assert.equal(r.code, 0, r.out)
+  })
+})
+
+describe('portability rules', () => {
+  const entry = (path, size = 10, symlink = false) => ({ path, size, symlink })
+
+  test('flag names Windows or macOS cannot hold, and case-only duplicates', async () => {
+    const { portabilityProblems } = await import(join(REAL_ROOT, '.github/scripts/check-repo.mjs'))
+    const problems = portabilityProblems([
+      entry('a:b.md'),
+      entry('notes.'),
+      entry('trail /x.md'),
+      entry('con.md'),
+      entry('docs/LPT1'),
+      entry('Readme.md'),
+      entry('README.md'),
+      entry('__MACOSX/x'),
+      entry('thumbs.db'),
+    ]).join('\n')
+    for (const name of ['a:b.md', 'notes.', 'trail ', 'con.md', 'LPT1'])
+      assert.ok(problems.includes(`"${name}"`), `${name} not flagged:\n${problems}`)
+    assert.match(problems, /README\.md and Readme\.md differ only by capitalization/)
+    assert.match(problems, /__MACOSX\/x is a macOS or Windows system file/)
+    assert.match(problems, /thumbs\.db is a macOS or Windows system file/)
+  })
+
+  test('size limit spares images and fonts; file count is capped at 512', async () => {
+    const { portabilityProblems } = await import(join(REAL_ROOT, '.github/scripts/check-repo.mjs'))
+    const big = 300 * 1024
+    assert.deepEqual(portabilityProblems([entry('logo.png', big), entry('font.woff2', big)]), [])
+    assert.equal(portabilityProblems([entry('data.json', big)]).length, 1)
+    const many = Array.from({ length: 513 }, (_, i) => entry(`f${i}.md`))
+    assert.match(portabilityProblems(many).join('\n'), /513 files; the limit is 512/)
+    assert.deepEqual(portabilityProblems(many.slice(0, 512)), [])
   })
 })
 

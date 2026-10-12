@@ -2,8 +2,9 @@
 // Repository policy checks that `claude plugin validate` does not cover.
 // Exit 0 = pass, exit 1 = at least one error.
 
-import { existsSync, readdirSync, statSync } from 'node:fs'
-import { join } from 'node:path'
+import { execFileSync } from 'node:child_process'
+import { existsSync, lstatSync, readdirSync, statSync } from 'node:fs'
+import { join, relative, sep } from 'node:path'
 import { renderReadme } from './catalog.mjs'
 import { COMPONENT_TYPES, detectComponents } from './components.mjs'
 import {
@@ -25,6 +26,78 @@ import {
   SURFACE_PROFILES,
   surfaceProfileKey,
 } from './lib.mjs'
+
+// ── Portability rules of Anthropic's plugin directory (claude.com/docs/plugins/pre-submission-checklist) ──
+const SYSTEM_FILES = new Set(['.ds_store', 'thumbs.db', 'desktop.ini', '__macosx'])
+const DEVICE_NAME = /^(con|prn|aux|nul|com[1-9]|lpt[1-9])(\..*)?$/i
+const IMAGE_OR_FONT = /\.(png|jpe?g|gif|webp|svg|woff2?|ttf|otf)$/i
+const MAX_FILE_BYTES = 256 * 1024 // larger files are held for a reviewer
+const MAX_FILES = 512 // more files are held for a reviewer
+
+/**
+ * Problems in a plugin's files that make the directory block a submission or hold it for a reviewer.
+ * `entries`: `{ path, size, symlink }` with `path` relative to the plugin folder, `/`-separated.
+ */
+export function portabilityProblems(entries) {
+  const problems = new Set()
+  const seen = new Map()
+  for (const { path, size, symlink } of entries) {
+    for (const seg of path.split('/')) {
+      if (SYSTEM_FILES.has(seg.toLowerCase()))
+        problems.add(`${path} is a macOS or Windows system file — remove it`)
+      else if (seg.includes(':') || /[. ]$/.test(seg) || DEVICE_NAME.test(seg))
+        problems.add(`"${seg}" in ${path} is not a valid file name on Windows`)
+    }
+    const key = path.toLowerCase()
+    if (seen.has(key) && seen.get(key) !== path)
+      problems.add(`${[path, seen.get(key)].sort().join(' and ')} differ only by capitalization`)
+    else seen.set(key, path)
+    if (symlink) problems.add(`${path} is a symbolic link — commit a regular file`)
+    else if (size > MAX_FILE_BYTES && !IMAGE_OR_FONT.test(path))
+      problems.add(`${path} is over 256 KiB`)
+  }
+  if (entries.length > MAX_FILES)
+    problems.add(`the plugin has ${entries.length} files; the limit is ${MAX_FILES}`)
+  return [...problems]
+}
+
+/** The plugin's files as a clone holds them: tracked and new untracked, never git-ignored. */
+function pluginEntries(dir) {
+  let paths
+  try {
+    paths = execFileSync(
+      'git',
+      ['-C', ROOT, 'ls-files', '-co', '--exclude-standard', '-z', '--', relative(ROOT, dir)],
+      { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] },
+    )
+      .split('\0')
+      .filter(Boolean)
+      .map((p) => join(ROOT, p))
+  } catch {
+    paths = walk(dir) // not a git checkout: every file on disk
+  }
+  const entries = []
+  for (const abs of paths) {
+    let st
+    try {
+      st = lstatSync(abs)
+    } catch {
+      continue // listed by git but deleted in the working tree
+    }
+    entries.push({
+      path: relative(dir, abs).split(sep).join('/'),
+      size: st.size,
+      symlink: st.isSymbolicLink(),
+    })
+  }
+  return entries
+}
+
+function walk(dir) {
+  return readdirSync(dir, { withFileTypes: true }).flatMap((d) =>
+    d.isDirectory() ? walk(join(dir, d.name)) : [join(dir, d.name)],
+  )
+}
 
 export function checkRepo() {
   const errors = []
@@ -135,7 +208,7 @@ export function checkRepo() {
       if (components.bin && profileKey !== 'claude-code-only') {
         err(
           scope,
-          'ships a top-level bin/, which makes Cowork refuse the plugin — declare metadata.surfaces ["claude-code"] or move the code into a skill\'s scripts/',
+          'ships a top-level bin/, which makes the Claude app refuse the plugin — declare metadata.surfaces ["claude-code"] or move the code into a skill\'s scripts/',
         )
       }
       if (existsSync(join(dir, 'README.md'))) {
@@ -174,6 +247,13 @@ export function checkRepo() {
         }
       }
     }
+  }
+
+  // ── Portability (Anthropic's plugin directory) ─────────────────────────────
+  for (const name of listed) {
+    if (!existsSync(pluginDir(name))) continue
+    for (const problem of portabilityProblems(pluginEntries(pluginDir(name))))
+      err(`plugins/${name}`, problem)
   }
 
   // ── Root README generated blocks ───────────────────────────────────────────

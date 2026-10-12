@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1280" height="320" viewBox="0 0 1280 320" role="img" aria-labelledby="title desc">
   <title id="title">The Claude Factory</title>
-  <desc id="desc">A plugin marketplace for Claude Code and Cowork, illustrated with a factory skyline and turning gears.</desc>
+  <desc id="desc">A plugin marketplace for Claude Code and the Claude app, illustrated with a factory skyline and turning gears.</desc>
   <defs>
     <clipPath id="frame"><rect width="1280" height="320" rx="24"/></clipPath>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
@@ -61,7 +61,7 @@
   <g font-family="ui-sans-serif, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif">
     <text x="72" y="132" fill="#F5EFE9" font-size="64" font-weight="800" letter-spacing="-1">The Claude Factory</text>
     <rect x="74" y="152" width="120" height="6" rx="3" fill="url(#accent)"/>
-    <text x="72" y="204" fill="#CDBFB4" font-size="26" font-weight="500">Plugins for Claude Code &amp; Cowork</text>
+    <text x="72" y="204" fill="#CDBFB4" font-size="26" font-weight="500">Plugins for Claude Code &amp; the Claude app</text>
     <text x="72" y="244" fill="#9C8D82" font-size="20">skills · agents · hooks · MCP · LSP · output styles</text>
   </g>
   </g>

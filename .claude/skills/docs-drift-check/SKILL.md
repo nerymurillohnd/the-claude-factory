@@ -13,7 +13,7 @@ Goal: find everything in this repository that no longer matches official sources
 
 - Claude Code changelog: `/en/changelog` in the Claude Code Docs MCP (or <https://code.claude.com/docs/en/changelog>). Note releases since the version pinned in `.github/workflows/validate.yml` (`CLAUDE_CODE_VERSION`).
 - Plugin docs: `/en/plugins/*` — install, marketplace-reference, manifest-reference, publish, host-marketplace, troubleshooting.
-- Cross-surface support: <https://claude.com/docs/plugins/platform-support> and <https://claude.com/docs/cowork/guide/plugins>.
+- Cross-surface support: <https://claude.com/docs/plugins/platform-support>, <https://claude.com/docs/cowork/guide/plugins>, <https://support.claude.com/en/articles/13837440-use-plugins-in-claude>, <https://support.claude.com/en/articles/16761823>, the Claude app release notes (<https://support.claude.com/en/articles/12138966-release-notes>) and the Claude Desktop changelog (<https://claude.com/docs/cowork/changelog.md>).
 - Latest versions: `npm view @anthropic-ai/claude-code version`, `npm view markdownlint-cli2 version`, latest tags of `actions/checkout`, `actions/setup-node`, `rhysd/actionlint`.
 
 ## 2. Compare against the repo
@@ -21,7 +21,7 @@ Goal: find everything in this repository that no longer matches official sources
 | Area | Files |
 | :-- | :-- |
 | Commands, flags, UI paths, min versions | `README.md`, `docs/*.md`, `.claude/templates/plugin/README.md` |
-| Compatibility matrix | `.claude/rules/cross-surface-compatibility.md`, `README.md`, `docs/compatibility.md` |
+| Compatibility matrix | `.claude/rules/cross-surface-compatibility.md`, `README.md`, `docs/compatibility.md`, `.claude/templates/plugin/README.md`, every `plugins/*/README.md` |
 | Manifest / marketplace fields, reserved names | `.github/scripts/lib.mjs`, `check-repo.mjs`, templates |
 | Pinned versions | `.github/workflows/*.yml`, `.claude/CLAUDE.md`, `verify` skill |
 | New capabilities worth adopting | e.g. new manifest fields, `relevance`, evals, new component types |

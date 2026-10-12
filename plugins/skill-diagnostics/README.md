@@ -5,7 +5,7 @@
 <p><strong>Audits Claude skills for best-practice conformance, portability and whether a model can run them without guessing, with file-and-line evidence and one verdict.</strong></p>
 
 [![Version](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Fnerymurillohnd%2Fthe-claude-factory%2Fmain%2Fplugins%2Fskill-diagnostics%2F.claude-plugin%2Fplugin.json&query=%24.version&label=version&color=D97757)](./CHANGELOG.md)
-[![Works in](https://img.shields.io/badge/works%20in-Claude%20Code%20%C2%B7%20Cowork-2563EB)](#-compatibility)
+[![Works in](https://img.shields.io/badge/works%20in-Claude%20Code%20%C2%B7%20Claude%20app-2563EB)](#-compatibility)
 [![Category](https://img.shields.io/badge/category-Testing%20%26%20Quality-6B7280)](../../README.md#-catalog)
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-%E2%89%A5%202.1.176-D97757?logo=claude&logoColor=white)](https://code.claude.com/docs/en/plugins/install)
 [![License: MIT](https://img.shields.io/badge/license-MIT-22C55E)](./LICENSE)
@@ -33,7 +33,7 @@ A skill can look finished to the person who wrote it and still fail the model th
 - **Evidence, not opinions** — every finding quotes the exact text with its file and line, and says how to fix it.
 - **Verified before it counts** — before the verdict, every finding is checked again: its quote against your files, any rule or platform claim against the live official Claude documentation (with the URL and the exact sentence), and the official Claude Code changelog from your version on. Findings that don't hold up are corrected or withdrawn.
 - **Checks what validation skips** — `claude plugin validate` confirms the structure; Skill Diagnostics also checks name and description limits, quoting that breaks strict YAML, argument placeholders, broken links and script setup, with whatever tools your session has.
-- **Ready for every surface** — every audit covers Claude Code, Cowork, claude.ai uploads and the Skills API, flags what each one rejects or skips, and ranks it by whether your skill reaches that surface today.
+- **Ready for every surface** — every audit covers Claude Code, the Claude app, claude.ai skill uploads and the Skills API, flags what each one rejects or skips, and ranks it by whether your skill reaches that surface today.
 - **Catches new skills as you write them** — after a `SKILL.md` is created or changed, for example with Anthropic's `skill-creator`, Claude offers an audit before you move on.
 
 ## 🧩 What's inside
@@ -86,7 +86,7 @@ Requires Claude Code v2.1.275+. With the marketplace already added, `/plugin ins
 </details>
 
 <details>
-<summary><b>🖥️ Claude desktop app &amp; Cowork</b></summary>
+<summary><b>🖥️ Claude app (web, desktop &amp; Cowork)</b></summary>
 
 1. Open **Customize** in the sidebar, then **Plugins**.
 2. Select **Add marketplace** and enter `nerymurillohnd/the-claude-factory`.
@@ -125,7 +125,7 @@ You can also pass a file inside the skill, or several paths at once.
 /skill-diagnostics:audit https://github.com/owner/repo/tree/main/skills/meeting-notes
 ```
 
-**Result:** the same audit on a skill you haven't installed yet. Every audit covers Claude Code, Cowork, claude.ai uploads and the Skills API: the report says where the skill comes from, which surfaces it reaches, and what would break if you moved it to another one.
+**Result:** the same audit on a skill you haven't installed yet. Every audit covers Claude Code, the Claude app, claude.ai skill uploads and the Skills API: the report says where the skill comes from, which surfaces it reaches, and what would break if you moved it to another one.
 
 ### Run one lens only
 
@@ -145,7 +145,7 @@ Create or edit a skill as usual, for example with `skill-creator`. When the skil
 | :-- | :-- | :-- | :-- |
 | `on_skill_write` | string | `suggest` | What happens after a `SKILL.md` is created or changed: `suggest` (Claude offers an audit once the skill is finished), `run` (Claude runs the audit when the skill is finished) or `off`. Set via `/plugin` → **Installed** → **Skill Diagnostics** → **Configure options**, or in `/config` (v2.1.269+). |
 
-In Cowork the option can't be changed and keeps its default, `suggest`.
+In the Claude app the option can't be changed and keeps its default, `suggest`.
 
 ## 🔄 Updating
 
@@ -155,7 +155,7 @@ claude plugin update skill-diagnostics@the-claude-factory
 
 Or in a session: `/plugin` → **Installed** → **Skill Diagnostics** → **Update now**. Then run `/reload-plugins`.
 
-Installed from the Claude app or Cowork? In Claude Code (v2.1.273+, signed in with that claude.ai account) it appears as `skill-diagnostics@synced`: update and uninstall it in the app (**Customize** → **Plugins**); in `/plugin` you can only turn it on or off, unless your organization requires it.
+Installed from the Claude app? In Claude Code (v2.1.273+, signed in with that claude.ai account) it appears as `skill-diagnostics@synced`: update and uninstall it in the app (**Customize** → **Plugins**); in `/plugin` you can only turn it on or off, unless your organization requires it.
 
 > [!TIP]
 > Turn on auto-update once for the whole marketplace: `/plugin` → **Marketplaces** → **the-claude-factory** → **Enable auto-update**.
@@ -172,17 +172,17 @@ In a session: `/plugin` → **Installed** → **Skill Diagnostics** → **Uninst
 
 ## 🧭 Compatibility
 
-**Works in:** 💻 Claude Code · 🤝 Cowork
+**Works in:** 💻 Claude Code · 🖥️ Claude app
 
-| Component | Claude Code | Cowork | Claude chat |
-| :-- | :--: | :--: | :--: |
-| 🎯 Skills | ✅ | ✅ | ✅ |
-| 🤖 Agents | ✅ | ✅ | ➖ |
-| 🪝 Hooks | ✅ | ✅ | ➖ |
+| Component | Claude Code | Claude app |
+| :-- | :--: | :--: |
+| 🎯 Skills | ✅ | ✅ |
+| 🤖 Agents | ✅ | ⚠️ in Cowork sessions, not in a chat conversation |
+| 🪝 Hooks | ✅ | ⚠️ in Cowork sessions, not in a chat conversation |
 
-<sub>✅ works · ⚠️ partial · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there</sub>
+<sub>✅ works · ⚠️ partial · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. The Claude app (web, desktop and mobile) runs a conversation as a Cowork session when it can, and as a chat conversation otherwise, for example on a device that can't run Cowork or in the separate Chat mode that Team and Enterprise plans keep for now.</sub>
 
-Where agents are not available, the skill applies both lenses itself, one after the other. Where hooks don't run, ask for the audit yourself after writing a skill.
+In a chat conversation, where agents don't run, the skill applies both lenses itself, one after the other. Hooks don't run there either, so ask for the audit yourself after writing a skill.
 
 ## ❓ FAQ & Troubleshooting
 
@@ -214,7 +214,7 @@ The audit pre-approves nothing: your permission settings decide what asks first,
 
 - **Running commands**, such as listing your skill's files or checking your Claude Code version.
 - **Reading your skill**, when it lives outside your working directory, for example in `~/.claude/skills/`. Allow it and the audit continues.
-- **Reading the plugin's own guides and the saved changelog**, which live in Claude Code's plugin folders. Safe to allow.
+- **Reading the plugin's own guides**, which live in Claude Code's plugin folder. Safe to allow.
 - **Fetching an official page**, to verify a finding. If you deny it, the finding stays in the report, marked *not verified live*, and the verdict is *provisional*.
 - **Cloning a skill with `git`**, when you audit one from a URL, into a temporary folder deleted after the report.
 
