@@ -1,6 +1,6 @@
 ---
 name: new-plugin
-description: Creates a new plugin in The Claude Factory end to end — design brief, scaffold, components, sales-quality README, changelog, validation and install tests on Claude Code and Cowork. Use only when Nery explicitly asks to create, build or start a plugin.
+description: Creates a new plugin in The Claude Factory end to end — design brief, scaffold, components, sales-quality README, changelog, validation and install tests on Claude Code and the Claude app. Use only when Nery explicitly asks to create, build or start a plugin.
 argument-hint: "[plugin-name] [category]"
 ---
 
@@ -16,7 +16,7 @@ Agree on, in Spanish:
 - **Name** — kebab-case, permanent, no `claude-`/`anthropic-` prefix. **Display name** and an emoji.
 - **Category** — an `id` from `.github/scripts/categories.json`.
 - **Components** — skills, agents, hooks, MCP, LSP, output styles, monitors, scripts. Justify each.
-- **Surfaces** — default Claude Code + Cowork. Check every component against `.claude/rules/cross-surface-compatibility.md`; if any part forces Claude Code-only, say why and get Nery's OK.
+- **Surfaces** — default Claude Code + the Claude app. Check every component against `.claude/rules/cross-surface-compatibility.md`; if any part forces Claude Code-only, say why and get Nery's OK.
 - **Requirements** — CLIs, accounts, API keys (`userConfig`), minimum Claude Code version.
 
 Research current official docs for every component type used (Claude Code Docs MCP). Note version-gated features.
@@ -29,7 +29,7 @@ node .github/scripts/new-plugin.mjs --name <name> --category <id> \
   --min-claude-code <x.y.z> [--claude-code-only]
 ```
 
-Add `--claude-code-only` only when the brief approved it; the default declares Claude Code + Cowork.
+Add `--claude-code-only` only when the brief approved it; the default declares Claude Code + the Claude app.
 
 This creates `plugins/<name>/` (manifest, README, CHANGELOG, LICENSE), registers the entry and regenerates the catalog.
 
@@ -62,7 +62,7 @@ Follow `.claude/rules/plugin-authoring.md`. Add `keywords` to `plugin.json`. Kee
    claude plugin details <name>
    ```
 
-3. Exercise each component in Claude Code (`claude --plugin-dir plugins/<name>`) and in Cowork (add the marketplace or upload a zip, run a task), unless the plugin is declared Claude Code-only.
+3. Exercise each component in Claude Code while building (`claude --plugin-dir plugins/<name>`), then run `/test-installed-plugin <name>` and test in the Claude app (a Cowork session and a chat conversation), unless the plugin is declared Claude Code-only.
 4. Delegate an independent review to the `plugin-reviewer` agent; fix every confirmed finding.
 
 ## 7. Hand off

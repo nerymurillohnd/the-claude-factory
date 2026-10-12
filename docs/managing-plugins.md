@@ -2,7 +2,7 @@
 
 > Keep plugins from **The Claude Factory** up to date, turn them on and off, and remove them cleanly.
 
-**On this page:** [Updates](#-updates) · [Auto-update](#-auto-update) · [Enable & disable](#️-enable--disable) · [Uninstall](#️-uninstall) · [Remove the marketplace](#-remove-the-marketplace) · [Inspect a plugin](#-inspect-a-plugin) · [Cowork](#-in-cowork)
+**On this page:** [Updates](#-updates) · [Auto-update](#-auto-update) · [Enable & disable](#️-enable--disable) · [Uninstall](#️-uninstall) · [Remove the marketplace](#-remove-the-marketplace) · [Inspect a plugin](#-inspect-a-plugin) · [Claude app](#️-in-the-claude-app)
 
 ---
 
@@ -69,13 +69,15 @@ claude plugin marketplace remove the-claude-factory
 | Which plugins haven't I used lately? | `/plugin` → **Installed** → **Not used recently** |
 | Why didn't something load? | `/plugin` → **Errors** |
 
-## 🤝 In Cowork
+## 🖥️ In the Claude app
 
 Everything lives under **Customize** → **Plugins**:
 
-- **Update** — click **Update** on the marketplace to pull the latest versions. Cowork warns you before an update overwrites files you edited locally.
+- **Update** — click **Update** on the marketplace to pull the latest versions. The app warns you before an update overwrites files you edited locally.
 - **Turn components on or off** — open the installed plugin and toggle its skills, connectors, agents or hooks.
 - **Uninstall** — open the plugin and click **Uninstall**.
+
+In Claude Code (v2.1.273+, signed in with the same claude.ai account), these plugins appear as `<plugin>@synced`. Update and uninstall them here; in `/plugin` you can only turn them on or off, unless your organization requires them. Claude Code picks up changes when it starts; if it says *Plugins changed*, run `/reload-plugins`.
 
 ---
 

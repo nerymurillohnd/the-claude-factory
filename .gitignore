@@ -15,3 +15,11 @@ CLAUDE.local.md
 tmp/
 *.log
 actionlint
+
+# Plugin eval results
+**/evals/results/
+
+# Python
+__pycache__/
+*.pyc
+eval-results/

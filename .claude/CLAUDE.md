@@ -1,6 +1,6 @@
 # The Claude Factory — maintainer instructions
 
-Public Claude Code / Cowork plugin marketplace at `github.com/nerymurillohnd/the-claude-factory`.
+Public Claude Code / Claude app plugin marketplace at `github.com/nerymurillohnd/the-claude-factory`.
 Two maintainers: Nery (owner) and Claude. No external pull requests; users contribute through issues.
 
 ## Working with Nery
@@ -21,8 +21,8 @@ Two maintainers: Nery (owner) and Claude. No external pull requests; users contr
 | `README.md`, `CHANGELOG.md`, `docs/` | Showcase and user guides | Users |
 | `SECURITY.md`, `SUPPORT.md`, `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md` | Community files | Users |
 | `.github/ISSUE_TEMPLATE/`, `.github/labels.json` | Issue forms and labels | Users / maintainers |
-| `.github/scripts/` | Zero-dependency Node tooling + tests | Maintainers, CI |
-| `.github/workflows/` | `validate.yml` (gates), `release.yml` (tags + releases) | CI |
+| `.github/scripts/` | Zero-dependency Node tooling + tests, and each plugin's Python tests | Maintainers, CI |
+| `.github/workflows/` | `validate.yml` (gates), `release.yml` (tags + releases), `evals.yml` (full plugin eval suites; they use Nery's plan) | CI |
 | `.claude/` | This file, memory, rules, skills, agents, templates | Maintainers only |
 
 ## Golden rules
@@ -33,7 +33,7 @@ Two maintainers: Nery (owner) and Claude. No external pull requests; users contr
 4. **Never hand-edit generated blocks** in `README.md` (`<!-- catalog:* -->`, `<!-- plugin-count:* -->`). Run `catalog.mjs`.
 5. **User docs sell and teach; they never mention maintenance**, internal tooling, `.claude/`, scripts or our workflow.
 6. **Verify against live official docs** before stating Claude Code behavior, commands, versions or UI paths. Use the Claude Code Docs MCP or code.claude.com / claude.com docs. Live docs beat this repo's files; flag conflicts.
-7. **Plugins target Claude Code and Cowork.** Claude Code-only only when a plugin's nature requires it, declared in its README. The verified component matrix and design rules are in `.claude/rules/cross-surface-compatibility.md` (always loaded) — use it instead of re-researching.
+7. **Plugins target Claude Code and the Claude app** (chat and Cowork are one app). Claude Code-only only when a plugin's nature requires it, declared in its README. The verified component matrix and design rules are in `.claude/rules/cross-surface-compatibility.md` (always loaded) — use it instead of re-researching.
 8. **Every gate passes before commit.** Fix root causes; never weaken a check to make it pass.
 
 ## Quality gates
@@ -45,6 +45,14 @@ node --test ".github/scripts/tests/*.test.mjs"
 node .github/scripts/check-repo.mjs
 node .github/scripts/catalog.mjs --check
 .github/scripts/validate-claude.sh
+npx --yes @biomejs/biome@2.5.15 check .
+git ls-files -z '*.sh' | xargs -0 shellcheck -o all -S style -x -a -P SCRIPTDIR
+git ls-files -z '*.sh' | xargs -0 shfmt -d
+python3 -m unittest discover -s .github/scripts/tests/skill-diagnostics
+.github/scripts/tests/skill-diagnostics/by_path.sh
+uvx ruff@0.17.0 check plugins .github/scripts
+uvx ruff@0.17.0 format --check plugins .github/scripts
+git ls-files -z 'plugins/*.py' | xargs -0 uvx --from mypy==1.18.2 mypy --python-version 3.9 --strict
 npx --yes markdownlint-cli2@0.23.3
 ```
 
@@ -53,6 +61,7 @@ npx --yes markdownlint-cli2@0.23.3
 | Task | Skill |
 | :-- | :-- |
 | Create a plugin | `/new-plugin` |
+| Test a plugin as users install it (copied install, load check, evals, Claude app zip) | `/test-installed-plugin` |
 | Release a plugin or the marketplace | `/release` |
 | Triage and answer issues | `/triage-issues` |
 | Run all gates | `/verify` |

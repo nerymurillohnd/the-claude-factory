@@ -1,22 +1,102 @@
 [
-  { "name": "type: bug", "color": "D73A4A", "description": "Something isn't working as documented" },
-  { "name": "type: enhancement", "color": "A2EEEF", "description": "Improvement to an existing plugin" },
-  { "name": "type: plugin-idea", "color": "D97757", "description": "Proposal for a new plugin" },
-  { "name": "type: documentation", "color": "0075CA", "description": "Docs are wrong, unclear or missing" },
-  { "name": "type: question", "color": "D876E3", "description": "Usage or setup question" },
-  { "name": "type: security", "color": "B60205", "description": "Security hardening (vulnerabilities go through private advisories)" },
-  { "name": "type: dependencies", "color": "0366D6", "description": "Dependency or action updates" },
-  { "name": "status: triage", "color": "FBCA04", "description": "Awaiting maintainer review" },
-  { "name": "status: needs-info", "color": "FEF2C0", "description": "Waiting on the reporter for details" },
-  { "name": "status: confirmed", "color": "0E8A16", "description": "Reproduced or accepted; scheduled" },
-  { "name": "status: in-progress", "color": "1D76DB", "description": "Being worked on" },
-  { "name": "status: released", "color": "5319E7", "description": "Fixed or shipped in a published release" },
-  { "name": "status: duplicate", "color": "CFD3D7", "description": "Already tracked elsewhere" },
-  { "name": "status: wontfix", "color": "FFFFFF", "description": "Out of scope or working as intended" },
-  { "name": "status: upstream", "color": "C5DEF5", "description": "Caused by Claude Code or a third-party service" },
-  { "name": "priority: high", "color": "B60205", "description": "Breaks core functionality for many users" },
-  { "name": "priority: medium", "color": "FBCA04", "description": "Important, with a workaround" },
-  { "name": "priority: low", "color": "C2E0C6", "description": "Nice to have" },
-  { "name": "area: marketplace", "color": "BFD4F2", "description": "Catalog, root docs or marketplace manifest" },
-  { "name": "area: ci", "color": "BFD4F2", "description": "Workflows, scripts and quality gates" }
+  {
+    "name": "type: bug",
+    "color": "D73A4A",
+    "description": "Something isn't working as documented"
+  },
+  {
+    "name": "type: enhancement",
+    "color": "A2EEEF",
+    "description": "Improvement to an existing plugin"
+  },
+  {
+    "name": "type: plugin-idea",
+    "color": "D97757",
+    "description": "Proposal for a new plugin"
+  },
+  {
+    "name": "type: documentation",
+    "color": "0075CA",
+    "description": "Docs are wrong, unclear or missing"
+  },
+  {
+    "name": "type: question",
+    "color": "D876E3",
+    "description": "Usage or setup question"
+  },
+  {
+    "name": "type: security",
+    "color": "B60205",
+    "description": "Security hardening (vulnerabilities go through private advisories)"
+  },
+  {
+    "name": "type: dependencies",
+    "color": "0366D6",
+    "description": "Dependency or action updates"
+  },
+  {
+    "name": "status: triage",
+    "color": "FBCA04",
+    "description": "Awaiting maintainer review"
+  },
+  {
+    "name": "status: needs-info",
+    "color": "FEF2C0",
+    "description": "Waiting on the reporter for details"
+  },
+  {
+    "name": "status: confirmed",
+    "color": "0E8A16",
+    "description": "Reproduced or accepted; scheduled"
+  },
+  {
+    "name": "status: in-progress",
+    "color": "1D76DB",
+    "description": "Being worked on"
+  },
+  {
+    "name": "status: released",
+    "color": "5319E7",
+    "description": "Fixed or shipped in a published release"
+  },
+  {
+    "name": "status: duplicate",
+    "color": "CFD3D7",
+    "description": "Already tracked elsewhere"
+  },
+  {
+    "name": "status: wontfix",
+    "color": "FFFFFF",
+    "description": "Out of scope or working as intended"
+  },
+  {
+    "name": "status: upstream",
+    "color": "C5DEF5",
+    "description": "Caused by Claude Code or a third-party service"
+  },
+  {
+    "name": "priority: high",
+    "color": "B60205",
+    "description": "Breaks core functionality for many users"
+  },
+  {
+    "name": "priority: medium",
+    "color": "FBCA04",
+    "description": "Important, with a workaround"
+  },
+  {
+    "name": "priority: low",
+    "color": "C2E0C6",
+    "description": "Nice to have"
+  },
+  {
+    "name": "area: marketplace",
+    "color": "BFD4F2",
+    "description": "Catalog, root docs or marketplace manifest"
+  },
+  {
+    "name": "area: ci",
+    "color": "BFD4F2",
+    "description": "Workflows, scripts and quality gates"
+  }
 ]

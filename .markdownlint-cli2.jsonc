@@ -9,11 +9,20 @@
     // Files open with an HTML hero block or a template comment instead of a heading.
     "MD041": false,
     // Emoji-prefixed headings may repeat across sections of different documents.
-    "MD024": { "siblings_only": true },
+    "MD024": {
+      "siblings_only": true
+    },
     // Allow "---" separators and tables with emoji alignment.
-    "MD035": { "style": "---" },
+    "MD035": {
+      "style": "---"
+    },
     "MD060": false
   },
-  "globs": ["**/*.md"],
-  "ignores": ["**/node_modules/**", ".git/**"]
+  "globs": [
+    "**/*.md"
+  ],
+  "ignores": [
+    "**/node_modules/**",
+    ".git/**"
+  ]
 }

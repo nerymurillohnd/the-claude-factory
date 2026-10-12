@@ -1,0 +1,72 @@
+# Where a skill runs
+
+What changes for a skill on each surface. The conformance lens uses this to judge portability on all four surfaces. Labels as in `fields.md`: **[req]**, **[rec]**, **[spec]**, **[default]**, **[observed]**.
+
+Sources, checked 2026-10-12: [Claude Code skills](https://code.claude.com/docs/en/skills) (Where skills live, Skills in Cowork and cloud sessions, Using skill frontmatter outside Claude Code), [plugin platform support](https://claude.com/docs/plugins/platform-support), [Use plugins in Claude](https://support.claude.com/en/articles/13837440-use-plugins-in-claude), [Claude Cowork and chat are one Claude](https://support.claude.com/en/articles/16761823), [skill authoring best practices](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices) (Runtime environment, Package dependencies).
+
+## Contents
+
+- Where the skill comes from
+- What each surface accepts
+- How a skill reaches each surface
+- Scripts and dependencies
+- Portability findings
+
+## Where the skill comes from
+
+Every skill is checked on all four surfaces. Its origin sets which surfaces it reaches today and where its fixes belong. The first row that matches is the origin.
+
+| Origin | How to tell | Reaches | Fixes go |
+| :-- | :-- | :-- | :-- |
+| Web | A URL the user gives, audited before installing | Whatever its README or plugin manifest says it targets | Upstream; tell the user before installing |
+| Synced account skill | Under `~/.claude/skills/synced/` | claude.ai upload rules, the Claude app, Claude Code | On claude.ai: a sync overwrites local edits |
+| Plugin | An ancestor folder holds `.claude-plugin/plugin.json`, or the user names a plugin root without one (the manifest is optional) | Claude Code and the Claude app | In the plugin's source |
+| Personal | Under `~/.claude/skills/` | Claude Code on that machine | Locally |
+| Project | Under a repository's `.claude/skills/` | Claude Code, cloud sessions | In the repository |
+| Loose folder | Anywhere else | Claude Code once installed | Locally |
+
+## What each surface accepts
+
+| Feature | Claude Code | Claude app (plugin) | claude.ai upload | Skills API |
+| :-- | :--: | :--: | :--: | :--: |
+| All 20 frontmatter fields | ✅ | ✅ | ❌ hard error | ❌ hard error |
+| Only `name`, `description`, `license`, `compatibility`, `metadata`, `allowed-tools` | ✅ | ✅ | ✅ | ✅ |
+| `description` over 1,024 characters | ⚠️ cut in the listing at 1,536 by default | ⚠️ | ❌ | ❌ |
+| `anthropic` or `claude` in `name` | ✅ | ✅ | ❌ | ❌ |
+| `!` dynamic-context lines | ✅ run at load | ⚠️ replaced by a placeholder | ❌ never run | ❌ never run |
+| `${CLAUDE_SKILL_DIR}` | ✅ | ✅ | ⚠️ substituted where Claude Code runs the synced skill (Cowork, cloud and local sessions); not documented in a chat conversation | ⚠️ not documented |
+| `${CLAUDE_PROJECT_DIR}`, `${CLAUDE_SESSION_ID}` | ✅ | ✅ | ⚠️ substituted in cloud and Cowork sessions; literal text in other local sessions | ⚠️ not documented |
+| Bundled scripts | ✅ | ✅ | ✅ through the interpreter | ✅ no network |
+
+- [req] Uploads and the Skills API fail with `Unexpected key(s) in SKILL.md frontmatter` for any field outside the six. A skill meant for both Claude Code and an upload keeps to the six fields, or ships two versions.
+- [req] Synced skills: in a cloud session the body behaves like a local skill. In any other local Claude Code session, a synced skill does not run `!` lines, does not attach `@` files, and leaves `${CLAUDE_PROJECT_DIR}` and `${CLAUDE_SESSION_ID}` as literal text.
+- [req] In a Cowork session on the desktop, Claude Code replaces every `!` line with a placeholder, for every skill.
+- [req] The Claude app (chat and Cowork are one app) runs a conversation as a Cowork session when it can, and as a chat conversation otherwise, such as on a device that can't run Cowork or in the separate Chat mode Team and Enterprise keep. In a chat conversation a plugin's agents, hooks and local MCP servers don't run (Use plugins in Claude: "Hooks and sub-agents run in Cowork and Claude Code, not in chat"). A plugin skill that needs its agents states what it does without them.
+
+## How a skill reaches each surface
+
+- [req] Personal skills in `~/.claude/skills/` load only on that machine: not in the Claude app, cloud sessions or routines.
+- [req] The Claude app loads the skills enabled on the claude.ai account (synced when the session starts) and the skills of installed plugins.
+- [req] Cloud sessions also load project skills committed to the repository's `.claude/skills/`.
+- [req] Enabling a personal skill on the claude.ai account is an upload: the upload rules apply.
+
+## Scripts and dependencies
+
+- [req] In Claude Code, commands run in the session's directory, never the skill's: call bundled scripts as `${CLAUDE_SKILL_DIR}/scripts/<file>`.
+- [req] In Claude Code, a command that fails (any non-zero exit, except exit 1 from search and comparison commands) reaches Claude cut to about 10,000 characters, with no file path; a valid result over about 30,000 characters arrives as a file path and a preview ([tools reference](https://code.claude.com/docs/en/tools-reference), Output limits). A script that reports problems inside its output exits 0.
+- [default] In Claude Code and the Claude app, a script starts with `#!/usr/bin/env <interpreter>` (no version), is executable (committed as `100755`) and is called by its path; the user's first interpreter on `PATH` runs it. The skill's README lists the interpreter and minimum version under requirements.
+- [default] For an upload or the API, call scripts through their interpreter with a path relative to the skill (`python3 scripts/<file>`): a zip upload can lose the executable bit, and the platform documentation shows only relative paths, never the path variables.
+- [req] The Skills API has no network access and installs nothing at run time; claude.ai can install packages from npm and PyPI. Use only preinstalled packages for the API.
+- [req] MCP tools are named `mcp__<server>__<tool>` in Claude Code (`mcp__plugin_<plugin>_<server>__<tool>` for a plugin's server); other clients use `Server:tool`.
+
+## Portability findings
+
+Report every portability problem on every surface. Severity depends on whether the skill reaches that surface:
+
+| Problem | Severity |
+| :-- | :-- |
+| A field, limit or feature a surface the skill reaches rejects | high |
+| A feature a surface the skill reaches silently skips (a `!` line in Cowork, a path variable in a synced skill) that an instruction depends on | high |
+| The same, when no instruction depends on it | low |
+| A requirement the skill needs but does not state (interpreter, network, a tool on `PATH`) | medium |
+| Any of these on a surface the skill does not reach today | low: "breaks if you move it to <surface>" |

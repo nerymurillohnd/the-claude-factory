@@ -1,0 +1,263 @@
+<div align="center">
+
+# 🩺 Skill Diagnostics
+
+<p><strong>Audits Claude skills for best-practice conformance, portability and whether a model can run them without guessing, with file-and-line evidence and one verdict.</strong></p>
+
+[![Version](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Fnerymurillohnd%2Fthe-claude-factory%2Fmain%2Fplugins%2Fskill-diagnostics%2F.claude-plugin%2Fplugin.json&query=%24.version&label=version&color=D97757)](./CHANGELOG.md)
+[![Works in](https://img.shields.io/badge/works%20in-Claude%20Code%20%C2%B7%20Claude%20app-2563EB)](#-compatibility)
+[![Category](https://img.shields.io/badge/category-Testing%20%26%20Quality-6B7280)](../../README.md#-catalog)
+[![Claude Code](https://img.shields.io/badge/Claude%20Code-%E2%89%A5%202.1.176-D97757?logo=claude&logoColor=white)](https://code.claude.com/docs/en/plugins/install)
+[![License: MIT](https://img.shields.io/badge/license-MIT-22C55E)](./LICENSE)
+
+[Why use it](#-why-use-it) •
+[What's inside](#-whats-inside) •
+[Install](#-installation) •
+[Usage](#-usage) •
+[Compatibility](#-compatibility) •
+[FAQ](#-faq--troubleshooting)
+
+</div>
+
+---
+
+> [!TIP]
+> **TL;DR** — Type `/skill-diagnostics:audit <skill folder>` and get one report that says whether the skill follows the official rules, works where you plan to use it, and can be run by a model without guessing, with the exact line behind every finding.
+
+## ✨ Why use it
+
+A skill can look finished to the person who wrote it and still fail the model that runs it: a placeholder nothing defines, a reference that contradicts `SKILL.md`, a description that never triggers, a field that breaks the upload to claude.ai.
+
+- **Two audits in one pass** — conformance (official rules, recommendations, portability) and executability (could a model follow it without guessing) run in parallel and come back as one report with one verdict.
+- **Reads every line** — both auditors read every file of the skill from start to end, scripts and hidden files included; nothing is sampled or skimmed. If a file can't be listed or read, the report names it, and a gap that matters gives *not determinable* instead of a pass.
+- **Evidence, not opinions** — every finding quotes the exact text with its file and line, and says how to fix it.
+- **Verified before it counts** — before the verdict, every finding is checked again: its quote against your files, any rule or platform claim against the live official Claude documentation (with the URL and the exact sentence), and the official Claude Code changelog from your version on. Findings that don't hold up are corrected or withdrawn.
+- **Checks what validation skips** — `claude plugin validate` confirms the structure; Skill Diagnostics also checks name and description limits, quoting that breaks strict YAML, argument placeholders, broken links and script setup, with whatever tools your session has.
+- **Ready for every surface** — every audit covers Claude Code, the Claude app, claude.ai skill uploads and the Skills API, flags what each one rejects or skips, and ranks it by whether your skill reaches that surface today.
+- **Catches new skills as you write them** — after a `SKILL.md` is created or changed, for example with Anthropic's `skill-creator`, Claude offers an audit before you move on.
+
+## 🧩 What's inside
+
+| Component | Name | What it does | How it runs |
+| :-- | :-- | :-- | :-- |
+| 🎯 Skill | `skill-diagnostics:audit` | Lists the skill's files, launches both lenses in parallel, verifies and merges the results, and gives the verdict | `/skill-diagnostics:audit <path>`, or ask Claude to audit, review or check a skill |
+| 🤖 Agent | `skill-diagnostics:conformance-auditor` | Checks one skill against the documented rules and recommendations, on all four surfaces | Launched by the skill, one per skill |
+| 🤖 Agent | `skill-diagnostics:executability-auditor` | Traces every workflow of one skill as the model that must run it | Launched by the skill, one per skill |
+| 🪝 Hook | `PostToolUse` | After a `SKILL.md` is written or edited, asks Claude to offer an audit once the skill is finished (or to run it, if you [configure](#️-configuration) that) | Automatically, once per skill per session |
+
+Skill Diagnostics only audits. To create a skill, use Anthropic's `skill-creator`, then audit the result.
+
+## ✅ Requirements
+
+| Requirement | Details |
+| :-- | :-- |
+| **Claude Code** | v2.1.176 or later — check with `claude --version` |
+| **Surfaces** | See [Compatibility](#-compatibility) |
+| **External tools** | Python 3.9 or later on `PATH` as `python3`, for the hook. On Windows, Git for Windows, so the hook runs by its path. `git`, only to audit a skill from a URL. Without Python the audit still runs, but the hook can't start: Claude Code shows a hook error after each `SKILL.md` write |
+| **Network** | Used to verify findings against the official Claude documentation and the Claude Code changelog, and to download a skill you audit from a URL. It fetches pages from `code.claude.com`, `claude.com`, `platform.claude.com`, `support.claude.com` and `agentskills.io`. It only downloads public documentation pages; it never uploads your skill's files to those sites. Without network access the audit still runs; findings that need an official page are marked *not verified live* and the verdict is *provisional* |
+| **Accounts / API keys** | None |
+
+## 📥 Installation
+
+<details open>
+<summary><b>💻 Terminal (shell)</b></summary>
+
+```bash
+# One step: adds the marketplace (if needed) and installs the plugin — Claude Code v2.1.292+
+claude plugin install skill-diagnostics --marketplace nerymurillohnd/the-claude-factory
+
+# Or, with the marketplace already added
+claude plugin install skill-diagnostics@the-claude-factory
+```
+
+Add `--scope project` to enable it for everyone working in the current repository.
+
+</details>
+
+<details>
+<summary><b>💬 Inside a Claude Code session</b></summary>
+
+```text
+/plugin install skill-diagnostics --marketplace nerymurillohnd/the-claude-factory
+```
+
+Requires Claude Code v2.1.275+. With the marketplace already added, `/plugin install skill-diagnostics@the-claude-factory` opens the plugin's details so you can pick a scope. You can also browse it in `/plugin` → **Discover**.
+
+</details>
+
+<details>
+<summary><b>🖥️ Claude app (web, desktop &amp; Cowork)</b></summary>
+
+1. Open **Customize** in the sidebar, then **Plugins**.
+2. Select **Add marketplace** and enter `nerymurillohnd/the-claude-factory`.
+3. Find **Skill Diagnostics** and click **Install**.
+
+In the desktop app's **Code** tab you can also click **+** → **Plugins** → **Add plugin**.
+
+</details>
+
+> [!NOTE]
+> New to this marketplace? The [installation guide](../../docs/installation.md) covers every surface step by step. If you install it both in the Claude app and in Claude Code, Claude Code loads its own copy and reports the synced one as not loaded, so update the copy you use.
+
+## 🚀 Usage
+
+### Audit one skill
+
+```text
+/skill-diagnostics:audit ~/.claude/skills/release-notes
+```
+
+**Result:** a report in the conversation with the verdict (**pass**, **pass with warnings**, **fail** or **not determinable**), a findings table sorted by severity, the verbatim evidence for each finding and what was not checked. No file is written.
+
+You can also pass a file inside the skill, or several paths at once.
+
+### Audit every skill in a plugin
+
+```text
+/skill-diagnostics:audit ./plugins/my-plugin
+```
+
+**Result:** one report per skill and, when there are several, a summary table with each skill's verdict and its high, medium and low findings. The plugin folder and its `skills/` folder both work, and so does any folder whose subfolders are skills.
+
+### Check a skill before you install it
+
+```text
+/skill-diagnostics:audit https://github.com/owner/repo/tree/main/skills/meeting-notes
+```
+
+**Result:** the same audit on a skill you haven't installed yet. Every audit covers Claude Code, the Claude app, claude.ai skill uploads and the Skills API: the report says where the skill comes from, which surfaces it reaches, and what would break if you moved it to another one.
+
+### Run one lens only
+
+```text
+/skill-diagnostics:audit ./skills/invoice-note --lens executability
+```
+
+**Result:** only the executability lens runs, which halves the work on a large set of skills. Structure checks belong to the conformance lens, so they run only with `--lens conformance` or with both lenses.
+
+### Audit a skill you just wrote
+
+Create or edit a skill as usual, for example with `skill-creator`. When the skill is finished, Claude offers the audit; answer yes and the report follows.
+
+## ⚙️ Configuration
+
+| Option | Type | Default | Description |
+| :-- | :-- | :-- | :-- |
+| `on_skill_write` | string | `suggest` | What happens after a `SKILL.md` is created or changed: `suggest` (Claude offers an audit once the skill is finished), `run` (Claude runs the audit when the skill is finished) or `off`. Set via `/plugin` → **Installed** → **Skill Diagnostics** → **Configure options**, or in `/config` (v2.1.269+). |
+
+In the Claude app the option can't be changed and keeps its default, `suggest`.
+
+## 🔄 Updating
+
+```bash
+claude plugin update skill-diagnostics@the-claude-factory
+```
+
+Or in a session: `/plugin` → **Installed** → **Skill Diagnostics** → **Update now**. Then run `/reload-plugins`.
+
+Installed from the Claude app? In Claude Code (v2.1.273+, signed in with that claude.ai account) it appears as `skill-diagnostics@synced`: update and uninstall it in the app (**Customize** → **Plugins**); in `/plugin` you can only turn it on or off, unless your organization requires it.
+
+> [!TIP]
+> Turn on auto-update once for the whole marketplace: `/plugin` → **Marketplaces** → **the-claude-factory** → **Enable auto-update**.
+
+## 🗑️ Uninstalling
+
+```bash
+claude plugin uninstall skill-diagnostics@the-claude-factory
+```
+
+Installed with `--scope project`? Add `--scope project` here too.
+
+In a session: `/plugin` → **Installed** → **Skill Diagnostics** → **Uninstall**. In the Claude app: **Customize** → **Plugins** → **Skill Diagnostics** → **Uninstall**.
+
+## 🧭 Compatibility
+
+**Works in:** 💻 Claude Code · 🖥️ Claude app
+
+| Component | Claude Code | Claude app |
+| :-- | :--: | :--: |
+| 🎯 Skills | ✅ | ✅ |
+| 🤖 Agents | ✅ | ⚠️ in Cowork sessions, not in a chat conversation |
+| 🪝 Hooks | ✅ | ⚠️ in Cowork sessions, not in a chat conversation |
+
+<sub>✅ works · ⚠️ partial · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. The Claude app (web, desktop and mobile) runs a conversation as a Cowork session when it can, and as a chat conversation otherwise, for example on a device that can't run Cowork or in the separate Chat mode that Team and Enterprise plans keep for now.</sub>
+
+In a chat conversation, where agents don't run, the skill applies both lenses itself, one after the other. Hooks don't run there either, so ask for the audit yourself after writing a skill.
+
+## ❓ FAQ & Troubleshooting
+
+<details>
+<summary><b>The plugin's commands don't show up after installing.</b></summary>
+
+Run `/reload-plugins`, then type `/skill-diagnostics:` to list its skills. If it still doesn't appear, open `/plugin` → **Errors** and see the [troubleshooting guide](../../docs/troubleshooting.md).
+
+</details>
+
+<details>
+<summary><b>How is this different from <code>skill-creator</code>?</b></summary>
+
+`skill-creator` helps you write a skill and measure it with test prompts. Skill Diagnostics reads a finished skill and reports, with evidence, what breaks the rules, what a surface rejects and where a model would have to guess. Use both: create with `skill-creator`, then audit.
+
+</details>
+
+<details>
+<summary><b>Does it change my skill?</b></summary>
+
+No. The audit only reads files and reports. If you then ask Claude to fix the findings, that is a normal edit you approve as usual.
+
+</details>
+
+<details>
+<summary><b>Claude asks for permission during an audit.</b></summary>
+
+The audit pre-approves nothing: your permission settings decide what asks first, so these prompts are expected. The audit never changes your files; it only clones a skill from a URL into a temporary folder it deletes afterwards:
+
+- **Running commands**, such as listing your skill's files or checking your Claude Code version.
+- **Reading your skill**, when it lives outside your working directory, for example in `~/.claude/skills/`. Allow it and the audit continues.
+- **Reading the plugin's own guides**, which live in Claude Code's plugin folder. Safe to allow.
+- **Fetching an official page**, to verify a finding. If you deny it, the finding stays in the report, marked *not verified live*, and the verdict is *provisional*.
+- **Cloning a skill with `git`**, when you audit one from a URL, into a temporary folder deleted after the report.
+
+</details>
+
+<details>
+<summary><b>The report lists files as "not inspected".</b></summary>
+
+Both auditors read every file of the skill from its first line to its last, scripts and hidden files included, and exclude nothing on their own. A file is listed as not inspected only when it can't be opened as text or an image (a binary), when a folder can't be listed, or when your settings or hooks block it, for example a `Read` deny rule; the audit respects the block and gives the reason.
+
+</details>
+
+<details>
+<summary><b>The report warns that my description is too long for the skill listing.</b></summary>
+
+Claude Code cuts each skill's `description` (plus `when_to_use`) in its skill listing at the `skillListingMaxDescChars` setting, 1,536 characters by default. The warning uses that default. If you raised the setting, the warning does not apply to you, but users of a skill you share may still see the cut text, so keep the key use case first.
+
+</details>
+
+<details>
+<summary><b>How much does an audit cost?</b></summary>
+
+Each skill is read in full by two agents in parallel, and every finding is then verified against the live documentation, so a large folder of skills uses more of your plan's usage than a single one. Use `--lens` to run one lens, or audit a few skills at a time.
+
+</details>
+
+## 🔗 Related
+
+- 📦 [All plugins in The Claude Factory](../../README.md#-catalog)
+- 📖 [Claude Code plugin docs](https://code.claude.com/docs/en/plugins/overview)
+- 📖 [Claude Code skills](https://code.claude.com/docs/en/skills)
+- 📖 [Skill authoring best practices](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices)
+
+## 🐞 Found a problem?
+
+[Report a bug](https://github.com/nerymurillohnd/the-claude-factory/issues/new?template=bug_report.yml&plugin=skill-diagnostics) •
+[Request a feature](https://github.com/nerymurillohnd/the-claude-factory/issues/new?template=feature_request.yml&plugin=skill-diagnostics) •
+[Ask a question](https://github.com/nerymurillohnd/the-claude-factory/issues/new?template=question.yml&plugin=skill-diagnostics)
+
+## 📝 Changelog
+
+See [CHANGELOG.md](./CHANGELOG.md) for every release.
+
+## 📄 License
+
+[MIT](./LICENSE) © Nery Murillo

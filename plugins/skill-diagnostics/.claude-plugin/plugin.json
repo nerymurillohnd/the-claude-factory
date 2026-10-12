@@ -1,0 +1,35 @@
+{
+  "name": "skill-diagnostics",
+  "displayName": "Skill Diagnostics",
+  "version": "0.1.0",
+  "description": "Audits Claude skills for best-practice conformance, portability and whether a model can run them without guessing, with file-and-line evidence and one verdict.",
+  "author": {
+    "name": "Nery Murillo",
+    "url": "https://github.com/nerymurillohnd"
+  },
+  "homepage": "https://github.com/nerymurillohnd/the-claude-factory/tree/main/plugins/skill-diagnostics#readme",
+  "repository": "https://github.com/nerymurillohnd/the-claude-factory",
+  "license": "MIT",
+  "keywords": [
+    "testing",
+    "skills",
+    "skill-audit",
+    "best-practices",
+    "portability",
+    "cowork"
+  ],
+  "metadata": {
+    "surfaces": [
+      "claude-code",
+      "claude-app"
+    ]
+  },
+  "userConfig": {
+    "on_skill_write": {
+      "type": "string",
+      "title": "When a skill is written",
+      "description": "What Claude does after a SKILL.md is created or changed: suggest (offer an audit), run (audit when the skill is finished) or off.",
+      "default": "suggest"
+    }
+  }
+}

@@ -10,3 +10,12 @@ trim_trailing_whitespace = true
 
 [*.md]
 trim_trailing_whitespace = false
+
+# Shell style for shfmt (every key replaces one flag): -i 2 -s -bn -ci -sr.
+[[shell]]
+indent_style = space
+indent_size = 2
+simplify = true
+binary_next_line = true
+switch_case_indent = true
+space_redirects = true

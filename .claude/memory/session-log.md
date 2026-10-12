@@ -2,6 +2,19 @@
 
 Newest first. One entry per session: what changed, commits, what's next.
 
+## 2026-10-11/12 — skill-diagnostics build (phases 0–9)
+
+- Audited claude-essentials `skills-engineering`; rebuilt it as `skill-diagnostics` (audit-only skill, conformance + executability agents, `check_skill.py`, `PostToolUse` hook). Plan and audit live in claude.ai artifacts (see project-state).
+- Evals pilot ($2.41), docs-auditor and plugin-reviewer reviews, isolated cached installs and installed self-audits; Nery tested synced zips in Cowork and Claude Code and reviewed PR #1 from another session. Every confirmed finding fixed.
+- Design changes from testing: full-read auditors with only Read and a `check_skill.py --list` inventory (Glob is absent on macOS/Linux and caps at 100); coverage left to user settings; hook fires anywhere (`//**/SKILL.md`) and skips Claude Code-managed folders; synced-install docs.
+- Course correction: the self-audit loop had grown `SKILL.md` 66%; refactored to moderate detail with `references/fallbacks.md`, recalibrated "decides output", updated `plugin-authoring.md`.
+- Commits `caacfa4`…`HEAD` on `feat/skill-diagnostics`; CI green; Nery's local `main` holds a merge (not pushed).
+- Verification gate (Nery's design): auditors report everything; the orchestrator verifies each finding against the files, live official docs and the last 15 days of official changes, sends disputes back, closes with a checklist. Two audits of `8afed00` from Nery's sessions fixed in `41c3c6e`, `4c62e1a`, `87ac3fe` (Files read line, dispute protocol, merge rule, provisional threshold, WebFetch pre-approval, `--list` `exists` flag, plugin-root expansion per the manifest docs).
+- Evals rebuilt around Nery's five cases (natural trigger rate 7/7, hook-offer, hook-audit, full reads proven from the trace, live verification) and run by path on Linux/macOS/Windows in CI (`by_path.sh`); every checker rule has a test (meta-test).
+- Smoke tests found the audit skipping step 5: fixed with a `Stop` hook in the skill frontmatter (`verification_gate.py`), proven in an installed run. Checker fixes: missing `name` is a note outside uploads; `${CLAUDE_SKILL_DIR}` in uploads is a warning.
+- CI `evals.yml` authenticates with `CLAUDE_CODE_OAUTH_TOKEN`, runs on PR open/reopen/ready or by hand, shows skipped without the token, evaluates a copy outside `$HOME`. Fifth PR review fixed (`e4d3cc7`); `anthropics/skills` dropped as a verification source (`2c6def5`).
+- Next: Nery tests the latest zip and the skill-creator → hook offer; re-run the eval pilot; decide the CI eval key and trigger; `/release` (marketplace 0.2.0, tag `skill-diagnostics--v0.1.0`).
+
 ## 2026-10-11 — Bootstrap and publication
 
 - Researched current plugin/marketplace docs and how `claude-plugins-official` versions (commit SHAs, no changelogs) → chose explicit SemVer.

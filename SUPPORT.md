@@ -6,7 +6,7 @@
 | :-- | :-- |
 | [Installation](./docs/installation.md) | Adding the marketplace and installing plugins on every surface |
 | [Managing plugins](./docs/managing-plugins.md) | Updates, auto-update, disabling and uninstalling |
-| [Compatibility](./docs/compatibility.md) | What works in Claude Code, Cowork and Claude chat |
+| [Compatibility](./docs/compatibility.md) | What works in Claude Code and the Claude app |
 | [Troubleshooting](./docs/troubleshooting.md) | Fixes for common errors |
 | [FAQ](./docs/faq.md) | Quick answers |
 

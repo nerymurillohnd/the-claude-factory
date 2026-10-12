@@ -48,8 +48,7 @@ body:
       multiple: true
       options:
         - Claude Code (terminal, desktop, IDE)
-        - Cowork
-        - Claude chat
+        - Claude app (web, desktop, mobile)
 
   - type: checkboxes
     id: checks

@@ -35,7 +35,7 @@ node .github/scripts/bump-version.mjs <name> <level>
 
 ## 5. Verify and commit
 
-1. Run the `verify` skill — all ✔. Confirm the release was exercised in Claude Code and Cowork (per `.claude/rules/cross-surface-compatibility.md`).
+1. Run the `verify` skill — all ✔. Confirm the release passed `/test-installed-plugin` and was exercised in the Claude app (per `.claude/rules/cross-surface-compatibility.md`).
 2. Commit: `chore(release): <name> <new-version>` (body: changelog bullets, `Closes #n` for fixed issues).
 3. After Nery pushes to `main`, `release.yml` creates the `<name>--v<version>` tag and GitHub Release. Never tag by hand.
 

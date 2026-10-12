@@ -2,7 +2,7 @@
 
 > Add **The Claude Factory** to Claude and install its plugins — on every surface, step by step.
 
-**On this page:** [Before you start](#-before-you-start) · [Terminal](#-terminal) · [Claude Code session](#-inside-a-claude-code-session) · [Desktop app](#️-claude-desktop-app--code-tab) · [VS Code](#-vs-code) · [JetBrains](#-jetbrains) · [Cowork](#-cowork) · [Choose a scope](#-choose-an-install-scope) · [Teams](#-set-it-up-for-a-whole-team) · [Verify](#-verify-the-install)
+**On this page:** [Before you start](#-before-you-start) · [Terminal](#-terminal) · [Claude Code session](#-inside-a-claude-code-session) · [Desktop app](#️-claude-desktop-app--code-tab) · [VS Code](#-vs-code) · [JetBrains](#-jetbrains) · [Claude app](#️-claude-app) · [Choose a scope](#-choose-an-install-scope) · [Teams](#-set-it-up-for-a-whole-team) · [Verify](#-verify-the-install)
 
 ---
 
@@ -10,7 +10,7 @@
 
 | You need | Notes |
 | :-- | :-- |
-| **Claude Code** *or* the **Claude desktop app** with Cowork | Claude Code runs in the terminal, the desktop app's **Code** tab, VS Code and JetBrains. |
+| **Claude Code** *or* the **Claude app** | Claude Code runs in the terminal, the desktop app's **Code** tab, VS Code and JetBrains. The Claude app runs on the web, desktop and mobile. |
 | A recent Claude Code version | Run `claude --version`. One-step installs need **v2.1.292+** in the shell and **v2.1.275+** in a session. |
 | Network access to `github.com` | The marketplace is a public GitHub repository; no GitHub account or token is needed. |
 
@@ -77,16 +77,16 @@ Open sessions reload their plugins after you save changes.
 
 The JetBrains plugin runs Claude Code in the IDE's terminal, so follow the [Terminal](#-terminal) or [session](#-inside-a-claude-code-session) steps there.
 
-## 🤝 Cowork
+## 🖥️ Claude app
 
 1. Open **Customize** in the sidebar, then **Plugins**.
 2. Select **Add marketplace** and enter `nerymurillohnd/the-claude-factory` (the full `https://github.com/nerymurillohnd/the-claude-factory` URL also works).
-3. Plugins from The Claude Factory now appear alongside other marketplaces. Select one and click **Install**.
+3. Plugins from The Claude Factory now appear alongside other marketplaces. Select one and add it to your account.
 
-A plugin you install on your claude.ai account in Cowork also appears in Claude Code as a synced plugin (`<plugin>@synced`) at your next session start.
+A plugin you install on your claude.ai account in the Claude app also appears in Claude Code as a synced plugin (`<plugin>@synced`) at your next session start (Claude Code v2.1.273+, signed in with the same claude.ai account); if it says *Plugins changed*, run `/reload-plugins`. If you also install the same plugin in Claude Code, Claude Code loads that copy and reports the synced one as not loaded; disable your terminal copy to use the one from the app.
 
 > [!IMPORTANT]
-> Not every component loads in Cowork. Check the plugin's **Compatibility** table first — see [Compatibility](./compatibility.md).
+> Not every component loads in the Claude app: agents, hooks and local MCP servers run in Cowork sessions, not in a chat conversation. Check the plugin's **Compatibility** table first — see [Compatibility](./compatibility.md).
 
 ## 🎯 Choose an install scope
 

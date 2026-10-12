@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="./docs/assets/banner.svg" alt="The Claude Factory — plugins for Claude Code and Cowork" width="100%">
+<img src="./docs/assets/banner.svg" alt="The Claude Factory — plugins for Claude Code and the Claude app" width="100%">
 
 <br>
 
@@ -11,7 +11,7 @@
 <br>
 
 <!-- plugin-count:start -->
-[![Plugins](https://img.shields.io/badge/plugins-0-D97757?style=for-the-badge)](#-catalog)
+[![Plugins](https://img.shields.io/badge/plugins-1-D97757?style=for-the-badge)](#-catalog)
 <!-- plugin-count:end -->
 [![Validate](https://img.shields.io/github/actions/workflow/status/nerymurillohnd/the-claude-factory/validate.yml?branch=main&label=validate&style=for-the-badge)](https://github.com/nerymurillohnd/the-claude-factory/actions/workflows/validate.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-22C55E?style=for-the-badge)](./LICENSE)
@@ -30,7 +30,7 @@
 
 ## 🏭 What is The Claude Factory?
 
-**The Claude Factory** is a public [plugin marketplace](https://code.claude.com/docs/en/plugins/overview) for **Claude Code** and **Cowork**. Each plugin solves one real problem end to end — a workflow you repeat, a check you forget, a tool you wish Claude already knew — and installs with a single command.
+**The Claude Factory** is a public [plugin marketplace](https://code.claude.com/docs/en/plugins/overview) for **Claude Code** and the **Claude app**. Each plugin solves one real problem end to end — a workflow you repeat, a check you forget, a tool you wish Claude already knew — and installs with a single command.
 
 | | |
 | :-- | :-- |
@@ -43,7 +43,7 @@
 ## ⚡ Quick start
 
 > [!IMPORTANT]
-> You need **[Claude Code](https://code.claude.com/docs/en/overview)** (terminal, desktop app, VS Code or JetBrains) or the **Claude desktop app with Cowork**. Keep Claude Code current — check with `claude --version`.
+> You need **[Claude Code](https://code.claude.com/docs/en/overview)** (terminal, desktop app, VS Code or JetBrains) or the **Claude app** (web, desktop or mobile). Keep Claude Code current — check with `claude --version`.
 
 ### 1️⃣ Add the marketplace (once)
 
@@ -66,7 +66,7 @@ claude plugin marketplace add nerymurillohnd/the-claude-factory
 </details>
 
 <details>
-<summary><b>🖥️ Claude desktop app &amp; Cowork</b></summary>
+<summary><b>🖥️ Claude app (web, desktop &amp; Cowork)</b></summary>
 
 1. Open **Customize** in the sidebar, then **Plugins**.
 2. Select **Add marketplace**.
@@ -84,7 +84,7 @@ Pick one from the [catalog](#-catalog), then:
 | 💬 Claude Code session | `/plugin install <plugin>@the-claude-factory` — or browse `/plugin` → **Discover** |
 | 🖥️ Desktop app, Code tab | **+** → **Plugins** → **Add plugin** |
 | 🧩 VS Code | Type `/plugins` → **Plugins** tab → **Install** |
-| 🤝 Cowork | **Customize** → **Plugins** → **Browse plugins** → **Install** |
+| 🖥️ Claude app | **Customize** → **Plugins** → **Discover** → select the plugin and add it |
 
 > [!TIP]
 > **Skip step 1.** Add the marketplace and install in one go:
@@ -102,9 +102,19 @@ Plugin skills are namespaced, so they never collide with yours: type `/<plugin>:
 ## 📦 Catalog
 
 <!-- catalog:start -->
-> [!NOTE]
-> 🏗️ **The factory floor is being set up.** The first plugins are on their way.
-> ⭐ Star or 👀 watch this repository to be notified when they ship.
+| Category | Plugins |
+| :-- | :--: |
+| [🧪 Testing & Quality](#-testing--quality) | 1 |
+
+### 🧪 Testing & Quality
+
+*Tests, audits, linting and quality gates.*
+
+| Plugin | What it does | Works in | Version | Includes |
+| :-- | :-- | :-- | :--: | :-- |
+| [**Skill Diagnostics**](./plugins/skill-diagnostics#readme)<br>`skill-diagnostics@the-claude-factory` | Audits Claude skills for best-practice conformance, portability and whether a model can run them without guessing, with file-and-line evidence and one verdict. | 💻 Code · 🖥️ Claude app | `0.1.0` | 🎯 Skills · 🤖 Agents · 🪝 Hooks |
+
+<sub>**Legend:** 🎯 Skills · ⌨️ Commands · 🤖 Agents · 🪝 Hooks · 🔌 MCP · 🧠 LSP · 🎨 Output styles · 📡 Monitors · 🔁 Workflows · 🌈 Themes · ⚙️ Executables</sub>
 <!-- catalog:end -->
 
 ## 🔧 Manage your plugins
@@ -122,26 +132,26 @@ Plugin skills are namespaced, so they never collide with yours: type `/<plugin>:
 > [!TIP]
 > 🔄 **Get updates automatically.** Third-party marketplaces start with auto-update **off**. Turn it on once: `/plugin` → **Marketplaces** → **the-claude-factory** → **Enable auto-update**.
 
-In **Cowork**, manage everything from **Customize** → **Plugins**: click **Update** on the marketplace to pull new versions, or open a plugin and click **Uninstall**. Full details: [Managing plugins](./docs/managing-plugins.md).
+In the **Claude app**, manage everything from **Customize** → **Plugins**: click **Update** on the marketplace to pull new versions, or open a plugin and click **Uninstall**. Full details: [Managing plugins](./docs/managing-plugins.md).
 
 > [!WARNING]
 > Removing the marketplace **uninstalls every plugin** you installed from it.
 
 ## 🧭 Where plugins work
 
-The same plugin loads on every Claude surface, but each surface loads a different subset of components. Every plugin README has its own **Compatibility** table.
+The same plugin installs in Claude Code and in the Claude app, but each loads a different subset of components. Every plugin README has its own **Compatibility** table.
 
-| Component | Claude Code | Cowork | Claude chat |
-| :-- | :--: | :--: | :--: |
-| 🎯 Skills | ✅ | ✅ | ✅ |
-| 🤖 Agents | ✅ | ✅ | ➖ |
-| 🪝 Hooks | ✅ | ✅ | ➖ |
-| 🔌 Remote MCP servers | ✅ | ✅ | 🔗 connect manually |
-| 🖥️ Local MCP servers | ✅ | ✅ on your computer | ➖ |
-| 🧠 LSP · 🎨 Output styles · 🌈 Themes | ✅ | ➖ | ➖ |
-| ⚙️ Executables in `bin/` | ✅ | ❌ | ❌ |
+| Component | Claude Code | Claude app |
+| :-- | :--: | :--: |
+| 🎯 Skills | ✅ | ✅ |
+| 🤖 Agents | ✅ | ⚠️ in Cowork sessions |
+| 🪝 Hooks | ✅ | ⚠️ in Cowork sessions |
+| 🔌 Remote MCP servers | ✅ | 🔗 connect on the plugin's **Connectors** tab |
+| 🖥️ Local MCP servers | ✅ | ⚠️ in Cowork sessions on your computer |
+| 🧠 LSP · 🎨 Output styles · 🌈 Themes | ✅ | ➖ |
+| ⚙️ Executables in `bin/` | ✅ | ❌ |
 
-<sub>✅ loads · ➖ ignored · ❌ the plugin can't be installed there · Source: [Plugin feature support across platforms](https://claude.com/docs/plugins/platform-support). More in [Compatibility](./docs/compatibility.md).</sub>
+<sub>✅ loads · ⚠️ conditional · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. The Claude app (web, desktop and mobile) runs a conversation as a Cowork session when it can and as a chat conversation otherwise; agents, hooks and local MCP servers don't run in a chat conversation. Sources: [Use plugins in Claude](https://support.claude.com/en/articles/13837440-use-plugins-in-claude), [Plugin feature support across platforms](https://claude.com/docs/plugins/platform-support). More in [Compatibility](./docs/compatibility.md).</sub>
 
 ## 🛡️ Trust & safety
 
@@ -157,7 +167,7 @@ Plugins can run hooks, scripts and MCP servers on your machine. Before installin
 | :-- | :-- |
 | 📥 [Installation](./docs/installation.md) | Adding the marketplace and installing plugins on every surface, scopes, private setups |
 | 🔧 [Managing plugins](./docs/managing-plugins.md) | Updates, auto-update, disabling, uninstalling, removing the marketplace |
-| 🧭 [Compatibility](./docs/compatibility.md) | What loads in Claude Code, Cowork and Claude chat |
+| 🧭 [Compatibility](./docs/compatibility.md) | What loads in Claude Code and the Claude app |
 | 🩺 [Troubleshooting](./docs/troubleshooting.md) | Fixes for the most common install and loading errors |
 | ❓ [FAQ](./docs/faq.md) | Quick answers about the marketplace, versions and support |
 | 📖 [Official plugin docs](https://code.claude.com/docs/en/plugins/overview) | Anthropic's reference for plugins and marketplaces |

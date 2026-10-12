@@ -27,4 +27,4 @@ body:
     id: claude-version
     attributes:
       label: Claude Code version
-      description: Output of `claude --version`, or "Cowork".
+      description: Output of `claude --version`, or "Claude app".

@@ -45,9 +45,9 @@ Plugin names are permanent, because your installs and settings are keyed by them
 </details>
 
 <details>
-<summary><b>Do plugins work in Cowork and Claude chat?</b></summary>
+<summary><b>Do plugins work in the Claude app?</b></summary>
 
-Mostly. Skills work everywhere; agents and hooks work in Claude Code and Cowork; LSP servers and output styles are Claude Code-only. See [Compatibility](./compatibility.md) and each plugin's own table.
+Mostly. Skills work everywhere; agents and hooks work in Claude Code and in Cowork sessions of the Claude app, not in a chat conversation; LSP servers and output styles are Claude Code-only. See [Compatibility](./compatibility.md) and each plugin's own table.
 
 </details>
 

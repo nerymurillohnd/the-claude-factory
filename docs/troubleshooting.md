@@ -72,9 +72,9 @@ The first message comes from `/plugin install` in a session, the second from `cl
 </details>
 
 <details>
-<summary>Cowork refuses to install the plugin</summary>
+<summary>The Claude app refuses to install the plugin</summary>
 
-The plugin ships executables in a `bin/` folder, which Cowork and Claude chat can't install. Use it from Claude Code instead — the plugin's **Compatibility** table says so.
+The plugin ships executables in a `bin/` folder, which the Claude app can't install. Use it from Claude Code instead — the plugin's **Compatibility** table says so.
 
 </details>
 
@@ -106,6 +106,7 @@ Adding an MCP server invalidates the prompt cache. Run `/reload-plugins --force`
 
 - `claude plugin update <plugin>@the-claude-factory` says *already at the latest version*: no new release has shipped yet — check the plugin's `CHANGELOG.md`.
 - Updated but still seeing old behavior: the running session keeps the loaded version. Run `/reload-plugins` or start a new session.
+- A plugin shown as `<plugin>@synced` came from the Claude app: update it there (**Customize** → **Plugins**), then start Claude Code again or run `/reload-plugins` when it says *Plugins changed*.
 - Want updates without thinking about it: [enable auto-update](./managing-plugins.md#-auto-update).
 
 ## 🆘 Still stuck?

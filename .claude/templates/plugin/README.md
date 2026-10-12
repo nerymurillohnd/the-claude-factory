@@ -83,7 +83,7 @@ Requires Claude Code v2.1.275+. With the marketplace already added, `/plugin ins
 </details>
 
 <details>
-<summary><b>🖥️ Claude desktop app &amp; Cowork</b></summary>
+<summary><b>🖥️ Claude app (web, desktop &amp; Cowork)</b></summary>
 
 1. Open **Customize** in the sidebar, then **Plugins**.
 2. Select **Add marketplace** and enter `nerymurillohnd/the-claude-factory`.
@@ -124,6 +124,8 @@ claude plugin update {{name}}@the-claude-factory
 
 Or in a session: `/plugin` → **Installed** → **{{displayName}}** → **Update now**. Then run `/reload-plugins`.
 
+Installed from the Claude app? In Claude Code (v2.1.273+, signed in with that claude.ai account) it appears as `{{name}}@synced`: update and uninstall it in the app (**Customize** → **Plugins**); in `/plugin` you can only turn it on or off, unless your organization requires it.
+
 > [!TIP]
 > Turn on auto-update once for the whole marketplace: `/plugin` → **Marketplaces** → **the-claude-factory** → **Enable auto-update**.
 
@@ -141,22 +143,22 @@ In a session: `/plugin` → **Installed** → **{{displayName}}** → **Uninstal
 
 **Works in:** {{surfacesText}}
 
-| Component | Claude Code | Cowork | Claude chat |
-| :-- | :--: | :--: | :--: |
-| 🎯 Skills | ✅ | ✅ | ✅ |
-| ⌨️ Commands | ✅ | ✅ | ⚠️ loaded as a skill |
-| 🤖 Agents | ✅ | ✅ | ➖ |
-| 🪝 Hooks | ✅ | ✅ | ➖ |
-| 🔌 MCP server (remote) | ✅ | ✅ connect on the plugin's **Connectors** tab | 🔗 connect manually |
-| 🖥️ MCP server (local) | ✅ | ⚠️ only when Cowork runs on your computer | ➖ |
-| 🧠 LSP server | ✅ | ➖ | ➖ |
-| 🎨 Output styles | ✅ | ➖ | ➖ |
-| 📡 Monitors | ✅ | ➖ | ➖ |
-| 🔁 Workflows | ✅ | ➖ | ➖ |
-| 🌈 Themes | ✅ | ➖ | ➖ |
-| ⚙️ Executables (`bin/`) | ✅ | ❌ | ❌ |
+| Component | Claude Code | Claude app |
+| :-- | :--: | :--: |
+| 🎯 Skills | ✅ | ✅ |
+| ⌨️ Commands | ✅ | ✅ loaded as a skill in a chat conversation |
+| 🤖 Agents | ✅ | ⚠️ in Cowork sessions, not in a chat conversation |
+| 🪝 Hooks | ✅ | ⚠️ in Cowork sessions, not in a chat conversation |
+| 🔌 MCP server (remote) | ✅ | 🔗 connect it on the plugin's **Connectors** tab |
+| 🖥️ MCP server (local) | ✅ | ⚠️ only in Cowork sessions on your computer |
+| 🧠 LSP server | ✅ | ➖ |
+| 🎨 Output styles | ✅ | ➖ |
+| 📡 Monitors | ✅ | ➖ |
+| 🔁 Workflows | ✅ | ➖ |
+| 🌈 Themes | ✅ | ➖ |
+| ⚙️ Executables (`bin/`) | ✅ | ❌ |
 
-<sub>✅ works · ⚠️ partial · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there</sub>
+<sub>✅ works · ⚠️ partial · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. The Claude app (web, desktop and mobile) runs a conversation as a Cowork session when it can, and as a chat conversation otherwise, for example on a device that can't run Cowork or in the separate Chat mode that Team and Enterprise plans keep for now.</sub>
 
 ## ❓ FAQ & Troubleshooting
 

@@ -20,6 +20,9 @@ env:
   CLAUDE_CODE_VERSION: "2.1.296"
   MARKDOWNLINT_CLI2_VERSION: "0.23.3"
   ACTIONLINT_VERSION: "1.7.12"
+  RUFF_VERSION: "0.17.0"
+  BIOME_VERSION: "2.5.15"
+  MYPY_VERSION: "1.18.2"
 
 jobs:
   policy:
@@ -44,12 +47,71 @@ jobs:
           PR_BASE: ${{ github.event.pull_request.base.sha }}
           PUSH_BEFORE: ${{ github.event.before }}
         run: |
-          if [ "$EVENT" = "pull_request" ]; then base="$PR_BASE"; else base="$PUSH_BEFORE"; fi
-          if [ -z "$base" ] || [ "$base" = "0000000000000000000000000000000000000000" ] || ! git cat-file -e "$base^{commit}" 2>/dev/null; then
+          if [[ "${EVENT}" = "pull_request" ]]; then base="${PR_BASE}"; else base="${PUSH_BEFORE}"; fi
+          if [[ -z "${base}" ]] || [[ "${base}" = "0000000000000000000000000000000000000000" ]] || ! git cat-file -e "${base}^{commit}" 2>/dev/null; then
             echo "No comparable base commit; skipping version-bump check."
             exit 0
           fi
-          node .github/scripts/check-version-bump.mjs "$base"
+          node .github/scripts/check-version-bump.mjs "${base}"
+
+  python:
+    name: Plugin Python tests (${{ matrix.os }}, ${{ matrix.python }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python: ["3.9", "3.13"]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Unit tests (every plugin's Python suite)
+        shell: bash
+        run: |
+          found=0
+          for dir in .github/scripts/tests/*/; do
+            ls "${dir}"test_*.py >/dev/null 2>&1 || continue
+            found=1
+            echo "::group::${dir}"
+            python -m unittest discover -s "${dir}" -v
+            echo "::endgroup::"
+          done
+          [[ "${found}" = 1 ]] || { echo "No plugin Python tests found"; exit 1; }
+      - name: Scripts run by path, as Claude Code runs them
+        shell: bash
+        run: |
+          if [[ "${RUNNER_OS}" = Windows ]]; then
+            # Users must have python3 on PATH (plugin README); Windows installers name it python.
+            shim="$(cygpath -u "${RUNNER_TEMP}")/bin"
+            mkdir -p "${shim}"
+            printf '#!/bin/sh\nexec python "$@"\n' >"${shim}/python3"
+            chmod +x "${shim}/python3"
+            export PATH="${shim}:${PATH}"
+          fi
+          python3 -c "import sys; assert sys.version_info[:2] == tuple(int(p) for p in '${{ matrix.python }}'.split('.')), sys.version"
+          for check in .github/scripts/tests/*/by_path.sh; do
+            [[ -e "${check}" ]] || continue
+            echo "::group::${check}"
+            "${check}"
+            echo "::endgroup::"
+          done
+
+  python-lint:
+    name: Python lint & types
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.13"
+      - name: ruff and mypy
+        run: |
+          python -m pip install --disable-pip-version-check "ruff==${RUFF_VERSION}" "mypy==${MYPY_VERSION}"
+          ruff check plugins .github/scripts
+          ruff format --check plugins .github/scripts
+          git ls-files -z 'plugins/*.py' | xargs -0 mypy --python-version 3.9 --strict
 
   claude-validate:
     name: claude plugin validate
@@ -72,9 +134,15 @@ jobs:
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: ${{ env.NODE_VERSION }}
+      - name: Biome (format, lint, imports)
+        run: npx --yes "@biomejs/biome@${BIOME_VERSION}" ci .
       - name: markdownlint
         run: npx --yes "markdownlint-cli2@${MARKDOWNLINT_CLI2_VERSION}"
       - name: actionlint
+        env:
+          # Every shellcheck check, style included, as on the maintainers' machines.
+          SHELLCHECK_OPTS: -o all -S style -x -a -P SCRIPTDIR
         run: |
-          bash <(curl -sSfL "https://raw.githubusercontent.com/rhysd/actionlint/v${ACTIONLINT_VERSION}/scripts/download-actionlint.bash") "${ACTIONLINT_VERSION}"
+          curl -sSfL -o download-actionlint.bash "https://raw.githubusercontent.com/rhysd/actionlint/v${ACTIONLINT_VERSION}/scripts/download-actionlint.bash"
+          bash download-actionlint.bash "${ACTIONLINT_VERSION}"
           ./actionlint -color
