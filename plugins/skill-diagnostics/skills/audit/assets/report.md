@@ -1,7 +1,7 @@
 # Skill audit: <skill name>
 
 - **Path:** <absolute path>
-- **Targets:** <targets, "assumed" when inferred>
+- **Targets:** <targets, "assumed" when inferred; `not used` when only the executability lens ran>
 - **Verdict:** **<pass | pass with warnings | fail | not determinable>**<, provisional when verification.md (Unreachable sources) says so> — <one-line reason>
 
 ## Findings
