@@ -7,13 +7,14 @@ root=$(cd "$(dirname "$0")/../../../.." && pwd)
 plugin="$root/plugins/skill-diagnostics"
 checker="$plugin/skills/audit/scripts/check_skill.py"
 hook="$plugin/hooks/skill_written.py"
+gate="$plugin/skills/audit/scripts/verification_gate.py"
 work=$(mktemp -d)
 trap 'rm -rf "$work"' EXIT
 
 echo "python3: $(command -v python3) ($(python3 --version))"
 
 # 1. Committed as executable, so it runs by path after a clone or install.
-for script in "$checker" "$hook"; do
+for script in "$checker" "$hook" "$gate"; do
   mode=$(git -C "$root" ls-files -s -- "${script#"$root"/}" | cut -d' ' -f1)
   [ "$mode" = 100755 ] || { echo "FAIL: ${script#"$root"/} is $mode, not 100755"; exit 1; }
 done
@@ -40,4 +41,15 @@ out=$(printf '%s' "$event" | env -u CLAUDE_PLUGIN_OPTION_ON_SKILL_WRITE \
 case "$out" in
   *"/skill-diagnostics:audit"*) echo "hook: offers the audit" ;;
   *) echo "FAIL: hook output: $out"; exit 1 ;;
+esac
+
+# 4. The verification gate, by path: an audit turn with no fetch is sent back.
+printf '%s\n' '{"type":"user","message":{"role":"user","content":"check skills/demo"}}' \
+  '{"type":"assistant","message":{"content":[{"type":"tool_use","id":"t1","name":"Skill","input":{"skill":"skill-diagnostics:audit"}}]}}' \
+  >"$work/session.jsonl"
+transcript=$(cd "$work" && (pwd -W 2>/dev/null || pwd))/session.jsonl
+out=$(printf '{"transcript_path":"%s","stop_hook_active":false,"last_assistant_message":"Verdict: pass"}' "$transcript" | "$gate")
+case "$out" in
+  *"step 5 of the audit is not complete"*) echo "gate: sends an unverified audit back" ;;
+  *) echo "FAIL: gate output: $out"; exit 1 ;;
 esac
