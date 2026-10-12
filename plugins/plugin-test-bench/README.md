@@ -7,7 +7,7 @@
 [![Version](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Fnerymurillohnd%2Fthe-claude-factory%2Fmain%2Fplugins%2Fplugin-test-bench%2F.claude-plugin%2Fplugin.json&query=%24.version&label=version&color=D97757)](./CHANGELOG.md)
 [![Works in](https://img.shields.io/badge/works%20in-Claude%20Code%20only-2563EB)](#-compatibility)
 [![Category](https://img.shields.io/badge/category-Testing%20%26%20Quality-6B7280)](../../README.md#-catalog)
-[![Claude Code](https://img.shields.io/badge/Claude%20Code-%E2%89%A5%202.1.288-D97757?logo=claude&logoColor=white)](https://code.claude.com/docs/en/plugins/install)
+[![Claude Code](https://img.shields.io/badge/Claude%20Code-%E2%89%A5%202.1.293-D97757?logo=claude&logoColor=white)](https://code.claude.com/docs/en/plugins/install)
 [![License: MIT](https://img.shields.io/badge/license-MIT-22C55E)](./LICENSE)
 
 [Why use it](#-why-use-it) •
@@ -31,7 +31,7 @@
 A plugin that works with `claude --plugin-dir` on your machine can still break for your users. They get a copy in their plugin cache, without your git-ignored files, your settings, your other plugins or your `CLAUDE.md`.
 
 - **Test what your users get** — the plugin is installed from a commit into a separate Claude Code configuration, exactly as a marketplace install copies it, and every file your folder has but the copy lacks is reported.
-- **Your setup stays out of it** — nothing touches your own configuration or project, and everything the test creates, including its sign-in, is removed at the end.
+- **Your setup stays out of it** — the test uses its own Claude Code configuration and an empty project folder, without your settings, plugins, memory or claude.ai plugins and connectors, and everything it creates, including its sign-in, is removed at the end.
 - **Proof, not impressions** — a load check from Claude Code's own startup report, your eval suite run against the installed copy, and a report with raw results and a verdict.
 - **Eval cases that mean something** — the review flags cases Claude would pass without your plugin, graders that silently stop counting in the comparison against no plugin, triggering tested with a single prompt, and fixtures that don't build.
 - **No surprise bills** — Claude tells you how many model runs a step starts and waits for your go-ahead before every paid step.
@@ -47,11 +47,11 @@ A plugin that works with `claude --plugin-dir` on your machine can still break f
 
 | Requirement | Details |
 | :-- | :-- |
-| **Claude Code** | v2.1.288 or later — check with `claude --version` |
+| **Claude Code** | v2.1.293 or later — check with `claude --version` |
 | **Surfaces** | Claude Code only. See [Compatibility](#-compatibility) |
 | **External tools** | `git`, with your plugin committed in a repository (without one, Claude offers a throwaway snapshot); git 2.31 or later to run eval suites. A Bash shell. Built and tested on macOS |
 | **Accounts / API keys** | The test configuration signs in on its own: you run `claude auth login` once when Claude asks, or keep `ANTHROPIC_API_KEY` or your cloud provider's variables set in your shell. Your own login is never copied |
-| **Usage** | The load check, eval runs and test requests are real model calls, counted against your plan or API bill. `claude plugin eval` prints a list-price estimate of each run |
+| **Usage** | Eval runs and test requests are real model calls, counted against your plan or API bill. `claude plugin eval` prints a list-price estimate of each run |
 
 ## 📥 Installation
 
@@ -145,7 +145,7 @@ In a session: `/plugin` → **Installed** → **Plugin Test Bench** → **Uninst
 
 | Component | Claude Code | Claude app |
 | :-- | :--: | :--: |
-| 🎯 Skills | ✅ | ➖ its steps run the `claude` command in a terminal |
+| 🎯 Skills | ✅ | ⚠️ loads, but its steps need the `claude` command in your terminal |
 
 <sub>✅ works · ⚠️ partial · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. The Claude app (web, desktop and mobile) runs a conversation as a Cowork session when it can, and as a chat conversation otherwise, for example on a device that can't run Cowork or in the separate Chat mode that Team and Enterprise plans keep for now.</sub>
 
@@ -170,7 +170,7 @@ Run `/reload-plugins`, then type `/plugin-test-bench:` to list its skills. If it
 <details>
 <summary><b>Why do I have to sign in again?</b></summary>
 
-The test runs in a brand-new Claude Code configuration, so none of your settings, plugins or memory can make the plugin look better than it is. That configuration has no login, and copying yours would mix the two. Run the `claude auth login` command Claude gives you, or keep an API key in your shell. The login is removed at the end, including the macOS Keychain entry.
+The test runs in a brand-new Claude Code configuration, so none of your settings, plugins or memory can make the plugin look better than it is; it also turns off syncing of your claude.ai plugins, skills and connectors. That configuration has no login, and copying yours would mix the two. Run the `claude auth login` command Claude gives you in another terminal, or keep an API key in your shell. You sign in only when a paid step follows. The login is removed at the end, including the macOS Keychain entry.
 
 </details>
 
@@ -191,14 +191,14 @@ No. Claude Code's own `claude plugin eval init` interviews you and drafts the ca
 <details>
 <summary><b>What does a test cost?</b></summary>
 
-The install and the comparison are free. The load check is one short model call. A smoke test of your eval suite is one run per case, plus three judge calls for each `llm` grader. A full comparison against no plugin is six runs per case. Claude states the number of runs and waits for your go-ahead before each paid step.
+The install, the comparison and the load check are free. A smoke test of your eval suite is one run per case, plus three judge calls for each `llm` or `baseline` grader. A full comparison against no plugin is six runs per case at the default three runs. Claude states the number of runs and waits for your go-ahead before each paid step.
 
 </details>
 
 <details>
 <summary><b>Does it change my Claude Code setup or my project?</b></summary>
 
-No. Every command runs with a separate configuration folder and in an empty project folder, both temporary. `review-evals` changes your eval files only after you approve its fixes.
+Not your setup: every command runs with a separate configuration folder and in an empty project folder, both temporary. The optional real-request runs use your own home folder, so the tools you grant them (for example file edits or shell commands) act with your user's access; Claude asks you to confirm those grants first. `review-evals` changes your eval files only after you approve its fixes.
 
 </details>
 
