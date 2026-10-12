@@ -41,7 +41,7 @@ A skill can look finished to the person who wrote it and still fail the model th
 | 🎯 Skill | `skill-diagnostics:audit` | Runs the structure checker, launches both lenses in parallel, merges the results and gives the verdict | `/skill-diagnostics:audit <path>`, or ask Claude to audit, review or check a skill |
 | 🤖 Agent | `skill-diagnostics:conformance-auditor` | Checks one skill against the documented rules, recommendations and target surfaces | Launched by the skill, one per skill |
 | 🤖 Agent | `skill-diagnostics:executability-auditor` | Traces every workflow of one skill as the model that must run it | Launched by the skill, one per skill |
-| 🪝 Hook | `PostToolUse` | After a `SKILL.md` is written or edited, asks Claude to offer an audit once the skill is finished | Automatically, once per skill per session |
+| 🪝 Hook | `PostToolUse` | After a `SKILL.md` is written or edited, asks Claude to offer an audit once the skill is finished (or to run it, if you [configure](#️-configuration) that) | Automatically, once per skill per session |
 
 Skill Diagnostics only audits. To create a skill, use Anthropic's `skill-creator`, then audit the result.
 
@@ -51,7 +51,8 @@ Skill Diagnostics only audits. To create a skill, use Anthropic's `skill-creator
 | :-- | :-- |
 | **Claude Code** | v2.1.176 or later — check with `claude --version` |
 | **Surfaces** | See [Compatibility](#-compatibility) |
-| **External tools** | Python 3.9 or later on `PATH` as `python3`, for the structure checker and the hook. On Windows, Git for Windows, so scripts run by their path. Without Python the audit still runs, without the checker |
+| **External tools** | Python 3.9 or later on `PATH` as `python3`, for the structure checker and the hook. On Windows, Git for Windows, so scripts run by their path. Without Python the audit still runs without the checker, but the hook can't start and Claude Code shows a hook error after each `SKILL.md` write |
+| **Network** | Optional. To confirm a rule that may have changed, the audit can fetch the official Claude documentation page that owns it. Claude Code asks before each fetch, and nothing from your skill is sent |
 | **Accounts / API keys** | None |
 
 ## 📥 Installation
@@ -104,15 +105,17 @@ In the desktop app's **Code** tab you can also click **+** → **Plugins** → *
 /skill-diagnostics:audit ~/.claude/skills/release-notes
 ```
 
-**Result:** a report with the verdict (**pass**, **pass with warnings**, **fail** or **not determinable**), a findings table sorted by severity, the verbatim evidence for each finding and what was not checked.
+**Result:** a report in the conversation with the verdict (**pass**, **pass with warnings**, **fail** or **not determinable**), a findings table sorted by severity, the verbatim evidence for each finding and what was not checked. No file is written.
+
+You can also pass a file inside the skill, or several paths at once.
 
 ### Audit every skill in a plugin
 
 ```text
-/skill-diagnostics:audit ./plugins/my-plugin/skills
+/skill-diagnostics:audit ./plugins/my-plugin
 ```
 
-**Result:** one report per skill, then a summary table with each skill's verdict and its high, medium and low findings.
+**Result:** one report per skill, then a summary table with each skill's verdict and its high, medium and low findings. The plugin folder and its `skills/` folder both work, and so does any folder whose subfolders are skills.
 
 ### Check a skill before uploading it to claude.ai
 
@@ -120,7 +123,9 @@ In the desktop app's **Code** tab you can also click **+** → **Plugins** → *
 /skill-diagnostics:audit ./skills/meeting-notes --target upload
 ```
 
-**Result:** the same audit, judged by upload rules: only the six fields claude.ai accepts, a description of at most 1,024 characters, no load-time commands, scripts called through their interpreter. Use `--target cowork` or `--target api` for those surfaces; several targets are allowed.
+**Result:** the same audit, judged by upload rules: only the six fields claude.ai accepts, a description of at most 1,024 characters, no load-time commands, scripts called through their interpreter. Use `--target cowork` or `--target api` for those surfaces, and repeat the option for several (`--target code --target upload`).
+
+Without `--target`, the audit picks the surfaces from where the skill lives: Claude Code for your personal and project skills, Claude Code and Cowork for skills inside a plugin. The report says which surfaces it assumed.
 
 ### Run one lens only
 
@@ -128,7 +133,7 @@ In the desktop app's **Code** tab you can also click **+** → **Plugins** → *
 /skill-diagnostics:audit ./skills/invoice-note --lens executability
 ```
 
-**Result:** only the executability lens runs, which halves the work on a large set of skills.
+**Result:** only the executability lens runs, which halves the work on a large set of skills. The structure checker belongs to the conformance lens, so it runs only with `--lens conformance` or with both lenses.
 
 ### Audit a skill you just wrote
 
@@ -138,7 +143,9 @@ Create or edit a skill as usual, for example with `skill-creator`. When the skil
 
 | Option | Type | Default | Description |
 | :-- | :-- | :-- | :-- |
-| `on_skill_write` | string | `suggest` | What happens after a `SKILL.md` is created or changed: `suggest` (Claude offers an audit once the skill is finished), `run` (Claude runs the audit when the skill is finished) or `off`. Set via `/plugin` → **Installed** → **Skill Diagnostics** → **Configure options**. |
+| `on_skill_write` | string | `suggest` | What happens after a `SKILL.md` is created or changed: `suggest` (Claude offers an audit once the skill is finished), `run` (Claude runs the audit when the skill is finished) or `off`. Set via `/plugin` → **Installed** → **Skill Diagnostics** → **Configure options**, or in `/config` (v2.1.269+). |
+
+In Cowork the option can't be changed and keeps its default, `suggest`.
 
 ## 🔄 Updating
 
@@ -156,6 +163,8 @@ Or in a session: `/plugin` → **Installed** → **Skill Diagnostics** → **Upd
 ```bash
 claude plugin uninstall skill-diagnostics@the-claude-factory
 ```
+
+Installed with `--scope project`? Add `--scope project` here too.
 
 In a session: `/plugin` → **Installed** → **Skill Diagnostics** → **Uninstall**. In the Claude app: **Customize** → **Plugins** → **Skill Diagnostics** → **Uninstall**.
 
@@ -197,16 +206,27 @@ No. The audit only reads files and reports. If you then ask Claude to fix the fi
 </details>
 
 <details>
-<summary><b>Claude asks for permission to read the skill.</b></summary>
+<summary><b>Claude asks for permission during an audit.</b></summary>
 
-That happens when the skill lives outside your working directory, for example in `~/.claude/skills/`. It is Claude Code's normal permission check for reads outside the project; allow it once and the audit continues.
+These prompts are expected, and the audit only reads:
+
+- **Reading your skill**, when it lives outside your working directory, for example in `~/.claude/skills/`. Allow it and the audit continues.
+- **Reading the plugin's own guides**, which live in Claude Code's plugin folder. Safe to allow.
+- **Fetching an official documentation page**, to confirm a rule against the live docs. If you deny it, the finding stays in the report, marked *not verified live*.
 
 </details>
 
 <details>
 <summary><b>The report says "checker not run".</b></summary>
 
-The structure checker needs Python 3.9 or later as `python3` on your `PATH` (on Windows, with Git for Windows). The rest of the audit still ran; install Python and run the audit again to add the checker's findings.
+The structure checker needs Python 3.9 or later as `python3` on your `PATH` (on Windows, with Git for Windows). The rest of the audit still ran; install Python and run the audit again to add the checker's findings. Without Python, Claude Code also shows a hook error after each `SKILL.md` write; installing Python removes it.
+
+</details>
+
+<details>
+<summary><b>The report warns that my description is too long for the skill listing.</b></summary>
+
+Claude Code cuts each skill's `description` (plus `when_to_use`) in its skill listing at the `skillListingMaxDescChars` setting, 1,536 characters by default. The warning uses that default. If you raised the setting, the warning does not apply to you, but users of a skill you share may still see the cut text, so keep the key use case first.
 
 </details>
 

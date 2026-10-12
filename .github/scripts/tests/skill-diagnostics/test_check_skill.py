@@ -155,19 +155,45 @@ class Name(SkillCase):
         _, report = run(self.skill)
         self.assertTrue(has(report, severity="error", rule="name-format"))
 
-    def test_reserved_word_is_error(self) -> None:
+    def test_reserved_word_is_error_for_upload(self) -> None:
         """Regression: the claude-essentials checker only warned."""
         self.skill = self.root / "claude-helper"
         self.skill.mkdir()
         self.skill_md("name: claude-helper\ndescription: Does a thing. Use when asked.\n")
-        code, report = run(self.skill)
+        code, report = run(self.skill, "--target", "upload")
         self.assertEqual(code, 1, report)
-        self.assertTrue(has(report, severity="error", line=2))
+        self.assertTrue(has(report, severity="error", line=2, rule="name-reserved"))
+
+    def test_reserved_word_is_info_for_claude_code(self) -> None:
+        """Claude Code accepts the word, so a valid Claude Code skill must not fail."""
+        self.skill = self.root / "claude-helper"
+        self.skill.mkdir()
+        self.skill_md("name: claude-helper\ndescription: Does a thing. Use when asked.\n")
+        code, report = run(self.skill)
+        self.assertEqual(code, 0, report)
+        self.assertTrue(has(report, severity="info", line=2, rule="name-reserved"))
 
     def test_name_must_match_directory(self) -> None:
         self.skill_md("name: other-name\ndescription: Does a thing. Use when asked.\n")
         _, report = run(self.skill)
+        self.assertTrue(has(report, severity="warning", rule="name-directory"))
+        _, report = run(self.skill, "--target", "upload")
         self.assertTrue(has(report, severity="error", rule="name-directory"))
+
+    def test_synced_directory_is_error_for_claude_code(self) -> None:
+        self.skill = self.root / "synced"
+        self.skill.mkdir()
+        self.skill_md("name: synced\ndescription: Does a thing. Use when asked.\n")
+        code, report = run(self.skill)
+        self.assertEqual(code, 1, report)
+        self.assertTrue(has(report, severity="error", rule="name-reserved-local"))
+        _, report = run(self.skill, "--target", "upload")
+        self.assertFalse(has(report, rule="name-reserved-local"), report)
+
+    def test_anthropic_skills_name_is_error_for_claude_code(self) -> None:
+        self.skill_md("name: anthropic-skills\ndescription: Does a thing. Use when asked.\n")
+        _, report = run(self.skill)
+        self.assertTrue(has(report, severity="error", rule="name-reserved-local"))
 
 
 class Description(SkillCase):
@@ -291,6 +317,15 @@ class Files(SkillCase):
         self.write("scripts/build.py", "#!/usr/bin/env python3\nprint('ok')\n", executable=True)
         _, report = run(self.skill)
         self.assertTrue(has(report, severity="warning", rule="script-path"))
+
+    def test_upload_skill_dir_path_reported_once_per_line(self) -> None:
+        self.skill_md(GOOD, "Read `${CLAUDE_SKILL_DIR}/references/a.md` and `${CLAUDE_SKILL_DIR}/references/b.md`.\n")
+        self.write("references/a.md", "# A\n")
+        self.write("references/b.md", "# B\n")
+        _, report = run(self.skill, "--target", "upload")
+        hits = [f for f in findings(report) if f.get("rule") == "script-path"]
+        self.assertEqual(len(hits), 1, report)
+        self.assertNotIn("interpreter", json.dumps(hits[0]))
 
     def test_bare_script_file_mention_is_not_a_command(self) -> None:
         self.skill_md(GOOD, "| `scripts/build.py` | Run it, do not read it |\n")

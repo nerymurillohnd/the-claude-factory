@@ -6,13 +6,13 @@
         "hooks": [
           {
             "type": "command",
-            "if": "Write(**/SKILL.md)",
+            "if": "Write(//**/SKILL.md)",
             "command": "\"${CLAUDE_PLUGIN_ROOT}/hooks/skill_written.py\"",
             "timeout": 10
           },
           {
             "type": "command",
-            "if": "Edit(**/SKILL.md)",
+            "if": "Edit(//**/SKILL.md)",
             "command": "\"${CLAUDE_PLUGIN_ROOT}/hooks/skill_written.py\"",
             "timeout": 10
           }

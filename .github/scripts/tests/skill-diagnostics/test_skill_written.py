@@ -84,6 +84,27 @@ class SkillWrittenHook(unittest.TestCase):
         _, context = self.fire(path=cached)
         self.assertEqual(context, "")
 
+    def test_ignores_the_plugin_itself_but_not_a_sibling_folder(self) -> None:
+        own = str(REPO / "plugins" / "skill-diagnostics" / "skills" / "audit" / "SKILL.md")
+        sibling = str(REPO / "plugins" / "skill-diagnostics-extra" / "skills" / "a" / "SKILL.md")
+        self.assertEqual(self.fire(path=own)[1], "")
+        self.assertIn("skill-diagnostics-extra", self.fire(path=sibling)[1])
+
+    def test_relative_path_names_a_real_directory(self) -> None:
+        _, context = self.fire(path="SKILL.md")
+        self.assertNotIn("the skill at  was", context)
+        self.assertIn(os.getcwd(), context)
+
+    def test_prunes_old_session_state(self) -> None:
+        folder = self.data / "notified"
+        folder.mkdir(parents=True)
+        old = folder / "old.txt"
+        old.write_text("x\n", encoding="utf-8")
+        stale = 40 * 24 * 3600
+        os.utime(old, (old.stat().st_atime - stale, old.stat().st_mtime - stale))
+        self.fire()
+        self.assertFalse(old.exists())
+
     def test_bad_input_never_blocks(self) -> None:
         code, context = self.fire(raw="not json")
         self.assertEqual((code, context), (0, ""))

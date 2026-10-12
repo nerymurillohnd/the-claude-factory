@@ -257,6 +257,7 @@ class Checker:
         if fm is not None:
             self.check_fields(fm)
             self.check_name(fm)
+            self.check_local_reserved(fm)
             self.check_description(fm)
             body_start = fm.end_line + 1
         body = lines[body_start - 1 :]
@@ -383,19 +384,49 @@ class Checker:
             if word in name:
                 self.add(
                     "name-reserved",
-                    "error",
+                    "error" if self.upload else "info",
                     self.skill_md,
                     line,
-                    f"'name' contains the reserved word '{word}': claude.ai uploads and the Skills API reject it",
+                    f"'name' contains the reserved word '{word}': claude.ai uploads and the Skills API reject it"
+                    + ("" if self.upload else "; it matters only if you upload the skill"),
                 )
         if name != self.dir.name:
             self.add(
                 "name-directory",
-                "error",
+                "error" if self.upload else "warning",
                 self.skill_md,
                 line,
                 f"'name' is '{name}' but the directory is '{self.dir.name}'; the spec requires them to match",
             )
+
+    def check_local_reserved(self, fm: Frontmatter) -> None:
+        """Names Claude Code refuses to load, whatever the frontmatter says."""
+        if self.upload:
+            return
+        fld = fm.fields.get("name")
+        line = fld.line if fld else 1
+        if self.dir.name.lower() == "synced":
+            self.add(
+                "name-reserved-local",
+                "error",
+                self.skill_md,
+                line,
+                "the directory is named 'synced', which Claude Code reserves for skills synced from claude.ai;"
+                " it skips this skill",
+                "Rename the directory.",
+            )
+        for value in (self.dir.name, fld.value if fld else ""):
+            if value == "anthropic-skills" or value.startswith("anthropic-skills:"):
+                self.add(
+                    "name-reserved-local",
+                    "error",
+                    self.skill_md,
+                    line,
+                    f"'{value}' uses 'anthropic-skills', which Claude Code reserves for synced skills;"
+                    " it does not load",
+                    "Rename the directory and the 'name'.",
+                )
+                break
 
     # description
     def check_description(self, fm: Frontmatter) -> None:
@@ -667,17 +698,23 @@ class Checker:
     def check_scripts(self, body: list[str], start: int) -> None:
         for offset, line in enumerate(body):
             number = start + offset
-            for match in SKILL_DIR_PATH.finditer(line):
+            matches = list(SKILL_DIR_PATH.finditer(line))
+            if self.upload and matches:
+                scripts_used = any(m.group(1).startswith("scripts/") for m in matches)
+                self.add(
+                    "script-path",
+                    "error",
+                    self.skill_md,
+                    number,
+                    f"${{CLAUDE_SKILL_DIR}} does not exist on {self.target}",
+                    "Call it through its interpreter, relative to the skill: python3 scripts/x.py"
+                    if scripts_used
+                    else "Use a path relative to the skill: references/x.md",
+                )
+            for match in matches:
                 if self.upload:
-                    self.add(
-                        "script-path",
-                        "error",
-                        self.skill_md,
-                        number,
-                        f"${{CLAUDE_SKILL_DIR}} does not exist on {self.target}",
-                        "Call it through its interpreter, relative to the skill: python3 scripts/x.py",
-                    )
-                elif not (self.dir / match.group(1).rstrip(".")).exists():
+                    continue
+                if not (self.dir / match.group(1).rstrip(".")).exists():
                     self.add("script-missing", "error", self.skill_md, number, f"missing file: {match.group(1)}")
             if not self.upload and RELATIVE_SCRIPT.search(line) and "CLAUDE_SKILL_DIR" not in line:
                 self.add(

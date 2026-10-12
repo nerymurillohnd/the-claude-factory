@@ -14,10 +14,12 @@ import hashlib
 import json
 import os
 import sys
+import time
 from pathlib import Path
 
 MODES = ("suggest", "run", "off")
 DEFAULT_MODE = "suggest"
+STATE_MAX_AGE = 30 * 24 * 3600  # seconds; older per-session state files are removed
 
 
 def message(mode: str, skill_dir: str) -> str:
@@ -34,12 +36,30 @@ def message(mode: str, skill_dir: str) -> str:
     )
 
 
+def prune(folder: Path) -> None:
+    """Remove state files of sessions older than STATE_MAX_AGE."""
+    cutoff = time.time() - STATE_MAX_AGE
+    for old in folder.glob("*.txt"):
+        try:
+            if old.stat().st_mtime < cutoff:
+                old.unlink()
+        except OSError:
+            pass
+
+
+def inside(path: str, root: str) -> bool:
+    """True when path is root or below it, on whole path segments."""
+    root = root.rstrip("/")
+    return bool(root) and (path == root or path.startswith(root + "/"))
+
+
 def already_notified(data_dir: str, session: str, skill_dir: str) -> bool:
     """Record the skill for this session; True when it was recorded before."""
     if not data_dir:
         return False
     folder = Path(data_dir) / "notified"
     folder.mkdir(parents=True, exist_ok=True)
+    prune(folder)
     key = hashlib.sha256(session.encode("utf-8")).hexdigest()[:32]
     log = folder / f"{key}.txt"
     seen = log.read_text(encoding="utf-8").splitlines() if log.exists() else []
@@ -60,10 +80,10 @@ def main() -> int:
     file_path = str(event.get("tool_input", {}).get("file_path", ""))
     if os.path.basename(file_path) != "SKILL.md":
         return 0
-    skill_dir = os.path.dirname(file_path)
+    skill_dir = os.path.dirname(os.path.abspath(file_path))
     normalized = skill_dir.replace("\\", "/")
     plugin_root = os.environ.get("CLAUDE_PLUGIN_ROOT", "").replace("\\", "/")
-    if "/plugins/cache/" in normalized or (plugin_root and normalized.startswith(plugin_root)):
+    if "/plugins/cache/" in normalized or inside(normalized, plugin_root):
         return 0
     if already_notified(os.environ.get("CLAUDE_PLUGIN_DATA", ""), str(event.get("session_id", "")), skill_dir):
         return 0

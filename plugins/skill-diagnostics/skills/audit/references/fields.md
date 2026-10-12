@@ -51,7 +51,8 @@ All 20 fields are optional in Claude Code [req]. Set `name` and `description` an
 ## Name
 
 - [spec] 1–64 characters; lowercase letters, digits and hyphens; no hyphen at the start or end; no two hyphens in a row; equal to the directory name.
-- [req] claude.ai uploads and the Skills API also reject the words `anthropic` and `claude` in `name`.
+- [req] claude.ai uploads and the Skills API also reject the words `anthropic` and `claude` in `name`. Claude Code accepts them: report it only for an upload or API target.
+- [req] Claude Code never loads a skill whose directory is named `synced` (any capitalization), or whose directory or `name` is `anthropic-skills` or starts with `anthropic-skills:`; both are reserved for skills synced from claude.ai.
 - [rec] Prefer a name that says the activity (`processing-invoices`) over a vague one (`helper`, `utils`).
 
 ## Description

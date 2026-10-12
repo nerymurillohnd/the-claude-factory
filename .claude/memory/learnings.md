@@ -18,6 +18,9 @@ Rules learned the hard way. Follow them; add one line per new lesson.
 - Self-auditing a skill with both lenses converges in passes: each pass surfaces finer gaps once the coarse ones are fixed (skill-diagnostics `audit`: 7 → 6 → 5 → 3 findings, verdict fail → pass with warnings). Run passes until no high finding remains, then fix the rest without another full pass.
 - `claude plugin eval` only runs a granted Bash inside the OS sandbox: on Linux install `bubblewrap` and `socat` first (CI too), then grant `--allow-tools Bash`; a wildcard rule like `Bash(*check_skill.py *)` did not match. A skill's own `allowed-tools` cannot widen an eval's grants.
 - Eval fixtures that look hard are often easy for Sonnet: the first skill-diagnostics pilot passed 4 of 6 cases without the plugin. Calibrate differences against the baseline arm before trusting a case; reclassify a delta-0 case as a guardrail or rewrite it.
+- Hook `if` and permission path rules are anchored: `**/SKILL.md` matches only at or under the session's cwd. Use `//**/SKILL.md` to match anywhere on disk (Windows paths normalize to `/c/...`, so `//**` covers every drive).
+- A plugin hook started through a `python3` shebang shows a "hook error" notice on every matching tool call when `python3` is missing; a mode check inside the script can't silence it. Declare it in the README Requirements.
+- The Agent Skills reserved words (`claude`, `anthropic`) only matter for uploads and the API; Claude Code instead refuses skill folders named `synced` and names in the `anthropic-skills` namespace.
 - A copied (cached) install for local testing: a local marketplace whose entry uses `{"source":"git-subdir","url":"file:///abs/repo.git","path":"plugins/<name>"}`; a relative-path source loads in place instead. Isolate with `HOME=<tmp>` or `CLAUDE_CONFIG_DIR`.
 
 ## GitHub
@@ -34,4 +37,5 @@ Rules learned the hard way. Follow them; add one line per new lesson.
 - GitHub heading anchors keep the emoji variation selector (U+FE0F) and start with `-` for emoji headings (`#-catalog`); markdownlint MD051 checks them, and `catalog.mjs` `anchor()` mirrors that.
 - Nested code fences inside a markdown example: use `~~~` for the outer fence.
 - Don't write literal double-brace placeholders in template comments — `check-repo.mjs` flags them.
+- A `.gitignore` fix never untracks committed files: after widening a pattern, `git rm -r --cached` what it now covers (plugin eval results once shipped this way).
 - Moving files from a cloud session to Nery's Mac: tar in the cloud → `device_commit_files` → extract with the device shell.
