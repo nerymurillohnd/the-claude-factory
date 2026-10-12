@@ -8,7 +8,7 @@ Any exit other than 0, no valid JSON, an error trace, no `python3` 3.9+ on `PATH
 
 - First, if the path of this audit skill's own folder (the start of the script path) contains a space, retry once with the script path quoted; the command then needs the user's approval, which is safe to give.
 - Still failing: record `checker not run: <reason, with the first error line>` and continue; the lenses still run.
-- Inventory: list the files with this session's own tool, `find "<skill-dir>" -type f` by default (Glob with `**/*` and `**/.*` stops at 100 results), and the links with `find "<skill-dir>" -type l`. Without the checker there is no way to see where a link leads: report every link as not inspected. Name the tool on the report's Files line.
+- Inventory: if `--list` worked and only `--target` failed, keep the step 1 inventory. Only if `--list` failed, list the files with this session's own tool, `find "<skill-dir>" -type f` by default (Glob with `**/*` and `**/.*` stops at 100 results), and the links with `find "<skill-dir>" -type l`. Without the checker there is no way to see where a link leads: report every link as not inspected. Name the tool on the report's Files line.
 
 ## The inventory is incomplete
 

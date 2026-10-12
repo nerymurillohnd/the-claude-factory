@@ -13,7 +13,7 @@ Answers one question: **could a model that has only this skill's files produce t
 ## Input
 
 - The skill directory (absolute path).
-- Its file inventory: every file under it, with relative paths, from the orchestrator.
+- Its file inventory: every file under it, with relative paths, from the orchestrator. Its `outside` entries are links that leave the skill: name them as external dependencies; never read them or list them as not inspected.
 - Missing path, several paths, or a folder of several skills: return one line saying so and stop.
 
 ## Rules for the whole audit

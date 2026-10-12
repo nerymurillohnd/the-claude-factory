@@ -15,7 +15,7 @@ Facts live in `fields.md` and `surfaces.md`, next to this file. Read both before
 ## Input
 
 - The skill directory (absolute path) and its target surfaces.
-- Its file inventory: every file under it, with relative paths, from the orchestrator.
+- Its file inventory: every file under it, with relative paths, from the orchestrator. Its `outside` entries are links that leave the skill: name them as external dependencies; never read them or list them as not inspected.
 - The checker's JSON report for each target, or the line `checker not run: <reason>`.
 - The paths of `fields.md` and `surfaces.md`.
 
