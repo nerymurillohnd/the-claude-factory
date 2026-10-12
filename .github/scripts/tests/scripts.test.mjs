@@ -36,15 +36,33 @@ const read = (p) => readFileSync(join(root, p), 'utf8');
 const write = (p, s) => writeFileSync(join(root, p), s);
 const json = (p) => JSON.parse(read(p));
 
-function scaffold(name = 'demo-tool', category = 'productivity') {
-  const r = run('new-plugin.mjs', ['--name', name, '--category', category, '--description', 'Does demo things.']);
+function scaffold(name = 'demo-tool', category = 'productivity', extra = []) {
+  const r = run('new-plugin.mjs', ['--name', name, '--category', category, '--description', 'Does demo things.', ...extra]);
   assert.equal(r.code, 0, r.out);
 }
 
-/** Simulate a maintainer finishing the README: remove every TODO/TEMPLATE comment. */
+/** Keep only the Compatibility rows whose text contains one of `keep`. */
+function pruneCompat(name, keep) {
+  const p = `plugins/${name}/README.md`;
+  const text = read(p);
+  const start = text.search(/^## .*Compatibility/m);
+  const end = text.indexOf('\n## ', start + 1);
+  const section = text
+    .slice(start, end)
+    .split('\n')
+    .filter((l) => !l.startsWith('| ') || /^\| (Component|:--)/.test(l) || keep.some((k) => l.includes(k)))
+    .join('\n');
+  write(p, text.slice(0, start) + section + text.slice(end));
+}
+
+/** Simulate a maintainer finishing the plugin: add one skill, resolve TODOs, trim the Compatibility table. */
 function resolveTodos(name = 'demo-tool') {
+  mkdirSync(join(root, `plugins/${name}/skills/demo`), { recursive: true });
+  write(`plugins/${name}/skills/demo/SKILL.md`, '---\ndescription: Demo skill. Use when testing.\n---\nDo it.\n');
   const p = `plugins/${name}/README.md`;
   write(p, read(p).replace(/<!--\s*(TODO|TEMPLATE)[\s\S]*?-->\n?/g, ''));
+  pruneCompat(name, ['Skills']);
+  assert.equal(run('catalog.mjs').code, 0);
 }
 
 beforeEach(() => {
@@ -107,6 +125,54 @@ describe('check-repo', () => {
     const r = run('check-repo.mjs');
     assert.equal(r.code, 1);
     assert.match(r.out, /missing the "Compatibility" section/);
+  });
+
+  test('requires a valid metadata.surfaces declaration', () => {
+    scaffold();
+    resolveTodos();
+    const p = 'plugins/demo-tool/.claude-plugin/plugin.json';
+    const m = json(p);
+    m.metadata.surfaces = ['cowork'];
+    write(p, `${JSON.stringify(m, null, 2)}\n`);
+    const r = run('check-repo.mjs');
+    assert.equal(r.code, 1);
+    assert.match(r.out, /metadata\.surfaces must be one of/);
+  });
+
+  test('a bin/ plugin must be declared Claude Code-only', () => {
+    scaffold();
+    resolveTodos();
+    mkdirSync(join(root, 'plugins/demo-tool/bin'), { recursive: true });
+    write('plugins/demo-tool/bin/tool', '#!/bin/sh\necho hi\n');
+    const r = run('check-repo.mjs');
+    assert.equal(r.code, 1);
+    assert.match(r.out, /bin\/, which makes Cowork refuse the plugin/);
+    assert.match(r.out, /no row for Executables/);
+  });
+
+  test('a Claude Code-only plugin passes when declared everywhere', () => {
+    scaffold('lang-tool', 'language-support', ['--claude-code-only']);
+    mkdirSync(join(root, 'plugins/lang-tool/bin'), { recursive: true });
+    write('plugins/lang-tool/bin/tool', '#!/bin/sh\necho hi\n');
+    const p = 'plugins/lang-tool/README.md';
+    write(p, read(p).replace(/<!--\s*(TODO|TEMPLATE)[\s\S]*?-->\n?/g, 'it needs bin/ executables'));
+    pruneCompat('lang-tool', ['Executables']);
+    assert.equal(run('catalog.mjs').code, 0);
+    assert.deepEqual(json('plugins/lang-tool/.claude-plugin/plugin.json').metadata.surfaces, ['claude-code']);
+    assert.match(read(p), /works%20in-Claude%20Code%20only-/);
+    assert.match(read('README.md'), /💻 Code only/);
+    const r = run('check-repo.mjs');
+    assert.equal(r.code, 0, r.out);
+  });
+
+  test('flags Compatibility rows for components the plugin does not ship', () => {
+    scaffold();
+    resolveTodos();
+    const p = 'plugins/demo-tool/README.md';
+    write(p, read(p).replace('| 🎯 Skills |', '| 🤖 Agents | ✅ | ✅ | ➖ |\n| 🎯 Skills |'));
+    const r = run('check-repo.mjs');
+    assert.equal(r.code, 1);
+    assert.match(r.out, /lists Agents, which the plugin doesn't ship/);
   });
 
   test('flags a stale README catalog', () => {

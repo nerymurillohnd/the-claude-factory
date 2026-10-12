@@ -4,18 +4,19 @@ import { existsSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { loadManifest, pluginDir } from './lib.mjs';
 
+/** `row` is the text the README Compatibility table must contain for that component. */
 export const COMPONENT_TYPES = [
-  { id: 'skills', emoji: '🎯', label: 'Skills' },
-  { id: 'commands', emoji: '⌨️', label: 'Commands' },
-  { id: 'agents', emoji: '🤖', label: 'Agents' },
-  { id: 'hooks', emoji: '🪝', label: 'Hooks' },
-  { id: 'mcp', emoji: '🔌', label: 'MCP' },
-  { id: 'lsp', emoji: '🧠', label: 'LSP' },
-  { id: 'outputStyles', emoji: '🎨', label: 'Output styles' },
-  { id: 'monitors', emoji: '📡', label: 'Monitors' },
-  { id: 'workflows', emoji: '🔁', label: 'Workflows' },
-  { id: 'themes', emoji: '🌈', label: 'Themes' },
-  { id: 'bin', emoji: '⚙️', label: 'Executables' },
+  { id: 'skills', emoji: '🎯', label: 'Skills', row: 'Skills', claudeCodeOnly: false },
+  { id: 'commands', emoji: '⌨️', label: 'Commands', row: 'Commands', claudeCodeOnly: false },
+  { id: 'agents', emoji: '🤖', label: 'Agents', row: 'Agents', claudeCodeOnly: false },
+  { id: 'hooks', emoji: '🪝', label: 'Hooks', row: 'Hooks', claudeCodeOnly: false },
+  { id: 'mcp', emoji: '🔌', label: 'MCP', row: 'MCP server', claudeCodeOnly: false },
+  { id: 'lsp', emoji: '🧠', label: 'LSP', row: 'LSP', claudeCodeOnly: true },
+  { id: 'outputStyles', emoji: '🎨', label: 'Output styles', row: 'Output styles', claudeCodeOnly: true },
+  { id: 'monitors', emoji: '📡', label: 'Monitors', row: 'Monitors', claudeCodeOnly: true },
+  { id: 'workflows', emoji: '🔁', label: 'Workflows', row: 'Workflows', claudeCodeOnly: true },
+  { id: 'themes', emoji: '🌈', label: 'Themes', row: 'Themes', claudeCodeOnly: true },
+  { id: 'bin', emoji: '⚙️', label: 'Executables', row: 'Executables', claudeCodeOnly: true },
 ];
 
 function countFiles(dir, predicate) {

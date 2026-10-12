@@ -5,6 +5,7 @@
 import { existsSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { renderReadme } from './catalog.mjs';
+import { COMPONENT_TYPES, detectComponents } from './components.mjs';
 import {
   changelogSection,
   isMain,
@@ -21,6 +22,8 @@ import {
   RESERVED_NAME,
   ROOT,
   SEMVER,
+  SURFACE_PROFILES,
+  surfaceProfileKey,
 } from './lib.mjs';
 
 export function checkRepo() {
@@ -103,8 +106,30 @@ export function checkRepo() {
       if (/\{\{\w+\}\}/.test(changelog)) err(scope, 'CHANGELOG.md has unresolved {{placeholders}}');
     }
 
-    if (existsSync(join(dir, 'bin'))) {
-      warn(scope, 'ships a top-level bin/ — claude.ai and Cowork refuse to install it; README Compatibility must say so');
+    // ── Cross-surface declaration (.claude/rules/cross-surface-compatibility.md) ──
+    const profileKey = surfaceProfileKey(manifest.metadata?.surfaces);
+    const components = detectComponents(name);
+    if (!profileKey) {
+      err(scope, `plugin.json metadata.surfaces must be one of: ${Object.values(SURFACE_PROFILES).map((p) => JSON.stringify(p.surfaces)).join(' or ')}`);
+    } else {
+      if (components.bin && profileKey !== 'claude-code-only') {
+        err(scope, 'ships a top-level bin/, which makes Cowork refuse the plugin — declare metadata.surfaces ["claude-code"] or move the code into a skill\'s scripts/');
+      }
+      if (existsSync(join(dir, 'README.md'))) {
+        const readme = readText(join(dir, 'README.md'));
+        const profile = SURFACE_PROFILES[profileKey];
+        if (!readme.includes(`works%20in-${profile.badge}-`)) err(scope, `README.md is missing the "works in" badge for ${JSON.stringify(profile.surfaces)}`);
+        if (profileKey === 'claude-code-only' && !readme.includes('**Claude Code only**')) {
+          err(scope, 'README.md must state "**Claude Code only**" (and why) for a Claude Code-only plugin');
+        }
+        const compat = readme.match(/^## [^\n]*Compatibility[^\n]*\n([\s\S]*?)(?=^## |(?![\s\S]))/m)?.[1] ?? '';
+        const rows = compat.split('\n').filter((l) => l.startsWith('|') && !/^\|\s*:?-/.test(l) && !/^\|\s*Component\s*\|/.test(l));
+        for (const t of COMPONENT_TYPES) {
+          const present = rows.some((r) => r.includes(t.row));
+          if (components[t.id] && !present) err(scope, `README.md Compatibility table has no row for ${t.label}, which the plugin ships`);
+          if (!components[t.id] && present) err(scope, `README.md Compatibility table lists ${t.label}, which the plugin doesn't ship — remove the row`);
+        }
+      }
     }
   }
 

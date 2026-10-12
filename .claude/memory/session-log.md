@@ -10,4 +10,5 @@ Newest first. One entry per session: what changed, commits, what's next.
 - Created the public GitHub repo from Nery's browser, pushed `c441921`, Release published `marketplace--v0.1.0`; set PRs to Collaborators only, topics, labels.
 - Moved `CLAUDE.md` to `.claude/CLAUDE.md` and created committed project memory in `.claude/memory/`.
 - Settled the cross-surface standard (Claude Code + Cowork) and saved the verified component matrix in `.claude/rules/cross-surface-compatibility.md`.
+- Added `metadata.surfaces` declaration with README badge, catalog "Works in" column and enforced checks (22 tests); made maintenance skills invocable on explicit request.
 - Next: choose and build the first plugin with `/new-plugin`.

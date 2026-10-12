@@ -1,8 +1,7 @@
 ---
 name: new-plugin
-description: Creates a new plugin in The Claude Factory end to end — design brief, scaffold from templates, components, sales-quality README, changelog, validation and a local install test. Use when Nery asks to create, build, add or start a plugin for the marketplace.
+description: Creates a new plugin in The Claude Factory end to end — design brief, scaffold, components, sales-quality README, changelog, validation and install tests on Claude Code and Cowork. Use only when Nery explicitly asks to create, build or start a plugin.
 argument-hint: "[plugin-name] [category]"
-disable-model-invocation: true
 ---
 
 # Create a plugin
@@ -27,8 +26,10 @@ Research current official docs for every component type used (Claude Code Docs M
 ```bash
 node .github/scripts/new-plugin.mjs --name <name> --category <id> \
   --description "<one sentence, outcome-first>" --display-name "<Display Name>" --emoji <emoji> \
-  --min-claude-code <x.y.z>
+  --min-claude-code <x.y.z> [--claude-code-only]
 ```
+
+Add `--claude-code-only` only when the brief approved it; the default declares Claude Code + Cowork.
 
 This creates `plugins/<name>/` (manifest, README, CHANGELOG, LICENSE), registers the entry and regenerates the catalog.
 
@@ -39,6 +40,7 @@ Follow `.claude/rules/plugin-authoring.md`. Add `keywords` to `plugin.json`. Kee
 ## 4. Write the README
 
 - Resolve every `{{…}}` and `<!-- TODO -->` in `plugins/<name>/README.md`; delete rows/sections that don't apply (keep all required sections).
+- Compatibility table: keep exactly one row per component type the plugin ships.
 - Follow `.claude/rules/user-docs-style.md`: outcome-first TL;DR, real usage examples, accurate Compatibility table.
 - Fill `CHANGELOG.md` `0.1.0` → `### Added` with what ships.
 

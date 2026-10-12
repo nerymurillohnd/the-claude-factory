@@ -1,7 +1,6 @@
 ---
 name: docs-drift-check
-description: Checks The Claude Factory against the current Claude Code and Claude app releases — changelog, plugin and marketplace docs, platform support, pinned tool and action versions — and lists every user doc, template, rule or script that is now outdated. Use periodically, after a Claude Code release, or when Nery asks whether the repo is up to date.
-disable-model-invocation: true
+description: Checks The Claude Factory against current Claude Code and Claude app releases — changelog, plugin docs, platform support, pinned versions — and lists every outdated doc, rule, template or script. Use only when Nery explicitly asks for a drift or freshness check.
 context: fork
 agent: general-purpose
 ---

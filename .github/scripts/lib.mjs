@@ -37,6 +37,38 @@ export const REQUIRED_PLUGIN_SECTIONS = [
   'License',
 ];
 
+/**
+ * Surface profiles. A plugin declares one in plugin.json `metadata.surfaces` (Claude Code ignores
+ * `metadata`); the README badge, the catalog column and check-repo.mjs all derive from it.
+ * Matrix and rules: .claude/rules/cross-surface-compatibility.md
+ */
+export const SURFACE_PROFILES = {
+  both: {
+    surfaces: ['claude-code', 'cowork'],
+    badge: 'Claude%20Code%20%C2%B7%20Cowork',
+    text: '💻 Claude Code · 🤝 Cowork',
+    catalog: '💻 Code · 🤝 Cowork',
+    note: '',
+  },
+  'claude-code-only': {
+    surfaces: ['claude-code'],
+    badge: 'Claude%20Code%20only',
+    text: '💻 **Claude Code only**',
+    catalog: '💻 Code only',
+    note: '💻 **Claude Code only** — <!-- TODO: say why, e.g. "it ships an LSP server" or "it needs bin/ executables" -->. It doesn\'t install or work in Cowork or Claude chat.\n\n',
+  },
+};
+
+/** Returns the profile key for a surfaces array, or null when it matches none. */
+export function surfaceProfileKey(surfaces) {
+  if (!Array.isArray(surfaces)) return null;
+  const key = [...surfaces].sort().join(',');
+  for (const [name, profile] of Object.entries(SURFACE_PROFILES)) {
+    if ([...profile.surfaces].sort().join(',') === key) return name;
+  }
+  return null;
+}
+
 export function readJson(path) {
   return JSON.parse(readFileSync(path, 'utf8'));
 }

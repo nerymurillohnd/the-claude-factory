@@ -6,7 +6,9 @@ Rules learned the hard way. Follow them; add one line per new lesson.
 
 - `claude plugin validate --strict` warns on an empty `plugins` array — `validate-claude.sh` drops `--strict` for the marketplace only while the catalog is empty.
 - Plugin names starting with `claude-`, `anthropic-`, `cc-plugin-` fail validation; `claude` as a whole word anywhere only warns. Marketplace name `the-claude-factory` is accepted.
-- Skills with `disable-model-invocation: true` don't appear in Claude's own skill list — expected; Nery invokes them with `/name`.
+- Skills with `disable-model-invocation: true` can't be run by Claude, and the Claude app's `/` and **+ → Skills** menus only list account skills — so in app/cloud sessions repo skills are usable only if Claude may invoke them. Our maintenance skills therefore omit that flag and say "Use only when Nery explicitly asks".
+- In cloud sessions the environment's `skillOverrides` blocks Claude from invoking a skill named `verify`; run the gates directly there (commands in `.claude/CLAUDE.md`).
+- Project skills appear in the `/` menu only in Claude Code opened on the repo (terminal, desktop Code tab, IDE).
 - A project skill named `verify` replaces the bundled `/verify` and Claude Code runs it before each commit.
 - Test install loops in an isolated config: `CLAUDE_CONFIG_DIR=$(mktemp -d) claude plugin marketplace add ./`.
 

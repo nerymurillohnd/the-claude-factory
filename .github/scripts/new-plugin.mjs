@@ -2,6 +2,7 @@
 // Scaffolds a plugin from .claude/templates/plugin and registers it in marketplace.json.
 //   node .github/scripts/new-plugin.mjs --name my-plugin --category development \
 //     --description "One sentence." [--display-name "My Plugin"] [--emoji 🧰] [--min-claude-code 2.1.292]
+//     [--claude-code-only]   (default: works in Claude Code and Cowork)
 
 import { cpSync, existsSync, mkdirSync, readdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -18,6 +19,7 @@ import {
   README_PATH,
   render,
   RESERVED_NAME,
+  SURFACE_PROFILES,
   TEMPLATES_DIR,
   today,
   writeJson,
@@ -31,6 +33,7 @@ const { values } = parseArgs({
     'display-name': { type: 'string' },
     emoji: { type: 'string', default: '🧩' },
     'min-claude-code': { type: 'string', default: '2.1.292' },
+    'claude-code-only': { type: 'boolean', default: false },
   },
 });
 
@@ -50,6 +53,7 @@ if (marketplace.renames && name in marketplace.renames) fail(`"${name}" is a ret
 
 const displayName =
   values['display-name'] ?? name.split('-').map((w) => w[0].toUpperCase() + w.slice(1)).join(' ');
+const profile = SURFACE_PROFILES[values['claude-code-only'] ? 'claude-code-only' : 'both'];
 const vars = {
   name,
   displayName,
@@ -59,6 +63,10 @@ const vars = {
   emoji: values.emoji,
   minClaudeCode: values['min-claude-code'],
   date: today(),
+  surfacesBadge: profile.badge,
+  surfacesText: profile.text,
+  surfacesNote: profile.note,
+  surfacesJson: JSON.stringify(profile.surfaces),
 };
 
 mkdirSync(join(dir, '.claude-plugin'), { recursive: true });

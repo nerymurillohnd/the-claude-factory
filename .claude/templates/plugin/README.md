@@ -6,6 +6,7 @@
 <p><strong>{{description}}</strong></p>
 
 [![Version](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Fnerymurillohnd%2Fthe-claude-factory%2Fmain%2Fplugins%2F{{name}}%2F.claude-plugin%2Fplugin.json&query=%24.version&label=version&color=D97757)](./CHANGELOG.md)
+[![Works in](https://img.shields.io/badge/works%20in-{{surfacesBadge}}-2563EB)](#-compatibility)
 [![Category](https://img.shields.io/badge/category-{{categoryBadge}}-6B7280)](../../README.md#-catalog)
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-%E2%89%A5%20{{minClaudeCode}}-D97757?logo=claude&logoColor=white)](https://code.claude.com/docs/en/plugins/install)
 [![License: MIT](https://img.shields.io/badge/license-MIT-22C55E)](./LICENSE)
@@ -21,7 +22,7 @@
 
 ---
 
-> [!TIP]
+{{surfacesNote}}> [!TIP]
 > **TL;DR** — <!-- TODO: one sentence on the outcome a user gets, e.g. "Type `/{{name}}:run` and get X without doing Y." -->
 
 ## ✨ Why use it
@@ -136,13 +137,26 @@ In a session: `/plugin` → **Installed** → **{{displayName}}** → **Uninstal
 
 ## 🧭 Compatibility
 
-<!-- TODO: mark each row ✅ works · ⚠️ partial (explain) · ➖ ignored · ❌ can't be installed. Rules: https://claude.com/docs/plugins/platform-support -->
+<!-- TODO: keep one row per component type this plugin ships (check-repo.mjs enforces it) and delete the rest. Values come from .claude/rules/cross-surface-compatibility.md. -->
+
+**Works in:** {{surfacesText}}
 
 | Component | Claude Code | Cowork | Claude chat |
 | :-- | :--: | :--: | :--: |
-| Skills | ✅ | ✅ | ✅ |
-| Agents | ✅ | ✅ | ➖ |
-| Hooks | ✅ | ✅ | ➖ |
+| 🎯 Skills | ✅ | ✅ | ✅ |
+| ⌨️ Commands | ✅ | ✅ | ⚠️ loaded as a skill |
+| 🤖 Agents | ✅ | ✅ | ➖ |
+| 🪝 Hooks | ✅ | ✅ | ➖ |
+| 🔌 MCP server (remote) | ✅ | ✅ connect on the plugin's **Connectors** tab | 🔗 connect manually |
+| 🖥️ MCP server (local) | ✅ | ⚠️ only when Cowork runs on your computer | ➖ |
+| 🧠 LSP server | ✅ | ➖ | ➖ |
+| 🎨 Output styles | ✅ | ➖ | ➖ |
+| 📡 Monitors | ✅ | ➖ | ➖ |
+| 🔁 Workflows | ✅ | ➖ | ➖ |
+| 🌈 Themes | ✅ | ➖ | ➖ |
+| ⚙️ Executables (`bin/`) | ✅ | ❌ | ❌ |
+
+<sub>✅ works · ⚠️ partial · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there</sub>
 
 ## ❓ FAQ & Troubleshooting
 

@@ -43,6 +43,13 @@ Verified 2026-10-11 against <https://claude.com/docs/plugins/platform-support>, 
    - Claude Code: `claude --plugin-dir plugins/<name>` (or local marketplace install).
    - Cowork: add the marketplace (or **Customize → Plugins → Add → Upload plugin** with a zip), start a task, confirm skills/agents/hooks load and connectors connect.
 
+## Declaring surfaces
+
+- Every plugin declares its surfaces in `plugin.json` → `"metadata": { "surfaces": [...] }`: `["claude-code", "cowork"]` (default) or `["claude-code"]`. Claude Code ignores `metadata`; our tooling reads it.
+- Scaffold a Claude Code-only plugin with `new-plugin.mjs --claude-code-only`.
+- From that one field: the README **works in** badge, the catalog **Works in** column, and `check-repo.mjs` checks.
+- `check-repo.mjs` fails when: `metadata.surfaces` is missing/invalid; a plugin ships `bin/` but isn't `["claude-code"]`; the badge doesn't match; a Claude Code-only README lacks "**Claude Code only**"; the Compatibility table misses a row for a shipped component or lists one it doesn't ship.
+
 ## README obligations
 
 - The **Compatibility** table reflects exactly the components the plugin ships, per the matrix above.

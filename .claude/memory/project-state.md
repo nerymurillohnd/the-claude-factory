@@ -14,6 +14,8 @@
 | 2026-10-11 | Maintenance lives only in `.claude/` and `.github/scripts/`; `CLAUDE.md` moved to `.claude/CLAUDE.md` | Keep the public root a clean showcase |
 | 2026-10-11 | Project memory committed in `.claude/memory/` | Auto memory is machine-local; this repo is worked on from Nery's Mac and cloud sessions |
 | 2026-10-11 | Plugins target Claude Code **and** Cowork; Claude Code-only only when unavoidable and declared in the README | Reach both audiences with one package |
+| 2026-10-11 | Surfaces declared in `plugin.json` `metadata.surfaces`; README badge, catalog column and `check-repo.mjs` derive from it | One source of truth, enforced |
+| 2026-10-11 | Maintenance skills invocable by Claude on Nery's explicit request (no `disable-model-invocation`) | Nery works mostly from the Claude app, whose menus don't show repo skills |
 | 2026-10-11 | Plugins must be generic: no Forestal MT references, no forced conversation language | Public audience |
 
 ## Status

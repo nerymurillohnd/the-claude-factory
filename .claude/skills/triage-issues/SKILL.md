@@ -1,8 +1,7 @@
 ---
 name: triage-issues
-description: Triages open GitHub issues of The Claude Factory — reproduces, labels, prioritizes and drafts or posts replies using the saved reply templates. Use when Nery asks to review, triage, answer or clean up issues, or to check what users reported.
+description: Triages open GitHub issues of The Claude Factory — reproduces, labels, prioritizes and drafts replies from the saved templates; posts only after Nery approves. Use only when Nery explicitly asks to review, triage or answer issues.
 argument-hint: "[issue-number|all]"
-disable-model-invocation: true
 allowed-tools:
   - "Bash(gh issue list*)"
   - "Bash(gh issue view*)"

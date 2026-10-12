@@ -21,7 +21,7 @@ paths:
 
 ## Manifest (`plugin.json`)
 
-- Required by our policy: `name`, `displayName`, `version` (semver), `description`, `author`, `homepage` (plugin README on main), `repository`, `license: MIT`, `keywords`.
+- Required by our policy: `name`, `displayName`, `version` (semver), `description`, `author`, `homepage` (plugin README on main), `repository`, `license: MIT`, `keywords`, `metadata.surfaces`.
 - Secrets and per-user values go in `userConfig` (`sensitive: true` for secrets) — never hardcoded.
 
 ## Cross-surface behavior

@@ -1,7 +1,6 @@
 ---
 name: wrap-up
-description: Closes a working session on The Claude Factory — updates the committed project memory in .claude/memory/ (state, environment, learnings, session log), verifies, and commits it. Use when Nery says to wrap up, close or end the session, save context, or remember what we did.
-disable-model-invocation: true
+description: Closes a working session on The Claude Factory — updates the committed project memory in .claude/memory/, verifies and commits it. Use only when Nery explicitly asks to wrap up, close the session or save what we did.
 ---
 
 # Wrap up the session

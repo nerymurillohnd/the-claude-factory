@@ -1,8 +1,7 @@
 ---
 name: release
-description: Releases a plugin or the marketplace of The Claude Factory — picks the SemVer level, rolls the changelog, bumps the version, updates the root changelog and catalog, verifies, and commits. Use when Nery asks to release, publish, ship, bump or version a plugin or the marketplace.
+description: Releases a plugin or the marketplace of The Claude Factory — SemVer level, changelog, version bump, root changelog, catalog, verification and commit. Use only when Nery explicitly asks to release, publish, ship or bump a plugin or the marketplace.
 argument-hint: "<plugin-name|marketplace> [major|minor|patch]"
-disable-model-invocation: true
 ---
 
 # Release

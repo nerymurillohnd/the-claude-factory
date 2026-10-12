@@ -5,7 +5,17 @@
 
 import { writeFileSync } from 'node:fs';
 import { componentBadges, COMPONENT_TYPES, detectComponents } from './components.mjs';
-import { isMain, loadCategories, loadManifest, loadMarketplace, MARKETPLACE_NAME, readText, README_PATH } from './lib.mjs';
+import {
+  isMain,
+  loadCategories,
+  loadManifest,
+  loadMarketplace,
+  MARKETPLACE_NAME,
+  readText,
+  README_PATH,
+  SURFACE_PROFILES,
+  surfaceProfileKey,
+} from './lib.mjs';
 
 function block(name) {
   return { start: `<!-- ${name}:start -->`, end: `<!-- ${name}:end -->` };
@@ -35,6 +45,7 @@ export function buildCatalog() {
       version: manifest.version ?? entry.version ?? '—',
       category: entry.category,
       components: componentBadges(detectComponents(entry.name)),
+      worksIn: SURFACE_PROFILES[surfaceProfileKey(manifest.metadata?.surfaces)]?.catalog ?? '—',
     };
   });
 
@@ -57,10 +68,10 @@ export function buildCatalog() {
 
   for (const c of used) {
     out.push('', `### ${c.emoji} ${c.title}`, '', `*${c.description}*`, '');
-    out.push('| Plugin | What it does | Version | Includes |', '| :-- | :-- | :--: | :-- |');
+    out.push('| Plugin | What it does | Works in | Version | Includes |', '| :-- | :-- | :-- | :--: | :-- |');
     for (const e of entries.filter((x) => x.category === c.id).sort((a, b) => a.name.localeCompare(b.name))) {
       out.push(
-        `| [**${escapeCell(e.displayName)}**](./plugins/${e.name}#readme)<br>\`${e.name}@${MARKETPLACE_NAME}\` | ${escapeCell(e.description)} | \`${e.version}\` | ${e.components || '—'} |`,
+        `| [**${escapeCell(e.displayName)}**](./plugins/${e.name}#readme)<br>\`${e.name}@${MARKETPLACE_NAME}\` | ${escapeCell(e.description)} | ${e.worksIn} | \`${e.version}\` | ${e.components || '—'} |`,
       );
     }
   }

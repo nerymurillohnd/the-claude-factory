@@ -10,5 +10,8 @@
   "homepage": "https://github.com/nerymurillohnd/the-claude-factory/tree/main/plugins/{{name}}#readme",
   "repository": "https://github.com/nerymurillohnd/the-claude-factory",
   "license": "MIT",
-  "keywords": ["{{category}}"]
+  "keywords": ["{{category}}"],
+  "metadata": {
+    "surfaces": {{surfacesJson}}
+  }
 }
