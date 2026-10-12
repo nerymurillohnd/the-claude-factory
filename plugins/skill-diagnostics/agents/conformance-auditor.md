@@ -1,8 +1,9 @@
 ---
 name: conformance-auditor
-description: Checks one skill against the documented skill rules and recommendations and its portability to Claude Code, Cowork, claude.ai uploads and the Skills API. Launched by the skill-diagnostics audit skill, one per skill, with the paths it needs.
+description: Checks one skill against the documented skill rules and recommendations and its portability to Claude Code, the Claude app, claude.ai uploads and the Skills API. Launched by the skill-diagnostics audit skill, one per skill, with the paths it needs.
 tools: Read, WebFetch
 model: inherit
+omitClaudeMd: true
 color: blue
 ---
 

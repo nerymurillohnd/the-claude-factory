@@ -15,7 +15,7 @@ Facts live in `fields.md` and `surfaces.md`, next to this file. Read both before
 ## Input
 
 - The skill directory (absolute path) and its origin.
-- Its file inventory: every file under it, with relative paths, from the orchestrator. Its `outside` entries are links that leave the skill: name them as external dependencies; never read them or list them as not inspected. One whose `exists` is false is a broken link.
+- Its file inventory: every file under it, with relative paths, from the orchestrator. Links that leave the skill are listed with their target and whether it exists: name them as external dependencies; never read them or list them as not inspected. One whose target is missing is a broken link.
 - The paths of `fields.md`, `surfaces.md`, `examples.md` and the `assets/examples/` folder.
 - Disputed findings, only on a second round, with your previous report block: answer only those. Re-check each against the files and the evidence given, correct it or withdraw it, and return that block with the corrected rows and a closing line `Withdrawn: <ID — why, or none>`.
 
@@ -42,7 +42,7 @@ Check these on every surface, by reading; facts and limits are in `fields.md` an
 - [req] Every name in `arguments` appears as `$name` in the body; a literal `$` before a digit is escaped (`\$1.00`), in code blocks too; a braced Claude Code variable in prose is meant to become a path.
 - [req] Every local link and every path under the skill-folder variable points to a file in the inventory, with forward slashes.
 - [rec] A reference over 100 lines opens with a contents list, and no reference links to another reference.
-- [req] A script the skill runs is called by its path under the skill-folder variable, never by a relative path, starts with `#!/usr/bin/env <interpreter>`, and is executable (the inventory says).
+- [req] A script the skill runs is called through the skill-folder variable, never by a path relative to the session's directory. [default] It starts with `#!/usr/bin/env <interpreter>` and is executable (the inventory says), as `surfaces.md` (Scripts and dependencies) describes.
 
 ### Description and triggering
 
@@ -81,7 +81,7 @@ Check these on every surface, by reading; facts and limits are in `fields.md` an
 - [req] `paths` only on a skill Claude may start.
 - [rec] A forked or preloaded skill states its input and its single final output, and never needs to ask the user.
 - [rec] A skill with side effects states what running it authorizes and what still needs the user.
-- [req] `allowed-tools` pre-approves the commands the skill runs, and nothing broader.
+- [rec] When present, `allowed-tools` names the exact commands the skill runs, and nothing broader.
 
 ### Scripts
 
@@ -90,7 +90,7 @@ Check these on every surface, by reading; facts and limits are in `fields.md` an
 - [rec] Dependencies are declared, or the script uses only the standard library.
 - [rec] A script handles the error cases it can foresee instead of failing and leaving the model to guess.
 - [rec] Every constant in a script says why it has that value.
-- [req] Packages are installed locally, never globally (Claude Code).
+- [rec] Packages are installed locally, never globally (Claude Code: global installation is discouraged).
 - [rec] A destructive or batch step has a validation or dry-run step before it.
 - [req] A script whose output Claude needs exits 0 when it printed that output and reports problems inside it: a failing command's output is cut to about 10,000 characters.
 

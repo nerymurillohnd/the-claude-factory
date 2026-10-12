@@ -43,7 +43,7 @@ Full skills that pass every rule, one per profile, are in `assets/examples/`: `f
 - Strong: `` !`git log --oneline -20` `` in the body, then `Find the commits that match: $ARGUMENTS`.
 - Why: the argument is substituted into the command before the shell runs it, so `$(…)` in it runs as code. High.
 
-## allowed-tools names the exact command [req]
+## allowed-tools names the exact command [rec]
 
 - Weak: `allowed-tools: Bash`
 - Strong: `allowed-tools: Bash(${CLAUDE_SKILL_DIR}/scripts/check_totals.py *)`

@@ -31,4 +31,4 @@ A line whose lens did not run says `not checked` and why.
 - Order and flow: <from the executability lens>
 - Verification: <n verified; n corrected; n withdrawn, with why>; changelog read from <oldest> to <newest> (user on <version>, or unknown); unreachable: <sources, or none>
 - Not verified live: <items, or none>
-- External dependencies: <found or unverified, plus the inventory's `outside` links, or none>
+- External dependencies: <found or unverified, plus the links that leave the skill, or none>

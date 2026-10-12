@@ -3,6 +3,7 @@ name: executability-auditor
 description: Checks whether a model with only one skill's files could produce the right output without guessing, with verbatim file and line evidence. Launched by the skill-diagnostics audit skill, one per skill, with the paths it needs.
 tools: Read
 model: inherit
+omitClaudeMd: true
 color: cyan
 ---
 
