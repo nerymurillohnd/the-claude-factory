@@ -1,0 +1,27 @@
+{
+  "name": "plugin-test-bench",
+  "displayName": "Plugin Test Bench",
+  "version": "0.1.0",
+  "description": "Proves your Claude Code plugin works the way your users receive it: installs a copy in a throwaway config, checks it loads, runs your eval suite against that copy, and reviews your eval cases so they measure what the plugin adds.",
+  "author": {
+    "name": "Nery Murillo",
+    "url": "https://github.com/nerymurillohnd"
+  },
+  "homepage": "https://github.com/nerymurillohnd/the-claude-factory/tree/main/plugins/plugin-test-bench#readme",
+  "repository": "https://github.com/nerymurillohnd/the-claude-factory",
+  "license": "MIT",
+  "keywords": [
+    "testing",
+    "plugins",
+    "evals",
+    "plugin-eval",
+    "install",
+    "quality",
+    "release"
+  ],
+  "metadata": {
+    "surfaces": [
+      "claude-code"
+    ]
+  }
+}
