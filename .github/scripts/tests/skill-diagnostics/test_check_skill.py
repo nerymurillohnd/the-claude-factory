@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import stat
 import subprocess
 import sys
@@ -470,6 +471,63 @@ class Inventory(SkillCase):
     def test_no_skill_md_is_bad_input(self) -> None:
         code, _ = run(self.root, "--list")
         self.assertEqual(code, 2)
+
+
+class RuleCoverage(SkillCase):
+    """One test per checker rule that no other test reaches."""
+
+    def test_description_missing_is_error(self) -> None:
+        self.skill_md("name: demo-skill\n")
+        code, report = run(self.skill)
+        self.assertEqual((code, report["summary"]["error"] > 0), (0, True), report)
+        self.assertTrue(has(report, severity="error", rule="description-missing"))
+
+    def test_money_amount_is_escaped(self) -> None:
+        self.skill_md(GOOD, "Charge $10.50 per seat.\n")
+        _, report = run(self.skill)
+        self.assertTrue(has(report, severity="warning", rule="arguments-escape"))
+
+    def test_placeholder_in_code_block_expands(self) -> None:
+        self.skill_md(GOOD, "Example:\n\n```bash\necho $1\n```\n")
+        _, report = run(self.skill)
+        self.assertTrue(has(report, severity="warning", rule="arguments-escape"))
+
+    def test_long_body_warns_on_tokens(self) -> None:
+        self.skill_md(GOOD, ("word " * 16 + "\n") * 300)  # about 6,000 tokens in 300 lines
+        _, report = run(self.skill)
+        self.assertTrue(has(report, severity="warning", rule="body-tokens"))
+        self.assertFalse(has(report, rule="body-lines"), report)
+
+    def test_backslash_link_is_error(self) -> None:
+        self.skill_md(GOOD, "Read [a](references\\\\a.md).\n")
+        self.write("references/a.md", "# A\n")
+        _, report = run(self.skill)
+        self.assertTrue(has(report, severity="error", rule="link-backslash"))
+
+    def test_unreadable_markdown_is_error(self) -> None:
+        self.skill_md(GOOD)
+        (self.skill / "notes.md").write_bytes(b"caf\xe9\n")  # Latin-1, not UTF-8
+        code, report = run(self.skill)
+        self.assertEqual(code, 0, report)
+        self.assertTrue(has(report, severity="error", rule="read", file="notes.md"))
+
+    def test_skill_dir_variable_in_prose_warns(self) -> None:
+        self.skill_md(GOOD, "Files live under ${CLAUDE_SKILL_DIR} next to this file.\n")
+        _, report = run(self.skill)
+        self.assertTrue(has(report, severity="warning", rule="render-variable"))
+
+    def test_missing_script_is_error(self) -> None:
+        self.skill_md(GOOD, "Run `${CLAUDE_SKILL_DIR}/scripts/gone.py`.\n")
+        _, report = run(self.skill)
+        self.assertTrue(has(report, severity="error", rule="script-missing"))
+
+    def test_every_rule_has_a_test(self) -> None:
+        """A new rule without a test fails here, so every check the checker makes is proven."""
+        rules = set(re.findall(r'self\.add\(\s*"([a-z0-9-]+)"', CHECKER.read_text(encoding="utf-8")))
+        tests = Path(__file__).read_text(encoding="utf-8")
+        self.assertGreater(len(rules), 20)
+        untested = sorted(r for r in rules if f'rule="{r}"' not in tests and f'"rule") == "{r}"' not in tests)
+        self.assertEqual(untested, [])
 
 
 class Output(SkillCase):

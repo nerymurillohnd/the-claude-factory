@@ -78,6 +78,24 @@ jobs:
             echo "::endgroup::"
           done
           [ "$found" = 1 ] || { echo "No plugin Python tests found"; exit 1; }
+      - name: Scripts run by path, as Claude Code runs them
+        shell: bash
+        run: |
+          if [ "$RUNNER_OS" = Windows ]; then
+            # Users must have python3 on PATH (plugin README); Windows installers name it python.
+            shim="$(cygpath -u "$RUNNER_TEMP")/bin"
+            mkdir -p "$shim"
+            printf '#!/bin/sh\nexec python "$@"\n' >"$shim/python3"
+            chmod +x "$shim/python3"
+            export PATH="$shim:$PATH"
+          fi
+          python3 -c "import sys; assert sys.version_info[:2] == tuple(int(p) for p in '${{ matrix.python }}'.split('.')), sys.version"
+          for check in .github/scripts/tests/*/by_path.sh; do
+            [ -e "$check" ] || continue
+            echo "::group::$check"
+            "$check"
+            echo "::endgroup::"
+          done
 
   python-lint:
     name: Python lint & types
