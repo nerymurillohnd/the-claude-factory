@@ -392,7 +392,7 @@ class Checker:
         if fld is None or not fld.value:
             self.add(
                 "name-missing",
-                "error" if self.upload else "warning",
+                "error" if self.upload else "info",
                 self.skill_md,
                 1,
                 "no 'name': Claude Code uses the directory name; uploads and the spec require it",

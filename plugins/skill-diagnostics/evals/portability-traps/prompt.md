@@ -1,8 +1,8 @@
 ---
-description: "Difference: before a claude.ai upload, Claude without the plugin misses upload rules that need current platform facts; with it, at least three of the four planted problems are reported."
+description: "Difference: a user about to upload a skill to claude.ai. Hypothesis: without the plugin, Claude misses upload rules that need current platform facts and the upload breaks; with it, at least three of the four planted problems are reported before the upload."
 tags: [output, trigger]
-max_turns: 40
-timeout_seconds: 900
+max_turns: 80
+timeout_seconds: 1200
 allowed_tools: [Read, Glob, Grep, Skill, Agent]
 ---
 

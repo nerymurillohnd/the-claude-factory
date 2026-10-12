@@ -1,5 +1,5 @@
 ---
-description: "Trigger conflict: a request to create a skill must not run the audit skill, in either arm."
+description: "Guard: a user asking to create a skill must not get an unrequested audit (time and cost they did not ask for), in either arm."
 tags: [negative]
 max_turns: 15
 allowed_tools: [Read, Glob, Grep, Skill]

@@ -173,6 +173,15 @@ class Name(SkillCase):
         self.assertEqual(code, 0, report)
         self.assertTrue(has(report, severity="info", line=2, rule="name-reserved"))
 
+    def test_missing_name_is_a_note_for_claude_code(self) -> None:
+        """All fields are optional in Claude Code; only uploads and the API require `name`."""
+        self.skill_md("description: Does a thing. Use when asked.\n")
+        _, report = run(self.skill)
+        self.assertEqual(report["summary"]["warning"] + report["summary"]["error"], 0, report)
+        self.assertTrue(has(report, severity="info", rule="name-missing"))
+        _, report = run(self.skill, "--target", "upload")
+        self.assertTrue(has(report, severity="error", rule="name-missing"))
+
     def test_name_must_match_directory(self) -> None:
         self.skill_md("name: other-name\ndescription: Does a thing. Use when asked.\n")
         _, report = run(self.skill)

@@ -1,5 +1,5 @@
 ---
-description: "Trigger conflict: after a SKILL.md is written, the hook makes Claude offer /skill-diagnostics:audit without running it (default on_skill_write=suggest)."
+description: "Difference: a user who just wrote a skill and would not think to audit it. Hypothesis: without the plugin nothing is offered; with it, Claude offers /skill-diagnostics:audit and, under the default on_skill_write=suggest, does not run it unasked."
 tags: [hook]
 max_turns: 10
 allowed_tools: [Read, Skill]
