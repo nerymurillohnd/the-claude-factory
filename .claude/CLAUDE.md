@@ -56,6 +56,7 @@ npx --yes markdownlint-cli2@0.23.3
 | Task | Skill |
 | :-- | :-- |
 | Create a plugin | `/new-plugin` |
+| Test a plugin as users install it (copied install, session, evals, Cowork zip) | `/install-test` |
 | Release a plugin or the marketplace | `/release` |
 | Triage and answer issues | `/triage-issues` |
 | Run all gates | `/verify` |
