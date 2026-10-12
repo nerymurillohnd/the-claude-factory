@@ -15,12 +15,12 @@
 
 ### 1 — <short title>
 
-- "<verbatim quote>" (<file:line>)
+- "<verbatim quote>" (<file:line>), or for something missing: Absent: needed at <file:line>; searched <files>
 - Consequence: <what goes wrong, for whom>
 
 ## Coverage
 
-- Files read: <n> of <n>; not inspected: <files and why, or none>
+- Files: <n> in the skill; not inspected: <files and why, or none>
 - Checker: <ran (target …) | not run: reason>
 - Lenses: <conformance, executability; agent or inline>
 - Not verified live: <items, or none>

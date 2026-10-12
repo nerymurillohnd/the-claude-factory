@@ -26,7 +26,7 @@ Answers one question: **could a model that has only this skill's files produce t
 
 ## Steps
 
-1. **Inventory.** List every file under the skill, hidden and git-ignored files included, in any folder and format. Files outside the skill that it references: check that a referenced path exists; record a skill or agent name as an unverified external dependency. Paths built on the skill-directory variable are inside the skill; paths on the plugin-root variable are inside the nearest ancestor that holds `.claude-plugin/plugin.json`.
+1. **Inventory.** List every file under the skill, hidden and git-ignored files included, in any folder and format: Glob both `**/*` and `**/.*`. When your tools cannot show whether git-ignored files exist, say so in the output header. Files outside the skill that it references: check that a referenced path exists; record a skill or agent name as an unverified external dependency. Paths built on the skill-directory variable are inside the skill; paths on the plugin-root variable are inside the nearest ancestor that holds `.claude-plugin/plugin.json`.
 2. **Read everything.** Read each text file to its last line; when the Read tool returns a partial file, continue from the next line until the end. Read images and check they show what the text says. Read every page of a PDF. A binary the Read tool cannot open is recorded as not inspected. Searching never replaces reading.
 3. **Map.** From `SKILL.md`: the purpose, the inputs and where each comes from, defaults, placeholders, which file governs which step, which assets each step uses, outputs and where they go, validation, and when the work is done. Cite `file:line` for each. Record what the frontmatter says; do not judge it.
 4. **Trace.** For each workflow, and each variant that changes what is produced, follow the instructions in order: the trigger, each input to its source, each value and placeholder to its definition, each command or tool call, each output to its destination, validation and completion. Note for each step whether it depends only on earlier steps, when it is skipped, and where to resume after a failure. Stop a branch where information is missing or contradictory, record the exact point, and go on with the next branch.
@@ -60,11 +60,11 @@ Return exactly this as your final message; the orchestrator merges it:
 
 ```markdown
 ### Executability — <skill name> (<absolute path>)
-Files read: <n> of <n> (<list of files not inspected and why, or none>)
+Files read: <n> of <n> (<each file not inspected, why, and "needed by <file:line>" or "unreferenced"; or none>)
 
-| ID | Decides output | Location | Finding | Evidence | Consequence |
-| :-- | :-- | :-- | :-- | :-- | :-- |
-| E1 | yes | assets/template.md:3 | <one line> | "<verbatim quote>" | <what the model would do wrong> |
+| ID | Decides output | Location | Finding | Evidence | Consequence | Fix |
+| :-- | :-- | :-- | :-- | :-- | :-- | :-- |
+| E1 | yes | assets/template.md:3 | <one line> | "<verbatim quote>" | <what the model would do wrong> | <smallest change that removes the guess> |
 
 Order and flow: <one or two lines: where the flow is clear, where it breaks>
 External dependencies: <names or paths, found or unverified, or none>

@@ -15,7 +15,7 @@ Facts live in `fields.md` and `surfaces.md`, next to this file. Read both before
 ## Input
 
 - The skill directory (absolute path) and its target surfaces.
-- The checker's JSON report, or the line `checker not run: <reason>`.
+- The checker's JSON report for each target, or the line `checker not run: <reason>`.
 - The paths of `fields.md` and `surfaces.md`.
 
 Missing skill path: return one line saying so. Missing checker report: run the checklist without it and note `checker not run` in the output.
@@ -91,10 +91,11 @@ Return exactly this as your final message; the orchestrator merges it:
 ### Conformance — <skill name> (<absolute path>)
 Targets: <targets> · Checker: ran | not run (<reason>)
 
-| ID | Severity | Location | Label | Finding | Evidence | Fix |
-| :-- | :-- | :-- | :-- | :-- | :-- | :-- |
-| C1 | high | SKILL.md:3 | req | <one line> | "<verbatim quote>" | <one line> |
+| ID | Severity | Location | Label | Finding | Evidence | Consequence | Fix |
+| :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- |
+| C1 | high | SKILL.md:3 | req | <one line> | "<verbatim quote>" | <what goes wrong, for whom> | <one line> |
 
+Not inspected: <each file, why, and "needed by <file:line>" or "unreferenced"; or none>
 Not verified live: <items, or none>
 ```
 

@@ -15,6 +15,7 @@ Rules learned the hard way. Follow them; add one line per new lesson.
 - Hand a plugin agent its files as absolute paths in the delegation message (the skill body expands `${CLAUDE_SKILL_DIR}`) instead of relying on `skills:` preloading, whose name resolution for plugin skills is undocumented; verified working with the Read grant above.
 - Plugin `PostToolUse` hooks with `if: "Write(**/SKILL.md)"` fire when `skill-creator` writes a skill (it uses the Write tool) and inside `claude plugin eval` runs. Verified 2.1.296, 2026-10-11.
 - In `claude plugin eval`, the agent can't write under `.claude/` even with `--allow-tools Write` (protected path, denied in dontAsk mode): eval prompts must target paths like `skills/<name>/`. Scaffold scripts run as the user and may write anywhere in the workspace.
+- Self-auditing a skill with both lenses converges in passes: each pass surfaces finer gaps once the coarse ones are fixed (skill-diagnostics `audit`: 7 → 6 → 5 → 3 findings, verdict fail → pass with warnings). Run passes until no high finding remains, then fix the rest without another full pass.
 - A copied (cached) install for local testing: a local marketplace whose entry uses `{"source":"git-subdir","url":"file:///abs/repo.git","path":"plugins/<name>"}`; a relative-path source loads in place instead. Isolate with `HOME=<tmp>` or `CLAUDE_CONFIG_DIR`.
 
 ## GitHub
