@@ -191,7 +191,7 @@ No. Claude Code's own `claude plugin eval init` interviews you and drafts the ca
 <details>
 <summary><b>What does a test cost?</b></summary>
 
-The install, the comparison and the load check are free. A smoke test of your eval suite is one run per case, plus three judge calls for each `llm` or `baseline` grader. A full comparison against no plugin is six runs per case at the default three runs. Claude states the number of runs and waits for your go-ahead before each paid step.
+The install, the comparison and the load check are free; if an Anthropic profile on your machine (from `ant auth login` or a Console sign-in without an API key) would sign the load check in, Claude asks first. A smoke test of your eval suite is one run per case, plus three judge calls for each `llm` or `baseline` grader. A full comparison against no plugin is six runs per case at the default three runs. Claude states the number of runs and waits for your go-ahead before each paid step.
 
 </details>
 

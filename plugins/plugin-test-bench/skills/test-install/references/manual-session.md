@@ -5,7 +5,7 @@ Read when the user agreed to real requests in step 7, after step 8 signed in.
 These runs isolate the configuration, not the home folder: unlike an eval run, they can see the user's files and environment.
 
 1. Put in `<target>` whatever the requests need, such as a small sample project or file. Never copy the user's real project.
-2. Take the requests from the plugin's README usage examples. If it has none, propose one to three realistic requests from the skills' descriptions and confirm them with the user. Run each request twice: as the slash command (`/<name>:<skill> …`) and as a natural request that doesn't name the skill.
+2. Run each request agreed in step 7 twice: as the slash command (`/<name>:<skill> …`) and as a natural request that doesn't name the skill.
 3. Run each request, with the prompt right after `-p`, because `--allowedTools` takes several values and would read a prompt placed after it as a tool:
 
    ```bash

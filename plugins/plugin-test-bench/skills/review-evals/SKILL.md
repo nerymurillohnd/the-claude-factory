@@ -1,6 +1,6 @@
 ---
 name: review-evals
-description: Reviews the cases of a Claude Code plugin's eval suite before any paid run — checks that each case measures what the plugin adds rather than what Claude does anyway, that graders count with and without the plugin, that triggering is measured as a rate, and that fixtures are correct. Use when the user asks to review, check or debug plugin eval cases, after claude plugin eval init drafted a suite, or when scores or deltas look wrong. Not for writing a suite or for skill-creator's evals.json.
+description: Reviews a Claude Code plugin's eval cases before paid runs — checks that each case measures what the plugin adds over plain Claude, that graders count in both arms, that triggering is measured as a rate, and that fixtures are correct; dry-runs fixtures and applies fixes only after asking. Use when the user asks to review, check or debug plugin eval cases, after claude plugin eval init drafted a suite, or when scores or deltas look wrong. Not for writing a suite or for skill-creator's evals.json.
 argument-hint: "[plugin folder]"
 ---
 
@@ -17,7 +17,7 @@ Format reference: <https://code.claude.com/docs/en/plugin-evals>. Read it live b
 1. **Read the plugin**: its manifest, each skill's `description` and body, agents, hooks and README. You need to know what it promises and what Claude would do without it.
 2. **Read every case in full**: a case is a folder holding `case.yaml` or `prompt.md` under the suite. List the cases first, then read each one's `prompt.md`, `case.yaml`, every file in `graders/`, scaffold scripts, fixtures and mocks, with no skipping.
 3. **Check each case** against the checks below. Take its kind from its `description`; when it names none, infer the kind from the prompt and graders, mark it `(inferred)`, and add a finding that the description should state the kind and its hypothesis. Give every finding the case, the file, what is wrong, what it does to the score, and the fix.
-4. **Dry-check fixtures for free** when cases have a `scaffold_script`. Ask first: the script runs on this machine as the user. Run `mktemp -d` twice for `<ws>` and `<home>`, then run it the way a real run does, in the empty workspace with a temporary home and no other variables:
+4. **Dry-check fixtures for free** when cases have a `scaffold_script`. Ask first: the script runs on this machine as the user. If the user declines, or the conversation has no shell, mark those fixtures `not dry-checked`. Run `mktemp -d` twice for `<ws>` and `<home>`, then run it the way a real run does, in the empty workspace with a temporary home and no other variables:
 
    ```bash
    cd <ws> && env -i PATH="$PATH" HOME=<home> TMPDIR="$TMPDIR" TERM=dumb bash <absolute case folder>/<scaffold_script>
@@ -69,8 +69,8 @@ One prompt proves nothing about triggering. Look for several realistic phrasings
 
 Each case gets the first verdict that matches:
 
-1. **remove**: its hypothesis duplicates another case, or a unit test could prove it.
-2. **rewrite**: it measures nothing: a Difference case Claude would pass without the plugin, a prompt that names the skill or hints at the answer, or a fixture that can't support the task.
+1. **remove**: its hypothesis duplicates a case listed before it, or a unit test could prove it.
+2. **rewrite**: it measures nothing or several things: a Difference case Claude would pass without the plugin (unless it is reclassified as a Guardrail: then fix), a "test everything" case, a prompt that names the skill or hints at the answer, or a fixture that can't support the task.
 3. **fix**: it has findings that a change to its own files resolves.
 4. **keep**: no findings.
 
@@ -82,13 +82,13 @@ Each case gets the first verdict that matches:
 | <case> | <kind, or "<kind> (inferred)"> | keep / fix / rewrite / remove | <count> |
 
 ### <case>
-- **<file>** — <what is wrong> → <effect on the score> → **Fix:** <exact change>
+- **<file>** — <what is wrong> → <effect on the score> → **Fix:** <exact change> <(unverified live), when it applies>
 
 ### Missing
 - <cases the suite needs and doesn't have: trigger rate, nearby requests, own risk>
 
 ### Next run
-`claude plugin eval <plugin folder> --case "<glob of the changed cases>" --runs 1 --ablation none` <plus `--allow-tools` with the grants the cases need> — <n> runs, one per matching case, plus three judge calls per `llm` or `baseline` grader.
+`claude plugin eval <plugin folder> --case "<glob of the changed cases>" --runs 1 --ablation none` <plus `--allow-tools` with the grants the cases need> — <n> runs, one per matching case, plus three judge calls per `llm` or `baseline` grader. <One command per glob when one glob can't match them all; "none needed" when every case is keep. The user runs it in a terminal: the first run in a folder asks to trust it.>
 ```
 
 After a run, read the results with the user: a case with Δ about 0 that isn't a Guardrail measures nothing; a case that fails in both arms points at the grader or the task before the plugin. A full comparison runs each case twice per run, three runs by default or the case's own `runs`. Never change a case after a run just to make it pass: fix the plugin, or record why the case was wrong.
