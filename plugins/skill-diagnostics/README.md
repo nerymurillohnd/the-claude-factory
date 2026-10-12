@@ -86,7 +86,7 @@ Requires Claude Code v2.1.275+. With the marketplace already added, `/plugin ins
 </details>
 
 <details>
-<summary><b>🖥️ Claude app (web, desktop &amp; Cowork)</b></summary>
+<summary><b>🖥️ Claude app (web and desktop)</b></summary>
 
 1. Open **Customize** in the sidebar, then **Plugins**.
 2. Select **Add marketplace** and enter `nerymurillohnd/the-claude-factory`.

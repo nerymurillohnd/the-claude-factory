@@ -255,6 +255,21 @@ describe('check-repo', () => {
     assert.match(r.out, /skills\/link\.md is a symbolic link/)
   })
 
+  test('in a git checkout, counts tracked and new files but never git-ignored or deleted ones', () => {
+    const git = (...args) => execFileSync('git', ['-C', root, ...args], { stdio: 'ignore' })
+    git('init', '-q')
+    write('plugins/skill-diagnostics/gone.md', 'x')
+    git('add', '-A')
+    rmSync(join(root, 'plugins/skill-diagnostics/gone.md'))
+    write('plugins/skill-diagnostics/.DS_Store', 'x') // git-ignored: a clone never has it
+    assert.equal(run('check-repo.mjs').code, 0)
+    write('plugins/skill-diagnostics/desktop.ini', 'x') // new, not ignored
+    const r = run('check-repo.mjs')
+    assert.equal(r.code, 1)
+    assert.match(r.out, /desktop\.ini is a macOS or Windows system file/)
+    assert.doesNotMatch(r.out, /\.DS_Store/)
+  })
+
   test('flags a stale README catalog', () => {
     scaffold()
     resolveTodos()
@@ -438,6 +453,9 @@ describe('portability rules', () => {
     assert.match(problems, /README\.md and Readme\.md differ only by capitalization/)
     assert.match(problems, /__MACOSX\/x is a macOS or Windows system file/)
     assert.match(problems, /thumbs\.db is a macOS or Windows system file/)
+    const both = portabilityProblems([entry('__MACOSX/a:b')]).join('\n')
+    assert.match(both, /__MACOSX\/a:b is a macOS or Windows system file/)
+    assert.match(both, /"a:b" in __MACOSX\/a:b is not a valid file name on Windows/)
   })
 
   test('size limit spares images and fonts; file count is capped at 512', async () => {
