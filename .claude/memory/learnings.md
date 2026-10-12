@@ -16,6 +16,8 @@ Rules learned the hard way. Follow them; add one line per new lesson.
 - Plugin `PostToolUse` hooks with `if: "Write(**/SKILL.md)"` fire when `skill-creator` writes a skill (it uses the Write tool) and inside `claude plugin eval` runs. Verified 2.1.296, 2026-10-11.
 - In `claude plugin eval`, the agent can't write under `.claude/` even with `--allow-tools Write` (protected path, denied in dontAsk mode): eval prompts must target paths like `skills/<name>/`. Scaffold scripts run as the user and may write anywhere in the workspace.
 - Self-auditing a skill with both lenses converges in passes: each pass surfaces finer gaps once the coarse ones are fixed (skill-diagnostics `audit`: 7 → 6 → 5 → 3 findings, verdict fail → pass with warnings). Run passes until no high finding remains, then fix the rest without another full pass.
+- `claude plugin eval` only runs a granted Bash inside the OS sandbox: on Linux install `bubblewrap` and `socat` first (CI too), then grant `--allow-tools Bash`; a wildcard rule like `Bash(*check_skill.py *)` did not match. A skill's own `allowed-tools` cannot widen an eval's grants.
+- Eval fixtures that look hard are often easy for Sonnet: the first skill-diagnostics pilot passed 4 of 6 cases without the plugin. Calibrate differences against the baseline arm before trusting a case; reclassify a delta-0 case as a guardrail or rewrite it.
 - A copied (cached) install for local testing: a local marketplace whose entry uses `{"source":"git-subdir","url":"file:///abs/repo.git","path":"plugins/<name>"}`; a relative-path source loads in place instead. Isolate with `HOME=<tmp>` or `CLAUDE_CONFIG_DIR`.
 
 ## GitHub

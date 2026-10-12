@@ -1,5 +1,6 @@
 ---
 type: llm
+arm: with-only
 ---
 
 The skill has three planted defects:

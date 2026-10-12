@@ -46,7 +46,7 @@ Copy and tick:
    - conformance: the skill path, the targets, the checker JSON for each target (or the not-run line for each), and the paths `${CLAUDE_SKILL_DIR}/references/conformance.md`, `${CLAUDE_SKILL_DIR}/references/fields.md` and `${CLAUDE_SKILL_DIR}/references/surfaces.md`;
    - executability: the skill path and the path `${CLAUDE_SKILL_DIR}/references/executability.md`.
 
-   When agents are not available, or an agent returns one line instead of its report, apply that lens yourself: read its reference completely and follow it, one skill at a time.
+   Launch the agents whatever the size of the skill; a short skill is no reason to skip them. Apply a lens yourself only when agents are not available, or when an agent returns one line instead of its report: then read its reference completely and follow it, one skill at a time.
 4. **Merge** each skill's lens reports into one findings table. Executability severity: *decides output* → high, otherwise medium. Join findings with the same location and the same root defect into one row that names both lenses and keeps the higher severity, the clearer fix and both consequences. Number the rows from 1, highest severity first.
 5. **Verdict** for each skill: apply the first rule that matches, in this order.
    1. **fail:** at least one high finding.

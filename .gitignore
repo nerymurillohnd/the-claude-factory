@@ -17,7 +17,7 @@ tmp/
 actionlint
 
 # Plugin eval results
-evals/results/
+**/evals/results/
 
 # Python
 __pycache__/
