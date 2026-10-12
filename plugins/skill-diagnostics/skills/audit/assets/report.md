@@ -20,8 +20,9 @@
 
 ## Coverage
 
-- Files: <n> in the skill; not inspected: <files and why, or none>; git-ignored files: <listed | not visible to the tools>
+- Files: <n> in the skill; not inspected: <files and why, or none>; git-ignored files: <the files | none | not visible to the tools>
 - Checker: <ran (target …) | not run: reason>
 - Lenses: <conformance, executability; agent or inline>
+- Order and flow: <the executability lens's line, or not checked: executability lens not selected>
 - Not verified live: <items, or none>
 - External dependencies: <names or paths, found or unverified, or none>
