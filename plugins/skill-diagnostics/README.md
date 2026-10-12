@@ -96,7 +96,7 @@ In the desktop app's **Code** tab you can also click **+** → **Plugins** → *
 </details>
 
 > [!NOTE]
-> New to this marketplace? The [installation guide](../../docs/installation.md) covers every surface step by step.
+> New to this marketplace? The [installation guide](../../docs/installation.md) covers every surface step by step. Installed both in the Claude app and from the terminal, Claude Code uses the terminal copy and skips the synced one, so update the copy you use.
 
 ## 🚀 Usage
 
@@ -155,6 +155,8 @@ claude plugin update skill-diagnostics@the-claude-factory
 ```
 
 Or in a session: `/plugin` → **Installed** → **Skill Diagnostics** → **Update now**. Then run `/reload-plugins`.
+
+Installed from the Claude app or Cowork? In Claude Code it appears as `skill-diagnostics@synced`: update and uninstall it in the app (**Customize** → **Plugins**); in `/plugin` you can only disable it.
 
 > [!TIP]
 > Turn on auto-update once for the whole marketplace: `/plugin` → **Marketplaces** → **the-claude-factory** → **Enable auto-update**.

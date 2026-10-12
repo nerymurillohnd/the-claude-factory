@@ -124,6 +124,8 @@ claude plugin update {{name}}@the-claude-factory
 
 Or in a session: `/plugin` → **Installed** → **{{displayName}}** → **Update now**. Then run `/reload-plugins`.
 
+Installed from the Claude app or Cowork? In Claude Code it appears as `{{name}}@synced`: update and uninstall it in the app (**Customize** → **Plugins**); in `/plugin` you can only disable it.
+
 > [!TIP]
 > Turn on auto-update once for the whole marketplace: `/plugin` → **Marketplaces** → **the-claude-factory** → **Enable auto-update**.
 

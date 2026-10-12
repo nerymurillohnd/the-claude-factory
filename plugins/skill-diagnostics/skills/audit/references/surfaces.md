@@ -19,6 +19,7 @@ Sources, checked 2026-10-11: [Claude Code skills](https://code.claude.com/docs/e
 | Personal (`~/.claude/skills/`) or project (`.claude/skills/`) | Claude Code | `--target code` (default) |
 | Inside a plugin (an ancestor folder holds `.claude-plugin/plugin.json`) | Claude Code and Cowork | `--target code` and `--target cowork`, one run each |
 | Uploaded to claude.ai, or enabled on the account so it reaches Cowork and cloud sessions | claude.ai upload | `--target upload` |
+| A synced copy of an account skill (`~/.claude/skills/synced/`) | claude.ai upload; fixes are made on claude.ai, since a sync overwrites local edits | `--target upload` |
 | Sent through the Skills API | API | `--target api` |
 | Anywhere else (a loose folder, a `skills/` folder outside `.claude/`) | Claude Code | `--target code`, stated as assumed |
 
@@ -37,7 +38,7 @@ When the request does not say, infer it from where the skill lives with this tab
 | Bundled scripts | ✅ | ✅ | ✅ through the interpreter | ✅ no network |
 
 - [req] Uploads and the Skills API fail with `Unexpected key(s) in SKILL.md frontmatter` for any field outside the six. A skill meant for both Claude Code and an upload keeps to the six fields, or ships two versions.
-- [req] A skill synced from claude.ai into a local Claude Code session does not run `!` lines, does not attach `@` files, and leaves `${CLAUDE_PROJECT_DIR}` and `${CLAUDE_SESSION_ID}` as literal text.
+- [req] Synced skills: in a cloud session the body behaves like a local skill. In any other local Claude Code session, a synced skill does not run `!` lines, does not attach `@` files, and leaves `${CLAUDE_PROJECT_DIR}` and `${CLAUDE_SESSION_ID}` as literal text.
 - [req] In a Cowork session on the desktop, Claude Code replaces every `!` line with a placeholder, for every skill.
 
 ## How a skill reaches each surface

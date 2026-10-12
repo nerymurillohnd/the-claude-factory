@@ -84,8 +84,9 @@ def main() -> int:
     normalized = skill_dir.replace("\\", "/")
     plugin_root = os.environ.get("CLAUDE_PLUGIN_ROOT", "").replace("\\", "/")
     config_dir = os.environ.get("CLAUDE_CONFIG_DIR") or os.path.join(os.path.expanduser("~"), ".claude")
-    cache_dir = os.path.join(config_dir, "plugins", "cache").replace("\\", "/")
-    if inside(normalized, cache_dir) or inside(normalized, plugin_root):
+    managed = [os.path.join(config_dir, *parts).replace("\\", "/") for parts in (("plugins",), ("skills", "synced"))]
+    # Claude Code overwrites files in these folders, so an audit offer there is useless.
+    if any(inside(normalized, folder) for folder in managed) or inside(normalized, plugin_root):
         return 0
     if already_notified(os.environ.get("CLAUDE_PLUGIN_DATA", ""), str(event.get("session_id", "")), skill_dir):
         return 0

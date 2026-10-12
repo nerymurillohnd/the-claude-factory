@@ -2,7 +2,7 @@
 
 Facts the conformance lens checks a skill against. Each line is labelled: **[req]** documented behavior, **[rec]** official recommendation, **[spec]** Agent Skills specification, **[default]** this plugin's recommended default (an alternative is acceptable when the skill states why), **[observed]** seen in testing but not documented.
 
-Sources, checked 2026-10-11: [Claude Code skills](https://code.claude.com/docs/en/skills), [settings reference](https://code.claude.com/docs/en/settings-reference), [Agent Skills specification](https://agentskills.io/specification), [skill authoring best practices](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices). When a live page disagrees with this file, the live page wins: report the difference.
+Sources, checked 2026-10-11: [Claude Code skills](https://code.claude.com/docs/en/skills), [settings reference](https://code.claude.com/docs/en/settings-reference), [Agent Skills specification](https://agentskills.io/specification), [skill authoring best practices](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices), [best practices for skill creators](https://agentskills.io/skill-creation/best-practices) (checked 2026-10-12). When a live page disagrees with this file, the live page wins: report the difference.
 
 ## Contents
 

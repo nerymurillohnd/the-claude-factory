@@ -44,13 +44,16 @@ Labels say how strong each item is (see `fields.md`). A **[default]** item is re
 
 - [rec] One coherent job; no repetition of a sibling skill's job.
 - [rec] Every paragraph is something the model would get wrong without it; no explanation of things the model already knows.
+- [rec] Moderate detail: the main path plus the edge cases a model would get wrong; the rest is left to its judgment. A body that tries to cover every case is a finding.
+- [rec] Prescriptive only where the task is fragile (exact commands, sequences, formats); elsewhere it states the goal and why.
+- [rec] Teaches a method that generalizes, not the answer to one instance.
 - [rec] Concrete commands, paths and values; one default where several approaches compete, with a short escape hatch.
 - [rec] One term per concept.
 - [rec] No dates or version-dependent statements in the instructions; history, if needed, in a collapsed "old patterns" note.
 
 ### Structure
 
-- [rec] Every supporting file is linked from `SKILL.md` with when to read it; no file is unused (an `evals/` folder is exempt).
+- [rec] `SKILL.md` holds what every run needs; material only some runs need lives in a referenced file, one level deep, linked with when to read it. No file is unused (an `evals/` folder is exempt).
 - [rec] Critical rules near the top; instructions written as standing rules for the whole task.
 - [rec] Multi-step work has numbered steps or a copyable checklist, and says when the work is done.
 - [rec] Where output shape matters, a template or an example shows it.

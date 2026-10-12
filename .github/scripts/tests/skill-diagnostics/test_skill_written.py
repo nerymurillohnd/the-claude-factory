@@ -106,6 +106,17 @@ class SkillWrittenHook(unittest.TestCase):
         self.fire()
         self.assertFalse(old.exists())
 
+    def test_ignores_folders_claude_code_manages(self) -> None:
+        config = Path(self._tmp.name) / ".claude"
+        managed = (
+            "plugins/synced/notes/skills/a/SKILL.md",
+            "plugins/marketplaces/m/skills/a/SKILL.md",
+            "skills/synced/a/SKILL.md",
+        )
+        for rel in managed:
+            self.assertEqual(self.fire(path=str(config / rel))[1], "", rel)
+        self.assertIn("/skill-diagnostics:audit", self.fire(path=str(config / "skills" / "mine" / "SKILL.md"))[1])
+
     def test_a_project_folder_named_plugins_cache_is_not_skipped(self) -> None:
         project = str(Path(self._tmp.name) / "work" / "plugins" / "cache" / "skills" / "a" / "SKILL.md")
         self.assertIn("/skill-diagnostics:audit", self.fire(path=project)[1])

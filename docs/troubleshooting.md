@@ -106,6 +106,7 @@ Adding an MCP server invalidates the prompt cache. Run `/reload-plugins --force`
 
 - `claude plugin update <plugin>@the-claude-factory` says *already at the latest version*: no new release has shipped yet — check the plugin's `CHANGELOG.md`.
 - Updated but still seeing old behavior: the running session keeps the loaded version. Run `/reload-plugins` or start a new session.
+- A plugin shown as `<plugin>@synced` came from the Claude app: update it there (**Customize** → **Plugins**), then start Claude Code again or run `/reload-plugins` when it says *Plugins changed*.
 - Want updates without thinking about it: [enable auto-update](./managing-plugins.md#-auto-update).
 
 ## 🆘 Still stuck?
