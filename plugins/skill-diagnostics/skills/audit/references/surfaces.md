@@ -1,0 +1,66 @@
+# Where a skill runs
+
+What changes for a skill on each surface. The conformance lens uses this to judge portability; the checker's `--target` option applies the same rules. Labels as in `fields.md`: **[req]**, **[rec]**, **[spec]**, **[default]**, **[observed]**.
+
+Sources, checked 2026-10-11: [Claude Code skills](https://code.claude.com/docs/en/skills) (Where skills live, Skills in Cowork and cloud sessions, Using skill frontmatter outside Claude Code), [plugin platform support](https://claude.com/docs/plugins/platform-support), [skill authoring best practices](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices) (Runtime environment, Package dependencies).
+
+## Contents
+
+- Pick the target
+- What each surface accepts
+- How a skill reaches each surface
+- Scripts and dependencies
+- Portability findings
+
+## Pick the target
+
+| The skill is | Target | Checker option |
+| :-- | :-- | :-- |
+| Personal (`~/.claude/skills/`), project (`.claude/skills/`) or in a plugin used from Claude Code | Claude Code | `--target code` (default) |
+| In a plugin installed in Cowork | Cowork | `--target cowork` |
+| Uploaded to claude.ai, or enabled on the account so it reaches Cowork and cloud sessions | claude.ai upload | `--target upload` |
+| Sent through the Skills API | API | `--target api` |
+
+When the request does not say, infer it from where the skill lives and say which target you assumed. A plugin meant for both Claude Code and Cowork is checked for both.
+
+## What each surface accepts
+
+| Feature | Claude Code | Cowork (plugin) | claude.ai upload | Skills API |
+| :-- | :--: | :--: | :--: | :--: |
+| All 20 frontmatter fields | ✅ | ✅ | ❌ hard error | ❌ hard error |
+| Only `name`, `description`, `license`, `compatibility`, `metadata`, `allowed-tools` | ✅ | ✅ | ✅ | ✅ |
+| `description` over 1,024 characters | ⚠️ cut in the listing at 1,536 by default | ⚠️ | ❌ | ❌ |
+| `anthropic` or `claude` in `name` | ✅ | ✅ | ❌ | ❌ |
+| `!` dynamic-context lines | ✅ run at load | ⚠️ replaced by a placeholder | ❌ never run | ❌ never run |
+| `${CLAUDE_*}` path variables | ✅ | ✅ | ❌ | ❌ |
+| Bundled scripts | ✅ | ✅ | ✅ through the interpreter | ✅ no network |
+
+- [req] Uploads and the Skills API fail with `Unexpected key(s) in SKILL.md frontmatter` for any field outside the six. A skill meant for both Claude Code and an upload keeps to the six fields, or ships two versions.
+- [req] A skill synced from claude.ai into a local Claude Code session does not run `!` lines, does not attach `@` files, and leaves `${CLAUDE_PROJECT_DIR}` and `${CLAUDE_SESSION_ID}` as literal text.
+- [req] In a Cowork session on the desktop, Claude Code replaces every `!` line with a placeholder, for every skill.
+
+## How a skill reaches each surface
+
+- [req] Personal skills in `~/.claude/skills/` load only on that machine: not in Cowork, cloud sessions or routines.
+- [req] Cowork sessions load the skills enabled on the claude.ai account (synced when the session starts) and the skills of installed plugins.
+- [req] Cloud sessions also load project skills committed to the repository's `.claude/skills/`.
+- [req] Enabling a personal skill on the claude.ai account is an upload: the upload rules apply.
+
+## Scripts and dependencies
+
+- [req] In Claude Code, commands run in the session's directory, never the skill's: call bundled scripts as `${CLAUDE_SKILL_DIR}/scripts/<file>`.
+- [default] In Claude Code and Cowork, a script starts with `#!/usr/bin/env <interpreter>` (no version), is executable (committed as `100755`) and is called by its path; the user's first interpreter on `PATH` runs it. The skill's README lists the interpreter and minimum version under requirements.
+- [default] For an upload or the API, call scripts through their interpreter with a path relative to the skill (`python3 scripts/<file>`): a zip upload can lose the executable bit, and the path variables do not exist there.
+- [req] The Skills API has no network access and installs nothing at run time; claude.ai can install packages from npm and PyPI. Use only preinstalled packages for the API.
+- [req] MCP tools are named `mcp__<server>__<tool>` in Claude Code (`mcp__plugin_<plugin>_<server>__<tool>` for a plugin's server); other clients use `Server:tool`.
+
+## Portability findings
+
+Report a portability problem only for a target the skill is meant for. Severity:
+
+| Problem | Severity |
+| :-- | :-- |
+| A field, limit or feature the target rejects (upload or API) | high |
+| A feature the target silently skips (a `!` line in Cowork, a path variable in a synced skill) that an instruction depends on | high |
+| The same, when no instruction depends on it | low |
+| A requirement the skill needs but does not state (interpreter, network, a tool on `PATH`) | medium |

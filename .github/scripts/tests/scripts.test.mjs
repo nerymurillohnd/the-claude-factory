@@ -199,11 +199,14 @@ describe('new-plugin', () => {
   });
 
   test('registers the entry, renders templates and updates the catalog', () => {
+    const before = json('.claude-plugin/marketplace.json').plugins;
     scaffold();
     const mp = json('.claude-plugin/marketplace.json');
-    assert.deepEqual(mp.plugins, [
+    const expected = [
+      ...before,
       { name: 'demo-tool', source: './plugins/demo-tool', description: 'Does demo things.', category: 'productivity' },
-    ]);
+    ].sort((a, b) => a.name.localeCompare(b.name));
+    assert.deepEqual(mp.plugins, expected);
     const manifest = json('plugins/demo-tool/.claude-plugin/plugin.json');
     assert.equal(manifest.version, '0.1.0');
     assert.equal(manifest.displayName, 'Demo Tool');
@@ -211,7 +214,7 @@ describe('new-plugin', () => {
     assert.ok(existsSync(join(root, 'plugins/demo-tool/LICENSE')));
     const readme = read('README.md');
     assert.match(readme, /\[\*\*Demo Tool\*\*\]\(\.\/plugins\/demo-tool#readme\)/);
-    assert.match(readme, /plugins-1-D97757/);
+    assert.match(readme, new RegExp(`plugins-${before.length + 1}-D97757`));
     assert.equal(run('catalog.mjs', ['--check']).code, 0);
   });
 

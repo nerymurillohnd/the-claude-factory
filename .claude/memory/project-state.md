@@ -34,7 +34,7 @@
 ## Open items
 
 - GitHub's default labels (`bug`, `enhancement`, `documentation`, `duplicate`, `good first issue`, `help wanted`, `invalid`, `question`, `wontfix`, `accessibility`) still exist next to ours — Nery decides whether to delete them.
-- `skill-diagnostics` build in progress: plan and phases in Nery's "Plan: skill-diagnostics" doc (claude.ai artifact 3d3dfddc-5aad-4e92-8ad1-ac636b8db2fe); audit of the source plugin in artifact 268a085a-e5fb-4f8f-998a-863888641ff0.
+- `skill-diagnostics` 0.1.0 is built through phase 6 on branch `feat/skill-diagnostics` (draft PR); phases 7–10 pending (eval pilot needs Nery's approval). Build in progress: plan and phases in Nery's "Plan: skill-diagnostics" doc (claude.ai artifact 3d3dfddc-5aad-4e92-8ad1-ac636b8db2fe); audit of the source plugin in artifact 268a085a-e5fb-4f8f-998a-863888641ff0.
 - Evals in CI need Nery's decision: `ANTHROPIC_API_KEY` secret (billed to the API console) and trigger (recommended: plugin version change + manual).
 
 ## Plugin ideas backlog

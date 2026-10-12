@@ -11,7 +11,7 @@ Rules learned the hard way. Follow them; add one line per new lesson.
 - Project skills appear in the `/` menu only in Claude Code opened on the repo (terminal, desktop Code tab, IDE).
 - A project skill named `verify` replaces the bundled `/verify` and Claude Code runs it before each commit.
 - Test install loops in an isolated config: `CLAUDE_CONFIG_DIR=$(mktemp -d) claude plugin marketplace add ./`.
-- Reading a file inside an installed plugin (cache under `~/.claude/plugins/cache/`) is a read outside the working directory: in default mode it needs permission, from the main session and from subagents. Pre-approve a skill's own files with `allowed-tools: Read(/${CLAUDE_SKILL_DIR}/**)` (the leading `/` makes the expanded path absolute, `//…`); the grant also covers subagents launched in that turn. Verified 2.1.296, 2026-10-11.
+- Reading a file inside an installed plugin (cache under `~/.claude/plugins/cache/`) is a read outside the working directory: in default mode it needs permission, from the main session and from subagents. Pre-approve a skill's own files with `allowed-tools: Read(/${CLAUDE_SKILL_DIR}/**)` (the leading `/` makes the expanded path absolute, `//…`); the grant also covers subagents launched in that turn. Observed on 2.1.296, 2026-10-11 — the docs only promise substitution in Bash rules, so re-check it with `/docs-drift-check`.
 - Hand a plugin agent its files as absolute paths in the delegation message (the skill body expands `${CLAUDE_SKILL_DIR}`) instead of relying on `skills:` preloading, whose name resolution for plugin skills is undocumented; verified working with the Read grant above.
 - Plugin `PostToolUse` hooks with `if: "Write(**/SKILL.md)"` fire when `skill-creator` writes a skill (it uses the Write tool) and inside `claude plugin eval` runs. Verified 2.1.296, 2026-10-11.
 - In `claude plugin eval`, the agent can't write under `.claude/` even with `--allow-tools Write` (protected path, denied in dontAsk mode): eval prompts must target paths like `skills/<name>/`. Scaffold scripts run as the user and may write anywhere in the workspace.
@@ -23,6 +23,7 @@ Rules learned the hard way. Follow them; add one line per new lesson.
 - Issue-form labels that don't exist in the repo are silently dropped — run `sync-labels.mjs` after adding labels or plugins.
 - "Pull requests → Collaborators only" exists natively since 2026-02 (Settings → General → Features).
 - The `release.yml` workflow is triggered by `workflow_run` after Validate on `main`; never tag by hand.
+- A plugin registered in `marketplace.json` on `main` is live: users can install it from the branch and `release.yml` tags its version. Build new plugins on a `feat/<name>` branch with a draft PR and merge only at release.
 
 ## Tooling
 

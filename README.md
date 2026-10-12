@@ -11,7 +11,7 @@
 <br>
 
 <!-- plugin-count:start -->
-[![Plugins](https://img.shields.io/badge/plugins-0-D97757?style=for-the-badge)](#-catalog)
+[![Plugins](https://img.shields.io/badge/plugins-1-D97757?style=for-the-badge)](#-catalog)
 <!-- plugin-count:end -->
 [![Validate](https://img.shields.io/github/actions/workflow/status/nerymurillohnd/the-claude-factory/validate.yml?branch=main&label=validate&style=for-the-badge)](https://github.com/nerymurillohnd/the-claude-factory/actions/workflows/validate.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-22C55E?style=for-the-badge)](./LICENSE)
@@ -102,9 +102,19 @@ Plugin skills are namespaced, so they never collide with yours: type `/<plugin>:
 ## 📦 Catalog
 
 <!-- catalog:start -->
-> [!NOTE]
-> 🏗️ **The factory floor is being set up.** The first plugins are on their way.
-> ⭐ Star or 👀 watch this repository to be notified when they ship.
+| Category | Plugins |
+| :-- | :--: |
+| [🧪 Testing & Quality](#-testing--quality) | 1 |
+
+### 🧪 Testing & Quality
+
+*Tests, audits, linting and quality gates.*
+
+| Plugin | What it does | Works in | Version | Includes |
+| :-- | :-- | :-- | :--: | :-- |
+| [**Skill Diagnostics**](./plugins/skill-diagnostics#readme)<br>`skill-diagnostics@the-claude-factory` | Audits Claude skills for best-practice conformance, portability and whether a model can run them without guessing, with file-and-line evidence and one verdict. | 💻 Code · 🤝 Cowork | `0.1.0` | 🎯 Skills · 🤖 Agents · 🪝 Hooks |
+
+<sub>**Legend:** 🎯 Skills · ⌨️ Commands · 🤖 Agents · 🪝 Hooks · 🔌 MCP · 🧠 LSP · 🎨 Output styles · 📡 Monitors · 🔁 Workflows · 🌈 Themes · ⚙️ Executables</sub>
 <!-- catalog:end -->
 
 ## 🔧 Manage your plugins

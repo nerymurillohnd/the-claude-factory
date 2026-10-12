@@ -7,5 +7,12 @@
     "name": "Nery Murillo",
     "url": "https://github.com/nerymurillohnd"
   },
-  "plugins": []
+  "plugins": [
+    {
+      "name": "skill-diagnostics",
+      "source": "./plugins/skill-diagnostics",
+      "description": "Audits Claude skills for best-practice conformance, portability and whether a model can run them without guessing, with file-and-line evidence and one verdict.",
+      "category": "testing"
+    }
+  ]
 }
