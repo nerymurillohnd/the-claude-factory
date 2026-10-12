@@ -35,22 +35,30 @@ Write each case from the user's side: what someone who installed the plugin asks
 - A skill's triggering is a rate: one case per realistic prompt (different wordings, no slash command, no skill name), each with a `tool_used: Skill` grader, plus prompts that must not trigger it (`min: 0`, `max: 0`, `arm: both`). Docs: skills, Skill not triggering.
 - Trigger cases only need the first tool call: keep `max_turns` low so they stay cheap, and tag them `trigger` so `--tag trigger` re-runs them after every description change.
 
-## Pilot (local, no cost cap)
+## Local smoke test
+
+As the docs recommend for iterating: one arm, one run, traces kept for inspection.
 
 ```bash
-claude plugin eval plugins/<name> --runs 1 --model sonnet --judge-model opus --scaffold --no-publish [--allow-tools …]
+claude plugin eval plugins/<name> [--case <glob> | --tag <tag>] --runs 1 --ablation none \
+  --model sonnet --judge-model opus --scaffold --no-publish --trust-plugin --keep-temp [--allow-tools …]
 ```
+
+- `--case` takes one glob per run; use `--tag` to group cases.
+- Read `out/trace.jsonl` in the kept folder to see what really happened (subagent calls carry `parent_tool_use_id`), then remove the folder.
+- The with-minus-without Δ comes from the full run in CI, not from the smoke test.
 
 - Grant both arms what a real user's session has: a skill's own `allowed-tools` can't widen an eval's grants, so pass them with `--allow-tools` (for example `Bash`, `Write`, and `WebFetch(domain:…)` for each source the plugin verifies against).
 - Ask Nery before running; state the number of runs (cases × 2 arms, plus judge calls) and the estimated cost.
 - From the raw WITH / W/OUT / Δ table:
   - Δ ≈ 0 on a non-guardrail case → remove or rewrite it: it measures nothing.
   - Fails in both arms → suspect the grader or the task before the plugin.
-- Record the pilot's printed cost; it sets the full-run cap.
+- Record the smoke test's printed cost; it sets the full-run cap in `.github/scripts/evals-config.json`.
 
 ## Full run (CI, capped)
 
-- 3 runs per case (default), `--max-cost-usd` = pilot cost × 3 × 1.25, `--trust-plugin`, `--scaffold`, pinned model IDs.
+- `.github/workflows/evals.yml` runs `.github/scripts/run-evals.sh`: both arms, 3 runs per case, `--trust-plugin`, `--scaffold`, pinned model IDs, and each plugin's tool grants and `--max-cost-usd` (smoke cost × 3 runs, plus the baseline arm, × 1.25) from `.github/scripts/evals-config.json`.
+- It runs when a pull request changes a plugin's `plugin.json` (a version bump) or by hand, and only when the `ANTHROPIC_API_KEY` secret exists; a plugin with evals and no config entry fails the job.
 - Passing the full run is the release gate for a plugin that ships an eval suite.
 - Never edit a case after a full run just to make it pass: fix the plugin, or record why the case was wrong.
 

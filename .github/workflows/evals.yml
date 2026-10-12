@@ -1,0 +1,65 @@
+name: Evals
+
+# Full eval suite of every plugin that ships one: both arms (with and without
+# the plugin), three runs per case. Billed to the ANTHROPIC_API_KEY secret, so it
+# runs only when a plugin's version changes in a pull request, or by hand.
+on:
+  pull_request:
+    paths:
+      - "plugins/*/.claude-plugin/plugin.json"
+  workflow_dispatch:
+    inputs:
+      plugin:
+        description: "Plugin to evaluate (folder name under plugins/), or all"
+        default: all
+
+permissions:
+  contents: read
+
+concurrency:
+  group: evals-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: "24"
+  CLAUDE_CODE_VERSION: "2.1.296"
+  # Full model IDs, never aliases, so a model rollout isn't read as a plugin regression.
+  EVAL_MODEL: ${{ vars.EVAL_MODEL || 'claude-sonnet-5-5' }}
+  EVAL_JUDGE_MODEL: ${{ vars.EVAL_JUDGE_MODEL || 'claude-opus-5-5' }}
+
+jobs:
+  evals:
+    name: Plugin evals
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    env:
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+    steps:
+      - name: Skip without an API key
+        if: env.ANTHROPIC_API_KEY == ''
+        run: echo "::notice::ANTHROPIC_API_KEY is not set; evals skipped."
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        if: env.ANTHROPIC_API_KEY != ''
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        if: env.ANTHROPIC_API_KEY != ''
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Install Claude Code and the shell sandbox
+        if: env.ANTHROPIC_API_KEY != ''
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq bubblewrap socat
+          npm install --global "@anthropic-ai/claude-code@${CLAUDE_CODE_VERSION}"
+          claude --version
+      - name: Run each plugin's full suite
+        if: env.ANTHROPIC_API_KEY != ''
+        env:
+          ONLY: ${{ inputs.plugin || 'all' }}
+        run: .github/scripts/run-evals.sh
+      - name: Keep the results
+        if: always() && env.ANTHROPIC_API_KEY != ''
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: eval-results
+          path: eval-results/
+          if-no-files-found: ignore
