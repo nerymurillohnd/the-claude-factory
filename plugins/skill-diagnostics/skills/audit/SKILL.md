@@ -57,11 +57,11 @@ Example: `/skill-diagnostics:audit ./plugins/notes --target upload` audits every
    ```
 
    It exits 0 with JSON; `summary.error` counts the errors.
-3. **Lenses.** In one message, launch the agent of every selected lens (`skill-diagnostics:conformance-auditor`, `skill-diagnostics:executability-auditor`) for every skill, even a short one. Pass absolute paths:
+3. **Lenses.** In one message, launch the agent of every selected lens (`skill-diagnostics:conformance-auditor`, `skill-diagnostics:executability-auditor`) for every skill, even a short one. Tell each agent to read every inventory file in full, first line to last, and to back every finding with a verbatim quote and its `file:line`. Pass absolute paths:
    - conformance: skill path, inventory (with its `outside` entries), targets, checker JSON per target, and `${CLAUDE_SKILL_DIR}/references/` `conformance.md`, `fields.md`, `surfaces.md`;
    - executability: skill path, inventory (with its `outside` entries), and `${CLAUDE_SKILL_DIR}/references/executability.md`.
 4. **Merge** each skill's reports into one table, keeping every finding. Executability severity: *decides output* on a *normal* path → high; on a *rare* path, or not deciding output → medium. One root defect is one row, listing every location and every lens that flagged it, with the highest severity; it counts once in the totals. Highest severity first.
-5. **Verify** every finding before it counts: read [verification.md](references/verification.md) and follow it. It checks each quote against the files, each rule or platform claim against the live official page, and the official changes of the last 15 days; false, partly false or off-focus findings go back to the lens that produced them.
+5. **Verify** every finding before it counts: read [verification.md](references/verification.md) and follow it. Never skip it, even when every finding is about the skill's own text: the 15-day change check always runs. It checks each quote against the files, each rule or platform claim against the live official page, and the official changes of the last 15 days; false, partly false or off-focus findings go back to the lens that produced them.
 6. **Verdict**, first rule that matches:
    1. **fail:** any high finding.
    2. **not determinable:** the inventory is incomplete, or a lens could not inspect a file an instruction needs.
@@ -73,8 +73,8 @@ Example: `/skill-diagnostics:audit ./plugins/notes --target upload` audits every
    - inventory taken, and the checker ran for each target (or why not);
    - each lens agent returned its report block, with `Files read: n of n` covering the inventory;
    - every finding has a verbatim quote with `file:line` (or where something absent is needed);
-   - every finding went through step 5: rule and platform findings carry an official URL and quote; the last 15 days of changes were checked; disputed findings were sent back;
-   - the verdict follows step 6, marked provisional when [verification.md](references/verification.md) (Unreachable sources) says so;
+   - every finding went through step 5: rule and platform findings carry an official URL and quote; the change sources of the last 15 days were fetched; disputed findings were sent back;
+   - the verdict follows step 6, marked provisional only when [verification.md](references/verification.md) (Unreachable sources) says so; a check you did not run is a stage to redo, never a reason for provisional;
    - the report fills every section of the template that applies.
 
 If the checker cannot run, a path resolves to no skill, the inventory is incomplete, or an agent is unavailable or fails: read [fallbacks.md](references/fallbacks.md) and follow it for that case.

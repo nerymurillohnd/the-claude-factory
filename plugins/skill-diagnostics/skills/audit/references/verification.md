@@ -37,4 +37,6 @@ For each finding, note whether a recent change confirms it, changes it or makes 
 
 ## Unreachable sources
 
+A source is unreachable only when you fetched it and the fetch failed. A source you did not fetch is not unreachable: fetch it.
+
 List every unreachable page or change source under Not verified live. Mark a finding that needed an official page and could not get one `not verified live`, and keep it. Mark the verdict **provisional**, with the reason, when any finding is `not verified live` or none of the change sources could be checked; an unreachable source on its own does not make it provisional.
