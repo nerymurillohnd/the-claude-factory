@@ -47,6 +47,7 @@
 
 - Marketplace `0.1.0` released (`marketplace--v0.1.0`); its 0.2.0 bump for the added plugin is pending (`/release marketplace`).
 - `skill-diagnostics` 0.1.0 merged to `main` (PR #1, squash `809cf90`) and released (`skill-diagnostics--v0.1.0`); 0.1.1 with the `@claude` review fixes is PR #3.
+- `session-handoff` 0.1.0 (skill `write-handoff` + `SessionStart` hook, no evals by Nery's choice) is in review on `feat/session-handoff`; its Claude app behaviour (Cowork session, chat conversation) is not yet tested.
 - `main` has `claude.yml` (`@claude` mentions) and `claude-code-review.yml` (review on every PR), from PR #2.
 - CI green: Validate (policy + script tests, `claude plugin validate`, markdownlint + actionlint) and Release.
 - GitHub settings done: PRs Collaborators only, private vulnerability reporting, topics, 20 custom labels.
@@ -65,4 +66,5 @@
 | :-- | :-- | :-- |
 | `project-records` — decision records, debt ledgers, session handoffs (handoffs gitignored) | Nery, earlier sessions | idea |
 | `skill-diagnostics` — audit skills: conformance + executability (was `skills-engineering`) | Nery, earlier sessions | building |
+| `session-handoff` — end-of-session handoff file + start-of-session reader | Nery, 2026-10-12 | in review |
 | `live-docs-research` — research from live official sources + changelog checks | Nery, earlier sessions | idea |

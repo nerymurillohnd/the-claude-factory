@@ -73,9 +73,9 @@ claude plugin marketplace remove the-claude-factory
 
 Everything lives under **Customize** → **Plugins**:
 
-- **Update** — click **Update** on the marketplace to pull the latest versions. The app warns you before an update overwrites files you edited locally.
-- **Turn components on or off** — open the installed plugin and toggle its skills, connectors, agents or hooks.
-- **Uninstall** — open the plugin and click **Uninstall**.
+- **Update** — plugins update from the marketplace automatically once a new version syncs. To pull the latest now, select **Check for updates**; for a marketplace you added from github.com you can also turn on **Sync automatically**.
+- **Turn off** — open the plugin and turn off its toggle, labeled **Disable plugin**; turn it on again to enable the plugin.
+- **Remove** — open the plugin, open its menu and select **Remove**.
 
 In Claude Code (v2.1.273+, signed in with the same claude.ai account), these plugins appear as `<plugin>@synced`. Update and uninstall them here; in `/plugin` you can only turn them on or off, unless your organization requires them. Claude Code picks up changes when it starts; if it says *Plugins changed*, run `/reload-plugins`.
 

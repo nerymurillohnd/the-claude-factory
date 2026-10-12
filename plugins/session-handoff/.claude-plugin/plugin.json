@@ -1,0 +1,27 @@
+{
+  "name": "session-handoff",
+  "displayName": "Session Handoff",
+  "version": "0.1.0",
+  "description": "Carries a project's working state from one session to the next: write a handoff when you stop, and the next session reads it, reports what is still open and asks you where to start.",
+  "author": {
+    "name": "Nery Murillo",
+    "url": "https://github.com/nerymurillohnd"
+  },
+  "homepage": "https://github.com/nerymurillohnd/the-claude-factory/tree/main/plugins/session-handoff#readme",
+  "repository": "https://github.com/nerymurillohnd/the-claude-factory",
+  "license": "MIT",
+  "keywords": [
+    "productivity",
+    "handoff",
+    "session",
+    "continuity",
+    "context",
+    "git"
+  ],
+  "metadata": {
+    "surfaces": [
+      "claude-code",
+      "claude-app"
+    ]
+  }
+}
