@@ -19,7 +19,7 @@ Arguments: $ARGUMENTS
 
 From those arguments, or from the request when there are none:
 
-- **Paths:** a skill folder, a file or folder inside one (audit the nearest folder above it that holds `SKILL.md`, or the outer skill when that folder sits inside another skill's folder), a folder of skills (such as `skills/`), or a plugin root (its `skills/` folder plus any paths its `plugin.json` `skills` field declares). Expand a folder of skills with `find -L "<folder>" -name SKILL.md` (for a plugin root, run it on `skills/` and each declared path, never on the root); each parent folder is one skill, and a `SKILL.md` inside another skill's folder belongs to that skill. Audit each skill once.
+- **Paths:** a skill folder, a file or folder inside one (audit the nearest folder above it that holds `SKILL.md`, or the outer skill when that folder sits inside another skill's folder), a folder of skills (such as `skills/`), or a plugin root (a folder holding `.claude-plugin/plugin.json`: its `skills/` folder plus each path its `skills` field declares, a string or a list, relative to the root; `.` is the root). Expand a folder of skills such as `skills/` with `find -L "<folder>" -name SKILL.md`, never on a plugin root; a declared path is one skill when it holds `SKILL.md`, otherwise each `<name>/SKILL.md` one level below it is one. Each parent folder is one skill, and a `SKILL.md` inside another skill's folder belongs to that skill. Audit each skill once.
 - **No path:** audit every skill whose `SKILL.md` was created or edited in this conversation and not audited since (a hook message may name them). If there are none, ask for the path, then invoke this skill again with it: the user's reply ends this skill's pre-approval, and a new invocation restores it.
 - **Lens:** `--lens conformance` or `--lens executability` runs one; default both.
 - **Unknown option or value:** stop before step 1 and list the accepted ones.
@@ -75,7 +75,7 @@ Example: `/skill-diagnostics:audit ./plugins/notes --target upload` audits every
    - every finding has a verbatim quote with `file:line` (or where something absent is needed);
    - every finding went through step 5: rule and platform findings carry an official URL and quote; the last 15 days of changes were checked; disputed findings were sent back;
    - the verdict follows step 6, marked provisional when [verification.md](references/verification.md) (Unreachable sources) says so;
-   - the report fills every section of the template.
+   - the report fills every section of the template that applies.
 
 If the checker cannot run, a path resolves to no skill, the inventory is incomplete, or an agent is unavailable or fails: read [fallbacks.md](references/fallbacks.md) and follow it for that case.
 

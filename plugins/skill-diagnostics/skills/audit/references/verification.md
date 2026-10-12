@@ -31,6 +31,7 @@ For each finding, note whether a recent change confirms it, changes it or makes 
 ## Send back what fails
 
 - Send each partly false, false or off-focus finding back to the lens agent that produced it, under the heading `Disputed findings`, each with its ID and your evidence; the lens reference says how the agent answers. Relaunch that agent with the same inputs plus that list when it can't be resumed. A lens you applied inline: re-check the finding yourself.
+- Replace the disputed rows with the lens's answer, redo the merge (step 4) for that skill, and verify only the changed rows.
 - At most two rounds. What is still not verified after that: keep only the part you verified yourself, and count the rest as withdrawn in the report's Verification line, with the reason.
 - Add a finding the lenses missed only with the same evidence a lens would give.
 
