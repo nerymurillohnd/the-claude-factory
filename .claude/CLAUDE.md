@@ -21,8 +21,8 @@ Two maintainers: Nery (owner) and Claude. No external pull requests; users contr
 | `README.md`, `CHANGELOG.md`, `docs/` | Showcase and user guides | Users |
 | `SECURITY.md`, `SUPPORT.md`, `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md` | Community files | Users |
 | `.github/ISSUE_TEMPLATE/`, `.github/labels.json` | Issue forms and labels | Users / maintainers |
-| `.github/scripts/` | Zero-dependency Node tooling + tests | Maintainers, CI |
-| `.github/workflows/` | `validate.yml` (gates), `release.yml` (tags + releases), `evals.yml` (full plugin eval suites, billed) | CI |
+| `.github/scripts/` | Zero-dependency Node tooling + tests, and each plugin's Python tests | Maintainers, CI |
+| `.github/workflows/` | `validate.yml` (gates), `release.yml` (tags + releases), `evals.yml` (full plugin eval suites; they use Nery's plan) | CI |
 | `.claude/` | This file, memory, rules, skills, agents, templates | Maintainers only |
 
 ## Golden rules
@@ -48,6 +48,11 @@ node .github/scripts/catalog.mjs --check
 npx --yes @biomejs/biome@2.5.15 check .
 git ls-files -z '*.sh' | xargs -0 shellcheck -o all -S style -x -a -P SCRIPTDIR
 git ls-files -z '*.sh' | xargs -0 shfmt -d
+python3 -m unittest discover -s .github/scripts/tests/skill-diagnostics
+.github/scripts/tests/skill-diagnostics/by_path.sh
+uvx ruff@0.17.0 check plugins .github/scripts
+uvx ruff@0.17.0 format --check plugins .github/scripts
+git ls-files -z 'plugins/*.py' | xargs -0 uvx --from mypy==1.18.2 mypy --python-version 3.9 --strict
 npx --yes markdownlint-cli2@0.23.3
 ```
 
