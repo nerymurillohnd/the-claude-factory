@@ -31,6 +31,7 @@ A skill can look finished to the person who wrote it and still fail the model th
 - **Two audits in one pass** — conformance (official rules, recommendations, portability) and executability (could a model follow it without guessing) run in parallel and come back as one report with one verdict.
 - **Reads every line** — both auditors read every file of the skill from start to end, scripts and hidden files included; nothing is sampled or skimmed. If a file can't be listed or read, the report names it, and a gap that matters gives *not determinable* instead of a pass.
 - **Evidence, not opinions** — every finding quotes the exact text with its file and line, and says how to fix it.
+- **Verified before it counts** — before the verdict, every finding is checked again: its quote against your files, any rule or platform claim against the live official Claude documentation (with the URL and the exact sentence), and the official changes of the last 15 days. Findings that don't hold up are corrected or withdrawn.
 - **Checks what validation skips** — `claude plugin validate` confirms the structure; Skill Diagnostics also checks name and description limits, quoting that breaks strict YAML, argument placeholders, broken links and script setup.
 - **Ready for every surface** — tell it where the skill must work (Claude Code, Cowork, a claude.ai upload, the Skills API) and it flags what that surface rejects or skips.
 - **Catches new skills as you write them** — after a `SKILL.md` is created or changed, for example with Anthropic's `skill-creator`, Claude offers an audit before you move on.
@@ -53,7 +54,7 @@ Skill Diagnostics only audits. To create a skill, use Anthropic's `skill-creator
 | **Claude Code** | v2.1.176 or later — check with `claude --version` |
 | **Surfaces** | See [Compatibility](#-compatibility) |
 | **External tools** | Python 3.9 or later on `PATH` as `python3`, for the structure checker and the hook. On Windows, Git for Windows, so scripts run by their path. Without Python the audit still runs without the checker, but the hook can't start and Claude Code shows a hook error after each `SKILL.md` write |
-| **Network** | Optional. To confirm a rule that may have changed, the audit can fetch the official Claude documentation page that owns it. Claude Code asks before each fetch, and nothing from your skill is sent |
+| **Network** | Used to verify findings against the official Claude documentation, changelogs and release notes. Claude Code may ask before a fetch, and nothing from your skill is sent. Without network access the audit still runs, and its verdict is marked *provisional* |
 | **Accounts / API keys** | None |
 
 ## 📥 Installation
@@ -215,7 +216,7 @@ These prompts are expected, and the audit only reads:
 
 - **Reading your skill**, when it lives outside your working directory, for example in `~/.claude/skills/`. Allow it and the audit continues.
 - **Reading the plugin's own guides**, which live in Claude Code's plugin folder. Safe to allow.
-- **Fetching an official documentation page**, to confirm a rule against the live docs. If you deny it, the finding stays in the report, marked *not verified live*.
+- **Fetching an official documentation page, changelog or release notes**, to verify findings. If you deny it, the findings stay in the report, marked *not verified live*, and the verdict is *provisional*.
 
 </details>
 
@@ -243,7 +244,7 @@ Claude Code cuts each skill's `description` (plus `when_to_use`) in its skill li
 <details>
 <summary><b>How much does an audit cost?</b></summary>
 
-Each skill is read in full by two agents in parallel, so a large folder of skills uses more of your plan's usage than a single one. Use `--lens` to run one lens, or audit a few skills at a time.
+Each skill is read in full by two agents in parallel, and every finding is then verified against the live documentation, so a large folder of skills uses more of your plan's usage than a single one. Use `--lens` to run one lens, or audit a few skills at a time.
 
 </details>
 

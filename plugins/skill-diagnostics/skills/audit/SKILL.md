@@ -37,8 +37,10 @@ Example: `/skill-diagnostics:audit ./plugins/notes --target upload` audits every
 - [ ] 2 Checker    per skill and target (conformance lens only) → JSON
 - [ ] 3 Lenses     every agent in one message → lens reports
 - [ ] 4 Merge      per skill → findings table
-- [ ] 5 Verdict    per skill
-- [ ] 6 Report     assets/report.md per skill, summary table for several
+- [ ] 5 Verify     every finding against the files and live official sources
+- [ ] 6 Verdict    per skill
+- [ ] 7 Report     assets/report.md per skill, summary table for several
+- [ ] 8 Checklist  every stage of every agent done
 ```
 
 1. **Inventory.** Run, per skill:
@@ -58,17 +60,24 @@ Example: `/skill-diagnostics:audit ./plugins/notes --target upload` audits every
 3. **Lenses.** In one message, launch the agent of every selected lens (`skill-diagnostics:conformance-auditor`, `skill-diagnostics:executability-auditor`) for every skill, even a short one. Pass absolute paths:
    - conformance: skill path, inventory (with its `outside` entries), targets, checker JSON per target, and `${CLAUDE_SKILL_DIR}/references/` `conformance.md`, `fields.md`, `surfaces.md`;
    - executability: skill path, inventory (with its `outside` entries), and `${CLAUDE_SKILL_DIR}/references/executability.md`.
-4. **Merge** each skill's reports into one table. Executability severity: *decides output* → high, otherwise medium. One root defect at one location is one row, naming every lens that flagged it, with the highest severity. Highest severity first.
-5. **Verdict**, first rule that matches:
+4. **Merge** each skill's reports into one table, keeping every finding. Executability severity: *decides output* on a *normal* path → high; on a *rare* path, or not deciding output → medium. One root defect at one location is one row, naming every lens that flagged it, with the highest severity. Highest severity first.
+5. **Verify** every finding before it counts: read [verification.md](references/verification.md) and follow it. It checks each quote against the files, each rule or platform claim against the live official page, and the official changes of the last 15 days; false, partly false or off-focus findings go back to the lens that produced them.
+6. **Verdict**, first rule that matches:
    1. **fail:** any high finding.
    2. **not determinable:** the inventory is incomplete, or a lens could not inspect a file an instruction needs.
    3. **pass with warnings:** only medium or low findings.
    4. **pass:** no findings.
-6. **Report** each skill in your reply with [report.md](assets/report.md); write no file. For more than one skill or path, end with: Skill | Path | Verdict | High | Medium | Low.
+7. **Report** each skill in your reply with [report.md](assets/report.md); write no file. For more than one skill or path, end with: Skill | Path | Verdict | High | Medium | Low.
+
+8. **Checklist.** Before replying, confirm every item for every skill; redo the stage that fails, without exception:
+   - inventory taken, and the checker ran for each target (or why not);
+   - each lens agent returned its report block, with `Files read: n of n` covering the inventory;
+   - every finding has a verbatim quote with `file:line` (or where something absent is needed);
+   - every finding went through step 5: rule and platform findings carry an official URL and quote; the last 15 days of changes were checked; disputed findings were sent back;
+   - the verdict follows step 6, marked provisional if live sources were unreachable;
+   - the report fills every section of the template.
 
 If the checker cannot run, a path resolves to no skill, the inventory is incomplete, or an agent is unavailable or fails: read [fallbacks.md](references/fallbacks.md) and follow it for that case.
-
-Done when every skill has a verdict, every finding has a verbatim quote with `file:line` (or, for something absent, where it is needed), and the report says what was not checked.
 
 ## Gotchas
 
@@ -81,6 +90,7 @@ Done when every skill has a verdict, every finding has a verbatim quote with `fi
 | :-- | :-- |
 | [conformance.md](references/conformance.md), [executability.md](references/executability.md) | The two lenses. Pass their paths to the agents; read one yourself only to apply it inline ([fallbacks.md](references/fallbacks.md)) |
 | [fields.md](references/fields.md), [surfaces.md](references/surfaces.md) | Facts for the conformance lens |
+| [verification.md](references/verification.md) | Step 5, every run: how to verify findings, the official sources and the 15-day change check |
 | [fallbacks.md](references/fallbacks.md) | Read when the checker can't run, a path doesn't resolve, the inventory is incomplete, or an agent fails |
-| [report.md](assets/report.md) | Step 6 template |
+| [report.md](assets/report.md) | Step 7 template |
 | `scripts/check_skill.py` | Steps 1–2: run it, don't read it. Python 3.9+ as `python3` |

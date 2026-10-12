@@ -34,6 +34,7 @@ Rules learned the hard way. Follow them; add one line per new lesson.
 - Verify every user-doc claim against the docs before writing it: "a duplicate install loads twice" was wrong (a same-named install wins over the synced copy).
 - Following symlinks in an inventory: stay inside the skill (a link out is an external dependency, never read), and tell a duplicate path (alias to a listed folder) from a loop (link to an ancestor); otherwise coverage fixes create false "not determinable" verdicts and out-of-scope reads.
 - Audit verdicts are not stable across runs: the same `19279f6` gave pass with warnings (1 medium) and fail (5 high) in two runs. Never treat one audit as proof; measure stability with repeated runs on a fixed fixture.
+- Never suppress findings to tame an auditor: a rule like "report only what a model would plausibly get wrong" also hides real defects. Report everything, classify by impact and path (normal vs rare), and verify each finding against live official sources instead.
 - A copied (cached) install for local testing: a local marketplace whose entry uses `{"source":"git-subdir","url":"file:///abs/repo.git","path":"plugins/<name>"}`; a relative-path source loads in place instead. Isolate with `HOME=<tmp>` or `CLAUDE_CONFIG_DIR`.
 
 ## GitHub

@@ -2,7 +2,7 @@
 
 - **Path:** <absolute path>
 - **Targets:** <targets, "assumed" when inferred>
-- **Verdict:** **<pass | pass with warnings | fail | not determinable>** — <one-line reason>
+- **Verdict:** **<pass | pass with warnings | fail | not determinable>**<, provisional (no live sources) when step 5 couldn't reach them> — <one-line reason>
 
 ## Findings
 
@@ -18,6 +18,8 @@ No findings: write `No findings.` and leave out Evidence.
 ### 1 — <short title>
 
 - "<verbatim quote>" (<file:line>), or Absent: needed at <file:line>
+- Official source: <URL> — "<verbatim quote>", or internal (the skill's own text is the evidence)
+- Recent changes: <none affecting it in <date> to <date> | the change and its source>
 - Consequence: <what goes wrong, for whom>
 
 ## Coverage
@@ -28,5 +30,6 @@ A line whose lens or checker did not run says `not checked` and why.
 - Checker: <ran (targets) | not run: reason>
 - Lenses: <which; agent or inline>
 - Order and flow: <from the executability lens>
+- Verification: <n verified; n corrected; n withdrawn, with why>; changes checked <date> to <date> in <sources>
 - Not verified live: <items, or none>
 - External dependencies: <found or unverified, plus the inventory's `outside` links, or none>
