@@ -9,9 +9,9 @@
   },
   "plugins": [
     {
-      "name": "skill-diagnostics",
-      "source": "./plugins/skill-diagnostics",
-      "description": "Audits Claude skills for best-practice conformance, portability and whether a model can run them without guessing, with file-and-line evidence and one verdict.",
+      "name": "plugin-test-bench",
+      "source": "./plugins/plugin-test-bench",
+      "description": "Proves your Claude Code plugin works the way your users receive it: installs a copy in a throwaway config, checks it loads, runs your eval suite against that copy, and reviews your eval cases so they measure what the plugin adds.",
       "category": "testing"
     },
     {
@@ -19,6 +19,12 @@
       "source": "./plugins/session-handoff",
       "description": "Carries a project's working state from one session to the next: write a handoff when you stop, and the next session reads it, reports what is still open and asks you where to start.",
       "category": "productivity"
+    },
+    {
+      "name": "skill-diagnostics",
+      "source": "./plugins/skill-diagnostics",
+      "description": "Audits Claude skills for best-practice conformance, portability and whether a model can run them without guessing, with file-and-line evidence and one verdict.",
+      "category": "testing"
     }
   ]
 }

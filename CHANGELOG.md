@@ -14,6 +14,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 - **skill-diagnostics** 0.1.0 — audits Claude skills for conformance, portability and executability, with evidence and one verdict.
 - **session-handoff** 0.1.0 — carries a project's working state between sessions: a handoff written when you stop, read at the start of the next session.
+- **plugin-test-bench** 0.1.0 — tests a Claude Code plugin as its users install it, and reviews its eval cases so they measure what the plugin adds.
 
 ### Changed
 

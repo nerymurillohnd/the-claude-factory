@@ -56,6 +56,9 @@ Rules learned the hard way. Follow them; add one line per new lesson.
 - `compgen -G "${dir}/*.md"` treats the whole path as a pattern: brackets or backslashes in the project path hide every file. Quote the directory and glob only the file name (`"${dir}"/[0-9]*.md` plus a `-f` check).
 - The Claude app's plugin labels (claude.com/docs/plugins/overview): **Add** → **Add marketplace**, **Discover** → **Add**, the plugin's menu → **Remove**, **Check for updates**; not "Install" or "Uninstall".
 - A copied (cached) install for local testing: a local marketplace whose entry uses `{"source":"git-subdir","url":"file:///abs/repo.git","path":"plugins/<name>"}`; a relative-path source loads in place instead. Isolate with `HOME=<tmp>` or `CLAUDE_CONFIG_DIR`.
+- A plain YAML value holding a colon followed by a space breaks strict YAML ("mapping values are not allowed here"), yet `claude plugin validate --strict` passes it: check skill frontmatter with a strict parser (`uvx --with pyyaml`) after writing a description.
+- A "free" `claude -p` load check stays free only with every credential source off: `env -u` the API key, auth token, OAuth token, `ANTHROPIC_PROFILE`, federation and every `CLAUDE_CODE_USE_*` provider variable, and check for an active Anthropic profile in `~/.config/anthropic`, which lives outside `CLAUDE_CONFIG_DIR` (docs: authentication, precedence).
+- `CLAUDE_CODE_PLUGIN_CACHE_DIR` moves the whole plugins root (including `installed_plugins.json`) out of `CLAUDE_CONFIG_DIR`: unset it for an isolated install test.
 
 ## GitHub
 
@@ -80,3 +83,5 @@ Rules learned the hard way. Follow them; add one line per new lesson.
 - A Node "is this the main module" check must `realpathSync(process.argv[1])`: `import.meta.url` is the real path, and macOS temp folders sit under the `/var` → `/private/var` link. Unresolved, `check-repo.mjs` ran nothing and exited 0 in the script tests on the Mac only (CI on Linux stayed green).
 - Biome config is the root `biome.json` (Nery's standard from claude-essentials) with `json.formatter.expand: "always"`, so `writeJson` (`JSON.stringify(…, 2)`) output stays formatted; templates with `{{…}}` placeholders aren't JSON and are excluded. Without a repo config Biome silently uses its defaults (tabs, double quotes, 80 columns).
 - Nery's shell sets `SHELLCHECK_OPTS=-o all -S style`, so local `actionlint` reports style findings that CI (default shellcheck) doesn't.
+- The github-ops hook can't parse a Bash command that mixes a heredoc with `git`: write the message to a file in one call, then `git commit -F <file>` alone.
+- markdownlint-cli2 lints untracked files too (`.git/info/exclude` doesn't stop it): plan files and scratch workspaces in the tree turn `/verify` red locally while CI stays green.
