@@ -355,6 +355,54 @@ class Files(SkillCase):
         self.assertFalse([f for f in findings(report) if f["file"].startswith("scripts/")], report)
 
 
+class Inventory(SkillCase):
+    """--list: the full file inventory the lenses read from."""
+
+    def test_lists_every_file_hidden_and_ignored_included(self) -> None:
+        self.skill_md(GOOD)
+        self.write(".env.example", "KEY=\n")
+        self.write(".hidden/notes.md", "# Notes\n")
+        self.write(".gitignore", "build/\n")
+        self.write("build/out.txt", "x\n")
+        self.write("references/deep/a/b.md", "# B\n")
+        code, report = run(self.skill, "--list")
+        self.assertEqual(code, 0, report)
+        paths = [f["path"] for f in report["files"]]
+        self.assertEqual(
+            paths,
+            sorted(
+                [
+                    ".env.example",
+                    ".gitignore",
+                    ".hidden/notes.md",
+                    "SKILL.md",
+                    "build/out.txt",
+                    "references/deep/a/b.md",
+                ]
+            ),
+        )
+        self.assertEqual(report["count"], 6)
+        self.assertEqual(report["not_listed"], [])
+
+    def test_no_cap_on_the_number_of_files(self) -> None:
+        self.skill_md(GOOD)
+        for i in range(150):
+            self.write(f"assets/f{i:03}.txt", "x\n")
+        _, report = run(self.skill, "--list")
+        self.assertEqual(report["count"], 151)
+
+    def test_reports_sizes_without_checking(self) -> None:
+        self.skill_md(GOOD, "Read [missing](references/none.md).\n")
+        code, report = run(self.skill, "--list")
+        self.assertEqual(code, 0, report)  # a broken link is not an inventory error
+        self.assertNotIn("findings", report)
+        self.assertGreater(report["files"][0]["bytes"], 0)
+
+    def test_no_skill_md_is_bad_input(self) -> None:
+        code, _ = run(self.root, "--list")
+        self.assertEqual(code, 2)
+
+
 class Output(SkillCase):
     def test_text_format_and_utf8(self) -> None:
         self.skill_md("name: demo-skill\ndescription: Formatea notas «rápido». Use when asked.\n")

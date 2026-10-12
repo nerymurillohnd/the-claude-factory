@@ -25,6 +25,7 @@
 | 2026-10-11 | Evals: Sonnet runs, Opus judges; only differentiating cases; uncapped local pilot, capped full run in CI (`.claude/rules/evals.md`) | Objective, cost-controlled evidence |
 | 2026-10-11 | Keep a Changelog 2.0.0 (published 2026-06-07) | Current version of the format |
 | 2026-10-12 | Plugins never limit their own file coverage (no git-ignored or similar exclusions); the user's settings and hooks set the limits, and blocked files are reported, never worked around | Users choose their own coverage; a plugin must not decide it for them |
+| 2026-10-12 | skill-diagnostics auditors read every file end to end: inventory from `check_skill.py --list`, auditors get only Read (+ WebFetch), no search tools; a mod was considered and rejected (Claude Code-only, high-trust) | A real audit reads everything; works the same in Claude Code and Cowork |
 
 ## Status
 

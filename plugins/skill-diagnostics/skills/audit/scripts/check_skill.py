@@ -3,6 +3,11 @@
 
 Usage: check_skill.py [--format json|text] [--target code|cowork|upload|api]
                       [--listing-cap N] SKILL_DIR
+       check_skill.py --list [--format json|text] SKILL_DIR
+
+--list prints the skill's full file inventory instead of checking it: every
+file at any depth, hidden files included, nothing excluded, names and sizes
+only (no file is opened).
 
 Checks what `claude plugin validate` does not: frontmatter syntax and quoting,
 known fields and values, name and description limits per target surface,
@@ -785,6 +790,46 @@ def render(skill: Path, target: str, findings: list[Finding], fmt: str) -> str:
     )
 
 
+def inventory(skill: Path) -> dict[str, object]:
+    """Every file under the skill, hidden ones included; nothing is opened or excluded."""
+    files: list[dict[str, object]] = []
+    not_listed: list[dict[str, str]] = []
+
+    def failed(error: OSError) -> None:
+        where = Path(error.filename).relative_to(skill).as_posix() if error.filename else "?"
+        not_listed.append({"path": where, "reason": error.strerror or str(error)})
+
+    for root, dirs, names in os.walk(skill, onerror=failed):
+        base = Path(root)
+        for name in list(dirs):
+            if (base / name).is_symlink():  # os.walk does not enter it; say so instead of hiding it
+                dirs.remove(name)
+                not_listed.append({"path": (base / name).relative_to(skill).as_posix(), "reason": "symlinked folder"})
+        for name in names:
+            path = base / name
+            try:
+                size = path.stat().st_size
+            except OSError as error:
+                not_listed.append({"path": path.relative_to(skill).as_posix(), "reason": error.strerror or str(error)})
+                continue
+            files.append({"path": path.relative_to(skill).as_posix(), "bytes": size})
+    files.sort(key=lambda f: str(f["path"]))
+    not_listed.sort(key=lambda f: f["path"])
+    return {"skill": skill.as_posix(), "count": len(files), "files": files, "not_listed": not_listed}
+
+
+def render_inventory(data: dict[str, object], fmt: str) -> str:
+    if fmt == "json":
+        return json.dumps(data, indent=2, ensure_ascii=False)
+    files = data["files"]
+    not_listed = data["not_listed"]
+    assert isinstance(files, list) and isinstance(not_listed, list)
+    rows = [f"Skill: {data['skill']}  ({data['count']} files)"]
+    rows += [f"{f['bytes']:>9}  {f['path']}" for f in files]
+    rows += [f"not listed  {f['path']}  ({f['reason']})" for f in not_listed]
+    return "\n".join(rows)
+
+
 def main(argv: list[str] | None = None) -> int:
     for stream in (sys.stdout, sys.stderr):
         reconfigure = getattr(stream, "reconfigure", None)  # absent on some wrapped streams
@@ -797,6 +842,7 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument("skill_dir", help="directory that holds SKILL.md (a SKILL.md path is accepted)")
     parser.add_argument("--format", choices=("json", "text"), default="json")
+    parser.add_argument("--list", action="store_true", help="print the full file inventory instead of checking")
     parser.add_argument(
         "--target", choices=TARGETS, default="code", help="surface the skill must work on (default code)"
     )
@@ -813,6 +859,9 @@ def main(argv: list[str] | None = None) -> int:
     if not (path / "SKILL.md").is_file():
         sys.stderr.write(f"Error: no SKILL.md in {path}. Pass the skill directory.\n")
         return 2
+    if args.list:
+        sys.stdout.write(render_inventory(inventory(path), args.format) + "\n")
+        return 0
     if args.listing_cap < 1:
         sys.stderr.write("Error: --listing-cap must be a positive number.\n")
         return 2

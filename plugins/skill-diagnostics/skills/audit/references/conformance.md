@@ -15,6 +15,7 @@ Facts live in `fields.md` and `surfaces.md`, next to this file. Read both before
 ## Input
 
 - The skill directory (absolute path) and its target surfaces.
+- Its file inventory: every file under it, with relative paths, from the orchestrator.
 - The checker's JSON report for each target, or the line `checker not run: <reason>`.
 - The paths of `fields.md` and `surfaces.md`.
 
@@ -22,7 +23,7 @@ Missing skill path: return one line saying so. Missing checker report: run the c
 
 ## Steps
 
-1. **Inventory.** List every file under the skill directory, hidden files included; exclude nothing yourself. A file the user's settings or hooks block is recorded as not inspected, with the reason. Read `SKILL.md` completely and every file it links; open the others enough to know what they are.
+1. **Read everything.** Take the file list from your task message; it is complete, hidden files included. Read every file on the inventory with the Read tool, from its first line to its last; when Read returns part of a file, continue from the next line until the end. Read images and check they show what the text says; read every page of a PDF. A file Read cannot open (a binary) or that the user's settings or hooks block is recorded as not inspected, with the reason, and never worked around. You have no search tool: every finding rests on what you read.
 2. **Checker findings.** Take each checker finding as reported; do not re-judge it. Read the `file:line` it points to only to quote that line verbatim as its evidence. Map its severity: `error` → high, `warning` → medium, `info` → low. When the quoted line shows a false positive, drop the finding and say so.
 3. **Checklist.** Walk the checklist below on every file it applies to. Mark each item pass, fail or n/a. An item the files cannot show (runtime behavior, triggering in practice) is n/a.
 4. **Live check.** When a failing item depends on a field or behavior that may have changed, fetch the owning page listed in `fields.md` or `surfaces.md` and read that section. A live page that contradicts the reference wins: report the difference. Unreachable page: keep the finding and mark it `not verified live`.
@@ -95,7 +96,7 @@ Targets: <targets> · Checker: ran | not run (<reason>)
 | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- |
 | C1 | high | SKILL.md:3 | req | <one line> | "<verbatim quote>" | <what goes wrong, for whom> | <one line> |
 
-Not inspected: <each file, why, and "needed by <file:line>", "run, not read" (a script the skill says to run without reading) or "unreferenced"; or none>
+Not inspected: <each file, why, and "needed by <file:line>" or "unreferenced"; or none>
 Not verified live: <items, or none>
 ```
 

@@ -29,6 +29,7 @@
 A skill can look finished to the person who wrote it and still fail the model that runs it: a placeholder nothing defines, a reference that contradicts `SKILL.md`, a description that never triggers, a field that breaks the upload to claude.ai.
 
 - **Two audits in one pass** — conformance (official rules, recommendations, portability) and executability (could a model follow it without guessing) run in parallel and come back as one report with one verdict.
+- **Reads every line** — both auditors read every file of the skill from start to end, scripts and hidden files included; nothing is sampled or skimmed.
 - **Evidence, not opinions** — every finding quotes the exact text with its file and line, and says how to fix it.
 - **Checks what validation skips** — `claude plugin validate` confirms the structure; Skill Diagnostics also checks name and description limits, quoting that breaks strict YAML, argument placeholders, broken links and script setup.
 - **Ready for every surface** — tell it where the skill must work (Claude Code, Cowork, a claude.ai upload, the Skills API) and it flags what that surface rejects or skips.
@@ -219,14 +220,14 @@ These prompts are expected, and the audit only reads:
 <details>
 <summary><b>The report lists files as "not inspected".</b></summary>
 
-The audit reads every file of the skill, hidden files included, and excludes nothing on its own. When your settings or hooks block a file, for example a `Read` deny rule, the audit respects the block and lists the file as not inspected, with the reason. A skill script the skill says to run without reading is also listed, as *run, not read*.
+Both auditors read every file of the skill from its first line to its last, scripts and hidden files included, and exclude nothing on their own. A file is listed as not inspected only when it can't be opened as text or an image (a binary), or when your settings or hooks block it, for example a `Read` deny rule; the audit respects the block and gives the reason.
 
 </details>
 
 <details>
 <summary><b>The report says "checker not run".</b></summary>
 
-The structure checker needs Python 3.9 or later as `python3` on your `PATH` (on Windows, with Git for Windows). The rest of the audit still ran; install Python and run the audit again to add the checker's findings. Without Python, Claude Code also shows a hook error after each `SKILL.md` write; installing Python removes it.
+The structure checker needs Python 3.9 or later as `python3` on your `PATH` (on Windows, with Git for Windows). The rest of the audit still ran; install Python and run the audit again to add the checker's findings. Without Python the file inventory comes from the session's own listing tool, which can stop at 100 files; the report says which tool listed the files. Without Python, Claude Code also shows a hook error after each `SKILL.md` write; installing Python removes it.
 
 </details>
 
@@ -240,7 +241,7 @@ Claude Code cuts each skill's `description` (plus `when_to_use`) in its skill li
 <details>
 <summary><b>How much does an audit cost?</b></summary>
 
-Each skill is read by two agents in parallel, so a large folder of skills uses more of your plan's usage than a single one. Use `--lens` to run one lens, or audit a few skills at a time.
+Each skill is read in full by two agents in parallel, so a large folder of skills uses more of your plan's usage than a single one. Use `--lens` to run one lens, or audit a few skills at a time.
 
 </details>
 
