@@ -1,0 +1,48 @@
+---
+name: triage-issues
+description: Triages open GitHub issues of The Claude Factory — reproduces, labels, prioritizes and drafts or posts replies using the saved reply templates. Use when Nery asks to review, triage, answer or clean up issues, or to check what users reported.
+argument-hint: "[issue-number|all]"
+disable-model-invocation: true
+allowed-tools:
+  - "Bash(gh issue list*)"
+  - "Bash(gh issue view*)"
+  - "Bash(gh label list*)"
+---
+
+# Triage issues
+
+Scope: `$ARGUMENTS` (default: all issues labeled `status: triage` or `status: needs-info`).
+Rules: `.claude/rules/github-operations.md`. Replies: `.claude/templates/issue-replies.md`.
+
+## 1. Collect
+
+```bash
+gh issue list --repo nerymurillohnd/the-claude-factory --state open --label "status: triage" --json number,title,labels,createdAt,author
+gh issue view <n> --repo nerymurillohnd/the-claude-factory --comments
+```
+
+## 2. Classify each issue
+
+1. **Plugin** — which one? Add `plugin: <name>`.
+2. **Valid?** Check against the plugin README, current code and official docs. Try to reproduce (local marketplace install or `--plugin-dir`).
+3. **Outcome** — one of:
+   - `status: confirmed` + `priority:` (high = core broken for many; medium = workaround exists; low = nice to have)
+   - `status: needs-info` — list exactly what's missing
+   - `status: duplicate` — link the original
+   - `status: upstream` — Claude Code or third-party cause; link where to report
+   - `status: wontfix` — out of scope or working as intended; explain why
+4. **Security** disclosed publicly → follow the security reply, hide details, move to a private advisory.
+
+## 3. Reply
+
+- Draft each reply from the templates, personalized and specific. Show Nery the plan (table: issue · labels · outcome · reply) and wait for approval before posting.
+- Post only after approval:
+
+  ```bash
+  gh issue edit <n> --add-label "<labels>" --remove-label "status: triage"
+  gh issue comment <n> --body-file <reply.md>
+  ```
+
+## 4. Plan the work
+
+For confirmed issues, propose the fix and release level. Fixes ship through `/release`; issues close only when released.

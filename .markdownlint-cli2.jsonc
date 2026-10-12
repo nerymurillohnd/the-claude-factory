@@ -1,0 +1,19 @@
+{
+  // markdownlint-cli2 configuration — run with: npx markdownlint-cli2
+  "config": {
+    "default": true,
+    // Long lines are fine in prose and tables.
+    "MD013": false,
+    // Inline HTML is used on purpose: centered hero, <details>, <sub>, <br>, <img>.
+    "MD033": false,
+    // Files open with an HTML hero block or a template comment instead of a heading.
+    "MD041": false,
+    // Emoji-prefixed headings may repeat across sections of different documents.
+    "MD024": { "siblings_only": true },
+    // Allow "---" separators and tables with emoji alignment.
+    "MD035": { "style": "---" },
+    "MD060": false
+  },
+  "globs": ["**/*.md"],
+  "ignores": ["**/node_modules/**", ".git/**"]
+}

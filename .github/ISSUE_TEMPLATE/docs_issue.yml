@@ -1,0 +1,34 @@
+name: 📝 Documentation issue
+description: Something in a README or guide is wrong, unclear, outdated or missing.
+title: "[Docs] <page>: <short summary>"
+labels: ["type: documentation", "status: triage"]
+body:
+  - type: input
+    id: page
+    attributes:
+      label: Page
+      description: Link to the page or section.
+      placeholder: https://github.com/nerymurillohnd/the-claude-factory/blob/main/docs/installation.md#-cowork
+    validations:
+      required: true
+
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What's the problem?
+      options:
+        - Incorrect or outdated
+        - Unclear or confusing
+        - Missing information
+        - Broken link or image
+        - Typo or formatting
+    validations:
+      required: true
+
+  - type: textarea
+    id: details
+    attributes:
+      label: Details
+      description: What does it say now, and what should it say?
+    validations:
+      required: true

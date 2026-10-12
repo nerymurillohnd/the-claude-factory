@@ -1,0 +1,60 @@
+name: ✨ Feature request
+description: Suggest an improvement to an existing plugin.
+title: "[Feature] <plugin>: <short summary>"
+labels: ["type: enhancement", "status: triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Great ideas start with a real problem. Tell us what slows you down — we'll figure out the best way to solve it. 💡
+        Have an idea for a **brand-new plugin**? Use [Plugin idea](https://github.com/nerymurillohnd/the-claude-factory/issues/new?template=plugin_idea.yml) instead.
+
+  - type: input
+    id: plugin
+    attributes:
+      label: Plugin
+      description: The install name, as in `<plugin>@the-claude-factory`.
+      placeholder: e.g. project-records
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem are you trying to solve?
+      description: Describe the situation and why the plugin falls short today.
+      placeholder: Every time I …, I have to …
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What would you like to happen?
+      description: Describe the behavior you'd love to see. Examples of commands or output help a lot.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives you've considered
+      description: Workarounds you use today, or other tools that do this well.
+
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Where would you use it?
+      multiple: true
+      options:
+        - Claude Code (terminal, desktop, IDE)
+        - Cowork
+        - Claude chat
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checklist
+      options:
+        - label: I searched existing issues and this hasn't been requested yet.
+          required: true

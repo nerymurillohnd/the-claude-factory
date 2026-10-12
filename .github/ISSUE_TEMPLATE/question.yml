@@ -1,0 +1,30 @@
+name: ❔ Question
+description: Ask how to install, configure or use a plugin.
+title: "[Question] <short summary>"
+labels: ["type: question", "status: triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Happy to help! 👋 The [docs](https://github.com/nerymurillohnd/the-claude-factory/tree/main/docs) and the [FAQ](https://github.com/nerymurillohnd/the-claude-factory/blob/main/docs/faq.md) answer the most common questions.
+
+  - type: input
+    id: plugin
+    attributes:
+      label: Plugin (if any)
+      description: The install name, or leave blank for a marketplace question.
+      placeholder: e.g. project-records
+
+  - type: textarea
+    id: question
+    attributes:
+      label: Your question
+      description: What are you trying to do, and what have you tried so far?
+    validations:
+      required: true
+
+  - type: input
+    id: claude-version
+    attributes:
+      label: Claude Code version
+      description: Output of `claude --version`, or "Cowork".

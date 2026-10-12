@@ -1,0 +1,49 @@
+name: Release
+
+# After Validate succeeds on main, tag and publish a GitHub Release for every plugin (and the
+# marketplace) whose current version has no tag yet. Tags follow `claude plugin tag`:
+# {name}--v{version}, so plugin dependency ranges resolve against them.
+
+on:
+  workflow_run:
+    workflows: [Validate]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    if: github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "24"
+      - name: Tag and release new versions
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TARGET_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+        run: |
+          set -euo pipefail
+          targets="marketplace $(node -e 'console.log(require("./.claude-plugin/marketplace.json").plugins.map(p => p.name).join(" "))')"
+          for target in $targets; do
+            tag="$(node .github/scripts/release-notes.mjs "$target" --tag)"
+            if git rev-parse -q --verify "refs/tags/$tag" >/dev/null; then
+              echo "✔ $tag already released"
+              continue
+            fi
+            node .github/scripts/release-notes.mjs "$target" > notes.md
+            gh release create "$tag" --target "$TARGET_SHA" --title "$tag" --notes-file notes.md
+            echo "🚀 Released $tag"
+          done

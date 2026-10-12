@@ -1,0 +1,17 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Node
+node_modules/
+npm-debug.log*
+
+# Local Claude Code state (personal, never committed)
+.claude/settings.local.json
+.claude/worktrees/
+CLAUDE.local.md
+
+# Scratch
+tmp/
+*.log
+actionlint

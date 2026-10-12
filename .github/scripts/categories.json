@@ -1,0 +1,77 @@
+{
+  "$comment": "Single source of truth for catalog categories. The README catalog, issue forms and policy checks all read this file. Order here is the order shown in the README.",
+  "categories": [
+    {
+      "id": "development",
+      "emoji": "🛠️",
+      "title": "Development",
+      "description": "Write, refactor, review and ship code faster."
+    },
+    {
+      "id": "productivity",
+      "emoji": "⚡",
+      "title": "Productivity",
+      "description": "Everyday workflows, planning and knowledge work."
+    },
+    {
+      "id": "automation",
+      "emoji": "🤖",
+      "title": "Automation",
+      "description": "Hooks, agents and pipelines that run work for you."
+    },
+    {
+      "id": "testing",
+      "emoji": "🧪",
+      "title": "Testing & Quality",
+      "description": "Tests, audits, linting and quality gates."
+    },
+    {
+      "id": "security",
+      "emoji": "🛡️",
+      "title": "Security",
+      "description": "Guardrails, secret hygiene and security reviews."
+    },
+    {
+      "id": "documentation",
+      "emoji": "📚",
+      "title": "Documentation & Writing",
+      "description": "Docs, changelogs, records and written content."
+    },
+    {
+      "id": "data",
+      "emoji": "📊",
+      "title": "Data & Analytics",
+      "description": "Databases, data processing and reporting."
+    },
+    {
+      "id": "design",
+      "emoji": "🎨",
+      "title": "Design & Frontend",
+      "description": "UI, accessibility and visual work."
+    },
+    {
+      "id": "devops",
+      "emoji": "🚀",
+      "title": "DevOps & Deployment",
+      "description": "CI/CD, infrastructure, releases and monitoring."
+    },
+    {
+      "id": "integrations",
+      "emoji": "🔌",
+      "title": "Integrations",
+      "description": "MCP servers and connectors to external services."
+    },
+    {
+      "id": "language-support",
+      "emoji": "🧠",
+      "title": "Language Support",
+      "description": "LSP servers and code intelligence for specific languages."
+    },
+    {
+      "id": "learning",
+      "emoji": "🎓",
+      "title": "Learning",
+      "description": "Output styles and skills that teach as they work."
+    }
+  ]
+}

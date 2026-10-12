@@ -1,0 +1,11 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "the-claude-factory",
+  "description": "Production-grade Claude Code plugins that automate and optimize everyday workflows: skills, agents, hooks, MCP and LSP servers, and more.",
+  "version": "0.1.0",
+  "owner": {
+    "name": "Nery Murillo",
+    "url": "https://github.com/nerymurillohnd"
+  },
+  "plugins": []
+}

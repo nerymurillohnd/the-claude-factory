@@ -1,0 +1,77 @@
+name: 💡 Plugin idea
+description: Propose a new plugin for The Claude Factory.
+title: "[Plugin idea] <short name>"
+labels: ["type: plugin-idea", "status: triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        We build plugins that remove real, recurring friction. The more concrete your workflow, the better the plugin. 🏭
+
+  - type: textarea
+    id: workflow
+    attributes:
+      label: Which workflow should this plugin improve?
+      description: Walk us through what you do today, step by step, and where it hurts.
+      placeholder: |
+        Today I …
+        Then I have to …
+        It takes … / I often forget …
+    validations:
+      required: true
+
+  - type: textarea
+    id: outcome
+    attributes:
+      label: What would the plugin do for you?
+      description: Describe the ideal result. What would you type, and what would Claude do?
+      placeholder: I'd run `/my-plugin:do-thing` and Claude would …
+    validations:
+      required: true
+
+  - type: dropdown
+    id: components
+    attributes:
+      label: Components you imagine (optional)
+      description: Not sure? Leave it blank — we'll design it.
+      multiple: true
+      options:
+        - Skills
+        - Agents
+        - Hooks
+        - MCP server / connector
+        - LSP server
+        - Output style
+        - Scripts or executables
+
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Where would you use it?
+      multiple: true
+      options:
+        - Claude Code (terminal, desktop, IDE)
+        - Cowork
+        - Claude chat
+    validations:
+      required: true
+
+  - type: textarea
+    id: tools
+    attributes:
+      label: Tools, services or languages involved
+      description: e.g. GitHub, Postgres, Figma, Python, Terraform …
+
+  - type: textarea
+    id: prior-art
+    attributes:
+      label: Existing solutions
+      description: Plugins, skills or tools that already do part of this, and what they miss.
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checklist
+      options:
+        - label: I checked the catalog and existing issues for a similar plugin or idea.
+          required: true

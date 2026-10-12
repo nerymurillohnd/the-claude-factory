@@ -1,0 +1,115 @@
+name: 🐞 Bug report
+description: A plugin doesn't install, load or behave as documented.
+title: "[Bug] <plugin>: <short summary>"
+labels: ["type: bug", "status: triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report this! 🙏 A precise report gets a precise fix.
+
+        > **Before you start:** update the plugin (`claude plugin update <plugin>@the-claude-factory`) and check [Troubleshooting](https://github.com/nerymurillohnd/the-claude-factory/blob/main/docs/troubleshooting.md).
+        > Found a **security** problem? Please [report it privately](https://github.com/nerymurillohnd/the-claude-factory/security/advisories/new) instead.
+
+  - type: input
+    id: plugin
+    attributes:
+      label: Plugin
+      description: The install name, as in `<plugin>@the-claude-factory`.
+      placeholder: e.g. project-records
+    validations:
+      required: true
+
+  - type: input
+    id: plugin-version
+    attributes:
+      label: Plugin version
+      description: Shown by `claude plugin list`.
+      placeholder: e.g. 1.2.0
+    validations:
+      required: true
+
+  - type: input
+    id: claude-version
+    attributes:
+      label: Claude Code version
+      description: Output of `claude --version`. In Cowork only, write "Cowork" and your desktop app version.
+      placeholder: e.g. 2.1.296 (Claude Code)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Where did it happen?
+      multiple: true
+      options:
+        - Terminal (CLI)
+        - Claude desktop app — Code tab
+        - VS Code extension
+        - JetBrains
+        - Cowork
+        - Claude chat (claude.ai / apps)
+        - Non-interactive (claude -p / Agent SDK / CI)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating system
+      options:
+        - macOS
+        - Windows
+        - Windows (WSL)
+        - Linux
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Describe the problem. Paste error messages verbatim.
+      placeholder: When I run `/plugin-name:skill`, Claude …
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect?
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      value: |
+        1.
+        2.
+        3.
+    validations:
+      required: true
+
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Diagnostics
+      description: |
+        Paste the output of `claude plugin details <plugin>` and anything listed in `/plugin` → **Errors**. Remove secrets and personal data first.
+      render: text
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checklist
+      options:
+        - label: I searched existing issues and this isn't a duplicate.
+          required: true
+        - label: I'm on the latest version of the plugin.
+          required: true
+        - label: I removed tokens, keys and personal data from everything above.
+          required: true
