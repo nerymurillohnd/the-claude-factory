@@ -41,6 +41,7 @@
 | 2026-10-12 | Biome 2.5.15 for JS/JSON: Nery's `biome.json` (from claude-essentials) at the root plus `json.formatter.expand: "always"`; shell style in `.editorconfig` `[[shell]]` (shfmt `-i 2 -s -bn -ci -sr`); CI actionlint runs shellcheck with `SHELLCHECK_OPTS=-o all -S style -x -a -P SCRIPTDIR` | Nery's standards for all of Nery's repos; the same shellcheck rules in CI (workflow blocks) and in `/verify` (scripts) |
 | 2026-10-12 | Maintenance scripts stay in Node, not Bash | JSON-heavy; Bash would need `jq`, macOS ships Bash 3.2 and BSD tools, Windows needs Git Bash |
 | 2026-10-12 | Evals are optional per plugin (Nery decides which plugins get a suite); CI runs only plugins with `evals/` whose `plugin.json` changed in the PR, one matrix job each (`eval-targets.mjs`); no required eval check on `main` | With many plugins, re-running unchanged suites wastes time, Actions minutes and Nery's plan |
+| 2026-10-12 | A PR is required only for changes to a plugin itself (`plugins/<name>/`: `plugin.json`, README, `SKILL.md`, components); everything else (docs, local skills, `.claude/`, `CLAUDE.md`, tooling) goes by direct push or PR as Nery decides; never default to a PR for those | Nery: forcing a PR to delete a `.gitkeep` is absurd |
 
 ## Status
 
