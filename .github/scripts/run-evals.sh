@@ -14,13 +14,16 @@ for dir in plugins/*/; do
   name=$(basename "$dir")
   [ -d "$dir/evals" ] || continue
   [ "${ONLY:-all}" = all ] || [ "$ONLY" = "$name" ] || continue
-  if ! node -e 'process.exit(require(process.argv[1])[process.argv[2]] ? 0 : 1)' "./$config" "$name"; then
+  # The plugin's entry: its cost cap on the first line, then one granted tool per line.
+  if ! entry=$(node -e 'const e = require(process.argv[1])[process.argv[2]]; if (!e) process.exit(1);
+console.log([e.max_cost_usd, ...e.allow_tools].join("\n"))' "./$config" "$name"); then
     echo "::error::$name ships evals but has no entry in $config"
     status=1
     continue
   fi
-  mapfile -t tools < <(node -e 'for (const t of require(process.argv[1])[process.argv[2]].allow_tools) console.log(t)' "./$config" "$name")
-  cap=$(node -e 'console.log(require(process.argv[1])[process.argv[2]].max_cost_usd)' "./$config" "$name")
+  mapfile -t tools <<<"$entry"
+  cap=${tools[0]}
+  tools=("${tools[@]:1}")
   echo "::group::$name (cap \$$cap)"
   ran=1
   # Granted Bash runs in a sandbox that can't read the home directory, and a CI

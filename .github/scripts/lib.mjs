@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 // Shared helpers for the repository's maintenance scripts.
 // Zero dependencies: runs on the Node.js version pinned in CI (24 LTS) and locally on Node ≥ 22.
 

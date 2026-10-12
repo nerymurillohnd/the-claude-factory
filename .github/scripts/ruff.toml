@@ -1,7 +1,0 @@
-# Lint and format settings for Python shipped in plugins and its tests.
-# Run: uvx ruff@0.14.0 check --config .github/scripts/ruff.toml plugins .github/scripts
-target-version = "py39"
-line-length = 120
-
-[lint]
-select = ["E", "F", "W", "B", "UP", "I", "SIM"]

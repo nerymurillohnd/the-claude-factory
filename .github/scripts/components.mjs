@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 // Detects which component types a plugin ships, from its standard layout and manifest.
 
 import { existsSync, readdirSync, statSync } from 'node:fs';

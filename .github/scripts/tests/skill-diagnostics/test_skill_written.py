@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Tests for skill-diagnostics' hooks/skill_written.py.
 
 Run: python3 -m unittest discover -s .github/scripts/tests/skill-diagnostics -v
