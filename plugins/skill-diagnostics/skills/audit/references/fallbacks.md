@@ -8,7 +8,7 @@ Any exit other than 0 or 1, an error trace, no `python3` 3.9+ on `PATH`, or no s
 
 - Record `checker not run: <reason, with the first error line>` and continue; the lenses still run.
 - Inventory: list the files with this session's own tool, `find -L "<skill-dir>" -type f` by default (Glob with `**/*` and `**/.*` stops at 100 results). Name the tool on the report's Files line.
-- If the skill's own folder path contains a space, quote the script path: the command then needs the user's approval, which is safe to give.
+- If the path of this audit skill's own folder (the start of the script path) contains a space, quote the script path: the command then needs the user's approval, which is safe to give.
 
 ## The inventory is incomplete
 

@@ -15,7 +15,9 @@ allowed-tools: Read(/${CLAUDE_SKILL_DIR}/**) Bash(${CLAUDE_SKILL_DIR}/scripts/ch
 
 ## Input
 
-From the arguments or the request:
+Arguments: $ARGUMENTS
+
+From those arguments, or from the request when there are none:
 
 - **Paths:** a skill folder, a file or folder inside one, a folder of skills (such as `skills/`), or a plugin root (its `skills/` folder plus any paths its `plugin.json` `skills` field declares). Audit each skill once.
 - **No path:** audit the skills whose `SKILL.md` was just written in this conversation (a hook message may name them). If there are none, ask for the path, then invoke this skill again with it: the user's reply ends this skill's pre-approval, and a new invocation restores it.
@@ -49,7 +51,7 @@ Example: `/skill-diagnostics:audit ./plugins/notes --target upload` audits every
    ```
 
    Exit 0 (no errors) and 1 (errors found) are both normal results with JSON.
-3. **Lenses.** In one message, launch `skill-diagnostics:conformance-auditor` and `skill-diagnostics:executability-auditor` for every skill, even a short one. Pass absolute paths:
+3. **Lenses.** In one message, launch the agent of every selected lens (`skill-diagnostics:conformance-auditor`, `skill-diagnostics:executability-auditor`) for every skill, even a short one. Pass absolute paths:
    - conformance: skill path, inventory, targets, checker JSON per target, and `${CLAUDE_SKILL_DIR}/references/` `conformance.md`, `fields.md`, `surfaces.md`;
    - executability: skill path, inventory, and `${CLAUDE_SKILL_DIR}/references/executability.md`.
 4. **Merge** each skill's reports into one table. Executability severity: *decides output* → high, otherwise medium. One root defect at one location is one row, naming every lens that flagged it, with the highest severity. Highest severity first.
