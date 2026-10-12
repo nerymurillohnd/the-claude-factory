@@ -19,7 +19,7 @@ Arguments: $ARGUMENTS
 
 From those arguments, or from the request when there are none:
 
-- **Paths:** a skill folder, a file or folder inside one (audit the nearest folder above it that holds `SKILL.md`), a folder of skills (such as `skills/`), or a plugin root (its `skills/` folder plus any paths its `plugin.json` `skills` field declares). Expand a folder into its skills with `find -L "<folder>" -name SKILL.md`; each parent folder is one skill. Audit each skill once.
+- **Paths:** a skill folder, a file or folder inside one (audit the nearest folder above it that holds `SKILL.md`), a folder of skills (such as `skills/`), or a plugin root (its `skills/` folder plus any paths its `plugin.json` `skills` field declares). Expand a folder of skills with `find -L "<folder>" -name SKILL.md` (for a plugin root, run it on `skills/` and each declared path, never on the root); each parent folder is one skill, and a `SKILL.md` inside another skill's folder belongs to that skill. Audit each skill once.
 - **No path:** audit the skills whose `SKILL.md` was just written in this conversation (a hook message may name them). If there are none, ask for the path, then invoke this skill again with it: the user's reply ends this skill's pre-approval, and a new invocation restores it.
 - **Lens:** `--lens conformance` or `--lens executability` runs one; default both.
 - **Target:** `--target code|cowork|upload|api`, repeatable. Default: infer it with the table in [surfaces.md](references/surfaces.md) (Pick the target) and say which you assumed.
