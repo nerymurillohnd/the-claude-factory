@@ -18,7 +18,7 @@ No findings: replace the table with `No findings.` and leave out the Evidence se
 ### 1 — <short title>
 
 - "<verbatim quote>" (<file:line>), or for something missing: Absent: needed at <file:line>; read <files>
-- Consequence: <what goes wrong, for whom>
+- Consequence: <what goes wrong, for whom> (one bullet per lens when the row joins both)
 
 ## Coverage
 
