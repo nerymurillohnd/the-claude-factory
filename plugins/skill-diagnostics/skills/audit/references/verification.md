@@ -24,7 +24,7 @@ Check what changed in the last 15 days, counted back from today, in:
 - Claude apps release notes (Claude, Cowork): <https://support.claude.com/en/articles/12138966-release-notes>
 - Agent Skills specification and best practices, which have no changelog: <https://agentskills.io/specification>, <https://agentskills.io/skill-creation/best-practices>, and the commit history of <https://github.com/anthropics/skills> (its `spec/` folder)
 
-Record each source as checked, with its date range, or unreachable. GitHub often refuses automated fetches; that source is then unreachable, never guessed.
+Record each source as checked, with its date range, or unreachable. GitHub often refuses automated fetches; try the commit history once, and if it is refused, record it as unreachable, never guessed.
 
 For each finding, note whether a recent change confirms it, changes it or makes it obsolete, and correct it.
 

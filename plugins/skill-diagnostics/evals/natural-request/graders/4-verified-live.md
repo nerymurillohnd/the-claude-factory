@@ -1,6 +1,8 @@
 ---
-type: tool_used
-tool: WebFetch
-input_match: '"url"\s*:\s*"https://(?:code\.claude\.com|claude\.com|platform\.claude\.com|support\.claude\.com|agentskills\.io)/'
-arm: with-only
+type: regex
+target: trace
+arm: both
+pattern: '"name":"WebFetch","input":\{"url":"https://code\.claude\.com/docs/en/changelog[^\n]*"parent_tool_use_id":null'
 ---
+
+The orchestrator, not a lens agent, fetched the Claude Code changelog: step 5's change check ran.

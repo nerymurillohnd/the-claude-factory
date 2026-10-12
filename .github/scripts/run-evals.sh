@@ -23,11 +23,16 @@ for dir in plugins/*/; do
   cap=$(node -e 'console.log(require(process.argv[1])[process.argv[2]].max_cost_usd)' "./$config" "$name")
   echo "::group::$name (cap \$$cap)"
   ran=1
-  claude plugin eval "$dir" \
+  # Granted Bash runs in a sandbox that can't read the home directory, and a CI
+  # checkout lives under it (/home/runner/work): evaluate a copy outside it.
+  copy="$(mktemp -d /tmp/plugin-eval.XXXXXX)/$name"
+  cp -R "$dir" "$copy"
+  claude plugin eval "$copy" \
     --trust-plugin --scaffold --no-publish \
     --model "${EVAL_MODEL:?}" --judge-model "${EVAL_JUDGE_MODEL:?}" \
     --max-cost-usd "$cap" \
-    --json "eval-results/$name.json" \
+    --json "$root/eval-results/$name.json" \
+    --output-dir "$root/eval-results/$name" \
     --allow-tools "${tools[@]}" || status=1
   echo "::endgroup::"
 done

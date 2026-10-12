@@ -3,8 +3,8 @@
 
 Registered by the skill's own frontmatter, so it exists only in sessions where
 the audit was invoked. At the end of a turn that invoked the audit and produced
-a verdict, it checks the session transcript for a fetch attempt of every change
-source in references/verification.md, and the report for its Verification line.
+a verdict, it checks the session transcript for an attempt to fetch each required
+change source (with any tool: WebFetch, a docs MCP server, curl), and the report for its Verification line.
 When something is missing it tells Claude what, once per turn (stop_hook_active).
 A fetch that failed counts as attempted: unreachable sources are the report's
 business, never a reason to keep the turn going.
@@ -23,14 +23,14 @@ from typing import Any
 Entry = dict[str, Any]
 
 AUDIT_SKILL = "skill-diagnostics:audit"
-# Change sources step 5 must try (references/verification.md, Recent official changes).
+# Change sources step 5 must try (references/verification.md, Recent official changes). The
+# anthropics/skills history is left out: GitHub refuses automated fetches, so demanding it adds nothing.
 SOURCES = {
     "the Claude Code changelog (https://code.claude.com/docs/en/changelog)": "code.claude.com/docs/en/changelog",
     "the Claude apps release notes (https://support.claude.com/en/articles/12138966-release-notes)": (
         "support.claude.com/en/articles/12138966"
     ),
     "the Agent Skills specification (https://agentskills.io/specification)": "agentskills.io/specification",
-    "the anthropics/skills commit history (https://github.com/anthropics/skills)": "github.com/anthropics/skills",
 }
 
 
@@ -76,12 +76,8 @@ def audit_ran(turn: list[Entry]) -> bool:
 
 
 def fetched(turn: list[Entry]) -> list[str]:
-    return [
-        str((use.get("input") or {}).get("url", ""))
-        for entry in turn
-        for use in tool_uses(entry)
-        if use.get("name") == "WebFetch"
-    ]
+    """The input of every tool call the main thread made, as text: any tool that names a source counts."""
+    return [json.dumps(use.get("input") or {}) for entry in turn for use in tool_uses(entry)]
 
 
 def gaps(event: Entry) -> list[str]:

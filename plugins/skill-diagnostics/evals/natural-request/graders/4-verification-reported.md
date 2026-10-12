@@ -1,6 +1,6 @@
 ---
 type: regex
-pattern: 'Verification:[^\n]*verified'
+pattern: 'Verification:[^\n]*?(?<![\w-])[1-9]\d* verified'
 flags: i
-arm: with-only
+arm: both
 ---

@@ -1,5 +1,5 @@
 ---
-description: "Case 2. Writing a SKILL.md fires the plugin's hook, which leads into the audit: the skill folder's full inventory, and both lens agents told to read every file. Plugin options can't be set in an eval run, so the hook runs in its default suggest mode, and the user accepts the offer in advance, as a user would by answering yes. Without the plugin no hook fires and no audit follows."
+description: "Case 2, second half (hook-offer proves the hook fires): once the user accepts the offer, the audit runs on the written skill: the skill folder's full inventory, and both lens agents told to read every file. Plugin options can't be set in an eval run, so the hook runs in its default suggest mode, and the user accepts the offer in advance, as a user would by answering yes. Without the plugin no hook fires and no audit follows."
 tags: [hook, agents]
 max_turns: 80
 timeout_seconds: 1200

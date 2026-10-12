@@ -2,7 +2,7 @@
 
 What changes for a skill on each surface. The conformance lens uses this to judge portability; the checker's `--target` option applies the same rules. Labels as in `fields.md`: **[req]**, **[rec]**, **[spec]**, **[default]**, **[observed]**.
 
-Sources, checked 2026-10-11: [Claude Code skills](https://code.claude.com/docs/en/skills) (Where skills live, Skills in Cowork and cloud sessions, Using skill frontmatter outside Claude Code), [plugin platform support](https://claude.com/docs/plugins/platform-support), [skill authoring best practices](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices) (Runtime environment, Package dependencies).
+Sources, checked 2026-10-12: [Claude Code skills](https://code.claude.com/docs/en/skills) (Where skills live, Skills in Cowork and cloud sessions, Using skill frontmatter outside Claude Code), [plugin platform support](https://claude.com/docs/plugins/platform-support), [skill authoring best practices](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices) (Runtime environment, Package dependencies).
 
 ## Contents
 
@@ -36,7 +36,8 @@ Without `--target`, the three location rules in `SKILL.md` (Input → Target) de
 | `description` over 1,024 characters | ⚠️ cut in the listing at 1,536 by default | ⚠️ | ❌ | ❌ |
 | `anthropic` or `claude` in `name` | ✅ | ✅ | ❌ | ❌ |
 | `!` dynamic-context lines | ✅ run at load | ⚠️ replaced by a placeholder | ❌ never run | ❌ never run |
-| `${CLAUDE_*}` path variables | ✅ | ✅ | ⚠️ substituted where Claude Code runs it (Cowork, cloud and local sessions); not documented elsewhere | ⚠️ not documented |
+| `${CLAUDE_SKILL_DIR}` | ✅ | ✅ | ⚠️ substituted where Claude Code runs the synced skill (Cowork, cloud and local sessions); not documented in claude.ai chat | ⚠️ not documented |
+| `${CLAUDE_PROJECT_DIR}`, `${CLAUDE_SESSION_ID}` | ✅ | ✅ | ⚠️ substituted in cloud and Cowork sessions; literal text in other local sessions | ⚠️ not documented |
 | Bundled scripts | ✅ | ✅ | ✅ through the interpreter | ✅ no network |
 
 - [req] Uploads and the Skills API fail with `Unexpected key(s) in SKILL.md frontmatter` for any field outside the six. A skill meant for both Claude Code and an upload keeps to the six fields, or ships two versions.

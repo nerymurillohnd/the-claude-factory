@@ -16,7 +16,7 @@ ALL_SOURCES = [
     "https://code.claude.com/docs/en/changelog",
     "https://support.claude.com/en/articles/12138966-release-notes",
     "https://agentskills.io/specification",
-    "https://github.com/anthropics/skills/commits/main",
+    "https://github.com/anthropics/skills/commits/main",  # tried in practice, not required
 ]
 REPORT = "# Skill audit: demo\n\n- **Verdict:** **fail**\n\n## Coverage\n\n- Verification: 2 verified; changes checked"
 
@@ -81,9 +81,9 @@ class Gate(unittest.TestCase):
             "code.claude.com/docs/en/changelog",
             "support.claude.com",
             "agentskills.io",
-            "anthropics/skills",
         ):
             self.assertIn(marker, context)
+        self.assertNotIn("anthropics/skills", context)  # GitHub refuses automated fetches
 
     def test_partial_verification_names_only_what_is_missing(self) -> None:
         entries = [prompt("check skills/demo"), skill_call(), result(), *fetches(ALL_SOURCES[:2])]
@@ -91,10 +91,14 @@ class Gate(unittest.TestCase):
         self.assertNotIn("fetch the Claude Code changelog", context)
         self.assertNotIn("fetch the Claude apps release notes", context)
         self.assertIn("agentskills.io/specification", context)
-        self.assertIn("anthropics/skills", context)
 
     def test_complete_verification_is_silent(self) -> None:
         entries = [prompt("check skills/demo"), skill_call(), result(), *fetches(ALL_SOURCES)]
+        self.assertEqual(self.fire(entries), (0, ""))
+
+    def test_any_tool_that_names_the_source_counts(self) -> None:
+        entries = [prompt("check skills/demo"), skill_call(), result(), *fetches(ALL_SOURCES[1:3])]
+        entries += [tool("Bash", command=f"curl -s {ALL_SOURCES[0]}"), result()]
         self.assertEqual(self.fire(entries), (0, ""))
 
     def test_failed_fetch_counts_as_tried(self) -> None:

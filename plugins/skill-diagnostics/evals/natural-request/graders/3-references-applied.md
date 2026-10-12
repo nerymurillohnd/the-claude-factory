@@ -1,7 +1,7 @@
 ---
 type: regex
 target: trace
-arm: with-only
+arm: both
 pattern: '^(?=[\s\S]*?"input":\{"file_path":"[^"]*skills/audit/references/conformance\.md"\}[^\n]*"parent_tool_use_id":"toolu_)(?=[\s\S]*?"input":\{"file_path":"[^"]*skills/audit/references/fields\.md"\}[^\n]*"parent_tool_use_id":"toolu_)(?=[\s\S]*?"input":\{"file_path":"[^"]*skills/audit/references/surfaces\.md"\}[^\n]*"parent_tool_use_id":"toolu_)(?=[\s\S]*?"input":\{"file_path":"[^"]*skills/audit/references/executability\.md"\}[^\n]*"parent_tool_use_id":"toolu_)'
 ---
 
