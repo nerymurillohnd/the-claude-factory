@@ -478,7 +478,7 @@ class Checker:
         if TAG.search(text):
             self.add(
                 "description-tags",
-                "error",
+                "error" if self.upload else "info",
                 self.skill_md,
                 line,
                 "'description' contains an angle-bracket tag; uploads reject it and Claude Code escapes it",

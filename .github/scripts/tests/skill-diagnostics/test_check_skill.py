@@ -245,10 +245,13 @@ class Description(SkillCase):
         self.assertEqual(code, 1)
         self.assertTrue(has(report, severity="error", rule="description-length"))
 
-    def test_angle_bracket_tag_is_error(self) -> None:
+    def test_angle_bracket_tag_is_error_for_upload_only(self) -> None:
         self.skill_md("name: demo-skill\ndescription: Formats <b>notes</b>. Use when asked.\n")
-        _, report = run(self.skill)
+        _, report = run(self.skill, "--target", "upload")
         self.assertTrue(has(report, severity="error", rule="description-tags"))
+        code, report = run(self.skill)
+        self.assertEqual(code, 0, report)
+        self.assertTrue(has(report, severity="info", rule="description-tags"))
 
     def test_missing_trigger_clause_warns(self) -> None:
         self.skill_md("name: demo-skill\ndescription: Formats notes.\n")
