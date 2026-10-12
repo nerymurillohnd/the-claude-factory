@@ -9,7 +9,7 @@
 | ID | Lens | Severity | Location | Finding | Fix |
 | :-- | :-- | :-- | :-- | :-- | :-- |
 | 1 | executability | high | assets/template.md:3 | <one line> | <one line> |
-| 2 | conformance, executability | medium | SKILL.md:3 | <one line, for a row both lenses flagged> | <one line> |
+| 2 | conformance, executability | medium | SKILL.md:3 | <one line; a joined row names every lens that flagged it> | <one line> |
 
 No findings: replace the table with `No findings.` and leave out the Evidence section.
 
@@ -18,7 +18,7 @@ No findings: replace the table with `No findings.` and leave out the Evidence se
 ### 1 — <short title>
 
 - "<verbatim quote>" (<file:line>), or for something missing: Absent: needed at <file:line>; read <files>
-- Consequence: <what goes wrong, for whom> (one bullet per lens when the row joins both)
+- Consequence: <what goes wrong, for whom> (one bullet per joined finding)
 
 ## Coverage
 

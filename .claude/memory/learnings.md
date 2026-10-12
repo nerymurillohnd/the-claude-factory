@@ -44,4 +44,6 @@ Rules learned the hard way. Follow them; add one line per new lesson.
 - Nested code fences inside a markdown example: use `~~~` for the outer fence.
 - Don't write literal double-brace placeholders in template comments — `check-repo.mjs` flags them.
 - A `.gitignore` fix never untracks committed files: after widening a pattern, `git rm -r --cached` what it now covers (plugin eval results once shipped this way).
+- A Bash command that exits non-zero counts as a failed tool call (`PostToolUseFailure`, not `PostToolUse`), so a checker that exits 1 on findings is "failing" by design; skills must accept its documented exit codes. `FileChanged` only watches literal filenames in the cwd and can't pass context to Claude.
+- The device shell's delete permission does not survive between turns: re-request it before git commands on Nery's Mac, then clear the `.lock` files the failed command left.
 - Moving files from a cloud session to Nery's Mac: tar in the cloud → `device_commit_files` → extract with the device shell.

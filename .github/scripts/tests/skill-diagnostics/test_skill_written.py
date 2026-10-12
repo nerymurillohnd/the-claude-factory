@@ -30,6 +30,7 @@ class SkillWrittenHook(unittest.TestCase):
     def fire(self, mode: str | None = None, path: str | None = None, session: str = "s1", raw: str | None = None):
         env = {k: v for k, v in os.environ.items() if not k.startswith("CLAUDE_PLUGIN_")}
         env["CLAUDE_PLUGIN_DATA"] = str(self.data)
+        env["CLAUDE_CONFIG_DIR"] = str(Path(self._tmp.name) / ".claude")
         env["CLAUDE_PLUGIN_ROOT"] = str(REPO / "plugins" / "skill-diagnostics")
         if mode is not None:
             env["CLAUDE_PLUGIN_OPTION_ON_SKILL_WRITE"] = mode
@@ -104,6 +105,15 @@ class SkillWrittenHook(unittest.TestCase):
         os.utime(old, (old.stat().st_atime - stale, old.stat().st_mtime - stale))
         self.fire()
         self.assertFalse(old.exists())
+
+    def test_a_project_folder_named_plugins_cache_is_not_skipped(self) -> None:
+        project = str(Path(self._tmp.name) / "work" / "plugins" / "cache" / "skills" / "a" / "SKILL.md")
+        self.assertIn("/skill-diagnostics:audit", self.fire(path=project)[1])
+
+    def test_path_with_spaces_is_quoted(self) -> None:
+        spaced = str(Path(self._tmp.name) / "My Skills" / "greet" / "SKILL.md")
+        _, context = self.fire(path=spaced)
+        self.assertIn('/skill-diagnostics:audit "' + str(Path(spaced).parent) + '"', context)
 
     def test_bad_input_never_blocks(self) -> None:
         code, context = self.fire(raw="not json")

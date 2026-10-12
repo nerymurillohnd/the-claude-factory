@@ -296,6 +296,20 @@ class Files(SkillCase):
         self.assertEqual(code, 1)
         self.assertTrue(has(report, severity="error", rule="link-broken"))
 
+    def test_link_with_spaces_is_checked(self) -> None:
+        self.skill_md(GOOD, "Read [a](<references/my guide.md>) and [b](references/my%20notes.md).\n")
+        self.write("references/my guide.md", "# Guide\n")
+        _, report = run(self.skill)
+        broken = [f["message"] for f in findings(report) if f.get("rule") == "link-broken"]
+        self.assertEqual(broken, ["broken link: references/my notes.md"], report)  # the spaced guide resolves
+
+    def test_fence_inside_a_longer_fence_stays_code(self) -> None:
+        body = "````markdown\n```bash\nRead [x](missing.md)\n```\n````\n\nRead [y](missing-too.md).\n"
+        self.skill_md(GOOD, body)
+        _, report = run(self.skill)
+        broken = [f["message"] for f in findings(report) if f.get("rule") == "link-broken"]
+        self.assertEqual(broken, ["broken link: missing-too.md"], report)
+
     def test_broken_link_inside_assets_is_error(self) -> None:
         self.skill_md(GOOD)
         self.write("assets/template.md", "See [spec](missing.md).\n")
@@ -400,6 +414,19 @@ class Inventory(SkillCase):
         self.assertEqual(code, 0, report)  # a broken link is not an inventory error
         self.assertNotIn("findings", report)
         self.assertGreater(report["files"][0]["bytes"], 0)
+
+    @unittest.skipIf(IS_WINDOWS, "symlinks need extra privileges on Windows")
+    def test_follows_symlinked_folders_and_reports_loops(self) -> None:
+        self.skill_md(GOOD)
+        outside = self.root / "shared"
+        (outside / "deep").mkdir(parents=True)
+        (outside / "deep" / "x.md").write_text("# X\n", encoding="utf-8")
+        (self.skill / "linked").symlink_to(outside, target_is_directory=True)
+        (outside / "deep" / "back").symlink_to(outside, target_is_directory=True)
+        _, report = run(self.skill, "--list")
+        paths = [f["path"] for f in report["files"]]
+        self.assertIn("linked/deep/x.md", paths)
+        self.assertIn("symlink loop", [n["reason"] for n in report["not_listed"]])
 
     def test_no_skill_md_is_bad_input(self) -> None:
         code, _ = run(self.root, "--list")

@@ -6,8 +6,8 @@ Usage: check_skill.py [--format json|text] [--target code|cowork|upload|api]
        check_skill.py --list [--format json|text] SKILL_DIR
 
 --list prints the skill's full file inventory instead of checking it: every
-file at any depth, hidden files included, nothing excluded, names and sizes
-only (no file is opened).
+file at any depth, hidden files included, symlinked folders followed, nothing
+excluded, names and sizes only (no file is opened).
 
 Checks what `claude plugin validate` does not: frontmatter syntax and quoting,
 known fields and values, name and description limits per target surface,
@@ -36,6 +36,7 @@ import sys
 from collections.abc import Iterator
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
+from urllib.parse import unquote
 
 # --- Facts, each with its source -------------------------------------------------
 # Skill frontmatter fields Claude Code reads.
@@ -102,7 +103,8 @@ UPLOAD_TARGETS = frozenset({"upload", "api"})
 KEY_LINE = re.compile(r"^([A-Za-z0-9_-]+):(?:\s+(.*)|\s*)$")
 BLOCK_SCALAR = re.compile(r"^[|>][+-]?[0-9]?\s*(#.*)?$")
 YAML_INDICATORS = tuple("[]{}&*!|>%@`'\",#?-:")
-LINK = re.compile(r"\[[^\]]*\]\(\s*<?([^)\s>]+)>?(?:\s+\"[^\"]*\")?\s*\)")
+LINK = re.compile(r"\[[^\]]*\]\(\s*(?:<([^>\n]+)>|([^)\s]+))(?:\s+\"[^\"]*\")?\s*\)")
+FENCE = re.compile(r"^ {0,3}(`{3,}|~{3,})(.*)$")
 INLINE_CODE = re.compile(r"`[^`]*`")
 TAG = re.compile(r"</?[A-Za-z][^>]*>")
 PERSON = re.compile(r"^\s*(I|I'm|I'll|I can|We|We'll|You|You can|You'll|Let me)\b", re.I)
@@ -222,6 +224,30 @@ def needs_quotes(value: str) -> str:
 
 
 # --- Checker -------------------------------------------------------------------------
+def fenced(lines: list[str]) -> Iterator[tuple[str, str, str]]:
+    """Yield (line, kind, info) per line; kind is "fence", "code" or "text" (CommonMark fences).
+
+    A fence closes only with the same character, at least as long, and no info string,
+    so a ``` line inside a ~~~ block (or a longer fence) stays code.
+    """
+    opener: tuple[str, int] | None = None
+    for line in lines:
+        match = FENCE.match(line)
+        if opener is None:
+            if match and not (match.group(1)[0] == "`" and "`" in match.group(2)):
+                opener = (match.group(1)[0], len(match.group(1)))
+                yield line, "fence", match.group(2).strip()
+            else:
+                yield line, "text", ""
+        elif (
+            match and match.group(1)[0] == opener[0] and len(match.group(1)) >= opener[1] and not match.group(2).strip()
+        ):
+            opener = None
+            yield line, "fence", ""
+        else:
+            yield line, "code", ""
+
+
 class Checker:
     def __init__(self, skill_dir: Path, target: str, listing_cap: int) -> None:
         self.dir = skill_dir
@@ -545,15 +571,13 @@ class Checker:
             )
         declared = self.declared_arguments(fm)
         used: set[str] = set()
-        in_fence = False
-        for offset, line in enumerate(body):
+        for offset, (line, kind, info) in enumerate(fenced(body)):
             number = start + offset
-            stripped = line.strip()
-            if stripped.startswith("```") or stripped.startswith("~~~"):
-                if stripped.startswith("```!"):
+            if kind == "fence":
+                if info.startswith("!"):
                     self.dynamic(number)
-                in_fence = not in_fence
                 continue
+            in_fence = kind == "code"
             for name in declared:
                 if re.search(rf"(?<![\\\w])\${re.escape(name)}(?!\w)", line):
                     used.add(name)
@@ -643,15 +667,11 @@ class Checker:
         return path.suffix == ".md" and path.name != "SKILL.md" and "assets" not in rel.parts
 
     def links(self, text: str) -> Iterator[tuple[int, str]]:
-        in_fence = False
-        for number, line in enumerate(text.splitlines(), 1):
-            if line.strip().startswith(("```", "~~~")):
-                in_fence = not in_fence
-                continue
-            if in_fence:
+        for number, (line, kind, _) in enumerate(fenced(text.splitlines()), 1):
+            if kind != "text":
                 continue
             for match in LINK.finditer(INLINE_CODE.sub("", line)):
-                target = match.group(1)
+                target = unquote(match.group(1) or match.group(2))
                 if not target.startswith(EXTERNAL) and "${" not in target:
                     yield number, target
 
@@ -791,28 +811,38 @@ def render(skill: Path, target: str, findings: list[Finding], fmt: str) -> str:
 
 
 def inventory(skill: Path) -> dict[str, object]:
-    """Every file under the skill, hidden ones included; nothing is opened or excluded."""
+    """Every file under the skill, hidden ones included; nothing is opened or excluded.
+
+    Symlinked folders are followed (like `find -L`); a folder already visited through
+    another path (a symlink loop) is reported in not_listed instead of being entered again.
+    """
     files: list[dict[str, object]] = []
     not_listed: list[dict[str, str]] = []
+    seen: set[str] = set()
+
+    def rel(path: Path) -> str:
+        return path.relative_to(skill).as_posix() if path != skill else "."
 
     def failed(error: OSError) -> None:
-        where = Path(error.filename).relative_to(skill).as_posix() if error.filename else "?"
+        where = rel(Path(error.filename)) if error.filename else "?"
         not_listed.append({"path": where, "reason": error.strerror or str(error)})
 
-    for root, dirs, names in os.walk(skill, onerror=failed):
+    for root, dirs, names in os.walk(skill, onerror=failed, followlinks=True):
         base = Path(root)
-        for name in list(dirs):
-            if (base / name).is_symlink():  # os.walk does not enter it; say so instead of hiding it
-                dirs.remove(name)
-                not_listed.append({"path": (base / name).relative_to(skill).as_posix(), "reason": "symlinked folder"})
+        real = os.path.realpath(base)
+        if real in seen:
+            dirs[:] = []
+            not_listed.append({"path": rel(base), "reason": "symlink loop"})
+            continue
+        seen.add(real)
         for name in names:
             path = base / name
             try:
                 size = path.stat().st_size
             except OSError as error:
-                not_listed.append({"path": path.relative_to(skill).as_posix(), "reason": error.strerror or str(error)})
+                not_listed.append({"path": rel(path), "reason": error.strerror or str(error)})
                 continue
-            files.append({"path": path.relative_to(skill).as_posix(), "bytes": size})
+            files.append({"path": rel(path), "bytes": size})
     files.sort(key=lambda f: str(f["path"]))
     not_listed.sort(key=lambda f: f["path"])
     return {"skill": skill.as_posix(), "count": len(files), "files": files, "not_listed": not_listed}

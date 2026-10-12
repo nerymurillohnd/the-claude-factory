@@ -29,7 +29,7 @@
 A skill can look finished to the person who wrote it and still fail the model that runs it: a placeholder nothing defines, a reference that contradicts `SKILL.md`, a description that never triggers, a field that breaks the upload to claude.ai.
 
 - **Two audits in one pass** — conformance (official rules, recommendations, portability) and executability (could a model follow it without guessing) run in parallel and come back as one report with one verdict.
-- **Reads every line** — both auditors read every file of the skill from start to end, scripts and hidden files included; nothing is sampled or skimmed.
+- **Reads every line** — both auditors read every file of the skill from start to end, scripts and hidden files included; nothing is sampled or skimmed. If a file can't be listed or read, the report names it, and a gap that matters gives *not determinable* instead of a pass.
 - **Evidence, not opinions** — every finding quotes the exact text with its file and line, and says how to fix it.
 - **Checks what validation skips** — `claude plugin validate` confirms the structure; Skill Diagnostics also checks name and description limits, quoting that breaks strict YAML, argument placeholders, broken links and script setup.
 - **Ready for every surface** — tell it where the skill must work (Claude Code, Cowork, a claude.ai upload, the Skills API) and it flags what that surface rejects or skips.

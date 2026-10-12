@@ -23,7 +23,7 @@ STATE_MAX_AGE = 30 * 24 * 3600  # seconds; older per-session state files are rem
 
 
 def message(mode: str, skill_dir: str) -> str:
-    command = f"/skill-diagnostics:audit {skill_dir}"
+    command = f'/skill-diagnostics:audit "{skill_dir}"'
     if mode == "run":
         return (
             f"skill-diagnostics: the skill at {skill_dir} was created or changed. "
@@ -83,7 +83,9 @@ def main() -> int:
     skill_dir = os.path.dirname(os.path.abspath(file_path))
     normalized = skill_dir.replace("\\", "/")
     plugin_root = os.environ.get("CLAUDE_PLUGIN_ROOT", "").replace("\\", "/")
-    if "/plugins/cache/" in normalized or inside(normalized, plugin_root):
+    config_dir = os.environ.get("CLAUDE_CONFIG_DIR") or os.path.join(os.path.expanduser("~"), ".claude")
+    cache_dir = os.path.join(config_dir, "plugins", "cache").replace("\\", "/")
+    if inside(normalized, cache_dir) or inside(normalized, plugin_root):
         return 0
     if already_notified(os.environ.get("CLAUDE_PLUGIN_DATA", ""), str(event.get("session_id", "")), skill_dir):
         return 0

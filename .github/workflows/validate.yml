@@ -66,8 +66,18 @@ jobs:
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: ${{ matrix.python }}
-      - name: Unit tests
-        run: python -m unittest discover -s .github/scripts/tests/skill-diagnostics -v
+      - name: Unit tests (every plugin's Python suite)
+        shell: bash
+        run: |
+          found=0
+          for dir in .github/scripts/tests/*/; do
+            ls "$dir"test_*.py >/dev/null 2>&1 || continue
+            found=1
+            echo "::group::$dir"
+            python -m unittest discover -s "$dir" -v
+            echo "::endgroup::"
+          done
+          [ "$found" = 1 ] || { echo "No plugin Python tests found"; exit 1; }
 
   python-lint:
     name: Python lint & types
