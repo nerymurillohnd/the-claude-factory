@@ -58,7 +58,7 @@ claude plugin eval plugins/<name> [--case <glob> | --tag <tag>] --runs 1 --ablat
 ## Full run (CI, capped)
 
 - `.github/workflows/evals.yml` runs `.github/scripts/run-evals.sh`: both arms, 3 runs per case, `--trust-plugin`, `--scaffold`, pinned model IDs, and each plugin's tool grants and `--max-cost-usd` (smoke cost × 3 runs, plus the baseline arm, × 1.25) from `.github/scripts/evals-config.json`.
-- It runs when a pull request changes a plugin's `plugin.json` (a version bump) or by hand, and only when the `ANTHROPIC_API_KEY` secret exists; a plugin with evals and no config entry fails the job.
+- It authenticates with the `CLAUDE_CODE_OAUTH_TOKEN` secret (Nery's subscription, from `claude setup-token`; runs count against its usage limits). It runs when a pull request that changes a plugin's `plugin.json` is opened, reopened or marked ready for review, or by hand; never on every push. Without the secret it is skipped; a plugin with evals and no config entry fails the job.
 - Passing the full run is the release gate for a plugin that ships an eval suite.
 - Never edit a case after a full run just to make it pass: fix the plugin, or record why the case was wrong.
 
