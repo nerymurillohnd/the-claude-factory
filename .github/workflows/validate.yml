@@ -111,7 +111,7 @@ jobs:
           python -m pip install --disable-pip-version-check "ruff==${RUFF_VERSION}" "mypy==${MYPY_VERSION}"
           ruff check plugins .github/scripts
           ruff format --check plugins .github/scripts
-          mypy --python-version 3.9 --strict plugins/*/skills/*/scripts/*.py plugins/*/hooks/*.py
+          git ls-files -z 'plugins/*.py' | xargs -0 mypy --python-version 3.9 --strict
 
   claude-validate:
     name: claude plugin validate

@@ -1,11 +1,10 @@
 #!/usr/bin/env bash
-# Runs skill-diagnostics' scripts the way Claude Code does: by their path,
+# Runs skill-diagnostics' hook the way Claude Code does: by its path,
 # through the shebang, with whatever `python3` is first on PATH. CI runs this on
 # Linux, macOS and Windows (Git Bash). Exits non-zero on the first failure.
 set -euo pipefail
 root=$(cd "$(dirname "$0")/../../../.." && pwd)
 plugin="${root}/plugins/skill-diagnostics"
-checker="${plugin}/skills/audit/scripts/check_skill.py"
 hook="${plugin}/hooks/skill_written.py"
 work=$(mktemp -d)
 trap 'rm -rf "$work"' EXIT
@@ -15,30 +14,13 @@ version=$(python3 --version)
 echo "python3: ${python} (${version})"
 
 # 1. Committed as executable, so it runs by path after a clone or install.
-for script in "${checker}" "${hook}"; do
-  mode=$(git -C "${root}" ls-files -s -- "${script#"${root}"/}" | cut -d' ' -f1)
-  [[ ${mode} == 100755 ]] || {
-    echo "FAIL: ${script#"${root}"/} is ${mode}, not 100755"
-    exit 1
-  }
-done
+mode=$(git -C "${root}" ls-files -s -- "${hook#"${root}"/}" | cut -d' ' -f1)
+[[ ${mode} == 100755 ]] || {
+  echo "FAIL: ${hook#"${root}"/} is ${mode}, not 100755"
+  exit 1
+}
 
-# 2. The checker, by path: inventory and check of a real skill, valid JSON, exit 0.
-"${checker}" --list "${plugin}/skills/audit" > "${work}/list.json"
-"${checker}" "${plugin}/skills/audit" > "${work}/check.json"
-python3 - "${work}/list.json" "${work}/check.json" << 'PY'
-import json, sys
-inventory = json.load(open(sys.argv[1], encoding="utf-8"))
-report = json.load(open(sys.argv[2], encoding="utf-8"))
-assert inventory["count"] >= 9 and not inventory["not_listed"], inventory
-surfaces = report["surfaces"]
-assert set(surfaces) == {"code", "cowork", "upload", "api"}, surfaces.keys()
-for surface in ("code", "cowork"):  # where a plugin skill runs
-    assert surfaces[surface]["summary"]["error"] == 0, (surface, surfaces[surface]["summary"])
-print(f"checker: {inventory['count']} files listed, {surfaces['code']['summary']} on its own skill (code)")
-PY
-
-# 3. The hook, by path: a SKILL.md write gets the audit offer.
+# 2. The hook, by path: a SKILL.md write gets the audit offer.
 mkdir -p "${work}/skills/demo"
 printf -- '---\nname: demo\ndescription: Demo. Use when asked.\n---\n\nDo it.\n' > "${work}/skills/demo/SKILL.md"
 native=$(cd "${work}" && (pwd -W 2> /dev/null || pwd) ) # Windows path on Git Bash, as Claude Code sends it

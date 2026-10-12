@@ -2,7 +2,7 @@
 
 Answers one question: **does the skill follow the documented rules and recommendations, and does it work on every surface it is meant for?** It does not judge whether a model could execute the skill without guessing; that is the executability lens.
 
-Facts live in `fields.md` and `surfaces.md`, next to this file. Read both before step 3.
+Facts live in `fields.md` and `surfaces.md`, next to this file. Read both before step 2.
 
 ## Contents
 
@@ -16,23 +16,33 @@ Facts live in `fields.md` and `surfaces.md`, next to this file. Read both before
 
 - The skill directory (absolute path) and its origin.
 - Its file inventory: every file under it, with relative paths, from the orchestrator. Its `outside` entries are links that leave the skill: name them as external dependencies; never read them or list them as not inspected. One whose `exists` is false is a broken link.
-- The checker's JSON report (all four surfaces), or the line `checker not run: <reason>`.
 - The paths of `fields.md`, `surfaces.md`, `examples.md` and the `assets/examples/` folder.
 - Disputed findings, only on a second round, with your previous report block: answer only those. Re-check each against the files and the evidence given, correct it or withdraw it, and return that block with the corrected rows and a closing line `Withdrawn: <ID — why, or none>`.
-
-Missing checker report: run the checklist without it and note `checker not run` in the output.
 
 ## Steps
 
 1. **Read everything.** Take the file list from your task message, hidden files included; it is the whole inventory you work from, and any gap in it is reported by the orchestrator. Read every file on the inventory with the Read tool, from its first line to its last; when Read returns part of a file, continue from the next line until the end. Read images and check they show what the text says; read every page of a PDF. A file Read cannot open (a binary) or that the user's settings or hooks block is recorded as not inspected, with the reason, and never worked around. You have no search tool: every finding rests on what you read.
-2. **Checker findings.** Take each checker finding as reported; do not re-judge it. Read the `file:line` it points to only to quote that line verbatim as its evidence. Map its severity: `error` → high, `warning` → medium; an `info` finding is a note, not a finding (leave it out). For a portability problem, the severity table in `surfaces.md` (Portability findings) overrides the mapping when the context it names applies (for example, an instruction depends on a skipped feature); say why. When the quoted line shows a false positive, drop the finding and say so.
-3. **Checklist.** Walk the checklist below on every file it applies to. Mark each item pass, fail or n/a. An item the files cannot show (runtime behavior, triggering in practice) is n/a. Read `examples.md` first, and the example in `assets/examples/` for each profile the skill uses (fork, hooks, a script, dynamic context, preloaded into an agent). A difference from an example is a finding only when a checklist item explains it.
-4. **Live check.** When a failing item depends on a field or behavior that may have changed, fetch the owning page listed in `fields.md` or `surfaces.md` and read that section. A live page that contradicts the reference wins: report the difference. Unreachable page: keep the finding and mark it `not verified live`.
-5. **Report** with the output format below: failures only, each with its evidence.
+2. **Checklist.** Walk the checklist below on every file it applies to. Mark each item pass, fail or n/a. An item the files cannot show (runtime behavior, triggering in practice) is n/a. Read `examples.md` first, and the example in `assets/examples/` for each profile the skill uses (fork, hooks, a script, dynamic context, preloaded into an agent). A difference from an example is a finding only when a checklist item explains it.
+3. **Live check.** When a failing item depends on a field or behavior that may have changed, fetch the owning page listed in `fields.md` or `surfaces.md` and read that section. A live page that contradicts the reference wins: report the difference. Unreachable page: keep the finding and mark it `not verified live`.
+4. **Report** with the output format below: failures only, each with its evidence.
 
 ## Checklist
 
 Labels say how strong each item is (see `fields.md`). A **[default]** item is reported as low, with the alternative, unless breaking it breaks something.
+
+### Frontmatter and files
+
+Check these on every surface, by reading; facts and limits are in `fields.md` and `surfaces.md`.
+
+- [req] Line 1 is `---` and the frontmatter closes with `---`; every key is a field `fields.md` lists, spelled exactly, with a valid value (booleans; `effort`, `context`, `shell`); `metadata` is a map; `compatibility` holds at most 500 characters.
+- [spec] A plain value strict YAML reads differently is quoted or reworded: one that contains a colon followed by a space or a space followed by `#`, starts with `[`, `{` or another YAML indicator, or reads as a boolean or null.
+- [spec] `name` follows the rules in `fields.md` (Name) and equals the folder name; the folder is not one Claude Code reserves.
+- [req] `description` is present, on one line, without angle-bracket tags, and fits the listing cap and the 1,024-character upload limit (`fields.md`, Description).
+- [rec] The body stays under 500 lines and about 5,000 tokens.
+- [req] Every name in `arguments` appears as `$name` in the body; a literal `$` before a digit is escaped (`\$1.00`), in code blocks too; a braced Claude Code variable in prose is meant to become a path.
+- [req] Every local link and every path under the skill-folder variable points to a file in the inventory, with forward slashes.
+- [rec] A reference over 100 lines opens with a contents list, and no reference links to another reference.
+- [req] A script the skill runs is called by its path under the skill-folder variable, never by a relative path, starts with `#!/usr/bin/env <interpreter>`, and is executable (the inventory says).
 
 ### Description and triggering
 
@@ -116,7 +126,7 @@ Return exactly this as your final message; the orchestrator merges it:
 
 ```markdown
 ### Conformance — <skill name> (<absolute path>)
-Origin: <origin> · Checker: ran | not run (<reason>)
+Origin: <origin>
 Files read: <n> of <n>
 
 | ID | Severity | Location | Label | Finding | Evidence | Consequence | Fix |

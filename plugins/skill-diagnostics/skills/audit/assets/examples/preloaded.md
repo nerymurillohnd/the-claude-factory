@@ -7,7 +7,7 @@ This skill is preloaded into the `release-notes` agent through its `skills` fiel
 
 ## Input
 
-The delegation message gives the version and the list of changes. Missing either: return one line saying which, and stop; never ask.
+The delegation message gives the version, the release date and the list of changes. Missing any: return one line saying which, and stop; never ask.
 
 ## Steps
 

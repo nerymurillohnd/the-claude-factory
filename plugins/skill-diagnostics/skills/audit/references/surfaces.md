@@ -1,6 +1,6 @@
 # Where a skill runs
 
-What changes for a skill on each surface. The conformance lens uses this to judge portability; the checker applies the same rules to all four surfaces. Labels as in `fields.md`: **[req]**, **[rec]**, **[spec]**, **[default]**, **[observed]**.
+What changes for a skill on each surface. The conformance lens uses this to judge portability on all four surfaces. Labels as in `fields.md`: **[req]**, **[rec]**, **[spec]**, **[default]**, **[observed]**.
 
 Sources, checked 2026-10-12: [Claude Code skills](https://code.claude.com/docs/en/skills) (Where skills live, Skills in Cowork and cloud sessions, Using skill frontmatter outside Claude Code), [plugin platform support](https://claude.com/docs/plugins/platform-support), [skill authoring best practices](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices) (Runtime environment, Package dependencies).
 

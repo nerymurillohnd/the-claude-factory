@@ -2,7 +2,7 @@
 
 Examples for the conformance checklist: each pair shows the weak form a rule catches and a strong form that passes it, with the rule's label from `fields.md`. They illustrate the rules; they are not templates. A skill that looks different but meets every rule passes.
 
-Full skills that pass every rule, one per profile, are in `assets/examples/`: `forked.md`, `with-hooks.md`, `script-backed.md`, `live-data.md`, `preloaded.md`. Each is checked by the plugin's checker on every release.
+Full skills that pass every rule, one per profile, are in `assets/examples/`: `forked.md`, `with-hooks.md`, `script-backed.md`, `live-data.md`, `preloaded.md`.
 
 ## Description says what, then when [rec]
 

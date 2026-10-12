@@ -2,7 +2,7 @@
 
 - **Path:** <absolute path>
 - **Origin:** <synced | plugin | personal | project | web | loose folder>; reaches <surfaces>
-- **Verdict:** **<pass | pass with warnings | fail | not determinable>**<, provisional when step 5 says so><, conformance lens only | executability lens only> — <one-line reason>
+- **Verdict:** **<pass | pass with warnings | fail | not determinable>**<, provisional when step 4 says so><, conformance lens only | executability lens only> — <one-line reason>
 
 ## Findings
 
@@ -24,10 +24,9 @@ No findings: write `No findings.` and leave out Evidence.
 
 ## Coverage
 
-A line whose lens or checker did not run says `not checked` and why.
+A line whose lens did not run says `not checked` and why.
 
-- Files: <n> (listed by <checker | find | Glob>); not inspected: <files and why, or none>
-- Checker: <ran (code, cowork, upload, api) | not run: reason>
+- Files: <n> (listed by <tool>); not inspected: <files and why, or none>
 - Lenses: <which; agent or inline>
 - Order and flow: <from the executability lens>
 - Verification: <n verified; n corrected; n withdrawn, with why>; changelog read from <oldest> to <newest> (user on <version>, or unknown); unreachable: <sources, or none>

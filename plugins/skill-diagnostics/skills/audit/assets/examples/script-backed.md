@@ -13,5 +13,5 @@ Requires Python 3.9+ as `python3`; standard library only.
 ## Steps
 
 1. Run `${CLAUDE_SKILL_DIR}/scripts/check_totals.py <csv-file>`.
-2. Exit 2: read the error, correct the path or the file, and run it again.
+2. Exit 2: read the error, correct the path or the file, and run it again once. Still exit 2: report the error to the user and stop.
 3. Report each invoice under `failing`, with its expected and actual total.
