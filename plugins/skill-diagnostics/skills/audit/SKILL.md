@@ -1,6 +1,6 @@
 ---
 name: audit
-description: Audits existing skills for conformance with official best practices and portability, and for whether a model can run them without guessing; returns one report with file and line evidence and a verdict. Use when the user asks to audit, review, check or diagnose a skill or a plugin's skills, or when a skill-diagnostics hook message asks for an audit. Not for creating or writing skills.
+description: Audits existing skills for conformance with official best practices and portability, and for whether a model can run them without guessing; returns one report with file and line evidence and a verdict. Use when the user asks to audit, review, check or diagnose a skill or a plugin's skills, asks whether a skill will work in Claude Code, Cowork, a claude.ai upload or the API, or when a skill-diagnostics hook message asks for an audit. Not for creating or writing skills.
 argument-hint: "[skill-path ...] [--lens conformance|executability] [--target code|cowork|upload|api ...]"
 allowed-tools: Read(/${CLAUDE_SKILL_DIR}/**) Bash(${CLAUDE_SKILL_DIR}/scripts/check_skill.py *) WebFetch(domain:code.claude.com) WebFetch(domain:claude.com) WebFetch(domain:platform.claude.com) WebFetch(domain:support.claude.com) WebFetch(domain:agentskills.io) WebFetch(domain:github.com)
 hooks:
