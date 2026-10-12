@@ -23,7 +23,10 @@ From those arguments, or from the request when there are none:
 - **No path:** audit the skills whose `SKILL.md` was just written in this conversation (a hook message may name them). If there are none, ask for the path, then invoke this skill again with it: the user's reply ends this skill's pre-approval, and a new invocation restores it.
 - **Lens:** `--lens conformance` or `--lens executability` runs one; default both.
 - **Unknown option or value:** stop before step 1 and list the accepted ones.
-- **Target:** `--target code|cowork|upload|api`, repeatable. Default: infer it with the table in [surfaces.md](references/surfaces.md) (Pick the target) and say which you assumed.
+- **Target:** `--target code|cowork|upload|api`, repeatable. Without it, the first match wins, and say which you assumed:
+  1. under `~/.claude/skills/synced/` (a synced account skill) → `upload`; fixes belong on claude.ai;
+  2. inside a plugin (an ancestor holds `.claude-plugin/plugin.json`) → `code` and `cowork`;
+  3. anywhere else → `code`.
 
 Example: `/skill-diagnostics:audit ./plugins/notes --target upload` audits every skill in that plugin against claude.ai upload rules and ends with the summary table.
 
@@ -44,14 +47,14 @@ Example: `/skill-diagnostics:audit ./plugins/notes --target upload` audits every
    ${CLAUDE_SKILL_DIR}/scripts/check_skill.py --list <skill-dir>
    ```
 
-   It prints JSON with every file (`files`, `count`), any folder it could not enter (`not_listed`), and links that leave the skill (`outside`): those are external dependencies, not gaps, and are not read. Exclude nothing yourself; what the user's settings or hooks block is reported as not inspected, never worked around.
+   It prints JSON with every file (`files`, `count`), any folder it could not read (`not_listed`), links that leave the skill (`outside`: external dependencies, not read, not gaps), and symlink loops (`loops`: their files are already listed, not gaps). Exclude nothing yourself; what the user's settings or hooks block is reported as not inspected, never worked around.
 2. **Checker**, only with the conformance lens, per skill and target:
 
    ```bash
    ${CLAUDE_SKILL_DIR}/scripts/check_skill.py --target <target> <skill-dir>
    ```
 
-   Exit 0 (no errors) and 1 (errors found) are both normal results with JSON.
+   It exits 0 with JSON; `summary.error` counts the errors.
 3. **Lenses.** In one message, launch the agent of every selected lens (`skill-diagnostics:conformance-auditor`, `skill-diagnostics:executability-auditor`) for every skill, even a short one. Pass absolute paths:
    - conformance: skill path, inventory, targets, checker JSON per target, and `${CLAUDE_SKILL_DIR}/references/` `conformance.md`, `fields.md`, `surfaces.md`;
    - executability: skill path, inventory, and `${CLAUDE_SKILL_DIR}/references/executability.md`.
@@ -71,14 +74,13 @@ Done when every skill has a verdict, every finding has a verbatim quote with `fi
 
 - **Keep the checker commands exactly as written:** no quotes around the script path, no `cd`, no loop, nothing appended such as `; echo $?`. Any change stops the `allowed-tools` pre-approval from matching and makes Claude Code ask the user. Quote `<skill-dir>` if it has spaces.
 - **A skill outside the working directory** (for example in `~/.claude/skills/`) makes Claude Code ask once to read it; that is expected.
-- **Two lenses, one question each.** Conformance judges rules and portability; executability judges whether a model could run the skill without guessing.
 
 ## Files
 
 | File | Use |
 | :-- | :-- |
 | [conformance.md](references/conformance.md), [executability.md](references/executability.md) | The two lenses. Pass their paths to the agents; read one yourself only to apply it inline ([fallbacks.md](references/fallbacks.md)) |
-| [fields.md](references/fields.md), [surfaces.md](references/surfaces.md) | Facts for the conformance lens; read the target table in `surfaces.md` when no `--target` is given |
+| [fields.md](references/fields.md), [surfaces.md](references/surfaces.md) | Facts for the conformance lens |
 | [fallbacks.md](references/fallbacks.md) | Read when the checker can't run, a path doesn't resolve, the inventory is incomplete, or an agent fails |
 | [report.md](assets/report.md) | Step 6 template |
 | `scripts/check_skill.py` | Steps 1–2: run it, don't read it. Python 3.9+ as `python3` |

@@ -118,7 +118,7 @@ class Frontmatter(SkillCase):
     def test_missing_opening_marker_is_error(self) -> None:
         self.write("SKILL.md", "name: demo-skill\n---\nBody\n")
         code, report = run(self.skill)
-        self.assertEqual(code, 1)
+        self.assertEqual((code, report["summary"]["error"] > 0), (0, True), report)
         self.assertTrue(has(report, severity="error", line=1, rule="frontmatter-start"))
 
     def test_unknown_field_warns_with_suggestion(self) -> None:
@@ -131,13 +131,13 @@ class Frontmatter(SkillCase):
     def test_invalid_effort_value_is_error(self) -> None:
         self.skill_md(GOOD + "effort: extreme\n")
         code, report = run(self.skill)
-        self.assertEqual(code, 1)
+        self.assertEqual((code, report["summary"]["error"] > 0), (0, True), report)
         self.assertTrue(has(report, severity="error", rule="field-value"))
 
     def test_upload_target_rejects_claude_code_only_fields(self) -> None:
         self.skill_md(GOOD + 'argument-hint: "[tag]"\n')
         code, report = run(self.skill, "--target", "upload")
-        self.assertEqual(code, 1)
+        self.assertEqual((code, report["summary"]["error"] > 0), (0, True), report)
         self.assertTrue(has(report, severity="error", rule="field-unknown"))
         code, _ = run(self.skill, "--target", "code")
         self.assertEqual(code, 0)
@@ -147,7 +147,7 @@ class Name(SkillCase):
     def test_name_over_64_chars_is_error(self) -> None:
         self.skill_md("name: " + "a" * 65 + "\ndescription: Does a thing. Use when asked.\n")
         code, report = run(self.skill)
-        self.assertEqual(code, 1)
+        self.assertEqual((code, report["summary"]["error"] > 0), (0, True), report)
         self.assertTrue(has(report, severity="error", rule="name-length"))
 
     def test_double_hyphen_is_error(self) -> None:
@@ -161,7 +161,7 @@ class Name(SkillCase):
         self.skill.mkdir()
         self.skill_md("name: claude-helper\ndescription: Does a thing. Use when asked.\n")
         code, report = run(self.skill, "--target", "upload")
-        self.assertEqual(code, 1, report)
+        self.assertEqual((code, report["summary"]["error"] > 0), (0, True), report)
         self.assertTrue(has(report, severity="error", line=2, rule="name-reserved"))
 
     def test_reserved_word_is_info_for_claude_code(self) -> None:
@@ -185,7 +185,7 @@ class Name(SkillCase):
         self.skill.mkdir()
         self.skill_md("name: synced\ndescription: Does a thing. Use when asked.\n")
         code, report = run(self.skill)
-        self.assertEqual(code, 1, report)
+        self.assertEqual((code, report["summary"]["error"] > 0), (0, True), report)
         self.assertTrue(has(report, severity="error", rule="name-reserved-local"))
         _, report = run(self.skill, "--target", "upload")
         self.assertFalse(has(report, rule="name-reserved-local"), report)
@@ -207,7 +207,7 @@ class Description(SkillCase):
     def test_unquoted_colon_space_is_error_with_reword_hint(self) -> None:
         self.skill_md("name: demo-skill\ndescription: Formats notes. Use when: the user asks.\n")
         code, report = run(self.skill)
-        self.assertEqual(code, 1)
+        self.assertEqual((code, report["summary"]["error"] > 0), (0, True), report)
         hit = [f for f in findings(report) if f.get("rule") == "yaml-quoting"]
         self.assertTrue(hit, report)
         self.assertIn("reword", hit[0].get("hint", "").lower())
@@ -215,7 +215,7 @@ class Description(SkillCase):
     def test_unquoted_space_hash_truncates_and_is_error(self) -> None:
         self.skill_md("name: demo-skill\ndescription: Tracks issue #12 and others. Use when asked.\n")
         code, report = run(self.skill)
-        self.assertEqual(code, 1)
+        self.assertEqual((code, report["summary"]["error"] > 0), (0, True), report)
         self.assertTrue(has(report, severity="error", rule="yaml-quoting"))
 
     def test_unneeded_quotes_are_info(self) -> None:
@@ -242,7 +242,7 @@ class Description(SkillCase):
         text = "Formats notes. Use when asked. " + "x" * 1100
         self.skill_md(f"name: demo-skill\ndescription: {text}\n")
         code, report = run(self.skill, "--target", "upload")
-        self.assertEqual(code, 1)
+        self.assertEqual((code, report["summary"]["error"] > 0), (0, True), report)
         self.assertTrue(has(report, severity="error", rule="description-length"))
 
     def test_angle_bracket_tag_is_error_for_upload_only(self) -> None:
@@ -293,7 +293,7 @@ class Files(SkillCase):
     def test_broken_link_is_error(self) -> None:
         self.skill_md(GOOD, "Read [guide](references/guide.md) first.\n")
         code, report = run(self.skill)
-        self.assertEqual(code, 1)
+        self.assertEqual((code, report["summary"]["error"] > 0), (0, True), report)
         self.assertTrue(has(report, severity="error", rule="link-broken"))
 
     def test_link_with_spaces_is_checked(self) -> None:
@@ -426,13 +426,14 @@ class Inventory(SkillCase):
         self.assertEqual(report["not_listed"], [], report)
 
     @unittest.skipIf(IS_WINDOWS, "symlinks need extra privileges on Windows")
-    def test_symlink_loop_inside_the_skill_is_reported(self) -> None:
+    def test_symlink_loop_is_reported_but_not_a_gap(self) -> None:
         self.skill_md(GOOD)
         self.write("deep/x.md", "# X\n")
         (self.skill / "deep" / "back").symlink_to(self.skill, target_is_directory=True)
         _, report = run(self.skill, "--list")
         self.assertIn("deep/x.md", [f["path"] for f in report["files"]])
-        self.assertIn("symlink loop", [n["reason"] for n in report["not_listed"]])
+        self.assertEqual([lp["path"] for lp in report["loops"]], ["deep/back"], report)
+        self.assertEqual(report["not_listed"], [], report)  # a loop is not a gap
 
     @unittest.skipIf(IS_WINDOWS, "symlinks need extra privileges on Windows")
     def test_links_leaving_the_skill_are_not_followed(self) -> None:

@@ -33,6 +33,7 @@ Rules learned the hard way. Follow them; add one line per new lesson.
 - `context: fork` skills get no conversation history: wrong for skills that act on what was just discussed, like `audit` after a hook offer. (Subagents can spawn subagents up to three levels; docs: sub-agents, depth limit.)
 - Verify every user-doc claim against the docs before writing it: "a duplicate install loads twice" was wrong (a same-named install wins over the synced copy).
 - Following symlinks in an inventory: stay inside the skill (a link out is an external dependency, never read), and tell a duplicate path (alias to a listed folder) from a loop (link to an ancestor); otherwise coverage fixes create false "not determinable" verdicts and out-of-scope reads.
+- Audit verdicts are not stable across runs: the same `19279f6` gave pass with warnings (1 medium) and fail (5 high) in two runs. Never treat one audit as proof; measure stability with repeated runs on a fixed fixture.
 - A copied (cached) install for local testing: a local marketplace whose entry uses `{"source":"git-subdir","url":"file:///abs/repo.git","path":"plugins/<name>"}`; a relative-path source loads in place instead. Isolate with `HOME=<tmp>` or `CLAUDE_CONFIG_DIR`.
 
 ## GitHub
@@ -50,6 +51,6 @@ Rules learned the hard way. Follow them; add one line per new lesson.
 - Nested code fences inside a markdown example: use `~~~` for the outer fence.
 - Don't write literal double-brace placeholders in template comments — `check-repo.mjs` flags them.
 - A `.gitignore` fix never untracks committed files: after widening a pattern, `git rm -r --cached` what it now covers (plugin eval results once shipped this way).
-- A Bash command that exits non-zero counts as a failed tool call (`PostToolUseFailure`, not `PostToolUse`), so a checker that exits 1 on findings is "failing" by design; skills must accept its documented exit codes. `FileChanged` only watches literal filenames in the cwd and can't pass context to Claude.
+- A Bash command that exits non-zero counts as a failed tool call (`PostToolUseFailure`, not `PostToolUse`), and a failed command's output is cut to ~10,000 characters with no file path: skill-diagnostics' checker lost JSON that way until it exited 0 with the error count inside. `FileChanged` only watches literal filenames in the cwd and can't pass context to Claude.
 - The device shell's delete permission does not survive between turns: re-request it before git commands on Nery's Mac, then clear the `.lock` files the failed command left.
 - Moving files from a cloud session to Nery's Mac: tar in the cloud → `device_commit_files` → extract with the device shell.

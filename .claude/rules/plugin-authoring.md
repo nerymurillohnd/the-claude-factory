@@ -47,6 +47,7 @@ paths:
 - Scripts start with `#!/usr/bin/env <interpreter>` (no version), are committed as `100755`, and are called by path (`${CLAUDE_SKILL_DIR}` or `${CLAUDE_PLUGIN_ROOT}`). The user's first interpreter on `PATH` runs them.
 - No per-OS fallbacks: every runtime a script needs (interpreter, minimum version, POSIX shell or Git for Windows) is declared in the README **Requirements** section.
 - Standard library only, no install step, unless declared in Requirements.
+- A script Claude runs through Bash exits 0 whenever it printed its result, and reports problems inside the output. Claude Code treats exit 1 as a failed command and cuts its output to about 10,000 characters (docs: tools-reference, Output limits).
 - Never exfiltrate data; network calls only when the plugin's purpose requires them and the README discloses them.
 
 ## Done means

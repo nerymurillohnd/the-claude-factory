@@ -14,12 +14,14 @@ Sources, checked 2026-10-11: [Claude Code skills](https://code.claude.com/docs/e
 
 ## Pick the target
 
+The first row that matches wins.
+
 | The skill is | Target | Checker option |
 | :-- | :-- | :-- |
-| Personal (`~/.claude/skills/`) or project (`.claude/skills/`) | Claude Code | `--target code` (default) |
-| Inside a plugin (an ancestor folder holds `.claude-plugin/plugin.json`) | Claude Code and Cowork | `--target code` and `--target cowork`, one run each |
-| Uploaded to claude.ai, or enabled on the account so it reaches Cowork and cloud sessions | claude.ai upload | `--target upload` |
 | A synced copy of an account skill (`~/.claude/skills/synced/`) | claude.ai upload; fixes are made on claude.ai, since a sync overwrites local edits | `--target upload` |
+| Uploaded to claude.ai, or enabled on the account so it reaches Cowork and cloud sessions | claude.ai upload | `--target upload` |
+| Inside a plugin (an ancestor folder holds `.claude-plugin/plugin.json`) | Claude Code and Cowork | `--target code` and `--target cowork`, one run each |
+| Personal (`~/.claude/skills/`) or project (`.claude/skills/`) | Claude Code | `--target code` (default) |
 | Sent through the Skills API | API | `--target api` |
 | Anywhere else (a loose folder, a `skills/` folder outside `.claude/`) | Claude Code | `--target code`, stated as assumed |
 

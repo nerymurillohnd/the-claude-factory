@@ -4,15 +4,15 @@ Read the section for the case at hand; the main path in `SKILL.md` covers everyt
 
 ## The checker cannot run
 
-Any exit other than 0 or 1, an error trace, no `python3` 3.9+ on `PATH`, or no shell.
+Any exit other than 0, no valid JSON, an error trace, no `python3` 3.9+ on `PATH`, or no shell.
 
 - First, if the path of this audit skill's own folder (the start of the script path) contains a space, retry once with the script path quoted; the command then needs the user's approval, which is safe to give.
 - Still failing: record `checker not run: <reason, with the first error line>` and continue; the lenses still run.
-- Inventory: list the files with this session's own tool, `find -L "<skill-dir>" -type f` by default (Glob with `**/*` and `**/.*` stops at 100 results). Drop entries whose real path is outside the skill and report them as external dependencies. Name the tool on the report's Files line.
+- Inventory: list the files with this session's own tool, `find "<skill-dir>" -type f` by default (Glob with `**/*` and `**/.*` stops at 100 results), and the links with `find "<skill-dir>" -type l`. Without the checker there is no way to see where a link leads: report every link as not inspected. Name the tool on the report's Files line.
 
 ## The inventory is incomplete
 
-`not_listed` has an entry, `find` printed an error, or Glob returned 100 results.
+`not_listed` has an entry, `find` printed an error or found links, or Glob returned 100 results. `outside` and `loops` entries are not gaps.
 
 - List what is missing as not inspected; step 5 of `SKILL.md` decides the verdict.
 - If no inventory can be made at all, skip the checker and the lenses for that skill, give it the verdict not determinable, and say why in place of the findings.

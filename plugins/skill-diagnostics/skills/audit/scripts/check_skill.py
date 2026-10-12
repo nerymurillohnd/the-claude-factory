@@ -21,7 +21,9 @@ Targets:
   upload  claude.ai skill upload (also covers account skills synced to Cowork).
   api     Skills API.
 
-Exit codes: 0 no errors, 1 at least one error, 2 bad input.
+Exit codes: 0 report printed (errors are counted in summary.error), 2 bad input.
+A report never exits 1: Claude Code treats exit 1 as a failed command and cuts
+its output at about 10,000 characters.
 Requires Python 3.9+, standard library only.
 """
 
@@ -815,8 +817,9 @@ def inventory(skill: Path) -> dict[str, object]:
     """Every file under the skill, hidden ones included; nothing is opened or excluded.
 
     Symlinked folders inside the skill are followed (like `find -L`). A folder reached a
-    second time is skipped silently when it is a duplicate path (its files are already
-    listed) and reported in not_listed when it is a loop (a link back to an ancestor).
+    second time is skipped: silently when it is a duplicate path, and under `loops` when
+    it links back to an ancestor; either way its files are already listed, so neither
+    is a gap. not_listed holds only what could not be read (permissions, errors).
     A link whose target lies outside the skill is not followed: it goes to `outside`,
     so the audit never reads files that do not belong to the skill.
     """
@@ -824,6 +827,7 @@ def inventory(skill: Path) -> dict[str, object]:
     files: list[dict[str, object]] = []
     not_listed: list[dict[str, str]] = []
     outside: list[dict[str, str]] = []
+    loops: list[dict[str, str]] = []
     seen: set[str] = set()
 
     def rel(path: Path) -> str:
@@ -847,7 +851,7 @@ def inventory(skill: Path) -> dict[str, object]:
                 outside.append({"path": rel(base / name), "target": target})
             elif target in seen or any(target == os.path.realpath(base / k) for k in keep):
                 if within(real) and (real == target or real.startswith(target.rstrip(os.sep) + os.sep)):
-                    not_listed.append({"path": rel(base / name), "reason": "symlink loop"})
+                    loops.append({"path": rel(base / name), "target": target})  # its files are already listed
                 # otherwise a duplicate path to a folder already listed: nothing is missing
             else:
                 keep.append(name)
@@ -867,12 +871,14 @@ def inventory(skill: Path) -> dict[str, object]:
     files.sort(key=lambda f: str(f["path"]))
     not_listed.sort(key=lambda f: f["path"])
     outside.sort(key=lambda f: f["path"])
+    loops.sort(key=lambda f: f["path"])
     return {
         "skill": skill.as_posix(),
         "count": len(files),
         "files": files,
         "not_listed": not_listed,
         "outside": outside,
+        "loops": loops,
     }
 
 
@@ -899,7 +905,7 @@ def main(argv: list[str] | None = None) -> int:
                 reconfigure(encoding="utf-8")  # Windows consoles default to another code page
     parser = argparse.ArgumentParser(
         description="Check the structure of one skill directory. Read-only.",
-        epilog="Exit codes: 0 no errors, 1 errors found, 2 bad input.",
+        epilog="Exit codes: 0 report printed (see summary.error), 2 bad input.",
     )
     parser.add_argument("skill_dir", help="directory that holds SKILL.md (a SKILL.md path is accepted)")
     parser.add_argument("--format", choices=("json", "text"), default="json")
@@ -928,7 +934,7 @@ def main(argv: list[str] | None = None) -> int:
         return 2
     findings = Checker(path, args.target, args.listing_cap).run()
     sys.stdout.write(render(path, args.target, findings, args.format) + "\n")
-    return 1 if any(f.severity == "error" for f in findings) else 0
+    return 0
 
 
 if __name__ == "__main__":
