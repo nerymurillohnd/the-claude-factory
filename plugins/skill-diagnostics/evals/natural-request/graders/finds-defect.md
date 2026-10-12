@@ -1,5 +1,6 @@
 ---
 type: llm
+weight: 2
 ---
 
 In this skill, scripts/render.py only accepts `--lang` values en, fr and de, while references/countries.md maps Spain and Mexico to `es` (and an `es` template exists), so rendering any invoice for Spain or Mexico fails.
