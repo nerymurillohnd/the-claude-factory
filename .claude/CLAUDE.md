@@ -3,10 +3,14 @@
 Public Claude Code / Cowork plugin marketplace at `github.com/nerymurillohnd/the-claude-factory`.
 Two maintainers: Nery (owner) and Claude. No external pull requests; users contribute through issues.
 
-## Language
+## Working with Nery
 
-- Talk with Nery in **Spanish**.
-- Write everything in the repository in **English**: docs, code, comments, commits, issue replies.
+- Talk with Nery in **Spanish**. Write everything in the repository in **English**: docs, code, comments, commits, issue replies.
+- Ask until you are ≥95% sure before building; once a plan is approved, finish it and stop only for decisions that are Nery's to make.
+- Push back on weak instructions and recommend the strongest option, saying which one and why.
+- Verify the environment, stack and tools before starting a task.
+- Prove "done" with raw output from the gates. Demand raw evidence from subagents and check it yourself.
+- End every task with a summary: work done, decisions, changes, learnings, current state.
 
 ## Layout
 
@@ -19,7 +23,7 @@ Two maintainers: Nery (owner) and Claude. No external pull requests; users contr
 | `.github/ISSUE_TEMPLATE/`, `.github/labels.json` | Issue forms and labels | Users / maintainers |
 | `.github/scripts/` | Zero-dependency Node tooling + tests | Maintainers, CI |
 | `.github/workflows/` | `validate.yml` (gates), `release.yml` (tags + releases) | CI |
-| `.claude/` | Rules, skills, agents, templates for maintaining the repo | Maintainers only |
+| `.claude/` | This file, memory, rules, skills, agents, templates | Maintainers only |
 
 ## Golden rules
 
@@ -28,7 +32,7 @@ Two maintainers: Nery (owner) and Claude. No external pull requests; users contr
 3. **SemVer + Keep a Changelog** for every plugin and for the marketplace. Release only through `bump-version.mjs`.
 4. **Never hand-edit generated blocks** in `README.md` (`<!-- catalog:* -->`, `<!-- plugin-count:* -->`). Run `catalog.mjs`.
 5. **User docs sell and teach; they never mention maintenance**, internal tooling, `.claude/`, scripts or our workflow.
-6. **Verify against live official docs** before stating Claude Code behavior, commands, versions or UI paths. Use the Claude Code Docs MCP or code.claude.com / claude.com docs.
+6. **Verify against live official docs** before stating Claude Code behavior, commands, versions or UI paths. Use the Claude Code Docs MCP or code.claude.com / claude.com docs. Live docs beat this repo's files; flag conflicts.
 7. **Every gate passes before commit.** Fix root causes; never weaken a check to make it pass.
 
 ## Quality gates
@@ -52,10 +56,24 @@ npx --yes markdownlint-cli2@0.23.3
 | Triage and answer issues | `/triage-issues` |
 | Run all gates | `/verify` |
 | Check docs and pins against current Claude Code | `/docs-drift-check` |
+| Close a session and update project memory | `/wrap-up` |
 
 Agents: `plugin-reviewer` (independent review of a plugin before release), `docs-auditor` (user-doc accuracy and style).
 
 ## Repository settings (GitHub)
 
-- Pull requests: **Collaborators only**. Issues: on. Private vulnerability reporting: on.
+- Pull requests: **Collaborators only**. Issues: on. Private vulnerability reporting: on. Topics set.
 - Labels come from `.github/labels.json` via `node .github/scripts/sync-labels.mjs`.
+
+## Project memory
+
+Project memory lives in `.claude/memory/` and is committed, so every session sees it on any machine or surface (Claude Code's own auto memory is machine-local).
+
+- Loaded every session: @memory/project-state.md · @memory/environment.md · @memory/learnings.md
+- Read on demand: `.claude/memory/session-log.md` (dated history of sessions).
+- Update memory in the same commit as the work, or with `/wrap-up` at the end of a session:
+  - **project-state** — decisions, current status, roadmap, open items.
+  - **environment** — how we work across surfaces, tools, access and their limits.
+  - **learnings** — gotchas that cost time once; write each as a rule to follow.
+  - **session-log** — one dated entry per session: what changed, commits, what's next.
+- Keep memory factual and short: one fact per line, no duplication with this file, rules or code. Delete stale lines instead of piling up corrections.
