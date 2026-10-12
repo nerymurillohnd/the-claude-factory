@@ -19,6 +19,7 @@
 - `claude` CLI pinned in CI at `2.1.296` (`CLAUDE_CODE_VERSION` in `validate.yml`); local validation uses the same command via `.github/scripts/validate-claude.sh`.
 - `markdownlint-cli2@0.23.3`, actionlint `1.7.12`, `actions/checkout` v7.0.1, `actions/setup-node` v7.1.0 and `anthropics/claude-code-action` v1.0.248 pinned by SHA; Linux jobs on `ubuntu-24.04`; CI Node from `.nvmrc`. Review with `/docs-drift-check`.
 - Claude Code Docs MCP is available for live docs; claude.com docs via WebFetch (`.md` URLs work).
+- Global tools on Nery's Mac (nvm Node 26.11.1 `bin` on `PATH`): `tsc` 6.0.3, `typescript-language-server` 6.0.2 (loads the workspace `node_modules/typescript` when present, else its bundled one), `biome` 2.5.15 at `~/.local/bin`; VS Code has the Biome extension with no `biome.*` overrides; no `BIOME_*` variables. `npx tsc` runs the global `tsc`.
 
 ## Keeping Nery's local clone in sync
 

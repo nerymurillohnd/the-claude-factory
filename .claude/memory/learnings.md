@@ -84,4 +84,10 @@ Rules learned the hard way. Follow them; add one line per new lesson.
 - Biome config is the root `biome.json` (Nery's standard from claude-essentials) with `json.formatter.expand: "always"`, so `writeJson` (`JSON.stringify(…, 2)`) output stays formatted; templates with `{{…}}` placeholders aren't JSON and are excluded. Without a repo config Biome silently uses its defaults (tabs, double quotes, 80 columns).
 - Nery's shell sets `SHELLCHECK_OPTS=-o all -S style`, so local `actionlint` reports style findings that CI (default shellcheck) doesn't.
 - The github-ops hook can't parse a Bash command that mixes a heredoc with `git`: write the message to a file in one call, then `git commit -F <file>` alone.
+- Biome exits 0 on warnings: gates need `--error-on-warnings` (info never fails). Probe a rule's severity with `--only=<group/rule>` and read the exit code.
+- Biome globs in `overrides` are relative to the config: `*.test.js` matches the root only; write `**/*.test.{js,mjs,ts}`. In `files.includes` a folder is `!!**/dist`; elsewhere `!**/dist/**`.
+- Never set Biome `json.parser.allowComments: true` repo-wide: it lets a comment into a `.json` manifest that `JSON.parse` rejects (`.jsonc` already allows comments).
+- Biome's `noExplicitAny`, `noImplicitAnyLet` and `noEvolvingTypes` don't fire in `.mjs`; `noMagicNumbers` does. `useBlockStatements`' fix is unsafe: apply with `--only=style/useBlockStatements --write --unsafe`, then rerun the script tests.
+- `tsc` neither expands CLI globs nor reads a tsconfig when files are passed: use `tsc -p <dir>`. zsh `**` skips dot folders, so name `.github/` explicitly.
+- TypeScript 6 `types` defaults to `[]` and only `node_modules/@types` upward from the tsconfig resolves; removed options pass as `false` but fail as `true` (TS5102) and are unknown in TS 7 (TS5023); `showConfig` is CLI-only (TS6266).
 - markdownlint-cli2 lints untracked files unless its config sets `"gitignore": true` (`.git/info/exclude` alone doesn't stop it): local plans and scratch workspaces go in `.gitignore`, and the config skips them, so a local run lints what CI lints.

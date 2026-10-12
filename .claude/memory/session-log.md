@@ -2,6 +2,14 @@
 
 Newest first. One entry per session: what changed, commits, what's next.
 
+## 2026-10-12 — Biome strictness, unwired tsconfig, tooling research
+
+- Researched TypeScript 6/7, tsconfig bases, typescript-language-server and Biome with Context7, each fact probed with Nery's `tsc` 6.0.3, LSP 6.0.2 and Biome 2.5.15.
+- Biome: Nery's rule set merged and migrated to 2.5.15, override globs fixed, `jsxEverywhere` off, `allowComments`/`globals` kept unset with proof; gates now `--error-on-warnings`; scripts got block statements and one justified suppression (`b3ada31`).
+- `tsconfig.json` (root base) and `.github/scripts/tsconfig.json` added unwired and force-ignored by Biome.
+- Verified: every `/verify` gate, `check-version-bump` and actionlint green before the commit.
+- Next: Nery decides when to wire the TypeScript gate (package.json in `.github/scripts`, JSDoc for 132 errors); plugin-test-bench follow-ups in the entry below.
+
 ## 2026-10-12 — plugin-test-bench audits and fixes
 
 - Three-agent audit (skill-creator, conformance, executability) of `test-install` and `review-evals`; plan `.claude/plans/2026-10-12-plugin-test-bench-fixes.md` executed inline: verdict rules, free load check, sign-in after the go-ahead, quoted grants, prompt before `--allowedTools` (`397be74`, `f15ea85`, `f493a73`).
