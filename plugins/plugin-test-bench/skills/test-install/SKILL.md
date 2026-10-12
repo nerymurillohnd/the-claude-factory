@@ -69,14 +69,14 @@ The copy comes from a commit. If `git status --porcelain -- <plugin folder>` pri
    - An eval run grants `Bash` only inside the OS sandbox: on Linux, `command -v bwrap socat` must find both; native Windows has none (use WSL2). Without it, drop `Bash` from the eval grants and say which cases will fail.
    - Paid steps: with an eval suite, the smoke test in step 9, one run per case (a case is a folder holding `case.yaml` or `prompt.md` under the eval directory), and real requests as an extra. Without one, real requests: take them from the plugin's README usage examples, or propose one to three from its skills' descriptions, two runs each; also suggest `claude plugin eval init` to draft a suite and the `review-evals` skill to check it.
    - When cases have a `scaffold_script`, ask whether the user wrote or trusts the suite: scaffold scripts run on this machine as the user, so step 9 adds `--scaffold` only on a yes.
-   - Who pays: `ANTHROPIC_API_KEY`, `ANTHROPIC_AUTH_TOKEN`, `CLAUDE_CODE_OAUTH_TOKEN` or a cloud provider's variables set in the shell authenticate the paid runs; otherwise the login of step 8.
+   - Who pays: `ANTHROPIC_API_KEY`, `ANTHROPIC_AUTH_TOKEN`, `CLAUDE_CODE_OAUTH_TOKEN` or a cloud provider's variables set in the shell, or the Anthropic profile found in step 6, authenticate the paid runs; otherwise the login of step 8.
    - Show the grants, the requests, the run counts and who pays, and wait. If the user declines everything paid, go to step 11.
 8. **Sign in.** A new configuration has no login (docs: <https://code.claude.com/docs/en/authentication>). If step 7 found a credential in the shell, it authenticates the runs. Otherwise ask the user to run `CLAUDE_CONFIG_DIR=<cfg> claude auth login` in a separate terminal, and wait until `CLAUDE_CONFIG_DIR=<cfg> claude auth status` shows a login.
 9. **Eval suite on the installed copy**, when agreed in step 7. The suite is `evals/`, or the `experimental.evals` path in `plugin.json`.
    - `cd <target> && CLAUDE_CONFIG_DIR=<cfg> claude plugin eval <name>@test-bench-local --runs 1 --ablation none --no-publish --keep-temp --allow-tools <grants>`. The target comes before `--allow-tools`; each grant is its own argument, quoted when it holds parentheses or `*`, as in `--allow-tools Write "Bash(npm test *)" "WebFetch(domain:example.com)"`. With no grants, leave out `--allow-tools`.
    - Add `--scaffold` when the user said yes in step 7. Without it, cases with a `scaffold_script` run without their fixtures: leave them out of the passed count and list them under Not tested. An installed plugin named as the target needs no trust prompt.
-   - Results land in `<target>/evals/results/`. Report each case's score and failing graders; a case passes when its score meets the threshold, 1.0 by default. When a case fails, read `out/trace.jsonl` in the kept folder the eval printed: it is readable as is. Don't run git inside a kept folder: the eval's own notice warns against it.
-   - A full run (both arms, 3 runs each by default) is `cases × 6` runs plus three judge calls per `llm` or `baseline` grader per run; offer it only as a follow-up.
+   - Results land in `<target>/<eval dir>/results/` (`evals/` unless `experimental.evals` names another). Report each case's score and failing graders; a case passes when its score meets the threshold, 1.0 by default. When a case fails, read `out/trace.jsonl` in the kept folder the eval printed: it is readable as is. Don't run git inside a kept folder: the eval's own notice warns against it.
+   - A full run (both arms) is twice the sum of each case's `runs` (3 by default) plus three judge calls per `llm` or `baseline` grader per run; offer it only as a follow-up.
 10. **Real requests**, when agreed in step 7: read `references/manual-session.md`.
 11. **Clean up**, even after a failure. First, if the plugin's README says it works in the Claude app, ask whether to build a zip to try it there; on a yes, read `references/claude-app.md`. Then, in this order:
     - `CLAUDE_CONFIG_DIR=<cfg> claude auth logout`, when step 8 signed in: on macOS the login is a Keychain entry keyed to `<cfg>`, which deleting the folder leaves behind.
@@ -102,7 +102,7 @@ The copy comes from a commit. If `git status --porcelain -- <plugin folder>` pri
 The verdict is the first rule that matches:
 
 1. **fails as installed**: `marketplace add`, `install` or `validate` failed, the plugin is not under `plugins` in the init event or its `path` is not `<installPath>`, `plugin_errors` is present, or a needed file is missing from the copy.
-2. **works with warnings**: `validate` reported warnings, an eval case failed, a request hit a permission denial, an unreferenced file is missing from the copy, or no eval case and no request ran.
+2. **works with warnings**: `validate` reported warnings, an eval case failed, a request hit a permission denial or its plugin component didn't run, an unreferenced file is missing from the copy, or no eval case and no request ran.
 3. **works as installed**: otherwise. Other operating systems and the Claude app go under Not tested and never change the verdict.
 
 ## Beyond this machine

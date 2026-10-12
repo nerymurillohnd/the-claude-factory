@@ -2,6 +2,12 @@
 
 Newest first. One entry per session: what changed, commits, what's next.
 
+## 2026-10-12 — plugin-test-bench audits and fixes
+
+- Three-agent audit (skill-creator, conformance, executability) of `test-install` and `review-evals`; plan `.claude/plans/2026-10-12-plugin-test-bench-fixes.md` executed inline: verdict rules, free load check, sign-in after the go-ahead, quoted grants, prompt before `--allowedTools` (`397be74`, `f15ea85`, `f493a73`).
+- Final branch review plus two re-audit rounds with live docs and the changelog 2.1.291–2.1.296: Anthropic profiles could bill the load check, plugin cache variables, step-7 agreement, case pass threshold, results folder, scaffold flag (`db854d2` and the release-prep commit). Nery: fix only what users would realistically hit.
+- Next: free installed run on the plugin itself (confirms init-before-login), port the fixes to `.claude/skills/test-installed-plugin`, `/release` plugin-test-bench 0.1.0 and the marketplace.
+
 ## 2026-10-12 — Unified Claude app, three releases, per-plugin evals
 
 - Surface model moved to Claude Code + the Claude app (chat and Cowork one app); `check-repo.mjs` enforces the directory's portability rules; skill-diagnostics lost its scripts and `allowed-tools`; `/test-installed-plugin` added (squashed into PR #1).

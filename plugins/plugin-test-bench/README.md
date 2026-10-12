@@ -34,7 +34,7 @@ A plugin that works with `claude --plugin-dir` on your machine can still break f
 - **Your setup stays out of it** — the test uses its own Claude Code configuration and an empty project folder, without your settings, plugins, memory or claude.ai plugins and connectors, and everything it creates, including its sign-in, is removed at the end.
 - **Proof, not impressions** — a load check from Claude Code's own startup report, your eval suite run against the installed copy, and a report with raw results and a verdict.
 - **Eval cases that mean something** — the review flags cases Claude would pass without your plugin, graders that silently stop counting in the comparison against no plugin, triggering tested with a single prompt, and fixtures that don't build.
-- **No surprise bills** — Claude tells you how many model runs a step starts and waits for your go-ahead before every paid step.
+- **No surprise bills** — Claude tells you how many model runs it proposes and who pays for them, and waits for your go-ahead before anything paid runs.
 
 ## 🧩 What's inside
 
@@ -49,8 +49,8 @@ A plugin that works with `claude --plugin-dir` on your machine can still break f
 | :-- | :-- |
 | **Claude Code** | v2.1.293 or later — check with `claude --version` |
 | **Surfaces** | Claude Code only. See [Compatibility](#-compatibility) |
-| **External tools** | `git`, with your plugin committed in a repository (without one, Claude offers a throwaway snapshot); git 2.31 or later to run eval suites. A Bash shell. Built and tested on macOS |
-| **Accounts / API keys** | The test configuration signs in on its own: you run `claude auth login` once when Claude asks, or keep `ANTHROPIC_API_KEY` or your cloud provider's variables set in your shell. Your own login is never copied |
+| **External tools** | `git`, with your plugin committed in a repository (without one, Claude offers a throwaway snapshot); git 2.31 or later to run eval suites. Eval cases that grant Bash need the OS sandbox: `bubblewrap` and `socat` on Linux, WSL2 on Windows. A Bash shell. Built and tested on macOS |
+| **Accounts / API keys** | The test configuration signs in on its own: you run the `claude auth login` command Claude gives you, once per test with a paid step, or keep `ANTHROPIC_API_KEY` or your cloud provider's variables set in your shell. Your own login is never copied |
 | **Usage** | Eval runs and test requests are real model calls, counted against your plan or API bill. `claude plugin eval` prints a list-price estimate of each run |
 
 ## 📥 Installation
@@ -92,7 +92,7 @@ Requires Claude Code v2.1.275+. With the marketplace already added, `/plugin ins
 /plugin-test-bench:test-install plugins/my-plugin
 ```
 
-**Result:** Claude installs `my-plugin` from your last commit into a throwaway configuration, lists any file your folder has that the installed copy lacks, and checks that the plugin loads with no errors, all for free. It then tells you the paid runs it proposes, your eval suite once per case or a few real requests, and only after your go-ahead asks you to sign that configuration in. It ends with a report: verdict, files missing from the copy, the load result, each case's score with the reason for every failure, the cost estimate and what was not tested. Everything it created is then removed.
+**Result:** Claude installs `my-plugin` from your last commit into a throwaway configuration, lists any file your folder has that the installed copy lacks, and checks that the plugin loads with no errors, all for free. It then tells you the paid runs it proposes, your eval suite once per case or a few real requests, and only after your go-ahead asks you to sign that configuration in. It ends with a report: verdict, files missing from the copy, the load result, each case's score with the reason for every failure, the cost estimate and what was not tested. Everything it created, except a zip you asked for, is then removed.
 
 ### Ask in your own words
 
@@ -149,7 +149,7 @@ In a session: `/plugin` → **Installed** → **Plugin Test Bench** → **Uninst
 
 <sub>✅ works · ⚠️ partial · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. The Claude app (web, desktop and mobile) runs a conversation as a Cowork session when it can, and as a chat conversation otherwise, for example on a device that can't run Cowork or in the separate Chat mode that Team and Enterprise plans keep for now.</sub>
 
-Building a plugin for the Claude app too? `test-install` can package your committed plugin as a zip for you to upload in the app (**Customize** → **Plugins** → **Add** → **Upload plugin**) and try there.
+Building a plugin for the Claude app too? When your plugin's README says it works there, `test-install` offers to package your committed plugin as a zip for you to upload in the app (**Customize** → **Plugins** → **Add** → **Upload plugin**) and try there.
 
 ## ❓ FAQ & Troubleshooting
 
@@ -191,7 +191,7 @@ No. Claude Code's own `claude plugin eval init` interviews you and drafts the ca
 <details>
 <summary><b>What does a test cost?</b></summary>
 
-The install, the comparison and the load check are free; if an Anthropic profile on your machine (from `ant auth login` or a Console sign-in without an API key) would sign the load check in, Claude asks first. A smoke test of your eval suite is one run per case, plus three judge calls for each `llm` or `baseline` grader. A full comparison against no plugin is six runs per case at the default three runs. Claude states the number of runs and waits for your go-ahead before each paid step.
+The install, the comparison and the load check are free; if an Anthropic profile on your machine (from `ant auth login` or a Console sign-in without an API key) would sign the load check in, Claude asks first. A smoke test of your eval suite is one run per case, plus three judge calls for each `llm` or `baseline` grader. A full comparison against no plugin is six runs per case at the default three runs. Claude states the number of runs and waits for your go-ahead before anything paid runs.
 
 </details>
 

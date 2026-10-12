@@ -88,7 +88,7 @@ Each case gets the first verdict that matches:
 - <cases the suite needs and doesn't have: trigger rate, nearby requests, own risk>
 
 ### Next run
-`claude plugin eval <plugin folder> --case "<glob of the changed cases>" --runs 1 --ablation none` <plus `--allow-tools` with the grants the cases need> — <n> runs, one per matching case, plus three judge calls per `llm` or `baseline` grader. <One command per glob when one glob can't match them all; "none needed" when every case is keep. The user runs it in a terminal: the first run in a folder asks to trust it.>
+`claude plugin eval <plugin folder> --case "<glob of the changed cases>" --runs 1 --ablation none` <plus `--allow-tools` with the grants the cases need, and `--scaffold` when a matching case has a `scaffold_script` the user trusts> — <n> runs, one per matching case, plus three judge calls per `llm` or `baseline` grader. <One command per glob when one glob can't match them all; "none needed" when every case is keep. The user runs it in a terminal: the first run in a folder asks to trust it.>
 ```
 
 After a run, read the results with the user: a case with Δ about 0 that isn't a Guardrail measures nothing; a case that fails in both arms points at the grader or the task before the plugin. A full comparison runs each case twice per run, three runs by default or the case's own `runs`. Never change a case after a run just to make it pass: fix the plugin, or record why the case was wrong.

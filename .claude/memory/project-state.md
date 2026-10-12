@@ -43,6 +43,8 @@
 | 2026-10-12 | Evals are optional per plugin (Nery decides which plugins get a suite); CI runs only plugins with `evals/` whose `plugin.json` changed in the PR, one matrix job each (`eval-targets.mjs`); no required eval check on `main` | With many plugins, re-running unchanged suites wastes time, Actions minutes and Nery's plan |
 | 2026-10-12 | A PR is required only for changes to a plugin itself (`plugins/<name>/`: `plugin.json`, README, `SKILL.md`, components); everything else (docs, local skills, `.claude/`, `CLAUDE.md`, tooling) goes by direct push or PR as Nery decides; never default to a PR for those | Nery: forcing a PR to delete a `.gitkeep` is absurd |
 | 2026-10-12 | session-handoff ships no evals; its `write-handoff` skill is model-invocable (no `disable-model-invocation`) | Nery; the Claude app documents slash commands for plugin commands only, so a manual-only skill may not be startable in Cowork |
+| 2026-10-12 | `plugin-test-bench`: skills `test-install` and `review-evals`, Claude Code only (`metadata.surfaces: ["claude-code"]`), minimum Claude Code 2.1.293, ships no evals | It drives the `claude` CLI and git in a terminal; Nery decides evals per plugin |
+| 2026-10-12 | Audits of our skills run in-session: one skill-creator agent plus the conformance and executability lenses as hand-built agents from skill-diagnostics' references, then the orchestrator's live verification and changelog read; fix only findings a user would realistically hit | Nery: not a `--plugin-dir` terminal session; stay objective, don't chase a clean report with remote edge cases |
 
 ## Status
 
@@ -52,6 +54,7 @@
 
 ## Open items
 
+- **plugin-test-bench, before release:** the free installed run on itself (plan Task 6) is not done; it must confirm that `claude -p` with no credentials emits `system/init` before the login error (undocumented; the verdict rule depends on it). The maintainer skill `.claude/skills/test-installed-plugin` still carries the defects fixed in the plugin (verdict rule, free load check with profiles, sign-in after the go-ahead, quoted grants, prompt before `--allowedTools`).
 - **skill-diagnostics regression (in 0.1.0 and 0.1.1):** the full CI eval of 0.1.1 (run 38297567893, 8/10 cases, score 0.94, Δ +0.67, ~$5.87 list-price estimate) showed natural-request never reading the Claude Code changelog (0/3) and skipping both lens agents in 2/3 runs; hook-audit skipped the agents in 1/3. Plan: restore a `Stop` gate (a prompt hook, no script), run a local `--keep-temp` smoke test of natural-request to read why agents are skipped, release 0.1.2. CI keeps no traces.
 - **session-handoff, untested on the Claude app:** what `${CLAUDE_PROJECT_DIR}` is in a Cowork session (cloud or local), whether a handoff persists in the user's folder and the hook fires there, how a chat conversation renders the placeholder; also `/test-installed-plugin session-handoff`. The runtime minimum Claude Code version is undocumented (v2.1.292 is the install command's floor).
 - skill-diagnostics follow-ups: `/test-installed-plugin skill-diagnostics`, a re-audit of the `audit` skill, the skill-creator → hook offer step; design item: lens agents read their method from the plugin cache (read prompts), and moving it into the agent body needs its own design and re-audit.
@@ -68,4 +71,5 @@
 | `project-records` — decision records, debt ledgers, session handoffs (handoffs gitignored) | Nery, earlier sessions | idea |
 | `skill-diagnostics` — audit skills: conformance + executability (was `skills-engineering`) | Nery, earlier sessions | released 0.1.1 |
 | `session-handoff` — end-of-session handoff file + start-of-session reader | Nery, 2026-10-12 | released 0.1.0 |
+| `plugin-test-bench` — copied-install test of a plugin + eval-case review | Nery, 2026-10-12 | in review (draft PR) |
 | `live-docs-research` — research from live official sources + changelog checks | Nery, earlier sessions | idea |
