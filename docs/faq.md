@@ -12,7 +12,7 @@ Yes. Every plugin is open source under the [MIT License](../LICENSE). Some plugi
 <details>
 <summary><b>Do I need a GitHub account to install plugins?</b></summary>
 
-No. The repository is public, so Claude Code and Cowork can read it without signing in to GitHub. You only need an account to open issues.
+No. The repository is public, so Claude Code and the Claude app can read it without signing in to GitHub. You only need an account to open issues.
 
 </details>
 

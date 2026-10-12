@@ -66,7 +66,7 @@ claude plugin marketplace add nerymurillohnd/the-claude-factory
 </details>
 
 <details>
-<summary><b>🖥️ Claude app (web, desktop &amp; Cowork)</b></summary>
+<summary><b>🖥️ Claude app (web and desktop)</b></summary>
 
 1. Open **Customize** in the sidebar, then **Plugins**.
 2. Select **Add marketplace**.
@@ -112,7 +112,7 @@ Plugin skills are namespaced, so they never collide with yours: type `/<plugin>:
 
 | Plugin | What it does | Works in | Version | Includes |
 | :-- | :-- | :-- | :--: | :-- |
-| [**Skill Diagnostics**](./plugins/skill-diagnostics#readme)<br>`skill-diagnostics@the-claude-factory` | Audits Claude skills for best-practice conformance, portability and whether a model can run them without guessing, with file-and-line evidence and one verdict. | 💻 Code · 🖥️ Claude app | `0.1.0` | 🎯 Skills · 🤖 Agents · 🪝 Hooks |
+| [**Skill Diagnostics**](./plugins/skill-diagnostics#readme)<br>`skill-diagnostics@the-claude-factory` | Audits Claude skills for best-practice conformance, portability and whether a model can run them without guessing, with file-and-line evidence and one verdict. | 💻 Code · 🖥️ Claude app | `0.1.1` | 🎯 Skills · 🤖 Agents · 🪝 Hooks |
 
 <sub>**Legend:** 🎯 Skills · ⌨️ Commands · 🤖 Agents · 🪝 Hooks · 🔌 MCP · 🧠 LSP · 🎨 Output styles · 📡 Monitors · 🔁 Workflows · 🌈 Themes · ⚙️ Executables</sub>
 <!-- catalog:end -->

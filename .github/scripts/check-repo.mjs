@@ -45,7 +45,7 @@ export function portabilityProblems(entries) {
     for (const seg of path.split('/')) {
       if (SYSTEM_FILES.has(seg.toLowerCase()))
         problems.add(`${path} is a macOS or Windows system file — remove it`)
-      else if (seg.includes(':') || /[. ]$/.test(seg) || DEVICE_NAME.test(seg))
+      if (seg.includes(':') || /[. ]$/.test(seg) || DEVICE_NAME.test(seg))
         problems.add(`"${seg}" in ${path} is not a valid file name on Windows`)
     }
     const key = path.toLowerCase()
