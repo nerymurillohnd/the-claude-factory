@@ -81,6 +81,7 @@ Claude Code replaces these in `SKILL.md` before Claude reads it [req]:
 - [req] With no placeholder in the body, Claude Code appends the arguments as a final `ARGUMENTS: <value>` line.
 - [req] Substitution happens everywhere in the body, code blocks included. A literal `$1.00` must be written `\$1.00`.
 - [req] The path variables are also substituted in Bash rules of `allowed-tools`, so a bundled script can run without a prompt.
+- [req] Built-in read-only commands (`ls`, `cat`, `head`, `grep`, `find`, `wc`, `diff`, `stat` and others) run without a prompt in every mode, so a skill needs no `allowed-tools` entry for them; they still prompt with an unquoted glob when the command has write-capable flags (`find`), or for paths a user's `blockReadsOutsideWorkingDirectories` covers ([permissions](https://code.claude.com/docs/en/permissions), Read-only commands).
 - [observed] They are substituted in `Read(...)` rules too: `Read(/${CLAUDE_SKILL_DIR}/**)` lets the skill, and subagents it launches in the same turn, read the skill's own files without a prompt (Claude Code 2.1.296).
 - [req] The variables are text substitutions, not environment variables: commands run through the Bash tool do not see them.
 

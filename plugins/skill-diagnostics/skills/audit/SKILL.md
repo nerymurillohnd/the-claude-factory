@@ -56,8 +56,8 @@ Example: `/skill-diagnostics:audit ./plugins/notes --target upload` audits every
 
    It exits 0 with JSON; `summary.error` counts the errors.
 3. **Lenses.** In one message, launch the agent of every selected lens (`skill-diagnostics:conformance-auditor`, `skill-diagnostics:executability-auditor`) for every skill, even a short one. Pass absolute paths:
-   - conformance: skill path, inventory, targets, checker JSON per target, and `${CLAUDE_SKILL_DIR}/references/` `conformance.md`, `fields.md`, `surfaces.md`;
-   - executability: skill path, inventory, and `${CLAUDE_SKILL_DIR}/references/executability.md`.
+   - conformance: skill path, inventory (with its `outside` entries), targets, checker JSON per target, and `${CLAUDE_SKILL_DIR}/references/` `conformance.md`, `fields.md`, `surfaces.md`;
+   - executability: skill path, inventory (with its `outside` entries), and `${CLAUDE_SKILL_DIR}/references/executability.md`.
 4. **Merge** each skill's reports into one table. Executability severity: *decides output* → high, otherwise medium. One root defect at one location is one row, naming every lens that flagged it, with the highest severity. Highest severity first.
 5. **Verdict**, first rule that matches:
    1. **fail:** any high finding.

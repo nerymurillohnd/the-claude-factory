@@ -29,4 +29,4 @@ A line whose lens or checker did not run says `not checked` and why.
 - Lenses: <which; agent or inline>
 - Order and flow: <from the executability lens>
 - Not verified live: <items, or none>
-- External dependencies: <found or unverified, or none>
+- External dependencies: <found or unverified, plus the inventory's `outside` links, or none>
