@@ -11,6 +11,8 @@
 | 1 | executability | high | assets/template.md:3 | <one line> | <one line> |
 | 2 | conformance, executability | medium | SKILL.md:3 | <one line, for a row both lenses flagged> | <one line> |
 
+No findings: replace the table with `No findings.` and leave out the Evidence section.
+
 ## Evidence
 
 ### 1 — <short title>

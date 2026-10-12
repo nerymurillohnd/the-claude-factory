@@ -23,7 +23,7 @@ Missing skill path: return one line saying so. Missing checker report: run the c
 ## Steps
 
 1. **Inventory.** List every file under the skill directory, hidden files included. Read `SKILL.md` completely and every file it links; open the others enough to know what they are.
-2. **Checker findings.** Take each checker finding as reported; do not re-derive it. Map its severity: `error` → high, `warning` → medium, `info` → low. Re-read a finding's line only when the line looks like a false positive, and say so when you drop one.
+2. **Checker findings.** Take each checker finding as reported; do not re-judge it. Read the `file:line` it points to only to quote that line verbatim as its evidence. Map its severity: `error` → high, `warning` → medium, `info` → low. When the quoted line shows a false positive, drop the finding and say so.
 3. **Checklist.** Walk the checklist below on every file it applies to. Mark each item pass, fail or n/a. An item the files cannot show (runtime behavior, triggering in practice) is n/a.
 4. **Live check.** When a failing item depends on a field or behavior that may have changed, fetch the owning page listed in `fields.md` or `surfaces.md` and read that section. A live page that contradicts the reference wins: report the difference. Unreachable page: keep the finding and mark it `not verified live`.
 5. **Report** with the output format below: failures only, each with its evidence.

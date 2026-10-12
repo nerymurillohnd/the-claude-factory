@@ -22,6 +22,9 @@ Rules learned the hard way. Follow them; add one line per new lesson.
 - A plugin hook started through a `python3` shebang shows a "hook error" notice on every matching tool call when `python3` is missing; a mode check inside the script can't silence it. Declare it in the README Requirements.
 - The Agent Skills reserved words (`claude`, `anthropic`) only matter for uploads and the API; Claude Code instead refuses skill folders named `synced` and names in the `anthropic-skills` namespace.
 - A plugin zip uploaded in the Claude app (**Customize** → **Plugins**) also reaches Claude Code as `<plugin>@synced`: a quick way to test the cached, synced path on Nery's Mac before release. Remove that copy after release so it doesn't duplicate the marketplace install. Verified 2026-10-11 with skill-diagnostics (checker, both agents and the Read grant worked).
+- In a Cowork task, a plugin skill ran its Python 3 script by path and launched plugin agents (observed 2026-10-12, skill-diagnostics). Still undocumented, so keep runtimes in README Requirements.
+- A skill's `allowed-tools` grant ends at the user's next message: a skill that asks the user something mid-run must invoke itself again to get its pre-approvals back.
+- Fixing audit findings can plant new ones ("and that ran" made the verdict rule ambiguous): re-run the audit on the fix before calling it done.
 - A copied (cached) install for local testing: a local marketplace whose entry uses `{"source":"git-subdir","url":"file:///abs/repo.git","path":"plugins/<name>"}`; a relative-path source loads in place instead. Isolate with `HOME=<tmp>` or `CLAUDE_CONFIG_DIR`.
 
 ## GitHub
