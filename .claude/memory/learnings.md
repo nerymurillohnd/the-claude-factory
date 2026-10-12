@@ -40,6 +40,11 @@ Rules learned the hard way. Follow them; add one line per new lesson.
 - Make a verifier's "provisional" rule depend on what stayed unverified, not on any source being down; otherwise one always-blocked source makes every verdict provisional.
 - Verify every fact an eval rubric asserts against the live docs, and dry-check fixtures with the plugin's own scripts: on 2026-10-12 this caught a rubric (and the plugin) claiming `${CLAUDE_SKILL_DIR}` breaks in an uploaded skill used in Cowork, which the docs contradict, and a false `name-missing` warning for Claude Code.
 - An eval case earns its place only if Claude without the plugin, and without our session context, would get it wrong; eval runs are isolated (no CLAUDE.md, memory or other plugins), so the with-arm already answers "does it work without our context".
+- A `claude plugin eval` trace (`out/trace.jsonl`, kept with `--keep-temp`) holds subagent tool calls too, each line tagged with `parent_tool_use_id`; a full Read is `"input":{"file_path":"…"}` with no offset or limit. Regex graders on `target: trace` can prove per-file full reads by agents (verified 2026-10-12).
+- Plugin options can't be set in an eval run: only allowlisted and `EVAL_*` variables reach it, so `CLAUDE_PLUGIN_OPTION_*` stays unset and hooks run on their defaults.
+- Local eval smoke tests follow the docs: `--case … --runs 1 --ablation none` (one arm, one run); the full two-arm, three-run suite belongs in CI.
+- Instructions alone don't hold every time: smoke tests showed the audit skipping the 15-day change check (0/4, then 2/4 sources) despite "never skip it". A `Stop` hook in the skill's `hooks` frontmatter fixed it in an installed run; `${CLAUDE_PLUGIN_ROOT}` resolves there (2.1.296).
+- In `claude -p` without grants, Claude invoking a skill by itself (the Skill tool) is denied; a prompt that starts with the slash command is not. Headless tests of natural triggering need `--allowedTools Skill`.
 - A copied (cached) install for local testing: a local marketplace whose entry uses `{"source":"git-subdir","url":"file:///abs/repo.git","path":"plugins/<name>"}`; a relative-path source loads in place instead. Isolate with `HOME=<tmp>` or `CLAUDE_CONFIG_DIR`.
 
 ## GitHub

@@ -31,7 +31,7 @@ A skill can look finished to the person who wrote it and still fail the model th
 - **Two audits in one pass** — conformance (official rules, recommendations, portability) and executability (could a model follow it without guessing) run in parallel and come back as one report with one verdict.
 - **Reads every line** — both auditors read every file of the skill from start to end, scripts and hidden files included; nothing is sampled or skimmed. If a file can't be listed or read, the report names it, and a gap that matters gives *not determinable* instead of a pass.
 - **Evidence, not opinions** — every finding quotes the exact text with its file and line, and says how to fix it.
-- **Verified before it counts** — before the verdict, every finding is checked again: its quote against your files, any rule or platform claim against the live official Claude documentation (with the URL and the exact sentence), and the official changes of the last 15 days. Findings that don't hold up are corrected or withdrawn.
+- **Verified before it counts** — before the verdict, every finding is checked again: its quote against your files, any rule or platform claim against the live official Claude documentation (with the URL and the exact sentence), and the official changes of the last 15 days. Findings that don't hold up are corrected or withdrawn, and the audit can't finish until that check has run.
 - **Checks what validation skips** — `claude plugin validate` confirms the structure; Skill Diagnostics also checks name and description limits, quoting that breaks strict YAML, argument placeholders, broken links and script setup.
 - **Ready for every surface** — tell it where the skill must work (Claude Code, Cowork, a claude.ai upload, the Skills API) and it flags what that surface rejects or skips.
 - **Catches new skills as you write them** — after a `SKILL.md` is created or changed, for example with Anthropic's `skill-creator`, Claude offers an audit before you move on.
@@ -44,6 +44,7 @@ A skill can look finished to the person who wrote it and still fail the model th
 | 🤖 Agent | `skill-diagnostics:conformance-auditor` | Checks one skill against the documented rules, recommendations and target surfaces | Launched by the skill, one per skill |
 | 🤖 Agent | `skill-diagnostics:executability-auditor` | Traces every workflow of one skill as the model that must run it | Launched by the skill, one per skill |
 | 🪝 Hook | `PostToolUse` | After a `SKILL.md` is written or edited, asks Claude to offer an audit once the skill is finished (or to run it, if you [configure](#️-configuration) that) | Automatically, once per skill per session |
+| 🪝 Hook | `Stop` (part of the audit skill) | If an audit is about to finish without having checked the official change sources, or without saying what it verified, sends it back once to complete that step | Only in sessions where you ran an audit |
 
 Skill Diagnostics only audits. To create a skill, use Anthropic's `skill-creator`, then audit the result.
 
