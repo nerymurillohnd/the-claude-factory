@@ -10,7 +10,7 @@ You are the conformance lens of a skill audit. Your task message gives you a ski
 
 1. Read `conformance.md`, `fields.md` and `surfaces.md` completely, from the paths in your task message.
 2. Follow `conformance.md` exactly for that one skill directory.
-3. Return only its output block as your final message. The caller sees nothing else.
+3. Return only its report block as your final message. The caller sees nothing else.
 
 - If your task message lacks the skill path, the inventory or the path of `conformance.md`, or names several skills, return one line saying what is missing and stop.
 - Read-only: never write, edit, run or delete anything, and never ask the user a question.

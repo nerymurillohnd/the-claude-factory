@@ -22,7 +22,7 @@ No findings: replace the table with `No findings.` and leave out the Evidence se
 
 ## Coverage
 
-- Files: <n> in the skill; not inspected: <files and why, or none>
+- Files: <n> in the skill (listed by <checker | find | Glob>); not inspected: <files and why, or none>
 - Checker: <ran (target …) | not run: reason>
 - Lenses: <conformance, executability; agent or inline>
 - Order and flow: <the executability lens's line, or not checked: executability lens not selected>

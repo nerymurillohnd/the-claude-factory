@@ -17,7 +17,7 @@ Sources, checked 2026-10-11: [Claude Code skills](https://code.claude.com/docs/e
 | The skill is | Target | Checker option |
 | :-- | :-- | :-- |
 | Personal (`~/.claude/skills/`) or project (`.claude/skills/`) | Claude Code | `--target code` (default) |
-| Inside a plugin (an ancestor folder holds `.claude-plugin/plugin.json`) | Claude Code and Cowork | `--target code --target cowork` |
+| Inside a plugin (an ancestor folder holds `.claude-plugin/plugin.json`) | Claude Code and Cowork | `--target code` and `--target cowork`, one run each |
 | Uploaded to claude.ai, or enabled on the account so it reaches Cowork and cloud sessions | claude.ai upload | `--target upload` |
 | Sent through the Skills API | API | `--target api` |
 | Anywhere else (a loose folder, a `skills/` folder outside `.claude/`) | Claude Code | `--target code`, stated as assumed |
