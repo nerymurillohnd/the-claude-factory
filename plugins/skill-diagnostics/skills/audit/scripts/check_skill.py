@@ -732,10 +732,11 @@ class Checker:
                 scripts_used = any(m.group(1).startswith("scripts/") for m in matches)
                 self.add(
                     "script-path",
-                    "error",
+                    "warning",
                     self.skill_md,
                     number,
-                    f"${{CLAUDE_SKILL_DIR}} does not exist on {self.target}",
+                    f"${{CLAUDE_SKILL_DIR}} is documented only where Claude Code runs the skill; "
+                    f"{self.target} docs use paths relative to the skill",
                     "Call it through its interpreter, relative to the skill: python3 scripts/x.py"
                     if scripts_used
                     else "Use a path relative to the skill: references/x.md",

@@ -36,7 +36,7 @@ Without `--target`, the three location rules in `SKILL.md` (Input → Target) de
 | `description` over 1,024 characters | ⚠️ cut in the listing at 1,536 by default | ⚠️ | ❌ | ❌ |
 | `anthropic` or `claude` in `name` | ✅ | ✅ | ❌ | ❌ |
 | `!` dynamic-context lines | ✅ run at load | ⚠️ replaced by a placeholder | ❌ never run | ❌ never run |
-| `${CLAUDE_*}` path variables | ✅ | ✅ | ❌ | ❌ |
+| `${CLAUDE_*}` path variables | ✅ | ✅ | ⚠️ substituted where Claude Code runs it (Cowork, cloud and local sessions); not documented elsewhere | ⚠️ not documented |
 | Bundled scripts | ✅ | ✅ | ✅ through the interpreter | ✅ no network |
 
 - [req] Uploads and the Skills API fail with `Unexpected key(s) in SKILL.md frontmatter` for any field outside the six. A skill meant for both Claude Code and an upload keeps to the six fields, or ships two versions.
@@ -54,7 +54,7 @@ Without `--target`, the three location rules in `SKILL.md` (Input → Target) de
 
 - [req] In Claude Code, commands run in the session's directory, never the skill's: call bundled scripts as `${CLAUDE_SKILL_DIR}/scripts/<file>`.
 - [default] In Claude Code and Cowork, a script starts with `#!/usr/bin/env <interpreter>` (no version), is executable (committed as `100755`) and is called by its path; the user's first interpreter on `PATH` runs it. The skill's README lists the interpreter and minimum version under requirements.
-- [default] For an upload or the API, call scripts through their interpreter with a path relative to the skill (`python3 scripts/<file>`): a zip upload can lose the executable bit, and the path variables do not exist there.
+- [default] For an upload or the API, call scripts through their interpreter with a path relative to the skill (`python3 scripts/<file>`): a zip upload can lose the executable bit, and the platform documentation shows only relative paths, never the path variables.
 - [req] The Skills API has no network access and installs nothing at run time; claude.ai can install packages from npm and PyPI. Use only preinstalled packages for the API.
 - [req] MCP tools are named `mcp__<server>__<tool>` in Claude Code (`mcp__plugin_<plugin>_<server>__<tool>` for a plugin's server); other clients use `Server:tool`.
 

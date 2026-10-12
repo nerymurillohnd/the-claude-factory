@@ -38,6 +38,8 @@ Rules learned the hard way. Follow them; add one line per new lesson.
 - A skill's `allowed-tools` can pre-approve web sources with `WebFetch(domain:host)`; headless audits fetched 4–9 official pages with 0 denials (2026-10-12). `code.claude.com` and `claude.com` are also in Claude Code's built-in preapproved docs set.
 - WebFetch can't read GitHub commit history or rendered files (robots.txt / 403, and the CHANGELOG blob page has no content): treat GitHub sources as possibly unreachable and use the docs' own changelog pages instead.
 - Make a verifier's "provisional" rule depend on what stayed unverified, not on any source being down; otherwise one always-blocked source makes every verdict provisional.
+- Verify every fact an eval rubric asserts against the live docs, and dry-check fixtures with the plugin's own scripts: on 2026-10-12 this caught a rubric (and the plugin) claiming `${CLAUDE_SKILL_DIR}` breaks in an uploaded skill used in Cowork, which the docs contradict, and a false `name-missing` warning for Claude Code.
+- An eval case earns its place only if Claude without the plugin, and without our session context, would get it wrong; eval runs are isolated (no CLAUDE.md, memory or other plugins), so the with-arm already answers "does it work without our context".
 - A copied (cached) install for local testing: a local marketplace whose entry uses `{"source":"git-subdir","url":"file:///abs/repo.git","path":"plugins/<name>"}`; a relative-path source loads in place instead. Isolate with `HOME=<tmp>` or `CLAUDE_CONFIG_DIR`.
 
 ## GitHub

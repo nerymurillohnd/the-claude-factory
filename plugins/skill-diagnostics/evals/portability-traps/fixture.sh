@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
-# Seeds a skill that works in Claude Code but breaks a claude.ai upload in
-# ways that need current platform facts to spot.
+# Seeds a skill that works in Claude Code but breaks once uploaded to claude.ai
+# and used in Cowork, in ways that need current platform facts to spot
+# (https://code.claude.com/docs/en/skills: Using skill frontmatter outside
+# Claude Code; How Claude Code handles the body of a synced skill).
 set -euo pipefail
 d=skills/claude-notes
-mkdir -p "$d/scripts"
+mkdir -p "$d"
 cat >"$d/SKILL.md" <<'SKILL'
 ---
 name: claude-notes
@@ -12,15 +14,9 @@ when_to_use: When notes mention tasks, owners or deadlines.
 allowed-tools: Read
 ---
 
-1. Run `${CLAUDE_SKILL_DIR}/scripts/extract.py` on the notes the user gives.
-2. List every action item the script prints, grouped by owner.
+Today: !`date +%F`
+
+1. Find every task in the notes the user gives.
+2. Give each task an owner from the notes, and a due date counted from today's date above (default: one week).
+3. List the tasks grouped by owner, each as `- [ ] <task> #owner <name> #due <YYYY-MM-DD>`.
 SKILL
-cat >"$d/scripts/extract.py" <<'PY'
-#!/usr/bin/env python3
-"""Print one action item per line from notes on stdin."""
-import sys
-for line in sys.stdin:
-    if line.strip().lower().startswith(("todo", "action")):
-        print(line.strip())
-PY
-chmod 755 "$d/scripts/extract.py"

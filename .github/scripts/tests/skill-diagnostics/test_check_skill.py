@@ -351,6 +351,7 @@ class Files(SkillCase):
         _, report = run(self.skill, "--target", "upload")
         hits = [f for f in findings(report) if f.get("rule") == "script-path"]
         self.assertEqual(len(hits), 1, report)
+        self.assertEqual(hits[0]["severity"], "warning", report)  # undocumented there, not proven broken
         self.assertNotIn("interpreter", json.dumps(hits[0]))
 
     def test_bare_script_file_mention_is_not_a_command(self) -> None:

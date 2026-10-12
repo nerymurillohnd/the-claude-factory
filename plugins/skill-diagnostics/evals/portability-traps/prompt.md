@@ -1,5 +1,5 @@
 ---
-description: "Difference: a user about to upload a skill to claude.ai. Hypothesis: without the plugin, Claude misses upload rules that need current platform facts and the upload breaks; with it, at least three of the four planted problems are reported before the upload."
+description: "Difference: a user about to upload a skill to claude.ai. Hypothesis: without the plugin, Claude misses upload rules that need current platform facts and the upload breaks; with it, the two problems that need those facts (`when_to_use` rejected by uploads, the `!` line replaced by a placeholder in Cowork) are reported before the upload. The pilot's earlier three-of-four rubric passed the baseline once, because two of the four need only general knowledge."
 tags: [output, trigger]
 max_turns: 80
 timeout_seconds: 1200
