@@ -35,7 +35,7 @@ Copy and tick:
 - [ ] 6 Report    assets/report.md, then the summary table for several skills
 ```
 
-1. **Resolve** the paths as described in Input. For each skill, list its files, hidden files included (Glob `**/*` and `**/.*`) and keep the count for the report's coverage line.
+1. **Resolve** the paths as described in Input. For each skill, list its files, hidden files included, with the Glob tool only (`**/*` and `**/.*`), and keep the count for the report's coverage line. Run no shell command to list files or to check git-ignored files; that status comes from the executability lens.
 2. **Run the checker** for each skill and target, only when the conformance lens runs (otherwise record `checker not run: conformance lens not selected`):
 
    ```bash
@@ -56,7 +56,7 @@ Copy and tick:
    4. **pass:** no findings.
 
    The coverage line uses the file count from step 1, the files each lens reports as not inspected, and the `Git-ignored:` field of the executability lens's `Files read:` line (`not visible to the tools` without that lens). The Order and flow line comes from the executability lens's `Order and flow:` line.
-6. **Report** each skill in your reply, with [report.md](assets/report.md) filled in order; write no file. A coverage line whose lens did not run says `not checked: <lens> lens not selected`. For several skills, end with one table: Skill | Path | Verdict | High | Medium | Low; a path not found or a plugin with no skills gets no per-skill report, only a row with that text in the verdict column.
+6. **Report** each skill in your reply, with [report.md](assets/report.md) filled in order; write no file. Without the conformance lens, the Not verified live line says `not checked: conformance lens not selected`; without the executability lens, so does the Order and flow line, with that lens's name. For several skills, end with one table: Skill | Path | Verdict | High | Medium | Low; a path not found or a plugin with no skills gets no per-skill report, only a row with that text in the verdict column. When no path resolves to a skill, reply with those lines only.
 
 Done when every skill has a verdict, every finding carries a verbatim quote with `file:line` (or, for something absent, where it is needed and the files searched), and the report lists what was not checked.
 
