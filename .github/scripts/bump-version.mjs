@@ -21,7 +21,9 @@ import {
 } from './lib.mjs'
 
 const [target, level] = process.argv.slice(2)
-if (!target || !level) fail('Usage: bump-version.mjs <plugin-name|marketplace> <major|minor|patch>')
+if (!target || !level) {
+  fail('Usage: bump-version.mjs <plugin-name|marketplace> <major|minor|patch>')
+}
 
 const isMarketplace = target === 'marketplace'
 let current
@@ -40,7 +42,9 @@ if (isMarketplace) {
   writeJson(MARKETPLACE_PATH, mp)
 } else {
   const manifest = loadManifest(target)
-  if (!manifest) fail(`plugins/${target}/.claude-plugin/plugin.json not found`)
+  if (!manifest) {
+    fail(`plugins/${target}/.claude-plugin/plugin.json not found`)
+  }
   current = manifest.version
   next = bumpSemver(current, level)
   manifest.version = next
@@ -54,11 +58,17 @@ writeFileSync(README_PATH, renderReadme(readText(README_PATH)))
 console.log(`✔ ${target}: ${current} → ${next}`)
 
 function rollChangelog() {
-  if (!existsSync(changelogPath)) fail(`${changelogPath} not found`)
+  if (!existsSync(changelogPath)) {
+    fail(`${changelogPath} not found`)
+  }
   let text = readText(changelogPath)
   const m = text.match(/^## \[Unreleased\]\s*\n([\s\S]*?)(?=^## \[|^\[[^\]]+\]:|(?![\s\S]))/m)
-  if (!m) fail('CHANGELOG.md has no "## [Unreleased]" section')
-  if (!m[1].trim()) fail('[Unreleased] is empty — document the changes before bumping')
+  if (!m) {
+    fail('CHANGELOG.md has no "## [Unreleased]" section')
+  }
+  if (!m[1].trim()) {
+    fail('[Unreleased] is empty — document the changes before bumping')
+  }
 
   text = text.replace(
     /^## \[Unreleased\]\s*\n/m,
@@ -69,8 +79,10 @@ function rollChangelog() {
   // Link references: [Unreleased] compares from the new tag; add the new version's tag link.
   const unreleasedLink = `[Unreleased]: ${REPO_URL}/compare/${tagPrefix}${next}...HEAD`
   const versionLink = `[${next}]: ${REPO_URL}/releases/tag/${tagPrefix}${next}`
-  if (/^\[Unreleased\]:.*$/m.test(text))
+  if (/^\[Unreleased\]:.*$/m.test(text)) {
     text = text.replace(/^\[Unreleased\]:.*$/m, `${unreleasedLink}\n${versionLink}`)
-  else text = `${text.trimEnd()}\n\n${unreleasedLink}\n${versionLink}\n`
+  } else {
+    text = `${text.trimEnd()}\n\n${unreleasedLink}\n${versionLink}\n`
+  }
   writeFileSync(changelogPath, text)
 }

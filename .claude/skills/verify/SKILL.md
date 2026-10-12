@@ -4,7 +4,7 @@ description: Runs every quality gate of The Claude Factory repository (script te
 allowed-tools:
   - "Bash(node *)"
   - "Bash(npx --yes markdownlint-cli2*)"
-  - "Bash(npx --yes @biomejs/biome@2.5.15 check .)"
+  - "Bash(npx --yes @biomejs/biome@2.5.15 check --error-on-warnings .)"
   - "Bash(git ls-files -z *)"
   - "Bash(.github/scripts/validate-claude.sh)"
   - "Bash(git diff*)"
@@ -47,7 +47,7 @@ Run every gate from the repository root. Show the **raw output** of each command
 5. JavaScript and JSON format, lint and imports (config in `biome.json`; fix with `--write`, never by loosening the config):
 
    ```bash
-   npx --yes @biomejs/biome@2.5.15 check .
+   npx --yes @biomejs/biome@2.5.15 check --error-on-warnings .
    ```
 
 6. Shell scripts, with the shell style in `.editorconfig` and shellcheck's optional checks:

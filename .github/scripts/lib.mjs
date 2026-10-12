@@ -63,10 +63,14 @@ export const SURFACE_PROFILES = {
 
 /** Returns the profile key for a surfaces array, or null when it matches none. */
 export function surfaceProfileKey(surfaces) {
-  if (!Array.isArray(surfaces)) return null
+  if (!Array.isArray(surfaces)) {
+    return null
+  }
   const key = [...surfaces].sort().join(',')
   for (const [name, profile] of Object.entries(SURFACE_PROFILES)) {
-    if ([...profile.surfaces].sort().join(',') === key) return name
+    if ([...profile.surfaces].sort().join(',') === key) {
+      return name
+    }
   }
   return null
 }
@@ -105,16 +109,24 @@ export function compareSemver(a, b) {
   const pa = a.split(/[-+]/)[0].split('.').map(Number)
   const pb = b.split(/[-+]/)[0].split('.').map(Number)
   for (let i = 0; i < 3; i += 1) {
-    if (pa[i] !== pb[i]) return pa[i] > pb[i] ? 1 : -1
+    if (pa[i] !== pb[i]) {
+      return pa[i] > pb[i] ? 1 : -1
+    }
   }
   return 0
 }
 
 export function bumpSemver(version, level) {
   const [major, minor, patch] = version.split(/[-+]/)[0].split('.').map(Number)
-  if (level === 'major') return `${major + 1}.0.0`
-  if (level === 'minor') return `${major}.${minor + 1}.0`
-  if (level === 'patch') return `${major}.${minor}.${patch + 1}`
+  if (level === 'major') {
+    return `${major + 1}.0.0`
+  }
+  if (level === 'minor') {
+    return `${major}.${minor + 1}.0`
+  }
+  if (level === 'patch') {
+    return `${major}.${minor}.${patch + 1}`
+  }
   throw new Error(`Unknown bump level "${level}" (use major, minor or patch)`)
 }
 

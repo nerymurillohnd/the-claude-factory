@@ -15,8 +15,10 @@
       "!!**/build",
       "!!.claude/worktrees",
       "!!.superpowers",
-      "!.claude/templates/plugin/plugin.json"
-    ]
+      "!.claude/templates/plugin/plugin.json",
+      "!!**/tsconfig.json"
+    ],
+    "maxSize": 1048576
   },
   "formatter": {
     "enabled": true,
@@ -31,12 +33,107 @@
     "rules": {
       "preset": "recommended",
       "correctness": {
-        "noUndeclaredDependencies": "off"
+        "noUndeclaredDependencies": "off",
+        "noConstAssign": "error",
+        "noConstantCondition": "error",
+        "noEmptyCharacterClassInRegex": "error",
+        "noEmptyPattern": "error",
+        "noGlobalObjectCalls": "error",
+        "noInvalidConstructorSuper": "error",
+        "noNonoctalDecimalEscape": "error",
+        "noPrecisionLoss": "error",
+        "noSelfAssign": "error",
+        "noSetterReturn": "error",
+        "noSwitchDeclarations": "error",
+        "noUndeclaredVariables": "error",
+        "noUnreachable": "error",
+        "noUnreachableSuper": "error",
+        "noUnusedImports": "error",
+        "noUnusedFunctionParameters": "warn",
+        "noChildrenProp": "error",
+        "useIsNan": "error",
+        "useValidForDirection": "error",
+        "useYield": "error"
+      },
+      "a11y": {
+        "preset": "recommended"
+      },
+      "complexity": {
+        "noExtraBooleanCast": "error",
+        "noUselessCatch": "error"
+      },
+      "performance": {
+        "noAccumulatingSpread": "warn",
+        "noDelete": "error"
+      },
+      "security": {
+        "noGlobalEval": "error"
+      },
+      "style": {
+        "noImplicitBoolean": "error",
+        "noNegationElse": "off",
+        "noParameterAssign": "warn",
+        "noRestrictedGlobals": "error",
+        "noShoutyConstants": "warn",
+        "noUnusedTemplateLiteral": "warn",
+        "useBlockStatements": "error",
+        "useCollapsedElseIf": "warn",
+        "useConst": "error",
+        "useDefaultParameterLast": "error",
+        "useExponentiationOperator": "error",
+        "useNumberNamespace": "error",
+        "useSingleVarDeclarator": "error",
+        "useTemplate": "warn",
+        "useConsistentArrayType": "error",
+        "useForOf": "error",
+        "useImportType": "error",
+        "useNamingConvention": "warn"
+      },
+      "suspicious": {
+        "noAssignInExpressions": "error",
+        "noAsyncPromiseExecutor": "error",
+        "noCatchAssign": "error",
+        "noClassAssign": "error",
+        "noCommentText": "error",
+        "noCompareNegZero": "error",
+        "noConsole": "warn",
+        "noControlCharactersInRegex": "error",
+        "noDebugger": "error",
+        "noDoubleEquals": "error",
+        "noDuplicateCase": "error",
+        "noDuplicateClassMembers": "error",
+        "noDuplicateObjectKeys": "error",
+        "noDuplicateParameters": "error",
+        "noEmptyBlockStatements": "error",
+        "noExplicitAny": "warn",
+        "noExtraNonNullAssertion": "error",
+        "noFallthroughSwitchClause": "error",
+        "noFunctionAssign": "error",
+        "noGlobalAssign": "error",
+        "noImportAssign": "error",
+        "noMisleadingCharacterClass": "error",
+        "noPrototypeBuiltins": "error",
+        "noRedeclare": "error",
+        "noShadowRestrictedNames": "error",
+        "noUnsafeDeclarationMerging": "error",
+        "noUnsafeNegation": "error",
+        "noFocusedTests": "error",
+        "noSkippedTests": "warn",
+        "useAdjacentOverloadSignatures": "error",
+        "useGetterReturn": "error"
+      },
+      "nursery": {
+        "useExplicitType": "warn"
       }
     }
   },
   "assist": {
-    "enabled": true
+    "enabled": true,
+    "actions": {
+      "source": {
+        "organizeImports": "on"
+      }
+    }
   },
   "javascript": {
     "formatter": {
@@ -44,11 +141,47 @@
       "jsxQuoteStyle": "double",
       "semicolons": "asNeeded",
       "trailingCommas": "all"
+    },
+    "parser": {
+      "jsxEverywhere": false
     }
   },
   "json": {
     "formatter": {
       "expand": "always"
     }
-  }
+  },
+  "overrides": [
+    {
+      "includes": [
+        "**/*.test.{js,mjs,ts}",
+        "**/*.spec.{js,mjs,ts}",
+        "**/__tests__/**",
+        "**/test/**",
+        "**/tests/**"
+      ],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noConsole": "off"
+          },
+          "style": {
+            "noImplicitBoolean": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": [
+        ".github/scripts/**"
+      ],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noConsole": "off"
+          }
+        }
+      }
+    }
+  ]
 }

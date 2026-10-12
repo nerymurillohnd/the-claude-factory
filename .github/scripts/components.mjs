@@ -27,12 +27,17 @@ export const COMPONENT_TYPES = [
 ]
 
 function countFiles(dir, predicate) {
-  if (!existsSync(dir)) return 0
+  if (!existsSync(dir)) {
+    return 0
+  }
   let n = 0
   for (const entry of readdirSync(dir)) {
     const full = join(dir, entry)
-    if (statSync(full).isDirectory()) n += countFiles(full, predicate)
-    else if (predicate(entry, full)) n += 1
+    if (statSync(full).isDirectory()) {
+      n += countFiles(full, predicate)
+    } else if (predicate(entry, full)) {
+      n += 1
+    }
   }
   return n
 }
@@ -43,7 +48,9 @@ export function detectComponents(name) {
   const manifest = loadManifest(name) ?? {}
   const found = {}
   const set = (id, n) => {
-    if (n > 0) found[id] = n
+    if (n > 0) {
+      found[id] = n
+    }
   }
 
   set(

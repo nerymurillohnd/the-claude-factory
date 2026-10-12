@@ -38,22 +38,32 @@ const { values } = parseArgs({
 })
 
 const { name, category, description } = values
-if (!name || !category || !description)
+if (!name || !category || !description) {
   fail('Usage: --name <kebab-name> --category <id> --description "<one sentence>"')
-if (!KEBAB.test(name)) fail(`"${name}" is not kebab-case`)
-if (RESERVED_NAME.test(name))
+}
+if (!KEBAB.test(name)) {
+  fail(`"${name}" is not kebab-case`)
+}
+if (RESERVED_NAME.test(name)) {
   fail(`"${name}" passes as an Anthropic plugin name and is rejected by Claude Code`)
+}
 const categories = loadCategories()
 const cat = categories.find((c) => c.id === category)
-if (!cat) fail(`Unknown category "${category}". Valid: ${categories.map((c) => c.id).join(', ')}`)
+if (!cat) {
+  fail(`Unknown category "${category}". Valid: ${categories.map((c) => c.id).join(', ')}`)
+}
 
 const dir = pluginDir(name)
-if (existsSync(dir)) fail(`plugins/${name} already exists`)
+if (existsSync(dir)) {
+  fail(`plugins/${name} already exists`)
+}
 const marketplace = loadMarketplace()
-if (marketplace.plugins.some((p) => p.name === name))
+if (marketplace.plugins.some((p) => p.name === name)) {
   fail(`"${name}" is already listed in marketplace.json`)
-if (marketplace.renames && name in marketplace.renames)
+}
+if (marketplace.renames && name in marketplace.renames) {
   fail(`"${name}" is a retired name in renames; pick another`)
+}
 
 const displayName =
   values['display-name'] ??

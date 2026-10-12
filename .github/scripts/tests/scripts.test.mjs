@@ -61,6 +61,7 @@ function run(script, args = []) {
   const r = spawnSync(process.execPath, [join(root, '.github', 'scripts', script), ...args], {
     cwd: root,
     encoding: 'utf8',
+    // biome-ignore lint/style/useNamingConvention: TCF_ROOT is an environment variable name, read by lib.mjs
     env: { ...process.env, TCF_ROOT: root },
   })
   return { code: r.status, out: `${r.stdout}${r.stderr}` }
@@ -512,8 +513,9 @@ describe('portability rules', () => {
       entry('__MACOSX/x'),
       entry('thumbs.db'),
     ]).join('\n')
-    for (const name of ['a:b.md', 'notes.', 'trail ', 'con.md', 'LPT1'])
+    for (const name of ['a:b.md', 'notes.', 'trail ', 'con.md', 'LPT1']) {
       assert.ok(problems.includes(`"${name}"`), `${name} not flagged:\n${problems}`)
+    }
     assert.match(problems, /README\.md and Readme\.md differ only by capitalization/)
     assert.match(problems, /__MACOSX\/x is a macOS or Windows system file/)
     assert.match(problems, /thumbs\.db is a macOS or Windows system file/)

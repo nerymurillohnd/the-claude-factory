@@ -25,8 +25,9 @@ export function replaceBlock(text, name, content) {
   const { start, end } = block(name)
   const i = text.indexOf(start)
   const j = text.indexOf(end)
-  if (i === -1 || j === -1 || j < i)
+  if (i === -1 || j === -1 || j < i) {
     throw new Error(`README.md is missing the ${start} … ${end} markers`)
+  }
   return `${text.slice(0, i + start.length)}\n${content}\n${text.slice(j)}`
 }
 

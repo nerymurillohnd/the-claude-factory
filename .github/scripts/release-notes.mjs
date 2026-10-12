@@ -15,11 +15,15 @@ import {
 } from './lib.mjs'
 
 const target = process.argv[2]
-if (!target) fail('Usage: release-notes.mjs <plugin-name|marketplace> [--tag]')
+if (!target) {
+  fail('Usage: release-notes.mjs <plugin-name|marketplace> [--tag]')
+}
 
 const isMarketplace = target === 'marketplace'
 const version = isMarketplace ? loadMarketplace().version : loadManifest(target)?.version
-if (!version) fail(`No version found for ${target}`)
+if (!version) {
+  fail(`No version found for ${target}`)
+}
 const tag = isMarketplace ? `marketplace--v${version}` : `${target}--v${version}`
 
 if (process.argv.includes('--tag')) {
@@ -29,7 +33,9 @@ if (process.argv.includes('--tag')) {
     isMarketplace ? join(ROOT, 'CHANGELOG.md') : join(pluginDir(target), 'CHANGELOG.md'),
   )
   const body = changelogSection(changelog, version)
-  if (!body) fail(`No CHANGELOG entry for ${tag}`)
+  if (!body) {
+    fail(`No CHANGELOG entry for ${tag}`)
+  }
   const install = isMarketplace
     ? '```bash\nclaude plugin marketplace update the-claude-factory\n```'
     : `\`\`\`bash\nclaude plugin update ${target}@the-claude-factory\n\`\`\``

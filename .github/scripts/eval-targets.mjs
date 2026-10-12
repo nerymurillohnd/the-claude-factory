@@ -29,20 +29,28 @@ export function changedTargets(base, head) {
 
 /** `all`: every plugin with evals. A name: that plugin, which must exist and have evals. */
 export function onlyTargets(only) {
-  if (only === 'all')
+  if (only === 'all') {
     return readdirSync(join(ROOT, 'plugins'), { withFileTypes: true })
       .filter((d) => d.isDirectory() && hasEvals(d.name))
       .map((d) => d.name)
       .sort()
-  if (!existsSync(pluginDir(only))) fail(`no plugin named "${only}"`)
-  if (!hasEvals(only)) fail(`${only} has no evals/ folder`)
+  }
+  if (!existsSync(pluginDir(only))) {
+    fail(`no plugin named "${only}"`)
+  }
+  if (!hasEvals(only)) {
+    fail(`${only} has no evals/ folder`)
+  }
   return [only]
 }
 
 if (isMain(import.meta.url)) {
   const [mode, ...args] = process.argv.slice(2)
-  if (mode === '--changed' && args.length === 2)
+  if (mode === '--changed' && args.length === 2) {
     console.log(JSON.stringify(changedTargets(args[0], args[1])))
-  else if (mode === '--only' && args.length === 1) console.log(JSON.stringify(onlyTargets(args[0])))
-  else fail('Usage: eval-targets.mjs --changed <base> <head> | --only <plugin|all>')
+  } else if (mode === '--only' && args.length === 1) {
+    console.log(JSON.stringify(onlyTargets(args[0])))
+  } else {
+    fail('Usage: eval-targets.mjs --changed <base> <head> | --only <plugin|all>')
+  }
 }

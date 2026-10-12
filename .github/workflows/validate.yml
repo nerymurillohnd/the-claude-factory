@@ -134,7 +134,7 @@ jobs:
         with:
           node-version-file: .nvmrc
       - name: Biome (format, lint, imports)
-        run: npx --yes "@biomejs/biome@${BIOME_VERSION}" ci .
+        run: npx --yes "@biomejs/biome@${BIOME_VERSION}" ci --error-on-warnings .
       - name: markdownlint
         run: npx --yes "markdownlint-cli2@${MARKDOWNLINT_CLI2_VERSION}"
       - name: actionlint

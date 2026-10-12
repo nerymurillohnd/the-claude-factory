@@ -32,14 +32,22 @@ export function checkVersionBump(base) {
   const byPlugin = new Map()
   for (const file of changed) {
     const m = file.match(/^plugins\/([^/]+)\/(.+)$/)
-    if (!m) continue
-    if (!byPlugin.has(m[1])) byPlugin.set(m[1], [])
+    if (!m) {
+      continue
+    }
+    if (!byPlugin.has(m[1])) {
+      byPlugin.set(m[1], [])
+    }
     byPlugin.get(m[1]).push(m[2])
   }
 
   for (const [name, files] of byPlugin) {
-    if (!existsSync(pluginDir(name))) continue // plugin removed: handled by renames / check-repo
-    if (files.every((f) => DOC_ONLY.has(f))) continue
+    if (!existsSync(pluginDir(name))) {
+      continue // plugin removed: handled by renames / check-repo
+    }
+    if (files.every((f) => DOC_ONLY.has(f))) {
+      continue
+    }
 
     let baseVersion = null
     try {
@@ -58,17 +66,24 @@ export function checkVersionBump(base) {
       continue
     }
     const changelog = readText(join(pluginDir(name), 'CHANGELOG.md'))
-    if (!changelogSection(changelog, version))
+    if (!changelogSection(changelog, version)) {
       errors.push(`plugins/${name}: CHANGELOG.md has no entry for ${version}`)
+    }
   }
   return { errors, checked: [...byPlugin.keys()] }
 }
 
 if (isMain(import.meta.url)) {
   const base = process.argv[2]
-  if (!base) fail('Usage: check-version-bump.mjs <base-ref>')
+  if (!base) {
+    fail('Usage: check-version-bump.mjs <base-ref>')
+  }
   const { errors, checked } = checkVersionBump(base)
-  for (const e of errors) console.error(`✖ ${e}`)
-  if (errors.length) process.exit(1)
+  for (const e of errors) {
+    console.error(`✖ ${e}`)
+  }
+  if (errors.length) {
+    process.exit(1)
+  }
   console.log(`✔ Version bumps OK (${checked.length ? checked.join(', ') : 'no plugin changes'})`)
 }
