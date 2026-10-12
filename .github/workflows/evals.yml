@@ -1,10 +1,13 @@
 name: Evals
 
-# Full eval suite of every plugin that ships one: both arms (with and without
-# the plugin), three runs per case. Authenticates with the CLAUDE_CODE_OAUTH_TOKEN
-# secret (`claude setup-token`), so runs count against that subscription's usage
-# limits. Runs when a pull request that changes a plugin's plugin.json is opened,
-# reopened or marked ready for review (not on every push), or by hand.
+# Full eval suite (both arms, three runs per case) of each plugin that ships one.
+# Evals are optional: a plugin without an evals/ folder is never run and never
+# fails this workflow. On a pull request it runs only the plugins with evals whose
+# plugin.json changed, one job each; by hand, one plugin or all of them.
+# Authenticates with the CLAUDE_CODE_OAUTH_TOKEN secret (`claude setup-token`),
+# so runs count against that subscription's usage limits. Runs when a pull
+# request that changes a plugin's plugin.json is opened, reopened or marked ready
+# for review (not on every push), or by hand.
 on:
   pull_request:
     types: [opened, reopened, ready_for_review]
@@ -46,12 +49,44 @@ jobs:
           if [[ -n "${CLAUDE_CODE_OAUTH_TOKEN}" ]]; then echo "present=true" >>"${GITHUB_OUTPUT}"
           else echo "present=false" >>"${GITHUB_OUTPUT}"; echo "::notice::CLAUDE_CODE_OAUTH_TOKEN is not set; evals skipped."; fi
 
+  # The plugins to evaluate, as a JSON array; empty when no plugin with evals changed.
+  targets:
+    name: Plugins to evaluate
+    runs-on: ubuntu-latest
+    outputs:
+      plugins: ${{ steps.pick.outputs.plugins }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - id: pick
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+          ONLY: ${{ inputs.plugin }}
+        run: |
+          if [[ "${GITHUB_EVENT_NAME}" == pull_request ]]; then
+            plugins=$(node .github/scripts/eval-targets.mjs --changed "${BASE}" "${HEAD}")
+          else
+            plugins=$(node .github/scripts/eval-targets.mjs --only "${ONLY:-all}")
+          fi
+          echo "plugins=${plugins}" >>"${GITHUB_OUTPUT}"
+          if [[ "${plugins}" == "[]" ]]; then echo "::notice::No plugin with evals changed; evals skipped."
+          else echo "::notice::Evaluating ${plugins}"; fi
+
   evals:
-    name: Plugin evals
-    needs: token
-    if: needs.token.outputs.present == 'true'
+    name: Plugin evals (${{ matrix.plugin }})
+    needs: [token, targets]
+    if: needs.token.outputs.present == 'true' && needs.targets.outputs.plugins != '[]'
     runs-on: ubuntu-latest
     timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        plugin: ${{ fromJSON(needs.targets.outputs.plugins) }}
     env:
       CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
     steps:
@@ -65,14 +100,14 @@ jobs:
           sudo apt-get install -y -qq bubblewrap socat
           npm install --global "@anthropic-ai/claude-code@${CLAUDE_CODE_VERSION}"
           claude --version
-      - name: Run each plugin's full suite
+      - name: Run the plugin's full suite
         env:
-          ONLY: ${{ inputs.plugin || 'all' }}
+          ONLY: ${{ matrix.plugin }}
         run: .github/scripts/run-evals.sh
       - name: Keep the results
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: eval-results
+          name: eval-results-${{ matrix.plugin }}
           path: eval-results/
           if-no-files-found: ignore

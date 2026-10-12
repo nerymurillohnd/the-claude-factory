@@ -40,10 +40,13 @@
 | 2026-10-12 | One ruff config: Nery's strict `ruff.toml` at the root (`ALL`, 100 cols, no `target-version`); `.github/scripts/ruff.toml` removed; CI ruff 0.17.0; every script has a shebang and `100755` | Nery's standard for all of Nery's repos |
 | 2026-10-12 | Biome 2.5.15 for JS/JSON: Nery's `biome.json` (from claude-essentials) at the root plus `json.formatter.expand: "always"`; shell style in `.editorconfig` `[[shell]]` (shfmt `-i 2 -s -bn -ci -sr`); CI actionlint runs shellcheck with `SHELLCHECK_OPTS=-o all -S style -x -a -P SCRIPTDIR` | Nery's standards for all of Nery's repos; the same shellcheck rules in CI (workflow blocks) and in `/verify` (scripts) |
 | 2026-10-12 | Maintenance scripts stay in Node, not Bash | JSON-heavy; Bash would need `jq`, macOS ships Bash 3.2 and BSD tools, Windows needs Git Bash |
+| 2026-10-12 | Evals are optional per plugin (Nery decides which plugins get a suite); CI runs only plugins with `evals/` whose `plugin.json` changed in the PR, one matrix job each (`eval-targets.mjs`); no required eval check on `main` | With many plugins, re-running unchanged suites wastes time, Actions minutes and Nery's plan |
 
 ## Status
 
-- Marketplace `0.1.0` released (`marketplace--v0.1.0`). Catalog on `main` empty; `skill-diagnostics` 0.1.0 lives on `feat/skill-diagnostics` (draft PR #1), merged only into Nery's local `main` (not pushed).
+- Marketplace `0.1.0` released (`marketplace--v0.1.0`); its 0.2.0 bump for the added plugin is pending (`/release marketplace`).
+- `skill-diagnostics` 0.1.0 merged to `main` (PR #1, squash `809cf90`) and released (`skill-diagnostics--v0.1.0`); 0.1.1 with the `@claude` review fixes is PR #3.
+- `main` has `claude.yml` (`@claude` mentions) and `claude-code-review.yml` (review on every PR), from PR #2.
 - CI green: Validate (policy + script tests, `claude plugin validate`, markdownlint + actionlint) and Release.
 - GitHub settings done: PRs Collaborators only, private vulnerability reporting, topics, 20 custom labels.
 
