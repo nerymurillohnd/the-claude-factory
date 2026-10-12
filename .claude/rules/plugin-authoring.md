@@ -39,6 +39,12 @@ paths:
   - Read arguments with `$ARGUMENTS` (or `$N`) rather than relying on the appended `ARGUMENTS:` line.
 - Audit our own skills with `/skill-diagnostics:audit`. The audit reports every verified finding; fix first those that change a verdict, findings or produced files. Re-audit after any rewrite: slimming can drop a load-bearing rule.
 - `context: fork` only for a self-contained task that needs no conversation history (the forked subagent doesn't see it).
+- Frontmatter must parse: Claude Code loads a skill with malformed YAML with empty metadata, so its description never matches. Validate every skills directory with `claude plugin validate` (v2.1.233+); `.github/scripts/validate-claude.sh` runs it on `.claude/` and on every plugin.
+- Measure triggering as a rate, never one prompt at a time: several realistic prompts, each an eval case with a `tool_used: Skill` grader, re-run after every description change (`.claude/rules/evals.md`, Trigger rate).
+- Keep the skill followed for the whole session (docs: skills, Claude stops following a skill):
+  - A rule that must hold every time goes in a hook, in the skill's `hooks` frontmatter or the plugin's `hooks/hooks.json`; instructions alone get skipped.
+  - Guidance that needs judgment is worded for the whole task ("after every edit", not "once").
+  - The most important instructions sit near the top of `SKILL.md`: after compaction Claude Code may keep only its start. After a compaction, invoke the skill again.
 - Generic for any user: no personal, company or language-specific assumptions.
 
 ## Hooks and scripts

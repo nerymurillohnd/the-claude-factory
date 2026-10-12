@@ -30,6 +30,11 @@ Write each case from the user's side: what someone who installed the plugin asks
 - Dry-check every fixture for free before a paid run: build it in a temp folder and run the plugin's own scripts on it. A fixture that trips the plugin is a plugin bug or a wrong fixture, found at no cost.
 - Prefer free deterministic graders (`regex`, `tool_used`, `tool_order`, `file_exists`). Use an `llm` judge only where the result needs judgment: each one costs 3 Opus calls per run.
 
+## Trigger rate
+
+- A skill's triggering is a rate: one case per realistic prompt (different wordings, no slash command, no skill name), each with a `tool_used: Skill` grader, plus prompts that must not trigger it (`min: 0`, `max: 0`, `arm: both`). Docs: skills, Skill not triggering.
+- Trigger cases only need the first tool call: keep `max_turns` low so they stay cheap, and tag them `trigger` so `--tag trigger` re-runs them after every description change.
+
 ## Pilot (local, no cost cap)
 
 ```bash
