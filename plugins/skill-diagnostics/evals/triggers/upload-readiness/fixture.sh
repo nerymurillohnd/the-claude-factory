@@ -2,7 +2,7 @@
 # Seeds a small, plausible skill for a trigger case.
 set -euo pipefail
 mkdir -p "skills/meeting-notes"
-cat >"skills/meeting-notes/SKILL.md" <<'SKILL'
+cat > "skills/meeting-notes/SKILL.md" << 'SKILL'
 ---
 name: meeting-notes
 description: Turns meeting notes into action items. Use when the user pastes meeting notes.

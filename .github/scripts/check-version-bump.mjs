@@ -4,55 +4,71 @@
 // Documentation-only edits (README.md, CHANGELOG.md [Unreleased]) do not reach users through
 // `claude plugin update`, so changes limited to README.md do not require a bump.
 
-import { execFileSync } from 'node:child_process';
-import { existsSync } from 'node:fs';
-import { join } from 'node:path';
-import { changelogSection, compareSemver, fail, isMain, loadManifest, pluginDir, readText, ROOT } from './lib.mjs';
+import { execFileSync } from 'node:child_process'
+import { existsSync } from 'node:fs'
+import { join } from 'node:path'
+import {
+  changelogSection,
+  compareSemver,
+  fail,
+  isMain,
+  loadManifest,
+  pluginDir,
+  ROOT,
+  readText,
+} from './lib.mjs'
 
-const DOC_ONLY = new Set(['README.md']);
+const DOC_ONLY = new Set(['README.md'])
 
 function git(args) {
-  return execFileSync('git', args, { cwd: ROOT, encoding: 'utf8' }).trim();
+  return execFileSync('git', args, { cwd: ROOT, encoding: 'utf8' }).trim()
 }
 
 export function checkVersionBump(base) {
-  const errors = [];
-  const changed = git(['diff', '--name-only', `${base}...HEAD`]).split('\n').filter(Boolean);
-  const byPlugin = new Map();
+  const errors = []
+  const changed = git(['diff', '--name-only', `${base}...HEAD`])
+    .split('\n')
+    .filter(Boolean)
+  const byPlugin = new Map()
   for (const file of changed) {
-    const m = file.match(/^plugins\/([^/]+)\/(.+)$/);
-    if (!m) continue;
-    if (!byPlugin.has(m[1])) byPlugin.set(m[1], []);
-    byPlugin.get(m[1]).push(m[2]);
+    const m = file.match(/^plugins\/([^/]+)\/(.+)$/)
+    if (!m) continue
+    if (!byPlugin.has(m[1])) byPlugin.set(m[1], [])
+    byPlugin.get(m[1]).push(m[2])
   }
 
   for (const [name, files] of byPlugin) {
-    if (!existsSync(pluginDir(name))) continue; // plugin removed: handled by renames / check-repo
-    if (files.every((f) => DOC_ONLY.has(f))) continue;
+    if (!existsSync(pluginDir(name))) continue // plugin removed: handled by renames / check-repo
+    if (files.every((f) => DOC_ONLY.has(f))) continue
 
-    let baseVersion = null;
+    let baseVersion = null
     try {
-      baseVersion = JSON.parse(git(['show', `${base}:plugins/${name}/.claude-plugin/plugin.json`])).version;
+      baseVersion = JSON.parse(
+        git(['show', `${base}:plugins/${name}/.claude-plugin/plugin.json`]),
+      ).version
     } catch {
-      continue; // new plugin: nothing to compare against
+      continue // new plugin: nothing to compare against
     }
-    const manifest = loadManifest(name);
-    const version = manifest?.version;
+    const manifest = loadManifest(name)
+    const version = manifest?.version
     if (!version || compareSemver(version, baseVersion) <= 0) {
-      errors.push(`plugins/${name}: files changed (${files.join(', ')}) but version is still ${baseVersion}. Run bump-version.mjs ${name} <level>.`);
-      continue;
+      errors.push(
+        `plugins/${name}: files changed (${files.join(', ')}) but version is still ${baseVersion}. Run bump-version.mjs ${name} <level>.`,
+      )
+      continue
     }
-    const changelog = readText(join(pluginDir(name), 'CHANGELOG.md'));
-    if (!changelogSection(changelog, version)) errors.push(`plugins/${name}: CHANGELOG.md has no entry for ${version}`);
+    const changelog = readText(join(pluginDir(name), 'CHANGELOG.md'))
+    if (!changelogSection(changelog, version))
+      errors.push(`plugins/${name}: CHANGELOG.md has no entry for ${version}`)
   }
-  return { errors, checked: [...byPlugin.keys()] };
+  return { errors, checked: [...byPlugin.keys()] }
 }
 
 if (isMain(import.meta.url)) {
-  const base = process.argv[2];
-  if (!base) fail('Usage: check-version-bump.mjs <base-ref>');
-  const { errors, checked } = checkVersionBump(base);
-  for (const e of errors) console.error(`✖ ${e}`);
-  if (errors.length) process.exit(1);
-  console.log(`✔ Version bumps OK (${checked.length ? checked.join(', ') : 'no plugin changes'})`);
+  const base = process.argv[2]
+  if (!base) fail('Usage: check-version-bump.mjs <base-ref>')
+  const { errors, checked } = checkVersionBump(base)
+  for (const e of errors) console.error(`✖ ${e}`)
+  if (errors.length) process.exit(1)
+  console.log(`✔ Version bumps OK (${checked.length ? checked.join(', ') : 'no plugin changes'})`)
 }

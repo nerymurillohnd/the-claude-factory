@@ -2,7 +2,7 @@
 # Seeds a small, plausible skill for a trigger case.
 set -euo pipefail
 mkdir -p "skills/report-builder"
-cat >"skills/report-builder/SKILL.md" <<'SKILL'
+cat > "skills/report-builder/SKILL.md" << 'SKILL'
 ---
 name: report-builder
 description: Builds a weekly status report from a task list. Use when the user asks for a status report.

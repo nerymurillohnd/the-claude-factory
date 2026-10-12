@@ -1,9 +1,11 @@
 ---
 name: verify
-description: Runs every quality gate of The Claude Factory repository (script tests, policy checks, catalog sync, claude plugin validate --strict, markdownlint, actionlint) and reports raw results. Use before every commit, before a release, or when asked to verify, validate or check the repo.
+description: Runs every quality gate of The Claude Factory repository (script tests, policy checks, catalog sync, claude plugin validate --strict, Biome, shellcheck, shfmt, markdownlint, actionlint) and reports raw results. Use before every commit, before a release, or when asked to verify, validate or check the repo.
 allowed-tools:
   - "Bash(node *)"
   - "Bash(npx --yes markdownlint-cli2*)"
+  - "Bash(npx --yes @biomejs/biome@2.5.15 check .)"
+  - "Bash(git ls-files -z *)"
   - "Bash(.github/scripts/validate-claude.sh)"
   - "Bash(git diff*)"
   - "Bash(git status*)"
@@ -40,13 +42,26 @@ Run every gate from the repository root. Show the **raw output** of each command
    node .github/scripts/check-version-bump.mjs origin/main
    ```
 
-5. Markdown lint:
+5. JavaScript and JSON format, lint and imports (config in `biome.json`; fix with `--write`, never by loosening the config):
+
+   ```bash
+   npx --yes @biomejs/biome@2.5.15 check .
+   ```
+
+6. Shell scripts, with the shell style in `.editorconfig` and shellcheck's optional checks:
+
+   ```bash
+   git ls-files -z '*.sh' | xargs -0 shellcheck -o all -S style -x -a -P SCRIPTDIR
+   git ls-files -z '*.sh' | xargs -0 shfmt -d
+   ```
+
+7. Markdown lint:
 
    ```bash
    npx --yes markdownlint-cli2@0.23.3
    ```
 
-6. Workflow lint, only when `.github/workflows/` changed: run `actionlint` if installed; otherwise say CI will run it.
+8. Workflow lint, only when `.github/workflows/` changed: run `SHELLCHECK_OPTS='-o all -S style -x -a -P SCRIPTDIR' actionlint` if installed; otherwise say CI will run it.
 
 ## Report
 

@@ -4,9 +4,9 @@
 # template and SKILL.md all treat as supported.
 set -euo pipefail
 d=skills/invoice-pack
-mkdir -p "$d/references" "$d/assets" "$d/scripts"
+mkdir -p "${d}/references" "${d}/assets" "${d}/scripts"
 
-cat >"$d/SKILL.md" <<'EOF'
+cat > "${d}/SKILL.md" << 'EOF'
 ---
 name: invoice-pack
 description: Renders a customer invoice in the customer's language from an order file, with tax and currency rules applied. Use when the user asks to create, render or send an invoice for an order.
@@ -33,7 +33,7 @@ Input: the path of one order JSON file. No path: ask for it.
 5. Reply with the path of `invoice.md`, the language used, and the grand total.
 EOF
 
-cat >"$d/references/countries.md" <<'EOF'
+cat > "${d}/references/countries.md" << 'EOF'
 # Countries
 
 | Country | Language code | Currency |
@@ -51,7 +51,7 @@ cat >"$d/references/countries.md" <<'EOF'
 A country not in this table: use `en` and USD, and say so in the reply.
 EOF
 
-cat >"$d/references/tax-rules.md" <<'EOF'
+cat > "${d}/references/tax-rules.md" << 'EOF'
 # Tax rules
 
 - United States and Canada: no tax line; the order's `tax` field is shown as given.
@@ -62,7 +62,7 @@ cat >"$d/references/tax-rules.md" <<'EOF'
 Round each tax line half up to two decimals before adding it to the total.
 EOF
 
-cat >"$d/references/currency.md" <<'EOF'
+cat > "${d}/references/currency.md" << 'EOF'
 # Currency formats
 
 | Currency | Example |
@@ -74,25 +74,38 @@ cat >"$d/references/currency.md" <<'EOF'
 EOF
 
 for lang in en fr de es; do
-  case $lang in
-    en) title="Invoice"; total="Total due" ;;
-    fr) title="Facture"; total="Total à payer" ;;
-    de) title="Rechnung"; total="Gesamtbetrag" ;;
-    es) title="Factura"; total="Total a pagar" ;;
+  case ${lang} in
+    en)
+      title="Invoice"
+      total="Total due"
+      ;;
+    fr)
+      title="Facture"
+      total="Total à payer"
+      ;;
+    de)
+      title="Rechnung"
+      total="Gesamtbetrag"
+      ;;
+    es)
+      title="Factura"
+      total="Total a pagar"
+      ;;
+    *) exit 1 ;;
   esac
-  cat >"$d/assets/invoice-$lang.md" <<EOF
-# $title {{number}}
+  cat > "${d}/assets/invoice-${lang}.md" << EOF
+# ${title} {{number}}
 
 {{customer}}
 {{date}}
 
 {{lines}}
 
-$total: {{total}}
+${total}: {{total}}
 EOF
 done
 
-cat >"$d/scripts/render.py" <<'EOF'
+cat > "${d}/scripts/render.py" << 'EOF'
 #!/usr/bin/env python3
 """Render an invoice from an order JSON file and a language template.
 
@@ -158,7 +171,7 @@ if __name__ == "__main__":
     sys.exit(main(sys.argv[1:]))
 EOF
 
-cat >"$d/scripts/check_totals.py" <<'EOF'
+cat > "${d}/scripts/check_totals.py" << 'EOF'
 #!/usr/bin/env python3
 """Print OK when an invoice file has a total line, or what is missing."""
 
@@ -169,4 +182,4 @@ text = Path(sys.argv[1]).read_text(encoding="utf-8")
 labels = ("Total due:", "Total à payer:", "Gesamtbetrag:", "Total a pagar:")
 print("OK" if any(label in text for label in labels) else "missing total line")
 EOF
-chmod 755 "$d/scripts/render.py" "$d/scripts/check_totals.py"
+chmod 755 "${d}/scripts/render.py" "${d}/scripts/check_totals.py"

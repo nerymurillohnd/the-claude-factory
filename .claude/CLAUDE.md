@@ -45,6 +45,9 @@ node --test ".github/scripts/tests/*.test.mjs"
 node .github/scripts/check-repo.mjs
 node .github/scripts/catalog.mjs --check
 .github/scripts/validate-claude.sh
+npx --yes @biomejs/biome@2.5.15 check .
+git ls-files -z '*.sh' | xargs -0 shellcheck -o all -S style -x -a -P SCRIPTDIR
+git ls-files -z '*.sh' | xargs -0 shfmt -d
 npx --yes markdownlint-cli2@0.23.3
 ```
 

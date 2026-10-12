@@ -2,7 +2,7 @@
 # Seeds a small, plausible skill for a trigger case.
 set -euo pipefail
 mkdir -p "skills/csv-summary"
-cat >"skills/csv-summary/SKILL.md" <<'SKILL'
+cat > "skills/csv-summary/SKILL.md" << 'SKILL'
 ---
 name: csv-summary
 description: Summarizes a CSV file in five lines. Use when the user asks what a CSV contains.
@@ -13,4 +13,4 @@ description: Summarizes a CSV file in five lines. Use when the user asks what a 
 3. Reply with the result and nothing else.
 SKILL
 mkdir -p .claude-plugin
-printf '{\n  "name": "data-helpers",\n  "version": "0.1.0",\n  "description": "Small helpers for CSV files."\n}\n' >.claude-plugin/plugin.json
+printf '{\n  "name": "data-helpers",\n  "version": "0.1.0",\n  "description": "Small helpers for CSV files."\n}\n' > .claude-plugin/plugin.json
