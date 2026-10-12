@@ -25,6 +25,7 @@ Rules learned the hard way. Follow them; add one line per new lesson.
 - In a Cowork task, a plugin skill ran its Python 3 script by path and launched plugin agents (observed 2026-10-12, skill-diagnostics). Still undocumented, so keep runtimes in README Requirements.
 - A skill's `allowed-tools` grant ends at the user's next message: a skill that asks the user something mid-run must invoke itself again to get its pre-approvals back.
 - Fixing audit findings can plant new ones ("and that ran" made the verdict rule ambiguous): re-run the audit on the fix before calling it done.
+- Claude Code's Glob lists gitignored files by default (Grep skips them); users opt out with `CLAUDE_CODE_GLOB_NO_IGNORE=false`. A plugin that lists with Glob gets full coverage and leaves the limit to the user.
 - A copied (cached) install for local testing: a local marketplace whose entry uses `{"source":"git-subdir","url":"file:///abs/repo.git","path":"plugins/<name>"}`; a relative-path source loads in place instead. Isolate with `HOME=<tmp>` or `CLAUDE_CONFIG_DIR`.
 
 ## GitHub

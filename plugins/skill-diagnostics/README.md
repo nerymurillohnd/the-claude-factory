@@ -217,6 +217,13 @@ These prompts are expected, and the audit only reads:
 </details>
 
 <details>
+<summary><b>The report lists files as "not inspected".</b></summary>
+
+The audit reads every file of the skill, hidden files included, and excludes nothing on its own. When your settings or hooks block a file, for example a `Read` deny rule, the audit respects the block and lists the file as not inspected, with the reason. A skill script the skill says to run without reading is also listed, as *run, not read*.
+
+</details>
+
+<details>
 <summary><b>The report says "checker not run".</b></summary>
 
 The structure checker needs Python 3.9 or later as `python3` on your `PATH` (on Windows, with Git for Windows). The rest of the audit still ran; install Python and run the audit again to add the checker's findings. Without Python, Claude Code also shows a hook error after each `SKILL.md` write; installing Python removes it.
