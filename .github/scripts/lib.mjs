@@ -2,7 +2,7 @@
 // Shared helpers for the repository's maintenance scripts.
 // Zero dependencies: runs on the Node.js version pinned in CI (24 LTS) and locally on Node ≥ 22.
 
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, realpathSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
@@ -135,8 +135,10 @@ export function changelogSection(text, version) {
 }
 
 /** True when the calling module is the script being executed (not imported). */
+/** True when the module is the script Node started. import.meta.url is the real path, so resolve
+ *  symlinks in argv[1] too (macOS temp folders live under the /var → /private/var link). */
 export function isMain(metaUrl) {
-  return process.argv[1] !== undefined && metaUrl === pathToFileURL(resolve(process.argv[1])).href;
+  return process.argv[1] !== undefined && metaUrl === pathToFileURL(realpathSync(process.argv[1])).href;
 }
 
 export function fail(message) {
