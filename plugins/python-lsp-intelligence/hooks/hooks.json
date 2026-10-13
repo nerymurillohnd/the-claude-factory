@@ -1,0 +1,36 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|NotebookEdit|Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3",
+            "args": [
+              "${CLAUDE_PLUGIN_ROOT}/hooks/check.py"
+            ],
+            "timeout": 60,
+            "statusMessage": "python-lsp-intelligence: ruff check --fix, ruff format and basedpyright on the changed Python files"
+          }
+        ]
+      }
+    ],
+    "PostToolUseFailure": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3",
+            "args": [
+              "${CLAUDE_PLUGIN_ROOT}/hooks/check.py"
+            ],
+            "timeout": 60,
+            "statusMessage": "python-lsp-intelligence: ruff check --fix, ruff format and basedpyright on the changed Python files"
+          }
+        ]
+      }
+    ]
+  }
+}

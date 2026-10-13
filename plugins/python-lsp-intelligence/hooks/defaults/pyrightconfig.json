@@ -1,0 +1,18 @@
+{
+  "typeCheckingMode": "recommended",
+  "failOnWarnings": true,
+  "strictListInference": true,
+  "strictSetInference": true,
+  "strictDictionaryInference": true,
+  "strictParameterNoneValue": true,
+  "strictGenericNarrowing": true,
+  "reportMissingParameterType": "error",
+  "reportAny": "error",
+  "reportDeprecated": "error",
+  "reportImplicitStringConcatenation": "error",
+  "reportPrivateLocalImportUsage": "error",
+  "reportUnusedImport": "error",
+  "reportUnusedVariable": "error",
+  "reportPrivateUsage": "error",
+  "reportMissingTypeStubs": "warning"
+}
