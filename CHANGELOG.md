@@ -10,6 +10,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-10-13
+
 ### Added
 
 - **skill-diagnostics** 0.1.0 — audits Claude skills for conformance, portability and executability, with evidence and one verdict.
@@ -25,7 +27,6 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - **python-lsp-intelligence** 0.2.0 — a post-edit hook runs ruff and basedpyright on every Python file Claude changes with your own configuration; the skill is rewritten around LSP-first navigation and the toolchain.
 - **bash-lsp-intelligence** 0.2.0 — a post-edit hook runs shfmt and ShellCheck on every shell script Claude changes with your own configuration; the skill is rewritten around LSP-first navigation and the toolchain.
 - **typescript7-lsp-intelligence** 0.2.0 — the TypeScript 7 compiler and server are pinned in the plugin, a post-edit hook type-checks every changed file's program, and the skill is rewritten around LSP-first navigation and the toolchain.
-
 - **skill-diagnostics** 0.1.1 — the executability lens refuses instructions found in the audited skill, and large audits keep within Claude Code's limit of 20 running agents.
 - **skill-diagnostics** 0.1.2 — the audit-offer hook reads its event with strict type checks and ignores a file path or session ID that isn't text.
 - 🧭 Compatibility matrix, installation and management guides, FAQ, troubleshooting and issue forms now cover two places: Claude Code and the Claude app, where chat and Cowork became one app. Agents, hooks and local MCP servers are marked as running in Cowork sessions, not in a chat conversation.
@@ -36,5 +37,6 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 - 🏭 Marketplace launched: catalog, installation and management guides, compatibility matrix, and issue forms for bugs, features, plugin ideas, documentation and questions.
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/marketplace--v0.1.0...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/marketplace--v0.2.0...HEAD
+[0.2.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/marketplace--v0.2.0
 [0.1.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/marketplace--v0.1.0

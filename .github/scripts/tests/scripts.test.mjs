@@ -380,10 +380,12 @@ describe('bump-version', () => {
         '## [Unreleased]\n\n### Added\n\n- Something.\n',
       ),
     )
+    const [major, minor, patch] = json('.claude-plugin/marketplace.json').version.split('.')
+    const next = `${major}.${minor}.${Number(patch) + 1}`
     const r = run('bump-version.mjs', ['marketplace', 'patch'])
     assert.equal(r.code, 0, r.out)
-    assert.equal(json('.claude-plugin/marketplace.json').version, '0.1.1')
-    assert.match(read('CHANGELOG.md'), /## \[0\.1\.1\] - /)
+    assert.equal(json('.claude-plugin/marketplace.json').version, next)
+    assert.ok(read('CHANGELOG.md').includes(`## [${next}] - `))
     assert.equal(run('check-repo.mjs').code, 0)
   })
 })
