@@ -10,6 +10,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+### Added
+
+- **prompt-writer** 0.1.0 — turns a goal, idea or draft into one copy-ready prompt tuned to the target Claude model and effort, with the recommended setup to run it.
+
 ## [0.2.0] - 2026-10-13
 
 ### Added
