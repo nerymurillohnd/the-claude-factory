@@ -19,7 +19,7 @@ Run every gate from the repository root. Show the **raw output** of each command
 
 ## Steps
 
-1. Script tests:
+1. Script tests (the LSP hook tests need `shfmt`, `shellcheck`, `ruff`, `basedpyright` on `PATH` and, once, `npm ci --ignore-scripts --prefix plugins/typescript6-lsp-intelligence` and the same for `typescript7-lsp-intelligence`; a missing tool skips its cases, so read the `skipped` count):
 
    ```bash
    node --test ".github/scripts/tests/*.test.mjs"
@@ -62,6 +62,8 @@ Run every gate from the repository root. Show the **raw output** of each command
    ```bash
    python3 -m unittest discover -s .github/scripts/tests/skill-diagnostics
    .github/scripts/tests/skill-diagnostics/by_path.sh
+   python3 -m unittest discover -s .github/scripts/tests/python-lsp-intelligence
+   .github/scripts/tests/python-lsp-intelligence/by_path.sh
    uvx ruff@0.17.0 check plugins .github/scripts
    uvx ruff@0.17.0 format --check plugins .github/scripts
    git ls-files -z 'plugins/*.py' | xargs -0 uvx --from mypy==1.18.2 mypy --python-version 3.9 --strict
