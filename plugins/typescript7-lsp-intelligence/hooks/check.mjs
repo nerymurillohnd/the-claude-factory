@@ -228,7 +228,7 @@ function display(path, base) {
     return path
   }
   const rel = relative(base, path)
-  return rel.startsWith('..') ? path : rel
+  return rel.startsWith('..') ? path : rel.split(sep).join('/')
 }
 
 // Sort tsc's error lines: edited files first, then the rest of the program, config errors last.

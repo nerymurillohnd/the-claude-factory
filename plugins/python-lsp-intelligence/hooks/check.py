@@ -324,7 +324,7 @@ def display(path: Path, base: Path | None) -> str:
     """Path relative to base when it lies under it, for short messages."""
     if base is not None:
         try:
-            return str(path.relative_to(base))
+            return path.relative_to(base).as_posix()
         except ValueError:
             return str(path)
     return str(path)

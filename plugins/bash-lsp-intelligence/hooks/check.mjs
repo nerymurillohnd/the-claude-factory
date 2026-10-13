@@ -321,7 +321,7 @@ function display(path, base) {
     return path
   }
   const rel = relative(base, path)
-  return rel.startsWith('..') ? path : rel
+  return rel.startsWith('..') ? path : rel.split(sep).join('/')
 }
 
 function report(checked, results, unchecked, base) {
