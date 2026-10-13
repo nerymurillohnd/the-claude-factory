@@ -1,4 +1,0 @@
-// Fixture: clean control that every check must pass.
-export function add(left: number, right: number): number {
-  return left + right;
-}

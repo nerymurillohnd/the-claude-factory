@@ -39,6 +39,12 @@
       "category": "testing"
     },
     {
+      "name": "typescript6-lsp-intelligence",
+      "source": "./plugins/typescript6-lsp-intelligence",
+      "description": "Gives Claude Code a pinned TypeScript 6 language server for TypeScript and JavaScript, checks every file Claude edits with the matching compiler, and teaches Claude to navigate by symbol and fix compiler findings without unsafe assertions or suppressions.",
+      "category": "language-support"
+    },
+    {
       "name": "typescript7-lsp-intelligence",
       "source": "./plugins/typescript7-lsp-intelligence",
       "description": "Gives Claude Code the native TypeScript 7 language server for TypeScript and JavaScript, plus a skill that teaches Claude to check which program owns a file, fix compiler findings without unsafe assertions or suppressions, and verify every change with evidence.",

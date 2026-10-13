@@ -16,7 +16,8 @@
       "!!.claude/worktrees",
       "!!.superpowers",
       "!.claude/templates/plugin/plugin.json",
-      "!!**/tsconfig.json"
+      "!!**/tsconfig.json",
+      "!!**/package-lock.json"
     ],
     "maxSize": 1048576
   },
