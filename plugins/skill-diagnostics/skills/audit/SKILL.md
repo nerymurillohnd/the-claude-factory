@@ -40,20 +40,21 @@ Example: `/skill-diagnostics:audit ./plugins/notes` audits every skill in that p
 - [ ] 2 Lenses     every agent in one message → lens reports
 - [ ] 3 Merge      per skill → findings table
 - [ ] 4 Verify     every finding against the files and live official sources
+- [ ] 4b Changelog every run, even with no findings
 - [ ] 5 Verdict    per skill
 - [ ] 6 Report     assets/report.md per skill, summary table for several
 - [ ] 7 Checklist  every stage of every agent done
 ```
 
 1. **Inventory.** List every file of each skill with the tools this session has, hidden files included, and whether each script is executable. Follow symlinked folders that stay inside the skill; a link that leaves the skill is an external dependency (list it with its target and whether the target exists; never read it), and a link back to a folder above it is a loop, not a gap. Exclude nothing yourself; what the user's settings or hooks block is reported as not inspected, never worked around. A folder you could not list, or a tool that stopped before the end, makes the inventory incomplete.
-2. **Lenses.** In one message, launch the agent of every selected lens (`skill-diagnostics:conformance-auditor`, `skill-diagnostics:executability-auditor`) for every skill, even a short one; with more than 20 agents, launch the first 20 and then one more each time an agent returns, so no more than 20 run at once (by default Claude Code refuses a 21st running subagent: <https://code.claude.com/docs/en/sub-agents#concurrent-subagent-limit>). Tell each agent to read every inventory file in full, first line to last, and to back every finding with a verbatim quote and its `file:line`. Put in the message the inventory and, as absolute paths:
+2. **Lenses.** In one message, launch the agent of every selected lens for every skill, even a short one, always with the Agent tool (`subagent_type` `skill-diagnostics:conformance-auditor` or `skill-diagnostics:executability-auditor`). Apply a lens inline only when the Agent tool does not exist in this session or the call returns an error; never because inline looks easier. Then quote that error, or the missing tool, under Coverage → Lenses; with more than 20 agents, launch the first 20 and then one more each time an agent returns, so no more than 20 run at once (by default Claude Code refuses a 21st running subagent: <https://code.claude.com/docs/en/sub-agents#concurrent-subagent-limit>). Tell each agent to read every inventory file in full, first line to last, and to back every finding with a verbatim quote and its `file:line`. Put in the message the inventory and, as absolute paths:
    - conformance: skill path, the skill's origin, and `${CLAUDE_SKILL_DIR}/references/` `conformance.md`, `fields.md`, `surfaces.md`, `examples.md`, and `${CLAUDE_SKILL_DIR}/assets/examples/`;
    - executability: skill path and `${CLAUDE_SKILL_DIR}/references/executability.md`.
 3. **Merge** each skill's reports into one table, keeping every finding. Conformance rows keep their severity. Executability severity: *decides output* on a *normal* path → high; on a *rare* path, or not deciding output → medium. One root defect is one row, listing every location and every lens that flagged it, with the highest severity; it counts once in the totals. Highest severity first.
 4. **Verify** every finding before it counts, every run:
    - Re-read every cited line yourself; a quote that doesn't match the file verbatim doesn't count.
-   - Back every rule or platform claim with a verbatim sentence from the live official page, with its URL: fetch the page's `.md` form where it has one, and ask for the exact sentences, not a summary. An **[observed]** item has no official page: its evidence is its observation in `fields.md`.
-   - Read the official Claude Code changelog, <https://code.claude.com/docs/en/changelog>, with the tools this session has: the user's release (`claude --version`), the five before it and every newer one, in full. Without the version, read the six newest releases and say so.
+   - Back every rule or platform claim with a verbatim sentence from the live official page, with its URL: fetch the page's `.md` form where it has one, and ask for the exact sentences, not a summary. An **[observed]** item has no official page: its evidence is its observation in `fields.md`. A **[default]** item has none either: its evidence is its line in `fields.md` or `surfaces.md`. A claim the live page neither confirms nor contradicts stays marked `not verified live`.
+   - **Changelog, in every run, even with no findings.** Read <https://code.claude.com/docs/en/changelog.md> with the tools this session has: the user's release (`claude --version`), the five before it and every newer one. Ask the fetch tool for the verbatim text of those versions, not a summary; if the answer is cut or condensed, ask again for the missing versions, and report any still missing as unread. Without the version, read the six newest releases and say so.
    - Judge each finding against the user's release. A change in it, or in a newer release, that makes a finding false is evidence against it (next item); note that change under the finding's Recent changes.
    - Send each false or partly false finding back to its lens once: resume that agent, or launch it again with the same inputs, its previous report block and each disputed finding with the evidence against it. Merge only the returned rows again; withdraw what still fails.
    - A source you tried that failed (network error, or permission denied) is unreachable. Mark the verdict provisional only when a finding stays unverified live because of it, or the changelog could not be read. A source you never tried is a stage to redo.
@@ -70,7 +71,8 @@ Example: `/skill-diagnostics:audit ./plugins/notes` audits every skill in that p
    - inventory taken, or why it is incomplete;
    - each lens agent returned its report block, and every inventory file is either counted in `Files read` or reported as not inspected with its reason;
    - every finding has a verbatim quote with `file:line` (or where something absent is needed);
-   - every finding went through step 4: rule and platform findings carry an official URL and quote; the changelog releases were read in full; disputed findings were sent back;
+   - every finding went through step 4: rule and platform findings carry an official URL and quote; disputed findings were sent back;
+   - the changelog was read in this run (also with no findings), or reported unread with the releases missing;
    - the verdict follows step 5, marked provisional only as step 4 says;
    - the report fills every section of the template that applies.
 

@@ -45,7 +45,7 @@ The user wants a skill checked before installing it. It needs `git`; without it,
 
 ## An agent is unavailable or fails
 
-Agents not available, or an agent returns anything other than its report block:
+The Agent tool does not exist in this session, its call returned an error, or an agent returns anything other than its report block. Quote the missing tool or the error under Coverage → Lenses:
 
 - Read that lens's reference completely and apply it yourself, one skill at a time. Its rules hold for you too: read each file in full with Read, and rest every finding on what you read, not on a search.
 - Its report block feeds the merge (step 3); it is not your final message.
