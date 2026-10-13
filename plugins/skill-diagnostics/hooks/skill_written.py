@@ -16,10 +16,30 @@ import os
 from pathlib import Path
 import sys
 import time
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 MODES = ("suggest", "run", "off")
 DEFAULT_MODE = "suggest"
 STATE_MAX_AGE = 30 * 24 * 3600  # seconds; older per-session state files are removed
+
+
+class JsonObject(dict[str, object]):
+    """A decoded JSON object: the decoder builds every object as this type."""
+
+
+_decode: Callable[[str], object] = json.JSONDecoder(object_hook=JsonObject).decode
+
+
+def text_at(value: object, *keys: str) -> str:
+    """Return the string under keys in nested JSON objects, or "" when absent or not a string."""
+    for key in keys:
+        if not isinstance(value, JsonObject):
+            return ""
+        value = value.get(key)
+    return value if isinstance(value, str) else ""
 
 
 def message(mode: str, skill_dir: str) -> str:
@@ -68,7 +88,7 @@ def already_notified(data_dir: str, session: str, skill_dir: str) -> bool:
     if skill_dir in seen:
         return True
     with log.open("a", encoding="utf-8") as handle:
-        handle.write(skill_dir + "\n")
+        _ = handle.write(skill_dir + "\n")
     return False
 
 
@@ -79,9 +99,8 @@ def main() -> int:
         mode = DEFAULT_MODE
     if mode == "off":
         return 0
-    event = json.load(sys.stdin)
-    file_path = str(event.get("tool_input", {}).get("file_path", ""))
-    path = Path(file_path)
+    event = _decode(sys.stdin.read())
+    path = Path(text_at(event, "tool_input", "file_path"))
     if path.name != "SKILL.md":
         return 0
     skill_dir = str(Path(os.path.normpath(path.absolute())).parent)
@@ -96,7 +115,7 @@ def main() -> int:
     if any(inside(normalized, folder) for folder in managed) or inside(normalized, plugin_root):
         return 0
     if already_notified(
-        os.environ.get("CLAUDE_PLUGIN_DATA", ""), str(event.get("session_id", "")), skill_dir
+        os.environ.get("CLAUDE_PLUGIN_DATA", ""), text_at(event, "session_id"), skill_dir
     ):
         return 0
     output = {
@@ -105,7 +124,7 @@ def main() -> int:
             "additionalContext": message(mode, skill_dir),
         }
     }
-    sys.stdout.write(json.dumps(output) + "\n")
+    _ = sys.stdout.write(json.dumps(output) + "\n")
     return 0
 
 
