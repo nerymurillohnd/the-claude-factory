@@ -5,7 +5,7 @@ description: Navigates TypeScript and JavaScript by symbol through the native Ty
 
 # TypeScript and JavaScript code intelligence (TypeScript 7)
 
-**After every Edit or Write of a `.ts`, `.tsx`, `.mts`, `.cts`, `.js`, `.jsx`, `.mjs` or `.cjs` file, run `node "${CLAUDE_PLUGIN_ROOT}/node_modules/typescript/bin/tsc" --noEmit -p <nearest tsconfig.json>` yourself and fix what it reports before the next step.** The TypeScript 7 server answers navigation requests but pushes no diagnostics after edits, so no `Found N new diagnostic issues` line will ever appear for these files: silence means unchecked, not clean.
+The TypeScript 7 server answers navigation requests but pushes no diagnostics after edits, so no `Found N new diagnostic issues` line ever appears for `.ts`, `.tsx`, `.mts`, `.cts`, `.js`, `.jsx`, `.mjs` or `.cjs` files: silence means unchecked, not clean. To check a whole program, or a caller in another file, run the plugin's compiler yourself: `node "${CLAUDE_PLUGIN_ROOT}/node_modules/typescript/bin/tsc" --noEmit -p <tsconfig.json>`.
 
 Work with the language server first and the toolchain second. Nothing here mentions how the project is checked automatically; run every check yourself when the task calls for it.
 
@@ -54,7 +54,7 @@ Copy this checklist into your working notes and tick each item:
 
 ## Gotchas (verified on fixtures)
 
-- **The TypeScript 7 server reports no diagnostics after edits** (it serves pull diagnostics only). The compiler run at the top of this skill is the only type check you get; run it on each program the change touches, not only on the edited file's.
+- **The TypeScript 7 server reports no diagnostics after edits** (it serves pull diagnostics only). When you need the compiler's view of a change, run the command at the top of this skill on each program the change touches, not only on the edited file's.
 - **Only loaded projects are searched.** Callers in another `tsconfig` project, or in a file no `tsconfig` includes, are missing and the result is stable across repeats, so the warm-up check passes. `hover` one file of each other project first, then re-run `findReferences`.
 - **`.astro`, `.svelte`, `.vue` and `.mdx` are invisible** to the server. Grep them before any rename or deletion.
 - **Aliases and barrels are followed** (`import { f as g } from "./index"` lists the calls to `g`), so the reference list is the TypeScript-side must-change set.

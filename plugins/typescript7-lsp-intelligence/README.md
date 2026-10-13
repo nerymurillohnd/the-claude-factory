@@ -41,7 +41,7 @@
 | :-- | :-- | :-- | :-- |
 | 🧠 LSP server | `typescript` | Starts the pinned TypeScript 7 server (`tsc --lsp --stdio`) for `.ts`, `.tsx`, `.mts`, `.cts`, `.js`, `.jsx`, `.mjs` and `.cjs` files | Automatically when Claude opens or edits one of those files |
 | 🪝 Hook | `PostToolUse` · `PostToolUseFailure` | Runs the pinned `tsc --noEmit` on the program of each TypeScript or JavaScript file an Edit, Write or Bash call changed | Automatically after each of those tool calls |
-| 🎯 Skill | `typescript7-lsp-intelligence:typescript7-lsp-intelligence` | Teaches Claude to run the compiler after every edit (the TypeScript 7 server pushes no diagnostics), navigate with the language server first, trust its results only after five checks, and work with `tsc` the way your project configures it | Automatically when you work on TypeScript or JavaScript, or `/typescript7-lsp-intelligence:typescript7-lsp-intelligence` |
+| 🎯 Skill | `typescript7-lsp-intelligence:typescript7-lsp-intelligence` | Teaches Claude that the TypeScript 7 server pushes no diagnostics and how to run the compiler on a whole program or a caller in another file, to navigate with the language server first, trust its results only after five checks, and work with `tsc` the way your project configures it | Automatically when you work on TypeScript or JavaScript, or `/typescript7-lsp-intelligence:typescript7-lsp-intelligence` |
 
 ## ✅ Requirements
 
@@ -190,9 +190,9 @@ Run `/reload-plugins`, then type `/typescript7-lsp-intelligence:` to list its sk
 </details>
 
 <details>
-<summary><b>Why does Claude run <code>tsc</code> itself after every edit?</b></summary>
+<summary><b>No <code>Found N new diagnostic issues</code> line appears for TypeScript files. Is the server working?</b></summary>
 
-The native TypeScript 7 server answers navigation requests but doesn't push diagnostics after edits, so the usual `Found N new diagnostic issues` line never appears for these files. The hook and the skill cover that: the hook checks each edit, and the skill tells Claude to run the compiler on every program a change touches.
+Yes. The native TypeScript 7 server answers navigation requests but doesn't push diagnostics after edits, so that line never appears for these files. Type errors reach Claude through the hook's check of each edit instead, and the skill teaches Claude to run the compiler itself when it needs a whole program or a caller in another file checked.
 
 </details>
 

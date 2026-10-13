@@ -52,7 +52,7 @@ Copy this checklist into your working notes and tick each item:
 
 ## Gotchas (verified on fixtures)
 
-- **Diagnostics after each edit cover the edited file only.** A caller you broke elsewhere surfaces only when you run `node "${CLAUDE_PLUGIN_ROOT}/node_modules/typescript/bin/tsc" --noEmit -p <tsconfig.json>` on its program; do that after every change.
+- **Diagnostics after each edit cover the edited file only.** To check a whole program, or a caller in another file, run the plugin's compiler yourself: `node "${CLAUDE_PLUGIN_ROOT}/node_modules/typescript/bin/tsc" --noEmit -p <tsconfig.json>` on that program.
 - **`prepareCallHierarchy` then `incomingCalls` works here**; module-level calls appear as the module.
 - **Only loaded projects are searched.** Callers in another `tsconfig` project, or in a file no `tsconfig` includes, are missing and the result is stable across repeats, so the warm-up check passes. `hover` one file of each other project first, then re-run `findReferences`.
 - **`.astro`, `.svelte`, `.vue` and `.mdx` are invisible** to the server. Grep them before any rename or deletion.
