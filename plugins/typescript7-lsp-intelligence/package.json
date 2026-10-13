@@ -1,0 +1,8 @@
+{
+  "name": "typescript7-lsp-intelligence",
+  "private": true,
+  "description": "Pins the TypeScript 7 compiler and language server that this Claude Code plugin runs.",
+  "dependencies": {
+    "typescript": "7.0.2"
+  }
+}

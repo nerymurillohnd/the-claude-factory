@@ -6,7 +6,15 @@
 
 import assert from 'node:assert/strict'
 import { spawnSync } from 'node:child_process'
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, utimesSync, writeFileSync } from 'node:fs'
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  utimesSync,
+  writeFileSync,
+} from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { afterEach, beforeEach, describe, test } from 'node:test'
@@ -197,3 +205,99 @@ describe('bash-lsp-intelligence hook', () => {
     })
   })
 })
+
+const TS7 = join(PLUGINS, 'typescript7-lsp-intelligence')
+const TS6 = join(PLUGINS, 'typescript6-lsp-intelligence')
+const STRICT_TSCONFIG =
+  '{ "compilerOptions": { "strict": true, "noEmit": true, "target": "es2022", "module": "esnext", "moduleResolution": "bundler", "types": [] }, "include": ["**/*.ts"] }\n'
+const LOOSE_TSCONFIG =
+  '{ "compilerOptions": { "strict": false, "noEmit": true, "types": [] }, "include": ["**/*.ts"] }\n'
+
+function tsSuite(name, plugin) {
+  const hook = join(plugin, 'hooks', 'check.mjs')
+  const ready = existsSync(join(plugin, 'node_modules', 'typescript', 'bin', 'tsc'))
+  describe(`${name} hook`, { skip: !ready }, () => {
+    let ws
+    beforeEach(() => {
+      ws = makeWorkspace()
+    })
+    afterEach(() => ws.cleanup())
+
+    test('ignores non-TypeScript files', () => {
+      const md = ws.write('notes.md', '# hi\n')
+      const r = fire(hook, event('Edit', md), { cwd: ws.project, env: ws.env })
+      assert.deepEqual(r, { code: 0, out: '', err: '' })
+    })
+
+    test('clean file in a program confirms', () => {
+      ws.write('tsconfig.json', STRICT_TSCONFIG)
+      const ts = ws.write('src/a.ts', 'export const n: number = 1\n')
+      const r = fire(hook, event('Edit', ts), { cwd: ws.project, env: ws.env })
+      assert.equal(r.err, '')
+      assert.equal(r.code, 0)
+      assert.match(JSON.parse(r.out).systemMessage, new RegExp(`${name}: tsc passed · src/a\\.ts`))
+    })
+
+    test('type error blocks with the TS code', () => {
+      ws.write('tsconfig.json', STRICT_TSCONFIG)
+      const ts = ws.write('src/bad.ts', 'export const n: number = "x"\n')
+      const r = fire(hook, event('Edit', ts), { cwd: ws.project, env: ws.env })
+      assert.equal(r.code, 2)
+      assert.match(r.err, /TS2322/)
+      assert.match(r.err, /Fix these findings in src\/bad\.ts/)
+    })
+
+    test('nearest tsconfig wins and sibling errors come after', () => {
+      ws.write('tsconfig.json', LOOSE_TSCONFIG)
+      ws.write('packages/app/tsconfig.json', STRICT_TSCONFIG)
+      ws.write('packages/app/sibling.ts', 'export const s: number = "y"\n')
+      const ts = ws.write('packages/app/edited.ts', 'export const e: number = "x"\n')
+      const r = fire(hook, event('Edit', ts), { cwd: ws.project, env: ws.env })
+      assert.equal(r.code, 2)
+      assert.ok(r.err.indexOf('edited.ts') < r.err.indexOf('sibling.ts'))
+      assert.match(r.err, /packages\/app\/tsconfig\.json/)
+    })
+
+    test('file outside every program is reported, not passed over', () => {
+      ws.write(
+        'tsconfig.json',
+        '{ "compilerOptions": { "noEmit": true, "types": [] }, "include": ["src/**/*.ts"] }\n',
+      )
+      ws.write('src/ok.ts', 'export const ok = 1\n') // the program needs one input, or tsc reports TS18003
+      const ts = ws.write('scripts/loose.ts', 'export const n: number = 1\n')
+      const r = fire(hook, event('Edit', ts), { cwd: ws.project, env: ws.env })
+      assert.equal(r.code, 0)
+      assert.match(JSON.parse(r.out).hookSpecificOutput.additionalContext, /not part of/)
+    })
+
+    test('no tsconfig: compiler defaults on the file alone', () => {
+      const ts = ws.write('alone.ts', 'export const n: number = "x"\n')
+      const r = fire(hook, event('Edit', ts), { cwd: ws.project, env: ws.env })
+      assert.equal(r.code, 2)
+      assert.match(r.err, /TS2322/)
+    })
+
+    test('two files in one program run tsc once', () => {
+      ws.write('tsconfig.json', STRICT_TSCONFIG)
+      const a = ws.write('src/a.ts', 'export const a = 1\n')
+      const b = ws.write('src/b.ts', 'export const b = 2\n')
+      const r = fire(hook, bashEvent([a, b]), { cwd: ws.project, env: ws.env })
+      assert.equal(r.code, 0)
+      assert.match(JSON.parse(r.out).systemMessage, /src\/a\.ts, src\/b\.ts/)
+    })
+
+    test('a config error is a finding', () => {
+      ws.write(
+        'tsconfig.json',
+        '{ "compilerOptions": { "noEmit": true, "types": [] }, "include": ["nothing/**/*.ts"] }\n',
+      )
+      const ts = ws.write('src/a.ts', 'export const a = 1\n')
+      const r = fire(hook, event('Edit', ts), { cwd: ws.project, env: ws.env })
+      assert.equal(r.code, 2)
+      assert.match(r.err, /TS18003/)
+    })
+  })
+}
+
+tsSuite('typescript7-lsp-intelligence', TS7)
+tsSuite('typescript6-lsp-intelligence', TS6)

@@ -10,8 +10,12 @@
   "homepage": "https://github.com/nerymurillohnd/the-claude-factory/tree/main/plugins/typescript6-lsp-intelligence#readme",
   "repository": "https://github.com/nerymurillohnd/the-claude-factory",
   "license": "MIT",
-  "keywords": ["language-support"],
+  "keywords": [
+    "language-support"
+  ],
   "metadata": {
-    "surfaces": ["claude-code"]
+    "surfaces": [
+      "claude-code"
+    ]
   }
 }
