@@ -1,0 +1,6 @@
+"""A return value that contradicts the annotation: reportReturnType."""
+
+
+def count() -> int:
+    """Return the wrong type."""
+    return "three"

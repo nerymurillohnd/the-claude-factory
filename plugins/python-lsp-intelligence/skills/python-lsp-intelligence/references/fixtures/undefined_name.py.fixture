@@ -1,0 +1,6 @@
+"""An undefined name: ruff F821 and basedpyright reportUndefinedVariable."""
+
+
+def label() -> str:
+    """Return a name that does not exist."""
+    return missing_name

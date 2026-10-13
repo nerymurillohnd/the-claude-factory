@@ -1,0 +1,4 @@
+"""Formatting differs from ruff's output."""
+VALUE=1
+def f( x ):
+    return x

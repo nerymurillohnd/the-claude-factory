@@ -1,0 +1,9 @@
+"""For the language server: `target` is defined once and called three times."""
+def target(value: int) -> int:
+    """Add one."""
+    return value + 1
+
+
+FIRST = target(1)
+SECOND = target(2)
+THIRD = target(3)
