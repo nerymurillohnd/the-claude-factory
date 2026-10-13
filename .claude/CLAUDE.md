@@ -103,9 +103,10 @@ docs/                        user guides: installation, compatibility, managing 
 ## Golden Rules
 
 - **Plugin `name` is permanent.** Change `displayName` for labels.
-- A plugin rename or removal needs a `renames` entry in `.claude-plugin/marketplace.json` and a major marketplace bump.
-- **`plugin.json` holds the version.** Never set `version` on a marketplace entry.
-- **SemVer and Keep a Changelog** for every plugin and for the marketplace. Release only through `.github/scripts/bump-version.mjs`.
+- A plugin rename or removal needs a `renames` entry in `.claude-plugin/marketplace.json`.
+- **`plugin.json` holds the version.** Never set `version` on a marketplace entry or on the marketplace.
+- **The marketplace has no version and no tag.** Root `CHANGELOG.md` is grouped by date.
+- **SemVer and Keep a Changelog** for every plugin. Release only through `.github/scripts/bump-version.mjs`.
 - **Never hand-edit generated blocks** in `README.md` (`<!-- catalog:* -->`, `<!-- plugin-count:* -->`). Run `.github/scripts/catalog.mjs`.
 - **User docs sell and teach.** They never mention maintenance, internal tooling, `.claude/`, scripts or our workflow.
 - **Verify against live official docs** before stating Claude Code behavior, commands, versions or UI paths.

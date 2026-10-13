@@ -1,7 +1,7 @@
 ---
 name: release
-description: Releases a plugin or the marketplace of The Claude Factory — SemVer level, changelog, version bump, root changelog, catalog, verification and commit. Use only when Nery explicitly asks to release, publish, ship or bump a plugin or the marketplace.
-argument-hint: "<plugin-name|marketplace> [major|minor|patch]"
+description: Releases a plugin of The Claude Factory — SemVer level, changelog, version bump, root changelog line, catalog, verification and commit. Use only when Nery explicitly asks to release, publish, ship or bump a plugin. The marketplace has no version to release.
+argument-hint: "<plugin-name> [major|minor|patch]"
 ---
 
 # Release
@@ -10,7 +10,7 @@ Target: `$ARGUMENTS`. Rules: `.claude/rules/versioning-and-releases.md`.
 
 ## 1. Decide the level
 
-1. Diff since the last tag: `git diff <name>--v<current>..HEAD -- plugins/<name>/` (or `marketplace--v<current>` for the catalog).
+1. Diff since the last tag: `git diff <name>--v<current>..HEAD -- plugins/<name>/`.
 2. Classify every change as major / minor / patch; the highest wins. If a level was given, confirm it matches the diff — push back if it doesn't.
 
 ## 2. Changelog
@@ -26,12 +26,8 @@ node .github/scripts/bump-version.mjs <name> <level>
 
 ## 4. Marketplace record
 
-1. Root `CHANGELOG.md` → `[Unreleased]`: `- **<name>** <new-version> — <one-line summary>.` under the right group.
-2. Bump the marketplace per the table in the rules (minor for a plugin major/minor, patch for a plugin patch):
-
-   ```bash
-   node .github/scripts/bump-version.mjs marketplace <level>
-   ```
+- Root `CHANGELOG.md`: add `- **<name>** <new-version> — <one-line summary>.` under today's `## YYYY-MM-DD` heading and the right group. Create the heading when it is missing.
+- Do not bump the marketplace. It has no version.
 
 ## 5. Verify and commit
 

@@ -2,17 +2,17 @@
 
 All notable changes to **The Claude Factory** marketplace are documented here: plugins added, updated, renamed or retired, and changes to the catalog itself. Each plugin keeps its own detailed changelog in `plugins/<name>/CHANGELOG.md`.
 
-The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and the marketplace adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html):
+The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The marketplace has no version of its own: entries are grouped by date, newest first, and every plugin carries its own version, changelog and tag. The versions 0.1.0 and 0.2.0 below are the history from before that change; their tags stay.
 
-- **Major** — a plugin is removed or renamed.
-- **Minor** — a plugin is added, or a plugin ships a new major or minor version.
-- **Patch** — a plugin ships a patch version, or catalog metadata changes.
-
-## [Unreleased]
+## 2026-10-13
 
 ### Added
 
 - **prompt-writer** 0.1.0 — turns a goal, idea or draft into one copy-ready prompt tuned to the target Claude model and effort, with the recommended setup to run it.
+
+### Changed
+
+- The marketplace no longer carries a version. `marketplace.json` has no `version`, releases tag plugins only, and this changelog is grouped by date. The tags `marketplace--v0.1.0` and `marketplace--v0.2.0` remain as history.
 
 ## [0.2.0] - 2026-10-13
 
@@ -41,6 +41,5 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 - 🏭 Marketplace launched: catalog, installation and management guides, compatibility matrix, and issue forms for bugs, features, plugin ideas, documentation and questions.
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/marketplace--v0.2.0...HEAD
 [0.2.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/marketplace--v0.2.0
 [0.1.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/marketplace--v0.1.0

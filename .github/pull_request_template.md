@@ -11,7 +11,6 @@ Closes #
 | Target | Bump | New version |
 | :-- | :-- | :-- |
 | `<plugin>` | patch / minor / major / none | `x.y.z` |
-| marketplace | patch / minor / major / none | `x.y.z` |
 
 ## Checklist
 

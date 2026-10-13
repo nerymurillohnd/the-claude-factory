@@ -47,7 +47,7 @@ Follow `.claude/rules/plugin-authoring.md`. Add `keywords` to `plugin.json`. Kee
 ## 5. Register everywhere
 
 - `node .github/scripts/catalog.mjs`
-- Root `CHANGELOG.md` → `[Unreleased]` → `### Added`: `- **<name>** 0.1.0 — <summary>.`
+- Root `CHANGELOG.md` → today's `## YYYY-MM-DD` heading → `### Added`: `- **<name>** 0.1.0 — <summary>.` Create the heading when it is missing.
 - After push: `node .github/scripts/sync-labels.mjs` to create `plugin: <name>`.
 
 ## 6. Prove it works
@@ -67,4 +67,4 @@ Follow `.claude/rules/plugin-authoring.md`. Add `keywords` to `plugin.json`. Kee
 
 ## 7. Hand off
 
-Summarize for Nery: what was built, evidence (raw gate output), surfaces tested, and the release step (`/release marketplace minor` when publishing).
+Summarize for Nery: what was built, evidence (raw gate output), surfaces tested, and the release step (merge the PR; `release.yml` tags the plugin; the marketplace has no version to bump).

@@ -144,6 +144,15 @@ describe('check-repo', () => {
     assert.match(r.out, /plugins\/orphan.*not listed/)
   })
 
+  test('flags a version on the marketplace itself', () => {
+    const mp = json('.claude-plugin/marketplace.json')
+    mp.version = '0.3.0'
+    write('.claude-plugin/marketplace.json', `${JSON.stringify(mp, null, 2)}\n`)
+    const r = run('check-repo.mjs')
+    assert.equal(r.code, 1)
+    assert.match(r.out, /marketplace carries no version/)
+  })
+
   test('flags a version on the marketplace entry', () => {
     scaffold()
     resolveTodos()
@@ -372,21 +381,21 @@ describe('bump-version', () => {
     assert.match(read('README.md'), /`0\.2\.0`/)
   })
 
-  test('bumps the marketplace version and root changelog', () => {
-    write(
-      'CHANGELOG.md',
-      read('CHANGELOG.md').replace(
-        '## [Unreleased]\n',
-        '## [Unreleased]\n\n### Added\n\n- Something.\n',
-      ),
-    )
-    const [major, minor, patch] = json('.claude-plugin/marketplace.json').version.split('.')
-    const next = `${major}.${minor}.${Number(patch) + 1}`
+  test('refuses to bump the marketplace, which has no version', () => {
+    const before = read('.claude-plugin/marketplace.json')
     const r = run('bump-version.mjs', ['marketplace', 'patch'])
-    assert.equal(r.code, 0, r.out)
-    assert.equal(json('.claude-plugin/marketplace.json').version, next)
-    assert.ok(read('CHANGELOG.md').includes(`## [${next}] - `))
-    assert.equal(run('check-repo.mjs').code, 0)
+    assert.notEqual(r.code, 0)
+    assert.match(r.out, /marketplace has no version/)
+    assert.equal(read('.claude-plugin/marketplace.json'), before)
+  })
+
+  test('release-notes prints a plugin tag and refuses the marketplace', () => {
+    scaffold()
+    resolveTodos()
+    const tag = run('release-notes.mjs', ['demo-tool', '--tag'])
+    assert.equal(tag.code, 0, tag.out)
+    assert.equal(tag.out.trim(), 'demo-tool--v0.1.0')
+    assert.notEqual(run('release-notes.mjs', ['marketplace', '--tag']).code, 0)
   })
 })
 

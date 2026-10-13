@@ -2,6 +2,13 @@
 
 Newest first. One entry per session: what changed, commits, what's next.
 
+## 2026-10-13 — prompt-writer plugin and the marketplace without a version
+
+- Built `prompt-writer` 0.1.0 from `prompt-writer.skill` on `feat/prompt-writer` (PR #8, merged `1aceba8`; `release.yml` tagged `prompt-writer--v0.1.0`). Personal references made generic (the user, they/their, no default conversation language). The executability audit of another copy and the plugin-reviewer findings were applied; `lessons.md` and personal rules of that copy stay out.
+- Nery: the marketplace does not change version. Removed `version` from `marketplace.json`; `check-repo.mjs` now fails on it; `bump-version.mjs`, `release-notes.mjs` and `release.yml` handle plugins only; root `CHANGELOG.md` grouped by date; rules, CLAUDE.md, release and new-plugin skills and the PR template updated. Existing marketplace tags and releases kept as history.
+- Fixed skill-diagnostics memory: 0.1.2 is released; its regression is still open (no Stop gate, no eval re-run).
+- Next: `/test-installed-plugin prompt-writer` and a Claude app check (Cowork and chat); skill-diagnostics Stop gate; the TypeScript gate stays unwired (the typescript6 hook reports its 132 known `tsc` errors on every `.github/scripts` edit).
+
 ## 2026-10-13 — LSP intelligence plugins v2 (branch `feat/lsp-intelligence-v2`)
 
 - Design from official sources only (Claude Code Docs, agentskills.io, Platform docs) with runtime probes: spec `.claude/specs/2026-10-13-lsp-intelligence-plugins-design.md` (on `main`, `c902e97`); plan executed inline from `.claude/plans/2026-10-13-lsp-intelligence-v2.md`.

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-// Releases a plugin or the marketplace: bumps the version and turns [Unreleased] into a dated section.
-//   node .github/scripts/bump-version.mjs <plugin-name|marketplace> <major|minor|patch>
+// Releases a plugin: bumps the version and turns [Unreleased] into a dated section.
+//   node .github/scripts/bump-version.mjs <plugin-name> <major|minor|patch>
 
 import { existsSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
@@ -9,12 +9,9 @@ import {
   bumpSemver,
   fail,
   loadManifest,
-  loadMarketplace,
-  MARKETPLACE_PATH,
   pluginDir,
   README_PATH,
   REPO_URL,
-  ROOT,
   readText,
   today,
   writeJson,
@@ -22,37 +19,25 @@ import {
 
 const [target, level] = process.argv.slice(2)
 if (!target || !level) {
-  fail('Usage: bump-version.mjs <plugin-name|marketplace> <major|minor|patch>')
+  fail('Usage: bump-version.mjs <plugin-name> <major|minor|patch>')
+}
+if (target === 'marketplace') {
+  fail(
+    "The marketplace has no version. Add a line under today's date heading in CHANGELOG.md instead.",
+  )
 }
 
-const isMarketplace = target === 'marketplace'
-let current
-let next
-let changelogPath
-let tagPrefix
-
-if (isMarketplace) {
-  const mp = loadMarketplace()
-  current = mp.version
-  next = bumpSemver(current, level)
-  mp.version = next
-  changelogPath = join(ROOT, 'CHANGELOG.md')
-  tagPrefix = 'marketplace--v'
-  rollChangelog()
-  writeJson(MARKETPLACE_PATH, mp)
-} else {
-  const manifest = loadManifest(target)
-  if (!manifest) {
-    fail(`plugins/${target}/.claude-plugin/plugin.json not found`)
-  }
-  current = manifest.version
-  next = bumpSemver(current, level)
-  manifest.version = next
-  changelogPath = join(pluginDir(target), 'CHANGELOG.md')
-  tagPrefix = `${target}--v`
-  rollChangelog()
-  writeJson(join(pluginDir(target), '.claude-plugin', 'plugin.json'), manifest)
+const manifest = loadManifest(target)
+if (!manifest) {
+  fail(`plugins/${target}/.claude-plugin/plugin.json not found`)
 }
+const current = manifest.version
+const next = bumpSemver(current, level)
+manifest.version = next
+const changelogPath = join(pluginDir(target), 'CHANGELOG.md')
+const tagPrefix = `${target}--v`
+rollChangelog()
+writeJson(join(pluginDir(target), '.claude-plugin', 'plugin.json'), manifest)
 
 writeFileSync(README_PATH, renderReadme(readText(README_PATH)))
 console.log(`✔ ${target}: ${current} → ${next}`)

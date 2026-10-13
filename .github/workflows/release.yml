@@ -1,8 +1,8 @@
 name: Release
 
-# After Validate succeeds on main, tag and publish a GitHub Release for every plugin (and the
-# marketplace) whose current version has no tag yet. Tags follow `claude plugin tag`:
-# {name}--v{version}, so plugin dependency ranges resolve against them.
+# After Validate succeeds on main, tag and publish a GitHub Release for every plugin whose current
+# version has no tag yet. The marketplace itself has no version and no tag. Tags follow
+# `claude plugin tag`: {name}--v{version}, so plugin dependency ranges resolve against them.
 
 on:
   workflow_run:
@@ -36,7 +36,7 @@ jobs:
           TARGET_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
         run: |
           set -euo pipefail
-          targets="marketplace $(node -e 'console.log(require("./.claude-plugin/marketplace.json").plugins.map(p => p.name).join(" "))')"
+          targets="$(node -e 'console.log(require("./.claude-plugin/marketplace.json").plugins.map(p => p.name).join(" "))')"
           for target in ${targets}; do
             tag="$(node .github/scripts/release-notes.mjs "${target}" --tag)"
             if git rev-parse -q --verify "refs/tags/${tag}" >/dev/null; then

@@ -122,8 +122,11 @@ export function checkRepo() {
   if (!mp.description) {
     err('marketplace', 'missing description')
   }
-  if (!SEMVER.test(mp.version ?? '')) {
-    err('marketplace', `version "${mp.version}" is not semver`)
+  if ('version' in mp) {
+    err(
+      'marketplace',
+      'the marketplace carries no version: remove "version"; plugins are versioned',
+    )
   }
   if (!Array.isArray(mp.plugins)) {
     err('marketplace', 'plugins must be an array')
@@ -333,8 +336,6 @@ export function checkRepo() {
   const rootChangelog = join(ROOT, 'CHANGELOG.md')
   if (!existsSync(rootChangelog)) {
     err('CHANGELOG.md', 'missing')
-  } else if (changelogSection(readText(rootChangelog), mp.version) === null) {
-    err('CHANGELOG.md', `no "## [${mp.version}]" entry for the marketplace version`)
   }
 
   return { errors }
