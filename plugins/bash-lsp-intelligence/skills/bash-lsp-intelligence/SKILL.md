@@ -1,93 +1,70 @@
 ---
 name: bash-lsp-intelligence
-description: Navigates Bash and POSIX shell scripts through bash-language-server, tells same-named functions apart by what each script sources, repairs ShellCheck and shfmt findings without changing behavior, and verifies each change. Use when navigating, editing, refactoring or diagnosing shell scripts, including sourced files and extensionless executables, investigating ShellCheck or shfmt findings, or verifying shell behavior. Not for converting scripts to other shell dialects.
+description: Navigates Bash and POSIX shell scripts through bash-language-server, traces source chains before trusting same-named functions, and checks scripts with shfmt and ShellCheck using the project's own configuration. Use when editing, refactoring or diagnosing shell scripts, fixing a ShellCheck finding such as SC2086, renaming a shell function, or formatting a script.
 ---
 
-# Bash and POSIX Shell Code Intelligence
+# Bash and POSIX shell code intelligence
 
-Understand the real shell dialect and source relationships, preserve execution semantics, and verify the changed behavior. Fix the actionable diagnostics before beginning unrelated changes: those are the findings in the code the task changes, including any the change introduces. Report pre-existing findings in code the task does not touch; fix them only when the user asks.
+Work with the language server first and the toolchain second. Nothing here mentions how the project is checked automatically; run every check yourself when the task calls for it.
 
-**Authorized** means what the request covers explicitly or necessarily implies, such as editing the scripts it asks to change and running read-only checks. Executing scripts beyond a syntax check, installing tools, converting a script's dialect, and changing ShellCheck, shfmt or EditorConfig policy always need an explicit request.
+## LSP and Grep are complementary
 
-## Choose the right tool
+LSP owns questions about code structure; Grep owns questions about text. Route each question to its owner, and use both before changing or deleting code.
 
-**Claude must prefer the LSP over Grep, Glob, and Bash for code navigation and semantic relationships.** Shell definitions, references, outlines, and documentation are useful, but shell navigation is not a static type checker. Source reading resolves implementation details and sourcing scope. Text search supplements semantic discovery for strings and files outside coverage.
+| Question | Owner | Operation |
+| :-- | :-- | :-- |
+| Where is X defined? | LSP | `goToDefinition` |
+| Who uses or imports X? | LSP | `findReferences` |
+| Type or signature of X? | LSP | `hover` |
+| What does this file contain? | LSP | `documentSymbol`, before reading the whole file |
+| Where is X, file unknown? | LSP | `workspaceSymbol`, always with `query` |
+| Who calls X, what does X call? | LSP | `prepareCallHierarchy`, then `incomingCalls` / `outgoingCalls` |
+| Implementations of an interface | LSP | `goToImplementation` |
+| Where does a word appear as text (docs, comments, strings, config, scripts)? | Grep | — |
+| Is it safe to delete or rename? | Both | LSP for code references, Grep for the blind spots below |
 
-The user installs `bash-language-server` separately, and Claude Code doesn't start plugin language servers in cloud sessions. If the `LSP` tool is missing or returns an error because the server can't start, don't retry: say so once, and navigate with source reading and text search.
+Every operation takes `filePath` (absolute), `line` (1-based) and `character` (1-based, UTF-16 code units: an emoji before the symbol counts 2). Raw LSP data in logs is 0-based: add 1 to both.
 
-| Operation | Purpose | Use before |
-|---|---|---|
-| `goToDefinition` | Identify a function or variable definition | Modifying unfamiliar code |
-| `findReferences` | Discover candidate uses | Refactoring or renaming |
-| `goToImplementation` | Implementation relationships | Polymorphic work |
-| `hover` | Inspect available documentation/declaration information | Understanding APIs or checking position |
-| `documentSymbol` | Obtain a script outline | Exploring a long script |
-| `workspaceSymbol` | Search named symbols | Locating related source |
-| `prepareCallHierarchy` | Callable hierarchy item | Call analysis |
-| `incomingCalls` | Callers from a hierarchy item | Impact analysis |
-| `outgoingCalls` | Callees from a hierarchy item | Dependency tracing |
+## Trusting a result
 
-Not every server answers every operation. When one returns an error or says the method is unsupported, use the fallback in [operations.md](references/operations.md) instead of retrying it.
+When a result is empty, shows only the definition, or will justify an edit or deletion, check all five before believing it:
 
-For the Claude `LSP` tool, provide the common parameters for every operation:
+1. **Position**: `hover` at the same spot shows the intended symbol. "No hover information" means a wrong position or no server, never "no usages".
+2. **Warm-up**: a session's first workspace-wide query can be partial. Repeat until two consecutive results match (at most three).
+3. **Scope**: only the session's working directory is indexed. Outside it, results are stable and incomplete: say so and use Grep plus reading.
+4. **Freshness**: changes made outside Edit and Write (Bash, git, codegen, formatters) may never reach the index. Grep or Read those files instead of trusting counts.
+5. **Blind spots**: Grep the name for the uses LSP cannot see (next section).
 
-- `filePath`: the absolute source path.
-- `line`: a 1-based line number.
-- `character`: a 1-based UTF-16 column at the symbol name.
+Only after all five does "no references" mean none. Never delete code on LSP evidence alone.
 
-Supply additional fields only when the actual tool schema exposes them. Raw protocol positions are 0-based. Read [operations.md](references/operations.md) for capability checks, workspace symbol search, and supported alternatives.
+## Blind spots, every language
 
-## Resolve identity, not just names
+LSP sees static code references only. Grep the name in: strings and reflection (dynamic imports, `eval`, dispatch by name); entry points and config (package scripts, YAML, JSON, TOML, `.env`); framework injection (fixtures, decorators, registries, routes); shell scripts, CI, Makefiles, Dockerfiles; docs, comments, templates.
 
-Use `documentSymbol` when the function name or position is unknown, then definitions/references for the specific relationship. Confirm the declaration; hover may be absent for shell functions even when references work.
+## Impact analysis (rename, signature change, deletion)
 
-Reference results can be overinclusive: bash-language-server can return unrelated same-named functions together. For an empty or short result, verify path, dialect, loaded workspace, file discovery, and synchronization, then retry at most twice after the initial request. Report material scope limitations once.
+Copy this checklist into your working notes and tick each item:
 
-To rename or delete a function:
+- [ ] `findReferences` on the definition, with the five trust checks. The references are the must-change list.
+- [ ] The language-specific steps in "Gotchas" below.
+- [ ] Grep the blind spots. Textual mentions are listed as optional; any dynamic use blocks a deletion.
+- [ ] After the change, run the checks in [toolchain.md](references/toolchain.md) and fix what they report.
 
-1. Find the definition and its references semantically.
-2. Trace the direct and transitive `source`/`.` relationships and decide which definition each caller reaches; exclude a candidate only after establishing it belongs to another definition.
-3. Search for indirect consumers: command dispatch, aliases, traps, `eval`, generated commands, CI and Makefiles, and source paths that depend on cwd or variables. Include extensionless executables and relevant hidden directories.
-4. List confirmed edits and unresolved cases separately, then edit only the confirmed ones.
-5. Verify with the checks in "Verify changed behavior". The rename is done when they pass, no confirmed caller still uses the old name, and the unresolved cases are reported.
+## Gotchas (verified on fixtures)
 
-Read [shell-navigation.md](references/shell-navigation.md) before a rename or deletion, or when counts look incomplete.
+- **Functions match by name.** Two unrelated same-named functions share one `findReferences` list, so it over-reports and is never a rename set. Before renaming, drop every hit whose file the caller does not `source`, directly or transitively.
+- **Extensionless scripts are never indexed** (`bin/tool`), nor are files in hidden folders the server's glob doesn't cover. Grep them.
+- **`prepareCallHierarchy` is unsupported** by bash-language-server: use `findReferences` and read the bodies.
+- **`trap fn EXIT`, `"$action"` dispatch, `eval`, `bash -c` strings and hook commands in JSON** are static text to the server: Grep the bare name across the tree before any deletion.
+- **A `.sh` suffix does not make zsh code Bash.** Check the shebang; ShellCheck rejects zsh (SC1071), so a zsh file is never clean by ShellCheck.
+- **`shfmt -w` rewrites in place.** Re-read a file after running it and before the next edit.
 
-## Diagnose the correct language and context
+## Checks
 
-A shebang or explicit shell declaration determines intent; a `.sh` suffix does not turn Zsh into Bash. ShellCheck's unsupported-dialect message is a tool boundary, not proof that valid Zsh code is defective. Preserve language and behavior unless conversion is authorized.
+Run them yourself after a change, on every script you touched and every script that sources it:
 
-Inspect SC codes, severity, location, source resolution, and effective configuration before changing a script. An unresolved sourced file can produce later unassigned-variable findings; verify the source chain before adding assignments or suppressions. Analyzer lookup paths do not change the script's runtime cwd.
+- `shfmt -w <files>` (style from the nearest `.editorconfig`), then `shellcheck <files>` (rules from `.shellcheckrc` and `SHELLCHECK_OPTS`); `https://www.shellcheck.net/wiki/SC<code>` explains a code.
+- `bash -n <file>` for syntax, one script per invocation.
+- Exercise the changed launch path, arguments, exit status and traps in a controlled context; never run a deploy or delete script to lint it.
 
-Repair quoting, splitting, globbing, arrays, exit-status handling, and redirection with the intended behavior in mind. Do not quote an intentional glob into a literal filename or convert an intentional multi-argument value into one argument. Reread any formatted source before constructing another edit.
-
-Read [diagnostics-and-repair.md](references/diagnostics-and-repair.md) for practical repair decisions. Do not run an arbitrary script merely to obtain static diagnostics, install a tool automatically, or change checker configuration solely to hide a finding.
-
-## Verify changed behavior
-
-Use the project's declared tools, dialect, and checking policy; when it declares none, use the default in [verification.md](references/verification.md) and say that no policy was declared. Formatting, parsing, linting, and runtime tests establish different things. Preserve each process status, stdout, and stderr; a successful final command does not cancel an earlier failure. A successful ShellCheck invocation does not establish that an omitted or unfollowed file was analyzed.
-
-For scripts that write, delete, deploy, or contact services, test with existing test doubles or in a temporary directory rather than running production operations. After each fix, rerun the same checks; [verification.md](references/verification.md) sets when to stop. Report the actual checks performed, source scope, observed behavior, and remaining uncertainty.
-
-## Control tests
-
-Run the control tests only when the user asks to test tool coverage, or when a check passes code it should flag. They are not a step of ordinary coding tasks. Read [controls.md](references/controls.md) first, then run the bundled runner by path:
-
-```bash
-"${CLAUDE_SKILL_DIR}/scripts/verify-fixtures.sh"
-"${CLAUDE_SKILL_DIR}/scripts/verify-fixtures.sh" --tool shellcheck=/absolute/path/to/shellcheck --tool shfmt=/absolute/path/to/shfmt
-```
-
-The first form uses `shellcheck` and `shfmt` from `PATH`; add one `--tool name=/absolute/path` pair for each executable the task declares. The runner needs `bash` and `jq` 1.6 or later, installs nothing, and never executes the controls.
-
-- **Exit 0**: the JSON report printed. `allExpectedOutcomesMatched` is the overall result; each entry in `results` carries its own `expectedOutcomeMatched`.
-- **Exit 2**: setup failed and no report printed; stderr names the failed step and what to do next.
-
-## Reference map
-
-- [operations.md](references/operations.md): capability checks, workspace symbol search, and fallbacks.
-- [shell-navigation.md](references/shell-navigation.md): sourcing identity, traps, and discovery.
-- [diagnostics-and-repair.md](references/diagnostics-and-repair.md): SC findings, quoting, and context.
-- [verification.md](references/verification.md): the default check policy, statuses, and the repeat-after-fix loop.
-- [controls.md](references/controls.md): the control tests and their expected results.
-- [sources.md](references/sources.md): read when an installed tool behaves differently from this skill, before revising an assumption.
+Read [toolchain.md](references/toolchain.md) when configuring or installing shfmt or ShellCheck, wiring CI or an IDE, or when a finding needs the project's intended style. Read [fixtures.md](references/fixtures.md) when a check passes code it should flag.

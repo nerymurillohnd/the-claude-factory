@@ -1,4 +1,3 @@
 # shellcheck shell=bash
-# Fixture: unquoted expansion (SC2086), reported without optional checks.
-value=$1
-printf '%s\n' $value
+value="a b"
+echo $value

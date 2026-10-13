@@ -1,6 +1,6 @@
-"""Fixture: the annotation and the returned value disagree."""
+"""A return value that contradicts the annotation: reportReturnType."""
 
 
-def count_items(items: list[str]) -> int:
-    """Return how many items there are."""
-    return ",".join(items)
+def count() -> int:
+    """Return the wrong type."""
+    return "three"

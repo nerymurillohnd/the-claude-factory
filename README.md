@@ -11,7 +11,7 @@
 <br>
 
 <!-- plugin-count:start -->
-[![Plugins](https://img.shields.io/badge/plugins-6-D97757?style=for-the-badge)](#-catalog)
+[![Plugins](https://img.shields.io/badge/plugins-7-D97757?style=for-the-badge)](#-catalog)
 <!-- plugin-count:end -->
 [![Validate](https://img.shields.io/github/actions/workflow/status/nerymurillohnd/the-claude-factory/validate.yml?branch=main&label=validate&style=for-the-badge)](https://github.com/nerymurillohnd/the-claude-factory/actions/workflows/validate.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-22C55E?style=for-the-badge)](./LICENSE)
@@ -106,7 +106,7 @@ Plugin skills are namespaced, so they never collide with yours: type `/<plugin>:
 | :-- | :--: |
 | [⚡ Productivity](#-productivity) | 1 |
 | [🧪 Testing & Quality](#-testing--quality) | 2 |
-| [🧠 Language Support](#-language-support) | 3 |
+| [🧠 Language Support](#-language-support) | 4 |
 
 ### ⚡ Productivity
 
@@ -131,9 +131,10 @@ Plugin skills are namespaced, so they never collide with yours: type `/<plugin>:
 
 | Plugin | What it does | Works in | Version | Includes |
 | :-- | :-- | :-- | :--: | :-- |
-| [**Bash LSP Intelligence**](./plugins/bash-lsp-intelligence#readme)<br>`bash-lsp-intelligence@the-claude-factory` | Gives Claude Code bash-language-server for Bash and POSIX shell scripts, plus a skill that teaches Claude to trace sourced files and same-named functions, fix ShellCheck and shfmt findings without changing behavior, and verify every change with evidence. | 💻 Code only | `0.1.0` | 🎯 Skills · 🧠 LSP |
-| [**Python LSP Intelligence**](./plugins/python-lsp-intelligence#readme)<br>`python-lsp-intelligence@the-claude-factory` | Gives Claude Code the basedpyright language server for Python, plus a skill that teaches Claude to resolve symbols, aliases and imports semantically, fix basedpyright and Ruff findings without suppressing them, and verify every change with evidence. | 💻 Code only | `0.1.0` | 🎯 Skills · 🧠 LSP |
-| [**TypeScript 7 LSP Intelligence**](./plugins/typescript7-lsp-intelligence#readme)<br>`typescript7-lsp-intelligence@the-claude-factory` | Gives Claude Code the native TypeScript 7 language server for TypeScript and JavaScript, plus a skill that teaches Claude to check which program owns a file, fix compiler findings without unsafe assertions or suppressions, and verify every change with evidence. | 💻 Code only | `0.1.0` | 🎯 Skills · 🧠 LSP |
+| [**Bash LSP Intelligence**](./plugins/bash-lsp-intelligence#readme)<br>`bash-lsp-intelligence@the-claude-factory` | Gives Claude Code bash-language-server for Bash and POSIX shell scripts, formats and checks every script Claude edits with shfmt and ShellCheck using your own configuration, and teaches Claude to trace sourced files and same-named functions before a rename. | 💻 Code only | `0.2.0` | 🎯 Skills · 🪝 Hooks · 🧠 LSP |
+| [**Python LSP Intelligence**](./plugins/python-lsp-intelligence#readme)<br>`python-lsp-intelligence@the-claude-factory` | Gives Claude Code the basedpyright language server for Python, checks every Python file Claude edits with ruff and basedpyright using your own configuration, and teaches Claude to navigate by symbol, resolve aliases and imports, and fix findings without suppressing them. | 💻 Code only | `0.2.0` | 🎯 Skills · 🪝 Hooks · 🧠 LSP |
+| [**TypeScript 6 LSP Intelligence**](./plugins/typescript6-lsp-intelligence#readme)<br>`typescript6-lsp-intelligence@the-claude-factory` | Gives Claude Code a pinned TypeScript 6 language server for TypeScript and JavaScript, type-checks the program of every file Claude edits with the matching compiler, and teaches Claude to find the program that owns a file and fix compiler findings without unsafe assertions or suppressions. | 💻 Code only | `0.1.0` | 🎯 Skills · 🪝 Hooks · 🧠 LSP |
+| [**TypeScript 7 LSP Intelligence**](./plugins/typescript7-lsp-intelligence#readme)<br>`typescript7-lsp-intelligence@the-claude-factory` | Gives Claude Code a pinned native TypeScript 7 language server for TypeScript and JavaScript, type-checks the program of every file Claude edits with the matching compiler, and teaches Claude to find the program that owns a file and fix compiler findings without unsafe assertions or suppressions. | 💻 Code only | `0.2.0` | 🎯 Skills · 🪝 Hooks · 🧠 LSP |
 
 <sub>**Legend:** 🎯 Skills · ⌨️ Commands · 🤖 Agents · 🪝 Hooks · 🔌 MCP · 🧠 LSP · 🎨 Output styles · 📡 Monitors · 🔁 Workflows · 🌈 Themes · ⚙️ Executables</sub>
 <!-- catalog:end -->

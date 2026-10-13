@@ -1,4 +1,0 @@
-enable=all
-external-sources=true
-source-path=SCRIPTDIR
-extended-analysis=true

@@ -1,0 +1,30 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/check.mjs\"",
+            "timeout": 60,
+            "statusMessage": "bash-lsp-intelligence: shfmt and shellcheck on the changed shell scripts"
+          }
+        ]
+      }
+    ],
+    "PostToolUseFailure": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/check.mjs\"",
+            "timeout": 60,
+            "statusMessage": "bash-lsp-intelligence: shfmt and shellcheck on the changed shell scripts"
+          }
+        ]
+      }
+    ]
+  }
+}

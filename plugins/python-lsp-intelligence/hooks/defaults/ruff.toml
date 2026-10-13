@@ -1,0 +1,108 @@
+# python-lsp-intelligence defaults: used only when ruff finds no configuration of your own.
+
+line-length = 100
+indent-width = 4
+
+respect-gitignore = true
+force-exclude = true
+
+# Explicit, not implicit: preview rules, fixes and formatter style change between patch
+# releases and are not a quality gate. `ruff check --preview` still opts in per run.
+preview = false
+
+[lint]
+
+select = ["ALL"]
+
+ignore = [
+    # === Owned by basedpyright ===
+
+    # flake8-annotations: only the parameter and `Any` rules have a basedpyright owner.
+    # The return-annotation rules (ANN201, ANN202, ANN204, ANN205, ANN206) stay ON:
+    "ANN001",  # missing-type-function-argument -> reportMissingParameterType
+    "ANN002",  # missing-type-args -> reportMissingParameterType
+    "ANN003",  # missing-type-kwargs -> reportMissingParameterType
+    "ANN401",  # any-type -> reportAny
+    "PLE0605", # invalid-all-format -> basedpyright validates __all__
+    "RUF013",  # implicit-optional -> strictParameterNoneValue
+    "RUF016",  # invalid-index-type -> type-aware indexing checks
+    "UP006",   # non-pep585-annotation -> deprecateTypingAliases (List, Dict, ...)
+    "UP007",   # non-pep604-annotation-union -> deprecateTypingAliases (typing.Union)
+    "UP035",   # deprecated-import -> deprecateTypingAliases + reportDeprecated
+    "UP045",   # non-pep604-annotation-optional -> deprecateTypingAliases (typing.Optional)
+    "D418",    # overload-with-docstring -> basedpyright shows per-overload docstrings
+    "PLC0414", # useless-import-alias -> conflicts: `x as x` is the explicit re-export
+    #            form reportPrivateLocalImportUsage requires
+    "ISC001",  # single-line-implicit-string-concatenation -> reportImplicitStringConcatenation
+    "ISC004",  # implicit concat in collection literal -> reportImplicitStringConcatenation
+    #            (ISC002/ISC003 stay on: basedpyright exempts parenthesized multi-line
+    #            implicit concatenation, which is exactly what ISC003 asks for)
+    "W191",   # tab-indentation
+    "E111",   # indentation-with-invalid-multiple
+    "E114",   # indentation-with-invalid-multiple-comment
+    "E117",   # over-indented
+    "D206",   # docstring-tab-indentation
+    "D300",   # triple-single-quotes
+    "Q000",   # bad-quotes-inline-string
+    "Q001",   # bad-quotes-multiline-string
+    "Q002",   # bad-quotes-docstring
+    "Q003",   # avoidable-escaped-quote
+    "Q004",   # unnecessary-escaped-quote
+    "COM812", # missing-trailing-comma
+    "COM819", # prohibited-trailing-comma
+
+    # === Global standalone-script policy ===
+
+    "CPY001", # missing-copyright-notice (stable since 0.16.0); enable per project
+    "D100",   # missing-docstring-in-public-module
+    "D104",   # missing-docstring-in-public-package
+    "S603",   # subprocess-without-shell-equals-true (fires on every subprocess call)
+    "INP001", # implicit-namespace-package (loose scripts are not packages)
+]
+
+fixable = ["ALL"]
+unfixable = []
+
+[lint.per-file-ignores]
+"**/{tests,test}/**/*.py" = [
+    "S101",    # assert is the pytest idiom
+    "PLR2004", # magic-value-comparison in expected values
+    "D",       # test docstrings
+    "SLF001",  # private member access in white-box tests
+    "A001", # builtin-variable-shadowing: names mirror the runtime module
+    "A002", # builtin-argument-shadowing
+    "N",    # pep8-naming: third-party names are not ours to choose
+]
+
+[lint.isort]
+
+force-sort-within-sections = true
+combine-as-imports = true
+order-by-type = true
+
+[lint.mccabe]
+
+max-complexity = 8
+
+[lint.pydocstyle]
+
+convention = "google"
+
+[lint.flake8-tidy-imports]
+
+ban-relative-imports = "all"
+
+[lint.pycodestyle]
+
+max-doc-length = 100
+ignore-overlong-task-comments = true
+
+[format]
+
+exclude = ["*.md"]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "lf"
+docstring-code-format = true
+docstring-code-line-length = 100

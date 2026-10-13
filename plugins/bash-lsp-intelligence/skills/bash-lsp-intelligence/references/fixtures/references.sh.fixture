@@ -1,8 +1,5 @@
 # shellcheck shell=bash
-# Fixture for the language server: `target` is defined once and called three times.
-target() {
-  printf '%s\n' "$1"
-}
+target() { printf '%s\n' "$1"; }
 target one
 target two
 target three

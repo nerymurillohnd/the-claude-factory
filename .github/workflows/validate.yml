@@ -22,6 +22,11 @@ env:
   RUFF_VERSION: "0.17.0"
   BIOME_VERSION: "2.5.15"
   MYPY_VERSION: "1.18.2"
+  BASEDPYRIGHT_VERSION: "1.40.2"
+  UV_VERSION: "0.13.0"
+  # shfmt release binary for the Bash hook tests; the checksum pins the exact build.
+  SHFMT_VERSION: "3.14.1"
+  SHFMT_SHA256: "76e77641faa025814b77f153b29796b8e6fa2fca03e0c76a691608b86c7ea7bf"
 
 jobs:
   policy:
@@ -34,6 +39,17 @@ jobs:
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version-file: .nvmrc
+      - name: Tools the LSP hook tests run (shellcheck, shfmt, the pinned TypeScript compilers)
+        run: |
+          sudo apt-get install -y --no-install-recommends shellcheck
+          curl -sSfL -o /usr/local/bin/shfmt "https://github.com/mvdan/sh/releases/download/v${SHFMT_VERSION}/shfmt_v${SHFMT_VERSION}_linux_amd64"
+          echo "${SHFMT_SHA256}  /usr/local/bin/shfmt" | sha256sum --check --strict
+          sudo chmod 755 /usr/local/bin/shfmt
+          for plugin in typescript6-lsp-intelligence typescript7-lsp-intelligence; do
+            npm ci --ignore-scripts --no-audit --no-fund --prefix "plugins/${plugin}"
+          done
+          shellcheck --version | head -2
+          shfmt --version
       - name: Script tests
         run: node --test ".github/scripts/tests/*.test.mjs"
       - name: Repository policy
@@ -66,6 +82,17 @@ jobs:
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: ${{ matrix.python }}
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+        with:
+          version: ${{ env.UV_VERSION }}
+      - name: ruff and basedpyright for the Python hook tests
+        shell: bash
+        run: |
+          # uv tools run on their own interpreter (basedpyright's wheel needs Python 3.10+);
+          # the hook under test still runs on the matrix Python.
+          uv tool install "ruff==${RUFF_VERSION}"
+          uv tool install "basedpyright==${BASEDPYRIGHT_VERSION}"
+          uv tool dir --bin >> "${GITHUB_PATH}"
       - name: Unit tests (every plugin's Python suite)
         shell: bash
         run: |
@@ -102,15 +129,14 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
         with:
-          python-version: "3.13"
+          version: ${{ env.UV_VERSION }}
       - name: ruff and mypy
         run: |
-          python -m pip install --disable-pip-version-check "ruff==${RUFF_VERSION}" "mypy==${MYPY_VERSION}"
-          ruff check plugins .github/scripts
-          ruff format --check plugins .github/scripts
-          git ls-files -z 'plugins/*.py' | xargs -0 mypy --python-version 3.9 --strict
+          uvx "ruff@${RUFF_VERSION}" check --output-format=github plugins .github/scripts
+          uvx "ruff@${RUFF_VERSION}" format --check plugins .github/scripts
+          git ls-files -z 'plugins/*.py' '.github/scripts/tests/*.py' | xargs -0 uvx --from "mypy==${MYPY_VERSION}" mypy --python-version 3.9 --strict
 
   claude-validate:
     name: claude plugin validate

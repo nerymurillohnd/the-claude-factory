@@ -1,0 +1,23 @@
+{
+  "typescript": {
+    "command": "node",
+    "args": [
+      "${CLAUDE_PLUGIN_ROOT}/node_modules/typescript-language-server/lib/cli.mjs",
+      "--stdio"
+    ],
+    "startupTimeout": 30000,
+    "maxRestarts": 3,
+    "extensionToLanguage": {
+      ".ts": "typescript",
+      ".tsx": "typescriptreact",
+      ".mts": "typescript",
+      ".cts": "typescript",
+      ".js": "javascript",
+      ".jsx": "javascriptreact",
+      ".mjs": "javascript",
+      ".cjs": "javascript"
+    },
+    "restartOnCrash": true,
+    "diagnostics": true
+  }
+}

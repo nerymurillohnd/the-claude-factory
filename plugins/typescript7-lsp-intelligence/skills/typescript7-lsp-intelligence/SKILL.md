@@ -1,95 +1,72 @@
 ---
 name: typescript7-lsp-intelligence
-description: Navigates TypeScript and JavaScript through the native TypeScript language server, finds the tsconfig program that owns each file, repairs compiler findings without unsafe assertions or suppressions, and verifies each change with the compiler. Use when navigating, editing, refactoring or diagnosing TypeScript or JavaScript, resolving imports, types or program membership, explaining why the editor and tsc disagree, or verifying a change.
+description: Navigates TypeScript and JavaScript by symbol through the native TypeScript 7 language server, finds the tsconfig program that owns each file, and checks changes with the pinned tsc using the project's own configuration. Use when editing, refactoring or diagnosing TypeScript or JavaScript on TypeScript 7, fixing a compiler error such as TS2322, finding every usage of an export, or explaining why the editor and tsc disagree.
 ---
 
-# TypeScript and JavaScript Code Intelligence
+# TypeScript and JavaScript code intelligence (TypeScript 7)
 
-Understand the symbol and the program that owns it, preserve runtime and public API contracts, and verify the affected behavior. Fix the actionable diagnostics before beginning unrelated changes: those are the findings in the code the task changes, including any the change introduces. Report pre-existing findings in code the task does not touch; fix them only when the user asks.
+The TypeScript 7 server answers navigation requests but pushes no diagnostics after edits, so no `Found N new diagnostic issues` line ever appears for `.ts`, `.tsx`, `.mts`, `.cts`, `.js`, `.jsx`, `.mjs` or `.cjs` files: silence means unchecked, not clean. To check a whole program, or a caller in another file, run the plugin's compiler yourself: `node "${CLAUDE_PLUGIN_ROOT}/node_modules/typescript/bin/tsc" --noEmit -p <tsconfig.json>`.
 
-**Authorized** means what the request covers explicitly or necessarily implies, such as editing the code it asks to change and running read-only checks. Installing or switching compilers, changing dependencies, and changing `tsconfig`, lint or format policy always need an explicit request.
+Work with the language server first and the toolchain second. Nothing here mentions how the project is checked automatically; run every check yourself when the task calls for it.
 
-## Choose the right tool
+## LSP and Grep are complementary
 
-**Claude must prefer the LSP over Grep, Glob, and Bash for code navigation and semantic relationships.** Use source reading to understand implementation and text search for metadata, dynamic names, and source formats outside semantic coverage. Use the compiler and other command-line tools for explicit verification.
+LSP owns questions about code structure; Grep owns questions about text. Route each question to its owner, and use both before changing or deleting code.
 
-| Operation | Purpose | Use before |
-|---|---|---|
-| `goToDefinition` | Identify a symbol's declaration | Modifying unfamiliar code |
-| `findReferences` | Discover static consumers | Refactoring or renaming |
-| `goToImplementation` | Find interface/abstract implementations | Changing polymorphic behavior |
-| `hover` | Inspect inferred types, signatures, and documentation | Understanding APIs or validating position |
-| `documentSymbol` | Obtain a file outline | Exploring a large file |
-| `workspaceSymbol` | Search named symbols | Locating related source |
-| `prepareCallHierarchy` | Identify the callable hierarchy item | Analyzing call relationships |
-| `incomingCalls` | Discover callers | Impact analysis |
-| `outgoingCalls` | Discover callees | Dependency tracing |
+| Question | Owner | Operation |
+| :-- | :-- | :-- |
+| Where is X defined? | LSP | `goToDefinition` |
+| Who uses or imports X? | LSP | `findReferences` |
+| Type or signature of X? | LSP | `hover` |
+| What does this file contain? | LSP | `documentSymbol`, before reading the whole file |
+| Where is X, file unknown? | LSP | `workspaceSymbol`, always with `query` |
+| Who calls X, what does X call? | LSP | `prepareCallHierarchy`, then `incomingCalls` / `outgoingCalls` |
+| Implementations of an interface | LSP | `goToImplementation` |
+| Where does a word appear as text (docs, comments, strings, config, scripts)? | Grep | — |
+| Is it safe to delete or rename? | Both | LSP for code references, Grep for the blind spots below |
 
-For the Claude `LSP` tool, provide the common parameters for every operation:
+Every operation takes `filePath` (absolute), `line` (1-based) and `character` (1-based, UTF-16 code units: an emoji before the symbol counts 2). Raw LSP data in logs is 0-based: add 1 to both.
 
-- `filePath`: the absolute source path.
-- `line`: a 1-based line number.
-- `character`: a 1-based UTF-16 column at the symbol name.
+## Trusting a result
 
-Supply additional fields only when the actual tool schema exposes them. Read [operations.md](references/operations.md) for capability checks, workspace symbol search, and import actions.
+When a result is empty, shows only the definition, or will justify an edit or deletion, check all five before believing it:
 
-## Change an exported symbol
+1. **Position**: `hover` at the same spot shows the intended symbol. "No hover information" means a wrong position or no server, never "no usages".
+2. **Warm-up**: a session's first workspace-wide query can be partial. Repeat until two consecutive results match (at most three).
+3. **Scope**: only the session's working directory is indexed. Outside it, results are stable and incomplete: say so and use Grep plus reading.
+4. **Freshness**: changes made outside Edit and Write (Bash, git, codegen, formatters) may never reach the index. Grep or Read those files instead of trusting counts.
+5. **Blind spots**: Grep the name for the uses LSP cannot see (next section).
 
-1. Identify the declaration with `goToDefinition` or `hover`.
-2. Find the program that owns the file (see "Verify what changed") and query `findReferences` from a source file in each implicated program. For a short or empty result, check path, position, synchronization, and loaded projects, then retry at most twice after the initial request.
-3. Inspect what references miss: re-exports, local import aliases, package `exports` and entry points, declaration files, dynamically named consumers, and framework files a TS-only server can't read.
-4. Edit the confirmed consumers; list unresolved ones separately.
-5. Verify with the compiler on every affected program. The change is done when those checks pass, the diagnostics Claude Code reports after each edit show no new findings, and the unresolved consumers are reported.
+Only after all five does "no references" mean none. Never delete code on LSP evidence alone.
 
-Read [typescript-navigation.md](references/typescript-navigation.md) for project scope, moved files, and call analysis. When semantic tooling is unavailable, report the boundary once and use source reading and text search; do not install a server merely to answer a lookup.
+## Blind spots, every language
 
-## Diagnose the actual program
+LSP sees static code references only. Grep the name in: strings and reflection (dynamic imports, `eval`, dispatch by name); entry points and config (package scripts, YAML, JSON, TOML, `.env`); framework injection (fixtures, decorators, registries, routes); shell scripts, CI, Makefiles, Dockerfiles; docs, comments, templates.
 
-Preserve the diagnostic's source, file, location, code, message, snapshot, and relevant configuration. The LSP findings are the diagnostics Claude Code reports automatically after each edit; compare them with a CLI run on the same source and program before deciding why they disagree.
+## Impact analysis (rename, signature change, deletion)
 
-For external or unknown values, validate runtime shape and narrow `unknown` into the required contract. Preserve rejection behavior, module side effects, and affected callers. Do not use unsafe assertions, non-null assertions, broader `any`, suppressions, invented defaults, or weaker checking merely to make diagnostics disappear. Reread source changed by a formatter or code action before the next edit.
+Copy this checklist into your working notes and tick each item:
 
-Read [diagnostics-and-repair.md](references/diagnostics-and-repair.md) before selecting a correction or changing configuration.
+- [ ] `findReferences` on the definition, with the five trust checks. The references are the must-change list.
+- [ ] The language-specific steps in "Gotchas" below.
+- [ ] Grep the blind spots. Textual mentions are listed as optional; any dynamic use blocks a deletion.
+- [ ] After the change, run the checks in [toolchain.md](references/toolchain.md) and fix what they report.
 
-## Verify what changed
+## Gotchas (verified on fixtures)
 
-1. Find the owning `tsconfig.json`: the nearest one above the file. Confirm with `tsc --listFilesOnly -p <tsconfig>` that the file is listed; if it isn't, follow that config's `references`, or the solution-style root that lists it, until you find the program that includes it.
-2. Compile with the project's own compiler, `tsc --noEmit -p <tsconfig>`, run through the project's package manager (for example `npx tsc`). A compiler the user or the project declares replaces this default.
-3. Run the project's declared lint, format, and test commands for the changed files.
-4. After each fix, rerun the same checks; [verification.md](references/verification.md) sets when to stop.
+- **The TypeScript 7 server reports no diagnostics after edits** (it serves pull diagnostics only). When you need the compiler's view of a change, run the command at the top of this skill on each program the change touches, not only on the edited file's.
+- **Only loaded projects are searched.** Callers in another `tsconfig` project, or in a file no `tsconfig` includes, are missing and the result is stable across repeats, so the warm-up check passes. `hover` one file of each other project first, then re-run `findReferences`.
+- **`.astro`, `.svelte`, `.vue` and `.mdx` are invisible** to the server. Grep them before any rename or deletion.
+- **Aliases and barrels are followed** (`import { f as g } from "./index"` lists the calls to `g`), so the reference list is the TypeScript-side must-change set.
+- **`tsc` checks a whole program.** An error in a file you did not edit is breakage your change caused; fix it too. A file absent from `tsc --listFilesOnly -p <tsconfig>` has not been checked at all.
+- **`allowJs` admits JavaScript; only `checkJs` or `// @ts-check` type-checks it.** A listed JS file with checking off has not passed type checking.
 
-Preserve every process status and full stdout/stderr. Report the change or diagnosis, the compiler and version used, the programs checked, and remaining uncertainty.
+## Checks
 
-## Pitfalls
+Run them yourself after a change:
 
-- `--showConfig` and `--listFilesOnly` inspect configuration and membership; neither type-checks.
-- A config without `files` or `include` still defines a program: the defaults include source files.
-- `allowJs` brings JavaScript into the program; only `checkJs` or a file's `// @ts-check` type-checks it.
-- A moved file absent from the compiler's program has not been validated by that compiler; a passing CLI run cannot dismiss its LSP diagnostic.
-- A failed `tsc` with no `error TS` line is still a failure; a successful final filter does not establish compiler success.
-- `--noEmit` stops program output, not incremental or build metadata writes.
-- The legacy generation exposes `tsserver` (`lib/tsserver.js`), which wrappers such as typescript-language-server need; the native generation exposes `tsc --lsp --stdio` and no `tsserver.js`. Do not point a `tsserver` wrapper at a native-only package.
-- Raw LSP protocol positions are 0-based; convert once.
+- `tsc --noEmit -p <tsconfig.json>` for every program that includes a changed file or a caller; `tsc --listFilesOnly -p <tsconfig.json>` to confirm membership; `tsc --showConfig -p <tsconfig.json>` to read the effective options (neither of the last two type-checks).
+- The project's own formatter and linter (Biome, Prettier, ESLint), exactly as its `package.json` scripts run them.
+- The project's tests for the changed behavior.
 
-## Control tests
-
-Run the control tests only when the user asks to test tool coverage, or when a check passes code it should flag. They are not a step of ordinary coding tasks. Read [controls.md](references/controls.md) first, then run the bundled runner by path:
-
-```bash
-"${CLAUDE_SKILL_DIR}/scripts/verify-fixtures.sh"
-"${CLAUDE_SKILL_DIR}/scripts/verify-fixtures.sh" --tool tsc=/absolute/path/to/declared/tsc
-```
-
-The first form uses `tsc` from `PATH`; pass `--tool tsc=/absolute/path` for the compiler the task declares, and run once per compiler generation you need to check. The runner needs `bash` and `jq` 1.6 or later, installs nothing, and never executes the controls.
-
-- **Exit 0**: the JSON report printed. `allExpectedOutcomesMatched` is the overall result; each entry in `results` carries its own `expectedOutcomeMatched`.
-- **Exit 2**: setup failed and no report printed; stderr names the failed step and what to do next.
-
-## Reference map
-
-- [operations.md](references/operations.md): capability checks, workspace symbol search, and import actions.
-- [typescript-navigation.md](references/typescript-navigation.md): symbol identity and consumer coverage.
-- [diagnostics-and-repair.md](references/diagnostics-and-repair.md): program context, compiler generations, and safe repairs.
-- [verification.md](references/verification.md): what each check establishes, Biome, and the repeat-after-fix loop.
-- [controls.md](references/controls.md): the control tests and their expected results.
-- [sources.md](references/sources.md): read when an installed tool behaves differently from this skill, before revising an assumption.
+Read [toolchain.md](references/toolchain.md) when configuring TypeScript, raising strictness, telling TypeScript 6 and 7 apart, or wiring CI or an IDE. Read [fixtures.md](references/fixtures.md) when a check passes code it should flag.

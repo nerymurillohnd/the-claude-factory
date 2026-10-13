@@ -1,9 +1,6 @@
-"""Fixture: clean control that every check must pass.
-
-A passing result is a positive control only for the selected analysis profile.
-"""
+"""Clean control: every check must pass here."""
 
 
 def add(left: int, right: int) -> int:
-    """Return the sum of two integers."""
+    """Add two integers."""
     return left + right

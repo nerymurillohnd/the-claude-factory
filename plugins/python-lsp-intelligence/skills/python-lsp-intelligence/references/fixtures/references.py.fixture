@@ -1,8 +1,6 @@
-"""Fixture for the language server: `target` is defined once and called three times."""
-
-
+"""For the language server: `target` is defined once and called three times."""
 def target(value: int) -> int:
-    """Return the value plus one."""
+    """Add one."""
     return value + 1
 
 

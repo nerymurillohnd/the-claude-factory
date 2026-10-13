@@ -1,86 +1,69 @@
 ---
 name: python-lsp-intelligence
-description: Navigates Python code through the basedpyright language server, repairs basedpyright and Ruff findings without suppressing them, and verifies each change with separate lint, format, type and test evidence. Use when navigating, editing, refactoring or diagnosing Python code, resolving imports or annotations, investigating incomplete LSP answers, or verifying a Python change. Not for other languages.
+description: Navigates Python by symbol through basedpyright, resolves imports and aliases before a rename or deletion, and checks code with ruff and basedpyright using the project's own configuration. Use when editing, refactoring or diagnosing Python, fixing a ruff or basedpyright finding, finding every usage of a function, or explaining why an import fails only in the editor.
 ---
 
-# Python Code Intelligence
+# Python code intelligence
 
-Use semantic evidence to understand code, preserve its contract when changing it, and verify the specific behavior affected. Fix the actionable diagnostics before beginning unrelated changes: those are the findings in the code the task changes, including any the change introduces. Report pre-existing findings in code the task does not touch; fix them only when the user asks.
+Work with the language server first and the toolchain second. Nothing here mentions how the project is checked automatically; run every check yourself when the task calls for it.
 
-**Authorized** means what the request covers explicitly or necessarily implies, such as editing the code it asks to change and running read-only checks. Creating, synchronizing or substituting environments, installing or changing dependencies, and changing checker or linter policy always need an explicit request.
+## LSP and Grep are complementary
 
-## Choose the right tool
+LSP owns questions about code structure; Grep owns questions about text. Route each question to its owner, and use both before changing or deleting code.
 
-**Claude must prefer the LSP over Grep, Glob, and Bash for code navigation and semantic relationships.** Confirm the available tool and server capabilities before making a request. Use source reading for implementation details and text search for strings, metadata, dynamic uses, or files the server cannot serve. Use command-line tools for explicit verification, not as substitutes for semantic navigation.
+| Question | Owner | Operation |
+| :-- | :-- | :-- |
+| Where is X defined? | LSP | `goToDefinition` |
+| Who uses or imports X? | LSP | `findReferences` |
+| Type or signature of X? | LSP | `hover` |
+| What does this file contain? | LSP | `documentSymbol`, before reading the whole file |
+| Where is X, file unknown? | LSP | `workspaceSymbol`, always with `query` |
+| Who calls X, what does X call? | LSP | `prepareCallHierarchy`, then `incomingCalls` / `outgoingCalls` |
+| Implementations of an interface | LSP | `goToImplementation` |
+| Where does a word appear as text (docs, comments, strings, config, scripts)? | Grep | — |
+| Is it safe to delete or rename? | Both | LSP for code references, Grep for the blind spots below |
 
-| Operation | Purpose | Use before |
-|---|---|---|
-| `goToDefinition` | Identify the defining symbol | Modifying unfamiliar code |
-| `findReferences` | Discover static uses | Refactoring or renaming |
-| `goToImplementation` | Find supported implementation relationships | Changing polymorphic behavior |
-| `hover` | Inspect inferred types, signatures, and documentation | Understanding an API or validating a position |
-| `documentSymbol` | Obtain a file outline | Exploring a large file |
-| `workspaceSymbol` | Search named symbols | Locating a symbol with unknown file |
-| `prepareCallHierarchy` | Identify the callable hierarchy item | Tracing call relationships |
-| `incomingCalls` | Discover callers | Impact analysis |
-| `outgoingCalls` | Discover callees | Dependency tracing |
+Every operation takes `filePath` (absolute), `line` (1-based) and `character` (1-based, UTF-16 code units: an emoji before the symbol counts 2). Raw LSP data in logs is 0-based: add 1 to both.
 
-For the Claude `LSP` tool, provide these common parameters for every operation:
+## Trusting a result
 
-- `filePath`: the absolute source-file path within the workspace.
-- `line`: a 1-based line number.
-- `character`: a 1-based UTF-16 column; an emoji before the symbol contributes two code units.
+When a result is empty, shows only the definition, or will justify an edit or deletion, check all five before believing it:
 
-Point at the symbol name. Supply additional fields only when the actual tool schema exposes them; do not add raw-protocol fields to the Claude request. Raw LSP protocol positions and diagnostic ranges are 0-based; convert once when reporting or calling the Claude tool. A server capability is not automatically an operation exposed by the client. Read [operations.md](references/operations.md) for positions, capability checks, and imports.
+1. **Position**: `hover` at the same spot shows the intended symbol. "No hover information" means a wrong position or no server, never "no usages".
+2. **Warm-up**: a session's first workspace-wide query can be partial. Repeat until two consecutive results match (at most three).
+3. **Scope**: only the session's working directory is indexed. Outside it, results are stable and incomplete: say so and use Grep plus reading.
+4. **Freshness**: changes made outside Edit and Write (Bash, git, codegen, formatters) may never reach the index. Grep or Read those files instead of trusting counts.
+5. **Blind spots**: Grep the name for the uses LSP cannot see (next section).
 
-## Navigate with bounded, scoped evidence
+Only after all five does "no references" mean none. Never delete code on LSP evidence alone.
 
-1. Locate the symbol semantically, confirm its identity with `hover` or its declaration, then ask the operation that answers the task.
-2. Before relying on an empty or unexpectedly small result, verify the file, symbol position, workspace, synchronization, and supported operation. If a cold index is plausible, load a relevant file semantically and retry at most twice after the initial request. Stable results do not establish complete coverage.
-3. For a rename or deletion, inspect imports, aliases, public exports, entry points, pytest fixtures, and dynamic consumers. With `from module import target as local`, references to `target` can omit calls through `local`; query the alias as well. Preserve the alias unless the requested change includes it.
-4. Search the relevant non-code registrations and dynamic uses after semantic discovery. Inspect candidate hits by identity; do not replace every matching word. Report unresolved external consumers or dynamic names rather than asserting universal absence.
+## Blind spots, every language
 
-Read [python-navigation.md](references/python-navigation.md) for aliases, decorators, pytest, source scope, and safe change boundaries. If semantic tooling is unavailable or unsupported, report the material limit once and use the available source/search tools; do not invent a tool or install a server merely to complete a lookup.
+LSP sees static code references only. Grep the name in: strings and reflection (dynamic imports, `eval`, dispatch by name); entry points and config (package scripts, YAML, JSON, TOML, `.env`); framework injection (fixtures, decorators, registries, routes); shell scripts, CI, Makefiles, Dockerfiles; docs, comments, templates.
 
-## Diagnose before changing behavior
+## Impact analysis (rename, signature change, deletion)
 
-Collect the diagnostic's tool, file, position, rule, message, source version, and applicable configuration. An error, warning, empty response, unavailable analysis, and a passed check are different evidence. Investigate disagreements between LSP and CLI using the same source snapshot, interpreter, rules, and scope; neither source of evidence wins merely because it returned fewer findings.
+Copy this checklist into your working notes and tick each item:
 
-For an import error, establish the intended environment and declaration before adding a dependency or editing the import. A PEP 723 script may be analyzed under a different interpreter than the one supplying its declared packages. Explain that mismatch; do not create, synchronize, or substitute environments unless authorized.
+- [ ] `findReferences` on the definition, with the five trust checks. The references are the must-change list.
+- [ ] The language-specific steps in "Gotchas" below.
+- [ ] Grep the blind spots. Textual mentions are listed as optional; any dynamic use blocks a deletion.
+- [ ] After the change, run the checks in [toolchain.md](references/toolchain.md) and fix what they report.
 
-For unknown or `Any` data, validate the external boundary and narrow from `object` to the required type. Keep runtime rejection paths, public return types, and caller assumptions intact. An annotation alone does not validate a value. Do not use unchecked casts, suppression comments, invented defaults, or weaker configuration solely to hide a finding.
+## Gotchas (verified on fixtures)
 
-Read [diagnostics-and-repair.md](references/diagnostics-and-repair.md) for F401, type rules, input validation, and error classification. Re-read source that any formatter or code action changed before constructing the next edit.
+- **Aliases aren't followed.** After `from m import f as g`, `findReferences` on `f` lists the import line but not the calls to `g`. Run it on `g` too, and keep the alias unless the rename includes it.
+- **PEP 723 scripts show false import errors in the server** (`reportMissingImports`, cascading `reportUnknown*`): it can't see the script's uv environment. Check such a script with `basedpyright --pythonpath "$(uv python find --script <file>)" <file>`.
+- **`ruff format` and `ruff check --fix` rewrite in place.** Re-read a file after running them and before the next edit.
+- **Diagnostics after each edit cover the edited file only.** A caller broken by a signature change surfaces when you run basedpyright on it; do that for every file `findReferences` listed.
+- **pytest fixtures, entry points and `__all__` are strings to the server.** Grep `tests/`, `conftest.py`, `pyproject.toml` (`[project.scripts]`, `[project.entry-points]`) and `__all__` lists before calling a name unused.
 
-## Verify the actual change
+## Checks
 
-Use the declared checking policy and the tools already available. Confirm which files were analyzed and preserve each process's status and full diagnostics; the last command in a sequence or a successful JSON filter does not establish that preceding checks passed. A warning can exist with exit 0 under some configurations. Ruff can exclude an explicitly named file when `force-exclude` is enabled.
+Run them yourself after a change, on every file you touched and every caller:
 
-Check affected callers when changing exports, annotations, or signatures: file-scoped type checking is not whole-program coverage.
+- `ruff check --fix <files>` then `ruff format <files>`; `ruff rule <CODE>` explains a code.
+- `basedpyright <files>` from the project root, so it reads the project's `pyrightconfig.json` or `pyproject.toml`; add `--outputjson` for machine-readable output.
+- The project's tests for the changed behavior.
 
-Read [verification.md](references/verification.md) when selecting checks, interpreting statuses, or repeating checks after a fix.
-
-Report the concrete change or diagnosis, verification performed, scope, and remaining uncertainty. Correct authorized code defects without waiting for another approval; report a missing environment, incompatible API contract, or policy decision at its actual boundary.
-
-## Control tests
-
-Run the control tests only when the user asks to test tool coverage, or when a check passes code it should flag. They are not a step of ordinary coding tasks. Read [controls.md](references/controls.md) first, then run the bundled runner by path:
-
-```bash
-"${CLAUDE_SKILL_DIR}/scripts/verify-fixtures.sh"
-"${CLAUDE_SKILL_DIR}/scripts/verify-fixtures.sh" --tool basedpyright=/absolute/path/to/basedpyright --tool ruff=/absolute/path/to/ruff
-```
-
-The first form uses `basedpyright` and `ruff` from `PATH`; add one `--tool name=/absolute/path` pair for each executable the task declares. The runner needs `bash` and `jq` 1.6 or later, installs nothing, and never executes the controls.
-
-- **Exit 0**: the JSON report printed. `allExpectedOutcomesMatched` is the overall result; each entry in `results` carries its own `expectedOutcomeMatched`.
-- **Exit 2**: setup failed (missing tool, bad argument, unreadable manifest) and no control ran; stderr names the cause.
-
-## Reference map
-
-- [operations.md](references/operations.md): Claude requests, capability checks, raw-protocol differences, and import actions.
-- [python-navigation.md](references/python-navigation.md): Python-specific identity and consumer coverage.
-- [diagnostics-and-repair.md](references/diagnostics-and-repair.md): repair decisions and input boundaries.
-- [verification.md](references/verification.md): independent checks, the repeat-after-fix loop, and completion evidence.
-- [controls.md](references/controls.md): the control tests and their expected results.
-- [sources.md](references/sources.md): read when an installed tool behaves differently from this skill, before revising an assumption.
+Read [toolchain.md](references/toolchain.md) when configuring or installing ruff or basedpyright, wiring CI or an IDE, or raising strictness. Read [fixtures.md](references/fixtures.md) when a check passes code it should flag.
