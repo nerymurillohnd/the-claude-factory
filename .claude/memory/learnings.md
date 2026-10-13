@@ -72,7 +72,8 @@ Rules learned the hard way. Follow them; add one line per new lesson.
 - Issue-form query parameters prefill **text inputs** only, so the `plugin` field is an `input`, not a dropdown.
 - Issue-form labels that don't exist in the repo are silently dropped — run `sync-labels.mjs` after adding labels or plugins.
 - "Pull requests → Collaborators only" exists natively since 2026-02 (Settings → General → Features).
-- The `release.yml` workflow is triggered by `workflow_run` after Validate on `main`; never tag by hand.
+- The `release.yml` workflow is triggered by `workflow_run` after Validate on `main`; never tag by hand. Versions already dated in a merged PR get tagged by that run, so `/release` afterwards only has the marketplace left.
+- A plain `git push` from a checkout still on a merged, deleted feature branch recreates that branch on GitHub: switch to `main` first, or push `origin main` explicitly.
 - A plugin registered in `marketplace.json` on `main` is live: users can install it from the branch and `release.yml` tags its version. Build new plugins on a `feat/<name>` branch with a draft PR and merge only at release.
 
 ## Tooling
