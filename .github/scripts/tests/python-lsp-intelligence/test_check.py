@@ -76,7 +76,8 @@ class Workspace(unittest.TestCase):
     def write(self, name: str, text: str) -> Path:
         path = self.project / name
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_bytes(text.encode("utf-8"))  # LF everywhere, Windows included (3.9 has no newline=)
+        # Bytes keep LF on Windows too; Path.write_text(newline=) needs Python 3.10.
+        path.write_bytes(text.encode("utf-8"))
         return path
 
 
