@@ -167,7 +167,8 @@
             "noConsole": "off"
           },
           "style": {
-            "noImplicitBoolean": "off"
+            "noImplicitBoolean": "off",
+            "useNamingConvention": "off"
           }
         }
       }
