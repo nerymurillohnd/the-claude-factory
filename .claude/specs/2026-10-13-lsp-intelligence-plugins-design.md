@@ -146,6 +146,7 @@ Decisions behind the table:
 - No PEP 723 environment preparation, no `uv sync`, no interpreter substitution: basedpyright reports what it sees, and the skill teaches `--pythonpath "$(uv python find --script <file>)"` for scripts.
 - No invented strictness profile for TypeScript: the project's `tsconfig.json` is the policy. The skill explains how to raise it.
 - Every default flag above is the tool's own documented option; the hook never writes a config file to apply them.
+- The Bash defaults are documented twice for users: the README Configuration section and the skill's `toolchain.md` state that `.editorconfig` (searched upward from the file, as shfmt does) and `.shellcheckrc`/`SHELLCHECK_OPTS` override the plugin, and that without them the style is `shfmt -i 2 -ci -bn` and the analysis is `-o all -S style -x -a -P SCRIPTDIR`.
 
 ## 5. LSP configuration
 
@@ -185,7 +186,7 @@ TypeScript packaging:
 
 ### 6.3 References
 
-`toolchain.md` per language: how each tool finds its configuration, the exact CLI invocations for one file and for a project, how to raise strictness in the project's own config, where the project's formatter and linter run (TypeScript), IDE and CI notes, install commands. `fixtures.md` + `fixtures/`: minimal `.fixture` files with one known defect each (clean control, format change, lint finding, type error, references target) and the exact commands plus expected codes, run in a temporary folder next to the project so its configuration applies.
+`toolchain.md` per language: how each tool finds its configuration and what the plugin's defaults are when it finds none, the exact CLI invocations for one file and for a project, how to raise strictness in the project's own config, where the project's formatter and linter run (TypeScript), IDE and CI notes, install commands. `fixtures.md` + `fixtures/`: minimal `.fixture` files with one known defect each (clean control, format change, lint finding, type error, references target) and the exact commands plus expected codes, run in a temporary folder next to the project so its configuration applies.
 
 ## 7. Hook error handling and limits
 
