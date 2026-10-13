@@ -53,19 +53,18 @@
 
 ## Status
 
-- Released on `main` (tags by `release.yml`): `skill-diagnostics` 0.1.0 (PR #1) and 0.1.1 (PR #3, `@claude` review fixes), `session-handoff` 0.1.0 (PR #5). Marketplace still `0.1.0`: the 0.2.0 bump for the two added plugins is pending (`/release marketplace`).
+- Released on `main` (tags by `release.yml`): `skill-diagnostics` 0.1.0 (PR #1) and 0.1.1 (PR #3, `@claude` review fixes), `session-handoff` 0.1.0 (PR #5), `plugin-test-bench` 0.1.0 (PR #6). Marketplace still `0.1.0`: the 0.2.0 bump for the three added plugins is pending (`/release marketplace`).
 - CI: Validate, Release, `claude-code-review.yml` (review on every PR) and `claude.yml` (`@claude` mentions, from PR #2); `evals.yml` runs one matrix job per changed plugin with `evals/` (PR #4; verified on PR #5: nothing selected, eval job skipped).
-- GitHub settings done: PRs Collaborators only, private vulnerability reporting, topics, 20 custom labels. `main` has no branch protection.
+- GitHub settings done: PRs Collaborators only, private vulnerability reporting, topics, 23 custom labels (including the three `plugin: <name>` labels). `main` has no branch protection.
 
 ## Open items
 
 - **TypeScript gate (unwired):** wiring needs `.github/scripts/package.json` (`typescript` 6.0.3, `@types/node` 26.x, lockfile), a CI step and a `/verify` line, plus JSDoc on the 11 scripts: 132 strictest errors measured 2026-10-12 (mostly implicit `any`). No tool here bans an explicit JSDoc `any` or magic strings (Biome `noMagicNumbers` covers numbers only).
-- **plugin-test-bench, before release:** the free installed run on itself (plan Task 6) is not done; it must confirm that `claude -p` with no credentials emits `system/init` before the login error (undocumented; the verdict rule depends on it). The maintainer skill `.claude/skills/test-installed-plugin` still carries the defects fixed in the plugin (verdict rule, free load check with profiles, sign-in after the go-ahead, quoted grants, prompt before `--allowedTools`).
+- **plugin-test-bench (released 0.1.0):** the free installed run on itself (plan Task 6) was never done; it must confirm that `claude -p` with no credentials emits `system/init` before the login error (undocumented; the verdict rule depends on it). The maintainer skill `.claude/skills/test-installed-plugin` still carries the defects fixed in the plugin (verdict rule, free load check with profiles, sign-in after the go-ahead, quoted grants, prompt before `--allowedTools`).
 - **skill-diagnostics regression (in 0.1.0 and 0.1.1):** the full CI eval of 0.1.1 (run 38297567893, 8/10 cases, score 0.94, Δ +0.67, ~$5.87 list-price estimate) showed natural-request never reading the Claude Code changelog (0/3) and skipping both lens agents in 2/3 runs; hook-audit skipped the agents in 1/3. Plan: restore a `Stop` gate (a prompt hook, no script), run a local `--keep-temp` smoke test of natural-request to read why agents are skipped, release 0.1.2. CI keeps no traces.
 - **session-handoff, untested on the Claude app:** what `${CLAUDE_PROJECT_DIR}` is in a Cowork session (cloud or local), whether a handoff persists in the user's folder and the hook fires there, how a chat conversation renders the placeholder; also `/test-installed-plugin session-handoff`. The runtime minimum Claude Code version is undocumented (v2.1.292 is the install command's floor).
 - skill-diagnostics follow-ups: `/test-installed-plugin skill-diagnostics`, a re-audit of the `audit` skill, the skill-creator → hook offer step; design item: lens agents read their method from the plugin cache (read prompts), and moving it into the agent body needs its own design and re-audit.
 - `evals.yml` shows the skipped matrix job as `Plugin evals (${{ matrix.plugin }})`: cosmetic, give it a fixed name.
-- `sync-labels.mjs` not yet run for the two plugins (`plugin: <name>` labels).
 - Submitting skill-diagnostics to Anthropic's directory: its hook runs a Python file from a plugin in a repository subfolder, which the portal holds for a reviewer ("Scripts the validator couldn't follow", claude.com pre-submission checklist). `check-repo.mjs` enforces the checklist's file rules (names, system files, symlinks, 256 KiB, 512 files).
 - GitHub's default labels (`bug`, `enhancement`, `documentation`, `duplicate`, `good first issue`, `help wanted`, `invalid`, `question`, `wontfix`, `accessibility`) still exist next to ours — Nery decides whether to delete them.
 - Evals cost basis: two full CI runs of skill-diagnostics, ~$6.70 (28 min) and ~$5.87 (20 min) list-price estimates on Nery's plan; cap `max_cost_usd` 10 in `evals-config.json`.
@@ -77,5 +76,5 @@
 | `project-records` — decision records, debt ledgers, session handoffs (handoffs gitignored) | Nery, earlier sessions | idea |
 | `skill-diagnostics` — audit skills: conformance + executability (was `skills-engineering`) | Nery, earlier sessions | released 0.1.1 |
 | `session-handoff` — end-of-session handoff file + start-of-session reader | Nery, 2026-10-12 | released 0.1.0 |
-| `plugin-test-bench` — copied-install test of a plugin + eval-case review | Nery, 2026-10-12 | in review (draft PR) |
+| `plugin-test-bench` — copied-install test of a plugin + eval-case review | Nery, 2026-10-12 | released 0.1.0 |
 | `live-docs-research` — research from live official sources + changelog checks | Nery, earlier sessions | idea |

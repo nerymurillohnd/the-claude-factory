@@ -50,6 +50,7 @@ git ls-files -z '*.sh' | xargs -0 shellcheck -o all -S style -x -a -P SCRIPTDIR
 git ls-files -z '*.sh' | xargs -0 shfmt -d
 python3 -m unittest discover -s .github/scripts/tests/skill-diagnostics
 .github/scripts/tests/skill-diagnostics/by_path.sh
+.github/scripts/tests/session-handoff/by_path.sh
 uvx ruff@0.17.0 check plugins .github/scripts
 uvx ruff@0.17.0 format --check plugins .github/scripts
 git ls-files -z 'plugins/*.py' | xargs -0 uvx --from mypy==1.18.2 mypy --python-version 3.9 --strict
