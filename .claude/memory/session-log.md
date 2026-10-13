@@ -2,6 +2,16 @@
 
 Newest first. One entry per session: what changed, commits, what's next.
 
+## 2026-10-13 — LSP intelligence plugins v2 (branch `feat/lsp-intelligence-v2`)
+
+- Design from official sources only (Claude Code Docs, agentskills.io, Platform docs) with runtime probes: spec `.claude/specs/2026-10-13-lsp-intelligence-plugins-design.md` (on `main`, `c902e97`); plan executed inline from `.claude/plans/2026-10-13-lsp-intelligence-v2.md`.
+- Each plugin = `.lsp.json` + one `PostToolUse`/`PostToolUseFailure` hook (`Edit|Write[|NotebookEdit]|Bash`, shell form) scoped to the changed files + a short LSP-first skill. Python hook in Python 3 stdlib with defaults in `hooks/defaults/`; Bash and both TypeScript hooks in Node; TypeScript 7.0.2 and 6.0.3 + typescript-language-server 6.0.2 pinned by `package.json`/lockfile and installed by Claude Code into the cache.
+- Tools run natively (user config first, plugin defaults only when none exists: `shfmt -i 2 -ci -bn`, `shellcheck -o all -S style -x -a -P SCRIPTDIR`, the bundled ruff/basedpyright profiles, `tsc` defaults without a tsconfig); clean runs confirm with a `systemMessage`; findings go to stderr with exit 2.
+- Removed: the unused `.github/scripts/quality-gate/` engine, `bin/`, `verify-fixtures.sh`, the six-reference skill layout. Versions: python/bash/typescript7 0.2.0, typescript6 0.1.0 (new). CI installs shellcheck, a checksum-pinned shfmt, ruff, basedpyright and the TS plugins' `node_modules` for the hook tests.
+- Verified: 59 script tests + 19 Python hook tests, every gate green; copied install from the branch in an isolated config with `node_modules` auto-installed; headless sessions on the installed copies showed each hook's findings reaching Claude (basedpyright, SC2086/SC2250, TS2322 in the edited file and its caller) and the `systemMessage` on a clean edit; skill trigger rate 3/3 (python, ts7, ts6) and 2/3 (bash: a bare rename prompt greps first).
+- Incident: the spec commit `9b754cf` swept the staged plugin draft onto `main`; reverted in `606988a` (plugins restored byte-identical). Lesson recorded in learnings.
+- Next: Nery reviews the draft PR; `/release` python, bash, typescript7 (0.2.0) and typescript6 (0.1.0) plus the marketplace minor bump; `project-state.md` still carries Nery's uncommitted `tsconfig.base.json` line, so its v2 status lines wait for his commit.
+
 ## 2026-10-12 — Biome strictness, unwired tsconfig, tooling research
 
 - Researched TypeScript 6/7, tsconfig bases, typescript-language-server and Biome with Context7, each fact probed with Nery's `tsc` 6.0.3, LSP 6.0.2 and Biome 2.5.15.
