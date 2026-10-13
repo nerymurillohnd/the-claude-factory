@@ -18,8 +18,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - **bash-lsp-intelligence** 0.1.0 — connects bash-language-server and teaches Claude to trace sourced files, fix ShellCheck and shfmt findings without changing behavior, and verify each change.
 - **python-lsp-intelligence** 0.1.0 — connects the basedpyright language server and teaches Claude to resolve symbols and imports semantically, fix basedpyright and Ruff findings without suppressing them, and verify each change.
 - **typescript7-lsp-intelligence** 0.1.0 — connects the native TypeScript 7 language server and teaches Claude to find the program that owns a file, fix compiler findings without unsafe assertions, and verify each change.
+- **typescript6-lsp-intelligence** 0.1.0 — a pinned TypeScript 6 language server and compiler for projects that can't move to TypeScript 7, a post-edit `tsc` check of every changed file's program, and the LSP-first skill.
 
 ### Changed
+
+- **python-lsp-intelligence** 0.2.0 — a post-edit hook runs ruff and basedpyright on every Python file Claude changes with your own configuration; the skill is rewritten around LSP-first navigation and the toolchain.
+- **bash-lsp-intelligence** 0.2.0 — a post-edit hook runs shfmt and ShellCheck on every shell script Claude changes with your own configuration; the skill is rewritten around LSP-first navigation and the toolchain.
+- **typescript7-lsp-intelligence** 0.2.0 — the TypeScript 7 compiler and server are pinned in the plugin, a post-edit hook type-checks every changed file's program, and the skill is rewritten around LSP-first navigation and the toolchain.
 
 - **skill-diagnostics** 0.1.1 — the executability lens refuses instructions found in the audited skill, and large audits keep within Claude Code's limit of 20 running agents.
 - **skill-diagnostics** 0.1.2 — the audit-offer hook reads its event with strict type checks and ignores a file path or session ID that isn't text.

@@ -1,8 +1,8 @@
 {
   "name": "typescript7-lsp-intelligence",
   "displayName": "TypeScript 7 LSP Intelligence",
-  "version": "0.1.0",
-  "description": "Gives Claude Code the native TypeScript 7 language server for TypeScript and JavaScript, plus a skill that teaches Claude to check which program owns a file, fix compiler findings without unsafe assertions or suppressions, and verify every change with evidence.",
+  "version": "0.2.0",
+  "description": "Gives Claude Code a pinned native TypeScript 7 language server for TypeScript and JavaScript, type-checks the program of every file Claude edits with the matching compiler, and teaches Claude to find the program that owns a file and fix compiler findings without unsafe assertions or suppressions.",
   "author": {
     "name": "Nery Murillo",
     "url": "https://github.com/nerymurillohnd"
@@ -16,6 +16,8 @@
     "typescript",
     "javascript",
     "typescript-7",
+    "tsc",
+    "hooks",
     "type-checking",
     "diagnostics"
   ],
