@@ -1,0 +1,8 @@
+"""Fixture: a finding basedpyright reports as a warning, not an error."""
+
+import json
+
+
+def parse(text: str) -> object:
+    """Parse JSON text."""
+    return json.loads(text)

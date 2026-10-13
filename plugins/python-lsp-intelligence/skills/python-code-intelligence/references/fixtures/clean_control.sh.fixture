@@ -1,5 +1,0 @@
-# shellcheck shell=bash
-# Fixture: clean control that every check must pass.
-# A failure here means the checks are misconfigured, not that the code is wrong.
-greeting="hello"
-printf '%s\n' "${greeting}"

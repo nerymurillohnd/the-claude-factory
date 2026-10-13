@@ -1,0 +1,163 @@
+{
+  "language": "python",
+  "tool_versions_tested": {
+    "ruff": "0.17.0",
+    "basedpyright": "1.40.2"
+  },
+  "profiles": {
+    "ruff": "ruff.toml.fixture",
+    "basedpyright": "pyrightconfig.json.fixture"
+  },
+  "cases": [
+    {
+      "file": "clean_control.py.fixture",
+      "expect": {
+        "ruff": {
+          "codes": [],
+          "exit": "zero"
+        },
+        "basedpyright": {
+          "codes": [],
+          "exit": "zero"
+        },
+        "format": {
+          "codes": [],
+          "exit": "zero"
+        }
+      }
+    },
+    {
+      "file": "references.py.fixture",
+      "expect": {
+        "ruff": {
+          "codes": [],
+          "exit": "zero"
+        },
+        "basedpyright": {
+          "codes": [],
+          "exit": "zero"
+        },
+        "format": {
+          "codes": [],
+          "exit": "zero"
+        }
+      }
+    },
+    {
+      "file": "undefined_name.py.fixture",
+      "expect": {
+        "ruff": {
+          "codes": [
+            "F821"
+          ],
+          "exit": "nonzero"
+        },
+        "basedpyright": {
+          "codes": [
+            "reportUndefinedVariable"
+          ],
+          "exit": "nonzero"
+        },
+        "format": {
+          "codes": [],
+          "exit": "zero"
+        }
+      }
+    },
+    {
+      "file": "return_type.py.fixture",
+      "expect": {
+        "ruff": {
+          "codes": [],
+          "exit": "zero"
+        },
+        "basedpyright": {
+          "codes": [
+            "reportReturnType"
+          ],
+          "exit": "nonzero"
+        },
+        "format": {
+          "codes": [],
+          "exit": "zero"
+        }
+      }
+    },
+    {
+      "file": "missing_import.py.fixture",
+      "expect": {
+        "ruff": {
+          "codes": [],
+          "exit": "zero"
+        },
+        "basedpyright": {
+          "codes": [
+            "reportMissingImports"
+          ],
+          "exit": "nonzero"
+        },
+        "format": {
+          "codes": [],
+          "exit": "zero"
+        }
+      }
+    },
+    {
+      "file": "warning_only.py.fixture",
+      "expect": {
+        "ruff": {
+          "codes": [],
+          "exit": "zero"
+        },
+        "basedpyright": {
+          "codes": [
+            "reportAny"
+          ],
+          "exit": "nonzero"
+        },
+        "format": {
+          "codes": [],
+          "exit": "zero"
+        }
+      }
+    },
+    {
+      "file": "unused_missing_import.py.fixture",
+      "expect": {
+        "ruff": {
+          "codes": [
+            "F401"
+          ],
+          "exit": "nonzero"
+        },
+        "basedpyright": {
+          "codes": [
+            "reportMissingImports"
+          ],
+          "exit": "nonzero"
+        },
+        "format": {
+          "codes": [],
+          "exit": "zero"
+        }
+      }
+    },
+    {
+      "file": "typed_json_boundary.py.fixture",
+      "expect": {
+        "ruff": {
+          "codes": [],
+          "exit": "zero"
+        },
+        "format": {
+          "codes": [],
+          "exit": "zero"
+        },
+        "basedpyright": {
+          "codes": [],
+          "exit": "zero"
+        }
+      }
+    }
+  ]
+}

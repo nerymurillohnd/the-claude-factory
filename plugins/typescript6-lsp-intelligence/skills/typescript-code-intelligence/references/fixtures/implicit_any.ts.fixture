@@ -1,4 +1,0 @@
-// Fixture: an implicit any parameter, reported only under strict (noImplicitAny).
-export function double(value) {
-  return value * 2;
-}

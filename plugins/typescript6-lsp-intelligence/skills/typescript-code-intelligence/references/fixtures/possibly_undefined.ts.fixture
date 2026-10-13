@@ -1,4 +1,0 @@
-// Fixture: a value that may be undefined, reported only under strict (strictNullChecks).
-export function length(text: string | undefined): number {
-  return text.length;
-}

@@ -1,7 +1,0 @@
-#!/usr/bin/env bash
-# On-demand run of the ts-lsp quality gate: ts-gate <file>...
-# bin/ is on the Bash tool's PATH while ts-lsp is enabled. Exit 0 = clean, 2 = findings.
-set -uo pipefail
-here=$(dirname "${BASH_SOURCE[0]}") || exit 2
-root=$(cd "${here}/.." && pwd) || exit 2
-exec bash "${root}/scripts/tsc.sh" "$@"

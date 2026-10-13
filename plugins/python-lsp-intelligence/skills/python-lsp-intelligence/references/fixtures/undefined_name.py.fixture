@@ -1,0 +1,6 @@
+"""Fixture: a name used but never defined. ruff cannot auto-fix it."""
+
+
+def total(prices: list[float]) -> float:
+    """Return the taxed total."""
+    return sum(prices) * tax_rate

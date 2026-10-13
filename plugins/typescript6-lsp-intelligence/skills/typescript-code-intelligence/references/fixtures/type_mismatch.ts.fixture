@@ -1,2 +1,0 @@
-// Fixture: a value whose type does not match the declared type.
-export const retries: number = "three";

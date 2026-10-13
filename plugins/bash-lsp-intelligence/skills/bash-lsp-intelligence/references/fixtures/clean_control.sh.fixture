@@ -1,0 +1,4 @@
+# shellcheck shell=bash
+# Fixture: clean control that every check must pass.
+greeting="hello"
+printf '%s\n' "${greeting}"
