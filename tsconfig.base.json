@@ -36,6 +36,5 @@
     "skipLibCheck": false,
     "noErrorTruncation": true,
     "diagnostics": true
-  },
-  "files": []
+  }
 }
