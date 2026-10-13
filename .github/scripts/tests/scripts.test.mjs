@@ -61,7 +61,6 @@ function run(script, args = []) {
   const r = spawnSync(process.execPath, [join(root, '.github', 'scripts', script), ...args], {
     cwd: root,
     encoding: 'utf8',
-    // biome-ignore lint/style/useNamingConvention: TCF_ROOT is an environment variable name, read by lib.mjs
     env: { ...process.env, TCF_ROOT: root },
   })
   return { code: r.status, out: `${r.stdout}${r.stderr}` }

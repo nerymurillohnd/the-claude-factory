@@ -82,7 +82,13 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
       - name: ruff and basedpyright for the Python hook tests
-        run: python -m pip install --disable-pip-version-check "ruff==${RUFF_VERSION}" "basedpyright==${BASEDPYRIGHT_VERSION}"
+        shell: bash
+        run: |
+          # basedpyright's wheel needs Python 3.10+, so uv installs it with its own interpreter;
+          # the hook under test still runs on the matrix Python.
+          python -m pip install --disable-pip-version-check uv "ruff==${RUFF_VERSION}"
+          uv tool install "basedpyright==${BASEDPYRIGHT_VERSION}"
+          uv tool dir --bin >> "${GITHUB_PATH}"
       - name: Unit tests (every plugin's Python suite)
         shell: bash
         run: |
