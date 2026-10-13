@@ -1,0 +1,8 @@
+"""Fixture: an import that resolves in no environment.
+
+The import is used, so `ruff check --fix` cannot delete it.
+"""
+
+import fixture_module_that_does_not_exist
+
+VALUE: object = fixture_module_that_does_not_exist.VALUE

@@ -1,0 +1,23 @@
+{
+  "typescript": {
+    "command": "tsc",
+    "args": [
+      "--lsp",
+      "--stdio"
+    ],
+    "startupTimeout": 30000,
+    "maxRestarts": 3,
+    "extensionToLanguage": {
+      ".ts": "typescript",
+      ".tsx": "typescriptreact",
+      ".mts": "typescript",
+      ".cts": "typescript",
+      ".js": "javascript",
+      ".jsx": "javascriptreact",
+      ".mjs": "javascript",
+      ".cjs": "javascript"
+    },
+    "restartOnCrash": true,
+    "diagnostics": true
+  }
+}

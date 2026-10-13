@@ -1,0 +1,11 @@
+"""Fixture for the language server: `target` is defined once and called three times."""
+
+
+def target(value: int) -> int:
+    """Return the value plus one."""
+    return value + 1
+
+
+FIRST = target(1)
+SECOND = target(2)
+THIRD = target(3)

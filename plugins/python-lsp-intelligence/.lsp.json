@@ -1,0 +1,17 @@
+{
+  "basedpyright": {
+    "command": "basedpyright-langserver",
+    "args": [
+      "--stdio"
+    ],
+    "startupTimeout": 30000,
+    "maxRestarts": 3,
+    "extensionToLanguage": {
+      ".py": "python",
+      ".pyi": "python",
+      ".pyw": "python"
+    },
+    "restartOnCrash": true,
+    "diagnostics": true
+  }
+}

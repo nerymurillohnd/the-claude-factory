@@ -1,0 +1,21 @@
+{
+  "shellscript": {
+    "command": "bash-language-server",
+    "args": [
+      "start"
+    ],
+    "startupTimeout": 30000,
+    "maxRestarts": 3,
+    "env": {
+      "GLOB_PATTERN": "{**/*,**/.claude/**/*,**/.github/**/*}@(.sh|.inc|.bash|.command)"
+    },
+    "extensionToLanguage": {
+      ".sh": "shellscript",
+      ".inc": "shellscript",
+      ".bash": "shellscript",
+      ".command": "shellscript"
+    },
+    "restartOnCrash": true,
+    "diagnostics": true
+  }
+}

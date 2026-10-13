@@ -1,0 +1,94 @@
+{
+  "language": "typescript",
+  "tool_versions_tested": {
+    "typescript_legacy": "6.0.3",
+    "typescript_native": "7.0.2"
+  },
+  "profiles": {
+    "tsc": "tsconfig.json.fixture"
+  },
+  "cases": [
+    {
+      "file": "clean_control.ts.fixture",
+      "expect": {
+        "tsc": {
+          "codes": [],
+          "exit": "zero"
+        }
+      }
+    },
+    {
+      "file": "references.ts.fixture",
+      "expect": {
+        "tsc": {
+          "codes": [],
+          "exit": "zero"
+        }
+      }
+    },
+    {
+      "file": "type_mismatch.ts.fixture",
+      "expect": {
+        "tsc": {
+          "codes": [
+            "TS2322"
+          ],
+          "exit": "nonzero"
+        }
+      }
+    },
+    {
+      "file": "implicit_any.ts.fixture",
+      "expect": {
+        "tsc": {
+          "codes": [
+            "TS7006"
+          ],
+          "exit": "nonzero"
+        }
+      }
+    },
+    {
+      "file": "possibly_undefined.ts.fixture",
+      "expect": {
+        "tsc": {
+          "codes": [
+            "TS18048"
+          ],
+          "exit": "nonzero"
+        }
+      }
+    },
+    {
+      "file": "javascript_type.js.fixture",
+      "expect": {
+        "tsc": {
+          "codes": [
+            "TS2322"
+          ],
+          "exit": "nonzero"
+        }
+      }
+    },
+    {
+      "file": "unchecked_index.ts.fixture",
+      "expect": {
+        "tsc": {
+          "codes": [
+            "TS2322"
+          ],
+          "exit": "nonzero"
+        }
+      }
+    },
+    {
+      "file": "typed_json_boundary.ts.fixture",
+      "expect": {
+        "tsc": {
+          "codes": [],
+          "exit": "zero"
+        }
+      }
+    }
+  ]
+}

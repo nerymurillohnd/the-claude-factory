@@ -1,0 +1,83 @@
+{
+  "language": "bash",
+  "tool_versions_tested": {
+    "shellcheck": "0.11.0",
+    "shfmt": "3.14.1"
+  },
+  "profiles": {
+    "shellcheck": "shellcheckrc.fixture",
+    "shfmt": "editorconfig.fixture"
+  },
+  "cases": [
+    {
+      "file": "clean_control.sh.fixture",
+      "expect": {
+        "shellcheck": {
+          "codes": [],
+          "exit": "zero"
+        },
+        "format": {
+          "codes": [],
+          "exit": "zero"
+        }
+      }
+    },
+    {
+      "file": "references.sh.fixture",
+      "expect": {
+        "shellcheck": {
+          "codes": [],
+          "exit": "zero"
+        },
+        "format": {
+          "codes": [],
+          "exit": "zero"
+        }
+      }
+    },
+    {
+      "file": "optional_checks.sh.fixture",
+      "expect": {
+        "shellcheck": {
+          "codes": [
+            "SC2250",
+            "SC2312"
+          ],
+          "exit": "nonzero"
+        },
+        "format": {
+          "codes": [],
+          "exit": "zero"
+        }
+      }
+    },
+    {
+      "file": "unquoted_expansion.sh.fixture",
+      "expect": {
+        "shellcheck": {
+          "codes": [
+            "SC2086"
+          ],
+          "exit": "nonzero"
+        },
+        "format": {
+          "codes": [],
+          "exit": "zero"
+        }
+      }
+    },
+    {
+      "file": "unformatted.sh.fixture",
+      "expect": {
+        "shellcheck": {
+          "codes": [],
+          "exit": "zero"
+        },
+        "format": {
+          "codes": [],
+          "exit": "nonzero"
+        }
+      }
+    }
+  ]
+}

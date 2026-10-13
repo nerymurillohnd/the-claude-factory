@@ -1,0 +1,19 @@
+import json
+from collections.abc import Callable
+from typing import TypeGuard
+
+_decode_json: Callable[[str], object] = json.loads
+
+
+def _is_dictionary(value: object) -> TypeGuard[dict[object, object]]:
+    return isinstance(value, dict)
+
+
+def read_label(text: str) -> str:
+    decoded = _decode_json(text)
+    if not _is_dictionary(decoded):
+        raise ValueError("Expected a JSON object")
+    label = decoded.get("label")
+    if not isinstance(label, str):
+        raise ValueError("Expected a string label")
+    return label

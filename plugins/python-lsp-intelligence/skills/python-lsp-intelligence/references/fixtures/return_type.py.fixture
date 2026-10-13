@@ -1,0 +1,6 @@
+"""Fixture: the annotation and the returned value disagree."""
+
+
+def count_items(items: list[str]) -> int:
+    """Return how many items there are."""
+    return ",".join(items)

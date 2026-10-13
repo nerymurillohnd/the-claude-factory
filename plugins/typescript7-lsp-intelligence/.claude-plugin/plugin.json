@@ -1,0 +1,27 @@
+{
+  "name": "typescript7-lsp-intelligence",
+  "displayName": "TypeScript 7 LSP Intelligence",
+  "version": "0.1.0",
+  "description": "Gives Claude Code the native TypeScript 7 language server for TypeScript and JavaScript, plus a skill that teaches Claude to check which program owns a file, fix compiler findings without unsafe assertions or suppressions, and verify every change with evidence.",
+  "author": {
+    "name": "Nery Murillo",
+    "url": "https://github.com/nerymurillohnd"
+  },
+  "homepage": "https://github.com/nerymurillohnd/the-claude-factory/tree/main/plugins/typescript7-lsp-intelligence#readme",
+  "repository": "https://github.com/nerymurillohnd/the-claude-factory",
+  "license": "MIT",
+  "keywords": [
+    "lsp",
+    "code-intelligence",
+    "typescript",
+    "javascript",
+    "typescript-7",
+    "type-checking",
+    "diagnostics"
+  ],
+  "metadata": {
+    "surfaces": [
+      "claude-code"
+    ]
+  }
+}

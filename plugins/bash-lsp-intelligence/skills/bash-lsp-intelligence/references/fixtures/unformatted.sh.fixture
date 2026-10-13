@@ -1,0 +1,5 @@
+# shellcheck shell=bash
+# Fixture: valid shell that shfmt reformats.
+if [[ -n "$1" ]];then
+echo "argument given"
+fi

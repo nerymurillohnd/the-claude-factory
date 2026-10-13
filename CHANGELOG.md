@@ -15,6 +15,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - **skill-diagnostics** 0.1.0 — audits Claude skills for conformance, portability and executability, with evidence and one verdict.
 - **session-handoff** 0.1.0 — carries a project's working state between sessions: a handoff written when you stop, read at the start of the next session.
 - **plugin-test-bench** 0.1.0 — tests a Claude Code plugin as its users install it, and reviews its eval cases so they measure what the plugin adds.
+- **bash-lsp-intelligence** 0.1.0 — connects bash-language-server and teaches Claude to trace sourced files, fix ShellCheck and shfmt findings without changing behavior, and verify each change.
+- **python-lsp-intelligence** 0.1.0 — connects the basedpyright language server and teaches Claude to resolve symbols and imports semantically, fix basedpyright and Ruff findings without suppressing them, and verify each change.
+- **typescript7-lsp-intelligence** 0.1.0 — connects the native TypeScript 7 language server and teaches Claude to find the program that owns a file, fix compiler findings without unsafe assertions, and verify each change.
 
 ### Changed
 

@@ -9,10 +9,22 @@
   },
   "plugins": [
     {
+      "name": "bash-lsp-intelligence",
+      "source": "./plugins/bash-lsp-intelligence",
+      "description": "Gives Claude Code bash-language-server for Bash and POSIX shell scripts, plus a skill that teaches Claude to trace sourced files and same-named functions, fix ShellCheck and shfmt findings without changing behavior, and verify every change with evidence.",
+      "category": "language-support"
+    },
+    {
       "name": "plugin-test-bench",
       "source": "./plugins/plugin-test-bench",
       "description": "Proves your Claude Code plugin works the way your users receive it: installs a copy in a throwaway config, checks it loads, runs your eval suite against that copy, and reviews your eval cases so they measure what the plugin adds.",
       "category": "testing"
+    },
+    {
+      "name": "python-lsp-intelligence",
+      "source": "./plugins/python-lsp-intelligence",
+      "description": "Gives Claude Code the basedpyright language server for Python, plus a skill that teaches Claude to resolve symbols, aliases and imports semantically, fix basedpyright and Ruff findings without suppressing them, and verify every change with evidence.",
+      "category": "language-support"
     },
     {
       "name": "session-handoff",
@@ -25,6 +37,12 @@
       "source": "./plugins/skill-diagnostics",
       "description": "Audits Claude skills for best-practice conformance, portability and whether a model can run them without guessing, with file-and-line evidence and one verdict.",
       "category": "testing"
+    },
+    {
+      "name": "typescript7-lsp-intelligence",
+      "source": "./plugins/typescript7-lsp-intelligence",
+      "description": "Gives Claude Code the native TypeScript 7 language server for TypeScript and JavaScript, plus a skill that teaches Claude to check which program owns a file, fix compiler findings without unsafe assertions or suppressions, and verify every change with evidence.",
+      "category": "language-support"
     }
   ]
 }
