@@ -215,6 +215,52 @@ class WithTools(Workspace):
         assert code == 2
         assert "sub/x.py" in err
 
+    def test_unreadable_folder_is_skipped_by_the_walk(self) -> None:
+        locked = self.project / "locked"
+        locked.mkdir()
+        locked.chmod(0o000)
+        self.write("new.py", "def f(x):\n    return undefined_name\n")
+        payload = event("Bash", duration_ms=20, tool_input={"command": "x"})
+        env = {**self.env, "CLAUDE_PROJECT_DIR": str(self.project)}
+        try:
+            code, _, err = fire(payload, self.home, env)
+        finally:
+            locked.chmod(0o755)
+        assert "Traceback" not in err
+        assert code == 2
+        assert "new.py" in err
+
+    def test_home_is_never_walked(self) -> None:
+        self.write("new.py", "def f(x):\n    return undefined_name\n")
+        payload = event("Bash", duration_ms=20, tool_input={"command": "x"})
+        env = {
+            **self.env,
+            "HOME": str(self.project),
+            "USERPROFILE": str(self.project),
+            "CLAUDE_PROJECT_DIR": str(self.project),
+        }
+        assert fire(payload, self.project, env) == (0, "", "")
+
+    def test_default_profile_resolves_first_party_imports(self) -> None:
+        self.write("pyproject.toml", '[project]\nname = "demo"\nversion = "0.1.0"\n')
+        self.write("mypkg/__init__.py", '"""Pkg."""\n\nVALUE = 1\n')
+        body = '"""Mod."""\n\nfrom mypkg import VALUE\n\n\ndef f() -> int:\n    """Use."""\n'
+        path = self.write("mypkg/sub/mod.py", body + "    return VALUE\n")
+        code, out, err = fire(event("Edit", path), self.home, self.env)  # cwd elsewhere on purpose
+        assert (code, err) == (0, "")
+        assert "passed" in json.loads(out)["systemMessage"]
+
+    def test_default_profile_resolves_src_layout_imports(self) -> None:
+        self.write("pyproject.toml", '[project]\nname = "demo"\nversion = "0.1.0"\n')
+        self.write("src/pkg2/__init__.py", '"""Pkg."""\n\nX = 2\n')
+        path = self.write(
+            "src/pkg2/use.py",
+            '"""Use."""\n\nfrom pkg2 import X\n\n\ndef g() -> int:\n    """Use."""\n    return X\n',
+        )
+        code, out, err = fire(event("Edit", path), self.home, self.env)
+        assert (code, err) == (0, "")
+        assert "passed" in json.loads(out)["systemMessage"]
+
     def test_post_tool_use_failure_names_its_event(self) -> None:
         self.write("c.py", '"""Doc."""\n\nVALUE=1\n')
         payload = json.dumps(

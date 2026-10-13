@@ -133,9 +133,11 @@ The hook runs the compiler the way you would from a terminal, so **your configur
 
 | Situation | What the hook does |
 | :-- | :-- |
-| A `tsconfig.json` exists above the file | `tsc --noEmit -p <that tsconfig.json>` with the pinned TypeScript 7: your `strict`, `target`, `module`, `jsx` and `include` apply |
-| Several changed files share a `tsconfig.json` | One `tsc` run for that program |
-| No `tsconfig.json` above the file | `tsc --noEmit <file>` with the compiler's defaults, and the report says so |
+| A `tsconfig.json` or `jsconfig.json` exists above the file | `tsc --noEmit -p <that config>` with the pinned TypeScript 7: your `strict`, `target`, `module`, `jsx` and `include` apply |
+| That config is a solution file (`files: []` with `references`) | The referenced programs are followed to the one that lists the file |
+| Several changed files share a config | One `tsc` run for that program |
+| A TypeScript file with no config above it | `tsc --noEmit <file>` with the compiler's defaults, and the report says so |
+| A JavaScript file with no config above it | Not type-checked; the report says so instead of blocking |
 
 The plugin never creates or edits a `tsconfig.json`, and it never runs a formatter or linter: Biome, Prettier and ESLint stay your project's tools, and the skill teaches Claude to run them as your `package.json` scripts do.
 

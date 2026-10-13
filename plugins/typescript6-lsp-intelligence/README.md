@@ -29,7 +29,7 @@
 
 ## ✨ Why use it
 
-- **The compiler and server come with the plugin** — TypeScript 6.0.3 and typescript-language-server 6.0.2 are pinned in the plugin and installed by Claude Code when it caches it, so the server and the checks never depend on, or change, the `tsc` in your project or on your `PATH`.
+- **The compiler and server come with the plugin** — TypeScript 6.0.3 and typescript-language-server 6.0.2 are pinned in the plugin and installed by Claude Code when it caches it, so nothing is installed globally and the checks never depend on, or change, the `tsc` in your project. The language server uses your project's own TypeScript when the project has one in `node_modules`, and the pinned 6.0.3 otherwise; the hook always checks with the pinned 6.0.3.
 - **Every edit is type-checked in its program** — after each edit to a `.ts`, `.tsx`, `.mts`, `.cts`, `.js`, `.jsx`, `.mjs` or `.cjs` file, the plugin runs `tsc --noEmit` on the nearest `tsconfig.json` program. Errors in the edited file come first, breakage in sibling files after; a file no program includes is reported, never passed over. A clean run shows you a one-line confirmation.
 - **Your `tsconfig.json` is the policy** — strictness, module resolution and JSX come from your project. Without a `tsconfig.json`, the compiler's defaults apply and Claude is told so.
 - **Type errors as Claude edits, plus symbol navigation** — the TypeScript 6 server pushes diagnostics for the edited file right after each edit, and answers go to definition, references, hover, call hierarchy and workspace symbols.
@@ -39,7 +39,7 @@
 
 | Component | Name | What it does | How it runs |
 | :-- | :-- | :-- | :-- |
-| 🧠 LSP server | `typescript` | Starts the pinned typescript-language-server with the pinned TypeScript 6 `tsserver` for `.ts`, `.tsx`, `.mts`, `.cts`, `.js`, `.jsx`, `.mjs` and `.cjs` files | Automatically when Claude opens or edits one of those files |
+| 🧠 LSP server | `typescript` | Starts the pinned typescript-language-server (your project's TypeScript when it has one, else the pinned TypeScript 6) for `.ts`, `.tsx`, `.mts`, `.cts`, `.js`, `.jsx`, `.mjs` and `.cjs` files | Automatically when Claude opens or edits one of those files |
 | 🪝 Hook | `PostToolUse` · `PostToolUseFailure` | Runs the pinned `tsc --noEmit` on the program of each TypeScript or JavaScript file an Edit, Write or Bash call changed | Automatically after each of those tool calls |
 | 🎯 Skill | `typescript6-lsp-intelligence:typescript6-lsp-intelligence` | Teaches Claude to navigate with the language server first, trust its results only after five checks, and work with `tsc` the way your project configures it | Automatically when you work on TypeScript or JavaScript, or `/typescript6-lsp-intelligence:typescript6-lsp-intelligence` |
 
@@ -52,7 +52,7 @@
 | **External tools** | Node.js 18 or later and `npm` on the `PATH` of the shell you start `claude` from. Claude Code installs the pinned TypeScript and language server with `npm` when it caches the plugin; the hook runs on `node`. Windows: run Claude Code from Git Bash with Node.js on its `PATH` |
 | **Accounts / API keys** | None |
 
-TypeScript 6.0.3 and typescript-language-server 6.0.2 are pinned in the plugin's `package.json` and `package-lock.json`; you don't install them and they don't touch your project's dependencies.
+TypeScript 6.0.3 and typescript-language-server 6.0.2 are pinned in the plugin's `package.json` and `package-lock.json`; you don't install them and they don't touch your project's dependencies. The language server uses your project's own TypeScript when the project has one in `node_modules`, and the pinned 6.0.3 otherwise; the hook always checks with the pinned 6.0.3.
 
 ## 📥 Installation
 
@@ -133,9 +133,11 @@ The hook runs the compiler the way you would from a terminal, so **your configur
 
 | Situation | What the hook does |
 | :-- | :-- |
-| A `tsconfig.json` exists above the file | `tsc --noEmit -p <that tsconfig.json>` with the pinned TypeScript 6: your `strict`, `target`, `module`, `jsx` and `include` apply |
-| Several changed files share a `tsconfig.json` | One `tsc` run for that program |
-| No `tsconfig.json` above the file | `tsc --noEmit <file>` with the compiler's defaults, and the report says so |
+| A `tsconfig.json` or `jsconfig.json` exists above the file | `tsc --noEmit -p <that config>` with the pinned TypeScript 6: your `strict`, `target`, `module`, `jsx` and `include` apply |
+| That config is a solution file (`files: []` with `references`) | The referenced programs are followed to the one that lists the file |
+| Several changed files share a config | One `tsc` run for that program |
+| A TypeScript file with no config above it | `tsc --noEmit <file>` with the compiler's defaults, and the report says so |
+| A JavaScript file with no config above it | Not type-checked; the report says so instead of blocking |
 
 The plugin never creates or edits a `tsconfig.json`, and it never runs a formatter or linter: Biome, Prettier and ESLint stay your project's tools, and the skill teaches Claude to run them as your `package.json` scripts do.
 

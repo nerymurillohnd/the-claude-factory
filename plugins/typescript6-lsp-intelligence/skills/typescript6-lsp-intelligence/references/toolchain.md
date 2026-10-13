@@ -15,7 +15,7 @@
 
 ## The compiler this plugin pins
 
-The plugin ships TypeScript 6.0.3 and typescript-language-server 6.0.2 under its own `node_modules` and starts the language server from them, so it never depends on, or changes, the `tsc` on your `PATH` or in your project. The server's `$/typescriptVersion` notification reports `source: "user-setting"` when the pinned `tsserver.js` is in use:
+The plugin ships TypeScript 6.0.3 and typescript-language-server 6.0.2 under its own `node_modules` and starts the language server from them, so it never depends on, or changes, the `tsc` on your `PATH` or in your project. The server itself uses the project's own TypeScript when `node_modules/typescript` exists in the workspace and the pinned 6.0.3 otherwise (its `$/typescriptVersion` notification says which); the compiler below is always the pinned one:
 
 ```bash
 node "${CLAUDE_PLUGIN_ROOT}/node_modules/typescript/bin/tsc" --version

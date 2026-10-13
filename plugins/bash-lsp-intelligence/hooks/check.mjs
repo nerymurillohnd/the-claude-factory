@@ -19,7 +19,7 @@ import {
   statSync,
 } from 'node:fs'
 import { homedir } from 'node:os'
-import { dirname, join, relative, resolve, sep } from 'node:path'
+import { dirname, join, parse, relative, resolve, sep } from 'node:path'
 
 const PLUGIN = 'bash-lsp-intelligence'
 const SHELL_SUFFIXES = new Set(['.sh', '.bash'])
@@ -28,6 +28,8 @@ const SKIPPED_DIRS = new Set(['node_modules', '.venv', 'venv', 'site-packages'])
 const PRUNED_DIRS = new Set([...SKIPPED_DIRS, '.git', 'dist', 'build', '__pycache__', '.cache'])
 // A Bash command that rewrites more files than this gets the rest reported, not checked.
 const MAX_FILES = 20
+// The modification-time walk gives up after this many files, so a huge tree stays cheap.
+const MAX_WALK_FILES = 20_000
 // Claude Code saves hook output over 10,000 characters to a file Claude never reads.
 const MAX_REPORT_CHARS = 9000
 // Clock slack added to duration_ms when looking for files a Bash command changed.
@@ -126,15 +128,29 @@ function newerThan(path, sinceMs) {
   }
 }
 
-function walk(dir, sinceMs, found) {
-  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+// Collects files newer than sinceMs under dir; unreadable folders are skipped and the walk
+// stops once budget.left runs out.
+function walk(dir, sinceMs, found, budget) {
+  let entries
+  try {
+    entries = readdirSync(dir, { withFileTypes: true })
+  } catch {
+    return
+  }
+  for (const entry of entries) {
+    if (budget.left <= 0) {
+      return
+    }
     const path = join(dir, entry.name)
     if (entry.isDirectory()) {
       if (!PRUNED_DIRS.has(entry.name)) {
-        walk(path, sinceMs, found)
+        walk(path, sinceMs, found, budget)
       }
-    } else if (newerThan(path, sinceMs)) {
-      found.push(path)
+    } else {
+      budget.left -= 1
+      if (newerThan(path, sinceMs)) {
+        found.push(path)
+      }
     }
   }
 }
@@ -149,8 +165,11 @@ function changedSince(project, sinceMs) {
       .map((rel) => join(project, rel))
       .filter((path) => newerThan(path, sinceMs))
   }
+  if (project === realpath(homedir()) || project === parse(project).root) {
+    return [] // a walk of the whole home directory or disk is never worth a hook's budget
+  }
   const found = []
-  walk(project, sinceMs, found)
+  walk(project, sinceMs, found, { left: MAX_WALK_FILES })
   return found
 }
 

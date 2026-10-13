@@ -19,6 +19,7 @@ import re
 import shutil
 import subprocess
 import sys
+import tempfile
 import time
 from typing import TYPE_CHECKING, NamedTuple, cast
 
@@ -35,6 +36,10 @@ PRUNED_DIRS = SKIPPED_DIRS | frozenset(
 )
 # A Bash command that rewrites more files than this gets the rest reported, not checked.
 MAX_FILES = 20
+# The modification-time walk gives up after this many files, so a huge tree stays cheap.
+MAX_WALK_FILES = 20_000
+# A file's project root, where basedpyright resolves first-party imports and the .venv from.
+PROJECT_MARKERS = ("pyproject.toml", "setup.py", "setup.cfg", "requirements.txt", ".git")
 # Claude Code saves hook output over 10,000 characters to a file Claude never reads.
 MAX_REPORT_CHARS = 9000
 # Clock slack added to duration_ms when looking for files a Bash command changed.
@@ -47,6 +52,7 @@ TOOL_TIMEOUT_S = 50
 # ruff exits 2, and basedpyright 2 or more, when they could not do their job at all.
 ABNORMAL_EXIT = 2
 DEFAULTS_DIR = Path(__file__).resolve().parent / "defaults"
+DEFAULTS_PYRIGHT = DEFAULTS_DIR / "pyrightconfig.json"
 INSTALL_HINTS = {"ruff": "uv tool install ruff", "basedpyright": "uv tool install basedpyright"}
 
 
@@ -157,11 +163,19 @@ def changed_since(project: Path, since_s: float) -> list[Path]:
             )
             paths = (project / rel for rel in listed.output.split("\0") if rel)
             return [path for path in paths if newer_than(path, since_s)]
+    if project in (Path.home().resolve(), Path(project.anchor)):
+        return []  # a walk of the whole home directory or disk is never worth a hook's budget
     found: list[Path] = []
-    for directory, subdirs, files in os.walk(project):
+    visited = 0
+    for directory, subdirs, files in os.walk(project):  # unreadable folders are skipped
         subdirs[:] = [name for name in subdirs if name not in PRUNED_DIRS]
-        paths = (Path(directory) / name for name in files)
-        found.extend(path for path in paths if newer_than(path, since_s))
+        for name in files:
+            visited += 1
+            if visited > MAX_WALK_FILES:
+                return found
+            path = Path(directory) / name
+            if newer_than(path, since_s):
+                found.append(path)
     return found
 
 
@@ -257,11 +271,8 @@ def has_pyright_table(pyproject: Path) -> bool:
     return "[tool.basedpyright]" in text or "[tool.pyright]" in text
 
 
-def pyright_config(path: Path) -> Path:
-    """The nearest pyrightconfig.json or pyproject.toml with a pyright table above path.
-
-    The plugin's default config when there is none.
-    """
+def user_pyright_config(path: Path) -> Path | None:
+    """The nearest pyrightconfig.json or pyproject.toml with a pyright table above path."""
     for directory in path.parents:
         config = directory / "pyrightconfig.json"
         if config.is_file():
@@ -269,7 +280,37 @@ def pyright_config(path: Path) -> Path:
         pyproject = directory / "pyproject.toml"
         if pyproject.is_file() and has_pyright_table(pyproject):
             return pyproject
-    return DEFAULTS_DIR / "pyrightconfig.json"
+    return None
+
+
+def project_root(path: Path) -> Path:
+    """The nearest folder above path with a project marker, else the file's own folder."""
+    for directory in path.parents:
+        if any((directory / marker).exists() for marker in PROJECT_MARKERS):
+            return directory
+    return path.parent
+
+
+def default_pyright_config(path: Path, scratch: Path) -> Path:
+    """Write the plugin's profile, bound to the file's project, into scratch and return it.
+
+    basedpyright resolves imports and the virtual environment from the config file's folder,
+    so the bundled profile is copied next to nothing in the project: the project root (and
+    its src/) become search paths and execution root, and a .venv there is used when present.
+    """
+    root = project_root(path)
+    profile = _decode(DEFAULTS_PYRIGHT.read_text(encoding="utf-8"))
+    if not isinstance(profile, JsonObject):
+        profile = JsonObject()
+    search = [str(root), str(root / "src")]
+    profile["extraPaths"] = search
+    profile["executionEnvironments"] = [{"root": str(root), "extraPaths": search}]
+    if (root / ".venv").is_dir():
+        profile["venvPath"] = str(root)
+        profile["venv"] = ".venv"
+    config = scratch / "pyrightconfig.json"
+    _ = config.write_text(json.dumps(profile), encoding="utf-8")
+    return config
 
 
 def record(result: Run, label: str, path: Path, out: FileResult) -> None:
@@ -289,7 +330,9 @@ def check_file(path: Path, tools: Tools) -> FileResult:
     record(run([tools.ruff, "format", *config, str(path)]), "ruff format", path, out)
     rewrote = digest(path) != before
     if path.suffix != NOTEBOOK_SUFFIX:
-        pyright = run([tools.basedpyright, "-p", str(pyright_config(path)), str(path)])
+        with tempfile.TemporaryDirectory(prefix="python-lsp-intelligence-") as scratch:
+            pyright_cfg = user_pyright_config(path) or default_pyright_config(path, Path(scratch))
+            pyright = run([tools.basedpyright, "-p", str(pyright_cfg), str(path)])
         record(pyright, "basedpyright", path, out)
     return FileResult(out.findings, out.failures, rewrote)
 

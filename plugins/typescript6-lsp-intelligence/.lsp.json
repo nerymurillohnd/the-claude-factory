@@ -5,12 +5,6 @@
       "${CLAUDE_PLUGIN_ROOT}/node_modules/typescript-language-server/lib/cli.mjs",
       "--stdio"
     ],
-    "initializationOptions": {
-      "disableAutomaticTypingAcquisition": true,
-      "tsserver": {
-        "path": "${CLAUDE_PLUGIN_ROOT}/node_modules/typescript/lib/tsserver.js"
-      }
-    },
     "startupTimeout": 30000,
     "maxRestarts": 3,
     "extensionToLanguage": {

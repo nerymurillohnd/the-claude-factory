@@ -7,11 +7,14 @@
 import assert from 'node:assert/strict'
 import { spawnSync } from 'node:child_process'
 import {
+  chmodSync,
+  cpSync,
   existsSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
   rmSync,
+  symlinkSync,
   utimesSync,
   writeFileSync,
 } from 'node:fs'
@@ -184,6 +187,27 @@ describe('bash-lsp-intelligence hook', () => {
       assert.doesNotMatch(r.err, /old\.sh/)
     })
 
+    test('an unreadable folder does not crash the mtime walk', () => {
+      mkdirSync(join(ws.project, 'locked'))
+      chmodSync(join(ws.project, 'locked'), 0o000)
+      ws.write('new.sh', '#!/usr/bin/env bash\nx="a b"\necho $x\n')
+      const payload = event('Bash', null, { tool_input: { command: 'x' }, duration_ms: 20 })
+      const env = { ...ws.env, CLAUDE_PROJECT_DIR: ws.project }
+      const r = fire(BASH_HOOK, payload, { cwd: ws.home, env })
+      chmodSync(join(ws.project, 'locked'), 0o755)
+      assert.doesNotMatch(r.err, /at walk|EACCES|EPERM/)
+      assert.equal(r.code, 2)
+      assert.match(r.err, /new\.sh/)
+    })
+
+    test('the home directory is never walked', () => {
+      ws.write('new.sh', '#!/usr/bin/env bash\nx="a b"\necho $x\n')
+      const payload = event('Bash', null, { tool_input: { command: 'x' }, duration_ms: 20 })
+      const env = { ...ws.env, HOME: ws.project, CLAUDE_PROJECT_DIR: ws.project }
+      const r = fire(BASH_HOOK, payload, { cwd: ws.project, env })
+      assert.deepEqual(r, { code: 0, out: '', err: '' })
+    })
+
     test('more than twenty files reports the rest', () => {
       const files = Array.from({ length: MANY }, (_, i) =>
         ws.write(`many/f${i}.sh`, '#!/usr/bin/env bash\nprintf hi\n'),
@@ -250,12 +274,81 @@ function tsSuite(name, plugin) {
     test('nearest tsconfig wins and sibling errors come after', () => {
       ws.write('tsconfig.json', LOOSE_TSCONFIG)
       ws.write('packages/app/tsconfig.json', STRICT_TSCONFIG)
-      ws.write('packages/app/sibling.ts', 'export const s: number = "y"\n')
-      const ts = ws.write('packages/app/edited.ts', 'export const e: number = "x"\n')
+      // The sibling sorts first alphabetically and tsc lists it first; the hook must reorder.
+      ws.write('packages/app/aaa.ts', 'export const s: number = "y"\n')
+      const ts = ws.write('packages/app/zzz.ts', 'export const e: number = "x"\n')
       const r = fire(hook, event('Edit', ts), { cwd: ws.project, env: ws.env })
       assert.equal(r.code, 2)
-      assert.ok(r.err.indexOf('edited.ts') < r.err.indexOf('sibling.ts'))
+      assert.ok(r.err.indexOf('zzz.ts') < r.err.indexOf('aaa.ts'), r.err)
       assert.match(r.err, /packages\/app\/tsconfig\.json/)
+    })
+
+    test('tsc explanation lines stay attached to their error', () => {
+      ws.write('tsconfig.json', STRICT_TSCONFIG)
+      const body =
+        "type Foo = { a: { b: number } }\nconst y = { a: { b: 'x' } }\nexport const v: Foo = y\n"
+      const ts = ws.write('src/nested.ts', body)
+      const r = fire(hook, event('Edit', ts), { cwd: ws.project, env: ws.env })
+      assert.equal(r.code, 2)
+      assert.match(r.err, /The types of 'a\.b' are incompatible/)
+    })
+
+    test('a jsconfig-only project checks JavaScript with that config', () => {
+      ws.write(
+        'jsconfig.json',
+        '{ "compilerOptions": { "checkJs": true, "noEmit": true, "types": [] }, "include": ["src/**/*.js"] }\n',
+      )
+      const js = ws.write('src/a.js', '/** @type {number} */\nconst n = "x"\nexport { n }\n')
+      const r = fire(hook, event('Edit', js), { cwd: ws.project, env: ws.env })
+      assert.equal(r.code, 2)
+      assert.match(r.err, /TS2322/)
+      assert.match(r.err, /jsconfig\.json/)
+    })
+
+    test('JavaScript with no config is reported as not type-checked, without blocking', () => {
+      const js = ws.write('src/loose.mjs', 'export const n = 1\n')
+      const r = fire(hook, event('Edit', js), { cwd: ws.project, env: ws.env })
+      assert.equal(r.err, '')
+      assert.equal(r.code, 0)
+      const payload = JSON.parse(r.out)
+      assert.match(payload.hookSpecificOutput.additionalContext, /not type-checked/)
+      assert.doesNotMatch(payload.systemMessage, /passed/)
+    })
+
+    test('a solution-style tsconfig is followed to the program that owns the file', () => {
+      ws.write(
+        'tsconfig.json',
+        '{ "files": [], "references": [{ "path": "./tsconfig.app.json" }] }\n',
+      )
+      ws.write(
+        'tsconfig.app.json',
+        '{ "compilerOptions": { "strict": true, "noEmit": true, "composite": true, "types": [] }, "include": ["src/**/*.ts"] }\n',
+      )
+      const ts = ws.write('src/main.ts', 'export const n: number = "x"\n')
+      const r = fire(hook, event('Edit', ts), { cwd: ws.project, env: ws.env })
+      assert.equal(r.code, 2)
+      assert.match(r.err, /TS2322/)
+      assert.match(r.err, /tsconfig\.app\.json/)
+    })
+
+    test('the plugin name comes from plugin.json under the cache layout', () => {
+      const cache = join(ws.root, name, '0.9.9')
+      mkdirSync(join(cache, 'hooks'), { recursive: true })
+      mkdirSync(join(cache, '.claude-plugin'))
+      cpSync(join(plugin, 'hooks', 'check.mjs'), join(cache, 'hooks', 'check.mjs'))
+      cpSync(
+        join(plugin, '.claude-plugin', 'plugin.json'),
+        join(cache, '.claude-plugin', 'plugin.json'),
+      )
+      symlinkSync(join(plugin, 'node_modules'), join(cache, 'node_modules'))
+      ws.write('tsconfig.json', STRICT_TSCONFIG)
+      const ts = ws.write('src/a.ts', 'export const n: number = 1\n')
+      const r = fire(join(cache, 'hooks', 'check.mjs'), event('Edit', ts), {
+        cwd: ws.project,
+        env: { ...ws.env, CLAUDE_PLUGIN_ROOT: cache },
+      })
+      assert.equal(r.code, 0, r.err)
+      assert.match(JSON.parse(r.out).systemMessage, new RegExp(`^${name}: tsc passed`))
     })
 
     test('file outside every program is reported, not passed over', () => {
@@ -267,7 +360,10 @@ function tsSuite(name, plugin) {
       const ts = ws.write('scripts/loose.ts', 'export const n: number = 1\n')
       const r = fire(hook, event('Edit', ts), { cwd: ws.project, env: ws.env })
       assert.equal(r.code, 0)
-      assert.match(JSON.parse(r.out).hookSpecificOutput.additionalContext, /not part of/)
+      const payload = JSON.parse(r.out)
+      assert.match(payload.hookSpecificOutput.additionalContext, /not part of/)
+      assert.doesNotMatch(payload.systemMessage, /passed/)
+      assert.match(payload.systemMessage, /not checked/)
     })
 
     test('no tsconfig: compiler defaults on the file alone', () => {

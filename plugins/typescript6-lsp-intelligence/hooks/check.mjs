@@ -1,20 +1,26 @@
 #!/usr/bin/env node
 // Post-edit hook of the TypeScript LSP intelligence plugins: runs the plugin's own tsc on
 // the program that contains each TypeScript or JavaScript file a tool call changed. Reads
-// one PostToolUse or PostToolUseFailure event on stdin. The nearest tsconfig.json above the
-// file is the policy; without one, tsc checks the file alone with its defaults. Exit 0 with
-// a systemMessage when everything passed, stderr and exit 2 with errors or when tsc could
-// not run. Files of other languages are ignored in silence. Node 18 or later. This file is
-// byte-identical in typescript6-lsp-intelligence and typescript7-lsp-intelligence.
+// one PostToolUse or PostToolUseFailure event on stdin. The nearest tsconfig.json or
+// jsconfig.json above the file is the policy, and a solution-style config is followed
+// through its references to the program that lists the file; without any config, tsc
+// checks a TypeScript file alone with its defaults and JavaScript is reported as not
+// type-checked. Exit 0 with a systemMessage when everything passed, stderr and exit 2 with
+// errors or when tsc could not run. Files of other languages are ignored in silence.
+// Node 18 or later. This file is byte-identical in typescript6-lsp-intelligence and
+// typescript7-lsp-intelligence.
 
 import { spawnSync } from 'node:child_process'
 import { existsSync, readdirSync, readFileSync, realpathSync, statSync } from 'node:fs'
-import { basename, dirname, join, relative, resolve, sep } from 'node:path'
+import { homedir } from 'node:os'
+import { basename, dirname, join, parse, relative, resolve, sep } from 'node:path'
 
 const PLUGIN_ROOT = process.env.CLAUDE_PLUGIN_ROOT ?? resolve(dirname(process.argv[1]), '..')
-const PLUGIN = basename(PLUGIN_ROOT)
+const PLUGIN = pluginName()
 const TSC = join(PLUGIN_ROOT, 'node_modules', 'typescript', 'bin', 'tsc')
-const TS_SUFFIXES = new Set(['.ts', '.tsx', '.mts', '.cts', '.js', '.jsx', '.mjs', '.cjs'])
+const TS_SUFFIXES = new Set(['.ts', '.tsx', '.mts', '.cts'])
+const JS_SUFFIXES = new Set(['.js', '.jsx', '.mjs', '.cjs'])
+const CONFIG_NAMES = ['tsconfig.json', 'jsconfig.json']
 const SKIPPED_DIRS = new Set(['node_modules', '.venv', 'venv', 'site-packages'])
 const PRUNED_DIRS = new Set([
   ...SKIPPED_DIRS,
@@ -35,13 +41,31 @@ const MAX_REPORT_CHARS = 9000
 const BASH_SLACK_MS = 2000
 // Window used when the event carries no duration_ms.
 const FALLBACK_WINDOW_MS = 30_000
+// The modification-time walk gives up after this many files, so a huge tree stays cheap.
+const MAX_WALK_FILES = 20_000
 // Under the hook's 120 s budget, so a slow program is reported instead of cancelled in silence.
 const TOOL_TIMEOUT_MS = 110_000
 const MS_PER_S = 1000
 const ERROR_LINE = /^(.*?)\((\d+),(\d+)\): error TS\d+: /
 const BARE_ERROR = /^error TS\d+: /
+const CONTINUATION = /^\s+\S/
 const LISTED_FILE = /^(?:\/|[A-Za-z]:[\\/])/
 const INSTALL_HINT = `the plugin's own TypeScript was not installed; run "npm ci" in ${PLUGIN_ROOT} or reinstall the plugin from the marketplace`
+
+// The plugin's name from its manifest: the install folder is named after the version.
+function pluginName() {
+  try {
+    const manifest = JSON.parse(
+      readFileSync(join(PLUGIN_ROOT, '.claude-plugin', 'plugin.json'), 'utf8'),
+    )
+    if (typeof manifest.name === 'string' && manifest.name !== '') {
+      return manifest.name
+    }
+  } catch {
+    // fall through
+  }
+  return basename(PLUGIN_ROOT)
+}
 
 function textAt(value, ...keys) {
   let current = value
@@ -123,15 +147,29 @@ function newerThan(path, sinceMs) {
   }
 }
 
-function walk(dir, sinceMs, found) {
-  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+// Collects files newer than sinceMs under dir; unreadable folders are skipped and the walk
+// stops once budget.left runs out.
+function walk(dir, sinceMs, found, budget) {
+  let entries
+  try {
+    entries = readdirSync(dir, { withFileTypes: true })
+  } catch {
+    return
+  }
+  for (const entry of entries) {
+    if (budget.left <= 0) {
+      return
+    }
     const path = join(dir, entry.name)
     if (entry.isDirectory()) {
       if (!PRUNED_DIRS.has(entry.name)) {
-        walk(path, sinceMs, found)
+        walk(path, sinceMs, found, budget)
       }
-    } else if (newerThan(path, sinceMs)) {
-      found.push(path)
+    } else {
+      budget.left -= 1
+      if (newerThan(path, sinceMs)) {
+        found.push(path)
+      }
     }
   }
 }
@@ -146,8 +184,11 @@ function changedSince(project, sinceMs) {
       .map((rel) => join(project, rel))
       .filter((path) => newerThan(path, sinceMs))
   }
+  if (project === realpath(homedir()) || project === parse(project).root) {
+    return [] // a walk of the whole home directory or disk is never worth a hook's budget
+  }
   const found = []
-  walk(project, sinceMs, found)
+  walk(project, sinceMs, found, { left: MAX_WALK_FILES })
   return found
 }
 
@@ -186,22 +227,33 @@ function candidates(event, nowMs) {
   return asFiles(changedSince(project, nowMs - windowMs))
 }
 
-function isTypeScript(path) {
+function suffixOf(path) {
   const name = basename(path)
   const dot = name.lastIndexOf('.')
-  return dot > 0 && TS_SUFFIXES.has(name.slice(dot))
+  return dot > 0 ? name.slice(dot) : ''
+}
+
+function isTypeScript(path) {
+  return TS_SUFFIXES.has(suffixOf(path))
+}
+
+function isJavaScript(path) {
+  return JS_SUFFIXES.has(suffixOf(path))
 }
 
 function skipped(path) {
   return path.split(sep).some((part) => SKIPPED_DIRS.has(part))
 }
 
-function nearestTsconfig(path) {
+// The nearest tsconfig.json, else jsconfig.json, above the file; null without either.
+function nearestConfig(path) {
   let dir = dirname(path)
   for (;;) {
-    const config = join(dir, 'tsconfig.json')
-    if (existsSync(config)) {
-      return config
+    for (const name of CONFIG_NAMES) {
+      const config = join(dir, name)
+      if (existsSync(config)) {
+        return config
+      }
     }
     const parent = dirname(dir)
     if (parent === dir) {
@@ -214,7 +266,7 @@ function nearestTsconfig(path) {
 function groupByProgram(files) {
   const groups = new Map()
   for (const path of files) {
-    const key = nearestTsconfig(path) ?? ''
+    const key = nearestConfig(path) ?? ''
     if (!groups.has(key)) {
       groups.set(key, [])
     }
@@ -231,31 +283,73 @@ function display(path, base) {
   return rel.startsWith('..') ? path : rel.split(sep).join('/')
 }
 
-// Sort tsc's error lines: edited files first, then the rest of the program, config errors last.
-function orderErrors(lines, edited, configDir) {
+// Groups tsc's output into errors with their indented explanation lines, then sorts them:
+// edited files first, the rest of the program after, config errors last. tsc prints file
+// paths relative to its own working directory, which is the hook's.
+function orderErrors(lines, edited) {
   const own = []
   const others = []
   const bare = []
+  let current = null
   for (const line of lines) {
     const match = ERROR_LINE.exec(line)
     if (match) {
-      const file = realpath(resolve(configDir, match[1]))
-      if (edited.has(file)) {
-        own.push(line)
-      } else {
-        others.push(line)
-      }
+      current = edited.has(realpath(resolve(match[1]))) ? own : others
+      current.push(line)
     } else if (BARE_ERROR.test(line)) {
-      bare.push(line)
+      current = bare
+      current.push(line)
+    } else if (current !== null && CONTINUATION.test(line)) {
+      current.push(line)
+    } else {
+      current = null
     }
   }
   return [...own, ...others, ...bare]
 }
 
+// The configs a solution-style config refers to, resolved through tsc so comments and
+// extends are handled; a directory reference means the tsconfig.json inside it.
+function referencedConfigs(config) {
+  const shown = run([process.execPath, TSC, '--showConfig', '-p', config])
+  if (shown.code !== 0) {
+    return []
+  }
+  let parsed
+  try {
+    parsed = JSON.parse(shown.output)
+  } catch {
+    return []
+  }
+  const references = Array.isArray(parsed.references) ? parsed.references : []
+  const configs = []
+  for (const reference of references) {
+    if (typeof reference?.path !== 'string') {
+      continue
+    }
+    const target = resolve(dirname(config), reference.path)
+    const file = isDir(target) ? join(target, 'tsconfig.json') : target
+    if (existsSync(file)) {
+      configs.push(realpath(file))
+    }
+  }
+  return configs
+}
+
 function checkLooseFiles(files, base) {
   const out = { findings: [], failures: [], uncovered: [] }
-  const names = files.map((file) => display(file, base)).join(', ')
-  const result = run([process.execPath, TSC, '--noEmit', '--pretty', 'false', ...files])
+  const typescript = files.filter(isTypeScript)
+  for (const file of files.filter(isJavaScript)) {
+    out.uncovered.push({
+      file,
+      reason: 'no tsconfig.json or jsconfig.json above it; JavaScript not type-checked',
+    })
+  }
+  if (typescript.length === 0) {
+    return out
+  }
+  const names = typescript.map((file) => display(file, base)).join(', ')
+  const result = run([process.execPath, TSC, '--noEmit', '--pretty', 'false', ...typescript])
   if (result.code === null) {
     out.failures.push(`tsc failed, so ${names} was not checked:\n${result.output.trim()}`)
   } else if (result.code !== 0) {
@@ -265,11 +359,12 @@ function checkLooseFiles(files, base) {
   return out
 }
 
-function checkProgram(config, files, base) {
+function checkProgram(config, files, base, visited = new Set()) {
   if (config === '') {
     return checkLooseFiles(files, base)
   }
   const out = { findings: [], failures: [], uncovered: [] }
+  visited.add(config)
   const result = run([
     process.execPath,
     TSC,
@@ -290,14 +385,32 @@ function checkProgram(config, files, base) {
   const listed = new Set(
     lines.filter((line) => LISTED_FILE.test(line)).map((line) => realpath(line.trim())),
   )
-  const errors = orderErrors(lines, new Set(files), dirname(config))
+  const errors = orderErrors(lines, new Set(files))
   if (errors.length > 0) {
     out.findings.push(`tsc (${display(config, base)}):\n${errors.join('\n')}`)
   } else if (result.code !== 0) {
     const label = `tsc exited ${result.code} without error lines, so ${display(config, base)} was not checked`
     out.failures.push(`${label}:\n${result.output.trim()}`)
   }
-  out.uncovered = files.filter((path) => !listed.has(path))
+  let missing = files.filter((path) => !listed.has(path))
+  if (missing.length > 0) {
+    for (const referenced of referencedConfigs(config)) {
+      if (missing.length === 0 || visited.has(referenced)) {
+        continue
+      }
+      const nested = checkProgram(referenced, missing, base, visited)
+      out.findings.push(...nested.findings)
+      out.failures.push(...nested.failures)
+      const stillMissing = new Set(nested.uncovered.map((entry) => entry.file))
+      missing = missing.filter((path) => stillMissing.has(path))
+    }
+  }
+  for (const file of missing) {
+    out.uncovered.push({
+      file,
+      reason: `not part of ${display(config, base)}'s program; add it to include or files`,
+    })
+  }
   return out
 }
 
@@ -323,7 +436,9 @@ function main() {
   if (event === null) {
     return 0
   }
-  const files = candidates(event, Date.now()).filter((path) => !skipped(path) && isTypeScript(path))
+  const files = candidates(event, Date.now()).filter(
+    (path) => !skipped(path) && (isTypeScript(path) || isJavaScript(path)),
+  )
   if (files.length === 0) {
     return 0
   }
@@ -334,28 +449,33 @@ function main() {
     return 2
   }
   const base = projectDir(event)
-  const results = [...groupByProgram(files)].map(([config, group]) => ({
-    config,
-    ...checkProgram(config, group, base),
-  }))
-  const names = files.map((file) => display(file, base)).join(', ')
+  const results = [...groupByProgram(files)].map(([config, group]) =>
+    checkProgram(config, group, base),
+  )
   const parts = results.flatMap((result) => [...result.findings, ...result.failures])
   if (parts.length > 0) {
+    const names = files.map((file) => display(file, base)).join(', ')
     parts.push(`Fix these findings in ${names} before continuing; do not suppress them.`)
     process.stderr.write(bounded(`${parts.join('\n')}\n`))
     return 2
   }
-  const payload = { systemMessage: `${PLUGIN}: tsc passed · ${names}` }
-  const uncovered = results.flatMap((result) =>
-    result.uncovered.map(
-      (file) =>
-        `${display(file, base)} is not part of ${display(result.config, base)}'s program; add it to include or files.`,
-    ),
-  )
+  const uncovered = results.flatMap((result) => result.uncovered)
+  const unchecked = new Set(uncovered.map((entry) => entry.file))
+  const checked = files.filter((file) => !unchecked.has(file)).map((file) => display(file, base))
+  const summary = []
+  if (checked.length > 0) {
+    summary.push(`tsc passed · ${checked.join(', ')}`)
+  }
+  if (uncovered.length > 0) {
+    summary.push(`not checked · ${uncovered.map((entry) => display(entry.file, base)).join(', ')}`)
+  }
+  const payload = { systemMessage: `${PLUGIN}: ${summary.join('; ')}` }
   if (uncovered.length > 0) {
     payload.hookSpecificOutput = {
       hookEventName: textAt(event, 'hook_event_name') || 'PostToolUse',
-      additionalContext: uncovered.join(' '),
+      additionalContext: uncovered
+        .map((entry) => `${display(entry.file, base)}: ${entry.reason}.`)
+        .join(' '),
     }
   }
   process.stdout.write(JSON.stringify(payload))
