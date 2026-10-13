@@ -1,0 +1,5 @@
+# shellcheck shell=bash
+target() { printf '%s\n' "$1"; }
+target one
+target two
+target three
