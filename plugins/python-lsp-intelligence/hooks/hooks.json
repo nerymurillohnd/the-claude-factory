@@ -6,10 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3",
-            "args": [
-              "${CLAUDE_PLUGIN_ROOT}/hooks/check.py"
-            ],
+            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/check.py\"",
             "timeout": 60,
             "statusMessage": "python-lsp-intelligence: ruff check --fix, ruff format and basedpyright on the changed Python files"
           }
@@ -22,10 +19,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3",
-            "args": [
-              "${CLAUDE_PLUGIN_ROOT}/hooks/check.py"
-            ],
+            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/check.py\"",
             "timeout": 60,
             "statusMessage": "python-lsp-intelligence: ruff check --fix, ruff format and basedpyright on the changed Python files"
           }

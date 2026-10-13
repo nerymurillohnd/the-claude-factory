@@ -6,10 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node",
-            "args": [
-              "${CLAUDE_PLUGIN_ROOT}/hooks/check.mjs"
-            ],
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/check.mjs\"",
             "timeout": 120,
             "statusMessage": "typescript6-lsp-intelligence: tsc --noEmit (TypeScript 6) on the program of each changed TypeScript/JavaScript file"
           }
@@ -22,10 +19,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node",
-            "args": [
-              "${CLAUDE_PLUGIN_ROOT}/hooks/check.mjs"
-            ],
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/check.mjs\"",
             "timeout": 120,
             "statusMessage": "typescript6-lsp-intelligence: tsc --noEmit (TypeScript 6) on the program of each changed TypeScript/JavaScript file"
           }
