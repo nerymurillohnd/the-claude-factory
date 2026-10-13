@@ -1,0 +1,27 @@
+{
+  "name": "prompt-writer",
+  "displayName": "Prompt Writer",
+  "version": "0.1.0",
+  "description": "Turns a goal, idea or draft into one copy-ready prompt tuned to the target Claude model and effort: it clarifies intent, checks current official facts and recommends the setup to run it with.",
+  "author": {
+    "name": "Nery Murillo",
+    "url": "https://github.com/nerymurillohnd"
+  },
+  "homepage": "https://github.com/nerymurillohnd/the-claude-factory/tree/main/plugins/prompt-writer#readme",
+  "repository": "https://github.com/nerymurillohnd/the-claude-factory",
+  "license": "MIT",
+  "keywords": [
+    "productivity",
+    "prompt",
+    "prompt-engineering",
+    "system-prompt",
+    "model-migration",
+    "writing"
+  ],
+  "metadata": {
+    "surfaces": [
+      "claude-code",
+      "claude-app"
+    ]
+  }
+}

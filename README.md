@@ -11,7 +11,7 @@
 <br>
 
 <!-- plugin-count:start -->
-[![Plugins](https://img.shields.io/badge/plugins-7-D97757?style=for-the-badge)](#-catalog)
+[![Plugins](https://img.shields.io/badge/plugins-8-D97757?style=for-the-badge)](#-catalog)
 <!-- plugin-count:end -->
 [![Validate](https://img.shields.io/github/actions/workflow/status/nerymurillohnd/the-claude-factory/validate.yml?branch=main&label=validate&style=for-the-badge)](https://github.com/nerymurillohnd/the-claude-factory/actions/workflows/validate.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-22C55E?style=for-the-badge)](./LICENSE)
@@ -104,7 +104,7 @@ Plugin skills are namespaced, so they never collide with yours: type `/<plugin>:
 <!-- catalog:start -->
 | Category | Plugins |
 | :-- | :--: |
-| [⚡ Productivity](#-productivity) | 1 |
+| [⚡ Productivity](#-productivity) | 2 |
 | [🧪 Testing & Quality](#-testing--quality) | 2 |
 | [🧠 Language Support](#-language-support) | 4 |
 
@@ -114,6 +114,7 @@ Plugin skills are namespaced, so they never collide with yours: type `/<plugin>:
 
 | Plugin | What it does | Works in | Version | Includes |
 | :-- | :-- | :-- | :--: | :-- |
+| [**Prompt Writer**](./plugins/prompt-writer#readme)<br>`prompt-writer@the-claude-factory` | Turns a goal, idea or draft into one copy-ready prompt tuned to the target Claude model and effort: it clarifies intent, checks current official facts and recommends the setup to run it with. | 💻 Code · 🖥️ Claude app | `0.1.0` | 🎯 Skills |
 | [**Session Handoff**](./plugins/session-handoff#readme)<br>`session-handoff@the-claude-factory` | Carries a project's working state from one session to the next: write a handoff when you stop, and the next session reads it, reports what is still open and asks you where to start. | 💻 Code · 🖥️ Claude app | `0.1.0` | 🎯 Skills · 🪝 Hooks |
 
 ### 🧪 Testing & Quality
