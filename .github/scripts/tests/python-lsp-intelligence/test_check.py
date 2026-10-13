@@ -76,7 +76,7 @@ class Workspace(unittest.TestCase):
     def write(self, name: str, text: str) -> Path:
         path = self.project / name
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(text, encoding="utf-8", newline="\n")  # LF everywhere, Windows included
+        path.write_bytes(text.encode("utf-8"))  # LF everywhere, Windows included (3.9 has no newline=)
         return path
 
 

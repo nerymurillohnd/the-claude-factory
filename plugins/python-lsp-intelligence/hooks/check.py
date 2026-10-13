@@ -124,7 +124,8 @@ def project_dir(event: JsonObject) -> Path | None:
     env_dir = os.environ.get("CLAUDE_PROJECT_DIR", "")
     for candidate in (env_dir, text_at(event, "cwd"), str(Path.cwd())):
         if candidate and Path(candidate).is_dir():
-            return Path(candidate)
+            # Resolved like the files are, so relative display works with symlinked or 8.3 paths.
+            return Path(candidate).resolve()
     return None
 
 
