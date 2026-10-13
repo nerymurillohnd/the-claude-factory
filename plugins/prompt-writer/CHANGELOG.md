@@ -6,6 +6,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-10-13
+
+### Fixed
+
+- The skill now reads its reference files from exact paths that resolve in Claude Code and in the Claude app, so Claude no longer searches the file system for them or fails to read them.
+- The skill states its scope up front: it always delivers a prompt and never carries out the task the prompt describes, including when the requested prompt is a slash command, a system prompt or skill instructions.
+
 ## [0.1.0] - 2026-10-13
 
 ### Added
@@ -14,5 +21,6 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - Works on new prompts, drafts to refine, existing prompts to audit and prompts to migrate to another target model, and saves the prompt to a file when you ask for one.
 - Built-in references for prompting principles, agentic patterns, reliability and safety, and model selection and configuration, with a drift report when live official documentation contradicts them.
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/prompt-writer--v0.1.0...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/prompt-writer--v0.1.1...HEAD
+[0.1.1]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/prompt-writer--v0.1.1
 [0.1.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/prompt-writer--v0.1.0

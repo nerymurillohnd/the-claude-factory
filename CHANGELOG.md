@@ -12,6 +12,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The
 
 ### Changed
 
+- **prompt-writer** 0.1.1 — reads its reference files from paths that resolve in Claude Code and the Claude app, and always delivers a prompt instead of carrying out the task it describes.
 - The marketplace no longer carries a version. `marketplace.json` has no `version`, releases tag plugins only, and this changelog is grouped by date. The tags `marketplace--v0.1.0` and `marketplace--v0.2.0` remain as history.
 
 ## [0.2.0] - 2026-10-13
