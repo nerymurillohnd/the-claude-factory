@@ -12,7 +12,7 @@ Verified 2026-10-12 against <https://claude.com/docs/plugins/platform-support>, 
 - One plugin folder, one marketplace, installs on both. Each surface loads the components it supports and silently skips the rest.
 - Exception: a top-level `bin/` makes the Claude app **refuse the whole plugin**.
 - Claude app installs attach to the claude.ai account and also reach Claude Code as `<plugin>@synced`; Claude Code shell installs stay on that machine.
-- Claude app limits: 200 MB and 5,000 files per plugin, 500 plugins per marketplace, 25 added marketplaces per account.
+- Claude app limits: 200 MB and 5,000 files per plugin, 500 plugins per marketplace, 512 MB per marketplace repository archive, 25 added marketplaces per account in each organization (Cowork guide: plugins, Limits; platform-support).
 
 ## Component matrix
 
