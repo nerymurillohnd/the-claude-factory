@@ -1,3 +1,0 @@
-"""Control: removing an unused import can remove missing-import evidence."""
-
-import skill_fixture_missing_unused_dependency

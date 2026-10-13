@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# On-demand run of the basedpyright-lsp quality gate: python-gate <file>...
+# bin/ is on the Bash tool's PATH while basedpyright-lsp is enabled. Exit 0 = clean, 2 = findings.
+set -uo pipefail
+here=$(dirname "${BASH_SOURCE[0]}") || exit 2
+root=$(cd "${here}/.." && pwd) || exit 2
+exec bash "${root}/scripts/ruff-basedpyright.sh" "$@"

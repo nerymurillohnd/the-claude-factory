@@ -1,0 +1,5 @@
+# shellcheck shell=bash
+# Fixture: findings that appear only with `-o all` (optional checks).
+name="world"
+echo "Hello, $name"
+echo "Today is $(date +%A)"

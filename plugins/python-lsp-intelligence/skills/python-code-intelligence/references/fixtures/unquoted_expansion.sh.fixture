@@ -1,0 +1,4 @@
+# shellcheck shell=bash
+# Fixture: unquoted expansion (SC2086), reported without optional checks.
+target_dir=$1
+rm -r $target_dir

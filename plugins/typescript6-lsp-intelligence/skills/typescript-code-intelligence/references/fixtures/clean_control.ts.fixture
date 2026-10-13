@@ -1,0 +1,5 @@
+// Fixture: clean control that every check must pass.
+// A failure here means the checks are misconfigured, not that the code is wrong.
+export function add(left: number, right: number): number {
+  return left + right;
+}
