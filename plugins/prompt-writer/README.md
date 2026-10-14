@@ -32,7 +32,7 @@ Most weak prompts come from a vague goal, not from missing tags or headings. Pro
 - **Written for the model that will run it** — guidance for Claude Fable 5.1, Opus 5.5, Opus 5 and Sonnet 5.5 is built in, so a prompt for one model does not carry habits that backfire on another.
 - **No outdated facts inside your prompt** — when your prompt depends on products, APIs, prices or rules that change, Claude checks them against current official sources before writing.
 - **One answer, ready to paste** — you get a single final prompt with a short header for your records, not a menu of variants; you paste the prompt below the header. When the next step depends on a result you have to bring back, you get the first prompt and what to bring back.
-- **Setup advice included** — each prompt comes with the recommended model, effort and session mode, each with a one-line reason, and names the skills it relies on.
+- **Setup advice included** — each prompt comes with the recommended model, effort and session mode, each with a one-line reason, names the skills it relies on, and tells you how to check that its first result meets your goal.
 - **Works on prompts you already have** — refine a draft, audit and fix an existing prompt or system prompt, or migrate a prompt to another target model.
 
 ## 🧩 What's inside

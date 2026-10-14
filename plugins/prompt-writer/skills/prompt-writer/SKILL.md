@@ -182,6 +182,7 @@ In the user's language and in plain words:
    - The session mode and where to run it, by reading "Session mode recommendations" in [model-selection-and-config.md](references/model-selection-and-config.md).
    - For the API or an agent harness only: the configuration the prompt depends on, by reading "Thinking display and progress updates", "max_tokens", "Conversation history and mid-conversation changes" and "Structured outputs" in [model-selection-and-config.md](references/model-selection-and-config.md), plus the target model's file. Much of what makes a prompt work there lives in that configuration, not in the text.
    - The skills the prompt relies on.
+   - How to check it worked: the check the user gave at step 2, applied to the first result; when they gave none, one concrete check against the prompt's success criteria.
    - Before recommending a product mode or feature (for example a Claude Code permission mode or a Claude app feature), confirm it exists today.
 2. **Follow-up,** when this is the first of several prompts or the user should review its result before acting on it: what to bring back (the output or what happened) and what you will assess in it. For a fixed chain, what each stage receives.
 3. **Design notes:** the key decisions and the reference or page behind each, and anything you added beyond the request, with why. Keep it brief.
