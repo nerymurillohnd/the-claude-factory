@@ -19,7 +19,7 @@ Read this when you run a suite, iterate on a case, grant tools, choose models, c
 - **Claude Code v2.1.269 or later** (`claude --version`, `claude update`).
 - **Git.** If git is installed it must be 2.31 or later; since v2.1.283, an older git is refused before any case runs. Without git, runs work. Each run switches off git hooks, credential helpers and other programs a repository's git config can start.
 - **A plugin.** Either a directory with `plugin.json` or `.claude-plugin/plugin.json`, or a skills-directory plugin.
-- **The same credentials and provider your normal sessions use.** Runs, judge graders and `init` all call the model on that account.
+- **The same credentials and provider your normal sessions use.** Runs, judge graders and the interactive `init` interview call the model on that account. `init` run inside a Claude Code session only prints the interview; its pilots are paid runs.
 - **Messages before any run:**
   - `plugin eval is currently in early access`: update Claude Code.
   - `plugin eval is currently unavailable`: switched off server-side. Update and try later.
@@ -75,7 +75,7 @@ claude plugin eval . --case first-case --runs 1 --keep-temp    # keep the run fo
 | `--output-dir <dir>` | `<eval dir>/results/<timestamp>/` | Where `aggregate-result.json` and `report.html` go |
 | `--report <path>` | — | Write the HTML report to this path instead |
 | `--no-publish` / `--publish-report` | publish when the account allows | See [results.md](results.md) |
-| `--keep-temp` | off | Keep the run folders for debugging |
+| `--keep-temp` | off | Keep the run folders for debugging and print their paths. The docs and `--help` describe what it keeps differently, so check `--help` |
 | `--verbose` | off | Per-message trace events in the debug log |
 
 ## Granting tools and the sandbox
@@ -123,7 +123,7 @@ claude plugin eval . --case first-case --runs 1 --keep-temp    # keep the run fo
   - Use `--ablation none` when Δ isn't needed.
   - Set `--max-cost-usd`.
   - Leave `partial: true` and `skippedPaidGraders` runs out of any trend.
-- **Estimate before asking.** A pilot's `costUsd` × runs, plus the baseline arm, is a fair estimate of the full suite. State it and get a yes before running.
+- **Estimate before asking.** After a one-arm pilot (`--runs 1 --ablation none`), the full suite costs about the pilot's `costUsd` × runs × arms (2 with the baseline), plus agent-mock calls. State it and get a yes before running.
 
 ## CI recipe
 
@@ -159,7 +159,7 @@ claude plugin eval . \
 | Code | Meaning |
 | :-- | :-- |
 | 0 | Every case met `--threshold` and every case file loaded |
-| 1 | A case under the threshold, a case file that failed to load, no cases found, a run that couldn't start, an untrusted directory without `--trust-plugin`, an invalid option, or (since v2.1.299) a run that ended on an API error, which scores 0 ungraded |
+| 1 | A case under the threshold, a case file that failed to load, no cases found, a run that couldn't start, an untrusted directory without `--trust-plugin`, an invalid option, or (since v2.1.299) a run that ended on an API error, which scores 0 without grading |
 | 2 | Partial: the `--max-cost-usd` ceiling was hit, or the credential was rejected at or before the first run. The JSON has `partial: true` and the reason |
 | 130 | Interrupted; partial results are written |
 | 143 | Terminated, for example by a CI timeout |

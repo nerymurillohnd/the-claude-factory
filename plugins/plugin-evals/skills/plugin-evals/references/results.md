@@ -55,7 +55,7 @@ The same document `--json` prints. It is versioned (`schemaVersion: 1`) and uses
 | `cases[].name` | Case name |
 | `cases[].aggregates.score` | Mean with-arm run score |
 | `cases[].aggregates.delta` | Δ. Omitted when the case ran one arm or the arms aren't comparable |
-| `cases[].arms.with[].error` | `null`, or why the run ended abnormally. A run that ended badly is still graded on what it produced |
+| `cases[].arms.with[].error` | `null`, or why the run ended abnormally. A run that ended badly is still graded on what it produced, except that since v2.1.299 a run that ended on an API error scores 0 without grading |
 | `cases[].arms.with[].aborted` | Present when a mock stopped the run (`expect:`, `abort_when`, or the agent-mock budget), with server, tool and reason. Score 0, `error` is `null` |
 | `cases[].arms.with[].skippedPaidGraders` | The cost ceiling skipped this run's judge graders, so its score isn't comparable |
 | `cases[].arms.without` | The baseline runs |
@@ -78,7 +78,7 @@ The document also carries the suite configuration, every grader definition, and 
 | :-- | :-- | :-- |
 | Exit 1, but every case looks good | The default `--threshold` is 1.0, or a case file failed to load (named on stderr above the table) | Set the threshold you require; fix the case file |
 | A grader shows `passed: false` under a run that scored 1.0 | The grader is excluded by design (`scored: false`) | Expected. Use `arm: both` if it must count |
-| No `W/OUT` column, or `ablation requested but no plugin resolved` | No plugin was found for the case, or every case resumes a `history_file` | Add `plugins: ["../.."]` with the path from the case to the plugin |
+| No `W/OUT` column, or `ablation requested but no plugin resolved` | No plugin was found for the case, or every case resumes a `history_file` | Add `plugins: ["../.."]` with the path from the case to the plugin; for `history_file` cases, pass `--ablation with-without` |
 | `Agent type '<plugin>:<agent>' not found` in baseline runs | The baseline arm has no plugin agents | Expected. Use `--ablation none` to skip the baseline |
 | Everything scores 0 although the right files were made | The graders target `files` (paths), or `file_exists` on a file that already existed or was only edited | Target `{ source: file, path: … }`; for edits, use `tool_used` on `Edit` |
 | A regex on the trace misses visible text | The default target is `last_message`, quotes are escaped as `\"`, or an inline `(?i)` was used | Set `target: trace`, match `\"`, use `flags: i` |

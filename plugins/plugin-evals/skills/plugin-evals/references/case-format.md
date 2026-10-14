@@ -58,7 +58,7 @@ The body is sent exactly as written. `@path` mentions are not expanded, so to ha
 
 The read-only set that `allowed_tools` can grant on its own is `Read`, `Glob`, `Grep`, `NotebookRead`, `Skill`, `AskUserQuestion`, `Agent`, `TodoWrite`, `TaskCreate`, `TaskGet`, `TaskList`, `TaskUpdate` and `TaskStop`.
 
-**`disallowed_tools`** (since v2.1.299) removes built-in tools from Claude in that case, even when they are granted, for example `Agent`. The run-wide flag is `--disallow-tools`. When this snapshot was taken, the docs page didn't list the field yet. Confirm where it goes with `claude plugin eval --help` and the live page before you rely on it.
+**`disallowed_tools`** (since v2.1.299) removes built-in tools from Claude in that case, even when they are granted, for example `Agent`. The run-wide flag is `--disallow-tools`. When this snapshot was taken, the docs page didn't list the field yet. Confirm where it goes with the live page before you rely on it. When you can't confirm it, use the run-wide `--disallow-tools` flag instead, because an unknown `prompt.md` key fails the case.
 
 ## `case.yaml`
 

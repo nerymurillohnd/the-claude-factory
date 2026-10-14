@@ -24,7 +24,7 @@ Running `claude plugin eval` needs the Claude Code CLI. In the Claude app, write
 
 | The user wants to | Do this | Read |
 | :-- | :-- | :-- |
-| Create a suite | From the plugin root, run `claude plugin eval init`. Inside a Claude Code session it prints the current authoring interview instead of opening one: conduct it with the user, and apply the method below | [references/case-format.md](references/case-format.md) |
+| Create a suite | From the plugin root, run `claude plugin eval init`. Inside a Claude Code session it prints the current authoring interview instead of opening one: conduct it with the user, and apply the method below. Printing the interview makes no model call; its pilot runs do | [references/case-format.md](references/case-format.md) |
 | Write or fix one case or grader | Write the files by hand; `claude plugin eval init --bare <case>` gives a blank template | [references/case-format.md](references/case-format.md) |
 | Seed files, a git repo, an earlier conversation, or mock MCP servers | Add `case.yaml` context, mocks and replays | [references/fixtures-and-mocks.md](references/fixtures-and-mocks.md) |
 | Run, iterate, grant tools, pick models, cap cost, or run it in CI | Choose the target, flags and recipe | [references/running-and-ci.md](references/running-and-ci.md) |
@@ -34,14 +34,14 @@ Running `claude plugin eval` needs the Claude Code CLI. In the Claude app, write
 ## 3. Method for a suite whose score means something
 
 - **Every case proves a difference.** Write a case only when Claude without the plugin would fail it in a specific, predictable way, or when it guards a known risk. If both arms pass, the case measures nothing: rewrite it or drop it.
-- **Grade the outcome, and confirm the plugin produced it.** Give every case at least one grader on the result (the final reply or a produced file) and one on the steps (`tool_used` or `tool_order`). A `tool_used: Skill` grader alone never moves Δ.
-- **Measure triggering as a rate.** Use at least 4 should-fire prompts in different shapes, written the way users talk and without naming the skill. Add 1–2 near-miss prompts that must not fire. Re-run them after every change to the `description`.
+- **Grade the outcome, and confirm the plugin produced it.** Give every case at least one grader on the result (the final reply or a produced file) and one on the steps (`tool_used` or `tool_order` on a tool other than `Skill`, such as the `Bash` command or the MCP tool your plugin should call). Add a `tool_used: Skill` grader as a trigger indicator, but it never counts toward the score in a two-arm run.
+- **Measure triggering as a rate.** Use at least 4 should-fire prompts in different shapes, written the way users talk and without naming the skill. Add 1–2 near-miss prompts that must not fire. Re-run them after every change to the `description`. The trigger rate is the share of with-arm runs whose `tool_used: Skill` grader has `passed: true` in `aggregate-result.json` (it is reported even when `scored: false`).
 - **Tools follow graders.** A grader on a created file needs `Write` or `Edit` granted. A `tool_used` grader on X needs X allowed. A task that runs a build or tests needs a scoped `Bash(...)` grant. A missing tool scores 0 in both arms and reads as "the plugin did nothing".
 - **Size budgets to the task.** A one-shot answer needs about 5 turns and 60–120 s. Reading a repo, running a tool and writing a report needs 25–40 turns and 600–900 s. Hitting a limit is a run error that lowers the score.
-- **Prefer free graders.** `regex`, `tool_used`, `tool_order` and `file_exists` cost nothing. Use an `llm` grader only for judgment, with concrete PASS and FAIL claims, and grade long output with `regex` over the file. Make the judge Sonnet-tier or larger (`--judge-model sonnet`), never the agent's own model.
-- **Pilot before the full run.** Run each case once (`--runs 1`), then show the user the inputs, outputs and grades, and ask whether they would score any differently. If they would, revise the rubric. Confirm any change at the default 3 runs before trusting it.
-- **Never spend without a yes.** Every run and every judge vote is a real model call on the user's plan or API bill. Before any paid run, state the number of agent runs (cases × runs × arms) and the judge calls (3 per `llm` or `baseline` grader per run). Give an estimate when you have one, such as a pilot's `costUsd` × runs, and wait for the user's go-ahead.
-- **Read traces, not only scores.** When a case is low or Δ is odd, re-run it once with `--keep-temp` and read what Claude actually did.
+- **Prefer free graders.** `regex`, `tool_used`, `tool_order` and `file_exists` cost nothing. Use an `llm` grader only for judgment, with concrete PASS and FAIL claims, and grade long output with `regex` over the file. Make the judge Sonnet-tier or larger and never the agent's own model: with a Sonnet agent, use a larger judge such as `--judge-model opus`.
+- **Pilot before the full run.** Run each case once with one arm (`--runs 1 --ablation none`), then show the user the inputs, outputs and grades, and ask whether they would score any differently. If they would, revise the rubric. Confirm any change at the default 3 runs before trusting it.
+- **Never spend without a yes.** Every run and every judge vote is a real model call on the user's plan or API bill. Before any paid run, state the number of agent runs (cases × runs × arms), the judge calls (3 per `llm` or `baseline` grader per run) and, for `type: agent` mocks without a replay, up to 4 × `max_turns` more judge calls per run. After a one-arm pilot, estimate the full suite as the pilot's `costUsd` × runs × arms (2 with the baseline). Wait for the user's go-ahead.
+- **Read traces, not only scores.** When a case is low or Δ is odd, re-run that one case with `--keep-temp`. The run prints the path of each folder it keeps; read the transcript there (it has been `out/trace.jsonl`; list the folder if it isn't). Check `claude plugin eval --help` for what the flag keeps in your version.
 
 ## 4. Gotchas that cost real runs
 
@@ -55,9 +55,9 @@ Running `claude plugin eval` needs the Claude Code CLI. In the Claude app, write
 - **Plugin MCP tools have scoped names.** They are named `mcp__plugin_<plugin>_<server>__<tool>`, and plugin agents are named `<plugin>:<agent>`. A grader or grant on the bare server name never matches.
 - **Granting Bash forces the OS sandbox.** It needs `bubblewrap` and `socat` on Linux and WSL2 on Windows. With no sandbox backend, the eval refuses each run instead of running unconfined, unlike an interactive session.
 - **Runs are isolated.** A run loads nothing personal or project-level: no `CLAUDE.md`, settings, memory, other plugins, your MCP servers or the Artifact tool. Ship everything a case needs in the plugin. Managed settings still apply.
-- **Usage or rate limits read as regressions.** A run that hits a usage or rate limit scores about 0, and the suite is not marked `partial`. Check `cases[].arms.with[].error` before you trust a drop.
+- **Usage or rate limits read as regressions.** A run that ends on a usage or rate limit usually scores 0, and the suite is not marked `partial`; since v2.1.299, a run that ends on an API error also makes the suite exit 1. Check `cases[].arms.with[].error` before you trust a drop.
 - **The cost cap is an estimate.** `--max-cost-usd` caps the list-price estimate, not plan usage, and runs already in flight can pass it.
-- **Old git is refused.** With git older than 2.31 installed, `claude plugin eval` refuses to run. Results go to `evals/results/`, so add that folder to `.gitignore`.
+- **Old git is refused.** With git older than 2.31 installed, `claude plugin eval` refuses to run. Results go to `<eval dir>/results/` (`evals/results/` by default), so add that folder to `.gitignore`.
 
 ## 5. Answer format
 
