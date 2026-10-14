@@ -125,6 +125,8 @@ docs/                        user guides: installation, compatibility, managing 
 
 - `.claude/rules/cross-surface-compatibility.md` - component matrix and design rules for both surfaces; always loaded.
 - `.claude/rules/plugin-authoring.md` - loads for `plugins/**` and `.claude/templates/plugin/**`.
+- `.claude/rules/skill-file-references.md` - loads for `plugins/*/skills/**` and `.claude/skills/**`.
+- `.claude/rules/skill-content.md` - loads for `plugins/*/skills/**` and `.claude/skills/**`.
 - `.claude/rules/versioning-and-releases.md` - loads for changelogs, `plugin.json`, `.claude-plugin/**` and `release.yml`.
 - `.claude/rules/user-docs-style.md` - loads for user docs and plugin READMEs.
 - `.claude/rules/evals.md` - loads for `plugins/*/evals/**` and `evals.yml`.
