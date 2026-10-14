@@ -25,12 +25,13 @@ Ask the user once, with `AskUserQuestion`, whether read-only network queries are
 Read these first:
 
 - The summary's `failed_git_calls` and the saved file's `errors` section. A failed call is recorded there instead of being read as an empty result: treat every fact that depends on a failed call as `BLOCKED`.
-- Lists in the output (`untracked`, `ignored`, noise, secret-like names, nested repositories) are samples of at most 50 with a `count` and a `truncated` flag; use `count`, and get the full list with the matching Git command when you need it.
+- Lists in the output (`untracked`, `ignored`, noise, secret-like names, hidden top-level names, nested repositories) are samples of at most 50 with a `count` and a `truncated` flag; use `count`, and get the full list with the matching Git command when you need it. A `capped: true` on a `history` entry means its commit count stopped at the scan limit.
 
 The `context` section answers: checkout root, git dir and common dir, bare / linked worktree / shallow / partial clone, HEAD (branch, detached, unborn), remotes (credentials already redacted), whether `main` and `origin/main` exist, each remote's cached default branch, operations in progress (merge, rebase, cherry-pick, revert, bisect), submodules and nested repositories, and tools.
 
 - An operation in progress, a detached HEAD, a conflicted index, a bare or partial clone, a linked worktree as target, or an unborn HEAD: report it first and ask the user how to proceed before planning anything else.
-- No `main`: say so and use the remote default branch as the base. Never rename or change it. The live default is `git -C "<repo>" ls-remote --symref <remote> HEAD`; if it differs from the cached one, re-run the inventory with `--base`.
+- No `main`: say so and use the remote default branch as the base. Never rename or change it. `base_check` in the summary names the remote the base belongs to and, with `--ls-remote`, the live default: when `matches_live_default` is false, re-run the inventory with `--base <remote>/<live default>`. With `published: false` the base exists only locally: nothing shows what the remote has, so say so, mark the remote facts `BLOCKED`, and plan no deletion that needs the remote.
+- The main checkout is dirty, or the base branch is checked out in another worktree: report it as a risk now. Phase 2 plans around it by asking the user; the default is that you never stash or commit their changes for them.
 - Submodules and nested repositories are separate repositories. List them; never act inside them without a separate approval of its own action.
 
 ## 2. Provider, visibility, permissions, pull requests
@@ -78,7 +79,7 @@ The `working_tree` and `files` sections list staged, unstaged, untracked, confli
 
 ## 7. History noise and reflog
 
-The `history` section counts commits and flags WIP-style subjects on the base and across all refs (`truncated` marks a cap). The `reflog` section lists recent HEAD commits no branch or tag contains. Reflogs are local and expire (`gc.reflogExpire`, 90 days by default for reachable entries): treat them as a hint about lost work and never promise recovery from them. Rewriting noisy history that is already published is not an option; report it.
+The `history` section counts commits and flags WIP-style subjects on the base and across all refs (`capped` marks a scan cut at the limit). The `reflog` section lists recent HEAD commits no branch or tag contains. Reflogs are local and expire (`gc.reflogExpire`, 90 days by default for reachable entries): treat them as a hint about lost work and never promise recovery from them. Rewriting noisy history that is already published is not an option; report it.
 
 ## 8. Large repositories
 

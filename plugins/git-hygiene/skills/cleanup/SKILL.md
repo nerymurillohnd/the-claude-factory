@@ -21,12 +21,12 @@ Leave the repository as clean as safely possible, ideally with only `main` and `
 
 Arguments: `$ARGUMENTS`.
 
-- If the first word is an existing directory, that is the repository and any text after it is a problem to investigate. Otherwise the repository is the current directory (get its absolute path with `pwd`) and the text, if any, is the problem. If the text looks like a path that does not exist, ask the user.
+- If the first word is an absolute path to an existing directory, that is the repository and any text after it is a problem to investigate. With no such word the repository is the current directory (`pwd`) and all the text, if any, is the problem. A first word that looks like a path but is relative or does not exist: ask the user. Resolve the repository root once with `git -C "<path>" rev-parse --show-toplevel` and use it as `<repo>` everywhere; tell the user if it differs from the path they gave.
 - Use absolute paths: the shell does not expand `~` inside quotes. Run every Git command as `git -C "<repo>" …` and every `gh` command with `-R <owner>/<repo>`.
-- If the inventory answers `error: not a Git repository`, stop and tell the user.
+- If the inventory prints an `error` (not a Git repository, a file it cannot read or write), it wrote nothing: stop and tell the user.
 - **Scratch folder**: a folder you create once outside the repository (`mktemp -d "${TMPDIR:-/tmp}/git-hygiene-XXXXXX"`). Phase 1 writes only here: `inventory.json`, `audit-log.md` (every command and its relevant result), `findings.md` and `plan-draft.md`. Tell the user its path.
 - **Backup folder**: chosen by the user in Phase 2, outside the repository. Holds the backup, `plan.md` and the revalidation inventory. Tell the user its path.
-- **Base branch**: the local branch the others are compared with, `main` unless the remote's default branch is another one. **Base ref**: its published copy, `<remote>/<base branch>`, for example `origin/main`. The inventory's `branches.base` is the base ref.
+- **Base branch**: the local branch the others are compared with, `main` unless the remote's default branch is another one. **Base ref**: its published copy, `<remote>/<base branch>`, for example `origin/main`. The inventory's `branches.base` is the base ref. Read `base_check` in its summary: `published: false` means the base is local only, so nothing proves what the remote has (say so and mark remote facts `BLOCKED`); `matches_live_default: false` means the cached default is stale, so re-run with `--base <remote>/<live default>`. Always name the remote.
 - **Action IDs and classes** (`A-01`, `prep`, `integrate`, `publish`, `local-delete`, `remote-delete`, `files`) are defined in `${CLAUDE_SKILL_DIR}/references/phase-2-plan.md`. **A-01 is always the backup.**
 
 ## Rules that hold in every phase
@@ -39,7 +39,7 @@ Arguments: `$ARGUMENTS`.
 - Secrets: never open or print secret-bearing files (`.env`, keys, tokens, credentials); report their names only. Committed secrets can hide in diffs, so audit with `--stat`, `--name-status` and `--name-only`, and when you need content exclude secret-like paths (Phase 1 §3). Redact credentials in every command and report.
 - Never go beyond the approved scope: a changed or additional operation needs new approval.
 - Approval is an explicit answer that names the whole plan or the action IDs. A-01 is added to every approval (tell the user it was added), and nothing else runs until A-01 has run and verified. An empty, timed-out, auto-closed or ambiguous answer is not approval: ask again. An explicit refusal, or "audit only", is an answer: stop and deliver the findings and the plan.
-- Keep state on disk so a context compaction cannot lose it: the scratch folder in Phase 1 and 2, the backup folder's `plan.md` from Phase 3. After a compaction re-read those files and this skill's rules; if you cannot find them, ask the user for the folder paths or to type `/git-hygiene:cleanup` again. If the user gives you a backup folder that contains `plan.md`, resume at Phase 3 step 2.
+- Keep state on disk so a context compaction cannot lose it: the scratch folder in Phase 1 and 2, the backup folder's `plan.md` from Phase 3, where you append each action's status as it finishes (`done`, `failed`, `skipped`). After a compaction re-read those files and this skill's rules; if you cannot find them, ask the user for the folder paths or to type `/git-hygiene:cleanup` again. If the user gives you a backup folder that contains `plan.md`, resume at Phase 3 step 2, and run only the actions that are not `done`.
 
 ## Phases
 

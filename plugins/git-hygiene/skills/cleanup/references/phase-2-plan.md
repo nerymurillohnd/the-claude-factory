@@ -49,16 +49,17 @@ Run and list the actions in this class order; inside a class, in dependency orde
 | 3 | `publish` | A plain, non-force push of the integrated base branch: `git push <remote> <base branch>`; also pushing a local-only tag the user wants kept |
 | 4 | `local-delete` | Deleting local branches, removing or pruning worktrees, dropping stashes, deleting local tags, pruning stale remote-tracking refs (`git remote prune <remote>`) |
 | 5 | `remote-delete` | Deleting branches or tags on the remote, one per action |
-| 6 | `files` | Deleting named untracked or ignored non-secret noise files, after `git clean -n` previewed them and the backup copied them. Tracked noise is only reported; removing it needs a commit, so the user must ask for it, and then it is an `integrate` plus a `publish` |
+| 6 | `files` | Deleting named untracked non-secret noise files that are not ignored, after `git clean -n` previewed them and the backup copied them. Ignored noise is harmless and stays. Tracked noise is only reported; removing it needs a commit, so the user must ask for it, and then it is an `integrate` plus a `publish` |
 
 Two rules make that order safe:
 
-- **Integrations are published before anything is deleted.** Every `integrate` action is followed by a `publish` action. The aim of only `main` and `origin/main` cannot be reached without it, and a branch whose only home is an unpushed local merge is not safe to delete. An `integrate` action's commands include its checkout: `git switch <base branch>` in a clean worktree and, if the base ref is ahead, a fast-forward first (a merge into a stale local base branch makes the push non-fast-forward, and a force push is forbidden). Stop if the working tree is dirty or the base branch is checked out in another worktree.
+- **Integrations are published before anything is deleted.** Every `integrate` action is followed by a `publish` action. The aim of only `main` and `origin/main` cannot be reached without it, and a branch whose only home is an unpushed local merge is not safe to delete. An `integrate` action's commands include its checkout: `git switch <base branch>` in a clean worktree and, if the base ref is ahead, a fast-forward first (a merge into a stale local base branch makes the push non-fast-forward, and a force push is forbidden). If the working tree is dirty or the base branch is checked out in another worktree, do not plan around it silently: ask the user (finish or move the work themselves, or approve a plan that leaves that checkout alone), and never stash, commit or discard their changes on your own.
 - **Every deletion carries a containment check.** Phase 3 runs it first:
   - Branch: `git merge-base --is-ancestor <audited tip SHA> <remote>/<base branch>`, or one of the other accepted reasons below.
   - Stash: its content is patch-equivalent to the base (`git diff --stat <base ref> <selector>` is empty) or it is saved in the backup. Several stash drops go in descending index order.
   - Worktree: its status is clean and its branch is contained.
   - Remote branch: the containment check of the branch, plus its live SHA still equals the audited SHA.
+  - Tag: the commit it points to (`git rev-parse <tag>^{commit}`) is an ancestor of `<remote>/<base branch>`, or the tag is in the backup bundle and the plan says `backup-only`. A remote tag also needs its live SHA (`git ls-remote --tags <remote> <tag>`) to equal the audited one.
 
 Accepted reasons to delete a branch, as one list: (1) its tip is an ancestor of the published base; (2) `no-net-change-vs-base` or patch-equivalence, with the evidence; (3) it is saved in the backup bundle, only with the user's explicit approval of that action and marked `backup-only` in the plan. Say which reason each deletion uses.
 

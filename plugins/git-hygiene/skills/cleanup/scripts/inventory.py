@@ -199,7 +199,7 @@ def nested_repositories(root: str, submodules: list[str]) -> list[str]:
         rel = "/".join(depth)
         if rel and has_git and rel not in submodules:
             found.append(rel)
-    return found[:SAMPLE]
+    return found
 
 
 def context_of(repo: Repo, root: str) -> Json:
@@ -242,7 +242,7 @@ def context_of(repo: Repo, root: str) -> Json:
             name for name, marker in OPERATIONS.items() if (Path(git_dir) / marker).exists()
         ],
         "submodules": submodules,
-        "nested_repositories": nested_repositories(root, submodules),
+        "nested_repositories": sample(nested_repositories(root, submodules)),
         "tools": {
             "git": repo.out("--version"),
             "gh": shutil.which("gh") is not None,
@@ -510,7 +510,7 @@ def noise_of(repo: Repo) -> Json:
             big.append((int(size), path))
     return {
         "noise": report,
-        "hidden_top_level": hidden[:SAMPLE],
+        "hidden_top_level": sample(hidden),
         "secret_like_file_names": sample(secret_like),
         "large_tracked_files": [{"path": p, "bytes": s} for s, p in sorted(big, reverse=True)[:10]],
         "tracked_files": len(tracked),
@@ -531,6 +531,7 @@ def history_of(repo: Repo, base: str | None) -> Json:
         wip = [line for line in subjects if WIP_SUBJECT.match(line.split("\t", 1)[-1])]
         report[label] = {
             "commits": len(subjects),
+            "capped": len(subjects) >= HISTORY_LIMIT,
             "wip_style": sample([redact(w) for w in wip], 10),
         }
     return report
@@ -563,6 +564,34 @@ def reflog_of(repo: Repo) -> Json:
     }
 
 
+def live_default_branch(repo: Repo, remote: str) -> str | None:
+    """Return the branch a remote's HEAD points to right now, or None when it cannot tell."""
+    code, listing = repo.git("ls-remote", "--symref", remote, "HEAD")
+    if code != 0:
+        return None
+    for line in listing.split("\n"):
+        if line.startswith("ref: refs/heads/"):
+            return line.split("\t")[0].removeprefix("ref: refs/heads/")
+    return None
+
+
+def base_check(base: str | None, remotes: Json, live: Json | None) -> Json:
+    """Say where the base ref lives and, with --ls-remote, whether it is the live default."""
+    remote = next((n for n in remotes if base and base.startswith(f"{n}/")), None)
+    report: Json = {
+        "base": base,
+        "remote": remote,
+        "published": remote is not None,
+        "matches_live_default": None,
+    }
+    entry = live.get(remote) if live and remote else None
+    default = entry.get("default_branch") if isinstance(entry, dict) else None
+    if default:
+        report["live_default"] = f"{remote}/{default}"
+        report["matches_live_default"] = base == f"{remote}/{default}"
+    return report
+
+
 def live_remotes(repo: Repo, remotes: Json) -> Json:
     """Compare remote-tracking branches with the branches the remote actually has."""
     report: Json = {}
@@ -576,6 +605,7 @@ def live_remotes(repo: Repo, remotes: Json) -> Json:
             for line in listing.split("\n")
             if "\t" in line
         }
+        default = live_default_branch(repo, name)
         prefix = f"refs/remotes/{name}/"
         tracked = {
             ref.removeprefix(prefix)
@@ -583,6 +613,7 @@ def live_remotes(repo: Repo, remotes: Json) -> Json:
             if not ref.endswith("/HEAD")
         }
         report[name] = {
+            "default_branch": default,
             "branches_on_remote": sorted(live),
             "stale_tracking_refs": sorted(tracked - live),
             "not_fetched_yet": sorted(live - tracked),
@@ -601,8 +632,10 @@ def summarize(data: Json) -> Json:
     worktrees = data.get("worktrees")
     stashes = data.get("stashes")
     errors = data.get("errors")
+    check = data.get("base_check")
     return {
         "output_sections": sorted(data),
+        "base_check": check if isinstance(check, dict) else None,
         "branch_count": len(entries),
         "branch_signals": signal_counts,
         "detail_truncated": bool(isinstance(branches, dict) and branches.get("detail_truncated")),
@@ -635,8 +668,11 @@ def build(repo: Repo, args: argparse.Namespace) -> Json:
         "errors": repo.errors,
     }
     remotes = context.get("remotes")
-    if args.ls_remote and isinstance(remotes, dict):
+    remotes = remotes if isinstance(remotes, dict) else {}
+    if args.ls_remote:
         data["remote_live"] = live_remotes(repo, remotes)
+    live = data.get("remote_live")
+    data["base_check"] = base_check(base, remotes, live if isinstance(live, dict) else None)
     return data
 
 
@@ -677,22 +713,33 @@ def select(data: Json, args: argparse.Namespace) -> object:
     return shown
 
 
+def report_error(message: str) -> int:
+    """Print a problem as JSON and exit 0, so the result reaches Claude uncut."""
+    sys.stdout.write(json.dumps({"error": message}) + "\n")
+    return 0
+
+
 def main() -> int:
     """Run the inventory; report problems inside the JSON and exit 0 once it printed."""
     args = parser().parse_args()
     if args.source:
-        data: Json = json.loads(Path(args.source).read_text(encoding="utf-8"))
+        try:
+            data: Json = json.loads(Path(args.source).read_text(encoding="utf-8"))
+        except (OSError, ValueError) as problem:
+            return report_error(f"cannot read the saved inventory {args.source}: {problem}")
     else:
         repo = Repo(args.repo)
         if not repo.ok("rev-parse", "--git-dir"):
-            sys.stdout.write(json.dumps({"error": f"not a Git repository: {args.repo}"}) + "\n")
-            return 0
+            return report_error(f"not a Git repository: {args.repo}")
         try:
             data = build(repo, args)
         finally:
             repo.close()
     if args.out and not args.source:
-        Path(args.out).write_text(json.dumps(data, indent=1), encoding="utf-8")
+        try:
+            Path(args.out).write_text(json.dumps(data, indent=1), encoding="utf-8")
+        except OSError as problem:
+            return report_error(f"cannot write the inventory to {args.out}: {problem}")
         shown: object = (
             select(data, args) if args.section else {**summarize(data), "saved_to": args.out}
         )

@@ -388,5 +388,105 @@ class ScaleAndRenameTests(unittest.TestCase):
         assert obj(none["branches"])["detail_truncated"] is True
 
 
+class BaseAndLimitTests(unittest.TestCase):
+    """The base ref is checked against the remote, and every cut list says it was cut."""
+
+    def fresh(self) -> Fixture:
+        """Build the fixture without the unreachable credentialed remotes."""
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        fixture = Fixture(Path(tmp.name))
+        fixture.build()
+        fixture.git("remote", "remove", "creds")
+        fixture.git("remote", "remove", "creds2")
+        return fixture
+
+    def test_base_matches_the_live_default(self) -> None:
+        fixture = self.fresh()
+        _, data, _ = run_inventory(fixture.work, "--ls-remote")
+        check = obj(data["base_check"])
+        assert check["remote"] == "origin"
+        assert check["published"] is True
+        assert check["live_default"] == "origin/main"
+        assert check["matches_live_default"] is True
+
+    def test_a_changed_remote_default_is_flagged(self) -> None:
+        fixture = self.fresh()
+        fixture.git("push", "-q", "origin", "main:trunk")
+        fixture.git("symbolic-ref", "HEAD", "refs/heads/trunk", cwd=fixture.origin)
+        _, data, _ = run_inventory(fixture.work, "--ls-remote")
+        check = obj(data["base_check"])
+        assert check["base"] == "origin/main"
+        assert check["live_default"] == "origin/trunk"
+        assert check["matches_live_default"] is False
+
+    def test_without_the_network_the_default_is_unknown(self) -> None:
+        _, data, _ = run_inventory(self.fresh().work)
+        check = obj(data["base_check"])
+        assert check["published"] is True
+        assert check["matches_live_default"] is None
+
+    def test_a_local_only_base_is_not_published(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            fixture = Fixture(Path(tmp))
+            fixture.work.mkdir()
+            fixture.git("init", "-q", "-b", "main")
+            fixture.commit("a.txt", "a\n", "init")
+            _, data, _ = run_inventory(fixture.work)
+        check = obj(data["base_check"])
+        assert check["base"] == "main"
+        assert check["remote"] is None
+        assert check["published"] is False
+
+    def test_long_lists_are_samples_with_a_truncated_flag(self) -> None:
+        fixture = self.fresh()
+        for number in range(51):
+            (fixture.work / f"repo{number}" / ".git").mkdir(parents=True)
+            (fixture.work / f".hidden{number}").write_text("x", encoding="utf-8")
+        _, data, _ = run_inventory(fixture.work)
+        nested = obj(obj(data["context"])["nested_repositories"])
+        hidden = obj(obj(data["files"])["hidden_top_level"])
+        for listing in (nested, hidden):
+            assert int(str(listing["count"])) >= 51
+            assert len(items(listing["sample"])) == 50
+            assert listing["truncated"] is True
+
+    def test_history_says_when_the_scan_hit_its_cap(self) -> None:
+        spec = importlib.util.spec_from_file_location("inventory_history", INVENTORY)
+        assert spec is not None
+        assert spec.loader is not None
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        fixture = self.fresh()
+        repo = module.Repo(str(fixture.work))
+        assert module.history_of(repo, "main")["base"]["capped"] is False
+        vars(module)["HISTORY_LIMIT"] = 2
+        assert module.history_of(repo, "main")["base"]["capped"] is True
+
+    def test_unreadable_and_unwritable_files_report_inside_the_json(self) -> None:
+        fixture = self.fresh()
+        missing = Path(fixture.base) / "missing" / "inventory.json"
+        done = subprocess.run(
+            [sys.executable, str(INVENTORY), "--from", str(missing), "--section", "branches"],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        assert done.returncode == 0
+        assert "cannot read the saved inventory" in str(obj(_decode(done.stdout))["error"])
+        code, data, _ = run_inventory(fixture.work, "--out", str(missing))
+        assert code == 0
+        assert "cannot write the inventory" in str(data["error"])
+        assert not missing.exists()
+
+    def test_not_a_repository_writes_no_output_file(self) -> None:
+        with tempfile.TemporaryDirectory() as empty:
+            out = Path(empty) / "inventory.json"
+            code, data, _ = run_inventory(Path(empty), "--out", str(out))
+            assert code == 0
+            assert "not a Git repository" in str(data["error"])
+            assert not out.exists()
+
+
 if __name__ == "__main__":
     unittest.main()

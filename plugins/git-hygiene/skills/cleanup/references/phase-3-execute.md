@@ -4,11 +4,11 @@ The user approved either the whole plan or specific action IDs, and A-01 was add
 
 ## 1. Save the approved plan
 
-Create the backup folder the user chose (`mkdir -p`, nothing else yet), then write the plan exactly as approved, with its action IDs and the approved IDs, to `<backup dir>/plan.md`. Context can be compacted mid-run: after a compaction, re-read this file, `plan.md` and `SKILL.md` before the next action (ask the user for the backup folder if you no longer know it). Only the IDs listed there may run. If you re-plan an action later, update `plan.md` and get the new approval first.
+Create the backup folder the user chose (`mkdir -p`, nothing else yet), then write the plan exactly as approved, with its action IDs and the approved IDs, to `<backup dir>/plan.md`. Context can be compacted mid-run: after a compaction, re-read this file, `plan.md` and `SKILL.md` before the next action (ask the user for the backup folder if you no longer know it). Only the IDs listed there may run. Append each action's status to `plan.md` right after it finishes (`done`, `failed` or `skipped`, with the time), so a resumed run starts at the first action that is not `done`. If you re-plan an action later, update `plan.md` and get the new approval first.
 
 ## 2. Revalidate
 
-Re-run the inventory (with `--ls-remote` if the plan touches remotes) into `<backup dir>/inventory-revalidated.json` and compare it with the plan's evidence: branch SHAs, worktrees, stashes, open pull requests, working tree. If anything affecting an approved action changed materially (a branch moved, a stash appeared, a pull request opened), stop, report the difference and re-plan only the affected actions with the user.
+Re-run the inventory (with `--ls-remote` if the plan touches remotes) into `<backup dir>/inventory-revalidated.json` and compare it with the plan's evidence: branch SHAs, worktrees, stashes, open pull requests, working tree. When resuming, compare only the actions that are not `done`. If anything affecting an approved action changed materially (a branch moved, a stash appeared, a pull request opened), stop, report the difference and re-plan only the affected actions with the user.
 
 ## 3. Backup first (A-01)
 
@@ -31,15 +31,15 @@ Order: the class order of Phase 2 §3 (`prep`, `integrate`, `publish`, `local-de
 3. Verify the result with a read-only command (the ref is gone, the merge commit exists, the worktree list changed).
 4. If a result is unexpected, or any step fails, do not run dependent actions (§5).
 
-Before every deletion, local or remote, run the containment check the plan recorded for it. For a remote branch also re-read its live SHA (`git ls-remote --heads <remote> <branch>`) and delete only if it equals the audited SHA: someone may have pushed since. If a check fails, skip that deletion, report it, and carry on only as §5 says.
+Before every deletion, local or remote, run the containment check the plan recorded for it. For a remote branch or tag also re-read its live SHA (`git ls-remote --heads <remote> <branch>`, or `--tags` for a tag) and delete only if it equals the audited SHA: someone may have pushed since. If a check fails, skip that deletion, report it, and carry on only as §5 says.
 
 Branch deletion: use `git branch -d` for branches Git considers merged; use `-D` only when the plan recorded the accepted reason (Phase 2 §3) and the user approved that ID. Delete a worktree's branch only after the worktree is removed. When you finish, the base branch must be checked out, so a branch is never deleted while it is checked out.
 
 ## 5. Conflicts and failures
 
-A conflict ends the run. Inspect the active operation (`git status`, and the files `git rev-parse --git-path MERGE_HEAD`, `CHERRY_PICK_HEAD`, `rebase-merge` name; `.git` is a file in a linked worktree), tell the user what conflicts, and use the action's Recovery field (by default the matching `git merge --abort`, `git cherry-pick --abort` or `git rebase --abort`). Never discard changes (`reset --hard`, `checkout --`, `clean`) merely to force completion, and never resolve a conflict by guessing: show it to the user.
+A conflict stops that action. Inspect the active operation (`git status`, and the files `git rev-parse --git-path MERGE_HEAD`, `CHERRY_PICK_HEAD`, `rebase-merge` name; `.git` is a file in a linked worktree), tell the user what conflicts, and use the action's Recovery field (by default the matching `git merge --abort`, `git cherry-pick --abort` or `git rebase --abort`). Never discard changes (`reset --hard`, `checkout --`, `clean`) merely to force completion, and never resolve a conflict by guessing: show it to the user.
 
-Any other failure skips only the actions that depend on the failed one. Report it, and ask the user before continuing with the independent actions.
+Abort the conflicted operation with its Recovery step, then handle it like any other failure: skip only the actions that depend on it, report it, and ask the user before continuing with the independent actions. Whatever the user decides, still run §6 and §8 for what was done.
 
 ## 6. Final verification
 
