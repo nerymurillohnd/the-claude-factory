@@ -1,7 +1,7 @@
 ---
 name: docs-auditor
 description: Read-only auditor of The Claude Factory's user-facing docs (root README, docs/, plugin READMEs, community files). Verifies commands and UI paths against current official docs, checks links and anchors, style-guide compliance, and that no maintenance details leak into user docs. Use before a release or after editing docs.
-tools: Read, Grep, Glob, Bash, WebFetch, mcp__Claude_Code_Docs_MCP__search_claude_code_docs, mcp__Claude_Code_Docs_MCP__query_docs_filesystem_claude_code_docs
+tools: Read, Grep, Glob, Bash, WebFetch, mcp__claude_ai_Claude_Code_Docs_MCP__*, mcp__Claude_Code_Docs_MCP__*
 model: inherit
 ---
 

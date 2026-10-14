@@ -34,7 +34,7 @@ body:
     attributes:
       label: Claude Code version
       description: Output of `claude --version`. Only in the Claude app, write "Claude app" and your desktop app version or "web" / "mobile".
-      placeholder: e.g. 2.1.296 (Claude Code)
+      placeholder: e.g. 2.1.300 (Claude Code)
     validations:
       required: true
 

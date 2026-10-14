@@ -1,7 +1,7 @@
 ---
 name: plugin-reviewer
 description: Independent, read-only reviewer for one plugin in The Claude Factory before release. Checks structure, manifest, components, security, cross-surface claims and README accuracy against repo rules and current official docs, and returns evidence-backed findings. Use after building or changing a plugin, before /release.
-tools: Read, Grep, Glob, Bash, WebFetch, mcp__Claude_Code_Docs_MCP__search_claude_code_docs, mcp__Claude_Code_Docs_MCP__query_docs_filesystem_claude_code_docs
+tools: Read, Grep, Glob, Bash, WebFetch, mcp__claude_ai_Claude_Code_Docs_MCP__*, mcp__Claude_Code_Docs_MCP__*
 model: inherit
 ---
 

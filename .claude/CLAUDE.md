@@ -26,7 +26,7 @@ Two maintainers: Nery (owner) and Claude. No external pull requests; users contr
 - Biome 2.5.15: governed by `biome.json`.
 - ShellCheck: governed by `.shellcheckrc`. shfmt: governed by `.editorconfig`.
 - markdownlint-cli2 0.23.3: governed by `.markdownlint-cli2.jsonc`.
-- `claude` CLI 2.1.296: runs `claude plugin validate --strict`.
+- `claude` CLI 2.1.300: runs `claude plugin validate --strict`.
 - CI tool versions: pinned in the `env` block of `.github/workflows/validate.yml`.
 - Local hooks: `.pre-commit-config.yaml`.
 - TypeScript: `tsconfig.base.json` and `.github/scripts/tsconfig.json` exist unwired; nothing runs them.
@@ -72,7 +72,7 @@ docs/                        user guides: installation, compatibility, managing 
 - `.github/scripts/tests/<plugin>/by_path.sh` - Run before every commit for each plugin folder that ships one.
 - `uvx ruff@0.17.0 check plugins .github/scripts` - Run before every commit.
 - `uvx ruff@0.17.0 format --check plugins .github/scripts` - Run before every commit.
-- `git ls-files -z 'plugins/*.py' '.github/scripts/tests/*.py' | xargs -0 uvx --from mypy==1.18.2 mypy --python-version 3.9 --strict` - Run before every commit.
+- `git ls-files -z 'plugins/*.py' '.github/scripts/tests/*.py' | xargs -0 uvx --from mypy==1.20.2 mypy --python-version 3.9 --strict` - Run before every commit.
 - `npx --yes markdownlint-cli2@0.23.3` - Run before every commit.
 - `SHELLCHECK_OPTS='-o all -S style -x -a -P SCRIPTDIR' actionlint` - Run when `.github/workflows/` changes.
 - For gate prerequisites and the report format, read `.claude/skills/verify/SKILL.md`.

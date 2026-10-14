@@ -66,7 +66,7 @@ Run every gate from the repository root. Show the **raw output** of each command
    .github/scripts/tests/python-lsp-intelligence/by_path.sh
    uvx ruff@0.17.0 check plugins .github/scripts
    uvx ruff@0.17.0 format --check plugins .github/scripts
-   git ls-files -z 'plugins/*.py' '.github/scripts/tests/*.py' | xargs -0 uvx --from mypy==1.18.2 mypy --python-version 3.9 --strict
+   git ls-files -z 'plugins/*.py' '.github/scripts/tests/*.py' | xargs -0 uvx --from mypy==1.20.2 mypy --python-version 3.9 --strict
    ```
 
    Repeat the first two lines for every plugin folder under `.github/scripts/tests/`.
