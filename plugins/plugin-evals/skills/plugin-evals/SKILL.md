@@ -1,6 +1,6 @@
 ---
 name: plugin-evals
-description: Expert guidance for Claude Code plugin evals (claude plugin eval, eval init). Designs suites that prove what a plugin adds; writes cases, graders, fixtures and MCP mocks; runs, debugs and CI-gates them; and reads the results, checked against the installed CLI and the live docs. Use for any task about evaluating, testing or benchmarking a plugin or its skills, agents, hooks or MCP servers, even when the user never says "eval". Not for Claude API app evals, which is /claude-api build-eval.
+description: Expertise in Claude Code plugin evals (claude plugin eval, eval init). Designs suites that prove what a plugin adds; writes cases, graders, fixtures and MCP mocks; gives the commands to run, debug and gate them in CI such as GitHub Actions; reads results, checked against the installed CLI and live docs. Use for any task about evaluating, testing or benchmarking a plugin or its skills, agents, hooks or MCP servers, even when the user never says "eval". Not for Claude API app evals (/claude-api build-eval).
 ---
 
 # Plugin evals
