@@ -6,19 +6,21 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-10-14
+
 ### Added
 
 - Claude Fable 5 is a covered model, next to Fable 5.1, Opus 5.5, Opus 5 and Sonnet 5.5.
-- Every prompt comes with a session mode: interactive or unattended, and plan mode or direct execution in Claude Code, with the reason and how to start it. The prompt is written for that mode, and the header records it in `session_mode` and `claude_code_mode`.
+- Every prompt comes with a session mode: interactive or unattended, and plan mode or direct execution in Claude Code, with the reason and how to start it. The prompt is written for that mode, and the header records it in `session_mode` and `claude_code_mode`. Interactive is the default; audits, reviews and other read-only work run in direct execution and report findings without editing.
 - Each time, Claude reads the target model's current Anthropic page, what's new or its overview, and follows it where it differs from the built-in guidance, telling you the difference in the design notes.
 - Writes the complete text of a system prompt, skill, slash command, agent or `CLAUDE.md` in that file's own format. When it is unclear whether you want that file or a prompt so Claude creates it, Claude asks first.
 - Placeholders follow what fills them: Claude Code skill and command arguments, an application's template fields, or fields you fill by hand, named in the reply.
 - Success criteria you can check: the prompt states measurable criteria from what you said a good result is, and the reply tells you how to check it.
 - Safeguards only where your case needs them: against invented facts, format drift, hostile input or untrusted content, prompt leaks and slow answers.
-- When the next step depends on a result nobody has seen yet, you get the first prompt plus drafts of the next ones, each marked as a draft and saying what output it waits for. Bring the output back and Claude checks it against your goal, then revises the prompt or finishes the next draft.
+- When the next step depends on a result nobody has seen yet, you get the first prompt plus drafts of the next ones, each marked as a draft and saying what output it waits for. Bring the output back and Claude checks it against your goal, then revises the prompt, the setup or the next draft. If your first message is an output that disappointed you, Claude asks for the prompt behind it, the model and where it ran.
 - A fixed automated sequence comes as all its stages at once, each with its input, output and stage number.
 - Skills that would help the task are named in the prompt and in the setup advice, once Claude confirms they exist on your surface.
-- Every delivery ends with the checklist Claude verified the prompt against. In Claude Code, a check then compares the reply's claims, such as the pages it cites and the verified items, with what Claude actually did, and sends Claude back to fix any claim without evidence.
+- Every delivery ends with the checklist Claude verified the prompt against; an item Claude could not verify stays unchecked with its reason. The **Sources** and **Verification checklist** headings stay in English in every reply language. In Claude Code, a check then compares the reply's claims, such as the pages it cites and the verified items, with what Claude actually did, and sends Claude back to fix any claim without evidence.
 - Audits list the problems found before the fixed prompt, and the design notes say how each was fixed and name anything added beyond your request.
 
 ### Changed
@@ -40,7 +42,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - Settings that return an error on the covered models, such as a prefilled reply, non-default `temperature`, `top_p` or `top_k`, and manual thinking budgets, are left out of the recommended setup.
 - When live documentation contradicts the built-in guidance, Claude follows the documentation and explains the difference in the design notes instead of asking you.
 - The reply gives the URL of every official page Claude read. When a long page cannot be read, Claude moves to a shorter one instead of fetching it again, and says what stayed unverified.
-- A question about the reply language counts within the three or four questions of a round instead of adding to them.
+- Claude asks at most four questions in a round, the reply language included, in a fixed order of priority, and at most one short follow-up when an answer still leaves the goal unclear.
 
 ## [0.1.1] - 2026-10-13
 
@@ -57,6 +59,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - Works on new prompts, drafts to refine, existing prompts to audit and prompts to migrate to another target model, and saves the prompt to a file when you ask for one.
 - Built-in references for prompting principles, agentic patterns, reliability and safety, and model selection and configuration, with a drift report when live official documentation contradicts them.
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/prompt-writer--v0.1.1...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/prompt-writer--v0.2.0...HEAD
+[0.2.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/prompt-writer--v0.2.0
 [0.1.1]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/prompt-writer--v0.1.1
 [0.1.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/prompt-writer--v0.1.0
