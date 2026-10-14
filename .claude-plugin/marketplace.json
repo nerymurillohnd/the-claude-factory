@@ -14,6 +14,12 @@
       "category": "language-support"
     },
     {
+      "name": "git-hygiene",
+      "source": "./plugins/git-hygiene",
+      "description": "Audits a Git repository end to end, plans the cleanup with you, and executes only what you approve, keeping every piece of valuable work safe.",
+      "category": "development"
+    },
+    {
       "name": "plugin-test-bench",
       "source": "./plugins/plugin-test-bench",
       "description": "Proves your Claude Code plugin works the way your users receive it: installs a copy in a throwaway config, checks it loads, runs your eval suite against that copy, and reviews your eval cases so they measure what the plugin adds.",

@@ -1,0 +1,564 @@
+#!/usr/bin/env python3
+"""Read-only inventory of a Git repository for the git-hygiene audit.
+
+Collects the facts the audit needs in one pass, as JSON: repository context, every branch with
+its exclusive work, linked worktrees, stashes, the working tree, noise, history and reflog.
+It never changes the repository, never reads file contents and redacts credentials in what it
+prints. The network is touched only with --ls-remote (a read-only query of the remote).
+
+Usage:
+    inventory.py [--repo PATH] [--base REF] [--detail-limit N] [--ls-remote] [--out FILE]
+    inventory.py --from FILE --section NAME
+
+Requires Python 3.9+, standard library only, and Git 2.38+ for the merge preview.
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import os
+from pathlib import Path
+import re
+import shutil
+import subprocess
+import sys
+import time
+
+Json = dict[str, object]
+
+GIT = shutil.which("git") or "git"
+TIMEOUT = 180
+SAMPLE = 50
+DAY = 86400
+STALE_DAYS = 180
+BIG_FILE = 1_000_000
+
+CREDENTIAL_URL = re.compile(r"(?<=//)[^/@\s]+(?::[^/@\s]*)?@")
+TOKEN_QUERY = re.compile(r"([?&](?:token|access_token|key|password|secret)=)[^&\s]+", re.IGNORECASE)
+SECRET_VALUE = re.compile(
+    r"(ghp_|gho_|ghs_|github_pat_|glpat-|xox[baprs]-|sk-|AKIA)[A-Za-z0-9_\-]{12,}"
+    r"|-----BEGIN [A-Z ]*PRIVATE KEY-----"
+    r"|(?i:(?:password|passwd|secret|token|api[_-]?key)\s*[:=]\s*)\S+",
+)
+SECRET_NAME = re.compile(
+    r"(^|/)(\.env(\..+)?|.+\.(pem|key|p12|pfx|keystore|kdbx|tfstate)|id_(rsa|dsa|ecdsa|ed25519)"
+    r"|\.netrc|\.npmrc|\.pypirc|\.git-credentials|\.htpasswd|credentials(\..+)?|secrets?(\..+)?"
+    r"|terraform\.tfvars)$",
+    re.IGNORECASE,
+)
+SECRET_EXAMPLE = re.compile(r"\.(example|sample|template|dist|pub)$", re.IGNORECASE)
+NOISE = {
+    "os-metadata": re.compile(r"(^|/)(\.DS_Store|Thumbs\.db|desktop\.ini|\._[^/]+)$"),
+    "editor-or-temp": re.compile(r"(\.(swp|swo|tmp|bak|orig|rej)|~)$"),
+    "bytecode-or-log": re.compile(r"\.(pyc|pyo|log)$"),
+    "cache-or-generated-dir": re.compile(
+        r"(^|/)(__pycache__|node_modules|\.pytest_cache|\.mypy_cache|\.ruff_cache|\.cache|\.next"
+        r"|\.nuxt|\.parcel-cache|coverage|dist|build|\.venv|venv|\.tox|\.gradle|target"
+        r"|\.terraform)(/|$)",
+    ),
+}
+WIP_SUBJECT = re.compile(
+    r"^(wip\b|work in progress|fixup!|squash!|tmp\b|temp\b|\.+$|asdf|stuff$|misc$|update$"
+    r"|changes?$|fix$|test$)",
+    re.IGNORECASE,
+)
+OPERATIONS = {
+    "merge": "MERGE_HEAD",
+    "rebase": "rebase-merge",
+    "rebase-apply": "rebase-apply",
+    "cherry-pick": "CHERRY_PICK_HEAD",
+    "revert": "REVERT_HEAD",
+    "bisect": "BISECT_LOG",
+}
+
+
+def redact(text: str) -> str:
+    """Remove credentials from URLs and anything shaped like a token or a password."""
+    text = CREDENTIAL_URL.sub("***@", text)
+    text = TOKEN_QUERY.sub(r"\1***", text)
+    return SECRET_VALUE.sub("[REDACTED]", text)
+
+
+def is_secret_name(path: str) -> bool:
+    """True when a path names a file that usually holds secrets (the name only is ever read)."""
+    return bool(SECRET_NAME.search(path)) and not SECRET_EXAMPLE.search(path)
+
+
+class Repo:
+    """A repository path and the read-only Git calls the inventory makes on it."""
+
+    def __init__(self, path: str) -> None:
+        """Remember the directory every Git call runs in."""
+        self.path = path
+
+    def git(self, *args: str, cwd: str | None = None) -> tuple[int, str]:
+        """Run git and return (exit code, stdout without the final newline); 124 on timeout."""
+        env = {**os.environ, "GIT_OPTIONAL_LOCKS": "0", "GIT_TERMINAL_PROMPT": "0", "LC_ALL": "C"}
+        try:
+            done = subprocess.run(
+                [GIT, *args],
+                cwd=cwd or self.path,
+                capture_output=True,
+                check=False,
+                env=env,
+                timeout=TIMEOUT,
+            )
+        except subprocess.TimeoutExpired:
+            return 124, ""
+        except OSError:
+            return 127, ""
+        return done.returncode, done.stdout.decode("utf-8", "replace").rstrip("\n")
+
+    def out(self, *args: str) -> str:
+        """Return stdout of a git call that is expected to succeed, or "" when it fails."""
+        code, text = self.git(*args)
+        return text if code == 0 else ""
+
+    def lines(self, *args: str) -> list[str]:
+        """Return the non-empty lines of a git call."""
+        return [line for line in self.out(*args).split("\n") if line]
+
+    def ok(self, *args: str) -> bool:
+        """True when a git call exits 0."""
+        return self.git(*args)[0] == 0
+
+
+def sample(items: list[str], limit: int = SAMPLE) -> Json:
+    """Return a count and the first `limit` items, flagging when the list was cut."""
+    return {"count": len(items), "sample": items[:limit], "truncated": len(items) > limit}
+
+
+def redacted_remote(url: str) -> Json:
+    """Describe a remote URL without credentials: redacted text, host and owner/repo."""
+    clean = redact(url)
+    match = re.match(r"^(?:[a-z+]+://)?(?:[^@/]*@)?([^/:]+)[/:](.+?)(?:\.git)?/?$", clean)
+    return {
+        "url": clean,
+        "host": match.group(1) if match else "",
+        "path": match.group(2) if match else "",
+    }
+
+
+def remotes_of(repo: Repo) -> Json:
+    """Return the configured remotes with redacted URLs."""
+    found: Json = {}
+    for line in repo.lines("config", "--get-regexp", r"^remote\..*\.(url|pushurl)$"):
+        key, _, value = line.partition(" ")
+        name, _, kind = key[len("remote.") :].rpartition(".")
+        entry = found.setdefault(name, {})
+        if isinstance(entry, dict):
+            entry[kind] = redacted_remote(value)
+    return found
+
+
+def nested_repositories(root: str, submodules: list[str]) -> list[str]:
+    """Return folders below root that hold their own .git and are not submodules."""
+    found: list[str] = []
+    skip = {"node_modules", ".git"}
+    for folder, dirs, files in os.walk(root):
+        depth = Path(folder).relative_to(root).parts
+        has_git = ".git" in dirs or ".git" in files
+        dirs[:] = [d for d in dirs if d not in skip and len(depth) < 4]  # noqa: PLR2004
+        rel = "/".join(depth)
+        if rel and has_git and rel not in submodules:
+            found.append(rel)
+    return found[:SAMPLE]
+
+
+def context_of(repo: Repo, root: str) -> Json:
+    """Collect the repository context: type, HEAD, remotes, operations, submodules, tools."""
+    git_dir = repo.out("rev-parse", "--absolute-git-dir")
+    common = repo.out("rev-parse", "--git-common-dir")
+    common_dir = str((Path(root) / common).resolve()) if common else ""
+    staged = repo.lines("ls-files", "--stage")
+    submodules = [line.split("\t", 1)[1] for line in staged if line.startswith("160000")]
+    branch = repo.out("branch", "--show-current")
+    head = repo.out("rev-parse", "--verify", "--quiet", "HEAD")
+    remotes = remotes_of(repo)
+    return {
+        "directory": str(Path(root).resolve()),
+        "toplevel": repo.out("rev-parse", "--show-toplevel"),
+        "git_dir": git_dir,
+        "common_git_dir": common_dir,
+        "bare": repo.out("rev-parse", "--is-bare-repository") == "true",
+        "shallow": repo.out("rev-parse", "--is-shallow-repository") == "true",
+        "partial_clone": bool(repo.lines("config", "--get-regexp", r"^remote\..*\.promisor$")),
+        "linked_worktree": bool(git_dir and common_dir and git_dir != common_dir),
+        "head": {
+            "branch": branch or None,
+            "detached": not branch and bool(head),
+            "unborn": not head,
+            "sha": head or None,
+        },
+        "remotes": remotes,
+        "main_exists": repo.ok("show-ref", "--verify", "--quiet", "refs/heads/main"),
+        "origin_main_exists": repo.ok(
+            "show-ref", "--verify", "--quiet", "refs/remotes/origin/main"
+        ),
+        "remote_default_branch": {
+            name: repo.out("symbolic-ref", "--quiet", f"refs/remotes/{name}/HEAD")
+            for name in remotes
+        },
+        "operations_in_progress": [
+            name for name, marker in OPERATIONS.items() if (Path(git_dir) / marker).exists()
+        ],
+        "submodules": submodules,
+        "nested_repositories": nested_repositories(root, submodules),
+        "tools": {
+            "git": repo.out("--version"),
+            "gh": shutil.which("gh") is not None,
+            "python": sys.version.split()[0],
+        },
+    }
+
+
+def pick_base(repo: Repo, requested: str | None) -> str | None:
+    """Choose the branch every other branch is compared with."""
+    candidates = [requested] if requested else []
+    candidates += ["origin/main", "main", "origin/master", "master"]
+    for ref in candidates:
+        if ref and repo.ok("rev-parse", "--verify", "--quiet", f"{ref}^{{commit}}"):
+            return ref
+    return None
+
+
+def worktrees_of(repo: Repo) -> list[Json]:
+    """Parse `git worktree list --porcelain`, checking whether each path still exists."""
+    found: list[Json] = []
+    for block in repo.out("worktree", "list", "--porcelain").split("\n\n"):
+        entry: Json = {}
+        for line in block.split("\n"):
+            key, _, value = line.partition(" ")
+            if key:
+                entry[key] = value or True
+        path = str(entry.get("worktree", ""))
+        if not path:
+            continue
+        entry["exists"] = Path(path).is_dir()
+        if entry["exists"]:
+            code, status = repo.git("status", "--porcelain", cwd=path)
+            entry["dirty_entries"] = len(status.split("\n")) if code == 0 and status else 0
+        found.append(entry)
+    return found
+
+
+def detail_of(repo: Repo, ref: str, base: str) -> Json:
+    """Measure one branch against the base: exclusive commits, integration, merge preview."""
+    left, _, right = repo.out("rev-list", "--left-right", "--count", f"{base}...{ref}").partition(
+        "\t"
+    )
+    behind, ahead = int(left or 0), int(right or 0)
+    detail: Json = {
+        "behind": behind,
+        "ahead": ahead,
+        "merged": repo.ok("merge-base", "--is-ancestor", ref, base),
+    }
+    if ahead:
+        subjects = repo.lines("log", "--max-count=2000", "--format=%h\t%an\t%s", f"{base}..{ref}")
+        cherry = repo.lines("cherry", base, ref)
+        detail["authors"] = sorted({line.split("\t")[1] for line in subjects if "\t" in line})[:10]
+        detail["exclusive_commits"] = [redact(line) for line in subjects[:20]]
+        detail["patch_equivalent_in_base"] = sum(line.startswith("-") for line in cherry)
+        detail["patch_unique"] = sum(line.startswith("+") for line in cherry)
+        detail["diffstat"] = repo.out("diff", "--shortstat", f"{base}...{ref}")
+    code, merged_tree = repo.git("merge-tree", "--write-tree", "--no-messages", base, ref)
+    base_tree = repo.out("rev-parse", f"{base}^{{tree}}")
+    detail["merge_preview"] = {
+        "exit_code": code,
+        "conflicts": code == 1,
+        "no_net_change": code == 0 and merged_tree.split("\n")[0] == base_tree,
+    }
+    return detail
+
+
+def signals_of(entry: Json, detail: Json, stale_after: float) -> list[str]:
+    """Name the facts about a branch that matter for the cleanup decision."""
+    out: list[str] = []
+    preview = detail.get("merge_preview")
+    if detail.get("merged"):
+        out.append("merged-into-base")
+    if isinstance(preview, dict) and preview.get("no_net_change"):
+        out.append("no-net-change-vs-base")
+    if isinstance(preview, dict) and preview.get("conflicts"):
+        out.append("conflicts-with-base")
+    if detail.get("ahead") and not detail.get("merged"):
+        out.append("has-exclusive-commits")
+    if entry.get("track") == "gone":
+        out.append("upstream-gone")
+    if float(str(entry.get("commit_unix", 0))) < stale_after:
+        out.append(f"stale-over-{STALE_DAYS}-days")
+    if WIP_SUBJECT.match(str(entry.get("subject", ""))):
+        out.append("wip-subject")
+    return out
+
+
+def branches_of(repo: Repo, base: str | None, limit: int, worktrees: list[Json]) -> Json:
+    """List every local and remote branch with its comparison against the base."""
+    fmt = "%(refname)\t%(objectname:short)\t%(upstream:short)\t%(upstream:track,nobracket)"
+    fmt += "\t%(committerdate:unix)\t%(authorname)\t%(subject)"
+    checked_out = {str(w.get("branch", "")).removeprefix("refs/heads/"): w for w in worktrees}
+    stale_after = time.time() - STALE_DAYS * DAY
+    entries: list[Json] = []
+    detailed = 0
+    for line in repo.lines("for-each-ref", f"--format={fmt}", "refs/heads", "refs/remotes"):
+        name, sha, upstream, track, when, author, subject = (line.split("\t", 6) + [""] * 7)[:7]
+        if name.endswith("/HEAD"):
+            continue
+        short = name.removeprefix("refs/heads/").removeprefix("refs/remotes/")
+        entry: Json = {
+            "ref": short,
+            "kind": "local" if name.startswith("refs/heads/") else "remote",
+            "sha": sha,
+            "upstream": upstream or None,
+            "track": track or None,
+            "commit_unix": int(when or 0),
+            "author": author,
+            "subject": redact(subject),
+            "worktree": str(checked_out[short]["worktree"]) if short in checked_out else None,
+        }
+        if base and short != base and detailed < limit:
+            detail = detail_of(repo, name, base)
+            entry["vs_base"] = detail
+            entry["signals"] = signals_of(entry, detail, stale_after)
+            detailed += 1
+        entries.append(entry)
+    return {
+        "base": base,
+        "branches": entries,
+        "detail_limit": limit,
+        "detail_truncated": base is not None and len(entries) - 1 > detailed,
+    }
+
+
+def stashes_of(repo: Repo) -> list[Json]:
+    """List stashes with the files each one holds (names only)."""
+    found: list[Json] = []
+    for line in repo.lines("stash", "list", "--format=%gd\t%H\t%cI\t%gs"):
+        selector, sha, date, message = (line.split("\t", 3) + [""] * 4)[:4]
+        code, names = repo.git("stash", "show", "--include-untracked", "--name-only", selector)
+        if code != 0:
+            names = repo.out("stash", "show", "--name-only", selector)
+        files = [name for name in names.split("\n") if name]
+        found.append(
+            {
+                "selector": selector,
+                "sha": sha,
+                "date": date,
+                "message": redact(message),
+                "files": sample(files),
+                "secret_like_files": [f for f in files if is_secret_name(f)],
+            },
+        )
+    return found
+
+
+def working_tree_of(repo: Repo) -> Json:
+    """Summarize staged, unstaged, untracked and ignored files (paths only)."""
+    raw = repo.out("status", "--porcelain=v1", "-z", "--untracked-files=all")
+    staged: list[str] = []
+    unstaged: list[str] = []
+    untracked: list[str] = []
+    conflicts: list[str] = []
+    for item in [entry for entry in raw.split("\0") if len(entry) > 3]:  # noqa: PLR2004
+        code, path = item[:2], item[3:]
+        if code == "??":
+            untracked.append(path)
+        elif "U" in code or code in {"AA", "DD"}:
+            conflicts.append(path)
+        else:
+            (staged if code[0] != " " else unstaged).append(path)
+            if code[0] != " " and code[1] != " ":
+                unstaged.append(path)
+    ignored = repo.lines("ls-files", "--others", "--ignored", "--exclude-standard", "--directory")
+    return {
+        "staged": sample(staged),
+        "unstaged": sample(unstaged),
+        "untracked": sample(untracked),
+        "conflicted": sample(conflicts),
+        "ignored": sample(ignored),
+    }
+
+
+def noise_of(repo: Repo) -> Json:
+    """Find tracked and untracked files that look like noise, and secret-like file names."""
+    tracked = repo.lines("ls-files")
+    others = repo.lines("ls-files", "--others", "--exclude-standard")
+    ignored = repo.lines("ls-files", "--others", "--ignored", "--exclude-standard", "--directory")
+    report: Json = {}
+    for label, paths in (("tracked", tracked), ("untracked", others), ("ignored", ignored)):
+        report[label] = {
+            kind: sample([p for p in paths if pattern.search(p)]) for kind, pattern in NOISE.items()
+        }
+    hidden = sorted({p.split("/")[0] for p in tracked + others + ignored if p.startswith(".")})
+    secret_like = [p for p in tracked + others + ignored if is_secret_name(p)]
+    big: list[tuple[int, str]] = []
+    for line in repo.lines("ls-tree", "-r", "-l", "HEAD"):
+        meta, _, path = line.partition("\t")
+        size = meta.split()[-1] if meta.split() else "-"
+        if size.isdigit() and int(size) >= BIG_FILE:
+            big.append((int(size), path))
+    return {
+        "noise": report,
+        "hidden_top_level": hidden[:SAMPLE],
+        "secret_like_file_names": sample(secret_like),
+        "large_tracked_files": [{"path": p, "bytes": s} for s, p in sorted(big, reverse=True)[:10]],
+        "tracked_files": len(tracked),
+    }
+
+
+def history_of(repo: Repo, base: str | None) -> Json:
+    """Count commits and flag WIP-style subjects on the base and on all refs."""
+    report: Json = {
+        "commits_all_refs": int(repo.out("rev-list", "--count", "--all") or 0),
+        "tags": len(repo.lines("tag", "--list")),
+        "objects": repo.out("count-objects", "-v", "-H").replace("\n", "; "),
+    }
+    for label, scope in (("base", base), ("all_refs", "--all")):
+        if not scope:
+            continue
+        subjects = repo.lines("log", "--max-count=200000", "--format=%h\t%s", scope)
+        wip = [line for line in subjects if WIP_SUBJECT.match(line.split("\t", 1)[-1])]
+        report[label] = {
+            "commits": len(subjects),
+            "wip_style": sample([redact(w) for w in wip], 10),
+        }
+    return report
+
+
+def reflog_of(repo: Repo) -> Json:
+    """List recent HEAD reflog commits that no branch, remote branch or tag contains."""
+    fmt = "%H\t%cI\t%gs"
+    entries = repo.lines("reflog", "show", "--format=" + fmt, "--max-count=300", "HEAD")
+    seen: set[str] = set()
+    orphans: list[Json] = []
+    for line in entries:
+        sha, date, action = (line.split("\t", 2) + [""] * 3)[:3]
+        if sha in seen or len(seen) >= 100:  # noqa: PLR2004
+            continue
+        seen.add(sha)
+        held = repo.out(
+            "for-each-ref", "--count=1", "--contains", sha, "--format=x",
+            "refs/heads", "refs/remotes", "refs/tags", "refs/stash",
+        )  # fmt: skip
+        if not held:
+            subject = redact(repo.out("log", "-1", "--format=%s", sha))
+            orphans.append(
+                {"sha": sha[:10], "date": date, "action": redact(action), "subject": subject}
+            )
+    return {
+        "entries_read": len(entries),
+        "only_in_reflog": orphans,
+        "note": "Reflog entries expire; they are a hint, never a backup.",
+    }
+
+
+def live_remotes(repo: Repo, remotes: Json) -> Json:
+    """Compare remote-tracking branches with the branches the remote actually has."""
+    report: Json = {}
+    for name in remotes:
+        code, listing = repo.git("ls-remote", "--heads", name)
+        if code != 0:
+            report[name] = {"error": f"ls-remote exited {code}"}
+            continue
+        live = {
+            line.split("\t")[1].removeprefix("refs/heads/")
+            for line in listing.split("\n")
+            if "\t" in line
+        }
+        prefix = f"refs/remotes/{name}/"
+        tracked = {
+            ref.removeprefix(prefix)
+            for ref in repo.lines("for-each-ref", "--format=%(refname)", prefix)
+            if not ref.endswith("/HEAD")
+        }
+        report[name] = {
+            "branches_on_remote": sorted(live),
+            "stale_tracking_refs": sorted(tracked - live),
+            "not_fetched_yet": sorted(live - tracked),
+        }
+    return report
+
+
+def summarize(data: Json) -> Json:
+    """Reduce the inventory to the counts that show where to look first."""
+    branches = data.get("branches")
+    entries = branches.get("branches", []) if isinstance(branches, dict) else []
+    signal_counts: dict[str, int] = {}
+    for entry in entries:
+        for signal in entry.get("signals", []) if isinstance(entry, dict) else []:
+            signal_counts[signal] = signal_counts.get(signal, 0) + 1
+    worktrees = data.get("worktrees")
+    stashes = data.get("stashes")
+    return {
+        "output_sections": sorted(data),
+        "branch_count": len(entries),
+        "branch_signals": signal_counts,
+        "detail_truncated": bool(isinstance(branches, dict) and branches.get("detail_truncated")),
+        "worktrees": len(worktrees) if isinstance(worktrees, list) else 0,
+        "missing_worktree_paths": sum(
+            1 for w in (worktrees if isinstance(worktrees, list) else []) if not w.get("exists")
+        ),
+        "stashes": len(stashes) if isinstance(stashes, list) else 0,
+    }
+
+
+def build(repo: Repo, args: argparse.Namespace) -> Json:
+    """Run every section and return the inventory."""
+    root = repo.out("rev-parse", "--show-toplevel") or args.repo
+    context = context_of(repo, root)
+    worktrees = worktrees_of(repo)
+    base = pick_base(repo, args.base)
+    data: Json = {
+        "generated_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+        "network_used": args.ls_remote,
+        "context": context,
+        "worktrees": worktrees,
+        "branches": branches_of(repo, base, args.detail_limit, worktrees),
+        "stashes": stashes_of(repo),
+        "working_tree": working_tree_of(repo),
+        "files": noise_of(repo),
+        "history": history_of(repo, base),
+        "reflog": reflog_of(repo),
+    }
+    remotes = context.get("remotes")
+    if args.ls_remote and isinstance(remotes, dict):
+        data["remote_live"] = live_remotes(repo, remotes)
+    return data
+
+
+def parser() -> argparse.ArgumentParser:
+    """Return the command-line parser."""
+    cli = argparse.ArgumentParser(description="Read-only Git repository inventory (JSON).")
+    cli.add_argument("--repo", default=".", help="repository directory (default: current)")
+    cli.add_argument("--base", help="branch to compare against (default: origin/main, main)")
+    cli.add_argument("--detail-limit", type=int, default=500, help="branches to measure in depth")
+    cli.add_argument("--ls-remote", action="store_true", help="also query the remotes (read-only)")
+    cli.add_argument("--out", help="write the full JSON here and print only a summary")
+    cli.add_argument("--from", dest="source", help="read a saved inventory instead of scanning")
+    cli.add_argument("--section", help="print only this section (with --from, or after a scan)")
+    return cli
+
+
+def main() -> int:
+    """Run the inventory; report problems inside the JSON and exit 0 once it printed."""
+    args = parser().parse_args()
+    if args.source:
+        data: Json = json.loads(Path(args.source).read_text(encoding="utf-8"))
+    else:
+        repo = Repo(args.repo)
+        if not repo.ok("rev-parse", "--git-dir"):
+            sys.stdout.write(json.dumps({"error": f"not a Git repository: {args.repo}"}) + "\n")
+            return 0
+        data = build(repo, args)
+    if args.out and not args.source:
+        Path(args.out).write_text(json.dumps(data, indent=1), encoding="utf-8")
+        shown: object = {**summarize(data), "saved_to": args.out}
+    else:
+        shown = data.get(args.section) if args.section else data
+    sys.stdout.write(json.dumps(shown, indent=1) + "\n")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

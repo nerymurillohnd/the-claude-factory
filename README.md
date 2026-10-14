@@ -11,7 +11,7 @@
 <br>
 
 <!-- plugin-count:start -->
-[![Plugins](https://img.shields.io/badge/plugins-8-D97757?style=for-the-badge)](#-catalog)
+[![Plugins](https://img.shields.io/badge/plugins-9-D97757?style=for-the-badge)](#-catalog)
 <!-- plugin-count:end -->
 [![Validate](https://img.shields.io/github/actions/workflow/status/nerymurillohnd/the-claude-factory/validate.yml?branch=main&label=validate&style=for-the-badge)](https://github.com/nerymurillohnd/the-claude-factory/actions/workflows/validate.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-22C55E?style=for-the-badge)](./LICENSE)
@@ -104,9 +104,18 @@ Plugin skills are namespaced, so they never collide with yours: type `/<plugin>:
 <!-- catalog:start -->
 | Category | Plugins |
 | :-- | :--: |
+| [🛠️ Development](#️-development) | 1 |
 | [⚡ Productivity](#-productivity) | 2 |
 | [🧪 Testing & Quality](#-testing--quality) | 2 |
 | [🧠 Language Support](#-language-support) | 4 |
+
+### 🛠️ Development
+
+*Write, refactor, review and ship code faster.*
+
+| Plugin | What it does | Works in | Version | Includes |
+| :-- | :-- | :-- | :--: | :-- |
+| [**Git Hygiene**](./plugins/git-hygiene#readme)<br>`git-hygiene@the-claude-factory` | Audits a Git repository end to end, plans the cleanup with you, and executes only what you approve, keeping every piece of valuable work safe. | 💻 Code only | `0.1.0` | 🎯 Skills |
 
 ### ⚡ Productivity
 
