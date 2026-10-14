@@ -11,6 +11,7 @@ import os
 from pathlib import Path
 import shutil
 import subprocess
+import sys
 import tempfile
 import time
 from typing import TYPE_CHECKING
@@ -114,7 +115,10 @@ class Fixture:
 def run_inventory(repo: Path, *extra: str) -> tuple[int, JsonObject, str]:
     """Run inventory.py by path; return (exit code, parsed JSON, raw stdout)."""
     done = subprocess.run(
-        [str(INVENTORY), "--repo", str(repo), *extra], capture_output=True, text=True, check=False
+        [sys.executable, str(INVENTORY), "--repo", str(repo), *extra],
+        capture_output=True,
+        text=True,
+        check=False,
     )
     return (done.returncode, obj(_decode(done.stdout)), done.stdout)
 
@@ -236,7 +240,7 @@ class InventoryTests(unittest.TestCase):
         assert summary["saved_to"] == str(out)
         assert int(str(summary["branch_count"])) >= 5
         done = subprocess.run(
-            [str(INVENTORY), "--from", str(out), "--section", "stashes"],
+            [sys.executable, str(INVENTORY), "--from", str(out), "--section", "stashes"],
             capture_output=True,
             text=True,
             check=False,
@@ -262,6 +266,7 @@ class InventoryTests(unittest.TestCase):
     def test_section_filters_page_the_branches(self) -> None:
         done = subprocess.run(
             [
+                sys.executable,
                 str(INVENTORY),
                 "--repo",
                 str(self.fixture.work),
@@ -320,8 +325,7 @@ class ScaleAndRenameTests(unittest.TestCase):
                 [shutil.which("git") or "git", "update-ref", "--stdin"],
                 cwd=fixture.work,
                 env=fixture.env,
-                input=lines,
-                text=True,
+                input=lines.encode(),
                 check=True,
             )
             started = time.monotonic()

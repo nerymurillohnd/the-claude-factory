@@ -9,6 +9,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 import subprocess
+import sys
 from typing import TYPE_CHECKING
 import unittest
 
@@ -37,7 +38,9 @@ def text_at(value: object, *keys: str) -> str:
 def run_guard(event: dict[str, object] | str) -> tuple[int, str, str]:
     """Run the guard by path with an event; return (exit code, decision or "", reason or "")."""
     payload = event if isinstance(event, str) else json.dumps(event)
-    done = subprocess.run([str(GUARD)], input=payload, capture_output=True, text=True, check=False)
+    done = subprocess.run(
+        [sys.executable, str(GUARD)], input=payload, capture_output=True, text=True, check=False
+    )
     if not done.stdout:
         return (done.returncode, "", "")
     parsed = _decode(done.stdout)
