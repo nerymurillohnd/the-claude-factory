@@ -22,7 +22,7 @@
 ---
 
 > [!TIP]
-> **TL;DR** — Describe what you want a prompt to achieve, even loosely, and Claude interviews you about the situation, then hands back one complete prompt written for the model you will run it on, plus the model, effort and session setup to use with it.
+> **TL;DR** — Run `/prompt-writer:prompt-writer`, describe what you want a prompt to achieve, even loosely, and Claude interviews you about the situation, then hands back one complete prompt written for the model you will run it on, plus the model, effort and session setup to use with it.
 
 ## ✨ Why use it
 
@@ -31,15 +31,15 @@ Most weak prompts come from a vague goal, not from missing tags or headings. Pro
 - **Say it loosely** — you describe the goal in plain language. Claude decides the structure, length and techniques, and asks you about the situation, the audience and what "good" looks like, never about XML tags or effort levels.
 - **Written for the model that will run it** — guidance for Claude Fable 5.1, Opus 5.5, Opus 5 and Sonnet 5.5 is built in, so a prompt for one model does not carry habits that backfire on another.
 - **No outdated facts inside your prompt** — when your prompt depends on products, APIs, prices or rules that change, Claude checks them against current official sources before writing.
-- **One answer, ready to paste** — you get a single final prompt with a short header, not a menu of variants. When the next step depends on a result you have to bring back, you get the first prompt and what to bring back.
-- **Setup advice included** — each prompt comes with the recommended model, effort and session mode, each with a one-line reason.
+- **One answer, ready to paste** — you get a single final prompt with a short header for your records, not a menu of variants; you paste the prompt below the header. When the next step depends on a result you have to bring back, you get the first prompt and what to bring back.
+- **Setup advice included** — each prompt comes with the recommended model, effort and session mode, each with a one-line reason, and names the skills it relies on.
 - **Works on prompts you already have** — refine a draft, audit and fix an existing prompt or system prompt, or migrate a prompt to another target model.
 
 ## 🧩 What's inside
 
 | Component | Name | What it does | How it runs |
 | :-- | :-- | :-- | :-- |
-| 🎯 Skill | `prompt-writer:prompt-writer` | Acts as your prompt partner: clarifies the goal, researches what the prompt depends on, designs it for the target model and delivers one copy-ready prompt with setup advice | `/prompt-writer:prompt-writer` or automatically when you ask for a prompt |
+| 🎯 Skill | `prompt-writer:prompt-writer` | Acts as your prompt partner: clarifies the goal, researches what the prompt depends on, and delivers one copy-ready prompt, the text of a system prompt, skill, slash command or agent, or a prompt that has Claude build one, with setup advice. It writes the prompt; you run it in another session | Only when you run `/prompt-writer:prompt-writer`; Claude doesn't start it on its own |
 
 ## ✅ Requirements
 
@@ -94,6 +94,8 @@ In the desktop app's **Code** tab you can also click **+** → **Plugins** → *
 
 ## 🚀 Usage
 
+Start every request with `/prompt-writer:prompt-writer`; Claude doesn't start the skill on its own. In the Claude app, type `/` or select **+** to pick it from your plugins' skills.
+
 ### Example: a prompt from a loose idea
 
 ```text
@@ -102,10 +104,18 @@ In the desktop app's **Code** tab you can also click **+** → **Plugins** → *
 
 **Result:** Claude restates the goal, asks up to three or four questions about the situation, each with its recommendation (who reads the review, where the report lives, what counts as a useful answer), and then delivers one prompt in a fenced block. Below it you get the recommended model, effort and session mode, short design notes and any assumptions.
 
+### Example: the text of a skill or slash command
+
+```text
+/prompt-writer:prompt-writer Write the SKILL.md for a Claude Code skill that takes a GitHub issue number and plans the fix
+```
+
+**Result:** you get the complete file in the skill's own format, with its own frontmatter and arguments in Claude Code's syntax, written against the current Claude Code documentation. If your request could also mean a prompt that has Claude build the skill, Claude asks which one you want first.
+
 ### Example: improve a draft you already have
 
 ```text
-Audit this system prompt and fix it for Sonnet 5.5: <paste your prompt>
+/prompt-writer:prompt-writer Audit this system prompt and fix it for Sonnet 5.5: <paste your prompt>
 ```
 
 **Result:** Claude names what the draft does and what it should cause, applies Sonnet 5.5's documented behavior, and returns the corrected prompt with design notes on the key decisions. You can ask in any language.
@@ -113,7 +123,7 @@ Audit this system prompt and fix it for Sonnet 5.5: <paste your prompt>
 ### Example: move a prompt to another model
 
 ```text
-Migrate this prompt from Opus 5 to Fable 5.1: <paste your prompt>
+/prompt-writer:prompt-writer Migrate this prompt from Opus 5 to Fable 5.1: <paste your prompt>
 ```
 
 **Result:** Claude adjusts the prompt to the target model's documented differences and explains the key decisions in the design notes, with the recommended model, effort and session setup.
@@ -121,7 +131,7 @@ Migrate this prompt from Opus 5 to Fable 5.1: <paste your prompt>
 ### Example: save the prompt to a file
 
 ```text
-Write a prompt for a weekly changelog summary and save it to prompts/changelog-summary.md
+/prompt-writer:prompt-writer Write a prompt for a weekly changelog summary and save it to prompts/changelog-summary.md
 ```
 
 **Result:** the file holds a short metadata header (title, objective, prompt type, target model, surface, effort, output language, required capabilities, version) and the clean prompt. Without a location, Claude asks before creating any file.
@@ -176,14 +186,21 @@ Run `/reload-plugins`, then type `/prompt-writer:` to list its skills. If it sti
 <details>
 <summary><b>Which models does it write for?</b></summary>
 
-Claude Fable 5.1 (Mythos 5.1 shares its guidance), Opus 5.5, Opus 5 and Sonnet 5.5. If you name another model, Claude says the built-in guidance covers these four and asks whether to continue with the general principles only. If you name no model, Claude picks one and tells you why.
+Claude Fable 5.1 (Mythos 5.1 shares its guidance), Opus 5.5, Opus 5 and Sonnet 5.5. If you name another model, Claude recommends the closest one it covers; if you keep yours, it writes with the general principles only. If you name no model, Claude picks one and tells you why.
+
+</details>
+
+<details>
+<summary><b>What if the prompt doesn't get the result I wanted?</b></summary>
+
+Bring the result back to the conversation. Claude checks it against your goal, tells you what worked and what didn't, and revises the prompt or writes the next one.
 
 </details>
 
 <details>
 <summary><b>What happens when the official documentation has changed?</b></summary>
 
-The built-in guidance is a snapshot of Anthropic's prompting documentation dated 2026-10-13. If current official documentation contradicts it on something your prompt depends on, Claude stops before finalizing, shows you what the snapshot says, what the live page says and how it affects your prompt, and finishes with your choice.
+The built-in guidance is a snapshot of Anthropic's prompting documentation dated 2026-10-13. If current official documentation contradicts it on something your prompt depends on, Claude follows the live page and tells you in the design notes what the snapshot says, what the live page says and how it affects your prompt.
 
 </details>
 
@@ -197,7 +214,14 @@ When the answer would change the objective, the target model, the tools or the o
 <details>
 <summary><b>Does it run my prompt or build tests for it?</b></summary>
 
-No. It delivers one prompt and the advice to use it. It does not execute the prompt or generate evaluation suites.
+No. It delivers one prompt and the advice to use it, and it does not build evaluation suites for that prompt. If you also ask it to run the prompt, you still get only the prompt, to run in a new session with the model and effort it recommends. A request written as an order, such as "audit my repo" or "fix this bug", is what the prompt gets done when you run it in another session.
+
+</details>
+
+<details>
+<summary><b>What can it write besides a prompt for a task?</b></summary>
+
+It also writes the complete text of something Claude loads, such as a system prompt, a skill, a slash command, an agent or a `CLAUDE.md`, in that file's own format. If it is unclear whether you want the file itself or a prompt so Claude creates it, Claude asks. Placeholders follow what fills them, and the design notes name anything Claude added beyond your request.
 
 </details>
 

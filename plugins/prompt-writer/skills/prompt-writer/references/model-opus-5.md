@@ -43,7 +43,7 @@ Files it writes (reports, Markdown documents, summaries) run long. Ask it to mat
 
 ## Verification and scope
 
-- It verifies its own work unprompted. Remove explicit verification instructions ("add a final verification step", "use a subagent to verify") and legacy verification scaffolding; they cause over-verification with no quality gain.
+- It verifies its own work unprompted. Remove explicit verification instructions ("add a final verification step", "use a subagent to verify") and legacy verification scaffolding; they cause over-verification with no quality gain. A separate verifier role in a multi-agent writer-verifier design is fine; the removal applies to asking the model to check its own work.
 - It can expand scope. For narrow tasks, instruct: deliver what was asked at the intended scope; make routine judgment calls and check in only when readings lead to materially different work; flag a mistaken request or better approach in a sentence, then continue as asked; finish the whole task and stop short of actions beyond the ask.
 
 ## Code review

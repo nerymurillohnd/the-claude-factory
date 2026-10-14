@@ -25,7 +25,9 @@ Use to recommend the model, effort, thinking, and API settings that accompany a 
 | Opus 5 | Complex agentic coding and enterprise work, multi-agent coordination, very long context (1M tokens default and maximum), office documents. | Verbose by default; over-verifies when told to verify; delegates to subagents readily. |
 | Sonnet 5.5 | The balance of speed and intelligence: agentic coding and multistep tool use, chat and latency-sensitive work, everyday knowledge work. | For the hardest long-horizon work an Opus model is the better choice. Lower effort may skip verification or stop early to check in. |
 
-Known API strings: `claude-fable-5-1`, `claude-opus-5-5`, `claude-sonnet-5-5`. Verify the Opus 5 and Mythos 5.1 strings in the models overview before using them.
+Known API strings: `claude-fable-5-1`, `claude-mythos-5-1` (organizations verified through Anthropic's verification programs only), `claude-opus-5-5`, `claude-sonnet-5-5`. Opus 5 is a legacy model; verify its string in the models overview before using it.
+
+Anthropic's default advice: start with Opus 5.5 for most workloads; use Fable 5.1 for demanding reasoning and long-horizon agentic work, or when evals on Opus 5.5 at higher effort still fall short.
 
 ## Effort by model
 
@@ -68,7 +70,7 @@ On all four, read response content by block `type`, not position; a response may
 
 - Prefill on the last assistant turn: 400 since Claude 4.6 models.
 - `budget_tokens` (manual extended thinking): 400 on Claude 4.7 and later.
-- Non-default `temperature`: 400 on Claude 4.7 and later. Non-default sampling parameters (`temperature`, `top_p`, `top_k`): documented as 400 on Opus 5.5 and Sonnet 5.5; for Fable 5.1 and Opus 5, check the model's page before relying on a non-default value. For variety, use instructions (for example, propose distinct directions before building).
+- Non-default sampling parameters (`temperature`, `top_p`, `top_k`): 400 on Opus 4.7 and later (Opus 5 and Opus 5.5 included), Fable 5.1, Sonnet 5 and Sonnet 5.5. For variety, use instructions (for example, propose distinct directions before building).
 - Forced `tool_choice` (`{"type": "any"}` or `{"type": "tool", ...}`): 400 on Fable 5.1, Opus 5.5, and Sonnet 5.5 (Opus 5 accepts it). Use `auto` plus strict tool use or structured outputs, and say in the prompt when the tool applies.
 - `thinking: {"type": "disabled"}`: not accepted on Fable 5.1, Opus 5.5, or Sonnet 5.5; on Opus 5, only at effort `high` or lower.
 - Sonnet 5.5 `between_tools` with `display`, `budget_tokens`, or `block_binding`: 400.
@@ -104,7 +106,7 @@ On all four, read response content by block `type`, not position; a response may
 Recommend how to run the prompt, with a reason:
 
 - **Single-turn API call** for extraction, classification, transformation, and pipelines.
-- **Interactive session** (claude.ai or Claude Code) when the user will steer, review, or answer questions.
+- **Interactive session** (the Claude app or Claude Code) when the user will steer, review, or answer questions.
 - **Long-running autonomous agent** when the task is large, well specified, and the user will not be watching; pair the prompt with unattended-run instructions (proceed without permission questions on reversible steps) and harness handling of text-only turn endings.
 
-Product-specific modes and features (Claude Code permission modes such as plan or auto mode, effort settings in the app, claude.ai research or project features, skills to pair) change over time. Verify they exist and how they are named before recommending them.
+Product-specific modes and features (Claude Code permission modes such as plan or auto mode, effort settings in the app, Claude app research or project features, skills to pair) change over time. Verify they exist and how they are named before recommending them.

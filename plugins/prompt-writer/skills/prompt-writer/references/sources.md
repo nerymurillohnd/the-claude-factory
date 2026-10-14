@@ -1,6 +1,6 @@
-# Sources and maintenance
+# Sources
 
-Guidance snapshot: 2026-10-13. All references were rewritten from these Anthropic pages.
+Guidance snapshot: 2026-10-13. The references were rewritten from these Anthropic pages; the Claude Code format pages are in `formats-and-variables.md`.
 
 ## Prompt engineering
 
@@ -26,6 +26,8 @@ Guidance snapshot: 2026-10-13. All references were rewritten from these Anthropi
 
 ## Models, effort and examples
 
+- What's new in Claude Fable 5.1, for its rejected settings and the Mythos 5.1 ID: <https://platform.claude.com/docs/en/models/fable-5-1/whats-new-fable-5-1>
 - Models overview, for current model IDs: <https://platform.claude.com/docs/en/about-claude/models/overview>
+- Migration guides, for settings that return errors per model: <https://platform.claude.com/docs/en/models/opus-5-5/migration-guide>, <https://platform.claude.com/docs/en/models/sonnet-5-5/migration-guide>, <https://platform.claude.com/docs/en/models/fable-5-1/migration-guide>
 - Effort, for the current beta header and per-message changes: <https://platform.claude.com/docs/en/build-with-claude/effort>
 - Cookbook, for working tool definitions such as the crop tool: <https://platform.claude.com/cookbook>

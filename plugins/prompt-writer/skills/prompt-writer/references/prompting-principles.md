@@ -39,7 +39,7 @@ Adaptive thinking and subagents cover most multistep work in one call. Chain sep
 
 ## Migrating older prompts
 
-- Remove prefill, `budget_tokens`, and sampling parameters; use structured outputs, instructions, and effort.
+- Remove prefill, `budget_tokens`, and non-default sampling parameters (the per-model status is in `model-selection-and-config.md`); use structured outputs, instructions, and effort.
 - Dial back anti-laziness and "always use tools" language.
 - Remove instructions that force visible reasoning.
 - Remove scaffolding that forced interim status messages where the model already updates well; describe the cadence instead.

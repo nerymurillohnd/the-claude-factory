@@ -49,7 +49,7 @@ Ask the model to weigh reversibility: proceed with local, reversible actions (ed
 
 - State that the user is not watching and cannot answer mid-task, so permission questions block the work; proceed with reversible steps that follow from the request.
 - Before ending a turn, check whether the last paragraph is a plan, a promise, or a question about work it could do, and do that work.
-- Pause only for destructive actions, real scope changes, or input only the user has.
+- Pause only for destructive actions, real scope changes, or input only the user has. Externally visible actions (pushing, posting, sending) still follow "Autonomy and reversibility": say in the prompt which of them the run may take on its own.
 - Harness support (documented for Opus 5.5): treat a text-only end of turn as a report, not completion; keep the task's parts in a checklist the model updates; if items remain open with no stated blocker, send a short message naming them; stop after two or three automatic continuations.
 - Leave these instructions out of human-in-the-loop products.
 
