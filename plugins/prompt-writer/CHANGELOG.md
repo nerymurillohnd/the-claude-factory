@@ -17,7 +17,6 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - Follow-ups: bring back what a prompt produced and Claude checks it against your goal, tells you what worked and what did not, then revises the prompt or writes the next one; every delivery ends with an invitation to come back if the result misses.
 - Built-in lessons from real prompt-writing sessions, read before clarifying a request.
 - For a model outside the built-in guidance, Claude recommends the closest covered one, or writes with the general principles and marks it `other`.
-- Every prompt comes with how to check that its first result meets your goal.
 
 ### Changed
 
