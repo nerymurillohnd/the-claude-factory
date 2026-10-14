@@ -9,6 +9,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The
 ### Added
 
 - **git-hygiene** 0.1.0 — audits a Git repository end to end, builds a numbered cleanup plan with a verified backup, and executes only what you approve, behind a guard that refuses force-pushes and secret reads.
+- **plugin-evals** 0.1.0 — makes Claude an expert in Claude Code plugin evals: suites that prove what a plugin adds, correct cases, graders, mocks and CI commands, and results read right, checked against the CLI and docs you have today.
+
+### Changed
+
+- **prompt-writer** 0.2.0 — rebuilt as a step-by-step workflow: it covers Fable 5 as well, recommends a session mode with each prompt, checks the target model's live change page every time, prints the checklist it verified, and starts only from `/prompt-writer:prompt-writer`.
 
 ## 2026-10-13
 
@@ -18,6 +23,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The
 
 ### Changed
 
+- **prompt-writer** 0.1.1 — reads its reference files from paths that resolve in Claude Code and the Claude app, and always delivers a prompt instead of carrying out the task it describes.
 - The marketplace no longer carries a version. `marketplace.json` has no `version`, releases tag plugins only, and this changelog is grouped by date. The tags `marketplace--v0.1.0` and `marketplace--v0.2.0` remain as history.
 
 ## [0.2.0] - 2026-10-13
