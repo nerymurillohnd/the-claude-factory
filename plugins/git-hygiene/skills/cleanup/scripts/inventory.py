@@ -37,6 +37,7 @@ SAMPLE = 50
 DAY = 86400
 STALE_DAYS = 180
 BIG_FILE = 1_000_000
+FAILURE_CODE = 2  # git exits 1 for "nothing found"; 2 and above are real failures
 HISTORY_LIMIT = 200_000
 CHERRY_MAX_AHEAD = 200
 CHERRY_MAX_BEHIND = 5000
@@ -101,6 +102,7 @@ class Repo:
         """Remember the directory every Git call runs in."""
         self.path = path
         self.scratch: str | None = None
+        self.errors: list[Json] = []
 
     def git(
         self, *args: str, cwd: str | None = None, env_extra: dict[str, str] | None = None
@@ -118,10 +120,17 @@ class Repo:
                 timeout=TIMEOUT,
             )
         except subprocess.TimeoutExpired:
-            return 124, ""
+            return self.failed(args, 124), ""
         except OSError:
-            return 127, ""
+            return self.failed(args, 127), ""
+        if done.returncode >= FAILURE_CODE:
+            self.failed(args, done.returncode)
         return done.returncode, done.stdout.decode("utf-8", "replace").rstrip("\n")
+
+    def failed(self, args: tuple[str, ...], code: int) -> int:
+        """Record a git call that failed (not merely found nothing), so zeros are never silent."""
+        self.errors.append({"command": redact(" ".join(args))[:160], "exit": code})
+        return code
 
     def scratch_objects(self) -> dict[str, str]:
         """Environment that sends new objects to a temporary store and reads the repo's own."""
@@ -268,7 +277,9 @@ def worktrees_of(repo: Repo) -> list[Json]:
         entry["exists"] = Path(path).is_dir()
         if entry["exists"]:
             code, status = repo.git("status", "--porcelain", cwd=path)
-            entry["dirty_entries"] = len(status.split("\n")) if code == 0 and status else 0
+            entry["dirty_entries"] = (
+                (len(status.split("\n")) if status else 0) if code == 0 else None
+            )
         found.append(entry)
     return found
 
@@ -589,6 +600,7 @@ def summarize(data: Json) -> Json:
             signal_counts[signal] = signal_counts.get(signal, 0) + 1
     worktrees = data.get("worktrees")
     stashes = data.get("stashes")
+    errors = data.get("errors")
     return {
         "output_sections": sorted(data),
         "branch_count": len(entries),
@@ -599,6 +611,7 @@ def summarize(data: Json) -> Json:
             1 for w in (worktrees if isinstance(worktrees, list) else []) if not w.get("exists")
         ),
         "stashes": len(stashes) if isinstance(stashes, list) else 0,
+        "failed_git_calls": len(errors) if isinstance(errors, list) else 0,
     }
 
 
@@ -619,6 +632,7 @@ def build(repo: Repo, args: argparse.Namespace) -> Json:
         "files": noise_of(repo),
         "history": history_of(repo, base),
         "reflog": reflog_of(repo),
+        "errors": repo.errors,
     }
     remotes = context.get("remotes")
     if args.ls_remote and isinstance(remotes, dict):

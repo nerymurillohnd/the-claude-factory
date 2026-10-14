@@ -56,4 +56,4 @@ Verification the plan promises: `git bundle verify`, the ref list of the bundle 
 
 End the plan with its summary (counts per class, what is irreversible, what is `BLOCKED`) and ask the user, with `AskUserQuestion`, to approve the whole plan, approve specific action IDs, or revise. Approval of IDs is exactly those IDs.
 
-An answer counts only if the user explicitly chose to approve and, for a partial approval, named the IDs. A question that was closed without an answer, timed out, was auto-continued or was answered with something else is not approval: ask again. Do nothing else until you have it.
+A-01 is part of every approval, whole-plan or partial: if the user does not approve A-01, no `integrate`, `local-delete`, `remote` or `files` action may run. An answer counts only if the user explicitly chose to approve and, for a partial approval, named the IDs. A question that was closed without an answer, timed out, was auto-continued or was answered with something else is not approval: ask again. Do nothing else until you have it.

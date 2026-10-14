@@ -33,7 +33,7 @@ Old branches, forgotten stashes, worktrees whose folders are gone and pull reque
 - **Nothing valuable gets lost** — before anything is proposed, every branch is compared with `main` commit by commit, so "looks merged" is never taken for granted. Work that is already in `main` under other commits (a squash merge, a cherry-pick) is recognized; work that is not stays.
 - **You approve every step** — the audit is read-only and changes nothing, not even a fetch. The plan gives each operation an ID, its evidence, risk and backup coverage, and Claude runs only the IDs you approve.
 - **A backup you can restore** — before anything is deleted, Claude writes a bundle of every ref, stash and file at risk outside the repository, restores it into a scratch repository to prove it works, and keeps it until you say it can go.
-- **Safe where it matters** — a guard refuses force-pushes, deleting `main` on the remote, history rewrites and changing the default branch, and makes you confirm every command that changes anything. It refuses to read or print your `.env` files and keys.
+- **Safe where it matters** — a guard refuses force-pushes, deleting `main` on the remote, history-rewriting tools and changing the default branch, and makes you confirm every command, file write or MCP action that changes anything. It watches shell commands, file reads and searches, file writes and MCP tools, and refuses to read or print your `.env` files and keys.
 - **Built for big repositories** — a read-only inventory gathers branches, worktrees, stashes, noise and history in one pass, with aggregated queries instead of a history dump, and measures unmerged branches in depth, newest first, within a time budget, so a repository with thousands of commits and branches stays workable. Anything it had to skip is reported, never hidden.
 
 ## 🧩 What's inside
@@ -167,7 +167,7 @@ Run `/reload-plugins`, then type `/git-hygiene:` to list its skills. If it still
 <details>
 <summary><b>Claude Code asks me to confirm almost every command during the cleanup.</b></summary>
 
-That is the guard. Every `git` or `gh` command that changes the repository, its remotes or its pull requests, every file deletion or move, and every command that prints file contents asks you first, with the reason. Approve a prompt only when it matches the action ID you approved in the plan. Approving the plan is not approving a prompt, and approving a prompt is not approving the plan: you get two checks on every change.
+That is the guard. Every `git` or `gh` command that changes the repository, its remotes or its pull requests, every file write, deletion or move, every MCP action that is not a plain read, and every command that prints file contents asks you first, with the reason. Approve a prompt only when it matches the action ID you approved in the plan. Approving the plan is not approving a prompt, and approving a prompt is not approving the plan: you get two checks on every change.
 
 </details>
 

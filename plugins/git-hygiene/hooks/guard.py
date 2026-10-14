@@ -78,8 +78,19 @@ READ_ONLY_GIT = frozenset(
     },
 )  # fmt: skip
 PATCH_FLAGS = frozenset(
-    {"-p", "--patch", "-u", "-c", "--cc", "--patch-with-stat", "--patch-with-raw"}
+    {
+        "-p", "--patch", "-u", "-c", "--cc", "--patch-with-stat", "--patch-with-raw", "-W",
+        "--function-context", "--binary", "--ext-diff", "--color-words", "--word-diff",
+    },
+)  # fmt: skip
+PATCH_PREFIXES = ("-L", "-U", "--unified", "--word-diff", "--color-words")
+SEARCH_TOOLS = frozenset({"grep", "egrep", "fgrep", "rg", "ag", "sed", "awk"})
+SECRET_VARIABLE = re.compile(
+    r"\$\{?\w*(token|secret|passw|api_?key|credential|private_?key)", re.IGNORECASE
 )
+ENV_PRINTERS = frozenset({"export", "declare", "typeset", "set"})
+WRITE_TOOLS = frozenset({"Write", "Edit", "NotebookEdit"})
+READ_MCP = re.compile(r"__(get|list|search|read|query|find|fetch|describe|show)_", re.IGNORECASE)
 STAT_FLAGS = frozenset(
     {
         "--stat", "--shortstat", "--numstat", "--name-only", "--name-status", "--summary",
@@ -120,7 +131,7 @@ DRY_RUN_LETTERS = frozenset("nfdqxXvi")
 STRONG_SECRET = re.compile(
     r"^(\.env(\..+)?|\.envrc|.+\.(pem|p12|pfx|keystore|jks|kdbx|tfstate|tfvars)"
     r"|id_(rsa|dsa|ecdsa|ed25519)|\.netrc|\.npmrc|\.pypirc|\.git-credentials|\.htpasswd"
-    r"|\.vault_pass|\.dockerconfigjson|kubeconfig)$",
+    r"|\.vault_pass|\.dockerconfigjson|kubeconfig|\.pgpass|\.my\.cnf)$",
     re.IGNORECASE,
 )
 WEAK_SECRET = re.compile(
@@ -130,7 +141,7 @@ WEAK_SECRET = re.compile(
 )
 SECRET_EXAMPLE = re.compile(r"\.(example|sample|template|dist|pub)$", re.IGNORECASE)
 SECRET_DIRS = frozenset({".ssh", ".aws", ".gnupg", ".docker", ".kube"})
-SECRET_PAIRS = frozenset({(".git", "config"), (".config", "gh")})
+SECRET_PAIRS = frozenset({(".git", "config"), (".config", "gh"), (".config", "gcloud")})
 GLOB_SAMPLES = (
     ".env",
     ".envrc",
@@ -149,7 +160,12 @@ FILE_READERS = frozenset(
         "paste", "column", "fold", "rev", "tee", "uniq", "comm",
     },
 )  # fmt: skip
-FILE_CHANGERS = frozenset({"rm", "rmdir", "unlink", "shred", "mv", "truncate"})
+FILE_CHANGERS = frozenset(
+    {
+        "rm", "rmdir", "unlink", "shred", "mv", "truncate", "touch", "cp", "tee", "chmod",
+        "chown", "ln", "install", "dd",
+    },
+)  # fmt: skip
 NETWORK_TOOLS = frozenset({"curl", "wget", "http", "https"})
 GH_READ = frozenset(
     {
@@ -221,7 +237,7 @@ def is_secret_path(token: str, *, strong_only: bool = False) -> bool:
     parts = [part for part in re.split(r"[\\/]", token) if part]
     if any(part in SECRET_DIRS for part in parts[:-1]):
         return True
-    if len(parts) >= 2 and (parts[-2], parts[-1]) in SECRET_PAIRS:  # noqa: PLR2004
+    if any((parts[i], parts[i + 1]) in SECRET_PAIRS for i in range(len(parts) - 1)):
         return True
     name = parts[-1] if parts else ""
     if SECRET_EXAMPLE.search(name):
@@ -263,18 +279,27 @@ SAFE_WITH = {
     "grep": GREP_SAFE_FLAGS,
     "cat-file": CAT_FILE_SAFE_FLAGS,
 }
-PRINTS_WITH = {"log": PATCH_FLAGS, "whatchanged": PATCH_FLAGS, "stash": PATCH_FLAGS}
+PRINTS_WITH = {
+    "log": PATCH_FLAGS,
+    "whatchanged": PATCH_FLAGS,
+    "stash": PATCH_FLAGS,
+    "reflog": PATCH_FLAGS,
+}
+
+
+def has_patch_flag(args: list[str]) -> bool:
+    """True when the arguments ask git to print a patch or file content."""
+    return any(arg in PATCH_FLAGS or arg.startswith(PATCH_PREFIXES) for arg in args)
 
 
 def prints_content(sub: str, args: list[str]) -> bool:
     """True when a read-only git command would print file contents rather than names or stats."""
-    if any(arg.startswith((":(exclude)", ":!", ":^")) for arg in args):
+    if "--no-patch" in args or any(arg.startswith((":(exclude)", ":!", ":^")) for arg in args):
         return False
-    flags = set(args)
     if sub in SAFE_WITH:
-        return not flags & SAFE_WITH[sub]
+        return has_patch_flag(args) or not set(args) & SAFE_WITH[sub]
     if sub in PRINTS_WITH:
-        return bool(flags & PRINTS_WITH[sub])
+        return has_patch_flag(args)
     return sub in {"blame", "annotate"}
 
 
@@ -372,13 +397,22 @@ def check_config(args: list[str]) -> Verdict | None:
         "--rename-section",
     }
     plain = positionals(args)
-    if any(arg in writing for arg in args) or len(plain) > 1:
+    regexp = "--get-regexp" in args
+    if any(arg in writing for arg in args) or (len(plain) > 1 and not regexp):
         return ASK, "git config changes the repository's configuration."
-    listing = {"-l", "--list", "--get-regexp", "--show-origin"}
-    sensitive = re.compile(r"url|credential|token|password|extraheader", re.IGNORECASE)
-    if any(arg in listing for arg in args) or any(sensitive.search(key) for key in plain):
-        return DENY, CREDENTIALS
-    return None
+    wide = re.compile(r"remote|http|^\.\*?$", re.IGNORECASE)
+    named = re.compile(r"url|credential|token|password|extraheader", re.IGNORECASE)
+    risky = (
+        any(arg in {"-l", "--list"} for arg in args)
+        or (regexp and (not plain or any(wide.search(key) for key in plain)))
+        or any(named.search(key) for key in plain)
+    )
+    return (DENY, CREDENTIALS) if risky else None
+
+
+def check_var(args: list[str]) -> Verdict | None:
+    """Deny git var -l, which lists every config value including remote URLs."""
+    return (DENY, CREDENTIALS) if "-l" in args else None
 
 
 def check_clean(args: list[str]) -> Verdict | None:
@@ -421,6 +455,7 @@ SPECIAL_GIT: dict[str, Callable[[list[str]], Verdict | None]] = {
     "config": check_config,
     "clean": check_clean,
     "ls-remote": check_ls_remote,
+    "var": check_var,
     "symbolic-ref": check_symbolic_ref,
     "reflog": check_reflog,
 }
@@ -540,7 +575,7 @@ def check_gh_api(args: list[str]) -> Verdict | None:
     if "default_branch" in joined:
         return DENY, DEFAULT_BRANCH
     if method == "DELETE" and re.search(
-        r"(refs/heads|branches)/(main|master|trunk|develop)\b", joined
+        r"(refs/heads|branches)/(main|master|trunk|develop)(?![\w.\-/])", joined, re.IGNORECASE
     ):
         return (
             DENY,
@@ -615,9 +650,34 @@ def classify_runner(name: str, rest: list[str]) -> Verdict | None:
     """Ask for inline interpreter code and network tools."""
     if name in NETWORK_TOOLS:
         return ASK, f"{name} can change GitHub or other services."
-    if any(arg in INLINE_FLAGS for arg in rest):
-        return ASK, f"{name} with inline code can do anything; put it in a file the user can read."
+    for arg in rest:
+        if arg in INLINE_FLAGS:
+            return (
+                ASK,
+                f"{name} with inline code can do anything; put it in a file the user can read.",
+            )
+        if not arg.startswith("-"):
+            break
     return None
+
+
+def reader_arguments(name: str, rest: list[str]) -> list[str]:
+    """Return the arguments of a file-reading command that are file names, not patterns."""
+    if name not in SEARCH_TOOLS:
+        return rest
+    kept: list[str] = []
+    skip_next = False
+    pattern_given = any(arg in {"-e", "--regexp", "-f", "--file"} for arg in rest)
+    for arg in rest:
+        if skip_next:
+            skip_next = False
+        elif arg in {"-e", "--regexp"}:
+            skip_next = True
+        elif not arg.startswith("-") and not pattern_given:
+            pattern_given = True
+        else:
+            kept.append(arg)
+    return kept
 
 
 def classify_other(name: str, rest: list[str]) -> Verdict | None:
@@ -625,14 +685,15 @@ def classify_other(name: str, rest: list[str]) -> Verdict | None:
     if name in {"git-filter-repo", "bfg"}:
         return DENY, f"{name} {REWRITES}"
     if name in FILE_READERS:
-        return secret_verdict(rest) or classify_file_change(name, rest)
+        return secret_verdict(reader_arguments(name, rest)) or classify_file_change(name, rest)
     if name in FILE_CHANGERS or name == "find":
         return classify_file_change(name, rest)
     if name in INTERPRETERS or name in NETWORK_TOOLS:
         return classify_runner(name, rest)
-    if name == "printenv" or (name == "env" and not rest):
-        return DENY, "This prints the environment, which can hold secrets."
-    return None
+    prints_env = name == "printenv" or (
+        name in ENV_PRINTERS | {"env"} and rest in ([], ["-p"], ["-x"])
+    )
+    return (DENY, "This prints the environment, which can hold secrets.") if prints_env else None
 
 
 def classify_command(name: str, rest: list[str], *, at_start: bool) -> Verdict | None:
@@ -644,9 +705,31 @@ def classify_command(name: str, rest: list[str], *, at_start: bool) -> Verdict |
     return classify_other(name, rest)
 
 
+def redirect_verdict(segment: list[str]) -> Verdict | None:
+    """Ask when the command redirects output into a file other than /dev/null."""
+    for index, token in enumerate(segment):
+        match = re.match(r"^\d*>>?(?!&)(.*)$", token)
+        if not match:
+            continue
+        target = match.group(1) or (segment[index + 1] if index + 1 < len(segment) else "")
+        if target != "/dev/null":
+            return ASK, "Output redirection writes a file."
+    return None
+
+
 def classify_segment(segment: list[str]) -> list[Verdict]:
     """Return the verdicts for one command segment: every token may start a command."""
     verdicts: list[Verdict] = []
+    variable = next((t for t in segment if SECRET_VARIABLE.search(t)), None)
+    if variable:
+        verdicts.append(
+            (DENY, f"'{variable}' would expose a secret held in an environment variable.")
+        )
+    redirect = redirect_verdict(segment)
+    if redirect:
+        verdicts.append(redirect)
+    if basename(segment[0]) in {"echo", "printf"}:
+        return verdicts
     for index, token in enumerate(segment):
         found = classify_command(
             basename(token), segment[index + 1 :], at_start=at_command_position(segment, index)
@@ -658,6 +741,8 @@ def classify_segment(segment: list[str]) -> list[Verdict]:
 
 def split_segments(command: str) -> list[list[str]]:
     """Split a command line into segments on ; & | ( ) and newlines."""
+    command = re.sub(r"&>>?", " > ", command)
+    command = re.sub(r"\d*>&\d*-?", " ", command)  # 2>&1 only merges streams
     command = re.sub(r"(?<![<(])<(?![<(])", " < ", command)
     lexer = shlex.shlex(command, posix=True, punctuation_chars=SEPARATORS)
     lexer.whitespace = " \t\r"
@@ -703,14 +788,24 @@ def analyze(command: str, depth: int = 0) -> list[Verdict]:
     return verdicts
 
 
-def decide(event: object) -> Verdict | None:
-    """Return the single verdict for a hook event: deny beats ask, nothing means no objection."""
-    tool = text_at(event, "tool_name")
+def decide_tool(tool: str, event: object) -> Verdict | None:
+    """Verdict for the non-Bash tools: secret reads, file writes and MCP actions."""
     if tool in {"Read", "Grep"}:
         paths = [text_at(event, "tool_input", key) for key in ("file_path", "path", "glob")]
         return secret_verdict([path for path in paths if path])
+    changes = tool in WRITE_TOOLS or (tool.startswith("mcp__") and not READ_MCP.search(tool))
+    return (
+        (ASK, f"{tool} may change files or a service; the audit phase is read-only.")
+        if changes
+        else None
+    )
+
+
+def decide(event: object) -> Verdict | None:
+    """Return the single verdict for a hook event: deny beats ask, nothing means no objection."""
+    tool = text_at(event, "tool_name")
     if tool != "Bash":
-        return None
+        return decide_tool(tool, event)
     try:
         verdicts = analyze(text_at(event, "tool_input", "command"))
     except ValueError:

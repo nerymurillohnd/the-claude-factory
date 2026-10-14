@@ -6,6 +6,7 @@ Needs git 2.38+ on PATH. Standard library only; runs on Python 3.9+.
 
 from __future__ import annotations
 
+import importlib.util
 import json
 import os
 from pathlib import Path
@@ -298,6 +299,30 @@ class InventoryTests(unittest.TestCase):
             code, data, _ = run_inventory(Path(empty))
         assert code == 0
         assert "not a Git repository" in str(data["error"])
+
+
+class FailureTests(unittest.TestCase):
+    """A failed git call is recorded, never silently read as an empty result."""
+
+    def test_failures_are_recorded_not_collapsed_into_zeros(self) -> None:
+        spec = importlib.util.spec_from_file_location("inventory_under_test", INVENTORY)
+        assert spec is not None
+        assert spec.loader is not None
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        with tempfile.TemporaryDirectory() as empty:
+            repo = module.Repo(empty)
+            assert repo.out("status") == ""
+        assert len(repo.errors) == 1
+        assert repo.errors[0]["exit"] == 128
+
+    def test_a_healthy_inventory_reports_no_failed_calls(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            fixture = Fixture(Path(tmp))
+            fixture.build()
+            _, data, _ = run_inventory(fixture.work, "--time-budget", "0")
+        assert "errors" in data
+        assert items(data["errors"]) == []
 
 
 class ScaleAndRenameTests(unittest.TestCase):

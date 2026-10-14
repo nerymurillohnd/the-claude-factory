@@ -123,6 +123,16 @@ class GuardTests(unittest.TestCase):
                 "cat README.md",
                 "cat .env.example",
                 "cat *",
+                "grep -rn credentials .",
+                "grep -rn secret src/",
+                r"git ls-files | grep '\.env'",
+                "python3 script.py -e foo",
+                "echo git push -f",
+                r"git config --get-regexp '^branch\.'",
+                "git config --show-origin user.name",
+                "git log 2>&1",
+                "git status 2>/dev/null",
+                "git diff --stat origin/main...feat/x -U0 --no-patch",
             ],
         )
 
@@ -194,6 +204,18 @@ class GuardTests(unittest.TestCase):
                 "find . -name '*.orig' -delete",
                 "find . -type f -exec rm {} +",
                 "git branch --merged | xargs rm",
+                "git diff --stat -p",
+                "git show --stat -p HEAD",
+                "git log -L1,5:f.txt",
+                "git log --word-diff",
+                "git log -U5",
+                "git reflog show -p",
+                "git log --binary",
+                "echo hi > out.txt",
+                "touch f",
+                "cp a b",
+                "chmod 600 f",
+                "gh api -X DELETE repos/o/r/git/refs/heads/main-old",
                 "mv a b",
                 "sed -i s/a/b/ file",
                 "python3 -c 'import os'",
@@ -242,6 +264,14 @@ class GuardTests(unittest.TestCase):
                 "cat ~/.docker/config.json",
                 "cat .git/config",
                 "cat .envrc",
+                "git var -l",
+                "cat ~/.config/gh/hosts.yml",
+                "echo $GITHUB_TOKEN",
+                "export",
+                "declare -p",
+                "cat ~/.pgpass",
+                "cat ~/.config/gcloud/credentials.db",
+                "git config --get-regexp .",
                 "cat service-account.json",
                 "git log -p -- .env",
                 "git remote get-url origin",
@@ -279,8 +309,21 @@ class GuardTests(unittest.TestCase):
         )
         assert (denied, allowed, grep) == ("deny", "", "deny")
 
+    def test_writes_and_mcp_actions_ask_but_reads_pass(self) -> None:
+        def decision(tool: str) -> str:
+            return run_guard({"tool_name": tool, "tool_input": {}})[1]
+
+        assert decision("Write") == "ask"
+        assert decision("Edit") == "ask"
+        assert decision("NotebookEdit") == "ask"
+        assert decision("mcp__github__delete_file") == "ask"
+        assert decision("mcp__github__push_files") == "ask"
+        assert decision("mcp__github__get_file_contents") == ""
+        assert decision("mcp__github__list_branches") == ""
+        assert decision("mcp__github__search_code") == ""
+
     def test_other_tools_are_ignored(self) -> None:
-        _, decision, _ = run_guard({"tool_name": "Edit", "tool_input": {"file_path": ".env"}})
+        _, decision, _ = run_guard({"tool_name": "WebSearch", "tool_input": {"query": ".env"}})
         assert decision == ""
 
     def test_broken_input_asks_instead_of_passing(self) -> None:

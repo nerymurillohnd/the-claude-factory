@@ -5,7 +5,7 @@ argument-hint: "[absolute path to the repository, or a problem to investigate]"
 disable-model-invocation: true
 hooks:
   PreToolUse:
-    - matcher: "Bash|Read|Grep"
+    - matcher: "Bash|Read|Grep|Write|Edit|NotebookEdit|mcp__.*"
       hooks:
         - type: command
           command: "\"${CLAUDE_PLUGIN_ROOT}/hooks/guard.py\""
@@ -22,11 +22,11 @@ Arguments: `$ARGUMENTS`. If it is an existing directory, that is the target repo
 ## Rules that hold in every phase
 
 - Work in this order and never skip ahead: Audit → Plan → Approval → Backup → Execute → Verify → Remove the backup. The audit is read-only; the backup is made only after approval; the backup is removed only after the user explicitly says so, and its removal is verified.
-- A guard hook is active for the rest of the session. It refuses force-pushes, deleting `main` on the remote, history rewriting, `git clean -x`, default-branch changes and anything that prints credentials or reads secret files, and it makes the user confirm every command that changes state or prints file contents. Never work around a denial; stop and tell the user. Approving a confirmation prompt is not approval of the plan.
+- A guard hook is active for the rest of the session. It refuses force-pushes, deleting `main` on the remote, history rewriting, `git clean -x`, default-branch changes and anything that prints credentials or reads secret files, and it makes the user confirm every command, file write or MCP action that changes state or prints file contents. Never work around a denial; stop and tell the user. Approving a confirmation prompt is not approval of the plan.
 - Evidence beats assumption. Mark what cannot be verified `BLOCKED`, keep that item untouched, and say exactly what stopped you. Never call something safe because it looks merged.
 - Never rewrite published history, never force-push, never change the remote default branch.
 - Secrets: never open or print secret-bearing files (`.env`, keys, tokens, credentials); report their names only. Committed secrets can hide in diffs, so audit with `--stat`, `--name-status` and `--name-only`, and when you need content exclude secret-like paths with `':(exclude)<path>'` pathspecs. Redact credentials in every command and report.
-- Never go beyond the approved scope: a changed or additional operation needs new approval. Approval is an explicit answer that names the plan or the action IDs. An empty, timed-out, auto-closed or ambiguous answer is not approval: ask again.
+- Never go beyond the approved scope: a changed or additional operation needs new approval. Approval is an explicit answer that names the plan or the action IDs, and every approval includes A-01, the backup: if A-01 is not approved, no integration, deletion or prune runs. An empty, timed-out, auto-closed or ambiguous answer is not approval: ask again.
 - Keep the approved plan on disk (Phase 3 step 1). After a context compaction, re-read it and these rules; if this skill's guidance is gone, ask the user to type `/git-hygiene:cleanup` again.
 
 ## Phases

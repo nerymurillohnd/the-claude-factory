@@ -28,7 +28,7 @@ Run the inventory with `--ls-remote` once the user accepts a network query (the 
 
 ## 2. Provider, visibility, permissions, pull requests
 
-Needed to judge remote deletions. Use `gh` if it is installed and signed in (`gh auth status`); else the GitHub tools of any connected MCP server; else mark these items `BLOCKED`. Never print tokens. Take `<owner>/<repo>` from the inventory's redacted remote and always pass it with `-R`: `gh` otherwise reads the repository of the current directory, which may not be the target.
+Needed to judge remote deletions. Use `gh` if it is installed and signed in (`gh auth status`); else the read-only GitHub tools (`get`, `list`, `search`) of a connected MCP server, never one that writes; else mark these items `BLOCKED`. Never print tokens. Take `<owner>/<repo>` from the inventory's redacted remote and always pass it with `-R`: `gh` otherwise reads the repository of the current directory, which may not be the target.
 
 ```bash
 gh -R <owner>/<repo> repo view --json nameWithOwner,visibility,defaultBranchRef,viewerPermission,isFork
