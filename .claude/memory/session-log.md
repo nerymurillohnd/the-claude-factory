@@ -2,6 +2,13 @@
 
 Newest first. One entry per session: what changed, commits, what's next.
 
+## 2026-10-14 — docs drift check
+
+- `/docs-drift-check` against Claude Code 2.1.299 (changelog; npm 2.1.300 not yet documented), plugin docs, platform-support, the Cowork plugins guide, support 13837440, the Claude app release notes and the Claude Desktop changelog (v2.37337.1, 2026-10-13), and the latest tool and action releases.
+- Found: Claude Code pin 2.1.296 behind; maintainer agents name an MCP server that doesn't exist on the Mac (2.1.299 exact-server `tools:`); mypy capped at 1.20.x by the 3.9 floor; uv and `claude-code-action` patch releases; one stale note in plugin-evals' sources; an Install/Add wording split between official pages. User docs, version gates and the compatibility matrix matched.
+- Report only; no repo files changed besides memory.
+- Next: Nery decides which drift fixes to apply (pin bump, agent `tools:`, mypy 1.20.2, plugin-evals note in a patch release).
+
 ## 2026-10-13 — prompt-writer comprehensibility audit and user-only invocation
 
 - Three-reviewer comprehensibility audit (Red, Blue, Green; `Plan`, sonnet, high) of the `prompt-writer` skill: 34 consolidated findings; after re-reading the full scaffold and the design spec, 11 confirmed (5 narrowed) and 23 retired with evidence.

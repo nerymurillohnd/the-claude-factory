@@ -79,6 +79,7 @@ Rules learned the hard way. Follow them; add one line per new lesson.
 - skill-creator's `aggregate_benchmark.py` hardcodes `runs_per_configuration: 3` and `<model-name>`, and averages every `eval-*` folder (near misses with no without-arm included): keep trigger prompts in their own folder and patch the metadata, then regenerate the `.md` with its `generate_markdown()`.
 - A first `claude -p` in a fresh `CLAUDE_CONFIG_DIR` without `env -u CLAUDE_CODE_SYNC_PLUGINS -u CLAUDE_CODE_SYNC_SKILLS` syncs the account's plugins into it: run every probe with the same unset variables, or recreate the config.
 - A redaction pass over every string of a tool's output must not match token prefixes inside words: `sk-[A-Za-z0-9_-]{12,}` turned `feat/task-cleanup-inventory` into `feat/ta[REDACTED]` (git-hygiene, 2026-10-14). Anchor prefixes with `(?<![A-Za-z0-9])` and test real branch names, paths and subjects.
+- mypy 2.0 dropped `--python-version 3.9` (1.20 only stopped running on 3.9): the plugin Python floor caps mypy at 1.20.x.
 
 ## GitHub
 
