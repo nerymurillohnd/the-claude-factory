@@ -14,6 +14,12 @@
       "category": "language-support"
     },
     {
+      "name": "plugin-evals",
+      "source": "./plugins/plugin-evals",
+      "description": "Makes Claude an expert in Claude Code plugin evals: designs suites that prove what a plugin adds, writes cases, graders and mocks, runs and gates them in CI, and reads the results, always checked against the CLI and docs you have today.",
+      "category": "testing"
+    },
+    {
       "name": "plugin-test-bench",
       "source": "./plugins/plugin-test-bench",
       "description": "Proves your Claude Code plugin works the way your users receive it: installs a copy in a throwaway config, checks it loads, runs your eval suite against that copy, and reviews your eval cases so they measure what the plugin adds.",
