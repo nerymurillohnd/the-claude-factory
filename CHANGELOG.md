@@ -8,6 +8,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The
 
 ### Added
 
+- **git-hygiene** 0.1.0 — audits a Git repository end to end, builds a numbered cleanup plan with a verified backup, and executes only what you approve, behind a guard that refuses force-pushes and secret reads.
 - **plugin-evals** 0.1.0 — makes Claude an expert in Claude Code plugin evals: suites that prove what a plugin adds, correct cases, graders, mocks and CI commands, and results read right, checked against the CLI and docs you have today.
 
 ### Changed
