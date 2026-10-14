@@ -55,7 +55,7 @@ The same document `--json` prints. It is versioned (`schemaVersion: 1`) and uses
 | `cases[].name` | Case name |
 | `cases[].aggregates.score` | Mean with-arm run score |
 | `cases[].aggregates.delta` | Δ. Omitted when the case ran one arm or the arms aren't comparable |
-| `cases[].arms.with[].error` | `null`, or why the run ended abnormally. A run that ended badly is still graded on what it produced, except that since v2.1.299 a run that ended on an API error scores 0 without grading |
+| `cases[].arms.with[].error` | `null`, or why the run ended abnormally, such as a timeout. Some of these runs are still graded on what they produced, so an error does not mean a score of 0; since v2.1.299 a run that ended on an API error scores 0 without grading |
 | `cases[].arms.with[].aborted` | Present when a mock stopped the run (`expect:`, `abort_when`, or the agent-mock budget), with server, tool and reason. Score 0, `error` is `null` |
 | `cases[].arms.with[].skippedPaidGraders` | The cost ceiling skipped this run's judge graders, so its score isn't comparable |
 | `cases[].arms.without` | The baseline runs |
