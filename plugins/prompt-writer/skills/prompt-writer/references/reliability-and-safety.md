@@ -25,7 +25,7 @@ Read when accuracy, consistency, untrusted content, confidentiality, or latency 
 - Otherwise define the exact format (JSON keys, XML template, custom template) and give an example of the output. Examples constrain better than abstract instructions.
 - Ground answers in a fixed knowledge set via retrieval for chatbots and knowledge bases, and specify which entry was used.
 - For characters, list common scenarios with the expected in-character handling, not just the persona.
-- Prefill is not available on current models; use structured outputs or instructions.
+- Prefill is not available on the covered models; use structured outputs or instructions.
 
 ## Jailbreaks and direct prompt injection
 
@@ -59,5 +59,5 @@ Documented for Opus 5.5. The application wraps each pasted block in `<pasted_con
 ## Latency
 
 - Engineer for quality first; premature latency work hides what top performance looks like.
-- Levers: a faster model or lower effort; concise prompts that stay clear; ask for shorter outputs using sentence or paragraph counts; `max_tokens` as a hard cap (it can cut mid-sentence, and thinking counts toward it, so leave headroom on models that think by default); streaming for perceived responsiveness. Effort is the main latency lever on the target models.
-- Do not set non-default sampling parameters: they return errors on all four covered models (see `model-selection-and-config.md`). Lower effort instead.
+- Levers: a faster model or lower effort; concise prompts that stay clear; ask for shorter outputs using sentence or paragraph counts; `max_tokens` as a hard cap (it can cut mid-sentence, and thinking counts toward it, so leave headroom on models that think by default); streaming for perceived responsiveness. Effort is the main latency lever on the covered models.
+- Do not set non-default sampling parameters: they return errors on all four covered models. Lower effort instead.

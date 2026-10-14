@@ -25,7 +25,7 @@ Read for prompts that use tools, run long, act autonomously, or delegate. Where 
 
 ## Parallel tool calls
 
-- Current models run independent calls in parallel. An instruction can push this close to always: when calls have no dependencies, issue them together (for example, read three files in three parallel calls); keep dependent calls sequential and never guess missing parameters.
+- The covered models run independent calls in parallel. An instruction can push this close to always: when calls have no dependencies, issue them together (for example, read three files in three parallel calls); keep dependent calls sequential and never guess missing parameters.
 - To reduce parallelism (system strain), ask for sequential execution.
 - Fable 5.1 in coding and computer-use loops may issue one call per turn. After each round of tool results, append a turn-scoped system message asking it to list privately what it needs next and request every independent item in one response.
 
@@ -92,4 +92,4 @@ Give the agent a place to record lessons (one per file, one-line summary, correc
 
 ## Temporary files
 
-Current models create scratch files while coding; if net-new files should be avoided, ask for cleanup at the end.
+The covered models create scratch files while coding; if net-new files should be avoided, ask for cleanup at the end.

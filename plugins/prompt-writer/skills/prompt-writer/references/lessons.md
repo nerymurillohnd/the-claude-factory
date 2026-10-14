@@ -5,6 +5,22 @@ Read before clarifying any request. Each lesson comes from a real session: what 
 ## Contents
 
 - Writing the prompt
+  - Aspiration is not specification
+  - Let the target model discover what only it can see
+  - Detail where the domain needs it
+  - Do not freeze facts the target model was asked to research
+  - Verify the brief's facts, in both directions
+  - Sequence by root cause and gate each phase
+  - Drop rhetorical role framing
+  - When the input does not match the description, ask first
+  - Respect the platform's hard constraints
+  - Final versions, not proposals
+  - Proportionality
+  - Computer-use prompts start with a state check
+  - Domain facts come from the canonical source
+  - Reasoning, not procedure
+  - Do not invent frameworks or terminology
+  - Say exactly what is and is not done
 - Working with the user
 
 ## Writing the prompt

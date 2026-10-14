@@ -1,6 +1,6 @@
 # Sources
 
-Guidance snapshot: 2026-10-13. The references were rewritten from the Anthropic pages below; the Skills pages are for checking skills you write. The Claude Code format pages are in `formats-and-variables.md`.
+Guidance snapshot: 2026-10-13. The references were rewritten from the Anthropic pages below; the Skills pages are for checking skills you write.
 
 ## Prompt engineering
 

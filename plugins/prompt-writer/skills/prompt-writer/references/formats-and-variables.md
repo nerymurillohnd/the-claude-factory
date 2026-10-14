@@ -7,7 +7,7 @@ Read when the prompt is the text of something Claude loads, has Claude build one
 System prompt, skill, slash command, agent, `CLAUDE.md`, hook and plugin formats change between releases. Before you write one, or a prompt that has Claude build one, check its current official page and follow it over memory:
 
 - System prompts for the API: <https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/claude-prompting-best-practices>
-- Skills and slash commands (slash commands are skills now; `.claude/commands/` files are the older form): <https://code.claude.com/docs/en/skills>
+- Skills and slash commands (slash commands are skills; `.claude/commands/` files are the older form): <https://code.claude.com/docs/en/skills>
 - Subagents: <https://code.claude.com/docs/en/sub-agents>
 - `CLAUDE.md` and memory: <https://code.claude.com/docs/en/memory>
 - Hooks: <https://code.claude.com/docs/en/hooks>

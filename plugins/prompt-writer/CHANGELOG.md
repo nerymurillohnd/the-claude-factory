@@ -42,7 +42,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - The design notes give the URL of every live page Claude checked. When a long official page cannot be read, Claude moves to a shorter one instead of fetching it again, and says what stayed unverified.
 - A question about the reply language counts within the three or four questions of a round instead of adding to them.
 - Writing a prompt that builds an evaluation suite is in scope; the skill does not build test suites for its own prompts.
-- Reference files are linked with paths relative to the skill, as the skill format documents, wherever the skill asks Claude to read one.
+- The built-in guidance speaks of the four covered models by one name instead of "current models", so it stays accurate when Anthropic releases a new model.
+- Reference files are linked only from the skill's main file, by their path from the skill folder, as the skill format documents, so Claude reads each one in full.
 - The source list adds the official Agent Skills pages (Claude Platform and agentskills.io) for checking skills you ask for, and drops a model page outside the built-in guidance.
 
 ## [0.1.1] - 2026-10-13

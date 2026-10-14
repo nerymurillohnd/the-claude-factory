@@ -54,7 +54,7 @@ Prose can run dense (long sentences, few paragraph breaks). Add, preferably in a
 
 ## Formatting in chat
 
-Fable 5.1 uses less bold, fewer headers, lists, and quotation marks than earlier models. Remove anti-formatting blocks written for older models; they suppress structure the content needs. Replace them with a rule that says when formatting is appropriate: lists when asked or when content is multifaceted; no lists, headers, or bold when the user asks for minimal formatting; plain prose in conversational, personal, or emotional exchanges.
+Fable 5.1 uses less bold, fewer headers, lists, and quotation marks than older models. Remove anti-formatting blocks written for them; they suppress structure the content needs. Replace them with a rule that says when formatting is appropriate: lists when asked or when content is multifaceted; no lists, headers, or bold when the user asks for minimal formatting; plain prose in conversational, personal, or emotional exchanges.
 
 ## Quoting retrieved sources
 
@@ -115,4 +115,4 @@ Best on dense images with iterative crop and verify: a container with raw images
 - **Readable final summaries.** Shorthand is fine between tool calls; the final message is for a reader who saw none of it: outcome first, then what is needed from the user, complete sentences, no invented labels or arrow chains, clear over short.
 - **Send-to-user tool.** For long async agents, a client tool whose input is rendered verbatim lets the agent deliver content mid-task. It is rarely called without an instruction saying to use it only for user-facing content.
 - **Self-verification on long runs.** Fresh-context verifier subagents checking against the spec at intervals outperform self-critique.
-- **Refactor old skills and prompts.** Instructions written for prior models are often too prescriptive and can degrade output.
+- **Refactor old skills and prompts.** Instructions written for older models are often too prescriptive and can degrade output.

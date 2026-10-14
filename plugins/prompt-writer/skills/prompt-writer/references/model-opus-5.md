@@ -31,7 +31,7 @@ Default `high`. Use `low` and `medium` liberally as the main cost and latency co
 
 ## Response length and verbosity
 
-Default responses run longer than prior Opus models, and lowering effort does not reliably shorten them. Prompt for concision explicitly: focused, brief answers; short caveats; high-level explanations unless depth is requested. In a long system prompt, add a short concision reminder near the end as well.
+Default responses run longer than older Opus models, and lowering effort does not reliably shorten them. Prompt for concision explicitly: focused, brief answers; short caveats; high-level explanations unless depth is requested. In a long system prompt, add a short concision reminder near the end as well.
 
 ## Progress updates
 
