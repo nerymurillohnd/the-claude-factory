@@ -30,7 +30,7 @@
 
 Old branches, forgotten stashes, worktrees whose folders are gone and pull requests nobody remembers pile up in every long-lived repository. Cleaning them by hand is risky, because the one branch you delete is the one with work that exists nowhere else.
 
-- **Nothing valuable gets lost** — before anything is proposed, every branch is compared with `main` commit by commit, so "looks merged" is never taken for granted. Work that is already in `main` under other commits (a squash merge, a cherry-pick) is recognized; work that is not stays.
+- **Nothing valuable gets lost** — before anything is proposed, every branch is compared with the base branch, commit by commit for unmerged work, so "looks merged" is never taken for granted. Work that is already in `main` under other commits (a squash merge, a cherry-pick) is recognized; work that is not stays.
 - **You approve every step** — the audit is read-only and changes nothing, not even a fetch. The plan gives each operation an ID, its evidence, risk and backup coverage, and Claude runs only the IDs you approve.
 - **A backup you can restore** — before anything is deleted, Claude writes a bundle of every ref, stash and file at risk outside the repository, restores it into a scratch repository to prove it works, and keeps it until you say it can go.
 - **Safe where it matters** — a guard refuses force-pushes, deleting `main` on the remote, history-rewriting tools and changing the default branch, and makes you confirm every command, file write or MCP action that changes anything. It watches shell commands, file reads and searches, file writes and MCP tools, and refuses to read or print your `.env` files and keys.
@@ -95,14 +95,15 @@ Requires Claude Code v2.1.275+. With the marketplace already added, `/plugin ins
 **Result:** Claude runs the audit and reports what it found: how many branches (local and remote), which are fully integrated, which hold work that exists nowhere else, worktrees pointing at folders that are gone, stashes, open pull requests, and noise such as `.DS_Store` or caches. It asks you about anything ambiguous, with its recommendation, then presents a plan like this:
 
 ```text
-A-01  prep          Back up every ref, stash and file at risk to ~/git-backups/my-repo-2026-10-14
-A-02  integrate     Merge feat/invoices into main (clean merge preview, 3 exclusive commits)
-A-03  local-delete  Delete local branch feat/old-login (content already in main; patch-equivalent)
-A-04  remote        Delete origin/feat/old-login (no open pull request, you are the only author)
-A-05  local-delete  Prune the worktree registration ../wt-hotfix (folder is gone; branch merged)
+A-01  prep           Back up every ref, stash and file at risk to ~/git-backups/my-repo-2026-10-14
+A-02  integrate      Merge feat/invoices into main (clean merge preview, 3 exclusive commits)
+A-03  publish        Push main to origin (a plain push, never a force-push)
+A-04  local-delete   Delete local branch feat/old-login (content already in main; patch-equivalent)
+A-05  local-delete   Prune the worktree registration ../wt-hotfix (folder is gone; branch merged)
+A-06  remote-delete  Delete origin/feat/old-login (no open pull request, you are the only author)
 ```
 
-Approve the whole plan, or tell Claude which IDs to run. Nothing else happens.
+Approve the whole plan, tell Claude which IDs to run, or stop with the audit only. The backup (A-01) always comes first and is part of every approval. Nothing else happens.
 
 ### Clean up another repository
 
@@ -114,7 +115,7 @@ Use an absolute path.
 
 ### Only audit
 
-Answer the plan with "audit only" (or approve nothing). You keep the findings and the plan, and the repository is untouched.
+Choose "audit only" when Claude asks you to approve the plan (or refuse it). You keep the findings and the draft plan, and the repository is untouched.
 
 ### Look into a specific problem
 
@@ -149,7 +150,7 @@ In a session: `/plugin` → **Installed** → **Git Hygiene** → **Uninstall**.
 
 | Component | Claude Code | Claude app |
 | :-- | :--: | :--: |
-| 🎯 Skills | ✅ | ⚠️ loads, but the guard hook that protects your repository doesn't run in a chat conversation, so the plugin isn't offered there |
+| 🎯 Skills | ✅ | ⚠️ loads, but the guard hook that protects your repository doesn't run in a chat conversation, so use Claude Code |
 
 <sub>✅ works · ⚠️ partial · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. The Claude app (web, desktop and mobile) runs a conversation as a Cowork session when it can, and as a chat conversation otherwise, for example on a device that can't run Cowork or in the separate Chat mode that Team and Enterprise plans keep for now.</sub>
 

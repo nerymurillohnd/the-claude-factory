@@ -285,6 +285,29 @@ class InventoryTests(unittest.TestCase):
         section = obj(_decode(done.stdout))
         assert len(items(section["branches"])) == 1
         assert int(str(section["matching_branches"])) >= 2
+        total = int(str(section["matching_branches"]))
+        second = subprocess.run(
+            [
+                sys.executable,
+                str(INVENTORY),
+                "--repo",
+                str(self.fixture.work),
+                "--section",
+                "branches",
+                "--signal",
+                "has-exclusive-commits",
+                "--limit",
+                "1",
+                "--offset",
+                "1",
+            ],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        page = obj(_decode(second.stdout))
+        assert len(items(page["branches"])) == min(1, total - 1)
+        assert obj(items(page["branches"])[0])["ref"] != obj(items(section["branches"])[0])["ref"]
 
     def test_subdirectory_repo_argument_resolves_the_real_git_dir(self) -> None:
         sub = self.fixture.work / "docs"

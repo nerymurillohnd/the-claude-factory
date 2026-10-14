@@ -11,7 +11,7 @@ contents and redacts credentials in what it prints. The network is touched only 
 Usage:
     inventory.py [--repo PATH] [--base REF] [--detail-limit N] [--time-budget SECONDS]
                  [--ls-remote] [--out FILE]
-    inventory.py --from FILE --section NAME [--signal SIGNAL] [--limit N]
+    inventory.py --from FILE --section NAME [--signal SIGNAL] [--limit N] [--offset N]
 
 Requires Python 3.9+, standard library only, and Git 2.38+ for the merge preview.
 """
@@ -652,7 +652,10 @@ def parser() -> argparse.ArgumentParser:
     cli.add_argument(
         "--signal", help="with --section branches: keep only branches with this signal"
     )
-    cli.add_argument("--limit", type=int, help="with --section branches: keep only the first N")
+    cli.add_argument("--limit", type=int, help="with --section branches: keep only N branches")
+    cli.add_argument(
+        "--offset", type=int, default=0, help="with --section branches: skip the first N"
+    )
     cli.add_argument("--ls-remote", action="store_true", help="also query the remotes (read-only)")
     cli.add_argument("--out", help="write the full JSON here and print only a summary")
     cli.add_argument("--from", dest="source", help="read a saved inventory instead of scanning")
@@ -668,7 +671,8 @@ def select(data: Json, args: argparse.Namespace) -> object:
         if args.signal:
             entries = [e for e in entries if args.signal in e.get("signals", [])]
         matching = len(entries)
-        shown = {**shown, "branches": entries[: args.limit] if args.limit else entries}
+        page = entries[args.offset :]
+        shown = {**shown, "branches": page[: args.limit] if args.limit else page}
         shown["matching_branches"] = matching
     return shown
 
