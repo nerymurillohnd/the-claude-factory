@@ -65,6 +65,9 @@ Rules learned the hard way. Follow them; add one line per new lesson.
 - `claude plugin validate --strict` and the Claude app's packager accept `package.json` and `package-lock.json` at the plugin root; `check-repo.mjs` ignores the local `node_modules` because it lists files with `git ls-files -co --exclude-standard`.
 - Measuring skill triggering headless needs `--output-format stream-json --verbose` and a grep on `"name":"Skill","input":{"skill":"<plugin>:…"`; `--output-format json` holds only the result, so every prompt reads 0.
 - A bare "Rename X to Y" prompt with no language cue does not trigger a language skill on the first turn (Claude greps first); prompts that name the tool, the error code or the file type trigger it 3/3 (2026-10-13).
+- `disable-model-invocation: true` on a plugin skill: a plain-language request with `--allowedTools Skill` made 0 Skill calls, and `/<plugin>:<skill>` loaded it (headless, 2026-10-13). In the Claude app, "/" or "+" lists plugin skills in chat and Cowork (support 13837440); whether the app honors the flag is undocumented, so test it there.
+- Comprehensibility reviewers over-report: 23 of 34 findings on prompt-writer were false or already settled by a stated precedence rule, a design decision or a fallback. Re-read the whole scaffold and verify every finding before mapping fixes.
+- The `Plan` agent type has Bash: a reviewer told "no shell" still ran `find`. For a strictly read-only reviewer use an agent whose tools are only Read, Glob and Grep.
 - `git commit -F msg -- <paths>` commits only those paths; a plain `git commit` after `git add <path>` also sweeps whatever another session left staged in the same checkout (on 2026-10-13 that put an uncommitted plugin draft on `main`, reverted in `606988a`). Run `git status --short` before every commit.
 
 ## GitHub

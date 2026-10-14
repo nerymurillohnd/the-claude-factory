@@ -2,6 +2,14 @@
 
 Newest first. One entry per session: what changed, commits, what's next.
 
+## 2026-10-13 — prompt-writer comprehensibility audit and user-only invocation
+
+- Three-reviewer comprehensibility audit (Red, Blue, Green; `Plan`, sonnet, high) of the `prompt-writer` skill: 34 consolidated findings; after re-reading the full scaffold and the design spec, 11 confirmed (5 narrowed) and 23 retired with evidence.
+- Fixed in `SKILL.md`, `agentic-patterns.md`, README and CHANGELOG: the skill never runs the prompt, even when asked in the same message; out-of-list models keep the model-independent references; one prompt by default, split only for an unseen result or a fixed chain; paste the body only; a system prompt gets no contract header; live docs win, drift reported in the design notes; unattended runs name the visible actions they may take.
+- Nery: the skill is user-invoked only (`disable-model-invocation: true`), verified headless (natural request: 0 Skill calls; slash command: skill loaded from the branch). Version call: 0.x breaking change → minor, next 0.2.0.
+- Commit `89fff81` on `fix/prompt-writer-references` (signed, local), with the earlier uncommitted reference work, `lessons.md`, `formats-and-variables.md` and the spec; full `/verify` green (73 script tests, every gate ✔).
+- Next: push and PR, Claude app test of the user-only skill, `/release prompt-writer minor`, Nery's yes/no on the `0.x` versioning rule line.
+
 ## 2026-10-13 — prompt-writer plugin and the marketplace without a version
 
 - Built `prompt-writer` 0.1.0 from `prompt-writer.skill` on `feat/prompt-writer` (PR #8, merged `1aceba8`; `release.yml` tagged `prompt-writer--v0.1.0`). Personal references made generic (the user, they/their, no default conversation language). The executability audit of another copy and the plugin-reviewer findings were applied; `lessons.md` and personal rules of that copy stay out.
