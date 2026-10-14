@@ -124,7 +124,7 @@ The read-only set that `allowed_tools` can grant on its own is `Read`, `Glob`, `
 
 ## Ready-to-copy patterns
 
-The skill fired. Display only: under two arms it never moves Δ.
+The skill fired. A display-only indicator under two arms; pair it with an outcome grader, because as a case's only grader it is scored and inflates Δ.
 
 ```markdown
 ---

@@ -10,7 +10,7 @@ Read this when the user mentions skill-creator, `evals/evals.json`, trigger-quer
 | Iterate on one skill inside a conversation: blind A/B between versions, description tuning, an HTML review viewer | The skill-creator plugin from Anthropic's official marketplace | `evals/evals.json` inside the skill directory |
 | Evaluate an application built on the Claude API | Claude Code's bundled `/claude-api build-eval`, and `/claude-api hillclimb` to improve against it (both v2.1.259+) | Its own runner |
 
-`claude plugin eval` and skill-creator read neither each other's case files nor each other's results. Both default to an `evals/` folder, so when a plugin uses both, move one aside. For the plugin suite, set `"experimental": { "evals": "<dir>" }` in `plugin.json` or pass `--eval-dir <dir>`.
+`claude plugin eval` and skill-creator read neither each other's case files nor each other's results. skill-creator keeps `evals/evals.json` inside the skill directory, and `claude plugin eval` uses `evals/` under the plugin root, so they collide only when a skill's folder is the plugin root. Then move one aside. For the plugin suite, set `"experimental": { "evals": "<dir>" }` in `plugin.json` or pass `--eval-dir <dir>`.
 
 ## skill-creator's `evals/evals.json`
 

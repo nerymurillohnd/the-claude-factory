@@ -42,6 +42,7 @@ These are the reasons the skill checks `--help` first.
 
 - **`--disallow-tools` and the `disallowed_tools` case field** shipped in v2.1.299 and appear in `claude plugin eval --help`. The plugin-evals page didn't list them yet.
 - **The default judge.** `--help` named `haiku`; the docs say "the model for background tasks".
+- **Runs that end on an API error.** Since v2.1.299 they score 0 without grading and make the suite exit 1; the docs page still says a run that ended badly is graded on what it produced.
 - **`--keep-temp`.** `--help` says it preserves scaffold directories; the docs say it keeps every run's sandbox directory.
 
 ## Version milestones

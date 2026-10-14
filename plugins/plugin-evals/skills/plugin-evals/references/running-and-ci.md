@@ -51,7 +51,7 @@ claude plugin eval . --case first-case --runs 1 --keep-temp    # keep the run fo
 
 - **`init` with a terminal** opens an interactive session that reads the plugin, asks what good looks like, proposes cases and graders, pilots them and writes the files. Exit it with `/exit` or Ctrl+D.
 - **`init` inside a Claude Code session** prints that interview for the current session to conduct. Follow it: it carries the current rules for gates, floor invariants, tools, budgets, mocks, the pilot and the cost check.
-- **`init` without a terminal**, such as in CI, needs `--bare <name>`.
+- **`init` without a terminal**, such as in CI, writes the blank template and needs a case name: `claude plugin eval init --bare <name>`.
 
 ## Options
 
@@ -149,7 +149,7 @@ claude plugin eval . \
   3. `ANTHROPIC_API_KEY`.
   4. `apiKeyHelper`.
   5. `CLAUDE_CODE_OAUTH_TOKEN`. Generate it with `claude setup-token`; it needs a Pro, Max, Team or Enterprise plan and counts against that plan's usage.
-- **`--bare` runs** read neither OAuth sign-ins nor `CLAUDE_CODE_OAUTH_TOKEN`.
+- **Bare mode** (`claude --bare -p`, a separate command) reads neither OAuth sign-ins nor `CLAUDE_CODE_OAUTH_TOKEN`; `claude plugin eval` has no `--bare` run flag.
 - **Pin both models with full IDs**, so a model rollout isn't mistaken for a regression. The docs' CI example uses a Haiku-tier judge. The authoring interview asks for a Sonnet-tier or larger judge for `llm` graders. With judged graders, prefer the larger judge.
 - **Keep CI on the exit code**, and archive `results.json` and the report even when the job fails (for example, an upload step with `if: always()`). To see why a case scored low, rerun it locally without `--json` so the per-run grader lines print.
 - **Run only when needed.** Run the full two-arm suite on the changes that need it, such as a version bump or a release, not on every push.

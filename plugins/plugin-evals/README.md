@@ -102,12 +102,12 @@ You don't need a command: describe what you want, and the skill loads when your 
 I want evals for my plugin in ./plugins/changelog-writer. Where do I start?
 ```
 
-**Result:** Claude checks your Claude Code version, runs `claude plugin eval init` from the plugin root and conducts the interview it prints. It asks what a good and a bad result look like, then proposes cases that prove a difference, including prompts that must not trigger the skill. It writes each case's `prompt.md` and graders with the tools they need, and gives you the one-run pilot command and its cost before running anything.
+**Result:** Claude checks your Claude Code version, runs `claude plugin eval init` from the plugin root and conducts the interview it prints. It asks what a good and a bad result look like, then proposes cases that prove a difference, including prompts that must not trigger the skill. It writes each case's `prompt.md` and graders with the tools they need, and tells you how many runs the one-run pilot needs before running anything.
 
 ### Fix a case that never fails
 
 ```text
-My "skill must not fire" grader passes even when the skill fires. Why?
+My "skill must not fire" case still passes when the skill fires. Why?
 ```
 
 **Result:** Claude explains that in a run compared against no plugin, a `tool_used: Skill` grader is only an indicator and doesn't count, and rewrites it with `min: 0`, `max: 0` and `arm: both`, next to an outcome grader.
