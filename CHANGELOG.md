@@ -16,6 +16,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The
 - **git-hygiene** 0.1.1 — redacts credentials in every string of a saved or loaded inventory.
 - **prompt-writer** 0.2.0 — rebuilt as a step-by-step workflow: it covers Fable 5 as well, recommends a session mode with each prompt, checks the target model's live change page every time, prints the checklist it verified, and starts only from `/prompt-writer:prompt-writer`.
 
+### Fixed
+
+- **plugin-evals** 0.1.1 — corrects what its references say about runs that end on an API error, now matching the docs, and confirms them against Claude Code v2.1.300.
+
 ## 2026-10-13
 
 ### Added
