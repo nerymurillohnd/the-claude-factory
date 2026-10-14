@@ -11,6 +11,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 ### Fixed
 
 - `inventory.py` now redacts credentials in every string of a saved or loaded inventory, not only in the strings it gathers itself.
+- Branch names, paths and commit subjects that contain a token prefix inside a word, such as `task-…` or `risk-…`, are no longer cut off as `[REDACTED]`; real tokens that start with `sk-`, `ghp_`, `AKIA` or `eyJ` are still redacted.
 
 ## [0.1.0] - 2026-10-14
 

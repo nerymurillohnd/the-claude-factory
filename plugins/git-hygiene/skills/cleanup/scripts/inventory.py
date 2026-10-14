@@ -45,9 +45,9 @@ CHERRY_MAX_BEHIND = 5000
 CREDENTIAL_URL = re.compile(r"(?<=//)[^/\s]*@")
 TOKEN_QUERY = re.compile(r"([?&](?:token|access_token|key|password|secret)=)[^&\s]+", re.IGNORECASE)
 SECRET_VALUE = re.compile(
-    r"(ghp_|gho_|ghs_|github_pat_|glpat-|xox[baprs]-|sk-|AKIA)[A-Za-z0-9_\-]{12,}"
+    r"(?<![A-Za-z0-9])(ghp_|gho_|ghs_|github_pat_|glpat-|xox[baprs]-|sk-|AKIA)[A-Za-z0-9_\-]{12,}"
     r"|-----BEGIN [A-Z ]*PRIVATE KEY-----"
-    r"|eyJ[A-Za-z0-9_\-]{10,}\.[A-Za-z0-9_\-]{10,}\.[A-Za-z0-9_\-]{10,}"
+    r"|(?<![A-Za-z0-9])eyJ[A-Za-z0-9_\-]{10,}\.[A-Za-z0-9_\-]{10,}\.[A-Za-z0-9_\-]{10,}"
     r"|(?i:bearer\s+)[A-Za-z0-9._~+/\-]{12,}"
     r"|(?i:(?:password|passwd|secret|token|api[_-]?key)\s*[:=]\s*)\S+",
 )

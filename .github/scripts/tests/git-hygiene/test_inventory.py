@@ -205,6 +205,26 @@ class InventoryTests(unittest.TestCase):
         assert MARKER not in done.stdout
         assert "[REDACTED]" in done.stdout
 
+    def test_names_containing_token_prefixes_are_kept(self) -> None:
+        source = self.fixture.base / "saved-names.json"
+        token = "sk-" + "a1b2c3d4e5f6g7h8"
+        names = [
+            "feat/task-cleanup-inventory",
+            "fix/risk-assessment-page",
+            "Add mask-eyJhbGciOiJIUzI1",
+        ]
+        source.write_text(json.dumps({"names": [*names, token]}), encoding="utf-8")
+        done = subprocess.run(
+            [sys.executable, str(INVENTORY), "--from", str(source)],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        assert done.returncode == 0
+        for name in names:
+            assert name in done.stdout
+        assert token not in done.stdout
+
     def test_merged_branch_is_flagged(self) -> None:
         assert "merged-into-base" in self.signals("feat/merged")
 
