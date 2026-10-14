@@ -19,7 +19,7 @@ Recommend exactly one target model, an effort level and the session settings bef
    - **Horizon:** single reply, short multistep, or long-running agentic (hours or more, subagents).
    - **Constraints:** latency-sensitive, cost-sensitive, or quality-first.
    - **Domain risk:** offensive security, biology or life sciences, or requests to reveal reasoning.
-2. **Check availability.** Respect the user's selected model and environment when workable. If the user is pinned to a model (platform, plan, existing pipeline), write for that model and skip to step 4. Rule out a model the user's surface or plan cannot run, and Fable 5.1 when the organization lacks 30-day data retention.
+2. **Check availability.** Respect the user's selected model and environment when workable. If the user is pinned to a model (platform, plan, existing pipeline), write for that model and skip to step 4. Rule out a model the user's surface or plan cannot run, and Fable 5.1 when the organization lacks 30-day data retention. When the surface, plan, platform or retention is unknown and would change the pick, it belongs in the Step 1 round; when it surfaces only now, ask it as that round's one follow-up; otherwise state the assumption.
 3. **Pick the model** using the decision rules below. Prefer Fable 5.1, Opus 5.5 or Sonnet 5.5. Pick Fable 5 or Opus 5 only when the user is pinned to it or is migrating a prompt already tuned for it. Tune effort before switching models: it is often the better lever. Latency and cost often improve more by choosing a different model than by rewording the prompt. State the choice and the one reason that decided it.
 4. **Check for changes.** Before setting effort and setup, read the target's change page live and whole, as Step 2 in `SKILL.md` says. Follow any model ID, default, effort level, breaking change, refusal or fallback rule, or setting that returns an error that differs from this file, and report it in the design notes. Keep the page's behavior differences for Step 4.
    - Claude Fable 5.1: <https://platform.claude.com/docs/en/models/fable-5-1/whats-new-fable-5-1>
@@ -27,11 +27,15 @@ Recommend exactly one target model, an effort level and the session settings bef
    - Claude Opus 5.5: <https://platform.claude.com/docs/en/models/opus-5-5/whats-new-opus-5-5>
    - Claude Opus 5: <https://platform.claude.com/docs/en/models/opus-5/overview>
    - Claude Sonnet 5.5: <https://platform.claude.com/docs/en/models/sonnet-5-5/whats-new-sonnet-5-5>
+
+   Fable 5 and Opus 5 have no what's-new page of their own: their change page is their overview. The successor's what's-new page their prompting files list is an API setup page, read only when the API setup applies.
 5. **Pick the effort** from the effort table. Never carry an effort value across models: effort names map to different amounts of thinking on each model.
 6. **Set the rest of the setup** (see "Setup to recommend").
 7. **Record the recommendation** for the reply around the deliverable; the session mode, the design and the prompt come next.
 
 ## Decision rules
+
+The default row holds unless the user's stated priority or situation matches another row; when two rows match, the user's stated priority decides.
 
 | Situation | Recommend |
 |---|---|
@@ -40,7 +44,7 @@ Recommend exactly one target model, an effort level and the session settings bef
 | Speed matters most: chat, well-specified coding, multistep tool use, high volume | **Sonnet 5.5** |
 | Pinned to the previous generation | **Fable 5** or **Opus 5**, matching the tier above |
 | Offensive security or biology or life sciences | Not Fable. Warn that safety classifiers on every model in scope can return `stop_reason: "refusal"` |
-| Cost-sensitive but quality-first | Compare **Fable 5.1 at `low`** against Opus 5.5 or Sonnet 5.5 at higher effort; Fable 5.1 at `low` is often competitive on cost per task while scoring higher |
+| Cost-sensitive but quality-first | **Fable 5.1 at `low`**: it is often competitive on cost per task with Opus 5.5 or Sonnet 5.5 at higher effort while scoring higher; name that alternative as the one to compare against |
 
 ## Effort table
 
@@ -50,7 +54,7 @@ Recommend exactly one target model, an effort level and the session settings bef
 | Fable 5 | `high` | `high`; `medium`/`low` for routine or interactive work | `xhigh` for the most capability-sensitive work |
 | Opus 5.5 | `medium` | `medium` (matches or beats Opus 5 at `high`); `low` for cost-sensitive coding | `xhigh`/`max` only after a measured gain |
 | Opus 5 | `high` | `high`; `low`/`medium` wherever quality holds | `xhigh` for demanding coding and agentic work |
-| Sonnet 5.5 | `high` | `medium` for well-specified agentic tasks and chat; `low` for latency-sensitive chat | `high` for harder or longer tasks; `xhigh`/`max` only after a measured gain |
+| Sonnet 5.5 | `high` | `high` for most work; `medium` for well-specified agentic coding and multistep tool use; `medium` or `low` for chat and other latency-sensitive work | `high` for harder or longer tasks; `xhigh`/`max` only after a measured gain |
 
 - Effort is soft: it guides thinking and also tool behavior, and lower effort makes fewer and terser tool calls. `max_tokens` is the hard ceiling.
 - Effort affects all output tokens, text included, except on Opus 5, where it does not reliably shorten responses: prompt for length there.
@@ -73,7 +77,13 @@ Give each of these separately in the reply, and only when it applies:
 - The tools and permissions the prompt needs.
 - Configuration outside the prompt text. For the API or an agent harness, give the configuration the prompt depends on (see "API and agent-harness configuration"): much of what makes a prompt work there lives in that configuration, not in the text.
 
-Never fabricate parameter values, command syntax, product modes or available permissions. Never imply that a recommendation has changed the user's configuration. When an exact value cannot be verified, write the recommended value and state what remains unconfirmed. Product modes and features (Claude Code permission modes, effort settings in the app, Claude app features, skills to pair with the prompt) change: confirm on its official page that each exists, and how it is named, before recommending it.
+Never fabricate parameter values, command syntax, product modes or available permissions. Never imply that a recommendation has changed the user's configuration. When an exact value cannot be verified, write the recommended value and state what remains unconfirmed. Product modes and features (Claude Code permission modes, effort settings in the app, Claude app features, skills to pair with the prompt) change: confirm on its official page that each exists, and how it is named, before recommending it:
+
+| Product fact | Page | Size and sections |
+| :-- | :-- | :-- |
+| Claude Code model selection and effort (`/model`, `/effort`) | <https://code.claude.com/docs/en/model-config> | about 116,000 characters: subsections only, "### Setting your model" and "### Adjust effort level" (about 12,000 to 13,000 each) |
+| Claude Code permission modes and plan mode | <https://code.claude.com/docs/en/permission-modes> | about 90,000 characters: sections only, "## Switch permission modes" (about 9,700) |
+| Claude Code skills and slash commands | <https://code.claude.com/docs/en/skills> | about 100,000 characters: subsections only, "### Frontmatter reference" and "### Pass arguments to skills" |
 
 ## API and agent-harness configuration
 

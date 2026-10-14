@@ -1,6 +1,6 @@
 # Writing prompts for Claude Opus 5.5
 
-Start from the Opus 5 patterns, then apply an item below only when the prompt's use case produces its symptom. Use each sample as written, at its stated placement, and adapt it only where it is marked as an example or a starting point.
+Start from the Opus 5 patterns: prompts written for Opus 5 should work here without changes. They carry over unchanged (no added verification step, scope limits for narrow tasks, damped subagent use, asking for every finding instead of only high-severity ones), except where this file has its own section on the topic, which wins: effort, progress updates, reasoning in the response and the settings that return errors. Response length does not carry over: on Opus 5.5 effort shortens output too, so lower effort before adding length instructions. Then apply an item below only when the prompt's use case produces its symptom. Use each sample as written, at its stated placement, and adapt it only where it is marked as an example or a starting point. Restate emphasis in a sample (MUST, NEVER, CRITICAL, capitals) in calm language with its reason; keep everything else as written.
 
 ## Contents
 

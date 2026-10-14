@@ -1,6 +1,6 @@
 # Prompting techniques for every covered model
 
-These techniques come from the official prompting best-practices page and apply to every covered model; where the target model's prompting files say otherwise, they win. Apply a technique only when its trigger holds: an unneeded technique adds length and noise. Use each sample as written, adapt it only where it is marked as an example, and when a technique names the model it was measured on, re-check it before applying it to another.
+These techniques come from the official prompting best-practices page and apply to every covered model; where the target model's prompting files say otherwise, they win. Apply a technique only when its trigger holds: an unneeded technique adds length and noise. Use each sample as written, except that emphasis (MUST, NEVER, CRITICAL, capitals) is restated in calm language with its reason; adapt it only where it is marked as an example, and when a technique names the model it was measured on, re-check it before applying it to another.
 
 ## Contents
 
@@ -191,7 +191,7 @@ On Fable 5.1 in long agent loops, send the parallel-calls instruction as a turn-
 - **Prefer general instructions over prescriptive steps:** "think thoroughly" often produces better reasoning than a hand-written step-by-step plan.
 - **Worked examples shape thinking:** present each as a problem, the method to apply, and the expected answer.
 - **Never use manual chain-of-thought** on the covered models: rely on thinking instead, at a lower effort if cost or latency matters. A prompt that asks the model to write out its reasoning, for example in `<thinking>` tags, may be declined.
-- **Self-check:** append something like "Before you finish, verify your answer against [test criteria]." It catches errors, especially in coding and math. Never add it for Opus 5, which verifies on its own and over-verifies with it.
+- **Self-check:** append something like "Before you finish, verify your answer against [test criteria]." It catches errors, especially in coding and math. Never add it for Opus 5 or Opus 5.5, which verify on their own and over-verify with it.
 - **Reflection after tool results:**
 
 ```text
@@ -408,4 +408,4 @@ When migrating a prompt written for an older model:
 - Replace manual thinking (`budget_tokens`, which returns a 400 error) with adaptive thinking and effort.
 - Migrate away from prefill (see "Migrating away from prefill").
 - Dial back anti-laziness and "use tools aggressively" guidance written for older models.
-- Append each assistant turn exactly as the API returned it, thinking blocks included, and keep the history append-only. On Fable 5.1, Opus 5.5 and Sonnet 5.5, modifying the conversation before a thinking block returns an error: move such changes to mid-conversation system messages and server-side context management.
+- Append each assistant turn exactly as the API returned it, thinking blocks included, and keep the history append-only. On Fable 5.1, Opus 5.5 and Sonnet 5.5, for accounts created on or after 2026-08-31, modifying the conversation before a thinking block returns an error; keep the pattern for every account: move such changes to mid-conversation system messages and server-side context management.

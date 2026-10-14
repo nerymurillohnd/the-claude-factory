@@ -8,10 +8,11 @@ Use this exact structure: the metadata is the user's record of the prompt.
 
 - Put the deliverable in a fenced Markdown block. Use a fence longer than any fence inside the prompt: four backticks when the prompt contains triple-backtick code blocks.
 - The block holds the metadata, then the clean prompt body.
-- Replace every placeholder with an actual value; leave none in a completed deliverable.
+- Replace every placeholder of this template with an actual value; leave none in a completed deliverable. Variables the prompt itself takes stay, marked the way whatever fills them expects and named in the reply.
 - `target_model`: always set; `other` only for a model outside the covered models, with the model named in `objective`.
 - `effort`: the level chosen in Step 2 (model selection). On `claude-app` or `claude-code`, verify that the surface exposes the setting. Use `not-applicable` only when the model, or the surface once verified, has no effort setting; if you cannot verify, write the recommended level and list it under assumptions.
 - `session_mode`: the session chosen in Step 3 (session mode selection), `interactive` or `non-interactive`.
+- `surface`: `claude-app` for a Claude app conversation (chat or Cowork); `claude-code` for Claude Code in the terminal, an IDE, the desktop Code tab, a cloud session or `claude -p`; `api` for a direct Messages API call from the user's code; `agent-harness` for an agent loop the user runs on the API, including the Agent SDK.
 - `claude_code_mode`: `plan` or `execution` when the surface is `claude-code`; `not-applicable` on any other surface.
 - `output_language`: the language of the people or inputs the target model will serve.
 - `required_capabilities`: only capabilities the task actually needs, from `web-search`, `tools`, `structured-output`, `vision`, `long-context`; an empty list when it needs none.
@@ -22,7 +23,7 @@ Use this exact structure: the metadata is the user's record of the prompt.
 
 The reply template is a sensible default: adapt it to the request.
 
-- Write the headings and the text in the user's language. Keep the commentary proportionate to the task.
+- Write the headings and the text in the user's language, except the headings **Sources** and **Verification checklist**, which stay in English: the delivery check looks for them. Keep the commentary proportionate to the task.
 - Include only the items that apply; leave out a section with nothing to say, and add no generic invitation to continue.
 - **Model and effort:** verified recommendations, or the limitation that kept you from verifying them.
 - **Session mode:** interactive or non-interactive, plan mode or execution for Claude Code, the one reason that decided it, and how to start that mode. It must match `session_mode` and `claude_code_mode`.
@@ -81,5 +82,6 @@ version: 1.0.0
 - <URL of each official page read>
 
 **Verification checklist**
-- [x] <each checklist item, marked as verified>
+- [x] <each checklist item you verified>
+- [ ] <an item you could not verify> — not verified: <reason>
 ```

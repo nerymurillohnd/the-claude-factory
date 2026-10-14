@@ -1,6 +1,6 @@
-# Step 8: Follow-ups, only when they apply
+# Follow-ups: drafts in Step 4 and returned outputs in Step 8
 
-Use this step when the task's nature and goals need more than one prompt, because the next instructions depend on a result nobody has seen yet. Deliver the first prompt complete, draft the follow-ups after it, and revise each draft when the user brings back the output it depends on.
+Use the drafts when the task's nature and goals need more than one prompt, because the next instructions depend on a result nobody has seen yet. Deliver the first prompt complete, draft the follow-ups after it, and revise each draft when the user brings back the output it depends on.
 
 ## Contents
 

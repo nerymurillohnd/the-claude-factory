@@ -1,6 +1,6 @@
 # Writing prompts for Claude Opus 5
 
-Apply these patterns to Opus 5, and use them as the starting point for Opus 5.5. Apply an item only when the prompt's use case calls for it. Use each sample as written, at its stated placement, and adapt it only where it is marked as an example or a starting point.
+Apply these patterns to Opus 5, and use them as the starting point for Opus 5.5. Apply an item only when the prompt's use case calls for it. Use each sample as written, at its stated placement, and adapt it only where it is marked as an example or a starting point. Restate emphasis in a sample (MUST, NEVER, CRITICAL, capitals) in calm language with its reason; keep everything else as written.
 
 ## Contents
 

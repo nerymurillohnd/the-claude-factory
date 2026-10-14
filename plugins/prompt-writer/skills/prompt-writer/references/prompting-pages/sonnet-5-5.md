@@ -1,6 +1,6 @@
 # Writing prompts for Claude Sonnet 5.5
 
-Start from the Sonnet 5 patterns, and recommend an Opus model instead for the hardest long-horizon work. Apply an item below only when the prompt's use case produces its symptom. Use each sample as written, at its stated placement, and adapt it only where it is marked as an example or a starting point.
+Start from the Sonnet 5 patterns, and recommend an Opus model instead for the hardest long-horizon work. Apply an item below only when the prompt's use case produces its symptom. Use each sample as written, at its stated placement, and adapt it only where it is marked as an example or a starting point. Restate emphasis in a sample (MUST, NEVER, CRITICAL, capitals) in calm language with its reason; keep everything else as written.
 
 ## Contents
 

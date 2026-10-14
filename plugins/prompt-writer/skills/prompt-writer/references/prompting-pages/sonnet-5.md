@@ -1,6 +1,6 @@
 # Writing prompts for Claude Sonnet 5.5: patterns from Sonnet 5
 
-Apply these Sonnet 5 patterns when the target is Sonnet 5.5, except where the Sonnet 5.5 guidance says otherwise; Sonnet 5 itself is never a target. Apply an item only when the prompt's use case calls for it. Use each sample as written, at its stated placement, and adapt it only where it is marked as an example or a starting point.
+Apply these Sonnet 5 patterns when the target is Sonnet 5.5, except where the Sonnet 5.5 guidance says otherwise; Sonnet 5 itself is never a target. Apply an item only when the prompt's use case calls for it. Use each sample as written, at its stated placement, and adapt it only where it is marked as an example or a starting point. Restate emphasis in a sample (MUST, NEVER, CRITICAL, capitals) in calm language with its reason; keep everything else as written.
 
 ## Contents
 
@@ -66,7 +66,7 @@ NEVER use generic AI-generated aesthetics like overused font families (Inter, Ro
 
 ## Interactive coding
 
-Token use and behavior differ between autonomous coding agents with a single user turn and interactive agents with many. In interactive coding products, recommend autonomous features such as an auto mode and fewer required user interactions, and put the task, intent and relevant constraints in the first user turn: ambiguous or underspecified specs spread over several turns tend to cost tokens and sometimes quality.
+Token use and behavior differ between autonomous coding agents with a single user turn and interactive agents with many. In interactive coding products the user builds, recommend autonomous features such as an auto mode and fewer required user interactions (in Claude Code, the permission mode stays the user's choice), and put the task, intent and relevant constraints in the first user turn: ambiguous or underspecified specs spread over several turns tend to cost tokens and sometimes quality.
 
 ## Code review
 

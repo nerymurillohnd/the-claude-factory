@@ -47,7 +47,7 @@ Investigate first:
 2. Run the suite 5 times and list every test that failed in any run, with its error.
 3. For each flaky test, find the cause: shared state, timers, network, ordering or a real bug.
 
-Then propose a plan: what you will change, in which files, in what order, and how each change will be checked. Put the fixes for flaky tests before the speed work, since a faster suite that still fails at random is not done. Wait for my approval before editing.
+Then propose a plan: what you will change, in which files, in what order, and how each change will be checked. Put the fixes for flaky tests before the speed work, since a faster suite that still fails at random is not done.
 ```
 
 **Recommendation:** one interactive prompt in plan mode: the causes are unknown until Claude measures them, and you should approve the plan before files change.
@@ -68,6 +68,28 @@ Then propose a plan: what you will change, in which files, in what order, and ho
 **Sources**
 - https://platform.claude.com/docs/en/models/opus-5-5/whats-new-opus-5-5
 - https://code.claude.com/docs/en/model-config
+- https://code.claude.com/docs/en/permission-modes
+
+**Verification checklist**
+- [x] The reply delivers a prompt and does not carry out the task the prompt describes.
+- [x] The prompt serves the user's intended outcome.
+- [x] Material requirements are preserved.
+- [x] Assumptions and additional requirements are identified.
+- [x] The objective and relevant success criteria are clear.
+- [x] Scope, boundaries, and stop conditions are appropriate.
+- [x] The structure and length fit the task, and the prompt is as short as it can be while meeting every other item.
+- [x] Every key constraint carries its reason.
+- [x] Instructions say what to do, in calm language, without CRITICAL, MUST or capitals for emphasis.
+- [x] Content types are separated by XML tags where the prompt mixes them, and long inputs sit above the question.
+- [x] The target model is set and checked against its change page, its adjustments are applied, and nothing from the Gotchas or its anti-patterns is present.
+- [x] The session mode is set, and the prompt is written for it: questions or none, unattended guidance or none, a plan or the work itself.
+- [x] Model-specific instructions are supported by the official pages you read.
+- [x] Recommended capabilities and configuration are verified or clearly qualified.
+- [x] Known values are filled and variables follow what fills them.
+- [x] Metadata and prompt instructions do not contradict each other.
+- [x] Follow-ups appear only when the next instructions depend on a result, and each draft is marked as a draft and says what output it waits for.
+- [x] No unsupported fact is presented as verified, every difference from the live documentation is reported, and every official page you read is cited.
+- [x] The deliverable is complete and ready to use.
 ````
 
 ## Example 2: an audit of an API draft
@@ -146,4 +168,25 @@ Return the category with a short explanation of the deciding phrase in the ticke
 - https://platform.claude.com/docs/en/models/sonnet-5-5/whats-new-sonnet-5-5
 - https://platform.claude.com/docs/en/models/sonnet-5-5/migration-guide
 - https://platform.claude.com/docs/en/build-with-claude/structured-outputs
+
+**Verification checklist**
+- [x] The reply delivers a prompt and does not carry out the task the prompt describes.
+- [x] The prompt serves the user's intended outcome.
+- [x] Material requirements are preserved.
+- [x] Assumptions and additional requirements are identified.
+- [x] The objective and relevant success criteria are clear.
+- [x] Scope, boundaries, and stop conditions are appropriate.
+- [x] The structure and length fit the task, and the prompt is as short as it can be while meeting every other item.
+- [x] Every key constraint carries its reason.
+- [x] Instructions say what to do, in calm language, without CRITICAL, MUST or capitals for emphasis.
+- [x] Content types are separated by XML tags where the prompt mixes them, and long inputs sit above the question.
+- [x] The target model is set and checked against its change page, its adjustments are applied, and nothing from the Gotchas or its anti-patterns is present.
+- [x] The session mode is set, and the prompt is written for it: questions or none, unattended guidance or none, a plan or the work itself.
+- [x] Model-specific instructions are supported by the official pages you read.
+- [x] Recommended capabilities and configuration are verified or clearly qualified.
+- [x] Known values are filled and variables follow what fills them.
+- [x] Metadata and prompt instructions do not contradict each other.
+- [x] Follow-ups appear only when the next instructions depend on a result, and each draft is marked as a draft and says what output it waits for.
+- [x] No unsupported fact is presented as verified, every difference from the live documentation is reported, and every official page you read is cited.
+- [x] The deliverable is complete and ready to use.
 ````

@@ -51,7 +51,7 @@ Add what the task calls for, and nothing else:
 The target model's prompting files hold its samples. Use them this way:
 
 - **Symptom first.** Apply a fix only when the prompt's use case produces its symptom. Stacking every sample makes the prompt longer and can trade away behavior the user wanted.
-- **Placement and timing are part of the technique.** Copy where the sample goes (the end of the system prompt, the system prompt from the first request, the first user message, the end of the user message, a turn-scoped system message after tool results, a tool description) together with its text: the wrong place can break the request or the behavior.
+- **Placement and timing are part of the technique.** Copy where the sample goes (the end of the system prompt, the system prompt from the first request, the first user message, the end of the user message, a turn-scoped system message after tool results, a tool description) together with its text: the wrong place can break the request or the behavior. When the user's surface gives them no system prompt to fill (a Claude app conversation, a Claude Code session), put a system-prompt sample where that surface keeps standing instructions, confirmed on its official page, or at the top of the prompt body for a single run, and say which in the reply.
 - **Conditions travel with the sample.** Keep each condition or trade-off: in the prompt when it shapes the text, in the reply's setup when it is a setting, and in the design notes when the user must weigh it.
 - **Remove before adding.** When refining, auditing or migrating a draft, list first the lines written for older models that the target model's files or the best-practices page say to delete, then add.
 - **Use the form that works.** Some behaviors respond to a brief general instruction, others to naming the specific cases or to a concrete positive specification. Follow the form the model's files give.
@@ -81,7 +81,7 @@ Include context that enables correct decisions, even when it is not phrased as a
 - Use numbered steps when order or completeness matters. For repair, migration or setup work, order the phases so causes are fixed before symptoms, and gate each phase on explicit validation.
 - Give the role in one accurate sentence, without flattery.
 - Use examples when they resolve ambiguity that prose instructions cannot efficiently resolve.
-- Mark variables the way whatever fills them expects: Claude Code fills `$ARGUMENTS` in a skill or command, an application fills its own template syntax, and a person filling by hand gets `{{VARIABLE_NAME}}`, each one named in the reply. Confirm the Claude Code syntax on its official page.
+- Mark variables the way whatever fills them expects: Claude Code fills `$ARGUMENTS` in a skill or command, an application fills its own template syntax, and a person filling by hand gets `{{VARIABLE_NAME}}`, each one named in the reply. Confirm the Claude Code syntax on <https://code.claude.com/docs/en/skills>, in "Available string substitutions" under "### Frontmatter reference" (about 18,000 characters).
 - Fill known values rather than leaving unnecessary placeholders.
 - Never assume that prompt formatting alone guarantees a specific output format.
 - Put long documents above the instructions and the query.
@@ -141,6 +141,7 @@ Defenses that are prompt text (a policy on untrusted content, refusal wording, p
 
 Create a file only when requested and supported by the available tools.
 
+- The file holds the deliverable as delivered: the metadata block, then the prompt body. For the text of something Claude loads, the file is that text alone, in its own format.
 - Use the user's requested path and format.
 - If only a folder is given, choose a descriptive filename.
 - For files consumed by a specific system, use its expected name and format.
