@@ -90,6 +90,7 @@ Rules learned the hard way. Follow them; add one line per new lesson.
 - A plugin registered in `marketplace.json` on `main` is live: users can install it from the branch and `release.yml` tags its version. Build new plugins on a `feat/<name>` branch with a draft PR and merge only at release.
 - Pushes by `copilot-swe-agent` to a PR make Claude Code Review fail with `App token exchange failed: 401 ... User does not have write access` (the bot isn't a collaborator), and its commits may get no Validate runs; a push by a collaborator runs both. `pull-requests: write` doesn't fix it.
 - After a squash merge, a later PR from the same branch name shows every old commit; check its diff against `main` before reviewing, and prefer a fresh branch per change.
+- Cloud sessions can't delete remote branches: `git push origin --delete <b>` prints "Everything up-to-date" and deletes nothing, and `gh api -X DELETE .../git/refs/heads/<b>` gets 403 from the session proxy. Nery deletes them on GitHub (**Branches** page) or from his Mac.
 
 ## Tooling
 
