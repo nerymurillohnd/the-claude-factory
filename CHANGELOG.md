@@ -10,6 +10,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The
 
 - **plugin-evals** 0.1.0 — makes Claude an expert in Claude Code plugin evals: suites that prove what a plugin adds, correct cases, graders, mocks and CI commands, and results read right, checked against the CLI and docs you have today.
 
+### Changed
+
+- **prompt-writer** 0.2.0 — rebuilt as a step-by-step workflow: it covers Fable 5 as well, recommends a session mode with each prompt, checks the target model's live change page every time, prints the checklist it verified, and starts only from `/prompt-writer:prompt-writer`.
+
 ## 2026-10-13
 
 ### Added
