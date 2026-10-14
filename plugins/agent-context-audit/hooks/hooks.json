@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|clear",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"${CLAUDE_PLUGIN_ROOT}/skills/audit/scripts/agent_context_audit.py\" session-notice",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}

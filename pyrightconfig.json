@@ -1,3 +1,14 @@
 {
-  "pythonVersion": "3.9"
+  "pythonVersion": "3.9",
+  "executionEnvironments": [
+    {
+      "root": "plugins/agent-context-audit/skills/audit/scripts"
+    },
+    {
+      "root": ".github/scripts/tests/agent-context-audit",
+      "extraPaths": [
+        "plugins/agent-context-audit/skills/audit/scripts"
+      ]
+    }
+  ]
 }

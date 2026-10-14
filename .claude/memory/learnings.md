@@ -81,6 +81,10 @@ Rules learned the hard way. Follow them; add one line per new lesson.
 - A redaction pass over every string of a tool's output must not match token prefixes inside words: `sk-[A-Za-z0-9_-]{12,}` turned `feat/task-cleanup-inventory` into `feat/ta[REDACTED]` (git-hygiene, 2026-10-14). Anchor prefixes with `(?<![A-Za-z0-9])` and test real branch names, paths and subjects.
 - mypy 2.0 dropped `--python-version 3.9` (1.20 only stopped running on 3.9): the plugin Python floor caps mypy at 1.20.x.
 - Plugins installed from the terminal at user scope also load in the desktop app's Code tab (local and SSH sessions: Desktop reads the same `~/.claude` settings), never in its cloud or WSL sessions, Cowork or chat, which take plugins from the claude.ai account (docs: desktop, Shared configuration and Install plugins). A same-named marketplace install and `@synced` copy never load twice: one loads, the other is reported "not loaded" (docs: plugins/loading, Name conflicts).
+- A skill's `allowed-tools` Bash rule matches a script under a path with a space (the desktop app's `Application Support` plugin folders) only in the quoted form `Bash("${CLAUDE_SKILL_DIR}/scripts/x.sh" *)` with the command quoted the same way; the docs' unquoted form was denied in dontAsk (haiku probe, 2.1.300, 2026-10-14).
+- Read returns at most 25,000 tokens per call by default and refuses a whole file over 256 KB; an `offset`/`limit` read over the limit errors (docs: tools-reference). Plan read chunks by size, closing each before the line that would pass the limit.
+- `claude plugin list --json` gives each install's `installPath`, or `readFromFolder` for a plugin that loads in place (2.1.289+): a terminal launcher can find the current version there.
+- A background Bash command in `claude -p` keeps the run open until it exits or its time limit (up to 2 h with `timeout: 7200000`), then Claude takes one more turn (docs: headless, Background tasks at exit).
 
 ## GitHub
 
@@ -95,6 +99,9 @@ Rules learned the hard way. Follow them; add one line per new lesson.
 - Cloud sessions can't delete remote branches: `git push origin --delete <b>` prints "Everything up-to-date" and deletes nothing, and `gh api -X DELETE .../git/refs/heads/<b>` gets 403 from the session proxy. Nery deletes them on GitHub (**Branches** page) or from his Mac.
 
 ## Tooling
+
+- basedpyright analyzes 0 files under `.github/`: pyright excludes dot folders by default, even when the file is passed on the command line. To type-check tests there, run it with a config whose `include` names the folder and whose `exclude` is set.
+- The python-lsp-intelligence hook runs `ruff check --fix` after every write: an import that is unused in an intermediate version of a file gets deleted. Write a test file complete in one go.
 
 - `node --test <dir>` fails on Node ≥ 22 — pass a glob: `node --test ".github/scripts/tests/*.test.mjs"`.
 - GitHub heading anchors keep the emoji variation selector (U+FE0F) and start with `-` for emoji headings (`#-catalog`); markdownlint MD051 checks them, and `catalog.mjs` `anchor()` mirrors that.

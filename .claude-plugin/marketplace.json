@@ -8,6 +8,12 @@
   },
   "plugins": [
     {
+      "name": "agent-context-audit",
+      "source": "./plugins/agent-context-audit",
+      "description": "Audits everything Claude Code and Codex load as context in a project, read-only and in parallel, and writes one evidence-backed report of false, stale, duplicated, conflicting and misplaced instructions, from a session, a terminal or a schedule.",
+      "category": "testing"
+    },
+    {
       "name": "bash-lsp-intelligence",
       "source": "./plugins/bash-lsp-intelligence",
       "description": "Gives Claude Code bash-language-server for Bash and POSIX shell scripts, formats and checks every script Claude edits with shfmt and ShellCheck using your own configuration, and teaches Claude to trace sourced files and same-named functions before a rename.",

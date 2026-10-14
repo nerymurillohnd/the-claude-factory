@@ -1,0 +1,302 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "decisions",
+    "pairs",
+    "cross_findings",
+    "conflict_groups"
+  ],
+  "properties": {
+    "decisions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "fid",
+          "verdict",
+          "disposition",
+          "severity",
+          "reason",
+          "evidence"
+        ],
+        "properties": {
+          "fid": {
+            "type": "string"
+          },
+          "verdict": {
+            "type": "string",
+            "enum": [
+              "accept",
+              "revise",
+              "dismiss"
+            ]
+          },
+          "disposition": {
+            "type": "string",
+            "enum": [
+              "keep",
+              "remove",
+              "merge",
+              "move",
+              "revise",
+              "investigate"
+            ]
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "high",
+              "medium",
+              "low"
+            ]
+          },
+          "reason": {
+            "type": "string"
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "pairs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "verdict",
+          "reason"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "verdict": {
+            "type": "string",
+            "enum": [
+              "duplicate",
+              "overlap",
+              "contradiction",
+              "misplaced",
+              "unrelated"
+            ]
+          },
+          "reason": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "cross_findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "category",
+          "severity",
+          "confidence",
+          "sid",
+          "line_start",
+          "line_end",
+          "excerpt",
+          "conflicts_with",
+          "evidence",
+          "ladder",
+          "impact",
+          "disposition",
+          "rationale",
+          "related",
+          "target",
+          "replacement",
+          "topics"
+        ],
+        "properties": {
+          "category": {
+            "type": "string",
+            "enum": [
+              "false",
+              "wrong",
+              "obsolete",
+              "dead",
+              "ambiguous",
+              "duplicated",
+              "overlapping",
+              "misplaced",
+              "contradictory",
+              "redundant-with-defaults",
+              "non-conformant"
+            ]
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "high",
+              "medium",
+              "low"
+            ]
+          },
+          "confidence": {
+            "type": "string",
+            "enum": [
+              "high",
+              "medium",
+              "low"
+            ]
+          },
+          "sid": {
+            "type": "string"
+          },
+          "line_start": {
+            "type": "integer"
+          },
+          "line_end": {
+            "type": "integer"
+          },
+          "excerpt": {
+            "type": "string"
+          },
+          "conflicts_with": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "kind",
+                "ref",
+                "detail"
+              ],
+              "properties": {
+                "kind": {
+                  "type": "string",
+                  "enum": [
+                    "file-line",
+                    "repo-fact",
+                    "doc",
+                    "default",
+                    "none"
+                  ]
+                },
+                "ref": {
+                  "type": "string"
+                },
+                "detail": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "ladder": {
+            "type": "string",
+            "enum": [
+              "a",
+              "b",
+              "c",
+              "n/a"
+            ]
+          },
+          "impact": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "correctness",
+                "reliability",
+                "context-cost",
+                "maintenance"
+              ]
+            }
+          },
+          "disposition": {
+            "type": "string",
+            "enum": [
+              "keep",
+              "remove",
+              "merge",
+              "move",
+              "revise",
+              "investigate"
+            ]
+          },
+          "rationale": {
+            "type": "string"
+          },
+          "related": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "sid",
+                "line_start",
+                "line_end"
+              ],
+              "properties": {
+                "sid": {
+                  "type": "string"
+                },
+                "line_start": {
+                  "type": "integer"
+                },
+                "line_end": {
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "target": {
+            "type": "string"
+          },
+          "replacement": {
+            "type": "string"
+          },
+          "topics": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "conflict_groups": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "topic",
+          "fids",
+          "precedence"
+        ],
+        "properties": {
+          "topic": {
+            "type": "string"
+          },
+          "fids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "precedence": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

@@ -8,6 +8,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The
 
 ### Added
 
+- **agent-context-audit** 0.1.0 — audits everything Claude Code and Codex load as context in a project, read-only and line by line, and writes one evidence-backed report of false, stale, duplicated, conflicting and misplaced instructions, from a session, a terminal or a schedule.
 - **git-hygiene** 0.1.0 — audits a Git repository end to end, builds a numbered cleanup plan with a verified backup, and executes only what you approve, behind a guard that refuses force-pushes and secret reads.
 - **plugin-evals** 0.1.0 — makes Claude an expert in Claude Code plugin evals: suites that prove what a plugin adds, correct cases, graders, mocks and CI commands, and results read right, checked against the CLI and docs you have today.
 

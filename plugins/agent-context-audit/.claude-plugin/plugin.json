@@ -1,0 +1,38 @@
+{
+  "name": "agent-context-audit",
+  "displayName": "Agent Context Audit",
+  "version": "0.1.0",
+  "description": "Audits everything Claude Code and Codex load as context in a project, read-only and in parallel, and writes one evidence-backed report of false, stale, duplicated, conflicting and misplaced instructions, from a session, a terminal or a schedule.",
+  "author": {
+    "name": "Nery Murillo",
+    "url": "https://github.com/nerymurillohnd"
+  },
+  "homepage": "https://github.com/nerymurillohnd/the-claude-factory/tree/main/plugins/agent-context-audit#readme",
+  "repository": "https://github.com/nerymurillohnd/the-claude-factory",
+  "license": "MIT",
+  "keywords": [
+    "audit",
+    "context",
+    "claude-md",
+    "agents-md",
+    "codex",
+    "instructions",
+    "rules",
+    "memory",
+    "settings",
+    "governance"
+  ],
+  "metadata": {
+    "surfaces": [
+      "claude-code"
+    ]
+  },
+  "userConfig": {
+    "session_notice": {
+      "type": "boolean",
+      "title": "Announce new reports",
+      "description": "At session start, say once when a new audit report exists for the project (for example after a scheduled run).",
+      "default": true
+    }
+  }
+}
