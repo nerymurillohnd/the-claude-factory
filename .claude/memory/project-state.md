@@ -55,6 +55,7 @@
 | 2026-10-13 | The TypeScript plugins pin compiler and server in `package.json` + lockfile (TS7: `typescript` 7.0.2; TS6: `typescript` 6.0.3 + `typescript-language-server` 6.0.2), installed by Claude Code into the plugin cache | TS 7's native server pushes no diagnostics, so the hook's `tsc` is the check; pinned versions keep hook and server in agreement |
 | 2026-10-13 | CI installs Python tools with uv (`setup-uv` pinned, `uv tool install`, `uvx`), never pip; the uv cache is keyed to `validate.yml`, where the tool versions are pinned | Nery's environment contract; the repo has no lockfile for setup-uv's default cache glob |
 | 2026-10-14 | `plugin-evals` 0.1.0 (branch `feat/plugin-evals`): one model-invocable skill + six references, no agents/hooks/scripts; self-contained (no mention of our other plugins); skill checks `claude plugin eval --help`, runs `eval init` in-session and reads live `.md` docs and the changelog before any time-sensitive fact; no eval suite yet | Nery's brief; baseline probe (Sonnet 5.5, no plugin, $0.92) answered 7/10 via `--help` and `claude-code-guide` but missed `arm: both`, the CI recipe and the eval sandbox refusal; the built-in guide's eval versions were stale |
+| 2026-10-14 | `plugin-evals` cost accepted: +35% per answer ($0.082 vs $0.061) but equal per passed expectation ($0.022 vs $0.021); no further splitting of references | Nery; iteration 2 showed the extra cost is the skill and one reference loaded, which is what buys 88.9% vs 67.5% |
 
 ## Status
 
