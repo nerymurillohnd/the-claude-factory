@@ -63,7 +63,7 @@
 
 ## Status
 
-- Released on `main` (tags by `release.yml`): `skill-diagnostics` 0.1.0 (PR #1), 0.1.1 (PR #3, `@claude` review fixes) and 0.1.2 (direct merge `d467fcc`: strict-typed hook event; the tag also carries `87ba49c`, which forces the Agent tool for the lenses and makes the changelog read its own step, with no CHANGELOG entry), `session-handoff` 0.1.0 (PR #5), `plugin-test-bench` 0.1.0 (PR #6), `python-lsp-intelligence`, `bash-lsp-intelligence` and `typescript7-lsp-intelligence` 0.2.0 plus `typescript6-lsp-intelligence` 0.1.0 (PR #7, v2). `prompt-writer` 0.1.0 (PR #8) and 0.1.1 (PR #9, merged `15e3869`; it also carried the rebuilt skill under version 0.1.1); 0.2.0 dated on branch `release/prompt-writer-0.2.0`, PR pending. `plugin-evals` 0.1.0 (PR #11, squash-merged `aea23f0`). The marketplace has no version (last tagged 0.2.0, `3748926`).
+- Released on `main` (tags by `release.yml`): `skill-diagnostics` 0.1.0 (PR #1), 0.1.1 (PR #3, `@claude` review fixes) and 0.1.2 (direct merge `d467fcc`: strict-typed hook event; the tag also carries `87ba49c`, which forces the Agent tool for the lenses and makes the changelog read its own step, with no CHANGELOG entry), `session-handoff` 0.1.0 (PR #5), `plugin-test-bench` 0.1.0 (PR #6), `python-lsp-intelligence`, `bash-lsp-intelligence` and `typescript7-lsp-intelligence` 0.2.0 plus `typescript6-lsp-intelligence` 0.1.0 (PR #7, v2). `prompt-writer` 0.1.0 (PR #8) and 0.1.1 (PR #9, merged `15e3869`; it also carried the rebuilt skill under version 0.1.1); 0.2.0 dated on branch `release/prompt-writer-0.2.0`, PR pending. `plugin-evals` 0.1.0 (PR #11, squash-merged `aea23f0`). `git-hygiene` 0.1.0 (PR #10, `c8ec827`) and 0.1.1 (PR #13, `37a9c2b`: redaction of every inventory string with word-bounded token prefixes; PR #13 reused the merged `feat/plugin-evals` branch). The marketplace has no version (last tagged 0.2.0, `3748926`).
 - CI: Validate, Release, `claude-code-review.yml` (review on every PR) and `claude.yml` (`@claude` mentions, from PR #2); `evals.yml` runs one matrix job per changed plugin with `evals/` (PR #4; verified on PR #5: nothing selected, eval job skipped).
 - GitHub settings done: PRs Collaborators only, private vulnerability reporting, topics, 23 custom labels (including the three `plugin: <name>` labels). `main` has no branch protection.
 
@@ -93,5 +93,6 @@
 | `session-handoff` — end-of-session handoff file + start-of-session reader | Nery, 2026-10-12 | released 0.1.0 |
 | `plugin-test-bench` — copied-install test of a plugin + eval-case review | Nery, 2026-10-12 | released 0.1.0 |
 | `live-docs-research` — research from live official sources + changelog checks | Nery, earlier sessions | idea |
-| `plugin-evals` — expert in `claude plugin eval` suites, CI and results | Nery, 2026-10-14 | merged 0.1.0 (PR #11) |
+| `plugin-evals` — expert in `claude plugin eval` suites, CI and results | Nery, 2026-10-14 | released 0.1.0 |
+| `git-hygiene` — audit a Git repository, plan the cleanup, execute only what the user approves | Nery, 2026-10-14 | released 0.1.1 |
 | Biome LSP (`biome lsp-proxy`) for `.json`, `.jsonc`, `.css`, `.graphql` only: lint/parse diagnostics after each edit; never TS/JS (one server per extension, and Biome lacks references, hover and symbols, so it would displace `typescript7-lsp-intelligence`) | Nery, 2026-10-12 | idea |
