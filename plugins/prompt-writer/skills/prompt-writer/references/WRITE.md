@@ -33,6 +33,7 @@ Add what the task calls for, and nothing else:
 - The output it must produce; when the user wants a final result, ask for it and forbid drafts and alternatives.
 - How to handle uncertainty or missing information.
 - Approval gates before consequential actions.
+- The skills to use, by name, when one available on the user's surface fits the task; confirm it exists before naming it.
 
 ## Success criteria
 
@@ -132,7 +133,7 @@ Defenses that are prompt text (a policy on untrusted content, refusal wording, p
 
 ## Deliver
 
-- Fill the prompt deliverable, then the reply around it, as "Output contract" in `SKILL.md` says.
+- Fill the prompt deliverable, then the reply around it, as the Gotchas in `SKILL.md` say.
 - Deliver the complete prompt, not fragments or a diff.
 - For revisions, preserve valid requirements and provide the full updated version. Briefly identify substantive changes outside the prompt.
 

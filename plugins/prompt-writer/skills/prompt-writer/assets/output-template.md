@@ -31,6 +31,7 @@ The reply template is a sensible default: adapt it to the request.
 - **Follow-up drafts:** only when the design calls for follow-ups. One block per draft after the prompt, marked **Draft**, with no metadata, each preceded by the output it waits for, what you will assess in it and the assumptions it rests on.
 - **Next step:** the exact action or artifact needed when continuation is useful.
 - **Sources:** the URL of every official page you read for a technical recommendation.
+- **Verification checklist:** last, after the sources: the checklist from Step 7 in `SKILL.md`, each item marked as you verified it.
 - Keep citations, configuration notes and commentary outside the copy-ready prompt unless the task requires them inside it.
 
 ## Prompt deliverable
@@ -68,7 +69,7 @@ version: 1.0.0
 
 **Session mode:** <interactive or non-interactive; plan mode or execution in Claude Code>. <one-line reason; how to start it>
 
-**Where and setup:** <surface; tools and permissions; for the API or an agent harness, the configuration outside the prompt>
+**Where and setup:** <surface; tools and permissions; the skills that would help; for the API or an agent harness, the configuration outside the prompt>
 
 **Design notes**
 - <decision, assumption or change>: <its reason>
@@ -78,4 +79,7 @@ version: 1.0.0
 
 **Sources**
 - <URL of each official page read>
+
+**Verification checklist**
+- [x] <each checklist item, marked as verified>
 ```

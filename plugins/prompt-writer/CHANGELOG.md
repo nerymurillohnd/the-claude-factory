@@ -17,6 +17,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - Safeguards only where your case needs them: against invented facts, format drift, hostile input or untrusted content, prompt leaks and slow answers.
 - When the next step depends on a result nobody has seen yet, you get the first prompt plus drafts of the next ones, each marked as a draft and saying what output it waits for. Bring the output back and Claude checks it against your goal, then revises the prompt or finishes the next draft.
 - A fixed automated sequence comes as all its stages at once, each with its input, output and stage number.
+- Skills that would help the task are named in the prompt and in the setup advice, once Claude confirms they exist on your surface.
+- Every delivery ends with the checklist Claude verified the prompt against. In Claude Code, a check then compares the reply's claims, such as the pages it cites and the verified items, with what Claude actually did, and sends Claude back to fix any claim without evidence.
 - Audits list the problems found before the fixed prompt, and the design notes say how each was fixed and name anything added beyond your request.
 
 ### Changed

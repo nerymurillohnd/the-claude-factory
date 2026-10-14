@@ -32,7 +32,8 @@ Most weak prompts come from a vague goal, not from missing tags or headings. Pro
 - **Written for the model that will run it** — guidance for Claude Fable 5.1, Fable 5, Opus 5.5, Opus 5 and Sonnet 5.5 is built in, so a prompt for one model does not carry habits that backfire on another.
 - **No outdated facts inside your prompt** — when your prompt depends on products, APIs, prices or rules that change, Claude checks them against current official sources before writing.
 - **One answer, ready to paste** — you get a single final prompt with a short header for your records, not a menu of variants; you paste the prompt below the header. When the next step depends on a result you have to bring back, you get the first prompt and what to bring back.
-- **Setup advice included** — each prompt comes with the recommended model, effort and session mode, plan mode or direct execution in Claude Code, each with a one-line reason.
+- **Setup advice included** — each prompt comes with the recommended model, effort and session mode, plan mode or direct execution in Claude Code, each with a one-line reason, and names the skills that would help.
+- **Checked before you get it** — every delivery ends with the checklist Claude verified the prompt against.
 - **Works on prompts you already have** — refine a draft, audit and fix an existing prompt or system prompt, or migrate a prompt to another target model.
 
 ## 🧩 What's inside
@@ -171,6 +172,8 @@ Prompts you saved to files stay where you put them.
 | 🎯 Skills | ✅ | ✅ |
 
 <sub>✅ works · ⚠️ partial · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. The Claude app (web, desktop and mobile) runs a conversation as a Cowork session when it can, and as a chat conversation otherwise, for example on a device that can't run Cowork or in the separate Chat mode that Team and Enterprise plans keep for now.</sub>
+
+In Claude Code, after each delivery a check compares what the reply claims, such as the pages it cites and the verified checklist items, with what Claude actually did in the session, and sends Claude back to fix any claim without evidence. The check adds a short wait after each reply while the skill is in use. Elsewhere the checklist is Claude's own.
 
 The skill works the same in a Cowork session and in a chat conversation. Saving a prompt to a file needs a session that can reach a folder on your computer; elsewhere Claude gives you the prompt in a code block.
 

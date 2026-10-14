@@ -11,9 +11,9 @@ With the intent, the model, the effort and the session mode set, learn what the 
 
 ## Read the sources
 
-- Read the target model's prompting files in full, as Step 4 in `SKILL.md` lists them, and apply the behavior differences the target's change page showed in Step 2.
+- Apply the target model's prompting files read in Step 2, and the behavior differences its change page showed there.
 - Read the prompting techniques `SKILL.md` links for this step, through their index by trigger: only the sections whose trigger the prompt meets. Read the cross-model criteria linked there too.
-- Read any other official page this skill names when its condition applies, as "Reading official pages" in `SKILL.md` says.
+- Read any other official page this skill names when its condition applies, as Step 2 in `SKILL.md` says.
 - Verify live whatever the prompt depends on that changes: products, APIs, tools, commands, file formats, features, prices, rules.
 - Where a general page and the target model's prompting files differ, the model's prompting files win.
 
@@ -33,7 +33,7 @@ These rules apply to every official page read live, and to the samples in this s
 
 Decide, before writing:
 
-- **The shape:** one self-contained prompt (the default), a fixed automated sequence whose stages can all be written now, or a first prompt with follow-ups because the next instructions depend on a result nobody has seen yet (Step 7).
+- **The shape:** one self-contained prompt (the default), a fixed automated sequence whose stages can all be written now, or a first prompt with follow-ups because the next instructions depend on a result nobody has seen yet (Step 8).
 - **The content:** the source material and project context the prompt needs, and the success criteria it will state.
 - **The model's items:** the items in the target model's prompting files whose symptom the use case produces, with their placement and conditions, and the lines to remove from a draft.
 - **The form:** examples to establish format, tone or boundaries; structure; length.

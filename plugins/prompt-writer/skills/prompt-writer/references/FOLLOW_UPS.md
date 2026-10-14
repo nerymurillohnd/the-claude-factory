@@ -1,4 +1,4 @@
-# Step 7: Follow-ups, only when they apply
+# Step 8: Follow-ups, only when they apply
 
 Use this step when the task's nature and goals need more than one prompt, because the next instructions depend on a result nobody has seen yet. Deliver the first prompt complete, draft the follow-ups after it, and revise each draft when the user brings back the output it depends on.
 
