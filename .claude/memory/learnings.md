@@ -66,6 +66,14 @@ Rules learned the hard way. Follow them; add one line per new lesson.
 - Measuring skill triggering headless needs `--output-format stream-json --verbose` and a grep on `"name":"Skill","input":{"skill":"<plugin>:…"`; `--output-format json` holds only the result, so every prompt reads 0.
 - A bare "Rename X to Y" prompt with no language cue does not trigger a language skill on the first turn (Claude greps first); prompts that name the tool, the error code or the file type trigger it 3/3 (2026-10-13).
 - `git commit -F msg -- <paths>` commits only those paths; a plain `git commit` after `git add <path>` also sweeps whatever another session left staged in the same checkout (on 2026-10-13 that put an uncommitted plugin draft on `main`, reverted in `606988a`). Run `git status --short` before every commit.
+- `claude plugin eval init` run from inside a Claude Code session (e.g. the Bash tool) starts no interview: it prints the CLI's current authoring interview (gates, floor invariants, tools-follow-graders, judge model, pilot, cost gate) for the session to conduct. Free and version-exact; skills should follow it, not restate it (2.1.299).
+- `claude plugin eval --help` can run ahead of the docs page: 2.1.299 added `--disallow-tools`/`disallowed_tools` before plugin-evals.md listed them, and `--help` names `haiku` as the default judge. Check `--help` before the docs for flags.
+- `claude -p --tools ""` makes Sonnet 5.5 write fake tool calls as text instead of answering: a no-tools probe doesn't measure model knowledge. Probe with real, scoped tools.
+- In a cloud session, `claude --bare -p` fails with "Authentication error" (bare reads no OAuth and the session has no API key); a non-bare `claude -p` with `CLAUDE_CONFIG_DIR=$(mktemp -d)` authenticates and loads nothing personal.
+- agentskills.io is blocked from cloud sessions (proxy 403, DNS failure for WebFetch); read its docs from `raw.githubusercontent.com/agentskills/agentskills/main/docs/...mdx`.
+- A skill's ground-truth commands must be plain (`claude plugin eval --help`, no pipes or `cd … &&`): in `dontAsk` runs with `Bash(claude plugin *)`, piped variants were denied in 4/10 runs and wasted a turn each; users with narrow allow rules hit the same.
+- skill-creator's `aggregate_benchmark.py` hardcodes `runs_per_configuration: 3` and `<model-name>`, and averages every `eval-*` folder (near misses with no without-arm included): keep trigger prompts in their own folder and patch the metadata, then regenerate the `.md` with its `generate_markdown()`.
+- A first `claude -p` in a fresh `CLAUDE_CONFIG_DIR` without `env -u CLAUDE_CODE_SYNC_PLUGINS -u CLAUDE_CODE_SYNC_SKILLS` syncs the account's plugins into it: run every probe with the same unset variables, or recreate the config.
 
 ## GitHub
 
