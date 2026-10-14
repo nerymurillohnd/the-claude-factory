@@ -1,6 +1,6 @@
 # Sources
 
-Guidance snapshot: 2026-10-13. The references were rewritten from these Anthropic pages; the Claude Code format pages are in `formats-and-variables.md`.
+Guidance snapshot: 2026-10-13. The references were rewritten from the Anthropic pages below; the Skills pages are for checking skills you write. The Claude Code format pages are in `formats-and-variables.md`.
 
 ## Prompt engineering
 
@@ -13,7 +13,14 @@ Guidance snapshot: 2026-10-13. The references were rewritten from these Anthropi
 - Prompting Claude Opus 4.8: <https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-opus-4-8>
 - Prompting Claude Sonnet 5.5: <https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-sonnet-5-5>
 - Prompting Claude Sonnet 5: <https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-sonnet-5>
-- Prompting Claude Haiku 5.5: <https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-haiku-5-5>
+
+## Skills
+
+- Agent Skills overview: <https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview>
+- Skill authoring best practices: <https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices>
+- Using Agent Skills with the API: <https://platform.claude.com/docs/en/build-with-claude/skills-guide>
+- Agent Skills specification (open standard): <https://agentskills.io/specification>
+- Best practices for skill creators (open standard): <https://agentskills.io/skill-creation/best-practices>
 
 ## Test and evaluate
 

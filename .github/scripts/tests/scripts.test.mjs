@@ -495,6 +495,7 @@ describe('eval-targets', () => {
   test('manual runs: all plugins with evals, or one that has them', () => {
     scaffold()
     assert.deepEqual(JSON.parse(run('eval-targets.mjs', ['--only', 'all']).out), [
+      'prompt-writer',
       'skill-diagnostics',
     ])
     assert.deepEqual(JSON.parse(run('eval-targets.mjs', ['--only', 'skill-diagnostics']).out), [
