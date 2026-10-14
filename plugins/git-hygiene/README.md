@@ -7,7 +7,7 @@
 [![Version](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Fnerymurillohnd%2Fthe-claude-factory%2Fmain%2Fplugins%2Fgit-hygiene%2F.claude-plugin%2Fplugin.json&query=%24.version&label=version&color=D97757)](./CHANGELOG.md)
 [![Works in](https://img.shields.io/badge/works%20in-Claude%20Code%20only-2563EB)](#-compatibility)
 [![Category](https://img.shields.io/badge/category-Development-6B7280)](../../README.md#-catalog)
-[![Claude Code](https://img.shields.io/badge/Claude%20Code-%E2%89%A5%202.1.293-D97757?logo=claude&logoColor=white)](https://code.claude.com/docs/en/plugins/install)
+[![Claude Code](https://img.shields.io/badge/Claude%20Code-%E2%89%A5%202.1.295-D97757?logo=claude&logoColor=white)](https://code.claude.com/docs/en/plugins/install)
 [![License: MIT](https://img.shields.io/badge/license-MIT-22C55E)](./LICENSE)
 
 [Why use it](#-why-use-it) •
@@ -21,7 +21,7 @@
 
 ---
 
-💻 **Claude Code only** — it works on a repository on your computer, and its safety guard is a hook that has to check every command Claude runs, which only Claude Code does. It doesn't install in the Claude app (chat or Cowork).
+💻 **Claude Code only** — it works on a repository on your computer, and its safety guard is a hook that has to check every command Claude runs, which a chat conversation in the Claude app doesn't run. The plugin is built and tested for Claude Code only.
 
 > [!TIP]
 > **TL;DR** — Type `/git-hygiene:cleanup` and Claude audits the whole repository, shows you a numbered cleanup plan, and carries out only the steps you approve, after a verified backup, until the repository is down to `main` and `origin/main`.
@@ -31,10 +31,10 @@
 Old branches, forgotten stashes, worktrees whose folders are gone and pull requests nobody remembers pile up in every long-lived repository. Cleaning them by hand is risky, because the one branch you delete is the one with work that exists nowhere else.
 
 - **Nothing valuable gets lost** — before anything is proposed, every branch is compared with `main` commit by commit, so "looks merged" is never taken for granted. Work that is already in `main` under other commits (a squash merge, a cherry-pick) is recognized; work that is not stays.
-- **You approve every step** — the audit changes nothing. The plan gives each operation an ID, its evidence, risk and backup coverage, and Claude runs only the IDs you approve.
+- **You approve every step** — the audit is read-only and changes nothing, not even a fetch. The plan gives each operation an ID, its evidence, risk and backup coverage, and Claude runs only the IDs you approve.
 - **A backup you can restore** — before anything is deleted, Claude writes a bundle of every ref, stash and file at risk outside the repository, restores it into a scratch repository to prove it works, and keeps it until you say it can go.
-- **Safe where it matters** — a guard refuses force-pushes, deleting `main` on the remote, history rewrites and changing the default branch, and makes you confirm every command that changes anything. It never reads or prints your `.env` files or keys.
-- **Built for big repositories** — a read-only inventory gathers branches, worktrees, stashes, noise and history in one pass, with aggregated queries instead of a history dump, so a repository with thousands of commits and pull requests is audited as thoroughly as a small one.
+- **Safe where it matters** — a guard refuses force-pushes, deleting `main` on the remote, history rewrites and changing the default branch, and makes you confirm every command that changes anything. It refuses to read or print your `.env` files and keys.
+- **Built for big repositories** — a read-only inventory gathers branches, worktrees, stashes, noise and history in one pass, with aggregated queries instead of a history dump, and measures unmerged branches in depth, newest first, within a time budget, so a repository with thousands of commits and branches stays workable. Anything it had to skip is reported, never hidden.
 
 ## 🧩 What's inside
 
@@ -47,7 +47,7 @@ Old branches, forgotten stashes, worktrees whose folders are gone and pull reque
 
 | Requirement | Details |
 | :-- | :-- |
-| **Claude Code** | v2.1.293 or later — check with `claude --version` |
+| **Claude Code** | v2.1.295 or later — check with `claude --version` |
 | **Surfaces** | Claude Code only. See [Compatibility](#-compatibility) |
 | **External tools** | `git` 2.38 or later (older versions work, without the merge preview) and `python3` 3.9 or later on `PATH`, for the guard and the inventory. `gh` signed in, optional, to read pull requests, repository visibility and branch protections; without it those items are reported as blocked. On Windows, Git for Windows |
 | **Network** | Read-only queries of your remote (`git ls-remote`, `gh`). A `git fetch`, a push or a remote branch deletion happens only if you approve it |
@@ -107,8 +107,10 @@ Approve the whole plan, or tell Claude which IDs to run. Nothing else happens.
 ### Clean up another repository
 
 ```text
-/git-hygiene:cleanup ~/code/other-repo
+/git-hygiene:cleanup /Users/ada/code/other-repo
 ```
+
+Use an absolute path.
 
 ### Only audit
 
@@ -120,7 +122,7 @@ Answer the plan with "audit only" (or approve nothing). You keep the findings an
 /git-hygiene:cleanup find out who introduced the failing date parsing
 ```
 
-When you bring a concrete problem, Claude also uses `git grep`, `git blame` and, with your approval, `git bisect` in an isolated checkout.
+When the text is not a folder, Claude works on the current repository and treats it as a problem to investigate: it also uses `git grep`, `git blame` and, with your approval, `git bisect` in an isolated checkout.
 
 ## 🔄 Updating
 
@@ -147,11 +149,11 @@ In a session: `/plugin` → **Installed** → **Git Hygiene** → **Uninstall**.
 
 | Component | Claude Code | Claude app |
 | :-- | :--: | :--: |
-| 🎯 Skills | ✅ | ✅ |
+| 🎯 Skills | ✅ | ⚠️ loads, but the guard hook that protects your repository doesn't run in a chat conversation, so the plugin isn't offered there |
 
 <sub>✅ works · ⚠️ partial · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. The Claude app (web, desktop and mobile) runs a conversation as a Cowork session when it can, and as a chat conversation otherwise, for example on a device that can't run Cowork or in the separate Chat mode that Team and Enterprise plans keep for now.</sub>
 
-The plugin is meant for Claude Code: the guard that protects your repository is a hook inside the skill, which chat conversations in the Claude app don't run, and the cleanup needs your repository on your computer.
+The guard is a hook declared inside the skill. Chat conversations in the Claude app don't run hooks, and the cleanup needs your repository on your computer, so use Claude Code.
 
 ## ❓ FAQ & Troubleshooting
 
@@ -165,7 +167,7 @@ Run `/reload-plugins`, then type `/git-hygiene:` to list its skills. If it still
 <details>
 <summary><b>Claude Code asks me to confirm almost every command during the cleanup.</b></summary>
 
-That is the guard. Every command that changes the repository, its remotes, its pull requests or files asks you first, with the reason. Approve a prompt only when it matches the action ID you approved in the plan. Approving the plan is not approving a prompt, and approving a prompt is not approving the plan: you get two checks on every change.
+That is the guard. Every `git` or `gh` command that changes the repository, its remotes or its pull requests, every file deletion or move, and every command that prints file contents asks you first, with the reason. Approve a prompt only when it matches the action ID you approved in the plan. Approving the plan is not approving a prompt, and approving a prompt is not approving the plan: you get two checks on every change.
 
 </details>
 
@@ -179,14 +181,14 @@ No. The skill runs only when you type `/git-hygiene:cleanup`, and Claude cannot 
 <details>
 <summary><b>What does Claude refuse to do, even if I approve?</b></summary>
 
-Force-push, delete `main` on the remote, rewrite published history (`filter-branch`, `filter-repo`), change the remote's default branch, and print remote URLs or tokens that may contain credentials. If you need one of those, do it yourself outside the cleanup.
+Force-push, delete `main` on the remote, rewrite published history (`filter-branch`, `filter-repo`), change the remote's default branch, run `git clean -x`, and print remote URLs or tokens that may contain credentials. If you need one of those, do it yourself outside the cleanup. The guard is a safety net against honest mistakes, not a sandbox, and a settings-file mod that approves tool calls can override a plugin hook's refusal.
 
 </details>
 
 <details>
 <summary><b>Does it read my <code>.env</code> files?</b></summary>
 
-No. Files that look like secrets (`.env`, keys, certificates, token and credential files) are listed by name only. The guard refuses commands and file reads that target them, and the cleanup never deletes or copies them.
+No. Files that look like secrets (`.env`, keys, certificates, token and credential files) are listed by name only. The guard refuses commands and file reads that name them, and the cleanup never deletes or copies them. Commits can still contain secrets, so Claude audits with `--stat` and name listings, and any command that would print file contents asks for your confirmation first.
 
 </details>
 
@@ -205,9 +207,16 @@ No. Use the default permission mode, so every change reaches you as a prompt. Th
 </details>
 
 <details>
+<summary><b>Every command is blocked with a "hook error" and <code>python3</code> not found.</b></summary>
+
+The guard needs `python3` 3.9 or later on `PATH`. If it cannot run, Claude Code blocks the action instead of letting it through, so the cleanup stops safely. Install Python 3 (or fix `PATH`) and start the cleanup again.
+
+</details>
+
+<details>
 <summary><b>Can I run it with <code>claude -p</code>?</b></summary>
 
-The audit and the plan, yes. Commands that change anything need your confirmation, and a headless run has nobody to give it, so Claude Code refuses them. Run the execution phase in an interactive session.
+Only the read-only audit is meant for it. The plan needs your approval and every command that changes anything needs your confirmation, and a headless run has nobody to give either, so Claude Code refuses them. Run the cleanup in an interactive session.
 
 </details>
 

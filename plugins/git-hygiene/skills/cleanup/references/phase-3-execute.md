@@ -2,15 +2,19 @@
 
 The user approved either the whole plan or specific action IDs. Run only those. Each command that changes state will also raise a confirmation prompt from the guard; that is expected. Name the action ID before each command, and approve nothing that does not match it.
 
-## 1. Revalidate
+## 1. Save the approved plan
+
+Create the backup folder the user chose (`mkdir -p`, nothing else yet), then write the plan exactly as approved, with its action IDs and the approved IDs, to `<backup dir>/plan.md` (outside the repository) before running anything. Context can be compacted mid-run: after a compaction, re-read this file and `SKILL.md` before the next action. Only the IDs listed there may run.
+
+## 2. Revalidate
 
 Re-run the inventory (with `--ls-remote` if the plan touches remotes) and compare with the plan's evidence: branch SHAs, worktrees, stashes, open pull requests, working tree. If anything affecting an approved action changed materially (a branch moved, a stash appeared, a pull request opened), stop, report the difference and re-plan only the affected actions with the user.
 
-## 2. Backup first
+## 3. Backup first
 
-Run the backup action, then its verification: `git bundle verify`, compare the bundle's `git bundle list-heads` with the refs it should contain, restore it into a throwaway repository and compare the ref lists, record the checksum (`shasum -a 256` or `sha256sum`). Show the user the backup path, size and checksum. Do not run any deletion or prune until the backup verifies. If it does not, fix it or stop.
+Run the backup action (A-01), then its verification: `git bundle verify`, compare the bundle's `git bundle list-heads` with the refs it should contain, restore it into a throwaway repository and compare the ref lists, record the checksum (`shasum -a 256` or `sha256sum`). Show the user the backup path, size and checksum. Do not run any deletion or prune until the backup verifies. If it does not, fix it or stop.
 
-## 3. Execute in order
+## 4. Execute in order
 
 Order: preparation → integration → local deletion → remote-impacting actions → files. For each approved action:
 
@@ -19,25 +23,27 @@ Order: preparation → integration → local deletion → remote-impacting actio
 3. Verify the result with a read-only command (the ref is gone, the merge commit exists, the worktree list changed).
 4. If a result is unexpected, or any step fails, do not run dependent destructive actions.
 
-Branch deletion: use `git branch -d` for branches Git considers merged; use `-D` only when the plan recorded why the work is preserved elsewhere (integrated by another strategy, or in the backup) and the user approved that ID. Delete a worktree's branch only after the worktree is removed.
+Before every deletion, local or remote, run the containment check the plan recorded: `git merge-base --is-ancestor <audited tip SHA> origin/main` must succeed (after the integrations were pushed), or the recorded reason for preserving the work elsewhere must still hold and have been approved. For a remote branch, also re-read its SHA (`git ls-remote --heads <remote> <branch>`) and delete only if it equals the audited SHA: someone may have pushed since. If a check fails, skip that deletion, report it, and continue only with actions that do not depend on it.
 
-## 4. Conflicts and failures
+Branch deletion: use `git branch -d` for branches Git considers merged; use `-D` only when the plan recorded why the work is preserved elsewhere (integrated by another strategy, pushed to `origin/main`, or in the backup) and the user approved that ID. Delete a worktree's branch only after the worktree is removed. Make sure the checked-out branch is `main` (or the base) when you finish, so a branch is never deleted while it is checked out.
 
-Stop at the first conflict. Inspect the active operation (`git status`, `.git/MERGE_HEAD`, `rebase-merge/`), tell the user what conflicts, and use the recovery the plan approved: `git merge --abort`, `git cherry-pick --abort`, `git rebase --abort`. Never discard changes (`reset --hard`, `checkout --`, `clean`) merely to force completion, and never resolve a conflict by guessing: show it to the user.
+## 5. Conflicts and failures
 
-## 5. Final verification
+Stop at the first conflict. Inspect the active operation (`git status`, and the files `git rev-parse --git-path MERGE_HEAD`, `CHERRY_PICK_HEAD`, `rebase-merge`; `.git` is a file in a linked worktree), tell the user what conflicts, and use the recovery the plan approved: `git merge --abort`, `git cherry-pick --abort`, `git rebase --abort`. Never discard changes (`reset --hard`, `checkout --`, `clean`) merely to force completion, and never resolve a conflict by guessing: show it to the user.
+
+## 6. Final verification
 
 Prove the end state with fresh read-only output, not memory:
 
 - `git branch -a -vv`, `git for-each-ref refs/heads refs/remotes`, and `git ls-remote --heads <remote>` for the actual remote branches.
 - `git worktree list`, `git stash list`, `git status --short --branch --ignored`.
-- Open pull requests (`gh pr list --state open`) and that no approved integration lost work: every exclusive commit is reachable from the base or from the backup bundle.
+- Open pull requests (`gh pr list --state open`) and that no approved integration lost work: every exclusive commit is reachable from `origin/main` (published) or from the backup bundle, and `main` equals `origin/main`.
 - The aim is only `main` and `origin/main`, no extra worktrees, stashes or leftovers. Anything kept because deleting it could lose data, break a protection, affect unapproved remote work, or was never verified stays, with the reason.
 
-## 6. The backup and temporary artifacts
+## 7. The backup and temporary artifacts
 
-Remove the temporary `refs/git-hygiene-backup/*` refs once the backup is verified and no longer needed. The backup folder itself is the user's recovery copy: never delete it on your own. Once everything is verified, tell the user where it is and ask whether to keep it or remove it. Remove it only after an explicit yes, and verify it is gone. Never delete the only recoverable copy of valuable data.
+The temporary `refs/git-hygiene-backup/*` refs were removed by A-01; verify none remain (`git for-each-ref refs/git-hygiene-backup`). The backup folder itself is the user's recovery copy: never delete it on your own. Once everything is verified, tell the user where it is and ask whether to keep it or remove it. Remove it only after an explicit yes, and verify it is gone. Never delete the only recoverable copy of valuable data.
 
-## 7. Report
+## 8. Report
 
 Report what was integrated, removed, preserved and blocked, what was verified and how (with the commands), the retained backup with its location and why, and any limitation.

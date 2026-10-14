@@ -12,6 +12,7 @@ from pathlib import Path
 import shutil
 import subprocess
 import tempfile
+import time
 from typing import TYPE_CHECKING
 import unittest
 
@@ -107,6 +108,7 @@ class Fixture:
         (self.work / "scratch").mkdir()
         (self.work / "scratch" / "notes.tmp").write_text("x", encoding="utf-8")
         self.git("remote", "add", "creds", f"https://ada:{SECRET}@example.com/o/r.git")
+        self.git("remote", "add", "creds2", f"https://ada:p@ss-{SECRET}@example.com:8443/o/r.git")
 
 
 def run_inventory(repo: Path, *extra: str) -> tuple[int, JsonObject, str]:
@@ -149,6 +151,8 @@ class InventoryTests(unittest.TestCase):
                 cls.fixture.git("stash", "list"),
                 cls.fixture.git("worktree", "list", "--porcelain"),
                 cls.fixture.git("config", "--local", "--list"),
+                cls.fixture.git("count-objects", "-v"),
+                cls.fixture.git("fsck", "--unreachable", "--no-reflogs", "--no-progress"),
             ]
         )
 
@@ -240,17 +244,96 @@ class InventoryTests(unittest.TestCase):
         assert len(items(_decode(done.stdout))) == 1
 
     def test_ls_remote_compares_with_the_real_remote(self) -> None:
+        self.fixture.git("remote", "remove", "creds")
+        self.fixture.git("remote", "remove", "creds2")
         self.fixture.git("branch", "-D", "-r", "origin/feat/unmerged")
         code, data, _ = run_inventory(self.fixture.work, "--ls-remote")
         assert code == 0
         live = obj(obj(data["remote_live"])["origin"])
         assert "feat/unmerged" in str(live["not_fetched_yet"])
 
+    def test_password_with_an_at_sign_is_fully_redacted(self) -> None:
+        assert "ss-" not in self.raw
+        remotes = obj(obj(self.data["context"])["remotes"])
+        creds2 = obj(obj(remotes["creds2"])["url"])
+        assert creds2["host"] == "example.com"
+        assert creds2["path"] == "o/r"
+
+    def test_section_filters_page_the_branches(self) -> None:
+        done = subprocess.run(
+            [
+                str(INVENTORY),
+                "--repo",
+                str(self.fixture.work),
+                "--section",
+                "branches",
+                "--signal",
+                "has-exclusive-commits",
+                "--limit",
+                "1",
+            ],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        section = obj(_decode(done.stdout))
+        assert len(items(section["branches"])) == 1
+        assert int(str(section["matching_branches"])) >= 2
+
+    def test_subdirectory_repo_argument_resolves_the_real_git_dir(self) -> None:
+        sub = self.fixture.work / "docs"
+        sub.mkdir(exist_ok=True)
+        _, data, _ = run_inventory(sub)
+        context = obj(data["context"])
+        assert context["linked_worktree"] is False
+        assert context["common_git_dir"] == str((self.fixture.work / ".git").resolve())
+
     def test_not_a_repository_reports_inside_the_json(self) -> None:
         with tempfile.TemporaryDirectory() as empty:
             code, data, _ = run_inventory(Path(empty))
         assert code == 0
         assert "not a Git repository" in str(data["error"])
+
+
+class ScaleAndRenameTests(unittest.TestCase):
+    """Renames are read correctly and many branches do not make the audit unusable."""
+
+    def test_staged_rename_is_one_staged_path_and_no_unstaged_change(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            fixture = Fixture(Path(tmp))
+            fixture.build()
+            fixture.git("stash", "clear")
+            fixture.git("checkout", "-q", "--", ".")
+            fixture.git("mv", "README.md", "renamed_file.md")
+            _, data, _ = run_inventory(fixture.work)
+        tree = obj(data["working_tree"])
+        assert obj(tree["staged"])["sample"] == ["renamed_file.md"]
+        assert obj(tree["unstaged"])["count"] == 0
+
+    def test_many_merged_branches_are_cheap_and_deep_detail_is_bounded(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            fixture = Fixture(Path(tmp))
+            fixture.build()
+            head = fixture.git("rev-parse", "main").strip()
+            lines = "".join(f"create refs/heads/old/{i} {head}\n" for i in range(1500))
+            subprocess.run(
+                [shutil.which("git") or "git", "update-ref", "--stdin"],
+                cwd=fixture.work,
+                env=fixture.env,
+                input=lines,
+                text=True,
+                check=True,
+            )
+            started = time.monotonic()
+            _, data, _ = run_inventory(fixture.work, "--detail-limit", "1")
+            elapsed = time.monotonic() - started
+            _, none, _ = run_inventory(fixture.work, "--time-budget", "0")
+        branches = obj(data["branches"])
+        assert len(items(branches["branches"])) >= 1500
+        assert elapsed < 60
+        assert int(str(branches["deep_detail_skipped"])) >= 1
+        assert branches["detail_truncated"] is True
+        assert obj(none["branches"])["detail_truncated"] is True
 
 
 if __name__ == "__main__":
