@@ -90,4 +90,5 @@
 | `session-handoff` — end-of-session handoff file + start-of-session reader | Nery, 2026-10-12 | released 0.1.0 |
 | `plugin-test-bench` — copied-install test of a plugin + eval-case review | Nery, 2026-10-12 | released 0.1.0 |
 | `live-docs-research` — research from live official sources + changelog checks | Nery, earlier sessions | idea |
+| `plugin-evals` — expert in `claude plugin eval` suites, CI and results | Nery, 2026-10-14 | built 0.1.0, draft PR |
 | Biome LSP (`biome lsp-proxy`) for `.json`, `.jsonc`, `.css`, `.graphql` only: lint/parse diagnostics after each edit; never TS/JS (one server per extension, and Biome lacks references, hover and symbols, so it would displace `typescript7-lsp-intelligence`) | Nery, 2026-10-12 | idea |
