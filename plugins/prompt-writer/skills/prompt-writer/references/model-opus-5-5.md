@@ -1,6 +1,6 @@
 # Claude Opus 5.5
 
-Opus 5 prompts work on Opus 5.5 without changes, and the Opus 5 patterns (explicit concision instructions, no extra verification or double-check instructions, damping subagent use, limiting correction narration) remain a reasonable starting point (their detail is in `model-opus-5.md`, which you also read for Opus 5.5). Apply them by default, and note once in the design notes that they were documented for Opus 5. Apply the items below that match the use case.
+Opus 5 prompts work on Opus 5.5 without changes, and the Opus 5 patterns (explicit concision instructions, no extra verification or double-check instructions, damping subagent use, limiting correction narration) remain a reasonable starting point (their detail is in `model-opus-5.md`). Apply them by default, and note once in the design notes that they were documented for Opus 5. Apply the items below that match the use case.
 
 ## Contents
 
