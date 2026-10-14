@@ -6,6 +6,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-10-14
+
+### Fixed
+
+- `inventory.py` now redacts credentials in every string of a saved or loaded inventory, not only in the strings it gathers itself.
+- Branch names, paths and commit subjects that contain a token prefix inside a word, such as `task-…` or `risk-…`, are no longer cut off as `[REDACTED]`; real tokens that start with `sk-`, `ghp_`, `AKIA` or `eyJ` are still redacted.
+
 ## [0.1.0] - 2026-10-14
 
 ### Added
@@ -14,5 +21,6 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - `inventory.py`, a read-only script that gathers the audit facts in one pass, redacts credentials and previews merges with `git merge-tree`.
 - A `PreToolUse` guard, active from the moment the cleanup starts: refuses force-pushes, deleting `main` on the remote, the history-rewriting tools `filter-branch`, `filter-repo` and `bfg`, `git clean -x`, default-branch changes and anything that prints credentials or reads secret files, and asks before every command that changes state or prints file contents. It blocks the action if the guard itself cannot run.
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/git-hygiene--v0.1.0...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/git-hygiene--v0.1.1...HEAD
+[0.1.1]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/git-hygiene--v0.1.1
 [0.1.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/git-hygiene--v0.1.0

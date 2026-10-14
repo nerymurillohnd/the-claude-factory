@@ -45,9 +45,9 @@ CHERRY_MAX_BEHIND = 5000
 CREDENTIAL_URL = re.compile(r"(?<=//)[^/\s]*@")
 TOKEN_QUERY = re.compile(r"([?&](?:token|access_token|key|password|secret)=)[^&\s]+", re.IGNORECASE)
 SECRET_VALUE = re.compile(
-    r"(ghp_|gho_|ghs_|github_pat_|glpat-|xox[baprs]-|sk-|AKIA)[A-Za-z0-9_\-]{12,}"
+    r"(?<![A-Za-z0-9])(ghp_|gho_|ghs_|github_pat_|glpat-|xox[baprs]-|sk-|AKIA)[A-Za-z0-9_\-]{12,}"
     r"|-----BEGIN [A-Z ]*PRIVATE KEY-----"
-    r"|eyJ[A-Za-z0-9_\-]{10,}\.[A-Za-z0-9_\-]{10,}\.[A-Za-z0-9_\-]{10,}"
+    r"|(?<![A-Za-z0-9])eyJ[A-Za-z0-9_\-]{10,}\.[A-Za-z0-9_\-]{10,}\.[A-Za-z0-9_\-]{10,}"
     r"|(?i:bearer\s+)[A-Za-z0-9._~+/\-]{12,}"
     r"|(?i:(?:password|passwd|secret|token|api[_-]?key)\s*[:=]\s*)\S+",
 )
@@ -88,6 +88,22 @@ def redact(text: str) -> str:
     text = CREDENTIAL_URL.sub("***@", text)
     text = TOKEN_QUERY.sub(r"\1***", text)
     return SECRET_VALUE.sub("[REDACTED]", text)
+
+
+def redact_value(value: object) -> object:
+    """Redact every string nested in inventory data."""
+    if isinstance(value, str):
+        return redact(value)
+    if isinstance(value, dict):
+        return redact_json(value)
+    if isinstance(value, list):
+        return [redact_value(item) for item in value]
+    return value
+
+
+def redact_json(data: Json) -> Json:
+    """Redact strings throughout inventory data, including data loaded from a file."""
+    return {key: redact_value(value) for key, value in data.items()}
 
 
 def is_secret_name(path: str) -> bool:
@@ -735,6 +751,7 @@ def main() -> int:
             data = build(repo, args)
         finally:
             repo.close()
+    data = redact_json(data)
     if args.out and not args.source:
         try:
             Path(args.out).write_text(json.dumps(data, indent=1), encoding="utf-8")

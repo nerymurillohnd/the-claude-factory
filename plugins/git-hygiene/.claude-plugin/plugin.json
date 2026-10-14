@@ -1,7 +1,7 @@
 {
   "name": "git-hygiene",
   "displayName": "Git Hygiene",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Audits a Git repository end to end, plans the cleanup with you, and executes only what you approve, keeping every piece of valuable work safe.",
   "author": {
     "name": "Nery Murillo",
