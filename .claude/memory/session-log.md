@@ -2,6 +2,15 @@
 
 Newest first. One entry per session: what changed, commits, what's next.
 
+## 2026-10-14 — drift fixes applied and plugin-evals 0.1.1
+
+- `/release` check: every plugin's `plugin.json` version was already tagged, with no changes since; memory corrected (prompt-writer 0.2.0 released in PR #12, stale remote branches gone) in `6d37893`.
+- Drift items 1–4 pushed to `main` in `b034d5e`: Claude Code 2.1.300 (its changelog was published after the check; nothing in it touches our plugins), mypy 1.20.2, uv 0.13.1, `claude-code-action` v1.0.250 by SHA, and both maintainer agents list the docs MCP by server pattern under both names. Full `/verify` green, actionlint clean, Validate on `main` green.
+- `plugin-evals` 0.1.1 (PR #14, squash `95388e5`): references no longer claim the docs grade API-error runs; results row aligned with the page; snapshot re-checked on 2.1.300. 13 checks passed, eval job skipped (no `evals/`), Claude review "No issues found"; `release.yml` tagged `plugin-evals--v0.1.1`.
+- `sync-labels.mjs` had not run since git-hygiene and plugin-evals were added: synced, 30 labels.
+- Nery installed git-hygiene, plugin-evals and prompt-writer from the marketplace on the Mac; the synced copies now report "not loaded", as documented.
+- Next: Nery adds the marketplace in the Claude app and removes the uploaded zips; the skill-diagnostics `Stop` gate (0.1.3); Claude app tests of git-hygiene and plugin-evals.
+
 ## 2026-10-14 — docs drift check
 
 - `/docs-drift-check` against Claude Code 2.1.299 (changelog; npm 2.1.300 not yet documented), plugin docs, platform-support, the Cowork plugins guide, support 13837440, the Claude app release notes and the Claude Desktop changelog (v2.37337.1, 2026-10-13), and the latest tool and action releases.
