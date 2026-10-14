@@ -40,6 +40,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - When live documentation contradicts the built-in guidance, Claude follows the documentation and explains the difference in the design notes instead of asking you.
 - Prompts for unattended runs say which visible actions, such as pushing or sending, the run may take on its own.
 - Audits list the problems found before the fixed prompt, and Claude may ask where you will use the prompt.
+- A question about the reply language counts within the three or four questions of a round instead of adding to them.
 - Writing a prompt that builds an evaluation suite is in scope; the skill does not build test suites for its own prompts.
 - Reference files are linked with paths relative to the skill, as the skill format documents, wherever the skill asks Claude to read one.
 - The source list adds the official Agent Skills pages (Claude Platform and agentskills.io) for checking skills you ask for, and drops a model page outside the built-in guidance.

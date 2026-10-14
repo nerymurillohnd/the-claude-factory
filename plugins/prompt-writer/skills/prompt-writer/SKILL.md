@@ -168,7 +168,7 @@ Field rules:
 
 - `target_model`: from the list in "References."
 - `effort`: the level chosen at step 4. On `claude-app` or `claude-code`, verify that the surface exposes the setting (see "Gotchas"). Use `not-applicable` only when the model, or the surface once verified, has no effort setting; if you cannot verify, write the recommended level and list it under assumptions.
-- `output_language`: the language of the people or inputs the target model will serve; ask only when that is unclear and it matters. Since the frontmatter is not pasted, the body states the language when it matters. Write the prompt body itself in English unless the user asks otherwise.
+- `output_language`: the language of the people or inputs the target model will serve; ask only when that is unclear and it matters, as one of the questions of the clarify round. Since the frontmatter is not pasted, the body states the language when it matters. Write the prompt body itself in English unless the user asks otherwise.
 - `required_capabilities`: only what the prompt needs; `none` when it needs nothing.
 - `stage`: only for a fixed automated chain.
 - `version`: `1.0.0` for a new prompt and for a draft without one. When revising, raise the last number for a wording-only change, the middle one for a change of content, and the first one for a migration to another target model.
