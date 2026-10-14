@@ -8,43 +8,37 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ### Added
 
+- Claude Fable 5 is a covered model, next to Fable 5.1, Opus 5.5, Opus 5 and Sonnet 5.5.
+- Every prompt comes with a session mode: interactive or unattended, and plan mode or direct execution in Claude Code, with the reason and how to start it. The prompt is written for that mode, and the header records it in `session_mode` and `claude_code_mode`.
+- Each time, Claude reads the target model's current Anthropic page, what's new or its overview, and follows it where it differs from the built-in guidance, telling you the difference in the design notes.
 - Writes the complete text of a system prompt, skill, slash command, agent or `CLAUDE.md` in that file's own format. When it is unclear whether you want that file or a prompt so Claude creates it, Claude asks first.
 - Placeholders follow what fills them: Claude Code skill and command arguments, an application's template fields, or fields you fill by hand, named in the reply.
-- The design notes name anything Claude added beyond your request.
-- Claude works out what you want and why from what it knows of you (this conversation, your memory, past conversations it can see, your projects), and asks only about intent, in plain words, never about technical choices.
-- For complex or step-by-step work you get the first prompt and an invitation to come back with its output, so Claude can recommend the follow-up.
-- Skills that would help the task are named inside the prompt and in the advice that comes with it.
-- Follow-ups: bring back what a prompt produced and Claude checks it against your goal, tells you what worked and what did not, then revises the prompt or writes the next one; every delivery ends with an invitation to come back if the result misses.
-- Built-in lessons from real prompt-writing sessions, read before clarifying a request.
-- For a model outside the built-in guidance, Claude recommends the closest covered one, or writes with the general principles and marks it `other`.
+- Success criteria you can check: the prompt states measurable criteria from what you said a good result is, and the reply tells you how to check it.
+- Safeguards only where your case needs them: against invented facts, format drift, hostile input or untrusted content, prompt leaks and slow answers.
+- When the next step depends on a result nobody has seen yet, you get the first prompt plus drafts of the next ones, each marked as a draft and saying what output it waits for. Bring the output back and Claude checks it against your goal, then revises the prompt or finishes the next draft.
+- A fixed automated sequence comes as all its stages at once, each with its input, output and stage number.
+- Audits list the problems found before the fixed prompt, and the design notes say how each was fixed and name anything added beyond your request.
 
 ### Changed
 
-- The skill now starts only when you run `/prompt-writer:prompt-writer`: asking for a prompt in plain words no longer starts it, so begin your request with the command.
-- Model guidance: Opus 5.5 is the default recommendation with Fable 5.1 for the most demanding work, Opus 5 is marked legacy, and the Mythos 5.1 model ID is listed.
+- The skill starts only when you run `/prompt-writer:prompt-writer`: asking for a prompt in plain words no longer starts it, so begin your request with the command.
+- Model choice: Opus 5.5 is the default recommendation, Fable 5.1 for the hardest or longest work, Sonnet 5.5 when speed matters most; Fable 5 and Opus 5 when you are tied to them or migrating a prompt tuned for them.
+- The built-in guidance is each covered model's official prompting page and Anthropic's prompting best practices, rewritten as instructions for Claude and dated 2026-10-14.
+
+### Removed
+
+- Mythos 5.1 is no longer listed with Fable 5.1's guidance.
 
 ### Fixed
 
 - The skill states up front that it writes a prompt for you to run in another session; a request phrased as an order is the goal of that prompt, not an instruction to carry out.
-- Claude reads the built-in guidance before it recommends a model, effort or approach.
-- A skill, slash command or agent file keeps its own frontmatter instead of being wrapped in the prompt header.
-- The effort field, the language the target model answers in, nested code fences and the file names of chained prompts now follow clear rules.
-- Opus 5.5 prompts apply the Opus 5 patterns by default, and the guidance on verifier roles no longer contradicts itself.
-- Sampling parameters: non-default `temperature`, `top_p` and `top_k` are documented as rejected on all four covered models.
-- Asking Claude to write a prompt and run it gets only the prompt, with a note to run it in a new session; Claude does not carry out its task in the same session.
-- A prompt for a model outside the built-in guidance keeps the safety, agentic and format guidance its case needs.
-- Clear rules for when you get one prompt, a first prompt of several, or a fixed chain of stages.
+- Asking Claude to write a prompt and run it gets only the prompt, with a note to run it in a new session.
+- A skill, slash command or agent file keeps its own frontmatter instead of being wrapped in the prompt header, and a system prompt comes without the header.
 - You paste only the prompt body; the header stays as your record, and the body states the reply language when it matters.
-- A system prompt is delivered as plain text, without the prompt header.
+- Settings that return an error on the covered models, such as a prefilled reply, non-default `temperature`, `top_p` or `top_k`, and manual thinking budgets, are left out of the recommended setup.
 - When live documentation contradicts the built-in guidance, Claude follows the documentation and explains the difference in the design notes instead of asking you.
-- Prompts for unattended runs say which visible actions, such as pushing or sending, the run may take on its own.
-- Audits list the problems found before the fixed prompt, and Claude may ask where you will use the prompt.
-- The design notes give the URL of every live page Claude checked. When a long official page cannot be read, Claude moves to a shorter one instead of fetching it again, and says what stayed unverified.
+- The reply gives the URL of every official page Claude read. When a long page cannot be read, Claude moves to a shorter one instead of fetching it again, and says what stayed unverified.
 - A question about the reply language counts within the three or four questions of a round instead of adding to them.
-- Writing a prompt that builds an evaluation suite is in scope; the skill does not build test suites for its own prompts.
-- The built-in guidance speaks of the four covered models by one name instead of "current models", so it stays accurate when Anthropic releases a new model.
-- Reference files are linked only from the skill's main file, by their path from the skill folder, as the skill format documents, so Claude reads each one in full.
-- The source list adds the official Agent Skills pages (Claude Platform and agentskills.io) for checking skills you ask for, and drops a model page outside the built-in guidance.
 
 ## [0.1.1] - 2026-10-13
 

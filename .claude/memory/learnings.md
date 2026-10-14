@@ -69,6 +69,7 @@ Rules learned the hard way. Follow them; add one line per new lesson.
 - Comprehensibility reviewers over-report: 23 of 34 findings on prompt-writer were false or already settled by a stated precedence rule, a design decision or a fallback. Re-read the whole scaffold and verify every finding before mapping fixes.
 - The `Plan` agent type has Bash: a reviewer told "no shell" still ran `find`. For a strictly read-only reviewer use an agent whose tools are only Read, Glob and Grep.
 - `git commit -F msg -- <paths>` commits only those paths; a plain `git commit` after `git add <path>` also sweeps whatever another session left staged in the same checkout (on 2026-10-13 that put an uncommitted plugin draft on `main`, reverted in `606988a`). Run `git status --short` before every commit.
+- `sed -n '/^## X/,/^## /p'` stops at the first `##` heading line, including one inside a fenced Markdown example: on 2026-10-14 it cut three best-practices sections to 358–1,068 characters. Check a section extraction's size and last line before trusting it.
 
 ## GitHub
 

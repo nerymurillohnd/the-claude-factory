@@ -29,10 +29,10 @@
 Most weak prompts come from a vague goal, not from missing tags or headings. Prompt Writer starts from the outcome you want and works backwards.
 
 - **Say it loosely** — you describe the goal in plain language. Claude decides the structure, length and techniques, and asks you about the situation, the audience and what "good" looks like, never about XML tags or effort levels.
-- **Written for the model that will run it** — guidance for Claude Fable 5.1, Opus 5.5, Opus 5 and Sonnet 5.5 is built in, so a prompt for one model does not carry habits that backfire on another.
+- **Written for the model that will run it** — guidance for Claude Fable 5.1, Fable 5, Opus 5.5, Opus 5 and Sonnet 5.5 is built in, so a prompt for one model does not carry habits that backfire on another.
 - **No outdated facts inside your prompt** — when your prompt depends on products, APIs, prices or rules that change, Claude checks them against current official sources before writing.
 - **One answer, ready to paste** — you get a single final prompt with a short header for your records, not a menu of variants; you paste the prompt below the header. When the next step depends on a result you have to bring back, you get the first prompt and what to bring back.
-- **Setup advice included** — each prompt comes with the recommended model, effort and session mode, each with a one-line reason, and names the skills it relies on.
+- **Setup advice included** — each prompt comes with the recommended model, effort and session mode, plan mode or direct execution in Claude Code, each with a one-line reason.
 - **Works on prompts you already have** — refine a draft, audit and fix an existing prompt or system prompt, or migrate a prompt to another target model.
 
 ## 🧩 What's inside
@@ -110,7 +110,7 @@ Start every request with `/prompt-writer:prompt-writer`; Claude doesn't start th
 /prompt-writer:prompt-writer Write the SKILL.md for a Claude Code skill that takes a GitHub issue number and plans the fix
 ```
 
-**Result:** you get the complete file in the skill's own format, with its own frontmatter and arguments in Claude Code's syntax, written against the current Claude Code documentation. If your request could also mean a prompt that has Claude build the skill, Claude asks which one you want first.
+**Result:** you get the complete file in the skill's own format, with its own frontmatter and arguments in Claude Code's syntax. If your request could also mean a prompt that has Claude build the skill, Claude asks which one you want first.
 
 ### Example: improve a draft you already have
 
@@ -134,7 +134,7 @@ Start every request with `/prompt-writer:prompt-writer`; Claude doesn't start th
 /prompt-writer:prompt-writer Write a prompt for a weekly changelog summary and save it to prompts/changelog-summary.md
 ```
 
-**Result:** the file holds a short metadata header (title, objective, prompt type, target model, surface, effort, output language, required capabilities, version) and the clean prompt. Without a location, Claude asks before creating any file.
+**Result:** the file holds a short metadata header (title, objective, prompt type, target model, surface, effort, session mode, Claude Code mode, output language, required capabilities, version) and the clean prompt. Without a location, Claude asks before creating any file.
 
 > [!TIP]
 > Your conversation stays in your own language, and prompts are written in English unless you ask otherwise. The language the target model answers in is a separate choice, and Claude asks about it when it matters.
@@ -186,7 +186,7 @@ Run `/reload-plugins`, then type `/prompt-writer:` to list its skills. If it sti
 <details>
 <summary><b>Which models does it write for?</b></summary>
 
-Claude Fable 5.1 (Mythos 5.1 shares its guidance), Opus 5.5, Opus 5 and Sonnet 5.5. If you name another model, Claude recommends the closest one it covers; if you keep yours, it writes with the general principles only. If you name no model, Claude picks one and tells you why.
+Claude Fable 5.1, Fable 5, Opus 5.5, Opus 5 and Sonnet 5.5. If you name another model, Claude recommends the closest one it covers; if you keep yours, it writes with the general principles only. If you name no model, Claude picks one and tells you why.
 
 </details>
 
@@ -200,7 +200,7 @@ Bring the result back to the conversation. Claude checks it against your goal, t
 <details>
 <summary><b>What happens when the official documentation has changed?</b></summary>
 
-The built-in guidance is a snapshot of Anthropic's prompting documentation dated 2026-10-13. If current official documentation contradicts it on something your prompt depends on, Claude follows the live page and tells you in the design notes what the snapshot says, what the live page says and how it affects your prompt.
+The built-in guidance is a snapshot of Anthropic's prompting documentation dated 2026-10-14. Each time, Claude also reads the target model's current page on what changed. If current official documentation contradicts the snapshot on something your prompt depends on, Claude follows the live page and tells you in the design notes what the snapshot says, what the live page says and how it affects your prompt.
 
 </details>
 
