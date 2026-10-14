@@ -22,7 +22,7 @@ if TYPE_CHECKING:
     from collections.abc import Callable
 REPO = Path(__file__).resolve().parents[4]
 INVENTORY = REPO / "plugins" / "git-hygiene" / "skills" / "cleanup" / "scripts" / "inventory.py"
-SECRET = "s3cr3t-token-value"  # noqa: S105
+MARKER = "fixture-value-42"
 
 
 class JsonObject(dict[str, object]):
@@ -106,11 +106,11 @@ class Fixture:
         (self.work / "stashed-new.txt").write_text("new\n", encoding="utf-8")
         self.git("add", "stashed-new.txt")
         self.git("stash", "push", "-q", "-m", "half done")
-        (self.work / ".env").write_text(f"TOKEN={SECRET}\n", encoding="utf-8")
+        (self.work / ".env").write_text(f"TOKEN={MARKER}\n", encoding="utf-8")
         (self.work / "scratch").mkdir()
         (self.work / "scratch" / "notes.tmp").write_text("x", encoding="utf-8")
-        self.git("remote", "add", "creds", f"https://ada:{SECRET}@example.com/o/r.git")
-        self.git("remote", "add", "creds2", f"https://ada:p@ss-{SECRET}@example.com:8443/o/r.git")
+        self.git("remote", "add", "creds", f"https://ada:{MARKER}@example.com/o/r.git")
+        self.git("remote", "add", "creds2", f"https://ada:p@ss-{MARKER}@example.com:8443/o/r.git")
 
 
 def run_inventory(repo: Path, *extra: str) -> tuple[int, JsonObject, str]:
@@ -187,10 +187,23 @@ class InventoryTests(unittest.TestCase):
         assert context["operations_in_progress"] == []
 
     def test_credentials_never_appear(self) -> None:
-        assert SECRET not in self.raw
+        assert MARKER not in self.raw
         remotes = obj(obj(self.data["context"])["remotes"])
         assert "creds" in remotes
         assert "***@example.com" in self.raw
+
+    def test_saved_inventory_is_redacted(self) -> None:
+        source = self.fixture.base / "saved-inventory.json"
+        source.write_text(json.dumps({"note": f"TOKEN={MARKER}"}), encoding="utf-8")
+        done = subprocess.run(
+            [sys.executable, str(INVENTORY), "--from", str(source)],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        assert done.returncode == 0
+        assert MARKER not in done.stdout
+        assert "[REDACTED]" in done.stdout
 
     def test_merged_branch_is_flagged(self) -> None:
         assert "merged-into-base" in self.signals("feat/merged")
@@ -224,7 +237,7 @@ class InventoryTests(unittest.TestCase):
         tracked_noise = obj(obj(obj(files["noise"])["tracked"])["os-metadata"])
         assert tracked_noise["sample"] == [".DS_Store"]
         assert ".env" in str(obj(files["secret_like_file_names"])["sample"])
-        assert SECRET not in self.raw
+        assert MARKER not in self.raw
 
     def test_working_tree_lists_untracked(self) -> None:
         untracked = obj(obj(self.data["working_tree"])["untracked"])

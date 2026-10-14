@@ -90,6 +90,22 @@ def redact(text: str) -> str:
     return SECRET_VALUE.sub("[REDACTED]", text)
 
 
+def redact_value(value: object) -> object:
+    """Redact every string nested in inventory data."""
+    if isinstance(value, str):
+        return redact(value)
+    if isinstance(value, dict):
+        return redact_json(value)
+    if isinstance(value, list):
+        return [redact_value(item) for item in value]
+    return value
+
+
+def redact_json(data: Json) -> Json:
+    """Redact strings throughout inventory data, including data loaded from a file."""
+    return {key: redact_value(value) for key, value in data.items()}
+
+
 def is_secret_name(path: str) -> bool:
     """True when a path names a file that usually holds secrets (the name only is ever read)."""
     return bool(SECRET_NAME.search(path)) and not SECRET_EXAMPLE.search(path)
@@ -735,6 +751,7 @@ def main() -> int:
             data = build(repo, args)
         finally:
             repo.close()
+    data = redact_json(data)
     if args.out and not args.source:
         try:
             Path(args.out).write_text(json.dumps(data, indent=1), encoding="utf-8")
