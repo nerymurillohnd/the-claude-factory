@@ -32,6 +32,7 @@ Every page has a raw Markdown version at the same address ending in `.md`. Read 
 | Hooks and subagents, when cases exercise them | <https://code.claude.com/docs/en/hooks.md>, <https://code.claude.com/docs/en/sub-agents.md> |
 | MCP servers in plugins | <https://code.claude.com/docs/en/mcp.md> |
 | Errors | <https://code.claude.com/docs/en/errors.md> |
+| Success criteria and evaluations for Claude API apps | <https://platform.claude.com/docs/en/test-and-evaluate/develop-tests.md> |
 | Skill authoring best practices | <https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices.md> |
 | Evaluating skills, optimizing descriptions | <https://agentskills.io/skill-creation/evaluating-skills>, <https://agentskills.io/skill-creation/optimizing-descriptions> |
 | skill-creator plugin | <https://github.com/anthropics/claude-plugins-official/tree/main/plugins/skill-creator> |

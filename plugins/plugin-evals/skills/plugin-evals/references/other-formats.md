@@ -8,7 +8,7 @@ Read this when the user mentions skill-creator, `evals/evals.json`, trigger-quer
 | :-- | :-- | :-- |
 | Score a plugin, with or without the plugin, repeatably, and gate CI | `claude plugin eval` | `evals/<case>/prompt.md`, `graders/*.md`, optional `case.yaml` |
 | Iterate on one skill inside a conversation: blind A/B between versions, description tuning, an HTML review viewer | The skill-creator plugin from Anthropic's official marketplace | `evals/evals.json` inside the skill directory |
-| Evaluate an application built on the Claude API | Claude Code's bundled `/claude-api build-eval`, and `/claude-api hillclimb` to improve against it (both v2.1.259+) | Its own runner |
+| Evaluate an application built on the Claude API | Claude Code's bundled `/claude-api build-eval`, and `/claude-api hillclimb` to improve against it (both v2.1.259+), following Claude Platform's guide to success criteria and evaluations | Its own runner, with code-based graders (exact or string match, similarity, ROUGE) and LLM graders |
 
 `claude plugin eval` and skill-creator read neither each other's case files nor each other's results. skill-creator keeps `evals/evals.json` inside the skill directory, and `claude plugin eval` uses `evals/` under the plugin root, so they collide only when a skill's folder is the plugin root. Then move one aside. For the plugin suite, set `"experimental": { "evals": "<dir>" }` in `plugin.json` or pass `--eval-dir <dir>`.
 
