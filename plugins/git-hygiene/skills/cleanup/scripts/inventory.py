@@ -206,12 +206,14 @@ def context_of(repo: Repo, root: str) -> Json:
     return {
         "directory": str(Path(root).resolve()),
         "toplevel": repo.out("rev-parse", "--show-toplevel"),
-        "git_dir": git_dir,
+        "git_dir": str(Path(git_dir).resolve()) if git_dir else "",
         "common_git_dir": common_dir,
         "bare": repo.out("rev-parse", "--is-bare-repository") == "true",
         "shallow": repo.out("rev-parse", "--is-shallow-repository") == "true",
         "partial_clone": bool(repo.lines("config", "--get-regexp", r"^remote\..*\.promisor$")),
-        "linked_worktree": bool(git_dir and common_dir and git_dir != common_dir),
+        "linked_worktree": bool(
+            git_dir and common_dir and Path(git_dir).resolve() != Path(common_dir).resolve()
+        ),
         "head": {
             "branch": branch or None,
             "detached": not branch and bool(head),
