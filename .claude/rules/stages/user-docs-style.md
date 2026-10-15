@@ -34,16 +34,4 @@ READMEs sell: lead with the outcome and why to install, then teach. Never mentio
 
 ## Accuracy
 
-- Every command, flag, version and UI path is verified against current official docs before publishing.
 - Version-gated features state the minimum version (e.g. "v2.1.292+").
-- Install commands always use `<plugin>@the-claude-factory` and source `nerymurillohnd/the-claude-factory`.
-
-## Structure
-
-- Root README section order is defined in `.claude/templates/root-readme.md`.
-- Plugin README section order comes from `.claude/templates/plugin/README.md`; required sections are enforced by `check-repo.mjs`.
-- `docs/` pages end with prev/next navigation in `<sub>`.
-
-## Lint
-
-`npx --yes markdownlint-cli2@0.23.3` must pass. Heading anchors with emoji start with `-` (e.g. `#-catalog`).

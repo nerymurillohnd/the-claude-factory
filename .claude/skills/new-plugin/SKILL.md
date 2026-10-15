@@ -35,13 +35,13 @@ This creates `plugins/<name>/` (manifest, README, CHANGELOG, LICENSE), registers
 
 ## 3. Build components
 
-Follow `.claude/rules/plugin-authoring.md`. Add `keywords` to `plugin.json`. Keep `version` at `0.1.0` for the first release.
+Follow `.claude/rules/stages/plugin-authoring.md`. Add `keywords` to `plugin.json`. Keep `version` at `0.1.0` for the first release.
 
 ## 4. Write the README
 
 - Resolve every `{{…}}` and `<!-- TODO -->` in `plugins/<name>/README.md`; delete rows/sections that don't apply (keep all required sections).
 - Compatibility table: keep exactly one row per component type the plugin ships.
-- Follow `.claude/rules/user-docs-style.md`: outcome-first TL;DR, real usage examples, accurate Compatibility table.
+- Follow `.claude/rules/stages/user-docs-style.md`: outcome-first TL;DR, real usage examples, accurate Compatibility table.
 - Fill `CHANGELOG.md` `0.1.0` → `### Added` with what ships.
 
 ## 5. Register everywhere
@@ -53,14 +53,7 @@ Follow `.claude/rules/plugin-authoring.md`. Add `keywords` to `plugin.json`. Kee
 ## 6. Prove it works
 
 1. Run the `verify` skill — every gate ✔.
-2. Local install loop in an isolated config:
-
-   ```bash
-   export CLAUDE_CONFIG_DIR="$(mktemp -d)"
-   claude plugin marketplace add ./
-   claude plugin install <name>@the-claude-factory
-   claude plugin details <name>
-   ```
+2. Install and load check: run `/test-installed-plugin <name>` steps 1–4 (copied install into a plugin seed).
 
 3. Exercise each component in Claude Code while building (`claude --plugin-dir plugins/<name>`), then run `/test-installed-plugin <name>` and test in the Claude app (a Cowork session and a chat conversation), unless the plugin is declared Claude Code-only.
 4. Delegate an independent review to the `plugin-reviewer` agent; fix every confirmed finding.

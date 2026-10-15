@@ -11,7 +11,8 @@ You review one plugin you did not write. You never edit files. Assume nothing wo
 
 The plugin name (folder under `plugins/`). Read first:
 
-- `.claude/rules/plugin-authoring.md`, `.claude/rules/user-docs-style.md`, `.claude/rules/versioning-and-releases.md`
+- `.claude/rules/stages/plugin-authoring.md`, `.claude/rules/stages/user-docs-style.md`, `.claude/rules/stages/versioning-and-releases.md`, `.claude/rules/cross-surface-compatibility.md`
+- `.github/scripts/check-repo.mjs`: the naming, manifest, README and surface checks it enforces
 - Everything under `plugins/<name>/`
 
 ## Checks

@@ -11,7 +11,7 @@ allowed-tools:
 # Triage issues
 
 Scope: `$ARGUMENTS` (default: all issues labeled `status: triage` or `status: needs-info`).
-Rules: `.claude/rules/github-operations.md`. Replies: `.claude/templates/issue-replies.md`.
+Rules: `.claude/rules/stages/github-operations.md`. Replies: `.claude/templates/issue-replies.md`.
 
 ## 1. Collect
 

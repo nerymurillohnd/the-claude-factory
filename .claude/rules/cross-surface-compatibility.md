@@ -37,24 +37,11 @@ Verified 2026-10-12 against <https://claude.com/docs/plugins/platform-support>, 
 ## Design rules
 
 1. Build the core from skills (+ references/assets/scripts), agents and hooks.
-2. No top-level `bin/`. Put code in a skill's `scripts/` or call it from hooks. Use `bin/` only for a Claude Code-only plugin, declared in the README.
-3. Integrate services through remote MCP servers; local MCP only when unavoidable, documented as "Claude app: only in Cowork sessions on your computer".
-4. Every `userConfig` option has a default, so the plugin works in the Claude app without prompts. Secrets: `sensitive: true`.
-5. LSP, output styles, themes, monitors, workflows, mods and `dependencies` are enhancements; the plugin must still deliver its core value in the Claude app without them. Agents and hooks must degrade gracefully in a chat conversation.
-6. Scripts and hooks use only common system tools (`bash`, `python3`, `node`), install nothing, and fail safe with a clear message. Every runtime they need is declared in the README **Requirements** section — the Claude app runtime's available interpreters are **not documented** (unverified), so never assume more.
-7. Test on both before every release:
-   - Claude Code: `/test-installed-plugin <name>` (copied install from a git source, load check, eval suite).
-   - Claude app: add the marketplace (or **Customize → Plugins → Add → Upload plugin** with a zip); confirm skills/agents/hooks load in a Cowork session and that the skill still works in a chat conversation; connect connectors.
-
-## Declaring surfaces
-
-- Every plugin declares its surfaces in `plugin.json` → `"metadata": { "surfaces": [...] }`: `["claude-code", "claude-app"]` (default) or `["claude-code"]`. Claude Code ignores `metadata`; our tooling reads it.
-- Scaffold a Claude Code-only plugin with `new-plugin.mjs --claude-code-only`.
-- From that one field: the README **works in** badge, the catalog **Works in** column, and `check-repo.mjs` checks.
-- `check-repo.mjs` fails when: `metadata.surfaces` is missing/invalid; a plugin ships `bin/` but isn't `["claude-code"]`; the badge doesn't match; a Claude Code-only README lacks "**Claude Code only**"; the Compatibility table misses a row for a shipped component or lists one it doesn't ship.
+2. Integrate services through remote MCP servers; local MCP only when unavoidable, documented as "Claude app: only in Cowork sessions on your computer".
+3. Every `userConfig` option has a default, so the plugin works in the Claude app without prompts. Secrets: `sensitive: true`.
+4. LSP, output styles, themes, monitors, workflows, mods and `dependencies` are enhancements; the plugin must still deliver its core value in the Claude app without them. Agents and hooks must degrade gracefully in a chat conversation.
+5. Scripts and hooks use only common system tools (`bash`, `python3`, `node`), install nothing, and fail safe with a clear message. Every runtime they need is declared in the README **Requirements** section — the Claude app runtime's available interpreters are **not documented** (unverified), so never assume more.
 
 ## README obligations
 
-- The **Compatibility** table has the columns `Component | Claude Code | Claude app` and reflects exactly the components the plugin ships, per the matrix above, with the chat-conversation note under it.
-- A Claude Code-only plugin states it in the hero/TL;DR, and the reason (e.g. "ships an LSP server", "needs `bin/` executables").
 - Conditional features (agents, hooks, local MCP, `userConfig`) are explained in Requirements/Configuration for Claude app users.

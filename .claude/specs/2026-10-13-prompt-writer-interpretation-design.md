@@ -27,7 +27,7 @@ What the skill did add, measured against the session without it: its live resear
 
 | Cause | Evidence |
 | :-- | :-- |
-| The request reaches Claude as a fresh order after the skill body | `SKILL.md` has no `$ARGUMENTS`; Claude Code then appends "ARGUMENTS: <value>" (<https://code.claude.com/docs/en/skills#available-string-substitutions>). `.claude/rules/plugin-authoring.md` requires `$ARGUMENTS` |
+| The request reaches Claude as a fresh order after the skill body | `SKILL.md` has no `$ARGUMENTS`; Claude Code then appends "ARGUMENTS: <value>" (<https://code.claude.com/docs/en/skills#available-string-substitutions>). `.claude/rules/stages/plugin-authoring.md` requires `$ARGUMENTS` |
 | The "never do the task" rule is not at the top | `SKILL.md` opens with a persona section; the scope rule follows it. `plugin-authoring.md`: the most important instructions sit near the top |
 | Research can slide into doing the task | Step 3 allows tools; "investigate the repository" is the audit itself |
 | No check of the reply's shape | The self-review checks prompt quality, never whether the reply is a prompt |
