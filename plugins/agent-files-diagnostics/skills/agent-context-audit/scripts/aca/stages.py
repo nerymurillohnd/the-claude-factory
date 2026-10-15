@@ -374,12 +374,16 @@ def _assign(state: RunState) -> None:
 
 
 def _usage(state: RunState, journal: Journal, labels: list[str]) -> None:
+    missing: list[str] = []
     for label in labels:
         transcript = journal.transcript(label)
         if transcript is None or not transcript.is_file():
+            missing.append(label)
             continue
         tokens = coverage.usage_from_transcript(transcript)
         state.usage.append({"label": label, **tokens})
+    if missing:
+        state.warnings.append(f"no transcript for {', '.join(missing)}: their usage is not counted")
 
 
 def accept_domains(state: RunState, journal: Journal) -> JsonObj:
@@ -455,20 +459,22 @@ def _write_verify_tasks(state: RunState, tasks: Path) -> list[JsonObj]:
     return verify
 
 
-def _write_claim_tasks(state: RunState, tasks: Path) -> list[JsonObj]:
+def _claim_batches(state: RunState) -> list[JsonObj]:
+    """The external claims in batches, as rows the researcher receives in its prompt.
+
+    The researcher has no file access by design, so the rows travel inside the workflow
+    arguments: the claim id, the public subject and the one-sentence claim, nothing else.
+    """
     claims: list[JsonObj] = []
     batches = [
         state.claims[start : start + CLAIM_BATCH]
         for start in range(0, len(state.claims), CLAIM_BATCH)
     ]
     for number, batch in enumerate(batches, start=1):
-        path = tasks / f"claims-{number}.md"
-        rows = [
+        rows: list[JsonObj] = [
             {"cid": claim.cid, "subject": claim.subject, "claim": claim.claim} for claim in batch
         ]
-        body = json.dumps(rows, indent=1, ensure_ascii=False)
-        _ = path.write_text(f"# Claims to verify\n\n```json\n{body}\n```\n", encoding="utf-8")
-        claims.append({"label": f"claims-{number}", "task": str(path)})
+        claims.append({"label": f"claims-{number}", "claims": rows})
     return claims
 
 
@@ -492,7 +498,7 @@ def _write_review_tasks(state: RunState) -> JsonObj:
         "owners": owners,
         "owners_by_fid": owners_by_fid,
         "verify": _write_verify_tasks(state, tasks),
-        "claims": _write_claim_tasks(state, tasks),
+        "claims": _claim_batches(state),
         "rounds": max(1, min(2, state.options.challenge_rounds)),
         "deterministic": [item.fid for item in state.findings if item.origin == "deterministic"],
     }

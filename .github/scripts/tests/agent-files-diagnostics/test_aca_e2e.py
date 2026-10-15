@@ -265,8 +265,10 @@ def review_scenario(run: Run, *, outcome: str = "owner") -> _aca_support.Scenari
             ]
         },
     }
-    claims = get_list(get_obj(run.domains, "review"), "claims")
+    claims = [as_obj(raw) for raw in get_list(get_obj(run.domains, "review"), "claims")]
     if claims:
+        assert get_list(claims[0], "claims"), "a claims batch carries its rows inline"
+        assert "task" not in claims[0], "the researcher gets no file to read"
         results["claims-1"] = {
             "results": [
                 {

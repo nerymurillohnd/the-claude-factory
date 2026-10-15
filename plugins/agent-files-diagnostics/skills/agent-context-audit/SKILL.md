@@ -21,7 +21,7 @@ The request: `$ARGUMENTS`. If it starts with `latest`, follow **Show the latest 
 ### 1. Check what the run needs
 
 - The Workflow tool is in your tools. If it is not (dynamic workflows are off or unavailable on this plan), stop and tell the user: the audit's execution mechanism is dynamic workflows, and it is not substituted by subagents or by reading the files yourself. Say that `/config` has a **Dynamic workflows** row on Pro, and that `disableWorkflows` or `CLAUDE_CODE_DISABLE_WORKFLOWS` turn them off.
-- `python3 --version` is 3.9 or later, `git` is on `PATH`, and you are in the repository to audit (the script resolves its root).
+- `python3 --version` is 3.9 or later, `git` is on `PATH`, and your working directory is inside the repository to audit: every command below runs from it, and the script resolves the repository root from there.
 - The script: `"${CLAUDE_SKILL_DIR}/scripts/agent_context_audit.py"`. Keep the quotes in every command below.
 
 ### 2. Agree the scope with the user
@@ -32,7 +32,8 @@ Tell the user, in a few lines, and ask for one approval:
 - that the audit also reads the user-level instruction and memory files Claude Code and Codex load for this project (`~/.claude/CLAUDE.md`, `~/.claude/rules/`, `~/.claude/agents/`, the auto memory of this project, `~/.codex/AGENTS.md` and the Codex memories) and consults settings only to learn what loads;
 - that skills, commands and plugins are counted, never reviewed, and configuration is never audited;
 - that two workflows run read-only agents on the user's account and plan (the report shows the tokens), that nothing changes, and that the private working copies are deleted at the end;
-- that an audit never applies fixes: cleanup is a separate request after the report.
+- that an audit never applies fixes: cleanup is a separate request after the report;
+- what they will be asked to allow while it runs, unless their settings already allow it: the script's Bash commands, the launch of each of the two workflows, and the web access (WebFetch, WebSearch) of the `claim-researcher` when there are claims to check; a workflow waits on such a prompt until they answer.
 
 Do not read repository files, run the script or start a workflow before the approval. A narrowing the user asks for (one directory) is applied with `--repo`; a widening (settings, skills, another project) is declined and offered as a separate task.
 
@@ -41,10 +42,10 @@ Do not read repository files, run the script or start a workflow before the appr
 Run, with the Bash tool:
 
 ```bash
-"${CLAUDE_SKILL_DIR}/scripts/agent_context_audit.py" prepare --repo "${CLAUDE_PROJECT_DIR}"
+"${CLAUDE_SKILL_DIR}/scripts/agent_context_audit.py" prepare
 ```
 
-Add `--offline` only when the user asks not to check the live documentation. The output is one JSON object. If its `status` is `cannot-run` or `failure`, tell the user the `reason` and stop. Otherwise show the user: the counts in `sources` and `audited`, the `external_sources` it read, the `out_of_scope` groups, the number of `packages`, and every line of `problems` and `warnings`. Keep `run_dir` and `packages`: the next steps need them.
+Add `--offline` only when the user asks not to check the live documentation, and `--repo <path>` only when the user narrows the audit to another folder. The output is one JSON object. When Bash shows it truncated with the path of a saved file, Read that file and take the objects from there; the same holds for every command below. If its `status` is `cannot-run` or `failure`, tell the user the `reason` and stop. Otherwise show the user: the counts in `sources` and `audited`, the `external_sources` it read, the `out_of_scope` groups, the number of `packages`, and every line of `problems` and `warnings`. Keep `run_dir` and `packages`: the next steps need them.
 
 ### 4. Domain audits (workflow 1)
 
@@ -59,7 +60,7 @@ When it ends, run:
 The script reads each agent's result from the workflow's journal, proves from its transcript that every assigned line reached it, validates every finding against the snapshot copies, and writes the tasks of the review. Read its output:
 
 - `packages`: one row per package with `status`, `gaps` and `error`. If `retry` is not empty, start the workflow again with only those packages (take them from prepare's `packages` array) and run the same `accept` command with the new run id; the script re-evaluates only the pending packages. Do this at most twice; a package still not `complete` leaves the run `partial`.
-- `rejected`: findings the validation refused; they are listed in the report, never dropped silently.
+- `rejected`: how many findings the validation refused; they are listed in the report, never dropped silently.
 - `review`: the object the next workflow needs. Keep it verbatim.
 
 ### 5. Cross-domain review, challenge round, verification (workflow 2)
@@ -102,7 +103,7 @@ Then stop. Do not implement fixes, offer to apply them, or treat the user's sile
 ## Show the latest report
 
 ```bash
-"${CLAUDE_SKILL_DIR}/scripts/agent_context_audit.py" latest --repo "${CLAUDE_PROJECT_DIR}"
+"${CLAUDE_SKILL_DIR}/scripts/agent_context_audit.py" latest
 ```
 
 If the output's `status` is `no-report`, say there is no report yet and offer to run an audit. Otherwise read the `report` path's `report.md` and present it as in step 7, without running anything.
@@ -113,7 +114,7 @@ Say these when they apply; never work around them.
 
 - Consumption is documented, not observed: the audit reads no session transcript, so no source is marked `verified`.
 - Coverage is proven from the agents' transcripts under `~/.claude/projects/`; when a transcript is missing, the package is `partial` with `coverage unverified`.
-- Cost in money is not available: the report carries tokens per agent; `/usage` shows the plan's usage.
+- Cost in money is not available: the report carries tokens per agent, for the agents whose transcript was found; `/usage` shows the plan's usage and a session estimate.
 - The external verification reaches only official documentation, official repositories and package registries, with the tool and package names and nothing from the repository.
 - The agents' models and tools are fixed in their definitions; `CLAUDE_CODE_SUBAGENT_MODEL_FORCE` or an organization's `availableModels` can replace the model, and then you say so.
 

@@ -44,7 +44,7 @@
 | 🤖 Agent | `domain-auditor` | Reads one package completely and reports evidence-backed findings; answers the reviewer's challenges. Read, Grep and Glob only. |
 | 🤖 Agent | `cross-domain-reviewer` | Decides every finding, judges similar instructions across files, finds conflicts no single auditor could see. Read, Grep and Glob only. |
 | 🤖 Agent | `finding-verifier` | Re-reads the cited lines and conflicts of every finding and says whether it holds. Read, Grep and Glob only. |
-| 🤖 Agent | `claim-researcher` | Checks claims about third-party tools and versions against official documentation, repositories and registries. The only agent with web access; it never sees your files. |
+| 🤖 Agent | `claim-researcher` | Checks claims about third-party tools and versions against official documentation, repositories and registries. WebFetch and WebSearch only: it has no tool that reads a file, and the claims reach it as one-sentence statements with no path or project name. |
 
 The skill also ships a Python script that does the deterministic work: the inventory, the redacted working copies, the mechanical checks, the coverage proof, the validation of every finding, the integrity check and the report.
 
@@ -52,7 +52,7 @@ The skill also ships a Python script that does the deterministic work: the inven
 
 - **Claude Code 2.1.300 or later**, signed in, with **dynamic workflows** available: they come with every paid plan; on Pro, turn them on from the **Dynamic workflows** row in `/config`. If `disableWorkflows` or `CLAUDE_CODE_DISABLE_WORKFLOWS` is set, the skill says so and stops; it never audits by other means.
 - **Python 3.9 or later** as `python3` on `PATH` (standard library only), and **git**. macOS, Linux or WSL; native Windows is refused with a message.
-- **Network**, for two things: the script compares its bundled knowledge of how Claude Code and Codex load files with the live documentation on `code.claude.com` and `learn.chatgpt.com` (skip it with `--offline`), and the `claim-researcher` fetches official documentation, official repositories and package registries. Both send only tool and package names and generic terms, never your files. Everything else runs on your machine.
+- **Network**, for two things: the script compares its bundled knowledge of how Claude Code and Codex load files with the live documentation on `code.claude.com`, `developers.openai.com` and `learn.chatgpt.com` (skip it with `--offline`), and the `claim-researcher` fetches official documentation, official repositories and package registries. Both send only tool and package names and generic terms, never your files. Everything else runs on your machine.
 - **Codex CLI is optional.** Its `AGENTS.md` chain and memories are audited whenever its files exist.
 
 ## 📥 Installation
@@ -96,7 +96,7 @@ Open Claude Code in the repository you want audited. Every audit starts with the
 /agent-files-diagnostics:agent-context-audit
 ```
 
-Claude tells you what it will read (the project's files and the user-level files Claude Code and Codex load for it), where the report goes (`.claude/agent-context-audit/<run>/` in the repository, git-ignored), and that nothing changes. After your approval it prepares the inventory, starts the two workflows (`/workflows` shows their progress), inspects every finding, and comes back with the report.
+Claude tells you what it will read (the project's files and the user-level files Claude Code and Codex load for it), where the report goes (`.claude/agent-context-audit/<run>/` in the repository, git-ignored), and that nothing changes. After your approval it prepares the inventory, starts the two workflows (`/workflows` shows their progress), inspects every finding, and comes back with the report. Unless your settings already allow them, you approve the script's commands, each workflow's launch, and the researcher's web access as they come.
 
 ### Read a finding
 
@@ -143,8 +143,8 @@ Reports stay in each repository's `.claude/agent-context-audit/` folder; delete 
 
 | Component | Claude Code | Claude app |
 | :-- | :--: | :--: |
-| 🎯 Skills | ✅ | ➖ the files it audits and the workflows it relies on live in Claude Code |
-| 🤖 Agents | ✅ | ➖ |
+| 🎯 Skills | ✅ | ⚠️ loads, but stops at its first check: dynamic workflows exist only in Claude Code |
+| 🤖 Agents | ✅ | ⚠️ Cowork sessions only, and unused without the workflows |
 | 🔁 Workflows | ✅ | ➖ |
 
 <sub>✅ works · ⚠️ partial · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. The Claude app (web, desktop and mobile) runs a conversation as a Cowork session when it can, and as a chat conversation otherwise, for example on a device that can't run Cowork or in the separate Chat mode that Team and Enterprise plans keep for now.</sub>
@@ -175,7 +175,7 @@ No. The agents have no write tool, the script writes only the report folder, and
 <details>
 <summary><b>What leaves my computer?</b></summary>
 
-Two things: the names of documentation pages the script compares with the live docs, and, for claims about third-party tools, the tool or package names the `claim-researcher` looks up on official sites. No file content, path or project name is sent. The auditors and the reviewer have no web tools at all.
+Two things: the fixed documentation pages the script compares with the live docs (on `code.claude.com`, `developers.openai.com` and `learn.chatgpt.com`), and, for claims about third-party tools, the tool or package names the `claim-researcher` looks up on official sites. No file content, path or project name is sent. The auditors, the reviewer and the verifiers have no web tools, and the researcher has no file tool.
 
 </details>
 
@@ -203,7 +203,7 @@ Then there is nothing of Codex to audit and the report says so. An `AGENTS.md` i
 <details>
 <summary><b>How much does a run cost?</b></summary>
 
-The report lists the tokens of every agent, summed from their transcripts. A small repository with a handful of instruction files takes a few agents and a few minutes; the count grows with the files. Cost in money isn't available to the audit; `/usage` shows your plan's usage.
+The report lists the tokens of every agent whose transcript was found, summed from it. A small repository with a handful of instruction files takes a few agents and a few minutes; the count grows with the files. Cost in money isn't available to the audit; `/usage` shows your plan's usage and a session estimate.
 
 </details>
 

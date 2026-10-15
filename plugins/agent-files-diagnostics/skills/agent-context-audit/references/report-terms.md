@@ -43,4 +43,4 @@ Statements about third-party tools or versions that neither the repository nor t
 
 ## Usage
 
-Token counts per agent, summed from each agent's transcript. Cost in money is not available to the audit; the run counts toward the plan's usage limits, which `/usage` shows.
+Token counts per agent, summed from each agent's transcript; an agent whose transcript was not found is missing from the table and named in a warning. Cost in money is not available to the audit; the run counts toward the plan's usage limits, which `/usage` shows with a session estimate.

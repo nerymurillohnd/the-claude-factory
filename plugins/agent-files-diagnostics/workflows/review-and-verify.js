@@ -511,6 +511,14 @@ function readTask(mode, task) {
   return `${mode} mode. Read the task file at ${task} with the Read tool and carry it out exactly. Return only the structured result.`
 }
 
+function claimsPrompt(claims) {
+  const rows = Array.isArray(claims) ? claims : []
+  return [
+    'Research mode. Verify each claim below against current primary sources and return only the structured result.',
+    `Claims:\n${JSON.stringify(rows, null, 1)}`,
+  ].join('\n\n')
+}
+
 function rebuttalPrompt(items, findingsFile) {
   const rows = items.map((item) => ({
     fid: item.fid,
@@ -575,7 +583,7 @@ const verifying = parallel(
 )
 const researching = parallel(
   claimTasks.map((task) => () =>
-    agent(readTask('Research', task.task), {
+    agent(claimsPrompt(task.claims), {
       label: task.label,
       phase: 'External claims',
       agentType: RESEARCHER,
@@ -585,12 +593,18 @@ const researching = parallel(
 )
 
 phase('Cross-domain review')
-const reconciler = await agent(readTask('Reconcile', reconcileTask), {
-  label: 'reconcile',
-  phase: 'Cross-domain review',
-  agentType: REVIEWER,
-  schema: RECONCILER_SCHEMA,
-})
+// Wrapped in parallel() so that a reviewer that stalls on every attempt yields null instead of
+// ending the run: the coordinator then records the review as partial and still gets the
+// verification and research results.
+const [reconciler] = await parallel([
+  () =>
+    agent(readTask('Reconcile', reconcileTask), {
+      label: 'reconcile',
+      phase: 'Cross-domain review',
+      agentType: REVIEWER,
+      schema: RECONCILER_SCHEMA,
+    }),
+])
 if (reconciler === null) {
   log('the reviewer returned no valid result; the coordinator will record the run as partial')
 }
@@ -623,12 +637,16 @@ for (let round = 1; round <= rounds && contested.length > 0; round += 1) {
   const last = round === rounds
   let decision = null
   if (rebutted.length > 0) {
-    decision = await agent(decidePrompt(rebutted, contested, last), {
-      label: `decide-${round}`,
-      phase: 'Challenge round',
-      agentType: REVIEWER,
-      schema: DECIDE_SCHEMA,
-    })
+    const [decided] = await parallel([
+      () =>
+        agent(decidePrompt(rebutted, contested, last), {
+          label: `decide-${round}`,
+          phase: 'Challenge round',
+          agentType: REVIEWER,
+          schema: DECIDE_SCHEMA,
+        }),
+    ])
+    decision = decided || null
   }
   challenge.push({
     round,
