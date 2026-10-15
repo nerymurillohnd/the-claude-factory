@@ -8,6 +8,12 @@
   },
   "plugins": [
     {
+      "name": "agent-files-diagnostics",
+      "source": "./plugins/agent-files-diagnostics",
+      "description": "Keeps the files that steer Claude Code and Codex accurate: audits CLAUDE.md, AGENTS.md, rules, memory, subagent definitions, output styles, loop.md and every Markdown file they point to with read-only agents, and writes one evidence-backed report of broken links and false, stale, duplicated, conflicting and misplaced instructions.",
+      "category": "testing"
+    },
+    {
       "name": "bash-lsp-intelligence",
       "source": "./plugins/bash-lsp-intelligence",
       "description": "Gives Claude Code bash-language-server for Bash and POSIX shell scripts, formats and checks every script Claude edits with shfmt and ShellCheck using your own configuration, and teaches Claude to trace sourced files and same-named functions before a rename.",
