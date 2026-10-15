@@ -1,0 +1,43 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "responses"
+  ],
+  "properties": {
+    "responses": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "fid",
+          "position",
+          "reason",
+          "evidence"
+        ],
+        "properties": {
+          "fid": {
+            "type": "string"
+          },
+          "position": {
+            "type": "string",
+            "enum": [
+              "concede",
+              "rebut"
+            ]
+          },
+          "reason": {
+            "type": "string"
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  }
+}

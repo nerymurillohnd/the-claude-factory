@@ -1,0 +1,166 @@
+{
+  "testing": [
+    "test",
+    "tests",
+    "testing",
+    "pytest",
+    "jest",
+    "vitest",
+    "unittest",
+    "coverage",
+    "e2e",
+    "playwright"
+  ],
+  "formatting": [
+    "format",
+    "formatter",
+    "formatting",
+    "prettier",
+    "black",
+    "biome",
+    "indentation",
+    "indent",
+    "shfmt",
+    "line length"
+  ],
+  "linting": [
+    "lint",
+    "linter",
+    "linting",
+    "eslint",
+    "ruff",
+    "shellcheck",
+    "markdownlint",
+    "clippy",
+    "golangci"
+  ],
+  "typing": [
+    "types",
+    "typecheck",
+    "type-check",
+    "mypy",
+    "pyright",
+    "basedpyright",
+    "tsc",
+    "typescript"
+  ],
+  "git": [
+    "commit",
+    "commits",
+    "branch",
+    "branches",
+    "push",
+    "rebase",
+    "merge",
+    "git",
+    "pull request"
+  ],
+  "release": [
+    "release",
+    "releases",
+    "version",
+    "versions",
+    "changelog",
+    "semver",
+    "tag",
+    "publish"
+  ],
+  "security": [
+    "secret",
+    "secrets",
+    "token",
+    "tokens",
+    "credential",
+    "credentials",
+    "password",
+    "api key",
+    "sandbox"
+  ],
+  "permissions": [
+    "permission",
+    "permissions",
+    "allow",
+    "deny",
+    "approve",
+    "approval"
+  ],
+  "dependencies": [
+    "dependency",
+    "dependencies",
+    "npm",
+    "pnpm",
+    "yarn",
+    "pip",
+    "uv",
+    "poetry",
+    "lockfile",
+    "package"
+  ],
+  "build": [
+    "build",
+    "compile",
+    "bundle",
+    "make",
+    "cmake",
+    "webpack",
+    "vite"
+  ],
+  "documentation": [
+    "documentation",
+    "readme",
+    "docs",
+    "docstring",
+    "comments"
+  ],
+  "naming": [
+    "naming",
+    "camelcase",
+    "snake_case",
+    "kebab-case",
+    "rename"
+  ],
+  "language": [
+    "spanish",
+    "english",
+    "language",
+    "respond",
+    "reply"
+  ],
+  "agent-config": [
+    "claude.md",
+    "agents.md",
+    "skill",
+    "skills",
+    "hook",
+    "hooks",
+    "subagent",
+    "subagents",
+    "mcp",
+    "plugin",
+    "plugins",
+    "settings.json"
+  ],
+  "runtime": [
+    "node",
+    "python",
+    "nvm",
+    "runtime",
+    "interpreter"
+  ],
+  "deployment": [
+    "deploy",
+    "deployment",
+    "production",
+    "staging",
+    "ci",
+    "pipeline",
+    "workflow"
+  ],
+  "communication": [
+    "concise",
+    "verbose",
+    "explain",
+    "summary",
+    "report"
+  ]
+}

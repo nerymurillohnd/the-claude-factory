@@ -1,0 +1,23 @@
+{
+  "source": "https://developers.openai.com/codex/config-reference",
+  "checked": "2026-10-14",
+  "deprecated_keys": {
+    "experimental_instructions_file": "model_instructions_file",
+    "features.codex_hooks": "features.hooks",
+    "agents.max_threads": "agents.max_concurrent_threads_per_session",
+    "memories.no_memories_if_mcp_or_web_search": "memories.disable_on_external_context",
+    "features.web_search": "web_search",
+    "features.web_search_cached": "web_search = \"cached\"",
+    "features.web_search_request": "web_search = \"live\"",
+    "personality": "explicit instruction overrides (friendly and pragmatic no longer select a style)"
+  },
+  "reserved_keys": {
+    "instructions": "reserved for future use; use model_instructions_file or AGENTS.md"
+  },
+  "values": {
+    "approval_policy": {
+      "on-failure": "deprecated; use on-request for interactive runs or never for non-interactive runs",
+      "untrusted": "unsupported as approval_policy; set trust_level = \"untrusted\" on the project instead"
+    }
+  }
+}

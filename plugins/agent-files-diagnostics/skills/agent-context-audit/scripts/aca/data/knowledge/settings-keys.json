@@ -1,0 +1,2468 @@
+{
+  "advisorModel": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Pick which model answers when Claude asks the [advisor tool](/docs/en/advisor)"
+  },
+  "agent": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Start every session as a named [subagent](/docs/en/sub-agents) with its prompt, tools, and model"
+  },
+  "agentPushNotifEnabled": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Let Claude send a [push notification to your phone](/docs/en/remote-control#mobile-push-notifications) when it decides to"
+  },
+  "allowAllClaudeAiMcps": {
+    "scope": "Managed",
+    "files": [
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Load the [claude.ai connectors](/docs/en/mcp) Claude Code fetches itself alongside a deployed [`managed-mcp.json`](/docs/en/managed-mcp#exclusive-control-with-managed-mcp-json)"
+  },
+  "allowClaudeInChromeWithManagedMcp": {
+    "scope": "Managed",
+    "files": [
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Let the built-in [Claude in Chrome](/docs/en/chrome) server run alongside a deployed [`managed-mcp.json`](/docs/en/managed-mcp#exclusive-control-with-managed-mcp-json)"
+  },
+  "allowedChannelPlugins": {
+    "scope": "Managed",
+    "files": [
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Replace the default allowlist of [channel plugins](/docs/en/channels#restrict-which-channel-plugins-can-run) that can push messages"
+  },
+  "allowedHttpHookUrls": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Limit which URLs [HTTP hooks](/docs/en/hooks) can target"
+  },
+  "allowedMcpServers": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Allowlist which [MCP servers](/docs/en/mcp) users can add"
+  },
+  "allowedProviders": {
+    "scope": "Managed",
+    "files": [
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Limit which [API providers](/docs/en/third-party-integrations) a machine may use"
+  },
+  "allowManagedHooksOnly": {
+    "scope": "Managed",
+    "files": [
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Run only the [hooks](/docs/en/hooks) your organization deploys"
+  },
+  "allowManagedMcpServersOnly": {
+    "scope": "Managed",
+    "files": [
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Make the managed [MCP](/docs/en/mcp) allowlist the only one that applies"
+  },
+  "allowManagedPermissionRulesOnly": {
+    "scope": "Managed",
+    "files": [
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Make [managed settings](/docs/en/managed-settings) the only settings source of [permission rules](/docs/en/permissions#managed-settings)"
+  },
+  "alwaysThinkingEnabled": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Turn [extended thinking](/docs/en/model-config#extended-thinking) off for every session"
+  },
+  "apiKeyHelper": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Generate the [API credential](/docs/en/authentication#credential-management) with your own command"
+  },
+  "askUserQuestionTimeout": {
+    "scope": "User or managed",
+    "files": [
+      "user",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Let an unanswered question [auto-continue](/docs/en/tools-reference#question-auto-continue-timeout) after idle time"
+  },
+  "appendPlugins": {
+    "scope": "User or managed",
+    "files": [
+      "user",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Run your organization's [mods](/docs/en/plugins/mods/admin) after every mod a user installs"
+  },
+  "attribution": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Customize the attribution Claude Code adds to commits and pull requests"
+  },
+  "attribution.commit": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Change or hide the trailer Claude Code adds to commits"
+  },
+  "attribution.pr": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Change or hide the attribution line in pull request descriptions"
+  },
+  "attribution.sessionUrl": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Omit the claude.ai session link from [cloud](/docs/en/claude-code-on-the-web) and [Remote Control](/docs/en/remote-control) commits"
+  },
+  "autoCompactEnabled": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Turn [automatic compaction](/docs/en/context-window) off or on"
+  },
+  "autoCompactWindow": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Set how full the context gets before Claude Code [compacts](/docs/en/context-window)"
+  },
+  "autoConnectIde": {
+    "scope": "Global config",
+    "files": [
+      "global"
+    ],
+    "deprecated": false,
+    "description": "Connect to a running [VS Code](/docs/en/vs-code) or [JetBrains](/docs/en/jetbrains#from-external-terminals) IDE automatically from an external terminal"
+  },
+  "autoContinueAtUsageLimit": {
+    "scope": "User or managed",
+    "files": [
+      "user",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Wait in the open session and [continue the task automatically](/docs/en/interactive-mode#wait-for-a-usage-limit-to-reset) after a claude.ai usage limit resets"
+  },
+  "autoInstallIdeExtension": {
+    "scope": "Global config",
+    "files": [
+      "global"
+    ],
+    "deprecated": false,
+    "description": "Turn off automatic install of the [IDE extension](/docs/en/vs-code#install-the-extension) from a VS Code terminal"
+  },
+  "autoMemoryDirectory": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Store [auto memory](/docs/en/memory#auto-memory) in a directory you choose"
+  },
+  "autoMemoryEnabled": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Turn [auto memory](/docs/en/memory#auto-memory) off or on"
+  },
+  "autoMode": {
+    "scope": "User or managed",
+    "files": [
+      "user",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Add your own allow and deny rules to the [auto mode](/docs/en/permission-modes#eliminate-prompts-with-auto-mode) classifier"
+  },
+  "autoMode.classifyAllShell": {
+    "scope": "User or managed",
+    "files": [
+      "user",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Send every shell command through the [auto mode classifier](/docs/en/permission-modes#what-the-classifier-blocks-by-default), even ones a narrow allow rule matches"
+  },
+  "autoScrollEnabled": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "[Follow new output](/docs/en/fullscreen#auto-follow) to the bottom in fullscreen rendering"
+  },
+  "autoUpdatesChannel": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Follow the stable [release channel](/docs/en/setup#configure-release-channel) instead of latest"
+  },
+  "availableModels": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "[Restrict which models](/docs/en/model-config#restrict-model-selection) people can pick"
+  },
+  "availableModelsMatch": {
+    "scope": "Managed",
+    "files": [
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Make each `availableModels` model ID entry [permit only the version it names](/docs/en/model-config#block-specific-models-or-versions)"
+  },
+  "awaySummaryEnabled": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Turn off the [session recap](/docs/en/interactive-mode#session-recap) shown when you come back to the terminal"
+  },
+  "awsAuthRefresh": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Refresh expired [Bedrock credentials](/docs/en/amazon-bedrock#advanced-credential-configuration) in `.aws` with your own command"
+  },
+  "awsCredentialExport": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Supply [Bedrock credentials](/docs/en/amazon-bedrock#advanced-credential-configuration) as JSON from your own command"
+  },
+  "axScreenReader": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Render [screen-reader friendly output](/docs/en/accessibility)"
+  },
+  "bashEditDiffEnabled": {
+    "scope": "User or managed",
+    "files": [
+      "user",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Record the [files that changed while a Bash command ran](/docs/en/hooks#bash) in every permission mode"
+  },
+  "bashOutputMaxChars": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Set how much of a successful command's [output](/docs/en/tools-reference#output-limits) Claude receives inline"
+  },
+  "blockedMarketplaces": {
+    "scope": "Managed",
+    "files": [
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Block [plugin marketplace](/docs/en/plugins/overview) sources for your organization"
+  },
+  "browserExternalPageTools": {
+    "scope": "Managed",
+    "files": [
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Keep Claude's tools off external pages in the [desktop](/docs/en/desktop) Browser pane"
+  },
+  "channelsEnabled": {
+    "scope": "Managed",
+    "files": [
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Allow [channels](/docs/en/channels#enable-channels-for-your-organization) for your organization"
+  },
+  "claudeInChromeDefaultEnabled": {
+    "scope": "Global config",
+    "files": [
+      "global"
+    ],
+    "deprecated": false,
+    "description": "Turn on [Chrome integration](/docs/en/chrome) when a session starts, in the interactive CLI and the VS Code extension"
+  },
+  "claudeMd": {
+    "scope": "Managed",
+    "files": [
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Inject organization-wide [CLAUDE.md](/docs/en/memory#deploy-organization-wide-claude-md) instructions from managed settings"
+  },
+  "claudeMdExcludes": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Skip specific [CLAUDE.md](/docs/en/memory#exclude-specific-claude-md-files) files when memory loads"
+  },
+  "cleanupPeriodDays": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Choose how many days Claude Code keeps [transcripts](/docs/en/data-usage#data-retention) before deleting them"
+  },
+  "companyAnnouncements": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Show your organization's announcements at startup"
+  },
+  "copyFullResponse": {
+    "scope": "Global config",
+    "files": [
+      "global"
+    ],
+    "deprecated": false,
+    "description": "Make [`/copy`](/docs/en/commands) copy the full response without showing the picker"
+  },
+  "copyOnSelect": {
+    "scope": "Global config",
+    "files": [
+      "global"
+    ],
+    "deprecated": false,
+    "description": "Turn off automatic copying of text you select with the mouse in [fullscreen rendering](/docs/en/fullscreen#use-the-mouse) and agent view"
+  },
+  "crossSessionInbound": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Choose whether Claude Code delivers [messages from your other sessions](/docs/en/cross-session-messaging#control-inbound-messages), shows a notice without delivering them, or refuses them"
+  },
+  "defaultShell": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Choose whether Bash or PowerShell runs the shell commands you type with the [`!` prefix](/docs/en/interactive-mode#shell-mode-with-prefix)"
+  },
+  "defaultToAgentsView": {
+    "scope": "Global config",
+    "files": [
+      "global"
+    ],
+    "deprecated": false,
+    "description": "Open [agent view](/docs/en/agent-view) instead of a new conversation when you run `claude` with no arguments"
+  },
+  "deniedMcpServers": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Block specific [MCP servers](/docs/en/mcp) by URL, command, or name"
+  },
+  "deniedModels": {
+    "scope": "Managed",
+    "files": [
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "[Block specific models](/docs/en/model-config#block-specific-models-or-versions), even ones `availableModels` permits"
+  },
+  "desktopSessionCleanupPeriodDays": {
+    "scope": "User or managed",
+    "files": [
+      "user",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Set an age limit in days for [Claude Desktop and Cowork transcripts](/docs/en/claude-directory#cleaned-up-automatically)"
+  },
+  "dialogExpiry": {
+    "scope": "User or managed",
+    "files": [
+      "user",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Set how long Claude Code waits for [Remote Control](/docs/en/remote-control) or an SDK host to answer a forwarded dialog before it cancels the dialog"
+  },
+  "diffTool": {
+    "scope": "Global config",
+    "files": [
+      "global"
+    ],
+    "deprecated": false,
+    "description": "Choose whether Claude's proposed file changes open in the [VS Code](/docs/en/vs-code) or [JetBrains](/docs/en/jetbrains#features) diff viewer or stay in the terminal"
+  },
+  "disableAgentView": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Turn off background agents and [agent view](/docs/en/agent-view)"
+  },
+  "disableAllHooks": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Turn off [hooks](/docs/en/hooks), a custom [status line](/docs/en/statusline), and a custom [`@` file suggestion](/docs/en/interactive-mode#quick-commands) command at once"
+  },
+  "disableArtifact": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": true,
+    "description": "Deprecated; use `enableArtifact` to turn the [Artifact tool](/docs/en/artifacts) off"
+  },
+  "disableAutoMode": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Remove [auto mode](/docs/en/permission-modes#eliminate-prompts-with-auto-mode) from the permission mode cycle"
+  },
+  "disableBrowserExternalNavigation": {
+    "scope": "Managed",
+    "files": [
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Limit the [desktop](/docs/en/desktop) Browser pane to localhost for people and Claude"
+  },
+  "disableBundledSkills": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Turn off the [skills](/docs/en/skills#bundled-skills) and [workflows](/docs/en/workflows) included with Claude Code"
+  },
+  "disableClaudeAiConnectors": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Turn off [claude.ai connectors](/docs/en/mcp#disable-claude-ai-connectors) so Claude Code doesn't fetch them"
+  },
+  "disableCommandPluginSources": {
+    "scope": "Managed",
+    "files": [
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Block [plugins](/docs/en/plugins/overview) that install by running a marketplace-declared command"
+  },
+  "disableDeepLinkRegistration": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Stop Claude Code from registering the [`claude-cli://` handler](/docs/en/deep-links)"
+  },
+  "disableDesktopLocalSessions": {
+    "scope": "Managed",
+    "files": [
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Turn off [Desktop Code sessions](/docs/en/desktop#local-sessions-on-managed-devices) that run on the device, leaving SSH to other hosts and cloud"
+  },
+  "disabledMcpjsonServers": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Reject specific servers from a project's [`.mcp.json`](/docs/en/mcp#project-scope)"
+  },
+  "disableMobileSimulatorTools": {
+    "scope": "Managed",
+    "files": [
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Block Claude's tools in the [desktop](/docs/en/desktop) iOS Simulator pane"
+  },
+  "disableRemoteControl": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Turn off [Remote Control](/docs/en/remote-control) everywhere it can start"
+  },
+  "disableSideloadFlags": {
+    "scope": "Managed",
+    "files": [
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Reject the CLI flags that sideload [plugins](/docs/en/plugins/overview), [subagents](/docs/en/sub-agents), and [MCP servers](/docs/en/mcp)"
+  },
+  "disableSkillShellExecution": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Stop [skills](/docs/en/skills) and custom commands from running inline shell"
+  },
+  "disableWorkflows": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Turn [dynamic workflows](/docs/en/workflows) off for everyone; use `enableWorkflows` for yourself"
+  },
+  "editorMode": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Use [vim key bindings](/docs/en/interactive-mode#vim-editor-mode) in the input prompt"
+  },
+  "effortLevel": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Set a default [effort level](/docs/en/model-config#adjust-effort-level) for models without a saved level of their own"
+  },
+  "emojiCompletionEnabled": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Turn off [`:shortcode:` emoji suggestions and replacement](/docs/en/interactive-mode#emoji-shortcodes) in the prompt input"
+  },
+  "enableAllProjectMcpServers": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Approve every server in project [`.mcp.json`](/docs/en/mcp#project-server-approvals-and-workspace-trust) files without a prompt"
+  },
+  "enableArtifact": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Turn the [Artifact tool](/docs/en/artifacts) off with a `false` in any file; no file can turn it back on"
+  },
+  "enabledMcpjsonServers": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Approve specific servers from a project's [`.mcp.json`](/docs/en/mcp#project-server-approvals-and-workspace-trust)"
+  },
+  "enabledPlugins": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Turn individual [plugins](/docs/en/plugins/overview) on or off per scope"
+  },
+  "enableWorkflows": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Turn [dynamic workflows](/docs/en/workflows) on or off against your plan's default"
+  },
+  "enforceAvailableModels": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Keep the [`/model` Default choice](/docs/en/model-config#enforce-the-allowlist-for-the-default-model) inside your `availableModels` allowlist"
+  },
+  "env": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Set [environment variables](/docs/en/env-vars#in-settings-files) for every session and its subprocesses"
+  },
+  "externalEditorContext": {
+    "scope": "Global config",
+    "files": [
+      "global"
+    ],
+    "deprecated": false,
+    "description": "Show Claude's last response as comments when you press [Ctrl+G](/docs/en/interactive-mode#general-controls) to edit"
+  },
+  "extraKnownMarketplaces": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Register [marketplaces](/docs/en/plugins/overview) for a repository or an organization"
+  },
+  "fallbackModel": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Name [backup models](/docs/en/model-config#fallback-model-chains) for when the primary is overloaded"
+  },
+  "fastMode": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Turn [fast mode](/docs/en/fast-mode) on for sessions where it's available"
+  },
+  "fastModePerSessionOptIn": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Require people to turn [fast mode](/docs/en/fast-mode) on each session"
+  },
+  "feedbackDrafts": {
+    "scope": "User or managed",
+    "files": [
+      "user",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Control whether Claude queues [feedback drafts](/docs/en/tools-reference#sendfeedback-tool-behavior) for you to review"
+  },
+  "feedbackSurveyRate": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Change how often the [session quality survey](/docs/en/data-usage#session-quality-surveys) appears"
+  },
+  "fileCheckpointingEnabled": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Turn off or on the file snapshots that [`/rewind`](/docs/en/checkpointing) restores"
+  },
+  "fileSuggestion": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Supply [`@` file autocomplete](/docs/en/interactive-mode#quick-commands) from your own command"
+  },
+  "footerLinksRegexes": {
+    "scope": "User or managed",
+    "files": [
+      "user",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Make issue or review IDs in output into [clickable links](/docs/en/statusline#clickable-links) below the input box"
+  },
+  "forceLoginGatewayUrl": {
+    "scope": "User or managed",
+    "files": [
+      "user",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Set the [gateway URL](/docs/en/claude-apps-gateway#set-the-gateway-url) the login screen connects to"
+  },
+  "forceLoginMethod": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "[Restrict login](/docs/en/authentication#restrict-login-to-your-organization) to claude.ai, Claude Console, or a [cloud gateway](/docs/en/claude-apps-gateway)"
+  },
+  "forceLoginOrgUUID": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "[Pin claude.ai logins to your organization](/docs/en/authentication#restrict-login-to-your-organization); only a managed source enforces it"
+  },
+  "forceRemoteSettingsRefresh": {
+    "scope": "Managed",
+    "files": [
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Block startup until [server-managed settings](/docs/en/server-managed-settings) are freshly fetched"
+  },
+  "gatewayInternalNetworks": {
+    "scope": "Managed",
+    "files": [
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Let `/login` reach a [cloud gateway](/docs/en/claude-apps-gateway#allow-a-gateway-on-public-address-space-you-own) on public IPv4 space your organization uses internally"
+  },
+  "gcpAuthRefresh": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Refresh [Google Cloud credentials](/docs/en/google-vertex-ai#advanced-credential-configuration) with your own command"
+  },
+  "hooks": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Run your own commands as [hooks](/docs/en/hooks) at points in Claude Code's lifecycle"
+  },
+  "httpHookAllowedEnvVars": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Limit which env vars [HTTP hooks](/docs/en/hooks) can put in headers"
+  },
+  "idleCompaction": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Stop Claude Code from compacting a long conversation while your terminal session is idle"
+  },
+  "includeCoAuthoredBy": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": true,
+    "description": "Deprecated; use `attribution` to hide or change commit and PR attribution"
+  },
+  "includeGitInstructions": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Remove the built-in commit and PR instructions from Claude's context"
+  },
+  "inputNeededNotifEnabled": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Get a [push notification](/docs/en/remote-control#mobile-push-notifications) when Claude is waiting on you"
+  },
+  "isolatePeerMachines": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Ask you before Claude [messages one of your sessions on another machine](/docs/en/cross-session-messaging#require-approval-for-cross-machine-messages)"
+  },
+  "keybindingFlavor": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": true,
+    "description": "Deprecated and has no effect; the word-editing shortcuts always [follow readline conventions](/docs/en/interactive-mode#make-ctrl-w-delete-back-to-whitespace)"
+  },
+  "language": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Have Claude respond in a language other than English"
+  },
+  "leftArrowOpensAgents": {
+    "scope": "Global config",
+    "files": [
+      "global"
+    ],
+    "deprecated": false,
+    "description": "Turn off the `←` shortcut that [backgrounds the session and opens agent view](/docs/en/agent-view#switch-sessions-without-leaving-the-terminal)"
+  },
+  "managedMcpServers": {
+    "scope": "Managed",
+    "files": [
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Provide remote [MCP servers](/docs/en/managed-mcp#provide-servers-through-managed-settings) to every user alongside the ones they add"
+  },
+  "managedSourcesBehavior": {
+    "scope": "Managed",
+    "files": [
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Compose every [managed source](/docs/en/managed-settings#how-claude-code-combines-managed-sources) you deploy instead of using the highest-priority one alone"
+  },
+  "maxEffortLevel": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Cap the [effort level](/docs/en/model-config#adjust-effort-level) for every model or per model, on every provider"
+  },
+  "maxProseWidth": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Cap how wide the prose in Claude's responses runs in a wide terminal"
+  },
+  "minimumVersion": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Keep [auto-updates](/docs/en/setup#pin-a-minimum-version) from installing anything below a version"
+  },
+  "model": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Change the [model](/docs/en/model-config#set-a-default-model-for-new-sessions) Claude Code starts with"
+  },
+  "modelOverrides": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "[Map model IDs](/docs/en/model-config#override-model-ids-per-version) to your provider's IDs, such as Bedrock ARNs"
+  },
+  "modelPicker": {
+    "scope": "User or managed",
+    "files": [
+      "user",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Choose which models the [`/model` picker](/docs/en/model-config#available-models) lists, in your own order and with your own labels"
+  },
+  "modelPricing": {
+    "scope": "Managed",
+    "files": [
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Report spend at your organization's contracted rates instead of list price"
+  },
+  "modelSettings": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Keep a saved [effort level](/docs/en/model-config#adjust-effort-level) or [auto-compact window](/docs/en/model-config#set-the-auto-compact-window) per model, or cap one model's effort"
+  },
+  "otelHeadersHelper": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Generate rotating [OpenTelemetry](/docs/en/monitoring-usage#dynamic-headers) headers with your own command"
+  },
+  "outputStyle": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Change Claude's role, tone, and output format with an [output style](/docs/en/output-styles)"
+  },
+  "parentSettingsBehavior": {
+    "scope": "Managed",
+    "files": [
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Apply or drop restrictions an [SDK or IDE host](/docs/en/managed-settings#let-an-embedding-host-add-policy) passes when you deploy [managed settings](/docs/en/managed-settings)"
+  },
+  "permissionExplainerEnabled": {
+    "scope": "Global config",
+    "files": [
+      "global"
+    ],
+    "deprecated": false,
+    "description": "Removed in v2.1.257, together with the `Ctrl+E` command explanation on shell permission prompts"
+  },
+  "permissions": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Set allow, ask, and deny rules and the starting [permission mode](/docs/en/permission-modes)"
+  },
+  "permissions.additionalDirectories": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Give Claude file access to [directories outside the current one](/docs/en/permissions#working-directories)"
+  },
+  "permissions.allow": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Approve listed [tool uses](/docs/en/permissions#permission-rule-syntax) without a prompt"
+  },
+  "permissions.ask": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Always prompt before listed [tool uses](/docs/en/permissions#permission-rule-syntax)"
+  },
+  "permissions.blockReadsOutsideWorkingDirectories": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Make the file tools refuse reads outside the [working directories](/docs/en/permissions#working-directories) in every permission mode"
+  },
+  "permissions.defaultMode": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Set the [permission mode](/docs/en/permission-modes#which-mode-a-session-starts-in) new sessions start in"
+  },
+  "permissions.deny": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Block listed [tool uses](/docs/en/permissions#permission-rule-syntax), including reads of files that hold secrets"
+  },
+  "permissions.disableBypassPermissionsMode": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Prevent anyone from entering [bypassPermissions mode](/docs/en/permission-modes#skip-all-checks-with-bypasspermissions-mode)"
+  },
+  "plansDirectory": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Choose where [plan mode](/docs/en/permission-modes#analyze-before-you-edit-with-plan-mode) writes plan files"
+  },
+  "pluginConfigs": {
+    "scope": "User or managed",
+    "files": [
+      "user",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Store the answers you gave a [plugin](/docs/en/plugins/overview)'s configuration dialog"
+  },
+  "pluginSuggestionMarketplaces": {
+    "scope": "Managed",
+    "files": [
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Choose which [marketplaces](/docs/en/plugins/org#restrict-what-users-can-install) can surface plugin install suggestions in `/plugin`"
+  },
+  "pluginTrustMessage": {
+    "scope": "Managed",
+    "files": [
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Add your own text to the [plugin](/docs/en/plugins/overview) trust warning"
+  },
+  "policyHelper": {
+    "scope": "Managed",
+    "files": [
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Run an executable that computes [managed settings](/docs/en/managed-settings#compute-the-policy-with-a-helper-program) at startup"
+  },
+  "policyHelper.path": {
+    "scope": "Managed",
+    "files": [
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Name the [helper executable](/docs/en/managed-settings#compute-the-policy-with-a-helper-program) Claude Code runs"
+  },
+  "policyHelper.refreshIntervalMs": {
+    "scope": "Managed",
+    "files": [
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Re-run the [helper](/docs/en/managed-settings#compute-the-policy-with-a-helper-program) in the background on an interval"
+  },
+  "policyHelper.timeoutMs": {
+    "scope": "Managed",
+    "files": [
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Set how long Claude Code waits for the [helper](/docs/en/managed-settings#compute-the-policy-with-a-helper-program)"
+  },
+  "preferredNotifChannel": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Choose a [terminal bell or desktop notification](/docs/en/terminal-config#get-a-terminal-bell-or-notification) for task completion"
+  },
+  "prefersReducedMotion": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "[Reduce or turn off](/docs/en/accessibility#accessibility-settings) spinner, shimmer, and flash animations"
+  },
+  "prependPlugins": {
+    "scope": "User or managed",
+    "files": [
+      "user",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Run your organization's [mods](/docs/en/plugins/mods/admin) before every mod a user installs"
+  },
+  "processWrapper": {
+    "scope": "User or managed",
+    "files": [
+      "user",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Run Claude Code's background processes through a [corporate launcher](/docs/en/corporate-launcher) on macOS and Linux"
+  },
+  "promptCacheTtl": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Choose the [prompt cache lifetime](/docs/en/prompt-caching#cache-lifetime) for the main conversation"
+  },
+  "promptSuggestionEnabled": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Hide the grayed-out [prompt suggestions](/docs/en/interactive-mode#prompt-suggestions) in the input box"
+  },
+  "prStatusFooterEnabled": {
+    "scope": "Global config",
+    "files": [
+      "global"
+    ],
+    "deprecated": false,
+    "description": "Turn off the prompt footer's [PR review status](/docs/en/interactive-mode#pr-review-status) badge and the pull request check behind it"
+  },
+  "prUrlTemplate": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Point PR links at an internal code-review tool instead of github.com"
+  },
+  "remote.defaultEnvironmentId": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Pick the default [cloud environment](/docs/en/cloud-environments) for `claude --cloud`; a self-hosted `ccpool_` ID is read only from user and managed settings and `--settings`"
+  },
+  "remoteControlAtStartup": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Connect [Remote Control](/docs/en/remote-control#enable-remote-control-for-all-sessions) automatically when a session starts"
+  },
+  "requiredMaximumVersion": {
+    "scope": "Managed",
+    "files": [
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "[Refuse to start](/docs/en/setup#pin-a-minimum-version) on a version newer than your organization allows"
+  },
+  "requiredMinimumVersion": {
+    "scope": "Managed",
+    "files": [
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "[Refuse to start](/docs/en/setup#pin-a-minimum-version) on a version older than your organization requires"
+  },
+  "respectGitignore": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Keep gitignored files out of the [`@` file picker](/docs/en/interactive-mode#quick-commands)"
+  },
+  "respondToBashCommands": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Stop Claude from responding after a [`!` shell command](/docs/en/interactive-mode#shell-mode-with-prefix) runs"
+  },
+  "sandbox": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "[Isolate Bash commands](/docs/en/sandboxing) from your filesystem and network on macOS, Linux, and WSL2"
+  },
+  "sandbox.allowAppleEvents": {
+    "scope": "User or managed",
+    "files": [
+      "user",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Let [sandboxed](/docs/en/sandboxing) commands send Apple Events on macOS"
+  },
+  "sandbox.allowUnsandboxedCommands": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Let Claude retry a blocked command outside the [sandbox](/docs/en/sandboxing#the-unsandboxed-retry-escape-hatch), or forbid it"
+  },
+  "sandbox.autoAllowBashIfSandboxed": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Run [sandboxed](/docs/en/sandboxing#auto-allow-mode) commands without a permission prompt"
+  },
+  "sandbox.bwrapPath": {
+    "scope": "Managed",
+    "files": [
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Point the [sandbox](/docs/en/sandboxing) at a bubblewrap binary outside `PATH`"
+  },
+  "sandbox.credentials": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Hide or mask credential files and variables inside the [sandbox](/docs/en/sandboxing#protect-credentials)"
+  },
+  "sandbox.credentials.allowPlaintextInject": {
+    "scope": "User or managed",
+    "files": [
+      "user",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Let [masked credentials](/docs/en/sandboxing#mask-credentials) reach plain HTTP services on trusted test networks"
+  },
+  "sandbox.credentials.awsPairs": {
+    "scope": "User or managed",
+    "files": [
+      "user",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Link custom-named AWS key variables into one credential for [re-signing](/docs/en/sandboxing#re-sign-aws-requests)"
+  },
+  "sandbox.credentials.envVars": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Unset or mask an environment variable inside the [sandbox](/docs/en/sandboxing#mask-environment-variables)"
+  },
+  "sandbox.credentials.files": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Block or mask reads of a credential file inside the [sandbox](/docs/en/sandboxing#mask-credential-files)"
+  },
+  "sandbox.credentials.sigv4": {
+    "scope": "User or managed",
+    "files": [
+      "user",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Choose whether streaming, presigned, or [SigV4A AWS requests](/docs/en/sandboxing#re-sign-aws-requests) fail or pass through"
+  },
+  "sandbox.enabled": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Turn on [Bash sandboxing](/docs/en/sandboxing#get-started) on macOS, Linux, and WSL2"
+  },
+  "sandbox.enableWeakerNestedSandbox": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Run the Linux [sandbox](/docs/en/sandboxing) inside an unprivileged container"
+  },
+  "sandbox.enableWeakerNetworkIsolation": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Let `gh`, `gcloud`, and `terraform` verify TLS behind a MITM proxy inside the [sandbox](/docs/en/sandboxing#go-based-clis-fail-tls-verification-on-macos) on macOS"
+  },
+  "sandbox.excludedCommands": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Name commands Claude Code can run outside the [sandbox](/docs/en/sandboxing)"
+  },
+  "sandbox.failIfUnavailable": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Refuse to start when the [sandbox](/docs/en/sandboxing) can't, instead of running unsandboxed"
+  },
+  "sandbox.filesystem": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Control which paths [sandboxed](/docs/en/sandboxing#filesystem-isolation) commands can read and write"
+  },
+  "sandbox.filesystem.allowManagedReadPathsOnly": {
+    "scope": "Managed",
+    "files": [
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Stop developers from re-opening [read paths your organization blocked](/docs/en/sandboxing#keep-developers-from-widening-the-policy)"
+  },
+  "sandbox.filesystem.allowRead": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Re-open reading inside a region [`denyRead`](#sandbox-filesystem-denyread) blocks"
+  },
+  "sandbox.filesystem.allowWrite": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Add paths [sandboxed](/docs/en/sandboxing) commands can write to"
+  },
+  "sandbox.filesystem.denyRead": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Block [sandboxed](/docs/en/sandboxing) commands from reading specific paths"
+  },
+  "sandbox.filesystem.denyWrite": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Block [sandboxed](/docs/en/sandboxing) commands from writing to specific paths"
+  },
+  "sandbox.filesystem.disabled": {
+    "scope": "User or managed",
+    "files": [
+      "user",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "[Turn off filesystem isolation](/docs/en/sandboxing#disable-filesystem-isolation) while keeping network isolation"
+  },
+  "sandbox.ignoreViolations": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Silence violation reports for paths a command is expected to probe"
+  },
+  "sandbox.network": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Control which hosts, ports, and sockets [sandboxed](/docs/en/sandboxing#network-isolation) commands reach"
+  },
+  "sandbox.network.allowAllUnixSockets": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Let [sandboxed](/docs/en/sandboxing) commands connect to every Unix socket"
+  },
+  "sandbox.network.allowedDomains": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Pre-allow domains so [sandboxed](/docs/en/sandboxing) commands don't prompt for them"
+  },
+  "sandbox.network.allowLocalBinding": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Let [sandboxed](/docs/en/sandboxing) commands listen on network ports and connect to localhost on macOS"
+  },
+  "sandbox.network.allowMachLookup": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Let macOS [sandboxed](/docs/en/sandboxing) tools like the iOS Simulator or Playwright reach their XPC services"
+  },
+  "sandbox.network.allowManagedDomainsOnly": {
+    "scope": "Managed",
+    "files": [
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Lock the network allowlist to [managed settings](/docs/en/sandboxing#keep-developers-from-widening-the-policy)"
+  },
+  "sandbox.network.allowUnixSockets": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "List Unix socket paths [sandboxed](/docs/en/sandboxing) commands can use on macOS"
+  },
+  "sandbox.network.deniedDomains": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Block domains for [sandboxed](/docs/en/sandboxing) commands, even inside an allowed wildcard"
+  },
+  "sandbox.network.httpProxyPort": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Route [sandbox](/docs/en/sandboxing#custom-proxy-configuration) HTTP traffic through your own proxy"
+  },
+  "sandbox.network.socksProxyPort": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Route [sandbox](/docs/en/sandboxing#custom-proxy-configuration) SOCKS traffic through your own proxy"
+  },
+  "sandbox.network.strictAllowlist": {
+    "scope": "User or managed",
+    "files": [
+      "user",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Deny hosts outside the [allowlist](/docs/en/sandboxing#network-isolation) instead of prompting"
+  },
+  "sandbox.network.tlsTerminate": {
+    "scope": "User or managed",
+    "files": [
+      "user",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Have the [sandbox](/docs/en/sandboxing#network-isolation) proxy terminate TLS so it can read HTTPS requests"
+  },
+  "sandbox.ripgrep": {
+    "scope": "User or managed",
+    "files": [
+      "user",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Use your own ripgrep binary inside the [sandbox](/docs/en/sandboxing)"
+  },
+  "sandbox.socatPath": {
+    "scope": "Managed",
+    "files": [
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Point the [sandbox](/docs/en/sandboxing) proxy at a `socat` binary outside `PATH`"
+  },
+  "showClearContextOnPlanAccept": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Show a \"clear context\" option on the [plan accept screen](/docs/en/permission-modes#review-and-approve-a-plan)"
+  },
+  "showThinkingSummaries": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "See summaries of Claude's [thinking](/docs/en/model-config#extended-thinking) instead of a collapsed stub"
+  },
+  "showTurnDuration": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Hide the \"Cooked for\" duration after each response"
+  },
+  "skillListingBudgetFraction": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Reserve more or less context for the [skill listing](/docs/en/skills#skill-descriptions-are-cut-short)"
+  },
+  "skillListingMaxDescChars": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Cap each skill's description length in the [skill listing](/docs/en/skills#skill-descriptions-are-cut-short)"
+  },
+  "skillOverrides": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "[Hide or collapse a skill](/docs/en/skills#override-skill-visibility-from-settings) without editing its SKILL.md"
+  },
+  "skipAutoPermissionPrompt": {
+    "scope": "User or managed",
+    "files": [
+      "user",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Skip the one-time notice Claude Code shows when you first enter [auto mode](/docs/en/permission-modes#eliminate-prompts-with-auto-mode) yourself rather than through the built-in default"
+  },
+  "skipDangerousModePermissionPrompt": {
+    "scope": "User, local, or managed",
+    "files": [
+      "user",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Skip the confirmation dialog before [bypassPermissions mode](/docs/en/permission-modes#skip-all-checks-with-bypasspermissions-mode)"
+  },
+  "skipWebFetchPreflight": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Skip the [WebFetch hostname check](/docs/en/tools-reference#webfetch-tool-behavior) when Anthropic is unreachable"
+  },
+  "spellcheck": {
+    "scope": "User or managed",
+    "files": [
+      "user",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Underline misspelled words in the prompt input with a [spell checker](/docs/en/interactive-mode#check-spelling-as-you-type) you install"
+  },
+  "spinnerTipsEnabled": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Hide tips in the spinner while Claude works"
+  },
+  "spinnerTipsOverride": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Add your own tips to the spinner rotation, or replace the built-in tips"
+  },
+  "spinnerVerbs": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Add or replace the verbs shown while a turn runs"
+  },
+  "sshConfigs": {
+    "scope": "User or managed",
+    "files": [
+      "user",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Add [SSH connections](/docs/en/desktop#pre-configure-ssh-connections-for-your-team) to the Desktop environment dropdown"
+  },
+  "sshHostAllowlist": {
+    "scope": "Managed",
+    "files": [
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Limit which hosts [Desktop SSH sessions](/docs/en/desktop#restrict-which-ssh-hosts-users-can-connect-to) can reach"
+  },
+  "statusLine": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Run your own command to render a [status line](/docs/en/statusline) below the prompt"
+  },
+  "strictKnownMarketplaces": {
+    "scope": "Managed",
+    "files": [
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Allowlist the [marketplace](/docs/en/plugins/overview) sources users can add and install from"
+  },
+  "strictPluginOnlyCustomization": {
+    "scope": "Managed",
+    "files": [
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Block [skills](/docs/en/skills), [agents](/docs/en/sub-agents), [hooks](/docs/en/hooks), and [MCP servers](/docs/en/mcp) from user and project sources"
+  },
+  "strictPluginOnlyCustomization.agents": {
+    "scope": "Managed",
+    "files": [
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Lock [agents](/docs/en/sub-agents) to plugin and managed sources"
+  },
+  "strictPluginOnlyCustomization.hooks": {
+    "scope": "Managed",
+    "files": [
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Lock [hooks](/docs/en/hooks) to plugin and managed sources"
+  },
+  "strictPluginOnlyCustomization.mcp": {
+    "scope": "Managed",
+    "files": [
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Lock [MCP servers](/docs/en/mcp) to plugin and managed sources"
+  },
+  "strictPluginOnlyCustomization.skills": {
+    "scope": "Managed",
+    "files": [
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Lock [skills](/docs/en/skills) to plugin and managed sources"
+  },
+  "subagentPromptCacheTtl": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Choose the [prompt cache lifetime](/docs/en/prompt-caching#cache-lifetime) for subagents and other requests outside the main conversation"
+  },
+  "subagentStatusLine": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Rewrite rows in the [subagent](/docs/en/sub-agents) task display with your own command"
+  },
+  "switchModelsOnFlag": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Switch models automatically or pause when a [safety classifier](/docs/en/model-config#ask-before-switching) flags a request"
+  },
+  "syncClaudeAiPlugins": {
+    "scope": "User, local, or managed",
+    "files": [
+      "user",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Stop loading the [plugins enabled on your claude.ai account](/docs/en/plugins/loading#synced-plugins) and stop downloading new ones"
+  },
+  "syncClaudeAiSkills": {
+    "scope": "User, local, or managed",
+    "files": [
+      "user",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Stop loading the [skills enabled on your claude.ai account](/docs/en/skills#how-synced-skills-behave) and stop downloading new ones"
+  },
+  "syntaxHighlightingDisabled": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Turn off syntax highlighting in diffs and code blocks"
+  },
+  "taskOutputMaxChars": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Removed in v2.1.277, together with the `TaskOutput` tool it sized"
+  },
+  "teammateDefaultModel": {
+    "scope": "Global config",
+    "files": [
+      "global"
+    ],
+    "deprecated": false,
+    "description": "Removed in v2.1.234; see [Specify teammates and models](/docs/en/agent-teams#specify-teammates-and-models) for how Claude Code picks a teammate's model"
+  },
+  "teammateMode": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Choose how [agent team teammates display](/docs/en/agent-teams#choose-a-display-mode)"
+  },
+  "terminalProgressBarEnabled": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Hide the terminal progress bar in terminals that support it"
+  },
+  "terminalTitleFromRename": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Stop [`/rename`](/docs/en/sessions#name-your-sessions) and `--name` from changing the terminal tab title"
+  },
+  "theme": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Pick the interface [color theme](/docs/en/terminal-config#match-the-color-theme), built-in or custom"
+  },
+  "timeFormat": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Show the times in the interface on a 12-hour or 24-hour clock, in UTC, or with a strftime pattern"
+  },
+  "timeZone": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Show the times in the interface in a time zone other than your system's"
+  },
+  "tui": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Choose the [fullscreen](/docs/en/fullscreen) or classic terminal renderer"
+  },
+  "ultracode": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Have Claude plan a [workflow](/docs/en/workflows#let-claude-decide-with-ultracode) for each substantive task without being asked"
+  },
+  "useAutoModeDuringPlan": {
+    "scope": "User, local, or managed",
+    "files": [
+      "user",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Let the [auto mode](/docs/en/permission-modes#eliminate-prompts-with-auto-mode) classifier review shell commands in [plan mode](/docs/en/permission-modes#analyze-before-you-edit-with-plan-mode); set `false` to get prompts instead"
+  },
+  "verbose": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Show [full tool output](/docs/en/cli-reference#cli-flags) instead of truncated summaries; `viewMode` takes precedence when both are set"
+  },
+  "viewMode": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Start every session in [default, verbose, or focus view](/docs/en/cli-reference#cli-flags)"
+  },
+  "vimInsertModeRemaps": {
+    "scope": "User or managed",
+    "files": [
+      "user",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Map a two-key [INSERT-mode sequence](/docs/en/interactive-mode#remap-insert-mode-key-sequences) such as `jj` to Escape"
+  },
+  "voice": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Turn on [voice dictation](/docs/en/voice-dictation) and pick hold or tap mode"
+  },
+  "voiceEnabled": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Turn on [voice dictation](/docs/en/voice-dictation) with the older single-key form"
+  },
+  "wheelScrollAccelerationEnabled": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Turn off [mouse-wheel acceleration](/docs/en/fullscreen#mouse-wheel-scrolling) in fullscreen rendering"
+  },
+  "workflowKeywordTriggerEnabled": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Let the word `ultracode` in a prompt start a [workflow](/docs/en/workflows); set `false` to type it without starting one"
+  },
+  "workflowSizeGuideline": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Set the agent count Claude aims for in [dynamic workflows](/docs/en/workflows)"
+  },
+  "worktree": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Configure how Claude Code creates git [worktrees](/docs/en/worktrees)"
+  },
+  "worktree.baseRef": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Branch new [worktrees](/docs/en/worktrees) from the remote default branch or your local HEAD"
+  },
+  "worktree.bgIsolation": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Let background sessions edit the working copy without a [worktree](/docs/en/worktrees)"
+  },
+  "worktree.location": {
+    "scope": "User",
+    "files": [
+      "user"
+    ],
+    "deprecated": false,
+    "description": "Choose where [Desktop SSH sessions](/docs/en/desktop#ssh-sessions) create their worktrees on a remote machine"
+  },
+  "worktree.sparsePaths": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Check out only the directories you need in each [worktree](/docs/en/worktrees)"
+  },
+  "worktree.symlinkDirectories": {
+    "scope": "Any file",
+    "files": [
+      "user",
+      "project",
+      "local",
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Symlink large directories into each [worktree](/docs/en/worktrees) instead of duplicating them"
+  },
+  "wslInheritsWindowsSettings": {
+    "scope": "Managed",
+    "files": [
+      "managed"
+    ],
+    "deprecated": false,
+    "description": "Have WSL read [managed settings](/docs/en/managed-settings) from the Windows policy chain"
+  }
+}

@@ -13,6 +13,7 @@ paths:
 - Prefer `skills/` over `commands/` for new work.
 - Reference plugin files from hooks and MCP/LSP configs as `${CLAUDE_PLUGIN_ROOT}/...`; persistent data goes in `${CLAUDE_PLUGIN_DATA}`.
 - Component paths in `plugin.json` start with `./` and stay inside the plugin.
+- Workflow scripts (`workflows/*.js`) use the top-level `return` the workflow runtime provides, which no JavaScript parser accepts, so Biome skips `plugins/*/workflows`. Keep them small, keep their schemas equal to the JSON schemas the plugin's own validator uses (a unit test checks the embedded copies), and test them with a real run.
 
 ## Naming
 

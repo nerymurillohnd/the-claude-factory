@@ -18,7 +18,8 @@
       "!.claude/templates/plugin/plugin.json",
       "!!**/tsconfig.json",
       "!!**/tsconfig.base.json",
-      "!!**/package-lock.json"
+      "!!**/package-lock.json",
+      "!!plugins/*/workflows"
     ],
     "maxSize": 1048576
   },

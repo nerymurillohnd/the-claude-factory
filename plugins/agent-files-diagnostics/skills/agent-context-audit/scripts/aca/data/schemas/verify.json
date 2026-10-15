@@ -1,0 +1,39 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "results"
+  ],
+  "properties": {
+    "results": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "fid",
+          "holds",
+          "reason",
+          "checked"
+        ],
+        "properties": {
+          "fid": {
+            "type": "string"
+          },
+          "holds": {
+            "type": "boolean"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "checked": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  }
+}
