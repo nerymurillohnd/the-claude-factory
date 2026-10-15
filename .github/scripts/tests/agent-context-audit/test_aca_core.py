@@ -442,7 +442,8 @@ class WorkerEnvTests(unittest.TestCase):
             timeout=60,
             budget=1.5,
         )
-        argv = workers.command("claude", spec, Path("/work"))
+        work = Path("/work")
+        argv = workers.command("claude", spec, work)
         joined = " ".join(argv)
         for flag in (
             "-p",
@@ -457,7 +458,7 @@ class WorkerEnvTests(unittest.TestCase):
         assert pairs["--tools"] == "Read,Grep,Glob"
         assert pairs["--permission-mode"] == "dontAsk"
         assert pairs["--permission-prompts"] == "none"
-        assert pairs["--add-dir"] == "/work"
+        assert pairs["--add-dir"] == str(work)
         assert pairs["--max-budget-usd"] == "1.50"
         assert "--dangerously-skip-permissions" not in joined
 
