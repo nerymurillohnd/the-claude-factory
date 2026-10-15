@@ -46,4 +46,6 @@ READMEs sell: lead with the outcome and why to install, then teach. Never mentio
 
 ## Lint
 
-`npx --yes markdownlint-cli2@0.23.3` must pass. Heading anchors with emoji start with `-` (e.g. `#-catalog`).
+`npx --yes markdownlint-cli2@0.23.3` must pass. It covers only Markdown that people read: root files, `docs/`, plugin READMEs and changelogs, templates and specs. Markdown that Claude Code or Codex load as instructions (`CLAUDE.md`, `AGENTS.md`, rules, memory, skills, agents, commands, output styles, evals) is excluded in `.markdownlint-cli2.jsonc` and is never linted or formatted by anything.
+
+Spacing is fixed to what Prettier would write for Markdown, so the two never disagree: `-` bullets, 2-space nested indent, `*emphasis*`, `**strong**`, and compact tables (one space on each side of a cell, never column padding). Heading anchors with emoji start with `-` (e.g. `#-catalog`).

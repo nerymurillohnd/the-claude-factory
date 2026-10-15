@@ -1,5 +1,9 @@
 {
   // markdownlint-cli2 configuration — run with: npx markdownlint-cli2
+  //
+  // Scope: Markdown that people read (root files, docs/, plugin READMEs and changelogs,
+  // templates, specs). Markdown that Claude Code or Codex load as instructions is never
+  // linted or formatted by anything: see "ignores" below.
   "config": {
     "default": true,
     // Long lines are fine in prose and tables.
@@ -16,7 +20,27 @@
     "MD035": {
       "style": "---"
     },
-    "MD060": false
+    // Spacing fixed explicitly, matching what Prettier writes for Markdown, so the two
+    // never disagree: "-" bullets, 2-space nested indent, "**strong**", one space on each
+    // side of a table cell. Emphasis keeps "*" (Prettier writes "_"): every document here
+    // already uses "*", and the marker costs no spacing. Tables are "compact", never
+    // "aligned": column padding adds whitespace that readers never see and models pay for,
+    // and catalog.mjs writes compact tables into the root README.
+    "MD004": {
+      "style": "dash"
+    },
+    "MD007": {
+      "indent": 2
+    },
+    "MD049": {
+      "style": "asterisk"
+    },
+    "MD050": {
+      "style": "asterisk"
+    },
+    "MD060": {
+      "style": "compact"
+    }
   },
   // Skip what git ignores (local plans, scratch workspaces), so a local run lints what CI lints.
   "gitignore": true,
@@ -25,6 +49,24 @@
   ],
   "ignores": [
     "**/node_modules/**",
-    ".git/**"
+    ".git/**",
+    // Agent-consumed Markdown: files Claude Code and Codex load natively as instructions,
+    // memory, skills, agents and eval material. No linter or formatter touches them; they
+    // are written by hand, as compact as possible, because every byte in them is context
+    // the model pays for in each session. claude plugin validate --strict still checks
+    // their frontmatter.
+    "**/CLAUDE.md",
+    "**/CLAUDE.local.md",
+    "**/AGENTS.md",
+    "**/AGENTS.override.md",
+    ".claude/rules/**",
+    ".claude/memory/**",
+    ".claude/skills/**",
+    ".claude/agents/**",
+    "plugins/*/skills/**",
+    "plugins/*/agents/**",
+    "plugins/*/commands/**",
+    "plugins/*/output-styles/**",
+    "plugins/*/evals/**"
   ]
 }
