@@ -2,6 +2,15 @@
 
 Newest first. One entry per session: what changed, commits, what's next.
 
+## 2026-10-15 — agent-files-diagnostics rebuilt on dynamic workflows and run end to end
+
+- Morning: `prompt-audit` on the four agents (six repetition findings, patch applied by an agent and verified: 4 files, 7 insertions, 11 deletions), a skill-creator review of `SKILL.md` (13,000 tokens, inverted disclosure, entry point at the end), and the `--keep-temp` question answered from disk: 152 of 153 kept eval folders have mode 500 with `sealed/` at 000, undocumented anywhere.
+- Nery's decision: delete the plugin or complete it; then the specification "Evidence-Based Instruction and Memory Audit Plugin" on dynamic workflows, scope limited to the Markdown that Claude Code and Codex load. Research: docs MCP (plugin `workflows/`, plans, limits, failure semantics, journal) plus a $0.03 probe proving `agentType` keeps `tools`, `omitClaudeMd`, `model` and `effort`.
+- Build: the `aca` package from `feat/agent-context-audit` ported into `skills/agent-context-audit/scripts/` without its workers, pipeline, hook and settings/MCP domain; new `store`, `stages`, `cli`, `coverage` (journal and transcript readers); domains A–E, four per-source fields, two unit identities; four agents to the spec's eleven sections; two workflow scripts with embedded schemas; `SKILL.md` rewritten as the coordinator's procedure; tests rewritten around a fake workflow journal (88 tests); README, CHANGELOG, spec; Biome skips workflow scripts; `pyrightconfig.json` execution environments.
+- Real run on a fixture with eight planted defects, headless with `--plugin-dir` and an isolated home: `complete-with-findings`, 14 findings (10 medium, 4 low), every planted defect found, 15 of 15 sources read completely with proof, 13 of 14 findings verified independently, 14 of 14 inspected by the coordinator, files and git unchanged, 6 minutes, $1.67. Fixes after the run: `finalize --checked-json`, the audited home in the report's metadata, two definition clarifications.
+- Gates: ruff, ruff format, mypy 3.9 strict, unittest on 3.9 and 3.14, every `by_path.sh`, Node script tests (47), `check-repo`, `catalog --check`, `validate-claude.sh` (13), `check-version-bump`, Biome, shellcheck, shfmt, markdownlint: all green.
+- Next: commit and push; `plugin-reviewer`; `/test-installed-plugin`; an interactive run on a real repository; `sync-labels.mjs`; draft PR; delete `feat/agent-context-audit` and its draft PR when Nery confirms.
+
 ## 2026-10-14 — agent-files-diagnostics migrated; markdownlint scoped to human docs
 
 - Branch `feat/agent-files-diagnostics` created from `main` (`6e2f202`) in a worktree, because the main checkout holds `feat/agent-context-audit` with 21 staged files that must not be touched.
