@@ -2,6 +2,15 @@
 
 Newest first. One entry per session: what changed, commits, what's next.
 
+## 2026-10-14 — agent-files-diagnostics migrated; markdownlint scoped to human docs
+
+- Branch `feat/agent-files-diagnostics` created from `main` (`6e2f202`) in a worktree, because the main checkout holds `feat/agent-context-audit` with 21 staged files that must not be touched.
+- `agent-files-diagnostics` 0.1.0 migrated from `~/NSM/Claude` (where two review rounds, 33 items, had been applied the same day): `plugin.json` aligned with the repo, LICENSE, README (Claude Code only, minimum 2.1.271), CHANGELOG, marketplace entry (`testing`), catalog regenerated (11 plugins). The skill is user-invoked only (`disable-model-invocation: true`). The five instruction files got one H1 each (they had 23, 12, 8, 8, 8).
+- Prettier reviewed against `forestal-mt` and `forestal-mt-store` and rejected: it would rewrite 124 files, 70 of them instruction files, and realign the catalog block `catalog.mjs` writes. markdownlint stays, now limited to human-read Markdown with explicit Prettier-like spacing (`MD004`, `MD007`, `MD049`, `MD050`, `MD060` compact); agent-consumed Markdown is excluded from every linter and formatter (41 files linted, 0 issues).
+- Gates run: markdownlint, Biome, `check-repo`, `catalog --check`, `validate-claude.sh`, `check-version-bump`, all green. Not run: script tests and the Python gates (no code changed).
+- Commits: `feat(agent-files-diagnostics)` (plugin, marketplace, catalog), `chore(lint)` (markdownlint scope and rule), `docs(memory)` (this wrap-up); pushed to `origin/feat/agent-files-diagnostics`, no PR yet.
+- Next: Nery decides on the `/skill-diagnostics:audit` offer, the `DEVELOPMENT.md` move and the fate of `agent-context-audit`; then `plugin-reviewer`, an isolated install test with one real audit, `sync-labels.mjs`, and the draft PR.
+
 ## 2026-10-14 — drift fixes applied and plugin-evals 0.1.1
 
 - `/release` check: every plugin's `plugin.json` version was already tagged, with no changes since; memory corrected (prompt-writer 0.2.0 released in PR #12, stale remote branches gone) in `6d37893`.
