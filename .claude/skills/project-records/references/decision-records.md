@@ -20,8 +20,31 @@ One file per decision in `.claude/maintainer/decisions/`, named `ADR_<YYYY-MM-DD
    - Decision makers. Default: Nery.
    - Optional: consulted, informed, risks, confirmation.
 3. Set the status. Use `accepted` when Nery decided in this conversation. Use `proposed` when the decision is still open.
+4. With more than one decision, ask Nery how to register them before writing: see "Choose how to register".
 
 Do not ask permission to record. Record, then tell Nery in one line which file you wrote.
+
+## Choose how to register
+
+Do this when there is more than one decision to record. With one decision, skip it and write one individual ADR.
+
+Ask Nery with `AskUserQuestion`: one question, three options. Put the recommended option first, label it "(Recommended)", and give the reason in its description.
+
+- **Individual:** one ADR per decision.
+- **Single:** one ADR that holds all the decisions.
+- **Classified:** one ADR per class, grouping the decisions that share a theme, such as process, architecture, security or distribution.
+
+Pick the recommendation by this rule, and say why in one sentence:
+
+- Individual, when the decisions can change independently. Each one can be superseded alone, so the history stays precise. This is the default.
+- Single, when the decisions were made together and stand or fall as one package.
+- Classified, when there are many decisions and several share a theme. It keeps the folder short without mixing unrelated decisions.
+
+After the answer:
+
+- Name the slug after the decision (individual), the package (single) or the class (classified).
+- In a single or classified ADR, list each decision as a numbered item under "Decision outcome".
+- Do not ask again for the same batch.
 
 ## Write the record
 

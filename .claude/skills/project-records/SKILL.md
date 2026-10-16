@@ -16,7 +16,7 @@ Keep the maintainers' decisions and unfixed technical debt in files, so nobody h
 
 ## When to act
 
-Act before finishing the task, not after. Record without asking permission. Ask only for facts you are missing, then tell Nery in one line what you recorded and where.
+Act before finishing the task, not after. Do not ask permission to record. When there are several decisions to record, first ask Nery how to register them: [choose how to register](references/decision-records.md#choose-how-to-register). Otherwise ask only for facts you are missing. Then tell Nery in one line what you recorded and where.
 
 1. An important decision is made: read [decision records](references/decision-records.md), then write the ADR.
 2. A problem is found that cannot be fixed now: read [debt ledger: open and update](references/debt-ledger-open.md), then log it.
