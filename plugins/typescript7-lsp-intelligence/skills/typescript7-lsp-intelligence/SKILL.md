@@ -65,7 +65,7 @@ Copy this checklist into your working notes and tick each item:
 
 Run them yourself after a change:
 
-- `tsc --noEmit -p <tsconfig.json>` for every program that includes a changed file or a caller; `tsc --listFilesOnly -p <tsconfig.json>` to confirm membership; `tsc --showConfig -p <tsconfig.json>` to read the effective options (neither of the last two type-checks).
+- `tsc --noEmit -p <tsconfig.json>` for every program that includes a changed file or a caller, with the strict profile's options from [toolchain.md](references/toolchain.md) on the command line so a lax config does not hide errors in the changed files; `tsc --listFilesOnly -p <tsconfig.json>` to confirm membership; `tsc --showConfig -p <tsconfig.json>` to read the effective options (neither of the last two type-checks).
 - The project's own formatter and linter (Biome, Prettier, ESLint), exactly as its `package.json` scripts run them.
 - The project's tests for the changed behavior.
 

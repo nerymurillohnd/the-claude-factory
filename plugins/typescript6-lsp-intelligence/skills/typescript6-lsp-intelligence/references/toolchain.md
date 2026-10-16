@@ -60,7 +60,13 @@ There is no `--strictest` flag. A strict project sets these explicitly:
 
 `strict` already turns on `noImplicitAny`, `strictNullChecks`, `strictFunctionTypes`, `strictBindCallApply`, `strictPropertyInitialization`, `noImplicitThis`, `useUnknownInCatchVariables` and `alwaysStrict`. `noImplicitThis` is the one people forget they rely on: a plain `function () { return this.width }` returned from a method has no instance `this`, and TS2683 says so; keep it on and use an arrow function or an explicit `this` parameter. `@tsconfig/strictest` sets `skipLibCheck: true`; read a preset before relying on it. Keep the project's `target`, `module`, `moduleResolution`, `jsx` and `lib`: strictness never replaces them.
 
-To hold one change to this profile without editing the project's `tsconfig.json`, pass each option on the command line with an explicit value: `tsc --noEmit -p tsconfig.json --strict true --strictNullChecks true --noUncheckedIndexedAccess true …`. Command-line options override the config while its `paths`, module resolution and `types` still apply; `--strict` alone does not override an explicit `"strictNullChecks": false`, so name every option.
+To hold a change to this profile without editing the project's `tsconfig.json`, pass every option on the command line with an explicit value:
+
+```bash
+tsc --noEmit -p tsconfig.json --strict true --noImplicitAny true --strictNullChecks true --strictFunctionTypes true --strictBindCallApply true --strictPropertyInitialization true --strictBuiltinIteratorReturn true --noImplicitThis true --useUnknownInCatchVariables true --alwaysStrict true --exactOptionalPropertyTypes true --noUncheckedIndexedAccess true --noPropertyAccessFromIndexSignature true --noImplicitReturns true --noImplicitOverride true --noFallthroughCasesInSwitch true --noUnusedLocals true --noUnusedParameters true --allowUnusedLabels false --allowUnreachableCode false --allowJs true --checkJs true
+```
+
+Command-line options override the config while its `paths`, module resolution and `types` still apply; `--strict` alone does not override an explicit `"strictNullChecks": false`, so name every option. `--checkJs true` also brings the program's JavaScript files into the check. An error this run reports in a file you did not change, and that the same command without the options does not report, is the project's existing strictness debt, not a regression of yours.
 
 ## No tsconfig.json
 
