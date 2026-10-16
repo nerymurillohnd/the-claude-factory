@@ -16,14 +16,13 @@ count_lines() {
 }
 
 report_session_state() {
-  local branch upstream status_out stash_out worktree_out claude_out state_file
+  local branch upstream status_out stash_out worktree_out claude_out
   branch="$(git branch --show-current 2> /dev/null || true)"
   upstream="$(git rev-list --left-right --count origin/main...HEAD 2> /dev/null || true)"
   status_out="$(git status --porcelain 2> /dev/null)" || status_out=""
   stash_out="$(git stash list 2> /dev/null)" || stash_out=""
   worktree_out="$(git worktree list 2> /dev/null)" || worktree_out=""
   claude_out="$(claude --version 2> /dev/null)" || claude_out=""
-  state_file=".claude/memory/project-state.md"
 
   local behind="${upstream%%[[:space:]]*}" ahead="${upstream##*[[:space:]]}"
   local node_have node_want claude_want
@@ -39,11 +38,6 @@ report_session_state() {
   worktrees="$(count_lines "${worktree_out}")"
   echo "- Uncommitted entries: ${dirty}; stashes: ${stashes}; worktrees: ${worktrees}."
   echo "- Node: ${node_have} (.nvmrc ${node_want}); claude: ${claude_out%% *} (CI pin ${claude_want:-unknown})."
-  if [[ -f ${state_file} ]]; then
-    echo "- Before the first task, read the Open items in ${state_file} and list the decisions only Nery can settle."
-  else
-    echo "- No ${state_file} found."
-  fi
 }
 
 report_session_state

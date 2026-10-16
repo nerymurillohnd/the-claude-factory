@@ -11,19 +11,20 @@ allowed-tools:
 # Triage issues
 
 Scope: `$ARGUMENTS` (default: all issues labeled `status: triage` or `status: needs-info`).
-Rules: `.claude/rules/stages/github-operations.md`. Replies: `.claude/templates/issue-replies.md`.
+Replies: `.claude/templates/issue-replies.md`.
 
 ## 1. Collect
 
 ```bash
 gh issue list --repo nerymurillohnd/the-claude-factory --state open --label "status: triage" --json number,title,labels,createdAt,author
+gh issue list --repo nerymurillohnd/the-claude-factory --state open --label "status: needs-info" --json number,title,labels,createdAt,author
 gh issue view <n> --repo nerymurillohnd/the-claude-factory --comments
 ```
 
 ## 2. Classify each issue
 
 1. **Plugin** — which one? Add `plugin: <name>`.
-2. **Valid?** Check against the plugin README, current code and official docs. Try to reproduce (local marketplace install or `--plugin-dir`).
+2. **Valid?** Check against the plugin README, current code and official docs. Try to reproduce in an isolated install (`/test-installed-plugin`).
 3. **Outcome** — one of:
    - `status: confirmed` + `priority:` (high = core broken for many; medium = workaround exists; low = nice to have)
    - `status: needs-info` — list exactly what's missing
@@ -38,10 +39,10 @@ gh issue view <n> --repo nerymurillohnd/the-claude-factory --comments
 - Post only after approval:
 
   ```bash
-  gh issue edit <n> --add-label "<labels>" --remove-label "status: triage"
+  gh issue edit <n> --add-label "<labels>" --remove-label "<the status label the issue had>"
   gh issue comment <n> --body-file <reply.md>
   ```
 
 ## 4. Plan the work
 
-For confirmed issues, propose the fix and release level. Fixes ship through `/release`; issues close only when released.
+For confirmed issues, propose the fix and release level. Fixes ship in a plugin PR with a version bump; an issue closes once its release tag exists.

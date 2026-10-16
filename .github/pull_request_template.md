@@ -4,7 +4,7 @@
 
 <!-- What changes and why, in 1–3 sentences. -->
 
-Closes #
+Refs #
 
 ## Release impact
 

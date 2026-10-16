@@ -16,7 +16,7 @@ Agree on, in Spanish:
 - **Name** — kebab-case, permanent, no `claude-`/`anthropic-` prefix. **Display name** and an emoji.
 - **Category** — an `id` from `.github/scripts/categories.json`.
 - **Components** — skills, agents, hooks, MCP, LSP, output styles, monitors, scripts. Justify each.
-- **Surfaces** — default Claude Code + the Claude app. Check every component against `.claude/rules/cross-surface-compatibility.md`; if any part forces Claude Code-only, say why and get Nery's OK.
+- **Surfaces** — default Claude Code + the Claude app. Check every component against `docs/compatibility.md`; if any part forces Claude Code-only, say why and get Nery's OK.
 - **Requirements** — CLIs, accounts, API keys (`userConfig`), minimum Claude Code version.
 
 Research current official docs for every component type used (Claude Code Docs MCP). Note version-gated features.
@@ -47,15 +47,14 @@ Follow `.claude/rules/stages/plugin-authoring.md`. Add `keywords` to `plugin.jso
 ## 5. Register everywhere
 
 - `node .github/scripts/catalog.mjs`
-- Root `CHANGELOG.md` → today's `## YYYY-MM-DD` heading → `### Added`: `- **<name>** 0.1.0 — <summary>.` Create the heading when it is missing.
+- Root `CHANGELOG.md` → today's `## YYYY-MM-DD` heading → `### Added`: `- **<name>** 0.1.0 — <summary>.` Create the heading when it is missing; move the line under the merge day if the PR merges later.
 - After push: `node .github/scripts/sync-labels.mjs` to create `plugin: <name>`.
 
 ## 6. Prove it works
 
-1. Run the `verify` skill — every gate ✔.
-2. Install and load check: run `/test-installed-plugin <name>` steps 1–4 (copied install into a plugin seed).
-
-3. Exercise each component in Claude Code while building (`claude --plugin-dir plugins/<name>`), then run `/test-installed-plugin <name>` and test in the Claude app (a Cowork session and a chat conversation), unless the plugin is declared Claude Code-only.
+1. Run the gates in `.claude/CLAUDE.md` → Gates — every gate passes.
+2. Exercise each component in Claude Code while building (`claude --plugin-dir plugins/<name>`).
+3. Run `/test-installed-plugin <name>` once, in full (this request authorizes it), and test in the Claude app (a Cowork session and a chat conversation), unless the plugin is declared Claude Code-only.
 4. Delegate an independent review to the `plugin-reviewer` agent; fix every confirmed finding.
 
 ## 7. Hand off

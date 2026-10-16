@@ -15,7 +15,7 @@ Plugin: `$ARGUMENTS`. Never install into `~/.claude/plugins`, never declare a te
 - **Other machines**: CI. `validate.yml` runs each plugin's scripts by path (`.github/scripts/tests/<plugin>/by_path.sh`) on Linux, macOS and Windows with Python 3.9 and 3.13; `evals.yml` runs the full suite on an Ubuntu runner. No official page gives a recipe for testing a plugin inside a container; only seeding is documented (docs: plugins/org, Seed containers and CI).
 - **Claude app** (step 8): only a claude.ai install reaches it. A conversation runs as a Cowork session when it can and as a chat conversation otherwise, where agents, hooks and local MCP servers don't run. Which interpreters the app provides is not documented.
 - **Not used**: `--bare`. It loads the plugin in place, sends no skill listing, gives Claude only Bash, file read and file edit tools, and needs an API key (`ANTHROPIC_API_KEY` or `apiKeyHelper`), never a subscription login (docs: headless, Start faster with bare mode).
-- The copy comes from a commit, not the working tree. If `git status --porcelain plugins/<name>` prints anything, tell Nery the test covers `HEAD` only, and commit first only if Nery asks.
+- The copy comes from a commit, not the working tree. If `git status --porcelain plugins/<name>` prints anything, commit it first: the test covers `HEAD` only.
 
 ## Steps
 
@@ -49,7 +49,7 @@ Plugin: `$ARGUMENTS`. Never install into `~/.claude/plugins`, never declare a te
    - `cd <target> && CLAUDE_CODE_PLUGIN_SEED_DIR=<seed> CLAUDE_CODE_PLUGIN_CACHE_DIR=<root> claude -p --setting-sources project,local --output-format stream-json --verbose "Reply OK."`
    - In the `init` event, the plugin is listed under `plugins` with its `path` under `<seed>/cache/factory-install-test/`, and `plugin_errors` is absent (docs: plugins/org, Seed containers and CI). Stop and report otherwise.
 5. **Grants.** Take the plugin's `allow_tools` from `.github/scripts/evals-config.json`. In a `-p` run with no host, anything that would prompt is denied (docs: headless, Turn off permission prompts in unattended runs), and a run with no mode set can start in auto mode, which drops a bare `Bash` grant (docs: headless, Auto-approve tools); so the manual session pins `--permission-mode dontAsk`.
-6. **Eval suite on the installed copy.** For a plugin with `evals/`, run a smoke test as `.claude/rules/stages/evals.md` says:
+6. **Eval suite on the installed copy.** For a plugin with `evals/`, run a smoke test:
    - `cd <target> && CLAUDE_CODE_PLUGIN_SEED_DIR=<seed> CLAUDE_CODE_PLUGIN_CACHE_DIR=<root> claude plugin eval <name>@factory-install-test --runs 1 --ablation none --model sonnet --judge-model opus --scaffold --no-publish --keep-temp --allow-tools <grants>`
    - An installed plugin named as the target skips the trust prompt (docs: plugin-evals, Trust the plugin directory), so no `--trust-plugin`.
    - Results go to `<target>/evals/results/`: report them, with the kept sandbox paths, before step 9 deletes `<target>`.

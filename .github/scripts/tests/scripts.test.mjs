@@ -21,6 +21,7 @@ import { afterEach, beforeEach, describe, test } from 'node:test'
 import { fileURLToPath } from 'node:url'
 
 const REAL_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..', '..')
+/** @type {string} */
 let root
 
 // The files a clone would hold: tracked plus new untracked ones, never git-ignored ones (such as a
@@ -440,6 +441,118 @@ describe('check-version-bump', () => {
     git('commit', '-qam', 'docs')
     const r = run('check-version-bump.mjs', ['HEAD~1'])
     assert.equal(r.code, 0, r.out)
+  })
+})
+
+describe('version-bump-gate hook', () => {
+  /**
+   * Run the standalone hook script the way Claude Code does: by its path, the event on stdin.
+   * @param {string} input
+   */
+  const hookWith = (input) => {
+    const r = spawnSync(join(root, '.claude', 'hooks', 'version-bump-gate.sh'), {
+      cwd: root,
+      encoding: 'utf8',
+      env: { ...process.env, CLAUDE_PROJECT_DIR: root },
+      input,
+    })
+    return { code: r.status, out: `${r.stdout}${r.stderr}` }
+  }
+  const hook = (command = 'git push origin feat/demo') =>
+    hookWith(JSON.stringify({ tool_name: 'Bash', tool_input: { command } }))
+  /** @param {...string} args */
+  const git = (...args) => execFileSync('git', args, { cwd: root, encoding: 'utf8' })
+  function initRepo(withOrigin = true) {
+    git('init', '-q', '-b', 'main')
+    git('config', 'user.email', 'test@example.com')
+    git('config', 'user.name', 'Test')
+    git('add', '-A')
+    git('commit', '-qm', 'base')
+    if (withOrigin) {
+      git('update-ref', 'refs/remotes/origin/main', 'HEAD')
+    }
+  }
+  function addSkill() {
+    mkdirSync(join(root, 'plugins/demo-tool/skills/demo'), { recursive: true })
+    write('plugins/demo-tool/skills/demo/SKILL.md', '---\ndescription: Demo.\n---\nDo it.\n')
+    git('add', '-A')
+    git('commit', '-qm', 'change')
+  }
+
+  test('denies the push while a changed plugin has no version bump', () => {
+    scaffold()
+    initRepo()
+    addSkill()
+    const r = hook()
+    assert.equal(r.code, 0, r.out)
+    const { hookSpecificOutput: out } = JSON.parse(r.out)
+    assert.equal(out.hookEventName, 'PreToolUse')
+    assert.equal(out.permissionDecision, 'deny')
+    assert.match(out.permissionDecisionReason, /bump-version\.mjs demo-tool <level>/)
+    assert.match(out.permissionDecisionReason, /major: breaking/)
+  })
+
+  test('lets the push through once the plugin is bumped', () => {
+    scaffold()
+    initRepo()
+    addSkill()
+    const p = 'plugins/demo-tool/CHANGELOG.md'
+    write(
+      p,
+      read(p).replace('## [Unreleased]\n', '## [Unreleased]\n\n### Added\n\n- Demo skill.\n'),
+    )
+    assert.equal(run('bump-version.mjs', ['demo-tool', 'minor']).code, 0)
+    git('add', '-A')
+    git('commit', '-qm', 'bump')
+    const r = hook()
+    assert.equal(r.code, 0, r.out)
+    assert.equal(r.out, '')
+  })
+
+  test('lets the push through for README-only edits', () => {
+    scaffold()
+    initRepo()
+    write('plugins/demo-tool/README.md', `${read('plugins/demo-tool/README.md')}\nMore docs.\n`)
+    git('commit', '-qam', 'docs')
+    const r = hook()
+    assert.equal(r.code, 0, r.out)
+    assert.equal(r.out, '')
+  })
+
+  test('denies every spelling of a push and only a push', () => {
+    scaffold()
+    initRepo()
+    addSkill()
+    const denied = [
+      'git push',
+      'git push --force-with-lease origin feat/demo',
+      'FOO=1 git -C . push origin feat/demo',
+      'git status && git -c core.editor=true push',
+      'npm test; git push origin main',
+    ]
+    for (const command of denied) {
+      assert.match(hook(command).out, /"permissionDecision":"deny"/, command)
+    }
+    const allowed = [
+      'git status',
+      'git log --grep push',
+      'echo $(npm root -g)',
+      'echo git push',
+      'gh pr view 3 --json reviews',
+    ]
+    for (const command of allowed) {
+      assert.equal(hook(command).out, '', command)
+    }
+    assert.equal(hookWith('not json').out, '')
+  })
+
+  test('lets the push through when origin/main does not exist', () => {
+    scaffold()
+    initRepo(false)
+    addSkill()
+    const r = hook()
+    assert.equal(r.code, 0, r.out)
+    assert.equal(r.out, '')
   })
 })
 
