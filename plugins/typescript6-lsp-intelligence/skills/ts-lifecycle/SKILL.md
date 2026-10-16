@@ -1,0 +1,141 @@
+---
+name: ts-lifecycle
+description: Work and code TS/JS with comprehensive research, deep knowledge, and lifecycle execution using official sources, LSP code intelligence, and behavioral evidence. Use for all tasks involving writing, editing, auditing, or answering queries about TypeScript or JavaScript code—including scripts, configuration, modules, declarations, migrations, editor discrepancies, controlled defects, negative test cases, and cross-tool contracts. Exclude unrelated work and elementary syntax explanations.
+---
+
+# TypeScript/JavaScript Lifecycle Execution
+
+## Overview
+
+One contract governs three facets: research establishes the supported approach, execution makes the scoped change, and verification demonstrates that the affected code and its checks behave as intended. Read procedures on demand. Apply this to TypeScript and materially connected tools, not every installed dependency.
+
+## Scope
+
+- Covers `.ts`, `.tsx`, `.mts`, `.cts`, `.js`, `.jsx`, `.mjs` and `.cjs` files, `tsconfig.json` and `jsconfig.json`, and the tools that consume them (frameworks, bundlers, runtimes, test runners, editors, CI) when the task crosses into them.
+- Plain JavaScript is in scope. The TypeScript language service is its semantic layer. The TypeScript compiler checks it when the project enables `allowJs` or `checkJs`; otherwise the project's own lint and tests are its gates.
+- This rule alone decides activation. Use the skill when a task changes TS/JS code or configuration, diagnoses a compiler, editor, build or runtime error in it, reviews it, or asks a question whose answer depends on the project or on a version.
+- Skip it for other languages, edits that change only comments or formatting, and syntax questions that depend on neither the project nor a version.
+
+## Modes
+
+Set the mode at the start and state it in the report.
+
+- `research`: questions, reviews, audits and diagnoses without permission to edit. Read-only in the user's project: read files, use the `LSP` tool, and run commands that write nothing there (`--version`, `--showConfig`, `--listFilesOnly`, and `tsc --noEmit --tsBuildInfoFile <file in a mktemp -d folder>`, since an `incremental` or `composite` config otherwise writes its build-info file into the project). Temporary reproductions go in a `mktemp -d` folder outside the project. Deliver supported conclusions and proposed checks, never a claim that an implementation or test passed.
+- `implementation`: the user asked for a change. Edit only the files the change needs.
+
+## Governing contract
+
+LSP owns questions about code structure; Grep owns questions about text. Route each question to its owner, and use both before changing or deleting code.
+
+| Question | Owner | Operation |
+| :-- | :-- | :-- |
+| Where is X defined? | LSP | `goToDefinition` |
+| Who uses or imports X? | LSP | `findReferences` |
+| Type or signature of X? | LSP | `hover` |
+| What does this file contain? | LSP | `documentSymbol`, before reading the whole file |
+| Where is X, file unknown? | LSP | `workspaceSymbol`, always with `query` |
+| Who calls X, what does X call? | LSP | `incomingCalls` / `outgoingCalls` on the function's position |
+| Implementations of an interface | LSP | `goToImplementation` |
+| Where does a word appear as text (docs, comments, strings, config, scripts)? | Grep | — |
+| Is it safe to delete, rename or change a signature? | Both | LSP for code references, then Grep to confirm them and find the blind spots below |
+
+When Grep finds several symbols with the same name, search for the name together with the module it is imported from, and read the import lines to tell them apart. Without `hover`, read the type's declaration (the `.d.ts` under `node_modules` for a library) or ask `tsc`.
+
+Every operation takes `filePath` (absolute), `line` (1-based) and `character` (1-based, UTF-16 code units: an emoji before the symbol counts 2). Raw LSP data in logs is 0-based: add 1 to both.
+
+If the `LSP` tool is not loaded, load it first with `ToolSearch` and the query `select:LSP`. Send `LSP` calls in their own message, never in parallel with another tool; several `LSP` calls may share a message. The session's first `LSP` call goes alone: its answer can come from a server still loading the project, so pass the warm-up check below before grouping calls.
+
+### 1. Discover and research the actual system
+
+- Distinguish declared ranges, lockfile resolutions, installed packages, invoked executables, and active editor services.
+- Inspect effective configuration, inheritance, consumers, file coverage, relevant workspace settings, and supported version/help output.
+- Trace material connections across frameworks, adapters, generators, dependencies, bundlers, runtimes, tests, editors and CI.
+- Consult official documentation on both sides, including prerequisites, caveats and cross-references; memory or help output alone does not establish semantics or compatibility.
+- Corroborate material decisions with TypeScript and counterpart release histories, newest first, backward through installed-to-target versions or feature history.
+- Reconcile defaults, breaking changes, fixes, regressions, deprecations, new capabilities and experimental-to-stable transitions. Newer fixes are not necessarily installed.
+
+### 2. Treat LSP results as evidence, not the whole picture
+
+- A `findReferences` result is never the full list. It misses callers in `.svelte`, `.vue` and `.astro` files when run from a `.ts` file, test mocks (`vi.mock`, `jest.mock`) and other string references, and files changed from the shell. Confirm it with Grep before deleting a symbol or changing a signature: compare the two counts and explain each difference before acting on either.
+- `findReferences` returns only a file, line and column. To see what each reference is, read its line in Grep's output instead of opening every file.
+- The tool is read-only: no rename and no code actions. Diagnostics are not a call either: the server pushes them on a later turn after an edit, or never, depending on the server. No diagnostics straight after an edit does not mean the edit is clean; run the type check before reporting done.
+
+### 3. Establish readiness, coverage and freshness
+
+- Empty, stale, pending, truncated or degraded responses do not prove absence or correctness. Investigate cause; cold start is one possibility, not the default conclusion.
+- Use bounded readiness-aware retries for transient initialization/indexing.
+- Stop on success or a non-transient blocker. Exhaustion remains incomplete evidence.
+- Confirm post-edit results correspond to current content and expected diagnostic transitions.
+
+### 4. Map impact and control edits
+
+- Select operations by their applicable triggers and cover each material relationship.
+- One hover is insufficient impact analysis; executing every available operation is not a completion criterion.
+- A rename or signature change is a set of manual edits: apply it only after `findReferences` and Grep agree, or after you explain each difference. Respect authorization, formatter ownership and existing user changes.
+- Preserve legitimate CLI/editor/environment differences; do not edit the project's configuration to impose identical or stricter settings without task justification.
+
+### 5. Test behavior and the verification mechanism
+
+**Verify intended behavior and relevant negative cases:**
+
+- For code or configuration changes, demonstrate sensitivity of each relied-on checking layer with an applicable controlled defect or existing executable negative fixture.
+- An exemption needs a concrete scope or capability reason and an explicit evidence limit.
+
+**Match the defect to the observer:**
+
+- Type errors test checking; valid-but-wrong behavior tests assertions. Neither substitutes for the other.
+- Use isolated, version/configuration-faithful reproductions; preserve dependencies, lockfiles, generated outputs and unrelated files.
+- Record baseline, expected failure, observed failure, restoration and restored pass. No incidental crash, suppressed diagnostic, weakened assertion or unexplained failure counts as proof. Restore experimental edits even if a probe fails; never erase user changes.
+
+### 6. Close only on attributable evidence
+
+1. Distinguish observation, inference, contradiction and unavailable evidence.
+2. Block dependent decisions only.
+3. Stop expanding research when material relationships are resolved or explicitly blocked, and justify that boundary.
+4. Run applicable native project gates as well as fresh semantic checks.
+5. Report baseline failures and unverified surfaces; never claim the project clean with unresolved actionable errors or missing evidence.
+6. Reopen research when implementation reveals new assumptions or components.
+
+## Workflow: a three-facet lifecycle
+
+1. [ ] **Research.** Follow [research-workflow.md](references/research-workflow.md). Select and count the applicable categories, load only the relevant sources, and establish the outcome, supported approach, affected surfaces and validation before dependent edits. It uses:
+     - [project-evidence.md](references/project-evidence.md): installed versions, configuration graph and local compiler probes.
+     - [source-map.md](references/source-map.md): official TypeScript sources for each of the ten research categories.
+     - [integration-and-releases.md](references/integration-and-releases.md): counterpart tool contracts and release-history reconciliation.
+2. [ ] **Execute.** Follow [semantic-execution.md](references/semantic-execution.md) to navigate, map impact and apply scoped changes. Return to research as new contracts emerge.
+3. [ ] **Verify.** Follow [verification.md](references/verification.md) to test the change and the checks that observe it. Run [fixtures.md](references/fixtures.md) once per project, before the first time you report its checks clean, and restore every probe. This skill's folder is `${CLAUDE_SKILL_DIR}`; the fixtures are in its `assets/` folder.
+
+### Probes
+
+- By default, run a sensitivity probe in a temporary copy outside the project, with the same compiler, configuration chain and lockfile-installed dependencies. Keep its outputs and caches there.
+- In `research` mode, never probe inside the project.
+- In `implementation` mode, an in-project probe is allowed only when a copy cannot reproduce the check, for example a monorepo layout or a running editor service. It must be in a file the task already edits:
+  - Save the file's content first.
+  - Introduce one defect.
+  - Restore the saved content, even if the probe fails.
+  - Confirm with `git diff` or a hash that only the intended change remains.
+  - Never touch another file. If the user edits the same file meanwhile, report the remaining probe instead of overwriting their work.
+
+### Trusting a result
+
+When a result is empty, shows only the definition, or will justify an edit or deletion, check all five before believing it:
+
+1. **Position**: `hover` at the same spot shows the intended symbol. "No hover information" means a wrong position or no server, never "no usages".
+2. **Warm-up**: a session's first `LSP` calls can be partial or wrong, `goToDefinition` included (it may point at the import line). Repeat until two consecutive results match (at most three). This match check is separate from the readiness retries in semantic-execution.md.
+3. **Scope**: only the session's working directory is indexed. Outside it, results are stable and incomplete: say so and use Grep plus reading.
+4. **Freshness**: changes made outside Edit and Write (Bash, git, codegen, formatters) may never reach the index. Grep or Read those files instead of trusting counts.
+5. **Blind spots**: Grep the name for the uses LSP cannot see (next section).
+
+### Blind spots
+
+LSP sees static code references only. Grep the name in: strings and reflection (dynamic imports, `eval`, dispatch by name); test mocks and stubs (`vi.mock`, `jest.mock` and other module paths in strings); entry points and config (package scripts, YAML, JSON, TOML, `.env`); framework injection (fixtures, decorators, registries, routes); `.astro`, `.svelte`, `.vue` and `.mdx` files; shell scripts, CI, Makefiles, Dockerfiles; docs, comments, templates.
+
+## Final completion gate
+
+- [ ] Outcome, mode, categories/count, actual versions, configuration and material relationships recorded.
+- [ ] Official sources and release history support each material decision; research boundary and dependent blockers stated.
+- [ ] Applicable semantic operations have current, scoped evidence; retries and fallbacks are accounted for.
+- [ ] Authorized final diff preserves contracts; positive/negative checks and checking-layer sensitivity have attributable results; all probes restored.
+- [ ] Applicable project gates passed; remaining gaps are explicit. Research-only completion reports supported conclusions and proposed checks, never implementation/test success. Blocked required checks mean execution remains incomplete.
+
+For skill maintenance only, read [acceptance-scenarios.md](references/acceptance-scenarios.md) and [execution-scenarios.md](references/execution-scenarios.md).

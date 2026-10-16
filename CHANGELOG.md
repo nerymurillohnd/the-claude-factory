@@ -8,7 +8,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The
 
 ### Changed
 
-- **typescript6-lsp-intelligence** 0.2.0 — uses your own TypeScript 6 and language server instead of pinned copies; a Bash hook holds every edit to a strictest policy with your project's environment and finds `tsc` across Node version managers.
+- **typescript6-lsp-intelligence** 0.2.0 — uses your own TypeScript 6 and language server instead of pinned copies; a Bash hook holds every edit to a strictest policy with your project's environment and finds `tsc` across Node version managers; the skill is now `ts-lifecycle`.
 - **typescript7-lsp-intelligence** 0.3.0 — uses your own TypeScript 7 instead of a pinned copy; a Bash hook runs the native compiler without Node.js and holds every edit to a strictest policy with your project's environment.
 
 ## 2026-10-15
