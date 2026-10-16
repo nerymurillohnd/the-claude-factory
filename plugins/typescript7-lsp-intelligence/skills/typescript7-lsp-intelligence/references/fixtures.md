@@ -13,7 +13,7 @@ OWNER="<absolute path of the owning tsconfig.json>"
 for name in clean_control type_mismatch implicit_any possibly_undefined; do
   W=$(mktemp -d "<rootDir of that program>/lsp-fixture-XXXXXX")
   cp "<skill folder>/references/fixtures/$name.ts.fixture" "$W/$name.ts"
-  printf '{ "extends": "%s", "include": ["*.ts"] }\n' "$OWNER" > "$W/tsconfig.json"
+  printf '{ "extends": "%s", "files": [], "include": ["*.ts"] }\n' "$OWNER" > "$W/tsconfig.json"
   # the strict check from SKILL.md, with -p "$W/tsconfig.json"; compare with the table
   rm -rf "$W"
 done

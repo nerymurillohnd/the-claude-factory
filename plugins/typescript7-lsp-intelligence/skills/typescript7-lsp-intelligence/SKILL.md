@@ -71,8 +71,10 @@ After every change to a TypeScript or JavaScript file, and before you report it 
 **The strict check** is the only command whose result decides "clean". It holds the code to the same profile as this plugin's post-edit hook, whatever the project's config says. Run it from the folder that holds the program's `tsconfig.json`, once per program that includes a changed file or a caller:
 
 ```bash
-tsc -p <tsconfig.json> --pretty false --noEmit true --skipLibCheck true --allowJs true --checkJs true --strict true --noImplicitAny true --strictNullChecks true --strictFunctionTypes true --strictBindCallApply true --strictPropertyInitialization true --strictBuiltinIteratorReturn true --noImplicitThis true --useUnknownInCatchVariables true --alwaysStrict true --exactOptionalPropertyTypes true --noUncheckedIndexedAccess true --noPropertyAccessFromIndexSignature true --noImplicitReturns true --noImplicitOverride true --noFallthroughCasesInSwitch true --noUnusedLocals true --noUnusedParameters true --allowUnusedLabels false --allowUnreachableCode false
+tsc -p <tsconfig.json> --pretty false --noEmit true --tsBuildInfoFile "$(mktemp -d)/check.tsbuildinfo" --skipLibCheck true --allowJs true --checkJs true --strict true --noImplicitAny true --strictNullChecks true --strictFunctionTypes true --strictBindCallApply true --strictPropertyInitialization true --strictBuiltinIteratorReturn true --noImplicitThis true --useUnknownInCatchVariables true --alwaysStrict true --exactOptionalPropertyTypes true --noUncheckedIndexedAccess true --noPropertyAccessFromIndexSignature true --noImplicitReturns true --noImplicitOverride true --noFallthroughCasesInSwitch true --noUnusedLocals true --noUnusedParameters true --allowUnusedLabels false --allowUnreachableCode false
 ```
+
+`--tsBuildInfoFile` keeps the build-info file of an `incremental` or `composite` config out of the project; `--incremental false` does not, and fails on `composite`.
 
 Read the results this way:
 

@@ -79,7 +79,7 @@ Read the error's own text; these are the ones whose fix is easy to get wrong.
 | :-- | :-- | :-- |
 | TS2322 / TS2345 | A value's type does not match the declared or expected type | Decide which side is wrong and fix that one |
 | TS2683 | `this` implicitly has type `any` (`noImplicitThis`) | Use an arrow function, or declare `this` as the first parameter |
-| TS2307 | Cannot find module | Fix the import path, or install the package with the project's package manager |
+| TS2307 | Cannot find module | Fix the import path. A missing package is installed only with the user's approval, with the project's package manager |
 | TS18003 | No inputs were found in the config file | Fix `include` or `files`; the config is broken, not the code |
 
 Never make an error disappear with `@ts-ignore`, `any`, `as unknown as T`, a non-null `!`, or a looser option. The only exception is a verified false positive: put `// @ts-expect-error <reason>` on the line above and tell the user.

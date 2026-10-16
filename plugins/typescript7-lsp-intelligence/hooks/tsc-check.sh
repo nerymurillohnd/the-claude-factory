@@ -556,13 +556,15 @@ check_group() {
     *) config="${found}" ;;
   esac
   run_dir="$(dirname "${config}")"
-  strict="$(cd "${run_dir}" && "${TSC[@]}" -p "${config}" --pretty false "${STRICT_FLAGS[@]+"${STRICT_FLAGS[@]}"}" 2>&1 || true)"
+  # Both passes write nothing into the project: no emitted files, and the tsbuildinfo of an
+  # incremental or composite config goes to WORK (--incremental false fails on composite).
+  strict="$(cd "${run_dir}" && "${TSC[@]}" -p "${config}" --pretty false --tsBuildInfoFile "${WORK}/strict-${RANDOM}${RANDOM}.tsbuildinfo" "${STRICT_FLAGS[@]+"${STRICT_FLAGS[@]}"}" 2>&1 || true)"
   parse_output "${strict}" "${run_dir}" "${files}"
   config_errors="${GROUP_CONFIG}"
   edited_errors="${GROUP_EDITED}"
   other_errors="${GROUP_OTHER}"
   if [[ -n ${other_errors} && ${config} == "${found}" ]]; then
-    project="$(cd "${run_dir}" && "${TSC[@]}" -p "${config}" --pretty false 2>&1 || true)"
+    project="$(cd "${run_dir}" && "${TSC[@]}" -p "${config}" --pretty false --noEmit true --tsBuildInfoFile "${WORK}/project-${RANDOM}${RANDOM}.tsbuildinfo" 2>&1 || true)"
     parse_output "${project}" "${run_dir}" "${files}"
     project_other="${GROUP_OTHER}"
   fi
