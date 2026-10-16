@@ -29,7 +29,7 @@
 
 ## ✨ Why use it
 
-- **Every edit is held to the strictest checks** — after each edit to a `.ts`, `.tsx`, `.mts`, `.cts`, `.js`, `.jsx`, `.mjs` or `.cjs` file, the edited code must pass `strict`, `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, `noImplicitReturns` and the rest of the plugin's strictest policy, even when your `tsconfig.json` is lax or turns them off. Claude has to fix the findings; nothing fails in silence.
+- **Every edit is held to the strictest checks** — after each edit to a `.ts`, `.tsx`, `.mts`, `.cts`, `.js`, `.jsx`, `.mjs` or `.cjs` file, the edited code must pass `strict`, `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, `noImplicitReturns`, `checkJs` and the rest of the plugin's strictest policy, even when your `tsconfig.json` is lax or turns them off. JavaScript is type-checked too, not just admitted. Claude has to fix the findings; nothing fails in silence.
 - **Your project's environment, never broken by the check** — module resolution, path aliases, JSX, `lib`, `types` and `include` come from your nearest `tsconfig.json` and its project references, so the check never reports an import that works in your build.
 - **No noise from code nobody touched** — the strictest policy applies to the edited files only. An error in another file is reported only when your own config also finds it, because the edit probably caused it. A broken `tsconfig.json` is reported instead of letting everything pass.
 - **Your TypeScript, wherever you installed it** — the hook uses your project's `node_modules` first, then a global install, and finds `tsc` through nvm, fnm, Volta, asdf, mise, n, Homebrew, pnpm, Bun or a custom npm prefix, even when Claude Code starts without your shell profile. The plugin installs nothing.
@@ -151,7 +151,8 @@ Your project decides the environment; the plugin decides how strict the edited c
 | That config is a solution file (`files: []` with `references`) | The referenced programs are followed to the one that lists the file |
 | Several changed files share a program | One `tsc` run for that program |
 | The file isn't in any program | Checked alone on top of the nearest config, with its `types` and path aliases, and the report says so |
-| No config above the file | Checked alone with the plugin's strictest config; JavaScript files get `checkJs` |
+| A JavaScript file | Type-checked: `checkJs` is part of the strictest policy, so a `.js` file in your `include` is checked in its program even when your config only sets `allowJs`, or neither |
+| No config above the file | Checked alone with the plugin's strictest config |
 | Your config itself has errors | Reported, so a broken config never looks like a clean check |
 | No usable Node.js or TypeScript is found | Not blocking: you get one message per session listing where the hook searched, and Claude is told the file wasn't checked |
 
@@ -243,9 +244,9 @@ Each edit compiles the whole program; TypeScript 7's native compiler is several 
 </details>
 
 <details>
-<summary><b>A JavaScript file passed but has obvious type errors.</b></summary>
+<summary><b>Does it check JavaScript files?</b></summary>
 
-Inside a program, `allowJs` admits JavaScript and only `checkJs` in `tsconfig.json`, or a `// @ts-check` comment at the top of the file, type-checks it. Turn one of them on. A JavaScript file with no config above it is checked with `checkJs` on.
+Yes. The strictest policy turns on `checkJs`, so a JavaScript file Claude edits is type-checked from its JSDoc types, in its program when your `include` covers it and alone otherwise. JavaScript files Claude didn't touch are reported only when your own config checks them too.
 
 </details>
 

@@ -8,6 +8,7 @@
 #   its references to the program that lists the file.
 # - Strictness comes from tsconfig.strictest.json next to this script: each boolean option
 #   is passed on the command line, so it overrides the project's value, explicit false too.
+#   Its checkJs brings the JavaScript files of a program into the check, as allowJs would.
 # - A file outside every program is checked alone on top of the nearest config, or on top
 #   of tsconfig.strictest.json without one.
 # - Strictest errors count for the edited files only; errors in other files count only when
@@ -31,7 +32,6 @@ readonly BASH_SLACK_S=2
 readonly FALLBACK_WINDOW_S=30
 readonly MAX_WALK_FILES=20000
 readonly TS_FILE_PATTERN='\.(ts|tsx|mts|cts|js|jsx|mjs|cjs)$'
-readonly JS_FILE_PATTERN='\.(js|jsx|mjs|cjs)$'
 readonly NL=$'\n'
 
 HOOK_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
@@ -413,8 +413,9 @@ referenced_configs() {
   return 0
 }
 
-# Sets PROGRAM to the config whose program lists file $1, to "uncovered <nearest>" when no
-# program does, or to "none" without a config. A config tsc cannot read is used as is.
+# Sets PROGRAM to the config whose program lists file $1 under the strictest flags, so
+# JavaScript counts as checkJs admits it; to "uncovered <nearest>" when no program does,
+# or to "none" without a config. A config tsc cannot read is used as is.
 PROGRAM=""
 program_of() {
   local file="$1" nearest queue config listed seen="${NL}"
@@ -432,7 +433,7 @@ program_of() {
     [[ -n ${config} ]] || continue
     [[ ${seen} == *"${NL}${config}${NL}"* ]] && continue
     seen="${seen}${config}${NL}"
-    listed="$(cd "$(dirname "${config}")" && "${TSC[@]}" --listFilesOnly -p "${config}" 2>&1 || true)"
+    listed="$(cd "$(dirname "${config}")" && "${TSC[@]}" --listFilesOnly -p "${config}" "${STRICT_FLAGS[@]+"${STRICT_FLAGS[@]}"}" 2>&1 || true)"
     if [[ ${listed} == *"error TS"* && ${config} == "${nearest}" ]]; then
       PROGRAM="${config}"
       return 0
@@ -461,9 +462,6 @@ load_strict_flags() {
 # Writes config $1 that checks file $3 alone on top of base config $2.
 write_alone_config() {
   local out="$1" base="$2" file="$3" options="" roots="" dir types shown base_json file_json
-  if [[ ${file} =~ ${JS_FILE_PATTERN} ]]; then
-    options='"allowJs": true, "checkJs": true'
-  fi
   # A config in a temporary folder would not find the project's @types: give it the
   # folders tsc searches by default, unless the base sets typeRoots itself.
   if [[ ${base} != "${STRICTEST}" ]]; then
@@ -558,7 +556,7 @@ check_group() {
     *) config="${found}" ;;
   esac
   run_dir="$(dirname "${config}")"
-  strict="$(cd "${run_dir}" && "${TSC[@]}" -p "${config}" --pretty false "${STRICT_FLAGS[@]}" 2>&1 || true)"
+  strict="$(cd "${run_dir}" && "${TSC[@]}" -p "${config}" --pretty false "${STRICT_FLAGS[@]+"${STRICT_FLAGS[@]}"}" 2>&1 || true)"
   parse_output "${strict}" "${run_dir}" "${files}"
   config_errors="${GROUP_CONFIG}"
   edited_errors="${GROUP_EDITED}"
