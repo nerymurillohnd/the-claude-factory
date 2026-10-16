@@ -66,13 +66,14 @@ If the `LSP` tool is not loaded, load it first with `ToolSearch` and the query `
 
 - A `findReferences` result is never the full list. It misses callers in `.svelte`, `.vue` and `.astro` files when run from a `.ts` file, test mocks (`vi.mock`, `jest.mock`) and other string references, and files changed from the shell. Confirm it with Grep before deleting a symbol or changing a signature: compare the two counts and explain each difference before acting on either.
 - `findReferences` returns only a file, line and column. To see what each reference is, read its line in Grep's output instead of opening every file.
+- The `LSP` tool runs Claude Code's own language server, not the user's editor: its answers say nothing about what the editor shows. Label any conclusion about the editor as inference unless the user shares the editor's output.
 - The tool is read-only: no rename and no code actions. Diagnostics are not a call either, and this plugin's TypeScript 7 server (`tsc --lsp`) pushes none after an edit: silence means unchecked, not clean. Run the type check after every change to a TypeScript or JavaScript file and before reporting done.
 
 ### 3. Establish readiness, coverage and freshness
 
 - Empty, stale, pending, truncated or degraded responses do not prove absence or correctness. Investigate cause; cold start is one possibility, not the default conclusion.
-- Retry a transient initialization or indexing failure at most four times within 30 seconds, as semantic-execution.md describes, then stop.
-- Stop at the first usable result, or at a blocker that retrying cannot fix; exhausted retries leave the evidence incomplete, never a negative answer.
+- When a call errors or reports that the server is initializing or indexing, make at most four attempts in total (the first call plus three retries) within one 30-second budget per operation, as semantic-execution.md describes, then stop.
+- Stop at the first result that passes the five checks under "Trusting a result", or at a blocker that retrying cannot fix; exhausted retries leave the evidence incomplete, never a negative answer. These retries are for errors and indexing; the warm-up check below is for a session's first calls, and the two do not add up.
 - Confirm post-edit results correspond to current content and expected diagnostic transitions.
 
 ### 4. Map impact and control edits
@@ -98,7 +99,7 @@ If the `LSP` tool is not loaded, load it first with `ToolSearch` and the query `
 ### 6. Close only on attributable evidence
 
 1. Distinguish observation, inference, contradiction and unavailable evidence.
-2. When evidence for one decision is missing, block only that decision and continue the independent work, so one gap does not stall the task.
+2. When evidence for one decision is missing, block only that decision and continue the independent work, so one gap does not stall the task. Ask the user only when the decision needs an input no local observation or official source can supply: the intended behavior, an authorization, or a choice between valid options. Otherwise list the missing input under Gaps.
 3. Stop expanding research when material relationships are resolved or explicitly blocked, and justify that boundary.
 4. Run the project's own gates (type check, lint, tests, build) on the final state, plus a fresh semantic check: `hover` or `findReferences` on each changed symbol after the last edit. When no diagnostics arrive, the type check is the gate and semantic diagnostics are reported as unavailable.
 5. Report baseline failures and unverified surfaces; never claim the project clean with unresolved actionable errors or missing evidence.
@@ -110,7 +111,7 @@ If the `LSP` tool is not loaded, load it first with `ToolSearch` and the query `
      - [project-evidence.md](references/project-evidence.md): installed versions, configuration graph and local compiler probes.
      - [source-map.md](references/source-map.md): official TypeScript sources for each of the ten research categories.
      - [integration-and-releases.md](references/integration-and-releases.md): counterpart tool contracts and release-history reconciliation.
-2. [ ] **Execute.** Follow [semantic-execution.md](references/semantic-execution.md) to navigate, map impact and apply scoped changes. Return to research as new contracts emerge.
+2. [ ] **Execute.** Before the first edit, record the baseline of each project check (step 1 of verification.md). Follow [semantic-execution.md](references/semantic-execution.md) to navigate, map impact and apply scoped changes. Return to research as new contracts emerge.
 3. [ ] **Verify.** Follow [verification.md](references/verification.md) to test the change and the checks that observe it. Run [fixtures.md](references/fixtures.md) once per program the change touches, before the first time you report its checks clean, and restore every probe. Its type-check fixtures run with `bash ${CLAUDE_SKILL_DIR}/scripts/run-fixtures.sh <owning tsconfig.json>`.
 
 ### Probes
@@ -130,7 +131,7 @@ If the `LSP` tool is not loaded, load it first with `ToolSearch` and the query `
 When a result is empty, shows only the definition, or will justify an edit or deletion, check all five before believing it:
 
 1. **Position**: `hover` at the same spot shows the intended symbol. "No hover information" means a wrong position or no server, never "no usages".
-2. **Warm-up**: a session's first `LSP` calls can be partial or wrong, `goToDefinition` included (it may point at the import line). Repeat until two consecutive results match (at most three). If no two match, record the result as unstable and use Grep plus reading. This match check is separate from the readiness retries in semantic-execution.md.
+2. **Warm-up**: a session's first `LSP` calls can be partial or wrong, `goToDefinition` included (it may point at the import line). Repeat until two consecutive results match, with at most three calls in total. If no two match, record the result as unstable and use Grep plus reading. This match check is separate from the readiness retries in semantic-execution.md.
 3. **Scope**: only the session's working directory is indexed. Outside it, results are stable and incomplete: say so and use Grep plus reading.
 4. **Freshness**: changes made outside Edit and Write (Bash, git, codegen, formatters) may never reach the index. Grep or Read those files instead of trusting counts.
 5. **Blind spots**: Grep the name for the uses LSP cannot see (next section).
@@ -145,7 +146,7 @@ LSP sees static code references only. Grep the name in: strings and reflection (
 - [ ] Official sources, and release history where a decision depends on a version or another tool, support each material decision; research boundary and dependent blockers stated.
 - [ ] Applicable semantic operations have current, scoped evidence; retries and fallbacks are accounted for.
 - [ ] Authorized final diff preserves contracts; positive/negative checks and checking-layer sensitivity have attributable results; all probes restored.
-- [ ] Applicable project gates passed; remaining gaps are explicit. Research-only completion reports supported conclusions and proposed checks, never implementation/test success. Blocked required checks mean execution remains incomplete.
+- [ ] Applicable project gates show no failure that is new against the baseline; baseline failures are listed under Gaps. Research-only completion reports supported conclusions and proposed checks, never implementation/test success. Blocked required checks mean execution remains incomplete.
 
 ## Report
 
@@ -153,7 +154,7 @@ End with this record in the reply, scaled to the task:
 
 ```text
 Mode: research | implementation
-Categories: <selected source-map categories> (<count> of 10)
+Categories: <selected source-map categories> (<count> of 10; 0 when the change needed no research)
 Versions: <declared, locked, installed and invoked compiler and counterparts>
 Change: <scoped diff, or the proposed change in research mode>
 Evidence: <each claim as observation, inference, contradiction or unavailable, with its command or source>

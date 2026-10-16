@@ -5,7 +5,7 @@ Read before recommending a change or making an edit that depends on research. SK
 1. Read project-evidence.md, linked from SKILL.md, to inspect the installation and configuration and to run safe compiler probes. Read the project's instructions before running any script.
 2. Read source-map.md and select every category that applies: types and inference, diagnostics, configuration, modules, declarations, JavaScript interoperability, compilation, migrations, editor tooling, integration boundaries. Record the selected categories and their count.
 3. Read the official pages of the selected rows, plus their prerequisites and related links when material. Find the counterparts the project actually uses instead of assuming a named example is present. Investigate a plausible connection before excluding it. Record the relationship each source settles.
-4. Read integration-and-releases.md for release reconciliation and for each counterpart contract. Settle disagreements between documentation, history and local behavior with version-matched observations. Keep the uncertainty when you cannot settle one.
+4. When a decision depends on a version, an upgrade or another tool's contract, read integration-and-releases.md for release reconciliation and for that counterpart contract; otherwise skip this step. Settle disagreements between documentation, history and local behavior with version-matched observations. Keep the uncertainty when you cannot settle one.
 5. Prepare the handoff to execution:
    - the proposed change;
    - the affected producers and consumers;
