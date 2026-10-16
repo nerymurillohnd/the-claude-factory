@@ -25,8 +25,9 @@ import json
 import re
 import shlex
 import sys
-from typing import TYPE_CHECKING
 
+# Not imported from typing: that import costs about 1 ms on every hook call.
+TYPE_CHECKING = False
 if TYPE_CHECKING:
     from collections.abc import Callable
 
@@ -39,13 +40,16 @@ SEPARATORS = ";&|()\n"
 WRAPPERS = frozenset(
     {"sudo", "command", "time", "nohup", "exec", "xargs", "env", "nice", "builtin", "timeout"},
 )
-KEYWORDS = frozenset({"do", "then", "else", "elif", "if", "while", "until", "{", "!", "time"})
+KEYWORDS = frozenset({"do", "then", "else", "elif", "if", "while", "until", "{", "!"})
 SHELLS = frozenset({"bash", "sh", "zsh", "dash", "ksh"})
 INTERPRETERS = frozenset({"python", "python3", "node", "perl", "ruby", "php", "deno", "bun", "lua"})
 INLINE_FLAGS = frozenset({"-c", "-e", "-E", "-p", "--eval", "--command"})
 PROTECTED = frozenset({"main", "master", "trunk", "develop", "head"})
 
 DEFAULT_BRANCH = "Changing the repository's default branch is never done automatically."
+PROTECTED_DELETE = (
+    "Deleting main (or another protected branch) on the remote is never part of cleanup."
+)
 REWRITES = "rewrites history; cleanup never rewrites published history."
 CREDENTIALS = (
     "This can print remote URLs or credentials. Run the plugin's inventory.py: it redacts them."
@@ -81,7 +85,7 @@ READ_ONLY_GIT = frozenset(
 PATCH_FLAGS = frozenset(
     {
         "-p", "--patch", "-u", "-c", "--cc", "--patch-with-stat", "--patch-with-raw", "-W",
-        "--function-context", "--binary", "--ext-diff", "--color-words", "--word-diff",
+        "--function-context", "--binary", "--ext-diff",
     },
 )  # fmt: skip
 PATCH_PREFIXES = ("-L", "-U", "--unified", "--word-diff", "--color-words")
@@ -89,13 +93,13 @@ SEARCH_TOOLS = frozenset({"grep", "egrep", "fgrep", "rg", "ag", "sed", "awk"})
 SECRET_VARIABLE = re.compile(
     r"\$\{?\w*(token|secret|passw|api_?key|credential|private_?key)", re.IGNORECASE
 )
-ENV_PRINTERS = frozenset({"export", "declare", "typeset", "set"})
+ENV_PRINTERS = frozenset({"export", "declare", "typeset", "set", "env"})
 WRITE_TOOLS = frozenset({"Write", "Edit", "NotebookEdit"})
 READ_MCP = re.compile(r"__(get|list|search|read|query|find|fetch|describe|show)_", re.IGNORECASE)
 STAT_FLAGS = frozenset(
     {
         "--stat", "--shortstat", "--numstat", "--name-only", "--name-status", "--summary",
-        "--check", "--quiet", "-s", "--raw", "--dirstat", "--no-patch", "-q",
+        "--check", "--quiet", "-s", "--raw", "--dirstat", "-q",
     },
 )  # fmt: skip
 GREP_SAFE_FLAGS = frozenset(
@@ -111,7 +115,6 @@ SAFE_FIRST_ARG = {
     "notes": frozenset({"list", "show"}),
 }
 ASK_GIT_REASON = {
-    "push": "git push changes the remote.",
     "fetch": "git fetch updates remote-tracking references.",
     "reset": "git reset moves a branch and can discard work.",
     "gc": "git gc prunes unreachable objects.",
@@ -122,8 +125,7 @@ MUTATING_GIT = frozenset(
         "add", "rm", "mv", "commit", "merge", "rebase", "cherry-pick", "revert", "checkout",
         "switch", "restore", "am", "apply", "pull", "init", "clone", "update-ref",
         "replace", "maintenance", "sparse-checkout", "lfs", "format-patch", "archive",
-        "merge-file", "update-index", "repack", "pack-refs", "tag", "branch", "config",
-        "remote", "push", "clean", "reflog", "symbolic-ref",
+        "merge-file", "update-index", "repack", "pack-refs", "fetch", "reset", "gc", "prune",
     },
 )  # fmt: skip
 DRY_RUN_GIT = frozenset({"fetch", "clean", "worktree", "remote", "gc", "prune"})
@@ -148,15 +150,8 @@ SECRET_EXAMPLE = re.compile(r"\.(example|sample|template|dist|pub)$", re.IGNOREC
 SECRET_DIRS = frozenset({".ssh", ".aws", ".gnupg", ".docker", ".kube"})
 SECRET_PAIRS = frozenset({(".git", "config"), (".config", "gh"), (".config", "gcloud")})
 GLOB_SAMPLES = (
-    ".env",
-    ".envrc",
-    ".netrc",
-    ".npmrc",
-    "id_rsa",
-    "server.pem",
-    "secrets",
-    "credentials",
-)
+    ".env", ".envrc", ".netrc", ".npmrc", "id_rsa", "server.pem", "secrets", "credentials",
+)  # fmt: skip
 FILE_READERS = frozenset(
     {
         "cat", "head", "tail", "less", "more", "bat", "nl", "tac", "sed", "awk", "grep",
@@ -174,19 +169,10 @@ FILE_CHANGERS = frozenset(
 NETWORK_TOOLS = frozenset({"curl", "wget", "http", "https"})
 GH_READ = frozenset(
     {
-        "view",
-        "list",
-        "status",
-        "diff",
-        "checks",
-        "get",
-        "show",
-        "watch",
-        "browse",
-        "help",
+        "view", "list", "status", "diff", "checks", "get", "show", "watch", "browse", "help",
         "search",
     },
-)
+)  # fmt: skip
 GH_SENSITIVE = frozenset({"secret", "variable", "ssh-key", "gpg-key"})
 GH_BODY_FLAGS = frozenset({"-f", "-F", "--field", "--raw-field", "--input"})
 GH_GLOBAL_WITH_VALUE = frozenset({"-R", "--repo", "--hostname"})
@@ -226,8 +212,7 @@ def is_cluster(arg: str, letters: str) -> bool:
 
 def glob_hits_secret(name: str) -> bool:
     """True when a wildcard pattern could expand to a secret-bearing file name."""
-    literal = name.replace("*", "").replace("?", "").replace("[", "").replace("]", "")
-    if not literal or not any(char in name for char in "*?["):
+    if not name.strip("*?[]") or not any(char in name for char in "*?["):
         return False
     dotted = name.startswith(".")
     return any(
@@ -276,20 +261,11 @@ def git_path_arguments(args: list[str]) -> list[str]:
 
 
 SAFE_WITH = {
-    "diff": STAT_FLAGS,
-    "diff-tree": STAT_FLAGS,
-    "diff-index": STAT_FLAGS,
-    "diff-files": STAT_FLAGS,
-    "show": STAT_FLAGS,
+    **dict.fromkeys(("diff", "diff-tree", "diff-index", "diff-files", "show"), STAT_FLAGS),
     "grep": GREP_SAFE_FLAGS,
     "cat-file": CAT_FILE_SAFE_FLAGS,
 }
-PRINTS_WITH = {
-    "log": PATCH_FLAGS,
-    "whatchanged": PATCH_FLAGS,
-    "stash": PATCH_FLAGS,
-    "reflog": PATCH_FLAGS,
-}
+PATCH_PRINTERS = frozenset({"log", "whatchanged", "reflog"})
 
 
 def has_patch_flag(args: list[str]) -> bool:
@@ -302,8 +278,10 @@ def prints_content(sub: str, args: list[str]) -> bool:
     if "--no-patch" in args or any(arg.startswith((":(exclude)", ":!", ":^")) for arg in args):
         return False
     if sub in SAFE_WITH:
-        return has_patch_flag(args) or not set(args) & SAFE_WITH[sub]
-    if sub in PRINTS_WITH:
+        return has_patch_flag(args) or SAFE_WITH[sub].isdisjoint(args)
+    if sub == "stash":
+        return args[:1] == ["show"] and has_patch_flag(args)
+    if sub in PATCH_PRINTERS:
         return has_patch_flag(args)
     return sub in {"blame", "annotate"}
 
@@ -311,32 +289,36 @@ def prints_content(sub: str, args: list[str]) -> bool:
 def check_push(args: list[str]) -> Verdict | None:
     """Deny force pushes and deleting a protected branch; ask for any other real push."""
     plain = positionals(args)
-    longs = [arg for arg in args if arg.startswith("--")]
     forced = (
-        any(arg in {"--force", "--mirror", "--force-if-includes"} for arg in longs)
-        or any(arg.startswith("--force-with-lease") for arg in longs)
+        any(arg in {"--force", "--mirror", "--force-if-includes"} for arg in args)
+        or any(arg.startswith("--force-with-lease") for arg in args)
         or any(is_cluster(arg, "f") for arg in args)
         or any(ref.startswith("+") for ref in plain)
     )
     if forced:
         return DENY, "Force-pushing rewrites published history; cleanup never does that."
-    if "--dry-run" in longs or "-n" in args:
+    if "--dry-run" in args or "-n" in args:
         return None
     deleting = (
-        "--delete" in longs
+        "--delete" in args
         or any(is_cluster(arg, "d") for arg in args)
         or any(r.startswith(":") for r in plain)
     )
     targets = [ref.lstrip(":").removeprefix("refs/heads/").lower() for ref in plain[1:]]
     if deleting and any(target in PROTECTED for target in targets):
-        return (
-            DENY,
-            "Deleting main (or another protected branch) on the remote is never part of cleanup.",
-        )
+        return DENY, PROTECTED_DELETE
     verb = "deletes a remote branch" if deleting else "changes the remote"
-    if "--prune" in longs:
+    if "--prune" in args:
         verb = "can delete remote branches (--prune)"
     return ASK, f"git push {verb}."
+
+
+LISTING_FLAGS = frozenset({"-l", "--list", "--contains", "--merged", "--no-merged", "--points-at"})
+
+
+def names_without_listing(args: list[str]) -> bool:
+    """True when a branch or tag command names something and has no listing option."""
+    return bool(positionals(args)) and LISTING_FLAGS.isdisjoint(args)
 
 
 def check_branch(args: list[str]) -> Verdict | None:
@@ -347,8 +329,7 @@ def check_branch(args: list[str]) -> Verdict | None:
     }  # fmt: skip
     if any(arg in changing or arg.startswith("--set-upstream") for arg in args):
         return ASK, "git branch deletes, renames or reconfigures a branch."
-    listing = {"-l", "--list", "--contains", "--merged", "--no-merged", "--points-at"}
-    if positionals(args) and not any(arg in listing for arg in args):
+    if names_without_listing(args):
         return ASK, "git branch with a name creates a branch."
     return None
 
@@ -356,10 +337,9 @@ def check_branch(args: list[str]) -> Verdict | None:
 def check_tag(args: list[str]) -> Verdict | None:
     """Ask for tag creation and deletion; listing passes."""
     changing = {"-d", "--delete", "-f", "--force", "-a", "-s", "-m"}
-    listing = {"-l", "--list", "--contains", "--merged", "--no-merged", "--points-at"}
     if any(arg in changing for arg in args):
         return ASK, "git tag creates or deletes a tag."
-    if positionals(args) and not any(arg in listing for arg in args):
+    if names_without_listing(args):
         return ASK, "git tag with a name creates a tag."
     return None
 
@@ -374,17 +354,10 @@ def check_remote(args: list[str]) -> Verdict | None:
         or action in {"get-url", "show"}
     ):
         return DENY, CREDENTIALS
-    if action in {
-        "add",
-        "remove",
-        "rm",
-        "rename",
-        "set-url",
-        "set-head",
-        "set-branches",
-        "prune",
-        "update",
-    }:
+    changing = {
+        "add", "remove", "rm", "rename", "set-url", "set-head", "set-branches", "prune", "update",
+    }  # fmt: skip
+    if action in changing:
         return ASK, f"git remote {action} changes the repository's remotes."
     return None
 
@@ -392,15 +365,9 @@ def check_remote(args: list[str]) -> Verdict | None:
 def check_config(args: list[str]) -> Verdict | None:
     """Deny config reads that can print credentials; ask for writes."""
     writing = {
-        "--unset",
-        "--unset-all",
-        "--add",
-        "--replace-all",
-        "--edit",
-        "-e",
-        "--remove-section",
+        "--unset", "--unset-all", "--add", "--replace-all", "--edit", "-e", "--remove-section",
         "--rename-section",
-    }
+    }  # fmt: skip
     plain = positionals(args)
     regexp = "--get-regexp" in args
     if any(arg in writing for arg in args) or (len(plain) > 1 and not regexp):
@@ -464,13 +431,7 @@ SPECIAL_GIT: dict[str, Callable[[list[str]], Verdict | None]] = {
     "symbolic-ref": check_symbolic_ref,
     "reflog": check_reflog,
 }
-KNOWN_GIT = (
-    READ_ONLY_GIT
-    | MUTATING_GIT
-    | frozenset(SAFE_FIRST_ARG)
-    | frozenset(ASK_GIT_REASON)
-    | frozenset(DENY_GIT)
-)
+KNOWN_GIT = READ_ONLY_GIT | MUTATING_GIT
 
 
 def parse_git(args: list[str]) -> tuple[str, list[str], list[str]]:
@@ -493,19 +454,8 @@ def parse_git(args: list[str]) -> tuple[str, list[str], list[str]]:
 
 def dry_run(sub: str, args: list[str]) -> bool:
     """True when the arguments ask for a preview (-n means something else for fetch)."""
-    short_n = any(
-        arg.startswith("-")
-        and not arg.startswith("--")
-        and "n" in arg
-        and set(arg[1:]) <= DRY_RUN_LETTERS
-        for arg in args
-    )
+    short_n = any(is_cluster(arg, "n") and set(arg[1:]) <= DRY_RUN_LETTERS for arg in args)
     return "--dry-run" in args or (sub != "fetch" and short_n)
-
-
-def read_only(sub: str, rest: list[str]) -> bool:
-    """True for subcommands that only read (fsck --lost-found writes)."""
-    return sub in READ_ONLY_GIT and not (sub == "fsck" and "--lost-found" in rest)
 
 
 def classify_subcommand(sub: str, rest: list[str], *, strict: bool) -> Verdict | None:
@@ -521,7 +471,8 @@ def classify_subcommand(sub: str, rest: list[str], *, strict: bool) -> Verdict |
             if first in SAFE_FIRST_ARG[sub]
             else (ASK, f"git {sub} {first} changes repository state.")
         )
-    if read_only(sub, rest) or (sub not in KNOWN_GIT and not strict):
+    reads_only = sub in READ_ONLY_GIT and not (sub == "fsck" and "--lost-found" in rest)
+    if reads_only or (sub not in KNOWN_GIT and not strict):
         return None
     return ASK, ASK_GIT_REASON.get(sub, f"git {sub} can change repository state.")
 
@@ -534,7 +485,7 @@ def inspect_arguments(sub: str, rest: list[str]) -> Verdict | None:
             return verdict
     if any(arg.startswith("--output") for arg in rest):
         return ASK, f"git {sub} --output writes a file."
-    if prints_content(sub, rest) and not (sub == "stash" and rest[:1] != ["show"]):
+    if prints_content(sub, rest):
         return ASK, CONTENT
     return None
 
@@ -582,10 +533,7 @@ def check_gh_api(args: list[str]) -> Verdict | None:
     if method == "DELETE" and re.search(
         r"(refs/heads|branches)/(main|master|trunk|develop)(?![\w.\-/])", joined, re.IGNORECASE
     ):
-        return (
-            DENY,
-            "Deleting main (or another protected branch) on the remote is never part of cleanup.",
-        )
+        return DENY, PROTECTED_DELETE
     return ASK, f"gh api {method} changes GitHub state."
 
 
@@ -629,15 +577,10 @@ def classify_gh(args: list[str]) -> Verdict | None:
     return ASK, f"gh {group} {action} changes GitHub state."
 
 
-def at_command_position(segment: list[str], index: int) -> bool:
-    """True when every token before index is an assignment, a keyword, a wrapper or an option."""
-    for token in segment[:index]:
-        assignment = "=" in token and "/" not in token.split("=", 1)[0]
-        if not (
-            assignment or token in KEYWORDS or basename(token) in WRAPPERS or token.startswith("-")
-        ):
-            return False
-    return True
+def is_command_prefix(token: str) -> bool:
+    """True for a token that can precede a command: an assignment, keyword, wrapper or option."""
+    assignment = "=" in token and "/" not in token.split("=", 1)[0]
+    return assignment or token in KEYWORDS or basename(token) in WRAPPERS or token.startswith("-")
 
 
 def classify_file_change(name: str, rest: list[str]) -> Verdict | None:
@@ -652,9 +595,7 @@ def classify_file_change(name: str, rest: list[str]) -> Verdict | None:
 
 
 def classify_runner(name: str, rest: list[str]) -> Verdict | None:
-    """Ask for inline interpreter code and network tools."""
-    if name in NETWORK_TOOLS:
-        return ASK, f"{name} can change GitHub or other services."
+    """Ask for inline interpreter code."""
     for arg in rest:
         if arg in INLINE_FLAGS:
             return (
@@ -693,21 +634,12 @@ def classify_other(name: str, rest: list[str]) -> Verdict | None:
         return secret_verdict(reader_arguments(name, rest)) or classify_file_change(name, rest)
     if name in FILE_CHANGERS or name == "find":
         return classify_file_change(name, rest)
-    if name in INTERPRETERS or name in NETWORK_TOOLS:
+    if name in NETWORK_TOOLS:
+        return ASK, f"{name} can change GitHub or other services."
+    if name in INTERPRETERS:
         return classify_runner(name, rest)
-    prints_env = name == "printenv" or (
-        name in ENV_PRINTERS | {"env"} and rest in ([], ["-p"], ["-x"])
-    )
+    prints_env = name == "printenv" or (name in ENV_PRINTERS and rest in ([], ["-p"], ["-x"]))
     return (DENY, "This prints the environment, which can hold secrets.") if prints_env else None
-
-
-def classify_command(name: str, rest: list[str], *, at_start: bool) -> Verdict | None:
-    """Return the verdict for one command name and its arguments."""
-    if name == "git":
-        return classify_git(rest, strict=at_start)
-    if name == "gh":
-        return classify_gh(rest)
-    return classify_other(name, rest)
 
 
 def redirect_verdict(segment: list[str]) -> Verdict | None:
@@ -735,12 +667,18 @@ def classify_segment(segment: list[str]) -> list[Verdict]:
         verdicts.append(redirect)
     if basename(segment[0]) in {"echo", "printf"}:
         return verdicts
+    at_start = True
     for index, token in enumerate(segment):
-        found = classify_command(
-            basename(token), segment[index + 1 :], at_start=at_command_position(segment, index)
-        )
+        name, rest = basename(token), segment[index + 1 :]
+        if name == "git":
+            found = classify_git(rest, strict=at_start)
+        elif name == "gh":
+            found = classify_gh(rest)
+        else:
+            found = classify_other(name, rest)
         if found:
             verdicts.append(found)
+        at_start = at_start and is_command_prefix(token)
     return verdicts
 
 
@@ -798,12 +736,9 @@ def decide_tool(tool: str, event: object) -> Verdict | None:
     if tool in {"Read", "Grep"}:
         paths = [text_at(event, "tool_input", key) for key in ("file_path", "path", "glob")]
         return secret_verdict([path for path in paths if path])
-    changes = tool in WRITE_TOOLS or (tool.startswith("mcp__") and not READ_MCP.search(tool))
-    return (
-        (ASK, f"{tool} may change files or a service; the audit phase is read-only.")
-        if changes
-        else None
-    )
+    if tool in WRITE_TOOLS or (tool.startswith("mcp__") and not READ_MCP.search(tool)):
+        return ASK, f"{tool} may change files or a service; the audit phase is read-only."
+    return None
 
 
 def decide(event: object) -> Verdict | None:
@@ -818,11 +753,7 @@ def decide(event: object) -> Verdict | None:
             ASK,
             "git-cleanup could not parse this command, so it cannot tell whether it is safe.",
         )
-    for kind in (DENY, ASK):
-        for found in verdicts:
-            if found[0] == kind:
-                return found
-    return None
+    return next((found for kind in (DENY, ASK) for found in verdicts if found[0] == kind), None)
 
 
 def emit(verdict: Verdict) -> None:
