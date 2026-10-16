@@ -32,14 +32,14 @@ The skill uses four things:
 - A shell (the Bash tool), to run `tsc`, the project's scripts and `scripts/run-fixtures.sh`.
 - The project's toolchain: a `tsc` (the program's `node_modules/.bin/tsc`, or a `tsc` on `PATH`) and the package manager that runs its lint and test scripts.
 - The Claude Code `LSP` tool, served by this plugin's language server.
-- Web access (WebFetch or WebSearch), for official documentation and release notes.
+- Web access, for official documentation and release notes, through the first that works: WebFetch or WebSearch; `curl` to the official domain (typescriptlang.org, the counterpart's docs site); `gh` on the official repository (`gh release view`, `gh api repos/<owner>/<repo>/contents/<path>` for its docs and `CHANGELOG.md`), such as `microsoft/TypeScript`.
 
 When one is missing, find the row, do what it says, and report it as it says:
 
 | Missing | How you know | What to do | What to report |
 | :-- | :-- | :-- | :-- |
 | `LSP` tool | `ToolSearch` with `select:LSP` finds nothing, or every `LSP` call errors and the retries in rule 3 do not fix it (the Claude app's chat and Cowork never run language servers) | Answer every LSP row of the governing contract with Grep and reading the files. Skip the references fixture and the fresh semantic check | Semantic evidence: unavailable |
-| Web access | No fetch or search tool, or two fetches of an official page fail | Continue every decision that no official page decides. Block each decision that needs one | Each unread source: unavailable. Blocked decisions under Gaps |
+| Web access | WebFetch, WebSearch, `curl` to the official domain and `gh` on the official repository all fail or are absent | Continue every decision that no official page decides. Block each decision that needs one | Each unread source: unavailable. Blocked decisions under Gaps |
 | Type checking | No `tsconfig.json` covers the changed files, or only a `jsconfig.json` without `checkJs` does | Lint and tests are the gates. The type-check fixtures do not apply | Type-check layer: not present |
 | `tsc` | No `node_modules/.bin/tsc` above the program and no `tsc` on `PATH` | Run lint and tests | Type check: cannot run, under Gaps |
 | Shell | No Bash tool (the Claude app's chat) | Read and reason only: no gate, fixture or probe can run | Implementation: not verified |
