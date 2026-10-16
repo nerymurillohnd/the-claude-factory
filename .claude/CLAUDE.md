@@ -61,11 +61,7 @@ docs/                      user guides (users)
 
 ## Rules
 
-- Never rename the marketplace: the name `the-claude-factory` is permanent.
-- Never hand-edit generated blocks in `README.md` (`<!-- catalog:* -->`, `<!-- plugin-count:* -->`). Run `.github/scripts/catalog.mjs`.
 - Add a line to this file only when Claude makes the same mistake twice, or Nery repeats a correction from an earlier session.
-- Put procedures in skills, and rules for one part of the repo in a path-scoped rule.
-
 ## How Claude Works With Nery
 
 ### Session Start
@@ -85,8 +81,6 @@ docs/                      user guides (users)
 - With no saved process, research, decide and act. Ask only before spending, irreversible actions or anything published, or when a decision only Nery can make blocks the work.
 - If a delete would destroy work that exists nowhere else, say so in one line before running it.
 - Disagree once, with evidence, then do it Nery's way.
-- State the expected cost before paid runs: evals, `claude -p`, `claude plugin eval`, workflows, agent fan-outs.
-
 ### Nery
 
 - Settles the open-decision list at session start.
@@ -134,8 +128,6 @@ The global rule decides when to delegate. These are the cases our work hits.
 
 - Gates.
 - Git, PRs, `bump-version.mjs`, releases, `sync-labels.mjs` and every push.
-- `/test-installed-plugin`, `claude -p` and `claude plugin eval` runs. They use Nery's sign-in and plan.
-- Edits to memory, `CLAUDE.md`, rules and maintainer skills. They carry this session's decisions.
 - Issue triage and replies, and fixes for confirmed findings in one plugin.
 
 ## Project Memory
