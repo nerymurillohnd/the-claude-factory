@@ -21,11 +21,11 @@ All of these must also hold: the condition is observable or backed by traceable 
    ```
 
 2. If an open entry already tracks it, do not add a new one. Update that entry when the new finding adds evidence.
-3. If a resolved entry covers it and the problem is back, open a new item that links back to it (see debt-ledger-resolve.md, "Keep history").
+3. If a resolved entry covers it and the problem is back, open a new item that links back to it (see [Keep history](debt-ledger-resolve.md#keep-history)).
 
 ## Add an item
 
-1. Create the ledger from `.claude/skills/project-records/assets/pending-debt.md` when `pending-debt.md` does not exist. Read the asset and write the file with the Write tool.
+1. Create the ledger from the [pending debt template](../assets/pending-debt.md) when `pending-debt.md` does not exist. Read the template and write the file with the Write tool.
 2. Find the next free ID. Never reuse an ID from either ledger.
 
    ```bash

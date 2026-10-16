@@ -11,7 +11,7 @@ allowed-tools:
 # Triage issues
 
 Scope: `$ARGUMENTS` (default: all issues labeled `status: triage` or `status: needs-info`).
-Replies: `.claude/templates/issue-replies.md`.
+Replies: [issue replies](../../templates/issue-replies.md).
 
 ## 1. Collect
 

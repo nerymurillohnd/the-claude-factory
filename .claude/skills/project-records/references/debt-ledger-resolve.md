@@ -9,7 +9,7 @@ A logged problem is fixed. Move its item from `.claude/maintainer/technical-debt
    - Negative: the original failure no longer reproduces. Showing that the new path works is not enough.
 2. Record both checks with evidence: commands, tests or review. Quote the output.
 3. If the condition disappeared without a fix, such as the code was removed, say so as the fix. The negative check is then the evidence that the condition is gone.
-4. Create the ledger from `.claude/skills/project-records/assets/resolved-debt.md` when `resolved-debt.md` does not exist. Read the asset and write the file with the Write tool.
+4. Create the ledger from the [resolved debt template](../assets/resolved-debt.md) when `resolved-debt.md` does not exist. Read the template and write the file with the Write tool.
 5. Copy the "Entry format" block above its comment and fill it. Keep the same ID. Copy Logged on from the pending entry. Set Resolved on to today's date.
 
    ```bash

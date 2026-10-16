@@ -32,7 +32,7 @@ Do not ask permission to record. Record, then tell Nery in one line which file y
    mkdir -p .claude/maintainer/decisions
    ```
 
-2. Read `.claude/skills/project-records/assets/ADR_YYYY-MM-DD_decision-slug.md`.
+2. Read the [ADR template](../assets/ADR_YYYY-MM-DD_decision-slug.md).
 3. Write `.claude/maintainer/decisions/ADR_<date>_<slug>.md` with the Write tool. The slug is lowercase kebab-case and names the decision, such as `merge-git-hygiene-into-github-operations`.
 4. Keep the frontmatter `date` equal to the date in the file name.
 5. Replace every `{placeholder}`. Leave the template's HTML comments out.

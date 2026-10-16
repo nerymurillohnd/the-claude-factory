@@ -5,7 +5,7 @@ description: Closes a working session on The Claude Factory — updates the loca
 
 # Wrap up the session
 
-Memory lives in `.claude/memory/`: `MEMORY.md` indexes one topic file per fact. Rules for it are in `.claude/CLAUDE.md` → *Project Memory*.
+Memory lives in `.claude/memory/`: `MEMORY.md` indexes one topic file per fact. Rules for it are in [Project Memory](../../CLAUDE.md#project-memory).
 
 ## 1. Collect what changed
 
@@ -22,7 +22,7 @@ Memory lives in `.claude/memory/`: `MEMORY.md` indexes one topic file per fact. 
 ## 3. Verify
 
 1. Memory is gitignored: do not commit or push it.
-2. Run the gates in `.claude/rules/QUALITY_GATE.md` → Before Every Push if code changed.
+2. Run the gates in [Before Every Push](../../rules/QUALITY_GATE.md#before-every-push) if code changed.
 
 ## 4. Report to Nery (Spanish)
 

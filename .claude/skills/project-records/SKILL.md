@@ -18,9 +18,9 @@ Keep the maintainers' decisions and unfixed technical debt in files, so nobody h
 
 Act before finishing the task, not after. Record without asking permission. Ask only for facts you are missing, then tell Nery in one line what you recorded and where.
 
-1. An important decision is made: read `references/decision-records.md`, then write the ADR.
-2. A problem is found that cannot be fixed now: read `references/debt-ledger-open.md`, then log it.
-3. A logged problem is fixed: read `references/debt-ledger-resolve.md`, verify the fix, then move the entry to resolved.
+1. An important decision is made: read [decision records](references/decision-records.md), then write the ADR.
+2. A problem is found that cannot be fixed now: read [debt ledger: open and update](references/debt-ledger-open.md), then log it.
+3. A logged problem is fixed: read [debt ledger: resolve](references/debt-ledger-resolve.md), verify the fix, then move the entry to resolved.
 
 ## What counts as an important decision
 
@@ -50,6 +50,6 @@ Do not record renames, typos, formatting, comments, a small refactor that keeps 
 
 ## References
 
-- `references/decision-records.md`: write, supersede and check an ADR. Template: `assets/ADR_YYYY-MM-DD_decision-slug.md`.
-- `references/debt-ledger-open.md`: what belongs in the ledger, how to log and update an item. Template: `assets/pending-debt.md`.
-- `references/debt-ledger-resolve.md`: verify a fix, move the item, keep history. Template: `assets/resolved-debt.md`.
+- [Decision records](references/decision-records.md): write, supersede and check an ADR. Template: [ADR template](assets/ADR_YYYY-MM-DD_decision-slug.md).
+- [Debt ledger: open and update](references/debt-ledger-open.md): what belongs in the ledger, how to log and update an item. Template: [pending debt](assets/pending-debt.md).
+- [Debt ledger: resolve](references/debt-ledger-resolve.md): verify a fix, move the item, keep history. Template: [resolved debt](assets/resolved-debt.md).
