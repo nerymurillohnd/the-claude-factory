@@ -23,7 +23,7 @@ Resolve the project's actual compiler using its package manager/workspace conven
 
 After checking installed support and output behavior, use resolution/file explanations or performance diagnostics as relevant. Explicit source-file invocations can select different configuration behavior from project invocations: reconcile installed CLI behavior and official CLI docs. Use the real project check/build command for final validation, accounting for caches and generated outputs; informational probes are not test passes.
 
-For editor discrepancies, compare the **same file** across command and service. Establish whether it belongs to app, tests, tooling, generated, or inferred projects before proposing SDK changes or exclusions. Preserve intentional browser/server/test ambient environments. Available language-server diagnostics/references can help, but observe readiness, freshness, project root and capabilities; empty results alone prove nothing.
+For editor discrepancies, compare the **same file** across command and service. Establish whether it belongs to app, tests, tooling, generated, or inferred projects before proposing SDK changes or exclusions. Preserve intentional browser/server/test ambient environments. Available language-server diagnostics/references can help, but observe readiness, freshness, project root and capabilities; empty results alone prove nothing. Server diagnostics arrive only after an edit, so in `research` mode the compiler's output stands in for them and the server's view is inference (SKILL.md, rule 2).
 
 ## Isolated reproduction
 
