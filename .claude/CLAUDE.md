@@ -62,6 +62,7 @@ docs/                      user guides (users)
 ## Rules
 
 - Add a line to this file only when Claude makes the same mistake twice, or Nery repeats a correction from an earlier session.
+
 ## How Claude Works With Nery
 
 ### Session Start
