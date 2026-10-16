@@ -6,6 +6,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+### Changed
+
+- `python-lsp-intelligence` skill: states again that a finding is fixed at its cause and never silenced with `# noqa`, `# type: ignore`, `cast()` or a relaxed rule, matching the hook's message; removes the unsupported "verified on fixtures" label from the gotchas; rewords the opening line about automatic checks.
+
+### Fixed
+
+- `toolchain.md` and the README said basedpyright finds its configuration only in the current working directory. It searches from the working directory upward through its parent folders, and never from the file's folder.
+
 ## [0.2.0] - 2026-10-13
 
 ### Added
