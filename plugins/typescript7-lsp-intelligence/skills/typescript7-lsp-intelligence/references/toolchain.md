@@ -10,6 +10,7 @@
 - Frequent errors
 - Repair external values without assertions
 - Check one program or the whole repository
+- When the editor and tsc disagree
 - CI
 - IDE
 
@@ -21,11 +22,13 @@ The plugin ships no TypeScript: it uses yours. The project's `node_modules/.bin/
 node_modules/.bin/tsc --version || tsc --version
 ```
 
+Run it from the folder that holds the program's `tsconfig.json`; in a monorepo with hoisted dependencies, walk up the folders to the first `node_modules/.bin/tsc` instead.
+
 The language server is `tsc --lsp --stdio`, the TypeScript 7 `tsc` on the `PATH` Claude Code started with. The `typescript` package also ships a native binary per platform, `node_modules/@typescript/typescript-<os>-<arch>/lib/tsc`, which runs without Node.js. When the project's and the global compiler disagree, say which one produced each result; never mix their outputs.
 
 ## TypeScript 7 and TypeScript 6
 
-Tell the generation by its interface, not its version number. TypeScript 7 (the native compiler) serves the language server as `tsc --lsp --stdio` and ships no `lib/tsserver.js`. TypeScript 6 ships `lib/tsserver.js`, which wrappers such as typescript-language-server drive; such a wrapper cannot run TypeScript 7. A project pinned to TypeScript 6 is served by the sibling plugin `typescript6-lsp-intelligence`; enable one of the two, never both, since one server handles each file extension.
+Tell the generation by its interface, not its version number. TypeScript 7 (the native compiler) serves the language server as `tsc --lsp --stdio` and ships no `lib/tsserver.js`. TypeScript 6 ships `lib/tsserver.js`, which wrappers such as typescript-language-server drive; such a wrapper cannot run TypeScript 7. A project pinned to TypeScript 6 is served by the sibling plugin `typescript6-lsp-intelligence`; enable one of the two, never both, since one server handles each file extension. When the project's `tsc --version` reports 6.x while this plugin is active, tell the user the sibling plugin fits that project, and label every result with the compiler that produced it.
 
 ## Where configuration lives
 
@@ -36,7 +39,7 @@ Tell the generation by its interface, not its version number. TypeScript 7 (the 
 
 ## A strict profile
 
-There is no `--strictest` flag. A strict project sets these explicitly:
+There is no `--strictest` flag. The strict check in SKILL.md holds code to this profile, the same one the plugin's post-edit hook applies (the hook also sets `target` and `module`; the skill keeps the project's):
 
 ```json
 {
@@ -52,79 +55,68 @@ There is no `--strictest` flag. A strict project sets these explicitly:
     "noUnusedParameters": true,
     "allowUnusedLabels": false,
     "allowUnreachableCode": false,
-    "noEmit": true,
-    "skipLibCheck": false
+    "allowJs": true,
+    "checkJs": true,
+    "skipLibCheck": true,
+    "noEmit": true
   }
 }
 ```
 
-`strict` already turns on `noImplicitAny`, `strictNullChecks`, `strictFunctionTypes`, `strictBindCallApply`, `strictPropertyInitialization`, `noImplicitThis`, `useUnknownInCatchVariables` and `alwaysStrict`. `noImplicitThis` is the one people forget they rely on: a plain `function () { return this.width }` returned from a method has no instance `this`, and TS2683 says so; keep it on and use an arrow function or an explicit `this` parameter. `@tsconfig/strictest` sets `skipLibCheck: true`; read a preset before relying on it. Keep the project's `target`, `module`, `moduleResolution`, `jsx` and `lib`: strictness never replaces them.
+`strict` already turns on `noImplicitAny`, `strictNullChecks`, `strictFunctionTypes`, `strictBindCallApply`, `strictPropertyInitialization`, `noImplicitThis`, `useUnknownInCatchVariables`, `alwaysStrict` and `strictBuiltinIteratorReturn`; the command names each one anyway. Keep the project's `target`, `module`, `moduleResolution`, `jsx` and `lib`: strictness never replaces them.
 
-To hold a change to this profile without editing the project's `tsconfig.json`, pass every option on the command line with an explicit value:
-
-```bash
-tsc --noEmit -p tsconfig.json --strict true --noImplicitAny true --strictNullChecks true --strictFunctionTypes true --strictBindCallApply true --strictPropertyInitialization true --strictBuiltinIteratorReturn true --noImplicitThis true --useUnknownInCatchVariables true --alwaysStrict true --exactOptionalPropertyTypes true --noUncheckedIndexedAccess true --noPropertyAccessFromIndexSignature true --noImplicitReturns true --noImplicitOverride true --noFallthroughCasesInSwitch true --noUnusedLocals true --noUnusedParameters true --allowUnusedLabels false --allowUnreachableCode false --allowJs true --checkJs true
-```
-
-Command-line options override the config while its `paths`, module resolution and `types` still apply; `--strict` alone does not override an explicit `"strictNullChecks": false`, so name every option. `--checkJs true` also brings the program's JavaScript files into the check. An error this run reports in a file you did not change, and that the same command without the options does not report, is the project's existing strictness debt, not a regression of yours.
+Command-line options override the config while its `paths`, module resolution and `types` still apply. `--strict` alone does not override an explicit `"strictNullChecks": false`, so the command names every option. `--checkJs true` also brings the program's JavaScript files into the check.
 
 ## No tsconfig.json
 
-Without a `tsconfig.json` above the file, `tsc --noEmit <file>` checks it alone with the compiler's defaults: not strict, no JSX, default `lib`. Add a `tsconfig.json` to get the project's real policy; do not invent one in a temporary folder.
+Without a `tsconfig.json` above the file, `tsc <file>` checks it alone with the compiler's defaults: not strict, no JSX, default `lib`. Propose a `tsconfig.json` to the user (the profile above plus `target` and `module`) and create it only if they agree. Meanwhile, run the strict check's options on the file instead of `-p <tsconfig.json>`: `tsc <options> --target es2022 --module nodenext <file>`, adding `--jsx preserve` for `.tsx` or `.jsx`. Do not invent a config in a temporary folder.
 
 ## Frequent errors
+
+Read the error's own text; these are the ones whose fix is easy to get wrong.
 
 | Code | Meaning | Fix |
 | :-- | :-- | :-- |
 | TS2322 / TS2345 | A value's type does not match the declared or expected type | Decide which side is wrong and fix that one |
-| TS2339 | The property does not exist on the type | Narrow the type first, or fix the type definition |
-| TS18047 / TS18048 / TS2532 | The value may be `null` or `undefined` | Narrow with a check before use |
-| TS7006 / TS7031 | Implicit `any` parameter | Annotate the parameter |
 | TS2683 | `this` implicitly has type `any` (`noImplicitThis`) | Use an arrow function, or declare `this` as the first parameter |
 | TS2307 | Cannot find module | Fix the import path, or install the package with the project's package manager |
-| TS6133 | Declared but never used | Remove it, or use it |
 | TS18003 | No inputs were found in the config file | Fix `include` or `files`; the config is broken, not the code |
 
-Never make an error disappear with `@ts-ignore`, `@ts-expect-error`, `any`, `as unknown as T`, a non-null `!`, or a looser option. A verified false positive gets `// @ts-expect-error <reason>` on the line above, and the user is told.
+Never make an error disappear with `@ts-ignore`, `any`, `as unknown as T`, a non-null `!`, or a looser option. The only exception is a verified false positive: put `// @ts-expect-error <reason>` on the line above and tell the user.
 
 ## Repair external values without assertions
 
-Start from `unknown`, validate the shape, then use the narrowed value:
-
-```typescript
-export function readLabel(text: string): string {
-  const decoded: unknown = JSON.parse(text)
-  if (typeof decoded !== 'object' || decoded === null || !('label' in decoded)) {
-    throw new Error('Expected an object with a label')
-  }
-  if (typeof decoded.label !== 'string') {
-    throw new Error('Expected a string label')
-  }
-  return decoded.label
-}
-```
-
-Invalid JSON keeps its parsing exception; missing or non-string labels are rejected; empty strings stay valid. The `in` narrowing needs TypeScript 4.9 or later.
+Start from `unknown`, validate the shape, then use the narrowed value (`JSON.parse(text)` assigned to `const decoded: unknown`, then `typeof` and `in` checks that throw on a wrong shape). Invalid JSON keeps its parsing exception.
 
 ## Check one program or the whole repository
 
+Use the strict check from SKILL.md; these two commands inspect a program and do not give a verdict:
+
 ```bash
-tsc --noEmit -p path/to/tsconfig.json
 tsc --noEmit --listFiles -p path/to/tsconfig.json | grep '^/'   # the files the program read
-tsc --noEmit --pretty false -p path/to/tsconfig.json             # file(line,col): error TSnnnn: message
+tsc --noEmit --pretty false -p path/to/tsconfig.json             # file(line,col): error TSnnnn: message, with the project's own options only
 ```
 
 - One `-p` run checks one program. A repository with several `tsconfig.json` files needs one run per program that includes a changed file or a caller.
 - `tsc` exits 0 when clean, non-zero with errors; a non-zero exit with no `error TS` line is a tool failure, not a clean result.
 - `--noEmit` only stops output files; `--incremental` still writes `tsbuildinfo`.
 
+## When the editor and tsc disagree
+
+Take the same file through four steps; the command line is the reference.
+
+1. **Same compiler?** Compare `node_modules/.bin/tsc --version` with the editor's TypeScript (VS Code: **TypeScript: Select TypeScript Version**).
+2. **Same program?** `tsc --listFilesOnly -p <tsconfig.json>` must list the file, and `--showConfig` must show the options the editor assumes.
+3. **Same options?** The editor uses the project's config; the strict check adds the strict profile, so it can report errors the editor does not.
+4. **Stale editor?** Restart the language server; tell the user which side produced each result.
+
 ## CI
 
 ```bash
-npx tsc --noEmit -p tsconfig.json
+node_modules/.bin/tsc --noEmit -p tsconfig.json
 ```
 
-Run the project's own TypeScript there, pinned in `package.json`, so CI and the editor agree.
+This CI command applies the project's own policy, not the strict check; add the strict check's options only if the user wants CI held to that profile. In CI, install dependencies first and run the project's own TypeScript, pinned in `package.json`, so CI and the editor agree.
 
 ## IDE
 
