@@ -47,7 +47,7 @@ Copy this checklist into your working notes and tick each item:
 - [ ] `findReferences` on the definition, with the five trust checks. The references are the must-change list.
 - [ ] The language-specific steps in "Gotchas" below.
 - [ ] Grep the blind spots. Textual mentions are listed as optional; any dynamic use blocks a deletion.
-- [ ] After the change, run the checks in [toolchain.md](references/toolchain.md) and fix what they report.
+- [ ] After the change, run the [Checks](#checks) below and fix what they report.
 
 ## Gotchas
 
@@ -66,4 +66,4 @@ Run them yourself after a change, on every script you touched and every script t
 - `bash -n <file>` for syntax, one script per invocation.
 - Exercise the changed launch path, arguments, exit status and traps in a controlled context; never run a deploy or delete script to lint it.
 
-Read [toolchain.md](references/toolchain.md) when configuring or installing shfmt or ShellCheck, wiring CI or an IDE, or when a finding needs the project's intended style. Read [fixtures.md](references/fixtures.md) when a check passes code it should flag.
+Read [toolchain.md](references/toolchain.md) when configuring or installing shfmt or ShellCheck, wiring CI or an IDE, or when a finding needs the project's intended style. Read [fixtures.md](references/fixtures.md) when a check passes code it should flag; it runs the files in `references/fixtures/`.
