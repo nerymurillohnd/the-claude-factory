@@ -53,39 +53,10 @@ docs/                      user guides (users)
 
 ## Commands
 
-### Gate Rules
-
-- Report each gate as a table: gate, result and key output line.
-- Call the work verified only when every gate passes.
-- Gates run pinned versions (`npx`, `uvx`); CI pins the ones it runs in the `env` block of `.github/workflows/validate.yml`.
-- No git hook runs `.pre-commit-config.yaml`, and CI does not run `basedpyright` or `tsc`.
-
 ### Setup
 
 - `npm ci --ignore-scripts --prefix plugins/typescript6-lsp-intelligence` - Run when the clone is new, before the script tests.
 - `npm ci --ignore-scripts --prefix plugins/typescript7-lsp-intelligence` - Run when the clone is new, before the script tests.
-
-### Gates
-
-- `node --test ".github/scripts/tests/*.test.mjs"` - Run before every push. Read the `skipped` count.
-- `node .github/scripts/check-repo.mjs` - Run before every push.
-- `node .github/scripts/catalog.mjs --check` - Run before every push.
-- `.github/scripts/validate-claude.sh` - Run before every push.
-- `node .github/scripts/check-version-bump.mjs origin/main` - Run before every push, once `origin/main` exists.
-- `npx --yes @biomejs/biome@2.5.15 check --error-on-warnings .` - Run before every push.
-- `git ls-files -z '*.sh' | xargs -0 shellcheck -o all -S style -x -a -P SCRIPTDIR` - Run before every push.
-- `git ls-files -z '*.sh' | xargs -0 shfmt -d` - Run before every push.
-- `python3 -m unittest discover -s .github/scripts/tests/<plugin>` - Run before every push, for each plugin test folder with Python tests.
-- `.github/scripts/tests/<plugin>/by_path.sh` - Run before every push, for each plugin folder that ships one.
-- `uvx ruff@0.17.0 check plugins .github/scripts` - Run before every push.
-- `uvx ruff@0.17.0 format --check plugins .github/scripts` - Run before every push.
-- `git ls-files -z 'plugins/*.py' '.github/scripts/tests/*.py' | xargs -0 uvx --from mypy==1.20.2 mypy --python-version 3.9 --strict` - Run before every push.
-- `basedpyright --warnings` - Run before every push.
-- `npx --yes --package typescript@6.0.3 tsc -p plugins/tsconfig.json --noEmit --typeRoots "$(npm root -g)/@types"` - Run before every push.
-- `npx --yes --package typescript@6.0.3 tsc -p .github/scripts/tsconfig.json --noEmit --typeRoots "$(npm root -g)/@types"` - Run before every push.
-- `npx --yes markdownlint-cli2@0.23.3` - Run before every push.
-- `SHELLCHECK_OPTS='-o all -S style -x -a -P SCRIPTDIR' actionlint` - Run when `.github/workflows/` changes.
-- The LSP hook tests need `shfmt`, `shellcheck`, `ruff` and `basedpyright` on `PATH`.
 - For all other commands, read `.github/scripts/` and `.github/workflows/validate.yml`.
 
 ## Rules

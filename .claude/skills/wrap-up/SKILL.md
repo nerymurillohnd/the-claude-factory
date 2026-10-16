@@ -22,7 +22,7 @@ Memory lives in `.claude/memory/`: `MEMORY.md` indexes one topic file per fact. 
 ## 3. Verify
 
 1. Memory is gitignored: do not commit or push it.
-2. Run the gates in `.claude/CLAUDE.md` → Gates if code changed.
+2. Run the gates in `.claude/rules/QUALITY_GATE.md` → Before Every Push if code changed.
 
 ## 4. Report to Nery (Spanish)
 
