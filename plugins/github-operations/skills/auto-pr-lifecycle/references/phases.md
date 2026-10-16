@@ -24,7 +24,7 @@ Lookup table for what to call in each phase. The shape of the loop, the tracker 
 
 - GitHub's MCP server groups operations behind one tool with a `method` parameter (`pull_request_read`, `pull_request_review_write`, `issue_write`). Do not assume a tool named after the operation exists.
 - Inspect the tools actually exposed in the session. If a tool or method below is missing, use the other layer for that operation, and report the gap only after both failed. Do not invent names or parameters.
-- For every task, use the preferred layer and its fallback, in both directions, as the tool matrix in `SKILL.md` lists. Workflow runs, logs, reruns and Dependabot alerts exist in the MCP only on the all-toolsets URL; repository merge-method settings, auto-merge, merge queue entry and remote ref deletion exist only in `gh`.
+- For every task, use the preferred layer and its fallback, in both directions, as the tool matrix in `SKILL.md` lists. Workflow runs, logs, reruns and Dependabot alerts exist in the MCP only with all toolsets on, which is how the plugin connects; repository merge-method settings, auto-merge, merge queue entry and remote ref deletion exist only in `gh`.
 
 ## 1. Scope
 
@@ -99,10 +99,10 @@ When the head changes for any reason, including a push by someone else, every ob
 
 For every actionable finding:
 
-1. Pull the evidence: failing job logs (`get_job_logs` on the all-toolsets URL, otherwise `gh run view --log-failed`), the review comment and diff context (`get_review_comments`, `get_diff`), the exact file and line.
+1. Pull the evidence: failing job logs (`get_job_logs` with all toolsets on, otherwise `gh run view --log-failed`), the review comment and diff context (`get_review_comments`, `get_diff`), the exact file and line.
 2. Classify it: real branch-caused, valid pre-existing, stale, false positive, transient or infrastructure, external blocker, or non-blocking improvement.
 3. For a real branch-caused problem, make the smallest change that fixes it. Do not refactor unrelated code.
-4. Rerun a check only with evidence of a transient failure (`actions_run_trigger` on the all-toolsets URL, otherwise `gh run rerun --failed`).
+4. Rerun a check only with evidence of a transient failure (`actions_run_trigger` with all toolsets on, otherwise `gh run rerun --failed`).
 5. Re-run the local validation of phase 4 after every code change, before pushing.
 6. Reply to each addressed review thread:
    - `add_reply_to_pull_request_comment` (`commentId` is the numeric review-comment ID, not the thread node ID) for a reply anchored to a line.

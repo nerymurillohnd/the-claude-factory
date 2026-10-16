@@ -28,7 +28,7 @@ Read the reference for the step you are on:
 - Read [merge-protocol.md](references/merge-protocol.md) when the PR looks ready: readiness, merge method, approval, landing, cleanup.
 - Read [tool-matrix.md](references/tool-matrix.md) before the first GitHub operation of a run and whenever a tool call fails: the preflight, and for each task the preferred layer (MCP or `gh`) with its fallback.
 - Read `${CLAUDE_PLUGIN_ROOT}/references/github-read-tasks.md` when you inspect a PR, its checks, runs, logs, reviews or alerts: the exact read-only commands, MCP and `gh`, each with its fallback. The `pr-tracker` agent reads the same file.
-- Read `${CLAUDE_PLUGIN_ROOT}/references/mcp-catalog.md` when you need to know whether the GitHub MCP offers a tool, which toolset URL it needs, or whether it writes.
+- Read `${CLAUDE_PLUGIN_ROOT}/references/mcp-catalog.md` when you need to know whether the GitHub MCP offers a tool, which toolsets it needs, or whether it writes.
 - Read [final-report.md](references/final-report.md) when you close the run.
 
 If a reference is missing or disagrees with the tools you have, inspect the actual tool interface and repository policy. Do not invent tool names, parameters or operations.

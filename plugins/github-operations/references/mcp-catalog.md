@@ -1,10 +1,8 @@
 # GitHub MCP tool catalog
 
-Complete list of the tools the remote GitHub MCP server returned from `tools/list` on 2026-10-15, grouped by area. Refresh before relying on it: load the live list with `ToolSearch` (`+github`) or read the server's `tools/list`.
+The tools the remote GitHub MCP server returns from `tools/list` with the plugin's headers (`X-MCP-Toolsets: all` and `X-MCP-Insiders: true`), grouped by area. Refresh before relying on it: load the live list with `ToolSearch` (`+github`) or read the server's `tools/list`.
 
-Marks after each name: `R` read-only, `W` writes, `!` the server flags it destructive, `+` only on the all-toolsets URL (`/x/all`), absent from the default URL.
-
-Counts in that snapshot: 100 tools on `/x/all`, 49 on the default URL, 65 read-only on `/x/all/readonly`.
+Marks after each name: `R` read-only, `W` writes, `!` the server flags it destructive, `+` only with all toolsets on, absent from GitHub's default toolsets, `I` only in early-access (insiders) mode.
 
 The list depends on the token. Observed, not documented here: with a token holding `repo`, `workflow`, `read:org` and `gist`, `delete_repository` was absent from `tools/list`, while another session with a broader token showed it. Treat a missing tool as a scope question first. Check the tools actually loaded before planning around one.
 
@@ -61,3 +59,7 @@ Tools with a `method` parameter group several operations (`pull_request_read`, `
 ## Copilot and search helpers
 
 `assign_copilot_to_issue` W, `assign_copilot_to_issue_with_intent` W+, `create_pull_request_with_copilot` W, `get_copilot_job_status` R, `list_copilot_spaces` R+, `get_copilot_space` R+, `github_support_docs_search` R+, `web_search` R+
+
+## Early access (insiders mode)
+
+`get_file_blame` RI, `issue_dependency_read` RI, `issue_dependency_write` WI

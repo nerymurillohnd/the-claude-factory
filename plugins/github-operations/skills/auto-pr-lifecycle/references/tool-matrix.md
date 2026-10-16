@@ -5,7 +5,7 @@ For each write task, the layer that does it best is listed first. The read-only 
 ## Rules
 
 - Never say something cannot be done until the task has been tried through its listed fallback, and the exact error of each attempt is in hand.
-- If both layers fail, report what you tried, the exact errors and the concrete unlock (a token scope, a toolset URL, a repository permission), then wait for the user to decide.
+- If both layers fail, report what you tried, the exact errors and the concrete unlock (a token scope, a toolset, a repository permission), then wait for the user to decide.
 - A permission denial from Claude Code itself (a permission rule or the auto-mode classifier) is the user's decision, not a tool gap. Do not route the same outcome through the other layer. Name the rule that would allow it.
 - Commits and pushes always use local git. The MCP tools `push_files`, `create_or_update_file` and `delete_file` commit on GitHub without the user's signing key or hooks.
 - Never pass `--admin`. Always pass the head guard on a merge (`expectedHeadSha` or `--match-head-commit`).
@@ -15,7 +15,7 @@ For each write task, the layer that does it best is listed first. The read-only 
 
 Before the first GitHub operation of a run, learn what you can do. Do not assume.
 
-- MCP tools loaded: list them with `ToolSearch` (`+github`). A tool missing from a catalog entry usually means a narrower toolset URL or a token without the scope. The Actions, Dependabot, Discussions and Projects tools exist only on the all-toolsets URL.
+- MCP tools loaded: list them with `ToolSearch` (`+github`). A tool missing from a catalog entry usually means fewer toolsets than the plugin turns on or a token without the scope. The Actions, Dependabot, Discussions and Projects tools exist only with all toolsets on, which is how the plugin connects.
 - Identity: MCP `get_me`, or `gh auth status`, which masks the token and prints its scopes.
 - Repository permission of the `gh` login: `gh api repos/<owner>/<repo> --jq '.permissions'` returns `admin`, `maintain`, `push`, `triage`, `pull`. The MCP server may use a different token, so a permission seen by one layer is not proof for the other.
 - Rules on the base branch: MCP `repository_ruleset_read` with `method: get_rules_for_branch`, or `gh ruleset check <branch> -R <owner>/<repo>`.

@@ -25,7 +25,7 @@ The tracker's own report format covers CI failures, reviews and findings, warnin
 - When alert access is unavailable, the report states incomplete coverage, not zero alerts.
 - Optional optimizations stay separate from required fixes, and the rationale is concise and evidence-backed, not a transcript of reasoning.
 
-When the report lists a coverage gap because an MCP tool was missing (a narrower toolset URL, or a token without the scope), read that data yourself with the `gh` form before you classify.
+When the report lists a coverage gap because an MCP tool was missing (fewer toolsets than the plugin turns on, or a token without the scope), read that data yourself with the `gh` form before you classify.
 
 ## Classify the report
 

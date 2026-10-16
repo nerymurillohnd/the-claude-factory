@@ -27,19 +27,5 @@
     "surfaces": [
       "claude-code"
     ]
-  },
-  "userConfig": {
-    "github_token": {
-      "type": "string",
-      "title": "GitHub token",
-      "description": "Personal access token the bundled GitHub MCP server sends as a Bearer header. Stored in your system keychain.",
-      "sensitive": true
-    },
-    "github_mcp_url": {
-      "type": "string",
-      "title": "GitHub MCP server URL",
-      "description": "Default exposes every toolset, including write and delete tools. Append /readonly, or use /x/<toolset>, to narrow it.",
-      "default": "https://api.githubcopilot.com/mcp/x/all"
-    }
   }
 }

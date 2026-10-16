@@ -44,7 +44,7 @@
 | 🎯 Skill | `github-operations:pr-diagnostics` | The inspection procedure and report format the tracker agent follows | Preloaded by the agent; not meant to be run directly |
 | 🤖 Agent | `github-operations:pr-tracker` | Read-only monitor of a PR's checks, jobs, logs, reviews, warnings and security alerts; reports to Claude | Launched by `auto-pr-lifecycle` on every monitoring cycle |
 | 🪝 Hook | `PreToolUse` | Refuses dangerous commands and secret reads during a cleanup, and asks you to confirm every command that changes state | Automatically, from the moment you start `git-cleanup` until the session ends |
-| 🔌 MCP server | `github` | GitHub's remote MCP server: pull requests, issues, Actions, security alerts and more | Tools appear as `mcp__plugin_github-operations_github__*` |
+| 🔌 MCP server | `github` | GitHub's remote MCP server with every toolset and early-access mode: pull requests, issues, Actions, security alerts and more. See [GitHub MCP tools](../../docs/github-mcp-tools.md) | Tools appear as `mcp__plugin_github-operations_github__*` |
 
 ## ✅ Requirements
 
@@ -53,7 +53,7 @@
 | **Claude Code** | v2.1.295 or later — check with `claude --version` |
 | **Surfaces** | Claude Code only. See [Compatibility](#-compatibility) |
 | **External tools** | `git` and `python3` 3.9 or later on `PATH`. `gh` signed in, to read run logs, rerun jobs, enable auto-merge and delete branches, and as the fallback when a GitHub MCP tool is missing. On Windows, Git for Windows |
-| **Accounts / API keys** | A GitHub personal access token for the bundled MCP server, entered when you configure the plugin (see [Configuration](#-configuration)). Without it the server shows as failed in `/mcp` and Claude uses `gh` |
+| **Accounts / API keys** | A GitHub personal access token in the `GITHUB_PAT` environment variable of the shell that starts Claude Code (see [Configuration](#-configuration)). Without it the MCP server fails in `/mcp` and Claude uses `gh` |
 
 ## 📥 Installation
 
@@ -136,26 +136,40 @@ Pass an absolute path to clean another repository, or text that is not a folder 
 
 ## 🔧 Configuration
 
-Set both options from `/plugin` → **Installed** → **GitHub Operations** → **Configure options**.
+The plugin has no options to fill in. It needs one thing: your GitHub token in an environment variable named **`GITHUB_PAT`**. The name is fixed, because the bundled MCP server reads exactly that variable. Where you keep the token is up to you.
 
-| Option | Type | Default | Description |
-| :-- | :-- | :-- | :-- |
-| `github_token` | string, sensitive | — | A GitHub personal access token. The bundled MCP server sends it as a Bearer header. It is stored in your system keychain. |
-| `github_mcp_url` | string | `https://api.githubcopilot.com/mcp/x/all` | Which tools the GitHub MCP server offers. The default exposes **every toolset, including tools that write and delete**. |
+**Step 1. Create a token.** Make a [fine-grained personal access token](https://github.com/settings/personal-access-tokens/new) for the repositories you work in, with only the permissions you want Claude to have.
 
-> [!WARNING]
-> **The default is the full tool set.** `https://api.githubcopilot.com/mcp/x/all` offers every GitHub MCP toolset: pull requests, issues, Actions (including rerunning and cancelling runs), projects, discussions, notifications and more, and the tools that create, merge, delete and write. What Claude can actually do is also limited by your token, so create a fine-grained token for the repositories you work in and grant only the permissions you want Claude to have.
+**Step 2. Keep it where `GITHUB_PAT` gets set before you start `claude`.** Pick one:
 
-To offer fewer tools, change `github_mcp_url` and run `/reload-plugins`:
-
-| Goal | URL |
+| Where | How |
 | :-- | :-- |
-| Everything, read-only | `https://api.githubcopilot.com/mcp/x/all/readonly` |
-| GitHub's default toolsets | `https://api.githubcopilot.com/mcp/` |
-| Default toolsets, read-only | `https://api.githubcopilot.com/mcp/readonly` |
-| One toolset, for example issues | `https://api.githubcopilot.com/mcp/x/issues` |
+| Your shell startup file (`~/.zshenv`, `~/.zprofile` or `~/.zshrc`; `~/.bash_profile` or `~/.bashrc`) | Add `export GITHUB_PAT="<your token>"` |
+| A `.env` file outside your repositories | Keep `GITHUB_PAT=<your token>` in a file such as `~/.config/github/.env`, run `chmod 600` on it, and load it from your startup file with `set -a; . ~/.config/github/.env; set +a` |
+| The macOS Keychain | Save it once with `security add-generic-password -a "$USER" -s github-pat -w`, which asks for the token so it never lands in your shell history. Then add `export GITHUB_PAT="$(security find-generic-password -a "$USER" -s github-pat -w)"` to your startup file |
+| A secret manager's command line | Add `export GITHUB_PAT="$(<command that prints the token>)"` to your startup file |
 
-The pull request loop needs the Actions and security toolsets to read job logs and Dependabot alerts. With a narrower URL, Claude reads them through `gh` instead. To block one tool, add a deny rule for it in your settings, for example `mcp__plugin_github-operations_github__delete_file`. To use your own GitHub MCP server instead, turn this one off in `/mcp`.
+**Step 3. Start Claude Code from that shell**, then run `/mcp` and check that **GitHub** shows as connected. After you change where the token lives, restart Claude Code.
+
+> [!NOTE]
+> Don't use `CLAUDE_ENV_FILE` for this. Claude Code documents it for the shell commands Claude runs, not for MCP server settings. If you start Claude Code from an editor or an app instead of a terminal, make sure that program can see `GITHUB_PAT` too.
+
+### What the GitHub server includes
+
+The plugin connects to GitHub's official remote MCP server at `https://api.githubcopilot.com/mcp/` with **every toolset** (`X-MCP-Toolsets: all`) and GitHub's **early-access mode** (`X-MCP-Insiders: true`). That covers pull requests, reviews, issues, Actions (including rerunning and cancelling runs), security alerts, projects, discussions, notifications and more, including the tools that create, merge and delete. The full list, tool by tool, with the ones that only read marked, is in [GitHub MCP tools](../../docs/github-mcp-tools.md).
+
+> [!IMPORTANT]
+> **Your token decides what works.** The server offers these tools, but GitHub only lets a tool do what your token is allowed to do, and it can hide tools your token can't use. Manage Claude's reach through the token's repositories and permissions.
+
+### Reduce what Claude can use
+
+| Way | What it does |
+| :-- | :-- |
+| Limit the token | Fewer repositories or permissions. GitHub enforces it whatever Claude asks for |
+| Block tools in your settings | A deny rule such as `mcp__plugin_github-operations_github__delete_file` removes that tool from Claude's context. Use `mcp__plugin_github-operations_github` for the whole server |
+| Use your own server | Turn this one off in `/mcp` and add yours with headers such as `X-MCP-Readonly: true` or a shorter `X-MCP-Toolsets` list |
+
+[GitHub MCP tools](../../docs/github-mcp-tools.md#️-reduce-what-claude-can-use) has the settings and the `.mcp.json` to copy. The pull request loop reads job logs and Dependabot alerts through the Actions and security tools; when you remove them, Claude reads that data through `gh` instead.
 
 ## 🔄 Updating
 
@@ -174,7 +188,7 @@ Or in a session: `/plugin` → **Installed** → **GitHub Operations** → **Upd
 claude plugin uninstall github-operations@the-claude-factory
 ```
 
-In a session: `/plugin` → **Installed** → **GitHub Operations** → **Uninstall**. Your saved token is removed with it.
+In a session: `/plugin` → **Installed** → **GitHub Operations** → **Uninstall**.
 
 ## 🧭 Compatibility
 
@@ -184,7 +198,7 @@ In a session: `/plugin` → **Installed** → **GitHub Operations** → **Uninst
 | :-- | :--: | :--: |
 | 🎯 Skills | ✅ | ⚠️ they load, but they need `git`, `gh` and your repository on your computer, and the cleanup guard hook that protects your repository doesn't run in a chat conversation, so use Claude Code |
 | 🤖 Agents | ✅ | ⚠️ in Cowork sessions, not in a chat conversation |
-| 🔌 MCP server (remote) | ✅ | ⚠️ the Claude app doesn't prompt for the token option |
+| 🔌 MCP server (remote) | ✅ needs `GITHUB_PAT` in the environment | ⚠️ it reads `GITHUB_PAT` from the environment that starts Claude Code, so use Claude Code |
 
 <sub>✅ works · ⚠️ partial · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. The Claude app (web, desktop and mobile) runs a conversation as a Cowork session when it can, and as a chat conversation otherwise, for example on a device that can't run Cowork or in the separate Chat mode that Team and Enterprise plans keep for now.</sub>
 
@@ -200,7 +214,13 @@ Run `/reload-plugins`, then type `/github-operations:` to list its skills. If it
 <details>
 <summary><b>The GitHub server shows as failed or "needs authentication" in <code>/mcp</code>.</b></summary>
 
-You haven't set the token, or GitHub rejected it. Set `github_token` in `/plugin` → **Installed** → **GitHub Operations** → **Configure options**, then run `/reload-plugins`. Until then the monitoring agent has no GitHub tools, so Claude reads GitHub through `gh` itself.
+Look at the message, then fix the token. Until you do, the monitoring agent has no GitHub tools, so Claude reads GitHub through `gh` itself.
+
+| What you see | Why | What to do |
+| :-- | :-- | :-- |
+| `/mcp` warns that `GITHUB_PAT` is not set, or `400 — Authorization header is badly formatted` | The variable is not in the environment that started Claude Code | Define `GITHUB_PAT` as in [Configuration](#-configuration), then restart `claude` from that shell |
+| `401 — token authentication failed` | The token is wrong or expired | Create a new token and update where you keep it |
+| Some tools work and others don't | The token lacks a permission those tools need | Add the permission to the token |
 
 </details>
 
@@ -297,6 +317,12 @@ In a folder outside the repository that you choose in the plan. Claude never del
 
 See [CHANGELOG.md](./CHANGELOG.md) for every release.
 
+## 🙏 Credits
+
+This plugin ships none of GitHub's software. It connects Claude Code to the hosted remote server of the official [GitHub MCP Server](https://github.com/github/github-mcp-server) (MIT license, © GitHub). The URL forms, toolsets and tool names come from GitHub's documentation: the [remote server guide](https://github.com/github/github-mcp-server/blob/main/docs/remote-server.md) and the guide to [installing it in Claude applications](https://github.com/github/github-mcp-server/blob/main/docs/installation-guides/install-claude.md). We re-checked them against the live server, and if GitHub changes them, GitHub's documentation is the reference.
+
+GitHub also publishes its own [agent plugin](https://github.com/github/github-mcp-server/tree/main/agent-plugin) for the same server, which declares only the server connection. This plugin adds the pull request and cleanup workflows around that server, with a token option and a choice of tool set.
+
 ## 📄 License
 
-[MIT](./LICENSE) © Nery Murillo
+[MIT](./LICENSE) © Nery Murillo. Not affiliated with or endorsed by GitHub. *GitHub* is a trademark of GitHub, Inc.
