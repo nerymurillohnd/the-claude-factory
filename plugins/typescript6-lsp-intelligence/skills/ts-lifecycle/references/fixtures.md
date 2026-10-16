@@ -17,11 +17,7 @@ The owning tsconfig is the program that contains the changed files: `tsc --listF
 
 ## The strict check
 
-The script runs each fixture through this command, from the fixture's folder:
-
-```bash
-tsc -p <tsconfig.json> --pretty false --noEmit true --tsBuildInfoFile <file in a temporary folder> --skipLibCheck true --allowJs true --checkJs true --strict true --noImplicitAny true --strictNullChecks true --strictFunctionTypes true --strictBindCallApply true --strictPropertyInitialization true --strictBuiltinIteratorReturn true --noImplicitThis true --useUnknownInCatchVariables true --alwaysStrict true --exactOptionalPropertyTypes true --noUncheckedIndexedAccess true --noPropertyAccessFromIndexSignature true --noImplicitReturns true --noImplicitOverride true --noFallthroughCasesInSwitch true --noUnusedLocals true --noUnusedParameters true --allowUnusedLabels false --allowUnreachableCode false
-```
+The script runs each fixture through `tsc -p <tsconfig.json>` from the fixture's folder, with every option of its `STRICT` array and `--tsBuildInfoFile` in a temporary folder. `scripts/run-fixtures.sh` is the only source of the options and of the expected codes (its `expected_for`): read them there, never from a copy, and do not run the fixtures by hand.
 
 The fixtures are `.ts` files, so `--allowJs` and `--checkJs` change nothing for them; they are there because the strict profile is the plugin hook's, which checks edited JavaScript too. Each option has an explicit value because `--strict` alone does not override an explicit `"strictNullChecks": false` in the config; the project's `paths`, module resolution and `types` still apply. `--tsBuildInfoFile` keeps an `incremental` or `composite` config from writing its build-info file into the project. A compiler that rejects an option (TS5023) predates it: say which option, and do not call the fixtures passed.
 
@@ -31,8 +27,10 @@ Skip it in `research` mode, without an `LSP` tool, and without the Bash tool, wh
 
 1. Create `lsp-fixture-references/references.ts` at the root of the session's working directory with the Write tool, with the content of `assets/references.ts.fixture`. Write reaches the language server; a file copied from the shell may not. If that folder already exists, stop: it is not yours to overwrite.
 2. `hover` `target` at line 2, character 17, so the server loads the program.
-3. Run `findReferences` at the same position.
+3. Run `findReferences` at the same position until two consecutive results match, at most three calls: the warm-up check under "Trusting a result" in SKILL.md.
 4. Delete the folder from Bash with `rm -rf <working directory>/lsp-fixture-references`, even when a step failed. Write cannot delete.
+
+The table below explains the codes the script prints; when it differs from the script, the script wins and the table is the bug to report.
 
 | Fixture | Command | Expected |
 | :-- | :-- | :-- |
@@ -47,4 +45,4 @@ Skip it in `research` mode, without an `LSP` tool, and without the Bash tool, wh
 
 - A broken fixture without its expected code means the check is blind here: the owning config could not be read, or the compiler is not the one you think. Say which, and do not call code clean on that check.
 - A failing `clean_control` means the checks misfire in this program. Explain the errors before trusting any other result.
-- Fewer than four references after two matching results means the index is cold, the file is not synchronized with the server, or it belongs to no loaded project; see "Trusting a result" in SKILL.md.
+- Fewer than four references in the two matching results means the index is cold, the file is not synchronized with the server, or it belongs to no loaded project; see "Trusting a result" in SKILL.md.

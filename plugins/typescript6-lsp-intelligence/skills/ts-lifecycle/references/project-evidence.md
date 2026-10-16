@@ -33,4 +33,4 @@ Compare baseline and proposal under matched conditions. Include expected-success
 
 ## Recording
 
-Record findings as observation, inference, contradiction or unavailable evidence (SKILL.md, "Close only on attributable evidence"). Explain why the components you did not visit cannot affect the scoped conclusion, or name the unresolved component that blocks it.
+Record findings as observation, inference, contradiction or unavailable evidence (SKILL.md, "Close only on attributable evidence", item 1). Explain why the components you did not visit cannot affect the scoped conclusion, or name the unresolved component that blocks it.

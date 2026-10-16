@@ -63,7 +63,7 @@ LSP owns questions about code structure; Grep owns questions about text. Route e
 
 When Grep finds several symbols with the same name, search for the name together with the module it is imported from, and read the import lines to tell them apart. Without `hover`, read the type's declaration (the `.d.ts` under `node_modules` for a library) or ask `tsc`.
 
-Every operation takes `filePath` (absolute), `line` (1-based) and `character` (1-based, UTF-16 code units: an emoji before the symbol counts 2). Raw LSP data in logs is 0-based: add 1 to both.
+Every operation takes `filePath` (absolute), `line` (1-based) and `character` (1-based, UTF-16 code units: an emoji before the symbol counts 2). Raw LSP data in logs is 0-based: add 1 to both. Raw `character` values count in the encoding the client and server negotiated (`positionEncoding`); UTF-16 is LSP's default and the only one this tool uses, so convert a UTF-8 or UTF-32 offset from another client before passing it.
 
 If the `LSP` tool is not loaded, load it first with `ToolSearch` and the query `select:LSP`. Send `LSP` calls in their own message, never in parallel with another tool; several `LSP` calls may share a message. The session's first `LSP` call goes alone: its answer can come from a server still loading the project, so pass the warm-up check below before grouping calls.
 
@@ -83,7 +83,7 @@ If the `LSP` tool is not loaded, load it first with `ToolSearch` and the query `
 - A `findReferences` result is never the full list. It misses callers in `.svelte`, `.vue` and `.astro` files when run from a `.ts` file, test mocks (`vi.mock`, `jest.mock`) and other string references, and files changed from the shell. Confirm it with Grep before deleting a symbol or changing a signature: compare call sites, not lines: each reference `findReferences` lists against each Grep hit that calls or imports the name, Grepping also the alias of every `import { name as alias }`, and explain each difference before acting on either.
 - `findReferences` returns only a file, line and column. To see what each reference is, read its line in Grep's output instead of opening every file.
 - The `LSP` tool runs Claude Code's own language server, not the user's editor: its answers say nothing about what the editor shows. Label any conclusion about the editor as inference unless the user shares the editor's output. The editor's exact message and file are inputs only the user has: ask for them, and report inference until they arrive.
-- The tool is read-only: no rename and no code actions. Diagnostics are not a call either: the server pushes them on a later turn after an edit, or never, depending on the server. No diagnostics straight after an edit does not mean the edit is clean; run the type check before reporting done. In `research` mode there is no edit, so no server diagnostics: use the compiler's output (`tsc --noEmit` as the research mode allows) and report semantic diagnostics as unavailable.
+- The tool is read-only: no rename and no code actions. Diagnostics are not a call either: the server pushes them on a later turn after an edit, or never, depending on the server. No diagnostics straight after an edit does not mean the edit is clean; run the type check before reporting done, or, when the project has no type-check layer, its lint and tests. In `research` mode there is no edit, so no server diagnostics: use the compiler's output (`tsc --noEmit` as the research mode allows) and report semantic diagnostics as unavailable.
 
 ### Establish readiness, coverage and freshness
 
@@ -96,7 +96,7 @@ If the `LSP` tool is not loaded, load it first with `ToolSearch` and the query `
 
 - Pick the operations each question in the table needs, and cover every caller, consumer and configuration the change can reach.
 - One hover is insufficient impact analysis; executing every available operation is not a completion criterion.
-- A rename or signature change is a set of manual edits: apply it only after `findReferences` and Grep agree, or after you explain each difference. Respect authorization, formatter ownership and existing user changes.
+- A rename or signature change is a set of manual edits: apply it only after `findReferences` and Grep agree (both list the same call sites and imports, compared as "Treat LSP results as evidence, not the whole picture" describes), or after you explain each difference. Respect authorization, formatter ownership and existing user changes.
 - Rename scope: update every code reference, string reference and mock that would break at run time. List doc and comment mentions for the user instead of editing them, unless the user's request covers them ("everywhere", or names the docs or comments): the user's stated scope wins over this default.
 - Public API: a symbol is public API when code outside the repository can import it: it is exported, directly or through re-exports, from a module that an `exports`, `main`, `types`, `typings` or `bin` entry of its own `package.json` points to, and that `package.json` is not `"private": true`. Those entries name files, often built ones: map each to its source through the tsconfig `rootDir` and `outDir`, then read that source's exports. In a monorepo, judge the package that holds the symbol; an export only other workspace packages import is internal, so update those packages too. A project with no `package.json`, or a `private` one, has no public API.
 - Ask before renaming public API, naming the entry point that exposes it, because callers outside the repository break. The rename request itself is not that answer unless it says outside callers may break (for example, a breaking change or a major version).
@@ -120,7 +120,7 @@ If the `LSP` tool is not loaded, load it first with `ToolSearch` and the query `
 1. Distinguish observation, inference, contradiction and unavailable evidence.
 2. When evidence for one decision is missing, block only that decision and continue the independent work, so one gap does not stall the task. Ask the user only when the decision needs an input no local observation or official source can supply: the intended behavior, an authorization, or a choice between valid options. Otherwise list the missing input under Gaps.
 3. Stop expanding research when material relationships are resolved or explicitly blocked, and justify that boundary.
-4. In `implementation` mode, run the project's own gates (type check, lint, tests, build) on the final state, plus a fresh semantic check: `hover` or `findReferences` on each changed symbol after the last edit. When no diagnostics arrive, the type check is the gate and semantic diagnostics are reported as unavailable.
+4. In `implementation` mode, run the project's own gates (type check, lint, tests, build) on the final state, plus a fresh semantic check: `hover` or `findReferences` on each changed symbol after the last edit. When no diagnostics arrive, the type check is the gate (lint and tests when there is no type-check layer) and semantic diagnostics are reported as unavailable.
    In `research` mode, run only the gates the research mode allows and list the others as proposed checks.
 5. Report baseline failures and unverified surfaces; never claim the project clean with unresolved actionable errors or missing evidence.
 6. Reopen research when implementation reveals new assumptions or components.
@@ -172,7 +172,7 @@ When a result is the session's first `LSP` result, is empty, shows only the defi
 1. **Position**: `hover` at the same spot shows the intended symbol. "No hover information" means a wrong position or no server, never "no usages".
 2. **Warm-up**: a session's first `LSP` calls can be partial or wrong, `goToDefinition` included (it may point at the import line). Repeat until two consecutive results match, with at most three calls in total. If no two match, record the result as unstable and use Grep plus reading. This match check is separate from the readiness retries in semantic-execution.md.
 3. **Scope**: only the session's working directory is indexed. Outside it, results are stable and incomplete: say so and use Grep plus reading.
-4. **Freshness**: changes made outside Edit and Write (Bash, git, codegen, formatters) may never reach the index. Grep or Read those files instead of trusting counts.
+4. **Freshness**: changes made outside Edit and Write (Bash, git, codegen, formatters) may never reach the index. Grep or Read those files instead of trusting the references the server lists for them.
 5. **Blind spots**: Grep the name for the uses LSP cannot see (next section).
 
 #### Blind spots

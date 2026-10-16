@@ -36,4 +36,4 @@ Official background: [Stryker introduction](https://stryker-mutator.io/docs/) an
 
 ## Reporting
 
-Report each result as observation, inference, contradiction or unavailable evidence (SKILL.md, "Close only on attributable evidence"), with the command and its output.
+Report each result as observation, inference, contradiction or unavailable evidence (SKILL.md, "Close only on attributable evidence", item 1), with the command and its output.
