@@ -21,7 +21,7 @@ All of these must also hold: the condition is observable or backed by traceable 
    ```
 
 2. If an open entry already tracks it, do not add a new one. Update that entry when the new finding adds evidence.
-3. If a resolved entry covers it and the problem is back, open a new item that links back to it (see [Keep history](debt-ledger-resolve.md#keep-history)).
+3. If a resolved entry covers it and the problem is back, open a new item that links back to it (see "Keep history" in the resolve procedure).
 
 ## Add an item
 
