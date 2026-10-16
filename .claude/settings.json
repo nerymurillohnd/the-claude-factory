@@ -40,5 +40,8 @@
       }
     ]
   },
-  "autoMemoryDirectory": "~/Claude/the-claude-factory/.claude/memory"
+  "autoMemoryDirectory": "~/Claude/the-claude-factory/.claude/memory",
+  "enabledPlugins": {
+    "plugin-evals@the-claude-factory": true
+  }
 }
