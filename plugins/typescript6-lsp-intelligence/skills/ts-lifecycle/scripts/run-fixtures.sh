@@ -9,7 +9,7 @@ set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd -P)"
 readonly ASSETS="${SCRIPT_DIR}/../assets"
-readonly FIXTURES="clean_control type_mismatch implicit_any possibly_undefined"
+readonly FIXTURES="clean_control type_mismatch implicit_any possibly_undefined missing_member"
 readonly STRICT=(--pretty false --noEmit true --skipLibCheck true --allowJs true --checkJs true
   --strict true --noImplicitAny true --strictNullChecks true --strictFunctionTypes true
   --strictBindCallApply true --strictPropertyInitialization true --strictBuiltinIteratorReturn true
@@ -46,6 +46,7 @@ expected_for() {
     type_mismatch) EXPECTED=TS2322 ;;
     implicit_any) EXPECTED=TS7006 ;;
     possibly_undefined) EXPECTED=TS18048 ;;
+    missing_member) EXPECTED=TS2551 ;;
     *) EXPECTED=none ;;
   esac
   return 0

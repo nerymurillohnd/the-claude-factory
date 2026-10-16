@@ -2,7 +2,7 @@
 
 A clean result proves nothing until the same check fails on code that is broken on purpose. Run the fixtures once per program the change touches, before the first time you report that program's checks clean; a new session that cannot tell whether it ran them runs them again. Without a shell (the Claude app's chat and Cowork) they cannot run: say the checks were not proven.
 
-The fixtures prove that this compiler and this tsconfig chain see the program's files and report strict errors. They do not prove the project's own check command: a framework checker (`vue-tsc`, `svelte-check`, `astro check`) or a package script needs its own sensitivity probe.
+The fixtures prove that this compiler and this tsconfig chain see the program's files and report strict errors. They do not prove the project's own check command: a framework checker (`vue-tsc`, `svelte-check`, `astro check`), a package script or a lax `tsconfig.json` checked without the strict profile needs its own sensitivity probe. They also do not prove which files a program contains: check that with `tsc --listFilesOnly -p <tsconfig.json>`.
 
 Each file in the skill's `assets/` folder holds one known defect, or none (`clean_control`). The files end in `.fixture` so no tool treats them as code. `tsconfig.json.fixture` is a strict, self-contained program.
 
@@ -40,10 +40,11 @@ Skip it in `research` mode, and without an `LSP` tool: report reference coverage
 | `type_mismatch.ts.fixture` | the strict check | `TS2322` |
 | `implicit_any.ts.fixture` | the strict check | `TS7006` |
 | `possibly_undefined.ts.fixture` | the strict check | `TS18048` |
+| `missing_member.ts.fixture` | the strict check | `TS2551`, the error an incomplete rename leaves |
 | `references.ts.fixture` | `findReferences` on `target` at line 2, character 17 | The definition and three calls |
 
 ## Reading the outcome
 
-- A broken fixture without its expected code means the check is blind here: the file is in no program, the owning config could not be read, or the compiler is not the one you think. Say which, and do not call code clean on that check.
+- A broken fixture without its expected code means the check is blind here: the owning config could not be read, or the compiler is not the one you think. Say which, and do not call code clean on that check.
 - A failing `clean_control` means the checks misfire in this program. Explain the errors before trusting any other result.
 - Fewer than four references after two matching results means the index is cold, the file is not synchronized with the server, or it belongs to no loaded project; see "Trusting a result" in SKILL.md.
