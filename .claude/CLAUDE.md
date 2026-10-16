@@ -28,28 +28,6 @@
 - ruff: governed by `ruff.toml`, Nery's strict config and the only ruff config in the repo.
 - TypeScript: `tsconfig.base.json`, `plugins/tsconfig.json` and `.github/scripts/tsconfig.json` type-check the `.mjs` files with the pinned `tsc`.
 
-## Directory Map
-
-```text
-.claude-plugin/            marketplace.json catalog
-plugins/<name>/            one plugin per folder: .claude-plugin/plugin.json and its components (users)
-docs/                      user guides (users)
-.github/ISSUE_TEMPLATE/    issue forms (users and maintainers)
-.github/scripts/           zero-dependency Node tooling (maintainers, CI)
-.github/scripts/tests/     script tests, LSP hook tests and each plugin's Python tests
-.github/workflows/         CI: validate, release, evals, PR review, @claude mentions
-.claude/                   this file and the maintainer folders below (maintainers only)
-.claude/memory/            project memory (gitignored, local to this Mac)
-.claude/rules/             project gates and path-scoped stage rules
-.claude/maintainer/        decision records and technical debt ledgers
-.claude/skills/            maintainer workflows
-.claude/agents/            maintainer review agents
-.claude/hooks/             session-start check and the version-bump push gate
-.claude/templates/         plugin scaffold, root README and issue-reply templates
-.claude/specs/             committed design specs
-.claude/plans/             local implementation plans (gitignored)
-```
-
 ## Commands
 
 ### Setup
@@ -74,7 +52,8 @@ The gates live in `.claude/rules/`.
 
 - Decisions: record each important decision as an ADR in `.claude/maintainer/decisions/`, with the `project-records` skill.
 - Technical debt: log pending debt in `pending-debt.md` and move it to `resolved-debt.md` once verified, both in `.claude/maintainer/technical-debt/`.
-- Never write a decision or a debt item in memory, a README, a changelog or a commit message.
+- Specs: write each design spec in `.claude/specs/`, named `YYYY-MM-DD-<topic>.md`. Git tracks them.
+- Plans: write each implementation plan in `.claude/plans/`, named `YYYY-MM-DD-<topic>.md`. Git ignores them.
 - `docs/`: the user guides, covering installation, managing plugins, compatibility, FAQ, troubleshooting and tool references. Maintainer notes never go there.
 - Root `README.md`, `CHANGELOG.md`, `SECURITY.md`, `SUPPORT.md`, `CONTRIBUTING.md` and `CODE_OF_CONDUCT.md`: the user-facing showcase and community files.
 
@@ -100,31 +79,22 @@ The gates live in `.claude/rules/`.
 
 ### Nery
 
-- Settles the open-decision list at session start.
-- Runs one session per checkout.
 - States an order's scope: only this, or whatever it takes to finish it.
-- Approves every push that touches `plugins/` and gives the green light to merge.
 
 ### Done
 
 - A plugin PR is ready to merge when every gate passes and `plugin-reviewer` left no confirmed finding.
 - It also needs `/test-installed-plugin` and a Claude app check (unless Claude Code-only).
-- The plugin is released when `release.yml` tags it after the merge.
 - Do not mark a plugin PR ready to merge short of that.
 
 ## Plugin Development
 
 - Do not start a new plugin while a released one lacks its installed test or Claude app check.
 - Name skills and plugins for what the skill does, not how it is implemented.
-- Propose names before creating files.
-- Ship every new plugin with a complete `plugin.json` and a marketplace entry, created in the same pass as the plugin files.
-- Target macOS and Linux (POSIX). When a plugin supports Windows, state the Git Bash requirement in its README.
 - Keep the plugin Python floor at 3.9 (uv's `python3.9`), typed by `pyrightconfig.json` and mypy `--python-version 3.9`.
 - Keep the version in `plugin.json`. Never set `version` on a marketplace entry.
 - Change `displayName` to relabel a plugin.
 - After moving or creating files, delete `.DS_Store` files and orphaned cache directories.
-- Test-install plugins in isolation with `CLAUDE_CODE_PLUGIN_CACHE_DIR` and `CLAUDE_CODE_PLUGIN_SEED_DIR`.
-- Never touch `~/.claude/plugins` and never build ad-hoc sandbox configs.
 - Name each subagent when spawning it, so named subagents can exchange messages with `SendMessage`. Agent Teams are not required. After a restart or a compaction, address an agent by its ID.
 - Use a dynamic workflow to codify review and cross-check phases, such as agents reviewing each other's findings.
 - Do not rely on `skills:` in an agent definition for a teammate. A teammate loads skills from project and user settings.
@@ -137,13 +107,9 @@ The global rule decides when to delegate. These are the cases our work hits.
 
 ### Delegate
 
-- Plugin review before release: `plugin-reviewer`, once the plugin passes its gates.
-- User-doc audit: `docs-auditor`, after editing the root `README.md`, `docs/` or a plugin README, and before a release.
 - Skill audit: `/skill-diagnostics:audit` (conformance and executability lenses) plus one skill-creator agent, launched together.
-- Then verify every skill-audit finding live and read the Claude Code changelog.
 - Comprehensibility review: an agent whose tools are only Read, Glob and Grep. The `Plan` agent has Bash.
 - Docs and pins research: `/docs-drift-check` when Nery asks for a drift check, otherwise one research subagent per docs area; it returns quotes with links.
-- One change across several plugins: one subagent per plugin, each in its own worktree.
 - Verify every reviewer finding against the files and the live docs before fixing anything. Reviewers over-report.
 
 ### Work Directly
@@ -157,6 +123,5 @@ The global rule decides when to delegate. These are the cases our work hits.
 - `.claude/memory/MEMORY.md` indexes the project memory: one topic file per fact. Cross-project facts live in `~/.claude/memory/`.
 - Memory is gitignored: it lives on this Mac only, and cloud sessions do not see it.
 - Update `.claude/memory/` as the work happens, never only at the end of the session.
-- Write each gotcha and fact as its own topic file, and index it in `MEMORY.md`.
 - Keep memory factual and short: one fact per line, no duplication with this file, rules or code.
 - Delete stale lines instead of piling up corrections.
