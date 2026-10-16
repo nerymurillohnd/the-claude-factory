@@ -25,6 +25,7 @@
     "checkJs": true,
     "skipLibCheck": true,
     "noEmit": true,
+    "noCheck": false,
 
     "target": "es2022",
     "module": "nodenext"

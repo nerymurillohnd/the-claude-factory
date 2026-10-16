@@ -39,10 +39,12 @@ readonly HOOK_DIR
 readonly STRICTEST="${HOOK_DIR}/tsconfig.strictest.json"
 PLUGIN_ROOT="$(cd "${HOOK_DIR}/.." && pwd -P)"
 readonly PLUGIN_ROOT
-PLUGIN="$(sed -n 's/^[[:space:]]*"name"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' \
-  "${PLUGIN_ROOT}/.claude-plugin/plugin.json")"
-PLUGIN="${PLUGIN%%"${NL}"*}"
+# The first "name" key is the plugin's own: plugin.json lists it before author.name.
+PLUGIN="$(grep -o '"name"[[:space:]]*:[[:space:]]*"[^"]*"' "${PLUGIN_ROOT}/.claude-plugin/plugin.json" \
+  | head -n 1 | sed 's/.*:[[:space:]]*"\([^"]*\)"$/\1/')"
 readonly PLUGIN
+# A mise shim whose tool is missing would install it; this hook installs nothing.
+export MISE_AUTO_INSTALL=false
 case "${PLUGIN}" in
   typescript7-*)
     readonly NATIVE=yes
@@ -66,16 +68,64 @@ readonly EVENT
 
 # ── JSON ────────────────────────────────────────────────────────────────────────────────
 
-# Sets UNESCAPED to $1 without the JSON escapes a path or an identifier can carry.
+# Sets UTF8 to code point $1 encoded as UTF-8.
+UTF8=""
+utf8_of() {
+  local c="$1" octal
+  if ((c < 0x80)); then
+    octal="$(printf '\\0%03o' "${c}")"
+  elif ((c < 0x800)); then
+    octal="$(printf '\\0%03o\\0%03o' $((0xC0 | c >> 6)) $((0x80 | (c & 0x3F))))"
+  elif ((c < 0x10000)); then
+    octal="$(printf '\\0%03o\\0%03o\\0%03o' $((0xE0 | c >> 12)) $((0x80 | (c >> 6 & 0x3F))) $((0x80 | (c & 0x3F))))"
+  else
+    octal="$(printf '\\0%03o\\0%03o\\0%03o\\0%03o' $((0xF0 | c >> 18)) $((0x80 | (c >> 12 & 0x3F))) \
+      $((0x80 | (c >> 6 & 0x3F))) $((0x80 | (c & 0x3F))))"
+  fi
+  # The x keeps a trailing newline from being stripped by the command substitution.
+  UTF8="$(printf '%bx' "${octal}")"
+  UTF8="${UTF8%x}"
+}
+
+# Sets UNESCAPED to JSON string body $1 with every escape decoded, \uXXXX and surrogate
+# pairs included.
 UNESCAPED=""
 json_unescape() {
-  local s="$1" bs=$'\001'
-  s="${s//\\\\/${bs}}"
-  s="${s//\\\"/\"}"
-  s="${s//\\\//\/}"
-  s="${s//\\t/$'\t'}"
-  UNESCAPED="${s//${bs}/\\}"
+  local s="$1" out="" rest c hex low code
+  while [[ ${s} == *\\* ]]; do
+    out="${out}${s%%\\*}"
+    rest="${s#*\\}"
+    c="${rest:0:1}"
+    s="${rest:1}"
+    case "${c}" in
+      n) out="${out}${NL}" ;;
+      t) out="${out}"$'\t' ;;
+      r) out="${out}"$'\r' ;;
+      b) out="${out}"$'\b' ;;
+      f) out="${out}"$'\f' ;;
+      u)
+        hex="${s:0:4}"
+        s="${s:4}"
+        [[ ${hex} =~ ^[0-9A-Fa-f]{4}$ ]] || hex=FFFD
+        code=$((16#${hex}))
+        if ((code >= 0xD800 && code < 0xDC00)) && [[ ${s:0:2} == '\u' && ${s:2:4} =~ ^[0-9A-Fa-f]{4}$ ]]; then
+          low=$((16#${s:2:4}))
+          if ((low >= 0xDC00 && low < 0xE000)); then
+            code=$((0x10000 + ((code - 0xD800) << 10) + (low - 0xDC00)))
+            s="${s:6}"
+          fi
+        fi
+        utf8_of "${code}"
+        out="${out}${UTF8}"
+        ;;
+      *) out="${out}${c}" ;;
+    esac
+  done
+  UNESCAPED="${out}${s}"
 }
+
+# A JSON string token.
+readonly JSON_STR='"([^"\\]|\\.)*"'
 
 # Sets VALUE to the first string value of key $1 anywhere in the event, empty when absent.
 VALUE=""
@@ -83,6 +133,15 @@ json_string() {
   local raw
   raw="$(printf '%s' "${EVENT}" | sed -E -n \
     "s/^[^\"]*(\"([^\"\\\\]|\\\\.)*\"[^\"]*)*\"$1\"[[:space:]]*:[[:space:]]*\"(([^\"\\\\]|\\\\.)*)\".*/\\3/p")"
+  json_unescape "${raw}"
+  VALUE="${UNESCAPED}"
+}
+
+# Sets VALUE to string key $2 of the flat top-level object $1 (tool_input), empty when absent.
+json_member() {
+  local raw
+  raw="$(printf '%s' "${EVENT}" | sed -E -n \
+    "s/.*\"$1\"[[:space:]]*:[[:space:]]*\\{([^\"{}]|${JSON_STR})*\"$2\"[[:space:]]*:[[:space:]]*\"(([^\"\\\\]|\\\\.)*)\".*/\\3/p")"
   json_unescape "${raw}"
   VALUE="${UNESCAPED}"
 }
@@ -118,6 +177,15 @@ to_posix() {
       ;;
     *) ;;
   esac
+}
+
+# Sets MIXED to $1 as a Windows compiler reads it (C:/x/y) under Git Bash; other paths stay.
+MIXED=""
+mixed_path() {
+  MIXED="$1"
+  if [[ $1 == /* ]] && command -v cygpath > /dev/null 2>&1; then
+    MIXED="$(cygpath -m "$1")"
+  fi
 }
 
 # Sets CANONICAL to the path of $1 with its folder's symlinks resolved, as tsc lists files;
@@ -311,11 +379,41 @@ native_compiler() {
   done
 }
 
-# Sets TSC to the command that runs tsc candidate $1; leaves it empty when it cannot run.
+# Sets TSC, TSC_ID and TSC_VERSION from compiler identity $1 ("native|<path>|<version>" or
+# "node|<path>|<version>"); TSC is empty for an empty identity.
 TSC=()
-use_tsc() {
-  local tsc="$1" package="" version
+TSC_ID=""
+TSC_VERSION=""
+set_tsc() {
+  local kind path rest
   TSC=()
+  TSC_ID="$1"
+  TSC_VERSION=""
+  [[ -n ${TSC_ID} ]] || return 0
+  kind="${TSC_ID%%|*}"
+  rest="${TSC_ID#*|}"
+  path="${rest%%|*}"
+  TSC_VERSION="${rest#*|}"
+  if [[ ${kind} == native ]]; then
+    TSC=("${path}")
+  else
+    TSC=(env "PATH=${NODE_DIR}:${PATH}" "${path}")
+  fi
+}
+
+# Sets FOUND_ID to the identity of tsc candidate $1, empty when it cannot run. Each candidate
+# is probed once per run.
+FOUND_ID=""
+PROBED="${NL}"
+use_tsc() {
+  local tsc="$1" package="" version line
+  FOUND_ID=""
+  if [[ ${PROBED} == *"${NL}${tsc}"$'\t'* ]]; then
+    line="${PROBED#*"${NL}${tsc}"$'\t'}"
+    FOUND_ID="${line%%"${NL}"*}"
+    return 0
+  fi
+  SEARCHED="${SEARCHED}${tsc}${NL}"
   resolve_link "${tsc}"
   case "${CANONICAL}" in
     */typescript/bin/tsc) package="${CANONICAL%/bin/tsc}" ;;
@@ -325,35 +423,36 @@ use_tsc() {
     native_compiler "${package}"
     if [[ -n ${NATIVE_TSC} ]]; then
       version="$("${NATIVE_TSC}" --version 2> /dev/null || true)"
-      if [[ ${version} == Version* ]]; then
-        TSC=("${NATIVE_TSC}")
-        return 0
-      fi
+      [[ ${version} == Version* ]] && FOUND_ID="native|${NATIVE_TSC}|${version#Version }"
     fi
   fi
-  if [[ -z ${NODE_DIR} ]]; then
+  if [[ -z ${FOUND_ID} && -z ${NODE_DIR} ]]; then
     SKIPPED="${SKIPPED}${tsc} (no Node.js ${NODE_MIN} or later to run it)${NL}"
-    return 0
+  elif [[ -z ${FOUND_ID} ]]; then
+    version="$(PATH="${NODE_DIR}:${PATH}" "${tsc}" --version 2> /dev/null || true)"
+    if [[ ${version} == Version* ]]; then
+      FOUND_ID="node|${tsc}|${version#Version }"
+    else
+      SKIPPED="${SKIPPED}${tsc} (did not run with ${NODE_DIR}/node)${NL}"
+    fi
   fi
-  version="$(PATH="${NODE_DIR}:${PATH}" "${tsc}" --version 2> /dev/null || true)"
-  if [[ ${version} != Version* ]]; then
-    SKIPPED="${SKIPPED}${tsc} (did not run with ${NODE_DIR}/node)${NL}"
-    return 0
-  fi
-  TSC=(env "PATH=${NODE_DIR}:${PATH}" "${tsc}")
+  PROBED="${PROBED}${tsc}"$'\t'"${FOUND_ID}${NL}"
 }
 
-# Sets TSC for file $1: the project's node_modules above it first, then a global tsc.
+# Sets TSC for file $1: the project's node_modules above it first, then a global tsc. Each
+# file gets its own, so files of different packages run their own compilers.
 find_tsc() {
   local dir candidate
-  TSC=()
+  set_tsc ""
   dir="$(dirname "$1")"
   while :; do
     for candidate in "${dir}/node_modules/.bin/tsc" "${dir}/node_modules/typescript/bin/tsc"; do
       [[ -f ${candidate} ]] || continue
-      SEARCHED="${SEARCHED}${candidate}${NL}"
       use_tsc "${candidate}"
-      [[ ${#TSC[@]} -gt 0 ]] && return 0
+      if [[ -n ${FOUND_ID} ]]; then
+        set_tsc "${FOUND_ID}"
+        return 0
+      fi
     done
     [[ ${dir} == / || ${dir} == . ]] && break
     dir="$(dirname "${dir}")"
@@ -361,9 +460,11 @@ find_tsc() {
   for dir in "${DIRS[@]+"${DIRS[@]}"}"; do
     candidate="${dir}/tsc"
     [[ -f ${candidate} ]] || continue
-    SEARCHED="${SEARCHED}${candidate}${NL}"
     use_tsc "${candidate}"
-    [[ ${#TSC[@]} -gt 0 ]] && return 0
+    if [[ -n ${FOUND_ID} ]]; then
+      set_tsc "${FOUND_ID}"
+      return 0
+    fi
   done
   return 0
 }
@@ -450,18 +551,24 @@ program_of() {
 
 # The boolean options of tsconfig.strictest.json as command-line flags.
 STRICT_FLAGS=()
+# Read as tokens, not lines, so any valid formatting of the file gives the same flags. A
+# policy without its noEmit and noCheck entries is not the plugin's: stop instead.
 load_strict_flags() {
   local options name value
-  options="$(sed -n -E 's/^[[:space:]]*"([A-Za-z]+)"[[:space:]]*:[[:space:]]*(true|false),?[[:space:]]*$/\1 \2/p' "${STRICTEST}")"
+  options="$(grep -o -E '"[A-Za-z]+"[[:space:]]*:[[:space:]]*(true|false)' "${STRICTEST}" \
+    | sed -E 's/^"([A-Za-z]+)"[[:space:]]*:[[:space:]]*(true|false)$/\1 \2/' || true)"
   while IFS=' ' read -r name value; do
     [[ -n ${name} ]] && STRICT_FLAGS+=("--${name}" "${value}")
   done <<< "${options}"
-  return 0
+  if [[ " ${STRICT_FLAGS[*]-} " != *" --noEmit true "* || " ${STRICT_FLAGS[*]-} " != *" --noCheck false "* ]]; then
+    echo "${PLUGIN}: ${STRICTEST} does not set noEmit true and noCheck false; reinstall the plugin" >&2
+    return 1
+  fi
 }
 
 # Writes config $1 that checks file $3 alone on top of base config $2.
 write_alone_config() {
-  local out="$1" base="$2" file="$3" options="" roots="" dir types shown base_json file_json
+  local out="$1" base="$2" file="$3" options="" roots="" dir types shown base_json file_json root
   # A config in a temporary folder would not find the project's @types: give it the
   # folders tsc searches by default, unless the base sets typeRoots itself.
   if [[ ${base} != "${STRICTEST}" ]]; then
@@ -471,7 +578,8 @@ write_alone_config() {
       while :; do
         types="${dir}/node_modules/@types"
         if [[ -d ${types} ]]; then
-          json_escape "${types}"
+          mixed_path "${types}"
+          json_escape "${MIXED}"
           roots="${roots:+${roots}, }\"${ESCAPED}\""
         fi
         [[ ${dir} == / || ${dir} == . ]] && break
@@ -480,9 +588,19 @@ write_alone_config() {
       [[ -n ${roots} ]] && options="${options:+${options}, }\"typeRoots\": [${roots}]"
     fi
   fi
-  json_escape "${base}"
+  # The config lives in a temporary folder, which TypeScript 6 takes as the default rootDir,
+  # and composite requires every imported file in the files list: neither fits one file.
+  mixed_path "${file}"
+  case "${MIXED}" in
+    [A-Za-z]:/*) root="${MIXED:0:3}" ;;
+    *) root=/ ;;
+  esac
+  options="${options:+${options}, }\"composite\": false, \"rootDir\": \"${root}\""
+  mixed_path "${base}"
+  json_escape "${MIXED}"
   base_json="${ESCAPED}"
-  json_escape "${file}"
+  mixed_path "${file}"
+  json_escape "${MIXED}"
   file_json="${ESCAPED}"
   printf '{ "extends": "%s", "files": ["%s"], "include": [], "compilerOptions": { %s } }\n' \
     "${base_json}" "${file_json}" "${options}" > "${out}"
@@ -506,6 +624,8 @@ parse_output() {
   while IFS= read -r line; do
     if [[ ${line} =~ ${re} ]]; then
       where="${BASH_REMATCH[1]}"
+      to_posix "${where}"
+      where="${POSIX}"
       [[ ${where} == /* ]] || where="${cwd}/${where}"
       canonical "${where}"
       where="${CANONICAL}"
@@ -533,12 +653,33 @@ parse_output() {
 }
 
 REPORT=""
+IGNORED=0
+
+# Sets ERRORS to the number of error lines in tsc output $1.
+ERRORS=0
+count_errors() {
+  local line
+  ERRORS=0
+  while IFS= read -r line; do
+    [[ ${line} == *"error TS"* ]] && ERRORS=$((ERRORS + 1))
+  done <<< "$1"
+  return 0
+}
+
+# Sets FIRST_LINES to the first 20 lines of $1, or "(no output)".
+FIRST_LINES=""
+first_lines() {
+  FIRST_LINES="$(printf '%s\n' "$1" | head -n 20)"
+  [[ -n ${FIRST_LINES} ]] || FIRST_LINES="(no output)"
+}
 
 # Checks one program, or one file alone, and appends what it finds to REPORT. $1 is what
-# program_of found, $2 the edited files with a newline on each side.
+# program_of found, $2 the edited files with a newline on each side. A run that exits
+# non-zero without a TypeScript error (a crash, a killed process, an unknown output format)
+# is reported as not checked, never as a pass.
 check_group() {
-  local found="$1" files="$2" config base note="" run_dir strict project file
-  local config_errors edited_errors other_errors project_other="" parts=""
+  local found="$1" files="$2" config base note="" run_dir strict project file status=0
+  local config_errors edited_errors other_errors project_other="" parts="" strict_count
   case "${found}" in
     none | uncovered\ *)
       file="${files#"${NL}"}"
@@ -556,17 +697,31 @@ check_group() {
     *) config="${found}" ;;
   esac
   run_dir="$(dirname "${config}")"
-  # Both passes write nothing into the project: no emitted files, and the tsbuildinfo of an
+  # Both passes write nothing into the project: the policy's noEmit, and the tsbuildinfo of an
   # incremental or composite config goes to WORK (--incremental false fails on composite).
-  strict="$(cd "${run_dir}" && "${TSC[@]}" -p "${config}" --pretty false --tsBuildInfoFile "${WORK}/strict-${RANDOM}${RANDOM}.tsbuildinfo" "${STRICT_FLAGS[@]+"${STRICT_FLAGS[@]}"}" 2>&1 || true)"
+  strict="$(cd "${run_dir}" && "${TSC[@]}" -p "${config}" --pretty false --tsBuildInfoFile "${WORK}/strict-${RANDOM}${RANDOM}.tsbuildinfo" "${STRICT_FLAGS[@]+"${STRICT_FLAGS[@]}"}" 2>&1)" || status=$?
   parse_output "${strict}" "${run_dir}" "${files}"
   config_errors="${GROUP_CONFIG}"
   edited_errors="${GROUP_EDITED}"
   other_errors="${GROUP_OTHER}"
+  if [[ ${status} -ne 0 && -z ${config_errors}${edited_errors}${other_errors} ]]; then
+    first_lines "${strict}"
+    parts="tsc ${TSC_VERSION} exited with status ${status} without reporting a TypeScript error, so these files were not checked:${files}Its output:${NL}${FIRST_LINES}${NL}${NL}"
+  fi
   if [[ -n ${other_errors} && ${config} == "${found}" ]]; then
-    project="$(cd "${run_dir}" && "${TSC[@]}" -p "${config}" --pretty false --noEmit true --tsBuildInfoFile "${WORK}/project-${RANDOM}${RANDOM}.tsbuildinfo" 2>&1 || true)"
+    status=0
+    project="$(cd "${run_dir}" && "${TSC[@]}" -p "${config}" --pretty false --noEmit true --tsBuildInfoFile "${WORK}/project-${RANDOM}${RANDOM}.tsbuildinfo" 2>&1)" || status=$?
     parse_output "${project}" "${run_dir}" "${files}"
     project_other="${GROUP_OTHER}"
+    if [[ ${status} -ne 0 && -z ${GROUP_CONFIG}${GROUP_EDITED}${GROUP_OTHER} ]]; then
+      first_lines "${project}"
+      parts="${parts}The strictest run found errors in other files, but the check under the project's own config exited with status ${status} without a TypeScript error, so whether they are the project's own is unknown:${NL}${other_errors}Its output:${NL}${FIRST_LINES}${NL}${NL}"
+    else
+      count_errors "${other_errors}"
+      strict_count="${ERRORS}"
+      count_errors "${project_other}"
+      ((strict_count > ERRORS)) && IGNORED=$((IGNORED + strict_count - ERRORS))
+    fi
   fi
   if [[ -n ${config_errors} ]]; then
     parts="${parts}The TypeScript config (${found#uncovered }) has errors, so tsc could not check the code as configured:${NL}${config_errors}${NL}"
@@ -586,13 +741,16 @@ check_group() {
 
 # Prints the files a Bash command changed inside project $1 in the last $2 seconds.
 changed_since() {
-  local project="$1" window="$2" ref="${WORK}/since" now when stamp home_real listed rel
+  local project="$1" window="$2" ref="${WORK}/since" now when stamp home_real listed staged rel
   now="$(date +%s)"
   when=$((now - window))
   stamp="$(date -u -r "${when}" +%Y%m%d%H%M.%S 2> /dev/null || date -u -d "@${when}" +%Y%m%d%H%M.%S)"
   TZ=UTC touch -t "${stamp}" "${ref}"
   if git -C "${project}" rev-parse --is-inside-work-tree > /dev/null 2>&1; then
+    # Staged files count too: a command that runs git add leaves nothing --modified.
     listed="$(git -C "${project}" ls-files --modified --others --exclude-standard)"
+    staged="$(git -C "${project}" diff --cached --name-only --relative 2> /dev/null || true)"
+    listed="${listed}${NL}${staged}"
     while IFS= read -r rel; do
       [[ -n ${rel} && -f "${project}/${rel}" && "${project}/${rel}" -nt ${ref} ]] && printf '%s\n' "${project}/${rel}"
     done <<< "${listed}"
@@ -614,12 +772,12 @@ candidates() {
   tool="${VALUE}"
   case "${tool}" in
     Edit | Write)
-      json_string file_path
+      json_member tool_input file_path
       to_posix "${VALUE}"
       [[ -n ${POSIX} ]] && printf '%s\n' "${POSIX}"
       return 0
       ;;
-    Bash) ;;
+    Bash | PowerShell) ;;
     *) return 0 ;;
   esac
   if [[ ${EVENT} =~ \"changedFiles\"[[:space:]]*:[[:space:]]*\[ ]]; then
@@ -633,7 +791,8 @@ candidates() {
       to_posix "${UNESCAPED}"
       printf '%s\n' "${POSIX}"
     done
-    return 0
+    # An incomplete or skipped list is a floor, not the answer: add the recent changes.
+    [[ ${EVENT} =~ \"(unavailable|skipped)\"[[:space:]]*:[[:space:]]*true ]] || return 0
   fi
   project="${CLAUDE_PROJECT_DIR:-}"
   if [[ -z ${project} || ! -d ${project} ]]; then
@@ -665,74 +824,123 @@ bounded() {
   fi
 }
 
-# Tells the user once per session, and Claude every time, that files $1 went unchecked.
-report_unchecked() {
-  local files="$1" event session marker_dir marker message="" context names line
-  json_string hook_event_name
-  event="${VALUE:-PostToolUse}"
-  json_string session_id
-  session="${VALUE:-unknown}"
-  names=""
-  while IFS= read -r line; do
-    [[ -n ${line} ]] && names="${names:+${names}, }${line}"
-  done <<< "${files}"
-  context="${PLUGIN}: ${names} not type-checked: no usable TypeScript compiler was found. Do not treat these files as checked."
-  marker_dir="${CLAUDE_PLUGIN_DATA:-${TMPDIR:-/tmp}/${PLUGIN}}/notices"
-  marker="${marker_dir}/${session//[!A-Za-z0-9_-]/_}"
-  if [[ ! -f ${marker} ]]; then
-    message="${PLUGIN}: no usable TypeScript compiler was found, so edited files are not type-checked.${NL}Searched:${NL}${SEARCHED:-(no node or tsc in any known folder)${NL}}"
-    [[ -n ${SKIPPED} ]] && message="${message}Skipped:${NL}${SKIPPED}"
-    message="${message}Requirements: ${README_URL}"
-    mkdir -p "${marker_dir}"
-    : > "${marker}"
-  fi
-  json_escape "${event}"
-  event="${ESCAPED}"
-  json_escape "${context}"
-  context="${ESCAPED}"
-  if [[ -n ${message} ]]; then
-    bounded "${message}"
-    json_escape "${BOUNDED}"
-    printf '{"systemMessage":"%s","hookSpecificOutput":{"hookEventName":"%s","additionalContext":"%s"}}' \
-      "${ESCAPED}" "${event}" "${context}"
-  else
-    printf '{"hookSpecificOutput":{"hookEventName":"%s","additionalContext":"%s"}}' "${event}" "${context}"
-  fi
-}
-
-# Confirms to the user in one line that files $1 passed.
-report_passed() {
-  local files="$1" project names="" line
-  project="${CLAUDE_PROJECT_DIR:-}"
+# Sets NAMES to the files in $1 (one per line), comma-separated and relative to the project.
+NAMES=""
+names_of() {
+  local project="${CLAUDE_PROJECT_DIR:-}" line
+  NAMES=""
   if [[ -n ${project} && -d ${project} ]]; then
     project="$(cd "${project}" && pwd -P)"
   fi
   while IFS= read -r line; do
     [[ -n ${line} ]] || continue
     [[ -n ${project} ]] && line="${line#"${project}/"}"
-    names="${names:+${names}, }${line}"
-  done <<< "${files}"
-  json_escape "${PLUGIN}: tsc passed (strictest) · ${names}"
-  printf '{"systemMessage":"%s"}' "${ESCAPED}"
+    NAMES="${NAMES:+${NAMES}, }${line}"
+  done <<< "$1"
+  return 0
+}
+
+# Sets NOTICE to the once-per-session message about a missing compiler, empty after the first.
+NOTICE=""
+compiler_notice() {
+  local session marker_dir marker
+  NOTICE=""
+  json_string session_id
+  session="${VALUE:-unknown}"
+  marker_dir="${CLAUDE_PLUGIN_DATA:-${TMPDIR:-/tmp}/${PLUGIN}}/notices"
+  marker="${marker_dir}/${session//[!A-Za-z0-9_-]/_}"
+  [[ -f ${marker} ]] && return 0
+  NOTICE="${PLUGIN}: no usable TypeScript compiler was found, so edited files are not type-checked.${NL}Searched:${NL}${SEARCHED:-(no node or tsc in any known folder)${NL}}"
+  [[ -n ${SKIPPED} ]] && NOTICE="${NOTICE}Skipped:${NL}${SKIPPED}"
+  NOTICE="${NOTICE}Requirements: ${README_URL}"
+  mkdir -p "${marker_dir}"
+  : > "${marker}"
+}
+
+# Prints the one JSON object of this run. $1 is the passed files, $2 the files without a
+# compiler, $3 the edited files left out (with the reason on each line), $4 the compilers used.
+# Findings block on PostToolUse; PostToolUseFailure takes only additionalContext, so there
+# they go to Claude that way.
+emit() {
+  local passed="$1" unchecked="$2" left_out="$3" used="$4" event context="" message="" fields=""
+  json_string hook_event_name
+  event="${VALUE:-PostToolUse}"
+  if [[ -n ${unchecked} ]]; then
+    names_of "${unchecked}"
+    context="${PLUGIN}: ${NAMES} not type-checked: no usable TypeScript compiler was found. Do not treat these files as checked.${NL}"
+    compiler_notice
+    message="${NOTICE}"
+  fi
+  if [[ -n ${left_out} ]]; then
+    context="${context}${PLUGIN}: these edited files were not type-checked:${NL}${left_out}"
+  fi
+  if [[ -n ${REPORT} ]]; then
+    bounded "TypeScript errors detected after file edit. Fix them before continuing; do not suppress them.${NL}${NL}${REPORT}${context:+${NL}${context}}"
+    json_escape "${BOUNDED}"
+    if [[ ${event} == PostToolUseFailure ]]; then
+      fields="\"hookSpecificOutput\":{\"hookEventName\":\"PostToolUseFailure\",\"additionalContext\":\"${ESCAPED}\"}"
+    else
+      fields="\"decision\":\"block\",\"reason\":\"${ESCAPED}\""
+    fi
+  else
+    if [[ -n ${passed} ]]; then
+      names_of "${passed}"
+      message="${message:+${message}${NL}}${PLUGIN}: tsc ${used} · the edited files pass the strictest policy"
+      ((IGNORED > 0)) && message="${message}; strictest-only errors in other files not counted, since the project's own config accepts them: ${IGNORED}"
+      message="${message} · ${NAMES}"
+      [[ -n ${SKIPPED} ]] && message="${message}${NL}Compilers skipped first:${NL}${SKIPPED%"${NL}"}"
+    fi
+    if [[ -n ${context} ]]; then
+      json_escape "${event}"
+      fields="\"hookSpecificOutput\":{\"hookEventName\":\"${ESCAPED}\""
+      bounded "${context}"
+      json_escape "${BOUNDED}"
+      fields="${fields},\"additionalContext\":\"${ESCAPED}\"}"
+    fi
+  fi
+  if [[ -n ${message} ]]; then
+    bounded "${message}"
+    json_escape "${BOUNDED}"
+    fields="\"systemMessage\":\"${ESCAPED}\"${fields:+,${fields}}"
+  fi
+  [[ -n ${fields} ]] && printf '{%s}' "${fields}"
+  return 0
 }
 
 # ── Main ────────────────────────────────────────────────────────────────────────────────
 
 main() {
-  local raw path files="" file keys="" listed key group first
+  local raw path files="" file keys="" listed key group passed="" unchecked="" left_out="" used=""
+  json_string tool_name
+  if [[ -z ${VALUE} ]]; then
+    echo "${PLUGIN}: the hook event has no tool_name; it is not the JSON Claude Code sends" >&2
+    return 1
+  fi
   raw="$(candidates)"
   while IFS= read -r path; do
-    [[ -n ${path} && -f ${path} && ${path} =~ ${TS_FILE_PATTERN} ]] || continue
+    [[ -n ${path} && ${path} =~ ${TS_FILE_PATTERN} ]] || continue
     case "${path}" in
-      */node_modules/* | */.venv/* | */venv/* | */site-packages/*) continue ;;
+      */node_modules/* | */.venv/* | */venv/* | */site-packages/*)
+        left_out="${left_out}${path} (dependency folder; the hook checks project code only)${NL}"
+        continue
+        ;;
       *) ;;
     esac
+    if [[ ! -f ${path} ]]; then
+      # A Bash command can delete a file; an edit tool cannot leave one missing.
+      json_string tool_name
+      [[ ${VALUE} == Edit || ${VALUE} == Write ]] && left_out="${left_out}${path} (not found on disk)${NL}"
+      continue
+    fi
     canonical "${path}"
     file="${CANONICAL}"
     [[ ${files} == *"${NL}${file}${NL}"* ]] && continue
     files="${files:-${NL}}${file}${NL}"
   done <<< "${raw}"
-  [[ -z ${files} ]] && return 0
+  if [[ -z ${files} ]]; then
+    emit "" "" "${left_out}" ""
+    return 0
+  fi
 
   if [[ ! -f ${STRICTEST} ]]; then
     echo "${PLUGIN}: ${STRICTEST} is missing; reinstall the plugin" >&2
@@ -741,37 +949,33 @@ main() {
   collect_dirs
   find_node
   load_strict_flags
-  first="${files#"${NL}"}"
-  first="${first%%"${NL}"*}"
-  find_tsc "${first}"
-  if [[ ${#TSC[@]} -eq 0 ]]; then
-    report_unchecked "${files}"
-    return 0
-  fi
 
-  # One run per program; a file outside every program is checked on its own.
+  # One run per program and compiler; a file outside every program is checked on its own.
   while IFS= read -r file; do
     [[ -n ${file} ]] || continue
+    find_tsc "${file}"
+    if [[ ${#TSC[@]} -eq 0 ]]; then
+      unchecked="${unchecked}${file}${NL}"
+      continue
+    fi
+    [[ ${NL}${used} == *"${NL}${TSC_VERSION}${NL}"* ]] || used="${used}${TSC_VERSION}${NL}"
+    passed="${passed}${file}${NL}"
     program_of "${file}"
     case "${PROGRAM}" in
       none | uncovered\ *) check_group "${PROGRAM}" "${NL}${file}${NL}" ;;
-      *) keys="${keys}${PROGRAM}"$'\t'"${file}${NL}" ;;
+      *) keys="${keys}${TSC_ID}"$'\t'"${PROGRAM}"$'\t'"${file}${NL}" ;;
     esac
   done <<< "${files}"
-  listed="$(printf '%s' "${keys}" | cut -f1 | sort -u)"
+  listed="$(printf '%s' "${keys}" | cut -f1,2 | sort -u)"
   while IFS= read -r key; do
     [[ -n ${key} ]] || continue
-    group="$(printf '%s' "${keys}" | awk -F '\t' -v k="${key}" '$1 == k { print $2 }')"
-    check_group "${key}" "${NL}${group}${NL}"
+    group="$(printf '%s' "${keys}" | awk -F '\t' -v k="${key}" '$1 "\t" $2 == k { print $3 }')"
+    set_tsc "${key%%$'\t'*}"
+    check_group "${key#*$'\t'}" "${NL}${group}${NL}"
   done <<< "${listed}"
 
-  if [[ -z ${REPORT} ]]; then
-    report_passed "${files}"
-    return 0
-  fi
-  bounded "${REPORT}"
-  json_escape "TypeScript errors detected after file edit. Fix them before continuing; do not suppress them.${NL}${NL}${BOUNDED}"
-  printf '{"decision":"block","reason":"%s"}' "${ESCAPED}"
+  used="${used%"${NL}"}"
+  emit "${passed}" "${unchecked}" "${left_out}" "${used//${NL}/, }"
 }
 
 main
