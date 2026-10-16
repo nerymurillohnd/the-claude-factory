@@ -34,17 +34,21 @@ Plugin: `$ARGUMENTS`. Never install into `~/.claude/plugins`, never declare a te
            "url": "file://<absolute repo path>",
            "path": "plugins/<name>",
            "sha": "<output of git rev-parse HEAD>"
-         }
+         },
+         "version": "<version from the plugin's plugin.json>"
        }
      ]
    }
    ```
+
+   - The `version` is for this test marketplace only. Without it, a run computes a `git-subdir` version (`<sha>-<hash>`) that matches no cache folder, while the install wrote `cache/.../<version>/`, so the seed plugin reports "enabled in project settings but isn't installed".
 
 3. **Install.**
    - `cd <target> && CLAUDE_CODE_PLUGIN_CACHE_DIR=<seed> claude plugin marketplace add <mkt> --scope project`
    - `cd <target> && CLAUDE_CODE_PLUGIN_CACHE_DIR=<seed> claude plugin install <name>@factory-install-test --scope project`
    - `CLAUDE_CODE_PLUGIN_CACHE_DIR` makes the install write to `<seed>` instead of `~/.claude/plugins`; `--scope project` declares the marketplace and enables the plugin in `<target>/.claude/settings.json` (docs: plugins/org, Seed containers and CI; plugins/cli-reference, Scopes).
    - Confirm the copy: `ls <seed>/cache/factory-install-test/<name>/`.
+   - Copy the marketplace into the seed: `mkdir -p <seed>/marketplaces/factory-install-test && cp -R <mkt>/. <seed>/marketplaces/factory-install-test/`. A `directory` marketplace is recorded in place, and a seed registers only marketplaces under its own `marketplaces/<name>/` (debug log: `Seed marketplace '<name>' not found under <seed>/marketplaces/, skipping`); without the copy the plugin never loads.
 4. **Check the load.** Every run from here on uses `CLAUDE_CODE_PLUGIN_SEED_DIR=<seed> CLAUDE_CODE_PLUGIN_CACHE_DIR=<root>` and `--setting-sources project,local`: the seed is read-only, `<root>` keeps Nery's own plugins out, and his user settings stay out of the run. The sign-in is Nery's own, so this run costs one short reply.
    - `cd <target> && CLAUDE_CODE_PLUGIN_SEED_DIR=<seed> CLAUDE_CODE_PLUGIN_CACHE_DIR=<root> claude -p --setting-sources project,local --output-format stream-json --verbose "Reply OK."`
    - In the `init` event, the plugin is listed under `plugins` with its `path` under `<seed>/cache/factory-install-test/`, and `plugin_errors` is absent (docs: plugins/org, Seed containers and CI). Stop and report otherwise.
