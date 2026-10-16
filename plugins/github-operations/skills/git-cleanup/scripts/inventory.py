@@ -63,6 +63,10 @@ FAILURE_CODE = 2  # git exits 1 for "nothing found"; 2 and above are real failur
 HISTORY_LIMIT = 200_000
 CHERRY_MAX_AHEAD = 200
 CHERRY_MAX_BEHIND = 5000
+NESTED_REPO_MAX_DEPTH = 4  # folders deeper than this are not searched for nested repositories
+COUNT_FIELDS = 2  # Git prints ahead and behind as two counts
+STATUS_PREFIX = 3  # "XY " before the path in `git status --porcelain -z`
+REFLOG_MAX_COMMITS = 100
 
 CREDENTIAL_URL = re.compile(r"(?<=//)[^/\s]*@")
 TOKEN_QUERY = re.compile(r"([?&](?:token|access_token|key|password|secret)=)[^&\s]+", re.IGNORECASE)
@@ -269,7 +273,7 @@ def nested_repositories(root: str, submodules: list[str]) -> list[str]:
     for folder, dirs, files in os.walk(root):
         depth = Path(folder).relative_to(root).parts
         has_git = ".git" in dirs or ".git" in files
-        dirs[:] = [d for d in dirs if d not in skip and len(depth) < 4]  # noqa: PLR2004
+        dirs[:] = [d for d in dirs if d not in skip and len(depth) < NESTED_REPO_MAX_DEPTH]
         rel = "/".join(depth)
         if rel and has_git and rel not in submodules:
             found.append(rel)
@@ -368,18 +372,23 @@ def counts_of(repo: Repo, base: str) -> dict[str, tuple[int, int]]:
         return found
     for line in text.split("\n"):
         name, _, pair = line.partition("\t")
-        numbers = pair.split()
-        if len(numbers) == 2 and all(n.isdigit() for n in numbers):  # noqa: PLR2004
-            found[name] = (int(numbers[0]), int(numbers[1]))
+        counts = count_pair(pair.split())
+        if counts is not None:
+            found[name] = counts
     return found
+
+
+def count_pair(fields: list[str]) -> tuple[int, int] | None:
+    """Return Git's two counts as integers, or None for any other output."""
+    if len(fields) != COUNT_FIELDS or not all(field.isdigit() for field in fields):
+        return None
+    return int(fields[0]), int(fields[1])
 
 
 def ahead_behind(repo: Repo, ref: str, base: str) -> tuple[int, int]:
     """Return (ahead, behind) of one ref against the base, for Git older than 2.41."""
-    numbers = repo.out("rev-list", "--left-right", "--count", f"{ref}...{base}").split()
-    if len(numbers) == 2 and all(n.isdigit() for n in numbers):  # noqa: PLR2004
-        return int(numbers[0]), int(numbers[1])
-    return 0, 0
+    counts = count_pair(repo.out("rev-list", "--left-right", "--count", f"{ref}...{base}").split())
+    return counts if counts is not None else (0, 0)
 
 
 def merged_refs(repo: Repo, base: str) -> set[str]:
@@ -539,9 +548,9 @@ def working_tree_of(repo: Repo) -> Json:
     while index < len(parts):
         item = parts[index]
         index += 1
-        if len(item) <= 3:  # noqa: PLR2004
+        if len(item) <= STATUS_PREFIX:
             continue
-        code, path = item[:2], item[3:]
+        code, path = item[:2], item[STATUS_PREFIX:]
         index += 1 if code[0] in "RC" else 0  # a rename or copy is followed by its origin path
         if code == "??":
             untracked.append(path)
@@ -617,7 +626,7 @@ def reflog_of(repo: Repo) -> Json:
     orphans: list[Json] = []
     for line in entries:
         sha, date, action = (line.split("\t", 2) + [""] * 3)[:3]
-        if sha in seen or len(seen) >= 100:  # noqa: PLR2004
+        if sha in seen or len(seen) >= REFLOG_MAX_COMMITS:
             continue
         seen.add(sha)
         held = repo.out(

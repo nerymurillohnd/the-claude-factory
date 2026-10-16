@@ -563,7 +563,7 @@ def gh_api_method(args: list[str]) -> str:
             return args[index + 1].upper()
         if arg.startswith("--method="):
             return arg.split("=", 1)[1].upper()
-        if arg.startswith("-X") and len(arg) > 2:  # noqa: PLR2004
+        if arg.startswith("-X") and arg[2:]:
             return arg[2:].upper()
     body = any(arg.split("=", 1)[0] in GH_BODY_FLAGS or re.match(r"^-[fF].", arg) for arg in args)
     return "POST" if body else "GET"
