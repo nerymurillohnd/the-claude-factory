@@ -49,7 +49,7 @@
 | :-- | :-- |
 | **Claude Code** | v2.1.292 or later — check with `claude --version` |
 | **Surfaces** | See [Compatibility](#-compatibility) |
-| **External tools** | On the `PATH` of the shell you start `claude` from: `bash-language-server` (`npm install -g bash-language-server`), `shfmt` and `shellcheck` (macOS: `brew install shfmt shellcheck`; Debian/Ubuntu: `sudo apt install shellcheck` and shfmt from its [release binary](https://github.com/mvdan/sh/releases)), and Node.js 18 or later, which runs the hook. Windows: run Claude Code from Git Bash with the same tools on its `PATH` |
+| **External tools** | On the `PATH` of the shell you start `claude` from: `bash-language-server` (`npm install -g bash-language-server`), `shfmt` and `shellcheck` (macOS: `brew install shfmt shellcheck`; Debian/Ubuntu: `sudo apt install shellcheck` and shfmt from its [release binary](https://github.com/mvdan/sh/releases)), and Node.js 20 or later, which runs bash-language-server and the hook. Windows: run Claude Code from Git Bash with the same tools on its `PATH` |
 | **Accounts / API keys** | None |
 
 The plugin doesn't install the tools; Claude Code starts `bash-language-server` by name and the hook starts `shfmt` and `shellcheck` by name from your `PATH`.

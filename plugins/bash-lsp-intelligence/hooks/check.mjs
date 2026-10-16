@@ -30,7 +30,8 @@ const PRUNED_DIRS = new Set([...SKIPPED_DIRS, '.git', 'dist', 'build', '__pycach
 const MAX_FILES = 20
 // The modification-time walk gives up after this many files, so a huge tree stays cheap.
 const MAX_WALK_FILES = 20_000
-// Claude Code saves hook output over 10,000 characters to a file Claude never reads.
+// Claude Code saves hook output over 10,000 characters to a file and passes Claude only its
+// path and a 2,000-character preview, so the findings must fit under the cap.
 const MAX_REPORT_CHARS = 9000
 // Clock slack added to duration_ms when looking for files a Bash command changed.
 const BASH_SLACK_MS = 2000

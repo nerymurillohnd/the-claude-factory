@@ -6,6 +6,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+### Fixed
+
+- `bash-lsp-intelligence` skill: the routing table no longer offers `prepareCallHierarchy` and `goToImplementation`, which bash-language-server does not support; callers come from `findReferences` and callees from reading the body.
+- `bash-lsp-intelligence` skill: the Checks section gives the post-edit hook's defaults (`shfmt -i 2 -ci -bn`, `shellcheck -o all -S style -x -a -P SCRIPTDIR`) for projects without configuration, so a manual run matches the hook.
+- `bash-lsp-intelligence` skill: the Gotchas heading no longer claims every gotcha was verified on fixtures.
+- Toolchain reference: shfmt installs pin v3.14.1 (the `go install` form no longer says `@latest`) and pick the release binary for the machine's architecture; the project-wide examples quote file names with `git ls-files -z | xargs -0`; the suppression note matches the hook, which asks for findings to be fixed, not suppressed.
+- README: the requirement is Node.js 20 or later, which bash-language-server itself needs; it also runs the hook.
+
 ## [0.2.0] - 2026-10-13
 
 ### Added
