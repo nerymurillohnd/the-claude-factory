@@ -16,10 +16,10 @@ concurrency:
 env:
   # Pinned for reproducible CI. Dependabot does not track npm CLIs installed with npx/npm -g,
   # so the docs-drift-check skill reviews these pins.
-  CLAUDE_CODE_VERSION: "2.1.300"
+  CLAUDE_CODE_VERSION: "2.1.302"
   MARKDOWNLINT_CLI2_VERSION: "0.23.3"
   ACTIONLINT_VERSION: "1.7.12"
-  RUFF_VERSION: "0.17.0"
+  RUFF_VERSION: "0.17.1"
   BIOME_VERSION: "2.5.15"
   MYPY_VERSION: "1.20.2"
   BASEDPYRIGHT_VERSION: "1.40.2"

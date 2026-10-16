@@ -20,8 +20,8 @@
 
 ### Python
 
-- `uvx ruff@0.17.0 format <file>` - Run first, after every `.py` edit.
-- `uvx ruff@0.17.0 check <file>` - Run after the formatter.
+- `uvx ruff@0.17.1 format <file>` - Run first, after every `.py` edit.
+- `uvx ruff@0.17.1 check <file>` - Run after the formatter.
 - `uvx --from mypy==1.20.2 mypy --python-version 3.9 --strict <file>` - Run after ruff.
 - `basedpyright --warnings <file>` - Run after mypy.
 - `python3 -m unittest discover -s .github/scripts/tests/<plugin>` - Run when the file belongs to a plugin with Python tests.
@@ -67,8 +67,8 @@
 11. `git ls-files -z '*.sh' | xargs -0 shfmt -d` - Shows the formatting drift of every tracked shell script.
 12. `python3 -m unittest discover -s .github/scripts/tests/<plugin>` - Runs the Python tests of one plugin. Repeat for each test folder with `test_*.py` files.
 13. `.github/scripts/tests/<plugin>/by_path.sh` - Runs the plugin scripts by path, as Claude Code does. Repeat for each plugin folder that ships one.
-14. `uvx ruff@0.17.0 check plugins .github/scripts` - Lints the Python files.
-15. `uvx ruff@0.17.0 format --check plugins .github/scripts` - Checks the formatting of the Python files.
+14. `uvx ruff@0.17.1 check plugins .github/scripts` - Lints the Python files.
+15. `uvx ruff@0.17.1 format --check plugins .github/scripts` - Checks the formatting of the Python files.
 16. `git ls-files -z 'plugins/*.py' '.github/scripts/tests/*.py' | xargs -0 uvx --from mypy==1.20.2 mypy --python-version 3.9 --strict` - Type-checks the Python files at the 3.9 floor.
 17. `basedpyright --warnings` - Type-checks the whole project.
 18. `npx --yes --package typescript@6.0.3 tsc -p plugins/tsconfig.json --noEmit --typeRoots "$(npm root -g)/@types"` - Type-checks the `.mjs` files under `plugins/`.
