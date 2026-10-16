@@ -109,6 +109,7 @@ docs/                      user guides (users)
 - Use a dynamic workflow to codify review and cross-check phases, such as agents reviewing each other's findings.
 - Do not rely on `skills:` in an agent definition for a teammate. A teammate loads skills from project and user settings.
 - Do not set `hooks` in the frontmatter of a plugin agent: it is ignored. Declare the hook in the plugin's `hooks/hooks.json`.
+- Test a hook in `settings.json` right after editing it: the file watcher loads it with no restart. A plugin hook needs `/reload-plugins`.
 
 ## Subagents In This Project
 
