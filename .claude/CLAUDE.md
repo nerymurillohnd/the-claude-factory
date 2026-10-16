@@ -40,7 +40,7 @@ docs/                      user guides (users)
 .github/workflows/         CI: validate, release, evals, PR review, @claude mentions
 .claude/                   this file and the maintainer folders below (maintainers only)
 .claude/memory/            project memory (gitignored, local to this Mac)
-.claude/rules/             gate rules (quality, GitHub, maintenance, releases) and path-scoped rules in stages/ (gitignored, local to this Mac)
+.claude/rules/             gate rules (quality, GitHub, maintenance, releases, plugins) and path-scoped rules in stages/
 .claude/skills/            maintainer workflows
 .claude/agents/            maintainer review agents
 .claude/hooks/             session-start check and the version-bump push gate

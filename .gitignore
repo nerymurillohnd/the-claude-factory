@@ -30,6 +30,5 @@ __pycache__/
 .mypy_cache/
 eval-results/
 
-# Claude Code auto memory and path-scoped rules (machine-local)
+# Claude Code auto memory (machine-local)
 .claude/memory/
-.claude/rules/
