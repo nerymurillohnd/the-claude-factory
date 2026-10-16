@@ -1,6 +1,6 @@
 ---
 name: ts-lifecycle
-description: Work and code TS/JS with comprehensive research, deep knowledge, and lifecycle execution using official sources, LSP code intelligence, and behavioral evidence. Use for all tasks involving writing, editing, auditing, or answering queries about TypeScript or JavaScript code—including scripts, configuration, modules, declarations, migrations, editor discrepancies, controlled defects, negative test cases, and cross-tool contracts. Exclude other languages, comment-only or formatting-only edits, and syntax explanations that depend on neither the project nor a version.
+description: Researches, writes, edits, reviews and verifies TypeScript and JavaScript code with official sources, LSP code intelligence and behavioral evidence. Use for every task that writes, edits, audits or answers questions about TypeScript or JavaScript code, including scripts, tsconfig and jsconfig, modules, declarations, migrations, type errors, editor and tsc disagreements, broken builds, failing checks and cross-tool behavior. Not for other languages, comment-only or formatting-only edits, or syntax explanations that depend on neither the project nor a version.
 allowed-tools: Bash(bash ${CLAUDE_SKILL_DIR}/scripts/run-fixtures.sh *)
 ---
 
@@ -160,5 +160,3 @@ Evidence: <each claim as observation, inference, contradiction or unavailable, w
 Checks: <command, baseline result, final result>; fixtures <run | not run, why>; probes restored <yes | n/a>
 Gaps: <blocked decisions, missing evidence, pre-existing failures>
 ```
-
-For skill maintenance only, read [acceptance-scenarios.md](references/acceptance-scenarios.md) and [execution-scenarios.md](references/execution-scenarios.md).
