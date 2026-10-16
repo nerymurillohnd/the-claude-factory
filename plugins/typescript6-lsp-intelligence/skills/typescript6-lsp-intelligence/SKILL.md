@@ -23,7 +23,7 @@ LSP owns questions about code structure; Grep owns questions about text. Route e
 | Where does a word appear as text (docs, comments, strings, config, scripts)? | Grep | — |
 | Is it safe to delete, rename or change a signature? | Both | LSP for code references, then Grep to confirm them and find the blind spots below |
 
-When Grep finds several symbols with the same name, search for the name together with the module it is imported from, and read the import lines to tell them apart.
+When Grep finds several symbols with the same name, search for the name together with the module it is imported from, and read the import lines to tell them apart. Without `hover`, read the type's declaration (the `.d.ts` under `node_modules` for a library) or ask `tsc`.
 
 Every operation takes `filePath` (absolute), `line` (1-based) and `character` (1-based, UTF-16 code units: an emoji before the symbol counts 2). Raw LSP data in logs is 0-based: add 1 to both.
 
@@ -54,7 +54,7 @@ Copy this checklist into your working notes and tick each item:
 
 ## Gotchas (verified on fixtures)
 
-- **`findReferences` is never the full list.** It misses callers in `.svelte`, `.vue` and `.astro` files when run from a `.ts` file, mocks and other string references, and files changed from the shell. Confirm with Grep before deleting a symbol or changing a signature.
+- **`findReferences` is never the full list.** It misses callers in `.svelte`, `.vue` and `.astro` files when run from a `.ts` file, mocks and other string references, and files changed from the shell. Confirm with Grep before deleting a symbol or changing a signature: compare the two counts and explain each difference. It returns only file, line and column; read each hit's line in Grep's output instead of opening every file.
 - **Diagnostics arrive on a later turn after an edit, not immediately, and cover the edited file only.** No diagnostics straight after an edit does not mean the edit is clean; run the type check before reporting done. To check a whole program, or a caller in another file, run the compiler yourself on that program: `node_modules/.bin/tsc --noEmit -p <tsconfig.json>` from the project, or the global `tsc` when the project has none.
 - **`prepareCallHierarchy` then `incomingCalls` works here**; module-level calls appear as the module.
 - **Only loaded projects are searched.** Callers in another `tsconfig` project, or in a file no `tsconfig` includes, are missing and the result is stable across repeats, so the warm-up check passes. `hover` one file of each other project first, then re-run `findReferences`.
