@@ -23,7 +23,7 @@ Goal: find everything in this repository that no longer matches official sources
 | Commands, flags, UI paths, min versions | `README.md`, `docs/*.md`, `.claude/templates/plugin/README.md` |
 | Compatibility matrix | `README.md`, `docs/compatibility.md`, `.claude/templates/plugin/README.md`, every `plugins/*/README.md` |
 | Manifest / marketplace fields, reserved names | `.github/scripts/lib.mjs`, `check-repo.mjs`, templates |
-| Pinned versions | `.github/workflows/*.yml`, `.claude/CLAUDE.md` (Gates) |
+| Pinned versions | `.github/workflows/*.yml`, `.claude/rules/QUALITY_GATE.md` |
 | New capabilities worth adopting | e.g. new manifest fields, `relevance`, evals, new component types |
 
 ## 3. Report
