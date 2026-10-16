@@ -105,6 +105,10 @@ docs/                      user guides (users)
 - After moving or creating files, delete `.DS_Store` files and orphaned cache directories.
 - Test-install plugins in isolation with `CLAUDE_CODE_PLUGIN_CACHE_DIR` and `CLAUDE_CODE_PLUGIN_SEED_DIR`.
 - Never touch `~/.claude/plugins` and never build ad-hoc sandbox configs.
+- Name each subagent when spawning it, so named subagents can exchange messages with `SendMessage`. Agent Teams are not required. After a restart or a compaction, address an agent by its ID.
+- Use a dynamic workflow to codify review and cross-check phases, such as agents reviewing each other's findings.
+- Do not rely on `skills:` in an agent definition for a teammate. A teammate loads skills from project and user settings.
+- Do not set `hooks` in the frontmatter of a plugin agent: it is ignored. Declare the hook in the plugin's `hooks/hooks.json`.
 
 ## Subagents In This Project
 
