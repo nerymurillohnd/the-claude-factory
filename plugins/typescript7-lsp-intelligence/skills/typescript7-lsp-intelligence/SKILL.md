@@ -29,12 +29,14 @@ When Grep finds several symbols with the same name, search for the name together
 
 Every operation takes `filePath` (absolute), `line` (1-based) and `character` (1-based, UTF-16 code units: an emoji before the symbol counts 2). Raw LSP data in logs is 0-based: add 1 to both.
 
+If the `LSP` tool is not loaded, load it first with `ToolSearch` and the query `select:LSP`. Send `LSP` calls in their own message, never in parallel with another tool; several `LSP` calls may share a message. The session's first `LSP` call goes alone: its answer can come from a server still loading the project, so pass the warm-up check below before grouping calls.
+
 ## Trusting a result
 
 When a result is empty, shows only the definition, or will justify an edit or deletion, check all five before believing it:
 
 1. **Position**: `hover` at the same spot shows the intended symbol. "No hover information" means a wrong position or no server, never "no usages".
-2. **Warm-up**: a session's first workspace-wide query can be partial. Repeat until two consecutive results match (at most three runs). If three runs never match, treat the result as incomplete and use Grep.
+2. **Warm-up**: a session's first `LSP` calls can be partial or wrong, `goToDefinition` included (it may point at the import line). Repeat until two consecutive results match (at most three runs). If three runs never match, treat the result as incomplete and use Grep.
 3. **Scope**: only the session's working directory is indexed. Outside it, results are stable and incomplete: say so and use Grep plus reading.
 4. **Freshness**: changes made outside Edit and Write (Bash, git, codegen, formatters) may never reach the index. Grep or Read those files instead of trusting counts.
 5. **Blind spots**: Grep the name for the uses LSP cannot see (next section).
