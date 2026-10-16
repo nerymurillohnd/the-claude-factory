@@ -1,6 +1,6 @@
 # Fixtures: prove the checks detect breakage
 
-A clean result proves nothing until the same check fails on code that is broken on purpose. Run the fixtures once per program the change touches, before the first time you report that program's checks clean; a new session that cannot tell whether it ran them runs them again. Without a shell (the Claude app's chat and Cowork) they cannot run: say the checks were not proven. In `research` mode, run only `--outside`, and only when a conclusion rests on the compiler's sensitivity (SKILL.md); otherwise skip the fixtures and report them as not run.
+A clean result proves nothing until the same check fails on code that is broken on purpose. Run the fixtures once per program the change touches, before the first time you report that program's checks clean; a new session that cannot tell whether it ran them runs them again. Without the Bash tool they cannot run: say the checks were not proven. In `research` mode, run only `--outside`, and only when a conclusion rests on the compiler's sensitivity (SKILL.md); otherwise skip the fixtures and report them as not run.
 
 The fixtures prove that this compiler and this tsconfig chain see the program's files and report strict errors. They do not prove the project's own check command: a framework checker (`vue-tsc`, `svelte-check`, `astro check`), a package script or a lax `tsconfig.json` checked without the strict profile needs its own sensitivity probe. They also do not prove which files a program contains: check that with `tsc --listFilesOnly -p <tsconfig.json>`.
 
@@ -27,12 +27,12 @@ The fixtures are `.ts` files, so `--allowJs` and `--checkJs` change nothing for 
 
 ## Run the references fixture
 
-Skip it in `research` mode, and without an `LSP` tool: report reference coverage as not proven. Otherwise:
+Skip it in `research` mode, without an `LSP` tool, and without the Bash tool, which the cleanup needs: report reference coverage as not proven. Otherwise:
 
-1. Create `references.ts` with the Write tool, with the content of `assets/references.ts.fixture`, in a new folder inside the session's working directory. Write reaches the language server; a file copied from the shell may not.
+1. Create `lsp-fixture-references/references.ts` at the root of the session's working directory with the Write tool, with the content of `assets/references.ts.fixture`. Write reaches the language server; a file copied from the shell may not. If that folder already exists, stop: it is not yours to overwrite.
 2. `hover` `target` at line 2, character 17, so the server loads the program.
 3. Run `findReferences` at the same position.
-4. Delete the folder.
+4. Delete the folder from Bash with `rm -rf <working directory>/lsp-fixture-references`, even when a step failed. Write cannot delete.
 
 | Fixture | Command | Expected |
 | :-- | :-- | :-- |

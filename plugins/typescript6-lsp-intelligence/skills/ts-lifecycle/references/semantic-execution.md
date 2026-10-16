@@ -8,11 +8,13 @@ Inspect the authorized workspace root, target files, relevant language/server pr
 
 The Claude Code `LSP` tool takes `operation`, `filePath`, `line` and `character` on every call, with `line` and `character` **1-based** as shown in editors. `workspaceSymbol` also needs a non-empty `query`. `incomingCalls` and `outgoingCalls` take the function's position directly. Raw LSP, as used by other clients, is zero-based, with character offsets in the negotiated encoding, and its hierarchy calls consume a prepared item. Do not mix the two conventions.
 
-The tool exposes `goToDefinition`, `findReferences`, `hover`, `documentSymbol`, `workspaceSymbol`, `goToImplementation`, `prepareCallHierarchy`, `incomingCalls` and `outgoingCalls`. It is read-only. Diagnostics are pushed on a later turn after an edit, when the server pushes them at all (some servers never do); they are not a callable operation. A call returns an error when no language server can start for the file.
+The tool exposes `goToDefinition`, `findReferences`, `hover`, `documentSymbol`, `workspaceSymbol`, `goToImplementation`, `prepareCallHierarchy`, `incomingCalls` and `outgoingCalls`. It is read-only, and diagnostics are not a callable operation (SKILL.md, "Treat LSP results as evidence, not the whole picture"). A call returns an error when no language server can start for the file.
 
-Use document symbols or a targeted file/text search to locate the actual occurrence when coordinates are unknown. Confirm the intended symbol, avoiding comments, string lookalikes and shadowed names. When several symbols share a name, search for the name together with the module it is imported from, and read the import lines to tell them apart.
+Use document symbols or a targeted file/text search to locate the actual occurrence when coordinates are unknown. Confirm the intended symbol, avoiding comments, string lookalikes and shadowed names; SKILL.md says how to tell apart symbols that share a name.
 
 ## Readiness and bounded retry loop
+
+This loop is the only statement of the retry bounds. A bound applies to one operation: the same operation on the same file and position.
 
 1. Submit the relevant supported operation. Record target, content state and availability/partial-result metadata where exposed.
 2. Classify the response. A valid empty result, wrong project/position, unsupported method, unavailable dependency, request failure, indexing, stale cache and truncation need different remedies. Check project inclusion and symbol position before blaming cold start.
@@ -30,7 +32,7 @@ Use every applicable row needed to resolve the change, and say for each whether 
 | --- | --- | --- | --- |
 | Definition | `goToDefinition` | Locate ownership before changing an unfamiliar symbol | Import alias versus actual declaration; multiple targets; generated or external code |
 | Type information | `hover` | Understand declared and inferred types, overloads and call contracts | Actual occurrence, compiler version, contextual typing; hover is not use coverage |
-| References | `findReferences` | Before a rename, deletion or contract change; locate consumers | Never the full list: misses `.svelte`, `.vue` and `.astro` callers when run from a `.ts` file, mocks and other string references, and files changed from the shell; confirm with text search before a deletion or signature change |
+| References | `findReferences` | Before a rename, deletion or contract change; locate consumers | Never the full list; confirm with Grep as SKILL.md says before a deletion or signature change |
 | Implementation | `goToImplementation` | Interfaces, abstract members and polymorphic dispatch | Structural matches and runtime dispatch may exceed static results |
 | Document symbols | `documentSymbol` | File structure and exact positions | Outline completeness; not a substitute for references |
 | Workspace symbols | `workspaceSymbol` with `query` | Find relevant symbols across a project | Query limits, indexing and duplicate names (tell them apart by their import lines); follow to definitions |
@@ -39,13 +41,13 @@ Use every applicable row needed to resolve the change, and say for each whether 
 | Type hierarchy | Not exposed: `goToImplementation`, `findReferences` and reading the declarations | Inherited contracts, when relevant | Structural typing |
 | Rename | Not exposed: `findReferences` plus a repository text search, then manual edits | Authorized symbol rename | Public, string-keyed and generated consumers |
 | Code actions and organize imports | Not exposed: edit by hand, following the project's formatter and linter | Import repairs and other fixes | Side-effect imports |
-| Diagnostics | Pushed on a later turn after an edit, when the server pushes them (some servers never do); no diagnostics straight after an edit is not a clean result; the native checker as the second observer, and the only one when none arrive | Baseline and post-edit feedback | Current content, framework checker ownership, files outside the edit |
+| Diagnostics | Not callable (SKILL.md); the native checker is the second observer, and the only one when none arrive | Baseline and post-edit feedback | Current content, framework checker ownership, files outside the edit |
 
 Selection examples: a renamed exported function usually needs ownership, references, type/signature, `findReferences` confirmed by Grep and diagnostics; call hierarchy adds caller/callee evidence when the behavior or calling contract warrants it. A tsconfig change emphasizes file membership, type/diagnostic changes and consumers rather than renaming. A literal-only edit may need text search, not a symbol operation.
 
 ## Apply and observe
 
-A rename or signature change is a set of manual edits. Apply it only after `findReferences` and Grep agree, or after you explain each difference; validate target paths, current content, unexpected public API changes and generated ownership.
+Apply a rename or signature change by the rules under "Map impact and control edits" in SKILL.md; also validate target paths, current content, unexpected public API changes and generated ownership.
 
 Search relevant dynamic imports, serialized keys, routes, templates, test mocks and configuration alongside semantic references. Respect the project's formatter and import conventions. Removing an import can drop a side effect: check semantics and tests first.
 

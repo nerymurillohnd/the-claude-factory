@@ -1,6 +1,6 @@
 # Research procedure
 
-Read when the change crosses a tool boundary or depends on a version (SKILL.md, rule 1), before recommending or making it. SKILL.md holds the rules and the modes; this file holds only the steps.
+Read when the change crosses a tool boundary or depends on a version (SKILL.md, "Discover and research the actual system"), before recommending or making it. SKILL.md holds the rules and the modes; this file holds only the steps.
 
 1. Read project-evidence.md, linked from SKILL.md, to inspect the installation and configuration and to run safe compiler probes. Read the project's instructions before running any script.
 2. Read source-map.md and select every category that applies: types and inference, diagnostics, configuration, modules, declarations, JavaScript interoperability, compilation, migrations, editor tooling, integration boundaries. Record the selected categories and their count.

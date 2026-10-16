@@ -23,7 +23,7 @@ Resolve the project's actual compiler using its package manager/workspace conven
 
 After checking installed support and output behavior, use resolution/file explanations or performance diagnostics as relevant. Explicit source-file invocations can select different configuration behavior from project invocations: reconcile installed CLI behavior and official CLI docs. Use the real project check/build command for final validation, accounting for caches and generated outputs; informational probes are not test passes.
 
-For editor discrepancies, compare the **same file** across command and service. Establish whether it belongs to app, tests, tooling, generated, or inferred projects before proposing SDK changes or exclusions. Preserve intentional browser/server/test ambient environments. Available language-server diagnostics/references can help, but observe readiness, freshness, project root and capabilities; empty results alone prove nothing. Server diagnostics arrive only after an edit, so in `research` mode the compiler's output stands in for them and the server's view is inference (SKILL.md, rule 2).
+For editor discrepancies, compare the **same file** across command and service. Establish whether it belongs to app, tests, tooling, generated, or inferred projects before proposing SDK changes or exclusions. Preserve intentional browser/server/test ambient environments. Available language-server diagnostics/references can help, but observe readiness, freshness, project root and capabilities; empty results alone prove nothing. Server diagnostics arrive only after an edit, so in `research` mode the compiler's output stands in for them and the server's view is inference (SKILL.md, "Treat LSP results as evidence, not the whole picture").
 
 ## Isolated reproduction
 
@@ -33,4 +33,4 @@ Compare baseline and proposal under matched conditions. Include expected-success
 
 ## Recording
 
-Record findings as observation, inference, contradiction or unavailable evidence (SKILL.md, rule 6). Explain why the components you did not visit cannot affect the scoped conclusion, or name the unresolved component that blocks it.
+Record findings as observation, inference, contradiction or unavailable evidence (SKILL.md, "Close only on attributable evidence"). Explain why the components you did not visit cannot affect the scoped conclusion, or name the unresolved component that blocks it.
