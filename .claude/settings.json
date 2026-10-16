@@ -4,7 +4,6 @@
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
     "CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR": "1"
   },
-  "enableWorkflows": true,
   "permissions": {
     "allow": [
       "Bash(node .github/scripts/*)",
@@ -26,9 +25,6 @@
     ],
     "deny": [
       "Bash(git push --force*)",
-      "Bash(git tag *)",
-      "Bash(gh release create*)",
-      "Bash(gh release delete*)",
       "Bash(gh repo delete*)"
     ]
   },
@@ -39,8 +35,8 @@
         "hooks": [
           {
             "type": "command",
-            "if": "Bash(git push *)",
             "command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/version-bump-gate.sh",
+            "if": "Bash(git push *)",
             "onFailure": "block"
           }
         ]
@@ -58,8 +54,9 @@
       }
     ]
   },
-  "autoMemoryDirectory": "~/Claude/the-claude-factory/.claude/memory",
+  "enableWorkflows": true,
   "enabledPlugins": {
     "plugin-evals@the-claude-factory": true
-  }
+  },
+  "autoMemoryDirectory": "~/Claude/the-claude-factory/.claude/memory"
 }
