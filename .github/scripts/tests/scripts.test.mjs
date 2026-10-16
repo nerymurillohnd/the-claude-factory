@@ -58,6 +58,11 @@ function copyRepo() {
 }
 
 /** Run a script from the temp copy, so its own lib.mjs resolves ROOT to the temp copy. */
+/**
+ * @param {string} script
+ * @param {string[]} [args]
+ * @returns {{ code: number | null, out: string }}
+ */
 function run(script, args = []) {
   const r = spawnSync(process.execPath, [join(root, '.github', 'scripts', script), ...args], {
     cwd: root,
@@ -67,10 +72,21 @@ function run(script, args = []) {
   return { code: r.status, out: `${r.stdout}${r.stderr}` }
 }
 
+/** @param {string} p */
 const read = (p) => readFileSync(join(root, p), 'utf8')
+/**
+ * @param {string} p
+ * @param {string} s
+ */
 const write = (p, s) => writeFileSync(join(root, p), s)
+/** @param {string} p */
 const json = (p) => JSON.parse(read(p))
 
+/**
+ * @param {string} [name]
+ * @param {string} [category]
+ * @param {string[]} [extra]
+ */
 function scaffold(name = 'demo-tool', category = 'productivity', extra = []) {
   const r = run('new-plugin.mjs', [
     '--name',
@@ -84,7 +100,11 @@ function scaffold(name = 'demo-tool', category = 'productivity', extra = []) {
   assert.equal(r.code, 0, r.out)
 }
 
-/** Keep only the Compatibility rows whose text contains one of `keep`. */
+/**
+ * Keep only the Compatibility rows whose text contains one of `keep`.
+ * @param {string} name
+ * @param {string[]} keep
+ */
 function pruneCompat(name, keep) {
   const p = `plugins/${name}/README.md`
   const text = read(p)
@@ -266,6 +286,7 @@ describe('check-repo', () => {
   })
 
   test('in a git checkout, counts tracked and new files but never git-ignored or deleted ones', () => {
+    /** @param {...string} args */
     const git = (...args) => execFileSync('git', ['-C', root, ...args], { stdio: 'ignore' })
     git('init', '-q')
     write('plugins/skill-diagnostics/gone.md', 'x')
@@ -401,6 +422,7 @@ describe('bump-version', () => {
 })
 
 describe('check-version-bump', () => {
+  /** @param {...string} args */
   const git = (...args) => execFileSync('git', args, { cwd: root, encoding: 'utf8' })
   function initRepo() {
     git('init', '-q', '-b', 'main')
@@ -460,6 +482,7 @@ describe('version-bump-gate hook', () => {
   }
   const hook = (command = 'git push origin feat/demo') =>
     hookWith(JSON.stringify({ tool_name: 'Bash', tool_input: { command } }))
+  /** @param {...string} args */
   /** @param {...string} args */
   const git = (...args) => execFileSync('git', args, { cwd: root, encoding: 'utf8' })
   function initRepo(withOrigin = true) {
@@ -557,11 +580,14 @@ describe('version-bump-gate hook', () => {
 })
 
 describe('eval-targets', () => {
+  /** @param {...string} args */
   const git = (...args) => execFileSync('git', args, { cwd: root, encoding: 'utf8' })
+  /** @param {string} name */
   const touchManifest = (name) => {
     const p = `plugins/${name}/.claude-plugin/plugin.json`
     write(p, `${read(p).trimEnd()}\n\n`)
   }
+  /** @param {string} message */
   function commitAll(message) {
     git('add', '-A')
     git('commit', '-qm', message)
@@ -621,6 +647,11 @@ describe('eval-targets', () => {
 })
 
 describe('portability rules', () => {
+  /**
+   * @param {string} path
+   * @param {number} [size]
+   * @param {boolean} [symlink]
+   */
   const entry = (path, size = 10, symlink = false) => ({ path, size, symlink })
 
   test('flag names Windows or macOS cannot hold, and case-only duplicates', async () => {

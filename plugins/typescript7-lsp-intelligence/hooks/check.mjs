@@ -15,7 +15,12 @@ import { existsSync, readdirSync, readFileSync, realpathSync, statSync } from 'n
 import { homedir } from 'node:os'
 import { basename, dirname, join, parse, relative, resolve, sep } from 'node:path'
 
-const PLUGIN_ROOT = process.env.CLAUDE_PLUGIN_ROOT ?? resolve(dirname(process.argv[1]), '..')
+/** @typedef {{ file: string, reason: string }} Uncovered */
+/** @typedef {{ findings: string[], failures: string[], uncovered: Uncovered[] }} Outcome */
+/** @typedef {{ code: number | null, output: string }} RunResult */
+
+const { CLAUDE_PLUGIN_ROOT, CLAUDE_PROJECT_DIR } = process.env
+const PLUGIN_ROOT = CLAUDE_PLUGIN_ROOT ?? resolve(dirname(process.argv[1] ?? ''), '..')
 const PLUGIN = pluginName()
 const TSC = join(PLUGIN_ROOT, 'node_modules', 'typescript', 'bin', 'tsc')
 const TS_SUFFIXES = new Set(['.ts', '.tsx', '.mts', '.cts'])
@@ -53,6 +58,7 @@ const LISTED_FILE = /^(?:\/|[A-Za-z]:[\\/])/
 const INSTALL_HINT = `the plugin's own TypeScript was not installed; run "npm ci" in ${PLUGIN_ROOT} or reinstall the plugin from the marketplace`
 
 // The plugin's name from its manifest: the install folder is named after the version.
+/** @returns {string} */
 function pluginName() {
   try {
     const manifest = JSON.parse(
@@ -67,28 +73,43 @@ function pluginName() {
   return basename(PLUGIN_ROOT)
 }
 
+/**
+ * @param {unknown} value
+ * @param {...string} keys
+ * @returns {string}
+ */
 function textAt(value, ...keys) {
+  /** @type {unknown} */
   let current = value
   for (const key of keys) {
     if (current === null || typeof current !== 'object') {
       return ''
     }
-    current = current[key]
+    current = /** @type {Record<string, unknown>} */ (current)[key]
   }
   return typeof current === 'string' ? current : ''
 }
 
+/**
+ * @param {unknown} value
+ * @param {...string} keys
+ * @returns {string[] | null}
+ */
 function stringsAt(value, ...keys) {
+  /** @type {unknown} */
   let current = value
   for (const key of keys) {
     if (current === null || typeof current !== 'object') {
       return null
     }
-    current = current[key]
+    current = /** @type {Record<string, unknown>} */ (current)[key]
   }
-  return Array.isArray(current) ? current.filter((item) => typeof item === 'string') : null
+  return Array.isArray(current)
+    ? current.filter(/** @returns {item is string} */ (item) => typeof item === 'string')
+    : null
 }
 
+/** @returns {Record<string, unknown> | null} */
 function readEvent() {
   try {
     const data = JSON.parse(readFileSync(0, 'utf8'))
@@ -98,6 +119,10 @@ function readEvent() {
   }
 }
 
+/**
+ * @param {string} path
+ * @returns {boolean}
+ */
 function isDir(path) {
   try {
     return statSync(path).isDirectory()
@@ -108,6 +133,10 @@ function isDir(path) {
 
 // The canonical path (symlinks resolved, as process.cwd() reports it), so that files, the
 // project and tsc's --listFiles output compare equal whatever spelling the event used.
+/**
+ * @param {string} path
+ * @returns {string}
+ */
 function realpath(path) {
   try {
     return realpathSync(path)
@@ -116,8 +145,12 @@ function realpath(path) {
   }
 }
 
+/**
+ * @param {Record<string, unknown>} event
+ * @returns {string | null}
+ */
 function projectDir(event) {
-  const candidates = [process.env.CLAUDE_PROJECT_DIR ?? '', textAt(event, 'cwd'), process.cwd()]
+  const candidates = [CLAUDE_PROJECT_DIR ?? '', textAt(event, 'cwd'), process.cwd()]
   for (const candidate of candidates) {
     if (candidate && isDir(candidate)) {
       return realpath(candidate)
@@ -126,11 +159,15 @@ function projectDir(event) {
   return null
 }
 
+/**
+ * @param {[string, ...string[]]} argv
+ * @returns {RunResult}
+ */
 function run(argv) {
   const result = spawnSync(argv[0], argv.slice(1), { encoding: 'utf8', timeout: TOOL_TIMEOUT_MS })
   if (result.error) {
     const detail =
-      result.error.code === 'ETIMEDOUT'
+      /** @type {NodeJS.ErrnoException} */ (result.error).code === 'ETIMEDOUT'
         ? `timed out after ${TOOL_TIMEOUT_MS / MS_PER_S} s`
         : `could not start: ${result.error.message}`
     return { code: null, output: `${argv[0]} ${detail}` }
@@ -138,6 +175,11 @@ function run(argv) {
   return { code: result.status, output: `${result.stdout}${result.stderr}` }
 }
 
+/**
+ * @param {string} path
+ * @param {number} sinceMs
+ * @returns {boolean}
+ */
 function newerThan(path, sinceMs) {
   try {
     const st = statSync(path)
@@ -149,6 +191,13 @@ function newerThan(path, sinceMs) {
 
 // Collects files newer than sinceMs under dir; unreadable folders are skipped and the walk
 // stops once budget.left runs out.
+/**
+ * @param {string} dir
+ * @param {number} sinceMs
+ * @param {string[]} found
+ * @param {{ left: number }} budget
+ * @returns {void}
+ */
 function walk(dir, sinceMs, found, budget) {
   let entries
   try {
@@ -174,6 +223,11 @@ function walk(dir, sinceMs, found, budget) {
   }
 }
 
+/**
+ * @param {string} project
+ * @param {number} sinceMs
+ * @returns {string[]}
+ */
 function changedSince(project, sinceMs) {
   const inside = run(['git', '-C', project, 'rev-parse', '--is-inside-work-tree'])
   if (inside.code === 0) {
@@ -187,12 +241,18 @@ function changedSince(project, sinceMs) {
   if (project === realpath(homedir()) || project === parse(project).root) {
     return [] // a walk of the whole home directory or disk is never worth a hook's budget
   }
+  /** @type {string[]} */
   const found = []
   walk(project, sinceMs, found, { left: MAX_WALK_FILES })
   return found
 }
 
+/**
+ * @param {readonly string[]} names
+ * @returns {string[]}
+ */
 function asFiles(names) {
+  /** @type {Set<string>} */
   const seen = new Set()
   for (const name of names) {
     if (!name) {
@@ -206,6 +266,11 @@ function asFiles(names) {
   return [...seen]
 }
 
+/**
+ * @param {Record<string, unknown>} event
+ * @param {number} nowMs
+ * @returns {string[]}
+ */
 function candidates(event, nowMs) {
   const tool = textAt(event, 'tool_name')
   if (tool === 'Edit' || tool === 'Write') {
@@ -222,30 +287,53 @@ function candidates(event, nowMs) {
   if (project === null) {
     return []
   }
-  const duration = event.duration_ms
-  const windowMs = Number.isInteger(duration) ? duration + BASH_SLACK_MS : FALLBACK_WINDOW_MS
+  const { duration_ms: duration } = event
+  const windowMs =
+    typeof duration === 'number' && Number.isInteger(duration)
+      ? duration + BASH_SLACK_MS
+      : FALLBACK_WINDOW_MS
   return asFiles(changedSince(project, nowMs - windowMs))
 }
 
+/**
+ * @param {string} path
+ * @returns {string}
+ */
 function suffixOf(path) {
   const name = basename(path)
   const dot = name.lastIndexOf('.')
   return dot > 0 ? name.slice(dot) : ''
 }
 
+/**
+ * @param {string} path
+ * @returns {boolean}
+ */
 function isTypeScript(path) {
   return TS_SUFFIXES.has(suffixOf(path))
 }
 
+/**
+ * @param {string} path
+ * @returns {boolean}
+ */
 function isJavaScript(path) {
   return JS_SUFFIXES.has(suffixOf(path))
 }
 
+/**
+ * @param {string} path
+ * @returns {boolean}
+ */
 function skipped(path) {
   return path.split(sep).some((part) => SKIPPED_DIRS.has(part))
 }
 
 // The nearest tsconfig.json, else jsconfig.json, above the file; null without either.
+/**
+ * @param {string} path
+ * @returns {string | null}
+ */
 function nearestConfig(path) {
   let dir = dirname(path)
   for (;;) {
@@ -263,18 +351,30 @@ function nearestConfig(path) {
   }
 }
 
+/**
+ * @param {readonly string[]} files
+ * @returns {Map<string, string[]>}
+ */
 function groupByProgram(files) {
+  /** @type {Map<string, string[]>} */
   const groups = new Map()
   for (const path of files) {
     const key = nearestConfig(path) ?? ''
-    if (!groups.has(key)) {
-      groups.set(key, [])
+    const group = groups.get(key)
+    if (group === undefined) {
+      groups.set(key, [path])
+    } else {
+      group.push(path)
     }
-    groups.get(key).push(path)
   }
   return groups
 }
 
+/**
+ * @param {string} path
+ * @param {string | null} base
+ * @returns {string}
+ */
 function display(path, base) {
   if (base === null) {
     return path
@@ -286,15 +386,24 @@ function display(path, base) {
 // Groups tsc's output into errors with their indented explanation lines, then sorts them:
 // edited files first, the rest of the program after, config errors last. tsc prints file
 // paths relative to its own working directory, which is the hook's.
+/**
+ * @param {readonly string[]} lines
+ * @param {ReadonlySet<string>} edited
+ * @returns {string[]}
+ */
 function orderErrors(lines, edited) {
+  /** @type {string[]} */
   const own = []
+  /** @type {string[]} */
   const others = []
+  /** @type {string[]} */
   const bare = []
+  /** @type {string[] | null} */
   let current = null
   for (const line of lines) {
     const match = ERROR_LINE.exec(line)
     if (match) {
-      current = edited.has(realpath(resolve(match[1]))) ? own : others
+      current = edited.has(realpath(resolve(match[1] ?? ''))) ? own : others
       current.push(line)
     } else if (BARE_ERROR.test(line)) {
       current = bare
@@ -310,6 +419,10 @@ function orderErrors(lines, edited) {
 
 // The configs a solution-style config refers to, resolved through tsc so comments and
 // extends are handled; a directory reference means the tsconfig.json inside it.
+/**
+ * @param {string} config
+ * @returns {string[]}
+ */
 function referencedConfigs(config) {
   const shown = run([process.execPath, TSC, '--showConfig', '-p', config])
   if (shown.code !== 0) {
@@ -336,7 +449,13 @@ function referencedConfigs(config) {
   return configs
 }
 
+/**
+ * @param {readonly string[]} files
+ * @param {string | null} base
+ * @returns {Outcome}
+ */
 function checkLooseFiles(files, base) {
+  /** @type {Outcome} */
   const out = { findings: [], failures: [], uncovered: [] }
   const typescript = files.filter(isTypeScript)
   for (const file of files.filter(isJavaScript)) {
@@ -359,10 +478,18 @@ function checkLooseFiles(files, base) {
   return out
 }
 
+/**
+ * @param {string} config
+ * @param {readonly string[]} files
+ * @param {string | null} base
+ * @param {Set<string>} [visited]
+ * @returns {Outcome}
+ */
 function checkProgram(config, files, base, visited = new Set()) {
   if (config === '') {
     return checkLooseFiles(files, base)
   }
+  /** @type {Outcome} */
   const out = { findings: [], failures: [], uncovered: [] }
   visited.add(config)
   const result = run([
@@ -414,6 +541,10 @@ function checkProgram(config, files, base, visited = new Set()) {
   return out
 }
 
+/**
+ * @param {string} text
+ * @returns {string}
+ */
 function bounded(text) {
   if (text.length <= MAX_REPORT_CHARS) {
     return text
@@ -431,6 +562,7 @@ function bounded(text) {
   return `${kept.join('\n')}\n… ${lines.length - kept.length} more lines\n`
 }
 
+/** @returns {number} */
 function main() {
   const event = readEvent()
   if (event === null) {
@@ -469,6 +601,7 @@ function main() {
   if (uncovered.length > 0) {
     summary.push(`not checked · ${uncovered.map((entry) => display(entry.file, base)).join(', ')}`)
   }
+  /** @type {{ systemMessage: string, hookSpecificOutput?: { hookEventName: string, additionalContext: string } }} */
   const payload = { systemMessage: `${PLUGIN}: ${summary.join('; ')}` }
   if (uncovered.length > 0) {
     payload.hookSpecificOutput = {

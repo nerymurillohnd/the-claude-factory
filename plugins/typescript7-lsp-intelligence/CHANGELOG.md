@@ -6,6 +6,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+### Changed
+
+- Post-edit hook: `hooks/check.mjs` carries JSDoc types and passes `tsc` under the repository's strict profile; its behavior is unchanged.
+
 ## [0.2.0] - 2026-10-13
 
 ### Added

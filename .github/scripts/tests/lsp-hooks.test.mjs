@@ -32,11 +32,21 @@ const REPORT_CEILING = 9100
 const MANY = 23
 const UNCHECKED = 3
 
+/**
+ * @param {string} tool
+ * @returns {boolean}
+ */
 function onPath(tool) {
   return spawnSync('sh', ['-c', `command -v ${tool}`]).status === 0
 }
 const HAVE_SHELL_TOOLS = onPath('shfmt') && onPath('shellcheck')
 
+/**
+ * @param {string} hook
+ * @param {unknown} payload
+ * @param {{ cwd: string, env?: Record<string, string> }} options
+ * @returns {{ code: number | null, out: string, err: string }}
+ */
 function fire(hook, payload, { cwd, env = {} }) {
   const base = Object.fromEntries(
     Object.entries(process.env).filter(([key]) => !key.startsWith('CLAUDE_')),
@@ -50,14 +60,22 @@ function fire(hook, payload, { cwd, env = {} }) {
   return { code: run.status, out: run.stdout, err: run.stderr }
 }
 
+/**
+ * @param {string} tool
+ * @param {string | null} path
+ * @param {Record<string, unknown>} [extra]
+ * @returns {Record<string, unknown>}
+ */
 function event(tool, path, extra = {}) {
   const data = { hook_event_name: 'PostToolUse', tool_name: tool, ...extra }
-  if (path) {
-    data.tool_input = { file_path: path }
-  }
-  return data
+  return path ? { ...data, tool_input: { file_path: path } } : data
 }
 
+/**
+ * @param {string[]} files
+ * @param {Record<string, unknown>} [extra]
+ * @returns {Record<string, unknown>}
+ */
 function bashEvent(files, extra = {}) {
   return event('Bash', null, {
     tool_input: { command: 'x' },
@@ -73,12 +91,17 @@ function makeWorkspace() {
   mkdirSync(home)
   mkdirSync(project)
   const env = { HOME: home, XDG_CONFIG_HOME: join(home, '.config'), SHELLCHECK_OPTS: '' }
+  /**
+   * @param {string} name
+   * @param {string} text
+   */
   const write = (name, text) => {
     const path = join(project, name)
     mkdirSync(dirname(path), { recursive: true })
     writeFileSync(path, text)
     return path
   }
+  /** @param {string} path */
   const age = (path) => {
     const then = Date.now() / MS_PER_S - SECONDS_AGO
     utimesSync(path, then, then)
@@ -87,7 +110,10 @@ function makeWorkspace() {
   return { root, home, project, env, write, age, cleanup }
 }
 
+/** @typedef {ReturnType<typeof makeWorkspace>} Workspace */
+
 describe('bash-lsp-intelligence hook', () => {
+  /** @type {Workspace} */
   let ws
   beforeEach(() => {
     ws = makeWorkspace()
@@ -237,10 +263,15 @@ const STRICT_TSCONFIG =
 const LOOSE_TSCONFIG =
   '{ "compilerOptions": { "strict": false, "noEmit": true, "types": [] }, "include": ["**/*.ts"] }\n'
 
+/**
+ * @param {string} name
+ * @param {string} plugin
+ */
 function tsSuite(name, plugin) {
   const hook = join(plugin, 'hooks', 'check.mjs')
   const ready = existsSync(join(plugin, 'node_modules', 'typescript', 'bin', 'tsc'))
   describe(`${name} hook`, { skip: !ready }, () => {
+    /** @type {Workspace} */
     let ws
     beforeEach(() => {
       ws = makeWorkspace()

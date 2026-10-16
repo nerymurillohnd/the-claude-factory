@@ -5,7 +5,14 @@ import { existsSync, readdirSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 import { loadManifest, pluginDir } from './lib.mjs'
 
-/** `row` is the text the README Compatibility table must contain for that component. */
+/** @typedef {'skills' | 'commands' | 'agents' | 'hooks' | 'mcp' | 'lsp' | 'outputStyles' | 'monitors' | 'workflows' | 'themes' | 'bin'} ComponentId */
+/** @typedef {{ id: ComponentId, emoji: string, label: string, row: string, claudeCodeOnly: boolean }} ComponentType */
+/** @typedef {Partial<Record<ComponentId, number>>} Components */
+
+/**
+ * `row` is the text the README Compatibility table must contain for that component.
+ * @type {ComponentType[]}
+ */
 export const COMPONENT_TYPES = [
   { id: 'skills', emoji: '🎯', label: 'Skills', row: 'Skills', claudeCodeOnly: false },
   { id: 'commands', emoji: '⌨️', label: 'Commands', row: 'Commands', claudeCodeOnly: false },
@@ -26,6 +33,11 @@ export const COMPONENT_TYPES = [
   { id: 'bin', emoji: '⚙️', label: 'Executables', row: 'Executables', claudeCodeOnly: true },
 ]
 
+/**
+ * @param {string} dir
+ * @param {(entry: string, full: string) => boolean} predicate
+ * @returns {number}
+ */
 function countFiles(dir, predicate) {
   if (!existsSync(dir)) {
     return 0
@@ -42,11 +54,21 @@ function countFiles(dir, predicate) {
   return n
 }
 
-/** Returns { skills: 2, agents: 1, ... } with only the component types present. */
+/**
+ * Returns { skills: 2, agents: 1, ... } with only the component types present.
+ * @param {string} name
+ * @returns {Components}
+ */
 export function detectComponents(name) {
   const dir = pluginDir(name)
+  /** @type {import('./lib.mjs').Manifest} */
   const manifest = loadManifest(name) ?? {}
+  /** @type {Components} */
   const found = {}
+  /**
+   * @param {ComponentId} id
+   * @param {number} n
+   */
   const set = (id, n) => {
     if (n > 0) {
       found[id] = n
@@ -92,6 +114,10 @@ export function detectComponents(name) {
   return found
 }
 
+/**
+ * @param {Components} found
+ * @returns {string}
+ */
 export function componentBadges(found) {
   return COMPONENT_TYPES.filter((t) => found[t.id])
     .map((t) => `${t.emoji} ${t.label}`)

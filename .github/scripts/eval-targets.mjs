@@ -12,9 +12,15 @@ import { fail, isMain, pluginDir, ROOT } from './lib.mjs'
 
 const MANIFEST = /^plugins\/([^/]+)\/\.claude-plugin\/plugin\.json$/
 
+/** @param {string} name */
 const hasEvals = (name) => existsSync(join(pluginDir(name), 'evals'))
 
-/** Plugins with evals whose `plugin.json` changed between the merge base of `base` and `head`. */
+/**
+ * Plugins with evals whose `plugin.json` changed between the merge base of `base` and `head`.
+ * @param {string} base
+ * @param {string} head
+ * @returns {string[]}
+ */
 export function changedTargets(base, head) {
   const names = execFileSync(
     'git',
@@ -23,11 +29,15 @@ export function changedTargets(base, head) {
   )
     .split('\n')
     .map((path) => MANIFEST.exec(path)?.[1])
-    .filter(Boolean)
+    .filter(/** @returns {name is string} */ (name) => Boolean(name))
   return [...new Set(names)].filter(hasEvals).sort()
 }
 
-/** `all`: every plugin with evals. A name: that plugin, which must exist and have evals. */
+/**
+ * `all`: every plugin with evals. A name: that plugin, which must exist and have evals.
+ * @param {string} only
+ * @returns {string[]}
+ */
 export function onlyTargets(only) {
   if (only === 'all') {
     return readdirSync(join(ROOT, 'plugins'), { withFileTypes: true })
@@ -46,10 +56,11 @@ export function onlyTargets(only) {
 
 if (isMain(import.meta.url)) {
   const [mode, ...args] = process.argv.slice(2)
-  if (mode === '--changed' && args.length === 2) {
-    console.log(JSON.stringify(changedTargets(args[0], args[1])))
-  } else if (mode === '--only' && args.length === 1) {
-    console.log(JSON.stringify(onlyTargets(args[0])))
+  const [first, second] = args
+  if (mode === '--changed' && args.length === 2 && first && second) {
+    console.log(JSON.stringify(changedTargets(first, second)))
+  } else if (mode === '--only' && args.length === 1 && first) {
+    console.log(JSON.stringify(onlyTargets(first)))
   } else {
     fail('Usage: eval-targets.mjs --changed <base> <head> | --only <plugin|all>')
   }
