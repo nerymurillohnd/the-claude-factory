@@ -157,6 +157,8 @@ Your project decides the environment; the plugin decides how strict the edited c
 
 The plugin never creates or edits a `tsconfig.json`, and it never runs a formatter or linter: Biome, Prettier and ESLint stay your project's tools, and the skill teaches Claude to run them as your `package.json` scripts do.
 
+The language server starts one TypeScript server process instead of the usual two: `.lsp.json` sets `useSyntaxServer` to `never`, so a single semantic server answers every request and less memory is used.
+
 **Optional, recommended:** let the hook see exactly which files a Bash command changed by adding this to your user settings (`~/.claude/settings.json`); without it the hook finds them by modification time:
 
 ```json

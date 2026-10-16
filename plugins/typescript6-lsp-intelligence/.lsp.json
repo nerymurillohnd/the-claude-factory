@@ -4,19 +4,24 @@
     "args": [
       "--stdio"
     ],
-    "startupTimeout": 30000,
-    "maxRestarts": 3,
     "extensionToLanguage": {
       ".ts": "typescript",
       ".tsx": "typescriptreact",
-      ".mts": "typescript",
-      ".cts": "typescript",
       ".js": "javascript",
       ".jsx": "javascriptreact",
+      ".mts": "typescript",
+      ".cts": "typescript",
       ".mjs": "javascript",
       ".cjs": "javascript"
     },
+    "startupTimeout": 30000,
+    "maxRestarts": 3,
     "restartOnCrash": true,
-    "diagnostics": true
+    "diagnostics": true,
+    "initializationOptions": {
+      "tsserver": {
+        "useSyntaxServer": "never"
+      }
+    }
   }
 }
