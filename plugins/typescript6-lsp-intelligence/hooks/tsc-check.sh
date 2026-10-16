@@ -156,7 +156,7 @@ json_number() {
 ESCAPED=""
 json_escape() {
   local s
-  s="$(printf '%s' "$1" | LC_ALL=C tr -d '\000-\010\013\014\016-\037')"
+  s="$(printf '%s' "$1" | LC_ALL=C tr -d '\000-\010\013-\037')"
   s="${s//\\/\\\\}"
   s="${s//\"/\\\"}"
   s="${s//$'\t'/\\t}"
@@ -741,19 +741,22 @@ check_group() {
 
 # Prints the files a Bash command changed inside project $1 in the last $2 seconds.
 changed_since() {
-  local project="$1" window="$2" ref="${WORK}/since" now when stamp home_real listed staged rel
+  local project="$1" window="$2" ref="${WORK}/since" now when stamp home_real rel
   now="$(date +%s)"
   when=$((now - window))
   stamp="$(date -u -r "${when}" +%Y%m%d%H%M.%S 2> /dev/null || date -u -d "@${when}" +%Y%m%d%H%M.%S)"
   TZ=UTC touch -t "${stamp}" "${ref}"
   if git -C "${project}" rev-parse --is-inside-work-tree > /dev/null 2>&1; then
-    # Staged files count too: a command that runs git add leaves nothing --modified.
-    listed="$(git -C "${project}" ls-files --modified --others --exclude-standard)"
-    staged="$(git -C "${project}" diff --cached --name-only --relative 2> /dev/null || true)"
-    listed="${listed}${NL}${staged}"
-    while IFS= read -r rel; do
+    # NUL-separated: without -z git quotes names with non-ASCII bytes ("caf\303\251.ts"),
+    # and the quoted form is no file. Staged files count too: a command that runs git add
+    # leaves nothing --modified.
+    {
+      git -C "${project}" ls-files -z --modified --others --exclude-standard || true
+      git -C "${project}" diff -z --cached --name-only --relative 2> /dev/null || true
+    } > "${WORK}/listed"
+    while IFS= read -r -d '' rel; do
       [[ -n ${rel} && -f "${project}/${rel}" && "${project}/${rel}" -nt ${ref} ]] && printf '%s\n' "${project}/${rel}"
-    done <<< "${listed}"
+    done < "${WORK}/listed"
     return 0
   fi
   home_real="$(cd "${HOME}" 2> /dev/null && pwd -P || printf '%s' "${HOME}")"

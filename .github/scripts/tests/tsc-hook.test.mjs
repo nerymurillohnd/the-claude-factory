@@ -130,6 +130,29 @@ describe('typescript lsp hook', () => {
     assert.match(reason, /boom/)
   })
 
+  test('CRLF compiler output still gives valid JSON', () => {
+    ws.write('crlf/tsconfig.json', STRICT)
+    const file = ws.write('crlf/a.ts', 'export const x = 1;\n')
+    const stub = ws.write(
+      'crlf/node_modules/.bin/tsc',
+      [
+        '#!/bin/sh',
+        'case "$*" in',
+        '  *--version*) echo "Version 6.0.3" ;;',
+        `  *--listFilesOnly*) echo "${file}" ;;`,
+        "  *) printf 'a.ts(1,14): error TS2322: bad\\r\\n  detail\\r\\n'; exit 2 ;;",
+        'esac',
+        '',
+      ].join('\n'),
+    )
+    chmodSync(stub, 0o755)
+    const r = fire(ws.edit(file), ws.env)
+    assert.equal(r.code, 0)
+    const reason = parsed(r.out).reason
+    assert.match(reason, /error TS2322: bad\n {2}detail/)
+    assert.doesNotMatch(reason, /\r/)
+  })
+
   test('a policy that lost noCheck stops the hook', () => {
     const plugin = join(ws.root, 'plugin')
     cpSync(PLUGIN, plugin, { recursive: true })
@@ -271,6 +294,35 @@ describe('typescript lsp hook', () => {
       })
       const r = fire(payload, ws.env)
       assert.match(parsed(r.out).reason, /n\.ts\(1,14\): error TS2322/)
+    })
+
+    test('a non-ASCII file name from git is found, not skipped as a quoted path', () => {
+      const repo = join(ws.root, 'repo-utf8')
+      mkdirSync(repo)
+      const git = (/** @type {string[]} */ ...args) =>
+        spawnSync(
+          'git',
+          [
+            '-C',
+            repo,
+            '-c',
+            'commit.gpgsign=false',
+            '-c',
+            'user.name=t',
+            '-c',
+            'user.email=t@t',
+            ...args,
+          ],
+          { encoding: 'utf8' },
+        )
+      git('init', '-q')
+      ws.write('repo-utf8/tsconfig.json', STRICT)
+      git('add', '.')
+      git('commit', '-qm', 'init')
+      ws.write('repo-utf8/café.ts', TYPE_ERROR)
+      const payload = event('Bash', { cwd: repo, tool_input: { command: 'x' }, duration_ms: 1000 })
+      const r = fire(payload, ws.env)
+      assert.match(parsed(r.out).reason, /café\.ts\(1,14\): error TS2322/)
     })
   })
 })
