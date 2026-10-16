@@ -42,7 +42,7 @@ export const REQUIRED_PLUGIN_SECTIONS = [
 /**
  * Surface profiles. A plugin declares one in plugin.json `metadata.surfaces` (Claude Code ignores
  * `metadata`); the README badge, the catalog column and check-repo.mjs all derive from it.
- * Matrix and rules: .claude/rules/cross-surface-compatibility.md
+ * Matrix: docs/compatibility.md
  */
 export const SURFACE_PROFILES = {
   both: {

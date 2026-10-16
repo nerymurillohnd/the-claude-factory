@@ -139,7 +139,7 @@ In a session: `/plugin` → **Installed** → **{{displayName}}** → **Uninstal
 
 ## 🧭 Compatibility
 
-<!-- TODO: keep one row per component type this plugin ships (check-repo.mjs enforces it) and delete the rest. Values come from .claude/rules/cross-surface-compatibility.md. -->
+<!-- TODO: keep one row per component type this plugin ships (check-repo.mjs enforces it) and delete the rest. Values come from docs/compatibility.md. -->
 
 **Works in:** {{surfacesText}}
 

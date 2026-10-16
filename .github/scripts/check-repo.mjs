@@ -254,7 +254,7 @@ export function checkRepo() {
       }
     }
 
-    // ── Cross-surface declaration (.claude/rules/cross-surface-compatibility.md) ──
+    // ── Cross-surface declaration (docs/compatibility.md) ──
     const profileKey = surfaceProfileKey(manifest.metadata?.surfaces)
     const components = detectComponents(name)
     if (!profileKey) {
