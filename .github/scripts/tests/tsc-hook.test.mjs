@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Tests for the post-edit hook of the TypeScript LSP intelligence plugins, run against the
-// real tsc on PATH. Without tsc the compiler cases are skipped.
+// real tsc on PATH. Without tsc the compiler cases are skipped locally; in CI that is a failure.
 //   node --test ".github/scripts/tests/*.test.mjs"
 
 import assert from 'node:assert/strict'
@@ -23,6 +23,8 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..', '..')
 const PLUGIN = join(ROOT, 'plugins', 'typescript6-lsp-intelligence')
 const HOOK = join(PLUGIN, 'hooks', 'tsc-check.sh')
 const HAVE_TSC = spawnSync('sh', ['-c', 'command -v tsc']).status === 0
+const { CI } = process.env
+const IN_CI = CI === 'true'
 const STRICT = '{ "compilerOptions": { "strict": true } }'
 const TYPE_ERROR = 'export const x: number = "s";\n'
 
@@ -170,7 +172,13 @@ describe('typescript lsp hook', () => {
     assert.match(r.err, /does not set noEmit true and noCheck false/)
   })
 
-  describe('with tsc', { skip: !HAVE_TSC }, () => {
+  test('CI has tsc on PATH, so the compiler cases never skip there', () => {
+    if (IN_CI) {
+      assert.ok(HAVE_TSC, 'install tsc in .github/workflows/validate.yml')
+    }
+  })
+
+  describe('with tsc', { skip: !HAVE_TSC && !IN_CI }, () => {
     test('a type error blocks with its code', () => {
       ws.write('app/tsconfig.json', STRICT)
       const r = fire(ws.edit(ws.write('app/a.ts', TYPE_ERROR)), ws.env)

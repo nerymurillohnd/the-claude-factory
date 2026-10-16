@@ -52,7 +52,7 @@
 - Report the gates as a table: gate, result and key output line.
 - Call the work verified only when every gate passes.
 - The gates run pinned versions. CI pins the ones it runs in the `env` block of `.github/workflows/validate.yml`.
-- No git hook runs `.pre-commit-config.yaml`, and CI does not run `basedpyright` or `tsc`.
+- No git hook runs `.pre-commit-config.yaml`, and CI does not run `basedpyright`. CI installs `tsc` only so the TypeScript hook tests run; it does not type-check the `.mjs` files.
 
 1. `git branch --show-current` - Confirm it is the intended branch, not a stale or merged one.
 2. `git status --short` - Confirm no path is staged that you did not change.

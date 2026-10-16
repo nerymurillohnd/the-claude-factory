@@ -24,6 +24,8 @@ env:
   MYPY_VERSION: "1.20.2"
   BASEDPYRIGHT_VERSION: "1.40.2"
   UV_VERSION: "0.13.1"
+  # The tsc the TypeScript hook tests run; the hook uses the user's compiler, so CI installs one.
+  TYPESCRIPT_VERSION: "6.0.3"
   # shfmt release binary for the Bash hook tests; the checksum pins the exact build.
   SHFMT_VERSION: "3.14.1"
   SHFMT_SHA256: "76e77641faa025814b77f153b29796b8e6fa2fca03e0c76a691608b86c7ea7bf"
@@ -39,14 +41,16 @@ jobs:
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version-file: .nvmrc
-      - name: Tools the LSP hook tests run (shellcheck, shfmt)
+      - name: Tools the LSP hook tests run (shellcheck, shfmt, tsc)
         run: |
           sudo apt-get install -y --no-install-recommends shellcheck
           curl -sSfL -o /usr/local/bin/shfmt "https://github.com/mvdan/sh/releases/download/v${SHFMT_VERSION}/shfmt_v${SHFMT_VERSION}_linux_amd64"
           echo "${SHFMT_SHA256}  /usr/local/bin/shfmt" | sha256sum --check --strict
           sudo chmod 755 /usr/local/bin/shfmt
+          npm install -g --ignore-scripts --no-audit --no-fund "typescript@${TYPESCRIPT_VERSION}"
           shellcheck --version | head -2
           shfmt --version
+          tsc --version
       - name: Script tests
         run: node --test ".github/scripts/tests/*.test.mjs"
       - name: Repository policy
