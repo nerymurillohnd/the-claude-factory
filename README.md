@@ -115,7 +115,7 @@ Plugin skills are namespaced, so they never collide with yours: type `/<plugin>:
 
 | Plugin | What it does | Works in | Version | Includes |
 | :-- | :-- | :-- | :--: | :-- |
-| [**Git Hygiene**](./plugins/git-hygiene#readme)<br>`git-hygiene@the-claude-factory` | Audits a Git repository end to end, plans the cleanup with you, and executes only what you approve, keeping every piece of valuable work safe. | 💻 Code only | `0.1.1` | 🎯 Skills |
+| [**GitHub Operations**](./plugins/github-operations#readme)<br>`github-operations@the-claude-factory` | Carries a GitHub pull request from open to merge, cleans up a Git repository without losing work, and brings the GitHub MCP server with it. | 💻 Code only | `0.1.0` | 🎯 Skills · 🤖 Agents · 🔌 MCP |
 
 ### ⚡ Productivity
 

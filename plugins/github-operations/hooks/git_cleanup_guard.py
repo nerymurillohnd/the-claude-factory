@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
-"""PreToolUse hook for git-hygiene's cleanup skill: the guard rails that must hold every time.
+"""PreToolUse hook for the git-cleanup skill: the guard rails that must hold every time.
 
-Registered by the skill's frontmatter, so it only runs after /git-hygiene:cleanup was invoked.
+Registered by the skill's frontmatter, so it only runs after /github-operations:git-cleanup
+was invoked.
 Reads the hook event on stdin and answers with a permission decision on stdout:
 
 - deny: force-pushes, deleting main on the remote, history rewriting tools, changing the remote
@@ -811,7 +812,7 @@ def decide(event: object) -> Verdict | None:
     except ValueError:
         return (
             ASK,
-            "git-hygiene could not parse this command, so it cannot tell whether it is safe.",
+            "git-cleanup could not parse this command, so it cannot tell whether it is safe.",
         )
     for kind in (DENY, ASK):
         for found in verdicts:
@@ -832,7 +833,7 @@ def emit(verdict: Verdict) -> None:
         "hookSpecificOutput": {
             "hookEventName": "PreToolUse",
             "permissionDecision": kind,
-            "permissionDecisionReason": f"git-hygiene: {reason}{suffix}",
+            "permissionDecisionReason": f"git-cleanup: {reason}{suffix}",
         },
     }
     sys.stdout.write(json.dumps(decision) + "\n")
@@ -843,7 +844,7 @@ def main() -> int:
     try:
         verdict = decide(_decode(sys.stdin.read()))
     except (ValueError, OSError, RecursionError):
-        verdict = ASK, "git-hygiene's guard could not read this tool call."
+        verdict = ASK, "git-cleanup's guard could not read this tool call."
     if verdict:
         emit(verdict)
     return 0

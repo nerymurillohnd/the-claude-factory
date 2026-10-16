@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# Runs git-hygiene's scripts the way Claude Code does: by their path, through the shebang,
+# Runs the git-cleanup scripts the way Claude Code does: by their path, through the shebang,
 # with whatever `python3` is first on PATH. CI runs this on Linux and macOS. Exits non-zero
 # on the first failure.
 set -euo pipefail
 root=$(cd "$(dirname "$0")/../../../.." && pwd)
-plugin="${root}/plugins/git-hygiene"
-guard="${plugin}/hooks/guard.py"
-inventory="${plugin}/skills/cleanup/scripts/inventory.py"
+plugin="${root}/plugins/github-operations"
+guard="${plugin}/hooks/git_cleanup_guard.py"
+inventory="${plugin}/skills/git-cleanup/scripts/inventory.py"
 work=$(mktemp -d)
 trap 'rm -rf "$work"' EXIT
 

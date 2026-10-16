@@ -1,0 +1,45 @@
+{
+  "name": "github-operations",
+  "displayName": "GitHub Operations",
+  "version": "0.1.0",
+  "description": "Carries a GitHub pull request from open to merge, cleans up a Git repository without losing work, and brings the GitHub MCP server with it.",
+  "author": {
+    "name": "Nery Murillo",
+    "url": "https://github.com/nerymurillohnd"
+  },
+  "homepage": "https://github.com/nerymurillohnd/the-claude-factory/tree/main/plugins/github-operations#readme",
+  "repository": "https://github.com/nerymurillohnd/the-claude-factory",
+  "license": "MIT",
+  "keywords": [
+    "github",
+    "pull-request",
+    "ci",
+    "code-review",
+    "mcp",
+    "automation",
+    "git",
+    "cleanup",
+    "branches",
+    "worktrees",
+    "stash"
+  ],
+  "metadata": {
+    "surfaces": [
+      "claude-code"
+    ]
+  },
+  "userConfig": {
+    "github_token": {
+      "type": "string",
+      "title": "GitHub token",
+      "description": "Personal access token the bundled GitHub MCP server sends as a Bearer header. Stored in your system keychain.",
+      "sensitive": true
+    },
+    "github_mcp_url": {
+      "type": "string",
+      "title": "GitHub MCP server URL",
+      "description": "Default exposes every toolset, including write and delete tools. Append /readonly, or use /x/<toolset>, to narrow it.",
+      "default": "https://api.githubcopilot.com/mcp/x/all"
+    }
+  }
+}

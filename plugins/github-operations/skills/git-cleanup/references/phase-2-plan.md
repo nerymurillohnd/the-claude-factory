@@ -6,7 +6,7 @@ Present what Phase 1 found (the same grouping as `<scratch>/findings.md`): conte
 
 ## 2. Questions
 
-Before drafting the plan, ask the user about every ambiguous finding, preservation priority, integration choice or acceptable risk, with `AskUserQuestion` (up to four questions per call; put your recommended option first and say why in its description). Group branches that get the same recommendation into one question instead of asking per branch. Typical questions: what to do with each group holding unmerged work, whether remote branches of other authors may be touched at all, what to do with stale pull requests, whether stashes whose content is already in the base can go, and where to put the backup. Recommend a backup folder outside the repository such as `~/git-hygiene-backups/<repo>-<date>` (written as an absolute path); refuse a folder inside the repository.
+Before drafting the plan, ask the user about every ambiguous finding, preservation priority, integration choice or acceptable risk, with `AskUserQuestion` (up to four questions per call; put your recommended option first and say why in its description). Group branches that get the same recommendation into one question instead of asking per branch. Typical questions: what to do with each group holding unmerged work, whether remote branches of other authors may be touched at all, what to do with stale pull requests, whether stashes whose content is already in the base can go, and where to put the backup. Recommend a backup folder outside the repository such as `~/git-cleanup-backups/<repo>-<date>` (written as an absolute path); refuse a folder inside the repository.
 
 Choose the integration strategy by the work's intent:
 
@@ -67,7 +67,7 @@ Accepted reasons to delete a branch, as one list: (1) its tip is an ancestor of 
 
 One action that includes every step below, created outside the repository in the folder the user chose, before anything is integrated, pushed, deleted or pruned. Its steps, in this order:
 
-1. Temporary refs: for every stash (`refs/git-hygiene-backup/stash-<n>`) and every reflog-only commit worth keeping (`refs/git-hygiene-backup/reflog-<first 10 SHA characters>`).
+1. Temporary refs: for every stash (`refs/git-cleanup-backup/stash-<n>`) and every reflog-only commit worth keeping (`refs/git-cleanup-backup/reflog-<first 10 SHA characters>`).
 2. `git bundle create <dir>/all.bundle --all`: every branch, tag, remote-tracking ref and temporary ref. In a shallow clone a bundle may fail or be incomplete: say so and mark the affected items `BLOCKED`.
 3. Uncommitted work, for the main checkout (`main-checkout`) and every worktree the plan would remove or switch away from (`wt-<folder name>`): the tracked changes with `git diff HEAD --binary -- . ':(exclude,glob)**/<secret-like name>'` into `<dir>/uncommitted-<name>.patch`, and the untracked non-secret files into `<dir>/files/`. Take the untracked list from `git ls-files --others --exclude-standard`, not from the inventory's capped sample, minus the secret-like names, and copy exactly those paths.
 4. `<dir>/manifest.txt`: every branch and its SHA, every worktree, every stash selector and SHA, the files saved above, and the exact restore commands.

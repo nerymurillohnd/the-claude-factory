@@ -1,6 +1,6 @@
-"""Tests for git-hygiene's skills/cleanup/scripts/inventory.py against a throwaway repository.
+"""Tests for the git-cleanup skill's scripts/inventory.py against a throwaway repository.
 
-Run: python3 -m unittest discover -s .github/scripts/tests/git-hygiene -v
+Run: python3 -m unittest discover -s .github/scripts/tests/github-operations -v
 Needs git 2.38+ on PATH. Standard library only; runs on Python 3.9+.
 """
 
@@ -21,7 +21,9 @@ import unittest
 if TYPE_CHECKING:
     from collections.abc import Callable
 REPO = Path(__file__).resolve().parents[4]
-INVENTORY = REPO / "plugins" / "git-hygiene" / "skills" / "cleanup" / "scripts" / "inventory.py"
+INVENTORY = (
+    REPO / "plugins" / "github-operations" / "skills" / "git-cleanup" / "scripts" / "inventory.py"
+)
 MARKER = "fixture-value-42"
 
 

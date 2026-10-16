@@ -1,6 +1,8 @@
-"""Tests for git-hygiene's hooks/guard.py, run the way Claude Code runs it: event on stdin.
+"""Tests for the git-cleanup guard, hooks/git_cleanup_guard.py, run as Claude Code runs it.
 
-Run: python3 -m unittest discover -s .github/scripts/tests/git-hygiene -v
+The hook event goes on stdin and the permission decision comes back on stdout.
+
+Run: python3 -m unittest discover -s .github/scripts/tests/github-operations -v
 Standard library only; runs on Python 3.9+.
 """
 
@@ -16,7 +18,7 @@ import unittest
 if TYPE_CHECKING:
     from collections.abc import Callable
 REPO = Path(__file__).resolve().parents[4]
-GUARD = REPO / "plugins" / "git-hygiene" / "hooks" / "guard.py"
+GUARD = REPO / "plugins" / "github-operations" / "hooks" / "git_cleanup_guard.py"
 
 
 class JsonObject(dict[str, object]):
@@ -329,7 +331,7 @@ class GuardTests(unittest.TestCase):
     def test_broken_input_asks_instead_of_passing(self) -> None:
         code, decision, reason = run_guard("not json")
         assert (code, decision) == (0, "ask")
-        assert "git-hygiene" in reason
+        assert "git-cleanup" in reason
 
     def test_reasons_explain_and_guide(self) -> None:
         _, _, deny_reason = run_guard(

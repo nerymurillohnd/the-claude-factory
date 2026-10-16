@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Read-only inventory of a Git repository for the git-hygiene audit.
+"""Read-only inventory of a Git repository for the git-cleanup audit.
 
 Collects the facts the audit needs in one pass, as JSON: repository context, every branch with
 its exclusive work, linked worktrees, stashes, the working tree, noise, history and reflog.
@@ -151,7 +151,7 @@ class Repo:
     def scratch_objects(self) -> dict[str, str]:
         """Environment that sends new objects to a temporary store and reads the repo's own."""
         if self.scratch is None:
-            self.scratch = tempfile.mkdtemp(prefix="git-hygiene-")
+            self.scratch = tempfile.mkdtemp(prefix="git-cleanup-")
         shared = self.out("rev-parse", "--path-format=absolute", "--git-path", "objects")
         return {"GIT_OBJECT_DIRECTORY": self.scratch, "GIT_ALTERNATE_OBJECT_DIRECTORIES": shared}
 

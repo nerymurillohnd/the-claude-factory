@@ -18,7 +18,7 @@ Run A-01 as one action, in the order of Phase 2 §3, then verify it before any o
 - `git bundle list-heads <dir>/all.bundle`, leaving out `HEAD`, equals the refs it should hold.
 - A restore test: `git init --bare <temp dir>/restore.git`, then `git -C <temp dir>/restore.git fetch <dir>/all.bundle 'refs/*:refs/*'`; its ref list must match. Remove the temp dir afterwards.
 - Record the checksum in the manifest (`shasum -a 256`, or `sha256sum` where that is what exists).
-- Delete the temporary `refs/git-hygiene-backup/*` refs.
+- Delete the temporary `refs/git-cleanup-backup/*` refs.
 
 Show the user the backup path, size and checksum. Do not run any other action until the backup verifies. If it does not, fix it or stop.
 
@@ -46,7 +46,7 @@ Abort the conflicted operation with its Recovery step, then handle it like any o
 Prove the end state with fresh read-only output, not memory:
 
 - `git branch -a -vv`, `git for-each-ref refs/heads refs/remotes`, and `git ls-remote --heads <remote>` for the actual remote branches.
-- `git worktree list`, `git stash list`, `git status --short --branch --ignored`, `git for-each-ref refs/git-hygiene-backup` (must be empty).
+- `git worktree list`, `git stash list`, `git status --short --branch --ignored`, `git for-each-ref refs/git-cleanup-backup` (must be empty).
 - Open pull requests (`gh -R <owner>/<repo> pr list --state open`).
 - No integration lost work: for every exclusive tip recorded in Phase 1 (`<scratch>/audit-log.md`), `git merge-base --is-ancestor <tip> <remote>/<base branch>` succeeds, or the tip is in the backup bundle and the plan said so; and the local base branch equals `<remote>/<base branch>`.
 - The aim is only `main` and `origin/main`, no extra worktrees, stashes or leftovers. Anything kept because deleting it could lose data, break a protection, affect unapproved remote work, or was never verified stays, with the reason.

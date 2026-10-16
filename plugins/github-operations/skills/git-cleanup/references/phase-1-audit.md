@@ -16,7 +16,7 @@ The skill's hook is set to block when it cannot run, but a policy that disables 
 git -C "<repo>" push --dry-run --force origin HEAD
 ```
 
-It must be refused with a message starting `git-hygiene:`. **That refusal is the expected success: do not stop, and ignore its "Cleanup stops here" ending, which applies to real denials.** If the command runs, or fails for any other reason than that refusal, the guard is not working: stop, tell the user (a missing `python3` is the usual cause), and do not continue.
+It must be refused with a message starting `git-cleanup:`. **That refusal is the expected success: do not stop, and ignore its "Cleanup stops here" ending, which applies to real denials.** If the command runs, or fails for any other reason than that refusal, the guard is not working: stop, tell the user (a missing `python3` is the usual cause), and do not continue.
 
 ## 1. Context
 
