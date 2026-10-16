@@ -41,7 +41,7 @@ Use every applicable row needed to resolve the change, and say for each whether 
 | Code actions and organize imports | Not exposed: edit by hand, following the project's formatter and linter | Import repairs and other fixes | Side-effect imports |
 | Diagnostics | Pushed on a later turn after an edit, when the server pushes them (some servers never do); no diagnostics straight after an edit is not a clean result; the native checker as the second observer, and the only one when none arrive | Baseline and post-edit feedback | Current content, framework checker ownership, files outside the edit |
 
-Selection examples: a renamed exported function usually needs ownership, references, type/signature, rename preview and diagnostics; call hierarchy adds caller/callee evidence when the behavior or calling contract warrants it. A tsconfig change emphasizes file membership, type/diagnostic changes and consumers rather than renaming. A literal-only edit may need text search, not a symbol operation.
+Selection examples: a renamed exported function usually needs ownership, references, type/signature, `findReferences` confirmed by Grep and diagnostics; call hierarchy adds caller/callee evidence when the behavior or calling contract warrants it. A tsconfig change emphasizes file membership, type/diagnostic changes and consumers rather than renaming. A literal-only edit may need text search, not a symbol operation.
 
 ## Apply and observe
 

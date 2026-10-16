@@ -1,45 +1,42 @@
 # Fixtures: prove the checks detect breakage
 
-A clean result proves nothing until the same check fails on code that is broken on purpose. Run these once per project, before the first time you report that project's checks clean. "Project" means one repository or workspace root; a new session that cannot tell whether it ran them runs them again. Without a shell (Chat, Cowork) they cannot run: say the checks were not proven. In `research` mode they never go inside the project: run them in a `mktemp -d` folder with `tsconfig.json.fixture`, which proves the compiler but not the project's config, or report the checks as not proven.
+A clean result proves nothing until the same check fails on code that is broken on purpose. Run the fixtures once per program the change touches, before the first time you report that program's checks clean; a new session that cannot tell whether it ran them runs them again. Without a shell (the Claude app's chat and Cowork) they cannot run: say the checks were not proven.
 
-Each file in the skill's `assets/` folder holds one known defect, or none (`clean_control`). The files end in `.fixture` so no tool treats them as code; copy one to a `.ts` name to use it. `tsconfig.json.fixture` is a strict, self-contained program.
+The fixtures prove that this compiler and this tsconfig chain see the program's files and report strict errors. They do not prove the project's own check command: a framework checker (`vue-tsc`, `svelte-check`, `astro check`) or a package script needs its own sensitivity probe.
 
-## The strict check
-
-Use the project's `node_modules/.bin/tsc` (walk up the folders to the first one), or a global `tsc` when the project has none; never `npx tsc`, which fetches the deprecated npm package named `tsc` when no local TypeScript exists. Run it from the folder that holds the program's `tsconfig.json`:
-
-```bash
-tsc -p <tsconfig.json> --pretty false --noEmit true --tsBuildInfoFile "$(mktemp -d)/check.tsbuildinfo" --skipLibCheck true --allowJs true --checkJs true --strict true --noImplicitAny true --strictNullChecks true --strictFunctionTypes true --strictBindCallApply true --strictPropertyInitialization true --strictBuiltinIteratorReturn true --noImplicitThis true --useUnknownInCatchVariables true --alwaysStrict true --exactOptionalPropertyTypes true --noUncheckedIndexedAccess true --noPropertyAccessFromIndexSignature true --noImplicitReturns true --noImplicitOverride true --noFallthroughCasesInSwitch true --noUnusedLocals true --noUnusedParameters true --allowUnusedLabels false --allowUnreachableCode false
-```
-
-Each option is passed with an explicit value because `--strict` alone does not override an explicit `"strictNullChecks": false` in the config. The project's `paths`, module resolution and `types` still apply. `--tsBuildInfoFile` keeps an `incremental` or `composite` config from writing its build-info file into the project.
+Each file in the skill's `assets/` folder holds one known defect, or none (`clean_control`). The files end in `.fixture` so no tool treats them as code. `tsconfig.json.fixture` is a strict, self-contained program.
 
 ## Run the type-check fixtures
 
-Write the absolute path of the skill folder (the `${CLAUDE_SKILL_DIR}` that SKILL.md gives) in place of `<skill folder>`. Create and delete only the `lsp-fixture-*` folders below; touch nothing else in the project.
+The owning tsconfig is the program that contains the changed files: `tsc --listFilesOnly -p <tsconfig.json>` lists them. When that tsconfig is a solution-style root (`files: []` with `references`), use the referenced program that lists them. A JavaScript project with no `tsconfig.json` or `jsconfig.json` has no type-check layer: report it as not present instead of running the fixtures.
 
-Run each fixture in its own temporary folder inside the project, extending the tsconfig that owns the code by absolute path (when that tsconfig is a solution-style root, use the referenced program that lists the code). `"files": []` drops the owner's own file list. Create the folder inside that program's `rootDir`, or beside the tsconfig when it sets none:
+- `implementation` mode: `bash <skill folder>/scripts/run-fixtures.sh <owning tsconfig.json>`. The script creates one `lsp-fixture-*` folder at a time in the program's `rootDir` (or beside the tsconfig), extends the owning tsconfig by absolute path with its `files` reset, runs the strict check below, and deletes the folder.
+- `research` mode: `bash <skill folder>/scripts/run-fixtures.sh --outside`. It uses `tsconfig.json.fixture` in a temporary folder outside the project, which proves the compiler but not the project's config.
+
+`<skill folder>` is the `${CLAUDE_SKILL_DIR}` that SKILL.md gives. The script uses the project's `node_modules/.bin/tsc`, walking up from the tsconfig, then a `tsc` on `PATH`; pass a compiler path as the last argument to override it. It never uses `npx tsc`, which fetches the deprecated npm package named `tsc` when no local TypeScript exists. It always exits 0 and prints one line per fixture, `expected` against `observed`, then a verdict.
+
+## The strict check
+
+The script runs each fixture through this command, from the fixture's folder:
 
 ```bash
-OWNER="<absolute path of the owning tsconfig.json>"
-for name in clean_control type_mismatch implicit_any possibly_undefined; do
-  W=$(mktemp -d "<rootDir of that program>/lsp-fixture-XXXXXX")
-  cp "<skill folder>/assets/$name.ts.fixture" "$W/$name.ts"
-  printf '{ "extends": "%s", "files": [], "include": ["*.ts"] }\n' "$OWNER" > "$W/tsconfig.json"
-  # the strict check above, with -p "$W/tsconfig.json"; compare with the table
-  rm -rf "$W"
-done
+tsc -p <tsconfig.json> --pretty false --noEmit true --tsBuildInfoFile <file in a temporary folder> --skipLibCheck true --allowJs true --checkJs true --strict true --noImplicitAny true --strictNullChecks true --strictFunctionTypes true --strictBindCallApply true --strictPropertyInitialization true --strictBuiltinIteratorReturn true --noImplicitThis true --useUnknownInCatchVariables true --alwaysStrict true --exactOptionalPropertyTypes true --noUncheckedIndexedAccess true --noPropertyAccessFromIndexSignature true --noImplicitReturns true --noImplicitOverride true --noFallthroughCasesInSwitch true --noUnusedLocals true --noUnusedParameters true --allowUnusedLabels false --allowUnreachableCode false
 ```
 
-Outside any project, create `W=$(mktemp -d)` and copy `tsconfig.json.fixture` to `$W/tsconfig.json` instead of extending.
+Each option has an explicit value because `--strict` alone does not override an explicit `"strictNullChecks": false` in the config; the project's `paths`, module resolution and `types` still apply. `--tsBuildInfoFile` keeps an `incremental` or `composite` config from writing its build-info file into the project. A compiler that rejects an option (TS5023) predates it: say which option, and do not call the fixtures passed.
 
 ## Run the references fixture
 
-Copy `references.ts.fixture` to a `references.ts` in a temporary folder inside the project, `hover` it so the server loads the program, run `findReferences` on `target` at line 2, character 17 with that absolute path, then delete the folder.
+Skip it in `research` mode, and without an `LSP` tool: report reference coverage as not proven. Otherwise:
+
+1. Create `references.ts` with the Write tool, with the content of `assets/references.ts.fixture`, in a new folder inside the session's working directory. Write reaches the language server; a file copied from the shell may not.
+2. `hover` `target` at line 2, character 17, so the server loads the program.
+3. Run `findReferences` at the same position.
+4. Delete the folder.
 
 | Fixture | Command | Expected |
 | :-- | :-- | :-- |
-| `clean_control.ts.fixture` | the strict check | exit 0, no errors |
+| `clean_control.ts.fixture` | the strict check | no errors |
 | `type_mismatch.ts.fixture` | the strict check | `TS2322` |
 | `implicit_any.ts.fixture` | the strict check | `TS7006` |
 | `possibly_undefined.ts.fixture` | the strict check | `TS18048` |
@@ -48,5 +45,5 @@ Copy `references.ts.fixture` to a `references.ts` in a temporary folder inside t
 ## Reading the outcome
 
 - A broken fixture without its expected code means the check is blind here: the file is in no program, the owning config could not be read, or the compiler is not the one you think. Say which, and do not call code clean on that check.
-- A failing `clean_control` means the checks misfire in this project. Explain the errors before trusting any other result.
-- Fewer than four references after two matching results means the index is cold or the file belongs to no loaded project; see "Trusting a result" in SKILL.md.
+- A failing `clean_control` means the checks misfire in this program. Explain the errors before trusting any other result.
+- Fewer than four references after two matching results means the index is cold, the file is not synchronized with the server, or it belongs to no loaded project; see "Trusting a result" in SKILL.md.
