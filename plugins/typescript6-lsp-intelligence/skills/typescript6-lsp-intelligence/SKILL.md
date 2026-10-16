@@ -21,7 +21,9 @@ LSP owns questions about code structure; Grep owns questions about text. Route e
 | Who calls X, what does X call? | LSP | `prepareCallHierarchy`, then `incomingCalls` / `outgoingCalls` |
 | Implementations of an interface | LSP | `goToImplementation` |
 | Where does a word appear as text (docs, comments, strings, config, scripts)? | Grep | — |
-| Is it safe to delete or rename? | Both | LSP for code references, Grep for the blind spots below |
+| Is it safe to delete, rename or change a signature? | Both | LSP for code references, then Grep to confirm them and find the blind spots below |
+
+When Grep finds several symbols with the same name, search for the name together with the module it is imported from, and read the import lines to tell them apart.
 
 Every operation takes `filePath` (absolute), `line` (1-based) and `character` (1-based, UTF-16 code units: an emoji before the symbol counts 2). Raw LSP data in logs is 0-based: add 1 to both.
 
@@ -39,30 +41,31 @@ Only after all five does "no references" mean none. Never delete code on LSP evi
 
 ## Blind spots, every language
 
-LSP sees static code references only. Grep the name in: strings and reflection (dynamic imports, `eval`, dispatch by name); entry points and config (package scripts, YAML, JSON, TOML, `.env`); framework injection (fixtures, decorators, registries, routes); shell scripts, CI, Makefiles, Dockerfiles; docs, comments, templates.
+LSP sees static code references only. Grep the name in: strings and reflection (dynamic imports, `eval`, dispatch by name); test mocks and stubs (`vi.mock`, `jest.mock` and other module paths in strings); entry points and config (package scripts, YAML, JSON, TOML, `.env`); framework injection (fixtures, decorators, registries, routes); shell scripts, CI, Makefiles, Dockerfiles; docs, comments, templates.
 
 ## Impact analysis (rename, signature change, deletion)
 
 Copy this checklist into your working notes and tick each item:
 
-- [ ] `findReferences` on the definition, with the five trust checks. The references are the must-change list.
+- [ ] `findReferences` on the definition, with the five trust checks. The references start the must-change list; they are never all of it.
 - [ ] The language-specific steps in "Gotchas" below.
-- [ ] Grep the blind spots. Textual mentions are listed as optional; any dynamic use blocks a deletion.
+- [ ] Before deleting or changing a signature, Grep the name to confirm the references and add every caller they missed. Textual mentions are listed as optional; any dynamic use or mock blocks a deletion.
 - [ ] After the change, run the checks in [toolchain.md](references/toolchain.md) and fix what they report.
 
 ## Gotchas (verified on fixtures)
 
-- **Diagnostics after each edit cover the edited file only.** To check a whole program, or a caller in another file, run the compiler yourself on that program: `node_modules/.bin/tsc --noEmit -p <tsconfig.json>` from the project, or the global `tsc` when the project has none.
+- **`findReferences` is never the full list.** It misses callers in `.svelte`, `.vue` and `.astro` files when run from a `.ts` file, mocks and other string references, and files changed from the shell. Confirm with Grep before deleting a symbol or changing a signature.
+- **Diagnostics arrive on a later turn after an edit, not immediately, and cover the edited file only.** No diagnostics straight after an edit does not mean the edit is clean; run the type check before reporting done. To check a whole program, or a caller in another file, run the compiler yourself on that program: `node_modules/.bin/tsc --noEmit -p <tsconfig.json>` from the project, or the global `tsc` when the project has none.
 - **`prepareCallHierarchy` then `incomingCalls` works here**; module-level calls appear as the module.
 - **Only loaded projects are searched.** Callers in another `tsconfig` project, or in a file no `tsconfig` includes, are missing and the result is stable across repeats, so the warm-up check passes. `hover` one file of each other project first, then re-run `findReferences`.
-- **`.astro`, `.svelte`, `.vue` and `.mdx` are invisible** to the server. Grep them before any rename or deletion.
-- **Aliases and barrels are followed** (`import { f as g } from "./index"` lists the calls to `g`), so the reference list is the TypeScript-side must-change set.
+- **`.astro`, `.svelte`, `.vue` and `.mdx` are invisible** to the server, so `findReferences` run from a `.ts` file misses their callers. Grep them before any rename, signature change or deletion.
+- **Aliases and barrels are followed** (`import { f as g } from "./index"` lists the calls to `g`), so the reference list covers the TypeScript-side callers; Grep still finds the rest.
 - **`tsc` checks a whole program.** An error in a file you did not edit is breakage your change caused; fix it too. A file absent from `tsc --listFilesOnly -p <tsconfig>` has not been checked at all.
 - **`allowJs` admits JavaScript; only `checkJs` or `// @ts-check` type-checks it.** A listed JS file with checking off has not passed type checking.
 
 ## Checks
 
-Run them yourself after a change:
+Run them yourself after a change, before reporting it done:
 
 - `tsc --noEmit -p <tsconfig.json>` for every program that includes a changed file or a caller, with the strict profile's options from [toolchain.md](references/toolchain.md) on the command line so a lax config does not hide errors in the changed files; `tsc --listFilesOnly -p <tsconfig.json>` to confirm membership; `tsc --showConfig -p <tsconfig.json>` to read the effective options (neither of the last two type-checks).
 - The project's own formatter and linter (Biome, Prettier, ESLint), exactly as its `package.json` scripts run them.

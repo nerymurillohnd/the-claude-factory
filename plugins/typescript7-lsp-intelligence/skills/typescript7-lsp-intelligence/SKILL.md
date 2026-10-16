@@ -5,7 +5,7 @@ description: Navigates TypeScript and JavaScript by symbol through the native Ty
 
 # TypeScript and JavaScript code intelligence (TypeScript 7)
 
-The TypeScript 7 server answers navigation requests but pushes no diagnostics after edits, so no `Found N new diagnostic issues` line ever appears for `.ts`, `.tsx`, `.mts`, `.cts`, `.js`, `.jsx`, `.mjs` or `.cjs` files: silence means unchecked, not clean. Run the strict check under "Checks" yourself after every change to such a file.
+The TypeScript 7 server answers navigation requests but pushes no diagnostics after edits, so no `Found N new diagnostic issues` line ever appears for `.ts`, `.tsx`, `.mts`, `.cts`, `.js`, `.jsx`, `.mjs` or `.cjs` files: silence means unchecked, not clean. Run the strict check under "Checks" yourself after every change to such a file, before reporting it done.
 
 Work with the language server first and the toolchain second. Without an LSP tool (Chat and Cowork load this skill but ignore language servers, and the server may be off in Claude Code), answer structure questions with Grep and Read, say the result is textual only, and run the strict check when a shell is available.
 
@@ -23,7 +23,9 @@ LSP owns questions about code structure; Grep owns questions about text. Route e
 | Who calls X, what does X call? | LSP | `prepareCallHierarchy`, then `incomingCalls` / `outgoingCalls` |
 | Implementations of an interface | LSP | `goToImplementation` |
 | Where does a word appear as text (docs, comments, strings, config, scripts)? | Grep | — |
-| Is it safe to delete or rename? | Both | LSP for code references, Grep for the blind spots below |
+| Is it safe to delete, rename or change a signature? | Both | LSP for code references, then Grep to confirm them and find the blind spots below |
+
+When Grep finds several symbols with the same name, search for the name together with the module it is imported from, and read the import lines to tell them apart.
 
 Every operation takes `filePath` (absolute), `line` (1-based) and `character` (1-based, UTF-16 code units: an emoji before the symbol counts 2). Raw LSP data in logs is 0-based: add 1 to both.
 
@@ -41,24 +43,25 @@ Only after all five does "no references" mean none. Never delete code on LSP evi
 
 ## Blind spots, every language
 
-LSP sees static code references only. Grep the name in: strings and reflection (dynamic imports, `eval`, dispatch by name); entry points and config (package scripts, YAML, JSON, TOML, `.env`); framework injection (fixtures, decorators, registries, routes); shell scripts, CI, Makefiles, Dockerfiles; docs, comments, templates.
+LSP sees static code references only. Grep the name in: strings and reflection (dynamic imports, `eval`, dispatch by name); test mocks and stubs (`vi.mock`, `jest.mock` and other module paths in strings); entry points and config (package scripts, YAML, JSON, TOML, `.env`); framework injection (fixtures, decorators, registries, routes); shell scripts, CI, Makefiles, Dockerfiles; docs, comments, templates.
 
 ## Impact analysis (rename, signature change, deletion)
 
 Copy this checklist into your working notes and tick each item:
 
-- [ ] `findReferences` on the definition, with the five trust checks. The references are the must-change list.
+- [ ] `findReferences` on the definition, with the five trust checks. The references start the must-change list; they are never all of it.
 - [ ] The language-specific steps in "Gotchas" below.
-- [ ] Grep the blind spots. Textual mentions are listed as optional; any dynamic use blocks a deletion and must be updated by hand in a rename or signature change.
+- [ ] Before deleting or changing a signature, Grep the name to confirm the references and add every caller they missed. Textual mentions are listed as optional; any dynamic use or mock blocks a deletion and must be updated by hand in a rename or signature change.
 - [ ] Before the change, take the baseline of the strict check (see "Checks").
 - [ ] After the change, run the strict check and the other checks, fix what they report, and run them again until the strict check reports 0 errors in the edited files and 0 new errors elsewhere.
 
 ## Gotchas (verified on fixtures)
 
+- **`findReferences` is never the full list.** It misses callers in `.svelte`, `.vue` and `.astro` files when run from a `.ts` file, mocks and other string references, and files changed from the shell. Confirm with Grep before deleting a symbol or changing a signature.
 - **Run the strict check on each program the change touches**, not only on the edited file's.
 - **Only loaded projects are searched.** Callers in another `tsconfig` project, or in a file no `tsconfig` includes, are missing and the result is stable across repeats, so the warm-up check passes. List the other projects with Glob `**/tsconfig.json` (skip `node_modules`), `hover` one file of each, then re-run `findReferences`. For files outside every program (`tsc --listFilesOnly` does not list them), Grep the name.
-- **`.astro`, `.svelte`, `.vue` and `.mdx` are invisible** to the server. Grep them before any rename or deletion.
-- **Aliases and barrels are followed** (`import { f as g } from "./index"` lists the calls to `g`), so the reference list is the TypeScript-side must-change set.
+- **`.astro`, `.svelte`, `.vue` and `.mdx` are invisible** to the server, so `findReferences` run from a `.ts` file misses their callers. Grep them before any rename, signature change or deletion.
+- **Aliases and barrels are followed** (`import { f as g } from "./index"` lists the calls to `g`), so the reference list covers the TypeScript-side callers; Grep still finds the rest.
 - **`tsc` checks a whole program.** An error in a file you did not edit is yours when the baseline did not have it; see "Checks". A file absent from `tsc --listFilesOnly -p <tsconfig>` has not been checked at all.
 - **`allowJs` admits JavaScript; only `checkJs` or `// @ts-check` type-checks it.** A listed JS file with checking off has not passed type checking.
 
