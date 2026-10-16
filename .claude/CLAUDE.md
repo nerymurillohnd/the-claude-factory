@@ -40,7 +40,8 @@ docs/                      user guides (users)
 .github/workflows/         CI: validate, release, evals, PR review, @claude mentions
 .claude/                   this file and the maintainer folders below (maintainers only)
 .claude/memory/            project memory (gitignored, local to this Mac)
-.claude/rules/             gate rules (quality, GitHub, maintenance, releases, plugins) and path-scoped rules in stages/
+.claude/rules/             project gates and path-scoped stage rules
+.claude/maintainer/        decision records and technical debt ledgers
 .claude/skills/            maintainer workflows
 .claude/agents/            maintainer review agents
 .claude/hooks/             session-start check and the version-bump push gate
@@ -49,8 +50,6 @@ docs/                      user guides (users)
 .claude/plans/             local implementation plans (gitignored)
 ```
 
-- Root `README.md`, `CHANGELOG.md`, `SECURITY.md`, `SUPPORT.md`, `CONTRIBUTING.md` and `CODE_OF_CONDUCT.md` are the user-facing showcase and community files.
-
 ## Commands
 
 ### Setup
@@ -58,6 +57,26 @@ docs/                      user guides (users)
 - `npm ci --ignore-scripts --prefix plugins/typescript6-lsp-intelligence` - Run when the clone is new, before the script tests.
 - `npm ci --ignore-scripts --prefix plugins/typescript7-lsp-intelligence` - Run when the clone is new, before the script tests.
 - For all other commands, read `.github/scripts/` and `.github/workflows/validate.yml`.
+
+## Project Gates
+
+The gates live in `.claude/rules/`.
+
+- Quality Gate: runs the per-file checks after editing `.py`, `.mjs` and `.sh` files and the full command list before every push, and allows no progress while an issue is open.
+- GitHub Gate: governs PRs, labels, staging, commits, pushes and the PR review loop up to ready to merge.
+- Maintenance Gate: keeps READMEs, changelogs and the other docs current, consistent and in sync with the code.
+- Plugin Gate: sets how plugins are built, portable and distributed, how evals are requested and how versions are bumped.
+- Releases: verifies the release right after a plugin PR with a version change merges.
+- Skill Gate: sets how a skill references its own files and files outside it.
+- Stage rules: authoring, user-docs style and versioning, each scoped to the paths it governs.
+
+## Documentation and Maintenance
+
+- Decisions: record each important decision as an ADR in `.claude/maintainer/decisions/`, with the `project-records` skill.
+- Technical debt: log pending debt in `pending-debt.md` and move it to `resolved-debt.md` once verified, both in `.claude/maintainer/technical-debt/`.
+- Never write a decision or a debt item in memory, a README, a changelog or a commit message.
+- `docs/`: the user guides, covering installation, managing plugins, compatibility, FAQ, troubleshooting and tool references. Maintainer notes never go there.
+- Root `README.md`, `CHANGELOG.md`, `SECURITY.md`, `SUPPORT.md`, `CONTRIBUTING.md` and `CODE_OF_CONDUCT.md`: the user-facing showcase and community files.
 
 ## How Claude Works With Nery
 
@@ -78,6 +97,7 @@ docs/                      user guides (users)
 - With no saved process, research, decide and act. Ask only before spending, irreversible actions or anything published, or when a decision only Nery can make blocks the work.
 - If a delete would destroy work that exists nowhere else, say so in one line before running it.
 - Disagree once, with evidence, then do it Nery's way.
+
 ### Nery
 
 - Settles the open-decision list at session start.
@@ -137,6 +157,6 @@ The global rule decides when to delegate. These are the cases our work hits.
 - `.claude/memory/MEMORY.md` indexes the project memory: one topic file per fact. Cross-project facts live in `~/.claude/memory/`.
 - Memory is gitignored: it lives on this Mac only, and cloud sessions do not see it.
 - Update `.claude/memory/` as the work happens, never only at the end of the session.
-- Write each decision, gotcha and open item as its own topic file, and index it in `MEMORY.md`.
+- Write each gotcha and fact as its own topic file, and index it in `MEMORY.md`.
 - Keep memory factual and short: one fact per line, no duplication with this file, rules or code.
 - Delete stale lines instead of piling up corrections.
