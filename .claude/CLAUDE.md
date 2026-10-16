@@ -30,10 +30,6 @@
 
 ## Commands
 
-### Setup
-
-- `npm ci --ignore-scripts --prefix plugins/typescript6-lsp-intelligence` - Run when the clone is new, before the script tests.
-- `npm ci --ignore-scripts --prefix plugins/typescript7-lsp-intelligence` - Run when the clone is new, before the script tests.
 - For all other commands, read `.github/scripts/` and `.github/workflows/validate.yml`.
 
 ## Project Gates

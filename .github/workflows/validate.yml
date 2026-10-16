@@ -39,15 +39,12 @@ jobs:
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version-file: .nvmrc
-      - name: Tools the LSP hook tests run (shellcheck, shfmt, the pinned TypeScript compilers)
+      - name: Tools the LSP hook tests run (shellcheck, shfmt)
         run: |
           sudo apt-get install -y --no-install-recommends shellcheck
           curl -sSfL -o /usr/local/bin/shfmt "https://github.com/mvdan/sh/releases/download/v${SHFMT_VERSION}/shfmt_v${SHFMT_VERSION}_linux_amd64"
           echo "${SHFMT_SHA256}  /usr/local/bin/shfmt" | sha256sum --check --strict
           sudo chmod 755 /usr/local/bin/shfmt
-          for plugin in typescript6-lsp-intelligence typescript7-lsp-intelligence; do
-            npm ci --ignore-scripts --no-audit --no-fund --prefix "plugins/${plugin}"
-          done
           shellcheck --version | head -2
           shfmt --version
       - name: Script tests

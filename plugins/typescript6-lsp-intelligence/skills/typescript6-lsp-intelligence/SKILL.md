@@ -1,6 +1,6 @@
 ---
 name: typescript6-lsp-intelligence
-description: Navigates TypeScript and JavaScript by symbol through a pinned TypeScript 6 language server, finds the tsconfig program that owns each file, and checks changes with the pinned tsc using the project's own configuration. Use when editing, refactoring or diagnosing TypeScript or JavaScript on TypeScript 6, fixing a compiler error such as TS2322, finding every usage of an export, or explaining why the editor and tsc disagree.
+description: Navigates TypeScript and JavaScript by symbol through the TypeScript 6 language server, finds the tsconfig program that owns each file, and checks changes with the project's own tsc and configuration. Use when editing, refactoring or diagnosing TypeScript or JavaScript on TypeScript 6, fixing a compiler error such as TS2322, finding every usage of an export, or explaining why the editor and tsc disagree.
 ---
 
 # TypeScript and JavaScript code intelligence (TypeScript 6)
@@ -52,7 +52,7 @@ Copy this checklist into your working notes and tick each item:
 
 ## Gotchas (verified on fixtures)
 
-- **Diagnostics after each edit cover the edited file only.** To check a whole program, or a caller in another file, run the plugin's compiler yourself: `node "${CLAUDE_PLUGIN_ROOT}/node_modules/typescript/bin/tsc" --noEmit -p <tsconfig.json>` on that program.
+- **Diagnostics after each edit cover the edited file only.** To check a whole program, or a caller in another file, run the compiler yourself on that program: `node_modules/.bin/tsc --noEmit -p <tsconfig.json>` from the project, or the global `tsc` when the project has none.
 - **`prepareCallHierarchy` then `incomingCalls` works here**; module-level calls appear as the module.
 - **Only loaded projects are searched.** Callers in another `tsconfig` project, or in a file no `tsconfig` includes, are missing and the result is stable across repeats, so the warm-up check passes. `hover` one file of each other project first, then re-run `findReferences`.
 - **`.astro`, `.svelte`, `.vue` and `.mdx` are invisible** to the server. Grep them before any rename or deletion.

@@ -1,8 +1,7 @@
 {
   "typescript": {
-    "command": "node",
+    "command": "typescript-language-server",
     "args": [
-      "${CLAUDE_PLUGIN_ROOT}/node_modules/typescript-language-server/lib/cli.mjs",
       "--stdio"
     ],
     "startupTimeout": 30000,

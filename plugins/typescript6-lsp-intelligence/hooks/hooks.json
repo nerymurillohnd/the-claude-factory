@@ -6,9 +6,10 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/check.mjs\"",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/tsc-check.sh\"",
             "timeout": 120,
-            "statusMessage": "typescript6-lsp-intelligence: tsc --noEmit (TypeScript 6) on the program of each changed TypeScript/JavaScript file"
+            "onFailure": "block",
+            "statusMessage": "typescript6-lsp-intelligence: tsc --noEmit on each changed TypeScript/JavaScript file, project environment and strictest policy"
           }
         ]
       }
@@ -19,9 +20,10 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/check.mjs\"",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/tsc-check.sh\"",
             "timeout": 120,
-            "statusMessage": "typescript6-lsp-intelligence: tsc --noEmit (TypeScript 6) on the program of each changed TypeScript/JavaScript file"
+            "onFailure": "block",
+            "statusMessage": "typescript6-lsp-intelligence: tsc --noEmit on each changed TypeScript/JavaScript file, project environment and strictest policy"
           }
         ]
       }

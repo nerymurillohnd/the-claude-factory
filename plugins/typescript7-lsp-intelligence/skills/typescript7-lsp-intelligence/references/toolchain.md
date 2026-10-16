@@ -2,7 +2,7 @@
 
 ## Contents
 
-- The compiler this plugin pins
+- Which compiler runs
 - TypeScript 7 and TypeScript 6
 - Where configuration lives
 - A strict profile
@@ -13,15 +13,15 @@
 - CI
 - IDE
 
-## The compiler this plugin pins
+## Which compiler runs
 
-The plugin ships TypeScript 7.0.2 under its own `node_modules` and starts the language server from it, so it never depends on, or changes, the `tsc` on your `PATH` or in your project:
+The plugin ships no TypeScript: it uses yours. The project's `node_modules/.bin/tsc` is what its `package.json` scripts and CI run, so it comes first; a global `tsc` serves only a project without one. Check which one you are about to run before trusting its result:
 
 ```bash
-node "${CLAUDE_PLUGIN_ROOT}/node_modules/typescript/bin/tsc" --version
+node_modules/.bin/tsc --version || tsc --version
 ```
 
-Your project's own `node_modules/.bin/tsc` is what its `package.json` scripts and CI run. When the two disagree, say which one produced each result; never mix their outputs.
+The language server is `tsc --lsp --stdio`, the TypeScript 7 `tsc` on the `PATH` Claude Code started with. The `typescript` package also ships a native binary per platform, `node_modules/@typescript/typescript-<os>-<arch>/lib/tsc`, which runs without Node.js. When the project's and the global compiler disagree, say which one produced each result; never mix their outputs.
 
 ## TypeScript 7 and TypeScript 6
 
@@ -59,6 +59,8 @@ There is no `--strictest` flag. A strict project sets these explicitly:
 ```
 
 `strict` already turns on `noImplicitAny`, `strictNullChecks`, `strictFunctionTypes`, `strictBindCallApply`, `strictPropertyInitialization`, `noImplicitThis`, `useUnknownInCatchVariables` and `alwaysStrict`. `noImplicitThis` is the one people forget they rely on: a plain `function () { return this.width }` returned from a method has no instance `this`, and TS2683 says so; keep it on and use an arrow function or an explicit `this` parameter. `@tsconfig/strictest` sets `skipLibCheck: true`; read a preset before relying on it. Keep the project's `target`, `module`, `moduleResolution`, `jsx` and `lib`: strictness never replaces them.
+
+To hold one change to this profile without editing the project's `tsconfig.json`, pass each option on the command line with an explicit value: `tsc --noEmit -p tsconfig.json --strict true --strictNullChecks true --noUncheckedIndexedAccess true …`. Command-line options override the config while its `paths`, module resolution and `types` still apply; `--strict` alone does not override an explicit `"strictNullChecks": false`, so name every option.
 
 ## No tsconfig.json
 

@@ -1,11 +1,11 @@
 ---
 name: typescript7-lsp-intelligence
-description: Navigates TypeScript and JavaScript by symbol through the native TypeScript 7 language server, finds the tsconfig program that owns each file, and checks changes with the pinned tsc using the project's own configuration. Use when editing, refactoring or diagnosing TypeScript or JavaScript on TypeScript 7, fixing a compiler error such as TS2322, finding every usage of an export, or explaining why the editor and tsc disagree.
+description: Navigates TypeScript and JavaScript by symbol through the native TypeScript 7 language server, finds the tsconfig program that owns each file, and checks changes with the project's own tsc and configuration. Use when editing, refactoring or diagnosing TypeScript or JavaScript on TypeScript 7, fixing a compiler error such as TS2322, finding every usage of an export, or explaining why the editor and tsc disagree.
 ---
 
 # TypeScript and JavaScript code intelligence (TypeScript 7)
 
-The TypeScript 7 server answers navigation requests but pushes no diagnostics after edits, so no `Found N new diagnostic issues` line ever appears for `.ts`, `.tsx`, `.mts`, `.cts`, `.js`, `.jsx`, `.mjs` or `.cjs` files: silence means unchecked, not clean. To check a whole program, or a caller in another file, run the plugin's compiler yourself: `node "${CLAUDE_PLUGIN_ROOT}/node_modules/typescript/bin/tsc" --noEmit -p <tsconfig.json>`.
+The TypeScript 7 server answers navigation requests but pushes no diagnostics after edits, so no `Found N new diagnostic issues` line ever appears for `.ts`, `.tsx`, `.mts`, `.cts`, `.js`, `.jsx`, `.mjs` or `.cjs` files: silence means unchecked, not clean. To check a whole program, or a caller in another file, run the compiler yourself: `node_modules/.bin/tsc --noEmit -p <tsconfig.json>` from the project, or the global `tsc` when the project has none.
 
 Work with the language server first and the toolchain second. Nothing here mentions how the project is checked automatically; run every check yourself when the task calls for it.
 

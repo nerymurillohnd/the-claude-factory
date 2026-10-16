@@ -1,8 +1,7 @@
 {
   "typescript": {
-    "command": "node",
+    "command": "tsc",
     "args": [
-      "${CLAUDE_PLUGIN_ROOT}/node_modules/typescript/bin/tsc",
       "--lsp",
       "--stdio"
     ],

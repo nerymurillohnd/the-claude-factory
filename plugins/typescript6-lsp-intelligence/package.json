@@ -1,9 +1,0 @@
-{
-  "name": "typescript6-lsp-intelligence",
-  "private": true,
-  "description": "Pins the TypeScript 6 compiler and typescript-language-server that this Claude Code plugin runs.",
-  "dependencies": {
-    "typescript": "6.0.3",
-    "typescript-language-server": "6.0.2"
-  }
-}
