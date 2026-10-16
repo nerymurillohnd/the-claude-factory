@@ -43,7 +43,7 @@
 | :-- | :-- | :-- | :-- |
 | 🧠 LSP server | `typescript` | Starts your TypeScript 7 server (`tsc --lsp --stdio`) for `.ts`, `.tsx`, `.mts`, `.cts`, `.js`, `.jsx`, `.mjs` and `.cjs` files | Automatically when Claude opens or edits one of those files |
 | 🪝 Hook | `PostToolUse` · `PostToolUseFailure` | Runs your native `tsc --noEmit` with your project's environment and the plugin's strictest policy on each TypeScript or JavaScript file an Edit, Write or Bash call changed | Automatically after each of those tool calls |
-| 🎯 Skill | `typescript7-lsp-intelligence:typescript7-lsp-intelligence` | Teaches Claude that the TypeScript 7 server pushes no diagnostics and how to run the compiler on a whole program or a caller in another file, to navigate with the language server first, trust its results only after five checks, and work with `tsc` the way your project configures it | Automatically when you work on TypeScript or JavaScript, or `/typescript7-lsp-intelligence:typescript7-lsp-intelligence` |
+| 🎯 Skill | `typescript7-lsp-intelligence:ts-lifecycle` | Teaches Claude that the TypeScript 7 server pushes no diagnostics, to research a TypeScript or JavaScript change from official docs and release notes, navigate with the language server and confirm with Grep, trust results only after five checks, and prove the checks with fixtures before calling code clean | Automatically when you work on TypeScript or JavaScript, or `/typescript7-lsp-intelligence:ts-lifecycle` |
 
 ## ✅ Requirements
 
