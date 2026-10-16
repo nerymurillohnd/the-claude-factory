@@ -130,14 +130,18 @@ DRY_RUN_GIT = frozenset({"fetch", "clean", "worktree", "remote", "gc", "prune"})
 DRY_RUN_LETTERS = frozenset("nfdqxXvi")
 
 STRONG_SECRET = re.compile(
-    r"^(\.env(\..+)?|\.envrc|.+\.(pem|p12|pfx|keystore|jks|kdbx|tfstate|tfvars)"
-    r"|id_(rsa|dsa|ecdsa|ed25519)|\.netrc|\.npmrc|\.pypirc|\.git-credentials|\.htpasswd"
-    r"|\.vault_pass|\.dockerconfigjson|kubeconfig|\.pgpass|\.my\.cnf)$",
+    (
+        r"^(\.env(\..+)?|\.envrc|.+\.(pem|p12|pfx|keystore|jks|kdbx|tfstate|tfvars)"
+        r"|id_(rsa|dsa|ecdsa|ed25519)|\.netrc|\.npmrc|\.pypirc|\.git-credentials|\.htpasswd"
+        r"|\.vault_pass|\.dockerconfigjson|kubeconfig|\.pgpass|\.my\.cnf)$"
+    ),
     re.IGNORECASE,
 )
 WEAK_SECRET = re.compile(
-    r"^(.+\.key|\.secrets?|service-account.*\.json"
-    r"|(secrets?|credentials)(\.(json|ya?ml|txt|toml|ini|conf|cfg|xml|properties|env))?)$",
+    (
+        r"^(.+\.key|\.secrets?|service-account.*\.json"
+        r"|(secrets?|credentials)(\.(json|ya?ml|txt|toml|ini|conf|cfg|xml|properties|env))?)$"
+    ),
     re.IGNORECASE,
 )
 SECRET_EXAMPLE = re.compile(r"\.(example|sample|template|dist|pub)$", re.IGNORECASE)
@@ -836,7 +840,7 @@ def emit(verdict: Verdict) -> None:
             "permissionDecisionReason": f"git-cleanup: {reason}{suffix}",
         },
     }
-    sys.stdout.write(json.dumps(decision) + "\n")
+    _ = sys.stdout.write(json.dumps(decision) + "\n")
 
 
 def main() -> int:

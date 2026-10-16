@@ -28,8 +28,30 @@ import subprocess
 import sys
 import tempfile
 import time
+from typing import TYPE_CHECKING, cast
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 Json = dict[str, object]
+_decode: Callable[[str], object] = json.JSONDecoder().decode
+
+
+class Options(argparse.Namespace):
+    """The parsed command line, typed so each option keeps its type."""
+
+    repo: str = "."
+    base: str | None = None
+    detail_limit: int = 500
+    time_budget: float = 60.0
+    signal: str | None = None
+    limit: int | None = None
+    offset: int = 0
+    ls_remote: bool = False
+    out: str | None = None
+    source: str | None = None
+    section: str | None = None
+
 
 GIT = shutil.which("git") or "git"
 TIMEOUT = 180
@@ -45,16 +67,20 @@ CHERRY_MAX_BEHIND = 5000
 CREDENTIAL_URL = re.compile(r"(?<=//)[^/\s]*@")
 TOKEN_QUERY = re.compile(r"([?&](?:token|access_token|key|password|secret)=)[^&\s]+", re.IGNORECASE)
 SECRET_VALUE = re.compile(
-    r"(?<![A-Za-z0-9])(ghp_|gho_|ghs_|github_pat_|glpat-|xox[baprs]-|sk-|AKIA)[A-Za-z0-9_\-]{12,}"
-    r"|-----BEGIN [A-Z ]*PRIVATE KEY-----"
-    r"|(?<![A-Za-z0-9])eyJ[A-Za-z0-9_\-]{10,}\.[A-Za-z0-9_\-]{10,}\.[A-Za-z0-9_\-]{10,}"
-    r"|(?i:bearer\s+)[A-Za-z0-9._~+/\-]{12,}"
-    r"|(?i:(?:password|passwd|secret|token|api[_-]?key)\s*[:=]\s*)\S+",
+    (
+        r"(?<![A-Za-z0-9])(ghp_|gho_|ghs_|github_pat_|glpat-|xox[baprs]-|sk-|AKIA)[A-Za-z0-9_\-]{12,}"
+        r"|-----BEGIN [A-Z ]*PRIVATE KEY-----"
+        r"|(?<![A-Za-z0-9])eyJ[A-Za-z0-9_\-]{10,}\.[A-Za-z0-9_\-]{10,}\.[A-Za-z0-9_\-]{10,}"
+        r"|(?i:bearer\s+)[A-Za-z0-9._~+/\-]{12,}"
+        r"|(?i:(?:password|passwd|secret|token|api[_-]?key)\s*[:=]\s*)\S+"
+    ),
 )
 SECRET_NAME = re.compile(
-    r"(^|/)(\.env(\..+)?|.+\.(pem|key|p12|pfx|keystore|kdbx|tfstate)|id_(rsa|dsa|ecdsa|ed25519)"
-    r"|\.netrc|\.npmrc|\.pypirc|\.git-credentials|\.htpasswd|credentials(\..+)?|secrets?(\..+)?"
-    r"|terraform\.tfvars)$",
+    (
+        r"(^|/)(\.env(\..+)?|.+\.(pem|key|p12|pfx|keystore|kdbx|tfstate)|id_(rsa|dsa|ecdsa|ed25519)"
+        r"|\.netrc|\.npmrc|\.pypirc|\.git-credentials|\.htpasswd|credentials(\..+)?|secrets?(\..+)?"
+        r"|terraform\.tfvars)$"
+    ),
     re.IGNORECASE,
 )
 SECRET_EXAMPLE = re.compile(r"\.(example|sample|template|dist|pub)$", re.IGNORECASE)
@@ -63,14 +89,18 @@ NOISE = {
     "editor-or-temp": re.compile(r"(\.(swp|swo|tmp|bak|orig|rej)|~)$"),
     "bytecode-or-log": re.compile(r"\.(pyc|pyo|log)$"),
     "cache-or-generated-dir": re.compile(
-        r"(^|/)(__pycache__|node_modules|\.pytest_cache|\.mypy_cache|\.ruff_cache|\.cache|\.next"
-        r"|\.nuxt|\.parcel-cache|coverage|dist|build|\.venv|venv|\.tox|\.gradle|target"
-        r"|\.terraform)(/|$)",
+        (
+            r"(^|/)(__pycache__|node_modules|\.pytest_cache|\.mypy_cache|\.ruff_cache|\.cache|\.next"
+            r"|\.nuxt|\.parcel-cache|coverage|dist|build|\.venv|venv|\.tox|\.gradle|target"
+            r"|\.terraform)(/|$)"
+        ),
     ),
 }
 WIP_SUBJECT = re.compile(
-    r"^(wip\b|work in progress|fixup!|squash!|tmp\b|temp\b|\.+$|asdf|stuff$|misc$|update$"
-    r"|changes?$|fix$|test$)",
+    (
+        r"^(wip\b|work in progress|fixup!|squash!|tmp\b|temp\b|\.+$|asdf|stuff$|misc$|update$"
+        r"|changes?$|fix$|test$)"
+    ),
     re.IGNORECASE,
 )
 OPERATIONS = {
@@ -90,14 +120,42 @@ def redact(text: str) -> str:
     return SECRET_VALUE.sub("[REDACTED]", text)
 
 
+def json_object(value: object) -> Json | None:
+    """Return value as a JSON object, or None for any other value."""
+    if isinstance(value, dict):
+        return cast("Json", value)  # a JSON object holds string keys and decoded values
+    return None
+
+
+def json_array(value: object) -> list[object] | None:
+    """Return value as a JSON array, or None for any other value."""
+    if isinstance(value, list):
+        return cast("list[object]", value)  # a JSON array holds decoded values of any type
+    return None
+
+
+def as_json(value: object) -> Json:
+    """Return value as a JSON object, or an empty one for any other value."""
+    found = json_object(value)
+    return {} if found is None else found
+
+
+def as_list(value: object) -> list[object]:
+    """Return value as a JSON array, or an empty list for any other value."""
+    found = json_array(value)
+    return [] if found is None else found
+
+
 def redact_value(value: object) -> object:
     """Redact every string nested in inventory data."""
     if isinstance(value, str):
         return redact(value)
-    if isinstance(value, dict):
-        return redact_json(value)
-    if isinstance(value, list):
-        return [redact_value(item) for item in value]
+    as_object = json_object(value)
+    if as_object is not None:
+        return redact_json(as_object)
+    as_array = json_array(value)
+    if as_array is not None:
+        return [redact_value(item) for item in as_array]
     return value
 
 
@@ -116,7 +174,7 @@ class Repo:
 
     def __init__(self, path: str) -> None:
         """Remember the directory every Git call runs in."""
-        self.path = path
+        self.path: str = path
         self.scratch: str | None = None
         self.errors: list[Json] = []
 
@@ -140,7 +198,7 @@ class Repo:
         except OSError:
             return self.failed(args, 127), ""
         if done.returncode >= FAILURE_CODE:
-            self.failed(args, done.returncode)
+            _ = self.failed(args, done.returncode)
         return done.returncode, done.stdout.decode("utf-8", "replace").rstrip("\n")
 
     def failed(self, args: tuple[str, ...], code: int) -> int:
@@ -363,10 +421,8 @@ def deep_detail(repo: Repo, ref: str, base: str, ahead: int, behind: int) -> Jso
 
 def signals_of(entry: Json, stale_after: float) -> list[str]:
     """Name the facts about a branch that matter for the cleanup decision."""
-    detail = entry.get("vs_base")
-    detail = detail if isinstance(detail, dict) else {}
-    preview = detail.get("merge_preview")
-    preview = preview if isinstance(preview, dict) else {}
+    detail = as_json(entry.get("vs_base"))
+    preview = as_json(detail.get("merge_preview"))
     checks = (
         (detail.get("merged"), "merged-into-base"),
         (preview.get("no_net_change"), "no-net-change-vs-base"),
@@ -601,7 +657,7 @@ def base_check(base: str | None, remotes: Json, live: Json | None) -> Json:
         "matches_live_default": None,
     }
     entry = live.get(remote) if live and remote else None
-    default = entry.get("default_branch") if isinstance(entry, dict) else None
+    default = as_json(entry).get("default_branch")
     if default:
         report["live_default"] = f"{remote}/{default}"
         report["matches_live_default"] = base == f"{remote}/{default}"
@@ -639,32 +695,30 @@ def live_remotes(repo: Repo, remotes: Json) -> Json:
 
 def summarize(data: Json) -> Json:
     """Reduce the inventory to the counts that show where to look first."""
-    branches = data.get("branches")
-    entries = branches.get("branches", []) if isinstance(branches, dict) else []
+    branches = as_json(data.get("branches"))
+    entries = as_list(branches.get("branches", []))
     signal_counts: dict[str, int] = {}
     for entry in entries:
-        for signal in entry.get("signals", []) if isinstance(entry, dict) else []:
-            signal_counts[signal] = signal_counts.get(signal, 0) + 1
-    worktrees = data.get("worktrees")
-    stashes = data.get("stashes")
-    errors = data.get("errors")
-    check = data.get("base_check")
+        for signal in as_list(as_json(entry).get("signals", [])):
+            label = str(signal)
+            signal_counts[label] = signal_counts.get(label, 0) + 1
+    worktrees = as_list(data.get("worktrees"))
+    stashes = as_list(data.get("stashes"))
+    errors = as_list(data.get("errors"))
     return {
         "output_sections": sorted(data),
-        "base_check": check if isinstance(check, dict) else None,
+        "base_check": json_object(data.get("base_check")),
         "branch_count": len(entries),
         "branch_signals": signal_counts,
-        "detail_truncated": bool(isinstance(branches, dict) and branches.get("detail_truncated")),
-        "worktrees": len(worktrees) if isinstance(worktrees, list) else 0,
-        "missing_worktree_paths": sum(
-            1 for w in (worktrees if isinstance(worktrees, list) else []) if not w.get("exists")
-        ),
-        "stashes": len(stashes) if isinstance(stashes, list) else 0,
-        "failed_git_calls": len(errors) if isinstance(errors, list) else 0,
+        "detail_truncated": bool(branches.get("detail_truncated")),
+        "worktrees": len(worktrees),
+        "missing_worktree_paths": sum(1 for w in worktrees if not as_json(w).get("exists")),
+        "stashes": len(stashes),
+        "failed_git_calls": len(errors),
     }
 
 
-def build(repo: Repo, args: argparse.Namespace) -> Json:
+def build(repo: Repo, args: Options) -> Json:
     """Run every section and return the inventory."""
     root = repo.out("rev-parse", "--show-toplevel") or args.repo
     context = context_of(repo, root)
@@ -683,66 +737,89 @@ def build(repo: Repo, args: argparse.Namespace) -> Json:
         "reflog": reflog_of(repo),
         "errors": repo.errors,
     }
-    remotes = context.get("remotes")
-    remotes = remotes if isinstance(remotes, dict) else {}
+    remotes = as_json(context.get("remotes"))
     if args.ls_remote:
         data["remote_live"] = live_remotes(repo, remotes)
-    live = data.get("remote_live")
-    data["base_check"] = base_check(base, remotes, live if isinstance(live, dict) else None)
+    data["base_check"] = base_check(base, remotes, json_object(data.get("remote_live")))
     return data
 
 
 def parser() -> argparse.ArgumentParser:
     """Return the command-line parser."""
     cli = argparse.ArgumentParser(description="Read-only Git repository inventory (JSON).")
-    cli.add_argument("--repo", default=".", help="repository directory (default: current)")
-    cli.add_argument("--base", help="branch to compare against (default: origin/main, main)")
-    cli.add_argument(
-        "--detail-limit", type=int, default=500, help="max branches to measure in depth"
+    _ = cli.add_argument(
+        "--repo", default=Options.repo, help="repository directory (default: current)"
     )
-    cli.add_argument("--time-budget", type=float, default=60.0, help="seconds for the deep phase")
-    cli.add_argument(
+    _ = cli.add_argument("--base", help="branch to compare against (default: origin/main, main)")
+    _ = cli.add_argument(
+        "--detail-limit",
+        type=int,
+        default=Options.detail_limit,
+        help="max branches to measure in depth",
+    )
+    _ = cli.add_argument(
+        "--time-budget",
+        type=float,
+        default=Options.time_budget,
+        help="seconds for the deep phase",
+    )
+    _ = cli.add_argument(
         "--signal", help="with --section branches: keep only branches with this signal"
     )
-    cli.add_argument("--limit", type=int, help="with --section branches: keep only N branches")
-    cli.add_argument(
-        "--offset", type=int, default=0, help="with --section branches: skip the first N"
+    _ = cli.add_argument("--limit", type=int, help="with --section branches: keep only N branches")
+    _ = cli.add_argument(
+        "--offset",
+        type=int,
+        default=Options.offset,
+        help="with --section branches: skip the first N",
     )
-    cli.add_argument("--ls-remote", action="store_true", help="also query the remotes (read-only)")
-    cli.add_argument("--out", help="write the full JSON here and print only a summary")
-    cli.add_argument("--from", dest="source", help="read a saved inventory instead of scanning")
-    cli.add_argument("--section", help="print only this section (with --from, or after a scan)")
+    _ = cli.add_argument(
+        "--ls-remote", action="store_true", help="also query the remotes (read-only)"
+    )
+    _ = cli.add_argument("--out", help="write the full JSON here and print only a summary")
+    _ = cli.add_argument("--from", dest="source", help="read a saved inventory instead of scanning")
+    _ = cli.add_argument("--section", help="print only this section (with --from, or after a scan)")
     return cli
 
 
-def select(data: Json, args: argparse.Namespace) -> object:
+def select(data: Json, args: Options) -> object:
     """Pick the section to print, filtering the branches by signal and count when asked."""
-    shown = data.get(args.section) if args.section else data
-    if args.section == "branches" and isinstance(shown, dict):
-        entries = [e for e in shown.get("branches", []) if isinstance(e, dict)]
-        if args.signal:
-            entries = [e for e in entries if args.signal in e.get("signals", [])]
-        matching = len(entries)
-        page = entries[args.offset :]
-        shown = {**shown, "branches": page[: args.limit] if args.limit else page}
-        shown["matching_branches"] = matching
-    return shown
+    if not args.section:
+        return data
+    shown = data.get(args.section)
+    section = json_object(shown)
+    if args.section != "branches" or section is None:
+        return shown
+    found = (json_object(item) for item in as_list(section.get("branches", [])))
+    entries = [entry for entry in found if entry is not None]
+    if args.signal:
+        entries = [e for e in entries if args.signal in as_list(e.get("signals", []))]
+    page = entries[args.offset :]
+    return {
+        **section,
+        "branches": page[: args.limit] if args.limit else page,
+        "matching_branches": len(entries),
+    }
 
 
 def report_error(message: str) -> int:
     """Print a problem as JSON and exit 0, so the result reaches Claude uncut."""
-    sys.stdout.write(json.dumps({"error": message}) + "\n")
+    _ = sys.stdout.write(json.dumps({"error": message}) + "\n")
     return 0
 
 
 def main() -> int:
     """Run the inventory; report problems inside the JSON and exit 0 once it printed."""
-    args = parser().parse_args()
+    args = parser().parse_args(namespace=Options())
     if args.source:
         try:
-            data: Json = json.loads(Path(args.source).read_text(encoding="utf-8"))
+            loaded = _decode(Path(args.source).read_text(encoding="utf-8"))
         except (OSError, ValueError) as problem:
             return report_error(f"cannot read the saved inventory {args.source}: {problem}")
+        saved = json_object(loaded)
+        if saved is None:
+            return report_error(f"the saved inventory {args.source} is not a JSON object")
+        data = saved
     else:
         repo = Repo(args.repo)
         if not repo.ok("rev-parse", "--git-dir"):
@@ -754,7 +831,7 @@ def main() -> int:
     data = redact_json(data)
     if args.out and not args.source:
         try:
-            Path(args.out).write_text(json.dumps(data, indent=1), encoding="utf-8")
+            _ = Path(args.out).write_text(json.dumps(data, indent=1), encoding="utf-8")
         except OSError as problem:
             return report_error(f"cannot write the inventory to {args.out}: {problem}")
         shown: object = (
@@ -762,7 +839,7 @@ def main() -> int:
         )
     else:
         shown = select(data, args)
-    sys.stdout.write(json.dumps(shown, indent=1) + "\n")
+    _ = sys.stdout.write(json.dumps(shown, indent=1) + "\n")
     return 0
 
 

@@ -6,6 +6,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+### Fixed
+
+- `git-cleanup` inventory: `--from` with a saved file that is not a JSON object now reports a JSON error and exits 0, instead of ending with a traceback.
+
 ## [0.1.0] - 2026-10-15
 
 ### Added
