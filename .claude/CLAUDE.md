@@ -59,10 +59,6 @@ docs/                      user guides (users)
 - `npm ci --ignore-scripts --prefix plugins/typescript7-lsp-intelligence` - Run when the clone is new, before the script tests.
 - For all other commands, read `.github/scripts/` and `.github/workflows/validate.yml`.
 
-## Rules
-
-- Add a line to this file only when Claude makes the same mistake twice, or Nery repeats a correction from an earlier session.
-
 ## How Claude Works With Nery
 
 ### Session Start
