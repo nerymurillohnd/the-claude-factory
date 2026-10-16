@@ -62,8 +62,25 @@ export const SEMVER =
   /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/
 export const KEBAB = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
 
-/** Plugin-name prefixes and words Claude Code rejects as passing for Anthropic's own (manifest reference). */
-export const RESERVED_NAME = /^(claude|anthropics?|cc-plugin)(-|$)|^claude-code$|^claude-mods$/
+const ANTHROPIC_WORD = 'claude|anthropics?'
+const SEPARATOR = '[^a-z0-9]'
+
+/**
+ * Plugin names `claude plugin validate` reports as errors for passing as Anthropic's own
+ * (manifest reference, "name"). The official check ignores case and treats a run of separators
+ * as one: a name starting with claude-, anthropic-, anthropics- or cc-plugin-, a name that is
+ * just claude, anthropic or anthropics, or `official` beside claude, anthropic or anthropics.
+ * (A whole word elsewhere, such as mcp-for-claude, is only a warning there.)
+ */
+export const RESERVED_NAME = new RegExp(
+  [
+    `^(?:${ANTHROPIC_WORD}|cc${SEPARATOR}+plugin)${SEPARATOR}`,
+    `^(?:${ANTHROPIC_WORD})$`,
+    `(?:^|${SEPARATOR})official${SEPARATOR}+(?:${ANTHROPIC_WORD})(?:${SEPARATOR}|$)`,
+    `(?:^|${SEPARATOR})(?:${ANTHROPIC_WORD})${SEPARATOR}+official(?:${SEPARATOR}|$)`,
+  ].join('|'),
+  'i',
+)
 
 /** README sections every plugin must keep (matched on heading text, emoji-insensitive). */
 export const REQUIRED_PLUGIN_SECTIONS = [
