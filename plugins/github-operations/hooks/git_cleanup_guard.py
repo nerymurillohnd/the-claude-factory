@@ -91,7 +91,8 @@ PATCH_FLAGS = frozenset(
 PATCH_PREFIXES = ("-L", "-U", "--unified", "--word-diff", "--color-words")
 SEARCH_TOOLS = frozenset({"grep", "egrep", "fgrep", "rg", "ag", "sed", "awk"})
 SECRET_VARIABLE = re.compile(
-    r"\$\{?\w*(token|secret|passw|api_?key|credential|private_?key)", re.IGNORECASE
+    r"\$\{?(?:\w*(?:token|secret|passw|api_?key|credential|private_?key)|(?:\w*_)?pat\b)",
+    re.IGNORECASE,
 )
 ENV_PRINTERS = frozenset({"export", "declare", "typeset", "set", "env"})
 WRITE_TOOLS = frozenset({"Write", "Edit", "NotebookEdit"})
