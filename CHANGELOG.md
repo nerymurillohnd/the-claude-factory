@@ -4,6 +4,13 @@ All notable changes to **The Claude Factory** marketplace are documented here: p
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The marketplace has no version of its own: entries are grouped by date, newest first, and every plugin carries its own version, changelog and tag. The versions 0.1.0 and 0.2.0 below are the history from before that change; their tags stay.
 
+## 2026-10-17
+
+### Changed
+
+- **bash-lsp-intelligence** 0.2.1 — the skill stops offering operations bash-language-server does not support, and the hook's types and docs are tightened with the same behavior.
+- **python-lsp-intelligence** 0.2.1 — the skill again says a finding is fixed at its cause and never silenced, and the docs now say how basedpyright finds its configuration.
+
 ## 2026-10-16
 
 ### Changed
