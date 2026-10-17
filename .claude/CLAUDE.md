@@ -29,6 +29,7 @@
 
 ## Commands
 
+- For the gate commands, read `.claude/rules/QUALITY_GATE.md`.
 - For all other commands, read `.github/scripts/` and `.github/workflows/validate.yml`.
 
 ## Project Gates
@@ -38,7 +39,7 @@ The gates live in `.claude/rules/`.
 - Quality Gate: per-file and pre-push checks.
 - GitHub Gate: PRs, labels, commits, pushes.
 - Maintenance Gate: docs kept in sync.
-- Plugin Gate: sets how plugins are built, portable and distributed, how evals are requested and how versions are bumped.
+- Plugin Gate: sets how plugins are built, portable and distributed, and how evals are requested.
 - Releases: verified after each plugin merge.
 - Skill Gate: sets how a skill references its own files and files outside it.
 - Stage rules: authoring, user-docs style and versioning, each scoped to the paths it governs.
