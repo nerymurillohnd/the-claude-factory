@@ -11,7 +11,7 @@
 - Public plugin marketplace at `github.com/nerymurillohnd/the-claude-factory`, for users and developers who run their projects and operations with Claude Code.
 - Plugins only: Claude Code plugins, built for Cowork too where they apply.
 - Built on Nery's Mac in the local clone; served to users from the remote repository.
-- Nery and Claude are the only maintainers: no third party or team develops, operates or maintains it.
+- No third party or team develops, operates or maintains it.
 - Users contribute through issues.
 
 ## Purpose
@@ -22,10 +22,9 @@
 
 - No build step and no runtime to maintain: no root `package.json`, `pyproject.toml` or virtual environment.
 - Node and npm: via nvm; `.nvmrc` sets the CI Node.
-- Python, plus the uv tools `ruff` and `basedpyright`: via uv.
+- Python, ruff and basedpyright: via uv. `ruff.toml` is Nery's strict config and the only ruff config in the repo.
 - `shfmt`, `shellcheck` and `actionlint`: Homebrew formulas.
 - Biome and markdownlint-cli2: governed by `biome.json` and `.markdownlint-cli2.jsonc`.
-- ruff: governed by `ruff.toml`, Nery's strict config and the only ruff config in the repo.
 - TypeScript: `tsconfig.base.json`, `plugins/tsconfig.json` and `.github/scripts/tsconfig.json` type-check the `.mjs` files with the pinned `tsc`.
 
 ## Commands
@@ -36,11 +35,11 @@
 
 The gates live in `.claude/rules/`.
 
-- Quality Gate: runs the per-file checks after editing `.py`, `.mjs` and `.sh` files and the full command list before every push, and allows no progress while an issue is open.
-- GitHub Gate: governs PRs, labels, staging, commits, pushes and the PR review loop up to ready to merge.
-- Maintenance Gate: keeps READMEs, changelogs and the other docs current, consistent and in sync with the code.
+- Quality Gate: per-file and pre-push checks.
+- GitHub Gate: PRs, labels, commits, pushes.
+- Maintenance Gate: docs kept in sync.
 - Plugin Gate: sets how plugins are built, portable and distributed, how evals are requested and how versions are bumped.
-- Releases: verifies the release right after a plugin PR with a version change merges.
+- Releases: verified after each plugin merge.
 - Skill Gate: sets how a skill references its own files and files outside it.
 - Stage rules: authoring, user-docs style and versioning, each scoped to the paths it governs.
 
@@ -50,14 +49,13 @@ The gates live in `.claude/rules/`.
 - Technical debt: log pending debt in `pending-debt.md` and move it to `resolved-debt.md` once verified, both in `.claude/maintainer/technical-debt/`.
 - Specs: write each design spec in `.claude/specs/`, named `YYYY-MM-DD-<topic>.md`. Git tracks them.
 - Plans: write each implementation plan in `.claude/plans/`, named `YYYY-MM-DD-<topic>.md`. Git ignores them.
-- `docs/`: the user guides, covering installation, managing plugins, compatibility, FAQ, troubleshooting and tool references. Maintainer notes never go there.
+- `docs/`: the user guides, covering installation, managing plugins, compatibility, FAQ, troubleshooting and tool references.
 - Root `README.md`, `CHANGELOG.md`, `SECURITY.md`, `SUPPORT.md`, `CONTRIBUTING.md` and `CODE_OF_CONDUCT.md`: the user-facing showcase and community files.
 
 ## How Claude Works With Nery
 
 ### Session Start
 
-- Read the hook's session check and `.claude/memory/MEMORY.md`.
 - List the decisions only Nery can settle.
 
 ### One Open Task At A Time
@@ -79,9 +77,7 @@ The gates live in `.claude/rules/`.
 
 ### Done
 
-- A plugin PR is ready to merge when every gate passes and `plugin-reviewer` left no confirmed finding.
-- It also needs `/test-installed-plugin` and a Claude app check (unless Claude Code-only).
-- Do not mark a plugin PR ready to merge short of that.
+- A plugin PR is ready to merge only when: every gate passes; `plugin-reviewer` left no confirmed finding; `/test-installed-plugin` and the Claude app check passed (unless Claude Code-only).
 
 ## Plugin Development
 
@@ -91,12 +87,8 @@ The gates live in `.claude/rules/`.
 - Keep the version in `plugin.json`. Never set `version` on a marketplace entry.
 - Change `displayName` to relabel a plugin.
 - After moving or creating files, delete `.DS_Store` files and orphaned cache directories.
-- Name each subagent when spawning it, so named subagents can exchange messages with `SendMessage`. Agent Teams are not required. After a restart or a compaction, address an agent by its ID.
-- Use a dynamic workflow to codify review and cross-check phases, such as agents reviewing each other's findings.
-- Do not rely on `skills:` in an agent definition for a teammate. A teammate loads skills from project and user settings.
 - Do not set `hooks` in the frontmatter of a plugin agent: it is ignored. Declare the hook in the plugin's `hooks/hooks.json`.
 - Test a hook in `settings.json` right after editing it: the file watcher loads it with no restart. A plugin hook needs `/reload-plugins`.
-- Design every plugin runtime for marketplace users, never for Nery's machine.
 - Resolve `node` and `tsc` across every Node manager: plugin hooks and LSP servers get no shell profile.
 - Set `"onFailure": "block"` on a check hook, so a broken hook never passes in silence.
 - Report a missing tool as a non-blocking `systemMessage` plus `additionalContext`, never as a silent pass.
@@ -122,10 +114,17 @@ The global rule decides when to delegate. These are the cases our work hits.
 - Git, PRs, `bump-version.mjs`, releases, `sync-labels.mjs` and every push.
 - Issue triage and replies, and fixes for confirmed findings in one plugin.
 
+### Agent Conventions
+
+- Name each subagent when spawning it, so named subagents can exchange messages with `SendMessage`.
+- Agent Teams are not required.
+- After a restart or a compaction, address an agent by its ID.
+- Use a dynamic workflow to codify review and cross-check phases, such as agents reviewing each other's findings.
+- Do not rely on `skills:` in an agent definition for a teammate. A teammate loads skills from project and user settings.
+
 ## Project Memory
 
 - `.claude/memory/MEMORY.md` indexes the project memory: one topic file per fact. Cross-project facts live in `~/.claude/memory/`.
 - Memory is gitignored: it lives on this Mac only, and cloud sessions do not see it.
 - Update `.claude/memory/` as the work happens, never only at the end of the session.
-- Keep memory factual and short: one fact per line, no duplication with this file, rules or code.
-- Delete stale lines instead of piling up corrections.
+- Keep each topic file to one short fact, with no duplication of this file, rules or code. Delete stale entries instead of piling up corrections.
