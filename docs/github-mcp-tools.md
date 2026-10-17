@@ -52,7 +52,7 @@ Create a [fine-grained token](https://github.com/settings/personal-access-tokens
 | `create_or_update_file` | Create or update file | Write | |
 | `push_files` | Push files to repository | Write | |
 | `delete_file` | Delete file | Write · deletes | |
-| `delete_repository` | Delete repository | Write · deletes | Listed only when your token allows it |
+| `delete_repository` | Delete repository | Write · deletes | A classic token hides it without the `delete_repo` scope; a fine-grained token lists it, and GitHub refuses the call without permission |
 | `star_repository` | Star repository | Write | Outside GitHub's default toolsets |
 | `unstar_repository` | Unstar repository | Write | Outside GitHub's default toolsets |
 | `list_starred_repositories` | List starred repositories | Read | Outside GitHub's default toolsets |

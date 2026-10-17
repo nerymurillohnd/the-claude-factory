@@ -82,7 +82,7 @@ This applies to:
 | `create_or_update_file` | `W` |
 | `push_files` | `W` |
 | `delete_file` | `W!` |
-| `delete_repository` | `W` |
+| `delete_repository` | `W!` |
 | `star_repository` | `W+` |
 | `unstar_repository` | `W+` |
 | `list_starred_repositories` | `R+` |
