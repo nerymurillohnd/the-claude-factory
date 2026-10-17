@@ -24,7 +24,7 @@ Lookup table for what to call in each phase. The shape of the loop, the tracker 
 
 - GitHub's MCP server groups operations behind one tool with a `method` parameter (`pull_request_read`, `pull_request_review_write`, `issue_write`). Do not assume a tool named after the operation exists.
 - Inspect the tools actually exposed in the session. If a tool or method below is missing, use the other layer for that operation, and report the gap only after both failed. Do not invent names or parameters.
-- For every task, use the preferred layer and its fallback, in both directions, as the tool matrix in `SKILL.md` lists. Workflow runs, logs, reruns and Dependabot alerts exist in the MCP only with all toolsets on, which is how the plugin connects; repository merge-method settings, auto-merge, merge queue entry and remote ref deletion exist only in `gh`.
+- For every task, use the preferred layer and its fallback, in both directions, as the tool matrix lists. Workflow runs, logs, reruns and Dependabot alerts exist in the MCP only with all toolsets on, which is how the plugin connects; repository merge-method settings, auto-merge, merge queue entry and remote ref deletion exist only in `gh`.
 
 ## 1. Scope
 
