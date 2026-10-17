@@ -29,3 +29,6 @@ __pycache__/
 .ruff_cache/
 .mypy_cache/
 eval-results/
+
+# Claude Code auto memory (machine-local)
+.claude/memory/

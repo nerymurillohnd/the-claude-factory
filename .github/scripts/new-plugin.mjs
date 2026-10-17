@@ -69,7 +69,7 @@ const displayName =
   values['display-name'] ??
   name
     .split('-')
-    .map((w) => w[0].toUpperCase() + w.slice(1))
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
     .join(' ')
 const profile = SURFACE_PROFILES[values['claude-code-only'] ? 'claude-code-only' : 'both']
 const vars = {

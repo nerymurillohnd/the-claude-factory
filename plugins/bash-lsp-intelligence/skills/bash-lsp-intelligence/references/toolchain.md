@@ -16,7 +16,7 @@
 | Platform | Commands |
 | :-- | :-- |
 | macOS | `brew install shfmt shellcheck` and `npm install -g bash-language-server` |
-| Debian / Ubuntu | `sudo apt install shellcheck`; shfmt from the release binary (`curl -sSfL -o /usr/local/bin/shfmt https://github.com/mvdan/sh/releases/download/v3.14.1/shfmt_v3.14.1_linux_amd64 && chmod 755 /usr/local/bin/shfmt`) or `go install mvdan.cc/sh/v3/cmd/shfmt@latest`; `npm install -g bash-language-server` |
+| Debian / Ubuntu | `sudo apt install shellcheck`; shfmt from the release binary for your architecture (`sudo curl -sSfL -o /usr/local/bin/shfmt "https://github.com/mvdan/sh/releases/download/v3.14.1/shfmt_v3.14.1_linux_$(dpkg --print-architecture)" && sudo chmod 755 /usr/local/bin/shfmt`) or `go install mvdan.cc/sh/v3/cmd/shfmt@v3.14.1`; `npm install -g bash-language-server` |
 | Windows | Git Bash with the same binaries on `PATH` |
 
 `which shfmt shellcheck bash-language-server` confirms they are on the `PATH` of the shell that starts Claude Code.
@@ -69,13 +69,13 @@ source-path=SCRIPTDIR
 | SC1091 | Sourced file not followed | `# shellcheck source=path/to/file` |
 | SC1071 | Unsupported dialect (zsh) | ShellCheck can't check it; use a zsh-aware tool or Bash |
 
-A suppression (`# shellcheck disable=SCnnnn`) is for a verified false positive only, on the line above, with a comment saying why.
+Fix a finding; do not suppress it with `# shellcheck disable=SCnnnn` to get a clean result. When you can show that a finding is a false positive, report it with the evidence and let the project owner decide.
 
 ## Check one file or the whole project
 
 ```bash
 shfmt -w path/to/script.sh && shellcheck path/to/script.sh
-shfmt -d . && shellcheck -x $(git ls-files '*.sh')
+shfmt -d . && git ls-files -z '*.sh' | xargs -0 shellcheck -x
 bash -n path/to/script.sh
 ```
 
@@ -87,7 +87,7 @@ bash -n path/to/script.sh
 
 ```bash
 shfmt -d .
-shellcheck -o all -S style -x -a -P SCRIPTDIR $(git ls-files '*.sh')
+git ls-files -z '*.sh' | xargs -0 shellcheck -o all -S style -x -a -P SCRIPTDIR
 ```
 
 Pin the versions (shfmt 3.14.1, ShellCheck 0.10 or later) so a release does not change the result.

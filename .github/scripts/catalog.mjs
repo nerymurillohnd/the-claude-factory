@@ -17,10 +17,20 @@ import {
   surfaceProfileKey,
 } from './lib.mjs'
 
+/**
+ * @param {string} name
+ * @returns {{ start: string, end: string }}
+ */
 function block(name) {
   return { start: `<!-- ${name}:start -->`, end: `<!-- ${name}:end -->` }
 }
 
+/**
+ * @param {string} text
+ * @param {string} name
+ * @param {string} content
+ * @returns {string}
+ */
 export function replaceBlock(text, name, content) {
   const { start, end } = block(name)
   const i = text.indexOf(start)
@@ -31,17 +41,24 @@ export function replaceBlock(text, name, content) {
   return `${text.slice(0, i + start.length)}\n${content}\n${text.slice(j)}`
 }
 
+/**
+ * @param {string | undefined} s
+ * @returns {string}
+ */
 function escapeCell(s) {
   return String(s ?? '')
     .replaceAll('|', '\\|')
     .replaceAll('\n', ' ')
 }
 
+/** @returns {string} */
 export function buildCatalog() {
   const marketplace = loadMarketplace()
   const categories = loadCategories()
   const entries = marketplace.plugins.map((entry) => {
+    /** @type {import('./lib.mjs').Manifest} */
     const manifest = loadManifest(entry.name) ?? {}
+    const profileKey = surfaceProfileKey(manifest.metadata?.surfaces)
     return {
       name: entry.name,
       displayName: entry.displayName ?? manifest.displayName ?? entry.name,
@@ -49,7 +66,7 @@ export function buildCatalog() {
       version: manifest.version ?? entry.version ?? '—',
       category: entry.category,
       components: componentBadges(detectComponents(entry.name)),
-      worksIn: SURFACE_PROFILES[surfaceProfileKey(manifest.metadata?.surfaces)]?.catalog ?? '—',
+      worksIn: profileKey === null ? '—' : SURFACE_PROFILES[profileKey].catalog,
     }
   })
 
@@ -61,6 +78,7 @@ export function buildCatalog() {
     ].join('\n')
   }
 
+  /** @type {string[]} */
   const out = []
   const used = categories.filter((c) => entries.some((e) => e.category === c.id))
 
@@ -90,7 +108,11 @@ export function buildCatalog() {
   return out.join('\n')
 }
 
-/** GitHub heading anchor: lowercase, drop punctuation/emoji, spaces → hyphens. */
+/**
+ * GitHub heading anchor: lowercase, drop punctuation/emoji, spaces → hyphens.
+ * @param {string} heading
+ * @returns {string}
+ */
 export function anchor(heading) {
   return heading
     .toLowerCase()
@@ -98,11 +120,16 @@ export function anchor(heading) {
     .replace(/\s/g, '-')
 }
 
+/** @returns {string} */
 export function buildCountBadge() {
   const n = loadMarketplace().plugins.length
   return `[![Plugins](https://img.shields.io/badge/plugins-${n}-D97757?style=for-the-badge)](#-catalog)`
 }
 
+/**
+ * @param {string} text
+ * @returns {string}
+ */
 export function renderReadme(text) {
   let next = replaceBlock(text, 'catalog', buildCatalog())
   next = replaceBlock(next, 'plugin-count', buildCountBadge())

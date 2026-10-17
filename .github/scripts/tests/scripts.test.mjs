@@ -21,6 +21,7 @@ import { afterEach, beforeEach, describe, test } from 'node:test'
 import { fileURLToPath } from 'node:url'
 
 const REAL_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..', '..')
+/** @type {string} */
 let root
 
 // The files a clone would hold: tracked plus new untracked ones, never git-ignored ones (such as a
@@ -57,6 +58,11 @@ function copyRepo() {
 }
 
 /** Run a script from the temp copy, so its own lib.mjs resolves ROOT to the temp copy. */
+/**
+ * @param {string} script
+ * @param {string[]} [args]
+ * @returns {{ code: number | null, out: string }}
+ */
 function run(script, args = []) {
   const r = spawnSync(process.execPath, [join(root, '.github', 'scripts', script), ...args], {
     cwd: root,
@@ -66,10 +72,21 @@ function run(script, args = []) {
   return { code: r.status, out: `${r.stdout}${r.stderr}` }
 }
 
+/** @param {string} p */
 const read = (p) => readFileSync(join(root, p), 'utf8')
+/**
+ * @param {string} p
+ * @param {string} s
+ */
 const write = (p, s) => writeFileSync(join(root, p), s)
+/** @param {string} p */
 const json = (p) => JSON.parse(read(p))
 
+/**
+ * @param {string} [name]
+ * @param {string} [category]
+ * @param {string[]} [extra]
+ */
 function scaffold(name = 'demo-tool', category = 'productivity', extra = []) {
   const r = run('new-plugin.mjs', [
     '--name',
@@ -83,7 +100,11 @@ function scaffold(name = 'demo-tool', category = 'productivity', extra = []) {
   assert.equal(r.code, 0, r.out)
 }
 
-/** Keep only the Compatibility rows whose text contains one of `keep`. */
+/**
+ * Keep only the Compatibility rows whose text contains one of `keep`.
+ * @param {string} name
+ * @param {string[]} keep
+ */
 function pruneCompat(name, keep) {
   const p = `plugins/${name}/README.md`
   const text = read(p)
@@ -265,6 +286,7 @@ describe('check-repo', () => {
   })
 
   test('in a git checkout, counts tracked and new files but never git-ignored or deleted ones', () => {
+    /** @param {...string} args */
     const git = (...args) => execFileSync('git', ['-C', root, ...args], { stdio: 'ignore' })
     git('init', '-q')
     write('plugins/skill-diagnostics/gone.md', 'x')
@@ -400,6 +422,7 @@ describe('bump-version', () => {
 })
 
 describe('check-version-bump', () => {
+  /** @param {...string} args */
   const git = (...args) => execFileSync('git', args, { cwd: root, encoding: 'utf8' })
   function initRepo() {
     git('init', '-q', '-b', 'main')
@@ -443,12 +466,128 @@ describe('check-version-bump', () => {
   })
 })
 
-describe('eval-targets', () => {
+describe('version-bump-gate hook', () => {
+  /**
+   * Run the standalone hook script the way Claude Code does: by its path, the event on stdin.
+   * @param {string} input
+   */
+  const hookWith = (input) => {
+    const r = spawnSync(join(root, '.claude', 'hooks', 'version-bump-gate.sh'), {
+      cwd: root,
+      encoding: 'utf8',
+      env: { ...process.env, CLAUDE_PROJECT_DIR: root },
+      input,
+    })
+    return { code: r.status, out: `${r.stdout}${r.stderr}` }
+  }
+  const hook = (command = 'git push origin feat/demo') =>
+    hookWith(JSON.stringify({ tool_name: 'Bash', tool_input: { command } }))
+  /** @param {...string} args */
+  /** @param {...string} args */
   const git = (...args) => execFileSync('git', args, { cwd: root, encoding: 'utf8' })
+  function initRepo(withOrigin = true) {
+    git('init', '-q', '-b', 'main')
+    git('config', 'user.email', 'test@example.com')
+    git('config', 'user.name', 'Test')
+    git('add', '-A')
+    git('commit', '-qm', 'base')
+    if (withOrigin) {
+      git('update-ref', 'refs/remotes/origin/main', 'HEAD')
+    }
+  }
+  function addSkill() {
+    mkdirSync(join(root, 'plugins/demo-tool/skills/demo'), { recursive: true })
+    write('plugins/demo-tool/skills/demo/SKILL.md', '---\ndescription: Demo.\n---\nDo it.\n')
+    git('add', '-A')
+    git('commit', '-qm', 'change')
+  }
+
+  test('denies the push while a changed plugin has no version bump', () => {
+    scaffold()
+    initRepo()
+    addSkill()
+    const r = hook()
+    assert.equal(r.code, 0, r.out)
+    const { hookSpecificOutput: out } = JSON.parse(r.out)
+    assert.equal(out.hookEventName, 'PreToolUse')
+    assert.equal(out.permissionDecision, 'deny')
+    assert.match(out.permissionDecisionReason, /bump-version\.mjs demo-tool <level>/)
+    assert.match(out.permissionDecisionReason, /major: breaking/)
+  })
+
+  test('lets the push through once the plugin is bumped', () => {
+    scaffold()
+    initRepo()
+    addSkill()
+    const p = 'plugins/demo-tool/CHANGELOG.md'
+    write(
+      p,
+      read(p).replace('## [Unreleased]\n', '## [Unreleased]\n\n### Added\n\n- Demo skill.\n'),
+    )
+    assert.equal(run('bump-version.mjs', ['demo-tool', 'minor']).code, 0)
+    git('add', '-A')
+    git('commit', '-qm', 'bump')
+    const r = hook()
+    assert.equal(r.code, 0, r.out)
+    assert.equal(r.out, '')
+  })
+
+  test('lets the push through for README-only edits', () => {
+    scaffold()
+    initRepo()
+    write('plugins/demo-tool/README.md', `${read('plugins/demo-tool/README.md')}\nMore docs.\n`)
+    git('commit', '-qam', 'docs')
+    const r = hook()
+    assert.equal(r.code, 0, r.out)
+    assert.equal(r.out, '')
+  })
+
+  test('denies every spelling of a push and only a push', () => {
+    scaffold()
+    initRepo()
+    addSkill()
+    const denied = [
+      'git push',
+      'git push --force-with-lease origin feat/demo',
+      'FOO=1 git -C . push origin feat/demo',
+      'git status && git -c core.editor=true push',
+      'npm test; git push origin main',
+    ]
+    for (const command of denied) {
+      assert.match(hook(command).out, /"permissionDecision":"deny"/, command)
+    }
+    const allowed = [
+      'git status',
+      'git log --grep push',
+      'echo $(npm root -g)',
+      'echo git push',
+      'gh pr view 3 --json reviews',
+    ]
+    for (const command of allowed) {
+      assert.equal(hook(command).out, '', command)
+    }
+    assert.equal(hookWith('not json').out, '')
+  })
+
+  test('lets the push through when origin/main does not exist', () => {
+    scaffold()
+    initRepo(false)
+    addSkill()
+    const r = hook()
+    assert.equal(r.code, 0, r.out)
+    assert.equal(r.out, '')
+  })
+})
+
+describe('eval-targets', () => {
+  /** @param {...string} args */
+  const git = (...args) => execFileSync('git', args, { cwd: root, encoding: 'utf8' })
+  /** @param {string} name */
   const touchManifest = (name) => {
     const p = `plugins/${name}/.claude-plugin/plugin.json`
     write(p, `${read(p).trimEnd()}\n\n`)
   }
+  /** @param {string} message */
   function commitAll(message) {
     git('add', '-A')
     git('commit', '-qm', message)
@@ -508,6 +647,11 @@ describe('eval-targets', () => {
 })
 
 describe('portability rules', () => {
+  /**
+   * @param {string} path
+   * @param {number} [size]
+   * @param {boolean} [symlink]
+   */
   const entry = (path, size = 10, symlink = false) => ({ path, size, symlink })
 
   test('flag names Windows or macOS cannot hold, and case-only duplicates', async () => {

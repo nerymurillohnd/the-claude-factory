@@ -9,7 +9,7 @@ repos:
         additional_dependencies: ["@biomejs/biome@2.5.15"]
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.17.0
+    rev: v0.17.1
     hooks:
       - id: ruff-check
         types_or: [python, pyi]
@@ -40,4 +40,20 @@ repos:
         language: unsupported
         types: [shell]
         exclude_types: [zsh, csh, tcsh]
+        require_serial: true
+
+      - id: tsc-showconfig
+        name: TypeScript config resolves
+        entry: npx --yes --package typescript@6.0.3 tsc -p plugins/tsconfig.json --showConfig
+        language: unsupported
+        files: ^(plugins/tsconfig\.json|tsconfig\.base\.json)$
+        pass_filenames: false
+        require_serial: true
+
+      - id: tsc-noemit
+        name: TypeScript type-check
+        entry: sh -c 'exec npx --yes --package typescript@6.0.3 tsc -p plugins/tsconfig.json --noEmit --typeRoots "$(npm root -g)/@types"'
+        language: unsupported
+        files: ^(plugins/.*\.mjs|plugins/tsconfig\.json|tsconfig\.base\.json)$
+        pass_filenames: false
         require_serial: true

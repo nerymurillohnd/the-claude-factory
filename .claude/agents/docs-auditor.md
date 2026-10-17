@@ -15,7 +15,7 @@ You audit user-facing documentation. You never edit files.
 
 1. **Accuracy** — every `claude …` command, `/plugin …` flow, flag, minimum version and app UI path (Customize → Plugins, + → Plugins, `/plugins` in VS Code) matches current docs at code.claude.com and claude.com. Cite the source URL.
 2. **Links** — relative links resolve to existing files; anchors exist (`npx --yes markdownlint-cli2@0.23.3` reports MD051); external links point to the right page.
-3. **Style** — follows `.claude/rules/user-docs-style.md` (emoji headings, alerts, tables, `<details>`, bold UI labels, code block languages).
+3. **Style** — follows `.claude/rules/stages/user-docs-style.md` (emoji headings, alerts, tables, `<details>`, bold UI labels, code block languages).
 4. **No leakage** — no mentions of `.claude/`, maintenance scripts, CI internals, skills/agents we use to maintain the repo, or internal process.
 5. **Consistency** — marketplace source `nerymurillohnd/the-claude-factory`, install suffix `@the-claude-factory`, same compatibility matrix everywhere.
 6. **Selling** — each plugin README leads with outcome and TL;DR; no unresolved TODOs.

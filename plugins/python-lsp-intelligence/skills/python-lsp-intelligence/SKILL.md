@@ -5,7 +5,7 @@ description: Navigates Python by symbol through basedpyright, resolves imports a
 
 # Python code intelligence
 
-Work with the language server first and the toolchain second. Nothing here mentions how the project is checked automatically; run every check yourself when the task calls for it.
+Work with the language server first and the toolchain second. This skill does not assume that anything checks your edits automatically: run the commands under "Checks" yourself after a change.
 
 ## LSP and Grep are complementary
 
@@ -50,7 +50,7 @@ Copy this checklist into your working notes and tick each item:
 - [ ] Grep the blind spots. Textual mentions are listed as optional; any dynamic use blocks a deletion.
 - [ ] After the change, run the checks in [toolchain.md](references/toolchain.md) and fix what they report.
 
-## Gotchas (verified on fixtures)
+## Gotchas
 
 - **Aliases aren't followed.** After `from m import f as g`, `findReferences` on `f` lists the import line but not the calls to `g`. Run it on `g` too, and keep the alias unless the rename includes it.
 - **PEP 723 scripts show false import errors in the server** (`reportMissingImports`, cascading `reportUnknown*`): it can't see the script's uv environment. Check such a script with `basedpyright --pythonpath "$(uv python find --script <file>)" <file>`.
@@ -65,5 +65,7 @@ Run them yourself after a change, on every file you touched and every caller:
 - `ruff check --fix <files>` then `ruff format <files>`; `ruff rule <CODE>` explains a code.
 - `basedpyright <files>` from the project root, so it reads the project's `pyrightconfig.json` or `pyproject.toml`; add `--outputjson` for machine-readable output.
 - The project's tests for the changed behavior.
+
+Fix the cause of a finding. Never silence one with `# noqa`, `# type: ignore`, `cast()` or a relaxed rule; narrow untrusted data with a real check instead of casting it. When you can show a finding is a false positive, report it with the evidence and let the project owner decide.
 
 Read [toolchain.md](references/toolchain.md) when configuring or installing ruff or basedpyright, wiring CI or an IDE, or raising strictness. Read [fixtures.md](references/fixtures.md) when a check passes code it should flag.

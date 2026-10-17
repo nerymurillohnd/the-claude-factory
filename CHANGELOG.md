@@ -4,6 +4,26 @@ All notable changes to **The Claude Factory** marketplace are documented here: p
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The marketplace has no version of its own: entries are grouped by date, newest first, and every plugin carries its own version, changelog and tag. The versions 0.1.0 and 0.2.0 below are the history from before that change; their tags stay.
 
+## 2026-10-17
+
+### Changed
+
+- **bash-lsp-intelligence** 0.2.1 — the skill stops offering operations bash-language-server does not support, and the hook's types and docs are tightened with the same behavior.
+- **python-lsp-intelligence** 0.2.1 — the skill again says a finding is fixed at its cause and never silenced, and the docs now say how basedpyright finds its configuration.
+
+## 2026-10-16
+
+### Changed
+
+- **typescript6-lsp-intelligence** 0.2.0 — uses your own TypeScript 6 and language server instead of pinned copies; a Bash hook holds every edit to a strictest policy with your project's environment and finds `tsc` across Node version managers; the skill is now `ts-lifecycle`; a compiler crash or a project `noCheck` can no longer pass as checked.
+- **typescript7-lsp-intelligence** 0.3.0 — uses your own TypeScript 7 instead of a pinned copy; a Bash hook runs the native compiler without Node.js and holds every edit to a strictest policy with your project's environment; the skill is now `ts-lifecycle`, shared with the TypeScript 6 plugin; a compiler crash or a project `noCheck` can no longer pass as checked.
+
+## 2026-10-15
+
+### Removed
+
+- **git-hygiene** retired: its cleanup is now the `git-cleanup` skill of **github-operations**, and the marketplace renames existing installs. Type `/github-operations:git-cleanup` where you typed `/git-hygiene:cleanup`.
+
 ## 2026-10-14
 
 ### Added

@@ -130,7 +130,7 @@ The hook runs the tools the way you would from a terminal, so **your configurati
 | Tool | What it reads | When you have none |
 | :-- | :-- | :-- |
 | ruff | The closest `ruff.toml`, `.ruff.toml` or `pyproject.toml` with `[tool.ruff]` above the file, then your user-level `~/.config/ruff/ruff.toml` | The plugin's `hooks/defaults/ruff.toml`: `select = ["ALL"]` with the formatter- and basedpyright-owned rules ignored, 100-column lines |
-| basedpyright | The nearest `pyrightconfig.json`, or `pyproject.toml` with `[tool.basedpyright]`, above the file (passed with `-p`, since basedpyright's own lookup only sees the current directory) | The plugin's `hooks/defaults/pyrightconfig.json` (`recommended` mode with `failOnWarnings`, strict inference and the `report*` rules that complement the ruff ignores), bound to your project for that run: its root (the nearest `pyproject.toml`, `setup.py`, `setup.cfg`, `requirements.txt` or `.git` above the file) and `src/` are the import roots, and a `.venv` there is used when present |
+| basedpyright | The nearest `pyrightconfig.json`, or `pyproject.toml` with `[tool.basedpyright]`, above the file (passed with `-p`, since basedpyright's own lookup starts at the current directory, not at the file) | The plugin's `hooks/defaults/pyrightconfig.json` (`recommended` mode with `failOnWarnings`, strict inference and the `report*` rules that complement the ruff ignores), bound to your project for that run: its root (the nearest `pyproject.toml`, `setup.py`, `setup.cfg`, `requirements.txt` or `.git` above the file) and `src/` are the import roots, and a `.venv` there is used when present |
 
 Any configuration file of your own replaces the corresponding default entirely; the plugin never creates or edits one.
 

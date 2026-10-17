@@ -6,6 +6,21 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-10-17
+
+### Changed
+
+- Post-edit hook: `hooks/check.mjs` carries JSDoc types and passes `tsc` under the repository's strict profile; its behavior is unchanged.
+
+### Fixed
+
+- `bash-lsp-intelligence` skill: the routing table no longer offers `prepareCallHierarchy` and `goToImplementation`, which bash-language-server does not support; callers come from `findReferences` and callees from reading the body.
+- `bash-lsp-intelligence` skill: the Checks section gives the post-edit hook's defaults (`shfmt -i 2 -ci -bn`, `shellcheck -o all -S style -x -a -P SCRIPTDIR`) for projects without configuration, so a manual run matches the hook.
+- `bash-lsp-intelligence` skill: the Gotchas heading no longer claims every gotcha was verified on fixtures.
+- `bash-lsp-intelligence` skill: the impact checklist points to the Checks section instead of `toolchain.md`, and the fixtures pointer names the `references/fixtures/` folder.
+- Toolchain reference: shfmt installs pin v3.14.1 (the `go install` form no longer says `@latest`) and pick the release binary for the machine's architecture; the project-wide examples quote file names with `git ls-files -z | xargs -0`; the suppression note matches the hook, which asks for findings to be fixed, not suppressed.
+- README: the requirement is Node.js 20 or later, which bash-language-server itself needs; it also runs the hook.
+
 ## [0.2.0] - 2026-10-13
 
 ### Added
@@ -28,6 +43,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - `bash-lsp-intelligence` skill: navigates shell code with the language server; traces direct and transitive `source` chains before trusting same-named functions; respects the script's real dialect; fixes ShellCheck and shfmt findings without changing quoting, globbing or exit-status behavior; and reports each check's status, the scripts covered and what stayed unverified.
 - Optional controls: a bundled runner checks ShellCheck and shfmt against known control files in a temporary folder, without running them or installing anything.
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/bash-lsp-intelligence--v0.2.0...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/bash-lsp-intelligence--v0.2.1...HEAD
+[0.2.1]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/bash-lsp-intelligence--v0.2.1
 [0.2.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/bash-lsp-intelligence--v0.2.0
 [0.1.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/bash-lsp-intelligence--v0.1.0

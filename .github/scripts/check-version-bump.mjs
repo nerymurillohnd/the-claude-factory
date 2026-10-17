@@ -20,25 +20,38 @@ import {
 
 const DOC_ONLY = new Set(['README.md'])
 
+/**
+ * @param {string[]} args
+ * @returns {string}
+ */
 function git(args) {
   return execFileSync('git', args, { cwd: ROOT, encoding: 'utf8' }).trim()
 }
 
+/**
+ * @param {string} base
+ * @returns {{ errors: string[], checked: string[] }}
+ */
 export function checkVersionBump(base) {
+  /** @type {string[]} */
   const errors = []
   const changed = git(['diff', '--name-only', `${base}...HEAD`])
     .split('\n')
     .filter(Boolean)
+  /** @type {Map<string, string[]>} */
   const byPlugin = new Map()
   for (const file of changed) {
     const m = file.match(/^plugins\/([^/]+)\/(.+)$/)
-    if (!m) {
+    const [, name, rest] = m ?? []
+    if (name === undefined || rest === undefined) {
       continue
     }
-    if (!byPlugin.has(m[1])) {
-      byPlugin.set(m[1], [])
+    const files = byPlugin.get(name)
+    if (files === undefined) {
+      byPlugin.set(name, [rest])
+    } else {
+      files.push(rest)
     }
-    byPlugin.get(m[1]).push(m[2])
   }
 
   for (const [name, files] of byPlugin) {

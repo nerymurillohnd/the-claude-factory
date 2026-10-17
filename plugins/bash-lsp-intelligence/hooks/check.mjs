@@ -21,6 +21,11 @@ import {
 import { homedir } from 'node:os'
 import { dirname, join, parse, relative, resolve, sep } from 'node:path'
 
+/** @typedef {{ code: number | null, output: string }} RunResult */
+/** @typedef {{ shfmt: string, shellcheck: string }} Tools */
+/** @typedef {{ findings: string[], failures: string[], rewrote: boolean }} FileResult */
+
+const { CLAUDE_PROJECT_DIR, SHELLCHECK_OPTS, XDG_CONFIG_HOME } = process.env
 const PLUGIN = 'bash-lsp-intelligence'
 const SHELL_SUFFIXES = new Set(['.sh', '.bash'])
 const SHEBANG_SHELL = /^#!(?:\S*\/)?(?:env\s+(?:-S\s+)?)?(sh|bash|zsh)(?:\s|$)/
@@ -30,7 +35,8 @@ const PRUNED_DIRS = new Set([...SKIPPED_DIRS, '.git', 'dist', 'build', '__pycach
 const MAX_FILES = 20
 // The modification-time walk gives up after this many files, so a huge tree stays cheap.
 const MAX_WALK_FILES = 20_000
-// Claude Code saves hook output over 10,000 characters to a file Claude never reads.
+// Claude Code saves hook output over 10,000 characters to a file and passes Claude only its
+// path and a 2,000-character preview, so the findings must fit under the cap.
 const MAX_REPORT_CHARS = 9000
 // Clock slack added to duration_ms when looking for files a Bash command changed.
 const BASH_SLACK_MS = 2000
@@ -48,28 +54,43 @@ const INSTALL_HINTS = {
 const SHFMT_DEFAULT_ARGS = ['-i', '2', '-ci', '-bn']
 const SHELLCHECK_DEFAULT_ARGS = ['-o', 'all', '-S', 'style', '-x', '-a', '-P', 'SCRIPTDIR']
 
+/**
+ * @param {unknown} value
+ * @param {...string} keys
+ * @returns {string}
+ */
 function textAt(value, ...keys) {
+  /** @type {unknown} */
   let current = value
   for (const key of keys) {
     if (current === null || typeof current !== 'object') {
       return ''
     }
-    current = current[key]
+    current = /** @type {Record<string, unknown>} */ (current)[key]
   }
   return typeof current === 'string' ? current : ''
 }
 
+/**
+ * @param {unknown} value
+ * @param {...string} keys
+ * @returns {string[] | null}
+ */
 function stringsAt(value, ...keys) {
+  /** @type {unknown} */
   let current = value
   for (const key of keys) {
     if (current === null || typeof current !== 'object') {
       return null
     }
-    current = current[key]
+    current = /** @type {Record<string, unknown>} */ (current)[key]
   }
-  return Array.isArray(current) ? current.filter((item) => typeof item === 'string') : null
+  return Array.isArray(current)
+    ? current.filter(/** @returns {item is string} */ (item) => typeof item === 'string')
+    : null
 }
 
+/** @returns {Record<string, unknown> | null} */
 function readEvent() {
   try {
     const data = JSON.parse(readFileSync(0, 'utf8'))
@@ -79,6 +100,10 @@ function readEvent() {
   }
 }
 
+/**
+ * @param {string} path
+ * @returns {boolean}
+ */
 function isDir(path) {
   try {
     return statSync(path).isDirectory()
@@ -87,8 +112,12 @@ function isDir(path) {
   }
 }
 
+/**
+ * @param {Record<string, unknown>} event
+ * @returns {string | null}
+ */
 function projectDir(event) {
-  const candidates = [process.env.CLAUDE_PROJECT_DIR ?? '', textAt(event, 'cwd'), process.cwd()]
+  const candidates = [CLAUDE_PROJECT_DIR ?? '', textAt(event, 'cwd'), process.cwd()]
   for (const candidate of candidates) {
     if (candidate && isDir(candidate)) {
       return realpath(candidate)
@@ -99,6 +128,10 @@ function projectDir(event) {
 
 // The canonical path (symlinks resolved, as process.cwd() reports it), so that files and the
 // project compare equal whatever spelling the event used.
+/**
+ * @param {string} path
+ * @returns {string}
+ */
 function realpath(path) {
   try {
     return realpathSync(path)
@@ -107,11 +140,15 @@ function realpath(path) {
   }
 }
 
+/**
+ * @param {[string, ...string[]]} argv
+ * @returns {RunResult}
+ */
 function run(argv) {
   const result = spawnSync(argv[0], argv.slice(1), { encoding: 'utf8', timeout: TOOL_TIMEOUT_MS })
   if (result.error) {
     const detail =
-      result.error.code === 'ETIMEDOUT'
+      /** @type {NodeJS.ErrnoException} */ (result.error).code === 'ETIMEDOUT'
         ? `timed out after ${TOOL_TIMEOUT_MS / MS_PER_S} s`
         : `could not start: ${result.error.message}`
     return { code: null, output: `${argv[0]} ${detail}` }
@@ -119,6 +156,11 @@ function run(argv) {
   return { code: result.status, output: `${result.stdout}${result.stderr}`.trim() }
 }
 
+/**
+ * @param {string} path
+ * @param {number} sinceMs
+ * @returns {boolean}
+ */
 function newerThan(path, sinceMs) {
   try {
     const st = statSync(path)
@@ -130,6 +172,13 @@ function newerThan(path, sinceMs) {
 
 // Collects files newer than sinceMs under dir; unreadable folders are skipped and the walk
 // stops once budget.left runs out.
+/**
+ * @param {string} dir
+ * @param {number} sinceMs
+ * @param {string[]} found
+ * @param {{ left: number }} budget
+ * @returns {void}
+ */
 function walk(dir, sinceMs, found, budget) {
   let entries
   try {
@@ -155,6 +204,11 @@ function walk(dir, sinceMs, found, budget) {
   }
 }
 
+/**
+ * @param {string} project
+ * @param {number} sinceMs
+ * @returns {string[]}
+ */
 function changedSince(project, sinceMs) {
   const inside = run(['git', '-C', project, 'rev-parse', '--is-inside-work-tree'])
   if (inside.code === 0) {
@@ -168,12 +222,18 @@ function changedSince(project, sinceMs) {
   if (project === realpath(homedir()) || project === parse(project).root) {
     return [] // a walk of the whole home directory or disk is never worth a hook's budget
   }
+  /** @type {string[]} */
   const found = []
   walk(project, sinceMs, found, { left: MAX_WALK_FILES })
   return found
 }
 
+/**
+ * @param {readonly string[]} names
+ * @returns {string[]}
+ */
 function asFiles(names) {
+  /** @type {Set<string>} */
   const seen = new Set()
   for (const name of names) {
     if (!name) {
@@ -187,6 +247,11 @@ function asFiles(names) {
   return [...seen]
 }
 
+/**
+ * @param {Record<string, unknown>} event
+ * @param {number} nowMs
+ * @returns {string[]}
+ */
 function candidates(event, nowMs) {
   const tool = textAt(event, 'tool_name')
   if (tool === 'Edit' || tool === 'Write') {
@@ -203,23 +268,34 @@ function candidates(event, nowMs) {
   if (project === null) {
     return []
   }
-  const duration = event.duration_ms
-  const windowMs = Number.isInteger(duration) ? duration + BASH_SLACK_MS : FALLBACK_WINDOW_MS
+  const { duration_ms: duration } = event
+  const windowMs =
+    typeof duration === 'number' && Number.isInteger(duration)
+      ? duration + BASH_SLACK_MS
+      : FALLBACK_WINDOW_MS
   return changedSince(project, nowMs - windowMs)
 }
 
+/**
+ * @param {string} path
+ * @returns {string}
+ */
 function firstLine(path) {
   try {
     const fd = openSync(path, 'r')
     const buffer = Buffer.alloc(HEAD_BYTES)
     const read = readSync(fd, buffer, 0, HEAD_BYTES, 0)
-    return buffer.toString('utf8', 0, read).split('\n')[0]
+    return buffer.toString('utf8', 0, read).split('\n')[0] ?? ''
   } catch {
     return ''
   }
 }
 
 // 'sh' | 'bash' | 'zsh' | null: the dialect by suffix or shebang; null means not a shell file.
+/**
+ * @param {string} path
+ * @returns {'sh' | 'bash' | 'zsh' | null}
+ */
 function dialect(path) {
   const name = path.slice(path.lastIndexOf(sep) + 1)
   const dot = name.lastIndexOf('.')
@@ -234,13 +310,23 @@ function dialect(path) {
   if (suffix !== '') {
     return null
   }
-  return match ? match[1] : null
+  const shell = match?.[1]
+  return shell === 'sh' || shell === 'bash' || shell === 'zsh' ? shell : null
 }
 
+/**
+ * @param {string} path
+ * @returns {boolean}
+ */
 function skipped(path) {
   return path.split(sep).some((part) => SKIPPED_DIRS.has(part))
 }
 
+/**
+ * @param {string} start
+ * @param {readonly string[]} names
+ * @returns {string | null}
+ */
 function findUp(start, names) {
   let dir = start
   for (;;) {
@@ -257,21 +343,33 @@ function findUp(start, names) {
   }
 }
 
+/**
+ * @param {string} path
+ * @returns {boolean}
+ */
 function hasEditorconfig(path) {
   return findUp(dirname(path), ['.editorconfig']) !== null
 }
 
+/**
+ * @param {string} path
+ * @returns {boolean}
+ */
 function hasShellcheckConfig(path) {
-  if ((process.env.SHELLCHECK_OPTS ?? '').trim() !== '') {
+  if ((SHELLCHECK_OPTS ?? '').trim() !== '') {
     return true
   }
   if (findUp(dirname(path), ['.shellcheckrc', 'shellcheckrc']) !== null) {
     return true
   }
-  const xdg = process.env.XDG_CONFIG_HOME ?? join(homedir(), '.config')
+  const xdg = XDG_CONFIG_HOME ?? join(homedir(), '.config')
   return existsSync(join(homedir(), '.shellcheckrc')) || existsSync(join(xdg, 'shellcheckrc'))
 }
 
+/**
+ * @param {string} path
+ * @returns {string}
+ */
 function digest(path) {
   try {
     return createHash('sha256').update(readFileSync(path)).digest('hex')
@@ -280,7 +378,13 @@ function digest(path) {
   }
 }
 
+/**
+ * @param {string} path
+ * @param {Tools} tools
+ * @returns {FileResult}
+ */
 function checkFile(path, tools) {
+  /** @type {FileResult} */
   const out = { findings: [], failures: [], rewrote: false }
   const before = digest(path)
   const shfmtArgs = hasEditorconfig(path) ? ['-w', path] : [...SHFMT_DEFAULT_ARGS, '-w', path]
@@ -301,28 +405,47 @@ function checkFile(path, tools) {
   return out
 }
 
+/**
+ * @param {string} tool
+ * @returns {string | null}
+ */
 function which(tool) {
   const result = spawnSync('sh', ['-c', 'command -v "$1"', 'sh', tool], { encoding: 'utf8' })
   return result.status === 0 ? result.stdout.trim() : null
 }
 
-function findTools() {
-  const found = {}
-  for (const [name, hint] of Object.entries(INSTALL_HINTS)) {
-    const executable = which(name)
-    if (executable === null) {
-      return `${PLUGIN}: ${name} is not installed, so no shell file was checked. Install it: ${hint}\n`
-    }
-    found[name] = executable
-  }
-  return found
+/**
+ * @param {keyof typeof INSTALL_HINTS} name
+ * @returns {string}
+ */
+function notInstalled(name) {
+  return `${PLUGIN}: ${name} is not installed, so no shell file was checked. Install it: ${INSTALL_HINTS[name]}\n`
 }
 
+// The tools' paths, or the message for the first one that is missing.
+/** @returns {Tools | string} */
+function findTools() {
+  const shfmt = which('shfmt')
+  if (shfmt === null) {
+    return notInstalled('shfmt')
+  }
+  const shellcheck = which('shellcheck')
+  if (shellcheck === null) {
+    return notInstalled('shellcheck')
+  }
+  return { shfmt, shellcheck }
+}
+
+/**
+ * @param {string} text
+ * @returns {string}
+ */
 function bounded(text) {
   if (text.length <= MAX_REPORT_CHARS) {
     return text
   }
   const lines = text.split('\n')
+  /** @type {string[]} */
   const kept = []
   let size = 0
   for (const line of lines) {
@@ -335,6 +458,11 @@ function bounded(text) {
   return `${kept.join('\n')}\n… ${lines.length - kept.length} more lines\n`
 }
 
+/**
+ * @param {string} path
+ * @param {string | null} base
+ * @returns {string}
+ */
 function display(path, base) {
   if (base === null) {
     return path
@@ -343,6 +471,13 @@ function display(path, base) {
   return rel.startsWith('..') ? path : rel.split(sep).join('/')
 }
 
+/**
+ * @param {readonly string[]} checked
+ * @param {readonly FileResult[]} results
+ * @param {readonly string[]} unchecked
+ * @param {string | null} base
+ * @returns {string}
+ */
 function report(checked, results, unchecked, base) {
   const parts = results.flatMap((result) => [...result.findings, ...result.failures])
   if (unchecked.length > 0) {
@@ -358,15 +493,27 @@ function report(checked, results, unchecked, base) {
   return `${parts.join('\n')}\n`
 }
 
+/**
+ * @param {Record<string, unknown>} event
+ * @param {readonly string[]} checked
+ * @param {readonly FileResult[]} results
+ * @param {readonly string[]} zsh
+ * @param {string | null} base
+ * @returns {string}
+ */
 function success(event, checked, results, zsh, base) {
   const eventName = textAt(event, 'hook_event_name') || 'PostToolUse'
+  /** @type {{ systemMessage?: string, hookSpecificOutput?: { hookEventName: string, additionalContext: string } }} */
   const payload = {}
   if (checked.length > 0) {
     const names = checked.map((path) => display(path, base)).join(', ')
     payload.systemMessage = `${PLUGIN}: shfmt, shellcheck passed · ${names}`
   }
+  /** @type {string[]} */
   const notes = []
-  const rewritten = checked.filter((_, i) => results[i].rewrote).map((path) => display(path, base))
+  const rewritten = checked
+    .filter((_, i) => results[i]?.rewrote === true)
+    .map((path) => display(path, base))
   if (rewritten.length > 0) {
     notes.push(`shfmt reformatted ${rewritten.join(', ')}; re-read before the next edit.`)
   }
@@ -380,12 +527,15 @@ function success(event, checked, results, zsh, base) {
   return Object.keys(payload).length > 0 ? JSON.stringify(payload) : ''
 }
 
+/** @returns {number} */
 function main() {
   const event = readEvent()
   if (event === null) {
     return 0
   }
+  /** @type {string[]} */
   const shell = []
+  /** @type {string[]} */
   const zsh = []
   for (const path of candidates(event, Date.now())) {
     if (skipped(path)) {
@@ -402,14 +552,14 @@ function main() {
     return 0
   }
   const base = projectDir(event)
-  const tools = shell.length > 0 ? findTools() : {}
+  const tools = shell.length > 0 ? findTools() : null
   if (typeof tools === 'string') {
     process.stderr.write(tools)
     return 2
   }
   const checked = shell.slice(0, MAX_FILES)
   const unchecked = shell.slice(MAX_FILES)
-  const results = checked.map((path) => checkFile(path, tools))
+  const results = tools === null ? [] : checked.map((path) => checkFile(path, tools))
   const text = report(checked, results, unchecked, base)
   if (text !== '') {
     process.stderr.write(bounded(text))

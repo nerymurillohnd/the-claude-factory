@@ -1,0 +1,2 @@
+// Fixture: a member that does not exist, the error an incomplete rename leaves.
+export const shout: string = "x".toUppercase();

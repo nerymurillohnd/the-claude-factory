@@ -14,9 +14,9 @@
       "category": "language-support"
     },
     {
-      "name": "git-hygiene",
-      "source": "./plugins/git-hygiene",
-      "description": "Audits a Git repository end to end, plans the cleanup with you, and executes only what you approve, keeping every piece of valuable work safe.",
+      "name": "github-operations",
+      "source": "./plugins/github-operations",
+      "description": "Carries a GitHub pull request from open to merge, cleans up a Git repository without losing work, and brings the GitHub MCP server with it.",
       "category": "development"
     },
     {
@@ -58,14 +58,17 @@
     {
       "name": "typescript6-lsp-intelligence",
       "source": "./plugins/typescript6-lsp-intelligence",
-      "description": "Gives Claude Code a pinned TypeScript 6 language server for TypeScript and JavaScript, type-checks the program of every file Claude edits with the matching compiler, and teaches Claude to find the program that owns a file and fix compiler findings without unsafe assertions or suppressions.",
+      "description": "Connects your TypeScript 6 language server to Claude Code, type-checks every file Claude edits with your own TypeScript under a strictest policy, and teaches Claude to find the program that owns a file and fix compiler findings without unsafe assertions or suppressions.",
       "category": "language-support"
     },
     {
       "name": "typescript7-lsp-intelligence",
       "source": "./plugins/typescript7-lsp-intelligence",
-      "description": "Gives Claude Code a pinned native TypeScript 7 language server for TypeScript and JavaScript, type-checks the program of every file Claude edits with the matching compiler, and teaches Claude to find the program that owns a file and fix compiler findings without unsafe assertions or suppressions.",
+      "description": "Connects the native TypeScript 7 language server to Claude Code, type-checks every file Claude edits with your own native TypeScript 7 compiler under a strictest policy, and teaches Claude to find the program that owns a file and fix compiler findings without unsafe assertions or suppressions.",
       "category": "language-support"
     }
-  ]
+  ],
+  "renames": {
+    "git-hygiene": "github-operations"
+  }
 }

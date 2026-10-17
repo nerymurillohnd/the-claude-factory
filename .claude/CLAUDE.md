@@ -5,143 +5,127 @@
 - Act as co-maintainer of the marketplace with Nery, the owner.
 - Build, review, test and release plugins.
 - Triage issues and draft replies.
-- Keep the project memory in `.claude/memory/` current.
 
 ## Overview
 
-Public Claude Code and Claude app plugin marketplace at `github.com/nerymurillohnd/the-claude-factory`.
-Two maintainers: Nery (owner) and Claude. No external pull requests; users contribute through issues.
+- Public plugin marketplace at `github.com/nerymurillohnd/the-claude-factory`, for users and developers who run their projects and operations with Claude Code.
+- Plugins only: Claude Code plugins, built for Cowork too where they apply.
+- Built on Nery's Mac in the local clone; served to users from the remote repository.
+- Nery and Claude are the only maintainers: no third party or team develops, operates or maintains it.
+- Users contribute through issues.
 
 ## Purpose
 
-- Goal: publish production-grade plugins that automate and optimize everyday workflows.
-- Objective: every plugin installs and works on Claude Code and the Claude app, unless its nature makes it Claude Code-only.
-- Success: every gate passes and every release goes out through `release.yml` tags.
+- Goal: publish plugins that automate and optimize everyday workflows.
 
 ## Stack
 
-- Node: 26.11.1 via nvm, set by `.nvmrc`. Maintenance scripts are zero-dependency Node in `.github/scripts/`.
-- Python: via uv only. Plugin Python floor 3.9, typed by `pyrightconfig.json` and mypy `--python-version 3.9`.
-- ruff 0.17.0: governed by `ruff.toml` (Nery's strict config, the only one in the repo).
-- Biome 2.5.15: governed by `biome.json`.
-- ShellCheck: governed by `.shellcheckrc`. shfmt: governed by `.editorconfig`.
-- markdownlint-cli2 0.23.3: governed by `.markdownlint-cli2.jsonc`.
-- `claude` CLI 2.1.300: runs `claude plugin validate --strict`.
-- CI tool versions: pinned in the `env` block of `.github/workflows/validate.yml`.
-- Local hooks: `.pre-commit-config.yaml`.
-- TypeScript: `tsconfig.base.json` and `.github/scripts/tsconfig.json` exist unwired; nothing runs them.
-
-## Directory Map
-
-```text
-.claude-plugin/              marketplace.json catalog; the name the-claude-factory is permanent
-plugins/<name>/              one plugin per folder: .claude-plugin/plugin.json, README.md, CHANGELOG.md, LICENSE, components (users)
-docs/                        user guides: installation, compatibility, managing plugins, FAQ, troubleshooting (users)
-.github/ISSUE_TEMPLATE/      issue forms; labels come from .github/labels.json (users and maintainers)
-.github/scripts/             zero-dependency Node tooling and its tests (maintainers, CI)
-.github/scripts/tests/       script tests, LSP hook tests, and each plugin's Python tests
-.github/workflows/           validate.yml gates, release.yml tags and releases, evals.yml eval suites, claude-code-review.yml PR review, claude.yml @claude mentions
-.claude/                     this file, memory, rules, skills, agents, templates (maintainers only)
-.claude/memory/              committed project memory
-.claude/rules/               path-scoped maintainer rules
-.claude/skills/              maintainer workflows: verify, release, new-plugin, and more
-.claude/agents/              plugin-reviewer and docs-auditor
-.claude/templates/           plugin scaffold, root README and issue-reply templates
-.claude/specs/               committed design specs
-.claude/plans/               local implementation plans (gitignored)
-```
-
-- Root files `README.md`, `CHANGELOG.md`, `SECURITY.md`, `SUPPORT.md`, `CONTRIBUTING.md` and `CODE_OF_CONDUCT.md` are the showcase and community files for users.
+- No build step and no runtime to maintain: no root `package.json`, `pyproject.toml` or virtual environment.
+- Node and npm: via nvm; `.nvmrc` sets the CI Node.
+- Python, plus the uv tools `ruff` and `basedpyright`: via uv.
+- `shfmt`, `shellcheck` and `actionlint`: Homebrew formulas.
+- Biome and markdownlint-cli2: governed by `biome.json` and `.markdownlint-cli2.jsonc`.
+- ruff: governed by `ruff.toml`, Nery's strict config and the only ruff config in the repo.
+- TypeScript: `tsconfig.base.json`, `plugins/tsconfig.json` and `.github/scripts/tsconfig.json` type-check the `.mjs` files with the pinned `tsc`.
 
 ## Commands
 
-### Gates
+- For all other commands, read `.github/scripts/` and `.github/workflows/validate.yml`.
 
-- `/verify` - Run before every commit. It runs every gate below and reports raw output.
-- Run the gates directly in cloud sessions, where Claude cannot invoke a skill named `verify`.
-- `npm ci --ignore-scripts --prefix plugins/typescript6-lsp-intelligence` - Run once per clone before the script tests; repeat for `plugins/typescript7-lsp-intelligence`.
-- `node --test ".github/scripts/tests/*.test.mjs"` - Run before every commit. The LSP hook tests need `shfmt`, `shellcheck`, `ruff` and `basedpyright` on `PATH`; read the `skipped` count.
-- `node .github/scripts/check-repo.mjs` - Run before every commit.
-- `node .github/scripts/catalog.mjs --check` - Run before every commit.
-- `.github/scripts/validate-claude.sh` - Run before every commit.
-- `node .github/scripts/check-version-bump.mjs origin/main` - Run before every commit, once `origin/main` exists.
-- `npx --yes @biomejs/biome@2.5.15 check --error-on-warnings .` - Run before every commit.
-- `git ls-files -z '*.sh' | xargs -0 shellcheck -o all -S style -x -a -P SCRIPTDIR` - Run before every commit.
-- `git ls-files -z '*.sh' | xargs -0 shfmt -d` - Run before every commit.
-- `python3 -m unittest discover -s .github/scripts/tests/<plugin>` - Run before every commit for each plugin folder under `.github/scripts/tests/` that has Python tests.
-- `.github/scripts/tests/<plugin>/by_path.sh` - Run before every commit for each plugin folder that ships one.
-- `uvx ruff@0.17.0 check plugins .github/scripts` - Run before every commit.
-- `uvx ruff@0.17.0 format --check plugins .github/scripts` - Run before every commit.
-- `git ls-files -z 'plugins/*.py' '.github/scripts/tests/*.py' | xargs -0 uvx --from mypy==1.20.2 mypy --python-version 3.9 --strict` - Run before every commit.
-- `npx --yes markdownlint-cli2@0.23.3` - Run before every commit.
-- `SHELLCHECK_OPTS='-o all -S style -x -a -P SCRIPTDIR' actionlint` - Run when `.github/workflows/` changes.
-- For gate prerequisites and the report format, read `.claude/skills/verify/SKILL.md`.
+## Project Gates
 
-### Workflows
+The gates live in `.claude/rules/`.
 
-- `/new-plugin` - Run when creating a plugin.
-- `/test-installed-plugin` - Run when testing a plugin as users install it: copied install, load check, evals, Claude app zip.
-- `/release` - Run when releasing a plugin or the marketplace.
-- `/triage-issues` - Run when triaging and answering issues.
-- `/docs-drift-check` - Run when checking docs and pins against current Claude Code.
-- `/wrap-up` - Run when closing a session and updating project memory.
-- `node .github/scripts/sync-labels.mjs` - Run after changing `.github/labels.json`.
-- Use the `plugin-reviewer` agent for an independent review of a plugin before release.
-- Use the `docs-auditor` agent for user-doc accuracy and style.
+- Quality Gate: runs the per-file checks after editing `.py`, `.mjs` and `.sh` files and the full command list before every push, and allows no progress while an issue is open.
+- GitHub Gate: governs PRs, labels, staging, commits, pushes and the PR review loop up to ready to merge.
+- Maintenance Gate: keeps READMEs, changelogs and the other docs current, consistent and in sync with the code.
+- Plugin Gate: sets how plugins are built, portable and distributed, how evals are requested and how versions are bumped.
+- Releases: verifies the release right after a plugin PR with a version change merges.
+- Skill Gate: sets how a skill references its own files and files outside it.
+- Stage rules: authoring, user-docs style and versioning, each scoped to the paths it governs.
 
-## Working With Nery
+## Documentation and Maintenance
 
-- Talk with Nery in **Spanish**. Write everything in the repository in **English**: docs, code, comments, commits, issue replies.
-- Ask until you are at least 95% sure before building.
-- Once a plan is approved, finish it. Stop only for decisions that are Nery's to make.
-- Push back on weak instructions. Recommend the strongest option, say which one and why.
-- Verify the environment, stack and tools before starting a task.
-- Prove "done" with raw output from the gates.
-- Demand raw evidence from subagents and check it yourself.
-- End every task with a summary: work done, decisions, changes, learnings, current state.
+- Decisions: record each important decision as an ADR in `.claude/maintainer/decisions/`, with the `project-records` skill.
+- Technical debt: log pending debt in `pending-debt.md` and move it to `resolved-debt.md` once verified, both in `.claude/maintainer/technical-debt/`.
+- Specs: write each design spec in `.claude/specs/`, named `YYYY-MM-DD-<topic>.md`. Git tracks them.
+- Plans: write each implementation plan in `.claude/plans/`, named `YYYY-MM-DD-<topic>.md`. Git ignores them.
+- `docs/`: the user guides, covering installation, managing plugins, compatibility, FAQ, troubleshooting and tool references. Maintainer notes never go there.
+- Root `README.md`, `CHANGELOG.md`, `SECURITY.md`, `SUPPORT.md`, `CONTRIBUTING.md` and `CODE_OF_CONDUCT.md`: the user-facing showcase and community files.
 
-## Golden Rules
+## How Claude Works With Nery
 
-- **Plugin `name` is permanent.** Change `displayName` for labels.
-- A plugin rename or removal needs a `renames` entry in `.claude-plugin/marketplace.json`.
-- **`plugin.json` holds the version.** Never set `version` on a marketplace entry or on the marketplace.
-- **The marketplace has no version and no tag.** Root `CHANGELOG.md` is grouped by date.
-- **SemVer and Keep a Changelog** for every plugin. Release only through `.github/scripts/bump-version.mjs`.
-- **Never hand-edit generated blocks** in `README.md` (`<!-- catalog:* -->`, `<!-- plugin-count:* -->`). Run `.github/scripts/catalog.mjs`.
-- **User docs sell and teach.** They never mention maintenance, internal tooling, `.claude/`, scripts or our workflow.
-- **Verify against live official docs** before stating Claude Code behavior, commands, versions or UI paths.
-- Use the Claude Code Docs MCP or the code.claude.com and claude.com docs. Live docs beat this repo's files; flag conflicts.
-- **Plugins target Claude Code and the Claude app** (chat and Cowork are one app).
-- Make a plugin Claude Code-only only when its nature requires it, and declare it in its README.
-- Use the component matrix and design rules in `.claude/rules/cross-surface-compatibility.md` instead of re-researching.
-- **Every gate passes before commit.** Fix root causes. Never weaken a check to make it pass.
+### Session Start
 
-## Repository Settings
+- Read the hook's session check and `.claude/memory/MEMORY.md`.
+- List the decisions only Nery can settle.
 
-- GitHub pull requests: **Collaborators only**. Issues: on. Private vulnerability reporting: on. Topics set.
-- Labels come from `.github/labels.json`.
+### One Open Task At A Time
 
-## Where Knowledge Lives
+- Keep one plugin or change in progress, on one branch or worktree, in one session. A change across several plugins uses one worktree per plugin.
+- Before starting new work, finish or park the current task, committed. A parked task has no open issue.
 
-- `.claude/rules/cross-surface-compatibility.md` - component matrix and design rules for both surfaces; always loaded.
-- `.claude/rules/plugin-authoring.md` - loads for `plugins/**` and `.claude/templates/plugin/**`.
-- `.claude/rules/skill-file-references.md` - loads for `plugins/*/skills/**` and `.claude/skills/**`.
-- `.claude/rules/skill-content.md` - loads for `plugins/*/skills/**` and `.claude/skills/**`.
-- `.claude/rules/versioning-and-releases.md` - loads for changelogs, `plugin.json`, `.claude-plugin/**` and `release.yml`.
-- `.claude/rules/user-docs-style.md` - loads for user docs and plugin READMEs.
-- `.claude/rules/evals.md` - loads for `plugins/*/evals/**` and `evals.yml`.
-- `.claude/rules/github-operations.md` - loads for `.github/**`.
+### Claude
+
+- Do exactly what Nery asks: no backups, stashes, confirmations or extra steps Nery did not request. The standing gate rules are not extra steps.
+- Follow the saved process (skill or memory) before improvising.
+- With no saved process, research, decide and act. Ask only before spending, irreversible actions or anything published, or when a decision only Nery can make blocks the work.
+- If a delete would destroy work that exists nowhere else, say so in one line before running it.
+- Disagree once, with evidence, then do it Nery's way.
+
+### Nery
+
+- States an order's scope: only this, or whatever it takes to finish it.
+
+### Done
+
+- A plugin PR is ready to merge when every gate passes and `plugin-reviewer` left no confirmed finding.
+- It also needs `/test-installed-plugin` and a Claude app check (unless Claude Code-only).
+- Do not mark a plugin PR ready to merge short of that.
+
+## Plugin Development
+
+- Do not start a new plugin while a released one lacks its installed test or Claude app check.
+- Name skills and plugins for what the skill does, not how it is implemented.
+- Keep the plugin Python floor at 3.9 (uv's `python3.9`), typed by `pyrightconfig.json` and mypy `--python-version 3.9`.
+- Keep the version in `plugin.json`. Never set `version` on a marketplace entry.
+- Change `displayName` to relabel a plugin.
+- After moving or creating files, delete `.DS_Store` files and orphaned cache directories.
+- Name each subagent when spawning it, so named subagents can exchange messages with `SendMessage`. Agent Teams are not required. After a restart or a compaction, address an agent by its ID.
+- Use a dynamic workflow to codify review and cross-check phases, such as agents reviewing each other's findings.
+- Do not rely on `skills:` in an agent definition for a teammate. A teammate loads skills from project and user settings.
+- Do not set `hooks` in the frontmatter of a plugin agent: it is ignored. Declare the hook in the plugin's `hooks/hooks.json`.
+- Test a hook in `settings.json` right after editing it: the file watcher loads it with no restart. A plugin hook needs `/reload-plugins`.
+- Design every plugin runtime for marketplace users, never for Nery's machine.
+- Resolve `node` and `tsc` across every Node manager: plugin hooks and LSP servers get no shell profile.
+- Set `"onFailure": "block"` on a check hook, so a broken hook never passes in silence.
+- Report a missing tool as a non-blocking `systemMessage` plus `additionalContext`, never as a silent pass.
+- Write one permission rule per hook `if` field. A rule joined with `|` never matches.
+- Ship a plugin's Node dependencies only with an npm or Bun lockfile; other lockfiles leave no `node_modules`.
+- Pass each strict `tsc` flag with an explicit value. `--strict` does not override an explicit `false` in a tsconfig.
+- Test a hook script with `env -i`, an empty `HOME` and a minimal `PATH` for each Node manager.
+
+## Subagents In This Project
+
+The global rule decides when to delegate. These are the cases our work hits.
+
+### Delegate
+
+- Skill audit: `/skill-diagnostics:audit` (conformance and executability lenses) plus one skill-creator agent, launched together.
+- Comprehensibility review: an agent whose tools are only Read, Glob and Grep. The `Plan` agent has Bash.
+- Docs and pins research: `/docs-drift-check` when Nery asks for a drift check, otherwise one research subagent per docs area; it returns quotes with links.
+- Verify every reviewer finding against the files and the live docs before fixing anything. Reviewers over-report.
+
+### Work Directly
+
+- Gates.
+- Git, PRs, `bump-version.mjs`, releases, `sync-labels.mjs` and every push.
+- Issue triage and replies, and fixes for confirmed findings in one plugin.
 
 ## Project Memory
 
-Project memory lives in `.claude/memory/` and is committed, so every session sees it on any machine or surface. Claude Code's own auto memory is machine-local.
-
-- Loaded every session: @memory/project-state.md · @memory/environment.md · @memory/learnings.md
-- Read on demand: `.claude/memory/session-log.md`, the dated history of sessions.
-- Update memory in the same commit as the work, or with `/wrap-up` at the end of a session.
-- Write decisions, current status, roadmap and open items in `project-state`.
-- Write how we work across surfaces, tools, access and their limits in `environment`.
-- Write gotchas that cost time once in `learnings`, each as a rule to follow.
-- Write one dated entry per session in `session-log`: what changed, commits, what's next.
+- `.claude/memory/MEMORY.md` indexes the project memory: one topic file per fact. Cross-project facts live in `~/.claude/memory/`.
+- Memory is gitignored: it lives on this Mac only, and cloud sessions do not see it.
+- Update `.claude/memory/` as the work happens, never only at the end of the session.
 - Keep memory factual and short: one fact per line, no duplication with this file, rules or code.
 - Delete stale lines instead of piling up corrections.

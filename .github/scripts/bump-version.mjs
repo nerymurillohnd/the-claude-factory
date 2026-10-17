@@ -32,6 +32,9 @@ if (!manifest) {
   fail(`plugins/${target}/.claude-plugin/plugin.json not found`)
 }
 const current = manifest.version
+if (!current) {
+  fail(`plugins/${target}/.claude-plugin/plugin.json has no version`)
+}
 const next = bumpSemver(current, level)
 manifest.version = next
 const changelogPath = join(pluginDir(target), 'CHANGELOG.md')
@@ -51,7 +54,7 @@ function rollChangelog() {
   if (!m) {
     fail('CHANGELOG.md has no "## [Unreleased]" section')
   }
-  if (!m[1].trim()) {
+  if (!m[1]?.trim()) {
     fail('[Unreleased] is empty — document the changes before bumping')
   }
 

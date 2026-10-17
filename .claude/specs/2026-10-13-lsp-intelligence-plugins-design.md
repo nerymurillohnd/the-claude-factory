@@ -2,6 +2,8 @@
 
 Date: 2026-10-13. Owner: Nery. Status: approved design, pending implementation plan.
 
+> Superseded on 2026-10-16 for `typescript6-lsp-intelligence` and `typescript7-lsp-intelligence`: they no longer pin TypeScript. The `package.json` and `package-lock.json`, `hooks/check.mjs` and the `node ${CLAUDE_PLUGIN_ROOT}/node_modules/...` server commands are gone. Each plugin starts the user's own language server from `PATH` and runs `hooks/tsc-check.sh`, which checks with the project's or the global `tsc` under `hooks/tsconfig.strictest.json`. The plugin READMEs and changelogs describe the current behavior.
+
 Four public plugins for Claude Code users on macOS and Linux (Windows only through Git Bash): `python-lsp-intelligence`, `bash-lsp-intelligence`, `typescript7-lsp-intelligence` and the new `typescript6-lsp-intelligence`. This document replaces the committed 0.1.0 design and the uncommitted working-tree draft.
 
 Design sources, in this order and nothing else: Claude Code Docs (`hooks`, `plugins/components`, `plugins/loading`, `plugins/manifest-reference`, `plugins/code-intelligence`, `skills`, `tools-reference`, `plugins/measure`, `best-practices`), agentskills.io (specification, best practices) and Claude Platform Docs (skill authoring best practices). Tool facts were measured on 2026-10-13 with Claude Code 2.1.296.

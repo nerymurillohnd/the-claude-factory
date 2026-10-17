@@ -34,12 +34,18 @@ const IMAGE_OR_FONT = /\.(png|jpe?g|gif|webp|svg|woff2?|ttf|otf)$/i
 const MAX_FILE_BYTES = 256 * 1024 // larger files are held for a reviewer
 const MAX_FILES = 512 // more files are held for a reviewer
 
+/** @typedef {{ path: string, size: number, symlink: boolean }} FileEntry */
+
 /**
  * Problems in a plugin's files that make the directory block a submission or hold it for a reviewer.
  * `entries`: `{ path, size, symlink }` with `path` relative to the plugin folder, `/`-separated.
+ * @param {readonly FileEntry[]} entries
+ * @returns {string[]}
  */
 export function portabilityProblems(entries) {
+  /** @type {Set<string>} */
   const problems = new Set()
+  /** @type {Map<string, string>} */
   const seen = new Map()
   for (const { path, size, symlink } of entries) {
     for (const seg of path.split('/')) {
@@ -68,7 +74,11 @@ export function portabilityProblems(entries) {
   return [...problems]
 }
 
-/** The plugin's files as a clone holds them: tracked and new untracked, never git-ignored. */
+/**
+ * The plugin's files as a clone holds them: tracked and new untracked, never git-ignored.
+ * @param {string} dir
+ * @returns {FileEntry[]}
+ */
 function pluginEntries(dir) {
   let paths
   try {
@@ -83,6 +93,7 @@ function pluginEntries(dir) {
   } catch {
     paths = walk(dir) // not a git checkout: every file on disk
   }
+  /** @type {FileEntry[]} */
   const entries = []
   for (const abs of paths) {
     let st
@@ -100,14 +111,24 @@ function pluginEntries(dir) {
   return entries
 }
 
+/**
+ * @param {string} dir
+ * @returns {string[]}
+ */
 function walk(dir) {
   return readdirSync(dir, { withFileTypes: true }).flatMap((d) =>
     d.isDirectory() ? walk(join(dir, d.name)) : [join(dir, d.name)],
   )
 }
 
+/** @returns {{ errors: string[] }} */
 export function checkRepo() {
+  /** @type {string[]} */
   const errors = []
+  /**
+   * @param {string} scope
+   * @param {string} msg
+   */
   const err = (scope, msg) => errors.push(`[${scope}] ${msg}`)
 
   // ── Marketplace ────────────────────────────────────────────────────────────
@@ -132,6 +153,7 @@ export function checkRepo() {
     err('marketplace', 'plugins must be an array')
   }
 
+  /** @type {Set<string>} */
   const listed = new Set()
   for (const [i, entry] of (mp.plugins ?? []).entries()) {
     const scope = `marketplace.plugins[${i}] ${entry.name ?? '?'}`
@@ -148,7 +170,7 @@ export function checkRepo() {
     if (entry.source !== `./plugins/${entry.name}`) {
       err(scope, `source must be "./plugins/${entry.name}"`)
     }
-    if (!categoryIds.has(entry.category)) {
+    if (!categoryIds.has(entry.category ?? '')) {
       err(scope, `category "${entry.category}" is not in categories.json`)
     }
     if (!entry.description) {
@@ -201,7 +223,7 @@ export function checkRepo() {
     if (!SEMVER.test(manifest.version ?? '')) {
       err(scope, `plugin.json version "${manifest.version}" is not semver`)
     }
-    for (const f of ['displayName', 'description', 'author', 'keywords']) {
+    for (const f of /** @type {const} */ (['displayName', 'description', 'author', 'keywords'])) {
       if (!manifest[f]) {
         err(scope, `plugin.json missing ${f}`)
       }
@@ -224,7 +246,7 @@ export function checkRepo() {
 
     if (existsSync(join(dir, 'README.md'))) {
       const readme = readText(join(dir, 'README.md'))
-      const headings = [...readme.matchAll(/^## (.+)$/gm)].map((m) => m[1])
+      const headings = [...readme.matchAll(/^## (.+)$/gm)].map((m) => m[1] ?? '')
       for (const section of REQUIRED_PLUGIN_SECTIONS) {
         if (!headings.some((h) => h.includes(section))) {
           err(scope, `README.md missing the "${section}" section`)
@@ -254,7 +276,7 @@ export function checkRepo() {
       }
     }
 
-    // ── Cross-surface declaration (.claude/rules/cross-surface-compatibility.md) ──
+    // ── Cross-surface declaration (docs/compatibility.md) ──
     const profileKey = surfaceProfileKey(manifest.metadata?.surfaces)
     const components = detectComponents(name)
     if (!profileKey) {
@@ -329,7 +351,7 @@ export function checkRepo() {
       err('README.md', 'catalog is out of date — run node .github/scripts/catalog.mjs')
     }
   } catch (e) {
-    err('README.md', e.message)
+    err('README.md', e instanceof Error ? e.message : String(e))
   }
 
   // ── Root CHANGELOG ─────────────────────────────────────────────────────────

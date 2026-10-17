@@ -2,12 +2,12 @@
 
 # 🟦 TypeScript 7 LSP Intelligence
 
-<p><strong>Gives Claude Code a pinned native TypeScript 7 language server for TypeScript and JavaScript, type-checks the program of every file Claude edits with the matching compiler, and teaches Claude to find the program that owns a file and fix compiler findings without unsafe assertions or suppressions.</strong></p>
+<p><strong>Connects the native TypeScript 7 language server to Claude Code, type-checks every file Claude edits with your own native TypeScript 7 compiler under a strictest policy, and teaches Claude to find the program that owns a file and fix compiler findings without unsafe assertions or suppressions.</strong></p>
 
 [![Version](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Fnerymurillohnd%2Fthe-claude-factory%2Fmain%2Fplugins%2Ftypescript7-lsp-intelligence%2F.claude-plugin%2Fplugin.json&query=%24.version&label=version&color=D97757)](./CHANGELOG.md)
 [![Works in](https://img.shields.io/badge/works%20in-Claude%20Code%20only-2563EB)](#-compatibility)
 [![Category](https://img.shields.io/badge/category-Language%20Support-6B7280)](../../README.md#-catalog)
-[![Claude Code](https://img.shields.io/badge/Claude%20Code-%E2%89%A5%202.1.292-D97757?logo=claude&logoColor=white)](https://code.claude.com/docs/en/plugins/install)
+[![Claude Code](https://img.shields.io/badge/Claude%20Code-%E2%89%A5%202.1.295-D97757?logo=claude&logoColor=white)](https://code.claude.com/docs/en/plugins/install)
 [![License: MIT](https://img.shields.io/badge/license-MIT-22C55E)](./LICENSE)
 
 [Why use it](#-why-use-it) •
@@ -25,34 +25,45 @@
 💻 **Claude Code only** — it connects a language server and a post-edit hook, and only Claude Code runs language servers. Install it where you write TypeScript, in Claude Code.
 
 > [!TIP]
-> **TL;DR** — Add this plugin and Claude gets the native TypeScript 7 compiler and language server, pinned inside the plugin: every TypeScript or JavaScript file Claude edits is type-checked in its own `tsconfig.json` program, and Claude navigates your code by symbol instead of by text search. Nothing else to install.
+> **TL;DR** — For projects on TypeScript 7: after every edit Claude makes to a TypeScript or JavaScript file, your own native `tsc` checks it with your project's settings and the strictest checks on top, and Claude is told to fix what it finds before moving on. Claude also navigates your code by symbol through the TypeScript 7 language server.
 
 ## ✨ Why use it
 
-- **The compiler comes with the plugin** — TypeScript 7.0.2 is pinned in the plugin and installed by Claude Code when it caches it, so the server and the checks never depend on, or change, the `tsc` in your project or on your `PATH`.
-- **Every edit is type-checked in its program** — after each edit to a `.ts`, `.tsx`, `.mts`, `.cts`, `.js`, `.jsx`, `.mjs` or `.cjs` file, the plugin runs `tsc --noEmit` on the nearest `tsconfig.json` program. Errors in the edited file come first, breakage in sibling files after; a file no program includes is reported, never passed over. A clean run shows you a one-line confirmation.
-- **Your `tsconfig.json` is the policy** — strictness, module resolution and JSX come from your project. Without a `tsconfig.json`, the compiler's defaults apply and Claude is told so.
-- **Symbol navigation on TypeScript 7** — go to definition, references, hover, call hierarchy and workspace symbols through the native server, which is the generation the `typescript` package now ships.
+- **Every edit is held to the strictest checks** — after each edit to a `.ts`, `.tsx`, `.mts`, `.cts`, `.js`, `.jsx`, `.mjs` or `.cjs` file, the edited code must pass `strict`, `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, `noImplicitReturns`, `checkJs` and the rest of the plugin's strictest policy, even when your `tsconfig.json` is lax or turns them off. JavaScript is type-checked too, not just admitted. Claude gets every finding with the order to fix it before continuing. A compiler crash, a missing compiler or an edited file the hook skipped is reported too, never passed in silence.
+- **Your project's environment, never broken by the check** — module resolution, path aliases, JSX, `lib`, `types` and `include` come from your nearest `tsconfig.json` and its project references, so the check never reports an import that works in your build.
+- **No noise from code nobody touched** — the strictest policy applies to the edited files only. An error in another file is reported only when your own config also finds it, because the edit probably caused it. A broken `tsconfig.json` is reported instead of letting everything pass.
+- **Your TypeScript, wherever you installed it** — the hook uses your project's `node_modules` first, then a global install, and finds `tsc` through nvm, fnm, Volta, asdf, mise, n, Homebrew, pnpm, Bun or a custom npm prefix, even when Claude Code starts without your shell profile. The plugin installs nothing.
+- **The native compiler, no Node.js in the way** — the hook runs the platform binary that ships with the `typescript` package directly, so the check works even where Node.js isn't on the `PATH`.
+- **Symbol navigation on TypeScript 7** — go to definition, references, hover, call hierarchy and workspace symbols through the native server. It pushes no diagnostics after edits, so the hook is where type errors come from.
 - **Fixes, not silencing** — no `@ts-ignore`, `any`, `as unknown as T` or non-null `!` just to make an error disappear.
 
 ## 🧩 What's inside
 
 | Component | Name | What it does | How it runs |
 | :-- | :-- | :-- | :-- |
-| 🧠 LSP server | `typescript` | Starts the pinned TypeScript 7 server (`tsc --lsp --stdio`) for `.ts`, `.tsx`, `.mts`, `.cts`, `.js`, `.jsx`, `.mjs` and `.cjs` files | Automatically when Claude opens or edits one of those files |
-| 🪝 Hook | `PostToolUse` · `PostToolUseFailure` | Runs the pinned `tsc --noEmit` on the program of each TypeScript or JavaScript file an Edit, Write or Bash call changed | Automatically after each of those tool calls |
-| 🎯 Skill | `typescript7-lsp-intelligence:typescript7-lsp-intelligence` | Teaches Claude that the TypeScript 7 server pushes no diagnostics and how to run the compiler on a whole program or a caller in another file, to navigate with the language server first, trust its results only after five checks, and work with `tsc` the way your project configures it | Automatically when you work on TypeScript or JavaScript, or `/typescript7-lsp-intelligence:typescript7-lsp-intelligence` |
+| 🧠 LSP server | `typescript` | Starts your TypeScript 7 server (`tsc --lsp --stdio`) for `.ts`, `.tsx`, `.mts`, `.cts`, `.js`, `.jsx`, `.mjs` and `.cjs` files | Automatically when Claude opens or edits one of those files |
+| 🪝 Hook | `PostToolUse` · `PostToolUseFailure` | Runs your native `tsc --noEmit` with your project's environment and the plugin's strictest policy on each TypeScript or JavaScript file an Edit, Write, Bash or PowerShell call changed | Automatically after each of those tool calls |
+| 🎯 Skill | `typescript7-lsp-intelligence:ts-lifecycle` | Teaches Claude that the TypeScript 7 server pushes no diagnostics, to research a TypeScript or JavaScript change from official docs and release notes, navigate with the language server and confirm with Grep, trust results only after five checks, and prove the checks with fixtures before calling code clean | Automatically when you work on TypeScript or JavaScript, or `/typescript7-lsp-intelligence:ts-lifecycle` |
 
 ## ✅ Requirements
 
 | Requirement | Details |
 | :-- | :-- |
-| **Claude Code** | v2.1.292 or later — check with `claude --version` |
+| **Claude Code** | v2.1.295 or later — check with `claude --version` |
 | **Surfaces** | See [Compatibility](#-compatibility) |
-| **External tools** | Node.js 18 or later and `npm` on the `PATH` of the shell you start `claude` from. Claude Code installs the pinned TypeScript with `npm` when it caches the plugin; the hook runs on `node`. Windows: run Claude Code from Git Bash with Node.js on its `PATH` |
+| **TypeScript 7** | In your project's `node_modules`, or installed globally. The hook uses the project's copy first |
+| **Language server** | A global TypeScript 7 `tsc` on the `PATH` of the shell you start `claude` from |
+| **Node.js** | 16.20.0 or later, for the `tsc` command that starts the language server. The hook runs the native compiler without it |
+| **Windows** | Git Bash. Start Claude Code from a Git Bash shell that has Node.js on its `PATH` |
 | **Accounts / API keys** | None |
 
-TypeScript 7.0.2 is pinned in the plugin's `package.json` and `package-lock.json`; you don't install it and it doesn't touch your project's dependencies.
+Install TypeScript 7 globally:
+
+```bash
+npm install -g typescript@7
+```
+
+If your project is still on TypeScript 6, install [TypeScript 6 LSP Intelligence](../typescript6-lsp-intelligence/README.md) instead. The plugin checks with whichever TypeScript it finds and doesn't compare versions, so keep the plugin and your TypeScript on the same major version.
 
 ## 📥 Installation
 
@@ -85,7 +96,7 @@ Requires Claude Code v2.1.275+. With the marketplace already added, `/plugin ins
 > [!NOTE]
 > New to this marketplace? The [installation guide](../../docs/installation.md) covers every surface step by step.
 
-To confirm it works, ask Claude to add a type error to a TypeScript file and fix it. The hook reports the error under the edit and, once the file is clean, a line like `typescript7-lsp-intelligence: tsc passed · src/app.ts`.
+To confirm it works, ask Claude to add a type error to a TypeScript file and fix it. The hook reports the error under the edit and, once the file is clean, a line like `typescript7-lsp-intelligence: tsc <version> · the edited files pass the strictest policy · src/app.ts`.
 
 > [!IMPORTANT]
 > Enable only one TypeScript plugin at a time. Each file extension gets one language server: with this plugin and `typescript6-lsp-intelligence` (or the official `typescript-lsp`) both enabled, only the first registered serves `.ts` files and `/plugin` → **Errors** shows the other isn't used.
@@ -100,16 +111,19 @@ You don't need to call anything: the language server starts with the first TypeS
 Make loadConfig return the parsed settings instead of the raw text.
 ```
 
-**Result:** Claude edits the function. If the compiler finds something in that program, Claude sees it right away:
+**Result:** Claude edits the function. If the check finds something, Claude sees it right away and has to fix it before continuing:
 
 ```text
-tsc (tsconfig.json):
+TypeScript errors detected after file edit. Fix them before continuing; do not suppress them.
+
+Errors in the edited files under the strictest policy, with the project environment:
 src/config.ts(18,10): error TS2322: Type 'string' is not assignable to type 'Settings'.
+
+Errors in other files of the program under the project's own config; this edit may have caused them:
 src/server.ts(42,21): error TS2345: Argument of type 'Settings' is not assignable to parameter of type 'string'.
-Fix these findings in src/config.ts before continuing; do not suppress them.
 ```
 
-Claude fixes the function and the caller it broke, the hook runs again, and the turn ends with `typescript7-lsp-intelligence: tsc passed · src/config.ts`.
+Claude fixes the function and the caller it broke, the hook runs again, and the turn ends with `typescript7-lsp-intelligence: tsc <version> · the edited files pass the strictest policy · src/config.ts`.
 
 ### Example: rename an export
 
@@ -125,19 +139,25 @@ Rename formatPrice to formatMoney across the repo.
 Add scripts/migrate.ts that renames the old config keys.
 ```
 
-**Result:** The hook runs the nearest program, notices the new file is not in its `include`, and tells Claude: `scripts/migrate.ts is not part of tsconfig.json's program; add it to include or files.` Claude adds it, and the next check covers it.
+**Result:** The new file isn't in the `include` of any program, so the hook checks it on its own on top of your nearest `tsconfig.json`, keeping your path aliases, and tells Claude: `scripts/migrate.ts is not part of the program of tsconfig.json or its references … Add it to include or files.`
 
 ## ⚙️ Configuration
 
-The hook runs the compiler the way you would from a terminal, so **your configuration wins**:
+Your project decides the environment; the plugin decides how strict the edited code must be:
 
 | Situation | What the hook does |
 | :-- | :-- |
-| A `tsconfig.json` or `jsconfig.json` exists above the file | `tsc --noEmit -p <that config>` with the pinned TypeScript 7: your `strict`, `target`, `module`, `jsx` and `include` apply |
+| A `tsconfig.json` or `jsconfig.json` exists above the file | `tsc --noEmit -p <that config>` with every strictest option passed on the command line, so it wins over the config's own value, an explicit `false` included |
 | That config is a solution file (`files: []` with `references`) | The referenced programs are followed to the one that lists the file |
-| Several changed files share a config | One `tsc` run for that program |
-| A TypeScript file with no config above it | `tsc --noEmit <file>` with the compiler's defaults, and the report says so |
-| A JavaScript file with no config above it | Not type-checked; the report says so instead of blocking |
+| Several changed files share a program | One `tsc` run for that program |
+| The file isn't in any program | Checked alone on top of the nearest config, with its `types` and path aliases, and the report says so |
+| A JavaScript file | Type-checked: `checkJs` is part of the strictest policy, so a `.js` file in your `include` is checked in its program even when your config only sets `allowJs`, or neither |
+| No config above the file | Checked alone with the plugin's strictest config |
+| Your config itself has errors | Reported, so a broken config never looks like a clean check |
+| The project sets `noCheck` | Ignored: the policy passes `noCheck false`, so the type check always runs |
+| `tsc` crashes or exits non-zero without a TypeScript error | Reported to Claude as not checked, with the compiler's first output lines, never as a pass |
+| An edited file is gone, or sits in `node_modules`, `.venv`, `venv` or `site-packages` | Claude is told it wasn't checked |
+| No usable Node.js or TypeScript is found | Not blocking: you get one message per session listing where the hook searched, and Claude is told the file wasn't checked |
 
 The plugin never creates or edits a `tsconfig.json`, and it never runs a formatter or linter: Biome, Prettier and ESLint stay your project's tools, and the skill teaches Claude to run them as your `package.json` scripts do.
 
@@ -155,7 +175,7 @@ The plugin never creates or edits a `tsconfig.json`, and it never runs a formatt
 claude plugin update typescript7-lsp-intelligence@the-claude-factory
 ```
 
-Or in a session: `/plugin` → **Installed** → **TypeScript 7 LSP Intelligence** → **Update now**. Then run `/reload-plugins`. An update that changes the pinned TypeScript installs it again automatically.
+Or in a session: `/plugin` → **Installed** → **TypeScript 7 LSP Intelligence** → **Update now**. Then run `/reload-plugins`. Update TypeScript yourself, the way you installed it.
 
 > [!TIP]
 > Turn on auto-update once for the whole marketplace: `/plugin` → **Marketplaces** → **the-claude-factory** → **Enable auto-update**.
@@ -166,7 +186,7 @@ Or in a session: `/plugin` → **Installed** → **TypeScript 7 LSP Intelligence
 claude plugin uninstall typescript7-lsp-intelligence@the-claude-factory
 ```
 
-In a session: `/plugin` → **Installed** → **TypeScript 7 LSP Intelligence** → **Uninstall**. The pinned TypeScript goes with the plugin; your project's dependencies are untouched.
+In a session: `/plugin` → **Installed** → **TypeScript 7 LSP Intelligence** → **Uninstall**. Your TypeScript and your project's dependencies stay as they are.
 
 ## 🧭 Compatibility
 
@@ -175,7 +195,7 @@ In a session: `/plugin` → **Installed** → **TypeScript 7 LSP Intelligence** 
 | Component | Claude Code | Claude app |
 | :-- | :--: | :--: |
 | 🎯 Skills | ✅ | ⚠️ loads, but it relies on the language server, which the Claude app doesn't run |
-| 🪝 Hooks | ✅ | ➖ runs only where Claude Code installs the plugin's TypeScript and starts language servers |
+| 🪝 Hooks | ✅ | ➖ runs only in Claude Code, next to your TypeScript |
 | 🧠 LSP server | ✅ | ➖ |
 
 <sub>✅ works · ⚠️ partial · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. The Claude app (web, desktop and mobile) runs a conversation as a Cowork session when it can, and as a chat conversation otherwise, for example on a device that can't run Cowork or in the separate Chat mode that Team and Enterprise plans keep for now.</sub>
@@ -192,6 +212,20 @@ Run `/reload-plugins`, then type `/typescript7-lsp-intelligence:` to list its sk
 </details>
 
 <details>
+<summary><b>I see "no usable TypeScript compiler was found".</b></summary>
+
+The hook didn't find a `tsc` it could run, so it didn't block Claude but told it the file wasn't checked. The message lists every place it searched and everything it skipped. Install TypeScript 7 in your project or globally (`npm install -g typescript@7`); if it's already installed somewhere the list doesn't show, [report it](https://github.com/nerymurillohnd/the-claude-factory/issues/new?template=bug_report.yml&plugin=typescript7-lsp-intelligence) with that list.
+
+</details>
+
+<details>
+<summary><b>The language server doesn't start.</b></summary>
+
+Claude Code starts `tsc --lsp --stdio` by name from the `PATH` it was launched with. Run `tsc --version` in the shell you start `claude` from; it must print a 7.x version. If nothing prints, install TypeScript 7 globally. The desktop app and some IDEs don't load your shell profile, which is where nvm, fnm and Volta add Node.js to the `PATH`: start Claude Code from a terminal, or launch the IDE from one.
+
+</details>
+
+<details>
 <summary><b>No <code>Found N new diagnostic issues</code> line appears for TypeScript files. Is the server working?</b></summary>
 
 Yes. The native TypeScript 7 server answers navigation requests but doesn't push diagnostics after edits, so that line never appears for these files. Type errors reach Claude through the hook's check of each edit instead, and the skill teaches Claude to run the compiler itself when it needs a whole program or a caller in another file checked.
@@ -199,44 +233,30 @@ Yes. The native TypeScript 7 server answers navigation requests but doesn't push
 </details>
 
 <details>
-<summary><b>The hook says the plugin's TypeScript was not installed.</b></summary>
-
-Claude Code installs it with `npm` when it caches the plugin, within 60 seconds. If that failed (no `npm` on `PATH`, no network), `/plugin` shows a note on the plugin. Put `npm` on the `PATH` of the shell that starts `claude` and reinstall the plugin, or run `npm ci` inside the plugin folder `/plugin` names.
-
-</details>
-
-<details>
-<summary><b>I use <code>--plugin-dir</code> to try the plugin from a clone.</b></summary>
-
-Claude Code doesn't install dependencies for a plugin loaded in place. Run `npm ci --ignore-scripts` in the plugin folder once.
-
-</details>
-
-<details>
 <summary><b>My project has hundreds of legacy errors. Will Claude chase them all?</b></summary>
 
-The hook reports the program's errors with the edited file's first, because an error elsewhere in the same program is often breakage the edit caused. Claude fixes what its change broke; legacy errors in untouched programs never come up, since the hook runs only on programs that contain a changed file.
+No. The strictest policy applies to the files Claude edits. Errors in other files appear only when your own config finds them too, because the edit probably caused them. When the strictest run finds errors in other files that your config accepts, the success line gives their count instead of hiding them. Programs without a changed file are never checked.
 
 </details>
 
 <details>
 <summary><b>The check is slow on a large program.</b></summary>
 
-Each edit compiles the whole program; TypeScript 7's native compiler is several times faster than TypeScript 6, which is why this plugin exists. Splitting a huge program into project references makes each check smaller. The hook gives up after 120 seconds and says nothing, so a slow program is never checked in silence for long.
+Each edit compiles the whole program; TypeScript 7's native compiler is several times faster than TypeScript 6. Splitting a huge program into project references makes each check smaller. The hook stops after 120 seconds and tells Claude it timed out, so a slow program is never passed as checked.
 
 </details>
 
 <details>
-<summary><b>A JavaScript file passed but has obvious type errors.</b></summary>
+<summary><b>Does it check JavaScript files?</b></summary>
 
-`allowJs` admits JavaScript to the program; only `checkJs` in `tsconfig.json`, or a `// @ts-check` comment at the top of the file, type-checks it. Turn one of them on.
+Yes. The strictest policy turns on `checkJs`, so a JavaScript file Claude edits is type-checked from its JSDoc types, in its program when your `include` covers it and alone otherwise. JavaScript files Claude didn't touch are reported only when your own config checks them too.
 
 </details>
 
 <details>
 <summary><b>Does it work on Windows?</b></summary>
 
-Through Git Bash: start Claude Code from a Git Bash shell that has `node` and `npm` on its `PATH`.
+Through Git Bash: start Claude Code from a Git Bash shell that has Node.js and a global TypeScript 7 `tsc` on its `PATH`.
 
 </details>
 

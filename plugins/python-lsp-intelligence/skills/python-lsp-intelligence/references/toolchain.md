@@ -1,5 +1,7 @@
 # Python toolchain: ruff and basedpyright
 
+Snapshot: the configuration lookup, exit codes, JSON fields and `uv python find --script` behavior in this file were checked on 2026-10-15 with ruff 0.17.0 and basedpyright 1.40.2.
+
 ## Contents
 
 - Install
@@ -25,7 +27,7 @@ uv tool install basedpyright
 | Tool | Lookup order | How to see what applies |
 | :-- | :-- | :-- |
 | ruff | The closest `ruff.toml`, `.ruff.toml` or `pyproject.toml` with `[tool.ruff]` above the file; then the user-level `~/.config/ruff/ruff.toml` (or `pyproject.toml`); then ruff's defaults. The closest file wins outright, parents are not merged (`extend = "../ruff.toml"` inherits on purpose) | `ruff check --show-settings <file>` prints `Settings path:` with the file it resolved; no such line means defaults |
-| basedpyright | `pyrightconfig.json`, else `pyproject.toml` with `[tool.basedpyright]` (or `[tool.pyright]`), **in the current working directory only**. It does not walk up from the file | `basedpyright --verbose <file>` prints `Loading pyproject.toml file at …` when it found one; run it from the project root or pass `-p <config file>` |
+| basedpyright | `pyrightconfig.json`, else `pyproject.toml` with `[tool.basedpyright]` (or `[tool.pyright]`), searched from the **current working directory** upward through its parent folders, never from the file's folder: a file outside the working directory's tree gets no configuration | `basedpyright --verbose <file>` prints `Loading configuration file at …` (`pyrightconfig.json`) or `Loading pyproject.toml file at …` when it found one, and neither line otherwise; run it from the project root or pass `-p <config file>` |
 
 A `pyrightconfig.json` always wins over a `pyproject.toml` beside it.
 
