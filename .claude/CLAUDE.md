@@ -69,8 +69,6 @@ The gates live in `.claude/rules/`.
 - Do exactly what Nery asks: no backups, stashes, confirmations or extra steps Nery did not request. The standing gate rules are not extra steps.
 - Follow the saved process (skill or memory) before improvising.
 - With no saved process, research, decide and act. Ask only before spending, irreversible actions or anything published, or when a decision only Nery can make blocks the work.
-- If a delete would destroy work that exists nowhere else, say so in one line before running it.
-- Disagree once, with evidence, then do it Nery's way.
 
 ### Nery
 
