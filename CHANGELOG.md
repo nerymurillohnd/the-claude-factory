@@ -10,6 +10,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The
 
 - **bash-lsp-intelligence** 0.2.1 — the skill stops offering operations bash-language-server does not support, and the hook's types and docs are tightened with the same behavior.
 - **python-lsp-intelligence** 0.2.1 — the skill again says a finding is fixed at its cause and never silenced, and the docs now say how basedpyright finds its configuration.
+- **github-operations** 0.1.1 — the command guard also blocks printing `$GITHUB_PAT`, and the docs list `delete_repository` and every `X-MCP-Readonly` value.
 
 ## 2026-10-16
 
@@ -19,6 +20,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The
 - **typescript7-lsp-intelligence** 0.3.0 — uses your own TypeScript 7 instead of a pinned copy; a Bash hook runs the native compiler without Node.js and holds every edit to a strictest policy with your project's environment; the skill is now `ts-lifecycle`, shared with the TypeScript 6 plugin; a compiler crash or a project `noCheck` can no longer pass as checked.
 
 ## 2026-10-15
+
+### Added
+
+- **github-operations** 0.1.0 — carries a pull request from open to merge with a read-only tracker agent, cleans up a Git repository without losing work, and brings the GitHub MCP server with it.
 
 ### Removed
 

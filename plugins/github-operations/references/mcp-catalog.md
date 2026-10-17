@@ -14,7 +14,7 @@ Tools with a `method` parameter group several operations (`pull_request_read`, `
 
 ## Repositories and files
 
-`search_repositories` R, `create_repository` W, `fork_repository` W, `list_repository_collaborators` R, `get_file_contents` R, `get_repository_tree` R+, `search_code` R, `create_or_update_file` W, `push_files` W, `delete_file` W!, `star_repository` W+, `unstar_repository` W+, `list_starred_repositories` R+
+`search_repositories` R, `create_repository` W, `fork_repository` W, `list_repository_collaborators` R, `get_file_contents` R, `get_repository_tree` R+, `search_code` R, `create_or_update_file` W, `push_files` W, `delete_file` W!, `delete_repository` W, `star_repository` W+, `unstar_repository` W+, `list_starred_repositories` R+
 
 ## Commits, branches, tags, releases
 
