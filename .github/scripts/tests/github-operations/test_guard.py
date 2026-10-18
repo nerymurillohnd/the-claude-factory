@@ -320,8 +320,18 @@ class GuardTests(unittest.TestCase):
                 "grep -r ghp_ ~/.claude",
                 "grep -r ghp_ $HOME/.claude/",
                 "grep -r x ~/.ssh",
+                f"grep -r ghp_ {Path.home()}/.claude",
+                'grep -r ghp_ "$CLAUDE_CONFIG_DIR"',
+                "rg -uu ghp_ ~/.claude/..",
+                "grep -r ghp_ ~",
+                "security -qi",
+                "security -iq",
             ],
         )
+        _, grep, _ = run_guard(
+            {"tool_name": "Grep", "tool_input": {"pattern": "x", "path": f"{Path.home()}/.claude"}}
+        )
+        assert grep == "deny"
 
     def test_keychain_metadata_reads_pass(self) -> None:
         self.check(
@@ -332,6 +342,10 @@ class GuardTests(unittest.TestCase):
                 "security show-keychain-info",
                 "security -q list-keychains",
                 "grep -rn foo .claude/",
+                "git log --stat -- .docker",
+                "git diff --stat -- .kube",
+                "git log --name-only -- .aws",
+                f"grep -rn foo {Path.home()}/code/repo",
             ],
         )
 

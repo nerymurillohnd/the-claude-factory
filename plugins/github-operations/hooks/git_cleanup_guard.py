@@ -22,6 +22,8 @@ from __future__ import annotations
 
 import fnmatch
 import json
+import os
+from pathlib import Path
 import re
 import shlex
 import sys
@@ -90,6 +92,7 @@ PATCH_FLAGS = frozenset(
 )  # fmt: skip
 PATCH_PREFIXES = ("-L", "-U", "--unified", "--word-diff", "--color-words")
 SEARCH_TOOLS = frozenset({"grep", "egrep", "fgrep", "rg", "ag", "sed", "awk"})
+RECURSIVE_READERS = frozenset({"rg", "ag"})
 SECRET_VARIABLE = re.compile(
     r"\$\{?(?:\w*(?:token|secret|passw|api_?key|credential|private_?key)|(?:\w*_)?pat\b)",
     re.IGNORECASE,
@@ -154,7 +157,7 @@ GLOB_SAMPLES = (
     ".env", ".envrc", ".netrc", ".npmrc", "id_rsa", "server.pem", "secrets", "credentials",
     ".credentials.json",
 )  # fmt: skip
-HOME_CLAUDE = frozenset({"~/.claude", "$HOME/.claude", "${HOME}/.claude"})
+CONFIG_DIR_VARIABLES = ("$CLAUDE_CONFIG_DIR", "${CLAUDE_CONFIG_DIR}")
 FILE_READERS = frozenset(
     {
         "cat", "head", "tail", "less", "more", "bat", "nl", "tac", "sed", "awk", "grep",
@@ -227,12 +230,31 @@ def glob_hits_secret(name: str) -> bool:
     )
 
 
-def is_secret_path(token: str, *, strong_only: bool = False) -> bool:
-    """True when a token names a file or folder that usually holds secrets."""
-    if token.rstrip("/\\") in HOME_CLAUDE:
+def holds_claude_config(token: str) -> bool:
+    """True when a path is Claude Code's config folder, which holds its credentials, or above it."""
+    if any(variable in token for variable in CONFIG_DIR_VARIABLES):
         return True
+    path = Path(token.replace("${HOME}", "~").replace("$HOME", "~")).expanduser()
+    if not path.is_absolute():
+        return False
+    path = Path(os.path.normpath(path))
+    configs = [Path("~/.claude").expanduser(), Path(os.environ.get("CLAUDE_CONFIG_DIR") or "~")]
+    return any(
+        path == config or path in config.parents
+        for config in (Path(os.path.normpath(config.expanduser())) for config in configs)
+    )
+
+
+def is_secret_path(token: str, *, strong_only: bool = False, folders: bool = False) -> bool:
+    """True when a token names a file or folder that usually holds secrets.
+
+    folders is for recursive readers: they also read what a secret folder named on its own,
+    or a folder above Claude Code's config, holds.
+    """
     parts = [part for part in re.split(r"[\\/]", token) if part]
-    if any(part in SECRET_DIRS for part in parts):
+    if any(part in SECRET_DIRS for part in parts[:-1]):
+        return True
+    if folders and ((parts and parts[-1] in SECRET_DIRS) or holds_claude_config(token)):
         return True
     if any((parts[i], parts[i + 1]) in SECRET_PAIRS for i in range(len(parts) - 1)):
         return True
@@ -244,14 +266,16 @@ def is_secret_path(token: str, *, strong_only: bool = False) -> bool:
     return not strong_only and bool(WEAK_SECRET.match(name))
 
 
-def secret_verdict(tokens: list[str], *, strong_only: bool = False) -> Verdict | None:
-    """Deny when any token names a secret-bearing file."""
+def secret_verdict(
+    tokens: list[str], *, strong_only: bool = False, folders: bool = False
+) -> Verdict | None:
+    """Deny when any token names a secret-bearing file, or a secret folder for folders=True."""
     for token in tokens:
         candidate = token.lstrip("<")
         if (
             candidate
             and not candidate.startswith("-")
-            and is_secret_path(candidate, strong_only=strong_only)
+            and is_secret_path(candidate, strong_only=strong_only, folders=folders)
         ):
             return DENY, (
                 f"'{candidate}' looks like a secret-bearing file; the audit reports its name only "
@@ -637,7 +661,7 @@ def classify_keychain(rest: list[str]) -> Verdict | None:
     """Deny macOS keychain commands that print a stored password, such as plugin tokens."""
     subcommand = ""
     for index, arg in enumerate(rest):
-        if arg == "-i":
+        if is_cluster(arg, "i"):
             return DENY, "security -i runs keychain commands from input the guard can't check."
         if not arg.startswith("-") and rest[index - 1 : index] != ["-p"]:
             subcommand = arg
@@ -650,12 +674,26 @@ def classify_keychain(rest: list[str]) -> Verdict | None:
     return None
 
 
+def reads_recursively(name: str, rest: list[str]) -> bool:
+    """True when a file reader descends into the folders it is given."""
+    letters = "rRa" if name == "cp" else "rR"
+    return name in RECURSIVE_READERS or any(
+        arg.startswith("--recursive")
+        or arg == "--dereference-recursive"
+        or is_cluster(arg, letters)
+        for arg in rest
+    )
+
+
 def classify_other(name: str, rest: list[str]) -> Verdict | None:
     """Return the verdict for commands that are neither git, gh nor security."""
     if name in {"git-filter-repo", "bfg"}:
         return DENY, f"{name} {REWRITES}"
     if name in FILE_READERS:
-        return secret_verdict(reader_arguments(name, rest)) or classify_file_change(name, rest)
+        folders = reads_recursively(name, rest)
+        return secret_verdict(
+            reader_arguments(name, rest), folders=folders
+        ) or classify_file_change(name, rest)
     if name in FILE_CHANGERS or name == "find":
         return classify_file_change(name, rest)
     if name in NETWORK_TOOLS:
@@ -765,7 +803,7 @@ def decide_tool(tool: str, event: object) -> Verdict | None:
     """Verdict for the non-Bash tools: secret reads, file writes and MCP actions."""
     if tool in {"Read", "Grep"}:
         paths = [text_at(event, "tool_input", key) for key in ("file_path", "path", "glob")]
-        return secret_verdict([path for path in paths if path])
+        return secret_verdict([path for path in paths if path], folders=tool == "Grep")
     if tool in WRITE_TOOLS or (tool.startswith("mcp__") and not READ_MCP.search(tool)):
         return ASK, f"{tool} may change files or a service; the audit phase is read-only."
     return None
