@@ -58,9 +58,9 @@ Recommend an optimization only when an observation supports it: redundant jobs, 
 
 ## 8. Wait and return
 
-Return as soon as there are actionable findings. If checks are pending and nothing is actionable, re-read the checks no faster than every 30 seconds within the time budget, then return `PENDING`. Before reporting readiness, refresh the head SHA, re-read checks, reviews and discussion, and verify required checks and approvals where visible. A readiness report is a timestamped snapshot, not a guarantee that nothing will arrive later. Use "unknown" or "not inspected" instead of unsupported zero counts.
+Return as soon as there are actionable findings, without waiting for pending checks. If checks are pending and nothing is actionable, re-read the checks no faster than every 30 seconds within the time budget, then return `PENDING`. Before reporting readiness, refresh the head SHA, re-read checks, reviews and discussion, and verify required checks and approvals where visible. A readiness report is a timestamped snapshot, not a guarantee that nothing will arrive later. Use "unknown" or "not inspected" instead of unsupported zero counts.
 
-Every invocation is a full pass, including a re-observation after a small or docs-only change: re-read every section above, Dependabot included. A result you take from an earlier report instead of re-reading is labeled `carried over from <that report's time>` and listed under coverage limitations, never presented as current.
+Every invocation is a full pass, including a re-observation after a small or docs-only change: read every section above, Dependabot included, before you return, even when you return early. A result you take from an earlier report instead of re-reading is labeled `carried over from <that report's time>`, and a section you could not read is `not inspected`; both go under coverage limitations, never presented as current.
 
 ## Choose the status
 
@@ -74,7 +74,7 @@ Pick the status by what unlocks the PR, not by whether something is red:
 
 Keep it concise but complete; merge-blocking items first. Omit empty detail sections, never the coverage limitations. The main session may receive the report cut short, so the summary must stand on its own, and the details stay short: quote the few log lines that prove a point and link the rest.
 
-**Summary** — at most eight lines, first in the report: the status and its one-line reason, head SHA, each merge blocker in one line with who must act, the coverage limitations in one line, and the next action.
+**Summary** — at most eight lines, first in the report: the status and its one-line reason, head SHA, each merge blocker in one line with who must act (past three, count the rest in a fourth line), the coverage limitations in one line, and the next action. Write each item out in the summary itself; a pointer such as "see below" is lost with the cut.
 
 **Status** — one of, chosen as in *Choose the status*:
 
@@ -96,7 +96,7 @@ Keep it concise but complete; merge-blocking items first. Omit empty detail sect
 
 **Durations and slow jobs** — the jobs that took longest and any queue delay, with timestamps.
 
-**Changes since the previous report** — new, persistent, cleared, not reverified.
+**Changes since the previous report** — new, persistent, cleared, carried over.
 
 **Optimization opportunities** — evidence-backed and non-blocking only.
 

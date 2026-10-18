@@ -29,7 +29,7 @@ When the report lists a coverage gap because an MCP tool was missing (fewer tool
 
 ## Classify the report
 
-Map the tracker's status to a lifecycle state from `SKILL.md`: `ACTION_REQUIRED` to `actionable`, `PENDING` to `pending` (or `timeout` when the budget ended with nothing changing), `BLOCKED` to `blocked`, `READY_FOR_MAIN_SESSION` to `ready` only after you verify readiness yourself, `MERGED_OR_CLOSED` to a terminal outcome after you confirm it on GitHub. Classify warnings, security alerts and optimization suggestions separately from merge blockers. An existing unrelated alert does not make this PR responsible for remediation. Do not declare readiness when a verification gap prevents evaluating a required gate.
+Map the tracker's status to a lifecycle state from `SKILL.md`: `ACTION_REQUIRED` to `actionable`, `PENDING` to `pending` (or `timeout` when the budget ended with nothing changing), `BLOCKED` to `blocked` (unless every outside blocker is a check the report marks as not required: then evaluate readiness yourself against the required gates and the user's own rules, and list the failure in the approval request), `READY_FOR_MAIN_SESSION` to `ready` only after you verify readiness yourself, `MERGED_OR_CLOSED` to a terminal outcome after you confirm it on GitHub. Classify warnings, security alerts and optimization suggestions separately from merge blockers. An existing unrelated alert does not make this PR responsible for remediation. Do not declare readiness when a verification gap prevents evaluating a required gate.
 
 ## Keep monitoring to a terminal decision
 
