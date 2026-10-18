@@ -16,7 +16,7 @@ The plugin connects Claude Code to GitHub's official remote MCP server with ever
 | `X-MCP-Insiders` | `true`: GitHub's early-access mode, which adds the tools marked *Early access* below |
 
 > [!IMPORTANT]
-> Claude Code asks for the token when you install the plugin from a session and keeps it in your system's secure credential store. The README's [Configuration](../plugins/github-operations/README.md#-configuration) shows how to set or change it. Until it is set, the plugin's GitHub server is missing from `/mcp`. Until you fix it, Claude reads GitHub through `gh`.
+> Claude Code asks for the token when you install the plugin from a session and keeps it in your system's secure credential store. The README's [Configuration](../plugins/github-operations/README.md#-configuration) shows how to set or change it. Until it is set, the plugin's GitHub server is missing from `/mcp` and Claude reads GitHub through `gh`.
 
 ## 🔐 Your token decides what works
 

@@ -140,7 +140,7 @@ The plugin has one option, your GitHub token.
 
 | Option | Type | Default | Description |
 | :-- | :-- | :-- | :-- |
-| `github_token` | string, sensitive, required | none | The token the bundled GitHub MCP server sends as `Authorization: Bearer`. Claude Code keeps it in your system's secure credential store (the macOS Keychain, or a protected credentials file on Linux and Windows), never in `settings.json`, and never shows it again once saved |
+| `github_token` | string, sensitive, required | none | The token the bundled GitHub MCP server sends as `Authorization: Bearer`. Claude Code keeps it in your system's secure credential store, the same place it keeps your Claude Code sign-in, never in `settings.json`, and never shows it again once saved |
 
 **Step 1. Create a token.** Make a [fine-grained personal access token](https://github.com/settings/personal-access-tokens/new) for the repositories you work in, with only the permissions you want Claude to have.
 
@@ -148,15 +148,15 @@ The plugin has one option, your GitHub token.
 
 | Where | How |
 | :-- | :-- |
-| In a session | Installing with `/plugin install` opens **Configure GitHub Operations** right away: paste the token, then choose **Save configuration**. To set or change it later, run `/plugin configure github-operations@the-claude-factory`, or open `/plugin` → **Installed** → **GitHub Operations** → **Configure options**. The change applies at once |
+| In a session | Installing with `/plugin install` opens **Configure GitHub Operations** right away: paste the token, then choose **Save configuration**. To set or change it later, run `/plugin configure github-operations@the-claude-factory`, or open `/plugin` → **Installed** → **GitHub Operations** → **Configure options**. Claude Code reloads the plugin as soon as you save |
 | In your shell | `claude plugin install` doesn't ask; it tells you the option is not set yet. Run `claude plugin configure github-operations@the-claude-factory --values-stdin`, paste `{"github_token": "<your token>"}` and press `Ctrl+D`, then restart Claude Code. The token stays out of your shell history |
 
 > [!WARNING]
-> The **Configure** dialog shows the token while you paste it. Paste it when nobody can see your screen, or use the shell form.
+> In Claude Code v2.1.302 the **Configure** dialog shows the token while you paste it. Paste it when nobody can see your screen, or use the shell form.
 
 **Step 3. Check it.** Run `/mcp` and look for `plugin:github-operations:github` marked as connected.
 
-The option isn't listed in `/config`, because Claude Code keeps sensitive options out of it. Uninstalling the plugin deletes the stored token.
+The option isn't listed in `/config`, because Claude Code keeps sensitive options out of it. Uninstalling the plugin from every scope it's installed in deletes the stored token.
 
 ### Coming from 0.1.x?
 
@@ -214,7 +214,7 @@ In a session: `/plugin` → **Installed** → **GitHub Operations** → **Uninst
 | :-- | :--: | :--: |
 | 🎯 Skills | ✅ | ⚠️ they load, but they need `git`, `gh` and your repository on your computer, and the cleanup guard hook that protects your repository doesn't run in a chat conversation, so use Claude Code |
 | 🤖 Agents | ✅ | ⚠️ in Cowork sessions, not in a chat conversation |
-| 🔌 MCP server (remote) | ✅ needs your token, set as in [Configuration](#-configuration) | ⚠️ the app can't ask for the token, so the server doesn't connect there; use Claude Code |
+| 🔌 MCP server (remote) | ✅ needs your token, set as in [Configuration](#-configuration) | ⚠️ the app can't ask for the token: Cowork skips the server, and a chat conversation has no way to set it, so use Claude Code |
 
 <sub>✅ works · ⚠️ partial · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. The Claude app (web, desktop and mobile) runs a conversation as a Cowork session when it can, and as a chat conversation otherwise, for example on a device that can't run Cowork or in the separate Chat mode that Team and Enterprise plans keep for now.</sub>
 
