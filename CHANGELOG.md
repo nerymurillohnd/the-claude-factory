@@ -8,7 +8,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The
 
 ### Changed
 
-- **github-operations** 0.2.1 — the README shows how to set the GitHub token for a plugin added in the Claude app, which Claude Code never asks for.
+- **github-operations** 0.2.1 — the README shows how to set the GitHub token for a plugin turned on in claude.ai, which Claude Code doesn't ask for.
 - **github-operations** 0.2.0 — **Breaking:** the GitHub token is now a sensitive plugin option kept in your secure credential store instead of `GITHUB_PAT`, so the MCP server also connects from the Claude Code desktop app; the guard also blocks reading that store.
 
 ## 2026-10-17
