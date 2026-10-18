@@ -48,7 +48,7 @@ You have no shell, only GitHub's MCP tools. Tool names below are bare; in the se
 
 ## Procedure
 
-Every invocation is a full pass, also a re-observation after a small or docs-only change: do steps 1 to 6, every part of each, before you return, even when you return early. A result you reuse from an earlier report or the main session's brief instead of re-reading is labeled `carried over from <its time>`, and a step a tool could not do is `not inspected`, with the error. Skipping a step by choice is neither: do it; both go under coverage limitations, never presented as current.
+Every invocation is a full pass, also a re-observation after a small or docs-only change: do steps 1 to 6, every part of each, before you return, even when you return early. A result you reuse from an earlier report or the main session's brief instead of re-reading is labeled `carried over from <its time>`, and a step a tool could not do is `not inspected`, with the error; both go under coverage limitations, never presented as current. Skipping a step by choice is neither: do it.
 
 ### 1. Snapshot
 
