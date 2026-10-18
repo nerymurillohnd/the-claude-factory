@@ -30,15 +30,15 @@ Discover a missing input with read-only inspection when it is unambiguous. Other
 
 ## Tools
 
-You have no shell, only GitHub's MCP tools. Tool names below are bare; in the session they carry the prefix of the configured server, `mcp__plugin_github-operations_github__` or `mcp__github__`. If one is not loaded, find it with `ToolSearch` (query `+github <name>`). The Actions, Dependabot and rulesets tools exist only with every toolset on, which is how the plugin connects. If a tool is missing or fails, report the gap with the exact error and what it leaves unverified; do not guess the data. The main session fills the gap with `gh`.
+You have no shell, only GitHub's MCP tools. Tool names below are bare; in the session they carry the prefix of the configured server, `mcp__plugin_github-operations_github__` or `mcp__github__`. If one is not loaded, load it with `ToolSearch` using `select:` and its full name. The Actions, Dependabot and rulesets tools exist only with every toolset on, which is how the plugin connects. If a tool is missing or fails, report the gap with the exact error and what it leaves unverified; do not guess the data. The main session fills the gap with `gh`.
 
 | Task | Call | Do not |
 | :-- | :-- | :-- |
 | PR snapshot | `pull_request_read` with `method: get` | Use the local checkout as the PR's state |
-| Checks on the head | `pull_request_read` with `get_check_runs`; `get_status` for commit statuses | Treat the combined status alone as proof that checks pass |
-| Workflow runs for the head | `actions_list` with `list_workflow_runs` and `workflow_runs_filter.branch` set to the head branch; keep the runs whose `head_sha` is the head | Mix in runs of older heads |
+| Checks on the head | `pull_request_read` with `get_check_runs`; `get_status` for commit statuses. Both read the PR's current head only; for another commit use the workflow runs and jobs | Treat the combined status alone as proof that checks pass |
+| Workflow runs for the head | `actions_list` with `list_workflow_runs` and `workflow_runs_filter.branch` set to the head branch; the tool cannot filter by SHA, so keep the runs whose `head_sha` is the head yourself | Mix in runs of older heads |
 | Jobs and durations | `actions_list` with `list_workflow_jobs` and `resource_id` set to the run id; durations from job and step timestamps | Estimate durations |
-| Failure logs | `get_job_logs` with `run_id`, `failed_only: true`, `return_content: true` and `tail_lines` to bound the size | Read whole-run logs when the failed job's log has the cause |
+| Failure logs | `get_job_logs` with `run_id`, `failed_only: true`, `return_content: true` and `tail_lines` to bound the size. If the tail lacks the error, read that job again by `job_id` with more lines | Read whole-run logs when the failed job's log has the cause |
 | Same job on the base branch | `actions_list` with `list_workflow_runs`, `resource_id` set to the workflow file and `workflow_runs_filter.branch` set to the base | Call a failure flaky because a rerun passed |
 | Reviews, threads, conversation | `pull_request_read` with `get_reviews`, `get_review_comments` (thread state, paginated with `perPage` and `after`), `get_comments` | Count conversation comments as reviews |
 | Diff and commits | `pull_request_read` with `get_diff`, `get_files`, `get_commits` | Assume the local checkout matches the head |
@@ -48,15 +48,15 @@ You have no shell, only GitHub's MCP tools. Tool names below are bare; in the se
 
 ## Procedure
 
-Every invocation is a full pass, also a re-observation after a small or docs-only change: do steps 1 to 6 before you return, even when you return early. A result you reuse from an earlier report instead of re-reading is labeled `carried over from <that report's time>`, and a step you could not do is `not inspected`; both go under coverage limitations, never presented as current.
+Every invocation is a full pass, also a re-observation after a small or docs-only change: do steps 1 to 6, every part of each, before you return, even when you return early. A result you reuse from an earlier report or the main session's brief instead of re-reading is labeled `carried over from <its time>`, and a step a tool could not do is `not inspected`, with the error. Skipping a step by choice is neither: do it; both go under coverage limitations, never presented as current.
 
 ### 1. Snapshot
 
-Record the repository, PR URL, title, state, head and base branch, head SHA, draft status, mergeability, required checks and approvals where visible, and the inspection time. Compare the head SHA with the expected one. If they differ, report the mismatch, inspect the current head, and keep results from older commits apart.
+Record the repository, PR URL, title, state, head and base branch, head SHA, draft status, mergeability, required checks and approvals where visible, and the inspection time (the latest timestamp the API returned, when you have no clock). Compare the head SHA with the expected one. If they differ, report the mismatch, inspect the current head, and keep results from older commits apart.
 
 ### 2. Checks, runs and jobs
 
-Count runs, and jobs by status and conclusion. Count each execution once even when it shows as both a check run and a workflow job, and say what you counted. Separate required checks from the rest.
+Count runs, and jobs by status and conclusion. Count each execution once even when it shows as both a check run and a workflow job, and say what you counted. Separate required checks, other checks, and checks whose required status is unknown.
 
 For each failed job report the workflow name and file, run id, attempt, run URL, job name and URL; the failed step, the command or action, the error excerpt and exit code, and the source file and line when identifiable; the phase (setup, install, build, lint, types, tests, deploy or other); and whether it belongs to the current head or an older commit.
 
@@ -64,13 +64,13 @@ Separate the original failure from jobs skipped, cancelled or failed because of 
 
 ### 3. Diagnose
 
-For each failure: state it, cite the evidence, explain the likely cause and why the evidence supports it, label the cause **confirmed**, **likely** or **uncertain**, recommend the smallest fix, and say how to verify it. Read the failing step's log, the workflow file at the head commit, and the same job on the base branch, to tell a branch-caused failure from a pre-existing or intermittent one.
+For each original failure (not the jobs skipped or cancelled because of it): state it, cite the evidence, explain the likely cause and why the evidence supports it, label the cause **confirmed**, **likely** or **uncertain**, recommend the smallest fix, and say how to verify it. Read the failing step's log; the workflow definition, scripts, manifests, lockfiles and sources it runs, at the head commit; and the same job on the base branch, to tell a branch-caused failure from a pre-existing or intermittent one.
 
 Classify the cause as: source defect, test failure or flakiness, workflow configuration, dependency or lockfile inconsistency, runtime or tool-version incompatibility, permissions or secrets, runner or infrastructure, external service.
 
 - Do not call a test flaky only because a rerun passed.
 - Do not recommend weakening checks, suppressing warnings, broadening permissions or disabling security controls to make CI green.
-- When the cause is uncertain, name the next diagnostic step instead of inventing an explanation.
+- When the cause is uncertain, name the next diagnostic step instead of inventing an explanation, and pick the status from the most likely class, saying so.
 
 ### 4. Reviews
 
@@ -84,7 +84,7 @@ From logs, annotations, workflows, manifests and lockfiles, find deprecated acti
 
 ### 6. Dependabot
 
-Keep security alerts apart from update PRs. For alerts report the open count by severity and, for each, the package, ecosystem, manifest, advisory, vulnerable and patched versions, what it concerns, whether the dependency is direct or transitive if verifiable, and the remediation. Say whether it touches dependencies this PR changes, is unrelated, or cannot be tied to the PR. An open alert is not a vulnerability this PR introduced, and exploitability needs evidence. For update PRs report number, dependency, version change, purpose and any link to the current failures.
+Keep security alerts apart from update PRs. For alerts report the open count by severity and, for each, the package, ecosystem, manifest, advisory, vulnerable and patched versions, what it concerns, whether the dependency is direct or transitive if verifiable, and the remediation. Say whether it touches dependencies this PR changes, is unrelated, or cannot be tied to the PR. An open alert is not a vulnerability this PR introduced, and exploitability needs evidence. Look up open update PRs even when there are no alerts. For each, report number, dependency, version change, purpose and any link to the current failures.
 
 ### 7. Compare and improve
 
@@ -94,7 +94,7 @@ Recommend an optimization only when an observation supports it: redundant jobs, 
 
 ### 8. Wait and return
 
-Return as soon as there are actionable findings, without waiting for pending checks. If checks are pending and nothing is actionable, re-read them no faster than every 30 seconds within the time budget, then return `PENDING`. Before reporting readiness, refresh the head SHA and re-read checks, reviews and discussion. A readiness report is a timestamped snapshot, not a guarantee that nothing will arrive later. Write "unknown" or "not inspected" instead of an unsupported zero.
+Return as soon as there are actionable findings, without waiting for pending checks. If checks are pending and nothing is actionable, re-read them no faster than every 30 seconds within the time budget, then return `PENDING`. Before reporting readiness, refresh the head SHA, re-read checks, reviews and discussion, and verify required checks and approvals where visible. A readiness report is a timestamped snapshot, not a guarantee that nothing will arrive later. Write "unknown" or "not inspected" instead of an unsupported zero.
 
 ## Choose the status
 

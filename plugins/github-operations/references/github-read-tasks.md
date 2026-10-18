@@ -11,19 +11,19 @@ Exact forms for inspecting a pull request and its CI without changing anything. 
 ## Checks on the current head
 
 - gh: `gh pr checks <n> -R <owner>/<repo> --json name,bucket,workflow,link,startedAt,completedAt`. `bucket` is `pass`, `fail`, `pending`, `skipping` or `cancel`; exit code 8 means pending. `--watch --fail-fast -i 30` waits for the checks to finish.
-- MCP: `pull_request_read` with `get_check_runs` for per-check detail.
+- MCP: `pull_request_read` with `get_check_runs` for per-check detail, on the PR's current head only.
 - Not: the combined status (`get_status`) alone as proof that checks pass.
 
 ## Workflow runs for the head
 
-- MCP: `actions_list` with `list_workflow_runs`.
+- MCP: `actions_list` with `list_workflow_runs` and `workflow_runs_filter.branch`; it cannot filter by SHA, so keep the runs whose `head_sha` is the head.
 - gh: `gh run list -R <owner>/<repo> --commit <sha> --json databaseId,name,workflowName,status,conclusion,attempt,url`.
 - Not: `gh run list` without `--commit`, which mixes older heads.
 
 ## Jobs, durations and failure logs
 
 - gh: `gh run view <run-id> -R <owner>/<repo> --json jobs` gives job and step `startedAt` and `completedAt`; durations come from these. Then `gh run view <run-id> -R <owner>/<repo> --log-failed` for the cause.
-- MCP: `actions_list` with `list_workflow_jobs`, and `get_job_logs` with `run_id`, `failed_only: true`, `return_content: true` and `tail_lines` to bound the size.
+- MCP: `actions_list` with `list_workflow_jobs`, and `get_job_logs` with `run_id`, `failed_only: true`, `return_content: true` and `tail_lines` to bound the size. If the tail lacks the error, read that job again by `job_id` with more lines.
 - Not: `--log` for the whole run unless `--log-failed` lacks the cause; it can be huge.
 
 ## Is the failure real?
