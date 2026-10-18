@@ -6,6 +6,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-10-18
+
+### Fixed
+
+- The README now covers a plugin you added in the Claude app. Claude Code loads it as `github-operations@synced` and never asks for the token, so the GitHub server doesn't start and `/plugin` lists the plugin under **Needs attention** with `Plugin option "github_token" isn't set`. *Configuration* and *Troubleshooting* now give the fix: `/plugin configure github-operations@synced`, then `/reload-plugins`.
+
 ## [0.2.0] - 2026-10-18
 
 ### Changed
@@ -42,7 +48,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 - `git-cleanup` inventory: `--from` with a saved file that is not a JSON object reports a JSON error and exits 0, instead of ending with a traceback.
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/github-operations--v0.2.0...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/github-operations--v0.2.1...HEAD
+[0.2.1]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/github-operations--v0.2.1
 [0.2.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/github-operations--v0.2.0
 [0.1.1]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/github-operations--v0.1.1
 [0.1.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/github-operations--v0.1.0
