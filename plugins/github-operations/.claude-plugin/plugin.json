@@ -1,7 +1,7 @@
 {
   "name": "github-operations",
   "displayName": "GitHub Operations",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Carries a GitHub pull request from open to merge, cleans up a Git repository without losing work, and brings the GitHub MCP server with it.",
   "author": {
     "name": "Nery Murillo",
@@ -27,5 +27,14 @@
     "surfaces": [
       "claude-code"
     ]
+  },
+  "userConfig": {
+    "github_token": {
+      "type": "string",
+      "title": "GitHub token",
+      "description": "A fine-grained personal access token (github.com/settings/personal-access-tokens/new) for the repositories you work in, with only the permissions you want Claude to have. The bundled GitHub MCP server sends it as a Bearer header. Stored in your system's secure credential store, not in settings.json.",
+      "required": true,
+      "sensitive": true
+    }
   }
 }
