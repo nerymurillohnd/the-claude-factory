@@ -11,12 +11,12 @@ The plugin connects Claude Code to GitHub's official remote MCP server with ever
 | Setting | Value |
 | :-- | :-- |
 | Server | `https://api.githubcopilot.com/mcp/` |
-| Your token | The `GITHUB_PAT` environment variable, sent as `Authorization: Bearer` |
+| Your token | The plugin's `github_token` option, sent as `Authorization: Bearer` |
 | `X-MCP-Toolsets` | `all`: every toolset GitHub offers |
 | `X-MCP-Insiders` | `true`: GitHub's early-access mode, which adds the tools marked *Early access* below |
 
 > [!IMPORTANT]
-> Set `GITHUB_PAT` in the environment that starts Claude Code. The README's [Configuration](../plugins/github-operations/README.md#-configuration) shows where to keep the token. If it is missing, `/mcp` warns that `GITHUB_PAT` is not set and GitHub answers `400 — Authorization header is badly formatted`. Until you fix it, Claude reads GitHub through `gh`.
+> Claude Code asks for the token when you enable the plugin and keeps it in your system's secure credential store. The README's [Configuration](../plugins/github-operations/README.md#-configuration) shows how to set or change it. If it is missing, `/mcp` shows the GitHub server as failed. Until you fix it, Claude reads GitHub through `gh`.
 
 ## 🔐 Your token decides what works
 
@@ -230,7 +230,7 @@ Use `mcp__plugin_github-operations_github` to block the whole server. When a too
 
 ### 3. Use your own server instead
 
-Turn the plugin's server off in `/mcp`, then add your own to the project's `.mcp.json`. Name it `github`, so the tracker agent can use its tools. This example offers every toolset but only the tools that read:
+Turn the plugin's server off in `/mcp`, then add your own to the project's `.mcp.json`. Name it `github`, so the tracker agent can use its tools. This example offers every toolset but only the tools that read. It reads the token from a `GITHUB_PAT` environment variable, so start Claude Code from a shell that sets it:
 
 ```json
 {

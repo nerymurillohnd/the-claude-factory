@@ -53,7 +53,7 @@
 | **Claude Code** | v2.1.295 or later — check with `claude --version` |
 | **Surfaces** | Claude Code only. See [Compatibility](#-compatibility) |
 | **External tools** | `git` and `python3` 3.9 or later on `PATH`. Git 2.38 or later adds the merge preview of each branch; older Git reports it as unavailable and the audit continues. `gh` signed in, to read run logs, rerun jobs, enable auto-merge and delete branches, and as the fallback when a GitHub MCP tool is missing. On Windows, Git for Windows |
-| **Accounts / API keys** | A GitHub personal access token in the `GITHUB_PAT` environment variable of the shell that starts Claude Code (see [Configuration](#-configuration)). Without it the MCP server fails in `/mcp` and Claude uses `gh` |
+| **Accounts / API keys** | A GitHub personal access token. Claude Code asks for it when you enable the plugin and keeps it in your system's secure credential store (see [Configuration](#-configuration)). Without it the MCP server fails in `/mcp` and Claude uses `gh` |
 
 ## 📥 Installation
 
@@ -136,23 +136,36 @@ Pass an absolute path to clean another repository, or text that is not a folder 
 
 ## 🔧 Configuration
 
-The plugin has no options to fill in. It needs one thing: your GitHub token in an environment variable named **`GITHUB_PAT`**. The name is fixed, because the bundled MCP server reads exactly that variable. Where you keep the token is up to you.
+The plugin has one option, your GitHub token. Claude Code asks for it when you enable the plugin.
+
+| Option | Type | Default | Description |
+| :-- | :-- | :-- | :-- |
+| `github_token` | string, sensitive, required | none | The token the bundled GitHub MCP server sends as `Authorization: Bearer`. Claude Code masks it while you type and stores it in your system's secure credential store (the macOS Keychain, or a protected credentials file on Linux and Windows), never in `settings.json` |
 
 **Step 1. Create a token.** Make a [fine-grained personal access token](https://github.com/settings/personal-access-tokens/new) for the repositories you work in, with only the permissions you want Claude to have.
 
-**Step 2. Keep it where `GITHUB_PAT` gets set before you start `claude`.** Pick one:
+**Step 2. Give it to Claude Code.** Paste it when Claude Code asks, after you install or enable the plugin. To set or change it later, pick one:
 
 | Where | How |
 | :-- | :-- |
-| Your shell startup file (`~/.zshenv`, `~/.zprofile` or `~/.zshrc`; `~/.bash_profile` or `~/.bashrc`) | Add `export GITHUB_PAT="<your token>"` |
-| A `.env` file outside your repositories | Keep `GITHUB_PAT=<your token>` in a file such as `~/.config/github/.env`, run `chmod 600` on it, and load it from your startup file with `set -a; . ~/.config/github/.env; set +a` |
-| The macOS Keychain | Save it once with `security add-generic-password -a "$USER" -s github-pat -w`, which asks for the token so it never lands in your shell history. Then add `export GITHUB_PAT="$(security find-generic-password -a "$USER" -s github-pat -w)"` to your startup file |
-| A secret manager's command line | Add `export GITHUB_PAT="$(<command that prints the token>)"` to your startup file |
+| In a session | `/plugin` → **Installed** → **GitHub Operations** → **Configure options** |
+| In your shell | `claude plugin configure github-operations@the-claude-factory --values-stdin`, then paste `{"github_token": "<your token>"}` and press `Ctrl+D`. The token never lands in your shell history |
 
-**Step 3. Start Claude Code from that shell**, then run `/mcp` and check that **GitHub** shows as connected. After you change where the token lives, restart Claude Code.
+**Step 3. Connect.** Run `/reload-plugins`, then `/mcp`, and check that **GitHub** shows as connected.
 
-> [!NOTE]
-> Don't use `CLAUDE_ENV_FILE` for this. Claude Code documents it for the shell commands Claude runs, not for MCP server settings. If you start Claude Code from an editor or an app instead of a terminal, make sure that program can see `GITHUB_PAT` too.
+The option isn't listed in `/config`, because Claude Code keeps sensitive options out of it. Uninstalling the plugin deletes the stored token.
+
+### Coming from 0.1.x?
+
+Version 0.1.x read the token from a `GITHUB_PAT` environment variable. From 0.2.0 the plugin reads only its own `github_token` option, which also works when you start Claude Code from the desktop app or an editor instead of a terminal. Updating doesn't copy the token for you, so after the update `/mcp` shows the GitHub server as failed until you set it.
+
+If `GITHUB_PAT` is still set in your shell, move it in one step with [`jq`](https://jqlang.org/download/):
+
+```bash
+jq -n '{github_token: env.GITHUB_PAT}' | claude plugin configure github-operations@the-claude-factory --values-stdin
+```
+
+Then run `/reload-plugins` in your session. `jq` reads the variable itself, so the token never appears on a command line. You can remove `GITHUB_PAT` from your shell startup file once nothing else uses it.
 
 ### What the GitHub server includes
 
@@ -198,7 +211,7 @@ In a session: `/plugin` → **Installed** → **GitHub Operations** → **Uninst
 | :-- | :--: | :--: |
 | 🎯 Skills | ✅ | ⚠️ they load, but they need `git`, `gh` and your repository on your computer, and the cleanup guard hook that protects your repository doesn't run in a chat conversation, so use Claude Code |
 | 🤖 Agents | ✅ | ⚠️ in Cowork sessions, not in a chat conversation |
-| 🔌 MCP server (remote) | ✅ needs `GITHUB_PAT` in the environment | ⚠️ it reads `GITHUB_PAT` from the environment that starts Claude Code, so use Claude Code |
+| 🔌 MCP server (remote) | ✅ asks for your token when you enable the plugin | ⚠️ the app can't ask for the token, so the server doesn't connect there; use Claude Code |
 
 <sub>✅ works · ⚠️ partial · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. The Claude app (web, desktop and mobile) runs a conversation as a Cowork session when it can, and as a chat conversation otherwise, for example on a device that can't run Cowork or in the separate Chat mode that Team and Enterprise plans keep for now.</sub>
 
@@ -218,8 +231,8 @@ Look at the message, then fix the token. Until you do, the monitoring agent has 
 
 | What you see | Why | What to do |
 | :-- | :-- | :-- |
-| `/mcp` warns that `GITHUB_PAT` is not set, or `400 — Authorization header is badly formatted` | The variable is not in the environment that started Claude Code | Define `GITHUB_PAT` as in [Configuration](#-configuration), then restart `claude` from that shell |
-| `401 — token authentication failed` | The token is wrong or expired | Create a new token and update where you keep it |
+| `Plugin option "github_token" isn't set`, or `400 — Authorization header is badly formatted` | The token is not set, for example right after updating from 0.1.x | Set it as in [Configuration](#-configuration), then run `/reload-plugins` |
+| `401 — token authentication failed` | The token is wrong or expired | Create a new token and set it again with **Configure options** |
 | Some tools work and others don't | The token lacks a permission those tools need | Add the permission to the token |
 
 </details>
