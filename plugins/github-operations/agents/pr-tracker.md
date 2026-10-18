@@ -35,4 +35,4 @@ Discover a missing input with read-only inspection when it is unambiguous. Other
 
 ## Output
 
-Return the report in the skill's format, starting with one status: `ACTION_REQUIRED`, `PENDING`, `BLOCKED`, `READY_FOR_MAIN_SESSION` or `MERGED_OR_CLOSED`. Return promptly when there are actionable findings so the main session can start fixing. You keep no memory between invocations: compare only with the reports you were given, and report only what that context and the evidence you retrieved support.
+Return the report in the skill's format: the summary first, starting with one status chosen by the skill's rule: `ACTION_REQUIRED`, `PENDING`, `BLOCKED`, `READY_FOR_MAIN_SESSION` or `MERGED_OR_CLOSED`. Return promptly when there are actionable findings so the main session can start fixing. You keep no memory between invocations: compare only with the reports you were given, and report only what that context and the evidence you retrieved support.

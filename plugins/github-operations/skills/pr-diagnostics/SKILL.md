@@ -60,15 +60,27 @@ Recommend an optimization only when an observation supports it: redundant jobs, 
 
 Return as soon as there are actionable findings. If checks are pending and nothing is actionable, re-read the checks no faster than every 30 seconds within the time budget, then return `PENDING`. Before reporting readiness, refresh the head SHA, re-read checks, reviews and discussion, and verify required checks and approvals where visible. A readiness report is a timestamped snapshot, not a guarantee that nothing will arrive later. Use "unknown" or "not inspected" instead of unsupported zero counts.
 
+Every invocation is a full pass, including a re-observation after a small or docs-only change: re-read every section above, Dependabot included. A result you take from an earlier report instead of re-reading is labeled `carried over from <that report's time>` and listed under coverage limitations, never presented as current.
+
+## Choose the status
+
+Pick the status by what unlocks the PR, not by whether something is red:
+
+- A failure or finding the main session can fix in the branch, or answer in a review thread, makes it `ACTION_REQUIRED`.
+- A failure only an outside party can clear (an expired or missing secret, permissions, a runner or service outage, a check unrelated to the diff that fails the same way on other PRs) makes it `BLOCKED`, naming who must act and how. If the failing check is not required, say so: whether it blocks the merge is the main session's policy, not yours.
+- With both kinds present, `ACTION_REQUIRED` wins, and the report lists the external blockers too.
+
 ## Report format
 
-Keep it concise but complete; merge-blocking items first. Omit empty detail sections, never the coverage limitations.
+Keep it concise but complete; merge-blocking items first. Omit empty detail sections, never the coverage limitations. The main session may receive the report cut short, so the summary must stand on its own, and the details stay short: quote the few log lines that prove a point and link the rest.
 
-**Status** — one of:
+**Summary** — at most eight lines, first in the report: the status and its one-line reason, head SHA, each merge blocker in one line with who must act, the coverage limitations in one line, and the next action.
 
-- `ACTION_REQUIRED`: actionable failures, review findings or verified blockers.
+**Status** — one of, chosen as in *Choose the status*:
+
+- `ACTION_REQUIRED`: failures or review findings the main session can fix or answer.
 - `PENDING`: checks or required approvals are outstanding.
-- `BLOCKED`: access or an external dependency prevents verification.
+- `BLOCKED`: a missing input, missing access, or a blocker only an outside party can clear.
 - `READY_FOR_MAIN_SESSION`: no observed blockers; list any housekeeping.
 - `MERGED_OR_CLOSED`: the PR is no longer open.
 
