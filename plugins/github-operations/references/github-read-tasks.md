@@ -1,6 +1,6 @@
 # Read-only GitHub tasks
 
-Exact forms for inspecting a pull request and its CI without changing anything. For each task, the first form is preferred and the other is the fallback, in both directions: when a tool is missing or fails, use the other layer, and report a gap only after both failed with the exact error of each. The `pr-tracker` agent has no shell and uses only the MCP forms; the main session uses either layer. Replace `<owner>/<repo>`, `<n>`, `<sha>`, `<run-id>`. MCP tool names are bare; in a session they carry the prefix of the configured GitHub server. The Actions, Dependabot and rulesets MCP tools exist only with all toolsets on, which is how the plugin connects. The `gh` forms were checked against `gh --help` field lists, and most were run read-only against a real PR. The MCP forms follow the tool schemas and were not executed.
+Exact forms for inspecting a pull request and its CI without changing anything. For each task, the first form is preferred and the other is the fallback, in both directions: when a tool is missing or fails, use the other layer, and report a gap only after both failed with the exact error of each. The main session uses either layer; the `pr-tracker` agent has no shell and carries the MCP forms in its own instructions. Replace `<owner>/<repo>`, `<n>`, `<sha>`, `<run-id>`. MCP tool names are bare; in a session they carry the prefix of the configured GitHub server. The Actions, Dependabot and rulesets MCP tools exist only with all toolsets on, which is how the plugin connects. The `gh` forms were checked against `gh --help` field lists, and most were run read-only against a real PR. The MCP forms follow the tool schemas and were not executed.
 
 ## PR snapshot
 
@@ -11,19 +11,19 @@ Exact forms for inspecting a pull request and its CI without changing anything. 
 ## Checks on the current head
 
 - gh: `gh pr checks <n> -R <owner>/<repo> --json name,bucket,workflow,link,startedAt,completedAt`. `bucket` is `pass`, `fail`, `pending`, `skipping` or `cancel`; exit code 8 means pending. `--watch --fail-fast -i 30` waits for the checks to finish.
-- MCP: `pull_request_read` with `get_check_runs` for per-check detail.
+- MCP: `pull_request_read` with `get_check_runs` for per-check detail, on the PR's current head only.
 - Not: the combined status (`get_status`) alone as proof that checks pass.
 
 ## Workflow runs for the head
 
-- MCP: `actions_list` with `list_workflow_runs`.
+- MCP: `actions_list` with `list_workflow_runs` and `workflow_runs_filter.branch`; it cannot filter by SHA, so keep the runs whose `head_sha` is the head.
 - gh: `gh run list -R <owner>/<repo> --commit <sha> --json databaseId,name,workflowName,status,conclusion,attempt,url`.
 - Not: `gh run list` without `--commit`, which mixes older heads.
 
 ## Jobs, durations and failure logs
 
 - gh: `gh run view <run-id> -R <owner>/<repo> --json jobs` gives job and step `startedAt` and `completedAt`; durations come from these. Then `gh run view <run-id> -R <owner>/<repo> --log-failed` for the cause.
-- MCP: `actions_list` with `list_workflow_jobs`, and `get_job_logs` with `run_id`, `failed_only: true`, `return_content: true` and `tail_lines` to bound the size.
+- MCP: `actions_list` with `list_workflow_jobs`, and `get_job_logs` with `run_id`, `failed_only: true`, `return_content: true` and `tail_lines` to bound the size. If the tail lacks the error, read that job again by `job_id` with more lines.
 - Not: `--log` for the whole run unless `--log-failed` lacks the cause; it can be huge.
 
 ## Is the failure real?

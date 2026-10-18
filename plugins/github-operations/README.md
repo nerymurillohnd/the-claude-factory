@@ -41,7 +41,6 @@
 | :-- | :-- | :-- | :-- |
 | 🎯 Skill | `github-operations:auto-pr-lifecycle` | Drives a pull request from any stage to merge: validate, push, watch, repair, resolve threads, ask, merge, clean up and sync | `/github-operations:auto-pr-lifecycle`, or automatically when you ask to open, ship, babysit or land a PR |
 | 🎯 Skill | `github-operations:git-cleanup` | Audits a Git repository, builds the cleanup plan with you, then executes and verifies what you approve | `/github-operations:git-cleanup` only; Claude never starts it on its own |
-| 🎯 Skill | `github-operations:pr-diagnostics` | The inspection procedure and report format the tracker agent follows | Preloaded by the agent; not meant to be run directly |
 | 🤖 Agent | `github-operations:pr-tracker` | Read-only monitor of a PR's checks, jobs, logs, reviews, warnings and security alerts; reports to Claude | Launched by `auto-pr-lifecycle` on every monitoring cycle |
 | 🪝 Hook | `PreToolUse` | Refuses dangerous commands and secret reads during a cleanup, and asks you to confirm every command that changes state | Automatically, from the moment you start `git-cleanup` until the session ends |
 | 🔌 MCP server | `github` | GitHub's remote MCP server with every toolset and early-access mode: pull requests, issues, Actions, security alerts and more. See [GitHub MCP tools](../../docs/github-mcp-tools.md) | Tools appear as `mcp__plugin_github-operations_github__*` |
@@ -150,6 +149,7 @@ The plugin has one option, your GitHub token.
 | :-- | :-- |
 | In a session | Installing with `/plugin install` opens **Configure GitHub Operations** right away: paste the token, then choose **Save configuration**. To set or change it later, run `/plugin configure github-operations@the-claude-factory`, or open `/plugin` → **Installed** → **GitHub Operations** → **Configure options**. Claude Code reloads the plugin as soon as you save |
 | In your shell | `claude plugin install` doesn't ask; it tells you the option is not set yet. Run `claude plugin configure github-operations@the-claude-factory --values-stdin`, paste `{"github_token": "<your token>"}` and press `Ctrl+D`, then restart Claude Code. The token stays out of your shell history |
+| Added in the Claude app | Claude Code loads a plugin you turned on in claude.ai as `github-operations@synced`, and as of v2.1.302 it doesn't ask for that copy's token, so `/plugin` → **Installed** lists `github` under **Needs attention** as `failed to load`. Run `/plugin configure github-operations@synced`, paste the token and save, then run `/reload-plugins` (or `/reload-plugins --force` if it asks). If you also installed the plugin from the marketplace, Claude Code loads that copy instead, so set the token there |
 
 > [!WARNING]
 > In Claude Code v2.1.302 the **Configure** dialog shows the token while you paste it. Paste it when nobody can see your screen, or use the shell form.
@@ -214,7 +214,7 @@ In a session: `/plugin` → **Installed** → **GitHub Operations** → **Uninst
 | :-- | :--: | :--: |
 | 🎯 Skills | ✅ | ⚠️ they load, but they need `git`, `gh` and your repository on your computer, and the cleanup guard hook that protects your repository doesn't run in a chat conversation, so use Claude Code |
 | 🤖 Agents | ✅ | ⚠️ in Cowork sessions, not in a chat conversation |
-| 🔌 MCP server (remote) | ✅ needs your token, set as in [Configuration](#-configuration) | ⚠️ the app can't ask for the token: Cowork skips the server, and a chat conversation has no way to set it, so use Claude Code |
+| 🔌 MCP server (remote) | ✅ needs your token, set as in [Configuration](#-configuration) | ⚠️ the app can't ask for the token: Cowork skips the server, and a chat conversation has no way to set it, so use Claude Code, where you set it as in [Configuration](#-configuration) |
 
 <sub>✅ works · ⚠️ partial · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. The Claude app (web, desktop and mobile) runs a conversation as a Cowork session when it can, and as a chat conversation otherwise, for example on a device that can't run Cowork or in the separate Chat mode that Team and Enterprise plans keep for now.</sub>
 
@@ -235,6 +235,7 @@ Look at the message, then fix the token. Until you do, the monitoring agent has 
 | What you see | Why | What to do |
 | :-- | :-- | :-- |
 | `plugin:github-operations:github` is missing from `/mcp` | The token is not set: you skipped the dialog, installed from the shell, or just updated from 0.1.x | Set it as in [Configuration](#-configuration) |
+| `/plugin` lists `github` under **Needs attention** as `failed to load`, with `Plugin option "github_token" isn't set` | You turned the plugin on in claude.ai, and Claude Code doesn't ask for the token of that copy | Run `/plugin configure github-operations@synced`, as in [Configuration](#-configuration) |
 | The server is marked failed, or `401 — token authentication failed` | The token is wrong or expired | Create a new token and set it again with **Configure options** |
 | Some tools work and others don't | The token lacks a permission those tools need | Add the permission to the token |
 

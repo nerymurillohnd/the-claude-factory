@@ -6,6 +6,23 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-10-18
+
+### Changed
+
+- The `pr-tracker` agent now carries its whole procedure in its own instructions: what to inspect, how to diagnose, how to pick the status, how to write the report, and which read-only GitHub tool to use for each task, with the exact parameters. It no longer reads plugin files when it starts, so it also drops its `Read`, `Grep` and `Glob` tools.
+
+### Removed
+
+- **Breaking:** the `github-operations:pr-diagnostics` skill. Only the `pr-tracker` agent loaded it, and its content now lives in the agent itself. Nothing changes in how you use the plugin.
+
+### Fixed
+
+- The README now covers a plugin you turned on in claude.ai. Claude Code loads it as `github-operations@synced` and doesn't ask for its token, so the GitHub server doesn't start and `/plugin` lists `github` under **Needs attention** with `Plugin option "github_token" isn't set`. *Configuration* and *Troubleshooting* now give the fix: `/plugin configure github-operations@synced`, then `/reload-plugins`.
+- The `pr-tracker` report now opens with a short summary that stands on its own: the status and why, each merge blocker with who must act, the coverage gaps and the next action. A report that reaches Claude cut short no longer loses them.
+- The `pr-tracker` agent now reports `BLOCKED`, not `ACTION_REQUIRED`, when the only thing standing in the way is something only an outside party can clear, such as an expired CI secret or a service outage. It also says when the failing check isn't required. When every outside blocker is a check that isn't required, `auto-pr-lifecycle` doesn't stop there: it checks readiness itself and names the failure when it asks you to approve the merge.
+- Every `pr-tracker` round re-reads everything, Dependabot alerts included, even after a docs-only change. Anything taken from an earlier report is labeled as carried over, never shown as current.
+
 ## [0.2.0] - 2026-10-18
 
 ### Changed
@@ -42,7 +59,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 - `git-cleanup` inventory: `--from` with a saved file that is not a JSON object reports a JSON error and exits 0, instead of ending with a traceback.
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/github-operations--v0.2.0...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/github-operations--v0.3.0...HEAD
+[0.3.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/github-operations--v0.3.0
 [0.2.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/github-operations--v0.2.0
 [0.1.1]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/github-operations--v0.1.1
 [0.1.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/github-operations--v0.1.0
