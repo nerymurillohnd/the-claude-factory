@@ -47,8 +47,8 @@ Chosen option: **fold the skill into the agent body**. It keeps the agent's whol
 
 | What must be true | How it is checked | Result | When to re-check |
 | --- | --- | --- | --- |
-| The agent reports correctly from its body alone | A/B run on the PR #20 expired-token failure (run 39138684403, attempt 1) | pending | Before PR #20 merges |
-| No file still references `pr-diagnostics` | `rg -n pr-diagnostics plugins docs README.md`, excluding changelogs | pending | Before PR #20 merges |
+| The agent reports correctly from its body alone | A/B run on the PR #20 expired-token failure (run 39138684403, attempt 1), agent body as the only instructions | 2026-10-18: `BLOCKED`, six-line self-contained summary, Dependabot re-read, classic protection reported `not inspected`; its notes led to the wording fixes in the same PR | When the agent body changes |
+| No file still references `pr-diagnostics` | `rg -n pr-diagnostics plugins docs README.md`, excluding changelogs | 2026-10-18: no match | Before each release of the plugin |
 
 ## More information
 
