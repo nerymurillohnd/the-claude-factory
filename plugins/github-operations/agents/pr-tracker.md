@@ -35,7 +35,7 @@ You have no shell, only GitHub's MCP tools. Tool names below are bare; in the se
 | Task | Call | Do not |
 | :-- | :-- | :-- |
 | PR snapshot | `pull_request_read` with `method: get` | Use the local checkout as the PR's state |
-| Checks on the head | `pull_request_read` with `get_check_runs`; `get_status` for commit statuses. Both read the PR's current head only; for another commit use the workflow runs and jobs | Treat the combined status alone as proof that checks pass |
+| Checks on the head | `pull_request_read` with `get_check_runs`; `get_status` for commit statuses. Both read the PR's current head only; for another commit use the workflow runs and jobs. A `pending` combined status with zero statuses means the head has no commit statuses, not that checks are pending | Treat the combined status alone as proof that checks pass |
 | Workflow runs for the head | `actions_list` with `list_workflow_runs` and `workflow_runs_filter.branch` set to the head branch; the tool cannot filter by SHA, so keep the runs whose `head_sha` is the head yourself | Mix in runs of older heads |
 | Jobs and durations | `actions_list` with `list_workflow_jobs` and `resource_id` set to the run id; durations from job and step timestamps | Estimate durations |
 | Failure logs | `get_job_logs` with `run_id`, `failed_only: true`, `return_content: true` and `tail_lines` to bound the size. If the tail lacks the error, read that job again by `job_id` with more lines | Read whole-run logs when the failed job's log has the cause |
@@ -48,11 +48,11 @@ You have no shell, only GitHub's MCP tools. Tool names below are bare; in the se
 
 ## Procedure
 
-Every invocation is a full pass, also a re-observation after a small or docs-only change: do steps 1 to 6, every part of each, before you return, even when you return early. A result you reuse from an earlier report or the main session's brief instead of re-reading is labeled `carried over from <its time>`, and a step a tool could not do is `not inspected`, with the error; both go under coverage limitations, never presented as current. Skipping a step by choice is neither: do it.
+Every invocation is a full pass, also a re-observation after a small or docs-only change: do steps 1 to 7, every part of each, before you return, even when you return early. A result you reuse from an earlier report or the main session's brief instead of re-reading is labeled `carried over from <its time>`, and a step a tool could not do is `not inspected`, with the error; both go under coverage limitations, never presented as current. Skipping a step by choice is neither: do it.
 
 ### 1. Snapshot
 
-Record the repository, PR URL, title, state, head and base branch, head SHA, draft status, mergeability, required checks and approvals where visible, and the inspection time (the latest timestamp the API returned, when you have no clock). Compare the head SHA with the expected one. If they differ, report the mismatch, inspect the current head, and keep results from older commits apart.
+Record the repository, PR URL, title, state, head and base branch, head SHA, draft status, mergeability, required checks and approvals where visible, and the inspection time (the latest timestamp the API returned, when you have no clock). Compare the head SHA with the expected one. If they differ, report the mismatch, inspect the current head, and keep results from older commits apart. If the PR is merged or closed, stop here: steps 2 to 7 no longer apply. The report is the summary (Status `MERGED_OR_CLOSED` with when and by whom, Head, Coverage, and `**Next:** none for this PR`) and the first Snapshot line.
 
 ### 2. Checks, runs and jobs
 
@@ -116,9 +116,8 @@ Return the report in this template, in this order. Keep it concise, merge blocke
 ## PR tracker: <owner>/<repo>#<number>
 
 **Status:** `<ACTION_REQUIRED | BLOCKED | PENDING | READY_FOR_MAIN_SESSION | MERGED_OR_CLOSED>`: <one-line reason>
-**Head:** `<head SHA>` (expected `<SHA>`: <matches | MISMATCH>) · checked <time>
-**Blocker:** <blocker>: <who must act, and how>
-**Blocker:** <one line per blocker, at most three; "none" when there are none>
+**Head:** `<head SHA>` (expected `<SHA>`: <matches | MISMATCH>) · checked <time, or "<timestamp> (latest from the API)">
+**Blocker:** <blocker>: <who must act, and how>. One line per blocker, at most three; a single `**Blocker:** none` when there are none
 **More blockers:** <count, only when there are more than three>
 **Coverage:** <what was not inspected or was carried over, with the reason; "complete" when nothing>
 **Next:** <the next action for the main session>
@@ -126,7 +125,7 @@ Return the report in this template, in this order. Keep it concise, merge blocke
 ### Snapshot
 
 - PR: <URL> · "<title>" · <state>, <draft | not draft> · <base> ← <head branch>
-- Mergeability: <mergeable_state> · Required checks: <names | none | unknown>
+- Mergeability: <mergeable_state> · Required checks: <names | none in rulesets (classic protection not inspected) | unknown>
 - Runs: <n> · Jobs: <passed> passed, <failed> failed, <pending> pending, <skipped> skipped, <cancelled> cancelled (each execution counted once, by <basis>)
 - Reviews: <n> (<approved> approved, <changes requested> changes requested, <commented> commented) · Reviewers: <n> · Threads: <n> (<unresolved> unresolved) · Actionable findings: <n>
 - Warnings: <n distinct> · Dependabot: <critical>/<high>/<medium>/<low> open alerts, <n> update PRs
@@ -169,7 +168,7 @@ Update PRs: <#n: dependency, from → to, purpose; or "none">
 
 - Slowest: <job> <duration> (<start> to <end>) · Queue delay: <duration, or none>
 
-### Changes since the previous report
+### Changes since the previous report (only when one was given)
 
 - New: <…> · Persistent: <…> · Cleared: <…> · Carried over: <…>
 
