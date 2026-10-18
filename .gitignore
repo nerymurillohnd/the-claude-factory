@@ -32,3 +32,6 @@ eval-results/
 
 # Claude Code auto memory (machine-local)
 .claude/memory/
+
+# Session handoffs (machine-local; they can hold personal and cross-project notes)
+.claude/session-handoff/
