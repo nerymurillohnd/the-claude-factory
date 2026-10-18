@@ -41,7 +41,6 @@
 | :-- | :-- | :-- | :-- |
 | 🎯 Skill | `github-operations:auto-pr-lifecycle` | Drives a pull request from any stage to merge: validate, push, watch, repair, resolve threads, ask, merge, clean up and sync | `/github-operations:auto-pr-lifecycle`, or automatically when you ask to open, ship, babysit or land a PR |
 | 🎯 Skill | `github-operations:git-cleanup` | Audits a Git repository, builds the cleanup plan with you, then executes and verifies what you approve | `/github-operations:git-cleanup` only; Claude never starts it on its own |
-| 🎯 Skill | `github-operations:pr-diagnostics` | The inspection procedure and report format the tracker agent follows | Preloaded by the agent; not meant to be run directly |
 | 🤖 Agent | `github-operations:pr-tracker` | Read-only monitor of a PR's checks, jobs, logs, reviews, warnings and security alerts; reports to Claude | Launched by `auto-pr-lifecycle` on every monitoring cycle |
 | 🪝 Hook | `PreToolUse` | Refuses dangerous commands and secret reads during a cleanup, and asks you to confirm every command that changes state | Automatically, from the moment you start `git-cleanup` until the session ends |
 | 🔌 MCP server | `github` | GitHub's remote MCP server with every toolset and early-access mode: pull requests, issues, Actions, security alerts and more. See [GitHub MCP tools](../../docs/github-mcp-tools.md) | Tools appear as `mcp__plugin_github-operations_github__*` |
