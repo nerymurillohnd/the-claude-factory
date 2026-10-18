@@ -152,7 +152,9 @@ SECRET_DIRS = frozenset({".ssh", ".aws", ".gnupg", ".docker", ".kube"})
 SECRET_PAIRS = frozenset({(".git", "config"), (".config", "gh"), (".config", "gcloud")})
 GLOB_SAMPLES = (
     ".env", ".envrc", ".netrc", ".npmrc", "id_rsa", "server.pem", "secrets", "credentials",
+    ".credentials.json",
 )  # fmt: skip
+HOME_CLAUDE = frozenset({"~/.claude", "$HOME/.claude", "${HOME}/.claude"})
 FILE_READERS = frozenset(
     {
         "cat", "head", "tail", "less", "more", "bat", "nl", "tac", "sed", "awk", "grep",
@@ -227,8 +229,10 @@ def glob_hits_secret(name: str) -> bool:
 
 def is_secret_path(token: str, *, strong_only: bool = False) -> bool:
     """True when a token names a file or folder that usually holds secrets."""
+    if token.rstrip("/\\") in HOME_CLAUDE:
+        return True
     parts = [part for part in re.split(r"[\\/]", token) if part]
-    if any(part in SECRET_DIRS for part in parts[:-1]):
+    if any(part in SECRET_DIRS for part in parts):
         return True
     if any((parts[i], parts[i + 1]) in SECRET_PAIRS for i in range(len(parts) - 1)):
         return True
@@ -631,7 +635,13 @@ def reader_arguments(name: str, rest: list[str]) -> list[str]:
 
 def classify_keychain(rest: list[str]) -> Verdict | None:
     """Deny macOS keychain commands that print a stored password, such as plugin tokens."""
-    subcommand = next(iter(positionals(rest)), "")
+    subcommand = ""
+    for index, arg in enumerate(rest):
+        if arg == "-i":
+            return DENY, "security -i runs keychain commands from input the guard can't check."
+        if not arg.startswith("-") and rest[index - 1 : index] != ["-p"]:
+            subcommand = arg
+            break
     prints_password = subcommand in KEYCHAIN_DUMPS or (
         subcommand in KEYCHAIN_LOOKUPS and any(is_cluster(arg, "wg") for arg in rest)
     )

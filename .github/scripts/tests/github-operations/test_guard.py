@@ -313,6 +313,13 @@ class GuardTests(unittest.TestCase):
                 "/usr/bin/security find-internet-password -s github.com -g",
                 "security dump-keychain -d",
                 "security export -k login.keychain -o out.p12",
+                "cat ~/.claude/.cred*",
+                "cat ~/.claude/.credentials.*",
+                'echo "dump-keychain" | security -i',
+                "security -p x dump-keychain",
+                "grep -r ghp_ ~/.claude",
+                "grep -r ghp_ $HOME/.claude/",
+                "grep -r x ~/.ssh",
             ],
         )
 
@@ -323,6 +330,8 @@ class GuardTests(unittest.TestCase):
                 'security find-generic-password -s "Claude Code-credentials"',
                 "security list-keychains",
                 "security show-keychain-info",
+                "security -q list-keychains",
+                "grep -rn foo .claude/",
             ],
         )
 

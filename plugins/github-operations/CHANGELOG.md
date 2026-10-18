@@ -14,7 +14,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ### Fixed
 
-- The command guard now also denies commands that print the secure store where Claude Code keeps plugin tokens: reading `.credentials.json`, and macOS `security` commands that print a password (`find-generic-password` or `find-internet-password` with `-w` or `-g`, `dump-keychain`, `export`). Looking up a keychain entry without printing its password still passes.
+- The command guard now also denies commands that print the secure store where Claude Code keeps plugin tokens: reading `.credentials.json`, also through a wildcard such as `~/.claude/.cred*`, searching your `~/.claude` folder recursively, and macOS `security` commands that print a password (`find-generic-password` or `find-internet-password` with `-w` or `-g`, `dump-keychain`, `export`, and `security -i`, which reads its commands from input). Looking up a keychain entry without printing its password still passes. Pointing a reader at a secret folder itself, such as `grep -r … ~/.ssh`, is now denied too, as reading a file inside it already was.
 
 ## [0.1.1] - 2026-10-17
 
