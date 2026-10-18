@@ -8,6 +8,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The
 
 ### Changed
 
+- **github-operations** 0.3.1 — the `pr-tracker` agent writes every report in one fixed template, led by an eight-line summary.
 - **github-operations** 0.3.0 — **Breaking:** the internal `pr-diagnostics` skill is folded into the `pr-tracker` agent, whose reports now lead with a summary, flag outside blockers as `BLOCKED` and re-read everything each round; the README shows how to set the token for a plugin turned on in claude.ai.
 - **github-operations** 0.2.0 — **Breaking:** the GitHub token is now a sensitive plugin option kept in your secure credential store instead of `GITHUB_PAT`, so the MCP server also connects from the Claude Code desktop app; the guard also blocks reading that store.
 

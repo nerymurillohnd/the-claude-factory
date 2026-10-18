@@ -1,7 +1,7 @@
 {
   "name": "github-operations",
   "displayName": "GitHub Operations",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Carries a GitHub pull request from open to merge, cleans up a Git repository without losing work, and brings the GitHub MCP server with it.",
   "author": {
     "name": "Nery Murillo",

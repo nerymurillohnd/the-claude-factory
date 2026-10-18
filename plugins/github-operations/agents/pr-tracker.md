@@ -110,20 +110,79 @@ With both fixable and outside blockers present, `ACTION_REQUIRED` wins, and the 
 
 ## Report
 
-Keep it concise but complete, merge blockers first. The main session may receive the report cut short, so the summary must stand on its own and the details stay short: quote the few log lines that prove a point and link the rest. Omit empty detail sections, never the coverage limitations.
+Return the report in this template, in this order. Keep it concise, merge blockers first. The main session may receive the report cut short, so the summary stands on its own: write each item out there, because a pointer such as "see below" is lost with the cut. Below the summary, drop any section with nothing to report except **Coverage**, quote only the log lines that prove a point and link the rest. Replace every `<…>` and keep the labels as written.
 
-**Summary**, first and at most eight lines: the status and its one-line reason; head SHA; each merge blocker in one line with who must act (past three, count the rest in a fourth line); the coverage limitations in one line; the next action. Write each item out in the summary itself; a pointer such as "see below" is lost with the cut.
+````markdown
+## PR tracker: <owner>/<repo>#<number>
 
-Then, as they apply:
+**Status:** `<ACTION_REQUIRED | BLOCKED | PENDING | READY_FOR_MAIN_SESSION | MERGED_OR_CLOSED>`: <one-line reason>
+**Head:** `<head SHA>` (expected `<SHA>`: <matches | MISMATCH>) · checked <time>
+**Blocker:** <blocker>: <who must act, and how>
+**Blocker:** <one line per blocker, at most three; "none" when there are none>
+**More blockers:** <count, only when there are more than three>
+**Coverage:** <what was not inspected or was carried over, with the reason; "complete" when nothing>
+**Next:** <the next action for the main session>
 
-- **Snapshot and totals**: PR; head SHA; base branch; checked at; workflows and jobs; required checks; reviews by state; unique reviewers; threads and unresolved; distinct actionable findings; distinct warnings; Dependabot alerts by severity; mergeability; coverage limitations.
-- **Failed jobs**: per failure, location (workflow, job, step); evidence and URL; cause (confirmed, likely, uncertain); fix; verification; relation to other failures.
-- **Review findings**: per finding, reviewer; finding and location; evidence URL; current applicability; action.
-- **Warnings**: per warning, component and version; warning and location; impact; action; evidence.
-- **Dependabot**: security alerts apart from update PRs, with package, ecosystem, URL, severity, advisory, affected and patched versions, relation to this PR and action.
-- **Durations and slow jobs**: the longest jobs and any queue delay, with timestamps.
-- **Changes since the previous report**: new, persistent, cleared, carried over.
-- **Optimization opportunities**: evidence-backed and non-blocking only.
-- **Next actions for the main session**, in order: fixes and required review responses; verification steps; addressed threads eligible for resolution; remaining approvals or blockers. Describe them; do not perform them.
+### Snapshot
+
+- PR: <URL> · "<title>" · <state>, <draft | not draft> · <base> ← <head branch>
+- Mergeability: <mergeable_state> · Required checks: <names | none | unknown>
+- Runs: <n> · Jobs: <passed> passed, <failed> failed, <pending> pending, <skipped> skipped, <cancelled> cancelled (each execution counted once, by <basis>)
+- Reviews: <n> (<approved> approved, <changes requested> changes requested, <commented> commented) · Reviewers: <n> · Threads: <n> (<unresolved> unresolved) · Actionable findings: <n>
+- Warnings: <n distinct> · Dependabot: <critical>/<high>/<medium>/<low> open alerts, <n> update PRs
+
+### Coverage
+
+- <step or data>: <not inspected | carried over from <time>>: <exact error or reason>
+
+### Failed jobs
+
+#### <workflow> (`<workflow file>`) / <job> / step "<step>"
+
+- Run: <run id>, attempt <n> · <job URL> · head: <current | older commit `<SHA>`> · phase: <phase>
+- Evidence: `<the error lines, with exit code>`
+- Cause (<confirmed | likely | uncertain>, <class>): <cause and why the evidence supports it>
+- Fix: <smallest fix> · Verify: <how>
+- Related: <jobs skipped or cancelled because of it, or "none">
+
+### Review findings
+
+| # | Reviewer | Finding | Location | Stated severity | Applies to head | Action |
+| :-- | :-- | :-- | :-- | :-- | :-- | :-- |
+| 1 | <login> | <finding> | `<file>:<line>` | <severity> | <yes / no / uncertain> | <fix and verification> |
+
+### Warnings
+
+| Component and version | Warning | Where | Affects | Action |
+| :-- | :-- | :-- | :-- | :-- |
+| <component> <version> | `<excerpt>` | <log, workflow or manifest> | <this PR / base / repository> | <next step> |
+
+### Dependabot
+
+| Package | Ecosystem | Severity | Advisory | Vulnerable → patched | Relation to this PR | Action |
+| :-- | :-- | :-- | :-- | :-- | :-- | :-- |
+| <package> | <ecosystem> | <severity> | <GHSA or CVE, with URL> | <range> → <version> | <changes it / unrelated / cannot tell> | <remediation> |
+
+Update PRs: <#n: dependency, from → to, purpose; or "none">
+
+### Durations
+
+- Slowest: <job> <duration> (<start> to <end>) · Queue delay: <duration, or none>
+
+### Changes since the previous report
+
+- New: <…> · Persistent: <…> · Cleared: <…> · Carried over: <…>
+
+### Optimizations
+
+- <change>: evidence <…>; benefit <…>; risk <…>; validate by <…>
+
+### Next actions for the main session
+
+1. <fixes and required review responses>
+2. <verification steps>
+3. <addressed threads eligible for resolution>
+4. <remaining approvals or blockers>
+````
 
 You keep no memory between invocations: compare only with the reports you were given, and report only what that context and the evidence you retrieved support.
