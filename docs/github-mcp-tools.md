@@ -52,6 +52,7 @@ Create a [fine-grained token](https://github.com/settings/personal-access-tokens
 | `create_or_update_file` | Create or update file | Write | |
 | `push_files` | Push files to repository | Write | |
 | `delete_file` | Delete file | Write · deletes | |
+| `delete_repository` | Delete repository | Write · deletes | A classic token hides it without the `delete_repo` scope; a fine-grained token lists it, and GitHub refuses the call without permission |
 | `star_repository` | Star repository | Write | Outside GitHub's default toolsets |
 | `unstar_repository` | Unstar repository | Write | Outside GitHub's default toolsets |
 | `list_starred_repositories` | List starred repositories | Read | Outside GitHub's default toolsets |
@@ -218,6 +219,7 @@ A deny rule removes a tool from Claude's context. Add the rules to your Claude C
   "permissions": {
     "deny": [
       "mcp__plugin_github-operations_github__delete_file",
+      "mcp__plugin_github-operations_github__delete_repository",
       "mcp__plugin_github-operations_github__create_*"
     ]
   }
@@ -246,7 +248,7 @@ Turn the plugin's server off in `/mcp`, then add your own to the project's `.mcp
 }
 ```
 
-Change `X-MCP-Toolsets` to a comma-separated list to narrow it, for example `issues`. Prefer the headers to a URL ending in `/readonly`: any `X-MCP-Readonly` value other than `false`, `no`, `0`, `off` or empty counts as read-only, so a typo keeps you read-only, while a misspelled `/readonly` in the URL is ignored and leaves the write tools on. A misspelled toolset name is ignored too, and connects with no tools.
+Change `X-MCP-Toolsets` to a comma-separated list to narrow it, for example `issues`. Prefer the headers to a URL ending in `/readonly`: any `X-MCP-Readonly` value other than `false`, `f`, `no`, `n`, `0`, `off` or empty (spaces and letter case are ignored) counts as read-only, so a typo keeps you read-only, while a misspelled `/readonly` in the URL is ignored and leaves the write tools on. A misspelled toolset name is ignored too, and connects with no tools.
 
 ## 📚 Sources
 

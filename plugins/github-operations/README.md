@@ -52,7 +52,7 @@
 | :-- | :-- |
 | **Claude Code** | v2.1.295 or later — check with `claude --version` |
 | **Surfaces** | Claude Code only. See [Compatibility](#-compatibility) |
-| **External tools** | `git` and `python3` 3.9 or later on `PATH`. `gh` signed in, to read run logs, rerun jobs, enable auto-merge and delete branches, and as the fallback when a GitHub MCP tool is missing. On Windows, Git for Windows |
+| **External tools** | `git` and `python3` 3.9 or later on `PATH`. Git 2.38 or later adds the merge preview of each branch; older Git reports it as unavailable and the audit continues. `gh` signed in, to read run logs, rerun jobs, enable auto-merge and delete branches, and as the fallback when a GitHub MCP tool is missing. On Windows, Git for Windows |
 | **Accounts / API keys** | A GitHub personal access token in the `GITHUB_PAT` environment variable of the shell that starts Claude Code (see [Configuration](#-configuration)). Without it the MCP server fails in `/mcp` and Claude uses `gh` |
 
 ## 📥 Installation
@@ -166,7 +166,7 @@ The plugin connects to GitHub's official remote MCP server at `https://api.githu
 | Way | What it does |
 | :-- | :-- |
 | Limit the token | Fewer repositories or permissions. GitHub enforces it whatever Claude asks for |
-| Block tools in your settings | A deny rule such as `mcp__plugin_github-operations_github__delete_file` removes that tool from Claude's context. Use `mcp__plugin_github-operations_github` for the whole server |
+| Block tools in your settings | A deny rule such as `mcp__plugin_github-operations_github__delete_file` or `mcp__plugin_github-operations_github__delete_repository` removes that tool from Claude's context. Use `mcp__plugin_github-operations_github` for the whole server |
 | Use your own server | Turn this one off in `/mcp` and add yours with headers such as `X-MCP-Readonly: true` or a shorter `X-MCP-Toolsets` list |
 
 [GitHub MCP tools](../../docs/github-mcp-tools.md#️-reduce-what-claude-can-use) has the settings and the `.mcp.json` to copy. The pull request loop reads job logs and Dependabot alerts through the Actions and security tools; when you remove them, Claude reads that data through `gh` instead.

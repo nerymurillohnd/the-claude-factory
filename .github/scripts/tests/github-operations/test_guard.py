@@ -269,6 +269,9 @@ class GuardTests(unittest.TestCase):
                 "git var -l",
                 "cat ~/.config/gh/hosts.yml",
                 "echo $GITHUB_TOKEN",
+                'echo "$GITHUB_PAT"',
+                "echo ${GITHUB_PAT}",
+                "echo $GH_PAT",
                 "export",
                 "declare -p",
                 "cat ~/.pgpass",
@@ -297,6 +300,9 @@ class GuardTests(unittest.TestCase):
                 "echo ok && git push --force",
             ],
         )
+
+    def test_variables_that_only_resemble_a_token_name_pass(self) -> None:
+        self.check("", ['echo "$PATH"', "echo $PATHS", "echo $MY_PATTERN", "echo ${HOME}/path"])
 
     def test_secret_example_files_are_not_secrets(self) -> None:
         self.check("", ["cat .env.sample", "cat config/credentials.example", "cat id_rsa.pub"])
@@ -345,4 +351,4 @@ class GuardTests(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    unittest.main()
+    _ = unittest.main()
