@@ -301,6 +301,31 @@ class GuardTests(unittest.TestCase):
             ],
         )
 
+    def test_claude_code_credential_store_reads_are_denied(self) -> None:
+        self.check(
+            "deny",
+            [
+                "cat ~/.claude/.credentials.json",
+                "jq .pluginSecrets ~/.claude/.credentials.json",
+                "cd ~/.claude && cat .credentials.json",
+                'security find-generic-password -s "Claude Code-credentials" -w',
+                "security find-generic-password -ga Claude",
+                "/usr/bin/security find-internet-password -s github.com -g",
+                "security dump-keychain -d",
+                "security export -k login.keychain -o out.p12",
+            ],
+        )
+
+    def test_keychain_metadata_reads_pass(self) -> None:
+        self.check(
+            "",
+            [
+                'security find-generic-password -s "Claude Code-credentials"',
+                "security list-keychains",
+                "security show-keychain-info",
+            ],
+        )
+
     def test_variables_that_only_resemble_a_token_name_pass(self) -> None:
         self.check("", ['echo "$PATH"', "echo $PATHS", "echo $MY_PATTERN", "echo ${HOME}/path"])
 

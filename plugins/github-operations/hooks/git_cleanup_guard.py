@@ -136,7 +136,7 @@ STRONG_SECRET = re.compile(
     (
         r"^(\.env(\..+)?|\.envrc|.+\.(pem|p12|pfx|keystore|jks|kdbx|tfstate|tfvars)"
         r"|id_(rsa|dsa|ecdsa|ed25519)|\.netrc|\.npmrc|\.pypirc|\.git-credentials|\.htpasswd"
-        r"|\.vault_pass|\.dockerconfigjson|kubeconfig|\.pgpass|\.my\.cnf)$"
+        r"|\.vault_pass|\.dockerconfigjson|kubeconfig|\.pgpass|\.my\.cnf|\.credentials\.json)$"
     ),
     re.IGNORECASE,
 )
@@ -168,6 +168,8 @@ FILE_CHANGERS = frozenset(
     },
 )  # fmt: skip
 NETWORK_TOOLS = frozenset({"curl", "wget", "http", "https"})
+KEYCHAIN_DUMPS = frozenset({"dump-keychain", "export"})
+KEYCHAIN_LOOKUPS = frozenset({"find-generic-password", "find-internet-password"})
 GH_READ = frozenset(
     {
         "view", "list", "status", "diff", "checks", "get", "show", "watch", "browse", "help",
@@ -627,8 +629,19 @@ def reader_arguments(name: str, rest: list[str]) -> list[str]:
     return kept
 
 
+def classify_keychain(rest: list[str]) -> Verdict | None:
+    """Deny macOS keychain commands that print a stored password, such as plugin tokens."""
+    subcommand = next(iter(positionals(rest)), "")
+    prints_password = subcommand in KEYCHAIN_DUMPS or (
+        subcommand in KEYCHAIN_LOOKUPS and any(is_cluster(arg, "wg") for arg in rest)
+    )
+    if prints_password:
+        return DENY, "This prints a password from the keychain; the audit never reads secrets."
+    return None
+
+
 def classify_other(name: str, rest: list[str]) -> Verdict | None:
-    """Return the verdict for commands that are neither git nor gh."""
+    """Return the verdict for commands that are neither git, gh nor security."""
     if name in {"git-filter-repo", "bfg"}:
         return DENY, f"{name} {REWRITES}"
     if name in FILE_READERS:
@@ -655,6 +668,17 @@ def redirect_verdict(segment: list[str]) -> Verdict | None:
     return None
 
 
+def classify_command(name: str, rest: list[str], *, strict: bool) -> Verdict | None:
+    """Return the verdict for one command name and the tokens after it."""
+    if name == "git":
+        return classify_git(rest, strict=strict)
+    if name == "gh":
+        return classify_gh(rest)
+    if name == "security":
+        return classify_keychain(rest)
+    return classify_other(name, rest)
+
+
 def classify_segment(segment: list[str]) -> list[Verdict]:
     """Return the verdicts for one command segment: every token may start a command."""
     verdicts: list[Verdict] = []
@@ -671,12 +695,7 @@ def classify_segment(segment: list[str]) -> list[Verdict]:
     at_start = True
     for index, token in enumerate(segment):
         name, rest = basename(token), segment[index + 1 :]
-        if name == "git":
-            found = classify_git(rest, strict=at_start)
-        elif name == "gh":
-            found = classify_gh(rest)
-        else:
-            found = classify_other(name, rest)
+        found = classify_command(name, rest, strict=at_start)
         if found:
             verdicts.append(found)
         at_start = at_start and is_command_prefix(token)
