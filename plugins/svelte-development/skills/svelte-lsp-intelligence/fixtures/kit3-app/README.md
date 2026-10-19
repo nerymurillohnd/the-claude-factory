@@ -1,6 +1,6 @@
 # kit3-app fixture
 
-A minimal SvelteKit 3 project used by the `svelte-lsp-navigation` skill examples. It is not installed or built inside the plugin; it exists so the Svelte language server and the project check have known symbols to work on. The examples ran on a copy installed outside the plugin, as below.
+A minimal SvelteKit 3 project used by the `svelte-lsp-intelligence` skill examples. It is not installed or built inside the plugin; it exists so the Svelte language server and the project check have known symbols to work on. The examples ran on a copy installed outside the plugin, as below.
 
 | Symbol | File | Use it to try |
 | --- | --- | --- |

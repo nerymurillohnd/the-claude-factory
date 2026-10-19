@@ -17,7 +17,7 @@ The contract for the two tools that keep Svelte code current: reading the offici
 
 | Use it | Do not use it |
 |---|---|
-| Before writing or changing any `.svelte`, `.svelte.ts` or `.svelte.js` code, or replying with Svelte code | For where a symbol of the project is defined or used: that is the `svelte-lsp-navigation` skill |
+| Before writing or changing any `.svelte`, `.svelte.ts` or `.svelte.js` code, or replying with Svelte code | For where a symbol of the project is defined or used: that is the `svelte-lsp-intelligence` skill |
 | When asked whether Svelte code has problems, including code pasted in the chat | For React, Vue, plain TypeScript or other non-Svelte code |
 | When an exact rune, template tag, SvelteKit API, option or config key matters | |
 | When the project's Svelte or SvelteKit version is newer than what you remember | |
@@ -55,7 +55,7 @@ The short tool names (`get-documentation`, `svelte-autofixer`, `list-sections`, 
 - `${CLAUDE_PLUGIN_ROOT}/skills/svelte-best-practices/references/docs-map.md`: every documentation section classified by area, with its `get-documentation` path and raw URL. Read it to choose sections.
 - `${CLAUDE_PLUGIN_ROOT}/skills/svelte-best-practices/references/known-doc-errata.md`: doc statements known to be wrong or out of date, with what is right. Look up every page you read before copying its example.
 - `${CLAUDE_PLUGIN_ROOT}/skills/svelte-best-practices/references/changelogs.md`: when to read a changelog window, and the commands that read it.
-- The `svelte-best-practices` skill: the ground rules, who does the work, and the Svelte 5 and SvelteKit 3 rules to write by. The `svelte-lsp-navigation` skill: language server diagnostics and how to prove the server answers.
+- The `svelte-best-practices` skill: the ground rules, who does the work, and the Svelte 5 and SvelteKit 3 rules to write by. The `svelte-lsp-intelligence` skill: language server diagnostics and how to prove the server answers.
 
 ## Tools
 
@@ -106,7 +106,7 @@ mcp__plugin_svelte-development_svelte__svelte-autofixer
 
 It reports Svelte compiler errors and Svelte-specific mistakes: legacy syntax, effects that should be derived values, runes misuse, and version-gated suggestions such as replacing `class:` directives with the `class` attribute.
 
-**Step 6, verify.** Skip it for code pasted in the chat with no project. Diagnostics come after each edit of a `.svelte` file only (the language server serves no `.svelte.ts` or `.svelte.js` file), and only when the server answers: "no diagnostics" proves nothing until `documentSymbol` on a `.svelte` file has listed its symbols (`svelte-lsp-navigation`, rule 9). Without the server, rely on the project check and say so. The project check and its commands are ground rule 5's.
+**Step 6, verify.** Skip it for code pasted in the chat with no project. Diagnostics come after each edit of a `.svelte` file only (the language server serves no `.svelte.ts` or `.svelte.js` file), and only when the server answers: "no diagnostics" proves nothing until `documentSymbol` on a `.svelte` file has listed its symbols (`svelte-lsp-intelligence`, rule 9). Without the server, rely on the project check and say so. The project check and its commands are ground rule 5's.
 
 **Done** when the autofixer returns no issues with `require_another_tool_call_after_fixing` false (or the remaining ones are reported as likely false positives), and, in a project, ground rule 5 is met. A review is done when it has reported the autofixer and check results.
 

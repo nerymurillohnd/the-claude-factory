@@ -9,7 +9,7 @@
 
 <h1>{data.title}</h1>
 
-<!-- Deliberate type error for the svelte-lsp-navigation examples: label must be a string. -->
+<!-- Deliberate type error for the svelte-lsp-intelligence examples: label must be a string. -->
 <CounterButton {counter} label={42}>
   <p>Doubled: {formatCount(counter.doubled)}</p>
 </CounterButton>

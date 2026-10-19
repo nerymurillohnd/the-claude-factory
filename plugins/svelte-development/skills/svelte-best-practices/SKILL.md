@@ -17,14 +17,14 @@ The contract for writing Svelte by the current rules: Svelte 5 in runes mode and
 
 | Use it | Do not use it |
 |---|---|
-| Writing, converting or reviewing Svelte components, `.svelte.ts`/`.svelte.js` modules or SvelteKit files | For where a symbol of the project is used: that is the `svelte-lsp-navigation` skill |
+| Writing, converting or reviewing Svelte components, `.svelte.ts`/`.svelte.js` modules or SvelteKit files | For where a symbol of the project is used: that is the `svelte-lsp-intelligence` skill |
 | Migrating from Svelte 4 or SvelteKit 2 | For React, Vue, plain TypeScript or other non-Svelte code |
 | Setting up a project with `sv`, or Svelte with Astro or Tailwind CSS | |
 | Explaining how something is done in Svelte 5 or SvelteKit 3 | |
 
 ## Governance rules
 
-The ground rules below are the single copy for the plugin: the `svelte-docs-and-autofixer` and `svelte-lsp-navigation` skills and both agents point here for them. Depart from any rule on this page, ground rule or rule of this skill, only for a reason you state to the user. Where a rule says to ask the user and you run as one of the plugin's agents, stop and return the question in your report instead.
+The ground rules below are the single copy for the plugin: the `svelte-docs-and-autofixer` and `svelte-lsp-intelligence` skills and both agents point here for them. Depart from any rule on this page, ground rule or rule of this skill, only for a reason you state to the user. Where a rule says to ask the user and you run as one of the plugin's agents, stop and return the question in your report instead.
 
 ### Ground rules for every Svelte task
 
@@ -63,7 +63,7 @@ Decide this before you edit or check anything (ground rule 0). This table is the
 | Reviewing, auditing or checking a codebase, a pull request or a migration without changing it | `svelte-code-auditor` agent | Delegate with the Agent tool (below) |
 | The user asks you to work inline, or you already are one of these agents | You | Never delegate further |
 
-The documentation lookups and the autofixer loop then run in the agent's context instead of filling the main conversation. Its prompt names the files, the task, the constraints and what to report. When you already found the locations to change (an edit set from the `svelte-lsp-navigation` skill), pass them as file and line; the editor then runs the baseline, break and confirm steps itself, so do not run them first. For the editor on an older major, settle the migration first (this skill's rule 3) and say in the prompt whether the user migrated, declined, or asked to proceed without questions; the auditor handles an older major on its own. Call the agent without a `name`: a named call can start an agent-team teammate instead of a subagent, and a teammate gets none of the agent's preloaded skills.
+The documentation lookups and the autofixer loop then run in the agent's context instead of filling the main conversation. Its prompt names the files, the task, the constraints and what to report. When you already found the locations to change (an edit set from the `svelte-lsp-intelligence` skill), pass them as file and line; the editor then runs the baseline, break and confirm steps itself, so do not run them first. For the editor on an older major, settle the migration first (this skill's rule 3) and say in the prompt whether the user migrated, declined, or asked to proceed without questions; the auditor handles an older major on its own. Call the agent without a `name`: a named call can start an agent-team teammate instead of a subagent, and a teammate gets none of the agent's preloaded skills.
 
 ```text
 Agent
@@ -152,7 +152,7 @@ Read every reference the task touches, each once, for anything this page does no
 | [changelogs.md](references/changelogs.md) | Before writing code in a project (its first two steps), and in the cases its "When to run the check" lists |
 | [known-doc-errata.md](references/known-doc-errata.md) | Before copying a docs example: the doc statements known to be wrong or out of date |
 
-The sibling skills are `svelte-development:svelte-docs-and-autofixer` and `svelte-development:svelte-lsp-navigation`.
+The sibling skills are `svelte-development:svelte-docs-and-autofixer` and `svelte-development:svelte-lsp-intelligence`.
 
 ## Procedure
 
