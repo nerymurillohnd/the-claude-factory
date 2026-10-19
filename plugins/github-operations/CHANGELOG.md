@@ -15,7 +15,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ### Fixed
 
-- The README now shows how to use the GitHub server in the Claude app. The app can't read the plugin's token option, so it lists the server as a connector that is not added and starts its form on an OAuth sign-in that needs an OAuth app registered with GitHub. The new *In the Claude app* section connects it with your token instead: **No sign in**, then an `authorization` header with `Bearer <token>`. It also says who can add a connector on Team and Enterprise plans, where the app keeps the token, and that this works in a chat conversation while Cowork skips the server. *Compatibility* and *FAQ & Troubleshooting* point there.
+- The README now shows how to use the GitHub server in the Claude app. The app can't read the plugin's token option, so it lists the server as a connector that is not added and starts its form on an OAuth sign-in that needs an OAuth app registered with GitHub. The new *In the Claude app* section connects it with your token instead: **No sign in**, then an `authorization` header with `Bearer <token>`. It also says who can add a connector on Team and Enterprise plans, and where the app keeps the token. *Compatibility* and *FAQ & Troubleshooting* point there.
 
 ## [0.3.0] - 2026-10-18
 

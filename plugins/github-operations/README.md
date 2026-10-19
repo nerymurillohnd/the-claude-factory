@@ -170,8 +170,6 @@ The Claude app can't read the plugin's token option. When you turn the plugin on
 
 The app stores this token encrypted with your claude.ai connectors, apart from the copy Claude Code keeps, so changing one doesn't change the other. It reaches GitHub from Anthropic's cloud, not from your computer, and Claude Code's deny rules don't apply there: limit what Claude can do in the app through the token's repositories and permissions. On a Team or Enterprise plan, everyone who uses the connector reaches GitHub with that same token.
 
-This works in a chat conversation. Cowork sessions skip the plugin's GitHub server, because its token option has no default value.
-
 ### Coming from 0.1.x?
 
 Version 0.1.x read the token from a `GITHUB_PAT` environment variable. From 0.2.0 the plugin reads only its own `github_token` option, so the GitHub server also connects when you start Claude Code from the desktop app or an editor instead of a terminal. Updating doesn't ask for the token or copy it: until you set it, the GitHub server is missing from `/mcp`, with no error.
@@ -228,7 +226,7 @@ In a session: `/plugin` → **Installed** → **GitHub Operations** → **Uninst
 | :-- | :--: | :--: |
 | 🎯 Skills | ✅ | ⚠️ they load, but they need `git`, `gh` and your repository on your computer, and the cleanup guard hook that protects your repository doesn't run in a chat conversation, so use Claude Code |
 | 🤖 Agents | ✅ | ⚠️ in Cowork sessions, not in a chat conversation |
-| 🔌 MCP server (remote) | ✅ needs your token, set as in [Configuration](#-configuration) | 🔗 in a chat conversation, once you connect it with your token as in [In the Claude app](#in-the-claude-app); Cowork skips it, because the token option has no default |
+| 🔌 MCP server (remote) | ✅ needs your token, set as in [Configuration](#-configuration) | 🔗 connect it once with your token, as in [In the Claude app](#in-the-claude-app) |
 
 <sub>✅ works · ⚠️ partial · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. The Claude app (web, desktop and mobile) runs a conversation as a Cowork session when it can, and as a chat conversation otherwise, for example on a device that can't run Cowork or in the separate Chat mode that Team and Enterprise plans keep for now.</sub>
 
