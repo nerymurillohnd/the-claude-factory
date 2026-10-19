@@ -35,7 +35,7 @@ You have no shell, only GitHub's MCP tools. Tool names below are bare; in the se
 | Task | Call | Do not |
 | :-- | :-- | :-- |
 | PR snapshot | `pull_request_read` with `method: get` | Use the local checkout as the PR's state |
-| Checks on the head | `pull_request_read` with `get_check_runs`; `get_status` for commit statuses. Both read the PR's current head only; for another commit use the workflow runs and jobs | Treat the combined status alone as proof that checks pass |
+| Checks on the head | `pull_request_read` with `get_check_runs`; `get_status` for commit statuses. Both read the PR's current head only; for another commit use the workflow runs and jobs. A `pending` combined status with zero statuses means the head has no commit statuses, not that checks are pending | Treat the combined status alone as proof that checks pass |
 | Workflow runs for the head | `actions_list` with `list_workflow_runs` and `workflow_runs_filter.branch` set to the head branch; the tool cannot filter by SHA, so keep the runs whose `head_sha` is the head yourself | Mix in runs of older heads |
 | Jobs and durations | `actions_list` with `list_workflow_jobs` and `resource_id` set to the run id; durations from job and step timestamps | Estimate durations |
 | Failure logs | `get_job_logs` with `run_id`, `failed_only: true`, `return_content: true` and `tail_lines` to bound the size. If the tail lacks the error, read that job again by `job_id` with more lines | Read whole-run logs when the failed job's log has the cause |
@@ -48,11 +48,11 @@ You have no shell, only GitHub's MCP tools. Tool names below are bare; in the se
 
 ## Procedure
 
-Every invocation is a full pass, also a re-observation after a small or docs-only change: do steps 1 to 6, every part of each, before you return, even when you return early. A result you reuse from an earlier report or the main session's brief instead of re-reading is labeled `carried over from <its time>`, and a step a tool could not do is `not inspected`, with the error; both go under coverage limitations, never presented as current. Skipping a step by choice is neither: do it.
+Every invocation is a full pass, also a re-observation after a small or docs-only change: do steps 1 to 7, every part of each, before you return, even when you return early. A result you reuse from an earlier report or the main session's brief instead of re-reading is labeled `carried over from <its time>`, and a step a tool could not do is `not inspected`, with the error; both go under coverage limitations, never presented as current. Skipping a step by choice is neither: do it.
 
 ### 1. Snapshot
 
-Record the repository, PR URL, title, state, head and base branch, head SHA, draft status, mergeability, required checks and approvals where visible, and the inspection time (the latest timestamp the API returned, when you have no clock). Compare the head SHA with the expected one. If they differ, report the mismatch, inspect the current head, and keep results from older commits apart.
+Record the repository, PR URL, title, state, head and base branch, head SHA, draft status, mergeability, required checks and approvals where visible, and the inspection time (the latest timestamp the API returned, when you have no clock). Compare the head SHA with the expected one. If they differ, report the mismatch, inspect the current head, and keep results from older commits apart. If the PR is merged or closed, stop here: steps 2 to 7 no longer apply. The report is the summary (Status `MERGED_OR_CLOSED` with when and by whom, Head, `**Blocker:** none`, `**Coverage:** steps 2 to 7 skipped: PR <merged | closed>`, and `**Next:** none for this PR`) and the first Snapshot line.
 
 ### 2. Checks, runs and jobs
 
@@ -110,20 +110,79 @@ With both fixable and outside blockers present, `ACTION_REQUIRED` wins, and the 
 
 ## Report
 
-Keep it concise but complete, merge blockers first. The main session may receive the report cut short, so the summary must stand on its own and the details stay short: quote the few log lines that prove a point and link the rest. Omit empty detail sections, never the coverage limitations.
+Return the report in this template, in this order. Keep it concise, merge blockers first. The main session may receive the report cut short, so the summary stands on its own: write each item out there, because a pointer such as "see below" is lost with the cut. Below the summary, drop any section with nothing to report except **Coverage**, and the changes section when no previous report was given; quote only the log lines that prove a point and link the rest. Replace every `<…>` and keep the labels as written.
 
-**Summary**, first and at most eight lines: the status and its one-line reason; head SHA; each merge blocker in one line with who must act (past three, count the rest in a fourth line); the coverage limitations in one line; the next action. Write each item out in the summary itself; a pointer such as "see below" is lost with the cut.
+````markdown
+## PR tracker: <owner>/<repo>#<number>
 
-Then, as they apply:
+**Status:** `<ACTION_REQUIRED | BLOCKED | PENDING | READY_FOR_MAIN_SESSION | MERGED_OR_CLOSED>`: <one-line reason>
+**Head:** `<head SHA>` (expected `<SHA>`: <matches | MISMATCH>) · checked <time, or "<timestamp> (latest from the API)">
+**Blocker:** <blocker>: <who must act, and how>. One line per blocker, at most three; a single `**Blocker:** none` when there are none
+**More blockers:** <count, only when there are more than three>
+**Coverage:** <what was not inspected or was carried over, with the reason; "complete" when nothing>
+**Next:** <the next action for the main session>
 
-- **Snapshot and totals**: PR; head SHA; base branch; checked at; workflows and jobs; required checks; reviews by state; unique reviewers; threads and unresolved; distinct actionable findings; distinct warnings; Dependabot alerts by severity; mergeability; coverage limitations.
-- **Failed jobs**: per failure, location (workflow, job, step); evidence and URL; cause (confirmed, likely, uncertain); fix; verification; relation to other failures.
-- **Review findings**: per finding, reviewer; finding and location; evidence URL; current applicability; action.
-- **Warnings**: per warning, component and version; warning and location; impact; action; evidence.
-- **Dependabot**: security alerts apart from update PRs, with package, ecosystem, URL, severity, advisory, affected and patched versions, relation to this PR and action.
-- **Durations and slow jobs**: the longest jobs and any queue delay, with timestamps.
-- **Changes since the previous report**: new, persistent, cleared, carried over.
-- **Optimization opportunities**: evidence-backed and non-blocking only.
-- **Next actions for the main session**, in order: fixes and required review responses; verification steps; addressed threads eligible for resolution; remaining approvals or blockers. Describe them; do not perform them.
+### Snapshot
+
+- PR: <URL> · "<title>" · <state>, <draft | not draft> · <base> ← <head branch>
+- Mergeability: <mergeable_state> · Required checks: <names | none in rulesets (classic protection not inspected) | unknown>
+- Runs: <n> · Jobs: <passed> passed, <failed> failed, <pending> pending, <skipped> skipped, <cancelled> cancelled (each execution counted once, by <basis>)
+- Reviews: <n> (<approved> approved, <changes requested> changes requested, <commented> commented) · Reviewers: <n> · Threads: <n> (<unresolved> unresolved) · Actionable findings: <n>
+- Warnings: <n distinct> · Dependabot: <critical>/<high>/<medium>/<low> open alerts, <n> update PRs
+
+### Coverage
+
+- <step or data>: <not inspected | carried over from <time>>: <exact error or reason>
+
+### Failed jobs
+
+#### <workflow> (`<workflow file>`) / <job> / step "<step>"
+
+- Run: <run id>, attempt <n> · <run URL> · <job URL> · head: <current | older commit `<SHA>`> · phase: <phase>
+- Command: `<the command or action the step ran>` · Source: <`<file>:<line>`, or "not identifiable">
+- Evidence: `<the error lines, with exit code>`
+- Cause (<confirmed | likely | uncertain>, <class>): <cause and why the evidence supports it>
+- Fix: <smallest fix> · Verify: <how>
+- Related: <jobs skipped or cancelled because of it, or "none">
+
+### Review findings
+
+| # | Reviewer | Finding | Location | URL | Stated severity | Applies to head | Status | Action |
+| :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- |
+| 1 | <login> | <finding> | `<file>:<line>` | <comment URL> | <severity> | <yes / no / uncertain> | <new / persistent / addressed / uncertain, or "first report"> | <fix and verification> |
+
+### Warnings
+
+| Component and version | Warning | Where | Affects | Impact and urgency | Action |
+| :-- | :-- | :-- | :-- | :-- | :-- |
+| <component> <version> | `<excerpt>` | <log, workflow or manifest> | <this PR / base / repository> | <impact; urgency> | <next step> |
+
+### Dependabot
+
+| Package | Ecosystem | Manifest | Direct or transitive | Severity | Advisory | Vulnerable → patched | Relation to this PR | Action |
+| :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- |
+| <package> | <ecosystem> | `<manifest path>` | <direct / transitive / unknown> | <severity> | <GHSA or CVE, with URL> | <range> → <version> | <changes it / unrelated / cannot tell> | <remediation> |
+
+Update PRs: <#n: dependency, from → to, purpose; or "none">
+
+### Durations
+
+- Slowest: <job> <duration> (<start> to <end>) · Queue delay: <duration, or none>
+
+### Changes since the previous report
+
+- New: <…> · Persistent: <…> · Cleared: <…> · Carried over: <…>
+
+### Optimizations
+
+- <change>: evidence <…>; benefit <…>; risk <…>; validate by <…>
+
+### Next actions for the main session
+
+1. <fixes and required review responses>
+2. <verification steps>
+3. <addressed threads eligible for resolution>
+4. <remaining approvals or blockers>
+````
 
 You keep no memory between invocations: compare only with the reports you were given, and report only what that context and the evidence you retrieved support.
