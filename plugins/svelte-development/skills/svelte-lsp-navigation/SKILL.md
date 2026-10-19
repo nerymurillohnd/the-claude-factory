@@ -21,7 +21,7 @@ The contract for questions about the project's own code. The plugin starts the S
 
 ## Governance rules
 
-All of these rules hold for every later turn of the task, not only the turn that loaded this skill. Depart from one only for a reason you state to the user.
+Depart from one only for a reason you state to the user.
 
 ### Ground rules for every Svelte task
 
@@ -43,7 +43,7 @@ Skill
 7. **Diagnostics are not a project check.** Diagnostics are pushed once after an edit, only for open files, and cannot be requested again. "No diagnostics" proves nothing about the project: run the [project check](#project-check).
 8. **Never hide a problem.** No `--compiler-warnings x:ignore` or `--ignore` to get a check passing; ignore only a verified false positive, with the reason.
 9. **Prove a clean result when a tool stays silent, with the probe for that tool.** A silent language server and a silent project check have different causes:
-   - **Language server** (no diagnostics after an edit, empty answers): `documentSymbol` on a non-empty `.svelte` file of the project must list its symbols; an error that names the server (`No LSP server available`, `Executable not found in $PATH`) means it is missing. If it fails, follow [troubleshooting.md](references/troubleshooting.md). Never probe with `command -v svelteserver` in Bash: a sandboxed Bash cannot follow a symlinked global install and prints nothing while the server works.
+   - **Language server** (no diagnostics after an edit, empty answers): `documentSymbol` on a non-empty `.svelte` file of the project must list its symbols; an error that names the server (`No LSP server available`, `Executable not found in $PATH`) means it is missing. If it fails, follow [troubleshooting.md](references/troubleshooting.md). Never probe with `command -v svelteserver` in Bash: it checks the Bash command's `PATH`, not the server Claude Code started, so neither result proves anything about the server.
    - **Project check** (nothing reported after a change that must break): the cause is almost always in the project, not in svelte-check. In a SvelteKit project, run `npx --no-install svelte-kit sync` and check again, because missing generated types hide errors (a project on Svelte alone has no sync to run); read the last line, `COMPLETED <n> FILES …`, and confirm the edited file is inside the tsconfig `include` (SvelteKit 3 projects extend `$app/tsconfig`, SvelteKit 2 projects `./.svelte-kit/tsconfig.json`); confirm that `npm run check` really runs svelte-check (read the script in `package.json`); in a monorepo, run it from the app folder.
 10. **No installs without consent.** Never install `svelte-language-server`, `sv` or any package; tell the user what is missing.
 
@@ -125,7 +125,7 @@ Choose the procedure first: a question about the code (where, who calls, what ty
 
 Run these in order and do not skip a step:
 
-0. **Is the server there?** Once per session, before the first question: load the LSP tool if it is deferred (step 1) and call `documentSymbol` on a non-empty `.svelte` file of the project. Symbols mean the server answers. An empty result or a start-up error can be a server still starting: warm it up as step 4 says before deciding. An error that names the server (`No LSP server available`, `Executable not found in $PATH`) means there is no code intelligence in this session: skip steps 2 to 4, tell the user once that installing `svelte-language-server` (done by them) with `svelteserver` on the `PATH` of the shell they start `claude` from enables it, and go to step 5. Never probe with `command -v svelteserver` in Bash: a sandboxed Bash cannot follow a symlinked global install and prints nothing while the server works.
+0. **Is the server there?** Once per session, before the first question: load the LSP tool if it is deferred (step 1) and call `documentSymbol` on a non-empty `.svelte` file of the project. Symbols mean the server answers. An empty result or a start-up error can be a server still starting: warm it up as step 4 says before deciding. An error that names the server (`No LSP server available`, `Executable not found in $PATH`) means there is no code intelligence in this session: skip steps 2 to 4, tell the user once that installing `svelte-language-server` (done by them) with `svelteserver` on the `PATH` of the shell they start `claude` from enables it, and go to step 5. Never probe with `command -v svelteserver` in Bash: it checks the Bash command's `PATH`, not the server Claude Code started, so neither result proves anything about the server.
 1. **Load** the LSP tool if it is deferred. If ToolSearch does not return it, go to step 5.
 2. **Locate** the symbol: `documentSymbol` on the `.svelte` file that uses it, or `workspaceSymbol` with its name from any `.svelte` file. Take the exact line and character from the result.
 3. **Ask** the question: `findReferences`, `goToDefinition`, `hover` or `incomingCalls` at that position.

@@ -166,7 +166,7 @@ project check after renaming the declaration only
 
 An error site that is not in the `findReferences` list is a use the language server missed; a `findReferences` site with no error is a use the check cannot see (a string, a pattern). Both go into the edit set.
 
-**When the language server stays silent** (no diagnostics after an edit, empty answers), probe it directly: `documentSymbol` on a non-empty `.svelte` file must list its symbols, as in [Find a symbol](#find-a-symbol). Do not use `command -v svelteserver` in Bash for this: a sandboxed Bash cannot follow a symlinked global install. A script cannot call the LSP tool, so only these calls prove the server.
+**When the language server stays silent** (no diagnostics after an edit, empty answers), probe it directly: `documentSymbol` on a non-empty `.svelte` file must list its symbols, as in [Find a symbol](#find-a-symbol). Do not use `command -v svelteserver` in Bash for this: it checks the Bash command's `PATH`, not the server Claude Code started, and a missing server already shows as `Executable not found in $PATH` on the LSP call. A script cannot call the LSP tool, so only these calls prove the server.
 
 **When the project check stays silent** (it reports nothing after a change that must break): the cause is almost always in the project, not in svelte-check. Run `npx --no-install svelte-kit sync` and check again (missing generated types hide errors); read the last line, `COMPLETED <n> FILES …`, and confirm the edited file is inside the tsconfig `include` (SvelteKit 3 projects extend `$app/tsconfig`); confirm that `npm run check` really runs svelte-check (read the script in `package.json`); in a monorepo, run it from the app folder.
 

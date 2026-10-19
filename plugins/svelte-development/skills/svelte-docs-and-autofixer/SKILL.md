@@ -24,7 +24,7 @@ The contract for the two tools that keep Svelte code current: reading the offici
 
 ## Governance rules
 
-All of these rules hold for every later turn of the task, not only the turn that loaded this skill. Depart from one only for a reason you state to the user.
+Depart from one only for a reason you state to the user.
 
 ### Ground rules for every Svelte task
 
@@ -185,7 +185,7 @@ Try these in order, and say in the answer that the documentation or the code cou
    svelte-mcp svelte-autofixer src/lib/components/Counter.svelte --svelte-version 5.16.0
    ```
 
-   Probe it by running it, never with `command -v svelte-mcp`. A sandboxed Bash cannot follow a symlinked global install, so `command not found` there proves nothing: ask the user to confirm in their own shell. If it is missing, the user installs it with `npm install -g @sveltejs/mcp`; ask before suggesting `npx`.
+   Probe it by running it, never with `command -v svelte-mcp`. The Bash command's environment may not be the user's shell, so `command not found` there does not prove the tool is missing: ask the user to confirm in their own shell. If it is missing, the user installs it with `npm install -g @sveltejs/mcp`; ask before suggesting `npx`.
 
 ## What the user can start
 

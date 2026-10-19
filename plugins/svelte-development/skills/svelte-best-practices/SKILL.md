@@ -24,7 +24,7 @@ The contract for writing Svelte by the current rules: Svelte 5 in runes mode and
 
 ## Governance rules
 
-All of these rules hold for every later turn of the task, not only the turn that loaded this skill. The ground rules are the single copy for the plugin: the `svelte-docs-and-autofixer` and `svelte-lsp-navigation` skills point here for them. Depart from one only for a reason you state to the user.
+The ground rules are the single copy for the plugin: the `svelte-docs-and-autofixer` and `svelte-lsp-navigation` skills point here for them. Depart from one only for a reason you state to the user.
 
 ### Ground rules for every Svelte task
 

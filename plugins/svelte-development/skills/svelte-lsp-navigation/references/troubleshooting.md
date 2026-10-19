@@ -15,7 +15,7 @@
 
 Claude Code returns an error for each LSP call on a file whose server it cannot start. Check, in this order:
 
-1. **Binary.** The error names it (`Executable not found in $PATH: "svelteserver"`). The user can confirm it in their own shell, outside Claude Code; a sandboxed Bash cannot follow a symlinked global install, so an empty result there proves nothing:
+1. **Binary.** The error names it (`Executable not found in $PATH: "svelteserver"`). The user can confirm it in the shell they start `claude` from, which is where Claude Code takes the server's `PATH`; the Bash tool's result proves nothing about the server:
 
    ```sh
    command -v svelteserver || echo "svelteserver not found"
