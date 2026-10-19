@@ -16,7 +16,7 @@ Claude Code and the Claude app (web, desktop and mobile) can both install the sa
 | 🪝 **Hooks** (`hooks/hooks.json`) | ✅ | ⚠️ in Cowork sessions, not in a chat conversation |
 | 🔌 **Remote MCP server** (`http`/`sse`, fixed URL) | ✅ | 🔗 add or connect it on the plugin's **Connectors** tab |
 | 🖥️ **Local MCP server** (a command, incl. `.mcpb`) | ✅ | ⚠️ only in Cowork sessions on your computer |
-| 🔐 **MCP server using `${user_config.*}`** | ✅ prompts you for values | ⚠️ Cowork skips it when an option it uses has no default; a chat conversation skips it when its URL holds the reference |
+| 🔐 **MCP server using `${user_config.*}`** | ✅ prompts you for values | 🔗 the app can't fill the values: when they sit in headers, the plugin's **Connectors** tab lists the server as not added, and it works once you connect it there and enter them yourself, such as a token as a request header; a chat conversation skips it when its URL holds the reference |
 | 🧠 **LSP servers** | ✅ | ➖ |
 | 🎨 **Output styles** · 🌈 **Themes** · ⚙️ **`settings`** | ✅ | ➖ |
 | ⚙️ **Executables** in a top-level `bin/` | ✅ | ❌ |
