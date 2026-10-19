@@ -1,71 +1,56 @@
 ---
 name: git-cleanup
-description: Audits a Git repository end to end, plans the cleanup with the user, and executes only what the user approves, keeping every piece of valuable work safe. Runs only when the user types /github-operations:git-cleanup.
-argument-hint: "[absolute path to the repository, optionally followed by a problem to investigate]"
+description: Guidelines and workflows for safely auditing, evaluating, and cleaning up Git repositories, worktrees, branches, untracked/ignored paths, submodules, object stores, integration states, and isolating regressions without accidental data loss, history corruption, or secret exposure.
 disable-model-invocation: true
-hooks:
-  PreToolUse:
-    - matcher: "Bash|Read|Grep|Write|Edit|NotebookEdit|mcp__.*"
-      hooks:
-        - type: command
-          command: "\"${CLAUDE_PLUGIN_ROOT}/hooks/git_cleanup_guard.py\""
-          timeout: 15
-          onFailure: block
 ---
 
-# Git cleanup
+# Git Repository Cleanup Skill
 
-Leave the repository as clean as safely possible, ideally with only `main` and `origin/main` (the base branch and its published copy), without losing any valuable work. The user decides every consequential step: nothing is integrated, pushed, deleted or pruned before they approve the plan.
+Provides a structured, multi-phase procedure for safely inspecting, auditing, and cleaning up a Git repository. It prioritizes data retention, worktree safety, object store provenance, safe configuration inspection, and verified revision ancestry over aggressive deletion or destructive history rewrites.
 
-## Target and vocabulary
+## Core Operating Protocol & Execution Lifecycle
 
-Arguments: `$ARGUMENTS`.
+Any repository cleanup or audit request must follow a strictly gated, 3-stage lifecycle. **Zero destructive or mutating actions may occur before explicit, itemized user authorization.**
 
-- If the first word is an absolute path to an existing directory, that is the repository and any text after it is a problem to investigate. With no such word the repository is the current directory (`pwd`) and all the text, if any, is the problem. A first word that looks like a path but is relative or does not exist: ask the user. Resolve the repository root once with `git -C "<path>" rev-parse --show-toplevel` and use it as `<repo>` everywhere; tell the user if it differs from the path they gave.
-- Use absolute paths: the shell does not expand `~` inside quotes. Run every Git command as `git -C "<repo>" …` and every `gh` command with `-R <owner>/<repo>`.
-- If the inventory prints an `error` (not a Git repository, a file it cannot read or write), it wrote nothing: stop and tell the user.
-- **Scratch folder**: a folder you create once outside the repository (`mktemp -d "${TMPDIR:-/tmp}/git-cleanup-XXXXXX"`). Phase 1 writes only here: `inventory.json`, `audit-log.md` (every command and its relevant result), `findings.md` and `plan-draft.md`. Tell the user its path.
-- **Backup folder**: chosen by the user in Phase 2, outside the repository. Holds the backup, `plan.md` and the revalidation inventory. Tell the user its path.
-- **Base branch**: the local branch the others are compared with, `main` unless the remote's default branch is another one. **Base ref**: its published copy, `<remote>/<base branch>`, for example `origin/main`. The inventory's `branches.base` is the base ref. Read `base_check` in its summary: `published: false` means the base is local only, so nothing proves what the remote has (say so and mark remote facts `BLOCKED`); `matches_live_default: false` means the cached default is stale, so re-run with `--base <remote>/<live default>`. Always name the remote.
-- **Action IDs and classes** (`A-01`, `prep`, `integrate`, `publish`, `local-delete`, `remote-delete`, `files`) are defined in `${CLAUDE_SKILL_DIR}/references/phase-2-plan.md`. **A-01 is always the backup.**
+```text
+[STAGE 1: Non-Destructive Discovery & Audit]
+                       │
+                       ▼
+[STAGE 2: User-Facing Audit Report & Stop Gate] ───► (Execution HALTED; Awaiting Granular Approval)
+                       │ (User approves specific IDs: e.g., "Approve R1, retain R2")
+                       ▼
+[STAGE 3: Pre-Flight Check, Mutation & Verification] ──► (State Re-check ➔ Backups ➔ Ordered Mutations ➔ Report)
+```
 
-## Rules that hold in every phase
+### Stage 1: Non-Destructive Discovery & Classification (Read-Only)
 
-- Work in this order and never skip ahead: Audit → Plan → Approval → Backup → Execute → Verify → ask whether to remove the backup. The audit changes nothing in the repository; the backup is made only after approval; the backup is removed only after the user explicitly says so, and its removal is verified.
-- A guard hook is active for the rest of the session. It refuses force-pushes, deleting `main` on the remote, the history-rewriting tools `filter-branch`, `filter-repo` and `bfg`, `git clean -x`, default-branch changes and anything that prints credentials or reads secret files. It makes the user confirm every other command, file write or MCP action that changes state, and every git command that prints file contents (except stat listings and commands with an `:(exclude)` pathspec). `rebase`, `reset` and `commit --amend` are confirmed, not refused: use them only as the plan says. Never work around a denial; stop and tell the user. The only refusal you expect is the Phase 1 probe.
-- Approving a confirmation prompt is not approving the plan, and approving the plan is not approving a prompt: the user gives both.
-- Evidence beats assumption. Mark what cannot be verified `BLOCKED`, keep that item untouched, and say exactly what stopped you. Never call something safe because it looks merged.
-- Never rewrite published history, never force-push, never change the remote default branch.
-- Secrets: never open or print secret-bearing files (`.env`, keys, tokens, credentials); report their names only. Committed secrets can hide in diffs, so audit with `--stat`, `--name-status` and `--name-only`, and when you need content exclude secret-like paths (Phase 1 §3). Redact credentials in every command and report.
-- Never go beyond the approved scope: a changed or additional operation needs new approval.
-- Approval is an explicit answer that names the whole plan or the action IDs. A-01 is added to every approval (tell the user it was added), and nothing else runs until A-01 has run and verified. An empty, timed-out, auto-closed or ambiguous answer is not approval: ask again. An explicit refusal, or "audit only", is an answer: stop and deliver the findings and the plan.
-- Keep state on disk so a context compaction cannot lose it: the scratch folder in Phase 1 and 2, the backup folder's `plan.md` from Phase 3, where you append each action's status as it finishes (`done`, `failed`, `skipped`). After a compaction re-read those files and this skill's rules; if you cannot find them, ask the user for the folder paths or to type `/github-operations:git-cleanup` again. If the user gives you a backup folder that contains `plan.md`, resume at Phase 3 step 2, and run only the actions that are not `done`.
+Read [stage-1.md](references/stage-1.md) before the first command of the audit: the read-only boundary, the six classification buckets, what to record, and which phases to read.
+
+### Stage 2: User-Facing Audit Report & Recommendation Gate (MANDATORY HALT)
+
+Read [stage-2.md](references/stage-2.md) when the audit is complete: the plain-language report, the finding and recommendation IDs, the report template, and the approval request.
+
+### Stage 3: Approved Execution, Re-Validation & Post-Verification (Cleanup Starts Here)
+
+Read [stage-3.md](references/stage-3.md) only after the user authorizes specific recommendation IDs: the pre-flight check, the rollback points, the ordered mutations, the closing report, and which phases to read.
+
+---
 
 ## Phases
 
-### Phase 1: Audit and diagnosis
+The command suites and guardrails behind the stages. Read the ones the stage names.
 
-Read `${CLAUDE_SKILL_DIR}/references/phase-1-audit.md` now and follow it. It is strictly read-only: no fetch, no change to the repository; the only files written are in the scratch folder. Its first step proves the guard is active; if the probe is not refused, stop. Then ask once whether read-only network queries (`git ls-remote`, `gh`) are acceptable, and run the inventory, which gathers the facts in one pass (give the Bash call a long timeout, or run it in the background):
+- [phase-1.md](references/phase-1.md): context discovery and topology. Worktrees, refs, stashes, reflogs, remotes.
+- [phase-2.md](references/phase-2.md): path and workspace inventory. Untracked and ignored files, deletion previews.
+- [phase-3.md](references/phase-3.md): submodules, subtrees and large storage (LFS).
+- [phase-4.md](references/phase-4.md): object store, provenance and configuration security.
+- [phase-5.md](references/phase-5.md): branch ancestry and verification before deleting a branch.
+- [phase-6.md](references/phase-6.md): revisions and integration. Resolving revisions, dot syntax, merge, squash, rebase, conflicts.
+- [phase-7.md](references/phase-7.md): diagnostic and defect isolation. Grep, blame, bisect.
 
-```bash
-"${CLAUDE_SKILL_DIR}/scripts/inventory.py" --repo "<repo>" --out "<scratch>/inventory.json" --ls-remote
-```
+---
 
-Leave out `--ls-remote` if the user declined the network. It prints a summary; read a section with `--from <file> --section <name>`, and read branches in pages with `--signal`, `--limit` and `--offset`. Then investigate everything it flags, in depth. The repository may have thousands of commits, branches and pull requests: use targeted, aggregated, machine-readable commands, never an unbounded history dump.
+## Reference Documentation
 
-### Phase 2: Findings, plan and approval
-
-Read `${CLAUDE_SKILL_DIR}/references/phase-2-plan.md` and follow it. Present the evidence, ask the user about every ambiguous finding with your recommendation, then present the complete plan with one action ID per operation, the backup first, and ask for explicit approval. The user may approve the whole plan, specific IDs, or nothing.
-
-### Phase 3: Execution and final verification
-
-Read `${CLAUDE_SKILL_DIR}/references/phase-3-execute.md` and follow it. Save the approved plan, revalidate the state, create and verify the backup outside the repository, run only the approved actions in the plan's order, verify each one, then verify the final state. Say which action ID each command belongs to before you run it, so the user can match it to the confirmation prompt.
-
-## Debugging
-
-Only when the user brought a specific problem (a regression, where a line came from) or an audit finding needs it, read `${CLAUDE_SKILL_DIR}/references/debugging.md`. Debugging never authorizes source changes or history rewrites.
-
-## Example
-
-User: `/github-operations:git-cleanup /Users/ada/code/shop`
-Claude, after Phase 1: "42 local and 118 remote branches. 31 are fully merged, 6 hold unmerged work (listed with evidence), 1 worktree points to a folder that no longer exists, 3 stashes. Three questions before I draft the plan…" then, after the answers, the plan: "A-01 backup … A-02 merge `feat/x` into `main` … A-03 publish `main` … A-04 delete local `feat/x` … A-09 delete `origin/feat/old`" and, as the approval question: "Approve the whole plan, approve only some IDs, or stop here with the audit only?"
+* **Commands:** [git-clean](https://git-scm.com/docs/git-clean) | [git-check-ignore](https://git-scm.com/docs/git-check-ignore) | [git-branch](https://git-scm.com/docs/git-branch) | [git-worktree](https://git-scm.com/docs/git-worktree) | [git-stash](https://git-scm.com/docs/git-stash) | [git-submodule](https://git-scm.com/docs/git-submodule) | [git-merge-tree](https://git-scm.com/docs/git-merge-tree) | [git-bisect](https://git-scm.com/docs/git-bisect) | [git-blame](https://git-scm.com/docs/git-blame) | [git-grep](https://git-scm.com/docs/git-grep) | [Git reference](https://git-scm.com/docs/git)
+* **Revisions:** [gitrevisions](https://git-scm.com/docs/gitrevisions)
