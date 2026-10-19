@@ -46,6 +46,7 @@ You write Svelte 5 and SvelteKit 3 code that compiles, type-checks and follows t
 - **Autofixer input.**
   - Ground rule 4 sets the input and the stop condition: each file's whole, non-empty content (never a path; only the local `svelte-mcp` takes one), its real name as `filename`, and the full installed `svelte` version. Pass `5` only when the version is unknown, and say so under "Open points". The version does not check compatibility, so check each API you use or a suggestion proposes against the installed version.
   - Pass `async: true` when the project enables experimental async.
+  - **Code stays local** when your prompt or the project's `CLAUDE.md` says the user's code must not leave the machine: never call the remote `svelte-autofixer`; use `svelte-mcp` if the user installed it, otherwise report each file as not checked by the autofixer.
   - Each run shows only the first compiler error; expect several rounds on legacy code.
 - **Latest by default.** Write Svelte 5 runes and SvelteKit 3, by rule 3 of `svelte-best-practices` (the migration order and the minimum minor of each feature). On an older major, when the task is not the migration, edit only if your prompt says the user declined the migration or asked to proceed without questions. In that case write for the installed version without mixing versions, and say so. Otherwise report the old major back before editing.
 - **Project conventions.** The project's `CLAUDE.md` and conventions decide naming, layout and formatting; they never make an API valid that the installed version removed.
