@@ -160,15 +160,17 @@ The option isn't listed in `/config`, because Claude Code keeps sensitive option
 
 ### In the Claude app
 
-The Claude app can't read the plugin's token option. When you turn the plugin on there, the app lists its GitHub server as a connector that is not added yet, and its form starts on an OAuth sign-in that asks for an OAuth app you would have to register with GitHub yourself. Connect it with your token instead, once:
+The Claude app can't read the plugin's token option. When you turn the plugin on there, the app lists its GitHub server as a connector that is not added yet, and its form starts on an OAuth sign-in that asks for an OAuth app you would have to register with GitHub yourself. Connect it with your token instead, once. On a Team or Enterprise plan only an Owner (or, on Enterprise, a role with **Manage access to Libraries**) can add it; on the Free plan it counts as your one custom connector.
 
-1. Open **GitHub Operations** in your plugins, go to the **Connectors** tab and choose **Connect** next to `github`.
-2. Leave the name and URL as they are and choose **Continue**.
+1. Go to **Customize** → **Plugins** → **GitHub Operations**, open the **Connectors** tab and choose **Connect** next to `github`.
+2. Leave the name and URL as they are and go on to the next step.
 3. Under **Authentication**, choose **No sign in**.
 4. Under **Request headers**, add a header, pick `authorization` as its name and enter `Bearer <your token>` as the value, with one space after `Bearer`, for example `Bearer github_pat_11AB…`. Use a [fine-grained token](https://github.com/settings/personal-access-tokens/new), as in Step 1 above. Keep the `x-mcp-toolsets` and `x-mcp-insiders` headers the plugin already filled in, even though the form warns about custom header names.
 5. Add the connector, then ask Claude in a new conversation: *"Use the GitHub get_me tool and tell me my username."*
 
-The app stores this token with your claude.ai connectors, apart from the copy Claude Code keeps, so changing one doesn't change the other.
+The app stores this token encrypted with your claude.ai connectors, apart from the copy Claude Code keeps, so changing one doesn't change the other. It reaches GitHub from Anthropic's cloud, not from your computer, and Claude Code's deny rules don't apply there: limit what Claude can do in the app through the token's repositories and permissions. On a Team or Enterprise plan, everyone who uses the connector reaches GitHub with that same token.
+
+This works in a chat conversation. Cowork sessions skip the plugin's GitHub server, because its token option has no default value.
 
 ### Coming from 0.1.x?
 
@@ -226,7 +228,7 @@ In a session: `/plugin` → **Installed** → **GitHub Operations** → **Uninst
 | :-- | :--: | :--: |
 | 🎯 Skills | ✅ | ⚠️ they load, but they need `git`, `gh` and your repository on your computer, and the cleanup guard hook that protects your repository doesn't run in a chat conversation, so use Claude Code |
 | 🤖 Agents | ✅ | ⚠️ in Cowork sessions, not in a chat conversation |
-| 🔌 MCP server (remote) | ✅ needs your token, set as in [Configuration](#-configuration) | 🔗 connect it once with your token, as in [In the Claude app](#in-the-claude-app) |
+| 🔌 MCP server (remote) | ✅ needs your token, set as in [Configuration](#-configuration) | 🔗 in a chat conversation, once you connect it with your token as in [In the Claude app](#in-the-claude-app); Cowork skips it, because the token option has no default |
 
 <sub>✅ works · ⚠️ partial · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. The Claude app (web, desktop and mobile) runs a conversation as a Cowork session when it can, and as a chat conversation otherwise, for example on a device that can't run Cowork or in the separate Chat mode that Team and Enterprise plans keep for now.</sub>
 
@@ -248,7 +250,7 @@ Look at the message, then fix the token. Until you do, the monitoring agent has 
 | :-- | :-- | :-- |
 | `plugin:github-operations:github` is missing from `/mcp` | The token is not set: you skipped the dialog, installed from the shell, or just updated from 0.1.x | Set it as in [Configuration](#-configuration) |
 | `/plugin` lists `github` under **Needs attention** as `failed to load`, with `Plugin option "github_token" isn't set` | You turned the plugin on in claude.ai, and Claude Code doesn't ask for the token of that copy | Run `/plugin configure github-operations@synced`, as in [Configuration](#-configuration) |
-| In the Claude app, the plugin's **Connectors** tab shows `github` as not added, or its form asks for an OAuth client ID | The app can't read the plugin's token option | Connect it with your token, as in [In the Claude app](#in-the-claude-app) |
+| In the Claude app, the plugin's **Connectors** tab shows `github` as not added, or its form asks for an OAuth client | The app can't read the plugin's token option | Connect it with your token, as in [In the Claude app](#in-the-claude-app) |
 | The server is marked failed, or `401 — token authentication failed` | The token is wrong or expired | Create a new token and set it again with **Configure options** |
 | Some tools work and others don't | The token lacks a permission those tools need | Add the permission to the token |
 
