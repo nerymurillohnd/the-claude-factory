@@ -211,7 +211,7 @@ Not in the default permission mode: nobody is there to approve saving the file. 
 <details>
 <summary><b>Does the start-of-session reminder get in the way of <code>claude -p</code> or CI runs?</b></summary>
 
-No. Claude does the request it was given and only adds the list of open items at the end of its reply.
+No. The hook does nothing in `claude -p` runs, so they behave as if the plugin were not installed.
 
 </details>
 

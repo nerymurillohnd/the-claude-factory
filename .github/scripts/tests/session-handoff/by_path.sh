@@ -106,6 +106,11 @@ printf '# Session handoff\n' > "${store}/2025-12-31-2359.md"
 expect_protocol "hook output with a handoff"
 echo "hook: asks Claude to read, validate and compare the newest handoff"
 
+# 4b. claude -p (entrypoint sdk-cli) gets nothing, even with a handoff present.
+out=$(CLAUDE_CODE_ENTRYPOINT=sdk-cli CLAUDE_PROJECT_DIR="${work}" "${hook}" < /dev/null) || fail "claude -p: exit $?"
+[[ -z ${out} ]] || fail "claude -p: output: ${out}"
+echo "hook: silent in claude -p"
+
 # 5. `.claude` is a regular file: there is no store, so no output.
 reset
 printf 'not a folder\n' > "${work}/.claude"

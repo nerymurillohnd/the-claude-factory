@@ -8,6 +8,9 @@ set -euo pipefail
 shopt -s nullglob
 LC_ALL=C # digit ranges match only 0-9
 
+# claude -p (and the Agent SDK) runs a specific job: add nothing to it.
+[[ ${CLAUDE_CODE_ENTRYPOINT:-} == sdk-cli ]] && exit 0
+
 claude_dir="${CLAUDE_PROJECT_DIR:-.}/.claude"
 store="${claude_dir}/session-handoff"
 
