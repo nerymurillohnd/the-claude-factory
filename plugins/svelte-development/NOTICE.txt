@@ -1,5 +1,5 @@
 svelte-development
-Copyright (c) 2026 Claude Essentials maintainers. Licensed under the MIT License (see LICENSE).
+Copyright (c) 2026 Nery Murillo. Licensed under the MIT License (see LICENSE).
 
 This plugin contains material derived from sveltejs/ai-tools:
 

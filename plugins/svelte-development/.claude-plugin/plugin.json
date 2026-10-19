@@ -1,0 +1,34 @@
+{
+  "name": "svelte-development",
+  "displayName": "Svelte Development",
+  "version": "0.1.0",
+  "description": "Writes, reviews and migrates Svelte 5 and SvelteKit 3 code by current practice, checking every change against the official Svelte docs and autofixer, the Svelte language server and your project's own check.",
+  "author": {
+    "name": "Nery Murillo",
+    "url": "https://github.com/nerymurillohnd"
+  },
+  "homepage": "https://github.com/nerymurillohnd/the-claude-factory/tree/main/plugins/svelte-development#readme",
+  "repository": "https://github.com/nerymurillohnd/the-claude-factory",
+  "license": "MIT",
+  "keywords": [
+    "svelte",
+    "sveltekit",
+    "svelte-5",
+    "sveltekit-3",
+    "runes",
+    "migration",
+    "code-review",
+    "lsp",
+    "mcp",
+    "svelte-check",
+    "astro",
+    "tailwind",
+    "frontend"
+  ],
+  "metadata": {
+    "surfaces": [
+      "claude-code",
+      "claude-app"
+    ]
+  }
+}
