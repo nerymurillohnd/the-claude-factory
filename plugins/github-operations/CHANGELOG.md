@@ -12,6 +12,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 - The `pr-tracker` agent now writes every report in one fixed template: a summary of up to eight labeled lines (status, head, blockers, coverage, next action), then the snapshot, coverage, failed jobs, review findings, warnings, Dependabot, durations, changes since the last report, optimizations and next actions, with tables where items repeat. Reports read the same way every round, so a change between two of them is easy to spot.
 
+### Fixed
+
+- The README now shows how to use the GitHub server in the Claude app. The app can't read the plugin's token option, so it lists the server as a connector that is not added and starts its form on an OAuth sign-in that needs an OAuth app registered with GitHub. The new *In the Claude app* section connects it with your token instead: **No sign in**, then an `authorization` header with `Bearer <token>`. *Compatibility* and *FAQ & Troubleshooting* point there.
+
 ## [0.3.0] - 2026-10-18
 
 ### Changed
