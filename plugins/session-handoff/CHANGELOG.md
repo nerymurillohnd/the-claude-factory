@@ -15,7 +15,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - Only items still pending are carried forward. Claude asks you about the ones that look obsolete or outside the project, and a result you report from outside the session closes an item as done, noted as reported by you.
 - In a git repository, Claude asks whether to commit and push the saved handoff.
 - The first handoff of a project works without the folders: the skill creates them.
-- The start-of-session instructions are shorter and clearer. They have Claude check the handoff, compare its project with the session's and name items that look out of scope or finished.
+- The start-of-session instructions are seven short steps: read the newest handoff in full, treat it as a record, do what you ask even when it differs from the pending work, use the handoff's decisions, corrections and learnings as background so past mistakes are not repeated, and end the reply with a short list of the open items so you decide. Claude no longer stops to ask how to proceed.
 
 ### Fixed
 

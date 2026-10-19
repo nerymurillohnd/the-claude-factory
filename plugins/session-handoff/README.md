@@ -2,7 +2,7 @@
 
 # 🔁 Session Handoff
 
-<p><strong>Carries a project's working state from one session to the next: write a handoff when you stop, and the next session reads it, reports what is still open and asks you where to start.</strong></p>
+<p><strong>Carries a project's working state from one session to the next: write a handoff when you stop, and the next session reads it, does what you ask and ends its reply with what is still open.</strong></p>
 
 [![Version](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Fnerymurillohnd%2Fthe-claude-factory%2Fmain%2Fplugins%2Fsession-handoff%2F.claude-plugin%2Fplugin.json&query=%24.version&label=version&color=D97757)](./CHANGELOG.md)
 [![Works in](https://img.shields.io/badge/works%20in-Claude%20Code%20%C2%B7%20Claude%20app-2563EB)](#-compatibility)
@@ -32,7 +32,7 @@ A new session starts with an empty conversation. What you decided yesterday, the
 - **Nothing gets lost between sessions** — every open item of the previous handoff is carried forward or closed with its evidence, so a pending task cannot quietly disappear.
 - **Facts, not memory** — each handoff is built from the repository itself: branch, uncommitted work, stashes, unpushed commits, the commits since the last handoff and the repository's recent pull requests. What could not be checked is marked as such.
 - **One project at a time** — a handoff belongs to the project you are working in and holds only that project's work.
-- **You stay in charge** — the handoff is drafted with you and saved only after you approve it, and the next session asks how you want to proceed instead of starting the pending work on its own.
+- **You stay in charge** — the handoff is drafted with you and saved only after you approve it, and the next session does what you ask, never the pending work on its own, and ends its reply with the open items so you decide.
 - **Quiet everywhere else** — in projects without handoffs, the plugin adds nothing to the conversation.
 
 ## 🧩 What's inside
@@ -40,7 +40,7 @@ A new session starts with an empty conversation. What you decided yesterday, the
 | Component | Name | What it does | How it runs |
 | :-- | :-- | :-- | :-- |
 | 🎯 Skill | `session-handoff:write-handoff` | Reads the project's state, offers to commit, push or open a pull request first, reconciles the previous handoff, drafts the new one with you and saves it in `.claude/session-handoff/` | `/session-handoff:write-handoff`, or ask Claude to write a handoff when you wrap up |
-| 🪝 Hook | `SessionStart` | When a session starts or is cleared in a project with handoffs, has Claude read the newest one, check it, report what is open and ask how to proceed; if the handoff folder can't be read, warns you instead of staying silent | Automatically, at the start of a session and after `/clear` |
+| 🪝 Hook | `SessionStart` | When a session starts or is cleared in a project with handoffs, has Claude read the newest one in full, do what you ask and end its reply with the open items; if the handoff folder can't be read, warns you instead of staying silent | Automatically, at the start of a session and after `/clear` |
 
 ## ✅ Requirements
 
@@ -108,7 +108,7 @@ In the desktop app's **Code** tab you can also click **+** → **Plugins** → *
 
 Start Claude Code in the same project and type your first request as usual.
 
-**Result:** the first reply names the handoff it read, summarizes it, lists its pending items and keeps your request as the current one. It asks whether to handle your request first, resume the pending items first, or do something else, and waits for your answer before starting.
+**Result:** Claude reads the newest handoff in full and does what you asked. If your request differs from the pending work, it does your request anyway. It works with the handoff's decisions, corrections and learnings as background, so past mistakes are not repeated. At the end of its reply it lists the open items, one short line each, so you can decide what to do next.
 
 ### Start fresh in the same session
 
@@ -211,7 +211,7 @@ Not in the default permission mode: nobody is there to approve saving the file. 
 <details>
 <summary><b>Does the start-of-session reminder get in the way of <code>claude -p</code> or CI runs?</b></summary>
 
-No. In a run where nobody can answer, Claude is told to skip the question and go on with the request it was given.
+No. Claude does the request it was given and only adds the list of open items at the end of its reply.
 
 </details>
 
