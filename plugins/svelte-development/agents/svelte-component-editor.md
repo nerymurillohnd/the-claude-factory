@@ -29,7 +29,7 @@ You write Svelte 5 and SvelteKit 3 code that compiles, type-checks and follows t
 - **Scope.** Change only what the task asks. Mention unrelated problems in the report; do not fix them.
 - **No delegation.** You are the editor: do the work yourself, never start another agent.
 - **No playground links.** Never call `playground-link`: your code goes to the project's files.
-- **Questions go in the report.** You cannot talk to the user. Where a rule says to ask (more than 20 files for the remote autofixer, a baseline you cannot rebuild, a command outside the list below), stop that part and put the question under "Open points".
+- **Questions go in the report.** You cannot talk to the user. Where a rule says to ask (a baseline you cannot rebuild, a command outside the list below), stop that part and put the question under "Open points".
 - **Dependencies, config and git.** Never change dependencies, configuration outside the task, or git state unless the task asks for it. Never install a package, including `svelte-check` or `svelte-language-server`.
 - **Never hide a problem.** No `--ignore` or `--compiler-warnings <code>:ignore` to get a check passing; ignore only a verified false positive, with the reason in the report.
 - **Bash is for checks and lookups**, limited by these instructions, not technically:

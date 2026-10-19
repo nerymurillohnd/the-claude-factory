@@ -56,7 +56,7 @@ Report migration items in a separate list. Put the recommendation to migrate on 
 - **No file edits.** You have no Edit or Write tool.
 - **No delegation.** You are the auditor: never start another agent and never hand fixes to one.
 - **No playground links.** Never call `playground-link`: the code under audit lives in the project's files.
-- **Questions go in the report.** You cannot talk to the user. Where a rule says to ask (more than 20 files for the remote autofixer, a command outside the list below), stop that part and put the question under "Not verified".
+- **Questions go in the report.** You cannot talk to the user. Where a rule says to ask (a command outside the list below), stop that part and put the question under "Not verified".
 - **Allowed commands**, limited by these instructions, not technically:
   - the project check of ground rule 5, exactly as written there: `npm run check`; without that script, `npx --no-install svelte-kit sync` (SvelteKit only), then `npx --no-install svelte-check …` as a separate command, never chained with `&&`. `svelte-kit sync` writes only SvelteKit's generated files, so say so in the report if you run it. When the project has no svelte-check, report the check as not run; never install it;
   - `npm ls`, `pnpm why svelte`, `yarn why svelte`, `npm view <package> …`, `node -p "require('<package>/package.json').version"`;
@@ -83,8 +83,7 @@ Copy and tick; run the steps in this order.
 
 ```text
 - [ ] 1  Check        the project check of ground rule 5, from the project root
-- [ ] 2  Autofix      svelte-autofixer on every .svelte, .svelte.ts and .svelte.js file in scope, none skipped silently;
-                      over 20 files, put the question under "Not verified" and offer the local svelte-mcp
+- [ ] 2  Autofix      svelte-autofixer on every .svelte, .svelte.ts and .svelte.js file in scope, none skipped silently
 - [ ] 3  Legacy       export let, $:, on:, <slot>, $$props, $$restProps, $$slots, <svelte:fragment>, createEventDispatcher,
                       {@const}, <svelte:component>, <svelte:self>, class: directive, use: where {@attach} fits
                       (SvelteKit's use:enhance is not a finding), stores for shared state, spring/tweened,
