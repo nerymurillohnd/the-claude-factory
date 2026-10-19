@@ -54,7 +54,7 @@ Follow the [plugin authoring rules](${CLAUDE_PROJECT_DIR}/.claude/rules/stages/p
 
 1. Run the gates in [Before Every Push](${CLAUDE_PROJECT_DIR}/.claude/rules/QUALITY_GATE.md#before-every-push) — every gate passes.
 2. Exercise each component in Claude Code while building (`claude --plugin-dir plugins/<name>`).
-3. Run `/test-installed-plugin <name>` once, in full (this request authorizes it), and test in the Claude app (a Cowork session and a chat conversation), unless the plugin is declared Claude Code-only.
+3. Test in the Claude app (a Cowork session and a chat conversation), unless the plugin is declared Claude Code-only.
 4. Delegate an independent review to the `plugin-reviewer` agent; fix every confirmed finding.
 
 ## 7. Hand off

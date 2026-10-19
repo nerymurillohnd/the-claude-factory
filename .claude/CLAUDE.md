@@ -76,11 +76,11 @@ The gates live in `.claude/rules/`.
 
 ### Done
 
-- A plugin PR is ready to merge only when: every gate passes; `plugin-reviewer` left no confirmed finding; `/test-installed-plugin` and the Claude app check passed (unless Claude Code-only).
+- A plugin PR is ready to merge only when: every gate passes; `plugin-reviewer` left no confirmed finding; the Claude app check passed (unless Claude Code-only).
 
 ## Plugin Development
 
-- Do not start a new plugin while a released one lacks its installed test or Claude app check.
+- Do not start a new plugin while a released one lacks its Claude app check.
 - Name skills and plugins for what the skill does, not how it is implemented.
 - Keep the plugin Python floor at 3.9 (uv's `python3.9`), typed by `pyrightconfig.json` and mypy `--python-version 3.9`.
 - Keep the version in `plugin.json`. Never set `version` on a marketplace entry.

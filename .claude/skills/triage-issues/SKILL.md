@@ -24,7 +24,7 @@ gh issue view <n> --repo nerymurillohnd/the-claude-factory --comments
 ## 2. Classify each issue
 
 1. **Plugin** — which one? Add `plugin: <name>`.
-2. **Valid?** Check against the plugin README, current code and official docs. Try to reproduce in an isolated install (`/test-installed-plugin`).
+2. **Valid?** Check against the plugin README, current code and official docs. Try to reproduce in an isolated install.
 3. **Outcome** — one of:
    - `status: confirmed` + `priority:` (high = core broken for many; medium = workaround exists; low = nice to have)
    - `status: needs-info` — list exactly what's missing

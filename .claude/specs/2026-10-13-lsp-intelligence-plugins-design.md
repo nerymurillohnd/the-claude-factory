@@ -212,7 +212,6 @@ TypeScript packaging:
 
 - Unit tests per hook script in `.github/scripts/tests/`: `lsp-hooks.test.mjs` (Node hooks: Bash, TS6, TS7) and `test_python_check.py` (Python hook), driven by the same fixture files the skills ship. Cases: non-language file, clean file, finding, format rewrite, missing tool (`PATH` emptied), unsupported dialect, no `tsconfig.json`, edited file outside the program, oversized output, Bash input with `bashEditDiff`, Bash input without it (mtime window, git and non-git project, read-only command), `PostToolUseFailure` input, more than 20 changed files. They run in `/verify` and in `validate.yml` (Python suite on the existing matrix).
 - `claude plugin validate --strict` on the four plugins (`validate-claude.sh`).
-- `/test-installed-plugin <name>` for each: copied install from a git source, load check, and for the TypeScript plugins proof that `node_modules` arrived in the cache and the server starts.
 - Skill triggering measured with several realistic prompts (trigger rate), no full eval suite unless Nery decides otherwise.
 
 ## 9. Documentation, versions, release
