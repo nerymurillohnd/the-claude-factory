@@ -1,5 +1,5 @@
-import type { PageLoad } from "./$types";
+import type { PageLoad } from './$types'
 
 export const load: PageLoad = () => {
-  return { title: "Counter demo" };
-};
+  return { title: 'Counter demo' }
+}

@@ -83,7 +83,7 @@ Start from a usage or the import in a `.svelte` file; the result includes the de
 ```text
 LSP findReferences  src/lib/components/CounterButton.svelte 4 12   (formatCount import)
 → 8 references across 5 files: CounterButton.svelte 4:12, 16:13; Dynamic.svelte 4:12,
-  10:30 (stored in an object); format.ts 2:17; index.ts 1:10; +page.svelte 4:12, 14:16
+  10:30 (stored in an object); format.ts 2:17; index.ts 2:10; +page.svelte 4:12, 14:16
 ```
 
 A prop: references on the `Props` member include the destructuring and every parent that passes it.
