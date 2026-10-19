@@ -115,7 +115,7 @@ Plugin skills are namespaced, so they never collide with yours: type `/<plugin>:
 
 | Plugin | What it does | Works in | Version | Includes |
 | :-- | :-- | :-- | :--: | :-- |
-| [**GitHub Operations**](./plugins/github-operations#readme)<br>`github-operations@the-claude-factory` | Carries a GitHub pull request from open to merge, cleans up a Git repository without losing work, and brings the GitHub MCP server with it. | 💻 Code only | `0.3.1` | 🎯 Skills · 🤖 Agents · 🔌 MCP |
+| [**GitHub Operations**](./plugins/github-operations#readme)<br>`github-operations@the-claude-factory` | Carries a GitHub pull request from open to merge, cleans up a Git repository without losing work, and brings the GitHub MCP server with it. | 💻 Code only | `0.3.2` | 🎯 Skills · 🤖 Agents · 🔌 MCP |
 | [**Svelte Development**](./plugins/svelte-development#readme)<br>`svelte-development@the-claude-factory` | Writes, reviews and migrates Svelte 5 and SvelteKit 3 code by current practice, checking every change against the official Svelte docs and autofixer, the Svelte language server and your project's own check. | 💻 Code · 🖥️ Claude app | `0.1.0` | 🎯 Skills · 🤖 Agents · 🔌 MCP · 🧠 LSP |
 
 ### ⚡ Productivity

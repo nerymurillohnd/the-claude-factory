@@ -1,6 +1,6 @@
 # Final report
 
-Close every run, whatever its outcome, with:
+Close every run, whatever its outcome. Open with the outcome and the PR link in two lines, then give the items below that apply (leave out an item with nothing to say):
 
 - Repository and PR URL.
 - Final lifecycle outcome (one from `SKILL.md`).
@@ -14,6 +14,8 @@ Close every run, whatever its outcome, with:
 - Dependabot findings and alert-coverage limitations.
 - Optimization recommendations, marked non-blocking.
 - Conflicts or base updates handled.
+- Labels applied, and any label created.
+- Review threads left open for a human reviewer and why.
 - Merge method, queue state and source of the landing confirmation.
 - Post-merge workflow or deployment state, if observed.
 - Cleanup and synchronization results.
