@@ -21,6 +21,7 @@ import {
   REQUIRED_PLUGIN_SECTIONS,
   RESERVED_NAME,
   ROOT,
+  readJson,
   readText,
   SEMVER,
   SURFACE_PROFILES,
@@ -72,6 +73,74 @@ export function portabilityProblems(entries) {
     problems.add(`the plugin has ${entries.length} files; the limit is ${MAX_FILES}`)
   }
   return [...problems]
+}
+
+// ── LSP server configs (code.claude.com/docs/en/plugins/manifest-reference#lspservers) ──
+// `claude plugin validate` does not read .lsp.json, and an unknown key makes Claude Code
+// skip the whole file at load, so nothing else catches a bad key before users do.
+/** @type {Record<string, (v: unknown) => boolean>} */
+const LSP_FIELDS = {
+  command: (v) => typeof v === 'string' && v !== '' && (!v.includes(' ') || v.startsWith('/')),
+  extensionToLanguage: (v) =>
+    isRecord(v) &&
+    Object.keys(v).length > 0 &&
+    Object.entries(v).every(([ext, lang]) => ext.startsWith('.') && typeof lang === 'string'),
+  args: (v) => Array.isArray(v) && v.every((a) => typeof a === 'string'),
+  transport: (v) => v === 'stdio' || v === 'socket',
+  env: (v) => isRecord(v) && Object.values(v).every((e) => typeof e === 'string'),
+  initializationOptions: () => true,
+  settings: () => true,
+  workspaceFolder: (v) => typeof v === 'string',
+  startupTimeout: (v) => Number.isInteger(v) && Number(v) > 0,
+  shutdownTimeout: (v) => Number.isInteger(v) && Number(v) > 0,
+  requestTimeout: (v) => Number.isInteger(v) && Number(v) > 0,
+  restartOnCrash: (v) => typeof v === 'boolean',
+  maxRestarts: (v) => Number.isInteger(v) && Number(v) >= 0,
+  diagnostics: (v) => typeof v === 'boolean',
+}
+const LSP_REQUIRED = ['command', 'extensionToLanguage']
+
+/**
+ * @param {unknown} v
+ * @returns {v is Record<string, unknown>}
+ */
+function isRecord(v) {
+  return typeof v === 'object' && v !== null && !Array.isArray(v)
+}
+
+/**
+ * Problems in a parsed .lsp.json: a map of server name to a strict server config.
+ * @param {unknown} config
+ * @returns {string[]}
+ */
+export function lspConfigProblems(config) {
+  if (!isRecord(config) || Object.keys(config).length === 0) {
+    return ['.lsp.json must map at least one server name to its config']
+  }
+  /** @type {string[]} */
+  const problems = []
+  for (const [server, cfg] of Object.entries(config)) {
+    if (!isRecord(cfg)) {
+      problems.push(`.lsp.json server "${server}" must be an object`)
+      continue
+    }
+    for (const key of LSP_REQUIRED) {
+      if (!(key in cfg)) {
+        problems.push(`.lsp.json server "${server}" is missing ${key}`)
+      }
+    }
+    for (const [key, value] of Object.entries(cfg)) {
+      const valid = LSP_FIELDS[key]
+      if (!valid) {
+        problems.push(
+          `.lsp.json server "${server}" has unknown key "${key}" — Claude Code skips the file`,
+        )
+      } else if (!valid(value)) {
+        problems.push(`.lsp.json server "${server}" has an invalid ${key}`)
+      }
+    }
+  }
+  return problems
 }
 
 /**
@@ -236,6 +305,16 @@ export function checkRepo() {
     }
     if (manifest.repository !== REPO_URL) {
       err(scope, `plugin.json repository must be ${REPO_URL}`)
+    }
+
+    if (existsSync(join(dir, '.lsp.json'))) {
+      try {
+        for (const problem of lspConfigProblems(readJson(join(dir, '.lsp.json')))) {
+          err(scope, problem)
+        }
+      } catch (e) {
+        err(scope, `.lsp.json is not valid JSON: ${e instanceof Error ? e.message : String(e)}`)
+      }
     }
 
     for (const f of ['README.md', 'CHANGELOG.md', 'LICENSE']) {
