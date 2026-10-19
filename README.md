@@ -11,7 +11,7 @@
 <br>
 
 <!-- plugin-count:start -->
-[![Plugins](https://img.shields.io/badge/plugins-10-D97757?style=for-the-badge)](#-catalog)
+[![Plugins](https://img.shields.io/badge/plugins-11-D97757?style=for-the-badge)](#-catalog)
 <!-- plugin-count:end -->
 [![Validate](https://img.shields.io/github/actions/workflow/status/nerymurillohnd/the-claude-factory/validate.yml?branch=main&label=validate&style=for-the-badge)](https://github.com/nerymurillohnd/the-claude-factory/actions/workflows/validate.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-22C55E?style=for-the-badge)](./LICENSE)
@@ -104,7 +104,7 @@ Plugin skills are namespaced, so they never collide with yours: type `/<plugin>:
 <!-- catalog:start -->
 | Category | Plugins |
 | :-- | :--: |
-| [🛠️ Development](#️-development) | 1 |
+| [🛠️ Development](#️-development) | 2 |
 | [⚡ Productivity](#-productivity) | 2 |
 | [🧪 Testing & Quality](#-testing--quality) | 3 |
 | [🧠 Language Support](#-language-support) | 4 |
@@ -116,6 +116,7 @@ Plugin skills are namespaced, so they never collide with yours: type `/<plugin>:
 | Plugin | What it does | Works in | Version | Includes |
 | :-- | :-- | :-- | :--: | :-- |
 | [**GitHub Operations**](./plugins/github-operations#readme)<br>`github-operations@the-claude-factory` | Carries a GitHub pull request from open to merge, cleans up a Git repository without losing work, and brings the GitHub MCP server with it. | 💻 Code only | `0.3.1` | 🎯 Skills · 🤖 Agents · 🔌 MCP |
+| [**Svelte Development**](./plugins/svelte-development#readme)<br>`svelte-development@the-claude-factory` | Writes, reviews and migrates Svelte 5 and SvelteKit 3 code by current practice, checking every change against the official Svelte docs and autofixer, the Svelte language server and your project's own check. | 💻 Code · 🖥️ Claude app | `0.1.0` | 🎯 Skills · 🤖 Agents · 🔌 MCP · 🧠 LSP |
 
 ### ⚡ Productivity
 

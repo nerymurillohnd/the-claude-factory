@@ -4,6 +4,12 @@ All notable changes to **The Claude Factory** marketplace are documented here: p
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The marketplace has no version of its own: entries are grouped by date, newest first, and every plugin carries its own version, changelog and tag. The versions 0.1.0 and 0.2.0 below are the history from before that change; their tags stay.
 
+## 2026-10-19
+
+### Added
+
+- **svelte-development** 0.1.0 — writes, reviews and migrates Svelte 5 and SvelteKit 3 code from the official docs, checks every Svelte file with the Svelte autofixer and proves changes with the Svelte language server and your project's `svelte-check`.
+
 ## 2026-10-18
 
 ### Changed

@@ -56,6 +56,12 @@
       "category": "testing"
     },
     {
+      "name": "svelte-development",
+      "source": "./plugins/svelte-development",
+      "description": "Writes, reviews and migrates Svelte 5 and SvelteKit 3 code by current practice, checking every change against the official Svelte docs and autofixer, the Svelte language server and your project's own check.",
+      "category": "development"
+    },
+    {
       "name": "typescript6-lsp-intelligence",
       "source": "./plugins/typescript6-lsp-intelligence",
       "description": "Connects your TypeScript 6 language server to Claude Code, type-checks every file Claude edits with your own TypeScript under a strictest policy, and teaches Claude to find the program that owns a file and fix compiler findings without unsafe assertions or suppressions.",

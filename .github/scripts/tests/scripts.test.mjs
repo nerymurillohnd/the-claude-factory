@@ -10,6 +10,7 @@ import {
   existsSync,
   mkdirSync,
   mkdtempSync,
+  readdirSync,
   readFileSync,
   rmSync,
   symlinkSync,
@@ -686,6 +687,78 @@ describe('portability rules', () => {
     const many = Array.from({ length: 513 }, (_, i) => entry(`f${i}.md`))
     assert.match(portabilityProblems(many).join('\n'), /513 files; the limit is 512/)
     assert.deepEqual(portabilityProblems(many.slice(0, 512)), [])
+  })
+})
+
+describe('lsp config rules', () => {
+  test('accept every documented field with a valid value', async () => {
+    const { lspConfigProblems } = await import(join(REAL_ROOT, '.github/scripts/check-repo.mjs'))
+    assert.deepEqual(
+      lspConfigProblems({
+        svelte: {
+          command: 'svelteserver',
+          args: ['--stdio'],
+          extensionToLanguage: { '.svelte': 'svelte' },
+          transport: 'stdio',
+          env: { A: 'b' },
+          initializationOptions: { any: 1 },
+          settings: { any: 1 },
+          workspaceFolder: '/work',
+          startupTimeout: 30000,
+          shutdownTimeout: 15000,
+          requestTimeout: 60000,
+          restartOnCrash: true,
+          maxRestarts: 0,
+          diagnostics: false,
+        },
+      }),
+      [],
+    )
+  })
+
+  test('flag unknown keys, missing required fields and invalid values', async () => {
+    const { lspConfigProblems } = await import(join(REAL_ROOT, '.github/scripts/check-repo.mjs'))
+    const problems = lspConfigProblems({
+      a: { command: 'x', extensionToLanguage: { '.x': 'x' }, bogusKey: true },
+      b: { args: [] },
+      c: {
+        command: 'has space',
+        extensionToLanguage: { x: 'x' },
+        startupTimeout: 0,
+        maxRestarts: -1,
+        transport: 'tcp',
+      },
+    }).join('\n')
+    assert.match(problems, /"a" has unknown key "bogusKey" — Claude Code skips the file/)
+    assert.match(problems, /"b" is missing command/)
+    assert.match(problems, /"b" is missing extensionToLanguage/)
+    for (const key of [
+      'command',
+      'extensionToLanguage',
+      'startupTimeout',
+      'maxRestarts',
+      'transport',
+    ]) {
+      assert.ok(problems.includes(`"c" has an invalid ${key}`), `${key} not flagged:\n${problems}`)
+    }
+    assert.deepEqual(
+      lspConfigProblems({ d: { command: '/opt/my server', extensionToLanguage: { '.d': 'd' } } }),
+      [],
+    )
+    assert.equal(lspConfigProblems({}).length, 1)
+    assert.equal(lspConfigProblems([]).length, 1)
+  })
+
+  test('every shipped .lsp.json passes', async () => {
+    const { lspConfigProblems } = await import(join(REAL_ROOT, '.github/scripts/check-repo.mjs'))
+    const plugins = readdirSync(join(REAL_ROOT, 'plugins')).filter((p) =>
+      existsSync(join(REAL_ROOT, 'plugins', p, '.lsp.json')),
+    )
+    assert.ok(plugins.length > 0)
+    for (const p of plugins) {
+      const cfg = JSON.parse(readFileSync(join(REAL_ROOT, 'plugins', p, '.lsp.json'), 'utf8'))
+      assert.deepEqual(lspConfigProblems(cfg), [], p)
+    }
   })
 })
 
