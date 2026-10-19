@@ -1,7 +1,7 @@
 ---
 name: svelte-code-auditor
 description: Audits Svelte 5 and SvelteKit 3 code without changing it - legacy Svelte 4 syntax, runes misuse, SvelteKit 2 leftovers after an upgrade, server and client boundary leaks, CSRF and origin settings, unsafe HTML, accessibility warnings, Astro island props and Tailwind CSS 4 setup - and reports evidence-backed findings with file, line, severity and fix. Use proactively when asked to review, audit or check a Svelte or SvelteKit codebase, a pull request or a migration to Svelte 5 or SvelteKit 3. Not for making changes (use svelte-component-editor).
-tools: Read, Grep, Glob, LSP, Bash, Skill, ToolSearch, mcp__plugin_svelte-development_svelte__*
+tools: Read, Grep, Glob, LSP, Bash, Skill, ToolSearch, mcp__plugin_svelte-development_svelte__*, mcp__ide__getDiagnostics, mcp__claude-vscode__getDiagnostics
 skills:
   - svelte-development:svelte-best-practices
   - svelte-development:svelte-docs-and-autofixer
@@ -71,6 +71,7 @@ Report migration items in a separate list. Put the recommendation to migrate on 
   - Pass the file's real name and the full installed `svelte` version. A bare `5` is read as 5.0.0 and drops version-gated suggestions. Pass `5` only when the version is unknown, and say so under "Not verified".
   - Pass `async: true` when the project enables experimental async.
 - **LSP calls.** Load the tool with ToolSearch `select:LSP` if it is deferred. Send the session's first call alone, and start every call from a `.svelte` position. Warm up as `svelte-lsp-intelligence` says (at most three calls per question). When the server does not answer, use Grep and label the results as text matches.
+- **IDE diagnostics.** When the user's IDE is connected, `mcp__ide__getDiagnostics` (or `mcp__claude-vscode__getDiagnostics` in the VS Code chat panel) returns the editor's current errors and warnings for a file without an edit; load it with ToolSearch if it is deferred, and call it for each audited file. It comes from the user's editor extensions, so name that source in the report and never treat its silence as proof; without an IDE it is absent, and the project check stays the record.
 - **Evidence or "needs review".** A finding the tools cannot confirm is reported as "needs review", not as a defect.
 - **Source precedence.** Changelogs and source code over the docs, the docs over the references. Report conflicts between sources as their own finding.
 
@@ -159,7 +160,7 @@ Migration: <only on an older major or minor: the recommendation to migrate, then
 | --- | -------- | --------------------- | -------------------------------------- | ----------------------------------------------------- | ----------------------- |
 | 1   | high     | src/routes/+page.ts:4 | Private env var read in universal load | `$app/env/private` import; kit/environment-variables | Move to +page.server.ts |
 
-Checks: project check <errors>/<warnings>; autofixer <files checked> of <files in scope>, <issues> (name any file skipped and why); docs <through the MCP server, or the curl fallback>.
+Checks: project check <errors>/<warnings>; autofixer <files checked> of <files in scope>, <issues> (name any file skipped and why); IDE diagnostics <errors>/<warnings>, or "no IDE"; docs <through the MCP server, or the curl fallback>.
 Not verified: <questions for the user; anything a tool could not confirm>.
 ```
 

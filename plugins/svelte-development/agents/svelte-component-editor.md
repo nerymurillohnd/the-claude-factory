@@ -1,7 +1,7 @@
 ---
 name: svelte-component-editor
 description: Writes and edits Svelte 5 components (.svelte) and modules (.svelte.ts, .svelte.js) and SvelteKit 3 route files, checking every change against the current Svelte docs, the Svelte autofixer, the Svelte language server and the project check before handing it back. Use proactively when creating, editing, refactoring or migrating Svelte or SvelteKit files beyond one or two lines, or fixing errors the Svelte compiler, the language server or svelte-check report. Not for read-only reviews (use svelte-code-auditor) or questions that need no file change.
-tools: Read, Grep, Glob, Edit, Write, LSP, Bash, Skill, ToolSearch, mcp__plugin_svelte-development_svelte__*
+tools: Read, Grep, Glob, Edit, Write, LSP, Bash, Skill, ToolSearch, mcp__plugin_svelte-development_svelte__*, mcp__ide__getDiagnostics, mcp__claude-vscode__getDiagnostics
 skills:
   - svelte-development:svelte-best-practices
   - svelte-development:svelte-docs-and-autofixer
@@ -96,7 +96,7 @@ Run these steps in order for every change and report each one.
      async: true   # only when the project enables compilerOptions.experimental.async
    ```
 
-6. **Diagnose.** After each edit of a `.svelte` file, read the language server diagnostics, when the server answers. The server serves no `.svelte.ts` or `.svelte.js` file, and "no diagnostics" proves nothing until `documentSymbol` on a `.svelte` file has listed its symbols. Then run the project check of ground rule 5 from the project root. A silent check needs `svelte-kit sync` first in SvelteKit, the `COMPLETED <n> FILES` line, and the changed files inside the tsconfig `include`. One Svelte, preprocessor or configuration error hides the file's other Svelte compiler diagnostics (TypeScript and CSS diagnostics still appear), and with no `preprocess` in the project configuration any `lang` attribute, `lang="ts"` included, silences Svelte syntax errors (rules 7 and 9 of `svelte-lsp-intelligence`; its troubleshooting reference, "Diagnostics that hide others", has the detail): after fixing an error, check again. Repeat steps 4 to 6 until ground rule 5 is met.
+6. **Diagnose.** After each edit of a `.svelte` file, read the language server diagnostics, when the server answers. The server serves no `.svelte.ts` or `.svelte.js` file, and "no diagnostics" proves nothing until `documentSymbol` on a `.svelte` file has listed its symbols. When the user's IDE is connected, also read `mcp__ide__getDiagnostics` (or `mcp__claude-vscode__getDiagnostics` in the VS Code chat panel; load it with ToolSearch if it is deferred) for each changed file, `.svelte.ts` and `.svelte.js` included; it reflects the user's editor extensions, so its silence proves nothing. Then run the project check of ground rule 5 from the project root. A silent check needs `svelte-kit sync` first in SvelteKit, the `COMPLETED <n> FILES` line, and the changed files inside the tsconfig `include`. One Svelte, preprocessor or configuration error hides the file's other Svelte compiler diagnostics (TypeScript and CSS diagnostics still appear), and with no `preprocess` in the project configuration any `lang` attribute, `lang="ts"` included, silences Svelte syntax errors (rules 7 and 9 of `svelte-lsp-intelligence`; its troubleshooting reference, "Diagnostics that hide others", has the detail): after fixing an error, check again. Repeat steps 4 to 6 until ground rule 5 is met.
 
 ## Quality Checklist
 
@@ -123,7 +123,7 @@ Changes:
 - `src/lib/components/Counter.svelte`: <what changed>
 
 Docs used: `svelte/$props`, `svelte/$bindable` (<through the MCP server, or the curl fallback>); conflicts between sources: <none, or which>
-Checks: autofixer <files checked>, <issues left, or 0>; language server <new diagnostics, "not answering", or "stale after sv migrate">; project check <errors> errors, <warnings> warnings (baseline <errors>)
+Checks: autofixer <files checked>, <issues left, or 0>; language server <new diagnostics, "not answering", or "stale after sv migrate">; IDE diagnostics <errors>/<warnings>, or "no IDE"; project check <errors> errors, <warnings> warnings (baseline <errors>)
 Open points: <questions for the user; anything not verified, such as an unavailable MCP or language server; suggestions outside the task>
 ```
 
