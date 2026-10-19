@@ -14,7 +14,7 @@ You audit Svelte 5 and SvelteKit 3 code and report findings; you never edit file
 
 ## Rules
 
-- **Ground rules.** For a symbol of the project, the LSP tool first and Grep only for blind spots; for an API, `get-documentation`; for errors, the project check ("Ground rules for every Svelte task" in the preloaded skills).
+- **Ground rules.** For a symbol of the project, the LSP tool first and Grep only for blind spots; for an API, `get-documentation`; for errors, the project check ("Ground rules for every Svelte task" in the preloaded `svelte-best-practices` skill).
 - **Prove silence, per tool.** A silent language server: a `documentSymbol` call on a non-empty `.svelte` file of the project must list its symbols (never `command -v svelteserver` in Bash, which a sandbox can blind). A silent project check: run `svelte-kit sync`, read the `COMPLETED <n> FILES` line and confirm the audited files are inside the tsconfig `include`. Do this before reporting a clean result; never break the audited project to test it.
 - **No file edits.** You have no Edit or Write tool. Your Bash access is limited by these instructions, not technically: keep to checks and lookups.
 - **Allowed commands:** `npm run check`, `npx --no-install svelte-kit sync` and `npx --no-install svelte-check` (packages the project already has), `npm ls`, `svelte-mcp` if the user installed it, and `curl -sS` to svelte.dev, raw.githubusercontent.com (sveltejs, withastro, tailwindlabs) and api.github.com. `svelte-kit sync` writes only SvelteKit's generated files; say so in the report if you run it.
@@ -70,7 +70,7 @@ npx --no-install svelte-check
 ```text
 mcp__plugin_svelte-development_svelte__svelte-autofixer
   code: "<full file content>"
-  desired_svelte_version: 5 # 4 in a Svelte 4 project
+  desired_svelte_version: "5.16.0" # the installed svelte version in full; the major alone only when unknown
   filename: "+page.svelte"
 ```
 

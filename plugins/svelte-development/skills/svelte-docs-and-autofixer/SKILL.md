@@ -24,16 +24,16 @@ The contract for the two tools that keep Svelte code current: reading the offici
 
 ## Governance rules
 
-All of these rules hold for every later turn of the task, not only the turn that loaded this skill, whichever Svelte skill loaded first. Depart from one only for a reason you state to the user.
+All of these rules hold for every later turn of the task, not only the turn that loaded this skill. Depart from one only for a reason you state to the user.
 
 ### Ground rules for every Svelte task
 
-0. **Route before the first tool call.** An audit or review of project files goes to the `svelte-code-auditor` agent; creating or changing `.svelte`, `.svelte.ts`, `.svelte.js` or SvelteKit route files beyond a line or two goes to the `svelte-component-editor` agent (Agent tool, without a `name`). Work inline only for a question, code pasted in the chat, a change of one or two lines, when the user asks you to, or when you already are one of these agents. [Who does the work](#who-does-the-work) gives the detail.
-1. **Version first.** In a project, find the installed `svelte` and `@sveltejs/kit` before writing (`npm ls`, else the `package.json` ranges and the lockfile). On an older major (SvelteKit 2 or earlier, Svelte 4 or earlier), propose the migration before writing; write for the older version only when the user declines or the request says to proceed without questions, and say so.
-2. **Docs before code.** Fetch the official section with `mcp__plugin_svelte-development_svelte__get-documentation` (the raw `llms.txt` when the server is unavailable) before using any Svelte or SvelteKit API, rune, option or config key; never write them from memory.
-3. **Symbols through the language server.** Where something of the project is defined, used or called goes to the LSP tool first when the language server answers; Grep only for strings, route files, CSS classes, configuration, or a symbol that lives only in `.ts`/`.js` files no `.svelte` file imports, labelled as text matches.
-4. **Autofixer on all you write or review.** Run `mcp__plugin_svelte-development_svelte__svelte-autofixer` with the full code (the remote tool treats a file path as code) and `desired_svelte_version` (5, or 4 for Svelte 4 code), or the local `svelte-mcp` with the file path when the code must not leave the machine, on every component or module you wrote, until it reports no issues. In a review, run it on every component and module in scope and report what it finds; name any file you skipped and why. Before sending more than 20 files of the user's code to the remote server, ask, and offer the local `svelte-mcp`.
-5. **Done means checked.** When you change code in a project, finish only when the project check reports no error in the files you changed; a review or a question reports the check result instead. When the change touches something other files use (props, exports, signatures, shared state, a rename or a deletion), first run the check once before the first edit as the baseline, and finish only when it also reports nothing new elsewhere; for a change confined to one file, report errors in files you did not touch as already there, unless they name what you changed. Never stash, reset or check out the user's work to rebuild a baseline; ask instead. The check: `npm run check`; without that script, `npx --no-install svelte-kit sync`, then `npx --no-install svelte-check --tsconfig ./tsconfig.json` in SvelteKit, or `npx --no-install svelte-check` without SvelteKit, never chained with `&&`.
+The ground rules (0 to 5) live in the `svelte-development:svelte-best-practices` skill and hold for this skill; "ground rule N" below means rule N there. Before the first tool call, load it with the Skill tool unless it is already in your context:
+
+```text
+Skill
+  skill: "svelte-development:svelte-best-practices"
+```
 
 ### Rules of this skill
 
@@ -96,7 +96,7 @@ Skill
 
 ## Tools
 
-The plugin connects to the Svelte team's remote MCP server, `https://mcp.svelte.dev/mcp`; Claude Code reconnects it on its own when it drops. The tools are named `mcp__plugin_svelte-development_svelte__<tool>`. They may be deferred: if they are not in your tool list, load them before concluding they are missing:
+The plugin connects to the Svelte team's remote MCP server, `https://mcp.svelte.dev/mcp`. When the connection drops, Claude Code retries it up to five times with growing waits, then marks the server as failed; the user reconnects it from `/mcp`. The tools are named `mcp__plugin_svelte-development_svelte__<tool>`. They may be deferred: if they are not in your tool list, load them before concluding they are missing:
 
 ```text
 ToolSearch
@@ -107,7 +107,7 @@ ToolSearch
 |---|---|---|
 | `mcp__plugin_svelte-development_svelte__list-sections` | none | Every section with its `path` and a use-case hint |
 | `mcp__plugin_svelte-development_svelte__get-documentation` | `section`: one path or title, or an array of them | The full text of each section |
-| `mcp__plugin_svelte-development_svelte__svelte-autofixer` | `code` (required), `desired_svelte_version` (required: `5`, or `4` for Svelte 4 code), `filename`, `async` | `issues`, `suggestions`, `require_another_tool_call_after_fixing` |
+| `mcp__plugin_svelte-development_svelte__svelte-autofixer` | `code` (required), `desired_svelte_version` (required: the installed version as a full string, such as `"5.16.0"`; the major alone only when unknown), `filename`, `async` | `issues`, `suggestions`, `require_another_tool_call_after_fixing` |
 | `mcp__plugin_svelte-development_svelte__playground-link` | `name`, `tailwind`, `files` (`{ "App.svelte": "<code>" }`) | A svelte.dev playground URL holding the code |
 
 Section paths are written exactly as `list-sections` prints them, without a leading `docs/`: `svelte/$state`, `kit/load`, `cli/sv-migrate`. An exact title also works (`Migrating to SvelteKit v3`). A `docs/kit/…` path returns only "similar results". The `list-sections` hints are missing for the newest sections, including every SvelteKit 3 addition and declaration tags; the docs map classifies them.
@@ -132,16 +132,16 @@ mcp__plugin_svelte-development_svelte__get-documentation
   section: ["svelte/$props", "svelte/$bindable"]
 ```
 
-**Step 4, check the code.** Pass the whole component as `code`; use `desired_svelte_version: 4` only for Svelte 4 code, and set `async: true` only when the project enables `compilerOptions.experimental.async`:
+**Step 4, check the code.** Pass the whole component as `code` and the installed `svelte` version (ground rule 1) as `desired_svelte_version`, in full: some suggestions are enabled only from a minor version on, and a bare `5` is read as 5.0.0, which drops them. Pass the major alone (`5`, or `4` for Svelte 4 code) only when the version is unknown. Set `async: true` only when the project enables `compilerOptions.experimental.async`:
 
 ```text
 mcp__plugin_svelte-development_svelte__svelte-autofixer
   code: "<script lang=\"ts\">\n  let { value = $bindable(0) }: { value?: number } = $props();\n</script>\n…"
-  desired_svelte_version: 5
+  desired_svelte_version: "5.16.0"
   filename: "Counter.svelte"
 ```
 
-It reports Svelte compiler errors and Svelte-specific mistakes: legacy syntax, effects that should be derived values, runes misuse.
+It reports Svelte compiler errors and Svelte-specific mistakes: legacy syntax, effects that should be derived values, runes misuse, and version-gated suggestions such as replacing `class:` directives with the `class` attribute.
 
 **Step 6, verify.** Read the diagnostics Claude Code reports after each edit of a `.svelte` file (the language server serves `.svelte` files only, so `.svelte.ts` and `.svelte.js` edits get none), then run the project check from the project root:
 
@@ -177,16 +177,15 @@ Try these in order, and say in the answer that the documentation or the code cou
    ```
 
    The URL pattern is `https://svelte.dev/docs/<area>/<slug>/llms.txt`; the docs map lists it for every section. Keep the URL in single quotes: slugs such as `$state` would otherwise be expanded by the shell.
-3. **Local command line, if the user has it.** `@sveltejs/mcp`, installed globally by the user, runs on their machine, sends no code and reads file paths. Use it offline or when code must not leave the machine. Quote inline code in single quotes, because double quotes let the shell expand `$state`:
+3. **Local command line, if the user has it.** `@sveltejs/mcp`, installed globally by the user, runs on their machine, sends no code and reads file paths. Use it offline or when code must not leave the machine. Quote inline code in single quotes, because double quotes let the shell expand `$state`, and pass the full installed version to `--svelte-version`:
 
    ```sh
-   command -v svelte-mcp                                         # installed?
    svelte-mcp list-sections
    svelte-mcp get-documentation 'svelte/$props,svelte/$bindable'
-   svelte-mcp svelte-autofixer src/lib/components/Counter.svelte --svelte-version 5
+   svelte-mcp svelte-autofixer src/lib/components/Counter.svelte --svelte-version 5.16.0
    ```
 
-   If it is missing, the user installs it with `npm install -g @sveltejs/mcp`; ask before suggesting `npx`.
+   Probe it by running it, never with `command -v svelte-mcp`. A sandboxed Bash cannot follow a symlinked global install, so `command not found` there proves nothing: ask the user to confirm in their own shell. If it is missing, the user installs it with `npm install -g @sveltejs/mcp`; ask before suggesting `npx`.
 
 ## What the user can start
 

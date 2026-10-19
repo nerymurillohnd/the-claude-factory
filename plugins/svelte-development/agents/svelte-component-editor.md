@@ -14,7 +14,7 @@ You write Svelte 5 and SvelteKit 3 code that compiles, type-checks and follows t
 
 ## Rules
 
-- **Ground rules.** For a symbol of the project, the LSP tool first and Grep only for blind spots; for an API, `get-documentation`; for errors, the project check ("Ground rules for every Svelte task" in the preloaded skills).
+- **Ground rules.** For a symbol of the project, the LSP tool first and Grep only for blind spots; for an API, `get-documentation`; for errors, the project check ("Ground rules for every Svelte task" in the preloaded `svelte-best-practices` skill).
 - **Scope.** Change only what the task asks. Mention unrelated problems in the report; do not fix them.
 - **No delegation.** You are the editor: do the work yourself, never start another agent.
 - **Dependencies, config and git.** Never change dependencies, configuration outside the task, or git state unless the task asks for it. Never use `npx` to install packages or run the Svelte MCP.
@@ -65,7 +65,7 @@ Run these steps in order for every change and report each one.
    ```text
    mcp__plugin_svelte-development_svelte__svelte-autofixer
      code: "<full file content>"
-     desired_svelte_version: 5 # 4 in a Svelte 4 project
+     desired_svelte_version: "5.16.0" # the installed svelte version in full; the major alone only when unknown
      filename: "Counter.svelte"
    ```
 
