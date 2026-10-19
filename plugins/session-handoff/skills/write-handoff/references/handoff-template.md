@@ -40,7 +40,7 @@ HEAD: <full hash> | none | Not a git repository. | unverified (git failed: <reas
 - Behind upstream: <count | unverified (fetch failed) | no upstream>
 - Branch vs default (<default branch name, e.g. main | unknown>): <on default | on another branch | detached | unknown>
 - Commits since previous HEAD: <hash and subject per line | none (no new commits) | none (no commits) | the last 20, and why>
-- PRs: <every row of gh pr list --state all --limit 20, with state | none | not checked (gh failed)>
+- PRs: <every row of gh pr list --state open | none | not checked (gh failed)>
 - Where the project stands: <what works, what is broken, what is half done>
 
 ## Open items

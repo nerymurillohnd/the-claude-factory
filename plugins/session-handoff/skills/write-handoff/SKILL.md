@@ -15,7 +15,7 @@ The handoff ends the session. It gives the next Claude what a `CLAUDE.md` and me
 ## 1. Check the current state
 
 - PROJECT is the git root of the current directory (`git rev-parse --show-toplevel`). Not a git repository: PROJECT is the current directory. Skip the git checks.
-- Record the branch, uncommitted changes, stashes, unpushed commits and open PRs (`gh pr list --state open`).
+- If there is a remote, run `git fetch --quiet`. Record the branch, uncommitted changes, stashes, unpushed commits and open PRs (`gh pr list --state open`).
 - Check that `<PROJECT>/.claude/session-handoff/` exists. If not, this is the first handoff: step 6 creates it.
 
 ## 2. Summarize the session

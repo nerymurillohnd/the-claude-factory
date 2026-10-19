@@ -6,12 +6,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
-## [0.2.0] - 2026-10-19
+## [1.0.0] - 2026-10-19
 
 ### Changed
 
-- The skill follows a plain sequence: check the project's state, summarize the session from its start, compare it with the previous handoff, propose the handoff, add recommendations and context, then write it after you approve. A closing checklist confirms every step was done.
-- The handoff has six sections instead of eleven: Current state, Open items (in priority order, each with its first action, replacing Next steps), Context for the next session (learnings, corrections and recommendations), Decisions, Done this session (with the previous handoff's items) and Unverified and gaps. The template explains how to fill each one. Older handoffs with the eleven sections are still read.
+- **Breaking:** the skill follows a plain sequence: check the project's state, summarize the session from its start, compare it with the previous handoff, propose the handoff, add recommendations and context, then write it after you approve. A closing checklist confirms every step was done.
+- **Breaking:** the handoff has six sections instead of eleven: Current state, Open items (in priority order, each with its first action, replacing Next steps), Context for the next session (learnings, corrections and recommendations), Decisions, Done this session (with the previous handoff's items) and Unverified and gaps. The template explains how to fill each one. Older handoffs with the eleven sections are still read.
 - Only items still pending are carried forward. Claude asks you about the ones that look obsolete or outside the project, and a result you report from outside the session closes an item as done, noted as reported by you.
 - In a git repository, Claude asks whether to commit and push the saved handoff.
 - The first handoff of a project works without the folders: the skill creates them.
@@ -32,6 +32,6 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - Every handoff records what was done, decided, corrected and learned, what is still open with where it stands and what finishing needs, the next steps in order, and what could not be verified; open items older than 30 days are marked for you to confirm or drop.
 - `SessionStart` hook: when a session starts or is cleared in a project that has handoffs, Claude reads the newest one in full, summarizes it, lists its pending items, keeps your first request as the current one and asks how you want to proceed before starting work; in a run where nobody can answer, such as `claude -p`, it goes on with the request. In projects without handoffs the plugin adds nothing to the conversation.
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/session-handoff--v0.2.0...HEAD
-[0.2.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/session-handoff--v0.2.0
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/session-handoff--v1.0.0...HEAD
+[1.0.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/session-handoff--v1.0.0
 [0.1.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/session-handoff--v0.1.0

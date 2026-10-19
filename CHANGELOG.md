@@ -8,7 +8,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The
 
 ### Changed
 
-- **session-handoff** 0.2.0 — binds handoffs to one confirmed project, keeps other work out, warns on unreadable handoffs
+- **session-handoff** 1.0.0 — **Breaking:** a six-section handoff written in a plain seven-step flow, and a start-of-session hook that works from it as background and warns when it cannot be read
 
 ### Added
 
