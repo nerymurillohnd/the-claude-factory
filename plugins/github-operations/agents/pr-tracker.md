@@ -52,7 +52,7 @@ Every invocation is a full pass, also a re-observation after a small or docs-onl
 
 ### 1. Snapshot
 
-Record the repository, PR URL, title, state, head and base branch, head SHA, draft status, mergeability, required checks and approvals where visible, and the inspection time (the latest timestamp the API returned, when you have no clock). Compare the head SHA with the expected one. If they differ, report the mismatch, inspect the current head, and keep results from older commits apart. If the PR is merged or closed, stop here: steps 2 to 7 no longer apply. The report is the summary (Status `MERGED_OR_CLOSED` with when and by whom, Head, Coverage, and `**Next:** none for this PR`) and the first Snapshot line.
+Record the repository, PR URL, title, state, head and base branch, head SHA, draft status, mergeability, required checks and approvals where visible, and the inspection time (the latest timestamp the API returned, when you have no clock). Compare the head SHA with the expected one. If they differ, report the mismatch, inspect the current head, and keep results from older commits apart. If the PR is merged or closed, stop here: steps 2 to 7 no longer apply. The report is the summary (Status `MERGED_OR_CLOSED` with when and by whom, Head, `**Blocker:** none`, `**Coverage:** steps 2 to 7 skipped: PR <merged | closed>`, and `**Next:** none for this PR`) and the first Snapshot line.
 
 ### 2. Checks, runs and jobs
 
@@ -110,7 +110,7 @@ With both fixable and outside blockers present, `ACTION_REQUIRED` wins, and the 
 
 ## Report
 
-Return the report in this template, in this order. Keep it concise, merge blockers first. The main session may receive the report cut short, so the summary stands on its own: write each item out there, because a pointer such as "see below" is lost with the cut. Below the summary, drop any section with nothing to report except **Coverage**, quote only the log lines that prove a point and link the rest. Replace every `<…>` and keep the labels as written.
+Return the report in this template, in this order. Keep it concise, merge blockers first. The main session may receive the report cut short, so the summary stands on its own: write each item out there, because a pointer such as "see below" is lost with the cut. Below the summary, drop any section with nothing to report except **Coverage**, and the changes section when no previous report was given; quote only the log lines that prove a point and link the rest. Replace every `<…>` and keep the labels as written.
 
 ````markdown
 ## PR tracker: <owner>/<repo>#<number>
@@ -138,7 +138,8 @@ Return the report in this template, in this order. Keep it concise, merge blocke
 
 #### <workflow> (`<workflow file>`) / <job> / step "<step>"
 
-- Run: <run id>, attempt <n> · <job URL> · head: <current | older commit `<SHA>`> · phase: <phase>
+- Run: <run id>, attempt <n> · <run URL> · <job URL> · head: <current | older commit `<SHA>`> · phase: <phase>
+- Command: `<the command or action the step ran>` · Source: <`<file>:<line>`, or "not identifiable">
 - Evidence: `<the error lines, with exit code>`
 - Cause (<confirmed | likely | uncertain>, <class>): <cause and why the evidence supports it>
 - Fix: <smallest fix> · Verify: <how>
@@ -146,21 +147,21 @@ Return the report in this template, in this order. Keep it concise, merge blocke
 
 ### Review findings
 
-| # | Reviewer | Finding | Location | Stated severity | Applies to head | Action |
-| :-- | :-- | :-- | :-- | :-- | :-- | :-- |
-| 1 | <login> | <finding> | `<file>:<line>` | <severity> | <yes / no / uncertain> | <fix and verification> |
+| # | Reviewer | Finding | Location | URL | Stated severity | Applies to head | Status | Action |
+| :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- |
+| 1 | <login> | <finding> | `<file>:<line>` | <comment URL> | <severity> | <yes / no / uncertain> | <new / persistent / addressed / uncertain, or "first report"> | <fix and verification> |
 
 ### Warnings
 
-| Component and version | Warning | Where | Affects | Action |
-| :-- | :-- | :-- | :-- | :-- |
-| <component> <version> | `<excerpt>` | <log, workflow or manifest> | <this PR / base / repository> | <next step> |
+| Component and version | Warning | Where | Affects | Impact and urgency | Action |
+| :-- | :-- | :-- | :-- | :-- | :-- |
+| <component> <version> | `<excerpt>` | <log, workflow or manifest> | <this PR / base / repository> | <impact; urgency> | <next step> |
 
 ### Dependabot
 
-| Package | Ecosystem | Severity | Advisory | Vulnerable → patched | Relation to this PR | Action |
-| :-- | :-- | :-- | :-- | :-- | :-- | :-- |
-| <package> | <ecosystem> | <severity> | <GHSA or CVE, with URL> | <range> → <version> | <changes it / unrelated / cannot tell> | <remediation> |
+| Package | Ecosystem | Manifest | Direct or transitive | Severity | Advisory | Vulnerable → patched | Relation to this PR | Action |
+| :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- |
+| <package> | <ecosystem> | `<manifest path>` | <direct / transitive / unknown> | <severity> | <GHSA or CVE, with URL> | <range> → <version> | <changes it / unrelated / cannot tell> | <remediation> |
 
 Update PRs: <#n: dependency, from → to, purpose; or "none">
 
@@ -168,7 +169,7 @@ Update PRs: <#n: dependency, from → to, purpose; or "none">
 
 - Slowest: <job> <duration> (<start> to <end>) · Queue delay: <duration, or none>
 
-### Changes since the previous report (only when one was given)
+### Changes since the previous report
 
 - New: <…> · Persistent: <…> · Cleared: <…> · Carried over: <…>
 
