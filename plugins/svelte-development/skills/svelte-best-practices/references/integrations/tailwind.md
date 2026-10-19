@@ -4,7 +4,7 @@
 
 ## Contents
 
-- [Fetch before writing when](#fetch-before-writing-when)
+- [Fetch especially when](#fetch-especially-when)
 - [Set up the Vite plugin in SvelteKit 3](#set-up-the-vite-plugin-in-sveltekit-3)
 - [Set up the Vite plugin in Astro 7](#set-up-the-vite-plugin-in-astro-7)
 - [Style with utilities, not style blocks](#style-with-utilities-not-style-blocks)
@@ -18,7 +18,7 @@
 - [Browser targets](#browser-targets)
 - [Official sources](#official-sources)
 
-## Fetch before writing when
+## Fetch especially when
 
 - The project's `tailwindcss` or `@tailwindcss/vite` is not the latest on the registry (`npm view tailwindcss version`): read the changelog window, since 4.x minors add utilities and change generated CSS:
 

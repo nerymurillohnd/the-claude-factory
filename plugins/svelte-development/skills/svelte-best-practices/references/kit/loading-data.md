@@ -2,7 +2,7 @@
 
 > Precedence: the SvelteKit changelog and source code win over the docs, and the docs win over this file. Before relying on an exact signature, fetch the live section (see "Official sources").
 >
-> Applies to SvelteKit 3 projects. A SvelteKit 2 project migrates first ([migrating-to-kit-3.md](migrating-to-kit-3.md)); write SvelteKit 2 code only when the user declines the migration or the request says to proceed without questions.
+> Applies to SvelteKit 3 projects. A SvelteKit 2 project migrates first (the skill's rule 3 gives the order); write SvelteKit 2 code only when the user declines the migration or the request says to proceed without questions, and take its APIs from the installed package's types and changelog.
 
 ## Contents
 
@@ -15,7 +15,7 @@
 - [Reading app state](#reading-app-state)
 - [Page state](#page-state)
 - [Auth checks and load](#auth-checks-and-load)
-- [Fetch before writing when](#fetch-before-writing-when)
+- [Fetch especially when](#fetch-especially-when)
 - [Official sources](#official-sources)
 
 ## Universal and server load
@@ -162,7 +162,7 @@ await refreshAll(); // every load function and every active remote query
 
 Layout `load` does not rerun on every navigation, and page and layout `load` run in parallel unless the page awaits `parent()`. Protect routes in the `handle` hook or in each `+page.server.ts`, not only in a parent `+layout.server.ts`.
 
-## Fetch before writing when
+## Fetch especially when
 
 - You need the exact `LoadEvent` or `ServerLoadEvent` members, or the `keepState` semantics of `invalidate`.
 - You stream data on a host or proxy that may buffer responses.
@@ -190,11 +190,11 @@ curl -sS 'https://svelte.dev/docs/kit/$app-navigation/llms.txt'
 
 - Changelog: `https://raw.githubusercontent.com/sveltejs/kit/main/packages/kit/CHANGELOG.md`
 
-Read only the changelog entries newer than the installed version (the full procedure is in `${CLAUDE_PLUGIN_ROOT}/skills/svelte-best-practices/references/changelogs.md`):
+When the skill's rule 4 calls for a changelog window, read only the entries newer than the installed version:
 
 ```sh
 URL='https://raw.githubusercontent.com/sveltejs/kit/main/packages/kit/CHANGELOG.md'
 V="$(node -p "require('@sveltejs/kit/package.json').version")"  # the installed version
-curl -sS "$URL" | grep -c "^## $V\$"  # must print 1
+curl -sS "$URL" | grep -c "^## $V\$"  # must print 1; on 0, stop: the awk would print the whole file
 curl -sS "$URL" | awk -v v="## $V" '$0==v{exit} {print}'
 ```

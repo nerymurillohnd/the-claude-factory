@@ -14,7 +14,7 @@
 - [Error boundaries](#error-boundaries)
 - [Async server rendering](#async-server-rendering)
 - [Context and initialization order](#context-and-initialization-order)
-- [Fetch before writing when](#fetch-before-writing-when)
+- [Fetch especially when](#fetch-especially-when)
 - [Official sources](#official-sources)
 
 ## Status and opt-in flag
@@ -102,7 +102,7 @@ let item = $derived(await getItem(id));
 ```svelte
 <script lang="ts">
 	import { hydratable } from 'svelte';
-	import { getUser } from '$lib/server-api';
+	import { getUser } from '#lib/server-api.js';
 	const user = await hydratable('myapp:user', () => getUser());
 </script>
 ```
@@ -135,7 +135,7 @@ let item = $derived(await getItem(id));
 - `setContext` must run during initialization, before the first `await` in the component script. With `experimental.async`, calling it later throws `set_context_after_init`; since 5.57.1 this also applies during server rendering.
 - Read context (`getContext`, or the getter from `createContext`) at the top of the script as well, then use the value after the `await`.
 
-## Fetch before writing when
+## Fetch especially when
 
 - You use anything in this file: the whole feature set is experimental, and APIs or ordering can change in any minor release.
 - You call `fork`, `hydratable`, `getAbortSignal` or `settled`, or need the exact `render` options (`csp`, `transformError`, `idPrefix`).
@@ -164,14 +164,14 @@ curl -sS 'https://svelte.dev/docs/svelte/hydratable/llms.txt'
 - Changelog: `https://raw.githubusercontent.com/sveltejs/svelte/main/packages/svelte/CHANGELOG.md`
 - Source of the `fork` flag check: `https://github.com/sveltejs/svelte/blob/main/packages/svelte/src/internal/client/reactivity/batch.js`
 
-Read only the changelog entries newer than the installed version (the full procedure is in `${CLAUDE_PLUGIN_ROOT}/skills/svelte-best-practices/references/changelogs.md`):
+When the skill's rule 4 calls for a changelog window, read only the entries newer than the installed version:
 
 ```sh
 URL='https://raw.githubusercontent.com/sveltejs/svelte/main/packages/svelte/CHANGELOG.md'
 V="$(node -p "require('svelte/package.json').version")"  # the installed version
-curl -sS "$URL" | grep -c "^## $V\$"  # must print 1
+curl -sS "$URL" | grep -c "^## $V\$"  # must print 1; on 0, stop: the awk would print the whole file
 curl -sS "$URL" | awk -v v="## $V" '$0==v{exit} {print}'
 ```
 
 
-Partly derived from sveltejs/ai-tools (MIT), base 6b5d0da; see the plugin NOTICE.
+Partly derived from sveltejs/ai-tools (MIT), base 6b5d0da; see the plugin's NOTICE.txt.

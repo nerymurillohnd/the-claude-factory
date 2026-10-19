@@ -4,7 +4,7 @@
 
 ## Contents
 
-- [Fetch before writing when](#fetch-before-writing-when)
+- [Fetch especially when](#fetch-especially-when)
 - [Versions and peers](#versions-and-peers)
 - [Install and configure the integration](#install-and-configure-the-integration)
 - [Hydration directives](#hydration-directives)
@@ -17,7 +17,7 @@
 - [Tailwind in Astro](#tailwind-in-astro)
 - [Official sources](#official-sources)
 
-## Fetch before writing when
+## Fetch especially when
 
 - The project's `@astrojs/svelte` is newer than 9.1.0, the newest this file cites, or its `astro` or the slot behavior below does not match what you see.
 - You pass children or named slots from `.astro` files into Svelte components: read the renderer of the installed `@astrojs/svelte`:
@@ -27,7 +27,7 @@
   curl -sS 'https://raw.githubusercontent.com/withastro/astro/main/packages/integrations/svelte/src/server.ts'
   curl -sS 'https://raw.githubusercontent.com/withastro/astro/main/packages/integrations/svelte/src/client.svelte.ts'
   ```
-- You upgrade across an Astro major: read the upgrade guide and the `astro` changelog window (both URLs under [Official sources](#official-sources); the window command is in `${CLAUDE_PLUGIN_ROOT}/skills/svelte-best-practices/references/changelogs.md`).
+- You upgrade across an Astro major: read the upgrade guide and the `astro` changelog window (both URLs under [Official sources](#official-sources); the skill's changelogs reference has the window command).
 
 ## Versions and peers
 
@@ -161,7 +161,7 @@ import { getContainerRenderer } from "@astrojs/svelte/container-renderer";
 
 ## Tailwind in Astro
 
-Add `@tailwindcss/vite` to `vite.plugins` in `astro.config` and import a stylesheet containing `@import "tailwindcss";` from the layout. [tailwind.md](tailwind.md) covers the setup, `@reference` in Svelte `<style>` blocks and class detection.
+Add `@tailwindcss/vite` to `vite.plugins` in `astro.config` and import a stylesheet containing `@import "tailwindcss";` from the layout. The skill's Tailwind reference covers the setup, `@reference` in Svelte `<style>` blocks and class detection.
 
 ## Official sources
 

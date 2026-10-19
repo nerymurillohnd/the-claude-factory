@@ -14,7 +14,7 @@
 - [Debugging with inspect](#debugging-with-inspect)
 - [Host element](#host-element)
 - [Misuse patterns and their warnings](#misuse-patterns-and-their-warnings)
-- [Fetch before writing when](#fetch-before-writing-when)
+- [Fetch especially when](#fetch-especially-when)
 - [Official sources](#official-sources)
 
 ## Runes are compiler keywords
@@ -150,7 +150,7 @@ If an effect really must write state it also reads, read it through `untrack` to
 
 ## Misuse patterns and their warnings
 
-| Code | Cause | Fix |
+| Warning code | Cause | Fix |
 | --- | --- | --- |
 | `non_reactive_update` | A plain `let` is reassigned and read in the template or another reactive context | Declare it with `$state` |
 | `state_referenced_locally` | State or a prop is read once at setup (`setContext('k', count)`, `const c = type === 'x'`) | Use `$derived`, or pass a getter or a proxy |
@@ -161,7 +161,7 @@ If an effect really must write state it also reads, read it through `untrack` to
 
 Props were added to `state_referenced_locally` in 5.45.3; since 5.51.2 non-destructured props warn as well.
 
-## Fetch before writing when
+## Fetch especially when
 
 - You need the exact rules for constructor state fields, `$state.eager` or writable deriveds, or are targeting a version older than 5.31, 5.41 or 5.25 respectively.
 - A warning code is not in the table above, or its wording differs from what you see.
@@ -189,14 +189,14 @@ Same pattern for `$derived`, `$effect`, `$props`, `$bindable`, `$inspect`, `$hos
 
 - Changelog: `https://raw.githubusercontent.com/sveltejs/svelte/main/packages/svelte/CHANGELOG.md`
 
-Read only the changelog entries newer than the installed version (the full procedure is in `${CLAUDE_PLUGIN_ROOT}/skills/svelte-best-practices/references/changelogs.md`):
+When the skill's rule 4 calls for a changelog window, read only the entries newer than the installed version:
 
 ```sh
 URL='https://raw.githubusercontent.com/sveltejs/svelte/main/packages/svelte/CHANGELOG.md'
 V="$(node -p "require('svelte/package.json').version")"  # the installed version
-curl -sS "$URL" | grep -c "^## $V\$"  # must print 1
+curl -sS "$URL" | grep -c "^## $V\$"  # must print 1; on 0, stop: the awk would print the whole file
 curl -sS "$URL" | awk -v v="## $V" '$0==v{exit} {print}'
 ```
 
 
-Partly derived from sveltejs/ai-tools (MIT), base 6b5d0da; see the plugin NOTICE.
+Partly derived from sveltejs/ai-tools (MIT), base 6b5d0da; see the plugin's NOTICE.txt.

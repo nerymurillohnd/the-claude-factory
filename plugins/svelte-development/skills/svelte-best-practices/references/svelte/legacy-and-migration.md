@@ -11,7 +11,7 @@
 - [Migration tooling](#migration-tooling)
 - [Behavior changes to keep in mind](#behavior-changes-to-keep-in-mind)
 - [Svelte 6 forward compatibility](#svelte-6-forward-compatibility)
-- [Fetch before writing when](#fetch-before-writing-when)
+- [Fetch especially when](#fetch-especially-when)
 - [Official sources](#official-sources)
 
 ## Runes mode and legacy mode
@@ -21,7 +21,7 @@
 - Setting `compilerOptions.runes: true` for the whole project also forces runes mode on components inside `node_modules`, which can break libraries. Since 5.54, `runes` may be a function of `{ filename }` (so are `css` and `customElement`); with Vite, `dynamicCompileOptions` in `@sveltejs/vite-plugin-svelte` also works.
 
 ```js
-// svelte.config.js (or the Svelte plugin options in vite.config.js)
+// svelte.config.js outside SvelteKit 3 (plain Vite, Astro); in SvelteKit 3, the sveltekit({ … }) options in vite.config
 export default {
   compilerOptions: {
     runes: ({ filename }) =>
@@ -53,7 +53,7 @@ export default {
 | `<svelte:component this={C} />` | `<C />` (re-renders when `C` changes) |
 | `<svelte:self />` | `import Self from './Tree.svelte'` and `<Self />` |
 | `beforeUpdate` / `afterUpdate` | `$effect.pre` / `$effect`, plus `tick()` |
-| `use:action={arg}` | `{@attach factory(arg)}`, or `{@attach fromAction(action, () => arg)}` |
+| `use:action={arg}` | `{@attach factory(arg)}`, or `{@attach fromAction(action, () => arg)}`; SvelteKit's `use:enhance` stays |
 | `class:active={on}` | `class={['base', on && 'active']}` (object or array form, since 5.16) |
 | `{@const x = y}` | `{const x = $derived(y)}` (declaration tags, since 5.56) |
 | `spring()` / `tweened()` stores | `Spring` / `Tween` classes (since 5.8) |
@@ -153,7 +153,7 @@ Every change follows the replacement table: props from `$props()` (`$bindable` b
 - `experimental.async` is removed as a flag and its behavior becomes the default, including `set_context_after_init`. Call `setContext` before the first `await`.
 - In "a future version" (no major named): every falsy `class` value omits the attribute instead of stringifying `false`; self-closing non-void tags may become an error; Svelte's internal slot handling is removed, leaving `<slot>` as a plain DOM element.
 
-## Fetch before writing when
+## Fetch especially when
 
 - You migrate a real codebase: read the migration guide sections that match what you find, and the `sv migrate` page for the current migration list (`mcp__plugin_svelte-development_svelte__get-documentation` with `section: ["svelte/v5-migration-guide", "cli/sv-migrate"]`).
 - You need a `svelte/legacy` export's exact signature or a compiler option such as `compatibility.componentApi`.
@@ -179,11 +179,11 @@ curl -sS 'https://svelte.dev/docs/cli/sv-migrate/llms.txt'
 
 - Changelog: `https://raw.githubusercontent.com/sveltejs/svelte/main/packages/svelte/CHANGELOG.md`
 
-Read only the changelog entries newer than the installed version (the full procedure is in `${CLAUDE_PLUGIN_ROOT}/skills/svelte-best-practices/references/changelogs.md`):
+When the skill's rule 4 calls for a changelog window, read only the entries newer than the installed version:
 
 ```sh
 URL='https://raw.githubusercontent.com/sveltejs/svelte/main/packages/svelte/CHANGELOG.md'
 V="$(node -p "require('svelte/package.json').version")"  # the installed version
-curl -sS "$URL" | grep -c "^## $V\$"  # must print 1
+curl -sS "$URL" | grep -c "^## $V\$"  # must print 1; on 0, stop: the awk would print the whole file
 curl -sS "$URL" | awk -v v="## $V" '$0==v{exit} {print}'
 ```

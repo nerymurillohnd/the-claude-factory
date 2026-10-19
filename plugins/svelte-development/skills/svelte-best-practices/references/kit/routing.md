@@ -2,7 +2,7 @@
 
 > Precedence: the SvelteKit changelog and source code win over the docs, and the docs win over this file. Before relying on an exact signature, fetch the live section (see "Official sources").
 >
-> Applies to SvelteKit 3 projects. A SvelteKit 2 project migrates first ([migrating-to-kit-3.md](migrating-to-kit-3.md)); write SvelteKit 2 code only when the user declines the migration or the request says to proceed without questions.
+> Applies to SvelteKit 3 projects. A SvelteKit 2 project migrates first (the skill's rule 3 gives the order); write SvelteKit 2 code only when the user declines the migration or the request says to proceed without questions, and take its APIs from the installed package's types and changelog.
 
 ## Contents
 
@@ -15,7 +15,7 @@
 - [Sorting and escapes](#sorting-and-escapes)
 - [Groups and layout resets](#groups-and-layout-resets)
 - [Generated types and route IDs](#generated-types-and-route-ids)
-- [Fetch before writing when](#fetch-before-writing-when)
+- [Fetch especially when](#fetch-especially-when)
 - [Official sources](#official-sources)
 
 ## Route files
@@ -146,7 +146,7 @@ Characters that cannot appear in a file name or have meaning to the router are w
 - `RouteParams<'/blog/[slug]'>` gives a route's params.
 - `$app/manifest` exports `routes`, each `{ id, page, endpoint }`, for runtime introspection.
 
-## Fetch before writing when
+## Fetch especially when
 
 - You need the exact sorting rules for overlapping routes or an escape you have not used before.
 - You write matchers with a schema library, or need `MatcherParam` and `ParamDefinition` types.
@@ -174,11 +174,11 @@ curl -sS 'https://svelte.dev/docs/kit/@sveltejs-kit-params/llms.txt'
 
 - Changelog: `https://raw.githubusercontent.com/sveltejs/kit/main/packages/kit/CHANGELOG.md`
 
-Read only the changelog entries newer than the installed version (the full procedure is in `${CLAUDE_PLUGIN_ROOT}/skills/svelte-best-practices/references/changelogs.md`):
+When the skill's rule 4 calls for a changelog window, read only the entries newer than the installed version:
 
 ```sh
 URL='https://raw.githubusercontent.com/sveltejs/kit/main/packages/kit/CHANGELOG.md'
 V="$(node -p "require('@sveltejs/kit/package.json').version")"  # the installed version
-curl -sS "$URL" | grep -c "^## $V\$"  # must print 1
+curl -sS "$URL" | grep -c "^## $V\$"  # must print 1; on 0, stop: the awk would print the whole file
 curl -sS "$URL" | awk -v v="## $V" '$0==v{exit} {print}'
 ```

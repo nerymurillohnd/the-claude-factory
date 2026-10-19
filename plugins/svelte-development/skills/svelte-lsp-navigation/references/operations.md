@@ -11,7 +11,7 @@
 - [Find references before a change](#find-references-before-a-change)
 - [Read a type with hover](#read-a-type-with-hover)
 - [Trace callers and callees](#trace-callers-and-callees)
-- [Read diagnostics](#read-diagnostics)
+- [Read the project check output](#read-the-project-check-output)
 - [What the server sees in dynamic code](#what-the-server-sees-in-dynamic-code)
 - [Prove it: break something on purpose](#prove-it-break-something-on-purpose)
 - [Fetch before relying on this when](#fetch-before-relying-on-this-when)
@@ -19,7 +19,7 @@
 
 ## Call shape
 
-Every operation takes `operation`, `filePath`, `line` and `character`, all 1-based. `workspaceSymbol` also takes `query`, which must not be empty. Point at the first character of the symbol's name. Load the tool with ToolSearch (`query: "select:LSP"`) when it is deferred.
+Every operation takes `operation`, `filePath`, `line` and `character`, all 1-based. Point at the symbol's name; its first character is the safest position.
 
 ```text
 LSP
@@ -45,7 +45,7 @@ To navigate from inside TypeScript files as well, the user needs a TypeScript la
 
 ## Find a symbol
 
-`documentSymbol` lists one `.svelte` file's outline, script and markup:
+`documentSymbol` lists one `.svelte` file's outline, script and markup, with lines but no columns; read the line for the column:
 
 ```text
 LSP documentSymbol  src/lib/components/CounterButton.svelte 1 1
@@ -53,7 +53,7 @@ LSP documentSymbol  src/lib/components/CounterButton.svelte 1 1
   counter, label, children (Property) L7-9; counter, label, children (Variable) L12; button (Field) L15
 ```
 
-`workspaceSymbol` searches the project by name, from any `.svelte` file:
+`workspaceSymbol` searches the project by name, from any `.svelte` file. It finds the declaring file, here a `.ts` file, which is not a starting position: start from a `.svelte` file that uses the symbol.
 
 ```text
 LSP workspaceSymbol  src/routes/+page.svelte 1 1  query=formatCount
@@ -99,7 +99,7 @@ A method called on an instance: references from the call site include the implem
 `.svelte.ts` module and the interface member it implements, so this also answers "who implements it".
 
 ```text
-LSP findReferences  src/routes/+page.svelte 17 49   (reset in counter.reset())
+LSP findReferences  src/routes/+page.svelte 17 46   (reset in counter.reset())
 → 3 references across 3 files: counter.svelte.ts 12:3; resettable.ts 3:3; +page.svelte 17:46
 ```
 
@@ -114,18 +114,20 @@ LSP hover  src/lib/components/CounterButton.svelte 12 9   (counter in the $props
 
 ## Trace callers and callees
 
+`incomingCalls` and `outgoingCalls` work without a `prepareCallHierarchy` call first. A call-hierarchy item's line includes the function's leading comment, so `formatCount` shows line 1, its JSDoc, while `goToDefinition` gives line 2.
+
 ```text
-LSP prepareCallHierarchy  src/lib/components/CounterButton.svelte 16 14   (formatCount call)
+LSP prepareCallHierarchy  src/lib/components/CounterButton.svelte 16 13   (formatCount call)
 → formatCount (Function) - src/lib/format.ts:1
-LSP incomingCalls         src/lib/components/CounterButton.svelte 16 14
+LSP incomingCalls         src/lib/components/CounterButton.svelte 16 13
 → 2 incoming calls: CounterButton.svelte (Module) [calls at 16:13]; +page.svelte (Module) [calls at 14:16]
-LSP outgoingCalls         src/lib/components/CounterButton.svelte 16 14
+LSP outgoingCalls         src/lib/components/CounterButton.svelte 16 13
 → No outgoing calls found (this function calls nothing)
 ```
 
-## Read diagnostics
+## Read the project check output
 
-After each edit to a `.svelte` file, Claude Code reports the server's new diagnostics under the edit (`Found N new diagnostic issues in M files`). The fixture's deliberate error, as the project check reports it in Claude Code:
+After each edit to a `.svelte` file, Claude Code reports the server's new diagnostics under the edit (`Found N new diagnostic issues in M files`). The project check reports the whole project; the fixture's deliberate error, as it prints in Claude Code (the file count includes dependencies and depends on the environment):
 
 ```text
 1760845342123 ERROR "src/routes/+page.svelte" 13:26 "Type 'number' is not assignable to type 'string'."
@@ -148,13 +150,13 @@ Dynamic Svelte code is not a blind spot by default. Observed on this plugin's fi
 | The path string of `import("#lib/components/X.svelte")` | No | A string, not a reference. The project check still reports a literal `import()` of a file that does not exist |
 | `import.meta.glob("./*.svelte")` patterns | No | A string pattern; the project check does not report it either, so only Grep finds it |
 
-`documentSymbol` lists every one of these constructs in a component. Run it before concluding that the server cannot see dynamic code.
+Run the operation the table names, on the variable or import that holds the component, before concluding that the server cannot see dynamic code; `documentSymbol` helps find those variables.
 
 ## Prove it: break something on purpose
 
-A clean result proves nothing until a deliberate break has shown that the tool can see the change. Two ways, both with known results (the fixture README's "Mutations" table):
+A clean result proves nothing until a deliberate break has shown that the tool can see the change. One method breaks code, during a change only; two probes break nothing. The break has known results on the fixture (the fixture README's "Mutations" table):
 
-**In the user's project, during a rename**: rename only the declaration, run the project check, and compare its error sites with the `findReferences` list. On the fixture, renaming `label` inside `CounterButton.svelte` makes the check report exactly the three `findReferences` sites above:
+**In the user's project, during a rename**: rename only the declaration, run the project check, and compare its error sites with the `findReferences` list. The declaration is every site in the file that declares the symbol. On the fixture, renaming `label` inside `CounterButton.svelte` makes the check report exactly the three `findReferences` sites outside that file:
 
 ```text
 LSP findReferences  src/lib/components/CounterButton.svelte 8 5   (label in Props)
@@ -164,11 +166,11 @@ project check after renaming the declaration only
 → ERROR "src/lib/components/Dynamic.svelte" 14:19, 17:26; ERROR "src/routes/+page.svelte" 13:26
 ```
 
-An error site that is not in the `findReferences` list is a use the language server missed; a `findReferences` site with no error is a use the check cannot see (a string, a pattern). Both go into the edit set.
+An error site that is not in the `findReferences` list is a use the language server missed; a `findReferences` site outside the declaring file with no error is a use the check cannot see (a string, a pattern). Both go into the edit set.
 
 **When the language server stays silent** (no diagnostics after an edit, empty answers), probe it directly: `documentSymbol` on a non-empty `.svelte` file must list its symbols, as in [Find a symbol](#find-a-symbol). Do not use `command -v svelteserver` in Bash for this: it checks the Bash command's `PATH`, not the server Claude Code started, and a missing server already shows as `Executable not found in $PATH` on the LSP call. A script cannot call the LSP tool, so only these calls prove the server.
 
-**When the project check stays silent** (it reports nothing after a change that must break): the cause is almost always in the project, not in svelte-check. Run `npx --no-install svelte-kit sync` and check again (missing generated types hide errors); read the last line, `COMPLETED <n> FILES …`, and confirm the edited file is inside the tsconfig `include` (SvelteKit 3 projects extend `$app/tsconfig`); confirm that `npm run check` really runs svelte-check (read the script in `package.json`); in a monorepo, run it from the app folder.
+**When the project check stays silent** (it reports nothing after a change that must break): follow rule 9 of the skill, which lists the causes to check in order.
 
 ## Fetch before relying on this when
 

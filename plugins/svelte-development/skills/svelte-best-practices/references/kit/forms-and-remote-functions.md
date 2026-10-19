@@ -2,7 +2,7 @@
 
 > Precedence: the SvelteKit changelog and source code win over the docs, and the docs win over this file. Before relying on an exact signature, fetch the live section (see "Official sources").
 >
-> Applies to SvelteKit 3 projects. A SvelteKit 2 project migrates first ([migrating-to-kit-3.md](migrating-to-kit-3.md)); write SvelteKit 2 code only when the user declines the migration or the request says to proceed without questions.
+> Applies to SvelteKit 3 projects. A SvelteKit 2 project migrates first (the skill's rule 3 gives the order); write SvelteKit 2 code only when the user declines the migration or the request says to proceed without questions, and take its APIs from the installed package's types and changelog.
 
 ## Contents
 
@@ -16,7 +16,7 @@
 - [Single-flight mutations](#single-flight-mutations)
 - [prerender](#prerender)
 - [Validation, errors and the request event](#validation-errors-and-the-request-event)
-- [Fetch before writing when](#fetch-before-writing-when)
+- [Fetch especially when](#fetch-especially-when)
 - [Official sources](#official-sources)
 
 ## Choosing between them
@@ -208,7 +208,7 @@ for (const { arg, query, ignore } of requested(getPosts, 10)) {
 - In `query`, reading `event.url`, `event.params` or `event.route` throws since 3.0: pass the values as arguments. In `form` and `command` they describe the calling page and are client-controlled, so never authorize with them.
 - Remote responses carry `cache-control: private, no-store`.
 
-## Fetch before writing when
+## Fetch especially when
 
 - You use any remote-function API: the feature is experimental and its signatures move between releases.
 - You need `dirty()`, `touched()`, `submitted`, `withOverride`, or `requested` types.
@@ -236,11 +236,11 @@ curl -sS 'https://svelte.dev/docs/kit/$app-server/llms.txt'
 
 - Changelog: `https://raw.githubusercontent.com/sveltejs/kit/main/packages/kit/CHANGELOG.md`
 
-Read only the changelog entries newer than the installed version (the full procedure is in `${CLAUDE_PLUGIN_ROOT}/skills/svelte-best-practices/references/changelogs.md`):
+When the skill's rule 4 calls for a changelog window, read only the entries newer than the installed version:
 
 ```sh
 URL='https://raw.githubusercontent.com/sveltejs/kit/main/packages/kit/CHANGELOG.md'
 V="$(node -p "require('@sveltejs/kit/package.json').version")"  # the installed version
-curl -sS "$URL" | grep -c "^## $V\$"  # must print 1
+curl -sS "$URL" | grep -c "^## $V\$"  # must print 1; on 0, stop: the awk would print the whole file
 curl -sS "$URL" | awk -v v="## $V" '$0==v{exit} {print}'
 ```

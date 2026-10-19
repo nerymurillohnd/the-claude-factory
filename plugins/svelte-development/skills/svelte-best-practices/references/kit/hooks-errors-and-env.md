@@ -2,7 +2,7 @@
 
 > Precedence: the SvelteKit changelog and source code win over the docs, and the docs win over this file. Before relying on an exact signature, fetch the live section (see "Official sources").
 >
-> Applies to SvelteKit 3 projects. A SvelteKit 2 project migrates first ([migrating-to-kit-3.md](migrating-to-kit-3.md)); write SvelteKit 2 code only when the user declines the migration or the request says to proceed without questions.
+> Applies to SvelteKit 3 projects. A SvelteKit 2 project migrates first (the skill's rule 3 gives the order); write SvelteKit 2 code only when the user declines the migration or the request says to proceed without questions, and take its APIs from the installed package's types and changelog.
 
 ## Contents
 
@@ -15,7 +15,7 @@
 - [Build and runtime flags](#build-and-runtime-flags)
 - [Cookies](#cookies)
 - [Service workers](#service-workers)
-- [Fetch before writing when](#fetch-before-writing-when)
+- [Fetch especially when](#fetch-especially-when)
 - [Official sources](#official-sources)
 
 ## Hook files
@@ -178,7 +178,7 @@ import { PUBLIC_ANALYTICS_ID } from "$app/env/public";
 
 `$app/manifest` paths are relative to the base path, so map them through `resolve(...)` before caching. Give the folder its own `tsconfig.json` extending `$app/tsconfig/service-worker` and exclude it from the root config. Do not cache responses marked `no-store` (live queries and remote calls). Browsers do not check for a worker update on client-side navigations; call `registration.update()` yourself if needed.
 
-## Fetch before writing when
+## Fetch especially when
 
 - You need exact hook input types or the `kind`-specific fields of `handleError`.
 - You add `reroute` with server route resolution, or `transport` for a custom class.
@@ -207,11 +207,11 @@ curl -sS 'https://svelte.dev/docs/kit/service-workers/llms.txt'
 
 - Changelog: `https://raw.githubusercontent.com/sveltejs/kit/main/packages/kit/CHANGELOG.md`
 
-Read only the changelog entries newer than the installed version (the full procedure is in `${CLAUDE_PLUGIN_ROOT}/skills/svelte-best-practices/references/changelogs.md`):
+When the skill's rule 4 calls for a changelog window, read only the entries newer than the installed version:
 
 ```sh
 URL='https://raw.githubusercontent.com/sveltejs/kit/main/packages/kit/CHANGELOG.md'
 V="$(node -p "require('@sveltejs/kit/package.json').version")"  # the installed version
-curl -sS "$URL" | grep -c "^## $V\$"  # must print 1
+curl -sS "$URL" | grep -c "^## $V\$"  # must print 1; on 0, stop: the awk would print the whole file
 curl -sS "$URL" | awk -v v="## $V" '$0==v{exit} {print}'
 ```

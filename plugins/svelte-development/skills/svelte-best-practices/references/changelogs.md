@@ -14,13 +14,17 @@
 
 ## When to run the check
 
-Run it before writing code or advice when any of these holds:
+This is the single list of cases; the skill and the agents point here.
 
-- The installed version is not the latest on the registry (`npm view <package> version` against the command in Step 1): read the window between the two. This is the mechanical check; run it whenever the task depends on exact behaviour.
+Steps 1 and 2 are a few commands: run them before writing code in a project. Read the changelog window (Step 3) when any of these holds:
+
+- The installed version is older than the latest on the registry and the task uses an API the docs or a reference describe: the docs show the latest, so read the window between the two for what the installed version lacks.
 - A reference here disagrees with what the installed version does, or describes an API the installed version does not have.
 - The task touches an experimental feature (`experimental.async`, remote functions, `forkPreloads`, `fork`), configuration, an adapter, or a migration.
 - The docs and the observed behavior disagree, or a doc page and a changelog disagree.
 - The user asks whether something is current, deprecated or removed.
+
+The references were written against svelte 5.57, @sveltejs/kit 3.0 (peers unchanged in 3.1), sv 1.1, svelte-check 4.7, @astrojs/svelte 9.1 and Tailwind CSS 4. An installed version newer than these may behave differently from the references: read the entries between the version named here and the installed one (Step 3 with `V` set to the named version's first release, such as `5.57.0`, ignoring the entries newer than the installed version).
 
 ## Step 1: find the installed version
 
@@ -49,7 +53,7 @@ Print the entries newer than the installed version and stop at its heading. Conf
 ```sh
 URL=https://raw.githubusercontent.com/sveltejs/kit/main/packages/kit/CHANGELOG.md
 V=3.0.0
-curl -sS "$URL" | grep -c "^## $V\$"                 # must print 1
+curl -sS "$URL" | grep -c "^## $V\$"                 # must print 1; on 0, stop and use Step 4
 curl -sS "$URL" | awk -v v="## $V" '$0==v{exit} {print}'
 ```
 
@@ -83,7 +87,7 @@ curl -sS 'https://api.github.com/repos/sveltejs/kit/releases?per_page=10'
 2. The official docs.
 3. The reference files in this folder.
 
-When a lower source contradicts a higher one, follow the higher one and tell the user which document is out of date. Record the conflict with its evidence; the known cases are in [known-doc-errata.md](known-doc-errata.md).
+When a lower source contradicts a higher one, follow the higher one and tell the user which document is out of date. Record the conflict with its evidence; the skill's errata reference lists the known cases.
 
 ## Changelog URLs and heading formats
 

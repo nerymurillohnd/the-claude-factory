@@ -2,7 +2,7 @@
 
 > Precedence: the SvelteKit changelog and source code win over the docs, and the docs win over this file. Before relying on an exact signature, fetch the live section (see "Official sources").
 >
-> Applies to SvelteKit 3 projects. A SvelteKit 2 project migrates first ([migrating-to-kit-3.md](migrating-to-kit-3.md)); write SvelteKit 2 code only when the user declines the migration or the request says to proceed without questions.
+> Applies to SvelteKit 3 projects. A SvelteKit 2 project migrates first (the skill's rule 3 gives the order); write SvelteKit 2 code only when the user declines the migration or the request says to proceed without questions, and take its APIs from the installed package's types and changelog.
 
 ## Contents
 
@@ -17,7 +17,7 @@
 - [adapter-netlify](#adapter-netlify)
 - [Related packages](#related-packages)
 - [Notes for adapter authors](#notes-for-adapter-authors)
-- [Fetch before writing when](#fetch-before-writing-when)
+- [Fetch especially when](#fetch-especially-when)
 - [Official sources](#official-sources)
 
 ## Adapter versions for Kit 3
@@ -143,7 +143,7 @@ export const GET: RequestHandler = async ({ request }) => {
 
 `builder.config.kit` is gone (configuration is top-level); `createEntries` and `generateManifest` are removed (use `writeClient`, `writeServer`, `writePrerendered`, `generateServerInstance` and `builder.manifest`); `rimraf` and `mkdirp` are deprecated for `node:fs`; adapters can add Vite plugins (`pre` and `post`); `builder.instrument` requires `createInstrumentationInitializer`. Read the migration guide's adapter section before changing an adapter.
 
-## Fetch before writing when
+## Fetch especially when
 
 - You set adapter options or route `config` keys not shown here.
 - You deploy behind a proxy, change `BODY_SIZE_LIMIT`, or need graceful shutdown details.
@@ -172,11 +172,11 @@ curl -sS 'https://svelte.dev/docs/kit/adapter-vercel/llms.txt'
 - Changelogs: `https://raw.githubusercontent.com/sveltejs/kit/main/packages/adapter-<name>/CHANGELOG.md` (`auto`, `node`, `bun`, `static`, `cloudflare`, `vercel`, `netlify`)
 - npm: `npm view @sveltejs/adapter-<name> version peerDependencies engines`
 
-Read only the changelog entries newer than the installed version (the full procedure is in `${CLAUDE_PLUGIN_ROOT}/skills/svelte-best-practices/references/changelogs.md`):
+When the skill's rule 4 calls for a changelog window, read only the entries newer than the installed version:
 
 ```sh
 URL='https://raw.githubusercontent.com/sveltejs/kit/main/packages/adapter-node/CHANGELOG.md'  # adapter-<name>
 V="$(node -p "require('@sveltejs/adapter-node/package.json').version")"  # the installed adapter version
-curl -sS "$URL" | grep -c "^## $V\$"  # must print 1
+curl -sS "$URL" | grep -c "^## $V\$"  # must print 1; on 0, stop: the awk would print the whole file
 curl -sS "$URL" | awk -v v="## $V" '$0==v{exit} {print}'
 ```

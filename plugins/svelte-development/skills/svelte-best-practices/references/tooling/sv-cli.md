@@ -4,7 +4,7 @@
 
 ## Contents
 
-- [Fetch before writing when](#fetch-before-writing-when)
+- [Fetch especially when](#fetch-especially-when)
 - [Running sv and the Node.js floor](#running-sv-and-the-nodejs-floor)
 - [sv create: templates and flags](#sv-create-templates-and-flags)
 - [sv add: shared flags and option syntax](#sv-add-shared-flags-and-option-syntax)
@@ -17,7 +17,7 @@
 - [Community add-ons](#community-add-ons)
 - [Official sources](#official-sources)
 
-## Fetch before writing when
+## Fetch especially when
 
 - The project's `sv` is newer than 1.1.0, the newest this file cites, or its `svelte-check`, `prettier-plugin-svelte` or `prettier-plugin-tailwindcss` behaves differently from what this file describes.
 - You need an add-on option value that is not listed here; the typed options live in each add-on's source file.
@@ -139,7 +139,7 @@ npx sv migrate sveltekit-3 --tasks            # list the tasks without running t
 npx sv migrate sveltekit-3 --tasks environment # run one selectable task
 ```
 
-- Task-based migrations in sv: `sveltekit-3` and `app-state`. The two prerequisite tasks (`package-json`, `tsconfig`) always run. The code registers ten selectable tasks: `svelte-config`, `environment`, `paths`, `external-redirects`, `shallow-routing`, `params`, `imports`, `lib-alias`, `app-state`, `collect-migration-instructions`. The docs list only nine tasks in total.
+- Task-based migrations in sv: `sveltekit-3` and `app-state`. `app-state` is also one of the `sveltekit-3` tasks below, so a project migrating to SvelteKit 3 does not run it separately. The two prerequisite tasks (`package-json`, `tsconfig`) always run. The code registers ten selectable tasks: `svelte-config`, `environment`, `paths`, `external-redirects`, `shallow-routing`, `params`, `imports`, `lib-alias`, `app-state`, `collect-migration-instructions`. The docs list only nine tasks in total.
 - Run one task at a time and commit after each. After a task, sv formats with the project's `format` or `fmt` script, or Prettier, then offers to install dependencies. Search for `@migration-task` comments before calling the migration complete.
 - Legacy migrations (`svelte-5`, `svelte-4`, `sveltekit-2`, `self-closing-tags`, `package`, `routes`) delegate to `svelte-migrate@1` and receive no fixes.
 - Flags for both kinds: `--cwd <path>`, `--no-git-check`, `--confirm`. Task-based only: `--tasks [ids…|all|prerequisite]`, `--files <glob>` (an escape hatch that can leave the project inconsistent), `--install <pm>`, `--no-install`.

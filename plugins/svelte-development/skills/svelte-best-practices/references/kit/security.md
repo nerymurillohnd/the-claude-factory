@@ -2,7 +2,7 @@
 
 > Precedence: the SvelteKit changelog and source code win over the docs, and the docs win over this file. Before relying on an exact signature, fetch the live section (see "Official sources").
 >
-> Applies to SvelteKit 3 projects. A SvelteKit 2 project migrates first ([migrating-to-kit-3.md](migrating-to-kit-3.md)); write SvelteKit 2 code only when the user declines the migration or the request says to proceed without questions.
+> Applies to SvelteKit 3 projects. A SvelteKit 2 project migrates first (the skill's rule 3 gives the order); write SvelteKit 2 code only when the user declines the migration or the request says to proceed without questions, and take its APIs from the installed package's types and changelog.
 
 ## Contents
 
@@ -15,7 +15,7 @@
 - [Raw HTML](#raw-html)
 - [Content Security Policy](#content-security-policy)
 - [Headers, cookies and proxies](#headers-cookies-and-proxies)
-- [Fetch before writing when](#fetch-before-writing-when)
+- [Fetch especially when](#fetch-especially-when)
 - [Official sources](#official-sources)
 
 ## Minimum versions with security fixes
@@ -114,7 +114,7 @@ sveltekit({
 - `PROTOCOL_HEADER`, `HOST_HEADER`, `ADDRESS_HEADER` and `XFF_DEPTH` on Node and Bun trust forwarded headers; set them only behind a proxy that overwrites those headers, and count `XFF_DEPTH` from the right.
 - Set `paths.origin` behind proxies so CSRF checks compare against the real public origin.
 
-## Fetch before writing when
+## Fetch especially when
 
 - You change `csp`, `csrf` or redirect behaviour, or add `trusted-types`.
 - You expose an API to other origins or accept webhooks.
@@ -143,11 +143,11 @@ curl -sS 'https://svelte.dev/docs/svelte/@html/llms.txt'
 - Changelogs: `https://raw.githubusercontent.com/sveltejs/kit/main/packages/kit/CHANGELOG.md`, `https://raw.githubusercontent.com/sveltejs/svelte/main/packages/svelte/CHANGELOG.md`
 - Advisories: `https://github.com/sveltejs/kit/security/advisories`, `https://github.com/sveltejs/svelte/security/advisories`
 
-Read only the changelog entries newer than the installed version (the full procedure is in `${CLAUDE_PLUGIN_ROOT}/skills/svelte-best-practices/references/changelogs.md`):
+When the skill's rule 4 calls for a changelog window, read only the entries newer than the installed version:
 
 ```sh
 URL='https://raw.githubusercontent.com/sveltejs/kit/main/packages/kit/CHANGELOG.md'
 V="$(node -p "require('@sveltejs/kit/package.json').version")"  # the installed version
-curl -sS "$URL" | grep -c "^## $V\$"  # must print 1
+curl -sS "$URL" | grep -c "^## $V\$"  # must print 1; on 0, stop: the awk would print the whole file
 curl -sS "$URL" | awk -v v="## $V" '$0==v{exit} {print}'
 ```

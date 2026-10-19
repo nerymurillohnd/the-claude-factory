@@ -2,7 +2,7 @@
 
 > Precedence: the SvelteKit changelog and source code win over the docs, and the docs win over this file. Before relying on an exact signature, fetch the live section (see "Official sources").
 >
-> Applies to SvelteKit 3 projects. A SvelteKit 2 project migrates first ([migrating-to-kit-3.md](migrating-to-kit-3.md)); write SvelteKit 2 code only when the user declines the migration or the request says to proceed without questions.
+> Applies to SvelteKit 3 projects. A SvelteKit 2 project migrates first (the skill's rule 3 gives the order); write SvelteKit 2 code only when the user declines the migration or the request says to proceed without questions, and take its APIs from the installed package's types and changelog.
 
 ## Contents
 
@@ -15,7 +15,7 @@
 - [TypeScript configuration](#typescript-configuration)
 - [Server-only and remote modules](#server-only-and-remote-modules)
 - [Tracing and instrumentation](#tracing-and-instrumentation)
-- [Fetch before writing when](#fetch-before-writing-when)
+- [Fetch especially when](#fetch-especially-when)
 - [Official sources](#official-sources)
 
 ## Required versions
@@ -149,7 +149,7 @@ A `remote` segment marks a remote module (`posts.remote.ts`, `remote.ts`). Since
 - `src/instrumentation.server.ts` is loaded automatically, before app code, when the adapter supports it; no flag is required since 3.0.
 - `tracing: { server: true }` emits OpenTelemetry spans for `handle`, `load`, form actions and remote functions. It has a real cost; consider enabling it only outside production.
 
-## Fetch before writing when
+## Fetch especially when
 
 - You add or rename a config option, or meet an option not listed here.
 - You configure `csp`, `paths`, `router.resolution`, `prerender` handlers or `output`.
@@ -178,11 +178,11 @@ curl -sS 'https://svelte.dev/docs/kit/server-only-modules/llms.txt'
 - Changelog: `https://raw.githubusercontent.com/sveltejs/kit/main/packages/kit/CHANGELOG.md`
 - Source: `https://raw.githubusercontent.com/sveltejs/kit/main/packages/kit/src/exports/vite/index.js`
 
-Read only the changelog entries newer than the installed version (the full procedure is in `${CLAUDE_PLUGIN_ROOT}/skills/svelte-best-practices/references/changelogs.md`):
+When the skill's rule 4 calls for a changelog window, read only the entries newer than the installed version:
 
 ```sh
 URL='https://raw.githubusercontent.com/sveltejs/kit/main/packages/kit/CHANGELOG.md'
 V="$(node -p "require('@sveltejs/kit/package.json').version")"  # the installed version
-curl -sS "$URL" | grep -c "^## $V\$"  # must print 1
+curl -sS "$URL" | grep -c "^## $V\$"  # must print 1; on 0, stop: the awk would print the whole file
 curl -sS "$URL" | awk -v v="## $V" '$0==v{exit} {print}'
 ```

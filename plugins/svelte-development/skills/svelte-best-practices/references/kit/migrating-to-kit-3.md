@@ -9,7 +9,7 @@
 - [Old to new](#old-to-new)
 - [Manual checklist](#manual-checklist)
 - [Verifying the result](#verifying-the-result)
-- [Fetch before writing when](#fetch-before-writing-when)
+- [Fetch especially when](#fetch-especially-when)
 - [Official sources](#official-sources)
 
 ## Before you start
@@ -124,9 +124,7 @@ Check each item after the tasks run, whether or not a task touched it:
 1. The project's check with no errors, then the unit tests and the build:
 
    ```sh
-   npm run check        # or, without a check script, these two, never chained with &&:
-   npx --no-install svelte-kit sync
-   npx --no-install svelte-check --tsconfig ./tsconfig.json
+   npm run check        # without a check script: the commands of ground rule 5, never chained with &&
    npm test             # when the project has tests
    npm run build
    ```
@@ -142,7 +140,7 @@ Check each item after the tasks run, whether or not a task touched it:
 
 4. Deploy to a preview environment before production.
 
-## Fetch before writing when
+## Fetch especially when
 
 - Any table row above is ambiguous for your code, or you meet a 2.x API not listed here.
 - You maintain a custom adapter, use `builder.instrument`, or ship a library with `@sveltejs/package`.
@@ -168,11 +166,11 @@ curl -sS 'https://svelte.dev/docs/cli/sv-migrate/llms.txt'
 
 - Changelogs: `https://raw.githubusercontent.com/sveltejs/kit/main/packages/kit/CHANGELOG.md`, `https://raw.githubusercontent.com/sveltejs/cli/main/packages/sv/CHANGELOG.md`
 
-Read only the changelog entries newer than the installed version (the full procedure is in `${CLAUDE_PLUGIN_ROOT}/skills/svelte-best-practices/references/changelogs.md`):
+When the skill's rule 4 calls for a changelog window, read only the entries newer than the installed version:
 
 ```sh
 URL='https://raw.githubusercontent.com/sveltejs/kit/main/packages/kit/CHANGELOG.md'
 V="$(node -p "require('@sveltejs/kit/package.json').version")"  # the installed version
-curl -sS "$URL" | grep -c "^## $V\$"  # must print 1
+curl -sS "$URL" | grep -c "^## $V\$"  # must print 1; on 0, stop: the awk would print the whole file
 curl -sS "$URL" | awk -v v="## $V" '$0==v{exit} {print}'
 ```

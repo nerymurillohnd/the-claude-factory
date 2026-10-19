@@ -15,7 +15,7 @@
 - [Debug tag](#debug-tag)
 - [Bindings](#bindings)
 - [Class and style attributes](#class-and-style-attributes)
-- [Fetch before writing when](#fetch-before-writing-when)
+- [Fetch especially when](#fetch-especially-when)
 - [Official sources](#official-sources)
 
 ## Markup and attributes
@@ -109,7 +109,7 @@ Since 5.29, `{@attach fn}` runs `fn(element)` in an effect when the element moun
 - A factory call such as `tooltip(content)` re-creates the attachment whenever its argument changes. When setup is expensive, pass a getter and read it in a nested `$effect` inside the attachment, so only the update re-runs.
 - On a component, `{@attach}` becomes a prop keyed by a `Symbol`; spreading `{...props}` onto an element forwards it. To add one programmatically, use `[createAttachmentKey()]: fn` (from `svelte/attachments`).
 - Convert a library action with `fromAction` (since 5.32): `{@attach fromAction(action, () => arg)}`. The second argument is a function returning the parameter, not the parameter.
-- Prefer attachments over `use:` actions: actions run once and do not re-run when their argument changes.
+- Prefer attachments over `use:` actions: actions run once and do not re-run when their argument changes. SvelteKit's `use:enhance` on forms stays as it is.
 
 ## Declaration tags
 
@@ -157,7 +157,7 @@ Since 5.29, `{@attach fn}` runs `fn(element)` in an effect when the element moun
 <div class={['card', flags, extra]} style:--accent={active ? 'tomato' : 'gray'}>...</div>
 ```
 
-## Fetch before writing when
+## Fetch especially when
 
 - You declare a generic snippet (5.30 syntax not in the docs), use declaration tags (5.56) or `defaultValue` on `<select>` (5.57), or must support a version older than any "since" above.
 - You pass `TrustedHTML` to `{@html}` or rely on Trusted Types behavior.
@@ -185,14 +185,14 @@ Same pattern for each slug above.
 
 - Changelog: `https://raw.githubusercontent.com/sveltejs/svelte/main/packages/svelte/CHANGELOG.md`
 
-Read only the changelog entries newer than the installed version (the full procedure is in `${CLAUDE_PLUGIN_ROOT}/skills/svelte-best-practices/references/changelogs.md`):
+When the skill's rule 4 calls for a changelog window, read only the entries newer than the installed version:
 
 ```sh
 URL='https://raw.githubusercontent.com/sveltejs/svelte/main/packages/svelte/CHANGELOG.md'
 V="$(node -p "require('svelte/package.json').version")"  # the installed version
-curl -sS "$URL" | grep -c "^## $V\$"  # must print 1
+curl -sS "$URL" | grep -c "^## $V\$"  # must print 1; on 0, stop: the awk would print the whole file
 curl -sS "$URL" | awk -v v="## $V" '$0==v{exit} {print}'
 ```
 
 
-Partly derived from sveltejs/ai-tools (MIT), base 6b5d0da; see the plugin NOTICE.
+Partly derived from sveltejs/ai-tools (MIT), base 6b5d0da; see the plugin's NOTICE.txt.

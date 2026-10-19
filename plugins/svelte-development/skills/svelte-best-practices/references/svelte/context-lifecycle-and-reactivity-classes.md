@@ -11,7 +11,7 @@
 - [Window values](#window-values)
 - [Shared state and stores](#shared-state-and-stores)
 - [Imperative component API](#imperative-component-api)
-- [Fetch before writing when](#fetch-before-writing-when)
+- [Fetch especially when](#fetch-especially-when)
 - [Official sources](#official-sources)
 
 ## Context
@@ -136,7 +136,7 @@ export class Online {
 - `unmount(app, { outro: true })` plays outro transitions first and returns a promise (since 5.13).
 - `render(App, { props, context, idPrefix, csp, transformError })` from `svelte/server` runs only on the server build and returns `head` and `body` (`html` is deprecated) plus `hashes`. `idPrefix` exists since 5.22; the docs give only its type, so fetch the source before relying on its exact effect, and note it must not contain `--` (enforced since 5.55.2). `csp` exists since 5.46. CSS is not returned unless components are compiled with `css: 'injected'`.
 
-## Fetch before writing when
+## Fetch especially when
 
 - You use `createContext(...).has` (5.57), `SvelteMap.getOrInsert*` (5.57) or mount-time `createContext` wrappers (5.50), or support older versions.
 - You need the full `MountOptions`, `hydrate` or `render` option types.
@@ -164,14 +164,14 @@ curl -sS 'https://svelte.dev/docs/svelte/imperative-component-api/llms.txt'
 
 - Changelog: `https://raw.githubusercontent.com/sveltejs/svelte/main/packages/svelte/CHANGELOG.md`
 
-Read only the changelog entries newer than the installed version (the full procedure is in `${CLAUDE_PLUGIN_ROOT}/skills/svelte-best-practices/references/changelogs.md`):
+When the skill's rule 4 calls for a changelog window, read only the entries newer than the installed version:
 
 ```sh
 URL='https://raw.githubusercontent.com/sveltejs/svelte/main/packages/svelte/CHANGELOG.md'
 V="$(node -p "require('svelte/package.json').version")"  # the installed version
-curl -sS "$URL" | grep -c "^## $V\$"  # must print 1
+curl -sS "$URL" | grep -c "^## $V\$"  # must print 1; on 0, stop: the awk would print the whole file
 curl -sS "$URL" | awk -v v="## $V" '$0==v{exit} {print}'
 ```
 
 
-Partly derived from sveltejs/ai-tools (MIT), base 6b5d0da; see the plugin NOTICE.
+Partly derived from sveltejs/ai-tools (MIT), base 6b5d0da; see the plugin's NOTICE.txt.

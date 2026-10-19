@@ -11,7 +11,7 @@
 - [Build and tooling](#build-and-tooling)
 - [Errors the compiler does not catch](#errors-the-compiler-does-not-catch)
 - [Looking up a warning or error code](#looking-up-a-warning-or-error-code)
-- [Fetch before writing when](#fetch-before-writing-when)
+- [Fetch especially when](#fetch-especially-when)
 - [Official sources](#official-sources)
 
 ## Events and markup
@@ -83,7 +83,7 @@
   ```
 - Silence a false positive with `<!-- svelte-ignore code_a, code_b (reason) -->` on the line above the markup. Fix accessibility warnings instead of ignoring them unless the reason is documented. Project-wide filtering uses the `warningFilter` compiler option.
 
-## Fetch before writing when
+## Fetch especially when
 
 - A warning or error code appears that this file does not explain, or its message differs from the text here.
 - You are about to silence an `a11y_*` warning: read its entry first.
@@ -112,11 +112,11 @@ curl -sS 'https://svelte.dev/docs/svelte/v5-migration-guide/llms.txt'
 
 - Changelog: `https://raw.githubusercontent.com/sveltejs/svelte/main/packages/svelte/CHANGELOG.md`
 
-Read only the changelog entries newer than the installed version (the full procedure is in `${CLAUDE_PLUGIN_ROOT}/skills/svelte-best-practices/references/changelogs.md`):
+When the skill's rule 4 calls for a changelog window, read only the entries newer than the installed version:
 
 ```sh
 URL='https://raw.githubusercontent.com/sveltejs/svelte/main/packages/svelte/CHANGELOG.md'
 V="$(node -p "require('svelte/package.json').version")"  # the installed version
-curl -sS "$URL" | grep -c "^## $V\$"  # must print 1
+curl -sS "$URL" | grep -c "^## $V\$"  # must print 1; on 0, stop: the awk would print the whole file
 curl -sS "$URL" | awk -v v="## $V" '$0==v{exit} {print}'
 ```

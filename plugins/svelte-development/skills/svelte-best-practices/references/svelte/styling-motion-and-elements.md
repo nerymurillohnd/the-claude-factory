@@ -12,7 +12,7 @@
 - [Special elements](#special-elements)
 - [Custom elements](#custom-elements)
 - [TypeScript](#typescript)
-- [Fetch before writing when](#fetch-before-writing-when)
+- [Fetch especially when](#fetch-especially-when)
 - [Official sources](#official-sources)
 
 ## Scoped styles
@@ -105,7 +105,7 @@
 - `$state<number>()` is `number | undefined`; in classes, `value = $state() as number` is acceptable when the constructor assigns it.
 - Types: `Component<Props>` for component values, `ComponentProps<typeof X>` for props, `Snippet<[Args]>` for snippets, and `svelte/elements` (`HTMLButtonAttributes`, `SvelteHTMLElements['div']`, `ClassValue`) for wrappers. Add custom attributes or elements by augmenting `declare module 'svelte/elements'` in a `.d.ts` that ends with `export {}`.
 
-## Fetch before writing when
+## Fetch especially when
 
 - You need the exact options of a built-in transition or easing, or the `Spring`/`Tween` option defaults.
 - You target an older version than any "since" above (`ShadowRootInit` 5.49, motion classes 5.8, option types 5.55).
@@ -133,11 +133,11 @@ Same pattern for each slug above.
 
 - Changelog: `https://raw.githubusercontent.com/sveltejs/svelte/main/packages/svelte/CHANGELOG.md`
 
-Read only the changelog entries newer than the installed version (the full procedure is in `${CLAUDE_PLUGIN_ROOT}/skills/svelte-best-practices/references/changelogs.md`):
+When the skill's rule 4 calls for a changelog window, read only the entries newer than the installed version:
 
 ```sh
 URL='https://raw.githubusercontent.com/sveltejs/svelte/main/packages/svelte/CHANGELOG.md'
 V="$(node -p "require('svelte/package.json').version")"  # the installed version
-curl -sS "$URL" | grep -c "^## $V\$"  # must print 1
+curl -sS "$URL" | grep -c "^## $V\$"  # must print 1; on 0, stop: the awk would print the whole file
 curl -sS "$URL" | awk -v v="## $V" '$0==v{exit} {print}'
 ```

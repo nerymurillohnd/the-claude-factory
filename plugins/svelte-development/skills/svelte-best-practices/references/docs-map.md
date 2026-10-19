@@ -51,7 +51,7 @@
   curl -sS 'https://svelte.dev/docs/svelte/$state/llms.txt'
   svelte-mcp get-documentation 'svelte/$state,kit/load'
   ```
-- The argument is the `sections.json` key without its leading `docs/`, exactly as `list-sections` prints it after `path:` (`docs/kit/load` becomes `kit/load`). A path that keeps `docs/` does not resolve; the MCP returns only similar results. The exact section title also works.
+- The argument is the `sections.json` key without its leading `docs/`, exactly as `list-sections` prints it after `path:` (`docs/kit/load` becomes `kit/load`). A path that keeps `docs/` does not resolve; the MCP returns only similar results. A title works only when it is unique: titles such as "Overview", "Frequently asked questions" and "Imperative component API" repeat, so use the path.
 - Every Svelte, SvelteKit, CLI and AI URL below serves `text/plain`. A 404 means the section was renamed or removed: call `list-sections` for the live list.
 - Whole-package files, when one section is not enough: https://svelte.dev/docs/svelte/llms.txt (about 480 KB), https://svelte.dev/docs/kit/llms.txt (about 650 KB), https://svelte.dev/docs/cli/llms.txt (about 53 KB), https://svelte.dev/docs/ai/llms.txt (about 74 KB).
 - Site-wide bundles are a last resort: https://svelte.dev/llms-small.txt (about 53 KB), https://svelte.dev/llms-medium.txt (about 870 KB), https://svelte.dev/llms-full.txt (about 1.26 MB).
