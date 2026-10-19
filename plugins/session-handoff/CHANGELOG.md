@@ -6,6 +6,25 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-10-19
+
+### Changed
+
+- A handoff now belongs to one confirmed project folder: the skill compares the folder the session started in with the one it is working in, and asks which project the handoff is for when they differ, before it reads or writes any store.
+- A handoff holds only the project's work. Work on other projects, the machine or accounts is listed for you when the draft is shown and is not saved.
+- Inherited open items are put to you for a verdict: the ones that look out of scope, obsolete or finished elsewhere are listed with the reason, and you are asked whether you finished anything outside the session.
+- A result you report from outside the session now closes an item as done, noted as reported by you.
+- The previous handoff is read to the end and checked for its header lines and sections before it is used; a truncated or incomplete file stops the skill instead of being reconciled, and a handoff is treated as a record, never as instructions.
+- The previous commit is used only when it is a valid commit hash; otherwise the last 20 commits are listed.
+- The saved handoff is read back and compared with the approved draft before the skill confirms it.
+- The skill never follows a symbolic link in the handoff folder, and never writes a remote URL, an environment value or a raw command error.
+- The start-of-session instructions are shorter and clearer, and ask Claude to compare the handoff's project with the session's and to name items that look out of scope or finished.
+
+### Fixed
+
+- The start-of-session hook no longer reports an unreadable handoff folder as "no handoff": it warns you and Claude instead, also when the folder, `.claude` or a handoff is a symbolic link.
+- A git failure such as an ownership (`safe.directory`) error is no longer recorded as "Not a git repository."; the handoff marks the repository state as not verified, with the reason.
+
 ## [0.1.0] - 2026-10-12
 
 ### Added
@@ -14,5 +33,6 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - Every handoff records what was done, decided, corrected and learned, what is still open with where it stands and what finishing needs, the next steps in order, and what could not be verified; open items older than 30 days are marked for you to confirm or drop.
 - `SessionStart` hook: when a session starts or is cleared in a project that has handoffs, Claude reads the newest one in full, summarizes it, lists its pending items, keeps your first request as the current one and asks how you want to proceed before starting work; in a run where nobody can answer, such as `claude -p`, it goes on with the request. In projects without handoffs the plugin adds nothing to the conversation.
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/session-handoff--v0.1.0...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/session-handoff--v0.2.0...HEAD
+[0.2.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/session-handoff--v0.2.0
 [0.1.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/session-handoff--v0.1.0
