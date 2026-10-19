@@ -46,7 +46,7 @@ Report migration items in a separate list. Put the recommendation to migrate on 
 
 ### Rules
 
-- **Ground rules.** "Ground rules for every Svelte task" in the preloaded `svelte-best-practices` skill hold for every step: the LSP tool first for project symbols, `get-documentation` before citing any API, the autofixer on every Svelte file in scope (reporting, not applying), and the project check result in the report.
+- **Ground rules.** "Ground rules for every Svelte task" in the preloaded `svelte-best-practices` skill hold for every step: the LSP tool for project symbols and text search for text, `get-documentation` before citing any API, the autofixer on every Svelte file in scope (reporting, not applying), and the project check result in the report.
 - **Prove silence, per tool.** Before reporting a clean result, prove the tool could see a problem, as rule 9 of `svelte-lsp-intelligence` says.
   - Language server: you receive no language server diagnostics, because they follow an Edit or Write and you make neither. Your diagnostics come from the project check and, when the IDE is connected, the IDE diagnostics tool. For navigation in step 10, `documentSymbol` must list the symbols of a non-empty `.svelte` file. Never use `command -v svelteserver` in Bash, which checks the Bash `PATH`, not the server.
   - Project check: a silent check needs `svelte-kit sync` (SvelteKit only), the `COMPLETED <n> FILES` line, and the audited files inside the tsconfig `include`. You cannot break the project to prove it, so a clean check counts as proven only when it reports at least one diagnostic in a file in scope, or the files in scope are inside the tsconfig `include` and no hiding cause below applies; otherwise write "clean, not proven by a break (read-only audit)" under "Not verified".
@@ -61,6 +61,7 @@ Report migration items in a separate list. Put the recommendation to migrate on 
   - the project check of ground rule 5, exactly as written there: `npm run check`; without that script, `npx --no-install svelte-kit sync` (SvelteKit only), then `npx --no-install svelte-check …` as a separate command, never chained with `&&`. `svelte-kit sync` writes only SvelteKit's generated files, so say so in the report if you run it. When the project has no svelte-check, report the check as not run; never install it;
   - `npm ls`, `pnpm why svelte`, `yarn why svelte`, `npm view <package> …`, `node -p "require('<package>/package.json').version"`;
   - `git status --short`, `git diff` and `git log`, which only read;
+  - `grep -rn` or `grep -rnE` and `find … -name`, which only read, for text search when the session has no Grep or Glob tool (rule 1 of `svelte-lsp-intelligence`);
   - `curl -sS` to svelte.dev, raw.githubusercontent.com (sveltejs, withastro, tailwindlabs) and api.github.com, optionally piped to `grep`, `awk` or `head`;
   - `svelte-mcp` if the user installed it. Probe it with `svelte-mcp list-sections`, never with `command -v`.
 
@@ -115,7 +116,7 @@ mcp__plugin_svelte-development_svelte__svelte-autofixer
   async: true   # only when the project enables compilerOptions.experimental.async
 ```
 
-**Steps 3 to 9:** Grep for the patterns, then read the matching lines. Tighten patterns against false positives, for example `\son:[a-z]` for the `on:` directive (plain `on:` also matches `transition:`).
+**Steps 3 to 9:** search the text for the patterns (the Grep tool, or `grep -rnE` through Bash when the session has no Grep tool), then read the matching lines. Tighten patterns against false positives, for example `\son:[a-z]` for the `on:` directive, written `[[:space:]]on:[a-z]` for `grep -E` (plain `on:` also matches `transition:`).
 
 **Step 10**, from a `.svelte` position. For where a component is used, start at line 1, character 1 of its own file:
 
