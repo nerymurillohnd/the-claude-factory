@@ -1,20 +1,16 @@
 {
   "svelte": {
     "command": "svelteserver",
-    "args": ["--stdio"],
+    "args": [
+      "--stdio"
+    ],
     "extensionToLanguage": {
       ".svelte": "svelte"
     },
-    "startupTimeout": 60000,
+    "startupTimeout": 30000,
     "shutdownTimeout": 15000,
     "restartOnCrash": true,
     "maxRestarts": 3,
-    "diagnostics": true,
-    "initializationOptions": {
-      "tsserver": {
-        "useSyntaxServer": "never"
-      }
-    }
+    "diagnostics": true
   }
 }
-
