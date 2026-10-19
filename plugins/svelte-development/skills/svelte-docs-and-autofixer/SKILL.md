@@ -132,12 +132,12 @@ Claude Code reconnects a dropped server on its own; the user can also reconnect 
    ```
 
    The URL pattern is `https://svelte.dev/docs/<area>/<slug>/llms.txt`; the docs map lists it for every section. Keep the URL in single quotes: slugs such as `$state` would otherwise be expanded by the shell.
-2. **Local command line, if the user has it.** The `@sveltejs/mcp` package, installed globally by the user, provides the `svelte-mcp` command: it runs on their machine, sends no code and reads file paths. Use it offline or when code must not leave the machine. Put arguments that contain `$` in single quotes, because double quotes let the shell expand `$state`, and pass the full installed version to `--svelte-version`:
+2. **Local command line, if the user has it.** The `@sveltejs/mcp` package, installed globally by the user, provides the `svelte-mcp` command: it runs on their machine, sends no code and reads file paths. Use it offline or when code must not leave the machine. Put arguments that contain `$` in single quotes, because double quotes let the shell expand `$state`. Pass only the installed major to `--svelte-version` (`5`, or `4` for Svelte 4 code): `@sveltejs/mcp` 0.1.26, the latest release on 2026-10-19, accepts only 4 or 5 and rejects a full version such as `5.57.2`. Full versions are merged but not released (sveltejs/ai-tools #269); pass the full installed version once `npm ls -g @sveltejs/mcp` shows a release whose changelog lists "class directive to clsx attribute fixer". Until then the local run misses the `class:` suggestion, which needs the minor:
 
    ```sh
    svelte-mcp list-sections
    svelte-mcp get-documentation 'svelte/$props,svelte/$bindable'
-   svelte-mcp svelte-autofixer src/lib/components/Counter.svelte --svelte-version <installed svelte version> # add --async when the project enables experimental async
+   svelte-mcp svelte-autofixer src/lib/components/Counter.svelte --svelte-version 5 # add --async when the project enables experimental async
    ```
 
    Probe it with `svelte-mcp list-sections`, never with `command -v svelte-mcp`. The Bash command's environment may not be the user's shell, so `command not found` there does not prove the tool is missing: ask the user to confirm in their own shell. If it is missing, the user installs it with `npm install -g @sveltejs/mcp`; ask before suggesting `npx`. On an autofixer run, check that the output starts with `Detected file path`: `File not found, treating input as code` means the path was wrong and the result says nothing about the file.
