@@ -69,6 +69,7 @@ Answer questions about where code is, what calls it or what type it has yourself
 
 - [references/operations.md](references/operations.md): read when you need to see what an operation returns (real output observed on a SvelteKit 3 test project), or a result does not match what you expected.
 - [references/troubleshooting.md](references/troubleshooting.md): read when a call errors, returns nothing unexpectedly, or diagnostics never appear.
+- [references/rename.md](references/rename.md): read before a rename or move that involves a prop with shorthand attributes, a store or a component file.
 - The `svelte-best-practices` skill for the rules when fixing what diagnostics report; the `svelte-docs-and-autofixer` skill for the docs and the autofixer.
 
 The sibling skills are `svelte-development:svelte-best-practices` and `svelte-development:svelte-docs-and-autofixer`.
@@ -151,7 +152,7 @@ Copy this checklist when a change touches a symbol other files use. Steps 4 to 6
                    error can hide another
 ```
 
-**Done when**, for a rename, a signature change or a deletion, the project check ran at least at baseline, break and confirm, and the last run matches the baseline. There is no rename operation: a rename is steps 2 to 8, including the props passed to the component and destructured in `$props()`. [operations.md](references/operations.md), "Prove it", shows a worked example.
+**Done when**, for a rename, a signature change or a deletion, the project check ran at least at baseline, break and confirm, and the last run matches the baseline. There is no rename operation: a rename is steps 2 to 8, including the props passed to the component and destructured in `$props()`. For shorthand attributes, a store or a component file move, read [rename.md](references/rename.md) first. [operations.md](references/operations.md), "Prove it", shows a worked example.
 
 ## Project check
 
