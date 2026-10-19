@@ -1,6 +1,6 @@
 # Tool matrix: MCP first, gh as fallback, and back
 
-For each write task, the layer that does it best is listed first. The read-only tasks (snapshot, checks, runs, logs, reviews, Dependabot, files) are in the shared read-tasks file that `SKILL.md` links. The other layer is the fallback and works in both directions: when the MCP tool is missing or fails, use `gh`; when `gh` fails or lacks the operation, use the MCP tool. "Best" here means the structured result or the shorter path; speed was not measured.
+For each write task, the layer that does it best is listed first. The read-only tasks (snapshot, checks, runs, logs, reviews, Dependabot, files) are in the observation reference. The other layer is the fallback and works in both directions: when the MCP tool is missing or fails, use `gh`; when `gh` fails or lacks the operation, use the MCP tool. "Best" here means the structured result or the shorter path; speed was not measured.
 
 ## Rules
 
@@ -86,4 +86,4 @@ Before the first GitHub operation of a run, learn what you can do. Do not assume
 
 ## Beyond the lifecycle
 
-The shared catalog that `SKILL.md` links lists the tools that write, the ones outside GitHub's default toolsets and the early-access ones. Operations the MCP does not cover, such as creating releases and uploading assets (`gh release create|upload`), secrets and variables (`gh secret|variable set`) and repository settings, go through `gh` or `gh api`. `gh` also has command groups for `issue`, `discussion`, `project`, `search`, `ruleset`, `label`, `gist`, `cache`, `workflow` and `agent-task`.
+Operations the MCP does not cover, such as creating releases and uploading assets (`gh release create|upload`), secrets and variables (`gh secret|variable set`) and repository settings, go through `gh` or `gh api`. `gh` also has command groups for `issue`, `discussion`, `project`, `search`, `ruleset`, `label`, `gist`, `cache`, `workflow` and `agent-task`.

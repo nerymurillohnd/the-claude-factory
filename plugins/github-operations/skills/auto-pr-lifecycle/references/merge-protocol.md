@@ -5,7 +5,7 @@
 Before requesting approval:
 
 1. Refresh the PR head.
-2. Obtain a current tracking report.
+2. Observe the PR at that head, as the observation reference says.
 3. Confirm required checks pass for the applicable revision.
 4. Confirm required reviews and approvals are satisfied.
 5. Confirm actionable findings are addressed.

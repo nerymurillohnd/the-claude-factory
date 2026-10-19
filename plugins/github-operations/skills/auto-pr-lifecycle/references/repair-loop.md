@@ -2,7 +2,7 @@
 
 ## Repair each finding
 
-1. Verify the report applies to the current head.
+1. Verify the finding applies to the current head.
 2. Classify it as one of: a real branch-caused problem, a valid pre-existing problem, stale feedback, a false positive, a suspected intermittent or infrastructure problem, an external blocker, or a non-blocking improvement.
 3. Inspect enough evidence to evaluate the recommended fix.
 4. Apply the smallest justified change within scope.
@@ -10,7 +10,7 @@
 6. Reply to review feedback with what changed and why, or with the evidence for making no change.
 7. Commit and push through local git when a change is required.
 8. Refresh the remote head SHA.
-9. Delegate another monitoring cycle against that head.
+9. Observe again against that head.
 
 Fix real, reproducible, branch-caused problems autonomously within scope.
 
@@ -26,7 +26,7 @@ Do not:
 
 Rerun a check only with evidence of a transient failure, or after addressing the condition that stopped it from running.
 
-Every push invalidates head-specific observations and any earlier merge approval. Observe again against the new head.
+Every push invalidates head-specific observations and any earlier merge approval. Observe again against the new head, as the observation reference says.
 
 ## Review threads
 
