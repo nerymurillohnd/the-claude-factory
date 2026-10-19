@@ -8,10 +8,17 @@ set -euo pipefail
 shopt -s nullglob
 LC_ALL=C # digit ranges match only 0-9
 
-# claude -p (and the Agent SDK) runs a specific job: add nothing to it.
-[[ ${CLAUDE_CODE_ENTRYPOINT:-} == sdk-cli ]] && exit 0
+# claude -p, the Agent SDK and the GitHub Action run specific jobs: add nothing to them.
+# CLAUDE_CODE_ENTRYPOINT is observed in Claude Code 2.1.303, not documented.
+case ${CLAUDE_CODE_ENTRYPOINT:-} in
+  sdk-* | claude-code-github-action) exit 0 ;;
+  *) ;;
+esac
 
-claude_dir="${CLAUDE_PROJECT_DIR:-.}/.claude"
+# The store sits at the git root, where the skill writes it; outside git, in the project directory.
+project=${CLAUDE_PROJECT_DIR:-.}
+root=$(git -C "${project}" rev-parse --show-toplevel 2> /dev/null) || root=${project}
+claude_dir="${root}/.claude"
 store="${claude_dir}/session-handoff"
 
 warn() {

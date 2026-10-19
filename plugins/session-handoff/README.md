@@ -106,7 +106,7 @@ In the desktop app's **Code** tab you can also click **+** → **Plugins** → *
 
 ### Pick up in the next session
 
-Start Claude Code in the same project and type your first request as usual.
+Start Claude Code in the same project, at its root or in any subfolder of the repository, and type your first request as usual.
 
 **Result:** Claude reads the newest handoff in full and does what you asked. If your request differs from the pending work, it does your request anyway. It works with the handoff's decisions, corrections and learnings as background, so past mistakes are not repeated. At the end of its reply it lists the open items, one short line each, so you can decide what to do next.
 
@@ -211,7 +211,7 @@ Not in the default permission mode: nobody is there to approve saving the file. 
 <details>
 <summary><b>Does the start-of-session reminder get in the way of <code>claude -p</code> or CI runs?</b></summary>
 
-No. The hook does nothing in `claude -p` runs, so they behave as if the plugin were not installed.
+No. The hook does nothing in `claude -p` runs, the Agent SDK or the Claude Code GitHub Action, so they behave as if the plugin were not installed.
 
 </details>
 

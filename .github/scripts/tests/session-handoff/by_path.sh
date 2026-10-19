@@ -104,7 +104,7 @@ echo "hook: ignores files not named like a handoff"
 printf '# Session handoff\n' > "${store}/2026-01-01-0000.md"
 printf '# Session handoff\n' > "${store}/2025-12-31-2359.md"
 expect_protocol "hook output with a handoff"
-echo "hook: asks Claude to read, validate and compare the newest handoff"
+echo "hook: asks Claude to read the newest handoff"
 
 # 4b. claude -p (entrypoint sdk-cli) gets nothing, even with a handoff present.
 out=$(CLAUDE_CODE_ENTRYPOINT=sdk-cli CLAUDE_PROJECT_DIR="${work}" "${hook}" < /dev/null) || fail "claude -p: exit $?"
@@ -176,3 +176,41 @@ mkdir -p "${work}/.claude"
 printf 'not a folder\n' > "${store}"
 expect_warning "store that is a file"
 echo "hook: warns when the store is not a folder"
+
+# 9. Launched from a subfolder of a git repository, the hook finds the store at the git root.
+repo="${tmp}/repo"
+mkdir -p "${repo}/packages/app" "${repo}/.claude/session-handoff"
+git -C "${repo}" init --quiet
+printf '# Session handoff\n' > "${repo}/.claude/session-handoff/2026-01-01-0000.md"
+rc=0
+out=$(CLAUDE_PROJECT_DIR="${repo}/packages/app" "${hook}" < /dev/null) || rc=$?
+[[ ${rc} == 0 && ${out} == *"Session handoff loaded: 2026-01-01-0000.md"* ]] || fail "subfolder of a repository: exit ${rc}, output: ${out}"
+echo "hook: finds the store at the git root from a subfolder"
+
+# 10. Every non-interactive entrypoint gets nothing.
+reset
+mkdir -p "${store}"
+printf '# Session handoff\n' > "${store}/2026-01-01-0000.md"
+for entry in sdk-cli sdk-ts sdk-py claude-code-github-action; do
+  out=$(CLAUDE_CODE_ENTRYPOINT=${entry} CLAUDE_PROJECT_DIR="${work}" "${hook}" < /dev/null) || fail "${entry}: exit $?"
+  [[ -z ${out} ]] || fail "${entry}: output: ${out}"
+done
+echo "hook: silent for every non-interactive entrypoint"
+
+# 11. A folder named like a handoff is not one, and an unreadable handoff or store warns.
+reset
+mkdir -p "${store}/2027-01-01-0000.md"
+expect_silent "directory named like a handoff"
+echo "hook: ignores a folder named like a handoff"
+if ((can_chmod)); then
+  reset
+  mkdir -p "${store}"
+  printf '# Session handoff\n' > "${store}/2026-01-01-0000.md"
+  chmod 000 "${store}/2026-01-01-0000.md"
+  expect_warning "unreadable handoff in a readable store"
+  chmod 644 "${store}/2026-01-01-0000.md"
+  chmod 444 "${store}"
+  expect_warning "store without search permission"
+  chmod 755 "${store}"
+  echo "hook: warns for an unreadable handoff and for a store that cannot be searched"
+fi
