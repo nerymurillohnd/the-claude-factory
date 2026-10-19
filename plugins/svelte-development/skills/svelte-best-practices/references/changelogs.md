@@ -23,8 +23,9 @@ Steps 1 and 2 are a few commands: run them before writing code in a project. Rea
 - The task touches an experimental feature (`experimental.async`, remote functions, `forkPreloads`, `fork`), configuration, an adapter, or a migration.
 - The docs and the observed behavior disagree, or a doc page and a changelog disagree.
 - The user asks whether something is current, deprecated or removed.
+- `svelte-language-server` or `svelte2tsx` moved to a new minor: both stay at 0.x, so features come in patch releases and breaking changes in minor ones, and `svelte-check` bundles them.
 
-The references were written against svelte 5.57, @sveltejs/kit 3.0 (peers unchanged in 3.1), sv 1.1, svelte-check 4.7, @astrojs/svelte 9.1 and Tailwind CSS 4. An installed version newer than these may behave differently from the references: read the entries between the version named here and the installed one (Step 3 with `V` set to the named version's first release, such as `5.57.0`, ignoring the entries newer than the installed version).
+The references were written against svelte 5.57, @sveltejs/kit 3.0 (peers unchanged in 3.1), sv 1.1, svelte-check 4.7, svelte-language-server 0.18.5, @astrojs/svelte 9.1 and Tailwind CSS 4. An installed version newer than these may behave differently from the references: read the entries between the version named here and the installed one (Step 3 with `V` set to the named version's first release, such as `5.57.0`, ignoring the entries newer than the installed version).
 
 ## Step 1: find the installed version
 

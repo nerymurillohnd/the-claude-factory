@@ -44,7 +44,7 @@ The ground rules (0 to 5) live in the `svelte-development:svelte-best-practices`
 
 ### Gotchas
 
-- The server needs `svelteserver` on the user's PATH (`npm install -g svelte-language-server`, done by the user) and Node 18 or later. It runs its own TypeScript, a peer dependency npm installs with it (5.9 or 6, not 7), so the project needs no TypeScript of its own for the server.
+- The server needs `svelteserver` on the user's PATH (`npm install -g svelte-language-server`, done by the user), version 0.18.5 or later, and Node 18 or later. Older servers fail without an error in two common cases: before 0.18.4 they do not read SvelteKit 3's configuration from `vite.config`, and before 0.18.5 they find no configuration when the project sits under a directory whose name starts with a dot, such as Claude Code's `.claude/worktrees/`. It runs its own TypeScript, a peer dependency npm installs with it (5.9 or 6, not 7), so the project needs no TypeScript of its own for the server.
 - The server starts on the first LSP call or the first edit of a `.svelte` file, and its first answer can come late; that is what the warm-up is for.
 - The server's workspace is the directory Claude Code was started in. In a monorepo whose Svelte app lives in a subfolder, results that ignore the app's `tsconfig` or `vite.config` may come from a session started at the repository root (not tested on a monorepo); tell the user, and run the project check from the app folder.
 - The plugin restarts a crashed server up to three times, and a request the server never answers fails after 60 seconds (Claude Code's default). When requests keep timing out or the server stays down after its restarts, ask the user to run `/reload-plugins`.

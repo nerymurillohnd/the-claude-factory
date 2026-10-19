@@ -38,6 +38,7 @@ Claude Code returns an error for each LSP call on a file whose server it cannot 
 
 - Wrong position: positions are 1-based; place the position on the first character of the name. Use `documentSymbol` to get the line, then read that line for the column.
 - Empty `workspaceSymbol`: the `query` was empty or too short.
+- Results that ignore the project's configuration, in a SvelteKit 3 project or in a worktree under `.claude/worktrees/`: the server is older than 0.18.5 (0.18.4 reads SvelteKit 3's config from `vite.config`; 0.18.5 finds config under dot directories). The user checks the version in their own terminal with `npm ls -g svelte-language-server` and updates it.
 - Stale results after moving, creating or deleting route files: a known server crash (see below). Ask the user to run `/reload-plugins`, then confirm with the project check (`npm run check`).
 - Props typed `any` unexpectedly: if the component writes `$props<…>()` with type arguments, destructured props become `any` (known issue). Prefer `let { … }: Props = $props();`.
 
@@ -51,9 +52,11 @@ npx --no-install svelte-kit sync
 
 Since SvelteKit 3 the generated tsconfig lives in `node_modules/$app/tsconfig`, so dependencies must be installed.
 
+Types of an installed `@types/*` package missing (`Cannot find name 'process'`, an unknown global): a `types` array in the tsconfig, which `@tsconfig/svelte` and the Vite Svelte template set (`"types": ["svelte", "vite/client"]`), limits ambient types to the packages it lists. Tell the user to add the package to that array; do not remove the array.
+
 ## Known open issues
 
-Issues in `sveltejs/language-tools`; check whether each is still open before citing it to the user:
+Issues and pending fixes in `sveltejs/language-tools`; check whether each is still open, or released, before citing it to the user:
 
 | Issue | Symptom |
 | --- | --- |
@@ -61,6 +64,7 @@ Issues in `sveltejs/language-tools`; check whether each is still open before cit
 | #3080 | Reading the Svelte config from `vite.config.js/ts` can be wrong |
 | #3124 | Type arguments on `$props()` make destructured props `any` |
 | #3063 | TypeScript 7 crashes svelte2tsx and svelte-check; use `--tsgo` with TypeScript 7 and TypeScript 6 both installed, as the svelte-check README says |
+| Unreleased fix | `svelte-check --tsgo` leaves out TypeScript files the tsconfig lists; a pending changeset (`.changeset/quick-dogs-appear.md` in the repository) fixes it. Check the svelte-check changelog for the release before trusting a `--tsgo` result |
 
 Re-check an issue before citing it:
 

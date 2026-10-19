@@ -103,7 +103,7 @@
 - `tsconfig.json`: `target` of at least `ES2015`, `verbatimModuleSyntax: true`, `isolatedModules: true` (SvelteKit 3 includes the last two in `$app/tsconfig`).
 - Generic components: `<script lang="ts" generics="Item extends { id: string }">`; the attribute content is what goes between `<...>` in a generic function.
 - `$state<number>()` is `number | undefined`; in classes, `value = $state() as number` is acceptable when the constructor assigns it.
-- Types: `Component<Props>` for component values, `ComponentProps<typeof X>` for props, `Snippet<[Args]>` for snippets, and `svelte/elements` (`HTMLButtonAttributes`, `SvelteHTMLElements['div']`, `ClassValue`) for wrappers. Add custom attributes or elements by augmenting `declare module 'svelte/elements'` in a `.d.ts` that ends with `export {}`.
+- Types: `Component<Props>` for component values, `ComponentProps<typeof X>` for props, `Snippet<[Args]>` for snippets, and `svelte/elements` (`HTMLButtonAttributes`, `SvelteHTMLElements['div']`, `ClassValue`) for wrappers. Add custom attributes or elements by augmenting `declare module 'svelte/elements'` in a `.d.ts` that ends with `export {}`; the `svelteHTML` namespace and `svelte.JSX` that older guides show are the earlier forms.
 
 ## Fetch especially when
 
