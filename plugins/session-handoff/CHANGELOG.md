@@ -26,8 +26,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ### Fixed
 
-- The start-of-session hook no longer reports an unreadable handoff folder as "no handoff": it warns you and Claude instead, also when the folder, `.claude` or a handoff is a symbolic link.
 - A git failure such as an ownership (`safe.directory`) error is no longer recorded as "Not a git repository."; the handoff marks the repository state as not verified, with the reason.
+- The hook finds the handoff at the repository root when Claude Code starts in a subfolder, where the skill saves it.
 
 ## [0.1.0] - 2026-10-12
 

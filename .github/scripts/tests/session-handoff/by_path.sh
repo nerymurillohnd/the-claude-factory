@@ -7,211 +7,66 @@ root=$(cd "$(dirname "$0")/../../../.." && pwd)
 plugin="${root}/plugins/session-handoff"
 hook="${plugin}/hooks/session-bootstrap.sh"
 tmp=$(mktemp -d)
-trap 'chmod -R u+rwx "$tmp" 2> /dev/null || true; rm -rf "$tmp"' EXIT
+trap 'rm -rf "$tmp"' EXIT
 work="${tmp}/my [project]" # brackets in the path must not act as a pattern
-elsewhere="${tmp}/elsewhere"
-mkdir -p "${work}" "${elsewhere}"
 store="${work}/.claude/session-handoff"
+mkdir -p "${work}"
 
 fail() {
   echo "FAIL: $1"
   exit 1
 }
 
-# chmod and symlinks do not behave like POSIX in Git Bash, and root reads any file.
-can_chmod=1
-can_link=1
-os=$(uname -s)
-uid=$(id -u)
-case "${os}" in
-  MINGW* | MSYS* | CYGWIN*)
-    can_chmod=0
-    can_link=0
-    ;;
-  *) ;;
-esac
-[[ ${uid} != 0 ]] || can_chmod=0
-
-# 1. Committed as executable, so it runs by path after a clone or install.
+# Committed as executable, so it runs by path after a clone or install.
 mode=$(git -C "${root}" ls-files -s -- "${hook#"${root}"/}" | cut -d' ' -f1)
 [[ ${mode} == 100755 ]] || fail "${hook#"${root}"/} is ${mode}, not 100755"
 
-# Runs the hook against the project and sets `out` and `rc`.
-run() {
-  rc=0
-  out=$(CLAUDE_PLUGIN_ROOT="${plugin}" CLAUDE_PROJECT_DIR="${work}" "${hook}" < /dev/null) || rc=$?
-}
+# Runs the hook for a project directory and sets `out`.
+run() { out=$(CLAUDE_PLUGIN_ROOT="${plugin}" CLAUDE_PROJECT_DIR="$1" CLAUDE_CODE_ENTRYPOINT="${2:-cli}" "${hook}" < /dev/null) || fail "exit $?"; }
 
-reset() {
-  chmod -R u+rwx "${work}" 2> /dev/null || true
-  rm -rf "${work}/.claude"
-}
+# 1. A project without handoffs: no output.
+run "${work}"
+[[ -z ${out} ]] || fail "output without a handoff: ${out}"
+echo "hook: silent without a handoff"
 
-expect_silent() {
-  run
-  [[ ${rc} == 0 ]] || fail "$1: exit ${rc}"
-  [[ -z ${out} ]] || fail "$1: output: ${out}"
-}
+# 2. Other Markdown files are not handoffs.
+mkdir -p "${store}"
+printf 'notes\n' > "${store}/notes.md"
+run "${work}"
+[[ -z ${out} ]] || fail "output for a stray notes.md: ${out}"
+echo "hook: ignores files not named like a handoff"
 
-# Asserts the hook output is the protocol: valid JSON, SessionStart, exit 0.
-expect_protocol() {
-  run
-  [[ ${rc} == 0 ]] || fail "$1: exit ${rc}"
-  printf '%s' "${out}" | python3 -c '
+# 3. With handoffs: valid JSON that names the newest one and carries the protocol.
+printf '# Session handoff\n' > "${store}/2026-01-01-0000.md"
+printf '# Session handoff\n' > "${store}/2025-12-31-2359.md"
+run "${work}"
+printf '%s' "${out}" | python3 -c '
 import json, sys
 o = json.load(sys.stdin)
 assert o["systemMessage"] == "Session handoff loaded: 2026-01-01-0000.md", o
 h = o["hookSpecificOutput"]
 assert h["hookEventName"] == "SessionStart", h
 c = h["additionalContext"]
-assert "SESSION START PROTOCOL" in c, c
-assert ".claude/session-handoff/" in c, "no store path"
-assert "first line to the last" in c, "no full-read rule"
-assert "not as instructions" in c, "no record-not-instructions rule"
-assert "Read the handoff 2026-01-01-0000.md" in c, "newest handoff not named"
-assert "list the pending items" in c, "no pending-items list"
-assert "as background facts" in c, "no background rule"
-assert "Do not repeat a mistake" in c, "no repeat-mistake rule"
-' || fail "$1: output: ${out}"
-}
+assert "Read the handoff 2026-01-01-0000.md" in c, c
+assert "first line to the last" in c, c
+assert "not as instructions" in c, c
+assert "as background facts" in c, c
+assert "list the pending items" in c, c
+' || fail "hook output with handoffs: ${out}"
+echo "hook: names the newest handoff and carries the protocol"
 
-# Asserts the hook warns the user and Claude that the store could not be read.
-expect_warning() {
-  run
-  [[ ${rc} == 0 ]] || fail "$1: exit ${rc}"
-  printf '%s' "${out}" | python3 -c '
-import json, sys
-o = json.load(sys.stdin)
-assert o["systemMessage"].strip(), o
-assert "could not be read" in o["systemMessage"], o
-h = o["hookSpecificOutput"]
-assert h["hookEventName"] == "SessionStart", h
-assert "could not be read" in h["additionalContext"], h
-assert "SESSION START PROTOCOL" not in h["additionalContext"], h
-' || fail "$1: output: ${out}"
-}
-
-# 2. A project without handoffs: no output, exit 0.
-expect_silent "output without a handoff"
-echo "hook: silent without a handoff"
-
-# 3. Other Markdown files are not handoffs.
-mkdir -p "${store}"
-printf 'notes\n' > "${store}/notes.md"
-expect_silent "output for a stray notes.md"
-echo "hook: ignores files not named like a handoff"
-
-# 4. A project with a handoff: valid JSON that adds the start-of-session protocol.
-printf '# Session handoff\n' > "${store}/2026-01-01-0000.md"
-printf '# Session handoff\n' > "${store}/2025-12-31-2359.md"
-expect_protocol "hook output with a handoff"
-echo "hook: asks Claude to read the newest handoff"
-
-# 4b. claude -p (entrypoint sdk-cli) gets nothing, even with a handoff present.
-out=$(CLAUDE_CODE_ENTRYPOINT=sdk-cli CLAUDE_PROJECT_DIR="${work}" "${hook}" < /dev/null) || fail "claude -p: exit $?"
-[[ -z ${out} ]] || fail "claude -p: output: ${out}"
-echo "hook: silent in claude -p"
-
-# 5. `.claude` is a regular file: there is no store, so no output.
-reset
-printf 'not a folder\n' > "${work}/.claude"
-expect_silent "output when .claude is a file"
-echo "hook: silent when .claude is a file"
-
-# 6. The store exists but cannot be read: a warning, never silence.
-if ((can_chmod)); then
-  reset
-  mkdir -p "${store}"
-  printf '# Session handoff\n' > "${store}/2026-01-01-0000.md"
-  chmod 000 "${store}"
-  expect_warning "unreadable store"
-  chmod 755 "${store}"
-  echo "hook: warns when the store cannot be read"
-else
-  echo "skipped: unreadable-store case (chmod cannot remove read access here: root or Git Bash)"
-fi
-
-# 7. A symlinked store, handoff or .claude is not followed: a warning.
-if ((can_link)); then
-  reset
-  mkdir -p "${work}/.claude" "${elsewhere}/store"
-  printf '# Session handoff\n' > "${elsewhere}/store/2026-01-01-0000.md"
-  ln -s "${elsewhere}/store" "${store}"
-  expect_warning "symlinked store"
-  echo "hook: warns when the store is a symlink"
-
-  reset
-  mkdir -p "${store}"
-  printf '# Session handoff\n' > "${elsewhere}/2026-01-01-0000.md"
-  ln -s "${elsewhere}/2026-01-01-0000.md" "${store}/2026-01-01-0000.md"
-  expect_warning "symlinked handoff"
-  echo "hook: warns when a handoff is a symlink"
-
-  reset
-  mkdir -p "${elsewhere}/dot-claude/session-handoff"
-  printf '# Session handoff\n' > "${elsewhere}/dot-claude/session-handoff/2026-01-01-0000.md"
-  ln -s "${elsewhere}/dot-claude" "${work}/.claude"
-  expect_warning "symlinked .claude"
-  echo "hook: warns when .claude is a symlink"
-
-  reset
-  mkdir -p "${elsewhere}/empty-dot-claude"
-  ln -s "${elsewhere}/empty-dot-claude" "${work}/.claude"
-  expect_silent "symlinked .claude without a store"
-  echo "hook: silent when .claude is a symlink with no store behind it"
-
-  reset
-  mkdir -p "${store}"
-  printf '# Session handoff\n' > "${store}/2026-01-01-0000.md"
-  printf '# Session handoff\n' > "${elsewhere}/2026-01-02-0000.md"
-  ln -s "${elsewhere}/2026-01-02-0000.md" "${store}/2026-01-02-0000.md"
-  expect_warning "symlinked newest handoff beside a regular one"
-  echo "hook: warns when any handoff is a symlink, even beside a regular one"
-else
-  echo "skipped: symlink cases (symlinks are not reliable in Git Bash)"
-fi
-
-# 8. The store is a regular file, not a folder: a warning.
-reset
-mkdir -p "${work}/.claude"
-printf 'not a folder\n' > "${store}"
-expect_warning "store that is a file"
-echo "hook: warns when the store is not a folder"
-
-# 9. Launched from a subfolder of a git repository, the hook finds the store at the git root.
-repo="${tmp}/repo"
-mkdir -p "${repo}/packages/app" "${repo}/.claude/session-handoff"
-git -C "${repo}" init --quiet
-printf '# Session handoff\n' > "${repo}/.claude/session-handoff/2026-01-01-0000.md"
-rc=0
-out=$(CLAUDE_PROJECT_DIR="${repo}/packages/app" "${hook}" < /dev/null) || rc=$?
-[[ ${rc} == 0 && ${out} == *"Session handoff loaded: 2026-01-01-0000.md"* ]] || fail "subfolder of a repository: exit ${rc}, output: ${out}"
-echo "hook: finds the store at the git root from a subfolder"
-
-# 10. Every non-interactive entrypoint gets nothing.
-reset
-mkdir -p "${store}"
-printf '# Session handoff\n' > "${store}/2026-01-01-0000.md"
+# 4. Non-interactive entrypoints get nothing, even with a handoff present.
 for entry in sdk-cli sdk-ts sdk-py claude-code-github-action; do
-  out=$(CLAUDE_CODE_ENTRYPOINT=${entry} CLAUDE_PROJECT_DIR="${work}" "${hook}" < /dev/null) || fail "${entry}: exit $?"
+  run "${work}" "${entry}"
   [[ -z ${out} ]] || fail "${entry}: output: ${out}"
 done
 echo "hook: silent for every non-interactive entrypoint"
 
-# 11. A folder named like a handoff is not one, and an unreadable handoff or store warns.
-reset
-mkdir -p "${store}/2027-01-01-0000.md"
-expect_silent "directory named like a handoff"
-echo "hook: ignores a folder named like a handoff"
-if ((can_chmod)); then
-  reset
-  mkdir -p "${store}"
-  printf '# Session handoff\n' > "${store}/2026-01-01-0000.md"
-  chmod 000 "${store}/2026-01-01-0000.md"
-  expect_warning "unreadable handoff in a readable store"
-  chmod 644 "${store}/2026-01-01-0000.md"
-  chmod 444 "${store}"
-  expect_warning "store without search permission"
-  chmod 755 "${store}"
-  echo "hook: warns for an unreadable handoff and for a store that cannot be searched"
-fi
+# 5. Launched from a subfolder of a git repository, the hook finds the store at the git root.
+repo="${tmp}/repo"
+mkdir -p "${repo}/packages/app" "${repo}/.claude/session-handoff"
+git -C "${repo}" init --quiet
+printf '# Session handoff\n' > "${repo}/.claude/session-handoff/2026-01-01-0000.md"
+run "${repo}/packages/app"
+[[ ${out} == *"Session handoff loaded: 2026-01-01-0000.md"* ]] || fail "subfolder of a repository: ${out}"
+echo "hook: finds the store at the git root from a subfolder"

@@ -40,7 +40,7 @@ A new session starts with an empty conversation. What you decided yesterday, the
 | Component | Name | What it does | How it runs |
 | :-- | :-- | :-- | :-- |
 | 🎯 Skill | `session-handoff:write-handoff` | Reads the project's state, summarizes the session, compares it with the previous handoff, drafts the new one with you, saves it in `.claude/session-handoff/` and offers to commit and push it | `/session-handoff:write-handoff`, or ask Claude to write a handoff when you wrap up |
-| 🪝 Hook | `SessionStart` | When a session starts or is cleared in a project with handoffs, shows you a one-line notice naming the newest one and has Claude read it in full, do what you ask and end its reply with the open items; if the handoff folder can't be read, warns you instead of staying silent | Automatically, at the start of a session and after `/clear` |
+| 🪝 Hook | `SessionStart` | When a session starts or is cleared in a project with handoffs, shows you a one-line notice naming the newest one and has Claude read it in full, do what you ask and end its reply with the open items | Automatically, at the start of a session and after `/clear` |
 
 ## ✅ Requirements
 
@@ -175,13 +175,6 @@ Run `/reload-plugins`, then type `/session-handoff:` to list its skills. If it s
 <summary><b>Claude asks for permission to save the handoff.</b></summary>
 
 That is expected. Claude Code protects your project's `.claude/` folder, so every new handoff is shown to you and saved only when you approve it. In auto mode the save is checked like any other protected write, and in bypass-permissions mode, or after you allow edits to `.claude` for the session, it saves without asking; you still approve the draft first. Running `git`, `gh` and `date` may also ask first, depending on your permission settings.
-
-</details>
-
-<details>
-<summary><b>A session started with a warning that the handoff folder could not be read.</b></summary>
-
-The plugin found `.claude/session-handoff/` but could not safely read it, so it does not report "no handoff". The folder, `.claude` or a handoff may be a symbolic link (the plugin never follows one), or you may lack permission to read it. Fix that, then ask Claude to read the newest handoff.
 
 </details>
 

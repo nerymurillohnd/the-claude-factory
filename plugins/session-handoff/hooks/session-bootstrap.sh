@@ -1,9 +1,7 @@
 #!/usr/bin/env bash
-# SessionStart (startup, clear): when the project holds a session handoff, tell Claude to read the
+# SessionStart (startup, clear): when the project has a session handoff, tell Claude to read the
 # newest one, do what the user asks and list the pending items at the end of the reply. A project
-# without a handoff folder gets no output, so the plugin stays silent there. A folder that cannot
-# be read gets a warning, never silence: "no handoff" must not be a guess. The instructions are
-# fixed text; Claude finds and reads the file.
+# without handoffs gets no output.
 set -euo pipefail
 shopt -s nullglob
 LC_ALL=C # digit ranges match only 0-9
@@ -18,37 +16,9 @@ esac
 # The store sits at the git root, where the skill writes it; outside git, in the project directory.
 project=${CLAUDE_PROJECT_DIR:-.}
 root=$(git -C "${project}" rev-parse --show-toplevel 2> /dev/null) || root=${project}
-claude_dir="${root}/.claude"
-store="${claude_dir}/session-handoff"
-
-warn() {
-  cat << 'JSON'
-{
-  "systemMessage": "Session handoff: the handoff folder could not be read, so no handoff was loaded. The plugin does not follow symbolic links. Check .claude/session-handoff/ in this project.",
-  "hookSpecificOutput": {
-    "hookEventName": "SessionStart",
-    "additionalContext": "SESSION HANDOFF WARNING. The handoff store .claude/session-handoff/ could not be read. It may be a symbolic link, not a folder, or not readable. It may hold a handoff that is a symbolic link or not readable. This is not the same as having no handoff. Draw no conclusion about previous handoffs or their open items. Do what the user's prompt asks. At the end of your reply, tell the user the store could not be read."
-  }
-}
-JSON
-  exit 0
-}
-
-# .claude and the store are not followed when they are symbolic links; a linked .claude with no
-# store behind it is silent, like any project without handoffs. The paths stay literal (a
-# project path may hold [, ], * or \); only the file name is a pattern.
-if [[ -L ${claude_dir} ]]; then
-  if [[ -e ${store} ]]; then warn; fi
-  exit 0
-fi
-[[ -e ${store} || -L ${store} ]] || exit 0
-if [[ -L ${store} || ! -d ${store} || ! -r ${store} || ! -x ${store} ]]; then warn; fi
 
 newest=
-for handoff in "${store}"/[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]-[0-9][0-9][0-9][0-9].md; do
-  if [[ -L ${handoff} ]]; then warn; fi
-  [[ -f ${handoff} ]] || continue
-  if [[ ! -r ${handoff} ]]; then warn; fi
+for handoff in "${root}"/.claude/session-handoff/[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]-[0-9][0-9][0-9][0-9].md; do
   newest=${handoff##*/}
 done
 [[ -n ${newest} ]] || exit 0
