@@ -19,7 +19,7 @@
 
 ## Fetch before writing when
 
-- The project's `astro` or `@astrojs/svelte` is newer than the versions above, or the slot behavior below does not match what you see.
+- The project's `@astrojs/svelte` is newer than 9.0.1, the newest this file cites, or its `astro` or the slot behavior below does not match what you see.
 - You pass children or named slots from `.astro` files into Svelte components: read the renderer of the installed `@astrojs/svelte`:
 
   ```sh

@@ -19,7 +19,7 @@
 
 ## Fetch before writing when
 
-- The project's `sv`, `svelte-check`, `prettier-plugin-svelte` or `prettier-plugin-tailwindcss` is newer than the versions above.
+- The project's `sv` is newer than 1.1.0, the newest this file cites, or its `svelte-check`, `prettier-plugin-svelte` or `prettier-plugin-tailwindcss` behaves differently from what this file describes.
 - You need an add-on option value that is not listed here; the typed options live in each add-on's source file.
 - You run `sv migrate`: read the migration guide and the task list first:
 

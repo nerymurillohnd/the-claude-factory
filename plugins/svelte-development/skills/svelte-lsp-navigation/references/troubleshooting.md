@@ -24,7 +24,7 @@ Claude Code returns an error for each LSP call on a file whose server it cannot 
    Missing means the user installs it globally with `npm install -g svelte-language-server`; in `/plugin`, the **Errors** tab shows `Executable not found in $PATH: "svelteserver"`. Tell the user; do not install packages without their confirmation.
 2. **File type**: the plugin maps only `.svelte`. A `.ts`, `.js`, `.svelte.ts` or `.svelte.js` file needs a TypeScript language server the user installed separately.
 3. **Session type**: cloud sessions never start plugin language servers. Use the project check (`npm run check`) there.
-4. **Reload**: after installing the binary, the user runs `/reload-plugins` (a reload that adds the LSP tool for the first time needs `/reload-plugins --force`).
+4. **Reload**: after installing the binary, the user runs `/reload-plugins`. When adding the LSP tool would invalidate the prompt cache, Claude Code holds the reload and prints a line that ends `Run /reload-plugins --force to apply.`; the user runs that to apply it.
 
 ## No diagnostics appear after an edit
 

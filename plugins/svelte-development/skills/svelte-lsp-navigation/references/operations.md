@@ -172,7 +172,7 @@ An error site that is not in the `findReferences` list is a use the language ser
 
 ## Fetch before relying on this when
 
-- The project uses svelte-language-server or svelte-check newer than the versions above: check the language-tools releases for changed behaviour.
+- The language server or svelte-check behaves differently from what this file describes: read the language-tools releases newer than the svelte-check the project has (`npm ls svelte-check`) for changed behaviour.
 - A result contradicts what Grep shows: Grep also matches comments and strings, and the language server can lag SvelteKit 3; confirm with the project check before trusting either.
 
 ## Official sources
