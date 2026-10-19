@@ -9,7 +9,7 @@ Fixed lines: `No previous handoff.` · `Not a git repository.` · `None known.` 
 
 An empty section is one line: `None known.`
 
-For a project verified to be outside git (step 1.2), Branch and HEAD are `Not a git repository.` and the whole
+For a project verified to be outside git (job 2.2), Branch and HEAD are `Not a git repository.` and the whole
 Repository state section is exactly:
 
 ```markdown
@@ -17,13 +17,13 @@ Repository state section is exactly:
 Not a git repository.
 ```
 
-When git failed for another reason (step 1.2), Branch, HEAD and every Repository state line are
+When git failed for another reason (job 2.2), Branch, HEAD and every Repository state line are
 `unverified (git failed: <one-line reason>)`.
 
 With no previous handoff, Reconciliation of previous handoff is the single line `No previous handoff.`
 When no item is `done`, `partial` or `dropped`, the table is replaced by the line
 `No done, partial or dropped items.` and the count and Conflicts lines stay. The verdicts and what
-each row says are in step 3 of the skill.
+each row says are in phase 4 of the skill.
 
 Text in `<…>` is replaced; everything outside it is copied as written.
 
@@ -50,7 +50,7 @@ HEAD: <full hash> | none | Not a git repository. | unverified (git failed: <reas
 ## Reconciliation of previous handoff
 | Item | Opened | Verdict | Evidence or note |
 |---|---|---|---|
-| <item text> | <YYYY-MM-DD> | <done / partial / dropped> | <what step 3 asks for this verdict> |
+| <item text> | <YYYY-MM-DD> | <done / partial / dropped> | <what phase 4 asks for this verdict> |
 | <item text> | <YYYY-MM-DD> | done | per the user, <YYYY-MM-DD>: <what they reported> |
 Still open, unchanged: <n> (see Open items)
 Conflicts (repository wins): <each contradiction between the previous handoff and the repository, or None known.>
