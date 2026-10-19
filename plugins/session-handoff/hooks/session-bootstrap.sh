@@ -34,10 +34,8 @@ if [[ -L ${claude_dir} ]]; then
   if [[ -e ${store} ]]; then warn; fi
   exit 0
 fi
-[[ -d ${claude_dir} ]] || exit 0
-if [[ -L ${store} ]]; then warn; fi
-[[ -e ${store} ]] || exit 0
-if [[ ! -d ${store} || ! -r ${store} || ! -x ${store} ]]; then warn; fi
+[[ -e ${store} || -L ${store} ]] || exit 0
+if [[ -L ${store} || ! -d ${store} || ! -r ${store} || ! -x ${store} ]]; then warn; fi
 
 newest=
 for handoff in "${store}"/[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]-[0-9][0-9][0-9][0-9].md; do
