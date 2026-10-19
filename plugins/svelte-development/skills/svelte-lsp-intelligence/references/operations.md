@@ -1,6 +1,6 @@
 # LSP operations on Svelte files: observed behaviour and worked examples
 
-> Observed in a clean session with only this plugin loaded, on an installed copy of `fixtures/kit3-app`. Every result below is the tool's real output, shortened. Paths are relative to the fixture root.
+> Observed in a clean session with only this plugin loaded, on the maintainer's SvelteKit 3 test project, which is not installed with the plugin. Every result below is the tool's real output, shortened. Paths are relative to that project's root.
 
 ## Contents
 
@@ -115,7 +115,7 @@ There is no rename operation: this list is the edit set, after checking it again
 
 ## Find implementations
 
-`goToImplementation` from a `.svelte` position reaches the classes and methods that implement an interface, including those in `.svelte.ts` modules. Observed with a component outside the fixture that types a prop as `Resettable` (`let { item }: { item: Resettable } = $props();`, then `item.reset()` in markup):
+`goToImplementation` from a `.svelte` position reaches the classes and methods that implement an interface, including those in `.svelte.ts` modules. Observed with an added component that types a prop as `Resettable` (`let { item }: { item: Resettable } = $props();`, then `item.reset()` in markup):
 
 ```text
 LSP goToImplementation  <component> 2 17   (Resettable in the import)
@@ -152,18 +152,18 @@ LSP outgoingCalls         src/lib/components/CounterButton.svelte 16 13
 
 ## Read the project check output
 
-After each edit to a `.svelte` file, Claude Code reports the server's new diagnostics under the edit (`Found N new diagnostic issues in M files`). The project check reports the whole project; the fixture's deliberate error, as it prints in Claude Code (the file count includes dependencies and depends on the environment):
+After each edit to a `.svelte` file, Claude Code reports the server's new diagnostics under the edit (`Found N new diagnostic issues in M files`). The project check reports the whole project; the test project's deliberate error, as it prints in Claude Code (the file count includes dependencies and depends on the environment):
 
 ```text
 1760845342123 ERROR "src/routes/+page.svelte" 13:26 "Type 'number' is not assignable to type 'string'."
 1760845342130 COMPLETED 177 FILES 1 ERRORS 0 WARNINGS 1 FILES_WITH_PROBLEMS
 ```
 
-That check ran in a copy of the fixture outside the plugin, with the `.example` suffix dropped from its three config files and dependencies installed (see the fixture README), through `npm run check`.
+That check ran with the test project's dependencies installed, through `npm run check`.
 
 ## What the server sees in dynamic code
 
-Dynamic Svelte code is not a blind spot by default. Observed on this plugin's fixture:
+Dynamic Svelte code is not a blind spot by default. Observed on the test project:
 
 | Code | Seen | How |
 |---|---|---|
@@ -179,9 +179,9 @@ Run the operation the table names, on the variable or import that holds the comp
 
 ## Prove it: break something on purpose
 
-A clean result proves nothing until a deliberate break has shown that the tool can see the change. One method breaks code, during a change only; two probes break nothing. The break has known results on the fixture (the fixture README's "Mutations" table):
+During a change, a clean result proves nothing until a deliberate break has shown that the tool can see the change. The break is for changes only; a read-only review uses the two probes below, which break nothing. On the test project the break gave these results:
 
-**In the user's project, during a rename**: rename only the declaration, run the project check, and compare its error sites with the `findReferences` list. The declaration is every site in the file that declares the symbol. On the fixture, renaming `label` inside `CounterButton.svelte` makes the check report exactly the three `findReferences` sites outside that file:
+**In the user's project, during a rename**: rename only the declaration, run the project check, and compare its error sites with the `findReferences` list. The declaration is every site in the file that declares the symbol. On the test project, renaming `label` inside `CounterButton.svelte` makes the check report exactly the three `findReferences` sites outside that file:
 
 ```text
 LSP findReferences  src/lib/components/CounterButton.svelte 8 5   (label in Props)

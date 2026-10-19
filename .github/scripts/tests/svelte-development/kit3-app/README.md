@@ -1,17 +1,17 @@
 # kit3-app fixture
 
-A minimal SvelteKit 3 project used by the `svelte-lsp-intelligence` skill examples. It is not installed or built inside the plugin; it exists so the Svelte language server and the project check have known symbols to work on. The examples ran on a copy installed outside the plugin, as below.
+The maintainer's SvelteKit 3 test project behind the examples in the `svelte-development` plugin's `svelte-lsp-intelligence` skill (`plugins/svelte-development/skills/svelte-lsp-intelligence/references/operations.md`). It is not shipped with the plugin; it gives the Svelte language server and the project check known symbols to work on. The examples ran on a copy installed outside this repository, as below.
 
 | Symbol | File | Use it to try |
 | --- | --- | --- |
 | `Counter` class | `src/lib/counter.svelte.ts` | `goToDefinition`, `findReferences` |
-| `Resettable` interface | `src/lib/resettable.ts` | `findReferences` on `reset()`, which lists the implementation in `Counter`; `goToImplementation` from a component that uses the interface |
+| `Resettable` interface | `src/lib/resettable.ts` | `findReferences` on `reset()`, which lists the implementation in `Counter`; `goToImplementation` from a component you add that types a prop as `Resettable` (none in the fixture) |
 | `formatCount` function | `src/lib/format.ts` | `prepareCallHierarchy`, `incomingCalls` (two callers) |
 | `CounterButton` props | `src/lib/components/CounterButton.svelte` | `hover`, `documentSymbol` |
 | Dynamic usages | `src/lib/components/Dynamic.svelte` | A component held in `$state`, a lazy `import()`, `import.meta.glob`, `svelte:element` and a function stored in an object: `documentSymbol`, `findReferences` |
 | Deliberate error | `src/routes/+page.svelte` | `label={42}` where `label` is a `string`: a diagnostic after edits and in the project check |
 
-The project configuration files carry an `.example` suffix (`package.json.example`, `tsconfig.json.example`, `vite.config.ts.example`) so that tools which detect them by name, such as dependency scanners and editors, ignore the fixture inside the plugin. To run it for real, copy the folder somewhere outside the plugin, drop the suffix, install and check:
+The project configuration files carry an `.example` suffix (`package.json.example`, `tsconfig.json.example`, `vite.config.ts.example`) so that tools which detect them by name, such as dependency scanners and editors, ignore the fixture inside this repository. To run it for real, copy the folder somewhere outside the repository, drop the suffix, install and check:
 
 ```sh
 for f in package.json tsconfig.json vite.config.ts; do mv "$f.example" "$f"; done
@@ -21,7 +21,7 @@ npm run check
 
 ## Mutations
 
-Deliberate breakage with known results. They are the expected results of the examples in `references/operations.md`; re-check them when the fixture's pinned versions change.
+Deliberate breakage with known results. They are the expected results of the examples in `plugins/svelte-development/skills/svelte-lsp-intelligence/references/operations.md`; re-check them when the fixture's pinned versions change.
 
 | Step | Change | The project check must report | What it proves |
 | --- | --- | --- | --- |

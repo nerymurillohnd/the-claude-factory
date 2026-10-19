@@ -67,9 +67,8 @@ Answer questions about where code is, what calls it or what type it has yourself
 
 ## Where things are
 
-- [references/operations.md](references/operations.md): read when you need to see what an operation returns (real output on the bundled fixture), or a result does not match what you expected.
+- [references/operations.md](references/operations.md): read when you need to see what an operation returns (real output observed on a SvelteKit 3 test project), or a result does not match what you expected.
 - [references/troubleshooting.md](references/troubleshooting.md): read when a call errors, returns nothing unexpectedly, or diagnostics never appear.
-- `fixtures/kit3-app` in this skill's folder: the SvelteKit 3 project behind the examples in operations.md; it is not meant to be installed in the user's project.
 - The `svelte-best-practices` skill for the rules when fixing what diagnostics report; the `svelte-docs-and-autofixer` skill for the docs and the autofixer.
 
 The sibling skills are `svelte-development:svelte-best-practices` and `svelte-development:svelte-docs-and-autofixer`.
