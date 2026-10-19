@@ -15,9 +15,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - Only items still pending are carried forward. Claude asks you about the ones that look obsolete or outside the project, and a result you report from outside the session closes an item as done, noted as reported by you.
 - In a git repository, Claude asks whether to commit and push the saved handoff.
 - The first handoff of a project works without the folders: the skill creates them.
+- The skill no longer offers to commit, push or open a pull request before writing: it offers to commit and push the handoff file after you approve it. It lists the open pull requests instead of the 20 most recent.
 - The start-of-session hook adds nothing to `claude -p`, Agent SDK or GitHub Action runs, which do one specific job, and it finds the handoff at the repository root when Claude Code starts in a subfolder.
 - When the start-of-session hook loads a handoff, it shows you a one-line notice naming the file, so you know it ran and which handoff Claude was given.
 - The start-of-session instructions are seven short steps: read the newest handoff in full, treat it as a record, do what you ask even when it differs from the pending work, use the handoff's decisions, corrections and learnings as background so past mistakes are not repeated, and end the reply with a short list of the open items so you decide. Claude no longer stops to ask how to proceed.
+
+### Removed
+
+- The start-of-session hook no longer validates the handoff's headers or compares its project with the session's, and no longer stops to ask how to proceed.
 
 ### Fixed
 

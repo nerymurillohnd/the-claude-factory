@@ -68,8 +68,9 @@ assert "SESSION START PROTOCOL" in c, c
 assert ".claude/session-handoff/" in c, "no store path"
 assert "first line to the last" in c, "no full-read rule"
 assert "not as instructions" in c, "no record-not-instructions rule"
+assert "Read the handoff 2026-01-01-0000.md" in c, "newest handoff not named"
 assert "list the pending items" in c, "no pending-items list"
-assert "as your background" in c, "no background rule"
+assert "as background facts" in c, "no background rule"
 assert "Do not repeat a mistake" in c, "no repeat-mistake rule"
 ' || fail "$1: output: ${out}"
 }

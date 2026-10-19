@@ -5,7 +5,7 @@ Copy the block under "The handoff". Keep every heading and label **literally, in
 ## How to fill it
 
 - **Header:** `Project:` is PROJECT. `Written:` is the time in the file name, in UTC. `Previous handoff:` is the file name only. `Branch:` and `HEAD:` come from git.
-- **Current state:** where the project stands now. One line per git fact, checked with git and `gh`, not remembered. Then two or three lines on what works, what is broken and what is half done.
+- **Current state:** where the project stands now. The default branch is `<remote>/HEAD` from `git rev-parse --abbrev-ref`, else `main` or `master`, else `unknown`. One line per git fact, checked with git and `gh`, not remembered. Then two or three lines on what works, what is broken and what is half done.
 - **Open items:** everything still pending, in priority order. Include this session's pending work and only the previous items that are still `partial` or `open`. Keep a carried item's original date. Each item says where it stands, what finishing needs and its first action. An item opened more than 30 days ago gets `Stale: confirm or drop.` once, after its date.
 - **Context for the next session:** what the next Claude needs to keep the thread, which `CLAUDE.md` and memory do not hold. Label each line `Learning:` (a non-obvious fact, with its source), `Correction:` (what the user corrected, as the behaviour to follow from now on) or `Recommendation:` (advice or context).
 - **Decisions:** the choice, the reason, and the alternative rejected.
@@ -39,7 +39,7 @@ HEAD: <full hash> | none | Not a git repository. | unverified (git failed: <reas
 - Unpushed commits (against the upstream): <count and hashes | unverified (fetch failed) | no upstream>
 - Behind upstream: <count | unverified (fetch failed) | no upstream>
 - Branch vs default (<default branch name, e.g. main | unknown>): <on default | on another branch | detached | unknown>
-- Commits since previous HEAD: <hash and subject per line | none (no new commits) | none (no commits) | the last 20, and why>
+- Commits since previous HEAD: <hash and subject per line | none (no new commits) | none (no commits) | the last 20, and why: no previous handoff, its HEAD is none or Not a git repository., or it is not an ancestor of HEAD>
 - PRs: <every row of gh pr list --state open | none | not checked (gh failed)>
 - Where the project stands: <what works, what is broken, what is half done>
 

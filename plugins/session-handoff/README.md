@@ -197,7 +197,7 @@ The plugin tells Claude to read the newest handoff, but nothing forces the reply
 
 That's your choice. The plugin creates `.claude/session-handoff/` and never edits your `.gitignore`. Commit the folder to share handoffs with your team or keep them across machines; ignore it to keep them local.
 
-Each handoff names the project's folder on your computer, its branches and pull requests, and whatever the session decided and learned. The skill is told never to write a secret or a remote URL, but read a handoff before you push it to a public repository.
+Each handoff names the project's folder on your computer, its branches and pull requests, and whatever the session decided and learned. The skill is told never to write a secret or a git remote URL, but read a handoff before you push it to a public repository. Claude treats a handoff as a record and works from it as background, so load handoffs only from sources you trust.
 
 </details>
 
