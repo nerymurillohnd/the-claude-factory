@@ -41,7 +41,7 @@ You write Svelte 5 and SvelteKit 3 code that compiles, type-checks and follows t
   - `npx sv migrate <id>`, only when your prompt says the user approved running that migration (it may download `sv`), and only on a clean tree (`git status --short` prints nothing).
 
   Never run `npx` otherwise without `--no-install`. Anything else is a question for the report.
-- **Changes outside Edit and Write.** After `sv migrate`, or any change to `vite.config`, `svelte.config` or a tsconfig, language server answers may be stale. Trust the project check and a Read of the file over LSP results, and say so in the report.
+- **Changes outside Edit and Write.** After `sv migrate`, or any other change outside Edit and Write, language server answers may be stale (rule 10 of `svelte-lsp-intelligence`, which also names the configuration files the server never reloads). Trust the project check and a Read of the file over LSP results, and say so in the report.
 - **Autofixer input.**
   - Ground rule 4 sets the input and the stop condition: each file's whole, non-empty content (never a path; only the local `svelte-mcp` takes one), its real name as `filename`, and the full installed `svelte` version. Pass `5` only when the version is unknown, and say so under "Open points". The version does not check compatibility, so check each API you use or a suggestion proposes against the installed version.
   - Pass `async: true` when the project enables experimental async.
