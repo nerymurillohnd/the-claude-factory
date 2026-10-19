@@ -22,17 +22,17 @@
 
 ---
 
-💻 **Claude Code only** — it works on repositories on your computer through `git` and `gh`, and the cleanup's safety guard is a hook that has to check every command Claude runs, which a chat conversation in the Claude app doesn't run. The plugin is built and tested for Claude Code only. In the Claude app you can still use its GitHub server once you connect it with your token: see [In the Claude app](#in-the-claude-app).
+💻 **Claude Code only** — it works on repositories on your computer through `git` and `gh`, which a chat conversation in the Claude app can't run. The plugin is built and tested for Claude Code only. In the Claude app you can still use its GitHub server once you connect it with your token: see [In the Claude app](#in-the-claude-app).
 
 > [!TIP]
-> **TL;DR** — Type `/github-operations:auto-pr-lifecycle` and Claude takes your pull request all the way to merge: it watches the checks, fixes what fails, answers the reviews and stops only to ask you before the merge. Type `/github-operations:git-cleanup` and it audits a whole repository and runs only the cleanup steps you approve.
+> **TL;DR** — Type `/github-operations:auto-pr-lifecycle` and Claude takes your pull request all the way to merge: it watches the checks, fixes what fails, answers the reviews and stops only to ask you before the merge. Type `/github-operations:git-cleanup` and it audits a whole repository from its first commit, then changes it only after you approve twice.
 
 ## ✨ Why use it
 
 - **A pull request that finishes itself** — Claude opens or picks up the PR, then loops: a read-only agent watches CI, runs and reviews and reports what failed and why, Claude fixes it, pushes and sends the agent again, until everything is green and no findings remain.
 - **You keep the one decision that matters** — Claude asks for your approval right before the merge, for that exact PR and that exact commit. A new push voids the approval.
 - **Reports you can act on** — failed jobs with the step and the log excerpt, the jobs that took the longest, review findings counted without double counting, deprecation warnings and Dependabot alerts, each with a cause labeled confirmed, likely or uncertain.
-- **Nothing valuable gets lost in a cleanup** — every branch is compared with the base branch commit by commit, a backup you can restore is made and tested before anything is deleted, and you approve each numbered step.
+- **Nothing valuable gets lost in a cleanup** — the audit covers history, branches, worktrees, stashes, pull requests, issues, Actions, forks and every copy or link outside the repository that is still alive. You approve the recommendations, then the exact actions. A backup that was restore-tested comes first, and every deletion is checked against what is already safe.
 - **GitHub tools ready to use** — the GitHub MCP server comes with the plugin, so Claude reads and writes GitHub through structured tools, and falls back to `gh` when a tool is missing.
 
 ## 🧩 What's inside
@@ -40,9 +40,8 @@
 | Component | Name | What it does | How it runs |
 | :-- | :-- | :-- | :-- |
 | 🎯 Skill | `github-operations:auto-pr-lifecycle` | Drives a pull request from any stage to merge: validate, push, watch, repair, resolve threads, ask, merge, clean up and sync | `/github-operations:auto-pr-lifecycle`, or automatically when you ask to open, ship, babysit or land a PR |
-| 🎯 Skill | `github-operations:git-cleanup` | Audits a Git repository, builds the cleanup plan with you, then executes and verifies what you approve | `/github-operations:git-cleanup` only; Claude never starts it on its own |
+| 🎯 Skill | `github-operations:git-cleanup` | Audits a Git repository completely, reports it, then plans, executes and verifies only what you approve at two gates | `/github-operations:git-cleanup` only; Claude never starts it on its own |
 | 🤖 Agent | `github-operations:pr-tracker` | Read-only monitor of a PR's checks, jobs, logs, reviews, warnings and security alerts; reports to Claude | Launched by `auto-pr-lifecycle` on every monitoring cycle |
-| 🪝 Hook | `PreToolUse` | Refuses dangerous commands and secret reads during a cleanup, and asks you to confirm every command that changes state | Automatically, from the moment you start `git-cleanup` until the session ends |
 | 🔌 MCP server | `github` | GitHub's remote MCP server with every toolset and early-access mode: pull requests, issues, Actions, security alerts and more. See [GitHub MCP tools](../../docs/github-mcp-tools.md) | Tools appear as `mcp__plugin_github-operations_github__*` |
 
 ## ✅ Requirements
@@ -51,7 +50,7 @@
 | :-- | :-- |
 | **Claude Code** | v2.1.295 or later — check with `claude --version` |
 | **Surfaces** | Claude Code only. See [Compatibility](#-compatibility) |
-| **External tools** | `git` and `python3` 3.9 or later on `PATH`. Git 2.38 or later adds the merge preview of each branch; older Git reports it as unavailable and the audit continues. `gh` signed in, to read run logs, rerun jobs, enable auto-merge and delete branches, and as the fallback when a GitHub MCP tool is missing. On Windows, Git for Windows |
+| **External tools** | `git` on `PATH`. `gh` signed in, to read run logs, rerun jobs, enable auto-merge and delete branches, and as the fallback when a GitHub MCP tool is missing. On Windows, Git for Windows |
 | **Accounts / API keys** | A GitHub personal access token, which Claude Code keeps in your system's secure credential store (see [Configuration](#-configuration)). Without it the MCP server doesn't start and Claude uses `gh` |
 
 ## 📥 Installation
@@ -113,18 +112,23 @@ Answer yes and Claude merges, deletes the branch and syncs your local `main`. Sa
 /github-operations:git-cleanup
 ```
 
-**Result:** Claude audits the repository: how many branches (local and remote), which are fully integrated, which hold work that exists nowhere else, worktrees pointing at folders that are gone, stashes, open pull requests, and noise such as `.DS_Store` or caches. It asks you about anything ambiguous, with its recommendation, then presents a plan like this:
+**Result:** Claude audits the repository from its first commit to today, read-only, and writes down everything it finds: branches and whether each one's work is already safe, worktrees, stashes, history, large files and secret-like file names, open and stale pull requests, issues and discussions, failed workflows nobody re-ran, forks, and every clone, mirror, registry entry, scheduled job or tunnel on your machine and on GitHub that still points at the repository. Anything it cannot see is listed as not checked, with the reason.
+
+Then it stops twice:
+
+1. **Report and recommendations.** A plain-language report with numbered findings and recommendations (`R-1`, `R-2`, ...). You approve by ID; "clean it up" approves nothing.
+2. **Plan.** For the IDs you approved, a numbered plan of exact actions, like this:
 
 ```text
-A-01  prep           Back up every ref, stash and file at risk to ~/git-backups/my-repo-2026-10-14
+A-01  prep           Back up every ref, stash and uncommitted file at risk to ~/git-cleanup-backups/my-repo-2026-10-14
 A-02  integrate      Merge feat/invoices into main (clean merge preview, 3 exclusive commits)
 A-03  publish        Push main to origin (a plain push, never a force-push)
 A-04  local-delete   Delete local branch feat/old-login (content already in main; patch-equivalent)
-A-05  local-delete   Prune the worktree registration ../wt-hotfix (folder is gone; branch merged)
+A-05  local-delete   Remove the worktree ../wt-hotfix (clean; branch merged)
 A-06  remote-delete  Delete origin/feat/old-login (no open pull request, you are the only author)
 ```
 
-Approve the whole plan, tell Claude which IDs to run, or stop with the audit only. The backup (A-01) always comes first and is part of every approval. Nothing else happens.
+Approve the whole plan, tell Claude which IDs to run, or stop with the audit only. The backup (A-01) always comes first and is part of every approval. Claude runs the actions in order, checks each one before it runs, and finishes with fresh read-only proof and a results report. If the audit finds something that needs a refactor, a bisect or a fix, it goes into the same report and plan.
 
 Pass an absolute path to clean another repository, or text that is not a folder to investigate a problem:
 
@@ -224,7 +228,7 @@ In a session: `/plugin` → **Installed** → **GitHub Operations** → **Uninst
 
 | Component | Claude Code | Claude app |
 | :-- | :--: | :--: |
-| 🎯 Skills | ✅ | ⚠️ they load, but they need `git`, `gh` and your repository on your computer, and the cleanup guard hook that protects your repository doesn't run in a chat conversation, so use Claude Code |
+| 🎯 Skills | ✅ | ⚠️ they load, but they need `git`, `gh` and your repository on your computer, so use Claude Code |
 | 🤖 Agents | ✅ | ⚠️ in Cowork sessions, not in a chat conversation |
 | 🔌 MCP server (remote) | ✅ needs your token, set as in [Configuration](#-configuration) | 🔗 connect it once with your token, as in [In the Claude app](#in-the-claude-app) |
 
@@ -276,37 +280,30 @@ The PR tracker reports what is still pending and returns, and Claude waits for a
 </details>
 
 <details>
-<summary><b>Claude Code asks me to confirm almost every command during the cleanup.</b></summary>
-
-That is the guard. Every `git` or `gh` command that changes the repository, its remotes or its pull requests, every file write, deletion or move, every MCP action that is not a plain read, and every command that prints file contents asks you first, with the reason. Approve a prompt only when it matches the action ID you approved in the plan. Approving the plan is not approving a prompt, and approving a prompt is not approving the plan: you get two checks on every change.
-
-</details>
-
-<details>
 <summary><b>What does the cleanup refuse to do, even if I approve?</b></summary>
 
-Force-push, delete `main` on the remote, rewrite published history (`filter-branch`, `filter-repo`), change the remote's default branch, run `git clean -x`, and print remote URLs or tokens that may contain credentials. If you need one of those, do it yourself outside the cleanup. The guard is a safety net against honest mistakes, not a sandbox, and a settings-file mod that approves tool calls can override a plugin hook's refusal.
+It never force-pushes, never runs `git clean -x`, never deletes a branch with `-D` unless you approve that exact action, and never rewrites published history as part of a bulk approval. A history rewrite (to remove a secret or a huge file) happens only when you ask for it by name, in a fresh copy of the repository, with a backup. Deploy keys, tokens, secrets, installed apps and collaborator access are reported, never changed.
 
 </details>
 
 <details>
 <summary><b>Does the cleanup read my <code>.env</code> files?</b></summary>
 
-No. Files that look like secrets (`.env`, keys, certificates, token and credential files) are listed by name only. The guard refuses commands and file reads that name them, and the cleanup never deletes or copies them. Commits can still contain secrets, so Claude audits with `--stat` and name listings, and any command that would print file contents asks for your confirmation first.
+No. Files that look like secrets (`.env`, keys, certificates, token and credential files) are listed by name only and are never opened or copied into the backup. A secret that was ever committed is reported as exposed, with the instruction to rotate it.
+
+</details>
+
+<details>
+<summary><b>Does the cleanup install anything or write scripts?</b></summary>
+
+No. Claude runs ordinary `git` and `gh` commands from a scratch folder outside your repository, and removes it at the end. A command that is not available is reported as not checked.
 
 </details>
 
 <details>
 <summary><b>Should I run the cleanup in bypass-permissions mode?</b></summary>
 
-No. Use the default permission mode, so every change reaches you as a prompt. The guard's refusals are applied before your permission rules, but Claude Code does not document how confirmation prompts behave when permissions are bypassed.
-
-</details>
-
-<details>
-<summary><b>Every command is blocked with a "hook error" and <code>python3</code> not found.</b></summary>
-
-The cleanup guard needs `python3` 3.9 or later on `PATH`. If it cannot run, Claude Code blocks the action instead of letting it through, so the cleanup stops safely. Install Python 3 (or fix `PATH`) and start the cleanup again.
+No. Use the default permission mode, so Claude Code asks you before each command that changes something. Approving the plan and approving a prompt are two separate checks.
 
 </details>
 
