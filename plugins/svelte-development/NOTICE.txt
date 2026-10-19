@@ -1,0 +1,68 @@
+svelte-development
+Copyright (c) 2026 Claude Essentials maintainers. Licensed under the MIT License (see LICENSE).
+
+This plugin contains material derived from sveltejs/ai-tools:
+
+  Repository:  https://github.com/sveltejs/ai-tools
+  Base commit: 6b5d0dab3c9c083387247ab20dc684573481076b (2026-10-05)
+  Source path: plugins/claude/svelte (generated from tools/ in the same repository)
+
+Derived files, all rewritten, corrected and extended for this plugin:
+
+  skills/svelte-best-practices/SKILL.md
+      from skills/svelte-core-bestpractices/SKILL.md (itself the Svelte
+      "Best practices" docs page); renamed, rewritten as a contract (rules,
+      delegation, references map, procedure with explicit tool calls),
+      keeping its Svelte 5 practice sections, and extended with SvelteKit 3,
+      the Svelte CLI, Astro and Tailwind CSS.
+  skills/svelte-best-practices/references/svelte/template-syntax.md
+      from references/attach.md, bind.md, each.md, render.md, snippet.md
+  skills/svelte-best-practices/references/svelte/async-and-boundaries.md
+      from references/await-expressions.md, hydratable.md
+  skills/svelte-best-practices/references/svelte/runes.md
+      from references/inspect.md
+  skills/svelte-best-practices/references/svelte/context-lifecycle-and-reactivity-classes.md
+      from references/svelte-reactivity.md
+  skills/svelte-docs-and-autofixer/SKILL.md
+      from skills/svelte-code-writer/SKILL.md; tool names, shell quoting
+      and the npx calls corrected, rewritten as a contract with an MCP-first
+      procedure and explicit tool calls.
+  agents/svelte-component-editor.md
+      from agents/svelte-file-editor.md; tool names and the skill reference
+      corrected, the ignored permissionMode field removed, tools pinned,
+      rules placed before an ordered workflow with explicit tool calls.
+  .lsp.json
+      the svelteserver configuration from .claude-plugin/plugin.json.
+  .mcp.json
+      the server from .mcp.json, switched from the local package run with
+      "npx -y @sveltejs/mcp" to the Svelte team's remote server
+      (https://mcp.svelte.dev/mcp), which needs no download and reconnects.
+
+Everything else in this plugin is original. The Svelte name is used only to
+describe compatibility; this plugin is not affiliated with or endorsed by the
+Svelte project or its contributors.
+
+The upstream license follows, as required by its terms.
+
+--------------------------------------------------------------------------------
+MIT License
+
+Copyright (c) 2026 [Svelte Contributors](https://github.com/sveltejs/ai-tools/graphs/contributors)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
