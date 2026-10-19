@@ -46,7 +46,7 @@ To navigate from inside TypeScript files as well, the user needs a TypeScript la
 
 ## Find a symbol
 
-`documentSymbol` lists one `.svelte` file's outline, script and markup, with lines but no columns; read the line for the column. The server waits about 1 s before answering it (1085 ms observed, against 2 to 41 ms for the other operations):
+`documentSymbol` lists one `.svelte` file's outline, script and markup, with lines but no columns; read the line for the column. The server holds every `documentSymbol` request for 1 s before answering (svelte-language-server 0.18.5, `PluginHost.ts`; 1085 ms measured with a direct LSP client, not through the LSP tool, against 2 to 41 ms for the other operations):
 
 ```text
 LSP documentSymbol  src/lib/components/CounterButton.svelte 1 1
@@ -135,7 +135,7 @@ LSP hover  src/routes/+page.svelte 17 2   (the <button> tag)
 → The button element represents a button labeled by its contents. … [MDN Reference]
 ```
 
-On an element, attribute, directive or block keyword the HTML or Svelte part of the server answers first with static documentation; point at an identifier or an expression for its type.
+On an HTML element, attribute, directive or block keyword the HTML or Svelte part of the server answers first with static documentation; on a component tag or its props, and on an identifier or an expression, the answer is the TypeScript type.
 
 ## Trace callers and callees
 

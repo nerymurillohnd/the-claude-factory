@@ -51,16 +51,17 @@ The server's Svelte compiler diagnostics (source `svelte`) are all or nothing in
 
 For a verified false positive only (rule 8 of the skill, with the reason written down), `<!-- svelte-ignore <code> -->` or `compilerOptions.warningFilter` in the project's configuration silences the warning for both the server and svelte-check, which compile with the same configuration; svelte-check's `--compiler-warnings` flag and the server's own warning setting are separate.
 
-CSS diagnostics (source `css`, `scss` or `less`) cover the component's main `<style>` only; there are none for `postcss`, `sass` or `stylus` styles or for inline `style=` attributes, so their absence there proves nothing. In a project that uses Tailwind CSS, "Unknown at rule" warnings for `@apply`, `@reference`, `@theme` or `@utility` are noise: leave them.
+CSS diagnostics (source `css`, `scss` or `less`) cover the component's own `<style>` only: the first top-level one, outside any element and any `{#if}`, `{#each}` or `{#await}` block. There are none for `postcss`, `sass` or `stylus` styles or for inline `style=` attributes, so their absence there proves nothing. The server knows no Tailwind CSS at-rule, so in a project that uses Tailwind CSS, "Unknown at rule" warnings for `@apply`, `@config`, `@custom-variant`, `@plugin`, `@reference`, `@source`, `@theme`, `@utility` or `@variant` are noise: leave them.
 
 ## Results are empty or wrong
 
 - Wrong position: positions are 1-based; place the position on the first character of the name. Use `documentSymbol` to get the line, then read that line for the column.
-- Empty `workspaceSymbol`: the `query` was empty or too short.
+- Empty `workspaceSymbol`: the `query` was empty or too short, or the project is not loaded yet. It searches only projects already loaded: call `documentSymbol` on a `.svelte` file of the project first, then retry.
 - Results that ignore the project's configuration, in a SvelteKit 3 project or in a worktree under `.claude/worktrees/`: the server is older than 0.18.5 (0.18.4 reads SvelteKit 3's config from `vite.config`; 0.18.5 finds config under dot directories). The user checks the version in their own terminal with `npm ls -g svelte-language-server` and updates it.
 - Stale results after moving, creating or deleting route files: a known server crash (see below). Ask the user to run `/reload-plugins`, then confirm with the project check (`npm run check`).
-- Empty or partial results in a very large project: when the files that are not TypeScript add up to more than 20 MB, the server turns its TypeScript service off. The user can set `compilerOptions.disableSizeLimit` in the tsconfig.
-- Results limited to the files you opened: the file has no tsconfig, or sits outside its `include`, so the server's program holds only the open files and what they import.
+- Empty or partial results in a very large project: when the files that are not TypeScript add up to more than 20 MB, the server turns its TypeScript service off. The limit counts every file in the program that is not TypeScript, so first check that the tsconfig `include` and `exclude` leave out built or vendored JavaScript; only for a project that is really that large, the user sets `compilerOptions.disableSizeLimit` in the tsconfig.
+- Results limited to the files you opened: the file has no tsconfig, or sits outside its `include`, so the server's program holds only the open files and what they import. When the `include` of the tsconfig matches no `.svelte` file, the server also publishes a warning on the tsconfig's first line, "No svelte input files were found in config file …" (source `svelte`); add the `.svelte` files to `include`.
+- Empty results, or a rename that finds nothing, in one file: a `.svelte` file with a syntax error gets no generated code, and the server refuses to rename in it. Run the project check on that file and fix the syntax first (svelte-language-server 0.18.5, `RenameProvider.ts`; the effect on other operations is inferred, not observed).
 - Props typed `any` unexpectedly: if the component writes `$props<…>()` with type arguments, destructured props become `any` (known issue). Prefer `let { … }: Props = $props();`.
 
 ## False errors about generated types
@@ -85,7 +86,7 @@ Issues and pending fixes in `sveltejs/language-tools`; check whether each is sti
 | #3080 | Reading the Svelte config from `vite.config.js/ts` can be wrong |
 | #3124 | Type arguments on `$props()` make destructured props `any` |
 | #3063 | TypeScript 7 crashes svelte2tsx and svelte-check; use `--tsgo` with TypeScript 7 and TypeScript 6 both installed, as the svelte-check README says |
-| Unreleased fix | `svelte-check --tsgo` leaves out TypeScript files the tsconfig lists; a pending changeset (`.changeset/quick-dogs-appear.md` in the repository) fixes it. Check the svelte-check changelog for the release before trusting a `--tsgo` result |
+| #3146 (merged, unreleased) | `svelte-check --tsgo` leaves out TypeScript files the tsconfig lists; the fix merged on `master` on 2026-10-19 and svelte-check 4.7.7 does not carry it. Check the svelte-check changelog for #3146 before trusting a `--tsgo` result |
 
 Re-check an issue before citing it:
 
