@@ -10,6 +10,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The
 
 - **svelte-development** 0.1.0 — writes, reviews and migrates Svelte 5 and SvelteKit 3 code from the official docs, checks every Svelte file with the Svelte autofixer and proves changes with the Svelte language server and your project's `svelte-check`.
 
+### Changed
+
+- **session-handoff** 1.0.0 — **Breaking:** a six-section handoff written in a plain seven-step flow, and a start-of-session hook that works from it as background
+
 ## 2026-10-18
 
 ### Changed

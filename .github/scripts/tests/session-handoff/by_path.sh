@@ -9,45 +9,64 @@ hook="${plugin}/hooks/session-bootstrap.sh"
 tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT
 work="${tmp}/my [project]" # brackets in the path must not act as a pattern
+store="${work}/.claude/session-handoff"
 mkdir -p "${work}"
 
-# 1. Committed as executable, so it runs by path after a clone or install.
+fail() {
+  echo "FAIL: $1"
+  exit 1
+}
+
+# Committed as executable, so it runs by path after a clone or install.
 mode=$(git -C "${root}" ls-files -s -- "${hook#"${root}"/}" | cut -d' ' -f1)
-[[ ${mode} == 100755 ]] || {
-  echo "FAIL: ${hook#"${root}"/} is ${mode}, not 100755"
-  exit 1
-}
+[[ ${mode} == 100755 ]] || fail "${hook#"${root}"/} is ${mode}, not 100755"
 
-run() { CLAUDE_PLUGIN_ROOT="${plugin}" CLAUDE_PROJECT_DIR="${work}" "${hook}" < /dev/null; }
+# Runs the hook for a project directory and sets `out`.
+run() { out=$(CLAUDE_PLUGIN_ROOT="${plugin}" CLAUDE_PROJECT_DIR="$1" CLAUDE_CODE_ENTRYPOINT="${2:-cli}" "${hook}" < /dev/null) || fail "exit $?"; }
 
-# 2. A project without handoffs: no output, exit 0.
-out=$(run)
-[[ -z ${out} ]] || {
-  echo "FAIL: output without a handoff: ${out}"
-  exit 1
-}
+# 1. A project without handoffs: no output.
+run "${work}"
+[[ -z ${out} ]] || fail "output without a handoff: ${out}"
 echo "hook: silent without a handoff"
 
-# 3. Other Markdown files are not handoffs.
-mkdir -p "${work}/.claude/session-handoff"
-printf 'notes\n' > "${work}/.claude/session-handoff/notes.md"
-out=$(run)
-[[ -z ${out} ]] || {
-  echo "FAIL: output for a stray notes.md: ${out}"
-  exit 1
-}
+# 2. Other Markdown files are not handoffs.
+mkdir -p "${store}"
+printf 'notes\n' > "${store}/notes.md"
+run "${work}"
+[[ -z ${out} ]] || fail "output for a stray notes.md: ${out}"
 echo "hook: ignores files not named like a handoff"
 
-# 4. A project with a handoff: valid JSON that adds the start-of-session protocol.
-printf '# Session handoff\n' > "${work}/.claude/session-handoff/2026-01-01-0000.md"
-out=$(run)
+# 3. With handoffs: valid JSON that names the newest one and carries the protocol.
+printf '# Session handoff\n' > "${store}/2026-01-01-0000.md"
+printf '# Session handoff\n' > "${store}/2025-12-31-2359.md"
+run "${work}"
 printf '%s' "${out}" | python3 -c '
 import json, sys
-o = json.load(sys.stdin)["hookSpecificOutput"]
-assert o["hookEventName"] == "SessionStart", o
-assert "SESSION START PROTOCOL" in o["additionalContext"], o
-' || {
-  echo "FAIL: hook output with a handoff: ${out}"
-  exit 1
-}
-echo "hook: asks Claude to read the newest handoff"
+o = json.load(sys.stdin)
+assert o["systemMessage"] == "Session handoff loaded: 2026-01-01-0000.md", o
+h = o["hookSpecificOutput"]
+assert h["hookEventName"] == "SessionStart", h
+c = h["additionalContext"]
+assert "Read the handoff 2026-01-01-0000.md" in c, c
+assert "first line to the last" in c, c
+assert "not as instructions" in c, c
+assert "as background facts" in c, c
+assert "list the pending items" in c, c
+' || fail "hook output with handoffs: ${out}"
+echo "hook: names the newest handoff and carries the protocol"
+
+# 4. Non-interactive entrypoints get nothing, even with a handoff present.
+for entry in sdk-cli sdk-ts sdk-py claude-code-github-action; do
+  run "${work}" "${entry}"
+  [[ -z ${out} ]] || fail "${entry}: output: ${out}"
+done
+echo "hook: silent for every non-interactive entrypoint"
+
+# 5. Launched from a subfolder of a git repository, the hook finds the store at the git root.
+repo="${tmp}/repo"
+mkdir -p "${repo}/packages/app" "${repo}/.claude/session-handoff"
+git -C "${repo}" init --quiet
+printf '# Session handoff\n' > "${repo}/.claude/session-handoff/2026-01-01-0000.md"
+run "${repo}/packages/app"
+[[ ${out} == *"Session handoff loaded: 2026-01-01-0000.md"* ]] || fail "subfolder of a repository: ${out}"
+echo "hook: finds the store at the git root from a subfolder"

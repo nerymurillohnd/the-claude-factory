@@ -2,7 +2,7 @@
 
 # 🔁 Session Handoff
 
-<p><strong>Carries a project's working state from one session to the next: write a handoff when you stop, and the next session reads it, reports what is still open and asks you where to start.</strong></p>
+<p><strong>Carries a project's working state from one session to the next: write a handoff when you stop, and the next session reads it, does what you ask and ends its reply with what is still open.</strong></p>
 
 [![Version](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Fnerymurillohnd%2Fthe-claude-factory%2Fmain%2Fplugins%2Fsession-handoff%2F.claude-plugin%2Fplugin.json&query=%24.version&label=version&color=D97757)](./CHANGELOG.md)
 [![Works in](https://img.shields.io/badge/works%20in-Claude%20Code%20%C2%B7%20Claude%20app-2563EB)](#-compatibility)
@@ -22,24 +22,25 @@
 ---
 
 > [!TIP]
-> **TL;DR** — Type `/session-handoff:write-handoff` before you stop, and your next session in that project opens by telling you what was done, what is still open and where to pick up.
+> **TL;DR** — Type `/session-handoff:write-handoff` before you stop, and your next session in that project does what you ask with the whole story behind it, then lists what is still open.
 
 ## ✨ Why use it
 
 A new session starts with an empty conversation. What you decided yesterday, the fix that is half done and the item you promised to come back to live only in a transcript you will not reread.
 
-- **Start where you stopped** — the next session reads the newest handoff in full, summarizes it and lists what is still open before it touches anything.
+- **Start where you stopped** — the next session reads the newest handoff in full, works with its decisions, corrections and learnings as background, and ends its reply with what is still open.
 - **Nothing gets lost between sessions** — every open item of the previous handoff is carried forward or closed with its evidence, so a pending task cannot quietly disappear.
-- **Facts, not memory** — each handoff is built from the repository itself: branch, uncommitted work, stashes, unpushed commits, the commits since the last handoff and the repository's recent pull requests. What could not be checked is marked as such.
-- **You stay in charge** — the handoff is drafted with you and saved only after you approve it, and the next session asks how you want to proceed instead of starting the pending work on its own.
+- **Facts, not memory** — each handoff is built from the repository itself: branch, uncommitted work, stashes, unpushed commits, the commits since the last handoff and the open pull requests. What could not be checked is marked as such.
+- **One project at a time** — a handoff belongs to the project you are working in and holds only that project's work.
+- **You stay in charge** — the handoff is drafted with you and saved only after you approve it, and the next session does what you ask, never the pending work on its own, and ends its reply with the open items so you decide.
 - **Quiet everywhere else** — in projects without handoffs, the plugin adds nothing to the conversation.
 
 ## 🧩 What's inside
 
 | Component | Name | What it does | How it runs |
 | :-- | :-- | :-- | :-- |
-| 🎯 Skill | `session-handoff:write-handoff` | Reads the project's state, offers to commit, push or open a pull request first, reconciles the previous handoff, drafts the new one with you and saves it in `.claude/session-handoff/` | `/session-handoff:write-handoff`, or ask Claude to write a handoff when you wrap up |
-| 🪝 Hook | `SessionStart` | When a session starts or is cleared in a project with handoffs, has Claude read the newest one, report what is open and ask how to proceed | Automatically, at the start of a session and after `/clear` |
+| 🎯 Skill | `session-handoff:write-handoff` | Reads the project's state, summarizes the session, compares it with the previous handoff, drafts the new one with you, saves it in `.claude/session-handoff/` and offers to commit and push it | `/session-handoff:write-handoff`, or ask Claude to write a handoff when you wrap up |
+| 🪝 Hook | `SessionStart` | When a session starts or is cleared in a project with handoffs, shows you a one-line notice naming the newest one and has Claude read it in full, do what you ask and end its reply with the open items | Automatically, at the start of a session and after `/clear` |
 
 ## ✅ Requirements
 
@@ -47,8 +48,8 @@ A new session starts with an empty conversation. What you decided yesterday, the
 | :-- | :-- |
 | **Claude Code** | v2.1.292 or later — check with `claude --version` |
 | **Surfaces** | See [Compatibility](#-compatibility) |
-| **External tools** | `bash` on `PATH`, for the hook and the skill's commands; on Windows, Git for Windows. `git`, so the handoff can record the repository's state; outside a git repository the handoff says so and skips it. `gh` signed in, optional, to list the repository's recent pull requests |
-| **Network** | When the repository has a remote, the skill runs `git fetch` to compare your branch with it, and `gh pr list` to list pull requests. A push or a pull request happens only if you accept the skill's offer. Without network access the handoff marks those lines as not verified |
+| **External tools** | `bash` on `PATH`, for the hook and the skill's commands; on Windows, Git for Windows. `git`, so the handoff can record the repository's state; outside a git repository the handoff says so and skips it. `gh` signed in, optional, to list the repository's open pull requests |
+| **Network** | When the repository has a remote, the skill runs `git fetch` to compare your branch with it, and `gh pr list` to list pull requests. A commit or push of the handoff happens only if you accept the skill's offer. Without network access the handoff marks those lines as not verified |
 | **Accounts / API keys** | None. `git` and `gh` use the credentials you already have |
 
 ## 📥 Installation
@@ -101,13 +102,13 @@ In the desktop app's **Code** tab you can also click **+** → **Plugins** → *
 /session-handoff:write-handoff
 ```
 
-**Result:** Claude reads the repository's state and, if you have uncommitted work, stashes, unpushed commits or a branch not yet on the remote, asks whether to commit, push or open a pull request first. It then shows you the complete draft: what was done with its evidence, decisions and their reasons, corrections, learnings, open items with what finishing them needs, the next steps in order and what could not be verified. Once you approve it, the handoff is saved as `.claude/session-handoff/2026-03-14-1730.md` (the date and time in UTC).
+**Result:** Claude checks the project's state (branch, uncommitted work, stashes, unpushed commits, open pull requests), summarizes the session from its start and compares it with the previous handoff. It then shows you the complete proposal, in six sections: where the project stands, the open items in priority order with the first action of each, the context the next session needs (learnings, corrections and recommendations), the decisions with their reasons, what was done with its evidence, and what could not be verified. Once you approve it, the handoff is saved as `.claude/session-handoff/2026-03-14-1730.md` (the date and time in UTC), creating the folders the first time. In a git repository, Claude asks whether to commit and push it. The handoff marks the end of the session.
 
 ### Pick up in the next session
 
-Start Claude Code in the same project and type your first request as usual.
+Start Claude Code in the same project, at its root or in any subfolder of the repository, and type your first request as usual.
 
-**Result:** the first reply names the handoff it read, summarizes it, lists its pending items and keeps your request as the current one. It asks whether to handle your request first, resume the pending items first, or do something else, and waits for your answer before starting.
+**Result:** Claude reads the newest handoff in full and does what you asked. If your request differs from the pending work, it does your request anyway. It works with the handoff's decisions, corrections and learnings as background, so past mistakes are not repeated. At the end of its reply it lists the open items, one short line each, so you can decide what to do next.
 
 ### Start fresh in the same session
 
@@ -121,7 +122,7 @@ Start Claude Code in the same project and type your first request as usual.
 
 Run `/session-handoff:write-handoff` again at the end of the next session.
 
-**Result:** every open item of the previous handoff gets a verdict (done with its evidence, partial, still open, or dropped by you), and the open ones are carried into the new handoff with their original date. Items open for more than 30 days are marked for you to confirm or drop.
+**Result:** every open item of the previous handoff gets a verdict (done with its evidence, partial, still open, or dropped by you), and the open ones are carried into the new handoff with their original date. Only items that are still pending, in part or in full, are carried. Claude asks you about the ones that look obsolete or outside the project, and only you can drop an item. A result you report from outside the session, such as a test you ran in another app, closes an item as done, noted as reported by you. Items open for more than 30 days are marked for you to confirm or drop.
 
 ## 🔄 Updating
 
@@ -159,7 +160,7 @@ Your handoffs stay in each project's `.claude/session-handoff/` folder; delete t
 
 <sub>✅ works · ⚠️ partial · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. The Claude app (web, desktop and mobile) runs a conversation as a Cowork session when it can, and as a chat conversation otherwise, for example on a device that can't run Cowork or in the separate Chat mode that Team and Enterprise plans keep for now.</sub>
 
-Handoffs live in your project folder, so the plugin needs a session that works in one: Claude Code, or a Cowork session on your computer. In a chat conversation there is no project folder, and the skill says so instead of writing anything. If the start-of-session reminder does not appear in a Cowork session, ask Claude to read the newest handoff in `.claude/session-handoff/`.
+Handoffs live in your project folder, so the plugin needs a session that works in one: Claude Code, or a Cowork session on your computer. In a chat conversation there is no project folder, so the skill cannot save a handoff there. If the start-of-session reminder does not appear in a Cowork session, ask Claude to read the newest handoff in `.claude/session-handoff/`.
 
 ## ❓ FAQ & Troubleshooting
 
@@ -189,7 +190,7 @@ The plugin tells Claude to read the newest handoff, but nothing forces the reply
 
 That's your choice. The plugin creates `.claude/session-handoff/` and never edits your `.gitignore`. Commit the folder to share handoffs with your team or keep them across machines; ignore it to keep them local.
 
-Each handoff names the project's folder on your computer, its branches and pull requests, and whatever the session decided and learned. The skill is told never to write a secret, but read a handoff before you push it to a public repository.
+Each handoff names the project's folder on your computer, its branches and pull requests, and whatever the session decided and learned. The skill is told never to write a secret or a git remote URL, but read a handoff before you push it to a public repository. Claude treats a handoff as a record and works from it as background, so load handoffs only from sources you trust.
 
 </details>
 
@@ -203,14 +204,14 @@ Not in the default permission mode: nobody is there to approve saving the file. 
 <details>
 <summary><b>Does the start-of-session reminder get in the way of <code>claude -p</code> or CI runs?</b></summary>
 
-No. In a run where nobody can answer, Claude is told to skip the question and go on with the request it was given.
+No. The hook does nothing in `claude -p` runs, the Agent SDK or the Claude Code GitHub Action, so they behave as if the plugin were not installed.
 
 </details>
 
 <details>
 <summary><b>Does it change my code or repository?</b></summary>
 
-No. Writing a handoff reads the repository and saves one new file in `.claude/session-handoff/`. It commits, pushes or opens a pull request only when you accept its offer, and `git fetch` only updates your remote-tracking branches.
+No. Writing a handoff reads the repository and saves one new file in `.claude/session-handoff/`. It commits and pushes the handoff file only when you accept its offer, and `git fetch` only updates your remote-tracking branches.
 
 </details>
 

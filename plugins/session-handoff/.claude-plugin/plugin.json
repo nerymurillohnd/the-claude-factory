@@ -1,8 +1,8 @@
 {
   "name": "session-handoff",
   "displayName": "Session Handoff",
-  "version": "0.1.0",
-  "description": "Carries a project's working state from one session to the next: write a handoff when you stop, and the next session reads it, reports what is still open and asks you where to start.",
+  "version": "1.0.0",
+  "description": "Carries a project's working state from one session to the next: write a handoff when you stop, and the next session reads it, does what you ask and ends its reply with what is still open.",
   "author": {
     "name": "Nery Murillo",
     "url": "https://github.com/nerymurillohnd"
