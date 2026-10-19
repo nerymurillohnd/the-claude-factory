@@ -129,14 +129,19 @@ Check each item after the tasks run, whether or not a task touched it:
    npm run build
    ```
 
-2. `npm run preview` (the `vite preview` script sv projects have) against the build: forms (CSRF only runs in builds), redirects, error pages, cookies.
-3. Search the code for leftovers; every match needs a decision:
+   When you run as one of the plugin's agents and `npm test` or `npm run build` is not among your allowed commands, list it for the user under the report's open points instead of running it.
 
-   ```sh
-   grep -rnE '\$app/stores|\$lib/|\$env/|\$service-worker|invalidateAll|pushState|replaceState|resolveRoute|checkOrigin|svelte\.config|@migration-task' --exclude-dir=node_modules --exclude-dir=.svelte-kit --exclude-dir=build .
+2. `npm run preview` (the `vite preview` script sv projects have) against the build: forms (CSRF only runs in builds), redirects, error pages, cookies. This is a manual check: ask the user to run it, or, as an agent, list it under the report's open points.
+3. Search the code for leftovers with the Grep tool; every match needs a decision:
+
+   ```text
+   Grep
+     pattern: "\$app/stores|\$lib/|\$env/|\$service-worker|invalidateAll|pushState|replaceState|resolveRoute|checkOrigin|svelte\.config|@migration-task"
+     path: "."
+     output_mode: "content"
    ```
 
-   Run it from the project root over the whole tree, not only `src`: `$lib` and `svelte.config` leftovers also sit in `vite.config.*`, `tests/` and root files. Exclude `node_modules`, `.svelte-kit` and `build`.
+   Search from the project root over the whole tree, not only `src`: `$lib` and `svelte.config` leftovers also sit in `vite.config.*`, `tests/` and root files. Grep skips git-ignored folders; when `node_modules`, `.svelte-kit` or `build` are not git-ignored, leave their matches out.
 
 4. Deploy to a preview environment before production.
 

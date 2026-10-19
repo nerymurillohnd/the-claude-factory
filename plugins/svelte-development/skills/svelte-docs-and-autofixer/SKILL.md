@@ -1,6 +1,6 @@
 ---
 name: svelte-docs-and-autofixer
-description: Fetches the official Svelte, SvelteKit and Svelte CLI docs and checks Svelte code with the Svelte autofixer, through the plugin's Svelte MCP tools. Use when an exact Svelte API, rune, option or signature matters, to check a Svelte component for problems (including code pasted in the chat), or for a Svelte playground link.
+description: Fetches the official Svelte, SvelteKit and Svelte CLI docs and checks Svelte code with the Svelte autofixer, through the plugin's Svelte MCP tools. Use when an exact Svelte API, rune, option or signature matters, to check Svelte code pasted in the chat for problems (a review of project files goes to the svelte-code-auditor agent), or for a Svelte playground link.
 license: MIT
 metadata:
   upstream: "sveltejs/ai-tools skills/svelte-code-writer"
@@ -18,7 +18,7 @@ The contract for the two tools that keep Svelte code current: reading the offici
 | Use it | Do not use it |
 |---|---|
 | Before writing or changing any `.svelte`, `.svelte.ts` or `.svelte.js` code, or replying with Svelte code | For where a symbol of the project is defined or used: that is the `svelte-lsp-intelligence` skill |
-| When asked whether Svelte code has problems, including code pasted in the chat | For React, Vue, plain TypeScript or other non-Svelte code |
+| When asked whether Svelte code pasted in the chat has problems (a review of project files goes to the `svelte-code-auditor` agent, by ground rule 0) | For React, Vue, plain TypeScript or other non-Svelte code |
 | When an exact rune, template tag, SvelteKit API, option or config key matters | |
 | When the project's Svelte or SvelteKit version is newer than what you remember | |
 
@@ -35,7 +35,7 @@ The ground rules (0 to 5) live in the `svelte-development:svelte-best-practices`
 The short tool names (`get-documentation`, `svelte-autofixer`, `list-sections`, `playground-link`) stand for their full names, `mcp__plugin_svelte-development_svelte__<tool>`.
 
 1. **Sections from the docs map.** Fetch every section a change touches in one `get-documentation` call (ground rule 2), with the path from the docs map's second column; a title works only when it is unique in the map (titles such as "Overview" repeat). Call `list-sections` only for a topic the map lacks; this wins over that tool's description, which says to always call it first. Astro and Tailwind CSS docs are not on the server: fetch their raw URLs from the map with `curl -sS`.
-2. **Pass code, never a path, to the remote server.** It treats a file path as code and answers "no issues" instead of refusing it. Read the file and pass its full content as `code`, and its real file name as `filename` (`Counter.svelte`, `counter.svelte.ts`). Only the local command line below takes a path.
+2. **Pass code, never a path, to the remote server.** It treats a file path as code and answers "no issues" instead of refusing it. Read the file and pass its full content as `code`, and its real file name as `filename` (`Counter.svelte`, `counter.svelte.ts`). Without a filename the code is checked as a component, and a plain `.ts` name gives false errors; empty code comes back clean too. Only the local command line below takes a path.
 3. **The autofixer is not proof.** It does not type-check, does not know SvelteKit routing rules and does not run the code. Type errors come from the language server and the project check.
 4. **Older versions.** The live docs describe the newest Svelte and SvelteKit. On an older installed version, check each API against it before using it, reading the changelog window when "When to run the check" in the changelogs reference calls for it.
 5. **Playground links only for code answered in the chat**, never for code written to the project's files. A user's request for a link is their consent; otherwise offer one and wait for a yes.
@@ -84,8 +84,10 @@ Copy this checklist for any Svelte code you write, change or review, and run the
 - [ ] 2 Find      choose the sections in docs-map.md; call list-sections only for a topic the map lacks
 - [ ] 3 Read      one get-documentation call with every section the code touches; look each page up in known-doc-errata.md
 - [ ] 4 Write     write or edit the code from what the sections say (a review skips this step)
-- [ ] 5 Fix       svelte-autofixer on each Svelte file's full code, until clean (ground rule 4); in a review, report instead of applying
-- [ ] 6 Verify    in a project: language server diagnostics when the server answers, and the project check (ground rule 5)
+- [ ] 5 Fix       svelte-autofixer on each Svelte file's full code, until no issues remain and each suggestion is applied
+                  or named as skipped (ground rule 4); in a review, report instead of applying
+- [ ] 6 Verify    in a project: language server diagnostics after an edit, when the server answers (a review uses
+                  the project check), and the project check (ground rule 5)
 ```
 
 **Step 3, read the sections in one call:**
@@ -95,7 +97,7 @@ mcp__plugin_svelte-development_svelte__get-documentation
   section: ["svelte/$props", "svelte/$bindable"]
 ```
 
-**Step 5, check the code.** Pass the whole file as `code` and the installed `svelte` version in full (ground rules 1 and 4); with no project, pass `5` unless the user says the code is Svelte 4. Set `async: true` only when the project enables `compilerOptions.experimental.async`: in `svelte.config.js`, or in SvelteKit 3 in the `sveltekit({ … })` options in `vite.config`.
+**Step 5, check the code.** Pass the whole file as `code` and the installed `svelte` version in full (ground rules 1 and 4); with no project, pass `5` unless the user says the code is Svelte 4. Version 4 checks Svelte 4 syntax with the Svelte 5 compiler in legacy mode; Svelte 3 is refused, so report a Svelte 3 file as not checked by the autofixer. Set `async: true` only when the project enables `compilerOptions.experimental.async`: in `svelte.config.js`, or in SvelteKit 3 in the `sveltekit({ … })` options in `vite.config`.
 
 ```text
 mcp__plugin_svelte-development_svelte__svelte-autofixer
@@ -104,11 +106,11 @@ mcp__plugin_svelte-development_svelte__svelte-autofixer
   filename: "Counter.svelte"
 ```
 
-It reports Svelte compiler errors and Svelte-specific mistakes: legacy syntax, effects that should be derived values, runes misuse, and version-gated suggestions such as replacing `class:` directives with the `class` attribute.
+It reports Svelte compiler errors and Svelte-specific mistakes: legacy syntax, effects that should be derived values, runes misuse, and version-gated suggestions such as replacing `class:` directives with the `class` attribute. Compiler warnings (accessibility, deprecations) arrive as issues. Only the first compiler error is reported, and it stops every other check for the file: fix it and run again. The suggestion attached to a JavaScript parse error is generic: fix the error at the reported line.
 
-**Step 6, verify.** Skip it for code pasted in the chat with no project. Diagnostics come after each edit of a `.svelte` file only (the language server serves no `.svelte.ts` or `.svelte.js` file), and only when the server answers: "no diagnostics" proves nothing until `documentSymbol` on a `.svelte` file has listed its symbols (`svelte-lsp-intelligence`, rule 9). Without the server, rely on the project check and say so. The project check and its commands are ground rule 5's. One Svelte, preprocessor or configuration error hides the file's other Svelte compiler diagnostics (TypeScript and CSS diagnostics still appear): `${CLAUDE_PLUGIN_ROOT}/skills/svelte-lsp-intelligence/references/troubleshooting.md`, "Diagnostics that hide others".
+**Step 6, verify.** Skip it for code pasted in the chat with no project. A review edits nothing, so it gets no language server diagnostics and relies on the project check. Diagnostics come after each edit of a `.svelte` file only (the language server serves no `.svelte.ts` or `.svelte.js` file), and only when the server answers: "no diagnostics" proves nothing until `documentSymbol` on a `.svelte` file has listed its symbols (`svelte-lsp-intelligence`, rule 9). Without the server, rely on the project check and say so. The project check and its commands are ground rule 5's. One Svelte, preprocessor or configuration error hides the file's other Svelte compiler diagnostics (TypeScript and CSS diagnostics still appear): `${CLAUDE_PLUGIN_ROOT}/skills/svelte-lsp-intelligence/references/troubleshooting.md`, "Diagnostics that hide others".
 
-**Done** when the autofixer returns no issues with `require_another_tool_call_after_fixing` false (or the remaining ones are reported as likely false positives), and, in a project, ground rule 5 is met. A review is done when it has reported the autofixer and check results.
+**Done** when the autofixer returns no issues and every remaining suggestion is applied or named as skipped with its reason (or the remaining issues are reported as likely false positives), and, in a project, ground rule 5 is met; `require_another_tool_call_after_fixing` stays true while any suggestion remains. A review is done when it has reported the autofixer and check results.
 
 **Playground link**, when the user asked for one or said yes:
 
@@ -135,10 +137,10 @@ Claude Code reconnects a dropped server on its own; the user can also reconnect 
    ```sh
    svelte-mcp list-sections
    svelte-mcp get-documentation 'svelte/$props,svelte/$bindable'
-   svelte-mcp svelte-autofixer src/lib/components/Counter.svelte --svelte-version <installed svelte version>
+   svelte-mcp svelte-autofixer src/lib/components/Counter.svelte --svelte-version <installed svelte version> # add --async when the project enables experimental async
    ```
 
-   Probe it with `svelte-mcp list-sections`, never with `command -v svelte-mcp`. The Bash command's environment may not be the user's shell, so `command not found` there does not prove the tool is missing: ask the user to confirm in their own shell. If it is missing, the user installs it with `npm install -g @sveltejs/mcp`; ask before suggesting `npx`.
+   Probe it with `svelte-mcp list-sections`, never with `command -v svelte-mcp`. The Bash command's environment may not be the user's shell, so `command not found` there does not prove the tool is missing: ask the user to confirm in their own shell. If it is missing, the user installs it with `npm install -g @sveltejs/mcp`; ask before suggesting `npx`. On an autofixer run, check that the output starts with `Detected file path`: `File not found, treating input as code` means the path was wrong and the result says nothing about the file.
 
 When neither the server nor the local command line can run the autofixer, report the code as not checked by the autofixer and finish with the project check.
 

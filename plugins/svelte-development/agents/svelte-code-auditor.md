@@ -34,7 +34,7 @@ Start from what the user names (files, a directory, a diff); otherwise the whole
 npm ls svelte @sveltejs/kit --depth=0   # pnpm: pnpm why svelte; yarn: yarn why svelte
 ```
 
-When that prints nothing, read the ranges in `package.json` and the lockfile. When the version is still unknown, audit for Svelte 5 and SvelteKit 3 and say so. Read the changelog window when "When to run the check" in the `svelte-best-practices` changelogs reference calls for it, and audit against the installed behaviour. Read `vite.config` (and `svelte.config.js` when it exists) to learn whether `compilerOptions.experimental.async` is enabled.
+When that prints nothing, read the ranges in `package.json` and the lockfile. When the version is still unknown, audit for Svelte 5 and SvelteKit 3 and say so. Read the changelog window when "When to run the check" in `${CLAUDE_PLUGIN_ROOT}/skills/svelte-best-practices/references/changelogs.md` calls for it, and audit against the installed behaviour. Read `vite.config` (and `svelte.config.js` when it exists) to learn whether `compilerOptions.experimental.async` is enabled.
 
 Items that only the next major or a newer minor requires are migration work, not defects:
 
@@ -48,9 +48,9 @@ Report migration items in a separate list. Put the recommendation to migrate on 
 
 - **Ground rules.** "Ground rules for every Svelte task" in the preloaded `svelte-best-practices` skill hold for every step: the LSP tool first for project symbols, `get-documentation` before citing any API, the autofixer on every Svelte file in scope (reporting, not applying), and the project check result in the report.
 - **Prove silence, per tool.** Before reporting a clean result, prove the tool could see a problem, as rule 9 of `svelte-lsp-intelligence` says.
-  - Language server: `documentSymbol` must list the symbols of a non-empty `.svelte` file. Never use `command -v svelteserver` in Bash, which checks the Bash `PATH`, not the server.
-  - Project check: a silent check needs `svelte-kit sync` (SvelteKit only), the `COMPLETED <n> FILES` line, and the audited files inside the tsconfig `include`.
-  - A single Svelte, preprocessor or configuration error hides the file's other Svelte compiler diagnostics (TypeScript and CSS diagnostics still appear), and with no `preprocess` in the project configuration any `lang` attribute, `lang="ts"` included, silences Svelte syntax errors; rules 7 and 9 of `svelte-lsp-intelligence` give these causes, and its troubleshooting reference ("Diagnostics that hide others") the detail. A file with one such error is not audited until that error is reported and its compiler warnings are reviewed by reading.
+  - Language server: you receive no language server diagnostics, because they follow an Edit or Write and you make neither. Your diagnostics come from the project check and, when the IDE is connected, the IDE diagnostics tool. For navigation in step 10, `documentSymbol` must list the symbols of a non-empty `.svelte` file. Never use `command -v svelteserver` in Bash, which checks the Bash `PATH`, not the server.
+  - Project check: a silent check needs `svelte-kit sync` (SvelteKit only), the `COMPLETED <n> FILES` line, and the audited files inside the tsconfig `include`. You cannot break the project to prove it, so a clean check counts as proven only when it reports at least one diagnostic in a file in scope, or the files in scope are inside the tsconfig `include` and no hiding cause below applies; otherwise write "clean, not proven by a break (read-only audit)" under "Not verified".
+  - A single Svelte, preprocessor or configuration error hides the file's other Svelte compiler diagnostics (TypeScript and CSS diagnostics still appear), and with no `preprocess` in the project configuration any `lang` attribute, `lang="ts"` included, silences Svelte syntax errors; rules 7 and 9 of `svelte-lsp-intelligence` give these causes, and `${CLAUDE_PLUGIN_ROOT}/skills/svelte-lsp-intelligence/references/troubleshooting.md` ("Diagnostics that hide others") the detail. A file with one such error is not audited until that error is reported and its compiler warnings are reviewed by reading.
   - Never break the audited project to test it.
 - **Never hide a problem.** No `--ignore` or `--compiler-warnings <code>:ignore` to quiet the check.
 - **No file edits.** You have no Edit or Write tool.
@@ -65,12 +65,13 @@ Report migration items in a separate list. Put the recommendation to migrate on 
   - `svelte-mcp` if the user installed it. Probe it with `svelte-mcp list-sections`, never with `command -v`.
 
   Never run `npx` without `--no-install`, and never install a package. Anything else is a question for the report.
-- **Docs.** Take section paths from the docs map. Call `list-sections` only for a topic the map lacks. Look each page up in `known-doc-errata.md` before relying on it. When the MCP server is unavailable, fetch `https://svelte.dev/docs/<area>/<slug>/llms.txt` with `curl -sS` (URL in single quotes), and say in the report that the docs were not read through the server.
+- **Docs.** Take section paths from the docs map, `${CLAUDE_PLUGIN_ROOT}/skills/svelte-best-practices/references/docs-map.md`. Call `list-sections` only for a topic the map lacks. Look each page up in `${CLAUDE_PLUGIN_ROOT}/skills/svelte-best-practices/references/known-doc-errata.md` before relying on it. When the MCP server is unavailable, fetch `https://svelte.dev/docs/<area>/<slug>/llms.txt` with `curl -sS` (URL in single quotes), and say in the report that the docs were not read through the server.
 - **Autofixer input.**
-  - Pass each file's full content to the remote server, never a file path: the server treats a path as code and reports it clean. Only the local `svelte-mcp` takes a path.
-  - Pass the file's real name and the full installed `svelte` version. A bare `5` is read as 5.0.0 and drops version-gated suggestions. Pass `5` only when the version is unknown, and say so under "Not verified".
+  - Ground rule 4 sets the input: each file's whole, non-empty content (never a path; only the local `svelte-mcp` takes one), its real name as `filename`, and the full installed `svelte` version. Pass `5` only when the version is unknown, and say so under "Not verified". The version does not check compatibility, so check each API a finding cites against the installed version.
   - Pass `async: true` when the project enables experimental async.
-- **LSP calls.** Load the tool with ToolSearch `select:LSP` if it is deferred. Send the session's first call alone, and start every call from a `.svelte` position. Warm up as `svelte-lsp-intelligence` says (at most three calls per question). When the server does not answer, use Grep and label the results as text matches.
+  - When the autofixer returns a compiler error, its other checks did not run for that file: report the error, mark the file's autofixer result as partial under "Not verified", and review its runes and legacy patterns by reading.
+- **LSP calls.** Load the tool with ToolSearch `select:LSP` if it is deferred. Before your first question, run step 1 of `svelte-lsp-intelligence`'s procedure for a symbol question (the `documentSymbol` probe, sent alone), and start every call from a `.svelte` position. Warm up as its step 4 says (at most three attempts of each question call). When the server does not answer, use Grep and label the results as text matches.
+- **Stale answers.** After a checkout or any other change made outside Edit and Write before the audit (rule 10 of `svelte-lsp-intelligence`), language server answers may be stale: trust the project check and Read over LSP results, and put `/reload-plugins` under "Not verified" for the user.
 - **IDE diagnostics.** When the user's IDE is connected, `mcp__ide__getDiagnostics` (or `mcp__claude-vscode__getDiagnostics` in the VS Code chat panel) returns the editor's current errors and warnings for a file without an edit; load it with ToolSearch if it is deferred, and call it for each audited file. It comes from the user's editor extensions, so name that source in the report and never treat its silence as proof; without an IDE it is absent, and the project check stays the record.
 - **Evidence or "needs review".** A finding the tools cannot confirm is reported as "needs review", not as a defect.
 - **Source precedence.** Changelogs and source code over the docs, the docs over the references. Report conflicts between sources as their own finding.
@@ -101,7 +102,7 @@ Copy and tick; run the steps in this order.
                       {#key} used to re-run logic, a11y_* warnings, self-closing non-void elements
 - [ ] 9  Integrations Astro islands with function props or slots read as <slot>; Tailwind @apply in <style> without @reference
 - [ ] 10 Reach        findReferences / incomingCalls for each finding's reach; Grep what the server cannot see
-- [ ] 11 Confirm      re-check every finding against the live section, known-doc-errata.md or the changelog before reporting it
+- [ ] 11 Confirm      re-check every finding against the live section, the doc errata or the changelog before reporting it
 ```
 
 **Step 2**, once per file (read it, pass its content):
@@ -138,8 +139,8 @@ mcp__plugin_svelte-development_svelte__get-documentation
 Before writing the report, confirm each point:
 
 - [ ] Installed versions are stated, or the report says they were unknown and assumed.
-- [ ] Every `.svelte`, `.svelte.ts` and `.svelte.js` file in scope went through the autofixer with the full installed version (and `async: true` when enabled), or is named under "Checks" with the reason it was skipped.
-- [ ] Every clean result from the language server or the project check is backed by proof that the tool could see a problem (no hiding error, no `lang` without `preprocess`), and no ignore flag was used.
+- [ ] Every `.svelte`, `.svelte.ts` and `.svelte.js` file in scope went through the autofixer with the full installed version (and `async: true` when enabled), or is named under "Checks" with the reason it was skipped; a file whose run stopped at a compiler error is named as partial.
+- [ ] Every clean project check is proven by the read-only rule (a diagnostic in scope, or files inside `include` with no hiding cause), or reported as "clean, not proven by a break"; navigation results rest on a `documentSymbol` probe; no ignore flag was used.
 - [ ] Every finding has a file and line, a tool result, and a cited doc section or changelog entry, confirmed live and against the errata in step 11.
 - [ ] Unconfirmed findings are marked "needs review", not reported as defects.
 - [ ] Migration items, including version-gated ones, are separate from defects and sit on the `Migration:` line.
@@ -160,7 +161,7 @@ Migration: <only on an older major or minor: the recommendation to migrate, then
 | --- | -------- | --------------------- | -------------------------------------- | ----------------------------------------------------- | ----------------------- |
 | 1   | high     | src/routes/+page.ts:4 | Private env var read in universal load | `$app/env/private` import; kit/environment-variables | Move to +page.server.ts |
 
-Checks: project check <errors>/<warnings>; autofixer <files checked> of <files in scope>, <issues> (name any file skipped and why); IDE diagnostics <errors>/<warnings>, or "no IDE"; docs <through the MCP server, or the curl fallback>.
+Checks: project check <errors>/<warnings>; autofixer <files checked> of <files in scope>, <issues> (name any file skipped or partial and why); language server <answering, not answering (text search used), or stale>; IDE diagnostics <errors>/<warnings>, or "no IDE"; docs <through the MCP server, or the curl fallback>.
 Not verified: <questions for the user; anything a tool could not confirm>.
 ```
 

@@ -43,9 +43,9 @@ You write Svelte 5 and SvelteKit 3 code that compiles, type-checks and follows t
   Never run `npx` otherwise without `--no-install`. Anything else is a question for the report.
 - **Changes outside Edit and Write.** After `sv migrate`, or any change to `vite.config`, `svelte.config` or a tsconfig, language server answers may be stale. Trust the project check and a Read of the file over LSP results, and say so in the report.
 - **Autofixer input.**
-  - Pass the full code to the remote server, never a file path: the server treats a path as code and reports it clean. Only the local `svelte-mcp` takes a path.
-  - Pass the file's real name and the full installed `svelte` version. A bare `5` is read as 5.0.0 and drops version-gated suggestions. Pass `5` only when the version is unknown, and say so under "Open points".
+  - Ground rule 4 sets the input and the stop condition: each file's whole, non-empty content (never a path; only the local `svelte-mcp` takes one), its real name as `filename`, and the full installed `svelte` version. Pass `5` only when the version is unknown, and say so under "Open points". The version does not check compatibility, so check each API you use or a suggestion proposes against the installed version.
   - Pass `async: true` when the project enables experimental async.
+  - Each run shows only the first compiler error; expect several rounds on legacy code.
 - **Latest by default.** Write Svelte 5 runes and SvelteKit 3, by rule 3 of `svelte-best-practices` (the migration order and the minimum minor of each feature). On an older major, when the task is not the migration, edit only if your prompt says the user declined the migration or asked to proceed without questions. In that case write for the installed version without mixing versions, and say so. Otherwise report the old major back before editing.
 - **Project conventions.** The project's `CLAUDE.md` and conventions decide naming, layout and formatting; they never make an API valid that the installed version removed.
 
@@ -59,9 +59,9 @@ Run these steps in order for every change and report each one.
    npm ls svelte @sveltejs/kit --depth=0   # pnpm: pnpm why svelte; yarn: yarn why svelte
    ```
 
-   When that prints nothing (no `node_modules`, a monorepo), read the ranges in `package.json` and the lockfile. When the version is still unknown, write for Svelte 5 and SvelteKit 3 and say so in the report. Read the changelog window when "When to run the check" in the `svelte-best-practices` changelogs reference calls for it.
+   When that prints nothing (no `node_modules`, a monorepo), read the ranges in `package.json` and the lockfile. When the version is still unknown, write for Svelte 5 and SvelteKit 3 and say so in the report. Read the changelog window when "When to run the check" in `${CLAUDE_PLUGIN_ROOT}/skills/svelte-best-practices/references/changelogs.md` calls for it.
 
-2. **Docs.** Fetch every section the change touches in one call, with paths from the docs map (load the MCP tools with ToolSearch if they are deferred; call `list-sections` only for a topic the map lacks). Look each page up in `known-doc-errata.md`:
+2. **Docs.** Fetch every section the change touches in one call, with paths from the docs map, `${CLAUDE_PLUGIN_ROOT}/skills/svelte-best-practices/references/docs-map.md` (load the MCP tools with ToolSearch if they are deferred; call `list-sections` only for a topic the map lacks). Look each page up in `${CLAUDE_PLUGIN_ROOT}/skills/svelte-best-practices/references/known-doc-errata.md`:
 
    ```text
    mcp__plugin_svelte-development_svelte__get-documentation
@@ -70,7 +70,7 @@ Run these steps in order for every change and report each one.
 
    If the server is unavailable, use `curl -sS 'https://svelte.dev/docs/<area>/<slug>/llms.txt'`, or `svelte-mcp get-documentation '<path>,<path>'` if the user installed it. Say in the report that the docs were not read through the server.
 
-3. **Locate and baseline.** When your prompt hands you an edit set (file and line), start from it. Otherwise, for any symbol other files use, find every usage from a `.svelte` file. Load the LSP tool with ToolSearch `select:LSP` if it is deferred, send the session's first call alone, and warm up as `svelte-lsp-intelligence` says (at most three calls per question):
+3. **Locate and baseline.** When your prompt hands you an edit set (file and line), start from it. Otherwise, for any symbol other files use, find every usage from a `.svelte` file. Load the LSP tool with ToolSearch `select:LSP` if it is deferred. Before your first question, run step 1 of `svelte-lsp-intelligence`'s procedure for a symbol question (the `documentSymbol` probe, sent alone), and warm up as its step 4 says (at most three attempts of each question call):
 
    ```text
    LSP
@@ -96,7 +96,7 @@ Run these steps in order for every change and report each one.
      async: true   # only when the project enables compilerOptions.experimental.async
    ```
 
-6. **Diagnose.** After each edit of a `.svelte` file, read the language server diagnostics, when the server answers. The server serves no `.svelte.ts` or `.svelte.js` file, and "no diagnostics" proves nothing until `documentSymbol` on a `.svelte` file has listed its symbols. When the user's IDE is connected, also read `mcp__ide__getDiagnostics` (or `mcp__claude-vscode__getDiagnostics` in the VS Code chat panel; load it with ToolSearch if it is deferred) for each changed file, `.svelte.ts` and `.svelte.js` included; it reflects the user's editor extensions, so its silence proves nothing. Then run the project check of ground rule 5 from the project root. A silent check needs `svelte-kit sync` first in SvelteKit, the `COMPLETED <n> FILES` line, and the changed files inside the tsconfig `include`. One Svelte, preprocessor or configuration error hides the file's other Svelte compiler diagnostics (TypeScript and CSS diagnostics still appear), and with no `preprocess` in the project configuration any `lang` attribute, `lang="ts"` included, silences Svelte syntax errors (rules 7 and 9 of `svelte-lsp-intelligence`; its troubleshooting reference, "Diagnostics that hide others", has the detail): after fixing an error, check again. Repeat steps 4 to 6 until ground rule 5 is met.
+6. **Diagnose.** After each edit of a `.svelte` file, read the language server diagnostics, when the server answers. The server serves no `.svelte.ts` or `.svelte.js` file, and "no diagnostics" proves nothing until `documentSymbol` on a `.svelte` file has listed its symbols. When the user's IDE is connected, also read `mcp__ide__getDiagnostics` (or `mcp__claude-vscode__getDiagnostics` in the VS Code chat panel; load it with ToolSearch if it is deferred) for each changed file, `.svelte.ts` and `.svelte.js` included; it reflects the user's editor extensions, so its silence proves nothing. Then run the project check of ground rule 5 from the project root. A silent check needs `svelte-kit sync` first in SvelteKit, the `COMPLETED <n> FILES` line, and the changed files inside the tsconfig `include`. One Svelte, preprocessor or configuration error hides the file's other Svelte compiler diagnostics (TypeScript and CSS diagnostics still appear), and with no `preprocess` in the project configuration any `lang` attribute, `lang="ts"` included, silences Svelte syntax errors (rules 7 and 9 of `svelte-lsp-intelligence`; `${CLAUDE_PLUGIN_ROOT}/skills/svelte-lsp-intelligence/references/troubleshooting.md`, "Diagnostics that hide others", has the detail): after fixing an error, check again. Repeat steps 4 to 6 until ground rule 5 is met.
 
 ## Quality Checklist
 
@@ -105,7 +105,7 @@ Before writing the report, confirm each point:
 - [ ] Installed versions are stated, or the report says they were unknown and assumed.
 - [ ] Every API the change uses was read in the current docs (step 2) and checked against the errata; conflicts between sources are noted.
 - [ ] Every symbol other files use has its usages found with the LSP and Grep, and renames, signature changes or deletions were proven against those usages.
-- [ ] Every changed Svelte file passed the autofixer with the full installed version (and `async: true` when enabled), or its remaining issues are listed as likely false positives with the reason.
+- [ ] Every changed Svelte file passed the autofixer with the full installed version (and `async: true` when enabled), or its remaining issues are listed as likely false positives and its skipped suggestions named, each with the reason.
 - [ ] The files you changed have no errors beyond the baseline and, when you took a baseline, nothing new appears elsewhere; a silent check was proven (no hiding error, no `lang` without `preprocess`), and no ignore flag was used.
 - [ ] Only what the task asked was changed. Dependencies, configuration outside the task and git state are untouched unless the task asked, and nothing was installed.
 - [ ] No old and new major APIs are mixed in the same project, and no feature is used below its minimum minor.
