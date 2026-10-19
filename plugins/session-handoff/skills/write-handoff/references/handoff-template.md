@@ -4,9 +4,21 @@ Copy the block below. Keep every heading and label **literally, in this order**.
 `partial`, `open`, `dropped`), the word `unverified`, and the fixed lines below stay as written.
 
 Fixed lines: `No previous handoff.` · `Not a git repository.` · `None known.` · `none` · `no upstream` ·
-`none (no commits)` · `none (no new commits)` · `not checked (gh failed)` · `No done, partial or dropped items.`
+`none (no commits)` · `none (no new commits)` · `not checked (gh failed)` ·
+`unverified (git failed: <one-line reason>)` · `No done, partial or dropped items.`
 
 An empty section is one line: `None known.`
+
+For a project verified to be outside git (step 1.2), Branch and HEAD are `Not a git repository.` and the whole
+Repository state section is exactly:
+
+```markdown
+## Repository state
+Not a git repository.
+```
+
+When git failed for another reason (step 1.2), Branch, HEAD and every Repository state line are
+`unverified (git failed: <one-line reason>)`.
 
 With no previous handoff, Reconciliation of previous handoff is the single line `No previous handoff.`
 When no item is `done`, `partial` or `dropped`, the table is replaced by the line
@@ -23,8 +35,8 @@ Text in `<…>` is replaced; everything outside it is copied as written.
 Project: <absolute path of the project directory>
 Written: <YYYY-MM-DD HH:MM, the same time as the file name> UTC
 Previous handoff: <file name only, e.g. 2026-10-01-1430.md> | No previous handoff.
-Branch: <branch> | detached at <short hash> | Not a git repository.
-HEAD: <full hash> | none | Not a git repository.
+Branch: <branch> | detached at <short hash> | Not a git repository. | unverified (git failed: <reason>)
+HEAD: <full hash> | none | Not a git repository. | unverified (git failed: <reason>)
 
 ## Repository state
 - Uncommitted: <files and why they are uncommitted, or None known.>
@@ -32,13 +44,14 @@ HEAD: <full hash> | none | Not a git repository.
 - Unpushed commits (against the upstream): <count and hashes | unverified (fetch failed) | no upstream>
 - Behind upstream: <count | unverified (fetch failed) | no upstream>
 - Branch vs default (<default branch name, e.g. main | unknown>): <on default | on another branch | detached | unknown>
-- Commits since previous HEAD: <hash and subject per line | none (no new commits) | none (no commits) | the last 20, and why: no previous handoff, its HEAD is none or Not a git repository., or not an ancestor>
+- Commits since previous HEAD: <hash and subject per line | none (no new commits) | none (no commits) | the last 20, and why: no previous handoff, its HEAD is none or Not a git repository., its HEAD is invalid or missing, or not an ancestor>
 - PRs: <every row of gh pr list --state all --limit 20, with state | none | not checked (gh failed)>
 
 ## Reconciliation of previous handoff
 | Item | Opened | Verdict | Evidence or note |
 |---|---|---|---|
 | <item text> | <YYYY-MM-DD> | <done / partial / dropped> | <what step 3 asks for this verdict> |
+| <item text> | <YYYY-MM-DD> | done | per the user, <YYYY-MM-DD>: <what they reported> |
 Still open, unchanged: <n> (see Open items)
 Conflicts (repository wins): <each contradiction between the previous handoff and the repository, or None known.>
 
