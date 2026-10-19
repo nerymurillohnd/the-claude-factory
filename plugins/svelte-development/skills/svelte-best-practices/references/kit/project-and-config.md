@@ -20,7 +20,7 @@
 
 ## Required versions
 
-`@sveltejs/kit` 3.0.0 declares these peers and engines on npm: Node `>=22.17`, `vite ^8.0.12`, `svelte ^5.57.1`, `@sveltejs/vite-plugin-svelte ^7.0.0`, and `typescript ^6.0.0` (an optional peer: if the project uses TypeScript, it must be 6 or later). `@sveltejs/kit`, `svelte` and `vite` belong in `devDependencies`, and `package.json` has `"type": "module"`.
+`@sveltejs/kit` 3.0.0 declares these peers and engines on npm: Node `>=22.17`, `vite ^8.0.12`, `svelte ^5.57.1`, `@sveltejs/vite-plugin-svelte ^7.0.0`, and `typescript ^6.0.0` (an optional peer: if the project uses TypeScript, it must be 6.x; `^6.0.0` excludes TypeScript 7, which `npm i -D typescript` installs by default, so add it as `typescript@6`). `@sveltejs/kit`, `svelte` and `vite` belong in `devDependencies`, and `package.json` has `"type": "module"`.
 
 ## Project layout
 

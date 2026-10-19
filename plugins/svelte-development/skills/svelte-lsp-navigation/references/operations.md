@@ -128,8 +128,8 @@ LSP outgoingCalls         src/lib/components/CounterButton.svelte 16 14
 After each edit to a `.svelte` file, Claude Code reports the server's new diagnostics under the edit (`Found N new diagnostic issues in M files`). The fixture's deliberate error, as the project check reports it in Claude Code:
 
 ```text
-ERROR "src/routes/+page.svelte" 13:26 "Type 'number' is not assignable to type 'string'."
-COMPLETED 177 FILES 1 ERRORS 0 WARNINGS 1 FILES_WITH_PROBLEMS
+1760845342123 ERROR "src/routes/+page.svelte" 13:26 "Type 'number' is not assignable to type 'string'."
+1760845342130 COMPLETED 177 FILES 1 ERRORS 0 WARNINGS 1 FILES_WITH_PROBLEMS
 ```
 
 That check ran in a copy of the fixture outside the plugin, with the `.example` suffix dropped from its three config files and dependencies installed (see the fixture README), through `npm run check`.

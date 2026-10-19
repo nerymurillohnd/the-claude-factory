@@ -15,7 +15,7 @@
 ## Before you start
 
 - Upgrade to the latest 2.x first and fix its deprecation warnings; many 3.0 removals warn there.
-- Minimums: Node 22.17, Vite 8.0.12, `@sveltejs/vite-plugin-svelte` 7, Svelte 5.57.1, TypeScript 6 when used, and the adapter majors listed in the adapters reference.
+- Minimums: Node 22.17, Vite 8.0.12, `@sveltejs/vite-plugin-svelte` 7, Svelte 5.57.1, TypeScript 6 when used (not 7: `npm i -D typescript` installs 7, so pin `typescript@6`), and the adapter majors listed in the adapters reference.
 - Commit everything; the migration rewrites many files.
 
 ## Running the migration
@@ -124,7 +124,9 @@ Check each item after the tasks run, whether or not a task touched it:
 1. The project's check with no errors, then the unit tests and the build:
 
    ```sh
-   npm run check        # or: npx --no-install svelte-kit sync && npx --no-install svelte-check
+   npm run check        # or, without a check script, these two, never chained with &&:
+   npx --no-install svelte-kit sync
+   npx --no-install svelte-check --tsconfig ./tsconfig.json
    npm test             # when the project has tests
    npm run build
    ```

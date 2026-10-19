@@ -19,7 +19,7 @@
 
 ## Fetch before writing when
 
-- The project's `@astrojs/svelte` is newer than 9.0.1, the newest this file cites, or its `astro` or the slot behavior below does not match what you see.
+- The project's `@astrojs/svelte` is newer than 9.1.0, the newest this file cites, or its `astro` or the slot behavior below does not match what you see.
 - You pass children or named slots from `.astro` files into Svelte components: read the renderer of the installed `@astrojs/svelte`:
 
   ```sh
@@ -31,7 +31,7 @@
 
 ## Versions and peers
 
-- `@astrojs/svelte` 9.0.1 peers: `astro ^7.0.0`, `svelte ^5.43.6`, `typescript ^5.3.3 || ^6.0.0`; engines `node >=22.12.0`. Astro 7 declares the same Node floor.
+- `@astrojs/svelte` 9.1.0 peers: `astro ^7.0.0`, `svelte ^5.43.6`, `typescript ^5.3.3 || ^6.0.0`; engines `node >=22.22.0` (9.1.0 raised it from 22.12.0, its only change). Astro 7.4.0 declares the same Node floor.
 - 9.0.0 moved to Vite 8 and `@sveltejs/vite-plugin-svelte` 7. Svelte 3 and 4 need `@astrojs/svelte@5`.
 
 ## Install and configure the integration

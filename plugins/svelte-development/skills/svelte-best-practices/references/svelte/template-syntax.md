@@ -114,6 +114,7 @@ Since 5.29, `{@attach fn}` runs `fn(element)` in an effect when the element moun
 ## Declaration tags
 
 - Since 5.56, `{const x = expr}` and `{let x = $state(...)}` declare variables anywhere in markup. They follow lexical scope: visible to siblings and their descendants, and a nested declaration shadows an outer one.
+- They need runes mode: in a legacy-mode component (`export let`, `$$props` or `$$restProps`, or `runes: false`) the compiler rejects them with `declaration_tag_no_legacy_mode`. Migrate the component to runes first, or keep `{@const}` there.
 - When a value must stay reactive, declare it with a rune: `{const v = $derived(expr)}` or `{let v = $state(init)}`.
 - `{@const x = y}` is legacy: replace it with `{const x = $derived(y)}`. It was limited to the immediate child of a block, a component or a `<svelte:boundary>`.
 
@@ -130,7 +131,7 @@ Since 5.29, `{@attach fn}` runs `fn(element)` in an effect when the element moun
 
 ## Bindings
 
-- `bind:property={lvalue}`; `bind:value` alone when the variable has the same name. Element listeners on the same event run before the bound value updates.
+- `bind:property={lvalue}`; `bind:value` alone when the variable has the same name. Event attributes on the same element (`oninput`) run after the bound value updates, as the Events section says; only a listener attached to the element before the binding, such as one added by hand, runs before it.
 - Function bindings (since 5.9): `bind:value={() => value, (v) => (value = v.trim())}` for validation or transformation. For read-only bindings pass `null` as the getter: `bind:clientWidth={null, redraw}`. With `bind:this`, keep the getter so the value is cleared on destroy.
 - Numeric inputs bind numbers; an empty or invalid number input gives `undefined`.
 - Form reset: `defaultValue`/`defaultChecked` on inputs (since 5.6) and `defaultValue` on `<select>` (since 5.57) set the value restored on reset. On the first render, the bound value wins unless it is `null`/`undefined`.

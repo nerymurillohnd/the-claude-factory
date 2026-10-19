@@ -185,14 +185,14 @@ npx --no-install svelte-check
 - `svelte-check` is the check in every Svelte project; `svelte-kit sync` exists only in a SvelteKit one, so never chain them with `&&`: in a project on Svelte alone the sync fails and the check would never run.
 - In a SvelteKit project, without `svelte-kit sync` the generated `./$types` and `$app/types` are missing and the check reports false errors.
 - `npx sv check` forwards to the same tool but downloads `sv` when the project does not depend on it: ask before running it.
-- Inside Claude Code, svelte-check prints its machine format by default, because it detects the `CLAUDECODE` environment variable. Parse these lines; pass `--output human` only for the user:
+- Inside Claude Code, svelte-check prints its machine format by default, because it detects the `CLAUDECODE` environment variable. Each line starts with a timestamp in milliseconds; parse what follows it, and pass `--output human` only for the user:
 
   ```text
-  ERROR "src/routes/+page.svelte" 13:26 "Type 'number' is not assignable to type 'string'."
-  COMPLETED 177 FILES 1 ERRORS 0 WARNINGS 1 FILES_WITH_PROBLEMS
+  1760845342123 ERROR "src/routes/+page.svelte" 13:26 "Type 'number' is not assignable to type 'string'."
+  1760845342130 COMPLETED 177 FILES 1 ERRORS 0 WARNINGS 1 FILES_WITH_PROBLEMS
   ```
 
-- Useful flags: `--threshold error`, `--fail-on-warnings`, `--compiler-warnings <code>:ignore|error`, `--diagnostic-sources "svelte,ts"`, `--tsgo` (TypeScript 7, experimental).
+- Useful flags: `--threshold error`, `--fail-on-warnings`, `--compiler-warnings <code>:ignore|error`, `--diagnostic-sources "js,svelte"` (the values are `js`, which includes TypeScript, `svelte` and `css`; svelte-check drops any other value without a warning, so a wrong one hides those diagnostics), `--tsgo` (TypeScript 7, experimental).
 
 ## Blind spots
 
