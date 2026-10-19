@@ -106,7 +106,7 @@ mcp__plugin_svelte-development_svelte__svelte-autofixer
 
 It reports Svelte compiler errors and Svelte-specific mistakes: legacy syntax, effects that should be derived values, runes misuse, and version-gated suggestions such as replacing `class:` directives with the `class` attribute.
 
-**Step 6, verify.** Skip it for code pasted in the chat with no project. Diagnostics come after each edit of a `.svelte` file only (the language server serves no `.svelte.ts` or `.svelte.js` file), and only when the server answers: "no diagnostics" proves nothing until `documentSymbol` on a `.svelte` file has listed its symbols (`svelte-lsp-intelligence`, rule 9). Without the server, rely on the project check and say so. The project check and its commands are ground rule 5's.
+**Step 6, verify.** Skip it for code pasted in the chat with no project. Diagnostics come after each edit of a `.svelte` file only (the language server serves no `.svelte.ts` or `.svelte.js` file), and only when the server answers: "no diagnostics" proves nothing until `documentSymbol` on a `.svelte` file has listed its symbols (`svelte-lsp-intelligence`, rule 9). Without the server, rely on the project check and say so. The project check and its commands are ground rule 5's. One Svelte, preprocessor or configuration error hides every other diagnostic of the file: `${CLAUDE_PLUGIN_ROOT}/skills/svelte-lsp-intelligence/references/troubleshooting.md`, "Diagnostics that hide others".
 
 **Done** when the autofixer returns no issues with `require_another_tool_call_after_fixing` false (or the remaining ones are reported as likely false positives), and, in a project, ground rule 5 is met. A review is done when it has reported the autofixer and check results.
 

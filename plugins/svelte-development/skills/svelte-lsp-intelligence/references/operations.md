@@ -9,6 +9,7 @@
 - [Find a symbol](#find-a-symbol)
 - [Go to a definition](#go-to-a-definition)
 - [Find references before a change](#find-references-before-a-change)
+- [Find implementations](#find-implementations)
 - [Read a type with hover](#read-a-type-with-hover)
 - [Trace callers and callees](#trace-callers-and-callees)
 - [Read the project check output](#read-the-project-check-output)
@@ -45,7 +46,7 @@ To navigate from inside TypeScript files as well, the user needs a TypeScript la
 
 ## Find a symbol
 
-`documentSymbol` lists one `.svelte` file's outline, script and markup, with lines but no columns; read the line for the column:
+`documentSymbol` lists one `.svelte` file's outline, script and markup, with lines but no columns; read the line for the column. The server waits about 1 s before answering it (1085 ms observed, against 2 to 41 ms for the other operations):
 
 ```text
 LSP documentSymbol  src/lib/components/CounterButton.svelte 1 1
@@ -103,14 +104,38 @@ LSP findReferences  src/routes/+page.svelte 17 46   (reset in counter.reset())
 → 3 references across 3 files: counter.svelte.ts 12:3; resettable.ts 3:3; +page.svelte 17:46
 ```
 
+Where a component is used: on line 1, character 1 of the component's own file (or on its `<script` tag), `findReferences` returns the component's imports and tags instead of a symbol's references:
+
+```text
+LSP findReferences  src/lib/components/CounterButton.svelte 1 1
+→ 4 references across 2 files: Dynamic.svelte 2:10, 7:23; +page.svelte 2:10, 13:2
+```
+
 There is no rename operation: this list is the edit set, after checking it against the uses the server cannot see: route files, paths in strings, calls through an alias, CSS class names, and configuration or scripts.
+
+## Find implementations
+
+`goToImplementation` from a `.svelte` position reaches the classes and methods that implement an interface, including those in `.svelte.ts` modules. Observed with a component outside the fixture that types a prop as `Resettable` (`let { item }: { item: Resettable } = $props();`, then `item.reset()` in markup):
+
+```text
+LSP goToImplementation  <component> 2 17   (Resettable in the import)
+→ Defined in src/lib/counter.svelte.ts:4:14   (class Counter implements Resettable)
+LSP goToImplementation  <component> 6 33   (reset in item.reset())
+→ Defined in src/lib/counter.svelte.ts:12:3   (Counter.reset)
+```
+
+The server drops implementations that sit in generated code or do not map back to a source file, so an empty answer is not proof: confirm with `findReferences` on the interface member.
 
 ## Read a type with hover
 
 ```text
 LSP hover  src/lib/components/CounterButton.svelte 12 9   (counter in the $props() destructuring)
 → let counter: Counter
+LSP hover  src/routes/+page.svelte 17 2   (the <button> tag)
+→ The button element represents a button labeled by its contents. … [MDN Reference]
 ```
+
+On an element, attribute, directive or block keyword the HTML or Svelte part of the server answers first with static documentation; point at an identifier or an expression for its type.
 
 ## Trace callers and callees
 

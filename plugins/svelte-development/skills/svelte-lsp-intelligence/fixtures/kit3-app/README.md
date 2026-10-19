@@ -5,7 +5,7 @@ A minimal SvelteKit 3 project used by the `svelte-lsp-intelligence` skill exampl
 | Symbol | File | Use it to try |
 | --- | --- | --- |
 | `Counter` class | `src/lib/counter.svelte.ts` | `goToDefinition`, `findReferences` |
-| `Resettable` interface | `src/lib/resettable.ts` | `findReferences` on `reset()`, which lists the implementation in `Counter` (`goToImplementation` was not observed from a `.svelte` position) |
+| `Resettable` interface | `src/lib/resettable.ts` | `findReferences` on `reset()`, which lists the implementation in `Counter`; `goToImplementation` from a component that uses the interface |
 | `formatCount` function | `src/lib/format.ts` | `prepareCallHierarchy`, `incomingCalls` (two callers) |
 | `CounterButton` props | `src/lib/components/CounterButton.svelte` | `hover`, `documentSymbol` |
 | Dynamic usages | `src/lib/components/Dynamic.svelte` | A component held in `$state`, a lazy `import()`, `import.meta.glob`, `svelte:element` and a function stored in an object: `documentSymbol`, `findReferences` |

@@ -6,6 +6,7 @@
 
 - [The LSP tool returns an error](#the-lsp-tool-returns-an-error)
 - [No diagnostics appear after an edit](#no-diagnostics-appear-after-an-edit)
+- [Diagnostics that hide others](#diagnostics-that-hide-others)
 - [Results are empty or wrong](#results-are-empty-or-wrong)
 - [False errors about generated types](#false-errors-about-generated-types)
 - [Known open issues](#known-open-issues)
@@ -38,12 +39,28 @@ Claude Code returns an error for each LSP call on a file whose server it cannot 
 - Diagnostics after an edit appear as `Found N new diagnostic issues in M files`; only new issues are reported, so an unchanged error does not repeat.
 - `claude --debug` logs `LSP server <name> failed to start: <reason>` when the server crashes at start.
 
+## Diagnostics that hide others
+
+The server's Svelte diagnostics are all or nothing in these cases (svelte-language-server 0.18.5, `plugins/svelte/features/getDiagnostics.ts`); the same code runs in svelte-check, so its output has the same gaps:
+
+- **Configuration fails to load**: every `.svelte` file shows one "Error in vite.config" or "Error in svelte.config.js" diagnostic at the top, and no compiler warning or error. Fix the configuration first, then check again.
+- **The component does not compile**: only that one error is reported, with no warnings. After fixing it, check again: more problems can appear.
+- **A preprocessor fails**: one diagnostic with source `svelte(script)` or `svelte(style)` at the start of that block.
+- **A `lang` attribute with no preprocess configuration**: a syntax error whose message contains "expected" is dropped without a word, and with a `lang` on the template or a script `lang` other than `ts`, every warning except accessibility ones is dropped.
+- **The project's `svelte` cannot be loaded** (no `node_modules`, or the workspace is not trusted): the server compiles with its own bundled Svelte 4, so Svelte 5 code gets false errors. Install the dependencies; a trusted workspace is the default.
+
+To silence a compiler warning for both the server and svelte-check, use `<!-- svelte-ignore <code> -->` or `compilerOptions.warningFilter` in the project's configuration: svelte-check's `--compiler-warnings` flag and the server's own warning setting are separate.
+
+CSS diagnostics (source `css`, `scss` or `less`) cover the component's main `<style>` only; there are none for `postcss`, `sass` or `stylus` styles or for inline `style=` attributes, so their absence there proves nothing. In a project that uses Tailwind CSS, "Unknown at rule" warnings for `@apply`, `@reference`, `@theme` or `@utility` are noise: leave them.
+
 ## Results are empty or wrong
 
 - Wrong position: positions are 1-based; place the position on the first character of the name. Use `documentSymbol` to get the line, then read that line for the column.
 - Empty `workspaceSymbol`: the `query` was empty or too short.
 - Results that ignore the project's configuration, in a SvelteKit 3 project or in a worktree under `.claude/worktrees/`: the server is older than 0.18.5 (0.18.4 reads SvelteKit 3's config from `vite.config`; 0.18.5 finds config under dot directories). The user checks the version in their own terminal with `npm ls -g svelte-language-server` and updates it.
 - Stale results after moving, creating or deleting route files: a known server crash (see below). Ask the user to run `/reload-plugins`, then confirm with the project check (`npm run check`).
+- Empty or partial results in a very large project: when the files that are not TypeScript add up to more than 20 MB, the server turns its TypeScript service off. The user can set `compilerOptions.disableSizeLimit` in the tsconfig.
+- Results limited to the files you opened: the file has no tsconfig, or sits outside its `include`, so the server's program holds only the open files and what they import.
 - Props typed `any` unexpectedly: if the component writes `$props<…>()` with type arguments, destructured props become `any` (known issue). Prefer `let { … }: Props = $props();`.
 
 ## False errors about generated types
