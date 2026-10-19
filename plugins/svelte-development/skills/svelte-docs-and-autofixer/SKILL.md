@@ -137,7 +137,7 @@ mcp__plugin_svelte-development_svelte__get-documentation
 ```text
 mcp__plugin_svelte-development_svelte__svelte-autofixer
   code: "<script lang=\"ts\">\n  let { value = $bindable(0) }: { value?: number } = $props();\n</script>\n…"
-  desired_svelte_version: "5.16.0"
+  desired_svelte_version: "<installed svelte version from npm ls, such as 5.57.2>"
   filename: "Counter.svelte"
 ```
 
@@ -182,7 +182,7 @@ Try these in order, and say in the answer that the documentation or the code cou
    ```sh
    svelte-mcp list-sections
    svelte-mcp get-documentation 'svelte/$props,svelte/$bindable'
-   svelte-mcp svelte-autofixer src/lib/components/Counter.svelte --svelte-version 5.16.0
+   svelte-mcp svelte-autofixer src/lib/components/Counter.svelte --svelte-version <installed svelte version>
    ```
 
    Probe it by running it, never with `command -v svelte-mcp`. The Bash command's environment may not be the user's shell, so `command not found` there does not prove the tool is missing: ask the user to confirm in their own shell. If it is missing, the user installs it with `npm install -g @sveltejs/mcp`; ask before suggesting `npx`.

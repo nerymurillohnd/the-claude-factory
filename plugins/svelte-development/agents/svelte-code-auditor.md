@@ -70,7 +70,7 @@ npx --no-install svelte-check
 ```text
 mcp__plugin_svelte-development_svelte__svelte-autofixer
   code: "<full file content>"
-  desired_svelte_version: "5.16.0" # the installed svelte version in full; the major alone only when unknown
+  desired_svelte_version: "<installed svelte version from npm ls, such as 5.57.2>" # the major alone only when unknown
   filename: "+page.svelte"
 ```
 

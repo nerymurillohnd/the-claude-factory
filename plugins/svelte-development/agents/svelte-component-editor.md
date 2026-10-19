@@ -65,7 +65,7 @@ Run these steps in order for every change and report each one.
    ```text
    mcp__plugin_svelte-development_svelte__svelte-autofixer
      code: "<full file content>"
-     desired_svelte_version: "5.16.0" # the installed svelte version in full; the major alone only when unknown
+     desired_svelte_version: "<installed svelte version from step 1, such as 5.57.2>" # the major alone only when unknown
      filename: "Counter.svelte"
    ```
 
