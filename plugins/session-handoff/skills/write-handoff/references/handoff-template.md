@@ -9,7 +9,7 @@ Fixed lines: `No previous handoff.` · `Not a git repository.` · `None known.` 
 
 An empty section is one line: `None known.`
 
-For a project verified to be outside git (job 2.2), Branch and HEAD are `Not a git repository.` and the whole
+For a project verified to be outside git (phase 2), Branch and HEAD are `Not a git repository.` and the whole
 Repository state section is exactly:
 
 ```markdown
@@ -17,7 +17,7 @@ Repository state section is exactly:
 Not a git repository.
 ```
 
-When git failed for another reason (job 2.2), Branch, HEAD and every Repository state line are
+When git failed for another reason (phase 2), Branch, HEAD and every Repository state line are
 `unverified (git failed: <one-line reason>)`.
 
 With no previous handoff, Reconciliation of previous handoff is the single line `No previous handoff.`

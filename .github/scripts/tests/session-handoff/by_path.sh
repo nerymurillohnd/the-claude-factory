@@ -145,6 +145,12 @@ if ((can_link)); then
   echo "hook: warns when .claude is a symlink"
 
   reset
+  mkdir -p "${elsewhere}/empty-dot-claude"
+  ln -s "${elsewhere}/empty-dot-claude" "${work}/.claude"
+  expect_silent "symlinked .claude without a store"
+  echo "hook: silent when .claude is a symlink with no store behind it"
+
+  reset
   mkdir -p "${store}"
   printf '# Session handoff\n' > "${store}/2026-01-01-0000.md"
   printf '# Session handoff\n' > "${elsewhere}/2026-01-02-0000.md"

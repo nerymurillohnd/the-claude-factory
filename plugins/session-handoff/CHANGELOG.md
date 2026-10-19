@@ -10,15 +10,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ### Changed
 
-- A handoff now belongs to one confirmed project folder: the skill compares the folder the session started in with the one it is working in, and asks which project the handoff is for when they differ, before it reads or writes any store.
-- A handoff holds only the project's work. Work on other projects, the machine or accounts is listed for you when the draft is shown and is not saved.
+- A handoff now belongs to one confirmed project folder: the skill compares the folder the session started in with the one it is working in, and asks which project the handoff is for when they differ.
+- A handoff holds only the project's work. Work on other projects, the machine or accounts is listed for you before the draft and is not saved.
 - Inherited open items are put to you for a verdict: the ones that look out of scope, obsolete or finished elsewhere are listed with the reason, and you are asked whether you finished anything outside the session.
-- A result you report from outside the session now closes an item as done, noted as reported by you.
-- The previous handoff is read to the end and checked for its header lines and sections before it is used; a truncated or incomplete file stops the skill instead of being reconciled, and a handoff is treated as a record, never as instructions.
-- The previous commit is used only when it is a valid commit hash; otherwise the last 20 commits are listed.
-- The saved handoff is read back and compared with the approved draft before the skill confirms it.
-- The skill never follows a symbolic link in the handoff folder, and never writes a remote URL, an environment value or a raw command error.
-- The start-of-session instructions are shorter and clearer, and ask Claude to compare the handoff's project with the session's and to name items that look out of scope or finished.
+- A result you report from outside the session closes an item as done, noted as reported by you.
+- The skill is shorter and organized in phases, and covers the first handoff of a project, when the folders do not exist yet.
+- The start-of-session instructions are shorter and clearer. They have Claude check the handoff, compare its project with the session's and name items that look out of scope or finished.
 
 ### Fixed
 

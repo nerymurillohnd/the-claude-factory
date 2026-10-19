@@ -24,9 +24,13 @@ JSON
   exit 0
 }
 
-# .claude and the store are not followed when they are symbolic links. The paths stay literal (a
+# .claude and the store are not followed when they are symbolic links; a linked .claude with no
+# store behind it is silent, like any project without handoffs. The paths stay literal (a
 # project path may hold [, ], * or \); only the file name is a pattern.
-if [[ -L ${claude_dir} ]]; then warn; fi
+if [[ -L ${claude_dir} ]]; then
+  if [[ -e ${store} ]]; then warn; fi
+  exit 0
+fi
 [[ -d ${claude_dir} ]] || exit 0
 if [[ -L ${store} ]]; then warn; fi
 [[ -e ${store} ]] || exit 0
