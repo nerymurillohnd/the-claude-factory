@@ -33,12 +33,12 @@ The handoff ends the session. It gives the next Claude what a `CLAUDE.md` and me
 ## 4. Propose the handoff
 
 - Read [the template](references/handoff-template.md). Fill it as it says.
-- Open items: what is pending from this session, plus only the previous items still pending, partial or open.
-- Include the state the project is left in.
+- Current state: git facts, then where the project stands.
+- Open items: this session's pending work, plus only the previous items still pending, partial or open. Put them in priority order, each with its first action.
 
 ## 5. Add what keeps the thread
 
-- Add recommendations and any fact the next Claude needs to continue without asking, that `CLAUDE.md` and memory do not hold.
+- Fill Context for the next session: learnings, corrections, recommendations, and any fact the next Claude needs to continue without asking that `CLAUDE.md` and memory do not hold.
 - Show the complete proposal.
 
 ## 6. Approve, write and commit
@@ -62,8 +62,8 @@ Before step 7, confirm each item. Go back for any that is not done.
 - [ ] Session summarized from its start.
 - [ ] Previous handoff compared, or none exists.
 - [ ] Template read and every section filled.
-- [ ] Open items hold only what is still pending.
-- [ ] Recommendations and context added.
+- [ ] Open items hold only what is still pending, in priority order, each with a first action.
+- [ ] Context for the next session added.
 - [ ] User approved the proposal.
 - [ ] File written to the folder, folders created if missing.
 - [ ] Commit and push offered, or git ignores the file.

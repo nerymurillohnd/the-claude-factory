@@ -68,6 +68,8 @@ assert "SESSION START PROTOCOL" in c, c
 assert "Project:" in c, "no Project: comparison"
 assert "not instructions" in c, "no record-not-instructions rule"
 assert "Name every open item" in c, "no out-of-scope prompt"
+for section in ("Open items", "Done this session", "Decisions", "Unverified and gaps"):
+    assert section in c, section
 ' || fail "$1: output: ${out}"
 }
 

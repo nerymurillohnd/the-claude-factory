@@ -11,7 +11,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 ### Changed
 
 - The skill follows a plain sequence: check the project's state, summarize the session from its start, compare it with the previous handoff, propose the handoff, add recommendations and context, then write it after you approve. A closing checklist confirms every step was done.
-- The handoff gains a Project state section and a Recommendations and context section, and the template explains how to fill each section.
+- The handoff has six sections instead of eleven: Current state, Open items (in priority order, each with its first action, replacing Next steps), Context for the next session (learnings, corrections and recommendations), Decisions, Done this session (with the previous handoff's items) and Unverified and gaps. The template explains how to fill each one. Older handoffs with the eleven sections are still read.
 - Only items still pending are carried forward. Claude asks you about the ones that look obsolete or outside the project, and a result you report from outside the session closes an item as done, noted as reported by you.
 - In a git repository, Claude asks whether to commit and push the saved handoff.
 - The first handoff of a project works without the folders: the skill creates them.

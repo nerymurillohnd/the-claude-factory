@@ -102,7 +102,7 @@ In the desktop app's **Code** tab you can also click **+** → **Plugins** → *
 /session-handoff:write-handoff
 ```
 
-**Result:** Claude checks the project's state (branch, uncommitted work, stashes, unpushed commits, open pull requests), summarizes the session from its start and compares it with the previous handoff. It then shows you the complete proposal: what was done with its evidence, decisions and their reasons, corrections, learnings, open items with what finishing them needs, the next steps in order and what could not be verified. Once you approve it, the handoff is saved as `.claude/session-handoff/2026-03-14-1730.md` (the date and time in UTC), creating the folders the first time. In a git repository, Claude asks whether to commit and push it. The handoff marks the end of the session.
+**Result:** Claude checks the project's state (branch, uncommitted work, stashes, unpushed commits, open pull requests), summarizes the session from its start and compares it with the previous handoff. It then shows you the complete proposal, in six sections: where the project stands, the open items in priority order with the first action of each, the context the next session needs (learnings, corrections and recommendations), the decisions with their reasons, what was done with its evidence, and what could not be verified. Once you approve it, the handoff is saved as `.claude/session-handoff/2026-03-14-1730.md` (the date and time in UTC), creating the folders the first time. In a git repository, Claude asks whether to commit and push it. The handoff marks the end of the session.
 
 ### Pick up in the next session
 
