@@ -60,7 +60,7 @@ expect_protocol() {
   printf '%s' "${out}" | python3 -c '
 import json, sys
 o = json.load(sys.stdin)
-assert "systemMessage" not in o, o
+assert o["systemMessage"] == "Session handoff loaded: 2026-01-01-0000.md", o
 h = o["hookSpecificOutput"]
 assert h["hookEventName"] == "SessionStart", h
 c = h["additionalContext"]
@@ -102,6 +102,7 @@ echo "hook: ignores files not named like a handoff"
 
 # 4. A project with a handoff: valid JSON that adds the start-of-session protocol.
 printf '# Session handoff\n' > "${store}/2026-01-01-0000.md"
+printf '# Session handoff\n' > "${store}/2025-12-31-2359.md"
 expect_protocol "hook output with a handoff"
 echo "hook: asks Claude to read, validate and compare the newest handoff"
 

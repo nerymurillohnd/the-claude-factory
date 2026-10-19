@@ -40,7 +40,7 @@ A new session starts with an empty conversation. What you decided yesterday, the
 | Component | Name | What it does | How it runs |
 | :-- | :-- | :-- | :-- |
 | 🎯 Skill | `session-handoff:write-handoff` | Reads the project's state, offers to commit, push or open a pull request first, reconciles the previous handoff, drafts the new one with you and saves it in `.claude/session-handoff/` | `/session-handoff:write-handoff`, or ask Claude to write a handoff when you wrap up |
-| 🪝 Hook | `SessionStart` | When a session starts or is cleared in a project with handoffs, has Claude read the newest one in full, do what you ask and end its reply with the open items; if the handoff folder can't be read, warns you instead of staying silent | Automatically, at the start of a session and after `/clear` |
+| 🪝 Hook | `SessionStart` | When a session starts or is cleared in a project with handoffs, shows you a one-line notice naming the newest one and has Claude read it in full, do what you ask and end its reply with the open items; if the handoff folder can't be read, warns you instead of staying silent | Automatically, at the start of a session and after `/clear` |
 
 ## ✅ Requirements
 
