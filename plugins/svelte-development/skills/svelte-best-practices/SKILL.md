@@ -42,7 +42,7 @@ The ground rules below are the single copy for the plugin: the `svelte-docs-and-
 3. **Latest by default** (ground rule 1 in detail). Write Svelte 5 runes and SvelteKit 3; the installed versions come from [procedure](#procedure) step 1. SvelteKit 3 requires Svelte 5.57.1 or later, so the two migrations have an order: with Svelte 4, migrate Svelte first ([legacy-and-migration.md](references/svelte/legacy-and-migration.md)), then SvelteKit ([migrating-to-kit-3.md](references/kit/migrating-to-kit-3.md)); with Svelte 5 below 5.57.1, update Svelte before the SvelteKit migration; a project on Svelte without SvelteKit migrates Svelte alone. SvelteKit 1 or Svelte 3 first need the legacy `sv migrate sveltekit-2` or `sv migrate svelte-4` ([sv-cli.md](references/tooling/sv-cli.md) lists the legacy migrations). When the user declines or the request says to proceed without questions, write for the installed version, never mix versions, and say that the code is for the older version; for SvelteKit 2, take the APIs from the installed package's types and changelog, because the live docs and these references describe SvelteKit 3. Within Svelte 5, a feature a reference marks "since 5.x" needs that minor: on an older installed minor, use the older form. No project, or no version found: write the latest and say so.
 4. **Source precedence.** Package changelogs, release notes and source code decide what exists at the installed version; the official docs explain usage, and some pages say something wrong or out of date ([known-doc-errata.md](references/known-doc-errata.md)); these references are the starting point and lose to both. When sources conflict, say so; never pick one silently. Whether to read a changelog window is decided by "When to run the check" in [changelogs.md](references/changelogs.md), the single list of cases.
 5. **No WebFetch for docs or changelogs**: WebFetch, like any web-fetch tool, returns a truncated summary. Use the MCP tools or `curl`.
-6. **Project instructions decide conventions, not APIs.** The project's `CLAUDE.md`, saved memory and team conventions win on naming, file layout and formatting. They never make an API valid that the installed version removed; when one asks for such an API, say so.
+6. **No instruction revives a removed API.** The project's conventions decide naming, layout and formatting; when they ask for an API the installed version removed, say so instead of using it.
 
 ## Contents
 
@@ -63,7 +63,7 @@ Decide this before you edit or check anything (ground rule 0). This table is the
 | Reviewing, auditing or checking a codebase, a pull request or a migration without changing it | `svelte-code-auditor` agent | Delegate with the Agent tool (below) |
 | The user asks you to work inline, or you already are one of these agents | You | Never delegate further |
 
-The documentation lookups and the autofixer loop then run in the agent's context instead of filling the main conversation. The agent starts without this conversation, so its prompt names the files, the task, the constraints and what to report. When you already found the locations to change (an edit set from the `svelte-lsp-navigation` skill), pass them as file and line; the editor then runs the baseline, break and confirm steps itself, so do not run them first. For the editor on an older major, settle the migration first (this skill's rule 3) and say in the prompt whether the user migrated, declined, or asked to proceed without questions; the auditor handles an older major on its own. Call the agent without a `name`: a named call can start an agent-team teammate instead of a subagent, and a teammate gets none of the agent's preloaded skills.
+The documentation lookups and the autofixer loop then run in the agent's context instead of filling the main conversation. Its prompt names the files, the task, the constraints and what to report. When you already found the locations to change (an edit set from the `svelte-lsp-navigation` skill), pass them as file and line; the editor then runs the baseline, break and confirm steps itself, so do not run them first. For the editor on an older major, settle the migration first (this skill's rule 3) and say in the prompt whether the user migrated, declined, or asked to proceed without questions; the auditor handles an older major on its own. Call the agent without a `name`: a named call can start an agent-team teammate instead of a subagent, and a teammate gets none of the agent's preloaded skills.
 
 ```text
 Agent
@@ -152,12 +152,7 @@ Read every reference the task touches, each once, for anything this page does no
 | [changelogs.md](references/changelogs.md) | Before writing code in a project (its first two steps), and in the cases its "When to run the check" lists |
 | [known-doc-errata.md](references/known-doc-errata.md) | Before copying a docs example: the doc statements known to be wrong or out of date |
 
-The sibling skills (`svelte-docs-and-autofixer`, `svelte-lsp-navigation`) are named `svelte-development:<skill>`. When a step needs one that is not loaded yet, load it with the Skill tool:
-
-```text
-Skill
-  skill: "svelte-development:svelte-docs-and-autofixer"
-```
+The sibling skills are `svelte-development:svelte-docs-and-autofixer` and `svelte-development:svelte-lsp-navigation`.
 
 ## Procedure
 

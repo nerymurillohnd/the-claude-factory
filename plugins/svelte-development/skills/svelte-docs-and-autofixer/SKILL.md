@@ -28,25 +28,19 @@ Depart from any rule that holds here, ground rule or rule of this skill, only fo
 
 ### Ground rules for every Svelte task
 
-The ground rules (0 to 5) live in the `svelte-development:svelte-best-practices` skill and hold for this skill; "ground rule N" below means rule N there, and its rule 0 decides who does the work. Load that skill first, with one Skill call, unless it is already in your context (the plugin's agents have it preloaded):
-
-```text
-Skill
-  skill: "svelte-development:svelte-best-practices"
-```
+The ground rules (0 to 5) live in the `svelte-development:svelte-best-practices` skill and hold for this skill; "ground rule N" below means rule N there, and its rule 0 decides who does the work. Load that skill first with the Skill tool unless it is already in your context (the plugin's agents have it preloaded).
 
 ### Rules of this skill
 
 The short tool names (`get-documentation`, `svelte-autofixer`, `list-sections`, `playground-link`) stand for their full names, `mcp__plugin_svelte-development_svelte__<tool>`.
 
 1. **Sections from the docs map.** Fetch every section a change touches in one `get-documentation` call (ground rule 2), with the path from the docs map's second column; a title works only when it is unique in the map (titles such as "Overview" repeat). Call `list-sections` only for a topic the map lacks; this wins over that tool's description, which says to always call it first. Astro and Tailwind CSS docs are not on the server: fetch their raw URLs from the map with `curl -sS`.
-2. **Autofixer until clean, by ground rule 4.** Every `Write` or `Edit` of a Svelte file leaves it unchecked until you run step 5 of the procedure on its new content.
-3. **Pass code, never a path, to the remote server.** It treats a file path as code and answers "no issues" instead of refusing it. Read the file and pass its full content as `code`, and its real file name as `filename` (`Counter.svelte`, `counter.svelte.ts`). Only the local command line below takes a path.
-4. **The autofixer is not proof.** It does not type-check, does not know SvelteKit routing rules and does not run the code. Type errors come from the language server and the project check.
-5. **Older versions.** The live docs describe the newest Svelte and SvelteKit. On an older installed version, check each API against it before using it, reading the changelog window when "When to run the check" in the changelogs reference calls for it.
-6. **Playground links only for code answered in the chat**, never for code written to the project's files. A user's request for a link is their consent; otherwise offer one and wait for a yes.
-7. **Network and privacy.** Every MCP call needs network access. `svelte-autofixer` sends the code you pass to the Svelte team's server (Svelte states it does not log, store or inspect it); when the user does not want code to leave the machine, use the local command line below.
-8. **No downloads without consent.** Never install `@sveltejs/mcp` or run it through `npx` (which downloads it) without the user's confirmation.
+2. **Pass code, never a path, to the remote server.** It treats a file path as code and answers "no issues" instead of refusing it. Read the file and pass its full content as `code`, and its real file name as `filename` (`Counter.svelte`, `counter.svelte.ts`). Only the local command line below takes a path.
+3. **The autofixer is not proof.** It does not type-check, does not know SvelteKit routing rules and does not run the code. Type errors come from the language server and the project check.
+4. **Older versions.** The live docs describe the newest Svelte and SvelteKit. On an older installed version, check each API against it before using it, reading the changelog window when "When to run the check" in the changelogs reference calls for it.
+5. **Playground links only for code answered in the chat**, never for code written to the project's files. A user's request for a link is their consent; otherwise offer one and wait for a yes.
+6. **Network and privacy.** Every MCP call needs network access. `svelte-autofixer` sends the code you pass to the Svelte team's server (Svelte states it does not log, store or inspect it); when the user does not want code to leave the machine, use the local command line below.
+7. **No downloads without consent.** Never install `@sveltejs/mcp` or run it through `npx` (which downloads it) without the user's confirmation.
 
 ## Contents
 
@@ -127,17 +121,16 @@ mcp__plugin_svelte-development_svelte__playground-link
 
 ## When the MCP server is unavailable
 
-Say in the answer that the documentation or the code could not be checked through the server, and try these in order:
+Claude Code reconnects a dropped server on its own; the user can also reconnect it from `/mcp`. While the tools still fail, say in the answer that the documentation or the code could not be checked through the server, and use these fallbacks in order:
 
-1. **Retry once.** The server may be reconnecting; Claude Code retries a dropped server on its own. The user can reconnect it from `/mcp`, or run `/mcp reconnect all` (Claude Code 2.1.284 or later).
-2. **Raw download of the docs.** Fetch the section's text and filter it:
+1. **Raw download of the docs.** Fetch the section's text and filter it:
 
    ```sh
    curl -sS 'https://svelte.dev/docs/kit/load/llms.txt' | grep -n 'depends'
    ```
 
    The URL pattern is `https://svelte.dev/docs/<area>/<slug>/llms.txt`; the docs map lists it for every section. Keep the URL in single quotes: slugs such as `$state` would otherwise be expanded by the shell.
-3. **Local command line, if the user has it.** The `@sveltejs/mcp` package, installed globally by the user, provides the `svelte-mcp` command: it runs on their machine, sends no code and reads file paths. Use it offline or when code must not leave the machine. Put arguments that contain `$` in single quotes, because double quotes let the shell expand `$state`, and pass the full installed version to `--svelte-version`:
+2. **Local command line, if the user has it.** The `@sveltejs/mcp` package, installed globally by the user, provides the `svelte-mcp` command: it runs on their machine, sends no code and reads file paths. Use it offline or when code must not leave the machine. Put arguments that contain `$` in single quotes, because double quotes let the shell expand `$state`, and pass the full installed version to `--svelte-version`:
 
    ```sh
    svelte-mcp list-sections

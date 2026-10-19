@@ -25,12 +25,7 @@ Depart from any rule that holds here, ground rule or rule of this skill, only fo
 
 ### Ground rules for every Svelte task
 
-The ground rules (0 to 5) live in the `svelte-development:svelte-best-practices` skill. A question about the project's code needs only this skill's rules below. Before writing, changing or reviewing Svelte code, load that skill with the Skill tool unless it is already in your context; its ground rules then hold for this skill too, including rule 0 on who does the work:
-
-```text
-Skill
-  skill: "svelte-development:svelte-best-practices"
-```
+The ground rules (0 to 5) live in the `svelte-development:svelte-best-practices` skill. A question about the project's code needs only this skill's rules below. Before writing, changing or reviewing Svelte code, load that skill with the Skill tool unless it is already in your context; its ground rules then hold for this skill too, including rule 0 on who does the work.
 
 ### Rules of this skill
 
@@ -76,7 +71,7 @@ Answer questions about where code is, what calls it or what type it has yourself
 - `fixtures/kit3-app` in this skill's folder: the SvelteKit 3 project behind the examples in operations.md; it is not meant to be installed in the user's project.
 - The `svelte-best-practices` skill for the rules when fixing what diagnostics report; the `svelte-docs-and-autofixer` skill for the docs and the autofixer.
 
-The sibling skills (`svelte-best-practices`, `svelte-docs-and-autofixer`) are named `svelte-development:<skill>`; load one with the Skill tool when a step needs it.
+The sibling skills are `svelte-development:svelte-best-practices` and `svelte-development:svelte-docs-and-autofixer`.
 
 ## Calling the LSP tool
 
