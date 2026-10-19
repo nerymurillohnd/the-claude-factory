@@ -31,7 +31,7 @@ A new session starts with an empty conversation. What you decided yesterday, the
 - **Start where you stopped** — the next session reads the newest handoff in full, summarizes it and lists what is still open before it touches anything.
 - **Nothing gets lost between sessions** — every open item of the previous handoff is carried forward or closed with its evidence, so a pending task cannot quietly disappear.
 - **Facts, not memory** — each handoff is built from the repository itself: branch, uncommitted work, stashes, unpushed commits, the commits since the last handoff and the repository's recent pull requests. What could not be checked is marked as such.
-- **One project at a time** — a handoff belongs to the folder the session started in and holds only that project's work. If the session moved to another folder, Claude asks which project the handoff is for. Work on anything else is listed for you when the draft is shown and is not saved.
+- **One project at a time** — a handoff belongs to the project you are working in and holds only that project's work.
 - **You stay in charge** — the handoff is drafted with you and saved only after you approve it, and the next session asks how you want to proceed instead of starting the pending work on its own.
 - **Quiet everywhere else** — in projects without handoffs, the plugin adds nothing to the conversation.
 
@@ -102,7 +102,7 @@ In the desktop app's **Code** tab you can also click **+** → **Plugins** → *
 /session-handoff:write-handoff
 ```
 
-**Result:** Claude picks the project, reads the repository's state and, if you have uncommitted work, stashes, unpushed commits or a branch not yet on the remote, asks whether to commit, push or open a pull request first. The project is the folder the session started in; if the session has since moved to another folder, Claude asks which one the handoff is for before it writes anything. Before the draft, Claude lists the work from this session that belongs to other projects (not saved) and any inherited open item that looks out of scope or finished, and asks you what to do with each. It then shows you the complete draft: what was done with its evidence, decisions and their reasons, corrections, learnings, open items with what finishing them needs, the next steps in order and what could not be verified. Once you approve it, the handoff is saved as `.claude/session-handoff/2026-03-14-1730.md` (the date and time in UTC).
+**Result:** Claude checks the project's state (branch, uncommitted work, stashes, unpushed commits, open pull requests), summarizes the session from its start and compares it with the previous handoff. It then shows you the complete proposal: what was done with its evidence, decisions and their reasons, corrections, learnings, open items with what finishing them needs, the next steps in order and what could not be verified. Once you approve it, the handoff is saved as `.claude/session-handoff/2026-03-14-1730.md` (the date and time in UTC), creating the folders the first time. In a git repository, Claude asks whether to commit and push it. The handoff marks the end of the session.
 
 ### Pick up in the next session
 
@@ -122,7 +122,7 @@ Start Claude Code in the same project and type your first request as usual.
 
 Run `/session-handoff:write-handoff` again at the end of the next session.
 
-**Result:** every open item of the previous handoff gets a verdict (done with its evidence, partial, still open, or dropped by you), and the open ones are carried into the new handoff with their original date. An item stays open until you decide otherwise, so Claude asks about the ones that look out of scope, obsolete or finished elsewhere, and asks whether you finished anything outside the session. A result you report from outside the session, such as a test you ran in another app, closes an item as done, noted as reported by you. Items open for more than 30 days are marked for you to confirm or drop.
+**Result:** every open item of the previous handoff gets a verdict (done with its evidence, partial, still open, or dropped by you), and the open ones are carried into the new handoff with their original date. Only items that are still pending, in part or in full, are carried. Claude asks you about the ones that look obsolete or outside the project, and only you can drop an item. A result you report from outside the session, such as a test you ran in another app, closes an item as done, noted as reported by you. Items open for more than 30 days are marked for you to confirm or drop.
 
 ## 🔄 Updating
 
@@ -182,13 +182,6 @@ That is expected. Claude Code protects your project's `.claude/` folder, so ever
 <summary><b>A session started with a warning that the handoff folder could not be read.</b></summary>
 
 The plugin found `.claude/session-handoff/` but could not safely read it, so it does not report "no handoff". The folder, `.claude` or a handoff may be a symbolic link (the plugin never follows one), or you may lack permission to read it. Fix that, then ask Claude to read the newest handoff.
-
-</details>
-
-<details>
-<summary><b>Claude asked which project the handoff is for.</b></summary>
-
-The session started in one folder and is now working in another, for example after a `cd` into a repository. Answer with the folder the handoff should describe. The handoff covers only that project, and work done in the other folder is left out.
 
 </details>
 

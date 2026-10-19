@@ -10,11 +10,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ### Changed
 
-- A handoff now belongs to one confirmed project folder: the skill compares the folder the session started in with the one it is working in, and asks which project the handoff is for when they differ.
-- A handoff holds only the project's work. Work on other projects, the machine or accounts is listed for you before the draft and is not saved.
-- Inherited open items are put to you for a verdict: the ones that look out of scope, obsolete or finished elsewhere are listed with the reason, and you are asked whether you finished anything outside the session.
-- A result you report from outside the session closes an item as done, noted as reported by you.
-- The skill is shorter and organized in phases, and covers the first handoff of a project, when the folders do not exist yet.
+- The skill follows a plain sequence: check the project's state, summarize the session from its start, compare it with the previous handoff, propose the handoff, add recommendations and context, then write it after you approve. A closing checklist confirms every step was done.
+- The handoff gains a Project state section and a Recommendations and context section, and the template explains how to fill each section.
+- Only items still pending are carried forward. Claude asks you about the ones that look obsolete or outside the project, and a result you report from outside the session closes an item as done, noted as reported by you.
+- In a git repository, Claude asks whether to commit and push the saved handoff.
+- The first handoff of a project works without the folders: the skill creates them.
 - The start-of-session instructions are shorter and clearer. They have Claude check the handoff, compare its project with the session's and name items that look out of scope or finished.
 
 ### Fixed
