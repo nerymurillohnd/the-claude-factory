@@ -15,7 +15,7 @@ For each write task, the layer that does it best is listed first. The read-only 
 
 Before the first GitHub operation of a run, learn what you can do. Do not assume.
 
-- MCP tools loaded: list them with `ToolSearch` (`+github`). A tool missing from a catalog entry usually means fewer toolsets than the plugin turns on or a token without the scope. The Actions, Dependabot, Discussions and Projects tools exist only with all toolsets on, which is how the plugin connects.
+- MCP tools loaded: list them with `ToolSearch` (`+github`). A tool missing from the live list usually means fewer toolsets than the plugin turns on or a token without the scope. The Actions, Dependabot, Discussions and Projects tools exist only with all toolsets on, which is how the plugin connects.
 - Identity: MCP `get_me`, or `gh auth status`, which masks the token and prints its scopes.
 - Repository permission of the `gh` login: `gh api repos/<owner>/<repo> --jq '.permissions'` returns `admin`, `maintain`, `push`, `triage`, `pull`. The MCP server may use a different token, so a permission seen by one layer is not proof for the other.
 - Rules on the base branch: MCP `repository_ruleset_read` with `method: get_rules_for_branch`, or `gh ruleset check <branch> -R <owner>/<repo>`.
@@ -86,4 +86,4 @@ Before the first GitHub operation of a run, learn what you can do. Do not assume
 
 ## Beyond the lifecycle
 
-The full MCP tool list, with read and write marks, is the shared catalog that `SKILL.md` links. Operations the MCP does not cover, such as creating releases and uploading assets (`gh release create|upload`), secrets and variables (`gh secret|variable set`) and repository settings, go through `gh` or `gh api`. `gh` also has command groups for `issue`, `discussion`, `project`, `search`, `ruleset`, `label`, `gist`, `cache`, `workflow` and `agent-task`.
+The shared catalog that `SKILL.md` links lists the tools that write, the ones outside GitHub's default toolsets and the early-access ones. Operations the MCP does not cover, such as creating releases and uploading assets (`gh release create|upload`), secrets and variables (`gh secret|variable set`) and repository settings, go through `gh` or `gh api`. `gh` also has command groups for `issue`, `discussion`, `project`, `search`, `ruleset`, `label`, `gist`, `cache`, `workflow` and `agent-task`.

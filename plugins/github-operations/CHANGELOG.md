@@ -6,6 +6,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.3.2] - 2026-10-19
+
+### Changed
+
+- The `pr-tracker` agent's instructions are reorganized into a role, a mission, rules and numbered modules (inputs, tools, procedure, status, report), in shorter sentences. The report summary and the five statuses are unchanged. The tracker no longer says it re-reads pending checks every 30 seconds, because it has no way to wait: it returns `PENDING`. The steps are numbered 1 to 8 consistently.
+- The GitHub MCP tool catalog the PR skill reads is now a short reference: the tools that write (with the destructive ones marked), the tools outside GitHub's default toolsets, the early-access tools, how the token changes the list, and the tools with several operations. The full per-tool tables stay in the GitHub MCP tools page.
+
 ## [0.3.1] - 2026-10-18
 
 ### Changed
@@ -70,7 +77,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 - `git-cleanup` inventory: `--from` with a saved file that is not a JSON object reports a JSON error and exits 0, instead of ending with a traceback.
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/github-operations--v0.3.1...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/github-operations--v0.3.2...HEAD
+[0.3.2]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/github-operations--v0.3.2
 [0.3.1]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/github-operations--v0.3.1
 [0.3.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/github-operations--v0.3.0
 [0.2.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/github-operations--v0.2.0

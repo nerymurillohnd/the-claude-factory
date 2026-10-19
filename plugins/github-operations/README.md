@@ -271,7 +271,7 @@ No. It has no shell and only read-only GitHub tools, so it cannot comment, resol
 <details>
 <summary><b>How long will Claude wait for a slow pipeline?</b></summary>
 
-It keeps checking within a time budget and then hands control back with what it knows, so it never hangs on a pipeline that takes many minutes. Claude then starts another monitoring round.
+The PR tracker reports what is still pending and returns, and Claude waits for a real change within a time budget. When the budget ends it hands control back with what it knows, so it never hangs on a pipeline that takes many minutes. Claude then starts another monitoring round.
 
 </details>
 
