@@ -41,15 +41,15 @@ Claude Code returns an error for each LSP call on a file whose server it cannot 
 
 ## Diagnostics that hide others
 
-The server's Svelte diagnostics are all or nothing in these cases (svelte-language-server 0.18.5, `plugins/svelte/features/getDiagnostics.ts`); the same code runs in svelte-check, so its output has the same gaps:
+The server's Svelte compiler diagnostics (source `svelte`) are all or nothing in these cases (svelte-language-server 0.18.5, `plugins/svelte/features/getDiagnostics.ts`); svelte-check runs the same code, so its output has the same gaps. TypeScript and CSS diagnostics are computed separately and still appear, except that a file the server cannot parse shows a single `ts` or `js` parse error instead of its type errors.
 
 - **Configuration fails to load**: every `.svelte` file shows one "Error in vite.config" or "Error in svelte.config.js" diagnostic at the top, and no compiler warning or error. Fix the configuration first, then check again.
-- **The component does not compile**: only that one error is reported, with no warnings. After fixing it, check again: more problems can appear.
+- **The component does not compile**: only that one compiler error is reported, with no compiler warnings. After fixing it, check again: more problems can appear.
 - **A preprocessor fails**: one diagnostic with source `svelte(script)` or `svelte(style)` at the start of that block.
-- **A `lang` attribute with no preprocess configuration**: a syntax error whose message contains "expected" is dropped without a word, and with a `lang` on the template or a script `lang` other than `ts`, every warning except accessibility ones is dropped.
-- **The project's `svelte` cannot be loaded** (no `node_modules`, or the workspace is not trusted): the server compiles with its own bundled Svelte 4, so Svelte 5 code gets false errors. Install the dependencies; a trusted workspace is the default.
+- **Any `lang` attribute, `lang="ts"` included, when the project configuration sets no `preprocess`** (for example a SvelteKit 3 `vite.config` whose `sveltekit()` options have no `preprocess`): a Svelte syntax error whose message contains "expected" is dropped from the `svelte` diagnostics; only the TypeScript side reports a parse error. With a `lang` on the template or a script `lang` other than `ts`, every compiler warning except accessibility ones is dropped too, and with a `lang` on `<style>`, the unused-selector warnings.
+- **The project's `svelte` cannot be loaded** (no `node_modules`, or the workspace is not trusted): the server compiles with its own bundled Svelte 4, so Svelte 5 code can get false errors or none (inferred from the server's source, not observed). Tell the user to install the dependencies (rule 11 of the skill); a trusted workspace is the default.
 
-To silence a compiler warning for both the server and svelte-check, use `<!-- svelte-ignore <code> -->` or `compilerOptions.warningFilter` in the project's configuration: svelte-check's `--compiler-warnings` flag and the server's own warning setting are separate.
+For a verified false positive only (rule 8 of the skill, with the reason written down), `<!-- svelte-ignore <code> -->` or `compilerOptions.warningFilter` in the project's configuration silences the warning for both the server and svelte-check, which compile with the same configuration; svelte-check's `--compiler-warnings` flag and the server's own warning setting are separate.
 
 CSS diagnostics (source `css`, `scss` or `less`) cover the component's main `<style>` only; there are none for `postcss`, `sass` or `stylus` styles or for inline `style=` attributes, so their absence there proves nothing. In a project that uses Tailwind CSS, "Unknown at rule" warnings for `@apply`, `@reference`, `@theme` or `@utility` are noise: leave them.
 
