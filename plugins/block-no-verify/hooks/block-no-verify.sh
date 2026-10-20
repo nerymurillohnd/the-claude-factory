@@ -699,7 +699,7 @@ tk_dollar() {
       ;;
     \{)
       tk_find "${R_BRACE}" $((T_I + 2))
-      if ((MATCH < 0)); then deny 'unterminated ${...} expansion; failing closed'; fi
+      if ((MATCH < 0)); then deny $'unterminated ${...} expansion; failing closed'; fi
       body=${TK_S:T_I+2:MATCH-T_I-2}
       T_CUR+="\${${body}}"
       T_HAVE=1
@@ -1252,7 +1252,7 @@ is_assignment() { [[ $1 =~ ^[A-Za-z_][A-Za-z0-9_]*= ]]; }
 ps_env_assignment() { # prints NAME=VALUE for $env:NAME=VALUE words
   local w=$1 rest
   lower "${w:0:5}"
-  [[ ${LOWER} == '$env:' ]] || return 1
+  [[ ${LOWER} == $'$env:' ]] || return 1
   rest=${w:5}
   [[ ${rest} =~ ^[A-Za-z_][A-Za-z0-9_]* ]] || return 1
   RET=${rest}
