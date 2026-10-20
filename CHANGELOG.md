@@ -13,6 +13,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The
 ### Changed
 
 - **python-lsp-intelligence** 0.2.2 — hook messages to Claude name the skill to invoke.
+- **bash-lsp-intelligence** 0.2.2 — hook messages to Claude name the skill to invoke.
 
 ## 2026-10-19
 
