@@ -1,10 +1,10 @@
 <div align="center">
 
-# 🧾 Project Records
+# 🧾 Project Maintainer
 
 <p><strong>Records a project's important decisions as architecture decision records and tracks the technical debt it cannot fix yet in a ledger, so the next person knows why the project is the way it is.</strong></p>
 
-[![Version](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Fnerymurillohnd%2Fthe-claude-factory%2Fmain%2Fplugins%2Fproject-records%2F.claude-plugin%2Fplugin.json&query=%24.version&label=version&color=D97757)](./CHANGELOG.md)
+[![Version](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Fnerymurillohnd%2Fthe-claude-factory%2Fmain%2Fplugins%2Fproject-maintainer%2F.claude-plugin%2Fplugin.json&query=%24.version&label=version&color=D97757)](./CHANGELOG.md)
 [![Works in](https://img.shields.io/badge/works%20in-Claude%20Code%20%C2%B7%20Claude%20app-2563EB)](#-compatibility)
 [![Category](https://img.shields.io/badge/category-Documentation%20%26%20Writing-6B7280)](../../README.md#-catalog)
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-%E2%89%A5%202.1.292-D97757?logo=claude&logoColor=white)](https://code.claude.com/docs/en/plugins/install)
@@ -40,7 +40,7 @@ Months later, nobody remembers why the project uses one database over another, o
 
 | Component | Name | What it does | How it runs |
 | :-- | :-- | :-- | :-- |
-| 🎯 Skill | `project-records:record-decisions-and-debt` | Writes decisions as ADRs from a template and keeps a pending and a resolved debt ledger. It searches for an existing record first, asks only for facts it is missing, and tells you in one line what it saved and where | Automatically when a decision is made or a problem is postponed, or with `/project-records:record-decisions-and-debt` |
+| 🎯 Skill | `project-maintainer:write-records` | Writes decisions as ADRs from a template and keeps a pending and a resolved debt ledger. It searches for an existing record first, asks only for facts it is missing, and tells you in one line what it saved and where | Automatically when a decision is made or a problem is postponed, or with `/project-maintainer:write-records` |
 
 The ADR template follows [MADR 4.0](https://adr.github.io/madr/) and adds a scope, a risks table and a confirmation table.
 
@@ -61,10 +61,10 @@ The ADR template follows [MADR 4.0](https://adr.github.io/madr/) and adds a scop
 
 ```bash
 # One step: adds the marketplace (if needed) and installs the plugin — Claude Code v2.1.292+
-claude plugin install project-records --marketplace nerymurillohnd/the-claude-factory
+claude plugin install project-maintainer --marketplace nerymurillohnd/the-claude-factory
 
 # Or, with the marketplace already added
-claude plugin install project-records@the-claude-factory
+claude plugin install project-maintainer@the-claude-factory
 ```
 
 Add `--scope project` to enable it for everyone working in the current repository; each collaborator still installs it once on their own machine.
@@ -75,10 +75,10 @@ Add `--scope project` to enable it for everyone working in the current repositor
 <summary><b>💬 Inside a Claude Code session</b></summary>
 
 ```text
-/plugin install project-records --marketplace nerymurillohnd/the-claude-factory
+/plugin install project-maintainer --marketplace nerymurillohnd/the-claude-factory
 ```
 
-Requires Claude Code v2.1.275+. With the marketplace already added, `/plugin install project-records@the-claude-factory` opens the plugin's details so you can pick a scope. You can also browse it in `/plugin` → **Discover**.
+Requires Claude Code v2.1.275+. With the marketplace already added, `/plugin install project-maintainer@the-claude-factory` opens the plugin's details so you can pick a scope. You can also browse it in `/plugin` → **Discover**.
 
 </details>
 
@@ -87,7 +87,7 @@ Requires Claude Code v2.1.275+. With the marketplace already added, `/plugin ins
 
 1. Open **Customize** in the sidebar, then **Plugins**.
 2. Select **Add** → **Add marketplace** and enter `nerymurillohnd/the-claude-factory`.
-3. Find **Project Records** in **Discover** and select **Add**.
+3. Find **Project Maintainer** in **Discover** and select **Add**.
 
 In the desktop app's **Code** tab you can also click **+** → **Plugins** → **Add plugin**.
 
@@ -147,12 +147,12 @@ If your project already keeps ADRs in another folder, such as `docs/adr/`, or na
 ## 🔄 Updating
 
 ```bash
-claude plugin update project-records@the-claude-factory
+claude plugin update project-maintainer@the-claude-factory
 ```
 
-Or in a session: `/plugin` → **Installed** → **Project Records** → **Update now**. Then run `/reload-plugins`.
+Or in a session: `/plugin` → **Installed** → **Project Maintainer** → **Update now**. Then run `/reload-plugins`.
 
-Installed from the Claude app? In Claude Code (v2.1.273+, signed in with that claude.ai account) it appears as `project-records@synced`: update and uninstall it in the app (**Customize** → **Plugins**); in `/plugin` you can only turn it on or off, unless your organization requires it.
+Installed from the Claude app? In Claude Code (v2.1.273+, signed in with that claude.ai account) it appears as `project-maintainer@synced`: update and uninstall it in the app (**Customize** → **Plugins**); in `/plugin` you can only turn it on or off, unless your organization requires it.
 
 > [!TIP]
 > Turn on auto-update once for the whole marketplace: `/plugin` → **Marketplaces** → **the-claude-factory** → **Enable auto-update**.
@@ -160,12 +160,12 @@ Installed from the Claude app? In Claude Code (v2.1.273+, signed in with that cl
 ## 🗑️ Uninstalling
 
 ```bash
-claude plugin uninstall project-records@the-claude-factory
+claude plugin uninstall project-maintainer@the-claude-factory
 ```
 
 Installed with `--scope project`? Add `--scope project` here too.
 
-In a session: `/plugin` → **Installed** → **Project Records** → **Uninstall**. In the Claude app: **Customize** → **Plugins** → **Project Records** → its menu → **Remove**.
+In a session: `/plugin` → **Installed** → **Project Maintainer** → **Uninstall**. In the Claude app: **Customize** → **Plugins** → **Project Maintainer** → its menu → **Remove**.
 
 Your records stay in your project's folders; they are ordinary Markdown files.
 
@@ -186,7 +186,7 @@ Records live in your project folder, so the plugin needs a session that works in
 <details>
 <summary><b>The plugin's commands don't show up after installing.</b></summary>
 
-Run `/reload-plugins`, then type `/project-records:` to list its skills. If it still doesn't appear, open `/plugin` → **Errors** and see the [troubleshooting guide](../../docs/troubleshooting.md).
+Run `/reload-plugins`, then type `/project-maintainer:` to list its skills. If it still doesn't appear, open `/plugin` → **Errors** and see the [troubleshooting guide](../../docs/troubleshooting.md).
 
 </details>
 
@@ -234,9 +234,9 @@ Not yet. Claude writes every record from the plugin's templates. If your project
 
 ## 🐞 Found a problem?
 
-[Report a bug](https://github.com/nerymurillohnd/the-claude-factory/issues/new?template=bug_report.yml&plugin=project-records) •
-[Request a feature](https://github.com/nerymurillohnd/the-claude-factory/issues/new?template=feature_request.yml&plugin=project-records) •
-[Ask a question](https://github.com/nerymurillohnd/the-claude-factory/issues/new?template=question.yml&plugin=project-records)
+[Report a bug](https://github.com/nerymurillohnd/the-claude-factory/issues/new?template=bug_report.yml&plugin=project-maintainer) •
+[Request a feature](https://github.com/nerymurillohnd/the-claude-factory/issues/new?template=feature_request.yml&plugin=project-maintainer) •
+[Ask a question](https://github.com/nerymurillohnd/the-claude-factory/issues/new?template=question.yml&plugin=project-maintainer)
 
 ## 📝 Changelog
 

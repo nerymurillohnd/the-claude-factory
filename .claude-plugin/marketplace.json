@@ -32,8 +32,8 @@
       "category": "testing"
     },
     {
-      "name": "project-records",
-      "source": "./plugins/project-records",
+      "name": "project-maintainer",
+      "source": "./plugins/project-maintainer",
       "description": "Records a project's important decisions as architecture decision records and tracks the technical debt it cannot fix yet in a ledger, so the next person knows why the project is the way it is.",
       "category": "documentation"
     },

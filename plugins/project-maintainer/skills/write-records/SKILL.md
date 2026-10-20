@@ -1,9 +1,9 @@
 ---
-name: record-decisions-and-debt
+name: write-records
 description: Writes and maintains a project's architecture decision records (ADRs) and its technical-debt ledger. Use when an important decision is made, when a problem is found that cannot be fixed now, when logged debt is fixed, or when the user asks to record a decision, write an ADR, log technical debt or resolve a debt item. Searches for duplicates first, writes from templates and never rewrites an accepted record.
 ---
 
-# Record decisions and debt
+# Write records
 
 Keep a project's important decisions and the technical debt it cannot fix yet in files, so nobody has to rediscover why the project is the way it is. There are two kinds of record. Each has a procedure in `references/` and templates in `assets/`.
 
