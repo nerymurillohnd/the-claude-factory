@@ -19,7 +19,8 @@
     "records",
     "handoff",
     "session",
-    "continuity"
+    "continuity",
+    "guardrails"
   ],
   "userConfig": {
     "commitNudge": {

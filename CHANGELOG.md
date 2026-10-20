@@ -9,7 +9,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The
 ### Added
 
 - **svelte-development** 0.1.0 — writes, reviews and migrates Svelte 5 and SvelteKit 3 code from the official docs, checks every Svelte file with the Svelte autofixer and proves changes with the Svelte language server and your project's `svelte-check`.
-- **project-maintainer** 0.1.0 — records a project's important decisions as architecture decision records and tracks the technical debt it cannot fix yet in a pending and a resolved ledger.
+- **project-maintainer** 0.1.0 — records a project's important decisions as ADRs, tracks the technical debt it cannot fix yet and closes it as resolved, obsolete or accepted, carries each session's state to the next one in a handoff, and guards the records so Claude asks before it rewrites a settled one.
 
 ### Changed
 
