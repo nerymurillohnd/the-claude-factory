@@ -1,7 +1,7 @@
 {
   "name": "typescript7-lsp-intelligence",
   "displayName": "TypeScript 7 LSP Intelligence",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Connects the native TypeScript 7 language server to Claude Code, type-checks every file Claude edits with your own native TypeScript 7 compiler under a strictest policy, and teaches Claude to find the program that owns a file and fix compiler findings without unsafe assertions or suppressions.",
   "author": {
     "name": "Nery Murillo",
