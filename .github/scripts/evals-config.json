@@ -11,5 +11,14 @@
     ],
     "max_cost_usd": 10,
     "cost_basis": "2026-10-12 smoke tests, one arm, one run: $1.74; baseline arm about 40% of that; x3 runs x1.25"
+  },
+  "project-maintainer": {
+    "allow_tools": [
+      "Bash",
+      "Write",
+      "Edit"
+    ],
+    "max_cost_usd": 20,
+    "cost_basis": "2026-10-19 smoke run, 5 cases, one arm, one run: $3.82 ($2.16 agent + $1.65 judge, measured before 2 llm graders were removed); baseline arm about 40% of that; x3 runs x1.25"
   }
 }

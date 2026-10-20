@@ -39,6 +39,15 @@
 
 - Fix every error it reports, in the files you touched and in the others.
 
+### Mods
+
+A plugin that ships a mod keeps its code in `hooks/*.ts` and its tests in `tests/*.test.ts`.
+
+- `npx --yes @biomejs/biome@2.5.15 check --write --error-on-warnings <file>` - Run first, after every `.ts` edit.
+- `npx --yes --package typescript@6.0.3 tsc -p plugins/<plugin>/tsconfig.json --noEmit` - Run after Biome. The config extends the declarations the engine writes into `plugins/<plugin>/.claude-plugin/types/` when it loads the mod. Git ignores that folder, so after a fresh clone load the plugin once in an interactive session from a trusted folder (`claude --plugin-dir plugins/<plugin>`, then `/exit`) to write it. CI cannot run this gate for that reason.
+- `claude plugin validate --strict plugins/<plugin>` - Run after tsc. It reads the mod the way the engine will. Pass `$` only inside `register.ts`: validation fails when `$` goes to a function imported from another file.
+- `claude plugin test plugins/<plugin>` - Run last. Break the rule under test on purpose once and confirm its tests fail.
+
 ### Shell
 
 - `shfmt -w <file>` - Run first, after every `.sh` edit.
@@ -60,7 +69,7 @@
 4. `node --test ".github/scripts/tests/*.test.mjs"` - Runs the script tests and the LSP hook tests. They need `shfmt`, `shellcheck`, `ruff` and `basedpyright` on `PATH`. Read the `skipped` count: a missing tool skips its cases.
 5. `node .github/scripts/check-repo.mjs` - Checks the repository policy: manifests, required plugin files and sections, changelog entries, and the root `README.md` and `CHANGELOG.md`.
 6. `node .github/scripts/catalog.mjs --check` - Fails when the generated blocks of the root `README.md` are out of date.
-7. `.github/scripts/validate-claude.sh` - Runs `claude plugin validate --strict` on the marketplace, on `.claude/` and on every plugin.
+7. `.github/scripts/validate-claude.sh` - Runs `claude plugin validate --strict` on the marketplace, on `.claude/` and on every plugin, and `claude plugin test` on every plugin that ships mod tests.
 8. `node .github/scripts/check-version-bump.mjs origin/main` - Fails when a plugin changed since `origin/main` without a version bump and a changelog entry. Skip it when `origin/main` does not exist.
 9. `npx --yes @biomejs/biome@2.5.15 check --error-on-warnings .` - Checks the format, lint and imports of the JavaScript and JSON files.
 10. `git ls-files -z '*.sh' | xargs -0 shellcheck -o all -S style -x -a -P SCRIPTDIR` - Lints every tracked shell script.
@@ -73,6 +82,7 @@
 17. `basedpyright --warnings` - Type-checks the whole project.
 18. `npx --yes --package typescript@6.0.3 tsc -p plugins/tsconfig.json --noEmit --typeRoots "$(npm root -g)/@types"` - Type-checks the `.mjs` files under `plugins/`.
 19. `npx --yes --package typescript@6.0.3 tsc -p .github/scripts/tsconfig.json --noEmit --typeRoots "$(npm root -g)/@types"` - Type-checks the `.mjs` files under `.github/scripts/`.
-20. `npx --yes markdownlint-cli2@0.23.3` - Lints the Markdown that people read.
-21. `SHELLCHECK_OPTS='-o all -S style -x -a -P SCRIPTDIR' actionlint` - Lints the workflows. Run it only when `.github/workflows/` changed.
-22. `git push origin <branch>` - Never run a bare `git push`.
+20. `npx --yes --package typescript@6.0.3 tsc -p plugins/<plugin>/tsconfig.json --noEmit` - Type-checks the mod of each plugin that ships one. Run it locally: it needs the declarations the engine writes, which CI does not have.
+21. `npx --yes markdownlint-cli2@0.23.3` - Lints the Markdown that people read.
+22. `SHELLCHECK_OPTS='-o all -S style -x -a -P SCRIPTDIR' actionlint` - Lints the workflows. Run it only when `.github/workflows/` changed.
+23. `git push origin <branch>` - Never run a bare `git push`.

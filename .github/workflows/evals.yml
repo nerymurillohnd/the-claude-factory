@@ -27,7 +27,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  CLAUDE_CODE_VERSION: "2.1.302"
+  CLAUDE_CODE_VERSION: "2.1.304"
   # Full model IDs, never aliases, so a model rollout isn't read as a plugin regression.
   EVAL_MODEL: ${{ vars.EVAL_MODEL || 'claude-sonnet-5-5' }}
   EVAL_JUDGE_MODEL: ${{ vars.EVAL_JUDGE_MODEL || 'claude-opus-5-5' }}
