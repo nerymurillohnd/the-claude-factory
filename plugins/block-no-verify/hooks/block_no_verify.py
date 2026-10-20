@@ -26,6 +26,10 @@ MIN_ABBREVIATION = len("--no-v")  # git also accepts any unique prefix; shorter 
 # letters are their short options that take a value: a cluster scan stops at one of them.
 NO_VERIFY_SHORT = {"commit": frozenset("FmcCtUSu"), "am": frozenset("CpS")}
 ATTACHED_ONLY = frozenset("Su")  # the value must be attached (`-Skey`), never the next word
+MAX_DEPTH = 3  # shells inside shells (`bash -c`, `eval`) followed this far
+TOO_DEEP = f"nesting deeper than {MAX_DEPTH} levels (cannot inspect)"
+SHELLS = frozenset({"bash", "sh", "zsh", "dash", "ksh"})
+SHELL_VALUE_OPTIONS = frozenset({"-o", "+o", "-O", "+O", "--rcfile", "--init-file"})
 GLOBAL_VALUE_OPTIONS = frozenset(
     {"-C", "-c", "--git-dir", "--work-tree", "--namespace", "--super-prefix", "--config-env"}
 )
@@ -354,13 +358,49 @@ def git_bypass(words: list[str]) -> str | None:
     return None
 
 
-def find_bypass(command: str) -> str | None:
+def shell_script(words: list[str]) -> str | None:
+    """Return the command string a shell runs with `-c` (`words[0]` is the shell), or None."""
+    index = 1
+    while index < len(words):
+        word = words[index]
+        if not word.startswith(("-", "+")):
+            return None  # a script file: its contents are not inspected
+        if word in SHELL_VALUE_OPTIONS:
+            index += 2
+            continue
+        if not word.startswith("--") and "c" in word[1:]:
+            return words[index + 1] if index + 1 < len(words) else None
+        index += 1
+    return None
+
+
+def nested_bypass(script: str, depth: int) -> str | None:
+    """Return the first bypass in a command string run by a shell, one level deeper."""
+    if depth >= MAX_DEPTH:
+        return TOO_DEEP
+    return find_bypass(script, depth + 1)
+
+
+def words_bypass(words: list[str], depth: int) -> str | None:
+    """Return the first bypass in one command whose wrappers are already stripped, or None."""
+    if is_git(words[0]):
+        return git_bypass(words)
+    name = pathlib.Path(words[0]).name.casefold()
+    if name in SHELLS:
+        script = shell_script(words)
+        return None if script is None else nested_bypass(script, depth)
+    if name == "eval" and len(words) > 1:
+        return nested_bypass(" ".join(words[1:]), depth)
+    return None
+
+
+def find_bypass(command: str, depth: int = 0) -> str | None:
     """Return the first Git bypass found in a command list, or None."""
     for part in split_subcommands(command):
         words = strip_prefix(lex_words(part))
-        if not words or not is_git(words[0]):
+        if not words:
             continue
-        bypass = git_bypass(words)
+        bypass = words_bypass(words, depth)
         if bypass is not None:
             return bypass
     return None

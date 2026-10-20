@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+import shlex
 import subprocess
 import sys
 import time
@@ -42,6 +43,13 @@ def event(command: object) -> bytes:
         "tool_input": {"command": command},
     }
     return json.dumps(payload).encode("utf-8")
+
+
+def nest(command: str, levels: int) -> str:
+    """Wrap `command` in `bash -c '...'` the given number of times, quoting it as a shell would."""
+    for _ in range(levels):
+        command = "bash -c " + shlex.quote(command)
+    return command
 
 
 def deny_reason(stdout: str) -> str:
@@ -312,6 +320,74 @@ class SubcommandTests(HookCase):
         """Break caught: a carriage return gluing the flag to the word before the newline."""
         self.assert_denied("git commit -m x\r\ngit commit --no-verify\r\n", "--no-verify")
         self.assert_allowed("git commit -m x\r\ngit status\r\n")
+
+
+class ShellTests(HookCase):
+    """A git command inside `bash -c`, `eval` or a spliced name is still a git command."""
+
+    def test_a_shell_command_string_is_inspected(self) -> None:
+        """Break caught: `bash -c "git commit --no-verify"` passing because it is one word."""
+        commands = (
+            "bash -c 'git commit --no-verify'",
+            'sh -lc "git commit -n"',
+            'sudo bash -c "git commit --no-gpg-sign"',
+            "env X=1 zsh -c 'git push --no-verify'",
+            "/bin/bash -c 'git commit --no-verify'",
+            "bash -o pipefail -c 'git commit -n'",
+            "bash -c 'echo hi; git commit --no-verify'",
+            "dash -c 'git commit --no-verify'",
+            "ksh -c 'git commit --no-verify'",
+        )
+        for command in commands:
+            with self.subTest(command=command):
+                self.assert_denied(command)
+
+    def test_nesting_is_followed_to_three_levels(self) -> None:
+        """Break caught: a shell inside a shell hiding the bypass."""
+        for levels in (1, 2, 3):
+            with self.subTest(levels=levels):
+                self.assert_denied(nest("git commit --no-verify", levels), "--no-verify")
+
+    def test_deeper_nesting_is_denied_as_too_deep_to_inspect(self) -> None:
+        """Break caught: the depth limit being skipped, or reached without a deny."""
+        for command in (nest("git commit --no-verify", 4), nest("git status", 4)):
+            with self.subTest(command=command):
+                self.assert_denied(command, "nesting deeper than 3 levels")
+
+    def test_eval_is_read_the_way_the_shell_rereads_it(self) -> None:
+        """Break caught: `eval` hiding a bypass; its arguments are joined and parsed again."""
+        commands = (
+            'eval "git commit --no-verify"',
+            "eval git commit -n",
+            'eval git commit -m "x --no-verify"',  # the shell splits the joined message
+            'sudo eval "git commit --no-gpg-sign"',
+        )
+        for command in commands:
+            with self.subTest(command=command):
+                self.assert_denied(command)
+
+    def test_a_spliced_git_name_is_found(self) -> None:
+        """Break caught: quotes joined by the shell hiding the name from a substring check."""
+        self.assert_denied('g"i"t commit --no-verify', "--no-verify")
+        self.assert_denied("'g'it commit -n", "-n")
+        self.assert_denied("g\\it commit --no-verify", "--no-verify")
+
+    def test_shells_that_run_no_git_pass(self) -> None:
+        """Break caught: a false positive on shells, scripts and eval that only mention a flag."""
+        commands = (
+            "bash -c 'git status'",
+            "bash script.sh",
+            "bash -c 'echo --no-verify'",
+            "bash -c 'git commit -m \"docs: --no-verify\"'",
+            "sh -c 'git commit -mn'",
+            'eval "echo hi"',
+            "eval git status",
+            "bash",
+            "bash -c",
+        )
+        for command in commands:
+            with self.subTest(command=command):
+                self.assert_allowed(command)
 
 
 class ContractTests(HookCase):
