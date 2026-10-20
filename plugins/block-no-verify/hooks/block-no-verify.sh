@@ -1578,6 +1578,9 @@ main() {
     *) deny "the hook payload is malformed; failing closed" ;;
   esac
   parsed=${parsed:1}
+  # A native jq.exe on Windows prints CRLF for every LF, and jq 1.6 has no --binary to stop it.
+  # The tool name never ends in a CR, so one that does marks the conversion: undo it exactly.
+  if [[ ${parsed%%$'\n'*} == *$'\r' ]]; then parsed=${parsed//$'\r\n'/$'\n'}; fi
   tool=${parsed%%$'\n'*}
   parsed=${parsed#*$'\n'}
   PAYLOAD_CWD=${parsed%%$'\n'*}

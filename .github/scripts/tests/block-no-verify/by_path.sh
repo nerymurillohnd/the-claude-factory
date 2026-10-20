@@ -143,6 +143,24 @@ run_raw '{"tool_name":"Bash"}'
 [[ ${status} -eq 0 && -z ${out} ]] || fail "a call without tool_input must pass"
 echo "handler: guards the PowerShell tool and ignores calls without a Bash command"
 
+# A native jq.exe on Windows prints CRLF for every LF it writes. jq 1.6 has no --binary to stop it, so
+# the tool name arrives as "Bash\r" unless the handler undoes it. This stub does the same on any system.
+mkdir "${tmp}/winjq"
+cat > "${tmp}/winjq/jq" << STUB
+#!/usr/bin/env bash
+set -o pipefail
+"${jq_path}" "\$@" | sed \$'s/\$/\\r/'
+STUB
+chmod +x "${tmp}/winjq/jq"
+unix_path=${safe_path}
+safe_path="${tmp}/winjq:${unix_path}"
+expect_deny 'git commit --no-verify -m x'
+expect_deny $'git commit \\\n--no-verify -m x'
+expect_pass 'git status'
+expect_pass $'git commit -m "$(cat <<\'EOF\'\nfeat: x\n\nDo not use --no-verify.\nEOF\n)"'
+safe_path=${unix_path}
+echo "handler: reads the payload the same when jq prints CRLF, as a native Windows jq does"
+
 # What it cannot read it refuses: an unreadable payload or a command with an open quote.
 for payload in 'not json' '[]' '{"tool_name":"Bash","tool_input":{"command":"git commit -m \"x"}}'; do
   run_raw "${payload}"
