@@ -9,8 +9,7 @@
             "type": "command",
             "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/block-no-verify.sh\"",
             "timeout": 60,
-            "onFailure": "block",
-            "statusMessage": "Claude was blocked from running a --no-verify command."
+            "onFailure": "block"
           }
         ]
       }
