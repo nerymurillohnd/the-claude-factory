@@ -206,6 +206,114 @@ class AllowedTests(HookCase):
         self.assert_allowed('git commit -m"docs: explain --no-verify"')
 
 
+class SubcommandTests(HookCase):
+    """`-n` means --no-verify only in `git commit` and `git am`; elsewhere it is something else."""
+
+    def test_short_n_is_denied_on_commit_and_am(self) -> None:
+        """Break caught: `git commit -n`, the short spelling of --no-verify, passing."""
+        commands = (
+            "git commit -n",
+            'git commit -nm "x"',
+            'git commit -anm "x"',
+            'git commit -m "x" -n',
+            'git commit -am "x" -n',
+            "git commit -S -n",
+            "git commit -C HEAD -n",
+            "git am -n p.patch",
+            "git am -3 -n p.patch",
+        )
+        for command in commands:
+            with self.subTest(command=command):
+                self.assert_denied(command, "-n")
+
+    def test_short_n_is_found_behind_global_options(self) -> None:
+        """Break caught: global options before the subcommand hiding it from the `-n` rule."""
+        commands = (
+            "git -C /tmp/r commit -n",
+            "git -c user.name=x commit -n",
+            "git -c user.name=x -C /r commit -n",
+            "git --git-dir=/x commit -n",
+            "git --git-dir /x --no-pager commit -n",
+            "git --no-pager commit -n",
+        )
+        for command in commands:
+            with self.subTest(command=command):
+                self.assert_denied(command, "-n")
+
+    def test_short_n_passes_where_it_means_something_else(self) -> None:
+        """Break caught: a false positive on `-n` of push, merge, pull, cherry-pick or rebase."""
+        commands = (
+            "git push -n",
+            "git merge -n b",
+            "git pull -n",
+            "git cherry-pick -n abc",
+            "git revert -n abc",
+            "git rebase -n",
+            "git status -n",
+        )
+        for command in commands:
+            with self.subTest(command=command):
+                self.assert_allowed(command)
+
+    def test_short_n_passes_when_it_is_part_of_a_value(self) -> None:
+        """Break caught: a message or key id that starts with `n` read as a flag cluster."""
+        commands = (
+            "git commit -mn",
+            'git commit -m "n"',
+            'git commit -am "n"',
+            'git commit -m "-n"',
+            "git commit -S",
+            "git commit -Sn",
+            "git commit -Fn.txt",
+            "git am -3",
+            "git am -Cn",
+        )
+        for command in commands:
+            with self.subTest(command=command):
+                self.assert_allowed(command)
+
+    def test_a_bypass_flag_is_denied_on_every_subcommand(self) -> None:
+        """Break caught: the long flags being checked for commit only."""
+        cases = (
+            ("git push --no-verify", "--no-verify"),
+            ("git merge --no-verify b", "--no-verify"),
+            ("git rebase --no-verify", "--no-verify"),
+            ("git am --no-verify p.patch", "--no-verify"),
+            ("git tag --no-gpg-sign v1", "--no-gpg-sign"),
+            ("git merge --no-gpg-sign b", "--no-gpg-sign"),
+            ("git cherry-pick --no-gpg-sign abc", "--no-gpg-sign"),
+        )
+        for command, names in cases:
+            with self.subTest(command=command):
+                self.assert_denied(command, names)
+
+    def test_tag_signing_overrides_are_denied_like_commit_ones(self) -> None:
+        """Break caught: an unsigned tag through `-c tag.gpgsign=false`."""
+        for command in (
+            "git -c tag.gpgsign=false tag v1",
+            "git --config=tag.gpgsign=off tag v1",
+            "git -c TAG.GPGSIGN=No tag v1",
+        ):
+            with self.subTest(command=command):
+                self.assert_denied(command, "tag.gpgsign")
+
+    def test_windows_spellings_of_git_are_found(self) -> None:
+        """Break caught: `git.exe`, or a quoted path to it, hiding the call."""
+        cases = (
+            "git.exe commit --no-verify",
+            '"C:/Program Files/Git/cmd/git.exe" commit -n',
+            "/usr/bin/git commit --no-verify",
+        )
+        for command in cases:
+            with self.subTest(command=command):
+                self.assert_denied(command)
+
+    def test_crlf_line_ends_do_not_hide_a_command(self) -> None:
+        """Break caught: a carriage return gluing the flag to the word before the newline."""
+        self.assert_denied("git commit -m x\r\ngit commit --no-verify\r\n", "--no-verify")
+        self.assert_allowed("git commit -m x\r\ngit status\r\n")
+
+
 class ContractTests(HookCase):
     """What the hook prints and returns for payloads Claude Code or a caller could send."""
 

@@ -13,15 +13,22 @@ import json
 import pathlib
 import re
 import sys
-from typing import cast
+from typing import NamedTuple, cast
 
 sys.dont_write_bytecode = True
 
 ASSIGNMENT = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*=")
 FALSE_VALUES = frozenset({"false", "no", "off", "0"})
-GPGSIGN_KEYS = frozenset({"commit.gpgsign"})
+GPGSIGN_KEYS = frozenset({"commit.gpgsign", "tag.gpgsign"})
 BYPASS_FLAGS = ("--no-verify", "--no-gpg-sign")
 MIN_ABBREVIATION = len("--no-v")  # git also accepts any unique prefix; shorter ones match others
+# `-n` is --no-verify only in these subcommands (`git commit -h`, `git am -h`, git 2.56.0). The
+# letters are their short options that take a value: a cluster scan stops at one of them.
+NO_VERIFY_SHORT = {"commit": frozenset("FmcCtUSu"), "am": frozenset("CpS")}
+ATTACHED_ONLY = frozenset("Su")  # the value must be attached (`-Skey`), never the next word
+GLOBAL_VALUE_OPTIONS = frozenset(
+    {"-C", "-c", "--git-dir", "--work-tree", "--namespace", "--super-prefix", "--config-env"}
+)
 WRAPPERS = frozenset(
     {
         "sudo",
@@ -213,19 +220,43 @@ def strip_prefix(words: list[str]) -> list[str]:
 
 
 def is_git(word: str) -> bool:
-    """Return whether a command word names git, in any case and with or without a path."""
-    return pathlib.Path(word).name.casefold() == "git"
+    """Return whether a command word names git, in any case, with or without a path or `.exe`."""
+    return pathlib.Path(word).name.casefold() in {"git", "git.exe"}
+
+
+class GitCall(NamedTuple):
+    """A git invocation split into what comes before and after its subcommand."""
+
+    options: list[str]
+    subcommand: str | None
+    args: list[str]
+
+
+def parse_git(words: list[str]) -> GitCall:
+    """Split a git invocation (`words[0]` is git) at its subcommand, past the global options."""
+    options: list[str] = []
+    index = 1
+    while index < len(words):
+        word = words[index]
+        if not word.startswith("-"):
+            return GitCall(options, word, words[index + 1 :])
+        options.append(word)
+        index += 1
+        if word in GLOBAL_VALUE_OPTIONS and index < len(words):
+            options.append(words[index])
+            index += 1
+    return GitCall(options, None, [])
 
 
 def falsy_gpgsign(value: str) -> str | None:
-    """Return `key=value` when a `-c` value disables a signing key, else None."""
+    """Return `key=value`, with the key in lower case, when a `-c` value disables signing."""
     key, separator, configured_value = value.partition("=")
     if (
         separator == "="
         and key.casefold() in GPGSIGN_KEYS
         and configured_value.casefold() in FALSE_VALUES
     ):
-        return value
+        return f"{key.casefold()}={configured_value}"
     return None
 
 
@@ -281,13 +312,55 @@ def contains_bypass(words: list[str]) -> str | None:
     return None
 
 
+def scan_cluster(word: str, subcommand: str) -> tuple[bool, bool]:
+    """Scan one short-option cluster; return (it holds `-n`, the next word is its value)."""
+    for position, letter in enumerate(word[1:], start=1):
+        if letter == "n":
+            return True, False
+        if letter in NO_VERIFY_SHORT[subcommand]:
+            return False, position == len(word) - 1 and letter not in ATTACHED_ONLY
+    return False, False
+
+
+def short_n_bypass(subcommand: str, args: list[str]) -> str | None:
+    """Return `-n` when the arguments of `commit` or `am` hold it as a flag, else None."""
+    index = 0
+    while index < len(args):
+        word = args[index]
+        index += 1
+        if word == "--":
+            return None
+        if word == "--message":
+            index += 1
+            continue
+        if word.startswith("--") or not word.startswith("-") or len(word) == 1:
+            continue
+        found, has_value = scan_cluster(word, subcommand)
+        if found:
+            return "-n"
+        if has_value:
+            index += 1
+    return None
+
+
+def git_bypass(words: list[str]) -> str | None:
+    """Return the first bypass in one git invocation (`words[0]` is git), or None."""
+    bypass = contains_bypass(words)
+    if bypass is not None:
+        return bypass
+    call = parse_git(words)
+    if call.subcommand is not None and call.subcommand in NO_VERIFY_SHORT:
+        return short_n_bypass(call.subcommand, call.args)
+    return None
+
+
 def find_bypass(command: str) -> str | None:
     """Return the first Git bypass found in a command list, or None."""
     for part in split_subcommands(command):
         words = strip_prefix(lex_words(part))
         if not words or not is_git(words[0]):
             continue
-        bypass = contains_bypass(words)
+        bypass = git_bypass(words)
         if bypass is not None:
             return bypass
     return None
