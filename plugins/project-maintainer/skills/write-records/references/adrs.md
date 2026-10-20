@@ -3,13 +3,14 @@
 ## What this is
 
 - A decision record: one file per decision, in `<decisions>`.
-- Name: `ADR_<YYYY-MM-DD>_<slug>.md`.
+- Name: `ADR_<YYYY-MM-DD>_<slug>.md`, unless the folder already holds ADRs with another naming pattern. Then copy that pattern.
 - The file name without `.md` is the record's ID.
 - Template: [ADR template](../assets/ADR_YYYY-MM-DD_decision-slug.md).
 
 ## Rules
 
 - Search before writing. Never add a duplicate.
+- Name the file with the pattern of the ADRs already in the folder.
 - Never rewrite the reasoning of an accepted record. Supersede it.
 - Record without asking permission. Then tell the user in one line which file you wrote.
 - Set `accepted` only when the user decided in this conversation. Otherwise set `proposed`.
@@ -65,16 +66,20 @@ Take every fact from the conversation. Ask the user only for what is missing.
    ```
 
 2. Read the [ADR template](../assets/ADR_YYYY-MM-DD_decision-slug.md).
-3. Write `<decisions>/ADR_<date>_<slug>.md`.
+3. Name the file.
+   - The folder already holds ADRs? Copy their pattern. For a numbered pattern, use the next number at the same width, such as `0008-use-postgres-for-sessions.md`.
+   - Otherwise use `ADR_<date>_<slug>.md`.
    - The slug is lowercase kebab-case.
    - The slug names the decision, such as `use-postgres-for-sessions`.
-4. Keep the frontmatter `date` equal to the date in the file name.
-5. Replace every `{placeholder}`.
-6. Leave the template's HTML comments out.
-7. Remove the `consulted` and `informed` lines when they would be empty.
-8. Remove the optional sections that add nothing.
-9. Link the evidence: issues, pull requests, tests, documentation.
-10. Mark planned evidence as pending in Confirmation.
+4. Write the file in `<decisions>`.
+5. Keep the frontmatter `date` equal to the date in the file name when the name carries a date.
+6. Replace every `{placeholder}`.
+7. Leave the template's HTML comments out.
+8. Remove the `consulted` and `informed` lines when they would be empty.
+9. Fill "Pros and cons of the options" only when the options need evidence. Write one subsection per option.
+10. Remove the optional sections that add nothing.
+11. Link the evidence: issues, pull requests, tests, documentation.
+12. Mark planned evidence as pending in Confirmation.
 
 ## Choose how to register
 
@@ -104,7 +109,7 @@ Use this when there is more than one decision to record.
 
 ## Checklist
 
-- [ ] The file name date equals the frontmatter `date`.
+- [ ] The file name follows the folder's pattern. A dated name equals the frontmatter `date`.
 - [ ] No `{placeholder}` and no HTML comment from the template remains.
 - [ ] Every claim is verified, stated by the user, or marked pending.
 - [ ] No second record exists for the same decision.

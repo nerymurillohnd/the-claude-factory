@@ -142,7 +142,7 @@ We are moving sessions back to Redis. Update the record.
 | Pending debt | `docs/technical-debt/pending-debt.md` |
 | Resolved debt | `docs/technical-debt/resolved-debt.md` |
 
-If your project already keeps ADRs in another folder, such as `docs/adr/`, or names a location in its `CLAUDE.md` or `AGENTS.md`, Claude uses that instead and never moves existing records.
+If your project already keeps ADRs in another folder, such as `docs/adr/`, or names a location in its `CLAUDE.md` or `AGENTS.md`, Claude uses that instead and never moves existing records. It also names a new ADR with the pattern of the ADRs already in the folder, such as `0008-use-postgres.md`, and uses the name above only in a folder without ADRs.
 
 The first time Claude is about to create the records folders in a git repository, it asks you once whether git should **track** them (recommended, so your team shares them) or **ignore** them (they stay on your machine). If you choose to ignore them, it adds the two folders to the `.gitignore` at the root of your checkout and never asks again. It does not ask when a records folder already exists, and in a non-interactive run such as `claude -p` it tracks the records and says so.
 

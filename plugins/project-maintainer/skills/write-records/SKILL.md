@@ -28,6 +28,7 @@ description: Writes architecture decision records (ADRs) and keeps a technical-d
 - Mark anything unverified as an inference or as pending.
 - Mention a record elsewhere by its ID only: the ADR file name without `.md`, or `DEBT-<NNN>`.
 - Keep each ledger index equal to its entries.
+- Name an ADR with the pattern of the ADRs already in its folder.
 - Write dates as `YYYY-MM-DD`, using today's date.
 - Save records relative to the checkout you work in: the root that `git rev-parse --show-toplevel` prints, or the current directory outside git.
 - Keep every destination inside the project, symlinks included.
@@ -61,7 +62,7 @@ Do this once per task, before the first search or write.
 
 Below, `<decisions>` and `<debt>` stand for the two folders.
 
-- Decisions: `<decisions>/ADR_<YYYY-MM-DD>_<slug>.md`, one file per decision.
+- Decisions: one file per decision, named `<decisions>/ADR_<YYYY-MM-DD>_<slug>.md`. If `<decisions>` already holds ADRs with another naming pattern, copy that pattern.
 - Pending debt: `<debt>/pending-debt.md`.
 - Resolved debt: `<debt>/resolved-debt.md`.
 
@@ -130,6 +131,7 @@ Check each item before you finish.
 - [ ] The existing records were searched first. No duplicate exists.
 - [ ] Every claim is verified, stated by the user, or marked pending.
 - [ ] No placeholder or template instruction remains in an entry.
+- [ ] The ADR file name follows the pattern of its folder.
 - [ ] Each ledger index equals its entries.
 - [ ] No accepted ADR or resolved entry was rewritten.
 - [ ] Nothing was committed or pushed.
