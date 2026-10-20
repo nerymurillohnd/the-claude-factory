@@ -27,6 +27,10 @@ if TYPE_CHECKING:
     from collections.abc import Callable, Iterable
 
 PLUGIN = "python-lsp-intelligence"
+# Closes every message Claude reads, so a hook that checks is never taken for the whole workflow.
+SKILL_HINT = (
+    f"Use the {PLUGIN}:{PLUGIN} skill and apply all its knowledge when working on Python files."
+)
 PYTHON_SUFFIXES = frozenset({".py", ".pyi", ".pyw"})
 NOTEBOOK_SUFFIX = ".ipynb"
 SHEBANG = re.compile(r"^#!.*\b(python[0-9.]*|uv\s+run)\b")
@@ -349,15 +353,19 @@ def find_tools() -> Tools | str:
     return Tools(found["ruff"], found["basedpyright"])
 
 
-def bounded(text: str) -> str:
-    """Cut text at MAX_REPORT_CHARS on a line boundary, saying how many lines were dropped."""
-    if len(text) <= MAX_REPORT_CHARS:
+def bounded(text: str, reserve: int) -> str:
+    """Cut text on a line boundary so it and reserve more characters fit under MAX_REPORT_CHARS.
+
+    Says how many lines were dropped.
+    """
+    limit = MAX_REPORT_CHARS - reserve
+    if len(text) <= limit:
         return text
     kept: list[str] = []
     size = 0
     lines = text.splitlines()
     for line in lines:
-        if size + len(line) + 1 > MAX_REPORT_CHARS:
+        if size + len(line) + 1 > limit:
             break
         kept.append(line)
         size += len(line) + 1
@@ -408,7 +416,9 @@ def success(
         display(path, base) for index, path in enumerate(checked) if results[index].rewrote
     ]
     if rewritten:
-        note = f"ruff reformatted {', '.join(rewritten)}; re-read before the next edit."
+        note = (
+            f"ruff reformatted {', '.join(rewritten)}; re-read before the next edit. {SKILL_HINT}"
+        )
         payload["hookSpecificOutput"] = {
             "hookEventName": text_at(event, "hook_event_name") or "PostToolUse",
             "additionalContext": note,
@@ -427,14 +437,14 @@ def main() -> int:
         return 0
     tools = find_tools()
     if isinstance(tools, str):
-        _ = sys.stderr.write(tools)
+        _ = sys.stderr.write(f"{tools}{SKILL_HINT}\n")
         return 2
     checked, unchecked = files[:MAX_FILES], files[MAX_FILES:]
     results = [check_file(path, tools) for path in checked]
     base = project_dir(event)
     text = report(checked, results, unchecked, base)
     if text:
-        _ = sys.stderr.write(bounded(text))
+        _ = sys.stderr.write(f"{bounded(text, len(SKILL_HINT) + 1)}{SKILL_HINT}\n")
         return 2
     _ = sys.stdout.write(success(event, checked, results, base))
     return 0
