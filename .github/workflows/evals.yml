@@ -2,12 +2,11 @@ name: Evals
 
 # Full eval suite (both arms, three runs per case) of each plugin that ships one.
 # Evals are optional: a plugin without an evals/ folder is never run and never
-# fails this workflow. On a pull request it runs only the plugins with evals whose
+# fails this workflow. It runs when a pull request is opened, reopened or marked
+# ready for review (not on every push), and only the plugins with evals whose
 # plugin.json changed, one job each; by hand, one plugin or all of them.
 # Authenticates with the CLAUDE_CODE_OAUTH_TOKEN secret (`claude setup-token`),
-# so runs count against that subscription's usage limits. Runs when a pull
-# request that changes a plugin's plugin.json is opened, reopened or marked ready
-# for review (not on every push), or by hand.
+# so runs count against that subscription's usage limits.
 on:
   pull_request:
     types: [opened, reopened, ready_for_review]

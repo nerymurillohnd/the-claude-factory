@@ -22,10 +22,12 @@ jobs:
   release:
     if: github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
     runs-on: ubuntu-24.04
+    env:
+      TARGET_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+          ref: ${{ env.TARGET_SHA }}
           fetch-depth: 0
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
@@ -33,7 +35,6 @@ jobs:
       - name: Tag and release new versions
         env:
           GH_TOKEN: ${{ github.token }}
-          TARGET_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
         run: |
           set -euo pipefail
           targets="$(node -e 'console.log(require("./.claude-plugin/marketplace.json").plugins.map(p => p.name).join(" "))')"
