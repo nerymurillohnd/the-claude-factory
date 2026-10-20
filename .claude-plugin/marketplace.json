@@ -32,6 +32,12 @@
       "category": "testing"
     },
     {
+      "name": "project-records",
+      "source": "./plugins/project-records",
+      "description": "Records a project's important decisions as architecture decision records and tracks the technical debt it cannot fix yet in a ledger, so the next person knows why the project is the way it is.",
+      "category": "documentation"
+    },
+    {
       "name": "prompt-writer",
       "source": "./plugins/prompt-writer",
       "description": "Turns a goal, idea or draft into one copy-ready prompt tuned to the target Claude model and effort: it clarifies intent, checks current official facts and recommends the setup to run it with.",
