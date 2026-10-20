@@ -56,12 +56,15 @@ The same words are checked in these routes:
 - Quote-spliced names such as `g"i"t`: the filter runs on lexed words, never on raw text (`HOOKS_GATE.md`).
 - `bash`, `sh`, `zsh`, `dash` and `ksh` with a `-c` cluster (`-c`, `-lc`, `-ec`): the next word is parsed as a command, to a depth of 3. Deeper nesting is denied as too deep to inspect.
 - `eval "<string>"`: its arguments, joined by spaces, are parsed as a command, with the same depth limit.
+- A backslash-newline between the words: the shell joins the lines, so `git commit \⏎--no-verify` runs the flag. Found with git 2.56.0; the legacy lexer kept the newline inside the word.
+- A unique abbreviation of a flag: git accepts `--no-veri`, `--no-verif`, `--no-g`, `--no-gpg` and `--no-gpg-s` and runs them as the full flags (tested with git 2.56.0). The hook denies any prefix of `--no-verify` or `--no-gpg-sign` of six characters or more; an ambiguous prefix such as `--no-ve` only makes git fail, so denying it costs nothing.
 
 ### 4.2 What is allowed
 
 - Every other git command, and every non-git command.
 - Words inside a message: `-m "docs: explain --no-verify"`, `-m` clusters whose value starts with `n` (`-mn` is `-m` with the value `n`).
-- A heredoc body is data only when the line is one plain `git commit` or `git tag` reading its message with `-F -`: balanced quotes, no separator, no comment mark, no `-c` option. In any other command the body lines are checked as commands, so `bash <<EOF` and `cat <<EOF | bash` stay denied. This is the rule that `claude-essentials` reached after its first fix let four bypasses through.
+- A heredoc body is data only when its delimiter is quoted (`<<'EOF'`, `<<"EOF"`, `<<-'EOF'`) and the last command on the marker's line is a plain `git commit` or `git tag`. The marker ends the line, either right after that command (`git commit -F - <<'EOF'`) or after `-m "$(cat` (Claude's own form, `git add -A && git commit -m "$(cat <<'EOF'`). "Plain" means: wrappers and assignments are fine, a `git add … &&` before it is fine, but no `-c` or `--config` option, no `#` in that command, and balanced quotes in everything before the marker, so a string opened on an earlier line cannot hide the marker. The body, up to its closing delimiter, is the commit message and is not read as commands.
+- In any other case the body lines are checked as commands: a heredoc read by a shell or a pipe (`bash <<'EOF'`, `cat <<'EOF' | bash`, `bash -c "$(cat <<'EOF'`), an unquoted delimiter (the shell expands `$(…)` and backticks there, so the body can run), a marker inside a string or after a comment, a `-c` option, and a missing closing delimiter. Only the last command owns the heredoc, so `git status; git commit -F - <<'EOF'` passes: its body is a message. `claude-essentials` (commit `a4e9bd3`) refused any separator before the command; that would deny the common `git add … && git commit -m "$(cat <<'EOF'`.
 
 ### 4.3 Not covered
 
