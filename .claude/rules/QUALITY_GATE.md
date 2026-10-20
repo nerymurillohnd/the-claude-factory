@@ -28,7 +28,7 @@
 - `node --test ".github/scripts/tests/*.test.mjs"` - Run after the type check. Read the `skipped` count.
 - `node .github/scripts/check-repo.mjs` - Run after the tests.
 
-`tsc` checks the whole project.
+`tsc` checks the whole project. Pass each strict `tsc` flag with an explicit value: `--strict` does not override an explicit `false` in a tsconfig.
 
 ### Mods
 

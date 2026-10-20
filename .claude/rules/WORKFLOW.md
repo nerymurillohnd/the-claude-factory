@@ -17,6 +17,12 @@ Each section below applies to one kind of work. Follow the section for the task 
 - When the new plugin overlaps an existing one by domain, weigh integrating it into that plugin against creating an independent one. Propose the choice to Nery.
 - Whether a plugin has evals is Nery's decision.
 - Read the Claude Code changelog for the installed version, the four before it and every newer one. Contrast what you find and apply it.
+- Name skills and plugins for what the skill does, not how it is implemented.
+- Keep the version in `plugin.json`. Never set `version` on a marketplace entry.
+- Change `displayName` to relabel a plugin.
+- After moving or creating files, delete `.DS_Store` files and orphaned cache directories.
+- Ship a plugin's Node dependencies only with an npm or Bun lockfile; other lockfiles leave no `node_modules`.
+- Do not set `hooks` in the frontmatter of a plugin agent: it is ignored. Declare the hook in the plugin's `hooks/hooks.json`.
 
 ### When Using GitHub
 

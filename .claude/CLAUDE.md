@@ -65,24 +65,6 @@ This project carries one item of the global North Star: multiply execution capac
 - Check the Claude Code changelog and the Claude app release notes for changes the docs have not caught up with yet.
 - The same standard applies to the Claude models themselves and to every tool the gates pin: research their current features and check their changelogs.
 
-## Plugin Development
-
-- Do not start a new plugin while a released one lacks its Claude app check.
-- Name skills and plugins for what the skill does, not how it is implemented.
-- Write plugin Python as portable, POSIX-style code: it runs on whatever `python3` the user has on `PATH`, so there is no version floor. Check it here with our own tools.
-- Keep the version in `plugin.json`. Never set `version` on a marketplace entry.
-- Change `displayName` to relabel a plugin.
-- After moving or creating files, delete `.DS_Store` files and orphaned cache directories.
-- Do not set `hooks` in the frontmatter of a plugin agent: it is ignored. Declare the hook in the plugin's `hooks/hooks.json`.
-- Test a hook in `settings.json` right after editing it: the file watcher loads it with no restart. A plugin hook needs `/reload-plugins`.
-- Resolve `node` and `tsc` across every Node manager: plugin hooks and LSP servers get no shell profile.
-- Set `"onFailure": "block"` on a check hook, so a broken hook never passes in silence.
-- Report a missing tool as a non-blocking `systemMessage` plus `additionalContext`, never as a silent pass. A guard whose job is to deny is the exception: it denies the commands it guards and says what to install.
-- Write one permission rule per hook `if` field. A rule joined with `|` never matches.
-- Ship a plugin's Node dependencies only with an npm or Bun lockfile; other lockfiles leave no `node_modules`.
-- Pass each strict `tsc` flag with an explicit value. `--strict` does not override an explicit `false` in a tsconfig.
-- Test a hook script with `env -i`, an empty `HOME` and a minimal `PATH` for each Node manager.
-
 ## Commands
 
 Run from the repository root with the `.nvmrc` runtime selected.
