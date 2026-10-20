@@ -1,83 +1,74 @@
 # The Claude Factory
 
-## Role
+Nery and Claude Code are the only two parties responsible for this marketplace. Claude Code, with Anthropic's services, is integrated at every level of it: design, development, review, testing, release and issue triage.
 
-- Act as co-maintainer of the marketplace with Nery, the owner.
-- Build, review, test and release plugins.
-- Triage issues and draft replies.
+- No third-party team reviews our work between this repository and the users who install it. Every push, release and reply is the last check before the public; take each one with that responsibility.
+- Prefer automation and process optimization wherever they keep quality: CI, evals, hooks, agents and scheduled tasks for validation, review, releases, drift checks and issue handling. Where none exists yet, propose building it.
+- This project also follows the guidelines and way of working in the `@~/.claude/CLAUDE.md`, the global cross-projects memory `@~/.claude/memory/MEMORY.md`, and all of its indexed memory files.
 
 ## Overview
 
-- Public plugin marketplace at `github.com/nerymurillohnd/the-claude-factory`, for users and developers who run their projects and operations with Claude Code.
-- Plugins only: Claude Code plugins, built for Cowork too where they apply.
-- Built on Nery's Mac in the local clone; served to users from the remote repository.
-- No third party or team develops, operates or maintains it.
-- Users contribute through issues.
+A public Claude Code plugin marketplace at `github.com/nerymurillohnd/the-claude-factory`, for users and developers who run their projects and operations with Claude. It ships plugins only, built for Claude Code and for the Claude app wherever they apply. It is built on Nery's Mac in the local clone and served to users from the remote repository. Users contribute through issues.
 
-## Purpose
+Plugins are for third parties whose setups are unknown: every plugin works from what its README declares, never from what is installed on Nery's machine.
+
+## Purpose and Goal
+
+This project carries one item of the global North Star: multiply execution capacity with AI, and share it as public plugins.
 
 - Goal: publish plugins that automate and optimize everyday workflows.
+- Release gate: a plugin ships only when every requirement below has recorded evidence.
+- Requirements: every gate passes, `plugin-reviewer` leaves no confirmed finding, the Claude app check passes (unless Claude Code-only), the README is accurate against the current docs, and the plugin is portable across macOS, Linux and Windows through Git Bash.
 
-## Stack
+## Stack and Development
 
-- No build step and no runtime to maintain: no root `package.json`, `pyproject.toml` or virtual environment.
-- Node and npm: via nvm; `.nvmrc` sets the CI Node.
-- Python, ruff and basedpyright: via uv. `ruff.toml` is Nery's strict config and the only ruff config in the repo.
-- `shfmt`, `shellcheck` and `actionlint`: Homebrew formulas.
-- Biome and markdownlint-cli2: governed by `biome.json` and `.markdownlint-cli2.jsonc`.
-- TypeScript: `tsconfig.base.json`, `plugins/tsconfig.json` and `.github/scripts/tsconfig.json` type-check the `.mjs` files with the pinned `tsc`.
+- Product: Claude Code plugins (skills, agents, hooks, MCP and LSP servers, mods) listed in `.claude-plugin/marketplace.json`, one folder per plugin under `plugins/`.
+- Build: no build step and no runtime to maintain; no root `package.json`, `pyproject.toml` or virtual environment.
+- Plugin code: Bash and POSIX-style Python 3 that run on whatever `bash` and `python3` the user has on `PATH`, with no version floor; `.mjs` modules type-checked by TypeScript 6.0.3; mods in TypeScript under `hooks/*.ts`.
+- Repository tooling: Node scripts in `.github/scripts/` for scaffolding, catalog, version bumps, labels, policy checks and eval targets; Node 26 from `.nvmrc`.
+- Formatting and linters: Biome for JavaScript and JSON; ruff, mypy and basedpyright for Python; shfmt and ShellCheck for shell; markdownlint-cli2 for Markdown; actionlint for workflows. Each runs at the version pinned in `.claude/rules/QUALITY_GATE.md` and `validate.yml`.
+- Testing: `node --test` for script and hook tests, `unittest` and `by_path.sh` for plugin scripts, `claude plugin validate --strict` and `claude plugin test` for plugins and mods, `claude plugin eval` for plugins that have evals.
+- CI/CD and GitHub Actions: `validate.yml` on every push and PR, `evals.yml` for changed plugins that have evals, `release.yml` tags each plugin after merge, and Claude reviewers run on pull requests.
+- Tool sources: Node and npm via nvm; Python, ruff and basedpyright via uv; shfmt, ShellCheck and actionlint via Homebrew. Global configs are never overridden here; `ruff.toml` is the only ruff config in the repo.
 
-## Commands
+## Authority, Limits and Permissions
 
-- For the gate commands, read `.claude/rules/QUALITY_GATE.md`.
-- For all other commands, read `.github/scripts/` and `.github/workflows/validate.yml`.
+- Push only on Nery's instruction; when one is needed, ask for approval.
+- Type-check every `.mjs` and mod with strict `tsc`, and Python with `mypy --strict` and basedpyright: no `any`, unsafe casts, ignore comments or loosened configs.
+- Make each script and hook that receives critical input require the fields it needs, or fail loudly.
+- Prefer avoiding technical debt: resolve at its root every issue the task touches directly or indirectly, or needs to work.
+- Record as technical debt only a completely separate scope.
+- Fix every issue a hook, script, formatter, linter or diagnostic reports; never skip or suppress it.
+- Build every plugin for third parties: never depend on, cite or fold in what is installed on Nery's machine.
+- When designing, planning or proposing a plugin, justify every choice (name, skills, agents, structure) on its own merits.
+- Never name other plugins of the marketplace as precedent ("follows X", "like Y does") or as a blocker.
 
-## Project Gates
+## Documentation, Maintenance, and Gates
 
-The gates live in `.claude/rules/`.
-
-- Quality Gate: per-file and pre-push checks.
-- GitHub Gate: PRs, labels, commits, pushes.
-- Maintenance Gate: docs kept in sync.
-- Plugin Gate: sets how plugins are built, portable and distributed, and how evals are requested.
-- Hooks Gate: sets how a plugin's hooks are declared, filtered, failed, tested and documented.
-- Releases: verified after each plugin merge.
-- Skill Gate: sets how a skill references its own files and files outside it.
-- Stage rules: authoring, user-docs style and versioning, each scoped to the paths it governs.
-
-## Documentation and Maintenance
-
-- Decisions: record each important decision as an ADR in `.claude/maintainer/decisions/`, with the `project-maintainer:write-records` skill.
-- Technical debt: log pending debt in `pending-debt.md` and move it to `closed-debt.md` once it is closed (resolved, obsolete or accepted), both in `.claude/maintainer/technical-debt/`.
-- Specs: write each design spec in `.claude/specs/`, named `YYYY-MM-DD-<topic>.md`. Git tracks them.
-- Plans: write each implementation plan in `.claude/plans/`, named `YYYY-MM-DD-<topic>.md`. Git ignores them.
+- `.claude/maintainer/decisions/`: ADRs for important decisions.
+- `.claude/maintainer/technical-debt/`: pending and closed debt.
+- `.claude/audits/`: repository and project audit reports.
+- `.claude/memory/`: project memory (facts, feedback).
+- `.claude/session-handoff/`: session handoffs.
+- `.claude/specs/`: design specs.
+- `.claude/plans/`: implementation plans.
+- `.claude/templates/`: templates for plugin files, the root README and issue replies.
+- `.claude/rules/QUALITY_GATE.md`: per-file and pre-push checks.
+- `.claude/rules/GITHUB_GATE.md`: PRs, labels, commits, pushes.
+- `.claude/rules/MAINTENANCE_GATE.md`: docs kept in sync.
+- `.claude/rules/RELEASES.md`: release steps after a plugin merge.
+- `.claude/rules/PLUGIN_GATE.md`: building, portability, distribution and evals.
+- `.claude/rules/SKILL_GATE.md`: how a skill references files.
+- `.claude/rules/HOOKS_GATE.md`: how plugin hooks are declared, filtered, failed, tested and documented.
 - `docs/`: the user guides, covering installation, managing plugins, compatibility, FAQ, troubleshooting and tool references.
-- Root `README.md`, `CHANGELOG.md`, `SECURITY.md`, `SUPPORT.md`, `CONTRIBUTING.md` and `CODE_OF_CONDUCT.md`: the user-facing showcase and community files.
 
-## How Claude Works With Nery
+## Research and Sources
 
-### Session Start
-
-- List the decisions only Nery can settle.
-
-### One Open Task At A Time
-
-- Keep one plugin or change in progress, on one branch or worktree, in one session. A change across several plugins uses one worktree per plugin.
-- Before starting new work, finish or park the current task, committed. A parked task has no open issue.
-
-### Claude
-
-- Do exactly what Nery asks: no backups, stashes, confirmations or extra steps Nery did not request. The standing gate rules are not extra steps.
-- Follow the saved process (skill or memory) before improvising.
-- With no saved process, research, decide and act. Ask only before spending, irreversible actions or anything published, or when a decision only Nery can make blocks the work.
-
-### Nery
-
-- States an order's scope: only this, or whatever it takes to finish it.
-
-### Done
-
-- A plugin PR is ready to merge only when: every gate passes; `plugin-reviewer` left no confirmed finding; the Claude app check passed (unless Claude Code-only).
+- Claude Code and the Claude app change almost daily: training data, memory and project docs are starting points, not the authority.
+- Before any plan, answer, plugin component or scaffold, read the official sources for the installed Claude Code version and the pinned tool versions.
+- When components connect or depend on each other, research each one equally, never one side only (e.g. a plugin hook reads the hooks reference, the plugins reference and the Claude app platform support).
+- Check the Claude Code changelog and the Claude app release notes for changes the docs have not caught up with yet.
+- The same standard applies to the Claude models themselves and to every tool the gates pin: research their current features and check their changelogs.
 
 ## Plugin Development
 
@@ -97,34 +88,30 @@ The gates live in `.claude/rules/`.
 - Pass each strict `tsc` flag with an explicit value. `--strict` does not override an explicit `false` in a tsconfig.
 - Test a hook script with `env -i`, an empty `HOME` and a minimal `PATH` for each Node manager.
 
-## Subagents In This Project
+## Commands
 
-The global rule decides when to delegate. These are the cases our work hits.
+Run from the repository root with the `.nvmrc` runtime selected.
 
-### Delegate
+```bash
+node .github/scripts/new-plugin.mjs --name <name> --category <id> --description "<sentence>" [--display-name 
+"<Name>"] [--emoji <e>] [--min-claude-code <x.y.z>] [--claude-code-only]` - Run when scaffolding and registering a
+plugin.
+```
+- `node .github/scripts/catalog.mjs` - Run when regenerating the generated blocks of the root `README.md`; `--check` only checks them.
+- `node .github/scripts/check-repo.mjs` - Run when checking repository policy.
+- `node .github/scripts/check-version-bump.mjs <base-ref>` - Run when checking that a changed plugin carries a bump and a changelog entry.
+- `node .github/scripts/bump-version.mjs <plugin> <major|minor|patch>` - Run when bumping a plugin in its PR.
+- `node .github/scripts/release-notes.mjs <plugin> [--tag]` - Run when previewing a plugin's release notes or tag.
+- `node .github/scripts/eval-targets.mjs --changed <base> <head>` or `--only <plugin|all>` - Run when listing the plugins whose evals CI would run.
+- `node .github/scripts/sync-labels.mjs [--dry-run]` - Run when syncing the GitHub labels after a plugin is added.
+- `.github/scripts/validate-claude.sh` - Run when validating the marketplace, `.claude/` and every plugin with `claude plugin validate --strict`, plus mod tests.
+- `ONLY=<plugin> .github/scripts/run-evals.sh` - Run when running a plugin's full eval suite.
+- `claude --plugin-dir plugins/<plugin>` - Run when exercising a plugin in a live session.
+- For all other commands, read `.github/scripts/` and `.github/workflows/`.
 
-- Skill audit: `/skill-diagnostics:audit` (conformance and executability lenses) plus one skill-creator agent, launched together.
-- Comprehensibility review: an agent whose tools are only Read, Glob and Grep. The `Plan` agent has Bash.
-- Docs and pins research: `/docs-drift-check` when Nery asks for a drift check, otherwise one research subagent per docs area; it returns quotes with links.
-- Verify every reviewer finding against the files and the live docs before fixing anything. Reviewers over-report.
+### Command Rules
 
-### Work Directly
-
-- Gates.
-- Git, PRs, `bump-version.mjs`, releases, `sync-labels.mjs` and every push.
-- Issue triage and replies, and fixes for confirmed findings in one plugin.
-
-### Agent Conventions
-
-- Name each subagent when spawning it, so named subagents can exchange messages with `SendMessage`.
-- Agent Teams are not required.
-- After a restart or a compaction, address an agent by its ID.
-- Use a dynamic workflow to codify review and cross-check phases, such as agents reviewing each other's findings.
-- Do not rely on `skills:` in an agent definition for a teammate. A teammate loads skills from project and user settings.
-
-## Project Memory
-
-- `.claude/memory/MEMORY.md` indexes the project memory: one topic file per fact. Cross-project facts live in `~/.claude/memory/`.
-- Memory is gitignored: it lives on this Mac only, and cloud sessions do not see it.
-- Update `.claude/memory/` as the work happens, never only at the end of the session.
-- Keep each topic file to one short fact, with no duplication of this file, rules or code. Delete stale entries instead of piling up corrections.
+- Script `sync-labels.mjs` writes GitHub labels; run `--dry-run` first.
+- Script `run-evals.sh` spends API money: both arms, 3 runs per case, capped by `evals-config.json`. Run it only on Nery's request.
+- Script `bump-version.mjs` rewrites `plugin.json` and the plugin changelog; use it instead of hand edits.
+- `gh workflow run release.yml` tags and publishes; run it only per `.claude/rules/RELEASES.md`.

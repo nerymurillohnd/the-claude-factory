@@ -4,8 +4,6 @@
 
 - Do not advance to the next step, file or task while a detected issue is open.
 - Fix every issue the moment it appears: gate finding, failing test, error or warning in any output.
-- Fix issues that predate your change too. Do not defer, park or work around them.
-- Never accumulate technical debt: no TODO, no "fix later", no "known issue" left behind.
 - Fix the root cause. Never silence the symptom.
 - Report an issue as open only when it is blocked on a decision or a spend only Nery can make. Stop and ask.
 

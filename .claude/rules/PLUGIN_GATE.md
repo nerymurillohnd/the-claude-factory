@@ -16,7 +16,6 @@ paths:
 
 ## New Plugins
 
-- Review the existing plugins first.
 - When the new plugin overlaps an existing one by domain, weigh integrating it into that plugin against creating an independent one. Propose the choice to Nery.
 
 ## Evals
