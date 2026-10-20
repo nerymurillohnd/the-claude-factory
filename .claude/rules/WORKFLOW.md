@@ -1,5 +1,9 @@
 # How to Work With Nery in This Project
 
+## Rules by Task
+
+Each section below applies to one kind of work. Follow the section for the task at hand before you start it.
+
 ### When Maintaining Plugins and Repo Documentation
 
 - Read its README. Add what the change made missing and remove what it made obsolete.
