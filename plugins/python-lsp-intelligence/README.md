@@ -91,6 +91,8 @@ To confirm it works, ask Claude to add a type error to a Python file and fix it.
 
 You don't need to call anything: the language server starts with the first Python file Claude edits, the hook runs after each edit, and the skill loads when you work on Python code.
 
+When the hook reports a finding or a file it couldn't check, its message also tells Claude to use the `python-lsp-intelligence:python-lsp-intelligence` skill and apply all its knowledge when working on Python files, so a passing check is never mistaken for the whole workflow.
+
 ### Example: what happens after an edit
 
 ```text

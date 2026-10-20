@@ -23,6 +23,10 @@ HAVE_TOOLS = shutil.which("ruff") is not None and shutil.which("basedpyright") i
 REPORT_CEILING = 9_100
 MANY = 23
 LONG_AGO = 600
+SKILL_HINT = (
+    "Use the python-lsp-intelligence:python-lsp-intelligence skill and apply all its knowledge "
+    "when working on Python files."
+)
 
 
 def event(tool: str, path: Path | None = None, **extra: object) -> str:
@@ -113,6 +117,7 @@ class WithTools(Workspace):
         )
         assert "clean.py" in payload["systemMessage"]
         assert "hookSpecificOutput" not in payload
+        assert "apply all its knowledge" not in out
 
     def test_format_rewrite_asks_for_reread(self) -> None:
         path = self.write("fmt.py", '"""Doc."""\n\nVALUE=1\n')
@@ -122,6 +127,7 @@ class WithTools(Workspace):
         assert set(payload) == {"systemMessage", "hookSpecificOutput"}
         assert "passed" in payload["systemMessage"]
         assert "re-read" in payload["hookSpecificOutput"]["additionalContext"]
+        assert payload["hookSpecificOutput"]["additionalContext"].endswith(SKILL_HINT)
         assert payload["hookSpecificOutput"]["hookEventName"] == "PostToolUse"
         assert path.read_text(encoding="utf-8") == '"""Doc."""\n\nVALUE = 1\n'
 
@@ -132,6 +138,7 @@ class WithTools(Workspace):
         assert "F821" in err
         assert "reportMissingParameterType" in err
         assert "Fix these findings in" in err
+        assert err.endswith(f"{SKILL_HINT}\n")
 
     def test_user_config_wins_over_defaults(self) -> None:
         self.write("ruff.toml", "[lint]\nselect = []\n")
@@ -276,6 +283,19 @@ class WithTools(Workspace):
         assert code == 0
         assert json.loads(out)["hookSpecificOutput"]["hookEventName"] == "PostToolUseFailure"
 
+    def test_findings_after_a_failed_bash_call_name_the_skill_too(self) -> None:
+        path = self.write("bad2.py", "def f(x):\n    return undefined_name\n")
+        payload = event(
+            "Bash",
+            hook_event_name="PostToolUseFailure",
+            tool_response={"bashEditDiff": {"changedFiles": [str(path)]}},
+            tool_input={"command": "x"},
+        )
+        code, _, err = fire(payload, self.project, self.env)
+        assert code == 2
+        assert "F821" in err
+        assert err.endswith(f"{SKILL_HINT}\n")
+
     def test_more_than_twenty_files_reports_the_rest(self) -> None:
         paths = [self.write(f"many/f{i}.py", '"""Doc."""\n\nVALUE = 1\n') for i in range(MANY)]
         payload = event(
@@ -297,6 +317,7 @@ class WithTools(Workspace):
         assert code == 2
         assert len(err) <= REPORT_CEILING
         assert "more lines" in err
+        assert err.endswith(f"{SKILL_HINT}\n")
 
 
 class MissingTools(Workspace):
@@ -308,6 +329,7 @@ class MissingTools(Workspace):
         assert (code, out) == (2, "")
         assert "ruff is not installed" in err
         assert "uv tool install ruff" in err
+        assert err.endswith(f"{SKILL_HINT}\n")
 
 
 if __name__ == "__main__":

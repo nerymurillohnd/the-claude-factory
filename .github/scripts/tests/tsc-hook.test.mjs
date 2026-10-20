@@ -336,7 +336,7 @@ describe('typescript lsp hook', () => {
   })
 })
 
-const SKILL_PLUGINS = ['typescript7-lsp-intelligence']
+const SKILL_PLUGINS = ['typescript6-lsp-intelligence', 'typescript7-lsp-intelligence']
 const REASON_CEILING = 9100
 const MANY_ERRORS = 600
 // No Node manager, no npm prefix and no tsc on PATH. The hook also searches three fixed system
