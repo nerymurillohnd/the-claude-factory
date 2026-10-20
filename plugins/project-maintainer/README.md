@@ -144,6 +144,8 @@ We are moving sessions back to Redis. Update the record.
 
 If your project already keeps ADRs in another folder, such as `docs/adr/`, or names a location in its `CLAUDE.md` or `AGENTS.md`, Claude uses that instead and never moves existing records.
 
+The first time Claude is about to create the records folders in a git repository, it asks you once whether git should **track** them (recommended, so your team shares them) or **ignore** them (they stay on your machine). If you choose to ignore them, it adds the two folders to the `.gitignore` at the root of your checkout and never asks again. It does not ask when a records folder already exists, and in a non-interactive run such as `claude -p` it tracks the records and says so.
+
 ## 🔄 Updating
 
 ```bash
@@ -193,7 +195,14 @@ Run `/reload-plugins`, then type `/project-maintainer:` to list its skills. If i
 <details>
 <summary><b>Does Claude record things without asking me?</b></summary>
 
-Yes, that is the purpose of the plugin. When it sees an important decision or a problem you are postponing, it writes the record and tells you in one line which file it saved. It asks only for facts it is missing. It never commits or pushes a record, so delete the file if you did not want it. To record on demand only, tell Claude to wait for your request.
+Yes, that is the purpose of the plugin. When it sees an important decision or a problem you are postponing, it writes the record and tells you in one line which file it saved. It asks only for facts it is missing, plus the one question about git described under [Where records are saved](#where-records-are-saved). It never commits or pushes a record, so delete the file if you did not want it. To record on demand only, tell Claude to wait for your request.
+
+</details>
+
+<details>
+<summary><b>Does the plugin change my <code>.gitignore</code>?</b></summary>
+
+Only if you answer that you want the records kept local, and then it adds exactly two lines: the decisions folder and the debt folder. Otherwise it never touches the file. To change your mind later, edit `.gitignore` yourself. Claude does not ask again because the folders already exist.
 
 </details>
 

@@ -19,10 +19,23 @@ Below, `<decisions>` and `<debt>` stand for the two folders.
 - Decisions: `<decisions>/ADR_<YYYY-MM-DD>_<slug>.md`, one file per decision.
 - Pending debt: `<debt>/pending-debt.md`.
 - Resolved debt: `<debt>/resolved-debt.md`.
-- Create a folder or ledger the first time it is needed. There is no setup step. Installing the plugin creates nothing.
+- Create a folder or ledger the first time it is needed. The only setup is the question in "The first time records are created". Installing the plugin creates nothing.
 - Paths are relative to the checkout you are working in: the root that `git rev-parse --show-toplevel` prints, or the current directory outside git. Never use the plugin's install directory, and never the session's project-directory variable (`CLAUDE_PROJECT_DIR`): in a worktree it still points at the main checkout, where edits are blocked.
 - Never move a project's existing records to another location.
 - Check that the destination stays inside the project, symlinks included. If it is protected or unwritable, show the draft and the exact blocker. Do not relocate the record or widen permissions.
+
+## The first time records are created
+
+Before you create the first records folder in a project, ask the user once whether git should track the records or ignore them. Ask only when neither the decisions folder nor the debt folder exists yet, even if the project's `CLAUDE.md` or `AGENTS.md` names them, and only inside a git repository. Skip the question when git already ignores both paths (`git check-ignore -q <path>`).
+
+Use your question tool, put the recommendation first and give its reason:
+
+- **Track them (Recommended):** the records are committed with the project, so the team shares them and they survive a new clone.
+- **Keep them local:** the records stay on this machine and are not shared.
+
+Apply the answer to both folders at once, so the question is never asked again. For "keep them local", add `<decisions>/` and `<debt>/` to the `.gitignore` at the checkout root, creating the file if it is missing and adding only those two lines. For "track them", change nothing.
+
+In a non-interactive session do not ask: track the records, change nothing, and say in your one-line note that they are tracked and can be ignored on request.
 
 ## When to act
 

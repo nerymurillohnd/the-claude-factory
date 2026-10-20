@@ -12,6 +12,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 - `write-records` skill that writes a project's important decisions as architecture decision records (ADRs) and keeps a pending and a resolved technical-debt ledger.
 - Templates for the ADR (based on MADR 4.0, with a scope, a risks table and a confirmation table), the pending-debt ledger and the resolved-debt ledger.
+- The first time records are created in a git repository, Claude asks once whether git should track them or ignore them, and adds the two folders to `.gitignore` only if you choose to ignore them.
 - Records go where the project already keeps them (`CLAUDE.md`, `AGENTS.md` or an existing folder) and default to `docs/decisions/` and `docs/technical-debt/`.
 
 [Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/project-maintainer--v0.1.0...HEAD
