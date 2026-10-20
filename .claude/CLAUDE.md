@@ -47,18 +47,13 @@ This project carries one item of the global North Star: multiply execution capac
 
 - `.claude/maintainer/decisions/`: ADRs for important decisions.
 - `.claude/maintainer/technical-debt/`: pending and closed debt.
-- `.claude/audits/`: repository and project audit reports.
 - `.claude/memory/`: project memory (facts, feedback).
 - `.claude/session-handoff/`: session handoffs.
 - `.claude/specs/`: design specs.
 - `.claude/plans/`: implementation plans.
 - `.claude/templates/`: templates for plugin files and the root README.
 - `.claude/rules/QUALITY_GATE.md`: per-file and pre-push checks.
-- `.claude/rules/GITHUB_GATE.md`: PRs, labels, commits, pushes.
-- `.claude/rules/MAINTENANCE_GATE.md`: docs kept in sync.
 - `.claude/rules/RELEASES.md`: release steps after a plugin merge.
-- `.claude/rules/PLUGIN_GATE.md`: building, portability, distribution and evals.
-- `.claude/rules/SKILL_GATE.md`: how a skill references files.
 - `.claude/rules/HOOKS_GATE.md`: how plugin hooks are declared, filtered, failed, tested and documented.
 - `docs/`: the user guides, covering installation, managing plugins, compatibility, FAQ, troubleshooting and tool references.
 
