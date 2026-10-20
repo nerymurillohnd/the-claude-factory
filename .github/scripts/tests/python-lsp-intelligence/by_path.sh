@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Runs python-lsp-intelligence's hook the way Claude Code does: by its path, through the
-# shebang, with whatever python3 is first on PATH. CI runs this on Linux, macOS and Windows
-# (Git Bash). Exits non-zero on the first failure.
+# shebang, with whatever python3 is first on PATH. CI does not run it; QUALITY_GATE
+# runs it locally. Exits non-zero on the first failure.
 set -euo pipefail
 root=$(cd "$(dirname "$0")/../../../.." && pwd)
 hook="${root}/plugins/python-lsp-intelligence/hooks/check.py"

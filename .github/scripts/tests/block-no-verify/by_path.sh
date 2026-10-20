@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Runs block-no-verify's handler the way Claude Code does: by its path, a payload on stdin, in a
-# stripped environment. CI runs this on Linux, macOS and Windows (Git Bash). Needs jq on PATH, as
+# stripped environment. CI does not run it; QUALITY_GATE runs it locally. Needs jq on PATH, as
 # the plugin does. Exits non-zero on the first failure.
 set -euo pipefail
 root=$(cd "$(dirname "$0")/../../../.." && pwd)
