@@ -20,5 +20,14 @@
     ],
     "max_cost_usd": 20,
     "cost_basis": "2026-10-19 smoke run, 5 cases (one was dropped afterwards, about $0.30), one arm, one run: $3.82 ($2.16 agent + $1.65 judge, measured before 2 llm graders were removed); baseline arm about 40% of that; x3 runs x1.25"
+  },
+  "hook-workbench": {
+    "allow_tools": [
+      "Bash",
+      "WebFetch(domain:code.claude.com)",
+      "WebFetch(domain:raw.githubusercontent.com)"
+    ],
+    "max_cost_usd": 6,
+    "cost_basis": "2026-10-20 smoke run, 7 cases, both arms, one run: $1.34; x3 runs x1.25"
   }
 }
