@@ -2,7 +2,7 @@
 """Tests for skill-diagnostics' hooks/skill_written.py.
 
 Run: python3 -m unittest discover -s .github/scripts/tests/skill-diagnostics -v
-Standard library only; runs on Python 3.9+ on Linux, macOS and Windows.
+Standard library only; runs on the python3 on PATH on Linux, macOS and Windows.
 """
 
 from __future__ import annotations

@@ -70,24 +70,21 @@ jobs:
           node .github/scripts/check-version-bump.mjs "${BASE}"
 
   python:
-    name: Plugin Python tests (${{ matrix.os }}, ${{ matrix.python }})
+    name: Plugin Python tests (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     defaults:
       run:
         shell: bash
     strategy:
       fail-fast: false
-      # One job per OS, plus both ends of the Python range: the 3.9 floor and the newest.
+      # One job per OS. Plugins run on whatever python3 the user has, so there is no version floor.
       matrix:
-        include:
-          - { os: ubuntu-24.04, python: "3.9" }
-          - { os: macos-latest, python: "3.13" }
-          - { os: windows-latest, python: "3.9" }
+        os: [ubuntu-24.04, macos-latest, windows-latest]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
-          python-version: ${{ matrix.python }}
+          python-version: "3.x"
       - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
         with:
           version: ${{ env.UV_VERSION }}
@@ -121,7 +118,6 @@ jobs:
             chmod +x "${shim}/python3"
             export PATH="${shim}:${PATH}"
           fi
-          python3 -c "import sys; assert sys.version_info[:2] == tuple(int(p) for p in '${{ matrix.python }}'.split('.')), sys.version"
           for check in .github/scripts/tests/*/by_path.sh; do
             [[ -e "${check}" ]] || continue
             echo "::group::${check}"
@@ -143,7 +139,7 @@ jobs:
         run: |
           uvx "ruff@${RUFF_VERSION}" check --output-format=github plugins .github/scripts
           uvx "ruff@${RUFF_VERSION}" format --check plugins .github/scripts
-          git ls-files -z 'plugins/*.py' '.github/scripts/tests/*.py' | xargs -0 uvx --from "mypy==${MYPY_VERSION}" mypy --python-version 3.9 --strict
+          git ls-files -z 'plugins/*.py' '.github/scripts/tests/*.py' | xargs -0 uvx --from "mypy==${MYPY_VERSION}" mypy --strict
 
   claude-validate:
     name: claude plugin validate

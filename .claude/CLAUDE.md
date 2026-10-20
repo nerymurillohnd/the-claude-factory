@@ -83,7 +83,7 @@ The gates live in `.claude/rules/`.
 
 - Do not start a new plugin while a released one lacks its Claude app check.
 - Name skills and plugins for what the skill does, not how it is implemented.
-- Keep the plugin Python floor at 3.9 (uv's `python3.9`), typed by `pyrightconfig.json` and mypy `--python-version 3.9`.
+- Write plugin Python as portable, POSIX-style code: it runs on whatever `python3` the user has on `PATH`, so there is no version floor. Check it here with our own tools.
 - Keep the version in `plugin.json`. Never set `version` on a marketplace entry.
 - Change `displayName` to relabel a plugin.
 - After moving or creating files, delete `.DS_Store` files and orphaned cache directories.
