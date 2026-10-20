@@ -46,8 +46,8 @@ The gates live in `.claude/rules/`.
 
 ## Documentation and Maintenance
 
-- Decisions: record each important decision as an ADR in `.claude/maintainer/decisions/`, with the `project-records` skill.
-- Technical debt: log pending debt in `pending-debt.md` and move it to `resolved-debt.md` once verified, both in `.claude/maintainer/technical-debt/`.
+- Decisions: record each important decision as an ADR in `.claude/maintainer/decisions/`, with the `project-maintainer:write-records` skill.
+- Technical debt: log pending debt in `pending-debt.md` and move it to `closed-debt.md` once it is closed (resolved, obsolete or accepted), both in `.claude/maintainer/technical-debt/`.
 - Specs: write each design spec in `.claude/specs/`, named `YYYY-MM-DD-<topic>.md`. Git tracks them.
 - Plans: write each implementation plan in `.claude/plans/`, named `YYYY-MM-DD-<topic>.md`. Git ignores them.
 - `docs/`: the user guides, covering installation, managing plugins, compatibility, FAQ, troubleshooting and tool references.

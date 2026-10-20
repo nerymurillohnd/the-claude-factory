@@ -16,7 +16,7 @@ body:
     attributes:
       label: Plugin
       description: The install name, as in `<plugin>@the-claude-factory`.
-      placeholder: e.g. project-records
+      placeholder: e.g. project-maintainer
     validations:
       required: true
 

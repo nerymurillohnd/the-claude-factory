@@ -13,7 +13,7 @@ body:
     attributes:
       label: Plugin (if any)
       description: The install name, or leave blank for a marketplace question.
-      placeholder: e.g. project-records
+      placeholder: e.g. project-maintainer
 
   - type: textarea
     id: question
