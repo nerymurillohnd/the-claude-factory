@@ -6,6 +6,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-10-20
+
+### Changed
+
+- Post-edit hook: every message Claude receives (type errors, files left unchecked because no compiler was found, a missing policy file) now ends with one line telling it to use `typescript6-lsp-intelligence:ts-lifecycle` and apply all its knowledge when working on TypeScript and JavaScript files. What the hook checks, when it runs and how it exits are unchanged.
+
 ## [0.2.0] - 2026-10-16
 
 ### Changed
@@ -33,6 +39,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - Post-edit hook: after each Edit, Write or Bash call, the pinned `tsc --noEmit` checks the `tsconfig.json` program of every TypeScript or JavaScript file it changed; errors in the edited file first, breakage elsewhere in the program after, a file outside every program reported, compiler defaults when no `tsconfig.json` exists.
 - `typescript6-lsp-intelligence` skill: LSP operations first with a routing table against Grep, five checks before trusting a reference result, the blind spots to grep, an impact checklist for renames and deletions, server gotchas verified on fixtures, and a `toolchain.md` reference for the pinned compiler, TypeScript 6 vs 7, configuration, a strict profile, CI and IDE.
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/typescript6-lsp-intelligence--v0.2.0...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/typescript6-lsp-intelligence--v0.2.1...HEAD
+[0.2.1]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/typescript6-lsp-intelligence--v0.2.1
 [0.2.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/typescript6-lsp-intelligence--v0.2.0
 [0.1.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/typescript6-lsp-intelligence--v0.1.0

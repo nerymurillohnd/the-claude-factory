@@ -10,6 +10,7 @@ import {
   cpSync,
   mkdirSync,
   mkdtempSync,
+  readFileSync,
   realpathSync,
   rmSync,
   writeFileSync,
@@ -334,3 +335,170 @@ describe('typescript lsp hook', () => {
     })
   })
 })
+
+const SKILL_PLUGINS = ['typescript6-lsp-intelligence']
+const REASON_CEILING = 9100
+const MANY_ERRORS = 600
+// No Node manager, no npm prefix and no tsc on PATH. The hook also searches three fixed system
+// folders, which a machine may fill; noCompilerHook() takes them out of a copy.
+const NO_COMPILER_ENV = {
+  PATH: '/usr/bin:/bin',
+  NVM_DIR: '/nonexistent',
+  FNM_DIR: '/nonexistent',
+  VOLTA_HOME: '/nonexistent',
+  ASDF_DATA_DIR: '/nonexistent',
+  MISE_DATA_DIR: '/nonexistent',
+  N_PREFIX: '/nonexistent',
+  NPM_CONFIG_PREFIX: '/nonexistent',
+  PNPM_HOME: '/nonexistent',
+  BUN_INSTALL: '/nonexistent',
+}
+const SYSTEM_FOLDER =
+  /^\s*add_dir (\/opt\/homebrew\/bin|\/usr\/local\/bin|\/home\/linuxbrew\/\.linuxbrew\/bin)$/
+const SYSTEM_FOLDERS = 3
+
+/**
+ * @param {string} plugin
+ * @returns {string}
+ */
+function skillHint(plugin) {
+  return `Use the ${plugin}:ts-lifecycle skill and apply all its knowledge when working on TypeScript and JavaScript files.`
+}
+
+for (const plugin of SKILL_PLUGINS) {
+  describe(`${plugin} messages to Claude name the skill`, () => {
+    const hook = join(ROOT, 'plugins', plugin, 'hooks', 'tsc-check.sh')
+    const hint = skillHint(plugin)
+    /** @type {Workspace} */
+    let ws
+    beforeEach(() => {
+      ws = makeWorkspace()
+    })
+    afterEach(() => ws.cleanup())
+
+    /**
+     * A project whose compiler is a stub: it lists the file, then prints `errors` type errors
+     * (none for a clean pass).
+     * @param {number} errors
+     * @returns {string}
+     */
+    function project(errors) {
+      ws.write('p/tsconfig.json', STRICT)
+      const file = ws.write('p/a.ts', 'export const x = 1;\n')
+      const stub = ws.write(
+        'p/node_modules/.bin/tsc',
+        [
+          '#!/bin/sh',
+          'case "$*" in',
+          '  *--version*) echo "Version 6.0.3" ;;',
+          `  *--listFilesOnly*) echo "${file}" ;;`,
+          errors === 0
+            ? '  *) ;;'
+            : `  *) i=0; while [ $i -lt ${errors} ]; do echo "a.ts(1,14): error TS2322: bad $i"; i=$((i+1)); done; exit 2 ;;`,
+          'esac',
+          '',
+        ].join('\n'),
+      )
+      chmodSync(stub, 0o755)
+      return file
+    }
+
+    test('a type error blocks, and the reason ends with the hint', () => {
+      const r = fire(ws.edit(project(1)), ws.env, hook)
+      const out = parsed(r.out)
+      assert.equal(out.decision, 'block')
+      assert.match(out.reason, /TS2322/)
+      assert.ok(out.reason.endsWith(`\n${hint}`))
+    })
+
+    test('after a failed Bash call the additionalContext ends with the hint', () => {
+      const payload = event('Bash', {
+        hook_event_name: 'PostToolUseFailure',
+        tool_input: { command: 'x' },
+        tool_response: { bashEditDiff: { changedFiles: [project(1)] } },
+      })
+      const out = parsed(fire(payload, ws.env, hook).out)
+      assert.equal(out.decision, undefined)
+      assert.equal(out.hookSpecificOutput.hookEventName, 'PostToolUseFailure')
+      assert.ok(out.hookSpecificOutput.additionalContext.endsWith(`\n${hint}`))
+    })
+
+    test('a long report is cut and still ends with the hint', () => {
+      const reason = parsed(fire(ws.edit(project(MANY_ERRORS)), ws.env, hook).out).reason
+      assert.match(reason, /output cut at 9000 characters/)
+      assert.ok(reason.length <= REASON_CEILING)
+      assert.ok(reason.endsWith(`\n${hint}`))
+    })
+
+    /**
+     * A copy of the plugin whose hook does not search the three fixed system folders, so no
+     * compiler a machine keeps there can be found. Fails if the script stops listing them.
+     * @returns {string}
+     */
+    function noCompilerHook() {
+      const copy = join(ws.root, 'plugin-no-system-folders')
+      cpSync(join(ROOT, 'plugins', plugin), copy, { recursive: true })
+      const script = join(copy, 'hooks', 'tsc-check.sh')
+      const lines = readFileSync(script, 'utf8').split('\n')
+      const kept = lines.filter((line) => !SYSTEM_FOLDER.test(line))
+      assert.equal(lines.length - kept.length, SYSTEM_FOLDERS)
+      writeFileSync(script, kept.join('\n'))
+      return script
+    }
+
+    test('files left unchecked without a compiler name the skill to Claude, not to the user', () => {
+      ws.write('bare/a.ts', 'export const x = 1;\n')
+      const env = { ...ws.env, ...NO_COMPILER_ENV }
+      const r = fire(ws.edit(join(ws.root, 'bare', 'a.ts')), env, noCompilerHook())
+      const out = parsed(r.out)
+      assert.match(out.hookSpecificOutput.additionalContext, /Do not treat these files as checked/)
+      assert.ok(out.hookSpecificOutput.additionalContext.endsWith(`\n${hint}`))
+      assert.match(out.systemMessage, /no usable TypeScript compiler was found/)
+      assert.doesNotMatch(out.systemMessage, /apply all its knowledge/)
+    })
+
+    test('a file that is missing names the skill', () => {
+      const r = fire(ws.edit(join(ws.root, 'gone.ts')), ws.env, hook)
+      assert.ok(parsed(r.out).hookSpecificOutput.additionalContext.endsWith(`\n${hint}`))
+    })
+
+    test('a clean pass tells Claude nothing', () => {
+      const r = fire(ws.edit(project(0)), ws.env, hook)
+      assert.equal(r.code, 0)
+      assert.doesNotMatch(r.out, /apply all its knowledge/)
+      assert.equal(parsed(r.out).hookSpecificOutput, undefined)
+      assert.equal(r.err, '')
+    })
+
+    test('an event without tool_name fails with the hint on stderr', () => {
+      const r = fire('{"tool_input":', ws.env, hook)
+      assert.equal(r.code, 1)
+      assert.ok(r.err.endsWith(`${hint}\n`))
+    })
+
+    test('a missing strictest policy fails with the hint on stderr', () => {
+      const copy = join(ws.root, 'plugin')
+      cpSync(join(ROOT, 'plugins', plugin), copy, { recursive: true })
+      rmSync(join(copy, 'hooks', 'tsconfig.strictest.json'))
+      const file = ws.write('p/a.ts', 'export const x = 1;\n')
+      const r = fire(ws.edit(file), ws.env, join(copy, 'hooks', 'tsc-check.sh'))
+      assert.equal(r.code, 1)
+      assert.match(r.err, /tsconfig\.strictest\.json is missing/)
+      assert.ok(r.err.endsWith(`${hint}\n`))
+    })
+
+    test('a policy that lost noCheck fails with the hint on stderr', () => {
+      const copy = join(ws.root, 'plugin')
+      cpSync(join(ROOT, 'plugins', plugin), copy, { recursive: true })
+      writeFileSync(
+        join(copy, 'hooks', 'tsconfig.strictest.json'),
+        '{"compilerOptions":{"strict":true,"noEmit":true}}',
+      )
+      const file = ws.write('p/a.ts', 'export const x = 1;\n')
+      const r = fire(ws.edit(file), ws.env, join(copy, 'hooks', 'tsc-check.sh'))
+      assert.equal(r.code, 1)
+      assert.match(r.err, /does not set noEmit true and noCheck false/)
+      assert.ok(r.err.endsWith(`${hint}\n`))
+    })
+  })
+}
