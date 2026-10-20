@@ -25,7 +25,7 @@ paths:
 ## Filter
 
 - Never put `if` on a hook that enforces a policy. The page calls the filter best-effort: it strips leading `VAR=` assignments, and the permissions page strips only `timeout`, `time`, `nice`, `nohup`, `stdbuf`, `command`, `builtin` and `noglob`. Treat `sudo`, `env`, `xargs`, `watch` and `bash -c` as not stripped until a test shows otherwise, so `if: "Bash(git *)"` would skip `sudo git commit --no-verify`.
-- Filter inside the script instead: exit early on a cheap, case-insensitive check of the command text, before any parsing.
+- Filter inside the script instead, on the words after lexing, never on the raw text. The shell joins quotes, so `g"i"t commit --no-verify` runs git and contains no `git` substring. Parsing costs far less than starting the interpreter.
 
 ## Fail
 
