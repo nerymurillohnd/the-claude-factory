@@ -38,7 +38,7 @@
 
 3. Read the project's `CLAUDE.md` and `AGENTS.md`. Add any path they name for decisions, debt or pending items.
 4. Drop what does not apply:
-   - the folder you settled as `<decisions>` or `<debt>`,
+   - the plugin's own folder, `.claude/maintainer/`,
    - changelogs,
    - vendored or generated files.
 
@@ -66,7 +66,7 @@ Do this before you create any folder.
 
 ### 4. Migrate
 
-Do this after the git question and after the folders exist.
+Do this after the git question. Write every record with the Write tool. Write creates the folders.
 
 1. Write the records, one candidate at a time, in the order the source lists them.
 2. For a decision, write one ADR with the ADR template. Follow the ADRs reference.

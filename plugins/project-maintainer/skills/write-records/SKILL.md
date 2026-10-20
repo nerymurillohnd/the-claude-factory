@@ -29,11 +29,11 @@ description: Writes architecture decision records (ADRs) and keeps a technical-d
 - Mark anything unverified as an inference or as pending.
 - Mention a record elsewhere by its ID only: the ADR file name without `.md`, or `DEBT-<NNN>`.
 - Keep each ledger index equal to its entries.
-- Name an ADR with the pattern of the ADRs already in its folder.
 - Write dates as `YYYY-MM-DD`, using today's date.
-- Save records relative to the checkout you work in: the root that `git rev-parse --show-toplevel` prints, or the current directory outside git.
+- Save records under `.claude/maintainer/` in the checkout you work in: the root that `git rev-parse --show-toplevel` prints, or the current directory outside git.
+- Write records with the Write tool, never with Bash. `.claude/` is a protected folder, and Write creates the missing folders.
 - Keep every destination inside the project, symlinks included.
-- When a destination is protected or unwritable, show the draft and the exact blocker.
+- When the user denies a write or a destination is unwritable, show the draft and the exact blocker.
 
 ### Never
 
@@ -55,32 +55,29 @@ description: Writes architecture decision records (ADRs) and keeps a technical-d
 
 ## Instructions
 
-### 1. Settle the location
+### 1. Know where records live
 
-Do this once per task, before the first search or write.
+The locations are fixed. Never choose another one.
 
-1. Use the location the project already defines: a path in its `CLAUDE.md` or `AGENTS.md`, or an existing folder such as `docs/adr/`, `doc/adr/` or `docs/decisions/`.
-2. Otherwise use `docs/decisions/` and `docs/technical-debt/`.
-
-Below, `<decisions>` and `<debt>` stand for the two folders.
-
-- Decisions: one file per decision, named `<decisions>/ADR_<YYYY-MM-DD>_<slug>.md`. If `<decisions>` already holds ADRs with another naming pattern, copy that pattern.
-- Pending debt: `<debt>/pending-debt.md`.
-- Resolved debt: `<debt>/resolved-debt.md`.
+- Decisions: `.claude/maintainer/decisions/ADR_<YYYY-MM-DD>_<slug>.md`, one file per decision.
+- Pending debt: `.claude/maintainer/technical-debt/pending-debt.md`.
+- Resolved debt: `.claude/maintainer/technical-debt/resolved-debt.md`.
 
 Create a folder or ledger the first time it is needed. Installing the plugin creates nothing.
+
+Claude Code protects `.claude/`. The first write of a session can ask the user for permission. Wait for the answer. Do not work around it.
 
 ### 2. Look for existing records
 
 Do this before you create the first folder of each kind. It keeps one source of truth.
 
-- Decisions: do it when `<decisions>` does not exist yet.
-- Debt and pending items: do it when `<debt>` does not exist yet.
+- Decisions: do it when `.claude/maintainer/decisions` does not exist yet.
+- Debt and pending items: do it when `.claude/maintainer/technical-debt` does not exist yet.
 
 Then:
 
 1. Read [Existing records](references/existing-records.md).
-2. Find the project's own documents for that kind. Skip any folder you settled in step 1.
+2. Find the project's own documents for that kind.
 3. Show the user what you found. Ask whether to consolidate and migrate it.
 4. Migrate only what the user approves, in step 4.
 
@@ -93,16 +90,16 @@ Do this before you create the first records folder.
 Ask only when all of these hold:
 
 - The project is a git repository.
-- Neither `<decisions>` nor `<debt>` exists yet, even if the project's `CLAUDE.md` or `AGENTS.md` names them.
-- Git does not already ignore both paths. Check with `git check-ignore -q <path>`.
+- `.claude/maintainer/` does not exist yet.
+- Git does not already ignore it. Check with `git check-ignore -q .claude/maintainer/`.
 
 Then:
 
 1. Ask one question with your question tool. Put the recommendation first and give its reason.
    - **Track them (Recommended):** the records are committed with the project, so the team shares them and they survive a new clone.
    - **Keep them local:** the records stay on this machine and are not shared.
-2. Apply the answer to both folders at once. Never ask again.
-   - Keep them local: add `<decisions>/` and `<debt>/` to the `.gitignore` at the checkout root. Create the file if it is missing. Add only those two lines.
+2. Apply the answer once. Never ask again.
+   - Keep them local: add `.claude/maintainer/` to the `.gitignore` at the checkout root. Create the file if it is missing. Add only that line.
    - Track them: change nothing.
 
 In a non-interactive session, do not ask. Track the records, change nothing, and say so in your one-line note.
@@ -111,9 +108,8 @@ In a non-interactive session, do not ask. Track the records, change nothing, and
 
 Do this after step 3, only when the user approved a migration in step 2.
 
-1. Create the folders.
-2. Follow the migration steps in [Existing records](references/existing-records.md).
-3. Ask what to do with each original. Change nothing before the user answers.
+1. Follow the migration steps in [Existing records](references/existing-records.md). Write creates the folders.
+2. Ask what to do with each original. Change nothing before the user answers.
 
 ### 5. Decide whether to record
 
@@ -146,13 +142,13 @@ Tell the user in one line what you recorded and where.
 Example:
 
 - Input: "We decided to keep sessions in Postgres, not Redis."
-- Output: the file `docs/decisions/ADR_2026-03-14_keep-sessions-in-postgres.md`, then the line "Recorded the decision in `docs/decisions/ADR_2026-03-14_keep-sessions-in-postgres.md`."
+- Output: the file `.claude/maintainer/decisions/ADR_2026-03-14_keep-sessions-in-postgres.md`, then the line "Recorded the decision in `.claude/maintainer/decisions/ADR_2026-03-14_keep-sessions-in-postgres.md`."
 
 ## Checklist
 
 Check each item before you finish.
 
-- [ ] The location is settled and every path stays inside the checkout.
+- [ ] Every record is under `.claude/maintainer/` in the checkout, written with the Write tool.
 - [ ] Existing records were looked for before the first folder of each kind.
 - [ ] Nothing existing was moved, overwritten or deleted without the user's OK.
 - [ ] No record lives in two places, or the user chose to keep both.
@@ -160,7 +156,6 @@ Check each item before you finish.
 - [ ] The existing records were searched first. No duplicate exists.
 - [ ] Every claim is verified, stated by the user, or marked pending.
 - [ ] No placeholder or template instruction remains in an entry.
-- [ ] The ADR file name follows the pattern of its folder.
 - [ ] Each ledger index equals its entries.
 - [ ] No accepted ADR or resolved entry was rewritten.
 - [ ] Nothing was committed or pushed.

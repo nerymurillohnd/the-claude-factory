@@ -50,7 +50,7 @@ The ADR template follows [MADR 4.0](https://adr.github.io/madr/) and adds a scop
 | :-- | :-- |
 | **Claude Code** | v2.1.292 or later — check with `claude --version` |
 | **Surfaces** | See [Compatibility](#-compatibility) |
-| **External tools** | None to install. Claude Code searches and numbers records with `ls`, `grep` and `mkdir`, which macOS and Linux include; on Windows, use Git for Windows |
+| **External tools** | None to install. Claude Code searches and numbers records with `ls`, `grep` and `date`, which macOS and Linux include; on Windows, use Git for Windows |
 | **Network** | None. The plugin reads and writes files in your project only |
 | **Accounts / API keys** | None |
 
@@ -104,7 +104,7 @@ In the desktop app's **Code** tab you can also click **+** → **Plugins** → *
 We decided to keep sessions in Postgres instead of Redis. Record it.
 ```
 
-**Result:** Claude searches your existing records, asks only for what it is missing (for example, why Redis was rejected), and saves `docs/decisions/ADR_2026-03-14_keep-sessions-in-postgres.md` with the context, the options, the outcome and its consequences. It then tells you the file name in one line. The record is `accepted` when you made the decision in the conversation and `proposed` when it is still open.
+**Result:** Claude searches your existing records, asks only for what it is missing (for example, why Redis was rejected), and saves `.claude/maintainer/decisions/ADR_2026-03-14_keep-sessions-in-postgres.md` with the context, the options, the outcome and its consequences. It then tells you the file name in one line. The record is `accepted` when you made the decision in the conversation and `proposed` when it is still open.
 
 ### Record several decisions at once
 
@@ -116,7 +116,7 @@ We decided to keep sessions in Postgres instead of Redis. Record it.
 The nightly export fails on files over 2 GB. We cannot fix it until the vendor ships the new API. Log it as debt.
 ```
 
-**Result:** Claude searches both ledgers for the same problem, then adds `DEBT-001` to `docs/technical-debt/pending-debt.md`, creating the ledger the first time. The entry separates confirmed facts from inferences and records the impact, why it is not fixed now, the next action and the event that lets you close it.
+**Result:** Claude searches both ledgers for the same problem, then adds `DEBT-001` to `.claude/maintainer/technical-debt/pending-debt.md`, creating the ledger the first time. The entry separates confirmed facts from inferences and records the impact, why it is not fixed now, the next action and the event that lets you close it.
 
 ### Resolve a debt item
 
@@ -144,13 +144,27 @@ The first time Claude is about to create a records folder, it looks through your
 
 | What | Where |
 | :-- | :-- |
-| Decisions | `docs/decisions/ADR_<YYYY-MM-DD>_<slug>.md`, one file per decision |
-| Pending debt | `docs/technical-debt/pending-debt.md` |
-| Resolved debt | `docs/technical-debt/resolved-debt.md` |
+| Decisions | `.claude/maintainer/decisions/ADR_<YYYY-MM-DD>_<slug>.md`, one file per decision |
+| Pending debt | `.claude/maintainer/technical-debt/pending-debt.md` |
+| Resolved debt | `.claude/maintainer/technical-debt/resolved-debt.md` |
 
-If your project already keeps ADRs in another folder, such as `docs/adr/`, or names a location in its `CLAUDE.md` or `AGENTS.md`, Claude uses that instead and never moves existing records. It also names a new ADR with the pattern of the ADRs already in the folder, such as `0008-use-postgres.md`, and uses the name above only in a folder without ADRs.
+The records live in the `.claude/` folder of your project because they are Claude's working documentation about it. The locations are fixed, so every session finds them in the same place. Records you already keep elsewhere are handled by [Bring in records you already keep](#bring-in-records-you-already-keep).
 
-The first time Claude is about to create the records folders in a git repository, it asks you once whether git should **track** them (recommended, so your team shares them) or **ignore** them (they stay on your machine). If you choose to ignore them, it adds the two folders to the `.gitignore` at the root of your checkout and never asks again. It does not ask when a records folder already exists, and in a non-interactive run such as `claude -p` it tracks the records and says so.
+The first time Claude is about to create `.claude/maintainer/` in a git repository, it asks you once whether git should **track** it (recommended, so your team shares it) or **ignore** it (it stays on your machine). If you choose to ignore it, Claude adds `.claude/maintainer/` to the `.gitignore` at the root of your checkout and never asks again. It does not ask when the folder already exists, and in a non-interactive run such as `claude -p` it tracks the records and says so.
+
+### Permissions
+
+Claude Code protects the `.claude/` folder, so the first record you save in a session can open a permission prompt. Reading your records never asks.
+
+| Your permission mode | What happens when Claude saves a record |
+| :-- | :-- |
+| Default or accept edits | Claude Code asks. Choose **Yes, and allow Claude to edit files in this project's .claude folder for this session** and it stops asking until the session ends. |
+| Auto | A classifier decides instead of you. |
+| Bypass permissions | No prompt. |
+| Non-interactive (`claude -p`, don't ask) | Nobody can answer the prompt, so Claude shows you the record as a draft. |
+
+> [!NOTE]
+> A rule in your `settings.json`, such as `Edit(.claude/**)`, does not remove this prompt: Claude Code checks protected folders before it reads allow rules. See [Protected paths](https://code.claude.com/docs/en/permission-modes#protected-paths) in the Claude Code docs.
 
 ## 🔄 Updating
 
@@ -215,7 +229,7 @@ Not without your OK. Claude lists them, asks whether to migrate, and asks again,
 <details>
 <summary><b>Does the plugin change my <code>.gitignore</code>?</b></summary>
 
-Only if you answer that you want the records kept local, and then it adds exactly two lines: the decisions folder and the debt folder. Otherwise it never touches the file. To change your mind later, edit `.gitignore` yourself. Claude does not ask again because the folders already exist.
+Only if you answer that you want the records kept local, and then it adds exactly one line: `.claude/maintainer/`. Otherwise it never touches the file. To change your mind later, edit `.gitignore` yourself. Claude does not ask again because the folder already exists.
 
 </details>
 

@@ -3,8 +3,8 @@
 ## What this is
 
 - A ledger of problems that cannot be fixed now.
-- Pending debt: `<debt>/pending-debt.md`.
-- Resolved debt: `<debt>/resolved-debt.md`, in the same folder.
+- Pending debt: `.claude/maintainer/technical-debt/pending-debt.md`.
+- Resolved debt: `.claude/maintainer/technical-debt/resolved-debt.md`, in the same folder.
 - Debt is recorded nowhere else.
 - Other documents mention an item by its ID only: `DEBT-<NNN>`.
 - Templates: [pending debt](../assets/pending-debt.md) and [resolved debt](../assets/resolved-debt.md).
@@ -26,6 +26,7 @@
 - Never delete a pending item without a resolved entry.
 - Never rewrite a resolved entry. Only its "Superseded by" field may change.
 - Resolve an item without asking, as soon as the fix is verified.
+- Write the ledgers with the Write tool, never with Bash. Write creates the folder.
 
 ## Open an item
 
@@ -34,7 +35,7 @@
 1. Search for the same condition: the same file, symptom or cause.
 
    ```bash
-   grep -il "<keyword>" <debt>/*.md
+   grep -il "<keyword>" .claude/maintainer/technical-debt/*.md
    ```
 
 2. An open entry already tracks it? Add no new item. Update that entry when the new finding adds evidence.
@@ -51,7 +52,7 @@
 1. List the IDs in both ledgers:
 
    ```bash
-   grep -hoE 'DEBT-[0-9]+' <debt>/*.md 2>/dev/null | sort -u
+   grep -hoE 'DEBT-[0-9]+' .claude/maintainer/technical-debt/*.md 2>/dev/null | sort -u
    ```
 
 2. Read each existing ledger first. Treat a ledger confirmed absent as empty.

@@ -1,5 +1,5 @@
 <!--
-Template for <debt>/resolved-debt.md.
+Template for .claude/maintainer/technical-debt/resolved-debt.md.
 Create the ledger from this template the first time a debt item is resolved: write everything below this
 comment into the new file and leave this comment out.
 Keep the "Entry format" comment at the end of the new file. Each item is copied from it, above that comment.

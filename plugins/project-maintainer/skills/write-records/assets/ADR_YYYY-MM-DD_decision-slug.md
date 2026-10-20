@@ -12,10 +12,10 @@ superseded-by: none
 ---
 
 <!--
-Template for <decisions>/ADR_<YYYY-MM-DD>_<decision-slug>.md, or the naming pattern of the ADRs already in the folder.
+Template for .claude/maintainer/decisions/ADR_<YYYY-MM-DD>_<decision-slug>.md.
 Write the new file with the frontmatter above and the body below, and leave this comment out.
 - status: proposed, accepted, rejected, deprecated or superseded. Use accepted only when the decision is made.
-- date: the registration date. When the file name carries a date, equal to it.
+- date: the registration date, equal to the date in the file name.
 - supersedes: the file name of the ADR this record replaces, or none.
 - superseded-by: the file name of the ADR that replaces this one. Required when status is superseded.
 - Remove the consulted and informed lines when they would be empty.

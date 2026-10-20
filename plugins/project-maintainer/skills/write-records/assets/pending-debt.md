@@ -1,5 +1,5 @@
 <!--
-Template for <debt>/pending-debt.md.
+Template for .claude/maintainer/technical-debt/pending-debt.md.
 Create the ledger from this template the first time a debt item is logged: write everything below this
 comment into the new file and leave this comment out.
 Keep the "Entry format" comment at the end of the new file. Each item is copied from it, above that comment.
