@@ -42,6 +42,7 @@ Add an item only when all of these hold:
 | --- | --- | --- |
 | DEBT-001 | pr-tracker gets no GitHub tools when the GitHub MCP server has another name | 🟡 Pending |
 | DEBT-002 | Version-bump check fails on main after a revert of an unreleased bump and blocks every release | 🟠 Blocked |
+| DEBT-003 | basedpyright checks only half of the repository's Python files and never runs in CI | 🟠 Blocked |
 
 ## 📂 Open items
 
@@ -101,6 +102,35 @@ Add an item only when all of these hold:
 - **Next action:** decide with Nery whether `check-version-bump.mjs` compares each plugin with its latest `<plugin>--v*` tag instead of the previous commit. If yes, change it with tests for both cases: a revert to the tagged state passes and an edit without a bump still fails.
 - **Review condition:** closes when a revert of an unreleased bump passes `Validate` on `main` and a plugin change without a bump still fails it.
 - **Related records:** [PR #27](https://github.com/nerymurillohnd/the-claude-factory/pull/27), [PR #31](https://github.com/nerymurillohnd/the-claude-factory/pull/31); `.claude/rules/RELEASES.md`.
+
+### DEBT-003 — basedpyright checks only half of the repository's Python files and never runs in CI
+
+| Field | Value |
+| --- | --- |
+| **Status** | 🟠 Blocked |
+| **Category** | quality |
+| **Owner** | `.claude/rules/QUALITY_GATE.md` (step 17), `.github/workflows/validate.yml`, `.pre-commit-config.yaml` |
+| **Logged** | 2026-10-20 |
+
+#### 🔎 Evidence
+
+- **Confirmed facts:**
+  - `basedpyright --warnings --verbose` (basedpyright 1.40.2, based on pyright 1.1.414) at the repository root prints `Auto-excluding **/.*` and `Found 2 source files`, then `0 errors, 0 warnings, 0 notes`. The repository tracks 4 `.py` files; the two under `.github/scripts/tests/` are never checked by QUALITY_GATE step 17.
+  - No basedpyright config exists: `pyrightconfig.json` (`{"pythonVersion": "3.9"}`) was deleted in 56d0115, and there is no `pyproject.toml`.
+  - `basedpyright --warnings` on the 4 files passed explicitly reports `0 errors, 0 warnings, 0 notes` (2026-10-20), so nothing is hidden today.
+  - No `# pyright:`, `# type: ignore` or `# noqa` comment exists in the 4 files.
+  - `validate.yml` never runs basedpyright. Its only other caller, `.pre-commit-config.yaml` (hook `basedpyright`, `--warnings`, rev 1.40.2), is run by no git hook, per QUALITY_GATE.
+  - mypy (`--strict`, step 16) and ruff (steps 14 and 15) do cover all 4 files.
+- **Inferences:** none.
+- **Open questions:** whether basedpyright gets an explicit scope (a config with `include`, or the file list as in step 16) and a CI job, or mypy stays the only type check for `.github/`.
+
+#### 📈 Impact and next step
+
+- **Impact / risk:** a basedpyright finding in a Python test under `.github/scripts/tests/` would pass every gate, and a finding anywhere would reach `main` whenever the local step 17 is skipped. The gate report "0 errors" reads as full coverage when it is not.
+- **Why it is not fixed now:** the scope and whether CI runs it are Nery's call (handoff 2026-10-20-2228, item 3).
+- **Next action:** decide with Nery; if yes, change step 17 to `git ls-files -z '*.py' | xargs -0 basedpyright --warnings`, add the same command to `validate.yml`, and confirm with `--verbose` that it reports 4 source files.
+- **Review condition:** closes when step 17 and CI check every tracked `.py` file, or when Nery accepts mypy as the only type check for `.github/`.
+- **Related records:** none.
 
 <!--
 Entry format. Copy this block above this comment for each new item and add its row to the Index.
