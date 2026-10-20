@@ -332,7 +332,7 @@ In a folder outside the repository that you choose in the plan. Claude never del
 
 - 📦 [All plugins in The Claude Factory](../../README.md#-catalog)
 - 📖 [Claude Code plugin docs](https://code.claude.com/docs/en/plugins/overview)
-- 🔁 [Session Handoff](../session-handoff#readme) — write down where a session stopped, including the repository state, before you start a cleanup
+- 🔁 [Project Maintainer](../project-maintainer#readme) — write down where a session stopped, including the repository state, before you start a cleanup
 
 ## 🐞 Found a problem?
 

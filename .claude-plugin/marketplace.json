@@ -32,6 +32,12 @@
       "category": "testing"
     },
     {
+      "name": "project-maintainer",
+      "source": "./plugins/project-maintainer",
+      "description": "Keeps a project's memory in its .claude folder: decisions recorded as ADRs, technical debt tracked in a ledger, and a handoff that carries each session's state to the next one.",
+      "category": "documentation"
+    },
+    {
       "name": "prompt-writer",
       "source": "./plugins/prompt-writer",
       "description": "Turns a goal, idea or draft into one copy-ready prompt tuned to the target Claude model and effort: it clarifies intent, checks current official facts and recommends the setup to run it with.",
@@ -42,12 +48,6 @@
       "source": "./plugins/python-lsp-intelligence",
       "description": "Gives Claude Code the basedpyright language server for Python, checks every Python file Claude edits with ruff and basedpyright using your own configuration, and teaches Claude to navigate by symbol, resolve aliases and imports, and fix findings without suppressing them.",
       "category": "language-support"
-    },
-    {
-      "name": "session-handoff",
-      "source": "./plugins/session-handoff",
-      "description": "Carries a project's working state from one session to the next: write a handoff when you stop, and the next session reads it, does what you ask and ends its reply with what is still open.",
-      "category": "productivity"
     },
     {
       "name": "skill-diagnostics",
@@ -75,6 +75,7 @@
     }
   ],
   "renames": {
-    "git-hygiene": "github-operations"
+    "git-hygiene": "github-operations",
+    "session-handoff": "project-maintainer"
   }
 }

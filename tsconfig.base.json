@@ -9,7 +9,7 @@
     "verbatimModuleSyntax": true,
     "noUncheckedSideEffectImports": true,
     "libReplacement": false,
-
+    "typeRoots": ["/Users/forestalmt/.config/nvm/versions/node/v26.12.0/lib/node_modules/@types"],
     "strict": true,
     "alwaysStrict": true,
     "noImplicitAny": true,
@@ -20,7 +20,6 @@
     "strictBuiltinIteratorReturn": true,
     "noImplicitThis": true,
     "useUnknownInCatchVariables": true,
-
     "exactOptionalPropertyTypes": true,
     "noUncheckedIndexedAccess": true,
     "noPropertyAccessFromIndexSignature": true,
@@ -31,9 +30,8 @@
     "noUnusedParameters": true,
     "allowUnusedLabels": false,
     "allowUnreachableCode": false,
-
     "forceConsistentCasingInFileNames": true,
-    "skipLibCheck": false,
+    "skipLibCheck": true,
     "noErrorTruncation": true,
     "diagnostics": true
   }

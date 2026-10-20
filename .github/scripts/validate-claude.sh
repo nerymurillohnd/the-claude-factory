@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Runs the official Claude Code validator on the marketplace, every plugin
-# (manifest and components, skills included) and the repo's own .claude/.
+# (manifest and components, skills included) and the repo's own .claude/, then the mod
+# tests of every plugin that ships them.
 # --strict everywhere, except the marketplace while it lists zero plugins
 # (an empty catalog is a validator warning, not a defect).
 set -euo pipefail
@@ -34,6 +35,12 @@ for dir in plugins/*/; do
   [[ -d ${dir} ]] || continue
   echo
   claude plugin validate --strict "${dir}" || status=1
+  # A plugin that ships a mod ships its tests: they run in the engine's own test environment.
+  tests=$(find "${dir}" \( -name '*.test.ts' -o -name '*.test.tsx' \) -print -quit)
+  if [[ -n ${tests} ]]; then
+    echo
+    claude plugin test "${dir}" || status=1
+  fi
 done
 
 exit "${status}"

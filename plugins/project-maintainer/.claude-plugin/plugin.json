@@ -1,0 +1,39 @@
+{
+  "name": "project-maintainer",
+  "displayName": "Project Maintainer",
+  "version": "0.1.0",
+  "description": "Keeps a project's memory in its .claude folder: decisions recorded as ADRs, technical debt tracked in a ledger, and a handoff that carries each session's state to the next one.",
+  "author": {
+    "name": "Nery Murillo",
+    "url": "https://github.com/nerymurillohnd"
+  },
+  "homepage": "https://github.com/nerymurillohnd/the-claude-factory/tree/main/plugins/project-maintainer#readme",
+  "repository": "https://github.com/nerymurillohnd/the-claude-factory",
+  "license": "MIT",
+  "keywords": [
+    "documentation",
+    "adr",
+    "decisions",
+    "technical-debt",
+    "architecture",
+    "records",
+    "handoff",
+    "session",
+    "continuity",
+    "guardrails"
+  ],
+  "userConfig": {
+    "commitNudge": {
+      "type": "boolean",
+      "title": "Remind Claude after a commit that looks like a decision",
+      "description": "After a commit that changes dependencies, a database schema, CI or infrastructure, or whose message says workaround, temporary or revert, add one note that reminds Claude to record a decision or a debt. It uses no model call.",
+      "default": true
+    }
+  },
+  "metadata": {
+    "surfaces": [
+      "claude-code",
+      "claude-app"
+    ]
+  }
+}

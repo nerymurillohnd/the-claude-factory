@@ -10,6 +10,7 @@ import {
   existsSync,
   mkdirSync,
   mkdtempSync,
+  readdirSync,
   readFileSync,
   rmSync,
   symlinkSync,
@@ -633,9 +634,16 @@ describe('eval-targets', () => {
 
   test('manual runs: all plugins with evals, or one that has them', () => {
     scaffold()
-    assert.deepEqual(JSON.parse(run('eval-targets.mjs', ['--only', 'all']).out), [
-      'skill-diagnostics',
-    ])
+    // Every plugin of the repository that ships an evals/ folder, found on disk so a new suite never stales this test.
+    const withEvals = readdirSync(join(REAL_ROOT, 'plugins'), { withFileTypes: true })
+      .filter(
+        (entry) =>
+          entry.isDirectory() && existsSync(join(REAL_ROOT, 'plugins', entry.name, 'evals')),
+      )
+      .map((entry) => entry.name)
+      .sort()
+    assert.ok(withEvals.includes('skill-diagnostics'))
+    assert.deepEqual(JSON.parse(run('eval-targets.mjs', ['--only', 'all']).out), withEvals)
     assert.deepEqual(JSON.parse(run('eval-targets.mjs', ['--only', 'skill-diagnostics']).out), [
       'skill-diagnostics',
     ])

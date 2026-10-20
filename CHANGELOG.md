@@ -9,6 +9,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The
 ### Added
 
 - **svelte-development** 0.1.0 — writes, reviews and migrates Svelte 5 and SvelteKit 3 code from the official docs, checks every Svelte file with the Svelte autofixer and proves changes with the Svelte language server and your project's `svelte-check`.
+- **project-maintainer** 0.1.0 — records a project's important decisions as ADRs, tracks the technical debt it cannot fix yet and closes it as resolved, obsolete or accepted, carries each session's state to the next one in a handoff, and guards the records so Claude asks before it rewrites a settled one.
+
+### Removed
+
+- **session-handoff** retired: its handoff is now the `write-handoff` skill of **project-maintainer**, and the marketplace renames existing installs. Type `/project-maintainer:write-handoff` where you typed `/session-handoff:write-handoff`. Handoffs already saved in `.claude/session-handoff/` keep working.
 
 ### Changed
 

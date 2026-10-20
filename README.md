@@ -105,8 +105,9 @@ Plugin skills are namespaced, so they never collide with yours: type `/<plugin>:
 | Category | Plugins |
 | :-- | :--: |
 | [🛠️ Development](#️-development) | 2 |
-| [⚡ Productivity](#-productivity) | 2 |
+| [⚡ Productivity](#-productivity) | 1 |
 | [🧪 Testing & Quality](#-testing--quality) | 3 |
+| [📚 Documentation & Writing](#-documentation--writing) | 1 |
 | [🧠 Language Support](#-language-support) | 4 |
 
 ### 🛠️ Development
@@ -125,7 +126,6 @@ Plugin skills are namespaced, so they never collide with yours: type `/<plugin>:
 | Plugin | What it does | Works in | Version | Includes |
 | :-- | :-- | :-- | :--: | :-- |
 | [**Prompt Writer**](./plugins/prompt-writer#readme)<br>`prompt-writer@the-claude-factory` | Turns a goal, idea or draft into one copy-ready prompt tuned to the target Claude model and effort: it clarifies intent, checks current official facts and recommends the setup to run it with. | 💻 Code · 🖥️ Claude app | `0.2.0` | 🎯 Skills |
-| [**Session Handoff**](./plugins/session-handoff#readme)<br>`session-handoff@the-claude-factory` | Carries a project's working state from one session to the next: write a handoff when you stop, and the next session reads it, does what you ask and ends its reply with what is still open. | 💻 Code · 🖥️ Claude app | `1.0.0` | 🎯 Skills · 🪝 Hooks |
 
 ### 🧪 Testing & Quality
 
@@ -136,6 +136,14 @@ Plugin skills are namespaced, so they never collide with yours: type `/<plugin>:
 | [**Plugin Evals**](./plugins/plugin-evals#readme)<br>`plugin-evals@the-claude-factory` | Makes Claude an expert in Claude Code plugin evals: designs suites that prove what a plugin adds, writes cases, graders and mocks, runs and gates them in CI, and reads the results, always checked against the CLI and docs you have today. | 💻 Code · 🖥️ Claude app | `0.1.1` | 🎯 Skills |
 | [**Plugin Test Bench**](./plugins/plugin-test-bench#readme)<br>`plugin-test-bench@the-claude-factory` | Proves your Claude Code plugin works the way your users receive it: installs a copy in a throwaway config, checks it loads, runs your eval suite against that copy, and reviews your eval cases so they measure what the plugin adds. | 💻 Code only | `0.1.0` | 🎯 Skills |
 | [**Skill Diagnostics**](./plugins/skill-diagnostics#readme)<br>`skill-diagnostics@the-claude-factory` | Audits Claude skills for best-practice conformance, portability and whether a model can run them without guessing, with file-and-line evidence and one verdict. | 💻 Code · 🖥️ Claude app | `0.1.2` | 🎯 Skills · 🤖 Agents · 🪝 Hooks |
+
+### 📚 Documentation & Writing
+
+*Docs, changelogs, records and written content.*
+
+| Plugin | What it does | Works in | Version | Includes |
+| :-- | :-- | :-- | :--: | :-- |
+| [**Project Maintainer**](./plugins/project-maintainer#readme)<br>`project-maintainer@the-claude-factory` | Keeps a project's memory in its .claude folder: decisions recorded as ADRs, technical debt tracked in a ledger, and a handoff that carries each session's state to the next one. | 💻 Code · 🖥️ Claude app | `0.1.0` | 🎯 Skills · 🪝 Hooks |
 
 ### 🧠 Language Support
 
