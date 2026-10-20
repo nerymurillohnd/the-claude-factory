@@ -457,6 +457,18 @@ describe('check-version-bump', () => {
     assert.equal(after.code, 0, after.out)
   })
 
+  test('a new plugin passes without git noise: there is no base version to compare', () => {
+    initRepo()
+    scaffold()
+    git('add', '-A')
+    git('commit', '-qm', 'new plugin')
+
+    const r = run('check-version-bump.mjs', ['HEAD~1'])
+    assert.equal(r.code, 0, r.out)
+    assert.match(r.out, /Version bumps OK \(demo-tool\)/)
+    assert.doesNotMatch(r.out, /fatal:/)
+  })
+
   test('does not require a bump for README-only edits', () => {
     scaffold()
     initRepo()
