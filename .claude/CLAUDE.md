@@ -40,6 +40,7 @@ The gates live in `.claude/rules/`.
 - GitHub Gate: PRs, labels, commits, pushes.
 - Maintenance Gate: docs kept in sync.
 - Plugin Gate: sets how plugins are built, portable and distributed, and how evals are requested.
+- Hooks Gate: sets how a plugin's hooks are declared, filtered, failed, tested and documented.
 - Releases: verified after each plugin merge.
 - Skill Gate: sets how a skill references its own files and files outside it.
 - Stage rules: authoring, user-docs style and versioning, each scoped to the paths it governs.
