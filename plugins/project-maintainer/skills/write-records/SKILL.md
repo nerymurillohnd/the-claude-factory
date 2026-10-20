@@ -1,17 +1,62 @@
 ---
 name: write-records
-description: Writes and maintains a project's architecture decision records (ADRs) and its technical-debt ledger. Use when an important decision is made, when a problem is found that cannot be fixed now, when logged debt is fixed, or when the user asks to record a decision, write an ADR, log technical debt or resolve a debt item. Searches for duplicates first, writes from templates and never rewrites an accepted record.
+description: Writes architecture decision records (ADRs) and keeps a technical-debt ledger. Use when an important decision is made, a problem cannot be fixed now, or logged debt is fixed.
 ---
 
 # Write records
 
-Keep a project's important decisions and the technical debt it cannot fix yet in files, so nobody has to rediscover why the project is the way it is. There are two kinds of record. Each has a procedure in `references/` and templates in `assets/`.
+## What this is
 
-## Where records live
+- A skill that keeps a project's memory in Markdown files.
+- It covers two kinds of record: ADRs and the technical-debt ledger.
+- Each kind has a procedure in `references/` and templates in `assets/`.
+- The records answer one question: why is the project the way it is?
 
-Settle the location once per task, before the first search or write.
+## Role
 
-1. Use the location the project already defines: a path in its `CLAUDE.md` or `AGENTS.md`, or an existing decisions or debt folder such as `docs/adr/`, `doc/adr/` or `docs/decisions/`.
+- Act as the project's record keeper.
+- Record decisions and postponed problems before the task ends.
+- Record without asking permission. The user installed this plugin for that.
+- Ask only for facts you are missing.
+- Write only what is verified or what the user said.
+
+## Rules
+
+### Always
+
+- Search the existing records before adding one. Update the match instead of duplicating it.
+- Mark anything unverified as an inference or as pending.
+- Mention a record elsewhere by its ID only: the ADR file name without `.md`, or `DEBT-<NNN>`.
+- Keep each ledger index equal to its entries.
+- Write dates as `YYYY-MM-DD`, using today's date.
+- Save records relative to the checkout you work in: the root that `git rev-parse --show-toplevel` prints, or the current directory outside git.
+- Keep every destination inside the project, symlinks included.
+- When a destination is protected or unwritable, show the draft and the exact blocker.
+
+### Never
+
+- Never rewrite an accepted ADR or a resolved entry. Supersede it.
+- Never log a problem that can be fixed now. Fix it.
+- Never write a decision or a debt item into a README, changelog, code comment, commit message, task list or memory.
+- Never leave an unfilled placeholder or template instructions in an entry. A ledger keeps its reusable "Entry format" comment.
+- Never move a project's existing records.
+- Never use the plugin's install directory as a base.
+- Never use the session's project-directory variable (`CLAUDE_PROJECT_DIR`) as a base. In a worktree it still points at the main checkout, where edits are blocked.
+- Never relocate a record or widen permissions to get past a blocker.
+- Never commit or push a record unless the user asks.
+
+## References
+
+- [ADRs](references/adrs.md): read when you write, supersede or check a decision record. Template: [ADR template](assets/ADR_YYYY-MM-DD_decision-slug.md).
+- [Technical debt](references/technical-debt.md): read when you log, update or resolve a debt item. Templates: [pending debt](assets/pending-debt.md) and [resolved debt](assets/resolved-debt.md).
+
+## Instructions
+
+### 1. Settle the location
+
+Do this once per task, before the first search or write.
+
+1. Use the location the project already defines: a path in its `CLAUDE.md` or `AGENTS.md`, or an existing folder such as `docs/adr/`, `doc/adr/` or `docs/decisions/`.
 2. Otherwise use `docs/decisions/` and `docs/technical-debt/`.
 
 Below, `<decisions>` and `<debt>` stand for the two folders.
@@ -19,33 +64,31 @@ Below, `<decisions>` and `<debt>` stand for the two folders.
 - Decisions: `<decisions>/ADR_<YYYY-MM-DD>_<slug>.md`, one file per decision.
 - Pending debt: `<debt>/pending-debt.md`.
 - Resolved debt: `<debt>/resolved-debt.md`.
-- Create a folder or ledger the first time it is needed. The only setup is the question in "The first time records are created". Installing the plugin creates nothing.
-- Paths are relative to the checkout you are working in: the root that `git rev-parse --show-toplevel` prints, or the current directory outside git. Never use the plugin's install directory, and never the session's project-directory variable (`CLAUDE_PROJECT_DIR`): in a worktree it still points at the main checkout, where edits are blocked.
-- Never move a project's existing records to another location.
-- Check that the destination stays inside the project, symlinks included. If it is protected or unwritable, show the draft and the exact blocker. Do not relocate the record or widen permissions.
 
-## The first time records are created
+Create a folder or ledger the first time it is needed. Installing the plugin creates nothing.
 
-Before you create the first records folder in a project, ask the user once whether git should track the records or ignore them. Ask only when neither the decisions folder nor the debt folder exists yet, even if the project's `CLAUDE.md` or `AGENTS.md` names them, and only inside a git repository. Skip the question when git already ignores both paths (`git check-ignore -q <path>`).
+### 2. Ask about git on first use
 
-Use your question tool, put the recommendation first and give its reason:
+Do this before you create the first records folder.
 
-- **Track them (Recommended):** the records are committed with the project, so the team shares them and they survive a new clone.
-- **Keep them local:** the records stay on this machine and are not shared.
+Ask only when all of these hold:
 
-Apply the answer to both folders at once, so the question is never asked again. For "keep them local", add `<decisions>/` and `<debt>/` to the `.gitignore` at the checkout root, creating the file if it is missing and adding only those two lines. For "track them", change nothing.
+- The project is a git repository.
+- Neither `<decisions>` nor `<debt>` exists yet, even if the project's `CLAUDE.md` or `AGENTS.md` names them.
+- Git does not already ignore both paths. Check with `git check-ignore -q <path>`.
 
-In a non-interactive session do not ask: track the records, change nothing, and say in your one-line note that they are tracked and can be ignored on request.
+Then:
 
-## When to act
+1. Ask one question with your question tool. Put the recommendation first and give its reason.
+   - **Track them (Recommended):** the records are committed with the project, so the team shares them and they survive a new clone.
+   - **Keep them local:** the records stay on this machine and are not shared.
+2. Apply the answer to both folders at once. Never ask again.
+   - Keep them local: add `<decisions>/` and `<debt>/` to the `.gitignore` at the checkout root. Create the file if it is missing. Add only those two lines.
+   - Track them: change nothing.
 
-Act before finishing the task, not after. Do not ask permission to record: the user installed this plugin to have these records kept. Ask only for facts you are missing. Then tell the user in one line what you recorded and where. In a non-interactive session, such as `claude -p`, return the unanswered questions and leave the records that depend on them pending.
+In a non-interactive session, do not ask. Track the records, change nothing, and say so in your one-line note.
 
-1. An important decision is made, or the user asks for an ADR: read [ADRs](references/adrs.md), then write the record. With several decisions, ask how to register them first: [choose how to register](references/adrs.md#choose-how-to-register).
-2. A problem is found that cannot be fixed now, or the user asks to log debt: read [Technical debt](references/technical-debt.md), then log it.
-3. A logged problem is fixed: read [Technical debt](references/technical-debt.md), verify the fix, then move the entry to resolved.
-
-## What counts as an important decision
+### 3. Decide whether to record
 
 Record a decision that:
 
@@ -54,25 +97,40 @@ Record a decision that:
 - sets the scope or shape of a component, such as extending an existing module or creating an independent one,
 - would be hard to undo, or that someone may later question with "why did we do it this way?".
 
-Do not record renames, typos, formatting, comments, a small refactor that keeps behavior, or a choice an existing ADR already covers.
+Skip:
 
-## Do
+- renames, typos, formatting and comments,
+- a small refactor that keeps behavior,
+- a choice an existing ADR already covers.
 
-- Search the existing records before adding one. Update the match instead of duplicating it.
-- Write only what is verified or what the user said. Mark the rest as an inference or as pending, because a record that guesses misleads the next reader.
-- Mention a record elsewhere by its ID only: the ADR file name without `.md`, or `DEBT-<NNN>`.
-- Keep each ledger index equal to its entries.
-- Use today's date in `YYYY-MM-DD`.
+### 4. Route the work
 
-## Do not
+1. An important decision is made, or the user asks for an ADR: read [ADRs](references/adrs.md), then write the record.
+   - Several decisions? Ask how to register them first: [choose how to register](references/adrs.md#choose-how-to-register).
+2. A problem cannot be fixed now, or the user asks to log debt: read [Technical debt](references/technical-debt.md), then log it.
+3. A logged problem is fixed: read [Technical debt](references/technical-debt.md), verify the fix, then move the entry to resolved.
 
-- Do not rewrite an accepted ADR or a resolved entry. Supersede it, so the history stays true.
-- Do not log a problem that can be fixed now. Fix it.
-- Do not write a decision or a debt item into a README, changelog, code comment, commit message, task list or memory.
-- Do not leave an unfilled placeholder or template instructions in an entry. A ledger keeps its reusable "Entry format" comment.
-- Do not commit or push a record unless the user asks.
+In a non-interactive session, return the unanswered questions. Leave the records that depend on them pending.
 
-## References
+### 5. Report
 
-- [ADRs](references/adrs.md): write, supersede and check a decision record. Template: [ADR template](assets/ADR_YYYY-MM-DD_decision-slug.md).
-- [Technical debt](references/technical-debt.md): what belongs in the ledger, how to log, update and resolve an item. Templates: [pending debt](assets/pending-debt.md) and [resolved debt](assets/resolved-debt.md).
+Tell the user in one line what you recorded and where.
+
+Example:
+
+- Input: "We decided to keep sessions in Postgres, not Redis."
+- Output: the file `docs/decisions/ADR_2026-03-14_keep-sessions-in-postgres.md`, then the line "Recorded the decision in `docs/decisions/ADR_2026-03-14_keep-sessions-in-postgres.md`."
+
+## Checklist
+
+Check each item before you finish.
+
+- [ ] The location is settled and every path stays inside the checkout.
+- [ ] The git question was asked once, or was not needed.
+- [ ] The existing records were searched first. No duplicate exists.
+- [ ] Every claim is verified, stated by the user, or marked pending.
+- [ ] No placeholder or template instruction remains in an entry.
+- [ ] Each ledger index equals its entries.
+- [ ] No accepted ADR or resolved entry was rewritten.
+- [ ] Nothing was committed or pushed.
+- [ ] The user got a one-line note with the file and its ID.
