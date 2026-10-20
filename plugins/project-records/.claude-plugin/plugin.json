@@ -1,0 +1,27 @@
+{
+  "name": "project-records",
+  "displayName": "Project Records",
+  "version": "0.1.0",
+  "description": "Records a project's important decisions as architecture decision records and tracks the technical debt it cannot fix yet in a ledger, so the next person knows why the project is the way it is.",
+  "author": {
+    "name": "Nery Murillo",
+    "url": "https://github.com/nerymurillohnd"
+  },
+  "homepage": "https://github.com/nerymurillohnd/the-claude-factory/tree/main/plugins/project-records#readme",
+  "repository": "https://github.com/nerymurillohnd/the-claude-factory",
+  "license": "MIT",
+  "keywords": [
+    "documentation",
+    "adr",
+    "decisions",
+    "technical-debt",
+    "architecture",
+    "records"
+  ],
+  "metadata": {
+    "surfaces": [
+      "claude-code",
+      "claude-app"
+    ]
+  }
+}
