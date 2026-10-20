@@ -232,7 +232,7 @@ Everything else stays quiet: a new ADR, a new debt item, a `proposed` ADR that c
 Two small helpers run beside the guardrails:
 
 - **Compaction.** Before a compaction, Claude Code's summary is told to keep your decisions, the open items and every `ADR_…` and `DEBT-…` ID, so the records can be reconciled afterwards. It happens only in a project that has records or handoffs.
-- **Commit reminder.** After a commit that changes a dependency manifest, a database schema or migration, a CI workflow or infrastructure files, or whose message says workaround, temporary, revert, TODO or similar, Claude gets one note that reminds it to record a decision or a debt if the commit settles one. It uses no model call. Turn it off with the **Remind Claude after a commit that looks like a decision** option in the plugin's settings (`/plugin` → **Installed** → **Project Maintainer**).
+- **Commit reminder.** After a commit that changes a dependency manifest, a database schema or migration, a CI workflow or infrastructure files, or whose message says workaround, temporary, revert, TODO or similar, Claude gets one note that reminds it to record a decision or a debt if the commit settles one. It uses no model call. Turn it off with the **Remind Claude after a commit that looks like a decision** option. Claude Code asks about it when you install the plugin and lists it in `/config`.
 
 > [!NOTE]
 > The guardrails protect your records from Claude's mistakes. They are not a security boundary: a shell command written in a form they do not recognize, or your editor, can still change the files, and you can always edit a record by hand. They run in Claude Code (the terminal, the Desktop app's Code tab and the VS Code extension) and need v2.1.304 or later. They are off under `--safe-mode`, and with `"disableAllHooks": true` in your settings.
@@ -350,7 +350,7 @@ No. A refusal lists what is wrong, such as a date that differs from the file nam
 <details>
 <summary><b>Can I turn the guardrails off?</b></summary>
 
-Start Claude Code with `--safe-mode` for one session, or set `"disableAllHooks": true` in your settings, which also stops your other hooks. To keep only the checks, turn off the commit reminder in the plugin's settings and leave the rest. The skills and the start-of-session reminder keep working either way.
+Start Claude Code with `--safe-mode` for one session, or set `"disableAllHooks": true` in your settings, which also stops your other hooks. To keep the checks and drop only the commit reminder, turn that option off in `/config`. The skills and the start-of-session reminder keep working either way.
 
 </details>
 

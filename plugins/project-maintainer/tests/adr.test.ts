@@ -27,6 +27,14 @@ test('each rule refuses its own violation', () => {
       'decision-makers',
     ],
     [
+      'informed placeholder',
+      adr().replace(
+        'supersedes: none',
+        'informed:\n  - "{Optional person or role informed}"\nsupersedes: none',
+      ),
+      'informed still holds a template placeholder',
+    ],
+    [
       'supersedes with extension',
       adr({ supersedes: 'ADR_2026-01-02_use-redis.md' }),
       'holds an ID',

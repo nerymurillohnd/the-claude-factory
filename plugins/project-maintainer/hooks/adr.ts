@@ -98,6 +98,15 @@ export function validateAdr(text: string, context: AdrContext): string[] {
       'decision-makers must list at least one real person or role, with no template placeholder.',
     )
   }
+  for (const key of ['consulted', 'informed'] as const) {
+    if (
+      (frontmatter.lists.get(key) ?? []).some((person) => person === '' || isPlaceholder(person))
+    ) {
+      problems.push(
+        `Remove the ${key} lines, or name a real person or role: ${key} still holds a template placeholder.`,
+      )
+    }
+  }
   const selfId = adrId(context.name)
   for (const key of ['supersedes', 'superseded-by'] as const) {
     const value = frontmatter.scalars.get(key)
@@ -115,7 +124,7 @@ export function validateAdr(text: string, context: AdrContext): string[] {
   }
   if (status === 'superseded' && (frontmatter.scalars.get('superseded-by') ?? 'none') === 'none') {
     problems.push(
-      'A superseded record needs superseded-by set to the ID of the record that replaces it.',
+      'A superseded record needs superseded-by set to the ID of the record that replaces it. Change status and superseded-by in one edit.',
     )
   }
   if (
