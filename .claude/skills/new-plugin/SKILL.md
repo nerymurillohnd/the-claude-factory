@@ -35,13 +35,13 @@ This creates `plugins/<name>/` (manifest, README, CHANGELOG, LICENSE), registers
 
 ## 3. Build components
 
-Follow the [plugin authoring rules](${CLAUDE_PROJECT_DIR}/.claude/rules/stages/plugin-authoring.md). Add `keywords` to `plugin.json`. Keep `version` at `0.1.0` for the first release.
+Follow the [plugin and skill rules](${CLAUDE_PROJECT_DIR}/.claude/rules/WORKFLOW.md#when-writing-plugins). Add `keywords` to `plugin.json`. Keep `version` at `0.1.0` for the first release.
 
 ## 4. Write the README
 
 - Resolve every `{{…}}` and `<!-- TODO -->` in `plugins/<name>/README.md`; delete rows/sections that don't apply (keep all required sections).
 - Compatibility table: keep exactly one row per component type the plugin ships.
-- Follow the [user docs style](${CLAUDE_PROJECT_DIR}/.claude/rules/stages/user-docs-style.md): outcome-first TL;DR, real usage examples, accurate Compatibility table.
+- Follow the [user docs style](${CLAUDE_PROJECT_DIR}/.claude/rules/WORKFLOW.md#when-writing-user-docs): outcome-first TL;DR, real usage examples, accurate Compatibility table.
 - Fill `CHANGELOG.md` `0.1.0` → `### Added` with what ships.
 
 ## 5. Register everywhere
