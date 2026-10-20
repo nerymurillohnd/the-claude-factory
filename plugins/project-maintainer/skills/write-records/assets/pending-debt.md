@@ -3,7 +3,7 @@ Template for .claude/maintainer/technical-debt/pending-debt.md.
 Create the ledger from this template the first time a debt item is logged: write everything below this
 comment into the new file and leave this comment out.
 Keep the "Entry format" comment at the end of the new file. Each item is copied from it, above that comment.
-Fill every {{placeholder}}. Write "none" in a field with nothing to report. Leave no placeholder behind.
+Fill every {{placeholder}}. Write "none" in a field with nothing to report, except Owner ("unassigned") and Next action (a step, never "none"). Leave no placeholder behind.
 -->
 
 # 🧾 Pending Debt

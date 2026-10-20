@@ -76,7 +76,8 @@ Do this after the git question. Write every record with the Write tool. Write cr
    - Decision makers: the people the source names. Otherwise "not recorded in the source".
    - More information: "Migrated from `<source path>` on `<today>`."
 3. For a postponed problem, log one debt item with the pending debt template. Follow the Technical debt reference.
-   - Status: Pending, unless the source says Blocked or accepts the risk.
+   - Status: the source's, when it states one. Otherwise as the Technical debt reference says: Blocked for a problem that waits on an outside party, access or a decision, Pending if not.
+   - Owner: the person the source names. Otherwise "not recorded in the source".
    - Next action when the source has none: "not recorded in the source; confirm with the owner".
    - Skip a problem that can be fixed now. Tell the user it stays where it is.
 4. Compare the result with the source:

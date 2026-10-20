@@ -48,9 +48,9 @@
 
 ### 2. Collect the facts
 
-Take every fact from the conversation. A fact is missing only when it is the chosen option, a rejected option or the reason for the choice. Ask for it. In a non-interactive session write no record and return the question.
+Take every fact from the conversation. A fact is missing only when it is the chosen option, a rejected option, or the reason for the choice or for a rejection. Ask for it. In a non-interactive session write no record and return the question.
 
-For everything else, write what the conversation supports and write "Not stated by the user." for the rest. Never invent.
+For everything else, write what the conversation supports, plus what you verify in the repository, and write "Not stated by the user." for the rest. Never invent.
 
 - Context: the situation and the problem.
 - Decision drivers.
@@ -60,7 +60,7 @@ For everything else, write what the conversation supports and write "Not stated 
 - Decision makers: who made the decision.
   - Use the name the user gave in this conversation.
   - Otherwise use the name `git config user.name` prints. The project's Git identity counts as the project.
-  - A decision taken by "we" with no names: use a plain role such as "project owner".
+  - The user says "we" with no names? Use a plain role such as "project owner", not the Git name.
 - Optional: consulted, informed, risks, confirmation.
 
 ### 3. Set the status

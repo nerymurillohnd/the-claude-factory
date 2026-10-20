@@ -18,7 +18,7 @@ Write the new file with the frontmatter above and the body below, and leave this
 - date: the registration date, equal to the date in the file name.
 - supersedes: the ID of the ADR this record replaces (its file name without .md), or none.
 - superseded-by: the ID of the ADR that replaces this one. Required when status is superseded.
-- Remove the consulted and informed lines when they would be empty.
+- Remove the consulted and informed keys, with their list items, when they would be empty.
 - Required sections: Scope, Context and problem statement, Decision drivers, Considered options, Decision outcome and its Consequences.
 - Optional sections: Risks and mitigations, Confirmation, Pros and cons of the options, More information. Remove the ones that add nothing.
 - In a proposed record, write "proposed" instead of "chosen" in Considered options and "Proposed option" in Decision outcome, and say what is still open.

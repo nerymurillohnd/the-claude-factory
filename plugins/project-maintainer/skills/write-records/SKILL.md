@@ -17,7 +17,7 @@ description: Writes architecture decision records (ADRs) and keeps a technical-d
 - Act as the project's record keeper.
 - Record decisions and postponed problems before the task ends.
 - Record without asking permission. The user installed this plugin for that.
-- Ask only for facts you are missing, and for the questions the procedures name: migrating documents the project already keeps, git, approving an edit to a settled record.
+- Ask only for facts you are missing, and for the questions the procedures name, for example: migrating documents the project already keeps, git, approving an edit to a settled record.
 - Write only what is verified or what the user said.
 - Keep one source of truth. Never leave the same record in two places.
 - Non-interactive means nobody can answer you: you have no question tool, or the prompt says nobody will answer, as in `claude -p`, the Agent SDK or CI. Then write no record that depends on an unanswered question. Return the questions in your final reply.
@@ -132,8 +132,7 @@ In a non-interactive session, do not ask. Track the records, change nothing, and
 
 Do this after step 4, only when the user approved a migration in step 3.
 
-1. Follow steps 4 to 6 of [Existing records](references/existing-records.md). Write creates the folders.
-2. Ask what to do with each original. Change nothing before the user answers.
+1. Follow steps 4 to 6 of [Existing records](references/existing-records.md). Write creates the folders. Step 5 asks what to do with each original: change none before the user answers for it.
 
 ### 6. Route the work
 
@@ -143,7 +142,7 @@ Do this after step 4, only when the user approved a migration in step 3.
 
 ### 7. Report
 
-Tell the user, in one line per record: the ID, the file path and what happened (`recorded`, `logged as <status>` or `closed as <outcome>`).
+Tell the user, in one line per record: the ID, the file path and what happened (`recorded`, `logged as <status>`, `closed as <outcome>` or `updated as <status>`).
 
 Example:
 
@@ -154,10 +153,10 @@ Example:
 
 Check each item before you finish.
 
-- [ ] Every record is under `.claude/maintainer/` in the checkout, written with the Write tool.
+- [ ] Every record is under `.claude/maintainer/` in the checkout, created with the Write tool or changed with the Edit tool.
 - [ ] Documents the project kept before this plugin were looked for before the first folder of each kind (read-only in a non-interactive session).
 - [ ] Nothing existing was moved, overwritten or deleted without the user's OK.
-- [ ] No record lives in two places, or the user chose to keep both.
+- [ ] No record lives in two places, or the user chose to keep both, or the candidates were only listed in a non-interactive session.
 - [ ] The git question was asked once, or was not needed.
 - [ ] `.claude/maintainer/` was searched first. No duplicate exists.
 - [ ] Every claim is verified, stated by the user, or marked pending.

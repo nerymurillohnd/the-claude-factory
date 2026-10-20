@@ -22,12 +22,13 @@
   - it has a real impact,
   - a next action or a reassessment trigger exists,
   - no other record tracks it, such as an open issue or an ADR follow-up.
+- Evidence for those tests: the user's statement of the impact counts. For "no other record", search both ledgers and the ADRs, and treat issues as unchecked unless the user names one.
 - Never log improvement ideas, speculation or backlog tasks.
 - An explicit request to log does not waive these criteria. If one fails, tell the user which, and log nothing.
 - Never reuse an ID from either ledger.
 - Never delete a pending item without a closed entry.
 - Never rewrite a closed entry. Only its "Superseded by" field may change.
-- Close an item as resolved or obsolete without asking, as soon as the evidence is verified.
+- Close an item as resolved or obsolete without asking, as soon as the evidence is verified. The only question is the one in "Verify the closure".
 - Close an item as accepted only after the user decides to keep the condition for good.
 - Create a ledger with the Write tool and change it with the Edit tool. Never use Bash. Write creates the folder.
 - In a non-interactive session, write no entry that depends on an unanswered question. Return the questions in your final reply.
@@ -151,7 +152,7 @@ Run the checks yourself. Quote the output. Cannot tell whether the change was ai
 4. Copy Logged on and Owner from the pending entry.
 5. Set Closed on to today's date.
 6. Write "not applicable" in a Verification row the outcome does not use.
-7. Add the item's row at the bottom of the Index: closed date, ID, outcome, closure title, and "none" under Superseded by.
+7. Add the item's row at the bottom of the Index: closed-on date, ID, outcome, closure title, and "none" under Superseded by.
 8. Remove the "*No closed items yet.*" line when you add the first closed item.
 9. Only after the closed entry exists, remove the entry and its Index row from `pending-debt.md`.
 10. Restore the "*No open items.*" line when the last item leaves.
@@ -171,7 +172,7 @@ Run the checks yourself. Quote the output. Cannot tell whether the change was ai
 
 - [ ] No identical open entry existed before logging.
 - [ ] The new ID is the numeric maximum plus one, with at least three digits.
-- [ ] Every entry field is filled. Unknown fields say "none", and Owner says "unassigned".
+- [ ] Every entry field is filled. Unknown fields say "none", Owner says "unassigned", and Next action names a step.
 - [ ] Confirmed facts and inferences are kept apart.
 - [ ] Each Index row equals its entry.
 - [ ] A closed item has the evidence its outcome needs, quoted.

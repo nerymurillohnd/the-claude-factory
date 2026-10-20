@@ -17,13 +17,13 @@ Fill every {{placeholder}}. Write "none" in a field with nothing to report. Leav
 
 | Outcome | Meaning | Evidence it needs |
 | --- | --- | --- |
-| resolved | A fix was made and it works | A positive check and a negative check |
-| obsolete | The condition no longer exists, with no fix aimed at it: code removed, architecture changed, logged in error or duplicated | A negative check, and what changed |
+| resolved | A fix aimed at this item was made and it works | A positive check and a negative check |
+| obsolete | The condition no longer exists for another reason: a change not aimed at this item removed the code or changed the architecture, or the item was logged in error or duplicates another | A negative check, and what changed |
 | accepted | The user decided to keep the condition for good | The accepted ADR that records the decision |
 
 ## 📚 Index
 
-| Date | ID | Outcome | Closure | Superseded by |
+| Closed on | ID | Outcome | Closure | Superseded by |
 | --- | --- | --- | --- | --- |
 
 ## 🏁 Closed items
