@@ -31,7 +31,7 @@ test('each ledger rule refuses its own violation', () => {
   ).toContain('Logged must be a date')
   expect(
     run('pending-debt', `${pending(pendingEntry('DEBT-001'))}\n{{Short debt title}}\n`),
-  ).toContain('Replace every {{placeholder}}')
+  ).toContain('replace every {{placeholder}}')
   expect(run('closed-debt', closed(['DEBT-001', 'forgotten']))).toContain('Outcome must be one of')
   expect(
     run(
@@ -65,6 +65,22 @@ test('a problem that comes back gets a new ID, and moving a pending item to clos
     pending(pendingEntry('DEBT-001')),
   )
   expect(moved).toEqual([])
+})
+
+test('a literal {{ }} in unchanged content or in code is not a placeholder', () => {
+  const withTemplateSyntax = pending(pendingEntry('DEBT-001')).replace(
+    'ask the vendor',
+    'ask about {{ secrets.TOKEN }}',
+  )
+  // An entry already on disk that holds {{ }} never blocks an unrelated edit.
+  const edited = withTemplateSyntax.replace('Export', 'Exports')
+  expect(validateLedger('pending-debt', withTemplateSyntax, edited, null)).toEqual([])
+  // A new entry may quote {{ }} inside a code span.
+  const quoted = pending(pendingEntry('DEBT-001')).replace(
+    'ask the vendor',
+    'use the `{{ name }}` form',
+  )
+  expect(validateLedger('pending-debt', null, quoted, null)).toEqual([])
 })
 
 test('an entry that did not change is never judged', () => {

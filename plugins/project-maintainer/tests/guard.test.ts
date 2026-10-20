@@ -6,7 +6,7 @@ import {
   resultingText,
   withKeepNote,
 } from '../hooks/guard.ts'
-import { adrId, classify } from '../hooks/paths.ts'
+import { adrId, classify, resolvePath } from '../hooks/paths.ts'
 
 test('a path is a record only inside .claude/maintainer', () => {
   expect(classify('/work/app/.claude/maintainer/decisions/ADR_2026-03-14_x.md')).toEqual({
@@ -52,23 +52,66 @@ test('the saved file is computed from a Write or an Edit', () => {
   expect(resultingText({ path: '/a', oldString: 'a', newString: 'X' }, null)).toBeNull()
 })
 
+test('a path is resolved the way the tool call will write it', () => {
+  const cwd = '/work/app'
+  expect(resolvePath('.claude/maintainer/decisions/x.md', cwd)).toBe(
+    '/work/app/.claude/maintainer/decisions/x.md',
+  )
+  expect(resolvePath('./.claude//maintainer/../maintainer/decisions/x.md', cwd)).toBe(
+    '/work/app/.claude/maintainer/decisions/x.md',
+  )
+  expect(resolvePath('/work/app/.claude/maintainer/decisions/../decisions/x.md', cwd)).toBe(
+    '/work/app/.claude/maintainer/decisions/x.md',
+  )
+  expect(resolvePath('C:\\work\\app\\.claude\\maintainer\\x.md', 'C:/work')).toBe(
+    'C:/work/app/.claude/maintainer/x.md',
+  )
+  expect(resolvePath('../other/file.md', cwd)).toBe('/work/other/file.md')
+})
+
+test('every spelling of a records path is still a record', () => {
+  const cwd = '/work/app'
+  const spellings = [
+    '.claude/maintainer/decisions/ADR_2026-03-14_x.md',
+    '/work/app/.claude/maintainer/decisions/../decisions/ADR_2026-03-14_x.md',
+    '/work/app//.claude/./maintainer/decisions/ADR_2026-03-14_x.md',
+    '/work/app/.Claude/Maintainer/Decisions/ADR_2026-03-14_x.md',
+  ]
+  for (const spelling of spellings) {
+    expect(classify(resolvePath(spelling, cwd))?.kind, spelling).toBe('adr')
+  }
+  expect(
+    classify(resolvePath('.Claude/Maintainer/Technical-Debt/Pending-Debt.md', cwd))?.kind,
+  ).toBe('pending-debt')
+})
+
 test('a shell command that changes the records folders is flagged, a read is not', () => {
   const flagged = [
     'rm .claude/maintainer/decisions/ADR_2026-03-14_x.md',
     'mv .claude/maintainer/technical-debt/pending-debt.md /tmp/',
+    'mv .claude/maintainer .claude/elsewhere',
+    'rm -rf .claude/maintainer',
+    'cd .claude/maintainer && rm decisions/ADR_2026-03-14_x.md',
     "sed -i '' 's/a/b/' .claude/maintainer/technical-debt/closed-debt.md",
     'echo done >> .claude/maintainer/technical-debt/pending-debt.md',
     'cat notes | tee .claude/maintainer/decisions/ADR_2026-03-14_x.md',
+    'cp /tmp/x.md .claude/maintainer/decisions/ADR_2026-03-14_x.md',
+    'git rm .claude/maintainer/decisions/ADR_2026-03-14_x.md',
+    'cd .claude/maintainer; echo x > decisions/y.md',
   ]
   for (const command of flagged) {
-    expect(bashReason(command), command).toContain('Write tool')
+    expect(bashReason(command), command).toContain('Write and Edit tools')
   }
   const fine = [
     'cat .claude/maintainer/technical-debt/pending-debt.md',
     'ls .claude/maintainer/decisions/',
     'grep -r Postgres .claude/maintainer/',
+    'cp .claude/maintainer/decisions/ADR_2026-03-14_x.md /tmp/',
+    'cat .claude/maintainer/technical-debt/pending-debt.md | tee /tmp/out.md',
+    'cd .claude/maintainer/.. && ls',
     'rm build/output.txt',
     'git status',
+    'echo ok > /tmp/out && cat .claude/maintainer/technical-debt/pending-debt.md',
   ]
   for (const command of fine) {
     expect(bashReason(command), command).toBeNull()

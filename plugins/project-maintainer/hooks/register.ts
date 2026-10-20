@@ -20,13 +20,23 @@ import {
   type Surroundings,
   withKeepNote,
 } from './guard.ts'
-import { ADR_NAME, adrId, classify, type RecordRef } from './paths.ts'
+import { ADR_NAME, adrId, classify, type RecordRef, resolvePath } from './paths.ts'
 
-async function readText($: EngineInterface, path: string): Promise<string | null> {
+type Read = {
+  /** The text of the file, or null when it does not exist (or could not be read). */
+  text: string | null
+  /** True when the file exists and could not be read: nothing can be checked against it. */
+  failed: boolean
+}
+
+async function readText($: EngineInterface, path: string): Promise<Read> {
   try {
-    return await $.fs.read(path)
+    if (!(await $.fs.exists(path))) {
+      return { text: null, failed: false }
+    }
+    return { text: await $.fs.read(path), failed: false }
   } catch {
-    return null
+    return { text: null, failed: true }
   }
 }
 
@@ -46,7 +56,7 @@ async function around($: EngineInterface, ref: RecordRef): Promise<Surroundings>
     return { otherLedger: null, adrIds }
   }
   const other = ref.kind === 'pending-debt' ? 'closed-debt.md' : 'pending-debt.md'
-  return { otherLedger: await readText($, `${ref.dir}/${other}`), adrIds }
+  return { otherLedger: (await readText($, `${ref.dir}/${other}`)).text, adrIds }
 }
 
 async function headOf($: EngineInterface, cwd: string): Promise<string> {
@@ -65,11 +75,17 @@ export function register(on: On, options: PluginOptions): void {
   // Format guard: runs before the permission check, so a malformed record never reaches a prompt.
   on('tool.call', { tool: ['Write', 'Edit'] }, async ($, e, next) => {
     const input = fileInput(e)
-    const ref = input === null ? null : classify(input.path)
-    if (input === null || ref === null) {
+    const path = input === null ? null : resolvePath(input.path, await $.session.cwd())
+    const ref = path === null ? null : classify(path)
+    if (input === null || path === null || ref === null) {
       return next(e)
     }
-    const current = await readText($, input.path)
+    const { text: current, failed } = await readText($, path)
+    if (failed) {
+      return {
+        deny: `Project Maintainer could not read ${ref.name} to check the edit. Try the edit again.`,
+      }
+    }
     const resulting = resultingText(input, current)
     if (resulting === null) {
       return next(e)
@@ -84,12 +100,20 @@ export function register(on: On, options: PluginOptions): void {
   // Authority guard: only the person can approve rewriting a settled record.
   on('tool.check', { tool: ['Write', 'Edit'] }, async ($, e, next) => {
     const decided = await next(e)
-    const input = fileInput(e.input)
-    const ref = input === null || decided.decision === 'deny' ? null : classify(input.path)
-    if (input === null || ref === null) {
+    const input = decided.decision === 'deny' ? null : fileInput(e.input)
+    const path = input === null ? null : resolvePath(input.path, await $.session.cwd())
+    const ref = path === null ? null : classify(path)
+    if (input === null || path === null || ref === null) {
       return decided
     }
-    const current = await readText($, input.path)
+    const { text: current, failed } = await readText($, path)
+    if (failed) {
+      return {
+        decision: 'ask',
+        decider: 'person',
+        reason: `Project Maintainer could not read ${ref.name} to check the edit against the rules of the records. Approve only if it leaves the records as they are.`,
+      }
+    }
     const resulting = resultingText(input, current)
     if (current === null || resulting === null) {
       return decided

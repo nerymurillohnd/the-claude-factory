@@ -122,16 +122,56 @@ export function askReason(file: string, reasons: readonly string[]): string {
   ].join('\n')
 }
 
-/** Shell commands that rewrite, move or delete the records folders, or write into them. Best effort. */
-const RECORD_FOLDERS = /\.claude\/maintainer\//
-const CHANGES_FILES =
-  /(^|[\s;&|(])(rm|mv|cp|truncate|tee|dd|install|ln)\s|\bsed\s+(-\w*i|--in-place)|\bperl\s+-\w*i|>>?\s*\S*\.claude\/maintainer\//
+/** Whether a piece of a shell command names the records folder, with or without a trailing slash. */
+const mentionsRecords = (piece: string): boolean => /\.claude\/maintainer(?![\w-])/i.test(piece)
 
+const unquote = (token: string): string => token.replace(/^['"]|['"]$/g, '')
+const SEGMENTS = /&&|\|\||[;|\n]/
+const REMOVES_OR_MOVES = new Set(['rm', 'mv', 'unlink', 'shred', 'truncate'])
+const WRITES_LAST_ARGUMENT = new Set(['cp', 'install', 'ln'])
+
+/**
+ * Whether a shell command rewrites, moves or deletes the records folders, or writes into them.
+ * Reading, and copying out of the folder, stay quiet. Best effort: a shell has too many spellings.
+ */
 export function bashReason(command: string): string | null {
-  if (!RECORD_FOLDERS.test(command) || !CHANGES_FILES.test(command)) {
-    return null
+  let insideRecords = false
+  for (const segment of command.split(SEGMENTS)) {
+    const tokens = segment
+      .trim()
+      .split(/\s+/)
+      .map(unquote)
+      .filter((token) => token !== '')
+    const [first = '', ...rest] = tokens
+    const verb = first === 'git' ? (rest[0] ?? '') : first
+    const args = first === 'git' ? rest.slice(1) : rest
+    if (verb === 'cd') {
+      insideRecords = insideRecords || args.some(mentionsRecords)
+      continue
+    }
+    const names = args.some(mentionsRecords) || insideRecords
+    const redirect = tokens.some(
+      (token, index) =>
+        /^\d*>>?/.test(token) &&
+        (mentionsRecords(token) ||
+          (/^\d*>>?$/.test(token) && mentionsRecords(tokens[index + 1] ?? ''))),
+    )
+    const inPlace =
+      (verb === 'sed' || verb === 'perl') && args.some((arg) => /^-\w*i|^--in-place/.test(arg))
+    const flagged =
+      redirect ||
+      (insideRecords && tokens.some((token) => /^\d*>>?/.test(token))) ||
+      (REMOVES_OR_MOVES.has(verb) && names) ||
+      (WRITES_LAST_ARGUMENT.has(verb) && (mentionsRecords(args.at(-1) ?? '') || insideRecords)) ||
+      (verb === 'tee' && names) ||
+      (verb === 'dd' &&
+        args.some((arg) => arg.startsWith('of=') && (mentionsRecords(arg) || insideRecords))) ||
+      (inPlace && names)
+    if (flagged) {
+      return 'The command changes files in .claude/maintainer/. Records are written with the Write and Edit tools, which apply the rules of the records, and not through the shell.'
+    }
   }
-  return 'The command changes a file in .claude/maintainer/. Records are written with the Write tool, which applies the rules of the records, and not through the shell.'
+  return null
 }
 
 /** Appended to the instructions of a compaction so the summary keeps what the records need. */

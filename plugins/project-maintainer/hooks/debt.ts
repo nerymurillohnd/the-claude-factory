@@ -83,9 +83,6 @@ export function validateLedger(
   other: string | null,
 ): string[] {
   const problems: string[] = []
-  if (stripComments(resulting).includes('{{')) {
-    problems.push('Replace every {{placeholder}} of the template.')
-  }
   const after = parseLedger(resulting)
   const before = current === null ? null : parseLedger(current)
   const known = new Map((before?.entries ?? []).map((entry) => [entry.id, entry.text]))
@@ -129,8 +126,15 @@ export function validateLedger(
   return problems
 }
 
+/** Text with its code removed, so a literal `{{ x }}` in a code span is not taken for a placeholder. */
+const withoutCode = (text: string): string =>
+  text.replace(/```[\s\S]*?```/g, '').replace(/`[^`\n]*`/g, '')
+
 function entryProblems(kind: LedgerKind, entry: Entry): string[] {
   const problems: string[] = []
+  if (withoutCode(entry.text).includes('{{')) {
+    problems.push(`${entry.id}: replace every {{placeholder}} of the template.`)
+  }
   if (kind === 'pending-debt') {
     const status = field(entry.text, 'Status') ?? ''
     if (!DEBT_STATUSES.some((name) => status.includes(name))) {

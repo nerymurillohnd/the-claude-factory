@@ -13,10 +13,12 @@ const CLOSED = `${DEBT}/closed-debt.md`
 type Files = Record<string, string>
 
 /** The project on disk, as the hooks see it through `$.fs` and `$.session`. */
-function world(on: On, files: Files): void {
+function world(on: On, files: Files, unreadable: readonly string[] = []): void {
   on('fs.read', (_$, e) => {
     const text = files[e.path]
-    return text === undefined ? { deny: `ENOENT: ${e.path}` } : { value: text }
+    return text === undefined || unreadable.includes(e.path)
+      ? { deny: `EACCES: ${e.path}` }
+      : { value: text }
   })
   on('fs.list', (_$, e) => ({
     value: Object.keys(files)
@@ -67,6 +69,37 @@ test('the format guard refuses a malformed ADR and tells Claude how to fix it', 
   )
   expect(JSON.stringify(refused)).toContain('status must be one of')
   expect(JSON.stringify(refused)).toContain('date must equal the date in the file name')
+})
+
+test('the format guard sees a record under a relative path, dots and another case', async ($, on) => {
+  world(on, project())
+  on('tool.call', () => ({ result: 'saved' }))
+  const bad = adr({ status: 'maybe', date: '2026-04-02' })
+  const spellings = [
+    '.claude/maintainer/decisions/ADR_2026-04-01_move-sessions-to-redis.md',
+    `${DECISIONS}/../decisions/ADR_2026-04-01_move-sessions-to-redis.md`,
+    `${ROOT}//.claude/./maintainer/decisions/ADR_2026-04-01_move-sessions-to-redis.md`,
+    `${ROOT}/.Claude/Maintainer/Decisions/ADR_2026-04-01_move-sessions-to-redis.md`,
+  ]
+  for (const file_path of spellings) {
+    const refused = await $.tool.call({ tool: 'Write', file_path, content: bad })
+    expect(JSON.stringify(refused), file_path).toContain('refused to save')
+  }
+})
+
+test('a record that exists but cannot be read is not saved unchecked', async ($, on) => {
+  world(on, project(), [SETTLED_ADR])
+  on('tool.call', () => ({ result: 'saved' }))
+  on('tool.check', () => ({ decision: 'allow' }))
+  const edited = await $.tool.call(edit(SETTLED_ADR, 'status: accepted', 'status: deprecated'))
+  expect(JSON.stringify(edited)).toContain('could not read')
+  const verdict = await $.tool.check({
+    tool: 'Edit',
+    input: edit(SETTLED_ADR, 'status: accepted', 'status: deprecated'),
+  })
+  expect(verdict.decision).toBe('ask')
+  expect(verdict.decider).toBe('person')
+  expect(verdict.reason).toContain('could not read')
 })
 
 test('the format guard lets a well formed ADR, another file and an impossible edit through', async ($, on) => {
@@ -209,7 +242,7 @@ test('a shell command that rewrites the records asks the person, a read does not
   const removal = await $.tool.check({ tool: 'Bash', input: { command: `rm ${SETTLED_ADR}` } })
   expect(removal.decision).toBe('ask')
   expect(removal.decider).toBe('person')
-  expect(removal.reason).toContain('Write tool')
+  expect(removal.reason).toContain('Write and Edit tools')
   const read = await $.tool.check({ tool: 'Bash', input: { command: `cat ${SETTLED_ADR}` } })
   expect(read.decision).toBe('allow')
 })

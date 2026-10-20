@@ -24,23 +24,46 @@ export type RecordRef = {
   name: string
 }
 
-const RECORD_PATH = /^(.*\/\.claude\/maintainer)\/(decisions|technical-debt)\/([^/]+)$/
+const RECORD_PATH = /^(.*\/\.claude\/maintainer)\/(decisions|technical-debt)\/([^/]+)$/i
 
-/** Says which record a path is, or null for any other file. */
+/**
+ * The absolute path a tool call really writes: relative paths are taken from the session's
+ * directory, and `.`, `..`, repeated slashes and backslashes are folded away.
+ */
+export function resolvePath(path: string, cwd: string): string {
+  const slashed = path.replaceAll('\\', '/')
+  const absolute = /^([A-Za-z]:)?\//.test(slashed)
+    ? slashed
+    : `${cwd.replaceAll('\\', '/')}/${slashed}`
+  const drive = /^[A-Za-z]:/.exec(absolute)?.[0] ?? ''
+  const parts: string[] = []
+  for (const part of absolute.slice(drive.length).split('/')) {
+    if (part === '..') {
+      parts.pop()
+    } else if (part !== '' && part !== '.') {
+      parts.push(part)
+    }
+  }
+  return `${drive}/${parts.join('/')}`
+}
+
+/** Says which record a resolved path is, or null for any other file. A case-insensitive disk folds the case. */
 export function classify(path: string): RecordRef | null {
   const match = RECORD_PATH.exec(path.replaceAll('\\', '/'))
   if (match === null) {
     return null
   }
   const [, base = '', folder = '', name = ''] = match
-  if (folder === 'decisions') {
-    return name.endsWith('.md') ? { kind: 'adr', dir: `${base}/decisions`, name } : null
+  if (folder.toLowerCase() === 'decisions') {
+    return name.toLowerCase().endsWith('.md')
+      ? { kind: 'adr', dir: `${base}/${folder}`, name }
+      : null
   }
-  if (name === 'pending-debt.md') {
-    return { kind: 'pending-debt', dir: `${base}/technical-debt`, name }
+  if (name.toLowerCase() === 'pending-debt.md') {
+    return { kind: 'pending-debt', dir: `${base}/${folder}`, name }
   }
-  if (name === 'closed-debt.md') {
-    return { kind: 'closed-debt', dir: `${base}/technical-debt`, name }
+  if (name.toLowerCase() === 'closed-debt.md') {
+    return { kind: 'closed-debt', dir: `${base}/${folder}`, name }
   }
   return null
 }
