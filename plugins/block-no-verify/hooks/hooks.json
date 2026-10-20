@@ -1,15 +1,16 @@
 {
-  "description": "Denies git commands that skip commit hooks or signing",
   "hooks": {
     "PreToolUse": [
       {
-        "matcher": "Bash",
+        "matcher": "Bash|PowerShell",
         "hooks": [
           {
+            "description": "Hook to block --no-verify commands in Bash and PowerShell",
             "type": "command",
-            "command": "\"${CLAUDE_PLUGIN_ROOT}/hooks/block-no-verify.sh\"",
-            "timeout": 10,
-            "onFailure": "block"
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/block-no-verify.sh\"",
+            "timeout": 60,
+            "onFailure": "block",
+            "statusMessage": "Claude was blocked from running a --no-verify command."
           }
         ]
       }

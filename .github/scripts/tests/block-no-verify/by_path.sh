@@ -1,11 +1,13 @@
 #!/usr/bin/env bash
-# Runs block-no-verify's launcher the way Claude Code does: by its path, in a stripped
-# environment. CI runs this on Linux, macOS and Windows (Git Bash). Exits non-zero on the first failure.
+# Runs block-no-verify's handler the way Claude Code does: by its path, a payload on stdin, in a
+# stripped environment. CI runs this on Linux, macOS and Windows (Git Bash). Needs jq on PATH, as
+# the plugin does. Exits non-zero on the first failure.
 set -euo pipefail
 root=$(cd "$(dirname "$0")/../../../.." && pwd)
-launcher="${root}/plugins/block-no-verify/hooks/block-no-verify.sh"
+hook="${root}/plugins/block-no-verify/hooks/block-no-verify.sh"
 tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT
+count=0
 
 fail() {
   echo "FAIL: $1"
@@ -13,91 +15,161 @@ fail() {
   exit 1
 }
 
-# Both are committed as executable, so they run by path after a clone or an install.
-for file in hooks/block-no-verify.sh hooks/block_no_verify.py; do
-  mode=$(git -C "${root}" ls-files -s -- "plugins/block-no-verify/${file}" | cut -d' ' -f1)
-  [[ ${mode} == 100755 ]] || fail "${file} is ${mode:-untracked}, not 100755"
-done
+# Committed as executable, so it runs by path after a clone or an install.
+mode=$(git -C "${root}" ls-files -s -- plugins/block-no-verify/hooks/block-no-verify.sh | cut -d' ' -f1)
+[[ ${mode} == 100755 ]] || fail "block-no-verify.sh is ${mode:-untracked}, not 100755"
 
-# A minimal PATH that still finds python3 (and python, which the Windows CI shim runs).
-python=$(command -v python3) || fail "python3 is not on PATH"
-dirs=${python%/*}
-if other=$(command -v python 2> /dev/null); then dirs="${dirs}:${other%/*}"; fi
-safe_path="${dirs}:/usr/bin:/bin"
+jq_path=$(command -v jq) || fail "jq is not on PATH: the plugin needs it"
+safe_path="${jq_path%/*}:/usr/bin:/bin"
 bash_path=$(command -v bash)
 
-deny='{"tool_name":"Bash","tool_input":{"command":"git commit --no-verify -m x"}}'
-allow='{"tool_name":"Bash","tool_input":{"command":"git commit -m x"}}'
+# Runs the handler by path on a raw payload. Sets `status` and `out`; stderr goes to ${tmp}/err.
+run_raw() {
+  status=0
+  out=$(printf '%s' "$1" | env -i HOME= PATH="${safe_path}" "${hook}" 2> "${tmp}/err") || status=$?
+}
 
-# Runs the launcher by path in an empty environment: run <PATH> <payload>. Sets `out` and `status`.
+# run <tool> <command>: the payload Claude Code sends for one tool call.
 run() {
-  status=0
-  out=$(printf '%s' "$2" | env -i HOME= PATH="$1" "${launcher}" 2> "${tmp}/err") || status=$?
+  local payload
+  payload=$(jq -n --arg tool "$1" --arg cmd "$2" '{tool_name: $tool, tool_input: {command: $cmd}}')
+  run_raw "${payload}"
 }
 
-# The same, through an explicit bash, for a PATH that must not hold python3 or env's bash lookup.
-run_bash() {
-  status=0
-  out=$(printf '%s' "$2" | env -i HOME= PATH="$1" "${bash_path}" "${launcher}" 2> "${tmp}/err") || status=$?
+# A deny: exit 2, one JSON deny object on stdout, a reason that starts with the plugin name on stderr.
+expect_deny() {
+  run "${2:-Bash}" "$1"
+  [[ ${status} -eq 2 ]] || fail "not denied (exit ${status}): $1"
+  printf '%s' "${out}" | jq -e '.hookSpecificOutput | .hookEventName == "PreToolUse" and .permissionDecision == "deny"' > /dev/null \
+    || fail "no deny object on stdout: $1"
+  [[ $(< "${tmp}/err") == block-no-verify:* ]] || fail "no reason on stderr: $1"
+  count=$((count + 1))
 }
 
-# Asserts on the JSON in `out`: check_json <python assertions on o> <message>.
-check_json() {
-  printf '%s' "${out}" | python3 -c '
-import json, sys
-o = json.load(sys.stdin)
-'"$1" || fail "$2: ${out}"
+# A pass: exit 0 and nothing on stdout.
+expect_pass() {
+  run "${2:-Bash}" "$1"
+  [[ ${status} -eq 0 && -z ${out} ]] || fail "wrongly stopped (exit ${status}): $1"
+  count=$((count + 1))
 }
 
-# 1. A bypass is denied: one JSON object, exit 0.
-run "${safe_path}" "${deny}"
-[[ ${status} -eq 0 ]] || fail "deny payload exited ${status}"
-check_json '
-assert set(o) == {"hookSpecificOutput"}
-h = o["hookSpecificOutput"]
-assert h["hookEventName"] == "PreToolUse" and h["permissionDecision"] == "deny"
-assert "--no-verify" in h["permissionDecisionReason"]
-' "not a deny"
-echo "launcher: denies a bypass"
+denied=(
+  # the flags, in full, abbreviated and short
+  'git commit --no-verify -m x'
+  'git commit -n -m x'
+  'git commit -nm x'
+  'git commit --no-veri -m x'
+  'git commit --no-gpg-sign -m x'
+  'git push --no-verify'
+  'git merge --no-verify b'
+  'git am -n p.patch'
+  # signing and hooks switched off through configuration
+  'git -c commit.gpgsign=false commit -m x'
+  'git -c commit.gpgsign= commit -m x'
+  'git -c commit.gpgsign=00 commit -m x'
+  'git -c tag.gpgsign=off tag v1'
+  'git config commit.gpgsign false'
+  'git -c core.hooksPath=/dev/null commit -m x'
+  'git config core.hooksPath /dev/null'
+  'HUSKY=0 git commit -m x'
+  'GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=commit.gpgsign GIT_CONFIG_VALUE_0=false git commit -m x'
+  'git -c alias.ci="commit --no-verify" ci -m x'
+  # wrappers, grouping and control flow around the git call
+  'sudo -n git commit --no-verify -m x'
+  'env git commit --no-verify -m x'
+  'time git commit --no-verify -m x'
+  'exec git commit --no-verify -m x'
+  '(git commit --no-verify)'
+  '{ git commit --no-verify -m x; }'
+  '! git commit --no-verify -m x'
+  'if true; then git commit --no-verify -m x; fi'
+  'for f in a; do git commit -n -m x; done'
+  'sleep 1 & git commit --no-verify -m x'
+  '2>/dev/null git commit --no-verify -m x'
+  # command substitutions, quoting and line joins
+  $'echo "$(git commit --no-verify -m x)"'
+  $'out=$(git commit --no-verify -m x)'
+  $'echo `git commit -n -m x`'
+  "git commit \$'--no-verify' -m x"
+  'g"i"t commit --no-verify -m x'
+  $'git commit \\\n--no-verify -m x'
+  # a shell, eval or a heredoc that runs
+  'bash -c "git commit --no-verify -m x"'
+  'sh -lc "git commit -n"'
+  'eval "git commit --no-verify -m x"'
+  "bash -c \"bash -c 'git commit --no-verify'\""
+  $'bash <<\'EOF\'\ngit commit --no-verify\nEOF'
+  $'cat <<\'EOF\' | bash\ngit commit -n\nEOF'
+)
+for command in "${denied[@]}"; do expect_deny "${command}"; done
+echo "handler: denies ${count} bypasses, with exit 2, a deny object and a reason"
 
-# 2. An ordinary commit passes in silence.
-run "${safe_path}" "${allow}"
-[[ ${status} -eq 0 && -z ${out} ]] || fail "allowed payload gave status ${status}, output: ${out}"
-echo "launcher: stays silent for a normal commit"
+passed=(
+  'git status'
+  'git commit -m x'
+  'git commit -m "docs: mention --no-verify"'
+  'git commit --no-edit --amend'
+  'git push -n'
+  'git merge -n b'
+  'git pull -n'
+  'git cherry-pick -n abc'
+  'git config --get commit.gpgsign'
+  'git log --grep=no-verify'
+  'echo "(git commit --no-verify)"'
+  "echo 'never run git commit --no-verify'"
+  'grep -rn -- --no-verify .'
+  'ls -la'
+  # heredocs that only write text: a quote, or a line that mentions the flag, is not a command
+  $'cat > f <<\'EOF\'\nit\'s "odd\nEOF'
+  $'cat > README.md <<\'EOF\'\ngit commit --no-verify\nEOF'
+  $'python3 - <<\'EOF\'\n# don\'t break\nprint(1)\nEOF'
+  $'gh pr create --body "$(cat <<\'EOF\'\nfix: a 5" pipe\nEOF\n)"'
+  # Claude's own commit form
+  $'git commit -m "$(cat <<\'EOF\'\nfeat: x\n\nDo not use --no-verify.\nEOF\n)"'
+  $'git commit -am "$(cat <<\'EOF\'\nfix: a 5" pipe\nEOF\n)"'
+  $'git add -A && git commit -m "$(cat <<\'EOF\'\nx " y\nEOF\n)"'
+)
+before=${count}
+for command in "${passed[@]}"; do expect_pass "${command}"; done
+echo "handler: lets $((count - before)) harmless commands through, in silence"
 
-# 3. Without python3 the guard says it is inactive and blocks nothing.
+# The PowerShell tool is guarded too; other tools are not its business.
+expect_deny 'git commit --no-verify -m x' PowerShell
+expect_pass 'git status' PowerShell
+expect_pass 'git commit --no-verify -m x' Read
+run_raw '{"tool_name":"Bash","tool_input":{"command":5}}'
+[[ ${status} -eq 0 && -z ${out} ]] || fail "a command that is not a string must pass"
+run_raw '{"tool_name":"Bash"}'
+[[ ${status} -eq 0 && -z ${out} ]] || fail "a call without tool_input must pass"
+echo "handler: guards the PowerShell tool and ignores calls without a Bash command"
+
+# What it cannot read it refuses: an unreadable payload or a command with an open quote.
+for payload in 'not json' '[]' '{"tool_name":"Bash","tool_input":{"command":"git commit -m \"x"}}'; do
+  run_raw "${payload}"
+  [[ ${status} -eq 2 ]] || fail "unreadable input must be denied (exit ${status}): ${payload}"
+done
+echo "handler: fails closed on a payload or a command it cannot read"
+
+# Without jq it cannot read the payload: a command that could involve git is denied with the
+# reason, anything else passes. Bash alone, on an empty PATH.
 mkdir "${tmp}/empty"
-notice='
-assert "block-no-verify is inactive" in o["systemMessage"]
-h = o["hookSpecificOutput"]
-assert h["hookEventName"] == "PreToolUse" and "permissionDecision" not in h
-assert "not being blocked" in h["additionalContext"]
-'
-run_bash "${tmp}/empty" "${deny}"
-[[ ${status} -eq 0 ]] || fail "missing python3 exited ${status}"
-check_json "${notice}" "no notice without python3"
-echo "launcher: notice, no block, without python3"
+no_jq() {
+  local payload
+  payload=$(jq -n --arg cmd "$1" '{tool_name: "Bash", tool_input: {command: $cmd}}')
+  status=0
+  out=$(printf '%s' "${payload}" | env -i HOME= PATH="${tmp}/empty" "${bash_path}" "${hook}" 2> "${tmp}/err") || status=$?
+}
+no_jq 'git status'
+[[ ${status} -eq 2 ]] || fail "without jq a git command must be denied (exit ${status})"
+grep -q 'jq is not installed' "${tmp}/err" || fail "without jq the reason must say so"
+no_jq 'ls -la'
+[[ ${status} -eq 0 && -z ${out} ]] || fail "without jq a command with no git must pass"
+echo "handler: without jq it denies git commands, says why, and lets the rest through"
 
-# 4. A python3 older than 3.9 gets the same notice.
-mkdir "${tmp}/old"
-printf '#!/bin/sh\nexit 1\n' > "${tmp}/old/python3"
-chmod +x "${tmp}/old/python3"
-run_bash "${tmp}/old" "${deny}"
-[[ ${status} -eq 0 ]] || fail "old python3 exited ${status}"
-check_json "${notice}" "no notice with an old python3"
-echo "launcher: notice, no block, with python3 older than 3.9"
-
-# 5. Past the version check a crash is not hidden: its exit code and an empty stdout reach
-# Claude Code, which blocks the call because the hook sets onFailure to block.
-mkdir "${tmp}/crash"
-cat > "${tmp}/crash/python3" << 'EOF'
-#!/bin/sh
-case "$1" in
-  -c) exit 0 ;;
-  *) echo boom >&2; exit 3 ;;
-esac
-EOF
-chmod +x "${tmp}/crash/python3"
-run_bash "${tmp}/crash" "${deny}"
-[[ ${status} -eq 3 && -z ${out} ]] || fail "a crash gave status ${status}, output: ${out}"
-echo "launcher: a crash after the version check keeps its exit code"
+# A very long command must not outlast the hook: the handler meters its own work.
+printf -v long '%20000s' ''
+long=${long// /a}
+started=${SECONDS}
+expect_pass "git commit -m \"${long}\""
+((SECONDS - started < 10)) || fail "a 20 KB commit message took $((SECONDS - started)) s"
+echo "handler: reads a 20 KB command in $((SECONDS - started)) s"
