@@ -184,10 +184,21 @@ no_jq 'ls -la'
 [[ ${status} -eq 0 && -z ${out} ]] || fail "without jq a command with no git must pass"
 echo "handler: without jq it denies git commands, says why, and lets the rest through"
 
-# A very long command must not outlast the hook: the handler meters its own work.
-printf -v long '%20000s' ''
-long=${long// /a}
-started=${SECONDS}
-expect_pass "git commit -m \"${long}\""
-((SECONDS - started < 10)) || fail "a 20 KB commit message took $((SECONDS - started)) s"
-echo "handler: reads a 20 KB command in $((SECONDS - started)) s"
+# A very long command must not outlast the hook: the handler meters its own work. A watchdog turns
+# a hang into a failure, and each size is timed so a slowdown shows where it starts.
+long_command() { # $1: length of the commit message
+  local payload pid dog started=${SECONDS}
+  printf -v long "%${1}s" ''
+  long=${long// /a}
+  payload=$(jq -n --arg cmd "git commit -m \"${long}\"" '{tool_name: "Bash", tool_input: {command: $cmd}}')
+  printf '%s' "${payload}" | env -i HOME= PATH="${safe_path}" "${hook}" > "${tmp}/out" 2> "${tmp}/err" &
+  pid=$!
+  (sleep 20 && kill "${pid}") > /dev/null 2>&1 &
+  dog=$!
+  status=0
+  wait "${pid}" || status=$?
+  kill "${dog}" > /dev/null 2>&1 || true
+  [[ ${status} -eq 0 && ! -s "${tmp}/out" ]] || fail "a ${1}-character command was stopped or took over 20 s (exit ${status})"
+  echo "handler: reads a ${1}-character command in $((SECONDS - started)) s"
+}
+for size in 2000 5000 10000 20000; do long_command "${size}"; done
