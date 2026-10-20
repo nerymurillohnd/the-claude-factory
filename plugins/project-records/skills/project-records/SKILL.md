@@ -19,12 +19,14 @@ Below, `<decisions>` and `<debt>` stand for the two folders.
 - Decisions: `<decisions>/ADR_<YYYY-MM-DD>_<slug>.md`, one file per decision.
 - Pending debt: `<debt>/pending-debt.md`.
 - Resolved debt: `<debt>/resolved-debt.md`.
-- Create a folder or ledger the first time it is needed. There is no setup step.
+- Create a folder or ledger the first time it is needed. There is no setup step. Installing the plugin creates nothing.
+- Paths are relative to the checkout you are working in: the root that `git rev-parse --show-toplevel` prints, or the current directory outside git. Never use the plugin's install directory, and never the session's project-directory variable (`CLAUDE_PROJECT_DIR`): in a worktree it still points at the main checkout, where edits are blocked.
 - Never move a project's existing records to another location.
+- Check that the destination stays inside the project, symlinks included. If it is protected or unwritable, show the draft and the exact blocker. Do not relocate the record or widen permissions.
 
 ## When to act
 
-Act before finishing the task, not after. Do not ask permission to record: the user installed this plugin to have these records kept. Ask only for facts you are missing. Then tell the user in one line what you recorded and where.
+Act before finishing the task, not after. Do not ask permission to record: the user installed this plugin to have these records kept. Ask only for facts you are missing. Then tell the user in one line what you recorded and where. In a non-interactive session, such as `claude -p`, return the unanswered questions and leave the records that depend on them pending.
 
 1. An important decision is made, or the user asks for an ADR: read [ADRs](references/adrs.md), then write the record. With several decisions, ask how to register them first: [choose how to register](references/adrs.md#choose-how-to-register).
 2. A problem is found that cannot be fixed now, or the user asks to log debt: read [Technical debt](references/technical-debt.md), then log it.
@@ -54,7 +56,7 @@ Do not record renames, typos, formatting, comments, a small refactor that keeps 
 - Do not rewrite an accepted ADR or a resolved entry. Supersede it, so the history stays true.
 - Do not log a problem that can be fixed now. Fix it.
 - Do not write a decision or a debt item into a README, changelog, code comment, commit message, task list or memory.
-- Do not leave a placeholder or a template comment in a record.
+- Do not leave an unfilled placeholder or template instructions in an entry. A ledger keeps its reusable "Entry format" comment.
 - Do not commit or push a record unless the user asks.
 
 ## References

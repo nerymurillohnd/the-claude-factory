@@ -17,7 +17,7 @@ One file per decision in `<decisions>`, named `ADR_<YYYY-MM-DD>_<slug>.md`. The 
    - The chosen option and why.
    - Each rejected option and why.
    - Consequences, good and bad.
-   - Decision makers: who made the decision. Default: the user. Ask for a name or role when you do not have it.
+   - Decision makers: who made the decision. Default: the user. Use the name the user gave in this conversation or the project's `git config user.name`, otherwise a plain role such as "project owner". Never copy a job title, company or other details from outside the conversation and the project.
    - Optional: consulted, informed, risks, confirmation.
 3. Set the status. Use `accepted` when the user decided in this conversation. Use `proposed` when the decision is still open.
 4. With more than one decision, ask the user how to register them before writing: see "Choose how to register".
