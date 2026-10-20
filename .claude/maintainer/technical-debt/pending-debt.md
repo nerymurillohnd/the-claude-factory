@@ -1,7 +1,7 @@
 # 🧾 Pending Debt
 
 > [!NOTE]
-> Unresolved technical or maintenance conditions that cannot be fixed now. Each one has evidence, an owner and a way out. Fixed items move to `resolved-debt.md`.
+> Unresolved technical or maintenance conditions that cannot be fixed now. Each one has evidence, an owner and a way out. Closed items move to `closed-debt.md`.
 
 ## 🎯 Entry criteria
 
@@ -22,7 +22,7 @@ Add an item only when all of these hold:
 | --- | --- | --- |
 | ➕ Append | A new condition appears | Search both ledgers for the same condition first. |
 | ✏️ Update | Evidence, impact, owner or next action changes | Revise in place. Keep confirmed facts apart from inference. |
-| ✅ Resolve | The fix is verified | Move the entry to `resolved-debt.md` with the same ID. Never just delete it. |
+| ✅ Resolve | The fix is verified | Move the entry to `closed-debt.md` with the same ID. Never just delete it. |
 
 > [!IMPORTANT]
 > An item moves to resolved debt only after the fix works and the original failure no longer reproduces.
