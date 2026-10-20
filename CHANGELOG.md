@@ -8,6 +8,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The
 
 ### Added
 
+- **hook-workbench** 0.1.0 — designs, writes, audits and debugs prompt, agent and background hooks, with workspace-trust and security review checked against the live hooks docs.
 - **block-no-verify** 0.1.0 — denies Claude's git commands that skip commit hooks or signing (`--no-verify`, `--no-gpg-sign`, `commit.gpgsign=false`), so your quality gates always run.
 
 ### Changed

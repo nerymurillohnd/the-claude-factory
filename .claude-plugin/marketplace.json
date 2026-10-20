@@ -26,6 +26,12 @@
       "category": "development"
     },
     {
+      "name": "hook-workbench",
+      "source": "./plugins/hook-workbench",
+      "description": "Designs, writes, audits and debugs Claude Code prompt hooks, agent hooks and background hooks, with workspace-trust and security review, checked against the live hooks reference.",
+      "category": "automation"
+    },
+    {
       "name": "plugin-evals",
       "source": "./plugins/plugin-evals",
       "description": "Makes Claude an expert in Claude Code plugin evals: designs suites that prove what a plugin adds, writes cases, graders and mocks, runs and gates them in CI, and reads the results, always checked against the CLI and docs you have today.",
