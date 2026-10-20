@@ -10,7 +10,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ### Added
 
-- `project-records` skill that writes a project's important decisions as architecture decision records (ADRs) and keeps a pending and a resolved technical-debt ledger.
+- `record-decisions-and-debt` skill that writes a project's important decisions as architecture decision records (ADRs) and keeps a pending and a resolved technical-debt ledger.
 - Templates for the ADR (based on MADR 4.0, with a scope, a risks table and a confirmation table), the pending-debt ledger and the resolved-debt ledger.
 - Records go where the project already keeps them (`CLAUDE.md`, `AGENTS.md` or an existing folder) and default to `docs/decisions/` and `docs/technical-debt/`.
 

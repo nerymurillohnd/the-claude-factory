@@ -40,7 +40,7 @@ Months later, nobody remembers why the project uses one database over another, o
 
 | Component | Name | What it does | How it runs |
 | :-- | :-- | :-- | :-- |
-| 🎯 Skill | `project-records:project-records` | Writes decisions as ADRs from a template and keeps a pending and a resolved debt ledger. It searches for an existing record first, asks only for facts it is missing, and tells you in one line what it saved and where | Automatically when a decision is made or a problem is postponed, or with `/project-records:project-records` |
+| 🎯 Skill | `project-records:record-decisions-and-debt` | Writes decisions as ADRs from a template and keeps a pending and a resolved debt ledger. It searches for an existing record first, asks only for facts it is missing, and tells you in one line what it saved and where | Automatically when a decision is made or a problem is postponed, or with `/project-records:record-decisions-and-debt` |
 
 The ADR template follows [MADR 4.0](https://adr.github.io/madr/) and adds a scope, a risks table and a confirmation table.
 
