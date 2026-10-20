@@ -10,7 +10,7 @@ paths:
 
 - Description: what it does + when to use it, third person, ≤ ~500 characters, specific trigger phrases.
 - Body: headers, numbered steps, bullets; under 500 lines and ~5,000 tokens. Follow [agentskills.io best practices](https://agentskills.io/skill-creation/best-practices):
-  - Moderate detail: each line must be something the model would get wrong without it. The main path stays in `SKILL.md`; situational paths go to `references/` with a "read when …" trigger, one level deep. Leave layout and rare cases to the model.
+  - Moderate detail: each line must be something the model would get wrong without it. The main path stays in `SKILL.md`; situational paths go to `references/` with a "read when …" trigger. Leave layout and rare cases to the model.
   - Prescriptive only where the task is fragile (exact commands, sequences, formats); elsewhere state the goal and why.
   - Defaults, not menus: one default with a short escape hatch.
   - A short input/output example; a template for output that must keep its shape.
