@@ -22,8 +22,10 @@
 # Findings reach Claude as {"decision":"block"} JSON. Without a usable compiler the hook does
 # not block: the user is told once per session where it searched, and Claude is told the
 # files were not checked. Any other failure exits non-zero, which hooks.json turns into a
-# block with onFailure. Bash 3.2 or later; no jq, no Python. This file is byte-identical in
-# typescript6-lsp-intelligence and typescript7-lsp-intelligence.
+# block with onFailure. Every message that reaches Claude ends with one line naming the plugin's
+# ts-lifecycle skill, so a hook that checks is never taken for the whole workflow; the
+# user-only systemMessage does not carry it. Bash 3.2 or later; no jq, no Python. This file is
+# byte-identical in typescript6-lsp-intelligence and typescript7-lsp-intelligence.
 
 set -euo pipefail
 
@@ -43,6 +45,7 @@ readonly PLUGIN_ROOT
 PLUGIN="$(grep -o '"name"[[:space:]]*:[[:space:]]*"[^"]*"' "${PLUGIN_ROOT}/.claude-plugin/plugin.json" \
   | head -n 1 | sed 's/.*:[[:space:]]*"\([^"]*\)"$/\1/')"
 readonly PLUGIN
+readonly SKILL_HINT="Use the ${PLUGIN}:ts-lifecycle skill and apply all its knowledge when working on TypeScript and JavaScript files."
 # A mise shim whose tool is missing would install it; this hook installs nothing.
 export MISE_AUTO_INSTALL=false
 case "${PLUGIN}" in
@@ -562,6 +565,7 @@ load_strict_flags() {
   done <<< "${options}"
   if [[ " ${STRICT_FLAGS[*]-} " != *" --noEmit true "* || " ${STRICT_FLAGS[*]-} " != *" --noCheck false "* ]]; then
     echo "${PLUGIN}: ${STRICTEST} does not set noEmit true and noCheck false; reinstall the plugin" >&2
+    echo "${SKILL_HINT}" >&2
     return 1
   fi
 }
@@ -818,13 +822,20 @@ candidates() {
 
 # ── Output ──────────────────────────────────────────────────────────────────────────────
 
-# Sets BOUNDED to $1, cut under the hook output cap.
+# Sets BOUNDED to $1, cut under the hook output cap less $2 characters kept in reserve.
 BOUNDED=""
 bounded() {
+  local limit=$((MAX_REPORT_CHARS - ${2:-0}))
   BOUNDED="$1"
-  if [[ ${#BOUNDED} -gt ${MAX_REPORT_CHARS} ]]; then
-    BOUNDED="${BOUNDED:0:MAX_REPORT_CHARS}${NL}… output cut at ${MAX_REPORT_CHARS} characters"
+  if [[ ${#BOUNDED} -gt ${limit} ]]; then
+    BOUNDED="${BOUNDED:0:limit}${NL}… output cut at ${MAX_REPORT_CHARS} characters"
   fi
+}
+
+# Sets BOUNDED to $1, cut under the cap and followed by the skill hint on its own line.
+hinted() {
+  bounded "$1" $((${#NL} + ${#SKILL_HINT}))
+  BOUNDED="${BOUNDED}${NL}${SKILL_HINT}"
 }
 
 # Sets NAMES to the files in $1 (one per line), comma-separated and relative to the project.
@@ -878,7 +889,7 @@ emit() {
     context="${context}${PLUGIN}: these edited files were not type-checked:${NL}${left_out}"
   fi
   if [[ -n ${REPORT} ]]; then
-    bounded "TypeScript errors detected after file edit. Fix them before continuing; do not suppress them.${NL}${NL}${REPORT}${context:+${NL}${context}}"
+    hinted "TypeScript errors detected after file edit. Fix them before continuing; do not suppress them.${NL}${NL}${REPORT}${context:+${NL}${context}}"
     json_escape "${BOUNDED}"
     if [[ ${event} == PostToolUseFailure ]]; then
       fields="\"hookSpecificOutput\":{\"hookEventName\":\"PostToolUseFailure\",\"additionalContext\":\"${ESCAPED}\"}"
@@ -896,7 +907,7 @@ emit() {
     if [[ -n ${context} ]]; then
       json_escape "${event}"
       fields="\"hookSpecificOutput\":{\"hookEventName\":\"${ESCAPED}\""
-      bounded "${context}"
+      hinted "${context}"
       json_escape "${BOUNDED}"
       fields="${fields},\"additionalContext\":\"${ESCAPED}\"}"
     fi
@@ -917,6 +928,7 @@ main() {
   json_string tool_name
   if [[ -z ${VALUE} ]]; then
     echo "${PLUGIN}: the hook event has no tool_name; it is not the JSON Claude Code sends" >&2
+    echo "${SKILL_HINT}" >&2
     return 1
   fi
   raw="$(candidates)"
@@ -947,6 +959,7 @@ main() {
 
   if [[ ! -f ${STRICTEST} ]]; then
     echo "${PLUGIN}: ${STRICTEST} is missing; reinstall the plugin" >&2
+    echo "${SKILL_HINT}" >&2
     return 1
   fi
   collect_dirs
