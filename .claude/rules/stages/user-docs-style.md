@@ -19,7 +19,6 @@ READMEs sell: lead with the outcome and why to install, then teach. Never mentio
 
 - English, second person, active voice, present tense. Short sentences.
 - Benefit first, mechanics second.
-- No hype words without substance ("revolutionary", "magic").
 
 ## Formatting kit
 
@@ -29,7 +28,6 @@ READMEs sell: lead with the outcome and why to install, then teach. Never mentio
 - GitHub alerts (`> [!NOTE]`, `[!TIP]`, `[!IMPORTANT]`, `[!WARNING]`, `[!CAUTION]`) — never two alerts back to back without text between.
 - `<details>` for per-surface instructions and FAQs; the most common option `open`.
 - **Bold** for UI labels exactly as shown in the app (`/plugin` → **Installed** → **Update now**). *Italics* for emphasis or terms.
-- Code blocks always have a language (`bash`, `text`, `json`).
 - Relative links inside the repo; absolute `https://` links outside.
 
 ## Accuracy

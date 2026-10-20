@@ -9,9 +9,6 @@ paths:
 
 ## Plugins
 
-- Build plugins exclusively for Claude, to distribute them to third parties from a public repository or a public marketplace.
-- Make every plugin and its scripts portable. Never depend on what is installed on Nery's machine.
-- Target macOS and Linux. Support Windows only through Git Bash.
 - When a plugin needs a specific version, tool, binary or program, list it as a prerequisite in its README, with how to install it and the applicable alternatives.
 
 ## New Plugins
@@ -21,8 +18,4 @@ paths:
 ## Evals
 
 - Whether a plugin has evals is Nery's decision.
-- When Nery asks for evals for a plugin, do not work from memory.
-- Load the applicable skills and use the Claude Code Docs MCP tools.
 - Read the Claude Code changelog for the installed version, the four before it and every newer one. Contrast what you find and apply it.
-- Never invent. Never assume.
-- CI runs the evals only for plugins that have an `evals/` folder and that changed.

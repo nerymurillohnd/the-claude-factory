@@ -16,7 +16,6 @@ paths:
   - A short input/output example; a template for output that must keep its shape.
 - Word guidance that needs judgment for the whole task ("after every edit", not "once").
 - Audit our own skills with `/skill-diagnostics:audit`, and re-audit after any rewrite: slimming can drop a load-bearing rule.
-- Generic for any user: no personal, company or language-specific assumptions.
 
 ## Hooks and scripts
 

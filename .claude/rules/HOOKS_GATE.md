@@ -5,9 +5,6 @@ paths:
 
 # Hooks Gate
 
-- Source: <https://code.claude.com/docs/en/hooks>. Re-read the sections named below before changing a rule: the page moves.
-- This file adds to the hook bullets in `.claude/CLAUDE.md` (Plugin Development). It never repeats them.
-
 ## Declare
 
 - Use the three levels of `hooks/hooks.json`: event, matcher group, handler. The contract is JSON on stdin. Never write a `"hook"` object or read `$TOOL_INPUT`.

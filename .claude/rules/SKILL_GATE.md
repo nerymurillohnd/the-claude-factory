@@ -8,7 +8,6 @@ paths:
 
 ## Files Inside the Skill
 
-- In `SKILL.md`, link with a path relative to the skill folder: `[checklist](references/checklist.md)`.
 - In a file under `references/`, link with a path relative to that file, and only to templates: `[template](../assets/template.md)`.
 - Never link from one reference to another. Keep references one level deep from `SKILL.md`.
 

@@ -3,8 +3,6 @@
 ## No Progress With Open Issues
 
 - Do not advance to the next step, file or task while a detected issue is open.
-- Fix every issue the moment it appears: gate finding, failing test, error or warning in any output.
-- Fix the root cause. Never silence the symptom.
 - Report an issue as open only when it is blocked on a decision or a spend only Nery can make. Stop and ask.
 
 ## After Editing a File
@@ -12,9 +10,6 @@
 - Run the gates for every `.py`, `.mjs` and `.sh` file you edit, write or create.
 - Run them right after the edit, before the next task.
 - Run in this order: formatter, linter, type checker, tests.
-- Fix every finding at its source. Re-run until the output is clean.
-- Never loosen a config, add an ignore comment, cast unsafely or edit a test to silence a finding.
-- Quote each command and its output. Never report a gate as passing unless you ran it in this session.
 
 ### Python
 
@@ -34,8 +29,6 @@
 - `node .github/scripts/check-repo.mjs` - Run after the tests.
 
 `tsc` checks the whole project.
-
-- Fix every error it reports, in the files you touched and in the others.
 
 ### Mods
 
@@ -57,8 +50,6 @@ A plugin that ships a mod keeps its code in `hooks/*.ts` and its tests in `tests
 - Run the steps in order.
 - Stop at the first failure. Fix the cause, then restart from step 1.
 - Report the gates as a table: gate, result and key output line.
-- Call the work verified only when every gate passes.
-- The gates run pinned versions. CI pins the ones it runs in the `env` block of `.github/workflows/validate.yml`.
 - No git hook runs `.pre-commit-config.yaml`, and CI does not run `basedpyright`, the plugins' Python tests or the `by_path.sh` scripts: steps 12 and 13 are local. CI installs `tsc` only so the TypeScript hook tests run; it does not type-check the `.mjs` files.
 
 1. `git branch --show-current` - Confirm it is the intended branch, not a stale or merged one.
