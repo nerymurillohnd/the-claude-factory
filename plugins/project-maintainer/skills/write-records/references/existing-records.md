@@ -69,8 +69,8 @@ Do this before you create any folder.
 Do this after the git question. Write every record with the Write tool. Write creates the folders.
 
 1. Write the records, one candidate at a time, in the order the source lists them.
-2. For a decision, write one ADR with the ADR template. Follow the ADRs reference.
-   - Status: `accepted` when the source presents it as decided. `proposed` when it is open. `deprecated` or `superseded` only when the source says so.
+2. For a decision, write one ADR per decision with the ADR template. Follow the ADRs reference. Never group decisions, even when the source does.
+   - Status: `accepted` when the source presents it as decided. `proposed` when it is open. `rejected`, `deprecated` or `superseded` only when the source says so.
    - Date: the date the source gives. Without one, use today and write "original date not recorded" in More information.
    - Decision makers: the people the source names. Otherwise "not recorded in the source".
    - More information: "Migrated from `<source path>` on `<today>`."

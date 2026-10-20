@@ -1,6 +1,6 @@
 ---
 name: write-records
-description: Writes architecture decision records (ADRs) and keeps a technical-debt ledger. Use when an important decision is made, a problem cannot be fixed now, or logged debt is fixed.
+description: Writes architecture decision records (ADRs) and keeps a technical-debt ledger. Use when an important decision is made, a problem cannot be fixed now, or logged debt is closed.
 ---
 
 # Write records
@@ -8,7 +8,7 @@ description: Writes architecture decision records (ADRs) and keeps a technical-d
 ## What this is
 
 - A skill that keeps a project's memory in Markdown files.
-- It covers two kinds of record: ADRs and the technical-debt ledger.
+- It covers two kinds of record: ADRs, and the technical-debt ledgers (pending and closed).
 - Each kind has a procedure in `references/` and templates in `assets/`.
 - The records answer one question: why is the project the way it is?
 
@@ -17,17 +17,18 @@ description: Writes architecture decision records (ADRs) and keeps a technical-d
 - Act as the project's record keeper.
 - Record decisions and postponed problems before the task ends.
 - Record without asking permission. The user installed this plugin for that.
-- Ask only for facts you are missing.
+- Ask only for facts you are missing. The two questions in steps 3 and 4 are the only others.
 - Write only what is verified or what the user said.
 - Keep one source of truth. Never leave the same record in two places.
+- Non-interactive means nobody can answer you: you have no question tool, or the prompt says nobody will answer, as in `claude -p`, the Agent SDK or CI. Then write no record that depends on an unanswered question. Return the questions in your final reply.
 
 ## Rules
 
 ### Always
 
-- Search the existing records before adding one. Update the match instead of duplicating it.
+- Search the existing records before adding one. Update a debt match. Change an ADR match only as the ADRs reference allows.
 - Mark anything unverified as an inference or as pending.
-- Mention a record elsewhere by its ID only: the ADR file name without `.md`, or `DEBT-<NNN>`.
+- Mention a record inside another record by its ID only: the ADR file name without `.md`, or `DEBT-<NNN>`. Links to evidence, such as issues and pull requests, stay Markdown links. In your report to the user, give the file path.
 - Keep each ledger index equal to its entries.
 - Write dates as `YYYY-MM-DD`, using today's date.
 - Save records under `.claude/maintainer/` in the checkout you work in: the root that `git rev-parse --show-toplevel` prints, or the current directory outside git.
@@ -37,8 +38,9 @@ description: Writes architecture decision records (ADRs) and keeps a technical-d
 
 ### Never
 
-- Never rewrite an accepted ADR or a resolved entry. Supersede it.
-- Never log a problem that can be fixed now. Fix it.
+- Never rewrite a settled record: an ADR that is not `proposed`, or a closed debt entry. Supersede it.
+- Never group decisions. One ADR per decision.
+- Never log a problem that can be fixed now inside the current task. Fix it. If it falls outside the task, tell the user.
 - Never write a decision or a debt item into a README, changelog, code comment, commit message, task list or memory.
 - Never leave an unfilled placeholder or template instructions in an entry. A ledger keeps its reusable "Entry format" comment.
 - Never move, overwrite or delete a project's existing records without the user's explicit OK.
@@ -49,9 +51,9 @@ description: Writes architecture decision records (ADRs) and keeps a technical-d
 
 ## References
 
-- [ADRs](references/adrs.md): read when you write, supersede or check a decision record. Template: [ADR template](assets/ADR_YYYY-MM-DD_decision-slug.md).
+- [ADRs](references/adrs.md): read when you write, change or check a decision record. Template: [ADR template](assets/ADR_YYYY-MM-DD_decision-slug.md).
 - [Existing records](references/existing-records.md): read before you create the first folder of a kind, to find and migrate records the project already keeps elsewhere. Templates: [ADR template](assets/ADR_YYYY-MM-DD_decision-slug.md) and [pending debt](assets/pending-debt.md).
-- [Technical debt](references/technical-debt.md): read when you log, update or resolve a debt item. Templates: [pending debt](assets/pending-debt.md) and [resolved debt](assets/resolved-debt.md).
+- [Technical debt](references/technical-debt.md): read when you log, update or close a debt item. Templates: [pending debt](assets/pending-debt.md) and [closed debt](assets/closed-debt.md).
 
 ## Instructions
 
@@ -61,13 +63,34 @@ The locations are fixed. Never choose another one.
 
 - Decisions: `.claude/maintainer/decisions/ADR_<YYYY-MM-DD>_<slug>.md`, one file per decision.
 - Pending debt: `.claude/maintainer/technical-debt/pending-debt.md`.
-- Resolved debt: `.claude/maintainer/technical-debt/resolved-debt.md`.
+- Closed debt: `.claude/maintainer/technical-debt/closed-debt.md`.
 
 Create a folder or ledger the first time it is needed. Installing the plugin creates nothing.
 
 Claude Code protects `.claude/`. The first write of a session can ask the user for permission. Wait for the answer. Do not work around it.
 
-### 2. Look for existing records
+### 2. Decide whether to record
+
+An explicit request from the user to record something wins over the skip list.
+
+Record a decision that matches at least one of these:
+
+- It chooses one approach over another, with consequences that last.
+- It changes the architecture, a process, a dependency, security, or how the project is built, released or distributed.
+- It sets the scope or shape of a component, such as extending an existing module or creating an independent one.
+- It would be hard to undo, or someone may later question it with "why did we do it this way?".
+
+Skip:
+
+- renames, typos, formatting and comments,
+- a small refactor that keeps behavior,
+- a choice an existing ADR already covers.
+
+Record a problem as debt when it cannot be fixed now. The [Technical debt](references/technical-debt.md) reference sets the criteria. Close a logged item when it is fixed, no longer applies, or the user decides to keep it for good.
+
+Nothing to record or close? Stop here. Create nothing and ask nothing.
+
+### 3. Look for existing records
 
 Do this before you create the first folder of each kind. It keeps one source of truth.
 
@@ -79,11 +102,11 @@ Then:
 1. Read [Existing records](references/existing-records.md).
 2. Find the project's own documents for that kind.
 3. Show the user what you found. Ask whether to consolidate and migrate it.
-4. Migrate only what the user approves, in step 4.
+4. Migrate only what the user approves, in step 5.
 
-In a non-interactive session, find and migrate nothing. Name what you found in your one-line note.
+In a non-interactive session, find and migrate nothing. Name what you found in your report.
 
-### 3. Ask about git on first use
+### 4. Ask about git on first use
 
 Do this before you create the first records folder.
 
@@ -91,7 +114,7 @@ Ask only when all of these hold:
 
 - The project is a git repository.
 - `.claude/maintainer/` does not exist yet.
-- Git does not already ignore it. Check with `git check-ignore -q .claude/maintainer/`.
+- Git does not already ignore it. Check with `git check-ignore -q .claude/maintainer/`. Exit 0 means ignored.
 
 Then:
 
@@ -102,42 +125,24 @@ Then:
    - Keep them local: add `.claude/maintainer/` to the `.gitignore` at the checkout root. Create the file if it is missing. Add only that line.
    - Track them: change nothing.
 
-In a non-interactive session, do not ask. Track the records, change nothing, and say so in your one-line note.
+In a non-interactive session, do not ask. Track the records, change nothing, and say so in your report.
 
-### 4. Migrate approved records
+### 5. Migrate approved records
 
-Do this after step 3, only when the user approved a migration in step 2.
+Do this after step 4, only when the user approved a migration in step 3.
 
 1. Follow the migration steps in [Existing records](references/existing-records.md). Write creates the folders.
 2. Ask what to do with each original. Change nothing before the user answers.
 
-### 5. Decide whether to record
-
-Record a decision that:
-
-- chooses one approach over another, with consequences that last,
-- changes the architecture, a process, a dependency, security, or how the project is built, released or distributed,
-- sets the scope or shape of a component, such as extending an existing module or creating an independent one,
-- would be hard to undo, or that someone may later question with "why did we do it this way?".
-
-Skip:
-
-- renames, typos, formatting and comments,
-- a small refactor that keeps behavior,
-- a choice an existing ADR already covers.
-
 ### 6. Route the work
 
-1. An important decision is made, or the user asks for an ADR: read [ADRs](references/adrs.md), then write the record.
-   - Several decisions? Ask how to register them first: [choose how to register](references/adrs.md#choose-how-to-register).
+1. An important decision is made, or the user asks for an ADR: read [ADRs](references/adrs.md), then write one record per decision.
 2. A problem cannot be fixed now, or the user asks to log debt: read [Technical debt](references/technical-debt.md), then log it.
-3. A logged problem is fixed: read [Technical debt](references/technical-debt.md), verify the fix, then move the entry to resolved.
-
-In a non-interactive session, return the unanswered questions. Leave the records that depend on them pending.
+3. A logged problem is fixed, no longer applies, or the user decides to keep it for good: read [Technical debt](references/technical-debt.md), verify it, then close the item.
 
 ### 7. Report
 
-Tell the user in one line what you recorded and where.
+Tell the user in one line per record what you recorded and where.
 
 Example:
 
@@ -157,6 +162,7 @@ Check each item before you finish.
 - [ ] Every claim is verified, stated by the user, or marked pending.
 - [ ] No placeholder or template instruction remains in an entry.
 - [ ] Each ledger index equals its entries.
-- [ ] No accepted ADR or resolved entry was rewritten.
+- [ ] No settled ADR or closed entry was rewritten.
+- [ ] Each decision has its own ADR.
 - [ ] Nothing was committed or pushed.
-- [ ] The user got a one-line note with the file and its ID.
+- [ ] The user got a one-line note per record with its file and its ID.

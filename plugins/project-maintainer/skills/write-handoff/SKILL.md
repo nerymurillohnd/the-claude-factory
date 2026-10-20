@@ -36,7 +36,7 @@ The records live in `<PROJECT>/.claude/maintainer/`. The `write-records` skill k
 
 - No `<PROJECT>/.claude/maintainer/` folder: skip this step.
 - Read `technical-debt/pending-debt.md` whole.
-- Read the Index of `technical-debt/resolved-debt.md`.
+- Read the Index of `technical-debt/closed-debt.md`.
 - List `decisions/`.
 
 Pending debt:
@@ -45,10 +45,11 @@ Pending debt:
 - Write it as `DEBT-NNN <title>: <status>; <review condition>. First action: <Next action>`.
 - Keep the entry's Logged date as the item's date.
 
-Resolved debt:
+Closed debt:
 
-- A previous open item that cites a `DEBT-NNN` now in resolved debt gets the verdict done.
-- Cite the evidence: `DEBT-NNN resolved on <date>`.
+- A previous open item that cites a `DEBT-NNN` now in closed debt gets the verdict done, whatever the outcome (resolved, obsolete or accepted).
+- Cite the evidence: `DEBT-NNN closed as <outcome> on <date>`.
+- A closed debt item that no previous handoff cited needs no line. The ledger holds it.
 
 Decisions:
 

@@ -14,13 +14,16 @@ superseded-by: none
 <!--
 Template for .claude/maintainer/decisions/ADR_<YYYY-MM-DD>_<decision-slug>.md.
 Write the new file with the frontmatter above and the body below, and leave this comment out.
-- status: proposed, accepted, rejected, deprecated or superseded. Use accepted only when the decision is made.
+- status: proposed, accepted, rejected, deprecated or superseded. The ADRs reference says when each applies.
 - date: the registration date, equal to the date in the file name.
-- supersedes: the file name of the ADR this record replaces, or none.
-- superseded-by: the file name of the ADR that replaces this one. Required when status is superseded.
+- supersedes: the ID of the ADR this record replaces (its file name without .md), or none.
+- superseded-by: the ID of the ADR that replaces this one. Required when status is superseded.
 - Remove the consulted and informed lines when they would be empty.
-- Replace every {placeholder}. Remove the optional sections that add nothing.
-- Mark planned evidence as pending. Never present it as observed.
+- Required sections: Scope, Context and problem statement, Decision drivers, Considered options, Decision outcome and its Consequences.
+- Optional sections: Risks and mitigations, Confirmation, Pros and cons of the options, More information. Remove the ones that add nothing.
+- In a proposed record, write "proposed" instead of "chosen" in Considered options and "Proposed option" in Decision outcome, and say what is still open.
+- Replace every {placeholder}.
+- Mark planned evidence as pending. Never present it as observed. If you remove Confirmation, write the pending evidence in More information.
 -->
 
 # {Short title naming the decision}
@@ -89,7 +92,8 @@ Chosen option: **{Option name}**, because {why it best meets the decision driver
 - Neutral, because {argument with no material positive or negative effect}
 - Bad, because {argument against the option}
 
+<!-- Optional: remove this section when there is nothing to add. -->
+
 ## More information
 
-{Add evidence, related ADRs, implementation timing or supersession links. Remove this section
-when there is nothing to add.}
+{Add evidence, related ADRs by ID, implementation timing or pending evidence. For a record written after the decision was made, say when it was made.}

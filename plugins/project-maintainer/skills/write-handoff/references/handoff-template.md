@@ -9,7 +9,7 @@ Copy the block under "The handoff". Keep every heading and label **literally, in
 - **Open items:** everything still pending, in priority order. Include this session's pending work, every pending debt item from the project records, and only the previous items that are still `partial` or `open`. Keep a carried item's original date. Each item says where it stands, what finishing needs and its first action. A debt item cites its `DEBT-NNN` ID and takes its date, status, review condition and first action from its entry. An item opened more than 30 days ago gets `Stale: confirm or drop.` once, after its date.
 - **Context for the next session:** what the next Claude needs to keep the thread, which `CLAUDE.md` and memory do not hold. Label each line `Learning:` (a non-obvious fact, with its source), `Correction:` (what the user corrected, as the behaviour to follow from now on) or `Recommendation:` (advice or context).
 - **Decisions:** the choice, the reason, and the alternative rejected. A decision from the project records cites its ADR ID, the file name without `.md`.
-- **Done this session:** what changed and why it mattered, with its evidence. Then the previous handoff's items: one row per item that is `done`, `partial` or `dropped`, and a count of the `open` ones. A `done` row cites a commit, PR, test run or `per the user, <date>: <what they reported>`. A debt item resolved since the previous handoff cites `DEBT-NNN resolved on <date>`. A `partial` row says what was done and what remains.
+- **Done this session:** what changed and why it mattered, with its evidence. Then the previous handoff's items: one row per item that is `done`, `partial` or `dropped`, and a count of the `open` ones. A `done` row cites a commit, PR, test run or `per the user, <date>: <what they reported>`. A debt item closed since the previous handoff cites `DEBT-NNN closed as <outcome> on <date>`, the outcome being resolved, obsolete or accepted. A `partial` row says what was done and what remains.
 - **Conflicts:** the project records count as part of the repository. A contradiction between a record and the previous handoff goes here, and the record wins.
 - **Unverified and gaps:** what you could not check, and the parts of the conversation you could no longer see.
 
@@ -64,7 +64,7 @@ HEAD: <full hash> | none | Not a git repository. | unverified (git failed: <reas
 Previous handoff items:
 | Item | Opened | Verdict | Evidence or note |
 |---|---|---|---|
-| <item text> | <YYYY-MM-DD> | <done / partial / dropped> | <commit, PR, test run or per the user, <date>: <report>; DEBT-<NNN> resolved on <date>; for partial, what remains> |
+| <item text> | <YYYY-MM-DD> | <done / partial / dropped> | <commit, PR, test run or per the user, <date>: <report>; DEBT-<NNN> closed as <outcome> on <date>; for partial, what remains> |
 Still open, unchanged: <n> (see Open items)
 Conflicts (repository wins): <each contradiction between the previous handoff and the repository or the project records, or None known.>
 

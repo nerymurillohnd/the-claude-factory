@@ -4,14 +4,15 @@
 
 - A ledger of problems that cannot be fixed now.
 - Pending debt: `.claude/maintainer/technical-debt/pending-debt.md`.
-- Resolved debt: `.claude/maintainer/technical-debt/resolved-debt.md`, in the same folder.
+- Closed debt: `.claude/maintainer/technical-debt/closed-debt.md`, in the same folder.
 - Debt is recorded nowhere else.
 - Other documents mention an item by its ID only: `DEBT-<NNN>`.
-- Templates: [pending debt](../assets/pending-debt.md) and [resolved debt](../assets/resolved-debt.md).
+- Templates: [pending debt](../assets/pending-debt.md) and [closed debt](../assets/closed-debt.md).
 
 ## Rules
 
-- Fix a problem that can be fixed now. Never log it.
+- Fix a problem that can be fixed now and sits inside the current task. Never log it.
+- A fixable problem outside the current task: tell the user. Log nothing.
 - Log a problem only when it waits on one of these:
   - a decision or a spend only the user or the project's owners can make,
   - access or an external party,
@@ -23,10 +24,12 @@
   - no other record tracks it, such as an open issue or an ADR follow-up.
 - Never log improvement ideas, speculation or backlog tasks.
 - Never reuse an ID from either ledger.
-- Never delete a pending item without a resolved entry.
-- Never rewrite a resolved entry. Only its "Superseded by" field may change.
-- Resolve an item without asking, as soon as the fix is verified.
+- Never delete a pending item without a closed entry.
+- Never rewrite a closed entry. Only its "Superseded by" field may change.
+- Close an item as resolved or obsolete without asking, as soon as the evidence is verified.
+- Close an item as accepted only after the user decides to keep the condition for good.
 - Write the ledgers with the Write tool, never with Bash. Write creates the folder.
+- In a non-interactive session, write no entry that depends on an unanswered question. Return the questions in your final reply.
 
 ## Open an item
 
@@ -38,8 +41,10 @@
    grep -il "<keyword>" .claude/maintainer/technical-debt/*.md
    ```
 
+   If no ledger exists yet, the search finds nothing. Continue.
+
 2. An open entry already tracks it? Add no new item. Update that entry when the new finding adds evidence.
-3. A resolved entry covers it and the problem is back? Open a new item that links back to it. See "Keep history".
+3. A closed entry covers it and the problem is back? Continue with step 2, then write the new ID in that closed entry. See "Keep history".
 
 ### 2. Create the ledger if it is missing
 
@@ -49,29 +54,36 @@
 
 ### 3. Find the next free ID
 
-1. List the IDs in both ledgers:
+1. Read each ledger that exists, whole.
+2. List the heading IDs of the ledgers that exist. Pass only files that exist:
 
    ```bash
-   grep -hoE 'DEBT-[0-9]+' .claude/maintainer/technical-debt/*.md 2>/dev/null | sort -u
+   grep -hoE '^### DEBT-[0-9]+' .claude/maintainer/technical-debt/pending-debt.md .claude/maintainer/technical-debt/closed-debt.md | sort | uniq -d
    ```
 
-2. Read each existing ledger first. Treat a ledger confirmed absent as empty.
-3. Take the numeric maximum of every ID in both ledgers, links inside entries included.
-4. Add one. Pad to at least three digits.
-5. Never sort IDs as text: `DEBT-1000` follows `DEBT-999`.
-6. Use `DEBT-001` only when neither ledger holds an ID.
-7. Treat a failed search, a malformed ID or a duplicate as a discrepancy. Resolve it. Never restart the sequence.
+   A heading ID printed twice is a discrepancy.
+
+3. List every ID, links inside entries included, and take the numeric maximum:
+
+   ```bash
+   grep -hoE 'DEBT-[0-9]+' .claude/maintainer/technical-debt/pending-debt.md .claude/maintainer/technical-debt/closed-debt.md | sed 's/DEBT-//' | sort -n | tail -1
+   ```
+
+4. Add one to the maximum. Pad to at least three digits.
+5. Use `DEBT-001` only when neither ledger holds an ID.
+6. Never sort IDs as text: `DEBT-1000` follows `DEBT-999`.
+7. A command error, a malformed ID or a heading ID that repeats is a discrepancy. Stop, show the user the lines, and ask how to fix it. Never restart the sequence.
 
 ### 4. Write the entry
 
-1. Copy the "Entry format" block above its comment.
-2. Fill every field.
-3. Set Logged to today's date.
+1. Copy the text inside the "Entry format" comment. Leave out the `<!--` and `-->` markers and the instruction lines.
+2. Paste it right before that comment, after the last item.
+3. Fill every field. Set Logged to today's date.
 4. Remove the "*No open items.*" line when you add the first item.
 
 ### 5. Update the index
 
-- Add the item's row: ID, title, status icon and name.
+- Add the item's row at the bottom of the Index: ID, title, status icon and name.
 
 ### 6. Report
 
@@ -81,7 +93,8 @@
 
 - Put only verified facts under Confirmed facts: paths, revisions, commands, dates.
 - Put reasoned but unverified conclusions under Inferences.
-- Write "none" in a field with nothing to report.
+- Write "none" in a field with nothing to report. Owner is the exception: write "unassigned" when nobody owns the item.
+- Category is a free word, such as security, compatibility, cost or quality.
 - Write the smallest concrete action in Next action.
 - Write the event, date or evidence that permits closure in Review condition.
 - Link the related issues, ADRs and pull requests.
@@ -92,56 +105,75 @@
 - Set Status to one of: Pending, In progress, Blocked, Risk accepted.
 - Keep the Index row's ID, title and status equal to the entry.
 - Keep a Risk accepted item open. Its review condition still applies.
+- The user decides to keep the condition for good? Close the item as accepted. Do not leave it as Risk accepted.
 
-## Resolve an item
+## Close an item
 
-Use this when a logged problem is fixed.
+Use this when a logged problem is fixed, no longer applies, or the user decides to keep it for good.
 
-### 1. Verify the fix
+### 1. Pick the outcome
 
-1. Run both checks yourself.
+| Outcome | Use when |
+| --- | --- |
+| resolved | A fix was made and it works. |
+| obsolete | The condition no longer exists, with no fix aimed at it: code removed, architecture changed, or the item was logged in error or duplicates another. |
+| accepted | The user decided to keep the condition for good. An accepted ADR records that decision. |
+
+### 2. Verify the closure
+
+Run the checks yourself. Quote the output.
+
+1. resolved:
    - Positive: the fix works.
    - Negative: the original failure no longer reproduces. Showing that the new path works is not enough.
-2. Either check fails? Keep the item open. Update it instead.
-3. Record both checks with evidence: commands, tests or review. Quote the output.
-4. The condition disappeared without a fix, such as removed code? Say so as the fix. The negative check is then the evidence that the condition is gone.
+2. obsolete:
+   - Negative: the condition no longer exists. Show the evidence.
+   - Name what changed: an ADR ID, a commit or a pull request. Write "none" when nothing caused it.
+   - Logged in error, or a duplicate? Say so, and name the item it duplicates.
+3. accepted:
+   - The ADR exists with status `accepted`. Cite its ID.
+   - No ADR yet? Write it first, following the ADRs reference.
+4. Any check fails? Keep the item open. Update it instead.
 
-### 2. Create the resolved ledger if it is missing
+### 3. Create the closed ledger if it is missing
 
-1. Read the [resolved debt template](../assets/resolved-debt.md).
-2. Write everything below its first comment into `resolved-debt.md`.
+1. Read the [closed debt template](../assets/closed-debt.md).
+2. Write everything below its first comment into `closed-debt.md`.
 3. Keep the closing "Entry format" comment. Leave out only the first comment.
 
-### 3. Move the item
+### 4. Move the item
 
-1. Copy the "Entry format" block above its comment and fill it.
-2. Keep the same ID.
-3. Copy Logged on from the pending entry.
-4. Set Resolved on to today's date.
-5. Add the item's row to the Index: resolved date, ID, resolution title, and "none" under Superseded by.
-6. Remove the "*No resolved items yet.*" line when you add the first resolved item.
-7. Only after the resolved entry exists, remove the entry and its Index row from `pending-debt.md`.
-8. Restore the "*No open items.*" line when the last item leaves.
+1. Copy the text inside the "Entry format" comment. Leave out the markers and the instruction lines. Paste it right before that comment, after the last item.
+2. Fill it. Keep the same ID.
+3. Set Outcome to resolved, obsolete or accepted.
+4. Copy Logged on and Owner from the pending entry.
+5. Set Closed on to today's date.
+6. Write "not applicable" in a Verification row the outcome does not use.
+7. Add the item's row at the bottom of the Index: closed date, ID, outcome, closure title, and "none" under Superseded by.
+8. Remove the "*No closed items yet.*" line when you add the first closed item.
+9. Only after the closed entry exists, remove the entry and its Index row from `pending-debt.md`.
+10. Restore the "*No open items.*" line when the last item leaves.
 
-### 4. Report
+### 5. Report
 
-- Tell the user in one line which ID you resolved.
+- Tell the user in one line which ID you closed and with which outcome.
 
 ## Keep history
 
-- Keep resolved entries as dated records. Never rewrite them.
-- A later change invalidates a resolution? Keep the original entry. Open a new pending item that links back to it.
-- Write the new item's ID in Superseded by, in the old resolved entry and in its Index row. This is the only edit a resolved entry accepts.
-- Keep each resolved Index row's date, ID, title and Superseded by equal to its entry.
+- Keep closed entries as dated records. Never rewrite them.
+- A later change invalidates a closure? Keep the original entry. Open a new pending item that links back to it.
+- Write the new item's ID in Superseded by, in the old closed entry and in its Index row. This is the only edit a closed entry accepts.
+- Keep each closed Index row's date, ID, outcome, closure and Superseded by equal to its entry.
 
 ## Checklist
 
 - [ ] No identical open entry existed before logging.
 - [ ] The new ID is the numeric maximum plus one, with at least three digits.
-- [ ] Every entry field is filled. Unknown fields say "none".
+- [ ] Every entry field is filled. Unknown fields say "none", and Owner says "unassigned".
 - [ ] Confirmed facts and inferences are kept apart.
 - [ ] Each Index row equals its entry.
-- [ ] A resolved item has both checks with quoted evidence.
-- [ ] No pending item was deleted without a resolved entry.
-- [ ] No resolved entry was rewritten, except "Superseded by".
+- [ ] A closed item has the evidence its outcome needs, quoted.
+- [ ] A closed entry carries Outcome, Closed on, Logged on and Owner.
+- [ ] No pending item was deleted without a closed entry.
+- [ ] No closed entry was rewritten, except "Superseded by".
 - [ ] Each ledger keeps its "Entry format" comment.
