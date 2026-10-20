@@ -14,6 +14,12 @@
       "category": "language-support"
     },
     {
+      "name": "block-no-verify",
+      "source": "./plugins/block-no-verify",
+      "description": "Blocks Claude's git commands that skip commit hooks or signing (--no-verify, --no-gpg-sign, commit.gpgsign=false), so your quality gates always run.",
+      "category": "security"
+    },
+    {
       "name": "github-operations",
       "source": "./plugins/github-operations",
       "description": "Carries a GitHub pull request from open to merge, cleans up a Git repository without losing work, and brings the GitHub MCP server with it.",

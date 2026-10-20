@@ -25,7 +25,14 @@ const DOC_ONLY = new Set(['README.md'])
  * @returns {string}
  */
 function git(args) {
-  return execFileSync('git', args, { cwd: ROOT, encoding: 'utf8' }).trim()
+  // stderr is piped, not inherited: `git show` on a new plugin fails on purpose (no base version
+  // to compare), and an inherited stderr would print that expected `fatal:` into the run's output.
+  // A real failure still throws, and its message keeps git's stderr.
+  return execFileSync('git', args, {
+    cwd: ROOT,
+    encoding: 'utf8',
+    stdio: ['ignore', 'pipe', 'pipe'],
+  }).trim()
 }
 
 /**

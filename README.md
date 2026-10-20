@@ -11,7 +11,7 @@
 <br>
 
 <!-- plugin-count:start -->
-[![Plugins](https://img.shields.io/badge/plugins-11-D97757?style=for-the-badge)](#-catalog)
+[![Plugins](https://img.shields.io/badge/plugins-12-D97757?style=for-the-badge)](#-catalog)
 <!-- plugin-count:end -->
 [![Validate](https://img.shields.io/github/actions/workflow/status/nerymurillohnd/the-claude-factory/validate.yml?branch=main&label=validate&style=for-the-badge)](https://github.com/nerymurillohnd/the-claude-factory/actions/workflows/validate.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-22C55E?style=for-the-badge)](./LICENSE)
@@ -107,6 +107,7 @@ Plugin skills are namespaced, so they never collide with yours: type `/<plugin>:
 | [🛠️ Development](#️-development) | 2 |
 | [⚡ Productivity](#-productivity) | 1 |
 | [🧪 Testing & Quality](#-testing--quality) | 3 |
+| [🛡️ Security](#️-security) | 1 |
 | [📚 Documentation & Writing](#-documentation--writing) | 1 |
 | [🧠 Language Support](#-language-support) | 4 |
 
@@ -136,6 +137,14 @@ Plugin skills are namespaced, so they never collide with yours: type `/<plugin>:
 | [**Plugin Evals**](./plugins/plugin-evals#readme)<br>`plugin-evals@the-claude-factory` | Makes Claude an expert in Claude Code plugin evals: designs suites that prove what a plugin adds, writes cases, graders and mocks, runs and gates them in CI, and reads the results, always checked against the CLI and docs you have today. | 💻 Code · 🖥️ Claude app | `0.1.1` | 🎯 Skills |
 | [**Plugin Test Bench**](./plugins/plugin-test-bench#readme)<br>`plugin-test-bench@the-claude-factory` | Proves your Claude Code plugin works the way your users receive it: installs a copy in a throwaway config, checks it loads, runs your eval suite against that copy, and reviews your eval cases so they measure what the plugin adds. | 💻 Code only | `0.1.0` | 🎯 Skills |
 | [**Skill Diagnostics**](./plugins/skill-diagnostics#readme)<br>`skill-diagnostics@the-claude-factory` | Audits Claude skills for best-practice conformance, portability and whether a model can run them without guessing, with file-and-line evidence and one verdict. | 💻 Code · 🖥️ Claude app | `0.1.2` | 🎯 Skills · 🤖 Agents · 🪝 Hooks |
+
+### 🛡️ Security
+
+*Guardrails, secret hygiene and security reviews.*
+
+| Plugin | What it does | Works in | Version | Includes |
+| :-- | :-- | :-- | :--: | :-- |
+| [**Block No Verify**](./plugins/block-no-verify#readme)<br>`block-no-verify@the-claude-factory` | Blocks Claude's git commands that skip commit hooks or signing (--no-verify, --no-gpg-sign, commit.gpgsign=false), so your quality gates always run. | 💻 Code · 🖥️ Claude app | `0.1.0` | 🪝 Hooks |
 
 ### 📚 Documentation & Writing
 

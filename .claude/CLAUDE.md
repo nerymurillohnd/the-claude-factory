@@ -91,7 +91,7 @@ The gates live in `.claude/rules/`.
 - Test a hook in `settings.json` right after editing it: the file watcher loads it with no restart. A plugin hook needs `/reload-plugins`.
 - Resolve `node` and `tsc` across every Node manager: plugin hooks and LSP servers get no shell profile.
 - Set `"onFailure": "block"` on a check hook, so a broken hook never passes in silence.
-- Report a missing tool as a non-blocking `systemMessage` plus `additionalContext`, never as a silent pass.
+- Report a missing tool as a non-blocking `systemMessage` plus `additionalContext`, never as a silent pass. A guard whose job is to deny is the exception: it denies the commands it guards and says what to install.
 - Write one permission rule per hook `if` field. A rule joined with `|` never matches.
 - Ship a plugin's Node dependencies only with an npm or Bun lockfile; other lockfiles leave no `node_modules`.
 - Pass each strict `tsc` flag with an explicit value. `--strict` does not override an explicit `false` in a tsconfig.
