@@ -104,6 +104,8 @@ To confirm it works, ask Claude to add a type error to a TypeScript file and fix
 
 You don't need to call anything: the language server starts with the first TypeScript file Claude edits, the hook runs after each edit, and the skill loads when you work on TypeScript or JavaScript.
 
+When the hook reports an error or a file it couldn't check, its message also tells Claude to use the `typescript6-lsp-intelligence:ts-lifecycle` skill and apply all its knowledge when working on TypeScript and JavaScript files, so a passing or failing check is never mistaken for the whole workflow.
+
 ### Example: what happens after an edit
 
 ```text
