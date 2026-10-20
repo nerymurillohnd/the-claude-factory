@@ -29,17 +29,18 @@
 A pre-commit hook fails, and the quickest way for an agent to get past it is to skip it. Your linter, your tests, your secret scan and your commit signing then check nothing.
 
 - **Your gates keep their meaning** — a hook that fails gets fixed, not skipped. Claude cannot talk its way past a check that runs before the command does.
-- **Claude gets the reason, not a dead end** — the denial names the flag it found and says what to do: run the command without it and fix the cause.
-- **It reads the command, not just the flag** — it catches `-n` on `commit` and `am`, the abbreviations git accepts (`--no-veri`), a flag moved to the next line with a backslash, `sudo`, `env` and `timeout` in front, and `bash -c` or `eval` up to three levels deep.
-- **Normal work is untouched** — a commit message that mentions `--no-verify`, `git push -n` (a dry run), and Claude's usual `git commit -m "$(cat <<'EOF' …)"` all pass.
-- **Nothing to set up** — one hook, no accounts, no network, no files written.
-- **Fast** — about 40 ms per Bash command, most of it Python starting up.
+- **Claude gets the reason, not a dead end** — the denial names what it found and says what to do: run the command without it and fix the cause.
+- **It reads the command, not just the flag** — it catches `-n` on `git commit`, the abbreviations git accepts (`--no-veri`), `sudo`, `env`, `time` and `exec` in front, a subshell, a brace group, `if` and loops, `$(…)` and backticks, `$'…'` quoting, `bash -c` and `eval`, and a heredoc that a shell runs.
+- **It guards the configuration too** — `git config commit.gpgsign false`, `-c core.hooksPath=/dev/null`, `HUSKY=0`, `GIT_CONFIG_*` and an inline `-c alias.ci='commit --no-verify'` are stopped like the flag.
+- **Normal work is untouched** — a commit message that mentions `--no-verify`, `git push -n`, a heredoc that only writes a file, and Claude's usual `git commit -m "$(cat <<'EOF' …)"` all pass.
+- **Nothing to set up** — one hook, no accounts, no network, no files written. It also checks the PowerShell tool.
+- **Fast** — about 30 ms per Bash command, measured inside a Claude Code session.
 
 ## 🧩 What's inside
 
 | Component | Name | What it does | How it runs |
 | :-- | :-- | :-- | :-- |
-| 🪝 Hook | `PreToolUse` on Bash | Reads each Bash command and denies a git command that skips commit hooks or signing. Every other command passes without a word | Automatically, on every Bash command, in the main conversation and in subagents |
+| 🪝 Hook | `PreToolUse` on Bash and PowerShell | Reads each command and denies one that runs git so that it skips commit hooks or signing. Every other command passes without a word | Automatically, on every Bash and PowerShell command, in the main conversation and in subagents |
 
 ## ✅ Requirements
 
@@ -47,7 +48,7 @@ A pre-commit hook fails, and the quickest way for an agent to get past it is to 
 | :-- | :-- |
 | **Claude Code** | v2.1.295 or later — check with `claude --version`. The hook uses the `onFailure` field, which older versions ignore: a hook that cannot start would then let the command through without a word |
 | **Surfaces** | See [Compatibility](#-compatibility) |
-| **External tools** | `python3` 3.9 or later on your `PATH`, to run the guard — check with `python3 --version`. Install it with `xcode-select --install` or `brew install python` on macOS, your package manager on Linux (`sudo apt install python3`, `sudo dnf install python3`), or the installer from [python.org](https://www.python.org/downloads/) on any system. On Windows, use Git Bash with `python3` on your `PATH`: the python.org installer names the program `python`, so add a `python3` alias. Without Python the guard tells you it is inactive and blocks nothing: see [Limitations](#-limitations) |
+| **External tools** | `bash` 3.2 or later and `jq` 1.6 or later, on your `PATH` — check with `jq --version`. macOS has both (`/usr/bin/jq`, checked on macOS 27). On Linux, install `jq` with your package manager (`sudo apt install jq`, `sudo dnf install jq`). On Windows, use Git Bash and install `jq` with `winget install jqlang.jq`. `git` is optional: the hook only reads your aliases with it. Without `jq` the hook cannot read Claude's command: see [Limitations](#-limitations) |
 | **Accounts / API keys** | None |
 
 ## 📥 Installation
@@ -94,7 +95,7 @@ In the desktop app's **Code** tab you can also click **+** → **Plugins** → *
 
 ## 🚀 Usage
 
-There is nothing to run: the guard watches every Bash command. Work as you always do.
+There is nothing to run: the guard watches every Bash and PowerShell command. Work as you always do.
 
 ### See it stop a bypass
 
@@ -105,7 +106,7 @@ Commit my changes. The pre-commit hook fails, so just skip it with --no-verify.
 **Result:** the command never runs. Claude reads this and goes back to fix the failing hook:
 
 ```text
-block-no-verify: this command skips Git's commit hooks or signing (--no-verify). Run it without --no-verify so the project's checks run. If a hook fails, fix the cause; do not bypass it.
+block-no-verify: git commit --no-verify skips hooks (--no-verify). Do not retry with another bypass. Run the command without it and fix the underlying hook or signing failure; if the hook itself is wrong, ask the user to fix or skip it themselves.
 ```
 
 Claude Code labels the message `PreToolUse:Bash hook error`. That is how it shows any denial from a hook, not a fault in the plugin.
@@ -116,14 +117,17 @@ Claude Code labels the message `PreToolUse:Bash hook error`. That is how it show
 | :-- | :-- |
 | `git commit --no-verify -m "x"`, `git push --no-verify`, `git merge --no-verify b` | 🚫 Denied |
 | `git commit -n`, `git commit -nm "x"`, `git am -n p.patch` | 🚫 Denied: `-n` is `--no-verify` in `commit` and `am` |
-| `git commit --no-veri -m "x"`, `git commit --no-g -m "x"` | 🚫 Denied: git runs these abbreviations as the full flags |
-| `git commit --no-gpg-sign`, `git -c commit.gpgsign=false commit`, `git -c tag.gpgsign=off tag v1` | 🚫 Denied: unsigned commits and tags |
-| `sudo git commit --no-verify`, `env X=1 git push --no-verify`, `timeout 5 git commit -n` | 🚫 Denied: wrappers and variables in front are looked through |
-| `bash -c 'git commit --no-verify'`, `eval "git commit -n"` | 🚫 Denied: up to three levels deep. A fourth is denied as too deep to inspect |
-| `git commit -m "docs: explain --no-verify"` | ✅ Passes: the message is text |
+| `git commit --no-veri -m "x"` | 🚫 Denied: git runs the abbreviation as the full flag |
+| `git commit --no-gpg-sign`, `git -c commit.gpgsign=false commit`, `git -c commit.gpgsign= commit`, `git -c tag.gpgsign=off tag v1` | 🚫 Denied: unsigned commits and tags, with every spelling of false that git reads |
+| `git config commit.gpgsign false`, `git -c core.hooksPath=/dev/null commit`, `HUSKY=0 git commit` | 🚫 Denied: signing or hooks switched off through configuration |
+| `sudo -n git commit --no-verify`, `env git commit --no-verify`, `time git commit --no-verify`, `exec git commit --no-verify` | 🚫 Denied: what stands in front is looked through |
+| `(git commit --no-verify)`, `{ git commit --no-verify; }`, `if true; then git commit --no-verify; fi`, `sleep 1 & git commit --no-verify` | 🚫 Denied: grouping, control flow and background are looked through |
+| `echo "$(git commit --no-verify)"`, `` echo `git commit -n` ``, `git commit $'--no-verify'`, `g"i"t commit --no-verify` | 🚫 Denied: substitutions and quoting are read |
+| `bash -c 'git commit --no-verify'`, `eval "git commit -n"`, a heredoc fed to `bash` | 🚫 Denied: text that a shell runs is checked as commands |
+| `git commit -m "docs: explain --no-verify"`, `echo 'never run git commit --no-verify'` | ✅ Passes: the flag is text |
 | `git push -n`, `git merge -n`, `git pull -n`, `git cherry-pick -n` | ✅ Pass: `-n` means dry run, no diffstat or no commit there |
-| ``git commit -m "$(cat <<'EOF' … EOF)"``, even with quotes or a line that starts with `git` in the message | ✅ Passes: a quoted heredoc that feeds a plain `git commit` or `git tag` is the message |
-| `bash <<'EOF' … EOF`, `cat <<'EOF' \| bash` | 🚫 Checked as commands: a shell runs that text |
+| `cat > f <<'EOF' …`, `python3 - <<'EOF' …`, `gh pr create --body "$(cat <<'EOF' …)"`, even with an odd quote or a line that mentions `git commit --no-verify` | ✅ Pass: the heredoc only feeds a reader, so it is text |
+| ``git commit -m "$(cat <<'EOF' … EOF)"`` | ✅ Passes: Claude's usual commit form |
 
 A command the guard cannot read, such as an unterminated quote, is denied with that reason, so a parse failure never lets a bypass through.
 
@@ -131,9 +135,9 @@ A command the guard cannot read, such as an unterminated quote, is denied with t
 
 | Access | What the plugin does |
 | :-- | :-- |
-| Read | The Bash command Claude is about to run, which Claude Code passes to the hook. Nothing else |
+| Read | The command Claude is about to run, which Claude Code passes to the hook. To resolve an alias it runs `git config --get alias.<name>` in the call's folder, which only reads |
 | Write | None |
-| Process | Starts `python3` to run its own script. It never runs, changes or re-runs your command |
+| Process | `jq` to read the payload, and the read-only `git config` above. It never runs, changes or re-runs your command |
 | Network | None |
 | Credentials | None |
 
@@ -144,11 +148,12 @@ The guard is a barrier for Claude, not a security boundary. Claude Code's own do
 | Limitation | What you see | What to do |
 | :-- | :-- | :-- |
 | It only sees commands Claude runs | A bypass you type in your own terminal runs | Nothing: that is your decision |
-| Other ways to skip hooks are not checked: `-c core.hooksPath=…`, switches such as `HUSKY=0`, git aliases, scripts that run git, and a command built from variables or command substitution | The command runs | Protect what must hold with CI and branch protection |
-| Only the Bash tool is guarded. The PowerShell tool, if you turn it on with `CLAUDE_CODE_USE_POWERSHELL_TOOL=1`, is not | Its commands run unchecked | Leave the PowerShell tool off, or deny what you care about with a `PowerShell(...)` [permission rule](https://code.claude.com/docs/en/permissions#powershell) |
+| Some spellings are not read: comma brace lists (`{git,} commit -n`, `git commit --{no-verify,message=x}`), `bash -c -- '…'` and `bash -c -e '…'` with options between `-c` and the script, `xargs git` fed by a heredoc, and `source <(…)` | The command runs | Protect what must hold with CI and branch protection |
+| Values that come from outside the command: functions, earlier exports and scripts run from files | The command runs | Same |
 | Your organization can turn hooks off with `allowManagedHooksOnly`, or you with `disableAllHooks` | The guard does nothing | Check `/plugin` and your settings |
-| No Python 3.9 or later on `PATH` | Every Bash command shows a notice that the guard is inactive; nothing is blocked | Install Python (see [Requirements](#-requirements)) and run `/reload-plugins` |
-| The guard itself fails after Python starts | Claude Code blocks the Bash command and shows the error | Run `/reload-plugins`; if it keeps failing, [report it](#-found-a-problem) |
+| No `jq` on `PATH` | A command that could involve git is denied with the message `jq is not installed`; every other command runs | Install `jq` (see [Requirements](#-requirements)) |
+| A command too large to analyze within the hook's time that mentions a bypass | It is denied with that reason | Run smaller commands |
+| The guard itself fails | Claude Code blocks the command and shows the error | Run `/reload-plugins`; if it keeps failing, [report it](#-found-a-problem) |
 | In a Claude app chat conversation hooks do not run | No guard | Use a Cowork session or Claude Code |
 
 ## 🔄 Updating
@@ -196,9 +201,9 @@ In a scratch repository, ask Claude to run `git commit --no-verify -m test`. It 
 </details>
 
 <details>
-<summary><b>A command with a quoted message was denied. Why?</b></summary>
+<summary><b>A harmless command was denied. Why?</b></summary>
 
-A message in quotes, a `-m "$(cat <<'EOF' …)"` heredoc and `-F -` with a quoted heredoc all pass. A command the guard cannot read is denied with the reason `could not inspect this command`: an unterminated quote is the usual cause. An unquoted heredoc (`<<EOF`) is checked line by line, because the shell expands `$(…)` inside it. If a harmless command is denied, [report it](#-found-a-problem) with the command.
+A message in quotes, a heredoc that only writes text and Claude's `git commit -m "$(cat <<'EOF' …)"` all pass. A command the guard cannot read is denied with the reason: an unterminated quote is the usual cause. If a harmless command is denied, [report it](#-found-a-problem) with the command.
 
 </details>
 
@@ -212,21 +217,21 @@ Run the command yourself in your terminal: the guard only watches Claude. To tur
 <details>
 <summary><b>Does it block <code>git push --force</code>?</b></summary>
 
-No. It only blocks what skips commit hooks or signing: `--no-verify`, `--no-gpg-sign`, `-n` on `commit` and `am`, and a false `commit.gpgsign` or `tag.gpgsign`.
+No. It only blocks what skips commit hooks or signing: `--no-verify`, `--no-gpg-sign`, `-n` on `commit` and `am`, and a false signing setting or a hooks setting that points away from your repository.
 
 </details>
 
 <details>
 <summary><b>Does it slow Claude down?</b></summary>
 
-By about 40 ms per Bash command, measured on an Apple M4 with Python 3.15: 36 ms at the median and under 42 ms for 95 of 100. Almost all of it is Python starting up; reading the command takes a few microseconds.
+By about 30 ms per Bash command: Claude Code logged 26 to 39 ms for the hook inside a live session. A command that has nothing to do with git or hooks is let through before any parsing.
 
 </details>
 
 <details>
-<summary><b>Every Bash command shows "block-no-verify is inactive".</b></summary>
+<summary><b>The message says "jq is not installed".</b></summary>
 
-Python 3.9 or later is missing or not on `PATH`. Install it (see [Requirements](#-requirements)), then run `/reload-plugins`. Until then nothing is blocked.
+The guard needs `jq` to read Claude's command. Install it (see [Requirements](#-requirements)); until then it denies commands that could involve git and lets the others run.
 
 </details>
 
