@@ -9,7 +9,7 @@
 1. `gh run list --workflow release.yml --branch main --limit 1` - Run to read the release run that follows the merge.
 2. `gh release view <plugin>--v<version>` - Run to confirm the tag and the GitHub Release exist.
 3. `gh workflow run release.yml` - Run only when Validate passed and no release run exists.
-4. For each fixed issue: comment with the *Released* reply from `.claude/templates/issue-replies.md`, label it `status: released` and close it.
+4. For each fixed issue: comment that the fix is released, label it `status: released` and close it.
 
 - If Validate failed, fix the cause first. Release only after it passes.
 - Never tag by hand.

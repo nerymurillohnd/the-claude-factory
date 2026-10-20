@@ -52,7 +52,7 @@ This project carries one item of the global North Star: multiply execution capac
 - `.claude/session-handoff/`: session handoffs.
 - `.claude/specs/`: design specs.
 - `.claude/plans/`: implementation plans.
-- `.claude/templates/`: templates for plugin files, the root README and issue replies.
+- `.claude/templates/`: templates for plugin files and the root README.
 - `.claude/rules/QUALITY_GATE.md`: per-file and pre-push checks.
 - `.claude/rules/GITHUB_GATE.md`: PRs, labels, commits, pushes.
 - `.claude/rules/MAINTENANCE_GATE.md`: docs kept in sync.
