@@ -55,7 +55,7 @@ Chosen option: **no floor**, because plugins must run on whatever `python3` the 
 | What must be true | How it is checked | Result | When to re-check |
 | --- | --- | --- | --- |
 | mypy, basedpyright, ruff and the plugin Python tests pass without the floor | The pre-push gates run on Python 3.15 | Passed locally on 2026-10-20: mypy, basedpyright, ruff and 13 skill-diagnostics tests | At each Python release the maintainers adopt |
-| The `python` job passes on ubuntu, macOS and Windows on the newest Python | `Validate` dispatched on branch `ci/drop-python-version-tests` (run 39491973331) | Pending | When the run ends |
+| The `python` job passes on ubuntu, macOS and Windows on the newest Python | `Validate` dispatched on branch `ci/drop-python-version-tests` (run 39491973331) | Not completed: ubuntu passed, the run was cancelled and the job retired (ADR_2026-10-20_retire-cross-os-python-ci-job) | Not applicable |
 | The plugin READMEs and docstrings that say "Python 3.9 or later" stay accurate without a check | Stated by Nery on 2026-10-20: no Python below 3.9 is realistic, so the READMEs need no change | Accepted as is; no plugin file changes | If a plugin starts to need a newer minimum than 3.9 |
 
 ## More information
