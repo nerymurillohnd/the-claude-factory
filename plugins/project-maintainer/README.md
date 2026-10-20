@@ -100,7 +100,7 @@ In the desktop app's **Code** tab you can also click **+** → **Plugins** → *
 </details>
 
 > [!NOTE]
-> New to this marketplace? The [installation guide](../../docs/installation.md) covers every surface step by step. Already use the separate Session Handoff plugin? This plugin includes it. Turn the separate one off, or you get the start-of-session reminder twice.
+> New to this marketplace? The [installation guide](../../docs/installation.md) covers every surface step by step. Used the Session Handoff plugin? This plugin replaces it, and the marketplace renames an existing install for you. Its handoffs in `.claude/session-handoff/` keep working. If you installed Session Handoff from another source, turn it off, or you get the start-of-session reminder twice.
 
 ## 🚀 Usage
 
