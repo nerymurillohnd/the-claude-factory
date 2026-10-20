@@ -6,7 +6,7 @@ import { join } from 'node:path'
 import { loadManifest, pluginDir } from './lib.mjs'
 
 /** @typedef {'skills' | 'commands' | 'agents' | 'hooks' | 'mcp' | 'lsp' | 'outputStyles' | 'monitors' | 'workflows' | 'themes' | 'bin'} ComponentId */
-/** @typedef {{ id: ComponentId, emoji: string, label: string, row: string, claudeCodeOnly: boolean }} ComponentType */
+/** @typedef {{ id: ComponentId, emoji: string, label: string, row: string }} ComponentType */
 /** @typedef {Partial<Record<ComponentId, number>>} Components */
 
 /**
@@ -14,23 +14,30 @@ import { loadManifest, pluginDir } from './lib.mjs'
  * @type {ComponentType[]}
  */
 export const COMPONENT_TYPES = [
-  { id: 'skills', emoji: '🎯', label: 'Skills', row: 'Skills', claudeCodeOnly: false },
-  { id: 'commands', emoji: '⌨️', label: 'Commands', row: 'Commands', claudeCodeOnly: false },
-  { id: 'agents', emoji: '🤖', label: 'Agents', row: 'Agents', claudeCodeOnly: false },
-  { id: 'hooks', emoji: '🪝', label: 'Hooks', row: 'Hooks', claudeCodeOnly: false },
-  { id: 'mcp', emoji: '🔌', label: 'MCP', row: 'MCP server', claudeCodeOnly: false },
-  { id: 'lsp', emoji: '🧠', label: 'LSP', row: 'LSP', claudeCodeOnly: true },
-  {
-    id: 'outputStyles',
-    emoji: '🎨',
-    label: 'Output styles',
-    row: 'Output styles',
-    claudeCodeOnly: true,
-  },
-  { id: 'monitors', emoji: '📡', label: 'Monitors', row: 'Monitors', claudeCodeOnly: true },
-  { id: 'workflows', emoji: '🔁', label: 'Workflows', row: 'Workflows', claudeCodeOnly: true },
-  { id: 'themes', emoji: '🌈', label: 'Themes', row: 'Themes', claudeCodeOnly: true },
-  { id: 'bin', emoji: '⚙️', label: 'Executables', row: 'Executables', claudeCodeOnly: true },
+  { id: 'skills', emoji: '🎯', label: 'Skills', row: 'Skills' },
+  { id: 'commands', emoji: '⌨️', label: 'Commands', row: 'Commands' },
+  { id: 'agents', emoji: '🤖', label: 'Agents', row: 'Agents' },
+  { id: 'hooks', emoji: '🪝', label: 'Hooks', row: 'Hooks' },
+  { id: 'mcp', emoji: '🔌', label: 'MCP', row: 'MCP server' },
+  { id: 'lsp', emoji: '🧠', label: 'LSP', row: 'LSP' },
+  { id: 'outputStyles', emoji: '🎨', label: 'Output styles', row: 'Output styles' },
+  { id: 'monitors', emoji: '📡', label: 'Monitors', row: 'Monitors' },
+  { id: 'workflows', emoji: '🔁', label: 'Workflows', row: 'Workflows' },
+  { id: 'themes', emoji: '🌈', label: 'Themes', row: 'Themes' },
+  { id: 'bin', emoji: '⚙️', label: 'Executables', row: 'Executables' },
+]
+
+/**
+ * Component types counted from the files of one folder: [id, folder, which file names count].
+ * @type {[ComponentId, string, (file: string) => boolean][]}
+ */
+const FOLDER_COMPONENTS = [
+  ['commands', 'commands', (f) => f.endsWith('.md')],
+  ['agents', 'agents', (f) => f.endsWith('.md')],
+  ['outputStyles', 'output-styles', (f) => f.endsWith('.md')],
+  ['workflows', 'workflows', (f) => f.endsWith('.js')],
+  ['themes', 'themes', (f) => f.endsWith('.json')],
+  ['bin', 'bin', () => true],
 ]
 
 /**
@@ -80,37 +87,16 @@ export function detectComponents(name) {
     countFiles(join(dir, 'skills'), (f) => f === 'SKILL.md') +
       (existsSync(join(dir, 'SKILL.md')) ? 1 : 0),
   )
-  set(
-    'commands',
-    countFiles(join(dir, 'commands'), (f) => f.endsWith('.md')),
-  )
-  set(
-    'agents',
-    countFiles(join(dir, 'agents'), (f) => f.endsWith('.md')),
-  )
   set('hooks', existsSync(join(dir, 'hooks', 'hooks.json')) || manifest.hooks ? 1 : 0)
   set('mcp', existsSync(join(dir, '.mcp.json')) || manifest.mcpServers ? 1 : 0)
   set('lsp', existsSync(join(dir, '.lsp.json')) || manifest.lspServers ? 1 : 0)
   set(
-    'outputStyles',
-    countFiles(join(dir, 'output-styles'), (f) => f.endsWith('.md')),
-  )
-  set(
     'monitors',
     existsSync(join(dir, 'monitors', 'monitors.json')) || manifest.experimental?.monitors ? 1 : 0,
   )
-  set(
-    'workflows',
-    countFiles(join(dir, 'workflows'), (f) => f.endsWith('.js')),
-  )
-  set(
-    'themes',
-    countFiles(join(dir, 'themes'), (f) => f.endsWith('.json')),
-  )
-  set(
-    'bin',
-    countFiles(join(dir, 'bin'), () => true),
-  )
+  for (const [id, folder, counts] of FOLDER_COMPONENTS) {
+    set(id, countFiles(join(dir, folder), counts))
+  }
   return found
 }
 

@@ -323,8 +323,9 @@ export function checkRepo() {
       }
     }
 
-    if (existsSync(join(dir, 'README.md'))) {
-      const readme = readText(join(dir, 'README.md'))
+    const readmePath = join(dir, 'README.md')
+    const readme = existsSync(readmePath) ? readText(readmePath) : null
+    if (readme !== null) {
       const headings = [...readme.matchAll(/^## (.+)$/gm)].map((m) => m[1] ?? '')
       for (const section of REQUIRED_PLUGIN_SECTIONS) {
         if (!headings.some((h) => h.includes(section))) {
@@ -372,8 +373,7 @@ export function checkRepo() {
           'ships a top-level bin/, which makes the Claude app refuse the plugin — declare metadata.surfaces ["claude-code"] or move the code into a skill\'s scripts/',
         )
       }
-      if (existsSync(join(dir, 'README.md'))) {
-        const readme = readText(join(dir, 'README.md'))
+      if (readme !== null) {
         const profile = SURFACE_PROFILES[profileKey]
         if (!readme.includes(`works%20in-${profile.badge}-`)) {
           err(
