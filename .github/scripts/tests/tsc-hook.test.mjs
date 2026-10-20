@@ -27,6 +27,29 @@ const HAVE_TSC = spawnSync('sh', ['-c', 'command -v tsc']).status === 0
 const { CI } = process.env
 const IN_CI = CI === 'true'
 const STRICT = '{ "compilerOptions": { "strict": true } }'
+
+/**
+ * A git runner for one repository, with signing off and a fixed identity so a commit works anywhere.
+ * @param {string} repo
+ */
+const gitIn =
+  (repo) =>
+  (/** @type {string[]} */ ...args) =>
+    spawnSync(
+      'git',
+      [
+        '-C',
+        repo,
+        '-c',
+        'commit.gpgsign=false',
+        '-c',
+        'user.name=t',
+        '-c',
+        'user.email=t@t',
+        ...args,
+      ],
+      { encoding: 'utf8' },
+    )
 const TYPE_ERROR = 'export const x: number = "s";\n'
 
 /**
@@ -196,9 +219,7 @@ describe('typescript lsp hook', () => {
       const plugin = join(ws.root, 'plugin')
       cpSync(PLUGIN, plugin, { recursive: true })
       const policy = join(plugin, 'hooks', 'tsconfig.strictest.json')
-      const minified = JSON.stringify(
-        JSON.parse(spawnSync('cat', [policy], { encoding: 'utf8' }).stdout),
-      )
+      const minified = JSON.stringify(JSON.parse(readFileSync(policy, 'utf8')))
       writeFileSync(policy, minified)
       ws.write('m/tsconfig.json', '{ "compilerOptions": { "strict": false } }')
       const file = ws.write('m/a.ts', 'export function f(a) { return a }\n')
@@ -272,24 +293,7 @@ describe('typescript lsp hook', () => {
     test('a file the command staged is found without a diff', () => {
       const repo = join(ws.root, 'repo')
       mkdirSync(repo)
-      const git = (/** @type {string[]} */ ...args) =>
-        spawnSync(
-          'git',
-          [
-            '-C',
-            repo,
-            '-c',
-            'commit.gpgsign=false',
-            '-c',
-            'user.name=t',
-            '-c',
-            'user.email=t@t',
-            ...args,
-          ],
-          {
-            encoding: 'utf8',
-          },
-        )
+      const git = gitIn(repo)
       git('init', '-q')
       ws.write('repo/tsconfig.json', STRICT)
       git('add', '.')
@@ -308,22 +312,7 @@ describe('typescript lsp hook', () => {
     test('a non-ASCII file name from git is found, not skipped as a quoted path', () => {
       const repo = join(ws.root, 'repo-utf8')
       mkdirSync(repo)
-      const git = (/** @type {string[]} */ ...args) =>
-        spawnSync(
-          'git',
-          [
-            '-C',
-            repo,
-            '-c',
-            'commit.gpgsign=false',
-            '-c',
-            'user.name=t',
-            '-c',
-            'user.email=t@t',
-            ...args,
-          ],
-          { encoding: 'utf8' },
-        )
+      const git = gitIn(repo)
       git('init', '-q')
       ws.write('repo-utf8/tsconfig.json', STRICT)
       git('add', '.')

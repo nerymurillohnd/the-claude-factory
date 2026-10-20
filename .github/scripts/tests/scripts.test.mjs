@@ -20,6 +20,9 @@ import { tmpdir } from 'node:os'
 import { dirname, join, resolve, sep } from 'node:path'
 import { afterEach, beforeEach, describe, test } from 'node:test'
 import { fileURLToPath } from 'node:url'
+import { anchor } from '../catalog.mjs'
+import { lspConfigProblems, portabilityProblems } from '../check-repo.mjs'
+import { changelogSection } from '../lib.mjs'
 
 const REAL_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..', '..')
 /** @type {string} */
@@ -58,8 +61,8 @@ function copyRepo() {
   return dir
 }
 
-/** Run a script from the temp copy, so its own lib.mjs resolves ROOT to the temp copy. */
 /**
+ * Run a script from the temp copy, so its own lib.mjs resolves ROOT to the temp copy.
  * @param {string} script
  * @param {string[]} [args]
  * @returns {{ code: number | null, out: string }}
@@ -82,6 +85,24 @@ const read = (p) => readFileSync(join(root, p), 'utf8')
 const write = (p, s) => writeFileSync(join(root, p), s)
 /** @param {string} p */
 const json = (p) => JSON.parse(read(p))
+
+/** @param {...string} args */
+const git = (...args) => execFileSync('git', args, { cwd: root, encoding: 'utf8' })
+
+/**
+ * Make the temp copy a git repository with one commit of everything in it.
+ * @param {boolean} [withOrigin] also point refs/remotes/origin/main at that commit
+ */
+function initRepo(withOrigin = false) {
+  git('init', '-q', '-b', 'main')
+  git('config', 'user.email', 'test@example.com')
+  git('config', 'user.name', 'Test')
+  git('add', '-A')
+  git('commit', '-qm', 'base')
+  if (withOrigin) {
+    git('update-ref', 'refs/remotes/origin/main', 'HEAD')
+  }
+}
 
 /**
  * @param {string} [name]
@@ -135,6 +156,12 @@ function resolveTodos(name = 'demo-tool') {
   assert.equal(run('catalog.mjs').code, 0)
 }
 
+/** Scaffold the default plugin and finish it, so check-repo.mjs has nothing left to flag. */
+function scaffoldReady() {
+  scaffold()
+  resolveTodos()
+}
+
 beforeEach(() => {
   root = copyRepo()
 })
@@ -176,8 +203,7 @@ describe('check-repo', () => {
   })
 
   test('flags a version on the marketplace entry', () => {
-    scaffold()
-    resolveTodos()
+    scaffoldReady()
     const mp = json('.claude-plugin/marketplace.json')
     mp.plugins[0].version = '9.9.9'
     write('.claude-plugin/marketplace.json', `${JSON.stringify(mp, null, 2)}\n`)
@@ -187,8 +213,7 @@ describe('check-repo', () => {
   })
 
   test('flags a manifest name that differs from the entry name', () => {
-    scaffold()
-    resolveTodos()
+    scaffoldReady()
     const p = 'plugins/demo-tool/.claude-plugin/plugin.json'
     write(p, read(p).replace('"name": "demo-tool"', '"name": "other"'))
     const r = run('check-repo.mjs')
@@ -197,8 +222,7 @@ describe('check-repo', () => {
   })
 
   test('flags a missing required README section', () => {
-    scaffold()
-    resolveTodos()
+    scaffoldReady()
     const p = 'plugins/demo-tool/README.md'
     write(p, read(p).replace(/^## 🧭 Compatibility$/m, '## Platforms'))
     const r = run('check-repo.mjs')
@@ -207,8 +231,7 @@ describe('check-repo', () => {
   })
 
   test('requires a valid metadata.surfaces declaration', () => {
-    scaffold()
-    resolveTodos()
+    scaffoldReady()
     const p = 'plugins/demo-tool/.claude-plugin/plugin.json'
     const m = json(p)
     m.metadata.surfaces = ['claude-app']
@@ -219,8 +242,7 @@ describe('check-repo', () => {
   })
 
   test('rejects the retired cowork surface value', () => {
-    scaffold()
-    resolveTodos()
+    scaffoldReady()
     const p = 'plugins/demo-tool/.claude-plugin/plugin.json'
     const m = json(p)
     assert.deepEqual(m.metadata.surfaces, ['claude-code', 'claude-app'])
@@ -236,8 +258,7 @@ describe('check-repo', () => {
   })
 
   test('a bin/ plugin must be declared Claude Code-only', () => {
-    scaffold()
-    resolveTodos()
+    scaffoldReady()
     mkdirSync(join(root, 'plugins/demo-tool/bin'), { recursive: true })
     write('plugins/demo-tool/bin/tool', '#!/bin/sh\necho hi\n')
     const r = run('check-repo.mjs')
@@ -264,8 +285,7 @@ describe('check-repo', () => {
   })
 
   test('flags Compatibility rows for components the plugin does not ship', () => {
-    scaffold()
-    resolveTodos()
+    scaffoldReady()
     const p = 'plugins/demo-tool/README.md'
     write(p, read(p).replace('| 🎯 Skills |', '| 🤖 Agents | ✅ | ⚠️ |\n| 🎯 Skills |'))
     const r = run('check-repo.mjs')
@@ -274,8 +294,7 @@ describe('check-repo', () => {
   })
 
   test('flags system files, symlinks and oversized files in a plugin', () => {
-    scaffold()
-    resolveTodos()
+    scaffoldReady()
     write('plugins/demo-tool/.DS_Store', 'x')
     write('plugins/demo-tool/skills/big.md', 'a'.repeat(300 * 1024))
     symlinkSync('../README.md', join(root, 'plugins/demo-tool/skills/link.md'))
@@ -303,8 +322,7 @@ describe('check-repo', () => {
   })
 
   test('flags a stale README catalog', () => {
-    scaffold()
-    resolveTodos()
+    scaffoldReady()
     write('README.md', read('README.md').replace(/demo-tool@the-claude-factory/, 'stale'))
     const r = run('check-repo.mjs')
     assert.equal(r.code, 1)
@@ -413,8 +431,7 @@ describe('bump-version', () => {
   })
 
   test('release-notes prints a plugin tag and refuses the marketplace', () => {
-    scaffold()
-    resolveTodos()
+    scaffoldReady()
     const tag = run('release-notes.mjs', ['demo-tool', '--tag'])
     assert.equal(tag.code, 0, tag.out)
     assert.equal(tag.out.trim(), 'demo-tool--v0.1.0')
@@ -423,16 +440,6 @@ describe('bump-version', () => {
 })
 
 describe('check-version-bump', () => {
-  /** @param {...string} args */
-  const git = (...args) => execFileSync('git', args, { cwd: root, encoding: 'utf8' })
-  function initRepo() {
-    git('init', '-q', '-b', 'main')
-    git('config', 'user.email', 'test@example.com')
-    git('config', 'user.name', 'Test')
-    git('add', '-A')
-    git('commit', '-qm', 'base')
-  }
-
   test('fails when shipped files change without a bump, passes after bumping', () => {
     scaffold()
     initRepo()
@@ -495,19 +502,6 @@ describe('version-bump-gate hook', () => {
   }
   const hook = (command = 'git push origin feat/demo') =>
     hookWith(JSON.stringify({ tool_name: 'Bash', tool_input: { command } }))
-  /** @param {...string} args */
-  /** @param {...string} args */
-  const git = (...args) => execFileSync('git', args, { cwd: root, encoding: 'utf8' })
-  function initRepo(withOrigin = true) {
-    git('init', '-q', '-b', 'main')
-    git('config', 'user.email', 'test@example.com')
-    git('config', 'user.name', 'Test')
-    git('add', '-A')
-    git('commit', '-qm', 'base')
-    if (withOrigin) {
-      git('update-ref', 'refs/remotes/origin/main', 'HEAD')
-    }
-  }
   function addSkill() {
     mkdirSync(join(root, 'plugins/demo-tool/skills/demo'), { recursive: true })
     write('plugins/demo-tool/skills/demo/SKILL.md', '---\ndescription: Demo.\n---\nDo it.\n')
@@ -517,7 +511,7 @@ describe('version-bump-gate hook', () => {
 
   test('denies the push while a changed plugin has no version bump', () => {
     scaffold()
-    initRepo()
+    initRepo(true)
     addSkill()
     const r = hook()
     assert.equal(r.code, 0, r.out)
@@ -530,7 +524,7 @@ describe('version-bump-gate hook', () => {
 
   test('lets the push through once the plugin is bumped', () => {
     scaffold()
-    initRepo()
+    initRepo(true)
     addSkill()
     const p = 'plugins/demo-tool/CHANGELOG.md'
     write(
@@ -547,7 +541,7 @@ describe('version-bump-gate hook', () => {
 
   test('lets the push through for README-only edits', () => {
     scaffold()
-    initRepo()
+    initRepo(true)
     write('plugins/demo-tool/README.md', `${read('plugins/demo-tool/README.md')}\nMore docs.\n`)
     git('commit', '-qam', 'docs')
     const r = hook()
@@ -557,7 +551,7 @@ describe('version-bump-gate hook', () => {
 
   test('denies every spelling of a push and only a push', () => {
     scaffold()
-    initRepo()
+    initRepo(true)
     addSkill()
     const denied = [
       'git push',
@@ -584,7 +578,7 @@ describe('version-bump-gate hook', () => {
 
   test('lets the push through when origin/main does not exist', () => {
     scaffold()
-    initRepo(false)
+    initRepo()
     addSkill()
     const r = hook()
     assert.equal(r.code, 0, r.out)
@@ -593,8 +587,6 @@ describe('version-bump-gate hook', () => {
 })
 
 describe('eval-targets', () => {
-  /** @param {...string} args */
-  const git = (...args) => execFileSync('git', args, { cwd: root, encoding: 'utf8' })
   /** @param {string} name */
   const touchManifest = (name) => {
     const p = `plugins/${name}/.claude-plugin/plugin.json`
@@ -604,12 +596,6 @@ describe('eval-targets', () => {
   function commitAll(message) {
     git('add', '-A')
     git('commit', '-qm', message)
-  }
-  function initRepo() {
-    git('init', '-q', '-b', 'main')
-    git('config', 'user.email', 'test@example.com')
-    git('config', 'user.name', 'Test')
-    commitAll('base')
   }
   const changed = () => run('eval-targets.mjs', ['--changed', 'HEAD~1', 'HEAD'])
 
@@ -674,8 +660,7 @@ describe('portability rules', () => {
    */
   const entry = (path, size = 10, symlink = false) => ({ path, size, symlink })
 
-  test('flag names Windows or macOS cannot hold, and case-only duplicates', async () => {
-    const { portabilityProblems } = await import(join(REAL_ROOT, '.github/scripts/check-repo.mjs'))
+  test('flag names Windows or macOS cannot hold, and case-only duplicates', () => {
     const problems = portabilityProblems([
       entry('a:b.md'),
       entry('notes.'),
@@ -698,8 +683,7 @@ describe('portability rules', () => {
     assert.match(both, /"a:b" in __MACOSX\/a:b is not a valid file name on Windows/)
   })
 
-  test('size limit spares images and fonts; file count is capped at 512', async () => {
-    const { portabilityProblems } = await import(join(REAL_ROOT, '.github/scripts/check-repo.mjs'))
+  test('size limit spares images and fonts; file count is capped at 512', () => {
     const big = 300 * 1024
     assert.deepEqual(portabilityProblems([entry('logo.png', big), entry('font.woff2', big)]), [])
     assert.equal(portabilityProblems([entry('data.json', big)]).length, 1)
@@ -710,8 +694,7 @@ describe('portability rules', () => {
 })
 
 describe('lsp config rules', () => {
-  test('accept a valid config and flag unknown keys, missing fields and invalid values', async () => {
-    const { lspConfigProblems } = await import(join(REAL_ROOT, '.github/scripts/check-repo.mjs'))
+  test('accept a valid config and flag unknown keys, missing fields and invalid values', () => {
     assert.deepEqual(
       lspConfigProblems({
         svelte: {
@@ -737,8 +720,7 @@ describe('lsp config rules', () => {
 })
 
 describe('lib', () => {
-  test('changelogSection extracts one version body', async () => {
-    const { changelogSection } = await import(join(REAL_ROOT, '.github/scripts/lib.mjs'))
+  test('changelogSection extracts one version body', () => {
     const text =
       '# C\n\n## [Unreleased]\n\n## [1.1.0] - 2026-01-02\n\n- b\n\n## [1.0.0] - 2026-01-01\n\n- a\n\n[1.1.0]: x\n'
     assert.equal(changelogSection(text, '1.1.0'), '- b')
@@ -746,8 +728,7 @@ describe('lib', () => {
     assert.equal(changelogSection(text, '2.0.0'), null)
   })
 
-  test('anchor matches GitHub heading slugs, keeping emoji variation selectors', async () => {
-    const { anchor } = await import(join(REAL_ROOT, '.github/scripts/catalog.mjs'))
+  test('anchor matches GitHub heading slugs, keeping emoji variation selectors', () => {
     assert.equal(anchor('⚡ Productivity'), '-productivity')
     assert.equal(anchor('🛠️ Development'), '️-development')
     assert.equal(anchor('🧪 Testing & Quality'), '-testing--quality')
