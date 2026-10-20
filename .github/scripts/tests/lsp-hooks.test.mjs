@@ -27,8 +27,6 @@ const MS_PER_S = 1000
 const REPORT_CEILING = 9100
 const MANY = 23
 const UNCHECKED = 3
-const SKILL_HINT =
-  'Use the bash-lsp-intelligence:bash-lsp-intelligence skill and apply all its knowledge when working on shell scripts.'
 
 /**
  * @param {string} tool
@@ -129,9 +127,7 @@ describe('bash-lsp-intelligence hook', () => {
     const zsh = ws.write('z.sh', '#!/usr/bin/env zsh\necho hi\n')
     const r = fire(BASH_HOOK, event('Edit', zsh), { cwd: ws.project, env: ws.env })
     assert.equal(r.code, 0)
-    const { additionalContext } = JSON.parse(r.out).hookSpecificOutput
-    assert.match(additionalContext, /zsh/)
-    assert.ok(additionalContext.endsWith(SKILL_HINT))
+    assert.match(JSON.parse(r.out).hookSpecificOutput.additionalContext, /zsh/)
   })
 
   test('missing shfmt is reported with its install command', () => {
@@ -145,7 +141,6 @@ describe('bash-lsp-intelligence hook', () => {
     assert.equal(r.code, 2)
     assert.match(r.err, /shfmt is not installed/)
     assert.match(r.err, /brew install shfmt/)
-    assert.ok(r.err.endsWith(`${SKILL_HINT}\n`))
   })
 
   describe('with shfmt and shellcheck', { skip: !HAVE_SHELL_TOOLS }, () => {
@@ -161,16 +156,13 @@ describe('bash-lsp-intelligence hook', () => {
         JSON.parse(r.out).systemMessage,
         /bash-lsp-intelligence: shfmt, shellcheck passed · clean\.sh/,
       )
-      assert.doesNotMatch(r.out, /apply all its knowledge/)
     })
 
     test('default style is two spaces when no editorconfig exists', () => {
       const sh = ws.write('fmt.sh', '#!/usr/bin/env bash\nif true; then\n\techo a\nfi\n')
       const r = fire(BASH_HOOK, event('Write', sh), { cwd: ws.project, env: ws.env })
       assert.equal(r.code, 0)
-      const { additionalContext } = JSON.parse(r.out).hookSpecificOutput
-      assert.match(additionalContext, /re-read/)
-      assert.ok(additionalContext.endsWith(SKILL_HINT))
+      assert.match(JSON.parse(r.out).hookSpecificOutput.additionalContext, /re-read/)
       assert.equal(readFileSync(sh, 'utf8'), '#!/usr/bin/env bash\nif true; then\n  echo a\nfi\n')
     })
 
@@ -189,16 +181,6 @@ describe('bash-lsp-intelligence hook', () => {
       assert.match(r.err, /SC2086/)
       assert.match(r.err, /SC2250/)
       assert.match(r.err, /Fix these findings in bad\.sh/)
-      assert.ok(r.err.endsWith(`${SKILL_HINT}\n`))
-    })
-
-    test('findings after a failed Bash call name the skill too', () => {
-      const sh = ws.write('bad.sh', '#!/usr/bin/env bash\nx="a b"\necho $x\n')
-      const payload = bashEvent([sh], { hook_event_name: 'PostToolUseFailure' })
-      const r = fire(BASH_HOOK, payload, { cwd: ws.project, env: ws.env })
-      assert.equal(r.code, 2)
-      assert.match(r.err, /SC2086/)
-      assert.ok(r.err.endsWith(`${SKILL_HINT}\n`))
     })
 
     test('a user shellcheckrc replaces the defaults', () => {
@@ -266,7 +248,6 @@ describe('bash-lsp-intelligence hook', () => {
       assert.equal(r.code, 2)
       assert.ok(r.err.length <= REPORT_CEILING)
       assert.match(r.err, /more lines/)
-      assert.ok(r.err.endsWith(`${SKILL_HINT}\n`))
     })
   })
 })
