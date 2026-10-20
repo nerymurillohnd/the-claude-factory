@@ -390,6 +390,79 @@ class ShellTests(HookCase):
                 self.assert_allowed(command)
 
 
+class HeredocTests(HookCase):
+    """A quoted heredoc is data when it feeds a plain git commit or tag, and code otherwise."""
+
+    def test_claudes_own_commit_form_passes(self) -> None:
+        """Break caught: every commit whose message mentions a flag, or holds a quote, denied."""
+        body = "feat: add the guard\n\nMentions --no-verify and git commit -n here.\n"
+        self.assert_allowed("git commit -m \"$(cat <<'EOF'\n" + body + 'EOF\n)"')
+        odd = "fix: a 5\" pipe, don't panic\ngit commit --no-verify is blocked\n"
+        chained = "git add -A && git commit -m \"$(cat <<'EOF'\n" + odd + 'EOF\n)"'
+        self.assert_allowed(chained)
+        self.assert_allowed("git status\n" + chained + "\ngit log --oneline")
+
+    def test_a_message_read_from_a_quoted_heredoc_passes(self) -> None:
+        """Break caught: body lines that start with git read as commands."""
+        commands = (
+            (
+                "git commit -F - <<'EOF'\nfix: explain --no-verify\n\n"
+                "git commit --no-verify is blocked\nEOF"
+            ),
+            'git commit -F - <<"EOF"\ngit commit -n\nEOF',
+            "git tag -F - v1 <<'EOF'\ngit commit --no-verify\nEOF",
+            "git commit -F - <<-'EOF'\n\tgit commit --no-verify\n\tEOF",
+            "git commit -F - <<'EOF'\r\ngit commit --no-verify\r\nEOF\r\n",
+            "git commit -F - <<'EOF'\nmsg\nEOF\ngit status",
+            "git status; git commit -F - <<'EOF'\ngit commit --no-verify\nEOF",
+        )
+        for command in commands:
+            with self.subTest(command=command):
+                self.assert_allowed(command)
+
+    def test_a_flag_outside_the_message_is_still_denied(self) -> None:
+        """Break caught: dropping the body also dropping the git line, or what follows it."""
+        commands = (
+            "git commit --no-verify -F - <<'EOF'\nmsg\nEOF",
+            "git commit --no-verify -m \"$(cat <<'EOF'\nx\nEOF\n)\"",
+            "git commit -m \"$(cat <<'EOF'\nx\nEOF\n)\" --no-verify",
+            "git commit -F - <<'EOF'\nmsg\nEOF\ngit commit --no-verify -m y",
+            "git commit -F - <<'EOF'\nmsg\nEOF\ngit commit -n",
+        )
+        for command in commands:
+            with self.subTest(command=command):
+                self.assert_denied(command, "-n" if command.endswith("-n") else "--no-verify")
+
+    def test_a_heredoc_that_runs_as_code_is_checked(self) -> None:
+        """Break caught: a shell reading the heredoc as a script, which is the bypass route."""
+        commands = (
+            "bash <<'EOF'\ngit commit --no-verify\nEOF",
+            "sh <<'EOF'\ngit commit -n\nEOF",
+            "cat <<'EOF' | bash\ngit commit -n\nEOF",
+            "bash -c \"$(cat <<'EOF'\ngit commit --no-verify\nEOF\n)\"",
+            "eval \"$(cat <<'EOF'\ngit commit --no-verify\nEOF\n)\"",
+        )
+        for command in commands:
+            with self.subTest(command=command):
+                self.assert_denied(command)
+
+    def test_a_heredoc_that_is_not_plain_keeps_its_body_checked(self) -> None:
+        """Break caught: the four forms `claude-essentials` found, and an unquoted delimiter."""
+        commands = (
+            "git commit -F - # <<'EOF'\ngit commit --no-verify -m x\nEOF",  # marker in a comment
+            "git commit -m \"<<'EOF'\" -F -\ngit commit --no-verify -m x\nEOF",  # in a string
+            "git -c core.editor=true commit -F - <<'EOF'\ngit commit --no-verify -m x\nEOF",
+            "git commit -F - <<EOF\ngit commit --no-verify\nEOF",  # unquoted: $(...) would run
+            "git commit -F - <<'EOF'\ngit commit --no-verify\n",  # no closing delimiter
+            "git commit -F - <<'EOF' | cat\ngit commit --no-verify\nEOF",
+            # the first string ends before the bypass, which runs; the second holds the closing EOF
+            'echo "x\ngit commit -F - <<\'EOF\'\n" ; git commit --no-verify -m x ; echo "\nEOF\n"',
+        )
+        for command in commands:
+            with self.subTest(command=command):
+                self.assert_denied(command, "--no-verify")
+
+
 class ContractTests(HookCase):
     """What the hook prints and returns for payloads Claude Code or a caller could send."""
 

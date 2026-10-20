@@ -28,6 +28,11 @@ NO_VERIFY_SHORT = {"commit": frozenset("FmcCtUSu"), "am": frozenset("CpS")}
 ATTACHED_ONLY = frozenset("Su")  # the value must be attached (`-Skey`), never the next word
 MAX_DEPTH = 3  # shells inside shells (`bash -c`, `eval`) followed this far
 TOO_DEEP = f"nesting deeper than {MAX_DEPTH} levels (cannot inspect)"
+MESSAGE_COMMANDS = frozenset({"commit", "tag"})
+# A heredoc marker that ends its line, with a quoted delimiter: the shell does no expansion in it.
+HEREDOC_MARKER = re.compile(r"""<<(?P<dash>-?)\s*(?P<quote>['"])(?P<word>[^'"\s]+)(?P=quote)\s*$""")
+# `-m "$(cat` right before the marker: the heredoc is the commit message, built by cat.
+MESSAGE_SUBSTITUTION = re.compile(r"""(?:-m|--message)\s*=?\s*"\$\(\s*cat\s*$""")
 SHELLS = frozenset({"bash", "sh", "zsh", "dash", "ksh"})
 SHELL_VALUE_OPTIONS = frozenset({"-o", "+o", "-O", "+O", "--rcfile", "--init-file"})
 GLOBAL_VALUE_OPTIONS = frozenset(
@@ -394,9 +399,59 @@ def words_bypass(words: list[str], depth: int) -> str | None:
     return None
 
 
+def plain_message_command(before: str) -> bool:
+    """Return whether `before` ends in one plain git commit or tag that a heredoc can feed."""
+    try:
+        parts = split_subcommands(before)
+        words = strip_prefix(lex_words(parts[-1]))
+    except ValueError:
+        return False
+    if "#" in parts[-1] or not words or not is_git(words[0]):
+        return False
+    call = parse_git(words)
+    return call.subcommand in MESSAGE_COMMANDS and not any(
+        word.startswith(("-c", "--config")) for word in words[1:]
+    )
+
+
+def heredoc_end(lines: list[str], start: int, word: str, *, dash: bool) -> int | None:
+    """Return the index of the line that closes a heredoc, searching from `start`, or None."""
+    for index in range(start, len(lines)):
+        text = lines[index].rstrip("\r")
+        if (text.lstrip("\t") if dash else text) == word:
+            return index
+    return None
+
+
+def drop_heredoc_bodies(command: str) -> str:
+    """Remove the body of each quoted heredoc that feeds a plain git commit or tag.
+
+    That body is the commit message: text, not commands. A heredoc read by anything else (a
+    shell, a pipe) or opened with an unquoted delimiter, whose body the shell expands and runs,
+    keeps its body, and its lines are checked as commands.
+    """
+    lines = command.split("\n")
+    kept: list[str] = []
+    index = 0
+    while index < len(lines):
+        line = lines[index]
+        kept.append(line)
+        index += 1
+        marker = HEREDOC_MARKER.search(line)
+        if marker is None:
+            continue
+        before = MESSAGE_SUBSTITUTION.sub("", line[: marker.start()])
+        if not plain_message_command("\n".join([*kept[:-1], before])):
+            continue
+        end = heredoc_end(lines, index, marker.group("word"), dash=marker.group("dash") == "-")
+        if end is not None:
+            index = end + 1
+    return "\n".join(kept)
+
+
 def find_bypass(command: str, depth: int = 0) -> str | None:
     """Return the first Git bypass found in a command list, or None."""
-    for part in split_subcommands(command):
+    for part in split_subcommands(drop_heredoc_bodies(command)):
         words = strip_prefix(lex_words(part))
         if not words:
             continue
