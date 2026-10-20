@@ -19,6 +19,7 @@ description: Writes architecture decision records (ADRs) and keeps a technical-d
 - Record without asking permission. The user installed this plugin for that.
 - Ask only for facts you are missing.
 - Write only what is verified or what the user said.
+- Keep one source of truth. Never leave the same record in two places.
 
 ## Rules
 
@@ -40,7 +41,7 @@ description: Writes architecture decision records (ADRs) and keeps a technical-d
 - Never log a problem that can be fixed now. Fix it.
 - Never write a decision or a debt item into a README, changelog, code comment, commit message, task list or memory.
 - Never leave an unfilled placeholder or template instructions in an entry. A ledger keeps its reusable "Entry format" comment.
-- Never move a project's existing records.
+- Never move, overwrite or delete a project's existing records without the user's explicit OK.
 - Never use the plugin's install directory as a base.
 - Never use the session's project-directory variable (`CLAUDE_PROJECT_DIR`) as a base. In a worktree it still points at the main checkout, where edits are blocked.
 - Never relocate a record or widen permissions to get past a blocker.
@@ -49,6 +50,7 @@ description: Writes architecture decision records (ADRs) and keeps a technical-d
 ## References
 
 - [ADRs](references/adrs.md): read when you write, supersede or check a decision record. Template: [ADR template](assets/ADR_YYYY-MM-DD_decision-slug.md).
+- [Existing records](references/existing-records.md): read before you create the first folder of a kind, to find and migrate records the project already keeps elsewhere. Templates: [ADR template](assets/ADR_YYYY-MM-DD_decision-slug.md) and [pending debt](assets/pending-debt.md).
 - [Technical debt](references/technical-debt.md): read when you log, update or resolve a debt item. Templates: [pending debt](assets/pending-debt.md) and [resolved debt](assets/resolved-debt.md).
 
 ## Instructions
@@ -68,7 +70,23 @@ Below, `<decisions>` and `<debt>` stand for the two folders.
 
 Create a folder or ledger the first time it is needed. Installing the plugin creates nothing.
 
-### 2. Ask about git on first use
+### 2. Look for existing records
+
+Do this before you create the first folder of each kind. It keeps one source of truth.
+
+- Decisions: do it when `<decisions>` does not exist yet.
+- Debt and pending items: do it when `<debt>` does not exist yet.
+
+Then:
+
+1. Read [Existing records](references/existing-records.md).
+2. Find the project's own documents for that kind. Skip any folder you settled in step 1.
+3. Show the user what you found. Ask whether to consolidate and migrate it.
+4. Migrate only what the user approves, in step 4.
+
+In a non-interactive session, find and migrate nothing. Name what you found in your one-line note.
+
+### 3. Ask about git on first use
 
 Do this before you create the first records folder.
 
@@ -89,7 +107,15 @@ Then:
 
 In a non-interactive session, do not ask. Track the records, change nothing, and say so in your one-line note.
 
-### 3. Decide whether to record
+### 4. Migrate approved records
+
+Do this after step 3, only when the user approved a migration in step 2.
+
+1. Create the folders.
+2. Follow the migration steps in [Existing records](references/existing-records.md).
+3. Ask what to do with each original. Change nothing before the user answers.
+
+### 5. Decide whether to record
 
 Record a decision that:
 
@@ -104,7 +130,7 @@ Skip:
 - a small refactor that keeps behavior,
 - a choice an existing ADR already covers.
 
-### 4. Route the work
+### 6. Route the work
 
 1. An important decision is made, or the user asks for an ADR: read [ADRs](references/adrs.md), then write the record.
    - Several decisions? Ask how to register them first: [choose how to register](references/adrs.md#choose-how-to-register).
@@ -113,7 +139,7 @@ Skip:
 
 In a non-interactive session, return the unanswered questions. Leave the records that depend on them pending.
 
-### 5. Report
+### 7. Report
 
 Tell the user in one line what you recorded and where.
 
@@ -127,6 +153,9 @@ Example:
 Check each item before you finish.
 
 - [ ] The location is settled and every path stays inside the checkout.
+- [ ] Existing records were looked for before the first folder of each kind.
+- [ ] Nothing existing was moved, overwritten or deleted without the user's OK.
+- [ ] No record lives in two places, or the user chose to keep both.
 - [ ] The git question was asked once, or was not needed.
 - [ ] The existing records were searched first. No duplicate exists.
 - [ ] Every claim is verified, stated by the user, or marked pending.

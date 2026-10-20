@@ -134,6 +134,12 @@ We are moving sessions back to Redis. Update the record.
 
 **Result:** Claude writes a new ADR that supersedes the old one, then marks the old one `superseded` and links the two. The reasoning of the earlier record is not touched.
 
+### Bring in records you already keep
+
+The first time Claude is about to create a records folder, it looks through your project for documents that already track the same thing: an `ADR` or `decisions` folder, a `DECISIONS.md`, a `TECH_DEBT.md`, a known-issues or pending list, or any path your `CLAUDE.md` or `AGENTS.md` names.
+
+**Result:** Claude shows you what it found, one line per document, and asks whether to consolidate and migrate it. If you agree, each decision becomes an ADR and each postponed problem becomes a debt item, using the original wording and writing "not recorded in the source" where the original says nothing. Task lists that can be done now stay where they are. Afterwards Claude asks, for each original, whether to replace it with a one-line pointer, delete it or keep it, and it changes nothing until you answer. This way each fact lives in one place.
+
 ### Where records are saved
 
 | What | Where |
@@ -196,6 +202,13 @@ Run `/reload-plugins`, then type `/project-maintainer:` to list its skills. If i
 <summary><b>Does Claude record things without asking me?</b></summary>
 
 Yes, that is the purpose of the plugin. When it sees an important decision or a problem you are postponing, it writes the record and tells you in one line which file it saved. It asks only for facts it is missing, plus the one question about git described under [Where records are saved](#where-records-are-saved). It never commits or pushes a record, so delete the file if you did not want it. To record on demand only, tell Claude to wait for your request.
+
+</details>
+
+<details>
+<summary><b>Will it touch the decision or debt files I already have?</b></summary>
+
+Not without your OK. Claude lists them, asks whether to migrate, and asks again, for each original, before it replaces, deletes or keeps it. In a non-interactive run such as `claude -p` it migrates nothing and only names what it found.
 
 </details>
 
