@@ -1,6 +1,6 @@
 # block-no-verify: a guard against git bypass flags (design)
 
-Date: 2026-10-20. Owner: Nery. Status: draft v1, awaiting Nery's review. Nothing is built: no scaffold, no code, no gate run.
+Date: 2026-10-20. Owner: Nery. Status: approved by Nery on 2026-10-20; D1 to D6 of section 10 decided as recommended. Nothing is built: no scaffold, no code, no gate run.
 
 Plugin: `block-no-verify` 0.1.0, new, independent. Hooks rules: `.claude/rules/HOOKS_GATE.md`.
 
@@ -30,7 +30,7 @@ Decision: port the legacy parser and its tests to a Claude Code hook, and close 
 | Independent or inside `github-operations` | Independent | `github-operations` needs a token and an MCP server; a guard must not require them |
 | Components | One `PreToolUse` hook on Bash. No skill, agent, command or MCP | A plugin hook registers itself; the legacy skill existed only to copy files into Codex |
 | Mechanism | Command hook: a Bash launcher plus a Python 3.9 module | Stable, documented hooks API; works in Cowork; no jq. A mod needs 2.1.287 or later and an API that "can change between releases" |
-| Minimum Claude Code | 2.1.295 | `onFailure` exists from that version |
+| Minimum Claude Code | 2.1.295, in the README badge and Requirements (`--min-claude-code`) | `onFailure` exists from that version |
 | Surfaces | Claude Code: yes. Claude app: Cowork sessions only, not chat conversations | Hooks row of the compatibility matrix. Not declared Claude Code-only |
 | Evals | None | Nery's decision, not requested |
 
@@ -45,7 +45,7 @@ A command is denied when a `git` invocation in it carries any of these.
 | `--no-verify` | any subcommand: `commit`, `push`, `merge`, `rebase`, `am` and the rest |
 | `-n` | `commit` and `am` only, including clusters such as `-nm "x"` and `-anm`. In `push` it is `--dry-run`, in `merge`, `pull` and `rebase` it is `--no-stat`, in `cherry-pick` and `revert` it is `--no-commit` (git 2.56.0 `-h`) |
 | `--no-gpg-sign` | any subcommand |
-| `-c commit.gpgsign=<falsy>`, `--config commit.gpgsign=<falsy>` and the `=` forms | the global option; falsy is `false`, `no`, `off`, `0`, any case |
+| `-c commit.gpgsign=<falsy>`, `-c tag.gpgsign=<falsy>`, `--config` and the `=` forms | the global option; falsy is `false`, `no`, `off`, `0`, any case |
 
 The same words are checked in these routes:
 
@@ -55,6 +55,7 @@ The same words are checked in these routes:
 - Global options before the subcommand (`-C <dir>`, `-c k=v`, `--git-dir`, `--work-tree`, `--namespace`, `--no-pager`); the first word after them is the subcommand.
 - Quote-spliced names such as `g"i"t`: the filter runs on lexed words, never on raw text (`HOOKS_GATE.md`).
 - `bash`, `sh`, `zsh`, `dash` and `ksh` with a `-c` cluster (`-c`, `-lc`, `-ec`): the next word is parsed as a command, to a depth of 3. Deeper nesting is denied as too deep to inspect.
+- `eval "<string>"`: its arguments, joined by spaces, are parsed as a command, with the same depth limit.
 
 ### 4.2 What is allowed
 
@@ -79,7 +80,7 @@ When denied, the hook prints one JSON object and exits 0: `hookSpecificOutput` w
 
 ```text
 plugins/block-no-verify/
-  .claude-plugin/plugin.json      name, displayName, version 0.1.0, keywords, min 2.1.295
+  .claude-plugin/plugin.json      name, displayName, version 0.1.0, keywords (no version-floor field)
   hooks/hooks.json                the hook below
   hooks/block-no-verify.sh        launcher, 100755
   hooks/block_no_verify.py        parser and answer, Python 3.9, typed
@@ -149,14 +150,14 @@ Server-side enforcement, branch protection, CI checks, and a PowerShell parser. 
 
 ## 10. For Nery's review
 
-| # | Question | My recommendation |
+| # | Question | Decided (Nery, 2026-10-20) |
 | :-: | :-- | :-- |
 | D1 | Also deny `-c tag.gpgsign=<falsy>`? It is the same function and covers unsigned tags | Yes |
-| D2 | Deny `-c core.hooksPath=…`, which turns hooks off by pointing elsewhere? | Not in 0.1.0: legitimate setups exist; list it as a limitation and revisit |
+| D2 | Deny `-c core.hooksPath=…`, which turns hooks off by pointing elsewhere? | No in 0.1.0: legitimate setups exist; listed as a limitation, revisit later |
 | D3 | Parse `eval "<string>"` like `bash -c`? | Yes: the recursion exists already |
 | D4 | With no `python3`: visible notice and no block (the repo rule), or block every command? | The notice. Blocking would break Claude's shell for the user |
 | D5 | Category `security` or `testing` | `security` |
-| D6 | Emoji 🛑 | Keep |
+| D6 | Emoji 🛑 | Kept |
 
 ## 11. Risks
 
