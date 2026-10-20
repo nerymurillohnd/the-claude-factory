@@ -6,6 +6,7 @@
 import { writeFileSync } from 'node:fs'
 import { COMPONENT_TYPES, componentBadges, detectComponents } from './components.mjs'
 import {
+  fail,
   isMain,
   loadCategories,
   loadManifest,
@@ -63,7 +64,7 @@ export function buildCatalog() {
       name: entry.name,
       displayName: entry.displayName ?? manifest.displayName ?? entry.name,
       description: entry.description ?? manifest.description ?? '',
-      version: manifest.version ?? entry.version ?? '—',
+      version: manifest.version ?? '—',
       category: entry.category,
       components: componentBadges(detectComponents(entry.name)),
       worksIn: profileKey === null ? '—' : SURFACE_PROFILES[profileKey].catalog,
@@ -141,8 +142,7 @@ if (isMain(import.meta.url)) {
   const next = renderReadme(current)
   if (process.argv.includes('--check')) {
     if (current !== next) {
-      console.error('✖ README.md catalog is out of date. Run: node .github/scripts/catalog.mjs')
-      process.exit(1)
+      fail('README.md catalog is out of date. Run: node .github/scripts/catalog.mjs')
     }
     console.log('✔ README.md catalog is up to date')
   } else {

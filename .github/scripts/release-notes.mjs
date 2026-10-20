@@ -4,7 +4,15 @@
 //   node .github/scripts/release-notes.mjs <plugin-name>          → prints the notes
 
 import { join } from 'node:path'
-import { changelogSection, fail, loadManifest, pluginDir, readText } from './lib.mjs'
+import {
+  changelogSection,
+  fail,
+  loadManifest,
+  MARKETPLACE_NAME,
+  pluginDir,
+  pluginTag,
+  readText,
+} from './lib.mjs'
 
 const target = process.argv[2]
 if (!target) {
@@ -15,7 +23,7 @@ const version = loadManifest(target)?.version
 if (!version) {
   fail(`No version found for ${target}`)
 }
-const tag = `${target}--v${version}`
+const tag = pluginTag(target, version)
 
 if (process.argv.includes('--tag')) {
   console.log(tag)
@@ -24,6 +32,6 @@ if (process.argv.includes('--tag')) {
   if (!body) {
     fail(`No CHANGELOG entry for ${tag}`)
   }
-  const install = `\`\`\`bash\nclaude plugin update ${target}@the-claude-factory\n\`\`\``
+  const install = `\`\`\`bash\nclaude plugin update ${target}@${MARKETPLACE_NAME}\n\`\`\``
   console.log(`${body}\n\n---\n\n**Update:**\n\n${install}`)
 }

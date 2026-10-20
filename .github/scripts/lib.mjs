@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Shared helpers for the repository's maintenance scripts.
-// Zero dependencies: runs on the Node.js version pinned in CI (24 LTS) and locally on Node ≥ 22.
+// Zero dependencies: runs on the Node.js version in .nvmrc, the one CI uses.
 
 import { existsSync, readFileSync, realpathSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
@@ -19,7 +19,6 @@ export const ROOT = resolve(TCF_ROOT ?? join(SCRIPTS_DIR, '..', '..'))
  * @property {string} [source]
  * @property {string} [description]
  * @property {string} [displayName]
- * @property {string} [version]
  * @property {string} [category]
  */
 /**
@@ -184,11 +183,29 @@ export function pluginDir(name) {
 
 /**
  * @param {string} name
+ * @returns {string}
+ */
+export function manifestPath(name) {
+  return join(pluginDir(name), '.claude-plugin', 'plugin.json')
+}
+
+/**
+ * @param {string} name
  * @returns {Manifest | null}
  */
 export function loadManifest(name) {
-  const path = join(pluginDir(name), '.claude-plugin', 'plugin.json')
+  const path = manifestPath(name)
   return existsSync(path) ? readJson(path) : null
+}
+
+/**
+ * The release tag of a plugin version, as `claude plugin tag` names it.
+ * @param {string} name
+ * @param {string} version
+ * @returns {string}
+ */
+export function pluginTag(name, version) {
+  return `${name}--v${version}`
 }
 
 /**

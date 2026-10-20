@@ -7,9 +7,12 @@ import { join } from 'node:path'
 import { renderReadme } from './catalog.mjs'
 import {
   bumpSemver,
+  changelogSection,
   fail,
   loadManifest,
+  manifestPath,
   pluginDir,
+  pluginTag,
   README_PATH,
   REPO_URL,
   readText,
@@ -38,9 +41,9 @@ if (!current) {
 const next = bumpSemver(current, level)
 manifest.version = next
 const changelogPath = join(pluginDir(target), 'CHANGELOG.md')
-const tagPrefix = `${target}--v`
+const tag = pluginTag(target, next)
 rollChangelog()
-writeJson(join(pluginDir(target), '.claude-plugin', 'plugin.json'), manifest)
+writeJson(manifestPath(target), manifest)
 
 writeFileSync(README_PATH, renderReadme(readText(README_PATH)))
 console.log(`✔ ${target}: ${current} → ${next}`)
@@ -50,11 +53,11 @@ function rollChangelog() {
     fail(`${changelogPath} not found`)
   }
   let text = readText(changelogPath)
-  const m = text.match(/^## \[Unreleased\]\s*\n([\s\S]*?)(?=^## \[|^\[[^\]]+\]:|(?![\s\S]))/m)
-  if (!m) {
+  const unreleased = changelogSection(text, 'Unreleased')
+  if (unreleased === null) {
     fail('CHANGELOG.md has no "## [Unreleased]" section')
   }
-  if (!m[1]?.trim()) {
+  if (!unreleased) {
     fail('[Unreleased] is empty — document the changes before bumping')
   }
 
@@ -65,8 +68,8 @@ function rollChangelog() {
   text = text.replace(/\n{3,}/g, '\n\n')
 
   // Link references: [Unreleased] compares from the new tag; add the new version's tag link.
-  const unreleasedLink = `[Unreleased]: ${REPO_URL}/compare/${tagPrefix}${next}...HEAD`
-  const versionLink = `[${next}]: ${REPO_URL}/releases/tag/${tagPrefix}${next}`
+  const unreleasedLink = `[Unreleased]: ${REPO_URL}/compare/${tag}...HEAD`
+  const versionLink = `[${next}]: ${REPO_URL}/releases/tag/${tag}`
   if (/^\[Unreleased\]:.*$/m.test(text)) {
     text = text.replace(/^\[Unreleased\]:.*$/m, `${unreleasedLink}\n${versionLink}`)
   } else {
