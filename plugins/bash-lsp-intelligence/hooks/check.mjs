@@ -27,8 +27,6 @@ import { dirname, join, parse, relative, resolve, sep } from 'node:path'
 
 const { CLAUDE_PROJECT_DIR, SHELLCHECK_OPTS, XDG_CONFIG_HOME } = process.env
 const PLUGIN = 'bash-lsp-intelligence'
-// Closes every message Claude reads, so a hook that checks is never taken for the whole workflow.
-const SKILL_HINT = `Use the ${PLUGIN}:${PLUGIN} skill and apply all its knowledge when working on shell scripts.`
 const SHELL_SUFFIXES = new Set(['.sh', '.bash'])
 const SHEBANG_SHELL = /^#!(?:\S*\/)?(?:env\s+(?:-S\s+)?)?(sh|bash|zsh)(?:\s|$)/
 const SKIPPED_DIRS = new Set(['node_modules', '.venv', 'venv', 'site-packages'])
@@ -438,15 +436,12 @@ function findTools() {
   return { shfmt, shellcheck }
 }
 
-// Cuts text so that it and the reserved characters (the skill hint) fit under the cap.
 /**
  * @param {string} text
- * @param {number} reserve
  * @returns {string}
  */
-function bounded(text, reserve) {
-  const limit = MAX_REPORT_CHARS - reserve
-  if (text.length <= limit) {
+function bounded(text) {
+  if (text.length <= MAX_REPORT_CHARS) {
     return text
   }
   const lines = text.split('\n')
@@ -454,7 +449,7 @@ function bounded(text, reserve) {
   const kept = []
   let size = 0
   for (const line of lines) {
-    if (size + line.length + 1 > limit) {
+    if (size + line.length + 1 > MAX_REPORT_CHARS) {
       break
     }
     kept.push(line)
@@ -527,7 +522,6 @@ function success(event, checked, results, zsh, base) {
     notes.push(`ShellCheck does not support zsh; ${names} was not checked.`)
   }
   if (notes.length > 0) {
-    notes.push(SKILL_HINT)
     payload.hookSpecificOutput = { hookEventName: eventName, additionalContext: notes.join(' ') }
   }
   return Object.keys(payload).length > 0 ? JSON.stringify(payload) : ''
@@ -560,7 +554,7 @@ function main() {
   const base = projectDir(event)
   const tools = shell.length > 0 ? findTools() : null
   if (typeof tools === 'string') {
-    process.stderr.write(`${tools}${SKILL_HINT}\n`)
+    process.stderr.write(tools)
     return 2
   }
   const checked = shell.slice(0, MAX_FILES)
@@ -568,7 +562,7 @@ function main() {
   const results = tools === null ? [] : checked.map((path) => checkFile(path, tools))
   const text = report(checked, results, unchecked, base)
   if (text !== '') {
-    process.stderr.write(`${bounded(text, SKILL_HINT.length + 1)}${SKILL_HINT}\n`)
+    process.stderr.write(bounded(text))
     return 2
   }
   process.stdout.write(success(event, checked, results, zsh, base))

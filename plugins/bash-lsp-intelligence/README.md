@@ -91,8 +91,6 @@ To confirm it works, ask Claude to write `echo $name` in a script and fix it. Un
 
 You don't need to call anything: the language server starts with the first shell file Claude edits, the hook runs after each edit, and the skill loads when you work on shell scripts.
 
-When the hook reports a finding or a script it couldn't check, its message also tells Claude to use the `bash-lsp-intelligence:bash-lsp-intelligence` skill and apply all its knowledge when working on shell scripts, so a passing check is never mistaken for the whole workflow.
-
 ### Example: what happens after an edit
 
 ```text
