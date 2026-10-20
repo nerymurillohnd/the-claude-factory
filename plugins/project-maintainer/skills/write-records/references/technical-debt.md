@@ -23,12 +23,13 @@
   - a next action or a reassessment trigger exists,
   - no other record tracks it, such as an open issue or an ADR follow-up.
 - Never log improvement ideas, speculation or backlog tasks.
+- An explicit request to log does not waive these criteria. If one fails, tell the user which, and log nothing.
 - Never reuse an ID from either ledger.
 - Never delete a pending item without a closed entry.
 - Never rewrite a closed entry. Only its "Superseded by" field may change.
 - Close an item as resolved or obsolete without asking, as soon as the evidence is verified.
 - Close an item as accepted only after the user decides to keep the condition for good.
-- Write the ledgers with the Write tool, never with Bash. Write creates the folder.
+- Create a ledger with the Write tool and change it with the Edit tool. Never use Bash. Write creates the folder.
 - In a non-interactive session, write no entry that depends on an unanswered question. Return the questions in your final reply.
 
 ## Open an item
@@ -44,7 +45,7 @@
    If no ledger exists yet, the search finds nothing. Continue.
 
 2. An open entry already tracks it? Add no new item. Update that entry when the new finding adds evidence.
-3. A closed entry covers it and the problem is back? Continue with step 2, then write the new ID in that closed entry. See "Keep history".
+3. A closed entry covers it and the problem is back? Continue with steps 2 to 5 of this section, then write the new ID in "Superseded by" of that closed entry. See "Keep history".
 
 ### 2. Create the ledger if it is missing
 
@@ -55,13 +56,13 @@
 ### 3. Find the next free ID
 
 1. Read each ledger that exists, whole.
-2. List the heading IDs of the ledgers that exist. Pass only files that exist:
+2. Print the heading IDs that appear more than once. Pass only ledgers that exist:
 
    ```bash
    grep -hoE '^### DEBT-[0-9]+' .claude/maintainer/technical-debt/pending-debt.md .claude/maintainer/technical-debt/closed-debt.md | sort | uniq -d
    ```
 
-   A heading ID printed twice is a discrepancy.
+   No output means no duplicate. Any ID printed is a discrepancy.
 
 3. List every ID, links inside entries included, and take the numeric maximum:
 
@@ -87,15 +88,16 @@
 
 ### 6. Report
 
-- Tell the user in one line which ID you logged and why it is not fixed now.
+- Report as the skill's Report step says, and add why it is not fixed now.
 
 ## Fill an entry
 
-- Put only verified facts under Confirmed facts: paths, revisions, commands, dates.
+- Put only verified facts under Confirmed facts: paths, revisions, commands, dates. A fact the user states also goes there, as "stated by the user on <date>".
 - Put reasoned but unverified conclusions under Inferences.
-- Write "none" in a field with nothing to report. Owner is the exception: write "unassigned" when nobody owns the item.
+- Write "none" in a field with nothing to report. Owner is the exception: write the person the user names, otherwise "unassigned". Do not ask.
+- Set Status to Blocked when the item waits on an external party, access or a decision. Otherwise set Pending.
 - Category is a free word, such as security, compatibility, cost or quality.
-- Write the smallest concrete action in Next action.
+- Write the smallest concrete action in Next action. If the only step is to wait, write "check the review condition". Never write "none".
 - Write the event, date or evidence that permits closure in Review condition.
 - Link the related issues, ADRs and pull requests.
 
@@ -115,13 +117,13 @@ Use this when a logged problem is fixed, no longer applies, or the user decides 
 
 | Outcome | Use when |
 | --- | --- |
-| resolved | A fix was made and it works. |
-| obsolete | The condition no longer exists, with no fix aimed at it: code removed, architecture changed, or the item was logged in error or duplicates another. |
+| resolved | A fix aimed at this item was made and it works. |
+| obsolete | The condition no longer exists for another reason: a change that was not aimed at this item removed the code or changed the architecture, or the item was logged in error or duplicates another. |
 | accepted | The user decided to keep the condition for good. An accepted ADR records that decision. |
 
 ### 2. Verify the closure
 
-Run the checks yourself. Quote the output.
+Run the checks yourself. Quote the output. Cannot tell whether the change was aimed at this item? Ask the user in one question. In a non-interactive session use obsolete.
 
 1. resolved:
    - Positive: the fix works.
@@ -133,7 +135,7 @@ Run the checks yourself. Quote the output.
 3. accepted:
    - The ADR exists with status `accepted`. Cite its ID.
    - No ADR yet? Write it first, following the ADRs reference.
-4. Any check fails? Keep the item open. Update it instead.
+4. Any check fails? Keep the item open and update it. Tell the user which check failed and quote its output.
 
 ### 3. Create the closed ledger if it is missing
 
@@ -156,7 +158,7 @@ Run the checks yourself. Quote the output.
 
 ### 5. Report
 
-- Tell the user in one line which ID you closed and with which outcome.
+- Report as the skill's Report step says.
 
 ## Keep history
 

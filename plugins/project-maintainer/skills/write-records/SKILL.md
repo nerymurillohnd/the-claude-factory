@@ -17,7 +17,7 @@ description: Writes architecture decision records (ADRs) and keeps a technical-d
 - Act as the project's record keeper.
 - Record decisions and postponed problems before the task ends.
 - Record without asking permission. The user installed this plugin for that.
-- Ask only for facts you are missing. The two questions in steps 3 and 4 are the only others.
+- Ask only for facts you are missing, and for the questions the procedures name: migrating documents the project already keeps, git, approving an edit to a settled record.
 - Write only what is verified or what the user said.
 - Keep one source of truth. Never leave the same record in two places.
 - Non-interactive means nobody can answer you: you have no question tool, or the prompt says nobody will answer, as in `claude -p`, the Agent SDK or CI. Then write no record that depends on an unanswered question. Return the questions in your final reply.
@@ -26,13 +26,14 @@ description: Writes architecture decision records (ADRs) and keeps a technical-d
 
 ### Always
 
-- Search the existing records before adding one. Update a debt match. Change an ADR match only as the ADRs reference allows.
+- Search `.claude/maintainer/` for a record on the same subject before adding one. Update a debt match. Change an ADR match only as the ADRs reference allows.
 - Mark anything unverified as an inference or as pending.
 - Mention a record inside another record by its ID only: the ADR file name without `.md`, or `DEBT-<NNN>`. Links to evidence, such as issues and pull requests, stay Markdown links. In your report to the user, give the file path.
 - Keep each ledger index equal to its entries.
 - Write dates as `YYYY-MM-DD`, using today's date.
 - Save records under `.claude/maintainer/` in the checkout you work in: the root that `git rev-parse --show-toplevel` prints, or the current directory outside git.
-- Write records with the Write tool, never with Bash. `.claude/` is a protected folder, and Write creates the missing folders.
+- Create a record with the Write tool and change an existing one with the Edit tool. Never use Bash to write a record. `.claude/` is a protected folder, and Write creates the missing folders.
+- Run every command from the checkout root, so relative paths mean the same thing for every command.
 - Keep every destination inside the project, symlinks included.
 - When the user denies a write or a destination is unwritable, show the draft and the exact blocker.
 
@@ -43,7 +44,7 @@ description: Writes architecture decision records (ADRs) and keeps a technical-d
 - Never log a problem that can be fixed now inside the current task. Fix it. If it falls outside the task, tell the user.
 - Never write a decision or a debt item into a README, changelog, code comment, commit message, task list or memory.
 - Never leave an unfilled placeholder or template instructions in an entry. A ledger keeps its reusable "Entry format" comment.
-- Never move, overwrite or delete a project's existing records without the user's explicit OK.
+- Never move, overwrite or delete a document the project kept before this plugin without the user's explicit OK. Superseding an ADR and closing a debt item need no OK.
 - Never use the plugin's install directory as a base.
 - Never use the session's project-directory variable (`CLAUDE_PROJECT_DIR`) as a base. In a worktree it still points at the main checkout, where edits are blocked.
 - Never relocate a record or widen permissions to get past a blocker.
@@ -84,7 +85,7 @@ Skip:
 
 - renames, typos, formatting and comments,
 - a small refactor that keeps behavior,
-- a choice an existing ADR already covers.
+- a choice an existing ADR already covers and still holds. A new choice on the same topic changes that ADR: record it.
 
 Record a problem as debt when it cannot be fixed now. The [Technical debt](references/technical-debt.md) reference sets the criteria. Close a logged item when it is fixed, no longer applies, or the user decides to keep it for good.
 
@@ -92,7 +93,7 @@ Nothing to record or close? Stop here. Create nothing and ask nothing.
 
 ### 3. Look for existing records
 
-Do this before you create the first folder of each kind. It keeps one source of truth.
+Do this before you create the first folder of each kind. It keeps one source of truth. Look only for the kind whose folder is missing.
 
 - Decisions: do it when `.claude/maintainer/decisions` does not exist yet.
 - Debt and pending items: do it when `.claude/maintainer/technical-debt` does not exist yet.
@@ -104,7 +105,7 @@ Then:
 3. Show the user what you found. Ask whether to consolidate and migrate it.
 4. Migrate only what the user approves, in step 5.
 
-In a non-interactive session, find and migrate nothing. Name what you found in your report.
+In a non-interactive session, run steps 1 and 2 of that reference read-only. Ask nothing, migrate nothing, and list the candidates you found in your report.
 
 ### 4. Ask about git on first use
 
@@ -131,7 +132,7 @@ In a non-interactive session, do not ask. Track the records, change nothing, and
 
 Do this after step 4, only when the user approved a migration in step 3.
 
-1. Follow the migration steps in [Existing records](references/existing-records.md). Write creates the folders.
+1. Follow steps 4 to 6 of [Existing records](references/existing-records.md). Write creates the folders.
 2. Ask what to do with each original. Change nothing before the user answers.
 
 ### 6. Route the work
@@ -142,27 +143,27 @@ Do this after step 4, only when the user approved a migration in step 3.
 
 ### 7. Report
 
-Tell the user in one line per record what you recorded and where.
+Tell the user, in one line per record: the ID, the file path and what happened (`recorded`, `logged as <status>` or `closed as <outcome>`).
 
 Example:
 
 - Input: "We decided to keep sessions in Postgres, not Redis."
-- Output: the file `.claude/maintainer/decisions/ADR_2026-03-14_keep-sessions-in-postgres.md`, then the line "Recorded the decision in `.claude/maintainer/decisions/ADR_2026-03-14_keep-sessions-in-postgres.md`."
+- Output: the file `.claude/maintainer/decisions/ADR_2026-03-14_keep-sessions-in-postgres.md`, then the line "ADR_2026-03-14_keep-sessions-in-postgres, `.claude/maintainer/decisions/ADR_2026-03-14_keep-sessions-in-postgres.md`: recorded."
 
 ## Checklist
 
 Check each item before you finish.
 
 - [ ] Every record is under `.claude/maintainer/` in the checkout, written with the Write tool.
-- [ ] Existing records were looked for before the first folder of each kind.
+- [ ] Documents the project kept before this plugin were looked for before the first folder of each kind (read-only in a non-interactive session).
 - [ ] Nothing existing was moved, overwritten or deleted without the user's OK.
 - [ ] No record lives in two places, or the user chose to keep both.
 - [ ] The git question was asked once, or was not needed.
-- [ ] The existing records were searched first. No duplicate exists.
+- [ ] `.claude/maintainer/` was searched first. No duplicate exists.
 - [ ] Every claim is verified, stated by the user, or marked pending.
 - [ ] No placeholder or template instruction remains in an entry.
 - [ ] Each ledger index equals its entries.
 - [ ] No settled ADR or closed entry was rewritten.
 - [ ] Each decision has its own ADR.
 - [ ] Nothing was committed or pushed.
-- [ ] The user got a one-line note per record with its file and its ID.
+- [ ] The user got a one-line note per record with its ID, its file and what happened.

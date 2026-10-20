@@ -11,8 +11,8 @@
 ## Rules
 
 - Search before writing. Never add a duplicate.
-- Write the file with the Write tool, never with Bash. Write creates the folder.
-- Record without asking permission. Then tell the user in one line which file you wrote.
+- Create the file with the Write tool and change it with the Edit tool. Never use Bash. Write creates the folder.
+- Record without asking permission. Then report as the skill's Report step says.
 - Set the status only as the Statuses table says.
 - Once a record is not `proposed`, change it only as "Change a decision" says.
 - Write only claims that are verified or that the user stated.
@@ -41,13 +41,16 @@
    grep -ril "<keyword>" .claude/maintainer/decisions/
    ```
 
-   Search with two or three keywords: the component, the choice and the option you rejected. One keyword can miss a duplicate.
+   Search with two or three keywords: the component, the choice and the option you rejected. One keyword can miss a duplicate. If the folder does not exist, there is nothing to find. Continue.
 
 2. Found a record on the same decision? Do not add a duplicate. Change it only as "Change a decision" says.
+3. Found a record on the same topic, but the user chose differently? That is a new decision, not a duplicate. Go to "Change a decision".
 
 ### 2. Collect the facts
 
-Take every fact from the conversation. Ask the user only for what is missing.
+Take every fact from the conversation. A fact is missing only when it is the chosen option, a rejected option or the reason for the choice. Ask for it. In a non-interactive session write no record and return the question.
+
+For everything else, write what the conversation supports and write "Not stated by the user." for the rest. Never invent.
 
 - Context: the situation and the problem.
 - Decision drivers.
@@ -56,8 +59,8 @@ Take every fact from the conversation. Ask the user only for what is missing.
 - Consequences, good and bad.
 - Decision makers: who made the decision.
   - Use the name the user gave in this conversation.
-  - Otherwise use the name `git config user.name` prints.
-  - Otherwise use a plain role such as "project owner".
+  - Otherwise use the name `git config user.name` prints. The project's Git identity counts as the project.
+  - A decision taken by "we" with no names: use a plain role such as "project owner".
 - Optional: consulted, informed, risks, confirmation.
 
 ### 3. Set the status
@@ -81,7 +84,7 @@ Take every fact from the conversation. Ask the user only for what is missing.
 5. Keep the frontmatter `date` equal to the date in the file name.
 6. Replace every `{placeholder}`.
 7. Leave the template's HTML comments out.
-8. Remove the `consulted` and `informed` lines when they would be empty.
+8. Remove the `consulted` and `informed` keys, with their list items, when they would be empty. That is two lines each.
 9. Remove the optional sections that add nothing: Risks and mitigations, Confirmation, Pros and cons of the options, More information.
 10. Fill "Pros and cons of the options" only when the options need evidence. Write one subsection per option.
 11. Link the evidence: issues, pull requests, tests, documentation.

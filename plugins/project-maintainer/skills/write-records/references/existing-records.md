@@ -16,7 +16,8 @@
 - Migrate only items that qualify as records. Leave task lists in place.
 - Never migrate an item the source marks as done. It has no verification evidence.
 - Never decide for the user what happens to the original. Ask.
-- In a non-interactive session, find and migrate nothing. Name what you found in your one-line note.
+- In a non-interactive session, run steps 1 and 2 read-only. Ask nothing, migrate nothing, and list the candidates in your report.
+- Scan and migrate only the kind whose folder is missing, decisions or postponed problems.
 
 ## Steps
 
