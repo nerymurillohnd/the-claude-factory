@@ -144,7 +144,7 @@ Plugin skills are namespaced, so they never collide with yours: type `/<plugin>:
 
 | Plugin | What it does | Works in | Version | Includes |
 | :-- | :-- | :-- | :--: | :-- |
-| [**Project Maintainer**](./plugins/project-maintainer#readme)<br>`project-maintainer@the-claude-factory` | Records a project's important decisions as architecture decision records and tracks the technical debt it cannot fix yet in a ledger, so the next person knows why the project is the way it is. | 💻 Code · 🖥️ Claude app | `0.1.0` | 🎯 Skills |
+| [**Project Maintainer**](./plugins/project-maintainer#readme)<br>`project-maintainer@the-claude-factory` | Keeps a project's memory in its .claude folder: decisions recorded as ADRs, technical debt tracked in a ledger, and a handoff that carries each session's state to the next one. | 💻 Code · 🖥️ Claude app | `0.1.0` | 🎯 Skills · 🪝 Hooks |
 
 ### 🧠 Language Support
 
