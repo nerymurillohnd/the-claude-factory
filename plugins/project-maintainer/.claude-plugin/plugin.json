@@ -21,6 +21,14 @@
     "session",
     "continuity"
   ],
+  "userConfig": {
+    "commitNudge": {
+      "type": "boolean",
+      "title": "Remind Claude after a commit that looks like a decision",
+      "description": "After a commit that changes dependencies, a database schema, CI or infrastructure, or whose message says workaround, temporary or revert, add one note that reminds Claude to record a decision or a debt. It uses no model call.",
+      "default": true
+    }
+  },
   "metadata": {
     "surfaces": [
       "claude-code",
