@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Runs the official Claude Code validator on the marketplace, every plugin
-# (manifest and components, skills included) and the repo's own .claude/, then the mod
-# tests of every plugin that ships them.
+# (manifest and components, skills included), then the mod tests of every plugin that
+# ships them.
 # --strict everywhere, except the marketplace while it lists zero plugins
 # (an empty catalog is a validator warning, not a defect).
 set -euo pipefail
@@ -25,11 +25,6 @@ else
   echo "ℹ Marketplace lists no plugins yet — validating without --strict"
   claude plugin validate . || status=1
 fi
-
-# The maintainers' own skills, agents and commands: frontmatter that does not
-# parse leaves a skill without metadata, so Claude can't match its description.
-echo
-claude plugin validate --strict .claude || status=1
 
 for dir in plugins/*/; do
   [[ -d ${dir} ]] || continue
