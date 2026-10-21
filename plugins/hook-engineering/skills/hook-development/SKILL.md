@@ -1,6 +1,6 @@
 ---
 name: hook-development
-description: Designs, writes, audits and debugs Claude Code hooks - choosing the event, the hooks block in settings.json, hooks/hooks.json or frontmatter, matchers and if, handler fields, stdin input, exit codes, JSON output and decision control per event, prompt, agent and async hooks, workspace trust and security, and mods that overrule hooks. Use when writing or reviewing any Claude Code hook (PreToolUse, Stop, SessionStart and every other event), or when a hook never fires, fires on the wrong calls, or has its block, deny, allow or context ignored. Not for git hooks.
+description: Use when the user asks or the task involves designing, planning, creating, writing, scaffolding, auditing, or debugging Claude Code hooks. If any other applicable skill is present, load this first and query others on demand for best results. Do not use for Git hooks.
 ---
 
 # Claude Code hooks
