@@ -1,6 +1,6 @@
 ---
 type: regex
-pattern: 'CHANGELOG\.md|docs/en/changelog'
+pattern: 'hook-changes\.sh|CHANGELOG\.md|docs/en/changelog'
 target: trace
 weight: 2
 ---
