@@ -4,6 +4,12 @@ All notable changes to **The Claude Factory** marketplace are documented here: p
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The marketplace has no version of its own: entries are grouped by date, newest first, and every plugin carries its own version, changelog and tag. The versions 0.1.0 and 0.2.0 below are the history from before that change; their tags stay.
 
+## 2026-10-21
+
+### Added
+
+- **hook-engineering** 0.1.0 — designs, writes, audits and debugs Claude Code hooks end to end, checking each answer against the current docs and the changelog for your Claude Code version.
+
 ## 2026-10-20
 
 ### Added

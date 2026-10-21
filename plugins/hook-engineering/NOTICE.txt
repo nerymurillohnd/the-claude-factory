@@ -1,0 +1,34 @@
+hook-engineering
+Copyright (c) 2026 Nery Murillo. Licensed under the MIT License (see LICENSE).
+
+This plugin contains material derived from Anthropic's Claude Code documentation
+and changelog, and connects to Anthropic's documentation server:
+
+  Documentation:  https://code.claude.com/docs (pages under /en/hooks,
+                  /en/hooks-guide, /en/plugins, /en/plugins/mods, /en/permissions,
+                  /en/sub-agents, /en/skills, /en/settings-reference and others
+                  named in skills/hook-development/references/docs-map.md)
+  Changelog:      https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md
+  Read on:        2026-10-20, through Claude Code v2.1.305
+  Docs server:    https://code.claude.com/docs/mcp (configured in .mcp.json; no
+                  code from it is bundled)
+
+Derived files, all condensed and rewritten for this plugin. SKILL.md and the
+references carry "Docs:" lines naming the official section each part draws on,
+and references/docs-map.md lists every official heading in scope with its URL;
+the agent and the report template draw on those sections through the skill:
+
+  skills/hook-development/SKILL.md
+  skills/hook-development/references/*.md
+  skills/hook-development/assets/report.md
+  agents/hook-engineer.md
+
+The scripts in skills/hook-development/scripts/ are original; they implement
+rules the documentation states and link to the sections they come from.
+hook-changes.sh downloads the public CHANGELOG.md at run time and does not
+redistribute it.
+
+Anthropic's documentation and changelog remain Anthropic's and are subject to
+Anthropic's terms; this file does not restate a license for them. Claude and
+Claude Code are names of Anthropic products, used only to describe what this
+plugin works with; this plugin is not affiliated with or endorsed by Anthropic.

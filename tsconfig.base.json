@@ -9,7 +9,6 @@
     "verbatimModuleSyntax": true,
     "noUncheckedSideEffectImports": true,
     "libReplacement": false,
-    "typeRoots": ["/Users/forestalmt/.config/nvm/versions/node/v26.12.0/lib/node_modules/@types"],
     "strict": true,
     "alwaysStrict": true,
     "noImplicitAny": true,

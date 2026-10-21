@@ -7,5 +7,5 @@
     "module": "nodenext",
     "types": ["node"]
   },
-  "include": ["**/*.mjs"]
+  "include": ["**/*.mjs", "../../plugins/**/*.mjs"]
 }

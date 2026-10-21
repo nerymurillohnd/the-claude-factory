@@ -47,7 +47,7 @@ Tick each step as you finish it. Steps 3 to 5 apply once per component you add o
 Progress:
 - [ ] 1. **Scope**: the domain and the user task behind each component.
 - [ ] 2. **Docs**: the official page for each component type.
-- [ ] 3. **Recall**: the memories those components depend on.
+- [ ] 3. **Recall**: the memories and doc sections those components depend on.
 - [ ] 4. **Write**: files, manifest and components.
 - [ ] 5. **Scripts**: conventions and network calls.
 - [ ] 6. **Clean and try**: no leftovers, load it with `--plugin-dir`.
@@ -76,19 +76,19 @@ Read the current official page for each component type you will write, in full, 
 | Mods | `/en/plugins/mods/overview`, `create`, `reference`, `test` |
 | Dependencies and loading | `/en/plugins/dependencies`, `/en/plugins/loading` |
 
-Open them through the Claude Code Docs MCP tools, which serve `/en/plugins/components` at `/en/plugins/components.mdx`. The MCP copy can lack headings the live page has: when a heading is missing or a decision rests on exact wording, read the raw page at `https://code.claude.com/docs/en/<page>.md` (recall memory `docs-mcp-copy-vs-raw-page`).
+Open them through the Claude Code Docs MCP tools, which serve `/en/plugins/components` at `/en/plugins/components.mdx`. The MCP copy can lack headings the live page has: when a heading is missing or a decision rests on exact wording, read the raw page at `https://code.claude.com/docs/en/<page>.md`.
 
 ### 3. Recall
 
-Read these memories before you write or rely on the behavior they describe:
+Read these before you write or rely on the behavior they describe:
 
-| When you work on | Recall memory |
+| When you work on | Read first |
 | :-- | :-- |
-| An agent | `agent-file-rules`; also `subagent-skill-preload` before relying on `skills:` in its frontmatter |
-| `userConfig` options | `plugin-userconfig-behavior` (install, update and synced copies) |
-| An MCP server | `claude-app-plugin-mcp-connector`, `claude-code-desktop-vs-cli` (the `plugin-mcp-guidance` skill also recalls them) |
-| A mod | `claude-code-mods-facts` (`register.ts`, static validation, `decider: 'person'`, tests, type declarations) |
-| A script a skill or agent runs | `skill-placeholder-substitution-scope` (the path variables are substituted only in `SKILL.md` and agent bodies, never in `references/` or the Bash environment) |
+| An agent | Memory `agent-file-rules`; also `/en/sub-agents` → "Preload skills into subagents" before relying on `skills:` in its frontmatter |
+| `userConfig` options | `/en/plugins/manifest-reference` → "User configuration" (install, update and synced copies) |
+| An MCP server | The `plugin-mcp-guidance` skill (step 4 invokes it), which holds the Claude app and header rules |
+| A mod | `/en/plugins/mods/reference` and `/en/plugins/mods/test` (`register.ts`, static validation, `decider: 'person'`, tests, type declarations), and `.claude/CLAUDE.md` → Commands → Mods |
+| A script a skill or agent runs | `/en/skills` → "Available string substitutions" (the path variables are substituted only in `SKILL.md` and agent bodies, never in `references/` or the Bash environment) |
 
 Skills, evals and user docs have their own sections in `.claude/rules/WORKFLOW.md`: "When Writing Skills", "When Writing Evals" and "When Writing User Docs". Read the one that matches before you write.
 

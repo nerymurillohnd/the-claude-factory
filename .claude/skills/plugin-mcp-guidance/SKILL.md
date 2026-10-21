@@ -18,7 +18,7 @@ Act as an integration engineer who ships a server to strangers. You assume the c
 - Never name a plugin tool by the bare server key. Use the scoped name everywhere a plugin refers to it: an agent's `tools`, permission rules, a skill's `allowed-tools`, a hook matcher.
 - Secrets and per-user values go through `userConfig` and `${user_config.KEY}`. Never hardcode them, never read them from the user's shell environment. Put the value in a header, not in the URL: a chat conversation skips a server whose URL holds the reference.
 - Disclose each server in the README: what it connects to, what it sends, and the prerequisites with how to install them. Keep exactly one Compatibility row per MCP type the plugin ships.
-- Recall memory `plugin-userconfig-behavior` before relying on a `userConfig` option, memory `claude-app-plugin-mcp-connector` for the Claude app, and memory `claude-code-desktop-vs-cli` for `${VAR}` in headers.
+- Before relying on a `userConfig` option, read `/en/plugins/manifest-reference` → "User configuration"; before writing `${VAR}` in headers, read `/en/mcp` → "Environment variable expansion in `.mcp.json`". The Claude app rules are in the Gotchas below and in step 6.
 
 ## Gotchas
 
@@ -60,7 +60,7 @@ State the user task the server serves and why a skill or a script cannot serve i
 
 ### 2. Docs
 
-Read `/en/mcp` and, in `/en/plugins/components`, the MCP servers section; read `/en/plugins/manifest-reference` for `userConfig` and the fields that reject it. Open them through the Claude Code Docs MCP tools; when a heading is missing or exact wording decides, read the raw page at `https://code.claude.com/docs/en/<page>.md` (recall memory `docs-mcp-copy-vs-raw-page`).
+Read `/en/mcp` and, in `/en/plugins/components`, the MCP servers section; read `/en/plugins/manifest-reference` for `userConfig` and the fields that reject it. Open them through the Claude Code Docs MCP tools; when a heading is missing or exact wording decides, read the raw page at `https://code.claude.com/docs/en/<page>.md`.
 
 ### 3. Declare
 
@@ -70,7 +70,7 @@ Read `/en/mcp` and, in `/en/plugins/components`, the MCP servers section; read `
 
 ### 4. Reach
 
-Give an agent its tools through its `tools` allowlist, written with the scoped name: one entry per tool, or `mcp__plugin_<plugin>_<server>__*` for the whole server, the form `agent-file-rules` records for MCP entries. Confirm the real names in `/mcp` before you write the line. Leave `tools` unset to inherit everything. Use the same scoped name in a skill's `allowed-tools`, in any permission rule the README recommends, and in a hook matcher with `.*` for the whole server. Recall memory `agent-file-rules` before you write the agent, and memory `subagent-skill-preload` before you rely on `skills:` in its frontmatter.
+Give an agent its tools through its `tools` allowlist, written with the scoped name: one entry per tool, or `mcp__plugin_<plugin>_<server>__*` for the whole server, the form `agent-file-rules` records for MCP entries. Confirm the real names in `/mcp` before you write the line. Leave `tools` unset to inherit everything. Use the same scoped name in a skill's `allowed-tools`, in any permission rule the README recommends, and in a hook matcher with `.*` for the whole server. Recall memory `agent-file-rules` before you write the agent, and read `/en/sub-agents` → "Preload skills into subagents" before you rely on `skills:` in its frontmatter.
 
 ### 5. Scope
 
@@ -83,7 +83,7 @@ While Nery is still shaping the plugin, run only the cheap checks each edit need
 1. Load the plugin with the option unset: the server must be absent and the README's setup text must match what the user sees.
 2. Set the option, run `/reload-plugins`, and confirm the server and a tool call work.
 3. Call a tool from an agent that lists it in `tools`, and from the main conversation.
-4. For a remote server with `${user_config.*}` in headers, connect it through the Claude app's **Connectors** tab with **No sign in** and an `authorization` header, as memory `claude-app-plugin-mcp-connector` records; do not claim the app works until Nery's Claude app check says so.
+4. For a remote server with `${user_config.*}` in headers, connect it through the Claude app's **Connectors** tab with **No sign in** and an `authorization` header; do not claim the app works until Nery's Claude app check says so.
 
 ### 7. Document
 

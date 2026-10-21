@@ -149,7 +149,7 @@ In a session: `/plugin` → **Installed** → **{{displayName}}** → **Uninstal
 | ⌨️ Commands | ✅ | ✅ loaded as a skill in a chat conversation |
 | 🤖 Agents | ✅ | ⚠️ in Cowork sessions, not in a chat conversation |
 | 🪝 Hooks | ✅ | ⚠️ in Cowork sessions, not in a chat conversation |
-| 🔌 MCP server (remote) | ✅ | 🔗 connect it on the plugin's **Connectors** tab |
+| 🔌 MCP server (remote) | ✅ | 🔗 add or connect it on the plugin's **Connectors** tab |
 | 🖥️ MCP server (local) | ✅ | ⚠️ only in Cowork sessions on your computer |
 | 🧠 LSP server | ✅ | ➖ |
 | 🎨 Output styles | ✅ | ➖ |
