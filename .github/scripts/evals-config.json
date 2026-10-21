@@ -25,8 +25,7 @@
     "allow_tools": [
       "Bash",
       "WebFetch(domain:code.claude.com)",
-      "WebFetch(domain:raw.githubusercontent.com)",
-      "WebFetch(domain:github.com)"
+      "WebFetch(domain:raw.githubusercontent.com)"
     ],
     "max_cost_usd": 56,
     "cost_basis": "ESTIMATE, not measured: no run yet. The project-maintainer smoke run cost $0.76 per case (5 cases, one arm, one run, $3.82); 14 cases x $0.76 = $10.7; baseline arm about 40% of that; x3 runs x1.25. Replace with a measured figure after the first run."
