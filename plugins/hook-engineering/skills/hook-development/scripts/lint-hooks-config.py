@@ -149,7 +149,11 @@ def plugin_info(path: Path) -> PluginInfo | None:
     manifest = root / ".claude-plugin" / "plugin.json"
     if path.name != "hooks.json" or not manifest.is_file():
         return None
-    data = cast("dict[str, object]", load_json(manifest))
+    loaded = load_json(manifest)
+    if not isinstance(loaded, dict):
+        message = f"{manifest} is not a JSON object"
+        raise TypeError(message)
+    data = cast("dict[str, object]", loaded)
     servers = server_keys(data.get("mcpServers"), root)
     mcp_file = root / ".mcp.json"
     if mcp_file.is_file():
@@ -409,6 +413,20 @@ def check_group(
         check_handler(report, f"{where}.hooks[{index}]", event, handler, plugin)
 
 
+def read_plugin(report: Report, path: Path) -> PluginInfo | None:
+    """Read the plugin next to a hooks.json, reporting an unreadable manifest or MCP config."""
+    try:
+        return plugin_info(path)
+    except (OSError, ValueError, TypeError) as error:
+        report.add(
+            "ERROR",
+            "plugin",
+            f"cannot read the plugin manifest or MCP config next to this file: {error}",
+            "configuration",
+        )
+        return None
+
+
 def lint(path: Path) -> Report:
     """Lint one file."""
     report = Report(str(path))
@@ -426,7 +444,7 @@ def lint(path: Path) -> Report:
     if not isinstance(hooks, dict):
         report.add("ERROR", "hooks", "no 'hooks' object at the top level", "configuration")
         return report
-    plugin = plugin_info(path)
+    plugin = read_plugin(report, path)
     for event, groups in cast("dict[str, object]", hooks).items():
         if event not in EVENTS:
             report.add(

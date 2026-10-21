@@ -75,6 +75,25 @@ EXIT2 = {
     "MessageDisplay": "the original text is displayed",
 }
 
+BLOCKS_ON_EXIT2 = frozenset(
+    {
+        "PreToolUse",
+        "UserPromptSubmit",
+        "UserPromptExpansion",
+        "Stop",
+        "SubagentStop",
+        "TeammateIdle",
+        "TaskCreated",
+        "TaskCompleted",
+        "ConfigChange",
+        "PostToolBatch",
+        "PreCompact",
+        "PreModelSwitch",
+        "Elicitation",
+        "ElicitationResult",
+    }
+)
+
 PLAIN_STDOUT_IS_CONTEXT = frozenset(
     {"UserPromptSubmit", "UserPromptExpansion", "SessionStart", "PostModelSwitch"}
 )
@@ -240,13 +259,24 @@ def predict(kind: str, code: int, event: str, *, block_on_failure: bool) -> str:
     if worktree is not None:
         return worktree
     if code == EXIT_BLOCK:
+        if event in EXIT2 and event not in BLOCKS_ON_EXIT2:
+            return f"exit 2 does not block on this event: {EXIT2[event]}"
         if kind == "json":
             return "blocking error: fields are read but cannot override the block"
         return "blocking error: stderr is the reason"
     outcome, is_failure = OUTCOMES[kind, code == 0]
     if is_failure and block_on_failure and event not in NO_ON_FAILURE:
-        return FAILURE_BLOCKS
+        return failure_outcome(event)
     return outcome
+
+
+def failure_outcome(event: str) -> str:
+    """What a failure does under onFailure block: what exit 2 does, or PermissionRequest denies."""
+    if event == "PermissionRequest":
+        return "failure: onFailure is block, so the permission request is denied"
+    if event in EXIT2 and event not in BLOCKS_ON_EXIT2:
+        return f"failure: onFailure is block, so it does what exit 2 does here: {EXIT2[event]}"
+    return FAILURE_BLOCKS
 
 
 def report_no_result(event: str, reason: str, *, blocks: bool) -> None:
@@ -256,7 +286,7 @@ def report_no_result(event: str, reason: str, *, blocks: bool) -> None:
     if event == "PreModelSwitch" and reason.startswith("timed out"):
         out("outcome: the switch is blocked")
     elif blocks and event not in NO_ON_FAILURE:
-        out(f"outcome: {FAILURE_BLOCKS}")
+        out(f"outcome: {failure_outcome(event)}")
     else:
         out("outcome: no decision; the action goes ahead (PreToolUse: normal permission flow)")
 

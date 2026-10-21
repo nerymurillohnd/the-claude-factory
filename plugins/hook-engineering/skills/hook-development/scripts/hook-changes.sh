@@ -7,7 +7,8 @@
 #   installed-version  optional, e.g. from `claude --version`; entries above it are tagged [newer than installed]
 #
 # Source: the CHANGELOG.md in github.com/anthropics/claude-code, which is published
-# before the docs site catches up. Requires curl and awk on PATH.
+# before the docs site catches up. Requires curl and awk on PATH. Exits 3 when the
+# changelog can't be downloaded or read, so a network failure never reads as "no changes".
 
 set -euo pipefail
 
@@ -25,7 +26,12 @@ url="https://raw.githubusercontent.com/anthropics/claude-code/main/CHANGELOG.md"
 events='SessionStart|Setup|InstructionsLoaded|UserPromptSubmit|UserPromptExpansion|MessageDisplay|PreToolUse|PermissionRequest|PostToolUse|PostToolUseFailure|PostToolBatch|PermissionDenied|Notification|SubagentStart|SubagentStop|TaskCreated|TaskCompleted|StopFailure|TeammateIdle|ConfigChange|CwdChanged|DirectoryAdded|FileChanged|WorktreeCreate|WorktreeRemove|PreCompact|PostCompact|PreModelSwitch|PostModelSwitch|SessionEnd|Elicitation|ElicitationResult'
 terms="[Hh]ook|${events}|CLAUDE_ENV_FILE|hookSpecificOutput|additionalContext|permissionDecision|updatedInput|updatedToolOutput|watchPaths|initialUserMessage|reloadSkills|stop_hook_active|matcher|asyncRewake|ARGUMENTS|continueOnBlock|[Tt]rust"
 
-curl -fsSL "${url}" | awk -v since="${since}" -v installed="${installed}" -v terms="${terms}" '
+if ! changelog=$(curl -fsSL "${url}"); then
+  echo "hook-changes.sh: could not download ${url}; the changelog was not checked, so treat version-sensitive conclusions as unverified." >&2
+  exit 3
+fi
+
+printf '%s\n' "${changelog}" | awk -v since="${since}" -v installed="${installed}" -v terms="${terms}" -v url="${url}" '
   function cmp(a, b,   x, y, i, n) {
     n = split(a, x, "."); split(b, y, ".")
     for (i = 1; i <= 3; i++) { if ((x[i] + 0) != (y[i] + 0)) return (x[i] + 0) < (y[i] + 0) ? -1 : 1 }
@@ -34,6 +40,7 @@ curl -fsSL "${url}" | awk -v since="${since}" -v installed="${installed}" -v ter
   done { next }
   /^## [0-9]+\.[0-9]+\.[0-9]+/ {
     ver = $2
+    headings++
     if (cmp(ver, since) <= 0) { done = 1; next }
     tag = (installed != "" && cmp(ver, installed) > 0) ? " [newer than installed]" : ""
     printed = 0
@@ -44,5 +51,11 @@ curl -fsSL "${url}" | awk -v since="${since}" -v installed="${installed}" -v ter
     sub(/^[[:space:]]*[-*] /, "- ")
     print
   }
-  END { if (!found) print "No hook-related changelog entries after " since "." }
+  END {
+    if (!headings) {
+      print "hook-changes.sh: " url " has no version headings; the changelog was not checked, so treat version-sensitive conclusions as unverified." > "/dev/stderr"
+      exit 3
+    }
+    if (!found) print "No hook-related changelog entries after " since "."
+  }
 '
