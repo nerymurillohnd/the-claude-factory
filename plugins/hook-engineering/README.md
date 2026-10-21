@@ -49,7 +49,7 @@ A hook looks simple until it never fires, fires on the wrong calls, or returns a
 | :-- | :-- |
 | **Claude Code** | v2.1.292 or later (the one-step install command needs it) — check with `claude --version` |
 | **Surfaces** | See [Compatibility](#-compatibility) |
-| **External tools** | `python3` for the config linter and the hook probe, and `curl` and `awk` for the changelog script, all on `PATH`. On Windows, run them from Git Bash. Get Python 3 from [python.org](https://www.python.org/downloads/) or your package manager. `jq` is what the hooks the plugin writes use to read their input: install it with `brew install jq`, `apt install jq` or from [jqlang.org](https://jqlang.org/download/) |
+| **External tools** | `python3` for the config linter and the hook probe, and `bash`, `curl` and `awk` for the changelog script, all on `PATH`. Get Python 3 from [python.org](https://www.python.org/downloads/) or your package manager. `bash`, `curl` and `awk` come with macOS and most Linux distributions; otherwise install them with your package manager. On Windows, [Git for Windows](https://git-scm.com/downloads/win) provides Git Bash with all three. `jq` is what the hooks the plugin writes use to read their input: install it with `brew install jq`, `apt install jq` or from [jqlang.org](https://jqlang.org/download/) |
 | **Accounts / API keys** | None |
 
 If a tool is missing, the plugin tells you which check it could not run and marks the affected conclusions as unverified.
@@ -121,7 +121,7 @@ Use the hook-engineer agent to audit the hooks in .claude/settings.json. Don't c
 My SessionEnd hook uploads the session log to S3. It works by hand, but when I exit Claude Code the upload almost never finishes. Why?
 ```
 
-**Result:** Claude collects your configured command, a real input sample, your version and the debug log, reproduces the hook outside Claude Code, and names the cause with the evidence that shows it.
+**Result:** Claude collects your configured command and timeout, your version and the debug log, reads the hook instead of running it (it never runs a hook that sends data over the network), and names the cause with the evidence that shows it, such as the time limit Claude Code gives `SessionEnd` hooks.
 
 ## 🔄 Updating
 
@@ -163,8 +163,9 @@ The plugin makes these calls and no others:
 | Call | When | What it sends |
 | :-- | :-- | :-- |
 | `https://code.claude.com/docs/mcp` (Anthropic's Claude Code docs server, declared in `.mcp.json`) | Whenever Claude reads the official docs for a hook question | The search terms and page paths Claude asks for. No credentials |
-| `https://code.claude.com/docs/en/<page>.md` | When the docs server is not connected, or a heading is missing from its copy, Claude fetches the raw page with `curl` or WebFetch | A plain `GET` for that page |
+| `https://code.claude.com/docs/en/<page>.md` | When the docs server is not connected, or a heading is missing from its copy, Claude fetches the raw page with `curl` or WebFetch; it also reads `https://code.claude.com/docs/en/changelog` for a version-gated rule | A plain `GET` for that page |
 | `https://raw.githubusercontent.com/anthropics/claude-code/main/CHANGELOG.md` | When the skill or the agent runs `hook-changes.sh` to compare your installed version with the changelog | A plain `GET`; the script keeps nothing and prints only the hook-related entries |
+| `https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md` | When the docs changelog doesn't list your installed version yet, Claude opens the GitHub changelog with WebFetch | A plain `GET` for that page |
 
 The linter and the probe make no network calls. The probe runs the hook script you point it at, with the input you give it and nothing else; the agent runs it only on scripts that read no secrets and change nothing outside a temporary directory.
 
@@ -208,7 +209,7 @@ The references were checked against the Claude Code docs and changelog on 2026-1
 <details>
 <summary><b>I already added the official docs server myself.</b></summary>
 
-Claude Code connects one server per URL, so the plugin's copy is then skipped and the same tools appear under your server's name. The plugin and its agent work with either: they use this plugin's server when it is connected, the one you added when it is not, and the raw docs pages when neither is.
+Claude Code connects one server per URL, so the plugin's copy is then skipped and the same tools appear under your server's name. The skill uses either one. The `hook-engineer` agent can call yours only if you named it `claude-code-docs`, as the official quickstart does; under any other name it reads the raw docs pages instead.
 
 </details>
 

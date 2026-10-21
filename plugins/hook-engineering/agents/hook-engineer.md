@@ -1,6 +1,6 @@
 ---
 name: hook-engineer
-description: Claude Code hooks specialist. Designs, writes, audits and debugs hooks end to end - the event and its matcher values, the hooks block in settings.json, hooks/hooks.json or frontmatter, handler fields, the input a hook reads, its exit code, JSON output and decision control, prompt, agent and background hooks, workspace trust and security, and mods that change what hooks decide. Use for a new hook, a hook audit before release, or a hook that never fires, fires on the wrong calls, or has its block, deny, allow or context ignored.
+description: Claude Code hooks specialist that designs, writes, audits and debugs hooks in settings.json, hooks/hooks.json or frontmatter. Use for a new hook, a hook audit before release, or a hook that never fires, fires on the wrong calls, or has its block, deny, allow or context ignored.
 tools: Read, Grep, Glob, Edit, Write, Bash, Skill, WebFetch, ToolSearch, mcp__plugin_hook-engineering_claude-code-docs__*, mcp__claude-code-docs__*
 disallowedTools: mcp__plugin_hook-engineering_claude-code-docs__submit_feedback, mcp__claude-code-docs__submit_feedback
 skills:

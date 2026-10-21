@@ -13,8 +13,10 @@ and changelog, and connects to Anthropic's documentation server:
   Docs server:    https://code.claude.com/docs/mcp (configured in .mcp.json; no
                   code from it is bundled)
 
-Derived files, all condensed and rewritten for this plugin, with a "Docs:" line
-naming the official section each part draws on:
+Derived files, all condensed and rewritten for this plugin. SKILL.md and the
+references carry "Docs:" lines naming the official section each part draws on,
+and references/docs-map.md lists every official heading in scope with its URL;
+the agent and the report template draw on those sections through the skill:
 
   skills/hook-development/SKILL.md
   skills/hook-development/references/*.md
