@@ -12,7 +12,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The
 
 ### Changed
 
-- **github-operations** 0.4.0 — **Breaking:** `git-cleanup` becomes an exhaustive audit with two approval gates and drops its guard hook and the Python requirement; `pr-tracker` now finds your GitHub tools under any server name, a Claude app connector included.
+- **github-operations** 0.4.0 — **Breaking:** `git-cleanup` becomes an exhaustive audit with two approval gates and drops its guard hook and the Python requirement; `pr-tracker` now finds your GitHub tools under any server name, a Claude app connector included, waits for checks to finish before it reports, and also checks runners, the base branch, breaking changes and secrets in the diff.
 
 ## 2026-10-20
 

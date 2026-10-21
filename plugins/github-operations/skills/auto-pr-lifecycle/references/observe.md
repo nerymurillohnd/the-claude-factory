@@ -1,6 +1,6 @@
 # Observe the PR through the tracker
 
-The `github-operations:pr-tracker` agent observes. It reads one PR, diagnoses it and reports; it never changes anything. The main session (you) acts on the report. The agent carries the full inspection procedure in its own instructions (snapshot, checks and jobs, diagnosis, reviews, warnings, Dependabot, comparison with the previous report), so do not repeat that procedure in the brief. This reference covers what is yours: when to launch it, what to give it, how to hold its report to account, how to turn its status into a lifecycle state, how to wait, and how to read GitHub yourself when it cannot.
+The `github-operations:pr-tracker` agent observes. It reads one PR, diagnoses it and reports; it never changes anything. The main session (you) acts on the report. The agent carries the full inspection in its own instructions (workflows, jobs, runners, failures and their root cause, required checks, warnings, reviews, the diff, Dependabot, comparison with the previous report) and waits for the head's jobs to finish, so do not repeat any of that in the brief. This reference covers what is yours: when to launch it, what to give it, how to hold its report to account, how to turn its status into a lifecycle state, what to do after its wait, and how to read GitHub yourself when it cannot.
 
 ## 1. Launch the tracker
 
@@ -13,6 +13,7 @@ Give it, in the prompt:
 3. The previous tracker report, or a concise ledger of known findings. The agent keeps no memory between runs.
 4. What changed since the last report.
 5. Known blockers and access limits.
+6. The wait limit, when the user set one other than 30 minutes.
 
 ## 2. Hold the report to these points
 
@@ -21,7 +22,7 @@ Before you trust a report, check it against this list. If a point fails, read th
 1. Its head SHA equals the head you gave it. A mismatch means someone else pushed: observe again against the new head.
 2. A review, a comment, a thread and an actionable finding are different units, and the counts say how they were counted.
 3. Root failures are separate from downstream skips and cancellations, and current-head failures from older runs.
-4. Every cause is labeled confirmed, likely or uncertain, with a minimal fix and a way to verify it.
+4. Every cause has its class (code, tests, configuration, infrastructure or permissions), keeps facts apart from hypotheses, and says whether the same job fails on the base branch.
 5. No component is called outdated or unsupported without evidence, and not every warning is treated as a merge blocker.
 6. When alert access or any tool was unavailable, the report says incomplete coverage, never zero.
 7. Optimizations are kept apart from required fixes.
@@ -31,27 +32,25 @@ Before you trust a report, check it against this list. If a point fails, read th
 | Tracker status | Lifecycle state | Your rule |
 | :-- | :-- | :-- |
 | `ACTION_REQUIRED` | `actionable` | Go to the repair loop. |
-| `PENDING` | `pending` | Wait as section 4 says; `timeout` when the bound ends with nothing changed. |
+| `PENDING` | `pending`, or `timeout` | Section 4 says which. |
 | `BLOCKED` | `blocked` | Name who must act. If every outside blocker is a check the report marks as not required, decide readiness yourself against the required gates and the user's rules, and list the failure in the approval request. |
 | `READY_FOR_MAIN_SESSION` | `ready` | Only after you verify readiness yourself with the merge protocol. The status is a recommendation, and a material verification gap means not ready. |
 | `MERGED_OR_CLOSED` | a final outcome | Only after you confirm it on GitHub. |
 
 Classify warnings, security alerts and optimizations separately from merge blockers. An existing unrelated alert does not make this PR responsible for remediation.
 
-## 4. Wait for pending checks
+## 4. After the tracker's wait
 
-The tracker cannot wait; it returns `PENDING`. You wait, then launch it again. Wait until something changes, for at most 30 minutes in one stretch unless the user set another limit.
+The tracker waits for the head's jobs to finish, for at most 30 minutes or the limit you gave it, and then reports. Do not wait yourself while it runs; act on its report when it arrives.
 
-1. With `gh`: start its PR checks watcher in the background with fail-fast, a 30-second interval and a 30-minute timeout, and carry on only when it exits and you are notified. Then launch the tracker again. The only documented exit status is 8, "checks pending"; decide from the report, not from the exit status.
-2. Without `gh`: relaunch the tracker no more often than once a minute, and only when the report gave you a reason to expect a change.
-3. Reviews and required approvals arrive without a check changing. When the checks are done and only a human approval is missing, report `pending` and name who must act instead of waiting for a human.
-4. When the bound ends without a terminal state, the state is `timeout`: report what is still pending and ask whether to keep waiting. Never wait without a bound.
+1. `PENDING` with jobs still running: the state is `timeout`. Report what is still running and ask whether to keep waiting; if the user says yes, launch the tracker again. Never wait without a bound.
+2. `PENDING` because only a person's review or approval is missing: the state is `pending`. Report who must act instead of waiting for a human.
 
 Do not send routine messages such as "still waiting" or "fixed one issue, continuing". Surface actionable blockers and terminal outcomes only.
 
 ## 5. When the tracker cannot run, or left a gap
 
-If the Agent tool is unavailable, or the report lists a coverage gap (a missing MCP tool because the token lacks a scope or fewer toolsets are on), read that data yourself, with the same discipline: current head only, data you could not read is "not inspected" and never zero, and every list read to its end. Use the MCP form first and `gh` as the fallback, in both directions. Check a `gh` command's help for exact options before first use.
+If the Agent tool is unavailable, or the report lists something it could not inspect (a missing MCP tool because the token lacks a scope or fewer toolsets are on), read that data yourself, with the same discipline: current head only, data you could not read is "not inspected" and never zero, and every list read to its end. Use the MCP form first and `gh` as the fallback, in both directions. Check a `gh` command's help for exact options before first use.
 
 | Fact | MCP | gh |
 | :-- | :-- | :-- |
