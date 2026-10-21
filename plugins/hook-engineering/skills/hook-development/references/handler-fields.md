@@ -64,14 +64,14 @@ Docs: [command hook fields](https://code.claude.com/docs/en/hooks#command-hook-f
 
 Docs: [exec form and shell form](https://code.claude.com/docs/en/hooks#exec-form-and-shell-form)
 
-- **Exec form** (`args` present): `command` is resolved as an executable on `PATH` and spawned directly; each `args` element is one argument, verbatim. Placeholders are substituted as plain strings; no quoting needed. Prefer it whenever a placeholder appears.
+- **Exec form** (`args` present): `command` is resolved as an executable on `PATH` and spawned directly; each `args` element is one argument, verbatim. Placeholders are substituted as plain strings; no quoting needed. The docs prefer it whenever a placeholder appears, but for a hook that ships to others the Windows rule below decides.
 - **Shell form** (no `args`): the string goes to `sh -c` on macOS and Linux, Git Bash on Windows, or PowerShell without Git Bash. Use it for pipes, `&&`, redirects or globs. Wrap each placeholder in double quotes: `"node \"${CLAUDE_PLUGIN_ROOT}\"/scripts/format.js --fix"`.
 - Windows exec form needs a real executable such as `.exe`. `.cmd` and `.bat` shims can't be spawned without a shell: run `node` with the script path, or use shell form.
 - In exec form, `command` is one executable. A bare name with whitespace (`node script.js`) logs a warning and fails; move the extra words into `args`. An absolute path with spaces is fine.
 - Both forms export `CLAUDE_PROJECT_DIR`, `CLAUDE_PLUGIN_ROOT` and `CLAUDE_PLUGIN_DATA` as environment variables.
 - Plugin hooks substitute `${user_config.*}` in **exec form only**. A shell-form plugin hook that references it fails (since v2.1.207); read `$CLAUDE_PLUGIN_OPTION_<KEY>` instead, or switch to exec form.
 
-A plugin guard on Bash and PowerShell, in exec form, failing closed:
+A plugin guard on Bash and PowerShell, in shell form so it runs on macOS, Linux and Windows through Git Bash, failing closed:
 
 ```json
 {
@@ -82,8 +82,7 @@ A plugin guard on Bash and PowerShell, in exec form, failing closed:
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/guard.sh",
-            "args": [],
+            "command": "\"${CLAUDE_PLUGIN_ROOT}\"/hooks/guard.sh",
             "timeout": 10,
             "onFailure": "block"
           }
@@ -94,7 +93,7 @@ A plugin guard on Bash and PowerShell, in exec form, failing closed:
 }
 ```
 
-`onFailure` needs Claude Code v2.1.295 or later. On Windows, exec form needs a real `.exe`; to stay portable through Git Bash, use shell form with the quoted placeholder instead.
+`onFailure` needs Claude Code v2.1.295 or later. Exec form (`"command": "${CLAUDE_PLUGIN_ROOT}/hooks/guard.sh", "args": []`) would fail on Windows, where it needs a real `.exe`, and with `onFailure: "block"` that failure would block every Bash and PowerShell call. Use exec form for a hook that ships to others only when `command` is a real executable everywhere, such as `node` with the script path in `args`.
 
 ## HTTP hook fields
 
