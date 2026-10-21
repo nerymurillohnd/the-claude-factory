@@ -45,40 +45,17 @@ Only when Nery explicitly asks to create, build or start a plugin. Each step nam
 
 ### When Writing Plugins
 
-Scope:
+Every time you scaffold, create, edit or remove any of these:
 
-- Cover the plugin's whole domain in one install, and build each part as simply as it can be while staying safe, stable and efficient in Claude Code. Every component earns its place with a user task no other component of the plugin covers.
-- Build for any user of the public marketplace, never for Forestal MT, Nery's machine or the tools he uses. Nery's machine is a test bench, never a finding: recall memory `plugins-are-for-third-parties`.
-- When Nery hands over his own version of a plugin file, edit his file in place, and copy it into the plugin only after he reviews it and says so: recall memory `stage-external-plugin-files`.
-- A required tool, dependency, account or integration never rules a plugin out: it becomes a prerequisite in the README, with how to install it and its alternatives.
-- Read the official docs for each component type before you write it.
+- A file under `plugins/<name>/`: a component (skill, agent, hook, MCP or LSP server, mod, output style, `bin/`), a script, `plugin.json`, `LICENSE`, `NOTICE.txt`, the README or the CHANGELOG.
+- A plugin file that Nery hands over in his own version.
 
-Files:
+Do this:
 
-- Every plugin ships `LICENSE`, `CHANGELOG.md` and `README.md`.
-- A plugin that bundles, derives from or wires in third-party material or integrations also ships `NOTICE.txt`: the plugin's copyright and license, then each third-party source with its repository, version or commit, license and the files derived from it.
-- Keep `version` in `plugin.json`, at `0.1.0` for the first release, and add `keywords`. Never set `version` on a marketplace entry. Change `displayName` to relabel a plugin.
-- Name each skill for what it does, not how it is implemented.
-- Declare hooks in `hooks/hooks.json`. A plugin agent's frontmatter `hooks` is ignored.
-- Give a plugin its own `package.json` or Python environment only when its architecture needs one; the plugin's complexity must justify every dependency. Set it up the way the current plugins reference says, and ship Node dependencies only with an npm or Bun lockfile: other lockfiles leave no `node_modules`.
-- After moving or creating files, delete `.DS_Store` files and orphaned cache directories.
-- Keep `metadata` in `plugin.json` and `onFailure` on hooks even when the claude.ai sync warns about them: recall memory `claudeai-sync-warnings`.
-
-Components:
-
-- Agents: recall memory `agent-file-rules` before writing or editing one, and memory `subagent-skill-preload` before relying on `skills:` in its frontmatter.
-- `userConfig` options: recall memory `plugin-userconfig-behavior` for how they behave on install, update and synced copies.
-- MCP servers: recall memory `claude-app-plugin-mcp-connector` for how the Claude app connects a plugin's http server, and memory `claude-code-desktop-vs-cli` for `${VAR}` headers that expand empty in the desktop app.
-- Mods: recall memory `claude-code-mods-facts` for `register.ts`, static validation, `decider: 'person'`, tests and the type declarations.
-
-Scripts:
-
-- Start with `#!/usr/bin/env <interpreter>` (no version), commit as `100755`, and call by path through `${CLAUDE_PLUGIN_ROOT}` or `${CLAUDE_SKILL_DIR}`.
-- Make network calls only when the plugin's purpose requires them, and disclose each one in the README.
-
-Use:
-
-- When Nery uses a plugin for his own work, he installs the marketplace and the plugin like any other user. `--plugin-dir` is only for building and testing.
+1. Invoke the `plugin-development` skill with the Skill tool as soon as you touch the file, and follow it until its last step.
+2. State the user task each component serves, and read the official docs for each component type before you write it.
+3. Recall the memories those components depend on, then write for any user of the public marketplace: the required files, the manifest fields, each script called by path, every network call disclosed in the README.
+4. Clean up, exercise the plugin with `claude --plugin-dir plugins/<name>`, and finish with the `plugin-consistency` skill.
 
 ### When Writing Skills
 
@@ -202,7 +179,7 @@ After building or changing a plugin, before its release. Delegate it to a read-o
 
 1. Read `.claude/rules/WORKFLOW.md`, `docs/compatibility.md`, the checks in `.github/scripts/check-repo.mjs` and everything under `plugins/<name>/`.
 2. Run `claude plugin validate --strict plugins/<name>` and `node .github/scripts/check-repo.mjs`, and quote the output.
-3. Manifest: the fields When Writing Plugins sets; paths start with `./`; secrets go through `userConfig`; no hardcoded tokens or personal data.
+3. Manifest: the fields `.claude/skills/plugin-development/SKILL.md` → step 4 sets; paths start with `./`; secrets go through `userConfig`; no hardcoded tokens or personal data.
 4. Components: each skill, agent, hook, MCP and LSP server does what the README claims; skill descriptions state what and when; hook scripts fail safe; paths use `${CLAUDE_PLUGIN_ROOT}`.
 5. Security: no data exfiltration, no undisclosed network calls, no destructive commands without confirmation, no `curl | sh`, least-privilege tool grants.
 6. Compatibility: the README table matches `docs/compatibility.md` for the components actually shipped (e.g. `bin/` ⇒ ❌ Claude app; agents and hooks ⇒ ⚠️ Cowork sessions only).
@@ -213,36 +190,21 @@ After building or changing a plugin, before its release. Delegate it to a read-o
 
 Verify every finding against the files and the live docs before fixing it: reviewers over-report. Then apply the confirmed findings in one coherent pass per file and re-read each touched file and its references: recall memory `apply-fixes-holistically`.
 
-### When Auditing User Docs
-
-Before a release or after editing user docs. Delegate it to a read-only subagent, as for the plugin review. Scope: `README.md`, `docs/*.md`, `plugins/*/README.md`, `SECURITY.md`, `SUPPORT.md`, `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, `.github/ISSUE_TEMPLATE/*`, or only the path it is given.
-
-1. Accuracy: every `claude …` command, `/plugin …` flow, flag, minimum version and app UI path (Customize → Plugins, + → Plugins, `/plugins` in VS Code) matches the current docs at code.claude.com and claude.com, with the source URL.
-2. Links: relative links resolve to existing files, anchors exist (markdownlint reports MD051), and external links point to the right page.
-3. Style: follows When Writing User Docs.
-4. No leakage: no mention of `.claude/`, maintenance scripts, CI internals, the tooling that maintains the repo or internal process.
-5. Consistency: marketplace source `nerymurillohnd/the-claude-factory`, install suffix `@the-claude-factory`, the same compatibility matrix everywhere.
-6. Selling: each plugin README leads with the outcome and a TL;DR, with no unresolved TODOs.
-7. Report a findings table (severity, file:line, issue, evidence or source, suggested wording) and a pass or fail summary per file.
-
 ### When Using GitHub
 
-- Every edit to a plugin's `plugin.json`, skills (`SKILL.md` and its files), agents, hooks, `.mcp.json`, `.lsp.json` or dependencies goes through a PR. Everything else goes by direct push or by PR, as Nery decides.
-- Push and open a PR only on Nery's order. Label every PR from `gh label list`.
-- Before any push of `main`, recall memory `main-holds-unreleased-hook-workbench`: a push can publish and tag a plugin that is not ready.
-- Write commit messages and PR bodies through a quoted heredoc and read them back before pushing: the Bash tool runs zsh. Recall memory `zsh-modifiers-in-shell-strings`.
-- When a push fails with a broken pipe while fetch works, retry once with HTTP/1.1: recall memory `github-push-http1-workaround`.
-- PR review runs through the Claude workflows in `.github/workflows/`, not a managed review service: recall memory `claude-plan-pro-max`.
-- When Nery asks for CI work, offer the open CI items one by one before anything new: recall memory `ci-simplify-skipped-findings`.
+Every time you handle an issue or touch GitHub:
 
-Carry a PR to merge in this order:
+- A user issue arrives or is open: read, reproduce, label, reply, fix.
+- A commit, branch, push or PR: create, change or carry any of them.
+- A failed job, a review comment or a Dependabot alert on a PR.
+- A request from Nery for CI work.
 
-1. Read the failed jobs and every review, from Claude and from third parties.
-2. Verify each finding against the files and the docs before acting on it.
-3. Fix the root cause and commit. Push the fix only with Nery's OK.
-4. Reply to each review and resolve it.
-5. Repeat until every job is green and no review, issue or failed job remains.
-6. Stop at ready to merge, tell Nery, and wait for his green light.
+Do this:
+
+1. Invoke the `github-workflow` skill with the Skill tool as soon as the case arises, and follow it until its last step.
+2. Confirm an issue before you claim anything about it, and verify each review finding against the files and the docs before acting on it.
+3. Fix the root cause and commit; never post, label, close, push, open a PR or merge on the marketplace's behalf without Nery's order.
+4. Carry the PR until every job is green and no review is open, stop at ready to merge, and wait for his green light.
 
 ### When Releasing
 
@@ -255,34 +217,24 @@ Right after the merge:
 1. `gh run list --workflow release.yml --branch main --limit 1` - Read the release run that follows the merge.
 2. `gh release view <plugin>--v<version>` - Confirm the tag and the GitHub Release exist.
 3. If Validate failed, fix the cause first. Run `gh workflow run release.yml` only when Validate passed and no release run exists.
-4. For each fixed issue, per When Handling Issues: comment that the fix is released, label it `status: released`, and close it.
+4. For each fixed issue, per the `github-workflow` skill: comment that the fix is released, label it `status: released`, and close it.
 
-### When Handling Issues
+### When Keeping Docs Consistent
 
-- Nery and Claude Code are the only developers and maintainers. The marketplace has no outside collaborators, and pull requests from users are not accepted.
-- Users report through issues. For each one:
-  1. Reproduce it, or confirm the report against the code and the current docs.
-  2. Label it and draft the reply in English.
-  3. Fix the confirmed cause in a PR that references it as `Refs #n`.
-  4. Ship the fix in a release, then report on the issue what was fixed.
-- Post a reply, label or close an issue only after Nery approves it: it speaks for the marketplace in public.
+Every time you create, edit or remove any of these:
 
-### When Checking Docs Drift
+- A file under `plugins/<name>/`: a component, `plugin.json`, the README or the CHANGELOG.
+- The root `README.md` or `CHANGELOG.md`, a file in `docs/`, `.claude-plugin/marketplace.json`, a template, or a community file (`SECURITY.md`, `SUPPORT.md`, `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, an issue template).
+- A pinned tool or Claude Code version in the workflows or in `.claude/CLAUDE.md` → Commands.
 
-Only when Nery explicitly asks for a drift or freshness check. Delegate it to a read-only subagent; it reports with evidence and edits nothing unless asked.
+And every time before a release, or when Nery asks for a drift or freshness check, over the whole repo.
 
-1. Gather current facts from live sources only:
-   - Claude Code changelog: `/en/changelog` in the Claude Code Docs MCP (or <https://code.claude.com/docs/en/changelog>), every release since `CLAUDE_CODE_VERSION` in `.github/workflows/validate.yml`.
-   - Plugin docs: `/en/plugins/*` (install, marketplace-reference, manifest-reference, publish, host-marketplace, troubleshooting).
-   - Cross-surface support: <https://claude.com/docs/plugins/platform-support>, <https://claude.com/docs/cowork/guide/plugins>, <https://support.claude.com/en/articles/13837440-use-plugins-in-claude>, <https://support.claude.com/en/articles/16761823>, the Claude app release notes (<https://support.claude.com/en/articles/12138966-release-notes>) and the Claude Desktop changelog (<https://claude.com/docs/cowork/changelog.md>).
-   - Latest versions: `npm view @anthropic-ai/claude-code version`, `npm view markdownlint-cli2 version`, and the latest tags of `actions/checkout`, `actions/setup-node` and `rhysd/actionlint`.
-2. Compare them against the repo:
-   - commands, flags, UI paths and minimum versions: `README.md`, `docs/*.md`, `.claude/templates/plugin/README.md`;
-   - the compatibility matrix: `README.md`, `docs/compatibility.md`, `.claude/templates/plugin/README.md`, every `plugins/*/README.md`;
-   - manifest and marketplace fields, reserved names: `.github/scripts/lib.mjs`, `check-repo.mjs`, the templates;
-   - pinned versions: `.github/workflows/*.yml` and `.claude/CLAUDE.md` → Commands;
-   - new capabilities worth adopting, such as new manifest fields or component types.
-3. Report a table (file, line, what it says, what's current, source URL, severity: wrong, outdated or opportunity), then the proposed edits by file and the version bumps they need (a README-only edit needs none).
+Do this:
+
+1. Invoke the `plugin-consistency` skill with the Skill tool as soon as you touch the file, and follow it until its last step.
+2. Find what the change touches and which files must agree with it.
+3. Run the repo's check scripts, compare both sides of every pair, and confirm the claims the change added against live sources.
+4. Fix each disagreement in the same change, asking Nery where the right value is a decision, and rerun until clean. Report the raw output.
 
 ### When Writing a Handoff
 

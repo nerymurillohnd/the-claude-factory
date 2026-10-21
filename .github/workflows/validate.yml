@@ -15,7 +15,7 @@ concurrency:
 
 env:
   # Pinned for reproducible CI. Dependabot does not track npm CLIs installed with npx/npm -g,
-  # so the docs drift check in .claude/rules/WORKFLOW.md reviews these pins.
+  # so the plugin-consistency skill (WORKFLOW.md, "When Keeping Docs Consistent") reviews these pins.
   CLAUDE_CODE_VERSION: "2.1.304"
   MARKDOWNLINT_CLI2_VERSION: "0.23.3"
   ACTIONLINT_VERSION: "1.7.12"
