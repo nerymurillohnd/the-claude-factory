@@ -4,12 +4,14 @@
 
 Each section below applies to one kind of work. Follow the section for the task at hand before you start it. The sections run in the order of a plugin's life: quality applies to all of them, then create, write, change, version, review, ship, support and keep current. Commands live in `.claude/CLAUDE.md` → Commands.
 
+A line that says "Recall memory `<name>`" points to a verified fact or a past correction: read `<name>.md` in the project memory (`.claude/memory/`) or, when it is not there, in the global memory (`~/.claude/memory/`) before you act on that step.
+
 ### When Checking Quality
 
 Applies to every task.
 
 1. After you edit, write or create a `.py`, `.mjs`, `.ts` or `.sh` file, run the commands for its type in Commands → After Editing a File, right away and before the next task, in this order: formatter, linter, type checker, tests.
-2. Pass each strict `tsc` flag with an explicit value: `--strict` does not override an explicit `false` in a tsconfig.
+2. Pass each strict `tsc` flag with an explicit value: `--strict` does not override an explicit `false` in a tsconfig. Before the first edit of a `.ts`, `.mts`, `.js` or `.mjs` file in a task, tests and scratch scripts included, invoke the TypeScript lifecycle skill: recall memory `ts-lifecycle-before-ts-edits`.
 3. Fix every finding before you advance to the next step, file or task. An issue stays open only when it waits on a decision or a spend only Nery can make: then stop and ask.
 4. Before every push, run Commands → Before Every Push in order. Stop at the first failure, fix the cause, then restart from step 1.
 5. Report that run as a table: gate, result and key output line.
@@ -21,7 +23,7 @@ Only when Nery explicitly asks to create, build or start a plugin. Each step nam
 1. Write the design brief and agree it with Nery, in Spanish, before building anything:
    - Market check: what already exists for this domain, what users must combine today, and what this plugin covers in one install that they cannot find elsewhere.
    - Problem and outcome: the recurring friction it removes, and who it is for.
-   - Overlap: when an existing plugin of this marketplace covers part of the domain, weigh extending it against a new plugin, and propose the choice.
+   - Overlap: when an existing plugin of this marketplace covers part of the domain, weigh extending it against a new plugin, and propose the choice. Never argue a design choice from another plugin of the marketplace: recall memory `no-other-plugins-as-precedent`.
    - Name: kebab-case, permanent, no `claude-` or `anthropic-` prefix, named for what it does; a display name and an emoji.
    - Category: an `id` from `.github/scripts/categories.json`.
    - Components: skills, agents, hooks, MCP, LSP, output styles, monitors, scripts, each justified by a user task.
@@ -34,7 +36,7 @@ Only when Nery explicitly asks to create, build or start a plugin. Each step nam
 4. Write the README per When Writing User Docs, starting from the scaffolded template.
 5. Fill `CHANGELOG.md` → `## [0.1.0]` → `### Added` with what ships, and add `- **<name>** 0.1.0 — <summary>.` under `### Added` in today's heading of the root `CHANGELOG.md`. Move that line to the merge day if the PR merges on a later day.
 6. Write the evals when Nery approved them (When Writing Evals).
-7. Stop and tell Nery the plugin is built. Run the closing checks only once he says it is ready:
+7. Stop and tell Nery the plugin is built. While he is still shaping it, run only the cheap checks each edit needs, and do not run or announce live tests, the full gate sequence or the plugin review: recall memory `no-unrequested-verification-while-designing`. Run the closing checks only once he says it is ready:
    - every step of Before Every Push passes;
    - the plugin review passes (When Reviewing a Plugin) and every confirmed finding is fixed;
    - Nery runs the Claude app check in a Cowork session and a chat conversation, unless the plugin is Claude Code-only.
@@ -46,7 +48,8 @@ Only when Nery explicitly asks to create, build or start a plugin. Each step nam
 Scope:
 
 - Cover the plugin's whole domain in one install, and build each part as simply as it can be while staying safe, stable and efficient in Claude Code. Every component earns its place with a user task no other component of the plugin covers.
-- Build for any user of the public marketplace, never for Forestal MT, Nery's machine or the tools he uses.
+- Build for any user of the public marketplace, never for Forestal MT, Nery's machine or the tools he uses. Nery's machine is a test bench, never a finding: recall memory `plugins-are-for-third-parties`.
+- When Nery hands over his own version of a plugin file, edit his file in place, and copy it into the plugin only after he reviews it and says so: recall memory `stage-external-plugin-files`.
 - A required tool, dependency, account or integration never rules a plugin out: it becomes a prerequisite in the README, with how to install it and its alternatives.
 - Read the official docs for each component type before you write it.
 
@@ -59,6 +62,14 @@ Files:
 - Declare hooks in `hooks/hooks.json`. A plugin agent's frontmatter `hooks` is ignored.
 - Give a plugin its own `package.json` or Python environment only when its architecture needs one; the plugin's complexity must justify every dependency. Set it up the way the current plugins reference says, and ship Node dependencies only with an npm or Bun lockfile: other lockfiles leave no `node_modules`.
 - After moving or creating files, delete `.DS_Store` files and orphaned cache directories.
+- Keep `metadata` in `plugin.json` and `onFailure` on hooks even when the claude.ai sync warns about them: recall memory `claudeai-sync-warnings`.
+
+Components:
+
+- Agents: recall memory `agent-file-rules` before writing or editing one, and memory `subagent-skill-preload` before relying on `skills:` in its frontmatter.
+- `userConfig` options: recall memory `plugin-userconfig-behavior` for how they behave on install, update and synced copies.
+- MCP servers: recall memory `claude-app-plugin-mcp-connector` for how the Claude app connects a plugin's http server, and memory `claude-code-desktop-vs-cli` for `${VAR}` headers that expand empty in the desktop app.
+- Mods: recall memory `claude-code-mods-facts` for `register.ts`, static validation, `decider: 'person'`, tests and the type declarations.
 
 Scripts:
 
@@ -84,7 +95,7 @@ Use:
 
 ### When Writing Hooks
 
-Work through these in order: declare, filter, decide, fail, test, document.
+Work through these in order: declare, filter, decide, fail, test, document. Do not propose or build a hook that reminds Claude to invoke an LSP intelligence skill before the first edit until Nery reports skipped skills: recall memory `deferred-pretooluse-skill-reminder`.
 
 #### Declare
 
@@ -134,6 +145,7 @@ Work through these in order: declare, filter, decide, fail, test, document.
 
 - Plugins get evals by default; Nery decides which plugins skip them. Write evals only for a plugin he approved.
 - Never work from memory: load the plugin-evals skill, use the Claude Code Docs MCP tools, and read the Claude Code changelog for the installed version, the four before it and every newer one. Apply what changed. Never invent or assume a format or behavior.
+- Cases run in `dontAsk` mode, so writes under `.claude/` are denied and `userConfig` cannot be set: grade the attempt and the reply. Recall memory `plugin-eval-dontask-mode`.
 - Give the plugin an entry in `.github/scripts/evals-config.json`: the tools the cases need, `max_cost_usd` and the `cost_basis` it was measured from.
 - Run `run-evals.sh` only on Nery's request: it spends money. CI runs the suite only for plugins with an `evals/` folder that changed.
 - A plugin without evals is tested with the methods the official docs recommend for its component types.
@@ -199,7 +211,7 @@ After building or changing a plugin, before its release. Delegate it to a read-o
 9. Changelog: the current version has an entry that matches the actual changes.
 10. Report a verdict (**ready**, **ready after fixes** or **not ready**) and a findings table: severity (blocker, major, minor), file:line, problem, evidence (quoted output or doc URL), fix. Mark anything not verified as **unverified**.
 
-Verify every finding against the files and the live docs before fixing it: reviewers over-report.
+Verify every finding against the files and the live docs before fixing it: reviewers over-report. Then apply the confirmed findings in one coherent pass per file and re-read each touched file and its references: recall memory `apply-fixes-holistically`.
 
 ### When Auditing User Docs
 
@@ -217,6 +229,11 @@ Before a release or after editing user docs. Delegate it to a read-only subagent
 
 - Every edit to a plugin's `plugin.json`, skills (`SKILL.md` and its files), agents, hooks, `.mcp.json`, `.lsp.json` or dependencies goes through a PR. Everything else goes by direct push or by PR, as Nery decides.
 - Push and open a PR only on Nery's order. Label every PR from `gh label list`.
+- Before any push of `main`, recall memory `main-holds-unreleased-hook-workbench`: a push can publish and tag a plugin that is not ready.
+- Write commit messages and PR bodies through a quoted heredoc and read them back before pushing: the Bash tool runs zsh. Recall memory `zsh-modifiers-in-shell-strings`.
+- When a push fails with a broken pipe while fetch works, retry once with HTTP/1.1: recall memory `github-push-http1-workaround`.
+- PR review runs through the Claude workflows in `.github/workflows/`, not a managed review service: recall memory `claude-plan-pro-max`.
+- When Nery asks for CI work, offer the open CI items one by one before anything new: recall memory `ci-simplify-skipped-findings`.
 
 Carry a PR to merge in this order:
 
@@ -266,3 +283,7 @@ Only when Nery explicitly asks for a drift or freshness check. Delegate it to a 
    - pinned versions: `.github/workflows/*.yml` and `.claude/CLAUDE.md` → Commands;
    - new capabilities worth adopting, such as new manifest fields or component types.
 3. Report a table (file, line, what it says, what's current, source URL, severity: wrong, outdated or opportunity), then the proposed edits by file and the version bumps they need (a README-only edit needs none).
+
+### When Writing a Handoff
+
+- A handoff carries only work on this repository. Leave out other projects, Nery's machines, accounts and user-level settings, and record a test as done as soon as Nery reports it with evidence: recall memory `handoff-repo-scope`.
