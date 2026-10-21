@@ -41,7 +41,7 @@ Only when Nery explicitly asks to create, build or start a plugin. Each step nam
    - the plugin review passes (When Reviewing a Plugin) and every confirmed finding is fixed;
    - Nery runs the Claude app check in a Cowork session and a chat conversation, unless the plugin is Claude Code-only.
 8. Open the PR per When Using GitHub. After the first push, run `sync-labels.mjs` to create the `plugin: <name>` label.
-9. Hand off: what was built, the raw gate output, the surfaces tested and the release step (When Releasing).
+9. Hand off: what was built, the raw gate output, the surfaces tested and the release step (When Versioning and Releasing a Plugin).
 
 ### When Writing Plugins
 
@@ -151,7 +151,7 @@ After every change inside `plugins/<name>/`, in the same PR:
 
 1. Read the plugin's README and make it match the plugin as it now is: add what the change made missing and remove what it made obsolete.
 2. Record the change in the plugin's `CHANGELOG.md` under `## [Unreleased]`, in detail. Each plugin changelog tells the plugin's full story.
-3. Decide the bump per When Versioning a Plugin.
+3. Decide the bump per When Versioning and Releasing a Plugin.
 4. When the change is a version bump, a launch, a removal, a migration or a consolidation, add one short line to the root `CHANGELOG.md`.
 
 Changelog format (Keep a Changelog 2.0.0):
@@ -160,18 +160,20 @@ Changelog format (Keep a Changelog 2.0.0):
 - Mark breaking entries with a leading `**Breaking:**` inside their change type.
 - The root `CHANGELOG.md` is a summary, never a copy of a plugin changelog. It is grouped by date, newest first, one line per change: `- **plugin-name** 1.2.0 — one-line summary.` Create the `## YYYY-MM-DD` heading when it is missing, with `### Added`, `### Changed` and so on below it.
 
-### When Versioning a Plugin
+### When Versioning and Releasing a Plugin
 
-| Bump | When |
-| :-- | :-- |
-| **major** | Breaking: a removed or renamed skill, agent or command; changed config keys; a new required dependency; a change to behavior users rely on |
-| **minor** | A new component, option or capability, backwards compatible |
-| **patch** | A bug fix, prompt wording fix, performance gain or internal refactor with the same behavior |
+Every time you bump, rename, remove or release a plugin, or decide whether a change needs a new version:
 
-- Stay in `0.x` while a plugin is new; go to `1.0.0` only when Nery declares its interface stable.
-- In `0.x`, a breaking change bumps the minor (`0.y.z` → `0.(y+1).0`) and its changelog entry keeps `**Breaking:**`. From `1.0.0` on, breaking means major.
-- Bump with `bump-version.mjs` in the plugin's PR; it turns `[Unreleased]` into the dated section. Never edit a version by hand. A change limited to the README needs no bump.
-- Never rename or remove a plugin silently: add `"renames": { "old": "new" }` (or `"old": null` for a removal) to `marketplace.json` and note it in the root changelog.
+- A change inside `plugins/<name>/` other than its README, to be released.
+- A rename or removal of a plugin, or a move to `1.0.0`.
+- A question about which version a change carries.
+
+Do this:
+
+1. Invoke the `release-and-versioning` skill with the Skill tool as soon as the case arises, and follow it until its last step.
+2. Pick the bump from what changes for the user, and record the change in the plugin's `CHANGELOG.md` under `## [Unreleased]` first.
+3. Bump only with `bump-version.mjs` in the plugin's PR, add the root `CHANGELOG.md` line, and never tag by hand.
+4. After Nery merges, confirm the release run, the tag and the GitHub Release, and close the fixed issues.
 
 ### When Reviewing a Plugin
 
@@ -206,19 +208,6 @@ Do this:
 3. Fix the root cause and commit; never post, label, close, push, open a PR or merge on the marketplace's behalf without Nery's order.
 4. Carry the PR until every job is green and no review is open, stop at ready to merge, and wait for his green light.
 
-### When Releasing
-
-- The plugin PR carries the release: the bump from `bump-version.mjs`, the notes under the new version, and the root `CHANGELOG.md` line. There is no separate release commit.
-- Reference fixed issues as `Refs #n`, never `Closes #n`: issues close in the release step.
-- Never tag by hand: `release.yml` tags after Validate passes on `main`.
-
-Right after the merge:
-
-1. `gh run list --workflow release.yml --branch main --limit 1` - Read the release run that follows the merge.
-2. `gh release view <plugin>--v<version>` - Confirm the tag and the GitHub Release exist.
-3. If Validate failed, fix the cause first. Run `gh workflow run release.yml` only when Validate passed and no release run exists.
-4. For each fixed issue, per the `github-workflow` skill: comment that the fix is released, label it `status: released`, and close it.
-
 ### When Keeping Docs Consistent
 
 Every time you create, edit or remove any of these:
@@ -235,7 +224,3 @@ Do this:
 2. Find what the change touches and which files must agree with it.
 3. Run the repo's check scripts, compare both sides of every pair, and confirm the claims the change added against live sources.
 4. Fix each disagreement in the same change, asking Nery where the right value is a decision, and rerun until clean. Report the raw output.
-
-### When Writing a Handoff
-
-- A handoff carries only work on this repository. Leave out other projects, Nery's machines, accounts and user-level settings, and record a test as done as soon as Nery reports it with evidence: recall memory `handoff-repo-scope`.

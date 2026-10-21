@@ -14,7 +14,7 @@ Act as a release engineer who owns the integrity of the marketplace: the plugin 
 ## Rules
 
 - Scope is the change: the files touched since `origin/main` plus the working tree, and every counterpart they must agree with. Widen to the whole repo only when Nery asks for a freshness check or before a release.
-- Read the rules, do not restate them: `.claude/rules/WORKFLOW.md` → "When Changing a Plugin", "When Versioning a Plugin" and "When Writing User Docs" are the source. This skill checks that they were followed.
+- Read the rules, do not restate them: `.claude/rules/WORKFLOW.md` → "When Changing a Plugin" and "When Writing User Docs" are the source, and the `release-and-versioning` skill for versions. This skill checks that they were followed.
 - Fix the inconsistencies the change created, in the same change, at their root. Ask Nery before changing anything the change did not touch or cause.
 - Never commit, push or bump by hand. Bump with `bump-version.mjs`, as the rules say.
 - A passing script is not consistency: the scripts check that things exist, not that they are true. Read both sides of every pair.
@@ -81,7 +81,7 @@ Open both sides of every pair from step 2 and compare them. Goal: one fact has o
 
 - Every component the diff adds, removes or renames appears, or disappears, in the README, with the right name and usage example.
 - The README matches the plugin's behavior: prerequisites, network calls, options and defaults as the code has them.
-- The CHANGELOG `[Unreleased]` covers each user-visible change in the diff and nothing that did not happen; the bump level matches the table in "When Versioning a Plugin".
+- The CHANGELOG `[Unreleased]` covers each user-visible change in the diff and nothing that did not happen; the bump level matches the table in the `release-and-versioning` skill.
 - The root CHANGELOG has one line for a bump, launch, removal, migration or consolidation, under the right date.
 - Compatibility cells equal `docs/compatibility.md` word for word.
 - `grep -rnoE 'nerymurillohnd/[A-Za-z0-9._-]+|@[a-z-]*claude-factory'` over the touched docs returns only the expected source and suffix.

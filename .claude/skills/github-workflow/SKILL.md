@@ -86,4 +86,4 @@ Run the "Before Every Push" gates in `.claude/CLAUDE.md` → Commands, in order,
 
 ### 7. Close out
 
-Stop at ready to merge: tell Nery what the PR changed, the state of every job and review, and anything you did not verify, then wait for his green light. After the merge, follow `.claude/rules/WORKFLOW.md` → "When Releasing" to confirm the tag and the release; then draft, in English, the comment on each fixed issue saying what was fixed, show it to Nery, and with his approval post it, label the issue `status: released` and close it.
+Stop at ready to merge: tell Nery what the PR changed, the state of every job and review, and anything you did not verify, then wait for his green light. After the merge, follow the `release-and-versioning` skill to confirm the tag and the release; then draft, in English, the comment on each fixed issue saying what was fixed, show it to Nery, and with his approval post it, label the issue `status: released` and close it.

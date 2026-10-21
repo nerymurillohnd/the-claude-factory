@@ -1,10 +1,10 @@
 ---
-status: accepted
+status: superseded
 date: 2026-10-16
 decision-makers:
   - "Nery"
 supersedes: none
-superseded-by: none
+superseded-by: ADR_2026-10-20_procedures-live-in-project-skills
 ---
 
 # Maintainer operating model: gate rules, push authority, release and records

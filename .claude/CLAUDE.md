@@ -50,7 +50,7 @@ This project carries one item of the global North Star: multiply execution capac
 - `.claude/maintainer/technical-debt/`: pending and closed debt.
 - `.claude/memory/`: project memory (facts, feedback).
 - `.claude/session-handoff/`: session handoffs.
-- `.claude/skills/`: project skills (`plugin-development`, `plugin-consistency`, `github-workflow`).
+- `.claude/skills/`: project skills (`plugin-development`, `plugin-consistency`, `github-workflow`, `release-and-versioning`).
 - `.claude/specs/`: design specs.
 - `.claude/plans/`: implementation plans.
 - `.claude/templates/`: templates for plugin files and the root README.
@@ -146,4 +146,4 @@ No git hook runs `.pre-commit-config.yaml`, and CI does not run `basedpyright`, 
 - Script `sync-labels.mjs` writes GitHub labels; run `--dry-run` first.
 - Script `run-evals.sh` spends API money: both arms, 3 runs per case, capped by `evals-config.json`. Run it only on Nery's request.
 - Script `bump-version.mjs` rewrites `plugin.json` and the plugin changelog; use it instead of hand edits.
-- `gh workflow run release.yml` tags and publishes; run it only per "When Releasing" in `.claude/rules/WORKFLOW.md`.
+- `gh workflow run release.yml` tags and publishes; run it only per "When Versioning and Releasing a Plugin" in `.claude/rules/WORKFLOW.md` and the `release-and-versioning` skill.
