@@ -24,7 +24,7 @@ Before you trust a report, check it against this list. If a point fails, read th
 3. Root failures are separate from downstream skips and cancellations, and current-head failures from older runs.
 4. Every cause has its class (code, tests, configuration, infrastructure or permissions), keeps facts apart from hypotheses, and says whether the same job fails on the base branch.
 5. No component is called outdated or unsupported without evidence, and not every warning is treated as a merge blocker.
-6. When alert access or any tool was unavailable, the report says incomplete coverage, never zero.
+6. When alert access or any tool was unavailable, the report's **Could not inspect** line names it, never as zero.
 7. Optimizations are kept apart from required fixes.
 
 ## 3. Turn its status into a lifecycle state
