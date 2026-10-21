@@ -26,6 +26,12 @@
       "category": "development"
     },
     {
+      "name": "hook-engineering",
+      "source": "./plugins/hook-engineering",
+      "description": "Designs, writes, audits and debugs Claude Code hooks end to end: the event and configuration that decide when a hook runs, the input and output contract that decides what it does, prompt, agent and background hooks, workspace trust and security, and how mods interact with hooks, checked against the current docs and changelog.",
+      "category": "automation"
+    },
+    {
       "name": "plugin-evals",
       "source": "./plugins/plugin-evals",
       "description": "Makes Claude an expert in Claude Code plugin evals: designs suites that prove what a plugin adds, writes cases, graders and mocks, runs and gates them in CI, and reads the results, always checked against the CLI and docs you have today.",
