@@ -9,6 +9,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The
 ### Added
 
 - **block-no-verify** 0.1.0 — denies Claude's git commands that skip commit hooks or signing (`--no-verify`, `--no-gpg-sign`, `commit.gpgsign=false`), so your quality gates always run.
+- **hook-engineering** 0.1.0 — designs, writes, audits and debugs Claude Code hooks end to end, checking each answer against the current docs and the changelog for your Claude Code version.
 
 ### Changed
 
