@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Runs skill-diagnostics' hook the way Claude Code does: by its path,
 # through the shebang, with whatever `python3` is first on PATH. CI does not run it;
-# QUALITY_GATE runs it locally. Exits non-zero on the first failure.
+# the pre-push gate runs it locally. Exits non-zero on the first failure.
 set -euo pipefail
 root=$(cd "$(dirname "$0")/../../../.." && pwd)
 plugin="${root}/plugins/skill-diagnostics"

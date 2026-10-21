@@ -52,9 +52,7 @@ This project carries one item of the global North Star: multiply execution capac
 - `.claude/specs/`: design specs.
 - `.claude/plans/`: implementation plans.
 - `.claude/templates/`: templates for plugin files and the root README.
-- `.claude/rules/QUALITY_GATE.md`: when and in what order the gates run.
-- `.claude/rules/RELEASES.md`: release steps after a plugin merge.
-- `.claude/rules/HOOKS_GATE.md`: how plugin hooks are declared, filtered, failed, tested and documented.
+- `.claude/rules/WORKFLOW.md`: how to work by task: quality checks, maintenance, plugins, hooks, versioning, GitHub, releases, skills and user docs.
 - `docs/`: the user guides, covering installation, managing plugins, compatibility, FAQ, troubleshooting and tool references.
 
 ## Research and Sources
@@ -146,4 +144,4 @@ No git hook runs `.pre-commit-config.yaml`, and CI does not run `basedpyright`, 
 - Script `sync-labels.mjs` writes GitHub labels; run `--dry-run` first.
 - Script `run-evals.sh` spends API money: both arms, 3 runs per case, capped by `evals-config.json`. Run it only on Nery's request.
 - Script `bump-version.mjs` rewrites `plugin.json` and the plugin changelog; use it instead of hand edits.
-- `gh workflow run release.yml` tags and publishes; run it only per `.claude/rules/RELEASES.md`.
+- `gh workflow run release.yml` tags and publishes; run it only per "When Releasing" in `.claude/rules/WORKFLOW.md`.

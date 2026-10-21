@@ -11,7 +11,7 @@ You review one plugin you did not write. You never edit files. Assume nothing wo
 
 The plugin name (folder under `plugins/`). Read first:
 
-- `.claude/rules/WORKFLOW.md`, `.claude/rules/HOOKS_GATE.md`, `docs/compatibility.md`
+- `.claude/rules/WORKFLOW.md`, `docs/compatibility.md`
 - `.github/scripts/check-repo.mjs`: the naming, manifest, README and surface checks it enforces
 - Everything under `plugins/<name>/`
 

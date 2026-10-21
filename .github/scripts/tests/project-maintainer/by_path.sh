@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Runs project-maintainer's SessionStart hook the way Claude Code does: by its
 # path, through the shebang, with whatever `bash` is first on PATH. CI does not run
-# it; QUALITY_GATE runs it locally. Exits non-zero on the first failure.
+# it; the pre-push gate runs it locally. Exits non-zero on the first failure.
 set -euo pipefail
 root=$(cd "$(dirname "$0")/../../../.." && pwd)
 plugin="${root}/plugins/project-maintainer"

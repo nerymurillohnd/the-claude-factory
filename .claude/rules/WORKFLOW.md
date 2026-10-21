@@ -4,6 +4,18 @@
 
 Each section below applies to one kind of work. Follow the section for the task at hand before you start it.
 
+### When Checking Quality
+
+The commands live in `.claude/CLAUDE.md` → Commands.
+
+- Do not advance to the next step, file or task while a detected issue is open.
+- Report an issue as open only when it is blocked on a decision or a spend only Nery can make. Stop and ask.
+- Run the gates for every `.py`, `.mjs`, `.ts` and `.sh` file you edit, write or create, right after the edit and before the next task.
+- Run them in this order: formatter, linter, type checker, tests.
+- Pass each strict `tsc` flag with an explicit value: `--strict` does not override an explicit `false` in a tsconfig.
+- Before every push, run the steps in order. Stop at the first failure, fix the cause, then restart from step 1.
+- Report the gates as a table: gate, result and key output line.
+
 ### When Maintaining Plugins and Repo Documentation
 
 - Read its README. Add what the change made missing and remove what it made obsolete.
@@ -31,6 +43,53 @@ Each section below applies to one kind of work. Follow the section for the task 
 - Scripts start with `#!/usr/bin/env <interpreter>` (no version), are committed as `100755`, and are called by path (`${CLAUDE_SKILL_DIR}` or `${CLAUDE_PLUGIN_ROOT}`).
 - Network calls only when the plugin's purpose requires them and the README discloses them.
 
+### When Writing Hooks
+
+#### Declare
+
+- Use the three levels of `hooks/hooks.json`: event, matcher group, handler. The contract is JSON on stdin. Never write a `"hook"` object or read `$TOOL_INPUT`.
+- Write the command in shell form with the placeholder in double quotes: `"command": "\"${CLAUDE_PLUGIN_ROOT}/hooks/<script>\""`. Exec form (`args`) needs a real `.exe` on Windows, and Windows runs only through Git Bash here.
+- Set `timeout` on every handler. A command hook defaults to 600 seconds.
+- A matcher of letters, digits, `_`, `-` and `|` is an exact tool-name match. `Bash` does not cover `PowerShell`.
+- Resolve `node` and `tsc` across every Node manager: plugin hooks and LSP servers get no shell profile.
+
+#### Decide
+
+- Block with one JSON object on stdout and exit 0: `hookSpecificOutput.hookEventName` `"PreToolUse"`, `permissionDecision` `"deny"`, and a `permissionDecisionReason` that tells Claude what to do instead. Exit 2 with a reason on stderr blocks too. Exit 1 never blocks.
+- Print nothing else on stdout. A second line turns the output into plain text or a parse failure.
+- To pass a call, print nothing and exit 0. Silence leaves the decision to the permission flow; it never approves.
+- A guard that cannot read or parse its own input denies the call and says why.
+
+#### Filter
+
+- Never put `if` on a hook that enforces a policy. The page calls the filter best-effort: it strips leading `VAR=` assignments, and the permissions page strips only `timeout`, `time`, `nice`, `nohup`, `stdbuf`, `command`, `builtin` and `noglob`. Treat `sudo`, `env`, `xargs`, `watch` and `bash -c` as not stripped until a test shows otherwise, so `if: "Bash(git *)"` would skip `sudo git commit --no-verify`.
+- Filter inside the script instead, on the words after lexing, never on the raw text. The shell joins quotes, so `g"i"t commit --no-verify` runs git and contains no `git` substring. Parsing costs far less than starting the interpreter.
+- Write one permission rule per hook `if` field. A rule joined with `|` never matches.
+
+#### Fail
+
+- Set `"onFailure": "block"` on a check hook, so a broken hook never passes in silence.
+- Report a missing tool as a non-blocking `systemMessage` plus `additionalContext`, never as a silent pass. A guard whose job is to deny is the exception: it denies the commands it guards and says what to install.
+- Declaring `onFailure` makes Claude Code 2.1.295 the plugin's minimum. Older versions let a hook that cannot start pass the call.
+- A hook that runs an interpreter starts from a launcher script. The launcher checks the interpreter and its minimum version first. When either is missing it prints `systemMessage` and `additionalContext` and exits 0, because with `"onFailure": "block"` a missing interpreter would block every call, not only the guarded ones.
+- Past that check, a crash, a timeout or an exit code other than 0 or 2 blocks. That is the intent.
+
+#### Cover
+
+- Test a hook in `settings.json` right after editing it: the file watcher loads it with no restart. A plugin hook needs `/reload-plugins`.
+- Test a hook script with `env -i`, an empty `HOME` and a minimal `PATH` for each Node manager.
+- Plugin hooks also run inside subagents. The input carries `agent_id` and `agent_type`. Test one call made from a subagent before the README says the hook covers them.
+- Test the hook in `default` and in `bypassPermissions` mode before the README states what it blocks. The page does not say the hook runs in both.
+- Hooks that match one event run in parallel, and the strictest decision wins: `deny`, then `defer`, `ask`, `allow`.
+
+#### Document
+
+- Under Limitations in the README, name what the hook does not reach:
+  - a tool the matcher leaves out, such as the PowerShell tool when `CLAUDE_CODE_USE_POWERSHELL_TOOL=1` turns it on;
+  - the policies that turn hooks off, `allowManagedHooksOnly` and `disableAllHooks`;
+  - the surfaces where it does not run, per [compatibility](../../docs/compatibility.md).
+- State that a hook is a barrier for Claude, not a security boundary, and that it never sees what a person types in their own terminal. The page says to enforce a hard allow or deny through permissions.
+
 ### When Versioning a Plugin
 
 | Bump | When |
@@ -52,6 +111,21 @@ Each section below applies to one kind of work. Follow the section for the task 
 - Comment on each review and resolve it. A PR is not ready to merge before that.
 - Always stop at ready to merge and tell Nery, then wait for the green light.
 
+### When Releasing
+
+- Release right after a plugin PR that carries a version change merges. There is no separate release commit.
+- The plugin PR holds the bump: the level from the diff, the notes under `[Unreleased]`, `node .github/scripts/bump-version.mjs <plugin> <level>` and the root `CHANGELOG.md` line.
+- Reference fixed issues with `Refs #n`. Never write `Closes #n`: issues close in the release step.
+- If Validate failed, fix the cause first. Release only after it passes.
+- Never tag by hand.
+
+After the merge:
+
+1. `gh run list --workflow release.yml --branch main --limit 1` - Run to read the release run that follows the merge.
+2. `gh release view <plugin>--v<version>` - Run to confirm the tag and the GitHub Release exist.
+3. `gh workflow run release.yml` - Run only when Validate passed and no release run exists.
+4. For each fixed issue: comment that the fix is released, label it `status: released` and close it.
+
 ### When Writing Skills
 
 - Description: what it does + when to use it, third person, ≤ ~500 characters, specific trigger phrases.
@@ -64,7 +138,7 @@ Each section below applies to one kind of work. Follow the section for the task 
 - Audit our own skills with `/skill-diagnostics:audit`, and re-audit after any rewrite: slimming can drop a load-bearing rule.
 - In a file under `references/`, link with a path relative to that file, and only to templates: `[template](../assets/template.md)`.
 - Never link from one reference to another. Keep references one level deep from `SKILL.md`.
-- Project skill in `.claude/skills/`: use `${CLAUDE_PROJECT_DIR}/...`, such as `[rule](${CLAUDE_PROJECT_DIR}/.claude/rules/QUALITY_GATE.md)`.
+- Project skill in `.claude/skills/`: use `${CLAUDE_PROJECT_DIR}/...`, such as `[rule](${CLAUDE_PROJECT_DIR}/.claude/rules/WORKFLOW.md)`.
 - Skill inside a plugin: use `${CLAUDE_PLUGIN_ROOT}/...` for files of that plugin.
 - Never reference a file outside the plugin from a plugin skill. The install does not copy it.
 - Personal skill: use `${CLAUDE_SKILL_DIR}/...` for its own files.
