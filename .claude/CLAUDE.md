@@ -96,8 +96,7 @@ Python:
 JavaScript modules (`tsc` checks the whole project):
 
 - `npx --yes @biomejs/biome@2.5.15 check --write --error-on-warnings <file>` - Run first, after every `.mjs` edit.
-- `npx --yes --package typescript@6.0.3 tsc -p plugins/tsconfig.json --noEmit --typeRoots "$(npm root -g)/@types"` - Run when the file is under `plugins/`.
-- `npx --yes --package typescript@6.0.3 tsc -p .github/scripts/tsconfig.json --noEmit --typeRoots "$(npm root -g)/@types"` - Run when the file is under `.github/scripts/`.
+- `npx --yes --package typescript@6.0.3 tsc -p .github/scripts/tsconfig.json --noEmit --typeRoots "$(npm root -g)/@types"` - Run after Biome. The config covers the `.mjs` files under `.github/scripts/` and `plugins/`.
 - `node --test ".github/scripts/tests/*.test.mjs"` - Run after the type check. Read the `skipped` count.
 - `node .github/scripts/check-repo.mjs` - Run after the tests.
 
@@ -135,11 +134,10 @@ No git hook runs `.pre-commit-config.yaml`, and CI does not run `basedpyright`, 
 15. `uvx ruff@0.17.1 format --check plugins .github/scripts` - Checks the formatting of the Python files.
 16. `git ls-files -z 'plugins/*.py' '.github/scripts/tests/*.py' | xargs -0 uvx --from mypy==1.20.2 mypy --strict` - Type-checks the Python files.
 17. `basedpyright --warnings` - Type-checks the project's Python files outside hidden folders (DEBT-003).
-18. `npx --yes --package typescript@6.0.3 tsc -p plugins/tsconfig.json --noEmit --typeRoots "$(npm root -g)/@types"` - Type-checks the `.mjs` files under `plugins/`.
-19. `npx --yes --package typescript@6.0.3 tsc -p .github/scripts/tsconfig.json --noEmit --typeRoots "$(npm root -g)/@types"` - Type-checks the `.mjs` files under `.github/scripts/`.
-20. `npx --yes --package typescript@6.0.3 tsc -p plugins/<plugin>/tsconfig.json --noEmit` - Type-checks the mod of each plugin that ships one. Run it locally: it needs the declarations the engine writes, which CI does not have.
-21. `npx --yes markdownlint-cli2@0.23.3` - Lints the Markdown that people read.
-22. `SHELLCHECK_OPTS='-o all -S style -x -a -P SCRIPTDIR' actionlint` - Lints the workflows. Run it only when `.github/workflows/` changed.
+18. `npx --yes --package typescript@6.0.3 tsc -p .github/scripts/tsconfig.json --noEmit --typeRoots "$(npm root -g)/@types"` - Type-checks the `.mjs` files under `.github/scripts/` and `plugins/`.
+19. `npx --yes --package typescript@6.0.3 tsc -p plugins/<plugin>/tsconfig.json --noEmit` - Type-checks the mod of each plugin that ships one. Run it locally: it needs the declarations the engine writes, which CI does not have.
+20. `npx --yes markdownlint-cli2@0.23.3` - Lints the Markdown that people read.
+21. `SHELLCHECK_OPTS='-o all -S style -x -a -P SCRIPTDIR' actionlint` - Lints the workflows. Run it only when `.github/workflows/` changed.
 
 ### Command Rules
 
