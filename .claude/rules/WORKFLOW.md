@@ -4,7 +4,7 @@
 
 Each section below applies to one kind of work. Follow the section for the task at hand before you start it. Skill triggers and quality apply to all of it; then come the sections of a plugin's life: create, skills, evals, user docs and review. Commands live in `.claude/CLAUDE.md` → Commands.
 
-A line that says "Recall memory `<name>`" points to a verified fact or a past correction: read `<name>.md` in the project memory (`.claude/memory/`) or, when it is not there, in the global memory (`~/.claude/memory/`) before you act on that step.
+A line that says "Recall memory `<name>`" points to a verified fact or a past correction: read `<name>.md` in the project memory (`.claude/memory/`) before you act on that step. Cross-project lessons live in `~/.claude/LESSONS.md`, which `.claude/CLAUDE.md` already loads.
 
 ### Skill Triggers
 
@@ -28,7 +28,7 @@ Whatever the skill, confirm before you claim, verify each review finding against
 Applies to every task.
 
 1. After you edit, write or create a `.py`, `.mjs`, `.ts` or `.sh` file, run the commands for its type in Commands → After Editing a File, right away and before the next task, in this order: formatter, linter, type checker, tests.
-2. Pass each strict `tsc` flag with an explicit value: `--strict` does not override an explicit `false` in a tsconfig. Before the first edit of a `.ts`, `.mts`, `.js` or `.mjs` file in a task, tests and scratch scripts included, invoke the TypeScript lifecycle skill: recall memory `ts-lifecycle-before-ts-edits`.
+2. Pass each strict `tsc` flag with an explicit value: `--strict` does not override an explicit `false` in a tsconfig. Before the first edit of a `.ts`, `.mts`, `.js` or `.mjs` file in a task, tests and scratch scripts included, invoke the TypeScript lifecycle skill (`typescript6-lsp-intelligence:ts-lifecycle`); the post-edit `tsc` hook is not that skill.
 3. Fix every finding before you advance to the next step, file or task. An issue stays open only when it waits on a decision or a spend only Nery can make: then stop and ask.
 4. Before every push, run Commands → Before Every Push in order. Stop at the first failure, fix the cause, then restart from step 1.
 5. Report that run as a table: gate, result and key output line.
@@ -88,7 +88,7 @@ Plugin skills ship to users and follow the rules below. Skills that only govern 
 
 - Plugins get evals by default; Nery decides which plugins skip them. Write evals only for a plugin he approved.
 - Never work from memory: load the plugin-evals skill, use the Claude Code Docs MCP tools, and read the Claude Code changelog for the installed version, the four before it and every newer one. Apply what changed. Never invent or assume a format or behavior.
-- Cases run in `dontAsk` mode, so writes under `.claude/` are denied and `userConfig` cannot be set: grade the attempt and the reply. Recall memory `plugin-eval-dontask-mode`.
+- Runs never ask for permission: a tool you did not grant is removed, Bash writes stay in the run's workspace, no `.claude/` directory loads (not even one a `scaffold_script` wrote), and the temporary home has no `userConfig` values. Grade the attempt and the reply. Source: `/en/plugin-evals` → "Grant tools" and "How runs are isolated".
 - Give the plugin an entry in `.github/scripts/evals-config.json`: the tools the cases need, `max_cost_usd` and the `cost_basis` it was measured from.
 - Run `run-evals.sh` only on Nery's request: it spends money. CI runs the suite only for plugins with an `evals/` folder that changed.
 - A plugin without evals is tested with the methods the official docs recommend for its component types.
