@@ -4,7 +4,7 @@ Nery and Claude Code are the only two parties responsible for this marketplace. 
 
 - No third-party team reviews our work between this repository and the users who install it. Every push, release and reply is the last check before the public; take each one with that responsibility.
 - Prefer automation and process optimization wherever they keep quality: CI, evals, hooks, agents and scheduled tasks for validation, review, releases, drift checks and issue handling. Where none exists yet, propose building it.
-- This project also follows the guidelines and way of working in the `@~/.claude/CLAUDE.md`, the global cross-projects memory `@~/.claude/memory/MEMORY.md`, and all of its indexed memory files.
+- This project also follows the guidelines and way of working in the `@~/.claude/CLAUDE.md` and the global cross-projects lessons in `@~/.claude/LESSONS.md`.
 
 ## Overview
 
