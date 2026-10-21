@@ -33,6 +33,7 @@ The commands live in `.claude/CLAUDE.md` → Commands.
 Only when Nery explicitly asks to create, build or start a plugin.
 
 1. Design brief, agreed with Nery in Spanish before building:
+   - Market check: what already exists for this domain, what users must combine today, and what this plugin covers in one install that they cannot find elsewhere.
    - Problem and outcome: the recurring friction it removes; who it's for.
    - Name: kebab-case, permanent, no `claude-` or `anthropic-` prefix; a display name and an emoji.
    - Category: an `id` from `.github/scripts/categories.json`.
@@ -49,7 +50,7 @@ Only when Nery explicitly asks to create, build or start a plugin.
 
 ### When Writing Plugins
 
-- Aim for the expected behavior, delivered safely, stably and efficiently in Claude Code, with the least complexity that achieves it.
+- Cover the plugin's whole domain in one install, and build each part as simply as it can be while staying safe, stable and efficient in Claude Code. Every component earns its place with a user task no other component of the plugin covers.
 - Build for any user of the public marketplace, never for Forestal MT, Nery's machine or the tools he uses.
 - Every plugin ships a `LICENSE`, a `CHANGELOG.md` and a `README.md`.
 - A plugin that bundles, derives from or wires in third-party material or integrations also ships a `NOTICE.txt`: the plugin's own copyright and license, then each third-party source with its repository, version or commit, license and the files derived from it.
