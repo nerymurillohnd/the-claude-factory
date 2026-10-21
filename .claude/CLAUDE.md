@@ -50,6 +50,7 @@ This project carries one item of the global North Star: multiply execution capac
 - `.claude/maintainer/technical-debt/`: pending and closed debt.
 - `.claude/memory/`: project memory (facts, feedback).
 - `.claude/session-handoff/`: session handoffs.
+- `.claude/skills/`: project skills (`plugin-development`, `plugin-consistency`, `github-workflow`).
 - `.claude/specs/`: design specs.
 - `.claude/plans/`: implementation plans.
 - `.claude/templates/`: templates for plugin files and the root README.
