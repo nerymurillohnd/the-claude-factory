@@ -28,6 +28,25 @@ The commands live in `.claude/CLAUDE.md` → Commands.
 - Root `CHANGELOG.md` is grouped by date, newest first, with one line per plugin launch, version bump or substantial change under that day's heading: `- **plugin-name** 1.2.0 — one-line summary.`
 - Create the `## YYYY-MM-DD` heading when it is missing, with `### Added`, `### Changed` and so on below it.
 
+### When Creating a Plugin
+
+Only when Nery explicitly asks to create, build or start a plugin.
+
+1. Design brief, agreed with Nery in Spanish before building:
+   - Problem and outcome: the recurring friction it removes; who it's for.
+   - Name: kebab-case, permanent, no `claude-` or `anthropic-` prefix; a display name and an emoji.
+   - Category: an `id` from `.github/scripts/categories.json`.
+   - Components: skills, agents, hooks, MCP, LSP, output styles, monitors, scripts. Justify each.
+   - Surfaces: Claude Code and the Claude app by default. Check every component against `docs/compatibility.md`; if a part forces Claude Code-only, say why and get Nery's OK.
+   - Requirements: CLIs, accounts, API keys (`userConfig`), minimum Claude Code version.
+   - Research the current official docs for every component type used, and note version-gated features.
+2. Scaffold with `new-plugin.mjs` (see Commands). Pass `--claude-code-only` only when the brief approved it. It creates `plugins/<name>/` (manifest, README, CHANGELOG, LICENSE), registers the entry and regenerates the catalog.
+3. Build the components. Add `keywords` to `plugin.json`. Keep `version` at `0.1.0` for the first release.
+4. Write the README: resolve every `{{…}}` and `<!-- TODO -->`, delete rows and sections that don't apply but keep every required section, keep exactly one Compatibility row per component type the plugin ships, and give an outcome-first TL;DR with real usage examples. Fill `CHANGELOG.md` `0.1.0` → `### Added` with what ships.
+5. Register it: run `catalog.mjs`, add `- **<name>** 0.1.0 — <summary>.` under `### Added` in today's heading of the root `CHANGELOG.md` (move it to the merge day if the PR merges later), and after the push run `sync-labels.mjs` to create `plugin: <name>`.
+6. Prove it works, only once Nery says the plugin is ready: every gate in Before Every Push passes; each component is exercised in Claude Code (`claude --plugin-dir plugins/<name>`); it is tested in a Cowork session and a chat conversation unless it is Claude Code-only; the `plugin-reviewer` agent reviews it and every confirmed finding is fixed.
+7. Hand off: what was built, the raw gate output, the surfaces tested, and the release step (merge the PR; `release.yml` tags the plugin; the marketplace has no version to bump).
+
 ### When Writing Plugins
 
 - When a plugin needs a specific version, tool, binary or program, list it as a prerequisite in its README, with how to install it and the applicable alternatives.
@@ -158,3 +177,20 @@ After the merge:
 - **Bold** for UI labels exactly as shown in the app (`/plugin` → **Installed** → **Update now**). *Italics* for emphasis or terms.
 - Relative links inside the repo; absolute `https://` links outside.
 - Version-gated features state the minimum version (e.g. "v2.1.292+").
+
+### When Checking Docs Drift
+
+Only when Nery explicitly asks for a drift or freshness check. Run it in a subagent and report with evidence; edit nothing unless asked.
+
+1. Gather current facts from live sources only:
+   - Claude Code changelog: `/en/changelog` in the Claude Code Docs MCP (or <https://code.claude.com/docs/en/changelog>), every release since `CLAUDE_CODE_VERSION` in `.github/workflows/validate.yml`.
+   - Plugin docs: `/en/plugins/*` (install, marketplace-reference, manifest-reference, publish, host-marketplace, troubleshooting).
+   - Cross-surface support: <https://claude.com/docs/plugins/platform-support>, <https://claude.com/docs/cowork/guide/plugins>, <https://support.claude.com/en/articles/13837440-use-plugins-in-claude>, <https://support.claude.com/en/articles/16761823>, the Claude app release notes (<https://support.claude.com/en/articles/12138966-release-notes>) and the Claude Desktop changelog (<https://claude.com/docs/cowork/changelog.md>).
+   - Latest versions: `npm view @anthropic-ai/claude-code version`, `npm view markdownlint-cli2 version`, and the latest tags of `actions/checkout`, `actions/setup-node` and `rhysd/actionlint`.
+2. Compare them against the repo:
+   - commands, flags, UI paths and minimum versions: `README.md`, `docs/*.md`, `.claude/templates/plugin/README.md`;
+   - the compatibility matrix: `README.md`, `docs/compatibility.md`, `.claude/templates/plugin/README.md`, every `plugins/*/README.md`;
+   - manifest and marketplace fields, reserved names: `.github/scripts/lib.mjs`, `check-repo.mjs`, the templates;
+   - pinned versions: `.github/workflows/*.yml` and `.claude/CLAUDE.md` → Commands;
+   - new capabilities worth adopting, such as new manifest fields or component types.
+3. Report a table (file, line, what it says, what's current, source URL, severity: wrong, outdated or opportunity), then the proposed edits by file and the version bumps they need (docs-only README edits need none).
