@@ -10,6 +10,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The
 
 - **hook-engineering** 0.1.0 — designs, writes, audits and debugs Claude Code hooks end to end, checking each answer against the current docs and the changelog for your Claude Code version.
 
+### Changed
+
+- **github-operations** 0.4.0 — **Breaking:** `git-cleanup` becomes an exhaustive audit with two approval gates and drops its guard hook and the Python requirement; `pr-tracker` now finds your GitHub tools under any server name, a Claude app connector included.
+
 ## 2026-10-20
 
 ### Added
