@@ -2,9 +2,26 @@
 
 ## Rules by Task
 
-Each section below applies to one kind of work. Follow the section for the task at hand before you start it. The sections run in the order of a plugin's life: quality applies to all of them, then create, write, change, version, review, ship, support and keep current. Commands live in `.claude/CLAUDE.md` → Commands.
+Each section below applies to one kind of work. Follow the section for the task at hand before you start it. Skill triggers and quality apply to all of it; then come the sections of a plugin's life: create, skills, evals, user docs and review. Commands live in `.claude/CLAUDE.md` → Commands.
 
 A line that says "Recall memory `<name>`" points to a verified fact or a past correction: read `<name>.md` in the project memory (`.claude/memory/`) or, when it is not there, in the global memory (`~/.claude/memory/`) before you act on that step.
+
+### Skill Triggers
+
+Every time one of these cases arises, invoke the skill with the Skill tool before you act, and follow it to its last step. The skill holds the full procedure; do not work from a memory of it.
+
+| Every time you ... | Invoke |
+| :-- | :-- |
+| Scaffold, create, edit or remove a plugin file (a component, a script, `plugin.json`, `LICENSE`, `NOTICE.txt`, the README or the CHANGELOG), or receive one from Nery in his own version | `plugin-development` |
+| Write or review a plugin hook, its script, its launcher, its tests or the README text about what it blocks | `plugin-hooks-guidance` |
+| Add or edit an MCP server, its `userConfig`, or an agent that uses its tools | `plugin-mcp-guidance` |
+| Change a plugin, the root `README.md` or `CHANGELOG.md`, `docs/`, `marketplace.json`, a template, a community file or a pinned version; and, over the whole repo, before a release or on a drift or freshness check | `plugin-consistency` |
+| Bump, rename, remove or release a plugin, or decide which version a change carries | `release-and-versioning` |
+| Handle an issue, commit, branch, push, PR, review comment, failed job, Dependabot alert, or a request for CI work | `github-workflow` |
+
+The skills hand off to each other, and each lists its own hand-offs in a section of that name. The usual order is `github-workflow` → `plugin-development` (→ `plugin-hooks-guidance` for a hook, `plugin-mcp-guidance` for an MCP server or agent tools) → `plugin-consistency` (→ `release-and-versioning` for a bump or a changelog) → back to `github-workflow` for the PR and the merge. To invoke is to start a skill with the Skill tool; a skill that ends hands back to the one that invoked it, and never re-invokes its caller. When two apply to one change, `github-workflow` governs every push, PR and merge, `release-and-versioning` governs versions and tags, and `plugin-consistency` always runs last before a change is called ready.
+
+Whatever the skill, confirm before you claim, verify each review finding against the files and the docs before acting on it, never post, label, close, push, open a PR, merge, tag or publish without Nery's order, and report the raw output of every check.
 
 ### When Checking Quality
 
@@ -32,7 +49,7 @@ Only when Nery explicitly asks to create, build or start a plugin. Each step nam
    - Evals: ask Nery whether the plugin gets them (When Writing Evals).
    - Sources: the current official docs for every component type used, with their version-gated features.
 2. Scaffold with `new-plugin.mjs`. Pass `--claude-code-only` only when the brief approved it. It creates `plugins/<name>/` with the manifest, README, CHANGELOG and LICENSE, registers the marketplace entry and regenerates the catalog.
-3. Build the components per When Writing Plugins, When Writing Skills and When Writing Hooks. Exercise each one while you build with `claude --plugin-dir plugins/<name>`.
+3. Build the components with the skills in Skill Triggers and per When Writing Skills. Exercise each one while you build with `claude --plugin-dir plugins/<name>`.
 4. Write the README per When Writing User Docs, starting from the scaffolded template.
 5. Fill `CHANGELOG.md` → `## [0.1.0]` → `### Added` with what ships, and add `- **<name>** 0.1.0 — <summary>.` under `### Added` in today's heading of the root `CHANGELOG.md`. Move that line to the merge day if the PR merges on a later day.
 6. Write the evals when Nery approved them (When Writing Evals).
@@ -40,24 +57,12 @@ Only when Nery explicitly asks to create, build or start a plugin. Each step nam
    - every step of Before Every Push passes;
    - the plugin review passes (When Reviewing a Plugin) and every confirmed finding is fixed;
    - Nery runs the Claude app check in a Cowork session and a chat conversation, unless the plugin is Claude Code-only.
-8. Open the PR per When Using GitHub. After the first push, run `sync-labels.mjs` to create the `plugin: <name>` label.
-9. Hand off: what was built, the raw gate output, the surfaces tested and the release step (When Versioning and Releasing a Plugin).
-
-### When Writing Plugins
-
-Every time you scaffold, create, edit or remove any of these:
-
-- A file under `plugins/<name>/`: a component (skill, agent, hook, MCP or LSP server, mod, output style, `bin/`), a script, `plugin.json`, `LICENSE`, `NOTICE.txt`, the README or the CHANGELOG.
-- A plugin file that Nery hands over in his own version.
-
-Do this:
-
-1. Invoke the `plugin-development` skill with the Skill tool as soon as you touch the file, and follow it until its last step.
-2. State the user task each component serves, and read the official docs for each component type before you write it.
-3. Recall the memories those components depend on, then write for any user of the public marketplace: the required files, the manifest fields, each script called by path, every network call disclosed in the README.
-4. Clean up, exercise the plugin with `claude --plugin-dir plugins/<name>`, and finish with the `plugin-consistency` skill.
+8. Open the PR with the `github-workflow` skill. After the first push, run `sync-labels.mjs` to create the `plugin: <name>` label.
+9. Hand off: what was built, the raw gate output, the surfaces tested and the release step (the `release-and-versioning` skill).
 
 ### When Writing Skills
+
+Plugin skills ship to users and follow the rules below. Skills that only govern work on this repository, in `.claude/skills/`, follow "Project skills" at the end of this section.
 
 - Description: what it does and when to use it, third person, at most about 500 characters, with specific trigger phrases.
 - Body: headers, numbered steps and bullets; under 500 lines and about 5,000 tokens, following [agentskills.io best practices](https://agentskills.io/skill-creation/best-practices):
@@ -68,55 +73,16 @@ Do this:
 - Word guidance that needs judgment for the whole task ("after every edit", not "once").
 - Links: from `SKILL.md`, relative to the skill folder; from a file under `references/`, relative to that file and only to templates, such as `[template](../assets/template.md)`. References never link to each other and stay one level deep.
 - Use `${CLAUDE_PLUGIN_ROOT}/...` for other files of the plugin. Never reference a file outside the plugin, and never use `../` to leave the skill folder: the install copies only the plugin.
-- Audit every skill with `/skill-diagnostics:audit` after writing it and again after any rewrite: slimming can drop a load-bearing rule. Install the skill-diagnostics plugin from this marketplace when the command is missing.
+- Audit every plugin skill with `/skill-diagnostics:audit` after writing it and again after any rewrite: slimming can drop a load-bearing rule. Install the skill-diagnostics plugin from this marketplace when the command is missing.
 
-### When Writing Hooks
+#### Project skills
 
-Work through these in order: declare, filter, decide, fail, test, document. Do not propose or build a hook that reminds Claude to invoke an LSP intelligence skill before the first edit until Nery reports skipped skills: recall memory `deferred-pretooluse-skill-reminder`.
-
-#### Declare
-
-- Use the three levels of `hooks/hooks.json`: event, matcher group, handler. The input is JSON on stdin. Never write a `"hook"` object or read `$TOOL_INPUT`.
-- Write the command in shell form with the placeholder in double quotes: `"command": "\"${CLAUDE_PLUGIN_ROOT}/hooks/<script>\""`. Exec form (`args`) needs a real `.exe` on Windows, and Windows runs only through Git Bash here.
-- Set `timeout` on every handler. A command hook defaults to 600 seconds.
-- A matcher of letters, digits, `_`, `-` and `|` is an exact tool-name match. `Bash` does not cover `PowerShell`.
-- Resolve `node` and `tsc` across every Node manager: plugin hooks and LSP servers get no shell profile.
-
-#### Filter
-
-- Never put `if` on a hook that enforces a policy. The hooks page calls the filter best-effort: it strips leading `VAR=` assignments, and the permissions page strips only `timeout`, `time`, `nice`, `nohup`, `stdbuf`, `command`, `builtin` and `noglob`. Treat `sudo`, `env`, `xargs`, `watch` and `bash -c` as not stripped until a test shows otherwise, so `if: "Bash(git *)"` would skip `sudo git commit --no-verify`.
-- Filter inside the script instead, on the words after lexing, never on the raw text. The shell joins quotes, so `g"i"t commit --no-verify` runs git and contains no `git` substring. Parsing costs far less than starting the interpreter.
-- Where `if` is allowed, write one permission rule per field. A rule joined with `|` never matches.
-
-#### Decide
-
-- To block, print one JSON object on stdout and exit 0: `hookSpecificOutput.hookEventName` `"PreToolUse"`, `permissionDecision` `"deny"`, and a `permissionDecisionReason` that tells Claude what to do instead. Exit 2 with a reason on stderr also blocks. Exit 1 never blocks.
-- Print nothing else on stdout. A second line turns the output into plain text or a parse failure.
-- To pass a call, print nothing and exit 0. Silence leaves the decision to the permission flow; it never approves.
-- A guard that cannot read or parse its own input denies the call and says why.
-- Hooks that match one event run in parallel, and the strictest decision wins: `deny`, then `defer`, `ask`, `allow`.
-
-#### Fail
-
-- Set `"onFailure": "block"` on a check hook, so a broken hook never passes in silence. Declaring `onFailure` makes Claude Code 2.1.295 the plugin's minimum: older versions let a hook that cannot start pass the call.
-- A hook that runs an interpreter starts from a launcher script, which checks the interpreter and its minimum version first. When either is missing, it prints `systemMessage` and `additionalContext` and exits 0, because with `"onFailure": "block"` a missing interpreter would block every call, not only the guarded ones.
-- A guard whose job is to deny is the exception: when its tool is missing it denies the commands it guards and says what to install.
-- Past those checks, a crash, a timeout or an exit code other than 0 or 2 blocks. That is the intent.
-
-#### Test
-
-- A hook in `settings.json` loads on save, with no restart; a plugin hook needs `/reload-plugins`. Test right after each edit.
-- Run the script with `env -i`, an empty `HOME` and a minimal `PATH` for each Node manager.
-- Test one call made from a subagent before the README says the hook covers them: plugin hooks run inside subagents, and the input carries `agent_id` and `agent_type`.
-- Test in `default` and in `bypassPermissions` mode before the README states what the hook blocks: the docs do not say it runs in both.
-
-#### Document
-
-- Under Limitations in the README, name what the hook does not reach:
-  - a tool the matcher leaves out, such as the PowerShell tool when `CLAUDE_CODE_USE_POWERSHELL_TOOL=1` turns it on;
-  - the policies that turn hooks off, `allowManagedHooksOnly` and `disableAllHooks`;
-  - the surfaces where it does not run, per [compatibility](../../docs/compatibility.md).
-- State that a hook is a barrier for Claude, not a security boundary, and that it never sees what a person types in their own terminal. The docs say to enforce a hard allow or deny through permissions.
+- Frontmatter holds only `name` and `description`: one sentence, at most 120 characters.
+- Body, in this order: title; context in two or three sentences; role; rules; gotchas (only facts the model would get wrong without them); the workflow as a checklist with one short line per step; the details of each step.
+- Be exact where the task is fragile (commands, sources, formats); where several methods work, state the goal and why. Write procedures, not declarations, and add a validation loop where the skill produces claims.
+- Never write a `${CLAUDE_*}` variable literally in the body: Claude Code substitutes it when the skill loads.
+- Pair every project skill with a trigger section in this file: "Every time you ...", four steps, the first of which invokes the skill.
+- Before relying on a skill, dry-run it with a read-only subagent on a realistic scenario and fix the gaps. A new skill loads only after the session restarts.
 
 ### When Writing Evals
 
@@ -145,41 +111,11 @@ Applies to the root `README.md`, `docs/`, every plugin `README.md`, `SECURITY.md
 - Relative links inside the repo; absolute `https://` links outside.
 - State the minimum version of every version-gated feature (e.g. "v2.1.292+").
 
-### When Changing a Plugin
-
-After every change inside `plugins/<name>/`, in the same PR:
-
-1. Read the plugin's README and make it match the plugin as it now is: add what the change made missing and remove what it made obsolete.
-2. Record the change in the plugin's `CHANGELOG.md` under `## [Unreleased]`, in detail. Each plugin changelog tells the plugin's full story.
-3. Decide the bump per When Versioning and Releasing a Plugin.
-4. When the change is a version bump, a launch, a removal, a migration or a consolidation, add one short line to the root `CHANGELOG.md`.
-
-Changelog format (Keep a Changelog 2.0.0):
-
-- User-facing language: what changed for the user, not implementation detail. Reference issues as `(#12)`.
-- Mark breaking entries with a leading `**Breaking:**` inside their change type.
-- The root `CHANGELOG.md` is a summary, never a copy of a plugin changelog. It is grouped by date, newest first, one line per change: `- **plugin-name** 1.2.0 — one-line summary.` Create the `## YYYY-MM-DD` heading when it is missing, with `### Added`, `### Changed` and so on below it.
-
-### When Versioning and Releasing a Plugin
-
-Every time you bump, rename, remove or release a plugin, or decide whether a change needs a new version:
-
-- A change inside `plugins/<name>/` other than its README, to be released.
-- A rename or removal of a plugin, or a move to `1.0.0`.
-- A question about which version a change carries.
-
-Do this:
-
-1. Invoke the `release-and-versioning` skill with the Skill tool as soon as the case arises, and follow it until its last step.
-2. Pick the bump from what changes for the user, and record the change in the plugin's `CHANGELOG.md` under `## [Unreleased]` first.
-3. Bump only with `bump-version.mjs` in the plugin's PR, add the root `CHANGELOG.md` line, and never tag by hand.
-4. After Nery merges, confirm the release run, the tag and the GitHub Release, and close the fixed issues.
-
 ### When Reviewing a Plugin
 
-After building or changing a plugin, before its release. Delegate it to a read-only subagent (the `Explore` type: no Edit or Write) that did not write the plugin. It assumes nothing works until it sees evidence. It loads no CLAUDE.md, rule file or memory, so the delegation message carries the plugin name, these steps and every rule or fact they need: recall memory `agent-file-rules`. The same applies to every delegated audit or check below.
+After building or changing a plugin, before its release. Delegate it to a read-only subagent (the `Explore` type: no Edit or Write) that did not write the plugin. It assumes nothing works until it sees evidence. It loads no CLAUDE.md, rule file or memory, so the delegation message carries the plugin name, these steps and every rule or fact they need: recall memory `agent-file-rules`. The same applies to every delegated review.
 
-1. Read `.claude/rules/WORKFLOW.md`, `docs/compatibility.md`, the checks in `.github/scripts/check-repo.mjs` and everything under `plugins/<name>/`.
+1. Read `.claude/rules/WORKFLOW.md`, the pairs map in `.claude/skills/plugin-consistency/SKILL.md` → step 2, `docs/compatibility.md`, the checks in `.github/scripts/check-repo.mjs` and everything under `plugins/<name>/`.
 2. Run `claude plugin validate --strict plugins/<name>` and `node .github/scripts/check-repo.mjs`, and quote the output.
 3. Manifest: the fields `.claude/skills/plugin-development/SKILL.md` → step 4 sets; paths start with `./`; secrets go through `userConfig`; no hardcoded tokens or personal data.
 4. Components: each skill, agent, hook, MCP and LSP server does what the README claims; skill descriptions state what and when; hook scripts fail safe; paths use `${CLAUDE_PLUGIN_ROOT}`.
@@ -191,36 +127,3 @@ After building or changing a plugin, before its release. Delegate it to a read-o
 10. Report a verdict (**ready**, **ready after fixes** or **not ready**) and a findings table: severity (blocker, major, minor), file:line, problem, evidence (quoted output or doc URL), fix. Mark anything not verified as **unverified**.
 
 Verify every finding against the files and the live docs before fixing it: reviewers over-report. Then apply the confirmed findings in one coherent pass per file and re-read each touched file and its references: recall memory `apply-fixes-holistically`.
-
-### When Using GitHub
-
-Every time you handle an issue or touch GitHub:
-
-- A user issue arrives or is open: read, reproduce, label, reply, fix.
-- A commit, branch, push or PR: create, change or carry any of them.
-- A failed job, a review comment or a Dependabot alert on a PR.
-- A request from Nery for CI work.
-
-Do this:
-
-1. Invoke the `github-workflow` skill with the Skill tool as soon as the case arises, and follow it until its last step.
-2. Confirm an issue before you claim anything about it, and verify each review finding against the files and the docs before acting on it.
-3. Fix the root cause and commit; never post, label, close, push, open a PR or merge on the marketplace's behalf without Nery's order.
-4. Carry the PR until every job is green and no review is open, stop at ready to merge, and wait for his green light.
-
-### When Keeping Docs Consistent
-
-Every time you create, edit or remove any of these:
-
-- A file under `plugins/<name>/`: a component, `plugin.json`, the README or the CHANGELOG.
-- The root `README.md` or `CHANGELOG.md`, a file in `docs/`, `.claude-plugin/marketplace.json`, a template, or a community file (`SECURITY.md`, `SUPPORT.md`, `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, an issue template).
-- A pinned tool or Claude Code version in the workflows or in `.claude/CLAUDE.md` → Commands.
-
-And every time before a release, or when Nery asks for a drift or freshness check, over the whole repo.
-
-Do this:
-
-1. Invoke the `plugin-consistency` skill with the Skill tool as soon as you touch the file, and follow it until its last step.
-2. Find what the change touches and which files must agree with it.
-3. Run the repo's check scripts, compare both sides of every pair, and confirm the claims the change added against live sources.
-4. Fix each disagreement in the same change, asking Nery where the right value is a decision, and rerun until clean. Report the raw output.

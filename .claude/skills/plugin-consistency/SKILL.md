@@ -1,6 +1,6 @@
 ---
 name: plugin-consistency
-description: Keeps READMEs, CHANGELOGs, manifests and docs consistent; use on every edit to a plugin or to any of them.
+description: Use after any edit to a plugin, README, CHANGELOG, manifest or docs file, to make them agree before it is done.
 ---
 
 # Plugin consistency
@@ -14,21 +14,31 @@ Act as a release engineer who owns the integrity of the marketplace: the plugin 
 ## Rules
 
 - Scope is the change: the files touched since `origin/main` plus the working tree, and every counterpart they must agree with. Widen to the whole repo only when Nery asks for a freshness check or before a release.
-- Read the rules, do not restate them: `.claude/rules/WORKFLOW.md` → "When Changing a Plugin" and "When Writing User Docs" are the source, and the `release-and-versioning` skill for versions. This skill checks that they were followed.
+- Read the rules, do not restate them: `.claude/rules/WORKFLOW.md` → "When Writing User Docs" is the style source, and the `release-and-versioning` skill the source for versions and changelogs. This skill checks that they were followed.
 - Fix the inconsistencies the change created, in the same change, at their root. Ask Nery before changing anything the change did not touch or cause.
-- Never commit, push or bump by hand. Bump with `bump-version.mjs`, as the rules say.
+- Never push or bump by hand, and leave commits to `github-workflow` and `release-and-versioning`. Bump with `bump-version.mjs`, as the rules say.
 - A passing script is not consistency: the scripts check that things exist, not that they are true. Read both sides of every pair.
 - Check changed claims against live official sources, never against memory: commands, flags, UI paths and versions go stale.
 - Mark what you could not verify as **unverified** and say what it affects.
 
 ## Gotchas
 
-- A change limited to a plugin's `README.md` needs no version bump; any change to `plugin.json`, skills, agents, hooks, `.mcp.json`, `.lsp.json` or dependencies does (`check-version-bump.mjs` encodes this).
 - `check-repo.mjs` verifies that the Compatibility table has a row for each component type the plugin ships. It does not read the cell text, so compare the cells with `docs/compatibility.md` yourself.
 - A marketplace entry never carries `version`; `plugin.json` is the only source, and the README version badge reads it. A hardcoded version anywhere else is an inconsistency.
-- A plugin in `0.x` bumps the minor on a breaking change, not the major.
 - `markdownlint-cli2` ignores `.claude/rules`, `.claude/memory`, `.claude/skills`, `.claude/agents`, every `CLAUDE.md` and plugin skills and agents. "0 issues in 0 files" means nothing was linted.
 - User docs may mention the user's own `.claude/settings.json`; they must not mention this repo's `.claude/` or its internal process.
+
+## Hand-offs
+
+| When | Invoke with the Skill tool |
+| :-- | :-- |
+| The bump level, a CHANGELOG entry or the root CHANGELOG line is wrong or missing | `release-and-versioning`, during step 6 |
+| A hook file or the README text about it changed, and `plugin-hooks-guidance` has not run on that hook since its last edit | `plugin-hooks-guidance`, to check the hook against its rules (step 4) |
+| An `.mcp.json`, a manifest `mcpServers` or `userConfig` entry, or an agent's `tools` changed, and `plugin-mcp-guidance` has not run on it since its last edit | `plugin-mcp-guidance`, to check names, secrets and the README setup text (step 4) |
+| A component was added or rewritten and `plugin-development` has not run on it | `plugin-development` |
+| You were loaded alone (no skill invoked you) and the change goes to a PR | `github-workflow`, after step 8 |
+
+A skill you invoke hands back to you when it ends: continue at your next step. When a row names the skill that invoked you, hand back to it instead of invoking it, and never re-invoke it.
 
 ## Workflow
 
@@ -72,7 +82,7 @@ Run these from the repository root, read the output, and fix what they report be
 
 - `node .github/scripts/check-repo.mjs`
 - `node .github/scripts/catalog.mjs --check`
-- `node .github/scripts/check-version-bump.mjs origin/main` (skip if `origin/main` does not exist)
+- `node .github/scripts/check-version-bump.mjs origin/main` (skip if `origin/main` does not exist; it reads committed changes only and fails while a bump is pending or uncommitted, so expect that failure until step 6 delivers and commits the bump)
 - `npx --yes markdownlint-cli2@0.23.3` on the touched user docs (it reports broken anchors as MD051)
 
 ### 4. Agreement
@@ -99,7 +109,7 @@ In a whole-repo sweep, fetch every source above and read every release since `CL
 
 ### 6. Fix
 
-Edit each file so the pair agrees, in one coherent pass per file, and reread the whole file afterwards. Record the change in `[Unreleased]`, decide the bump and run `bump-version.mjs` when the rules call for it, and add the root CHANGELOG line. Where the right value is a decision (a bump level, a wording Nery owns, a borderline claim), stop and ask.
+Edit each file so the pair agrees, in one coherent pass per file, and reread the whole file afterwards. Record the change in `[Unreleased]`. Where the right value is a decision (a wording Nery owns, a borderline claim), stop and ask. For the bump level, the bump itself, a changelog entry or the root line, invoke `release-and-versioning` (unless it invoked you) instead of deciding here.
 
 ### 7. Prove
 
@@ -110,7 +120,9 @@ Rerun step 3 and recompare the pairs from step 4 that you edited. Repeat steps 6
 State, in this order:
 
 1. The change, in one line.
-2. A table of inconsistencies found: file:line · pair · what disagreed · source · fix applied or left open.
+2. A table of inconsistencies found, one row each, e.g. `plugins/<plugin>/README.md:42 · README ↔ plugin.json · badge says 0.2.0, manifest 0.3.0 · plugin.json · fixed`: file:line · pair · what disagreed · source · fix applied or left open.
 3. The files edited and the version bump, if any.
 4. The raw script output from step 7.
 5. What is left for Nery, and what you could not check, marked **unverified**.
+
+When another skill invoked you, hand back to it; when you were loaded alone and the change goes to a PR, invoke `github-workflow` next.

@@ -1,6 +1,6 @@
 ---
 name: plugin-development
-description: Applies the marketplace's plugin-building rules; use whenever you write, edit or scaffold a plugin's files.
+description: Use before writing, editing or scaffolding any file under plugins/<name>/: a component, manifest, script or README.
 ---
 
 # Plugin development
@@ -24,10 +24,21 @@ Act as a plugin engineer who builds for strangers. You read the official docs be
 ## Gotchas
 
 - A plugin with a top-level `bin/` makes the Claude app refuse it (`check-repo.mjs` enforces this); put the code in a skill's `scripts/` or declare the plugin Claude Code-only.
-- A hook declared in a plugin agent's frontmatter is ignored; hooks live in `hooks/hooks.json`.
+- A plugin agent ignores `hooks`, `mcpServers`, `permissionMode` and `initialPrompt` in its frontmatter; hooks live in `hooks/hooks.json` and servers in `.mcp.json`.
 - Keep `metadata` in `plugin.json` and `onFailure` on hooks even when the claude.ai sync warns about them: recall memory `claudeai-sync-warnings`.
 - A Node dependency ships only with an npm or Bun lockfile; other lockfiles leave no `node_modules`.
-- Memories live in the project memory (`.claude/memory/`) or, when absent there, in the global one (`~/.claude/memory/`).
+
+## Hand-offs
+
+| When | Invoke with the Skill tool |
+| :-- | :-- |
+| The component you write is a hook | `plugin-hooks-guidance`, before you write it (step 4) |
+| The component is an MCP server, or an agent that uses a server's tools | `plugin-mcp-guidance`, before you write it (step 4) |
+| The change is written | `plugin-consistency`, always (step 7) |
+| Nery says the change is ready to ship | `release-and-versioning` (step 8) |
+| The work came from an issue or ends in a PR | `github-workflow` |
+
+A skill you invoke hands back to you when it ends: continue at your next step. When a row names the skill that invoked you, hand back to it instead of invoking it, and never re-invoke it.
 
 ## Workflow
 
@@ -40,7 +51,8 @@ Progress:
 - [ ] 4. **Write**: files, manifest and components.
 - [ ] 5. **Scripts**: conventions and network calls.
 - [ ] 6. **Clean and try**: no leftovers, load it with `--plugin-dir`.
-- [ ] 7. **Consistency**: hand the result to `plugin-consistency`.
+- [ ] 7. **Consistency**: invoke `plugin-consistency`.
+- [ ] 8. **Release**: when Nery says it is ready to ship, invoke `release-and-versioning`.
 
 ## Step details
 
@@ -74,11 +86,11 @@ Read these memories before you write or rely on the behavior they describe:
 | :-- | :-- |
 | An agent | `agent-file-rules`; also `subagent-skill-preload` before relying on `skills:` in its frontmatter |
 | `userConfig` options | `plugin-userconfig-behavior` (install, update and synced copies) |
-| An MCP server | `claude-app-plugin-mcp-connector` (how the Claude app connects an http server) and `claude-code-desktop-vs-cli` (`${VAR}` headers that expand empty in the desktop app) |
+| An MCP server | `claude-app-plugin-mcp-connector`, `claude-code-desktop-vs-cli` (the `plugin-mcp-guidance` skill also recalls them) |
 | A mod | `claude-code-mods-facts` (`register.ts`, static validation, `decider: 'person'`, tests, type declarations) |
 | A script a skill or agent runs | `skill-placeholder-substitution-scope` (the path variables are substituted only in `SKILL.md` and agent bodies, never in `references/` or the Bash environment) |
 
-Skills, hooks, evals and user docs have their own sections in `.claude/rules/WORKFLOW.md`: "When Writing Skills", "When Writing Hooks", "When Writing Evals" and "When Writing User Docs". Read the one that matches before you write.
+Skills, evals and user docs have their own sections in `.claude/rules/WORKFLOW.md`: "When Writing Skills", "When Writing Evals" and "When Writing User Docs". Read the one that matches before you write.
 
 ### 4. Write
 
@@ -94,11 +106,11 @@ Manifest:
 - Declare hooks in `hooks/hooks.json`.
 - Give the plugin its own `package.json` or Python environment only when its architecture needs one, because its complexity must justify every dependency. Set it up the way the current plugins reference says.
 
-Check each component against the page you read in step 2 and the memory from step 3 before you move to the next.
+If a component is a hook, invoke `plugin-hooks-guidance` before you write it; if it is an MCP server, or an agent that uses a server's tools, invoke `plugin-mcp-guidance`. Check each component against the page you read in step 2 and the memory from step 3 before you move to the next.
 
 ### 5. Scripts
 
-- Start with `#!/usr/bin/env <interpreter>` with no version, commit as `100755`, and call the script by path through `CLAUDE_PLUGIN_ROOT` or `CLAUDE_SKILL_DIR`, each wrapped as `${…}` in the command. Write that command in `SKILL.md` (or the agent body), never in a `references/` file, where the variable arrives unsubstituted.
+- Start with `#!/usr/bin/env <interpreter>` with no version, commit as `100755`, and call the script by path through `CLAUDE_PLUGIN_ROOT` or `CLAUDE_SKILL_DIR`, each wrapped as `${…}` in the command (this file cannot spell them out: Claude Code would replace them with this machine's paths when the skill loads). Write that command in the plugin's `SKILL.md` or agent body, never in a `references/` file, where the variable arrives unsubstituted.
 - Write the README disclosure of each network call at the same time as the call, so the two cannot drift apart.
 
 ### 6. Clean and try
@@ -107,4 +119,8 @@ After moving or creating files, delete `.DS_Store` files and orphaned cache dire
 
 ### 7. Consistency
 
-Invoke the `plugin-consistency` skill with the Skill tool. It checks that the README, CHANGELOGs, manifests and docs agree with what you built, and it runs the repo's scripts.
+Invoke the `plugin-consistency` skill with the Skill tool, unless it invoked you. It checks that the README, CHANGELOGs, manifests and docs agree with what you built, and it runs the repo's scripts.
+
+### 8. Release
+
+Skip this step while Nery is still shaping the plugin. When he says the change is ready to ship, and `release-and-versioning` has not already bumped this change, invoke it with the Skill tool for the level, the notes and the bump (its steps 1 to 4); it hands back here, and `github-workflow` takes the push and the PR. Verifying the release comes after the merge.

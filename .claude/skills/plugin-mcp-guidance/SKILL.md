@@ -1,0 +1,90 @@
+---
+name: plugin-mcp-guidance
+description: Use when adding or editing a plugin's MCP server, its userConfig, or an agent's MCP tools in tools or allowed-tools.
+---
+
+# Plugin MCP guidance
+
+A plugin that bundles an MCP server puts its tools in front of every user's Claude, in the main conversation and in every agent, for as long as the plugin is enabled. The server needs credentials that only the user has, and each surface connects it differently. This skill covers declaring the server, naming its tools wherever a plugin refers to them, what a plugin cannot do to scope a server to one agent, and what the README must tell the user. It runs inside `plugin-development` whenever the component is an MCP server or an agent that uses MCP tools.
+
+## Role
+
+Act as an integration engineer who ships a server to strangers. You assume the credential is missing, the Claude app cannot fill it, and the tool names are not what the docs' short examples show; you make each of those visible to the user instead of failing silently.
+
+## Rules
+
+- Ship a server in the plugin's `.mcp.json` or manifest `mcpServers`. A plugin agent's own `mcpServers` is ignored for security, so never write it in a plugin agent file (step 5).
+- A plugin server is connected for the whole conversation, so every tool description costs context there. Keep one server per user task that no other component serves, and drop a server you could replace with a skill.
+- Never name a plugin tool by the bare server key. Use the scoped name everywhere a plugin refers to it: an agent's `tools`, permission rules, a skill's `allowed-tools`, a hook matcher.
+- Secrets and per-user values go through `userConfig` and `${user_config.KEY}`. Never hardcode them, never read them from the user's shell environment. Put the value in a header, not in the URL: a chat conversation skips a server whose URL holds the reference.
+- Disclose each server in the README: what it connects to, what it sends, and the prerequisites with how to install them. Keep exactly one Compatibility row per MCP type the plugin ships.
+- Recall memory `plugin-userconfig-behavior` before relying on a `userConfig` option, memory `claude-app-plugin-mcp-connector` for the Claude app, and memory `claude-code-desktop-vs-cli` for `${VAR}` in headers.
+
+## Gotchas
+
+- A tool of a plugin-bundled server is named `mcp__plugin_<plugin>_<server>__<tool>`, with any character outside letters, digits, `_` and `-` replaced by `_`. The server registers as `plugin:<plugin>:<server>`, which is the name an `mcp_tool` hook's `server` field takes.
+- `${user_config.KEY}` is substituted in MCP server config (`url`, `headers`, `env`, `args`), but rejected in `headersHelper`, in shell-form hook commands and in monitor commands: the component fails with an error. In skill and agent content only non-sensitive values are substituted.
+- A bundled server with a required option that has no saved value does not start. It is absent from `/mcp`; the `/plugin` **Errors** tab names it for some installs only. `claude plugin install` from the shell never prompts, and `claude plugin update` leaves new options unset.
+- The Claude app cannot fill `${user_config.*}` in headers: the plugin's **Connectors** tab lists the server as not added, and the user connects it there and types the value. Local (command) servers run only in Cowork sessions.
+- A manifest server with the same name as one in `.mcp.json` replaces it. `claude plugin validate` reports an entry Claude Code would drop at load (Claude Code 2.1.281+).
+- `claude mcp get` shows a plugin's stdio and WebSocket values as `[REDACTED]`; read `.mcp.json` or `plugin.json` on disk to see them.
+
+## Hand-offs
+
+| When | Invoke with the Skill tool |
+| :-- | :-- |
+| Another skill invoked you (`plugin-development`, `plugin-consistency`) | Nothing: hand back to it. `plugin-development` runs `plugin-consistency` once at its end |
+| You loaded this skill alone | `plugin-consistency`, when step 7 is done |
+| A hook matches one of this plugin's MCP tools | `plugin-hooks-guidance`, for the matcher and the decision output |
+
+A skill you invoke hands back to you when it ends: continue at your next step. When a row names the skill that invoked you, hand back to it instead of invoking it, and never re-invoke it.
+
+## Workflow
+
+Tick each step as you finish it, in order.
+
+Progress:
+- [ ] 1. **Need**: the user task, the transport and the surfaces.
+- [ ] 2. **Docs**: the current pages for MCP and plugin servers.
+- [ ] 3. **Declare**: `.mcp.json`, placeholders and `userConfig`.
+- [ ] 4. **Reach**: scoped names in agents, permissions and hooks.
+- [ ] 5. **Scope**: what a plugin cannot do, and what to tell users.
+- [ ] 6. **Test**: with and without the options set, on each surface.
+- [ ] 7. **Document**: prerequisites, setup, network calls, Compatibility.
+
+## Step details
+
+### 1. Need
+
+State the user task the server serves and why a skill or a script cannot serve it. Choose the transport: a remote server (`http` or `sse`, fixed URL) works in Claude Code and the Claude app; a local one (a command, or an `.mcpb` bundle) works in Claude Code and in Cowork sessions only. Check the choice against `docs/compatibility.md`, and get Nery's OK if a server forces a plugin to Claude Code-only.
+
+### 2. Docs
+
+Read `/en/mcp` and, in `/en/plugins/components`, the MCP servers section; read `/en/plugins/manifest-reference` for `userConfig` and the fields that reject it. Open them through the Claude Code Docs MCP tools; when a heading is missing or exact wording decides, read the raw page at `https://code.claude.com/docs/en/<page>.md` (recall memory `docs-mcp-copy-vs-raw-page`).
+
+### 3. Declare
+
+- Write the server in `.mcp.json` at the plugin root, or in the manifest `mcpServers` key, which also takes a path or an `.mcpb` file. Path variables (the plugin root and data directories, wrapped as `${…}`) are substituted in `command`, `args`, `env`, `url` and `headers`.
+- Put every credential or per-user value in `userConfig` and reference it as `${user_config.KEY}` in `headers`, `env` or `args`. Mark a token `sensitive`. Never use `headersHelper` with it.
+- Run `claude plugin validate --strict plugins/<name>` and load the plugin with `claude --plugin-dir plugins/<name>`; `/mcp` must show the server as `plugin:<plugin>:<server>`.
+
+### 4. Reach
+
+Give an agent its tools through its `tools` allowlist, written with the scoped name: one entry per tool, or `mcp__plugin_<plugin>_<server>__*` for the whole server, the form `agent-file-rules` records for MCP entries. Confirm the real names in `/mcp` before you write the line. Leave `tools` unset to inherit everything. Use the same scoped name in a skill's `allowed-tools`, in any permission rule the README recommends, and in a hook matcher with `.*` for the whole server. Recall memory `agent-file-rules` before you write the agent, and memory `subagent-skill-preload` before you rely on `skills:` in its frontmatter.
+
+### 5. Scope
+
+A plugin cannot keep a server out of the main conversation or hand it to one agent only: that needs `mcpServers` in the agent's own frontmatter, and a plugin agent ignores it. Do not promise scoping in the README. When users need it, say that they can copy the agent file to `.claude/agents/` or `~/.claude/agents/` and declare the server inline there; a project agent loads an inline server only after the user trusts that folder, and `permissionMode` there is subject to the main conversation's mode. State that this is a manual step the plugin does not do.
+
+### 6. Test
+
+While Nery is still shaping the plugin, run only the cheap checks each edit needs and no live tests; run all of this once he says it is ready (recall memory `no-unrequested-verification-while-designing`).
+
+1. Load the plugin with the option unset: the server must be absent and the README's setup text must match what the user sees.
+2. Set the option, run `/reload-plugins`, and confirm the server and a tool call work.
+3. Call a tool from an agent that lists it in `tools`, and from the main conversation.
+4. For a remote server with `${user_config.*}` in headers, connect it through the Claude app's **Connectors** tab with **No sign in** and an `authorization` header, as memory `claude-app-plugin-mcp-connector` records; do not claim the app works until Nery's Claude app check says so.
+
+### 7. Document
+
+In the README: the prerequisites (account, key, CLI) with how to install them and their alternatives; how to set each option (`/plugin` → **Installed** → **Configure**, `claude plugin install --config <key>=<value>` from the shell (for a bundled `.mcpb` server's own setting, `<server>.<key>=<value>`; Claude Code 2.1.285+), `/plugin configure <name>@synced` for a synced copy); every network call; the Claude app **Connectors** steps; and one Compatibility row per MCP type, matching `docs/compatibility.md`. An agent runs in the Claude app only in Cowork sessions, so say that an agent that depends on the server is unreachable from a chat conversation. Then hand off as the table above says.
