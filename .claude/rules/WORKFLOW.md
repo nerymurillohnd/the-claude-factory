@@ -18,14 +18,14 @@ The commands live in `.claude/CLAUDE.md` → Commands.
 
 ### When Maintaining Plugins and Repo Documentation
 
-- Read its README. Add what the change made missing and remove what it made obsolete.
-- Summarize the change in its `CHANGELOG.md`. Each plugin changelog tells the full story of that plugin.
+- After every change inside a plugin, read its README and make it match the plugin as it now is: add what the change made missing and remove what it made obsolete.
+- Record every change in the plugin's `CHANGELOG.md`, in detail. Each plugin changelog tells the full story of that plugin.
 - The Version badge in a plugin README must stay dynamic, reading `version` from `plugin.json`. Never hardcode a version in it.
-- The root `CHANGELOG.md` is a summary, never a copy of a plugin changelog.
+- The root `CHANGELOG.md` is a summary, never a copy of a plugin changelog: short, direct lines only for version bumps, new plugins, removals, migrations and consolidations.
 - Changelogs follow Keep a Changelog 2.0.0. Write entries under `## [Unreleased]` as you work.
 - User-facing language: what changed for the user, not implementation detail. Reference issues as `(#12)`.
 - Mark breaking entries with a leading `**Breaking:**` inside their change type (they force a major bump, or a minor bump in `0.x`).
-- Root `CHANGELOG.md` is grouped by date, newest first, with one line per plugin launch, version bump or substantial change under that day's heading: `- **plugin-name** 1.2.0 — one-line summary.`
+- Root `CHANGELOG.md` is grouped by date, newest first, one line per change under that day's heading: `- **plugin-name** 1.2.0 — one-line summary.`
 - Create the `## YYYY-MM-DD` heading when it is missing, with `### Added`, `### Changed` and so on below it.
 
 ### When Creating a Plugin
@@ -49,15 +49,20 @@ Only when Nery explicitly asks to create, build or start a plugin.
 
 ### When Writing Plugins
 
-- When a plugin needs a specific version, tool, binary or program, list it as a prerequisite in its README, with how to install it and the applicable alternatives.
+- Aim for the expected behavior, delivered safely, stably and efficiently in Claude Code, with the least complexity that achieves it.
+- Build for any user of the public marketplace, never for Forestal MT, Nery's machine or the tools he uses.
+- Every plugin ships a `LICENSE`, a `CHANGELOG.md` and a `README.md`.
+- A plugin that bundles, derives from or wires in third-party material or integrations also ships a `NOTICE.txt`: the plugin's own copyright and license, then each third-party source with its repository, version or commit, license and the files derived from it.
+- A required tool, dependency, account or integration never rules a plugin out. List it as a prerequisite in its README, with how to install it and the applicable alternatives, so users know what they need before they install.
 - When the new plugin overlaps an existing one by domain, weigh integrating it into that plugin against creating an independent one. Propose the choice to Nery.
-- Whether a plugin has evals is Nery's decision.
+- Plugins are tested with evals by default; Nery decides which plugins skip them. Test a plugin without evals with the methods the official docs recommend for its component types.
+- When Nery uses a plugin for his own work, he installs the marketplace and the plugin like any other user, never through `--plugin-dir`.
 - Read the Claude Code changelog for the installed version, the four before it and every newer one. Contrast what you find and apply it.
 - Name skills and plugins for what the skill does, not how it is implemented.
 - Keep the version in `plugin.json`. Never set `version` on a marketplace entry.
 - Change `displayName` to relabel a plugin.
 - After moving or creating files, delete `.DS_Store` files and orphaned cache directories.
-- Ship a plugin's Node dependencies only with an npm or Bun lockfile; other lockfiles leave no `node_modules`.
+- Give a plugin its own `package.json` or Python environment only when its architecture needs one; the plugin's complexity must justify every dependency. Set it up the way the current plugins reference says, and ship Node dependencies only with an npm or Bun lockfile; other lockfiles leave no `node_modules`.
 - Do not set `hooks` in the frontmatter of a plugin agent: it is ignored. Declare the hook in the plugin's `hooks/hooks.json`.
 - Scripts start with `#!/usr/bin/env <interpreter>` (no version), are committed as `100755`, and are called by path (`${CLAUDE_SKILL_DIR}` or `${CLAUDE_PLUGIN_ROOT}`).
 - Network calls only when the plugin's purpose requires them and the README discloses them.
@@ -123,12 +128,17 @@ Only when Nery explicitly asks to create, build or start a plugin.
 
 ### When Using GitHub
 
-- Changes to plugin manifests, components and dependencies always go through a PR.
-- Changes to maintainer documentation need no PR unless Nery explicitly asks for one.
+- Every edit to a plugin's `plugin.json`, skills (`SKILL.md` and its files), agents, hooks, `.mcp.json`, `.lsp.json` or dependencies goes through a PR.
+- Everything else goes by direct push or by PR, as Nery decides.
 - Check the failed jobs and the reviews of Claude and of third parties. Verify each finding.
 - Repeat until everything is green and no more reviews, issues or failed jobs are found.
 - Comment on each review and resolve it. A PR is not ready to merge before that.
 - Always stop at ready to merge and tell Nery, then wait for the green light.
+
+### When Handling Issues
+
+- Nery and Claude Code are the only developers and maintainers. The marketplace has no outside collaborators, and pull requests from users are not accepted.
+- Users report through issues. For each one: reproduce it or confirm the report against the code and the docs, fix the confirmed cause, ship the fix in a release, and report on the issue what was fixed.
 
 ### When Releasing
 
