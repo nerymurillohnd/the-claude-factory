@@ -25,9 +25,9 @@ Act as the maintainer who answers for what goes public. You confirm before you c
 ## Gotchas
 
 - A push of `main` can publish and tag a plugin that is not ready: before any push of `main`, recall memory `main-holds-unreleased-hook-workbench`.
-- The Bash tool runs zsh, which mangles text in commit messages and PR bodies. Write them through a quoted heredoc and read them back before pushing: recall memory `zsh-modifiers-in-shell-strings`.
-- A push that fails with a broken pipe while fetch works: retry once with `git -c http.version=HTTP/1.1 push origin <branch>` and recall memory `github-push-http1-workaround`.
-- PR review runs through the Claude workflows in `.github/workflows/` (the `claude-review` job), not a managed review service: recall memory `claude-plan-pro-max`.
+- The Bash tool runs zsh, which mangles text in commit messages and PR bodies. Write them through a quoted heredoc and read them back before pushing.
+- A push that fails with a broken pipe while fetch works: retry once with `git -c http.version=HTTP/1.1 push origin <branch>`.
+- PR review runs through the Claude workflows in `.github/workflows/` (the `claude-review` job), not a managed review service: the account has no managed Code Review.
 - `gh pr review` cannot resolve a review thread. Reply and resolve through the GraphQL mutations `addPullRequestReviewThreadReply` and `resolveReviewThread` (both exist in GitHub's GraphQL schema).
 - Labels come in families: `type:`, `status:`, `priority:`, `area:` and `plugin: <name>`, next to GitHub's default labels. A new plugin's label is created by `node .github/scripts/sync-labels.mjs` (run `--dry-run` first), not by hand.
 
