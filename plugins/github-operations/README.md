@@ -266,6 +266,20 @@ No. It always stops and asks before the merge, naming the PR, the commit, the me
 </details>
 
 <details>
+<summary><b>Can the monitoring agent change anything on GitHub?</b></summary>
+
+Its job is to read and report: Claude makes every comment, reply, rerun and merge. The agent has no tool list of its own, so it can use every tool your session has, including the shell and the GitHub tools that write. To make sure it never calls a write tool, add deny rules for those tools in your settings (see **Block tools in your settings** above): deny rules apply to the agent too.
+
+</details>
+
+<details>
+<summary><b>Which GitHub tools does the monitoring agent use?</b></summary>
+
+The ones your session already has, whatever the server is called: this plugin's `github` server, a GitHub server you added yourself, or the GitHub connector of the Claude app. You don't need to rename or duplicate a server for the agent to see it.
+
+</details>
+
+<details>
 <summary><b>How long will Claude wait for a slow pipeline?</b></summary>
 
 The PR tracker reports what is still pending and returns, and Claude waits for a real change within a time budget. When the budget ends it hands control back with what it knows, so it never hangs on a pipeline that takes many minutes. Claude then starts another monitoring round.
