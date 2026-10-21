@@ -44,7 +44,7 @@ Only when Nery explicitly asks to create, build or start a plugin.
 3. Build the components. Add `keywords` to `plugin.json`. Keep `version` at `0.1.0` for the first release.
 4. Write the README: resolve every `{{…}}` and `<!-- TODO -->`, delete rows and sections that don't apply but keep every required section, keep exactly one Compatibility row per component type the plugin ships, and give an outcome-first TL;DR with real usage examples. Fill `CHANGELOG.md` `0.1.0` → `### Added` with what ships.
 5. Register it: run `catalog.mjs`, add `- **<name>** 0.1.0 — <summary>.` under `### Added` in today's heading of the root `CHANGELOG.md` (move it to the merge day if the PR merges later), and after the push run `sync-labels.mjs` to create `plugin: <name>`.
-6. Prove it works, only once Nery says the plugin is ready: every gate in Before Every Push passes; each component is exercised in Claude Code (`claude --plugin-dir plugins/<name>`); it is tested in a Cowork session and a chat conversation unless it is Claude Code-only; the `plugin-reviewer` agent reviews it and every confirmed finding is fixed.
+6. Prove it works, only once Nery says the plugin is ready: every gate in Before Every Push passes; each component is exercised in Claude Code (`claude --plugin-dir plugins/<name>`); it is tested in a Cowork session and a chat conversation unless it is Claude Code-only; the plugin review (When Reviewing a Plugin) runs and every confirmed finding is fixed.
 7. Hand off: what was built, the raw gate output, the surfaces tested, and the release step (merge the PR; `release.yml` tags the plugin; the marketplace has no version to bump).
 
 ### When Writing Plugins
@@ -194,3 +194,30 @@ Only when Nery explicitly asks for a drift or freshness check. Run it in a subag
    - pinned versions: `.github/workflows/*.yml` and `.claude/CLAUDE.md` → Commands;
    - new capabilities worth adopting, such as new manifest fields or component types.
 3. Report a table (file, line, what it says, what's current, source URL, severity: wrong, outdated or opportunity), then the proposed edits by file and the version bumps they need (docs-only README edits need none).
+
+### When Reviewing a Plugin
+
+After building or changing a plugin, before the release. Delegate it to a fresh subagent that did not write the plugin, restricted to Read, Grep, Glob, Bash, WebFetch and the Claude Code Docs MCP tools. It never edits files and assumes nothing works until it sees evidence.
+
+1. Read `.claude/rules/WORKFLOW.md`, `docs/compatibility.md`, the checks in `.github/scripts/check-repo.mjs` and everything under `plugins/<name>/`.
+2. Validator: run `claude plugin validate --strict plugins/<name>` and `node .github/scripts/check-repo.mjs`; quote the output.
+3. Manifest: fields per the rules; paths start with `./`; `userConfig` for secrets; no hardcoded tokens or personal data.
+4. Components: each skill, agent, hook, MCP and LSP server does what the README claims; skill descriptions state what and when; hook scripts fail safe; `${CLAUDE_PLUGIN_ROOT}` is used for paths.
+5. Security: no data exfiltration, no undisclosed network calls, no destructive commands without confirmation, no `curl | sh`, least-privilege tool grants.
+6. Compatibility: the README table matches `docs/compatibility.md` for the components actually shipped (e.g. `bin/` ⇒ ❌ Claude app; agents and hooks ⇒ ⚠️ Cowork sessions only).
+7. Docs accuracy: every command, flag, version and UI path in the README exists in the current official docs; usage examples match real skill names (`/<plugin>:<skill>`).
+8. Generic: nothing specific to one person, company or language.
+9. Changelog: the current version has an entry that matches the actual changes.
+10. Report a verdict (**ready**, **ready after fixes** or **not ready**) and a findings table: severity (blocker, major, minor), file:line, problem, evidence (quoted output or doc URL), fix. Mark anything not verified as **unverified**.
+
+### When Auditing User Docs
+
+Before a release or after editing user docs. Delegate it to a read-only subagent with the same tools as the plugin review. It never edits files. Scope: `README.md`, `docs/*.md`, `plugins/*/README.md`, `SECURITY.md`, `SUPPORT.md`, `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, `.github/ISSUE_TEMPLATE/*`, or only the path it is given.
+
+1. Accuracy: every `claude …` command, `/plugin …` flow, flag, minimum version and app UI path (Customize → Plugins, + → Plugins, `/plugins` in VS Code) matches the current docs at code.claude.com and claude.com. Cite the source URL.
+2. Links: relative links resolve to existing files, anchors exist (`npx --yes markdownlint-cli2@0.23.3` reports MD051), and external links point to the right page.
+3. Style: follows When Writing User Docs.
+4. No leakage: no mention of `.claude/`, maintenance scripts, CI internals, the tooling that maintains the repo or internal process.
+5. Consistency: marketplace source `nerymurillohnd/the-claude-factory`, install suffix `@the-claude-factory`, the same compatibility matrix everywhere.
+6. Selling: each plugin README leads with the outcome and a TL;DR; no unresolved TODOs.
+7. Report a findings table (severity, file:line, issue, evidence or source, suggested wording) and a pass or fail summary per file.

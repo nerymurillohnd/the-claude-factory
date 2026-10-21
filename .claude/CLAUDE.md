@@ -18,7 +18,7 @@ This project carries one item of the global North Star: multiply execution capac
 
 - Goal: publish plugins that automate and optimize everyday workflows.
 - Release gate: a plugin ships only when every requirement below has recorded evidence.
-- Requirements: every gate passes, `plugin-reviewer` leaves no confirmed finding, the Claude app check passes (unless Claude Code-only), the README is accurate against the current docs, and the plugin is portable across macOS, Linux and Windows through Git Bash.
+- Requirements: every gate passes, the plugin review leaves no confirmed finding, the Claude app check passes (unless Claude Code-only), the README is accurate against the current docs, and the plugin is portable across macOS, Linux and Windows through Git Bash.
 
 ## Stack and Development
 
@@ -122,7 +122,7 @@ No git hook runs `.pre-commit-config.yaml`, and CI does not run `basedpyright`, 
 4. `node --test ".github/scripts/tests/*.test.mjs"` - Runs the script tests and the LSP hook tests. They need `shfmt`, `shellcheck`, `ruff` and `basedpyright` on `PATH`. Read the `skipped` count: a missing tool skips its cases.
 5. `node .github/scripts/check-repo.mjs` - Checks the repository policy: manifests, required plugin files and sections, changelog entries, and the root `README.md` and `CHANGELOG.md`.
 6. `node .github/scripts/catalog.mjs --check` - Fails when the generated blocks of the root `README.md` are out of date.
-7. `.github/scripts/validate-claude.sh` - Runs `claude plugin validate --strict` on the marketplace, on `.claude/` and on every plugin, and `claude plugin test` on every plugin that ships mod tests.
+7. `.github/scripts/validate-claude.sh` - Runs `claude plugin validate --strict` on the marketplace and on every plugin, and `claude plugin test` on every plugin that ships mod tests.
 8. `node .github/scripts/check-version-bump.mjs origin/main` - Fails when a plugin changed since `origin/main` without a version bump and a changelog entry. Skip it when `origin/main` does not exist.
 9. `npx --yes @biomejs/biome@2.5.15 check --error-on-warnings .` - Checks the format, lint and imports of the JavaScript and JSON files.
 10. `git ls-files -z '*.sh' | xargs -0 shellcheck -o all -S style -x -a -P SCRIPTDIR` - Lints every tracked shell script.
