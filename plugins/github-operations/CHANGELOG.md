@@ -18,6 +18,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ### Fixed
 
+- The `pr-tracker` agent now finds your GitHub tools under any server name: this plugin's server, a server you added yourself, or a Claude app connector. It used to accept only two fixed names, so with a connector it started with no GitHub tools and reported `BLOCKED` without inspecting the PR. It now inherits your session's tools.
 - `auto-pr-lifecycle` is corrected against the GitHub MCP schemas and `gh` help. State and outcome names are all snake_case (`ready_without_approval`, `awaiting_merge`, `externally_merged`, `closed_without_merge`). The skill takes an optional PR number or URL, opens a PR only when asked for one, and stops when signing fails instead of committing unsigned. Waiting for checks now has a bounded method and the `timeout` state it was missing. Repair replies come after the push, a branch that is behind or conflicting is updated by merging the base (never a rebase), and the same failure surviving two fixes stops the loop. Labels are discovered, created if none fits, and applied without wiping the existing ones. Cleanup sync and branch deletion have exact steps, including squash landings and stacked PRs. The tool matrix drops a `gh discussion` command that does not exist and a leftover "not run in this session" note, and adds draft-to-ready, label commands and the head guard on branch updates.
 
 ### Removed
