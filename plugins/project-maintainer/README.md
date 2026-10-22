@@ -61,7 +61,7 @@ The ADR template follows [MADR 4.0](https://adr.github.io/madr/) and adds a scop
 
 | Requirement | Details |
 | :-- | :-- |
-| **Claude Code** | v2.1.307 or later — check with `claude --version`. The guardrails need it: they ask for your approval in the form that Claude Code reads from that version on. On an older version the approval guard can be lost |
+| **Claude Code** | v2.1.307 or later — check with `claude --version`. The guardrails need it: from that version, Claude Code puts their prompts to you and no classifier can answer them. On an older version, auto mode's classifier can approve the edit for you |
 | **Surfaces** | See [Compatibility](#-compatibility) |
 | **External tools** | `bash` on `PATH`, for the hook and the skills' commands; on Windows, Git for Windows. `ls`, `grep` and `date`, which macOS and Linux include, to search and number records. `git`, so the handoff can record the repository's state; outside a git repository the handoff says so and skips it. `gh` signed in, optional, to list the repository's open pull requests |
 | **Network** | Records: none. The handoff runs `git fetch` to compare your branch with its remote, and `gh pr list` to list pull requests, when the repository has a remote. Without network access it marks those lines as not verified |
@@ -232,7 +232,7 @@ The plugin ships a Claude Code [mod](https://code.claude.com/docs/en/plugins/mod
 | Remove an item from `pending-debt.md` while `closed-debt.md` has no entry with an outcome for it (for *accepted*, an ADR that exists) | Claude Code asks you |
 | Rewrite, move or delete the records folders with a shell command | Claude Code asks you. Copying out of the folder and reading it stay quiet. Records are written with the Write and Edit tools, which apply these rules |
 
-Approve only an edit you asked for. Where nobody can answer, as in `claude -p` or the `dontAsk` mode, the edit is refused and Claude is told to write the new record instead. In the other permission modes Claude Code shows you the prompt. In auto mode the guardrails ask before the classifier runs, and Claude Code's docs do not say whether the classifier can answer that prompt for you.
+Approve only an edit you asked for. Where nobody can answer, as in `claude -p` or the `dontAsk` mode, the edit is refused and Claude is told to write the new record instead. In every other permission mode, auto mode included, the prompt comes to you and no classifier can approve it for you.
 
 Everything else stays quiet: a new ADR, a new debt item, a `proposed` ADR that changes, a status moving from *accepted* to *superseded* or *deprecated*, results in the Confirmation section, and a pending item that leaves after its closed entry exists.
 
