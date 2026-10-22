@@ -65,7 +65,7 @@ Lessons verified on 2026-10-22 against the live mod docs and the installed engin
 
 ## Where mods run
 
-- **Claim** surfaces from Overview → Where mods run: hooks run in the terminal, the Desktop Code tab, the VS Code extension, `claude -p`, the Agent SDK, Remote Control and cloud sessions that receive the plugin; they do not run in a Desktop WSL session. Drawing appears only in the terminal, the Desktop Code tab and the VS Code extension.
+- **Claim** surfaces from Overview → Where mods run: hooks run in every session that loads the plugin, whatever the model provider: the terminal (JetBrains included), the Desktop Code tab, the VS Code extension, `claude -p`, the Agent SDK, Remote Control and cloud sessions that receive the plugin; they do not run in a Desktop WSL session. Drawing appears only in the terminal, the Desktop Code tab and the VS Code extension.
 - **Remember** that `disableAllHooks` and `allowManagedModsOnly` stop the mod and keep the rest of the plugin (skills, commands, agents, MCP) loaded.
 - **Expect** the built-in guard `sec-default@builtin` (`cc-plugin-sec-default`) ahead of user mods on machines with managed settings or a Team or Enterprise login.
 
@@ -135,4 +135,6 @@ Lessons verified on 2026-10-22 against the live mod docs and the installed engin
 - **Tell** users how to diagnose an installed mod: `/plugin` names the active mods, and only `claude --debug` shows why one was refused or skipped.
 - **List** what turns the mod off while the rest of the plugin stays: `disableAllHooks`, `allowManagedModsOnly`, `allowManagedHooksOnly`, `--safe-mode`, `--bare`.
 - **Disclose** that in organizations with managed settings or a Team or Enterprise login, the built-in guard can refuse the mod or keep a deny it tried to lift.
+- **List** what the mod reaches, from the `hooks:` and `calls:` lines of `claude plugin validate`, with what each call touches and what the mod never does (writes, network, model calls): a mod runs with the user's permissions and no sandbox (Overview → Decide whether to trust a mod), and tell users to run `claude plugin validate` themselves before installing.
+- **Remember** that a mod cannot restyle or change what a permission prompt shows.
 - **Show** how to set the mod's options from the shell (`claude plugin install … --config <key>=<value>`) or in `/config`.
