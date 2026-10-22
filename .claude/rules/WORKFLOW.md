@@ -30,8 +30,10 @@ Applies to every task.
 1. After you edit, write or create a `.py`, `.mjs`, `.ts` or `.sh` file, run the commands for its type in Commands → After Editing a File, right away and before the next task, in this order: formatter, linter, type checker, tests.
 2. Pass each strict `tsc` flag with an explicit value: `--strict` does not override an explicit `false` in a tsconfig. Before the first edit of a `.ts`, `.mts`, `.js` or `.mjs` file in a task, tests and scratch scripts included, invoke the TypeScript lifecycle skill (`typescript6-lsp-intelligence:ts-lifecycle`); the post-edit `tsc` hook is not that skill.
 3. Fix every finding before you advance to the next step, file or task. An issue stays open only when it waits on a decision or a spend only Nery can make: then stop and ask.
-4. Before every push, run Commands → Before Every Push in order. Stop at the first failure, fix the cause, then restart from step 1.
+4. Before every push, run Commands → Before Every Push in order. Stop at the first failure, fix the cause, then restart from step 1. In a fresh clone or a new worktree, run `npm ci` first, with the `.nvmrc` Node selected: without `node_modules/@types/node` the `.mjs` type check fails with TS2688. Never bring back a global `@types/node` or `--typeRoots`.
 5. Report that run as a table: gate, result and key output line.
+6. CI checks only what is ours and what does not depend on the user's machine: the maintainer tooling under `scripts/` and the plugins' structure (`claude plugin validate`, `check-repo.mjs`, the catalog, the version bump). The plugins' behavior (their Python tests, the `by_path.sh` scripts, `claude plugin test` for mods, the mods' `tsc`) and the static analysis of plugin code run locally before the push, and through evals where a plugin has them, because they depend on the interpreter and tools of whoever installs the plugin.
+7. Maintainer code and its tests live in `scripts/` at the root, never under `.github/`: basedpyright and other tools skip folders whose name starts with a dot (ADR_2026-10-21_maintainer-scripts-at-root). The root `package.json` is maintainer tooling only, never a runtime of any plugin (ADR_2026-10-21_maintainer-only-root-package-json): recall memory `root-package-json-maintainer-only` before you change it.
 
 ### When Creating a Plugin
 
@@ -42,10 +44,10 @@ Only when Nery explicitly asks to create, build or start a plugin. Each step nam
    - Problem and outcome: the recurring friction it removes, and who it is for.
    - Overlap: when an existing plugin of this marketplace covers part of the domain, weigh extending it against a new plugin, and propose the choice. Never argue a design choice from another plugin of the marketplace: recall memory `no-other-plugins-as-precedent`.
    - Name: kebab-case, permanent, no `claude-` or `anthropic-` prefix, named for what it does; a display name and an emoji.
-   - Category: an `id` from `.github/scripts/categories.json`.
+   - Category: an `id` from `scripts/categories.json`.
    - Components: skills, agents, hooks, MCP, LSP, output styles, monitors, scripts, each justified by a user task.
    - Surfaces: Claude Code and the Claude app by default. Check every component against `docs/compatibility.md`; if a part forces Claude Code-only, say why and get Nery's OK.
-   - Requirements: CLIs, accounts, API keys (`userConfig`), dependencies, minimum Claude Code version.
+   - Requirements: CLIs, accounts, API keys (`userConfig`), dependencies, minimum Claude Code version. A Node dependency ships in the plugin's own `package.json` and npm or Bun lockfile under `plugins/<name>/`, never in the root `package.json`.
    - Evals: ask Nery whether the plugin gets them (When Writing Evals).
    - Sources: the current official docs for every component type used, with their version-gated features.
 2. Scaffold with `new-plugin.mjs`. Pass `--claude-code-only` only when the brief approved it. It creates `plugins/<name>/` with the manifest, README, CHANGELOG and LICENSE, registers the marketplace entry and regenerates the catalog.
@@ -89,7 +91,7 @@ Plugin skills ship to users and follow the rules below. Skills that only govern 
 - Plugins get evals by default; Nery decides which plugins skip them. Write evals only for a plugin he approved.
 - Never work from memory: load the plugin-evals skill, use the Claude Code Docs MCP tools, and read the Claude Code changelog for the installed version, the four before it and every newer one. Apply what changed. Never invent or assume a format or behavior.
 - Runs never ask for permission: a tool you did not grant is removed, Bash writes stay in the run's workspace, no `.claude/` directory loads (not even one a `scaffold_script` wrote), and the temporary home has no `userConfig` values. Grade the attempt and the reply. Source: `/en/plugin-evals` → "Grant tools" and "How runs are isolated".
-- Give the plugin an entry in `.github/scripts/evals-config.json`: the tools the cases need, `max_cost_usd` and the `cost_basis` it was measured from.
+- Give the plugin an entry in `scripts/evals-config.json`: the tools the cases need, `max_cost_usd` and the `cost_basis` it was measured from.
 - Run `run-evals.sh` only on Nery's request: it spends money. CI runs the suite only for plugins with an `evals/` folder that changed.
 - A plugin without evals is tested with the methods the official docs recommend for its component types.
 
@@ -115,10 +117,10 @@ Applies to the root `README.md`, `docs/`, every plugin `README.md`, `SECURITY.md
 
 After building or changing a plugin, before its release. Delegate it to a read-only subagent (the `Explore` type: no Edit or Write) that did not write the plugin. It assumes nothing works until it sees evidence. It loads no CLAUDE.md, rule file or memory, so the delegation message carries the plugin name, these steps and every rule or fact they need: recall memory `agent-file-rules`. The same applies to every delegated review.
 
-1. Read `.claude/rules/WORKFLOW.md`, the pairs map in `.claude/skills/plugin-consistency/SKILL.md` → step 2, `docs/compatibility.md`, the checks in `.github/scripts/check-repo.mjs` and everything under `plugins/<name>/`.
-2. Run `claude plugin validate --strict plugins/<name>` and `node .github/scripts/check-repo.mjs`, and quote the output.
+1. Read `.claude/rules/WORKFLOW.md`, the pairs map in `.claude/skills/plugin-consistency/SKILL.md` → step 2, `docs/compatibility.md`, the checks in `scripts/check-repo.mjs` and everything under `plugins/<name>/`.
+2. Run `claude plugin validate --strict plugins/<name>` and `node scripts/check-repo.mjs`, and quote the output.
 3. Manifest: the fields `.claude/skills/plugin-development/SKILL.md` → step 4 sets; paths start with `./`; secrets go through `userConfig`; no hardcoded tokens or personal data.
-4. Components: each skill, agent, hook, MCP and LSP server does what the README claims; skill descriptions state what and when; hook scripts fail safe; paths use `${CLAUDE_PLUGIN_ROOT}`.
+4. Components: each skill, agent, hook, MCP and LSP server does what the README claims; skill descriptions state what and when; hook scripts fail safe; paths use `${CLAUDE_PLUGIN_ROOT}`; code imports only `node:*` modules, the plugin's own files or the packages its own `package.json` declares, never anything from the repository's root `node_modules`, which no user receives.
 5. Security: no data exfiltration, no undisclosed network calls, no destructive commands without confirmation, no `curl | sh`, least-privilege tool grants.
 6. Compatibility: the README table matches `docs/compatibility.md` for the components actually shipped (e.g. `bin/` ⇒ ❌ Claude app; agents and hooks ⇒ ⚠️ Cowork sessions only).
 7. Docs accuracy: every command, flag, version and UI path in the README exists in the current official docs; usage examples match the real skill names (`/<plugin>:<skill>`).

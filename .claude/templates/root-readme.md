@@ -1,6 +1,6 @@
 # Root README blueprint
 
-Canonical section order and intent for `README.md`. Edit `README.md` directly following this blueprint; never hand-edit the generated `<!-- catalog:* -->` and `<!-- plugin-count:* -->` blocks — run `node .github/scripts/catalog.mjs`.
+Canonical section order and intent for `README.md`. Edit `README.md` directly following this blueprint; never hand-edit the generated `<!-- catalog:* -->` and `<!-- plugin-count:* -->` blocks — run `node scripts/catalog.mjs`.
 
 | # | Section | Intent | Rules |
 | :-- | :-- | :-- | :-- |

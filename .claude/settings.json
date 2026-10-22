@@ -6,9 +6,9 @@
   },
   "permissions": {
     "allow": [
-      "Bash(node .github/scripts/*)",
+      "Bash(node scripts/*)",
       "Bash(node --test *)",
-      "Bash(.github/scripts/validate-claude.sh)",
+      "Bash(npm run gates)",
       "Bash(npx --yes markdownlint-cli2@*)",
       "Bash(claude plugin validate *)",
       "Bash(claude plugin details *)",

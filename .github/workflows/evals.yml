@@ -67,9 +67,9 @@ jobs:
           ONLY: ${{ inputs.plugin }}
         run: |
           if [[ "${GITHUB_EVENT_NAME}" == pull_request ]]; then
-            plugins=$(node .github/scripts/eval-targets.mjs --changed "${BASE}" "${HEAD}")
+            plugins=$(node scripts/eval-targets.mjs --changed "${BASE}" "${HEAD}")
           else
-            plugins=$(node .github/scripts/eval-targets.mjs --only "${ONLY:-all}")
+            plugins=$(node scripts/eval-targets.mjs --only "${ONLY:-all}")
           fi
           echo "plugins=${plugins}" >>"${GITHUB_OUTPUT}"
           if [[ "${plugins}" == "[]" ]]; then echo "::notice::No plugin with evals changed; evals skipped."
@@ -101,7 +101,7 @@ jobs:
       - name: Run the plugin's full suite
         env:
           ONLY: ${{ matrix.plugin }}
-        run: .github/scripts/run-evals.sh
+        run: scripts/run-evals.sh
       - name: Keep the results
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
