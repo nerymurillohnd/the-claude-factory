@@ -83,7 +83,7 @@ While Nery is still shaping the plugin, run only the cheap checks each edit need
 1. Load the plugin with the option unset: the server must be absent and the README's setup text must match what the user sees.
 2. Set the option, run `/reload-plugins`, and confirm the server and a tool call work.
 3. Call a tool from an agent that lists it in `tools`, and from the main conversation.
-4. For a remote server with `${user_config.*}` in headers, connect it through the Claude app's **Connectors** tab with **No sign in** and an `authorization` header; do not claim the app works until Nery's Claude app check says so.
+4. For a remote server with `${user_config.*}` in headers, take the Claude app steps (the **Connectors** tab, **No sign in** and an `authorization` header) from the official claude.com and support.claude.com pages. Nery runs no per-plugin Claude app check: state in the README or the report what was not observed live as unverified, and never log it as debt or a blocker.
 
 ### 7. Document
 

@@ -58,9 +58,9 @@ Only when Nery explicitly asks to create, build or start a plugin. Each step nam
 7. Stop and tell Nery the plugin is built. While he is still shaping it, run only the cheap checks each edit needs, and do not run or announce live tests, the full gate sequence or the plugin review: recall memory `no-unrequested-verification-while-designing`. Run the closing checks only once he says it is ready:
    - every step of Before Every Push passes;
    - the plugin review passes (When Reviewing a Plugin) and every confirmed finding is fixed;
-   - Nery runs the Claude app check in a Cowork session and a chat conversation, unless the plugin is Claude Code-only.
+   - unless the plugin is Claude Code-only, its README's Claude app claims match `docs/compatibility.md` and the official claude.com and support.claude.com pages. Nery runs no per-plugin Claude app check: state what was not observed live as unverified, and never log it as debt, an open item or a release blocker.
 8. Open the PR with the `github-workflow` skill. After the first push, run `sync-labels.mjs` to create the `plugin: <name>` label.
-9. Hand off: what was built, the raw gate output, the surfaces tested and the release step (the `release-and-versioning` skill).
+9. Hand off: what was built, the raw gate output, the surfaces tested live and those taken from the docs, and the release step (the `release-and-versioning` skill).
 
 ### When Writing Skills
 

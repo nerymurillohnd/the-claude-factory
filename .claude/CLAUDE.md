@@ -19,7 +19,7 @@ This project carries one item of the global North Star: multiply execution capac
 - Goal: publish plugins that automate and optimize everyday workflows.
 - Differentiator: completeness, not complexity. Elsewhere, users combine several plugins and skills to cover one domain; here one plugin covers the whole domain (knowledge, enforcement, tooling, review and proof that it works), so users find everything in one place.
 - Release gate: a plugin ships only when every requirement below has recorded evidence.
-- Requirements: every gate passes, the plugin review leaves no confirmed finding, the Claude app check passes (unless Claude Code-only), the README is accurate against the current docs, and the plugin is portable across macOS, Linux and Windows through Git Bash.
+- Requirements: every gate passes, the plugin review leaves no confirmed finding, the README's Claude app claims match `docs/compatibility.md` and the official Claude app pages (unless Claude Code-only), the README is accurate against the current docs, and the plugin is portable across macOS, Linux and Windows through Git Bash.
 
 ## Stack and Development
 

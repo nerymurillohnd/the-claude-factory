@@ -63,7 +63,7 @@ Decide what you were given: a new issue, a PR to carry, a push or PR order, or a
 
 ### 2. Confirm
 
-Reproduce the report with the plugin loaded through `claude --plugin-dir plugins/<name>`, or confirm it against the plugin's README, the current code and the live official docs. State which of the two you did and quote the evidence. Read the entries about that plugin in `.claude/memory/MEMORY.md` first: an open app check or a known limit changes what "confirmed" means. A report you could not confirm is `status: needs-info`, with exactly what is missing.
+Reproduce the report with the plugin loaded through `claude --plugin-dir plugins/<name>`, or confirm it against the plugin's README, the current code and the live official docs. State which of the two you did and quote the evidence. Read the entries about that plugin in `.claude/memory/MEMORY.md` first: a known limit changes what "confirmed" means. A report you could not confirm is `status: needs-info`, with exactly what is missing.
 
 ### 3. Reply
 
