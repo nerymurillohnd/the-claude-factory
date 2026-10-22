@@ -156,13 +156,25 @@ const RUNTIME_FIELDS = [
   'type',
   'workspaces',
 ]
+// Scripts npm runs without being named: install and publish lifecycles, and pre<name>/post<name>
+// around every `npm run <name>`. `npm ci --ignore-scripts` stops only the install ones.
+const AUTO_SCRIPTS = new Set([
+  'install',
+  'prepare',
+  'prepack',
+  'prepublish',
+  'prepublishOnly',
+  'publish',
+  'version',
+  'dependencies',
+])
 
 /**
  * Problems in the root package.json. It may only pin exact @types/* packages for the
  * maintainers' type checks, with @types/node on the Node major of .nvmrc: a runtime field
  * would let a plugin resolve packages that no user receives, and "type" would change how
  * Node and tsc read the plugins' .js and .ts files.
- * @param {{ private?: unknown, devDependencies?: unknown } & Record<string, unknown>} pkg
+ * @param {{ private?: unknown, devDependencies?: unknown, scripts?: unknown } & Record<string, unknown>} pkg
  * @param {string} nodeVersion the content of .nvmrc
  * @returns {string[]}
  */
@@ -175,6 +187,14 @@ export function rootPackageProblems(pkg, nodeVersion) {
   for (const field of RUNTIME_FIELDS) {
     if (field in pkg) {
       problems.push(`must not declare "${field}": it is maintainer tooling, never a plugin runtime`)
+    }
+  }
+  const scripts = isRecord(pkg.scripts) ? pkg.scripts : {}
+  for (const name of Object.keys(scripts)) {
+    if (AUTO_SCRIPTS.has(name) || /^(pre|post)/.test(name)) {
+      problems.push(
+        `script "${name}" runs on its own: name every script so it runs only when called`,
+      )
     }
   }
   const dev = isRecord(pkg.devDependencies) ? pkg.devDependencies : {}

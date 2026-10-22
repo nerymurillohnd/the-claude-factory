@@ -753,6 +753,28 @@ describe('root package.json rules', () => {
     assert.match(problems, /"@types\/node" must be pinned to an exact version/)
   })
 
+  test('flag lifecycle scripts, which npm runs on its own', () => {
+    for (const name of ['postinstall', 'prepare', 'pregates', 'postgates']) {
+      assert.match(
+        rootPackageProblems({ ...pkg, scripts: { [name]: 'node x.mjs' } }, '26.12.1').join('\n'),
+        new RegExp(`script "${name}" runs on its own`),
+        name,
+      )
+    }
+    assert.deepEqual(
+      rootPackageProblems(
+        { ...pkg, scripts: { gates: 'node .github/scripts/gates.mjs' } },
+        '26.12.1',
+      ),
+      [],
+    )
+  })
+
+  test('flag a package without "private": true', () => {
+    const { private: _ignored, ...open } = pkg
+    assert.match(rootPackageProblems(open, '26.12.1').join('\n'), /"private": true/)
+  })
+
   test('flag @types/node on another major than .nvmrc', () => {
     assert.match(
       rootPackageProblems(pkg, 'v27.0.0').join('\n'),
