@@ -232,7 +232,7 @@ The plugin ships a Claude Code [mod](https://code.claude.com/docs/en/plugins/mod
 | Remove an item from `pending-debt.md` while `closed-debt.md` has no entry with an outcome for it (for *accepted*, an ADR that exists) | Claude Code asks you |
 | Rewrite, move or delete the records folders with a shell command | Claude Code asks you. Copying out of the folder and reading it stay quiet. Records are written with the Write and Edit tools, which apply these rules |
 
-The prompt is Claude Code's own one for files in the `.claude` folder: it shows the change but not which rule asked for it. Approve only an edit you asked for, one at a time. Where nobody can answer, as in `claude -p` or the `dontAsk` mode, the edit is refused and Claude is told to write the new record instead. In every other permission mode, auto mode included, the prompt comes to you and no classifier can approve it for you.
+The prompt is Claude Code's own one for files in the `.claude` folder: it shows the change but not which rule asked for it. Approve only an edit you asked for. Choosing **Yes, and allow Claude to edit files in this project's .claude folder for this session** does not switch the guardrails off: the next change to a settled record asks you again. Where nobody can answer, as in `claude -p` or the `dontAsk` mode, the edit is refused and Claude is told to write the new record instead. In every other permission mode, auto mode included, the prompt comes to you and no classifier can approve it for you.
 
 Everything else stays quiet: a new ADR, a new debt item, a `proposed` ADR that changes, a status moving from *accepted* to *superseded* or *deprecated*, results in the Confirmation section, and a pending item that leaves after its closed entry exists.
 
