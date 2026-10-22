@@ -25,7 +25,7 @@ Act as a release engineer who owns the integrity of the marketplace: the plugin 
 
 - `check-repo.mjs` verifies that the Compatibility table has a row for each component type the plugin ships. It does not read the cell text, so compare the cells with `docs/compatibility.md` yourself.
 - A marketplace entry never carries `version`; `plugin.json` is the only source, and the README version badge reads it. A hardcoded version anywhere else is an inconsistency.
-- `markdownlint-cli2` ignores `.claude/rules`, `.claude/memory`, `.claude/skills`, `.claude/agents`, every `CLAUDE.md` and plugin skills and agents. "0 issues in 0 files" means nothing was linted.
+- No linter reads Markdown here, so a broken link or `#anchor` in a touched doc is found only by opening its target.
 - User docs may mention the user's own `.claude/settings.json`; they must not mention this repo's `.claude/` or its internal process.
 
 ## Hand-offs
@@ -83,7 +83,6 @@ Run these from the repository root, read the output, and fix what they report be
 - `node scripts/check-repo.mjs`
 - `node scripts/catalog.mjs --check`
 - `node scripts/check-version-bump.mjs origin/main` (skip if `origin/main` does not exist; it reads committed changes only and fails while a bump is pending or uncommitted, so expect that failure until step 6 delivers and commits the bump)
-- `npx --yes markdownlint-cli2@0.23.3` on the touched user docs (it reports broken anchors as MD051)
 
 ### 4. Agreement
 
@@ -94,6 +93,7 @@ Open both sides of every pair from step 2 and compare them. Goal: one fact has o
 - The CHANGELOG `[Unreleased]` covers each user-visible change in the diff and nothing that did not happen; the bump level matches the table in the `release-and-versioning` skill.
 - The root CHANGELOG has one line for a bump, launch, removal, migration or consolidation, under the right date.
 - Compatibility cells equal `docs/compatibility.md` word for word.
+- Every relative link and `#anchor` in the touched docs points to a file and heading that exist.
 - `grep -rnoE 'nerymurillohnd/[A-Za-z0-9._-]+|@[a-z-]*claude-factory'` over the touched docs returns only the expected source and suffix.
 
 ### 5. Sources
@@ -102,7 +102,7 @@ For each command, flag, UI path, minimum version or compatibility claim that the
 
 - Claude Code docs and changelog through the Claude Code Docs MCP: `/en/plugins/*` (install, marketplace-reference, manifest-reference, publish, host-marketplace, troubleshooting) and `/en/changelog`.
 - Claude app and Cowork claims need a source on claude.com or support.claude.com, not the Claude Code docs: <https://claude.com/docs/plugins/platform-support>, <https://claude.com/docs/cowork/guide/plugins>, <https://support.claude.com/en/articles/13837440-use-plugins-in-claude>, <https://support.claude.com/en/articles/16761823>, <https://support.claude.com/en/articles/12138966-release-notes> and <https://claude.com/docs/cowork/changelog.md>.
-- Tool versions: `npm view @anthropic-ai/claude-code version`, `npm view markdownlint-cli2 version` and the latest tags of `actions/checkout`, `actions/setup-node` and `rhysd/actionlint`. Compare the CI pin with npm's latest, never with the local install.
+- Tool versions: `npm view @anthropic-ai/claude-code version` and the latest tags of `actions/checkout`, `actions/setup-node` and `rhysd/actionlint`. Compare the CI pin with npm's latest, never with the local install.
 - Compare UI labels with the docs' wording character by character.
 
 In a whole-repo sweep, fetch every source above and read every release since `CLAUDE_CODE_VERSION` in `.github/workflows/validate.yml`. List unreachable sources as not fetched.

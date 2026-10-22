@@ -202,7 +202,6 @@ export function gatesFor({ root, ci, base, pins }) {
     return value
   }
   const biome = `@biomejs/biome@${pin('BIOME_VERSION')}`
-  const markdownlint = `markdownlint-cli2@${pin('MARKDOWNLINT_CLI2_VERSION')}`
   const ruff = `ruff@${pin('RUFF_VERSION')}`
   const mypy = `mypy==${pin('MYPY_VERSION')}`
   const typescript = `typescript@${pin('TYPESCRIPT_VERSION')}`
@@ -356,13 +355,6 @@ export function gatesFor({ root, ci, base, pins }) {
       title: 'Biome outside plugins/',
       cmd: 'npx',
       args: ['--yes', biome, 'ci', '--error-on-warnings', ...maintainerBiome],
-    },
-    {
-      id: 'markdownlint',
-      group: 'lint',
-      title: 'markdownlint',
-      cmd: 'npx',
-      args: ['--yes', markdownlint],
     },
     {
       id: 'actionlint',

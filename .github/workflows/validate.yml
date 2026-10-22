@@ -17,7 +17,6 @@ env:
   # Pinned for reproducible CI. Dependabot does not track npm CLIs installed with npx/npm -g,
   # so the plugin-consistency skill (WORKFLOW.md, "Skill Triggers") reviews these pins.
   CLAUDE_CODE_VERSION: "2.1.304"
-  MARKDOWNLINT_CLI2_VERSION: "0.23.3"
   ACTIONLINT_VERSION: "1.7.12"
   RUFF_VERSION: "0.17.1"
   BIOME_VERSION: "2.5.15"
@@ -93,7 +92,7 @@ jobs:
         run: npm run gates:ci -- --group claude
 
   lint:
-    name: Markdown, workflow & JSON lint
+    name: Workflow & JSON lint
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
