@@ -18,6 +18,7 @@
 | Closed on | ID | Outcome | Closure | Superseded by |
 | --- | --- | --- | --- | --- |
 | 2026-10-21 | DEBT-003 | resolved | basedpyright checks every tracked Python file locally and the maintainer Python in CI | none |
+| 2026-10-22 | DEBT-005 | resolved | project-maintainer guardrails ask in the documented tool.check form and pass 50 of 50 on Claude Code 2.1.307+ | none |
 
 ## 🏁 Closed items
 
@@ -50,6 +51,37 @@ The cause was the folder, not the command. basedpyright's documented default exc
 - **Residual risk:** the CI job has not run on GitHub yet; it runs on the branch's first push. basedpyright on `plugins/` runs only locally, by decision.
 - **Closed by:** ADR_2026-10-21_maintainer-scripts-at-root, ADR_2026-10-21_ci-checks-maintainer-tooling-and-plugin-structure, commits e8f3b8c and 75da92b.
 - **Related records:** ADR_2026-10-21_gates-run-from-one-script.
+- **Superseded by:** none
+
+### DEBT-005 — project-maintainer guardrails ask in the documented tool.check form and pass 50 of 50 on Claude Code 2.1.307+
+
+| Field | Value |
+| --- | --- |
+| **Outcome** | resolved |
+| **Closed on** | 2026-10-22 |
+| **Logged on** | 2026-10-22 |
+| **Owner** | `plugins/project-maintainer` (its mod tests), the `mod-test:project-maintainer` gate of `scripts/gates.mjs` |
+
+#### ❗ The problem
+
+`claude plugin test plugins/project-maintainer` failed 5 of 50 on Claude Code 2.1.307 and 2.1.308, all authority-guard tests (`Expected: "person"`, `Received: undefined` on `verdict.decider`), after passing 50 of 50 on 2.1.304. Whether the shipped guards still asked the person live was unknown.
+
+#### 🔧 The closure
+
+Cause: Claude Code 2.1.307 removed `decider` from the `tool.check` result. The engine-written declarations went from `decider?: ToolCheckDecider` (written by 2.1.304) to an engine-pinned `plugin?: string` (written by 2.1.308), and the official changelog from 2.1.295 to 2.1.308 has no entry for it. The official mod docs (`/en/plugins/mods/events`, `/en/plugins/mods/reference`) never documented `decider`: a `tool.check` answer is `{ decision, reason }`. The guard now returns `{ decision: 'ask', reason }`, the tests assert only `decision` and `reason`, and project-maintainer 0.2.0 requires Claude Code v2.1.307. The review condition's "live run" was met with a debug log, not a scripted terminal session: Nery set on 2026-10-22 that the official docs win over a project condition, and the docs offer `claude plugin test` and `--debug-file`, not a terminal-scraping test.
+
+#### 🧪 Verification
+
+| Check | Evidence |
+| --- | --- |
+| ✅ **Positive:** the closure holds | `claude plugin test plugins/project-maintainer` on 2.1.307 and 2.1.308: `50 pass`, `0 fail`; `tsc -p plugins/project-maintainer/tsconfig.json --noEmit` exit 0; `claude plugin validate --strict`: `Validation passed`. Breaking the authority guard on purpose gave `46 pass`, `4 fail`, then restored. Live, 2.1.308, auto mode, settled ADR: `--debug-file` shows `project-maintainer@inline tool.check settled in 5.3ms`, `executePermissionRequestHooks called for tool: Edit`, `Slow permission decision: 112464ms` and the screen shows `Do you want to make this edit to ADR_2026-03-14_keep-sessions-in-postgres.md?`; the control with a `proposed` ADR showed no dialog and `Allowed by auto mode classifier`. The settled run's final `allow` came from the test script's own keystroke, not from a classifier. |
+| 🚫 **Negative:** the original failure or condition is gone | The 0.1.0 code (`git archive` of `origin/main`) still fails on 2.1.307 and 2.1.308 with `45 pass`, `5 fail`, and passes `50 pass` on 2.1.306, so the failure is the 2.1.307 contract change and the fix removes it. |
+
+#### 🔗 Follow-up
+
+- **Residual risk:** the documented contract does not say who answers a mod's `ask` in auto mode; the README no longer promises it. Users on 2.1.304 to 2.1.306 who update the plugin without updating Claude Code can lose the approval guard. Reporting the undocumented 2.1.307 change to the docs team waits on Nery's approval.
+- **Closed by:** commits 03ba140 and d8f3e94 on branch `fix/project-maintainer-mod-ask-api`.
+- **Related records:** none.
 - **Superseded by:** none
 
 <!--
