@@ -82,7 +82,7 @@ Pick one from the [catalog](#-catalog), then:
 | :-- | :-- |
 | 💻 Terminal | `claude plugin install <plugin>@the-claude-factory` |
 | 💬 Claude Code session | `/plugin install <plugin>@the-claude-factory` — or browse `/plugin` → **Discover** |
-| 🖥️ Desktop app, Code tab | **+** next to the prompt box → **Add plugins** (or **Plugins** → **Browse plugins**) |
+| 🖥️ Desktop app | Any of three ways: **+** next to the prompt box → **Add plugins** (or **Plugins** → **Browse plugins**) · **Settings** → **Plugins** → **Discover** · **Customize** in the sidebar → **Plugins** → **Discover** |
 | 🧩 VS Code | Type `/plugins` → **Plugins** tab → **Install** |
 | 🖥️ Claude app | **Customize** → **Plugins** → **Discover** → select the plugin → **Add** |
 
