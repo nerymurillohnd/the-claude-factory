@@ -60,6 +60,7 @@ This project carries one item of the global North Star: multiply execution capac
 - `.claude/plans/`: implementation plans.
 - `.claude/templates/`: templates for plugin files and the root README.
 - `.claude/rules/WORKFLOW.md`: how to work by task: quality checks, maintenance, plugins, hooks, versioning, GitHub, releases, skills and user docs.
+- `.claude/rules/mods.md`: mod sources and verified lessons; loads when Claude reads or edits a mod's files, tests, declarations or graders.
 - `docs/`: the user guides, covering installation, managing plugins, compatibility, FAQ, troubleshooting and tool references.
 
 ## Research and Sources
