@@ -68,7 +68,7 @@ The cause was the folder, not the command. basedpyright's documented default exc
 
 #### 🔧 The closure
 
-Cause: Claude Code 2.1.307 removed `decider` from the `tool.check` result. The engine-written declarations went from `decider?: ToolCheckDecider` (written by 2.1.304) to an engine-pinned `plugin?: string` (written by 2.1.308), and the official changelog from 2.1.295 to 2.1.308 has no entry for it. The official mod docs (`/en/plugins/mods/events`, `/en/plugins/mods/reference`) never documented `decider`: a `tool.check` answer is `{ decision, reason }`. The guard now returns `{ decision: 'ask', reason }`, the tests assert only `decision` and `reason`, and project-maintainer 0.2.0 requires Claude Code v2.1.307. On 2026-10-22 Nery replaced the review condition's "live run" with the tests plus a `--debug-file` log of a real session, because the official docs win over a project condition and offer `claude plugin test` and `--debug-file`, not a terminal-scraping test. That log shows the guard's ask reaching the permission dialog; no person's answer to that dialog was recorded.
+Cause: Claude Code 2.1.307 removed `decider` from the `tool.check` result. The engine-written declarations went from `decider?: ToolCheckDecider` (written by 2.1.304) to an engine-pinned `plugin?: string` (written by 2.1.308), and the official changelog from 2.1.295 to 2.1.308 has no entry for it. The mod docs pages (`/en/plugins/mods/events`, `/en/plugins/mods/reference`) never documented `decider`: a `tool.check` answer is `{ decision, reason }`. The same docs say to trust the declarations the engine writes for the installed build over any page (Create a mod → Get type definitions for your version), and the 2.1.308 declarations pin `plugin` on a hook's `ask`, put it to a person and let no classifier's allow settle it. The guard now returns `{ decision: 'ask', reason }`, the tests assert `decision`, `reason` and `plugin`, and project-maintainer 0.2.0 requires Claude Code v2.1.307. On 2026-10-22 Nery replaced the review condition's "live run" with the tests plus a `--debug-file` log of a real session, because the official docs win over a project condition and offer `claude plugin test` and `--debug-file`, not a terminal-scraping test. That log shows the guard's ask reaching the permission dialog; no person's answer to that dialog was recorded.
 
 #### 🧪 Verification
 
@@ -79,8 +79,8 @@ Cause: Claude Code 2.1.307 removed `decider` from the `tool.check` result. The e
 
 #### 🔗 Follow-up
 
-- **Residual risk:** the documented contract does not say who answers a mod's `ask` in auto mode; the README no longer promises it. Users on 2.1.304 to 2.1.306 who update the plugin without updating Claude Code can lose the approval guard. Reporting the undocumented 2.1.307 change to the docs team waits on Nery's approval.
-- **Closed by:** commits 03ba140 and d8f3e94 on branch `fix/project-maintainer-mod-ask-api`.
+- **Residual risk:** the routing of a hook's `ask` to a person is stated in the engine's declarations, not on the docs pages, and the mod API can change again without a changelog entry. Users on 2.1.304 to 2.1.306 who update the plugin without updating Claude Code can have auto mode's classifier approve a guarded edit; on 2.1.306 the suite fails 44 of 50 for that reason. Reporting the undocumented 2.1.307 change to the docs team waits on Nery's approval.
+- **Closed by:** commits 03ba140, d8f3e94 and ae98a47 on branch `fix/project-maintainer-mod-ask-api`.
 - **Related records:** none.
 - **Superseded by:** none
 
