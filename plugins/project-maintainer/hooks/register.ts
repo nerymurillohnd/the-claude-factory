@@ -1,7 +1,8 @@
 // Project Maintainer's guardrails. Every call on `$` lives in this file; the rules themselves are
 // pure functions in the sibling modules, so the tests can run them without an engine.
 //
-// - Format guard: refuses to save a malformed ADR or debt ledger. Nobody can waive it.
+// - Format guard: refuses to save a malformed ADR or debt ledger, or one it could not check.
+//   Nobody can waive it.
 // - Authority guard: asks the person before a settled record is rewritten. Claude cannot waive it.
 // - Compaction note: keeps decisions, open items and record IDs in the summary.
 // - Commit nudge: after a commit that looks like a decision, reminds Claude of write-records.
@@ -14,6 +15,7 @@ import {
   commitSignals,
   fileInput,
   formatProblems,
+  mayWriteRecord,
   nudgeText,
   refusal,
   resultingText,
@@ -92,9 +94,14 @@ export function register(on: On, options: PluginOptions): void {
     }
     const problems = formatProblems(ref, current, resulting, await around($, ref))
     return problems.length > 0 ? { deny: refusal(ref.name, problems) } : next(e)
-  }).catch(async ($, e, next) => {
-    $.ui.log('Project Maintainer could not check this record, so it was saved unchecked.')
-    return next(e)
+  }).catch(async (_$, e, next) => {
+    // Fail closed for records only: a broken check never blocks a save outside the records.
+    if (next.called || !mayWriteRecord(e)) {
+      return next(e)
+    }
+    return {
+      deny: 'Project Maintainer could not check this record against its format, so it was not saved. Try the save again, and tell the user if it fails again.',
+    }
   })
 
   // Authority guard: only the person can approve rewriting a settled record.
@@ -119,11 +126,17 @@ export function register(on: On, options: PluginOptions): void {
     }
     const reasons = authorityReasons(ref, current, resulting, await around($, ref))
     return reasons.length > 0 ? { decision: 'ask', reason: askReason(ref.name, reasons) } : decided
-  }).catch(async () => ({
-    decision: 'ask',
-    reason:
-      'Project Maintainer could not check this edit against the rules of the records. Approve only if it leaves the records as they are.',
-  }))
+  }).catch(async (_$, e, next) => {
+    // The verdict beneath stands for a deny and for any file outside the records.
+    const decided = await next(e)
+    return decided.decision === 'deny' || !mayWriteRecord(e.input)
+      ? decided
+      : {
+          decision: 'ask',
+          reason:
+            'Project Maintainer could not check this edit against the rules of the records. Approve only if it leaves the records as they are.',
+        }
+  })
 
   // The same guard for the shell, as far as a command can be read.
   on('tool.check', { tool: 'Bash' }, async (_$, e, next) => {

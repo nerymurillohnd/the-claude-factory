@@ -102,6 +102,39 @@ test('a record that exists but cannot be read is not saved unchecked', async ($,
   expect(verdict.reason).toContain('could not read')
 })
 
+test('a format check that breaks refuses a record and lets any other file through', async ($, on) => {
+  // The session cannot say where it works, so the check throws before it reads anything
+  on('session.cwd', () => ({ deny: 'no working directory' }))
+  on('tool.call', () => ({ result: 'saved' }))
+  on('tool.check', () => ({ decision: 'allow' }))
+  const record = await $.tool.call(edit(SETTLED_ADR, 'status: accepted', 'status: deprecated'))
+  expect(JSON.stringify(record)).toContain('could not check this record')
+  const readme = { tool: 'Write' as const, file_path: `${ROOT}/README.md`, content: 'notes' }
+  expect(await $.tool.call(readme)).toEqual({ result: 'saved' })
+  const asked = await $.tool.check({
+    tool: 'Edit',
+    input: edit(SETTLED_ADR, 'status: accepted', 'status: deprecated'),
+  })
+  expect(asked.decision).toBe('ask')
+  expect(asked.plugin).toBe('project-maintainer')
+  expect(asked.reason).toContain('could not check this edit')
+  const other = await $.tool.check({
+    tool: 'Write',
+    input: { file_path: readme.file_path, content: readme.content },
+  })
+  expect(other.decision).toBe('allow')
+})
+
+test('a deny beneath stands when the session cannot say where it works', async ($, on) => {
+  on('session.cwd', () => ({ deny: 'no working directory' }))
+  on('tool.check', () => ({ decision: 'deny', reason: 'a deny rule' }))
+  const verdict = await $.tool.check({
+    tool: 'Edit',
+    input: edit(SETTLED_ADR, 'status: accepted', 'status: deprecated'),
+  })
+  expect(verdict.decision).toBe('deny')
+})
+
 test('the format guard lets a well formed ADR, another file and an impossible edit through', async ($, on) => {
   world(on, project())
   on('tool.call', () => ({ result: 'saved' }))

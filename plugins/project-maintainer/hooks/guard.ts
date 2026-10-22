@@ -3,7 +3,7 @@
 
 import { adrAuthority, validateAdr } from './adr.ts'
 import { closedAuthority, pendingAuthority, validateLedger } from './debt.ts'
-import type { RecordRef } from './paths.ts'
+import { classify, type RecordRef, resolvePath } from './paths.ts'
 
 /** The arguments of a Write or Edit call, narrowed from the unknown input of `tool.check`. */
 export type FileInput = {
@@ -43,6 +43,20 @@ export function fileInput(value: unknown): FileInput | null {
     input.replaceAll = true
   }
   return input
+}
+
+/**
+ * Whether a Write or Edit call may save a record, judged with no call on `$` so it can run when
+ * the check itself broke. Both tools take an absolute path; a relative one is read from the root,
+ * which keeps its `.claude/maintainer` segment. A call it cannot read counts as a record.
+ */
+export function mayWriteRecord(value: unknown): boolean {
+  try {
+    const input = fileInput(value)
+    return input !== null && classify(resolvePath(input.path, '/')) !== null
+  } catch {
+    return true
+  }
 }
 
 /**
