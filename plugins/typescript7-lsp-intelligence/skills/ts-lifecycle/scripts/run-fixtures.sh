@@ -8,6 +8,7 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd -P)"
+readonly NL=$'\n'
 readonly ASSETS="${SCRIPT_DIR}/../assets"
 readonly FIXTURES="clean_control type_mismatch implicit_any possibly_undefined missing_member"
 # The post-edit hook's strictest policy, the same block as in hooks/tsc-check.sh (a test keeps
@@ -43,8 +44,8 @@ version_at_least() {
   local a1 a2 a3 b1 b2 b3
   IFS=. read -r a1 a2 a3 <<< "$1"
   IFS=. read -r b1 b2 b3 <<< "$2"
-  a1="${a1//[!0-9]/}" a2="${a2//[!0-9]/}" a3="${a3//[!0-9]/}"
-  a1="${a1:-0}" a2="${a2:-0}" a3="${a3:-0}"
+  a1="${a1%%[!0-9]*}" a2="${a2%%[!0-9]*}" a3="${a3%%[!0-9]*}"
+  a1="$((10#${a1:-0}))" a2="$((10#${a2:-0}))" a3="$((10#${a3:-0}))"
   AT_LEAST=no
   if ((a1 != b1)); then
     ((a1 > b1)) && AT_LEAST=yes
@@ -56,13 +57,22 @@ version_at_least() {
   return 0
 }
 
-# Sets STRICT to the flags of every policy option tsc version $1 knows, and NOT_APPLIED to the
-# ones it does not, so an older compiler runs the fixtures instead of rejecting an option.
-STRICT=()
+# The same strict family and conflict table as hooks/tsc-check.sh (a test keeps them equal):
+# a project that sets strict keeps the family, and an option tsc rejects next to a value the
+# project chose stays out.
+readonly STRICT_FAMILY=" strict noImplicitAny strictNullChecks strictFunctionTypes strictBindCallApply strictPropertyInitialization strictBuiltinIteratorReturn noImplicitThis useUnknownInCatchVariables "
+readonly POLICY_CONFLICTS='strictPropertyInitialization|"strictNullChecks": false
+exactOptionalPropertyTypes|"strictNullChecks": false
+checkJs|"allowJs": false
+checkJs|"isolatedDeclarations": true
+allowJs|"isolatedDeclarations": true'
+
+# Sets KNOWN to the policy lines tsc version $1 knows, and NOT_APPLIED to the ones it does not.
+KNOWN=""
 NOT_APPLIED=""
 strict_for() {
   local name value since
-  STRICT=(--pretty false --noEmit true)
+  KNOWN=""
   NOT_APPLIED=""
   while IFS=' ' read -r name value since; do
     [[ -n ${name} ]] || continue
@@ -73,8 +83,33 @@ strict_for() {
         continue
       fi
     fi
-    STRICT+=("--${name}" "${value}")
+    KNOWN="${KNOWN}${name} ${value}${NL}"
   done <<< "${STRICT_POLICY}"
+}
+
+# Sets STRICT to the flags the hook would pass for config $1: every known policy option its
+# config chain does not set (read with --showConfig), as the hook does, so the fixtures prove
+# the check the hook applies to this program, not a stricter one.
+STRICT=()
+strict_for_config() {
+  local shown own=" " family=no name value option line skip
+  STRICT=(--pretty false --noEmit true)
+  shown="$(cd "$(dirname "$1")" && "${TSC}" --showConfig -p "$1" 2> /dev/null)" || return 0
+  own=" $(printf '%s\n' "${shown}" \
+    | awk '/^    "compilerOptions": \{/ { f = 1; next } f && /^    \}/ { exit } f' \
+    | sed -n -E 's/^        "([A-Za-z]+)":.*/\1/p' | tr '\n' ' ')"
+  [[ ${own} == *" strict "* ]] && family=yes
+  while IFS=' ' read -r name value; do
+    [[ -n ${name} ]] || continue
+    [[ ${own} == *" ${name} "* ]] && continue
+    [[ ${family} == yes && ${STRICT_FAMILY} == *" ${name} "* ]] && continue
+    skip=no
+    while IFS='|' read -r option line; do
+      [[ ${option} == "${name}" && ${shown} == *"${line}"* ]] && skip=yes
+    done <<< "${POLICY_CONFLICTS}"
+    [[ ${skip} == yes ]] && continue
+    STRICT+=("--${name}" "${value}")
+  done <<< "${KNOWN}"
 }
 
 # The folder in use right now, removed on exit even if a run stops midway.
@@ -177,6 +212,7 @@ for name in ${FIXTURES}; do
   else
     printf '{ "extends": "%s", "files": [], "include": ["*.ts"] }\n' "${OWNER}" > "${work}/tsconfig.json"
   fi
+  strict_for_config "${work}/tsconfig.json"
   output="$(cd "${work}" && "${TSC}" -p "${work}/tsconfig.json" "${STRICT[@]}" \
     --tsBuildInfoFile "${BUILDINFO_DIR}/${name}.tsbuildinfo" 2>&1 || true)"
   codes="$(printf '%s\n' "${output}" | grep -o 'error TS[0-9]*' | sed 's/error //' | sort -u | tr '\n' ' ')"

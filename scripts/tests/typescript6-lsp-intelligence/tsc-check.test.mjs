@@ -199,11 +199,83 @@ describe('typescript lsp hook', () => {
       assert.match(parsed(r.out).reason, /TS2322/)
     })
 
-    test('a project with strict false still gets every strict option', () => {
-      ws.write('m/tsconfig.json', '{ "compilerOptions": { "strict": false } }')
+    test('a project silent on strict gets the strict family', () => {
+      ws.write('m/tsconfig.json', '{ "compilerOptions": { "types": [] } }')
       const file = ws.write('m/a.ts', 'export function f(a) { return a }\n')
       const r = fire(ws.edit(file), ws.env)
       assert.match(parsed(r.out).reason, /TS7006/)
+    })
+
+    test('a project that sets strict false keeps it: the strict family is not forced', () => {
+      ws.write('m/tsconfig.json', '{ "compilerOptions": { "strict": false } }')
+      const file = ws.write('m/a.ts', 'export function f(a) { return a }\n')
+      const r = fire(ws.edit(file), ws.env)
+      assert.doesNotMatch(r.out, /error TS/)
+      assert.match(parsed(r.out).systemMessage, /pass the strictest policy/)
+    })
+
+    test('a policy option the project leaves unset is applied', () => {
+      ws.write('u/tsconfig.json', STRICT)
+      const r = fire(
+        ws.edit(ws.write('u/a.ts', 'export const used = 1;\nconst unused = 2;\n')),
+        ws.env,
+      )
+      assert.match(parsed(r.out).reason, /TS6133/)
+    })
+
+    test('an option the project sets explicitly wins over the policy, false included', () => {
+      ws.write(
+        'u/tsconfig.json',
+        '{ "compilerOptions": { "strict": true, "noUnusedLocals": false } }',
+      )
+      const r = fire(
+        ws.edit(ws.write('u/a.ts', 'export const used = 1;\nconst unused = 2;\n')),
+        ws.env,
+      )
+      assert.doesNotMatch(r.out, /error TS/)
+    })
+
+    test('a policy option that needs one the project turned off is left out, not a config error', () => {
+      for (const options of [
+        '"strictNullChecks": false, "allowJs": false',
+        '"strict": false',
+        '"isolatedDeclarations": true, "declaration": true',
+      ]) {
+        ws.write('n/tsconfig.json', `{ "compilerOptions": { ${options} } }`)
+        const r = fire(ws.edit(ws.write('n/a.ts', 'export const a = 1;\n')), ws.env)
+        assert.doesNotMatch(r.out, /TS5052|TS5053|error TS/, options)
+      }
+    })
+
+    test('an option set in a config the project extends counts as the project own', () => {
+      ws.write('u/base.json', '{ "compilerOptions": { "noUnusedLocals": false } }')
+      ws.write(
+        'u/tsconfig.json',
+        '{ "extends": "./base.json", "compilerOptions": { "strict": true } }',
+      )
+      const r = fire(
+        ws.edit(ws.write('u/a.ts', 'export const used = 1;\nconst unused = 2;\n')),
+        ws.env,
+      )
+      assert.doesNotMatch(r.out, /error TS/)
+    })
+
+    test('a deprecated option in the project config blocks, and says it stops working in TypeScript 7', () => {
+      ws.write('d/tsconfig.json', '{ "compilerOptions": { "strict": true, "baseUrl": "." } }')
+      const r = fire(ws.edit(ws.write('d/a.ts', 'export const a = 1;\n')), ws.env)
+      const reason = parsed(r.out).reason
+      assert.match(reason, /TS5101/)
+      assert.match(reason, /deprecated in TypeScript 6 and stop working in TypeScript 7/)
+    })
+
+    test('a tsconfig.base.json beside the config is a base to extend, not a program', () => {
+      ws.write('b/tsconfig.base.json', '{ "compilerOptions": { "strict": true } }')
+      ws.write('b/tsconfig.json', '{ "extends": "./tsconfig.base.json", "include": ["src"] }')
+      ws.write('b/src/a.ts', 'export const a = 1;\n')
+      const r = fire(ws.edit(ws.write('b/scripts/tool.ts', TYPE_ERROR)), ws.env)
+      const reason = parsed(r.out).reason
+      assert.match(reason, /tool\.ts is not part of the program of/)
+      assert.match(reason, /TS2322/)
     })
 
     test('a file under no config is checked with the compiler defaults, not a fixed module', () => {
@@ -316,9 +388,13 @@ describe('typescript lsp hook', () => {
     test('strictest-only errors in other files are disclosed, not hidden behind a pass', () => {
       ws.write(
         'dep/tsconfig.json',
-        '{ "compilerOptions": { "strict": false }, "include": ["*.ts"] }',
+        '{ "compilerOptions": { "strict": true }, "include": ["*.ts"] }',
       )
-      ws.write('dep/b.ts', 'import { f } from "./a";\nexport function g(x) { return f(x) }\n')
+      // noUnusedLocals comes from the policy, since the project leaves it unset.
+      ws.write(
+        'dep/b.ts',
+        'import { f } from "./a";\nconst unused = 1;\nexport function g(x: string) { return f(x) }\n',
+      )
       const file = ws.write(
         'dep/a.ts',
         'export function f(a?: string): string { return a ?? "" }\n',
@@ -326,6 +402,24 @@ describe('typescript lsp hook', () => {
       const message = parsed(fire(ws.edit(file), ws.env).out).systemMessage
       assert.match(message, /tsc \d+\.\d+\.\d+ · the edited files pass the strictest policy/)
       assert.match(message, /not counted, since the project's own config accepts them: 1/)
+    })
+
+    test('Bash changes are found in the cwd Claude works in, not in CLAUDE_PROJECT_DIR', () => {
+      const repo = join(ws.root, 'worktree')
+      const elsewhere = join(ws.root, 'main-checkout')
+      mkdirSync(repo)
+      mkdirSync(elsewhere)
+      for (const dir of [repo, elsewhere]) {
+        const git = gitIn(dir)
+        git('init', '-q')
+        writeFileSync(join(dir, 'tsconfig.json'), STRICT)
+        git('add', '.')
+        git('commit', '-qm', 'init')
+      }
+      ws.write('worktree/a.ts', TYPE_ERROR)
+      const payload = event('Bash', { cwd: repo, tool_input: { command: 'x' }, duration_ms: 1000 })
+      const r = fire(payload, { ...ws.env, CLAUDE_PROJECT_DIR: elsewhere })
+      assert.match(parsed(r.out).reason, /a\.ts\(1,14\): error TS2322/)
     })
 
     test('a Bash failure reports through additionalContext', () => {
@@ -578,6 +672,20 @@ for (const plugin of SKILL_PLUGINS) {
       assert.ok(context.endsWith(hint))
     })
 
+    test('a dev build of a policy version is read by its number, not as octal', () => {
+      const { file, log } = logged('5.6.0-dev.20240819')
+      const r = fire(ws.edit(file), ws.env, hook)
+      assert.equal(r.code, 0)
+      assert.doesNotMatch(r.err, /value too great/)
+      assert.match(readFileSync(log, 'utf8'), /^--strictBuiltinIteratorReturn\ntrue$/m)
+    })
+
+    test('the block reason states facts, not commands', () => {
+      const out = parsed(fire(ws.edit(project(1)), ws.env, hook).out)
+      assert.match(out.reason, /^tsc found TypeScript errors after this edit\./)
+      assert.doesNotMatch(out.reason, /Fix them before continuing/)
+    })
+
     test('run-fixtures.sh holds the same strict policy as the hook', () => {
       const fixtures = join(
         ROOT,
@@ -588,11 +696,33 @@ for (const plugin of SKILL_PLUGINS) {
         'scripts',
         'run-fixtures.sh',
       )
-      /** @param {string} path */
-      const policy = (path) =>
-        readFileSync(path, 'utf8').match(/^readonly STRICT_POLICY="[^"]*"$/m)?.[0]
-      assert.ok(policy(hook), 'the hook has no STRICT_POLICY block')
-      assert.equal(policy(fixtures), policy(hook))
+      for (const block of [
+        /^readonly STRICT_POLICY="[^"]*"$/m,
+        /^readonly STRICT_FAMILY="[^"]*"$/m,
+        /^readonly POLICY_CONFLICTS='[^']*'$/m,
+      ]) {
+        const inHook = readFileSync(hook, 'utf8').match(block)?.[0]
+        assert.ok(inHook, `the hook has no ${block}`)
+        assert.equal(readFileSync(fixtures, 'utf8').match(block)?.[0], inHook)
+      }
+    })
+
+    test('run-fixtures.sh applies the project config as the hook does: strict false is kept', {
+      skip: !HAVE_TSC && !IN_CI,
+    }, () => {
+      const owner = ws.write('f/tsconfig.json', '{ "compilerOptions": { "strict": false } }')
+      const fixtures = join(
+        ROOT,
+        'plugins',
+        plugin,
+        'skills',
+        'ts-lifecycle',
+        'scripts',
+        'run-fixtures.sh',
+      )
+      const run = spawnSync('bash', [fixtures, owner], { encoding: 'utf8' })
+      assert.equal(run.status, 0)
+      assert.match(run.stdout, /^implicit_any +expected TS7006 +observed none +MISMATCH$/m)
     })
 
     test('run-fixtures.sh passes an older tsc only the options it knows', () => {

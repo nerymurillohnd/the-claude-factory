@@ -8,8 +8,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The
 
 ### Changed
 
-- **typescript6-lsp-intelligence** 0.3.0 — the post-edit hook keeps its strictest policy inside the hook, sets no environment of its own (a file under no config uses your compiler's defaults), passes each strict option only to a `tsc` that knows it, and checks a file with the sibling `tsconfig.<name>.json` that lists it.
-- **typescript7-lsp-intelligence** 0.4.0 — the post-edit hook keeps its strictest policy inside the hook, sets no environment of its own (a file under no config uses your compiler's defaults), passes each strict option only to a `tsc` that knows it, and checks a file with the sibling `tsconfig.<name>.json` that lists it.
+- **typescript6-lsp-intelligence** 0.3.0 — the post-edit hook treats its strictest policy as defaults your config overrides (breaking: an explicit `false` is now yours), keeps the policy inside the hook with no environment of its own, passes each option only to a `tsc` that knows it, reports deprecated config options, and finds Bash changes in worktrees and files only a sibling `tsconfig.<name>.json` lists.
+- **typescript7-lsp-intelligence** 0.4.0 — the post-edit hook treats its strictest policy as defaults your config overrides (breaking: an explicit `false` is now yours), keeps the policy inside the hook with no environment of its own, passes each option only to a `tsc` that knows it, reports deprecated config options, and finds Bash changes in worktrees and files only a sibling `tsconfig.<name>.json` lists.
 
 ### Fixed
 

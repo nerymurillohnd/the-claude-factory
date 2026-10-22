@@ -25,11 +25,11 @@
 💻 **Claude Code only** — it connects a language server and a post-edit hook, and only Claude Code runs language servers. Install it where you write TypeScript, in Claude Code.
 
 > [!TIP]
-> **TL;DR** — For projects that stay on TypeScript 6: after every edit Claude makes to a TypeScript or JavaScript file, your own `tsc` checks it with your project's settings and the strictest checks on top, and Claude is told to fix what it finds before moving on. Claude also navigates your code by symbol through the TypeScript 6 language server.
+> **TL;DR** — For projects that stay on TypeScript 6: after every edit Claude makes to a TypeScript or JavaScript file, your own `tsc` checks it with your project's settings and the strictest checks wherever those settings are silent, and Claude is told to fix what it finds before moving on. Claude also navigates your code by symbol through the TypeScript 6 language server.
 
 ## ✨ Why use it
 
-- **Every edit is held to the strictest checks** — after each edit to a `.ts`, `.tsx`, `.mts`, `.cts`, `.js`, `.jsx`, `.mjs` or `.cjs` file, the edited code must pass `strict`, `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, `noImplicitReturns`, `checkJs` and the rest of the plugin's strictest policy, even when your `tsconfig.json` is lax or turns them off. JavaScript is type-checked too, not just admitted. Claude gets every finding with the order to fix it before continuing. A compiler crash, a missing compiler or an edited file the hook skipped is reported too, never passed in silence.
+- **Every edit is held to the strictest checks** — after each edit to a `.ts`, `.tsx`, `.mts`, `.cts`, `.js`, `.jsx`, `.mjs` or `.cjs` file, the edited code must pass `strict`, `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, `noImplicitReturns`, `checkJs` and the rest of the plugin's strictest policy, wherever your `tsconfig.json` leaves an option unset; an option it sets itself, `false` included, stays yours. JavaScript is type-checked too, not just admitted. Claude gets every finding with the order to fix it before continuing. A compiler crash, a missing compiler or an edited file the hook skipped is reported too, never passed in silence.
 - **Your project's environment, never broken by the check** — module resolution, path aliases, JSX, `lib`, `types` and `include` come from your nearest `tsconfig.json` and its project references, so the check never reports an import that works in your build.
 - **No noise from code nobody touched** — the strictest policy applies to the edited files only. An error in another file is reported only when your own config also finds it, because the edit probably caused it. A broken `tsconfig.json` is reported instead of letting everything pass.
 - **Your TypeScript, wherever you installed it** — the hook uses your project's `node_modules` first, then a global install, and finds Node.js and `tsc` through nvm, fnm, Volta, asdf, mise, n, Homebrew, pnpm, Bun or a custom npm prefix, even when Claude Code starts without your shell profile. The plugin installs nothing.
@@ -115,7 +115,7 @@ Make loadConfig return the parsed settings instead of the raw text.
 **Result:** Claude edits the function. If the check finds something, Claude sees it right away and has to fix it before continuing:
 
 ```text
-TypeScript errors detected after file edit. Fix them before continuing; do not suppress them.
+tsc found TypeScript errors after this edit. The code does not compile until they are fixed; suppressing them with any, @ts-ignore or a cast does not fix them.
 
 Errors in the edited files under the strictest policy, with the project environment:
 src/config.ts(18,10): error TS2322: Type 'string' is not assignable to type 'Settings'.
@@ -148,15 +148,17 @@ Your project decides the environment; the plugin decides how strict the edited c
 
 | Situation | What the hook does |
 | :-- | :-- |
-| A `tsconfig.json` or `jsconfig.json` exists above the file | `tsc --noEmit -p <that config>` with every strictest option passed on the command line, so it wins over the config's own value, an explicit `false` included |
+| A `tsconfig.json` or `jsconfig.json` exists above the file | `tsc --noEmit -p <that config>` with each strictest option your config chain leaves unset passed on the command line |
+| Your config, or a config it extends, sets an option of the policy, at any value | Yours wins: the hook reads your config with `tsc --showConfig` and passes only the options you leave unset. Setting `strict` keeps the whole strict family yours, and an option `tsc` would reject next to your choice, such as `exactOptionalPropertyTypes` with `strictNullChecks: false`, is left out |
 | That config is a solution file (`files: []` with `references`) | The referenced programs are followed to the one that lists the file |
-| That config excludes the file and a sibling `tsconfig.<name>.json` or `jsconfig.<name>.json` beside it includes it, such as a `tsconfig.tests.json` for the tests | After the config and its references, the siblings are tried in name order and the first program that lists the file checks it, with its own ambient declarations; a sibling `tsc` can't read is skipped |
+| That config excludes the file and a sibling `tsconfig.<name>.json` or `jsconfig.<name>.json` beside it includes it, such as a `tsconfig.tests.json` for the tests | After the config and its references, the `tsconfig.<name>.json` files and then the `jsconfig.<name>.json` files are tried in name order, and the first program that lists the file checks it, with its own ambient declarations. A sibling `tsc` can't read is skipped, and so is one the config extends, such as a `tsconfig.base.json`, which is a base and not a program |
 | Several changed files share a program | One `tsc` run for that program |
 | The file isn't in any program | Checked alone on top of the nearest config, with its `types` and path aliases, and the report says so |
-| A JavaScript file | Type-checked: `checkJs` is part of the strictest policy, so a `.js` file in your `include` is checked in its program even when your config only sets `allowJs`, or neither |
-| No config above the file | Checked alone with your compiler's own defaults for `target` and `module` and the strictest options; the plugin sets no environment of its own |
+| A JavaScript file | Type-checked: `checkJs` is part of the strictest policy, so a `.js` file in your `include` is checked in its program when your config sets neither `checkJs` nor `allowJs`, or only `allowJs`. A `checkJs` or `allowJs` your config sets itself is yours |
+| No config above the file | Checked alone with your compiler's own defaults for `target` and `module` (with TypeScript 6, `es2025` and `esnext`; with TypeScript 5, ES5 and CommonJS) and the strictest options; the plugin sets no environment of its own |
 | Your project's `tsc` is older than an option of the policy, such as `strictBuiltinIteratorReturn` (TypeScript 5.6) | That option is left out, so the check still runs instead of failing on an unknown option, and Claude is told which options were not applied |
 | Your config itself has errors | Reported, so a broken config never looks like a clean check |
+| Your config uses an option deprecated in TypeScript 6, such as `baseUrl` | Reported and blocking, since it stops working in TypeScript 7; an `ignoreDeprecations` you set yourself is respected |
 | The project sets `noCheck` | Ignored: the policy passes `noCheck false`, so the type check always runs |
 | `tsc` crashes or exits non-zero without a TypeScript error | Reported to Claude as not checked, with the compiler's first output lines, never as a pass |
 | An edited file is gone, or sits in `node_modules`, `.venv`, `venv` or `site-packages` | Claude is told it wasn't checked |
@@ -254,7 +256,7 @@ Each edit compiles the whole program with TypeScript 6. Splitting a huge program
 <details>
 <summary><b>Does it check JavaScript files?</b></summary>
 
-Yes. The strictest policy turns on `checkJs`, so a JavaScript file Claude edits is type-checked from its JSDoc types, in its program when your `include` covers it and alone otherwise. JavaScript files Claude didn't touch are reported only when your own config checks them too.
+Yes. Unless your config sets `checkJs` or `allowJs` itself, the strictest policy turns on `checkJs`, so a JavaScript file Claude edits is type-checked from its JSDoc types, in its program when your `include` covers it and alone otherwise. JavaScript files Claude didn't touch are reported only when your own config checks them too.
 
 </details>
 
