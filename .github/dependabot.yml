@@ -9,3 +9,18 @@ updates:
       - "type: dependencies"
     commit-message:
       prefix: "ci"
+
+  # The root package.json holds only maintainer type packages (ADR_2026-10-21_maintainer-only-root-package-json).
+  # A new @types/node major goes with a new Node major in .nvmrc, never on its own.
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    ignore:
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
+    labels:
+      - "area: ci"
+      - "type: dependencies"
+    commit-message:
+      prefix: "chore"
