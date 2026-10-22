@@ -109,6 +109,7 @@ JavaScript modules (`tsc` checks the whole project):
 Mods (code in `hooks/*.ts`, tests in `tests/*.test.ts`):
 
 - `biome check --write --error-on-warnings <file>` - Run first, after every `.ts` edit.
+- `head -1 plugins/<plugin>/.claude-plugin/types/claude-code/index.d.ts` - Run before trusting the mod's `tsc`: its `Written by Claude Code` version must equal `claude --version`; if not, reload the plugin interactively (`claude -p` never rewrites it).
 - `tsc -p plugins/<plugin>/tsconfig.json --noEmit` - Run after Biome. The config extends the declarations the engine writes into `plugins/<plugin>/.claude-plugin/types/` when it loads the mod. Git ignores that folder, so after a fresh clone load the plugin once in an interactive session from a trusted folder (`claude --plugin-dir plugins/<plugin>`, then `/exit`) to write it. CI cannot run this gate for that reason.
 - `claude plugin validate --strict plugins/<plugin>` - Run after tsc. It reads the mod the way the engine will. Pass `$` only inside `register.ts`: validation fails when `$` goes to a function imported from another file.
 - `claude plugin test plugins/<plugin>` - Run last. Break the rule under test on purpose once and confirm its tests fail.

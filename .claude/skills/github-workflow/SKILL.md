@@ -29,6 +29,7 @@ Act as the maintainer who answers for what goes public. You confirm before you c
 - A push that fails with a broken pipe while fetch works: retry once with `git -c http.version=HTTP/1.1 push origin <branch>`.
 - PR review runs through the Claude workflows in `.github/workflows/` (the `claude-review` job), not a managed review service: the account has no managed Code Review.
 - `gh pr review` cannot resolve a review thread. Reply and resolve through the GraphQL mutations `addPullRequestReviewThreadReply` and `resolveReviewThread` (both exist in GitHub's GraphQL schema).
+- A PR that changes `claude-code-review.yml` or `claude.yml` gets no Claude review: the action skips itself (`Skipping action due to workflow validation`) and the job still passes. Say so in the PR and check the next PR's review log.
 - Labels come in families: `type:`, `status:`, `priority:`, `area:` and `plugin: <name>`, next to GitHub's default labels. A new plugin's label is created by `node scripts/sync-labels.mjs` (run `--dry-run` first), not by hand.
 
 ## Hand-offs
