@@ -84,8 +84,6 @@ jobs:
       fail-fast: false
       matrix:
         plugin: ${{ fromJSON(needs.targets.outputs.plugins) }}
-    env:
-      CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
@@ -99,6 +97,8 @@ jobs:
           claude --version
       - name: Run the plugin's full suite
         env:
+          # Only this step sees the token, never the install step.
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           ONLY: ${{ matrix.plugin }}
         run: scripts/run-evals.sh
       - name: Keep the results
