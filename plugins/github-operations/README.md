@@ -31,7 +31,7 @@
 
 - **A pull request that finishes itself** — Claude opens or picks up the PR, then loops: a read-only agent watches CI, runs and reviews and reports what failed and why, Claude fixes it, pushes and sends the agent again, until everything is green and no findings remain.
 - **You keep the one decision that matters** — Claude asks for your approval right before the merge, for that exact PR and that exact commit. A new push voids the approval.
-- **Reports you can act on** — failed jobs with the step and the log excerpt, the jobs that took the longest, review findings counted without double counting, deprecation warnings and Dependabot alerts, each with a cause labeled confirmed, likely or uncertain.
+- **Reports you can act on** — failed jobs with the step, the log excerpt and the root cause, whether the same job also fails on the base branch, slow or stuck jobs, unresolved review findings, breaking changes and secrets in the diff, deprecation warnings and Dependabot alerts.
 - **Nothing valuable gets lost in a cleanup** — the audit covers history, branches, worktrees, stashes, pull requests, issues, Actions, forks and every copy or link outside the repository that is still alive. You approve the recommendations, then the exact actions. A backup that was restore-tested comes first, and every deletion is checked against what is already safe.
 - **GitHub tools ready to use** — the GitHub MCP server comes with the plugin, so Claude reads and writes GitHub through structured tools, and falls back to `gh` when a tool is missing.
 
@@ -41,7 +41,7 @@
 | :-- | :-- | :-- | :-- |
 | 🎯 Skill | `github-operations:auto-pr-lifecycle` | Drives a pull request from any stage to merge: validate, push, watch, repair, resolve threads, ask, merge, clean up and sync | `/github-operations:auto-pr-lifecycle`, or automatically when you ask to open, ship, babysit or land a PR |
 | 🎯 Skill | `github-operations:git-cleanup` | Audits a Git repository completely, reports it, then plans, executes and verifies only what you approve at two gates | `/github-operations:git-cleanup` only; Claude never starts it on its own |
-| 🤖 Agent | `github-operations:pr-tracker` | Read-only monitor of a PR's checks, jobs, logs, reviews, warnings and security alerts; reports to Claude | Launched by `auto-pr-lifecycle` on every monitoring cycle |
+| 🤖 Agent | `github-operations:pr-tracker` | Waits for a PR's checks to finish, then reports failures and their root cause, unresolved reviews, breaking changes and secrets in the diff, warnings and security alerts to Claude | Launched by `auto-pr-lifecycle` on every monitoring cycle |
 | 🔌 MCP server | `github` | GitHub's remote MCP server with every toolset and early-access mode: pull requests, issues, Actions, security alerts and more. See [GitHub MCP tools](../../docs/github-mcp-tools.md) | Tools appear as `mcp__plugin_github-operations_github__*` |
 
 ## ✅ Requirements
@@ -268,14 +268,21 @@ No. It always stops and asks before the merge, naming the PR, the commit, the me
 <details>
 <summary><b>Can the monitoring agent change anything on GitHub?</b></summary>
 
-No. It has no shell and only read-only GitHub tools, so it cannot comment, resolve, rerun, merge or push. It reports, and Claude does everything else.
+Its job is to read and report: Claude makes every comment, reply, rerun and merge. The agent has no tool list of its own, so it can use every tool your session has, including the shell and the GitHub tools that write. To make sure it never calls a write tool, add deny rules for those tools in your settings (see **Block tools in your settings** above): deny rules apply to the agent too.
+
+</details>
+
+<details>
+<summary><b>Which GitHub tools does the monitoring agent use?</b></summary>
+
+The ones your session already has, whatever the server is called: this plugin's `github` server, a GitHub server you added yourself, or the GitHub connector of the Claude app. You don't need to rename or duplicate a server for the agent to see it.
 
 </details>
 
 <details>
 <summary><b>How long will Claude wait for a slow pipeline?</b></summary>
 
-The PR tracker reports what is still pending and returns, and Claude waits for a real change within a time budget. When the budget ends it hands control back with what it knows, so it never hangs on a pipeline that takes many minutes. Claude then starts another monitoring round.
+The PR tracker waits for the checks to finish, for up to 30 minutes or the limit you set. When the limit ends with jobs still running, it reports what it knows and which jobs are still running, and Claude asks you whether to keep waiting, so it never hangs on a pipeline that takes too long.
 
 </details>
 

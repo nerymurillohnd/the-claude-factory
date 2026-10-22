@@ -6,19 +6,23 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-10-21
+
 ### Changed
 
 - **Breaking:** `git-cleanup` is rewritten as an exhaustive audit and a nine-step lifecycle with two approval gates. The audit now covers the whole history from the first commit, every ref against the base (merged, squash or rebase already in the base, conflicting, unrelated), worktrees, stashes, residue of interrupted operations, large files and secret-like file names, and, through `gh`, pull requests in all states, issues, discussions, forks, Actions (failed and never re-run, stuck, scheduled, artifacts and caches), protection and rulesets, integrations and alerts. It also looks for every clone, mirror, registry entry, scheduled job and tunnel that still points at the repository. What it cannot see is listed in a coverage ledger as blocked, not reachable or declined.
 - You now approve twice: first the recommendations, then the exact actions. The plan orders actions by class (backup first, then investigate, fix, integrate, publish, deletions, closing, unlinking, files, maintenance), runs a containment check before every deletion, and defines each action's proof before it runs. Validation re-reads everything and quotes raw output.
 - The skill is only `SKILL.md` and ten references with the commands. It runs ordinary `git` and `gh` commands from a scratch folder, writes no scripts and installs nothing. Findings that need a bisect, a refactor or a fix go through the same report, plan and approval.
+- The `pr-tracker` agent now waits for the PR's checks to finish, for up to 30 minutes or the limit you set, and then reports once, instead of returning while jobs still run. Its report adds workflows that should have run and didn't, skipped, cancelled, slow, stuck and retried jobs, runner problems, whether a failure also happens on the base branch, breaking changes, out-of-scope changes and secrets in the diff, and a comparison with the previous report. `auto-pr-lifecycle` no longer waits on its own: when the agent's wait ends with jobs still running, Claude asks you whether to keep waiting.
 
 ### Restored
 
-- The `pr-tracker` agent, removed in the previous commit, is back as the read-only observer, and `auto-pr-lifecycle` delegates every observation to it again. The skill briefs it, checks its report against a fixed list, maps its status to a lifecycle state and decides readiness itself. The agent now reads every list to its end and reads the latest attempt of each job. Waiting for pending checks stays with the skill, which has a 30-minute bound and a `timeout` state.
+- The `pr-tracker` agent, removed in the previous commit, is back as the read-only observer, and `auto-pr-lifecycle` delegates every observation to it again. The skill briefs it, checks its report against a fixed list, maps its status to a lifecycle state and decides readiness itself. When the agent's wait ends with jobs still running, the skill reports `timeout` and asks you whether to keep waiting.
 
 ### Fixed
 
-- `auto-pr-lifecycle` is corrected against the GitHub MCP schemas and `gh` help. State and outcome names are all snake_case (`ready_without_approval`, `awaiting_merge`, `externally_merged`, `closed_without_merge`). The skill takes an optional PR number or URL, opens a PR only when asked for one, and stops when signing fails instead of committing unsigned. Waiting for checks now has a bounded method and the `timeout` state it was missing. Repair replies come after the push, a branch that is behind or conflicting is updated by merging the base (never a rebase), and the same failure surviving two fixes stops the loop. Labels are discovered, created if none fits, and applied without wiping the existing ones. Cleanup sync and branch deletion have exact steps, including squash landings and stacked PRs. The tool matrix drops a `gh discussion` command that does not exist and a leftover "not run in this session" note, and adds draft-to-ready, label commands and the head guard on branch updates.
+- The `pr-tracker` agent now finds your GitHub tools under any server name: this plugin's server, a server you added yourself, or a Claude app connector. It used to accept only two fixed names, so with a connector it started with no GitHub tools and reported `BLOCKED` without inspecting the PR. It now inherits your session's tools.
+- `auto-pr-lifecycle` is corrected against the GitHub MCP schemas and `gh` help. State and outcome names are all snake_case (`ready_without_approval`, `awaiting_merge`, `externally_merged`, `closed_without_merge`). The skill takes an optional PR number or URL, opens a PR only when asked for one, and stops when signing fails instead of committing unsigned. A wait that ends with checks still running now has the `timeout` state it was missing. Repair replies come after the push, a branch that is behind or conflicting is updated by merging the base (never a rebase), and the same failure surviving two fixes stops the loop. Labels are discovered, created if none fits, and applied without wiping the existing ones. Cleanup sync and branch deletion have exact steps, including squash landings and stacked PRs. The tool matrix drops a `gh discussion` command that does not exist and a leftover "not run in this session" note, and adds draft-to-ready, label commands and the head guard on branch updates.
 
 ### Removed
 
@@ -95,7 +99,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 - `git-cleanup` inventory: `--from` with a saved file that is not a JSON object reports a JSON error and exits 0, instead of ending with a traceback.
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/github-operations--v0.3.2...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/github-operations--v0.4.0...HEAD
+[0.4.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/github-operations--v0.4.0
 [0.3.2]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/github-operations--v0.3.2
 [0.3.1]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/github-operations--v0.3.1
 [0.3.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/github-operations--v0.3.0

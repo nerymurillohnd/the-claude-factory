@@ -33,7 +33,7 @@ Open a PR only when the request calls for one. "Commit", "commit and push" or "p
 Read the one for the step you are on:
 
 - [start.md](references/start.md): before the first push of a run. Scope, branch, validation, commit, push, create the PR, labels.
-- [observe.md](references/observe.md): every time you need the PR's state. How to brief the tracker, check its report, map its status to a lifecycle state, wait for pending checks, and read GitHub yourself when the tracker cannot.
+- [observe.md](references/observe.md): every time you need the PR's state. How to brief the tracker, check its report, map its status to a lifecycle state, act after its wait, and read GitHub yourself when the tracker cannot.
 - [repair-loop.md](references/repair-loop.md): when an observation has actionable findings, the branch is behind its base or conflicts, or you reply to or resolve review threads.
 - [merge-protocol.md](references/merge-protocol.md): when the PR looks ready. Readiness, merge method, approval, landing, cleanup.
 - [tool-matrix.md](references/tool-matrix.md): before the first GitHub operation of a run and whenever a tool call fails. Preflight, and for each write task the preferred layer (MCP or `gh`) with its fallback.
