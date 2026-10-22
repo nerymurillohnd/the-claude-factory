@@ -1,7 +1,7 @@
 {
   "name": "hook-engineering",
   "displayName": "Hook Engineering",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Designs, writes, audits and debugs Claude Code hooks end to end: the event and configuration that decide when a hook runs, the input and output contract that decides what it does, prompt, agent and background hooks, workspace trust and security, and how mods interact with hooks, checked against the current docs and changelog.",
   "author": {
     "name": "Nery Murillo",
