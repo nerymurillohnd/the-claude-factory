@@ -27,15 +27,15 @@ This project carries one item of the global North Star: multiply execution capac
 - Build: no build step and no runtime to maintain; no root `pyproject.toml` or virtual environment.
 - Root `package.json` (ADR_2026-10-21_maintainer-only-root-package-json): maintainer tooling only, never a runtime of any plugin. A user receives only `plugins/<name>/`, but Node resolves imports by walking up the folders, so anything in the root `node_modules` would let a plugin pass here and fail for users.
   - It holds only exact `@types/*` devDependencies, today `@types/node` on the Node major of `.nvmrc`, so `tsc`, the post-edit hook and the language server read `scripts/tsconfig.json` the same way. It sets `"private": true` and never `dependencies`, `main`, `exports`, `bin`, `type` or `workspaces`; a `"type"` would change how Node and `tsc` read the plugins' `.js` and `.ts` files.
-  - The CLIs stay out of it: TypeScript, Biome, ruff, mypy and every other tool run as installed on the machine, by bare name, never through `npx` or `uvx` (ADR_2026-10-21_gates-run-installed-tools). CI installs them at the pins of `validate.yml`.
+  - The CLIs stay out of it: TypeScript, Biome, ruff, mypy and every other tool run as installed on the machine, by bare name, never through `npx` or `uvx` (ADR_2026-10-21_gates-run-installed-tools). CI installs the latest release of each; only TypeScript is pinned, to 6.0.3 (ADR_2026-10-21_ci-installs-latest-tools).
   - `check-repo.mjs` enforces all of it, including the `.nvmrc` major. When `.nvmrc` changes major, change `@types/node` in the same commit with `npm install --save-dev --save-exact @types/node@<major>.x.y`.
   - A plugin that needs packages ships its own `package.json` and npm or Bun lockfile in `plugins/<name>/`, which Claude Code installs into that plugin's cache; it never relies on the root one.
 - Plugin code: Bash and POSIX-style Python 3 that run on whatever `bash` and `python3` the user has on `PATH`, with no version floor; `.mjs` modules type-checked by TypeScript 6.0.3; mods in TypeScript under `hooks/*.ts`.
 - Repository tooling: Node scripts in `scripts/` for scaffolding, catalog, version bumps, labels, policy checks and eval targets, with their tests in `scripts/tests/`; Node 26 from `.nvmrc`. Maintainer code lives at the root, never under `.github/` (ADR_2026-10-21_maintainer-scripts-at-root): basedpyright and other tools skip folders whose name starts with a dot, so code there goes unchecked. `.github/` holds only GitHub's own files.
-- Formatting and linters: Biome for JavaScript and JSON; ruff, mypy and basedpyright for Python; shfmt and ShellCheck for shell; actionlint for workflows. Markdown has no linter (ADR_2026-10-21_remove-markdownlint). Each runs as installed on the machine; CI installs the versions pinned in `validate.yml`.
+- Formatting and linters: Biome for JavaScript and JSON; ruff, mypy and basedpyright for Python; shfmt and ShellCheck for shell; actionlint for workflows. Markdown has no linter (ADR_2026-10-21_remove-markdownlint). Each runs as installed on the machine; CI installs the latest release of each, TypeScript excepted.
 - Testing: `node --test` for script and hook tests, `unittest` and `by_path.sh` for plugin scripts, `claude plugin validate --strict` and `claude plugin test` for plugins and mods, `claude plugin eval` for plugins that have evals.
 - CI/CD and GitHub Actions: `validate.yml` on every push and PR, `evals.yml` for changed plugins that have evals, `release.yml` tags each plugin after merge, and Claude reviewers run on pull requests.
-- Tool sources: Node, npm and a global TypeScript via nvm, and the root `node_modules` via `npm ci` after a fresh clone; Python, ruff, mypy and basedpyright via uv; Biome, shfmt, ShellCheck and actionlint via Homebrew. A tool that is missing is installed from its source, never run through `npx` or `uvx`. Global configs are never overridden here; `ruff.toml` is the only ruff config in the repo.
+- Tool sources: Node, npm and a global TypeScript via nvm, and the root `node_modules` via `npm ci` after a fresh clone; Python, ruff, mypy and basedpyright via uv (`uv tool install <tool>@latest`); Biome and Claude Code via their official installers; shfmt, ShellCheck and actionlint via Homebrew. A tool that is missing is installed from its source, never run through `npx` or `uvx`. Global configs are never overridden here; `ruff.toml` is the only ruff config in the repo.
 
 ## Authority, Limits and Permissions
 
@@ -65,14 +65,14 @@ This project carries one item of the global North Star: multiply execution capac
 ## Research and Sources
 
 - Claude Code and the Claude app change almost daily: training data, memory and project docs are starting points, not the authority.
-- Before any plan, answer, plugin component or scaffold, read the official sources for the installed Claude Code version and the pinned tool versions.
+- Before any plan, answer, plugin component or scaffold, read the official sources for the installed Claude Code version and the installed tool versions.
 - When components connect or depend on each other, research each one equally, never one side only (e.g. a plugin hook reads the hooks reference, the plugins reference and the Claude app platform support).
 - Check the Claude Code changelog and the Claude app release notes for changes the docs have not caught up with yet.
-- The same standard applies to the Claude models themselves and to every tool the gates pin: research their current features and check their changelogs.
+- The same standard applies to the Claude models themselves and to every tool the gates run: research their current features and check their changelogs.
 
 ## Commands
 
-Run from the repository root with the `.nvmrc` runtime selected and `npm ci` run once after a fresh clone, so `node_modules/@types/node` exists. The commands run the tools installed on the machine by bare name; CI installs them at the versions pinned in the `env` block of `.github/workflows/validate.yml`.
+Run from the repository root with the `.nvmrc` runtime selected and `npm ci` run once after a fresh clone, so `node_modules/@types/node` exists. The commands run the tools installed on the machine by bare name; CI installs the latest release of each, except TypeScript, pinned in the `env` block of `.github/workflows/validate.yml`.
 
 ### Project
 

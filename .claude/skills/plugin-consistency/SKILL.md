@@ -58,7 +58,7 @@ Progress:
 
 ### 1. Change
 
-Run `git status --short` and `git diff --name-only origin/main`, and for a file without a diff read the file itself. Classify each touched file as one of: plugin component, `plugin.json`, plugin README, plugin CHANGELOG, root CHANGELOG, root README, `docs/*`, `marketplace.json`, template, workflow or pinned version. For a component or manifest change, read the diff, not only the file names: the pairs depend on what changed.
+Run `git status --short` and `git diff --name-only origin/main`, and for a file without a diff read the file itself. Classify each touched file as one of: plugin component, `plugin.json`, plugin README, plugin CHANGELOG, root CHANGELOG, root README, `docs/*`, `marketplace.json`, template, workflow or the TypeScript pin. For a component or manifest change, read the diff, not only the file names: the pairs depend on what changed.
 
 ### 2. Pairs
 
@@ -72,7 +72,7 @@ For each touched file, list the files it must agree with, from this map:
 | A plugin CHANGELOG | The diff (every user-visible change recorded in user language, breaking ones marked), the bump level, the root CHANGELOG line |
 | The root CHANGELOG | The plugin CHANGELOG version and summary, in one line under the right date |
 | `docs/*` or the root README | Each other and `docs/compatibility.md`; the marketplace source `nerymurillohnd/the-claude-factory` and suffix `@the-claude-factory`; live official docs |
-| A pinned version (workflows, `.claude/CLAUDE.md` → Commands) | The other place that pins the same tool |
+| The TypeScript pin (`TYPESCRIPT_VERSION` in `validate.yml`) | `.claude/CLAUDE.md` → Stack, which names the same version |
 | A rename or removal in `marketplace.json` | The `renames` map and a note in the root CHANGELOG |
 | A template | The plugin READMEs built from it and the sections `check-repo.mjs` requires |
 
@@ -102,10 +102,10 @@ For each command, flag, UI path, minimum version or compatibility claim that the
 
 - Claude Code docs and changelog through the Claude Code Docs MCP: `/en/plugins/*` (install, marketplace-reference, manifest-reference, publish, host-marketplace, troubleshooting) and `/en/changelog`.
 - Claude app and Cowork claims need a source on claude.com or support.claude.com, not the Claude Code docs: <https://claude.com/docs/plugins/platform-support>, <https://claude.com/docs/cowork/guide/plugins>, <https://support.claude.com/en/articles/13837440-use-plugins-in-claude>, <https://support.claude.com/en/articles/16761823>, <https://support.claude.com/en/articles/12138966-release-notes> and <https://claude.com/docs/cowork/changelog.md>.
-- Tool versions: `npm view @anthropic-ai/claude-code version` and the latest tags of `actions/checkout`, `actions/setup-node` and `rhysd/actionlint`. Compare the CI pin with npm's latest, never with the local install.
+- Tool versions: CI installs every tool at its latest release except TypeScript, so check only that `TYPESCRIPT_VERSION` is still the newest 6.x (`npm view typescript@6 version`), and the latest tags of `actions/checkout`, `actions/setup-node` and `astral-sh/setup-uv`.
 - Compare UI labels with the docs' wording character by character.
 
-In a whole-repo sweep, fetch every source above and read every release since `CLAUDE_CODE_VERSION` in `.github/workflows/validate.yml`. List unreachable sources as not fetched.
+In a whole-repo sweep, fetch every source above and read every Claude Code release since the previous sweep. List unreachable sources as not fetched.
 
 ### 6. Fix
 
