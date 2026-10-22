@@ -4,15 +4,14 @@
 //   npm run gates
 
 import assert from 'node:assert/strict'
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { afterEach, beforeEach, describe, test } from 'node:test'
 import { fileURLToPath } from 'node:url'
-import { gatesFor, loadPins, nodeTestGate, runGates, unittestGate } from '../gates.mjs'
+import { gatesFor, nodeTestGate, runGates, unittestGate } from '../gates.mjs'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..')
-const PINS = loadPins(readFileSync(join(ROOT, '.github', 'workflows', 'validate.yml'), 'utf8'))
 
 /** @type {string} */
 let dir
@@ -119,8 +118,8 @@ describe('gates runner', () => {
 
 describe('gate list', () => {
   test('--ci keeps maintainer tooling and plugin structure, and leaves plugin behavior local', () => {
-    const local = gatesFor({ root: ROOT, ci: false, base: '', pins: PINS })
-    const ci = gatesFor({ root: ROOT, ci: true, base: '', pins: PINS }).map((g) => g.id)
+    const local = gatesFor({ root: ROOT, ci: false, base: '' })
+    const ci = gatesFor({ root: ROOT, ci: true, base: '' }).map((g) => g.id)
     const localOnly = local.filter((g) => g.group === 'local').map((g) => g.id)
     for (const id of [
       'signatures',
@@ -151,36 +150,21 @@ describe('gate list', () => {
   })
 
   test('the maintainer Node tests leave out the plugin test folders', () => {
-    const gate = gatesFor({ root: ROOT, ci: true, base: '', pins: PINS }).find(
-      (g) => g.id === 'node-tests',
-    )
+    const gate = gatesFor({ root: ROOT, ci: true, base: '' }).find((g) => g.id === 'node-tests')
     assert.ok(gate?.args.some((a) => a.endsWith('scripts.test.mjs')))
     assert.ok(!gate?.args.some((a) => /tests\/[a-z0-9-]+\//.test(a)), 'a plugin test runs in CI')
   })
 
   test('the version-bump base comes from --base in CI and is skipped when it is no commit', () => {
-    const bump = gatesFor({ root: ROOT, ci: true, base: '0'.repeat(40), pins: PINS }).find(
+    const bump = gatesFor({ root: ROOT, ci: true, base: '0'.repeat(40) }).find(
       (g) => g.id === 'version-bump',
     )
     assert.match(bump?.skipReason ?? '', /no comparable base commit/)
   })
 
-  test('a pin missing from validate.yml stops the run instead of running an unpinned tool', () => {
-    const { BIOME_VERSION: _dropped, ...pins } = PINS
-    assert.throws(() => gatesFor({ root: ROOT, ci: false, base: '', pins }), /BIOME_VERSION/)
-  })
-
-  test('the pins are read from the env block of validate.yml', () => {
-    assert.match(
-      Object.entries(PINS).find(([name]) => name === 'RUFF_VERSION')?.[1] ?? '',
-      /^\d+\.\d+\.\d+$/,
-    )
-    assert.deepEqual(
-      loadPins('on: push\nenv:\n  A_VERSION: "1.2.3"\n  B: 4\njobs:\n  x:\n    env:\n      C: 5\n'),
-      {
-        A_VERSION: '1.2.3',
-        B: '4',
-      },
-    )
+  test('every gate runs the installed tool, never npx or uvx', () => {
+    for (const gate of gatesFor({ root: ROOT, ci: false, base: '' })) {
+      assert.ok(!['npx', 'uvx'].includes(gate.cmd), `${gate.id} runs through ${gate.cmd}`)
+    }
   })
 })

@@ -16,8 +16,12 @@
 //
 // Every gate runs without a shell, as a command and an argument list, from the repository root.
 // A test skipped anywhere fails its gate: a skip means a tool is missing. A skip that is legitimate
-// goes into ALLOWED_SKIPS with its reason, never into a counter. The gates are written for macOS
-// and Linux: without a shell, Windows cannot start npx.cmd.
+// goes into ALLOWED_SKIPS with its reason, never into a counter.
+//
+// Each gate runs the tool installed on the machine by its bare name, never through npx or uvx.
+// Locally that is the maintainer's install; CI installs the pins of the env block of
+// validate.yml before the gates. The gates are written for macOS and Linux: without a shell,
+// Windows cannot start an npm .cmd shim such as tsc.cmd.
 
 import { spawnSync } from 'node:child_process'
 import { existsSync, readdirSync, readFileSync } from 'node:fs'
@@ -44,24 +48,6 @@ const ALLOWED_SKIPS = new Map(/** @type {[string, string][]} */ ([]))
  * @property {string} [skipReason] set when the gate cannot apply here, such as no base commit
  * @property {(stdout: string) => string | null} [after] a failure message for an exit-0 run, or null
  */
-
-/**
- * The top-level env block of a workflow, which holds the tool pins.
- * @param {string} workflow the text of .github/workflows/validate.yml
- * @returns {Record<string, string>}
- */
-export function loadPins(workflow) {
-  /** @type {Record<string, string>} */
-  const pins = {}
-  const block = workflow.match(/^env:\n((?:(?: {2}.*)?\n)*)/m)?.[1] ?? ''
-  for (const line of block.split('\n')) {
-    const pin = line.match(/^ {2}([A-Z0-9_]+):\s*"?([^"#\s]+)"?/)
-    if (pin?.[1] !== undefined && pin[2] !== undefined) {
-      pins[pin[1]] = pin[2]
-    }
-  }
-  return pins
-}
 
 /**
  * `node --test` on files, with the spec report on stdout and a TAP copy whose skips fail the gate.
@@ -188,23 +174,11 @@ function envVar(name, value) {
 }
 
 /**
- * The gates in order. Pins come from the env block of validate.yml, and a missing one stops the run.
- * @param {{ root: string, ci: boolean, base: string, pins: Record<string, string> }} options
+ * The gates in order.
+ * @param {{ root: string, ci: boolean, base: string }} options
  * @returns {Gate[]}
  */
-export function gatesFor({ root, ci, base, pins }) {
-  /** @param {string} name */
-  const pin = (name) => {
-    const value = pins[name]
-    if (value === undefined) {
-      throw new Error(`${name} is missing from the env block of .github/workflows/validate.yml`)
-    }
-    return value
-  }
-  const biome = `@biomejs/biome@${pin('BIOME_VERSION')}`
-  const ruff = `ruff@${pin('RUFF_VERSION')}`
-  const mypy = `mypy==${pin('MYPY_VERSION')}`
-  const typescript = `typescript@${pin('TYPESCRIPT_VERSION')}`
+export function gatesFor({ root, ci, base }) {
   const shellOpts = ['-o', 'all', '-S', 'style', '-x', '-a', '-P', 'SCRIPTDIR']
   const plugins = readdirSync(join(root, 'plugins'), { withFileTypes: true })
     .filter((d) => d.isDirectory())
@@ -286,8 +260,8 @@ export function gatesFor({ root, ci, base, pins }) {
       id: 'tsc-scripts',
       group: 'policy',
       title: 'tsc on scripts/',
-      cmd: 'npx',
-      args: ['--yes', '--package', typescript, 'tsc', '-p', 'scripts/tsconfig.json', '--noEmit'],
+      cmd: 'tsc',
+      args: ['-p', 'scripts/tsconfig.json', '--noEmit'],
     },
     {
       id: 'shellcheck-scripts',
@@ -307,22 +281,22 @@ export function gatesFor({ root, ci, base, pins }) {
       id: 'ruff-check-scripts',
       group: 'python',
       title: 'ruff check scripts/',
-      cmd: 'uvx',
-      args: [ruff, 'check', 'scripts'],
+      cmd: 'ruff',
+      args: ['check', 'scripts'],
     },
     {
       id: 'ruff-format-scripts',
       group: 'python',
       title: 'ruff format --check scripts/',
-      cmd: 'uvx',
-      args: [ruff, 'format', '--check', 'scripts'],
+      cmd: 'ruff',
+      args: ['format', '--check', 'scripts'],
     },
     {
       id: 'mypy-scripts',
       group: 'python',
       title: 'mypy --strict on scripts/',
-      cmd: 'uvx',
-      args: ['--from', mypy, 'mypy', '--strict', ...tracked(root, ['scripts/*.py'])],
+      cmd: 'mypy',
+      args: ['--strict', ...tracked(root, ['scripts/*.py'])],
     },
     {
       id: 'basedpyright-scripts',
@@ -353,8 +327,8 @@ export function gatesFor({ root, ci, base, pins }) {
       id: 'biome-maintainer',
       group: 'lint',
       title: 'Biome outside plugins/',
-      cmd: 'npx',
-      args: ['--yes', biome, 'ci', '--error-on-warnings', ...maintainerBiome],
+      cmd: 'biome',
+      args: ['ci', '--error-on-warnings', ...maintainerBiome],
     },
     {
       id: 'actionlint',
@@ -404,39 +378,23 @@ export function gatesFor({ root, ci, base, pins }) {
             id: `mod-tsc:${p}`,
             group: 'local',
             title: `tsc on the ${p} mod`,
-            cmd: 'npx',
-            args: [
-              '--yes',
-              '--package',
-              typescript,
-              'tsc',
-              '-p',
-              join('plugins', p, 'tsconfig.json'),
-              '--noEmit',
-            ],
+            cmd: 'tsc',
+            args: ['-p', join('plugins', p, 'tsconfig.json'), '--noEmit'],
           }),
       ),
     {
       id: 'tsc-plugins',
       group: 'local',
       title: "tsc on the plugins' .mjs files",
-      cmd: 'npx',
-      args: [
-        '--yes',
-        '--package',
-        typescript,
-        'tsc',
-        '-p',
-        'scripts/tsconfig.plugins.json',
-        '--noEmit',
-      ],
+      cmd: 'tsc',
+      args: ['-p', 'scripts/tsconfig.plugins.json', '--noEmit'],
     },
     {
       id: 'biome-plugins',
       group: 'local',
       title: 'Biome on plugins/',
-      cmd: 'npx',
-      args: ['--yes', biome, 'ci', '--error-on-warnings', 'plugins'],
+      cmd: 'biome',
+      args: ['ci', '--error-on-warnings', 'plugins'],
     },
     {
       id: 'shellcheck-plugins',
@@ -456,22 +414,22 @@ export function gatesFor({ root, ci, base, pins }) {
       id: 'ruff-check-plugins',
       group: 'local',
       title: 'ruff check plugins/',
-      cmd: 'uvx',
-      args: [ruff, 'check', 'plugins'],
+      cmd: 'ruff',
+      args: ['check', 'plugins'],
     },
     {
       id: 'ruff-format-plugins',
       group: 'local',
       title: 'ruff format --check plugins/',
-      cmd: 'uvx',
-      args: [ruff, 'format', '--check', 'plugins'],
+      cmd: 'ruff',
+      args: ['format', '--check', 'plugins'],
     },
     {
       id: 'mypy-plugins',
       group: 'local',
       title: 'mypy --strict on plugins/',
-      cmd: 'uvx',
-      args: ['--from', mypy, 'mypy', '--strict', ...tracked(root, ['plugins/*.py'])],
+      cmd: 'mypy',
+      args: ['--strict', ...tracked(root, ['plugins/*.py'])],
     },
     {
       id: 'basedpyright-plugins',
@@ -556,8 +514,7 @@ if (isMain(import.meta.url)) {
   }
   const ci = argv.includes('--ci')
   const group = value('--group')
-  const pins = loadPins(readFileSync(join(ROOT, '.github', 'workflows', 'validate.yml'), 'utf8'))
-  const gates = gatesFor({ root: ROOT, ci, base: value('--base') ?? '', pins }).filter(
+  const gates = gatesFor({ root: ROOT, ci, base: value('--base') ?? '' }).filter(
     (g) => group === undefined || g.group === group,
   )
   if (gates.length === 0) {

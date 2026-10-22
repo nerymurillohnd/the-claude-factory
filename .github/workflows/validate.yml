@@ -14,8 +14,10 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  # Pinned for reproducible CI. Dependabot does not track npm CLIs installed with npx/npm -g,
-  # so the plugin-consistency skill (WORKFLOW.md, "Skill Triggers") reviews these pins.
+  # Pinned for reproducible CI: each job installs its tools at these versions, and the gates run
+  # them by bare name, as on the maintainer's machine. Dependabot does not track tools installed
+  # with npm -g or uv tool install, so the plugin-consistency skill (WORKFLOW.md, "Skill Triggers")
+  # reviews these pins.
   CLAUDE_CODE_VERSION: "2.1.304"
   ACTIONLINT_VERSION: "1.7.12"
   RUFF_VERSION: "0.17.1"
@@ -23,7 +25,7 @@ env:
   MYPY_VERSION: "1.20.2"
   BASEDPYRIGHT_VERSION: "1.40.2"
   UV_VERSION: "0.13.1"
-  # tsc for the type check of scripts/, run through npx.
+  # tsc for the type check of scripts/.
   TYPESCRIPT_VERSION: "6.0.3"
   # shfmt release binary for the shell scripts under scripts/; the checksum pins the exact build.
   SHFMT_VERSION: "3.14.1"
@@ -46,6 +48,8 @@ jobs:
           node-version-file: .nvmrc
       - name: Maintainer type packages (no install scripts)
         run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: TypeScript
+        run: npm install --global --no-audit --no-fund "typescript@${TYPESCRIPT_VERSION}"
       - name: shellcheck and shfmt
         run: |
           sudo apt-get install -y --no-install-recommends shellcheck
@@ -73,8 +77,11 @@ jobs:
           version: ${{ env.UV_VERSION }}
           # No lockfile here: the tool versions are pinned in this workflow's env.
           cache-dependency-glob: .github/workflows/validate.yml
-      - name: basedpyright
-        run: uv tool install "basedpyright==${BASEDPYRIGHT_VERSION}"
+      - name: ruff, mypy and basedpyright
+        run: |
+          uv tool install "ruff==${RUFF_VERSION}"
+          uv tool install "mypy==${MYPY_VERSION}"
+          uv tool install "basedpyright==${BASEDPYRIGHT_VERSION}"
       - name: Gates
         run: npm run gates:ci -- --group python
 
@@ -104,5 +111,7 @@ jobs:
           curl -sSfL -o download-actionlint.bash "https://raw.githubusercontent.com/rhysd/actionlint/v${ACTIONLINT_VERSION}/scripts/download-actionlint.bash"
           bash download-actionlint.bash "${ACTIONLINT_VERSION}" /usr/local/bin
           rm download-actionlint.bash
+      - name: Biome
+        run: npm install --global --no-audit --no-fund "@biomejs/biome@${BIOME_VERSION}"
       - name: Gates
         run: npm run gates:ci -- --group lint

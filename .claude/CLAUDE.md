@@ -27,15 +27,15 @@ This project carries one item of the global North Star: multiply execution capac
 - Build: no build step and no runtime to maintain; no root `pyproject.toml` or virtual environment.
 - Root `package.json` (ADR_2026-10-21_maintainer-only-root-package-json): maintainer tooling only, never a runtime of any plugin. A user receives only `plugins/<name>/`, but Node resolves imports by walking up the folders, so anything in the root `node_modules` would let a plugin pass here and fail for users.
   - It holds only exact `@types/*` devDependencies, today `@types/node` on the Node major of `.nvmrc`, so `tsc`, the post-edit hook and the language server read `scripts/tsconfig.json` the same way. It sets `"private": true` and never `dependencies`, `main`, `exports`, `bin`, `type` or `workspaces`; a `"type"` would change how Node and `tsc` read the plugins' `.js` and `.ts` files.
-  - The CLIs stay out of it: TypeScript and Biome run through `npx --yes <pkg>@<version>` at the pins in Commands and `validate.yml`, and Python tools through `uvx`.
+  - The CLIs stay out of it: TypeScript, Biome, ruff, mypy and every other tool run as installed on the machine, by bare name, never through `npx` or `uvx` (ADR_2026-10-21_gates-run-installed-tools). CI installs them at the pins of `validate.yml`.
   - `check-repo.mjs` enforces all of it, including the `.nvmrc` major. When `.nvmrc` changes major, change `@types/node` in the same commit with `npm install --save-dev --save-exact @types/node@<major>.x.y`.
   - A plugin that needs packages ships its own `package.json` and npm or Bun lockfile in `plugins/<name>/`, which Claude Code installs into that plugin's cache; it never relies on the root one.
 - Plugin code: Bash and POSIX-style Python 3 that run on whatever `bash` and `python3` the user has on `PATH`, with no version floor; `.mjs` modules type-checked by TypeScript 6.0.3; mods in TypeScript under `hooks/*.ts`.
 - Repository tooling: Node scripts in `scripts/` for scaffolding, catalog, version bumps, labels, policy checks and eval targets, with their tests in `scripts/tests/`; Node 26 from `.nvmrc`. Maintainer code lives at the root, never under `.github/` (ADR_2026-10-21_maintainer-scripts-at-root): basedpyright and other tools skip folders whose name starts with a dot, so code there goes unchecked. `.github/` holds only GitHub's own files.
-- Formatting and linters: Biome for JavaScript and JSON; ruff, mypy and basedpyright for Python; shfmt and ShellCheck for shell; actionlint for workflows. Markdown has no linter (ADR_2026-10-21_remove-markdownlint). Each runs at the version pinned in Commands below and in `validate.yml`.
+- Formatting and linters: Biome for JavaScript and JSON; ruff, mypy and basedpyright for Python; shfmt and ShellCheck for shell; actionlint for workflows. Markdown has no linter (ADR_2026-10-21_remove-markdownlint). Each runs as installed on the machine; CI installs the versions pinned in `validate.yml`.
 - Testing: `node --test` for script and hook tests, `unittest` and `by_path.sh` for plugin scripts, `claude plugin validate --strict` and `claude plugin test` for plugins and mods, `claude plugin eval` for plugins that have evals.
 - CI/CD and GitHub Actions: `validate.yml` on every push and PR, `evals.yml` for changed plugins that have evals, `release.yml` tags each plugin after merge, and Claude reviewers run on pull requests.
-- Tool sources: Node and npm via nvm, and the root `node_modules` via `npm ci` after a fresh clone; Python, ruff and basedpyright via uv; shfmt, ShellCheck and actionlint via Homebrew. Global configs are never overridden here; `ruff.toml` is the only ruff config in the repo.
+- Tool sources: Node, npm and a global TypeScript via nvm, and the root `node_modules` via `npm ci` after a fresh clone; Python, ruff, mypy and basedpyright via uv; Biome, shfmt, ShellCheck and actionlint via Homebrew. A tool that is missing is installed from its source, never run through `npx` or `uvx`. Global configs are never overridden here; `ruff.toml` is the only ruff config in the repo.
 
 ## Authority, Limits and Permissions
 
@@ -72,7 +72,7 @@ This project carries one item of the global North Star: multiply execution capac
 
 ## Commands
 
-Run from the repository root with the `.nvmrc` runtime selected and `npm ci` run once after a fresh clone, so `node_modules/@types/node` exists. The gate commands run the versions CI pins in the `env` block of `.github/workflows/validate.yml`.
+Run from the repository root with the `.nvmrc` runtime selected and `npm ci` run once after a fresh clone, so `node_modules/@types/node` exists. The commands run the tools installed on the machine by bare name; CI installs them at the versions pinned in the `env` block of `.github/workflows/validate.yml`.
 
 ### Project
 
@@ -91,24 +91,24 @@ Run from the repository root with the `.nvmrc` runtime selected and `npm ci` run
 
 Python:
 
-- `uvx ruff@0.17.1 format <file>` - Run first, after every `.py` edit.
-- `uvx ruff@0.17.1 check <file>` - Run after the formatter.
-- `uvx --from mypy==1.20.2 mypy --strict <file>` - Run after ruff.
+- `ruff format <file>` - Run first, after every `.py` edit.
+- `ruff check <file>` - Run after the formatter.
+- `mypy --strict <file>` - Run after ruff.
 - `basedpyright --warnings <file>` - Run after mypy.
 - `python3 -m unittest discover -s scripts/tests/<plugin>` - Run when the file belongs to a plugin with Python tests.
 - `scripts/tests/<plugin>/by_path.sh` - Run when that plugin folder ships one.
 
 JavaScript modules (`tsc` checks the whole project):
 
-- `npx --yes @biomejs/biome@2.5.15 check --write --error-on-warnings <file>` - Run first, after every `.mjs` edit.
-- `npx --yes --package typescript@6.0.3 tsc -p scripts/tsconfig.json --noEmit` - Run after Biome, for a file under `scripts/`; `-p scripts/tsconfig.plugins.json` for a file under `plugins/`.
+- `biome check --write --error-on-warnings <file>` - Run first, after every `.mjs` edit.
+- `tsc -p scripts/tsconfig.json --noEmit` - Run after Biome, for a file under `scripts/`; `-p scripts/tsconfig.plugins.json` for a file under `plugins/`.
 - `node --test "scripts/tests/*.test.mjs"` - Run after the type check, and `node --test scripts/tests/<plugin>/*.test.mjs` when the file belongs to a plugin with Node tests. A skipped test means a missing tool: install it.
 - `node scripts/check-repo.mjs` - Run after the tests.
 
 Mods (code in `hooks/*.ts`, tests in `tests/*.test.ts`):
 
-- `npx --yes @biomejs/biome@2.5.15 check --write --error-on-warnings <file>` - Run first, after every `.ts` edit.
-- `npx --yes --package typescript@6.0.3 tsc -p plugins/<plugin>/tsconfig.json --noEmit` - Run after Biome. The config extends the declarations the engine writes into `plugins/<plugin>/.claude-plugin/types/` when it loads the mod. Git ignores that folder, so after a fresh clone load the plugin once in an interactive session from a trusted folder (`claude --plugin-dir plugins/<plugin>`, then `/exit`) to write it. CI cannot run this gate for that reason.
+- `biome check --write --error-on-warnings <file>` - Run first, after every `.ts` edit.
+- `tsc -p plugins/<plugin>/tsconfig.json --noEmit` - Run after Biome. The config extends the declarations the engine writes into `plugins/<plugin>/.claude-plugin/types/` when it loads the mod. Git ignores that folder, so after a fresh clone load the plugin once in an interactive session from a trusted folder (`claude --plugin-dir plugins/<plugin>`, then `/exit`) to write it. CI cannot run this gate for that reason.
 - `claude plugin validate --strict plugins/<plugin>` - Run after tsc. It reads the mod the way the engine will. Pass `$` only inside `register.ts`: validation fails when `$` goes to a function imported from another file.
 - `claude plugin test plugins/<plugin>` - Run last. Break the rule under test on purpose once and confirm its tests fail.
 
