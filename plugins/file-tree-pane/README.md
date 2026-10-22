@@ -30,8 +30,8 @@
 
 - **See what Claude touches as it works** — files shimmer purple while Claude reads or searches them, orange when it writes them, and green when it commits them; collapsed folders open to show the file, and the footer reports each `git` and `gh` operation.
 - **Know what changed at a glance** — every file and folder shows its git status in color, changed files show `+N -N` lines, folders show `?:N M:N D:N`, and the header shows the branch, its upstream and how far ahead or behind it is.
-- **Point Claude at a file without typing its path** — the file you select is passed to Claude with your next prompt, so you can ask "what changed here?", and an `@path` in your prompt reveals that file in the tree.
-- **Preview, diff and edit in place** — a click previews a file, `d` shows its diff, `e` opens your editor at the line in view, and a double click opens it in its default app.
+- **Point Claude at a file without typing its path** — while the pane is on screen, the file or folder you select is passed to Claude with each prompt, so you can ask "what changed here?", and an `@path` in your prompt reveals that file in the tree.
+- **Preview, diff and edit in place** — a click previews a file, `d` shows its diff, `e` opens your editor at the line in view, and a double click opens it in its default app (never a script or program, which would run).
 - **Light on huge repositories** — it draws only the rows on screen, lists a folder only when you open it, and scopes every git call to the folder it shows, so a tree of 50,000 files scrolls like one of fifty.
 
 ## 🧩 What's inside
@@ -83,7 +83,7 @@ Requires Claude Code v2.1.275+. With the marketplace already added, `/plugin ins
 <details>
 <summary><b>🖥️ Claude desktop app — Code tab</b></summary>
 
-With the marketplace added, click **+** next to the prompt box → **Add plugins** (or **Plugins** → **Browse plugins**), or open **Settings** → **Plugins** → **Discover**; then select **File Tree Pane** and choose a scope.
+With the marketplace added, click **+** next to the prompt box → **Add plugins** (or **Plugins** → **Browse plugins**), or click **Customize** in the sidebar; then select **File Tree Pane** and choose a scope.
 
 </details>
 
@@ -128,7 +128,7 @@ Select a changed file or folder and press `d`.
 
 ### Keys
 
-Click a row or press Ctrl+X Tab to give the pane the keys; Esc gives them back to the prompt.
+Click a row to give the tree the keys; Esc gives them back to the prompt. Ctrl+X Tab focuses the pane, where the shortcut buttons and the header's `p`, `d` and `e` take their keys.
 
 | Key | In the tree | In a preview or diff |
 | :-- | :-- | :-- |
@@ -137,7 +137,7 @@ Click a row or press Ctrl+X Tab to give the pane the keys; Esc gives them back t
 | `o` or Enter | Open the file with **Open with**, or open and close a folder | — |
 | Space | Quick Look on macOS; opens and closes a folder | Next page |
 | `p` | Preview the file | Back to the tree |
-| `d` | Diff the changed file or folder | Back to the file, or the tree |
+| `d` | Diff the changed file or folder | In a preview, that file's diff; in a diff, back to the file, or the tree |
 | `e` | Open the file in your editor | Open your editor at the top line shown |
 | `s` | Focus the search field; type, then Enter jumps to the first match | — |
 | `f` / `b`, PgDn / PgUp, Home / End | Page and jump | Page and jump |
@@ -159,14 +159,14 @@ Change them in `/config`, where they are listed as `file-tree-pane.<option>` and
 | `hints` | `true`, `false` | `true` | Outside a git repository, a line saying git status starts after `git init`. |
 | `searchSpacing` | `true`, `false` | `true` | A blank line above and below the search field. Off gives the tree those two rows. |
 | `shortcutRow` | `true`, `false` | `true` | The `j`/`k`/`h`/`l`/open/search buttons. Off hides them; the keys still work in the tree. |
-| `openWith` | empty, `editor`, a command | empty | Empty opens files in their default app. `editor` opens `$VISUAL`, then `$EDITOR`, then `vi`, in a new tmux window or a herdr pane; in tmux, nvim reuses a running nvim in the same session. A command such as `code -g {path}` runs as is, `{path}` being the file. |
+| `openWith` | empty, `editor`, a command | empty | Empty opens files in their default app, except files that app would run (scripts, programs, installers, shortcuts such as `.command`, `.sh`, `.exe` or `.desktop`), which need a command here. `editor` opens `$VISUAL`, then `$EDITOR`, then `vi`, in a new tmux window or a herdr pane; in tmux, nvim reuses a running nvim in the same session. A command such as `code -g {path}` runs as is, `{path}` being the file. |
 | `editWith` | empty, a command | empty | What `e` opens, at the top line shown: empty is the same editor as `editor` with `+line`; a command takes `{path}` and `{line}`, such as `code -g {path}:{line}` or `zed {path}:{line}`. |
-| `diffWith` | empty, a command | empty | Empty shows diffs in the pane. A terminal command such as `hunk diff --`, `lazygit -f`, `git difftool -y --` or `nvim -c Gvdiffsplit` runs on the path in a tmux window, a herdr pane or, on Linux, a new terminal window through `xdg-terminal-exec`. |
+| `diffWith` | empty, a command | empty | Empty shows diffs in the pane. A terminal command such as `hunk diff --`, `lazygit -f`, `git difftool -y --` or `nvim -c Gvdiffsplit` runs on the path, given as `./path`, in a tmux window, a herdr pane or, on Linux, a new terminal window through `xdg-terminal-exec`. |
 | `ignore` | names | empty | Names left out of the tree, the search and the highlights, separated by spaces or commas, such as `.cache .tmp`. Exact names at any depth, like the built-in `.git` and `node_modules`. |
 | `palette` | `tone=#rrggbb` pairs | empty | Your own colors over the theme's. Tones: `read`, `write`, `commit`, `modified`, `added`, `deleted`, `untracked`, `conflict`, `muted`, `accent`, `selected`, `hovered`. The pane names any pair it ignores. |
 | `glyphs` | `auto`, `nerd`, `plain` | `auto` | `auto` uses Nerd Font icons in a terminal when a Nerd Font was installed before the terminal started, and over SSH; plain Unicode in the desktop app and wherever no Nerd Font is found. |
 
-The pane takes its colors from your theme and follows a theme switch. On a light theme it uses its own palette, where every text color reaches WCAG AAA contrast (7:1 or more), on the selected and hovered rows too.
+The pane takes its colors from your theme and follows a theme switch. On a light theme, built in or custom with a light `base`, it uses its own palette, where every text color reaches WCAG AAA contrast (7:1 or more), on the selected and hovered rows too. With the `auto` theme, or a custom theme whose file it can't read, every color comes from the theme itself.
 
 A terminal editor needs a terminal to run in: a mod can't hand Claude Code's own terminal to another program. Outside tmux and herdr, `editor` and an empty **Edit with** show a notice instead; set a GUI command such as `code -g {path}:{line}` to edit from anywhere. In herdr, the editor opens in a pane to the right of Claude's, in the file's folder, and that pane closes when the editor exits; the file name reaches the editor through the pane's environment, so names with spaces or shell characters are safe.
 
@@ -199,16 +199,18 @@ In a session: `/plugin` → **Installed** → **File Tree Pane** → **Uninstall
 
 <sub>✅ works · ⚠️ partial · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. The Claude app (web, desktop and mobile) runs a conversation as a Cowork session when it can, and as a chat conversation otherwise, for example on a device that can't run Cowork or in the separate Chat mode that Team and Enterprise plans keep for now.</sub>
 
-The pane draws in the terminal, the desktop app's **Code** tab and the VS Code extension (extension v2.1.299+). In VS Code each row is a button: clicks and the shortcut buttons work, while the shimmer, double click, hover and the row keys need the terminal or the desktop app. In `claude -p` and cloud sessions nothing draws, and the mod only passes the selected file along when a pane is on screen.
+The pane draws in the terminal, the desktop app's **Code** tab and the VS Code extension (extension v2.1.299+; v2.1.304+ in a session that doesn't fetch feature flags, such as one on Amazon Bedrock). In VS Code each row is a button: clicks and the shortcut buttons work, while the shimmer, double click, hover and the row keys need the terminal or the desktop app. In `claude -p` and cloud sessions nothing draws, and the mod only passes the selected file along when a pane is on screen.
 
 ### Limitations
 
 - Claude's searches through the built-in Grep and Glob tools light up the folder they search. Searches run through the shell (`grep`, `rg`, `find`) light up the paths their command names.
 - The pane refreshes every 5 seconds while it is on screen, and right after Claude's tool calls: a change another program makes shows within those 5 seconds.
-- Line counts for untracked files cover the first 200 of them; a folder's diff shows its first 50 untracked files.
+- Line counts for untracked files cover the first 200 of them, up to 64 MiB each; a folder's diff shows its first 50 untracked files.
+- A submodule shows as changed when its commit moves; changes inside its own working tree don't show.
+- Search covers the first 4 MiB of file names `git` lists (about 50,000 to 100,000 files), or the first 100,000 entries outside a repository; the match line says when it stopped early. Files made outside Claude become searchable within 30 seconds.
 - Under herdr 0.9.0 and older the rows ignore the mouse, because those versions report clicks at the wrong cells; keys and everything else keep working. Run `herdr update` to get row clicks (herdr 0.9.1 or later).
 - On Windows, set **Open with**, **Edit with** and **Diff with** to GUI commands, such as `code -g {path}:{line}`: the built-in terminal editor and diff tools run in tmux, or in herdr on macOS and Linux.
-- These settings turn the mod off: `disableAllHooks`, `allowManagedModsOnly` and `allowManagedHooksOnly` in managed settings, and starting Claude Code with `--safe-mode` or `--bare`.
+- These settings turn the mod off: `"disableAllHooks": true` in your own `~/.claude/settings.json` or in managed settings, `allowManagedModsOnly` and `allowManagedHooksOnly` in managed settings, and starting Claude Code with `--safe-mode` or `--bare`.
 - In organizations with managed settings or a Team or Enterprise login, Claude Code's built-in guard runs ahead of every mod and can refuse to load it.
 
 ## ❓ FAQ & Troubleshooting
@@ -223,7 +225,7 @@ A pane that opens by itself waits for a terminal at least 144 columns wide (110 
 <details>
 <summary><b>The keys type into the prompt instead of moving in the tree.</b></summary>
 
-The prompt has the keys. Click a row, or press Ctrl+X Tab until the pane is focused; Esc gives the keys back to the prompt. While the pane has focus but before you click a row, the shortcut buttons (`j`, `k`, `h`, `l`, `o`, `s`) and the header's `p`, `d` and `e` take their keys.
+The prompt has the keys. Click a row to give the tree the keys; Esc gives them back to the prompt. Ctrl+X Tab focuses the pane without giving the tree its keys: there, the shortcut buttons (`j`, `k`, `h`, `l`, `o`, `s`) and the header's `p`, `d` and `e` take their keys.
 
 </details>
 
@@ -246,7 +248,7 @@ No. Each call passes on unchanged: before it, the mod marks the files it names; 
 
 It hooks the start of each session (to add `/file-tree` and open the pane), each tool call (to highlight the files it names and report git operations), each prompt you send (to pass the selected file and reveal `@path` files), a working directory change, a theme change in `/config`, the `/file-tree` command, and the pane's drawing, scrolling and input.
 
-It reads directory listings, the file you preview, and your font folders (`~/Library/Fonts` and `/Library/Fonts` on macOS, the Windows font folders, `fc-list` on Linux). It runs `git` (read-only, with every program a repository's own config can name turned off: fsmonitor, clean and process filters, textconv, external diff and signature checks; it reads the filter names with `git config` first, and skips git in a repository whose filter names it can't turn off), `wc -l` on untracked files, `du -sk` for folder sizes, `uname -s`, and, when it finds a Nerd Font, `ps` with `sh -c 'echo $PPID'` to learn when your terminal started. When you ask, it runs `open`, `xdg-open` or PowerShell's `Start-Process` for the default app, `qlmanage -p` and `killall qlmanage` for Quick Look, `tmux` or `herdr` for an editor or diff tool, and the commands you set in **Open with**, **Edit with** and **Diff with**. It reads the `HOME`, `VISUAL`, `EDITOR`, `TMUX`, `HERDR_ENV`, `HERDR_PANE_ID`, `SSH_CONNECTION`, `SSH_TTY`, `OS`, `LOCALAPPDATA`, `SystemRoot` and `USERPROFILE` environment variables.
+It reads directory listings, the file you preview, your `theme` setting through `/config` (and, for a custom theme, its file in `~/.claude/themes/`, or under `CLAUDE_CONFIG_DIR`), and your font folders (`~/Library/Fonts` and `/Library/Fonts` on macOS, the Windows font folders, `fc-list` on Linux). It runs `git` (read-only, with every program a repository's own config can name turned off: fsmonitor, clean and process filters, textconv, external diff and signature checks; it reads the filter names with `git config` first, skips git in a repository whose filter names it can't turn off, and never runs git inside a submodule's working tree), `wc -l` on untracked files, `du -sk` for folder sizes, `uname -s`, `herdr --version` at session start inside herdr, and, when it finds a Nerd Font, `ps` with `sh -c 'echo $PPID'` to learn when your terminal started. When you ask, it runs `open`, `xdg-open` or PowerShell's `Start-Process` for the default app, `qlmanage -p` and `killall qlmanage` for Quick Look, `tmux`, `herdr` or `xdg-terminal-exec` for an editor or diff tool, and the commands you set in **Open with**, **Edit with** and **Diff with**. It reads the `HOME`, `CLAUDE_CONFIG_DIR`, `VISUAL`, `EDITOR`, `TMUX`, `HERDR_ENV`, `HERDR_PANE_ID`, `SSH_CONNECTION`, `SSH_TTY`, `OS`, `LOCALAPPDATA`, `SystemRoot` and `USERPROFILE` environment variables.
 
 It never writes files, never reaches the network and never calls the model. Run `claude plugin validate` on the plugin's folder to list the same hooks and calls yourself.
 
