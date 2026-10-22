@@ -80,6 +80,12 @@
       "category": "development"
     },
     {
+      "name": "turn-meter",
+      "source": "./plugins/turn-meter",
+      "description": "Shows how long each turn took, how many tools it used in the main thread and in subagents, and the tokens it spent, in a band above the prompt, and alerts you when a long turn ends.",
+      "category": "productivity"
+    },
+    {
       "name": "typescript6-lsp-intelligence",
       "source": "./plugins/typescript6-lsp-intelligence",
       "description": "Connects your TypeScript 6 language server to Claude Code, type-checks every file Claude edits with your own TypeScript under a strictest policy, and teaches Claude to find the program that owns a file and fix compiler findings without unsafe assertions or suppressions.",

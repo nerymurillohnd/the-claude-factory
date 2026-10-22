@@ -149,6 +149,7 @@ In a session: `/plugin` → **Installed** → **{{displayName}}** → **Uninstal
 | ⌨️ Commands | ✅ | ✅ loaded as a skill in a chat conversation |
 | 🤖 Agents | ✅ | ⚠️ in Cowork sessions, not in a chat conversation |
 | 🪝 Hooks | ✅ | ⚠️ in Cowork sessions, not in a chat conversation |
+| 🧩 Mods | ✅ every Claude Code session except a Desktop session on WSL | ⚠️ the plugin directory lists a mod for Claude Code only |
 | 🔌 MCP server (remote) | ✅ | 🔗 add or connect it on the plugin's **Connectors** tab |
 | 🖥️ MCP server (local) | ✅ | ⚠️ only in Cowork sessions on your computer |
 | 🧠 LSP server | ✅ | ➖ |

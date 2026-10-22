@@ -1,0 +1,55 @@
+{
+  "name": "turn-meter",
+  "displayName": "Turn Meter",
+  "version": "0.1.0",
+  "description": "Shows how long each turn took, how many tools it used in the main thread and in subagents, and the tokens it spent, in a band above the prompt, and alerts you when a long turn ends.",
+  "author": {
+    "name": "Nery Murillo",
+    "url": "https://github.com/nerymurillohnd"
+  },
+  "homepage": "https://github.com/nerymurillohnd/the-claude-factory/tree/main/plugins/turn-meter#readme",
+  "repository": "https://github.com/nerymurillohnd/the-claude-factory",
+  "license": "MIT",
+  "keywords": [
+    "mods",
+    "turn",
+    "duration",
+    "tokens",
+    "usage",
+    "subagents",
+    "notifications",
+    "status"
+  ],
+  "types": "./types/index.d.ts",
+  "userConfig": {
+    "alert": {
+      "type": "string",
+      "title": "Long-turn alert",
+      "description": "How to alert you when a main turn runs longer than the threshold: toast shows a message inside Claude Code, notify sends a native notification through your terminal (falling back to a toast when none can be sent), off sends nothing.",
+      "options": [
+        "toast",
+        "notify",
+        "off"
+      ],
+      "default": "toast"
+    },
+    "alertAfterSeconds": {
+      "type": "number",
+      "title": "Alert after (seconds)",
+      "description": "A main turn that runs at least this many seconds triggers the long-turn alert.",
+      "min": 1,
+      "default": 120
+    },
+    "showTokens": {
+      "type": "boolean",
+      "title": "Show tokens",
+      "description": "Show the tokens the last turn spent in the band. Turn it off to see only time and tools.",
+      "default": true
+    }
+  },
+  "metadata": {
+    "surfaces": [
+      "claude-code"
+    ]
+  }
+}

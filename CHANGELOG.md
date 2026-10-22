@@ -9,6 +9,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The
 ### Added
 
 - **mods-engineering** 0.1.0 — designs, builds, reviews, tests and debugs Claude Code mods, checking every interface against the current mod docs and the type declarations your own Claude Code build writes.
+- **turn-meter** 0.1.0 — shows how long each turn took, its tool calls in the main thread and in subagents, and the tokens it spent, in a band above the prompt, and alerts you when a long turn ends.
 
 ### Changed
 
