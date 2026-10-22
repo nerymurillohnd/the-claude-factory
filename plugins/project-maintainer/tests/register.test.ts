@@ -98,8 +98,41 @@ test('a record that exists but cannot be read is not saved unchecked', async ($,
     input: edit(SETTLED_ADR, 'status: accepted', 'status: deprecated'),
   })
   expect(verdict.decision).toBe('ask')
-  expect(verdict.decider).toBe('person')
+  expect(verdict.plugin).toBe('project-maintainer')
   expect(verdict.reason).toContain('could not read')
+})
+
+test('a format check that breaks refuses a record and lets any other file through', async ($, on) => {
+  // The session cannot say where it works, so the check throws before it reads anything
+  on('session.cwd', () => ({ deny: 'no working directory' }))
+  on('tool.call', () => ({ result: 'saved' }))
+  on('tool.check', () => ({ decision: 'allow' }))
+  const record = await $.tool.call(edit(SETTLED_ADR, 'status: accepted', 'status: deprecated'))
+  expect(JSON.stringify(record)).toContain('could not check this record')
+  const readme = { tool: 'Write' as const, file_path: `${ROOT}/README.md`, content: 'notes' }
+  expect(await $.tool.call(readme)).toEqual({ result: 'saved' })
+  const asked = await $.tool.check({
+    tool: 'Edit',
+    input: edit(SETTLED_ADR, 'status: accepted', 'status: deprecated'),
+  })
+  expect(asked.decision).toBe('ask')
+  expect(asked.plugin).toBe('project-maintainer')
+  expect(asked.reason).toContain('could not check this edit')
+  const other = await $.tool.check({
+    tool: 'Write',
+    input: { file_path: readme.file_path, content: readme.content },
+  })
+  expect(other.decision).toBe('allow')
+})
+
+test('a deny beneath stands when the session cannot say where it works', async ($, on) => {
+  on('session.cwd', () => ({ deny: 'no working directory' }))
+  on('tool.check', () => ({ decision: 'deny', reason: 'a deny rule' }))
+  const verdict = await $.tool.check({
+    tool: 'Edit',
+    input: edit(SETTLED_ADR, 'status: accepted', 'status: deprecated'),
+  })
+  expect(verdict.decision).toBe('deny')
 })
 
 test('the format guard lets a well formed ADR, another file and an impossible edit through', async ($, on) => {
@@ -148,7 +181,7 @@ test('the authority guard asks the person before a settled ADR is rewritten', as
     input: edit(SETTLED_ADR, 'Chosen option: **Postgres**.', 'Chosen option: **Redis**.'),
   })
   expect(verdict.decision).toBe('ask')
-  expect(verdict.decider).toBe('person')
+  expect(verdict.plugin).toBe('project-maintainer')
   expect(verdict.reason).toContain('changes the text of a settled ADR')
   expect(verdict.reason).toContain('Write a new ADR that supersedes it')
 })
@@ -163,7 +196,7 @@ test('the authority guard covers a subagent and a whole-file Write too', async (
     agentId: 'subagent-1',
   })
   expect(verdict.decision).toBe('ask')
-  expect(verdict.decider).toBe('person')
+  expect(verdict.plugin).toBe('project-maintainer')
 })
 
 test('the authority guard lets the allowed edits and new files through', async ($, on) => {
@@ -211,6 +244,7 @@ test('a pending item may leave only once its closed entry exists', async ($, on)
     input: { file_path: PENDING, content: without },
   })
   expect(asked.decision).toBe('ask')
+  expect(asked.plugin).toBe('project-maintainer')
   expect(asked.reason).toContain('no entry with an outcome for it')
 })
 
@@ -233,7 +267,7 @@ test('a closed entry cannot be rewritten without the person', async ($, on) => {
     input: edit(CLOSED, 'Export fixed', 'Export never broke'),
   })
   expect(verdict.decision).toBe('ask')
-  expect(verdict.decider).toBe('person')
+  expect(verdict.plugin).toBe('project-maintainer')
 })
 
 test('a shell command that rewrites the records asks the person, a read does not', async ($, on) => {
@@ -241,7 +275,7 @@ test('a shell command that rewrites the records asks the person, a read does not
   on('tool.check', () => ({ decision: 'allow' }))
   const removal = await $.tool.check({ tool: 'Bash', input: { command: `rm ${SETTLED_ADR}` } })
   expect(removal.decision).toBe('ask')
-  expect(removal.decider).toBe('person')
+  expect(removal.plugin).toBe('project-maintainer')
   expect(removal.reason).toContain('Write and Edit tools')
   const read = await $.tool.check({ tool: 'Bash', input: { command: `cat ${SETTLED_ADR}` } })
   expect(read.decision).toBe('allow')
@@ -355,4 +389,17 @@ test('the reminder can be turned off', { options: { commitNudge: false } }, asyn
   commits(on, { value: 'aaa111' }, 'Add a cache layer\npackage.json\n')
   await $.tool.call({ tool: 'Bash', command: 'git commit -m "Add a cache layer"' })
   expect(session.appended().length).toBe(0)
+})
+
+test('a record still asks when the verdict beneath cannot be read either', async ($, on) => {
+  on('session.cwd', () => ({ deny: 'no working directory' }))
+  on('tool.check', () => {
+    throw new Error('the permission check broke')
+  })
+  const verdict = await $.tool.check({
+    tool: 'Edit',
+    input: edit(SETTLED_ADR, 'status: accepted', 'status: deprecated'),
+  })
+  expect(verdict.decision).toBe('ask')
+  expect(verdict.plugin).toBe('project-maintainer')
 })

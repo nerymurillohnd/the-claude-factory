@@ -7,7 +7,7 @@
 [![Version](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Fnerymurillohnd%2Fthe-claude-factory%2Fmain%2Fplugins%2Fproject-maintainer%2F.claude-plugin%2Fplugin.json&query=%24.version&label=version&color=D97757)](./CHANGELOG.md)
 [![Works in](https://img.shields.io/badge/works%20in-Claude%20Code%20%C2%B7%20Claude%20app-2563EB)](#-compatibility)
 [![Category](https://img.shields.io/badge/category-Documentation%20%26%20Writing-6B7280)](../../README.md#-catalog)
-[![Claude Code](https://img.shields.io/badge/Claude%20Code-%E2%89%A5%202.1.304-D97757?logo=claude&logoColor=white)](https://code.claude.com/docs/en/plugins/install)
+[![Claude Code](https://img.shields.io/badge/Claude%20Code-%E2%89%A5%202.1.307-D97757?logo=claude&logoColor=white)](https://code.claude.com/docs/en/plugins/install)
 [![License: MIT](https://img.shields.io/badge/license-MIT-22C55E)](./LICENSE)
 
 [Why use it](#-why-use-it) •
@@ -41,12 +41,19 @@ Months later, nobody remembers why the project uses one database over another, o
 
 ## 🧩 What's inside
 
-| Component | Name | What it does | How it runs |
-| :-- | :-- | :-- | :-- |
-| 🎯 Skill | `project-maintainer:write-records` | Writes decisions as ADRs from a template and keeps a pending and a closed debt ledger. It searches for an existing record first, asks only for facts it is missing, and tells you in one line what it saved and where | Automatically when a decision is made or a problem is postponed, or with `/project-maintainer:write-records` |
-| 🎯 Skill | `project-maintainer:write-handoff` | Reads the project's state, summarizes the session, compares it with the previous handoff and with your records, drafts the new handoff with you, saves it in `.claude/session-handoff/` and offers to commit and push it | `/project-maintainer:write-handoff`, or ask Claude to write a handoff when you wrap up |
-| 🪝 Hook | `SessionStart` | When a session starts or is cleared in a project with handoffs, shows you a one-line notice naming the newest one and has Claude read it in full, do what you ask and end its reply with the open items. If the records changed after that handoff, it says which | Automatically, at the start of a session and after `/clear` |
-| 🪝 Hook (mod) | `Guardrails` | Refuses to save a malformed record, asks you before a settled record is rewritten, keeps decisions and record IDs in a compaction summary, and reminds Claude to record after a commit that looks like a decision | Automatically, while Claude works. See [Guardrails](#-guardrails) |
+The two skills teach Claude how to keep your project's memory. The hook and the mod make sure that memory stays reliable even when Claude forgets an instruction or makes a mistake: the important rules are checked in code, not left to the model.
+
+| Component | Name | What it does for you | What it prevents | How it runs |
+| :-- | :-- | :-- | :-- | :-- |
+| 🎯 Skill | `project-maintainer:write-records` | Writes decisions as ADRs from a template and keeps a pending and a closed debt ledger. It searches for an existing record first, asks only for facts it is missing, and tells you in one line what it saved and where | Decisions and postponed problems that live only in a chat that is gone | Automatically when a decision is made or a problem is postponed, or with `/project-maintainer:write-records` |
+| 🎯 Skill | `project-maintainer:write-handoff` | Reads the project's state, summarizes the session, compares it with the previous handoff and with your records, drafts the new handoff with you, saves it in `.claude/session-handoff/` and offers to commit and push it | Ending a session with no record of what was done, decided or left open | `/project-maintainer:write-handoff`, or ask Claude to write a handoff when you wrap up |
+| 🪝 Hook | `SessionStart` | Shows you a one-line notice naming the newest handoff, has Claude read it in full, do what you ask and end its reply with the open items, and says which records changed after the handoff was written | A new session that starts from zero, or works from a handoff the records have since outdated | Automatically, at the start of a session and after `/clear` |
+| 🪝 Mod | Format guard | Checks every save of an ADR or a debt ledger against the format and refuses a broken one, telling Claude what to fix | A malformed record: a missing field, a repeated debt ID, a closed entry without an outcome, a link to a record that does not exist | Automatically, on every save. Nobody can waive it. See [Guardrails](#-guardrails) |
+| 🪝 Mod | Authority guard | Asks you before a settled record changes, and before a shell command rewrites, moves or deletes the records folders | Claude quietly rewriting history: editing a decision you accepted, changing a closed debt entry, or dropping a pending item without its closed entry | Automatically, on every save and shell command that touches the records. Only you can approve |
+| 🪝 Mod | Compaction note | Tells Claude Code's summary to keep your decisions, the open items and every record ID | Losing the thread of the records when a long conversation is compacted | Automatically, before a compaction in a project with records or handoffs |
+| 🪝 Mod | Commit reminder | After a commit that changes dependencies, a schema, CI or infrastructure, or whose message says workaround, temporary or revert, reminds Claude to record the decision or the debt behind it | A change that settles a decision going in with no record of why. It uses no model call | Automatically, after such a commit. You can turn it off |
+
+The mod runs in every Claude Code session that loads the plugin: the terminal (JetBrains included), the Desktop app's Code tab, the VS Code extension, `claude -p`, the Agent SDK, Remote Control and cloud sessions that receive the plugin, but not a Desktop session on WSL. The hook also runs in Cowork sessions. Where the mod does not run, the rules of the records are instructions Claude follows, not checks. See [Compatibility](#-compatibility).
 
 The ADR template follows [MADR 4.0](https://adr.github.io/madr/) and adds a scope, a risks table and a confirmation table.
 
@@ -54,7 +61,7 @@ The ADR template follows [MADR 4.0](https://adr.github.io/madr/) and adds a scop
 
 | Requirement | Details |
 | :-- | :-- |
-| **Claude Code** | v2.1.304 or later — check with `claude --version`. The guardrails need it: from that version, Claude Code can require your approval for an edit, and no classifier can give it for you. An older version does not know that field, so the approval guard could be lost |
+| **Claude Code** | v2.1.307 or later — check with `claude --version`. The guardrails need it: from that version, Claude Code puts their prompts to you and no classifier can answer them. On an older version, auto mode's classifier can approve the edit for you |
 | **Surfaces** | See [Compatibility](#-compatibility) |
 | **External tools** | `bash` on `PATH`, for the hook and the skills' commands; on Windows, Git for Windows. `ls`, `grep` and `date`, which macOS and Linux include, to search and number records. `git`, so the handoff can record the repository's state; outside a git repository the handoff says so and skips it. `gh` signed in, optional, to list the repository's open pull requests |
 | **Network** | Records: none. The handoff runs `git fetch` to compare your branch with its remote, and `gh pr list` to list pull requests, when the repository has a remote. Without network access it marks those lines as not verified |
@@ -66,7 +73,7 @@ The ADR template follows [MADR 4.0](https://adr.github.io/madr/) and adds a scop
 <summary><b>💻 Terminal (shell)</b></summary>
 
 ```bash
-# One step: adds the marketplace (if needed) and installs the plugin — Claude Code v2.1.304+
+# One step: adds the marketplace (if needed) and installs the plugin — Claude Code v2.1.307+
 claude plugin install project-maintainer --marketplace nerymurillohnd/the-claude-factory
 
 # Or, with the marketplace already added
@@ -84,7 +91,7 @@ Add `--scope project` to enable it for everyone working in the current repositor
 /plugin install project-maintainer --marketplace nerymurillohnd/the-claude-factory
 ```
 
-Requires Claude Code v2.1.304+. With the marketplace already added, `/plugin install project-maintainer@the-claude-factory` opens the plugin's details so you can pick a scope. You can also browse it in `/plugin` → **Discover**.
+Requires Claude Code v2.1.307+. With the marketplace already added, `/plugin install project-maintainer@the-claude-factory` opens the plugin's details so you can pick a scope. You can also browse it in `/plugin` → **Discover**.
 
 </details>
 
@@ -220,12 +227,12 @@ The plugin ships a Claude Code [mod](https://code.claude.com/docs/en/plugins/mod
 | What Claude tries to do | What happens |
 | :-- | :-- |
 | Save an ADR or a debt ledger that breaks the format: a status outside the list, a date that differs from the file name, no decision maker, a link to a record that does not exist, a repeated or invalid `DEBT-NNN`, a closed entry without an outcome | Refused, with the reason. Claude fixes the record and saves it again. There is nothing for you to approve |
-| Rewrite a settled ADR beyond its status, its `superseded-by` link and its Confirmation section | Claude Code asks you. The prompt says which rule applies |
+| Rewrite a settled ADR beyond its status, its `superseded-by` link and its Confirmation section | Claude Code asks you |
 | Change a closed debt entry beyond its "Superseded by" field | Claude Code asks you |
 | Remove an item from `pending-debt.md` while `closed-debt.md` has no entry with an outcome for it (for *accepted*, an ADR that exists) | Claude Code asks you |
 | Rewrite, move or delete the records folders with a shell command | Claude Code asks you. Copying out of the folder and reading it stay quiet. Records are written with the Write and Edit tools, which apply these rules |
 
-Approve only an edit you asked for. Where nobody can answer, as in `claude -p` or the `dontAsk` mode, the edit is refused and Claude is told to write the new record instead. In the other permission modes the prompt comes to you, and no classifier can approve it for you.
+The prompt is Claude Code's own one for files in the `.claude` folder: it shows the change but not which rule asked for it. Approve only an edit you asked for. Choosing **Yes, and allow Claude to edit files in this project's .claude folder for this session** does not switch the guardrails off: the next change to a settled record asks you again. Where nobody can answer, as in `claude -p` or the `dontAsk` mode, the edit is refused and Claude is told to write the new record instead. In every other permission mode, auto mode included, the prompt comes to you and no classifier can approve it for you.
 
 Everything else stays quiet: a new ADR, a new debt item, a `proposed` ADR that changes, a status moving from *accepted* to *superseded* or *deprecated*, results in the Confirmation section, and a pending item that leaves after its closed entry exists.
 
@@ -234,8 +241,20 @@ Two small helpers run beside the guardrails:
 - **Compaction.** Before a compaction, Claude Code's summary is told to keep your decisions, the open items and every `ADR_…` and `DEBT-…` ID, so the records can be reconciled afterwards. It happens only in a project that has records or handoffs.
 - **Commit reminder.** After a commit that changes a dependency manifest, a database schema or migration, a CI workflow or infrastructure files, or whose message says workaround, temporary, revert, TODO or similar, Claude gets one note that reminds it to record a decision or a debt if the commit settles one. It uses no model call. Turn it off with the **Remind Claude after a commit that looks like a decision** option. Claude Code asks about it when you install the plugin from a session with `/plugin install`, and lists it in `/config`. Installing from the shell never asks, so the reminder stays on: use `claude plugin install project-maintainer@the-claude-factory --config commitNudge=false`, or change it in `/config`.
 
+**What the mod can reach.** A mod runs with your permissions and is not sandboxed, so here is everything this one does, as `claude plugin validate` lists it:
+
+| It | When |
+| :-- | :-- |
+| Handles `tool.call` and `tool.check` on Write, Edit and Bash, and `session.compact` | On every such call and every compaction |
+| Reads, lists and checks files (`$.fs.read`, `$.fs.list`, `$.fs.exists`) | Only the records in `.claude/maintainer/`. Before a compaction it also checks whether `.claude/session-handoff/` exists, without reading it |
+| Reads the session's folder (`$.session.cwd`, `$.session.root`) | To find your project's records |
+| Runs `git rev-parse HEAD` and `git show --name-only` (`$.process.run`) | Only around a `git commit`, while the commit reminder is on |
+| Adds one note to the conversation (`$.session.append`) | Only after a commit that looks like a decision |
+
+It writes no file, makes no network request, calls no model and reads no environment variable. To check this yourself before you install, clone the repository and run `claude plugin validate plugins/project-maintainer`: its `hooks:` and `calls:` lines list the same.
+
 > [!NOTE]
-> The guardrails protect your records from Claude's mistakes. They are not a security boundary: a shell command written in a form they do not recognize, or your editor, can still change the files, and you can always edit a record by hand. They run in Claude Code (the terminal, the Desktop app's Code tab and the VS Code extension) and need v2.1.304 or later. They are off under `--safe-mode`, and with `"disableAllHooks": true` in your settings. If the check itself breaks, Claude Code saves the record unchecked and logs the failure.
+> The guardrails protect your records from Claude's mistakes. They are not a security boundary: a shell command written in a form they do not recognize, or your editor, can still change the files, and you can always edit a record by hand. They run in every Claude Code session that loads the plugin except a Desktop session on WSL, and need v2.1.307 or later. They are off under `--safe-mode`, and with `"disableAllHooks": true` in your settings. If a check itself breaks, it fails closed for the records only: a record that could not be checked is not saved and Claude is told to try again, a settled record that could not be checked asks you, and every other file is saved as usual.
 
 ## 🔄 Updating
 
@@ -269,11 +288,11 @@ Your records and handoffs stay in your project's `.claude/` folder; they are ord
 | Component | Claude Code | Claude app |
 | :-- | :--: | :--: |
 | 🎯 Skills | ✅ | ⚠️ loads everywhere; saves records and handoffs only where it can reach your project folder |
-| 🪝 Hooks | ✅ | ⚠️ the start-of-session reminder runs in Cowork sessions, not in a chat conversation; the guardrails are documented for Claude Code only |
+| 🪝 Hooks | ✅ | ⚠️ the start-of-session reminder runs in Cowork sessions, not in a chat conversation; the guardrails are a mod, which the plugin directory lists for Claude Code only |
 
 <sub>✅ works · ⚠️ partial · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. The Claude app (web, desktop and mobile) runs a conversation as a Cowork session when it can, and as a chat conversation otherwise, for example on a device that can't run Cowork or in the separate Chat mode that Team and Enterprise plans keep for now.</sub>
 
-Records and handoffs live in your project folder, so the plugin needs a session that works in one: Claude Code, or a Cowork session on your computer. In a chat conversation there is no project folder, so Claude can draft a record or a handoff there but cannot save it. If the start-of-session reminder does not appear in a Cowork session, ask Claude to read the newest handoff in `.claude/session-handoff/`. The guardrails are a Claude Code mod; Claude Code documents mods for the terminal, the Desktop app's Code tab and the VS Code extension, and it does not mention the Claude app's chat or Cowork. That is unverified: treat the guardrails as not available there, where the rules of the records are instructions Claude follows.
+Records and handoffs live in your project folder, so the plugin needs a session that works in one: Claude Code, or a Cowork session on your computer. In a chat conversation there is no project folder, so Claude can draft a record or a handoff there but cannot save it. If the start-of-session reminder does not appear in a Cowork session, ask Claude to read the newest handoff in `.claude/session-handoff/`. The guardrails are a Claude Code mod; Claude Code documents where mods run for its own sessions (the terminal, the Desktop app's Code tab, the VS Code extension, `claude -p`, the Agent SDK, Remote Control and cloud sessions), and the Claude app's plugin directory [lists a mod for Claude Code only](https://claude.com/docs/plugins/platform-support#compare-component-support-by-app). Treat the guardrails as not available in the Claude app's chat or Cowork, where the rules of the records are instructions Claude follows.
 
 ## ❓ FAQ & Troubleshooting
 
@@ -336,7 +355,7 @@ Not yet. Claude writes every record from the plugin's templates.
 <details>
 <summary><b>Claude Code asked me to approve an edit to a record. What should I do?</b></summary>
 
-Read the reason in the prompt. It names the rule: a settled ADR changes only through a new ADR that supersedes it, and a debt item leaves the pending ledger only after a closed entry exists. Approve only if you asked for that edit, such as fixing a typo in a settled record. Otherwise decline: Claude is told to write the superseding record or the closed entry instead.
+The prompt shows the change, not the rule behind it. The rules are: a settled ADR changes only through a new ADR that supersedes it, and a debt item leaves the pending ledger only after a closed entry exists. Approve only if you asked for that edit, such as fixing a typo in a settled record. Otherwise decline and tell Claude to write the superseding ADR or the closed entry instead: a declined prompt tells Claude only that you rejected the edit.
 
 </details>
 
@@ -351,6 +370,19 @@ No. A refusal lists what is wrong, such as a date that differs from the file nam
 <summary><b>Can I turn the guardrails off?</b></summary>
 
 Start Claude Code with `--safe-mode` for one session, which turns off every customization, skills and plugins included. Or set `"disableAllHooks": true` in your settings, which stops the guardrails, the start-of-session reminder and your other hooks. To keep the checks and drop only the commit reminder, turn that option off in `/config`: everything else keeps working.
+
+Your organization can also turn them off for you with managed settings (`disableAllHooks`, `allowManagedHooksOnly`, or `allowManagedModsOnly`, which keeps only its own mods), and `--bare` starts Claude Code without them. In each case the skills keep working; only the checks stop.
+
+</details>
+
+<details>
+<summary><b>The guardrails don't seem to run. How do I check?</b></summary>
+
+1. Run `/plugin` in a session. The line under the tabs, such as `1 mod active · project-maintainer`, lists the mods that loaded. If the plugin isn't there, open **Errors**.
+2. Start Claude Code with `claude --debug` and search the log for `project-maintainer`. A loaded mod has a line that starts with `hooks module project-maintainer` and says `loaded`; a refused one says `not loaded:` and why; a check that failed says `hook skipped:`.
+3. Check where you run it. The guardrails run in every Claude Code session that loads the plugin, but not in a Desktop session on WSL, and not in a folder you haven't trusted yet.
+4. On a machine with managed settings, or signed in with a Team or Enterprise account, Claude Code's built-in guard runs first and can refuse a mod your organization doesn't allow. Ask your administrator.
+5. Installed the plugin both from the Claude app and from the marketplace? Claude Code runs only one copy of a mod with the same name: the marketplace copy. `/plugin` → **Errors** says which.
 
 </details>
 

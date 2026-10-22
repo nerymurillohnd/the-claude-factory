@@ -8,9 +8,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The
 
 ### Changed
 
+- **project-maintainer** 0.2.0 — **Breaking:** requires Claude Code v2.1.307 or later, which puts every guardrail prompt to you with no classifier able to answer it; a broken check now fails closed for the records only, and the README says what each piece does and prevents and how to check that the guardrails run.
 - **hook-engineering** 0.2.0 — **Breaking:** the Claude Code docs server is no longer bundled: add it once with `claude mcp add` or as a Claude app connector; the `hook-engineer` agent now uses it under any name, and without it the plugin reads the raw docs pages.
 - **typescript6-lsp-intelligence** 0.3.0 — the post-edit hook treats its strictest policy as defaults your config overrides (breaking: an explicit `false` is now yours), keeps the policy inside the hook with no environment of its own, passes each option only to a `tsc` that knows it, reports deprecated config options, and finds Bash changes in worktrees and files only a sibling `tsconfig.<name>.json` lists.
 - **typescript7-lsp-intelligence** 0.4.0 — the post-edit hook treats its strictest policy as defaults your config overrides (breaking: an explicit `false` is now yours), keeps the policy inside the hook with no environment of its own, passes each option only to a `tsc` that knows it, reports deprecated config options, and finds Bash changes in worktrees and files only a sibling `tsconfig.<name>.json` lists.
+- 🧭 The compatibility matrix lists mods: they run in every Claude Code session except a Desktop session on WSL, and the Claude app's plugin directory lists them for Claude Code only.
+- 🩺 The troubleshooting guide explains why a plugin from the Claude app can be missing in Claude Code, and the management guide shows how to keep synced plugins out, one at a time, per project or all at once.
 
 ### Fixed
 

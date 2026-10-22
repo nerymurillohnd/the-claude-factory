@@ -3,6 +3,7 @@ import {
   bashReason,
   commitSignals,
   fileInput,
+  mayWriteRecord,
   resultingText,
   withKeepNote,
 } from '../hooks/guard.ts'
@@ -39,6 +40,26 @@ test('the tool input is read into camelCase fields', () => {
   expect(fileInput({ command: 'ls' })).toBeNull()
   expect(fileInput('text')).toBeNull()
   expect(fileInput(null)).toBeNull()
+})
+
+test('a call may save a record when its path is in the records, is relative or cannot be read', () => {
+  expect(
+    mayWriteRecord({ file_path: '/work/app/.claude/maintainer/technical-debt/pending-debt.md' }),
+  ).toBe(true)
+  expect(mayWriteRecord({ file_path: '.claude/maintainer/decisions/ADR_2026-03-14_x.md' })).toBe(
+    true,
+  )
+  expect(mayWriteRecord({ file_path: '/work/app/README.md' })).toBe(false)
+  expect(mayWriteRecord({ file_path: 'C:\\work\\app\\README.md' })).toBe(false)
+  expect(mayWriteRecord({ file_path: '../decisions/ADR_2026-03-14_x.md' })).toBe(true)
+  expect(mayWriteRecord({ file_path: 'README.md' })).toBe(true)
+  expect(mayWriteRecord({ command: 'ls' })).toBe(false)
+  const unreadable = {
+    get file_path(): string {
+      throw new Error('boom')
+    },
+  }
+  expect(mayWriteRecord(unreadable)).toBe(true)
 })
 
 test('the saved file is computed from a Write or an Edit', () => {

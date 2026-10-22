@@ -89,6 +89,19 @@ Work through these in order:
 5. **Missing a tool it depends on?** Check the plugin README's **Requirements** table — some plugins need a CLI on your `PATH` or an API key.
 
 <details>
+<summary>A plugin from the Claude app doesn't appear in Claude Code</summary>
+
+Claude Code (v2.1.273+) syncs plugins from your claude.ai account once each time it starts, in the background, and loads them as `<plugin>@synced`. If one is missing:
+
+- **Signed in another way?** Plugins sync only in a session signed in with your claude.ai account. They don't sync when `ANTHROPIC_AUTH_TOKEN`, `CLAUDE_CODE_OAUTH_TOKEN` or an `apiKeyHelper` script supplies the credential, when `CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC` is set, in bare mode, with `--safe-mode`, or with a `--setting-sources` list that leaves out `user`.
+- **Signed in on an older version?** Run `/login` again; the sync starts the next time you start Claude Code.
+- **Turned on during this session?** It arrives at the next start. If the session says *Plugins changed*, run `/reload-plugins`.
+- **Also installed from the marketplace?** Claude Code loads your marketplace copy and reports the synced one as not loaded. Disable the marketplace copy to use the one from the app.
+- **Turned off for everything?** `"syncClaudeAiPlugins": false` in your settings, or in your organization's managed settings, stops every synced plugin.
+
+</details>
+
+<details>
 <summary>A hook blocks a tool call or prompt</summary>
 
 That's often the hook doing its job — the message explains what it caught. If you believe it's wrong, disable the plugin temporarily (`claude plugin disable <plugin>@the-claude-factory`) and [report a bug](https://github.com/nerymurillohnd/the-claude-factory/issues/new?template=bug_report.yml) with the message.

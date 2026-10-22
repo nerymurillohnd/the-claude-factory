@@ -6,6 +6,21 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-10-22
+
+### Changed
+
+- **Breaking:** requires Claude Code v2.1.307 or later. The guardrails now ask for your approval with the `{ decision: 'ask', reason }` answer, and drop the `decider` field that Claude Code v2.1.307 no longer reads. From that version, Claude Code puts every guardrail prompt to you and no classifier can answer it. On v2.1.304 to v2.1.306, auto mode's classifier could approve the edit for you, so update Claude Code first.
+- When the format check itself breaks, the record is no longer saved unchecked: Claude is told it was not saved and to try again.
+- The README's "What's inside" table now says what each piece does for you and what it prevents, with the four parts of the guardrails listed one by one, and where the hook and the mod run.
+- The FAQ explains how to check that the guardrails run (`/plugin`, `claude --debug`, where they run, your organization's built-in guard, two copies of the plugin) and every setting that turns them off while the skills keep working.
+
+### Fixed
+
+- The README lists everything the mod can reach (files, `git`, the conversation) and how to check it with `claude plugin validate`, and says the guardrails run in every Claude Code session that loads the plugin, `claude -p`, the Agent SDK, Remote Control and cloud sessions included, but not a Desktop session on WSL.
+- The README no longer says the approval prompt names the rule: for files in `.claude/`, Claude Code shows its own prompt with the change and no reason.
+- When the approval check itself broke, Claude Code asked you before every file edit in the project. It now asks only for the records, and never turns a refusal into a question.
+
 ## [0.1.0] - 2026-10-19
 
 ### Added
@@ -23,5 +38,6 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - Before a compaction, the summary is told to keep decisions, open items and record IDs. After a commit that looks like a decision, such as one that changes dependencies, a schema, CI or infrastructure, Claude gets one reminder to record it. The reminder can be turned off in the plugin's settings.
 - **Requires Claude Code v2.1.304 or later.**
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/project-maintainer--v0.1.0...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/project-maintainer--v0.2.0...HEAD
+[0.2.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/project-maintainer--v0.2.0
 [0.1.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/project-maintainer--v0.1.0
