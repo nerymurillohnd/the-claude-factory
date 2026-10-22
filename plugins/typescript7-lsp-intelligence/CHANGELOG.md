@@ -6,6 +6,17 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-10-22
+
+### Changed
+
+- Post-edit hook: the strictest policy now lives in the hook itself, and `hooks/tsconfig.strictest.json` is gone. The policy holds only checks that apply to any project, and nothing of your environment: a file with no `tsconfig.json` or `jsconfig.json` above it is now checked with your compiler's own defaults for `target` and `module`, instead of a fixed `es2022` and `nodenext` that made such a file CommonJS and rejected top-level `await`.
+- Post-edit hook: each strict option goes only to a `tsc` that knows it. With an older project compiler, such as TypeScript 5.4, `strictBuiltinIteratorReturn` (TypeScript 5.6) is left out instead of every check failing on an unknown option, and Claude is told which options were not applied. The skill's `run-fixtures.sh` applies the same policy the same way and names any option it leaves out.
+
+### Fixed
+
+- Post-edit hook: a file that only a `tsconfig.<name>.json` or `jsconfig.<name>.json` lists, beside the nearest `tsconfig.json` and not referenced by it (such as the `tsconfig.node.json` or `tsconfig.app.json` many templates create), is now checked with that config's program. Before, it was checked alone and reported as not part of any program. The hook tries those configs after the nearest config's references, in name order, and skips one `tsc` cannot read, so a program you reference still wins.
+
 ## [0.3.1] - 2026-10-20
 
 ### Changed
@@ -55,7 +66,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - `typescript7-lsp-intelligence` skill: navigates TypeScript and JavaScript with the language server; checks program membership and effective configuration before trusting a diagnostic; tells TypeScript 6 `tsserver` tooling apart from the TypeScript 7 native server; fixes compiler findings by narrowing `unknown` instead of using assertions, `any` or suppressions; and reports each check's status, the programs covered and what stayed unverified.
 - Optional controls: a bundled runner compiles known control files with the compiler you choose, in a temporary folder, without running them or installing anything.
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/typescript7-lsp-intelligence--v0.3.1...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/typescript7-lsp-intelligence--v0.4.0...HEAD
+[0.4.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/typescript7-lsp-intelligence--v0.4.0
 [0.3.1]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/typescript7-lsp-intelligence--v0.3.1
 [0.3.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/typescript7-lsp-intelligence--v0.3.0
 [0.2.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/typescript7-lsp-intelligence--v0.2.0
