@@ -101,8 +101,8 @@ Python:
 JavaScript modules (`tsc` checks the whole project):
 
 - `npx --yes @biomejs/biome@2.5.15 check --write --error-on-warnings <file>` - Run first, after every `.mjs` edit.
-- `npx --yes --package typescript@6.0.3 tsc -p scripts/tsconfig.json --noEmit` - Run after Biome. The config covers the `.mjs` files under `scripts/` and `plugins/`.
-- `node --test "scripts/tests/*.test.mjs"` - Run after the type check. Read the `skipped` count.
+- `npx --yes --package typescript@6.0.3 tsc -p scripts/tsconfig.json --noEmit` - Run after Biome, for a file under `scripts/`; `-p scripts/tsconfig.plugins.json` for a file under `plugins/`.
+- `node --test "scripts/tests/*.test.mjs"` - Run after the type check, and `node --test scripts/tests/<plugin>/*.test.mjs` when the file belongs to a plugin with Node tests. A skipped test means a missing tool: install it.
 - `node scripts/check-repo.mjs` - Run after the tests.
 
 Mods (code in `hooks/*.ts`, tests in `tests/*.test.ts`):
@@ -120,29 +120,22 @@ Shell:
 
 ### Before Every Push
 
-No git hook runs `.pre-commit-config.yaml`, and CI does not run `basedpyright`, the plugins' Python tests or the `by_path.sh` scripts: steps 12, 13 and 17 are local. CI installs `tsc` only so the TypeScript hook tests run; it does not type-check the `.mjs` files.
+Run `npm run gates` with the `.nvmrc` Node and after `npm ci` (ADR_2026-10-21_gates-run-from-one-script). `scripts/gates.mjs` is the one list of gates, the source of the commands below: it runs them in order, without a shell, stops at the first failure with that gate's exit code, and fails any gate whose tests skipped a case, since a skip means a tool is missing. Fix the cause and run it again from the start. No git hook runs it or `.pre-commit-config.yaml`.
 
-1. `git branch --show-current` - Confirm it is the intended branch, not a stale or merged one.
-2. `git status --short` - Confirm no path is staged that you did not change.
-3. `git log --format='%h %G? %s' origin/main..HEAD` - Confirm every commit shows `G`.
-4. `node --test "scripts/tests/*.test.mjs"` - Runs the script tests and the LSP hook tests. They need `shfmt`, `shellcheck`, `ruff` and `basedpyright` on `PATH`. Read the `skipped` count: a missing tool skips its cases.
-5. `node scripts/check-repo.mjs` - Checks the repository policy: manifests, required plugin files and sections, changelog entries, and the root `README.md` and `CHANGELOG.md`.
-6. `node scripts/catalog.mjs --check` - Fails when the generated blocks of the root `README.md` are out of date.
-7. `scripts/validate-claude.sh` - Runs `claude plugin validate --strict` on the marketplace and on every plugin, and `claude plugin test` on every plugin that ships mod tests.
-8. `node scripts/check-version-bump.mjs origin/main` - Fails when a plugin changed since `origin/main` without a version bump and a changelog entry. Skip it when `origin/main` does not exist.
-9. `npx --yes @biomejs/biome@2.5.15 check --error-on-warnings .` - Checks the format, lint and imports of the JavaScript and JSON files.
-10. `git ls-files -z '*.sh' | xargs -0 shellcheck -o all -S style -x -a -P SCRIPTDIR` - Lints every tracked shell script.
-11. `git ls-files -z '*.sh' | xargs -0 shfmt -d` - Shows the formatting drift of every tracked shell script.
-12. `python3 -m unittest discover -s scripts/tests/<plugin>` - Runs the Python tests of one plugin. Repeat for each test folder with `test_*.py` files.
-13. `scripts/tests/<plugin>/by_path.sh` - Runs the plugin scripts by path, as Claude Code does. Repeat for each plugin folder that ships one.
-14. `uvx ruff@0.17.1 check plugins scripts` - Lints the Python files.
-15. `uvx ruff@0.17.1 format --check plugins scripts` - Checks the formatting of the Python files.
-16. `git ls-files -z 'plugins/*.py' 'scripts/tests/*.py' | xargs -0 uvx --from mypy==1.20.2 mypy --strict` - Type-checks the Python files.
-17. `basedpyright --warnings` - Type-checks the project's Python files outside hidden folders (DEBT-003).
-18. `npx --yes --package typescript@6.0.3 tsc -p scripts/tsconfig.json --noEmit` - Type-checks the `.mjs` files under `scripts/` and `plugins/`.
-19. `npx --yes --package typescript@6.0.3 tsc -p plugins/<plugin>/tsconfig.json --noEmit` - Type-checks the mod of each plugin that ships one. Run it locally: it needs the declarations the engine writes, which CI does not have.
-20. `npx --yes markdownlint-cli2@0.23.3` - Lints the Markdown that people read.
-21. `SHELLCHECK_OPTS='-o all -S style -x -a -P SCRIPTDIR' actionlint` - Lints the workflows. Run it only when `.github/workflows/` changed.
+| Group | Runs in | Gates |
+| :-- | :-- | :-- |
+| (before anything) | local | the branch, `git status`, every commit since `origin/main` signed `G` |
+| `policy` | CI and local | the maintainer Node tests (`scripts/tests/*.test.mjs`), `check-repo.mjs`, `catalog.mjs --check`, `check-version-bump.mjs`, `tsc` on `scripts/`, ShellCheck and shfmt on `scripts/` |
+| `python` | CI and local | ruff check, ruff format, `mypy --strict` and basedpyright on `scripts/` |
+| `claude` | CI and local | `claude plugin validate --strict` on the marketplace and on every plugin |
+| `lint` | CI and local | Biome outside `plugins/`, markdownlint, actionlint |
+| `local` | local only | the plugins' behavior: the tests in `scripts/tests/<plugin>/` (Node, Python and `by_path.sh`), `claude plugin test` for every mod, the mods' `tsc`; and the analysis of plugin code: `tsc -p scripts/tsconfig.plugins.json`, Biome, ShellCheck, shfmt, ruff, mypy and basedpyright on `plugins/` |
+
+CI runs only the `policy`, `python`, `claude` and `lint` groups, one per job, with `npm run gates:ci -- --group <group>` (ADR_2026-10-21_ci-checks-maintainer-tooling-and-plugin-structure): what is ours and what no user's machine changes. The plugins' behavior depends on the interpreter and tools of whoever installs them, so it is proven here before the push and, for a plugin that has them, by its evals in `evals.yml`. `--ci` changes only three things: it leaves out the `local` group, the version-bump base comes from `--base`, and the run goes on after a failure to list every failing gate.
+
+The mods' `tsc` needs the declarations the engine writes into `plugins/<plugin>/.claude-plugin/types/`; after a fresh clone, load the plugin once in an interactive session (`claude --plugin-dir plugins/<plugin>`, then `/exit`).
+
+Report the run as `.claude/rules/WORKFLOW.md` → When Checking Quality says: gate, result and key output line.
 
 ### Command Rules
 

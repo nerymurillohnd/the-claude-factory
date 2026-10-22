@@ -14,10 +14,7 @@ Refs #
 
 ## Checklist
 
-- [ ] `node scripts/check-repo.mjs` passes
-- [ ] `scripts/validate-claude.sh` passes (`claude plugin validate --strict`)
-- [ ] `node --test "scripts/tests/*.test.mjs"` passes
-- [ ] `npx markdownlint-cli2` passes
+- [ ] `npm run gates` passes (every gate, the local-only ones included)
 - [ ] Version bumped with `bump-version.mjs` for every plugin whose shipped files changed
 - [ ] Plugin `CHANGELOG.md` and root `CHANGELOG.md` updated
 - [ ] README catalog regenerated (`node scripts/catalog.mjs`)
