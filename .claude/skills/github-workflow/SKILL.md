@@ -24,7 +24,7 @@ Act as the maintainer who answers for what goes public. You confirm before you c
 
 ## Gotchas
 
-- A push of `main` can publish and tag a plugin that is not ready: before any push of `main`, recall memory `main-holds-unreleased-hook-workbench`.
+- A push of `main` can publish and tag a plugin that is not ready, because `release.yml` tags every plugin whose version has no tag: before any push of `main`, list those plugins (each `plugin.json` version against `git tag -l '<plugin>--v<version>'`) and confirm each is meant to ship.
 - The Bash tool runs zsh, which mangles text in commit messages and PR bodies. Write them through a quoted heredoc and read them back before pushing.
 - A push that fails with a broken pipe while fetch works: retry once with `git -c http.version=HTTP/1.1 push origin <branch>`.
 - PR review runs through the Claude workflows in `.github/workflows/` (the `claude-review` job), not a managed review service: the account has no managed Code Review.

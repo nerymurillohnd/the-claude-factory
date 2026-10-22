@@ -22,7 +22,7 @@ Act as the release manager who answers for what users receive. You choose the bu
 
 ## Gotchas
 
-- `release.yml` tags every plugin in `marketplace.json` whose current version has no tag yet, not only the one you changed. A push of `main` can therefore publish a plugin that is not ready: recall memory `main-holds-unreleased-hook-workbench` and ask Nery before any push of `main`.
+- `release.yml` tags every plugin in `marketplace.json` whose current version has no tag yet, not only the one you changed. A push of `main` can therefore publish a plugin that is not ready: list the untagged plugins (each `plugin.json` version against `git tag -l '<plugin>--v<version>'`) and ask Nery before any push of `main`.
 - The release run starts only from a Validate run that succeeded on a `push` to `main`. If Validate failed, nothing is tagged; the next green push of `main` then tags everything still untagged, the earlier version included, so the fix's merge releases it without any manual run.
 - `bump-version.mjs` fails when `[Unreleased]` is empty, and it refuses `marketplace`: the marketplace has no version, so a marketplace-level change is one line under today's date in the root `CHANGELOG.md`.
 - The tag is `<plugin>--v<version>`. Print it with `node scripts/release-notes.mjs <plugin> --tag` instead of composing it, and the same script prints the notes the release will carry.
