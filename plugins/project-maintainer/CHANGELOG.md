@@ -17,6 +17,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ### Fixed
 
+- The README lists everything the mod can reach (files, `git`, the conversation) and how to check it with `claude plugin validate`, and says the guardrails run in every Claude Code session that loads the plugin, `claude -p`, the Agent SDK, Remote Control and cloud sessions included, but not a Desktop session on WSL.
 - The README no longer says the approval prompt names the rule: for files in `.claude/`, Claude Code shows its own prompt with the change and no reason.
 - When the approval check itself broke, Claude Code asked you before every file edit in the project. It now asks only for the records, and never turns a refusal into a question.
 
