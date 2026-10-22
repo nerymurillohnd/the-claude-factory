@@ -8,7 +8,7 @@
     "allow": [
       "Bash(node scripts/*)",
       "Bash(node --test *)",
-      "Bash(scripts/validate-claude.sh)",
+      "Bash(npm run gates)",
       "Bash(npx --yes markdownlint-cli2@*)",
       "Bash(claude plugin validate *)",
       "Bash(claude plugin details *)",

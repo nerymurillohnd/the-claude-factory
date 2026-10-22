@@ -22,16 +22,21 @@ env:
   RUFF_VERSION: "0.17.1"
   BIOME_VERSION: "2.5.15"
   MYPY_VERSION: "1.20.2"
+  BASEDPYRIGHT_VERSION: "1.40.2"
   UV_VERSION: "0.13.1"
-  # The tsc the TypeScript hook tests run; the hook uses the user's compiler, so CI installs one.
+  # tsc for the type check of scripts/, run through npx.
   TYPESCRIPT_VERSION: "6.0.3"
-  # shfmt release binary for the Bash hook tests; the checksum pins the exact build.
+  # shfmt release binary for the shell scripts under scripts/; the checksum pins the exact build.
   SHFMT_VERSION: "3.14.1"
   SHFMT_SHA256: "76e77641faa025814b77f153b29796b8e6fa2fca03e0c76a691608b86c7ea7bf"
 
+# Every job runs one group of scripts/gates.mjs, the commands the maintainers run locally with
+# npm run gates. CI checks the maintainer tooling under scripts/ and the plugins' structure; the
+# plugins' behavior and the analysis of their code run locally
+# (ADR_2026-10-21_ci-checks-maintainer-tooling-and-plugin-structure).
 jobs:
   policy:
-    name: Repository policy & script tests
+    name: Maintainer scripts & repository policy
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -40,49 +45,39 @@ jobs:
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version-file: .nvmrc
-      - name: Tools the LSP hook tests run (shellcheck, shfmt, tsc)
+      - name: Maintainer type packages (no install scripts)
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: shellcheck and shfmt
         run: |
           sudo apt-get install -y --no-install-recommends shellcheck
           curl -sSfL -o /usr/local/bin/shfmt "https://github.com/mvdan/sh/releases/download/v${SHFMT_VERSION}/shfmt_v${SHFMT_VERSION}_linux_amd64"
           echo "${SHFMT_SHA256}  /usr/local/bin/shfmt" | sha256sum --check --strict
           sudo chmod 755 /usr/local/bin/shfmt
-          npm install -g --ignore-scripts --no-audit --no-fund "typescript@${TYPESCRIPT_VERSION}"
           shellcheck --version | head -2
           shfmt --version
-          tsc --version
-      - name: Script tests
-        run: node --test "scripts/tests/*.test.mjs"
-      - name: Repository policy
-        run: node scripts/check-repo.mjs
-      - name: Catalog in sync
-        run: node scripts/catalog.mjs --check
-      - name: Version bumps
+      - name: Gates
         env:
           # The PR base on a pull request, the previous head on a push, empty on a manual run.
           BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
-        run: |
-          # An empty or all-zero (new branch) SHA is not a commit either, so one check covers all three.
-          if ! git cat-file -e "${BASE}^{commit}" 2>/dev/null; then
-            echo "No comparable base commit; skipping version-bump check."
-            exit 0
-          fi
-          node scripts/check-version-bump.mjs "${BASE}"
+        run: npm run gates:ci -- --group policy --base "${BASE}"
 
-  python-lint:
-    name: Python lint & types
+  python:
+    name: Maintainer Python lint & types
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
       - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
         with:
           version: ${{ env.UV_VERSION }}
           # No lockfile here: the tool versions are pinned in this workflow's env.
           cache-dependency-glob: .github/workflows/validate.yml
-      - name: ruff and mypy
-        run: |
-          uvx "ruff@${RUFF_VERSION}" check --output-format=github plugins scripts
-          uvx "ruff@${RUFF_VERSION}" format --check plugins scripts
-          git ls-files -z 'plugins/*.py' 'scripts/tests/*.py' | xargs -0 uvx --from "mypy==${MYPY_VERSION}" mypy --strict
+      - name: basedpyright
+        run: uv tool install "basedpyright==${BASEDPYRIGHT_VERSION}"
+      - name: Gates
+        run: npm run gates:ci -- --group python
 
   claude-validate:
     name: claude plugin validate
@@ -94,26 +89,21 @@ jobs:
           node-version-file: .nvmrc
       - name: Install Claude Code
         run: npm install --global "@anthropic-ai/claude-code@${CLAUDE_CODE_VERSION}"
-      - name: Validate marketplace and plugins
-        run: scripts/validate-claude.sh
+      - name: Gates
+        run: npm run gates:ci -- --group claude
 
   lint:
-    name: Markdown & workflow lint
+    name: Markdown, workflow & JSON lint
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version-file: .nvmrc
-      - name: Biome (format, lint, imports)
-        run: npx --yes "@biomejs/biome@${BIOME_VERSION}" ci --error-on-warnings .
-      - name: markdownlint
-        run: npx --yes "markdownlint-cli2@${MARKDOWNLINT_CLI2_VERSION}"
       - name: actionlint
-        env:
-          # Every shellcheck check, style included, as on the maintainers' machines.
-          SHELLCHECK_OPTS: -o all -S style -x -a -P SCRIPTDIR
         run: |
           curl -sSfL -o download-actionlint.bash "https://raw.githubusercontent.com/rhysd/actionlint/v${ACTIONLINT_VERSION}/scripts/download-actionlint.bash"
-          bash download-actionlint.bash "${ACTIONLINT_VERSION}"
-          ./actionlint -color
+          bash download-actionlint.bash "${ACTIONLINT_VERSION}" /usr/local/bin
+          rm download-actionlint.bash
+      - name: Gates
+        run: npm run gates:ci -- --group lint

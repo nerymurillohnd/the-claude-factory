@@ -54,6 +54,14 @@ repos:
         name: TypeScript type-check
         entry: npx --yes --package typescript@6.0.3 tsc -p scripts/tsconfig.json --noEmit
         language: unsupported
-        files: ^((scripts|plugins)/.*\.mjs|scripts/tsconfig\.json|tsconfig\.base\.json|package(-lock)?\.json)$
+        files: ^(scripts/.*\.[cm]?[jt]sx?|scripts/tsconfig\.json|tsconfig\.base\.json|package(-lock)?\.json)$
+        pass_filenames: false
+        require_serial: true
+
+      - id: tsc-noemit-plugins
+        name: TypeScript type-check (plugins' .mjs files)
+        entry: npx --yes --package typescript@6.0.3 tsc -p scripts/tsconfig.plugins.json --noEmit
+        language: unsupported
+        files: ^(plugins/.*\.[cm]?[jt]sx?|scripts/tsconfig(\.plugins)?\.json|tsconfig\.base\.json|package(-lock)?\.json)$
         pass_filenames: false
         require_serial: true
