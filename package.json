@@ -7,6 +7,10 @@
     "type": "git",
     "url": "git+https://github.com/nerymurillohnd/the-claude-factory.git"
   },
+  "scripts": {
+    "gates": "node scripts/gates.mjs",
+    "gates:ci": "node scripts/gates.mjs --ci"
+  },
   "devDependencies": {
     "@types/node": "26.6.5"
   }
