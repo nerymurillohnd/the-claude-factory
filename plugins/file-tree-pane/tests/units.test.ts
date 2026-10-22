@@ -2,7 +2,7 @@ import { expect, test } from 'claude-code/testing'
 
 import { parseCommand, splitWords, touchesOf } from '../hooks/activity.ts'
 import { readMessage, thumbOf } from '../hooks/body.ts'
-import { nextStop, parseDiff } from '../hooks/diff.ts'
+import { nextStop, parseDiff, unquotePath } from '../hooks/diff.ts'
 import { clip, formatAge, formatDate, formatSize } from '../hooks/format.ts'
 import {
   countsText,
@@ -28,15 +28,19 @@ import {
   nvimReuseSteps,
   openPlan,
   platformOf,
+  runsWhenOpened,
   vimEscape,
 } from '../hooks/launch.ts'
 import {
   BACKGROUNDS,
   contrast,
-  isLightTheme,
+  DARK,
   LIGHT,
   LIGHT_BACKGROUND,
+  lookOf,
+  paletteFor,
   parsePalette,
+  THEMED,
   TONES,
 } from '../hooks/palette.ts'
 import { filterDrivers, gitArgv } from '../hooks/register.tsx'
@@ -247,6 +251,39 @@ test('a diff reads into rows with line numbers, files and hunks', () => {
   expect(nextStop(parsed.hunks, 5, 1)).toBe(5)
 })
 
+test('a diff names files from their header lines, C-quoted names and spaces included', () => {
+  expect(unquotePath('"caf\\303\\251 \\"x\\".md"')).toBe('café "x".md')
+  expect(unquotePath('"tab\\there"')).toBe('tab\there')
+  expect(unquotePath('plain name.md')).toBe('plain name.md')
+  const parsed = parseDiff(
+    [
+      'diff --git "a/caf\\303\\251.md" "b/caf\\303\\251.md"',
+      'index 1..2 100644',
+      '--- "a/caf\\303\\251.md"',
+      '+++ "b/caf\\303\\251.md"',
+      '@@ -1 +1 @@',
+      '-a',
+      '+b',
+      'diff --git a/x b/y b/x b/y',
+      'new file mode 100644',
+      '--- /dev/null',
+      '+++ b/x b/y',
+      '@@ -0,0 +1 @@',
+      '+--- not a header',
+      'diff --git "a/caf\\303\\251.bin" "b/caf\\303\\251.bin"',
+      'Binary files a/x and b/x differ',
+    ].join('\n'),
+  )
+  expect(parsed.rows.filter((row) => row.kind === 'file').map((row) => row.text)).toEqual([
+    'café.md',
+    'x b/y',
+    'café.bin',
+  ])
+  expect(parsed.rows.some((row) => row.kind === 'add' && row.text === '--- not a header')).toBe(
+    true,
+  )
+})
+
 test('every light palette text color reaches WCAG AAA on every background it is drawn on', () => {
   const backgrounds = [LIGHT_BACKGROUND, LIGHT.selected, LIGHT.hovered]
   for (const tone of TONES.filter((t) => !BACKGROUNDS.includes(t))) {
@@ -254,8 +291,20 @@ test('every light palette text color reaches WCAG AAA on every background it is 
       expect(contrast(LIGHT[tone], background)).toBeGreaterThanOrEqual(7)
     }
   }
-  expect(isLightTheme('light-daltonized')).toBe(true)
-  expect(isLightTheme('dark')).toBe(false)
+})
+
+test('a theme whose background is unknown draws theme keys only, never a fixed hue', () => {
+  expect(lookOf('light-daltonized')).toBe('light')
+  expect(lookOf('dark-ansi')).toBe('dark')
+  expect(lookOf('auto')).toBe('themed')
+  expect(lookOf('custom:sunrise', 'light')).toBe('light')
+  expect(lookOf('custom:night', 'dark')).toBe('dark')
+  expect(lookOf('custom:lost', null)).toBe('themed')
+  for (const tone of TONES) {
+    expect(THEMED[tone].startsWith('#')).toBe(false)
+  }
+  expect(paletteFor('themed', { read: '#112233' }).read).toBe('#112233')
+  expect(paletteFor('dark', {})).toEqual(DARK)
 })
 
 test('the Palette setting lays colors over the theme and reports what it ignores', () => {
@@ -296,10 +345,22 @@ test('files open with the default app of each platform, never through a shell', 
     argv: ['xdg-open', '/w/a'],
   })
   const windows = defaultAppPlan({ ...mac, platform: 'windows' }, 'C:/w/a&b.txt')
-  expect(windows.argv.join(' ')).not.toContain('a&b')
-  expect(windows.env).toEqual({ FTP_FILE: 'C:/w/a&b.txt' })
+  expect(windows.kind === 'run' ? windows.argv.join(' ') : '').not.toContain('a&b')
+  expect(windows.kind === 'run' ? windows.env : undefined).toEqual({ FTP_FILE: 'C:/w/a&b.txt' })
   expect(platformOf('MINGW64_NT-10.0-19045')).toBe('windows')
   expect(platformOf('Darwin\n')).toBe('darwin')
+})
+
+test('a file its default app would run never opens there', () => {
+  expect(runsWhenOpened('/w/install.command')).toBe('command')
+  expect(runsWhenOpened('C:/w/SETUP.EXE')).toBe('exe')
+  expect(runsWhenOpened('/w/.bashrc')).toBeNull()
+  expect(runsWhenOpened('/w/notes.md')).toBeNull()
+  for (const platform of ['darwin', 'linux', 'windows'] as const) {
+    expect(defaultAppPlan({ ...mac, platform }, '/w/run.sh').kind).toBe('notice')
+  }
+  expect(openPlan(mac, '', '/w/build.tool').kind).toBe('notice')
+  expect(openPlan(mac, 'code {path}', '/w/build.tool').kind).toBe('run')
 })
 
 test('templates fill path and line as whole words', () => {
@@ -347,13 +408,23 @@ test('a terminal editor runs in tmux, in a herdr pane, or not at all', () => {
   })
   expect(diffToolPlan({ ...mac, isTmux: true }, 'hunk diff --', 'src/a.ts', '/w')).toEqual({
     kind: 'run',
-    argv: ['tmux', 'new-window', '-c', '/w', '--', 'hunk', 'diff', '--', 'src/a.ts'],
+    argv: ['tmux', 'new-window', '-c', '/w', '--', 'hunk', 'diff', '--', './src/a.ts'],
   })
   expect(diffToolPlan({ ...mac, platform: 'linux' }, 'lazygit -f', 'a', '/w')).toEqual({
     kind: 'run',
-    argv: ['xdg-terminal-exec', 'lazygit', '-f', 'a'],
+    argv: ['xdg-terminal-exec', 'lazygit', '-f', './a'],
     cwd: '/w',
   })
+  expect(diffToolPlan({ ...mac, platform: 'linux' }, 'lazygit -f', '.', '/w')).toMatchObject({
+    argv: ['xdg-terminal-exec', 'lazygit', '-f', '.'],
+  })
+})
+
+test('a diff tool never reads a file name as an option or an editor command', () => {
+  const tmux = diffToolPlan({ ...mac, isTmux: true }, 'nvim -c Gvdiffsplit', '+!touch pwned', '/w')
+  expect(tmux.kind === 'run' ? tmux.argv.at(-1) : '').toBe('./+!touch pwned')
+  const herdr = diffToolPlan({ ...mac, herdrPane: 'p3' }, 'hunk diff --', '-rf', '/w')
+  expect(herdr.kind === 'herdr' ? herdr.split : []).toContain('FTP_FILE=./-rf')
 })
 
 test('a running nvim takes the file in place', () => {
@@ -367,6 +438,15 @@ test('a running nvim takes the file in place', () => {
     '%4',
     '-l',
     ':edit +3 /w/a.ts',
+  ])
+  // Ctrl-\ Ctrl-N leaves a :terminal buffer too, where Escape would reach its shell.
+  expect(nvimReuseSteps('%4', '/w/a.ts', 3)?.[0]).toEqual([
+    'tmux',
+    'send-keys',
+    '-t',
+    '%4',
+    'C-\\',
+    'C-n',
   ])
 })
 
@@ -424,6 +504,8 @@ test('filter drivers are read from git config, and a name -c cannot blank stops 
     '-c',
     'core.fsmonitor=false',
     '-c',
+    'core.quotePath=false',
+    '-c',
     'filter.lfs.clean=',
     '-c',
     'filter.lfs.smudge=',
@@ -437,6 +519,8 @@ test('filter drivers are read from git config, and a name -c cannot blank stops 
     'git',
     '-c',
     'core.fsmonitor=false',
+    '-c',
+    'core.quotePath=false',
     'log',
     '--no-show-signature',
     '-1',

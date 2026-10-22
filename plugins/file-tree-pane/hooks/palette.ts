@@ -1,6 +1,8 @@
 // The pane's colors. On a dark theme they are the theme's own keys, so they follow the person's
 // theme and its switches; on a light theme they are a palette of their own whose every text
-// color reaches WCAG AAA (7:1) on the background, the selected row and the hovered row.
+// color reaches WCAG AAA (7:1) on the background, the selected row and the hovered row. Where the
+// theme's background is unknown (`auto`, which follows the terminal, or a custom theme without a
+// readable base) every color is a theme key, so none is a fixed hue drawn on the wrong background.
 
 export type Tone =
   | 'read'
@@ -71,9 +73,41 @@ export const LIGHT: Palette = {
   hovered: '#f2f4f8',
 }
 
-/** The theme names Claude Code's light themes carry (`light`, `light-daltonized`, `light-ansi`). */
-export const isLightTheme = (theme: string | undefined): boolean =>
-  theme !== undefined && /light/i.test(theme)
+/** Every tone a theme key, for a theme whose background the pane can't know. */
+export const THEMED: Palette = {
+  read: 'merged',
+  write: 'claude',
+  commit: 'success',
+  modified: 'warning',
+  added: 'success',
+  deleted: 'error',
+  untracked: 'success',
+  conflict: 'error',
+  muted: 'subtle',
+  accent: 'claude',
+  selected: 'selectionBg',
+  hovered: 'userMessageBackgroundHover',
+}
+
+export type Look = 'dark' | 'light' | 'themed'
+
+/**
+ * The palette a theme setting calls for: the built-in presets by name (`light`,
+ * `light-daltonized`, `light-ansi` and their dark twins), a custom theme (`custom:<slug>`) by the
+ * `base` its file names, and `auto` or a custom theme whose base can't be read by theme keys.
+ */
+export const lookOf = (theme: string | undefined, customBase: string | null = null): Look => {
+  if (theme === undefined) {
+    return 'dark'
+  }
+  if (theme.startsWith('custom:')) {
+    return customBase === null ? 'themed' : /light/i.test(customBase) ? 'light' : 'dark'
+  }
+  if (theme === 'auto') {
+    return 'themed'
+  }
+  return /light/i.test(theme) ? 'light' : 'dark'
+}
 
 const HEX = /^#([0-9a-f]{6})$/i
 
@@ -119,7 +153,7 @@ export const parsePalette = (text: string): { colors: Partial<Palette>; problems
 }
 
 /** The palette in force: the theme's, then the person's own colors over it. */
-export const paletteFor = (isLight: boolean, own: Partial<Palette>): Palette => ({
-  ...(isLight ? LIGHT : DARK),
+export const paletteFor = (look: Look, own: Partial<Palette>): Palette => ({
+  ...(look === 'light' ? LIGHT : look === 'themed' ? THEMED : DARK),
   ...own,
 })

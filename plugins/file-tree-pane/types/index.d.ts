@@ -19,8 +19,11 @@ declare module 'claude-code' {
       /** The selected row's path relative to the root, or null. */
       selected: string | null
       view: FileTreeView
-      /** What the right column shows; the Σ button switches it to sizes and back. */
-      column: FileTreeColumn
+      /**
+       * What the right column shows once the Σ button switched it, or null for the Right column
+       * setting; null too after `/clear`, so the setting applies again.
+       */
+      column: FileTreeColumn | null
       /** The search the person typed. */
       query: string
     }

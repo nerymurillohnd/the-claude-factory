@@ -1,6 +1,7 @@
 // How a file reaches another program: its default app, Quick Look, a terminal editor in a tmux
-// window or a herdr pane, or a diff tool. Every plan is an argv run without a shell; a file name
-// never passes through a command line a shell parses.
+// window or a herdr pane, or a diff tool. Every plan is an argv run without a shell, or keys typed
+// into nvim's own command line; a file name never reaches a command line a shell parses, and a
+// relative name never starts with a character a program reads as an option.
 
 import { splitWords } from './activity.ts'
 import { parentOf } from './tree.ts'
@@ -67,8 +68,79 @@ export const fillTemplate = (template: string, path: string, line: number): stri
   return hasPath ? filled : [...filled, path]
 }
 
-/** The default app for a file or folder. */
-export const defaultAppPlan = (host: Host, path: string): RunPlan => {
+// Types a default app runs rather than shows: apps, installers, shortcuts and scripts on macOS,
+// Windows and Linux desktops. A file in a repository is someone else's code until the person
+// says otherwise, so these open only through an Open with command.
+const RUNS_WHEN_OPENED = new Set([
+  'action',
+  'app',
+  'applescript',
+  'appimage',
+  'appref-ms',
+  'bash',
+  'bat',
+  'cmd',
+  'com',
+  'command',
+  'cpl',
+  'csh',
+  'desktop',
+  'exe',
+  'fileloc',
+  'fish',
+  'hta',
+  'jar',
+  'jnlp',
+  'js',
+  'jse',
+  'ksh',
+  'lnk',
+  'mpkg',
+  'msc',
+  'msi',
+  'msp',
+  'pif',
+  'pkg',
+  'pl',
+  'ps1',
+  'psm1',
+  'py',
+  'pyw',
+  'rb',
+  'reg',
+  'run',
+  'scpt',
+  'scptd',
+  'scr',
+  'sh',
+  'terminal',
+  'tool',
+  'url',
+  'vbe',
+  'vbs',
+  'workflow',
+  'wsf',
+  'wsh',
+  'zsh',
+])
+
+/** The extension of a file a default app would run, lowercased, or null. */
+export const runsWhenOpened = (path: string): string | null => {
+  const name = path.slice(path.lastIndexOf('/') + 1)
+  const dot = name.lastIndexOf('.')
+  const extension = dot <= 0 ? '' : name.slice(dot + 1).toLowerCase()
+  return RUNS_WHEN_OPENED.has(extension) ? extension : null
+}
+
+/** The default app for a file or folder; a notice for a file it would run. */
+export const defaultAppPlan = (host: Host, path: string): RunPlan | Notice => {
+  const runnable = runsWhenOpened(path)
+  if (runnable !== null) {
+    return {
+      kind: 'notice',
+      text: `A .${runnable} file would run in its default app, so it doesn't open there; set Open with to a command to open it.`,
+    }
+  }
   switch (host.platform) {
     case 'darwin':
       return { kind: 'run', argv: ['open', path] }
@@ -168,7 +240,8 @@ export const editPlan = (host: Host, setting: string, file: string, line: number
 
 /**
  * Diff with, when set: a terminal diff tool on the path, in a tmux window, a herdr pane, or on
- * Linux a new terminal window through `xdg-terminal-exec`.
+ * Linux a new terminal window through `xdg-terminal-exec`. The path is relative to `root` and goes
+ * as `./path`, so a name starting with `-` or `+` is never read as an option or an editor command.
  */
 export const diffToolPlan = (
   host: Host,
@@ -176,14 +249,15 @@ export const diffToolPlan = (
   path: string,
   root: string,
 ): LaunchPlan => {
-  const words = [...splitWords(setting.trim()), path]
+  const target = path === '' || path === '.' ? '.' : `./${path}`
+  const words = [...splitWords(setting.trim()), target]
   if (host.isTmux) {
     return { kind: 'run', argv: ['tmux', 'new-window', '-c', root, '--', ...words] }
   }
   if (host.herdrPane !== null && host.platform !== 'windows') {
     return {
       kind: 'herdr',
-      split: herdrSplit(host.herdrPane, root, path),
+      split: herdrSplit(host.herdrPane, root, target),
       command: `${setting.trim()} "$FTP_FILE"; exit`,
     }
   }
@@ -205,17 +279,18 @@ export const vimEscape = (path: string): string =>
   path.replace(/[\s\\%#|"'<>!$`*?[\]{}]/g, (c) => `\\${c}`)
 
 /**
- * The tmux steps that hand a file to a running nvim: leave insert mode, type `:edit +line`, and
- * bring its window forward. Typed with `send-keys -l`, so tmux takes the text literally. Null for
- * a name holding a control character, which typed keys could turn into commands: such a file
- * opens in a new window instead, where its name is an argument.
+ * The tmux steps that hand a file to a running nvim: go to Normal mode with Ctrl-\ Ctrl-N, which
+ * leaves every mode, a `:terminal` buffer's included (Escape would reach the shell in it), type
+ * `:edit +line`, and bring its window forward. Typed with `send-keys -l`, so tmux takes the text
+ * literally. Null for a name holding a control character, which typed keys could turn into
+ * commands: such a file opens in a new window instead, where its name is an argument.
  */
 export const nvimReuseSteps = (pane: string, file: string, line: number): string[][] | null => {
   if (hasControlCharacter(file)) {
     return null
   }
   return [
-    ['tmux', 'send-keys', '-t', pane, 'Escape'],
+    ['tmux', 'send-keys', '-t', pane, 'C-\\', 'C-n'],
     ['tmux', 'send-keys', '-t', pane, '-l', `:edit +${line} ${vimEscape(file)}`],
     ['tmux', 'send-keys', '-t', pane, 'Enter'],
     ['tmux', 'select-window', '-t', pane],

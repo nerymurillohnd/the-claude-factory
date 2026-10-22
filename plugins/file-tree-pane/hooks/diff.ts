@@ -20,6 +20,64 @@ export type ParsedDiff = {
 
 const HUNK = /^@@ -(\d+)(?:,\d+)? \+(\d+)(?:,\d+)? @@ ?(.*)$/
 
+const ESCAPES: Record<string, number> = { a: 7, b: 8, t: 9, n: 10, v: 11, f: 12, r: 13 }
+
+// UTF-8 bytes to text, without TextDecoder, which a hooks module may not have.
+const fromUtf8 = (bytes: readonly number[]): string => {
+  let out = ''
+  let i = 0
+  while (i < bytes.length) {
+    const lead = bytes[i] ?? 0
+    const size = lead >= 0xf0 ? 4 : lead >= 0xe0 ? 3 : lead >= 0xc0 ? 2 : 1
+    let code = size === 1 ? lead : lead & (0xff >> (size + 1))
+    for (let k = 1; k < size; k += 1) {
+      code = (code << 6) | ((bytes[i + k] ?? 0) & 0x3f)
+    }
+    out += String.fromCodePoint(code)
+    i += size
+  }
+  return out
+}
+
+/**
+ * A path as git prints it in a diff header: as is, or C-quoted (`"caf\303\251"`) when it holds
+ * a quote, a backslash, a control character or, under the default `core.quotePath`, a byte past
+ * ASCII. Octal escapes are UTF-8 bytes.
+ */
+export const unquotePath = (text: string): string => {
+  if (!(text.length >= 2 && text.startsWith('"') && text.endsWith('"'))) {
+    return text
+  }
+  const body = text.slice(1, -1)
+  let out = ''
+  let bytes: number[] = []
+  for (let i = 0; i < body.length; i += 1) {
+    const char = body[i] ?? ''
+    const octal = char === '\\' ? /^[0-3][0-7]{2}/.exec(body.slice(i + 1, i + 4))?.[0] : undefined
+    if (octal !== undefined) {
+      bytes.push(Number.parseInt(octal, 8))
+      i += 3
+      continue
+    }
+    out += fromUtf8(bytes)
+    bytes = []
+    if (char === '\\') {
+      const next = body[i + 1] ?? ''
+      out += next in ESCAPES ? String.fromCharCode(ESCAPES[next] ?? 0) : next
+      i += 1
+    } else {
+      out += char
+    }
+  }
+  return out + fromUtf8(bytes)
+}
+
+// The name in a `--- a/x` or `+++ b/x` header line, or null for /dev/null.
+const headerName = (line: string): string | null => {
+  const name = unquotePath(line.slice(4))
+  return name === '/dev/null' ? null : name.replace(/^[ab]\//, '')
+}
+
 /** Parses `git diff` output, any number of files. */
 export const parseDiff = (text: string): ParsedDiff => {
   const rows: DiffRow[] = []
@@ -28,12 +86,26 @@ export const parseDiff = (text: string): ParsedDiff => {
   let oldLine = 0
   let newLine = 0
   let isInHunk = false
+  // The file heading's row, named from `diff --git` and renamed from the `---`/`+++` lines, which
+  // carry the name alone (the `diff --git` line can't tell `a/x b/y` apart when names hold spaces).
+  let heading: DiffRow | null = null
   for (const line of text.split('\n')) {
     if (line.startsWith('diff --git ')) {
-      const match = / b\/(.*)$/.exec(line)
+      const rest = line.slice('diff --git '.length)
+      const quoted = /"((?:[^"\\]|\\.)*)"$/.exec(rest)?.[0]
+      const name =
+        quoted === undefined ? (/ b\/(.*)$/.exec(rest)?.[1] ?? rest) : headerName(`+++ ${quoted}`)
       files.push(rows.length)
-      rows.push({ kind: 'file', text: match?.[1] ?? line.slice('diff --git '.length), line: null })
+      heading = { kind: 'file', text: name ?? rest, line: null }
+      rows.push(heading)
       isInHunk = false
+      continue
+    }
+    if (!isInHunk && heading !== null && (line.startsWith('--- ') || line.startsWith('+++ '))) {
+      const name = headerName(line)
+      if (name !== null) {
+        heading.text = name
+      }
       continue
     }
     const hunk = HUNK.exec(line)

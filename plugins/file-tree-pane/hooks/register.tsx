@@ -35,8 +35,8 @@ import {
   platformOf,
   quickLookPlan,
 } from './launch.ts'
-import type { Palette } from './palette.ts'
-import { isLightTheme, paletteFor, parsePalette } from './palette.ts'
+import type { Look, Palette } from './palette.ts'
+import { lookOf, paletteFor, parsePalette } from './palette.ts'
 import { searchPaths } from './search.ts'
 import type { Entry, Row } from './tree.ts'
 import {
@@ -87,6 +87,9 @@ const UNTRACKED_COUNTED = 200
 const SEARCH_INDEX_CAP = 100_000
 const SIZE_WORKERS = 4
 const DIFF_UNTRACKED_CAP = 50
+const INDEX_MS = 30_000
+// An untracked file past this size gets no line count: wc would read all of it every refresh.
+const COUNTED_BYTES = 64 * 1024 * 1024
 // git status without the optional index lock, so a background refresh never blocks a git
 // command the person or Claude runs at the same moment.
 const GIT_ENV: Record<string, string> = Object.fromEntries([['GIT_OPTIONAL_LOCKS', '0']])
@@ -95,7 +98,7 @@ const GIT_ENV: Record<string, string> = Object.fromEntries([['GIT_OPTIONAL_LOCKS
 // process filter on status and diff, a textconv or an external diff on diff, a gpg program on
 // log. The tree runs git on its own, in folders the person may not have vetted, so none of them
 // run: each filter driver the config names is blanked, and the rest are turned off by flag.
-// Claude Code already turns repository hooks off.
+// Claude Code already turns repository hooks off. Names print as they are, not C-quoted.
 export const gitArgv = (args: readonly string[], drivers: readonly string[] = []): string[] => {
   const [sub, ...rest] = args
   const safe =
@@ -114,7 +117,7 @@ export const gitArgv = (args: readonly string[], drivers: readonly string[] = []
     '-c',
     `filter.${name}.required=false`,
   ])
-  return ['git', '-c', 'core.fsmonitor=false', ...blanked, ...safe]
+  return ['git', '-c', 'core.fsmonitor=false', '-c', 'core.quotePath=false', ...blanked, ...safe]
 }
 
 /**
@@ -149,7 +152,7 @@ const pinnedAtom = atom({ plugin: 'file-tree-pane', key: 'isPinned' } as const, 
 const expandedAtom = atom({ plugin: 'file-tree-pane', key: 'expanded' } as const, [])
 const selectedAtom = atom({ plugin: 'file-tree-pane', key: 'selected' } as const, null)
 const viewAtom = atom({ plugin: 'file-tree-pane', key: 'view' } as const, { kind: 'tree' })
-const columnAtom = atom({ plugin: 'file-tree-pane', key: 'column' } as const, 'date')
+const columnAtom = atom({ plugin: 'file-tree-pane', key: 'column' } as const, null)
 const queryAtom = atom({ plugin: 'file-tree-pane', key: 'query' } as const, '')
 
 const pick = <T extends string>(value: unknown, allowed: readonly T[], fallback: T): T =>
@@ -375,7 +378,7 @@ let cwd = ''
 let surfaceKind = 'terminal'
 let host: Host = { platform: 'linux', isTmux: false, herdrPane: null, editor: 'vi' }
 let glyphs: Glyphs = settings.glyphs === 'nerd' ? 'nerd' : 'plain'
-let isLight = false
+let look: Look = 'dark'
 let isPointerOff = false
 let listingsRoot = ''
 const listings = new Map<string, Entry[]>()
@@ -383,13 +386,19 @@ let repo: 'unknown' | 'repo' | 'none' = 'unknown'
 let gitPrefix = ''
 let drivers: string[] = []
 let git: GitSnapshot | null = null
+let isRefreshing = false
+let isRefreshAgain = false
+// Line counts of untracked files, kept while the file's size and modification time stay put.
+const lineCounts = new Map<string, { stamp: string; lines: number }>()
 const sizes = new Map<string, number>()
 const sizeQueue: string[] = []
 let sizeWorkers = 0
 const activity = new Map<string, { kind: ActivityKind; until: number }>()
 let footer: Footer | null = null
 let index: string[] | null = null
-let isIndexing = false
+let indexAt = 0
+let indexing: Promise<void> | null = null
+let isIndexCut = false
 let matches: string[] = []
 let body = { rows: 0, columns: 0 }
 let listOffset = 0
@@ -402,7 +411,7 @@ let expiryTimer: { cancel: () => void } | null = null
 let isQuickLookOpen = false
 let lastClicked: Row | null = null
 
-const palette = (): Palette => paletteFor(isLight, own.colors)
+const palette = (): Palette => paletteFor(look, own.colors)
 
 // Bookkeeping never breaks what it observes: a failure here is dropped.
 const quietly = async <T,>(work: () => Promise<T>): Promise<T | undefined> => {
@@ -444,14 +453,22 @@ const loadDir = async ($: EngineInterface, root: string, rel: string): Promise<v
 const ensureRoot = async ($: EngineInterface): Promise<string> => {
   const root = await rootOf($)
   if (root !== listingsRoot) {
+    // Everything below names paths relative to the old root: none of it holds for the new one.
     listingsRoot = root
     listings.clear()
     sizes.clear()
+    sizeQueue.length = 0
+    lineCounts.clear()
+    activity.clear()
     repo = 'unknown'
     git = null
     index = null
     matches = []
     listOffset = 0
+    preview = null
+    diff = null
+    lastClicked = null
+    await update($, viewAtom, (): FileTreeView => ({ kind: 'tree' }))
   }
   return root
 }
@@ -504,12 +521,15 @@ const refreshGit = async ($: EngineInterface, root: string): Promise<void> => {
     return
   }
   drivers = found
+  // A submodule counts as changed when its commit moved; its own working tree is not read, so
+  // git starts no process inside it with that submodule's config.
   const status = await runGit($, root, [
     'status',
     '--porcelain=v2',
     '--branch',
     '-z',
     '--untracked-files=all',
+    '--ignore-submodules=dirty',
     '--',
     '.',
   ])
@@ -522,6 +542,7 @@ const refreshGit = async ($: EngineInterface, root: string): Promise<void> => {
     '--relative',
     '--numstat',
     '-z',
+    '--ignore-submodules=dirty',
     head.oid === null ? EMPTY_TREE : 'HEAD',
   ])
   for (const [path, counts] of parseNumstat(numstat ?? '')) {
@@ -530,16 +551,39 @@ const refreshGit = async ($: EngineInterface, root: string): Promise<void> => {
       files.set(path, { ...file, ...counts })
     }
   }
-  const untracked = [...files].filter(([, file]) => file.code === 'untracked').map(([path]) => path)
-  if (untracked.length > 0) {
+  const untracked = [...files]
+    .filter(([, file]) => file.code === 'untracked')
+    .map(([path]) => path)
+    .slice(0, UNTRACKED_COUNTED)
+  const stamps = new Map<string, string>()
+  const toCount: string[] = []
+  for (const path of untracked) {
+    const stat = await quietly(() => $.fs.stat(absoluteOf(path, root)))
+    if (stat === undefined || stat.kind !== 'file' || stat.size > COUNTED_BYTES) {
+      continue
+    }
+    const stamp = `${stat.size}:${stat.mtimeMs}`
+    stamps.set(path, stamp)
+    if (lineCounts.get(path)?.stamp !== stamp) {
+      toCount.push(path)
+    }
+  }
+  if (toCount.length > 0) {
     const counted = await quietly(() =>
-      $.process.run(['wc', '-l', '--', ...untracked.slice(0, UNTRACKED_COUNTED)], { cwd: root }),
+      $.process.run(['wc', '-l', '--', ...toCount], { cwd: root }),
     )
     for (const [path, lines] of parseWc(counted?.stdout ?? '')) {
-      const file = files.get(path)
-      if (file !== undefined) {
-        files.set(path, { ...file, added: lines, removed: 0 })
+      const stamp = stamps.get(path)
+      if (stamp !== undefined) {
+        lineCounts.set(path, { stamp, lines })
       }
+    }
+  }
+  for (const path of untracked) {
+    const counted = lineCounts.get(path)
+    const file = files.get(path)
+    if (counted !== undefined && counted.stamp === stamps.get(path) && file !== undefined) {
+      files.set(path, { ...file, added: counted.lines, removed: 0 })
     }
   }
   git = { head, files, folders: rollUp(files) }
@@ -547,7 +591,25 @@ const refreshGit = async ($: EngineInterface, root: string): Promise<void> => {
 
 // ---------------------------------------------------------------- refresh
 
+// One refresh at a time: the timer does not wait for the last one, and git or wc on a large
+// folder can take longer than its period. A refresh asked for meanwhile runs once after it.
 const refresh = async ($: EngineInterface): Promise<void> => {
+  if (isRefreshing) {
+    isRefreshAgain = true
+    return
+  }
+  isRefreshing = true
+  try {
+    do {
+      isRefreshAgain = false
+      await refreshOnce($)
+    } while (isRefreshAgain)
+  } finally {
+    isRefreshing = false
+  }
+}
+
+const refreshOnce = async ($: EngineInterface): Promise<void> => {
   const root = await ensureRoot($)
   const expanded = await read($, expandedAtom)
   await quietly(() => loadDir($, root, ''))
@@ -555,6 +617,10 @@ const refresh = async ($: EngineInterface): Promise<void> => {
     if (!isIgnored(dir, ignore)) {
       await quietly(() => loadDir($, root, dir))
     }
+  }
+  // A `git init` the person ran shows as a .git in the folder: look for the repository again.
+  if (repo === 'none' && (listings.get('') ?? []).some((entry) => entry.name === '.git')) {
+    repo = 'unknown'
   }
   await quietly(() => refreshGit($, root))
   listOffset = clampOffset(listOffset, (await rowsNow($)).length, room())
@@ -597,8 +663,12 @@ const duBytes = async ($: EngineInterface, abs: string): Promise<number | null> 
   return total
 }
 
+/** The right column in force: the Σ button's choice, else the Right column setting. */
+const columnNow = async ($: EngineInterface): Promise<FileTreeColumn> =>
+  (await read($, columnAtom)) ?? settings.rightColumn
+
 const queueSizes = async ($: EngineInterface): Promise<void> => {
-  if ((await read($, columnAtom)) !== 'size' || (await read($, viewAtom)).kind !== 'tree') {
+  if ((await columnNow($)) !== 'size' || (await read($, viewAtom)).kind !== 'tree') {
     return
   }
   const rows = await rowsNow($)
@@ -615,7 +685,8 @@ const queueSizes = async ($: EngineInterface): Promise<void> => {
         while (sizeQueue.length > 0) {
           const path = sizeQueue.shift() ?? ''
           const bytes = await duBytes($, absoluteOf(path, root))
-          if (bytes !== null) {
+          // A cd while du ran: its result names a folder of the old root.
+          if (bytes !== null && root === listingsRoot) {
             sizes.set(path, bytes)
             redraw($)
           }
@@ -823,7 +894,18 @@ const openDiff = async ($: EngineInterface, path: string, isDir: boolean): Promi
   const parts: string[] = []
   const tracked = await quietly(() =>
     $.process.run(
-      gitArgv(['diff', '--no-color', '--relative', base, '--', path === '' ? '.' : path], drivers),
+      gitArgv(
+        [
+          'diff',
+          '--no-color',
+          '--relative',
+          '--ignore-submodules=dirty',
+          base,
+          '--',
+          path === '' ? '.' : path,
+        ],
+        drivers,
+      ),
       {
         cwd: root,
         env: GIT_ENV,
@@ -864,6 +946,8 @@ const openDiff = async ($: EngineInterface, path: string, isDir: boolean): Promi
 
 const backToTree = async ($: EngineInterface): Promise<void> => {
   await update($, viewAtom, (): FileTreeView => ({ kind: 'tree' }))
+  preview = null
+  diff = null
   redraw($)
 }
 
@@ -893,37 +977,42 @@ const edit = async ($: EngineInterface, path: string, line: number): Promise<voi
 const isChanged = (row: Row): boolean =>
   row.kind === 'dir' ? (git?.folders.has(row.path) ?? false) : git?.files.has(row.path) === true
 
-const scrollView = (by: number): void => {
-  if (diff !== null) {
+/** Scrolls the preview or the diff, whichever the view shows. */
+const scrollView = (kind: 'preview' | 'diff', by: number): void => {
+  if (kind === 'diff' && diff !== null) {
     diffOffset = clampOffset(diffOffset + by, diff.parsed.rows.length, room())
-  } else if (preview !== null) {
+  } else if (kind === 'preview' && preview !== null) {
     previewOffset = clampOffset(previewOffset + by, preview.lines.length, room())
   }
 }
 
-const actInView = async ($: EngineInterface, view: FileTreeView, key: string): Promise<void> => {
+const actInView = async (
+  $: EngineInterface,
+  view: Exclude<FileTreeView, { kind: 'tree' }>,
+  key: string,
+): Promise<void> => {
   const page = Math.max(1, room() - 1)
   switch (key) {
     case 'down':
-      scrollView(1)
+      scrollView(view.kind, 1)
       break
     case 'up':
-      scrollView(-1)
+      scrollView(view.kind, -1)
       break
     case 'f':
     case 'pagedown':
     case 'space':
-      scrollView(page)
+      scrollView(view.kind, page)
       break
     case 'b':
     case 'pageup':
-      scrollView(-page)
+      scrollView(view.kind, -page)
       break
     case 'home':
-      scrollView(-Number.MAX_SAFE_INTEGER)
+      scrollView(view.kind, -Number.MAX_SAFE_INTEGER)
       break
     case 'end':
-      scrollView(Number.MAX_SAFE_INTEGER)
+      scrollView(view.kind, Number.MAX_SAFE_INTEGER)
       break
     case 'j':
     case 'k': {
@@ -937,7 +1026,7 @@ const actInView = async ($: EngineInterface, view: FileTreeView, key: string): P
           room(),
         )
       } else {
-        scrollView(direction)
+        scrollView(view.kind, direction)
       }
       break
     }
@@ -983,7 +1072,11 @@ const actInView = async ($: EngineInterface, view: FileTreeView, key: string): P
   redraw($)
 }
 
-const act = async ($: EngineInterface, key: string): Promise<void> => {
+// The names `onKey` gives a few keys; a typed space may also arrive as the character itself.
+const KEY_NAMES: Record<string, string> = { ' ': 'space', enter: 'return', pgdown: 'pagedown' }
+
+const act = async ($: EngineInterface, pressed: string): Promise<void> => {
+  const key = KEY_NAMES[pressed] ?? pressed
   const view = await read($, viewAtom)
   if (view.kind !== 'tree') {
     await actInView($, view, key)
@@ -1105,17 +1198,23 @@ const click = async ($: EngineInterface, at: number, isDouble: boolean): Promise
 // ---------------------------------------------------------------- search
 
 const buildIndex = async ($: EngineInterface): Promise<void> => {
-  if (index !== null || isIndexing) {
-    return
-  }
-  isIndexing = true
   const root = await rootOf($)
   const paths: string[] = []
+  let isCut = false
   if (repo === 'repo') {
     const listed = await quietly(() =>
-      runGit($, root, ['ls-files', '-z', '--cached', '--others', '--exclude-standard']),
+      $.process.run(
+        gitArgv(['ls-files', '-z', '--cached', '--others', '--exclude-standard'], drivers),
+        { cwd: root, env: GIT_ENV },
+      ),
     )
-    for (const path of (listed ?? '').split('\0')) {
+    const names = (listed?.exitCode === 0 ? listed.stdout : '').split('\0')
+    if (listed?.isStdoutTruncated === true) {
+      // The output stops mid-name past 4 MiB: drop the partial last one.
+      names.pop()
+      isCut = true
+    }
+    for (const path of names) {
       if (path !== '' && !isIgnored(path, ignore)) {
         paths.push(path)
       }
@@ -1136,17 +1235,39 @@ const buildIndex = async ($: EngineInterface): Promise<void> => {
         }
       }
     }
+    isCut = stack.length > 0
   }
-  index = paths
-  isIndexing = false
+  if (root === (await rootOf($))) {
+    index = paths
+    indexAt = await $.clock.now()
+    isIndexCut = isCut
+  }
+}
+
+// One build at a time, which every keystroke typed meanwhile waits for. Claude's writes drop the
+// index; past INDEX_MS it is built again, so files made by other programs become searchable.
+const ensureIndex = async ($: EngineInterface): Promise<void> => {
+  if (index !== null && (await $.clock.now()) - indexAt > INDEX_MS) {
+    index = null
+  }
+  if (index !== null) {
+    return
+  }
+  indexing ??= buildIndex($).finally(() => {
+    indexing = null
+  })
+  await indexing
 }
 
 const search = async ($: EngineInterface, query: string, isSubmit: boolean): Promise<void> => {
   await update($, queryAtom, () => query)
-  await buildIndex($)
-  matches = searchPaths(index ?? [], query, 50)
-  if (isSubmit && matches[0] !== undefined) {
-    await reveal($, matches[0])
+  redraw($)
+  await ensureIndex($)
+  // What the field holds now, which may be newer than this keystroke if the index was building.
+  matches = searchPaths(index ?? [], await read($, queryAtom), 50)
+  const first = isSubmit ? searchPaths(index ?? [], query, 1)[0] : undefined
+  if (first !== undefined) {
+    await reveal($, first)
     await quietly(() =>
       $.ui.focus({ requestId: PANE, key: settings.shortcutRow ? 'nav-j' : 'body' }),
     )
@@ -1335,9 +1456,34 @@ const terminalStartedAt = async ($: EngineInterface): Promise<number | null> => 
   return startedAt
 }
 
+// A custom theme's `base`, from its file in the Claude config folder; null when unreadable.
+const customBase = async ($: EngineInterface, theme: string): Promise<string | null> => {
+  const slug = theme.slice('custom:'.length)
+  if (!/^[\w.-]+$/.test(slug) || slug.startsWith('.')) {
+    return null
+  }
+  const configDir =
+    (await $.env.get('CLAUDE_CONFIG_DIR')) ??
+    `${normalizePath((await $.env.get('HOME')) ?? (await $.env.get('USERPROFILE')) ?? '')}/.claude`
+  const content = await quietly(() => $.fs.read(`${normalizePath(configDir)}/themes/${slug}.json`))
+  if (content === undefined) {
+    return null
+  }
+  try {
+    const parsed: unknown = JSON.parse(content)
+    const base =
+      typeof parsed === 'object' && parsed !== null && 'base' in parsed ? parsed.base : undefined
+    // A theme without `base` starts from dark, as the custom theme reference says.
+    return typeof base === 'string' ? base : 'dark'
+  } catch {
+    return null
+  }
+}
+
 const detectLook = async ($: EngineInterface): Promise<void> => {
-  const theme = (await quietly(() => $.config.list()))?.find((row) => row.key === 'theme')?.value
-  isLight = isLightTheme(typeof theme === 'string' ? theme : undefined)
+  const value = (await quietly(() => $.config.list()))?.find((row) => row.key === 'theme')?.value
+  const theme = typeof value === 'string' ? value : undefined
+  look = lookOf(theme, theme?.startsWith('custom:') === true ? await customBase($, theme) : null)
   if (settings.glyphs === 'auto') {
     const ssh = (await $.env.get('SSH_CONNECTION')) ?? (await $.env.get('SSH_TTY'))
     const fonts = surfaceKind === 'terminal' && ssh === undefined ? await nerdFontTimes($) : []
@@ -1382,10 +1528,6 @@ export const register: Register = (on: On, options: PluginOptions): void => {
       }),
     )
     await quietly(() => update($, viewAtom, (): FileTreeView => ({ kind: 'tree' })))
-    const column = await quietly(() => read($, columnAtom))
-    if (column === 'date' && settings.rightColumn !== 'date') {
-      await quietly(() => update($, columnAtom, () => settings.rightColumn))
-    }
     $.clock.after(0, () => {
       void quietly(async () => {
         await detectHost($)
@@ -1467,8 +1609,22 @@ export const register: Register = (on: On, options: PluginOptions): void => {
     if (touches.ops.length > 0) {
       await quietly(() => setFooter($, `⟳ ${touches.ops.map(opLabel).join(' · ')}`, 'running'))
     }
-    // Always awaited: returning while next(e) is pending would abort the call.
-    const result = await next(e)
+    // Always awaited: returning while next(e) is pending would abort the call. A call that
+    // throws (an interrupt) ends its marks and its footer before the error goes on.
+    let result: Awaited<ReturnType<typeof next>>
+    try {
+      result = await next(e)
+    } catch (error) {
+      await quietly(async () => {
+        if (touches.reads.length > 0) {
+          await markActivity($, touches.reads, 'read', READ_MS)
+        }
+        if (touches.ops.length > 0) {
+          await setFooter($, `✗ ${touches.ops.map(opLabel).join(' · ')} stopped`, 'error')
+        }
+      })
+      throw error
+    }
     if (!hasWork && String(e.tool) !== 'Bash') {
       return result
     }
@@ -1531,8 +1687,10 @@ export const register: Register = (on: On, options: PluginOptions): void => {
     ) {
       return next(e)
     }
-    const isDir = listings.has(selected)
-    const note = selectionNote(isDir, selected, absoluteOf(selected, root))
+    const row = await quietly(() => selectedRow($))
+    const kind =
+      row?.kind ?? (await quietly(() => $.fs.stat(absoluteOf(selected, root))))?.kind ?? 'file'
+    const note = selectionNote(kind === 'dir', selected, absoluteOf(selected, root))
     return next({ ...e, context: [...(e.context ?? []), note] })
   }).catch((_$, e, next) => next(e))
 
@@ -1543,12 +1701,12 @@ export const register: Register = (on: On, options: PluginOptions): void => {
         listOffset = clampOffset(listOffset + e.by, (await rowsNow($)).length, room())
         void queueSizes($)
       } else {
-        scrollView(e.by)
+        scrollView(view.kind, e.by)
       }
       redraw($)
     }
     return next({ ...e, offset: 1 })
-  })
+  }).catch((_$, e, next) => next({ ...e, offset: 1 }))
 
   on('ui.message', async ($, e, next) => {
     const message: BodyMessage | null = readMessage(e.data)
@@ -1576,7 +1734,9 @@ export const register: Register = (on: On, options: PluginOptions): void => {
         const total =
           view.kind === 'tree'
             ? (await rowsNow($)).length
-            : (diff?.parsed.rows.length ?? preview?.lines.length ?? 0)
+            : view.kind === 'diff'
+              ? (diff?.parsed.rows.length ?? 0)
+              : (preview?.lines.length ?? 0)
         const offset = Math.round(message.ratio * maxOffset(total, room()))
         if (view.kind === 'tree') {
           listOffset = offset
@@ -1601,7 +1761,7 @@ export const register: Register = (on: On, options: PluginOptions): void => {
     const root = await rootOf($)
     const view = await read($, viewAtom)
     const selected = await read($, selectedAtom)
-    const column = await read($, columnAtom)
+    const column = await columnNow($)
     const query = await read($, queryAtom)
     const now = await $.clock.now()
     const columns = Math.max(10, body.columns > 0 ? body.columns : e.props.bodyColumns)
@@ -1740,12 +1900,9 @@ export const register: Register = (on: On, options: PluginOptions): void => {
         <Box flexDirection="row" gap={1}>
           {isTree &&
             tip('sizes', 'Σ', column === 'size' ? 'Show dates' : 'Show sizes', async () => {
-              await update($, columnAtom, (value) =>
-                value === 'size'
-                  ? settings.rightColumn === 'size'
-                    ? 'date'
-                    : settings.rightColumn
-                  : 'size',
+              // Back from sizes: the Right column setting, or dates when the setting is sizes.
+              await update($, columnAtom, () =>
+                column !== 'size' ? 'size' : settings.rightColumn === 'size' ? 'date' : null,
               )
               redraw($)
               await queueSizes($)
@@ -1849,9 +2006,13 @@ export const register: Register = (on: On, options: PluginOptions): void => {
           )}
           {isTree && query !== '' && (
             <Text dimColor={true} wrap="truncate">
-              {matches.length === 0
-                ? 'No match.'
-                : `${matches.length}${matches.length === 50 ? '+' : ''} found · Enter jumps to the first: ${matches[0] ?? ''}`}
+              {indexing !== null && index === null
+                ? 'Searching…'
+                : `${
+                    matches.length === 0
+                      ? 'No match.'
+                      : `${matches.length}${matches.length === 50 ? '+' : ''} found · Enter jumps to the first: ${matches[0] ?? ''}`
+                  }${isIndexCut ? ' (searched the first part of this folder only)' : ''}`}
             </Text>
           )}
           {isTree && hasInput && settings.searchSpacing && <Text> </Text>}

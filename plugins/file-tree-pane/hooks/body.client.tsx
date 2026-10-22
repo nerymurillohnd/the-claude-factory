@@ -12,7 +12,8 @@ type Local = {
   rows: number
   columns: number
   hovered: number | null
-  lastClick: { index: number; at: number } | null
+  /** The screen row and time of the last click, which a second click there makes a double. */
+  lastClick: { y: number; at: number } | null
   isDragging: boolean
   phase: number
   /** What the tick reads: the latest props' shimmer, set on every draw. */
@@ -107,17 +108,28 @@ const Body: ClientModule<BodyProps, Local> = (
       return
     }
     if (event.type === 'up' && event.button === 'left' && !onBar) {
-      const index = now.live.first + event.y
-      if (event.y < 0 || event.y >= room || index >= now.live.total) {
+      if (event.y < 0 || event.y >= room) {
         return
       }
+      // A double click is two clicks on the same screen row: the first one may already have
+      // turned the body into the file's preview, whose rows are not the tree's. The hooks module
+      // opens the row the first click picked.
       const at = Date.now()
+      const index = now.live.first + event.y
       const isDouble =
         now.lastClick !== null &&
-        now.lastClick.index === index &&
+        now.lastClick.y === event.y &&
         at - now.lastClick.at <= DOUBLE_CLICK_MS
-      surface.setState({ ...now, lastClick: isDouble ? null : { index, at } })
-      surface.post({ type: isDouble ? 'open' : 'click', index } satisfies BodyMessage)
+      if (isDouble) {
+        surface.setState({ ...now, lastClick: null })
+        surface.post({ type: 'open', index } satisfies BodyMessage)
+        return
+      }
+      if (index >= now.live.total) {
+        return
+      }
+      surface.setState({ ...now, lastClick: { y: event.y, at } })
+      surface.post({ type: 'click', index } satisfies BodyMessage)
     }
   }
 

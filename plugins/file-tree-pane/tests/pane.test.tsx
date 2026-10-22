@@ -651,3 +651,130 @@ test('a file name reaches Claude quoted, never as loose text', async ($, on) => 
   expect(context.join('')).not.toContain('\n')
   await ui.unmount()
 })
+
+test('after a diff, the file preview scrolls again', async ($, on) => {
+  const lines = Array.from({ length: 40 }, (_, i) => `line ${String(i + 1).padStart(2, '0')}`)
+  const seen = stubWorld(on, { ...REPO, files: { ...REPO.files, 'src/a.ts': lines.join('\n') } })
+  await start($, seen)
+  const ui = await mountPane($, 'terminal', 12)
+  await ui.key({ key: 'j', in: 'body' })
+  await ui.key({ key: 'l', in: 'body' })
+  await ui.key({ key: 'j', in: 'body' })
+  await ui.key({ key: 'j', in: 'body' })
+  await ui.key({ key: 'd', in: 'body' })
+  expect(await bodyText(ui)).toContain('@@ -1,2 +1,2 @@')
+  await ui.key({ key: 'd', in: 'body' })
+  expect(await bodyText(ui)).toContain('line 01')
+  await ui.key({ key: 'down', in: 'body' })
+  expect(await bodyText(ui)).not.toContain('line 01')
+  expect(await bodyText(ui)).toContain('line 02')
+  await ui.unmount()
+})
+
+test('a double click on a scrolled tree opens the row the first click picked', async ($, on) => {
+  const files: Record<string, string> = {}
+  for (let i = 0; i < 40; i += 1) {
+    files[`f-${String(i).padStart(2, '0')}.txt`] = 'x'
+  }
+  const seen = stubWorld(on, { files, status: null })
+  await start($, seen)
+  const ui = await mountPane($, 'terminal')
+  await $.ui.scroll({
+    component: 'Pane',
+    requestId: PANE,
+    offset: 2,
+    by: 20,
+    bodyRows: 20,
+    contentRows: 22,
+    origin: { kind: 'person' },
+  })
+  await ui.pointer({ type: 'up', x: 4, y: 3, button: 'left', in: 'body' })
+  expect(await bodyText(ui)).toContain('x')
+  await ui.pointer({ type: 'up', x: 4, y: 3, button: 'left', in: 'body' })
+  await seen.clock.settle()
+  expect(seen.runs).toContainEqual(['open', '/work/f-23.txt'])
+  await ui.unmount()
+})
+
+test('a file its default app would run is never opened there', async ($, on) => {
+  const seen = stubWorld(on, { files: { 'install.command': 'rm -rf ~' }, status: null })
+  await start($, seen)
+  const ui = await mountPane($, 'terminal')
+  await ui.key({ key: 'j', in: 'body' })
+  await ui.key({ key: 'return', in: 'body' })
+  await seen.clock.settle()
+  expect(seen.runs.some(([program]) => program === 'open')).toBe(false)
+  expect(seen.toasts.join('\n')).toContain('A .command file would run in its default app')
+  await ui.unmount()
+})
+
+test('a cwd change brings the tree back from a preview of the old folder', async ($, on) => {
+  const seen = stubWorld(on, REPO)
+  on('classic.CwdChanged', () => ({}))
+  await start($, seen)
+  const ui = await mountPane($, 'terminal')
+  await ui.pointer({ type: 'up', x: 4, y: 2, button: 'left', in: 'body' })
+  expect(texts(await ui.drawn()).join('')).toContain('· preview')
+  await $.classic.CwdChanged({ old_cwd: ROOT, new_cwd: `${ROOT}/src` })
+  expect(texts(await ui.drawn()).join('')).not.toContain('· preview')
+  expect(await bodyText(ui)).toContain('lib/')
+  await ui.unmount()
+})
+
+test('a folder selected but never opened reaches Claude as a folder', async ($, on) => {
+  const seen = stubWorld(on, REPO)
+  let context: readonly string[] = []
+  on('prompt.submit', (_$, e) => {
+    context = e.context ?? []
+    return { text: e.text }
+  })
+  await start($, seen)
+  const ui = await mountPane($, 'terminal')
+  await ui.key({ key: 'j', in: 'body' })
+  await $.prompt.submit({ text: 'what is in here?', wait: false, origin: { kind: 'composer' } })
+  expect(context.join('')).toContain('the user has this folder selected')
+  await ui.unmount()
+})
+
+test('git status starts once the person runs git init, and Space opens a folder', async ($, on) => {
+  const world: World = { files: { 'src/a.txt': 'a', '.git/HEAD': 'ref' }, status: null }
+  const seen = stubWorld(on, world)
+  await start($, seen)
+  const ui = await mountPane($, 'terminal')
+  expect(texts(await ui.drawn()).join('')).toContain('git status starts after git init')
+  world.status = []
+  await seen.clock.advance(5000)
+  expect(texts(await ui.drawn()).join('')).not.toContain('git status starts after git init')
+  await ui.key({ key: 'j', in: 'body' })
+  await ui.key({ key: ' ', in: 'body' })
+  expect(await bodyText(ui)).toContain('a.txt')
+  await ui.unmount()
+})
+
+test('a file made after the first search becomes searchable', async ($, on) => {
+  const world: World = { ...REPO, files: { ...REPO.files } }
+  const seen = stubWorld(on, world)
+  await start($, seen)
+  const ui = await mountPane($, 'terminal')
+  await ui.input({ key: 'search', text: 'fresh' })
+  expect(texts(await ui.drawn()).join('')).toContain('No match.')
+  world.files['fresh.md'] = 'new'
+  await seen.clock.advance(31_000)
+  await ui.input({ key: 'search', text: 'fresh' })
+  expect(texts(await ui.drawn()).join('')).toContain('Enter jumps to the first: fresh.md')
+  await ui.unmount()
+})
+
+test('an interrupted git call ends its running footer', async ($, on) => {
+  const seen = stubWorld(on, REPO)
+  on('tool.call', () => {
+    throw new Error('interrupted')
+  })
+  await start($, seen)
+  const ui = await mountPane($, 'terminal')
+  await $.tool.call({ tool: 'Bash', command: 'git push origin main' }).catch(() => undefined)
+  const drawn = texts(await ui.drawn()).join('')
+  expect(drawn).toContain('stopped')
+  expect(drawn).not.toContain('⟳')
+  await ui.unmount()
+})
