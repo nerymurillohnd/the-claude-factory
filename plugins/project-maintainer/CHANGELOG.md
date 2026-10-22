@@ -12,6 +12,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 - **Breaking:** requires Claude Code v2.1.307 or later. The guardrails now ask for your approval with the `{ decision: 'ask', reason }` answer that Claude Code's mod docs describe, and drop the `decider` field that Claude Code v2.1.307 no longer reads. On v2.1.304 to v2.1.306 the approval guard can be lost, so update Claude Code first.
 - The README no longer promises that no classifier can approve a guardrail prompt: Claude Code's docs do not say how auto mode treats it.
+- The README's "What's inside" table now says what each piece does for you and what it prevents, with the four parts of the guardrails listed one by one, and where the hook and the mod run.
 
 ## [0.1.0] - 2026-10-19
 

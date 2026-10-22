@@ -41,12 +41,19 @@ Months later, nobody remembers why the project uses one database over another, o
 
 ## 🧩 What's inside
 
-| Component | Name | What it does | How it runs |
-| :-- | :-- | :-- | :-- |
-| 🎯 Skill | `project-maintainer:write-records` | Writes decisions as ADRs from a template and keeps a pending and a closed debt ledger. It searches for an existing record first, asks only for facts it is missing, and tells you in one line what it saved and where | Automatically when a decision is made or a problem is postponed, or with `/project-maintainer:write-records` |
-| 🎯 Skill | `project-maintainer:write-handoff` | Reads the project's state, summarizes the session, compares it with the previous handoff and with your records, drafts the new handoff with you, saves it in `.claude/session-handoff/` and offers to commit and push it | `/project-maintainer:write-handoff`, or ask Claude to write a handoff when you wrap up |
-| 🪝 Hook | `SessionStart` | When a session starts or is cleared in a project with handoffs, shows you a one-line notice naming the newest one and has Claude read it in full, do what you ask and end its reply with the open items. If the records changed after that handoff, it says which | Automatically, at the start of a session and after `/clear` |
-| 🪝 Hook (mod) | `Guardrails` | Refuses to save a malformed record, asks you before a settled record is rewritten, keeps decisions and record IDs in a compaction summary, and reminds Claude to record after a commit that looks like a decision | Automatically, while Claude works. See [Guardrails](#-guardrails) |
+The two skills teach Claude how to keep your project's memory. The hook and the mod make sure that memory stays reliable even when Claude forgets an instruction or makes a mistake: the important rules are checked in code, not left to the model.
+
+| Component | Name | What it does for you | What it prevents | How it runs |
+| :-- | :-- | :-- | :-- | :-- |
+| 🎯 Skill | `project-maintainer:write-records` | Writes decisions as ADRs from a template and keeps a pending and a closed debt ledger. It searches for an existing record first, asks only for facts it is missing, and tells you in one line what it saved and where | Decisions and postponed problems that live only in a chat that is gone | Automatically when a decision is made or a problem is postponed, or with `/project-maintainer:write-records` |
+| 🎯 Skill | `project-maintainer:write-handoff` | Reads the project's state, summarizes the session, compares it with the previous handoff and with your records, drafts the new handoff with you, saves it in `.claude/session-handoff/` and offers to commit and push it | Ending a session with no record of what was done, decided or left open | `/project-maintainer:write-handoff`, or ask Claude to write a handoff when you wrap up |
+| 🪝 Hook | `SessionStart` | Shows you a one-line notice naming the newest handoff, has Claude read it in full, do what you ask and end its reply with the open items, and says which records changed after the handoff was written | A new session that starts from zero, or works from a handoff the records have since outdated | Automatically, at the start of a session and after `/clear` |
+| 🪝 Mod | Format guard | Checks every save of an ADR or a debt ledger against the format and refuses a broken one, telling Claude what to fix | A malformed record: a missing field, a repeated debt ID, a closed entry without an outcome, a link to a record that does not exist | Automatically, on every save. Nobody can waive it. See [Guardrails](#-guardrails) |
+| 🪝 Mod | Authority guard | Asks you before a settled record changes, and before a shell command rewrites, moves or deletes the records folders | Claude quietly rewriting history: editing a decision you accepted, changing a closed debt entry, or dropping a pending item without its closed entry | Automatically, on every save and shell command that touches the records. Only you can approve |
+| 🪝 Mod | Compaction note | Tells Claude Code's summary to keep your decisions, the open items and every record ID | Losing the thread of the records when a long conversation is compacted | Automatically, before a compaction in a project with records or handoffs |
+| 🪝 Mod | Commit reminder | After a commit that changes dependencies, a schema, CI or infrastructure, or whose message says workaround, temporary or revert, reminds Claude to record the decision or the debt behind it | A change that settles a decision going in with no record of why. It uses no model call | Automatically, after such a commit. You can turn it off |
+
+The mod runs in Claude Code: the terminal, the Desktop app's Code tab and the VS Code extension. The hook also runs in Cowork sessions. Where the mod does not run, the rules of the records are instructions Claude follows, not checks. See [Compatibility](#-compatibility).
 
 The ADR template follows [MADR 4.0](https://adr.github.io/madr/) and adds a scope, a risks table and a confirmation table.
 
