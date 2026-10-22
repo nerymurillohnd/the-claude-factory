@@ -14,21 +14,10 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  # Pinned for reproducible CI. Dependabot does not track npm CLIs installed with npx/npm -g,
-  # so the plugin-consistency skill (WORKFLOW.md, "Skill Triggers") reviews these pins.
-  CLAUDE_CODE_VERSION: "2.1.304"
-  MARKDOWNLINT_CLI2_VERSION: "0.23.3"
-  ACTIONLINT_VERSION: "1.7.12"
-  RUFF_VERSION: "0.17.1"
-  BIOME_VERSION: "2.5.15"
-  MYPY_VERSION: "1.20.2"
-  BASEDPYRIGHT_VERSION: "1.40.2"
-  UV_VERSION: "0.13.1"
-  # tsc for the type check of scripts/, run through npx.
+  # Each job installs its tools at their latest release, as the maintainer's machine has them, and
+  # the gates run them by bare name (ADR_2026-10-21_ci-installs-latest-tools). TypeScript is the one
+  # pin: it stays on 6.x, the major the maintainer's machine runs.
   TYPESCRIPT_VERSION: "6.0.3"
-  # shfmt release binary for the shell scripts under scripts/; the checksum pins the exact build.
-  SHFMT_VERSION: "3.14.1"
-  SHFMT_SHA256: "76e77641faa025814b77f153b29796b8e6fa2fca03e0c76a691608b86c7ea7bf"
 
 # Every job runs one group of scripts/gates.mjs, the commands the maintainers run locally with
 # npm run gates. CI checks the maintainer tooling under scripts/ and the plugins' structure; the
@@ -47,12 +36,22 @@ jobs:
           node-version-file: .nvmrc
       - name: Maintainer type packages (no install scripts)
         run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: TypeScript
+        run: npm install --global --no-audit --no-fund "typescript@${TYPESCRIPT_VERSION}"
       - name: shellcheck and shfmt
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           sudo apt-get install -y --no-install-recommends shellcheck
-          curl -sSfL -o /usr/local/bin/shfmt "https://github.com/mvdan/sh/releases/download/v${SHFMT_VERSION}/shfmt_v${SHFMT_VERSION}_linux_amd64"
-          echo "${SHFMT_SHA256}  /usr/local/bin/shfmt" | sha256sum --check --strict
-          sudo chmod 755 /usr/local/bin/shfmt
+          # The latest shfmt release binary, checked against the digest GitHub records for it.
+          asset="$(gh api repos/mvdan/sh/releases/latest \
+            --jq '.assets[] | select(.name | endswith("_linux_amd64")) | "\(.browser_download_url) \(.digest)"')"
+          read -r url digest <<< "${asset}"
+          [[ -n ${url} && ${digest} == sha256:* ]] || { echo "no release asset or digest for mvdan/sh" >&2; exit 1; }
+          curl -sSfL -o shfmt "${url}"
+          echo "${digest#sha256:}  shfmt" | sha256sum --check --strict
+          sudo install -m 755 shfmt /usr/local/bin/shfmt
+          rm shfmt
           shellcheck --version | head -2
           shfmt --version
       - name: Gates
@@ -71,11 +70,13 @@ jobs:
           node-version-file: .nvmrc
       - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
         with:
-          version: ${{ env.UV_VERSION }}
-          # No lockfile here: the tool versions are pinned in this workflow's env.
-          cache-dependency-glob: .github/workflows/validate.yml
-      - name: basedpyright
-        run: uv tool install "basedpyright==${BASEDPYRIGHT_VERSION}"
+          # No lockfile and no pins: every run installs the latest tools.
+          enable-cache: "false"
+      - name: ruff, mypy and basedpyright
+        run: |
+          uv tool install ruff
+          uv tool install mypy
+          uv tool install basedpyright
       - name: Gates
         run: npm run gates:ci -- --group python
 
@@ -88,12 +89,26 @@ jobs:
         with:
           node-version-file: .nvmrc
       - name: Install Claude Code
-        run: npm install --global "@anthropic-ai/claude-code@${CLAUDE_CODE_VERSION}"
+        run: |
+          # Claude Code from Anthropic's signed apt repository, latest channel (the default channel of
+          # the native installer). apt checks every package against the release signing key, and the
+          # key itself is checked against the fingerprint the setup docs publish
+          # (https://code.claude.com/docs/en/setup#install-with-linux-package-managers).
+          sudo install -d -m 0755 /etc/apt/keyrings
+          sudo curl -fsSL https://downloads.claude.ai/keys/claude-code.asc -o /etc/apt/keyrings/claude-code.asc
+          gpg --show-keys --with-colons /etc/apt/keyrings/claude-code.asc \
+            | grep -qx 'fpr:::::::::31DDDE24DDFAB679F42D7BD2BAA929FF1A7ECACE:' \
+            || { echo "unexpected Claude Code signing key" >&2; exit 1; }
+          echo "deb [signed-by=/etc/apt/keyrings/claude-code.asc] https://downloads.claude.ai/claude-code/apt/latest latest main" \
+            | sudo tee /etc/apt/sources.list.d/claude-code.list
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq claude-code
+          claude --version
       - name: Gates
         run: npm run gates:ci -- --group claude
 
   lint:
-    name: Markdown, workflow & JSON lint
+    name: Workflow & JSON lint
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -101,9 +116,21 @@ jobs:
         with:
           node-version-file: .nvmrc
       - name: actionlint
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          curl -sSfL -o download-actionlint.bash "https://raw.githubusercontent.com/rhysd/actionlint/v${ACTIONLINT_VERSION}/scripts/download-actionlint.bash"
-          bash download-actionlint.bash "${ACTIONLINT_VERSION}" /usr/local/bin
-          rm download-actionlint.bash
+          # The latest actionlint release, checked against the digest GitHub records for it.
+          asset="$(gh api repos/rhysd/actionlint/releases/latest \
+            --jq '.assets[] | select(.name | endswith("_linux_amd64.tar.gz")) | "\(.browser_download_url) \(.digest)"')"
+          read -r url digest <<< "${asset}"
+          [[ -n ${url} && ${digest} == sha256:* ]] || { echo "no release asset or digest for rhysd/actionlint" >&2; exit 1; }
+          curl -sSfL -o actionlint.tar.gz "${url}"
+          echo "${digest#sha256:}  actionlint.tar.gz" | sha256sum --check --strict
+          tar -xzf actionlint.tar.gz actionlint
+          sudo install -m 755 actionlint /usr/local/bin/actionlint
+          rm actionlint actionlint.tar.gz
+          actionlint --version
+      - name: Biome
+        run: npm install --global --no-audit --no-fund @biomejs/biome
       - name: Gates
         run: npm run gates:ci -- --group lint

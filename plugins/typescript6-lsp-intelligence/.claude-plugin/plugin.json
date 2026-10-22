@@ -1,7 +1,7 @@
 {
   "name": "typescript6-lsp-intelligence",
   "displayName": "TypeScript 6 LSP Intelligence",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "Connects your TypeScript 6 language server to Claude Code, type-checks every file Claude edits with your own TypeScript under a strictest policy, and teaches Claude to find the program that owns a file and fix compiler findings without unsafe assertions or suppressions.",
   "author": {
     "name": "Nery Murillo",

@@ -201,7 +201,7 @@ export function rootPackageProblems(pkg, nodeVersion) {
   for (const [name, version] of Object.entries(dev)) {
     if (!name.startsWith('@types/')) {
       problems.push(
-        `devDependency "${name}" is not a type package: run tools with npx at a pinned version`,
+        `devDependency "${name}" is not a type package: tools run as installed, by bare name`,
       )
     } else if (typeof version !== 'string' || !SEMVER.test(version)) {
       problems.push(`devDependency "${name}" must be pinned to an exact version`)

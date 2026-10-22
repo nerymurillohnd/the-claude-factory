@@ -6,6 +6,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The
 
 ## 2026-10-22
 
+### Changed
+
+- **typescript6-lsp-intelligence** 0.3.0 — the post-edit hook treats its strictest policy as defaults your config overrides (breaking: an explicit `false` is now yours), keeps the policy inside the hook with no environment of its own, passes each option only to a `tsc` that knows it, reports deprecated config options, and finds Bash changes in worktrees and files only a sibling `tsconfig.<name>.json` lists.
+- **typescript7-lsp-intelligence** 0.4.0 — the post-edit hook treats its strictest policy as defaults your config overrides (breaking: an explicit `false` is now yours), keeps the policy inside the hook with no environment of its own, passes each option only to a `tsc` that knows it, reports deprecated config options, and finds Bash changes in worktrees and files only a sibling `tsconfig.<name>.json` lists.
+
 ### Fixed
 
 - **block-no-verify** 0.1.1 — the hook's description sits where Claude Code documents it, so the claude.ai sync stops warning about it; blocking is unchanged.

@@ -9,7 +9,6 @@
       "Bash(node scripts/*)",
       "Bash(node --test *)",
       "Bash(npm run gates)",
-      "Bash(npx --yes markdownlint-cli2@*)",
       "Bash(claude plugin validate *)",
       "Bash(claude plugin details *)",
       "Bash(claude plugin list*)",

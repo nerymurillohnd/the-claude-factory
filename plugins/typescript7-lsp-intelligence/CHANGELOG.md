@@ -6,6 +6,22 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-10-22
+
+### Changed
+
+- **Breaking:** Post-edit hook: the strictest policy is now a set of defaults, and your config wins. Each strict option goes to `tsc` only when your `tsconfig.json` or `jsconfig.json`, or a config it extends, leaves it unset; an option you set yourself, `false` included, is yours. Setting `strict` keeps the whole strict family yours, and an option `tsc` would reject next to your choice (`exactOptionalPropertyTypes` or `strictPropertyInitialization` with `strictNullChecks` off, `checkJs` with `allowJs` off, `allowJs` with `isolatedDeclarations`) is left out instead of turning into a config error. Before, every option was forced on the command line and overrode your explicit `false`. `noEmit` and `noCheck false` still always apply. The skill's `run-fixtures.sh` applies your config the same way, so a lax config shows as a fixture `MISMATCH`.
+- Post-edit hook: the strictest policy now lives in the hook itself, and `hooks/tsconfig.strictest.json` is gone. The policy holds only checks that apply to any project, and nothing of your environment: a file with no `tsconfig.json` or `jsconfig.json` above it is now checked with your compiler's own defaults for `target` and `module` (with TypeScript 6, `es2025` and `esnext`; with TypeScript 5, ES5 and CommonJS), instead of a fixed `es2022` and `nodenext` that made such a file CommonJS and rejected top-level `await`.
+- Post-edit hook: each strict option goes only to a `tsc` that knows it. With an older project compiler, such as TypeScript 5.4, `strictBuiltinIteratorReturn` (TypeScript 5.6) is left out instead of every check failing on an unknown option, and Claude is told which options were not applied. `run-fixtures.sh` names any option it leaves out the same way.
+- Post-edit hook: a config that uses an option deprecated in TypeScript 6, such as `baseUrl`, is reported as such, and the edit is still blocked: the option stops working in TypeScript 7. An `ignoreDeprecations` you set yourself is respected.
+- Post-edit hook: the message Claude gets for type errors states the facts (`tsc found TypeScript errors after this edit…`) instead of giving orders, as the hooks documentation advises.
+
+### Fixed
+
+- Post-edit hook: a file that only a `tsconfig.<name>.json` or `jsconfig.<name>.json` lists, beside the nearest `tsconfig.json` and not referenced by it (such as the `tsconfig.node.json` or `tsconfig.app.json` many templates create), is now checked with that config's program. Before, it was checked alone and reported as not part of any program. The hook tries the `tsconfig.<name>.json` files and then the `jsconfig.<name>.json` files after the nearest config's references, in name order, and skips one `tsc` cannot read and one the nearest config extends (a `tsconfig.base.json` is a base, not a program), so a program you reference still wins.
+- Post-edit hook: files a Bash or PowerShell command changes are now looked for in the folder Claude works in, the `cwd` of the event, instead of the folder the session started in. In a worktree, or after a `cd`, they were missed and left unchecked.
+- Post-edit hook: a TypeScript development build whose version has a patch number starting with 0, such as `5.6.0-dev.20240819`, no longer has options wrongly left out as unknown.
+
 ## [0.3.1] - 2026-10-20
 
 ### Changed
@@ -55,7 +71,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - `typescript7-lsp-intelligence` skill: navigates TypeScript and JavaScript with the language server; checks program membership and effective configuration before trusting a diagnostic; tells TypeScript 6 `tsserver` tooling apart from the TypeScript 7 native server; fixes compiler findings by narrowing `unknown` instead of using assertions, `any` or suppressions; and reports each check's status, the programs covered and what stayed unverified.
 - Optional controls: a bundled runner compiles known control files with the compiler you choose, in a temporary folder, without running them or installing anything.
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/typescript7-lsp-intelligence--v0.3.1...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/typescript7-lsp-intelligence--v0.4.0...HEAD
+[0.4.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/typescript7-lsp-intelligence--v0.4.0
 [0.3.1]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/typescript7-lsp-intelligence--v0.3.1
 [0.3.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/typescript7-lsp-intelligence--v0.3.0
 [0.2.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/typescript7-lsp-intelligence--v0.2.0

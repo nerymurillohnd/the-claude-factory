@@ -44,7 +44,7 @@ repos:
 
       - id: tsc-showconfig
         name: TypeScript config resolves
-        entry: npx --yes --package typescript@6.0.3 tsc -p scripts/tsconfig.json --showConfig
+        entry: tsc -p scripts/tsconfig.json --showConfig
         language: unsupported
         files: ^(scripts/tsconfig\.json|tsconfig\.base\.json)$
         pass_filenames: false
@@ -52,7 +52,7 @@ repos:
 
       - id: tsc-noemit
         name: TypeScript type-check
-        entry: npx --yes --package typescript@6.0.3 tsc -p scripts/tsconfig.json --noEmit
+        entry: tsc -p scripts/tsconfig.json --noEmit
         language: unsupported
         files: ^(scripts/.*\.[cm]?[jt]sx?|scripts/tsconfig\.json|tsconfig\.base\.json|package(-lock)?\.json)$
         pass_filenames: false
@@ -60,7 +60,7 @@ repos:
 
       - id: tsc-noemit-plugins
         name: TypeScript type-check (plugins' .mjs files)
-        entry: npx --yes --package typescript@6.0.3 tsc -p scripts/tsconfig.plugins.json --noEmit
+        entry: tsc -p scripts/tsconfig.plugins.json --noEmit
         language: unsupported
         files: ^(plugins/.*\.[cm]?[jt]sx?|scripts/tsconfig(\.plugins)?\.json|tsconfig\.base\.json|package(-lock)?\.json)$
         pass_filenames: false

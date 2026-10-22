@@ -25,10 +25,9 @@ report_session_state() {
   claude_out="$(claude --version 2> /dev/null)" || claude_out=""
 
   local behind="${upstream%%[[:space:]]*}" ahead="${upstream##*[[:space:]]}"
-  local node_have node_want claude_want
+  local node_have node_want
   node_have="$(node --version 2> /dev/null || echo unknown)"
   node_want="v$(cat .nvmrc 2> /dev/null || echo unknown)"
-  claude_want="$(sed -n 's/^ *CLAUDE_CODE_VERSION: "\(.*\)"/\1/p' .github/workflows/validate.yml 2> /dev/null)"
 
   echo "Session start check (The Claude Factory):"
   echo "- Branch: ${branch:-detached}; vs origin/main: ${ahead:-?} ahead, ${behind:-?} behind (last fetch)."
@@ -37,7 +36,7 @@ report_session_state() {
   stashes="$(count_lines "${stash_out}")"
   worktrees="$(count_lines "${worktree_out}")"
   echo "- Uncommitted entries: ${dirty}; stashes: ${stashes}; worktrees: ${worktrees}."
-  echo "- Node: ${node_have} (.nvmrc ${node_want}); claude: ${claude_out%% *} (CI pin ${claude_want:-unknown})."
+  echo "- Node: ${node_have} (.nvmrc ${node_want}); claude: ${claude_out%% *}."
 }
 
 report_session_state
