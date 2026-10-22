@@ -91,13 +91,50 @@ const DIFF_UNTRACKED_CAP = 50
 // command the person or Claude runs at the same moment.
 const GIT_ENV: Record<string, string> = Object.fromEntries([['GIT_OPTIONAL_LOCKS', '0']])
 
-// A repository's own config can name programs git runs: an fsmonitor on status, a textconv or
-// an external diff on diff. The tree runs git on its own, on folders the person may not have
-// vetted, so none of those run; Claude Code already turns repository hooks off.
-export const gitArgv = (args: readonly string[]): string[] => {
+// A repository's own config can name programs git runs: an fsmonitor on status, a clean or
+// process filter on status and diff, a textconv or an external diff on diff, a gpg program on
+// log. The tree runs git on its own, in folders the person may not have vetted, so none of them
+// run: each filter driver the config names is blanked, and the rest are turned off by flag.
+// Claude Code already turns repository hooks off.
+export const gitArgv = (args: readonly string[], drivers: readonly string[] = []): string[] => {
   const [sub, ...rest] = args
-  const safe = sub === 'diff' ? ['diff', '--no-ext-diff', '--no-textconv', ...rest] : [...args]
-  return ['git', '-c', 'core.fsmonitor=false', ...safe]
+  const safe =
+    sub === 'diff'
+      ? ['diff', '--no-ext-diff', '--no-textconv', ...rest]
+      : sub === 'log'
+        ? ['log', '--no-show-signature', ...rest]
+        : [...args]
+  const blanked = drivers.flatMap((name) => [
+    '-c',
+    `filter.${name}.clean=`,
+    '-c',
+    `filter.${name}.smudge=`,
+    '-c',
+    `filter.${name}.process=`,
+    '-c',
+    `filter.${name}.required=false`,
+  ])
+  return ['git', '-c', 'core.fsmonitor=false', ...blanked, ...safe]
+}
+
+/**
+ * The filter drivers `git config --get-regexp ^filter\.` names, or null when one has a name `-c`
+ * could not blank (an `=` in it, or a control character): then git must not run at all.
+ */
+export const filterDrivers = (config: string): string[] | null => {
+  const names = new Set<string>()
+  for (const line of config.split('\n')) {
+    const key = line.split(' ')[0] ?? ''
+    if (!key.startsWith('filter.')) {
+      continue
+    }
+    const name = key.slice('filter.'.length, key.lastIndexOf('.'))
+    if (name === '' || name.includes('=') || Array.from(name).some((c) => c.charCodeAt(0) < 0x20)) {
+      return null
+    }
+    names.add(name)
+  }
+  return [...names]
 }
 
 /**
@@ -344,6 +381,7 @@ let listingsRoot = ''
 const listings = new Map<string, Entry[]>()
 let repo: 'unknown' | 'repo' | 'none' = 'unknown'
 let gitPrefix = ''
+let drivers: string[] = []
 let git: GitSnapshot | null = null
 const sizes = new Map<string, number>()
 const sizeQueue: string[] = []
@@ -436,7 +474,7 @@ const room = (): number => Math.max(1, body.rows)
 // ---------------------------------------------------------------- git
 
 const runGit = async ($: EngineInterface, root: string, args: string[]): Promise<string | null> => {
-  const result = await $.process.run(gitArgv(args), { cwd: root, env: GIT_ENV })
+  const result = await $.process.run(gitArgv(args, drivers), { cwd: root, env: GIT_ENV })
   return result.exitCode === 0 ? result.stdout : null
 }
 
@@ -454,6 +492,18 @@ const refreshGit = async ($: EngineInterface, root: string): Promise<void> => {
     repo = 'repo'
     gitPrefix = top.trim()
   }
+  // Read before every refresh: a pinned folder or a later `git config` can add a driver.
+  const config = await $.process.run(['git', 'config', '--get-regexp', '^filter\\.'], {
+    cwd: root,
+    env: GIT_ENV,
+  })
+  const found = filterDrivers(config.exitCode === 0 ? config.stdout : '')
+  if (found === null) {
+    repo = 'none'
+    git = null
+    return
+  }
+  drivers = found
   const status = await runGit($, root, [
     'status',
     '--porcelain=v2',
@@ -773,7 +823,7 @@ const openDiff = async ($: EngineInterface, path: string, isDir: boolean): Promi
   const parts: string[] = []
   const tracked = await quietly(() =>
     $.process.run(
-      gitArgv(['diff', '--no-color', '--relative', base, '--', path === '' ? '.' : path]),
+      gitArgv(['diff', '--no-color', '--relative', base, '--', path === '' ? '.' : path], drivers),
       {
         cwd: root,
         env: GIT_ENV,
@@ -790,9 +840,12 @@ const openDiff = async ($: EngineInterface, path: string, isDir: boolean): Promi
     .slice(0, DIFF_UNTRACKED_CAP)
   for (const file of untracked) {
     const added = await quietly(() =>
-      $.process.run(gitArgv(['diff', '--no-color', '--no-index', '--', '/dev/null', file]), {
-        cwd: root,
-      }),
+      $.process.run(
+        gitArgv(['diff', '--no-color', '--no-index', '--', '/dev/null', file], drivers),
+        {
+          cwd: root,
+        },
+      ),
     )
     parts.push(added?.stdout ?? '')
   }

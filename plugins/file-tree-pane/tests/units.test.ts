@@ -39,6 +39,7 @@ import {
   parsePalette,
   TONES,
 } from '../hooks/palette.ts'
+import { filterDrivers, gitArgv } from '../hooks/register.tsx'
 import { searchPaths } from '../hooks/search.ts'
 import type { Entry } from '../hooks/tree.ts'
 import {
@@ -408,4 +409,36 @@ test('posts from the surface module are checked field by field', () => {
 test('a name holding a control character is never typed into a running editor', () => {
   expect(nvimReuseSteps('%4', '/w/a\n:!touch pwned\n.ts', 1)).toBeNull()
   expect(nvimReuseSteps('%4', '/w/a\u001b.ts', 1)).toBeNull()
+})
+
+test('filter drivers are read from git config, and a name -c cannot blank stops git', () => {
+  expect(
+    filterDrivers(
+      'filter.lfs.clean git-lfs clean -- %f\nfilter.lfs.smudge x\nfilter.my.drv.process y\n',
+    ),
+  ).toEqual(['lfs', 'my.drv'])
+  expect(filterDrivers('')).toEqual([])
+  expect(filterDrivers('filter.a=b.clean evil\n')).toBeNull()
+  expect(gitArgv(['status'], ['lfs'])).toEqual([
+    'git',
+    '-c',
+    'core.fsmonitor=false',
+    '-c',
+    'filter.lfs.clean=',
+    '-c',
+    'filter.lfs.smudge=',
+    '-c',
+    'filter.lfs.process=',
+    '-c',
+    'filter.lfs.required=false',
+    'status',
+  ])
+  expect(gitArgv(['log', '-1'])).toEqual([
+    'git',
+    '-c',
+    'core.fsmonitor=false',
+    'log',
+    '--no-show-signature',
+    '-1',
+  ])
 })

@@ -19,6 +19,8 @@ type World = {
   /** Font files in ~/Library/Fonts, with their modification times. */
   fonts?: Record<string, number>
   env?: Record<string, string>
+  /** What `git config --get-regexp ^filter\\.` prints; none when absent. */
+  filters?: string
 }
 
 type Seen = {
@@ -164,6 +166,10 @@ const stubWorld = (on: On, world: World): Seen => {
       switch (sub) {
         case 'rev-parse':
           return { value: ok('\n') }
+        case 'config':
+          return {
+            value: world.filters === undefined ? { ...failed(), exitCode: 1 } : ok(world.filters),
+          }
         case 'status':
           return {
             value: ok(
@@ -546,8 +552,12 @@ test('a path pins the tree, which then ignores cwd changes until /file-tree alon
   expect(bad).toMatchObject({ text: 'File Tree Pane: nope is not a folder.' })
 })
 
-test('git never runs a program a repository config names: fsmonitor, textconv or external diff', async ($, on) => {
-  const seen = stubWorld(on, REPO)
+test('git never runs a program a repository config names: fsmonitor, filters, textconv, external diff, gpg', async ($, on) => {
+  const seen = stubWorld(on, {
+    ...REPO,
+    filters: 'filter.lfs.clean git-lfs clean -- %f\nfilter.lfs.process git-lfs filter-process\n',
+  })
+  on('tool.call', () => ({ result: 'ok' }))
   await start($, seen)
   const ui = await mountPane($, 'terminal', 9)
   await ui.key({ key: 'j', in: 'body' })
@@ -555,15 +565,36 @@ test('git never runs a program a repository config names: fsmonitor, textconv or
   await ui.key({ key: 'j', in: 'body' })
   await ui.key({ key: 'j', in: 'body' })
   await ui.key({ key: 'd', in: 'body' })
-  const gits = seen.runs.filter(([program]) => program === 'git')
-  expect(gits.length).toBeGreaterThan(2)
+  await $.tool.call({ tool: 'Bash', command: 'git commit -m "x"' })
+  const gits = seen.runs.filter(([program, sub]) => program === 'git' && sub !== 'config')
+  expect(gits.some((argv) => argv.includes('status'))).toBe(true)
+  expect(gits.some((argv) => argv.includes('log'))).toBe(true)
   for (const argv of gits) {
     expect(argv.slice(1, 3)).toEqual(['-c', 'core.fsmonitor=false'])
-    if (argv[3] === 'diff') {
+    if (argv.includes('status') || argv.includes('diff')) {
+      expect(argv).toContain('filter.lfs.clean=')
+      expect(argv).toContain('filter.lfs.process=')
+      expect(argv).toContain('filter.lfs.required=false')
+    }
+    if (argv.includes('diff')) {
       expect(argv).toContain('--no-textconv')
       expect(argv).toContain('--no-ext-diff')
     }
+    if (argv.includes('log')) {
+      expect(argv).toContain('--no-show-signature')
+    }
   }
+  await ui.unmount()
+})
+
+test('a filter driver whose name git -c cannot blank keeps git from running', async ($, on) => {
+  const seen = stubWorld(on, { ...REPO, filters: 'filter.a=b.clean evil\n' })
+  await start($, seen)
+  const ui = await mountPane($, 'terminal')
+  expect(seen.runs.filter(([program, sub]) => program === 'git' && sub === 'status')).toHaveLength(
+    0,
+  )
+  expect(texts(await ui.drawn()).join('')).toContain('git status starts after git init')
   await ui.unmount()
 })
 
