@@ -206,15 +206,26 @@ export const vimEscape = (path: string): string =>
 
 /**
  * The tmux steps that hand a file to a running nvim: leave insert mode, type `:edit +line`, and
- * bring its window forward. Typed with `send-keys -l`, so tmux takes the text literally.
+ * bring its window forward. Typed with `send-keys -l`, so tmux takes the text literally. Null for
+ * a name holding a control character, which typed keys could turn into commands: such a file
+ * opens in a new window instead, where its name is an argument.
  */
-export const nvimReuseSteps = (pane: string, file: string, line: number): string[][] => [
-  ['tmux', 'send-keys', '-t', pane, 'Escape'],
-  ['tmux', 'send-keys', '-t', pane, '-l', `:edit +${line} ${vimEscape(file)}`],
-  ['tmux', 'send-keys', '-t', pane, 'Enter'],
-  ['tmux', 'select-window', '-t', pane],
-  ['tmux', 'select-pane', '-t', pane],
-]
+export const nvimReuseSteps = (pane: string, file: string, line: number): string[][] | null => {
+  if (hasControlCharacter(file)) {
+    return null
+  }
+  return [
+    ['tmux', 'send-keys', '-t', pane, 'Escape'],
+    ['tmux', 'send-keys', '-t', pane, '-l', `:edit +${line} ${vimEscape(file)}`],
+    ['tmux', 'send-keys', '-t', pane, 'Enter'],
+    ['tmux', 'select-window', '-t', pane],
+    ['tmux', 'select-pane', '-t', pane],
+  ]
+}
+
+/** Whether `text` holds a C0 control character or DEL, which typed keys would act on. */
+export const hasControlCharacter = (text: string): boolean =>
+  Array.from(text).some((char) => char.charCodeAt(0) < 0x20 || char.charCodeAt(0) === 0x7f)
 
 /** The pane id of a running nvim in `tmux list-panes -s -F '#{pane_id} #{pane_current_command}'`. */
 export const nvimPaneOf = (listing: string): string | null => {

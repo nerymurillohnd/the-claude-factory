@@ -359,7 +359,7 @@ test('a running nvim takes the file in place', () => {
   expect(nvimPaneOf('%1 zsh\n%4 nvim\n')).toBe('%4')
   expect(nvimPaneOf('%1 zsh\n')).toBeNull()
   expect(vimEscape('/w/a b%#.ts')).toBe('/w/a\\ b\\%\\#.ts')
-  expect(nvimReuseSteps('%4', '/w/a.ts', 3)[1]).toEqual([
+  expect(nvimReuseSteps('%4', '/w/a.ts', 3)?.[1]).toEqual([
     'tmux',
     'send-keys',
     '-t',
@@ -403,4 +403,9 @@ test('posts from the surface module are checked field by field', () => {
     shift: false,
   })
   expect(readMessage('nope')).toBeNull()
+})
+
+test('a name holding a control character is never typed into a running editor', () => {
+  expect(nvimReuseSteps('%4', '/w/a\n:!touch pwned\n.ts', 1)).toBeNull()
+  expect(nvimReuseSteps('%4', '/w/a\u001b.ts', 1)).toBeNull()
 })
