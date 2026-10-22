@@ -357,6 +357,41 @@ test('a huge folder draws only the rows in view and the wheel reaches its last r
   await ui.unmount()
 })
 
+test('on the desktop, the scrollbar dragged to its foot and the wheel both reach the last of 50,000 rows', async ($, on) => {
+  const files: Record<string, string> = {}
+  for (let i = 0; i < 50_000; i += 1) {
+    files[`big/file-${String(i).padStart(5, '0')}.txt`] = 'x'
+  }
+  const seen = stubWorld(on, { files, status: null })
+  await start($, seen)
+  const ui = await mountPane($, 'desktop', 30)
+  await ui.key({ key: 'j', in: 'body' })
+  await ui.key({ key: 'l', in: 'body' })
+  expect(JSON.stringify(await ui.drawn({ in: 'body' })).length).toBeLessThan(100_000)
+  // The scrollbar is the body's last column: press it at the top, drag to the foot.
+  await ui.pointer({ type: 'down', x: 59, y: 0, button: 'left', in: 'body' })
+  await ui.pointer({ type: 'move', x: 59, y: 23, button: 'left', in: 'body' })
+  await ui.pointer({ type: 'up', x: 59, y: 23, button: 'left', in: 'body' })
+  expect(await bodyText(ui)).toContain('file-49999.txt')
+  // Back to the top, then the wheel all the way down.
+  await ui.pointer({ type: 'down', x: 59, y: 0, button: 'left', in: 'body' })
+  await ui.pointer({ type: 'up', x: 59, y: 0, button: 'left', in: 'body' })
+  expect(await bodyText(ui)).not.toContain('file-49999.txt')
+  for (let tick = 0; tick < 3; tick += 1) {
+    await $.ui.scroll({
+      component: 'Pane',
+      requestId: PANE,
+      offset: 2,
+      by: 20_000,
+      bodyRows: 30,
+      contentRows: 32,
+      origin: { kind: 'person' },
+    })
+  }
+  expect(await bodyText(ui)).toContain('file-49999.txt')
+  await ui.unmount()
+})
+
 test('the engine window stays on the body so the wheel works both ways', async ($, on) => {
   const seen = stubWorld(on, REPO)
   await start($, seen)
