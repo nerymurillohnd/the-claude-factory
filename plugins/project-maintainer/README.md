@@ -102,7 +102,7 @@ Requires Claude Code v2.1.307+. With the marketplace already added, `/plugin ins
 2. Select **Add** → **Add marketplace** and enter `nerymurillohnd/the-claude-factory`.
 3. Find **Project Maintainer** in **Discover** and select **Add**.
 
-In the desktop app's **Code** tab you can also click **+** → **Plugins** → **Add plugin**.
+In the desktop app's **Code** tab you can also click **+** next to the prompt box → **Add plugins** (or **Plugins** → **Browse plugins**), or open **Settings** → **Plugins** → **Discover**.
 
 </details>
 
@@ -288,7 +288,8 @@ Your records and handoffs stay in your project's `.claude/` folder; they are ord
 | Component | Claude Code | Claude app |
 | :-- | :--: | :--: |
 | 🎯 Skills | ✅ | ⚠️ loads everywhere; saves records and handoffs only where it can reach your project folder |
-| 🪝 Hooks | ✅ | ⚠️ the start-of-session reminder runs in Cowork sessions, not in a chat conversation; the guardrails are a mod, which the plugin directory lists for Claude Code only |
+| 🪝 Hooks | ✅ | ⚠️ the start-of-session reminder runs in Cowork sessions, not in a chat conversation |
+| 🧩 Mods | ✅ the guardrails run in every Claude Code session except a Desktop session on WSL | ⚠️ the plugin directory lists the guardrails' mod for Claude Code only |
 
 <sub>✅ works · ⚠️ partial · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. The Claude app (web, desktop and mobile) runs a conversation as a Cowork session when it can, and as a chat conversation otherwise, for example on a device that can't run Cowork or in the separate Chat mode that Team and Enterprise plans keep for now.</sub>
 

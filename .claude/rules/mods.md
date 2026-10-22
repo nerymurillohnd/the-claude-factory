@@ -99,7 +99,7 @@ Lessons verified on 2026-10-22 against the live mod docs and the installed engin
 
 ## State, files and reload
 
-- **Keep** values in `$.state` or `$.store`, never in module-level variables: a reload re-initializes the module.
+- **Keep** values in `$.state` or `$.store`, never in module-level variables: a reload re-initializes the module. Counters of the turn in progress are the exception, when losing them to a reload in the middle of a turn only shortens that turn's count; say so in the README.
 - **Use** `$.store` (shared by every session on the machine, 4 MiB of JSON) for data several sessions change: `$.fs.write` is not atomic and another process can read a half-written file.
 - **Reload** saved values in a `classic.SessionStart` hook: `/clear`, `/resume` and `/branch` reset `$.state` and do not fire `session.start` again.
 - **Register** commands, tools and agents in `session.start`, which runs again in each fresh copy after a reload; a `$.agent.register` call from code still running in the old copy is refused.
@@ -129,6 +129,12 @@ Lessons verified on 2026-10-22 against the live mod docs and the installed engin
 - **Check** that `overrides installed version` and `shadowed by local copy` appear, so `--plugin-dir` tests the local copy.
 - **Run** a control beside the guarded case: in auto mode an unguarded `.claude/` edit shows `Allowed by auto mode classifier`, which separates the guard's dialog from the protected-folder prompt.
 - **Avoid** proving behavior by scraping the terminal: the UI draws text with escape sequences and no spaces, and a pattern in your own prompt matches its echo. A person's answer to a dialog comes only from a person.
+
+## Maintenance
+
+- **Expect** a Claude Code update to break a mod: the mods API is in early access and changes between releases, often with no changelog entry. This is our risk to carry, not the user's: keep it out of user docs.
+- **Version** each mod with semver like any plugin, and record in each release's CHANGELOG entry the Claude Code version it was validated and tested on.
+- **Prove** each release on the current build: `npm run gates` runs `claude plugin validate --strict`, `claude plugin test` and the mod's `tsc` for every mod, after the declarations are refreshed to `claude --version`.
 
 ## User docs for a plugin with a mod
 

@@ -1,0 +1,55 @@
+{
+  "name": "tool-ledger",
+  "displayName": "Tool Ledger",
+  "version": "0.1.0",
+  "description": "Lists every tool call of the session in a live panel: what ran, on what, whether Claude or a subagent made it, and whether it finished, failed or was denied.",
+  "author": {
+    "name": "Nery Murillo",
+    "url": "https://github.com/nerymurillohnd"
+  },
+  "homepage": "https://github.com/nerymurillohnd/the-claude-factory/tree/main/plugins/tool-ledger#readme",
+  "repository": "https://github.com/nerymurillohnd/the-claude-factory",
+  "license": "MIT",
+  "keywords": [
+    "mods",
+    "tool-calls",
+    "audit",
+    "subagents",
+    "hooks",
+    "permissions",
+    "panel",
+    "observability"
+  ],
+  "types": "./types/index.d.ts",
+  "userConfig": {
+    "autoOpen": {
+      "type": "string",
+      "title": "Open the panel by itself",
+      "description": "never opens the panel only when you run /tool-ledger. sidebar also opens it by itself once per session where it can dock beside the transcript, such as a fullscreen terminal at least 144 columns wide.",
+      "options": [
+        "never",
+        "sidebar"
+      ],
+      "default": "never"
+    },
+    "showTargets": {
+      "type": "boolean",
+      "title": "Show what each call acted on",
+      "description": "Show commands, file paths, patterns and subagent descriptions. Turn it off to list only tool names, for example while you share your screen.",
+      "default": true
+    },
+    "maxRows": {
+      "type": "number",
+      "title": "Calls kept in the session",
+      "description": "How many of the latest tool calls the panel keeps; older ones are dropped.",
+      "min": 10,
+      "max": 2000,
+      "default": 500
+    }
+  },
+  "metadata": {
+    "surfaces": [
+      "claude-code"
+    ]
+  }
+}

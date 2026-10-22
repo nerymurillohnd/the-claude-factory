@@ -22,6 +22,7 @@ import { afterEach, beforeEach, describe, test } from 'node:test'
 import { fileURLToPath } from 'node:url'
 import { anchor } from '../catalog.mjs'
 import { lspConfigProblems, portabilityProblems, rootPackageProblems } from '../check-repo.mjs'
+import { hooksFileKinds } from '../components.mjs'
 import { changelogSection } from '../lib.mjs'
 
 const REAL_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..')
@@ -787,6 +788,23 @@ describe('root package.json rules', () => {
       rootPackageProblems({ private: true, devDependencies: {} }, '26.12.1').join('\n'),
       /must declare "@types\/node"/,
     )
+  })
+})
+
+describe('component detection', () => {
+  test('hooks.json counts settings hooks under hooks and a mod under modules', () => {
+    assert.deepEqual(hooksFileKinds('{"hooks": {}}'), { hooks: true, mods: false })
+    assert.deepEqual(hooksFileKinds('{"modules": ["./register.ts"]}'), { hooks: false, mods: true })
+    assert.deepEqual(hooksFileKinds('{"modules": ["./r.ts"], "hooks": {}}'), {
+      hooks: true,
+      mods: true,
+    })
+    assert.deepEqual(hooksFileKinds('{"description": "x"}'), { hooks: false, mods: false })
+  })
+
+  test('a hooks.json that is not a JSON object counts as settings hooks', () => {
+    assert.deepEqual(hooksFileKinds('{ not json'), { hooks: true, mods: false })
+    assert.deepEqual(hooksFileKinds('[]'), { hooks: true, mods: false })
   })
 })
 

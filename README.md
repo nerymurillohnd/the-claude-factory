@@ -11,7 +11,7 @@
 <br>
 
 <!-- plugin-count:start -->
-[![Plugins](https://img.shields.io/badge/plugins-13-D97757?style=for-the-badge)](#-catalog)
+[![Plugins](https://img.shields.io/badge/plugins-16-D97757?style=for-the-badge)](#-catalog)
 <!-- plugin-count:end -->
 [![Validate](https://img.shields.io/github/actions/workflow/status/nerymurillohnd/the-claude-factory/validate.yml?branch=main&label=validate&style=for-the-badge)](https://github.com/nerymurillohnd/the-claude-factory/actions/workflows/validate.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-22C55E?style=for-the-badge)](./LICENSE)
@@ -82,7 +82,7 @@ Pick one from the [catalog](#-catalog), then:
 | :-- | :-- |
 | 💻 Terminal | `claude plugin install <plugin>@the-claude-factory` |
 | 💬 Claude Code session | `/plugin install <plugin>@the-claude-factory` — or browse `/plugin` → **Discover** |
-| 🖥️ Desktop app, Code tab | **+** → **Plugins** → **Add plugin** |
+| 🖥️ Desktop app | Any of three ways: **+** next to the prompt box → **Add plugins** (or **Plugins** → **Browse plugins**) · **Settings** → **Plugins** → **Discover** · **Customize** in the sidebar → **Plugins** → **Discover** |
 | 🧩 VS Code | Type `/plugins` → **Plugins** tab → **Install** |
 | 🖥️ Claude app | **Customize** → **Plugins** → **Discover** → select the plugin → **Add** |
 
@@ -104,8 +104,8 @@ Plugin skills are namespaced, so they never collide with yours: type `/<plugin>:
 <!-- catalog:start -->
 | Category | Plugins |
 | :-- | :--: |
-| [🛠️ Development](#️-development) | 2 |
-| [⚡ Productivity](#-productivity) | 1 |
+| [🛠️ Development](#️-development) | 3 |
+| [⚡ Productivity](#-productivity) | 3 |
 | [🤖 Automation](#-automation) | 1 |
 | [🧪 Testing & Quality](#-testing--quality) | 3 |
 | [🛡️ Security](#️-security) | 1 |
@@ -119,6 +119,7 @@ Plugin skills are namespaced, so they never collide with yours: type `/<plugin>:
 | Plugin | What it does | Works in | Version | Includes |
 | :-- | :-- | :-- | :--: | :-- |
 | [**GitHub Operations**](./plugins/github-operations#readme)<br>`github-operations@the-claude-factory` | Carries a GitHub pull request from open to merge, cleans up a Git repository without losing work, and brings the GitHub MCP server with it. | 💻 Code only | `0.4.0` | 🎯 Skills · 🤖 Agents · 🔌 MCP |
+| [**Mods Engineering**](./plugins/mods-engineering#readme)<br>`mods-engineering@the-claude-factory` | Designs, builds, reviews, tests and debugs Claude Code mods, checking every interface against the current mod docs and the type declarations your own Claude Code build writes. | 💻 Code · 🖥️ Claude app | `0.1.0` | 🎯 Skills |
 | [**Svelte Development**](./plugins/svelte-development#readme)<br>`svelte-development@the-claude-factory` | Writes, reviews and migrates Svelte 5 and SvelteKit 3 code by current practice, checking every change against the official Svelte docs and autofixer, the Svelte language server and your project's own check. | 💻 Code · 🖥️ Claude app | `0.1.0` | 🎯 Skills · 🤖 Agents · 🔌 MCP · 🧠 LSP |
 
 ### ⚡ Productivity
@@ -128,6 +129,8 @@ Plugin skills are namespaced, so they never collide with yours: type `/<plugin>:
 | Plugin | What it does | Works in | Version | Includes |
 | :-- | :-- | :-- | :--: | :-- |
 | [**Prompt Writer**](./plugins/prompt-writer#readme)<br>`prompt-writer@the-claude-factory` | Turns a goal, idea or draft into one copy-ready prompt tuned to the target Claude model and effort: it clarifies intent, checks current official facts and recommends the setup to run it with. | 💻 Code · 🖥️ Claude app | `0.2.0` | 🎯 Skills |
+| [**Tool Ledger**](./plugins/tool-ledger#readme)<br>`tool-ledger@the-claude-factory` | Lists every tool call of the session in a live panel: what ran, on what, whether Claude or a subagent made it, and whether it finished, failed or was denied. | 💻 Code only | `0.1.0` | 🧩 Mods |
+| [**Turn Meter**](./plugins/turn-meter#readme)<br>`turn-meter@the-claude-factory` | Shows how long each turn took, how many tools it used in the main thread and in subagents, and the tokens it spent, in a band above the prompt, and alerts you when a long turn ends. | 💻 Code only | `0.1.0` | 🧩 Mods |
 
 ### 🤖 Automation
 
@@ -161,7 +164,7 @@ Plugin skills are namespaced, so they never collide with yours: type `/<plugin>:
 
 | Plugin | What it does | Works in | Version | Includes |
 | :-- | :-- | :-- | :--: | :-- |
-| [**Project Maintainer**](./plugins/project-maintainer#readme)<br>`project-maintainer@the-claude-factory` | Keeps a project's memory in its .claude folder: decisions recorded as ADRs, technical debt tracked in a ledger, and a handoff that carries each session's state to the next one. | 💻 Code · 🖥️ Claude app | `0.2.0` | 🎯 Skills · 🪝 Hooks |
+| [**Project Maintainer**](./plugins/project-maintainer#readme)<br>`project-maintainer@the-claude-factory` | Keeps a project's memory in its .claude folder: decisions recorded as ADRs, technical debt tracked in a ledger, and a handoff that carries each session's state to the next one. | 💻 Code · 🖥️ Claude app | `0.2.0` | 🎯 Skills · 🪝 Hooks · 🧩 Mods |
 
 ### 🧠 Language Support
 
@@ -174,7 +177,7 @@ Plugin skills are namespaced, so they never collide with yours: type `/<plugin>:
 | [**TypeScript 6 LSP Intelligence**](./plugins/typescript6-lsp-intelligence#readme)<br>`typescript6-lsp-intelligence@the-claude-factory` | Connects your TypeScript 6 language server to Claude Code, type-checks every file Claude edits with your own TypeScript under a strictest policy, and teaches Claude to find the program that owns a file and fix compiler findings without unsafe assertions or suppressions. | 💻 Code only | `0.3.0` | 🎯 Skills · 🪝 Hooks · 🧠 LSP |
 | [**TypeScript 7 LSP Intelligence**](./plugins/typescript7-lsp-intelligence#readme)<br>`typescript7-lsp-intelligence@the-claude-factory` | Connects the native TypeScript 7 language server to Claude Code, type-checks every file Claude edits with your own native TypeScript 7 compiler under a strictest policy, and teaches Claude to find the program that owns a file and fix compiler findings without unsafe assertions or suppressions. | 💻 Code only | `0.4.0` | 🎯 Skills · 🪝 Hooks · 🧠 LSP |
 
-<sub>**Legend:** 🎯 Skills · ⌨️ Commands · 🤖 Agents · 🪝 Hooks · 🔌 MCP · 🧠 LSP · 🎨 Output styles · 📡 Monitors · 🔁 Workflows · 🌈 Themes · ⚙️ Executables</sub>
+<sub>**Legend:** 🎯 Skills · ⌨️ Commands · 🤖 Agents · 🪝 Hooks · 🧩 Mods · 🔌 MCP · 🧠 LSP · 🎨 Output styles · 📡 Monitors · 🔁 Workflows · 🌈 Themes · ⚙️ Executables</sub>
 <!-- catalog:end -->
 
 ## 🔧 Manage your plugins
@@ -206,6 +209,7 @@ The same plugin installs in Claude Code and in the Claude app, but each loads a 
 | 🎯 Skills | ✅ | ✅ |
 | 🤖 Agents | ✅ | ⚠️ in Cowork sessions |
 | 🪝 Hooks | ✅ | ⚠️ in Cowork sessions |
+| 🧩 Mods | ✅ except a Desktop session on WSL | ⚠️ listed for Claude Code only |
 | 🔌 Remote MCP servers | ✅ | 🔗 connect on the plugin's **Connectors** tab |
 | 🖥️ Local MCP servers | ✅ | ⚠️ in Cowork sessions on your computer |
 | 🧠 LSP · 🎨 Output styles · 🌈 Themes | ✅ | ➖ |

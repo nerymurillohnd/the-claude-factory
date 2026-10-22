@@ -105,7 +105,7 @@ Requires Claude Code v2.1.275+. With the marketplace already added, `/plugin ins
 3. Find **Svelte Development** in **Discover** and select **Add**.
 4. On the plugin's **Connectors** tab, connect `svelte` so its docs and autofixer tools are available.
 
-In the desktop app's **Code** tab you can also click **+** → **Plugins** → **Add plugin**.
+In the desktop app's **Code** tab you can also click **+** next to the prompt box → **Add plugins** (or **Plugins** → **Browse plugins**), or open **Settings** → **Plugins** → **Discover**.
 
 </details>
 

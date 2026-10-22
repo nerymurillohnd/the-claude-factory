@@ -32,6 +32,12 @@
       "category": "automation"
     },
     {
+      "name": "mods-engineering",
+      "source": "./plugins/mods-engineering",
+      "description": "Designs, builds, reviews, tests and debugs Claude Code mods, checking every interface against the current mod docs and the type declarations your own Claude Code build writes.",
+      "category": "development"
+    },
+    {
       "name": "plugin-evals",
       "source": "./plugins/plugin-evals",
       "description": "Makes Claude an expert in Claude Code plugin evals: designs suites that prove what a plugin adds, writes cases, graders and mocks, runs and gates them in CI, and reads the results, always checked against the CLI and docs you have today.",
@@ -72,6 +78,18 @@
       "source": "./plugins/svelte-development",
       "description": "Writes, reviews and migrates Svelte 5 and SvelteKit 3 code by current practice, checking every change against the official Svelte docs and autofixer, the Svelte language server and your project's own check.",
       "category": "development"
+    },
+    {
+      "name": "tool-ledger",
+      "source": "./plugins/tool-ledger",
+      "description": "Lists every tool call of the session in a live panel: what ran, on what, whether Claude or a subagent made it, and whether it finished, failed or was denied.",
+      "category": "productivity"
+    },
+    {
+      "name": "turn-meter",
+      "source": "./plugins/turn-meter",
+      "description": "Shows how long each turn took, how many tools it used in the main thread and in subagents, and the tokens it spent, in a band above the prompt, and alerts you when a long turn ends.",
+      "category": "productivity"
     },
     {
       "name": "typescript6-lsp-intelligence",

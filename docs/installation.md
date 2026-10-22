@@ -54,13 +54,15 @@ Plugins installed from the shell load the next time you start Claude Code, or ri
 
 ## 🖥️ Claude desktop app — Code tab
 
-In a local or SSH session:
+In a local or SSH session, open the plugins in any of three ways:
 
-1. Click **+** next to the prompt box → **Plugins** → **Add plugin**.
-2. Find the plugin and select it.
-3. Choose a scope.
+- **From the prompt box:** click **+** next to it → **Add plugins**. If the menu shows **Plugins** instead, select **Plugins** → **Browse plugins**.
+- **From Settings:** open **Settings** → **Plugins**. **Yours** lists what you have, including the plugins of the current project, and **Discover** lists the rest; **Add** adds a marketplace or a plugin.
+- **From the sidebar:** open **Customize** → **Plugins** → **Discover**. This installs the plugin on your claude.ai account, as in the [Claude app](#️-claude-app) below.
 
-Manage installed plugins later from **+** → **Plugins** → **Manage plugins**. The plugin browser isn't available in the desktop app's cloud sessions.
+Then find the plugin, select it and choose a scope.
+
+Manage installed plugins later from **+** → **Plugins** → **Manage plugins**, or from **Settings** → **Plugins** → **Yours**. The plugin browser isn't available in the desktop app's cloud sessions.
 
 > [!NOTE]
 > The desktop app's local sessions, the terminal and VS Code on the same computer share the same settings files — a plugin installed at user scope in one is available in the others.

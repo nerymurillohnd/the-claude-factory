@@ -6,6 +6,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The
 
 ## 2026-10-22
 
+### Added
+
+- **mods-engineering** 0.1.0 — designs, builds, reviews, tests and debugs Claude Code mods, checking every interface against the current mod docs and the type declarations your own Claude Code build writes.
+- **turn-meter** 0.1.0 — shows how long each turn took, its tool calls in the main thread and in subagents, and the tokens it spent, in a band above the prompt, and alerts you when a long turn ends.
+- **tool-ledger** 0.1.0 — lists every tool call of the session in a live panel: what ran, on what, whether Claude or a subagent made it, and whether it finished, failed or was denied.
+
 ### Changed
 
 - **project-maintainer** 0.2.0 — **Breaking:** requires Claude Code v2.1.307 or later, which puts every guardrail prompt to you with no classifier able to answer it; a broken check now fails closed for the records only, and the README says what each piece does and prevents and how to check that the guardrails run.
