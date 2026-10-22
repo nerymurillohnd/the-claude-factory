@@ -179,7 +179,7 @@ The panel draws in the terminal and the desktop app's **Code** tab. The VS Code 
 
 ### Limitations
 
-- **Denied** covers a `{ deny }` from another mod, a `PreToolUse` hook in your settings, and a deny rule that refuses the call at the permission check, such as `Bash(cat:*)`. A Read, Edit or Write of a path a deny rule covers is refused earlier, by the tool's own input check, so it shows as `error`. A call you decline at a permission prompt can also show as `error`.
+- **Denied** covers a `{ deny }` from another mod, a `PreToolUse` hook in your settings, and a deny rule that refuses the call at the permission check, such as `Bash(cat:*)`. A Read, Edit or Write of a path a deny rule covers is refused earlier, by the tool's own input check, so it shows as `error`. A call you decline at a permission prompt shows as `error`, and its duration includes the time the prompt waited for you.
 - A `PreToolUse` hook in managed settings runs ahead of every mod, so a call it denies shows as `error`.
 - A call that is interrupted before it returns can stay at `runs`.
 - If the plugin reloads in the middle of a call, such as when you update it, that call's row may not close.
