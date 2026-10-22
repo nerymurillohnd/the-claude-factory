@@ -48,16 +48,17 @@ export const formatDuration = (ms: number, isShort = false): string => {
   return `${minutes}m${isShort ? '' : ' '}${String(seconds).padStart(2, '0')}s`
 }
 
-// "6.3k" and "41.2k"; the short form rounds to whole thousands: "47k".
+// "6.3k" and "41.2k"; the short form rounds to whole thousands: "47k". The unit is picked after
+// rounding, so 999,999 reads "1M", never "1000k".
 export const formatTokens = (count: number, isShort = false): string => {
-  if (count >= 1_000_000) {
-    return `${(count / 1_000_000).toFixed(1).replace(/\.0$/, '')}M`
+  const thousands = isShort ? String(Math.round(count / 1000)) : (count / 1000).toFixed(1)
+
+  if (count >= 1000 && Number(thousands) < 1000) {
+    return `${thousands.replace(/\.0$/, '')}k`
   }
 
   if (count >= 1000) {
-    return isShort
-      ? `${Math.round(count / 1000)}k`
-      : `${(count / 1000).toFixed(1).replace(/\.0$/, '')}k`
+    return `${(count / 1_000_000).toFixed(1).replace(/\.0$/, '')}M`
   }
 
   return String(count)
@@ -196,15 +197,20 @@ export const register: Register = (on: On, options: PluginOptions): void => {
     }
 
     const { Box, Button, Text } = $.ui.resolve(e)
+    // The band is shared: what the mods after this one draw stays beneath the row.
+    const below = await next(e)
 
     return (
-      <Box flexDirection="row" gap={1}>
-        <Text dimColor={true}>{bandText(turn, settings.showTokens, e.props.bodyColumns)}</Text>
-        <Button
-          key="hide"
-          label="Hide"
-          onPress={(): Promise<boolean> => update($, isHidden, () => true)}
-        />
+      <Box flexDirection="column">
+        <Box flexDirection="row" gap={1}>
+          <Text dimColor={true}>{bandText(turn, settings.showTokens, e.props.bodyColumns)}</Text>
+          <Button
+            key="hide"
+            label="Hide"
+            onPress={(): Promise<boolean> => update($, isHidden, () => true)}
+          />
+        </Box>
+        {below}
       </Box>
     )
   })

@@ -264,6 +264,38 @@ test('the band yields to a survey and waits for the first turn', async ($, on) =
   }
 })
 
+test('the band keeps what the mods after it draw', async ($, on) => {
+  stubEngine(on)
+  await start($)
+  await runTurn($, { durationMs: 5000 })
+
+  for (const surface of SURFACES) {
+    const ui = await mountBand($, surface)
+    expect((await ui.find({ type: 'Text', text: /Last turn/ }))?.text).toBe(
+      'Last turn: 5s · 0 tools',
+    )
+    expect((await ui.find({ type: 'Text', text: /engine/ }))?.text).toBe('engine')
+    await ui.unmount()
+  }
+})
+
+test('tokens switch to millions once they round to a thousand thousands', async ($, on) => {
+  stubEngine(on)
+  await start($)
+  await runTurn($, {
+    durationMs: 5000,
+    usage: {
+      ...USAGE,
+      input_tokens: 999_999,
+      cache_read_input_tokens: 0,
+      cache_creation_input_tokens: 0,
+      output_tokens: 999_960,
+    },
+  })
+
+  expect(await bandLine($, 'terminal')).toBe('Last turn: 5s · 0 tools · 1M in / 1M out')
+})
+
 test('a narrow band shows the short form', async ($, on) => {
   stubEngine(on)
   await start($)

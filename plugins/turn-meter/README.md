@@ -24,7 +24,7 @@
 💻 **Claude Code only** — it is a mod: it draws in Claude Code's own interface, which the Claude app's chat and Cowork don't load.
 
 > [!TIP]
-> **TL;DR** — After every turn, one line above the prompt tells you how long it took, how many tools Claude and its subagents ran and how many tokens it spent, and a long turn sends you a notification when it ends.
+> **TL;DR** — After every turn, one line above the prompt tells you how long it took, how many tools Claude and its subagents ran and how many tokens it spent, and a long turn alerts you when it ends: a toast by default, or a native notification.
 
 ## ✨ Why use it
 
@@ -32,7 +32,7 @@
 - **Know how much work subagents did** — tool calls are split between the main thread and subagents, and their tokens are added in.
 - **Walk away from long turns** — a toast or a native notification tells you when a turn that ran past your threshold is done.
 - **Spot what went wrong** — an interrupted turn, an API error and a refusal each say so, with how long they ran.
-- **Stays out of the way** — it only observes: it never changes a prompt, a tool call or a reply, and one keystroke hides it.
+- **Stays out of the way** — it only observes: it never changes a prompt, a tool call or a reply, and the **Hide** button or `/turn-meter` hides it.
 
 ## 🧩 What's inside
 
@@ -84,7 +84,7 @@ Requires Claude Code v2.1.275+. With the marketplace already added, `/plugin ins
 <details>
 <summary><b>🖥️ Claude desktop app — Code tab</b></summary>
 
-Click **+** → **Plugins** → **Add plugin**, and add `turn-meter` from `nerymurillohnd/the-claude-factory`.
+With the marketplace added, click **+** next to the prompt box → **Add plugins** (or **Plugins** → **Browse plugins**), select **Turn Meter** and choose a scope.
 
 </details>
 
@@ -112,7 +112,7 @@ Last turn: 3m 12s · 24 tools (9 in 2 subagents) · 41.2k in / 6.3k out   [ Hide
 | You pressed Esc | `Last turn: interrupted after 1m 05s · 7 tools` |
 | An API error ended it | `Last turn: ended by API error after 40s · 3 tools` |
 | The model refused | `Last turn: refused after 12s` |
-| A narrow terminal (under 60 columns) | `3m12s · 24 tools · 48k tok` |
+| A narrow band (under 60 columns of room) | `3m12s · 24 tools · 48k tok` |
 
 ### Example: hide or show the band
 
