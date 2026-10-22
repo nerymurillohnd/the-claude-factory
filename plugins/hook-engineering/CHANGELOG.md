@@ -15,6 +15,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 ### Changed
 
 - The `hook-engineer` agent now inherits your session's tools instead of a fixed list, so it can use the docs server under any name, a Claude app connector included.
+- When `python3`, `curl` or `awk` is missing, the skill names the tool, says which check could not run and marks what that check would have proved as unverified.
 
 ## [0.1.0] - 2026-10-21
 

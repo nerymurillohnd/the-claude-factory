@@ -64,7 +64,7 @@ claude mcp add --transport http --scope user claude-code-docs https://code.claud
 
 Check it with `claude mcp list`: `claude-code-docs` should show `✔ Connected`. It needs no sign-in and no credentials.
 
-Keep the name `claude-code-docs`, the one the [official MCP quickstart](https://code.claude.com/docs/en/mcp-quickstart) uses. The `hook-engineer` agent and the skill call the server's tools as `mcp__claude-code-docs__*`; under another name they have to search for the tools first.
+Use the name `claude-code-docs`, the one the [official MCP quickstart](https://code.claude.com/docs/en/mcp-quickstart) uses: the skill and the `hook-engineer` agent look for `mcp__claude-code-docs__*` first. Another name works too, because they find the docs tools by the tools' own names.
 
 In the Claude app, add it as a custom connector instead; the steps are under [Installation](#-installation).
 
