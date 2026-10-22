@@ -288,11 +288,11 @@ Your records and handoffs stay in your project's `.claude/` folder; they are ord
 | Component | Claude Code | Claude app |
 | :-- | :--: | :--: |
 | 🎯 Skills | ✅ | ⚠️ loads everywhere; saves records and handoffs only where it can reach your project folder |
-| 🪝 Hooks | ✅ | ⚠️ the start-of-session reminder runs in Cowork sessions, not in a chat conversation; the guardrails are documented for Claude Code only |
+| 🪝 Hooks | ✅ | ⚠️ the start-of-session reminder runs in Cowork sessions, not in a chat conversation; the guardrails are a mod, which the plugin directory lists for Claude Code only |
 
 <sub>✅ works · ⚠️ partial · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. The Claude app (web, desktop and mobile) runs a conversation as a Cowork session when it can, and as a chat conversation otherwise, for example on a device that can't run Cowork or in the separate Chat mode that Team and Enterprise plans keep for now.</sub>
 
-Records and handoffs live in your project folder, so the plugin needs a session that works in one: Claude Code, or a Cowork session on your computer. In a chat conversation there is no project folder, so Claude can draft a record or a handoff there but cannot save it. If the start-of-session reminder does not appear in a Cowork session, ask Claude to read the newest handoff in `.claude/session-handoff/`. The guardrails are a Claude Code mod; Claude Code documents where mods run for its own sessions (the terminal, the Desktop app's Code tab, the VS Code extension, `claude -p`, the Agent SDK, Remote Control and cloud sessions), and it does not mention the Claude app's chat or Cowork. That is unverified: treat the guardrails as not available there, where the rules of the records are instructions Claude follows.
+Records and handoffs live in your project folder, so the plugin needs a session that works in one: Claude Code, or a Cowork session on your computer. In a chat conversation there is no project folder, so Claude can draft a record or a handoff there but cannot save it. If the start-of-session reminder does not appear in a Cowork session, ask Claude to read the newest handoff in `.claude/session-handoff/`. The guardrails are a Claude Code mod; Claude Code documents where mods run for its own sessions (the terminal, the Desktop app's Code tab, the VS Code extension, `claude -p`, the Agent SDK, Remote Control and cloud sessions), and the Claude app's plugin directory [lists a mod for Claude Code only](https://claude.com/docs/plugins/platform-support#compare-component-support-by-app). Treat the guardrails as not available in the Claude app's chat or Cowork, where the rules of the records are instructions Claude follows.
 
 ## ❓ FAQ & Troubleshooting
 

@@ -14,6 +14,7 @@ Claude Code and the Claude app (web, desktop and mobile) can both install the sa
 | ⌨️ **Commands** (`commands/*.md`) | ✅ | ✅ run as `/plugin:command`; loaded as a skill in a chat conversation |
 | 🤖 **Agents** (`agents/*.md`) | ✅ | ⚠️ in Cowork sessions, not in a chat conversation |
 | 🪝 **Hooks** (`hooks/hooks.json`) | ✅ | ⚠️ in Cowork sessions, not in a chat conversation |
+| 🧩 **Mods** (a hooks module under `modules` in `hooks/hooks.json`) | ✅ every Claude Code session except a Desktop session on WSL | ⚠️ the plugin directory lists a mod for Claude Code only |
 | 🔌 **Remote MCP server** (`http`/`sse`, fixed URL) | ✅ | 🔗 add or connect it on the plugin's **Connectors** tab |
 | 🖥️ **Local MCP server** (a command, incl. `.mcpb`) | ✅ | ⚠️ only in Cowork sessions on your computer |
 | 🔐 **MCP server using `${user_config.*}`** | ✅ prompts you for values | 🔗 the app can't fill the values: when they sit in headers, the plugin's **Connectors** tab lists the server as not added, and it works once you connect it there and enter them yourself, such as a token as a request header; a chat conversation skips it when its URL holds the reference |
