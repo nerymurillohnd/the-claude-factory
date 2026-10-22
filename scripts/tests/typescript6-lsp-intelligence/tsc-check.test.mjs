@@ -20,7 +20,7 @@ import { dirname, join, resolve } from 'node:path'
 import { afterEach, beforeEach, describe, test } from 'node:test'
 import { fileURLToPath } from 'node:url'
 
-const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..')
+const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..', '..')
 const PLUGIN = join(ROOT, 'plugins', 'typescript6-lsp-intelligence')
 const HOOK = join(PLUGIN, 'hooks', 'tsc-check.sh')
 const HAVE_TSC = spawnSync('sh', ['-c', 'command -v tsc']).status === 0

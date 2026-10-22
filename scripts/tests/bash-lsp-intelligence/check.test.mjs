@@ -19,7 +19,7 @@ import { dirname, join, resolve } from 'node:path'
 import { afterEach, beforeEach, describe, test } from 'node:test'
 import { fileURLToPath } from 'node:url'
 
-const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..')
+const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..', '..')
 const PLUGINS = join(ROOT, 'plugins')
 const BASH_HOOK = join(PLUGINS, 'bash-lsp-intelligence', 'hooks', 'check.mjs')
 const SECONDS_AGO = 600
