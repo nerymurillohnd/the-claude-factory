@@ -1,0 +1,13 @@
+{
+  "name": "the-claude-factory-maintainer",
+  "private": true,
+  "description": "Maintainer tooling of the marketplace repository only. Never a runtime of any plugin: plugins ship only their own folder.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nerymurillohnd/the-claude-factory.git"
+  },
+  "devDependencies": {
+    "@types/node": "26.6.5"
+  }
+}

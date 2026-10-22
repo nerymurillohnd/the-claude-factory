@@ -143,6 +143,60 @@ export function lspConfigProblems(config) {
   return problems
 }
 
+// ── Root package.json: maintainer tooling only, never a plugin runtime (ADR_2026-10-21_maintainer-only-root-package-json) ──
+const RUNTIME_FIELDS = [
+  'dependencies',
+  'optionalDependencies',
+  'peerDependencies',
+  'bundleDependencies',
+  'bundledDependencies',
+  'main',
+  'exports',
+  'bin',
+  'type',
+  'workspaces',
+]
+
+/**
+ * Problems in the root package.json. It may only pin exact @types/* packages for the
+ * maintainers' type checks, with @types/node on the Node major of .nvmrc: a runtime field
+ * would let a plugin resolve packages that no user receives, and "type" would change how
+ * Node and tsc read the plugins' .js and .ts files.
+ * @param {{ private?: unknown, devDependencies?: unknown } & Record<string, unknown>} pkg
+ * @param {string} nodeVersion the content of .nvmrc
+ * @returns {string[]}
+ */
+export function rootPackageProblems(pkg, nodeVersion) {
+  /** @type {string[]} */
+  const problems = []
+  if (pkg.private !== true) {
+    problems.push('must set "private": true')
+  }
+  for (const field of RUNTIME_FIELDS) {
+    if (field in pkg) {
+      problems.push(`must not declare "${field}": it is maintainer tooling, never a plugin runtime`)
+    }
+  }
+  const dev = isRecord(pkg.devDependencies) ? pkg.devDependencies : {}
+  for (const [name, version] of Object.entries(dev)) {
+    if (!name.startsWith('@types/')) {
+      problems.push(
+        `devDependency "${name}" is not a type package: run tools with npx at a pinned version`,
+      )
+    } else if (typeof version !== 'string' || !SEMVER.test(version)) {
+      problems.push(`devDependency "${name}" must be pinned to an exact version`)
+    }
+  }
+  const types = dev['@types/node']
+  const nodeMajor = nodeVersion.trim().replace(/^v/, '').split('.')[0]
+  if (types === undefined) {
+    problems.push('must declare "@types/node" in devDependencies for the scripts\' type check')
+  } else if (typeof types === 'string' && types.split('.')[0] !== nodeMajor) {
+    problems.push(`@types/node ${types} does not match the Node major ${nodeMajor} of .nvmrc`)
+  }
+  return problems
+}
+
 /**
  * The plugin's files as a clone holds them: tracked and new untracked, never git-ignored.
  * @param {string} dir
@@ -431,6 +485,17 @@ export function checkRepo() {
     }
   } catch (e) {
     err('README.md', e instanceof Error ? e.message : String(e))
+  }
+
+  // ── Root package.json ──────────────────────────────────────────────────────
+  try {
+    const pkg = readJson(join(ROOT, 'package.json'))
+    const nodeVersion = readText(join(ROOT, '.nvmrc'))
+    for (const problem of rootPackageProblems(isRecord(pkg) ? pkg : {}, nodeVersion)) {
+      err('package.json', problem)
+    }
+  } catch (e) {
+    err('package.json', e instanceof Error ? e.message : String(e))
   }
 
   // ── Root CHANGELOG ─────────────────────────────────────────────────────────

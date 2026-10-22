@@ -21,7 +21,7 @@ import { dirname, join, resolve, sep } from 'node:path'
 import { afterEach, beforeEach, describe, test } from 'node:test'
 import { fileURLToPath } from 'node:url'
 import { anchor } from '../catalog.mjs'
-import { lspConfigProblems, portabilityProblems } from '../check-repo.mjs'
+import { lspConfigProblems, portabilityProblems, rootPackageProblems } from '../check-repo.mjs'
 import { changelogSection } from '../lib.mjs'
 
 const REAL_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..', '..')
@@ -191,6 +191,15 @@ describe('check-repo', () => {
     const r = run('check-repo.mjs')
     assert.equal(r.code, 1)
     assert.match(r.out, /plugins\/orphan.*not listed/)
+  })
+
+  test('flags a root package.json that declares runtime dependencies', () => {
+    const pkg = json('package.json')
+    pkg.dependencies = { lodash: '4.17.21' }
+    write('package.json', `${JSON.stringify(pkg, null, 2)}\n`)
+    const r = run('check-repo.mjs')
+    assert.equal(r.code, 1)
+    assert.match(r.out, /\[package\.json\] must not declare "dependencies"/)
   })
 
   test('flags a version on the marketplace itself', () => {
@@ -716,6 +725,46 @@ describe('lsp config rules', () => {
     assert.match(problems, /"b" is missing command/)
     assert.match(problems, /"c" has an invalid startupTimeout/)
     assert.equal(lspConfigProblems({}).length, 1)
+  })
+})
+
+describe('root package.json rules', () => {
+  const pkg = { private: true, devDependencies: { '@types/node': '26.6.5' } }
+
+  test('accept the maintainer-only package', () => {
+    assert.deepEqual(rootPackageProblems(pkg, '26.12.1'), [])
+  })
+
+  test('flag anything that could make it a plugin runtime', () => {
+    const problems = rootPackageProblems(
+      {
+        dependencies: { lodash: '4.17.21' },
+        main: 'index.js',
+        type: 'module',
+        devDependencies: { typescript: '6.0.3', '@types/node': '^26.6.5' },
+      },
+      '26.12.1',
+    ).join('\n')
+    assert.match(problems, /"private": true/)
+    assert.match(problems, /must not declare "dependencies"/)
+    assert.match(problems, /must not declare "main"/)
+    assert.match(problems, /must not declare "type"/)
+    assert.match(problems, /"typescript" is not a type package/)
+    assert.match(problems, /"@types\/node" must be pinned to an exact version/)
+  })
+
+  test('flag @types/node on another major than .nvmrc', () => {
+    assert.match(
+      rootPackageProblems(pkg, 'v27.0.0').join('\n'),
+      /@types\/node 26\.6\.5 does not match the Node major 27 of \.nvmrc/,
+    )
+  })
+
+  test('flag a missing @types/node', () => {
+    assert.match(
+      rootPackageProblems({ private: true, devDependencies: {} }, '26.12.1').join('\n'),
+      /must declare "@types\/node"/,
+    )
   })
 })
 
