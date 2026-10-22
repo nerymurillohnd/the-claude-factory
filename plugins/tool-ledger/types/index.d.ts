@@ -21,6 +21,8 @@ declare module 'claude-code' {
       /** Each subagent's label, `type · "description"`, by agent id. */
       agents: Record<string, string>
       isErrorsOnly: boolean
+      /** Whether `autoOpen: sidebar` already opened the panel this session. */
+      isAutoOpened: boolean
     }
   }
 }

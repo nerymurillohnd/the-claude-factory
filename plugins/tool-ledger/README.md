@@ -50,7 +50,7 @@
 | **Accounts / API keys** | None |
 
 > [!NOTE]
-> Tool Ledger makes no network calls, runs no commands, and reads or writes no files. The ledger lives only in the session's memory: nothing is saved to disk or carried to the next session. The panel shows what the transcript already shows.
+> Tool Ledger makes no network calls, runs no commands, and reads or writes no files. The ledger lives only in the session's memory: nothing is saved to disk or carried to the next session, and `/clear`, `/resume` and `/branch` start it empty. The panel shows what the transcript already shows.
 
 ## 📥 Installation
 
@@ -83,7 +83,7 @@ Requires Claude Code v2.1.275+. With the marketplace already added, `/plugin ins
 <details>
 <summary><b>🖥️ Claude desktop app — Code tab</b></summary>
 
-Click **+** → **Plugins** → **Add plugin**, and add `tool-ledger` from `nerymurillohnd/the-claude-factory`.
+With the marketplace added, click **+** next to the prompt box → **Add plugins** (or **Plugins** → **Browse plugins**), select **Tool Ledger** and choose a scope.
 
 </details>
 
@@ -134,13 +134,13 @@ Press **Errors only** in the panel. It shows failed and denied calls, and the bu
 claude plugin install tool-ledger@the-claude-factory --config autoOpen=sidebar
 ```
 
-**Result:** in a fullscreen terminal session, the panel opens by itself beside the transcript once the terminal is at least 144 columns wide. When you open it yourself with `/tool-ledger`, it fits any width.
+**Result:** where the panel can dock beside the transcript, it opens by itself once per session: in a fullscreen terminal from 144 columns wide, or on another surface that reports it docks panels. When you open it yourself with `/tool-ledger`, it fits any width.
 
 ## ⚙️ Configuration
 
 | Option | Type | Default | Description |
 | :-- | :-- | :-- | :-- |
-| `autoOpen` | `never` or `sidebar` | `never` | `sidebar` opens the panel by itself in a fullscreen terminal, beside the transcript, from 144 columns |
+| `autoOpen` | `never` or `sidebar` | `never` | `sidebar` opens the panel by itself, once per session, where it can dock beside the transcript, such as a fullscreen terminal from 144 columns |
 | `showTargets` | boolean | `true` | Turn it off to hide commands, paths, patterns and subagent tasks, for example while you share your screen |
 | `maxRows` | number, 10 to 2000 | `500` | How many of the latest calls the session keeps |
 
@@ -175,7 +175,7 @@ In a session: `/plugin` → **Installed** → **Tool Ledger** → **Uninstall**.
 
 <sub>✅ works · ⚠️ partial · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. The Claude app (web, desktop and mobile) runs a conversation as a Cowork session when it can, and as a chat conversation otherwise, for example on a device that can't run Cowork or in the separate Chat mode that Team and Enterprise plans keep for now.</sub>
 
-The panel draws in the terminal and the desktop app's **Code** tab. The VS Code extension and `claude -p` don't place panels: there the mod still records calls, but you can't see the ledger.
+The panel draws in the terminal, the desktop app's **Code** tab and the VS Code extension (extension v2.1.299+, or v2.1.304+ in a session that doesn't fetch feature flags, such as one on Amazon Bedrock). `autoOpen` doesn't open it in VS Code: open it there with `/tool-ledger`. In `claude -p` and cloud sessions nothing draws: the mod still records calls, but you can't see the ledger.
 
 ### Limitations
 
@@ -192,14 +192,14 @@ The panel draws in the terminal and the desktop app's **Code** tab. The VS Code 
 <details open>
 <summary><b><code>/tool-ledger</code> says the panel is open but not shown.</b></summary>
 
-The surface you are on can't place panels yet, or the terminal is too narrow for a panel that opened by itself. The reply names the reason. Panels show in the terminal and the desktop app's **Code** tab. Run `/plugin` to check that `tool-ledger` is listed among active mods; if it is missing, start Claude Code with `claude --debug` and look in the debug log for `tool-ledger`, where a line names why the module was not loaded or a hook was skipped.
+The surface you are on can't place panels yet, or the terminal is too narrow for a panel that opened by itself. The reply names the reason. Panels show in the terminal, the desktop app's **Code** tab and the VS Code extension. Run `/plugin` to check that `tool-ledger` is listed among active mods; if it is missing, start Claude Code with `claude --debug` and look in the debug log for `tool-ledger`, where a line names why the module was not loaded or a hook was skipped.
 
 </details>
 
 <details>
 <summary><b>Can Tool Ledger change or slow down my tool calls?</b></summary>
 
-No. It records a row before the call and closes it after, and always passes the call on unchanged. If recording fails, the call still runs exactly once and returns its own result. It never blocks or approves anything: keep using permission rules and hooks for that.
+It never changes them. Before each call it does a few quick bookkeeping steps in the session's memory (read the clock, add a row, and look up a subagent the first time it appears), and after the call it closes the row; the call itself always passes on unchanged. If recording fails, the call still runs exactly once and returns its own result. It never blocks or approves anything: keep using permission rules and hooks for that.
 
 </details>
 

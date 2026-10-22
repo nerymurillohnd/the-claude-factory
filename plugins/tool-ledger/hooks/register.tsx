@@ -9,7 +9,7 @@ type Settings = {
   maxRows: number
 }
 
-type Line = { key: string; text: string; status: LedgerStatus | null; isNested: boolean }
+type Line = { key: string; text: string; status: LedgerStatus | null; header: Line | null }
 
 const COMMAND = 'tool-ledger'
 const PANE = 'tool-ledger'
@@ -19,6 +19,7 @@ const COMMAND_CHARS = 60
 const rowsAtom = atom({ plugin: 'tool-ledger', key: 'rows' } as const, [])
 const agentsAtom = atom({ plugin: 'tool-ledger', key: 'agents' } as const, {})
 const errorsOnlyAtom = atom({ plugin: 'tool-ledger', key: 'isErrorsOnly' } as const, false)
+const autoOpenedAtom = atom({ plugin: 'tool-ledger', key: 'isAutoOpened' } as const, false)
 
 // The engine fills in the manifest's defaults; these only cover a value of the wrong type.
 const readSettings = (options: PluginOptions): Settings => {
@@ -68,10 +69,16 @@ export const targetOf = (input: object & { tool: string }, cwd: string): string 
   }
 }
 
-export const formatDuration = (ms: number): string =>
-  ms < 60_000
-    ? `${(ms / 1000).toFixed(1)}s`
-    : `${Math.floor(ms / 60_000)}m ${Math.round((ms % 60_000) / 1000)}s`
+// "0.1s" and "14.2s" under a minute, then "2m 05s"; seconds are rounded before the minutes are
+// taken, so 119.6 s reads "2m 00s", never "1m 60s".
+export const formatDuration = (ms: number): string => {
+  const tenths = Math.round(ms / 100)
+  if (tenths < 600) {
+    return `${(tenths / 10).toFixed(1)}s`
+  }
+  const seconds = Math.round(ms / 1000)
+  return `${Math.floor(seconds / 60)}m ${String(seconds % 60).padStart(2, '0')}s`
+}
 
 const clip = (text: string, width: number): string =>
   text.length <= width ? text : `${text.slice(0, Math.max(0, width - 1))}…`
@@ -123,29 +130,36 @@ export const layout = (
         key: entry.row.id,
         text: rowText(entry.row, showTargets, columns, 0),
         status: entry.row.status,
-        isNested: false,
+        header: null,
       })
       continue
     }
     const label = agents[entry.agentId] ?? entry.agentId
     // Without targets, keep only the subagent's type: its description can say as much as a target.
     const header = showTargets ? label : (label.split(' · ')[0] ?? label)
-    lines.push({
+    const headerLine: Line = {
       key: `agent-${entry.agentId}`,
       text: clip(`▸ ${header}`, columns),
       status: null,
-      isNested: false,
-    })
+      header: null,
+    }
+    lines.push(headerLine)
     for (const row of entry.rows) {
       lines.push({
         key: row.id,
         text: rowText(row, showTargets, columns, 2),
         status: row.status,
-        isNested: true,
+        header: headerLine,
       })
     }
   }
-  return lines.slice(-Math.max(1, room))
+  const kept = lines.slice(-Math.max(1, room))
+  // A subagent's rows never show without its header: it takes the place of the oldest kept row.
+  const first = kept[0]
+  if (first?.header != null) {
+    kept[0] = first.header
+  }
+  return kept
 }
 
 export const summary = (rows: readonly LedgerRow[]): string => {
@@ -182,10 +196,12 @@ export const register: Register = (on: On, options: PluginOptions): void => {
   const settings = readSettings(options)
   let cwd = ''
   let calls = 0
-  let isAutoOpened = false
   // tool_use_ids a settings PreToolUse hook or the permission check denied. Their deny
   // reaches tool.call as an errored result, so the ledger learns of it here.
   const deniedIds = new Set<string>()
+  // Set when autoOpen opened the panel; saved to $.state by the next tool call.
+  let isAutoOpened = false
+  let isAutoOpenSaved = false
 
   // The ledger is best-effort: a failure here is dropped so it can never touch the call.
   const quietly = async <T,>(work: () => Promise<T>): Promise<T | undefined> => {
@@ -212,6 +228,9 @@ export const register: Register = (on: On, options: PluginOptions): void => {
     const id = e.tool_use_id ?? `call-${calls}`
     const agentId = e.agentId ?? null
     const startedAt = (await quietly(() => $.clock.now())) ?? null
+    if (isAutoOpened && !isAutoOpenSaved) {
+      isAutoOpenSaved = (await quietly(() => update($, autoOpenedAtom, () => true))) === true
+    }
 
     await quietly(async () => {
       if (agentId !== null && !(agentId in (await read($, agentsAtom)))) {
@@ -238,8 +257,11 @@ export const register: Register = (on: On, options: PluginOptions): void => {
     // Always awaited: returning while next(e) is pending would abort the call.
     const result = await next(e)
 
+    // A deny seen beneath counts only when the call did not run: a mod above this one can still
+    // allow it.
+    const wasDeniedBeneath = deniedIds.delete(id)
     const status: LedgerStatus =
-      result.deny !== undefined || deniedIds.delete(id)
+      result.deny !== undefined || (wasDeniedBeneath && result.isError === true)
         ? 'denied'
         : result.isError === true
           ? 'error'
@@ -291,8 +313,12 @@ export const register: Register = (on: On, options: PluginOptions): void => {
   // The band above the prompt is the first place a surface says whether it docks panes.
   on('ui.render', { component: 'AbovePrompt' }, async ($, e, next) => {
     if (settings.autoOpen === 'sidebar' && !isAutoOpened && e.viewport?.isFullscreen === true) {
-      isAutoOpened = true
-      await quietly(() => $.ui.open({ id: PANE, title: TITLE }))
+      // Once per session. A draw may read $.state but not write it, so the flag is saved by the
+      // next tool call, and a reload after that doesn't reopen a panel the user closed.
+      if ((await quietly(() => read($, autoOpenedAtom))) !== true) {
+        isAutoOpened = true
+        await quietly(() => $.ui.open({ id: PANE, title: TITLE }))
+      }
     }
     return next(e)
   })

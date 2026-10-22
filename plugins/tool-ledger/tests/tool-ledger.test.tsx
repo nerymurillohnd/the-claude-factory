@@ -2,21 +2,21 @@ import type { On } from 'claude-code'
 import type { Engine, Mounted } from 'claude-code/testing'
 import { expect, test } from 'claude-code/testing'
 
-const SURFACES = ['terminal', 'desktop'] as const
+const SURFACES = ['terminal', 'desktop', 'vscode'] as const
 type Surface = (typeof SURFACES)[number]
 
 type Engine$ = { toolRuns: number; opened: string[] }
 
 // Nothing sits beneath the plugin: these hooks stand for the engine. The clock moves
 // 100 ms on every read, so a call that reads it twice lasts 0.1s.
-const stubEngine = (on: On): Engine$ => {
+const stubEngine = (on: On, clock?: number[]): Engine$ => {
   const seen: Engine$ = { toolRuns: 0, opened: [] }
   let now = 0
   on('session.start', (_$, e) => ({ cwd: e.cwd }))
   on('command.register', (_$, e) => ({ value: { command: e.name } }))
   on('clock.now', () => {
     now += 100
-    return { value: now }
+    return { value: clock?.shift() ?? now }
   })
   on('agent.list', () => ({
     value: [
@@ -101,6 +101,45 @@ test('a settings PreToolUse deny, which reaches tool.call as an error, shows as 
   const ui = await mountPane($, 'terminal')
   expect(await textOf(ui, /\.env/)).toMatch(/^denied\s+Read\s+\.env$/)
   expect(await textOf(ui, /^Tool calls/)).toBe('Tool calls · 1 · 1 denied')
+  await ui.unmount()
+})
+
+test('a deny rule at the permission check shows as denied', async ($, on) => {
+  on('tool.check', () => ({ decision: 'deny', reason: 'Bash(cat:*) is denied' }))
+  stubEngine(on)
+  await start($)
+
+  const result = await $.tool.call({ tool: 'Bash', command: 'cat note.txt', tool_use_id: 'u2' })
+  expect(result).toMatchObject({ isError: true })
+
+  const ui = await mountPane($, 'terminal')
+  expect(await textOf(ui, /cat note/)).toMatch(/^denied\s+Bash\s+cat note\.txt$/)
+  await ui.unmount()
+})
+
+test('durations round to whole seconds before minutes are taken', async ($, on) => {
+  stubEngine(on, [0, 119_600])
+  await start($)
+  await $.tool.call({ tool: 'Bash', command: 'make build' })
+
+  const ui = await mountPane($, 'terminal')
+  expect(await textOf(ui, /make build/)).toMatch(/2m 00s$/)
+  await ui.unmount()
+})
+
+test('a subagent group cut by the panel height keeps its header', async ($, on) => {
+  stubEngine(on)
+  await start($)
+  await $.tool.call({ tool: 'Bash', command: 'echo main' })
+  for (const n of [1, 2, 3]) {
+    await $.tool.call({ tool: 'Bash', command: `echo sub-${n}`, agentId: 'a1' })
+  }
+
+  // Two lines of room: the header replaces sub-2 and sub-3 stays.
+  const ui = await mountPane($, 'terminal', 4)
+  expect(await textOf(ui, /▸/)).toBe('▸ Explore · "Find pricing references"')
+  expect(await textOf(ui, /sub-3/)).toMatch(/sub-3/)
+  expect(await textOf(ui, /sub-2|echo main/)).toBeUndefined()
   await ui.unmount()
 })
 
