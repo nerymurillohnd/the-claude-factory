@@ -135,7 +135,7 @@ Plugin skills are namespaced, so they never collide with yours: type `/<plugin>:
 
 | Plugin | What it does | Works in | Version | Includes |
 | :-- | :-- | :-- | :--: | :-- |
-| [**Hook Engineering**](./plugins/hook-engineering#readme)<br>`hook-engineering@the-claude-factory` | Designs, writes, audits and debugs Claude Code hooks end to end: the event and configuration that decide when a hook runs, the input and output contract that decides what it does, prompt, agent and background hooks, workspace trust and security, and how mods interact with hooks, checked against the current docs and changelog. | 💻 Code · 🖥️ Claude app | `0.1.0` | 🎯 Skills · 🤖 Agents · 🔌 MCP |
+| [**Hook Engineering**](./plugins/hook-engineering#readme)<br>`hook-engineering@the-claude-factory` | Designs, writes, audits and debugs Claude Code hooks end to end: the event and configuration that decide when a hook runs, the input and output contract that decides what it does, prompt, agent and background hooks, workspace trust and security, and how mods interact with hooks, checked against the current docs and changelog. | 💻 Code · 🖥️ Claude app | `0.2.0` | 🎯 Skills · 🤖 Agents |
 
 ### 🧪 Testing & Quality
 
