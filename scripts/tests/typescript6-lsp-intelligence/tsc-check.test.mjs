@@ -8,6 +8,7 @@ import { spawnSync } from 'node:child_process'
 import {
   chmodSync,
   cpSync,
+  existsSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
@@ -179,23 +180,6 @@ describe('typescript lsp hook', () => {
     assert.doesNotMatch(reason, /\r/)
   })
 
-  test('a policy that lost noCheck stops the hook', () => {
-    const plugin = join(ws.root, 'plugin')
-    cpSync(PLUGIN, plugin, { recursive: true })
-    writeFileSync(
-      join(plugin, '.claude-plugin', 'plugin.json'),
-      '{"name":"typescript6-lsp-intelligence"}',
-    )
-    writeFileSync(
-      join(plugin, 'hooks', 'tsconfig.strictest.json'),
-      '{"compilerOptions":{"strict":true,"noEmit":true}}',
-    )
-    const file = ws.write('p/a.ts', 'export const x = 1;\n')
-    const r = fire(ws.edit(file), ws.env, join(plugin, 'hooks', 'tsc-check.sh'))
-    assert.equal(r.code, 1)
-    assert.match(r.err, /does not set noEmit true and noCheck false/)
-  })
-
   test('CI has tsc on PATH, so the compiler cases never skip there', () => {
     if (IN_CI) {
       assert.ok(HAVE_TSC, 'install tsc in .github/workflows/validate.yml')
@@ -215,16 +199,20 @@ describe('typescript lsp hook', () => {
       assert.match(parsed(r.out).reason, /TS2322/)
     })
 
-    test('a minified policy gives the same strict flags', () => {
-      const plugin = join(ws.root, 'plugin')
-      cpSync(PLUGIN, plugin, { recursive: true })
-      const policy = join(plugin, 'hooks', 'tsconfig.strictest.json')
-      const minified = JSON.stringify(JSON.parse(readFileSync(policy, 'utf8')))
-      writeFileSync(policy, minified)
+    test('a project with strict false still gets every strict option', () => {
       ws.write('m/tsconfig.json', '{ "compilerOptions": { "strict": false } }')
       const file = ws.write('m/a.ts', 'export function f(a) { return a }\n')
-      const r = fire(ws.edit(file), ws.env, join(plugin, 'hooks', 'tsc-check.sh'))
+      const r = fire(ws.edit(file), ws.env)
       assert.match(parsed(r.out).reason, /TS7006/)
+    })
+
+    test('a file under no config is checked with the compiler defaults, not a fixed module', () => {
+      // Top-level await is valid under the compiler's default module (esnext since TypeScript
+      // 6) and an error under a fixed nodenext, which reads a file with no package.json as CommonJS.
+      const file = ws.write('loose/a.ts', 'export const v = await Promise.resolve(1);\n')
+      const r = fire(ws.edit(file), ws.env)
+      assert.doesNotMatch(r.out, /error TS/)
+      assert.match(parsed(r.out).systemMessage, /pass the strictest policy/)
     })
 
     test('a JSON-escaped path is decoded', () => {
@@ -529,29 +517,106 @@ for (const plugin of SKILL_PLUGINS) {
       assert.ok(r.err.endsWith(`${hint}\n`))
     })
 
-    test('a missing strictest policy fails with the hint on stderr', () => {
-      const copy = join(ws.root, 'plugin')
-      cpSync(join(ROOT, 'plugins', plugin), copy, { recursive: true })
-      rmSync(join(copy, 'hooks', 'tsconfig.strictest.json'))
-      const file = ws.write('p/a.ts', 'export const x = 1;\n')
-      const r = fire(ws.edit(file), ws.env, join(copy, 'hooks', 'tsc-check.sh'))
-      assert.equal(r.code, 1)
-      assert.match(r.err, /tsconfig\.strictest\.json is missing/)
-      assert.ok(r.err.endsWith(`${hint}\n`))
+    test('the plugin ships no tsconfig.strictest.json: the policy lives in the hook', () => {
+      assert.ok(!existsSync(join(ROOT, 'plugins', plugin, 'hooks', 'tsconfig.strictest.json')))
     })
 
-    test('a policy that lost noCheck fails with the hint on stderr', () => {
-      const copy = join(ws.root, 'plugin')
-      cpSync(join(ROOT, 'plugins', plugin), copy, { recursive: true })
-      writeFileSync(
-        join(copy, 'hooks', 'tsconfig.strictest.json'),
-        '{"compilerOptions":{"strict":true,"noEmit":true}}',
+    /**
+     * A project whose stub compiler reports `version`, lists the file, passes it, and logs
+     * every argument it receives to the returned log file.
+     * @param {string} version
+     * @returns {{ file: string, log: string }}
+     */
+    function logged(version) {
+      ws.write('v/tsconfig.json', STRICT)
+      const file = ws.write('v/a.ts', 'export const x = 1;\n')
+      const log = join(ws.root, 'args.log')
+      const stub = ws.write(
+        'v/node_modules/.bin/tsc',
+        [
+          '#!/bin/sh',
+          `printf '%s\\n' "$@" >> "${log}"`,
+          'case "$*" in',
+          `  *--version*) echo "Version ${version}" ;;`,
+          `  *--listFilesOnly*) echo "${file}" ;;`,
+          '  *) ;;',
+          'esac',
+          '',
+        ].join('\n'),
       )
-      const file = ws.write('p/a.ts', 'export const x = 1;\n')
-      const r = fire(ws.edit(file), ws.env, join(copy, 'hooks', 'tsc-check.sh'))
-      assert.equal(r.code, 1)
-      assert.match(r.err, /does not set noEmit true and noCheck false/)
-      assert.ok(r.err.endsWith(`${hint}\n`))
+      chmodSync(stub, 0o755)
+      return { file, log }
+    }
+
+    test('a current tsc gets every strict option and no environment option', () => {
+      const { file, log } = logged('6.0.3')
+      const r = fire(ws.edit(file), ws.env, hook)
+      assert.equal(r.code, 0)
+      const args = readFileSync(log, 'utf8')
+      for (const flag of [
+        '--strictBuiltinIteratorReturn',
+        '--exactOptionalPropertyTypes',
+        '--alwaysStrict',
+      ]) {
+        assert.match(args, new RegExp(`^${flag}\\ntrue$`, 'm'))
+      }
+      assert.match(args, /^--noCheck\nfalse$/m)
+      assert.doesNotMatch(args, /^--(target|module|moduleResolution|lib|types)$/m)
+      assert.doesNotMatch(r.out, /not applied/)
+    })
+
+    test('an older tsc gets only the options it knows, and Claude is told which were left out', () => {
+      const { file, log } = logged('5.4.5')
+      const r = fire(ws.edit(file), ws.env, hook)
+      assert.equal(r.code, 0)
+      const args = readFileSync(log, 'utf8')
+      assert.doesNotMatch(args, /^--(strictBuiltinIteratorReturn|noCheck)$/m)
+      assert.match(args, /^--exactOptionalPropertyTypes\ntrue$/m)
+      const context = parsed(r.out).hookSpecificOutput.additionalContext
+      assert.match(context, /strictBuiltinIteratorReturn \(TypeScript 5\.6\.0 or later\)/)
+      assert.doesNotMatch(context, /noCheck/)
+      assert.ok(context.endsWith(hint))
+    })
+
+    test('run-fixtures.sh holds the same strict policy as the hook', () => {
+      const fixtures = join(
+        ROOT,
+        'plugins',
+        plugin,
+        'skills',
+        'ts-lifecycle',
+        'scripts',
+        'run-fixtures.sh',
+      )
+      /** @param {string} path */
+      const policy = (path) =>
+        readFileSync(path, 'utf8').match(/^readonly STRICT_POLICY="[^"]*"$/m)?.[0]
+      assert.ok(policy(hook), 'the hook has no STRICT_POLICY block')
+      assert.equal(policy(fixtures), policy(hook))
+    })
+
+    test('run-fixtures.sh passes an older tsc only the options it knows', () => {
+      const { log } = logged('5.4.5')
+      const fixtures = join(
+        ROOT,
+        'plugins',
+        plugin,
+        'skills',
+        'ts-lifecycle',
+        'scripts',
+        'run-fixtures.sh',
+      )
+      const run = spawnSync(
+        'bash',
+        [fixtures, '--outside', join(ws.root, 'v', 'node_modules', '.bin', 'tsc')],
+        {
+          encoding: 'utf8',
+        },
+      )
+      assert.equal(run.status, 0)
+      const args = readFileSync(log, 'utf8')
+      assert.doesNotMatch(args, /^--strictBuiltinIteratorReturn$/m)
+      assert.match(args, /^--exactOptionalPropertyTypes\ntrue$/m)
     })
   })
 }

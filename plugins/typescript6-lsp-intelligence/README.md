@@ -154,7 +154,8 @@ Your project decides the environment; the plugin decides how strict the edited c
 | Several changed files share a program | One `tsc` run for that program |
 | The file isn't in any program | Checked alone on top of the nearest config, with its `types` and path aliases, and the report says so |
 | A JavaScript file | Type-checked: `checkJs` is part of the strictest policy, so a `.js` file in your `include` is checked in its program even when your config only sets `allowJs`, or neither |
-| No config above the file | Checked alone with the plugin's strictest config |
+| No config above the file | Checked alone with your compiler's own defaults for `target` and `module` and the strictest options; the plugin sets no environment of its own |
+| Your project's `tsc` is older than an option of the policy, such as `strictBuiltinIteratorReturn` (TypeScript 5.6) | That option is left out, so the check still runs instead of failing on an unknown option, and Claude is told which options were not applied |
 | Your config itself has errors | Reported, so a broken config never looks like a clean check |
 | The project sets `noCheck` | Ignored: the policy passes `noCheck false`, so the type check always runs |
 | `tsc` crashes or exits non-zero without a TypeScript error | Reported to Claude as not checked, with the compiler's first output lines, never as a pass |

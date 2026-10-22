@@ -7,11 +7,11 @@
 #   project: the nearest tsconfig.json or jsconfig.json above the file, followed through
 #   its references to the program that lists the file, then the tsconfig.<name>.json and
 #   jsconfig.<name>.json beside it (a tsconfig.tests.json that adds the excluded tests).
-# - Strictness comes from tsconfig.strictest.json next to this script: each boolean option
-#   is passed on the command line, so it overrides the project's value, explicit false too.
+# - Strictness comes from STRICT_POLICY below: each option is passed on the command line, so
+#   it overrides the project's value, explicit false too, and only to a tsc that knows it.
 #   Its checkJs brings the JavaScript files of a program into the check, as allowJs would.
-# - A file outside every program is checked alone on top of the nearest config, or on top
-#   of tsconfig.strictest.json without one.
+# - A file outside every program is checked alone on top of the nearest config, or with the
+#   compiler's own defaults and the strict options without one.
 # - Strictest errors count for the edited files only; errors in other files count only when
 #   the project's own config finds them too; errors in the project's config always count.
 #
@@ -39,7 +39,6 @@ readonly NL=$'\n'
 
 HOOK_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
 readonly HOOK_DIR
-readonly STRICTEST="${HOOK_DIR}/tsconfig.strictest.json"
 PLUGIN_ROOT="$(cd "${HOOK_DIR}/.." && pwd -P)"
 readonly PLUGIN_ROOT
 # The first "name" key is the plugin's own: plugin.json lists it before author.name.
@@ -398,6 +397,7 @@ set_tsc() {
   rest="${TSC_ID#*|}"
   path="${rest%%|*}"
   TSC_VERSION="${rest#*|}"
+  strict_flags_for "${TSC_VERSION}"
   if [[ ${kind} == native ]]; then
     TSC=("${path}")
   else
@@ -569,21 +569,67 @@ program_of() {
   PROGRAM="uncovered ${nearest}"
 }
 
-# The boolean options of tsconfig.strictest.json as command-line flags.
+# The strictest policy: one option per line, with the value the edited files are held to and
+# the TypeScript version that introduced it (0 for options older than TypeScript 4.0, which no
+# compiler this hook runs lacks). Only options that hold in any project: nothing of the
+# environment (target, module, moduleResolution, lib, types, paths), which stays the project's.
+# skills/ts-lifecycle/scripts/run-fixtures.sh holds the same block; a test keeps them equal.
+readonly STRICT_POLICY="strict true 0
+noImplicitAny true 0
+strictNullChecks true 0
+strictFunctionTypes true 0
+strictBindCallApply true 0
+strictPropertyInitialization true 0
+strictBuiltinIteratorReturn true 5.6.0
+noImplicitThis true 0
+useUnknownInCatchVariables true 4.4.0
+alwaysStrict true 0
+exactOptionalPropertyTypes true 4.4.0
+noUncheckedIndexedAccess true 4.1.0
+noPropertyAccessFromIndexSignature true 4.2.0
+noImplicitReturns true 0
+noImplicitOverride true 4.3.0
+noFallthroughCasesInSwitch true 0
+noUnusedLocals true 0
+noUnusedParameters true 0
+allowUnusedLabels false 0
+allowUnreachableCode false 0
+allowJs true 0
+checkJs true 0
+skipLibCheck true 0"
+# The hook's own guards, in the same form: never emit, and never let a project's noCheck
+# switch the check off. A tsc without noCheck (before 5.6) has nothing to switch off.
+readonly GUARD_POLICY="noEmit true 0
+noCheck false 5.6.0"
+
+# Sets STRICT_FLAGS to the policy and guard options that tsc version $1 knows, as
+# command-line flags. Each strict option left out goes into NOT_APPLIED, once per version.
 STRICT_FLAGS=()
-# Read as tokens, not lines, so any valid formatting of the file gives the same flags. A
-# policy without its noEmit and noCheck entries is not the plugin's: stop instead.
-load_strict_flags() {
-  local options name value
-  options="$(grep -o -E '"[A-Za-z]+"[[:space:]]*:[[:space:]]*(true|false)' "${STRICTEST}" \
-    | sed -E 's/^"([A-Za-z]+)"[[:space:]]*:[[:space:]]*(true|false)$/\1 \2/' || true)"
-  while IFS=' ' read -r name value; do
-    [[ -n ${name} ]] && STRICT_FLAGS+=("--${name}" "${value}")
-  done <<< "${options}"
-  if [[ " ${STRICT_FLAGS[*]-} " != *" --noEmit true "* || " ${STRICT_FLAGS[*]-} " != *" --noCheck false "* ]]; then
-    echo "${PLUGIN}: ${STRICTEST} does not set noEmit true and noCheck false; reinstall the plugin" >&2
-    echo "${SKILL_HINT}" >&2
-    return 1
+NOT_APPLIED=""
+strict_flags_for() {
+  local version="$1" name value since left=""
+  STRICT_FLAGS=()
+  while IFS=' ' read -r name value since; do
+    [[ -n ${name} ]] || continue
+    if [[ ${since} != 0 ]]; then
+      version_at_least "${version}" "${since}"
+      if [[ ${AT_LEAST} == no ]]; then
+        left="${left:+${left}, }${name} (TypeScript ${since} or later)"
+        continue
+      fi
+    fi
+    STRICT_FLAGS+=("--${name}" "${value}")
+  done <<< "${STRICT_POLICY}"
+  while IFS=' ' read -r name value since; do
+    [[ -n ${name} ]] || continue
+    if [[ ${since} != 0 ]]; then
+      version_at_least "${version}" "${since}"
+      [[ ${AT_LEAST} == no ]] && continue
+    fi
+    STRICT_FLAGS+=("--${name}" "${value}")
+  done <<< "${GUARD_POLICY}"
+  if [[ -n ${left} && ${NOT_APPLIED} != *"tsc ${version}: "* ]]; then
+    NOT_APPLIED="${NOT_APPLIED}tsc ${version}: ${left}${NL}"
   fi
 }
 
@@ -592,7 +638,7 @@ write_alone_config() {
   local out="$1" base="$2" file="$3" options="" roots="" dir types shown base_json file_json root
   # A config in a temporary folder would not find the project's @types: give it the
   # folders tsc searches by default, unless the base sets typeRoots itself.
-  if [[ ${base} != "${STRICTEST}" ]]; then
+  if [[ -n ${base} ]]; then
     shown="$(cd "$(dirname "${base}")" && "${TSC[@]}" --showConfig -p "${base}" 2> /dev/null || true)"
     if [[ ${shown} != *'"typeRoots"'* ]]; then
       dir="$(dirname "${base}")"
@@ -617,13 +663,16 @@ write_alone_config() {
     *) root=/ ;;
   esac
   options="${options:+${options}, }\"composite\": false, \"rootDir\": \"${root}\""
-  mixed_path "${base}"
-  json_escape "${MIXED}"
-  base_json="${ESCAPED}"
+  base_json=""
+  if [[ -n ${base} ]]; then
+    mixed_path "${base}"
+    json_escape "${MIXED}"
+    base_json="\"extends\": \"${ESCAPED}\", "
+  fi
   mixed_path "${file}"
   json_escape "${MIXED}"
   file_json="${ESCAPED}"
-  printf '{ "extends": "%s", "files": ["%s"], "include": [], "compilerOptions": { %s } }\n' \
+  printf '{ %s"files": ["%s"], "include": [], "compilerOptions": { %s } }\n' \
     "${base_json}" "${file_json}" "${options}" > "${out}"
 }
 
@@ -706,8 +755,8 @@ check_group() {
       file="${files#"${NL}"}"
       file="${file%"${NL}"}"
       if [[ ${found} == none ]]; then
-        base="${STRICTEST}"
-        note="No tsconfig.json or jsconfig.json covers ${file}; it was checked alone with the plugin's strictest config."
+        base=""
+        note="No tsconfig.json or jsconfig.json covers ${file}; it was checked alone with the compiler's defaults and the strictest options."
       else
         base="${found#uncovered }"
         note="${file} is not part of the program of ${base}, its references or the tsconfig.<name>.json and jsconfig.<name>.json beside it; it was checked alone on top of that config. Add it to include or files to check it with the rest of the program."
@@ -905,6 +954,9 @@ emit() {
   if [[ -n ${left_out} ]]; then
     context="${context}${PLUGIN}: these edited files were not type-checked:${NL}${left_out}"
   fi
+  if [[ -n ${NOT_APPLIED} ]]; then
+    context="${context}${PLUGIN}: these strictest options were not applied, because the project's tsc is too old to know them:${NL}${NOT_APPLIED}"
+  fi
   if [[ -n ${REPORT} ]]; then
     hinted "TypeScript errors detected after file edit. Fix them before continuing; do not suppress them.${NL}${NL}${REPORT}${context:+${NL}${context}}"
     json_escape "${BOUNDED}"
@@ -974,14 +1026,8 @@ main() {
     return 0
   fi
 
-  if [[ ! -f ${STRICTEST} ]]; then
-    echo "${PLUGIN}: ${STRICTEST} is missing; reinstall the plugin" >&2
-    echo "${SKILL_HINT}" >&2
-    return 1
-  fi
   collect_dirs
   find_node
-  load_strict_flags
 
   # One run per program and compiler; a file outside every program is checked on its own.
   while IFS= read -r file; do

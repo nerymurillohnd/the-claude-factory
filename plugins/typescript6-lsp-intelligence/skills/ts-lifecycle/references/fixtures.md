@@ -17,9 +17,9 @@ The owning tsconfig is the program that contains the changed files: `tsc --listF
 
 ## The strict check
 
-The script runs each fixture through `tsc -p <tsconfig.json>` from the fixture's folder, with every option of its `STRICT` array and `--tsBuildInfoFile` in a temporary folder. `scripts/run-fixtures.sh` is the only source of the options and of the expected codes (its `expected_for`): read them there, never from a copy, and do not run the fixtures by hand.
+The script runs each fixture through `tsc -p <tsconfig.json>` from the fixture's folder, with `--pretty false --noEmit true`, every option of its `STRICT_POLICY` that the compiler knows, and `--tsBuildInfoFile` in a temporary folder. `STRICT_POLICY` is the post-edit hook's own policy, so the fixtures prove the check the hook applies. `scripts/run-fixtures.sh` is the only source of the options and of the expected codes (its `expected_for`): read them there, never from a copy, and do not run the fixtures by hand.
 
-The fixtures are `.ts` files, so `--allowJs` and `--checkJs` change nothing for them; they are there because the strict profile is the plugin hook's, which checks edited JavaScript too. Each option has an explicit value because `--strict` alone does not override an explicit `"strictNullChecks": false` in the config; the project's `paths`, module resolution and `types` still apply. `--tsBuildInfoFile` keeps an `incremental` or `composite` config from writing its build-info file into the project. A compiler that rejects an option (TS5023) predates it: say which option, and do not call the fixtures passed.
+The fixtures are `.ts` files, so `--allowJs` and `--checkJs` change nothing for them; they are there because the strict profile is the plugin hook's, which checks edited JavaScript too. Each option has an explicit value because `--strict` alone does not override an explicit `"strictNullChecks": false` in the config; the project's `paths`, module resolution and `types` still apply. `--tsBuildInfoFile` keeps an `incremental` or `composite` config from writing its build-info file into the project. An option newer than the compiler is left out, and the output names it on a `Not applied` line: report those options as not proven, since that compiler cannot check them.
 
 ## Run the references fixture
 

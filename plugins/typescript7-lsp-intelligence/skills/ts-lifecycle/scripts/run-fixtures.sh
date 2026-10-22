@@ -10,14 +10,72 @@ set -uo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd -P)"
 readonly ASSETS="${SCRIPT_DIR}/../assets"
 readonly FIXTURES="clean_control type_mismatch implicit_any possibly_undefined missing_member"
-readonly STRICT=(--pretty false --noEmit true --skipLibCheck true --allowJs true --checkJs true
-  --strict true --noImplicitAny true --strictNullChecks true --strictFunctionTypes true
-  --strictBindCallApply true --strictPropertyInitialization true --strictBuiltinIteratorReturn true
-  --noImplicitThis true --useUnknownInCatchVariables true --alwaysStrict true
-  --exactOptionalPropertyTypes true --noUncheckedIndexedAccess true
-  --noPropertyAccessFromIndexSignature true --noImplicitReturns true --noImplicitOverride true
-  --noFallthroughCasesInSwitch true --noUnusedLocals true --noUnusedParameters true
-  --allowUnusedLabels false --allowUnreachableCode false)
+# The post-edit hook's strictest policy, the same block as in hooks/tsc-check.sh (a test keeps
+# them equal): one option per line, its value, and the TypeScript version that introduced it,
+# 0 for options older than TypeScript 4.0.
+readonly STRICT_POLICY="strict true 0
+noImplicitAny true 0
+strictNullChecks true 0
+strictFunctionTypes true 0
+strictBindCallApply true 0
+strictPropertyInitialization true 0
+strictBuiltinIteratorReturn true 5.6.0
+noImplicitThis true 0
+useUnknownInCatchVariables true 4.4.0
+alwaysStrict true 0
+exactOptionalPropertyTypes true 4.4.0
+noUncheckedIndexedAccess true 4.1.0
+noPropertyAccessFromIndexSignature true 4.2.0
+noImplicitReturns true 0
+noImplicitOverride true 4.3.0
+noFallthroughCasesInSwitch true 0
+noUnusedLocals true 0
+noUnusedParameters true 0
+allowUnusedLabels false 0
+allowUnreachableCode false 0
+allowJs true 0
+checkJs true 0
+skipLibCheck true 0"
+
+# Sets AT_LEAST to yes when version $1 (x.y.z) is at least $2, else no.
+AT_LEAST=no
+version_at_least() {
+  local a1 a2 a3 b1 b2 b3
+  IFS=. read -r a1 a2 a3 <<< "$1"
+  IFS=. read -r b1 b2 b3 <<< "$2"
+  a1="${a1//[!0-9]/}" a2="${a2//[!0-9]/}" a3="${a3//[!0-9]/}"
+  a1="${a1:-0}" a2="${a2:-0}" a3="${a3:-0}"
+  AT_LEAST=no
+  if ((a1 != b1)); then
+    ((a1 > b1)) && AT_LEAST=yes
+  elif ((a2 != b2)); then
+    ((a2 > b2)) && AT_LEAST=yes
+  elif ((a3 >= b3)); then
+    AT_LEAST=yes
+  fi
+  return 0
+}
+
+# Sets STRICT to the flags of every policy option tsc version $1 knows, and NOT_APPLIED to the
+# ones it does not, so an older compiler runs the fixtures instead of rejecting an option.
+STRICT=()
+NOT_APPLIED=""
+strict_for() {
+  local name value since
+  STRICT=(--pretty false --noEmit true)
+  NOT_APPLIED=""
+  while IFS=' ' read -r name value since; do
+    [[ -n ${name} ]] || continue
+    if [[ ${since} != 0 ]]; then
+      version_at_least "$1" "${since}"
+      if [[ ${AT_LEAST} == no ]]; then
+        NOT_APPLIED="${NOT_APPLIED:+${NOT_APPLIED}, }${name} (TypeScript ${since} or later)"
+        continue
+      fi
+    fi
+    STRICT+=("--${name}" "${value}")
+  done <<< "${STRICT_POLICY}"
+}
 
 # The folder in use right now, removed on exit even if a run stops midway.
 CURRENT=""
@@ -91,12 +149,16 @@ if [[ -z ${TSC} ]]; then
 fi
 
 VERSION="$("${TSC}" --version 2>&1 || true)"
+strict_for "${VERSION#Version }"
 BUILDINFO_DIR="$(mktemp -d)"
 if [[ ${OUTSIDE} == yes ]]; then
   printf 'Compiler: %s (%s)\nProgram: tsconfig.json.fixture in a temporary folder outside the project; this proves the compiler, not the project config.\n\n' "${TSC}" "${VERSION}"
 else
   root_dir_for "${OWNER}"
   printf 'Compiler: %s (%s)\nProgram: extends %s\nFolders: %s/lsp-fixture-*\n\n' "${TSC}" "${VERSION}" "${OWNER}" "${ROOT_DIR}"
+fi
+if [[ -n ${NOT_APPLIED} ]]; then
+  printf 'Not applied, this tsc is too old to know them: %s\n\n' "${NOT_APPLIED}"
 fi
 
 PASSED=0
