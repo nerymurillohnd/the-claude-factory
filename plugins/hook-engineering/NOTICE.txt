@@ -2,7 +2,7 @@ hook-engineering
 Copyright (c) 2026 Nery Murillo. Licensed under the MIT License (see LICENSE).
 
 This plugin contains material derived from Anthropic's Claude Code documentation
-and changelog, and connects to Anthropic's documentation server:
+and changelog, and reads Anthropic's documentation server when the user adds it:
 
   Documentation:  https://code.claude.com/docs (pages under /en/hooks,
                   /en/hooks-guide, /en/plugins, /en/plugins/mods, /en/permissions,
@@ -10,8 +10,8 @@ and changelog, and connects to Anthropic's documentation server:
                   named in skills/hook-development/references/docs-map.md)
   Changelog:      https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md
   Read on:        2026-10-20, through Claude Code v2.1.305
-  Docs server:    https://code.claude.com/docs/mcp (configured in .mcp.json; no
-                  code from it is bundled)
+  Docs server:    https://code.claude.com/docs/mcp (added by the user; the plugin
+                  neither configures it nor bundles code from it)
 
 Derived files, all condensed and rewritten for this plugin. SKILL.md and the
 references carry "Docs:" lines naming the official section each part draws on,
