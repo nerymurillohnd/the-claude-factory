@@ -83,7 +83,7 @@ Requires Claude Code v2.1.275+. With the marketplace already added, `/plugin ins
 <details>
 <summary><b>🖥️ Claude desktop app — Code tab</b></summary>
 
-With the marketplace added, click **+** next to the prompt box → **Add plugins** (or **Plugins** → **Browse plugins**), select **Tool Ledger** and choose a scope.
+With the marketplace added, click **+** next to the prompt box → **Add plugins** (or **Plugins** → **Browse plugins**), or open **Settings** → **Plugins** → **Discover**; then select **Tool Ledger** and choose a scope.
 
 </details>
 

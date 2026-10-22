@@ -106,7 +106,7 @@ Requires Claude Code v2.1.275+. With the marketplace already added, `/plugin ins
 3. Find **Hook Engineering** in **Discover** and select **Add**.
 4. Add the docs server as a custom connector. On a Pro or Max plan: **Customize** → **Connectors** → **+ Add** → **Add custom connector**. Enter a name such as `Claude Code Docs` and the URL `https://code.claude.com/docs/mcp`, select **Continue**, check the detected settings and select **Continue** again, choose **No sign in** under **Authentication**, then select **Add**. On a Team or Enterprise plan, an Owner adds it under **Organization settings** → **Connectors** → **Add** → **Custom** → **Web**, and you select **Connect** on it in **Customize** → **Connectors**. A Free plan allows one custom connector. Source: [Get started with custom connectors using remote MCP](https://support.claude.com/en/articles/11175166-get-started-with-custom-connectors-using-remote-mcp).
 
-In the desktop app's **Code** tab you can also click **+** → **Plugins** → **Add plugin**.
+In the desktop app's **Code** tab you can also click **+** next to the prompt box → **Add plugins** (or **Plugins** → **Browse plugins**), or open **Settings** → **Plugins** → **Discover**.
 
 > [!NOTE]
 > A connector you add in the Claude app also reaches Claude Code when you sign in there with the same claude.ai account, with tools named `mcp__claude_ai_<connector name>__*`. The skill and the `hook-engineer` agent find and use it under that name. If you also add `claude-code-docs` in Claude Code, Claude Code connects that one and hides the connector, because both point at the same URL.

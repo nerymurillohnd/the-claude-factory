@@ -92,7 +92,7 @@ Requires Claude Code v2.1.275+. With the marketplace already added, `/plugin ins
 2. Select **Add** → **Add marketplace** and enter `nerymurillohnd/the-claude-factory`.
 3. Find **Skill Diagnostics** in **Discover** and select **Add**.
 
-In the desktop app's **Code** tab you can also click **+** → **Plugins** → **Add plugin**.
+In the desktop app's **Code** tab you can also click **+** next to the prompt box → **Add plugins** (or **Plugins** → **Browse plugins**), or open **Settings** → **Plugins** → **Discover**.
 
 </details>
 
