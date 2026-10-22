@@ -6,6 +6,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-10-22
+
+### Fixed
+
+- The hook's description moved to the top-level `description` field of `hooks/hooks.json`, the only place Claude Code documents one, so syncing the marketplace to claude.ai no longer warns that it dropped the field. What the hook blocks is unchanged.
+
 ## [0.1.0] - 2026-10-20
 
 ### Added
@@ -17,5 +23,6 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - Fails closed on a payload or a command it cannot read. Without `jq` it denies the commands that could involve git, says why, and lets the rest run.
 - Needs Claude Code 2.1.295 or later, for the `onFailure` field, and `jq`.
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/block-no-verify--v0.1.0...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/block-no-verify--v0.1.1...HEAD
+[0.1.1]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/block-no-verify--v0.1.1
 [0.1.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/block-no-verify--v0.1.0
