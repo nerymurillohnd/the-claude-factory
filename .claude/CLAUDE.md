@@ -24,13 +24,18 @@ This project carries one item of the global North Star: multiply execution capac
 ## Stack and Development
 
 - Product: Claude Code plugins (skills, agents, hooks, MCP and LSP servers, mods) listed in `.claude-plugin/marketplace.json`, one folder per plugin under `plugins/`.
-- Build: no build step and no runtime to maintain; no root `package.json`, `pyproject.toml` or virtual environment.
+- Build: no build step and no runtime to maintain; no root `pyproject.toml` or virtual environment.
+- Root `package.json` (ADR_2026-10-21_maintainer-only-root-package-json): maintainer tooling only, never a runtime of any plugin. A user receives only `plugins/<name>/`, but Node resolves imports by walking up the folders, so anything in the root `node_modules` would let a plugin pass here and fail for users.
+  - It holds only exact `@types/*` devDependencies, today `@types/node` on the Node major of `.nvmrc`, so `tsc`, the post-edit hook and the language server read `.github/scripts/tsconfig.json` the same way. It sets `"private": true` and never `dependencies`, `main`, `exports`, `bin`, `type` or `workspaces`; a `"type"` would change how Node and `tsc` read the plugins' `.js` and `.ts` files.
+  - The CLIs stay out of it: TypeScript, Biome and markdownlint-cli2 run through `npx --yes <pkg>@<version>` at the pins in Commands and `validate.yml`, and Python tools through `uvx`.
+  - `check-repo.mjs` enforces all of it, including the `.nvmrc` major. When `.nvmrc` changes major, change `@types/node` in the same commit with `npm install --save-dev --save-exact @types/node@<major>.x.y`.
+  - A plugin that needs packages ships its own `package.json` and npm or Bun lockfile in `plugins/<name>/`, which Claude Code installs into that plugin's cache; it never relies on the root one.
 - Plugin code: Bash and POSIX-style Python 3 that run on whatever `bash` and `python3` the user has on `PATH`, with no version floor; `.mjs` modules type-checked by TypeScript 6.0.3; mods in TypeScript under `hooks/*.ts`.
 - Repository tooling: Node scripts in `.github/scripts/` for scaffolding, catalog, version bumps, labels, policy checks and eval targets; Node 26 from `.nvmrc`.
 - Formatting and linters: Biome for JavaScript and JSON; ruff, mypy and basedpyright for Python; shfmt and ShellCheck for shell; markdownlint-cli2 for Markdown; actionlint for workflows. Each runs at the version pinned in Commands below and in `validate.yml`.
 - Testing: `node --test` for script and hook tests, `unittest` and `by_path.sh` for plugin scripts, `claude plugin validate --strict` and `claude plugin test` for plugins and mods, `claude plugin eval` for plugins that have evals.
 - CI/CD and GitHub Actions: `validate.yml` on every push and PR, `evals.yml` for changed plugins that have evals, `release.yml` tags each plugin after merge, and Claude reviewers run on pull requests.
-- Tool sources: Node and npm via nvm; Python, ruff and basedpyright via uv; shfmt, ShellCheck and actionlint via Homebrew. Global configs are never overridden here; `ruff.toml` is the only ruff config in the repo.
+- Tool sources: Node and npm via nvm, and the root `node_modules` via `npm ci` after a fresh clone; Python, ruff and basedpyright via uv; shfmt, ShellCheck and actionlint via Homebrew. Global configs are never overridden here; `ruff.toml` is the only ruff config in the repo.
 
 ## Authority, Limits and Permissions
 
@@ -67,7 +72,7 @@ This project carries one item of the global North Star: multiply execution capac
 
 ## Commands
 
-Run from the repository root with the `.nvmrc` runtime selected. The gate commands run the versions CI pins in the `env` block of `.github/workflows/validate.yml`.
+Run from the repository root with the `.nvmrc` runtime selected and `npm ci` run once after a fresh clone, so `node_modules/@types/node` exists. The gate commands run the versions CI pins in the `env` block of `.github/workflows/validate.yml`.
 
 ### Project
 
@@ -96,7 +101,7 @@ Python:
 JavaScript modules (`tsc` checks the whole project):
 
 - `npx --yes @biomejs/biome@2.5.15 check --write --error-on-warnings <file>` - Run first, after every `.mjs` edit.
-- `npx --yes --package typescript@6.0.3 tsc -p .github/scripts/tsconfig.json --noEmit --typeRoots "$(npm root -g)/@types"` - Run after Biome. The config covers the `.mjs` files under `.github/scripts/` and `plugins/`.
+- `npx --yes --package typescript@6.0.3 tsc -p .github/scripts/tsconfig.json --noEmit` - Run after Biome. The config covers the `.mjs` files under `.github/scripts/` and `plugins/`.
 - `node --test ".github/scripts/tests/*.test.mjs"` - Run after the type check. Read the `skipped` count.
 - `node .github/scripts/check-repo.mjs` - Run after the tests.
 
@@ -134,7 +139,7 @@ No git hook runs `.pre-commit-config.yaml`, and CI does not run `basedpyright`, 
 15. `uvx ruff@0.17.1 format --check plugins .github/scripts` - Checks the formatting of the Python files.
 16. `git ls-files -z 'plugins/*.py' '.github/scripts/tests/*.py' | xargs -0 uvx --from mypy==1.20.2 mypy --strict` - Type-checks the Python files.
 17. `basedpyright --warnings` - Type-checks the project's Python files outside hidden folders (DEBT-003).
-18. `npx --yes --package typescript@6.0.3 tsc -p .github/scripts/tsconfig.json --noEmit --typeRoots "$(npm root -g)/@types"` - Type-checks the `.mjs` files under `.github/scripts/` and `plugins/`.
+18. `npx --yes --package typescript@6.0.3 tsc -p .github/scripts/tsconfig.json --noEmit` - Type-checks the `.mjs` files under `.github/scripts/` and `plugins/`.
 19. `npx --yes --package typescript@6.0.3 tsc -p plugins/<plugin>/tsconfig.json --noEmit` - Type-checks the mod of each plugin that ships one. Run it locally: it needs the declarations the engine writes, which CI does not have.
 20. `npx --yes markdownlint-cli2@0.23.3` - Lints the Markdown that people read.
 21. `SHELLCHECK_OPTS='-o all -S style -x -a -P SCRIPTDIR' actionlint` - Lints the workflows. Run it only when `.github/workflows/` changed.
