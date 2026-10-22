@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 // Prints, as a JSON array, the plugins whose eval suite CI should run. Evals are optional: only a
 // plugin with an evals/ folder is ever selected, and a plugin without one never fails the job.
-//   node .github/scripts/eval-targets.mjs --changed <base> <head>  plugins with evals whose
+//   node scripts/eval-targets.mjs --changed <base> <head>  plugins with evals whose
 //                                                                  plugin.json changed in base...head
-//   node .github/scripts/eval-targets.mjs --only <plugin|all>     a manual run
+//   node scripts/eval-targets.mjs --only <plugin|all>     a manual run
 
 import { execFileSync } from 'node:child_process'
 import { existsSync, readdirSync } from 'node:fs'

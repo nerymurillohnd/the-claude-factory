@@ -10,7 +10,7 @@ export const SCRIPTS_DIR = dirname(fileURLToPath(import.meta.url))
 
 /** Repository root. Overridable with TCF_ROOT so tests can run against a temp copy. */
 const { TCF_ROOT } = process.env
-export const ROOT = resolve(TCF_ROOT ?? join(SCRIPTS_DIR, '..', '..'))
+export const ROOT = resolve(TCF_ROOT ?? join(SCRIPTS_DIR, '..'))
 
 /**
  * A plugin entry of marketplace.json, as read; check-repo.mjs validates it.

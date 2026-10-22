@@ -80,9 +80,9 @@ For each touched file, list the files it must agree with, from this map:
 
 Run these from the repository root, read the output, and fix what they report before going further:
 
-- `node .github/scripts/check-repo.mjs`
-- `node .github/scripts/catalog.mjs --check`
-- `node .github/scripts/check-version-bump.mjs origin/main` (skip if `origin/main` does not exist; it reads committed changes only and fails while a bump is pending or uncommitted, so expect that failure until step 6 delivers and commits the bump)
+- `node scripts/check-repo.mjs`
+- `node scripts/catalog.mjs --check`
+- `node scripts/check-version-bump.mjs origin/main` (skip if `origin/main` does not exist; it reads committed changes only and fails while a bump is pending or uncommitted, so expect that failure until step 6 delivers and commits the bump)
 - `npx --yes markdownlint-cli2@0.23.3` on the touched user docs (it reports broken anchors as MD051)
 
 ### 4. Agreement

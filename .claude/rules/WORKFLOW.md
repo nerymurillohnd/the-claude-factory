@@ -42,7 +42,7 @@ Only when Nery explicitly asks to create, build or start a plugin. Each step nam
    - Problem and outcome: the recurring friction it removes, and who it is for.
    - Overlap: when an existing plugin of this marketplace covers part of the domain, weigh extending it against a new plugin, and propose the choice. Never argue a design choice from another plugin of the marketplace: recall memory `no-other-plugins-as-precedent`.
    - Name: kebab-case, permanent, no `claude-` or `anthropic-` prefix, named for what it does; a display name and an emoji.
-   - Category: an `id` from `.github/scripts/categories.json`.
+   - Category: an `id` from `scripts/categories.json`.
    - Components: skills, agents, hooks, MCP, LSP, output styles, monitors, scripts, each justified by a user task.
    - Surfaces: Claude Code and the Claude app by default. Check every component against `docs/compatibility.md`; if a part forces Claude Code-only, say why and get Nery's OK.
    - Requirements: CLIs, accounts, API keys (`userConfig`), dependencies, minimum Claude Code version.
@@ -89,7 +89,7 @@ Plugin skills ship to users and follow the rules below. Skills that only govern 
 - Plugins get evals by default; Nery decides which plugins skip them. Write evals only for a plugin he approved.
 - Never work from memory: load the plugin-evals skill, use the Claude Code Docs MCP tools, and read the Claude Code changelog for the installed version, the four before it and every newer one. Apply what changed. Never invent or assume a format or behavior.
 - Runs never ask for permission: a tool you did not grant is removed, Bash writes stay in the run's workspace, no `.claude/` directory loads (not even one a `scaffold_script` wrote), and the temporary home has no `userConfig` values. Grade the attempt and the reply. Source: `/en/plugin-evals` → "Grant tools" and "How runs are isolated".
-- Give the plugin an entry in `.github/scripts/evals-config.json`: the tools the cases need, `max_cost_usd` and the `cost_basis` it was measured from.
+- Give the plugin an entry in `scripts/evals-config.json`: the tools the cases need, `max_cost_usd` and the `cost_basis` it was measured from.
 - Run `run-evals.sh` only on Nery's request: it spends money. CI runs the suite only for plugins with an `evals/` folder that changed.
 - A plugin without evals is tested with the methods the official docs recommend for its component types.
 
@@ -115,8 +115,8 @@ Applies to the root `README.md`, `docs/`, every plugin `README.md`, `SECURITY.md
 
 After building or changing a plugin, before its release. Delegate it to a read-only subagent (the `Explore` type: no Edit or Write) that did not write the plugin. It assumes nothing works until it sees evidence. It loads no CLAUDE.md, rule file or memory, so the delegation message carries the plugin name, these steps and every rule or fact they need: recall memory `agent-file-rules`. The same applies to every delegated review.
 
-1. Read `.claude/rules/WORKFLOW.md`, the pairs map in `.claude/skills/plugin-consistency/SKILL.md` → step 2, `docs/compatibility.md`, the checks in `.github/scripts/check-repo.mjs` and everything under `plugins/<name>/`.
-2. Run `claude plugin validate --strict plugins/<name>` and `node .github/scripts/check-repo.mjs`, and quote the output.
+1. Read `.claude/rules/WORKFLOW.md`, the pairs map in `.claude/skills/plugin-consistency/SKILL.md` → step 2, `docs/compatibility.md`, the checks in `scripts/check-repo.mjs` and everything under `plugins/<name>/`.
+2. Run `claude plugin validate --strict plugins/<name>` and `node scripts/check-repo.mjs`, and quote the output.
 3. Manifest: the fields `.claude/skills/plugin-development/SKILL.md` → step 4 sets; paths start with `./`; secrets go through `userConfig`; no hardcoded tokens or personal data.
 4. Components: each skill, agent, hook, MCP and LSP server does what the README claims; skill descriptions state what and when; hook scripts fail safe; paths use `${CLAUDE_PLUGIN_ROOT}`.
 5. Security: no data exfiltration, no undisclosed network calls, no destructive commands without confirmation, no `curl | sh`, least-privilege tool grants.

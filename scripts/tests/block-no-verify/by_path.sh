@@ -3,7 +3,7 @@
 # stripped environment. CI does not run it; the pre-push gate runs it locally. Needs jq on PATH, as
 # the plugin does. Exits non-zero on the first failure.
 set -euo pipefail
-root=$(cd "$(dirname "$0")/../../../.." && pwd)
+root=$(cd "$(dirname "$0")/../../.." && pwd)
 hook="${root}/plugins/block-no-verify/hooks/block-no-verify.sh"
 tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT

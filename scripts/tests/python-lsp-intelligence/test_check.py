@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Tests for python-lsp-intelligence's hooks/check.py.
 
-Run: python3 -m unittest discover -s .github/scripts/tests/python-lsp-intelligence -v
+Run: python3 -m unittest discover -s scripts/tests/python-lsp-intelligence -v
 Standard library only. The tool cases need ruff and basedpyright on PATH.
 """
 
@@ -17,7 +17,7 @@ import tempfile
 import time
 import unittest
 
-REPO = Path(__file__).resolve().parents[4]
+REPO = Path(__file__).resolve().parents[3]
 HOOK = REPO / "plugins" / "python-lsp-intelligence" / "hooks" / "check.py"
 HAVE_TOOLS = shutil.which("ruff") is not None and shutil.which("basedpyright") is not None
 REPORT_CEILING = 9_100

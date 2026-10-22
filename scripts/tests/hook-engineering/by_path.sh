@@ -4,7 +4,7 @@
 # python3 and bash are first on PATH. No network: hook-changes.sh runs with a stub curl.
 # Exits non-zero on the first failure.
 set -euo pipefail
-root=$(cd "$(dirname "$0")/../../../.." && pwd)
+root=$(cd "$(dirname "$0")/../../.." && pwd)
 scripts="${root}/plugins/hook-engineering/skills/hook-development/scripts"
 work=$(mktemp -d)
 trap 'rm -rf "${work}"' EXIT

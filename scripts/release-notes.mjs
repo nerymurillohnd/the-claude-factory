@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Prints the release tag and notes for a plugin at its current version.
-//   node .github/scripts/release-notes.mjs <plugin-name> --tag    → prints the tag
-//   node .github/scripts/release-notes.mjs <plugin-name>          → prints the notes
+//   node scripts/release-notes.mjs <plugin-name> --tag    → prints the tag
+//   node scripts/release-notes.mjs <plugin-name>          → prints the notes
 
 import { join } from 'node:path'
 import {

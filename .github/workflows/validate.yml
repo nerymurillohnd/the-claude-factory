@@ -51,11 +51,11 @@ jobs:
           shfmt --version
           tsc --version
       - name: Script tests
-        run: node --test ".github/scripts/tests/*.test.mjs"
+        run: node --test "scripts/tests/*.test.mjs"
       - name: Repository policy
-        run: node .github/scripts/check-repo.mjs
+        run: node scripts/check-repo.mjs
       - name: Catalog in sync
-        run: node .github/scripts/catalog.mjs --check
+        run: node scripts/catalog.mjs --check
       - name: Version bumps
         env:
           # The PR base on a pull request, the previous head on a push, empty on a manual run.
@@ -66,7 +66,7 @@ jobs:
             echo "No comparable base commit; skipping version-bump check."
             exit 0
           fi
-          node .github/scripts/check-version-bump.mjs "${BASE}"
+          node scripts/check-version-bump.mjs "${BASE}"
 
   python-lint:
     name: Python lint & types
@@ -80,9 +80,9 @@ jobs:
           cache-dependency-glob: .github/workflows/validate.yml
       - name: ruff and mypy
         run: |
-          uvx "ruff@${RUFF_VERSION}" check --output-format=github plugins .github/scripts
-          uvx "ruff@${RUFF_VERSION}" format --check plugins .github/scripts
-          git ls-files -z 'plugins/*.py' '.github/scripts/tests/*.py' | xargs -0 uvx --from "mypy==${MYPY_VERSION}" mypy --strict
+          uvx "ruff@${RUFF_VERSION}" check --output-format=github plugins scripts
+          uvx "ruff@${RUFF_VERSION}" format --check plugins scripts
+          git ls-files -z 'plugins/*.py' 'scripts/tests/*.py' | xargs -0 uvx --from "mypy==${MYPY_VERSION}" mypy --strict
 
   claude-validate:
     name: claude plugin validate
@@ -95,7 +95,7 @@ jobs:
       - name: Install Claude Code
         run: npm install --global "@anthropic-ai/claude-code@${CLAUDE_CODE_VERSION}"
       - name: Validate marketplace and plugins
-        run: .github/scripts/validate-claude.sh
+        run: scripts/validate-claude.sh
 
   lint:
     name: Markdown & workflow lint

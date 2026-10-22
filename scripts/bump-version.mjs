@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Releases a plugin: bumps the version and turns [Unreleased] into a dated section.
-//   node .github/scripts/bump-version.mjs <plugin-name> <major|minor|patch>
+//   node scripts/bump-version.mjs <plugin-name> <major|minor|patch>
 
 import { existsSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'

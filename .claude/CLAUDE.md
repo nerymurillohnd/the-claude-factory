@@ -26,12 +26,12 @@ This project carries one item of the global North Star: multiply execution capac
 - Product: Claude Code plugins (skills, agents, hooks, MCP and LSP servers, mods) listed in `.claude-plugin/marketplace.json`, one folder per plugin under `plugins/`.
 - Build: no build step and no runtime to maintain; no root `pyproject.toml` or virtual environment.
 - Root `package.json` (ADR_2026-10-21_maintainer-only-root-package-json): maintainer tooling only, never a runtime of any plugin. A user receives only `plugins/<name>/`, but Node resolves imports by walking up the folders, so anything in the root `node_modules` would let a plugin pass here and fail for users.
-  - It holds only exact `@types/*` devDependencies, today `@types/node` on the Node major of `.nvmrc`, so `tsc`, the post-edit hook and the language server read `.github/scripts/tsconfig.json` the same way. It sets `"private": true` and never `dependencies`, `main`, `exports`, `bin`, `type` or `workspaces`; a `"type"` would change how Node and `tsc` read the plugins' `.js` and `.ts` files.
+  - It holds only exact `@types/*` devDependencies, today `@types/node` on the Node major of `.nvmrc`, so `tsc`, the post-edit hook and the language server read `scripts/tsconfig.json` the same way. It sets `"private": true` and never `dependencies`, `main`, `exports`, `bin`, `type` or `workspaces`; a `"type"` would change how Node and `tsc` read the plugins' `.js` and `.ts` files.
   - The CLIs stay out of it: TypeScript, Biome and markdownlint-cli2 run through `npx --yes <pkg>@<version>` at the pins in Commands and `validate.yml`, and Python tools through `uvx`.
   - `check-repo.mjs` enforces all of it, including the `.nvmrc` major. When `.nvmrc` changes major, change `@types/node` in the same commit with `npm install --save-dev --save-exact @types/node@<major>.x.y`.
   - A plugin that needs packages ships its own `package.json` and npm or Bun lockfile in `plugins/<name>/`, which Claude Code installs into that plugin's cache; it never relies on the root one.
 - Plugin code: Bash and POSIX-style Python 3 that run on whatever `bash` and `python3` the user has on `PATH`, with no version floor; `.mjs` modules type-checked by TypeScript 6.0.3; mods in TypeScript under `hooks/*.ts`.
-- Repository tooling: Node scripts in `.github/scripts/` for scaffolding, catalog, version bumps, labels, policy checks and eval targets; Node 26 from `.nvmrc`.
+- Repository tooling: Node scripts in `scripts/` for scaffolding, catalog, version bumps, labels, policy checks and eval targets, with their tests in `scripts/tests/`; Node 26 from `.nvmrc`. Maintainer code lives at the root, never under `.github/` (ADR_2026-10-21_maintainer-scripts-at-root): basedpyright and other tools skip folders whose name starts with a dot, so code there goes unchecked. `.github/` holds only GitHub's own files.
 - Formatting and linters: Biome for JavaScript and JSON; ruff, mypy and basedpyright for Python; shfmt and ShellCheck for shell; markdownlint-cli2 for Markdown; actionlint for workflows. Each runs at the version pinned in Commands below and in `validate.yml`.
 - Testing: `node --test` for script and hook tests, `unittest` and `by_path.sh` for plugin scripts, `claude plugin validate --strict` and `claude plugin test` for plugins and mods, `claude plugin eval` for plugins that have evals.
 - CI/CD and GitHub Actions: `validate.yml` on every push and PR, `evals.yml` for changed plugins that have evals, `release.yml` tags each plugin after merge, and Claude reviewers run on pull requests.
@@ -76,16 +76,16 @@ Run from the repository root with the `.nvmrc` runtime selected and `npm ci` run
 
 ### Project
 
-- `node .github/scripts/new-plugin.mjs --name <name> --category <id> --description "<sentence>" [--display-name "<Name>"] [--emoji <e>] [--min-claude-code <x.y.z>] [--claude-code-only]` - Run when scaffolding and registering a plugin.
-- `node .github/scripts/catalog.mjs` - Run when regenerating the generated blocks of the root `README.md`.
-- `node .github/scripts/bump-version.mjs <plugin> <major|minor|patch>` - Run when bumping a plugin in its PR.
-- `node .github/scripts/release-notes.mjs <plugin> [--tag]` - Run when previewing a plugin's release notes or tag.
-- `node .github/scripts/eval-targets.mjs --changed <base> <head>` or `--only <plugin|all>` - Run when listing the plugins whose evals CI would run.
-- `node .github/scripts/sync-labels.mjs [--dry-run]` - Run when syncing the GitHub labels after a plugin is added.
-- `ONLY=<plugin> .github/scripts/run-evals.sh` - Run when running a plugin's full eval suite.
+- `node scripts/new-plugin.mjs --name <name> --category <id> --description "<sentence>" [--display-name "<Name>"] [--emoji <e>] [--min-claude-code <x.y.z>] [--claude-code-only]` - Run when scaffolding and registering a plugin.
+- `node scripts/catalog.mjs` - Run when regenerating the generated blocks of the root `README.md`.
+- `node scripts/bump-version.mjs <plugin> <major|minor|patch>` - Run when bumping a plugin in its PR.
+- `node scripts/release-notes.mjs <plugin> [--tag]` - Run when previewing a plugin's release notes or tag.
+- `node scripts/eval-targets.mjs --changed <base> <head>` or `--only <plugin|all>` - Run when listing the plugins whose evals CI would run.
+- `node scripts/sync-labels.mjs [--dry-run]` - Run when syncing the GitHub labels after a plugin is added.
+- `ONLY=<plugin> scripts/run-evals.sh` - Run when running a plugin's full eval suite.
 - `claude --plugin-dir plugins/<plugin>` - Run when exercising a plugin in a live session.
 - `git push origin <branch>` - Run when Nery orders a push. Never run a bare `git push`.
-- For all other commands, read `.github/scripts/` and `.github/workflows/`.
+- For all other commands, read `scripts/` and `.github/workflows/`.
 
 ### After Editing a File
 
@@ -95,15 +95,15 @@ Python:
 - `uvx ruff@0.17.1 check <file>` - Run after the formatter.
 - `uvx --from mypy==1.20.2 mypy --strict <file>` - Run after ruff.
 - `basedpyright --warnings <file>` - Run after mypy.
-- `python3 -m unittest discover -s .github/scripts/tests/<plugin>` - Run when the file belongs to a plugin with Python tests.
-- `.github/scripts/tests/<plugin>/by_path.sh` - Run when that plugin folder ships one.
+- `python3 -m unittest discover -s scripts/tests/<plugin>` - Run when the file belongs to a plugin with Python tests.
+- `scripts/tests/<plugin>/by_path.sh` - Run when that plugin folder ships one.
 
 JavaScript modules (`tsc` checks the whole project):
 
 - `npx --yes @biomejs/biome@2.5.15 check --write --error-on-warnings <file>` - Run first, after every `.mjs` edit.
-- `npx --yes --package typescript@6.0.3 tsc -p .github/scripts/tsconfig.json --noEmit` - Run after Biome. The config covers the `.mjs` files under `.github/scripts/` and `plugins/`.
-- `node --test ".github/scripts/tests/*.test.mjs"` - Run after the type check. Read the `skipped` count.
-- `node .github/scripts/check-repo.mjs` - Run after the tests.
+- `npx --yes --package typescript@6.0.3 tsc -p scripts/tsconfig.json --noEmit` - Run after Biome. The config covers the `.mjs` files under `scripts/` and `plugins/`.
+- `node --test "scripts/tests/*.test.mjs"` - Run after the type check. Read the `skipped` count.
+- `node scripts/check-repo.mjs` - Run after the tests.
 
 Mods (code in `hooks/*.ts`, tests in `tests/*.test.ts`):
 
@@ -116,7 +116,7 @@ Shell:
 
 - `shfmt -w <file>` - Run first, after every `.sh` edit.
 - `shellcheck -o all -S style -x -a -P SCRIPTDIR <file>` - Run after shfmt.
-- `.github/scripts/tests/<plugin>/by_path.sh` - Run when the script belongs to a plugin that ships one.
+- `scripts/tests/<plugin>/by_path.sh` - Run when the script belongs to a plugin that ships one.
 
 ### Before Every Push
 
@@ -125,21 +125,21 @@ No git hook runs `.pre-commit-config.yaml`, and CI does not run `basedpyright`, 
 1. `git branch --show-current` - Confirm it is the intended branch, not a stale or merged one.
 2. `git status --short` - Confirm no path is staged that you did not change.
 3. `git log --format='%h %G? %s' origin/main..HEAD` - Confirm every commit shows `G`.
-4. `node --test ".github/scripts/tests/*.test.mjs"` - Runs the script tests and the LSP hook tests. They need `shfmt`, `shellcheck`, `ruff` and `basedpyright` on `PATH`. Read the `skipped` count: a missing tool skips its cases.
-5. `node .github/scripts/check-repo.mjs` - Checks the repository policy: manifests, required plugin files and sections, changelog entries, and the root `README.md` and `CHANGELOG.md`.
-6. `node .github/scripts/catalog.mjs --check` - Fails when the generated blocks of the root `README.md` are out of date.
-7. `.github/scripts/validate-claude.sh` - Runs `claude plugin validate --strict` on the marketplace and on every plugin, and `claude plugin test` on every plugin that ships mod tests.
-8. `node .github/scripts/check-version-bump.mjs origin/main` - Fails when a plugin changed since `origin/main` without a version bump and a changelog entry. Skip it when `origin/main` does not exist.
+4. `node --test "scripts/tests/*.test.mjs"` - Runs the script tests and the LSP hook tests. They need `shfmt`, `shellcheck`, `ruff` and `basedpyright` on `PATH`. Read the `skipped` count: a missing tool skips its cases.
+5. `node scripts/check-repo.mjs` - Checks the repository policy: manifests, required plugin files and sections, changelog entries, and the root `README.md` and `CHANGELOG.md`.
+6. `node scripts/catalog.mjs --check` - Fails when the generated blocks of the root `README.md` are out of date.
+7. `scripts/validate-claude.sh` - Runs `claude plugin validate --strict` on the marketplace and on every plugin, and `claude plugin test` on every plugin that ships mod tests.
+8. `node scripts/check-version-bump.mjs origin/main` - Fails when a plugin changed since `origin/main` without a version bump and a changelog entry. Skip it when `origin/main` does not exist.
 9. `npx --yes @biomejs/biome@2.5.15 check --error-on-warnings .` - Checks the format, lint and imports of the JavaScript and JSON files.
 10. `git ls-files -z '*.sh' | xargs -0 shellcheck -o all -S style -x -a -P SCRIPTDIR` - Lints every tracked shell script.
 11. `git ls-files -z '*.sh' | xargs -0 shfmt -d` - Shows the formatting drift of every tracked shell script.
-12. `python3 -m unittest discover -s .github/scripts/tests/<plugin>` - Runs the Python tests of one plugin. Repeat for each test folder with `test_*.py` files.
-13. `.github/scripts/tests/<plugin>/by_path.sh` - Runs the plugin scripts by path, as Claude Code does. Repeat for each plugin folder that ships one.
-14. `uvx ruff@0.17.1 check plugins .github/scripts` - Lints the Python files.
-15. `uvx ruff@0.17.1 format --check plugins .github/scripts` - Checks the formatting of the Python files.
-16. `git ls-files -z 'plugins/*.py' '.github/scripts/tests/*.py' | xargs -0 uvx --from mypy==1.20.2 mypy --strict` - Type-checks the Python files.
+12. `python3 -m unittest discover -s scripts/tests/<plugin>` - Runs the Python tests of one plugin. Repeat for each test folder with `test_*.py` files.
+13. `scripts/tests/<plugin>/by_path.sh` - Runs the plugin scripts by path, as Claude Code does. Repeat for each plugin folder that ships one.
+14. `uvx ruff@0.17.1 check plugins scripts` - Lints the Python files.
+15. `uvx ruff@0.17.1 format --check plugins scripts` - Checks the formatting of the Python files.
+16. `git ls-files -z 'plugins/*.py' 'scripts/tests/*.py' | xargs -0 uvx --from mypy==1.20.2 mypy --strict` - Type-checks the Python files.
 17. `basedpyright --warnings` - Type-checks the project's Python files outside hidden folders (DEBT-003).
-18. `npx --yes --package typescript@6.0.3 tsc -p .github/scripts/tsconfig.json --noEmit` - Type-checks the `.mjs` files under `.github/scripts/` and `plugins/`.
+18. `npx --yes --package typescript@6.0.3 tsc -p scripts/tsconfig.json --noEmit` - Type-checks the `.mjs` files under `scripts/` and `plugins/`.
 19. `npx --yes --package typescript@6.0.3 tsc -p plugins/<plugin>/tsconfig.json --noEmit` - Type-checks the mod of each plugin that ships one. Run it locally: it needs the declarations the engine writes, which CI does not have.
 20. `npx --yes markdownlint-cli2@0.23.3` - Lints the Markdown that people read.
 21. `SHELLCHECK_OPTS='-o all -S style -x -a -P SCRIPTDIR' actionlint` - Lints the workflows. Run it only when `.github/workflows/` changed.

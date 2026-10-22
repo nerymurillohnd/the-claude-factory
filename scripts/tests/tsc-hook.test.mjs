@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Tests for the post-edit hook of the TypeScript LSP intelligence plugins, run against the
 // real tsc on PATH. Without tsc the compiler cases are skipped locally; in CI that is a failure.
-//   node --test ".github/scripts/tests/*.test.mjs"
+//   node --test "scripts/tests/*.test.mjs"
 
 import assert from 'node:assert/strict'
 import { spawnSync } from 'node:child_process'
@@ -20,7 +20,7 @@ import { dirname, join, resolve } from 'node:path'
 import { afterEach, beforeEach, describe, test } from 'node:test'
 import { fileURLToPath } from 'node:url'
 
-const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..', '..')
+const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..')
 const PLUGIN = join(ROOT, 'plugins', 'typescript6-lsp-intelligence')
 const HOOK = join(PLUGIN, 'hooks', 'tsc-check.sh')
 const HAVE_TSC = spawnSync('sh', ['-c', 'command -v tsc']).status === 0

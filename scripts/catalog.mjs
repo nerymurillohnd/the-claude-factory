@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Regenerates the generated blocks in README.md from marketplace.json + plugin manifests.
-//   node .github/scripts/catalog.mjs          → rewrite README.md
-//   node .github/scripts/catalog.mjs --check  → exit 1 if README.md is out of date (CI)
+//   node scripts/catalog.mjs          → rewrite README.md
+//   node scripts/catalog.mjs --check  → exit 1 if README.md is out of date (CI)
 
 import { writeFileSync } from 'node:fs'
 import { COMPONENT_TYPES, componentBadges, detectComponents } from './components.mjs'
@@ -142,7 +142,7 @@ if (isMain(import.meta.url)) {
   const next = renderReadme(current)
   if (process.argv.includes('--check')) {
     if (current !== next) {
-      fail('README.md catalog is out of date. Run: node .github/scripts/catalog.mjs')
+      fail('README.md catalog is out of date. Run: node scripts/catalog.mjs')
     }
     console.log('✔ README.md catalog is up to date')
   } else {

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Tests for the hook-development skill's scripts in plugins/hook-engineering.
 
-Run: python3 -m unittest discover -s .github/scripts/tests/hook-engineering -v
+Run: python3 -m unittest discover -s scripts/tests/hook-engineering -v
 Standard library only. The hook-changes.sh cases need bash on PATH (Git Bash on Windows)
 and use a stub curl, so they make no network calls.
 """
@@ -17,7 +17,7 @@ import sys
 import tempfile
 import unittest
 
-REPO = Path(__file__).resolve().parents[4]
+REPO = Path(__file__).resolve().parents[3]
 SCRIPTS = REPO / "plugins" / "hook-engineering" / "skills" / "hook-development" / "scripts"
 LINT = SCRIPTS / "lint-hooks-config.py"
 PROBE = SCRIPTS / "probe-hook.py"

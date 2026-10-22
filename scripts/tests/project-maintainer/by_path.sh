@@ -3,7 +3,7 @@
 # path, through the shebang, with whatever `bash` is first on PATH. CI does not run
 # it; the pre-push gate runs it locally. Exits non-zero on the first failure.
 set -euo pipefail
-root=$(cd "$(dirname "$0")/../../../.." && pwd)
+root=$(cd "$(dirname "$0")/../../.." && pwd)
 plugin="${root}/plugins/project-maintainer"
 hook="${plugin}/hooks/session-bootstrap.sh"
 tmp=$(mktemp -d)

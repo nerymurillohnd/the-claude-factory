@@ -481,7 +481,7 @@ export function checkRepo() {
   try {
     const readme = readText(README_PATH)
     if (renderReadme(readme) !== readme) {
-      err('README.md', 'catalog is out of date — run node .github/scripts/catalog.mjs')
+      err('README.md', 'catalog is out of date — run node scripts/catalog.mjs')
     }
   } catch (e) {
     err('README.md', e instanceof Error ? e.message : String(e))

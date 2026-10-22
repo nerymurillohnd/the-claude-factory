@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Tests for the Node post-edit hook of bash-lsp-intelligence.
-//   node --test ".github/scripts/tests/*.test.mjs"
+//   node --test "scripts/tests/*.test.mjs"
 // Tool cases run only when the tool is on PATH.
 
 import assert from 'node:assert/strict'
@@ -19,7 +19,7 @@ import { dirname, join, resolve } from 'node:path'
 import { afterEach, beforeEach, describe, test } from 'node:test'
 import { fileURLToPath } from 'node:url'
 
-const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..', '..')
+const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..')
 const PLUGINS = join(ROOT, 'plugins')
 const BASH_HOOK = join(PLUGINS, 'bash-lsp-intelligence', 'hooks', 'check.mjs')
 const SECONDS_AGO = 600

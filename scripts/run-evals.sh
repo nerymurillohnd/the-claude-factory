@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 # Runs the full eval suite (both arms, 3 runs per case) of every plugin that
 # ships an evals/ folder, with the tool grants and cost ceiling set for it in
-# .github/scripts/evals-config.json. ONLY=<plugin> limits the run to one plugin.
+# scripts/evals-config.json. ONLY=<plugin> limits the run to one plugin.
 # Exits non-zero when any suite fails or a plugin with evals has no config.
 set -euo pipefail
-root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "${root}"
-config=.github/scripts/evals-config.json
+config=scripts/evals-config.json
 mkdir -p eval-results
 status=0
 ran=0

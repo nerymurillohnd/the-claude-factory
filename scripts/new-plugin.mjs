@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Scaffolds a plugin from .claude/templates/plugin and registers it in marketplace.json.
-//   node .github/scripts/new-plugin.mjs --name my-plugin --category development \
+//   node scripts/new-plugin.mjs --name my-plugin --category development \
 //     --description "One sentence." [--display-name "My Plugin"] [--emoji 🧰] [--min-claude-code 2.1.292]
 //     [--claude-code-only]   (default: works in Claude Code and the Claude app)
 

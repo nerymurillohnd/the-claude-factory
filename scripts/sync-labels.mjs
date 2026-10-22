@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Creates or updates the repository labels from .github/labels.json plus one "plugin: <name>"
 // label per catalog entry. Idempotent. Requires an authenticated `gh` CLI with repo access.
-//   node .github/scripts/sync-labels.mjs [--dry-run]
+//   node scripts/sync-labels.mjs [--dry-run]
 
 import { execFileSync } from 'node:child_process'
 import { join } from 'node:path'

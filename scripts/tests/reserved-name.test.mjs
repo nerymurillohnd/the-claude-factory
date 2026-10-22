@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Tests for RESERVED_NAME against the plugin-name table of the manifest reference
 // (https://code.claude.com/docs/en/plugins/manifest-reference#name).
-//   node --test ".github/scripts/tests/*.test.mjs"
+//   node --test "scripts/tests/*.test.mjs"
 
 import assert from 'node:assert/strict'
 import { test } from 'node:test'

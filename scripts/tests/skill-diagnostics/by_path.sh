@@ -3,7 +3,7 @@
 # through the shebang, with whatever `python3` is first on PATH. CI does not run it;
 # the pre-push gate runs it locally. Exits non-zero on the first failure.
 set -euo pipefail
-root=$(cd "$(dirname "$0")/../../../.." && pwd)
+root=$(cd "$(dirname "$0")/../../.." && pwd)
 plugin="${root}/plugins/skill-diagnostics"
 hook="${plugin}/hooks/skill_written.py"
 work=$(mktemp -d)

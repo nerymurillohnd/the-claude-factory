@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Fails when a plugin's files changed since <base-ref> without a version bump and changelog entry.
-//   node .github/scripts/check-version-bump.mjs <base-ref>
+//   node scripts/check-version-bump.mjs <base-ref>
 // Documentation-only edits (README.md, CHANGELOG.md [Unreleased]) do not reach users through
 // `claude plugin update`, so changes limited to README.md do not require a bump.
 

@@ -3,7 +3,7 @@
 # shebang, with whatever python3 is first on PATH. CI does not run it; the pre-push gate
 # runs it locally. Exits non-zero on the first failure.
 set -euo pipefail
-root=$(cd "$(dirname "$0")/../../../.." && pwd)
+root=$(cd "$(dirname "$0")/../../.." && pwd)
 hook="${root}/plugins/python-lsp-intelligence/hooks/check.py"
 work=$(mktemp -d)
 trap 'rm -rf "$work"' EXIT

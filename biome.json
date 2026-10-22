@@ -178,7 +178,7 @@
     },
     {
       "includes": [
-        ".github/scripts/**"
+        "scripts/**"
       ],
       "linter": {
         "rules": {

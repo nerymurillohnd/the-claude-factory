@@ -118,7 +118,7 @@ reason+='For each plugin, read what changed and pick the SemVer level:'$'\n'
 reason+='- major: breaking. A removed or renamed skill, agent or command, changed config keys, a new required dependency, or a change in behavior users rely on.'$'\n'
 reason+='- minor: a new component, option or capability, backwards compatible.'$'\n'
 reason+='- patch: a bug fix, a wording fix, performance, or an internal refactor with the same behavior.'$'\n'
-reason+='Summarize the change under [Unreleased] in the plugin CHANGELOG.md, run: node .github/scripts/bump-version.mjs <plugin> <level>. Commit the result, then push again.'$'\n'
+reason+='Summarize the change under [Unreleased] in the plugin CHANGELOG.md, run: node scripts/bump-version.mjs <plugin> <level>. Commit the result, then push again.'$'\n'
 reason+='If the plugin README.md no longer matches the change, update it first. Changes limited to README.md need no bump.'
 
 # A JSON string escapes a backslash, a double quote and a newline.

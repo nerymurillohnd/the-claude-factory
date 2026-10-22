@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // End-to-end tests for the maintenance scripts. Each test runs against a fresh temp copy of the
 // repository (TCF_ROOT), so the real working tree is never modified.
-//   node --test ".github/scripts/tests/*.test.mjs"
+//   node --test "scripts/tests/*.test.mjs"
 
 import assert from 'node:assert/strict'
 import { execFileSync, spawnSync } from 'node:child_process'
@@ -24,7 +24,7 @@ import { anchor } from '../catalog.mjs'
 import { lspConfigProblems, portabilityProblems, rootPackageProblems } from '../check-repo.mjs'
 import { changelogSection } from '../lib.mjs'
 
-const REAL_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..', '..')
+const REAL_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..')
 /** @type {string} */
 let root
 
@@ -68,7 +68,7 @@ function copyRepo() {
  * @returns {{ code: number | null, out: string }}
  */
 function run(script, args = []) {
-  const r = spawnSync(process.execPath, [join(root, '.github', 'scripts', script), ...args], {
+  const r = spawnSync(process.execPath, [join(root, 'scripts', script), ...args], {
     cwd: root,
     encoding: 'utf8',
     env: { ...process.env, TCF_ROOT: root },

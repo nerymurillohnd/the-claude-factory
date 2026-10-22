@@ -44,16 +44,16 @@ repos:
 
       - id: tsc-showconfig
         name: TypeScript config resolves
-        entry: npx --yes --package typescript@6.0.3 tsc -p .github/scripts/tsconfig.json --showConfig
+        entry: npx --yes --package typescript@6.0.3 tsc -p scripts/tsconfig.json --showConfig
         language: unsupported
-        files: ^(\.github/scripts/tsconfig\.json|tsconfig\.base\.json)$
+        files: ^(scripts/tsconfig\.json|tsconfig\.base\.json)$
         pass_filenames: false
         require_serial: true
 
       - id: tsc-noemit
         name: TypeScript type-check
-        entry: npx --yes --package typescript@6.0.3 tsc -p .github/scripts/tsconfig.json --noEmit
+        entry: npx --yes --package typescript@6.0.3 tsc -p scripts/tsconfig.json --noEmit
         language: unsupported
-        files: ^((\.github/scripts|plugins)/.*\.mjs|\.github/scripts/tsconfig\.json|tsconfig\.base\.json|package(-lock)?\.json)$
+        files: ^((scripts|plugins)/.*\.mjs|scripts/tsconfig\.json|tsconfig\.base\.json|package(-lock)?\.json)$
         pass_filenames: false
         require_serial: true

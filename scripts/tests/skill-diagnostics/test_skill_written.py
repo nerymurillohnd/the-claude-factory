@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Tests for skill-diagnostics' hooks/skill_written.py.
 
-Run: python3 -m unittest discover -s .github/scripts/tests/skill-diagnostics -v
+Run: python3 -m unittest discover -s scripts/tests/skill-diagnostics -v
 Standard library only; runs on the python3 on PATH on Linux, macOS and Windows.
 """
 
@@ -19,7 +19,7 @@ import unittest
 if TYPE_CHECKING:
     from collections.abc import Callable
 
-REPO = Path(__file__).resolve().parents[4]
+REPO = Path(__file__).resolve().parents[3]
 HOOK = REPO / "plugins" / "skill-diagnostics" / "hooks" / "skill_written.py"
 
 
