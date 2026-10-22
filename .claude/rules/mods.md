@@ -28,6 +28,7 @@ Lessons verified on 2026-10-22 against the live mod docs and the installed engin
 | [Troubleshoot a mod](https://code.claude.com/docs/en/plugins/mods/troubleshoot.md) | Find out why a mod does nothing, Check whether mods can load, Refusal messages, Messages from the built-in guard, A hook is skipped or a mod is unloaded, A tool call is denied, Read the debug log |
 | [API](https://code.claude.com/docs/en/plugins/mods/api.md), [Interface](https://code.claude.com/docs/en/plugins/mods/interface.md), [Admin](https://code.claude.com/docs/en/plugins/mods/admin.md) | `$` calls and background work, drawing and `$.state`, organization controls and the built-in guard |
 | [Permissions](https://code.claude.com/docs/en/permissions.md) | Precedence among rules, hooks, and mods; Hook approvals in plan mode |
+| [Plugins → Loading](https://code.claude.com/docs/en/plugins/loading.md) | Plugins synced from claude.ai, the load order by manifest name, Hooks when two enabled plugins share a name, Keep a session-only plugin from loading |
 | [Declarations on GitHub](https://github.com/anthropics/claude-code/blob/main/mods/types/claude-code.d.ts), [built-in guard source](https://github.com/anthropics/claude-code/tree/main/mods/sec-default) | A method or element not on the pages. The GitHub copy can be older than the installed build |
 | [`CHANGELOG.md`](https://raw.githubusercontent.com/anthropics/claude-code/main/CHANGELOG.md) | Fetch it raw with `curl`; the docs changelog page is too large for WebFetch. Expect missing version headings and contract changes with no entry |
 | [Docs index](https://code.claude.com/docs/llms.txt) | Find a mod page not listed here |
@@ -67,6 +68,12 @@ Lessons verified on 2026-10-22 against the live mod docs and the installed engin
 - **Claim** surfaces from Overview → Where mods run: hooks run in the terminal, the Desktop Code tab, the VS Code extension, `claude -p`, the Agent SDK, Remote Control and cloud sessions that receive the plugin; they do not run in a Desktop WSL session. Drawing appears only in the terminal, the Desktop Code tab and the VS Code extension.
 - **Remember** that `disableAllHooks` and `allowManagedModsOnly` stop the mod and keep the rest of the plugin (skills, commands, agents, MCP) loaded.
 - **Expect** the built-in guard `sec-default@builtin` (`cc-plugin-sec-default`) ahead of user mods on machines with managed settings or a Team or Enterprise login.
+
+## Copies of the same plugin
+
+- **Know** which copy runs (Plugins → Loading → the load order, Hooks when two enabled plugins share a name): copies compare by manifest name, a `--plugin-dir` copy beats an installed one, and an installed one beats the `<name>@synced` copy from claude.ai, which is reported as not loaded. Only one copy per name loads a hooks module; `/plugin` → **Errors** says `Its hooks module does not load` for the other.
+- **Test** a mod you also have installed or synced with `--plugin-dir`, and confirm `overrides installed version` and `shadowed by local copy` in the debug log. Set `"enabledPlugins": {"<name>@inline": false}` to stop a session-only copy from shadowing.
+- **Expect** a synced copy to load its hooks in the terminal only in sessions signed in with the claude.ai account: none load under `ANTHROPIC_AUTH_TOKEN`, `CLAUDE_CODE_OAUTH_TOKEN` or `apiKeyHelper`, without feature-flag fetching (`CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC`), in bare mode, under `--safe-mode`, or with `--setting-sources` that leaves out `user`. A synced change arrives at the next start, or after `/reload-plugins` when the session says `Plugins changed`.
 
 ## Events to handle with care
 
