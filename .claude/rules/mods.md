@@ -42,6 +42,8 @@ Lessons verified on 2026-10-22 against the live mod docs and the installed engin
 
 ## Files and the hook function
 
+- **Build** a marketplace mod in `plugins/<name>/` and run it with `claude --plugin-dir`, not in the session mods folder the plugin-authoring skill names: the project's scaffold, gates and catalog read only `plugins/`.
+- **Declare** these at the top level of `register.ts(x)`: every function that receives `$`, and the module state they share. `claude plugin validate` refuses a `$` passed to a closure declared inside `register` (verified on v2.1.308). Re-derivable caches (listings, git snapshots) may live there too and redraw with `$.ui.invalidate('ui.render')`; the person's own choices stay in `$.state`.
 - **Declare** exactly one module path in `hooks/hooks.json` → `modules` (`"modules": ["./register.ts"]`); classic settings hooks can sit beside it under `hooks`. The module is an ES module that exports `register(on, options)`.
 - **Read** `options` as the plugin's `userConfig` values with defaults filled in, and treat a missing value as its default.
 - **Declare** `$.state` values and any namespace the mod adds in `types/index.d.ts`, named by `types` in the manifest. It is not the engine's `.claude-plugin/types/`.
@@ -112,6 +114,8 @@ Lessons verified on 2026-10-22 against the live mod docs and the installed engin
 - **Check** `e.surface` against the Render sites and Elements tables, and fall back to a transcript line or a command reply where nothing draws. The VS Code extension ignores some props (`Button` `hotkey`, `Code` colors and more).
 - **Use** `weight` instead of the deprecated `bold`, and a `borderStyle` from the documented list: any other name draws no border.
 - **Open** a pane from a command or a button, and read `isPlaced`: a pane opened without the user asking waits for a wide terminal.
+- **Scroll** a long list yourself (observed live on v2.1.308): keep the engine's window pinned one row into a body exactly `bodyRows` tall, with a spacer row above and below, and turn each `ui.scroll` `by` into your own offset, answering `next({ ...e, offset: 1 })`. With a tree that fits, the engine raises no `ui.scroll` for a wheel-up at offset 0; with spacer rows sized to a header you counted, any header that draws taller than counted hides the last rows. Let a `Client` with `flexGrow` measure the rows it really has and post them.
+- **Expect** a `Client` to get keys only after a click on it; Ctrl+X Tab focuses the pane, where only `Button` hotkeys answer. A plugin's own `$.ui.scroll({ to: 'start' })` skips its own `ui.scroll` hook (re-entry): pin with `{ to: { key } }` on a keyed `Box`.
 
 ## Tests (`claude plugin test`)
 
