@@ -13,6 +13,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - **Breaking:** requires Claude Code v2.1.307 or later. The guardrails now ask for your approval with the `{ decision: 'ask', reason }` answer, and drop the `decider` field that Claude Code v2.1.307 no longer reads. From that version, Claude Code puts every guardrail prompt to you and no classifier can answer it. On v2.1.304 to v2.1.306, auto mode's classifier could approve the edit for you, so update Claude Code first.
 - When the format check itself breaks, the record is no longer saved unchecked: Claude is told it was not saved and to try again.
 - The README's "What's inside" table now says what each piece does for you and what it prevents, with the four parts of the guardrails listed one by one, and where the hook and the mod run.
+- The FAQ explains how to check that the guardrails run (`/plugin`, `claude --debug`, where they run, your organization's built-in guard, two copies of the plugin) and every setting that turns them off while the skills keep working.
 
 ### Fixed
 

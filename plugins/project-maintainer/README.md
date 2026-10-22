@@ -359,6 +359,19 @@ No. A refusal lists what is wrong, such as a date that differs from the file nam
 
 Start Claude Code with `--safe-mode` for one session, which turns off every customization, skills and plugins included. Or set `"disableAllHooks": true` in your settings, which stops the guardrails, the start-of-session reminder and your other hooks. To keep the checks and drop only the commit reminder, turn that option off in `/config`: everything else keeps working.
 
+Your organization can also turn them off for you with managed settings (`disableAllHooks`, `allowManagedHooksOnly`, or `allowManagedModsOnly`, which keeps only its own mods), and `--bare` starts Claude Code without them. In each case the skills keep working; only the checks stop.
+
+</details>
+
+<details>
+<summary><b>The guardrails don't seem to run. How do I check?</b></summary>
+
+1. Run `/plugin` in a session. The line under the tabs, such as `1 mod active · project-maintainer`, lists the mods that loaded. If the plugin isn't there, open **Errors**.
+2. Start Claude Code with `claude --debug` and search the log for `project-maintainer`. A loaded mod has a line that starts with `hooks module project-maintainer` and says `loaded`; a refused one says `not loaded:` and why; a check that failed says `hook skipped:`.
+3. Check where you run it. The guardrails run in the terminal, the Desktop app's Code tab and the VS Code extension, not in a Desktop session on WSL, and not in a folder you haven't trusted yet.
+4. On a machine with managed settings, or signed in with a Team or Enterprise account, Claude Code's built-in guard runs first and can refuse a mod your organization doesn't allow. Ask your administrator.
+5. Installed the plugin both from the Claude app and from the marketplace? Claude Code runs only one copy of a mod with the same name: the marketplace copy. `/plugin` → **Errors** says which.
+
 </details>
 
 <details>
