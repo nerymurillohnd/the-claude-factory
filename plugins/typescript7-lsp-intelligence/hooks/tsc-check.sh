@@ -5,7 +5,8 @@
 #
 # - Environment (module resolution, paths, jsx, lib, types, include) comes from the
 #   project: the nearest tsconfig.json or jsconfig.json above the file, followed through
-#   its references to the program that lists the file.
+#   its references to the program that lists the file, then the tsconfig.<name>.json and
+#   jsconfig.<name>.json beside it (a tsconfig.tests.json that adds the excluded tests).
 # - Strictness comes from tsconfig.strictest.json next to this script: each boolean option
 #   is passed on the command line, so it overrides the project's value, explicit false too.
 #   Its checkJs brings the JavaScript files of a program into the check, as allowJs would.
@@ -518,11 +519,13 @@ referenced_configs() {
 }
 
 # Sets PROGRAM to the config whose program lists file $1 under the strictest flags, so
-# JavaScript counts as checkJs admits it; to "uncovered <nearest>" when no program does,
-# or to "none" without a config. A config tsc cannot read is used as is.
+# JavaScript counts as checkJs admits it: the nearest config, then its references, then the
+# sibling tsconfig.<name>.json and jsconfig.<name>.json files beside it, sorted by name. Sets
+# it to "uncovered <nearest>" when no program does, or to "none" without a config. A nearest
+# config tsc cannot read is used as is; a sibling tsc cannot read is skipped.
 PROGRAM=""
 program_of() {
-  local file="$1" nearest queue config listed seen="${NL}"
+  local file="$1" nearest queue config listed sibling seen="${NL}"
   nearest_config "${file}"
   if [[ -z ${NEAREST} ]]; then
     PROGRAM=none
@@ -548,6 +551,20 @@ program_of() {
     fi
     referenced_configs "${config}"
     queue="${queue}${REFERENCED}"
+  done
+  # A sibling is a program of its own that the nearest config does not reference.
+  for sibling in "$(dirname "${nearest}")"/tsconfig.*.json "$(dirname "${nearest}")"/jsconfig.*.json; do
+    [[ -f ${sibling} ]] || continue
+    canonical "${sibling}"
+    config="${CANONICAL}"
+    [[ ${seen} == *"${NL}${config}${NL}"* ]] && continue
+    seen="${seen}${config}${NL}"
+    listed="$(cd "$(dirname "${config}")" && "${TSC[@]}" --listFilesOnly -p "${config}" "${STRICT_FLAGS[@]+"${STRICT_FLAGS[@]}"}" 2>&1 || true)"
+    [[ ${listed} == *"error TS"* ]] && continue
+    if [[ "${NL}${listed}${NL}" == *"${NL}${file}${NL}"* ]]; then
+      PROGRAM="${config}"
+      return 0
+    fi
   done
   PROGRAM="uncovered ${nearest}"
 }
@@ -693,7 +710,7 @@ check_group() {
         note="No tsconfig.json or jsconfig.json covers ${file}; it was checked alone with the plugin's strictest config."
       else
         base="${found#uncovered }"
-        note="${file} is not part of the program of ${base} or its references; it was checked alone on top of that config. Add it to include or files to check it with the rest of the program."
+        note="${file} is not part of the program of ${base}, its references or the tsconfig.<name>.json and jsconfig.<name>.json beside it; it was checked alone on top of that config. Add it to include or files to check it with the rest of the program."
       fi
       config="${WORK}/alone-${RANDOM}-${RANDOM}.json"
       write_alone_config "${config}" "${base}" "${file}"

@@ -141,7 +141,7 @@ Rename formatPrice to formatMoney across the repo.
 Add scripts/migrate.ts that renames the old config keys.
 ```
 
-**Result:** The new file isn't in the `include` of any program, so the hook checks it on its own on top of your nearest `tsconfig.json`, keeping your path aliases, and tells Claude: `scripts/migrate.ts is not part of the program of tsconfig.json or its references … Add it to include or files.`
+**Result:** The new file isn't in the `include` of any program, so the hook checks it on its own on top of your nearest `tsconfig.json`, keeping your path aliases, and tells Claude: `scripts/migrate.ts is not part of the program of tsconfig.json, its references or the tsconfig.<name>.json and jsconfig.<name>.json beside it … Add it to include or files.`
 
 ## ⚙️ Configuration
 
@@ -151,6 +151,7 @@ Your project decides the environment; the plugin decides how strict the edited c
 | :-- | :-- |
 | A `tsconfig.json` or `jsconfig.json` exists above the file | `tsc --noEmit -p <that config>` with every strictest option passed on the command line, so it wins over the config's own value, an explicit `false` included |
 | That config is a solution file (`files: []` with `references`) | The referenced programs are followed to the one that lists the file |
+| That config excludes the file and a sibling `tsconfig.<name>.json` or `jsconfig.<name>.json` beside it includes it, such as a `tsconfig.tests.json` for the tests | After the config and its references, the siblings are tried in name order and the first program that lists the file checks it, with its own ambient declarations; a sibling `tsc` can't read is skipped |
 | Several changed files share a program | One `tsc` run for that program |
 | The file isn't in any program | Checked alone on top of the nearest config, with its `types` and path aliases, and the report says so |
 | A JavaScript file | Type-checked: `checkJs` is part of the strictest policy, so a `.js` file in your `include` is checked in its program even when your config only sets `allowJs`, or neither |

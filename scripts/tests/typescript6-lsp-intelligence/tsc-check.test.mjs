@@ -261,6 +261,70 @@ describe('typescript lsp hook', () => {
       assert.doesNotMatch(reason, /TS6059|TS6307/)
     })
 
+    /**
+     * A root program that excludes the tests, and a sibling program that adds them.
+     * @returns {string} the test file, which only the sibling program lists
+     */
+    const siblingLayout = () => {
+      ws.write(
+        'sib/tsconfig.json',
+        '{ "compilerOptions": { "strict": true }, "include": ["src"], "exclude": ["src/**/*.test.ts"] }',
+      )
+      ws.write('sib/tsconfig.tests.json', '{ "extends": "./tsconfig.json", "exclude": [] }')
+      ws.write(
+        'sib/src/env.d.ts',
+        'declare module "*.astro" { const c: unknown; export default c }\n',
+      )
+      ws.write('sib/src/x.astro', '---\n---\n')
+      return ws.write('sib/src/x.test.ts', 'import X from "./x.astro";\nexport const y = X;\n')
+    }
+
+    test('a file only a sibling tsconfig.<name>.json lists is checked with that program', () => {
+      const r = fire(ws.edit(siblingLayout()), ws.env)
+      assert.equal(r.code, 0)
+      assert.doesNotMatch(r.out, /"decision"/)
+      assert.doesNotMatch(r.out, /TS2307|is not part of the program/)
+    })
+
+    test('without the sibling program the file is still checked alone and said so', () => {
+      const file = siblingLayout()
+      rmSync(join(ws.root, 'sib', 'tsconfig.tests.json'))
+      const reason = parsed(fire(ws.edit(file), ws.env).out).reason
+      assert.match(reason, /x\.test\.ts is not part of the program of .*tsconfig\.json/)
+    })
+
+    test('a referenced program wins over a sibling that also lists the file', () => {
+      ws.write(
+        'ref/tsconfig.json',
+        '{ "files": [], "references": [{ "path": "./tsconfig.app.json" }] }',
+      )
+      ws.write(
+        'ref/tsconfig.app.json',
+        '{ "compilerOptions": { "composite": true, "strict": true }, "include": ["src"] }',
+      )
+      // The sibling lists the file without the ambient declaration, so using it would fail.
+      ws.write(
+        'ref/tsconfig.a.json',
+        '{ "compilerOptions": { "strict": true }, "files": ["src/a.ts"] }',
+      )
+      ws.write(
+        'ref/src/env.d.ts',
+        'declare module "*.astro" { const c: unknown; export default c }\n',
+      )
+      const file = ws.write('ref/src/a.ts', 'import X from "./x.astro";\nexport const y = X;\n')
+      const r = fire(ws.edit(file), ws.env)
+      assert.equal(r.code, 0)
+      assert.doesNotMatch(r.out, /"decision"|TS2307/)
+    })
+
+    test('a sibling tsc cannot read is skipped, not used', () => {
+      const file = siblingLayout()
+      ws.write('sib/tsconfig.a-broken.json', '{ "extends": "./missing.json" }')
+      const r = fire(ws.edit(file), ws.env)
+      assert.equal(r.code, 0)
+      assert.doesNotMatch(r.out, /"decision"|missing\.json/)
+    })
+
     test('strictest-only errors in other files are disclosed, not hidden behind a pass', () => {
       ws.write(
         'dep/tsconfig.json',
