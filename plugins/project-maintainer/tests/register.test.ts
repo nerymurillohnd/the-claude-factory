@@ -390,3 +390,16 @@ test('the reminder can be turned off', { options: { commitNudge: false } }, asyn
   await $.tool.call({ tool: 'Bash', command: 'git commit -m "Add a cache layer"' })
   expect(session.appended().length).toBe(0)
 })
+
+test('a record still asks when the verdict beneath cannot be read either', async ($, on) => {
+  on('session.cwd', () => ({ deny: 'no working directory' }))
+  on('tool.check', () => {
+    throw new Error('the permission check broke')
+  })
+  const verdict = await $.tool.check({
+    tool: 'Edit',
+    input: edit(SETTLED_ADR, 'status: accepted', 'status: deprecated'),
+  })
+  expect(verdict.decision).toBe('ask')
+  expect(verdict.plugin).toBe('project-maintainer')
+})

@@ -42,7 +42,7 @@ test('the tool input is read into camelCase fields', () => {
   expect(fileInput(null)).toBeNull()
 })
 
-test('a call may save a record when its path is in the records, or when it cannot be read', () => {
+test('a call may save a record when its path is in the records, is relative or cannot be read', () => {
   expect(
     mayWriteRecord({ file_path: '/work/app/.claude/maintainer/technical-debt/pending-debt.md' }),
   ).toBe(true)
@@ -50,6 +50,9 @@ test('a call may save a record when its path is in the records, or when it canno
     true,
   )
   expect(mayWriteRecord({ file_path: '/work/app/README.md' })).toBe(false)
+  expect(mayWriteRecord({ file_path: 'C:\\work\\app\\README.md' })).toBe(false)
+  expect(mayWriteRecord({ file_path: '../decisions/ADR_2026-03-14_x.md' })).toBe(true)
+  expect(mayWriteRecord({ file_path: 'README.md' })).toBe(true)
   expect(mayWriteRecord({ command: 'ls' })).toBe(false)
   const unreadable = {
     get file_path(): string {

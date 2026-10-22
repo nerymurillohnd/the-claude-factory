@@ -47,13 +47,17 @@ export function fileInput(value: unknown): FileInput | null {
 
 /**
  * Whether a Write or Edit call may save a record, judged with no call on `$` so it can run when
- * the check itself broke. Both tools take an absolute path; a relative one is read from the root,
- * which keeps its `.claude/maintainer` segment. A call it cannot read counts as a record.
+ * the check itself broke. Without the session's directory a relative path could land anywhere,
+ * so it counts as a record, as does a call it cannot read: when in doubt, the guard holds.
  */
 export function mayWriteRecord(value: unknown): boolean {
   try {
     const input = fileInput(value)
-    return input !== null && classify(resolvePath(input.path, '/')) !== null
+    if (input === null) {
+      return false
+    }
+    const absolute = /^([A-Za-z]:)?[\\/]/.test(input.path)
+    return !absolute || classify(resolvePath(input.path, '/')) !== null
   } catch {
     return true
   }

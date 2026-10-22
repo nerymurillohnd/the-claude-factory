@@ -127,10 +127,14 @@ export function register(on: On, options: PluginOptions): void {
     const reasons = authorityReasons(ref, current, resulting, await around($, ref))
     return reasons.length > 0 ? { decision: 'ask', reason: askReason(ref.name, reasons) } : decided
   }).catch(async (_$, e, next) => {
-    // The verdict beneath stands for a deny and for any file outside the records.
-    const decided = await next(e)
-    return decided.decision === 'deny' || !mayWriteRecord(e.input)
-      ? decided
+    // Any file outside the records keeps the verdict beneath. A record asks, unless that verdict
+    // is a deny; if the verdict itself cannot be read, the record still asks.
+    if (!mayWriteRecord(e.input)) {
+      return next(e)
+    }
+    const beneath = await next(e).catch(() => null)
+    return beneath?.decision === 'deny'
+      ? beneath
       : {
           decision: 'ask',
           reason:
