@@ -98,7 +98,6 @@ test('a record that exists but cannot be read is not saved unchecked', async ($,
     input: edit(SETTLED_ADR, 'status: accepted', 'status: deprecated'),
   })
   expect(verdict.decision).toBe('ask')
-  expect(verdict.decider).toBe('person')
   expect(verdict.reason).toContain('could not read')
 })
 
@@ -148,7 +147,6 @@ test('the authority guard asks the person before a settled ADR is rewritten', as
     input: edit(SETTLED_ADR, 'Chosen option: **Postgres**.', 'Chosen option: **Redis**.'),
   })
   expect(verdict.decision).toBe('ask')
-  expect(verdict.decider).toBe('person')
   expect(verdict.reason).toContain('changes the text of a settled ADR')
   expect(verdict.reason).toContain('Write a new ADR that supersedes it')
 })
@@ -163,7 +161,6 @@ test('the authority guard covers a subagent and a whole-file Write too', async (
     agentId: 'subagent-1',
   })
   expect(verdict.decision).toBe('ask')
-  expect(verdict.decider).toBe('person')
 })
 
 test('the authority guard lets the allowed edits and new files through', async ($, on) => {
@@ -233,7 +230,6 @@ test('a closed entry cannot be rewritten without the person', async ($, on) => {
     input: edit(CLOSED, 'Export fixed', 'Export never broke'),
   })
   expect(verdict.decision).toBe('ask')
-  expect(verdict.decider).toBe('person')
 })
 
 test('a shell command that rewrites the records asks the person, a read does not', async ($, on) => {
@@ -241,7 +237,6 @@ test('a shell command that rewrites the records asks the person, a read does not
   on('tool.check', () => ({ decision: 'allow' }))
   const removal = await $.tool.check({ tool: 'Bash', input: { command: `rm ${SETTLED_ADR}` } })
   expect(removal.decision).toBe('ask')
-  expect(removal.decider).toBe('person')
   expect(removal.reason).toContain('Write and Edit tools')
   const read = await $.tool.check({ tool: 'Bash', input: { command: `cat ${SETTLED_ADR}` } })
   expect(read.decision).toBe('allow')

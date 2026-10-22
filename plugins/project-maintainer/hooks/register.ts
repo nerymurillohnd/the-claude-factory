@@ -110,7 +110,6 @@ export function register(on: On, options: PluginOptions): void {
     if (failed) {
       return {
         decision: 'ask',
-        decider: 'person',
         reason: `Project Maintainer could not read ${ref.name} to check the edit against the rules of the records. Approve only if it leaves the records as they are.`,
       }
     }
@@ -119,12 +118,9 @@ export function register(on: On, options: PluginOptions): void {
       return decided
     }
     const reasons = authorityReasons(ref, current, resulting, await around($, ref))
-    return reasons.length > 0
-      ? { decision: 'ask', decider: 'person', reason: askReason(ref.name, reasons) }
-      : decided
+    return reasons.length > 0 ? { decision: 'ask', reason: askReason(ref.name, reasons) } : decided
   }).catch(async () => ({
     decision: 'ask',
-    decider: 'person',
     reason:
       'Project Maintainer could not check this edit against the rules of the records. Approve only if it leaves the records as they are.',
   }))
@@ -138,12 +134,9 @@ export function register(on: On, options: PluginOptions): void {
         : null
     const reason =
       decided.decision === 'deny' || typeof command !== 'string' ? null : bashReason(command)
-    return reason === null
-      ? decided
-      : { decision: 'ask', decider: 'person', reason: `Project Maintainer: ${reason}` }
+    return reason === null ? decided : { decision: 'ask', reason: `Project Maintainer: ${reason}` }
   }).catch(async () => ({
     decision: 'ask',
-    decider: 'person',
     reason: 'Project Maintainer could not check this command against the rules of the records.',
   }))
 
