@@ -1,10 +1,10 @@
 ---
-status: accepted
+status: superseded
 date: 2026-10-20
 decision-makers:
   - "Nery Samuel Murillo"
 supersedes: none
-superseded-by: none
+superseded-by: ADR_2026-10-22_no-per-plugin-claude-app-check
 ---
 
 # The Claude app check of svelte-development 0.1.0 is discarded
