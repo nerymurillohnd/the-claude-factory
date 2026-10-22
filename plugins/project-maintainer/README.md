@@ -227,12 +227,12 @@ The plugin ships a Claude Code [mod](https://code.claude.com/docs/en/plugins/mod
 | What Claude tries to do | What happens |
 | :-- | :-- |
 | Save an ADR or a debt ledger that breaks the format: a status outside the list, a date that differs from the file name, no decision maker, a link to a record that does not exist, a repeated or invalid `DEBT-NNN`, a closed entry without an outcome | Refused, with the reason. Claude fixes the record and saves it again. There is nothing for you to approve |
-| Rewrite a settled ADR beyond its status, its `superseded-by` link and its Confirmation section | Claude Code asks you. The prompt says which rule applies |
+| Rewrite a settled ADR beyond its status, its `superseded-by` link and its Confirmation section | Claude Code asks you |
 | Change a closed debt entry beyond its "Superseded by" field | Claude Code asks you |
 | Remove an item from `pending-debt.md` while `closed-debt.md` has no entry with an outcome for it (for *accepted*, an ADR that exists) | Claude Code asks you |
 | Rewrite, move or delete the records folders with a shell command | Claude Code asks you. Copying out of the folder and reading it stay quiet. Records are written with the Write and Edit tools, which apply these rules |
 
-Approve only an edit you asked for. Where nobody can answer, as in `claude -p` or the `dontAsk` mode, the edit is refused and Claude is told to write the new record instead. In every other permission mode, auto mode included, the prompt comes to you and no classifier can approve it for you.
+The prompt is Claude Code's own one for files in the `.claude` folder: it shows the change but not which rule asked for it. Approve only an edit you asked for, one at a time. Where nobody can answer, as in `claude -p` or the `dontAsk` mode, the edit is refused and Claude is told to write the new record instead. In every other permission mode, auto mode included, the prompt comes to you and no classifier can approve it for you.
 
 Everything else stays quiet: a new ADR, a new debt item, a `proposed` ADR that changes, a status moving from *accepted* to *superseded* or *deprecated*, results in the Confirmation section, and a pending item that leaves after its closed entry exists.
 
@@ -343,7 +343,7 @@ Not yet. Claude writes every record from the plugin's templates.
 <details>
 <summary><b>Claude Code asked me to approve an edit to a record. What should I do?</b></summary>
 
-Read the reason in the prompt. It names the rule: a settled ADR changes only through a new ADR that supersedes it, and a debt item leaves the pending ledger only after a closed entry exists. Approve only if you asked for that edit, such as fixing a typo in a settled record. Otherwise decline: Claude is told to write the superseding record or the closed entry instead.
+The prompt shows the change, not the rule behind it. The rules are: a settled ADR changes only through a new ADR that supersedes it, and a debt item leaves the pending ledger only after a closed entry exists. Approve only if you asked for that edit, such as fixing a typo in a settled record. Otherwise decline and tell Claude to write the superseding ADR or the closed entry instead: a declined prompt tells Claude only that you rejected the edit.
 
 </details>
 

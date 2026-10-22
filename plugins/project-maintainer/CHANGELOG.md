@@ -17,6 +17,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ### Fixed
 
+- The README no longer says the approval prompt names the rule: for files in `.claude/`, Claude Code shows its own prompt with the change and no reason.
 - When the approval check itself broke, Claude Code asked you before every file edit in the project. It now asks only for the records, and never turns a refusal into a question.
 
 ## [0.1.0] - 2026-10-19
