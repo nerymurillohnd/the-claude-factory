@@ -11,6 +11,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The
 - **mods-engineering** 0.1.0 — designs, builds, reviews, tests and debugs Claude Code mods, checking every interface against the current mod docs and the type declarations your own Claude Code build writes.
 - **turn-meter** 0.1.0 — shows how long each turn took, its tool calls in the main thread and in subagents, and the tokens it spent, in a band above the prompt, and alerts you when a long turn ends.
 - **tool-ledger** 0.1.0 — lists every tool call of the session in a live panel: what ran, on what, whether Claude or a subagent made it, and whether it finished, failed or was denied.
+- **file-tree-pane** 0.1.0 — keeps a live file tree of your project beside the chat: git status and line counts, what Claude reads, writes and commits, search, previews, diffs and your editor one key away.
 
 ### Changed
 
