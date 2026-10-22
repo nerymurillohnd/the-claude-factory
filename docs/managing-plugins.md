@@ -79,6 +79,16 @@ Everything lives under **Customize** → **Plugins**:
 
 In Claude Code (v2.1.273+, signed in with the same claude.ai account), these plugins appear as `<plugin>@synced`. Update and uninstall them here; in `/plugin` you can only turn them on or off, unless your organization requires them. Claude Code picks up changes when it starts; if it says *Plugins changed*, run `/reload-plugins`.
 
+To keep synced plugins out of Claude Code:
+
+| Scope | How |
+| :-- | :-- |
+| One plugin, for you | `claude plugin disable <plugin>@synced`, or turn it off in `/plugin` → **Installed** |
+| One plugin, for everyone in a project | Add `"<plugin>@synced": false` under `enabledPlugins` in the project's committed `.claude/settings.json` |
+| Every synced plugin on this machine | Set `"syncClaudeAiPlugins": false` in `~/.claude/settings.json`. At the next start, Claude Code moves the ones it already synced to `~/.claude/plugins/.trash/` |
+
+A plugin your organization marks as required on claude.ai loads anyway: `claude plugin disable` refuses it, and `claude plugin list` marks it `required by your org`.
+
 ---
 
 <sub>⬅️ [Installation](./installation.md) · Next: [Compatibility](./compatibility.md) ➡️</sub>
