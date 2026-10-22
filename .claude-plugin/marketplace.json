@@ -32,6 +32,12 @@
       "category": "automation"
     },
     {
+      "name": "mods-engineering",
+      "source": "./plugins/mods-engineering",
+      "description": "Designs, builds, reviews, tests and debugs Claude Code mods, checking every interface against the current mod docs and the type declarations your own Claude Code build writes.",
+      "category": "development"
+    },
+    {
       "name": "plugin-evals",
       "source": "./plugins/plugin-evals",
       "description": "Makes Claude an expert in Claude Code plugin evals: designs suites that prove what a plugin adds, writes cases, graders and mocks, runs and gates them in CI, and reads the results, always checked against the CLI and docs you have today.",

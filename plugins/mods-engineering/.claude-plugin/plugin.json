@@ -1,0 +1,29 @@
+{
+  "name": "mods-engineering",
+  "displayName": "Mods Engineering",
+  "version": "0.1.0",
+  "description": "Designs, builds, reviews, tests and debugs Claude Code mods, checking every interface against the current mod docs and the type declarations your own Claude Code build writes.",
+  "author": {
+    "name": "Nery Murillo",
+    "url": "https://github.com/nerymurillohnd"
+  },
+  "homepage": "https://github.com/nerymurillohnd/the-claude-factory/tree/main/plugins/mods-engineering#readme",
+  "repository": "https://github.com/nerymurillohnd/the-claude-factory",
+  "license": "MIT",
+  "keywords": [
+    "mods",
+    "claude-code-mods",
+    "function-hooks",
+    "hooks-module",
+    "plugin-development",
+    "mods-api",
+    "testing",
+    "debugging"
+  ],
+  "metadata": {
+    "surfaces": [
+      "claude-code",
+      "claude-app"
+    ]
+  }
+}
