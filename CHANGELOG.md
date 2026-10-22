@@ -8,6 +8,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The
 
 ### Changed
 
+- **project-maintainer** 0.2.0 — **Breaking:** requires Claude Code v2.1.307 or later; the guardrails ask for your approval in the documented form, which v2.1.307 reads, and the README drops a promise about auto mode that Claude Code's docs do not make.
 - **hook-engineering** 0.2.0 — **Breaking:** the Claude Code docs server is no longer bundled: add it once with `claude mcp add` or as a Claude app connector; the `hook-engineer` agent now uses it under any name, and without it the plugin reads the raw docs pages.
 - **typescript6-lsp-intelligence** 0.3.0 — the post-edit hook treats its strictest policy as defaults your config overrides (breaking: an explicit `false` is now yours), keeps the policy inside the hook with no environment of its own, passes each option only to a `tsc` that knows it, reports deprecated config options, and finds Bash changes in worktrees and files only a sibling `tsconfig.<name>.json` lists.
 - **typescript7-lsp-intelligence** 0.4.0 — the post-edit hook treats its strictest policy as defaults your config overrides (breaking: an explicit `false` is now yours), keeps the policy inside the hook with no environment of its own, passes each option only to a `tsc` that knows it, reports deprecated config options, and finds Bash changes in worktrees and files only a sibling `tsconfig.<name>.json` lists.

@@ -6,6 +6,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-10-22
+
+### Changed
+
+- **Breaking:** requires Claude Code v2.1.307 or later. The guardrails now ask for your approval with the `{ decision: 'ask', reason }` answer that Claude Code's mod docs describe, and drop the `decider` field that Claude Code v2.1.307 no longer reads. On v2.1.304 to v2.1.306 the approval guard can be lost, so update Claude Code first.
+- The README no longer promises that no classifier can approve a guardrail prompt: Claude Code's docs do not say how auto mode treats it.
+
 ## [0.1.0] - 2026-10-19
 
 ### Added
@@ -23,5 +30,6 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - Before a compaction, the summary is told to keep decisions, open items and record IDs. After a commit that looks like a decision, such as one that changes dependencies, a schema, CI or infrastructure, Claude gets one reminder to record it. The reminder can be turned off in the plugin's settings.
 - **Requires Claude Code v2.1.304 or later.**
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/project-maintainer--v0.1.0...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/project-maintainer--v0.2.0...HEAD
+[0.2.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/project-maintainer--v0.2.0
 [0.1.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/project-maintainer--v0.1.0

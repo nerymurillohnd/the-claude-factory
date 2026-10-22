@@ -7,7 +7,7 @@
 [![Version](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Fnerymurillohnd%2Fthe-claude-factory%2Fmain%2Fplugins%2Fproject-maintainer%2F.claude-plugin%2Fplugin.json&query=%24.version&label=version&color=D97757)](./CHANGELOG.md)
 [![Works in](https://img.shields.io/badge/works%20in-Claude%20Code%20%C2%B7%20Claude%20app-2563EB)](#-compatibility)
 [![Category](https://img.shields.io/badge/category-Documentation%20%26%20Writing-6B7280)](../../README.md#-catalog)
-[![Claude Code](https://img.shields.io/badge/Claude%20Code-%E2%89%A5%202.1.304-D97757?logo=claude&logoColor=white)](https://code.claude.com/docs/en/plugins/install)
+[![Claude Code](https://img.shields.io/badge/Claude%20Code-%E2%89%A5%202.1.307-D97757?logo=claude&logoColor=white)](https://code.claude.com/docs/en/plugins/install)
 [![License: MIT](https://img.shields.io/badge/license-MIT-22C55E)](./LICENSE)
 
 [Why use it](#-why-use-it) •
@@ -54,7 +54,7 @@ The ADR template follows [MADR 4.0](https://adr.github.io/madr/) and adds a scop
 
 | Requirement | Details |
 | :-- | :-- |
-| **Claude Code** | v2.1.304 or later — check with `claude --version`. The guardrails need it: from that version, Claude Code can require your approval for an edit, and no classifier can give it for you. An older version does not know that field, so the approval guard could be lost |
+| **Claude Code** | v2.1.307 or later — check with `claude --version`. The guardrails need it: they ask for your approval in the form that Claude Code reads from that version on. On an older version the approval guard can be lost |
 | **Surfaces** | See [Compatibility](#-compatibility) |
 | **External tools** | `bash` on `PATH`, for the hook and the skills' commands; on Windows, Git for Windows. `ls`, `grep` and `date`, which macOS and Linux include, to search and number records. `git`, so the handoff can record the repository's state; outside a git repository the handoff says so and skips it. `gh` signed in, optional, to list the repository's open pull requests |
 | **Network** | Records: none. The handoff runs `git fetch` to compare your branch with its remote, and `gh pr list` to list pull requests, when the repository has a remote. Without network access it marks those lines as not verified |
@@ -66,7 +66,7 @@ The ADR template follows [MADR 4.0](https://adr.github.io/madr/) and adds a scop
 <summary><b>💻 Terminal (shell)</b></summary>
 
 ```bash
-# One step: adds the marketplace (if needed) and installs the plugin — Claude Code v2.1.304+
+# One step: adds the marketplace (if needed) and installs the plugin — Claude Code v2.1.307+
 claude plugin install project-maintainer --marketplace nerymurillohnd/the-claude-factory
 
 # Or, with the marketplace already added
@@ -84,7 +84,7 @@ Add `--scope project` to enable it for everyone working in the current repositor
 /plugin install project-maintainer --marketplace nerymurillohnd/the-claude-factory
 ```
 
-Requires Claude Code v2.1.304+. With the marketplace already added, `/plugin install project-maintainer@the-claude-factory` opens the plugin's details so you can pick a scope. You can also browse it in `/plugin` → **Discover**.
+Requires Claude Code v2.1.307+. With the marketplace already added, `/plugin install project-maintainer@the-claude-factory` opens the plugin's details so you can pick a scope. You can also browse it in `/plugin` → **Discover**.
 
 </details>
 
@@ -225,7 +225,7 @@ The plugin ships a Claude Code [mod](https://code.claude.com/docs/en/plugins/mod
 | Remove an item from `pending-debt.md` while `closed-debt.md` has no entry with an outcome for it (for *accepted*, an ADR that exists) | Claude Code asks you |
 | Rewrite, move or delete the records folders with a shell command | Claude Code asks you. Copying out of the folder and reading it stay quiet. Records are written with the Write and Edit tools, which apply these rules |
 
-Approve only an edit you asked for. Where nobody can answer, as in `claude -p` or the `dontAsk` mode, the edit is refused and Claude is told to write the new record instead. In the other permission modes the prompt comes to you, and no classifier can approve it for you.
+Approve only an edit you asked for. Where nobody can answer, as in `claude -p` or the `dontAsk` mode, the edit is refused and Claude is told to write the new record instead. In the other permission modes Claude Code shows you the prompt. In auto mode the guardrails ask before the classifier runs, and Claude Code's docs do not say whether the classifier can answer that prompt for you.
 
 Everything else stays quiet: a new ADR, a new debt item, a `proposed` ADR that changes, a status moving from *accepted* to *superseded* or *deprecated*, results in the Confirmation section, and a pending item that leaves after its closed entry exists.
 
@@ -235,7 +235,7 @@ Two small helpers run beside the guardrails:
 - **Commit reminder.** After a commit that changes a dependency manifest, a database schema or migration, a CI workflow or infrastructure files, or whose message says workaround, temporary, revert, TODO or similar, Claude gets one note that reminds it to record a decision or a debt if the commit settles one. It uses no model call. Turn it off with the **Remind Claude after a commit that looks like a decision** option. Claude Code asks about it when you install the plugin from a session with `/plugin install`, and lists it in `/config`. Installing from the shell never asks, so the reminder stays on: use `claude plugin install project-maintainer@the-claude-factory --config commitNudge=false`, or change it in `/config`.
 
 > [!NOTE]
-> The guardrails protect your records from Claude's mistakes. They are not a security boundary: a shell command written in a form they do not recognize, or your editor, can still change the files, and you can always edit a record by hand. They run in Claude Code (the terminal, the Desktop app's Code tab and the VS Code extension) and need v2.1.304 or later. They are off under `--safe-mode`, and with `"disableAllHooks": true` in your settings. If the check itself breaks, Claude Code saves the record unchecked and logs the failure.
+> The guardrails protect your records from Claude's mistakes. They are not a security boundary: a shell command written in a form they do not recognize, or your editor, can still change the files, and you can always edit a record by hand. They run in Claude Code (the terminal, the Desktop app's Code tab and the VS Code extension) and need v2.1.307 or later. They are off under `--safe-mode`, and with `"disableAllHooks": true` in your settings. If the check itself breaks, Claude Code saves the record unchecked and logs the failure.
 
 ## 🔄 Updating
 
