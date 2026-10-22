@@ -11,7 +11,7 @@
 <br>
 
 <!-- plugin-count:start -->
-[![Plugins](https://img.shields.io/badge/plugins-15-D97757?style=for-the-badge)](#-catalog)
+[![Plugins](https://img.shields.io/badge/plugins-16-D97757?style=for-the-badge)](#-catalog)
 <!-- plugin-count:end -->
 [![Validate](https://img.shields.io/github/actions/workflow/status/nerymurillohnd/the-claude-factory/validate.yml?branch=main&label=validate&style=for-the-badge)](https://github.com/nerymurillohnd/the-claude-factory/actions/workflows/validate.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-22C55E?style=for-the-badge)](./LICENSE)
@@ -105,7 +105,7 @@ Plugin skills are namespaced, so they never collide with yours: type `/<plugin>:
 | Category | Plugins |
 | :-- | :--: |
 | [🛠️ Development](#️-development) | 3 |
-| [⚡ Productivity](#-productivity) | 2 |
+| [⚡ Productivity](#-productivity) | 3 |
 | [🤖 Automation](#-automation) | 1 |
 | [🧪 Testing & Quality](#-testing--quality) | 3 |
 | [🛡️ Security](#️-security) | 1 |
@@ -129,6 +129,7 @@ Plugin skills are namespaced, so they never collide with yours: type `/<plugin>:
 | Plugin | What it does | Works in | Version | Includes |
 | :-- | :-- | :-- | :--: | :-- |
 | [**Prompt Writer**](./plugins/prompt-writer#readme)<br>`prompt-writer@the-claude-factory` | Turns a goal, idea or draft into one copy-ready prompt tuned to the target Claude model and effort: it clarifies intent, checks current official facts and recommends the setup to run it with. | 💻 Code · 🖥️ Claude app | `0.2.0` | 🎯 Skills |
+| [**Tool Ledger**](./plugins/tool-ledger#readme)<br>`tool-ledger@the-claude-factory` | Lists every tool call of the session in a live panel: what ran, on what, whether Claude or a subagent made it, and whether it finished, failed or was denied. | 💻 Code only | `0.1.0` | 🧩 Mods |
 | [**Turn Meter**](./plugins/turn-meter#readme)<br>`turn-meter@the-claude-factory` | Shows how long each turn took, how many tools it used in the main thread and in subagents, and the tokens it spent, in a band above the prompt, and alerts you when a long turn ends. | 💻 Code only | `0.1.0` | 🧩 Mods |
 
 ### 🤖 Automation
