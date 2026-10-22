@@ -391,6 +391,17 @@ export function checkRepo() {
       }
     }
 
+    if (existsSync(join(dir, 'hooks', 'hooks.json'))) {
+      try {
+        readJson(join(dir, 'hooks', 'hooks.json'))
+      } catch (e) {
+        err(
+          scope,
+          `hooks/hooks.json is not valid JSON: ${e instanceof Error ? e.message : String(e)}`,
+        )
+      }
+    }
+
     for (const f of ['README.md', 'CHANGELOG.md', 'LICENSE']) {
       if (!existsSync(join(dir, f))) {
         err(scope, `missing ${f}`)

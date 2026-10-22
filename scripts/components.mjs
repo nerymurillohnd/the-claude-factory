@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 // Detects which component types a plugin ships, from its standard layout and manifest.
 
-import { existsSync, readdirSync, statSync } from 'node:fs'
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'
 import { join } from 'node:path'
-import { loadManifest, pluginDir, readJson } from './lib.mjs'
+import { loadManifest, pluginDir } from './lib.mjs'
 
 /** @typedef {'skills' | 'commands' | 'agents' | 'hooks' | 'mods' | 'mcp' | 'lsp' | 'outputStyles' | 'monitors' | 'workflows' | 'themes' | 'bin'} ComponentId */
 /** @typedef {{ id: ComponentId, emoji: string, label: string, row: string }} ComponentType */
@@ -63,6 +63,27 @@ function countFiles(dir, predicate) {
 }
 
 /**
+ * Which component types a hooks/hooks.json declares: settings hooks under `hooks`, a mod's hooks
+ * module under `modules`. A file that is not a JSON object counts as settings hooks, as any
+ * hooks.json did before mods existed; check-repo reports it as invalid.
+ * @param {string} text
+ * @returns {{ hooks: boolean, mods: boolean }}
+ */
+export function hooksFileKinds(text) {
+  /** @type {unknown} */
+  let parsed
+  try {
+    parsed = JSON.parse(text)
+  } catch {
+    return { hooks: true, mods: false }
+  }
+  if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+    return { hooks: true, mods: false }
+  }
+  return { hooks: 'hooks' in parsed, mods: 'modules' in parsed }
+}
+
+/**
  * Returns { skills: 2, agents: 1, ... } with only the component types present.
  * @param {string} name
  * @returns {Components}
@@ -88,13 +109,12 @@ export function detectComponents(name) {
     countFiles(join(dir, 'skills'), (f) => f === 'SKILL.md') +
       (existsSync(join(dir, 'SKILL.md')) ? 1 : 0),
   )
-  // hooks/hooks.json holds settings hooks under `hooks` and a mod's hooks module under `modules`.
   const hooksPath = join(dir, 'hooks', 'hooks.json')
-  /** @type {unknown} */
-  const hooksJson = existsSync(hooksPath) ? readJson(hooksPath) : null
-  const hooksFile = typeof hooksJson === 'object' && hooksJson !== null ? hooksJson : {}
-  set('hooks', 'hooks' in hooksFile || manifest.hooks ? 1 : 0)
-  set('mods', 'modules' in hooksFile ? 1 : 0)
+  const kinds = existsSync(hooksPath)
+    ? hooksFileKinds(readFileSync(hooksPath, 'utf8'))
+    : { hooks: false, mods: false }
+  set('hooks', kinds.hooks || manifest.hooks ? 1 : 0)
+  set('mods', kinds.mods ? 1 : 0)
   set('mcp', existsSync(join(dir, '.mcp.json')) || manifest.mcpServers ? 1 : 0)
   set('lsp', existsSync(join(dir, '.lsp.json')) || manifest.lspServers ? 1 : 0)
   set(
