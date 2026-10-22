@@ -1,11 +1,11 @@
 {
+  "description": "Hook to block --no-verify commands in Bash and PowerShell",
   "hooks": {
     "PreToolUse": [
       {
         "matcher": "Bash|PowerShell",
         "hooks": [
           {
-            "description": "Hook to block --no-verify commands in Bash and PowerShell",
             "type": "command",
             "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/block-no-verify.sh\"",
             "timeout": 60,

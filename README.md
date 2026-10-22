@@ -153,7 +153,7 @@ Plugin skills are namespaced, so they never collide with yours: type `/<plugin>:
 
 | Plugin | What it does | Works in | Version | Includes |
 | :-- | :-- | :-- | :--: | :-- |
-| [**Block No Verify**](./plugins/block-no-verify#readme)<br>`block-no-verify@the-claude-factory` | Blocks Claude's git commands that skip commit hooks or signing (--no-verify, --no-gpg-sign, commit.gpgsign=false), so your quality gates always run. | 💻 Code · 🖥️ Claude app | `0.1.0` | 🪝 Hooks |
+| [**Block No Verify**](./plugins/block-no-verify#readme)<br>`block-no-verify@the-claude-factory` | Blocks Claude's git commands that skip commit hooks or signing (--no-verify, --no-gpg-sign, commit.gpgsign=false), so your quality gates always run. | 💻 Code · 🖥️ Claude app | `0.1.1` | 🪝 Hooks |
 
 ### 📚 Documentation & Writing
 
