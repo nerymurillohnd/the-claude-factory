@@ -85,7 +85,7 @@ Requires Claude Code v2.1.275+. With the marketplace already added, `/plugin ins
 2. Select **Add** → **Add marketplace** and enter `nerymurillohnd/the-claude-factory`.
 3. Find **Mods Engineering** in **Discover** and select **Add**.
 
-In the desktop app's **Code** tab you can also click **+** → **Plugins** → **Add plugin**.
+In the desktop app's **Code** tab you can also click **+** next to the prompt box → **Add plugins** (or **Plugins** → **Browse plugins**).
 
 </details>
 
@@ -188,7 +188,7 @@ No. Loading a mod runs its code, so the skill asks for your approval before it l
 <details>
 <summary><b>Why does Claude trust my build's declarations over the docs?</b></summary>
 
-Events and methods change between releases. The declarations Claude Code writes into `.claude-plugin/types/` when it loads a mod describe the exact version you run, and the official docs say to trust them over any page when the two disagree. Without them, Claude follows the documented steps to generate them and labels what it could not verify.
+Events and methods change between releases. The declarations Claude Code writes into `.claude-plugin/types/` when you load a mod from `--plugin-dir` in an interactive session, or when Claude writes the mod for you, describe the exact version you run, and the official docs say to trust them over any page when the two disagree. Without them, Claude follows the documented steps to generate them and labels what it could not verify.
 
 </details>
 
