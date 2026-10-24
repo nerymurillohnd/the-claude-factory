@@ -1,7 +1,7 @@
 {
   "name": "plugin-evals",
   "displayName": "Plugin Evals",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Makes Claude an expert in Claude Code plugin evals: designs suites that prove what a plugin adds, writes cases, graders and mocks, runs and gates them in CI, and reads the results, always checked against the CLI and docs you have today.",
   "author": {
     "name": "Nery Murillo",

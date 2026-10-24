@@ -1,7 +1,7 @@
 {
   "name": "python-lsp-intelligence",
   "displayName": "Python LSP Intelligence",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Gives Claude Code the basedpyright language server for Python, checks every Python file Claude edits with ruff and basedpyright using your own configuration, and teaches Claude to navigate by symbol, resolve aliases and imports, and fix findings without suppressing them.",
   "author": {
     "name": "Nery Murillo",

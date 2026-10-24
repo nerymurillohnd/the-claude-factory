@@ -1,7 +1,7 @@
 {
   "name": "tool-ledger",
   "displayName": "Tool Ledger",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Lists every tool call of the session in a live panel: what ran, on what, whether Claude or a subagent made it, and whether it finished, failed or was denied.",
   "author": {
     "name": "Nery Murillo",

@@ -6,11 +6,18 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-10-24
+
+### Changed
+
+- The marketplace now reads this plugin's catalog category from its manifest; nothing changes in how the plugin works.
+
 ## [0.1.0] - 2026-10-22
 
 ### Added
 
 - `cc-mods-guidance` skill: an engineering workflow for Claude Code mods that routes each question to the right official page, checks every interface against the declarations your build writes, and covers design, implementation within the engine's static-analysis rules, validation, tests, debugging, organization policy and sharing.
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/mods-engineering--v0.1.0...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/mods-engineering--v0.1.1...HEAD
+[0.1.1]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/mods-engineering--v0.1.1
 [0.1.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/mods-engineering--v0.1.0

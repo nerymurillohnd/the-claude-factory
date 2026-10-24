@@ -1,7 +1,7 @@
 {
   "name": "block-no-verify",
   "displayName": "Block No Verify",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Blocks Claude's git commands that skip commit hooks or signing (--no-verify, --no-gpg-sign, commit.gpgsign=false), so your quality gates always run.",
   "author": {
     "name": "Nery Murillo",

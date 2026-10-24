@@ -1,7 +1,7 @@
 {
   "name": "project-maintainer",
   "displayName": "Project Maintainer",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Keeps a project's memory in its .claude folder: decisions recorded as ADRs, technical debt tracked in a ledger, and a handoff that carries each session's state to the next one.",
   "author": {
     "name": "Nery Murillo",
