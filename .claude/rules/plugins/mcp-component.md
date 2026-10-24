@@ -26,7 +26,7 @@ paths:
 - Verify transport support against the server's documentation and the supported Claude Code version.
 - Use `${CLAUDE_PLUGIN_ROOT}` for bundled plugin files and executables.
 - Use `${CLAUDE_PLUGIN_DATA}` for persistent plugin state; never write mutable state into the plugin installation directory.
-- Use `${CLAUDE_PROJECT_DIR}` for the stable project root in plugin-provided configurations.
+- Use `${CLAUDE_PROJECT_DIR}` for the stable project root in plugin-provided configurations; Claude Code also sets it in the environment of stdio MCP servers and plugin LSP servers.
 - Apply plugin path placeholders only in supported fields: `command`, `args`, and `env` for stdio; `url`, `headers`, and `headersHelper` for HTTP, SSE, and WebSocket.
 - Keep each `args` element as a separate argument; do not add shell quoting to argument values.
 - Reference credentials through supported environment or user-configuration mechanisms; never commit secret values.
@@ -51,7 +51,7 @@ paths:
 
 - Reference plugin tools as `mcp__plugin_<plugin-name>_<server-name>__<tool-name>`.
 - Replace characters outside `A-Z`, `a-z`, `0-9`, `_`, and `-` with `_` when deriving callable plugin tool names.
-- Use full callable names in permission rules, skill `allowed-tools`, subagent `tools`, and hook matchers.
+- Use full callable names in permission rules, skill `allowed-tools`, subagent `tools`, hook matchers, and a hook handler's `if` field.
 - Never match a plugin tool using only the unscoped server key, such as `mcp__database-tools__.*`.
 - Reference configured plugin servers as `plugin:<plugin-name>:<server-name>` where a server identifier is required, including an `mcp_tool` hook's `server` field.
 - Check related permissions and hook references when renaming a server key.

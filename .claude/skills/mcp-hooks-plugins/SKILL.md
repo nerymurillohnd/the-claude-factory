@@ -100,8 +100,8 @@ For example, `matcher: "Write|Edit"` observes file edits, while its
 
 ## Match MCP Tool Calls
 
-- Use full plugin-scoped callable names in matchers, permission references,
-  skill `allowed-tools`, and subagent `tools`.
+- Use full plugin-scoped callable names in matchers, a handler's `if` field,
+  permission references, skill `allowed-tools`, and subagent `tools`.
 - Never match a plugin-bundled server through its bare key, such as
   `mcp__db__.*`.
 - Include a tool suffix or regex when matching a server's tools; a bare prefix is
