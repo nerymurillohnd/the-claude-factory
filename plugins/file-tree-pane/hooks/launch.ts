@@ -68,82 +68,148 @@ export const fillTemplate = (template: string, path: string, line: number): stri
   return hasPath ? filled : [...filled, path]
 }
 
-// Types a default app runs rather than shows: apps, installers, shortcuts and scripts on macOS,
-// Windows and Linux desktops. A file in a repository is someone else's code until the person
-// says otherwise, so these open only through an Open with command.
+// Types a default app runs rather than shows: apps, installers, shortcuts, help files, add-ins
+// and scripts on macOS, Windows and Linux desktops. A file in a repository is someone else's code
+// until the person says otherwise, so these open only through an Open with command.
 const RUNS_WHEN_OPENED = new Set([
   'action',
   'app',
   'applescript',
   'appimage',
+  'application',
   'appref-ms',
+  'appx',
+  'appxbundle',
   'bash',
   'bat',
+  'chm',
   'cmd',
   'com',
   'command',
   'cpl',
   'csh',
   'desktop',
+  'diagcab',
   'exe',
   'fileloc',
   'fish',
+  'gadget',
   'hta',
+  'inetloc',
+  'inf',
+  'ins',
+  'isp',
   'jar',
   'jnlp',
   'js',
   'jse',
   'ksh',
+  'library-ms',
   'lnk',
   'mpkg',
   'msc',
   'msi',
+  'msix',
+  'msixbundle',
   'msp',
+  'mst',
+  'osax',
   'pif',
   'pkg',
   'pl',
+  'prefpane',
   'ps1',
+  'psc1',
   'psm1',
   'py',
   'pyw',
   'rb',
   'reg',
   'run',
+  'saver',
+  'scf',
   'scpt',
   'scptd',
   'scr',
+  'sct',
+  'search-ms',
+  'searchconnector-ms',
+  'settingcontent-ms',
   'sh',
+  'shb',
+  'shs',
   'terminal',
   'tool',
   'url',
+  'vb',
   'vbe',
   'vbs',
+  'webloc',
+  'website',
+  'widget',
   'workflow',
+  'ws',
+  'wsc',
   'wsf',
   'wsh',
+  'xbap',
+  'xll',
   'zsh',
 ])
 
 /** The extension of a file a default app would run, lowercased, or null. */
 export const runsWhenOpened = (path: string): string | null => {
-  const name = path.slice(path.lastIndexOf('/') + 1)
+  const name = path.slice(Math.max(path.lastIndexOf('/'), path.lastIndexOf('\\')) + 1)
   const dot = name.lastIndexOf('.')
   const extension = dot <= 0 ? '' : name.slice(dot + 1).toLowerCase()
   return RUNS_WHEN_OPENED.has(extension) ? extension : null
 }
 
-/** The default app for a file or folder; a notice for a file it would run. */
-export const defaultAppPlan = (host: Host, path: string): RunPlan | Notice => {
-  const runnable = runsWhenOpened(path)
-  if (runnable !== null) {
-    return {
-      kind: 'notice',
-      text: `A .${runnable} file would run in its default app, so it doesn't open there; set Open with to a command to open it.`,
+/**
+ * What the pane learned about a file just before it hands it to the default app: where the
+ * path lands with every link followed, and whether that is a regular file the system would
+ * execute. The checks run on both the name shown and the file it lands on.
+ */
+export type OpenTarget = {
+  /** Absolute, every symbolic link followed; null when it could not be resolved. */
+  realPath: string | null
+  /** A regular file, not a folder, a device or a link that leads nowhere. */
+  isFile: boolean
+  /** The executable bit (`test -x`), or true when it could not be read. False on Windows. */
+  isExecutable: boolean
+}
+
+const refuse = (text: string): Notice => ({
+  kind: 'notice',
+  text: `${text}, so it doesn't open in its default app; set Open with to a command to open it.`,
+})
+
+/**
+ * The default app for a file; a notice for one it would run. A runnable extension on the name or
+ * on the file a link leads to, the executable bit, or a name ending in a dot or a space (which
+ * Windows drops, so `setup.exe.` is `setup.exe`) each keep the file from its default app. The
+ * plan opens the resolved path, the one that was checked.
+ */
+export const defaultAppPlan = (host: Host, path: string, target: OpenTarget): RunPlan | Notice => {
+  const real = target.realPath
+  if (real === null || !target.isFile) {
+    return refuse("This file's target can't be checked")
+  }
+  for (const name of [path, real]) {
+    if (/[. ]$/.test(name)) {
+      return refuse('A name ending in a dot or a space hides its type')
     }
+    const runnable = runsWhenOpened(name)
+    if (runnable !== null) {
+      return refuse(`A .${runnable} file would run`)
+    }
+  }
+  if (target.isExecutable) {
+    return refuse('An executable file would run')
   }
   switch (host.platform) {
     case 'darwin':
-      return { kind: 'run', argv: ['open', path] }
+      return { kind: 'run', argv: ['open', real] }
     case 'windows':
       return {
         kind: 'run',
@@ -155,10 +221,10 @@ export const defaultAppPlan = (host: Host, path: string): RunPlan | Notice => {
           'Start-Process -LiteralPath $env:FTP_FILE',
         ],
         // The path reaches PowerShell through its environment, never through a parsed command line.
-        env: Object.fromEntries([['FTP_FILE', path]]),
+        env: Object.fromEntries([['FTP_FILE', real]]),
       }
     default:
-      return { kind: 'run', argv: ['xdg-open', path] }
+      return { kind: 'run', argv: ['xdg-open', real] }
   }
 }
 
@@ -211,13 +277,18 @@ const editorPlan = (host: Host, file: string, line: number): LaunchPlan => {
 }
 
 /**
- * Open with: empty opens the default app; `editor` opens `$VISUAL`/`$EDITOR`/`vi` in tmux or
- * herdr; anything else is a command template.
+ * Open with: empty opens the default app, after the checks of `defaultAppPlan` on `target`;
+ * `editor` opens `$VISUAL`/`$EDITOR`/`vi` in tmux or herdr; anything else is a command template.
  */
-export const openPlan = (host: Host, setting: string, file: string): LaunchPlan => {
+export const openPlan = (
+  host: Host,
+  setting: string,
+  file: string,
+  target: OpenTarget,
+): LaunchPlan => {
   const value = setting.trim()
   if (value === '') {
-    return defaultAppPlan(host, file)
+    return defaultAppPlan(host, file, target)
   }
   if (value === 'editor') {
     return editorPlan(host, file, 1)

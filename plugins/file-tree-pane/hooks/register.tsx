@@ -8,7 +8,7 @@ import type { BodyLine, BodyMessage, BodyProps, Segment } from './body.ts'
 import { readMessage } from './body.ts'
 import type { DiffRow, ParsedDiff } from './diff.ts'
 import { nextStop, parseDiff, withoutHeadings } from './diff.ts'
-import { clip, formatAge, formatDate, formatSize } from './format.ts'
+import { clip, formatAge, formatDate, formatSize, printable } from './format.ts'
 import type { GitFile, GitSnapshot } from './git.ts'
 import {
   countsText,
@@ -22,7 +22,7 @@ import {
 } from './git.ts'
 import type { GlyphSetting, Glyphs } from './glyphs.ts'
 import { decideGlyphs, iconFor, isNerdFontFile } from './glyphs.ts'
-import type { Host, LaunchPlan } from './launch.ts'
+import type { Host, LaunchPlan, OpenTarget } from './launch.ts'
 import {
   canEdit,
   diffToolPlan,
@@ -208,7 +208,7 @@ const segment = (
   color: string | null,
   look: Partial<Omit<Segment, 'text' | 'color'>> = {},
 ): Segment => ({
-  text: value,
+  text: printable(value),
   color,
   isDim: look.isDim ?? false,
   isBold: look.isBold ?? false,
@@ -783,7 +783,7 @@ const run = async ($: EngineInterface, plan: LaunchPlan): Promise<void> => {
       })
       if (result.exitCode !== 0) {
         $.ui.toast(
-          `${plan.argv[0] ?? 'The command'} failed: ${(result.stderr.trim().split('\n')[0] ?? '').slice(0, 200)}`,
+          `${plan.argv[0] ?? 'The command'} failed: ${printable((result.stderr.trim().split('\n')[0] ?? '').slice(0, 200))}`,
         )
       }
       return
@@ -873,7 +873,7 @@ const openPreview = async ($: EngineInterface, path: string): Promise<void> => {
   } else if (content.includes('\0')) {
     preview = { path, lines: [], problem: 'This is a binary file.' }
   } else {
-    preview = { path, lines: content.split('\n'), problem: null }
+    preview = { path, lines: content.split(/\r?\n/), problem: null }
   }
   previewOffset = 0
   await update($, viewAtom, (): FileTreeView => ({ kind: 'preview', path }))
@@ -958,12 +958,31 @@ const selectedRow = async ($: EngineInterface): Promise<Row | null> => {
   return (await rowsNow($)).find((row) => row.path === selected) ?? null
 }
 
+/**
+ * Where a file lands and whether the system would execute it, read just before it opens. Fails
+ * closed: a path that cannot be resolved, or an executable bit that cannot be read, counts as
+ * unsafe for the default app. Windows decides by extension alone, so it skips `test -x`.
+ */
+const openTargetOf = async ($: EngineInterface, file: string): Promise<OpenTarget> => {
+  const stat = await quietly(() => $.fs.stat(file, { resolve: true }))
+  const realPath = stat?.realPath ?? null
+  if (stat === undefined || realPath === null || stat.kind !== 'file') {
+    return { realPath, isFile: false, isExecutable: true }
+  }
+  if (host.platform === 'windows') {
+    return { realPath, isFile: true, isExecutable: false }
+  }
+  const test = await quietly(() => $.process.run(['test', '-x', realPath]))
+  return { realPath, isFile: true, isExecutable: test?.exitCode !== 1 }
+}
+
 const openRow = async ($: EngineInterface, row: Row): Promise<void> => {
   if (row.kind === 'dir') {
     await toggle($, row.path)
     return
   }
-  launch($, openPlan(host, settings.openWith, absoluteOf(row.path, await rootOf($))))
+  const file = absoluteOf(row.path, await rootOf($))
+  launch($, openPlan(host, settings.openWith, file, await openTargetOf($, file)))
 }
 
 const edit = async ($: EngineInterface, path: string, line: number): Promise<void> => {
@@ -1321,7 +1340,7 @@ const setFooter = async (
   tone: Footer['tone'],
 ): Promise<void> => {
   footer = {
-    text: value,
+    text: printable(value),
     tone,
     until: (await $.clock.now()) + (tone === 'running' ? 600_000 : FOOTER_MS),
   }
@@ -1787,8 +1806,11 @@ export const register: Register = (on: On, options: PluginOptions): void => {
         total = preview.lines.length
         first = clampOffset(previewOffset, total, shown)
         code = {
-          source: preview.lines.slice(first, first + shown).join('\n'),
-          path: view.path,
+          source: preview.lines
+            .slice(first, first + shown)
+            .map(printable)
+            .join('\n'),
+          path: printable(view.path),
           startLine: first + 1,
         }
       }
@@ -1895,7 +1917,7 @@ export const register: Register = (on: On, options: PluginOptions): void => {
     const header = (
       <Box key="header" flexDirection="row" justifyContent="space-between">
         <Text weight="bold" wrap="truncate">
-          {heading}
+          {printable(heading)}
         </Text>
         <Box flexDirection="row" gap={1}>
           {isTree &&
@@ -2011,7 +2033,7 @@ export const register: Register = (on: On, options: PluginOptions): void => {
                 : `${
                     matches.length === 0
                       ? 'No match.'
-                      : `${matches.length}${matches.length === 50 ? '+' : ''} found · Enter jumps to the first: ${matches[0] ?? ''}`
+                      : `${matches.length}${matches.length === 50 ? '+' : ''} found · Enter jumps to the first: ${printable(matches[0] ?? '')}`
                   }${isIndexCut ? ' (searched the first part of this folder only)' : ''}`}
             </Text>
           )}

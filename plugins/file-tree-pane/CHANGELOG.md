@@ -14,7 +14,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - Git status per file and folder in color, `+N -N` line counts, `?:N M:N D:N` folder counts, and the branch, upstream and ahead/behind in the header.
 - Claude's reads and searches, writes and commits highlighted in the tree, Follow Claude, and `git` and `gh` operations in the footer.
 - The selected file or folder passed to Claude with each prompt while the pane is on screen, and `@path` mentions revealed in the tree.
-- Search over folders never opened, previews, diffs in the pane, sizes with folder disk usage, Quick Look on macOS, and opening files in their default app (never one that app would run), an editor in tmux or herdr, or your own commands.
+- Search over folders never opened, previews, diffs in the pane, sizes with folder disk usage, Quick Look on macOS, and opening files in their default app (never one that app would run: by its extension, its executable bit, a trailing dot or space, or the target of a link), an editor in tmux or herdr, or your own commands.
+- File names, diff lines and previews draw control and text-direction characters as U+FFFD (`�`), so a name can neither send the terminal an escape sequence nor read as another file.
 - Theme colors, a light palette at WCAG AAA contrast, theme keys only under the `auto` theme, your own Palette, and Nerd Font icons only where a Nerd Font is installed.
 - Settings in `/config`: Claude activity, Follow Claude, Open at start, Right column, Hints, Search spacing, Shortcut row, Open with, Edit with, Diff with, Ignore, Palette and Glyphs.
 - Validated and tested on Claude Code v2.1.310.

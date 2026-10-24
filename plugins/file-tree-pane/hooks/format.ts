@@ -66,3 +66,24 @@ export const clip = (text: string, width: number): string => {
   }
   return text.length <= width ? text : `${text.slice(0, Math.max(0, width - 1))}…`
 }
+
+// What a name, a diff line or a preview line must never draw raw: C0 controls but tab, DEL and C1
+// controls, which a terminal can read as escape sequences, and the direction marks, overrides and
+// isolates that make a name read as another (`invoice‮fdp.exe` shows as `invoiceexe.pdf`).
+const isUnprintable = (code: number): boolean =>
+  (code < 0x20 && code !== 0x09) ||
+  (code >= 0x7f && code <= 0x9f) ||
+  code === 0x061c ||
+  code === 0x200e ||
+  code === 0x200f ||
+  (code >= 0x202a && code <= 0x202e) ||
+  (code >= 0x2066 && code <= 0x2069)
+
+/** `text` with every unprintable character drawn as U+FFFD, one for one, so widths stay. */
+export const printable = (text: string): string => {
+  let shown = ''
+  for (const char of text) {
+    shown += isUnprintable(char.codePointAt(0) ?? 0) ? '\uFFFD' : char
+  }
+  return shown
+}

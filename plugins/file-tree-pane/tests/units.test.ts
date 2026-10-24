@@ -3,7 +3,7 @@ import { expect, test } from 'claude-code/testing'
 import { parseCommand, splitWords, touchesOf } from '../hooks/activity.ts'
 import { readMessage, thumbOf } from '../hooks/body.ts'
 import { nextStop, parseDiff, unquotePath } from '../hooks/diff.ts'
-import { clip, formatAge, formatDate, formatSize } from '../hooks/format.ts'
+import { clip, formatAge, formatDate, formatSize, printable } from '../hooks/format.ts'
 import {
   countsText,
   headText,
@@ -14,7 +14,7 @@ import {
   rollUp,
 } from '../hooks/git.ts'
 import { decideGlyphs, iconFor, isNerdFontFile } from '../hooks/glyphs.ts'
-import type { Host } from '../hooks/launch.ts'
+import type { Host, OpenTarget } from '../hooks/launch.ts'
 import {
   canEdit,
   defaultAppPlan,
@@ -132,6 +132,14 @@ test('ages and dates take a few characters', () => {
   expect(formatSize(1536)).toBe('1.5K')
   expect(formatSize(34 * 1024)).toBe('34K')
   expect(clip('abcdef', 4)).toBe('abc…')
+})
+
+test('names and lines draw control and direction characters as U+FFFD, one for one', () => {
+  expect(printable('a\u001b[2Jb')).toBe('a\uFFFD[2Jb')
+  expect(printable('bell\u0007 del\u007f c1\u009b')).toBe('bell\uFFFD del\uFFFD c1\uFFFD')
+  expect(printable('invoice\u202Efdp.exe')).toBe('invoice\uFFFDfdp.exe')
+  expect(printable('\u2066x\u2069\u200e\u200f\u061c')).toBe('\uFFFDx\uFFFD\uFFFD\uFFFD\uFFFD')
+  expect(printable('tab\tstays, é and 日本 and 🙂 too')).toBe('tab\tstays, é and 日本 and 🙂 too')
 })
 
 test('git status reads statuses, renames, branch and upstream under the root', () => {
@@ -338,13 +346,23 @@ test('auto glyphs use a Nerd Font only where one is sure to draw', () => {
 
 const mac: Host = { platform: 'darwin', isTmux: false, herdrPane: null, editor: 'nvim' }
 
+/** A plain, non-executable file that lands where it is named. */
+const plain = (path: string): OpenTarget => ({ realPath: path, isFile: true, isExecutable: false })
+
 test('files open with the default app of each platform, never through a shell', () => {
-  expect(defaultAppPlan(mac, '/w/a b.pdf')).toEqual({ kind: 'run', argv: ['open', '/w/a b.pdf'] })
-  expect(defaultAppPlan({ ...mac, platform: 'linux' }, '/w/a')).toEqual({
+  expect(defaultAppPlan(mac, '/w/a b.pdf', plain('/w/a b.pdf'))).toEqual({
+    kind: 'run',
+    argv: ['open', '/w/a b.pdf'],
+  })
+  expect(defaultAppPlan({ ...mac, platform: 'linux' }, '/w/a', plain('/w/a'))).toEqual({
     kind: 'run',
     argv: ['xdg-open', '/w/a'],
   })
-  const windows = defaultAppPlan({ ...mac, platform: 'windows' }, 'C:/w/a&b.txt')
+  const windows = defaultAppPlan(
+    { ...mac, platform: 'windows' },
+    'C:/w/a&b.txt',
+    plain('C:/w/a&b.txt'),
+  )
   expect(windows.kind === 'run' ? windows.argv.join(' ') : '').not.toContain('a&b')
   expect(windows.kind === 'run' ? windows.env : undefined).toEqual({ FTP_FILE: 'C:/w/a&b.txt' })
   expect(platformOf('MINGW64_NT-10.0-19045')).toBe('windows')
@@ -354,13 +372,45 @@ test('files open with the default app of each platform, never through a shell', 
 test('a file its default app would run never opens there', () => {
   expect(runsWhenOpened('/w/install.command')).toBe('command')
   expect(runsWhenOpened('C:/w/SETUP.EXE')).toBe('exe')
+  expect(runsWhenOpened('C:\\w\\help.CHM')).toBe('chm')
   expect(runsWhenOpened('/w/.bashrc')).toBeNull()
   expect(runsWhenOpened('/w/notes.md')).toBeNull()
   for (const platform of ['darwin', 'linux', 'windows'] as const) {
-    expect(defaultAppPlan({ ...mac, platform }, '/w/run.sh').kind).toBe('notice')
+    expect(defaultAppPlan({ ...mac, platform }, '/w/run.sh', plain('/w/run.sh')).kind).toBe(
+      'notice',
+    )
   }
-  expect(openPlan(mac, '', '/w/build.tool').kind).toBe('notice')
-  expect(openPlan(mac, 'code {path}', '/w/build.tool').kind).toBe('run')
+  expect(openPlan(mac, '', '/w/build.tool', plain('/w/build.tool')).kind).toBe('notice')
+  expect(openPlan(mac, 'code {path}', '/w/build.tool', plain('/w/build.tool')).kind).toBe('run')
+})
+
+test('the default app checks the file a link leads to, its executable bit and its real name', () => {
+  // A link with a harmless name to a script, an app or a file outside the tree is checked by its
+  // target, and the plan opens the target, the path that was checked.
+  const link = (realPath: string): OpenTarget => ({ realPath, isFile: true, isExecutable: false })
+  expect(defaultAppPlan(mac, '/w/notes.txt', link('/w/x/install.command')).kind).toBe('notice')
+  expect(defaultAppPlan(mac, '/w/notes.txt', link('/w/x/notes.md'))).toEqual({
+    kind: 'run',
+    argv: ['open', '/w/x/notes.md'],
+  })
+  // An app bundle is a folder, and a link that leads nowhere has no target to check.
+  expect(
+    defaultAppPlan(mac, '/w/notes.txt', { realPath: '/A.app', isFile: false, isExecutable: true })
+      .kind,
+  ).toBe('notice')
+  expect(
+    defaultAppPlan(mac, '/w/notes.txt', { realPath: null, isFile: false, isExecutable: true }).kind,
+  ).toBe('notice')
+  // An executable file runs on macOS and Linux whatever its name, so the bit alone refuses it.
+  for (const name of ['/w/build', '/w/photo.png']) {
+    expect(
+      defaultAppPlan(mac, name, { realPath: name, isFile: true, isExecutable: true }).kind,
+    ).toBe('notice')
+  }
+  // Windows drops a trailing dot or space, so `setup.exe.` would run as `setup.exe`.
+  for (const name of ['C:/w/setup.exe.', 'C:/w/setup.exe ', 'C:/w/setup.exe . ']) {
+    expect(defaultAppPlan({ ...mac, platform: 'windows' }, name, plain(name)).kind).toBe('notice')
+  }
 })
 
 test('templates fill path and line as whole words', () => {
@@ -370,7 +420,7 @@ test('templates fill path and line as whole words', () => {
     '/w/a b.ts:7',
   ])
   expect(fillTemplate('zed', '/w/a.ts', 1)).toEqual(['zed', '/w/a.ts'])
-  expect(openPlan(mac, 'subl -n', '/w/a.ts')).toEqual({
+  expect(openPlan(mac, 'subl -n', '/w/a.ts', plain('/w/a.ts'))).toEqual({
     kind: 'run',
     argv: ['subl', '-n', '/w/a.ts'],
     cwd: '/w',
@@ -378,7 +428,10 @@ test('templates fill path and line as whole words', () => {
 })
 
 test('a terminal editor runs in tmux, in a herdr pane, or not at all', () => {
-  expect(openPlan(mac, 'editor', '/w/a.ts')).toEqual({ kind: 'notice', text: NO_TERMINAL })
+  expect(openPlan(mac, 'editor', '/w/a.ts', plain('/w/a.ts'))).toEqual({
+    kind: 'notice',
+    text: NO_TERMINAL,
+  })
   expect(canEdit(mac, '')).toBe(false)
   expect(canEdit(mac, 'code -g {path}:{line}')).toBe(true)
   expect(editPlan({ ...mac, isTmux: true }, '', '/w/a.ts', 12)).toEqual({

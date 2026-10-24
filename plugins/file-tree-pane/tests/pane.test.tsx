@@ -21,6 +21,10 @@ type World = {
   env?: Record<string, string>
   /** What `git config --get-regexp ^filter\\.` prints; none when absent. */
   filters?: string
+  /** Symbolic links by path relative to the root, with the absolute path each lands on. */
+  links?: Record<string, string>
+  /** Paths relative to the root whose executable bit is set. */
+  executables?: string[]
 }
 
 type Seen = {
@@ -135,8 +139,15 @@ const stubWorld = (on: On, world: World): Seen => {
     if (path === null || !(dirs.has(path) || path in world.files)) {
       return { deny: `ENOENT: ${e.path}` }
     }
+    const link = world.links?.[path]
     return {
-      value: { kind: dirs.has(path) ? 'dir' : 'file', size: 1, mtimeMs: NOW, isLink: false },
+      value: {
+        kind: dirs.has(path) ? 'dir' : 'file',
+        size: 1,
+        mtimeMs: NOW,
+        isLink: link !== undefined,
+        ...(e.resolve ? { realPath: link ?? `${ROOT}/${path}` } : {}),
+      },
     }
   })
   on('fs.read', (_$, e) => {
@@ -150,6 +161,12 @@ const stubWorld = (on: On, world: World): Seen => {
     const [program] = argv
     // git's own options before the subcommand (`-c core.fsmonitor=false`).
     const sub = argv.slice(1).find((word, i, rest) => !word.startsWith('-') && rest[i - 1] !== '-c')
+    if (program === 'test') {
+      const path = rel(argv[2] ?? '')
+      return {
+        value: { ...ok(''), exitCode: path !== null && world.executables?.includes(path) ? 0 : 1 },
+      }
+    }
     if (program === 'uname') {
       return { value: ok('Darwin\n') }
     }
@@ -704,7 +721,67 @@ test('a file its default app would run is never opened there', async ($, on) => 
   await ui.key({ key: 'return', in: 'body' })
   await seen.clock.settle()
   expect(seen.runs.some(([program]) => program === 'open')).toBe(false)
-  expect(seen.toasts.join('\n')).toContain('A .command file would run in its default app')
+  expect(seen.toasts.join('\n')).toContain('A .command file would run')
+  await ui.unmount()
+})
+
+test('a file name or a preview line never draws a control character', async ($, on) => {
+  const name = 'a\u001b[2Jb\u202Etxt.md'
+  const seen = stubWorld(on, {
+    files: { [name]: '\u001b]0;title\u0007hello\r\nline two\u009b31m\r\n' },
+    status: null,
+  })
+  // A control character but tab and newline, DEL, a C1 control or a direction override.
+  const isUnsafe = (text: string): boolean =>
+    Array.from(text).some((char) => {
+      const code = char.codePointAt(0) ?? 0
+      return (
+        (code < 0x20 && code !== 0x09 && code !== 0x0a) ||
+        (code >= 0x7f && code <= 0x9f) ||
+        (code >= 0x202a && code <= 0x202e)
+      )
+    })
+  const everything = async (ui: Mounted<ClientSurface, 'Pane'>): Promise<string[]> => [
+    ...texts(await ui.drawn()),
+    ...texts(await ui.drawn({ in: 'body' })),
+  ]
+  await start($, seen)
+  for (const surface of ['terminal', 'desktop'] as const) {
+    const ui = await mountPane($, surface)
+    const tree = await everything(ui)
+    expect(tree.join('')).toContain('a\uFFFD[2Jb\uFFFDtxt.md')
+    expect(tree.some(isUnsafe)).toBe(false)
+    await ui.key({ key: 'j', in: 'body' })
+    await ui.key({ key: 'p', in: 'body' })
+    const shown = await everything(ui)
+    expect(shown.join('')).toContain('\uFFFD]0;title\uFFFDhello')
+    expect(shown.join('')).toContain('line two\uFFFD31m')
+    expect(shown.some(isUnsafe)).toBe(false)
+    await ui.key({ key: 'p', in: 'body' })
+    await ui.unmount()
+  }
+})
+
+test('a harmless name never hands its default app a link to a script or an executable', async ($, on) => {
+  const seen = stubWorld(on, {
+    files: { 'a-notes.txt': 'x', 'b-build': '#!/bin/sh', 'c-ok.md': '# ok', 'x/run.command': 'x' },
+    status: null,
+    links: { 'a-notes.txt': `${ROOT}/x/run.command` },
+    executables: ['b-build'],
+  })
+  await start($, seen)
+  const ui = await mountPane($, 'terminal')
+  // The folder x comes first, then the three files; each j moves to the next one.
+  await ui.key({ key: 'j', in: 'body' })
+  for (let file = 0; file < 3; file += 1) {
+    await ui.key({ key: 'j', in: 'body' })
+    await ui.key({ key: 'return', in: 'body' })
+    await seen.clock.settle()
+  }
+  const opened = seen.runs.filter(([program]) => program === 'open')
+  expect(opened).toEqual([['open', `${ROOT}/c-ok.md`]])
+  expect(seen.toasts.join('\n')).toContain('A .command file would run')
+  expect(seen.toasts.join('\n')).toContain('An executable file would run')
   await ui.unmount()
 })
 
