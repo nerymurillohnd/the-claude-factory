@@ -68,45 +68,42 @@ The rules live in `.claude/rules/maintainer-tooling.md`, `.claude/rules/plugin-t
 
 Consolidated here until Nery orders a rule file for them.
 
-- After you edit, write or create a `.py`, `.mjs`, `.ts` or `.sh` file, run the commands for its type below right away, before the next task, in this order: formatter, linter, type checker, tests.
-- Fix every finding before you advance to the next step, file or task. An issue stays open only when it waits on a decision or a spend only Nery can make: then stop and ask.
-- After a delegated review, verify every finding against the files and the live docs before fixing it, then apply the confirmed ones in one coherent pass per file and re-read each touched file and its references (memory `apply-fixes-holistically`).
+- Format, lint, and typecheck your work after each edit, in the order below, then run the tests of the unit you touched.
+- Fix every finding before you advance to the next step, file or task.
+- A skipped test means a missing tool: install it, never skip it.
 
 ### After editing a file
 
 Python:
 
-- `ruff format <file>` - Run first, after every `.py` edit.
-- `ruff check <file>` - Run after the formatter.
-- `basedpyright --warnings <file>` - Run after ruff.
-- The tests of the unit the file belongs to: the PEP 723 pytest runner for migrated code; `python3 -m unittest discover -s scripts/tests/<plugin>` until a plugin's tests are migrated.
-- `scripts/tests/<plugin>/by_path.sh` - Run when that plugin folder ships one.
-- Never run mypy on new or migrated code. The `mypy-scripts` and `mypy-plugins` gates run only over the unmigrated `.py` files and must pass until those migrate; `mypy-scripts` leaves out `scripts/schemas/`, `scripts/generators/` and `scripts/validators/` (`MIGRATED_PYTHON` in `scripts/gates.mjs`).
+- `ruff format <file>`, then `ruff check <file>`, then `basedpyright --warnings <file>`.
+- The unit's tests: the PEP 723 pytest runner for migrated code; `python3 -m unittest discover -s scripts/tests/<plugin>` until a plugin's tests migrate.
+- Never run mypy on new or migrated code; `MIGRATED_PYTHON` in `scripts/gates.mjs` lists the folders the `mypy-scripts` gate leaves out.
 
 JavaScript modules (`tsc` checks the whole project):
 
-- `biome check --write --error-on-warnings <file>` - Run first, after every `.mjs` edit.
-- `tsc -p scripts/tsconfig.json --noEmit` - Run after Biome, for a file under `scripts/`; `-p scripts/tsconfig.plugins.json` for a file under `plugins/`.
-- `node --test "scripts/tests/*.test.mjs"` - Run after the type check, and `node --test scripts/tests/<plugin>/*.test.mjs` when the file belongs to a plugin with Node tests. A skipped test means a missing tool: install it.
-- `node scripts/check-repo.mjs` - Run after the tests.
+- `biome check --write --error-on-warnings <file>`.
+- `tsc -p scripts/tsconfig.json --noEmit` for a file under `scripts/`; `-p scripts/tsconfig.plugins.json` for one under `plugins/`.
+- `node --test "scripts/tests/*.test.mjs"`, plus `node --test scripts/tests/<plugin>/*.test.mjs` for a plugin with Node tests.
+- `node scripts/check-repo.mjs`.
 
 Mods (code in `hooks/*.ts`, tests in `tests/*.test.ts`):
 
-- `biome check --write --error-on-warnings <file>` - Run first, after every `.ts` edit.
-- `head -1 plugins/<plugin>/.claude-plugin/types/claude-code/index.d.ts` - Run before trusting the mod's `tsc`: its `Written by Claude Code` version must equal `claude --version`; if not, reload the plugin interactively (`claude -p` never rewrites it).
-- `tsc -p plugins/<plugin>/tsconfig.json --noEmit` - Run after Biome. The config extends the declarations the engine writes into `plugins/<plugin>/.claude-plugin/types/` when it loads the mod. Git ignores that folder, so after a fresh clone load the plugin once in an interactive session from a trusted folder (`claude --plugin-dir plugins/<plugin>`, then `/exit`) to write it. CI cannot run this gate for that reason.
-- `claude plugin validate --strict plugins/<plugin>` - Run after tsc. It reads the mod the way the engine will. Pass `$` only inside `register.ts`: validation fails when `$` goes to a function imported from another file.
-- `claude plugin test plugins/<plugin>` - Run last. Break the rule under test on purpose once and confirm its tests fail.
+- `biome check --write --error-on-warnings <file>`.
+- `head -1 plugins/<plugin>/.claude-plugin/types/claude-code/index.d.ts`: its `Written by Claude Code` version must equal `claude --version` before you trust `tsc`; refresh the declarations as `.claude/rules/mods.md` says. CI cannot run the next gate, because git ignores them.
+- `tsc -p plugins/<plugin>/tsconfig.json --noEmit`.
+- `claude plugin validate --strict plugins/<plugin>`. Pass `$` only inside `register.ts`: validation fails when `$` goes to a function imported from another file.
+- `claude plugin test plugins/<plugin>`.
 
 Shell:
 
-- `shfmt -w <file>` - Run first, after every `.sh` edit.
-- `shellcheck -o all -S style -x -a -P SCRIPTDIR <file>` - Run after shfmt.
-- `scripts/tests/<plugin>/by_path.sh` - Run when the script belongs to a plugin that ships one.
+- `shfmt -w <file>`, then `shellcheck -o all -S style -x -a -P SCRIPTDIR <file>`.
+
+Any type: `scripts/tests/<plugin>/by_path.sh` when the plugin you edited ships one.
 
 ### Before every push
 
-Run `npm run gates` with the `.nvmrc` Node and after `npm ci` (ADR_2026-10-21_gates-run-from-one-script). `scripts/gates.mjs` is the one list of gates, the source of the commands below: it runs them in order, without a shell, stops at the first failure with that gate's exit code, and fails any gate whose tests skipped a case, since a skip means a tool is missing. Fix the cause and run it again from the start. No git hook runs it or `.pre-commit-config.yaml`.
+Run `npm run gates` (ADR_2026-10-21_gates-run-from-one-script). `scripts/gates.mjs` is the one list of gates: it runs them in order without a shell, stops at the first failure with that gate's exit code, and fails a gate whose tests skipped a case. Fix the cause and run it again from the start. No git hook or `.pre-commit-config.yaml` runs it.
 
 | Group | Runs in | Gates |
 | :-- | :-- | :-- |
@@ -117,9 +114,7 @@ Run `npm run gates` with the `.nvmrc` Node and after `npm ci` (ADR_2026-10-21_ga
 | `lint` | CI and local | Biome outside `plugins/`, actionlint |
 | `local` | local only | the plugins' behavior: the tests in `scripts/tests/<plugin>/` (Node, Python and `by_path.sh`), `claude plugin test` for every mod, the mods' `tsc`; and the analysis of plugin code: `tsc -p scripts/tsconfig.plugins.json`, Biome, ShellCheck, shfmt, ruff, mypy and basedpyright on `plugins/` |
 
-CI runs only the `policy`, `python`, `claude` and `lint` groups, one per job, with `npm run gates:ci -- --group <group>` (ADR_2026-10-21_ci-checks-maintainer-tooling-and-plugin-structure): what is ours and what no user's machine changes. The plugins' behavior depends on the interpreter and tools of whoever installs them, so it is proven here before the push and, for a plugin that has them, by its evals in `evals.yml`. `--ci` changes only three things: it leaves out the `local` group, the version-bump base comes from `--base`, and the run goes on after a failure to list every failing gate.
-
-The mods' `tsc` needs the declarations the engine writes into `plugins/<plugin>/.claude-plugin/types/`; after a fresh clone, load the plugin once in an interactive session (`claude --plugin-dir plugins/<plugin>`, then `/exit`).
+CI runs one group per job with `npm run gates:ci -- --group <group>`, every group but `local`: plugin behavior depends on the user's machine, so it is proven here and by each plugin's evals (ADR_2026-10-21_ci-checks-maintainer-tooling-and-plugin-structure). `--ci` also takes the version-bump base from `--base` and keeps going after a failure to list every failing gate.
 
 Report the run as a table: gate, result and key output line.
 
