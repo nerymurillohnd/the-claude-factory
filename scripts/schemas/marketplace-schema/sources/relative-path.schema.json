@@ -1,6 +1,5 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "sources/relative-path.schema.json",
   "type": "string",
   "description": "Relative path source: a local directory inside the marketplace repository. Must start with './' (or be '.' / './' for the marketplace root), is resolved from the marketplace root (the directory containing .claude-plugin/), must not contain '..' segments or backslashes. Not usable when the marketplace is added by a direct URL to marketplace.json.",
   "pattern": "^\\.(/.*)?$",

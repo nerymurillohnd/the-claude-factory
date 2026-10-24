@@ -1,0 +1,126 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "description": "Map of server name to language-server configuration. This is the shape of a whole .lsp.json file and of an inline lspServers object in plugin.json. The file has no wrapper key and no $schema key: either makes Claude Code reject the whole file.",
+  "additionalProperties": {
+    "$ref": "#/$defs/lspServerConfig"
+  },
+  "$defs": {
+    "lspServerConfig": {
+      "type": "object",
+      "description": "Configuration of one language server, keyed by an arbitrary server name in the enclosing map. Claude Code rejects unknown keys in a server entry (verified: unrecognized_keys). Required: command and extensionToLanguage.",
+      "additionalProperties": false,
+      "required": [
+        "command",
+        "extensionToLanguage"
+      ],
+      "properties": {
+        "command": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^(/[\\s\\S]*|[^ ]+)$",
+          "description": "The language-server binary to execute (must be in PATH, or an absolute path). Pass arguments in args, not here: Claude Code rejects a value that contains a space unless it starts with '/' (CLI-enforced rule, not stated in the docs). Supports ${CLAUDE_PLUGIN_ROOT}, ${CLAUDE_PLUGIN_DATA}, ${CLAUDE_PROJECT_DIR} and ${user_config.KEY} substitution.",
+          "x-source": "https://code.claude.com/docs/en/plugins/components#lsp-servers (Required fields: command); rule on spaces: CLI 2.1.281 runtime schema"
+        },
+        "args": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "Command-line arguments for the language server. Supports the same path/user_config substitutions as command. Empty-string items are rejected.",
+          "x-source": "https://code.claude.com/docs/en/plugins/components#lsp-servers (Optional fields: args)"
+        },
+        "extensionToLanguage": {
+          "type": "object",
+          "minProperties": 1,
+          "propertyNames": {
+            "pattern": "^\\..+$",
+            "description": "File extension including the leading dot, at least one character after it (for example .go, .d.ts)."
+          },
+          "additionalProperties": {
+            "type": "string",
+            "minLength": 1,
+            "description": "LSP language identifier for files with that extension (for example go, typescript)."
+          },
+          "description": "Maps file extensions (with the leading dot) to LSP language identifiers. At least one mapping is required. If several enabled servers declare the same extension, the first registered server handles it and the others never start for that extension.",
+          "x-source": "https://code.claude.com/docs/en/plugins/components#lsp-servers (Required fields: extensionToLanguage; Multiple servers for the same extension)"
+        },
+        "transport": {
+          "type": "string",
+          "enum": [
+            "stdio",
+            "socket"
+          ],
+          "default": "stdio",
+          "description": "Communication transport. Claude Code accepts 'socket' but runs every server over stdio, so the stdout protocol rules (log to stderr) apply to all servers.",
+          "x-source": "https://code.claude.com/docs/en/plugins/components#lsp-servers (Optional fields: transport)"
+        },
+        "env": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "description": "Environment variable value; ${...} placeholders are substituted."
+          },
+          "description": "Environment variables set when starting the server. Values must be strings; supports the path/user_config substitutions.",
+          "x-source": "https://code.claude.com/docs/en/plugins/components#lsp-servers (Optional fields: env)"
+        },
+        "initializationOptions": {
+          "description": "Options passed to the server in the LSP initialize request. Any JSON value; not validated by Claude Code.",
+          "x-source": "https://code.claude.com/docs/en/plugins/components#lsp-servers (Optional fields: initializationOptions)"
+        },
+        "settings": {
+          "description": "Settings sent to the server through workspace/didChangeConfiguration. Any JSON value; not validated by Claude Code.",
+          "x-source": "https://code.claude.com/docs/en/plugins/components#lsp-servers (Optional fields: settings)"
+        },
+        "workspaceFolder": {
+          "type": "string",
+          "description": "Workspace folder path for the server. Supports ${CLAUDE_PLUGIN_ROOT}, ${CLAUDE_PLUGIN_DATA}, ${CLAUDE_PROJECT_DIR} substitution.",
+          "x-source": "https://code.claude.com/docs/en/plugins/components#lsp-servers (Optional fields: workspaceFolder); #environment-variables"
+        },
+        "startupTimeout": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991,
+          "description": "Maximum time to wait for the server to start, in milliseconds. Must be a positive integer.",
+          "x-source": "https://code.claude.com/docs/en/plugins/components#lsp-servers (Optional fields: startupTimeout); integer/positive: CLI 2.1.281 runtime schema"
+        },
+        "shutdownTimeout": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991,
+          "description": "Maximum time to wait for graceful shutdown, in milliseconds; when it elapses Claude Code terminates the server process. When unset, no timeout applies. Requires Claude Code v2.1.205 or later (older versions skipped the whole server when this was set).",
+          "x-source": "https://code.claude.com/docs/en/plugins/components#lsp-servers (Optional fields: shutdownTimeout)"
+        },
+        "restartOnCrash": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether to restart the server after it crashes. Defaults to true; false leaves a crashed server stopped. Requires Claude Code v2.1.205 or later.",
+          "x-source": "https://code.claude.com/docs/en/plugins/components#lsp-servers (Optional fields: restartOnCrash)"
+        },
+        "maxRestarts": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991,
+          "description": "Maximum number of restart attempts before giving up. Non-negative integer.",
+          "x-source": "https://code.claude.com/docs/en/plugins/components#lsp-servers (Optional fields: maxRestarts); integer/non-negative: CLI 2.1.281 runtime schema"
+        },
+        "diagnostics": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether to push the server's diagnostics into Claude's context after edits (default true). Set to false to keep code navigation but suppress automatic diagnostic injection.",
+          "x-source": "https://code.claude.com/docs/en/plugins/components#lsp-servers (Optional fields: diagnostics)"
+        },
+        "requestTimeout": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2147483647,
+          "default": 60000,
+          "description": "Milliseconds to wait for the server to answer a request; a request it never answers fails after this. Defaults to 60000.",
+          "x-addedIn": "2.1.288",
+          "x-source": "https://code.claude.com/docs/en/plugins/manifest-reference#lspservers; changelog 2.1.288"
+        }
+      }
+    }
+  }
+}

@@ -1,6 +1,5 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "sources/archive.schema.json",
   "type": "object",
   "description": "Zip archive source downloaded over HTTPS (requires Claude Code v2.1.224+).",
   "properties": {
@@ -26,6 +25,7 @@
     "source",
     "url"
   ],
-  "additionalProperties": true,
-  "x-doc": "https://code.claude.com/docs/en/plugins/marketplace-reference#archive-plugin-source"
+  "additionalProperties": false,
+  "x-doc": "https://code.claude.com/docs/en/plugins/marketplace-reference#archive-plugin-source",
+  "x-cli-unknown-keys": "ignores"
 }

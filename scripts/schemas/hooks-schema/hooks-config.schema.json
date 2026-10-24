@@ -1,6 +1,5 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "hooks-config.schema.json",
   "type": "object",
   "title": "Hooks configuration",
   "description": "Hook definitions keyed by event name. Each event maps to an array of matcher groups `{matcher?, hooks: [handler...]}`. This is the value of the `hooks` key in settings.json (user, project, local, managed), of the top-level `hooks` key of a plugin's hooks/hooks.json, of an inline `hooks` object in plugin.json, and of the `hooks` frontmatter of skills and agents (YAML). Event names are case-sensitive; hooks merge across settings files.",

@@ -1,6 +1,5 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "sources/npm.schema.json",
   "type": "object",
   "description": "npm package source; fetched with npm pack --ignore-scripts and unpacked without running install scripts.",
   "properties": {
@@ -27,6 +26,7 @@
     "source",
     "package"
   ],
-  "additionalProperties": true,
-  "x-doc": "https://code.claude.com/docs/en/plugins/marketplace-reference#npm-plugin-source"
+  "additionalProperties": false,
+  "x-doc": "https://code.claude.com/docs/en/plugins/marketplace-reference#npm-plugin-source",
+  "x-cli-unknown-keys": "ignores"
 }

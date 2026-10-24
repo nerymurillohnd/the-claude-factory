@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "description": "One message channel bound to an MCP server the plugin provides. Unknown keys are rejected.",
+  "additionalProperties": false,
+  "required": [
+    "server"
+  ],
+  "properties": {
+    "server": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Name of the MCP server this channel binds to. Must match a key in the plugin's mcpServers (not checked by claude plugin validate).",
+      "x-source": "https://code.claude.com/docs/en/plugins/manifest-reference#channels"
+    },
+    "displayName": {
+      "type": "string",
+      "description": "Human-readable name shown in the config dialog title (for example Telegram). Defaults to the server name.",
+      "x-source": "CLI 2.1.281 runtime schema and CLI-generated channel scaffold; not on the docs Channels section",
+      "x-docs-status": "cli-only"
+    },
+    "userConfig": {
+      "$ref": "user-config.schema.json",
+      "description": "Fields to prompt for when the plugin is enabled; same schema as the top-level userConfig. Values are referenced as ${user_config.KEY} in the bound server's configuration.",
+      "x-source": "https://code.claude.com/docs/en/plugins/manifest-reference#channels"
+    }
+  }
+}

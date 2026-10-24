@@ -1,6 +1,5 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "handlers/handler-sets.schema.json",
   "title": "Hook handler sets",
   "description": "Reusable handler-type unions per event (which of command, http, mcp_tool, prompt, agent an event supports) plus the `if`-forbidden constraint. Referenced by the matcher groups under events/.",
   "$defs": {

@@ -1,6 +1,5 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "plugin-entry.schema.json",
   "type": "object",
   "description": "A plugin listed in the marketplace. Beyond the marketplace-specific fields (source, category, tags, strict, relevance, headers, headersHelper) an entry may carry any field of the plugin manifest schema. Unknown fields are validator warnings (errors under --strict).",
   "properties": {
@@ -10,72 +9,39 @@
       "x-doc": "https://code.claude.com/docs/en/plugins/manifest-reference#fields"
     },
     "name": {
-      "allOf": [
-        {
-          "$ref": "common.schema.json#/$defs/pluginName"
-        },
-        {
-          "not": {
-            "pattern": "^(?:(?:[Cc][Ll][Aa][Uu][Dd][Ee]|[Aa][Nn][Tt][Hh][Rr][Oo][Pp][Ii][Cc][Ss]?)|[Cc][Cc][^A-Za-z0-9]+[Pp][Ll][Uu][Gg][Ii][Nn])[^A-Za-z0-9]|^(?:(?:[Cc][Ll][Aa][Uu][Dd][Ee]|[Aa][Nn][Tt][Hh][Rr][Oo][Pp][Ii][Cc][Ss]?)|[Cc][Ll][Aa][Uu][Dd][Ee][^A-Za-z0-9]+[Cc][Oo][Dd][Ee]|[Cc][Ll][Aa][Uu][Dd][Ee][^A-Za-z0-9]+[Mm][Oo][Dd][Ss])$|(?:^|[^A-Za-z0-9])[Oo][Ff][Ff][Ii][Cc][Ii][Aa][Ll][^A-Za-z0-9]+(?:[Cc][Ll][Aa][Uu][Dd][Ee]|[Aa][Nn][Tt][Hh][Rr][Oo][Pp][Ii][Cc][Ss]?)(?:[^A-Za-z0-9]|$)|(?:^|[^A-Za-z0-9])(?:[Cc][Ll][Aa][Uu][Dd][Ee]|[Aa][Nn][Tt][Hh][Rr][Oo][Pp][Ii][Cc][Ss]?)[^A-Za-z0-9]+[Oo][Ff][Ff][Ii][Cc][Ii][Aa][Ll](?:[^A-Za-z0-9]|$)"
-          }
-        }
-      ],
-      "description": "Plugin identifier (kebab-case recommended); users see it in /plugin install <name>@<marketplace>. Must be unique in the marketplace. A name that passes as one of Anthropic's own is an error in `claude plugin validate` (case-insensitive, a run of separators counts as one): a claude-, anthropic-, anthropics- or cc-plugin- prefix; exactly claude, anthropic, anthropics, claude-code or claude-mods; or official beside claude or anthropic. A whole word elsewhere (mcp-for-claude) is only a warning and is not enforced here.",
-      "x-doc": "https://code.claude.com/docs/en/plugins/manifest-reference#name; https://code.claude.com/docs/en/plugins/marketplace-reference#validation-messages"
+      "$ref": "../plugin-manifest-schema/plugin-manifest.schema.json#/properties/name",
+      "description": "Plugin identifier (kebab-case recommended); users see it in /plugin install <name>@<marketplace>. Must be unique in the marketplace. A name that passes as one of Anthropic's own is an error in `claude plugin validate` (case-insensitive, a run of separators counts as one): a claude-, anthropic-, anthropics- or cc-plugin- prefix; exactly claude, anthropic, anthropics, claude-code or claude-mods; or official beside claude or anthropic. A whole word elsewhere (mcp-for-claude) is only a warning and is not enforced here."
     },
     "source": {
       "$ref": "sources/plugin-source.schema.json",
       "description": "Where to fetch the plugin from: a relative path string, a bare directory name (with metadata.pluginRoot), or one of the source objects github, url, git-subdir, npm, archive, command (discriminated by the 'source' key). There is no pip, zip or generic 'git' plugin source in the docs; the CLI rejects them."
     },
     "displayName": {
-      "type": "string",
-      "description": "Human-readable name for UI surfaces; may contain spaces and any casing; not used for namespacing or lookup.",
-      "x-doc": "https://code.claude.com/docs/en/plugins/marketplace-reference#plugin-entries"
+      "$ref": "../plugin-manifest-schema/plugin-manifest.schema.json#/properties/displayName"
     },
     "description": {
-      "type": "string",
-      "description": "Brief plugin description.",
-      "x-doc": "https://code.claude.com/docs/en/plugins/marketplace-reference#plugin-entries"
+      "$ref": "../plugin-manifest-schema/plugin-manifest.schema.json#/properties/description"
     },
     "version": {
-      "type": "string",
-      "description": "Plugin version. If set here or in plugin.json the plugin is pinned to this string and users only receive updates when it changes (plugin.json wins if both are set; ignored for command sources). Semver recommended, not enforced.",
-      "x-doc": "https://code.claude.com/docs/en/plugins/marketplace-reference#plugin-entries; https://code.claude.com/docs/en/plugins/manifest-reference#version"
+      "$ref": "../plugin-manifest-schema/plugin-manifest.schema.json#/properties/version"
     },
     "author": {
-      "$ref": "common.schema.json#/$defs/person",
-      "description": "Person or organization. Docs list name (required), email and url. The CLI accepts unknown keys here without a warning."
+      "$ref": "../plugin-manifest-schema/plugin-manifest.schema.json#/properties/author"
     },
     "homepage": {
-      "type": "string",
-      "description": "Plugin homepage or documentation URL.",
-      "format": "uri",
-      "pattern": "^(?![Hh][Tt][Tt][Pp][Ss]?:/*$)[A-Za-z][A-Za-z0-9+.-]*:\\S+$",
-      "x-doc": "https://code.claude.com/docs/en/plugins/marketplace-reference#plugin-entries"
+      "$ref": "../plugin-manifest-schema/plugin-manifest.schema.json#/properties/homepage"
     },
     "repository": {
-      "type": "string",
-      "description": "Source code repository URL.",
-      "x-doc": "https://code.claude.com/docs/en/plugins/marketplace-reference#plugin-entries"
+      "$ref": "../plugin-manifest-schema/plugin-manifest.schema.json#/properties/repository"
     },
     "license": {
-      "type": "string",
-      "description": "SPDX license identifier (for example MIT, Apache-2.0).",
-      "x-doc": "https://code.claude.com/docs/en/plugins/marketplace-reference#plugin-entries"
+      "$ref": "../plugin-manifest-schema/plugin-manifest.schema.json#/properties/license"
     },
     "keywords": {
-      "type": "array",
-      "description": "Tags for plugin discovery and categorization.",
-      "items": {
-        "type": "string"
-      },
-      "x-doc": "https://code.claude.com/docs/en/plugins/marketplace-reference#plugin-entries"
+      "$ref": "../plugin-manifest-schema/plugin-manifest.schema.json#/properties/keywords"
     },
     "metadata": {
-      "type": "object",
-      "description": "Free-form object for your own fields (entitlement, catalog data); Claude Code does not read it. A non-object value is ignored with a validator warning.",
-      "additionalProperties": true,
-      "x-doc": "https://code.claude.com/docs/en/plugins/marketplace-reference#plugin-entries"
+      "$ref": "../plugin-manifest-schema/plugin-manifest.schema.json#/properties/metadata"
     },
     "category": {
       "type": "string",
@@ -101,180 +67,67 @@
       "description": "Signals telling Claude Code when to suggest this plugin. Only takes effect for marketplaces an administrator allowlists in managed settings (pluginSuggestionMarketplaces). Unknown keys are validator warnings."
     },
     "defaultEnabled": {
-      "type": "boolean",
-      "description": "Whether the plugin is enabled after install (default true). false installs it disabled; takes precedence over plugin.json.",
-      "default": true,
-      "x-doc": "https://code.claude.com/docs/en/plugins/marketplace-reference#plugin-entries; https://code.claude.com/docs/en/plugins/manifest-reference#defaultenabled"
+      "$ref": "../plugin-manifest-schema/plugin-manifest.schema.json#/properties/defaultEnabled"
     },
     "dependencies": {
-      "type": "array",
-      "description": "Other plugins this plugin requires, optionally with semver constraints. A manifest may consist of only name plus dependencies to act as a bundle.",
-      "items": {
-        "$ref": "dependency.schema.json"
-      },
-      "x-doc": "https://code.claude.com/docs/en/plugins/dependencies; https://code.claude.com/docs/en/plugins/manifest-reference#component-path-forms"
+      "$ref": "../plugin-manifest-schema/plugin-manifest.schema.json#/properties/dependencies"
     },
     "skills": {
-      "description": "Custom skill directories containing <name>/SKILL.md (adds to the default skills/ scan; with a marketplace-root source the listed paths are the complete set). Each path starts with './' (or is '.').",
-      "anyOf": [
-        {
-          "$ref": "common.schema.json#/$defs/skillPath"
-        },
-        {
-          "type": "array",
-          "description": "Skill directories.",
-          "items": {
-            "$ref": "common.schema.json#/$defs/skillPath"
-          }
-        }
-      ],
-      "x-doc": "https://code.claude.com/docs/en/plugins/marketplace-reference#plugin-entries; https://code.claude.com/docs/en/plugins/manifest-reference#path-rules"
+      "$ref": "../plugin-manifest-schema/plugin-manifest.schema.json#/properties/skills",
+      "description": "Custom skill directories containing <name>/SKILL.md (adds to the default skills/ scan; with a marketplace-root source the listed paths are the complete set). Each path starts with './' (or is '.')."
     },
     "commands": {
-      "description": "Custom flat .md skill files or directories (replaces default commands/). The CLI (and the SchemaStore baseline) also accept an object form mapping command names to {source|content, description, argumentHint, model, allowedTools}; the docs only describe string|array.",
-      "anyOf": [
-        {
-          "$ref": "common.schema.json#/$defs/relPath"
-        },
-        {
-          "type": "array",
-          "description": "Command files/directories.",
-          "items": {
-            "$ref": "common.schema.json#/$defs/relPath"
-          }
-        },
-        {
-          "$ref": "components/commands.schema.json"
-        }
-      ],
-      "x-doc": "https://code.claude.com/docs/en/plugins/manifest-reference#component-path-forms"
+      "$ref": "../plugin-manifest-schema/plugin-manifest.schema.json#/properties/commands"
     },
     "agents": {
-      "description": "Custom agent .md files (replaces default agents/).",
-      "anyOf": [
-        {
-          "$ref": "common.schema.json#/$defs/agentPath"
-        },
-        {
-          "type": "array",
-          "description": "Agent files.",
-          "items": {
-            "$ref": "common.schema.json#/$defs/agentPath"
-          }
-        }
-      ],
-      "x-doc": "https://code.claude.com/docs/en/plugins/manifest-reference#component-path-forms"
+      "$ref": "../plugin-manifest-schema/plugin-manifest.schema.json#/properties/agents"
     },
     "workflows": {
-      "description": "Custom workflow script files or directories (replaces default workflows/).",
-      "anyOf": [
-        {
-          "$ref": "common.schema.json#/$defs/relPath"
-        },
-        {
-          "type": "array",
-          "description": "Paths.",
-          "items": {
-            "$ref": "common.schema.json#/$defs/relPath"
-          }
-        }
-      ],
-      "x-doc": "https://code.claude.com/docs/en/plugins/manifest-reference#component-path-forms"
+      "$ref": "../plugin-manifest-schema/plugin-manifest.schema.json#/properties/workflows"
     },
     "hooks": {
-      "description": "Hook configuration: path to a .json file, inline event map, or a list mixing both.",
-      "anyOf": [
-        {
-          "$ref": "common.schema.json#/$defs/relJsonPath"
-        },
-        {
-          "$ref": "components/hooks.schema.json"
-        },
-        {
-          "type": "array",
-          "description": "List of hook sources.",
-          "items": {
-            "anyOf": [
-              {
-                "$ref": "common.schema.json#/$defs/relJsonPath"
-              },
-              {
-                "$ref": "components/hooks.schema.json"
-              }
-            ]
-          }
-        }
-      ],
-      "x-doc": "https://code.claude.com/docs/en/plugins/manifest-reference#component-path-forms; https://code.claude.com/docs/en/plugins/manifest-reference#hooks"
+      "$ref": "../hooks-schema/hooks-config.schema.json",
+      "description": "Entry hooks load only as an inline event map: a file path or an array passes claude plugin validate but never runs, with a `not yet supported in a marketplace entry` error.",
+      "x-doc": "https://code.claude.com/docs/en/plugins/marketplace-reference#hooks-in-an-entry"
     },
     "mcpServers": {
-      "$ref": "components/mcp-servers.schema.json",
+      "$ref": "../plugin-manifest-schema/plugin-manifest.schema.json#/properties/mcpServers",
       "description": "MCP server definitions: path to a .json config file, an inline map of server name to config, or a list mixing both."
     },
     "lspServers": {
-      "$ref": "components/lsp-servers.schema.json",
+      "$ref": "../plugin-manifest-schema/plugin-manifest.schema.json#/properties/lspServers",
       "description": "LSP server definitions: path to a .json file, inline map of server name to config, or a list mixing both."
     },
     "outputStyles": {
-      "description": "Custom output style files or directories (replaces default output-styles/).",
-      "anyOf": [
-        {
-          "$ref": "common.schema.json#/$defs/relPath"
-        },
-        {
-          "type": "array",
-          "description": "Paths.",
-          "items": {
-            "$ref": "common.schema.json#/$defs/relPath"
-          }
-        }
-      ],
-      "x-doc": "https://code.claude.com/docs/en/plugins/manifest-reference#component-path-forms"
+      "$ref": "../plugin-manifest-schema/plugin-manifest.schema.json#/properties/outputStyles"
     },
     "userConfig": {
-      "$ref": "user-config.schema.json",
+      "$ref": "../plugin-manifest-schema/plugin-manifest.schema.json#/properties/userConfig",
       "description": "User-configurable values prompted when the plugin is enabled. Keys must be valid identifiers."
     },
     "channels": {
       "type": "array",
       "description": "Channel declarations for message injection (Telegram, Slack, Discord style).",
       "items": {
-        "$ref": "channel.schema.json"
+        "$ref": "../plugin-manifest-schema/components/channel.schema.json"
       },
       "x-doc": "https://code.claude.com/docs/en/plugins/manifest-reference#channels"
     },
     "experimental": {
-      "$ref": "components/experimental.schema.json",
-      "description": "Experimental component declarations whose schema may change between releases."
+      "$ref": "../plugin-manifest-schema/plugin-manifest.schema.json#/properties/experimental"
     },
     "themes": {
-      "description": "DEPRECATED top-level spelling of experimental.themes: still loads, but validation warns and a future release will require experimental.*.",
-      "deprecated": true,
-      "anyOf": [
-        {
-          "$ref": "common.schema.json#/$defs/relPath"
-        },
-        {
-          "type": "array",
-          "description": "Paths.",
-          "items": {
-            "$ref": "common.schema.json#/$defs/relPath"
-          }
-        }
-      ],
-      "x-doc": "https://code.claude.com/docs/en/plugins/components#themes-and-output-styles"
+      "$ref": "../plugin-manifest-schema/plugin-manifest.schema.json#/properties/themes",
+      "deprecated": true
     },
     "monitors": {
-      "$ref": "components/monitors.schema.json",
+      "$ref": "../plugin-manifest-schema/plugin-manifest.schema.json#/properties/monitors",
       "description": "DEPRECATED top-level spelling of experimental.monitors: still loads, but validation warns and a future release will require experimental.*.",
       "deprecated": true
     },
     "settings": {
-      "type": "object",
-      "description": "Settings to merge into user settings while the plugin is enabled (docs: only the agent and subagentStatusLine keys are supported).",
-      "additionalProperties": true,
-      "x-undocumented": true,
-      "x-note": "In the SchemaStore baseline and accepted by CLI 2.1.281; the docs describe this only as a settings.json file at the plugin root, not a manifest key."
+      "$ref": "../plugin-manifest-schema/plugin-manifest.schema.json#/properties/settings",
+      "description": "Settings to merge into user settings while the plugin is enabled (docs: only the agent and subagentStatusLine keys are supported)."
     },
     "headers": {
       "type": "object",
@@ -296,43 +149,10 @@
       "x-doc": "https://code.claude.com/docs/en/plugins/host-marketplace#add-a-headershelper-to-a-plugin-entry"
     },
     "types": {
-      "type": "string",
-      "description": "Path (starting ./) to the plugin's TypeScript type contract, ending in .d.ts; must stay inside the plugin directory.",
-      "pattern": "^\\./.*\\.d\\.ts$",
-      "not": {
-        "pattern": "(^|/)\\.\\.(/|$)"
-      },
-      "x-undocumented": true,
-      "x-note": "Accepted by CLI 2.1.281 (\"types must name a TypeScript declaration file ending in '.d.ts'\"); not in the current plugins-reference component tables."
+      "$ref": "../plugin-manifest-schema/plugin-manifest.schema.json#/properties/types"
     },
     "binaries": {
-      "description": "Map of basename to {sha256}: platform binaries fetched into bin/ at install time. `claude plugin validate` does not type-check this field at the marketplace-entry level (a bare string passes unchanged, oracle-verified); the object shape below is the documented/baseline intent, not an enforced constraint.",
-      "anyOf": [
-        {
-          "type": "object",
-          "additionalProperties": {
-            "type": "object",
-            "properties": {
-              "sha256": {
-                "type": "string",
-                "description": "64-character lowercase hex SHA-256.",
-                "pattern": "^[0-9a-f]{64}$"
-              }
-            },
-            "required": [
-              "sha256"
-            ],
-            "additionalProperties": false
-          }
-        },
-        {
-          "not": {
-            "type": "object"
-          }
-        }
-      ],
-      "x-undocumented": true,
-      "x-note": "Accepted by CLI 2.1.281 and present in the SchemaStore baseline; not in the current docs."
+      "$ref": "../plugin-manifest-schema/plugin-manifest.schema.json#/properties/binaries"
     }
   },
   "required": [

@@ -1,6 +1,5 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "events/session.schema.json",
   "title": "Hook events: session lifecycle",
   "description": "Event arrays (`hookEvent_<Event>`) and matcher groups (`hookMatcherGroup_<Event>`) for: SessionStart, Setup, InstructionsLoaded, SessionEnd.",
   "$defs": {

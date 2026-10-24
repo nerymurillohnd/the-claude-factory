@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Fields shared by several MCP transports, referenced by fragment from stdio, http, sse and ws.",
+  "$defs": {
+    "alwaysLoad": {
+      "type": "boolean",
+      "description": "true loads the server's tools upfront regardless of ENABLE_TOOL_SEARCH; false keeps every tool deferred behind tool search, including tools whose author marked _meta['anthropic/alwaysLoad'] true (2.1.287). Omitted, tools marked by their author load upfront. Startup waits for an alwaysLoad server (capped at the 5 s connect timeout).",
+      "x-addedIn": "2.1.287 (false defers every tool)",
+      "x-source": "https://code.claude.com/docs/en/mcp#exempt-a-server-from-deferral; https://code.claude.com/docs/en/mcp#defer-a-servers-tools; changelog 2.1.287"
+    },
+    "bareElicitationCapability": {
+      "type": "boolean",
+      "description": "true makes Claude Code announce the elicitation capability without URL prompts, for a server that stops connecting after URL prompts arrived (2025-11-25 protocol). Not in the docs.",
+      "x-docs-status": "changelog-only",
+      "x-addedIn": "2.1.287",
+      "x-source": "changelog 2.1.287"
+    },
+    "discoveryCache": {
+      "type": "boolean",
+      "description": "Read by the engine; not in the docs.",
+      "x-docs-status": "cli-only"
+    },
+    "toolPermissions": {
+      "type": "object",
+      "description": "Tool name to allow, ask or blocked. Read by the engine; not in the docs.",
+      "x-docs-status": "cli-only",
+      "additionalProperties": {
+        "enum": [
+          "allow",
+          "ask",
+          "blocked"
+        ]
+      }
+    },
+    "toolPolicies": {
+      "type": "array",
+      "description": "Per-tool permission policies. Read by the engine; not in the docs.",
+      "x-docs-status": "cli-only",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "permission_policy": {
+            "enum": [
+              "always_allow",
+              "always_ask",
+              "always_deny"
+            ]
+          }
+        }
+      }
+    },
+    "oauth": {
+      "type": "object",
+      "description": "OAuth 2.0 settings for a remote server. Applies to http and sse only (ws is header-only). The client secret is never stored here: pass --client-secret or MCP_CLIENT_SECRET when adding the server.",
+      "additionalProperties": false,
+      "properties": {
+        "clientId": {
+          "type": "string",
+          "description": "Pre-registered OAuth client ID, for servers without Dynamic Client Registration. Use with the secret supplied via --client-secret."
+        },
+        "callbackPort": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 65535,
+          "description": "Fixed local port for the OAuth redirect (http://localhost:PORT/callback) when the server needs a pre-registered redirect URI. Default: a random free port."
+        },
+        "authServerMetadataUrl": {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^https://.+",
+          "description": "https:// URL of the authorization server metadata (RFC 8414 or OpenID configuration) that replaces the default discovery chain. Its scopes_supported override the scopes the server advertises."
+        },
+        "scopes": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Space-separated OAuth scopes to request (RFC 6749 section 3.3). Takes precedence over authServerMetadataUrl and discovered scopes; offline_access is appended when advertised."
+        },
+        "xaa": {
+          "type": "boolean",
+          "description": "Read by the engine; not in the docs.",
+          "x-docs-status": "cli-only"
+        }
+      },
+      "x-cli-unknown-keys": "ignores"
+    }
+  }
+}

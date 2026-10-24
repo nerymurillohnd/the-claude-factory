@@ -1,6 +1,5 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "hooks.schema.json",
   "title": "Claude Code plugin hooks file (hooks/hooks.json)",
   "description": "Schema for hooks/hooks.json in a Claude Code plugin: an optional `$schema` and `description` plus a `hooks` object keyed by event name. Loaded when the plugin is enabled; its hooks merge with user and project hooks.",
   "type": "object",
@@ -46,7 +45,7 @@
     }
   ],
   "additionalProperties": false,
-  "$comment": "Source of truth for hooks/hooks.json validation; edit these files directly. Layout: hooks.schema.json (file envelope), hooks-config.schema.json (event -> matcher groups), plugin-manifest.schema.json (plugin.json `hooks` field), handlers/ (one schema per handler type plus handler-sets), events/ (event arrays and matcher groups by family). Cross-file $ref are relative and each `$id` is the file's path relative to this directory. additionalProperties is false on every object: the runtime tolerates and silently strips unknown keys (and ignores unknown events/handler types with a warning), so the schema is deliberately stricter to catch typos and fields set on the wrong handler type. It also encodes the documented per-event handler-type support and the rule that `if` is only evaluated on tool events, which `claude plugin validate` does not check. Fields that exist only in the runtime bundle and not in the docs (command `rewakeMessage`/`rewakeSummary`/`cloud`, http `cloud`) are intentionally omitted. hooks.json `modules` (a mod's hooks module) is documented in the mods reference and is modelled: a file holds `hooks`, `modules`, or both.",
+  "$comment": "Source of truth for hooks/hooks.json validation; edit these files directly. Layout: hooks.schema.json (file envelope), hooks-config.schema.json (event -> matcher groups), plugin-manifest.schema.json (plugin.json `hooks` field), handlers/ (one schema per handler type plus handler-sets), events/ (event arrays and matcher groups by family). No file declares $id: a schema's identity is its location, and every $ref is relative to the file that holds it. additionalProperties is false on every object: the runtime tolerates and silently strips unknown keys (and ignores unknown events/handler types with a warning), so the schema is deliberately stricter to catch typos and fields set on the wrong handler type. It also encodes the documented per-event handler-type support and the rule that `if` is only evaluated on tool events, which `claude plugin validate` does not check. Fields that exist only in the runtime bundle and not in the docs (command `rewakeMessage`/`rewakeSummary`/`cloud`, http `cloud`) are intentionally omitted. hooks.json `modules` (a mod's hooks module) is documented in the mods reference and is modelled: a file holds `hooks`, `modules`, or both.",
   "x-sources": [
     {
       "url": "https://code.claude.com/docs/en/hooks#configuration",

@@ -1,7 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "marketplace.schema.json",
-  "$comment": "Source of truth for .claude-plugin/marketplace.json validation; edit these files directly. Layout: marketplace.schema.json (file envelope), plugin-entry.schema.json (one plugin), common.schema.json (shared primitives), sources/ (plugin source forms), components/ (plugin component declarations) and one file each for dependency, relevance, user-config and channel. Cross-file $ref are relative and each `$id` is the file's path relative to this directory. Built from the official Claude Code docs (plugin-marketplaces, plugins-reference, plugin-dependencies, plugin-relevance, hooks, mcp) and verified against `claude plugin validate --strict` 2.1.281 on 2026-09-24. Not the SchemaStore schema: fields are docs-derived; undocumented-but-accepted fields carry x-undocumented. additionalProperties:false is used where the CLI warns on unknown keys (root, metadata, plugin entries, relevance, experimental, userConfig options, LSP servers, monitors, channels) and true where it accepts them silently (owner, author, source objects, dependency objects, hook handlers, MCP server configs). Not expressible in JSON Schema and left to the CLI: unique plugin names, renames chain resolution, entry.version vs plugin.json cross-check, existence of source directories, name impersonation heuristics, unique monitor names, options default membership, sha256 of archives.",
+  "$comment": "Source of truth for .claude-plugin/marketplace.json validation; edit these files directly. Layout: marketplace.schema.json (file envelope), plugin-entry.schema.json (one plugin), common.schema.json (shared primitives), sources/ (plugin source forms) and relevance.schema.json. Every field a plugin entry shares with plugin.json is referenced from ../plugin-manifest-schema, and inline hooks from ../hooks-schema/hooks-config.schema.json. No file declares $id: a schema's identity is its location, and every $ref is relative to the file that holds it. Built from the official Claude Code docs (plugin-marketplaces, plugins-reference, plugin-dependencies, plugin-relevance, hooks, mcp) and verified against `claude plugin validate --strict` 2.1.281 on 2026-09-24, re-checked on 2.1.310. Not the SchemaStore schema: fields are docs-derived; undocumented-but-accepted fields carry x-undocumented. additionalProperties is false on every object with a known shape, also where the CLI accepts unknown keys silently (owner, author, source objects, dependency objects, hook handlers, MCP server configs): a typo there passes claude plugin validate without a message, so the schema is the only check. x-cli-unknown-keys records what the CLI does. Not expressible in JSON Schema and left to the CLI: unique plugin names, renames chain resolution, entry.version vs plugin.json cross-check, existence of source directories, name impersonation heuristics, unique monitor names, options default membership, sha256 of archives.",
   "title": "Claude Code plugin marketplace (.claude-plugin/marketplace.json)",
   "description": "Catalog of plugins that Claude Code can install with /plugin install <plugin>@<marketplace>. Lives at .claude-plugin/marketplace.json in the marketplace repository root, or is served as a direct URL to the file.",
   "type": "object",
@@ -86,8 +85,9 @@
       "required": [
         "name"
       ],
-      "additionalProperties": true,
-      "x-doc": "https://code.claude.com/docs/en/plugins/marketplace-reference#top-level-fields"
+      "additionalProperties": false,
+      "x-doc": "https://code.claude.com/docs/en/plugins/marketplace-reference#top-level-fields",
+      "x-cli-unknown-keys": "ignores"
     },
     "plugins": {
       "type": "array",

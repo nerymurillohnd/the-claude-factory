@@ -1,6 +1,5 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "events/prompt.schema.json",
   "title": "Hook events: prompts and message display",
   "description": "Event arrays (`hookEvent_<Event>`) and matcher groups (`hookMatcherGroup_<Event>`) for: UserPromptSubmit, UserPromptExpansion, MessageDisplay.",
   "$defs": {

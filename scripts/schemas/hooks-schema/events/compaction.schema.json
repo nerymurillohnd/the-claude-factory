@@ -1,6 +1,5 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "events/compaction.schema.json",
   "title": "Hook events: compaction and model switching",
   "description": "Event arrays (`hookEvent_<Event>`) and matcher groups (`hookMatcherGroup_<Event>`) for: PreCompact, PostCompact, PreModelSwitch, PostModelSwitch.",
   "$defs": {

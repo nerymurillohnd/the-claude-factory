@@ -1,6 +1,5 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "sources/command.schema.json",
   "type": "object",
   "description": "Command source: a local command produces the plugin directory (requires Claude Code v2.1.229+; can be disabled by managed setting disableCommandPluginSources).",
   "properties": {
@@ -39,6 +38,7 @@
     "source",
     "command"
   ],
-  "additionalProperties": true,
-  "x-doc": "https://code.claude.com/docs/en/plugins/marketplace-reference#command-plugin-source"
+  "additionalProperties": false,
+  "x-doc": "https://code.claude.com/docs/en/plugins/marketplace-reference#command-plugin-source",
+  "x-cli-unknown-keys": "ignores"
 }

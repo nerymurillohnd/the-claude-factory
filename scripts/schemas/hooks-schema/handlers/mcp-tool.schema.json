@@ -1,6 +1,5 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "handlers/mcp-tool.schema.json",
   "type": "object",
   "title": "MCP tool hook",
   "description": "Calls a tool on an already-connected MCP server; the tool's text output is handled like command-hook stdout. A server that is not connected, or a tool result with isError, is a non-blocking error. Never triggers a connection or OAuth flow. On SessionStart at launch and on Setup the hook is skipped because servers are not yet available.",

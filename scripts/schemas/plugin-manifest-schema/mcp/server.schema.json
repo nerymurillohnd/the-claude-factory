@@ -1,0 +1,113 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "title": "MCP server entry",
+  "description": "One MCP server. The type field selects the transport: stdio (default when omitted), http (alias streamable-http), sse (deprecated) or ws.",
+  "properties": {
+    "type": {
+      "enum": [
+        "stdio",
+        "http",
+        "streamable-http",
+        "sse",
+        "ws"
+      ],
+      "description": "Transport discriminator. Omit for stdio; an entry with url but no type is skipped by Claude Code."
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "required": [
+          "type"
+        ],
+        "properties": {
+          "type": {
+            "const": "stdio"
+          }
+        }
+      },
+      "then": {
+        "$ref": "stdio.schema.json"
+      }
+    },
+    {
+      "if": {
+        "required": [
+          "type"
+        ],
+        "properties": {
+          "type": {
+            "enum": [
+              "http",
+              "streamable-http"
+            ]
+          }
+        }
+      },
+      "then": {
+        "$ref": "http.schema.json"
+      }
+    },
+    {
+      "if": {
+        "required": [
+          "type"
+        ],
+        "properties": {
+          "type": {
+            "const": "sse"
+          }
+        }
+      },
+      "then": {
+        "$ref": "sse.schema.json"
+      }
+    },
+    {
+      "if": {
+        "required": [
+          "type"
+        ],
+        "properties": {
+          "type": {
+            "const": "ws"
+          }
+        }
+      },
+      "then": {
+        "$ref": "ws.schema.json"
+      }
+    },
+    {
+      "if": {
+        "not": {
+          "required": [
+            "type"
+          ]
+        }
+      },
+      "then": {
+        "$ref": "stdio.schema.json"
+      }
+    },
+    {
+      "if": {
+        "required": [
+          "url"
+        ],
+        "not": {
+          "required": [
+            "type"
+          ]
+        }
+      },
+      "then": {
+        "required": [
+          "type"
+        ],
+        "$comment": "Claude Code skips an entry with url but no type: it reads it as stdio and fails for lack of command. Add \"type\": \"http\" (or \"sse\" / \"ws\")."
+      }
+    }
+  ]
+}

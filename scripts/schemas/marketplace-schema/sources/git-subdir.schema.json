@@ -1,6 +1,5 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "sources/git-subdir.schema.json",
   "type": "object",
   "description": "Plugin located in a subdirectory of a git repository (sparse partial clone).",
   "properties": {
@@ -34,6 +33,7 @@
     "url",
     "path"
   ],
-  "additionalProperties": true,
-  "x-doc": "https://code.claude.com/docs/en/plugins/marketplace-reference#git-subdir-plugin-source"
+  "additionalProperties": false,
+  "x-doc": "https://code.claude.com/docs/en/plugins/marketplace-reference#git-subdir-plugin-source",
+  "x-cli-unknown-keys": "ignores"
 }

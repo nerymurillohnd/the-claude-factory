@@ -1,6 +1,5 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "handlers/prompt.schema.json",
   "type": "object",
   "title": "Prompt hook",
   "description": "Sends a prompt plus the hook input to a Claude model for single-turn evaluation; the model answers `{\"ok\": true|false, \"reason\": \"...\", \"impossible\"?: bool}`. Not supported on the events listed as command/http/mcp_tool-only.",
@@ -19,7 +18,7 @@
     },
     "model": {
       "type": "string",
-      "description": "Model used for the evaluation. Defaults to a fast model (Haiku).",
+      "description": "Model used for the evaluation. Defaults to the model Claude Code uses for background functionality.",
       "title": "Model"
     },
     "continueOnBlock": {

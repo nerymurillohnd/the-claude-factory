@@ -1,6 +1,5 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "events/mcp-elicitation.schema.json",
   "title": "Hook events: MCP elicitation",
   "description": "Event arrays (`hookEvent_<Event>`) and matcher groups (`hookMatcherGroup_<Event>`) for: Elicitation, ElicitationResult.",
   "$defs": {

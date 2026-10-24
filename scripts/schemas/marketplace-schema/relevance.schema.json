@@ -1,6 +1,5 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "relevance.schema.json",
   "type": "object",
   "description": "Signals telling Claude Code when to suggest this plugin. Only takes effect for marketplaces an administrator allowlists in managed settings (pluginSuggestionMarketplaces). Unknown keys are validator warnings.",
   "properties": {
@@ -91,7 +90,8 @@
               "file",
               "pattern"
             ],
-            "additionalProperties": true
+            "additionalProperties": false,
+            "x-cli-unknown-keys": "ignores"
           },
           "maxItems": 10
         }

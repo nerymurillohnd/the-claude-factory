@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "title": "http server",
+  "description": "Remote Streamable HTTP server (recommended remote transport). Supports OAuth, static headers and headersHelper.",
+  "additionalProperties": false,
+  "required": [
+    "type",
+    "url"
+  ],
+  "properties": {
+    "type": {
+      "enum": [
+        "http",
+        "streamable-http"
+      ],
+      "description": "Transport type. \"streamable-http\" is an alias for \"http\" (the MCP specification name)."
+    },
+    "url": {
+      "type": "string",
+      "description": "Server endpoint URL (use https://). Supports ${VAR} and ${VAR:-default} environment-variable expansion. An empty string marks a not-configured placeholder that is not connected."
+    },
+    "headers": {
+      "type": "object",
+      "description": "Static HTTP headers sent on every request (values must be strings). Supports ${VAR} and ${VAR:-default} environment-variable expansion. In remote servers, credential variables such as ANTHROPIC_API_KEY read as empty. Dynamic headers from headersHelper override entries with the same name. Since 2.1.299 the configured headers except Authorization are also sent on OAuth sign-in, refresh and revocation to the server's origin.",
+      "additionalProperties": {
+        "type": "string",
+        "description": "Header value."
+      }
+    },
+    "headersHelper": {
+      "type": "string",
+      "description": "Shell command run at connect time (and again after a 401/403) that must print a JSON object of string header names to string values on stdout; killed after 10 seconds. Its Authorization output disables the OAuth fallback. Receives CLAUDE_CODE_MCP_SERVER_NAME, CLAUDE_CODE_MCP_SERVER_URL and, for plugins, CLAUDE_PLUGIN_ROOT. Project .mcp.json and plugin helpers run without credential-like env vars and only after workspace trust. Not expanded with ${VAR}; ${user_config.*} is rejected.",
+      "not": {
+        "pattern": "\\$\\{user_config\\."
+      }
+    },
+    "oauth": {
+      "$ref": "fields.schema.json#/$defs/oauth"
+    },
+    "timeout": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Per-server wall-clock limit for one tool call, in milliseconds. Overrides MCP_TOOL_TIMEOUT for this server; values below 1000 are ignored. Also floors the idle timeout. Progress notifications do not extend it."
+    },
+    "alwaysLoad": {
+      "$ref": "fields.schema.json#/$defs/alwaysLoad"
+    },
+    "bareElicitationCapability": {
+      "$ref": "fields.schema.json#/$defs/bareElicitationCapability"
+    },
+    "discoveryCache": {
+      "$ref": "fields.schema.json#/$defs/discoveryCache"
+    },
+    "toolPermissions": {
+      "$ref": "fields.schema.json#/$defs/toolPermissions"
+    },
+    "tools": {
+      "$ref": "fields.schema.json#/$defs/toolPolicies"
+    }
+  }
+}

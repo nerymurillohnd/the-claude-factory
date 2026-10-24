@@ -1,6 +1,5 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "handlers/http.schema.json",
   "type": "object",
   "title": "HTTP hook",
   "description": "POSTs the event JSON (Content-Type: application/json) to a URL; the 2xx JSON response body uses the same output format as command hooks. Non-2xx, connection failure and non-JSON bodies are non-blocking errors; it cannot block through the status code. Subject to allowedHttpHookUrls and httpHookAllowedEnvVars.",

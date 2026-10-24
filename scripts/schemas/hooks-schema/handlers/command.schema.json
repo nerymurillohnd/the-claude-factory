@@ -1,6 +1,5 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "handlers/command.schema.json",
   "type": "object",
   "title": "Command hook",
   "description": "Runs a shell command (shell form) or spawns an executable directly (exec form, when `args` is set). Receives the event JSON on stdin; results come back through exit codes and stdout.",
@@ -14,7 +13,7 @@
     "command": {
       "type": "string",
       "minLength": 1,
-      "description": "Shell command to execute; with `args`, the executable to spawn directly (no shell). Path placeholders `${CLAUDE_PROJECT_DIR}`, `${CLAUDE_PLUGIN_ROOT}` and `${CLAUDE_PLUGIN_DATA}` are substituted. In shell form wrap each placeholder in double quotes.",
+      "description": "Shell command to execute; with `args`, the executable to spawn directly (no shell). Path placeholders `${CLAUDE_PROJECT_DIR}`, `${CLAUDE_PLUGIN_ROOT}` and `${CLAUDE_PLUGIN_DATA}` are substituted. Prefer exec form whenever the command references a path placeholder; in shell form wrap each placeholder in double quotes. In a worktree, `${CLAUDE_PROJECT_DIR}` stays at the project root where the session started, while the `cwd` field of the hook input follows Claude into the worktree or after a `cd`: read `cwd` when the hook needs the directory Claude is working in.",
       "title": "Command"
     },
     "args": {

@@ -1,6 +1,5 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "handlers/agent.schema.json",
   "type": "object",
   "title": "Agent hook",
   "description": "EXPERIMENTAL. Spawns a subagent (Read/Grep/Glob, up to 50 turns) to verify a condition and return `{\"ok\": true|false, \"reason\": \"...\"}`. No `continueOnBlock` and no `impossible`; behaves like a prompt hook with continueOnBlock true. Not supported on PermissionRequest or on command/http/mcp_tool-only events.",
@@ -14,12 +13,12 @@
     "prompt": {
       "type": "string",
       "minLength": 1,
-      "description": "Prompt describing what to verify. `$ARGUMENTS` is replaced by the hook input JSON.",
+      "description": "Prompt describing what to verify. `$ARGUMENTS` is replaced by the hook input JSON; escape a literal dollar as `\\$` (`\\$1.00` renders as `$1.00`).",
       "title": "Prompt"
     },
     "model": {
       "type": "string",
-      "description": "Model used for the verification. Defaults to a fast model (Haiku).",
+      "description": "Model used for the verification. Defaults to the model Claude Code uses for background functionality.",
       "title": "Model"
     },
     "timeout": {

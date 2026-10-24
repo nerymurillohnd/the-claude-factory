@@ -1,6 +1,5 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "sources/github.schema.json",
   "type": "object",
   "description": "GitHub repository source.",
   "properties": {
@@ -27,6 +26,7 @@
     "source",
     "repo"
   ],
-  "additionalProperties": true,
-  "x-doc": "https://code.claude.com/docs/en/plugins/marketplace-reference#github-plugin-source"
+  "additionalProperties": false,
+  "x-doc": "https://code.claude.com/docs/en/plugins/marketplace-reference#github-plugin-source",
+  "x-cli-unknown-keys": "ignores"
 }
