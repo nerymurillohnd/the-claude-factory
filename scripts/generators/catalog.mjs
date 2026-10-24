@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 // Regenerates the generated blocks in README.md from marketplace.json + plugin manifests.
-//   node scripts/catalog.mjs          → rewrite README.md
-//   node scripts/catalog.mjs --check  → exit 1 if README.md is out of date (CI)
+//   node scripts/generators/catalog.mjs          → rewrite README.md
+//   node scripts/generators/catalog.mjs --check  → exit 1 if README.md is out of date (CI)
 
 import { writeFileSync } from 'node:fs'
-import { COMPONENT_TYPES, componentBadges, detectComponents } from './components.mjs'
+import { COMPONENT_TYPES, componentBadges, detectComponents } from '../components.mjs'
 import {
   fail,
   isMain,
@@ -16,7 +16,7 @@ import {
   readText,
   SURFACE_PROFILES,
   surfaceProfileKey,
-} from './lib.mjs'
+} from '../lib.mjs'
 
 /**
  * @param {string} name
@@ -57,7 +57,7 @@ export function buildCatalog() {
   const marketplace = loadMarketplace()
   const categories = loadCategories()
   const entries = marketplace.plugins.map((entry) => {
-    /** @type {import('./lib.mjs').Manifest} */
+    /** @type {import('../lib.mjs').Manifest} */
     const manifest = loadManifest(entry.name) ?? {}
     const profileKey = surfaceProfileKey(manifest.metadata?.surfaces)
     return {
@@ -142,7 +142,7 @@ if (isMain(import.meta.url)) {
   const next = renderReadme(current)
   if (process.argv.includes('--check')) {
     if (current !== next) {
-      fail('README.md catalog is out of date. Run: node scripts/catalog.mjs')
+      fail('README.md catalog is out of date. Run: node scripts/generators/catalog.mjs')
     }
     console.log('✔ README.md catalog is up to date')
   } else {

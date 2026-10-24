@@ -7,7 +7,7 @@
 import { cpSync, existsSync, mkdirSync, readdirSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { parseArgs } from 'node:util'
-import { renderReadme } from './catalog.mjs'
+import { renderReadme } from './generators/catalog.mjs'
 import {
   fail,
   KEBAB,

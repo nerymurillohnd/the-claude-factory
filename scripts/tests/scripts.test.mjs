@@ -20,9 +20,9 @@ import { tmpdir } from 'node:os'
 import { dirname, join, resolve, sep } from 'node:path'
 import { afterEach, beforeEach, describe, test } from 'node:test'
 import { fileURLToPath } from 'node:url'
-import { anchor } from '../catalog.mjs'
 import { lspConfigProblems, portabilityProblems, rootPackageProblems } from '../check-repo.mjs'
 import { hooksFileKinds } from '../components.mjs'
+import { anchor } from '../generators/catalog.mjs'
 import { changelogSection } from '../lib.mjs'
 
 const REAL_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..')
@@ -154,7 +154,7 @@ function resolveTodos(name = 'demo-tool') {
   const p = `plugins/${name}/README.md`
   write(p, read(p).replace(/<!--\s*(TODO|TEMPLATE)[\s\S]*?-->\n?/g, ''))
   pruneCompat(name, ['Skills'])
-  assert.equal(run('catalog.mjs').code, 0)
+  assert.equal(run('generators/catalog.mjs').code, 0)
 }
 
 /** Scaffold the default plugin and finish it, so check-repo.mjs has nothing left to flag. */
@@ -258,7 +258,7 @@ describe('check-repo', () => {
     const p = 'plugins/lang-tool/README.md'
     write(p, read(p).replace(/<!--\s*(TODO|TEMPLATE)[\s\S]*?-->\n?/g, 'it needs bin/ executables'))
     pruneCompat('lang-tool', ['Executables'])
-    assert.equal(run('catalog.mjs').code, 0)
+    assert.equal(run('generators/catalog.mjs').code, 0)
     assert.deepEqual(json('plugins/lang-tool/.claude-plugin/plugin.json').metadata.surfaces, [
       'claude-code',
     ])
@@ -416,6 +416,16 @@ describe('marketplace generator', () => {
   })
 })
 
+describe('catalog generator', () => {
+  test('is idempotent', () => {
+    const before = read('README.md')
+    const r = run('generators/catalog.mjs')
+    assert.equal(r.code, 0, r.out)
+    assert.equal(read('README.md'), before)
+    assert.equal(run('generators/catalog.mjs', ['--check']).code, 0)
+  })
+})
+
 describe('new-plugin', () => {
   test('rejects names Claude Code reserves for Anthropic', () => {
     const r = run('new-plugin.mjs', [
@@ -465,7 +475,7 @@ describe('new-plugin', () => {
     const readme = read('README.md')
     assert.match(readme, /\[\*\*Demo Tool\*\*\]\(\.\/plugins\/demo-tool#readme\)/)
     assert.match(readme, new RegExp(`plugins-${before.length + 1}-D97757`))
-    assert.equal(run('catalog.mjs', ['--check']).code, 0)
+    assert.equal(run('generators/catalog.mjs', ['--check']).code, 0)
   })
 
   test('refuses to overwrite an existing plugin', () => {

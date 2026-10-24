@@ -5,8 +5,8 @@
 import { execFileSync } from 'node:child_process'
 import { existsSync, lstatSync, readdirSync } from 'node:fs'
 import { join, relative, sep } from 'node:path'
-import { renderReadme } from './catalog.mjs'
 import { COMPONENT_TYPES, detectComponents } from './components.mjs'
+import { renderReadme } from './generators/catalog.mjs'
 import {
   changelogSection,
   isMain,
@@ -447,7 +447,7 @@ export function checkRepo() {
   try {
     const readme = readText(README_PATH)
     if (renderReadme(readme) !== readme) {
-      err('README.md', 'catalog is out of date — run node scripts/catalog.mjs')
+      err('README.md', 'catalog is out of date — run node scripts/generators/catalog.mjs')
     }
   } catch (e) {
     err('README.md', e instanceof Error ? e.message : String(e))

@@ -251,7 +251,7 @@ export function gatesFor({ root, ci, base }) {
       group: 'policy',
       title: 'README catalog in sync',
       cmd: 'node',
-      args: ['scripts/catalog.mjs', '--check'],
+      args: ['scripts/generators/catalog.mjs', '--check'],
     },
     {
       id: 'version-bump',
