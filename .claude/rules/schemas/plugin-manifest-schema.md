@@ -1,18 +1,16 @@
 ---
 paths:
   - "scripts/schemas/plugin-manifest-schema/**/*.schema.json"
-  - "scripts/schemas/lsp.schema.json"
-  - "scripts/schemas/mcp.schema.json"
 ---
 
 # Plugin manifest schema
 
-`scripts/schemas/plugin-manifest-schema/` is the source of truth for `.claude-plugin/plugin.json` and for every plugin component shape other than hooks: LSP servers, MCP servers, userConfig, channels and monitors. JSON Schema draft 2020-12, 12 files. Edit the files directly; nothing generates them.
+`scripts/schemas/plugin-manifest-schema/` is the source of truth for `.claude-plugin/plugin.json` and for every plugin component shape other than hooks: LSP servers, MCP servers, userConfig, channels and monitors. JSON Schema draft 2020-12, 13 files. Edit the files directly; nothing generates them.
 
 ## Entry points
 - `plugin-manifest.schema.json`: a plugin's `.claude-plugin/plugin.json`.
-- `scripts/schemas/lsp.schema.json`: a plugin's `.lsp.json`; it points to `components/lsp-servers.schema.json`.
-- `scripts/schemas/mcp.schema.json`: a `.mcp.json`, wrapped in `mcpServers` or bare; it points to `mcp/mcp-servers.schema.json`.
+- `components/lsp-servers.schema.json`: a plugin's `.lsp.json`, which is the same server map as inline `lspServers`, so it needs no envelope.
+- `mcp/mcp.schema.json`: a `.mcp.json`, wrapped in `mcpServers` or bare; it points to `mcp-servers.schema.json`.
 
 ## Structure
 - `plugin-manifest.schema.json` holds the 42 root fields, only `name` required, and delegates:
@@ -53,5 +51,5 @@ paths:
   - every file passes the 2020-12 metaschema;
   - no file declares `$id`;
   - every `$ref` resolves;
-  - every file other than the five entry points (`hooks-schema/hooks.schema.json`, `plugin-manifest-schema/plugin-manifest.schema.json`, `marketplace-schema/marketplace.schema.json`, `lsp.schema.json`, `mcp.schema.json`), and every `$defs` entry, is referenced.
-- Validate every `plugins/*/.claude-plugin/plugin.json` against `plugin-manifest.schema.json`, every `plugins/*/.lsp.json` against `lsp.schema.json` and every `plugins/*/.mcp.json` against `mcp.schema.json`.
+  - every file other than the four entry points (`hooks-schema/hooks.schema.json`, `plugin-manifest-schema/plugin-manifest.schema.json`, `plugin-manifest-schema/mcp/mcp.schema.json`, `marketplace-schema/marketplace.schema.json`), and every `$defs` entry, is referenced.
+- Validate every `plugins/*/.claude-plugin/plugin.json` against `plugin-manifest.schema.json`, every `plugins/*/.lsp.json` against `components/lsp-servers.schema.json` and every `plugins/*/.mcp.json` against `mcp/mcp.schema.json`.

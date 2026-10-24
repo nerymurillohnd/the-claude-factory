@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Claude Code MCP server configuration (.mcp.json)",
+  "description": "MCP server configuration for a Claude Code plugin: the contents of .mcp.json at the plugin root, either a map of server name to server config wrapped in \"mcpServers\", or that map with the wrapper omitted. The same map is accepted inline as plugin.json's mcpServers (mcp-servers.schema.json defines that map once).",
+  "$comment": "Entry point for a plugin's .mcp.json: the server map, wrapped in mcpServers or bare (a plugin's .mcp.json may omit the wrapper). The map itself is mcp-servers.schema.json, also the inline mcpServers of plugin.json.",
+  "oneOf": [
+    {
+      "type": "object",
+      "title": "Wrapped",
+      "required": [
+        "mcpServers"
+      ],
+      "properties": {
+        "mcpServers": {
+          "$ref": "mcp-servers.schema.json"
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "title": "Wrapper omitted",
+      "$ref": "mcp-servers.schema.json",
+      "not": {
+        "required": [
+          "mcpServers"
+        ]
+      }
+    }
+  ],
+  "x-sources": [
+    "https://code.claude.com/docs/en/mcp",
+    "https://code.claude.com/docs/en/plugins/components#mcp-servers",
+    "https://code.claude.com/docs/en/plugins/manifest-reference#mcpservers",
+    "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md (2.1.285, 2.1.287, 2.1.299)"
+  ],
+  "x-cli-unknown-keys": "ignores"
+}

@@ -48,5 +48,5 @@ paths:
   - every file passes the 2020-12 metaschema;
   - no file declares `$id`;
   - every `$ref` resolves;
-  - every file other than the five entry points (`hooks-schema/hooks.schema.json`, `plugin-manifest-schema/plugin-manifest.schema.json`, `marketplace-schema/marketplace.schema.json`, `lsp.schema.json`, `mcp.schema.json`), and every `$defs` entry, is referenced.
+  - every file other than the four entry points (`hooks-schema/hooks.schema.json`, `plugin-manifest-schema/plugin-manifest.schema.json`, `plugin-manifest-schema/mcp/mcp.schema.json`, `marketplace-schema/marketplace.schema.json`), and every `$defs` entry, is referenced.
 - Validate `.claude-plugin/marketplace.json` against `marketplace.schema.json`.

@@ -3,7 +3,10 @@
 # requires-python = "==3.15.*"
 # dependencies = ["jsonschema-rs"]
 # ///
-"""LSP configs: every LSP config file of every plugin conforms to scripts/schemas/lsp.schema.json.
+"""LSP configs: every LSP config file of every plugin conforms to its schema.
+
+The schema is scripts/schemas/plugin-manifest-schema/components/lsp-servers.schema.json, the
+same server map that inline `lspServers` in plugin.json uses.
 
 Where a plugin can hold one (https://code.claude.com/docs/en/plugins/manifest-reference#lspservers):
 
@@ -34,7 +37,7 @@ import jsonschema_rs
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterator
 
-SCHEMA = "lsp.schema.json"
+SCHEMA = "plugin-manifest-schema/components/lsp-servers.schema.json"
 DEFAULT_FILE = ".lsp.json"
 MANIFEST_FIELD = "lspServers"
 MAX_MESSAGE = 240

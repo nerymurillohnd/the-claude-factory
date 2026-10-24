@@ -3,7 +3,10 @@
 # requires-python = "==3.15.*"
 # dependencies = ["jsonschema-rs"]
 # ///
-"""MCP configs: every MCP config file of every plugin conforms to scripts/schemas/mcp.schema.json.
+"""MCP configs: every MCP config file of every plugin conforms to its schema.
+
+The schema is scripts/schemas/plugin-manifest-schema/mcp/mcp.schema.json: the server map that
+inline `mcpServers` in plugin.json uses, wrapped in `mcpServers` or bare.
 
 Where a plugin can hold one (https://code.claude.com/docs/en/mcp#plugin-provided-mcp-servers and
 https://code.claude.com/docs/en/plugins/manifest-reference):
@@ -36,7 +39,7 @@ import jsonschema_rs
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterator
 
-SCHEMA = "mcp.schema.json"
+SCHEMA = "plugin-manifest-schema/mcp/mcp.schema.json"
 DEFAULT_FILE = ".mcp.json"
 MANIFEST_FIELD = "mcpServers"
 MAX_MESSAGE = 240

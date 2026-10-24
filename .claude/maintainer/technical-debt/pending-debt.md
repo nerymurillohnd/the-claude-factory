@@ -174,7 +174,7 @@ Add an item only when all of these hold:
 
 - **Confirmed facts:**
   - `node --test "scripts/tests/*.test.mjs"` on 2026-10-24: 95 tests, 92 pass, 3 fail, all in `gates.test.mjs`: the two `argsAtRun` tests and "--ci keeps maintainer tooling and plugin structure, and leaves plugin behavior local". `argsAtRun` and the `pytest-env`, `basedpyright-maintainer` and `pytest-scripts` gates were removed from `scripts/gates.mjs` earlier that day, and the tests were not updated.
-  - `scripts/tests/schemas/test_schemas.py` and `cases.json` load `plugin.schema.json`, `marketplace.schema.json` and `hooks.schema.json` at the root of `scripts/schemas/`, which no longer exist (ADR_2026-10-24_one-schema-source-per-shape).
+  - `scripts/tests/schemas/test_schemas.py` and `cases.json` load `plugin.schema.json`, `marketplace.schema.json`, `hooks.schema.json`, `lsp.schema.json` and `mcp.schema.json` at the root of `scripts/schemas/`, which no longer exist (ADR_2026-10-24_one-schema-source-per-shape).
   - Case `mcp-63-invalid` expects an empty `mcpServers` map to fail; `claude plugin validate --strict` 2.1.310 accepts it.
 - **Inferences:** the `node-tests` gate, and so `npm run gates` and the CI `policy` job, fail until the three tests change.
 - **Open questions:** whether the schema tests should cover the four schema validators instead of the schema files alone.

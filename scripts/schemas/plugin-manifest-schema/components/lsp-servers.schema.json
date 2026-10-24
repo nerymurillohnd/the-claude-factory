@@ -1,5 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Claude Code LSP server configuration (.lsp.json)",
   "type": "object",
   "description": "Map of server name to language-server configuration. This is the shape of a whole .lsp.json file and of an inline lspServers object in plugin.json. The file has no wrapper key and no $schema key: either makes Claude Code reject the whole file.",
   "additionalProperties": {
@@ -122,5 +123,13 @@
         }
       }
     }
-  }
+  },
+  "x-sources": [
+    "https://code.claude.com/docs/en/plugins/manifest-reference#lspservers",
+    "https://code.claude.com/docs/en/plugins/manifest-reference#where-each-variable-resolves",
+    "https://code.claude.com/docs/en/plugins/components#lsp-servers",
+    "https://code.claude.com/docs/en/plugins/code-intelligence",
+    "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md (2.1.288)"
+  ],
+  "x-cli-unknown-keys": "rejects (a top-level key is a server name; a non-object value invalidates the file)"
 }
