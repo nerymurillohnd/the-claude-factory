@@ -1,10 +1,10 @@
 ---
-status: accepted
+status: superseded
 date: 2026-10-24
 decision-makers:
   - "Nery Samuel Murillo"
 supersedes: none
-superseded-by: none
+superseded-by: ADR_2026-10-24_maintainer-python-shebang-follows-its-dependencies
 ---
 
 # Maintainer Python entry points run through a PEP 723 uv shebang

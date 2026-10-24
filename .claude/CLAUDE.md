@@ -61,7 +61,7 @@ The rules live in `.claude/rules/maintainer-tooling.md`, `.claude/rules/plugin-t
 ## Migration
 
 - New code follows the tooling rules from the start.
-- Migrate existing code on touch, not in a dedicated sweep: Mypy to Basedpyright, unittest to pytest, and bare `python3` maintainer entry points to the uv shebang. Plugin scripts keep `#!/usr/bin/env python3`.
+- Migrate existing code on touch, not in a dedicated sweep: Mypy to Basedpyright, unittest to pytest, and maintainer entry points that need third-party dependencies to the uv shebang; standard-library-only ones keep `#!/usr/bin/env python3`. Plugin scripts keep `#!/usr/bin/env python3`.
 - Migrate the whole touched unit at once (a script with its tests and its gate), never half of it. Until then, its current gates keep running and must pass.
 
 ## Quality gates

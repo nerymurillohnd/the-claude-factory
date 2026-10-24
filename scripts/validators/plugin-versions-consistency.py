@@ -1,8 +1,4 @@
-#!/usr/bin/env -S PYTHONSAFEPATH=1 uv run --script
-# /// script
-# requires-python = "==3.15.*"
-# dependencies = []
-# ///
+#!/usr/bin/env python3
 """Plugin version consistency: every place that defines or names a plugin's version agrees.
 
 plugins/<name>/.claude-plugin/plugin.json `version` (full SemVer) is the only source; the rest
@@ -24,7 +20,7 @@ change lands. Git tags are out of scope: they are not files.
 A value that is missing, empty or of the wrong type is an error, never a skip. It reads files
 only: it never writes, imports or runs plugin code, starts a process or uses the network.
 Exit 0 = pass, 1 = at least one error, 2 = called with arguments (it takes none).
-Maintainer tooling: uv runs it on Python 3.15 from its inline metadata; run it by path.
+Maintainer tooling with no dependencies: run it by path, with the python3 on PATH.
 TCF_ROOT points it at another copy of the repository (tests).
 """
 

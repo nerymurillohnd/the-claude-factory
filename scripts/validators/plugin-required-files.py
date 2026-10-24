@@ -1,8 +1,4 @@
-#!/usr/bin/env -S PYTHONSAFEPATH=1 uv run --script
-# /// script
-# requires-python = "==3.15.*"
-# dependencies = []
-# ///
+#!/usr/bin/env python3
 """Plugin required files: every plugin ships its manifest, README, changelog and license.
 
 Every real directory in plugins/ is a plugin, and each must hold, as a regular file inside the
@@ -14,7 +10,7 @@ error too.
 It reads the file system only: it never opens the files, imports or runs plugin code, starts a
 process or uses the network.
 Exit 0 = pass, 1 = at least one error, 2 = called with arguments (it takes none).
-Maintainer tooling: uv runs it on Python 3.15 from its inline metadata; run it by path.
+Maintainer tooling with no dependencies: run it by path, with the python3 on PATH.
 TCF_ROOT points it at another copy of the repository (tests).
 """
 

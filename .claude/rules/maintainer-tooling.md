@@ -8,8 +8,8 @@
 - Keep maintainer code and its tests in `scripts/` at the root, never under `.github/`: Basedpyright and other tools skip folders whose name starts with a dot (ADR_2026-10-21_maintainer-scripts-at-root).
 
 ## Executable entry points
-- Start every executable maintainer Python entry point with `#!/usr/bin/env -S PYTHONSAFEPATH=1 uv run --script` on a single line.
-- Declare `requires-python = "==3.15.*"` and `dependencies` in each entry point's inline metadata; use an empty dependency list for standard-library-only scripts.
+- Start an executable maintainer Python entry point that needs only the standard library with `#!/usr/bin/env python3`, and run it with the `python3` on `PATH`: the maintainer's machine and CI run uv-managed Python. This applies to maintainer scripts only; plugin scripts follow `plugin-tooling.md`.
+- Start an entry point with third-party dependencies with `#!/usr/bin/env -S PYTHONSAFEPATH=1 uv run --script` on a single line, and declare `requires-python = "==3.15.*"` and its `dependencies` in its inline metadata.
 - Mark executable entry points with `chmod +x`, preserve their executable bits in Git, and run them by path.
 - Declare script dependencies in PEP 723 inline metadata; never use per-invocation `--with` or a root Python project.
 - Let uv manage script environments outside the repository; never create a manually maintained root virtual environment.
