@@ -9,7 +9,15 @@
   },
   "scripts": {
     "gates": "node scripts/gates.mjs",
-    "gates:ci": "node scripts/gates.mjs --ci"
+    "gates:ci": "node scripts/gates.mjs --ci",
+    "validate:lsp-json-schema": "scripts/validators/lsp-json-schema.py",
+    "validate:marketplace-json-schema": "scripts/validators/marketplace-json-schema.py",
+    "validate:mcp-json-schema": "scripts/validators/mcp-json-schema.py",
+    "validate:plugin-json-schema": "scripts/validators/plugin-json-schema.py",
+    "validate:plugin-names-consistency": "scripts/validators/plugin-names-consistency.py",
+    "validate:plugin-required-files": "scripts/validators/plugin-required-files.py",
+    "validate:plugin-versions-consistency": "scripts/validators/plugin-versions-consistency.py",
+    "validate:readme-catalog-consistency": "scripts/validators/readme-catalog-consistency.py"
   },
   "devDependencies": {
     "@types/node": "26.6.5"
