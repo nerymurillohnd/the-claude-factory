@@ -19,6 +19,12 @@
       "category": "security"
     },
     {
+      "name": "file-tree-pane",
+      "source": "./plugins/file-tree-pane",
+      "description": "Keeps a live file tree of your project beside the chat: git status and line counts, what Claude reads, writes and commits, search, previews, diffs and your editor one key away.",
+      "category": "productivity"
+    },
+    {
       "name": "github-operations",
       "source": "./plugins/github-operations",
       "description": "Carries a GitHub pull request from open to merge, cleans up a Git repository without losing work, and brings the GitHub MCP server with it.",

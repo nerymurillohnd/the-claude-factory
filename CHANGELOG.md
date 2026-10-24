@@ -11,6 +11,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The
 - 🧩 The catalog has a Mods category for plugins that change Claude Code's own interface: **tool-ledger** and **turn-meter** move there from Productivity.
 - **bash-lsp-intelligence** 0.2.4 — its catalog category now lives in its manifest; nothing changes for users.
 - **block-no-verify** 0.1.2 — its catalog category now lives in its manifest; nothing changes for users.
+- **file-tree-pane** 0.1.1 — its catalog category now lives in its manifest; nothing changes for users.
 - **github-operations** 0.4.1 — its catalog category now lives in its manifest; nothing changes for users.
 - **hook-engineering** 0.2.1 — its catalog category now lives in its manifest; nothing changes for users.
 - **mods-engineering** 0.1.1 — its catalog category now lives in its manifest; nothing changes for users.
@@ -25,6 +26,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The
 - **turn-meter** 0.1.1 — its catalog category now lives in its manifest; nothing changes for users.
 - **typescript6-lsp-intelligence** 0.3.1 — its catalog category now lives in its manifest; nothing changes for users.
 - **typescript7-lsp-intelligence** 0.4.1 — its catalog category now lives in its manifest; nothing changes for users.
+
+## 2026-10-23
+
+### Added
+
+- **file-tree-pane** 0.1.0 — keeps a live file tree of your project beside the chat: git status and line counts, what Claude reads, writes and commits, search, previews, diffs and your editor one key away.
 
 ## 2026-10-22
 

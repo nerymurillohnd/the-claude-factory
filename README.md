@@ -11,7 +11,7 @@
 <br>
 
 <!-- plugin-count:start -->
-[![Plugins](https://img.shields.io/badge/plugins-16-D97757?style=for-the-badge)](#-catalog)
+[![Plugins](https://img.shields.io/badge/plugins-17-D97757?style=for-the-badge)](#-catalog)
 <!-- plugin-count:end -->
 [![Validate](https://img.shields.io/github/actions/workflow/status/nerymurillohnd/the-claude-factory/validate.yml?branch=main&label=validate&style=for-the-badge)](https://github.com/nerymurillohnd/the-claude-factory/actions/workflows/validate.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-22C55E?style=for-the-badge)](./LICENSE)
@@ -105,7 +105,7 @@ Plugin skills are namespaced, so they never collide with yours: type `/<plugin>:
 | Category | Plugins |
 | :-- | :--: |
 | [🛠️ Development](#️-development) | 3 |
-| [⚡ Productivity](#-productivity) | 1 |
+| [⚡ Productivity](#-productivity) | 2 |
 | [🤖 Automation](#-automation) | 1 |
 | [🧩 Mods](#-mods) | 2 |
 | [🧪 Testing & Quality](#-testing--quality) | 3 |
@@ -129,6 +129,7 @@ Plugin skills are namespaced, so they never collide with yours: type `/<plugin>:
 
 | Plugin | What it does | Works in | Version | Includes |
 | :-- | :-- | :-- | :--: | :-- |
+| [**File Tree Pane**](./plugins/file-tree-pane#readme)<br>`file-tree-pane@the-claude-factory` | Keeps a live file tree of your project beside the chat: git status and line counts, what Claude reads, writes and commits, search, previews, diffs and your editor one key away. | 💻 Code only | `0.1.1` | 🧩 Mods |
 | [**Prompt Writer**](./plugins/prompt-writer#readme)<br>`prompt-writer@the-claude-factory` | Turns a goal, idea or draft into one copy-ready prompt tuned to the target Claude model and effort: it clarifies intent, checks current official facts and recommends the setup to run it with. | 💻 Code · 🖥️ Claude app | `0.2.1` | 🎯 Skills |
 
 ### 🤖 Automation

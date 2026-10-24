@@ -1,0 +1,126 @@
+{
+  "name": "file-tree-pane",
+  "displayName": "File Tree Pane",
+  "version": "0.1.1",
+  "description": "Keeps a live file tree of your project beside the chat: git status and line counts, what Claude reads, writes and commits, search, previews, diffs and your editor one key away.",
+  "author": {
+    "name": "Nery Murillo",
+    "url": "https://github.com/nerymurillohnd"
+  },
+  "homepage": "https://github.com/nerymurillohnd/the-claude-factory/tree/main/plugins/file-tree-pane#readme",
+  "repository": "https://github.com/nerymurillohnd/the-claude-factory",
+  "license": "MIT",
+  "keywords": [
+    "mods",
+    "file-tree",
+    "explorer",
+    "git-status",
+    "diff",
+    "preview",
+    "panel",
+    "productivity"
+  ],
+  "types": "./types/index.d.ts",
+  "userConfig": {
+    "activity": {
+      "type": "string",
+      "title": "Claude activity",
+      "description": "What shimmers in the tree as Claude works: reads and searches (purple), writes (orange) and commits (green). Git status, line counts and the git footer always show.",
+      "options": [
+        "reads and writes",
+        "writes",
+        "reads",
+        "none"
+      ],
+      "default": "reads and writes"
+    },
+    "followClaude": {
+      "type": "boolean",
+      "title": "Follow Claude",
+      "description": "Scroll the tree to what Claude reads, writes or commits, opening folders to show it. Off keeps the view where you put it; the highlights still show.",
+      "default": true
+    },
+    "openAtStart": {
+      "type": "boolean",
+      "title": "Open at start",
+      "description": "Open the pane when a session starts, where the terminal is wide enough to dock it. Off keeps it closed until you run /file-tree.",
+      "default": true
+    },
+    "rightColumn": {
+      "type": "string",
+      "title": "Right column",
+      "description": "What the right column shows when a session starts: the modification date, its age (now, 12m, 3h, 5d, Oct 9, 2025) or the size. The Σ button switches to sizes and back.",
+      "options": [
+        "date",
+        "age",
+        "size"
+      ],
+      "default": "date"
+    },
+    "hints": {
+      "type": "boolean",
+      "title": "Hints",
+      "description": "Show a line under the header outside a git repository saying git status starts after git init.",
+      "default": true
+    },
+    "searchSpacing": {
+      "type": "boolean",
+      "title": "Search spacing",
+      "description": "Keep a blank line above and below the search field. Off gives the tree those two rows.",
+      "default": true
+    },
+    "shortcutRow": {
+      "type": "boolean",
+      "title": "Shortcut row",
+      "description": "Show the j/k/h/l/open/search buttons under the search field. Off hides them; the keys still work with the tree focused.",
+      "default": true
+    },
+    "openWith": {
+      "type": "string",
+      "title": "Open with",
+      "description": "Empty opens files in their default app on double-click or Enter. editor opens $VISUAL, then $EDITOR, then vi, in a tmux window or a herdr pane. Anything else is a command, such as code -g {path}.",
+      "default": ""
+    },
+    "editWith": {
+      "type": "string",
+      "title": "Edit with",
+      "description": "What e opens at the line in view. Empty uses $VISUAL, then $EDITOR, then vi at +line, in a tmux window or a herdr pane. Otherwise a command where {path} is the file and {line} the line, such as zed {path}:{line}.",
+      "default": ""
+    },
+    "diffWith": {
+      "type": "string",
+      "title": "Diff with",
+      "description": "What d does on a changed file or folder. Empty shows the diff in the pane. Otherwise a terminal command run on the path in a tmux window, a herdr pane or, on Linux, a new terminal window, such as hunk diff -- or lazygit -f.",
+      "default": ""
+    },
+    "ignore": {
+      "type": "string",
+      "title": "Ignore",
+      "description": "File and folder names to leave out of the tree, its search and its highlights, separated by spaces or commas, such as .cache .tmp. Names match exactly at any depth; .git and node_modules are always left out.",
+      "default": ""
+    },
+    "palette": {
+      "type": "string",
+      "title": "Palette",
+      "description": "Your own colors over the theme's, as tone=#rrggbb pairs: read, write, commit, modified, added, deleted, untracked, conflict, muted, accent, selected, hovered.",
+      "default": ""
+    },
+    "glyphs": {
+      "type": "string",
+      "title": "Glyphs",
+      "description": "auto uses Nerd Font icons in a terminal that has a Nerd Font installed before it started, and over SSH; plain Unicode in the desktop app or without a Nerd Font. nerd or plain forces one.",
+      "options": [
+        "auto",
+        "nerd",
+        "plain"
+      ],
+      "default": "auto"
+    }
+  },
+  "metadata": {
+    "category": "productivity",
+    "surfaces": [
+      "claude-code"
+    ]
+  }
+}
