@@ -17,7 +17,7 @@ Act as a plugin engineer who builds for strangers. You read the official docs be
 - Cover the plugin's whole domain in one install. Every component must earn its place with a user task no other component of the plugin covers; justify each choice on its own merits, never by citing another plugin of the marketplace.
 - A required tool, dependency, account or integration never rules a plugin out: it becomes a prerequisite in the README, with how to install it and its alternatives.
 - When Nery hands over his own version of a plugin file, edit his file in place and copy it into the plugin only after he reviews it and says so: recall memory `stage-external-plugin-files`.
-- A new plugin starts from `.claude/rules/plugin-design.md` (brief agreed with Nery, then scaffold); `.claude/WORKFLOW.md` → Build lists the steps. This skill governs the build after that.
+- A new plugin starts from `node scripts/new-plugin.mjs`, which renders its files from `.claude/templates/plugin/` (`.claude/CLAUDE.md` → Plugin Documentation and Changelogs → Templates); `.claude/WORKFLOW.md` → Build lists the steps. This skill governs the build after that.
 - Make network calls only when the plugin's purpose requires them, and disclose each one in the README.
 - Never set `version` on a marketplace entry; `plugin.json` is the only source.
 
@@ -26,7 +26,7 @@ Act as a plugin engineer who builds for strangers. You read the official docs be
 - A plugin with a top-level `bin/` makes the Claude app refuse it (`check-repo.mjs` enforces this); put the code in a skill's `scripts/` or declare the plugin Claude Code-only.
 - A plugin agent ignores `hooks`, `mcpServers`, `permissionMode` and `initialPrompt` in its frontmatter; hooks live in `hooks/hooks.json` and servers in `.mcp.json`.
 - Keep `metadata` in `plugin.json` and `onFailure` on hooks even when the claude.ai sync warns about them: recall memory `claudeai-sync-warnings`.
-- A Node dependency ships only with an npm or Bun lockfile; other lockfiles leave no `node_modules`.
+- A Node dependency ships only with a text `bun.lock`, or an npm `package-lock.json` or `npm-shrinkwrap.json` with `lockfileVersion` 2 or 3; other lockfiles, `bun.lockb` included, leave no `node_modules`.
 
 ## Hand-offs
 
@@ -87,17 +87,17 @@ Read these before you write or rely on the behavior they describe:
 | An agent | Memory `agent-file-rules`; also `/en/sub-agents` → "Preload skills into subagents" before relying on `skills:` in its frontmatter |
 | `userConfig` options | `/en/plugins/manifest-reference` → "User configuration" (install, update and synced copies) |
 | An MCP server | The `plugin-mcp-guidance` skill (step 4 invokes it), which holds the Claude app and header rules |
-| A mod | `/en/plugins/mods/reference` and `/en/plugins/mods/test` (`register.ts`, static validation, tests, type declarations), `/en/plugins/mods/events`, and `.claude/rules/mods.md`, which lists the sources and the verified lessons. The declarations the engine writes for the installed build win over any docs page when they disagree, as the docs themselves say, and `.claude/CLAUDE.md` → Quality gates → After editing a file → Mods |
+| A mod | `/en/plugins/mods/reference` and `/en/plugins/mods/test` (`register.ts`, static validation, tests, type declarations), `/en/plugins/mods/events`, and `.claude/rules/mods.md`, which lists the sources and the verified lessons. The declarations the engine writes for the installed build win over any docs page when they disagree, as the docs themselves say, and `.claude/CLAUDE.md` → Maintainer and Plugin Scopes → Plugin Tooling |
 | A script a skill or agent runs | `/en/skills` → "Available string substitutions" (the path variables are substituted only in `SKILL.md` and agent bodies, never in `references/` or the Bash environment) |
 
-Skills, evals and user docs have their own rules in `.claude/rules/`: `skill-authoring.md`, `evals.md` and `user-docs.md`. Read the one that matches before you write.
+Evals and user docs have their own rules in `.claude/rules/`: `evals.md` and `user-docs.md`. Read the one that matches before you write.
 
 ### 4. Write
 
 Files every plugin ships:
 
 - `LICENSE`, `CHANGELOG.md` and `README.md`.
-- `NOTICE.txt` when the plugin bundles, derives from or wires in third-party material or integrations: the plugin's copyright and license, then each third-party source with its repository, version or commit, license and the files derived from it.
+- `NOTICE.txt` only when the plugin bundles, derives from or wires in third-party material: the plugin's copyright and license, then each third-party source with its repository, version or commit, license and the files derived from it.
 
 Manifest:
 
