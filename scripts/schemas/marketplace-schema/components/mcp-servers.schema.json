@@ -1,0 +1,152 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "components/mcp-servers.schema.json",
+  "description": "MCP server definitions: path to a .json config file, an inline map of server name to config, or a list mixing both.",
+  "anyOf": [
+    {
+      "$ref": "../common.schema.json#/$defs/relJsonPath"
+    },
+    {
+      "$ref": "#/$defs/mcpbRef"
+    },
+    {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/$defs/mcpServerConfig"
+      }
+    },
+    {
+      "type": "array",
+      "description": "List of config paths / MCPB bundles / inline maps.",
+      "items": {
+        "anyOf": [
+          {
+            "$ref": "../common.schema.json#/$defs/relJsonPath"
+          },
+          {
+            "$ref": "#/$defs/mcpbRef"
+          },
+          {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/$defs/mcpServerConfig"
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "x-doc": "https://code.claude.com/docs/en/plugins/manifest-reference#component-path-forms",
+  "$defs": {
+    "mcpServerConfig": {
+      "type": "object",
+      "description": "One MCP server: stdio (command/args/env) or remote http/sse/ws (url/headers). The full MCP configuration surface (oauth, timeouts, ...) is documented at the MCP page and is not modelled exhaustively here.",
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "Transport. Omit or use stdio for a local server; remote servers must set http, sse or ws. \"sdk\" (an in-process SDK-hosted server) is accepted by the CLI (oracle) but not documented on this page. \"streamable-http\" is an alias for \"http\" (docs, mcp#option-1-add-a-remote-http-server).",
+          "enum": [
+            "stdio",
+            "http",
+            "streamable-http",
+            "sse",
+            "ws",
+            "sdk"
+          ]
+        },
+        "name": {
+          "type": "string",
+          "description": "SDK server name (sdk type only).",
+          "x-undocumented": true
+        },
+        "command": {
+          "type": "string",
+          "description": "Executable to launch (stdio).",
+          "minLength": 1
+        },
+        "args": {
+          "type": "array",
+          "description": "Command-line arguments (stdio).",
+          "items": {
+            "type": "string"
+          }
+        },
+        "env": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Environment variables (stdio)."
+        },
+        "url": {
+          "type": "string",
+          "description": "Server URL (http/sse/ws)."
+        },
+        "headers": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "HTTP headers (http/sse/ws)."
+        },
+        "headersHelper": {
+          "type": "string",
+          "description": "Command printing dynamic headers as JSON."
+        },
+        "oauth": {
+          "type": "object",
+          "description": "OAuth options (clientId, callbackPort, scopes, authServerMetadataUrl, ...)."
+        }
+      },
+      "if": {
+        "required": [
+          "type"
+        ],
+        "properties": {
+          "type": {
+            "enum": [
+              "http",
+              "streamable-http",
+              "sse",
+              "ws"
+            ],
+            "description": "Property type."
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "url"
+        ]
+      },
+      "else": {
+        "if": {
+          "required": [
+            "type"
+          ],
+          "properties": {
+            "type": {
+              "const": "sdk",
+              "description": "Property type."
+            }
+          }
+        },
+        "then": {},
+        "else": {
+          "required": [
+            "command"
+          ]
+        }
+      },
+      "additionalProperties": true,
+      "x-doc": "https://code.claude.com/docs/en/plugins/components#mcp-servers; https://code.claude.com/docs/en/mcp#plugin-provided-mcp-servers"
+    },
+    "mcpbRef": {
+      "type": "string",
+      "pattern": "^(\\./|[Hh][Tt][Tt][Pp][Ss]?://).+\\.(mcpb|dxt)$",
+      "description": "Path (starting ./) or URL of an MCPB bundle; must end with .mcpb or .dxt.",
+      "x-undocumented": true,
+      "x-note": "Accepted by CLI 2.1.281 (\"MCPB file path must end with .mcpb or .dxt\") and in the SchemaStore baseline; not in the current docs."
+    }
+  }
+}

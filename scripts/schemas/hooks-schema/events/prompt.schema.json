@@ -1,0 +1,163 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "events/prompt.schema.json",
+  "title": "Hook events: prompts and message display",
+  "description": "Event arrays (`hookEvent_<Event>`) and matcher groups (`hookMatcherGroup_<Event>`) for: UserPromptSubmit, UserPromptExpansion, MessageDisplay.",
+  "$defs": {
+    "hookEvent_UserPromptSubmit": {
+      "title": "UserPromptSubmit",
+      "type": "array",
+      "description": "When the user submits a prompt, before Claude processes it. Default command/http/mcp_tool timeout is 30 s.",
+      "items": {
+        "$ref": "#/$defs/hookMatcherGroup_UserPromptSubmit"
+      },
+      "x-source": "https://code.claude.com/docs/en/hooks#userpromptsubmit",
+      "x-matcherSupported": false,
+      "x-handlerTypes": [
+        "command",
+        "http",
+        "mcp_tool",
+        "prompt",
+        "agent"
+      ],
+      "x-ifEvaluated": false,
+      "x-addedIn": "1.0.54"
+    },
+    "hookMatcherGroup_UserPromptSubmit": {
+      "type": "object",
+      "description": "Matcher group for UserPromptSubmit: an optional matcher plus the handlers to run when it applies. Handlers allowed here: command, http, mcp_tool, prompt or agent. The `if` field is not evaluated on this event, so a handler that sets it never runs.",
+      "properties": {
+        "matcher": {
+          "type": "string",
+          "description": "UserPromptSubmit has no matcher support: the field is accepted but silently ignored and the group fires on every occurrence. Omit it.",
+          "x-matcherSupported": false,
+          "title": "Matcher"
+        },
+        "hooks": {
+          "type": "array",
+          "description": "Hook handlers to run when the matcher applies; all matching handlers run in parallel and identical handlers from several settings files run once.",
+          "items": {
+            "allOf": [
+              {
+                "$ref": "../handlers/handler-sets.schema.json#/$defs/hookHandler"
+              },
+              {
+                "$ref": "../handlers/handler-sets.schema.json#/$defs/hookHandlerWithoutIf"
+              }
+            ]
+          },
+          "title": "Hooks"
+        }
+      },
+      "required": [
+        "hooks"
+      ],
+      "additionalProperties": false,
+      "x-source": "https://code.claude.com/docs/en/hooks#userpromptsubmit"
+    },
+    "hookEvent_UserPromptExpansion": {
+      "title": "UserPromptExpansion",
+      "type": "array",
+      "description": "When a user-typed command expands into a prompt, before it reaches Claude. Can block the expansion.",
+      "items": {
+        "$ref": "#/$defs/hookMatcherGroup_UserPromptExpansion"
+      },
+      "x-source": "https://code.claude.com/docs/en/hooks#userpromptexpansion",
+      "x-matcherSupported": true,
+      "x-handlerTypes": [
+        "command",
+        "http",
+        "mcp_tool",
+        "prompt",
+        "agent"
+      ],
+      "x-ifEvaluated": false,
+      "x-addedIn": "not stated in the changelog"
+    },
+    "hookMatcherGroup_UserPromptExpansion": {
+      "type": "object",
+      "description": "Matcher group for UserPromptExpansion: an optional matcher plus the handlers to run when it applies. Handlers allowed here: command, http, mcp_tool, prompt or agent. The `if` field is not evaluated on this event, so a handler that sets it never runs.",
+      "properties": {
+        "matcher": {
+          "type": "string",
+          "description": "Filters on the command name (skill or command name). Evaluation: `*`, an empty string, or an omitted matcher matches everything; a value made only of letters, digits, `_`, `-`, spaces, `,` and `|` is an exact string or a `|`/`,`-separated list of exact strings; any other character makes it an unanchored JavaScript regular expression (RegExp.test).",
+          "x-matcherSupported": true,
+          "examples": [
+            "deploy",
+            "my-skill"
+          ],
+          "title": "Matcher"
+        },
+        "hooks": {
+          "type": "array",
+          "description": "Hook handlers to run when the matcher applies; all matching handlers run in parallel and identical handlers from several settings files run once.",
+          "items": {
+            "allOf": [
+              {
+                "$ref": "../handlers/handler-sets.schema.json#/$defs/hookHandler"
+              },
+              {
+                "$ref": "../handlers/handler-sets.schema.json#/$defs/hookHandlerWithoutIf"
+              }
+            ]
+          },
+          "title": "Hooks"
+        }
+      },
+      "required": [
+        "hooks"
+      ],
+      "additionalProperties": false,
+      "x-source": "https://code.claude.com/docs/en/hooks#userpromptexpansion"
+    },
+    "hookEvent_MessageDisplay": {
+      "title": "MessageDisplay",
+      "type": "array",
+      "description": "While assistant message text is displayed. Display-only. Default command/http/mcp_tool timeout is 10 s.",
+      "items": {
+        "$ref": "#/$defs/hookMatcherGroup_MessageDisplay"
+      },
+      "x-source": "https://code.claude.com/docs/en/hooks#messagedisplay",
+      "x-matcherSupported": false,
+      "x-handlerTypes": [
+        "command",
+        "http",
+        "mcp_tool"
+      ],
+      "x-ifEvaluated": false,
+      "x-addedIn": "2.1.152"
+    },
+    "hookMatcherGroup_MessageDisplay": {
+      "type": "object",
+      "description": "Matcher group for MessageDisplay: an optional matcher plus the handlers to run when it applies. Handlers allowed here: command, http or mcp_tool (prompt and agent hooks are not supported on this event). The `if` field is not evaluated on this event, so a handler that sets it never runs.",
+      "properties": {
+        "matcher": {
+          "type": "string",
+          "description": "MessageDisplay has no matcher support: the field is accepted but silently ignored and the group fires on every occurrence. Omit it.",
+          "x-matcherSupported": false,
+          "title": "Matcher"
+        },
+        "hooks": {
+          "type": "array",
+          "description": "Hook handlers to run when the matcher applies; all matching handlers run in parallel and identical handlers from several settings files run once.",
+          "items": {
+            "allOf": [
+              {
+                "$ref": "../handlers/handler-sets.schema.json#/$defs/hookHandlerCommandHttpMcp"
+              },
+              {
+                "$ref": "../handlers/handler-sets.schema.json#/$defs/hookHandlerWithoutIf"
+              }
+            ]
+          },
+          "title": "Hooks"
+        }
+      },
+      "required": [
+        "hooks"
+      ],
+      "additionalProperties": false,
+      "x-source": "https://code.claude.com/docs/en/hooks#messagedisplay"
+    }
+  }
+}

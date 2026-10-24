@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "sources/archive.schema.json",
+  "type": "object",
+  "description": "Zip archive source downloaded over HTTPS (requires Claude Code v2.1.224+).",
+  "properties": {
+    "source": {
+      "const": "archive",
+      "description": "Source discriminator."
+    },
+    "url": {
+      "type": "string",
+      "description": "HTTPS URL of the zip archive. http:// and loopback, link-local and cloud-metadata hosts are refused (the host check in this schema is a best-effort approximation), as is every redirect hop that breaks the rules. Max 256 MiB.",
+      "pattern": "^[Hh][Tt][Tt][Pp][Ss]://\\S+$",
+      "not": {
+        "pattern": "^[Hh][Tt][Tt][Pp][Ss]://([^/?#@]*@)?([Ll][Oo][Cc][Aa][Ll][Hh][Oo][Ss][Tt]|[^/?#@:]*\\.[Ll][Oo][Cc][Aa][Ll][Hh][Oo][Ss][Tt]|127\\.[0-9.]*|0\\.0\\.0\\.0|0x7f[0-9a-fA-Fx.]*|2130706433|169\\.254\\.[0-9.]*|100\\.100\\.100\\.200|\\[[^\\]]*\\]|[Mm][Ee][Tt][Aa][Dd][Aa][Tt][Aa]\\.[Gg][Oo][Oo][Gg][Ll][Ee]\\.[Ii][Nn][Tt][Ee][Rr][Nn][Aa][Ll])(:[0-9]*)?([/?#]|$)"
+      }
+    },
+    "sha256": {
+      "type": "string",
+      "description": "SHA-256 digest of the archive as 64 hex characters (either case). Verified on every download; doubles as the plugin version when no version is declared.",
+      "pattern": "^[A-Fa-f0-9]{64}$"
+    }
+  },
+  "required": [
+    "source",
+    "url"
+  ],
+  "additionalProperties": true,
+  "x-doc": "https://code.claude.com/docs/en/plugins/marketplace-reference#archive-plugin-source"
+}

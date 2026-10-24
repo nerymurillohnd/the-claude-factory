@@ -81,7 +81,7 @@ Python:
 - `basedpyright --warnings <file>` - Run after ruff.
 - The tests of the unit the file belongs to: the PEP 723 pytest runner for migrated code; `python3 -m unittest discover -s scripts/tests/<plugin>` until a plugin's tests are migrated.
 - `scripts/tests/<plugin>/by_path.sh` - Run when that plugin folder ships one.
-- Until their migration, the `mypy-scripts` and `mypy-plugins` gates still run over every tracked `.py`, new files included, and must pass.
+- Never run mypy on new or migrated code. The `mypy-scripts` and `mypy-plugins` gates run only over the unmigrated `.py` files and must pass until those migrate; `mypy-scripts` leaves out `scripts/schemas/`, `scripts/generators/` and `scripts/validators/` (`MIGRATED_PYTHON` in `scripts/gates.mjs`).
 
 JavaScript modules (`tsc` checks the whole project):
 
@@ -112,7 +112,7 @@ Run `npm run gates` with the `.nvmrc` Node and after `npm ci` (ADR_2026-10-21_ga
 | :-- | :-- | :-- |
 | (before anything) | local | the branch, `git status`, every commit since `origin/main` signed `G` |
 | `policy` | CI and local | the maintainer Node tests (`scripts/tests/*.test.mjs`), `check-repo.mjs`, `catalog.mjs --check`, `check-version-bump.mjs`, `tsc` on `scripts/`, ShellCheck and shfmt on `scripts/` |
-| `python` | CI and local | ruff check, ruff format, `mypy --strict` and basedpyright on `scripts/` |
+| `python` | CI and local | ruff check, ruff format and basedpyright on `scripts/`; `mypy --strict` on its unmigrated `.py` |
 | `claude` | CI and local | `claude plugin validate --strict` on the marketplace and on every plugin |
 | `lint` | CI and local | Biome outside `plugins/`, actionlint |
 | `local` | local only | the plugins' behavior: the tests in `scripts/tests/<plugin>/` (Node, Python and `by_path.sh`), `claude plugin test` for every mod, the mods' `tsc`; and the analysis of plugin code: `tsc -p scripts/tsconfig.plugins.json`, Biome, ShellCheck, shfmt, ruff, mypy and basedpyright on `plugins/` |
@@ -126,12 +126,12 @@ Report the run as a table: gate, result and key output line.
 ## Documentation and Maintenance
 
 - `.claude/WORKFLOW.md`: the stage map, imported above.
-- `.claude/rules/`: the rules. Loaded in every session: `maintainer-tooling.md`, `plugin-tooling.md`, `node-tooling.md`, `skill-triggers.md`, `plugin-design.md`. Loaded when Claude reads or edits a matching file: `skill-authoring.md` (skills), `evals.md` (evals), `user-docs.md` (READMEs, `docs/`, community files, README templates), `mods.md` (a mod's files, tests, declarations or graders).
+- `.claude/rules/`: the rules; those without `paths` load in every session, the rest when Claude reads or edits a matching file.
 - `.claude/maintainer/decisions/`: ADRs for important decisions.
 - `.claude/maintainer/technical-debt/`: pending and closed debt.
 - `.claude/memory/`: project memory (facts, feedback).
 - `.claude/session-handoff/`: session handoffs.
-- `.claude/skills/`: project skills (`plugin-development`, `plugin-consistency`, `github-workflow`, `release-and-versioning`, `plugin-hooks-guidance`, `plugin-mcp-guidance`).
+- `.claude/skills/`: project skills, the procedures for work on this repository.
 - `.claude/specs/`: design specs.
 - `.claude/plans/`: implementation plans.
 - `.claude/templates/`: templates for plugin files, the root README and the plugin review brief.

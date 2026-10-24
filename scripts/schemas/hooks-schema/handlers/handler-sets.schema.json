@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "handlers/handler-sets.schema.json",
+  "title": "Hook handler sets",
+  "description": "Reusable handler-type unions per event (which of command, http, mcp_tool, prompt, agent an event supports) plus the `if`-forbidden constraint. Referenced by the matcher groups under events/.",
+  "$defs": {
+    "hookHandler": {
+      "title": "Any hook handler",
+      "description": "One hook handler, discriminated by `type`: command, http, mcp_tool, prompt or agent.",
+      "oneOf": [
+        {
+          "$ref": "command.schema.json"
+        },
+        {
+          "$ref": "http.schema.json"
+        },
+        {
+          "$ref": "mcp-tool.schema.json"
+        },
+        {
+          "$ref": "prompt.schema.json"
+        },
+        {
+          "$ref": "agent.schema.json"
+        }
+      ]
+    },
+    "hookHandlerNoAgent": {
+      "title": "Handler (no agent)",
+      "description": "command, http, mcp_tool or prompt handler (PermissionRequest).",
+      "oneOf": [
+        {
+          "$ref": "command.schema.json"
+        },
+        {
+          "$ref": "http.schema.json"
+        },
+        {
+          "$ref": "mcp-tool.schema.json"
+        },
+        {
+          "$ref": "prompt.schema.json"
+        }
+      ]
+    },
+    "hookHandlerCommandHttpMcp": {
+      "title": "Handler (command, http, mcp_tool)",
+      "description": "command, http or mcp_tool handler; prompt/agent are not supported on these events.",
+      "oneOf": [
+        {
+          "$ref": "command.schema.json"
+        },
+        {
+          "$ref": "http.schema.json"
+        },
+        {
+          "$ref": "mcp-tool.schema.json"
+        }
+      ]
+    },
+    "hookHandlerCommandMcp": {
+      "title": "Handler (command, mcp_tool)",
+      "description": "command or mcp_tool handler (SessionStart, Setup).",
+      "oneOf": [
+        {
+          "$ref": "command.schema.json"
+        },
+        {
+          "$ref": "mcp-tool.schema.json"
+        }
+      ]
+    },
+    "hookHandlerWithoutIf": {
+      "title": "Handler without `if`",
+      "description": "Constraint for events that do not evaluate `if`: a handler that sets it would never run.",
+      "properties": {
+        "if": false
+      }
+    }
+  }
+}

@@ -61,8 +61,14 @@ jobs:
         run: npm run gates:ci -- --group policy --base "${BASE}"
 
   python:
-    name: Maintainer Python lint & types
+    name: Maintainer Python lint, types & tests
     runs-on: ubuntu-24.04
+    env:
+      # uv uses only the Python it installed, and never downloads one on its own: the explicit
+      # install below is the only source, as on the maintainer's machine
+      # (ADR_2026-10-24_maintainer-python-entry-points-use-a-uv-shebang).
+      UV_PYTHON_PREFERENCE: only-managed
+      UV_PYTHON_DOWNLOADS: manual
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
@@ -72,8 +78,9 @@ jobs:
         with:
           # No lockfile and no pins: every run installs the latest tools.
           enable-cache: "false"
-      - name: ruff, mypy and basedpyright
+      - name: Python 3.15, ruff, mypy and basedpyright
         run: |
+          uv python install 3.15
           uv tool install ruff
           uv tool install mypy
           uv tool install basedpyright

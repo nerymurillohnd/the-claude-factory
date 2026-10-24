@@ -1,0 +1,393 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/nerymurillohnd/the-claude-factory/main/scripts/schemas/mcp.schema.json",
+  "title": "Claude Code MCP server configuration (.mcp.json)",
+  "description": "MCP server configuration for a Claude Code plugin: the contents of .mcp.json at the plugin root, either a map of server name to server config wrapped in \"mcpServers\", or that map with the wrapper omitted. The same map is accepted inline as plugin.json's mcpServers (plugin.schema.json references $defs/mcpServersMap).",
+  "$comment": "POLICY: stricter than Claude Code. Every server entry closes its keys per transport, because this repository authors these files and a typo the CLI silently ignores is a bug. Measured on 2.1.310: claude plugin validate --strict accepts an unknown key in a server entry with no message, and the engine (zod object, not strict) drops it at load. Keys the engine reads but the docs do not name carry x-docs-status: cli-only. @internal engine keys (role, request_timeout_ms) stay out. The root has no $schema property: with the wrapper omitted every top-level key is a server name, and validate --strict passes a $schema beside mcpServers, so it is no guard either. Associate this schema through editor settings (json.schemas), never through a key inside the file.",
+  "oneOf": [
+    {
+      "type": "object",
+      "title": "Wrapped",
+      "required": [
+        "mcpServers"
+      ],
+      "properties": {
+        "mcpServers": {
+          "$ref": "#/$defs/mcpServersMap"
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "title": "Wrapper omitted",
+      "$ref": "#/$defs/mcpServersMap",
+      "not": {
+        "required": [
+          "mcpServers"
+        ]
+      }
+    }
+  ],
+  "x-cli-unknown-keys": "ignores",
+  "$defs": {
+    "mcpServersMap": {
+      "type": "object",
+      "title": "MCP server map",
+      "description": "Map of server name to server configuration. A plugin's server registers as plugin:<plugin>:<server> and its tools as mcp__plugin_<plugin>_<server>__<tool>. A server declared later replaces an earlier one with the same name.",
+      "minProperties": 1,
+      "propertyNames": {
+        "pattern": "^[A-Za-z0-9_-]+$",
+        "not": {
+          "enum": [
+            "constructor",
+            "prototype",
+            "__proto__",
+            "__defineGetter__",
+            "__defineSetter__",
+            "__lookupGetter__",
+            "__lookupSetter__"
+          ]
+        },
+        "description": "Letters, digits, hyphens and underscores, not a JavaScript object member name (engine 2.1.310)."
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/mcpServerConfig"
+      },
+      "x-source": "https://code.claude.com/docs/en/mcp#plugin-provided-mcp-servers; https://code.claude.com/docs/en/plugins/components#mcp-servers"
+    },
+    "mcpServerConfig": {
+      "title": "MCP server",
+      "description": "One MCP server, by transport. An entry with a url and no type is a configuration error: Claude Code reads a typeless entry as stdio, skips it and reports 'MCP server \"<name>\" has a \"url\" but no \"type\"'. A \"type\": \"sdk\" entry is skipped in files: only an SDK host application can register one.",
+      "oneOf": [
+        {
+          "$ref": "#/$defs/stdioServer"
+        },
+        {
+          "$ref": "#/$defs/httpServer"
+        },
+        {
+          "$ref": "#/$defs/sseServer"
+        },
+        {
+          "$ref": "#/$defs/wsServer"
+        }
+      ],
+      "x-source": "https://code.claude.com/docs/en/mcp#option-1-add-a-remote-http-server"
+    },
+    "stdioServer": {
+      "type": "object",
+      "title": "stdio server",
+      "description": "A local process Claude Code starts and talks to over stdin and stdout.",
+      "required": [
+        "command"
+      ],
+      "additionalProperties": false,
+      "x-cli-unknown-keys": "ignores",
+      "properties": {
+        "type": {
+          "const": "stdio",
+          "description": "Optional; stdio is the default when type is absent.",
+          "x-source": "https://code.claude.com/docs/en/mcp#option-3-add-a-local-stdio-server"
+        },
+        "command": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Executable to start. Expands ${VAR} and ${VAR:-default}; in a plugin also ${CLAUDE_PLUGIN_ROOT}, ${CLAUDE_PLUGIN_DATA} and ${CLAUDE_PROJECT_DIR}.",
+          "x-source": "https://code.claude.com/docs/en/mcp#environment-variable-expansion-in-mcp-json; https://code.claude.com/docs/en/mcp#plugin-provided-mcp-servers"
+        },
+        "args": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Arguments, each passed as one argument with no quoting. Same expansion as command.",
+          "x-source": "https://code.claude.com/docs/en/plugins/components#mcp-servers"
+        },
+        "env": {
+          "$ref": "#/$defs/stringMap",
+          "description": "Environment of the server process. Same expansion as command. claude mcp get prints a plugin server's values as NAME=[REDACTED].",
+          "x-source": "https://code.claude.com/docs/en/mcp#plugin-provided-mcp-servers"
+        },
+        "timeout": {
+          "$ref": "#/$defs/toolTimeout"
+        },
+        "alwaysLoad": {
+          "$ref": "#/$defs/alwaysLoad"
+        },
+        "bareElicitationCapability": {
+          "$ref": "#/$defs/bareElicitationCapability"
+        }
+      }
+    },
+    "httpServer": {
+      "type": "object",
+      "title": "HTTP server",
+      "description": "A remote server over streamable HTTP.",
+      "required": [
+        "type",
+        "url"
+      ],
+      "additionalProperties": false,
+      "x-cli-unknown-keys": "ignores",
+      "properties": {
+        "type": {
+          "enum": [
+            "http",
+            "streamable-http"
+          ],
+          "description": "streamable-http is an alias for http, the name the MCP specification uses.",
+          "x-source": "https://code.claude.com/docs/en/mcp#option-1-add-a-remote-http-server"
+        },
+        "url": {
+          "$ref": "#/$defs/url"
+        },
+        "headers": {
+          "$ref": "#/$defs/headers"
+        },
+        "headersHelper": {
+          "$ref": "#/$defs/headersHelper"
+        },
+        "oauth": {
+          "$ref": "#/$defs/oauth"
+        },
+        "timeout": {
+          "$ref": "#/$defs/toolTimeout"
+        },
+        "alwaysLoad": {
+          "$ref": "#/$defs/alwaysLoad"
+        },
+        "tools": {
+          "$ref": "#/$defs/toolPolicies"
+        },
+        "toolPermissions": {
+          "$ref": "#/$defs/toolPermissions"
+        },
+        "discoveryCache": {
+          "$ref": "#/$defs/discoveryCache"
+        },
+        "bareElicitationCapability": {
+          "$ref": "#/$defs/bareElicitationCapability"
+        }
+      }
+    },
+    "sseServer": {
+      "type": "object",
+      "title": "SSE server",
+      "description": "A remote server over Server-Sent Events. The SSE transport is deprecated: use an HTTP server where available.",
+      "deprecated": true,
+      "required": [
+        "type",
+        "url"
+      ],
+      "additionalProperties": false,
+      "x-cli-unknown-keys": "ignores",
+      "x-source": "https://code.claude.com/docs/en/mcp#option-2-add-a-remote-sse-server",
+      "properties": {
+        "type": {
+          "const": "sse"
+        },
+        "url": {
+          "$ref": "#/$defs/url"
+        },
+        "headers": {
+          "$ref": "#/$defs/headers"
+        },
+        "headersHelper": {
+          "$ref": "#/$defs/headersHelper"
+        },
+        "oauth": {
+          "$ref": "#/$defs/oauth"
+        },
+        "timeout": {
+          "$ref": "#/$defs/toolTimeout"
+        },
+        "alwaysLoad": {
+          "$ref": "#/$defs/alwaysLoad"
+        },
+        "tools": {
+          "$ref": "#/$defs/toolPolicies"
+        },
+        "toolPermissions": {
+          "$ref": "#/$defs/toolPermissions"
+        },
+        "discoveryCache": {
+          "$ref": "#/$defs/discoveryCache"
+        },
+        "bareElicitationCapability": {
+          "$ref": "#/$defs/bareElicitationCapability"
+        }
+      }
+    },
+    "wsServer": {
+      "type": "object",
+      "title": "WebSocket server",
+      "description": "A remote server over WebSocket. Authentication is header-only (headers or headersHelper); claude mcp add --transport does not accept ws, so it is configured in JSON only.",
+      "required": [
+        "type",
+        "url"
+      ],
+      "additionalProperties": false,
+      "x-cli-unknown-keys": "ignores",
+      "x-source": "https://code.claude.com/docs/en/mcp#option-4-add-a-remote-websocket-server",
+      "properties": {
+        "type": {
+          "const": "ws"
+        },
+        "url": {
+          "$ref": "#/$defs/url"
+        },
+        "headers": {
+          "$ref": "#/$defs/headers"
+        },
+        "headersHelper": {
+          "$ref": "#/$defs/headersHelper"
+        },
+        "timeout": {
+          "$ref": "#/$defs/toolTimeout"
+        },
+        "alwaysLoad": {
+          "$ref": "#/$defs/alwaysLoad"
+        },
+        "bareElicitationCapability": {
+          "$ref": "#/$defs/bareElicitationCapability"
+        }
+      }
+    },
+    "url": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Endpoint of the server. Expands ${VAR} and ${VAR:-default}; in a plugin also the path placeholders. claude.ai and Cowork can offer a remote https server to the user as a connector; a stdio server never reaches them.",
+      "x-source": "https://code.claude.com/docs/en/mcp#environment-variable-expansion-in-mcp-json; https://code.claude.com/docs/en/plugins/components#mcp-servers"
+    },
+    "headers": {
+      "$ref": "#/$defs/stringMap",
+      "description": "Static HTTP headers, such as a bearer token. Values expand ${VAR}; a plugin may use ${user_config.KEY} here. Since 2.1.299 the configured headers except Authorization are also sent on OAuth sign-in, refresh and revocation to the server's origin.",
+      "x-source": "https://code.claude.com/docs/en/mcp#example-with-variable-expansion; https://code.claude.com/docs/en/mcp#sign-in-to-an-mcp-server-behind-a-gateway-that-requires-a-header"
+    },
+    "headersHelper": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Command that prints the headers as one JSON object, merged into the connection headers at connect time, for a credential that expires. Runs through a shell, so a plugin's helper cannot reference ${user_config.*}; for a project .mcp.json it runs only after the folder is trusted.",
+      "x-source": "https://code.claude.com/docs/en/mcp#use-dynamic-headers-for-custom-authentication"
+    },
+    "oauth": {
+      "type": "object",
+      "title": "OAuth",
+      "description": "OAuth settings for a remote server.",
+      "additionalProperties": false,
+      "x-cli-unknown-keys": "ignores",
+      "properties": {
+        "clientId": {
+          "type": "string",
+          "description": "Pre-registered OAuth client ID; the secret is entered with claude mcp add --client-secret, never stored in this file.",
+          "x-source": "https://code.claude.com/docs/en/mcp#use-pre-configured-oauth-credentials"
+        },
+        "callbackPort": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 65535,
+          "description": "Fixed OAuth callback port; alone it keeps dynamic client registration.",
+          "x-source": "https://code.claude.com/docs/en/mcp#use-a-fixed-oauth-callback-port"
+        },
+        "authServerMetadataUrl": {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^https://",
+          "description": "Authorization server metadata URL that bypasses discovery. Must use https://; its scopes_supported overrides the scopes the server advertises.",
+          "x-source": "https://code.claude.com/docs/en/mcp#override-oauth-metadata-discovery"
+        },
+        "scopes": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Space-separated scopes to request (RFC 6749 §3.3); takes precedence over authServerMetadataUrl and discovery. offline_access is appended when the server advertises it.",
+          "x-source": "https://code.claude.com/docs/en/mcp#restrict-oauth-scopes"
+        },
+        "xaa": {
+          "type": "boolean",
+          "description": "Read by the engine; not in the docs.",
+          "x-docs-status": "cli-only"
+        }
+      }
+    },
+    "toolTimeout": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Hard wall-clock limit per tool call, in milliseconds; overrides MCP_TOOL_TIMEOUT for this server. Values below 1000 are ignored and fall through to MCP_TOOL_TIMEOUT. Progress notifications do not extend it.",
+      "x-source": "https://code.claude.com/docs/en/mcp#time-limits-on-mcp-tool-calls"
+    },
+    "alwaysLoad": {
+      "type": "boolean",
+      "description": "true loads the server's tools upfront regardless of ENABLE_TOOL_SEARCH; false keeps every tool deferred behind tool search, including tools whose author marked _meta['anthropic/alwaysLoad'] true (2.1.287). Omitted, tools marked by their author load upfront.",
+      "x-addedIn": "2.1.287 (false defers every tool)",
+      "x-source": "https://code.claude.com/docs/en/mcp#exempt-a-server-from-deferral; https://code.claude.com/docs/en/mcp#defer-a-servers-tools; changelog 2.1.287"
+    },
+    "toolPolicies": {
+      "type": "array",
+      "description": "Per-tool permission policies. Read by the engine; not in the docs.",
+      "x-docs-status": "cli-only",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "permission_policy": {
+            "enum": [
+              "always_allow",
+              "always_ask",
+              "always_deny"
+            ]
+          }
+        }
+      }
+    },
+    "toolPermissions": {
+      "type": "object",
+      "description": "Tool name to allow, ask or blocked. Read by the engine; not in the docs.",
+      "x-docs-status": "cli-only",
+      "additionalProperties": {
+        "enum": [
+          "allow",
+          "ask",
+          "blocked"
+        ]
+      }
+    },
+    "discoveryCache": {
+      "type": "boolean",
+      "description": "Read by the engine; not in the docs.",
+      "x-docs-status": "cli-only"
+    },
+    "bareElicitationCapability": {
+      "type": "boolean",
+      "description": "true makes Claude Code announce the elicitation capability without URL prompts, for a server that stops connecting after URL prompts arrived (2025-11-25 protocol). Not in the docs.",
+      "x-docs-status": "changelog-only",
+      "x-addedIn": "2.1.287",
+      "x-source": "changelog 2.1.287"
+    },
+    "stringMap": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    }
+  },
+  "x-sources": [
+    "https://code.claude.com/docs/en/mcp",
+    "https://code.claude.com/docs/en/plugins/components#mcp-servers",
+    "https://code.claude.com/docs/en/plugins/manifest-reference#mcpservers",
+    "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md (2.1.285, 2.1.287, 2.1.299)"
+  ],
+  "x-verified": {
+    "date": "2026-10-24",
+    "claudeCodeVersion": "2.1.310",
+    "docsFetched": "2026-10-24 (raw markdown of code.claude.com/docs/en/<slug>.md)",
+    "engine": "zod schemas in @anthropic-ai/claude-agent-sdk 0.3.310, read as text",
+    "oracle": "claude plugin validate --strict --json on one-change fixture plugins",
+    "portedFrom": "Nery's mcp schema (2026-10-02, CLI 2.1.286), draft-07"
+  }
+}

@@ -1,0 +1,156 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/nerymurillohnd/the-claude-factory/main/scripts/schemas/lsp.schema.json",
+  "title": "Claude Code LSP server configuration (.lsp.json)",
+  "description": "Language-server configuration for a Claude Code plugin: the contents of .lsp.json at the plugin root, a map of server name to server config with no wrapper object. The same map is accepted inline as plugin.json's lspServers (plugin.schema.json references $defs/lspServersMap).",
+  "$comment": "POLICY: stricter than Claude Code where it can be, and here it matches it: a server entry is a strict object in the engine (zod strictObject), and an unknown key is rejected (measured on 2.1.310: an inline lspServers entry with an unknown key fails claude plugin validate --strict with 'Unrecognized key'). claude plugin validate does not read .lsp.json itself (docs, plugins/components#lsp-servers); at load time an invalid entry skips the whole file and /plugin's Errors tab shows 'Invalid LSP server config for \".lsp.json\"'. The root has no $schema property: every top-level key is a server name, so a $schema key would be read as a server and invalidate the file. Associate this schema through editor settings (json.schemas), never through a key inside the file.",
+  "type": "object",
+  "additionalProperties": {
+    "$ref": "#/$defs/lspServerConfig"
+  },
+  "x-cli-unknown-keys": "rejects (a top-level key is a server name; a non-object value invalidates the file)",
+  "$defs": {
+    "lspServerConfig": {
+      "type": "object",
+      "title": "LSP server",
+      "description": "Configuration of one language server, keyed by an arbitrary server name in the enclosing map. Required: command and extensionToLanguage.",
+      "additionalProperties": false,
+      "x-cli-unknown-keys": "rejects",
+      "required": [
+        "command",
+        "extensionToLanguage"
+      ],
+      "properties": {
+        "command": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^(/[\\s\\S]*|[^ ]+)$",
+          "description": "The language-server binary to execute (on PATH, or an absolute path). Pass arguments in args: Claude Code rejects a value that contains a space unless it starts with '/'. Supports ${CLAUDE_PLUGIN_ROOT}, ${CLAUDE_PLUGIN_DATA}, ${CLAUDE_PROJECT_DIR} and ${user_config.KEY} substitution.",
+          "x-source": "https://code.claude.com/docs/en/plugins/manifest-reference#lspservers; https://code.claude.com/docs/en/plugins/manifest-reference#where-each-variable-resolves"
+        },
+        "args": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "Command-line arguments for the language server. Same substitutions as command. Empty-string items are rejected (engine 2.1.310).",
+          "x-source": "https://code.claude.com/docs/en/plugins/manifest-reference#lspservers"
+        },
+        "extensionToLanguage": {
+          "type": "object",
+          "minProperties": 1,
+          "propertyNames": {
+            "pattern": "^\\..+$",
+            "description": "File extension including the leading dot, at least one character after it (for example .go, .d.ts)."
+          },
+          "additionalProperties": {
+            "type": "string",
+            "minLength": 1,
+            "description": "LSP language identifier for files with that extension (for example go, typescript)."
+          },
+          "description": "Maps file extensions (with the leading dot) to LSP language identifiers; at least one mapping. When two enabled servers claim the same extension, the first registered handles those files and the other isn't used for them (/plugin Errors tab warning 'LSP server \"<name>\" is not used for <ext> files').",
+          "x-source": "https://code.claude.com/docs/en/plugins/manifest-reference#lspservers; https://code.claude.com/docs/en/plugins/components#lsp-servers"
+        },
+        "transport": {
+          "type": "string",
+          "enum": [
+            "stdio",
+            "socket"
+          ],
+          "default": "stdio",
+          "description": "Communication transport. Claude Code accepts 'socket' but runs every server over stdio, so the stdout protocol rules (log to stderr) apply to all servers.",
+          "x-source": "https://code.claude.com/docs/en/plugins/manifest-reference#lspservers"
+        },
+        "env": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "description": "Environment variable value; ${...} placeholders are substituted."
+          },
+          "description": "Environment variables set when starting the server. Values must be strings.",
+          "x-source": "https://code.claude.com/docs/en/plugins/manifest-reference#lspservers"
+        },
+        "initializationOptions": {
+          "description": "Options sent in the LSP initialize request. Any JSON value; ${user_config.*} and path placeholders are substituted since 2.1.288.",
+          "x-source": "https://code.claude.com/docs/en/plugins/manifest-reference#lspservers; changelog 2.1.288"
+        },
+        "settings": {
+          "description": "Settings sent through workspace/didChangeConfiguration. Any JSON value; placeholders are substituted since 2.1.288.",
+          "x-source": "https://code.claude.com/docs/en/plugins/manifest-reference#lspservers; changelog 2.1.288"
+        },
+        "workspaceFolder": {
+          "type": "string",
+          "description": "Workspace folder path for the server. Supports ${CLAUDE_PLUGIN_ROOT}, ${CLAUDE_PLUGIN_DATA} and ${CLAUDE_PROJECT_DIR}.",
+          "x-source": "https://code.claude.com/docs/en/plugins/manifest-reference#lspservers"
+        },
+        "startupTimeout": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991,
+          "description": "Milliseconds to wait for the server to start; a positive integer.",
+          "x-source": "https://code.claude.com/docs/en/plugins/manifest-reference#lspservers"
+        },
+        "shutdownTimeout": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991,
+          "description": "Milliseconds to wait for a graceful shutdown; when it elapses Claude Code terminates the server process. When unset, no timeout applies.",
+          "x-source": "https://code.claude.com/docs/en/plugins/manifest-reference#lspservers"
+        },
+        "requestTimeout": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2147483647,
+          "default": 60000,
+          "description": "Milliseconds to wait for the server to answer a request; a request it never answers fails after this. Defaults to 60000.",
+          "x-addedIn": "2.1.288",
+          "x-source": "https://code.claude.com/docs/en/plugins/manifest-reference#lspservers; changelog 2.1.288"
+        },
+        "restartOnCrash": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether to restart the server after it crashes; false leaves a crashed server stopped.",
+          "x-source": "https://code.claude.com/docs/en/plugins/manifest-reference#lspservers"
+        },
+        "maxRestarts": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991,
+          "description": "Restart attempts before giving up; zero or more.",
+          "x-source": "https://code.claude.com/docs/en/plugins/manifest-reference#lspservers"
+        },
+        "diagnostics": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether to push the server's diagnostics into Claude's context after edits. false keeps code navigation and suppresses automatic diagnostic injection.",
+          "x-source": "https://code.claude.com/docs/en/plugins/manifest-reference#lspservers"
+        }
+      }
+    },
+    "lspServersMap": {
+      "type": "object",
+      "title": "LSP server map",
+      "description": "Map of server name to language-server configuration: the shape of a whole .lsp.json file and of an inline lspServers object in plugin.json. A server declared later replaces an earlier one with the same name.",
+      "additionalProperties": {
+        "$ref": "#/$defs/lspServerConfig"
+      },
+      "x-source": "https://code.claude.com/docs/en/plugins/manifest-reference#lspservers"
+    }
+  },
+  "x-sources": [
+    "https://code.claude.com/docs/en/plugins/manifest-reference#lspservers",
+    "https://code.claude.com/docs/en/plugins/manifest-reference#where-each-variable-resolves",
+    "https://code.claude.com/docs/en/plugins/components#lsp-servers",
+    "https://code.claude.com/docs/en/plugins/code-intelligence",
+    "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md (2.1.288)"
+  ],
+  "x-verified": {
+    "date": "2026-10-24",
+    "claudeCodeVersion": "2.1.310",
+    "docsFetched": "2026-10-24 (raw markdown of code.claude.com/docs/en/<slug>.md)",
+    "engine": "zod schemas in @anthropic-ai/claude-agent-sdk 0.3.310, read as text",
+    "oracle": "claude plugin validate --strict --json on one-change fixture plugins",
+    "portedFrom": "Nery's 2.1.281 lsp schema (2026-09-24), draft-07"
+  }
+}

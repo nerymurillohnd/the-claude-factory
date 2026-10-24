@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "common.schema.json",
+  "title": "Shared primitives",
+  "description": "Definitions reused by several files: plugin names, people, and the relative-path patterns for plugin components. Referenced as common.schema.json#/$defs/<name>.",
+  "$defs": {
+    "pluginName": {
+      "type": "string",
+      "description": "Plugin or marketplace identifier. Documented as kebab-case with no spaces, control characters or bidirectional-formatting characters. This pattern is the documented Claude Desktop accepted set (letters, digits, '.', '_', '-'; starts alphanumeric; max 128), a superset of kebab-case. Claude Code itself only hard-rejects spaces and control/bidi characters; other forms are validator warnings.",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$",
+      "x-kebab-case-pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+      "x-doc": "https://code.claude.com/docs/en/plugins/marketplace-reference#top-level-fields; https://code.claude.com/docs/en/plugins/troubleshooting#marketplace-validation-errors"
+    },
+    "person": {
+      "type": "object",
+      "description": "Person or organization. Docs list name (required), email and url. The CLI accepts unknown keys here without a warning.",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Name of the maintainer, author or team.",
+          "minLength": 1
+        },
+        "email": {
+          "type": "string",
+          "description": "Contact email."
+        },
+        "url": {
+          "type": "string",
+          "description": "Website, GitHub profile or organization URL."
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "additionalProperties": true
+    },
+    "relPath": {
+      "type": "string",
+      "description": "Path relative to the plugin root; must start with './' and must not contain '..' segments (a path resolving outside the plugin directory is dropped at load time).",
+      "pattern": "^\\./",
+      "not": {
+        "pattern": "(^|/)\\.\\.(/|$)"
+      }
+    },
+    "relJsonPath": {
+      "type": "string",
+      "description": "Path to a JSON file, relative to the plugin root, starting with './' and ending in '.json'.",
+      "pattern": "^\\./.*\\.json$",
+      "not": {
+        "pattern": "(^|/)\\.\\.(/|$)"
+      }
+    },
+    "skillPath": {
+      "type": "string",
+      "description": "Skill directory path relative to the plugin root: starts with './', or is '.'; no '..' segments.",
+      "pattern": "^\\.(/.*)?$",
+      "not": {
+        "pattern": "(^|/)\\.\\.(/|$)"
+      }
+    },
+    "agentPath": {
+      "type": "string",
+      "description": "Agent file path relative to the plugin root: starts with './', ends in '.md'; no '..' segments.",
+      "pattern": "^\\./.*\\.md$",
+      "not": {
+        "pattern": "(^|/)\\.\\.(/|$)"
+      }
+    }
+  }
+}

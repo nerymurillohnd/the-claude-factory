@@ -1,0 +1,138 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "user-config.schema.json",
+  "type": "object",
+  "description": "User-configurable values prompted when the plugin is enabled. Keys must be valid identifiers.",
+  "propertyNames": {
+    "pattern": "^[A-Za-z_]\\w*$"
+  },
+  "additionalProperties": {
+    "$ref": "#/$defs/userConfigOption"
+  },
+  "x-doc": "https://code.claude.com/docs/en/plugins/manifest-reference#user-configuration",
+  "$defs": {
+    "userConfigOption": {
+      "type": "object",
+      "description": "One user-configurable value prompted at enable time.",
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "Value type.",
+          "enum": [
+            "string",
+            "number",
+            "boolean",
+            "directory",
+            "file"
+          ]
+        },
+        "title": {
+          "type": "string",
+          "description": "Label shown in the configuration dialog."
+        },
+        "description": {
+          "type": "string",
+          "description": "Help text shown beneath the field."
+        },
+        "sensitive": {
+          "type": "boolean",
+          "description": "Mask input and store the value in secure storage instead of settings.json."
+        },
+        "required": {
+          "type": "boolean",
+          "description": "Validation fails when the field is empty."
+        },
+        "default": {
+          "description": "Value used when the user provides nothing (string, number, boolean or array of strings). For a field with options it must be one of the options.",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "array"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "options": {
+          "type": "array",
+          "description": "Fixed list of accepted values for a string field (v2.1.271+). Requires type string, no multiple/sensitive, and a default among them or required: true.",
+          "items": {
+            "type": "string",
+            "description": "One allowed value: 1-64 chars, no leading/trailing space, no control/invisible/direction characters, no case-insensitive duplicates.",
+            "minLength": 1,
+            "maxLength": 64,
+            "pattern": "^(?! )(?!.* $)[^\\u0000-\\u001f\\u007f-\\u009f ؜  -‏ -  -⁯　﻿]+$"
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "multiple": {
+          "type": "boolean",
+          "description": "For string type: allow an array of strings."
+        },
+        "min": {
+          "type": "number",
+          "description": "Minimum for number type."
+        },
+        "max": {
+          "type": "number",
+          "description": "Maximum for number type."
+        }
+      },
+      "required": [
+        "type",
+        "title",
+        "description"
+      ],
+      "additionalProperties": false,
+      "if": {
+        "required": [
+          "options"
+        ]
+      },
+      "then": {
+        "properties": {
+          "type": {
+            "const": "string",
+            "description": "Property type."
+          },
+          "multiple": {
+            "not": {
+              "const": true
+            },
+            "description": "Constraint fragment used by a conditional rule; see the enclosing definition."
+          },
+          "sensitive": {
+            "not": {
+              "const": true
+            },
+            "description": "Constraint fragment used by a conditional rule; see the enclosing definition."
+          }
+        },
+        "required": [
+          "type"
+        ],
+        "anyOf": [
+          {
+            "required": [
+              "default"
+            ]
+          },
+          {
+            "required": [
+              "required"
+            ],
+            "properties": {
+              "required": {
+                "const": true,
+                "description": "Property required."
+              }
+            }
+          }
+        ]
+      },
+      "x-doc": "https://code.claude.com/docs/en/plugins/manifest-reference#user-configuration"
+    }
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "sources/command.schema.json",
+  "type": "object",
+  "description": "Command source: a local command produces the plugin directory (requires Claude Code v2.1.229+; can be disabled by managed setting disableCommandPluginSources).",
+  "properties": {
+    "source": {
+      "const": "command",
+      "description": "Source discriminator."
+    },
+    "command": {
+      "type": "string",
+      "description": "Shell command that prints the absolute path of the plugin directory as a single stdout line and exits 0. Printable ASCII, at most 500 characters, no runs of four or more spaces.",
+      "minLength": 1,
+      "maxLength": 500,
+      "pattern": "^[\\x20-\\x7e]+$",
+      "not": {
+        "pattern": " {4}"
+      }
+    },
+    "timeout": {
+      "type": "integer",
+      "description": "Whole seconds to wait for the command (default 60, maximum 600).",
+      "minimum": 1,
+      "maximum": 600,
+      "default": 60
+    },
+    "mode": {
+      "type": "string",
+      "description": "copy (default) copies the printed directory into the plugin cache; link uses it in place (not supported on Windows).",
+      "enum": [
+        "copy",
+        "link"
+      ],
+      "default": "copy"
+    }
+  },
+  "required": [
+    "source",
+    "command"
+  ],
+  "additionalProperties": true,
+  "x-doc": "https://code.claude.com/docs/en/plugins/marketplace-reference#command-plugin-source"
+}

@@ -1,0 +1,482 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "events/agents-tasks.schema.json",
+  "title": "Hook events: agents, tasks, notifications and stop",
+  "description": "Event arrays (`hookEvent_<Event>`) and matcher groups (`hookMatcherGroup_<Event>`) for: Notification, SubagentStart, SubagentStop, TaskCreated, TaskCompleted, Stop, StopFailure, TeammateIdle.",
+  "$defs": {
+    "hookEvent_Notification": {
+      "title": "Notification",
+      "type": "array",
+      "description": "When Claude Code sends a notification.",
+      "items": {
+        "$ref": "#/$defs/hookMatcherGroup_Notification"
+      },
+      "x-source": "https://code.claude.com/docs/en/hooks#notification",
+      "x-matcherSupported": true,
+      "x-handlerTypes": [
+        "command",
+        "http",
+        "mcp_tool"
+      ],
+      "x-ifEvaluated": false,
+      "x-addedIn": "<=1.0.38"
+    },
+    "hookMatcherGroup_Notification": {
+      "type": "object",
+      "description": "Matcher group for Notification: an optional matcher plus the handlers to run when it applies. Handlers allowed here: command, http or mcp_tool (prompt and agent hooks are not supported on this event). The `if` field is not evaluated on this event, so a handler that sets it never runs.",
+      "properties": {
+        "matcher": {
+          "type": "string",
+          "description": "Filters on the notification type. Values: `permission_prompt`, `idle_prompt`, `auth_success`, `elicitation_dialog`, `elicitation_url_dialog`, `elicitation_complete`, `elicitation_response`, `agent_needs_input`, `agent_completed`, `quota_auto_resume_fired`, `quota_auto_resume_stale`, `quota_auto_resume_disabled`, `plugin_notification` (a mod raises a notification with `$.ui.notify`). Evaluation: `*`, an empty string, or an omitted matcher matches everything; a value made only of letters, digits, `_`, `-`, spaces, `,` and `|` is an exact string or a `|`/`,`-separated list of exact strings; any other character makes it an unanchored JavaScript regular expression (RegExp.test). `agent_needs_input`/`agent_completed` need v2.1.198+; the three `quota_auto_resume_*` types need v2.1.234+.",
+          "x-matcherSupported": true,
+          "x-matcherValues": [
+            "permission_prompt",
+            "idle_prompt",
+            "auth_success",
+            "elicitation_dialog",
+            "elicitation_url_dialog",
+            "elicitation_complete",
+            "elicitation_response",
+            "agent_needs_input",
+            "agent_completed",
+            "quota_auto_resume_fired",
+            "quota_auto_resume_stale",
+            "quota_auto_resume_disabled",
+            "plugin_notification"
+          ],
+          "examples": [
+            "permission_prompt",
+            "idle_prompt",
+            "auth_success",
+            "elicitation_dialog",
+            "elicitation_url_dialog",
+            "elicitation_complete",
+            "elicitation_response",
+            "agent_needs_input",
+            "agent_completed",
+            "quota_auto_resume_fired",
+            "quota_auto_resume_stale",
+            "quota_auto_resume_disabled",
+            "plugin_notification"
+          ],
+          "title": "Matcher"
+        },
+        "hooks": {
+          "type": "array",
+          "description": "Hook handlers to run when the matcher applies; all matching handlers run in parallel and identical handlers from several settings files run once.",
+          "items": {
+            "allOf": [
+              {
+                "$ref": "../handlers/handler-sets.schema.json#/$defs/hookHandlerCommandHttpMcp"
+              },
+              {
+                "$ref": "../handlers/handler-sets.schema.json#/$defs/hookHandlerWithoutIf"
+              }
+            ]
+          },
+          "title": "Hooks"
+        }
+      },
+      "required": [
+        "hooks"
+      ],
+      "additionalProperties": false,
+      "x-source": "https://code.claude.com/docs/en/hooks#notification"
+    },
+    "hookEvent_SubagentStart": {
+      "title": "SubagentStart",
+      "type": "array",
+      "description": "When a subagent is spawned (also on resume and per in-process teammate message).",
+      "items": {
+        "$ref": "#/$defs/hookMatcherGroup_SubagentStart"
+      },
+      "x-source": "https://code.claude.com/docs/en/hooks#subagentstart",
+      "x-matcherSupported": true,
+      "x-handlerTypes": [
+        "command",
+        "http",
+        "mcp_tool"
+      ],
+      "x-ifEvaluated": false,
+      "x-addedIn": "2.0.43"
+    },
+    "hookMatcherGroup_SubagentStart": {
+      "type": "object",
+      "description": "Matcher group for SubagentStart: an optional matcher plus the handlers to run when it applies. Handlers allowed here: command, http or mcp_tool (prompt and agent hooks are not supported on this event). The `if` field is not evaluated on this event, so a handler that sets it never runs.",
+      "properties": {
+        "matcher": {
+          "type": "string",
+          "description": "Filters on the agent type (built-in name, custom `name`, or plugin-scoped `plugin:agent`). Evaluation: `*`, an empty string, or an omitted matcher matches everything; a value made only of letters, digits, `_`, `-`, spaces, `,` and `|` is an exact string or a `|`/`,`-separated list of exact strings; any other character makes it an unanchored JavaScript regular expression (RegExp.test).",
+          "x-matcherSupported": true,
+          "examples": [
+            "general-purpose",
+            "Explore",
+            "Plan",
+            "code-reviewer",
+            "^my-plugin:reviewer$"
+          ],
+          "title": "Matcher"
+        },
+        "hooks": {
+          "type": "array",
+          "description": "Hook handlers to run when the matcher applies; all matching handlers run in parallel and identical handlers from several settings files run once.",
+          "items": {
+            "allOf": [
+              {
+                "$ref": "../handlers/handler-sets.schema.json#/$defs/hookHandlerCommandHttpMcp"
+              },
+              {
+                "$ref": "../handlers/handler-sets.schema.json#/$defs/hookHandlerWithoutIf"
+              }
+            ]
+          },
+          "title": "Hooks"
+        }
+      },
+      "required": [
+        "hooks"
+      ],
+      "additionalProperties": false,
+      "x-source": "https://code.claude.com/docs/en/hooks#subagentstart"
+    },
+    "hookEvent_SubagentStop": {
+      "title": "SubagentStop",
+      "type": "array",
+      "description": "When a subagent finishes.",
+      "items": {
+        "$ref": "#/$defs/hookMatcherGroup_SubagentStop"
+      },
+      "x-source": "https://code.claude.com/docs/en/hooks#subagentstop",
+      "x-matcherSupported": true,
+      "x-handlerTypes": [
+        "command",
+        "http",
+        "mcp_tool",
+        "prompt",
+        "agent"
+      ],
+      "x-ifEvaluated": false,
+      "x-addedIn": "1.0.41"
+    },
+    "hookMatcherGroup_SubagentStop": {
+      "type": "object",
+      "description": "Matcher group for SubagentStop: an optional matcher plus the handlers to run when it applies. Handlers allowed here: command, http, mcp_tool, prompt or agent. The `if` field is not evaluated on this event, so a handler that sets it never runs.",
+      "properties": {
+        "matcher": {
+          "type": "string",
+          "description": "Filters on the agent type (same values as SubagentStart). Evaluation: `*`, an empty string, or an omitted matcher matches everything; a value made only of letters, digits, `_`, `-`, spaces, `,` and `|` is an exact string or a `|`/`,`-separated list of exact strings; any other character makes it an unanchored JavaScript regular expression (RegExp.test).",
+          "x-matcherSupported": true,
+          "examples": [
+            "general-purpose",
+            "Explore",
+            "Plan",
+            "code-reviewer",
+            "^my-plugin:reviewer$"
+          ],
+          "title": "Matcher"
+        },
+        "hooks": {
+          "type": "array",
+          "description": "Hook handlers to run when the matcher applies; all matching handlers run in parallel and identical handlers from several settings files run once.",
+          "items": {
+            "allOf": [
+              {
+                "$ref": "../handlers/handler-sets.schema.json#/$defs/hookHandler"
+              },
+              {
+                "$ref": "../handlers/handler-sets.schema.json#/$defs/hookHandlerWithoutIf"
+              }
+            ]
+          },
+          "title": "Hooks"
+        }
+      },
+      "required": [
+        "hooks"
+      ],
+      "additionalProperties": false,
+      "x-source": "https://code.claude.com/docs/en/hooks#subagentstop"
+    },
+    "hookEvent_TaskCreated": {
+      "title": "TaskCreated",
+      "type": "array",
+      "description": "When a task is being created via TaskCreate. Exit code 2 rolls the creation back.",
+      "items": {
+        "$ref": "#/$defs/hookMatcherGroup_TaskCreated"
+      },
+      "x-source": "https://code.claude.com/docs/en/hooks#taskcreated",
+      "x-matcherSupported": false,
+      "x-handlerTypes": [
+        "command",
+        "http",
+        "mcp_tool",
+        "prompt",
+        "agent"
+      ],
+      "x-ifEvaluated": false,
+      "x-addedIn": "2.1.84"
+    },
+    "hookMatcherGroup_TaskCreated": {
+      "type": "object",
+      "description": "Matcher group for TaskCreated: an optional matcher plus the handlers to run when it applies. Handlers allowed here: command, http, mcp_tool, prompt or agent. The `if` field is not evaluated on this event, so a handler that sets it never runs.",
+      "properties": {
+        "matcher": {
+          "type": "string",
+          "description": "TaskCreated has no matcher support: the field is accepted but silently ignored and the group fires on every occurrence. Omit it.",
+          "x-matcherSupported": false,
+          "title": "Matcher"
+        },
+        "hooks": {
+          "type": "array",
+          "description": "Hook handlers to run when the matcher applies; all matching handlers run in parallel and identical handlers from several settings files run once.",
+          "items": {
+            "allOf": [
+              {
+                "$ref": "../handlers/handler-sets.schema.json#/$defs/hookHandler"
+              },
+              {
+                "$ref": "../handlers/handler-sets.schema.json#/$defs/hookHandlerWithoutIf"
+              }
+            ]
+          },
+          "title": "Hooks"
+        }
+      },
+      "required": [
+        "hooks"
+      ],
+      "additionalProperties": false,
+      "x-source": "https://code.claude.com/docs/en/hooks#taskcreated"
+    },
+    "hookEvent_TaskCompleted": {
+      "title": "TaskCompleted",
+      "type": "array",
+      "description": "When a task is being marked as completed.",
+      "items": {
+        "$ref": "#/$defs/hookMatcherGroup_TaskCompleted"
+      },
+      "x-source": "https://code.claude.com/docs/en/hooks#taskcompleted",
+      "x-matcherSupported": false,
+      "x-handlerTypes": [
+        "command",
+        "http",
+        "mcp_tool",
+        "prompt",
+        "agent"
+      ],
+      "x-ifEvaluated": false,
+      "x-addedIn": "2.1.33"
+    },
+    "hookMatcherGroup_TaskCompleted": {
+      "type": "object",
+      "description": "Matcher group for TaskCompleted: an optional matcher plus the handlers to run when it applies. Handlers allowed here: command, http, mcp_tool, prompt or agent. The `if` field is not evaluated on this event, so a handler that sets it never runs.",
+      "properties": {
+        "matcher": {
+          "type": "string",
+          "description": "TaskCompleted has no matcher support: the field is accepted but silently ignored and the group fires on every occurrence. Omit it.",
+          "x-matcherSupported": false,
+          "title": "Matcher"
+        },
+        "hooks": {
+          "type": "array",
+          "description": "Hook handlers to run when the matcher applies; all matching handlers run in parallel and identical handlers from several settings files run once.",
+          "items": {
+            "allOf": [
+              {
+                "$ref": "../handlers/handler-sets.schema.json#/$defs/hookHandler"
+              },
+              {
+                "$ref": "../handlers/handler-sets.schema.json#/$defs/hookHandlerWithoutIf"
+              }
+            ]
+          },
+          "title": "Hooks"
+        }
+      },
+      "required": [
+        "hooks"
+      ],
+      "additionalProperties": false,
+      "x-source": "https://code.claude.com/docs/en/hooks#taskcompleted"
+    },
+    "hookEvent_Stop": {
+      "title": "Stop",
+      "type": "array",
+      "description": "When the main Claude Code agent finishes responding (not on user interrupt; API errors fire StopFailure).",
+      "items": {
+        "$ref": "#/$defs/hookMatcherGroup_Stop"
+      },
+      "x-source": "https://code.claude.com/docs/en/hooks#stop",
+      "x-matcherSupported": false,
+      "x-handlerTypes": [
+        "command",
+        "http",
+        "mcp_tool",
+        "prompt",
+        "agent"
+      ],
+      "x-ifEvaluated": false,
+      "x-addedIn": "<=1.0.38"
+    },
+    "hookMatcherGroup_Stop": {
+      "type": "object",
+      "description": "Matcher group for Stop: an optional matcher plus the handlers to run when it applies. Handlers allowed here: command, http, mcp_tool, prompt or agent. The `if` field is not evaluated on this event, so a handler that sets it never runs.",
+      "properties": {
+        "matcher": {
+          "type": "string",
+          "description": "Stop has no matcher support: the field is accepted but silently ignored and the group fires on every occurrence. Omit it.",
+          "x-matcherSupported": false,
+          "title": "Matcher"
+        },
+        "hooks": {
+          "type": "array",
+          "description": "Hook handlers to run when the matcher applies; all matching handlers run in parallel and identical handlers from several settings files run once.",
+          "items": {
+            "allOf": [
+              {
+                "$ref": "../handlers/handler-sets.schema.json#/$defs/hookHandler"
+              },
+              {
+                "$ref": "../handlers/handler-sets.schema.json#/$defs/hookHandlerWithoutIf"
+              }
+            ]
+          },
+          "title": "Hooks"
+        }
+      },
+      "required": [
+        "hooks"
+      ],
+      "additionalProperties": false,
+      "x-source": "https://code.claude.com/docs/en/hooks#stop"
+    },
+    "hookEvent_StopFailure": {
+      "title": "StopFailure",
+      "type": "array",
+      "description": "When the turn ends because of an API error. Output and exit code are ignored except `terminalSequence`.",
+      "items": {
+        "$ref": "#/$defs/hookMatcherGroup_StopFailure"
+      },
+      "x-source": "https://code.claude.com/docs/en/hooks#stopfailure",
+      "x-matcherSupported": true,
+      "x-handlerTypes": [
+        "command",
+        "http",
+        "mcp_tool"
+      ],
+      "x-ifEvaluated": false,
+      "x-addedIn": "2.1.78"
+    },
+    "hookMatcherGroup_StopFailure": {
+      "type": "object",
+      "description": "Matcher group for StopFailure: an optional matcher plus the handlers to run when it applies. Handlers allowed here: command, http or mcp_tool (prompt and agent hooks are not supported on this event). The `if` field is not evaluated on this event, so a handler that sets it never runs.",
+      "properties": {
+        "matcher": {
+          "type": "string",
+          "description": "Filters on the error type. Values: `rate_limit`, `overloaded`, `authentication_failed`, `oauth_org_not_allowed`, `account_on_hold`, `billing_error`, `invalid_request`, `model_not_found`, `server_error`, `max_output_tokens`, `cloud_credential_error`, `unknown`. Evaluation: `*`, an empty string, or an omitted matcher matches everything; a value made only of letters, digits, `_` and `|` is an exact string or a `|`-separated list of exact strings (a hyphen, space or comma switches it to the regular-expression path and only `|` separates alternatives); any other character makes it an unanchored JavaScript regular expression. Matching `cloud_credential_error` needs v2.1.267+.",
+          "x-matcherSupported": true,
+          "x-matcherValues": [
+            "rate_limit",
+            "overloaded",
+            "authentication_failed",
+            "oauth_org_not_allowed",
+            "account_on_hold",
+            "billing_error",
+            "invalid_request",
+            "model_not_found",
+            "server_error",
+            "max_output_tokens",
+            "cloud_credential_error",
+            "unknown"
+          ],
+          "examples": [
+            "rate_limit",
+            "overloaded",
+            "authentication_failed",
+            "oauth_org_not_allowed",
+            "account_on_hold",
+            "billing_error",
+            "invalid_request",
+            "model_not_found",
+            "server_error",
+            "max_output_tokens",
+            "cloud_credential_error",
+            "unknown"
+          ],
+          "title": "Matcher"
+        },
+        "hooks": {
+          "type": "array",
+          "description": "Hook handlers to run when the matcher applies; all matching handlers run in parallel and identical handlers from several settings files run once.",
+          "items": {
+            "allOf": [
+              {
+                "$ref": "../handlers/handler-sets.schema.json#/$defs/hookHandlerCommandHttpMcp"
+              },
+              {
+                "$ref": "../handlers/handler-sets.schema.json#/$defs/hookHandlerWithoutIf"
+              }
+            ]
+          },
+          "title": "Hooks"
+        }
+      },
+      "required": [
+        "hooks"
+      ],
+      "additionalProperties": false,
+      "x-source": "https://code.claude.com/docs/en/hooks#stopfailure"
+    },
+    "hookEvent_TeammateIdle": {
+      "title": "TeammateIdle",
+      "type": "array",
+      "description": "When an agent-team teammate is about to go idle.",
+      "items": {
+        "$ref": "#/$defs/hookMatcherGroup_TeammateIdle"
+      },
+      "x-source": "https://code.claude.com/docs/en/hooks#teammateidle",
+      "x-matcherSupported": false,
+      "x-handlerTypes": [
+        "command",
+        "http",
+        "mcp_tool",
+        "prompt",
+        "agent"
+      ],
+      "x-ifEvaluated": false,
+      "x-addedIn": "2.1.33"
+    },
+    "hookMatcherGroup_TeammateIdle": {
+      "type": "object",
+      "description": "Matcher group for TeammateIdle: an optional matcher plus the handlers to run when it applies. Handlers allowed here: command, http, mcp_tool, prompt or agent. The `if` field is not evaluated on this event, so a handler that sets it never runs.",
+      "properties": {
+        "matcher": {
+          "type": "string",
+          "description": "TeammateIdle has no matcher support: the field is accepted but silently ignored and the group fires on every occurrence. Omit it.",
+          "x-matcherSupported": false,
+          "title": "Matcher"
+        },
+        "hooks": {
+          "type": "array",
+          "description": "Hook handlers to run when the matcher applies; all matching handlers run in parallel and identical handlers from several settings files run once.",
+          "items": {
+            "allOf": [
+              {
+                "$ref": "../handlers/handler-sets.schema.json#/$defs/hookHandler"
+              },
+              {
+                "$ref": "../handlers/handler-sets.schema.json#/$defs/hookHandlerWithoutIf"
+              }
+            ]
+          },
+          "title": "Hooks"
+        }
+      },
+      "required": [
+        "hooks"
+      ],
+      "additionalProperties": false,
+      "x-source": "https://code.claude.com/docs/en/hooks#teammateidle"
+    }
+  }
+}

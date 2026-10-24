@@ -32,6 +32,13 @@ import { isMain, ROOT } from './lib.mjs'
 /** The JavaScript and TypeScript extensions, ready for files the repository does not have yet. */
 const JS_FAMILY = ['js', 'cjs', 'mjs', 'jsx', 'ts', 'cts', 'mts', 'tsx']
 
+/**
+ * Python under scripts/ that follows the maintainer tooling rules and never runs mypy
+ * (ADR_2026-10-24_basedpyright-is-the-only-python-type-checker). mypy-scripts checks only the
+ * rest, until each unit migrates on touch.
+ */
+const MIGRATED_PYTHON = ['scripts/schemas/', 'scripts/generators/', 'scripts/validators/']
+
 /** Tests that may be skipped, by Node test name or unittest id, each with why. */
 const ALLOWED_SKIPS = new Map(/** @type {[string, string][]} */ ([]))
 
@@ -294,9 +301,12 @@ export function gatesFor({ root, ci, base }) {
     {
       id: 'mypy-scripts',
       group: 'python',
-      title: 'mypy --strict on scripts/',
+      title: 'mypy --strict on the unmigrated scripts/',
       cmd: 'mypy',
-      args: ['--strict', ...tracked(root, ['scripts/*.py'])],
+      args: [
+        '--strict',
+        ...tracked(root, ['scripts/*.py', ...MIGRATED_PYTHON.map((p) => `:(exclude)${p}`)]),
+      ],
     },
     {
       id: 'basedpyright-scripts',

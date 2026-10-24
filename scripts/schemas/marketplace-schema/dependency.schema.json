@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "dependency.schema.json",
+  "description": "A plugin dependency: a bare plugin name string, or an object with name and optional semver range / marketplace.",
+  "anyOf": [
+    {
+      "type": "string",
+      "description": "Plugin name resolved within the declaring plugin's marketplace. The CLI also accepts name@marketplace and name@marketplace@^range spellings that the docs do not describe.",
+      "pattern": "^[A-Za-z0-9][-A-Za-z0-9._]*(@[A-Za-z0-9][-A-Za-z0-9._]*)?(@\\^[^@]*)?$",
+      "x-undocumented-forms": [
+        "name@marketplace",
+        "name@marketplace@^range"
+      ]
+    },
+    {
+      "type": "object",
+      "description": "Dependency with optional constraint.",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Plugin name; resolves in the same marketplace unless 'marketplace' is set.",
+          "pattern": "^[A-Za-z0-9][-A-Za-z0-9._]*$"
+        },
+        "version": {
+          "type": [
+            "string",
+            "number"
+          ],
+          "description": "Semver range, for example ~2.1.0, ^2.0, >=1.4 or =2.1.0; the dependency is fetched at the highest tagged version satisfying it (tags: {plugin-name}--v{version}). Pre-releases need an opt-in suffix like ^2.0.0-0. The CLI does not type-check this field (a JSON number passes `claude plugin validate` unchanged, oracle-verified; behavior at resolve time for a non-string value is undocumented)."
+        },
+        "marketplace": {
+          "type": "string",
+          "description": "Different marketplace to resolve 'name' in; blocked unless listed in the root marketplace's allowCrossMarketplaceDependenciesOn.",
+          "pattern": "^[A-Za-z0-9][-A-Za-z0-9._]*$"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "additionalProperties": true
+    }
+  ],
+  "x-doc": "https://code.claude.com/docs/en/plugins/dependencies#declare-a-dependency-with-a-version-constraint"
+}

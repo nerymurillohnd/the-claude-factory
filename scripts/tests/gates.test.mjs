@@ -85,6 +85,28 @@ describe('gates runner', () => {
     assert.match(lines.join('\n'), /no-such-tool-for-gates is not on PATH/)
   })
 
+  test('argsAtRun adds arguments when the gate starts, after the gates before it', () => {
+    const gate = {
+      ...nodeGate('late', "require('node:fs').writeFileSync(process.argv[1], '')"),
+      argsAtRun: () => [join(dir, existsSync(join(dir, 'ran-a')) ? 'after-a' : 'before-a')],
+    }
+    assert.equal(runGates([touches('a'), gate], { root: dir, keepGoing: false, write }), 0)
+    assert.ok(existsSync(join(dir, 'after-a')), 'argsAtRun ran before the earlier gate')
+  })
+
+  test('argsAtRun that throws fails the gate with 1 and its message, without running it', () => {
+    const gate = {
+      ...touches('never'),
+      argsAtRun: () => {
+        throw new Error('no interpreter')
+      },
+    }
+    assert.equal(runGates([gate, touches('b')], { root: dir, keepGoing: false, write }), 1)
+    assert.ok(!existsSync(join(dir, 'ran-never')))
+    assert.ok(!existsSync(join(dir, 'ran-b')), 'a gate after the failure ran')
+    assert.match(lines.join('\n'), /✖ never \(exit 1\): no interpreter/)
+  })
+
   test('a skipped Node test fails the gate', () => {
     writeFileSync(
       join(dir, 'x.test.mjs'),
@@ -141,6 +163,9 @@ describe('gate list', () => {
       'version-bump',
       'tsc-scripts',
       'basedpyright-scripts',
+      'pytest-env',
+      'basedpyright-maintainer',
+      'pytest-scripts',
       'claude-validate:marketplace',
       'claude-validate:block-no-verify',
       'biome-maintainer',

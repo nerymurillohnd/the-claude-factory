@@ -1,0 +1,252 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "events/session.schema.json",
+  "title": "Hook events: session lifecycle",
+  "description": "Event arrays (`hookEvent_<Event>`) and matcher groups (`hookMatcherGroup_<Event>`) for: SessionStart, Setup, InstructionsLoaded, SessionEnd.",
+  "$defs": {
+    "hookEvent_SessionStart": {
+      "title": "SessionStart",
+      "type": "array",
+      "description": "When a session begins or resumes. mcp_tool hooks are skipped at launch (MCP servers are not yet available) but run after /clear or compaction.",
+      "items": {
+        "$ref": "#/$defs/hookMatcherGroup_SessionStart"
+      },
+      "x-source": "https://code.claude.com/docs/en/hooks#sessionstart",
+      "x-matcherSupported": true,
+      "x-handlerTypes": [
+        "command",
+        "mcp_tool"
+      ],
+      "x-ifEvaluated": false,
+      "x-addedIn": "1.0.62"
+    },
+    "hookMatcherGroup_SessionStart": {
+      "type": "object",
+      "description": "Matcher group for SessionStart: an optional matcher plus the handlers to run when it applies. Handlers allowed here: command or mcp_tool (http, prompt and agent hooks are not supported on this event). The `if` field is not evaluated on this event, so a handler that sets it never runs.",
+      "properties": {
+        "matcher": {
+          "type": "string",
+          "description": "Filters on how the session started. Values: `startup`, `resume`, `clear`, `compact`, `fork`. Evaluation: `*`, an empty string, or an omitted matcher matches everything; a value made only of letters, digits, `_`, `-`, spaces, `,` and `|` is an exact string or a `|`/`,`-separated list of exact strings; any other character makes it an unanchored JavaScript regular expression (RegExp.test).",
+          "x-matcherSupported": true,
+          "x-matcherValues": [
+            "startup",
+            "resume",
+            "clear",
+            "compact",
+            "fork"
+          ],
+          "examples": [
+            "startup",
+            "resume",
+            "clear",
+            "compact",
+            "fork"
+          ],
+          "title": "Matcher"
+        },
+        "hooks": {
+          "type": "array",
+          "description": "Hook handlers to run when the matcher applies; all matching handlers run in parallel and identical handlers from several settings files run once.",
+          "items": {
+            "allOf": [
+              {
+                "$ref": "../handlers/handler-sets.schema.json#/$defs/hookHandlerCommandMcp"
+              },
+              {
+                "$ref": "../handlers/handler-sets.schema.json#/$defs/hookHandlerWithoutIf"
+              }
+            ]
+          },
+          "title": "Hooks"
+        }
+      },
+      "required": [
+        "hooks"
+      ],
+      "additionalProperties": false,
+      "x-source": "https://code.claude.com/docs/en/hooks#sessionstart"
+    },
+    "hookEvent_Setup": {
+      "title": "Setup",
+      "type": "array",
+      "description": "When Claude Code starts with `--init-only`, or with `--init` or `--maintenance` in `-p` mode. Only command hooks actually run: mcp_tool hooks are always skipped here.",
+      "items": {
+        "$ref": "#/$defs/hookMatcherGroup_Setup"
+      },
+      "x-source": "https://code.claude.com/docs/en/hooks#setup",
+      "x-matcherSupported": true,
+      "x-handlerTypes": [
+        "command",
+        "mcp_tool"
+      ],
+      "x-ifEvaluated": false,
+      "x-addedIn": "2.1.10"
+    },
+    "hookMatcherGroup_Setup": {
+      "type": "object",
+      "description": "Matcher group for Setup: an optional matcher plus the handlers to run when it applies. Handlers allowed here: command or mcp_tool (http, prompt and agent hooks are not supported on this event). The `if` field is not evaluated on this event, so a handler that sets it never runs.",
+      "properties": {
+        "matcher": {
+          "type": "string",
+          "description": "Filters on the CLI flag that triggered setup. Values: `init`, `maintenance`. Evaluation: `*`, an empty string, or an omitted matcher matches everything; a value made only of letters, digits, `_`, `-`, spaces, `,` and `|` is an exact string or a `|`/`,`-separated list of exact strings; any other character makes it an unanchored JavaScript regular expression (RegExp.test).",
+          "x-matcherSupported": true,
+          "x-matcherValues": [
+            "init",
+            "maintenance"
+          ],
+          "examples": [
+            "init",
+            "maintenance"
+          ],
+          "title": "Matcher"
+        },
+        "hooks": {
+          "type": "array",
+          "description": "Hook handlers to run when the matcher applies; all matching handlers run in parallel and identical handlers from several settings files run once.",
+          "items": {
+            "allOf": [
+              {
+                "$ref": "../handlers/handler-sets.schema.json#/$defs/hookHandlerCommandMcp"
+              },
+              {
+                "$ref": "../handlers/handler-sets.schema.json#/$defs/hookHandlerWithoutIf"
+              }
+            ]
+          },
+          "title": "Hooks"
+        }
+      },
+      "required": [
+        "hooks"
+      ],
+      "additionalProperties": false,
+      "x-source": "https://code.claude.com/docs/en/hooks#setup"
+    },
+    "hookEvent_InstructionsLoaded": {
+      "title": "InstructionsLoaded",
+      "type": "array",
+      "description": "When a CLAUDE.md or .claude/rules/*.md file is loaded into context (asynchronous, observability only).",
+      "items": {
+        "$ref": "#/$defs/hookMatcherGroup_InstructionsLoaded"
+      },
+      "x-source": "https://code.claude.com/docs/en/hooks#instructionsloaded",
+      "x-matcherSupported": true,
+      "x-handlerTypes": [
+        "command",
+        "http",
+        "mcp_tool"
+      ],
+      "x-ifEvaluated": false,
+      "x-addedIn": "2.1.69"
+    },
+    "hookMatcherGroup_InstructionsLoaded": {
+      "type": "object",
+      "description": "Matcher group for InstructionsLoaded: an optional matcher plus the handlers to run when it applies. Handlers allowed here: command, http or mcp_tool (prompt and agent hooks are not supported on this event). The `if` field is not evaluated on this event, so a handler that sets it never runs.",
+      "properties": {
+        "matcher": {
+          "type": "string",
+          "description": "Filters on the load reason. Values: `session_start`, `nested_traversal`, `path_glob_match`, `include`, `compact`. Evaluation: `*`, an empty string, or an omitted matcher matches everything; a value made only of letters, digits, `_`, `-`, spaces, `,` and `|` is an exact string or a `|`/`,`-separated list of exact strings; any other character makes it an unanchored JavaScript regular expression (RegExp.test).",
+          "x-matcherSupported": true,
+          "x-matcherValues": [
+            "session_start",
+            "nested_traversal",
+            "path_glob_match",
+            "include",
+            "compact"
+          ],
+          "examples": [
+            "session_start",
+            "nested_traversal",
+            "path_glob_match",
+            "include",
+            "compact"
+          ],
+          "title": "Matcher"
+        },
+        "hooks": {
+          "type": "array",
+          "description": "Hook handlers to run when the matcher applies; all matching handlers run in parallel and identical handlers from several settings files run once.",
+          "items": {
+            "allOf": [
+              {
+                "$ref": "../handlers/handler-sets.schema.json#/$defs/hookHandlerCommandHttpMcp"
+              },
+              {
+                "$ref": "../handlers/handler-sets.schema.json#/$defs/hookHandlerWithoutIf"
+              }
+            ]
+          },
+          "title": "Hooks"
+        }
+      },
+      "required": [
+        "hooks"
+      ],
+      "additionalProperties": false,
+      "x-source": "https://code.claude.com/docs/en/hooks#instructionsloaded"
+    },
+    "hookEvent_SessionEnd": {
+      "title": "SessionEnd",
+      "type": "array",
+      "description": "When a session terminates. Hooks share a 1.5 s budget unless a longer per-hook `timeout` is set (max 60 s).",
+      "items": {
+        "$ref": "#/$defs/hookMatcherGroup_SessionEnd"
+      },
+      "x-source": "https://code.claude.com/docs/en/hooks#sessionend",
+      "x-matcherSupported": true,
+      "x-handlerTypes": [
+        "command",
+        "http",
+        "mcp_tool"
+      ],
+      "x-ifEvaluated": false,
+      "x-addedIn": "1.0.85"
+    },
+    "hookMatcherGroup_SessionEnd": {
+      "type": "object",
+      "description": "Matcher group for SessionEnd: an optional matcher plus the handlers to run when it applies. Handlers allowed here: command, http or mcp_tool (prompt and agent hooks are not supported on this event). The `if` field is not evaluated on this event, so a handler that sets it never runs.",
+      "properties": {
+        "matcher": {
+          "type": "string",
+          "description": "Filters on why the session ended. Values: `clear`, `resume`, `logout`, `prompt_input_exit`, `other`. Evaluation: `*`, an empty string, or an omitted matcher matches everything; a value made only of letters, digits, `_`, `-`, spaces, `,` and `|` is an exact string or a `|`/`,`-separated list of exact strings; any other character makes it an unanchored JavaScript regular expression (RegExp.test). `bypass_permissions_disabled` was removed in v2.1.234; drop it from matchers.",
+          "x-matcherSupported": true,
+          "x-matcherValues": [
+            "clear",
+            "resume",
+            "logout",
+            "prompt_input_exit",
+            "other"
+          ],
+          "examples": [
+            "clear",
+            "resume",
+            "logout",
+            "prompt_input_exit",
+            "other"
+          ],
+          "title": "Matcher"
+        },
+        "hooks": {
+          "type": "array",
+          "description": "Hook handlers to run when the matcher applies; all matching handlers run in parallel and identical handlers from several settings files run once.",
+          "items": {
+            "allOf": [
+              {
+                "$ref": "../handlers/handler-sets.schema.json#/$defs/hookHandlerCommandHttpMcp"
+              },
+              {
+                "$ref": "../handlers/handler-sets.schema.json#/$defs/hookHandlerWithoutIf"
+              }
+            ]
+          },
+          "title": "Hooks"
+        }
+      },
+      "required": [
+        "hooks"
+      ],
+      "additionalProperties": false,
+      "x-source": "https://code.claude.com/docs/en/hooks#sessionend"
+    }
+  }
+}

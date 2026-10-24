@@ -1,0 +1,320 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "components/hooks.schema.json",
+  "type": "object",
+  "description": "Inline hooks: map of hook event name to matcher groups.",
+  "propertyNames": {
+    "enum": [
+      "SessionStart",
+      "Setup",
+      "UserPromptSubmit",
+      "UserPromptExpansion",
+      "PreToolUse",
+      "PermissionRequest",
+      "PermissionDenied",
+      "PostToolUse",
+      "PostToolUseFailure",
+      "PostToolBatch",
+      "Notification",
+      "MessageDisplay",
+      "SubagentStart",
+      "SubagentStop",
+      "TaskCreated",
+      "TaskCompleted",
+      "Stop",
+      "StopFailure",
+      "TeammateIdle",
+      "InstructionsLoaded",
+      "ConfigChange",
+      "CwdChanged",
+      "DirectoryAdded",
+      "FileChanged",
+      "WorktreeCreate",
+      "WorktreeRemove",
+      "PreCompact",
+      "PostCompact",
+      "PreModelSwitch",
+      "PostModelSwitch",
+      "Elicitation",
+      "ElicitationResult",
+      "SessionEnd"
+    ]
+  },
+  "additionalProperties": {
+    "type": "array",
+    "description": "Matcher groups for the event.",
+    "items": {
+      "$ref": "#/$defs/hookMatcherGroup"
+    }
+  },
+  "x-doc": "https://code.claude.com/docs/en/plugins/manifest-reference#hooks",
+  "$defs": {
+    "hookMatcherGroup": {
+      "type": "object",
+      "description": "Matcher group.",
+      "properties": {
+        "matcher": {
+          "type": "string",
+          "description": "Filter for when the group fires (tool name / regex / event-specific)."
+        },
+        "hooks": {
+          "type": "array",
+          "description": "Handlers that run when the matcher matches.",
+          "items": {
+            "$ref": "#/$defs/hookHandler"
+          }
+        }
+      },
+      "required": [
+        "hooks"
+      ],
+      "additionalProperties": true,
+      "x-doc": "https://code.claude.com/docs/en/hooks#matcher-patterns"
+    },
+    "hookHandler": {
+      "description": "One hook handler, discriminated by 'type'. Unknown extra keys are accepted by the CLI.",
+      "oneOf": [
+        {
+          "type": "object",
+          "description": "Command hook.",
+          "properties": {
+            "type": {
+              "const": "command",
+              "description": "Hook handler type."
+            },
+            "if": {
+              "type": "string",
+              "description": "Permission-rule syntax filter (for example Bash(git *)); only evaluated on tool events."
+            },
+            "timeout": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "description": "Seconds before canceling (defaults: 600 command/http/mcp_tool, 30 prompt, 60 agent)."
+            },
+            "statusMessage": {
+              "type": "string",
+              "description": "Custom spinner message while the hook runs."
+            },
+            "once": {
+              "type": "boolean",
+              "description": "Remove the hook after its first successful run (only honored in skill frontmatter)."
+            },
+            "command": {
+              "type": "string",
+              "description": "Shell command, or the executable to spawn directly when args is set."
+            },
+            "args": {
+              "type": "array",
+              "description": "Argument list; when present the command is spawned directly with no shell (exec form).",
+              "items": {
+                "type": "string"
+              }
+            },
+            "async": {
+              "type": "boolean",
+              "description": "Run in the background without blocking."
+            },
+            "asyncRewake": {
+              "type": "boolean",
+              "description": "Run in the background and wake Claude on exit code 2."
+            },
+            "shell": {
+              "type": "string",
+              "description": "Shell for this hook.",
+              "enum": [
+                "bash",
+                "powershell"
+              ]
+            }
+          },
+          "required": [
+            "type",
+            "command"
+          ],
+          "additionalProperties": true,
+          "x-doc": "https://code.claude.com/docs/en/hooks#hook-handler-fields"
+        },
+        {
+          "type": "object",
+          "description": "HTTP hook.",
+          "properties": {
+            "type": {
+              "const": "http",
+              "description": "Hook handler type."
+            },
+            "if": {
+              "type": "string",
+              "description": "Permission-rule syntax filter (for example Bash(git *)); only evaluated on tool events."
+            },
+            "timeout": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "description": "Seconds before canceling (defaults: 600 command/http/mcp_tool, 30 prompt, 60 agent)."
+            },
+            "statusMessage": {
+              "type": "string",
+              "description": "Custom spinner message while the hook runs."
+            },
+            "once": {
+              "type": "boolean",
+              "description": "Remove the hook after its first successful run (only honored in skill frontmatter)."
+            },
+            "url": {
+              "type": "string",
+              "description": "URL to POST the event JSON to.",
+              "format": "uri"
+            },
+            "headers": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              },
+              "description": "Extra HTTP headers; values may interpolate $VAR listed in allowedEnvVars."
+            },
+            "allowedEnvVars": {
+              "type": "array",
+              "description": "Environment variable names that may be interpolated into header values.",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": [
+            "type",
+            "url"
+          ],
+          "additionalProperties": true,
+          "x-doc": "https://code.claude.com/docs/en/hooks#hook-handler-fields"
+        },
+        {
+          "type": "object",
+          "description": "MCP tool hook.",
+          "properties": {
+            "type": {
+              "const": "mcp_tool",
+              "description": "Hook handler type."
+            },
+            "if": {
+              "type": "string",
+              "description": "Permission-rule syntax filter (for example Bash(git *)); only evaluated on tool events."
+            },
+            "timeout": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "description": "Seconds before canceling (defaults: 600 command/http/mcp_tool, 30 prompt, 60 agent)."
+            },
+            "statusMessage": {
+              "type": "string",
+              "description": "Custom spinner message while the hook runs."
+            },
+            "once": {
+              "type": "boolean",
+              "description": "Remove the hook after its first successful run (only honored in skill frontmatter)."
+            },
+            "server": {
+              "type": "string",
+              "description": "Configured MCP server name (for a plugin-bundled server: plugin:<plugin>:<server>)."
+            },
+            "tool": {
+              "type": "string",
+              "description": "Tool name on that server."
+            },
+            "input": {
+              "type": "object",
+              "description": "Tool arguments; string values support ${path} substitution."
+            }
+          },
+          "required": [
+            "type",
+            "server",
+            "tool"
+          ],
+          "additionalProperties": true,
+          "x-doc": "https://code.claude.com/docs/en/hooks#hook-handler-fields"
+        },
+        {
+          "type": "object",
+          "description": "Prompt hook.",
+          "properties": {
+            "type": {
+              "const": "prompt",
+              "description": "Hook handler type."
+            },
+            "if": {
+              "type": "string",
+              "description": "Permission-rule syntax filter (for example Bash(git *)); only evaluated on tool events."
+            },
+            "timeout": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "description": "Seconds before canceling (defaults: 600 command/http/mcp_tool, 30 prompt, 60 agent)."
+            },
+            "statusMessage": {
+              "type": "string",
+              "description": "Custom spinner message while the hook runs."
+            },
+            "once": {
+              "type": "boolean",
+              "description": "Remove the hook after its first successful run (only honored in skill frontmatter)."
+            },
+            "prompt": {
+              "type": "string",
+              "description": "Prompt text; $ARGUMENTS holds the hook input JSON."
+            },
+            "model": {
+              "type": "string",
+              "description": "Model used for evaluation (defaults to a fast model)."
+            }
+          },
+          "required": [
+            "type",
+            "prompt"
+          ],
+          "additionalProperties": true,
+          "x-doc": "https://code.claude.com/docs/en/hooks#hook-handler-fields"
+        },
+        {
+          "type": "object",
+          "description": "Agent hook (experimental).",
+          "properties": {
+            "type": {
+              "const": "agent",
+              "description": "Hook handler type."
+            },
+            "if": {
+              "type": "string",
+              "description": "Permission-rule syntax filter (for example Bash(git *)); only evaluated on tool events."
+            },
+            "timeout": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "description": "Seconds before canceling (defaults: 600 command/http/mcp_tool, 30 prompt, 60 agent)."
+            },
+            "statusMessage": {
+              "type": "string",
+              "description": "Custom spinner message while the hook runs."
+            },
+            "once": {
+              "type": "boolean",
+              "description": "Remove the hook after its first successful run (only honored in skill frontmatter)."
+            },
+            "prompt": {
+              "type": "string",
+              "description": "Prompt text for the verifier agent."
+            },
+            "model": {
+              "type": "string",
+              "description": "Model used for evaluation."
+            }
+          },
+          "required": [
+            "type",
+            "prompt"
+          ],
+          "additionalProperties": true,
+          "x-doc": "https://code.claude.com/docs/en/hooks#hook-handler-fields"
+        }
+      ]
+    }
+  }
+}

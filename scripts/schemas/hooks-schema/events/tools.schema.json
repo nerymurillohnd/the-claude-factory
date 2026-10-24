@@ -1,0 +1,318 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "events/tools.schema.json",
+  "title": "Hook events: tool calls and permissions",
+  "description": "Event arrays (`hookEvent_<Event>`) and matcher groups (`hookMatcherGroup_<Event>`) for: PreToolUse, PermissionRequest, PermissionDenied, PostToolUse, PostToolUseFailure, PostToolBatch.",
+  "$defs": {
+    "hookEvent_PreToolUse": {
+      "title": "PreToolUse",
+      "type": "array",
+      "description": "Before a tool call executes. Can allow, deny, ask, defer, or rewrite the call.",
+      "items": {
+        "$ref": "#/$defs/hookMatcherGroup_PreToolUse"
+      },
+      "x-source": "https://code.claude.com/docs/en/hooks#pretooluse",
+      "x-matcherSupported": true,
+      "x-handlerTypes": [
+        "command",
+        "http",
+        "mcp_tool",
+        "prompt",
+        "agent"
+      ],
+      "x-ifEvaluated": true,
+      "x-addedIn": "<=1.0.38"
+    },
+    "hookMatcherGroup_PreToolUse": {
+      "type": "object",
+      "description": "Matcher group for PreToolUse: an optional matcher plus the handlers to run when it applies. Handlers allowed here: command, http, mcp_tool, prompt or agent.",
+      "properties": {
+        "matcher": {
+          "type": "string",
+          "description": "Filters on the tool name (any tool except EndConversation). Evaluation: `*`, an empty string, or an omitted matcher matches everything; a value made only of letters, digits, `_`, `-`, spaces, `,` and `|` is an exact string or a `|`/`,`-separated list of exact strings; any other character makes it an unanchored JavaScript regular expression (RegExp.test). MCP tools are named `mcp__<server>__<tool>`; end a server prefix with `.*` (`mcp__memory__.*`) to match all its tools; plugin-bundled MCP servers use `mcp__plugin_<plugin>_<server>__<tool>`.",
+          "x-matcherSupported": true,
+          "examples": [
+            "Bash",
+            "Edit|Write",
+            "Bash|PowerShell",
+            "mcp__memory__.*",
+            "^Notebook",
+            "*"
+          ],
+          "title": "Matcher"
+        },
+        "hooks": {
+          "type": "array",
+          "description": "Hook handlers to run when the matcher applies; all matching handlers run in parallel and identical handlers from several settings files run once.",
+          "items": {
+            "$ref": "../handlers/handler-sets.schema.json#/$defs/hookHandler"
+          },
+          "title": "Hooks"
+        }
+      },
+      "required": [
+        "hooks"
+      ],
+      "additionalProperties": false,
+      "x-source": "https://code.claude.com/docs/en/hooks#pretooluse"
+    },
+    "hookEvent_PermissionRequest": {
+      "title": "PermissionRequest",
+      "type": "array",
+      "description": "When a tool call needs a permission decision. Agent hooks are not supported here.",
+      "items": {
+        "$ref": "#/$defs/hookMatcherGroup_PermissionRequest"
+      },
+      "x-source": "https://code.claude.com/docs/en/hooks#permissionrequest",
+      "x-matcherSupported": true,
+      "x-handlerTypes": [
+        "command",
+        "http",
+        "mcp_tool",
+        "prompt"
+      ],
+      "x-ifEvaluated": true,
+      "x-addedIn": "2.0.45"
+    },
+    "hookMatcherGroup_PermissionRequest": {
+      "type": "object",
+      "description": "Matcher group for PermissionRequest: an optional matcher plus the handlers to run when it applies. Handlers allowed here: command, http, mcp_tool or prompt (an agent hook is skipped/rejected on this event).",
+      "properties": {
+        "matcher": {
+          "type": "string",
+          "description": "Filters on the tool name. Evaluation: `*`, an empty string, or an omitted matcher matches everything; a value made only of letters, digits, `_`, `-`, spaces, `,` and `|` is an exact string or a `|`/`,`-separated list of exact strings; any other character makes it an unanchored JavaScript regular expression (RegExp.test). MCP tools are named `mcp__<server>__<tool>`; end a server prefix with `.*` (`mcp__memory__.*`) to match all its tools; plugin-bundled MCP servers use `mcp__plugin_<plugin>_<server>__<tool>`.",
+          "x-matcherSupported": true,
+          "examples": [
+            "Bash",
+            "Edit|Write",
+            "Bash|PowerShell",
+            "mcp__memory__.*",
+            "^Notebook",
+            "*"
+          ],
+          "title": "Matcher"
+        },
+        "hooks": {
+          "type": "array",
+          "description": "Hook handlers to run when the matcher applies; all matching handlers run in parallel and identical handlers from several settings files run once.",
+          "items": {
+            "$ref": "../handlers/handler-sets.schema.json#/$defs/hookHandlerNoAgent"
+          },
+          "title": "Hooks"
+        }
+      },
+      "required": [
+        "hooks"
+      ],
+      "additionalProperties": false,
+      "x-source": "https://code.claude.com/docs/en/hooks#permissionrequest"
+    },
+    "hookEvent_PermissionDenied": {
+      "title": "PermissionDenied",
+      "type": "array",
+      "description": "When auto mode denies a tool call. Only `hookSpecificOutput.retry` from a command/http/mcp_tool hook has an effect.",
+      "items": {
+        "$ref": "#/$defs/hookMatcherGroup_PermissionDenied"
+      },
+      "x-source": "https://code.claude.com/docs/en/hooks#permissiondenied",
+      "x-matcherSupported": true,
+      "x-handlerTypes": [
+        "command",
+        "http",
+        "mcp_tool",
+        "prompt",
+        "agent"
+      ],
+      "x-ifEvaluated": true,
+      "x-addedIn": "2.1.89"
+    },
+    "hookMatcherGroup_PermissionDenied": {
+      "type": "object",
+      "description": "Matcher group for PermissionDenied: an optional matcher plus the handlers to run when it applies. Handlers allowed here: command, http, mcp_tool, prompt or agent.",
+      "properties": {
+        "matcher": {
+          "type": "string",
+          "description": "Filters on the tool name. Evaluation: `*`, an empty string, or an omitted matcher matches everything; a value made only of letters, digits, `_`, `-`, spaces, `,` and `|` is an exact string or a `|`/`,`-separated list of exact strings; any other character makes it an unanchored JavaScript regular expression (RegExp.test). MCP tools are named `mcp__<server>__<tool>`; end a server prefix with `.*` (`mcp__memory__.*`) to match all its tools; plugin-bundled MCP servers use `mcp__plugin_<plugin>_<server>__<tool>`.",
+          "x-matcherSupported": true,
+          "examples": [
+            "Bash",
+            "Edit|Write",
+            "Bash|PowerShell",
+            "mcp__memory__.*",
+            "^Notebook",
+            "*"
+          ],
+          "title": "Matcher"
+        },
+        "hooks": {
+          "type": "array",
+          "description": "Hook handlers to run when the matcher applies; all matching handlers run in parallel and identical handlers from several settings files run once.",
+          "items": {
+            "$ref": "../handlers/handler-sets.schema.json#/$defs/hookHandler"
+          },
+          "title": "Hooks"
+        }
+      },
+      "required": [
+        "hooks"
+      ],
+      "additionalProperties": false,
+      "x-source": "https://code.claude.com/docs/en/hooks#permissiondenied"
+    },
+    "hookEvent_PostToolUse": {
+      "title": "PostToolUse",
+      "type": "array",
+      "description": "After a tool call succeeds.",
+      "items": {
+        "$ref": "#/$defs/hookMatcherGroup_PostToolUse"
+      },
+      "x-source": "https://code.claude.com/docs/en/hooks#posttooluse",
+      "x-matcherSupported": true,
+      "x-handlerTypes": [
+        "command",
+        "http",
+        "mcp_tool",
+        "prompt",
+        "agent"
+      ],
+      "x-ifEvaluated": true,
+      "x-addedIn": "<=1.0.38"
+    },
+    "hookMatcherGroup_PostToolUse": {
+      "type": "object",
+      "description": "Matcher group for PostToolUse: an optional matcher plus the handlers to run when it applies. Handlers allowed here: command, http, mcp_tool, prompt or agent.",
+      "properties": {
+        "matcher": {
+          "type": "string",
+          "description": "Filters on the tool name. Evaluation: `*`, an empty string, or an omitted matcher matches everything; a value made only of letters, digits, `_`, `-`, spaces, `,` and `|` is an exact string or a `|`/`,`-separated list of exact strings; any other character makes it an unanchored JavaScript regular expression (RegExp.test). MCP tools are named `mcp__<server>__<tool>`; end a server prefix with `.*` (`mcp__memory__.*`) to match all its tools; plugin-bundled MCP servers use `mcp__plugin_<plugin>_<server>__<tool>`.",
+          "x-matcherSupported": true,
+          "examples": [
+            "Bash",
+            "Edit|Write",
+            "Bash|PowerShell",
+            "mcp__memory__.*",
+            "^Notebook",
+            "*"
+          ],
+          "title": "Matcher"
+        },
+        "hooks": {
+          "type": "array",
+          "description": "Hook handlers to run when the matcher applies; all matching handlers run in parallel and identical handlers from several settings files run once.",
+          "items": {
+            "$ref": "../handlers/handler-sets.schema.json#/$defs/hookHandler"
+          },
+          "title": "Hooks"
+        }
+      },
+      "required": [
+        "hooks"
+      ],
+      "additionalProperties": false,
+      "x-source": "https://code.claude.com/docs/en/hooks#posttooluse"
+    },
+    "hookEvent_PostToolUseFailure": {
+      "title": "PostToolUseFailure",
+      "type": "array",
+      "description": "After a tool call fails.",
+      "items": {
+        "$ref": "#/$defs/hookMatcherGroup_PostToolUseFailure"
+      },
+      "x-source": "https://code.claude.com/docs/en/hooks#posttoolusefailure",
+      "x-matcherSupported": true,
+      "x-handlerTypes": [
+        "command",
+        "http",
+        "mcp_tool",
+        "prompt",
+        "agent"
+      ],
+      "x-ifEvaluated": true,
+      "x-addedIn": "not stated in the changelog"
+    },
+    "hookMatcherGroup_PostToolUseFailure": {
+      "type": "object",
+      "description": "Matcher group for PostToolUseFailure: an optional matcher plus the handlers to run when it applies. Handlers allowed here: command, http, mcp_tool, prompt or agent.",
+      "properties": {
+        "matcher": {
+          "type": "string",
+          "description": "Filters on the tool name. Evaluation: `*`, an empty string, or an omitted matcher matches everything; a value made only of letters, digits, `_`, `-`, spaces, `,` and `|` is an exact string or a `|`/`,`-separated list of exact strings; any other character makes it an unanchored JavaScript regular expression (RegExp.test). MCP tools are named `mcp__<server>__<tool>`; end a server prefix with `.*` (`mcp__memory__.*`) to match all its tools; plugin-bundled MCP servers use `mcp__plugin_<plugin>_<server>__<tool>`.",
+          "x-matcherSupported": true,
+          "examples": [
+            "Bash",
+            "Edit|Write",
+            "Bash|PowerShell",
+            "mcp__memory__.*",
+            "^Notebook",
+            "*"
+          ],
+          "title": "Matcher"
+        },
+        "hooks": {
+          "type": "array",
+          "description": "Hook handlers to run when the matcher applies; all matching handlers run in parallel and identical handlers from several settings files run once.",
+          "items": {
+            "$ref": "../handlers/handler-sets.schema.json#/$defs/hookHandler"
+          },
+          "title": "Hooks"
+        }
+      },
+      "required": [
+        "hooks"
+      ],
+      "additionalProperties": false,
+      "x-source": "https://code.claude.com/docs/en/hooks#posttoolusefailure"
+    },
+    "hookEvent_PostToolBatch": {
+      "title": "PostToolBatch",
+      "type": "array",
+      "description": "After a full batch of parallel tool calls resolves, before the next model call.",
+      "items": {
+        "$ref": "#/$defs/hookMatcherGroup_PostToolBatch"
+      },
+      "x-source": "https://code.claude.com/docs/en/hooks#posttoolbatch",
+      "x-matcherSupported": false,
+      "x-handlerTypes": [
+        "command",
+        "http",
+        "mcp_tool",
+        "prompt",
+        "agent"
+      ],
+      "x-ifEvaluated": false,
+      "x-addedIn": "not stated in the changelog"
+    },
+    "hookMatcherGroup_PostToolBatch": {
+      "type": "object",
+      "description": "Matcher group for PostToolBatch: an optional matcher plus the handlers to run when it applies. Handlers allowed here: command, http, mcp_tool, prompt or agent. The `if` field is not evaluated on this event, so a handler that sets it never runs.",
+      "properties": {
+        "matcher": {
+          "type": "string",
+          "description": "PostToolBatch has no matcher support: the field is accepted but silently ignored and the group fires on every occurrence. Omit it.",
+          "x-matcherSupported": false,
+          "title": "Matcher"
+        },
+        "hooks": {
+          "type": "array",
+          "description": "Hook handlers to run when the matcher applies; all matching handlers run in parallel and identical handlers from several settings files run once.",
+          "items": {
+            "allOf": [
+              {
+                "$ref": "../handlers/handler-sets.schema.json#/$defs/hookHandler"
+              },
+              {
+                "$ref": "../handlers/handler-sets.schema.json#/$defs/hookHandlerWithoutIf"
+              }
+            ]
+          },
+          "title": "Hooks"
+        }
+      },
+      "required": [
+        "hooks"
+      ],
+      "additionalProperties": false,
+      "x-source": "https://code.claude.com/docs/en/hooks#posttoolbatch"
+    }
+  }
+}

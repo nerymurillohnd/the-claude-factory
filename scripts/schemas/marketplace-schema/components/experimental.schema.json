@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "components/experimental.schema.json",
+  "type": "object",
+  "description": "Experimental component declarations whose schema may change between releases.",
+  "properties": {
+    "themes": {
+      "description": "Color theme files or directories (replaces default themes/).",
+      "anyOf": [
+        {
+          "$ref": "../common.schema.json#/$defs/relPath"
+        },
+        {
+          "type": "array",
+          "description": "Paths.",
+          "items": {
+            "$ref": "../common.schema.json#/$defs/relPath"
+          }
+        }
+      ]
+    },
+    "monitors": {
+      "$ref": "monitors.schema.json",
+      "description": "Monitors: path to a .json file, or an inline array of monitor objects. Names must be unique within the plugin."
+    },
+    "evals": {
+      "description": "Directory below the plugin root holding eval cases when it is not the default evals/.",
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "array",
+          "description": "Directories.",
+          "items": {
+            "type": "string"
+          }
+        }
+      ]
+    }
+  },
+  "additionalProperties": false,
+  "x-doc": "https://code.claude.com/docs/en/plugins/components#themes-and-output-styles"
+}

@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "handlers/prompt.schema.json",
+  "type": "object",
+  "title": "Prompt hook",
+  "description": "Sends a prompt plus the hook input to a Claude model for single-turn evaluation; the model answers `{\"ok\": true|false, \"reason\": \"...\", \"impossible\"?: bool}`. Not supported on the events listed as command/http/mcp_tool-only.",
+  "properties": {
+    "type": {
+      "type": "string",
+      "const": "prompt",
+      "description": "Handler type: `prompt` evaluates a prompt with an LLM.",
+      "title": "Type"
+    },
+    "prompt": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Prompt text. `$ARGUMENTS` is replaced by the hook input JSON (appended when absent); escape a literal dollar as `\\$`.",
+      "title": "Prompt"
+    },
+    "model": {
+      "type": "string",
+      "description": "Model used for the evaluation. Defaults to a fast model (Haiku).",
+      "title": "Model"
+    },
+    "continueOnBlock": {
+      "type": "boolean",
+      "default": false,
+      "description": "On the events it applies to (PostToolUse, PreToolUse, TeammateIdle, ...), true feeds an `ok: false` reason back to Claude and continues instead of ending the turn. Default false. Prompt hooks only.",
+      "title": "Continue On Block"
+    },
+    "timeout": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "default": 30,
+      "description": "Seconds before the handler is canceled. Default 30 for prompt hooks.",
+      "title": "Timeout"
+    },
+    "statusMessage": {
+      "type": "string",
+      "description": "Custom spinner message displayed while the handler runs.",
+      "title": "Status Message"
+    },
+    "once": {
+      "type": "boolean",
+      "default": false,
+      "description": "If true, the hook is removed after its first successful run (a failed, exit-2 or timed-out run keeps it). Only honored for hooks declared in skill frontmatter; ignored in settings files and agent frontmatter.",
+      "title": "Once"
+    },
+    "if": {
+      "type": "string",
+      "description": "Permission-rule-syntax filter (exactly one rule, e.g. `Bash(git *)`, `Edit(*.ts)`, `PowerShell(Remove-Item *)`); the handler only runs when the tool call matches. Evaluated only on PreToolUse, PostToolUse, PostToolUseFailure, PermissionRequest and PermissionDenied; on any other event a handler with `if` never runs. There is no `&&`/`||`/list syntax: use one handler per condition. Best-effort filter, not a security boundary.",
+      "title": "If"
+    }
+  },
+  "required": [
+    "type",
+    "prompt"
+  ],
+  "additionalProperties": false,
+  "examples": [
+    {
+      "type": "prompt",
+      "prompt": "Evaluate if Claude should stop: $ARGUMENTS. Check if all tasks are complete."
+    }
+  ],
+  "x-source": "https://code.claude.com/docs/en/hooks#prompt-hook-configuration"
+}

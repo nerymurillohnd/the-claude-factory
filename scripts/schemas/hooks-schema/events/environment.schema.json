@@ -1,0 +1,328 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "events/environment.schema.json",
+  "title": "Hook events: environment, config, files and worktrees",
+  "description": "Event arrays (`hookEvent_<Event>`) and matcher groups (`hookMatcherGroup_<Event>`) for: ConfigChange, CwdChanged, DirectoryAdded, FileChanged, WorktreeCreate, WorktreeRemove.",
+  "$defs": {
+    "hookEvent_ConfigChange": {
+      "title": "ConfigChange",
+      "type": "array",
+      "description": "When a configuration file (settings, managed policy, skill) changes during a session.",
+      "items": {
+        "$ref": "#/$defs/hookMatcherGroup_ConfigChange"
+      },
+      "x-source": "https://code.claude.com/docs/en/hooks#configchange",
+      "x-matcherSupported": true,
+      "x-handlerTypes": [
+        "command",
+        "http",
+        "mcp_tool"
+      ],
+      "x-ifEvaluated": false,
+      "x-addedIn": "2.1.49"
+    },
+    "hookMatcherGroup_ConfigChange": {
+      "type": "object",
+      "description": "Matcher group for ConfigChange: an optional matcher plus the handlers to run when it applies. Handlers allowed here: command, http or mcp_tool (prompt and agent hooks are not supported on this event). The `if` field is not evaluated on this event, so a handler that sets it never runs.",
+      "properties": {
+        "matcher": {
+          "type": "string",
+          "description": "Filters on the configuration source. Values: `user_settings`, `project_settings`, `local_settings`, `policy_settings`, `skills`. Evaluation: `*`, an empty string, or an omitted matcher matches everything; a value made only of letters, digits, `_`, `-`, spaces, `,` and `|` is an exact string or a `|`/`,`-separated list of exact strings; any other character makes it an unanchored JavaScript regular expression (RegExp.test).",
+          "x-matcherSupported": true,
+          "x-matcherValues": [
+            "user_settings",
+            "project_settings",
+            "local_settings",
+            "policy_settings",
+            "skills"
+          ],
+          "examples": [
+            "user_settings",
+            "project_settings",
+            "local_settings",
+            "policy_settings",
+            "skills"
+          ],
+          "title": "Matcher"
+        },
+        "hooks": {
+          "type": "array",
+          "description": "Hook handlers to run when the matcher applies; all matching handlers run in parallel and identical handlers from several settings files run once.",
+          "items": {
+            "allOf": [
+              {
+                "$ref": "../handlers/handler-sets.schema.json#/$defs/hookHandlerCommandHttpMcp"
+              },
+              {
+                "$ref": "../handlers/handler-sets.schema.json#/$defs/hookHandlerWithoutIf"
+              }
+            ]
+          },
+          "title": "Hooks"
+        }
+      },
+      "required": [
+        "hooks"
+      ],
+      "additionalProperties": false,
+      "x-source": "https://code.claude.com/docs/en/hooks#configchange"
+    },
+    "hookEvent_CwdChanged": {
+      "title": "CwdChanged",
+      "type": "array",
+      "description": "When the working directory changes (for example after a `cd`).",
+      "items": {
+        "$ref": "#/$defs/hookMatcherGroup_CwdChanged"
+      },
+      "x-source": "https://code.claude.com/docs/en/hooks#cwdchanged",
+      "x-matcherSupported": false,
+      "x-handlerTypes": [
+        "command",
+        "http",
+        "mcp_tool"
+      ],
+      "x-ifEvaluated": false,
+      "x-addedIn": "2.1.83"
+    },
+    "hookMatcherGroup_CwdChanged": {
+      "type": "object",
+      "description": "Matcher group for CwdChanged: an optional matcher plus the handlers to run when it applies. Handlers allowed here: command, http or mcp_tool (prompt and agent hooks are not supported on this event). The `if` field is not evaluated on this event, so a handler that sets it never runs.",
+      "properties": {
+        "matcher": {
+          "type": "string",
+          "description": "CwdChanged has no matcher support: the field is accepted but silently ignored and the group fires on every occurrence. Omit it.",
+          "x-matcherSupported": false,
+          "title": "Matcher"
+        },
+        "hooks": {
+          "type": "array",
+          "description": "Hook handlers to run when the matcher applies; all matching handlers run in parallel and identical handlers from several settings files run once.",
+          "items": {
+            "allOf": [
+              {
+                "$ref": "../handlers/handler-sets.schema.json#/$defs/hookHandlerCommandHttpMcp"
+              },
+              {
+                "$ref": "../handlers/handler-sets.schema.json#/$defs/hookHandlerWithoutIf"
+              }
+            ]
+          },
+          "title": "Hooks"
+        }
+      },
+      "required": [
+        "hooks"
+      ],
+      "additionalProperties": false,
+      "x-source": "https://code.claude.com/docs/en/hooks#cwdchanged"
+    },
+    "hookEvent_DirectoryAdded": {
+      "title": "DirectoryAdded",
+      "type": "array",
+      "description": "After a working directory is added mid-session with `/add-dir` or the SDK `register_repo_root` control request.",
+      "items": {
+        "$ref": "#/$defs/hookMatcherGroup_DirectoryAdded"
+      },
+      "x-source": "https://code.claude.com/docs/en/hooks#directoryadded",
+      "x-matcherSupported": true,
+      "x-handlerTypes": [
+        "command",
+        "http",
+        "mcp_tool"
+      ],
+      "x-ifEvaluated": false,
+      "x-addedIn": "2.1.219"
+    },
+    "hookMatcherGroup_DirectoryAdded": {
+      "type": "object",
+      "description": "Matcher group for DirectoryAdded: an optional matcher plus the handlers to run when it applies. Handlers allowed here: command, http or mcp_tool (prompt and agent hooks are not supported on this event). The `if` field is not evaluated on this event, so a handler that sets it never runs.",
+      "properties": {
+        "matcher": {
+          "type": "string",
+          "description": "Filters on how the directory was added. Values: `slash_command`, `register_repo_root`. Evaluation: `*`, an empty string, or an omitted matcher matches everything; a value made only of letters, digits, `_`, `-`, spaces, `,` and `|` is an exact string or a `|`/`,`-separated list of exact strings; any other character makes it an unanchored JavaScript regular expression (RegExp.test).",
+          "x-matcherSupported": true,
+          "x-matcherValues": [
+            "slash_command",
+            "register_repo_root"
+          ],
+          "examples": [
+            "slash_command",
+            "register_repo_root"
+          ],
+          "title": "Matcher"
+        },
+        "hooks": {
+          "type": "array",
+          "description": "Hook handlers to run when the matcher applies; all matching handlers run in parallel and identical handlers from several settings files run once.",
+          "items": {
+            "allOf": [
+              {
+                "$ref": "../handlers/handler-sets.schema.json#/$defs/hookHandlerCommandHttpMcp"
+              },
+              {
+                "$ref": "../handlers/handler-sets.schema.json#/$defs/hookHandlerWithoutIf"
+              }
+            ]
+          },
+          "title": "Hooks"
+        }
+      },
+      "required": [
+        "hooks"
+      ],
+      "additionalProperties": false,
+      "x-source": "https://code.claude.com/docs/en/hooks#directoryadded"
+    },
+    "hookEvent_FileChanged": {
+      "title": "FileChanged",
+      "type": "array",
+      "description": "When a watched file changes on disk. The matcher also builds the watch list.",
+      "items": {
+        "$ref": "#/$defs/hookMatcherGroup_FileChanged"
+      },
+      "x-source": "https://code.claude.com/docs/en/hooks#filechanged",
+      "x-matcherSupported": true,
+      "x-handlerTypes": [
+        "command",
+        "http",
+        "mcp_tool"
+      ],
+      "x-ifEvaluated": false,
+      "x-addedIn": "2.1.83"
+    },
+    "hookMatcherGroup_FileChanged": {
+      "type": "object",
+      "description": "Matcher group for FileChanged: an optional matcher plus the handlers to run when it applies. Handlers allowed here: command, http or mcp_tool (prompt and agent hooks are not supported on this event). The `if` field is not evaluated on this event, so a handler that sets it never runs.",
+      "properties": {
+        "matcher": {
+          "type": "string",
+          "description": "Literal filenames to watch, split on `|` (`.envrc|.env`), and also the filter applied to the changed file's basename. Regex patterns are not useful for the watch list. Evaluation: `*`, an empty string, or an omitted matcher matches everything; a value made only of letters, digits, `_` and `|` is an exact string or a `|`-separated list of exact strings (a hyphen, space or comma switches it to the regular-expression path and only `|` separates alternatives); any other character makes it an unanchored JavaScript regular expression. Omit it on a group that only handles paths returned as `watchPaths` (matches every watched file, adds nothing to the watch list).",
+          "x-matcherSupported": true,
+          "examples": [
+            ".envrc|.env",
+            "data.csv"
+          ],
+          "title": "Matcher"
+        },
+        "hooks": {
+          "type": "array",
+          "description": "Hook handlers to run when the matcher applies; all matching handlers run in parallel and identical handlers from several settings files run once.",
+          "items": {
+            "allOf": [
+              {
+                "$ref": "../handlers/handler-sets.schema.json#/$defs/hookHandlerCommandHttpMcp"
+              },
+              {
+                "$ref": "../handlers/handler-sets.schema.json#/$defs/hookHandlerWithoutIf"
+              }
+            ]
+          },
+          "title": "Hooks"
+        }
+      },
+      "required": [
+        "hooks"
+      ],
+      "additionalProperties": false,
+      "x-source": "https://code.claude.com/docs/en/hooks#filechanged"
+    },
+    "hookEvent_WorktreeCreate": {
+      "title": "WorktreeCreate",
+      "type": "array",
+      "description": "When a worktree is being created (`--worktree`, `isolation: \"worktree\"`, background session). Replaces the default git behavior.",
+      "items": {
+        "$ref": "#/$defs/hookMatcherGroup_WorktreeCreate"
+      },
+      "x-source": "https://code.claude.com/docs/en/hooks#worktreecreate",
+      "x-matcherSupported": false,
+      "x-handlerTypes": [
+        "command",
+        "http",
+        "mcp_tool"
+      ],
+      "x-ifEvaluated": false,
+      "x-addedIn": "2.1.50"
+    },
+    "hookMatcherGroup_WorktreeCreate": {
+      "type": "object",
+      "description": "Matcher group for WorktreeCreate: an optional matcher plus the handlers to run when it applies. Handlers allowed here: command, http or mcp_tool (prompt and agent hooks are not supported on this event). The `if` field is not evaluated on this event, so a handler that sets it never runs.",
+      "properties": {
+        "matcher": {
+          "type": "string",
+          "description": "WorktreeCreate has no matcher support: the field is accepted but silently ignored and the group fires on every occurrence. Omit it.",
+          "x-matcherSupported": false,
+          "title": "Matcher"
+        },
+        "hooks": {
+          "type": "array",
+          "description": "Hook handlers to run when the matcher applies; all matching handlers run in parallel and identical handlers from several settings files run once.",
+          "items": {
+            "allOf": [
+              {
+                "$ref": "../handlers/handler-sets.schema.json#/$defs/hookHandlerCommandHttpMcp"
+              },
+              {
+                "$ref": "../handlers/handler-sets.schema.json#/$defs/hookHandlerWithoutIf"
+              }
+            ]
+          },
+          "title": "Hooks"
+        }
+      },
+      "required": [
+        "hooks"
+      ],
+      "additionalProperties": false,
+      "x-source": "https://code.claude.com/docs/en/hooks#worktreecreate"
+    },
+    "hookEvent_WorktreeRemove": {
+      "title": "WorktreeRemove",
+      "type": "array",
+      "description": "When a worktree is being removed.",
+      "items": {
+        "$ref": "#/$defs/hookMatcherGroup_WorktreeRemove"
+      },
+      "x-source": "https://code.claude.com/docs/en/hooks#worktreeremove",
+      "x-matcherSupported": false,
+      "x-handlerTypes": [
+        "command",
+        "http",
+        "mcp_tool"
+      ],
+      "x-ifEvaluated": false,
+      "x-addedIn": "2.1.50"
+    },
+    "hookMatcherGroup_WorktreeRemove": {
+      "type": "object",
+      "description": "Matcher group for WorktreeRemove: an optional matcher plus the handlers to run when it applies. Handlers allowed here: command, http or mcp_tool (prompt and agent hooks are not supported on this event). The `if` field is not evaluated on this event, so a handler that sets it never runs.",
+      "properties": {
+        "matcher": {
+          "type": "string",
+          "description": "WorktreeRemove has no matcher support: the field is accepted but silently ignored and the group fires on every occurrence. Omit it.",
+          "x-matcherSupported": false,
+          "title": "Matcher"
+        },
+        "hooks": {
+          "type": "array",
+          "description": "Hook handlers to run when the matcher applies; all matching handlers run in parallel and identical handlers from several settings files run once.",
+          "items": {
+            "allOf": [
+              {
+                "$ref": "../handlers/handler-sets.schema.json#/$defs/hookHandlerCommandHttpMcp"
+              },
+              {
+                "$ref": "../handlers/handler-sets.schema.json#/$defs/hookHandlerWithoutIf"
+              }
+            ]
+          },
+          "title": "Hooks"
+        }
+      },
+      "required": [
+        "hooks"
+      ],
+      "additionalProperties": false,
+      "x-source": "https://code.claude.com/docs/en/hooks#worktreeremove"
+    }
+  }
+}

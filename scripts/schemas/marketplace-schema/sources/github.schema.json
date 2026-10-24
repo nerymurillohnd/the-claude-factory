@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "sources/github.schema.json",
+  "type": "object",
+  "description": "GitHub repository source.",
+  "properties": {
+    "source": {
+      "const": "github",
+      "description": "Source discriminator."
+    },
+    "repo": {
+      "type": "string",
+      "description": "GitHub repository in owner/repo format (a single repository; owner wildcards are only valid in managed settings). The CLI does not enforce the owner/repo shape or non-emptiness (oracle: a bare name, a full https URL, and an empty string all pass `claude plugin validate`); the pattern below documents the intended format only and is informational, not enforced by this schema.",
+      "x-documented-format": "^[^/\\s]+/[^/\\s]+$"
+    },
+    "ref": {
+      "type": "string",
+      "description": "Git branch or tag to use. Defaults to the repository default branch. The CLI accepts an empty string too."
+    },
+    "sha": {
+      "type": "string",
+      "description": "Full 40-character git commit SHA pinning an exact version. When both ref and sha are set, sha is the effective pin. Docs say '40-character'; the CLI additionally requires lowercase hex.",
+      "pattern": "^[a-f0-9]{40}$"
+    }
+  },
+  "required": [
+    "source",
+    "repo"
+  ],
+  "additionalProperties": true,
+  "x-doc": "https://code.claude.com/docs/en/plugins/marketplace-reference#github-plugin-source"
+}
