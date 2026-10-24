@@ -1,5 +1,4 @@
 {
-  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "the-claude-factory",
   "description": "Production-grade Claude Code plugins that automate and optimize everyday workflows: skills, agents, hooks, MCP and LSP servers, and more.",
   "owner": {

@@ -278,9 +278,6 @@ export function checkRepo() {
   if (mp.name !== MARKETPLACE_NAME) {
     err('marketplace', `name must stay "${MARKETPLACE_NAME}" (it is permanent)`)
   }
-  if (!mp.$schema) {
-    err('marketplace', 'missing $schema')
-  }
   if (!mp.description) {
     err('marketplace', 'missing description')
   }
