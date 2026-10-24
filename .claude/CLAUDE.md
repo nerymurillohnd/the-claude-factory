@@ -123,6 +123,14 @@ The mods' `tsc` needs the declarations the engine writes into `plugins/<plugin>/
 
 Report the run as a table: gate, result and key output line.
 
+## Versioning and Releases
+
+Rules for this area live in `.claude/rules/plugins/versioning-and-releases.md`. Context they rely on:
+
+- Claude Code treats a plugin's `version` in `plugin.json` as a pin and does not check it against SemVer. Users stay on that version until it changes, and commits pushed without a bump never reach them. SemVer is this project's convention, and it is why every functional plugin change needs a bump.
+- A `0.x` version makes no interface-stability promise; `1.0.0` does.
+- The next green push to `main` tags every plugin whose `plugin.json` version has no tag yet, so a version left pending ships on that push. `release.yml` can also be run by hand.
+
 ## Documentation and Maintenance
 
 - `.claude/WORKFLOW.md`: the stage map, imported above.
