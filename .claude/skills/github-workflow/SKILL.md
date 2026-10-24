@@ -84,7 +84,7 @@ Run `git status --short` first: changes that are not yours stay out of the commi
 
 ### 5. Push
 
-Run the "Before Every Push" gates in `.claude/CLAUDE.md` → Commands, in order, and stop at the first failure. On Nery's order, push with `git push origin <branch>`, read the Gotchas above if it fails, and open the PR with its labels (Rules). Each later push is a new order.
+Run the gates in `.claude/CLAUDE.md` → Quality gates → Before every push, in order, and stop at the first failure. On Nery's order, push with `git push origin <branch>`, read the Gotchas above if it fails, and open the PR with its labels (Rules). Each later push is a new order.
 
 ### 6. Carry
 

@@ -14,7 +14,7 @@ Act as a release engineer who owns the integrity of the marketplace: the plugin 
 ## Rules
 
 - Scope is the change: the files touched since `origin/main` plus the working tree, and every counterpart they must agree with. Widen to the whole repo only when Nery asks for a freshness check or before a release.
-- Read the rules, do not restate them: `.claude/rules/WORKFLOW.md` → "When Writing User Docs" is the style source, and the `release-and-versioning` skill the source for versions and changelogs. This skill checks that they were followed.
+- Read the rules, do not restate them: `.claude/rules/user-docs.md` is the style source, and the `release-and-versioning` skill the source for versions and changelogs. This skill checks that they were followed.
 - Fix the inconsistencies the change created, in the same change, at their root. Ask Nery before changing anything the change did not touch or cause.
 - Never push or bump by hand, and leave commits to `github-workflow` and `release-and-versioning`. Bump with `bump-version.mjs`, as the rules say.
 - A passing script is not consistency: the scripts check that things exist, not that they are true. Read both sides of every pair.

@@ -1,10 +1,10 @@
 ---
-status: accepted
+status: superseded
 date: 2026-10-20
 decision-makers:
   - "Nery"
 supersedes: ADR_2026-10-16_maintainer-operating-model
-superseded-by: none
+superseded-by: ADR_2026-10-24_workflow-is-a-stage-map
 ---
 
 # Procedures live in project skills; WORKFLOW.md keeps the triggers

@@ -1,103 +1,87 @@
 # The Claude Factory
 
-Nery and Claude Code are the only two parties responsible for this marketplace. Claude Code, with Anthropic's services, is integrated at every level of it: design, development, review, testing, release and issue triage.
+Public Claude Code plugin marketplace (`github.com/nerymurillohnd/the-claude-factory`) for users and developers who run their projects and operations with Claude. It ships plugins only, built for Claude Code and, where they apply, for the Claude app. It is built in Nery's local clone and served to users from the remote repository. Users contribute through issues.
 
-- No third-party team reviews our work between this repository and the users who install it. Every push, release and reply is the last check before the public; take each one with that responsibility.
-- Prefer automation and process optimization wherever they keep quality: CI, evals, hooks, agents and scheduled tasks for validation, review, releases, drift checks and issue handling. Where none exists yet, propose building it.
-- This project also follows the guidelines and way of working in the `@~/.claude/CLAUDE.md` and the global cross-projects lessons in `@~/.claude/LESSONS.md`.
+This project also follows the guidelines and way of working in the `@~/.claude/CLAUDE.md` and the global cross-projects lessons in `@~/.claude/LESSONS.md`.
 
-## Overview
+The order of work, stage by stage, is a map whose steps each name the skill or rule that governs it: @WORKFLOW.md
 
-A public Claude Code plugin marketplace at `github.com/nerymurillohnd/the-claude-factory`, for users and developers who run their projects and operations with Claude. It ships plugins only, built for Claude Code and for the Claude app wherever they apply. It is built on Nery's Mac in the local clone and served to users from the remote repository. Users contribute through issues.
+## Responsibility
 
-Plugins are for third parties whose setups are unknown: every plugin works from what its README declares, never from what is installed on Nery's machine.
+- Nery and Claude Code are the only parties who work on this marketplace. Claude Code acts only with Nery's authorization. There are no outside collaborators, and pull requests from users are not accepted.
+- Users take part only through issues. Triaging, confirming, fixing, verifying and releasing the fix for every issue is Nery's and Claude Code's work, never the reporter's.
+- No third-party team reviews our work before users install it, so every push, release and issue reply is the last check before the public: verify it before it goes out.
+- Automate recurring work (validation, review, releases, drift checks, issue handling) with CI, evals, hooks, agents and scheduled tasks. Where none exists yet, propose building it.
 
-## Purpose and Goal
+## Current Claude Code features, capabilities, and guidance enforcement
 
-This project carries one item of the global North Star: multiply execution capacity with AI, and share it as public plugins.
+Claude Code, the Claude app, the Claude models and every tool the gates run change faster than training data, recall or project docs. Before any plan, plugin component or scaffold, and before any answer about how they behave, read the current official documentation and release notes.
+
+- When docs and release notes differ, the release notes win: docs lag releases.
+- When components depend on each other, research each side. For example, a plugin hook needs the hooks reference, the plugins reference and the Claude app platform-support page.
+
+## Purpose and release gate
 
 - Goal: publish plugins that automate and optimize everyday workflows.
-- Differentiator: completeness, not complexity. Elsewhere, users combine several plugins and skills to cover one domain; here one plugin covers the whole domain (knowledge, enforcement, tooling, review and proof that it works), so users find everything in one place.
-- Release gate: a plugin ships only when every requirement below has recorded evidence.
-- Requirements: every gate passes, the plugin review leaves no confirmed finding, the README's Claude app claims match `docs/compatibility.md` and the official Claude app pages (unless Claude Code-only), the README is accurate against the current docs, and the plugin is portable across macOS, Linux and Windows through Git Bash.
+- One plugin covers its whole domain: knowledge, enforcement, tooling, review and proof that it works.
+- Plugins are for third parties whose setups are unknown. Every plugin works from what its README declares, never from what is installed on Nery's machine.
+- A plugin ships only when each of these has recorded evidence:
+  - every gate passes;
+  - the plugin review leaves no confirmed finding;
+  - the README's Claude app claims match `docs/compatibility.md` and the official Claude app pages (not needed for Claude Code-only plugins);
+  - the README is accurate against the current official docs;
+  - the plugin runs on macOS and Linux, and on Windows through Git Bash when its README declares Windows support.
 
-## Stack and Development
+## Scopes
 
-- Product: Claude Code plugins (skills, agents, hooks, MCP and LSP servers, mods) listed in `.claude-plugin/marketplace.json`, one folder per plugin under `plugins/`.
-- Build: no build step and no runtime to maintain; no root `pyproject.toml` or virtual environment.
-- Root `package.json` (ADR_2026-10-21_maintainer-only-root-package-json): maintainer tooling only, never a runtime of any plugin. A user receives only `plugins/<name>/`, but Node resolves imports by walking up the folders, so anything in the root `node_modules` would let a plugin pass here and fail for users.
-  - It holds only exact `@types/*` devDependencies, today `@types/node` on the Node major of `.nvmrc`, so `tsc`, the post-edit hook and the language server read `scripts/tsconfig.json` the same way. It sets `"private": true` and never `dependencies`, `main`, `exports`, `bin`, `type` or `workspaces`; a `"type"` would change how Node and `tsc` read the plugins' `.js` and `.ts` files.
-  - The CLIs stay out of it: TypeScript, Biome, ruff, mypy and every other tool run as installed on the machine, by bare name, never through `npx` or `uvx` (ADR_2026-10-21_gates-run-installed-tools). CI installs the latest release of each; only TypeScript is pinned, to 6.0.3 (ADR_2026-10-21_ci-installs-latest-tools).
-  - `check-repo.mjs` enforces all of it, including the `.nvmrc` major. When `.nvmrc` changes major, change `@types/node` in the same commit with `npm install --save-dev --save-exact @types/node@<major>.x.y`.
-  - A plugin that needs packages ships its own `package.json` and npm or Bun lockfile in `plugins/<name>/`, which Claude Code installs into that plugin's cache; it never relies on the root one.
-- Plugin code: Bash and POSIX-style Python 3 that run on whatever `bash` and `python3` the user has on `PATH`, with no version floor; `.mjs` modules type-checked by TypeScript 6.0.3; mods in TypeScript under `hooks/*.ts`.
-- Repository tooling: Node scripts in `scripts/` for scaffolding, catalog, version bumps, labels, policy checks and eval targets, with their tests in `scripts/tests/`; Node 26 from `.nvmrc`. Maintainer code lives at the root, never under `.github/` (ADR_2026-10-21_maintainer-scripts-at-root): basedpyright and other tools skip folders whose name starts with a dot, so code there goes unchecked. `.github/` holds only GitHub's own files.
-- Formatting and linters: Biome for JavaScript and JSON; ruff, mypy and basedpyright for Python; shfmt and ShellCheck for shell; actionlint for workflows. Markdown has no linter (ADR_2026-10-21_remove-markdownlint). Each runs as installed on the machine; CI installs the latest release of each, TypeScript excepted.
-- Testing: `node --test` for script and hook tests, `unittest` and `by_path.sh` for plugin scripts, `claude plugin validate --strict` and `claude plugin test` for plugins and mods, `claude plugin eval` for plugins that have evals.
-- CI/CD and GitHub Actions: `validate.yml` on every push and PR, `evals.yml` for changed plugins that have evals, `release.yml` tags each plugin after merge, and Claude reviewers run on pull requests.
-- Tool sources: Node, npm and a global TypeScript via nvm, and the root `node_modules` via `npm ci` after a fresh clone; Python, ruff, mypy and basedpyright via uv (`uv tool install <tool>@latest`); Biome and Claude Code via their official installers; shfmt, ShellCheck and actionlint via Homebrew. A tool that is missing is installed from its source, never run through `npx` or `uvx`. Global configs are never overridden here; `ruff.toml` is the only ruff config in the repo.
+This repository has two distinct scopes: maintainer infrastructure and distributable plugins.
 
-## Authority, Limits and Permissions
+- Plugins are self-contained, portable within their declared requirements, and independent of maintainer tooling. They run on the user's machine, where the maintainer toolchain (uv, PEP 723 execution, the maintainer's Python version, the root `package.json`) does not exist.
+- Maintainer scripts, dependencies and execution requirements stay separate from plugin runtimes. Maintainer tooling runs only in maintainer and development environments and in CI.
+- Maintainer code and plugin code have separate runtimes and separate Basedpyright configurations.
 
-- Push only on Nery's instruction; when one is needed, ask for approval.
-- Type-check every `.mjs` and mod with strict `tsc`, and Python with `mypy --strict` and basedpyright: no `any`, unsafe casts, ignore comments or loosened configs.
-- Make each script and hook that receives critical input require the fields it needs, or fail loudly.
-- Prefer avoiding technical debt: resolve at its root every issue the task touches directly or indirectly, or needs to work.
-- Record as technical debt only a completely separate scope.
+## Working rules
+
+- Fix technical debt inside the task's scope as part of the task. Record it as pending only when fixing it would change the task's scope substantially or cannot be done.
 - Fix every issue a hook, script, formatter, linter or diagnostic reports; never skip or suppress it.
-- Build every plugin for third parties: never depend on, cite or fold in what is installed on Nery's machine.
-- When designing, planning or proposing a plugin, justify every choice (name, skills, agents, structure) on its own merits.
-- Never name other plugins of the marketplace as precedent ("follows X", "like Y does") or as a blocker.
+- Justify each choice in a plugin's design (name, skills, agents, structure) individually; precedent in another plugin is not a justification.
 
-## Documentation, Maintenance, and Gates
+## Tooling
 
-- `.claude/maintainer/decisions/`: ADRs for important decisions.
-- `.claude/maintainer/technical-debt/`: pending and closed debt.
-- `.claude/memory/`: project memory (facts, feedback).
-- `.claude/session-handoff/`: session handoffs.
-- `.claude/skills/`: project skills (`plugin-development`, `plugin-consistency`, `github-workflow`, `release-and-versioning`, `plugin-hooks-guidance`, `plugin-mcp-guidance`).
-- `.claude/specs/`: design specs.
-- `.claude/plans/`: implementation plans.
-- `.claude/templates/`: templates for plugin files and the root README.
-- `.claude/rules/WORKFLOW.md`: how to work by task: quality checks, maintenance, plugins, hooks, versioning, GitHub, releases, skills and user docs.
-- `.claude/rules/mods.md`: mod sources and verified lessons; loads when Claude reads or edits a mod's files, tests, declarations or graders.
-- `docs/`: the user guides, covering installation, managing plugins, compatibility, FAQ, troubleshooting and tool references.
+The rules live in `.claude/rules/maintainer-tooling.md`, `.claude/rules/plugin-tooling.md` and `.claude/rules/node-tooling.md`, which load in every session. This is the context their decisions rely on:
 
-## Research and Sources
+- Basedpyright is the only type checker, for maintainer and plugin Python. Mypy is not used.
+- `tsc` and Biome are to JavaScript and TypeScript what Basedpyright and Ruff are to Python: maintainer tools that check both maintainer and plugin code, installed on the machine and never declared in the root `package.json`. Biome also formats and lints JSON; `biome.json` decides which file types it covers.
+- The CLI gate is the authority for diagnostics. The editor and hooks are views of it and must match it.
+- Diagnostics from any additional checker fall into one of three classes: implementation defects, policy checks, inference limitations. Another checker is justified only by documented defects that the current stack misses.
+- `PYTHONSAFEPATH=1` only prevents automatic prepending of the script directory to the import path. It is not a sandbox.
+- `uv python find --script <file>` returns the base interpreter, without the script's dependencies, until `uv sync --script <file>` has run.
+- `requires-python` is what bounds the Python version, including in CI.
 
-- Claude Code and the Claude app change almost daily: training data, memory and project docs are starting points, not the authority.
-- Before any plan, answer, plugin component or scaffold, read the official sources for the installed Claude Code version and the installed tool versions.
-- When components connect or depend on each other, research each one equally, never one side only (e.g. a plugin hook reads the hooks reference, the plugins reference and the Claude app platform support).
-- Check the Claude Code changelog and the Claude app release notes for changes the docs have not caught up with yet.
-- The same standard applies to the Claude models themselves and to every tool the gates run: research their current features and check their changelogs.
+## Migration
 
-## Commands
+- New code follows the tooling rules from the start.
+- Migrate existing code on touch, not in a dedicated sweep: Mypy to Basedpyright, unittest to pytest, and bare `python3` maintainer entry points to the uv shebang. Plugin scripts keep `#!/usr/bin/env python3`.
+- Migrate the whole touched unit at once (a script with its tests and its gate), never half of it. Until then, its current gates keep running and must pass.
 
-Run from the repository root with the `.nvmrc` runtime selected and `npm ci` run once after a fresh clone, so `node_modules/@types/node` exists. The commands run the tools installed on the machine by bare name; CI installs the latest release of each, except TypeScript, pinned in the `env` block of `.github/workflows/validate.yml`.
+## Quality gates
 
-### Project
+Consolidated here until Nery orders a rule file for them.
 
-- `node scripts/new-plugin.mjs --name <name> --category <id> --description "<sentence>" [--display-name "<Name>"] [--emoji <e>] [--min-claude-code <x.y.z>] [--claude-code-only]` - Run when scaffolding and registering a plugin.
-- `node scripts/catalog.mjs` - Run when regenerating the generated blocks of the root `README.md`.
-- `node scripts/bump-version.mjs <plugin> <major|minor|patch>` - Run when bumping a plugin in its PR.
-- `node scripts/release-notes.mjs <plugin> [--tag]` - Run when previewing a plugin's release notes or tag.
-- `node scripts/eval-targets.mjs --changed <base> <head>` or `--only <plugin|all>` - Run when listing the plugins whose evals CI would run.
-- `node scripts/sync-labels.mjs [--dry-run]` - Run when syncing the GitHub labels after a plugin is added.
-- `ONLY=<plugin> scripts/run-evals.sh` - Run when running a plugin's full eval suite.
-- `claude --plugin-dir plugins/<plugin>` - Run when exercising a plugin in a live session.
-- `git push origin <branch>` - Run when Nery orders a push. Never run a bare `git push`.
-- For all other commands, read `scripts/` and `.github/workflows/`.
+- After you edit, write or create a `.py`, `.mjs`, `.ts` or `.sh` file, run the commands for its type below right away, before the next task, in this order: formatter, linter, type checker, tests.
+- Fix every finding before you advance to the next step, file or task. An issue stays open only when it waits on a decision or a spend only Nery can make: then stop and ask.
+- After a delegated review, verify every finding against the files and the live docs before fixing it, then apply the confirmed ones in one coherent pass per file and re-read each touched file and its references (memory `apply-fixes-holistically`).
 
-### After Editing a File
+### After editing a file
 
 Python:
 
 - `ruff format <file>` - Run first, after every `.py` edit.
 - `ruff check <file>` - Run after the formatter.
-- `mypy --strict <file>` - Run after ruff.
-- `basedpyright --warnings <file>` - Run after mypy.
-- `python3 -m unittest discover -s scripts/tests/<plugin>` - Run when the file belongs to a plugin with Python tests.
+- `basedpyright --warnings <file>` - Run after ruff.
+- The tests of the unit the file belongs to: the PEP 723 pytest runner for migrated code; `python3 -m unittest discover -s scripts/tests/<plugin>` until a plugin's tests are migrated.
 - `scripts/tests/<plugin>/by_path.sh` - Run when that plugin folder ships one.
+- Until their migration, the `mypy-scripts` and `mypy-plugins` gates still run over every tracked `.py`, new files included, and must pass.
 
 JavaScript modules (`tsc` checks the whole project):
 
@@ -120,7 +104,7 @@ Shell:
 - `shellcheck -o all -S style -x -a -P SCRIPTDIR <file>` - Run after shfmt.
 - `scripts/tests/<plugin>/by_path.sh` - Run when the script belongs to a plugin that ships one.
 
-### Before Every Push
+### Before every push
 
 Run `npm run gates` with the `.nvmrc` Node and after `npm ci` (ADR_2026-10-21_gates-run-from-one-script). `scripts/gates.mjs` is the one list of gates, the source of the commands below: it runs them in order, without a shell, stops at the first failure with that gate's exit code, and fails any gate whose tests skipped a case, since a skip means a tool is missing. Fix the cause and run it again from the start. No git hook runs it or `.pre-commit-config.yaml`.
 
@@ -137,11 +121,38 @@ CI runs only the `policy`, `python`, `claude` and `lint` groups, one per job, wi
 
 The mods' `tsc` needs the declarations the engine writes into `plugins/<plugin>/.claude-plugin/types/`; after a fresh clone, load the plugin once in an interactive session (`claude --plugin-dir plugins/<plugin>`, then `/exit`).
 
-Report the run as `.claude/rules/WORKFLOW.md` → When Checking Quality says: gate, result and key output line.
+Report the run as a table: gate, result and key output line.
 
-### Command Rules
+## Documentation and Maintenance
 
-- Script `sync-labels.mjs` writes GitHub labels; run `--dry-run` first.
-- Script `run-evals.sh` spends API money: both arms, 3 runs per case, capped by `evals-config.json`. Run it only on Nery's request.
-- Script `bump-version.mjs` rewrites `plugin.json` and the plugin changelog; use it instead of hand edits.
-- `gh workflow run release.yml` tags and publishes; run it only per the `release-and-versioning` skill.
+- `.claude/WORKFLOW.md`: the stage map, imported above.
+- `.claude/rules/`: the rules. Loaded in every session: `maintainer-tooling.md`, `plugin-tooling.md`, `node-tooling.md`, `skill-triggers.md`, `plugin-design.md`. Loaded when Claude reads or edits a matching file: `skill-authoring.md` (skills), `evals.md` (evals), `user-docs.md` (READMEs, `docs/`, community files, README templates), `mods.md` (a mod's files, tests, declarations or graders).
+- `.claude/maintainer/decisions/`: ADRs for important decisions.
+- `.claude/maintainer/technical-debt/`: pending and closed debt.
+- `.claude/memory/`: project memory (facts, feedback).
+- `.claude/session-handoff/`: session handoffs.
+- `.claude/skills/`: project skills (`plugin-development`, `plugin-consistency`, `github-workflow`, `release-and-versioning`, `plugin-hooks-guidance`, `plugin-mcp-guidance`).
+- `.claude/specs/`: design specs.
+- `.claude/plans/`: implementation plans.
+- `.claude/templates/`: templates for plugin files, the root README and the plugin review brief.
+- `docs/`: the user guides, covering installation, managing plugins, compatibility, FAQ, troubleshooting and tool references.
+
+## Commands
+
+**Command Rules:**
+
+1. Script `sync-labels.mjs` writes GitHub labels; run `--dry-run` first.
+2. Script `run-evals.sh` spends API money: both arms, 3 runs per case, capped by `evals-config.json`. Run it only on Nery's request.
+3. Script `bump-version.mjs` rewrites `plugin.json` and the plugin changelog; use it instead of hand edits.
+4. `gh workflow run release.yml` tags and publishes; run it only per the `release-and-versioning` skill.
+5. Run from the repository root with the `.nvmrc` runtime selected (`npm ci` per `node-tooling.md`).
+
+- `node scripts/new-plugin.mjs --name <name> --category <id> --description "<sentence>" [--display-name "<Name>"] [--emoji <e>] [--min-claude-code <x.y.z>] [--claude-code-only]` - Run when scaffolding and registering a plugin.
+- `node scripts/catalog.mjs` - Run when regenerating the generated blocks of the root `README.md`.
+- `node scripts/bump-version.mjs <plugin> <major|minor|patch>` - Run when bumping a plugin in its PR.
+- `node scripts/release-notes.mjs <plugin> [--tag]` - Run when previewing a plugin's release notes or tag.
+- `node scripts/eval-targets.mjs --changed <base> <head>` or `--only <plugin|all>` - Run when listing the plugins whose evals CI would run.
+- `node scripts/sync-labels.mjs [--dry-run]` - Run when syncing the GitHub labels after a plugin is added.
+- `ONLY=<plugin> scripts/run-evals.sh` - Run when running a plugin's full eval suite.
+- `claude --plugin-dir plugins/<plugin>` - Run when exercising a plugin in a live session.
+- `git push origin <branch>` - Run when Nery orders a push. Never run a bare `git push`.
