@@ -37,7 +37,16 @@ export function buildEntries() {
     if (!dirent.isDirectory()) {
       continue
     }
-    const manifest = loadManifest(dirent.name)
+    /** @type {import('../lib.mjs').Manifest | null} */
+    let manifest
+    try {
+      manifest = loadManifest(dirent.name)
+    } catch (e) {
+      problems.push(
+        `${scope}: .claude-plugin/plugin.json is not valid JSON: ${e instanceof Error ? e.message : String(e)}`,
+      )
+      continue
+    }
     if (manifest === null) {
       problems.push(`${scope}: .claude-plugin/plugin.json is missing`)
       continue
@@ -81,10 +90,12 @@ export function renderMarketplace() {
 }
 
 if (isMain(import.meta.url)) {
-  const current = loadMarketplace()
+  /** @type {import('../lib.mjs').Marketplace} */
+  let current
   /** @type {import('../lib.mjs').Marketplace} */
   let next
   try {
+    current = loadMarketplace()
     next = renderMarketplace()
   } catch (e) {
     fail(e instanceof Error ? e.message : String(e))

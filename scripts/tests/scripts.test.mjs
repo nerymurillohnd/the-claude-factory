@@ -395,6 +395,17 @@ describe('marketplace generator', () => {
     assert.match(r.out, /plugins\/block-no-verify: name "x" does not match its directory/)
   })
 
+  test('names the plugin whose manifest is not valid JSON, and keeps collecting', () => {
+    write(manifestOf('block-no-verify'), '{ broken')
+    editManifest('tool-ledger', (m) => {
+      m.name = 'x'
+    })
+    const r = generate()
+    assert.equal(r.code, 1)
+    assert.match(r.out, /plugins\/block-no-verify: \.claude-plugin\/plugin\.json is not valid JSON/)
+    assert.match(r.out, /plugins\/tool-ledger: name "x" does not match its directory/)
+  })
+
   test('ignores plain files in plugins/', () => {
     write('plugins/.DS_Store', 'x')
     assert.equal(generate(['--check']).code, 0)
@@ -449,6 +460,41 @@ describe('new-plugin', () => {
     ])
     assert.equal(r.code, 1)
     assert.match(r.out, /Unknown category/)
+  })
+
+  test('stops before writing anything when another plugin directory is broken', () => {
+    const before = read('.claude-plugin/marketplace.json')
+    mkdirSync(join(root, 'plugins/stray'))
+    const r = run('new-plugin.mjs', [
+      '--name',
+      'demo-tool',
+      '--category',
+      'productivity',
+      '--description',
+      'x',
+    ])
+    assert.equal(r.code, 1)
+    assert.match(r.out, /plugins\/stray: \.claude-plugin\/plugin\.json is missing/)
+    assert.ok(!existsSync(join(root, 'plugins/demo-tool')))
+    assert.equal(read('.claude-plugin/marketplace.json'), before)
+  })
+
+  test('writes a valid manifest when the description holds quotes and backslashes', () => {
+    const description = 'Says "hi" to C:\\temp.'
+    const r = run('new-plugin.mjs', [
+      '--name',
+      'demo-tool',
+      '--category',
+      'productivity',
+      '--description',
+      description,
+    ])
+    assert.equal(r.code, 0, r.out)
+    assert.equal(json('plugins/demo-tool/.claude-plugin/plugin.json').description, description)
+    const entry = json('.claude-plugin/marketplace.json').plugins.find(
+      (/** @type {{ name: string }} */ e) => e.name === 'demo-tool',
+    )
+    assert.equal(entry.description, description)
   })
 
   test('registers every plugin directory through the marketplace generator', () => {
