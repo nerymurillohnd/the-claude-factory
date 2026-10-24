@@ -20,6 +20,12 @@
       "description": "Hooks, agents and pipelines that run work for you."
     },
     {
+      "id": "mods",
+      "emoji": "🧩",
+      "title": "Mods",
+      "description": "Panels, bands and status views that change Claude Code's own interface."
+    },
+    {
       "id": "testing",
       "emoji": "🧪",
       "title": "Testing & Quality",

@@ -105,8 +105,9 @@ Plugin skills are namespaced, so they never collide with yours: type `/<plugin>:
 | Category | Plugins |
 | :-- | :--: |
 | [🛠️ Development](#️-development) | 3 |
-| [⚡ Productivity](#-productivity) | 3 |
+| [⚡ Productivity](#-productivity) | 1 |
 | [🤖 Automation](#-automation) | 1 |
+| [🧩 Mods](#-mods) | 2 |
 | [🧪 Testing & Quality](#-testing--quality) | 3 |
 | [🛡️ Security](#️-security) | 1 |
 | [📚 Documentation & Writing](#-documentation--writing) | 1 |
@@ -129,8 +130,6 @@ Plugin skills are namespaced, so they never collide with yours: type `/<plugin>:
 | Plugin | What it does | Works in | Version | Includes |
 | :-- | :-- | :-- | :--: | :-- |
 | [**Prompt Writer**](./plugins/prompt-writer#readme)<br>`prompt-writer@the-claude-factory` | Turns a goal, idea or draft into one copy-ready prompt tuned to the target Claude model and effort: it clarifies intent, checks current official facts and recommends the setup to run it with. | 💻 Code · 🖥️ Claude app | `0.2.0` | 🎯 Skills |
-| [**Tool Ledger**](./plugins/tool-ledger#readme)<br>`tool-ledger@the-claude-factory` | Lists every tool call of the session in a live panel: what ran, on what, whether Claude or a subagent made it, and whether it finished, failed or was denied. | 💻 Code only | `0.1.0` | 🧩 Mods |
-| [**Turn Meter**](./plugins/turn-meter#readme)<br>`turn-meter@the-claude-factory` | Shows how long each turn took, how many tools it used in the main thread and in subagents, and the tokens it spent, in a band above the prompt, and alerts you when a long turn ends. | 💻 Code only | `0.1.0` | 🧩 Mods |
 
 ### 🤖 Automation
 
@@ -139,6 +138,15 @@ Plugin skills are namespaced, so they never collide with yours: type `/<plugin>:
 | Plugin | What it does | Works in | Version | Includes |
 | :-- | :-- | :-- | :--: | :-- |
 | [**Hook Engineering**](./plugins/hook-engineering#readme)<br>`hook-engineering@the-claude-factory` | Designs, writes, audits and debugs Claude Code hooks end to end: the event and configuration that decide when a hook runs, the input and output contract that decides what it does, prompt, agent and background hooks, workspace trust and security, and how mods interact with hooks, checked against the current docs and changelog. | 💻 Code · 🖥️ Claude app | `0.2.0` | 🎯 Skills · 🤖 Agents |
+
+### 🧩 Mods
+
+*Panels, bands and status views that change Claude Code's own interface.*
+
+| Plugin | What it does | Works in | Version | Includes |
+| :-- | :-- | :-- | :--: | :-- |
+| [**Tool Ledger**](./plugins/tool-ledger#readme)<br>`tool-ledger@the-claude-factory` | Lists every tool call of the session in a live panel: what ran, on what, whether Claude or a subagent made it, and whether it finished, failed or was denied. | 💻 Code only | `0.1.0` | 🧩 Mods |
+| [**Turn Meter**](./plugins/turn-meter#readme)<br>`turn-meter@the-claude-factory` | Shows how long each turn took, how many tools it used in the main thread and in subagents, and the tokens it spent, in a band above the prompt, and alerts you when a long turn ends. | 💻 Code only | `0.1.0` | 🧩 Mods |
 
 ### 🧪 Testing & Quality
 

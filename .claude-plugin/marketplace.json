@@ -83,13 +83,13 @@
       "name": "tool-ledger",
       "source": "./plugins/tool-ledger",
       "description": "Lists every tool call of the session in a live panel: what ran, on what, whether Claude or a subagent made it, and whether it finished, failed or was denied.",
-      "category": "productivity"
+      "category": "mods"
     },
     {
       "name": "turn-meter",
       "source": "./plugins/turn-meter",
       "description": "Shows how long each turn took, how many tools it used in the main thread and in subagents, and the tokens it spent, in a band above the prompt, and alerts you when a long turn ends.",
-      "category": "productivity"
+      "category": "mods"
     },
     {
       "name": "typescript6-lsp-intelligence",
