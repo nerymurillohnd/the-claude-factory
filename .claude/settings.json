@@ -38,6 +38,15 @@
             "args": [],
             "if": "Bash(git push *)",
             "onFailure": "block"
+          },
+          {
+            "type": "command",
+            "command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/validators-gate.sh",
+            "args": [],
+            "if": "Bash(git push*)",
+            "timeout": 120,
+            "statusMessage": "Running the maintainer validators before the push…",
+            "onFailure": "block"
           }
         ]
       }
