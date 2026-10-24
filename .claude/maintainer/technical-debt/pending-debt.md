@@ -107,7 +107,7 @@ Add an item only when all of these hold:
 - **Why it is not fixed now:** the rule for reverts, and how the check treats a version that returns to the last tag, is a design decision for Nery. This task was only to get the pending releases out.
 - **Next action:** decide with Nery whether `check-version-bump.mjs` compares each plugin with its latest `<plugin>--v*` tag instead of the previous commit. If yes, change it with tests for both cases: a revert to the tagged state passes and an edit without a bump still fails.
 - **Review condition:** closes when a revert of an unreleased bump passes `Validate` on `main` and a plugin change without a bump still fails it.
-- **Related records:** [PR #27](https://github.com/nerymurillohnd/the-claude-factory/pull/27), [PR #31](https://github.com/nerymurillohnd/the-claude-factory/pull/31); `.claude/rules/RELEASES.md`.
+- **Related records:** [PR #27](https://github.com/nerymurillohnd/the-claude-factory/pull/27), [PR #31](https://github.com/nerymurillohnd/the-claude-factory/pull/31); `.claude/CLAUDE.md` → Versioning and Releases.
 
 ### DEBT-004 — Unproven that the TypeScript post-edit hook's block makes Claude fix the errors before it moves on
 
@@ -124,6 +124,7 @@ Add an item only when all of these hold:
   - Both plugins shipped on 2026-10-22 (`typescript6-lsp-intelligence--v0.3.0`, `typescript7-lsp-intelligence--v0.4.0`, [PR #41](https://github.com/nerymurillohnd/the-claude-factory/pull/41)). On type errors the hook prints `{"decision":"block","reason":...}` on `PostToolUse`.
   - The official hooks reference says a command hook's `PostToolUse` `decision: "block"` "adds the `reason` next to the tool result" and that Claude still sees the original output. It never says whether the turn continues or whether Claude must act first; the turn-ends rule and `continueOnBlock` are documented for prompt hooks only (research notes under `~/Claude/projects/the-claude-factory-research/research_notes/Auditoría del hook TypeScript/posttooluse_events.md`).
   - The README promises that Claude "has to fix it before continuing". The plugin owner's required behavior is that Claude reads the errors and fixes them before it advances.
+  - Since 2026-10-24 `.claude/CLAUDE.md` → Plugin Tooling requires every plugin that ships hooks to carry evals as its proof that it works. Neither plugin has an `evals/` folder.
 - **Inferences:** Claude acts on the reason in practice (observed while editing this repository's `.mjs` files with the hook installed), but that is not a controlled test of a two-step task.
 - **Open questions:** whether a reason in factual wording, the shipped one, is acted on as reliably as the earlier imperative one.
 
@@ -131,7 +132,7 @@ Add an item only when all of these hold:
 
 - **Impact / risk:** if Claude moves on, users get edits that do not compile while the README says they cannot.
 - **Why it is not fixed now:** the proof is a live Claude Code session, which spends the owner's subscription usage; Nery has not ordered it.
-- **Next action:** in a temporary project, run `claude -p --plugin-dir plugins/typescript6-lsp-intelligence` with a two-step task whose first step leaves a type error, and read the transcript: the fix must come before the second step. Repeat once interactively.
+- **Next action:** write the plugin's evals, which Plugin Tooling now requires, with a two-step case whose first step leaves a type error and whose grader checks that the fix comes before the second step. Running them spends money, so it waits on Nery's order.
 - **Review condition:** closes when the transcript shows the fix before the next step; if it does not, the hook's output needs another mechanism and the README claim changes.
 - **Related records:** ADR_2026-10-22_tsc-hook-policy-defaults-user-wins.
 
@@ -148,17 +149,18 @@ Add an item only when all of these hold:
 
 - **Confirmed facts:**
   - On 2026-10-24 `check-repo.mjs` stopped checking entry names, sources, directories, renames, the manifest name and homepage, the required files, SemVer, the entry version, `[Unreleased]`, the current version's section and the root CHANGELOG (commit `942df1e`), because the eight validators of `scripts/validators/` own them.
-  - `scripts/gates.mjs` has no gate for any validator; `grep -n validators scripts/gates.mjs` finds only `MIGRATED_PYTHON`. They run by hand, or through `npm run validate:<script>`.
-  - The four schema validators need uv and Python 3.15 (inline metadata); the four standard-library ones need a `python3` that is 3.15 (`TypeIs`, the `type` statement). CI's `python` job runs `uv python install 3.15`.
-- **Inferences:** a pull request that breaks a plugin name, version or required file now passes CI.
+  - `scripts/gates.mjs` has no gate for any validator; `grep -n validators scripts/gates.mjs` finds only `MIGRATED_PYTHON`. There are nine validators now (`skill-names-consistency.py` was added on 2026-10-24).
+  - `npm run validate` runs all nine and fails if one fails. The project `PreToolUse` hook `.claude/hooks/validators-gate.sh` runs it before every `git push` made from a Claude Code session in this repository and denies the push on a failure. A push from a plain terminal and every CI run skip them.
+  - The four schema validators and `skill-names-consistency.py` need uv and Python 3.15 (inline metadata); the other four need a `python3` that is 3.15 (`TypeIs`, the `type` statement). CI's `python` job runs `uv python install 3.15`.
+- **Inferences:** a pull request that breaks a plugin name, version or required file passes CI.
 - **Open questions:** which CI group each validator joins, and whether the standard-library ones get a `python3` that is 3.15 there.
 
 #### 📈 Impact and next step
 
-- **Impact / risk:** the checks moved out of `check-repo.mjs` run nowhere automatically, locally or in CI.
+- **Impact / risk:** the checks moved out of `check-repo.mjs` run automatically only on a push from a Claude Code session, never in CI.
 - **Why it is not fixed now:** Nery limited the deduplication to the scripts and asked not to touch gates or CI in that task.
 - **Next action:** add one gate per validator to the `python` group of `scripts/gates.mjs`, run by path, and confirm the CI `python` job runs them on Python 3.15.
-- **Review condition:** closes when `npm run gates:ci -- --group python` runs all eight validators and a defect planted in a copy fails the run.
+- **Review condition:** closes when `npm run gates:ci -- --group python` runs all nine validators and a defect planted in a copy fails the run.
 - **Related records:** ADR_2026-10-24_repository-checks-move-to-python-validators, ADR_2026-10-21_gates-run-from-one-script.
 
 ### DEBT-007 — Maintainer tests fail: `gates.test.mjs` and the schema tests still expect the removed gates and monoliths
@@ -173,7 +175,7 @@ Add an item only when all of these hold:
 #### 🔎 Evidence
 
 - **Confirmed facts:**
-  - `node --test "scripts/tests/*.test.mjs"` on 2026-10-24: 95 tests, 92 pass, 3 fail, all in `gates.test.mjs`: the two `argsAtRun` tests and "--ci keeps maintainer tooling and plugin structure, and leaves plugin behavior local". `argsAtRun` and the `pytest-env`, `basedpyright-maintainer` and `pytest-scripts` gates were removed from `scripts/gates.mjs` earlier that day, and the tests were not updated.
+  - `node --test "scripts/tests/*.test.mjs"` on 2026-10-24, after the generators landed: 106 tests, 103 pass, 3 fail, all in `gates.test.mjs`: the two `argsAtRun` tests and "--ci keeps maintainer tooling and plugin structure, and leaves plugin behavior local". `argsAtRun` and the `pytest-env`, `basedpyright-maintainer` and `pytest-scripts` gates were removed from `scripts/gates.mjs` earlier that day, and the tests were not updated.
   - `scripts/tests/schemas/test_schemas.py` and `cases.json` load `plugin.schema.json`, `marketplace.schema.json`, `hooks.schema.json`, `lsp.schema.json` and `mcp.schema.json` at the root of `scripts/schemas/`, which no longer exist (ADR_2026-10-24_one-schema-source-per-shape).
   - Case `mcp-63-invalid` expects an empty `mcpServers` map to fail; `claude plugin validate --strict` 2.1.310 accepts it.
 - **Inferences:** the `node-tests` gate, and so `npm run gates` and the CI `policy` job, fail until the three tests change.
