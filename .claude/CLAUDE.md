@@ -85,7 +85,7 @@ JavaScript modules (`tsc` checks the whole project):
 - `biome check --write --error-on-warnings <file>`.
 - `tsc -p scripts/tsconfig.json --noEmit` for a file under `scripts/`; `-p scripts/tsconfig.plugins.json` for one under `plugins/`.
 - `node --test "scripts/tests/*.test.mjs"`, plus `node --test scripts/tests/<plugin>/*.test.mjs` for a plugin with Node tests.
-- `node scripts/check-repo.mjs`.
+- `node scripts/check-repo.mjs`, `node scripts/generators/marketplace.mjs --check` and `node scripts/generators/catalog.mjs --check`.
 
 Mods (code in `hooks/*.ts`, tests in `tests/*.test.ts`):
 
