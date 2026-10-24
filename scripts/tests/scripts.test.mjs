@@ -187,13 +187,6 @@ describe('check-repo', () => {
     assert.equal(after.code, 0, after.out)
   })
 
-  test('flags a plugin directory missing from marketplace.json', () => {
-    mkdirSync(join(root, 'plugins', 'orphan', '.claude-plugin'), { recursive: true })
-    const r = run('check-repo.mjs')
-    assert.equal(r.code, 1)
-    assert.match(r.out, /plugins\/orphan.*not listed/)
-  })
-
   test('flags a root package.json that declares runtime dependencies', () => {
     const pkg = json('package.json')
     pkg.dependencies = { lodash: '4.17.21' }
@@ -210,25 +203,6 @@ describe('check-repo', () => {
     const r = run('check-repo.mjs')
     assert.equal(r.code, 1)
     assert.match(r.out, /marketplace carries no version/)
-  })
-
-  test('flags a version on the marketplace entry', () => {
-    scaffoldReady()
-    const mp = json('.claude-plugin/marketplace.json')
-    mp.plugins[0].version = '9.9.9'
-    write('.claude-plugin/marketplace.json', `${JSON.stringify(mp, null, 2)}\n`)
-    const r = run('check-repo.mjs')
-    assert.equal(r.code, 1)
-    assert.match(r.out, /do not set version on the entry/)
-  })
-
-  test('flags a manifest name that differs from the entry name', () => {
-    scaffoldReady()
-    const p = 'plugins/demo-tool/.claude-plugin/plugin.json'
-    write(p, read(p).replace('"name": "demo-tool"', '"name": "other"'))
-    const r = run('check-repo.mjs')
-    assert.equal(r.code, 1)
-    assert.match(r.out, /must equal the entry name/)
   })
 
   test('flags a missing required README section', () => {

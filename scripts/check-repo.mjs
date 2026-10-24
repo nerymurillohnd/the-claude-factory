@@ -1,16 +1,15 @@
 #!/usr/bin/env node
-// Repository policy checks that `claude plugin validate` does not cover.
+// Repository policy checks that `claude plugin validate` and scripts/validators/ do not cover.
 // Exit 0 = pass, exit 1 = at least one error.
 
 import { execFileSync } from 'node:child_process'
-import { existsSync, lstatSync, readdirSync, statSync } from 'node:fs'
+import { existsSync, lstatSync, readdirSync } from 'node:fs'
 import { join, relative, sep } from 'node:path'
 import { renderReadme } from './catalog.mjs'
 import { COMPONENT_TYPES, detectComponents } from './components.mjs'
 import {
   changelogSection,
   isMain,
-  KEBAB,
   loadCategories,
   loadManifest,
   loadMarketplace,
@@ -19,7 +18,6 @@ import {
   README_PATH,
   REPO_URL,
   REQUIRED_PLUGIN_SECTIONS,
-  RESERVED_NAME,
   ROOT,
   readJson,
   readText,
@@ -300,54 +298,16 @@ export function checkRepo() {
   const listed = new Set()
   for (const [i, entry] of (mp.plugins ?? []).entries()) {
     const scope = `marketplace.plugins[${i}] ${entry.name ?? '?'}`
-    if (!KEBAB.test(entry.name ?? '')) {
-      err(scope, 'name must be kebab-case')
-    }
-    if (RESERVED_NAME.test(entry.name ?? '')) {
-      err(scope, 'name passes as an Anthropic plugin (reserved prefix)')
-    }
-    if (listed.has(entry.name)) {
-      err(scope, 'duplicate entry')
-    }
     listed.add(entry.name)
-    if (entry.source !== `./plugins/${entry.name}`) {
-      err(scope, `source must be "./plugins/${entry.name}"`)
-    }
     if (!categoryIds.has(entry.category ?? '')) {
       err(scope, `category "${entry.category}" is not in categories.json`)
     }
     if (!entry.description) {
       err(scope, 'missing description')
     }
-    if ('version' in entry) {
-      err(scope, 'do not set version on the entry; plugin.json is the single source of truth')
-    }
-    if (!existsSync(pluginDir(entry.name))) {
-      err(scope, `directory plugins/${entry.name} does not exist`)
-    }
-  }
-  if (mp.renames) {
-    for (const [from, to] of Object.entries(mp.renames)) {
-      if (listed.has(from)) {
-        err('marketplace.renames', `"${from}" is renamed but still listed`)
-      }
-      if (to !== null && !listed.has(to)) {
-        err('marketplace.renames', `"${from}" → "${to}" points to an unlisted plugin`)
-      }
-    }
   }
 
   // ── Plugin directories ─────────────────────────────────────────────────────
-  const pluginsRoot = join(ROOT, 'plugins')
-  const dirs = existsSync(pluginsRoot)
-    ? readdirSync(pluginsRoot).filter((d) => statSync(join(pluginsRoot, d)).isDirectory())
-    : []
-  for (const d of dirs) {
-    if (!listed.has(d)) {
-      err(`plugins/${d}`, 'directory is not listed in marketplace.json')
-    }
-  }
-
   for (const entry of mp.plugins ?? []) {
     const name = entry.name
     const dir = pluginDir(name)
@@ -357,14 +317,7 @@ export function checkRepo() {
     const scope = `plugins/${name}`
     const manifest = loadManifest(name)
     if (!manifest) {
-      err(scope, 'missing .claude-plugin/plugin.json')
       continue
-    }
-    if (manifest.name !== name) {
-      err(scope, `plugin.json name "${manifest.name}" must equal the entry name "${name}"`)
-    }
-    if (!SEMVER.test(manifest.version ?? '')) {
-      err(scope, `plugin.json version "${manifest.version}" is not semver`)
     }
     for (const f of /** @type {const} */ (['displayName', 'description', 'author', 'keywords'])) {
       if (!manifest[f]) {
@@ -373,9 +326,6 @@ export function checkRepo() {
     }
     if (manifest.license !== 'MIT') {
       err(scope, 'plugin.json license must be "MIT"')
-    }
-    if (manifest.homepage !== `${REPO_URL}/tree/main/plugins/${name}#readme`) {
-      err(scope, 'plugin.json homepage must point to the plugin README on main')
     }
     if (manifest.repository !== REPO_URL) {
       err(scope, `plugin.json repository must be ${REPO_URL}`)
@@ -402,12 +352,6 @@ export function checkRepo() {
       }
     }
 
-    for (const f of ['README.md', 'CHANGELOG.md', 'LICENSE']) {
-      if (!existsSync(join(dir, f))) {
-        err(scope, `missing ${f}`)
-      }
-    }
-
     const readmePath = join(dir, 'README.md')
     const readme = existsSync(readmePath) ? readText(readmePath) : null
     if (readme !== null) {
@@ -427,13 +371,7 @@ export function checkRepo() {
 
     if (existsSync(join(dir, 'CHANGELOG.md')) && manifest.version) {
       const changelog = readText(join(dir, 'CHANGELOG.md'))
-      if (!/^## \[Unreleased\]/m.test(changelog)) {
-        err(scope, 'CHANGELOG.md missing "## [Unreleased]"')
-      }
-      const body = changelogSection(changelog, manifest.version)
-      if (body === null) {
-        err(scope, `CHANGELOG.md has no "## [${manifest.version}]" entry for the current version`)
-      } else if (!body) {
+      if (changelogSection(changelog, manifest.version) === '') {
         err(scope, `CHANGELOG.md entry for ${manifest.version} is empty`)
       }
       if (/\{\{\w+\}\}/.test(changelog)) {
@@ -527,12 +465,6 @@ export function checkRepo() {
     }
   } catch (e) {
     err('package.json', e instanceof Error ? e.message : String(e))
-  }
-
-  // ── Root CHANGELOG ─────────────────────────────────────────────────────────
-  const rootChangelog = join(ROOT, 'CHANGELOG.md')
-  if (!existsSync(rootChangelog)) {
-    err('CHANGELOG.md', 'missing')
   }
 
   return { errors }
