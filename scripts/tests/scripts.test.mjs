@@ -314,6 +314,108 @@ describe('check-repo', () => {
   })
 })
 
+describe('marketplace generator', () => {
+  const MARKETPLACE = '.claude-plugin/marketplace.json'
+  const generate = (/** @type {string[]} */ args = []) => run('generators/marketplace.mjs', args)
+  /** @param {string} name */
+  const manifestOf = (name) => `plugins/${name}/.claude-plugin/plugin.json`
+  /**
+   * @param {string} name
+   * @param {(m: { name?: string, metadata: { category?: string | undefined } }) => void} change
+   */
+  const editManifest = (name, change) => {
+    const m = json(manifestOf(name))
+    change(m)
+    write(manifestOf(name), `${JSON.stringify(m, null, 2)}\n`)
+  }
+
+  test('matches the committed marketplace.json', () => {
+    const r = generate(['--check'])
+    assert.equal(r.code, 0, r.out)
+    assert.match(r.out, /marketplace\.json plugins are up to date/)
+  })
+
+  test('is idempotent', () => {
+    const before = read(MARKETPLACE)
+    assert.equal(generate().code, 0)
+    assert.equal(read(MARKETPLACE), before)
+    assert.equal(generate(['--check']).code, 0)
+  })
+
+  test('keeps the top-level fields', () => {
+    const { plugins: _plugins, ...before } = json(MARKETPLACE)
+    write(MARKETPLACE, `${JSON.stringify({ ...before, plugins: [] }, null, 2)}\n`)
+    assert.equal(generate().code, 0)
+    const { plugins, ...after } = json(MARKETPLACE)
+    assert.deepEqual(after, before)
+    assert.deepEqual(Object.keys(after), Object.keys(before))
+    assert.ok(plugins.length > 0)
+  })
+
+  test('picks up a new plugin', () => {
+    cpSync(join(root, 'plugins/block-no-verify'), join(root, 'plugins/zz-demo'), {
+      recursive: true,
+    })
+    editManifest('zz-demo', (m) => {
+      m.name = 'zz-demo'
+    })
+    assert.equal(generate(['--check']).code, 1)
+    assert.equal(generate().code, 0)
+    const entries = json(MARKETPLACE).plugins
+    assert.deepEqual(entries.at(-1), {
+      name: 'zz-demo',
+      source: './plugins/zz-demo',
+      description: json(manifestOf('zz-demo')).description,
+      category: 'security',
+    })
+  })
+
+  test('fails on a plugin directory without a manifest', () => {
+    const before = read(MARKETPLACE)
+    mkdirSync(join(root, 'plugins/empty'))
+    const r = generate()
+    assert.equal(r.code, 1)
+    assert.match(r.out, /plugins\/empty: \.claude-plugin\/plugin\.json is missing/)
+    assert.equal(read(MARKETPLACE), before)
+  })
+
+  test('fails on a missing or unknown category', () => {
+    editManifest('block-no-verify', (m) => {
+      m.metadata.category = undefined // JSON.stringify drops the key
+    })
+    let r = generate()
+    assert.equal(r.code, 1)
+    assert.match(r.out, /plugins\/block-no-verify: metadata\.category is required/)
+    editManifest('block-no-verify', (m) => {
+      m.metadata.category = 'nope'
+    })
+    r = generate()
+    assert.equal(r.code, 1)
+    assert.match(r.out, /metadata\.category "nope" is not in categories\.json/)
+  })
+
+  test('fails when the manifest name differs from its directory', () => {
+    editManifest('block-no-verify', (m) => {
+      m.name = 'x'
+    })
+    const r = generate()
+    assert.equal(r.code, 1)
+    assert.match(r.out, /plugins\/block-no-verify: name "x" does not match its directory/)
+  })
+
+  test('ignores plain files in plugins/', () => {
+    write('plugins/.DS_Store', 'x')
+    assert.equal(generate(['--check']).code, 0)
+  })
+
+  test('fails on a symlink in plugins/', () => {
+    symlinkSync(join(root, 'plugins/block-no-verify'), join(root, 'plugins/linked'))
+    const r = generate()
+    assert.equal(r.code, 1)
+    assert.match(r.out, /plugins\/linked: must be a directory, not a symlink/)
+  })
+})
+
 describe('new-plugin', () => {
   test('rejects names Claude Code reserves for Anthropic', () => {
     const r = run('new-plugin.mjs', [
