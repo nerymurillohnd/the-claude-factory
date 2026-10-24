@@ -6,16 +6,13 @@ import { execFileSync } from 'node:child_process'
 import { existsSync, lstatSync, readdirSync } from 'node:fs'
 import { join, relative, sep } from 'node:path'
 import { COMPONENT_TYPES, detectComponents } from './components.mjs'
-import { renderReadme } from './generators/catalog.mjs'
 import {
   changelogSection,
   isMain,
-  loadCategories,
   loadManifest,
   loadMarketplace,
   MARKETPLACE_NAME,
   pluginDir,
-  README_PATH,
   REPO_URL,
   REQUIRED_PLUGIN_SECTIONS,
   ROOT,
@@ -274,7 +271,6 @@ export function checkRepo() {
 
   // ── Marketplace ────────────────────────────────────────────────────────────
   const mp = loadMarketplace()
-  const categoryIds = new Set(loadCategories().map((c) => c.id))
   if (mp.name !== MARKETPLACE_NAME) {
     err('marketplace', `name must stay "${MARKETPLACE_NAME}" (it is permanent)`)
   }
@@ -293,15 +289,8 @@ export function checkRepo() {
 
   /** @type {Set<string>} */
   const listed = new Set()
-  for (const [i, entry] of (mp.plugins ?? []).entries()) {
-    const scope = `marketplace.plugins[${i}] ${entry.name ?? '?'}`
+  for (const entry of mp.plugins ?? []) {
     listed.add(entry.name)
-    if (!categoryIds.has(entry.category ?? '')) {
-      err(scope, `category "${entry.category}" is not in categories.json`)
-    }
-    if (!entry.description) {
-      err(scope, 'missing description')
-    }
   }
 
   // ── Plugin directories ─────────────────────────────────────────────────────
@@ -441,16 +430,6 @@ export function checkRepo() {
     for (const problem of portabilityProblems(pluginEntries(pluginDir(name)))) {
       err(`plugins/${name}`, problem)
     }
-  }
-
-  // ── Root README generated blocks ───────────────────────────────────────────
-  try {
-    const readme = readText(README_PATH)
-    if (renderReadme(readme) !== readme) {
-      err('README.md', 'catalog is out of date — run node scripts/generators/catalog.mjs')
-    }
-  } catch (e) {
-    err('README.md', e instanceof Error ? e.message : String(e))
   }
 
   // ── Root package.json ──────────────────────────────────────────────────────

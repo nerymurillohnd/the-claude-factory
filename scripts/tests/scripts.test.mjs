@@ -304,14 +304,6 @@ describe('check-repo', () => {
     assert.match(r.out, /desktop\.ini is a macOS or Windows system file/)
     assert.doesNotMatch(r.out, /\.DS_Store/)
   })
-
-  test('flags a stale README catalog', () => {
-    scaffoldReady()
-    write('README.md', read('README.md').replace(/demo-tool@the-claude-factory/, 'stale'))
-    const r = run('check-repo.mjs')
-    assert.equal(r.code, 1)
-    assert.match(r.out, /catalog is out of date/)
-  })
 })
 
 describe('marketplace generator', () => {
@@ -424,6 +416,12 @@ describe('catalog generator', () => {
     assert.equal(read('README.md'), before)
     assert.equal(run('generators/catalog.mjs', ['--check']).code, 0)
   })
+  test('--check flags a stale README catalog', () => {
+    write('README.md', read('README.md').replace(/block-no-verify@the-claude-factory/, 'stale'))
+    const r = run('generators/catalog.mjs', ['--check'])
+    assert.equal(r.code, 1)
+    assert.match(r.out, /catalog is out of date/)
+  })
 })
 
 describe('new-plugin', () => {
@@ -451,6 +449,28 @@ describe('new-plugin', () => {
     ])
     assert.equal(r.code, 1)
     assert.match(r.out, /Unknown category/)
+  })
+
+  test('registers every plugin directory through the marketplace generator', () => {
+    cpSync(join(root, 'plugins/block-no-verify'), join(root, 'plugins/zz-copy'), {
+      recursive: true,
+    })
+    const m = json('plugins/zz-copy/.claude-plugin/plugin.json')
+    write(
+      'plugins/zz-copy/.claude-plugin/plugin.json',
+      `${JSON.stringify({ ...m, name: 'zz-copy' }, null, 2)}\n`,
+    )
+    scaffold()
+    const names = json('.claude-plugin/marketplace.json').plugins.map(
+      (/** @type {{ name: string }} */ e) => e.name,
+    )
+    assert.ok(names.includes('zz-copy'))
+    assert.ok(names.includes('demo-tool'))
+    assert.equal(
+      json('plugins/demo-tool/.claude-plugin/plugin.json').metadata.category,
+      'productivity',
+    )
+    assert.equal(run('generators/marketplace.mjs', ['--check']).code, 0)
   })
 
   test('registers the entry, renders templates and updates the catalog', () => {

@@ -17,6 +17,6 @@ Refs #
 - [ ] `npm run gates` passes (every gate, the local-only ones included)
 - [ ] Version bumped with `bump-version.mjs` for every plugin whose shipped files changed
 - [ ] Plugin `CHANGELOG.md` and root `CHANGELOG.md` updated
-- [ ] README catalog regenerated (`node scripts/catalog.mjs`)
+- [ ] Marketplace and README catalog regenerated (`npm run generate`)
 - [ ] Installed from a local marketplace and exercised on the surfaces the README claims
 - [ ] No maintenance or internal notes in user-facing docs

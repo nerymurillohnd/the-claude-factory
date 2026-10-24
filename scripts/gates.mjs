@@ -247,6 +247,13 @@ export function gatesFor({ root, ci, base }) {
       args: ['scripts/check-repo.mjs'],
     },
     {
+      id: 'marketplace',
+      group: 'policy',
+      title: 'marketplace.json plugins in sync',
+      cmd: 'node',
+      args: ['scripts/generators/marketplace.mjs', '--check'],
+    },
+    {
       id: 'catalog',
       group: 'policy',
       title: 'README catalog in sync',

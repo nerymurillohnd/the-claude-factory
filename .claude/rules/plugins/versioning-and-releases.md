@@ -21,6 +21,6 @@
 
 - Write the release notes under `## [Unreleased]` in the plugin's `CHANGELOG.md`, in terms of what changes for users, following Keep a Changelog 2.0.0.
 - Add the root `CHANGELOG.md` line under today's date: `- **<plugin>** X.Y.Z — summary.` If the PR is still open on a later day, move the line to that day's section before the merge.
-- Commit the bump, the plugin and root changelog entries, and the catalog regenerated with `node scripts/catalog.mjs` as one signed commit.
+- Commit the bump, the plugin and root changelog entries, and the catalog regenerated with `node scripts/generators/catalog.mjs` as one signed commit.
 - Never push `main` without first listing the untagged plugins (`plugin.json` version against `git tag -l '<plugin>--v<version>'`) and confirming each is meant to ship.
 - Never run `gh workflow run release.yml` while the Validate workflow is failing; fix the cause first.

@@ -10,6 +10,7 @@
   "scripts": {
     "gates": "node scripts/gates.mjs",
     "gates:ci": "node scripts/gates.mjs --ci",
+    "generate": "node scripts/generators/marketplace.mjs && node scripts/generators/catalog.mjs",
     "validate": "failed=0; for f in scripts/validators/*.py; do \"$f\" || failed=1; done; exit $failed",
     "validate:lsp-json-schema": "scripts/validators/lsp-json-schema.py",
     "validate:marketplace-json-schema": "scripts/validators/marketplace-json-schema.py",

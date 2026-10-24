@@ -8,6 +8,7 @@ import { cpSync, existsSync, mkdirSync, readdirSync, writeFileSync } from 'node:
 import { join } from 'node:path'
 import { parseArgs } from 'node:util'
 import { renderReadme } from './generators/catalog.mjs'
+import { renderMarketplace } from './generators/marketplace.mjs'
 import {
   fail,
   KEBAB,
@@ -99,9 +100,7 @@ for (const file of readdirSync(TEMPLATES_DIR)) {
   writeFileSync(target, render(readText(src), vars))
 }
 
-marketplace.plugins.push({ name, source: `./plugins/${name}`, description, category })
-marketplace.plugins.sort((a, b) => a.name.localeCompare(b.name))
-writeJson(MARKETPLACE_PATH, marketplace)
+writeJson(MARKETPLACE_PATH, renderMarketplace())
 writeFileSync(README_PATH, renderReadme(readText(README_PATH)))
 
 console.log(`✔ Scaffolded plugins/${name} and registered it in marketplace.json`)

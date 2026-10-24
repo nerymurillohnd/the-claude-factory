@@ -108,7 +108,7 @@ Run `npm run gates` (ADR_2026-10-21_gates-run-from-one-script). `scripts/gates.m
 | Group | Runs in | Gates |
 | :-- | :-- | :-- |
 | (before anything) | local | the branch, `git status`, every commit since `origin/main` signed `G` |
-| `policy` | CI and local | the maintainer Node tests (`scripts/tests/*.test.mjs`), `check-repo.mjs`, `catalog.mjs --check`, `check-version-bump.mjs`, `tsc` on `scripts/`, ShellCheck and shfmt on `scripts/` |
+| `policy` | CI and local | the maintainer Node tests (`scripts/tests/*.test.mjs`), `check-repo.mjs`, `generators/marketplace.mjs --check`, `generators/catalog.mjs --check`, `check-version-bump.mjs`, `tsc` on `scripts/`, ShellCheck and shfmt on `scripts/` |
 | `python` | CI and local | ruff check, ruff format and basedpyright on `scripts/`; `mypy --strict` on its unmigrated `.py` |
 | `claude` | CI and local | `claude plugin validate --strict` on the marketplace and on every plugin |
 | `lint` | CI and local | Biome outside `plugins/`, actionlint |
@@ -151,7 +151,9 @@ Rules for this area live in `.claude/rules/plugins/versioning-and-releases.md`. 
 5. Run from the repository root with the `.nvmrc` runtime selected (`npm ci` per `node-tooling.md`).
 
 - `node scripts/new-plugin.mjs --name <name> --category <id> --description "<sentence>" [--display-name "<Name>"] [--emoji <e>] [--min-claude-code <x.y.z>] [--claude-code-only]` - Run when scaffolding and registering a plugin.
-- `node scripts/catalog.mjs` - Run when regenerating the generated blocks of the root `README.md`.
+- `node scripts/generators/marketplace.mjs` - Run when regenerating `plugins[]` of `marketplace.json` from `plugins/` (each plugin's `metadata.category` sets its category).
+- `node scripts/generators/catalog.mjs` - Run when regenerating the generated blocks of the root `README.md` from `marketplace.json`.
+- `npm run generate` - Run both generators in order.
 - `node scripts/bump-version.mjs <plugin> <major|minor|patch>` - Run when bumping a plugin in its PR.
 - `node scripts/release-notes.mjs <plugin> [--tag]` - Run when previewing a plugin's release notes or tag.
 - `node scripts/eval-targets.mjs --changed <base> <head>` or `--only <plugin|all>` - Run when listing the plugins whose evals CI would run.
