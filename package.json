@@ -19,7 +19,8 @@
     "validate:plugin-names-consistency": "scripts/validators/plugin-names-consistency.py",
     "validate:plugin-required-files": "scripts/validators/plugin-required-files.py",
     "validate:plugin-versions-consistency": "scripts/validators/plugin-versions-consistency.py",
-    "validate:readme-catalog-consistency": "scripts/validators/readme-catalog-consistency.py"
+    "validate:readme-catalog-consistency": "scripts/validators/readme-catalog-consistency.py",
+    "validate:skill-names-consistency": "scripts/validators/skill-names-consistency.py"
   },
   "devDependencies": {
     "@types/node": "26.6.5"
