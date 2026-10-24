@@ -15,6 +15,7 @@
 [What's inside](#-whats-inside) •
 [Install](#-installation) •
 [Usage](#-usage) •
+[Configuration](#%EF%B8%8F-configuration) • <!-- TODO: delete this link together with the Configuration section when there is nothing to configure. -->
 [Compatibility](#-compatibility) •
 [FAQ](#-faq--troubleshooting)
 
@@ -53,6 +54,7 @@
 | **Surfaces** | See [Compatibility](#-compatibility) |
 | **External tools** | <!-- TODO: e.g. `node` ≥ 22 on PATH, `gh` authenticated, or "None" --> |
 | **Accounts / API keys** | <!-- TODO: e.g. "A GitHub token (prompted on enable)" or "None" --> |
+| **Network** | <!-- TODO: every network call the plugin makes: what, to where and when, e.g. "The MCP server calls api.github.com", or "None" --> |
 
 ## 📥 Installation
 
@@ -93,8 +95,19 @@ In the desktop app's **Code** tab you can also click **+** next to the prompt bo
 
 </details>
 
+<!-- TODO: for a Claude Code-only plugin, delete the Claude app block above and keep the Code-tab block below; otherwise delete the block below. -->
+<details>
+<summary><b>🖥️ Claude desktop app — Code tab</b></summary>
+
+With the marketplace added, click **+** next to the prompt box → **Add plugins** (or **Plugins** → **Browse plugins**), or open **Settings** → **Plugins** → **Discover**; then select **{{displayName}}** and choose a scope.
+
+</details>
+
 > [!NOTE]
 > New to this marketplace? The [installation guide](../../docs/installation.md) covers every surface step by step.
+
+<!-- TODO: keep the next paragraph only when the plugin ships a mod; otherwise delete it. -->
+A mod runs with your permissions and no sandbox. Before you install it, you can see everything it hooks and calls with `claude plugin validate <path to the plugin folder>`.
 
 ## 🚀 Usage
 
@@ -122,8 +135,9 @@ In the desktop app's **Code** tab you can also click **+** next to the prompt bo
 claude plugin update {{name}}@the-claude-factory
 ```
 
-Or in a session: `/plugin` → **Installed** → **{{displayName}}** → **Update now**. Then run `/reload-plugins`.
+Or in a session: `/plugin` → **Installed** → **{{displayName}}** → **Update now**. Then run `/reload-plugins`. <!-- TODO: name each external tool the user updates on their own, e.g. "Update `gopls` yourself, the way you installed it.", or delete this comment. -->
 
+<!-- TODO: delete the next paragraph for a Claude Code-only plugin. -->
 Installed from the Claude app? In Claude Code (v2.1.273+, signed in with that claude.ai account) it appears as `{{name}}@synced`: update and uninstall it in the app (**Customize** → **Plugins**); in `/plugin` you can only turn it on or off, unless your organization requires it.
 
 > [!TIP]
@@ -135,7 +149,12 @@ Installed from the Claude app? In Claude Code (v2.1.273+, signed in with that cl
 claude plugin uninstall {{name}}@the-claude-factory
 ```
 
-In a session: `/plugin` → **Installed** → **{{displayName}}** → **Uninstall**. In the Claude app: **Customize** → **Plugins** → **{{displayName}}** → its menu → **Remove**.
+Installed with `--scope project`? Add `--scope project` here too.
+
+In a session: `/plugin` → **Installed** → **{{displayName}}** → **Uninstall**. In the Claude app: **Customize** → **Plugins** → **{{displayName}}** → its menu → **Remove**. <!-- TODO: drop the Claude app sentence for a Claude Code-only plugin. -->
+
+<!-- TODO: say what stays behind: data the plugin wrote, files in the user's project, tools the user installed for it; or "The plugin keeps no data and writes no files, so nothing is left behind." -->
+
 
 ## 🧭 Compatibility
 
@@ -146,12 +165,13 @@ In a session: `/plugin` → **Installed** → **{{displayName}}** → **Uninstal
 | Component | Claude Code | Claude app |
 | :-- | :--: | :--: |
 | 🎯 Skills | ✅ | ✅ |
-| ⌨️ Commands | ✅ | ✅ loaded as a skill in a chat conversation |
+| ⌨️ Commands | ✅ | ✅ run as `/plugin:command`; loaded as a skill in a chat conversation |
 | 🤖 Agents | ✅ | ⚠️ in Cowork sessions, not in a chat conversation |
 | 🪝 Hooks | ✅ | ⚠️ in Cowork sessions, not in a chat conversation |
 | 🧩 Mods | ✅ every Claude Code session except a Desktop session on WSL | ⚠️ the plugin directory lists a mod for Claude Code only |
 | 🔌 MCP server (remote) | ✅ | 🔗 add or connect it on the plugin's **Connectors** tab |
 | 🖥️ MCP server (local) | ✅ | ⚠️ only in Cowork sessions on your computer |
+| 🔐 MCP server using `${user_config.*}` | ✅ prompts you for values | 🔗 the app can't fill the values: when they sit in headers, the plugin's **Connectors** tab lists the server as not added, and it works once you connect it |
 | 🧠 LSP server | ✅ | ➖ |
 | 🎨 Output styles | ✅ | ➖ |
 | 📡 Monitors | ✅ | ➖ |
@@ -176,7 +196,7 @@ Run `/reload-plugins`, then type `/{{name}}:` to list its skills. If it still do
 
 - 📦 [All plugins in The Claude Factory](../../README.md#-catalog)
 - 📖 [Claude Code plugin docs](https://code.claude.com/docs/en/plugins/overview)
-<!-- TODO: link sibling plugins that pair well with this one. -->
+<!-- TODO: link sibling plugins that pair well with this one, and the official docs of each component type the plugin ships (a mod: https://code.claude.com/docs/en/plugins/mods/overview). -->
 
 ## 🐞 Found a problem?
 
@@ -190,4 +210,4 @@ See [CHANGELOG.md](./CHANGELOG.md) for every release.
 
 ## 📄 License
 
-[MIT](./LICENSE) © Nery Murillo
+[MIT](./LICENSE) © Nery Murillo <!-- TODO: when the plugin derives from third-party material, add "Parts are derived from <source> (<license>); see [NOTICE.txt](./NOTICE.txt)."; when it names a third-party product, add "Not affiliated with or endorsed by <owner>. *<product>* is a trademark of <owner>." -->
