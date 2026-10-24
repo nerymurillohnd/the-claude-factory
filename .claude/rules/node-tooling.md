@@ -12,7 +12,7 @@
 - Never require root-level Node dependencies to install or run a plugin.
 
 ## Python boundary
-- Keep Python dependencies outside NPM dependency management; allow the gate runner to invoke installed Python tools and executable maintainer scripts.
+- Allow the gate runner to invoke installed Python tools and executable maintainer scripts.
 
 ## Type checking and linting
 - Type-check every `.mjs` file and mod with `tsc` in strict mode: no `any`, unsafe casts, ignore comments or loosened configs. Configs: `scripts/tsconfig.json` (maintainer), `scripts/tsconfig.plugins.json` (plugin `.mjs`), `plugins/<mod>/tsconfig.json` (mods). The maintainer and plugin `.mjs` configs extend `tsconfig.base.json`; a mod's config extends `.claude-plugin/types/tsconfig.json`, which the engine writes when it loads the mod.
