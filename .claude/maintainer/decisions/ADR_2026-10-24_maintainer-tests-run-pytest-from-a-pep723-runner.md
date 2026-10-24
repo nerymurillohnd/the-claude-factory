@@ -50,8 +50,8 @@ Chosen option: **a PEP 723 runner**, because the dependency is declared in the r
 
 | What must be true | How it is checked | Result | When to re-check |
 | --- | --- | --- | --- |
-| The runner fails on a skipped test | A test skipped on purpose | pending | When the runner is written |
-| Basedpyright resolves pytest in the gate | `basedpyright --pythonpath "$(uv python find --script <runner>)" scripts/tests` | pending | When the runner is written |
+| The runner fails on a skipped test | A test skipped on purpose | passed on 2026-10-24: `scripts/tests/run_pytest.py` exits 1 with "1 passed, 1 skipped" and 0 with no skip | When the runner changes |
+| Basedpyright resolves pytest in the gate | `basedpyright --pythonpath "$(uv python find --script <runner>)" scripts/tests` | partly: on 2026-10-24 the runner itself checks with 0 errors in all mode; no gate runs it and `scripts/tests/schemas/` is broken (DEBT-007) | When a pytest suite joins a gate |
 
 ## More information
 

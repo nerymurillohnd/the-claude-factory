@@ -43,6 +43,8 @@ Add an item only when all of these hold:
 | DEBT-001 | pr-tracker gets no GitHub tools when the GitHub MCP server has another name | 🔵 In progress |
 | DEBT-002 | Version-bump check fails on main after a revert of an unreleased bump and blocks every release | 🟠 Blocked |
 | DEBT-004 | Unproven that the TypeScript post-edit hook's block makes Claude fix the errors before it moves on | 🟠 Blocked |
+| DEBT-006 | No gate runs the validators of `scripts/validators/`, so CI lost the checks `check-repo.mjs` dropped | 🟡 Pending |
+| DEBT-007 | Maintainer tests fail: `gates.test.mjs` and the schema tests still expect the removed gates and monoliths | 🟡 Pending |
 
 ## 📂 Open items
 
@@ -132,6 +134,58 @@ Add an item only when all of these hold:
 - **Next action:** in a temporary project, run `claude -p --plugin-dir plugins/typescript6-lsp-intelligence` with a two-step task whose first step leaves a type error, and read the transcript: the fix must come before the second step. Repeat once interactively.
 - **Review condition:** closes when the transcript shows the fix before the next step; if it does not, the hook's output needs another mechanism and the README claim changes.
 - **Related records:** ADR_2026-10-22_tsc-hook-policy-defaults-user-wins.
+
+### DEBT-006 — No gate runs the validators of `scripts/validators/`, so CI lost the checks `check-repo.mjs` dropped
+
+| Field | Value |
+| --- | --- |
+| **Status** | 🟡 Pending |
+| **Category** | quality, reliability |
+| **Owner** | `scripts/gates.mjs`, `.github/workflows/validate.yml` |
+| **Logged** | 2026-10-24 |
+
+#### 🔎 Evidence
+
+- **Confirmed facts:**
+  - On 2026-10-24 `check-repo.mjs` stopped checking entry names, sources, directories, renames, the manifest name and homepage, the required files, SemVer, the entry version, `[Unreleased]`, the current version's section and the root CHANGELOG (commit `942df1e`), because the eight validators of `scripts/validators/` own them.
+  - `scripts/gates.mjs` has no gate for any validator; `grep -n validators scripts/gates.mjs` finds only `MIGRATED_PYTHON`. They run by hand, or through `npm run validate:<script>`.
+  - The four schema validators need uv and Python 3.15 (inline metadata); the four standard-library ones need a `python3` that is 3.15 (`TypeIs`, the `type` statement). CI's `python` job runs `uv python install 3.15`.
+- **Inferences:** a pull request that breaks a plugin name, version or required file now passes CI.
+- **Open questions:** which CI group each validator joins, and whether the standard-library ones get a `python3` that is 3.15 there.
+
+#### 📈 Impact and next step
+
+- **Impact / risk:** the checks moved out of `check-repo.mjs` run nowhere automatically, locally or in CI.
+- **Why it is not fixed now:** Nery limited the deduplication to the scripts and asked not to touch gates or CI in that task.
+- **Next action:** add one gate per validator to the `python` group of `scripts/gates.mjs`, run by path, and confirm the CI `python` job runs them on Python 3.15.
+- **Review condition:** closes when `npm run gates:ci -- --group python` runs all eight validators and a defect planted in a copy fails the run.
+- **Related records:** ADR_2026-10-24_repository-checks-move-to-python-validators, ADR_2026-10-21_gates-run-from-one-script.
+
+### DEBT-007 — Maintainer tests fail: `gates.test.mjs` and the schema tests still expect the removed gates and monoliths
+
+| Field | Value |
+| --- | --- |
+| **Status** | 🟡 Pending |
+| **Category** | quality |
+| **Owner** | `scripts/tests/gates.test.mjs`, `scripts/tests/schemas/` |
+| **Logged** | 2026-10-24 |
+
+#### 🔎 Evidence
+
+- **Confirmed facts:**
+  - `node --test "scripts/tests/*.test.mjs"` on 2026-10-24: 95 tests, 92 pass, 3 fail, all in `gates.test.mjs`: the two `argsAtRun` tests and "--ci keeps maintainer tooling and plugin structure, and leaves plugin behavior local". `argsAtRun` and the `pytest-env`, `basedpyright-maintainer` and `pytest-scripts` gates were removed from `scripts/gates.mjs` earlier that day, and the tests were not updated.
+  - `scripts/tests/schemas/test_schemas.py` and `cases.json` load `plugin.schema.json`, `marketplace.schema.json` and `hooks.schema.json` at the root of `scripts/schemas/`, which no longer exist (ADR_2026-10-24_one-schema-source-per-shape).
+  - Case `mcp-63-invalid` expects an empty `mcpServers` map to fail; `claude plugin validate --strict` 2.1.310 accepts it.
+- **Inferences:** the `node-tests` gate, and so `npm run gates` and the CI `policy` job, fail until the three tests change.
+- **Open questions:** whether the schema tests should cover the four schema validators instead of the schema files alone.
+
+#### 📈 Impact and next step
+
+- **Impact / risk:** a red `policy` gate hides any new failure behind the known three.
+- **Why it is not fixed now:** Nery ordered no test changes in the tasks that removed the gates and the monoliths.
+- **Next action:** drop the two `argsAtRun` tests, align the `--ci` test with the current gate ids, and point the schema tests at the entry schemas of the folders (`plugin-manifest-schema/`, `marketplace-schema/`, `hooks-schema/`), with `mcp-63` expecting valid.
+- **Review condition:** closes when `node --test "scripts/tests/*.test.mjs"` and `scripts/tests/run_pytest.py scripts/tests/schemas` both pass with no skip.
+- **Related records:** ADR_2026-10-24_maintainer-tests-run-pytest-from-a-pep723-runner.
 
 <!--
 Entry format. Copy this block above this comment for each new item and add its row to the Index.
