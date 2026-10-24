@@ -47,7 +47,7 @@ export const ROOT = resolve(TCF_ROOT ?? join(SCRIPTS_DIR, '..'))
  * @property {unknown} [mcpServers]
  * @property {unknown} [lspServers]
  * @property {{ monitors?: unknown }} [experimental]
- * @property {{ surfaces?: unknown }} [metadata]
+ * @property {{ category?: unknown, surfaces?: unknown }} [metadata]
  */
 
 export const MARKETPLACE_NAME = 'the-claude-factory'

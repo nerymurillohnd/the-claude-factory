@@ -21,6 +21,7 @@
     "debugging"
   ],
   "metadata": {
+    "category": "development",
     "surfaces": [
       "claude-code",
       "claude-app"

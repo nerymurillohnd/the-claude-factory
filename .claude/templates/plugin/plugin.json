@@ -12,6 +12,7 @@
   "license": "MIT",
   "keywords": ["{{category}}"],
   "metadata": {
+    "category": "{{category}}",
     "surfaces": {{surfacesJson}}
   }
 }

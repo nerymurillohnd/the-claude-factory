@@ -22,6 +22,7 @@
     "diagnostics"
   ],
   "metadata": {
+    "category": "language-support",
     "surfaces": [
       "claude-code"
     ]

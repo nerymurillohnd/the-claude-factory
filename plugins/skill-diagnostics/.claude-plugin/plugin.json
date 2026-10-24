@@ -19,6 +19,7 @@
     "cowork"
   ],
   "metadata": {
+    "category": "testing",
     "surfaces": [
       "claude-code",
       "claude-app"

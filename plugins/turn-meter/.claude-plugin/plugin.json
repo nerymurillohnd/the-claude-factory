@@ -48,6 +48,7 @@
     }
   },
   "metadata": {
+    "category": "mods",
     "surfaces": [
       "claude-code"
     ]

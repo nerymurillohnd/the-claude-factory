@@ -21,6 +21,7 @@
     "no-verify"
   ],
   "metadata": {
+    "category": "security",
     "surfaces": [
       "claude-code",
       "claude-app"

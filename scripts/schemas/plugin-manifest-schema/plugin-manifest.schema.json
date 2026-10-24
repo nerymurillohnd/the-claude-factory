@@ -97,6 +97,13 @@
     "metadata": {
       "type": "object",
       "additionalProperties": true,
+      "properties": {
+        "category": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+          "description": "This marketplace's catalog category: an id from scripts/categories.json (checked by scripts/generators/marketplace.mjs)."
+        }
+      },
       "description": "Free-form object for your own data (entitlement, catalog fields). Claude Code does not read it; a non-object value is ignored with a validate warning.",
       "x-source": "https://code.claude.com/docs/en/plugins/manifest-reference#fields (metadata)"
     },
