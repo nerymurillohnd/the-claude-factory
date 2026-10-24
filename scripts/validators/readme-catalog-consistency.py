@@ -13,6 +13,10 @@
   `### <emoji> <title>`.
 - README.md, between <!-- catalog:start --> and <!-- catalog:end -->: each row sits under the
   section heading of the plugin's marketplace category.
+- The `mods` category holds only mods: its plugins' hooks/hooks.json has `modules`, one path,
+  relative to that file, to a hooks module inside the plugin named .js, .mjs, .cjs, .jsx, .ts,
+  .mts, .cts or .tsx (https://code.claude.com/docs/en/plugins/mods/reference#files). A mod may
+  sit in another category when its purpose is another, so the reverse is not required.
 
 A value that is missing, empty or of the wrong type is an error, never a skip. It reads files
 only: it never writes, imports or runs plugin code, starts a process or uses the network.
@@ -38,6 +42,8 @@ CATALOG_END = "<!-- catalog:end -->"
 # A link to a plugin folder; group 1 is the plugin name.
 PLUGIN_LINK = re.compile(r"\]\(\./plugins/([^/#)\s]+)")
 SECTION = re.compile(r"^### (.+?)\s*$")
+MODS_CATEGORY = "mods"
+MOD_MODULE_SUFFIXES = (".js", ".mjs", ".cjs", ".jsx", ".ts", ".mts", ".cts", ".tsx")
 
 
 class JsonObject(dict[str, object]):
@@ -264,6 +270,52 @@ def compare(
                 )
 
 
+def hooks_module(root: Path, name: str, report: Report) -> str | tuple[str, Path]:
+    """The one `modules` path of plugins/<name>/hooks/hooks.json and its target, or a problem."""
+    hooks_json = root / "plugins" / name / "hooks" / "hooks.json"
+    if not hooks_json.is_file():
+        return "has no hooks/hooks.json"
+    hooks = read_json(hooks_json, f"plugins/{name}", report)
+    if hooks is None:
+        return "has a hooks/hooks.json that cannot be read"
+    modules = hooks.get("modules")
+    if not is_array(modules) or len(modules) != 1:
+        return 'needs "modules" in hooks/hooks.json: an array with one path to its hooks module'
+    module = modules[0]
+    if not isinstance(module, str) or module.strip() == "":
+        return '"modules" in hooks/hooks.json must hold a non-empty path'
+    return module, (hooks_json.parent / module).resolve()
+
+
+def mod_problem(root: Path, name: str, report: Report) -> str | None:
+    """Why plugins/<name> is not a mod, or None when it is one."""
+    found = hooks_module(root, name, report)
+    if isinstance(found, str):
+        return found
+    module, target = found
+    if not target.is_relative_to((root / "plugins" / name).resolve()):
+        return f'hooks module "{module}" resolves outside the plugin'
+    if target.suffix not in MOD_MODULE_SUFFIXES:
+        return f'hooks module "{module}" must end in {", ".join(MOD_MODULE_SUFFIXES)}'
+    if not target.is_file():
+        return f'hooks module "{module}" is missing'
+    return None
+
+
+def check_mods(
+    root: Path, directories: set[str], categories: dict[str, str], report: Report
+) -> None:
+    """Every plugin in the mods category is a mod."""
+    for name in sorted(directories):
+        if categories.get(name) != MODS_CATEGORY:
+            continue
+        problem = mod_problem(root, name, report)
+        if problem is not None:
+            report.error(
+                f"plugins/{name}", f'is in category "{MODS_CATEGORY}" but is not a mod: {problem}'
+            )
+
+
 def check(root: Path) -> list[str]:
     """Every README catalog consistency error under `root`, in a stable order."""
     report = Report(root)
@@ -274,6 +326,7 @@ def check(root: Path) -> list[str]:
     if directories is None or headings is None or categories is None or catalog is None:
         return report.errors
     compare(directories, categories, catalog_sections(catalog, headings, report), report)
+    check_mods(root, directories, categories, report)
     return report.errors
 
 
@@ -288,9 +341,7 @@ def main(argv: list[str]) -> int:
         lines.append(f"\n✖ README catalog checks failed: {len(errors)} error(s)")
         _ = sys.stderr.write("\n".join(lines) + "\n")
         return 1
-    _ = sys.stdout.write(
-        "✔ README catalog lists every plugin once, under its marketplace category\n"
-    )
+    _ = sys.stdout.write("✔ README catalog lists every plugin once, under its category\n")
     return 0
 
 
