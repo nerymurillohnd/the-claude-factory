@@ -1,6 +1,6 @@
 ---
 name: mcp-hooks-plugins
-description: Use before answering MCP questions or working on .mcp.json, plugin mcpServers, mcp_tool handlers, MCP hook matchers,scoped tool names, authentication, connection lifecycle, or MCP timeouts.
+description: Use before answering MCP questions or working on .mcp.json, plugin mcpServers, mcp_tool handlers, MCP hook matchers, scoped tool names, authentication, connection lifecycle, or MCP timeouts.
 ---
 
 # MCP Hooks and Plugins

@@ -1,6 +1,6 @@
 ---
 name: plugin-hooks-guidance
-description: Use when creating, editing or reviewing a plugin hook: hooks.json, hook scripts, matchers or README hook claims.
+description: Use when creating, editing or reviewing a plugin hook, its hooks.json, hook scripts, matchers or README hook claims.
 ---
 
 # Plugin hooks guidance

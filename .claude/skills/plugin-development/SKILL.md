@@ -1,6 +1,6 @@
 ---
 name: plugin-development
-description: Use before writing, editing or scaffolding any file under plugins/<name>/: a component, manifest, script or README.
+description: Use before writing, editing or scaffolding any file under plugins/<name>/, such as a component, manifest, script or README.
 ---
 
 # Plugin development
