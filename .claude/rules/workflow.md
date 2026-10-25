@@ -22,6 +22,8 @@ These rules set how to work on this project. Depending on the context, resume th
 1. Plugin design and planning
 2. Plugin creation
 3. Plugin testing and evaluation
+   - To test and evaluate a plugin that contains no mods, load and use the `testing-plugins` skill.
+   - To test and evaluate a mod, or a plugin that contains mods, load and use the `testing-mods` skill.
 4. Versioning and releases
    - Before a new plugin is published, or when an existing plugin has changed, load and use the `release-and-versioning` skill.
 5. Plugin renames and removals
