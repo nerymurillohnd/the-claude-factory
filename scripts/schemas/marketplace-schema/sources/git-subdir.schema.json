@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "description": "Plugin located in a subdirectory of a git repository (sparse partial clone).",
+  "properties": {
+    "source": {
+      "const": "git-subdir",
+      "description": "Source discriminator."
+    },
+    "url": {
+      "type": "string",
+      "description": "Git repository URL, GitHub owner/repo shorthand, or SSH URL. The CLI accepts an empty string too."
+    },
+    "path": {
+      "type": "string",
+      "description": "Subdirectory path within the repo that contains the plugin, for example tools/claude-plugin. Cloned sparsely.",
+      "not": {
+        "pattern": "(^|/)\\.\\.(/|$)"
+      }
+    },
+    "ref": {
+      "type": "string",
+      "description": "Git branch or tag to use. Defaults to the repository default branch. The CLI accepts an empty string too."
+    },
+    "sha": {
+      "type": "string",
+      "description": "Full 40-character git commit SHA pinning an exact version. When both ref and sha are set, sha is the effective pin. Docs say '40-character'; the CLI additionally requires lowercase hex.",
+      "pattern": "^[a-f0-9]{40}$"
+    }
+  },
+  "required": [
+    "source",
+    "url",
+    "path"
+  ],
+  "additionalProperties": false,
+  "x-doc": "https://code.claude.com/docs/en/plugins/marketplace-reference#git-subdir-plugin-source",
+  "x-cli-unknown-keys": "ignores"
+}

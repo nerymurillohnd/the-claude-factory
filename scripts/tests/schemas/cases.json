@@ -1,0 +1,1324 @@
+[
+  {
+    "id": "plugin-00-valid",
+    "schema": "plugin.schema.json",
+    "valid": true,
+    "data": {
+      "name": "deploy-tools",
+      "displayName": "Deploy Tools",
+      "version": "1.2.0",
+      "description": "Deployment commands, a review agent, and a status monitor",
+      "author": {
+        "name": "Example Team",
+        "email": "dev@example.com",
+        "url": "https://example.com"
+      },
+      "homepage": "https://example.com/docs/deploy-tools",
+      "repository": "https://github.com/example/deploy-tools",
+      "license": "MIT",
+      "keywords": [
+        "deployment",
+        "ci"
+      ],
+      "defaultEnabled": true,
+      "dependencies": [
+        "secrets-vault"
+      ],
+      "metadata": {
+        "catalogId": "cat-123"
+      },
+      "skills": [
+        "./extra-skills/"
+      ],
+      "commands": {
+        "status": {
+          "source": "./commands/status.md",
+          "description": "Show the current deployment status"
+        },
+        "about": {
+          "content": "Explain what the deploy-tools plugin provides.",
+          "description": "Describe this plugin"
+        }
+      },
+      "agents": [
+        "./agents/reviewer.md"
+      ],
+      "hooks": "./config/extra-hooks.json",
+      "mcpServers": {
+        "deploy-api": {
+          "command": "node",
+          "args": [
+            "${CLAUDE_PLUGIN_ROOT}/server.js"
+          ]
+        }
+      },
+      "lspServers": "./.lsp.json",
+      "outputStyles": "./styles/",
+      "experimental": {
+        "themes": "./themes/",
+        "monitors": "./config/monitors.json"
+      },
+      "userConfig": {
+        "api_token": {
+          "type": "string",
+          "title": "API token",
+          "description": "Token for the deployment API",
+          "sensitive": true
+        }
+      }
+    }
+  },
+  {
+    "id": "plugin-01-valid",
+    "schema": "plugin.schema.json",
+    "valid": true,
+    "data": {
+      "name": "demo",
+      "skills": [
+        "./extra/",
+        "."
+      ],
+      "commands": {
+        "about": {
+          "content": "x"
+        }
+      },
+      "hooks": [
+        "./a.json",
+        {
+          "PostToolUse": [
+            {
+              "matcher": "Write|Edit",
+              "hooks": [
+                {
+                  "type": "command",
+                  "command": "x"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "plugin-02-valid",
+    "schema": "plugin.schema.json",
+    "valid": true,
+    "data": {
+      "name": "demo",
+      "channels": [
+        {
+          "server": "telegram",
+          "userConfig": {
+            "bot_token": {
+              "type": "string",
+              "title": "t",
+              "description": "d",
+              "sensitive": true
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "plugin-03-valid",
+    "schema": "plugin.schema.json",
+    "valid": true,
+    "data": {
+      "name": "demo",
+      "dependencies": [
+        "a",
+        "b@m",
+        {
+          "name": "c",
+          "version": "~2.1.0"
+        }
+      ],
+      "mcpServers": "https://x.com/s.mcpb"
+    }
+  },
+  {
+    "id": "plugin-04-invalid",
+    "schema": "plugin.schema.json",
+    "valid": false,
+    "data": {
+      "name": "demo",
+      "unknownField": 1
+    },
+    "error_path": "$"
+  },
+  {
+    "id": "plugin-05-invalid",
+    "schema": "plugin.schema.json",
+    "valid": false,
+    "data": {
+      "name": "claude-helper"
+    },
+    "error_path": "$.name"
+  },
+  {
+    "id": "plugin-06-invalid",
+    "schema": "plugin.schema.json",
+    "valid": false,
+    "data": {
+      "name": "Official-Claude-Tools"
+    },
+    "error_path": "$.name"
+  },
+  {
+    "id": "plugin-07-invalid",
+    "schema": "plugin.schema.json",
+    "valid": false,
+    "data": {
+      "name": "my plugin"
+    },
+    "error_path": "$.name"
+  },
+  {
+    "id": "plugin-08-invalid",
+    "schema": "plugin.schema.json",
+    "valid": false,
+    "data": {
+      "name": "demo",
+      "agents": "agents/x.md"
+    },
+    "error_path": "$.agents"
+  },
+  {
+    "id": "plugin-09-invalid",
+    "schema": "plugin.schema.json",
+    "valid": false,
+    "data": {
+      "name": "demo",
+      "agents": "./../x.md"
+    },
+    "error_path": "$.agents"
+  },
+  {
+    "id": "plugin-10-invalid",
+    "schema": "plugin.schema.json",
+    "valid": false,
+    "data": {
+      "name": "demo",
+      "commands": {
+        "a": {
+          "source": "./a.md",
+          "content": "x"
+        }
+      }
+    },
+    "error_path": "$.commands.a"
+  },
+  {
+    "id": "plugin-11-invalid",
+    "schema": "plugin.schema.json",
+    "valid": false,
+    "data": {
+      "name": "demo",
+      "userConfig": {
+        "1bad": {
+          "type": "string",
+          "title": "t",
+          "description": "d"
+        }
+      }
+    },
+    "error_path": "$.userConfig"
+  },
+  {
+    "id": "plugin-12-invalid",
+    "schema": "plugin.schema.json",
+    "valid": false,
+    "data": {
+      "name": "demo",
+      "userConfig": {
+        "k": {
+          "type": "string",
+          "title": "t",
+          "description": "d",
+          "extra": 1
+        }
+      }
+    },
+    "error_path": "$.userConfig.k"
+  },
+  {
+    "id": "plugin-13-invalid",
+    "schema": "plugin.schema.json",
+    "valid": false,
+    "data": {
+      "name": "demo",
+      "lspServers": {
+        "go": {
+          "command": "gopls serve",
+          "extensionToLanguage": {
+            ".go": "go"
+          }
+        }
+      }
+    },
+    "error_path": "$.lspServers.go.command"
+  },
+  {
+    "id": "plugin-14-invalid",
+    "schema": "plugin.schema.json",
+    "valid": false,
+    "data": {
+      "name": "demo",
+      "mcpServers": "./bundle.zip"
+    },
+    "error_path": "$.mcpServers"
+  },
+  {
+    "id": "lsp-15-valid",
+    "schema": "lsp.schema.json",
+    "valid": true,
+    "data": {
+      "gopls": {
+        "command": "gopls",
+        "args": [
+          "serve"
+        ],
+        "extensionToLanguage": {
+          ".go": "go"
+        }
+      }
+    }
+  },
+  {
+    "id": "lsp-16-invalid",
+    "schema": "lsp.schema.json",
+    "valid": false,
+    "data": {
+      "gopls": {
+        "command": "gopls",
+        "extensionToLanguage": {
+          "go": "go"
+        }
+      }
+    },
+    "error_path": "$.gopls.extensionToLanguage"
+  },
+  {
+    "id": "lsp-17-invalid",
+    "schema": "lsp.schema.json",
+    "valid": false,
+    "data": {
+      "gopls": {
+        "command": "gopls",
+        "extensionToLanguage": {}
+      }
+    },
+    "error_path": "$.gopls.extensionToLanguage"
+  },
+  {
+    "id": "mcp-18-valid",
+    "schema": "mcp.schema.json",
+    "valid": true,
+    "data": {
+      "mcpServers": {
+        "db": {
+          "command": "node",
+          "args": [
+            "x"
+          ]
+        }
+      }
+    }
+  },
+  {
+    "id": "mcp-19-valid",
+    "schema": "mcp.schema.json",
+    "valid": true,
+    "data": {
+      "db": {
+        "command": "node"
+      }
+    }
+  },
+  {
+    "id": "mcp-20-valid",
+    "schema": "mcp.schema.json",
+    "valid": true,
+    "data": {
+      "mcpServers": {
+        "api": {
+          "type": "streamable-http",
+          "url": "https://x/mcp",
+          "oauth": {
+            "clientId": "c",
+            "callbackPort": 8080,
+            "scopes": "a b"
+          },
+          "alwaysLoad": true
+        }
+      }
+    }
+  },
+  {
+    "id": "mcp-21-valid",
+    "schema": "mcp.schema.json",
+    "valid": true,
+    "data": {
+      "mcpServers": {
+        "w": {
+          "type": "ws",
+          "url": "wss://x",
+          "headersHelper": "./h.sh"
+        }
+      }
+    }
+  },
+  {
+    "id": "mcp-22-invalid",
+    "schema": "mcp.schema.json",
+    "valid": false,
+    "data": {
+      "mcpServers": {
+        "api": {
+          "url": "https://x/mcp"
+        }
+      }
+    },
+    "error_path": "$.mcpServers.api"
+  },
+  {
+    "id": "mcp-23-invalid",
+    "schema": "mcp.schema.json",
+    "valid": false,
+    "data": {
+      "mcpServers": {
+        "w": {
+          "type": "ws",
+          "url": "wss://x",
+          "oauth": {}
+        }
+      }
+    },
+    "error_path": "$.mcpServers.w"
+  },
+  {
+    "id": "mcp-24-invalid",
+    "schema": "mcp.schema.json",
+    "valid": false,
+    "data": {
+      "mcpServers": {
+        "bad name": {
+          "command": "x"
+        }
+      }
+    },
+    "error_path": "$.mcpServers"
+  },
+  {
+    "id": "mcp-25-invalid",
+    "schema": "mcp.schema.json",
+    "valid": false,
+    "data": {
+      "mcpServers": {
+        "a": {
+          "type": "http",
+          "url": "https://x",
+          "oauth": {
+            "authServerMetadataUrl": "http://x"
+          }
+        }
+      }
+    },
+    "error_path": "$.mcpServers.a.oauth.authServerMetadataUrl"
+  },
+  {
+    "id": "hooks-26-valid",
+    "schema": "hooks.schema.json",
+    "valid": true,
+    "data": {
+      "description": "d",
+      "hooks": {
+        "PreToolUse": [
+          {
+            "matcher": "Bash",
+            "hooks": [
+              {
+                "type": "command",
+                "command": "node",
+                "args": [
+                  "a"
+                ],
+                "if": "Bash(git *)",
+                "onFailure": "block"
+              },
+              {
+                "type": "http",
+                "url": "http://localhost:8080/h",
+                "allowedEnvVars": [
+                  "T"
+                ]
+              },
+              {
+                "type": "mcp_tool",
+                "server": "plugin:p:db",
+                "tool": "scan",
+                "input": {
+                  "f": "${tool_input.file_path}"
+                }
+              },
+              {
+                "type": "prompt",
+                "prompt": "p",
+                "continueOnBlock": true
+              },
+              {
+                "type": "agent",
+                "prompt": "p",
+                "timeout": 120
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "hooks-27-valid",
+    "schema": "hooks.schema.json",
+    "valid": true,
+    "data": {
+      "modules": [
+        "./register.tsx"
+      ]
+    }
+  },
+  {
+    "id": "hooks-28-invalid",
+    "schema": "hooks.schema.json",
+    "valid": false,
+    "data": {
+      "PreToolUse": []
+    },
+    "error_path": "$"
+  },
+  {
+    "id": "hooks-29-invalid",
+    "schema": "hooks.schema.json",
+    "valid": false,
+    "data": {
+      "hooks": {
+        "PreTooluse": []
+      }
+    },
+    "error_path": "$.hooks"
+  },
+  {
+    "id": "hooks-30-invalid",
+    "schema": "hooks.schema.json",
+    "valid": false,
+    "data": {
+      "hooks": {
+        "Stop": [
+          {
+            "hooks": [
+              {
+                "type": "agent",
+                "prompt": "p",
+                "continueOnBlock": true
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "error_path": "$.hooks.Stop[0].hooks[0].type"
+  },
+  {
+    "id": "hooks-31-invalid",
+    "schema": "hooks.schema.json",
+    "valid": false,
+    "data": {
+      "hooks": {
+        "Stop": [
+          {
+            "hooks": [
+              {
+                "type": "prompt",
+                "prompt": "p",
+                "async": true
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "error_path": "$.hooks.Stop[0].hooks[0].type"
+  },
+  {
+    "id": "hooks-32-invalid",
+    "schema": "hooks.schema.json",
+    "valid": false,
+    "data": {
+      "modules": [
+        "./a.js",
+        "./b.js"
+      ]
+    },
+    "error_path": "$.modules"
+  },
+  {
+    "id": "hooks-33-invalid",
+    "schema": "hooks.schema.json",
+    "valid": false,
+    "data": {
+      "description": "only"
+    },
+    "error_path": "$"
+  },
+  {
+    "id": "marketplace-34-valid",
+    "schema": "marketplace.schema.json",
+    "valid": true,
+    "data": {
+      "name": "m",
+      "owner": {
+        "name": "o"
+      },
+      "plugins": [
+        {
+          "name": "f",
+          "source": {
+            "source": "github",
+            "repo": "o/r",
+            "ref": "v2",
+            "sha": "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0"
+          }
+        },
+        {
+          "name": "g",
+          "source": {
+            "source": "npm",
+            "package": "@o/f",
+            "version": "^2.0.0",
+            "registry": "https://npm.example.com"
+          }
+        },
+        {
+          "name": "h",
+          "source": {
+            "source": "archive",
+            "url": "https://a.example.com/f.zip",
+            "sha256": "6bfa50e3d2e00c052b46abe51fff89346ac803e45771f76dcf6df1ab74cca5e1"
+          }
+        },
+        {
+          "name": "i",
+          "source": {
+            "source": "command",
+            "command": "my-tool claude-plugin-path",
+            "timeout": 120
+          }
+        },
+        {
+          "name": "j",
+          "source": {
+            "source": "git-subdir",
+            "url": "https://github.com/o/m.git",
+            "path": "tools/f"
+          }
+        },
+        {
+          "name": "k",
+          "source": "./plugins/k",
+          "relevance": {
+            "signals": {
+              "manifestDeps": [
+                {
+                  "file": "x",
+                  "pattern": "y"
+                }
+              ]
+            }
+          },
+          "commands": "./commands/"
+        }
+      ],
+      "renames": {
+        "old": "k",
+        "gone": null
+      },
+      "metadata": {
+        "pluginRoot": "./plugins"
+      }
+    }
+  },
+  {
+    "id": "marketplace-35-invalid",
+    "schema": "marketplace.schema.json",
+    "valid": false,
+    "data": {
+      "name": "m",
+      "owner": {
+        "name": "o"
+      },
+      "plugins": [
+        {
+          "name": "f",
+          "source": "plugins/f"
+        }
+      ]
+    },
+    "error_path": "$.plugins[0].source"
+  },
+  {
+    "id": "marketplace-36-invalid",
+    "schema": "marketplace.schema.json",
+    "valid": false,
+    "data": {
+      "name": "m",
+      "owner": {
+        "name": "o"
+      },
+      "plugins": [
+        {
+          "name": "f",
+          "source": "./plugins/f",
+          "icon": "./i.png"
+        }
+      ]
+    },
+    "error_path": "$.plugins[0]"
+  },
+  {
+    "id": "marketplace-37-invalid",
+    "schema": "marketplace.schema.json",
+    "valid": false,
+    "data": {
+      "name": "m",
+      "owner": {
+        "name": "o"
+      },
+      "plugins": [
+        {
+          "name": "f",
+          "source": {
+            "source": "github",
+            "repo": "o/r",
+            "sha": "ABC"
+          }
+        }
+      ]
+    },
+    "error_path": "$.plugins[0].source.source"
+  },
+  {
+    "id": "marketplace-38-invalid",
+    "schema": "marketplace.schema.json",
+    "valid": false,
+    "data": {
+      "name": "m",
+      "owner": {
+        "name": "o"
+      },
+      "plugins": [
+        {
+          "name": "f",
+          "source": "./plugins/f",
+          "typo": 1
+        }
+      ]
+    },
+    "error_path": "$.plugins[0]"
+  },
+  {
+    "id": "marketplace-39-invalid",
+    "schema": "marketplace.schema.json",
+    "valid": false,
+    "data": {
+      "name": "m",
+      "owner": {
+        "name": "o"
+      },
+      "plugins": [
+        {
+          "name": "f",
+          "source": {
+            "source": "archive",
+            "url": "http://x/f.zip"
+          }
+        }
+      ]
+    },
+    "error_path": "$.plugins[0].source.url"
+  },
+  {
+    "id": "marketplace-40-invalid",
+    "schema": "marketplace.schema.json",
+    "valid": false,
+    "data": {
+      "name": "m",
+      "plugins": []
+    },
+    "error_path": "$"
+  },
+  {
+    "id": "marketplace-41-invalid",
+    "schema": "marketplace.schema.json",
+    "valid": false,
+    "data": {
+      "name": "a..b",
+      "owner": {
+        "name": "o"
+      },
+      "plugins": []
+    },
+    "error_path": "$.name"
+  },
+  {
+    "id": "hooks-42-valid",
+    "schema": "hooks.schema.json",
+    "valid": true,
+    "data": {
+      "hooks": {
+        "PreToolUse": [
+          {
+            "matcher": "Bash",
+            "hooks": [
+              {
+                "type": "command",
+                "command": "x",
+                "onFailure": "block"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "hooks-43-valid",
+    "schema": "hooks.schema.json",
+    "valid": true,
+    "data": {
+      "hooks": {
+        "PreToolUse": [
+          {
+            "hooks": [
+              {
+                "type": "http",
+                "url": "https://x.example.com",
+                "onFailure": "continue"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "hooks-44-invalid",
+    "schema": "hooks.schema.json",
+    "valid": false,
+    "data": {
+      "hooks": {
+        "PreToolUse": [
+          {
+            "hooks": [
+              {
+                "type": "prompt",
+                "prompt": "p",
+                "onFailure": "block"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "error_path": "$.hooks.PreToolUse[0].hooks[0].type"
+  },
+  {
+    "id": "hooks-45-invalid",
+    "schema": "hooks.schema.json",
+    "valid": false,
+    "data": {
+      "hooks": {
+        "PreToolUse": [
+          {
+            "hooks": [
+              {
+                "type": "command",
+                "command": "x",
+                "onFailure": "stop"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "error_path": "$.hooks.PreToolUse[0].hooks[0].type"
+  },
+  {
+    "id": "hooks-46-invalid",
+    "schema": "hooks.schema.json",
+    "valid": false,
+    "data": {
+      "modules": []
+    },
+    "error_path": "$.modules"
+  },
+  {
+    "id": "hooks-47-invalid",
+    "schema": "hooks.schema.json",
+    "valid": false,
+    "data": {
+      "hooks": {
+        "SessionStart": [
+          {
+            "hooks": [
+              {
+                "type": "http",
+                "url": "https://x.example.com"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "error_path": "$.hooks.SessionStart[0].hooks[0].type"
+  },
+  {
+    "id": "hooks-48-invalid",
+    "schema": "hooks.schema.json",
+    "valid": false,
+    "data": {
+      "hooks": {
+        "PermissionRequest": [
+          {
+            "hooks": [
+              {
+                "type": "agent",
+                "prompt": "p"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "error_path": "$.hooks.PermissionRequest[0].hooks[0].type"
+  },
+  {
+    "id": "hooks-49-invalid",
+    "schema": "hooks.schema.json",
+    "valid": false,
+    "data": {
+      "hooks": {
+        "Notification": [
+          {
+            "hooks": [
+              {
+                "type": "command",
+                "command": "x",
+                "if": "Bash(git *)"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "error_path": "$.hooks.Notification[0].hooks[0]"
+  },
+  {
+    "id": "hooks-50-valid",
+    "schema": "hooks.schema.json",
+    "valid": true,
+    "data": {
+      "modules": [
+        "./register.tsx"
+      ],
+      "hooks": {
+        "Stop": [
+          {
+            "hooks": [
+              {
+                "type": "command",
+                "command": "true"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "lsp-51-valid",
+    "schema": "lsp.schema.json",
+    "valid": true,
+    "data": {
+      "go": {
+        "command": "gopls",
+        "extensionToLanguage": {
+          ".go": "go"
+        },
+        "requestTimeout": 1000
+      }
+    }
+  },
+  {
+    "id": "lsp-52-invalid",
+    "schema": "lsp.schema.json",
+    "valid": false,
+    "data": {
+      "go": {
+        "command": "gopls",
+        "extensionToLanguage": {
+          ".go": "go"
+        },
+        "requestTimeout": 0
+      }
+    },
+    "error_path": "$.go.requestTimeout"
+  },
+  {
+    "id": "lsp-53-invalid",
+    "schema": "lsp.schema.json",
+    "valid": false,
+    "data": {
+      "$schema": "x",
+      "go": {
+        "command": "gopls",
+        "extensionToLanguage": {
+          ".go": "go"
+        }
+      }
+    },
+    "error_path": "$['$schema']"
+  },
+  {
+    "id": "plugin-54-valid",
+    "schema": "plugin.schema.json",
+    "valid": true,
+    "data": {
+      "name": "demo",
+      "lspServers": {
+        "go": {
+          "command": "gopls",
+          "extensionToLanguage": {
+            ".go": "go"
+          },
+          "requestTimeout": 1000
+        }
+      }
+    }
+  },
+  {
+    "id": "plugin-55-valid",
+    "schema": "plugin.schema.json",
+    "valid": true,
+    "data": {
+      "name": "demo",
+      "bugs": "https://x.example.com"
+    }
+  },
+  {
+    "id": "plugin-56-invalid",
+    "schema": "plugin.schema.json",
+    "valid": false,
+    "data": {
+      "name": "claude-tools"
+    },
+    "error_path": "$.name"
+  },
+  {
+    "id": "plugin-57-invalid",
+    "schema": "plugin.schema.json",
+    "valid": false,
+    "data": {
+      "name": "demo",
+      "commands": "./../c/"
+    },
+    "error_path": "$.commands"
+  },
+  {
+    "id": "plugin-58-valid",
+    "schema": "plugin.schema.json",
+    "valid": true,
+    "data": {
+      "name": "demo",
+      "userConfig": {
+        "t": {
+          "type": "string",
+          "title": "t",
+          "description": "d",
+          "options": [
+            "a",
+            "b"
+          ],
+          "default": "a"
+        }
+      }
+    }
+  },
+  {
+    "id": "mcp-59-valid",
+    "schema": "mcp.schema.json",
+    "valid": true,
+    "data": {
+      "mcpServers": {
+        "api": {
+          "type": "http",
+          "url": "https://x/mcp",
+          "alwaysLoad": false,
+          "timeout": 600000,
+          "bareElicitationCapability": true
+        }
+      }
+    }
+  },
+  {
+    "id": "mcp-60-valid",
+    "schema": "mcp.schema.json",
+    "valid": true,
+    "data": {
+      "mcpServers": {
+        "old": {
+          "type": "sse",
+          "url": "https://x/sse"
+        }
+      }
+    }
+  },
+  {
+    "id": "mcp-61-invalid",
+    "schema": "mcp.schema.json",
+    "valid": false,
+    "data": {
+      "mcpServers": {
+        "api": {
+          "type": "http",
+          "url": "https://x/mcp",
+          "timeout": 1.5
+        }
+      }
+    },
+    "error_path": "$.mcpServers.api.timeout"
+  },
+  {
+    "id": "mcp-62-invalid",
+    "schema": "mcp.schema.json",
+    "valid": false,
+    "data": {
+      "mcpServers": {
+        "s": {
+          "type": "sdk",
+          "name": "x"
+        }
+      }
+    },
+    "error_path": "$.mcpServers.s.type"
+  },
+  {
+    "id": "mcp-63-valid",
+    "schema": "mcp.schema.json",
+    "valid": true,
+    "data": {
+      "mcpServers": {}
+    }
+  },
+  {
+    "id": "mcp-64-invalid",
+    "schema": "mcp.schema.json",
+    "valid": false,
+    "data": {
+      "$schema": "x",
+      "db": {
+        "command": "node"
+      }
+    },
+    "error_path": "$['$schema']"
+  },
+  {
+    "id": "mcp-65-invalid",
+    "schema": "mcp.schema.json",
+    "valid": false,
+    "data": {
+      "mcpServers": {
+        "constructor": {
+          "command": "node"
+        }
+      }
+    },
+    "error_path": "$.mcpServers"
+  },
+  {
+    "id": "marketplace-66-invalid",
+    "schema": "marketplace.schema.json",
+    "valid": false,
+    "data": {
+      "name": "m",
+      "owner": {
+        "name": "o"
+      },
+      "plugins": [
+        {
+          "name": "f",
+          "source": "./plugins/f",
+          "relevance": {
+            "topic": "x"
+          }
+        }
+      ]
+    },
+    "error_path": "$.plugins[0].relevance"
+  },
+  {
+    "id": "marketplace-67-invalid",
+    "schema": "marketplace.schema.json",
+    "valid": false,
+    "data": {
+      "name": "m",
+      "owner": {
+        "name": "o"
+      },
+      "plugins": [
+        {
+          "name": "f",
+          "source": "./plugins/f",
+          "relevance": {
+            "signals": {}
+          }
+        }
+      ]
+    },
+    "error_path": "$.plugins[0].relevance.signals"
+  },
+  {
+    "id": "marketplace-68-valid",
+    "schema": "marketplace.schema.json",
+    "valid": true,
+    "data": {
+      "name": "m",
+      "owner": {
+        "name": "o"
+      },
+      "plugins": [
+        {
+          "name": "f",
+          "source": "./plugins/f",
+          "relevance": {
+            "signals": {
+              "cli": [
+                "terraform"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "marketplace-69-invalid",
+    "schema": "marketplace.schema.json",
+    "valid": false,
+    "data": {
+      "name": "m",
+      "owner": {
+        "name": "o"
+      },
+      "plugins": [
+        {
+          "name": "f",
+          "source": "./plugins/f",
+          "hooks": "./h.json"
+        }
+      ]
+    },
+    "error_path": "$.plugins[0].hooks"
+  },
+  {
+    "id": "marketplace-70-valid",
+    "schema": "marketplace.schema.json",
+    "valid": true,
+    "data": {
+      "name": "m",
+      "owner": {
+        "name": "o"
+      },
+      "plugins": [
+        {
+          "name": "f",
+          "source": "./plugins/f",
+          "hooks": {
+            "Stop": [
+              {
+                "hooks": [
+                  {
+                    "type": "command",
+                    "command": "true"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "marketplace-71-invalid",
+    "schema": "marketplace.schema.json",
+    "valid": false,
+    "data": {
+      "name": "m",
+      "owner": {
+        "name": "o"
+      },
+      "plugins": [
+        {
+          "name": "f",
+          "source": "./plugins/f",
+          "bugs": "https://x.example.com"
+        }
+      ]
+    },
+    "error_path": "$.plugins[0]"
+  },
+  {
+    "id": "marketplace-72-valid",
+    "schema": "marketplace.schema.json",
+    "valid": true,
+    "data": {
+      "name": "m",
+      "owner": {
+        "name": "o"
+      },
+      "plugins": [],
+      "forceRemoveDeletedPlugins": true
+    }
+  },
+  {
+    "id": "marketplace-73-valid",
+    "schema": "marketplace.schema.json",
+    "valid": true,
+    "data": {
+      "name": "m",
+      "owner": {
+        "name": "o"
+      },
+      "plugins": [
+        {
+          "name": "f",
+          "source": "./plugins/f",
+          "displayName": "F",
+          "settings": {
+            "agent": "x"
+          },
+          "userConfig": {
+            "k": {
+              "type": "string",
+              "title": "t",
+              "description": "d"
+            }
+          }
+        }
+      ]
+    }
+  }
+]

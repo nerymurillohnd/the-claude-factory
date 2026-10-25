@@ -1,0 +1,229 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Hook events: compaction and model switching",
+  "description": "Event arrays (`hookEvent_<Event>`) and matcher groups (`hookMatcherGroup_<Event>`) for: PreCompact, PostCompact, PreModelSwitch, PostModelSwitch.",
+  "$defs": {
+    "hookEvent_PreCompact": {
+      "title": "PreCompact",
+      "type": "array",
+      "description": "Before context compaction. Exit code 2 or `decision: \"block\"` blocks it.",
+      "items": {
+        "$ref": "#/$defs/hookMatcherGroup_PreCompact"
+      },
+      "x-source": "https://code.claude.com/docs/en/hooks#precompact",
+      "x-matcherSupported": true,
+      "x-handlerTypes": [
+        "command",
+        "http",
+        "mcp_tool"
+      ],
+      "x-ifEvaluated": false,
+      "x-addedIn": "1.0.48"
+    },
+    "hookMatcherGroup_PreCompact": {
+      "type": "object",
+      "description": "Matcher group for PreCompact: an optional matcher plus the handlers to run when it applies. Handlers allowed here: command, http or mcp_tool (prompt and agent hooks are not supported on this event). The `if` field is not evaluated on this event, so a handler that sets it never runs.",
+      "properties": {
+        "matcher": {
+          "type": "string",
+          "description": "Filters on what triggered compaction. Values: `manual`, `auto`. Evaluation: `*`, an empty string, or an omitted matcher matches everything; a value made only of letters, digits, `_`, `-`, spaces, `,` and `|` is an exact string or a `|`/`,`-separated list of exact strings; any other character makes it an unanchored JavaScript regular expression (RegExp.test).",
+          "x-matcherSupported": true,
+          "x-matcherValues": [
+            "manual",
+            "auto"
+          ],
+          "examples": [
+            "manual",
+            "auto"
+          ],
+          "title": "Matcher"
+        },
+        "hooks": {
+          "type": "array",
+          "description": "Hook handlers to run when the matcher applies; all matching handlers run in parallel and identical handlers from several settings files run once.",
+          "items": {
+            "allOf": [
+              {
+                "$ref": "../handlers/handler-sets.schema.json#/$defs/hookHandlerCommandHttpMcp"
+              },
+              {
+                "$ref": "../handlers/handler-sets.schema.json#/$defs/hookHandlerWithoutIf"
+              }
+            ]
+          },
+          "title": "Hooks"
+        }
+      },
+      "required": [
+        "hooks"
+      ],
+      "additionalProperties": false,
+      "x-source": "https://code.claude.com/docs/en/hooks#precompact"
+    },
+    "hookEvent_PostCompact": {
+      "title": "PostCompact",
+      "type": "array",
+      "description": "After context compaction completes.",
+      "items": {
+        "$ref": "#/$defs/hookMatcherGroup_PostCompact"
+      },
+      "x-source": "https://code.claude.com/docs/en/hooks#postcompact",
+      "x-matcherSupported": true,
+      "x-handlerTypes": [
+        "command",
+        "http",
+        "mcp_tool"
+      ],
+      "x-ifEvaluated": false,
+      "x-addedIn": "2.1.76"
+    },
+    "hookMatcherGroup_PostCompact": {
+      "type": "object",
+      "description": "Matcher group for PostCompact: an optional matcher plus the handlers to run when it applies. Handlers allowed here: command, http or mcp_tool (prompt and agent hooks are not supported on this event). The `if` field is not evaluated on this event, so a handler that sets it never runs.",
+      "properties": {
+        "matcher": {
+          "type": "string",
+          "description": "Filters on what triggered compaction. Values: `manual`, `auto`. Evaluation: `*`, an empty string, or an omitted matcher matches everything; a value made only of letters, digits, `_`, `-`, spaces, `,` and `|` is an exact string or a `|`/`,`-separated list of exact strings; any other character makes it an unanchored JavaScript regular expression (RegExp.test).",
+          "x-matcherSupported": true,
+          "x-matcherValues": [
+            "manual",
+            "auto"
+          ],
+          "examples": [
+            "manual",
+            "auto"
+          ],
+          "title": "Matcher"
+        },
+        "hooks": {
+          "type": "array",
+          "description": "Hook handlers to run when the matcher applies; all matching handlers run in parallel and identical handlers from several settings files run once.",
+          "items": {
+            "allOf": [
+              {
+                "$ref": "../handlers/handler-sets.schema.json#/$defs/hookHandlerCommandHttpMcp"
+              },
+              {
+                "$ref": "../handlers/handler-sets.schema.json#/$defs/hookHandlerWithoutIf"
+              }
+            ]
+          },
+          "title": "Hooks"
+        }
+      },
+      "required": [
+        "hooks"
+      ],
+      "additionalProperties": false,
+      "x-source": "https://code.claude.com/docs/en/hooks#postcompact"
+    },
+    "hookEvent_PreModelSwitch": {
+      "title": "PreModelSwitch",
+      "type": "array",
+      "description": "Before Claude Code applies a model switch that the user or a client requested. Can block it. Default timeout 30 s; a timed-out hook blocks the switch.",
+      "items": {
+        "$ref": "#/$defs/hookMatcherGroup_PreModelSwitch"
+      },
+      "x-source": "https://code.claude.com/docs/en/hooks#premodelswitch",
+      "x-matcherSupported": true,
+      "x-handlerTypes": [
+        "command",
+        "http",
+        "mcp_tool"
+      ],
+      "x-ifEvaluated": false,
+      "x-addedIn": "2.1.251"
+    },
+    "hookMatcherGroup_PreModelSwitch": {
+      "type": "object",
+      "description": "Matcher group for PreModelSwitch: an optional matcher plus the handlers to run when it applies. Handlers allowed here: command, http or mcp_tool (prompt and agent hooks are not supported on this event). The `if` field is not evaluated on this event, so a handler that sets it never runs.",
+      "properties": {
+        "matcher": {
+          "type": "string",
+          "description": "Filters on the canonical name of the model being switched to (e.g. `claude-opus-5`). Evaluation: `*`, an empty string, or an omitted matcher matches everything; a value made only of letters, digits, `_`, `-`, spaces, `,` and `|` is an exact string or a `|`/`,`-separated list of exact strings; any other character makes it an unanchored JavaScript regular expression (RegExp.test).",
+          "x-matcherSupported": true,
+          "examples": [
+            "claude-opus-5",
+            "claude-opus-4-6|claude-opus-5",
+            ".*opus.*"
+          ],
+          "title": "Matcher"
+        },
+        "hooks": {
+          "type": "array",
+          "description": "Hook handlers to run when the matcher applies; all matching handlers run in parallel and identical handlers from several settings files run once.",
+          "items": {
+            "allOf": [
+              {
+                "$ref": "../handlers/handler-sets.schema.json#/$defs/hookHandlerCommandHttpMcp"
+              },
+              {
+                "$ref": "../handlers/handler-sets.schema.json#/$defs/hookHandlerWithoutIf"
+              }
+            ]
+          },
+          "title": "Hooks"
+        }
+      },
+      "required": [
+        "hooks"
+      ],
+      "additionalProperties": false,
+      "x-source": "https://code.claude.com/docs/en/hooks#premodelswitch"
+    },
+    "hookEvent_PostModelSwitch": {
+      "title": "PostModelSwitch",
+      "type": "array",
+      "description": "After the session's model changes, including automatic changes. Default timeout 30 s.",
+      "items": {
+        "$ref": "#/$defs/hookMatcherGroup_PostModelSwitch"
+      },
+      "x-source": "https://code.claude.com/docs/en/hooks#postmodelswitch",
+      "x-matcherSupported": true,
+      "x-handlerTypes": [
+        "command",
+        "http",
+        "mcp_tool"
+      ],
+      "x-ifEvaluated": false,
+      "x-addedIn": "2.1.251"
+    },
+    "hookMatcherGroup_PostModelSwitch": {
+      "type": "object",
+      "description": "Matcher group for PostModelSwitch: an optional matcher plus the handlers to run when it applies. Handlers allowed here: command, http or mcp_tool (prompt and agent hooks are not supported on this event). The `if` field is not evaluated on this event, so a handler that sets it never runs.",
+      "properties": {
+        "matcher": {
+          "type": "string",
+          "description": "Filters on the canonical name of the model switched to. Evaluation: `*`, an empty string, or an omitted matcher matches everything; a value made only of letters, digits, `_`, `-`, spaces, `,` and `|` is an exact string or a `|`/`,`-separated list of exact strings; any other character makes it an unanchored JavaScript regular expression (RegExp.test).",
+          "x-matcherSupported": true,
+          "examples": [
+            "claude-opus-5",
+            "claude-opus-4-6|claude-opus-5",
+            ".*opus.*"
+          ],
+          "title": "Matcher"
+        },
+        "hooks": {
+          "type": "array",
+          "description": "Hook handlers to run when the matcher applies; all matching handlers run in parallel and identical handlers from several settings files run once.",
+          "items": {
+            "allOf": [
+              {
+                "$ref": "../handlers/handler-sets.schema.json#/$defs/hookHandlerCommandHttpMcp"
+              },
+              {
+                "$ref": "../handlers/handler-sets.schema.json#/$defs/hookHandlerWithoutIf"
+              }
+            ]
+          },
+          "title": "Hooks"
+        }
+      },
+      "required": [
+        "hooks"
+      ],
+      "additionalProperties": false,
+      "x-source": "https://code.claude.com/docs/en/hooks#postmodelswitch"
+    }
+  }
+}

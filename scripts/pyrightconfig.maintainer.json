@@ -1,0 +1,11 @@
+{
+  "typeCheckingMode": "all",
+  "failOnWarnings": true,
+  "pythonVersion": "3.15",
+  "include": [
+    "validators",
+    "generators",
+    "tests/schemas",
+    "tests/run_pytest.py"
+  ]
+}

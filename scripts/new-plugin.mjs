@@ -4,10 +4,11 @@
 //     --description "One sentence." [--display-name "My Plugin"] [--emoji 🧰] [--min-claude-code 2.1.292]
 //     [--claude-code-only]   (default: works in Claude Code and the Claude app)
 
-import { cpSync, existsSync, mkdirSync, readdirSync, writeFileSync } from 'node:fs'
+import { cpSync, existsSync, mkdirSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { parseArgs } from 'node:util'
-import { renderReadme } from './catalog.mjs'
+import { renderReadme } from './generators/catalog.mjs'
+import { buildEntries, renderMarketplace } from './generators/marketplace.mjs'
 import {
   fail,
   KEBAB,
@@ -86,6 +87,23 @@ const vars = {
   surfacesNote: profile.note,
   surfacesJson: JSON.stringify(profile.surfaces),
 }
+// plugin.json takes each value inside a JSON string, so quotes and backslashes are escaped there.
+/** @type {Record<string, unknown>} */
+const jsonVars = Object.fromEntries(
+  Object.entries(vars).map(([key, value]) => [
+    key,
+    typeof value === 'string' && key !== 'surfacesJson'
+      ? JSON.stringify(value).slice(1, -1)
+      : value,
+  ]),
+)
+
+// The marketplace is rebuilt from every plugin directory: stop before writing if one is broken.
+try {
+  buildEntries()
+} catch (e) {
+  fail(e instanceof Error ? e.message : String(e))
+}
 
 mkdirSync(join(dir, '.claude-plugin'), { recursive: true })
 for (const file of readdirSync(TEMPLATES_DIR)) {
@@ -96,12 +114,15 @@ for (const file of readdirSync(TEMPLATES_DIR)) {
   }
   const target =
     file === 'plugin.json' ? join(dir, '.claude-plugin', 'plugin.json') : join(dir, file)
-  writeFileSync(target, render(readText(src), vars))
+  writeFileSync(target, render(readText(src), file === 'plugin.json' ? jsonVars : vars))
 }
 
-marketplace.plugins.push({ name, source: `./plugins/${name}`, description, category })
-marketplace.plugins.sort((a, b) => a.name.localeCompare(b.name))
-writeJson(MARKETPLACE_PATH, marketplace)
+try {
+  writeJson(MARKETPLACE_PATH, renderMarketplace())
+} catch (e) {
+  rmSync(dir, { recursive: true, force: true })
+  fail(`plugins/${name} was removed again: ${e instanceof Error ? e.message : String(e)}`)
+}
 writeFileSync(README_PATH, renderReadme(readText(README_PATH)))
 
 console.log(`✔ Scaffolded plugins/${name} and registered it in marketplace.json`)

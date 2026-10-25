@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "description": "One background monitor. Unknown keys are rejected.",
+  "additionalProperties": false,
+  "required": [
+    "name",
+    "command",
+    "description"
+  ],
+  "properties": {
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Identifier unique within the plugin (uniqueness cannot be expressed in this schema; duplicates are an error). Prevents duplicate processes on reload or repeated skill invocation."
+    },
+    "command": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Shell command run as a persistent background process in the session working directory; every stdout line is delivered to Claude as a notification. Supports ${CLAUDE_PLUGIN_ROOT}, ${CLAUDE_PLUGIN_DATA}, ${CLAUDE_PROJECT_DIR} and ${ENV_VAR}; ${user_config.*} is rejected."
+    },
+    "description": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Short summary of what is watched; shown in the task panel and notification summaries."
+    },
+    "when": {
+      "type": "string",
+      "default": "always",
+      "pattern": "^(always|on-skill-invoke:.+)$",
+      "description": "When the monitor starts: 'always' (default) at session start and on plugin reload, or 'on-skill-invoke:<skill-name>' the first time the named skill in this plugin is dispatched."
+    }
+  }
+}

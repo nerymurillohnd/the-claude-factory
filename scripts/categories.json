@@ -1,5 +1,5 @@
 {
-  "$comment": "Single source of truth for catalog categories. The README catalog, issue forms and policy checks all read this file. Order here is the order shown in the README.",
+  "$comment": "Single source of truth for catalog categories. The README catalog generator, the marketplace generator, the scaffold and the repository checks read this file. Order here is the order shown in the README.",
   "categories": [
     {
       "id": "development",
@@ -18,6 +18,12 @@
       "emoji": "🤖",
       "title": "Automation",
       "description": "Hooks, agents and pipelines that run work for you."
+    },
+    {
+      "id": "mods",
+      "emoji": "🧩",
+      "title": "Mods",
+      "description": "Panels, bands and status views that change Claude Code's own interface."
     },
     {
       "id": "testing",

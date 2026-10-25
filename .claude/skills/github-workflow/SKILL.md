@@ -15,12 +15,11 @@ Act as the maintainer who answers for what goes public. You confirm before you c
 
 - Post a reply, label or close an issue only after Nery approves it: it speaks for the marketplace in public. His order to carry a PR already covers replying to and resolving its review threads (step 6).
 - Push and open a PR only on Nery's order, and push with `git push origin <branch>`, never a bare `git push`. Fix and commit freely. An order covers the action it names, on the branch it names, once: each later push, and any closing he approved in advance, is confirmed again when it happens.
-- Every edit to a plugin's `plugin.json`, skills (`SKILL.md` and its files), agents, hooks, `.mcp.json`, `.lsp.json` or dependencies goes through a PR. Everything else goes by direct push or by PR, as Nery decides.
+- Every change inside a plugin's directory, a `README.md`-only change included, and every change to `scripts/` goes through a PR. Everything else goes by direct push or by PR, as Nery decides.
 - Label every PR with labels that exist in `gh label list`.
 - Reference a fixed issue as `Refs #n`, never `Closes #n`: the issue closes in step 8, once the fix is out.
 - Verify each review finding against the files and the live docs before acting on it: reviewers over-report.
 - The merge is Nery's. Tell him the PR is ready only when every job is green, every review is resolved and the `pr-tracker` agent (Agent tool, `subagent_type` `github-operations:pr-tracker`, given the PR number), if available, reports no issues; then wait for his green light.
-- When Nery asks for CI work, offer the open CI items one by one before anything new: recall memory `ci-simplify-skipped-findings`.
 
 ## Gotchas
 
@@ -84,7 +83,7 @@ Run `git status --short` first: changes that are not yours stay out of the commi
 
 ### 5. Push
 
-Run the "Before Every Push" gates in `.claude/CLAUDE.md` → Commands, in order, and stop at the first failure. On Nery's order, push with `git push origin <branch>`, read the Gotchas above if it fails, and open the PR with its labels (Rules). Each later push is a new order.
+Run the checks in `.claude/CLAUDE.md` → Maintainer and Plugin Scopes (Maintainer Tooling, Plugin Tooling) on what the branch changes, and stop at the first failure. On Nery's order, push with `git push origin <branch>`, read the Gotchas above if it fails, and open the PR with its labels (Rules). Each later push is a new order.
 
 ### 6. Carry
 

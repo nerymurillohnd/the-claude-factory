@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "title": "HTTP hook",
+  "description": "POSTs the event JSON (Content-Type: application/json) to a URL; the 2xx JSON response body uses the same output format as command hooks. Non-2xx, connection failure and non-JSON bodies are non-blocking errors; it cannot block through the status code. Subject to allowedHttpHookUrls and httpHookAllowedEnvVars.",
+  "properties": {
+    "type": {
+      "type": "string",
+      "const": "http",
+      "description": "Handler type: `http` sends an HTTP POST request.",
+      "title": "Type"
+    },
+    "url": {
+      "type": "string",
+      "format": "uri",
+      "pattern": "^https?://",
+      "description": "URL to send the POST request to.",
+      "title": "Url"
+    },
+    "headers": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      },
+      "description": "Additional HTTP headers. Values support `$VAR_NAME` / `${VAR_NAME}` interpolation, but only for variables listed in `allowedEnvVars` (others become empty strings).",
+      "title": "Headers"
+    },
+    "allowedEnvVars": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "description": "Environment variable names that may be interpolated into header values. Required for any interpolation to work; further limited by the settings key httpHookAllowedEnvVars.",
+      "title": "Allowed Env Vars"
+    },
+    "timeout": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "default": 600,
+      "description": "Seconds before the handler is canceled. Default 600 for command, http and mcp_tool; lowered to 30 on UserPromptSubmit, PreModelSwitch and PostModelSwitch and to 10 on MessageDisplay. SessionEnd hooks share a 1.5 s budget (raised to the largest per-hook timeout, max 60 s). Not enforced on a command hook running with `async: true`.",
+      "title": "Timeout"
+    },
+    "statusMessage": {
+      "type": "string",
+      "description": "Custom spinner message displayed while the handler runs.",
+      "title": "Status Message"
+    },
+    "once": {
+      "type": "boolean",
+      "default": false,
+      "description": "If true, the hook is removed after its first successful run (a failed, exit-2 or timed-out run keeps it). Only honored for hooks declared in skill frontmatter; ignored in settings files and agent frontmatter.",
+      "title": "Once"
+    },
+    "if": {
+      "type": "string",
+      "description": "Permission-rule-syntax filter (exactly one rule, e.g. `Bash(git *)`, `Edit(*.ts)`, `PowerShell(Remove-Item *)`); the handler only runs when the tool call matches. Evaluated only on PreToolUse, PostToolUse, PostToolUseFailure, PermissionRequest and PermissionDenied; on any other event a handler with `if` never runs. There is no `&&`/`||`/list syntax: use one handler per condition. Best-effort filter, not a security boundary.",
+      "title": "If"
+    },
+    "onFailure": {
+      "type": "string",
+      "enum": [
+        "continue",
+        "block"
+      ],
+      "title": "On Failure",
+      "description": "Whether the action that triggered the hook goes ahead when the hook fails (it could not start, timed out, exited with a code other than 0 or 2, or printed invalid JSON): `continue` lets it through and reports the failure; `block` counts the failure as exit code 2. Ignored for async hooks and on Stop, SubagentStop, TaskCompleted and TeammateIdle.",
+      "x-addedIn": "2.1.295",
+      "x-source": "https://code.claude.com/docs/en/hooks#block-the-action-when-a-hook-fails; changelog 2.1.295"
+    }
+  },
+  "required": [
+    "type",
+    "url"
+  ],
+  "additionalProperties": false,
+  "examples": [
+    {
+      "type": "http",
+      "url": "http://localhost:8080/hooks/pre-tool-use",
+      "timeout": 30,
+      "headers": {
+        "Authorization": "Bearer $MY_TOKEN"
+      },
+      "allowedEnvVars": [
+        "MY_TOKEN"
+      ]
+    }
+  ],
+  "x-source": "https://code.claude.com/docs/en/hooks#http-hook-fields"
+}

@@ -1,0 +1,743 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Claude Code plugin manifest (.claude-plugin/plugin.json)",
+  "description": "Manifest of a Claude Code plugin. The manifest is optional; when present, name is the only required field. Built from the official Claude Code docs (Plugins reference), cross-checked against the changelog and the claude CLI 2.1.281.",
+  "$comment": "Source of truth for .claude-plugin/plugin.json validation; edit these files directly. Layout: plugin-manifest.schema.json (the manifest), components/ (LSP servers, userConfig, monitor, channel), mcp/ (MCP server map and one file per transport), and the inline hooks map from ../hooks-schema/hooks-config.schema.json. No file declares $id: a schema's identity is its location, and every $ref is relative to the file that holds it, also across folders. SCOPE: strict-mode contract. additionalProperties is false on every object with a known shape, also where the CLI ignores unknown keys (a typo there passes claude plugin validate silently), and at the root because 'claude plugin validate --strict' turns the runtime's unknown-field warning into a failure (docs: 'Pass --strict to treat warnings as errors'). At runtime Claude Code ignores unrecognized top-level fields, so a manifest that fails only on additionalProperties still loads; drop 'additionalProperties: false' at the root for a lenient editor experience. Properties carrying x-docs-status other than absent are NOT in the official docs' manifest reference: documented-once = mentioned in one other docs page; changelog-only = named only in the changelog; cli-tolerated / cli-only = accepted by the claude 2.1.281 binary but undocumented. Remove them for a docs-only schema. Not expressible in JSON Schema and left to claude plugin validate: path existence, name uniqueness of monitors, options-default membership, channels[].server matching an mcpServers key.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "name"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "JSON Schema URL for editor autocomplete and validation. Claude Code ignores it at load time.",
+      "x-source": "https://code.claude.com/docs/en/plugins/manifest-reference#fields ($schema); changelog 2.1.120"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+      "description": "Unique plugin identifier in kebab-case (lowercase letters, digits, hyphens), no spaces, control characters or bidirectional-formatting characters. Used to namespace components (for example plugin-dev:agent-creator). When a marketplace entry lists the plugin under a different name, the entry name is what enabledPlugins and /plugin use. Non-kebab names load at runtime but claude plugin validate warns (the claude.ai marketplace sync requires kebab-case).",
+      "x-source": "https://code.claude.com/docs/en/plugins/manifest-reference#name",
+      "x-policy": "Repository policy, stricter than Claude Code: kebab-case is required here, while Claude Code loads other names and claude plugin validate only warns (https://code.claude.com/docs/en/plugins/publish#prepare-your-plugin-for-release).",
+      "not": {
+        "pattern": "^(?:(?:[Cc][Ll][Aa][Uu][Dd][Ee]|[Aa][Nn][Tt][Hh][Rr][Oo][Pp][Ii][Cc][Ss]?)|[Cc][Cc][^A-Za-z0-9]+[Pp][Ll][Uu][Gg][Ii][Nn])[^A-Za-z0-9]|^(?:(?:[Cc][Ll][Aa][Uu][Dd][Ee]|[Aa][Nn][Tt][Hh][Rr][Oo][Pp][Ii][Cc][Ss]?)|[Cc][Ll][Aa][Uu][Dd][Ee][^A-Za-z0-9]+[Cc][Oo][Dd][Ee]|[Cc][Ll][Aa][Uu][Dd][Ee][^A-Za-z0-9]+[Mm][Oo][Dd][Ss])$|(?:^|[^A-Za-z0-9])[Oo][Ff][Ff][Ii][Cc][Ii][Aa][Ll][^A-Za-z0-9]+(?:[Cc][Ll][Aa][Uu][Dd][Ee]|[Aa][Nn][Tt][Hh][Rr][Oo][Pp][Ii][Cc][Ss]?)(?:[^A-Za-z0-9]|$)|(?:^|[^A-Za-z0-9])(?:[Cc][Ll][Aa][Uu][Dd][Ee]|[Aa][Nn][Tt][Hh][Rr][Oo][Pp][Ii][Cc][Ss]?)[^A-Za-z0-9]+[Oo][Ff][Ff][Ii][Cc][Ii][Aa][Ll](?:[^A-Za-z0-9]|$)",
+        "description": "Reserved: starts with claude-, anthropic-, anthropics- or cc-plugin-; is claude, anthropic, anthropics, claude-code or claude-mods; or puts official beside claude or anthropic.",
+        "x-source": "https://code.claude.com/docs/en/plugins/manifest-reference#name"
+      }
+    },
+    "displayName": {
+      "type": "string",
+      "description": "Human-readable name shown in the /plugin picker and other UI. A displayName on the marketplace entry takes precedence. May contain spaces and any casing; not used for namespacing or lookup.",
+      "x-source": "https://code.claude.com/docs/en/plugins/manifest-reference#fields (displayName)"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$",
+      "description": "Semantic version (MAJOR.MINOR.PATCH). Setting it pins the plugin: users only receive updates when you bump it. If also set in the marketplace entry, plugin.json wins. If omitted, the version comes from the marketplace entry, the git commit SHA, an archive digest, or 'unknown' (see Version management). The docs call it 'A version string, not checked against semver'; the pattern is this repository's policy (x-policy).",
+      "x-source": "https://code.claude.com/docs/en/plugins/manifest-reference#fields (version); #version-management",
+      "x-policy": "Repository policy, stricter than Claude Code: MAJOR.MINOR.PATCH is required here, while the docs call the field 'A version string, not checked against semver' (https://code.claude.com/docs/en/plugins/manifest-reference#version)."
+    },
+    "description": {
+      "type": "string",
+      "description": "Brief explanation of the plugin's purpose.",
+      "x-source": "https://code.claude.com/docs/en/plugins/manifest-reference#fields (description)"
+    },
+    "author": {
+      "type": "object",
+      "description": "Author information. name is required; extra keys are tolerated by Claude Code.",
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Display name of the plugin author or organization."
+        },
+        "email": {
+          "type": "string",
+          "description": "Contact email."
+        },
+        "url": {
+          "type": "string",
+          "description": "Website, GitHub profile or organization URL."
+        }
+      },
+      "x-source": "https://code.claude.com/docs/en/plugins/manifest-reference#fields (author); https://code.claude.com/docs/en/plugins/marketplace-reference#plugin-entries",
+      "additionalProperties": false,
+      "x-cli-unknown-keys": "ignores"
+    },
+    "homepage": {
+      "type": "string",
+      "format": "uri",
+      "pattern": "^(?![Hh][Tt][Tt][Pp][Ss]?:/*$)[A-Za-z][A-Za-z0-9+.-]*:\\S+$",
+      "description": "Documentation or homepage URL. Must be a valid absolute URL (enforced by the CLI). A bare scheme such as https:// is rejected.",
+      "x-source": "https://code.claude.com/docs/en/plugins/manifest-reference#fields (homepage)"
+    },
+    "repository": {
+      "type": "string",
+      "description": "Source code URL (a plain string; not an npm-style object).",
+      "x-source": "https://code.claude.com/docs/en/plugins/manifest-reference#fields (repository)"
+    },
+    "license": {
+      "type": "string",
+      "description": "SPDX license identifier, for example MIT or Apache-2.0. Not validated by the CLI.",
+      "x-source": "https://code.claude.com/docs/en/plugins/manifest-reference#fields (license)"
+    },
+    "keywords": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Discovery tags. A non-array value is a load error.",
+      "x-source": "https://code.claude.com/docs/en/plugins/manifest-reference#fields (keywords)"
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "category": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+          "description": "This marketplace's catalog category: an id from scripts/categories.json (checked by scripts/generators/marketplace.mjs)."
+        }
+      },
+      "description": "Free-form object for your own data (entitlement, catalog fields). Claude Code does not read it; a non-object value is ignored with a validate warning.",
+      "x-source": "https://code.claude.com/docs/en/plugins/manifest-reference#fields (metadata)"
+    },
+    "defaultEnabled": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether the plugin starts enabled when the user has no explicit setting. Defaults to true. The user's enabledPlugins entry and a dependency requirement take precedence; a marketplace-entry value overrides this one.",
+      "x-source": "https://code.claude.com/docs/en/plugins/manifest-reference#defaultenabled"
+    },
+    "skills": {
+      "description": "Custom skill directories containing <name>/SKILL.md, or '.'/'./' for the plugin root when it holds a SKILL.md itself. Adds to the default skills/ scan (except for a marketplace entry whose source is the marketplace root). A file path is an error.",
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^(\\.|\\./(?!(?:.*/)?\\.\\.(?:/|$)).*)$",
+          "description": "Skill directory relative to the plugin root (./...) or '.' for the plugin root itself."
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^(\\.|\\./(?!(?:.*/)?\\.\\.(?:/|$)).*)$",
+            "description": "Skill directory relative to the plugin root (./...) or '.'."
+          }
+        }
+      ],
+      "x-source": "https://code.claude.com/docs/en/plugins/manifest-reference#component-path-forms; #path-behavior-rules; changelog 2.1.221"
+    },
+    "commands": {
+      "description": "Custom flat .md skill files or directories (replaces the default commands/ directory; list ./commands/ explicitly to keep it). The object form (command name -> definition) is accepted by the CLI but not documented.",
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^\\./(?!(?:.*/)?\\.\\.(?:/|$))",
+          "description": "Command file or directory relative to the plugin root."
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^\\./(?!(?:.*/)?\\.\\.(?:/|$))",
+            "description": "Command file or directory relative to the plugin root."
+          }
+        },
+        {
+          "type": "object",
+          "x-docs-status": "cli-only",
+          "description": "Object form (undocumented; CLI 2.1.281 and SchemaStore baseline): command name -> definition with exactly one of source or content.",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "source": {
+                "type": "string",
+                "pattern": "^\\./(?!(?:.*/)?\\.\\.(?:/|$))",
+                "description": "Path to the command markdown file, relative to the plugin root."
+              },
+              "content": {
+                "type": "string",
+                "description": "Inline markdown content for the command."
+              },
+              "description": {
+                "type": "string",
+                "description": "Command description override."
+              },
+              "argumentHint": {
+                "type": "string",
+                "description": "Hint for command arguments, for example [file]."
+              },
+              "model": {
+                "type": "string",
+                "description": "Default model for this command."
+              },
+              "allowedTools": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Tools allowed when the command runs."
+              }
+            },
+            "oneOf": [
+              {
+                "required": [
+                  "source"
+                ],
+                "not": {
+                  "required": [
+                    "content"
+                  ]
+                }
+              },
+              {
+                "required": [
+                  "content"
+                ],
+                "not": {
+                  "required": [
+                    "source"
+                  ]
+                }
+              }
+            ],
+            "additionalProperties": false,
+            "x-cli-unknown-keys": "ignores"
+          }
+        }
+      ],
+      "x-source": "https://code.claude.com/docs/en/plugins/manifest-reference#component-path-forms (commands); object form: CLI 2.1.281 runtime schema"
+    },
+    "agents": {
+      "description": "Custom agent files (replaces the default agents/ directory). Each entry must be a .md file, not a directory; files listed here load without subfolder names in their scoped name.",
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^\\./(?!(?:.*/)?\\.\\.(?:/|$)).*\\.md$",
+          "description": "Agent markdown file relative to the plugin root, starting with ./ and ending in .md."
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^\\./(?!(?:.*/)?\\.\\.(?:/|$)).*\\.md$",
+            "description": "Agent markdown file relative to the plugin root, starting with ./ and ending in .md."
+          }
+        }
+      ],
+      "x-source": "https://code.claude.com/docs/en/plugins/manifest-reference#component-path-forms (agents); #agents"
+    },
+    "workflows": {
+      "description": "Custom workflow script files (.js) or directories (replaces the default workflows/ directory).",
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^\\./(?!(?:.*/)?\\.\\.(?:/|$))",
+          "description": "Path relative to the plugin root, starting with ./."
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^\\./(?!(?:.*/)?\\.\\.(?:/|$))",
+            "description": "Path relative to the plugin root, starting with ./."
+          }
+        }
+      ],
+      "x-source": "https://code.claude.com/docs/en/plugins/manifest-reference#component-path-forms (workflows); https://code.claude.com/docs/en/workflows#distribute-a-workflow-in-a-plugin"
+    },
+    "hooks": {
+      "description": "Hook configuration: a path to a hooks JSON file (./..., .json), an inline hooks object, or an array mixing both. Adds to hooks/hooks.json. The inline object shape is ../hooks-schema/hooks-config.schema.json.",
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^\\./(?!(?:.*/)?\\.\\.(?:/|$)).*\\.json$",
+          "description": "Path to a hooks JSON file relative to the plugin root. The file uses the wrapped format {\"hooks\": {...}}."
+        },
+        {
+          "$ref": "../hooks-schema/hooks-config.schema.json",
+          "description": "Inline hooks: an event-name map of matcher groups (the same map as the hooks key of settings files). The wrapped form {\"hooks\": {...}} belongs in hooks/hooks.json, not here."
+        },
+        {
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^\\./(?!(?:.*/)?\\.\\.(?:/|$)).*\\.json$",
+                "description": "Path to a hooks JSON file."
+              },
+              {
+                "$ref": "../hooks-schema/hooks-config.schema.json",
+                "description": "Inline hooks: an event-name map of matcher groups (the same map as the hooks key of settings files). The wrapped form {\"hooks\": {...}} belongs in hooks/hooks.json, not here."
+              }
+            ]
+          }
+        }
+      ],
+      "x-source": "https://code.claude.com/docs/en/plugins/manifest-reference#component-path-forms (hooks); #hooks"
+    },
+    "mcpServers": {
+      "description": "MCP server configuration: a path to a .json file, an inline server map, or an array mixing paths and maps. Adds to .mcp.json. The server-config shape is mcp/server.schema.json. The .mcpb/.dxt bundle forms are CLI-accepted but not in the docs.",
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^\\./(?!(?:.*/)?\\.\\.(?:/|$)).*\\.json$",
+          "description": "Path to an MCP config JSON file relative to the plugin root."
+        },
+        {
+          "type": "string",
+          "pattern": "^(\\./|[A-Za-z][A-Za-z0-9+.-]*://).*\\.(mcpb|dxt)$",
+          "x-docs-status": "cli-only",
+          "description": "Path (./...) or URL of an MCPB/DXT bundle ending in .mcpb or .dxt (undocumented; CLI 2.1.281 and SchemaStore baseline)."
+        },
+        {
+          "$ref": "mcp/mcp-servers.schema.json",
+          "description": "Inline MCP server configurations keyed by server name, with the same server shapes as .mcp.json."
+        },
+        {
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^\\./(?!(?:.*/)?\\.\\.(?:/|$)).*\\.json$",
+                "description": "Path to an MCP config JSON file."
+              },
+              {
+                "type": "string",
+                "pattern": "^(\\./|[A-Za-z][A-Za-z0-9+.-]*://).*\\.(mcpb|dxt)$",
+                "x-docs-status": "cli-only",
+                "description": "Path or URL of an MCPB/DXT bundle (undocumented)."
+              },
+              {
+                "$ref": "mcp/mcp-servers.schema.json",
+                "description": "Inline MCP server configurations keyed by server name, with the same server shapes as .mcp.json."
+              }
+            ]
+          }
+        }
+      ],
+      "x-source": "https://code.claude.com/docs/en/plugins/manifest-reference#component-path-forms (mcpServers); #mcp-servers; https://code.claude.com/docs/en/mcp#plugin-provided-mcp-servers"
+    },
+    "outputStyles": {
+      "description": "Custom output style files or directories (replaces the default output-styles/ directory).",
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^\\./(?!(?:.*/)?\\.\\.(?:/|$))",
+          "description": "Path relative to the plugin root, starting with ./."
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^\\./(?!(?:.*/)?\\.\\.(?:/|$))",
+            "description": "Path relative to the plugin root, starting with ./."
+          }
+        }
+      ],
+      "x-source": "https://code.claude.com/docs/en/plugins/manifest-reference#component-path-forms (outputStyles)"
+    },
+    "lspServers": {
+      "description": "Language-server configuration: a path to a .lsp.json-format file, an inline server map, or an array mixing both. Wherever it comes from, a plugin's servers are merged (the default ./.lsp.json is also read).",
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^\\./(?!(?:.*/)?\\.\\.(?:/|$)).*\\.json$",
+          "description": "Path, relative to the plugin root and starting with ./, of a JSON file in .lsp.json format."
+        },
+        {
+          "$ref": "components/lsp-servers.schema.json"
+        },
+        {
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^\\./(?!(?:.*/)?\\.\\.(?:/|$)).*\\.json$",
+                "description": "Path, relative to the plugin root and starting with ./, of a JSON file in .lsp.json format."
+              },
+              {
+                "$ref": "components/lsp-servers.schema.json"
+              }
+            ]
+          }
+        }
+      ],
+      "x-source": "https://code.claude.com/docs/en/plugins/manifest-reference#component-path-forms (lspServers); #lsp-servers"
+    },
+    "experimental": {
+      "type": "object",
+      "description": "Experimental components whose manifest schema may change between releases. Declare themes, monitors and evals here. Unknown keys inside produce a validate warning; a non-object value is ignored with a warning.",
+      "additionalProperties": false,
+      "properties": {
+        "themes": {
+          "description": "Color theme files or directories, relative to the plugin root (replaces the default themes/ directory).",
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^\\./(?!(?:.*/)?\\.\\.(?:/|$))",
+              "description": "Path relative to the plugin root, starting with ./."
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^\\./(?!(?:.*/)?\\.\\.(?:/|$))",
+                "description": "Path relative to the plugin root, starting with ./."
+              }
+            }
+          ],
+          "x-source": "https://code.claude.com/docs/en/plugins/manifest-reference#component-path-forms (experimental.themes); #themes"
+        },
+        "monitors": {
+          "description": "Background monitors: a path (relative, starting with ./, ending in .json) to a JSON file containing the monitors array, or the monitors array inline.",
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^\\./(?!(?:.*/)?\\.\\.(?:/|$)).*\\.json$",
+              "description": "Path to a JSON file holding the monitors array."
+            },
+            {
+              "type": "array",
+              "items": {
+                "$ref": "components/monitor.schema.json"
+              },
+              "description": "Inline monitor entries."
+            }
+          ],
+          "x-source": "https://code.claude.com/docs/en/plugins/manifest-reference#component-path-forms (experimental.monitors); #monitors"
+        },
+        "evals": {
+          "description": "Directory below the plugin root that holds the plugin's eval cases when it is not the default evals/. A list is accepted; its first entry is the case directory. Must be a relative path of plain directory names (no absolute path, no ..). claude plugin eval --eval-dir overrides it.",
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^(?!/)(?!.*\\.\\.).+$",
+              "description": "Relative eval directory, for example quality/evals."
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^(?!/)(?!.*\\.\\.).+$",
+                "description": "Relative eval directory."
+              }
+            }
+          ],
+          "x-source": "https://code.claude.com/docs/en/plugins/manifest-reference#component-path-forms (experimental.evals); https://code.claude.com/docs/en/plugin-evals#use-a-different-eval-directory"
+        },
+        "outputStyles": {
+          "description": "Output styles declared under experimental (undocumented alternative to the top-level outputStyles).",
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^\\./(?!(?:.*/)?\\.\\.(?:/|$))",
+              "description": "Path relative to the plugin root, starting with ./."
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^\\./(?!(?:.*/)?\\.\\.(?:/|$))",
+                "description": "Path relative to the plugin root, starting with ./."
+              }
+            }
+          ],
+          "x-source": "CLI 2.1.281 runtime schema (validator whitelist)",
+          "x-docs-status": "cli-only"
+        },
+        "syntaxHighlighting": {
+          "type": "object",
+          "description": "Custom highlight.js language bundles (undocumented; CLI 2.1.281).",
+          "additionalProperties": false,
+          "required": [
+            "hljsLanguages"
+          ],
+          "properties": {
+            "hljsLanguages": {
+              "type": "array",
+              "maxItems": 16,
+              "description": "Up to 16 highlight.js language entries.",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "id"
+                ],
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "maxLength": 64,
+                    "pattern": "^[a-z][a-z0-9_-]*$",
+                    "description": "Language id."
+                  },
+                  "remote": {
+                    "type": "string",
+                    "maxLength": 256,
+                    "pattern": "^(npm:[@a-z0-9/._-]+(@[a-z0-9._+-]+)?|github:[\\w.-]+/[\\w.-]+@[\\w./-]+#.+\\.js)$",
+                    "description": "Where to fetch the language: npm:<pkg>[@ver] or github:<owner>/<repo>@<ref>#<path>.js."
+                  },
+                  "integrity": {
+                    "type": "string",
+                    "maxLength": 512,
+                    "pattern": "^sha(256|384|512)-[A-Za-z0-9+/=]+$",
+                    "description": "Integrity hash (sha256-, sha384- or sha512- base64)."
+                  }
+                }
+              }
+            }
+          },
+          "x-source": "CLI 2.1.281 runtime schema (validator whitelist)",
+          "x-docs-status": "cli-only"
+        }
+      },
+      "x-source": "https://code.claude.com/docs/en/plugins/manifest-reference#component-path-forms; #experimental-components; #unrecognized-fields"
+    },
+    "themes": {
+      "description": "DEPRECATED top-level declaration; use experimental.themes. Still loads, but claude plugin validate warns and a future release will require experimental.*. Color theme files or directories, relative to the plugin root (replaces the default themes/ directory).",
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^\\./(?!(?:.*/)?\\.\\.(?:/|$))",
+          "description": "Path relative to the plugin root, starting with ./."
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^\\./(?!(?:.*/)?\\.\\.(?:/|$))",
+            "description": "Path relative to the plugin root, starting with ./."
+          }
+        }
+      ],
+      "deprecated": true,
+      "x-source": "https://code.claude.com/docs/en/plugins/components#themes-and-output-styles; changelog 2.1.129"
+    },
+    "monitors": {
+      "description": "DEPRECATED top-level declaration; use experimental.monitors. Still loads, but claude plugin validate warns and a future release will require experimental.*. Background monitors: a path (relative, starting with ./, ending in .json) to a JSON file containing the monitors array, or the monitors array inline.",
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^\\./(?!(?:.*/)?\\.\\.(?:/|$)).*\\.json$",
+          "description": "Path to a JSON file holding the monitors array."
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "components/monitor.schema.json"
+          },
+          "description": "Inline monitor entries."
+        }
+      ],
+      "deprecated": true,
+      "x-source": "https://code.claude.com/docs/en/plugins/components#themes-and-output-styles; changelog 2.1.105, 2.1.129"
+    },
+    "userConfig": {
+      "type": "object",
+      "description": "User-configurable values prompted when the plugin is enabled. Keys must be identifiers. Values are available as ${user_config.KEY} in MCP/LSP configs and hook commands (not in shell-form hook commands, monitor commands or MCP headersHelper), as CLAUDE_PLUGIN_OPTION_<KEY> in hook processes, and (non-sensitive only) in skill/agent content. Non-sensitive values are stored under pluginConfigs in user settings; sensitive ones in secure storage.",
+      "propertyNames": {
+        "pattern": "^[A-Za-z_]\\w*$",
+        "description": "Option key: a valid identifier (letters, digits, underscore; no leading digit). It becomes CLAUDE_PLUGIN_OPTION_<KEY> in hook processes."
+      },
+      "additionalProperties": {
+        "$ref": "components/user-config.schema.json#/$defs/userConfigOption"
+      },
+      "x-source": "https://code.claude.com/docs/en/plugins/manifest-reference#user-configuration; #limit-a-field-to-fixed-options; changelog 2.1.83"
+    },
+    "channels": {
+      "type": "array",
+      "items": {
+        "$ref": "components/channel.schema.json"
+      },
+      "description": "Channel declarations for message injection (Telegram, Slack, Discord style). Each entry binds to an MCP server the plugin provides.",
+      "x-source": "https://code.claude.com/docs/en/plugins/manifest-reference#channels"
+    },
+    "dependencies": {
+      "type": "array",
+      "items": {
+        "anyOf": [
+          {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][-A-Za-z0-9._]*(@[A-Za-z0-9][-A-Za-z0-9._]*)?(@\\^[^@]*)?$",
+            "description": "Bare plugin name (tracks the latest available version). The CLI also accepts name@marketplace and a legacy trailing @^range; the docs only document the bare name."
+          },
+          {
+            "type": "object",
+            "description": "A dependency with optional version constraint and marketplace. Extra keys are tolerated by Claude Code.",
+            "required": [
+              "name"
+            ],
+            "properties": {
+              "name": {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "^[A-Za-z0-9][-A-Za-z0-9._]*$",
+                "description": "Plugin name. Resolves within the same marketplace as the declaring plugin unless marketplace is set."
+              },
+              "version": {
+                "type": "string",
+                "description": "A semver range such as ~2.1.0, ^2.0, >=1.4 or =2.1.0. The dependency is fetched at the highest tagged version satisfying it. Pre-release versions are excluded unless the range opts in (for example ^2.0.0-0)."
+              },
+              "marketplace": {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "^[A-Za-z0-9][-A-Za-z0-9._]*$",
+                "description": "A different marketplace to resolve name in. Blocked unless the target marketplace is listed in allowCrossMarketplaceDependenciesOn in the root marketplace's marketplace.json."
+              }
+            },
+            "additionalProperties": false,
+            "x-cli-unknown-keys": "ignores"
+          }
+        ]
+      },
+      "description": "Other plugins this plugin requires, optionally with semver constraints. A manifest may consist of only name and dependencies to bundle a curated plugin set behind one install.",
+      "x-source": "https://code.claude.com/docs/en/plugins/manifest-reference#component-path-forms (dependencies); https://code.claude.com/docs/en/plugins/dependencies#declare-a-dependency-with-a-version-constraint"
+    },
+    "settings": {
+      "type": "object",
+      "description": "Default settings applied while the plugin is enabled. Only the agent and subagentStatusLine keys are supported; unknown keys are silently ignored. A settings.json at the plugin root takes priority over this field. Mentioned only in the 'Ship default settings' section of the Plugins guide, not in the manifest reference.",
+      "additionalProperties": false,
+      "properties": {
+        "agent": {
+          "type": "string",
+          "description": "Name of one of the plugin's agents to activate as the main thread (applies its system prompt, tool restrictions and model)."
+        },
+        "subagentStatusLine": {
+          "type": "object",
+          "description": "Custom row body for subagents in the agent panel; same shape as the subagentStatusLine setting (see Statusline docs).",
+          "additionalProperties": true
+        }
+      },
+      "x-source": "https://code.claude.com/docs/en/plugins/components#default-settings",
+      "x-docs-status": "documented-once",
+      "x-cli-unknown-keys": "ignores (keys other than agent and subagentStatusLine are dropped at load)"
+    },
+    "privacyPolicyUrl": {
+      "description": "Listing metadata key accepted by claude plugin validate (no unknown-field warning since v2.1.281). Not documented; the CLI does not check its type. Conventionally a URL string.",
+      "x-source": "changelog 2.1.281 (fix: 'privacyPolicyUrl, supportUrl and other listing metadata keys ... as unknown fields')",
+      "x-docs-status": "changelog-only"
+    },
+    "supportUrl": {
+      "description": "Listing metadata key accepted by claude plugin validate (no unknown-field warning since v2.1.281). Not documented; the CLI does not check its type. Conventionally a URL string.",
+      "x-source": "changelog 2.1.281 (same entry as privacyPolicyUrl)",
+      "x-docs-status": "changelog-only"
+    },
+    "icon": {
+      "description": "Listing metadata key on the CLI's tolerated-key whitelist (CLI 2.1.281 validator): claude plugin validate does not warn about it. Not documented anywhere; value type is not checked.",
+      "x-source": "CLI 2.1.281 validator whitelist (implied by changelog 2.1.281 'and other listing metadata keys')",
+      "x-docs-status": "cli-tolerated"
+    },
+    "screenshots": {
+      "description": "Listing metadata key on the CLI's tolerated-key whitelist (CLI 2.1.281 validator): claude plugin validate does not warn about it. Not documented anywhere; value type is not checked.",
+      "x-source": "CLI 2.1.281 validator whitelist (implied by changelog 2.1.281 'and other listing metadata keys')",
+      "x-docs-status": "cli-tolerated"
+    },
+    "classification": {
+      "description": "Listing metadata key on the CLI's tolerated-key whitelist (CLI 2.1.281 validator): claude plugin validate does not warn about it. Not documented anywhere; value type is not checked.",
+      "x-source": "CLI 2.1.281 validator whitelist (implied by changelog 2.1.281 'and other listing metadata keys')",
+      "x-docs-status": "cli-tolerated"
+    },
+    "privacy_policy": {
+      "description": "Listing metadata key on the CLI's tolerated-key whitelist (CLI 2.1.281 validator): claude plugin validate does not warn about it. Not documented anywhere; value type is not checked.",
+      "x-source": "CLI 2.1.281 validator whitelist (implied by changelog 2.1.281 'and other listing metadata keys')",
+      "x-docs-status": "cli-tolerated"
+    },
+    "privacyPolicy": {
+      "description": "Listing metadata key on the CLI's tolerated-key whitelist (CLI 2.1.281 validator): claude plugin validate does not warn about it. Not documented anywhere; value type is not checked.",
+      "x-source": "CLI 2.1.281 validator whitelist (implied by changelog 2.1.281 'and other listing metadata keys')",
+      "x-docs-status": "cli-tolerated"
+    },
+    "support": {
+      "description": "Listing metadata key on the CLI's tolerated-key whitelist (CLI 2.1.281 validator): claude plugin validate does not warn about it. Not documented anywhere; value type is not checked.",
+      "x-source": "CLI 2.1.281 validator whitelist (implied by changelog 2.1.281 'and other listing metadata keys')",
+      "x-docs-status": "cli-tolerated"
+    },
+    "bugs": {
+      "description": "Listing metadata key on the CLI's tolerated-key whitelist (CLI 2.1.281 validator): claude plugin validate does not warn about it. Not documented anywhere; value type is not checked.",
+      "x-source": "CLI 2.1.281 validator whitelist (implied by changelog 2.1.281 'and other listing metadata keys')",
+      "x-docs-status": "cli-tolerated"
+    },
+    "termsOfServiceUrl": {
+      "description": "Listing metadata key on the CLI's tolerated-key whitelist (CLI 2.1.281 validator): claude plugin validate does not warn about it. Not documented anywhere; value type is not checked.",
+      "x-source": "CLI 2.1.281 validator whitelist (implied by changelog 2.1.281 'and other listing metadata keys')",
+      "x-docs-status": "cli-tolerated"
+    },
+    "terms_of_service": {
+      "description": "Listing metadata key on the CLI's tolerated-key whitelist (CLI 2.1.281 validator): claude plugin validate does not warn about it. Not documented anywhere; value type is not checked.",
+      "x-source": "CLI 2.1.281 validator whitelist (implied by changelog 2.1.281 'and other listing metadata keys')",
+      "x-docs-status": "cli-tolerated"
+    },
+    "documentationUrl": {
+      "description": "Listing metadata key on the CLI's tolerated-key whitelist (CLI 2.1.281 validator): claude plugin validate does not warn about it. Not documented anywhere; value type is not checked.",
+      "x-source": "CLI 2.1.281 validator whitelist (implied by changelog 2.1.281 'and other listing metadata keys')",
+      "x-docs-status": "cli-tolerated"
+    },
+    "docs": {
+      "description": "Listing metadata key on the CLI's tolerated-key whitelist (CLI 2.1.281 validator): claude plugin validate does not warn about it. Not documented anywhere; value type is not checked.",
+      "x-source": "CLI 2.1.281 validator whitelist (implied by changelog 2.1.281 'and other listing metadata keys')",
+      "x-docs-status": "cli-tolerated"
+    },
+    "types": {
+      "type": "string",
+      "pattern": "^\\./(?!(?:.*/)?\\.\\.(?:/|$)).*\\.d\\.ts$",
+      "description": "Path to the plugin's type contract, a self-contained .d.ts starting with ./ (used by /plugin-types and validated by claude plugin validate). Undocumented; CLI 2.1.281 only.",
+      "x-source": "CLI 2.1.281 runtime schema",
+      "x-docs-status": "cli-only"
+    },
+    "binaries": {
+      "type": "object",
+      "maxProperties": 16,
+      "description": "sha256-pinned files fetched into bin/ at install time, keyed by basename (target triple encoded in the name). At most 16 valid entries are fetched. Undocumented; CLI 2.1.281 only.",
+      "propertyNames": {
+        "pattern": "^[a-z0-9](?:[a-z0-9._-]*[a-z0-9_-])?$"
+      },
+      "additionalProperties": {
+        "type": "object",
+        "required": [
+          "sha256"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$",
+            "description": "Lowercase hex SHA-256 of the file."
+          }
+        },
+        "x-cli-unknown-keys": "not measured"
+      },
+      "x-source": "CLI 2.1.281 runtime schema",
+      "x-docs-status": "cli-only"
+    }
+  },
+  "x-sources": [
+    "https://code.claude.com/docs/en/plugins/manifest-reference#fields - Plugin manifest schema (Complete schema, Required fields, Unrecognized fields, Metadata fields, Default enablement, Component path fields, Experimental components, User configuration, Channels, Path behavior rules, Environment variables)",
+    "https://code.claude.com/docs/en/plugins/components#lsp-servers - LSP servers",
+    "https://code.claude.com/docs/en/plugins/manifest-reference#monitors - Monitors",
+    "https://code.claude.com/docs/en/plugins/components#themes-and-output-styles - Themes",
+    "https://code.claude.com/docs/en/plugins/manifest-reference#hooks - Hooks",
+    "https://code.claude.com/docs/en/plugins/components#mcp-servers - MCP servers",
+    "https://code.claude.com/docs/en/plugins/manifest-reference#version - Version management",
+    "https://code.claude.com/docs/en/plugins/dependencies#declare-a-dependency-with-a-version-constraint - Declare a dependency with a version constraint",
+    "https://code.claude.com/docs/en/plugins/marketplace-reference#plugin-entries - Plugin entries (fields shared with the manifest)",
+    "https://code.claude.com/docs/en/plugins/components#default-settings - Ship default settings with your plugin",
+    "https://code.claude.com/docs/en/plugin-evals#use-a-different-eval-directory - Use a different eval directory",
+    "https://code.claude.com/docs/en/workflows#distribute-a-workflow-in-a-plugin - Distribute a workflow in a plugin",
+    "https://code.claude.com/docs/en/mcp#plugin-provided-mcp-servers - Plugin-provided MCP servers",
+    "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md - Changelog 2.1.83-2.1.281 (see report)"
+  ],
+  "x-verified": {
+    "date": "2026-09-24",
+    "claudeCodeVersion": "2.1.281",
+    "docsFetched": "2026-09-23/24 (raw markdown of code.claude.com/docs/en/<slug>.md)",
+    "oracle": "claude plugin validate --strict --json on fixture plugins; runtime loading via claude -p --debug-file"
+  }
+}

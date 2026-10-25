@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "description": "Map of server name to server entry. This exact shape (without the mcpServers wrapper) is also the inline value of mcpServers in plugin.json.",
+  "propertyNames": {
+    "pattern": "^[A-Za-z0-9_-]+$",
+    "not": {
+      "enum": [
+        "workspace",
+        "claude-in-chrome",
+        "computer-use",
+        "Claude Preview",
+        "Claude Browser",
+        "constructor",
+        "prototype",
+        "__proto__",
+        "__defineGetter__",
+        "__defineSetter__",
+        "__lookupGetter__",
+        "__lookupSetter__"
+      ]
+    },
+    "description": "Server name: letters, numbers, hyphens and underscores only. Names reserved for built-in servers (workspace, claude-in-chrome, computer-use, Claude Preview, Claude Browser) are skipped at load. A JavaScript object member name (constructor, prototype, __proto__, __defineGetter__, __defineSetter__, __lookupGetter__, __lookupSetter__) is rejected by the engine (2.1.310)."
+  },
+  "additionalProperties": {
+    "$ref": "server.schema.json"
+  }
+}

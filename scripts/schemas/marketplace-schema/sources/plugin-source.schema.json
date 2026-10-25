@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Where to fetch the plugin from: a relative path string, a bare directory name (with metadata.pluginRoot), or one of the source objects github, url, git-subdir, npm, archive, command (discriminated by the 'source' key). There is no pip, zip or generic 'git' plugin source in the docs; the CLI rejects them.",
+  "oneOf": [
+    {
+      "$ref": "relative-path.schema.json"
+    },
+    {
+      "$ref": "bare-name.schema.json"
+    },
+    {
+      "$ref": "github.schema.json"
+    },
+    {
+      "$ref": "url.schema.json"
+    },
+    {
+      "$ref": "git-subdir.schema.json"
+    },
+    {
+      "$ref": "npm.schema.json"
+    },
+    {
+      "$ref": "archive.schema.json"
+    },
+    {
+      "$ref": "command.schema.json"
+    }
+  ],
+  "x-doc": "https://code.claude.com/docs/en/plugins/marketplace-reference#plugin-sources"
+}

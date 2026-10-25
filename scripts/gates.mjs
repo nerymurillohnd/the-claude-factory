@@ -32,6 +32,17 @@ import { isMain, ROOT } from './lib.mjs'
 /** The JavaScript and TypeScript extensions, ready for files the repository does not have yet. */
 const JS_FAMILY = ['js', 'cjs', 'mjs', 'jsx', 'ts', 'cts', 'mts', 'tsx']
 
+/**
+ * The Python that scripts/basedpyright-maintainer.mjs checks under the maintainer config, each file
+ * against its own interpreter; basedpyright-scripts checks the rest of scripts/.
+ */
+const MAINTAINER_PYTHON = [
+  'scripts/validators',
+  'scripts/generators',
+  'scripts/tests/schemas',
+  'scripts/tests/run_pytest.py',
+]
+
 /** Tests that may be skipped, by Node test name or unittest id, each with why. */
 const ALLOWED_SKIPS = new Map(/** @type {[string, string][]} */ ([]))
 
@@ -158,7 +169,12 @@ function tracked(root, patterns) {
 function pluginTestFolders(root, test) {
   const base = join(root, 'scripts', 'tests')
   return readdirSync(base, { withFileTypes: true })
-    .filter((d) => d.isDirectory() && readdirSync(join(base, d.name)).some(test))
+    .filter(
+      (d) =>
+        d.isDirectory() &&
+        existsSync(join(root, 'plugins', d.name)) &&
+        readdirSync(join(base, d.name)).some(test),
+    )
     .map((d) => d.name)
     .sort()
 }
@@ -240,11 +256,18 @@ export function gatesFor({ root, ci, base }) {
       args: ['scripts/check-repo.mjs'],
     },
     {
+      id: 'marketplace',
+      group: 'policy',
+      title: 'marketplace.json plugins in sync',
+      cmd: 'node',
+      args: ['scripts/generators/marketplace.mjs', '--check'],
+    },
+    {
       id: 'catalog',
       group: 'policy',
       title: 'README catalog in sync',
       cmd: 'node',
-      args: ['scripts/catalog.mjs', '--check'],
+      args: ['scripts/generators/catalog.mjs', '--check'],
     },
     {
       id: 'version-bump',
@@ -292,18 +315,28 @@ export function gatesFor({ root, ci, base }) {
       args: ['format', '--check', 'scripts'],
     },
     {
-      id: 'mypy-scripts',
-      group: 'python',
-      title: 'mypy --strict on scripts/',
-      cmd: 'mypy',
-      args: ['--strict', ...tracked(root, ['scripts/*.py'])],
-    },
-    {
       id: 'basedpyright-scripts',
       group: 'python',
-      title: 'basedpyright on scripts/',
+      title: 'basedpyright on the plugin tests in scripts/',
       cmd: 'basedpyright',
-      args: ['--warnings', 'scripts'],
+      args: [
+        '--warnings',
+        ...tracked(root, ['scripts/*.py', ...MAINTAINER_PYTHON.map((p) => `:(exclude)${p}`)]),
+      ],
+    },
+    {
+      id: 'basedpyright-maintainer',
+      group: 'python',
+      title: 'basedpyright on the maintainer Python, each file with its own interpreter',
+      cmd: 'node',
+      args: ['scripts/basedpyright-maintainer.mjs'],
+    },
+    {
+      id: 'pytest-scripts',
+      group: 'python',
+      title: 'pytest on the maintainer tests, no skips',
+      cmd: 'scripts/tests/run_pytest.py',
+      args: ['scripts/tests/schemas'],
     },
     {
       id: 'claude-validate:marketplace',
@@ -423,13 +456,6 @@ export function gatesFor({ root, ci, base }) {
       title: 'ruff format --check plugins/',
       cmd: 'ruff',
       args: ['format', '--check', 'plugins'],
-    },
-    {
-      id: 'mypy-plugins',
-      group: 'local',
-      title: 'mypy --strict on plugins/',
-      cmd: 'mypy',
-      args: ['--strict', ...tracked(root, ['plugins/*.py'])],
     },
     {
       id: 'basedpyright-plugins',

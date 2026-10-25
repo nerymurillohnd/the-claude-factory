@@ -1,0 +1,106 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "title": "Command hook",
+  "description": "Runs a shell command (shell form) or spawns an executable directly (exec form, when `args` is set). Receives the event JSON on stdin; results come back through exit codes and stdout.",
+  "properties": {
+    "type": {
+      "type": "string",
+      "const": "command",
+      "description": "Handler type: `command` runs a command.",
+      "title": "Type"
+    },
+    "command": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Shell command to execute; with `args`, the executable to spawn directly (no shell). Path placeholders `${CLAUDE_PROJECT_DIR}`, `${CLAUDE_PLUGIN_ROOT}` and `${CLAUDE_PLUGIN_DATA}` are substituted. Prefer exec form whenever the command references a path placeholder; in shell form wrap each placeholder in double quotes. In a worktree, `${CLAUDE_PROJECT_DIR}` stays at the project root where the session started, while the `cwd` field of the hook input follows Claude into the worktree or after a `cd`: read `cwd` when the hook needs the directory Claude is working in.",
+      "title": "Command"
+    },
+    "args": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Argument list; when present (even empty), the hook uses exec form: `command` is resolved as an executable on PATH and spawned with these arguments and no shell, and each element is passed as one argument. Plugin hooks can use `${user_config.*}` only in exec form.",
+      "title": "Args"
+    },
+    "shell": {
+      "type": "string",
+      "enum": [
+        "bash",
+        "powershell"
+      ],
+      "default": "bash",
+      "description": "Shell for shell form: `bash` (default; on Windows without Git Bash it falls back to PowerShell) or `powershell`. Ignored when `args` is set.",
+      "title": "Shell"
+    },
+    "async": {
+      "type": "boolean",
+      "default": false,
+      "description": "If true, run in the background without blocking; its decision fields have no effect and `timeout` is not enforced. Only available on command hooks.",
+      "title": "Async"
+    },
+    "asyncRewake": {
+      "type": "boolean",
+      "default": false,
+      "description": "If true, run in the background and wake Claude on exit code 2: stderr (or stdout when stderr is empty) is shown to Claude as a system reminder. `timeout` is still enforced. Implies `async`.",
+      "title": "Async Rewake"
+    },
+    "timeout": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "default": 600,
+      "description": "Seconds before the handler is canceled. Default 600 for command, http and mcp_tool; lowered to 30 on UserPromptSubmit, PreModelSwitch and PostModelSwitch and to 10 on MessageDisplay. SessionEnd hooks share a 1.5 s budget (raised to the largest per-hook timeout, max 60 s). Not enforced on a command hook running with `async: true`.",
+      "title": "Timeout"
+    },
+    "statusMessage": {
+      "type": "string",
+      "description": "Custom spinner message displayed while the handler runs.",
+      "title": "Status Message"
+    },
+    "once": {
+      "type": "boolean",
+      "default": false,
+      "description": "If true, the hook is removed after its first successful run (a failed, exit-2 or timed-out run keeps it). Only honored for hooks declared in skill frontmatter; ignored in settings files and agent frontmatter.",
+      "title": "Once"
+    },
+    "if": {
+      "type": "string",
+      "description": "Permission-rule-syntax filter (exactly one rule, e.g. `Bash(git *)`, `Edit(*.ts)`, `PowerShell(Remove-Item *)`); the handler only runs when the tool call matches. Evaluated only on PreToolUse, PostToolUse, PostToolUseFailure, PermissionRequest and PermissionDenied; on any other event a handler with `if` never runs. There is no `&&`/`||`/list syntax: use one handler per condition. Best-effort filter, not a security boundary.",
+      "title": "If"
+    },
+    "onFailure": {
+      "type": "string",
+      "enum": [
+        "continue",
+        "block"
+      ],
+      "title": "On Failure",
+      "description": "Whether the action that triggered the hook goes ahead when the hook fails (it could not start, timed out, exited with a code other than 0 or 2, or printed invalid JSON): `continue` lets it through and reports the failure; `block` counts the failure as exit code 2. Ignored for async hooks and on Stop, SubagentStop, TaskCompleted and TeammateIdle.",
+      "x-addedIn": "2.1.295",
+      "x-source": "https://code.claude.com/docs/en/hooks#block-the-action-when-a-hook-fails; changelog 2.1.295"
+    }
+  },
+  "required": [
+    "type",
+    "command"
+  ],
+  "additionalProperties": false,
+  "examples": [
+    {
+      "type": "command",
+      "command": "${CLAUDE_PLUGIN_ROOT}/scripts/check.sh",
+      "args": [],
+      "timeout": 30
+    },
+    {
+      "type": "command",
+      "command": "node",
+      "args": [
+        "${CLAUDE_PLUGIN_ROOT}/scripts/format.js",
+        "--fix"
+      ]
+    }
+  ],
+  "x-source": "https://code.claude.com/docs/en/hooks#command-hook-fields"
+}

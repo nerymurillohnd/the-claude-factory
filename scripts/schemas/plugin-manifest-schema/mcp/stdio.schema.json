@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "title": "stdio server",
+  "description": "Local process server speaking MCP over stdin/stdout. Selected when type is \"stdio\" or omitted.",
+  "additionalProperties": false,
+  "required": [
+    "command"
+  ],
+  "properties": {
+    "type": {
+      "const": "stdio",
+      "description": "Transport type. Optional: an entry without type is read as stdio.",
+      "default": "stdio"
+    },
+    "command": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Executable that starts the server. Supports ${VAR} and ${VAR:-default} environment-variable expansion. Plugin servers also substitute ${CLAUDE_PLUGIN_ROOT}, ${CLAUDE_PLUGIN_DATA} and ${CLAUDE_PROJECT_DIR}. Use an absolute path for local scripts."
+    },
+    "args": {
+      "type": "array",
+      "default": [],
+      "items": {
+        "type": "string",
+        "description": "One command-line argument."
+      },
+      "description": "Arguments passed to command, one string each. Supports ${VAR} and ${VAR:-default} environment-variable expansion."
+    },
+    "env": {
+      "type": "object",
+      "description": "Environment variables set for the server process (string values). Supports ${VAR} and ${VAR:-default} environment-variable expansion. Claude Code also sets CLAUDE_PROJECT_DIR. Do not store secrets here in shared files.",
+      "additionalProperties": {
+        "type": "string",
+        "description": "Variable value."
+      }
+    },
+    "timeout": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Per-server wall-clock limit for one tool call, in milliseconds. Overrides MCP_TOOL_TIMEOUT for this server; values below 1000 are ignored. Also floors the idle timeout. Progress notifications do not extend it."
+    },
+    "alwaysLoad": {
+      "$ref": "fields.schema.json#/$defs/alwaysLoad"
+    },
+    "bareElicitationCapability": {
+      "$ref": "fields.schema.json#/$defs/bareElicitationCapability"
+    }
+  }
+}

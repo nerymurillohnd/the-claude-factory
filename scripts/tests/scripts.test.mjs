@@ -20,9 +20,9 @@ import { tmpdir } from 'node:os'
 import { dirname, join, resolve, sep } from 'node:path'
 import { afterEach, beforeEach, describe, test } from 'node:test'
 import { fileURLToPath } from 'node:url'
-import { anchor } from '../catalog.mjs'
 import { lspConfigProblems, portabilityProblems, rootPackageProblems } from '../check-repo.mjs'
 import { hooksFileKinds } from '../components.mjs'
+import { anchor } from '../generators/catalog.mjs'
 import { changelogSection } from '../lib.mjs'
 
 const REAL_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..')
@@ -154,7 +154,7 @@ function resolveTodos(name = 'demo-tool') {
   const p = `plugins/${name}/README.md`
   write(p, read(p).replace(/<!--\s*(TODO|TEMPLATE)[\s\S]*?-->\n?/g, ''))
   pruneCompat(name, ['Skills'])
-  assert.equal(run('catalog.mjs').code, 0)
+  assert.equal(run('generators/catalog.mjs').code, 0)
 }
 
 /** Scaffold the default plugin and finish it, so check-repo.mjs has nothing left to flag. */
@@ -187,13 +187,6 @@ describe('check-repo', () => {
     assert.equal(after.code, 0, after.out)
   })
 
-  test('flags a plugin directory missing from marketplace.json', () => {
-    mkdirSync(join(root, 'plugins', 'orphan', '.claude-plugin'), { recursive: true })
-    const r = run('check-repo.mjs')
-    assert.equal(r.code, 1)
-    assert.match(r.out, /plugins\/orphan.*not listed/)
-  })
-
   test('flags a root package.json that declares runtime dependencies', () => {
     const pkg = json('package.json')
     pkg.dependencies = { lodash: '4.17.21' }
@@ -210,25 +203,6 @@ describe('check-repo', () => {
     const r = run('check-repo.mjs')
     assert.equal(r.code, 1)
     assert.match(r.out, /marketplace carries no version/)
-  })
-
-  test('flags a version on the marketplace entry', () => {
-    scaffoldReady()
-    const mp = json('.claude-plugin/marketplace.json')
-    mp.plugins[0].version = '9.9.9'
-    write('.claude-plugin/marketplace.json', `${JSON.stringify(mp, null, 2)}\n`)
-    const r = run('check-repo.mjs')
-    assert.equal(r.code, 1)
-    assert.match(r.out, /do not set version on the entry/)
-  })
-
-  test('flags a manifest name that differs from the entry name', () => {
-    scaffoldReady()
-    const p = 'plugins/demo-tool/.claude-plugin/plugin.json'
-    write(p, read(p).replace('"name": "demo-tool"', '"name": "other"'))
-    const r = run('check-repo.mjs')
-    assert.equal(r.code, 1)
-    assert.match(r.out, /must equal the entry name/)
   })
 
   test('flags a missing required README section', () => {
@@ -284,7 +258,7 @@ describe('check-repo', () => {
     const p = 'plugins/lang-tool/README.md'
     write(p, read(p).replace(/<!--\s*(TODO|TEMPLATE)[\s\S]*?-->\n?/g, 'it needs bin/ executables'))
     pruneCompat('lang-tool', ['Executables'])
-    assert.equal(run('catalog.mjs').code, 0)
+    assert.equal(run('generators/catalog.mjs').code, 0)
     assert.deepEqual(json('plugins/lang-tool/.claude-plugin/plugin.json').metadata.surfaces, [
       'claude-code',
     ])
@@ -330,11 +304,132 @@ describe('check-repo', () => {
     assert.match(r.out, /desktop\.ini is a macOS or Windows system file/)
     assert.doesNotMatch(r.out, /\.DS_Store/)
   })
+})
 
-  test('flags a stale README catalog', () => {
-    scaffoldReady()
-    write('README.md', read('README.md').replace(/demo-tool@the-claude-factory/, 'stale'))
-    const r = run('check-repo.mjs')
+describe('marketplace generator', () => {
+  const MARKETPLACE = '.claude-plugin/marketplace.json'
+  const generate = (/** @type {string[]} */ args = []) => run('generators/marketplace.mjs', args)
+  /** @param {string} name */
+  const manifestOf = (name) => `plugins/${name}/.claude-plugin/plugin.json`
+  /**
+   * @param {string} name
+   * @param {(m: { name?: string, metadata: { category?: string | undefined } }) => void} change
+   */
+  const editManifest = (name, change) => {
+    const m = json(manifestOf(name))
+    change(m)
+    write(manifestOf(name), `${JSON.stringify(m, null, 2)}\n`)
+  }
+
+  test('matches the committed marketplace.json', () => {
+    const r = generate(['--check'])
+    assert.equal(r.code, 0, r.out)
+    assert.match(r.out, /marketplace\.json plugins are up to date/)
+  })
+
+  test('is idempotent', () => {
+    const before = read(MARKETPLACE)
+    assert.equal(generate().code, 0)
+    assert.equal(read(MARKETPLACE), before)
+    assert.equal(generate(['--check']).code, 0)
+  })
+
+  test('keeps the top-level fields', () => {
+    const { plugins: _plugins, ...before } = json(MARKETPLACE)
+    write(MARKETPLACE, `${JSON.stringify({ ...before, plugins: [] }, null, 2)}\n`)
+    assert.equal(generate().code, 0)
+    const { plugins, ...after } = json(MARKETPLACE)
+    assert.deepEqual(after, before)
+    assert.deepEqual(Object.keys(after), Object.keys(before))
+    assert.ok(plugins.length > 0)
+  })
+
+  test('picks up a new plugin', () => {
+    cpSync(join(root, 'plugins/block-no-verify'), join(root, 'plugins/zz-demo'), {
+      recursive: true,
+    })
+    editManifest('zz-demo', (m) => {
+      m.name = 'zz-demo'
+    })
+    assert.equal(generate(['--check']).code, 1)
+    assert.equal(generate().code, 0)
+    const entries = json(MARKETPLACE).plugins
+    assert.deepEqual(entries.at(-1), {
+      name: 'zz-demo',
+      source: './plugins/zz-demo',
+      description: json(manifestOf('zz-demo')).description,
+      category: 'security',
+    })
+  })
+
+  test('fails on a plugin directory without a manifest', () => {
+    const before = read(MARKETPLACE)
+    mkdirSync(join(root, 'plugins/empty'))
+    const r = generate()
+    assert.equal(r.code, 1)
+    assert.match(r.out, /plugins\/empty: \.claude-plugin\/plugin\.json is missing/)
+    assert.equal(read(MARKETPLACE), before)
+  })
+
+  test('fails on a missing or unknown category', () => {
+    editManifest('block-no-verify', (m) => {
+      m.metadata.category = undefined // JSON.stringify drops the key
+    })
+    let r = generate()
+    assert.equal(r.code, 1)
+    assert.match(r.out, /plugins\/block-no-verify: metadata\.category is required/)
+    editManifest('block-no-verify', (m) => {
+      m.metadata.category = 'nope'
+    })
+    r = generate()
+    assert.equal(r.code, 1)
+    assert.match(r.out, /metadata\.category "nope" is not in categories\.json/)
+  })
+
+  test('fails when the manifest name differs from its directory', () => {
+    editManifest('block-no-verify', (m) => {
+      m.name = 'x'
+    })
+    const r = generate()
+    assert.equal(r.code, 1)
+    assert.match(r.out, /plugins\/block-no-verify: name "x" does not match its directory/)
+  })
+
+  test('names the plugin whose manifest is not valid JSON, and keeps collecting', () => {
+    write(manifestOf('block-no-verify'), '{ broken')
+    editManifest('tool-ledger', (m) => {
+      m.name = 'x'
+    })
+    const r = generate()
+    assert.equal(r.code, 1)
+    assert.match(r.out, /plugins\/block-no-verify: \.claude-plugin\/plugin\.json is not valid JSON/)
+    assert.match(r.out, /plugins\/tool-ledger: name "x" does not match its directory/)
+  })
+
+  test('ignores plain files in plugins/', () => {
+    write('plugins/.DS_Store', 'x')
+    assert.equal(generate(['--check']).code, 0)
+  })
+
+  test('fails on a symlink in plugins/', () => {
+    symlinkSync(join(root, 'plugins/block-no-verify'), join(root, 'plugins/linked'))
+    const r = generate()
+    assert.equal(r.code, 1)
+    assert.match(r.out, /plugins\/linked: must be a directory, not a symlink/)
+  })
+})
+
+describe('catalog generator', () => {
+  test('is idempotent', () => {
+    const before = read('README.md')
+    const r = run('generators/catalog.mjs')
+    assert.equal(r.code, 0, r.out)
+    assert.equal(read('README.md'), before)
+    assert.equal(run('generators/catalog.mjs', ['--check']).code, 0)
+  })
+  test('--check flags a stale README catalog', () => {
+    write('README.md', read('README.md').replace(/block-no-verify@the-claude-factory/, 'stale'))
+    const r = run('generators/catalog.mjs', ['--check'])
     assert.equal(r.code, 1)
     assert.match(r.out, /catalog is out of date/)
   })
@@ -367,6 +462,63 @@ describe('new-plugin', () => {
     assert.match(r.out, /Unknown category/)
   })
 
+  test('stops before writing anything when another plugin directory is broken', () => {
+    const before = read('.claude-plugin/marketplace.json')
+    mkdirSync(join(root, 'plugins/stray'))
+    const r = run('new-plugin.mjs', [
+      '--name',
+      'demo-tool',
+      '--category',
+      'productivity',
+      '--description',
+      'x',
+    ])
+    assert.equal(r.code, 1)
+    assert.match(r.out, /plugins\/stray: \.claude-plugin\/plugin\.json is missing/)
+    assert.ok(!existsSync(join(root, 'plugins/demo-tool')))
+    assert.equal(read('.claude-plugin/marketplace.json'), before)
+  })
+
+  test('writes a valid manifest when the description holds quotes and backslashes', () => {
+    const description = 'Says "hi" to C:\\temp.'
+    const r = run('new-plugin.mjs', [
+      '--name',
+      'demo-tool',
+      '--category',
+      'productivity',
+      '--description',
+      description,
+    ])
+    assert.equal(r.code, 0, r.out)
+    assert.equal(json('plugins/demo-tool/.claude-plugin/plugin.json').description, description)
+    const entry = json('.claude-plugin/marketplace.json').plugins.find(
+      (/** @type {{ name: string }} */ e) => e.name === 'demo-tool',
+    )
+    assert.equal(entry.description, description)
+  })
+
+  test('registers every plugin directory through the marketplace generator', () => {
+    cpSync(join(root, 'plugins/block-no-verify'), join(root, 'plugins/zz-copy'), {
+      recursive: true,
+    })
+    const m = json('plugins/zz-copy/.claude-plugin/plugin.json')
+    write(
+      'plugins/zz-copy/.claude-plugin/plugin.json',
+      `${JSON.stringify({ ...m, name: 'zz-copy' }, null, 2)}\n`,
+    )
+    scaffold()
+    const names = json('.claude-plugin/marketplace.json').plugins.map(
+      (/** @type {{ name: string }} */ e) => e.name,
+    )
+    assert.ok(names.includes('zz-copy'))
+    assert.ok(names.includes('demo-tool'))
+    assert.equal(
+      json('plugins/demo-tool/.claude-plugin/plugin.json').metadata.category,
+      'productivity',
+    )
+    assert.equal(run('generators/marketplace.mjs', ['--check']).code, 0)
+  })
+
   test('registers the entry, renders templates and updates the catalog', () => {
     const before = json('.claude-plugin/marketplace.json').plugins
     scaffold()
@@ -389,7 +541,7 @@ describe('new-plugin', () => {
     const readme = read('README.md')
     assert.match(readme, /\[\*\*Demo Tool\*\*\]\(\.\/plugins\/demo-tool#readme\)/)
     assert.match(readme, new RegExp(`plugins-${before.length + 1}-D97757`))
-    assert.equal(run('catalog.mjs', ['--check']).code, 0)
+    assert.equal(run('generators/catalog.mjs', ['--check']).code, 0)
   })
 
   test('refuses to overwrite an existing plugin', () => {

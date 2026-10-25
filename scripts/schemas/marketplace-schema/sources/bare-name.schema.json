@@ -1,0 +1,8 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "string",
+  "description": "Bare directory name (no '/'), resolved under metadata.pluginRoot. Only valid when the marketplace sets metadata.pluginRoot (v2.1.239+). Organization sync rejects bare names.",
+  "pattern": "^[^/\\\\.][^/\\\\]*$",
+  "x-requires": "metadata.pluginRoot",
+  "x-doc": "https://code.claude.com/docs/en/plugins/marketplace-reference#relative-path-plugin-source"
+}

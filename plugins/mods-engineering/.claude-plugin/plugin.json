@@ -1,7 +1,7 @@
 {
   "name": "mods-engineering",
   "displayName": "Mods Engineering",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Designs, builds, reviews, tests and debugs Claude Code mods, checking every interface against the current mod docs and the type declarations your own Claude Code build writes.",
   "author": {
     "name": "Nery Murillo",
@@ -21,6 +21,7 @@
     "debugging"
   ],
   "metadata": {
+    "category": "development",
     "surfaces": [
       "claude-code",
       "claude-app"

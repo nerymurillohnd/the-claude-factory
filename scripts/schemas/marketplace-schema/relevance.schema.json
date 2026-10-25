@@ -1,0 +1,165 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "description": "Signals telling Claude Code when to suggest this plugin. Only takes effect for marketplaces an administrator allowlists in managed settings (pluginSuggestionMarketplaces). Unknown keys are validator warnings.",
+  "properties": {
+    "topic": {
+      "type": "string",
+      "description": "Phrase for 'Working with <topic>?' in the spinner tip; defaults to the capitalized plugin name. Max 64 characters.",
+      "minLength": 1,
+      "maxLength": 64
+    },
+    "signals": {
+      "type": "object",
+      "description": "Matchers that decide when the plugin is relevant. At least one non-empty signal is required.",
+      "properties": {
+        "cwd": {
+          "type": "array",
+          "description": "Working-directory globs; the only signal that can match at session start. Max 10 patterns of 256 chars.",
+          "items": {
+            "type": "string",
+            "description": "Glob matched against the session working directory (absolute and, in a git repo, repo-relative), forward slashes, case-insensitive.",
+            "minLength": 1,
+            "maxLength": 256,
+            "not": {
+              "pattern": "\\\\"
+            }
+          },
+          "maxItems": 10
+        },
+        "cli": {
+          "type": "array",
+          "description": "Command names Claude has run in shell commands this session. Max 10 entries of 64 chars.",
+          "items": {
+            "type": "string",
+            "description": "Command name (exact match).",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "maxItems": 10
+        },
+        "hosts": {
+          "type": "array",
+          "description": "Hostnames seen in http(s) URLs in Bash commands. Max 20 entries of 128 chars.",
+          "items": {
+            "type": "string",
+            "description": "Lowercase bare hostname: no scheme, port or path.",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[a-z0-9.-]+$"
+          },
+          "maxItems": 20
+        },
+        "filesRead": {
+          "type": "array",
+          "description": "File-read globs. Max 10 patterns of 256 chars.",
+          "items": {
+            "type": "string",
+            "description": "Glob matched against paths of files Claude has read (forward slashes, case-insensitive).",
+            "minLength": 1,
+            "maxLength": 256,
+            "not": {
+              "pattern": "\\\\"
+            }
+          },
+          "maxItems": 10
+        },
+        "manifestDeps": {
+          "type": "array",
+          "description": "Dependencies declared in package manifests Claude has read. Max 10 entries.",
+          "items": {
+            "type": "object",
+            "description": "One manifest dependency matcher.",
+            "properties": {
+              "file": {
+                "type": "string",
+                "description": "JavaScript RegExp source matched (case-insensitively) against the manifest file path; anchor at the end.",
+                "minLength": 1,
+                "maxLength": 256,
+                "format": "regex"
+              },
+              "pattern": {
+                "type": "string",
+                "description": "JavaScript RegExp source matched (case-sensitively) against the manifest file contents.",
+                "minLength": 1,
+                "maxLength": 256,
+                "format": "regex"
+              }
+            },
+            "required": [
+              "file",
+              "pattern"
+            ],
+            "additionalProperties": false,
+            "x-cli-unknown-keys": "ignores"
+          },
+          "maxItems": 10
+        }
+      },
+      "additionalProperties": false,
+      "minProperties": 1,
+      "anyOf": [
+        {
+          "required": [
+            "cwd"
+          ],
+          "properties": {
+            "cwd": {
+              "minItems": 1,
+              "description": "Constraint fragment used by a conditional rule; see the enclosing definition."
+            }
+          }
+        },
+        {
+          "required": [
+            "cli"
+          ],
+          "properties": {
+            "cli": {
+              "minItems": 1,
+              "description": "Constraint fragment used by a conditional rule; see the enclosing definition."
+            }
+          }
+        },
+        {
+          "required": [
+            "hosts"
+          ],
+          "properties": {
+            "hosts": {
+              "minItems": 1,
+              "description": "Constraint fragment used by a conditional rule; see the enclosing definition."
+            }
+          }
+        },
+        {
+          "required": [
+            "filesRead"
+          ],
+          "properties": {
+            "filesRead": {
+              "minItems": 1,
+              "description": "Constraint fragment used by a conditional rule; see the enclosing definition."
+            }
+          }
+        },
+        {
+          "required": [
+            "manifestDeps"
+          ],
+          "properties": {
+            "manifestDeps": {
+              "minItems": 1,
+              "description": "Constraint fragment used by a conditional rule; see the enclosing definition."
+            }
+          }
+        }
+      ]
+    }
+  },
+  "required": [
+    "signals"
+  ],
+  "additionalProperties": false,
+  "x-doc": "https://code.claude.com/docs/en/plugins/relevance#field-reference"
+}

@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "description": "Git URL source.",
+  "properties": {
+    "source": {
+      "const": "url",
+      "description": "Source discriminator."
+    },
+    "url": {
+      "type": "string",
+      "description": "Full git repository URL (https:// or git@). The .git suffix is optional. The CLI accepts an empty string too."
+    },
+    "ref": {
+      "type": "string",
+      "description": "Git branch or tag to use. Defaults to the repository default branch. The CLI accepts an empty string too."
+    },
+    "sha": {
+      "type": "string",
+      "description": "Full 40-character git commit SHA pinning an exact version. When both ref and sha are set, sha is the effective pin. Docs say '40-character'; the CLI additionally requires lowercase hex.",
+      "pattern": "^[a-f0-9]{40}$"
+    }
+  },
+  "required": [
+    "source",
+    "url"
+  ],
+  "additionalProperties": false,
+  "x-doc": "https://code.claude.com/docs/en/plugins/marketplace-reference#url-plugin-source",
+  "x-cli-unknown-keys": "ignores"
+}

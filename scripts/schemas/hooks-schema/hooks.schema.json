@@ -1,0 +1,92 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Claude Code plugin hooks file (hooks/hooks.json)",
+  "description": "Schema for hooks/hooks.json in a Claude Code plugin: an optional `$schema` and `description` plus a `hooks` object keyed by event name. Loaded when the plugin is enabled; its hooks merge with user and project hooks.",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "JSON Schema URL for editor autocomplete and validation; ignored by Claude Code at load time.",
+      "title": "Schema"
+    },
+    "description": {
+      "type": "string",
+      "description": "Brief, user-facing explanation of what these hooks provide.",
+      "title": "Description"
+    },
+    "hooks": {
+      "$ref": "hooks-config.schema.json",
+      "description": "Hook definitions keyed by event name (same format as the `hooks` value in settings.json).",
+      "title": "Hooks"
+    },
+    "modules": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1,
+      "maxItems": 1,
+      "title": "Modules",
+      "description": "A mod's hooks module: one path, relative to this hooks.json, of a module exporting register(on). A second entry is refused.",
+      "x-source": "https://code.claude.com/docs/en/plugins/mods/reference#files"
+    }
+  },
+  "anyOf": [
+    {
+      "required": [
+        "hooks"
+      ]
+    },
+    {
+      "required": [
+        "modules"
+      ]
+    }
+  ],
+  "additionalProperties": false,
+  "$comment": "Source of truth for hooks/hooks.json validation; edit these files directly. Layout: hooks.schema.json (file envelope), hooks-config.schema.json (event -> matcher groups, also the inline `hooks` of plugin.json and of a marketplace entry), handlers/ (one schema per handler type plus handler-sets), events/ (event arrays and matcher groups by family). No file declares $id: a schema's identity is its location, and every $ref is relative to the file that holds it. additionalProperties is false on every object: the runtime tolerates and silently strips unknown keys (and ignores unknown events/handler types with a warning), so the schema is deliberately stricter to catch typos and fields set on the wrong handler type. It also encodes the documented per-event handler-type support and the rule that `if` is only evaluated on tool events, which `claude plugin validate` does not check. Fields that exist only in the runtime bundle and not in the docs (command `rewakeMessage`/`rewakeSummary`/`cloud`, http `cloud`) are intentionally omitted. hooks.json `modules` (a mod's hooks module) is documented in the mods reference and is modelled: a file holds `hooks`, `modules`, or both.",
+  "x-sources": [
+    {
+      "url": "https://code.claude.com/docs/en/hooks#configuration",
+      "heading": "Hooks reference > Configuration"
+    },
+    {
+      "url": "https://code.claude.com/docs/en/hooks#matcher-patterns",
+      "heading": "Hooks reference > Matcher patterns"
+    },
+    {
+      "url": "https://code.claude.com/docs/en/hooks#hook-handler-fields",
+      "heading": "Hooks reference > Hook handler fields"
+    },
+    {
+      "url": "https://code.claude.com/docs/en/hooks#hook-events",
+      "heading": "Hooks reference > Hook events"
+    },
+    {
+      "url": "https://code.claude.com/docs/en/hooks#prompt-based-hooks",
+      "heading": "Hooks reference > Prompt-based hooks (per-event handler support)"
+    },
+    {
+      "url": "https://code.claude.com/docs/en/hooks#agent-based-hooks",
+      "heading": "Hooks reference > Agent-based hooks"
+    },
+    {
+      "url": "https://code.claude.com/docs/en/hooks#run-hooks-in-the-background",
+      "heading": "Hooks reference > Run hooks in the background"
+    },
+    {
+      "url": "https://code.claude.com/docs/en/plugins/manifest-reference#hooks",
+      "heading": "Plugins reference > Hooks"
+    },
+    {
+      "url": "https://code.claude.com/docs/en/settings-reference#hooks",
+      "heading": "Settings reference > Hooks and automation > hooks"
+    }
+  ],
+  "x-verified": {
+    "date": "2026-10-24",
+    "claudeCodeVersion": "2.1.310",
+    "method": "official docs (hooks, plugins/manifest-reference, plugins/components, plugins/mods/reference) read on 2026-10-24 + changelog 2.1.282..2.1.310 + `claude plugin validate --strict` oracle + handler zod schemas of @anthropic-ai/claude-agent-sdk 0.3.310 (the 2.1.310 engine); per-event handler support checked against the hooks page"
+  }
+}

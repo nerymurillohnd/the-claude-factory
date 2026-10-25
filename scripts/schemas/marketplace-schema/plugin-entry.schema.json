@@ -1,0 +1,219 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "description": "A plugin listed in the marketplace. Beyond the marketplace-specific fields (source, category, tags, strict, relevance, headers, headersHelper) an entry may carry any field of the plugin manifest schema. Unknown fields are validator warnings (errors under --strict).",
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "JSON Schema URL for editor tooling; ignored at load time (inherited from the plugin manifest schema).",
+      "x-doc": "https://code.claude.com/docs/en/plugins/manifest-reference#fields"
+    },
+    "name": {
+      "$ref": "../plugin-manifest-schema/plugin-manifest.schema.json#/properties/name",
+      "description": "Plugin identifier (kebab-case recommended); users see it in /plugin install <name>@<marketplace>. Must be unique in the marketplace. A name that passes as one of Anthropic's own is an error in `claude plugin validate` (case-insensitive, a run of separators counts as one): a claude-, anthropic-, anthropics- or cc-plugin- prefix; exactly claude, anthropic, anthropics, claude-code or claude-mods; or official beside claude or anthropic. A whole word elsewhere (mcp-for-claude) is only a warning and is not enforced here."
+    },
+    "source": {
+      "$ref": "sources/plugin-source.schema.json",
+      "description": "Where to fetch the plugin from: a relative path string, a bare directory name (with metadata.pluginRoot), or one of the source objects github, url, git-subdir, npm, archive, command (discriminated by the 'source' key). There is no pip, zip or generic 'git' plugin source in the docs; the CLI rejects them."
+    },
+    "displayName": {
+      "$ref": "../plugin-manifest-schema/plugin-manifest.schema.json#/properties/displayName"
+    },
+    "description": {
+      "$ref": "../plugin-manifest-schema/plugin-manifest.schema.json#/properties/description"
+    },
+    "version": {
+      "$ref": "../plugin-manifest-schema/plugin-manifest.schema.json#/properties/version"
+    },
+    "author": {
+      "$ref": "../plugin-manifest-schema/plugin-manifest.schema.json#/properties/author"
+    },
+    "homepage": {
+      "$ref": "../plugin-manifest-schema/plugin-manifest.schema.json#/properties/homepage"
+    },
+    "repository": {
+      "$ref": "../plugin-manifest-schema/plugin-manifest.schema.json#/properties/repository"
+    },
+    "license": {
+      "$ref": "../plugin-manifest-schema/plugin-manifest.schema.json#/properties/license"
+    },
+    "keywords": {
+      "$ref": "../plugin-manifest-schema/plugin-manifest.schema.json#/properties/keywords"
+    },
+    "metadata": {
+      "$ref": "../plugin-manifest-schema/plugin-manifest.schema.json#/properties/metadata"
+    },
+    "category": {
+      "type": "string",
+      "description": "Plugin category for organization.",
+      "x-doc": "https://code.claude.com/docs/en/plugins/marketplace-reference#plugin-entries"
+    },
+    "tags": {
+      "type": "array",
+      "description": "Tags for searchability.",
+      "items": {
+        "type": "string"
+      },
+      "x-doc": "https://code.claude.com/docs/en/plugins/marketplace-reference#plugin-entries"
+    },
+    "strict": {
+      "type": "boolean",
+      "description": "Whether plugin.json is the authority for component definitions (default true: entry supplements plugin.json and both merge; false: the entry is the entire definition and a plugin.json that also declares components is a conflict).",
+      "default": true,
+      "x-doc": "https://code.claude.com/docs/en/plugins/marketplace-reference#strict-mode"
+    },
+    "relevance": {
+      "$ref": "relevance.schema.json",
+      "description": "Signals telling Claude Code when to suggest this plugin. Only takes effect for marketplaces an administrator allowlists in managed settings (pluginSuggestionMarketplaces). Unknown keys are validator warnings."
+    },
+    "defaultEnabled": {
+      "$ref": "../plugin-manifest-schema/plugin-manifest.schema.json#/properties/defaultEnabled"
+    },
+    "dependencies": {
+      "$ref": "../plugin-manifest-schema/plugin-manifest.schema.json#/properties/dependencies"
+    },
+    "skills": {
+      "$ref": "../plugin-manifest-schema/plugin-manifest.schema.json#/properties/skills",
+      "description": "Custom skill directories containing <name>/SKILL.md (adds to the default skills/ scan; with a marketplace-root source the listed paths are the complete set). Each path starts with './' (or is '.')."
+    },
+    "commands": {
+      "$ref": "../plugin-manifest-schema/plugin-manifest.schema.json#/properties/commands"
+    },
+    "agents": {
+      "$ref": "../plugin-manifest-schema/plugin-manifest.schema.json#/properties/agents"
+    },
+    "workflows": {
+      "$ref": "../plugin-manifest-schema/plugin-manifest.schema.json#/properties/workflows"
+    },
+    "hooks": {
+      "$ref": "../hooks-schema/hooks-config.schema.json",
+      "description": "Entry hooks load only as an inline event map: a file path or an array passes claude plugin validate but never runs, with a `not yet supported in a marketplace entry` error.",
+      "x-doc": "https://code.claude.com/docs/en/plugins/marketplace-reference#hooks-in-an-entry"
+    },
+    "mcpServers": {
+      "$ref": "../plugin-manifest-schema/plugin-manifest.schema.json#/properties/mcpServers",
+      "description": "MCP server definitions: path to a .json config file, an inline map of server name to config, or a list mixing both."
+    },
+    "lspServers": {
+      "$ref": "../plugin-manifest-schema/plugin-manifest.schema.json#/properties/lspServers",
+      "description": "LSP server definitions: path to a .json file, inline map of server name to config, or a list mixing both."
+    },
+    "outputStyles": {
+      "$ref": "../plugin-manifest-schema/plugin-manifest.schema.json#/properties/outputStyles"
+    },
+    "userConfig": {
+      "$ref": "../plugin-manifest-schema/plugin-manifest.schema.json#/properties/userConfig",
+      "description": "User-configurable values prompted when the plugin is enabled. Keys must be valid identifiers."
+    },
+    "channels": {
+      "type": "array",
+      "description": "Channel declarations for message injection (Telegram, Slack, Discord style).",
+      "items": {
+        "$ref": "../plugin-manifest-schema/components/channel.schema.json"
+      },
+      "x-doc": "https://code.claude.com/docs/en/plugins/manifest-reference#channels"
+    },
+    "experimental": {
+      "$ref": "../plugin-manifest-schema/plugin-manifest.schema.json#/properties/experimental"
+    },
+    "themes": {
+      "$ref": "../plugin-manifest-schema/plugin-manifest.schema.json#/properties/themes",
+      "deprecated": true
+    },
+    "monitors": {
+      "$ref": "../plugin-manifest-schema/plugin-manifest.schema.json#/properties/monitors",
+      "description": "DEPRECATED top-level spelling of experimental.monitors: still loads, but validation warns and a future release will require experimental.*.",
+      "deprecated": true
+    },
+    "settings": {
+      "$ref": "../plugin-manifest-schema/plugin-manifest.schema.json#/properties/settings",
+      "description": "Settings to merge into user settings while the plugin is enabled (docs: only the agent and subagentStatusLine keys are supported)."
+    },
+    "headers": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      },
+      "description": "HTTP headers sent when downloading this entry's archive; overrides same-named marketplace headers (v2.1.238+). Only meaningful for archive sources.",
+      "x-doc": "https://code.claude.com/docs/en/plugins/marketplace-reference#plugin-entries"
+    },
+    "headersHelper": {
+      "type": "string",
+      "description": "Command that prints the archive-download headers as one JSON object, for short-lived credentials. Printable ASCII, max 500 characters, no runs of four or more spaces. The entry must set strict: false (v2.1.238+). Only meaningful for archive sources.",
+      "minLength": 1,
+      "maxLength": 500,
+      "pattern": "^[\\x20-\\x7e]+$",
+      "not": {
+        "pattern": " {4}"
+      },
+      "x-doc": "https://code.claude.com/docs/en/plugins/host-marketplace#add-a-headershelper-to-a-plugin-entry"
+    },
+    "types": {
+      "$ref": "../plugin-manifest-schema/plugin-manifest.schema.json#/properties/types"
+    },
+    "binaries": {
+      "$ref": "../plugin-manifest-schema/plugin-manifest.schema.json#/properties/binaries"
+    }
+  },
+  "required": [
+    "name",
+    "source"
+  ],
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "description": "headersHelper requires strict: false (error in the CLI).",
+      "if": {
+        "required": [
+          "headersHelper"
+        ]
+      },
+      "then": {
+        "required": [
+          "strict"
+        ],
+        "properties": {
+          "strict": {
+            "const": false,
+            "description": "Property strict."
+          }
+        }
+      }
+    },
+    {
+      "description": "headers/headersHelper only apply to archive sources (validator warning otherwise).",
+      "if": {
+        "anyOf": [
+          {
+            "required": [
+              "headers"
+            ]
+          },
+          {
+            "required": [
+              "headersHelper"
+            ]
+          }
+        ]
+      },
+      "then": {
+        "properties": {
+          "source": {
+            "type": "object",
+            "required": [
+              "source"
+            ],
+            "properties": {
+              "source": {
+                "const": "archive",
+                "description": "Property source."
+              }
+            },
+            "description": "Property source."
+          }
+        }
+      }
+    }
+  ],
+  "x-doc": "https://code.claude.com/docs/en/plugins/marketplace-reference#plugin-entries"
+}

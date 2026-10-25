@@ -6,6 +6,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.4.1] - 2026-10-24
+
+### Changed
+
+- The marketplace now reads this plugin's catalog category from its manifest; nothing changes in how the plugin works.
+
 ## [0.4.0] - 2026-10-21
 
 ### Changed
@@ -99,7 +105,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 - `git-cleanup` inventory: `--from` with a saved file that is not a JSON object reports a JSON error and exits 0, instead of ending with a traceback.
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/github-operations--v0.4.0...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/github-operations--v0.4.1...HEAD
+[0.4.1]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/github-operations--v0.4.1
 [0.4.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/github-operations--v0.4.0
 [0.3.2]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/github-operations--v0.3.2
 [0.3.1]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/github-operations--v0.3.1

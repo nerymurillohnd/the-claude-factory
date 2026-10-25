@@ -1,0 +1,274 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$comment": "Source of truth for .claude-plugin/marketplace.json validation; edit these files directly. Layout: marketplace.schema.json (file envelope), plugin-entry.schema.json (one plugin), common.schema.json (shared primitives), sources/ (plugin source forms) and relevance.schema.json. Every field a plugin entry shares with plugin.json is referenced from ../plugin-manifest-schema, and inline hooks from ../hooks-schema/hooks-config.schema.json. No file declares $id: a schema's identity is its location, and every $ref is relative to the file that holds it. Built from the official Claude Code docs (plugin-marketplaces, plugins-reference, plugin-dependencies, plugin-relevance, hooks, mcp) and verified against `claude plugin validate --strict` 2.1.281 on 2026-09-24, re-checked on 2.1.310. Not the SchemaStore schema: fields are docs-derived; undocumented-but-accepted fields carry x-undocumented. additionalProperties is false on every object with a known shape, also where the CLI accepts unknown keys silently (owner, author, source objects, dependency objects, hook handlers, MCP server configs): a typo there passes claude plugin validate without a message, so the schema is the only check. x-cli-unknown-keys records what the CLI does. Not expressible in JSON Schema and left to the CLI: unique plugin names, renames chain resolution, entry.version vs plugin.json cross-check, existence of source directories, name impersonation heuristics, unique monitor names, options default membership, sha256 of archives.",
+  "title": "Claude Code plugin marketplace (.claude-plugin/marketplace.json)",
+  "description": "Catalog of plugins that Claude Code can install with /plugin install <plugin>@<marketplace>. Lives at .claude-plugin/marketplace.json in the marketplace repository root, or is served as a direct URL to the file.",
+  "type": "object",
+  "required": [
+    "name",
+    "owner",
+    "plugins"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "JSON Schema URL for editor autocomplete; Claude Code ignores it at load time.",
+      "x-doc": "https://code.claude.com/docs/en/plugins/marketplace-reference#top-level-fields"
+    },
+    "name": {
+      "allOf": [
+        {
+          "$ref": "common.schema.json#/$defs/pluginName"
+        },
+        {
+          "not": {
+            "pattern": "^([Nn][Pp][Mm]|[Pp][Ii][Pp]|[Uu][Vv]|[Cc][Aa][Rr][Gg][Oo]|[Gg][Ii][Tt][Hh][Uu][Bb]|[Gg][Hh])$"
+          }
+        },
+        {
+          "not": {
+            "pattern": "(?!(?:[Cc][-_. ]*[Ll][-_. ]*[Aa][-_. ]*[Uu][-_. ]*[Dd][-_. ]*[Ee][-_. ]*[Cc][-_. ]*[Oo][-_. ]*[Dd][-_. ]*[Ee][-_. ]*[Mm][-_. ]*[Aa][-_. ]*[Rr][-_. ]*[Kk][-_. ]*[Ee][-_. ]*[Tt][-_. ]*[Pp][-_. ]*[Ll][-_. ]*[Aa][-_. ]*[Cc][-_. ]*[Ee]|[Cc][-_. ]*[Ll][-_. ]*[Aa][-_. ]*[Uu][-_. ]*[Dd][-_. ]*[Ee][-_. ]*[Cc][-_. ]*[Oo][-_. ]*[Dd][-_. ]*[Ee][-_. ]*[Pp][-_. ]*[Ll][-_. ]*[Uu][-_. ]*[Gg][-_. ]*[Ii][-_. ]*[Nn][-_. ]*[Ss]|[Cc][-_. ]*[Ll][-_. ]*[Aa][-_. ]*[Uu][-_. ]*[Dd][-_. ]*[Ee][-_. ]*[Pp][-_. ]*[Ll][-_. ]*[Uu][-_. ]*[Gg][-_. ]*[Ii][-_. ]*[Nn][-_. ]*[Ss][-_. ]*[Oo][-_. ]*[Ff][-_. ]*[Ff][-_. ]*[Ii][-_. ]*[Cc][-_. ]*[Ii][-_. ]*[Aa][-_. ]*[Ll]|[Cc][-_. ]*[Ll][-_. ]*[Aa][-_. ]*[Uu][-_. ]*[Dd][-_. ]*[Ee][-_. ]*[Pp][-_. ]*[Ll][-_. ]*[Uu][-_. ]*[Gg][-_. ]*[Ii][-_. ]*[Nn][-_. ]*[Ss][-_. ]*[Cc][-_. ]*[Oo][-_. ]*[Mm][-_. ]*[Mm][-_. ]*[Uu][-_. ]*[Nn][-_. ]*[Ii][-_. ]*[Tt][-_. ]*[Yy]|[Cc][-_. ]*[Ll][-_. ]*[Aa][-_. ]*[Uu][-_. ]*[Dd][-_. ]*[Ee][-_. ]*[Cc][-_. ]*[Oo][-_. ]*[Mm][-_. ]*[Mm][-_. ]*[Uu][-_. ]*[Nn][-_. ]*[Ii][-_. ]*[Tt][-_. ]*[Yy]|[Aa][-_. ]*[Nn][-_. ]*[Tt][-_. ]*[Hh][-_. ]*[Rr][-_. ]*[Oo][-_. ]*[Pp][-_. ]*[Ii][-_. ]*[Cc][-_. ]*[Mm][-_. ]*[Aa][-_. ]*[Rr][-_. ]*[Kk][-_. ]*[Ee][-_. ]*[Tt][-_. ]*[Pp][-_. ]*[Ll][-_. ]*[Aa][-_. ]*[Cc][-_. ]*[Ee]|[Aa][-_. ]*[Nn][-_. ]*[Tt][-_. ]*[Hh][-_. ]*[Rr][-_. ]*[Oo][-_. ]*[Pp][-_. ]*[Ii][-_. ]*[Cc][-_. ]*[Pp][-_. ]*[Ll][-_. ]*[Uu][-_. ]*[Gg][-_. ]*[Ii][-_. ]*[Nn][-_. ]*[Ss]|[Aa][-_. ]*[Gg][-_. ]*[Ee][-_. ]*[Nn][-_. ]*[Tt][-_. ]*[Ss][-_. ]*[Kk][-_. ]*[Ii][-_. ]*[Ll][-_. ]*[Ll][-_. ]*[Ss]|[Aa][-_. ]*[Nn][-_. ]*[Tt][-_. ]*[Hh][-_. ]*[Rr][-_. ]*[Oo][-_. ]*[Pp][-_. ]*[Ii][-_. ]*[Cc][-_. ]*[Aa][-_. ]*[Gg][-_. ]*[Ee][-_. ]*[Nn][-_. ]*[Tt][-_. ]*[Ss][-_. ]*[Kk][-_. ]*[Ii][-_. ]*[Ll][-_. ]*[Ll][-_. ]*[Ss]|[Kk][-_. ]*[Nn][-_. ]*[Oo][-_. ]*[Ww][-_. ]*[Ll][-_. ]*[Ee][-_. ]*[Dd][-_. ]*[Gg][-_. ]*[Ee][-_. ]*[Ww][-_. ]*[Oo][-_. ]*[Rr][-_. ]*[Kk][-_. ]*[Pp][-_. ]*[Ll][-_. ]*[Uu][-_. ]*[Gg][-_. ]*[Ii][-_. ]*[Nn][-_. ]*[Ss]|[Ll][-_. ]*[Ii][-_. ]*[Ff][-_. ]*[Ee][-_. ]*[Ss][-_. ]*[Cc][-_. ]*[Ii][-_. ]*[Ee][-_. ]*[Nn][-_. ]*[Cc][-_. ]*[Ee][-_. ]*[Ss]|[Cc][-_. ]*[Ll][-_. ]*[Aa][-_. ]*[Uu][-_. ]*[Dd][-_. ]*[Ee][-_. ]*[Ff][-_. ]*[Oo][-_. ]*[Rr][-_. ]*[Ll][-_. ]*[Ee][-_. ]*[Gg][-_. ]*[Aa][-_. ]*[Ll]|[Cc][-_. ]*[Ll][-_. ]*[Aa][-_. ]*[Uu][-_. ]*[Dd][-_. ]*[Ee][-_. ]*[Ff][-_. ]*[Oo][-_. ]*[Rr][-_. ]*[Ff][-_. ]*[Ii][-_. ]*[Nn][-_. ]*[Aa][-_. ]*[Nn][-_. ]*[Cc][-_. ]*[Ii][-_. ]*[Aa][-_. ]*[Ll][-_. ]*[Ss][-_. ]*[Ee][-_. ]*[Rr][-_. ]*[Vv][-_. ]*[Ii][-_. ]*[Cc][-_. ]*[Ee][-_. ]*[Ss]|[Ff][-_. ]*[Ii][-_. ]*[Nn][-_. ]*[Aa][-_. ]*[Nn][-_. ]*[Cc][-_. ]*[Ii][-_. ]*[Aa][-_. ]*[Ll][-_. ]*[Ss][-_. ]*[Ee][-_. ]*[Rr][-_. ]*[Vv][-_. ]*[Ii][-_. ]*[Cc][-_. ]*[Ee][-_. ]*[Ss][-_. ]*[Pp][-_. ]*[Ll][-_. ]*[Uu][-_. ]*[Gg][-_. ]*[Ii][-_. ]*[Nn][-_. ]*[Ss]|[Ff][-_. ]*[Ii][-_. ]*[Rr][-_. ]*[Ss][-_. ]*[Tt][-_. ]*[Pp][-_. ]*[Aa][-_. ]*[Rr][-_. ]*[Tt][-_. ]*[Yy][-_. ]*[Pp][-_. ]*[Ll][-_. ]*[Uu][-_. ]*[Gg][-_. ]*[Ii][-_. ]*[Nn][-_. ]*[Ss]|[Cc][-_. ]*[Ll][-_. ]*[Aa][-_. ]*[Uu][-_. ]*[Dd][-_. ]*[Ee][-_. ]*[Tt][-_. ]*[Aa][-_. ]*[Gg][-_. ]*[Pp][-_. ]*[Ll][-_. ]*[Uu][-_. ]*[Gg][-_. ]*[Ii][-_. ]*[Nn][-_. ]*[Ss]|[Hh][-_. ]*[Ee][-_. ]*[Aa][-_. ]*[Ll][-_. ]*[Tt][-_. ]*[Hh][-_. ]*[Cc][-_. ]*[Aa][-_. ]*[Rr][-_. ]*[Ee])$)^([Oo][Ff][Ff][Ii][Cc][Ii][Aa][Ll][-_. ]*([Cc][Ll][Aa][Uu][Dd][Ee]|[Aa][Nn][Tt][Hh][Rr][Oo][Pp][Ii][Cc])|([Cc][Ll][Aa][Uu][Dd][Ee]|[Aa][Nn][Tt][Hh][Rr][Oo][Pp][Ii][Cc])([-_. ]*([Pp][Ll][Uu][Gg][Ii][Nn][Ss]|[Mm][Aa][Rr][Kk][Ee][Tt][Pp][Ll][Aa][Cc][Ee]|[Oo][Ff][Ff][Ii][Cc][Ii][Aa][Ll]))+)([-_. ]*([Pp][Ll][Uu][Gg][Ii][Nn][Ss]|[Mm][Aa][Rr][Kk][Ee][Tt][Pp][Ll][Aa][Cc][Ee]|[Oo][Ff][Ff][Ii][Cc][Ii][Aa][Ll]))*([-_. ]*[vV]?[0-9]+)?[-_. ]*$"
+          }
+        },
+        {
+          "not": {
+            "pattern": "\\.\\."
+          }
+        }
+      ],
+      "description": "Marketplace identifier (kebab-case recommended). Public-facing: /plugin install <plugin>@<name>. One marketplace per name per user. npm, pip, uv, cargo, github, gh (any casing) are hard errors in `claude plugin validate`. A name that impersonates an official marketplace (heuristic; the docs give official-claude-plugins and anthropic-plugins-v2 as examples) is a hard error too. The 17 names in x-reserved-official-names are reserved for Anthropic per the docs, but `claude plugin validate` does NOT reject them (oracle-verified on 2.1.281, re-checked on 2.1.310 with claude-plugins-official and healthcare) — enforcement happens only when the marketplace is actually registered (`/plugin marketplace add`), which this schema cannot exercise offline. Likewise 'org', 'org-provisioned' and 'unknown' are only a Claude-Desktop-sync warning, not a validate error. A name containing `..` fails `claude plugin validate`.",
+      "x-doc": "https://code.claude.com/docs/en/plugins/marketplace-reference#top-level-fields",
+      "x-reserved-official-names": [
+        "claude-code-marketplace",
+        "claude-code-plugins",
+        "claude-plugins-official",
+        "claude-plugins-community",
+        "claude-community",
+        "anthropic-marketplace",
+        "anthropic-plugins",
+        "agent-skills",
+        "anthropic-agent-skills",
+        "knowledge-work-plugins",
+        "life-sciences",
+        "claude-for-legal",
+        "claude-for-financial-services",
+        "financial-services-plugins",
+        "first-party-plugins",
+        "claude-tag-plugins",
+        "healthcare"
+      ],
+      "x-reserved-desktop-names": [
+        "org",
+        "org-provisioned",
+        "unknown"
+      ],
+      "x-not-enforced-by": "claude plugin validate 2.1.310 (offline); docs say Claude Code re-checks reserved names on every marketplace load"
+    },
+    "owner": {
+      "type": "object",
+      "description": "Marketplace maintainer information (unknown keys are accepted silently by the CLI).",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Name of the maintainer or team.",
+          "minLength": 1
+        },
+        "email": {
+          "type": "string",
+          "description": "Contact email for the maintainer."
+        },
+        "url": {
+          "type": "string",
+          "description": "Website, GitHub profile or organization URL."
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "additionalProperties": false,
+      "x-doc": "https://code.claude.com/docs/en/plugins/marketplace-reference#top-level-fields",
+      "x-cli-unknown-keys": "ignores"
+    },
+    "plugins": {
+      "type": "array",
+      "description": "List of available plugins. Plugin names must be unique (case-sensitive) within the marketplace. An empty list is a validator warning.",
+      "items": {
+        "$ref": "plugin-entry.schema.json"
+      },
+      "x-doc": "https://code.claude.com/docs/en/plugins/marketplace-reference#plugin-entries"
+    },
+    "description": {
+      "type": "string",
+      "description": "Brief marketplace description (also accepted under metadata for backward compatibility). Missing description is a validator warning.",
+      "x-doc": "https://code.claude.com/docs/en/plugins/marketplace-reference#top-level-fields"
+    },
+    "version": {
+      "type": "string",
+      "description": "Marketplace manifest version (also accepted under metadata for backward compatibility).",
+      "x-doc": "https://code.claude.com/docs/en/plugins/marketplace-reference#top-level-fields"
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Optional marketplace metadata. Unknown keys are validator warnings.",
+      "properties": {
+        "pluginRoot": {
+          "type": "string",
+          "description": "Directory that bare plugin source names resolve under (v2.1.239+). Must itself be a relative path inside the marketplace.",
+          "not": {
+            "pattern": "^([/\\\\]|[A-Za-z]:)"
+          },
+          "allOf": [
+            {
+              "not": {
+                "pattern": "(^|/)\\.\\.(/|$)"
+              }
+            }
+          ]
+        },
+        "description": {
+          "type": "string",
+          "description": "Marketplace description (backward-compatible spelling of the top-level field)."
+        },
+        "version": {
+          "type": "string",
+          "description": "Marketplace version (backward-compatible spelling of the top-level field)."
+        }
+      },
+      "additionalProperties": false,
+      "x-doc": "https://code.claude.com/docs/en/plugins/marketplace-reference#top-level-fields"
+    },
+    "allowCrossMarketplaceDependenciesOn": {
+      "type": "array",
+      "description": "Other marketplaces that plugins in this marketplace may depend on; dependencies from an unlisted marketplace are blocked at install. Only the root marketplace's list is consulted (no transitive trust).",
+      "items": {
+        "type": "string",
+        "description": "Marketplace name.",
+        "minLength": 1
+      },
+      "x-doc": "https://code.claude.com/docs/en/plugins/marketplace-reference#top-level-fields; https://code.claude.com/docs/en/plugins/dependencies#depend-on-a-plugin-from-another-marketplace"
+    },
+    "renames": {
+      "type": "object",
+      "description": "Map from a former plugin name to its current name, or to null if the plugin was removed (v2.1.193+). Treat as append-only history; chains are followed. Every chain must end at null or a name listed in plugins (cycles and dangling targets are errors; not expressible in JSON Schema).",
+      "additionalProperties": {
+        "anyOf": [
+          {
+            "type": "null"
+          },
+          {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][-A-Za-z0-9._]*$"
+          }
+        ]
+      },
+      "x-doc": "https://code.claude.com/docs/en/plugins/host-marketplace#rename-or-remove-a-plugin"
+    },
+    "forceRemoveDeletedPlugins": {
+      "type": "boolean",
+      "description": "When true, plugins removed from this marketplace are automatically uninstalled and flagged for users.",
+      "x-undocumented": true,
+      "x-note": "In the SchemaStore baseline; accepted by CLI 2.1.281 without warning; the binary references it in delisted-plugin enforcement. Absent from every current docs page and the changelog."
+    }
+  },
+  "additionalProperties": false,
+  "if": {
+    "required": [
+      "metadata"
+    ],
+    "properties": {
+      "metadata": {
+        "required": [
+          "pluginRoot"
+        ],
+        "description": "Constraint fragment used by a conditional rule; see the enclosing definition."
+      }
+    }
+  },
+  "else": {
+    "properties": {
+      "plugins": {
+        "items": {
+          "properties": {
+            "source": {
+              "not": {
+                "type": "string",
+                "pattern": "^[^/\\\\.][^/\\\\]*$"
+              },
+              "description": "Constraint fragment used by a conditional rule; see the enclosing definition."
+            }
+          }
+        },
+        "description": "Constraint fragment used by a conditional rule; see the enclosing definition."
+      }
+    }
+  },
+  "x-verified": {
+    "date": "2026-10-24",
+    "claude_code_version": "2.1.310",
+    "method": "docs read on 2026-10-24 (plugins/marketplace-reference, manifest-reference, dependencies, relevance, mcp) + changelog 2.1.282..2.1.310 + claude plugin validate --strict oracle on fixtures + zod schemas of @anthropic-ai/claude-agent-sdk 0.3.310"
+  },
+  "x-sources": [
+    {
+      "url": "https://code.claude.com/docs/en/plugins/create-marketplace",
+      "headings": [
+        "Create the marketplace file",
+        "Marketplace schema (Required fields, Owner fields, Optional fields)",
+        "Plugin entries (Required fields, Optional plugin fields)",
+        "Plugin sources (Relative paths, GitHub repositories, Git repositories, Git subdirectories, npm packages, Zip archives, Command sources)",
+        "Advanced plugin entries",
+        "Strict mode",
+        "Rename or remove a plugin",
+        "Marketplace validation errors"
+      ]
+    },
+    {
+      "url": "https://code.claude.com/docs/en/plugins/manifest-reference",
+      "headings": [
+        "Plugin manifest schema",
+        "Component path fields",
+        "User configuration",
+        "Channels",
+        "Path behavior rules",
+        "Default enablement",
+        "Hooks",
+        "MCP servers",
+        "LSP servers",
+        "Monitors",
+        "Experimental components",
+        "Version management"
+      ]
+    },
+    {
+      "url": "https://code.claude.com/docs/en/plugins/dependencies",
+      "headings": [
+        "Declare a dependency with a version constraint",
+        "Depend on a plugin from another marketplace"
+      ]
+    },
+    {
+      "url": "https://code.claude.com/docs/en/plugins/relevance",
+      "headings": [
+        "Field reference (relevance, relevance.signals)"
+      ]
+    },
+    {
+      "url": "https://code.claude.com/docs/en/hooks",
+      "headings": [
+        "Hook events",
+        "Hook handler fields"
+      ]
+    },
+    {
+      "url": "https://code.claude.com/docs/en/mcp",
+      "headings": [
+        "Plugin-provided MCP servers"
+      ]
+    },
+    {
+      "url": "https://code.claude.com/docs/en/changelog",
+      "headings": [
+        "2.1.83 through 2.1.281 (window 2026-03-24 to 2026-09-24)"
+      ]
+    }
+  ]
+}

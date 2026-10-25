@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "title": "MCP tool hook",
+  "description": "Calls a tool on an already-connected MCP server; the tool's text output is handled like command-hook stdout. A server that is not connected, or a tool result with isError, is a non-blocking error. Never triggers a connection or OAuth flow. On SessionStart at launch and on Setup the hook is skipped because servers are not yet available.",
+  "properties": {
+    "type": {
+      "type": "string",
+      "const": "mcp_tool",
+      "description": "Handler type: `mcp_tool` calls an MCP tool.",
+      "title": "Type"
+    },
+    "server": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Name of a configured MCP server; for a plugin-bundled server use the scoped name `plugin:<plugin-name>:<server-name>`.",
+      "title": "Server"
+    },
+    "tool": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Name of the tool to call on that server.",
+      "title": "Tool"
+    },
+    "input": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Arguments passed to the tool. String values support `${path}` substitution from the hook input JSON, e.g. `${tool_input.file_path}`.",
+      "title": "Input"
+    },
+    "timeout": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "default": 600,
+      "description": "Seconds before the handler is canceled. Default 600 for command, http and mcp_tool; lowered to 30 on UserPromptSubmit, PreModelSwitch and PostModelSwitch and to 10 on MessageDisplay. SessionEnd hooks share a 1.5 s budget (raised to the largest per-hook timeout, max 60 s). Not enforced on a command hook running with `async: true`.",
+      "title": "Timeout"
+    },
+    "statusMessage": {
+      "type": "string",
+      "description": "Custom spinner message displayed while the handler runs.",
+      "title": "Status Message"
+    },
+    "once": {
+      "type": "boolean",
+      "default": false,
+      "description": "If true, the hook is removed after its first successful run (a failed, exit-2 or timed-out run keeps it). Only honored for hooks declared in skill frontmatter; ignored in settings files and agent frontmatter.",
+      "title": "Once"
+    },
+    "if": {
+      "type": "string",
+      "description": "Permission-rule-syntax filter (exactly one rule, e.g. `Bash(git *)`, `Edit(*.ts)`, `PowerShell(Remove-Item *)`); the handler only runs when the tool call matches. Evaluated only on PreToolUse, PostToolUse, PostToolUseFailure, PermissionRequest and PermissionDenied; on any other event a handler with `if` never runs. There is no `&&`/`||`/list syntax: use one handler per condition. Best-effort filter, not a security boundary.",
+      "title": "If"
+    }
+  },
+  "required": [
+    "type",
+    "server",
+    "tool"
+  ],
+  "additionalProperties": false,
+  "examples": [
+    {
+      "type": "mcp_tool",
+      "server": "my_server",
+      "tool": "security_scan",
+      "input": {
+        "file_path": "${tool_input.file_path}"
+      }
+    }
+  ],
+  "x-source": "https://code.claude.com/docs/en/hooks#mcp-tool-hook-fields"
+}

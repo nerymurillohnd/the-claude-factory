@@ -4,6 +4,29 @@ All notable changes to **The Claude Factory** marketplace are documented here: p
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The marketplace has no version of its own: entries are grouped by date, newest first, and every plugin carries its own version, changelog and tag. The versions 0.1.0 and 0.2.0 below are the history from before that change; their tags stay.
 
+## 2026-10-24
+
+### Changed
+
+- 🧩 The catalog has a Mods category for plugins that change Claude Code's own interface: **tool-ledger** and **turn-meter** move there from Productivity.
+- **bash-lsp-intelligence** 0.2.4 — its catalog category now lives in its manifest; nothing changes for users.
+- **block-no-verify** 0.1.2 — its catalog category now lives in its manifest; nothing changes for users.
+- **file-tree-pane** 0.1.1 — its catalog category now lives in its manifest; nothing changes for users.
+- **github-operations** 0.4.1 — its catalog category now lives in its manifest; nothing changes for users.
+- **hook-engineering** 0.2.1 — its catalog category now lives in its manifest; nothing changes for users.
+- **mods-engineering** 0.1.1 — its catalog category now lives in its manifest; nothing changes for users.
+- **plugin-evals** 0.1.2 — its catalog category now lives in its manifest; nothing changes for users.
+- **plugin-test-bench** 0.1.1 — its catalog category now lives in its manifest; nothing changes for users.
+- **project-maintainer** 0.2.1 — its catalog category now lives in its manifest; nothing changes for users.
+- **prompt-writer** 0.2.1 — its catalog category now lives in its manifest; nothing changes for users.
+- **python-lsp-intelligence** 0.2.3 — its catalog category now lives in its manifest; nothing changes for users.
+- **skill-diagnostics** 0.1.3 — its catalog category now lives in its manifest; nothing changes for users.
+- **svelte-development** 0.1.1 — its catalog category now lives in its manifest; nothing changes for users.
+- **tool-ledger** 0.1.1 — its catalog category now lives in its manifest; nothing changes for users.
+- **turn-meter** 0.1.1 — its catalog category now lives in its manifest; nothing changes for users.
+- **typescript6-lsp-intelligence** 0.3.1 — its catalog category now lives in its manifest; nothing changes for users.
+- **typescript7-lsp-intelligence** 0.4.1 — its catalog category now lives in its manifest; nothing changes for users.
+
 ## 2026-10-23
 
 ### Added

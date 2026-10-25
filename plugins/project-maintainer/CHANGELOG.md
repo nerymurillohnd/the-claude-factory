@@ -6,6 +6,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-10-24
+
+### Changed
+
+- The marketplace now reads this plugin's catalog category from its manifest; nothing changes in how the plugin works.
+
 ## [0.2.0] - 2026-10-22
 
 ### Changed
@@ -38,6 +44,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - Before a compaction, the summary is told to keep decisions, open items and record IDs. After a commit that looks like a decision, such as one that changes dependencies, a schema, CI or infrastructure, Claude gets one reminder to record it. The reminder can be turned off in the plugin's settings.
 - **Requires Claude Code v2.1.304 or later.**
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/project-maintainer--v0.2.0...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/project-maintainer--v0.2.1...HEAD
+[0.2.1]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/project-maintainer--v0.2.1
 [0.2.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/project-maintainer--v0.2.0
 [0.1.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/project-maintainer--v0.1.0

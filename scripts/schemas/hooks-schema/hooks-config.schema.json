@@ -1,0 +1,174 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "title": "Hooks configuration",
+  "description": "Hook definitions keyed by event name. Each event maps to an array of matcher groups `{matcher?, hooks: [handler...]}`. This is the value of the `hooks` key in settings.json (user, project, local, managed), of the top-level `hooks` key of a plugin's hooks/hooks.json, of an inline `hooks` object in plugin.json, and of the `hooks` frontmatter of skills and agents (YAML). Event names are case-sensitive; hooks merge across settings files.",
+  "properties": {
+    "SessionStart": {
+      "$ref": "events/session.schema.json#/$defs/hookEvent_SessionStart"
+    },
+    "Setup": {
+      "$ref": "events/session.schema.json#/$defs/hookEvent_Setup"
+    },
+    "UserPromptSubmit": {
+      "$ref": "events/prompt.schema.json#/$defs/hookEvent_UserPromptSubmit"
+    },
+    "UserPromptExpansion": {
+      "$ref": "events/prompt.schema.json#/$defs/hookEvent_UserPromptExpansion"
+    },
+    "PreToolUse": {
+      "$ref": "events/tools.schema.json#/$defs/hookEvent_PreToolUse"
+    },
+    "PermissionRequest": {
+      "$ref": "events/tools.schema.json#/$defs/hookEvent_PermissionRequest"
+    },
+    "PermissionDenied": {
+      "$ref": "events/tools.schema.json#/$defs/hookEvent_PermissionDenied"
+    },
+    "PostToolUse": {
+      "$ref": "events/tools.schema.json#/$defs/hookEvent_PostToolUse"
+    },
+    "PostToolUseFailure": {
+      "$ref": "events/tools.schema.json#/$defs/hookEvent_PostToolUseFailure"
+    },
+    "PostToolBatch": {
+      "$ref": "events/tools.schema.json#/$defs/hookEvent_PostToolBatch"
+    },
+    "Notification": {
+      "$ref": "events/agents-tasks.schema.json#/$defs/hookEvent_Notification"
+    },
+    "MessageDisplay": {
+      "$ref": "events/prompt.schema.json#/$defs/hookEvent_MessageDisplay"
+    },
+    "SubagentStart": {
+      "$ref": "events/agents-tasks.schema.json#/$defs/hookEvent_SubagentStart"
+    },
+    "SubagentStop": {
+      "$ref": "events/agents-tasks.schema.json#/$defs/hookEvent_SubagentStop"
+    },
+    "TaskCreated": {
+      "$ref": "events/agents-tasks.schema.json#/$defs/hookEvent_TaskCreated"
+    },
+    "TaskCompleted": {
+      "$ref": "events/agents-tasks.schema.json#/$defs/hookEvent_TaskCompleted"
+    },
+    "Stop": {
+      "$ref": "events/agents-tasks.schema.json#/$defs/hookEvent_Stop"
+    },
+    "StopFailure": {
+      "$ref": "events/agents-tasks.schema.json#/$defs/hookEvent_StopFailure"
+    },
+    "TeammateIdle": {
+      "$ref": "events/agents-tasks.schema.json#/$defs/hookEvent_TeammateIdle"
+    },
+    "InstructionsLoaded": {
+      "$ref": "events/session.schema.json#/$defs/hookEvent_InstructionsLoaded"
+    },
+    "ConfigChange": {
+      "$ref": "events/environment.schema.json#/$defs/hookEvent_ConfigChange"
+    },
+    "CwdChanged": {
+      "$ref": "events/environment.schema.json#/$defs/hookEvent_CwdChanged"
+    },
+    "DirectoryAdded": {
+      "$ref": "events/environment.schema.json#/$defs/hookEvent_DirectoryAdded"
+    },
+    "FileChanged": {
+      "$ref": "events/environment.schema.json#/$defs/hookEvent_FileChanged"
+    },
+    "WorktreeCreate": {
+      "$ref": "events/environment.schema.json#/$defs/hookEvent_WorktreeCreate"
+    },
+    "WorktreeRemove": {
+      "$ref": "events/environment.schema.json#/$defs/hookEvent_WorktreeRemove"
+    },
+    "PreCompact": {
+      "$ref": "events/compaction.schema.json#/$defs/hookEvent_PreCompact"
+    },
+    "PostCompact": {
+      "$ref": "events/compaction.schema.json#/$defs/hookEvent_PostCompact"
+    },
+    "PreModelSwitch": {
+      "$ref": "events/compaction.schema.json#/$defs/hookEvent_PreModelSwitch"
+    },
+    "PostModelSwitch": {
+      "$ref": "events/compaction.schema.json#/$defs/hookEvent_PostModelSwitch"
+    },
+    "Elicitation": {
+      "$ref": "events/mcp-elicitation.schema.json#/$defs/hookEvent_Elicitation"
+    },
+    "ElicitationResult": {
+      "$ref": "events/mcp-elicitation.schema.json#/$defs/hookEvent_ElicitationResult"
+    },
+    "SessionEnd": {
+      "$ref": "events/session.schema.json#/$defs/hookEvent_SessionEnd"
+    }
+  },
+  "additionalProperties": false,
+  "examples": [
+    {
+      "PreToolUse": [
+        {
+          "matcher": "Bash",
+          "hooks": [
+            {
+              "type": "command",
+              "if": "Bash(rm *)",
+              "command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/block-rm.sh",
+              "args": []
+            }
+          ]
+        }
+      ],
+      "SessionStart": [
+        {
+          "matcher": "startup",
+          "hooks": [
+            {
+              "type": "command",
+              "command": "echo ready"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "x-sources": [
+    {
+      "url": "https://code.claude.com/docs/en/hooks#configuration",
+      "heading": "Hooks reference > Configuration"
+    },
+    {
+      "url": "https://code.claude.com/docs/en/hooks#matcher-patterns",
+      "heading": "Hooks reference > Matcher patterns"
+    },
+    {
+      "url": "https://code.claude.com/docs/en/hooks#hook-handler-fields",
+      "heading": "Hooks reference > Hook handler fields"
+    },
+    {
+      "url": "https://code.claude.com/docs/en/hooks#hook-events",
+      "heading": "Hooks reference > Hook events"
+    },
+    {
+      "url": "https://code.claude.com/docs/en/hooks#prompt-based-hooks",
+      "heading": "Hooks reference > Prompt-based hooks (per-event handler support)"
+    },
+    {
+      "url": "https://code.claude.com/docs/en/hooks#agent-based-hooks",
+      "heading": "Hooks reference > Agent-based hooks"
+    },
+    {
+      "url": "https://code.claude.com/docs/en/hooks#run-hooks-in-the-background",
+      "heading": "Hooks reference > Run hooks in the background"
+    },
+    {
+      "url": "https://code.claude.com/docs/en/plugins/manifest-reference#hooks",
+      "heading": "Plugins reference > Hooks"
+    },
+    {
+      "url": "https://code.claude.com/docs/en/settings-reference#hooks",
+      "heading": "Settings reference > Hooks and automation > hooks"
+    }
+  ]
+}

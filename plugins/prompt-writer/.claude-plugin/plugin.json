@@ -1,7 +1,7 @@
 {
   "name": "prompt-writer",
   "displayName": "Prompt Writer",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Turns a goal, idea or draft into one copy-ready prompt tuned to the target Claude model and effort: it clarifies intent, checks current official facts and recommends the setup to run it with.",
   "author": {
     "name": "Nery Murillo",
@@ -19,6 +19,7 @@
     "writing"
   ],
   "metadata": {
+    "category": "productivity",
     "surfaces": [
       "claude-code",
       "claude-app"

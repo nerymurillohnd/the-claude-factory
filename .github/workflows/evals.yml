@@ -104,6 +104,19 @@ jobs:
             | sudo tee /etc/apt/sources.list.d/claude-code.list
           sudo apt-get update -qq
           sudo apt-get install -y -qq claude-code bubblewrap socat
+          # Ubuntu 24.04's AppArmor stops bwrap from creating user namespaces, so the sandbox cannot
+          # start and every case that grants Bash is refused. The profile grants that to bwrap only,
+          # not to what runs inside it
+          # (https://code.claude.com/docs/en/sandboxing#ubuntu-24-04-and-later-allow-bubblewrap-to-create-user-namespaces).
+          restrict="$(sysctl -n kernel.apparmor_restrict_unprivileged_userns 2>/dev/null || true)"
+          if [[ "${restrict}" == "1" ]]; then
+            printf '%s\n' 'abi <abi/4.0>,' 'include <tunables/global>' '' \
+              'profile bwrap /usr/bin/bwrap flags=(unconfined) {' '  userns,' \
+              '  include if exists <local/bwrap>' '}' | sudo tee /etc/apparmor.d/bwrap > /dev/null
+            sudo systemctl reload apparmor
+          fi
+          bwrap --ro-bind / / --unshare-user --unshare-net true \
+            || { echo "bubblewrap still cannot create a user namespace" >&2; exit 1; }
           claude --version
       - name: Run the plugin's full suite
         env:

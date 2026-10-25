@@ -78,7 +78,7 @@ A plugin cannot keep a server out of the main conversation or hand it to one age
 
 ### 6. Test
 
-While Nery is still shaping the plugin, run only the cheap checks each edit needs and no live tests; run all of this once he says it is ready (recall memory `no-unrequested-verification-while-designing`).
+While Nery is still shaping the plugin, run only the cheap checks each edit needs and no live tests; run all of this once he says it is ready.
 
 1. Load the plugin with the option unset: the server must be absent and the README's setup text must match what the user sees.
 2. Set the option, run `/reload-plugins`, and confirm the server and a tool call work.

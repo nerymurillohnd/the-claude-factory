@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "description": "npm package source; fetched with npm pack --ignore-scripts and unpacked without running install scripts.",
+  "properties": {
+    "source": {
+      "const": "npm",
+      "description": "Source discriminator."
+    },
+    "package": {
+      "type": "string",
+      "description": "Package name or scoped package, for example @org/plugin. The CLI accepts an empty string too."
+    },
+    "version": {
+      "type": "string",
+      "description": "Version or version range, for example 2.1.0, ^2.0.0 or ~1.5.0."
+    },
+    "registry": {
+      "type": "string",
+      "description": "Custom npm registry URL (http or https). Defaults to the system npm registry.",
+      "pattern": "^[Hh][Tt][Tt][Pp][Ss]?://.+",
+      "format": "uri"
+    }
+  },
+  "required": [
+    "source",
+    "package"
+  ],
+  "additionalProperties": false,
+  "x-doc": "https://code.claude.com/docs/en/plugins/marketplace-reference#npm-plugin-source",
+  "x-cli-unknown-keys": "ignores"
+}

@@ -1,0 +1,141 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "description": "Map of option key to user-configurable value definition (see userConfigOption).",
+  "propertyNames": {
+    "pattern": "^[A-Za-z_]\\w*$",
+    "description": "Option key: a valid identifier (letters, digits, underscore; no leading digit). It becomes CLAUDE_PLUGIN_OPTION_<KEY> in hook processes."
+  },
+  "additionalProperties": {
+    "$ref": "#/$defs/userConfigOption"
+  },
+  "$defs": {
+    "userConfigOption": {
+      "type": "object",
+      "description": "One user-configurable value. Claude Code prompts for it when the plugin is enabled and exposes it as ${user_config.KEY} and CLAUDE_PLUGIN_OPTION_<KEY>. Unknown keys are rejected.",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "title",
+        "description"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "string",
+            "number",
+            "boolean",
+            "directory",
+            "file"
+          ],
+          "description": "Value type: string, number, boolean, directory or file."
+        },
+        "title": {
+          "type": "string",
+          "description": "Label shown in the configuration dialog."
+        },
+        "description": {
+          "type": "string",
+          "description": "Help text shown beneath the field."
+        },
+        "sensitive": {
+          "type": "boolean",
+          "description": "If true, input is masked and the value is stored in secure storage (macOS Keychain or ~/.claude/.credentials.json) instead of settings.json. Cannot be combined with options."
+        },
+        "required": {
+          "type": "boolean",
+          "description": "If true, validation fails when the field is empty."
+        },
+        "default": {
+          "description": "Value used when the user provides nothing. With options it must be one of the options (the schema cannot cross-check that).",
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "options": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "pattern": "^(?! )(?!.* $)[^\\u0000-\\u001f\\u007f-\\u009f ؜  -‏ -  -⁯　﻿]+$",
+            "description": "One accepted value, 1-64 characters, no leading/trailing space, no control/invisible/bidi characters."
+          },
+          "description": "For type string: the only values the field accepts, shown in /config as a picker. Requires Claude Code v2.1.271 or later (older versions cannot load a plugin that declares options). Rules: type must be string; multiple and sensitive must not be true; default must be one of the options, or required must be true when default is unset; options must not repeat even in a different letter case."
+        },
+        "multiple": {
+          "type": "boolean",
+          "description": "For type string: allow an array of strings. Cannot be combined with options."
+        },
+        "min": {
+          "type": "number",
+          "description": "Lower bound for type number."
+        },
+        "max": {
+          "type": "number",
+          "description": "Upper bound for type number."
+        }
+      },
+      "if": {
+        "required": [
+          "options"
+        ]
+      },
+      "then": {
+        "properties": {
+          "type": {
+            "const": "string",
+            "description": "A field with options must have type string."
+          },
+          "multiple": {
+            "not": {
+              "const": true
+            },
+            "description": "A field with options must not set multiple to true."
+          },
+          "sensitive": {
+            "not": {
+              "const": true
+            },
+            "description": "A field with options must not set sensitive to true."
+          }
+        },
+        "anyOf": [
+          {
+            "required": [
+              "default"
+            ]
+          },
+          {
+            "required": [
+              "required"
+            ],
+            "properties": {
+              "required": {
+                "const": true,
+                "description": "Without a default, a field with options must set required to true."
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}
