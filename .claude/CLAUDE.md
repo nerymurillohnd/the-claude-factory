@@ -4,19 +4,27 @@ Public Claude Code plugin marketplace (`github.com/nerymurillohnd/the-claude-fac
 
 This project also follows the guidelines and way of working in `~/.claude/CLAUDE.md` and the global cross-project lessons in `~/.claude/LESSONS.md`.
 
-The order of work, stage by stage, is a map whose steps each name the skill or rule that governs it: @WORKFLOW.md
-
----
+- Goal: publish plugins that automate and optimize everyday workflows.
+- Every plugin stands on its own. Design, build and document it from its own goals: what it must do, run and solve for its users. Never use how another plugin was built as a reference, pattern, justification or constraint for a new one.
+- Plugins are for third parties whose setups are unknown. Every plugin works from what its README declares, never from what is installed on Nery's machine.
+- A plugin is not released unless it carries `README.md`, `LICENSE` and `CHANGELOG.md` and passes the checks in Plugin Tooling.
 
 ## Responsibility
 
+This marketplace is public, and what we publish runs on other people's machines, inside their projects and operations. Nery is its owner and author and answers personally for any harm a plugin causes a user, however small.
+
 - Nery and Claude Code are the only two parties responsible for this marketplace, and the only ones who work on it. There are no outside collaborators, and pull requests from users are not accepted.
 - Users take part only through issues. Triaging, confirming, fixing, verifying and releasing the fix for every issue is Nery's and Claude Code's work, never the reporter's.
-- No third-party team reviews our work before users install it, so every push, release and issue reply is the last check before the public: verify it before it goes out.
-- What this marketplace publishes runs on other people's machines, inside their projects and operations, and Nery answers for it as its owner and author. A defect, a stale fact or an unverified claim that reaches a release harms them, even in the smallest way. Treat every change as one that will reach them: check it against the current official docs and the tools installed in this session, prove it before the merge, and say plainly what you could not verify instead of publishing it.
-- Automate recurring work (validation, review, releases, drift checks, issue handling) with CI, evals, hooks, agents and scheduled tasks. Where none exists yet, propose building it.
+- No third-party team reviews our work before users install it, so every push, release and issue reply is the last check before the public.
 
----
+This is the standard for every session on this repository, including the one in progress:
+
+- Ship nothing you have not verified against current Claude Code official documentation and latest release notes. Negligence, or knowledge that is out of date for this session, reaching a user is the failure this project exists to prevent.
+- Treat anything a plugin does on a user's machine (files, commands, network, hooks, permissions, data) as high-risk. Choose the least invasive design, and make the README state what the plugin does there.
+- When you cannot tell whether something is safe for users, say so and ask Nery before it ships. Never publish on a guess.
+- Report problems as soon as you find them, including your own mistakes and flaws in work already published.
+- Improve how we work, not only what we build. When a session exposes a gap in this file, a rule, a gate or a skill, propose the fix in that same session.
+- Automate recurring work (validation, review, releases, drift checks, issue handling) with CI, evals, hooks, agents and scheduled tasks. Where none exists yet, propose building it.
 
 ## Current Claude Code features, capabilities, and guidance enforcement
 
@@ -24,18 +32,6 @@ Claude Code, the Claude app, the Claude models and every tool the gates run chan
 
 - When docs and release notes differ, the release notes win: docs lag releases.
 - When components depend on each other, research each side. For example, a plugin hook needs the hooks reference, the plugins reference and the Claude app platform-support page.
-
----
-
-## Purpose and release gate
-
-- Goal: publish plugins that automate and optimize everyday workflows.
-- One plugin covers its whole domain: knowledge, enforcement, tooling, review and proof that it works.
-- Every plugin stands on its own. Design, build and document it from its own goals: what it must do, run and solve for its users. Never use how another plugin was built as a reference, pattern, justification or constraint for a new one.
-- Plugins are for third parties whose setups are unknown. Every plugin works from what its README declares, never from what is installed on Nery's machine.
-- A plugin is not released unless it carries `README.md`, `LICENSE` and `CHANGELOG.md` and passes the checks in Plugin Tooling.
-
----
 
 ## Maintainer and Plugin Scopes
 
@@ -83,8 +79,6 @@ Rules that keep the scopes apart:
 - CI runs evals only for plugins that contain evals, and only when those plugins have changed; otherwise the evals are skipped.
 - Executable plugin scripts (especially Claude Code hooks) must include their interpreter's shebang (`#!/usr/bin/env python3`, `#!/usr/bin/env bash`, or `#!/usr/bin/env node`), be marked executable with `chmod +x`, and have their executable permissions preserved in Git.
 
----
-
 ## Plugin Categories
 
 Categories: `development`, `productivity`, `automation`, `mods`, `testing`, `security`, `documentation`, `data`, `design`, `devops`, `integrations`, `language-support`, `learning`.
@@ -93,8 +87,6 @@ Categories: `development`, `productivity`, `automation`, `mods`, `testing`, `sec
 - Give every plugin exactly one category, chosen by its purpose, in `metadata.category` of its `plugin.json`. `node scripts/new-plugin.mjs --category <id>` sets it for a new plugin.
 - Put a plugin in `mods` only when it is a mod: its `hooks/hooks.json` lists one hooks module under `modules`. A mod whose purpose is another goes in that category.
 - After setting or changing a category, run `npm run generate`: it writes the category into `marketplace.json` and the README catalog. Never edit the category in either file by hand.
-
----
 
 ## Plugin Documentation and Changelogs
 
@@ -154,32 +146,6 @@ Every plugin directory holds these files. `scripts/validators/plugin-required-fi
 
 ---
 
-## Versioning and Releases
-
-Versioning applies **only to plugins**. The marketplace catalog (`.claude-plugin/marketplace.json`) is never versioned or tagged.
-
-- Use Semantic Versioning (`MAJOR.MINOR.PATCH`). Choose the bump according to user-facing impact.
-- Apply version bumps exclusively with:
-  ```bash
-  node scripts/bump-version.mjs <plugin> <major|minor|patch>
-  ```
-  Never edit version numbers by hand.
-- **major** — breaking changes: removing or renaming skills, agents, or commands; changing configuration keys; introducing mandatory dependencies; or breaking behavior users rely on.
-- **minor** — backward-compatible additions of components, options, or capabilities.
-- **patch** — backward-compatible bug fixes, prompt wording improvements, performance improvements, or internal refactors.
-- When a single PR contains mixed change levels for a plugin, apply the highest applicable bump.
-- Skip the version bump **only** when a plugin's changes are limited to its `README.md`. Every other plugin change (including changelog-only changes) requires a bump.
-- During the `0.x` series, treat breaking changes as `minor` and prefix the corresponding changelog entries with `**Breaking:**`.
-- Never promote a plugin to `1.0.0` without Nery's explicit authorization. Reaching `1.0.0` declares interface stability.
-- From `1.0.0` onward, use `major` for breaking changes.
-- Write the plugin changelog entry and the root changelog line as described in Plugin Documentation and Changelogs.
-- Commit the version bump, the plugin and root changelog entries, and the catalog regenerated with `node scripts/generators/catalog.mjs` as a single signed commit.
-- Never push to `main` without first listing the untagged plugins (`plugin.json` version versus `git tag -l '<plugin>--v<version>'`) and confirming each is intended to ship.
-- Never run `gh workflow run release.yml` while the Validate workflow is failing; resolve the failure first.
-- Release tags (`<plugin>--v<version>`) are created unsigned by `release.yml`, under the exemption `~/.claude/CLAUDE.md` gives public plugin marketplaces: users never fetch a tag, and signing in CI would put the signing key in a GitHub secret. Every commit, and every tag created locally, is still SSH-signed.
-
----
-
 ## Documentation and Maintenance
 
 - `.claude/WORKFLOW.md`: the stage map, imported above.
@@ -203,9 +169,10 @@ Versioning applies **only to plugins**. The marketplace catalog (`.claude-plugin
 ## Change Control
 
 - Changes to plugin components or dependencies **require a pull request**.
-- Any change inside a plugin's directory, including a `README.md`-only change, goes through a pull request. A `README.md`-only change does not require a version bump (see Versioning and Releases).
+- Any change inside a plugin's directory, including a `README.md`-only change, goes through a pull request. A `README.md`-only change does not require a version bump (see the `release-and-versioning` skill).
 - Changes to `scripts/` **require a pull request**: they decide what is published and nobody reviews them afterwards.
 - Changes to documentation and maintainer files outside plugins and `scripts/` **do not require a pull request**.
 - Pull requests are opened only with Nery's explicit authorization.
 - Pushes, to any branch and including tags, are made only with Nery's explicit authorization. This holds for changes that need no pull request.
+- Release tags (`<plugin>--v<version>`) are created unsigned by `release.yml`, under the exemption `~/.claude/CLAUDE.md` gives public plugin marketplaces: users never fetch a tag, and signing in CI would put the signing key in a GitHub secret. Every commit, and every tag created locally, is still SSH-signed.
 - Every pull request, issue and any other item that takes labels uses only the labels already established in the repository. The one label created is `plugin: <name>`, for a new or renamed plugin, on Nery's order; the labels of retired plugins stay.
