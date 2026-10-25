@@ -75,7 +75,6 @@ Rules that keep the scopes apart:
 - A plugin that needs Node packages ships its own `package.json` and a lockfile Claude Code reads in `plugins/<name>/`: a text `bun.lock`, or an npm `package-lock.json` or `npm-shrinkwrap.json` with `lockfileVersion` 2 or 3. Never `bun.lockb`, `yarn.lock` or `pnpm-lock.yaml`: Claude Code skips the install with them. It never relies on the root `package.json`, and its `README.md` declares npm or Bun as a prerequisite.
 - Every plugin is validated with `claude plugin validate --strict`.
 - Mod plugins are additionally tested with `claude plugin test`.
-- Every plugin that ships hooks, skills, agents or scripts carries evals as its proof that it works. A plugin without such components is covered by validation alone.
 - CI runs evals only for plugins that contain evals, and only when those plugins have changed; otherwise the evals are skipped.
 - Executable plugin scripts (especially Claude Code hooks) must include their interpreter's shebang (`#!/usr/bin/env python3`, `#!/usr/bin/env bash`, or `#!/usr/bin/env node`), be marked executable with `chmod +x`, and have their executable permissions preserved in Git.
 

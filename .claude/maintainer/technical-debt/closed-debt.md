@@ -20,6 +20,7 @@
 | 2026-10-21 | DEBT-003 | resolved | basedpyright checks every tracked Python file locally and the maintainer Python in CI | none |
 | 2026-10-22 | DEBT-005 | resolved | project-maintainer guardrails ask in the documented tool.check form and pass 50 of 50 on Claude Code 2.1.307+ | none |
 | 2026-10-25 | DEBT-007 | resolved | The maintainer Node and schema tests pass, and CI runs the schema tests | none |
+| 2026-10-25 | DEBT-004 | obsolete | Dropped by Nery: its next action rested on an eval requirement he never set | none |
 
 ## 🏁 Closed items
 
@@ -114,6 +115,36 @@ The two `argsAtRun` tests were removed, as the entry's next action said. `basedp
 - **Residual risk:** the schema tests use the python `jsonschema` library while the validators use jsonschema-rs; parity was measured at 107 instances with no difference on 2026-10-24, and nothing re-measures it.
 - **Closed by:** commits 097c912 and bf14629.
 - **Related records:** ADR_2026-10-24_maintainer-tests-run-pytest-from-a-pep723-runner, ADR_2026-10-24_schema-identity-is-its-file-location.
+- **Superseded by:** none
+
+### DEBT-004 — Dropped by Nery: its next action rested on an eval requirement he never set
+
+| Field | Value |
+| --- | --- |
+| **Outcome** | obsolete |
+| **Closed on** | 2026-10-25 |
+| **Logged on** | 2026-10-22 |
+| **Owner** | `plugins/typescript6-lsp-intelligence/hooks/tsc-check.sh` and its byte-identical copy in `typescript7-lsp-intelligence` |
+
+#### ❗ The problem
+
+It was unproven that the TypeScript post-edit hook's `PostToolUse` `decision: "block"` makes Claude fix the type errors before it moves on, while the README promises that Claude "has to fix it before continuing". The entry's next action was to write the plugin's evals because `.claude/CLAUDE.md` → Plugin Tooling required every plugin that ships hooks to carry evals.
+
+#### 🔧 The closure
+
+Logged in part in error. The eval requirement came from a CLAUDE.md draft applied on 2026-10-24 that contradicted Nery's own instruction of the same day, that plugins get evals only when he requests them. On 2026-10-25 Nery had the line removed from `.claude/CLAUDE.md` and dropped this item. No change was made to either plugin.
+
+#### 🧪 Verification
+
+| Check | Evidence |
+| --- | --- |
+| 🚫 **Negative:** the original failure or condition is gone | `grep -n "carries evals" .claude/CLAUDE.md` finds nothing (2026-10-25). The hook behavior itself was not tested. |
+
+#### 🔗 Follow-up
+
+- **Residual risk:** the README claim that Claude "has to fix it before continuing" is still unproven by a controlled test; only everyday use while editing this repository's `.mjs` files suggests it holds.
+- **Closed by:** Nery's decision on 2026-10-25.
+- **Related records:** ADR_2026-10-22_tsc-hook-policy-defaults-user-wins.
 - **Superseded by:** none
 
 <!--

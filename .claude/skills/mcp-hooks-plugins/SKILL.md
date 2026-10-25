@@ -244,8 +244,7 @@ scanner can retroactively block an already completed Write or Edit.
 - Check hook timeout versus startup and execution timeout behavior.
 - Check that static validation never launches plugin code.
 - Use mocks or fixtures for unavailable runtime states; label untested live behavior.
-- Add evals when the plugin ships hooks, skills, agents or scripts, as Plugin
-  Tooling in `CLAUDE.md` requires.
+- Add evals only when Nery requests them.
 
 ## Response Requirements
 
