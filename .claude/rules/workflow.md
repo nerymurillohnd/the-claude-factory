@@ -13,6 +13,7 @@ These rules set how to work on this project. Depending on the context, resume th
    - Every time an idea, task or conflict resolution could not be carried out, load and use the `project-maintainer:write-records` skill to log it.
    - Every time a pending item from the point above is withdrawn, completed or closed, load and use the `project-maintainer:write-records` skill to record it.
 3. User documentation
+   - To write, update or check the marketplace's own user documentation, load and use the `maintaining-user-docs` skill.
 4. Issue handling and resolution
 5. Local quality gates
 6. Remote quality gates

@@ -1,11 +1,11 @@
 ---
 name: plugin-consistency
-description: Use after any edit to a plugin, README, CHANGELOG, manifest or docs file, to make them agree before it is done.
+description: Use after any edit to a plugin, its README, a CHANGELOG or a manifest, to make them agree before it is done.
 ---
 
 # Plugin consistency
 
-A change to one file of a plugin or of the docs is only done when every file that must agree with it agrees. Nobody reviews this repo between a push and the users who install from it, so an unrecorded change, a README that describes the old plugin or a matrix that differs between two docs reaches them as is. This skill runs on every such change, during plugin development and on any later edit, and finishes with everything consistent and the proof.
+A change to one file of a plugin is only done when every file that must agree with it agrees. Nobody reviews this repo between a push and the users who install from it, so an unrecorded change, a README that describes the old plugin or a Compatibility cell that differs from `docs/compatibility.md` reaches them as is. This skill runs on every such change, during plugin development and on any later edit, and finishes with everything consistent and the proof.
 
 ## Role
 
@@ -14,7 +14,7 @@ Act as a release engineer who owns the integrity of the marketplace: the plugin 
 ## Rules
 
 - Scope is the change: the files touched since `origin/main` plus the working tree, and every counterpart they must agree with. Widen to the whole repo only when Nery asks for a freshness check or before a release.
-- Read the rules, do not restate them: `.claude/rules/user-docs.md` is the style source, and the `release-and-versioning` skill the source for versions and changelogs. This skill checks that they were followed.
+- Read the rules, do not restate them: `.claude/rules/user-docs.md` is the style source for plugin READMEs, and the `release-and-versioning` skill the source for versions and changelogs. This skill checks that they were followed.
 - Fix the inconsistencies the change created, in the same change, at their root. Ask Nery before changing anything the change did not touch or cause.
 - Never push or bump by hand, and leave commits to `github-workflow` and `release-and-versioning`. Bump with `bump-version.mjs`, as the `release-and-versioning` skill says.
 - A passing script is not consistency: the scripts check that things exist, not that they are true. Read both sides of every pair.
@@ -58,7 +58,7 @@ Progress:
 
 ### 1. Change
 
-Run `git status --short` and `git diff --name-only origin/main`, and for a file without a diff read the file itself. Classify each touched file as one of: plugin component, `plugin.json`, plugin README, plugin CHANGELOG, root CHANGELOG, root README, `docs/*`, `marketplace.json`, template or workflow. For a component or manifest change, read the diff, not only the file names: the pairs depend on what changed.
+Run `git status --short` and `git diff --name-only origin/main`, and for a file without a diff read the file itself. Classify each touched file as one of: plugin component, `plugin.json`, plugin README, plugin CHANGELOG, root CHANGELOG, `marketplace.json`, template or workflow. For a component or manifest change, read the diff, not only the file names: the pairs depend on what changed.
 
 ### 2. Pairs
 
@@ -71,7 +71,6 @@ For each touched file, list the files it must agree with, from this map:
 | A plugin README | The components as they now are, `docs/compatibility.md`, the root README catalog line, the required sections of the template |
 | A plugin CHANGELOG | The diff (every user-visible change recorded in user language, breaking ones marked), the bump level, the root CHANGELOG line |
 | The root CHANGELOG | The plugin CHANGELOG version and summary, in one line under the right date |
-| `docs/*` or the root README | Each other and `docs/compatibility.md`; the marketplace source `nerymurillohnd/the-claude-factory` and suffix `@the-claude-factory`; live official docs |
 | A rename or removal in `marketplace.json` | The `renames` map, the root CHANGELOG line and the steps of the `plugin-renames-and-removals` skill |
 | A template | The plugin READMEs built from it and the sections `check-repo.mjs` requires |
 

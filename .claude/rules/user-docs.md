@@ -1,18 +1,12 @@
 ---
 paths:
-  - "README.md"
   - "plugins/*/README.md"
-  - "docs/**"
-  - "SECURITY.md"
-  - "SUPPORT.md"
-  - "CONTRIBUTING.md"
   - ".claude/templates/plugin/**"
-  - ".claude/templates/root-readme.md"
 ---
 
-# User Docs Rules
+# Plugin README Rules
 
-Apply to the root `README.md`, `docs/`, every plugin `README.md`, `SECURITY.md`, `SUPPORT.md`, `CONTRIBUTING.md` and the plugin and root README templates.
+Apply to every plugin `README.md` and the plugin templates.
 
 - READMEs sell: lead with the outcome and why to install, then teach. Never mention maintenance, `.claude/`, internal scripts, CI internals or how we work.
 - In a plugin README, resolve every `{{…}}` and `<!-- TODO -->` of the template, delete rows and sections that do not apply but keep every required section, keep exactly one Compatibility row per component type the plugin ships, and give an outcome-first TL;DR with real usage examples.

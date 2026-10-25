@@ -251,7 +251,7 @@ Every plugin directory holds these files. `scripts/validators/plugin-required-fi
 - `.claude/skills/`: project skills, the procedures for work on this repository.
 - `.claude/specs/`: specs, written before plans.
 - `.claude/plans/`: implementation plans.
-- `.claude/templates/`: templates for plugin files, the root README and the plugin review brief.
+- `.claude/templates/`: templates for plugin files and the plugin review brief.
 - `docs/`: the user guides, covering installation, managing plugins, compatibility, FAQ, troubleshooting and tool references.
 - `plugins/`: the plugins, one self-contained directory per plugin.
 - `scripts/`: maintenance scripts, tests and schemas.
