@@ -101,7 +101,7 @@ Files every plugin ships:
 
 Manifest:
 
-- Keep `version` in `plugin.json`, at `0.1.0` for the first release, and add `keywords`. Change `displayName` to relabel a plugin; never rename it.
+- Keep `version` in `plugin.json`, at `0.1.0` for the first release, and add `keywords`. Change `displayName` to relabel a plugin; change its `name` only through the `plugin-renames-and-removals` skill.
 - Name each skill for what it does, not how it is implemented.
 - Declare hooks in `hooks/hooks.json`.
 - Give the plugin its own `package.json` or Python environment only when its architecture needs one, because its complexity must justify every dependency. Set it up the way the current plugins reference says.

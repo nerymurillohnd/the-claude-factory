@@ -40,7 +40,9 @@ Every plugin keeps a `CHANGELOG.md` and uses semantic versioning: **patch** = fi
 <details>
 <summary><b>Will a plugin's name ever change?</b></summary>
 
-Plugin names are permanent, because your installs and settings are keyed by them. If a rename is ever unavoidable, the marketplace migrates your install to the new name automatically.
+Plugin names are permanent, because your installs and settings are keyed by them. If a rename is ever unavoidable, Claude Code migrates your install and its settings to the new name and tells you once. Run `/plugin install <new-name>@the-claude-factory` once afterwards, because the renamed plugin reports `not cached` until you do. If your organization enables the plugin in managed settings, your admin updates the name there.
+
+If a plugin is folded into another one, the same migration moves you to that plugin. If a plugin is retired with no replacement, Claude Code removes it from your settings and shows `Removed from the "the-claude-factory" marketplace`.
 
 </details>
 

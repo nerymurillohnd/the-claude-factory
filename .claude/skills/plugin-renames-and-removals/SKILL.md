@@ -21,6 +21,11 @@ Run every command from the repository root. All paths are relative to it:
 
 A rename or removal reaches users only through the `renames` map in `.claude-plugin/marketplace.json`. With that entry, Claude Code migrates existing installs instead of reporting the plugin as not found (`/en/plugins/host-marketplace`, "Migrate users with a renames map"). Without it, users of the old name are stranded.
 
+After the push, a user who still has the old name enabled sees one of these results:
+- **Rename or merge** (`"<old>": "<new>"`): the plugin loads under its new name, `claude plugin list` and `/plugin` show `Renamed to "<new>" in the "the-claude-factory" marketplace` once, and Claude Code rewrites the old key to the new one in `enabledPlugins` and `pluginConfigs` in the user, project and local settings scopes. Because this marketplace is a git repository, the plugin reports `Plugin "<new>" not cached at <path>` until the user runs `/plugin install <new>@the-claude-factory` once.
+- **Removal** (`"<old>": null`): the old key is dropped from those scopes and the user sees `Removed from the "the-claude-factory" marketplace`.
+- **Enabled in managed settings**: Claude Code cannot rewrite managed settings, so the notice recurs until an admin updates `enabledPlugins` there.
+
 ## Rules
 
 1. Register every rename or removal in the `renames` map. The map is append-only: add one entry per rename or removal, and never edit or delete an existing entry.
@@ -71,7 +76,7 @@ Split the results into live uses (to change) and dated history (to leave): old c
 
 For a removal, skip this step: there is nothing to bump. For a merge, `<target>` gained components: bump it as the `release-and-versioning` skill says, and in its changelog entry tell users of `<old>` which command replaces theirs. Then go to step 6.
 
-1. Write the release notes first, under `## [Unreleased]` in `plugins/<new>/CHANGELOG.md`, following Keep a Changelog 2.0.0. Start the entry with `**Breaking:**` and name the old and the new command, in user language. Tell users to run `/plugin install <new>@the-claude-factory` once: a marketplace added from a git repository reports `Plugin "<new>" not cached` until they do. The bump script fails when `[Unreleased]` is empty.
+1. Write the release notes first, under `## [Unreleased]` in `plugins/<new>/CHANGELOG.md`, following Keep a Changelog 2.0.0. Start the entry with `**Breaking:**` and name the old and the new command, in user language. Tell users to run `/plugin install <new>@the-claude-factory` once, because the plugin reports `Plugin "<new>" not cached` until they do, and that an organization that enables the plugin in managed settings must change `enabledPlugins` there. The bump script fails when `[Unreleased]` is empty.
 2. Run `node scripts/bump-version.mjs <new> <minor|major>`: `minor` during `0.x`, `major` from `1.0.0` on. The script turns `[Unreleased]` into the dated section and regenerates the README catalog.
 3. Read its output line (`<new>: <old version> → <new version>`).
 
@@ -90,7 +95,7 @@ Run `node scripts/generators/catalog.mjs`. A removal needs it explicitly; for a 
 ### 8. Check the GitHub label and installed copies
 
 1. Run `node scripts/sync-labels.mjs --dry-run`. A rename needs a `plugin: <new>` label, as a new plugin does; the `plugin: <old>` label stays, as the labels of retired plugins do. Tell Nery what the dry run shows. Do not write labels until he orders it.
-2. Removal: tell Nery that `.claude-plugin/marketplace.json` does not set `forceRemoveDeletedPlugins`, so the removed plugin stays installed on users' machines and reports `Plugin "<old>" not found in marketplace` when a session loads it. Setting it uninstalls every removed plugin at session start; that is his decision.
+2. Removal: tell Nery that `.claude-plugin/marketplace.json` does not set `forceRemoveDeletedPlugins`. The `null` entry drops the old key from users' settings, but the docs do not say that it deletes the installed copy. With `"forceRemoveDeletedPlugins": true`, Claude Code uninstalls at each session start every plugin that is neither listed in `plugins` nor in `renames`, from the user, project and local scopes, and lists it under **Flagged** in `/plugin` as `Removed from marketplace`; plugins installed only by managed settings stay. Setting it is his decision.
 
 ### 9. Commit
 
