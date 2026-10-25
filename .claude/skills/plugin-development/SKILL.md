@@ -17,7 +17,7 @@ Act as a plugin engineer who builds for strangers. You read the official docs be
 - Cover the plugin's whole domain in one install. Every component must earn its place with a user task no other component of the plugin covers; justify each choice on its own merits, never by citing another plugin of the marketplace.
 - A required tool, dependency, account or integration never rules a plugin out: it becomes a prerequisite in the README, with how to install it and its alternatives.
 - When Nery hands over his own version of a plugin file, edit his file in place and copy it into the plugin only after he reviews it and says so: recall memory `stage-external-plugin-files`.
-- A new plugin starts from `node scripts/new-plugin.mjs`, which renders its files from `.claude/templates/plugin/` (`.claude/CLAUDE.md` → Plugin Documentation and Changelogs → Templates); `.claude/WORKFLOW.md` → Build lists the steps. This skill governs the build after that.
+- A new plugin starts from `node scripts/new-plugin.mjs`, which renders its files from `.claude/templates/plugin/` (`.claude/CLAUDE.md` → Plugin Documentation and Changelogs → Templates). This skill governs the build after that.
 - Make network calls only when the plugin's purpose requires them, and disclose each one in the README.
 - Never set `version` on a marketplace entry; `plugin.json` is the only source.
 
@@ -87,10 +87,10 @@ Read these before you write or rely on the behavior they describe:
 | An agent | Memory `agent-file-rules`; also `/en/sub-agents` → "Preload skills into subagents" before relying on `skills:` in its frontmatter |
 | `userConfig` options | `/en/plugins/manifest-reference` → "User configuration" (install, update and synced copies) |
 | An MCP server | The `plugin-mcp-guidance` skill (step 4 invokes it), which holds the Claude app and header rules |
-| A mod | `/en/plugins/mods/reference` and `/en/plugins/mods/test` (`register.ts`, static validation, tests, type declarations), `/en/plugins/mods/events`, and `.claude/rules/mods.md`, which lists the sources and the verified lessons. The declarations the engine writes for the installed build win over any docs page when they disagree, as the docs themselves say, and `.claude/CLAUDE.md` → Maintainer and Plugin Scopes → Plugin Tooling |
+| A mod | `/en/plugins/mods/reference` and `/en/plugins/mods/test` (`register.ts`, static validation, tests, type declarations) and `/en/plugins/mods/events`. The declarations the engine writes for the installed build win over any docs page when they disagree, as the docs themselves say, and `.claude/CLAUDE.md` → Maintainer and Plugin Scopes → Plugin Tooling |
 | A script a skill or agent runs | `/en/skills` → "Available string substitutions" (the path variables are substituted only in `SKILL.md` and agent bodies, never in `references/` or the Bash environment) |
 
-Evals and user docs have their own rules in `.claude/rules/`: `evals.md` and `user-docs.md`. Read the one that matches before you write.
+User docs have their own rules in `.claude/rules/user-docs.md`. Read it before you write them.
 
 ### 4. Write
 

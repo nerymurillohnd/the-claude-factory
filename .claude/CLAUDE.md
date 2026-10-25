@@ -147,7 +147,7 @@ Every plugin directory holds these files. `scripts/validators/plugin-required-fi
 
 ## Documentation and Maintenance
 
-- `.claude/WORKFLOW.md`: the stage map, imported above.
+- `.claude/rules/workflow.md`: the workflow rules, which name the skill each stage loads.
 - `.claude/maintainer/decisions/`: ADRs for important decisions.
 - `.claude/maintainer/technical-debt/`: pending and closed debt.
 - `.claude/memory/`: project memory (facts, feedback). Git-ignored.
