@@ -44,6 +44,7 @@ Add an item only when all of these hold:
 | DEBT-002 | Version-bump check fails on main after a revert of an unreleased bump and blocks every release | 🟠 Blocked |
 | DEBT-006 | No gate runs the validators of `scripts/validators/`, so CI lost the checks `check-repo.mjs` dropped | 🟡 Pending |
 | DEBT-008 | `main` and the release tags have no GitHub protection | 🟠 Blocked |
+| DEBT-009 | Biome ignores Markdown, so no tool formats or lints the repository's Markdown | 🟡 Pending |
 
 ## 📂 Open items
 
@@ -160,6 +161,33 @@ Add an item only when all of these hold:
 - **Next action:** create a ruleset on `main` that requires the Validate checks and changes through pull requests, with Nery as bypass actor for documentation and maintainer commits, and a tag ruleset on `*--v*` that blocks update and deletion. Then add "A tag ruleset protects `*--v*` against update and deletion." to the release-tag line of `.claude/CLAUDE.md` → Change Control.
 - **Review condition:** closes when both rulesets exist, a push to `main` that fails Validate is refused, and deleting a test tag that matches `*--v*` is refused.
 - **Related records:** ADR_2026-10-25_release-tags-are-created-unsigned-by-ci.
+
+### DEBT-009 — Biome ignores Markdown, so no tool formats or lints the repository's Markdown
+
+| Field | Value |
+| --- | --- |
+| **Status** | 🟡 Pending |
+| **Category** | quality, maintainability |
+| **Owner** | Maintainer tooling (`biome.json`, `.claude/CLAUDE.md` → Maintainer Tooling) |
+| **Logged** | 2026-10-25 |
+
+#### 🔎 Evidence
+
+- **Confirmed facts:**
+  - `biome.json` `files.includes` lists only `**/*.{js,cjs,mjs,jsx,ts,cts,mts,tsx,json,jsonc}`.
+  - On 2026-10-25, `biome check README.md` with Biome 2.6.2 printed `These paths were provided but ignored: README.md` and exited 0.
+  - `.claude/CLAUDE.md` → Maintainer Tooling says "Markdown, JSON, JavaScript and TypeScript: format and lint with Biome", and its protected-files line says `biome.json` excludes them "whenever Markdown is in its `files.includes`".
+  - The `maintaining-user-docs` skill records that no linter reads the user docs, so broken links, anchors and tables are found only by opening them.
+- **Inferences:** user-facing Markdown (root README, `docs/`, plugin READMEs and changelogs) can ship malformed with every gate green.
+- **Open questions:** whether Biome 2.6.2 formats and lints Markdown at all, and if not, which tool should, given ADR_2026-10-21_remove-markdownlint.
+
+#### 📈 Impact and next step
+
+- **Impact / risk:** CLAUDE.md promises a Markdown gate that does not exist, and a formatting or link error in a doc users read is caught by no check.
+- **Why it is not fixed now:** Nery deferred it on 2026-10-25 to keep the session on the user-docs and skills consolidation.
+- **Next action:** check Biome's current docs and release notes for Markdown support. Then either add Markdown to `files.includes`, with the protected files excluded, or make the CLAUDE.md Maintainer Tooling line say what really reads Markdown.
+- **Review condition:** closes when `.claude/CLAUDE.md` and `biome.json` agree, and a Markdown check, if one is adopted, fails on a deliberately broken user doc.
+- **Related records:** ADR_2026-10-21_remove-markdownlint, ADR_2026-10-25_marketplace-user-docs-have-their-own-skill.
 
 <!--
 Entry format. Copy this block above this comment for each new item and add its row to the Index.
