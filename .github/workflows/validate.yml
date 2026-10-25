@@ -78,11 +78,10 @@ jobs:
         with:
           # No lockfile and no pins: every run installs the latest tools.
           enable-cache: "false"
-      - name: Python 3.15, ruff, mypy and basedpyright
+      - name: Python 3.15, ruff and basedpyright
         run: |
           uv python install 3.15
           uv tool install ruff
-          uv tool install mypy
           uv tool install basedpyright
       - name: Gates
         run: npm run gates:ci -- --group python

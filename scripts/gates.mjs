@@ -33,11 +33,15 @@ import { isMain, ROOT } from './lib.mjs'
 const JS_FAMILY = ['js', 'cjs', 'mjs', 'jsx', 'ts', 'cts', 'mts', 'tsx']
 
 /**
- * Python under scripts/ that follows the maintainer tooling rules and never runs mypy
- * (ADR_2026-10-24_basedpyright-is-the-only-python-type-checker). mypy-scripts checks only the
- * rest, until each unit migrates on touch.
+ * The Python that scripts/basedpyright-maintainer.mjs checks under the maintainer config, each file
+ * against its own interpreter; basedpyright-scripts checks the rest of scripts/.
  */
-const MIGRATED_PYTHON = ['scripts/schemas/', 'scripts/generators/', 'scripts/validators/']
+const MAINTAINER_PYTHON = [
+  'scripts/validators',
+  'scripts/generators',
+  'scripts/tests/schemas',
+  'scripts/tests/run_pytest.py',
+]
 
 /** Tests that may be skipped, by Node test name or unittest id, each with why. */
 const ALLOWED_SKIPS = new Map(/** @type {[string, string][]} */ ([]))
@@ -306,21 +310,28 @@ export function gatesFor({ root, ci, base }) {
       args: ['format', '--check', 'scripts'],
     },
     {
-      id: 'mypy-scripts',
+      id: 'basedpyright-scripts',
       group: 'python',
-      title: 'mypy --strict on the unmigrated scripts/',
-      cmd: 'mypy',
+      title: 'basedpyright on the plugin tests in scripts/',
+      cmd: 'basedpyright',
       args: [
-        '--strict',
-        ...tracked(root, ['scripts/*.py', ...MIGRATED_PYTHON.map((p) => `:(exclude)${p}`)]),
+        '--warnings',
+        ...tracked(root, ['scripts/*.py', ...MAINTAINER_PYTHON.map((p) => `:(exclude)${p}`)]),
       ],
     },
     {
-      id: 'basedpyright-scripts',
+      id: 'basedpyright-maintainer',
       group: 'python',
-      title: 'basedpyright on scripts/',
-      cmd: 'basedpyright',
-      args: ['--warnings', 'scripts'],
+      title: 'basedpyright on the maintainer Python, each file with its own interpreter',
+      cmd: 'node',
+      args: ['scripts/basedpyright-maintainer.mjs'],
+    },
+    {
+      id: 'pytest-scripts',
+      group: 'python',
+      title: 'pytest on the maintainer tests, no skips',
+      cmd: 'scripts/tests/run_pytest.py',
+      args: ['scripts/tests/schemas'],
     },
     {
       id: 'claude-validate:marketplace',
@@ -440,13 +451,6 @@ export function gatesFor({ root, ci, base }) {
       title: 'ruff format --check plugins/',
       cmd: 'ruff',
       args: ['format', '--check', 'plugins'],
-    },
-    {
-      id: 'mypy-plugins',
-      group: 'local',
-      title: 'mypy --strict on plugins/',
-      cmd: 'mypy',
-      args: ['--strict', ...tracked(root, ['plugins/*.py'])],
     },
     {
       id: 'basedpyright-plugins',
