@@ -13,6 +13,7 @@ The order of work, stage by stage, is a map whose steps each name the skill or r
 - Nery and Claude Code are the only two parties responsible for this marketplace, and the only ones who work on it. There are no outside collaborators, and pull requests from users are not accepted.
 - Users take part only through issues. Triaging, confirming, fixing, verifying and releasing the fix for every issue is Nery's and Claude Code's work, never the reporter's.
 - No third-party team reviews our work before users install it, so every push, release and issue reply is the last check before the public: verify it before it goes out.
+- What this marketplace publishes runs on other people's machines, inside their projects and operations, and Nery answers for it as its owner and author. A defect, a stale fact or an unverified claim that reaches a release harms them, even in the smallest way. Treat every change as one that will reach them: check it against the current official docs and the tools installed in this session, prove it before the merge, and say plainly what you could not verify instead of publishing it.
 - Automate recurring work (validation, review, releases, drift checks, issue handling) with CI, evals, hooks, agents and scheduled tasks. Where none exists yet, propose building it.
 
 ---
