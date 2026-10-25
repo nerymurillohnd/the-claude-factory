@@ -72,7 +72,7 @@ For each touched file, list the files it must agree with, from this map:
 | A plugin CHANGELOG | The diff (every user-visible change recorded in user language, breaking ones marked), the bump level, the root CHANGELOG line |
 | The root CHANGELOG | The plugin CHANGELOG version and summary, in one line under the right date |
 | `docs/*` or the root README | Each other and `docs/compatibility.md`; the marketplace source `nerymurillohnd/the-claude-factory` and suffix `@the-claude-factory`; live official docs |
-| A rename or removal in `marketplace.json` | The `renames` map and a note in the root CHANGELOG |
+| A rename or removal in `marketplace.json` | The `renames` map, the root CHANGELOG line and the steps of the `plugin-renames-and-removals` skill |
 | A template | The plugin READMEs built from it and the sections `check-repo.mjs` requires |
 
 ### 3. Scripts

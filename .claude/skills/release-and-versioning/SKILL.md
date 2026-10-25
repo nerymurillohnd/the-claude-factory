@@ -1,11 +1,11 @@
 ---
 name: release-and-versioning
-description: Use to choose a plugin's version bump, rename or remove a plugin, or confirm its tag and release after a merge.
+description: Use to choose a plugin's version bump or confirm its tag and release after a merge.
 ---
 
 # Release and versioning
 
-A plugin reaches users only through a version: `plugin.json` holds it, the changelog tells its story, and `release.yml` turns it into a tag and a GitHub Release after the merge. The marketplace itself has no version and no tag. This skill covers choosing the bump, rolling the changelog, renaming or removing a plugin without surprising anyone, and confirming the release after the merge.
+A plugin reaches users only through a version: `plugin.json` holds it, the changelog tells its story, and `release.yml` turns it into a tag and a GitHub Release after the merge. The marketplace itself has no version and no tag. This skill covers choosing the bump, rolling the changelog and confirming the release after the merge; a rename or removal follows `plugin-renames-and-removals`.
 
 ## Role
 
@@ -18,7 +18,6 @@ Act as the release manager who answers for what users receive. You choose the bu
 - A change limited to a plugin's `README.md` needs no bump; any other change inside the plugin does, a `CHANGELOG.md`-only edit included (`check-version-bump.mjs` treats only `README.md` as documentation).
 - Stay in `0.x` while a plugin is new. Going to `1.0.0` is Nery's declaration that the interface is stable; never take that step yourself.
 - Never tag by hand. `release.yml` tags after Validate succeeds on `main`.
-- Never rename or remove a plugin silently: add the entry to `renames` in `marketplace.json` and note it in the root changelog.
 
 ## Gotchas
 
@@ -33,6 +32,7 @@ Act as the release manager who answers for what users receive. You choose the bu
 
 | When | Invoke with the Skill tool |
 | :-- | :-- |
+| The change renames or removes a plugin (step 4) | `plugin-renames-and-removals` |
 | You finished step 3 and `plugin-consistency` has not run since the last edit | `plugin-consistency`: the bump rewrote `plugin.json`, the changelog and the README catalog |
 | Step 4 is done and the PR is still open | Nothing if `plugin-consistency`, `plugin-development` or `github-workflow` invoked you: hand back. Loaded alone, `github-workflow`, which owns the push, the PR and the merge |
 | The release is verified or recovered (steps 5 and 6) | `github-workflow`, which closes the fixed issues (its step 8) |
@@ -77,7 +77,7 @@ Skip the script when the PR already carries this change's bump (`plugin.json` ho
 
 A rename or removal reaches users only through `renames`, which makes Claude Code migrate existing installs instead of reporting the plugin as not found (`/en/plugins/host-marketplace`, "Migrate users with a renames map"). Never do one silently.
 
-When the change renames or removes a plugin, read [the rename procedure](references/renames.md) and follow it; otherwise skip this step.
+When the change renames or removes a plugin, invoke the `plugin-renames-and-removals` skill and follow it; otherwise skip this step.
 
 ### 5. Verify
 

@@ -145,8 +145,9 @@ Every plugin directory holds these files. `scripts/validators/plugin-required-fi
 - Write each line in the format of its event:
   - New plugin, under `### Added`: `- **<plugin>** X.Y.Z — summary.`
   - Version bump, under the change type of the change: `- **<plugin>** X.Y.Z — summary.`
-  - Rename, under `### Changed`: `- **<plugin>** renamed from **<old>** — reason.` The `renames` map in `marketplace.json` gets `"<old>": "<plugin>"`.
-  - Removal, under `### Removed`: `- **<plugin>** removed — reason.` The `renames` map gets `"<plugin>": null`.
+  - Rename, under `### Changed`: `- **<plugin>** X.Y.Z — renamed from <old>; summary.` The `renames` map in `marketplace.json` gets `"<old>": "<plugin>"`.
+  - Removal, under `### Removed`: `- **<old>** retired: reason.` The `renames` map gets `"<old>": null`.
+  - Merge into another plugin, under `### Removed`: `- **<old>** retired: its <what> is now the `<skill>` skill of **<target>**, and the marketplace renames existing installs. Type `/<target>:<skill>` where you typed `/<old>:<skill>`.` The `renames` map gets `"<old>": "<target>"`.
   - Marketplace change: `- summary.`, with no plugin name or version.
 - The `X.Y.Z` of a plugin line is a version that plugin's changelog has; `plugin-versions-consistency.py` fails otherwise.
 
@@ -205,4 +206,4 @@ Versioning applies **only to plugins**. The marketplace catalog (`.claude-plugin
 - Changes to documentation and maintainer files outside plugins and `scripts/` **do not require a pull request**.
 - Pull requests are opened only with Nery's explicit authorization.
 - Pushes, to any branch and including tags, are made only with Nery's explicit authorization. This holds for changes that need no pull request.
-- Every pull request, issue and any other item that takes labels uses only the labels already established in the repository.
+- Every pull request, issue and any other item that takes labels uses only the labels already established in the repository. The one label created is `plugin: <name>`, for a new or renamed plugin, on Nery's order; the labels of retired plugins stay.
