@@ -175,6 +175,7 @@ Versioning applies **only to plugins**. The marketplace catalog (`.claude-plugin
 - Commit the version bump, the plugin and root changelog entries, and the catalog regenerated with `node scripts/generators/catalog.mjs` as a single signed commit.
 - Never push to `main` without first listing the untagged plugins (`plugin.json` version versus `git tag -l '<plugin>--v<version>'`) and confirming each is intended to ship.
 - Never run `gh workflow run release.yml` while the Validate workflow is failing; resolve the failure first.
+- Release tags (`<plugin>--v<version>`) are created unsigned by `release.yml`, under the exemption `~/.claude/CLAUDE.md` gives public plugin marketplaces: users never fetch a tag, and signing in CI would put the signing key in a GitHub secret. Every commit, and every tag created locally, is still SSH-signed.
 
 ---
 
