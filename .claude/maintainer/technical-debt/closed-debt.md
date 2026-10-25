@@ -19,6 +19,7 @@
 | --- | --- | --- | --- | --- |
 | 2026-10-21 | DEBT-003 | resolved | basedpyright checks every tracked Python file locally and the maintainer Python in CI | none |
 | 2026-10-22 | DEBT-005 | resolved | project-maintainer guardrails ask in the documented tool.check form and pass 50 of 50 on Claude Code 2.1.307+ | none |
+| 2026-10-25 | DEBT-007 | resolved | The maintainer Node and schema tests pass, and CI runs the schema tests | none |
 
 ## 🏁 Closed items
 
@@ -82,6 +83,37 @@ Cause: Claude Code 2.1.307 removed `decider` from the `tool.check` result. The e
 - **Residual risk:** the routing of a hook's `ask` to a person is stated in the engine's declarations, not on the docs pages, and the mod API can change again without a changelog entry. Users on 2.1.304 to 2.1.306 who update the plugin without updating Claude Code can have auto mode's classifier approve a guarded edit; on 2.1.306 the suite fails 44 of 50 for that reason. Reporting the undocumented 2.1.307 change to the docs team waits on Nery's approval.
 - **Closed by:** commits 03ba140, d8f3e94 and ae98a47 on branch `fix/project-maintainer-mod-ask-api`.
 - **Related records:** none.
+- **Superseded by:** none
+
+### DEBT-007 — The maintainer Node and schema tests pass, and CI runs the schema tests
+
+| Field | Value |
+| --- | --- |
+| **Outcome** | resolved |
+| **Closed on** | 2026-10-25 |
+| **Logged on** | 2026-10-24 |
+| **Owner** | `scripts/tests/gates.test.mjs`, `scripts/tests/schemas/` |
+
+#### ❗ The problem
+
+`node --test "scripts/tests/*.test.mjs"` failed 3 tests in `gates.test.mjs`: two for `argsAtRun`, a runner feature removed from `scripts/gates.mjs`, and the `--ci` test, which expected the removed `pytest-env`, `basedpyright-maintainer` and `pytest-scripts` gates. The schema tests loaded the root monoliths `plugin`, `marketplace`, `hooks`, `lsp` and `mcp.schema.json`, which no longer exist, and asserted each schema's `$id`; case `mcp-63` expected an empty `mcpServers` map to fail although `claude plugin validate --strict` accepts it. The red `node-tests` gate hid any new failure.
+
+#### 🔧 The closure
+
+The two `argsAtRun` tests were removed, as the entry's next action said. `basedpyright-maintainer` and `pytest-scripts` exist again as gates of the `python` group: `scripts/basedpyright-maintainer.mjs` type-checks each maintainer file against its own interpreter, and `pytest-scripts` runs `scripts/tests/run_pytest.py scripts/tests/schemas` (commit 097c912). The schema tests now register every schema under its file URI, validate each kind of file through its folder's entry schema, and assert that no schema declares `$id`. `mcp-63` expects valid; `mcp-61` and `mcp-23` stay invalid with the more precise error paths the if/then transport selection reports (commit bf14629).
+
+#### 🧪 Verification
+
+| Check | Evidence |
+| --- | --- |
+| ✅ **Positive:** the closure holds | `node --test "scripts/tests/*.test.mjs"`: every test passes, `gates.test.mjs` 13 of 13. `scripts/tests/run_pytest.py scripts/tests/schemas`: `193 passed`, no skip. `node scripts/gates.mjs --ci`: `✔ All gates passed`, with `node-tests`, `basedpyright-maintainer` and `pytest-scripts` passing (2026-10-25). |
+| 🚫 **Negative:** the original failure or condition is gone | The 3 `gates.test.mjs` failures no longer reproduce, and the schema tests no longer reference a root monolith (`grep` for the five root names in `test_schemas.py` finds none). A type error planted in a validator in a throwaway worktree makes `basedpyright-maintainer.mjs` exit 1. |
+
+#### 🔗 Follow-up
+
+- **Residual risk:** the schema tests use the python `jsonschema` library while the validators use jsonschema-rs; parity was measured at 107 instances with no difference on 2026-10-24, and nothing re-measures it.
+- **Closed by:** commits 097c912 and bf14629.
+- **Related records:** ADR_2026-10-24_maintainer-tests-run-pytest-from-a-pep723-runner, ADR_2026-10-24_schema-identity-is-its-file-location.
 - **Superseded by:** none
 
 <!--
