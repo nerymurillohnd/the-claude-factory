@@ -44,6 +44,7 @@ Add an item only when all of these hold:
 | DEBT-002 | Version-bump check fails on main after a revert of an unreleased bump and blocks every release | 🟠 Blocked |
 | DEBT-004 | Unproven that the TypeScript post-edit hook's block makes Claude fix the errors before it moves on | 🟠 Blocked |
 | DEBT-006 | No gate runs the validators of `scripts/validators/`, so CI lost the checks `check-repo.mjs` dropped | 🟡 Pending |
+| DEBT-008 | `main` and the release tags have no GitHub protection | 🟠 Blocked |
 
 ## 📂 Open items
 
@@ -106,7 +107,7 @@ Add an item only when all of these hold:
 - **Why it is not fixed now:** the rule for reverts, and how the check treats a version that returns to the last tag, is a design decision for Nery. This task was only to get the pending releases out.
 - **Next action:** decide with Nery whether `check-version-bump.mjs` compares each plugin with its latest `<plugin>--v*` tag instead of the previous commit. If yes, change it with tests for both cases: a revert to the tagged state passes and an edit without a bump still fails.
 - **Review condition:** closes when a revert of an unreleased bump passes `Validate` on `main` and a plugin change without a bump still fails it.
-- **Related records:** [PR #27](https://github.com/nerymurillohnd/the-claude-factory/pull/27), [PR #31](https://github.com/nerymurillohnd/the-claude-factory/pull/31); `.claude/CLAUDE.md` → Versioning and Releases.
+- **Related records:** [PR #27](https://github.com/nerymurillohnd/the-claude-factory/pull/27), [PR #31](https://github.com/nerymurillohnd/the-claude-factory/pull/31); the `release-and-versioning` skill.
 
 ### DEBT-004 — Unproven that the TypeScript post-edit hook's block makes Claude fix the errors before it moves on
 
@@ -161,6 +162,32 @@ Add an item only when all of these hold:
 - **Next action:** add one gate per validator to the `python` group of `scripts/gates.mjs`, run by path, and confirm the CI `python` job runs them on Python 3.15.
 - **Review condition:** closes when `npm run gates:ci -- --group python` runs all nine validators and a defect planted in a copy fails the run.
 - **Related records:** ADR_2026-10-24_repository-checks-move-to-python-validators, ADR_2026-10-21_gates-run-from-one-script.
+
+### DEBT-008 — `main` and the release tags have no GitHub protection
+
+| Field | Value |
+| --- | --- |
+| **Status** | 🟠 Blocked |
+| **Category** | security, reliability |
+| **Owner** | GitHub repository settings of `nerymurillohnd/the-claude-factory` |
+| **Logged** | 2026-10-25 |
+
+#### 🔎 Evidence
+
+- **Confirmed facts:**
+  - On 2026-10-25 `gh api repos/nerymurillohnd/the-claude-factory/branches/main/protection` returned `Branch not protected` (HTTP 404), and the repository has no rulesets (`gh api repos/nerymurillohnd/the-claude-factory/rulesets` returned `[]`).
+  - Users clone `main`, and the `version` in `plugin.json` names their cached copy (`/en/plugins/loading`, "How Claude Code computes the version"). A merge to `main` is therefore the release, and the pull request's CI is the last gate before users.
+  - `release.yml` creates the `<plugin>--v<version>` tags unsigned (ADR_2026-10-25_release-tags-are-created-unsigned-by-ci).
+- **Inferences:** a direct push to `main` that changes a plugin without a bump reaches new installs under an existing version, and nothing stops a merge with failing checks or a moved or deleted release tag.
+- **Open questions:** whether GitHub immutable releases are available for this repository and add anything over a tag ruleset.
+
+#### 📈 Impact and next step
+
+- **Impact / risk:** the CI gate before users is voluntary, and a release tag can be moved or deleted, which would change what a plugin dependency range resolves to.
+- **Why it is not fixed now:** Nery decided on 2026-10-25 to protect `main` last, after the current consolidation of the rules, skills and pipeline, so that its changes are not routed through the new rules.
+- **Next action:** create a ruleset on `main` that requires the Validate checks and changes through pull requests, with Nery as bypass actor for documentation and maintainer commits, and a tag ruleset on `*--v*` that blocks update and deletion. Then add "A tag ruleset protects `*--v*` against update and deletion." to the release-tag line of `.claude/CLAUDE.md` → Change Control.
+- **Review condition:** closes when both rulesets exist, a push to `main` that fails Validate is refused, and deleting a test tag that matches `*--v*` is refused.
+- **Related records:** ADR_2026-10-25_release-tags-are-created-unsigned-by-ci.
 
 <!--
 Entry format. Copy this block above this comment for each new item and add its row to the Index.
