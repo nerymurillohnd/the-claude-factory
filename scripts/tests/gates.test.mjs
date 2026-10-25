@@ -164,6 +164,15 @@ describe('gate list', () => {
     assert.match(bump?.skipReason ?? '', /no comparable base commit/)
   })
 
+  test('plugin test gates run only for folders named after a plugin', () => {
+    const ids = gatesFor({ root: ROOT, ci: false, base: '' }).map((g) => g.id)
+    assert.ok(
+      !ids.includes('unittest:schemas'),
+      'the maintainer schema tests run as a plugin suite',
+    )
+    assert.ok(ids.includes('unittest:python-lsp-intelligence'))
+  })
+
   test('no gate runs mypy: Basedpyright is the only Python type checker', () => {
     for (const gate of gatesFor({ root: ROOT, ci: false, base: '' })) {
       assert.notEqual(gate.cmd, 'mypy', `${gate.id} runs mypy`)

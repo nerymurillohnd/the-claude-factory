@@ -169,7 +169,12 @@ function tracked(root, patterns) {
 function pluginTestFolders(root, test) {
   const base = join(root, 'scripts', 'tests')
   return readdirSync(base, { withFileTypes: true })
-    .filter((d) => d.isDirectory() && readdirSync(join(base, d.name)).some(test))
+    .filter(
+      (d) =>
+        d.isDirectory() &&
+        existsSync(join(root, 'plugins', d.name)) &&
+        readdirSync(join(base, d.name)).some(test),
+    )
     .map((d) => d.name)
     .sort()
 }
