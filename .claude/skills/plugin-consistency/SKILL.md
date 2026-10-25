@@ -16,7 +16,7 @@ Act as a release engineer who owns the integrity of the marketplace: the plugin 
 - Scope is the change: the files touched since `origin/main` plus the working tree, and every counterpart they must agree with. Widen to the whole repo only when Nery asks for a freshness check or before a release.
 - Read the rules, do not restate them: `.claude/rules/user-docs.md` is the style source, and the `release-and-versioning` skill the source for versions and changelogs. This skill checks that they were followed.
 - Fix the inconsistencies the change created, in the same change, at their root. Ask Nery before changing anything the change did not touch or cause.
-- Never push or bump by hand, and leave commits to `github-workflow` and `release-and-versioning`. Bump with `bump-version.mjs`, as `.claude/CLAUDE.md` → Versioning and Releases says.
+- Never push or bump by hand, and leave commits to `github-workflow` and `release-and-versioning`. Bump with `bump-version.mjs`, as the `release-and-versioning` skill says.
 - A passing script is not consistency: the scripts check that things exist, not that they are true. Read both sides of every pair.
 - Check changed claims against live official sources, never against memory: commands, flags, UI paths and versions go stale.
 - Mark what you could not verify as **unverified** and say what it affects.
