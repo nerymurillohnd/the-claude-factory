@@ -62,7 +62,7 @@ Split the results into live uses (to change) and dated history (to leave): old c
 ### 3. Change the live uses
 
 - **Rename**: move the directory with `git mv plugins/<old> plugins/<new>`, then change the live uses: `name` and `homepage` in `plugin.json`, skill names, the README commands and badges, the plugin's key in `scripts/evals-config.json`, its test folder (`git mv scripts/tests/<old> scripts/tests/<new>`) and its mentions in `docs/`.
-- **Merge**: move the components into `plugins/<target>/` and change `<target>` as the `plugin-development` skill says, then delete `plugins/<old>/` as for a removal.
+- **Merge**: move the components into `plugins/<target>/` and change `<target>` as the official docs page of each moved component type says, then delete `plugins/<old>/` as for a removal.
 - **Removal**: delete `plugins/<old>/`, its `scripts/evals-config.json` entry and its `scripts/tests/<old>/` folder, and remove the live uses elsewhere (for example README and `docs/` mentions), so the marketplace generator no longer finds the plugin.
 
 ### 4. Register the change in the marketplace
@@ -78,7 +78,7 @@ Split the results into live uses (to change) and dated history (to leave): old c
 
 ### 5. Version the plugin (rename and merge)
 
-For a removal, skip this step: there is nothing to bump. For a merge, `<target>` gained components: bump it as the `release-and-versioning` skill says, and in its changelog entry tell users of `<old>` which command replaces theirs. Claude Code moves each user's `pluginConfigs` entry of `<old>` to `<target>`: compare the `userConfig` keys of both plugins, and treat a key that `<target>` also declares with another meaning as a breaking change to resolve before the merge. **Unverified:** what Claude Code does when a user has both `<old>` and `<target>` installed. Then go to step 6.
+For a removal, skip this step: there is nothing to bump. For a merge, `<target>` gained components: write its notes under `## [Unreleased]` in `plugins/<target>/CHANGELOG.md` and bump it with `node scripts/bump-version.mjs <target> minor`, because it gained components (from `1.0.0` on, `major` when the merge breaks anything users of `<target>` rely on); in its changelog entry tell users of `<old>` which command replaces theirs. Claude Code moves each user's `pluginConfigs` entry of `<old>` to `<target>`: compare the `userConfig` keys of both plugins, and treat a key that `<target>` also declares with another meaning as a breaking change to resolve before the merge. **Unverified:** what Claude Code does when a user has both `<old>` and `<target>` installed. Then go to step 6.
 
 1. Write the release notes first, under `## [Unreleased]` in `plugins/<new>/CHANGELOG.md`, following Keep a Changelog 2.0.0. Start the entry with `**Breaking:**` and name the old and the new command, in user language. Tell users to run `/plugin install <new>@the-claude-factory` once, because the plugin reports `Plugin "<new>" not cached` until they do, and that an organization that enables the plugin in managed settings must change `enabledPlugins` there. The bump script fails when `[Unreleased]` is empty.
 2. Run `node scripts/bump-version.mjs <new> <minor|major>`: `minor` during `0.x`, `major` from `1.0.0` on. The script turns `[Unreleased]` into the dated section and regenerates the README catalog.
@@ -115,7 +115,7 @@ The version-bump and repo checks read committed changes only (`origin/main...HEA
 4. `node scripts/generators/marketplace.mjs --check`
 5. `node scripts/generators/catalog.mjs --check`
 6. `claude plugin validate --strict .`
-7. If `plugin-consistency` has not run since your last edit and did not invoke you, invoke it now.
+7. Read the renamed or target plugin's `README.md`, `CHANGELOG.md` and `plugin.json` side by side and make them agree with the change: the components, commands, prerequisites and network calls the README states, the Compatibility rows, and the version each file shows. A script passing is not this check.
 
 If any check fails before the push, fix the cause, amend the commit (`git commit -S --amend`) and run all the checks again. After the push, commit the fix as a new signed commit instead: never amend or force-push a pushed commit.
 
@@ -125,10 +125,19 @@ With Nery's authorization only: push the branch and open the PR, applying only t
 
 ### 12. Before any merge or push to `main`
 
-1. List what the merge publishes, as `release-and-versioning` step 8.1 and 8.2 say: the plugins whose version changes, the name that leaves `plugins`, and the versions on `origin/main` that still have no tag. Users receive the rename or removal as soon as the merge lands.
+1. List what the merge publishes: the plugins whose `plugin.json` version differs from `origin/main` (`git diff --name-only origin/main...HEAD -- 'plugins/*/.claude-plugin/plugin.json'`, then compare the versions), the name that leaves `plugins`, and the versions on `origin/main` that still have no tag (`plugin.json` version against `git tag -l '<plugin>--v<version>'`). Users receive the rename or removal as soon as the merge lands.
 2. Show Nery the lists and confirm each change is meant to ship.
 3. If the PR is still open on a later day than the root changelog line, move the line to that day's section now, before the merge, never in a push after the merge.
-4. Rename or merge: install `<new>` (or `<target>`) from the pushed PR branch in a throwaway configuration, as `release-and-versioning` step 8.5 shows, and confirm `plugin list` shows its new version. In the same configuration, `plugin install <old>@the-claude-factory` must fail with `not found in marketplace`.
+4. Rename or merge: install `<new>` (or `<target>`) the way a user without a GitHub SSH key gets it, from the pushed PR branch over HTTPS, in a throwaway configuration that leaves Nery's settings and plugins untouched; make `B` with `mktemp -d` in the session scratchpad:
+   ```bash
+   iso() { local t="$1"; shift; env -u CLAUDE_CODE_PLUGIN_DIRS CLAUDE_CODE_PLUGIN_PREFER_HTTPS=1 CLAUDE_CONFIG_DIR="$t/config" CLAUDE_CODE_PLUGIN_CACHE_DIR="$t/plugins" claude "$@"; }
+   B="$(mktemp -d)"
+   iso "$B" plugin marketplace add nerymurillohnd/the-claude-factory#<branch>
+   iso "$B" plugin install <new>@the-claude-factory
+   iso "$B" plugin list --json
+   iso "$B" plugin install <old>@the-claude-factory
+   ```
+   `plugin list --json` must show the new version, and the last command must fail with `not found in marketplace`. Delete `B` afterwards.
 5. Merge only when Nery orders it.
 
 ### 13. Verify after the merge
@@ -139,7 +148,7 @@ With Nery's authorization only: push the branch and open the PR, applying only t
 4. Rename: print the expected tag with `node scripts/release-notes.mjs <new> --tag`, then confirm it exists with `gh release view <new>--v<version>`.
 5. Confirm the old name's last tag and GitHub Release still exist: `gh release view <old>--v<last version>`. For a removal, no new tag is expected.
 6. Confirm no other plugin was tagged by the same run unless intended.
-7. Rename or merge: repeat the isolated install from `nerymurillohnd/the-claude-factory#main`. Removal: in that throwaway configuration, `plugin install <old>@the-claude-factory` must fail, because `<old>` is no longer in `plugins`.
+7. Repeat step 12.4 with `#main` in place of `#<branch>`: for a rename or merge, `plugin list --json` shows the new version of `<new>` (or `<target>`); in every case, installing `<old>` fails, because `<old>` is no longer in `plugins`.
 8. Report to Nery: what users receive, the new tag and release exist (rename or merge), the old ones are intact, and nothing unintended was tagged.
 
 ### 14. Recover from a failed Validate

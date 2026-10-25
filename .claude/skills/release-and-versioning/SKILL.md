@@ -7,7 +7,7 @@ description: Use when a plugin of this marketplace is published for the first ti
 
 ## Scope
 
-Follow this procedure whenever a plugin is published for the first time or changes in `the-claude-factory`, to decide whether it needs a version bump and to carry the change through release. For a plugin rename, removal or merge into another plugin, follow the `plugin-renames-and-removals` skill instead; it is a complete procedure on its own.
+Follow this procedure whenever a plugin is published for the first time or changes in `the-claude-factory`, to decide whether it needs a version bump and to carry the change through release. Renaming, removing or merging a plugin is outside this procedure.
 
 Run every command from the repository root. All paths are relative to it:
 - Plugin manifest (holds the version): `plugins/<plugin>/.claude-plugin/plugin.json`
@@ -40,7 +40,7 @@ This marketplace is a GitHub repository, and each plugin is a relative-path entr
 7. Never run `gh workflow run release.yml` while the Validate workflow is failing.
 8. The plugin PR carries the release: the bump, the changelog entries and the regenerated catalog go in that PR as one signed commit, beside the PR's other commits. Nothing is committed for the release after the merge.
 9. Push, open a PR or merge only when Nery authorizes it. Merge only with all CI checks green, all review comments resolved and a `github-operations:pr-tracker` report with no issues.
-10. A published plugin's `name` is permanent. Choose a new plugin's name to keep: kebab-case, and never a key of `renames`. Changing it later follows `plugin-renames-and-removals`.
+10. A published plugin's `name` is permanent. Choose a new plugin's name to keep: kebab-case, and never a key of `renames`. Changing it later is a rename, outside this procedure.
 11. When another plugin of this marketplace declares a version range on the changed plugin in its `dependencies`, the new version must still satisfy that range, or the dependent plugin gets its own change. Today no plugin declares `dependencies`: check with `jq '.dependencies // empty' plugins/*/.claude-plugin/plugin.json`.
 
 ## Procedure
@@ -99,13 +99,13 @@ The first two checks read committed changes only (`origin/main...HEAD`), so run 
 5. `claude plugin validate --strict plugins/<plugin>` for each changed plugin, then `claude plugin validate --strict .` for the marketplace.
 6. `git lfs ls-files -- plugins/<plugin>` prints nothing: a git clone never downloads LFS content, so an LFS file reaches users as a pointer file (`/en/plugins/host-marketplace`, "Keep plugin files out of Git LFS").
 7. `find plugins/<plugin> -type l` lists every symlink, and each must resolve inside `plugins/<plugin>/`: a link elsewhere in the repository is copied as its target's content, and a link outside it is skipped without a warning (`/en/plugins/host-marketplace`, "Share files within a marketplace with symlinks").
-8. If `plugin-consistency` has not run since your last edit and did not invoke you, invoke it now.
+8. Read the changed plugin's `README.md`, `CHANGELOG.md` and `plugin.json` side by side and make them agree with the change: the components, commands, prerequisites and network calls the README states, the Compatibility rows, and the version each file shows. A script passing is not this check.
 
 If any check fails before the push, fix the cause, amend the commit (`git commit -S --amend`) and run all the checks again. After the push, commit the fix as a new signed commit instead: never amend or force-push a pushed commit.
 
 ### 7. Push and open the PR
 
-With Nery's authorization only: push the branch and open the PR (`github-workflow` step 5), applying only the labels the repository already has.
+With Nery's authorization only: push the branch and open the PR, applying only the labels the repository already has.
 
 ### 8. Before any merge or push to `main`
 
@@ -150,13 +150,3 @@ With Nery's authorization only: push the branch and open the PR (`github-workflo
 3. The next green push of `main` tags everything still untagged, the earlier version included, so the fix's merge releases it without a manual run.
 4. Run `gh workflow run release.yml` only when Validate passed and no release run exists, and only after Nery says so: it tags and publishes.
 5. An instruction like "súbelo ya" with a failed Validate does not skip steps 1 to 4.
-
-## Hand-offs
-
-| When | Invoke with the Skill tool |
-| :-- | :-- |
-| The change renames, removes or merges a plugin | `plugin-renames-and-removals`, instead of this skill |
-| Step 6 is done and the PR is still open | Nothing if `plugin-consistency`, `plugin-development` or `github-workflow` invoked you: hand back. Loaded alone, `github-workflow`, which owns the push, the PR and the merge (steps 7 and 8 here) |
-| The release is verified or recovered (steps 9 and 10) | `github-workflow`, which closes the fixed issues (its step 8) |
-
-A skill you invoke hands back to you when it ends: continue at your next step. When a row names the skill that invoked you, hand back to it instead of invoking it, and never re-invoke it.
