@@ -97,7 +97,7 @@ Loop until nothing is left:
 
 ### 7. Ready to merge
 
-Tell Nery what the PR changed, the state of every job and review, and anything you did not verify, then wait for his green light. If the PR is still open on a later day than its root `CHANGELOG.md` line, move the line first (`release-and-versioning`, Gotchas). The merge is his; you learn of it from him or from `gh pr view <n> --json mergedAt`. After it, invoke `release-and-versioning` for its steps 5 and 6 to confirm the tag and the release; it hands back here.
+Tell Nery what the PR changed, the state of every job and review, and anything you did not verify, then wait for his green light. If the PR is still open on a later day than its root `CHANGELOG.md` line, move the line first (`release-and-versioning` step 8). The merge is his; you learn of it from him or from `gh pr view <n> --json mergedAt`. After it, invoke `release-and-versioning` for its steps 9 and 10 to confirm the tag and the release; it hands back here.
 
 ### 8. Close out
 

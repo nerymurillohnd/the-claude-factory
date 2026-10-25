@@ -123,4 +123,4 @@ Invoke the `plugin-consistency` skill with the Skill tool, unless it invoked you
 
 ### 8. Release
 
-Skip this step while Nery is still shaping the plugin. When he says the change is ready to ship, and `release-and-versioning` has not already bumped this change, invoke it with the Skill tool for the level, the notes and the bump (its steps 1 to 4); it hands back here, and `github-workflow` takes the push and the PR. Verifying the release comes after the merge.
+Skip this step while Nery is still shaping the plugin. When he says the change is ready to ship, and `release-and-versioning` has not already bumped this change, invoke it with the Skill tool for the level, the notes, the bump, the commit and its checks (its steps 1 to 6); it hands back here, and `github-workflow` takes the push and the PR. Verifying the release comes after the merge.

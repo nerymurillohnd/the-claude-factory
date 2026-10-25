@@ -3,90 +3,126 @@ name: release-and-versioning
 description: Use to choose a plugin's version bump or confirm its tag and release after a merge.
 ---
 
-# Release and versioning
+# Versioning and Releases
 
-A plugin reaches users only through a version: `plugin.json` holds it, the changelog tells its story, and `release.yml` turns it into a tag and a GitHub Release after the merge. The marketplace itself has no version and no tag. This skill covers choosing the bump, rolling the changelog and confirming the release after the merge; a rename or removal follows `plugin-renames-and-removals`.
+## Scope
 
-## Role
+Follow this procedure whenever a plugin changes in `the-claude-factory`, to decide whether it needs a version bump and to carry the change through release. For a plugin rename, removal or merge into another plugin, follow the `plugin-renames-and-removals` skill instead; it is a complete procedure on its own.
 
-Act as the release manager who answers for what users receive. You choose the bump from what changed for the user, you let the scripts and workflows do the mechanical work, and you confirm the result with evidence instead of assuming the pipeline ran.
+Run every command from the repository root. All paths are relative to it:
+- Plugin manifest (holds the version): `plugins/<plugin>/.claude-plugin/plugin.json`
+- Plugin changelog: `plugins/<plugin>/CHANGELOG.md`
+- Plugin README: `plugins/<plugin>/README.md`
+- Root changelog: `CHANGELOG.md`
+- Marketplace file: `.claude-plugin/marketplace.json`
+
+## Why this matters
+
+Claude Code treats a plugin's `version` in `plugin.json` as a pin. Users stay on that version until it changes, so commits pushed without a bump never reach them. Claude Code does not check the value against SemVer; SemVer is this project's convention (`/en/plugins/manifest-reference`, "version").
 
 ## Rules
 
-- The plugin PR carries the release: the bump from `bump-version.mjs`, the notes under the new version, and the root `CHANGELOG.md` line. There is no separate release commit.
-- Bump with `bump-version.mjs`, never by hand: it also rolls the changelog and regenerates the README catalog, and a hand edit leaves them out of step.
-- A change limited to a plugin's `README.md` needs no bump; any other change inside the plugin does, a `CHANGELOG.md`-only edit included (`check-version-bump.mjs` treats only `README.md` as documentation).
-- Stay in `0.x` while a plugin is new. Going to `1.0.0` is Nery's declaration that the interface is stable; never take that step yourself.
-- Never tag by hand. `release.yml` tags after Validate succeeds on `main`.
+1. Version plugins only. Never add a version or a tag to `.claude-plugin/marketplace.json`.
+2. Use SemVer (`MAJOR.MINOR.PATCH`) and choose the bump by user-facing impact.
+3. Apply every bump with `node scripts/bump-version.mjs <plugin> <major|minor|patch>`, never by hand. The script also turns `[Unreleased]` into the dated section with its link references and regenerates the README catalog; a hand edit leaves them out of step.
+4. A `0.x` version makes no interface-stability promise; `1.0.0` does. Stay in `0.x` while a plugin is new. Never promote a plugin to `1.0.0` without Nery's explicit authorization.
+5. Never tag by hand. `release.yml` creates the tags (format `<plugin>--v<version>`) after Validate succeeds on `main`, and it tags every plugin whose `plugin.json` version has no tag yet, not only the one you changed.
+6. Never push or merge to `main` without first listing the untagged plugins and confirming with Nery that each is meant to ship (step 8).
+7. Never run `gh workflow run release.yml` while the Validate workflow is failing.
+8. The plugin PR carries the release: the bump, the changelog entries and the regenerated catalog go in that PR as one signed commit, beside the PR's other commits. Nothing is committed for the release after the merge.
+9. Push, open a PR or merge only when Nery authorizes it. Merge only with all CI checks green, all review comments resolved and a `github-operations:pr-tracker` report with no issues.
 
-## Gotchas
+## Procedure
 
-- `release.yml` tags every plugin in `marketplace.json` whose current version has no tag yet, not only the one you changed. A push of `main` can therefore publish a plugin that is not ready: list the untagged plugins (each `plugin.json` version against `git tag -l '<plugin>--v<version>'`) and ask Nery before any push of `main`.
-- The release run starts only from a Validate run that succeeded on a `push` to `main`. If Validate failed, nothing is tagged; the next green push of `main` then tags everything still untagged, the earlier version included, so the fix's merge releases it without any manual run.
-- `bump-version.mjs` fails when `[Unreleased]` is empty, and it refuses `marketplace`: the marketplace has no version, so a marketplace-level change is one line, `- summary.`, under today's date and its change type in the root `CHANGELOG.md`.
-- The tag is `<plugin>--v<version>`. Print it with `node scripts/release-notes.mjs <plugin> --tag` instead of composing it, and the same script prints the notes the release will carry.
-- In `0.x` a breaking change bumps the minor, not the major, and its changelog entry keeps `**Breaking:**`. From `1.0.0` on, breaking means major.
-- The root `CHANGELOG.md` is a summary grouped by date, newest first, then by change type (`### Added`, `### Changed`, `### Fixed`, `### Removed`), one line per event in the format `.claude/CLAUDE.md` → Plugin Documentation and Changelogs → Root CHANGELOG.md gives it; a launch or a version bump reads `- **plugin-name** 1.2.0 — one-line summary.` Create the `## YYYY-MM-DD` heading and the change-type heading when they are missing, and put the line under today's date; if the PR is still open on a later day, move the line before Nery merges, never in a push after the merge.
+### 1. Choose the bump level
+
+Read the diff (`git diff origin/main...HEAD`) and choose the level by what changes for the user. When one PR mixes levels, take the highest for each affected plugin.
+
+| Bump | When |
+| :-- | :-- |
+| **major** | Breaking: a removed or renamed skill, agent or command; changed configuration keys; a new mandatory dependency; a change to behavior users rely on |
+| **minor** | A new component, option or capability, backward compatible |
+| **patch** | A backward-compatible bug fix, prompt wording improvement, performance improvement or internal refactor with the same behavior |
+
+- During `0.x`, a breaking change bumps **minor**, not major, and its changelog entry starts with `**Breaking:**`.
+- From `1.0.0` on, a breaking change bumps **major**.
+- If a plugin's changes are limited to its own `README.md`, it needs no bump: skip steps 2 and 3 for that plugin. Every other change requires a bump, a `CHANGELOG.md`-only change included.
+- If the PR changes only `.claude-plugin/marketplace.json` (no plugin), no bump applies: skip steps 2 and 3 and write the marketplace line in step 4.
+
+### 2. Write the plugin release notes
+
+1. Write them before the bump: they become the changelog section the bump creates. The bump script fails when `[Unreleased]` is empty.
+2. Put them under `## [Unreleased]` in `plugins/<plugin>/CHANGELOG.md`, following Keep a Changelog 2.0.0 (change types `### Added`, `### Changed`, `### Deprecated`, `### Removed`, `### Fixed`, `### Security`).
+3. Record every user-visible change in detail, in user language (what changes for the user, not how). Reference issues as `(#12)`.
+4. Start a breaking entry with `**Breaking:**`, inside its change type.
+5. Check the notes against the diff: every change appears and nothing that did not happen does.
+
+### 3. Apply the bump
+
+1. If `plugin.json` already holds a version above the one in `origin/main` (the PR already carries this change's bump), skip this step.
+2. Otherwise run `node scripts/bump-version.mjs <plugin> <major|minor|patch>`. It refuses `marketplace`: the marketplace has no version.
+3. Read its output line (`<plugin>: <old> → <new>`) and confirm the new version is the one you intended.
+
+### 4. Add the root changelog line
+
+1. Add a line in `CHANGELOG.md` (root) when the change is a version bump, a launch or a marketplace-level change.
+2. The root changelog is a summary, never a copy of a plugin changelog. Its structure: `## YYYY-MM-DD` headings, newest first; under each, change-type headings (`### Added`, `### Changed`, `### Fixed`, `### Removed`); under each, one line per event. Create the date heading and the change-type heading if they are missing.
+3. Put the line under today's date and the matching change type:
+   - Version bump or launch: `- **<plugin>** X.Y.Z — one-line summary.`
+   - Marketplace-level change: `- summary.` (no plugin name, no version)
+
+### 5. Commit
+
+1. Commit as one signed commit (`git commit -S`): the bump, the plugin changelog entry, the root changelog line and the regenerated catalog. The catalog is regenerated by the bump script; when step 3 was skipped or only the marketplace changed, run `node scripts/generators/catalog.mjs`.
+2. The commit message says what changed and why.
+
+### 6. Run the checks and show their raw output
+
+The first two checks read committed changes only (`origin/main...HEAD`), so run them after the commit in step 5.
+
+1. `git fetch origin main`
+2. `node scripts/check-version-bump.mjs origin/main`
+3. `node scripts/check-repo.mjs`
+4. `node scripts/generators/catalog.mjs --check`
+5. If `plugin-consistency` has not run since your last edit and did not invoke you, invoke it now.
+
+If any check fails before the push, fix the cause, amend the commit (`git commit -S --amend`) and run all the checks again. After the push, commit the fix as a new signed commit instead: never amend or force-push a pushed commit.
+
+### 7. Push and open the PR
+
+With Nery's authorization only: push the branch and open the PR (`github-workflow` step 5), applying only the labels the repository already has.
+
+### 8. Before any merge or push to `main`
+
+1. List the untagged plugins: for each plugin, compare the version in `plugin.json` with `git tag -l '<plugin>--v<version>'`. A plugin with no matching tag is untagged.
+2. Show Nery the list and confirm each untagged plugin is meant to ship. A plugin that is not ready would be published by the next green push of `main`.
+3. If the PR is still open on a later day than the root changelog line, move the line to that day's section now, before the merge, never in a push after the merge.
+4. Merge only when Nery orders it.
+
+### 9. Verify the release after the merge
+
+1. Take the merge commit's SHA: `gh pr view <n> --json mergeCommit`.
+2. Wait until `gh run list --workflow validate.yml --commit <sha>` shows the run completed.
+3. Read the release run: `gh run list --workflow release.yml --commit <sha>`. The release run starts only from a Validate run that succeeded on a `push` to `main`. No run while Validate is still running is not a failure. A missing run after Validate succeeded is unexplained: read the trigger in `release.yml` before running anything.
+4. Print the expected tag with `node scripts/release-notes.mjs <plugin> --tag` (never compose it by hand; the same script prints the notes the release will carry).
+5. Confirm the tag and the GitHub Release exist: `gh release view <plugin>--v<version>`, and that the tag matches step 4.
+6. Confirm no other plugin was tagged by the same run unless intended: `gh run view <run-id> --log | grep -oE 'Released [a-z0-9-]+--v[0-9.]+'` lists every tag that run published.
+7. Report to Nery: the tag and release exist and match, and nothing unintended was tagged.
+
+### 10. Recover from a failed Validate
+
+1. If Validate failed on `main`, nothing is tagged.
+2. Fix the cause first, in a new PR.
+3. The next green push of `main` tags everything still untagged, the earlier version included, so the fix's merge releases it without a manual run.
+4. Run `gh workflow run release.yml` only when Validate passed and no release run exists, and only after Nery says so: it tags and publishes.
+5. An instruction like "súbelo ya" with a failed Validate does not skip steps 1 to 4.
 
 ## Hand-offs
 
 | When | Invoke with the Skill tool |
 | :-- | :-- |
-| The change renames or removes a plugin (step 4) | `plugin-renames-and-removals` |
-| You finished step 3 and `plugin-consistency` has not run since the last edit | `plugin-consistency`: the bump rewrote `plugin.json`, the changelog and the README catalog |
-| Step 4 is done and the PR is still open | Nothing if `plugin-consistency`, `plugin-development` or `github-workflow` invoked you: hand back. Loaded alone, `github-workflow`, which owns the push, the PR and the merge |
-| The release is verified or recovered (steps 5 and 6) | `github-workflow`, which closes the fixed issues (its step 8) |
+| The change renames, removes or merges a plugin | `plugin-renames-and-removals`, instead of this skill |
+| Step 6 is done and the PR is still open | Nothing if `plugin-consistency`, `plugin-development` or `github-workflow` invoked you: hand back. Loaded alone, `github-workflow`, which owns the push, the PR and the merge (steps 7 and 8 here) |
+| The release is verified or recovered (steps 9 and 10) | `github-workflow`, which closes the fixed issues (its step 8) |
 
 A skill you invoke hands back to you when it ends: continue at your next step. When a row names the skill that invoked you, hand back to it instead of invoking it, and never re-invoke it.
-
-## Workflow
-
-Tick each step as you finish it. Steps 1 to 4 happen in the plugin's PR; then `github-workflow` pushes and stops at ready to merge, and the merge is Nery's, never yours. Steps 5 and 6 come after the merge.
-
-Progress:
-- [ ] 1. **Level**: the bump the change deserves.
-- [ ] 2. **Notes**: `[Unreleased]` complete, in user language.
-- [ ] 3. **Bump**: the script, then the root changelog line.
-- [ ] 4. **Renames**: `renames` for a rename or removal.
-- [ ] 5. **Verify**: after the merge, the release run, the tag and the GitHub Release.
-- [ ] 6. **Recover**: if Validate or the release failed.
-
-## Step details
-
-### 1. Level
-
-Read the diff and pick the bump from what changes for the user:
-
-| Bump | When |
-| :-- | :-- |
-| **major** | Breaking: a removed or renamed skill, agent or command; changed config keys; a new required dependency; a change to behavior users rely on |
-| **minor** | A new component, option or capability, backwards compatible |
-| **patch** | A bug fix, prompt wording fix, performance gain or internal refactor with the same behavior |
-
-In `0.x`, apply the table with major read as minor. When one PR mixes levels, take the highest.
-
-### 2. Notes
-
-The release notes are the changelog section the bump creates, so write them first. Follow Keep a Changelog 2.0.0. Each plugin changelog tells that plugin's full story, so under `## [Unreleased]` record every user-visible change in detail, in user language (what changed for the user, not how), reference issues as `(#12)`, and lead a breaking entry with `**Breaking:**` inside its change type. The root `CHANGELOG.md` is only a summary, never a copy of a plugin changelog. Check it against the diff: every change appears and nothing that did not happen does.
-
-### 3. Bump
-
-Skip the script when the PR already carries this change's bump (`plugin.json` holds a version above `origin/main`'s). Otherwise run `node scripts/bump-version.mjs <plugin> <major|minor|patch>`. It rewrites `plugin.json`, turns `[Unreleased]` into the dated section with its link references, and regenerates the README catalog. Read its output line (`<plugin>: <old> → <new>`). Then add the root `CHANGELOG.md` line when the change is a version bump, a launch, a rename or a removal. Run `node scripts/check-version-bump.mjs origin/main`, `node scripts/check-repo.mjs` and `node scripts/generators/catalog.mjs --check`, and show their output. Commit the bump, the plugin and root changelog entries and the catalog as one signed commit, because the first two read committed changes only (`origin/main...HEAD`). If `plugin-consistency` has not run since your last edit and did not invoke you, invoke it now.
-
-### 4. Renames
-
-A rename or removal reaches users only through `renames`, which makes Claude Code migrate existing installs instead of reporting the plugin as not found (`/en/plugins/host-marketplace`, "Migrate users with a renames map"). Never do one silently.
-
-When the change renames or removes a plugin, invoke the `plugin-renames-and-removals` skill and follow it; otherwise skip this step.
-
-### 5. Verify
-
-Right after Nery's merge:
-
-1. Take the merge commit's SHA (`gh pr view <n> --json mergeCommit`). Wait until `gh run list --workflow validate.yml --commit <sha>` shows it completed. Then `gh run list --workflow release.yml --commit <sha>` reads the release run that follows; no run yet while Validate is still running is not a failure, and once Validate has succeeded a missing run is unexplained, so read the trigger in `release.yml` before running anything.
-2. `gh release view <plugin>--v<version>` confirms the tag and the GitHub Release exist. Compare the tag with the one `release-notes.mjs <plugin> --tag` prints.
-3. Confirm that no other plugin was tagged by the same run unless you meant it: `gh release list --limit 5`.
-
-### 6. Recover
-
-If Validate failed, fix the cause first in a new PR. Run `gh workflow run release.yml` only when Validate passed and no release run exists, and only after Nery says so: it tags and publishes. An instruction like "súbelo ya" with a failed Validate does not skip this; fix the cause, since the next green push tags by itself. Once the release is verified, hand back to `github-workflow` (its step 8). A recovery PR starts a new `github-workflow` run at its step 4.
