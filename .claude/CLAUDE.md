@@ -13,7 +13,7 @@ This project also follows the guidelines and way of working in `~/.claude/CLAUDE
 
 This marketplace is public, and what we publish runs on other people's machines, inside their projects and operations. Nery is its owner and author and answers personally for any harm a plugin causes a user, however small.
 
-- Nery and Claude Code are the only two parties responsible for this marketplace, and the only ones who work on it. There are no outside collaborators, and pull requests from users are not accepted.
+- Nery and Claude Code are the only two parties responsible for this marketplace, and the only ones who work on it. There are no outside collaborators.
 - Users take part only through issues. Triaging, confirming, fixing, verifying and releasing the fix for every issue is Nery's and Claude Code's work, never the reporter's.
 - No third-party team reviews our work before users install it, so every push, release and issue reply is the last check before the public.
 
@@ -42,7 +42,6 @@ This repository holds two scopes. They are never mixed: a rule written for one s
 | **What it is** | Everything outside `plugins/`: `scripts/`, the root `package.json`, `.claude/`, `docs/`, the root `CHANGELOG.md`, `.claude-plugin/marketplace.json` | One self-contained directory per plugin under `plugins/<plugin>/` |
 | **Who it serves** | Nery and Claude Code | Third parties whose setups are unknown |
 | **Environment** | The tools, versions and binaries on Nery's machine | Only what the plugin's `README.md` declares as prerequisites |
-| **Changes** | Pull request required only for `scripts/`; otherwise none | Pull request always |
 | **Versioning** | None | Semantic Versioning per plugin |
 
 Rules that keep the scopes apart:
@@ -50,7 +49,7 @@ Rules that keep the scopes apart:
 - Before acting, identify the scope of every file the task touches. A task that touches both is handled as two parts, each under its own rules.
 - `scripts/` (maintainer) and any scripts inside `plugins/<plugin>/` (plugin) are different things. A script inside a plugin follows the plugin rules: portable, declared prerequisites, shebang and executable bit.
 - Maintainer tools may be run over plugin files to check them. That never makes them a dependency of the plugin, and a plugin never assumes them.
-- Never copy a maintainer-side path, tool or version into a plugin, and never apply a plugin-side constraint (versioning, portability limits, PR requirement) to a maintainer file unless a rule below says so.
+- Never copy a maintainer-side path, tool or version into a plugin, and never apply a plugin-side constraint (versioning, portability limits) to a maintainer file unless a rule below says so.
 
 ### Maintainer Tooling
 
@@ -230,7 +229,7 @@ Every plugin directory holds these files. `scripts/validators/plugin-required-fi
   - a plugin gets a version bump, a patch included;
   - a plugin is renamed or removed;
   - the marketplace itself changes, for example the catalog gains a category.
-- Group the lines under `## YYYY-MM-DD`, newest first, then under the Keep a Changelog change type: `### Added`, `### Changed`, `### Fixed`, `### Removed`. Use the date the change lands on `main`. If the PR is still open on a later day, move the line to that day's section before the merge.
+- Group the lines under `## YYYY-MM-DD`, newest first, then under the Keep a Changelog change type: `### Added`, `### Changed`, `### Fixed`, `### Removed`. Use the date the change lands on `main`.
 - Write each line in the format of its event:
   - New plugin, under `### Added`: `- **<plugin>** X.Y.Z — summary.`
   - Version bump, under the change type of the change: `- **<plugin>** X.Y.Z — summary.`
@@ -264,11 +263,8 @@ Every plugin directory holds these files. `scripts/validators/plugin-required-fi
 
 ## Change Control
 
-- Changes to plugin components or dependencies **require a pull request**.
-- Any change inside a plugin's directory, including a `README.md`-only change, goes through a pull request. A `README.md`-only change does not require a version bump (see the `release-and-versioning` skill).
-- Changes to `scripts/` **require a pull request**: they decide what is published and nobody reviews them afterwards.
-- Changes to documentation and maintainer files outside plugins and `scripts/` **do not require a pull request**.
-- Pull requests are opened only with Nery's explicit authorization.
-- Pushes, to any branch and including tags, are made only with Nery's explicit authorization. This holds for changes that need no pull request.
+- Every change inside a plugin's directory, its components, dependencies and a `README.md`-only change included, goes through a pull request. A `README.md`-only change does not require a version bump (see the `release-and-versioning` skill).
+- Every change outside `plugins/` does not require a pull request.
+- Pushes, to any branch and including tags, are made only with Nery's explicit authorization.
 - Release tags (`<plugin>--v<version>`) are created unsigned by `release.yml`, under the exemption `~/.claude/CLAUDE.md` gives public plugin marketplaces: users never fetch a tag, and signing in CI would put the signing key in a GitHub secret. Every commit, and every tag created locally, is still SSH-signed.
-- Every pull request, issue and any other item that takes labels uses only the labels already established in the repository. The one label created is `plugin: <name>`, for a new or renamed plugin, on Nery's order; the labels of retired plugins stay.
+- Every item that takes labels, issues included, uses only the labels already established in the repository. The one label created is `plugin: <name>`, for a new or renamed plugin, on Nery's order; the labels of retired plugins stay.
