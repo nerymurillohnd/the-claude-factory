@@ -1,6 +1,6 @@
 ---
 name: plugin-renames-and-removals
-description: Use when a plugin of this marketplace is to be renamed or removed, before changing its name, its directory or its marketplace entry.
+description: Use when a plugin of this marketplace is to be renamed, merged into another plugin, removed, retired or deprecated, before changing its name, its directory or its marketplace entry.
 ---
 
 # Renaming or Removing a Plugin
@@ -10,6 +10,8 @@ description: Use when a plugin of this marketplace is to be renamed or removed, 
 Follow this procedure only when a plugin is renamed or removed in `the-claude-factory`. It is complete on its own: it covers the change, the marketplace entry, the version, the changelogs, the checks, the PR and the release verification. Never rename or remove a plugin silently.
 
 To change only the label users see in `/plugin`, set `displayName` in `plugin.json` and keep `name`: that is not a rename, and this procedure does not apply.
+
+Claude Code has no deprecation state. Deprecating, withdrawing or retiring a plugin is a removal: remove the entry, map the name to `null` in `renames`, and decide on `forceRemoveDeletedPlugins` (`/en/plugins/host-marketplace`, "Work around what a marketplace can't do").
 
 Run every command from the repository root. All paths are relative to it:
 - Plugins live in `plugins/<plugin>/`; the manifest is `plugins/<plugin>/.claude-plugin/plugin.json`.
@@ -26,6 +28,8 @@ After the push, a user who still has the old name enabled sees one of these resu
 - **Removal** (`"<old>": null`): the old key is dropped from those scopes and the user sees `Removed from the "the-claude-factory" marketplace`.
 - **Enabled in managed settings**: Claude Code cannot rewrite managed settings, so the notice recurs until an admin updates `enabledPlugins` there.
 
+`renames` migrates only existing installs. A new install by the old name fails: `claude plugin install git-hygiene@the-claude-factory` printed `Plugin "git-hygiene" not found in marketplace "the-claude-factory"` on 2026-10-25, though `git-hygiene` maps to `github-operations`. Every README, doc and template that names the old plugin or its commands changes in the same PR.
+
 ## Rules
 
 1. Register every rename or removal in the `renames` map. The map is append-only: add one entry per rename or removal, and never edit or delete an existing entry.
@@ -35,9 +39,9 @@ After the push, a user who still has the old name enabled sees one of these resu
 5. Never promote a plugin to `1.0.0` without Nery's explicit authorization. In `0.x` a breaking change bumps the minor; from `1.0.0` on it bumps the major.
 6. Never tag by hand. `release.yml` creates the tags (format `<plugin>--v<version>`) after Validate succeeds on `main`, and it tags every plugin whose `plugin.json` version has no tag yet, not only the one you changed.
 7. Never delete or move the old tag or its GitHub Release; they stay as history. The new name gets its own tag at release.
-8. Never push or merge to `main` without first listing the untagged plugins and confirming with Nery (step 12). Never run `gh workflow run release.yml` while Validate is failing.
+8. Never merge a PR or push to `main` without listing what it publishes and confirming with Nery (step 12). Never run `gh workflow run release.yml` while Validate is failing.
 9. Do not write GitHub labels until Nery orders it.
-10. Push, open a PR or merge only when Nery authorizes it. Merge only with all CI checks green and all review comments resolved.
+10. Push, open a PR or merge only when Nery authorizes it. Merge only with all CI checks green, all review comments resolved and a `github-operations:pr-tracker` report with no issues.
 11. Never reuse a retired name: `node scripts/new-plugin.mjs` refuses any name that is a key of `renames`.
 
 ## Procedure
@@ -74,7 +78,7 @@ Split the results into live uses (to change) and dated history (to leave): old c
 
 ### 5. Version the plugin (rename and merge)
 
-For a removal, skip this step: there is nothing to bump. For a merge, `<target>` gained components: bump it as the `release-and-versioning` skill says, and in its changelog entry tell users of `<old>` which command replaces theirs. Then go to step 6.
+For a removal, skip this step: there is nothing to bump. For a merge, `<target>` gained components: bump it as the `release-and-versioning` skill says, and in its changelog entry tell users of `<old>` which command replaces theirs. Claude Code moves each user's `pluginConfigs` entry of `<old>` to `<target>`: compare the `userConfig` keys of both plugins, and treat a key that `<target>` also declares with another meaning as a breaking change to resolve before the merge. **Unverified:** what Claude Code does when a user has both `<old>` and `<target>` installed. Then go to step 6.
 
 1. Write the release notes first, under `## [Unreleased]` in `plugins/<new>/CHANGELOG.md`, following Keep a Changelog 2.0.0. Start the entry with `**Breaking:**` and name the old and the new command, in user language. Tell users to run `/plugin install <new>@the-claude-factory` once, because the plugin reports `Plugin "<new>" not cached` until they do, and that an organization that enables the plugin in managed settings must change `enabledPlugins` there. The bump script fails when `[Unreleased]` is empty.
 2. Run `node scripts/bump-version.mjs <new> <minor|major>`: `minor` during `0.x`, `major` from `1.0.0` on. The script turns `[Unreleased]` into the dated section and regenerates the README catalog.
@@ -95,7 +99,7 @@ Run `node scripts/generators/catalog.mjs`. A removal needs it explicitly; for a 
 ### 8. Check the GitHub label and installed copies
 
 1. Run `node scripts/sync-labels.mjs --dry-run`. A rename needs a `plugin: <new>` label, as a new plugin does; the `plugin: <old>` label stays, as the labels of retired plugins do. Tell Nery what the dry run shows. Do not write labels until he orders it.
-2. Removal: tell Nery that `.claude-plugin/marketplace.json` does not set `forceRemoveDeletedPlugins`. The `null` entry drops the old key from users' settings, but the docs do not say that it deletes the installed copy. With `"forceRemoveDeletedPlugins": true`, Claude Code uninstalls at each session start every plugin that is neither listed in `plugins` nor in `renames`, from the user, project and local scopes, and lists it under **Flagged** in `/plugin` as `Removed from marketplace`; plugins installed only by managed settings stay. Setting it is his decision.
+2. Removal: tell Nery that `.claude-plugin/marketplace.json` does not set `forceRemoveDeletedPlugins`. The `null` entry drops the old key from users' settings, but the docs do not say that it deletes the installed copy. With `"forceRemoveDeletedPlugins": true`, Claude Code uninstalls at each session start every plugin that is neither listed in `plugins` nor in `renames`, from the user, project and local scopes, and lists it under **Flagged** in `/plugin` as `Removed from marketplace`; plugins installed only by managed settings stay. A plugin that stays installed also keeps on the user's machine its data directory and the options and secrets saved for it, which an uninstall deletes (`/en/plugins/cli-reference`, "What an uninstall deletes and keeps"); say so when the plugin declares `userConfig` or writes to `${CLAUDE_PLUGIN_DATA}`. Setting the field is his decision, and it applies to every later removal too.
 
 ### 9. Commit
 
@@ -113,7 +117,7 @@ The version-bump and repo checks read committed changes only (`origin/main...HEA
 6. `claude plugin validate --strict .`
 7. If `plugin-consistency` has not run since your last edit and did not invoke you, invoke it now.
 
-If any check fails, fix the cause, amend the commit (`git commit -S --amend`) and run all the checks again.
+If any check fails before the push, fix the cause, amend the commit (`git commit -S --amend`) and run all the checks again. After the push, commit the fix as a new signed commit instead: never amend or force-push a pushed commit.
 
 ### 11. Push and open the PR
 
@@ -121,10 +125,10 @@ With Nery's authorization only: push the branch and open the PR, applying only t
 
 ### 12. Before any merge or push to `main`
 
-1. List the untagged plugins: for each plugin, compare the version in `plugin.json` with `git tag -l '<plugin>--v<version>'`. A plugin with no matching tag is untagged.
-2. Show Nery the list and confirm each is meant to ship; the next green push of `main` publishes every one of them.
+1. List what the merge publishes, as `release-and-versioning` step 8.1 and 8.2 say: the plugins whose version changes, the name that leaves `plugins`, and the versions on `origin/main` that still have no tag. Users receive the rename or removal as soon as the merge lands.
+2. Show Nery the lists and confirm each change is meant to ship.
 3. If the PR is still open on a later day than the root changelog line, move the line to that day's section now, before the merge, never in a push after the merge.
-4. Rename or merge: install `<new>` (or `<target>`) from the pushed PR branch in a throwaway configuration, as `release-and-versioning` step 8.5 shows, and confirm `plugin list` shows its new version.
+4. Rename or merge: install `<new>` (or `<target>`) from the pushed PR branch in a throwaway configuration, as `release-and-versioning` step 8.5 shows, and confirm `plugin list` shows its new version. In the same configuration, `plugin install <old>@the-claude-factory` must fail with `not found in marketplace`.
 5. Merge only when Nery orders it.
 
 ### 13. Verify after the merge
@@ -133,10 +137,10 @@ With Nery's authorization only: push the branch and open the PR, applying only t
 2. Wait until `gh run list --workflow validate.yml --commit <sha>` shows the run completed.
 3. Read the release run: `gh run list --workflow release.yml --commit <sha>`. It starts only from a Validate run that succeeded on a `push` to `main`. No run while Validate is still running is not a failure. A missing run after Validate succeeded is unexplained: read the trigger in `release.yml` before running anything.
 4. Rename: print the expected tag with `node scripts/release-notes.mjs <new> --tag`, then confirm it exists with `gh release view <new>--v<version>`.
-5. Confirm the old tag and its GitHub Release still exist unchanged: `gh release list --limit 10`. For a removal, no new tag is expected.
+5. Confirm the old name's last tag and GitHub Release still exist: `gh release view <old>--v<last version>`. For a removal, no new tag is expected.
 6. Confirm no other plugin was tagged by the same run unless intended.
 7. Rename or merge: repeat the isolated install from `nerymurillohnd/the-claude-factory#main`. Removal: in that throwaway configuration, `plugin install <old>@the-claude-factory` must fail, because `<old>` is no longer in `plugins`.
-8. Report to Nery: the tag and release exist (rename), the old ones are intact, nothing unintended was tagged.
+8. Report to Nery: what users receive, the new tag and release exist (rename or merge), the old ones are intact, and nothing unintended was tagged.
 
 ### 14. Recover from a failed Validate
 
