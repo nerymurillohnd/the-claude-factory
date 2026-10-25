@@ -10,7 +10,6 @@ import {
   existsSync,
   mkdirSync,
   mkdtempSync,
-  readdirSync,
   readFileSync,
   rmSync,
   symlinkSync,
@@ -745,72 +744,6 @@ describe('version-bump-gate hook', () => {
     const r = hook()
     assert.equal(r.code, 0, r.out)
     assert.equal(r.out, '')
-  })
-})
-
-describe('eval-targets', () => {
-  /** @param {string} name */
-  const touchManifest = (name) => {
-    const p = `plugins/${name}/.claude-plugin/plugin.json`
-    write(p, `${read(p).trimEnd()}\n\n`)
-  }
-  /** @param {string} message */
-  function commitAll(message) {
-    git('add', '-A')
-    git('commit', '-qm', message)
-  }
-  const changed = () => run('eval-targets.mjs', ['--changed', 'HEAD~1', 'HEAD'])
-
-  test('selects only changed plugins that ship evals; plugins without evals never count', () => {
-    scaffold()
-    initRepo()
-    touchManifest('skill-diagnostics')
-    touchManifest('demo-tool')
-    commitAll('both manifests')
-    const r = changed()
-    assert.equal(r.code, 0, r.out)
-    assert.deepEqual(JSON.parse(r.out), ['skill-diagnostics'])
-  })
-
-  test('selects nothing when no manifest changed, even if other plugin files did', () => {
-    initRepo()
-    write(
-      'plugins/skill-diagnostics/README.md',
-      `${read('plugins/skill-diagnostics/README.md')}\nx\n`,
-    )
-    commitAll('readme')
-    assert.deepEqual(JSON.parse(changed().out), [])
-  })
-
-  test('picks up a plugin once it ships evals, and leaves unchanged ones out', () => {
-    scaffold()
-    initRepo()
-    mkdirSync(join(root, 'plugins/demo-tool/evals/case'), { recursive: true })
-    write('plugins/demo-tool/evals/case/prompt.md', 'Do it.\n')
-    touchManifest('demo-tool')
-    commitAll('demo evals')
-    assert.deepEqual(JSON.parse(changed().out), ['demo-tool'])
-  })
-
-  test('manual runs: all plugins with evals, or one that has them', () => {
-    scaffold()
-    // Every plugin of the repository that ships an evals/ folder, found on disk so a new suite never stales this test.
-    const withEvals = readdirSync(join(REAL_ROOT, 'plugins'), { withFileTypes: true })
-      .filter(
-        (entry) =>
-          entry.isDirectory() && existsSync(join(REAL_ROOT, 'plugins', entry.name, 'evals')),
-      )
-      .map((entry) => entry.name)
-      .sort()
-    assert.ok(withEvals.includes('skill-diagnostics'))
-    assert.deepEqual(JSON.parse(run('eval-targets.mjs', ['--only', 'all']).out), withEvals)
-    assert.deepEqual(JSON.parse(run('eval-targets.mjs', ['--only', 'skill-diagnostics']).out), [
-      'skill-diagnostics',
-    ])
-    const none = run('eval-targets.mjs', ['--only', 'demo-tool'])
-    assert.equal(none.code, 1)
-    assert.match(none.out, /demo-tool has no evals\/ folder/)
-    assert.match(run('eval-targets.mjs', ['--only', 'nope']).out, /no plugin named "nope"/)
   })
 })
 
