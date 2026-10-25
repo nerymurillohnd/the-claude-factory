@@ -61,9 +61,9 @@ Split the results into live uses (to change) and dated history (to leave): old c
 
 ### 3. Change the live uses
 
-- **Rename**: move the directory with `git mv plugins/<old> plugins/<new>`, then change the live uses: `name` and `homepage` in `plugin.json`, skill names, the README commands and badges, the plugin's key in `scripts/evals-config.json`, its test folder (`git mv scripts/tests/<old> scripts/tests/<new>`) and its mentions in `docs/`.
+- **Rename**: move the directory with `git mv plugins/<old> plugins/<new>`, then change the live uses: `name` and `homepage` in `plugin.json`, skill names, the README commands and badges, its test folder (`git mv scripts/tests/<old> scripts/tests/<new>`) and its mentions in `docs/`.
 - **Merge**: move the components into `plugins/<target>/` and change `<target>` as the official docs page of each moved component type says, then delete `plugins/<old>/` as for a removal.
-- **Removal**: delete `plugins/<old>/`, its `scripts/evals-config.json` entry and its `scripts/tests/<old>/` folder, and remove the live uses elsewhere (for example README and `docs/` mentions), so the marketplace generator no longer finds the plugin.
+- **Removal**: delete `plugins/<old>/`, its `scripts/tests/<old>/` folder, and remove the live uses elsewhere (for example README and `docs/` mentions), so the marketplace generator no longer finds the plugin.
 
 ### 4. Register the change in the marketplace
 

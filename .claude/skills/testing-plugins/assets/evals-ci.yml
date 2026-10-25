@@ -35,14 +35,22 @@ jobs:
         run: |
           set -euo pipefail
           if [[ -n "${ONLY:-}" ]]; then
-            test -d "plugins/${ONLY}/evals" || { echo "plugins/${ONLY}/evals not found" >&2; exit 1; }
             names="${ONLY}"
           else
-            names="$(bash scripts/changed-eval-plugins.sh "$BASE" "$HEAD" plugins evals | cut -f1)"
+            listed="$(bash scripts/changed-eval-plugins.sh "${BASE}" "${HEAD}" plugins evals)"
+            names="$(cut -f1 <<< "${listed}")"
           fi
-          matrix="$(printf '%s\n' "$names" | jq -R -s -c 'split("\n") | map(select(length>0))')"
-          echo "matrix=${matrix}" >> "$GITHUB_OUTPUT"
-          echo "any=$([[ "$matrix" == "[]" ]] && echo false || echo true)" >> "$GITHUB_OUTPUT"
+          # A name reaches a path and a matrix value: accept only a plugin folder name with evals.
+          while IFS= read -r name; do
+            [[ -z "${name}" ]] && continue
+            [[ "${name}" =~ ^[a-z0-9-]+$ ]] || { echo "invalid plugin name: ${name}" >&2; exit 1; }
+            test -d "plugins/${name}/evals" || { echo "plugins/${name}/evals not found" >&2; exit 1; }
+          done <<< "${names}"
+          matrix="$(jq -R -s -c 'split("\n") | map(select(length>0))' <<< "${names}")"
+          any=true
+          [[ "${matrix}" == "[]" ]] && any=false
+          echo "matrix=${matrix}" >> "${GITHUB_OUTPUT}"
+          echo "any=${any}" >> "${GITHUB_OUTPUT}"
           echo "Targets: ${matrix}"
 
   evals:
@@ -65,6 +73,7 @@ jobs:
       # TODO 3: pin the Claude Code version (>= 2.1.269 is required for plugin eval)
       CLAUDE_CODE_VERSION: "2.1.310"
       CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+      PLUGIN: ${{ matrix.plugin }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -77,9 +86,9 @@ jobs:
           set -euo pipefail
           test -n "${CLAUDE_CODE_OAUTH_TOKEN}" || { echo "CLAUDE_CODE_OAUTH_TOKEN is not set" >&2; exit 1; }
           mkdir -p eval-results
-          claude plugin eval "plugins/${{ matrix.plugin }}" \
+          claude plugin eval "plugins/${PLUGIN}" \
             --trust-plugin \
-            --json "eval-results/${{ matrix.plugin }}.json" \
+            --json "eval-results/${PLUGIN}.json" \
             --threshold 0.8 \
             --model "${EVAL_MODEL}" \
             --judge-model "${EVAL_JUDGE_MODEL}" \
@@ -102,5 +111,7 @@ jobs:
       github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-latest
     steps:
-      - run: |
-          echo "::warning::Eval suite skipped: this PR comes from a fork and has no access to secrets. A maintainer should review the code, then run this workflow manually (workflow_dispatch) for: ${{ needs.targets.outputs.matrix }}"
+      - env:
+          TARGETS: ${{ needs.targets.outputs.matrix }}
+        run: |
+          echo "::warning::Eval suite skipped: this PR comes from a fork and has no access to secrets. A maintainer should review the code, then run this workflow manually (workflow_dispatch) for: ${TARGETS}"

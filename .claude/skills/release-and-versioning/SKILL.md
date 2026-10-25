@@ -112,7 +112,7 @@ With Nery's authorization only: push the branch and open the PR, applying only t
 1. List what the merge publishes: every plugin whose `plugin.json` version on the branch differs from `origin/main` (`git diff --name-only origin/main...HEAD -- 'plugins/*/.claude-plugin/plugin.json'`, then compare the versions). Users receive each one as soon as the merge lands.
 2. List the versions on `origin/main` that have no tag yet (`plugin.json` version against `git tag -l '<plugin>--v<version>'`): users already have them, and a missing tag means an earlier release run did not happen. Show Nery both lists and confirm each plugin is meant to ship.
 3. If the PR is still open on a later day than the root changelog line, move the line to that day's section now, before the merge, never in a push after the merge.
-4. Confirm the PR's Evals run passed for every changed plugin that ships evals.
+4. For every changed plugin that ships evals, confirm its suite passed on the PR's head. No CI runs it, so the run is a local `claude plugin eval` on Nery's yes, because it spends usage.
 5. Install each published plugin the way a user without a GitHub SSH key gets it: from the pushed PR branch, cloned over HTTPS from GitHub, in throwaway configurations that leave Nery's settings and plugins untouched. `B` holds the branch and `M` the current `main`, for comparison; make both with `mktemp -d` in the session scratchpad.
    ```bash
    iso() { local t="$1"; shift; env -u CLAUDE_CODE_PLUGIN_DIRS CLAUDE_CODE_PLUGIN_PREFER_HTTPS=1 CLAUDE_CONFIG_DIR="$t/config" CLAUDE_CODE_PLUGIN_CACHE_DIR="$t/plugins" claude "$@"; }
