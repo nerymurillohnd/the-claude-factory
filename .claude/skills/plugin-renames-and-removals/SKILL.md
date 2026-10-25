@@ -124,7 +124,8 @@ With Nery's authorization only: push the branch and open the PR, applying only t
 1. List the untagged plugins: for each plugin, compare the version in `plugin.json` with `git tag -l '<plugin>--v<version>'`. A plugin with no matching tag is untagged.
 2. Show Nery the list and confirm each is meant to ship; the next green push of `main` publishes every one of them.
 3. If the PR is still open on a later day than the root changelog line, move the line to that day's section now, before the merge, never in a push after the merge.
-4. Merge only when Nery orders it.
+4. Rename or merge: install `<new>` (or `<target>`) from the pushed PR branch in a throwaway configuration, as `release-and-versioning` step 8.5 shows, and confirm `plugin list` shows its new version.
+5. Merge only when Nery orders it.
 
 ### 13. Verify after the merge
 
@@ -134,12 +135,13 @@ With Nery's authorization only: push the branch and open the PR, applying only t
 4. Rename: print the expected tag with `node scripts/release-notes.mjs <new> --tag`, then confirm it exists with `gh release view <new>--v<version>`.
 5. Confirm the old tag and its GitHub Release still exist unchanged: `gh release list --limit 10`. For a removal, no new tag is expected.
 6. Confirm no other plugin was tagged by the same run unless intended.
-7. Report to Nery: the tag and release exist (rename), the old ones are intact, nothing unintended was tagged.
+7. Rename or merge: repeat the isolated install from `nerymurillohnd/the-claude-factory#main`. Removal: in that throwaway configuration, `plugin install <old>@the-claude-factory` must fail, because `<old>` is no longer in `plugins`.
+8. Report to Nery: the tag and release exist (rename), the old ones are intact, nothing unintended was tagged.
 
 ### 14. Recover from a failed Validate
 
-1. If Validate failed on `main`, nothing is tagged.
-2. Fix the cause first, in a new PR.
+1. If Validate failed on `main`, nothing is tagged, but users who update already receive the rename or removal: tell Nery at once.
+2. Fix the cause first, in a new PR, with its own bump when a plugin version must change to reach users.
 3. The next green push of `main` tags everything still untagged, so the fix's merge releases it without a manual run.
 4. Run `gh workflow run release.yml` only when Validate passed and no release run exists, and only after Nery says so: it tags and publishes.
 5. An instruction like "súbelo ya" with a failed Validate does not skip steps 1 to 4.

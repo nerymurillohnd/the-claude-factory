@@ -18,7 +18,13 @@ Run every command from the repository root. All paths are relative to it:
 
 ## Why this matters
 
-Claude Code treats a plugin's `version` in `plugin.json` as a pin. Users stay on that version until it changes, so commits pushed without a bump never reach them. Claude Code does not check the value against SemVer; SemVer is this project's convention (`/en/plugins/manifest-reference`, "version").
+This marketplace is a GitHub repository, and each plugin is a relative-path entry inside it (`./plugins/<plugin>`). Users add it as `nerymurillohnd/the-claude-factory`, which clones the repository's default branch, `main`. For that setup (`/en/plugins/loading`, "How Claude Code computes the version"; `/en/plugins/host-marketplace`, "Release a new version"):
+
+- The `version` in `plugin.json` is the version Claude Code computes for the plugin, and it names the cached copy (`cache/the-claude-factory/<plugin>/<version>/`). Users get a new copy only when that string changes and they update: `claude plugin update <plugin>@the-claude-factory`, the `/plugin` update, or auto-update, which is off by default for this marketplace.
+- A change merged without a bump never reaches existing installs, while a new install gets it under the same version: two different copies carry one version.
+- The release happens at the merge: what `main` holds is what the next update fetches. The PR's CI is the last gate before users; Validate on `main` and the release run come after users can already fetch the change.
+- The `<plugin>--v<version>` tag does not deliver the plugin. Plugin dependency ranges resolve against it, and for a relative-path plugin the tag lives in the marketplace repository, on a commit whose `plugin.json` holds that version (`/en/plugins/dependencies`, "Release a plugin that others depend on"). The GitHub Release carries the notes for people.
+- Claude Code does not check the value against SemVer; SemVer is this project's convention (`/en/plugins/manifest-reference`, "version").
 
 ## Rules
 
@@ -26,7 +32,7 @@ Claude Code treats a plugin's `version` in `plugin.json` as a pin. Users stay on
 2. Use SemVer (`MAJOR.MINOR.PATCH`) and choose the bump by user-facing impact.
 3. Apply every bump with `node scripts/bump-version.mjs <plugin> <major|minor|patch>`, never by hand. The script also turns `[Unreleased]` into the dated section with its link references and regenerates the README catalog; a hand edit leaves them out of step.
 4. A `0.x` version makes no interface-stability promise; `1.0.0` does. Stay in `0.x` while a plugin is new. Never promote a plugin to `1.0.0` without Nery's explicit authorization.
-5. Never tag by hand. `release.yml` creates the tags (format `<plugin>--v<version>`) after Validate succeeds on `main`, and it tags every plugin whose `plugin.json` version has no tag yet, not only the one you changed.
+5. Never tag by hand. `release.yml` creates the tags (format `<plugin>--v<version>`) on the commit Validate checked, after Validate succeeds on `main`, and it tags every plugin whose `plugin.json` version has no tag yet, not only the one you changed.
 6. Never push or merge to `main` without first listing the untagged plugins and confirming with Nery that each is meant to ship (step 8).
 7. Never run `gh workflow run release.yml` while the Validate workflow is failing.
 8. The plugin PR carries the release: the bump, the changelog entries and the regenerated catalog go in that PR as one signed commit, beside the PR's other commits. Nothing is committed for the release after the merge.
@@ -97,7 +103,17 @@ With Nery's authorization only: push the branch and open the PR (`github-workflo
 1. List the untagged plugins: for each plugin, compare the version in `plugin.json` with `git tag -l '<plugin>--v<version>'`. A plugin with no matching tag is untagged.
 2. Show Nery the list and confirm each untagged plugin is meant to ship. A plugin that is not ready would be published by the next green push of `main`.
 3. If the PR is still open on a later day than the root changelog line, move the line to that day's section now, before the merge, never in a push after the merge.
-4. Merge only when Nery orders it.
+4. Confirm the PR's Evals run passed for every changed plugin that ships evals.
+5. Install each bumped plugin the way users will get it: from the pushed PR branch, through GitHub, in a throwaway configuration that leaves Nery's settings and plugins untouched. Run in the scratchpad or a `mktemp -d` folder `T`:
+   ```bash
+   iso() { env -u CLAUDE_CODE_PLUGIN_DIRS CLAUDE_CONFIG_DIR="$T/config" CLAUDE_CODE_PLUGIN_CACHE_DIR="$T/plugins" claude "$@"; }
+   iso plugin marketplace add nerymurillohnd/the-claude-factory#<branch>
+   iso plugin install <plugin>@the-claude-factory
+   iso plugin list --json
+   iso plugin details <plugin>
+   ```
+   `plugin list` must show the new version and an `installPath` under `cache/the-claude-factory/<plugin>/<version>/`, and `plugin details` the components the plugin ships. A failure here would reach users: fix it before the merge. Delete `T` afterwards.
+6. Merge only when Nery orders it.
 
 ### 9. Verify the release after the merge
 
@@ -107,12 +123,13 @@ With Nery's authorization only: push the branch and open the PR (`github-workflo
 4. Print the expected tag with `node scripts/release-notes.mjs <plugin> --tag` (never compose it by hand; the same script prints the notes the release will carry).
 5. Confirm the tag and the GitHub Release exist: `gh release view <plugin>--v<version>`, and that the tag matches step 4.
 6. Confirm no other plugin was tagged by the same run unless intended: `gh run view <run-id> --log | grep -oE 'Released [a-z0-9-]+--v[0-9.]+'` lists every tag that run published.
-7. Report to Nery: the tag and release exist and match, and nothing unintended was tagged.
+7. Repeat the isolated install of step 8.5 from `nerymurillohnd/the-claude-factory#main` and confirm `plugin list` shows the new version: that is what users receive.
+8. Report to Nery: the version users receive, the tag and the release exist and match, and nothing unintended was tagged.
 
 ### 10. Recover from a failed Validate
 
-1. If Validate failed on `main`, nothing is tagged.
-2. Fix the cause first, in a new PR.
+1. If Validate failed on `main`, nothing is tagged, but users who update already receive the merged version: tell Nery at once.
+2. Fix the cause first, in a new PR, with its own bump, because a fix under the same version never reaches the users who already updated.
 3. The next green push of `main` tags everything still untagged, the earlier version included, so the fix's merge releases it without a manual run.
 4. Run `gh workflow run release.yml` only when Validate passed and no release run exists, and only after Nery says so: it tags and publishes.
 5. An instruction like "súbelo ya" with a failed Validate does not skip steps 1 to 4.
