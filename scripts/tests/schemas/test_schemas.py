@@ -1,5 +1,10 @@
 """The JSON Schemas in scripts/schemas/: metaschema, every real repository file, recorded cases.
 
+No schema declares `$id`: a schema's identity is its file location, and every `$ref` is relative
+to the file that holds it (ADR_2026-10-24_schema-identity-is-its-file-location). The registry
+therefore keys every schema by its file URI, and each kind of file is checked against its entry
+schema in the folder that owns it.
+
 cases.json holds valid documents (doc examples and edge cases) and invalid ones, each invalid case
 with the JSON path of the deepest error it must raise, so a schema change that stops rejecting a
 case, or rejects it for another reason, fails here.
@@ -27,7 +32,16 @@ type Json = str | int | float | bool | Mapping[str, Json] | Sequence[Json] | Non
 ROOT = Path(__file__).resolve().parents[3]
 SCHEMAS = ROOT / "scripts" / "schemas"
 CASES = Path(__file__).with_name("cases.json")
-NAMES = ("plugin", "marketplace", "hooks", "mcp", "lsp")
+# The entry schema of each kind of file, under scripts/schemas/.
+ENTRIES = {
+    "plugin": "plugin-manifest-schema/plugin-manifest.schema.json",
+    "marketplace": "marketplace-schema/marketplace.schema.json",
+    "hooks": "hooks-schema/hooks.schema.json",
+    "mcp": "plugin-manifest-schema/mcp/mcp.schema.json",
+    "lsp": "plugin-manifest-schema/components/lsp-servers.schema.json",
+}
+NAMES = tuple(ENTRIES)
+SCHEMA_FILES = tuple(sorted(SCHEMAS.rglob("*.schema.json")))
 
 # Every real file of each kind, as (schema, glob under the repository root).
 REPO_FILES = (
@@ -68,23 +82,18 @@ def load(path: Path) -> Json:
     return as_json(_decode(path.read_text(encoding="utf-8")))
 
 
-def schema(name: str) -> dict[str, Json]:
-    """The decoded schema `<name>.schema.json`."""
-    value = load(SCHEMAS / f"{name}.schema.json")
-    assert isinstance(value, dict), name
+def schema_file(path: Path) -> dict[str, Json]:
+    """One decoded schema file; a schema that is not a JSON object is a broken repository."""
+    value = load(path)
+    assert isinstance(value, dict), path
     return dict(value)
 
 
 def registry() -> SchemaRegistry:
-    """Every schema under its $id, so cross-file $refs resolve offline."""
-    pairs: list[tuple[str, Mapping[str, Json]]] = []
-    for name in NAMES:
-        s = schema(name)
-        uri = s["$id"]
-        assert isinstance(uri, str), name
-        pairs.append((uri, s))
+    """Every schema under its file URI, so relative and cross-folder $refs resolve offline."""
     return EMPTY_REGISTRY.with_resources(
-        (uri, DRAFT202012.create_resource(contents)) for uri, contents in pairs
+        (path.resolve().as_uri(), DRAFT202012.create_resource(schema_file(path)))
+        for path in SCHEMA_FILES
     )
 
 
@@ -92,8 +101,9 @@ REGISTRY = registry()
 
 
 def validator(name: str) -> Validator:
-    """A 2020-12 validator for one schema, with formats checked."""
-    return Draft202012Validator(schema(name), registry=REGISTRY, format_checker=FormatChecker())
+    """A 2020-12 validator for one kind of file, through its entry schema, with formats checked."""
+    entry = (SCHEMAS / ENTRIES[name]).resolve().as_uri()
+    return Draft202012Validator({"$ref": entry}, registry=REGISTRY, format_checker=FormatChecker())
 
 
 def error_paths(errors: Iterable[ValidationError]) -> set[str]:
@@ -127,16 +137,14 @@ def case_id(value: object) -> str:
     return str(value["id"]) if is_object(value) else str(value)
 
 
-@pytest.mark.parametrize("name", NAMES)
-def test_schema_is_valid_2020_12(name: str) -> None:
-    Draft202012Validator.check_schema(schema(name))
+@pytest.mark.parametrize("path", SCHEMA_FILES, ids=file_id)
+def test_schema_is_valid_2020_12(path: Path) -> None:
+    Draft202012Validator.check_schema(schema_file(path))
 
 
-@pytest.mark.parametrize("name", NAMES)
-def test_schema_id_matches_file(name: str) -> None:
-    uri = schema(name)["$id"]
-    assert isinstance(uri, str)
-    assert uri.endswith(f"/scripts/schemas/{name}.schema.json")
+@pytest.mark.parametrize("path", SCHEMA_FILES, ids=file_id)
+def test_schema_declares_no_id(path: Path) -> None:
+    assert "$id" not in schema_file(path), "a schema's identity is its file location"
 
 
 @pytest.mark.parametrize(("name", "path"), repo_files(), ids=file_id)
@@ -147,7 +155,7 @@ def test_repository_file_is_valid(name: str, path: Path) -> None:
 
 def test_every_kind_has_repository_files() -> None:
     for name, pattern in REPO_FILES:
-        assert list(ROOT.glob(pattern)), f"no {pattern} to check against {name}.schema.json"
+        assert list(ROOT.glob(pattern)), f"no {pattern} to check against {ENTRIES[name]}"
 
 
 def test_cases_cover_every_schema_both_ways() -> None:

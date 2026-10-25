@@ -397,7 +397,7 @@
         }
       }
     },
-    "error_path": "$.mcpServers.w.type"
+    "error_path": "$.mcpServers.w"
   },
   {
     "id": "mcp-24-invalid",
@@ -1098,7 +1098,7 @@
         }
       }
     },
-    "error_path": "$.mcpServers.api.type"
+    "error_path": "$.mcpServers.api.timeout"
   },
   {
     "id": "mcp-62-invalid",
@@ -1115,13 +1115,12 @@
     "error_path": "$.mcpServers.s.type"
   },
   {
-    "id": "mcp-63-invalid",
+    "id": "mcp-63-valid",
     "schema": "mcp.schema.json",
-    "valid": false,
+    "valid": true,
     "data": {
       "mcpServers": {}
-    },
-    "error_path": "$.mcpServers"
+    }
   },
   {
     "id": "mcp-64-invalid",
