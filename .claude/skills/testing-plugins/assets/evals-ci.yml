@@ -1,0 +1,106 @@
+# Full plugin eval suite, only for plugins that have evals AND are new or edited.
+# Template: copy to .github/workflows/evals.yml and adapt the three TODO values.
+# If the repo already has an eval workflow, audit it against the checklist in
+# references/eval-policy.md instead of adding this one.
+name: plugin-evals
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, ready_for_review]
+    paths: ["plugins/**"]
+  workflow_dispatch:
+    inputs:
+      plugin:
+        description: "Plugin directory name to run (bypasses new/edited detection)"
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  targets:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.pick.outputs.matrix }}
+      any: ${{ steps.pick.outputs.any }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - id: pick
+        env:
+          ONLY: ${{ inputs.plugin }}
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          if [[ -n "${ONLY:-}" ]]; then
+            test -d "plugins/${ONLY}/evals" || { echo "plugins/${ONLY}/evals not found" >&2; exit 1; }
+            names="${ONLY}"
+          else
+            names="$(bash scripts/changed-eval-plugins.sh "$BASE" "$HEAD" plugins evals | cut -f1)"
+          fi
+          matrix="$(printf '%s\n' "$names" | jq -R -s -c 'split("\n") | map(select(length>0))')"
+          echo "matrix=${matrix}" >> "$GITHUB_OUTPUT"
+          echo "any=$([[ "$matrix" == "[]" ]] && echo false || echo true)" >> "$GITHUB_OUTPUT"
+          echo "Targets: ${matrix}"
+
+  evals:
+    needs: targets
+    if: >-
+      needs.targets.outputs.any == 'true' &&
+      (github.event_name == 'workflow_dispatch' ||
+       github.event.pull_request.head.repo.full_name == github.repository)
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        plugin: ${{ fromJSON(needs.targets.outputs.matrix) }}
+    env:
+      # TODO 1: pin these as repository variables so a model rollout is not mistaken for a regression
+      EVAL_MODEL: ${{ vars.EVAL_MODEL }}
+      EVAL_JUDGE_MODEL: ${{ vars.EVAL_JUDGE_MODEL }}
+      # TODO 2: per-plugin ceiling in USD
+      MAX_COST_USD: "20"
+      # TODO 3: pin the Claude Code version (>= 2.1.269 is required for plugin eval)
+      CLAUDE_CODE_VERSION: "2.1.310"
+      CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install Claude Code
+        run: npm install -g "@anthropic-ai/claude-code@${CLAUDE_CODE_VERSION}"
+      - name: Run the full suite
+        run: |
+          set -euo pipefail
+          test -n "${CLAUDE_CODE_OAUTH_TOKEN}" || { echo "CLAUDE_CODE_OAUTH_TOKEN is not set" >&2; exit 1; }
+          mkdir -p eval-results
+          claude plugin eval "plugins/${{ matrix.plugin }}" \
+            --trust-plugin \
+            --json "eval-results/${{ matrix.plugin }}.json" \
+            --threshold 0.8 \
+            --model "${EVAL_MODEL}" \
+            --judge-model "${EVAL_JUDGE_MODEL}" \
+            --no-publish \
+            --max-cost-usd "${MAX_COST_USD}"
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: eval-${{ matrix.plugin }}
+          path: eval-results/
+          if-no-files-found: ignore
+
+  fork-notice:
+    # Secrets are not available to PRs from forks, so the suite cannot run there.
+    # Say so loudly instead of passing silently; a maintainer re-runs it with workflow_dispatch.
+    needs: targets
+    if: >-
+      needs.targets.outputs.any == 'true' &&
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.head.repo.full_name != github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo "::warning::Eval suite skipped: this PR comes from a fork and has no access to secrets. A maintainer should review the code, then run this workflow manually (workflow_dispatch) for: ${{ needs.targets.outputs.matrix }}"
