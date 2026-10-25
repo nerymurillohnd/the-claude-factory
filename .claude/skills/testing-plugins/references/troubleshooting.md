@@ -9,7 +9,7 @@ Contents: Triage · Commands that do not exist · Add a marketplace · Install a
 | Question | How to answer |
 | :- | :- |
 | Is the repo public and reachable? | `git ls-remote https://github.com/<owner>/<repo>.git`. A private or misspelled repo ends in an authentication message, not "not found". |
-| Is it the repo or the local machine? | `CLAUDE_CONFIG_DIR="$(mktemp -d)" claude plugin marketplace add <owner/repo>` then `... claude plugin install <plugin>@<marketplace>`. OK there, failing at home = local state. Failing in both = repo or entry. **[live]** the throwaway dir isolates settings and caches. |
+| Is it the repo or the local machine? | With `T` a `mktemp -d` folder: `env -u CLAUDE_CODE_PLUGIN_DIRS CLAUDE_CODE_PLUGIN_PREFER_HTTPS=1 CLAUDE_CONFIG_DIR="$T/config" CLAUDE_CODE_PLUGIN_CACHE_DIR="$T/plugins" claude plugin marketplace add <owner/repo>`, then `... claude plugin install <plugin>@<marketplace>` with the same prefix. OK there, failing at home = local state. Failing in both = repo or entry. **[live]** on v2.1.310 this isolates settings and the plugin cache, and drops plugins `CLAUDE_CODE_PLUGIN_DIRS` would add. |
 | Is the catalog valid? | Clone the repo, run `claude plugin validate <dir>` at its root (marketplace) and at each plugin root. |
 | What is registered locally? | `claude plugin marketplace list`, `claude plugin list`, `/plugin` → **Errors** tab, `claude plugin list --json` (`errors`, `errorDetails`). |
 | Need the real error text? | `claude --debug`, log at `~/.claude/debug/<session-id>.txt`. |

@@ -1,6 +1,6 @@
 # Eval policy: local pilot, full suite in CI
 
-Sources: https://code.claude.com/docs/en/plugin-evals (read 2026-10-25), `claude plugin eval --help` on v2.1.310, changelog v2.1.296–v2.1.306. Requires Claude Code ≥ v2.1.269 (and git ≥ 2.31). Where the docs and `--help` differ, `--help` wins for flags and the changelog wins for behavior.
+Sources: https://code.claude.com/docs/en/plugin-evals (read 2026-10-25), `claude plugin eval --help` on v2.1.310, every `plugin eval` entry of the changelog from v2.1.269 to v2.1.310. Requires Claude Code ≥ v2.1.269 (and git ≥ 2.31). Where the docs and `--help` differ, `--help` wins for flags and the changelog wins for behavior.
 
 Contents: Who runs what · Pilot · Reading a pilot · Writing the suite · CI audit checklist · Fork PRs · Flags worth knowing · Quick error map
 
@@ -26,7 +26,7 @@ claude plugin eval . --case "<glob>" --runs 1 --ablation none --no-publish   # o
 
 Before running, tell the user: cases × 1 run × 1 arm = N agent runs, plus 3 judge votes per `llm`/`baseline` grader per run, plus agent-mock calls (up to 4 × `max_turns` per run) if the suite has `type: agent` mocks. Then wait for a yes. After the first pilot, estimate full cost as pilot cost × runs × 2 arms.
 
-Gates that need a named go-ahead (they run code as the user, outside the sandbox, or call real services): `--trust-plugin`, `--scaffold`, `--allow-real-servers`, `--mocks off`. From inside an agent session stdin is not a terminal, so the first run in an untrusted directory is refused (`is not a trusted plugin directory, and this run cannot stop to ask you about it`). Either the user answers the prompt once in a terminal, or they approve `--trust-plugin` by name. Granting `Bash` forces the OS sandbox (`bubblewrap` + `socat` on Linux; WSL2 on Windows); with no backend each run is refused.
+Gates that need a named go-ahead (they run code as the user, outside the sandbox, or call real services): `--trust-plugin`, `--scaffold`, `--allow-real-servers`, `--mocks off`. From inside an agent session stdin is not a terminal, so the first run in an untrusted directory is refused (`is not a trusted plugin directory, and this run cannot stop to ask you about it`). Either the user answers the prompt once in a terminal, or they approve `--trust-plugin` by name. Granting `Bash` forces the OS sandbox (`bubblewrap` + `socat` on Linux; WSL2 on Windows); with no backend each run is refused. The sandboxed Bash has been reported unable to write the run workspace when `TMPDIR` is under `/tmp` (anthropics/claude-code#104797, open): if every Bash-granting case fails on writes, check `TMPDIR` first. **Unverified:** whether a plugin under your home directory runs locally with Bash granted; this repository's CI copies the plugin out of `$HOME` for that reason.
 
 Evaluating a plugin you did not write executes its code as the user: treat it as a trust decision, and do it from a throwaway config (`CLAUDE_CONFIG_DIR="$(mktemp -d)"`) with the plugin installed by `claude plugin install <plugin>@<marketplace>`, then `claude plugin eval <plugin>@<marketplace>`.
 

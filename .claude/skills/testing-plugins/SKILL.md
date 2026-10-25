@@ -1,6 +1,6 @@
 ---
 name: testing-plugins
-description: Use whenever a new plugin is asked to be tested with evals, or when an existing plugin with evals was edited. Also use to diagnose install, load or marketplace errors of plugins from public GitHub marketplaces. Not for mods.
+description: Use to build or run the eval suite of a plugin that has no mods, when evals are requested for it or a plugin that has evals was edited, and to diagnose install, load or marketplace errors of plugins from a public GitHub marketplace. Not for mods, and not for tests other than evals.
 ---
 
 # GitHub plugin QA
@@ -12,7 +12,8 @@ Tests plugins that are published, or about to be published, in a **public GitHub
 In scope: Claude Code plugins whose marketplace is a public GitHub repo (`owner/repo` or an `https://github.com/...` URL) added with `claude plugin marketplace add`.
 
 Out of scope. Say so in one sentence and stop; do not improvise a fix:
-- **Mods** (plugins that change Claude's interface or behavior through a hooks module, `types` contract or `ui.render`; marketplace category "mods"). If unsure whether a plugin is a mod, ask.
+- **Mods**: plugins whose `hooks/hooks.json` lists a hooks module under `modules`, whatever their category.
+- Tests other than evals: unit tests, type checks, linters and `claude plugin validate` runs.
 - Local-path marketplaces, GitHub Enterprise Server, `claudeai-*` (claude.ai) marketplaces, `skills-dir` plugins.
 - Anything blocked by organization policy (`blocked by enterprise policy`, `strictKnownMarketplaces`, `disableSideloadFlags`...): the fix belongs to an administrator.
 
@@ -30,7 +31,7 @@ Only when asked. Never add evals to a plugin, or run them, on your own initiativ
 Plugin evals and plugin loading change with every Claude Code release, and docs and changelog sometimes disagree (the changelog wins; say which one you used).
 
 1. `claude --version`, then `claude plugin eval --help` as separate plain commands. The CLI is the authority for flags.
-2. The references here were checked on 2026-10-25 against the docs, against `claude` v2.1.310 `--help`, and against the changelog for v2.1.296–v2.1.306 (v2.1.269–v2.1.294 and v2.1.307–v2.1.310 changelog entries are unverified). If the installed version is newer, check the changelog for `plugin eval` and `marketplace` before relying on a flag or message.
+2. The references here were checked on 2026-10-25 against the docs, against `claude` v2.1.310 `--help`, and against every `plugin eval` and marketplace entry of the changelog from v2.1.269, when `plugin eval` was added, to v2.1.310. If the installed version is newer, check the changelog for `plugin eval` and `marketplace` from v2.1.310 on before relying on a flag or message.
 3. Mark anything you could not verify as unverified and say what it affects.
 
 ## A. Evals: pilot locally, full suite in CI
@@ -48,7 +49,7 @@ Read [references/troubleshooting.md](references/troubleshooting.md).
 
 1. Get the **exact message** and the command that produced it. Search the reference by message text: it is grouped by the stage that emits the message, which is not always the command that was run.
 2. If the message is not in the reference, or is out of scope, say so. Do not guess from similar messages.
-3. Separate repo problems from local state: reproduce in a throwaway config with `CLAUDE_CONFIG_DIR="$(mktemp -d)" claude plugin marketplace add <owner/repo>`. Works there but not on the user's machine means local state (settings, cache, `installed_plugins.json`, git credentials). Fails in both means the marketplace repo or the plugin entry.
+3. Separate repo problems from local state: reproduce in a throwaway configuration that leaves your own settings and plugins untouched, as a user without a GitHub SSH key would: `env -u CLAUDE_CODE_PLUGIN_DIRS CLAUDE_CODE_PLUGIN_PREFER_HTTPS=1 CLAUDE_CONFIG_DIR="$T/config" CLAUDE_CODE_PLUGIN_CACHE_DIR="$T/plugins" claude plugin marketplace add <owner/repo>`, then `... claude plugin install <plugin>@<marketplace>` with the same prefix, where `T` is a `mktemp -d` folder. Works there but not on the user's machine means local state (settings, cache, `installed_plugins.json`, git credentials). Fails in both means the marketplace repo or the plugin entry.
 4. Apply one fix, then check the success signal the reference lists for that entry (for example `Successfully added marketplace: <name>`).
 
 ## Answer format
