@@ -24,3 +24,6 @@
 ## Executable scripts
 - Give every executable plugin script, especially Claude Code hooks, its interpreter's shebang: `#!/usr/bin/env python3`, `#!/usr/bin/env bash`, or `#!/usr/bin/env node`.
 - Mark executable plugin scripts with `chmod +x` and preserve their executable bits in Git.
+Validation and testing
+- Validate every plugin with `claude plugin validate --strict`.
+- Test mod plugins with `claude plugin test`
