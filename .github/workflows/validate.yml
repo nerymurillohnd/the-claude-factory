@@ -9,9 +9,11 @@ on:
 permissions:
   contents: read
 
+# A pull request keeps only its newest run. Every push to main gets its own run, never cancelled,
+# so each merged commit is validated and release.yml can tag the version it carries.
 concurrency:
-  group: validate-${{ github.ref }}
-  cancel-in-progress: true
+  group: validate-${{ github.event_name == 'pull_request' && github.ref || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:
   # Each job installs its tools at their latest release, as the maintainer's machine has them, and
