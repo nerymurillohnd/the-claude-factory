@@ -38,7 +38,7 @@ The files marked Out are read here only to check what the docs say about them. W
 - Tables for comparisons, commands per surface, requirements and options.
 - GitHub alerts (`> [!NOTE]`, `[!TIP]`, `[!IMPORTANT]`, `[!WARNING]`, `[!CAUTION]`), never two back to back without text between.
 - `<details>` for per-surface instructions and FAQs, with the most common option `open`.
-- **Bold** for UI labels, exactly as the app shows them (`/plugin` → **Installed** → **Update now**); *italics* for emphasis or terms.
+- **Bold** for UI labels, exactly as the app shows them (`/plugin` → **Installed** → **Update now**); _italics_ for emphasis or terms, the form Biome writes.
 - Relative links inside the repository; absolute `https://` links outside it.
 
 ## Files and their job
@@ -135,7 +135,7 @@ Run steps 3 to 7 on every file in scope, against every Claude Code release since
 
 ## Gotchas
 
-- No linter reads these files: Biome ignores Markdown here (`biome check README.md` reports it as ignored), so a broken link, anchor or table shows up only when you open it.
+- Biome formats and lints these files: run `biome check --write <file>` after editing one. It checks headings and fenced-code languages, not links, anchors or prose, so a broken link or anchor shows up only when you open it. It pads tables, except a table right after a `<!-- biome-ignore format: <reason> -->` comment, which the catalog generator writes before each of its tables.
 - `.claude/templates/root-readme.md` is an older, frozen copy of `assets/root-readme-template.md`, kept until DEBT-011 closes. Follow and edit only the asset.
 - The catalog's version column is generated and is the only version number of a plugin in the root README.
 - GitHub reads `SECURITY.md`, `SUPPORT.md`, `CONTRIBUTING.md` and `CODE_OF_CONDUCT.md` from `.github/` first, then the root, then `docs/`. A copy added in `.github/` would silently replace the root one.
