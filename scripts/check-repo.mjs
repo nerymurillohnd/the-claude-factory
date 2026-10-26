@@ -353,6 +353,12 @@ export function checkRepo() {
       if (/<!--\s*(TODO|TEMPLATE)\b/.test(readme)) {
         err(scope, 'README.md has unresolved TODO/TEMPLATE comments')
       }
+      // The building-plugins README template marks what the author fills with a `<` and a capital
+      // letter; code keeps such text on purpose (`<YYYY-MM-DD>`), so it is left out of the search.
+      const prose = readme.replace(/^```[\s\S]*?^```/gm, '').replace(/`[^`\n]*`/g, '')
+      if (/<[A-Z][^>]*>/.test(prose)) {
+        err(scope, 'README.md has unresolved <…> placeholders')
+      }
     }
 
     if (existsSync(join(dir, 'CHANGELOG.md')) && manifest.version) {

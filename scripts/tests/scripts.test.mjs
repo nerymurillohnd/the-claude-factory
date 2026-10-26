@@ -21,7 +21,7 @@ import { fileURLToPath } from 'node:url'
 import { lspConfigProblems, portabilityProblems, rootPackageProblems } from '../check-repo.mjs'
 import { hooksFileKinds } from '../components.mjs'
 import { anchor } from '../generators/catalog.mjs'
-import { changelogSection, SURFACE_PROFILES } from '../lib.mjs'
+import { changelogSection } from '../lib.mjs'
 
 const REAL_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..')
 /** @type {string} */
@@ -104,60 +104,41 @@ function initRepo(withOrigin = false) {
 }
 
 /**
- * Replace each {{key}} of `vars` in `template`.
- * @param {string} template
- * @param {Record<string, string>} vars
- */
-const fill = (template, vars) =>
-  template.replace(/\{\{(\w+)\}\}/g, (match, /** @type {string} */ key) => vars[key] ?? match)
-
-/**
- * Create a new plugin the way the repository gets one: its files under plugins/<name>/, then the
- * marketplace and catalog regenerated. The README comes from the old plugin template in
- * .claude/templates/plugin/, because check-repo.mjs still enforces that template's shape
- * (DEBT-011); the other files come from the building-plugins skill's assets, as its scaffold
- * writes them.
+ * Create a new plugin the way the repository gets one: the building-plugins skill's scaffold writes
+ * plugins/<name>/, then the marketplace and catalog are regenerated. It runs the temp copy's script
+ * with TCF_ROOT, so it writes into the copy.
  * @param {string} [name]
  * @param {string} [category]
  * @param {boolean} [claudeCodeOnly]
  */
 function scaffold(name = 'demo-tool', category = 'productivity', claudeCodeOnly = false) {
-  const assets = '.claude/skills/building-plugins/assets'
-  const profile = SURFACE_PROFILES[claudeCodeOnly ? 'claude-code-only' : 'both']
-  const cat = json('scripts/categories.json').categories.find(
-    (/** @type {{ id: string }} */ c) => c.id === category,
-  )
-  assert.ok(cat, `unknown category ${category}`)
-  const displayName = name
-    .split('-')
-    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-    .join(' ')
-  const vars = {
-    name,
-    displayName,
-    description: 'Does demo things.',
-    category,
-    categoryBadge: encodeURIComponent(cat.title).replaceAll('-', '--'),
-    emoji: '🧩',
-    minClaudeCode: '2.1.292',
-    date: new Date().toISOString().slice(0, 10),
-    surfacesBadge: profile.badge,
-    surfacesText: profile.text,
-    surfacesNote: profile.note,
-    surfacesJson: JSON.stringify(profile.surfaces),
-  }
-  mkdirSync(join(root, `plugins/${name}/.claude-plugin`), { recursive: true })
-  write(
-    `plugins/${name}/.claude-plugin/plugin.json`,
-    fill(read(`${assets}/plugin-template.json`), vars),
-  )
-  write(`plugins/${name}/CHANGELOG.md`, fill(read(`${assets}/CHANGELOG-template.md`), vars))
-  write(`plugins/${name}/LICENSE`, read(`${assets}/LICENSE-template`))
-  write(`plugins/${name}/README.md`, fill(read('.claude/templates/plugin/README.md'), vars))
+  const script = join(root, '.claude/skills/building-plugins/scripts/scaffold-plugin.py')
+  const args = ['--name', name, '--category', category, '--description', 'Does demo things.']
+  const r = spawnSync(script, claudeCodeOnly ? [...args, '--claude-code-only'] : args, {
+    cwd: root,
+    encoding: 'utf8',
+    env: { ...process.env, TCF_ROOT: root },
+  })
+  assert.equal(r.status, 0, `${r.stdout}${r.stderr}`)
   for (const generator of ['generators/marketplace.mjs', 'generators/catalog.mjs']) {
-    const r = run(generator)
-    assert.equal(r.code, 0, r.out)
+    const g = run(generator)
+    assert.equal(g.code, 0, g.out)
   }
+}
+
+/**
+ * Fill every placeholder the author fills (a `<` followed by a capital letter) with `text`,
+ * nested ones included.
+ * @param {string} name
+ * @param {string} [text]
+ */
+function resolvePlaceholders(name, text = 'x') {
+  const p = `plugins/${name}/README.md`
+  let readme = read(p)
+  while (/<[A-Z][^>]*>/.test(readme)) {
+    readme = readme.replace(/<[A-Z][^>]*>/g, text)
+  }
+  write(p, readme)
 }
 
 /**
@@ -181,15 +162,14 @@ function pruneCompat(name, keep) {
   write(p, text.slice(0, start) + section + text.slice(end))
 }
 
-/** Simulate a maintainer finishing the plugin: add one skill, resolve TODOs, trim the Compatibility table. */
-function resolveTodos(name = 'demo-tool') {
+/** Simulate a maintainer finishing the plugin: add one skill, fill the placeholders, trim the Compatibility table. */
+function finishPlugin(name = 'demo-tool') {
   mkdirSync(join(root, `plugins/${name}/skills/demo`), { recursive: true })
   write(
     `plugins/${name}/skills/demo/SKILL.md`,
     '---\ndescription: Demo skill. Use when testing.\n---\nDo it.\n',
   )
-  const p = `plugins/${name}/README.md`
-  write(p, read(p).replace(/<!--\s*(TODO|TEMPLATE)[\s\S]*?-->\n?/g, ''))
+  resolvePlaceholders(name)
   pruneCompat(name, ['Skills'])
   assert.equal(run('generators/catalog.mjs').code, 0)
 }
@@ -197,7 +177,7 @@ function resolveTodos(name = 'demo-tool') {
 /** Scaffold the default plugin and finish it, so check-repo.mjs has nothing left to flag. */
 function scaffoldReady() {
   scaffold()
-  resolveTodos()
+  finishPlugin()
 }
 
 beforeEach(() => {
@@ -213,13 +193,13 @@ describe('check-repo', () => {
     assert.equal(r.code, 0, r.out)
   })
 
-  test('fails on a freshly scaffolded plugin until its TODOs are resolved', () => {
+  test('fails on a freshly scaffolded plugin until its placeholders are filled', () => {
     scaffold()
     const before = run('check-repo.mjs')
     assert.equal(before.code, 1)
-    assert.match(before.out, /unresolved TODO\/TEMPLATE comments/)
+    assert.match(before.out, /unresolved <…> placeholders/)
 
-    resolveTodos()
+    finishPlugin()
     const after = run('check-repo.mjs')
     assert.equal(after.code, 0, after.out)
   })
@@ -293,7 +273,7 @@ describe('check-repo', () => {
     mkdirSync(join(root, 'plugins/lang-tool/bin'), { recursive: true })
     write('plugins/lang-tool/bin/tool', '#!/bin/sh\necho hi\n')
     const p = 'plugins/lang-tool/README.md'
-    write(p, read(p).replace(/<!--\s*(TODO|TEMPLATE)[\s\S]*?-->\n?/g, 'it needs bin/ executables'))
+    resolvePlaceholders('lang-tool', 'it needs bin/ executables')
     pruneCompat('lang-tool', ['Executables'])
     assert.equal(run('generators/catalog.mjs').code, 0)
     assert.deepEqual(json('plugins/lang-tool/.claude-plugin/plugin.json').metadata.surfaces, [
@@ -308,7 +288,7 @@ describe('check-repo', () => {
   test('flags Compatibility rows for components the plugin does not ship', () => {
     scaffoldReady()
     const p = 'plugins/demo-tool/README.md'
-    write(p, read(p).replace('| 🎯 Skills |', '| 🤖 Agents | ✅ | ⚠️ |\n| 🎯 Skills |'))
+    write(p, read(p).replace(/^\| 🎯 Skills /m, '| 🤖 Agents | ✅ | ⚠️ |\n$&'))
     const r = run('check-repo.mjs')
     assert.equal(r.code, 1)
     assert.match(r.out, /lists Agents, which the plugin doesn't ship/)
