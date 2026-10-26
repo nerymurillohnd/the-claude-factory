@@ -23,6 +23,7 @@
 | 2026-10-25 | DEBT-004 | obsolete | Dropped by Nery: its next action rested on an eval requirement he never set | none |
 | 2026-10-26 | DEBT-012 | obsolete | Logged in error: project-maintainer's mod already reminds Claude of write-records, and a live session met the review condition | none |
 | 2026-10-26 | DEBT-001 | resolved | pr-tracker inherits the session's tools, so a GitHub MCP server of any name reaches it | none |
+| 2026-10-26 | DEBT-008 | accepted | `main` and the release tags stay without GitHub protection by Nery's decision | none |
 
 ## 🏁 Closed items
 
@@ -209,6 +210,37 @@ On Nery's order the agent's `tools` allowlist was removed with no `disallowedToo
 - **Residual risk:** the tracker can call every tool of the session, GitHub write methods included; its instructions keep it read-only and the README tells users how to deny tools. No live run from the desktop Code tab with only the Claude app connector has been recorded; the inheritance there rests on the docs.
 - **Closed by:** [PR #37](https://github.com/nerymurillohnd/the-claude-factory/pull/37) (`4d0d65e`).
 - **Related records:** ADR_2026-10-18_fold-pr-diagnostics-into-pr-tracker; PR #22, PR #36 (where it was observed).
+- **Superseded by:** none
+
+### DEBT-008 — `main` and the release tags stay without GitHub protection by Nery's decision
+
+| Field | Value |
+| --- | --- |
+| **Outcome** | accepted |
+| **Closed on** | 2026-10-26 |
+| **Logged on** | 2026-10-25 |
+| **Owner** | GitHub repository settings of `nerymurillohnd/the-claude-factory` |
+
+#### ❗ The problem
+
+`main` had no branch protection and the repository had no rulesets, so the CI gate before users was voluntary, a push to `main` that fails Validate was not refused, and a `<plugin>--v<version>` release tag could be moved or deleted. The pending entry's next action was a ruleset on `main` requiring Validate and pull requests, and a tag ruleset on `*--v*`.
+
+#### 🔧 The closure
+
+Nery decided on 2026-10-26 to keep `main` and the release tags without GitHub protection, because the repository has a sole maintainer: only Nery and Claude Code push to it, and a ruleset requiring pull requests clashes with the rule that changes outside `plugins/` go straight to `main`. ADR_2026-10-26_main-and-release-tags-stay-unprotected records the decision.
+
+#### 🧪 Verification
+
+| Check | Evidence |
+| --- | --- |
+| ✅ **Positive:** the closure holds | ADR_2026-10-26_main-and-release-tags-stay-unprotected, status `accepted`. On 2026-10-26 `gh api repos/nerymurillohnd/the-claude-factory/rulesets` returned no ruleset and `…/branches/main/protection` returned `Branch not protected` (HTTP 404), the state the decision keeps. |
+| 🚫 **Negative:** the original failure or condition is gone | not applicable |
+
+#### 🔗 Follow-up
+
+- **Residual risk:** nothing on GitHub refuses a push to `main` that fails Validate, an unsigned commit (the three commits of PR #51 reached `main` unsigned on 2026-10-26), or a moved or deleted `*--v*` tag.
+- **Closed by:** ADR_2026-10-26_main-and-release-tags-stay-unprotected.
+- **Related records:** ADR_2026-10-25_release-tags-are-created-unsigned-by-ci.
 - **Superseded by:** none
 
 <!--
