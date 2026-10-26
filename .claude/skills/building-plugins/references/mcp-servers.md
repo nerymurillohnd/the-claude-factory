@@ -16,10 +16,10 @@ A plugin that bundles an MCP server puts its tools in front of every user's Clau
 - Never name a plugin tool by the bare server key. Use the scoped name everywhere a plugin refers to it: an agent's `tools`, permission rules, a skill's `allowed-tools`, a hook matcher.
 - Secrets and per-user values go through `userConfig` and `${user_config.KEY}`. Never hardcode them, never read them from the user's shell environment. Put the value in a header, not in the URL: a chat conversation skips a server whose URL holds the reference.
 - Disclose each server in the README: what it connects to, what it sends, and the prerequisites with how to install them. Keep exactly one Compatibility row per MCP type the plugin ships.
-- Before relying on a `userConfig` option, read `/en/plugins/manifest-reference` → "User configuration"; before writing `${VAR}` in headers, read `/en/mcp` → "Environment variable expansion in `.mcp.json`". The Claude app rules are in the Gotchas below and in Test.
+- Before relying on a `userConfig` option, read `/en/plugins/manifest-reference` → "User configuration"; before writing `${VAR}` in headers, read `/en/mcp` → "Environment variable expansion in `.mcp.json`". The Claude app rules are in the Gotchas below.
 - Read `.claude/rules/plugins/mcp-component.md` for every MCP configuration change. It loads by itself only with a `.mcp.json`, so read it explicitly when the servers sit in the manifest's `mcpServers`, and say so if the file is missing.
 - When the docs and the release notes disagree, the release notes win; read them raw from <https://raw.githubusercontent.com/anthropics/claude-code/main/CHANGELOG.md>.
-- Never launch plugin code, connect a server or authenticate only to validate configuration: static checks first, live checks only when Test calls for them.
+- Never launch plugin code, connect a server or authenticate while building: this skill runs static checks only. The live checks (loading the plugin, connecting the server, calling its tools) are the `testing-plugins` skill's, once Nery says the plugin is ready.
 
 ## Gotchas
 
@@ -47,7 +47,7 @@ Read `/en/mcp` and, in `/en/plugins/components`, the MCP servers section; read `
 
 - Write the server in `.mcp.json` at the plugin root, or in the manifest `mcpServers` key, which also takes a path or an `.mcpb` file. Path variables (the plugin root and data directories, wrapped as `${…}`) are substituted in `command`, `args` and `env` of a stdio server, and in `url`, `headers` and `headersHelper` of an `http`, `sse` or `ws` server (`/en/plugins/manifest-reference`).
 - Put every credential or per-user value in `userConfig` and reference it as `${user_config.KEY}` in `headers`, `env` or `args`. Mark a token `sensitive`. Never use `headersHelper` with it.
-- Run `claude plugin validate --strict plugins/<name>` and load the plugin with `claude --plugin-dir plugins/<name>`; `/mcp` must show the server as `plugin:<plugin>:<server>`.
+- Run `check-mcp-schema.py <plugin>` and `claude plugin validate --strict plugins/<name>`. Do not load the plugin to see it connect: that is a live check (Rules).
 
 ### 4. Reach
 
@@ -57,15 +57,6 @@ Give an agent its tools through its `tools` allowlist, written with the scoped n
 
 A plugin cannot keep a server out of the main conversation or hand it to one agent only: that needs `mcpServers` in the agent's own frontmatter, and a plugin agent ignores it. Do not promise scoping in the README. When users need it, say that they can copy the agent file to `.claude/agents/` or `~/.claude/agents/` and declare the server inline there; a project agent loads an inline server only after the user trusts that folder, and `permissionMode` there is subject to the main conversation's mode. State that this is a manual step the plugin does not do.
 
-### 6. Test
-
-While Nery is still shaping the plugin, run only the cheap checks each edit needs and no live tests; run all of this once he says it is ready.
-
-1. Load the plugin with the option unset: the server must not connect, and the README's setup text must match what the user sees.
-2. Set the option, run `/reload-plugins`, and confirm the server and a tool call work.
-3. Call a tool from an agent that lists it in `tools`, and from the main conversation.
-4. For a remote server with `${user_config.*}` in headers, take the Claude app steps (the **Connectors** tab, **No sign in** and an `authorization` header) from the official claude.com and support.claude.com pages. Nery runs no per-plugin Claude app check: state in the README or the report what was not observed live as unverified, and never log it as debt or a blocker.
-
-### 7. Document
+### 6. Document
 
 In the README: the prerequisites (account, key, CLI) with how to install them and their alternatives; how to set each option (`/plugin` → **Installed** → **Configure**, `claude plugin install --config <key>=<value>` from the shell (for a bundled `.mcpb` server's own setting, `<server>.<key>=<value>`; Claude Code 2.1.285+), `/plugin configure <name>@synced` for a synced copy); every network call; the Claude app **Connectors** steps; and one Compatibility row per MCP type, matching `docs/compatibility.md`. An agent runs in the Claude app only in Cowork sessions, so say that an agent that depends on the server is unreachable from a chat conversation.

@@ -8,7 +8,7 @@ Read this when the work involves a hook that matches MCP tools, an `mcp_tool` ho
 - Identify the target Claude Code version before you rely on a version-specific feature.
 - Distinguish servers a project or user configures from servers a plugin bundles, and declarative hooks from a mod's in-process function hooks: they do not share a schema or a lifecycle.
 - Distinguish project policy, documented behavior and observed runtime behavior. Report a conflict instead of changing policy silently.
-- Keep metadata inspection apart from runtime testing: never launch plugin code, connect a server or authenticate only to validate configuration.
+- Inspect configuration statically: never launch plugin code, connect a server or authenticate while building. Runtime checks are the `testing-plugins` skill's live MCP checks, once Nery says the plugin is ready.
 
 ## The three MCP identities
 
@@ -86,9 +86,8 @@ For plugin `my-plugin`, server `db` and tool `security_scan`:
 5. Check event input paths, substitution and the event's output.
 6. Check authentication, connection state, timeout units and failure behavior.
 7. Review permissions, matching and possible hook feedback loops.
-8. Run the repository's static checks without starting servers.
-9. Run runtime integration checks only when authorized, and keep them apart from static validation.
-10. Report the checks run, the checks not run, version requirements and remaining risks.
+8. Run the skill's static checks (`check-manifest-schema.py`, and `check-mcp-schema.py` for a server config) and `claude plugin validate --strict`, without starting servers.
+9. Report the checks run, the checks not run, version requirements and remaining risks. The runtime cases (identifiers, matching, inputs, outputs, connection states, startup events, timeouts) are verified live by `testing-plugins`, not here.
 
 - Read the debug log before changing configuration for a skipped hook: `claude --debug-file <path>` for a known location, or `claude --debug`. The "no MCP client context" lines are lifecycle limits, not malformed identifiers. Redact secrets before quoting a log.
 - A hook does not work because its JSON parses or its configuration validates.
@@ -119,18 +118,6 @@ This plugin hook applies only when plugin `my-plugin` bundles server `db` and th
 ```
 
 It inspects after the edit; it cannot block a Write or Edit that already ran.
-
-## Cases to verify
-
-- Correct and incorrect plugin-scoped server identifiers.
-- Full tool-name matching, and rejection of a bare-server matcher.
-- Valid arguments, and missing or invalid event input paths.
-- Successful text output, event-supported JSON decisions, and `isError: true`.
-- Connected, connecting, cached, unavailable and unauthenticated servers.
-- Launch-time `SessionStart`, later `SessionStart`, and `Setup`, separately.
-- A hook timeout against startup and execution timeouts.
-- Static validation never launching plugin code.
-- Use mocks or fixtures for runtime states you cannot reach, and label live behavior you did not test. Add evals only when Nery asks for them.
 
 ## Answering
 

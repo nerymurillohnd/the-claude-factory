@@ -22,6 +22,7 @@ This is the plugin-building procedure of this repository, a multi-plugin marketp
 | The plugin is a mod or contains one | `building-mods`, for the hooks module, what the README says about the mod, and the `mods` category | Together with this skill, from step 1 |
 | A new component type changes what `docs/compatibility.md` must say | `maintaining-user-docs` | Before step 4, so the README copies the updated cells |
 | The plugin is ready to ship | `release-and-versioning`, for the version, the changelog notes, the root changelog line, the pull request and the release | After step 5 (step 6) |
+| The plugin has an MCP server, or a hook that matches or calls MCP tools, and Nery says it is ready | `testing-plugins`, for the live MCP checks this skill never runs | After step 5 |
 | Evals are requested, or an install, load or marketplace error needs diagnosing | `testing-plugins` | After step 5, only when asked |
 | The plugin is to be renamed, merged, removed or retired | `plugin-renames-and-removals` | Instead of this skill |
 
