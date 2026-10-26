@@ -10,6 +10,7 @@ This skill's `assets/` are the templates a new plugin of this repository is buil
 | `assets/CHANGELOG-template.md` | `plugins/<name>/CHANGELOG.md`, with its `0.1.0` section dated today | `{{name}}`, `{{displayName}}`, `{{date}}` | `scaffold-plugin.py`, every one |
 | `assets/LICENSE-template` | `plugins/<name>/LICENSE` | none | Copied as is |
 | `assets/README-template.md` | `plugins/<name>/README.md` | `<Display Name>`, `<plugin>`, `<owner>/<repo>`, `<marketplace-name>`, and every other `<…>` | `scaffold-plugin.py` fills the first four; you fill the rest |
+| `assets/NOTICE-template.txt` | `plugins/<name>/NOTICE.txt`, only when the plugin bundles or derives from third-party material | `{{name}}`, `{{source}}`, `{{sourceUrl}}`, `{{sourceVersion}}`, `{{sourceLicense}}`, `{{derivedFile}}`, `{{sourceLicenseText}}` | You, by hand; the scaffold never writes it |
 
 `plugin-template.json` is not valid JSON until it is rendered (`{{surfacesJson}}` stands unquoted), so `biome.json` excludes it.
 
@@ -17,11 +18,14 @@ This skill's `assets/` are the templates a new plugin of this repository is buil
 
 1. Run `scaffold-plugin.py` (step 2 of `SKILL.md`). Never copy another plugin's files, and never write these files by hand for a new plugin.
 2. In the new `README.md`, replace every remaining `<…>` with the plugin's facts, in the style of `readme-style.md`. Delete a section only when it cannot apply, and say why in your hand-back.
-3. Leave `plugin.json`'s `version` at `0.1.0` and the `CHANGELOG.md` `0.1.0` entry as the launch entry; versioning after that is the release procedure's.
+3. When the plugin bundles or derives from third-party material, copy `NOTICE-template.txt` to `plugins/<name>/NOTICE.txt` and fill it: `{{name}}` is the plugin's name; for each source, its name, repository URL, version or commit, SPDX license, every file of the plugin derived from it (one `{{derivedFile}}` line each), and its full license text. For several sources, repeat the block from "This plugin contains material derived from" through the license text once per source. The file opens with the plugin's own copyright and license, as `.claude/CLAUDE.md` requires; keep that line.
+4. Leave `plugin.json`'s `version` at `0.1.0` and the `CHANGELOG.md` `0.1.0` entry as the launch entry; versioning after that is the release procedure's.
+
+Which README sections are required is the open question of DEBT-011: `.claude/CLAUDE.md` lists the ten sections `check-repo.mjs` checks, and this template has its own. Until DEBT-011 closes, follow this template, which outranks the older checks, and say in your hand-back that `check-repo.mjs` will flag the sections it expects; this skill does not run it.
 
 ## Change them
 
-- Edit an asset only to change what every new plugin gets, and keep its placeholders: they are what a new plugin resolves. A new placeholder needs `scaffold-plugin.py` to fill it, or a line in step 2 above telling the author to.
+- Edit an asset only to change what every new plugin gets, and keep its placeholders: they are what a new plugin resolves. A new placeholder needs `scaffold-plugin.py` to fill it, or a line in steps 2 or 3 above telling the author to.
 - A change to an asset brings every plugin file built from it in line in the same change. Those files are plugin files, so that part goes through a pull request.
 - After a change, scaffold a throwaway plugin in a scratchpad copy of the repository (`TCF_ROOT=<copy> scaffold-plugin.py …`) and read what it wrote.
 
