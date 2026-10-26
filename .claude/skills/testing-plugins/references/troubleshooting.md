@@ -10,7 +10,7 @@ Contents: Triage · Commands that do not exist · Add a marketplace · Install a
 | :- | :- |
 | Is the repo public and reachable? | `git ls-remote https://github.com/<owner>/<repo>.git`. A private or misspelled repo ends in an authentication message, not "not found". |
 | Is it the repo or the local machine? | With `T` a `mktemp -d` folder: `env -u CLAUDE_CODE_PLUGIN_DIRS CLAUDE_CODE_PLUGIN_PREFER_HTTPS=1 CLAUDE_CONFIG_DIR="$T/config" CLAUDE_CODE_PLUGIN_CACHE_DIR="$T/plugins" claude plugin marketplace add <owner/repo>`, then `... claude plugin install <plugin>@<marketplace>` with the same prefix. OK there, failing at home = local state. Failing in both = repo or entry. **[live]** on v2.1.310 this isolates settings and the plugin cache, and drops plugins `CLAUDE_CODE_PLUGIN_DIRS` would add. |
-| Is the catalog valid? | Clone the repo, run `claude plugin validate <dir>` at its root (marketplace) and at each plugin root. |
+| Is the catalog valid? | Clone the repo, run `claude plugin validate --strict <dir>` at its root (marketplace) and at each plugin root. |
 | What is registered locally? | `claude plugin marketplace list`, `claude plugin list`, `/plugin` → **Errors** tab, `claude plugin list --json` (`errors`, `errorDetails`). |
 | Need the real error text? | `claude --debug`, log at `~/.claude/debug/<session-id>.txt`. |
 
@@ -66,7 +66,7 @@ Aliases that work: `claude plugins` = `claude plugin`, `plugin remove` = `plugin
 | `An npm plugin source must name a registry package` | Entry's npm `package` is not a registry name or tarball link (e.g. `github:acme/formatter`). | Owner: fix `package`, or use a `github`/`url`/`git-subdir` source. |
 | `Marketplace "<name>" is registered from an untrusted source` | Registered under a name reserved for official Anthropic marketplaces from a non-`anthropics` repo. Re-checked at every load since v2.1.205. | User: `claude plugin marketplace remove <name>`, re-add from `github.com/anthropics`. Publisher: rename. |
 | `Marketplace "<name>" is added but ignored` | Entry in `~/.claude/plugins/known_marketplaces.json` failed a load check (network-drive or `..` location, unusable git URL, source mismatch with `extraKnownMarketplaces`, refused name). Pre-v2.1.286 shown as `Marketplace <name> not found` / `registered but was refused`. | `claude plugin marketplace remove <name>`, re-add, reinstall its plugins. Debug log names the entry. |
-| `Plugin <name> has a corrupt manifest file` (+ `JSON parse error:`) or `has an invalid manifest file` (+ `Validation errors:`) | `.claude-plugin/plugin.json` is not JSON, or fails the schema. Real name is in the `Failed to install plugin "<name>@<marketplace>"` prefix. | Author: `claude plugin validate <plugin-dir>`, fix. Others: report to the owner. |
+| `Plugin <name> has a corrupt manifest file` (+ `JSON parse error:`) or `has an invalid manifest file` (+ `Validation errors:`) | `.claude-plugin/plugin.json` is not JSON, or fails the schema. Real name is in the `Failed to install plugin "<name>@<marketplace>"` prefix. | Author: `claude plugin validate --strict <plugin-dir>`, fix. Others: report to the owner. |
 | `Plugin directory not found at path: <path>` (Errors tab) | Marketplace lists a relative `source` path that does not exist in the repo. `Marketplace directory not found at path: <path>` = the marketplace dir itself is gone. | Owner fixes `source` or restores the folder. |
 | `No plugins available` / `No marketplaces configured` | Nothing registered. | `/plugin marketplace add anthropics/claude-plugins-official` or the wanted marketplace. |
 | `Failed to install: <plugin> (<reason>)` (plugin menu) | Reason may be shortened to its first line. | Fix the named reason; for the full error, select the plugin in **Discover** and press Enter. |
@@ -101,7 +101,7 @@ Start: `/plugin` → **Installed** (enabled?), then the **Errors** tab, then `/r
 | `Disabled in ~/.claude/settings.json but still loads` | A higher-precedence source enables it. Set the id to `false` in `.claude/settings.local.json`. `required by your org` = claude.ai sync: out of scope. |
 | `Plugin "<name>" is enabled in project settings but isn't installed here` | Project settings enable, not install. `claude plugin install <name>@<marketplace> --scope project`, then `/reload-plugins`. |
 | Windows: still listed after `plugin uninstall` | Two records spelled differently (`c:\work\app` vs `C:\work\app`). Run the same uninstall again, same `--scope` and folder. Before v2.1.295 the second run fails with `is not installed in project scope`: `claude update`. |
-| `Failed to load hooks from <path>: <reason>` | `hooks/hooks.json` invalid JSON/schema; `claude plugin validate <plugin-dir>`. `hooks path not found: <path>`: manifest `hooks` path wrong. |
+| `Failed to load hooks from <path>: <reason>` | `hooks/hooks.json` invalid JSON/schema; `claude plugin validate --strict <plugin-dir>`. `hooks path not found: <path>`: manifest `hooks` path wrong. |
 | `<Event> hook error: Failed with non-blocking status code: <stderr>` | The hook ran and its command failed (e.g. `node: command not found`: install it / fix PATH). Path cut at a space = unquoted `${CLAUDE_PLUGIN_ROOT}`; quote it or use exec form. A hook exiting 2 blocks; since v2.1.281 the error ends `This hook comes from the <plugin> plugin.` |
 | Hook loads, never fires | Note `Its hooks.json hooks do not run` in plugin details = same-name plugin registered first. Else: event name is case-sensitive (`PostToolUse`), matcher matches the tool name, trigger it on purpose, read the debug log. |
 | `Failed to run: Plugin directory does not exist: <path> (<plugin> — run /plugin to reinstall)` | Run `/reload-plugins` first; read its output (`Reloaded:`; errors; or `... Run /reload-plugins --force to apply.`). |
@@ -126,7 +126,7 @@ Start: `/plugin` → **Installed** (enabled?), then the **Errors** tab, then `/r
 | `Warning: No commands found in plugin <name> custom directory` (debug log only) | `commands` path exists but holds no `.md`/`SKILL.md`. |
 | `claude plugin validate` errors (`Found N errors`, `Validation failed`, exit 1) | See table. |
 
-`claude plugin validate <path>` messages:
+`claude plugin validate --strict <path>` messages (with `--strict`, warnings fail too):
 
 | Message | Fix |
 | :- | :- |
@@ -145,7 +145,7 @@ Start: `/plugin` → **Installed** (enabled?), then the **Errors** tab, then `/r
 | :- | :- |
 | URL marketplace (`https://example.com/marketplace.json`): `its marketplace entry path does not stay inside the marketplace directory` / `Plugin source path refused` | Only the JSON file is downloaded, so relative `./plugins/x` sources break. Use `{ "source": "github", "repo": "owner/repo" }` per entry, or have users add the git repo URL (a git source clones everything, so relative paths resolve). For a GitHub-hosted marketplace, the repo itself is the right source. |
 
-`claude plugin validate .` at the marketplace root (marketplace-level messages):
+`claude plugin validate --strict .` at the marketplace root (marketplace-level messages):
 
 | Message | Kind | Fix |
 | :- | :- | :- |

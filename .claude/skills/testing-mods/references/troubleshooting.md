@@ -13,7 +13,7 @@ When a module does not load, a hook is skipped, or another mod refuses yours, Cl
 | `claude -p` with `--plugin-dir` | stderr (default text output). A refusal by *another* mod goes to the debug log only |
 
 Then, in order:
-1. `claude plugin validate <clone>` (static: misspelled event, bad manifest, unreadable module).
+1. `claude plugin validate --strict <clone>` (static: misspelled event, bad manifest, unreadable module).
 2. `claude plugin test <clone>` (behavior; see `testing.md`).
 3. Debug log: `claude --debug-file ./mod-debug.log --plugin-dir <clone>`; `grep <mod-name> ./mod-debug.log`. A loaded mod has a line like `hooks module first-mod@inline loaded (worker, environment 2, tier user); events: ...` (`@inline` for `--plugin-dir`; installed mods show their marketplace). **Unverified in `claude -p`**: in testing with 2.1.310 this line did not appear in `-p` debug logs; confirm in an interactive session.
 4. Each `--plugin-dir` hot reload prints a transcript line naming the mod and its hooks; a broken save prints `reload failed, the previous version stays loaded: <reason>`.
