@@ -1,4 +1,5 @@
-# Full plugin eval suite, only for plugins that have evals AND are new or edited.
+# Full plugin eval suite, only for plugins that have evals AND are new or had a
+# component or dependency changed. Every other plugin is skipped.
 # Template: copy to .github/workflows/evals.yml and adapt the three TODO values.
 # If the repo already has an eval workflow, audit it against the checklist in
 # references/eval-policy.md instead of adding this one.
@@ -76,19 +77,22 @@ jobs:
       PLUGIN: ${{ matrix.plugin }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version-file: .nvmrc
       - name: Install Claude Code
-        run: npm install -g "@anthropic-ai/claude-code@${CLAUDE_CODE_VERSION}"
+        # The native installer, which /en/setup recommends, at the pinned version
+        run: |
+          curl -fsSL https://claude.ai/install.sh | bash -s "${CLAUDE_CODE_VERSION}"
+          echo "${HOME}/.local/bin" >> "${GITHUB_PATH}"
       - name: Run the full suite
         run: |
           set -euo pipefail
           test -n "${CLAUDE_CODE_OAUTH_TOKEN}" || { echo "CLAUDE_CODE_OAUTH_TOKEN is not set" >&2; exit 1; }
           mkdir -p eval-results
+          # --trust-plugin and --scaffold: the docs allow them for suites you or your organization wrote
           claude plugin eval "plugins/${PLUGIN}" \
             --trust-plugin \
+            --scaffold \
             --json "eval-results/${PLUGIN}.json" \
+            --report "eval-results/${PLUGIN}.html" \
             --threshold 0.8 \
             --model "${EVAL_MODEL}" \
             --judge-model "${EVAL_JUDGE_MODEL}" \

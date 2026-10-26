@@ -1,18 +1,18 @@
 ---
 name: testing-plugins
-description: Use to build or run the eval suite of a plugin that has no mods, when evals are requested for it or a plugin that has evals was edited, to run the live checks of a ready plugin's MCP servers and MCP hooks, and to diagnose install, load or marketplace errors of plugins from a public GitHub marketplace. Not for mods, unit tests, type checks, linters or validate runs.
+description: Use to build or run the eval suite of any plugin, mods included, when evals are requested for it or a plugin that has evals was edited, to run the live checks of a ready plugin's MCP servers and MCP hooks, and to diagnose install, load or marketplace errors of plugins from a public GitHub marketplace. Not for a mod's own tests and troubleshooting, unit tests, type checks, linters or validate runs.
 ---
 
 # GitHub plugin QA
 
-Tests plugins that are published, or about to be published, in a **public GitHub marketplace**, and diagnoses the errors those plugins and marketplaces produce. Three jobs: (A) evals with a light local pilot and a full CI suite, (B) troubleshooting, (C) live checks of a ready plugin's MCP servers.
+Tests plugins that are published, or about to be published, in a **public GitHub marketplace**, and diagnoses the errors those plugins and marketplaces produce. Three jobs: (A) evals with a light local pilot and smoke and a full CI suite, (B) troubleshooting, (C) live checks of a ready plugin's MCP servers.
 
 ## Scope
 
 In scope: Claude Code plugins whose marketplace is a public GitHub repo (`owner/repo` or an `https://github.com/...` URL) added with `claude plugin marketplace add`.
 
 Out of scope. Say so in one sentence and stop; do not improvise a fix:
-- **Mods**: plugins whose `hooks/hooks.json` lists a hooks module under `modules`, whatever their category.
+- **A mod's own tests and troubleshooting** (`claude plugin test`, a hooks module that does not load or a skipped hook): `testing-mods`. A mod's eval suite is in scope here, as for any plugin: `/en/plugin-evals` excludes no kind of plugin.
 - Unit tests, type checks, linters and `claude plugin validate` runs: they belong to whoever writes the code.
 - Local-path marketplaces, GitHub Enterprise Server, `claudeai-*` (claude.ai) marketplaces, `skills-dir` plugins.
 - Anything blocked by organization policy (`blocked by enterprise policy`, `strictKnownMarketplaces`, `disableSideloadFlags`...): the fix belongs to an administrator.
@@ -23,8 +23,7 @@ Only when asked. Never add evals to a plugin, or run them, on your own initiativ
 
 - **New plugin, evals requested:** build or complete its suite, run the local pilot, hand the full run to CI.
 - **Existing plugin that has `evals/` and was edited:** run the local pilot on the affected cases, make sure CI will run the full suite.
-- **Existing plugin without evals, edited, and nobody asked for evals:** do nothing about evals. At most mention in one line that it has no suite.
-- **A user pastes an install, load or marketplace error:** go to part B.
+- **Existing plugin without evals, edited, and nobody asked for evals:** do nothing about evals. At most mention in one line that it has no suite.- **A user pastes an install, load or marketplace error:** go to part B.
 - **Nery says a plugin with an MCP server, or with a hook that matches or calls MCP tools, is ready:** go to part C. Never before: while the plugin is being shaped, its build runs static checks only.
 
 ## Ground truth first
@@ -32,17 +31,18 @@ Only when asked. Never add evals to a plugin, or run them, on your own initiativ
 Plugin evals and plugin loading change with every Claude Code release, and docs and changelog sometimes disagree (the changelog wins; say which one you used).
 
 1. `claude --version`, then `claude plugin eval --help` as separate plain commands. The CLI is the authority for flags.
-2. The references here were checked on 2026-10-25 against the docs, against `claude` v2.1.310 `--help`, and against every `plugin eval` and marketplace entry of the changelog from v2.1.269, when `plugin eval` was added, to v2.1.310. If the installed version is newer, check the changelog for `plugin eval` and `marketplace` from v2.1.310 on before relying on a flag or message.
-3. Mark anything you could not verify as unverified and say what it affects.
+2. The references here were checked against the docs (eval policy on 2026-10-26, troubleshooting on 2026-10-25), against `claude` v2.1.310 `--help`, and against every `plugin eval` and marketplace entry of the changelog from v2.1.269, when `plugin eval` was added, to v2.1.310. If the installed version is newer, check the changelog for `plugin eval` and `marketplace` from v2.1.310 on before relying on a flag or message.
+3. The official docs win over this skill, this repository's rules and its records. When they disagree, follow the docs, say so, and correct the project text.
+4. Mark anything you could not verify as unverified and say what it affects.
 
-## A. Evals: pilot locally, full suite in CI
+## A. Evals: pilot and smoke locally, full suite in CI
 
 Read [references/eval-policy.md](references/eval-policy.md) before running anything.
 
 1. **Gate.** Confirm the plugin is in scope and has (or is getting) `evals/`. For a new suite, use `claude plugin eval init` (interactive) or `claude plugin eval init --bare <case>`. Cases still need: one grader on the result, one on the steps, at least four should-trigger prompts in users' words plus one or two near misses.
-2. **Pilot (local, light).** `claude plugin eval . --runs 1 --ablation none --no-publish`, narrowed with `--case <glob>` to the cases the edit can affect. Target first, flags after. State the cost estimate (cases × 1 run × 1 arm, plus judge calls for `llm` graders) and get a yes before running. Never add `--trust-plugin`, `--scaffold`, `--allow-real-servers` or `--mocks off` unless the user's go-ahead names that flag.
+2. **Pilot (local, light).** `claude plugin eval . --runs 1 --ablation none --no-publish`, narrowed with `--case <glob>` to the cases the edit can affect; the smoke is the same command with `--tag smoke`. Target first, flags after. Add `--scaffold` when a case has a `scaffold_script`: the docs allow it for "suites you or your organization wrote", which a suite of this repository is. State the cost estimate (cases × 1 run × 1 arm, plus judge calls for `llm` graders) and get a yes before running. For a suite or plugin someone else wrote, `--trust-plugin` and `--scaffold` need the user's go-ahead by name; `--allow-real-servers` and `--mocks off` always do, because they call real services.
 3. **Report the pilot honestly.** It shows that cases load, run and grade. It has no baseline, so there is no Δ, and one run is noisy. Never call a pilot "the suite passed".
-4. **Full suite = CI, only for plugins with evals that are new or edited.** An unedited plugin with evals is skipped. Use the repo's existing eval workflow if there is one and audit it with the checklist in the reference; otherwise adapt [assets/evals-ci.yml](assets/evals-ci.yml), which uses [scripts/changed-eval-plugins.sh](scripts/changed-eval-plugins.sh) to pick targets, as the reference's "The CI template" says. Do not push, open a PR or spend CI money without the user's approval.
+4. **Full suite = CI, only for a new plugin or an existing plugin with evals whose components or dependencies changed.** Otherwise CI skips it. Use the repo's existing eval workflow if there is one and audit it with the checklist in the reference; otherwise adapt [assets/evals-ci.yml](assets/evals-ci.yml), which uses [scripts/changed-eval-plugins.sh](scripts/changed-eval-plugins.sh) to pick targets, as the reference's "The CI template" says. Do not push, open a PR or spend CI money without the user's approval.
 
 ## B. Troubleshooting
 

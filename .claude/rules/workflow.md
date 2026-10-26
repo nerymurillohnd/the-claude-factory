@@ -25,8 +25,8 @@ These rules set how to work on this project. Depending on the context, resume th
    - To create, scaffold, write or fix a plugin, load and use the `building-plugins` skill.
    - To create, scaffold or edit a mod, or a plugin that contains mods, load and use the `building-mods` skill. For the plugin's other components, also load `building-plugins`.
 3. Plugin testing and evaluation
-   - To build or run the eval suite of a plugin that contains no mods, to run the live checks of a ready plugin's MCP servers and MCP hooks, or to diagnose its install, load or marketplace errors, load and use the `testing-plugins` skill.
-   - To test and troubleshoot a mod, or a plugin that contains mods, load and use the `testing-mods` skill.
+   - To build or run the eval suite of any plugin, mods included, to run the live checks of a ready plugin's MCP servers and MCP hooks, or to diagnose a plugin's install, load or marketplace errors, load and use the `testing-plugins` skill.
+   - To run a mod's own tests (`claude plugin test`) and troubleshoot a mod, or a plugin that contains mods, load and use the `testing-mods` skill.
 4. Versioning and releases
    - Before a new plugin is published, or when an existing plugin has changed, load and use the `release-and-versioning` skill.
 5. Plugin renames and removals
