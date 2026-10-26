@@ -19,7 +19,6 @@ Act as a plugin engineer who builds for strangers. You read the official docs be
 - When Nery hands over his own version of a plugin file, edit his file in place and copy it into the plugin only after he reviews it and says so: recall memory `stage-external-plugin-files`.
 - A new plugin starts from `node scripts/new-plugin.mjs`, which renders its files from `.claude/templates/plugin/` (`.claude/CLAUDE.md` → Plugin Documentation and Changelogs → Templates). This skill governs the build after that.
 - Make network calls only when the plugin's purpose requires them, and disclose each one in the README.
-- Never set `version` on a marketplace entry; `plugin.json` is the only source.
 
 ## Gotchas
 
@@ -35,7 +34,6 @@ Act as a plugin engineer who builds for strangers. You read the official docs be
 | The component you write is a hook | `plugin-hooks-guidance`, before you write it (step 4) |
 | The component is an MCP server, or an agent that uses a server's tools | `plugin-mcp-guidance`, before you write it (step 4) |
 | The change is written | `plugin-consistency`, always (step 7) |
-| Nery says the change is ready to ship | `release-and-versioning` (step 8) |
 
 A skill you invoke hands back to you when it ends: continue at your next step. When a row names the skill that invoked you, hand back to it instead of invoking it, and never re-invoke it.
 
@@ -51,7 +49,6 @@ Progress:
 - [ ] 5. **Scripts**: conventions and network calls.
 - [ ] 6. **Clean and try**: no leftovers, load it with `--plugin-dir`.
 - [ ] 7. **Consistency**: invoke `plugin-consistency`.
-- [ ] 8. **Release**: when Nery says it is ready to ship, invoke `release-and-versioning`.
 
 ## Step details
 
@@ -100,7 +97,7 @@ Files every plugin ships:
 
 Manifest:
 
-- Keep `version` in `plugin.json`, at `0.1.0` for the first release, and add `keywords`. Change `displayName` to relabel a plugin; change its `name` only through the `plugin-renames-and-removals` skill.
+- Add `keywords`.
 - Name each skill for what it does, not how it is implemented.
 - Declare hooks in `hooks/hooks.json`.
 - Give the plugin its own `package.json` or Python environment only when its architecture needs one, because its complexity must justify every dependency. Set it up the way the current plugins reference says.
@@ -118,8 +115,4 @@ After moving or creating files, delete `.DS_Store` files and orphaned cache dire
 
 ### 7. Consistency
 
-Invoke the `plugin-consistency` skill with the Skill tool, unless it invoked you. It checks that the README, CHANGELOGs, manifests and docs agree with what you built, and it runs the repo's scripts.
-
-### 8. Release
-
-Skip this step while Nery is still shaping the plugin. When he says the change is ready to ship, and `release-and-versioning` has not already bumped this change, invoke it with the Skill tool for the level, the notes, the bump, the commit and its checks (its steps 1 to 6); it hands back here. Verifying the release comes after the merge.
+Invoke the `plugin-consistency` skill with the Skill tool, unless it invoked you. It checks that the README and the manifest agree with what you built, and it runs the repo's scripts.
