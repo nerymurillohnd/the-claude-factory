@@ -231,7 +231,7 @@ Add an item only when all of these hold:
 | --- | --- |
 | **Status** | 🟠 Blocked |
 | **Category** | quality, maintainability |
-| **Owner** | Maintainer tooling (`scripts/lib.mjs`, `scripts/check-repo.mjs`, `scripts/tests/scripts.test.mjs`), the frozen `.claude/templates/plugin/` and `.claude/templates/root-readme.md`, `.claude/CLAUDE.md` → Templates and README, and the plugins' READMEs |
+| **Owner** | Maintainer tooling (`scripts/lib.mjs`, `scripts/check-repo.mjs`, `scripts/tests/scripts.test.mjs`), the frozen `.claude/templates/plugin/` and `.claude/templates/root-readme.md`, the README rules of `.claude/CLAUDE.md` → Plugin Documentation and of the `building-plugins` skill, and the plugins' READMEs |
 | **Logged** | 2026-10-25 |
 
 #### 🔎 Evidence
@@ -243,8 +243,10 @@ Add an item only when all of these hold:
   - `scripts/tests/scripts.test.mjs` builds its fixture README from the frozen `.claude/templates/plugin/README.md`, because `check-repo.mjs` enforces that template's sections.
   - On a scratchpad copy on 2026-10-25, a plugin the scaffold created failed `check-repo.mjs` with `README.md missing the "Why use it" section` and the other old sections.
   - Nery's rule: new, validated work outranks existing files, which adapt to it.
+  - A comprehensibility review on 2026-10-25 found that the skill's own instructions also ask for what its template lacks: `SKILL.md` step 4 takes "each Compatibility cell from `docs/compatibility.md`", and `references/readme-style.md` and `references/mcp-servers.md` require Compatibility rows, a Version badge, an outcome-first TL;DR and emoji `##` headings; `assets/README-template.md` has none of them, only a "Works in:" line. `references/templates.md` says to follow the template until this item closes.
+  - The frozen `.claude/templates/root-readme.md` is now an older copy of `.claude/skills/maintaining-user-docs/assets/root-readme-template.md` (commit `dba682a`).
 - **Inferences:** none beyond the observed failure.
-- **Open questions:** which sections the adapted checks require (the skill's template has no Compatibility or Changelog section, which other checks read), and whether the 17 published READMEs move to the new shape at once or as each plugin next changes.
+- **Open questions:** which sections the adapted checks require (the skill's template has no Compatibility or Changelog section, which other checks read), whether the template gains Compatibility, badges and emoji headings or the skill's rules drop them, and whether the 17 published READMEs move to the new shape at once or as each plugin next changes.
 
 #### 📈 Impact and next step
 
@@ -253,7 +255,7 @@ Add an item only when all of these hold:
 - **Next action:** decide the section set with Nery. Then, in one change:
   - update `REQUIRED_PLUGIN_SECTIONS` and the checks that read Compatibility;
   - build the tests' fixture from the skill's template;
-  - fix CLAUDE.md → Templates and README.
+  - bring the README rules of `.claude/CLAUDE.md` → Plugin Documentation and of `building-plugins` in line with the section set.
 
   Then move each plugin README, by pull request, and delete `.claude/templates/plugin/` and `.claude/templates/root-readme.md`.
 - **Review condition:** closes when a plugin the scaffold creates passes `check-repo.mjs`, nothing reads the frozen templates, and they are deleted.
