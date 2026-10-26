@@ -36,7 +36,6 @@ Act as a plugin engineer who builds for strangers. You read the official docs be
 | The component is an MCP server, or an agent that uses a server's tools | `plugin-mcp-guidance`, before you write it (step 4) |
 | The change is written | `plugin-consistency`, always (step 7) |
 | Nery says the change is ready to ship | `release-and-versioning` (step 8) |
-| The work came from an issue or ends in a PR | `github-workflow` |
 
 A skill you invoke hands back to you when it ends: continue at your next step. When a row names the skill that invoked you, hand back to it instead of invoking it, and never re-invoke it.
 
@@ -123,4 +122,4 @@ Invoke the `plugin-consistency` skill with the Skill tool, unless it invoked you
 
 ### 8. Release
 
-Skip this step while Nery is still shaping the plugin. When he says the change is ready to ship, and `release-and-versioning` has not already bumped this change, invoke it with the Skill tool for the level, the notes, the bump, the commit and its checks (its steps 1 to 6); it hands back here, and `github-workflow` takes the push and the PR. Verifying the release comes after the merge.
+Skip this step while Nery is still shaping the plugin. When he says the change is ready to ship, and `release-and-versioning` has not already bumped this change, invoke it with the Skill tool for the level, the notes, the bump, the commit and its checks (its steps 1 to 6); it hands back here. Verifying the release comes after the merge.

@@ -16,7 +16,7 @@ Act as a release engineer who owns the integrity of the marketplace: the plugin 
 - Scope is the change: the files touched since `origin/main` plus the working tree, and every counterpart they must agree with. Widen to the whole repo only when Nery asks for a freshness check or before a release.
 - Read the rules, do not restate them: `.claude/rules/user-docs.md` is the style source for plugin READMEs, and the `release-and-versioning` skill the source for versions and changelogs. This skill checks that they were followed.
 - Fix the inconsistencies the change created, in the same change, at their root. Ask Nery before changing anything the change did not touch or cause.
-- Never push or bump by hand, and leave commits to `github-workflow` and `release-and-versioning`. Bump with `bump-version.mjs`, as the `release-and-versioning` skill says.
+- Never push or bump by hand, and leave commits to `release-and-versioning`. Bump with `bump-version.mjs`, as the `release-and-versioning` skill says.
 - A passing script is not consistency: the scripts check that things exist, not that they are true. Read both sides of every pair.
 - Check changed claims against live official sources, never against memory: commands, flags, UI paths and versions go stale.
 - Mark what you could not verify as **unverified** and say what it affects.
@@ -36,7 +36,6 @@ Act as a release engineer who owns the integrity of the marketplace: the plugin 
 | A hook file or the README text about it changed, and `plugin-hooks-guidance` has not run on that hook since its last edit | `plugin-hooks-guidance`, to check the hook against its rules (step 4) |
 | An `.mcp.json`, a manifest `mcpServers` or `userConfig` entry, or an agent's `tools` changed, and `plugin-mcp-guidance` has not run on it since its last edit | `plugin-mcp-guidance`, to check names, secrets and the README setup text (step 4) |
 | A component was added or rewritten and `plugin-development` has not run on it | `plugin-development` |
-| You were loaded alone (no skill invoked you) and the change goes to a PR | `github-workflow`, after step 8 |
 
 A skill you invoke hands back to you when it ends: continue at your next step. When a row names the skill that invoked you, hand back to it instead of invoking it, and never re-invoke it.
 
@@ -124,4 +123,4 @@ State, in this order:
 4. The raw script output from step 7.
 5. What is left for Nery, and what you could not check, marked **unverified**.
 
-When another skill invoked you, hand back to it; when you were loaded alone and the change goes to a PR, invoke `github-workflow` next.
+When another skill invoked you, hand back to it.
