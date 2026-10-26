@@ -1,10 +1,10 @@
 ---
-status: accepted
+status: superseded
 date: 2026-10-25
 decision-makers:
   - "Nery Samuel Murillo"
 supersedes: none
-superseded-by: none
+superseded-by: ADR_2026-10-25_plugin-readme-rules-live-in-building-plugins
 ---
 
 # The marketplace's user docs have their own skill
