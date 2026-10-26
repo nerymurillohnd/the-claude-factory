@@ -1,6 +1,6 @@
 ---
 name: plugin-mcp-guidance
-description: Use when adding or editing a plugin's MCP server, its userConfig, or an agent's MCP tools in tools or allowed-tools.
+description: Use when adding, editing, reviewing or debugging a plugin's MCP server or its userConfig, an agent's MCP tools in tools or allowed-tools, an MCP hook matcher or mcp_tool hook handler, scoped tool names, MCP authentication, connection lifecycle or MCP timeouts, and before answering a question about MCP in hooks or plugins.
 ---
 
 # Plugin MCP guidance
@@ -19,6 +19,10 @@ Act as an integration engineer who ships a server to strangers. You assume the c
 - Secrets and per-user values go through `userConfig` and `${user_config.KEY}`. Never hardcode them, never read them from the user's shell environment. Put the value in a header, not in the URL: a chat conversation skips a server whose URL holds the reference.
 - Disclose each server in the README: what it connects to, what it sends, and the prerequisites with how to install them. Keep exactly one Compatibility row per MCP type the plugin ships.
 - Before relying on a `userConfig` option, read `/en/plugins/manifest-reference` → "User configuration"; before writing `${VAR}` in headers, read `/en/mcp` → "Environment variable expansion in `.mcp.json`". The Claude app rules are in the Gotchas below and in step 6.
+- Read `.claude/rules/plugins/mcp-component.md` for every MCP configuration change. It loads by itself only with a `.mcp.json`, so read it explicitly when the servers sit in the manifest's `mcpServers`, and say so if the file is missing.
+- For a hook that matches MCP tools or calls one (`mcp_tool`), a server's connection state, authentication or timeouts, read [references/mcp-hooks-and-lifecycle.md](references/mcp-hooks-and-lifecycle.md) first.
+- When the docs and the release notes disagree, the release notes win; read them raw from <https://raw.githubusercontent.com/anthropics/claude-code/main/CHANGELOG.md>.
+- Never launch plugin code, connect a server or authenticate only to validate configuration: static checks first, live checks only when step 6 calls for them.
 
 ## Gotchas
 
@@ -60,11 +64,11 @@ State the user task the server serves and why a skill or a script cannot serve i
 
 ### 2. Docs
 
-Read `/en/mcp` and, in `/en/plugins/components`, the MCP servers section; read `/en/plugins/manifest-reference` for `userConfig` and the fields that reject it. Open them through the Claude Code Docs MCP tools; when a heading is missing or exact wording decides, read the raw page at `https://code.claude.com/docs/en/<page>.md`.
+Read `/en/mcp` and, in `/en/plugins/components`, the MCP servers section; read `/en/plugins/manifest-reference` for `userConfig` and the fields that reject it. For hooks, connection state and timeouts, the sources table at the end of `references/mcp-hooks-and-lifecycle.md` names the page for each topic. Open them through the Claude Code Docs MCP tools; when a heading is missing or exact wording decides, read the raw page at `https://code.claude.com/docs/en/<page>.md`.
 
 ### 3. Declare
 
-- Write the server in `.mcp.json` at the plugin root, or in the manifest `mcpServers` key, which also takes a path or an `.mcpb` file. Path variables (the plugin root and data directories, wrapped as `${…}`) are substituted in `command`, `args`, `env`, `url` and `headers`.
+- Write the server in `.mcp.json` at the plugin root, or in the manifest `mcpServers` key, which also takes a path or an `.mcpb` file. Path variables (the plugin root and data directories, wrapped as `${…}`) are substituted in `command`, `args` and `env` of a stdio server, and in `url`, `headers` and `headersHelper` of an `http`, `sse` or `ws` server (`/en/plugins/manifest-reference`).
 - Put every credential or per-user value in `userConfig` and reference it as `${user_config.KEY}` in `headers`, `env` or `args`. Mark a token `sensitive`. Never use `headersHelper` with it.
 - Run `claude plugin validate --strict plugins/<name>` and load the plugin with `claude --plugin-dir plugins/<name>`; `/mcp` must show the server as `plugin:<plugin>:<server>`.
 

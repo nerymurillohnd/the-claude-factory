@@ -13,7 +13,7 @@ paths:
 - Keep plugin MCP configuration independent of maintainer tools, environments, and machine-specific paths.
 - Consult the official references below before introducing fields or relying on version-specific behavior.
 - Corroborate every documented behavior against the changelog and the release notes for the installed `claude --version`; when they disagree with the docs, the changelog and release notes win.
-- Invoke `mcp-hooks-plugins` skill before answering questions or planning, implementing, reviewing, validating, or debugging MCP behavior in hooks or plugins; follow its required reading before proceeding.
+- Invoke the `plugin-mcp-guidance` skill before answering questions or planning, implementing, reviewing, validating, or debugging MCP behavior in hooks or plugins.
 
 ## Configuration and Portability
 
@@ -65,10 +65,8 @@ paths:
 
 ## Official References
 
-- Corroborate documented behavior against the changelog and release notes:
-  https://code.claude.com/docs/en/changelog
-  https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md
-  https://github.com/anthropics/claude-code/releases
+- Corroborate documented behavior against the release notes, read raw:
+  https://raw.githubusercontent.com/anthropics/claude-code/main/CHANGELOG.md
 - Validate plugin ownership and packaging against:
   https://code.claude.com/docs/en/plugins/overview
 - Validate plugin MCP behavior against:
