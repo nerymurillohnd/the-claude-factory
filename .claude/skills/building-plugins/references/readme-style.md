@@ -1,19 +1,19 @@
 # Plugin README: template and style
 
-How a plugin's `README.md` is written in this repository, and how its template is kept. It applies to every `plugins/<name>/README.md` and to everything under `.claude/templates/plugin/`. What the README must contain for any public plugin is in `public-readiness.md`; this file adds this repository's template and style.
+How a plugin's `README.md` is written in this repository, and how its templates are kept. It applies to every `plugins/<name>/README.md` and to the plugin templates. What the README must contain for any public plugin is in `public-readiness.md`; this file adds this repository's style.
 
-## Start from the template
+## Write it from the template
 
-- Every plugin README starts from `.claude/templates/plugin/README.md`, which `node scripts/new-plugin.mjs` renders for a new plugin. `check-repo.mjs` requires that template's sections, so never start from another plugin's README or from any other template.
-- Resolve every `{{…}}` placeholder and `<!-- TODO -->` comment of the template. Delete rows and sections that do not apply, but keep every required section.
+- Start a plugin README from `../assets/README-template.md`, never from another plugin's README.
+- Resolve every placeholder and `<!-- TODO -->` comment of the template. Delete rows and sections that do not apply, but keep every required section.
 - Keep exactly one Compatibility row per component type the plugin ships.
 - Open with an outcome-first TL;DR.
 - The Version badge reads `version` from `plugin.json`. Never hardcode a version in it.
 
-## Keep the template
+## Keep the templates
 
-- Edit `.claude/templates/plugin/` itself only to change what every plugin README gets, and keep its `{{…}}` placeholders and `<!-- TODO -->` comments: they are what a new README resolves.
-- A change to the template brings every plugin README built from it in line in the same change; those READMEs are plugin files, so that part goes through a pull request.
+- Edit a template only to change what every plugin README gets, and keep its placeholders and `<!-- TODO -->` comments: they are what a new README resolves.
+- A change to a template brings every plugin README built from it in line in the same change; those READMEs are plugin files, so that part goes through a pull request.
 
 ## Style
 
