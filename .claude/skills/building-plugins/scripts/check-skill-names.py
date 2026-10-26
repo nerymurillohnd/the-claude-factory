@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
 """Skill names: every skill of plugins/<plugin> names itself after its directory.
 
-The skills it reads: each `<dir>/SKILL.md` under plugins/<plugin>/skills/, and under each
-directory that `skills` in the plugin's .claude-plugin/plugin.json names; "." or "./" is the plugin
-root holding a SKILL.md itself, named after the plugin.
+The skills it reads, as Claude Code loads them (https://code.claude.com/docs/en/plugins/components
+and manifest-reference, `skills`): each `<dir>/SKILL.md` under plugins/<plugin>/skills/; each
+directory that `skills` in .claude-plugin/plugin.json names, either one folder holding SKILL.md
+directly, named after that folder ("." or "./" is the plugin root, named after the plugin), or a
+directory of `<dir>/SKILL.md` folders; and, with no skills/ and no `skills` key, a SKILL.md at the
+plugin root, the plugin's single skill, named after the plugin.
 
 For each SKILL.md, the `name:` line of its frontmatter (the lines between a first line `---` and
 the next `---`) must appear once, and its value, written alone on that line, must equal the
@@ -37,18 +40,20 @@ def repo_root() -> Path:
     return Path(override) if override else Path(__file__).resolve().parents[4]
 
 
-def declared_dirs(plugin: Path, errors: list[str]) -> list[Path]:
-    """The directories `skills` in plugin.json names, inside the plugin."""
+def declared_dirs(plugin: Path, errors: list[str]) -> tuple[list[Path], bool]:
+    """The directories `skills` in plugin.json names, inside the plugin, and whether it is set."""
     manifest = plugin / ".claude-plugin" / "plugin.json"
     if not manifest.is_file():
-        return []
+        return [], False
     try:
         data = _decode(manifest.read_text(encoding="utf-8"))
     except (OSError, ValueError) as e:
-        errors.append(f"[{manifest}] cannot be read as JSON: {e}")
-        return []
-    if not isinstance(data, dict):
-        return []
+        errors.append(
+            f"[plugins/{plugin.name}/.claude-plugin/plugin.json] cannot be read as JSON: {e}"
+        )
+        return [], False
+    if not isinstance(data, dict) or "skills" not in data:
+        return [], False
     value = cast("dict[str, object]", data).get("skills")
     items = cast("list[object]", value) if isinstance(value, list) else [value]
     found: list[Path] = []
@@ -62,17 +67,30 @@ def declared_dirs(plugin: Path, errors: list[str]) -> list[Path]:
             errors.append(f'[plugin.json skills] "{item}" names a directory that does not exist')
         else:
             found.append(target)
-    return found
+    return found, True
+
+
+def skill_name(folder: Path, plugin: Path) -> str:
+    """The name a skill folder must carry: its directory's, or the plugin's for the plugin root."""
+    return plugin.name if folder.resolve() == plugin.resolve() else folder.name
 
 
 def skills_of(plugin: Path, errors: list[str]) -> list[tuple[Path, str]]:
-    """(SKILL.md, the name it must carry) for every skill of the plugin, once each."""
+    """(SKILL.md, the name it must carry) for every skill of the plugin, once each.
+
+    `skills/` holds one folder per skill. Each directory `skills` in plugin.json names is either
+    one folder holding SKILL.md directly or a directory of skill folders. With no `skills/` and no
+    `skills` key, a SKILL.md at the plugin root loads as the plugin's single skill.
+    """
     found: dict[Path, tuple[Path, str]] = {}
-    for root in [plugin / "skills", *declared_dirs(plugin, errors)]:
-        if root.resolve() == plugin.resolve():
-            if (plugin / "SKILL.md").is_file():
-                _ = found.setdefault(plugin.resolve(), (plugin / "SKILL.md", plugin.name))
-            continue
+    declared, has_key = declared_dirs(plugin, errors)
+    default = plugin / "skills"
+    if not has_key and not default.is_dir() and (plugin / "SKILL.md").is_file():
+        _ = found.setdefault(plugin.resolve(), (plugin / "SKILL.md", plugin.name))
+    for root in declared:
+        if (root / "SKILL.md").is_file():
+            _ = found.setdefault(root.resolve(), (root / "SKILL.md", skill_name(root, plugin)))
+    for root in [default, *(d for d in declared if not (d / "SKILL.md").is_file())]:
         if not root.is_dir():
             continue
         for entry in sorted(root.iterdir()):
@@ -81,20 +99,24 @@ def skills_of(plugin: Path, errors: list[str]) -> list[tuple[Path, str]]:
     return list(found.values())
 
 
-def frontmatter(skill_file: Path) -> list[str] | None:
-    """The lines between the opening and closing `---`, or None when there is no frontmatter."""
-    lines = skill_file.read_text(encoding="utf-8").splitlines()
+def frontmatter(skill_file: Path) -> list[str] | str:
+    """The lines between the opening and closing `---`, or why there are none."""
+    missing = 'has no frontmatter between a first line "---" and a closing "---"'
+    try:
+        lines = skill_file.read_text(encoding="utf-8").splitlines()
+    except (OSError, ValueError) as e:
+        return f"cannot be read as UTF-8 text: {e}"
     if not lines or lines[0].rstrip() != "---":
-        return None
+        return missing
     end = next((i for i in range(1, len(lines)) if lines[i].rstrip() == "---"), None)
-    return None if end is None else lines[1:end]
+    return missing if end is None else lines[1:end]
 
 
 def name_problem(skill_file: Path, expected: str) -> str | None:
     """Why the frontmatter `name` of `skill_file` is not `expected`, or None when it is."""
     lines = frontmatter(skill_file)
-    if lines is None:
-        return 'has no frontmatter between a first line "---" and a closing "---"'
+    if isinstance(lines, str):
+        return lines
     values = [m.group(1).strip() for line in lines if (m := NAME_LINE.match(line))]
     if not values:
         return 'has no "name" field'
