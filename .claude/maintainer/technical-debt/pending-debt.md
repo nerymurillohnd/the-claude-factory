@@ -45,6 +45,7 @@ Add an item only when all of these hold:
 | DEBT-006 | No gate runs the validators of `scripts/validators/`, so CI lost the checks `check-repo.mjs` dropped | 🟡 Pending |
 | DEBT-008 | `main` and the release tags have no GitHub protection | 🟠 Blocked |
 | DEBT-009 | Biome ignores Markdown, so no tool formats or lints the repository's Markdown | 🟡 Pending |
+| DEBT-010 | The mod gates of `scripts/gates.mjs` can miss a mod or report green on a lost test summary | 🟡 Pending |
 
 ## 📂 Open items
 
@@ -188,6 +189,40 @@ Add an item only when all of these hold:
 - **Next action:** check Biome's current docs and release notes for Markdown support. Then either add Markdown to `files.includes`, with the protected files excluded, or make the CLAUDE.md Maintainer Tooling line say what really reads Markdown.
 - **Review condition:** closes when `.claude/CLAUDE.md` and `biome.json` agree, and a Markdown check, if one is adopted, fails on a deliberately broken user doc.
 - **Related records:** ADR_2026-10-21_remove-markdownlint, ADR_2026-10-25_marketplace-user-docs-have-their-own-skill.
+
+### DEBT-010 — The mod gates of `scripts/gates.mjs` can miss a mod or report green on a lost test summary
+
+| Field | Value |
+| --- | --- |
+| **Status** | 🟡 Pending |
+| **Category** | reliability, quality |
+| **Owner** | Maintainer tooling (`scripts/gates.mjs`) |
+| **Logged** | 2026-10-25 |
+
+#### 🔎 Evidence
+
+- **Confirmed facts (read on 2026-10-25):**
+  - `scripts/gates.mjs:392-404` creates the `mod-test:<plugin>` gate only for plugins with tracked `*.test.ts` or `*.test.tsx` files, not for every plugin whose `hooks/hooks.json` lists `modules`.
+  - `scripts/gates.mjs:406-417` creates the `mod-tsc:<plugin>` gate for any plugin with a `tsconfig.json`, and nothing refreshes the engine's declarations before it runs.
+  - `scripts/gates.mjs:494` runs every gate with `stdio: ['ignore', 'pipe', 'pipe']`, so `claude plugin test` writes to a pipe.
+  - anthropics/claude-code#103055 reports that `claude plugin test` on a pipe can lose the tail of its output, summary included, and exit 0. `testing-mods/scripts/check-mod.sh` writes to a file and fails without the summary.
+  - Before 2026-10-25, `.claude/CLAUDE.md` said `npm run gates` ran these checks "after the declarations are refreshed".
+- **Inferences:**
+  - A mod without tests is never run by `claude plugin test` in the gates.
+  - A failed test can pass the gate when the summary is lost.
+  - `tsc` runs against declarations from an older build after an update.
+- **Open questions:** whether #103055 still reproduces on 2.1.310 through `spawnSync` with pipes.
+
+#### 📈 Impact and next step
+
+- **Impact / risk:** the local release proof for a mod can report green on a mod that fails its tests, or that has none, and reach users.
+- **Why it is not fixed now:** Nery deferred it on 2026-10-25 to keep the session on consolidating the mod documentation.
+- **Next action:**
+  - key `mod-test` on `modules` in `hooks/hooks.json`;
+  - run `claude plugin test` with its output in a file, and fail when the `Ran N tests across N files` summary is missing, as `check-mod.sh` does;
+  - name `mod-tsc` for what it checks, and check the declarations' `// Written by Claude Code <version>.` header against `claude --version` before `tsc`.
+- **Review condition:** closes when a mod with no tests fails the gate, a test run with its summary removed fails it, and stale declarations are reported.
+- **Related records:** ADR_2026-10-21_gates-run-from-one-script, ADR_2026-10-25_building-mods-skill-holds-mod-authoring.
 
 <!--
 Entry format. Copy this block above this comment for each new item and add its row to the Index.
