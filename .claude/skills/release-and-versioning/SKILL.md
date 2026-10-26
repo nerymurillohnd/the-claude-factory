@@ -110,7 +110,7 @@ Run them after the commit in step 5: `check-version-bump.py` reads committed cha
 3. `$S/check-marketplace-unversioned.py`
 4. `$S/check-changelog-entry.py <plugin>` for each changed plugin.
 5. `node scripts/check-repo.mjs`, for the repository checks this skill does not own.
-6. `node scripts/generators/catalog.mjs --check`
+6. `node scripts/generators/catalog.mjs --check`, and `node scripts/generators/marketplace.mjs --check`, which fails while `marketplace.json` does not list a new plugin as `plugins/` holds it.
 7. `claude plugin validate --strict plugins/<plugin>` for each changed plugin, then `claude plugin validate --strict .` for the marketplace.
 8. `git lfs ls-files -- plugins/<plugin>` prints nothing: a git clone never downloads LFS content, so an LFS file reaches users as a pointer file (`/en/plugins/host-marketplace`, "Keep plugin files out of Git LFS").
 9. `find plugins/<plugin> -type l` lists every symlink, and each must resolve inside `plugins/<plugin>/`: a link elsewhere in the repository is copied as its target's content, and a link outside it is skipped without a warning (`/en/plugins/host-marketplace`, "Share files within a marketplace with symlinks").
