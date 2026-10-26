@@ -43,7 +43,6 @@ Add an item only when all of these hold:
 | DEBT-002 | Version-bump check fails on main after a revert of an unreleased bump and blocks every release | 🟠 Blocked |
 | DEBT-006 | No gate runs the validators of `scripts/validators/`, so CI lost the checks `check-repo.mjs` dropped | 🟡 Pending |
 | DEBT-010 | The mod gates of `scripts/gates.mjs` can miss a mod or report green on a lost test summary | 🟠 Blocked |
-| DEBT-011 | The repository's README checks and plugin READMEs still follow the old plugin template, not the one `building-plugins` sets | 🟠 Blocked |
 | DEBT-013 | The plugins' Markdown is not formatted or linted by Biome until each plugin next changes | 🔴 Risk accepted |
 
 ## 📂 Open items
@@ -135,42 +134,6 @@ Add an item only when all of these hold:
   - name `mod-tsc` for what it checks, and check the declarations' `// Written by Claude Code <version>.` header against `claude --version` before `tsc`.
 - **Review condition:** closes when a mod with no tests fails the gate, a test run with its summary removed fails it, and stale declarations are reported.
 - **Related records:** ADR_2026-10-21_gates-run-from-one-script, ADR_2026-10-25_building-mods-skill-holds-mod-authoring.
-
-### DEBT-011 — The repository's README checks and plugin READMEs still follow the old plugin template, not the one `building-plugins` sets
-
-| Field | Value |
-| --- | --- |
-| **Status** | 🟠 Blocked |
-| **Category** | quality, maintainability |
-| **Owner** | Maintainer tooling (`scripts/lib.mjs`, `scripts/check-repo.mjs`, `scripts/tests/scripts.test.mjs`), the frozen `.claude/templates/plugin/` and `.claude/templates/root-readme.md`, the README rules of the `building-plugins` skill, and the plugins' READMEs |
-| **Logged** | 2026-10-25 |
-
-#### 🔎 Evidence
-
-- **Confirmed facts (read on 2026-10-25):**
-  - The `building-plugins` skill starts a plugin README from its `assets/README-template.md`, whose sections are Install, Update, Prerequisites, Configuration, Usage, What this plugin runs and sends, Uninstall and License.
-  - `scripts/lib.mjs:85-96` `REQUIRED_PLUGIN_SECTIONS`, which `check-repo.mjs` enforces, lists Why use it, What's inside, Requirements, Installation, Usage, Updating, Uninstalling, Compatibility, Changelog and License.
-  - The skill's `scripts/scaffold-plugin.py` creates a new plugin from the skill's assets.
-  - `scripts/tests/scripts.test.mjs` builds its fixture README from the frozen `.claude/templates/plugin/README.md`, because `check-repo.mjs` enforces that template's sections.
-  - On a scratchpad copy on 2026-10-25, a plugin the scaffold created failed `check-repo.mjs` with `README.md missing the "Why use it" section` and the other old sections.
-  - Nery's rule: new, validated work outranks existing files, which adapt to it.
-  - A comprehensibility review on 2026-10-25 found that the skill's own instructions also ask for what its template lacks: `SKILL.md` step 4 takes "each Compatibility cell from `docs/compatibility.md`", and `references/readme-style.md` and `references/mcp-servers.md` require Compatibility rows, a Version badge, an outcome-first TL;DR and emoji `##` headings; `assets/README-template.md` has none of them, only a "Works in:" line. `references/templates.md` says to follow the template until this item closes.
-  - The frozen `.claude/templates/root-readme.md` is now an older copy of `.claude/skills/maintaining-user-docs/assets/root-readme-template.md` (commit `dba682a`).
-- **Inferences:** none beyond the observed failure.
-- **Open questions:** which sections the adapted checks require (the skill's template has no Compatibility or Changelog section, which other checks read), whether the template gains Compatibility, badges and emoji headings or the skill's rules drop them, and whether the 17 published READMEs move to the new shape at once or as each plugin next changes.
-
-#### 📈 Impact and next step
-
-- **Impact / risk:** a plugin the scaffold creates is refused by the repository's check, and the templates exist twice, the skill's assets and the frozen originals, which can drift if someone edits the wrong one.
-- **Why it is not fixed now:** adapting it changes maintainer scripts and every plugin README, which go through pull requests; it waits on Nery's decision on the open questions.
-- **Next action:** decide the section set with Nery. Then, in one change:
-  - update `REQUIRED_PLUGIN_SECTIONS` and the checks that read Compatibility;
-  - build the tests' fixture from the skill's template;
-  - bring the README rules of `building-plugins` (`references/readme-style.md` and `references/templates.md`) in line with the section set.
-
-  Then move each plugin README, by pull request, and delete `.claude/templates/plugin/` and `.claude/templates/root-readme.md`.
-- **Review condition:** closes when a plugin the scaffold creates passes `check-repo.mjs`, nothing reads the frozen templates, and they are deleted.
-- **Related records:** ADR_2026-10-25_plugin-scaffold-belongs-to-building-plugins.
 
 ### DEBT-013 — The plugins' Markdown is not formatted or linted by Biome until each plugin next changes
 

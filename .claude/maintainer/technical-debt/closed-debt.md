@@ -25,6 +25,7 @@
 | 2026-10-26 | DEBT-001 | resolved | pr-tracker inherits the session's tools, so a GitHub MCP server of any name reaches it | none |
 | 2026-10-26 | DEBT-008 | accepted | `main` and the release tags stay without GitHub protection by Nery's decision | none |
 | 2026-10-26 | DEBT-009 | resolved | Biome 2.6.3 formats and lints the Markdown outside `plugins/`, locally and in CI | none |
+| 2026-10-26 | DEBT-011 | resolved | The plugin README template takes the published shape, a scaffolded plugin passes `check-repo.mjs`, and the frozen templates are gone | none |
 
 ## 🏁 Closed items
 
@@ -273,6 +274,37 @@ Biome 2.6 supports Markdown. `biome.json` now includes `*.md`, excludes the neve
 - **Residual risk:** the plugins' Markdown joins only on each plugin's next change (DEBT-013); Biome does not check links, anchors or prose.
 - **Closed by:** ADR_2026-10-26_biome-formats-and-lints-maintainer-markdown.
 - **Related records:** ADR_2026-10-21_remove-markdownlint.
+- **Superseded by:** none
+
+### DEBT-011 — The plugin README template takes the published shape, a scaffolded plugin passes `check-repo.mjs`, and the frozen templates are gone
+
+| Field | Value |
+| --- | --- |
+| **Outcome** | resolved |
+| **Closed on** | 2026-10-26 |
+| **Logged on** | 2026-10-25 |
+| **Owner** | `building-plugins` (`assets/README-template.md`, `scripts/scaffold-plugin.py`), `scripts/check-repo.mjs`, `scripts/tests/scripts.test.mjs` |
+
+#### ❗ The problem
+
+The skill's README template had its own eight sections and one "Works in" line, while the 17 published READMEs, the frozen `.claude/templates/plugin/README.md` and `REQUIRED_PLUGIN_SECTIONS` shared another shape. A plugin the scaffold created failed `check-repo.mjs` with `README.md missing the "Why use it" section`, the tests built their fixture from the frozen README, and every template existed twice.
+
+#### 🔧 The closure
+
+Nery chose the published shape (ADR_2026-10-26_plugin-readme-template-takes-the-published-shape). The template was rebuilt on it with the "What this plugin runs and sends" disclosure kept (commit `fdd05ff`), the scaffold fills the identity and surface parts (`fab4add`), `check-repo.mjs` reports author placeholders left outside code and the tests build their demo plugin with the scaffold (`64f2af5`), and `.claude/templates/` was deleted with its live references (`5836c06`). The 17 published READMEs were not touched.
+
+#### 🧪 Verification
+
+| Check | Evidence |
+| --- | --- |
+| ✅ **Positive:** the closure holds | On 2026-10-26 in a scratch worktree, a plugin from `scaffold-plugin.py`, with its placeholders filled, its Compatibility table trimmed to Skills and one skill added, passed `node scripts/check-repo.mjs` (`✔ Repository checks passed`). `node --test scripts/tests/scripts.test.mjs scripts/tests/gates.test.mjs`: 64 of 64 pass; check-repo passes on the repository. |
+| 🚫 **Negative:** the original failure or condition is gone | The same fresh scaffold fails with `README.md has unresolved <…> placeholders`, not with a missing section; `grep -rn ".claude/templates"` finds no live reader outside dated specs and ADRs. |
+
+#### 🔗 Follow-up
+
+- **Residual risk:** the placeholder check skips code spans and fenced blocks, so a placeholder left only inside code passes.
+- **Closed by:** ADR_2026-10-26_plugin-readme-template-takes-the-published-shape, commits `fdd05ff`, `fab4add`, `64f2af5` and `5836c06`.
+- **Related records:** ADR_2026-10-25_plugin-scaffold-belongs-to-building-plugins.
 - **Superseded by:** none
 
 <!--
