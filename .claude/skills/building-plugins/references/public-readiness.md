@@ -17,11 +17,11 @@ Checked 2026-10-25 against `/en/plugins/publish`, `/en/plugins/host-marketplace`
 - `LICENSE` file, or `license` in `plugin.json`. A public repo without a license isn't legally reusable, and the directory blocks it.
 - `CHANGELOG.md` when you version releases.
 - Filled metadata: `description`, `author`, `homepage` (must be a valid URL), `repository`, `license`, `keywords`.
-- `NOTICE` or attribution when the plugin bundles or derives from third-party material, with each source's repo, version or commit, and license.
+- `NOTICE.txt` when the plugin bundles or derives from third-party material, with each source's repo, version or commit, and license.
 
 ## README: required sections
 
-1. **What it does** for the user, in plain words, and on which surfaces (Claude Code only, or also claude.ai/Cowork — see the surface table in `manifest-and-components.md`).
+1. **What it does** for the user, in plain words, and on which surfaces (Claude Code only, or also claude.ai/Cowork). In this repository the README states them as `docs/compatibility.md` does per component type; the surface table in `manifest-and-components.md` explains why.
 2. **Install** — the exact lines, with your real names. Since v2.1.295, `claude plugin validate` prints the line to paste when a README has none (advice only; it never fails the run):
 
    ```bash

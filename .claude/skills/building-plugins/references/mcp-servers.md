@@ -51,7 +51,7 @@ Read `/en/mcp` and, in `/en/plugins/components`, the MCP servers section; read `
 
 ### 4. Reach
 
-Give an agent its tools through its `tools` allowlist, written with the scoped name: one entry per tool, or `mcp__plugin_<plugin>_<server>__*` for the whole server, the form project memory `agent-file-rules` records for MCP entries. Confirm the real names in `/mcp` before you write the line. Leave `tools` unset to inherit everything. Use the same scoped name in a skill's `allowed-tools`, in any permission rule the README recommends, and in a hook matcher with `.*` for the whole server. Recall memory `agent-file-rules` before you write the agent, and read `/en/sub-agents` → "Preload skills into subagents" before you rely on `skills:` in its frontmatter.
+Give an agent its tools through its `tools` allowlist, written with the scoped name: one entry per tool, or `mcp__plugin_<plugin>_<server>__*` for the whole server; never the bare-key form `mcp__<server>__*`, which matches no plugin tool. Confirm the real names in `/mcp` before you write the line. Leave `tools` unset to inherit everything. Use the same scoped name in a skill's `allowed-tools`, in any permission rule the README recommends, and in a hook matcher with `.*` for the whole server. Read `/en/sub-agents` before you write the agent, and its "Preload skills into subagents" section before you rely on `skills:` in its frontmatter.
 
 ### 5. Scope
 
