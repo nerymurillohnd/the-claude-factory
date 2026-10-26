@@ -45,7 +45,7 @@ The value isn't checked against SemVer; SemVer is a convention you choose. Stayi
 ## Release checklist
 
 1. Decide the bump from the user-facing change (or confirm the plugin is unversioned on purpose).
-2. Update `version` in `plugin.json` and the plugin's `CHANGELOG.md` in the same commit as the change, so the default branch never holds changed files under an old version.
+2. Update `version` in `plugin.json` and the plugin's `CHANGELOG.md` before the change reaches the default branch, so it never holds changed files under an old version. In this repository the release stage of `.claude/rules/workflow.md` decides how: the bump goes in the change's pull request, as its own signed commit.
 3. `claude plugin validate --strict` on the plugin directory (no `--strict` if it omits `version` on purpose) and `claude plugin validate .` at the marketplace root; raw output in the hand-back.
 4. List what the push publishes — each plugin and its new version — and get the user's explicit go-ahead before pushing or merging to the default branch.
 5. In release notes or the README, tell users how to update (`claude plugin update <plugin>@<marketplace>`) and that auto-update is opt-in.
