@@ -71,7 +71,8 @@ evals/
 - **Single-arm cases** (no `W/OUT`, no Δ): every case under `--ablation none`; with a path target, a case that resumes a transcript through `context.history_file` (stderr prints a `single-arm (no Δ)` notice naming it; `--ablation with-without` compares the resumed turn anyway) and a case whose plugin Claude Code couldn't locate (fix with `plugins: ["../.."]`).
 - Anything beyond the read-only tools (`Read, Glob, Grep, NotebookRead, Skill, AskUserQuestion, Agent, TodoWrite`, `TaskCreate, TaskGet, TaskList, TaskUpdate, TaskStop`) needs `--allow-tools`; otherwise the tool is removed from the session and the progress output lists it as `not granted`. The grant applies to every case in the run. A grader on a created file needs `Write`/`Edit`. With `Bash` granted, network access is limited to the domains granted with `--allow-tools "WebFetch(domain:example.com)"`.
 - Defaults: `max_turns` 10, `timeout_seconds` 300 (up to 3600), `runs` 3. A one-shot answer needs about 5 turns; reading a repo and writing a report 25–40.
-- Runs are isolated: no `CLAUDE.md`, settings, memory, other plugins, or personal MCP servers. Ship everything a case needs inside the plugin.
+- Runs are isolated: each is a `claude -p` child process with only the plugin loaded, and no `CLAUDE.md`, settings, memory, other plugins, or personal MCP servers. Ship everything a case needs inside the plugin.
+- A mod's hooks run in eval runs, because they run in `claude -p`; what the mod draws does not (`/en/plugins/mods/overview` → Where mods run). Grade a mod's effect on the session, never its drawing.
 - An eval directory other than `evals/`: `"experimental": { "evals": "quality/evals" }` in `plugin.json`, or `--eval-dir` on both `init` and the run.
 
 ## Fixtures
