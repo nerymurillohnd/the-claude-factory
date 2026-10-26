@@ -239,7 +239,8 @@ Add an item only when all of these hold:
 - **Confirmed facts (read on 2026-10-25):**
   - The `building-plugins` skill starts a plugin README from its `assets/README-template.md`, whose sections are Install, Update, Prerequisites, Configuration, Usage, What this plugin runs and sends, Uninstall and License.
   - `scripts/lib.mjs:85-96` `REQUIRED_PLUGIN_SECTIONS`, which `check-repo.mjs` enforces, lists Why use it, What's inside, Requirements, Installation, Usage, Updating, Uninstalling, Compatibility, Changelog and License.
-  - Since commit 9b8f122 the skill's `scripts/scaffold-plugin.py` creates a new plugin from the skill's assets, `scripts/new-plugin.mjs` is gone (38fd709), and the original templates stay frozen in `.claude/templates/` at Nery's order (a8b0554): `check-repo.mjs` enforces the old README's sections, and `scripts/tests/scripts.test.mjs` builds its fixture README from `.claude/templates/plugin/README.md`.
+  - The skill's `scripts/scaffold-plugin.py` creates a new plugin from the skill's assets.
+  - `scripts/tests/scripts.test.mjs` builds its fixture README from the frozen `.claude/templates/plugin/README.md`, because `check-repo.mjs` enforces that template's sections.
   - On a scratchpad copy on 2026-10-25, a plugin the scaffold created failed `check-repo.mjs` with `README.md missing the "Why use it" section` and the other old sections.
   - Nery's rule: new, validated work outranks existing files, which adapt to it.
 - **Inferences:** none beyond the observed failure.
