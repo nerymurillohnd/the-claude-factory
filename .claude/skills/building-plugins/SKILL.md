@@ -32,13 +32,21 @@ These hold unless the user or the repo's own rules say otherwise, and each has a
 - **Disclose every network call and every hook** in the README. Hooks run with the user's full permissions outside the sandbox, and Claude Code's trust warning sends users to the plugin's homepage to decide whether to trust it.
 - **Never push, tag, publish, open a PR or merge without the user's explicit go-ahead** for that action. A push to the default branch is a release.
 
+## Scripts
+
+This skill's scripts live in `.claude/skills/building-plugins/scripts/`. Each one is Python with its own shebang: run it by path from the repository root, never through `python3` or `node`.
+
+| Script | Run at | What it does | Fails when |
+| :-- | :-- | :-- | :-- |
+| `scaffold-plugin.py --name <name> --category <id> --description "<one sentence>" [--display-name "<label>"] [--claude-code-only]` | Step 3, for a new plugin of this repository | Writes `plugins/<name>/` from this skill's `assets/`: `.claude-plugin/plugin.json`, `CHANGELOG.md` at `0.1.0`, `LICENSE` and `README.md` with the plugin, repository and marketplace names filled in. It reads `marketplace.json` and `scripts/categories.json`, and never registers the plugin or touches the root README | The name is not kebab-case, passes as Anthropic's, is listed in `marketplace.json`, is a key of `renames`, or `plugins/<name>` exists; the category is not in `scripts/categories.json`. It then writes nothing |
+
 ## Workflow
 
 Copy this checklist and tick steps as you go. Steps 3–6 repeat for each later change.
 
 - [ ] 1. **Pick the repo layout** — single-plugin repo or multi-plugin marketplace. Read `references/repo-layouts.md`.
 - [ ] 2. **Choose permanent names** — plugin `name` and marketplace `name`. Both are identities users type and their settings store; check them against the reserved-name rules in `references/repo-layouts.md` before writing anything else.
-- [ ] 3. **Write the plugin** — manifest and components. Read `references/manifest-and-components.md`, then the official page for each component type you write (skills, agents, hooks, MCP, LSP).
+- [ ] 3. **Write the plugin** — manifest and components. For a new plugin of this repository, first run `node scripts/generators/marketplace.mjs --check` (a repository tool) so the existing plugins are sound, then `scaffold-plugin.py`, then `npm run generate`, the repository's maintenance step that registers the plugin in `marketplace.json` and updates the root README catalog; if `npm run generate` fails, delete `plugins/<name>/` before you fix the cause. Read `references/manifest-and-components.md`, then the official page for each component type you write (skills, agents, hooks, MCP, LSP).
 - [ ] 4. **Make it public-ready** — README with install line, LICENSE, no secrets, disclosures, surfaces it supports. Read `references/public-readiness.md`; start the README from `assets/README-template.md`, in the style of `references/readme-style.md`.
 - [ ] 5. **Decide versioning** — bump or omit `version`, changelog, tag only if needed; for a rename or removal, the `renames` map. Read `references/versioning-and-release.md` before the first release and before every later one.
 - [ ] 6. **Validate** — `claude plugin validate --strict` on each plugin directory (without `--strict` for a plugin that omits `version` on purpose) and `claude plugin validate .` at the marketplace root; fix every error. Read `references/validation-messages.md` for what each message means and what validation won't catch.
