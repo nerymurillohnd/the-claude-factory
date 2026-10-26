@@ -136,7 +136,7 @@ Categories: `development`, `productivity`, `automation`, `mods`, `testing`, `sec
 - `.claude/skills/`: project skills, the procedures for work on this repository.
 - `.claude/specs/`: specs, written before plans.
 - `.claude/plans/`: implementation plans.
-- `.claude/templates/`: the plugin review brief, and the older plugin and root README templates, frozen until DEBT-011 closes.
+- `.claude/templates/`: the older plugin and root README templates, frozen until DEBT-011 closes.
 - `docs/`: the user guides, covering installation, managing plugins, compatibility, FAQ, troubleshooting and tool references.
 - `plugins/`: the plugins, one self-contained directory per plugin.
 - `scripts/`: maintenance scripts, tests and schemas.
