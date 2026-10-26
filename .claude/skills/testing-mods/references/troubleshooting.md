@@ -77,6 +77,7 @@ On Team organizations the guard has been reported to pass over user-tier `classi
 ## A hook is skipped or the mod is unloaded
 
 - **`<mod>: <event> hook skipped: <reason>`**: the hook threw, exceeded its time limit, or returned a wrong-shaped result. Shown once per event and failure kind until reload; the debug log has every occurrence. Fix the error.
+- **`<mod>: its <event> hook was skipped. "<plugin>" runs first and sent the event on past it.`** (transcript from 2.1.304; **[obs 2.1.310]** the same text under `the engine reported:` in `claude plugin test`): a mod ahead of yours in the order, the built-in guard `cc-plugin-sec-default` or an organization's mod in `prependPlugins`, called `next.to(e, 'append')`, which skips every mod a user installed (`/en/plugins/mods/reference` → The hook function). The debug log line is `<mod>: <event> bypassed by <plugin> (tier <tier>); beneath runs`; in a test, `next.trace` marks your link `skipped` with `reason` `bypassed by <plugin>`. Nothing in the mod causes it; the remedy is the administrator's, as for the guard table above. Which sessions show the transcript line is **[unverified]**.
 - **`<mod> registered /tally but no command.run hook answered it`**: no `command.run` hook, the filter names another command, the hook returned `next(e)`, or Claude Code skipped the hook (see `hook skipped`; `focus: false` to `$.ui.open` is one route). A `claude plugin test` that runs the command fails with the same reason.
 - **`<mod> was unloaded: it crashed the hooks worker`**: installed mods share one worker thread; a blocking hook (loop that never awaits) is a cause.
 - **`hooks: mods that run in the hooks worker are off for this session: it crashed 3 times`**: all non-built-in mods unloaded; run `/reload-plugins`.
@@ -114,7 +115,7 @@ On Team organizations the guard has been reported to pass over user-tier `classi
 - **Value resets after `/clear`, `/resume`, `/branch`**: `$.state` resets to defaults and `session.start` does not fire again; reload the saved value in a `classic.SessionStart` hook.
 - **`settings.read` hook key has no effect**: returned `env` entries do not become environment variables (use `$.env.set`), and returned `allow`/`ask`/`deny` rules are not checked on tool calls (use a settings file). For other keys grep the debug log for `settings.read`:
   - `settings.read hook skipped` → your hook failed; fix as for `hook skipped`.
-  - `settings.read bypassed by cc-plugin-sec-default` → guard skipped the hook; needs the org to install it as an org mod.
+  - `settings.read bypassed by cc-plugin-sec-default` → guard skipped the hook (the `runs first and sent the event on past it` case under "A hook is skipped"); needs the org to install it as an org mod.
   - `settings.read: the answer for <key> is no value the key can hold; the settings' own value stands` → value does not fit the key's schema (type/range); return a valid one.
   - `settings.read: the merge never settles for <key>` → set the key in a settings file.
   - `answered settings.read without next()` after a mod's name → that earlier mod blocks yours.
