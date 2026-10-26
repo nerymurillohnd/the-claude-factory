@@ -76,7 +76,7 @@ Split the results into live uses (to change) and dated history (to leave): old c
 ### 3. Change the live uses
 
 - **Rename**: first run `.claude/skills/plugin-renames-and-removals/scripts/check-new-name.py <new>`; if it fails, choose another name with Nery. Then move the directory with `git mv plugins/<old> plugins/<new>`, then change the live uses: `name` and `homepage` in `plugin.json`, skill names, the README commands and badges, its test folder (`git mv scripts/tests/<old> scripts/tests/<new>`) and its mentions in `docs/`.
-- **Merge**: move the components into `plugins/<target>/` and change `<target>` as the official docs page of each moved component type says, then delete `plugins/<old>/` as for a removal.
+- **Merge**: move the components into `plugins/<target>/` and change `<target>` as the official docs page of each moved component type says, then delete `plugins/<old>/` as for a removal. `<target>` keeps its category, unless the merge moves a hooks module in or out of it or changes what it is for: then check it with `plugin-categories` (situations C and B) before step 4; this procedure keeps the bump and the changelog.
 - **Removal**: delete `plugins/<old>/`, its `scripts/tests/<old>/` folder, and remove the live uses elsewhere (for example README and `docs/` mentions), so the marketplace generator no longer finds the plugin.
 
 ### 4. Register the change in the marketplace

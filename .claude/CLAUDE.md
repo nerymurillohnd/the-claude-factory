@@ -78,15 +78,6 @@ Rules that keep the scopes apart:
 - Type-check plugin Python with Basedpyright in its default `recommended` mode.
 - Test plugin scripts with their own tests under `scripts/tests/<plugin>/`; keep maintainer-only test dependencies out of plugin runtimes.
 
-## Plugin Categories
-
-Categories: `development`, `productivity`, `automation`, `mods`, `testing`, `security`, `documentation`, `data`, `design`, `devops`, `integrations`, `language-support`, `learning`.
-
-- `scripts/categories.json` is the only place a category is defined: its `id`, the title and description the README catalog shows, and the catalog order. Add or change a category there first.
-- Give every plugin exactly one category, chosen by its purpose, in `metadata.category` of its `plugin.json`. The `building-plugins` skill's scaffold sets it for a new plugin.
-- Put a plugin in `mods` only when it is a mod: its `hooks/hooks.json` lists one hooks module under `modules`. A mod whose purpose is another goes in that category.
-- After setting or changing a category, run `npm run generate`: it writes the category into `marketplace.json` and the README catalog. Never edit the category in either file by hand.
-
 ---
 
 ## Documentation and Maintenance
