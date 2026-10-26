@@ -42,9 +42,9 @@ Add an item only when all of these hold:
 | --- | --- | --- |
 | DEBT-002 | Version-bump check fails on main after a revert of an unreleased bump and blocks every release | 🟠 Blocked |
 | DEBT-006 | No gate runs the validators of `scripts/validators/`, so CI lost the checks `check-repo.mjs` dropped | 🟡 Pending |
-| DEBT-009 | Biome ignores Markdown, so no tool formats or lints the repository's Markdown | 🟠 Blocked |
 | DEBT-010 | The mod gates of `scripts/gates.mjs` can miss a mod or report green on a lost test summary | 🟠 Blocked |
 | DEBT-011 | The repository's README checks and plugin READMEs still follow the old plugin template, not the one `building-plugins` sets | 🟠 Blocked |
+| DEBT-013 | The plugins' Markdown is not formatted or linted by Biome until each plugin next changes | 🔴 Risk accepted |
 
 ## 📂 Open items
 
@@ -102,33 +102,6 @@ Add an item only when all of these hold:
 - **Next action:** add one gate per validator to the `python` group of `scripts/gates.mjs`, run by path, and confirm the CI `python` job runs them on Python 3.15.
 - **Review condition:** closes when `npm run gates:ci -- --group python` runs all nine validators and a defect planted in a copy fails the run.
 - **Related records:** ADR_2026-10-24_repository-checks-move-to-python-validators, ADR_2026-10-21_gates-run-from-one-script.
-
-### DEBT-009 — Biome ignores Markdown, so no tool formats or lints the repository's Markdown
-
-| Field | Value |
-| --- | --- |
-| **Status** | 🟠 Blocked |
-| **Category** | quality, maintainability |
-| **Owner** | Maintainer tooling (`biome.json`, `.claude/CLAUDE.md` → Maintainer Tooling) |
-| **Logged** | 2026-10-25 |
-
-#### 🔎 Evidence
-
-- **Confirmed facts:**
-  - `biome.json` `files.includes` lists only `**/*.{js,cjs,mjs,jsx,ts,cts,mts,tsx,json,jsonc}`.
-  - On 2026-10-25, `biome check README.md` with Biome 2.6.2 printed `These paths were provided but ignored: README.md` and exited 0.
-  - `.claude/CLAUDE.md` → Maintainer Tooling says "Markdown, JSON, JavaScript and TypeScript: format and lint with Biome", and its protected-files line says `biome.json` excludes them "whenever Markdown is in its `files.includes`".
-  - The `maintaining-user-docs` skill records that no linter reads the user docs, so broken links, anchors and tables are found only by opening them.
-- **Inferences:** user-facing Markdown (root README, `docs/`, plugin READMEs and changelogs) can ship malformed with every gate green.
-- **Open questions:** whether Biome 2.6.2 formats and lints Markdown at all, and if not, which tool should, given ADR_2026-10-21_remove-markdownlint.
-
-#### 📈 Impact and next step
-
-- **Impact / risk:** CLAUDE.md promises a Markdown gate that does not exist, and a formatting or link error in a doc users read is caught by no check.
-- **Why it is not fixed now:** Nery deferred it on 2026-10-25 to keep the session on the user-docs and skills consolidation.
-- **Next action:** check Biome's current docs and release notes for Markdown support. Then either add Markdown to `files.includes`, with the protected files excluded, or make the CLAUDE.md Maintainer Tooling line say what really reads Markdown.
-- **Review condition:** closes when `.claude/CLAUDE.md` and `biome.json` agree, and a Markdown check, if one is adopted, fails on a deliberately broken user doc.
-- **Related records:** ADR_2026-10-21_remove-markdownlint, ADR_2026-10-25_marketplace-user-docs-have-their-own-skill.
 
 ### DEBT-010 — The mod gates of `scripts/gates.mjs` can miss a mod or report green on a lost test summary
 
@@ -198,6 +171,32 @@ Add an item only when all of these hold:
   Then move each plugin README, by pull request, and delete `.claude/templates/plugin/` and `.claude/templates/root-readme.md`.
 - **Review condition:** closes when a plugin the scaffold creates passes `check-repo.mjs`, nothing reads the frozen templates, and they are deleted.
 - **Related records:** ADR_2026-10-25_plugin-scaffold-belongs-to-building-plugins.
+
+### DEBT-013 — The plugins' Markdown is not formatted or linted by Biome until each plugin next changes
+
+| Field | Value |
+| --- | --- |
+| **Status** | 🔴 Risk accepted |
+| **Category** | quality, maintainability |
+| **Owner** | `biome.json` (`!plugins/<name>/**/*.md` lines) and each plugin's next change, through `building-plugins` step 5 |
+| **Logged** | 2026-10-26 |
+
+#### 🔎 Evidence
+
+- **Confirmed facts:**
+  - On 2026-10-26, Biome 2.6.3 with Markdown enabled reformatted 202 Markdown files across all 17 plugins in a scratch worktree.
+  - `biome.json` lists one `!plugins/<name>/**/*.md` line per plugin, 17 lines, so `biome ci plugins` reads none of their Markdown.
+  - `building-plugins` step 5 removes a plugin's line and runs `biome check --write plugins/<name>` in that plugin's next change.
+- **Inferences:** a plugin that never changes again keeps its Markdown unformatted and unlinted.
+- **Open questions:** none.
+
+#### 📈 Impact and next step
+
+- **Impact / risk:** a heading jump, a fenced block without a language or a malformed table in a plugin's README, skill reference or changelog passes every check until that plugin changes.
+- **Why it is not fixed now:** formatting all 17 plugins at once would ship 17 versions whose only change is whitespace; Nery chose adoption on each plugin's next change (ADR_2026-10-26_biome-formats-and-lints-maintainer-markdown).
+- **Next action:** in each plugin's next change, follow `building-plugins` step 5 and remove its line from `biome.json`.
+- **Review condition:** closes when `biome.json` has no `!plugins/<name>/**/*.md` line left and `biome ci --error-on-warnings plugins` passes.
+- **Related records:** ADR_2026-10-26_biome-formats-and-lints-maintainer-markdown.
 
 <!--
 Entry format. Copy this block above this comment for each new item and add its row to the Index.

@@ -24,6 +24,7 @@
 | 2026-10-26 | DEBT-012 | obsolete | Logged in error: project-maintainer's mod already reminds Claude of write-records, and a live session met the review condition | none |
 | 2026-10-26 | DEBT-001 | resolved | pr-tracker inherits the session's tools, so a GitHub MCP server of any name reaches it | none |
 | 2026-10-26 | DEBT-008 | accepted | `main` and the release tags stay without GitHub protection by Nery's decision | none |
+| 2026-10-26 | DEBT-009 | resolved | Biome 2.6.3 formats and lints the Markdown outside `plugins/`, locally and in CI | none |
 
 ## 🏁 Closed items
 
@@ -241,6 +242,37 @@ Nery decided on 2026-10-26 to keep `main` and the release tags without GitHub pr
 - **Residual risk:** nothing on GitHub refuses a push to `main` that fails Validate, an unsigned commit (the three commits of PR #51 reached `main` unsigned on 2026-10-26), or a moved or deleted `*--v*` tag.
 - **Closed by:** ADR_2026-10-26_main-and-release-tags-stay-unprotected.
 - **Related records:** ADR_2026-10-25_release-tags-are-created-unsigned-by-ci.
+- **Superseded by:** none
+
+### DEBT-009 — Biome 2.6.3 formats and lints the Markdown outside `plugins/`, locally and in CI
+
+| Field | Value |
+| --- | --- |
+| **Outcome** | resolved |
+| **Closed on** | 2026-10-26 |
+| **Logged on** | 2026-10-25 |
+| **Owner** | Maintainer tooling (`biome.json`, `scripts/gates.mjs`, `.github/workflows/validate.yml`, `.claude/CLAUDE.md` → Maintainer Tooling) |
+
+#### ❗ The problem
+
+`biome.json` read only JS, TS and JSON, so `biome check README.md` reported the file as ignored, while `.claude/CLAUDE.md` said Biome formats and lints Markdown. A malformed doc users read passed every check.
+
+#### 🔧 The closure
+
+Biome 2.6 supports Markdown. `biome.json` now includes `*.md`, excludes the never-format files and each plugin's Markdown until it adopts the format, parses frontmatter, indents with spaces, and turns on the three Markdown nursery rules (`useConsistentHeadingLevel`, `useFencedCodeLanguage`, `useSingleTopLevelHeading`) as errors, since the recommended preset leaves nursery rules off. The maintainer gate of `scripts/gates.mjs` passes `*.md` paths to `biome ci`, `validate.yml` installs `@biomejs/biome@2.6.3`, and `catalog.mjs` writes a `biome-ignore format` comment before each table so the catalog stays as generated. The 29 maintainer Markdown files were formatted. ADR_2026-10-26_biome-formats-and-lints-maintainer-markdown records the decision.
+
+#### 🧪 Verification
+
+| Check | Evidence |
+| --- | --- |
+| ✅ **Positive:** the closure holds | On 2026-10-26 with Biome 2.6.3: `biome ci --error-on-warnings` on the maintainer gate's paths checked 105 files with no fixes; `node scripts/generators/catalog.mjs --check` and `marketplace.mjs --check` passed after formatting; `node --test scripts/tests/scripts.test.mjs scripts/tests/gates.test.mjs` passed 62 of 62. |
+| 🚫 **Negative:** the original failure or condition is gone | In a scratch worktree, a planted `docs/planted.md` with a heading jump, a fenced block without a language and two top-level headings failed `biome lint` with `useConsistentHeadingLevel`, `useFencedCodeLanguage` and `useSingleTopLevelHeading`, and an unpadded table in it made `biome ci` exit 1. |
+
+#### 🔗 Follow-up
+
+- **Residual risk:** the plugins' Markdown joins only on each plugin's next change (DEBT-013); Biome does not check links, anchors or prose.
+- **Closed by:** ADR_2026-10-26_biome-formats-and-lints-maintainer-markdown.
+- **Related records:** ADR_2026-10-21_remove-markdownlint.
 - **Superseded by:** none
 
 <!--
