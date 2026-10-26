@@ -7,7 +7,7 @@ This project also follows the guidelines and way of working in `~/.claude/CLAUDE
 - Goal: publish plugins that automate and optimize everyday workflows.
 - Every plugin stands on its own. Design, build and document it from its own goals: what it must do, run and solve for its users. Never use how another plugin was built as a reference, pattern, justification or constraint for a new one.
 - Plugins are for third parties whose setups are unknown. Every plugin works from what its README declares, never from what is installed on Nery's machine.
-- A plugin is not released unless it carries `README.md`, `LICENSE` and `CHANGELOG.md` and passes the checks in Plugin Tooling.
+- A plugin is not released unless it carries `README.md`, `LICENSE` and `CHANGELOG.md` and passes the checks of the `release-and-versioning` skill.
 
 ## Responsibility
 
@@ -67,14 +67,8 @@ Rules that keep the scopes apart:
 
 ### Plugin Tooling
 
-- Plugins must be self-contained and portable. They are intended for third parties and must not contain hard-coded paths or assumptions about any maintainer's machine.
 - Default target platforms are Linux and macOS with POSIX-compatible interfaces.
 - Windows support is optional and, when provided, must be limited to Git Bash only.
-- Plugins must not depend on the maintainer's runtime tools or environment. All required tools, version constraints, binaries, and software dependencies must be declared as installation prerequisites in each plugin's `README.md`, including any feature-specific requirements.
-- A plugin that needs Node packages ships its own `package.json` and a lockfile Claude Code reads in `plugins/<name>/`: a text `bun.lock`, or an npm `package-lock.json` or `npm-shrinkwrap.json` with `lockfileVersion` 2 or 3. Never `bun.lockb`, `yarn.lock` or `pnpm-lock.yaml`: Claude Code skips the install with them. It never relies on the root `package.json`, and its `README.md` declares npm or Bun as a prerequisite.
-- Every plugin is validated with `claude plugin validate --strict`.
-- CI runs evals only for plugins that contain evals, and only when those plugins have changed; otherwise the evals are skipped.
-- Executable plugin scripts (especially Claude Code hooks) must include their interpreter's shebang (`#!/usr/bin/env python3`, `#!/usr/bin/env bash`, or `#!/usr/bin/env node`), be marked executable with `chmod +x`, and have their executable permissions preserved in Git.
 
 ## Plugin Categories
 
@@ -108,7 +102,7 @@ Every plugin directory holds these files. `scripts/validators/plugin-required-fi
 
 ### README
 
-- Requirements lists every installation prerequisite, as Plugin Tooling requires.
+- Requirements lists every installation prerequisite: each tool, version constraint, binary and software dependency, feature-specific ones included.
 - Compatibility has one row per component type the plugin ships, and each cell says exactly what `docs/compatibility.md` says for that type.
 - Never write a version number in the README, except, for a plugin with a mod, the Claude Code version it was tested with, in Compatibility (the `building-mods` skill). The badges show values that live in other files:
   - **Version**: a dynamic shields.io badge that reads `$.version` from this plugin's `plugin.json` on `main`, so a bump shows once it is merged. `plugin-versions-consistency.py` fails on a hardcoded version.
