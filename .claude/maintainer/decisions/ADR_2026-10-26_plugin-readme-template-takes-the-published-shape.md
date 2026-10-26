@@ -41,7 +41,7 @@ Chosen option: **the published shape plus "What this plugin runs and sends"**, b
 
 - Good, because a plugin the scaffold creates passes `check-repo.mjs` once its author placeholders are filled and its Compatibility rows match what it ships.
 - Good, because each template lives once, in the skill that uses it.
-- Bad, because the placeholder check skips code spans and fenced blocks, so a placeholder left only inside code, such as `` `/<plugin>:<Skill>` ``, is not reported; the rows and sections around it carry placeholders outside code that are.
+- Neutral, because inside code spans and fenced blocks the placeholder check reports only the placeholders the template holds, such as `` `/<plugin>:<Skill>` `` (commit `ba13311`), so other `<…>` text in code, such as `<YYYY-MM-DD>`, passes.
 
 ## More information
 
