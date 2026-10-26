@@ -8,9 +8,11 @@ not exist; --category must be an id of scripts/categories.json. It writes nothin
 fails.
 
 Then it writes plugins/<name>/ from this skill's assets: .claude-plugin/plugin.json,
-CHANGELOG.md with today's 0.1.0 section, LICENSE and README.md, the README with its display name,
-plugin name, repository and marketplace filled in and every other placeholder left for the
-author.
+CHANGELOG.md with today's 0.1.0 section, LICENSE and README.md. In the README it fills what the
+command line already says: the display name, the plugin name, the repository and marketplace,
+the description, the Category and Works in badges, the Works in line, and the parts that apply
+to the plugin's surfaces (the <app> or <code-only> blocks). It leaves for the author every
+placeholder that starts with a capital letter.
 
 It reads marketplace.json, scripts/categories.json and the assets, and writes only under
 plugins/<name>/. It never registers the plugin, never regenerates the root README catalog, never
@@ -31,6 +33,7 @@ import re
 import shutil
 import sys
 from typing import cast
+from urllib.parse import quote
 
 MARKETPLACE = ".claude-plugin/marketplace.json"
 CATEGORIES = "scripts/categories.json"
@@ -38,6 +41,7 @@ REPOSITORY = "nerymurillohnd/the-claude-factory"
 MARKETPLACE_NAME = "the-claude-factory"
 ASSETS = Path(__file__).resolve().parents[1] / "assets"
 # Same rule as `claude plugin validate`: lowercase letters, digits and single hyphens.
+MAX_NAME = 64
 KEBAB = re.compile(r"[a-z0-9]+(?:-[a-z0-9]+)*")
 # Names `claude plugin validate` rejects as passing for Anthropic's own, as RESERVED in
 # scripts/validators/plugin-names-consistency.py. Applied after KEBAB, so "-" is the only separator.
@@ -52,8 +56,19 @@ RESERVED = re.compile(
         )
     ),
 )
-# The `metadata.surfaces` of each profile, as SURFACE_PROFILES in scripts/lib.mjs.
+# The `metadata.surfaces`, README badge and Works in text of each profile, as SURFACE_PROFILES
+# in scripts/lib.mjs.
 SURFACES = {"both": ["claude-code", "claude-app"], "claude-code-only": ["claude-code"]}
+SURFACE_BADGE = {
+    "both": "Claude%20Code%20%C2%B7%20Claude%20app",
+    "claude-code-only": "Claude%20Code%20only",
+}
+SURFACE_TEXT = {
+    "both": "💻 Claude Code · 🖥️ Claude app",
+    "claude-code-only": "💻 **Claude Code only**",
+}
+# README blocks the scaffold keeps for one surface profile and drops for the other.
+SURFACE_BLOCKS = {"both": ("app", "code-only"), "claude-code-only": ("code-only", "app")}
 _decode: Callable[[str], object] = json.JSONDecoder().decode
 
 
@@ -99,11 +114,40 @@ def names_of(entries: object, key: str) -> set[str]:
 
 def name_errors(name: str) -> list[str]:
     """Why the name's form is refused."""
+    if len(name) > MAX_NAME:
+        return [f'"{name}" is {len(name)} characters long; a plugin name has at most {MAX_NAME}']
     if not KEBAB.fullmatch(name):
         return [f'"{name}" is not kebab-case (lowercase letters, digits and single hyphens)']
     if RESERVED.search(name):
         return [f'"{name}" passes as one of Anthropic\'s own plugin names']
     return []
+
+
+def category_title(root: Path, category: str) -> str:
+    """The `title` of the category in scripts/categories.json; checked by category_errors first."""
+    data, _problem = read_object(root / CATEGORIES)
+    entries = data.get("categories")
+    for entry in cast("list[object]", entries if isinstance(entries, list) else []):
+        if isinstance(entry, dict):
+            fields = cast("dict[str, object]", entry)
+            title = fields.get("title")
+            if fields.get("id") == category and isinstance(title, str):
+                return title
+    return category
+
+
+def badge_text(text: str) -> str:
+    """`text` as a shields.io badge segment: URL-encoded, with each - written as --."""
+    return quote(text, safe="").replace("-", "--")
+
+
+def surface_blocks(text: str, profile: str) -> str:
+    """Keep the README blocks of `profile`, drop the other's, and tidy the blank lines left."""
+    keep, drop = SURFACE_BLOCKS[profile]
+    text = re.sub(rf"<{drop}>.*?</{drop}>", "", text, flags=re.DOTALL)
+    text = re.sub(rf"<{keep}>\n?|\n?</{keep}>", "", text)
+    text = re.sub(r"[ \t]+\n", "\n", text)
+    return re.sub(r"\n{3,}", "\n\n", text)
 
 
 def category_errors(root: Path, category: str) -> list[str]:
@@ -152,7 +196,7 @@ def asset(name: str) -> str:
     return (ASSETS / name).read_text(encoding="utf-8")
 
 
-def plugin_files(args: Args, display_name: str, surfaces: list[str]) -> dict[str, str]:
+def plugin_files(args: Args, display_name: str, profile: str, category: str) -> dict[str, str]:
     """Each file of the new plugin, by its path inside plugins/<name>/."""
     manifest = render(
         asset("plugin-template.json"),
@@ -161,7 +205,7 @@ def plugin_files(args: Args, display_name: str, surfaces: list[str]) -> dict[str
             "displayName": json_text(display_name),
             "description": json_text(args.description),
             "category": json_text(args.category),
-            "surfacesJson": json.dumps(surfaces),
+            "surfacesJson": json.dumps(SURFACES[profile]),
         },
     )
     today = datetime.now(UTC).date().isoformat()
@@ -169,9 +213,13 @@ def plugin_files(args: Args, display_name: str, surfaces: list[str]) -> dict[str
         asset("CHANGELOG-template.md"),
         {"name": args.name, "displayName": display_name, "date": today},
     )
+    readme = surface_blocks(asset("README-template.md"), profile)
     readme = (
-        asset("README-template.md")
-        .replace("<Display Name>", display_name)
+        readme.replace("<Display Name>", display_name)
+        .replace("<description>", args.description)
+        .replace("<surfaces-badge>", SURFACE_BADGE[profile])
+        .replace("<surfaces-text>", SURFACE_TEXT[profile])
+        .replace("<category-badge>", badge_text(category))
         .replace("<owner>/<repo>", REPOSITORY)
         .replace("<owner>%2F<repo>", REPOSITORY.replace("/", "%2F"))
         .replace("<marketplace-name>", MARKETPLACE_NAME)
@@ -222,8 +270,9 @@ def main(argv: list[str]) -> int:
         _ = sys.stderr.write("\n".join(f"✖ {e}" for e in errors) + "\n")
         return 1
     display_name = args.display_name or " ".join(w.capitalize() for w in args.name.split("-"))
-    surfaces = SURFACES["claude-code-only" if args.claude_code_only else "both"]
-    problem = write(root / "plugins" / args.name, plugin_files(args, display_name, surfaces))
+    profile = "claude-code-only" if args.claude_code_only else "both"
+    files = plugin_files(args, display_name, profile, category_title(root, args.category))
+    problem = write(root / "plugins" / args.name, files)
     if problem is not None:
         _ = sys.stderr.write(f"✖ {problem}\n")
         return 1

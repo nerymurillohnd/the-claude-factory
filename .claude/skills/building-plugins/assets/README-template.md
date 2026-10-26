@@ -2,11 +2,11 @@
 
 # <Emoji> <Display Name>
 
-<p><strong><One sentence: what the plugin does for the user, the same as the description in plugin.json.></strong></p>
+<p><strong><description></strong></p>
 
 [![Version](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2F<owner>%2F<repo>%2Fmain%2Fplugins%2F<plugin>%2F.claude-plugin%2Fplugin.json&query=%24.version&label=version&color=D97757)](./CHANGELOG.md)
-[![Works in](https://img.shields.io/badge/works%20in-<Surfaces: Claude%20Code%20%C2%B7%20Claude%20app or Claude%20Code%20only>-2563EB)](#-compatibility)
-[![Category](https://img.shields.io/badge/category-<Category title from scripts/categories.json, URL-encoded with -- for each ->-6B7280)](../../README.md#-catalog)
+[![Works in](https://img.shields.io/badge/works%20in-<surfaces-badge>-2563EB)](#-compatibility)
+[![Category](https://img.shields.io/badge/category-<category-badge>-6B7280)](../../README.md#-catalog)
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-%E2%89%A5%20<Minimum Claude Code version>-D97757?logo=claude&logoColor=white)](https://code.claude.com/docs/en/plugins/install)
 [![License: MIT](https://img.shields.io/badge/license-MIT-22C55E)](./LICENSE)
 
@@ -22,7 +22,9 @@
 
 ---
 
-<For a Claude Code-only plugin, a first line: 💻 **Claude Code only** — and why, for example "it ships an LSP server". It doesn't install in the Claude app (chat or Cowork). Otherwise delete this line.>
+<code-only>
+💻 **Claude Code only** — <Why: for example "it ships an LSP server">. It doesn't install in the Claude app (chat or Cowork).
+</code-only>
 
 > [!TIP]
 > **TL;DR** — <One sentence on the outcome a user gets, for example "Type `/<plugin>:run` and get X without doing Y.">
@@ -87,8 +89,7 @@ Requires Claude Code v2.1.275+. With the marketplace already added, `/plugin ins
 
 </details>
 
-<Keep the Claude app block below for a plugin that works in the Claude app and delete the Code tab block after it; for a Claude Code-only plugin, do the reverse. Then delete this line.>
-
+<app>
 <details>
 <summary><b>🖥️ Claude app (web and desktop)</b></summary>
 
@@ -99,13 +100,16 @@ Requires Claude Code v2.1.275+. With the marketplace already added, `/plugin ins
 In the desktop app's **Code** tab you can also click **+** next to the prompt box → **Add plugins** (or **Plugins** → **Browse plugins**), or open **Settings** → **Plugins** → **Discover**.
 
 </details>
+</app>
 
+<code-only>
 <details>
 <summary><b>🖥️ Claude desktop app — Code tab</b></summary>
 
 With the marketplace added, click **+** next to the prompt box → **Add plugins** (or **Plugins** → **Browse plugins**), or open **Settings** → **Plugins** → **Discover**; then select **<Display Name>** and choose a scope.
 
 </details>
+</code-only>
 
 > [!NOTE]
 > New to this marketplace? The [installation guide](../../docs/installation.md) covers every surface step by step.
@@ -145,7 +149,7 @@ claude plugin update <plugin>@<marketplace-name>
 
 Or in a session: `/plugin` → **Installed** → **<Display Name>** → **Update now**. Then run `/reload-plugins`. <Name each external tool the user updates on their own, for example "Update `gopls` yourself, the way you installed it.", or delete this sentence.>
 
-<For a plugin that works in the Claude app, keep this paragraph and delete this line; for a Claude Code-only plugin, delete both.> Installed from the Claude app? In Claude Code (v2.1.273+, signed in with that claude.ai account) it appears as `<plugin>@synced`: update and uninstall it in the app (**Customize** → **Plugins**); in `/plugin` you can only turn it on or off, unless your organization requires it.
+<app>Installed from the Claude app? In Claude Code (v2.1.273+, signed in with that claude.ai account) it appears as `<plugin>@synced`: update and uninstall it in the app (**Customize** → **Plugins**); in `/plugin` you can only turn it on or off, unless your organization requires it.</app>
 
 > [!TIP]
 > Auto-update is off for this marketplace until you turn it on: `/plugin` → **Marketplaces** → **<marketplace-name>** → **Enable auto-update**.
@@ -158,13 +162,13 @@ claude plugin uninstall <plugin>@<marketplace-name>
 
 Installed with `--scope project`? Add `--scope project` here too. Uninstalling from the last scope it's installed at also deletes its saved options and data directory, unless you pass `--keep-data`.
 
-In a session: `/plugin` → **Installed** → **<Display Name>** → **Uninstall**. <For a plugin that works in the Claude app, keep the next sentence and delete this one.> In the Claude app: **Customize** → **Plugins** → **<Display Name>** → its menu → **Remove**.
+In a session: `/plugin` → **Installed** → **<Display Name>** → **Uninstall**. <app>In the Claude app: **Customize** → **Plugins** → **<Display Name>** → its menu → **Remove**.</app>
 
 <What stays behind: data the plugin wrote, files in the user's project, tools the user installed for it; or "The plugin keeps no data and writes no files, so nothing is left behind.">
 
 ## 🧭 Compatibility
 
-**Works in:** <💻 Claude Code · 🖥️ Claude app, or 💻 **Claude Code only**>
+**Works in:** <surfaces-text>
 
 | Component                              |                         Claude Code                          |                                                                                                                                          Claude app                                                                                                                                           |
 | :------------------------------------- | :----------------------------------------------------------: | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
