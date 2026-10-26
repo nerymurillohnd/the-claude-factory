@@ -18,10 +18,10 @@ This skill's `assets/` are the templates a new plugin of this repository is buil
 
 1. Run `scaffold-plugin.py` (step 2 of `SKILL.md`). Never copy another plugin's files, and never write these files by hand for a new plugin.
 2. In the new `README.md`, replace every remaining `<…>` with the plugin's facts, in the style of `readme-style.md`. Delete a section only when it cannot apply, and say why in your hand-back.
-3. When the plugin bundles or derives from third-party material, copy `NOTICE-template.txt` to `plugins/<name>/NOTICE.txt` and fill it: `{{name}}` is the plugin's name; for each source, its name, repository URL, version or commit, SPDX license, every file of the plugin derived from it (one `{{derivedFile}}` line each), and its full license text. For several sources, repeat the block from "This plugin contains material derived from" through the license text once per source. The file opens with the plugin's own copyright and license, as `.claude/CLAUDE.md` requires; keep that line.
+3. When the plugin bundles or derives from third-party material, copy `NOTICE-template.txt` to `plugins/<name>/NOTICE.txt` and fill it: `{{name}}` is the plugin's name; for each source, its name, repository URL, version or commit, SPDX license, every file of the plugin derived from it (one `{{derivedFile}}` line each), and its full license text. For several sources, repeat the block from "This plugin contains material derived from" through the license text once per source. The file opens with the plugin's own copyright and license; keep that line.
 4. Leave `plugin.json`'s `version` at `0.1.0` and the `CHANGELOG.md` `0.1.0` entry as the launch entry; versioning after that is the release procedure's.
 
-Which README sections are required is the open question of DEBT-011: `.claude/CLAUDE.md` lists the ten sections `check-repo.mjs` checks, and this template has its own. Until DEBT-011 closes, follow this template, which outranks the older checks, and say in your hand-back that `check-repo.mjs` will flag the sections it expects; this skill does not run it.
+Which README sections are required is the open question of DEBT-011: `check-repo.mjs` requires ten sections (`REQUIRED_PLUGIN_SECTIONS` in `scripts/lib.mjs`), and this template has its own. Until DEBT-011 closes, follow this template, which outranks the older checks, and say in your hand-back that `check-repo.mjs` will flag the sections it expects; this skill does not run it.
 
 ## Change them
 

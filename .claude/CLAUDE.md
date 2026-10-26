@@ -89,40 +89,16 @@ Categories: `development`, `productivity`, `automation`, `mods`, `testing`, `sec
 
 ---
 
-## Plugin Documentation and Changelogs
+## Plugin Documentation
 
-### Required files
-
-- Every plugin directory holds `.claude-plugin/plugin.json`, `README.md`, `CHANGELOG.md` and `LICENSE`. `scripts/validators/plugin-required-files.py` fails when one is missing, is not a regular file, is a broken symlink or resolves outside the repository.
 - `plugin.json` is the only source of the plugin's name, version, description and category.
-- Third-party material goes in `NOTICE.txt`, which opens with the plugin's own copyright and license and names, for each source, the files derived from it.
-
-### Templates
-
-- Create every one of those files with the `building-plugins` skill's scaffold, from that skill's assets, never from another plugin's files. `.claude/templates/plugin/` holds the older templates, frozen until DEBT-011 closes: never edit them or create a plugin from them.
-- Keep every section the template defines. The README needs these sections, which `scripts/check-repo.mjs` checks: Why use it, What's inside, Requirements, Installation, Usage, Updating, Uninstalling, Compatibility, Changelog, License.
-- Resolve every `<!-- TODO -->` and `<!-- TEMPLATE -->` comment before the plugin ships; `check-repo.mjs` fails while one is left.
-- When a template changes, bring every plugin README built from it in line in the same change.
-
-### README
-
-- Requirements also states each version constraint, and the prerequisites of any single feature.
-- Compatibility has one row per component type the plugin ships, and each cell says exactly what `docs/compatibility.md` says for that type.
-- Never write a version number in the README, except, for a plugin with a mod, the Claude Code version it was tested with, in Compatibility (the `building-mods` skill). The badges show values that live in other files:
+- Never write a version number in a plugin README, except, for a plugin with a mod, the Claude Code version it was tested with, in Compatibility (the `building-mods` skill). The badges show values that live in other files:
   - **Version**: a dynamic shields.io badge that reads `$.version` from this plugin's `plugin.json` on `main`, so a bump shows once it is merged. `plugin-versions-consistency.py` fails on a hardcoded version.
   - **Works in**: `Claude Code · Claude app` or `Claude Code only`, matching `metadata.surfaces` in `plugin.json`.
   - **Category**: the title in `scripts/categories.json` of the plugin's `metadata.category`.
   - **Claude Code**: the minimum Claude Code version, the same one Requirements states.
   - **License**: links to the plugin's `LICENSE`.
 - When the surfaces, the category or the minimum Claude Code version change, update the badge, the README text that states it and the README catalog (`npm run generate`) in the same change.
-
-### Plugin CHANGELOG.md
-
-- `plugin-versions-consistency.py` checks that the newest section is the `plugin.json` version, that sections run newest first, and the link references.
-
-### Root CHANGELOG.md
-
-- The `X.Y.Z` of a plugin line is a version that plugin's changelog has; `plugin-versions-consistency.py` fails otherwise.
 
 ---
 
@@ -150,6 +126,5 @@ Categories: `development`, `productivity`, `automation`, `mods`, `testing`, `sec
 
 - Every change inside a plugin's directory, its components, dependencies and a `README.md`-only change included, goes through a pull request. A `README.md`-only change does not require a version bump (see the `release-and-versioning` skill).
 - Every change outside `plugins/` does not require a pull request.
-- Pushes, to any branch and including tags, are made only with Nery's explicit authorization.
 - Release tags (`<plugin>--v<version>`) are created unsigned by `release.yml`, under the exemption `~/.claude/CLAUDE.md` gives public plugin marketplaces: users never fetch a tag, and signing in CI would put the signing key in a GitHub secret. Every commit, and every tag created locally, is still SSH-signed.
 - Every item that takes labels, issues included, uses only the labels already established in the repository. The one label created is `plugin: <name>`, for a new or renamed plugin, on Nery's order; the labels of retired plugins stay.
