@@ -119,7 +119,7 @@ If any check fails before the push, fix the cause, amend the commit (`git commit
 
 ### 7. Push and open the PR
 
-With Nery's authorization only: push the branch and open the PR, applying only the labels the repository already has.
+With Nery's authorization only: push the branch and open the PR, applying only the labels the repository already has. A new plugin's PR also takes its `plugin: <name>` label, the one label this step may create, and only on Nery's order: `node scripts/sync-labels.mjs --dry-run` shows it, and the run without `--dry-run` creates it.
 
 ### 8. Before any merge or push to `main`
 

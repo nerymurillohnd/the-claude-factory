@@ -21,6 +21,7 @@ This file is the contract of the work on this project: each stage, the skill tha
    - Key jobs: keep the docs true to the current Claude Code release and the marketplace.
 4. Issue handling and resolution
    - Skill: none yet; ask Nery.
+   - Key jobs: label each issue only with the labels the repository already has.
 5. Local quality gates
    - Skill: none yet; ask Nery.
 6. Remote quality gates

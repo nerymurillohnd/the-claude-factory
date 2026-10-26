@@ -99,7 +99,5 @@ Categories: `development`, `productivity`, `automation`, `mods`, `testing`, `sec
 
 ## Change Control
 
-- Every change inside a plugin's directory, its components, dependencies and a `README.md`-only change included, goes through a pull request. A `README.md`-only change does not require a version bump (see the `release-and-versioning` skill).
-- Every change outside `plugins/` does not require a pull request.
+- Every change inside a plugin's directory, its components, dependencies and a `README.md`-only change included, goes through a pull request. Every change outside `plugins/` does not require one.
 - Release tags (`<plugin>--v<version>`) are created unsigned by `release.yml`, under the exemption `~/.claude/CLAUDE.md` gives public plugin marketplaces: users never fetch a tag, and signing in CI would put the signing key in a GitHub secret. Every commit, and every tag created locally, is still SSH-signed.
-- Every item that takes labels, issues included, uses only the labels already established in the repository. The one label created is `plugin: <name>`, for a new or renamed plugin, on Nery's order; the labels of retired plugins stay.
