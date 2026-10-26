@@ -531,6 +531,46 @@ describe('check-version-bump', () => {
     assert.equal(after.code, 0, after.out)
   })
 
+  /**
+   * Commit a shipped change with `version` written by hand in plugin.json and its CHANGELOG.
+   * @param {string} version
+   */
+  function commitVersion(version) {
+    scaffold()
+    initRepo()
+    mkdirSync(join(root, 'plugins/demo-tool/skills/demo'), { recursive: true })
+    write('plugins/demo-tool/skills/demo/SKILL.md', '---\ndescription: Demo.\n---\nDo it.\n')
+    const manifest = 'plugins/demo-tool/.claude-plugin/plugin.json'
+    write(manifest, read(manifest).replace('"version": "0.1.0"', `"version": "${version}"`))
+    const changelog = 'plugins/demo-tool/CHANGELOG.md'
+    write(
+      changelog,
+      read(changelog).replace(
+        '## [Unreleased]\n',
+        `## [Unreleased]\n\n## [${version}] - 2026-10-26\n\n### Added\n\n- Demo skill.\n`,
+      ),
+    )
+    git('add', '-A')
+    git('commit', '-qm', 'change')
+  }
+
+  test('fails a bump that skips a version', () => {
+    commitVersion('0.3.0')
+    const r = run('check-version-bump.mjs', ['HEAD~1'])
+    assert.equal(r.code, 1)
+    assert.match(
+      r.out,
+      /version jumps from 0\.1\.0 to 0\.3\.0; one step above 0\.1\.0 is 0\.1\.1, 0\.2\.0, 1\.0\.0/,
+    )
+  })
+
+  test('passes the promotion to 1.0.0 with a note that it needs authorization', () => {
+    commitVersion('1.0.0')
+    const r = run('check-version-bump.mjs', ['HEAD~1'])
+    assert.equal(r.code, 0, r.out)
+    assert.match(r.out, /0\.1\.0 → 1\.0\.0 promises a stable interface/)
+  })
+
   test('a new plugin passes without git noise: there is no base version to compare', () => {
     initRepo()
     scaffold()

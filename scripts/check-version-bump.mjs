@@ -1,5 +1,7 @@
 #!/usr/bin/env node
-// Fails when a plugin's files changed since <base-ref> without a version bump and changelog entry.
+// Fails when a plugin's files changed since <base-ref> without a one-step version bump (the next
+// patch, minor or major; a skipped version fails) and its changelog entry. A step from 0.x to
+// 1.0.0 passes with a note: it needs Nery's explicit authorization.
 //   node scripts/check-version-bump.mjs <base-ref>
 // Documentation-only edits (README.md, CHANGELOG.md [Unreleased]) do not reach users through
 // `claude plugin update`, so changes limited to README.md do not require a bump.
@@ -8,6 +10,7 @@ import { execFileSync } from 'node:child_process'
 import { existsSync } from 'node:fs'
 import { join } from 'node:path'
 import {
+  bumpSemver,
   changelogSection,
   compareSemver,
   fail,
@@ -37,11 +40,13 @@ function git(args) {
 
 /**
  * @param {string} base
- * @returns {{ errors: string[], checked: string[] }}
+ * @returns {{ errors: string[], notes: string[], checked: string[] }}
  */
 export function checkVersionBump(base) {
   /** @type {string[]} */
   const errors = []
+  /** @type {string[]} */
+  const notes = []
   const changed = git(['diff', '--name-only', `${base}...HEAD`])
     .split('\n')
     .filter(Boolean)
@@ -85,12 +90,25 @@ export function checkVersionBump(base) {
       )
       continue
     }
+    const allowed = ['patch', 'minor', 'major'].map((level) => bumpSemver(baseVersion, level))
+    const stepped = allowed.find((next) => compareSemver(version, next) === 0)
+    if (stepped === undefined) {
+      errors.push(
+        `plugins/${name}: version jumps from ${baseVersion} to ${version}; one step above ${baseVersion} is ${allowed.join(', ')}. Run bump-version.mjs ${name} <level> once from ${baseVersion}.`,
+      )
+      continue
+    }
+    if (stepped === allowed[2] && compareSemver(baseVersion, '1.0.0') < 0) {
+      notes.push(
+        `plugins/${name}: ${baseVersion} → ${version} promises a stable interface: it needs Nery's explicit authorization (release-and-versioning, rule 4).`,
+      )
+    }
     const changelog = readText(join(pluginDir(name), 'CHANGELOG.md'))
     if (!changelogSection(changelog, version)) {
       errors.push(`plugins/${name}: CHANGELOG.md has no entry for ${version}`)
     }
   }
-  return { errors, checked: [...byPlugin.keys()] }
+  return { errors, notes, checked: [...byPlugin.keys()] }
 }
 
 if (isMain(import.meta.url)) {
@@ -98,7 +116,10 @@ if (isMain(import.meta.url)) {
   if (!base) {
     fail('Usage: check-version-bump.mjs <base-ref>')
   }
-  const { errors, checked } = checkVersionBump(base)
+  const { errors, notes, checked } = checkVersionBump(base)
+  for (const n of notes) {
+    console.error(`! ${n}`)
+  }
   for (const e of errors) {
     console.error(`✖ ${e}`)
   }
