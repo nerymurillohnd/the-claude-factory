@@ -1,10 +1,10 @@
 ---
-status: accepted
+status: superseded
 date: 2026-10-22
 decision-makers:
   - "Nery"
 supersedes: none
-superseded-by: none
+superseded-by: ADR_2026-10-25_building-mods-skill-holds-mod-authoring
 ---
 
 # Mod knowledge lives in a path-scoped rule, not a skill
