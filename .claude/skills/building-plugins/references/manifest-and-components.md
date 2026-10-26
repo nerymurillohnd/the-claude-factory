@@ -35,7 +35,7 @@ Checked 2026-10-25 against `/en/plugins/create`, `/en/plugins/components`, `/en/
 
 - `name` is the only required field. See `repo-layouts.md` → Names.
 - `homepage` must parse as a URL or the plugin **fails to load**. `repository` isn't validated.
-- `version`: either set it and bump it on every release, or omit it (and keep it out of the marketplace entry) so the git commit SHA is the version. See `versioning-and-release.md`. `validate --strict` fails on a missing `version`, so run it without `--strict` if you omit it on purpose.
+- `version`: in general you either set it and bump it on every release, or omit it so the git commit SHA is the version. This repository always sets it, and never in the marketplace entry; see `versioning-and-release.md`. `validate --strict` fails on a missing `version`.
 - `license` (SPDX) or a `LICENSE` file; Anthropic's directory requires one of them.
 - `metadata` (v2.1.222+) is free-form and ignored by Claude Code. Directory-listing fields `icon`, `documentationUrl`, `supportUrl`, `privacyPolicyUrl`, `termsOfServiceUrl` are read only by Anthropic's directory; before v2.1.281 `validate` flagged them as unknown, so a `--strict` run on an older CLI fails.
 - `defaultEnabled: false` makes an install leave the plugin off. Once a user's `enabledPlugins` entry exists, later changes to `defaultEnabled` don't affect them.

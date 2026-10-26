@@ -97,4 +97,4 @@ If the author's own convention is "never pin tool versions", note the difference
 - [ ] Scripts with `#!/usr/bin/env <interpreter>`, committed `100755`, called by path through `${CLAUDE_PLUGIN_ROOT}`
 - [ ] No LFS, no stray OS files, portable file names, nothing outside the plugin directory
 - [ ] Surfaces stated; no top-level `bin/` unless Claude Code-only
-- [ ] Versioning decision made (see `versioning-and-release.md`)
+- [ ] `version` set in `plugin.json` and absent from the marketplace entry (see `versioning-and-release.md`)

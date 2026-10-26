@@ -1,14 +1,15 @@
-# Versioning, releases, renames and updates
+# How users receive a version
 
 Checked 2026-10-25 against `/en/plugins/loading` (Versions and updates), `/en/plugins/host-marketplace`, `/en/plugins/publish`, `/en/plugins/dependencies`, `/en/plugins/cli-reference` (`plugin tag`), Claude Code v2.1.310.
 
+This is background for building a plugin: what a version does on the user's machine, so the plugin you write ships the way you expect. Choosing the bump, writing the release notes, the pull request, the tag and the release are the release stage of `.claude/rules/workflow.md`; renaming, merging or removing a plugin is its renames stage. This skill does none of them.
+
 ## Contents
 - How users receive a release
-- Choose: bump or omit `version`
-- Release checklist
+- Version in this repository
 - Tags
 - Holding users on a version, release channels
-- Rename or remove a published plugin
+- Renames and removals
 - What a marketplace cannot do
 
 ## How users receive a release
@@ -29,57 +30,23 @@ Consequences:
 - A plugin updated mid-session keeps running the old path for hooks, MCP and LSP until `/reload-plugins`; monitors need a restart. Old version directories are removed 14 days later.
 - Claude Code doesn't report usage to the author (`/en/plugins/measure`). Issues are the only signal, so check everything before the push.
 
-## Choose: bump or omit `version`
+## Version in this repository
 
-| | Bump `version` each release | Omit `version` everywhere |
-| :-- | :-- | :-- |
-| Users update when | You change the string | Any commit changes the plugin's directory (relative path) or the source repo (github/url) |
-| Good for | Curated releases, changelogs, SemVer, dependency ranges | Fast-moving plugins where every merged commit should ship |
-| Risk | Forgetting the bump ships nothing to existing users | Every commit is a release; a broken commit reaches users who update |
-| `validate --strict` | Passes | Missing `version` is a warning, which `--strict` turns into a failure → validate that plugin without `--strict` |
-
-Never set `version` in both `plugin.json` and the entry: `plugin.json` wins silently and `validate` reports `Entry declares version "<a>" but <path>/plugin.json says "<b>"`. In a multi-plugin marketplace, keep versions in each `plugin.json` and none in `marketplace.json`.
-
-The value isn't checked against SemVer; SemVer is a convention you choose. Staying in `0.x` signals no stability promise yet. This repository takes the first column: every plugin sets `version` in `plugin.json`, follows SemVer, and bumps it in its release.
-
-## Release checklist
-
-1. Decide the bump from the user-facing change (or confirm the plugin is unversioned on purpose).
-2. Update `version` in `plugin.json` and the plugin's `CHANGELOG.md` before the change reaches the default branch, so it never holds changed files under an old version. In this repository the release stage of `.claude/rules/workflow.md` decides how: the bump goes in the change's pull request, as its own signed commit.
-3. `claude plugin validate --strict` on the plugin directory (no `--strict` if it omits `version` on purpose) and `claude plugin validate .` at the marketplace root; raw output in the hand-back.
-4. List what the push publishes — each plugin and its new version — and get the user's explicit go-ahead before pushing or merging to the default branch.
-5. In release notes or the README, tell users how to update (`claude plugin update <plugin>@<marketplace>`) and that auto-update is opt-in.
+Every plugin sets `version` in `plugin.json`, follows SemVer, and gets a new version in its release; no marketplace entry carries one. Claude Code itself does not check the value against SemVer, and an unversioned plugin would ship every commit as a release, which this repository does not do. `validate --strict` fails on a missing `version`, so it always runs with `--strict` here.
 
 ## Tags
 
-Tags don't deliver anything. In general they are needed only when other plugins declare a version range on yours, because ranges resolve against tags named `<plugin>--v<version>`. In this repository `release.yml` creates that tag for every new version after the merge, so never create one by hand. `claude plugin tag [path]` checks that `plugin.json` and any marketplace entry agree, then creates that annotated tag; `--dry-run` previews, `--push` pushes (needs the user's approval). It refuses a dirty tree, an existing tag, or a missing `version`. For a relative-path plugin, the tag lives in the marketplace repo on a commit whose `plugin.json` holds that version. A GitHub Release is for people, not for Claude Code.
+Tags don't deliver anything. Plugin dependency ranges resolve against tags named `<plugin>--v<version>`, and a GitHub Release is for people, not for Claude Code. In this repository `release.yml` creates that tag and the release for every new version after the merge, so never create one by hand.
 
 ## Holding users on a version, release channels
 
 - An entry with a `github`/`url`/`git-subdir` source can pin `ref` (branch/tag) and `sha` (40-char commit). With `sha`, users get exactly that commit even if the ref later moves or is deleted.
 - Users can add `owner/repo#stable` to follow a branch or tag of the catalog.
-- For stable and early-access tracks, host two marketplaces with **different `name` values** whose entries point at different refs, and give each ref a different `version` (or none). Claude Code has no channel concept, and one marketplace serves one version of each plugin.
+- Claude Code has no channel concept, and one marketplace serves one version of each plugin: stable and early-access tracks need two marketplaces with different `name` values whose entries point at different refs.
 
-## Rename or remove a published plugin
+## Renames and removals
 
-Users' `enabledPlugins` and `pluginConfigs` are keyed by `<name>@<marketplace>`, so a changed `name` breaks every install with `Plugin "<name>" not found in marketplace`. Avoid renames; change `displayName` instead.
-
-When it's unavoidable, add a top-level `renames` map to `marketplace.json`:
-
-```json
-{
-  "renames": {
-    "formatter": "code-formatter",
-    "legacy-linter": null
-  }
-}
-```
-
-- Old → new migrates users: the plugin loads under the new name and Claude Code rewrites the old keys in user/project/local settings. `null` drops a removed plugin. Managed settings can't be rewritten, so the notice repeats there until an admin edits them.
-- Users who added the marketplace from git see `Plugin "<name>" not cached at <path>` until they run `/plugin install <new>@<marketplace>` once. Say so in the release notes.
-- Treat `renames` as append-only history; on a second rename add a new entry instead of editing the old one. `validate` rejects cycles and chains that don't end in `null` or a listed name (`renames.<name>: chain does not resolve`).
-- Don't reuse a name that appears as a key in `renames` (our advice, not a documented rule: the chain is followed from the old name, so reusing it is ambiguous).
-- `"forceRemoveDeletedPlugins": true` uninstalls plugins that are neither listed nor renamed from users' machines at session start (managed-settings installs stay). Without it, a removed plugin stays installed and errors.
+Users' `enabledPlugins` and `pluginConfigs` are keyed by `<name>@<marketplace>`, so a changed `name` breaks every install with `Plugin "<name>" not found in marketplace` unless the marketplace's `renames` map migrates it. That is why a plugin's name is permanent and a new label goes in `displayName`. Renaming, merging or removing a published plugin is the renames stage of `.claude/rules/workflow.md`.
 
 ## What a marketplace cannot do
 
