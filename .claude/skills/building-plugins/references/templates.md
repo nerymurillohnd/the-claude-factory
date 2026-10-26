@@ -15,7 +15,7 @@ This skill's `assets/` are the templates a new plugin of this repository is buil
 
 ## Create from them
 
-1. Run `scaffold-plugin.py` (step 3 of `SKILL.md`). Never copy another plugin's files, and never write these files by hand for a new plugin.
+1. Run `scaffold-plugin.py` (step 2 of `SKILL.md`). Never copy another plugin's files, and never write these files by hand for a new plugin.
 2. In the new `README.md`, replace every remaining `<…>` with the plugin's facts, in the style of `readme-style.md`. Delete a section only when it cannot apply, and say why in your hand-back.
 3. Leave `plugin.json`'s `version` at `0.1.0` and the `CHANGELOG.md` `0.1.0` entry as the launch entry; versioning after that is the release procedure's.
 

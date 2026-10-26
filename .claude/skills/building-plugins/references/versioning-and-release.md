@@ -40,7 +40,7 @@ Consequences:
 
 Never set `version` in both `plugin.json` and the entry: `plugin.json` wins silently and `validate` reports `Entry declares version "<a>" but <path>/plugin.json says "<b>"`. In a multi-plugin marketplace, keep versions in each `plugin.json` and none in `marketplace.json`.
 
-The value isn't checked against SemVer; SemVer is a convention you choose. Staying in `0.x` signals no stability promise yet.
+The value isn't checked against SemVer; SemVer is a convention you choose. Staying in `0.x` signals no stability promise yet. This repository takes the first column: every plugin sets `version` in `plugin.json`, follows SemVer, and bumps it in its release.
 
 ## Release checklist
 
@@ -52,7 +52,7 @@ The value isn't checked against SemVer; SemVer is a convention you choose. Stayi
 
 ## Tags
 
-Tags don't deliver anything. Create them only when other plugins declare a version range on yours, because ranges resolve against tags named `<plugin>--v<version>`. `claude plugin tag [path]` checks that `plugin.json` and any marketplace entry agree, then creates that annotated tag; `--dry-run` previews, `--push` pushes (needs the user's approval). It refuses a dirty tree, an existing tag, or a missing `version`. For a relative-path plugin, the tag lives in the marketplace repo on a commit whose `plugin.json` holds that version. A GitHub Release is for people, not for Claude Code.
+Tags don't deliver anything. In general they are needed only when other plugins declare a version range on yours, because ranges resolve against tags named `<plugin>--v<version>`. In this repository `release.yml` creates that tag for every new version after the merge, so never create one by hand. `claude plugin tag [path]` checks that `plugin.json` and any marketplace entry agree, then creates that annotated tag; `--dry-run` previews, `--push` pushes (needs the user's approval). It refuses a dirty tree, an existing tag, or a missing `version`. For a relative-path plugin, the tag lives in the marketplace repo on a commit whose `plugin.json` holds that version. A GitHub Release is for people, not for Claude Code.
 
 ## Holding users on a version, release channels
 

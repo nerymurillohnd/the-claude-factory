@@ -57,7 +57,7 @@ From `CHANGELOG.md` and the docs:
 | 2.1.287 | Mods |
 | 2.1.288 | Shell `claude plugin install` falls back to HTTPS without an SSH key |
 | 2.1.289 | `validate` on a dir with both manifests checks both |
+| 2.1.290 | A marketplace named after another GitHub marketplace's `<owner>-<repo>` download folder is refused |
 | 2.1.292 | `claude plugin install <p> --marketplace <src>` |
 | 2.1.295 | `validate` prints a README install line when missing; only plugin-holding submodules are fetched |
-| 2.1.290 | A marketplace named after another GitHub marketplace's `<owner>-<repo>` download folder is refused |
 | 2.1.296 | JS member names refused as marketplace names; shell install falls back to HTTPS on Windows |
