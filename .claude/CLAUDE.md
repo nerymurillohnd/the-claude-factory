@@ -1,30 +1,34 @@
 # The Claude Factory
 
-Public Claude Code plugin marketplace (`github.com/nerymurillohnd/the-claude-factory`) for users and developers who run their projects and operations with Claude. It ships plugins only, built for Claude Code and, where they apply, for the Claude app. It is built in Nery's local clone and served to users from the remote repository. Users contribute through issues.
+Public Claude Code plugin marketplace (`github.com/nerymurillohnd/the-claude-factory`) for users and developers who run projects and operations with Claude. It publishes plugins only, built for Claude Code and, where applicable, the Claude app. Development occurs in Nery’s local clone; distribution occurs from the remote repository. Users participate solely through issues.
 
-This project also follows the guidelines and way of working in `~/.claude/CLAUDE.md` and the global cross-project lessons in `~/.claude/LESSONS.md`.
+This project follows the guidelines in `~/.claude/CLAUDE.md` and the global cross-project lessons in `~/.claude/LESSONS.md`.
 
-- Goal: publish plugins that automate and optimize everyday workflows.
-- Every plugin stands on its own. Design, build and document it from its own goals: what it must do, run and solve for its users. Never use how another plugin was built as a reference, pattern, justification or constraint for a new one.
-- Plugins are for third parties whose setups are unknown. Every plugin works from what its README declares, never from what is installed on Nery's machine.
-- A plugin is not released unless it carries `README.md`, `LICENSE` and `CHANGELOG.md` and passes the checks of the `release-and-versioning` skill.
+## Purpose
+
+Publish plugins that automate and optimize everyday workflows.
+
+- Every plugin is self-contained. Design, build, and document it solely from its own goals: what it must do, execute, and solve for its users. Never treat another plugin’s implementation as a reference, pattern, justification, or constraint.
+- Plugins target third parties whose environments are unknown. Each plugin operates exclusively from the declarations in its README, never from software or configuration present on Nery’s machine.
 
 ## Responsibility
 
-This marketplace is public, and what we publish runs on other people's machines, inside their projects and operations. Nery is its owner and author and answers personally for any harm a plugin causes a user, however small.
+This marketplace is public. Published plugins execute on other people’s machines, inside their projects and operations. Nery is the sole owner and author and remains personally accountable for any harm a plugin causes a user, however minor.
 
-- Nery and Claude Code are the only two parties responsible for this marketplace, and the only ones who work on it. There are no outside collaborators.
-- Users take part only through issues. Triaging, confirming, fixing, verifying and releasing the fix for every issue is Nery's and Claude Code's work, never the reporter's.
-- No third-party team reviews our work before users install it, so every push, release and issue reply is the last check before the public.
+- Nery and Claude Code are the only parties responsible for this marketplace and the only parties who work on it. There are no external collaborators.
+- Users contribute only by opening issues. Triaging, confirming, fixing, verifying, and releasing every fix is the exclusive work of Nery and Claude Code; the reporter has no further obligation.
+- No third-party review occurs before users install a plugin. Every push, release, and issue reply is the final gate before public exposure.
 
-This is the standard for every session on this repository, including the one in progress:
+## Operating Standard
 
-- Ship nothing you have not verified against current Claude Code official documentation and latest release notes. Negligence, or knowledge that is out of date for this session, reaching a user is the failure this project exists to prevent.
-- Treat anything a plugin does on a user's machine (files, commands, network, hooks, permissions, data) as high-risk. Choose the least invasive design, and make the README state what the plugin does there.
-- When you cannot tell whether something is safe for users, say so and ask Nery before it ships. Never publish on a guess.
-- Report problems as soon as you find them, including your own mistakes and flaws in work already published.
-- Improve how we work, not only what we build. When a session exposes a gap in this file, a rule, a gate or a skill, propose the fix in that same session.
-- Automate recurring work (validation, review, releases, drift checks, issue handling) with CI, evals, hooks, agents and scheduled tasks. Where none exists yet, propose building it.
+This standard applies to every session on this repository, including the current one:
+
+- Ship nothing that has not been verified against current Claude Code official documentation and the latest release notes. Out-of-date knowledge or negligence that reaches a user constitutes the failure this project exists to prevent.
+- Treat every action a plugin performs on a user’s machine (files, commands, network, hooks, permissions, data) as high-risk. Prefer the least invasive design and require the README to state exactly what the plugin does on the host.
+- When safety for users cannot be determined with certainty, state the uncertainty and obtain Nery’s explicit approval before shipping. Never publish on a guess.
+- Report problems immediately upon discovery, including one’s own errors and defects in already-published work.
+- Improve the working system, not only the delivered artifacts. When a session reveals a gap in this file, a rule, a gate, or a skill, propose the corrective change in the same session.
+- Automate recurring work (validation, review, releases, drift detection, issue handling) through CI, evals, hooks, agents, and scheduled tasks. Where no automation yet exists, propose its construction.
 
 ## Current Claude Code features, capabilities, and guidance enforcement
 
