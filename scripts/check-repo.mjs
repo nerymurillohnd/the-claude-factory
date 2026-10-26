@@ -37,8 +37,9 @@ const AUTHOR_PLACEHOLDER = /<[A-Z][^<>\n]*>/g // innermost marks, so nested ones
 let templateMarks
 
 /**
- * The author placeholders the README template holds, such as `<Skill>` and `<Display Name>`.
- * Throws when the template is missing or holds none, so the code check never passes by default.
+ * The author placeholders the README template holds, such as `<Skill name>` and `<Display Name>`.
+ * Throws when the template is missing or holds none, so the code check never passes by default,
+ * and when one is a single word, which code such as `Array<Type>` could hold.
  * @returns {Set<string>}
  */
 function templatePlaceholders() {
@@ -51,6 +52,12 @@ function templatePlaceholders() {
     templateMarks = new Set(readText(README_TEMPLATE).match(AUTHOR_PLACEHOLDER) ?? [])
     if (templateMarks.size === 0) {
       throw new Error(`${relative(ROOT, README_TEMPLATE)} holds no <…> placeholders`)
+    }
+    const single = [...templateMarks].filter((mark) => !mark.includes(' '))
+    if (single.length > 0) {
+      throw new Error(
+        `${relative(ROOT, README_TEMPLATE)} has one-word placeholders, which code can hold: ${single.join(' ')}`,
+      )
     }
   }
   return templateMarks

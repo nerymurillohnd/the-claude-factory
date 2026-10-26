@@ -1,6 +1,6 @@
 <div align="center">
 
-# <Emoji> <Display Name>
+# <Plugin emoji> <Display Name>
 
 <p><strong><description></strong></p>
 
@@ -31,19 +31,19 @@
 
 ## ✨ Why use it
 
-- **<Benefit>** — <what pain disappears>.
-- **<Benefit>** — <what becomes faster or safer>.
-- **<Benefit>** — <what you no longer have to remember>.
+- **<Benefit title>** — <what pain disappears>.
+- **<Benefit title>** — <what becomes faster or safer>.
+- **<Benefit title>** — <what you no longer have to remember>.
 
 ## 🧩 What's inside
 
-| Component     | Name                | What it does        | How it runs                                        |
-| :------------ | :------------------ | :------------------ | :------------------------------------------------- |
-| 🎯 Skill      | `<plugin>:<Skill>`  | <Short description> | `/<plugin>:<Skill>` or automatically when relevant |
-| 🤖 Agent      | `<plugin>:<Agent>`  | <Short description> | Delegated by Claude, or "use the <Agent> agent"    |
-| 🪝 Hook       | `<Event>`           | <Short description> | Automatically on matching tool calls               |
-| 🔌 MCP server | `<Server>`          | <Short description> | Tools appear as `mcp__plugin_<plugin>_<Server>__*` |
-| 🧠 LSP server | `<Language server>` | <Short description> | Automatically for matching file types              |
+| Component     | Name                    | What it does        | How it runs                                             |
+| :------------ | :---------------------- | :------------------ | :------------------------------------------------------ |
+| 🎯 Skill      | `<plugin>:<Skill name>` | <Short description> | `/<plugin>:<Skill name>` or automatically when relevant |
+| 🤖 Agent      | `<plugin>:<Agent name>` | <Short description> | Delegated by Claude, or "use the <Agent name> agent"    |
+| 🪝 Hook       | `<Hook event>`          | <Short description> | Automatically on matching tool calls                    |
+| 🔌 MCP server | `<Server name>`         | <Short description> | Tools appear as `mcp__plugin_<plugin>_<Server name>__*` |
+| 🧠 LSP server | `<Language server>`     | <Short description> | Automatically for matching file types                   |
 
 ## ✅ Requirements
 
@@ -121,23 +121,23 @@ With the marketplace added, click **+** next to the prompt box → **Add plugins
 ### <Task name>
 
 ```text
-/<plugin>:<Skill> <Arguments>
+/<plugin>:<Skill name> <Skill arguments>
 ```
 
 **Result:** <What Claude does or produces. Two to four realistic examples, each under its own ### heading.>
 
 ## ⚙️ Configuration
 
-| Option     | Type   | Default   | Description        |
-| :--------- | :----- | :-------- | :----------------- |
-| `<Option>` | <Type> | <Default> | <What it controls> |
+| Option         | Type          | Default         | Description        |
+| :------------- | :------------ | :-------------- | :----------------- |
+| `<Option key>` | <Option type> | <Default value> | <What it controls> |
 
-Set options when installing (`claude plugin install <plugin>@<marketplace-name> --config <Option>=<Value>`), later with `/plugin configure <plugin>@<marketplace-name>`, or in `/plugin` → **Installed** → **<Display Name>** → **Configure options**. <Delete this section, and its link in the header, when there is nothing to configure.>
+Set options when installing (`claude plugin install <plugin>@<marketplace-name> --config <Option key>=<Option value>`), later with `/plugin configure <plugin>@<marketplace-name>`, or in `/plugin` → **Installed** → **<Display Name>** → **Configure options**. <Delete this section, and its link in the header, when there is nothing to configure.>
 
 ## 🔍 What this plugin runs and sends
 
-- **Hooks:** <`<Event>` on `<Matcher>` runs `scripts/<File>`, which does what; or "none">.
-- **MCP servers:** <`<Server>` — its command or URL, and what it's used for; or "none">.
+- **Hooks:** <`<Hook event>` on `<Tool matcher>` runs `scripts/<Hook script>`, which does what; or "none">.
+- **MCP servers:** <`<Server name>` — its command or URL, and what it's used for; or "none">.
 - **Network:** <Every destination and the data sent there, or "none">.
 - **Files written:** <Paths, including anything under the plugin data directory, or "none">.
 
@@ -218,4 +218,4 @@ See [CHANGELOG.md](./CHANGELOG.md) for every release.
 
 ## 📄 License
 
-[MIT](./LICENSE) © Nery Murillo <When the plugin derives from third-party material, add "Parts are derived from <Source> (<License>); see [NOTICE.txt](./NOTICE.txt)."; when it names a third-party product, add "Not affiliated with or endorsed by <Owner>. _<Product>_ is a trademark of <Owner>."; otherwise delete this placeholder.>
+[MIT](./LICENSE) © Nery Murillo <When the plugin derives from third-party material, add "Parts are derived from <Source work> (<Source license>); see [NOTICE.txt](./NOTICE.txt)."; when it names a third-party product, add "Not affiliated with or endorsed by <Trademark owner>. _<Product name>_ is a trademark of <Trademark owner>."; otherwise delete this placeholder.>

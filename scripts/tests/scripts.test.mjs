@@ -207,14 +207,25 @@ describe('check-repo', () => {
   test('flags a template placeholder left only inside code, not other <…> text in code', () => {
     scaffoldReady()
     const p = 'plugins/demo-tool/README.md'
-    write(p, `${read(p)}\nRun \`/demo-tool:<Skill>\`.\n`)
+    write(p, `${read(p)}\nRun \`/demo-tool:<Skill name>\`.\n`)
     const left = run('check-repo.mjs')
     assert.equal(left.code, 1)
-    assert.match(left.out, /unresolved <…> placeholders \(in code: <Skill>\)/)
+    assert.match(left.out, /unresolved <…> placeholders \(in code: <Skill name>\)/)
 
-    write(p, read(p).replace('`/demo-tool:<Skill>`', '`<YYYY-MM-DD>` and `Promise<Result>`'))
+    write(
+      p,
+      read(p).replace('`/demo-tool:<Skill name>`', '`<YYYY-MM-DD>`, `Array<Type>` and `<Event>`'),
+    )
     const kept = run('check-repo.mjs')
     assert.equal(kept.code, 0, kept.out)
+  })
+
+  test('refuses a one-word placeholder in the README template', () => {
+    const tpl = '.claude/skills/building-plugins/assets/README-template.md'
+    write(tpl, `${read(tpl)}\n<Type>\n`)
+    const r = run('check-repo.mjs')
+    assert.notEqual(r.code, 0)
+    assert.match(r.out, /one-word placeholders, which code can hold: <Type>/)
   })
 
   test('flags a root package.json that declares runtime dependencies', () => {
