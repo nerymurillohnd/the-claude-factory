@@ -55,7 +55,8 @@ This skill's scripts live in `.claude/skills/plugin-renames-and-removals/scripts
 | `plugin-labels.py` | Step 8.1 | Prints the `gh label create` command of each listed plugin's `plugin: <name>` label; it runs none of them and calls no GitHub API | `marketplace.json` cannot be read |
 | `check-version-bump.py origin/main` | Step 10, after the step 9 commit | Reads the committed diff `origin/main...HEAD` and each changed plugin's version at `origin/main` | A plugin's files changed, other than its `README.md` alone, without a higher version or without a `CHANGELOG.md` section for it |
 | `check-marketplace-unversioned.py` | Step 10 | Reads `.claude-plugin/marketplace.json` | It has a top-level `version`, a `metadata.version` or a `version` on any entry |
-| `release-tag.py <new>` | Step 13.4, rename | Prints `<plugin>--v<version>` from `plugin.json` | The plugin has no version |
+| `check-changelog-entry.py <plugin>` | Step 10, rename and merge | Reads the plugin's `plugin.json` and `CHANGELOG.md` | The section of the `plugin.json` version is missing or empty |
+| `release-tag.py <plugin>` | Step 13.4, rename and merge | Prints `<plugin>--v<version>` from `plugin.json` | The plugin has no version |
 
 ## Procedure
 
@@ -122,13 +123,18 @@ Commit as one signed commit (`git commit -S`): the directory change, the `rename
 
 Run them after the commit in step 9: `check-version-bump.py` reads committed changes only (`origin/main...HEAD`).
 
+`<plugin>` below is `<new>` for a rename and `<target>` for a merge; a removal skips the steps that name it, since it leaves no plugin to check.
+
 1. `git fetch origin main` and `S=.claude/skills/plugin-renames-and-removals/scripts`
 2. `$S/check-version-bump.py origin/main`
 3. `$S/check-marketplace-unversioned.py`
-4. `node scripts/generators/marketplace.mjs --check`
-5. `node scripts/generators/catalog.mjs --check`
-6. `claude plugin validate --strict .`
-7. Read the renamed or target plugin's `README.md`, `CHANGELOG.md` and `plugin.json` side by side and make them agree with the change: the components, commands, prerequisites and network calls the README states, the Compatibility rows, and the version each file shows. A script passing is not this check.
+4. `$S/check-changelog-entry.py <plugin>`
+5. `node scripts/generators/marketplace.mjs --check`
+6. `node scripts/generators/catalog.mjs --check`
+7. `claude plugin validate --strict plugins/<plugin>`, then `claude plugin validate --strict .` for the marketplace.
+8. `git lfs ls-files -- plugins/<plugin>` prints nothing: a git clone never downloads LFS content, so an LFS file reaches users as a pointer file (`/en/plugins/host-marketplace`, "Keep plugin files out of Git LFS").
+9. `find plugins/<plugin> -type l` lists every symlink, and each must resolve inside `plugins/<plugin>/`: a link elsewhere in the repository is copied as its target's content, and a link outside it is skipped without a warning (`/en/plugins/host-marketplace`, "Share files within a marketplace with symlinks"). For a merge, check the moved components most closely: a link that resolved inside `plugins/<old>/` now points at a deleted directory.
+10. Read the renamed or target plugin's `README.md`, `CHANGELOG.md` and `plugin.json` side by side and make them agree with the change: the components, commands, prerequisites and network calls the README states, the Compatibility rows, and the version each file shows. A script passing is not this check.
 
 If any check fails before the push, fix the cause, amend the commit (`git commit -S --amend`) and run all the checks again. After the push, commit the fix as a new signed commit instead: never amend or force-push a pushed commit.
 
@@ -158,9 +164,9 @@ With Nery's authorization only: push the branch and open the PR, applying only t
 1. Take the merge commit's SHA: `gh pr view <n> --json mergeCommit`.
 2. Wait until `gh run list --workflow validate.yml --commit <sha>` shows the run completed.
 3. Read the release run: `gh run list --workflow release.yml --commit <sha>`. It starts only from a Validate run that succeeded on a `push` to `main`. No run while Validate is still running is not a failure. A missing run after Validate succeeded is unexplained: read the trigger in `release.yml` before running anything.
-4. Rename: print the expected tag with `.claude/skills/plugin-renames-and-removals/scripts/release-tag.py <new>`, then confirm it exists with `gh release view <new>--v<version>`.
+4. Rename or merge: print the expected tag with `.claude/skills/plugin-renames-and-removals/scripts/release-tag.py <new>` (or `<target>`, whose bump in step 5 gets its own tag), then confirm it exists with `gh release view <new>--v<version>` (or `<target>--v<version>`) and matches the printed tag.
 5. Confirm the old name's last tag and GitHub Release still exist: `gh release view <old>--v<last version>`. For a removal, no new tag is expected.
-6. Confirm no other plugin was tagged by the same run unless intended.
+6. Confirm no other plugin was tagged by the same run unless intended: `gh run view <run-id> --log | grep -oE 'Released [a-z0-9-]+--v[0-9.]+'` lists every tag that run published.
 7. Repeat step 12.4 with `#main` in place of `#<branch>`: for a rename or merge, `plugin list --json` shows the new version of `<new>` (or `<target>`); in every case, installing `<old>` fails, because `<old>` is no longer in `plugins`.
 8. Report to Nery: what users receive, the new tag and release exist (rename or merge), the old ones are intact, and nothing unintended was tagged.
 
