@@ -96,7 +96,7 @@ Example, a PreToolUse deny:
 1. Run the script by hand with a minimal environment, once per interpreter manager the hook depends on: `env -i HOME= PATH=/usr/bin:/bin ./hooks/<script> < input.json`, with `input.json` built from a quoted heredoc.
 2. Test one call made from a subagent before the README says the hook covers them.
 3. Test in `default` and in `bypassPermissions` mode before the README states what the hook blocks: the docs do not say it runs in both. Start the session in each mode as `/en/permission-modes` describes.
-4. Run `claude plugin validate --strict plugins/<name>` and the plugin's tests, which live in `scripts/tests/<plugin>/`: `node --test` for `*.test.mjs`, and `python3 -m unittest discover` plus `by_path.sh` for a Python script, as `.claude/CLAUDE.md` → Plugin Tooling and `.claude/rules/plugin-tooling.md` → Validation and testing require them. Break the rule on purpose once and confirm a test fails.
+4. Run `claude plugin validate --strict plugins/<name>` and the plugin's tests, which live in `scripts/tests/<plugin>/`: `node --test` for `*.test.mjs`, and `python3 -m unittest discover` plus `by_path.sh` for a Python script, as `.claude/CLAUDE.md` → Plugin Tooling requires them. Break the rule on purpose once and confirm a test fails.
 5. Reload with `/reload-plugins` after each edit and test again.
 
 ### 7. Document

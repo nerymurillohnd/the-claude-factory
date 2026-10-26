@@ -68,7 +68,11 @@ Rules that keep the scopes apart:
 ### Plugin Tooling
 
 - Default target platforms are Linux and macOS with POSIX-compatible interfaces.
-- Windows support is optional and, when provided, must be limited to Git Bash only.
+- Windows support is optional and, when provided, must be limited to Git Bash only, and only when the plugin's README declares Windows support.
+- Run plugin Python with the user's `python3` from `PATH`; never rely on the maintainer's uv, PEP 723 execution or the maintainer's Python version.
+- Write plugin Python for any `python3` a user may have; declare a minimum in the README only when a feature requires it.
+- Type-check plugin Python with Basedpyright in its default `recommended` mode.
+- Test plugin scripts with their own tests under `scripts/tests/<plugin>/`; keep maintainer-only test dependencies out of plugin runtimes.
 
 ## Plugin Categories
 

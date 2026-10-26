@@ -4,9 +4,9 @@ Paste this brief, with `<name>` filled in and every rule or fact the steps need,
 
 Review the plugin `<name>` of this marketplace, before its release:
 
-1. Read `.claude/rules/plugin-tooling.md`, `.claude/rules/user-docs.md`, `.claude/rules/skill-authoring.md`, the pairs map in `.claude/skills/plugin-consistency/SKILL.md` → step 2, `docs/compatibility.md`, the checks in `scripts/check-repo.mjs` and everything under `plugins/<name>/`.
+1. Read `.claude/CLAUDE.md` → Plugin Tooling, `.claude/rules/user-docs.md`, `.claude/rules/skill-authoring.md`, the pairs map in `.claude/skills/plugin-consistency/SKILL.md` → step 2, `docs/compatibility.md`, the checks in `scripts/check-repo.mjs` and everything under `plugins/<name>/`.
 2. Run `claude plugin validate --strict plugins/<name>`, `node scripts/check-repo.mjs`, `node scripts/generators/marketplace.mjs --check` and `node scripts/generators/catalog.mjs --check`, and quote the output.
-3. Manifest: the fields `.claude/skills/plugin-development/SKILL.md` → step 4 sets; paths start with `./`; secrets go through `userConfig`; no hardcoded tokens or personal data.
+3. Manifest: the fields `.claude/skills/building-plugins/references/manifest-and-components.md` → "plugin.json for a public plugin" sets; paths start with `./`; secrets go through `userConfig`; no hardcoded tokens or personal data.
 4. Components: each skill, agent, hook, MCP and LSP server does what the README claims; skill descriptions state what and when; hook scripts fail safe; paths use `${CLAUDE_PLUGIN_ROOT}`; code imports only `node:*` modules, the plugin's own files or the packages its own `package.json` declares, never anything from the repository's root `node_modules`, which no user receives.
 5. Security: no data exfiltration, no undisclosed network calls, no destructive commands without confirmation, no `curl | sh`, least-privilege tool grants.
 6. Compatibility: the README table matches `docs/compatibility.md` for the components actually shipped (e.g. `bin/` ⇒ ❌ Claude app; agents and hooks ⇒ ⚠️ Cowork sessions only).
