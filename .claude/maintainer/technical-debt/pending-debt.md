@@ -46,6 +46,7 @@ Add an item only when all of these hold:
 | DEBT-008 | `main` and the release tags have no GitHub protection | 🟠 Blocked |
 | DEBT-009 | Biome ignores Markdown, so no tool formats or lints the repository's Markdown | 🟡 Pending |
 | DEBT-010 | The mod gates of `scripts/gates.mjs` can miss a mod or report green on a lost test summary | 🟡 Pending |
+| DEBT-011 | The repository's README checks, scaffold and plugin READMEs still follow the old plugin template, not the one `building-plugins` sets | 🟠 Blocked |
 
 ## 📂 Open items
 
@@ -223,6 +224,38 @@ Add an item only when all of these hold:
   - name `mod-tsc` for what it checks, and check the declarations' `// Written by Claude Code <version>.` header against `claude --version` before `tsc`.
 - **Review condition:** closes when a mod with no tests fails the gate, a test run with its summary removed fails it, and stale declarations are reported.
 - **Related records:** ADR_2026-10-21_gates-run-from-one-script, ADR_2026-10-25_building-mods-skill-holds-mod-authoring.
+
+### DEBT-011 — The repository's README checks, scaffold and plugin READMEs still follow the old plugin template, not the one `building-plugins` sets
+
+| Field | Value |
+| --- | --- |
+| **Status** | 🟠 Blocked |
+| **Category** | quality, maintainability |
+| **Owner** | Maintainer tooling (`scripts/lib.mjs`, `scripts/check-repo.mjs`, `scripts/new-plugin.mjs`), `.claude/templates/plugin/README.md`, `.claude/CLAUDE.md` → Templates, and the plugins' READMEs |
+| **Logged** | 2026-10-25 |
+
+#### 🔎 Evidence
+
+- **Confirmed facts (read on 2026-10-25):**
+  - The `building-plugins` skill starts a plugin README from its `assets/README-template.md`, whose sections are Install, Update, Prerequisites, Configuration, Usage, What this plugin runs and sends, Uninstall and License.
+  - `scripts/lib.mjs:85-96` `REQUIRED_PLUGIN_SECTIONS`, which `check-repo.mjs` enforces, lists Why use it, What's inside, Requirements, Installation, Usage, Updating, Uninstalling, Compatibility, Changelog and License.
+  - `scripts/new-plugin.mjs` renders `.claude/templates/plugin/README.md`, and `.claude/CLAUDE.md` → Templates says to create every plugin file from that template.
+  - Nery's rule: new, validated work outranks existing files, which adapt to it.
+- **Inferences:** a README written from the `building-plugins` template fails `check-repo.mjs` until the older side is adapted.
+- **Open questions:** which sections the adapted checks require (the skill's template has no Compatibility or Changelog section, which other checks read), and whether the 17 published READMEs move to the new shape at once or as each plugin next changes.
+
+#### 📈 Impact and next step
+
+- **Impact / risk:** two templates give conflicting orders for the same file, and the one the skill sets is refused by the repository's check.
+- **Why it is not fixed now:** adapting it changes maintainer scripts and every plugin README, which go through pull requests; it waits on Nery's decision on the open questions.
+- **Next action:** decide the section set with Nery. Then, in one change:
+  - update `REQUIRED_PLUGIN_SECTIONS` and the checks that read Compatibility;
+  - make `new-plugin.mjs` render the `building-plugins` template, and retire or align `.claude/templates/plugin/README.md`;
+  - fix CLAUDE.md → Templates.
+
+  Then move each plugin README, by pull request.
+- **Review condition:** closes when a README written from the `building-plugins` template passes `check-repo.mjs`, `new-plugin.mjs` renders it, and no rule names the old template as the one to follow.
+- **Related records:** none.
 
 <!--
 Entry format. Copy this block above this comment for each new item and add its row to the Index.
