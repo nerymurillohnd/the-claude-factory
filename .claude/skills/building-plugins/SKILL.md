@@ -13,6 +13,18 @@ Scope: creating a plugin of this repository and writing its manifest and compone
 
 This is the plugin-building procedure of this repository, a multi-plugin marketplace (`plugins/<name>/`, one `.claude-plugin/marketplace.json` at the root). `.claude/CLAUDE.md` and `.claude/rules/` win when they say something different, and the official docs and release notes win over all of them. The references keep the general facts that hold for any public plugin, because they explain why this repository works the way it does.
 
+## Other skills
+
+`.claude/rules/workflow.md` names the skill for each stage. These are the ones a plugin build meets, and when:
+
+| Situation | Load | When |
+| :-- | :-- | :-- |
+| The plugin is a mod or contains one | `building-mods`, for the hooks module, what the README says about the mod, and the `mods` category | Together with this skill, from step 1 |
+| A new component type changes what `docs/compatibility.md` must say | `maintaining-user-docs` | Before step 4, so the README copies the updated cells |
+| The plugin is ready to ship | `release-and-versioning`, for the version, the changelog notes, the root changelog line, the pull request and the release | After step 5 (step 6) |
+| Evals are requested, or an install, load or marketplace error needs diagnosing | `testing-plugins` | After step 5, only when asked |
+| The plugin is to be renamed, merged, removed or retired | `plugin-renames-and-removals` | Instead of this skill |
+
 ## Ground truth before you rely on a behavior
 
 Claude Code ships releases every day or two and the docs lag behind them. The references here were checked on 2026-10-25 against the docs and Claude Code v2.1.310.
