@@ -11,7 +11,7 @@ Canonical section order and intent for `README.md`. Edit `README.md` directly fo
 | 4 | 🔧 Manage your plugins | Update, auto-update, disable, uninstall, remove marketplace | Terminal vs in-session table; Claude app paragraph; removal warning |
 | 5 | 🧭 Where plugins work | Cross-surface compatibility matrix | Two columns (Claude Code, Claude app) plus the chat-conversation note; must match `docs/compatibility.md` |
 | 6 | 🛡️ Trust & safety | How to review before installing | Link Security policy |
-| 7 | 📚 Documentation | Table of guides | Every user guide and tool reference in `docs/` listed, plus the official plugin docs |
+| 7 | 📚 Documentation | Table of guides | Every marketplace guide in `docs/` listed, plus the official plugin docs. A file in `docs/` that serves one plugin is linked from that plugin's README, not from here |
 | 8 | 💬 Support | Issue forms table | Note: no pull requests, issues welcome |
 | 9 | 📝 Changelog | Root vs per-plugin changelogs | |
 | 10 | 📄 License | MIT, non-affiliation and trademark note | |

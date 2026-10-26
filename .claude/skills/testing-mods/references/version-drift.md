@@ -1,6 +1,6 @@
 # Where the docs and the binary disagree (read before quoting messages)
 
-The docs lag releases by days; the CHANGELOG and the installed binary win. Evidence labels: **[obs 2.1.310]** observed by running the installed CLI during this skill's authoring; **[changelog X]** from the CHANGELOG entry for version X (https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md); **[docs]** only from the docs pages; **[unverified]** could not be confirmed.
+The docs lag releases by days; the CHANGELOG and the installed binary win. Evidence labels: **[obs 2.1.310]** observed by running the installed CLI during this skill's authoring; **[changelog X]** from the CHANGELOG entry for version X (raw: https://raw.githubusercontent.com/anthropics/claude-code/main/CHANGELOG.md); **[docs]** only from the docs pages; **[unverified]** could not be confirmed.
 
 When a version-sensitive answer matters, re-check: run the command on the installed build, `grep` the CHANGELOG for the mod/test/validate entry, and compare. The mods types in the `anthropics/claude-code` repo (`mods/types/claude-code.d.ts`) were "written by Claude Code 2.1.277" and also lag.
 
@@ -17,7 +17,8 @@ When a version-sensitive answer matters, re-check: run the command on the instal
 | Failed `expect` / refused stub answer in a registered hook | partially described | **[changelog 2.1.292]** now fails the test. |
 | `mock.session` / `$.session.append` | needs ≥ 2.1.293 [docs] | **[changelog 2.1.293]** added. **[changelog 2.1.295]** a `session.append` hook that dropped blocks no longer passes the test. |
 | `validate --json` | | **[changelog 2.1.290]** `gatingHooks` with `hasCatch`. **[changelog 2.1.304]** removed notes predicting where hooks run. **[changelog 2.1.295]** README install-line advice added. |
-| Hooks skipped where an org manages Claude Code | | **[changelog 2.1.299]** note added; **[changelog 2.1.304]** transcript line when an earlier plugin skips your mod's hook. |
+| Hooks skipped where an org manages Claude Code | | **[changelog 2.1.299]** note added; **[changelog 2.1.304]** transcript line when an earlier plugin skips your mod's hook. **[obs 2.1.310]** its text, from `claude plugin test` with a `prepend` mod calling `next.to(e, 'append')`: `<mod>: its <event> hook was skipped. "<plugin>" runs first and sent the event on past it.` |
+| `next.to` in a mod a user installs | only `prependPlugins`/`appendPlugins` mods can call it | **[obs 2.1.310]** `validate` passes it and lists `calls: next.to:append`; the loader refuses the module: `hooks module not loaded; next.to is available to managed plugins (prependPlugins / appendPlugins) only, and this plugin is user (policy/scan)`. |
 | Load-error wording | | **[changelog 2.1.309]** nested-too-deep error names the file; **[changelog 2.1.295]** rebound top-level `var` error names the line. |
 | Same-name plugins | | **[changelog 2.1.296]** /plugin Errors tab notes when another plugin of the same name holds the hooks-module name. |
 | Toast rate limiting | dropped within 2 s | **[docs]** removed in 2.1.290. |

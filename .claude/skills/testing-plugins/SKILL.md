@@ -1,11 +1,11 @@
 ---
 name: testing-plugins
-description: Use to build or run the eval suite of a plugin that has no mods, when evals are requested for it or a plugin that has evals was edited, and to diagnose install, load or marketplace errors of plugins from a public GitHub marketplace. Not for mods, and not for tests other than evals.
+description: Use to build or run the eval suite of a plugin that has no mods, when evals are requested for it or a plugin that has evals was edited, to run the live checks of a ready plugin's MCP servers and MCP hooks, and to diagnose install, load or marketplace errors of plugins from a public GitHub marketplace. Not for mods, unit tests, type checks, linters or validate runs.
 ---
 
 # GitHub plugin QA
 
-Tests plugins that are published, or about to be published, in a **public GitHub marketplace**, and diagnoses the errors those plugins and marketplaces produce. Two jobs: (A) evals with a light local pilot and a full CI suite, (B) troubleshooting.
+Tests plugins that are published, or about to be published, in a **public GitHub marketplace**, and diagnoses the errors those plugins and marketplaces produce. Three jobs: (A) evals with a light local pilot and a full CI suite, (B) troubleshooting, (C) live checks of a ready plugin's MCP servers.
 
 ## Scope
 
@@ -13,7 +13,7 @@ In scope: Claude Code plugins whose marketplace is a public GitHub repo (`owner/
 
 Out of scope. Say so in one sentence and stop; do not improvise a fix:
 - **Mods**: plugins whose `hooks/hooks.json` lists a hooks module under `modules`, whatever their category.
-- Tests other than evals: unit tests, type checks, linters and `claude plugin validate` runs.
+- Unit tests, type checks, linters and `claude plugin validate` runs: they belong to whoever writes the code.
 - Local-path marketplaces, GitHub Enterprise Server, `claudeai-*` (claude.ai) marketplaces, `skills-dir` plugins.
 - Anything blocked by organization policy (`blocked by enterprise policy`, `strictKnownMarketplaces`, `disableSideloadFlags`...): the fix belongs to an administrator.
 
@@ -25,6 +25,7 @@ Only when asked. Never add evals to a plugin, or run them, on your own initiativ
 - **Existing plugin that has `evals/` and was edited:** run the local pilot on the affected cases, make sure CI will run the full suite.
 - **Existing plugin without evals, edited, and nobody asked for evals:** do nothing about evals. At most mention in one line that it has no suite.
 - **A user pastes an install, load or marketplace error:** go to part B.
+- **Nery says a plugin with an MCP server, or with a hook that matches or calls MCP tools, is ready:** go to part C. Never before: while the plugin is being shaped, its build runs static checks only.
 
 ## Ground truth first
 
@@ -41,7 +42,7 @@ Read [references/eval-policy.md](references/eval-policy.md) before running anyth
 1. **Gate.** Confirm the plugin is in scope and has (or is getting) `evals/`. For a new suite, use `claude plugin eval init` (interactive) or `claude plugin eval init --bare <case>`. Cases still need: one grader on the result, one on the steps, at least four should-trigger prompts in users' words plus one or two near misses.
 2. **Pilot (local, light).** `claude plugin eval . --runs 1 --ablation none --no-publish`, narrowed with `--case <glob>` to the cases the edit can affect. Target first, flags after. State the cost estimate (cases × 1 run × 1 arm, plus judge calls for `llm` graders) and get a yes before running. Never add `--trust-plugin`, `--scaffold`, `--allow-real-servers` or `--mocks off` unless the user's go-ahead names that flag.
 3. **Report the pilot honestly.** It shows that cases load, run and grade. It has no baseline, so there is no Δ, and one run is noisy. Never call a pilot "the suite passed".
-4. **Full suite = CI, only for plugins with evals that are new or edited.** An unedited plugin with evals is skipped. Use the repo's existing eval workflow if there is one and audit it with the checklist in the reference; otherwise adapt [assets/evals-ci.yml](assets/evals-ci.yml), which uses [scripts/changed-eval-plugins.sh](scripts/changed-eval-plugins.sh) to pick targets. Do not push, open a PR or spend CI money without the user's approval.
+4. **Full suite = CI, only for plugins with evals that are new or edited.** An unedited plugin with evals is skipped. Use the repo's existing eval workflow if there is one and audit it with the checklist in the reference; otherwise adapt [assets/evals-ci.yml](assets/evals-ci.yml), which uses [scripts/changed-eval-plugins.sh](scripts/changed-eval-plugins.sh) to pick targets, as the reference's "The CI template" says. Do not push, open a PR or spend CI money without the user's approval.
 
 ## B. Troubleshooting
 
@@ -51,6 +52,10 @@ Read [references/troubleshooting.md](references/troubleshooting.md).
 2. If the message is not in the reference, or is out of scope, say so. Do not guess from similar messages.
 3. Separate repo problems from local state: reproduce in a throwaway configuration that leaves your own settings and plugins untouched, as a user without a GitHub SSH key would: `env -u CLAUDE_CODE_PLUGIN_DIRS CLAUDE_CODE_PLUGIN_PREFER_HTTPS=1 CLAUDE_CONFIG_DIR="$T/config" CLAUDE_CODE_PLUGIN_CACHE_DIR="$T/plugins" claude plugin marketplace add <owner/repo>`, then `... claude plugin install <plugin>@<marketplace>` with the same prefix, where `T` is a `mktemp -d` folder. Works there but not on the user's machine means local state (settings, cache, `installed_plugins.json`, git credentials). Fails in both means the marketplace repo or the plugin entry.
 4. Apply one fix, then check the success signal the reference lists for that entry (for example `Successfully added marketplace: <name>`).
+
+## C. Live MCP checks
+
+Read [references/mcp-live-checks.md](references/mcp-live-checks.md) and work through it: load with the option unset, set it and reload, call a tool from the main conversation and from an agent, the Claude app steps, and the cases of hooks that match or call MCP tools. They start the plugin's servers and call real tools, so they run only after the static checks pass and only on Nery's word that the plugin is ready.
 
 ## Answer format
 

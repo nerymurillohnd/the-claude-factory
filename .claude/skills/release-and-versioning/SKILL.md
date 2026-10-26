@@ -31,9 +31,9 @@ This marketplace is a GitHub repository, and each plugin is a relative-path entr
 
 ## Rules
 
-1. Version plugins only. Never add a version or a tag to `.claude-plugin/marketplace.json`.
+1. Version plugins only. Never add a version or a tag to `.claude-plugin/marketplace.json`; `check-marketplace-unversioned.py` enforces it in step 6.
 2. Use SemVer (`MAJOR.MINOR.PATCH`) and choose the bump by user-facing impact.
-3. Apply every bump with `node scripts/bump-version.mjs <plugin> <major|minor|patch>`, never by hand. The script also turns `[Unreleased]` into the dated section with its link references and regenerates the README catalog; a hand edit leaves them out of step.
+3. Apply every bump with `.claude/skills/release-and-versioning/scripts/bump-version.py <plugin> <major|minor|patch>`, never by hand. The script also turns `[Unreleased]` into the dated section with its link references; a hand edit leaves them out of step. It does not regenerate the README catalog, which shows the version: run `node scripts/generators/catalog.mjs` right after it.
 4. A `0.x` version makes no interface-stability promise; `1.0.0` does. Stay in `0.x` while a plugin is new. Never promote a plugin to `1.0.0` without Nery's explicit authorization.
 5. Never tag by hand. `release.yml` creates the tags (format `<plugin>--v<version>`) on the commit Validate checked, after Validate succeeds on `main`, and it tags every plugin whose `plugin.json` version has no tag yet, not only the one you changed. The tags are unsigned (ADR_2026-10-25_release-tags-are-created-unsigned-by-ci).
 6. Never merge a PR or push to `main` without listing what it publishes and confirming with Nery that each plugin is meant to ship (step 8).
@@ -42,6 +42,18 @@ This marketplace is a GitHub repository, and each plugin is a relative-path entr
 9. Push, open a PR or merge only when Nery authorizes it. Merge only with all CI checks green, all review comments resolved and a `github-operations:pr-tracker` report with no issues.
 10. A published plugin's `name` is permanent. Choose a new plugin's name to keep: kebab-case, and never a key of `renames`. Changing it later is a rename, outside this procedure.
 11. When another plugin of this marketplace declares a version range on the changed plugin in its `dependencies`, the new version must still satisfy that range, or the dependent plugin gets its own change. Today no plugin declares `dependencies`: check with `jq '.dependencies // empty' plugins/*/.claude-plugin/plugin.json`.
+
+## Scripts
+
+This skill's scripts live in `.claude/skills/release-and-versioning/scripts/`. Each one is Python with its own shebang: run it by path from the repository root, never through `python3` or `node`. Each reads and writes only what its row says, and none uses the network.
+
+| Script | Run at | What it does | Fails when |
+| :-- | :-- | :-- | :-- |
+| `bump-version.py <plugin> <major\|minor\|patch>` | Step 3, once per changed plugin | Writes the new version to `plugin.json` and moves `[Unreleased]` of `CHANGELOG.md` into the dated section with its link references | `[Unreleased]` is missing or empty, the level is unknown, the plugin has no manifest or version, or the target is `marketplace`; on a failure it writes nothing |
+| `check-version-bump.py origin/main` | Step 6, after the step 5 commit | Reads the committed diff `origin/main...HEAD` and each changed plugin's version at `origin/main` | A plugin's files changed, other than its `README.md` alone, without a higher version or without a `CHANGELOG.md` section for it |
+| `check-marketplace-unversioned.py` | Step 6 | Reads `.claude-plugin/marketplace.json` | It has a top-level `version`, a `metadata.version` or a `version` on any entry |
+| `check-changelog-entry.py <plugin>` | Step 6, for each changed plugin | Reads the plugin's `plugin.json` and `CHANGELOG.md` | The section of the `plugin.json` version is missing or empty |
+| `release-notes.py <plugin> [--tag]` | Step 9 | Prints the tag `<plugin>--v<version>` with `--tag`, otherwise the notes `release.yml` publishes | The version or its changelog section is missing |
 
 ## Procedure
 
@@ -59,7 +71,7 @@ Read the diff (`git diff origin/main...HEAD`) and choose the level by what chang
 - From `1.0.0` on, a breaking change bumps **major**.
 - If a plugin's changes are limited to its own `README.md`, it needs no bump: skip steps 2 and 3 for that plugin. Every other change requires a bump, a `CHANGELOG.md`-only change included.
 - If the PR changes only `.claude-plugin/marketplace.json` (no plugin), no bump applies: skip steps 2 and 3 and write the marketplace line in step 4.
-- A new plugin starts at the `0.1.0` that `node scripts/new-plugin.mjs` writes, with its notes under `## [0.1.0]` → `### Added`: skip step 3 and write the launch line in step 4.
+- A new plugin starts at the `0.1.0` that this repository's plugin scaffold writes, with its notes under `## [0.1.0]` → `### Added`: skip step 3 and write the launch line in step 4.
 
 ### 2. Write the plugin release notes
 
@@ -72,34 +84,36 @@ Read the diff (`git diff origin/main...HEAD`) and choose the level by what chang
 ### 3. Apply the bump
 
 1. If `plugin.json` already holds a version above the one in `origin/main` (the PR already carries this change's bump), skip this step.
-2. Otherwise run `node scripts/bump-version.mjs <plugin> <major|minor|patch>`. It refuses `marketplace`: the marketplace has no version.
+2. Otherwise run `.claude/skills/release-and-versioning/scripts/bump-version.py <plugin> <major|minor|patch>`. It refuses `marketplace`: the marketplace has no version.
 3. Read its output line (`<plugin>: <old> → <new>`) and confirm the new version is the one you intended.
+4. Run `node scripts/generators/catalog.mjs`, so the README catalog shows the new version.
 
 ### 4. Add the root changelog line
 
 1. Add a line in `CHANGELOG.md` (root) when the change is a version bump, a launch or a marketplace-level change.
 2. The root changelog is a summary, never a copy of a plugin changelog. Its structure: `## YYYY-MM-DD` headings, newest first; under each, change-type headings (`### Added`, `### Changed`, `### Fixed`, `### Removed`); under each, one line per event. Create the date heading and the change-type heading if they are missing.
 3. Put the line under today's date and the matching change type:
-   - Version bump or launch: `- **<plugin>** X.Y.Z — one-line summary.`
+   - Version bump or launch: `- **<plugin>** X.Y.Z — one-line summary.` A launch goes under `### Added`; a bump under the change type of its change.
    - Marketplace-level change: `- summary.` (no plugin name, no version)
 
 ### 5. Commit
 
-1. Commit as one signed commit (`git commit -S`): the bump, the plugin changelog entry, the root changelog line and the regenerated catalog. The catalog is regenerated by the bump script; when step 3 was skipped or only the marketplace changed, run `node scripts/generators/catalog.mjs`.
+1. Commit as one signed commit (`git commit -S`): the bump, the plugin changelog entry, the root changelog line and the regenerated catalog. Step 3.4 regenerated the catalog; when step 3 was skipped or only the marketplace changed, run `node scripts/generators/catalog.mjs`.
 2. The commit message says what changed and why.
 
 ### 6. Run the checks and show their raw output
 
-The first two checks read committed changes only (`origin/main...HEAD`), so run them after the commit in step 5.
+Run them after the commit in step 5: `check-version-bump.py` reads committed changes only (`origin/main...HEAD`).
 
-1. `git fetch origin main`
-2. `node scripts/check-version-bump.mjs origin/main`
-3. `node scripts/check-repo.mjs`
-4. `node scripts/generators/catalog.mjs --check`
-5. `claude plugin validate --strict plugins/<plugin>` for each changed plugin, then `claude plugin validate --strict .` for the marketplace.
-6. `git lfs ls-files -- plugins/<plugin>` prints nothing: a git clone never downloads LFS content, so an LFS file reaches users as a pointer file (`/en/plugins/host-marketplace`, "Keep plugin files out of Git LFS").
-7. `find plugins/<plugin> -type l` lists every symlink, and each must resolve inside `plugins/<plugin>/`: a link elsewhere in the repository is copied as its target's content, and a link outside it is skipped without a warning (`/en/plugins/host-marketplace`, "Share files within a marketplace with symlinks").
-8. Read the changed plugin's `README.md`, `CHANGELOG.md` and `plugin.json` side by side and make them agree with the change: the components, commands, prerequisites and network calls the README states, the Compatibility rows, and the version each file shows. A script passing is not this check.
+1. `git fetch origin main` and `S=.claude/skills/release-and-versioning/scripts`
+2. `$S/check-version-bump.py origin/main`
+3. `$S/check-marketplace-unversioned.py`
+4. `$S/check-changelog-entry.py <plugin>` for each changed plugin.
+5. `node scripts/generators/catalog.mjs --check`, and `node scripts/generators/marketplace.mjs --check`, which fails while `marketplace.json` does not list a new plugin as `plugins/` holds it.
+6. `claude plugin validate --strict plugins/<plugin>` for each changed plugin, then `claude plugin validate --strict .` for the marketplace.
+7. `git lfs ls-files -- plugins/<plugin>` prints nothing: a git clone never downloads LFS content, so an LFS file reaches users as a pointer file (`/en/plugins/host-marketplace`, "Keep plugin files out of Git LFS").
+8. `find plugins/<plugin> -type l` lists every symlink, and each must resolve inside `plugins/<plugin>/`: a link elsewhere in the repository is copied as its target's content, and a link outside it is skipped without a warning (`/en/plugins/host-marketplace`, "Share files within a marketplace with symlinks").
+9. Read the changed plugin's `README.md`, `CHANGELOG.md` and `plugin.json` side by side and make them agree with the change: the components, commands, prerequisites and network calls the README states, the Compatibility rows, and the version each file shows. A script passing is not this check.
 
 If any check fails before the push, fix the cause, amend the commit (`git commit -S --amend`) and run all the checks again. After the push, commit the fix as a new signed commit instead: never amend or force-push a pushed commit.
 
@@ -137,7 +151,7 @@ With Nery's authorization only: push the branch and open the PR, applying only t
 1. Take the merge commit's SHA: `gh pr view <n> --json mergeCommit`.
 2. Wait until `gh run list --workflow validate.yml --commit <sha>` shows the run completed.
 3. Read the release run: `gh run list --workflow release.yml --commit <sha>`. The release run starts only from a Validate run that succeeded on a `push` to `main`. No run while Validate is still running is not a failure. A missing run after Validate succeeded is unexplained: read the trigger in `release.yml` before running anything.
-4. Print the expected tag with `node scripts/release-notes.mjs <plugin> --tag` (never compose it by hand; the same script prints the notes the release will carry).
+4. Print the expected tag with `.claude/skills/release-and-versioning/scripts/release-notes.py <plugin> --tag` (never compose it by hand). Without `--tag` it prints the notes the release carries, the same text `release.yml` builds with `scripts/release-notes.mjs`.
 5. Confirm the tag and the GitHub Release exist: `gh release view <plugin>--v<version>`, and that the tag matches step 4.
 6. Confirm no other plugin was tagged by the same run unless intended: `gh run view <run-id> --log | grep -oE 'Released [a-z0-9-]+--v[0-9.]+'` lists every tag that run published.
 7. Repeat the branch half of step 8.5 from `nerymurillohnd/the-claude-factory#main`: `plugin list` must show the new version and `plugin details` the same components and `Always-on` figure as before the merge. That is what users receive.

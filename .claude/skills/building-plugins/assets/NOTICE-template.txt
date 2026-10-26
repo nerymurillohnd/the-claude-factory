@@ -1,0 +1,14 @@
+{{name}}
+Copyright (c) 2026 Nery Murillo. Licensed under the MIT License (see LICENSE).
+
+This plugin contains material derived from {{source}}:
+
+  Repository:  {{sourceUrl}}
+  Version:     {{sourceVersion}}
+  License:     {{sourceLicense}}
+
+Derived files:
+
+  {{derivedFile}}
+
+{{sourceLicenseText}}

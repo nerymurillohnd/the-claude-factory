@@ -5,7 +5,7 @@ description: Use when creating, editing or reviewing a plugin hook, its hooks.js
 
 # Plugin hooks guidance
 
-A hook runs on every user's machine, on every matching event, without anyone watching. When it is wrong it either blocks work it should not or silently lets through what it should stop, and neither shows up in a test that only checks the happy path. This skill covers a plugin hook from the decision to write it to the README that states what it does not reach. It runs inside `plugin-development` whenever the component is a hook.
+A hook runs on every user's machine, on every matching event, without anyone watching. When it is wrong it either blocks work it should not or silently lets through what it should stop, and neither shows up in a test that only checks the happy path. This skill covers a plugin hook from the decision to write it to the README that states what it does not reach. It runs beside `building-plugins` whenever the component is a hook.
 
 ## Role
 
@@ -35,9 +35,8 @@ Act as a hook engineer who assumes the hook will meet hostile input, a missing i
 
 | When | Invoke with the Skill tool |
 | :-- | :-- |
-| Another skill invoked you (`plugin-development`, `plugin-consistency`) | Nothing: hand back to it. `plugin-development` runs `plugin-consistency` once at its end |
-| You loaded this skill alone | `plugin-consistency`, when step 7 is done |
-| The hook matches an MCP tool of this plugin | `plugin-mcp-guidance`, for the scoped tool name |
+| Another skill invoked you | Nothing: hand back to it |
+| The hook matches an MCP tool of this plugin | `building-plugins`, whose `references/mcp-hooks-and-lifecycle.md` gives the scoped tool name |
 
 A skill you invoke hands back to you when it ends: continue at your next step. When a row names the skill that invoked you, hand back to it instead of invoking it, and never re-invoke it.
 
@@ -65,7 +64,7 @@ Decide what the hook is for before you write it: to enforce a policy (deny a cal
 - Declare the hook in `hooks/hooks.json`, with the three levels: event, matcher group, handler. The input arrives as JSON on stdin; never write a `"hook"` object and never read `$TOOL_INPUT`.
 - Write the command in shell form with the placeholder in double quotes: the variable `CLAUDE_PLUGIN_ROOT`, wrapped as `${…}`, followed by `/hooks/<script>`, inside escaped quotes in the JSON string. Exec form (`args`) needs a real `.exe` on Windows, and Windows runs only through Git Bash here.
 - Set `timeout` on every handler.
-- Start the script with `#!/usr/bin/env <interpreter>`, as `plugin-development` says. Resolve `node` and `tsc` across every Node manager inside the script.
+- Start the script with `#!/usr/bin/env <interpreter>`, as `building-plugins` says. Resolve `node` and `tsc` across every Node manager inside the script.
 
 ### 3. Filter
 
@@ -96,7 +95,7 @@ Example, a PreToolUse deny:
 1. Run the script by hand with a minimal environment, once per interpreter manager the hook depends on: `env -i HOME= PATH=/usr/bin:/bin ./hooks/<script> < input.json`, with `input.json` built from a quoted heredoc.
 2. Test one call made from a subagent before the README says the hook covers them.
 3. Test in `default` and in `bypassPermissions` mode before the README states what the hook blocks: the docs do not say it runs in both. Start the session in each mode as `/en/permission-modes` describes.
-4. Run `claude plugin validate --strict plugins/<name>` and the plugin's tests, which live in `scripts/tests/<plugin>/`: `node --test` for `*.test.mjs`, and `python3 -m unittest discover` plus `by_path.sh` for a Python script, as `.claude/CLAUDE.md` → Plugin Tooling and `.claude/rules/plugin-tooling.md` → Validation and testing require them. Break the rule on purpose once and confirm a test fails.
+4. Run `claude plugin validate --strict plugins/<name>` and the plugin's tests, which live in `scripts/tests/<plugin>/`: `node --test` for `*.test.mjs`, and `python3 -m unittest discover` plus `by_path.sh` for a Python script, as `.claude/CLAUDE.md` → Plugin Tooling requires them. Break the rule on purpose once and confirm a test fails.
 5. Reload with `/reload-plugins` after each edit and test again.
 
 ### 7. Document

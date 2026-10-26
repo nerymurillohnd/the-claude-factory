@@ -7,7 +7,6 @@ import assert from 'node:assert/strict'
 import { execFileSync, spawnSync } from 'node:child_process'
 import {
   cpSync,
-  existsSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
@@ -22,7 +21,7 @@ import { fileURLToPath } from 'node:url'
 import { lspConfigProblems, portabilityProblems, rootPackageProblems } from '../check-repo.mjs'
 import { hooksFileKinds } from '../components.mjs'
 import { anchor } from '../generators/catalog.mjs'
-import { changelogSection } from '../lib.mjs'
+import { changelogSection, SURFACE_PROFILES } from '../lib.mjs'
 
 const REAL_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..')
 /** @type {string} */
@@ -105,21 +104,60 @@ function initRepo(withOrigin = false) {
 }
 
 /**
+ * Replace each {{key}} of `vars` in `template`.
+ * @param {string} template
+ * @param {Record<string, string>} vars
+ */
+const fill = (template, vars) =>
+  template.replace(/\{\{(\w+)\}\}/g, (match, /** @type {string} */ key) => vars[key] ?? match)
+
+/**
+ * Create a new plugin the way the repository gets one: its files under plugins/<name>/, then the
+ * marketplace and catalog regenerated. The README comes from the old plugin template in
+ * .claude/templates/plugin/, because check-repo.mjs still enforces that template's shape
+ * (DEBT-011); the other files come from the building-plugins skill's assets, as its scaffold
+ * writes them.
  * @param {string} [name]
  * @param {string} [category]
- * @param {string[]} [extra]
+ * @param {boolean} [claudeCodeOnly]
  */
-function scaffold(name = 'demo-tool', category = 'productivity', extra = []) {
-  const r = run('new-plugin.mjs', [
-    '--name',
+function scaffold(name = 'demo-tool', category = 'productivity', claudeCodeOnly = false) {
+  const assets = '.claude/skills/building-plugins/assets'
+  const profile = SURFACE_PROFILES[claudeCodeOnly ? 'claude-code-only' : 'both']
+  const cat = json('scripts/categories.json').categories.find(
+    (/** @type {{ id: string }} */ c) => c.id === category,
+  )
+  assert.ok(cat, `unknown category ${category}`)
+  const displayName = name
+    .split('-')
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(' ')
+  const vars = {
     name,
-    '--category',
+    displayName,
+    description: 'Does demo things.',
     category,
-    '--description',
-    'Does demo things.',
-    ...extra,
-  ])
-  assert.equal(r.code, 0, r.out)
+    categoryBadge: encodeURIComponent(cat.title).replaceAll('-', '--'),
+    emoji: '🧩',
+    minClaudeCode: '2.1.292',
+    date: new Date().toISOString().slice(0, 10),
+    surfacesBadge: profile.badge,
+    surfacesText: profile.text,
+    surfacesNote: profile.note,
+    surfacesJson: JSON.stringify(profile.surfaces),
+  }
+  mkdirSync(join(root, `plugins/${name}/.claude-plugin`), { recursive: true })
+  write(
+    `plugins/${name}/.claude-plugin/plugin.json`,
+    fill(read(`${assets}/plugin-template.json`), vars),
+  )
+  write(`plugins/${name}/CHANGELOG.md`, fill(read(`${assets}/CHANGELOG-template.md`), vars))
+  write(`plugins/${name}/LICENSE`, read(`${assets}/LICENSE-template`))
+  write(`plugins/${name}/README.md`, fill(read('.claude/templates/plugin/README.md'), vars))
+  for (const generator of ['generators/marketplace.mjs', 'generators/catalog.mjs']) {
+    const r = run(generator)
+    assert.equal(r.code, 0, r.out)
+  }
 }
 
 /**
@@ -251,7 +289,7 @@ describe('check-repo', () => {
   })
 
   test('a Claude Code-only plugin passes when declared everywhere', () => {
-    scaffold('lang-tool', 'language-support', ['--claude-code-only'])
+    scaffold('lang-tool', 'language-support', true)
     mkdirSync(join(root, 'plugins/lang-tool/bin'), { recursive: true })
     write('plugins/lang-tool/bin/tool', '#!/bin/sh\necho hi\n')
     const p = 'plugins/lang-tool/README.md'
@@ -434,130 +472,6 @@ describe('catalog generator', () => {
   })
 })
 
-describe('new-plugin', () => {
-  test('rejects names Claude Code reserves for Anthropic', () => {
-    const r = run('new-plugin.mjs', [
-      '--name',
-      'claude-helper',
-      '--category',
-      'productivity',
-      '--description',
-      'x',
-    ])
-    assert.equal(r.code, 1)
-    assert.match(r.out, /passes as an Anthropic plugin name/)
-  })
-
-  test('rejects unknown categories', () => {
-    const r = run('new-plugin.mjs', [
-      '--name',
-      'demo-tool',
-      '--category',
-      'nope',
-      '--description',
-      'x',
-    ])
-    assert.equal(r.code, 1)
-    assert.match(r.out, /Unknown category/)
-  })
-
-  test('stops before writing anything when another plugin directory is broken', () => {
-    const before = read('.claude-plugin/marketplace.json')
-    mkdirSync(join(root, 'plugins/stray'))
-    const r = run('new-plugin.mjs', [
-      '--name',
-      'demo-tool',
-      '--category',
-      'productivity',
-      '--description',
-      'x',
-    ])
-    assert.equal(r.code, 1)
-    assert.match(r.out, /plugins\/stray: \.claude-plugin\/plugin\.json is missing/)
-    assert.ok(!existsSync(join(root, 'plugins/demo-tool')))
-    assert.equal(read('.claude-plugin/marketplace.json'), before)
-  })
-
-  test('writes a valid manifest when the description holds quotes and backslashes', () => {
-    const description = 'Says "hi" to C:\\temp.'
-    const r = run('new-plugin.mjs', [
-      '--name',
-      'demo-tool',
-      '--category',
-      'productivity',
-      '--description',
-      description,
-    ])
-    assert.equal(r.code, 0, r.out)
-    assert.equal(json('plugins/demo-tool/.claude-plugin/plugin.json').description, description)
-    const entry = json('.claude-plugin/marketplace.json').plugins.find(
-      (/** @type {{ name: string }} */ e) => e.name === 'demo-tool',
-    )
-    assert.equal(entry.description, description)
-  })
-
-  test('registers every plugin directory through the marketplace generator', () => {
-    cpSync(join(root, 'plugins/block-no-verify'), join(root, 'plugins/zz-copy'), {
-      recursive: true,
-    })
-    const m = json('plugins/zz-copy/.claude-plugin/plugin.json')
-    write(
-      'plugins/zz-copy/.claude-plugin/plugin.json',
-      `${JSON.stringify({ ...m, name: 'zz-copy' }, null, 2)}\n`,
-    )
-    scaffold()
-    const names = json('.claude-plugin/marketplace.json').plugins.map(
-      (/** @type {{ name: string }} */ e) => e.name,
-    )
-    assert.ok(names.includes('zz-copy'))
-    assert.ok(names.includes('demo-tool'))
-    assert.equal(
-      json('plugins/demo-tool/.claude-plugin/plugin.json').metadata.category,
-      'productivity',
-    )
-    assert.equal(run('generators/marketplace.mjs', ['--check']).code, 0)
-  })
-
-  test('registers the entry, renders templates and updates the catalog', () => {
-    const before = json('.claude-plugin/marketplace.json').plugins
-    scaffold()
-    const mp = json('.claude-plugin/marketplace.json')
-    const expected = [
-      ...before,
-      {
-        name: 'demo-tool',
-        source: './plugins/demo-tool',
-        description: 'Does demo things.',
-        category: 'productivity',
-      },
-    ].sort((a, b) => a.name.localeCompare(b.name))
-    assert.deepEqual(mp.plugins, expected)
-    const manifest = json('plugins/demo-tool/.claude-plugin/plugin.json')
-    assert.equal(manifest.version, '0.1.0')
-    assert.equal(manifest.displayName, 'Demo Tool')
-    assert.doesNotMatch(read('plugins/demo-tool/README.md'), /\{\{\w+\}\}/)
-    assert.ok(existsSync(join(root, 'plugins/demo-tool/LICENSE')))
-    const readme = read('README.md')
-    assert.match(readme, /\[\*\*Demo Tool\*\*\]\(\.\/plugins\/demo-tool#readme\)/)
-    assert.match(readme, new RegExp(`plugins-${before.length + 1}-D97757`))
-    assert.equal(run('generators/catalog.mjs', ['--check']).code, 0)
-  })
-
-  test('refuses to overwrite an existing plugin', () => {
-    scaffold()
-    const r = run('new-plugin.mjs', [
-      '--name',
-      'demo-tool',
-      '--category',
-      'productivity',
-      '--description',
-      'x',
-    ])
-    assert.equal(r.code, 1)
-    assert.match(r.out, /already exists/)
-  })
-})
-
 describe('bump-version', () => {
   test('refuses to release an empty [Unreleased] section', () => {
     scaffold()
@@ -589,14 +503,6 @@ describe('bump-version', () => {
     assert.notEqual(r.code, 0)
     assert.match(r.out, /marketplace has no version/)
     assert.equal(read('.claude-plugin/marketplace.json'), before)
-  })
-
-  test('release-notes prints a plugin tag and refuses the marketplace', () => {
-    scaffoldReady()
-    const tag = run('release-notes.mjs', ['demo-tool', '--tag'])
-    assert.equal(tag.code, 0, tag.out)
-    assert.equal(tag.out.trim(), 'demo-tool--v0.1.0')
-    assert.notEqual(run('release-notes.mjs', ['marketplace', '--tag']).code, 0)
   })
 })
 

@@ -53,7 +53,6 @@ export const ROOT = resolve(TCF_ROOT ?? join(SCRIPTS_DIR, '..'))
 export const MARKETPLACE_NAME = 'the-claude-factory'
 export const REPO_SLUG = 'nerymurillohnd/the-claude-factory'
 export const REPO_URL = `https://github.com/${REPO_SLUG}`
-export const TEMPLATES_DIR = join(ROOT, '.claude', 'templates', 'plugin')
 export const MARKETPLACE_PATH = join(ROOT, '.claude-plugin', 'marketplace.json')
 export const README_PATH = join(ROOT, 'README.md')
 
@@ -258,20 +257,6 @@ export function bumpSemver(version, level) {
 /** @returns {string} */
 export function today() {
   return new Date().toISOString().slice(0, 10)
-}
-
-/**
- * Replace {{key}} placeholders. Unknown keys are left in place so checks can catch them.
- * @param {string} template
- * @param {Record<string, unknown>} vars
- * @returns {string}
- */
-export function render(template, vars) {
-  return template.replace(
-    /\{\{(\w+)\}\}/g,
-    (/** @type {string} */ match, /** @type {string} */ key) =>
-      key in vars ? String(vars[key]) : match,
-  )
 }
 
 /**

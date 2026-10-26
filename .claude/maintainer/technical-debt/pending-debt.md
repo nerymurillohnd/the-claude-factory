@@ -44,6 +44,10 @@ Add an item only when all of these hold:
 | DEBT-002 | Version-bump check fails on main after a revert of an unreleased bump and blocks every release | 🟠 Blocked |
 | DEBT-006 | No gate runs the validators of `scripts/validators/`, so CI lost the checks `check-repo.mjs` dropped | 🟡 Pending |
 | DEBT-008 | `main` and the release tags have no GitHub protection | 🟠 Blocked |
+| DEBT-009 | Biome ignores Markdown, so no tool formats or lints the repository's Markdown | 🟠 Blocked |
+| DEBT-010 | The mod gates of `scripts/gates.mjs` can miss a mod or report green on a lost test summary | 🟠 Blocked |
+| DEBT-011 | The repository's README checks and plugin READMEs still follow the old plugin template, not the one `building-plugins` sets | 🟠 Blocked |
+| DEBT-012 | The `write-records` skill of `project-maintainer` is not loaded before records are written: it triggers only on events, and nothing reminds or requires it | 🟠 Blocked |
 
 ## 📂 Open items
 
@@ -160,6 +164,130 @@ Add an item only when all of these hold:
 - **Next action:** create a ruleset on `main` that requires the Validate checks and changes through pull requests, with Nery as bypass actor for documentation and maintainer commits, and a tag ruleset on `*--v*` that blocks update and deletion. Then add "A tag ruleset protects `*--v*` against update and deletion." to the release-tag line of `.claude/CLAUDE.md` → Change Control.
 - **Review condition:** closes when both rulesets exist, a push to `main` that fails Validate is refused, and deleting a test tag that matches `*--v*` is refused.
 - **Related records:** ADR_2026-10-25_release-tags-are-created-unsigned-by-ci.
+
+### DEBT-009 — Biome ignores Markdown, so no tool formats or lints the repository's Markdown
+
+| Field | Value |
+| --- | --- |
+| **Status** | 🟠 Blocked |
+| **Category** | quality, maintainability |
+| **Owner** | Maintainer tooling (`biome.json`, `.claude/CLAUDE.md` → Maintainer Tooling) |
+| **Logged** | 2026-10-25 |
+
+#### 🔎 Evidence
+
+- **Confirmed facts:**
+  - `biome.json` `files.includes` lists only `**/*.{js,cjs,mjs,jsx,ts,cts,mts,tsx,json,jsonc}`.
+  - On 2026-10-25, `biome check README.md` with Biome 2.6.2 printed `These paths were provided but ignored: README.md` and exited 0.
+  - `.claude/CLAUDE.md` → Maintainer Tooling says "Markdown, JSON, JavaScript and TypeScript: format and lint with Biome", and its protected-files line says `biome.json` excludes them "whenever Markdown is in its `files.includes`".
+  - The `maintaining-user-docs` skill records that no linter reads the user docs, so broken links, anchors and tables are found only by opening them.
+- **Inferences:** user-facing Markdown (root README, `docs/`, plugin READMEs and changelogs) can ship malformed with every gate green.
+- **Open questions:** whether Biome 2.6.2 formats and lints Markdown at all, and if not, which tool should, given ADR_2026-10-21_remove-markdownlint.
+
+#### 📈 Impact and next step
+
+- **Impact / risk:** CLAUDE.md promises a Markdown gate that does not exist, and a formatting or link error in a doc users read is caught by no check.
+- **Why it is not fixed now:** Nery deferred it on 2026-10-25 to keep the session on the user-docs and skills consolidation.
+- **Next action:** check Biome's current docs and release notes for Markdown support. Then either add Markdown to `files.includes`, with the protected files excluded, or make the CLAUDE.md Maintainer Tooling line say what really reads Markdown.
+- **Review condition:** closes when `.claude/CLAUDE.md` and `biome.json` agree, and a Markdown check, if one is adopted, fails on a deliberately broken user doc.
+- **Related records:** ADR_2026-10-21_remove-markdownlint, ADR_2026-10-25_marketplace-user-docs-have-their-own-skill.
+
+### DEBT-010 — The mod gates of `scripts/gates.mjs` can miss a mod or report green on a lost test summary
+
+| Field | Value |
+| --- | --- |
+| **Status** | 🟠 Blocked |
+| **Category** | reliability, quality |
+| **Owner** | Maintainer tooling (`scripts/gates.mjs`) |
+| **Logged** | 2026-10-25 |
+
+#### 🔎 Evidence
+
+- **Confirmed facts (read on 2026-10-25):**
+  - `scripts/gates.mjs:392-404` creates the `mod-test:<plugin>` gate only for plugins with tracked `*.test.ts` or `*.test.tsx` files, not for every plugin whose `hooks/hooks.json` lists `modules`.
+  - `scripts/gates.mjs:406-417` creates the `mod-tsc:<plugin>` gate for any plugin with a `tsconfig.json`, and nothing refreshes the engine's declarations before it runs.
+  - `scripts/gates.mjs:494` runs every gate with `stdio: ['ignore', 'pipe', 'pipe']`, so `claude plugin test` writes to a pipe.
+  - anthropics/claude-code#103055 reports that `claude plugin test` on a pipe can lose the tail of its output, summary included, and exit 0. `testing-mods/scripts/check-mod.sh` writes to a file and fails without the summary.
+- **Inferences:**
+  - A mod without tests is never run by `claude plugin test` in the gates.
+  - A failed test can pass the gate when the summary is lost.
+  - `tsc` runs against declarations from an older build after an update.
+- **Open questions:** whether #103055 still reproduces on 2.1.310 through `spawnSync` with pipes.
+
+#### 📈 Impact and next step
+
+- **Impact / risk:** the local release proof for a mod can report green on a mod that fails its tests, or that has none, and reach users.
+- **Why it is not fixed now:** Nery deferred it on 2026-10-25 to keep the session on consolidating the mod documentation.
+- **Next action:**
+  - key `mod-test` on `modules` in `hooks/hooks.json`;
+  - run `claude plugin test` with its output in a file, and fail when the `Ran N tests across N files` summary is missing, as `check-mod.sh` does;
+  - name `mod-tsc` for what it checks, and check the declarations' `// Written by Claude Code <version>.` header against `claude --version` before `tsc`.
+- **Review condition:** closes when a mod with no tests fails the gate, a test run with its summary removed fails it, and stale declarations are reported.
+- **Related records:** ADR_2026-10-21_gates-run-from-one-script, ADR_2026-10-25_building-mods-skill-holds-mod-authoring.
+
+### DEBT-011 — The repository's README checks and plugin READMEs still follow the old plugin template, not the one `building-plugins` sets
+
+| Field | Value |
+| --- | --- |
+| **Status** | 🟠 Blocked |
+| **Category** | quality, maintainability |
+| **Owner** | Maintainer tooling (`scripts/lib.mjs`, `scripts/check-repo.mjs`, `scripts/tests/scripts.test.mjs`), the frozen `.claude/templates/plugin/` and `.claude/templates/root-readme.md`, the README rules of `.claude/CLAUDE.md` → Plugin Documentation and of the `building-plugins` skill, and the plugins' READMEs |
+| **Logged** | 2026-10-25 |
+
+#### 🔎 Evidence
+
+- **Confirmed facts (read on 2026-10-25):**
+  - The `building-plugins` skill starts a plugin README from its `assets/README-template.md`, whose sections are Install, Update, Prerequisites, Configuration, Usage, What this plugin runs and sends, Uninstall and License.
+  - `scripts/lib.mjs:85-96` `REQUIRED_PLUGIN_SECTIONS`, which `check-repo.mjs` enforces, lists Why use it, What's inside, Requirements, Installation, Usage, Updating, Uninstalling, Compatibility, Changelog and License.
+  - The skill's `scripts/scaffold-plugin.py` creates a new plugin from the skill's assets.
+  - `scripts/tests/scripts.test.mjs` builds its fixture README from the frozen `.claude/templates/plugin/README.md`, because `check-repo.mjs` enforces that template's sections.
+  - On a scratchpad copy on 2026-10-25, a plugin the scaffold created failed `check-repo.mjs` with `README.md missing the "Why use it" section` and the other old sections.
+  - Nery's rule: new, validated work outranks existing files, which adapt to it.
+  - A comprehensibility review on 2026-10-25 found that the skill's own instructions also ask for what its template lacks: `SKILL.md` step 4 takes "each Compatibility cell from `docs/compatibility.md`", and `references/readme-style.md` and `references/mcp-servers.md` require Compatibility rows, a Version badge, an outcome-first TL;DR and emoji `##` headings; `assets/README-template.md` has none of them, only a "Works in:" line. `references/templates.md` says to follow the template until this item closes.
+  - The frozen `.claude/templates/root-readme.md` is now an older copy of `.claude/skills/maintaining-user-docs/assets/root-readme-template.md` (commit `dba682a`).
+- **Inferences:** none beyond the observed failure.
+- **Open questions:** which sections the adapted checks require (the skill's template has no Compatibility or Changelog section, which other checks read), whether the template gains Compatibility, badges and emoji headings or the skill's rules drop them, and whether the 17 published READMEs move to the new shape at once or as each plugin next changes.
+
+#### 📈 Impact and next step
+
+- **Impact / risk:** a plugin the scaffold creates is refused by the repository's check, and the templates exist twice, the skill's assets and the frozen originals, which can drift if someone edits the wrong one.
+- **Why it is not fixed now:** adapting it changes maintainer scripts and every plugin README, which go through pull requests; it waits on Nery's decision on the open questions.
+- **Next action:** decide the section set with Nery. Then, in one change:
+  - update `REQUIRED_PLUGIN_SECTIONS` and the checks that read Compatibility;
+  - build the tests' fixture from the skill's template;
+  - bring the README rules of `.claude/CLAUDE.md` → Plugin Documentation and of `building-plugins` in line with the section set.
+
+  Then move each plugin README, by pull request, and delete `.claude/templates/plugin/` and `.claude/templates/root-readme.md`.
+- **Review condition:** closes when a plugin the scaffold creates passes `check-repo.mjs`, nothing reads the frozen templates, and they are deleted.
+- **Related records:** ADR_2026-10-25_plugin-scaffold-belongs-to-building-plugins.
+
+### DEBT-012 — The `write-records` skill of `project-maintainer` is not loaded before records are written: it triggers only on events, and nothing reminds or requires it
+
+| Field | Value |
+| --- | --- |
+| **Status** | 🟠 Blocked |
+| **Category** | quality, reliability |
+| **Owner** | `plugins/project-maintainer` (skill `write-records`, its mod) |
+| **Logged** | 2026-10-25 |
+
+#### 🔎 Evidence
+
+- **Confirmed facts:**
+  - The skill's description (`plugins/project-maintainer/skills/write-records/SKILL.md:3`) is "Use when an important decision is made, a problem cannot be fixed now, or logged debt is closed." It names events, not the files a record lives in, so updating an existing entry in the middle of other work matches none of them.
+  - The plugin's guardrails check the format of every saved record and ask before a settled record is changed (`plugins/project-maintainer/README.md:35,51`); none reminds or requires the skill when `.claude/maintainer/` is written.
+  - On 2026-10-25, nine records of this repository (ADRs and DEBT-009 to DEBT-011) were written without the skill being loaded, although `.claude/rules/workflow.md` requires it. One debt update was saved with `sed`, which the skill forbids, and DEBT-011 was written as a change log, which its technical-debt reference does not allow. Stated by the user on 2026-10-25 as a defect of the plugin to fix.
+- **Inferences:** any user of the plugin can get records that bypass its procedure the same way, because a skill that is not loaded cannot apply its rules.
+- **Open questions:** whether a path-scoped trigger in the description is enough, or the mod should also remind, or refuse, a write under `.claude/maintainer/` made without the skill loaded; and whether a mod can tell that a skill was loaded in the session.
+
+#### 📈 Impact and next step
+
+- **Impact / risk:** records reach the repository without the skill's checks (placeholders, index, settled records, change-log content, Bash writes), and the format guard catches only part of them.
+- **Why it is not fixed now:** it is a change to a published plugin, which goes through a pull request and a release on Nery's order, outside the documentation work in progress.
+- **Next action:** in a pull request on `plugins/project-maintainer`:
+  - make the `write-records` description also trigger before creating or editing any file under `.claude/maintainer/`;
+  - test against the mods API whether the mod can remind of, or require, the skill on such a write.
+- **Review condition:** closes when a session that edits a record under `.claude/maintainer/`, without being asked to use the skill, loads it first or is told to; shown by a test or a recorded live session.
+- **Related records:** ADR_2026-10-22_mod-guardrails-fail-closed-for-records.
 
 <!--
 Entry format. Copy this block above this comment for each new item and add its row to the Index.

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Run `claude plugin validate` then `claude plugin test` on a mod directory and
+# Run `claude plugin validate --strict` then `claude plugin test` on a mod directory and
 # print both outputs. Exits 0 only if both succeed and the test output ends with
 # its summary line.
 #
@@ -18,8 +18,8 @@ dir="${1:?usage: check-mod.sh <mod-dir>}"
 log="$(mktemp "${TMPDIR:-/tmp}/check-mod.XXXXXX")"
 trap 'rm -f "${log}"' EXIT
 
-printf '== claude plugin validate %s\n' "${dir}"
-claude plugin validate "${dir}" < /dev/null
+printf '== claude plugin validate --strict %s\n' "${dir}"
+claude plugin validate --strict "${dir}" < /dev/null
 validate_status=$?
 
 printf '\n== claude plugin test %s\n' "${dir}"

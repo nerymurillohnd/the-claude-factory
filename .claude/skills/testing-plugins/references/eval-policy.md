@@ -2,7 +2,7 @@
 
 Sources: https://code.claude.com/docs/en/plugin-evals (read 2026-10-25), `claude plugin eval --help` on v2.1.310, every `plugin eval` entry of the changelog from v2.1.269 to v2.1.310. Requires Claude Code ≥ v2.1.269 (and git ≥ 2.31). Where the docs and `--help` differ, `--help` wins for flags and the changelog wins for behavior.
 
-Contents: Who runs what · Pilot · Reading a pilot · Writing the suite · CI audit checklist · Fork PRs · Flags worth knowing · Quick error map
+Contents: Who runs what · Pilot · Reading a pilot · Writing the suite · The CI template · CI audit checklist · Fork PRs · Flags worth knowing · Quick error map
 
 ## Who runs what
 
@@ -63,6 +63,22 @@ evals/
 - Defaults: `max_turns` 10, `timeout_seconds` 300, `runs` 3. A one-shot answer needs about 5 turns; reading a repo and writing a report 25–40.
 - Runs are isolated: no `CLAUDE.md`, settings, memory, other plugins, or personal MCP servers. Ship everything a case needs inside the plugin.
 - An eval directory other than `evals/`: `"experimental": { "evals": "quality/evals" }` in `plugin.json`, or `--eval-dir` on both `init` and the run.
+
+## The CI template
+
+`../assets/evals-ci.yml` is the template of a workflow that runs the full suite in CI, only for plugins that have `evals/` and are new or edited. Use it only when the repository has no eval workflow; when it has one, audit that one with the checklist below instead.
+
+1. Copy it to `.github/workflows/evals.yml`.
+2. Point the `targets` job at the target-selection script. The template calls `bash scripts/changed-eval-plugins.sh`; set the path to where that script lives in the repository (this skill keeps it at `.claude/skills/testing-plugins/scripts/changed-eval-plugins.sh`). It takes the base and head commits, the plugins directory and the eval directory name.
+3. Fill the three `TODO` values:
+   - **TODO 1, models:** create the repository variables `EVAL_MODEL` and `EVAL_JUDGE_MODEL` with exact model ids, so a model rollout is not mistaken for a regression.
+   - **TODO 2, cost:** set `MAX_COST_USD`, the ceiling per plugin per run; the user approves it, because it is what CI spends.
+   - **TODO 3, Claude Code:** set `CLAUDE_CODE_VERSION` to an exact version, 2.1.269 or later (`plugin eval` needs it).
+4. Add the secret `CLAUDE_CODE_OAUTH_TOKEN` (or switch the job to `ANTHROPIC_API_KEY`); the run step fails loudly when it is empty.
+5. Keep the pinned action SHAs and `node-version-file`, and check them against their latest releases before you add the workflow. Keep `--threshold`, `--trust-plugin` and `--no-publish` unless the user decides otherwise.
+6. Make sure `eval-results/` and `**/evals/results/` are git-ignored, then run the CI audit checklist below on the copy and `actionlint` on the file.
+
+Adding the workflow spends CI money on every pull request that edits a plugin with evals: get the user's approval before you commit it, and never push it without theirs.
 
 ## CI audit checklist
 
