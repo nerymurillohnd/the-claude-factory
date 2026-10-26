@@ -89,13 +89,9 @@ Categories: `development`, `productivity`, `automation`, `mods`, `testing`, `sec
 
 ### Required files
 
-Every plugin directory holds these files. `scripts/validators/plugin-required-files.py` fails when one of the first four is missing, is not a regular file, is a broken symlink or resolves outside the repository.
-
-- `.claude-plugin/plugin.json`: the manifest, the only source of the plugin's name, version, description and category.
-- `README.md`: the user guide.
-- `CHANGELOG.md`: the plugin's full history.
-- `LICENSE`.
-- `NOTICE.txt`, only when the plugin bundles, derives from or wires in third-party material: the plugin's copyright and license, then each third-party source with its repository, version or commit, license and the files derived from it.
+- Every plugin directory holds `.claude-plugin/plugin.json`, `README.md`, `CHANGELOG.md` and `LICENSE`. `scripts/validators/plugin-required-files.py` fails when one is missing, is not a regular file, is a broken symlink or resolves outside the repository.
+- `plugin.json` is the only source of the plugin's name, version, description and category.
+- Third-party material goes in `NOTICE.txt`, which opens with the plugin's own copyright and license and names, for each source, the files derived from it.
 
 ### Templates
 
@@ -106,7 +102,7 @@ Every plugin directory holds these files. `scripts/validators/plugin-required-fi
 
 ### README
 
-- Requirements lists every installation prerequisite: each tool, version constraint, binary and software dependency, feature-specific ones included.
+- Requirements also states each version constraint, and the prerequisites of any single feature.
 - Compatibility has one row per component type the plugin ships, and each cell says exactly what `docs/compatibility.md` says for that type.
 - Never write a version number in the README, except, for a plugin with a mod, the Claude Code version it was tested with, in Compatibility (the `building-mods` skill). The badges show values that live in other files:
   - **Version**: a dynamic shields.io badge that reads `$.version` from this plugin's `plugin.json` on `main`, so a bump shows once it is merged. `plugin-versions-consistency.py` fails on a hardcoded version.
