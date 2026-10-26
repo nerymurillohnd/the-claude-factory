@@ -1,6 +1,6 @@
 # Where the docs and the binary disagree (read before quoting messages)
 
-The docs lag releases by days; the CHANGELOG and the installed binary win. Evidence labels: **[obs 2.1.310]** observed by running the installed CLI during this skill's authoring; **[changelog X]** from the CHANGELOG entry for version X (https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md); **[docs]** only from the docs pages; **[unverified]** could not be confirmed.
+The docs lag releases by days; the CHANGELOG and the installed binary win. Evidence labels: **[obs 2.1.310]** observed by running the installed CLI during this skill's authoring; **[changelog X]** from the CHANGELOG entry for version X (raw: https://raw.githubusercontent.com/anthropics/claude-code/main/CHANGELOG.md); **[docs]** only from the docs pages; **[unverified]** could not be confirmed.
 
 When a version-sensitive answer matters, re-check: run the command on the installed build, `grep` the CHANGELOG for the mod/test/validate entry, and compare. The mods types in the `anthropics/claude-code` repo (`mods/types/claude-code.d.ts`) were "written by Claude Code 2.1.277" and also lag.
 
