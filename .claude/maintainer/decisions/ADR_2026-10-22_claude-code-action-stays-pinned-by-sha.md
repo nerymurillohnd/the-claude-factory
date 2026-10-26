@@ -1,10 +1,10 @@
 ---
-status: accepted
+status: superseded
 date: 2026-10-22
 decision-makers:
   - "Nery"
 supersedes: none
-superseded-by: none
+superseded-by: ADR_2026-10-26_claude-workflows-follow-the-official-template
 ---
 
 # claude-code-action stays pinned to a commit SHA
