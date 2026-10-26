@@ -45,7 +45,7 @@ The files marked Out are read here only to check what the docs say about them. W
 
 | File | Job | Primary sources |
 | :-- | :-- | :-- |
-| Root `README.md` | The front page, in the order of [references/root-readme.md](references/root-readme.md) | Every source below, by section |
+| Root `README.md` | The front page, in the order of the template [assets/root-readme-template.md](assets/root-readme-template.md); [references/root-readme.md](references/root-readme.md) says how to use and change it | Every source below, by section |
 | `docs/installation.md` | Add the marketplace and install, per surface; scopes; set up a team | `/en/plugins/install`, `/en/plugins/host-marketplace` → Register the marketplace for everyone in a repository, `/en/plugins/loading` → Plugins synced from claude.ai |
 | `docs/managing-plugins.md` | Update, auto-update, enable and disable, uninstall, remove the marketplace, inspect, the Claude app | `/en/plugins/install` → Manage installed plugins, Keep plugins updated, Manage marketplaces; `/en/plugins/cli-reference`; `/en/plugins/loading` → Versions and updates |
 | `docs/compatibility.md` | The single source of the component × surface matrix | <https://claude.com/docs/plugins/platform-support> |
@@ -136,7 +136,7 @@ Run steps 3 to 7 on every file in scope, against every Claude Code release since
 ## Gotchas
 
 - No linter reads these files: Biome ignores Markdown here (`biome check README.md` reports it as ignored), so a broken link, anchor or table shows up only when you open it.
-- `.claude/templates/root-readme.md` is an older, frozen copy of `references/root-readme.md`, kept until DEBT-011 closes. Follow and edit only the reference.
+- `.claude/templates/root-readme.md` is an older, frozen copy of `assets/root-readme-template.md`, kept until DEBT-011 closes. Follow and edit only the asset.
 - The catalog's version column is generated and is the only version number of a plugin in the root README.
 - GitHub reads `SECURITY.md`, `SUPPORT.md`, `CONTRIBUTING.md` and `CODE_OF_CONDUCT.md` from `.github/` first, then the root, then `docs/`. A copy added in `.github/` would silently replace the root one.
 - `docs/compatibility.md` drives the Compatibility cells of every plugin README, so a change to it is never only a docs change.

@@ -19,7 +19,7 @@ A `README.md` in this repository is one of four kinds, and each kind has its own
 
 ## Root README
 
-- **Template:** the blueprint in `.claude/skills/maintaining-user-docs/references/root-readme.md` sets the order of sections and what never goes in.
+- **Template:** `.claude/skills/maintaining-user-docs/assets/root-readme-template.md` sets the order of sections and what never goes in; `references/root-readme.md` there says how to use and change it.
 - **Generated blocks:** never edit the `<!-- catalog:* -->` and `<!-- plugin-count:* -->` blocks by hand; run `npm run generate`. The catalog's version column is the only plugin version the root README shows.
 - **Plugin details:** none beyond the catalog row; they belong in each plugin's README.
 - **Compatibility:** "Where plugins work" must match `docs/compatibility.md`.
