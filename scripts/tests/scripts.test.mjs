@@ -504,14 +504,6 @@ describe('bump-version', () => {
     assert.match(r.out, /marketplace has no version/)
     assert.equal(read('.claude-plugin/marketplace.json'), before)
   })
-
-  test('release-notes prints a plugin tag and refuses the marketplace', () => {
-    scaffoldReady()
-    const tag = run('release-notes.mjs', ['demo-tool', '--tag'])
-    assert.equal(tag.code, 0, tag.out)
-    assert.equal(tag.out.trim(), 'demo-tool--v0.1.0')
-    assert.notEqual(run('release-notes.mjs', ['marketplace', '--tag']).code, 0)
-  })
 })
 
 describe('check-version-bump', () => {

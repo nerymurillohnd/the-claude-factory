@@ -39,12 +39,12 @@ jobs:
           set -euo pipefail
           targets="$(node -e 'console.log(require("./.claude-plugin/marketplace.json").plugins.map(p => p.name).join(" "))')"
           for target in ${targets}; do
-            tag="$(node scripts/release-notes.mjs "${target}" --tag)"
+            tag="$(.claude/skills/release-and-versioning/scripts/release-notes.py "${target}" --tag)"
             if git rev-parse -q --verify "refs/tags/${tag}" >/dev/null; then
               echo "✔ ${tag} already released"
               continue
             fi
-            node scripts/release-notes.mjs "${target}" > notes.md
+            .claude/skills/release-and-versioning/scripts/release-notes.py "${target}" > notes.md
             gh release create "${tag}" --target "${TARGET_SHA}" --title "${tag}" --notes-file notes.md
             echo "🚀 Released ${tag}"
           done
