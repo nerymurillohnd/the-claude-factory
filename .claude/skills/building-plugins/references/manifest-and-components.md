@@ -65,7 +65,7 @@ Checked 2026-10-25 against `/en/plugins/create`, `/en/plugins/components`, `/en/
 
 **Hooks.** `hooks/hooks.json` with a top-level `"hooks"` key, same shape as settings. Plugin hooks register when the plugin loads and fire on every matching event from then on, not only when the plugin's skills run — narrow the `matcher`. A hook on the plugin's own MCP tool must match `mcp__plugin_<plugin>_<server>__<tool>`. Hooks have no prefix, so the same hook in user settings and the plugin runs twice. Read `/en/hooks` for events, exit codes and JSON output before writing one.
 
-**MCP servers.** `.mcp.json` at the root (the `mcpServers` wrapper is optional). Server shows as `plugin:<plugin>:<server>`; tools as `mcp__plugin_<plugin>_<server>__<tool>`. Never put secrets in it — every user receives the file; use `userConfig` with `sensitive: true` and `${user_config.KEY}`. A remote `https://` server also reaches claude.ai and Cowork users as a connector; a local stdio server runs only in Claude Code and local Cowork. Start a local server by running a file in the plugin (`node ${CLAUDE_PLUGIN_ROOT}/server.js`), not through `npx`/`uvx` launchers that fetch code at runtime.
+**MCP servers.** `.mcp.json` at the root (the `mcpServers` wrapper is optional). Server shows as `plugin:<plugin>:<server>`; tools as `mcp__plugin_<plugin>_<server>__<tool>`. Never put secrets in it — every user receives the file; use `userConfig` with `sensitive: true` and `${user_config.KEY}`. A remote `https://` server also reaches claude.ai and Cowork users as a connector; a local stdio server runs only in Claude Code and local Cowork. Start a local server by running a file in the plugin (`node ${CLAUDE_PLUGIN_ROOT}/server.js`), not through `npx`/`uvx` launchers that fetch code at runtime. Before writing one, read `mcp-servers.md`.
 
 **LSP servers.** `.lsp.json` or `lspServers`. See `/en/plugins/code-intelligence`; the language server binary is a user prerequisite to document.
 
@@ -102,7 +102,7 @@ If the plugin is Claude Code-only, say so in the README so app users aren't surp
 | Skills | `/en/skills` |
 | Agents | `/en/sub-agents` |
 | Hooks | `/en/hooks`, `/en/hooks-guide` |
-| MCP servers | `/en/mcp` |
+| MCP servers | `/en/mcp`, then `mcp-servers.md` and `mcp-hooks-and-lifecycle.md` in this skill |
 | LSP | `/en/plugins/code-intelligence` |
 | Output styles | `/en/output-styles` |
 | Mods | `/en/plugins/mods/*` |

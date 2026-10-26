@@ -35,7 +35,7 @@ Act as an engineer who owns the integrity of a plugin: its components, its READM
 | When | Invoke with the Skill tool |
 | :-- | :-- |
 | A hook file or the README text about it changed, and `plugin-hooks-guidance` has not run on that hook since its last edit | `plugin-hooks-guidance`, to check the hook against its rules (step 4) |
-| An `.mcp.json`, a manifest `mcpServers` or `userConfig` entry, or an agent's `tools` changed, and `plugin-mcp-guidance` has not run on it since its last edit | `plugin-mcp-guidance`, to check names, secrets and the README setup text (step 4) |
+| An `.mcp.json`, a manifest `mcpServers` or `userConfig` entry, or an agent's `tools` changed, and `building-plugins` has not checked it against `references/mcp-servers.md` since its last edit | `building-plugins`, to check names, secrets and the README setup text against `references/mcp-servers.md` (step 4) |
 | A component was added or rewritten and `plugin-development` has not run on it | `plugin-development` |
 
 A skill you invoke hands back to you when it ends: continue at your next step. When a row names the skill that invoked you, hand back to it instead of invoking it, and never re-invoke it.

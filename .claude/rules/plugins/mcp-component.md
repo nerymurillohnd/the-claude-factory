@@ -13,7 +13,7 @@ paths:
 - Keep plugin MCP configuration independent of maintainer tools, environments, and machine-specific paths.
 - Consult the official references below before introducing fields or relying on version-specific behavior.
 - Corroborate every documented behavior against the changelog and the release notes for the installed `claude --version`; when they disagree with the docs, the changelog and release notes win.
-- Invoke the `plugin-mcp-guidance` skill before answering questions or planning, implementing, reviewing, validating, or debugging MCP behavior in hooks or plugins.
+- Invoke the `building-plugins` skill and read its `references/mcp-servers.md` (and `references/mcp-hooks-and-lifecycle.md` for hooks, connection state and timeouts) before answering questions or planning, implementing, reviewing, validating, or debugging MCP behavior in hooks or plugins.
 
 ## Configuration and Portability
 

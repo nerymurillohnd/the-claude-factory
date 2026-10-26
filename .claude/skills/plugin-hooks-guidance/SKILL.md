@@ -37,7 +37,7 @@ Act as a hook engineer who assumes the hook will meet hostile input, a missing i
 | :-- | :-- |
 | Another skill invoked you (`plugin-development`, `plugin-consistency`) | Nothing: hand back to it. `plugin-development` runs `plugin-consistency` once at its end |
 | You loaded this skill alone | `plugin-consistency`, when step 7 is done |
-| The hook matches an MCP tool of this plugin | `plugin-mcp-guidance`, for the scoped tool name |
+| The hook matches an MCP tool of this plugin | `building-plugins`, whose `references/mcp-hooks-and-lifecycle.md` gives the scoped tool name |
 
 A skill you invoke hands back to you when it ends: continue at your next step. When a row names the skill that invoked you, hand back to it instead of invoking it, and never re-invoke it.
 

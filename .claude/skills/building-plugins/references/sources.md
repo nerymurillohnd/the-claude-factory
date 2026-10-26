@@ -34,6 +34,7 @@ Every reference file in this skill was checked on **2026-10-25** against Claude 
 | LSP | `/en/plugins/code-intelligence` |
 | Mods | `/en/plugins/mods/overview`, `create`, `api`, `events`, `interface`, `reference` |
 | Skills, agents, hooks, MCP | `/en/skills`, `/en/sub-agents`, `/en/hooks`, `/en/hooks-guide`, `/en/mcp` |
+| MCP timeouts, plugin MCP servers that don't start | `/en/env-vars`, `/en/plugins/troubleshooting` ("Invalid MCP server config") |
 | What loads where (chat, Cowork, Code) | claude.com `/docs/plugins/platform-support` |
 | Folder structure for every app | claude.com `/docs/plugins/build` |
 | Directory rules and submission | claude.com `/docs/plugins/pre-submission-checklist`, `/docs/plugins/submit`, `/docs/directory/publish` |
