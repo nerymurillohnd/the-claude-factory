@@ -57,8 +57,6 @@ Read these before you write or rely on the behavior they describe:
 | An agent | Memory `agent-file-rules`; also `/en/sub-agents` → "Preload skills into subagents" before relying on `skills:` in its frontmatter |
 | An MCP server | The `plugin-mcp-guidance` skill (step 3 invokes it), which holds the Claude app and header rules |
 
-User docs have their own rules in `.claude/rules/user-docs.md`. Read it before you write them.
-
 ### 3. Write
 
 Manifest:

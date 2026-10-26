@@ -16,7 +16,7 @@ Act as an engineer who owns the integrity of a plugin: its components, its READM
 ## Rules
 
 - Scope is the change: the files touched since `origin/main` plus the working tree, and every counterpart they must agree with. Widen to the whole repo only when Nery asks for a freshness check.
-- `.claude/rules/user-docs.md` is the style source for plugin READMEs. This skill checks that it was followed.
+- `.claude/skills/building-plugins/references/readme-style.md` is the style source for plugin READMEs. This skill checks that it was followed.
 - Fix the inconsistencies the change created, in the same change, at their root. Ask Nery before changing anything the change did not touch or cause.
 - Never push. Commit only when Nery asks.
 - A passing script is not consistency: the scripts check that things exist, not that they are true. Read both sides of every pair.

@@ -21,6 +21,8 @@ Checked 2026-10-25 against `/en/plugins/publish`, `/en/plugins/host-marketplace`
 
 ## README: required sections
 
+In this repository, this content goes into the sections of the plugin template, as `readme-style.md` says.
+
 1. **What it does** for the user, in plain words, and on which surfaces (Claude Code only, or also claude.ai/Cowork — see the surface table in `manifest-and-components.md`).
 2. **Install** — the exact lines, with your real names. Since v2.1.295, `claude plugin validate` prints the line to paste when a README has none (advice only; it never fails the run):
 
