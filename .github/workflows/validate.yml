@@ -139,6 +139,6 @@ jobs:
           rm actionlint actionlint.tar.gz
           actionlint --version
       - name: Biome
-        run: npm install --global --no-audit --no-fund @biomejs/biome
+        run: npm install --global --no-audit --no-fund @biomejs/biome@2.6.3
       - name: Gates
         run: npm run gates:ci -- --group lint

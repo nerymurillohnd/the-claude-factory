@@ -1,5 +1,5 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.6.2/schema.json",
+  "$schema": "https://biomejs.dev/schemas/2.6.3/schema.json",
   "vcs": {
     "enabled": true,
     "clientKind": "git",
@@ -9,7 +9,7 @@
   "files": {
     "ignoreUnknown": false,
     "includes": [
-      "**/*.{js,cjs,mjs,jsx,ts,cts,mts,tsx,json,jsonc}",
+      "**/*.{js,cjs,mjs,jsx,ts,cts,mts,tsx,json,jsonc,md}",
       "!!**/node_modules",
       "!!**/dist",
       "!!**/build",
@@ -21,7 +21,33 @@
       "!.claude/skills/building-plugins/assets/plugin-template.json",
       "!!**/tsconfig.json",
       "!!**/tsconfig.base.json",
-      "!!**/package-lock.json"
+      "!!**/package-lock.json",
+      "!**/SKILL.md",
+      "!**/CLAUDE.md",
+      "!.claude/memory",
+      "!.claude/session-handoff",
+      "!.claude/maintainer",
+      "!.claude/plans",
+      "!.claude/specs",
+      "!.claude/rules",
+      "!.claude/templates",
+      "!plugins/bash-lsp-intelligence/**/*.md",
+      "!plugins/block-no-verify/**/*.md",
+      "!plugins/file-tree-pane/**/*.md",
+      "!plugins/github-operations/**/*.md",
+      "!plugins/hook-engineering/**/*.md",
+      "!plugins/mods-engineering/**/*.md",
+      "!plugins/plugin-evals/**/*.md",
+      "!plugins/plugin-test-bench/**/*.md",
+      "!plugins/project-maintainer/**/*.md",
+      "!plugins/prompt-writer/**/*.md",
+      "!plugins/python-lsp-intelligence/**/*.md",
+      "!plugins/skill-diagnostics/**/*.md",
+      "!plugins/svelte-development/**/*.md",
+      "!plugins/tool-ledger/**/*.md",
+      "!plugins/turn-meter/**/*.md",
+      "!plugins/typescript6-lsp-intelligence/**/*.md",
+      "!plugins/typescript7-lsp-intelligence/**/*.md"
     ],
     "maxSize": 1048576
   },
@@ -128,7 +154,10 @@
         "useGetterReturn": "error"
       },
       "nursery": {
-        "useExplicitType": "warn"
+        "useExplicitType": "warn",
+        "useConsistentHeadingLevel": "error",
+        "useFencedCodeLanguage": "error",
+        "useSingleTopLevelHeading": "error"
       }
     }
   },
@@ -154,6 +183,14 @@
   "json": {
     "formatter": {
       "expand": "always"
+    }
+  },
+  "markdown": {
+    "parser": {
+      "frontmatter": true
+    },
+    "formatter": {
+      "indentStyle": "space"
     }
   },
   "overrides": [
