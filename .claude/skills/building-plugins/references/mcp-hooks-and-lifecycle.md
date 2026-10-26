@@ -68,7 +68,7 @@ For plugin `my-plugin`, server `db` and tool `security_scan`:
 
 - `SessionStart` at launch (with `--continue` or `--resume` too) and every `Setup` event fire before the session's servers are available: their `mcp_tool` hooks are skipped, and the debug log records `mcp_tool hooks are not available for the 'SessionStart' hook event (no MCP client context)` or the same naming `Setup` (`/en/hooks` → Events that fire before MCP servers are available). For launch-time work use a `command` hook. A later `SessionStart`, after `/clear` or compaction, can run `mcp_tool` hooks.
 - Decision-capable events such as `PreToolUse` and `Stop` wait for a connecting server within both `MCP_TIMEOUT` and the hook's timeout; observational events such as `Notification` and `SessionEnd` do not wait.
-- `cached` is a deferred connection, not a broken server: it connects when its tool is called, and a hook gets a non-blocking error if it is still unavailable then. An `mcp_tool` hook never starts an OAuth flow: authenticate the server from `/mcp` first.
+- `cached` is a deferred connection, not a broken server: it connects when its tool is called, and a hook gets a non-blocking error if it is still unavailable then. An `mcp_tool` hook never starts an OAuth flow: the user authenticates the server from `/mcp` first, and the README says so.
 - Let Claude Code manage a plugin server's connection; never add startup or reconnect loops that duplicate it.
 
 ## Timeout layers
@@ -82,14 +82,14 @@ For plugin `my-plugin`, server `db` and tool `security_scan`:
 1. Parse the configuration without executing plugin code.
 2. Check hook nesting, handler type, common fields and event compatibility.
 3. Resolve the plugin name, server key, scoped server identifier and callable tool name.
-4. Check the tool exists and its argument schema, from trusted docs or discovery already authorized.
+4. Check the tool exists and its argument schema from the server's documentation, never by connecting to the server while building.
 5. Check event input paths, substitution and the event's output.
 6. Check authentication, connection state, timeout units and failure behavior.
 7. Review permissions, matching and possible hook feedback loops.
 8. Run the skill's static checks (`check-manifest-schema.py`, and `check-mcp-schema.py` for a server config) and `claude plugin validate --strict`, without starting servers.
 9. Report the checks run, the checks not run, version requirements and remaining risks. The runtime cases (identifiers, matching, inputs, outputs, connection states, startup events, timeouts) are verified live by `testing-plugins`, not here.
 
-- Read the debug log before changing configuration for a skipped hook: `claude --debug-file <path>` for a known location, or `claude --debug`. The "no MCP client context" lines are lifecycle limits, not malformed identifiers. Redact secrets before quoting a log.
+- When a session Nery or `testing-plugins` ran reports a skipped hook, read that session's debug log before changing configuration (`claude --debug-file <path>` for a known location, or `claude --debug`); this skill never starts one to get it. The "no MCP client context" lines are lifecycle limits, not malformed identifiers. Redact secrets before quoting a log.
 - A hook does not work because its JSON parses or its configuration validates.
 
 ## Example

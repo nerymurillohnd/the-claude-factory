@@ -226,7 +226,10 @@ def main(argv: list[str]) -> int:
     if problem is not None:
         _ = sys.stderr.write(f"✖ {problem}\n")
         return 1
-    next_step = "run `npm run generate` to register it and update the catalog"
+    next_step = (
+        "run check-required-files.py and check-manifest-schema.py on it, then"
+        " `npm run generate` to register it and update the catalog"
+    )
     _ = sys.stdout.write(f"✔ Created plugins/{args.name}. Next: {next_step}.\n")
     return 0
 

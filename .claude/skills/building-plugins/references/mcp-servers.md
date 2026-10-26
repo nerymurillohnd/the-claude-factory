@@ -45,13 +45,13 @@ Read `/en/mcp` and, in `/en/plugins/components`, the MCP servers section; read `
 
 ### 3. Declare
 
-- Write the server in `.mcp.json` at the plugin root, or in the manifest `mcpServers` key, which also takes a path or an `.mcpb` file. Path variables (the plugin root and data directories, wrapped as `${…}`) are substituted in `command`, `args` and `env` of a stdio server, and in `url`, `headers` and `headersHelper` of an `http`, `sse` or `ws` server (`/en/plugins/manifest-reference`).
+- Write the server in `.mcp.json` at the plugin root, wrapped in a top-level `mcpServers` object as `.claude/rules/plugins/mcp-component.md` requires here, or in the manifest `mcpServers` key, which also takes a path or an `.mcpb` file. Path variables (the plugin root and data directories, wrapped as `${…}`) are substituted in `command`, `args` and `env` of a stdio server, and in `url`, `headers` and `headersHelper` of an `http`, `sse` or `ws` server (`/en/plugins/manifest-reference`).
 - Put every credential or per-user value in `userConfig` and reference it as `${user_config.KEY}` in `headers`, `env` or `args`. Mark a token `sensitive`. Never use `headersHelper` with it.
-- Run `check-mcp-schema.py <plugin>` and `claude plugin validate --strict plugins/<name>`. Do not load the plugin to see it connect: that is a live check (Rules).
+- Validate in `SKILL.md` step 5, with the checks this change meets: `check-manifest-schema.py` for servers inline in the manifest's `mcpServers` (`check-mcp-schema.py` reads only `.mcp.json` and named files, and passes with none), `check-mcp-schema.py` for those files, then `claude plugin validate --strict`. Do not load the plugin to see it connect: that is a live check (Rules).
 
 ### 4. Reach
 
-Give an agent its tools through its `tools` allowlist, written with the scoped name: one entry per tool, or `mcp__plugin_<plugin>_<server>__*` for the whole server; never the bare-key form `mcp__<server>__*`, which matches no plugin tool. Confirm the real names in `/mcp` before you write the line. Leave `tools` unset to inherit everything. Use the same scoped name in a skill's `allowed-tools`, in any permission rule the README recommends, and in a hook matcher with `.*` for the whole server. Read `/en/sub-agents` before you write the agent, and its "Preload skills into subagents" section before you rely on `skills:` in its frontmatter.
+Give an agent its tools through its `tools` allowlist, written with the scoped name: one entry per tool, or `mcp__plugin_<plugin>_<server>__*` for the whole server; never the bare-key form `mcp__<server>__*`, which matches no plugin tool. Derive each name with the formula in Gotchas; `testing-plugins` confirms them in `/mcp` during its live checks. Leave `tools` unset to inherit everything. Use the same scoped name in a skill's `allowed-tools`, in any permission rule the README recommends, and in a hook matcher with `.*` for the whole server. Read `/en/sub-agents` before you write the agent, and its "Preload skills into subagents" section before you rely on `skills:` in its frontmatter.
 
 ### 5. Scope
 

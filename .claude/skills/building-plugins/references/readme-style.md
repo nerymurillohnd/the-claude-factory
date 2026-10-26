@@ -5,7 +5,7 @@ How a plugin's `README.md` is written in this repository. It applies to every `p
 ## Write it from the template
 
 - Start a plugin README from `../assets/README-template.md`, never from another plugin's README.
-- Resolve every placeholder and `<!-- TODO -->` comment of the template. Delete rows and sections that do not apply, but keep every required section.
+- Replace every `<…>` placeholder of the template, then search the README for `<` to confirm none is left. Delete a row or section only as `templates.md` says.
 - Keep exactly one Compatibility row per component type the plugin ships.
 - Open with an outcome-first TL;DR.
 - The Version badge reads `version` from `plugin.json`. Never hardcode a version in it.

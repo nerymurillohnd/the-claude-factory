@@ -75,7 +75,7 @@ Checked 2026-10-25 against `/en/plugins/create`, `/en/plugins/components`, `/en/
 
 **Monitors.** Background shell commands with full user permissions; not started under `-p`; never receive `${user_config.*}`.
 
-**Mods.** A plugin whose `hooks/hooks.json` lists a JavaScript module under `modules` (v2.1.287+). Read `/en/plugins/mods/overview`, `create`, `api`, `events`, `interface` and `reference` before writing one. Mods publish through a marketplace exactly like other plugins.
+**Mods.** A plugin whose `hooks/hooks.json` lists a JavaScript module under `modules` (v2.1.287+). Before writing one, load the `building-mods` skill: it owns how a mod is written and which sources rule it. Mods publish through a marketplace exactly like other plugins.
 
 ## What loads on which surface
 
