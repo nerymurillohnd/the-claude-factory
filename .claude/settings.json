@@ -65,7 +65,17 @@
   },
   "enableWorkflows": true,
   "enabledPlugins": {
-    "plugin-evals@the-claude-factory": true
+    "plugin-evals@the-claude-factory": true,
+    "forestal-mt@forestal-mt": false,
+    "forestal-mt@synced": false
   },
+  "deniedMcpServers": [
+    {
+      "serverName": "claude.ai Gmail"
+    },
+    {
+      "serverName": "claude.ai Google Calendar"
+    }
+  ],
   "autoMemoryDirectory": "~/Claude/repositories/the-claude-factory/.claude/memory"
 }
