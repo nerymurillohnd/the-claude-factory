@@ -4,6 +4,12 @@ All notable changes to **The Claude Factory** marketplace are documented here: p
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The marketplace has no version of its own: entries are grouped by date, newest first, and every plugin carries its own version, changelog and tag. The versions 0.1.0 and 0.2.0 below are the history from before that change; their tags stay.
 
+## 2026-10-26
+
+### Fixed
+
+- **block-no-verify** 0.1.3 — a hook-script comment no longer says a timed-out hook lets the command through; nothing changes for users.
+
 ## 2026-10-24
 
 ### Changed

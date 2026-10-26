@@ -14,9 +14,10 @@
 #
 # Requires bash >= 3.2 and jq >= 1.6 (git optional, read-only, for aliases).
 # Standard tools only; no network, no writes. Parsing is metered so no input can
-# outlast the hook timeout (a timed-out hook does not block). Documented blind
-# spots: values from outside the command (functions, earlier exports, scripts
-# run from files) and anything outside Claude's tool calls.
+# outlast the hook timeout; if one did, hooks.json's onFailure "block" would turn
+# the timeout into a blocked command. Documented blind spots: values from outside
+# the command (functions, earlier exports, scripts run from files) and anything
+# outside Claude's tool calls.
 
 set -E -o pipefail
 export LC_ALL=C
