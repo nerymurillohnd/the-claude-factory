@@ -69,7 +69,6 @@ Read the current official page for each component type you will write, in full, 
 | MCP servers | `/en/mcp` |
 | LSP servers | `/en/plugins/code-intelligence` |
 | Output styles, themes, monitors, `bin/` | `/en/output-styles` and the matching sections of `/en/plugins/components` |
-| Mods | `/en/plugins/mods/overview`, `create`, `reference`, `test` |
 | Dependencies and loading | `/en/plugins/dependencies`, `/en/plugins/loading` |
 
 Open them through the Claude Code Docs MCP tools, which serve `/en/plugins/components` at `/en/plugins/components.mdx`. The MCP copy can lack headings the live page has: when a heading is missing or a decision rests on exact wording, read the raw page at `https://code.claude.com/docs/en/<page>.md`.
@@ -83,7 +82,6 @@ Read these before you write or rely on the behavior they describe:
 | An agent | Memory `agent-file-rules`; also `/en/sub-agents` → "Preload skills into subagents" before relying on `skills:` in its frontmatter |
 | `userConfig` options | `/en/plugins/manifest-reference` → "User configuration" (install, update and synced copies) |
 | An MCP server | The `plugin-mcp-guidance` skill (step 4 invokes it), which holds the Claude app and header rules |
-| A mod | `/en/plugins/mods/reference` and `/en/plugins/mods/test` (`register.ts`, static validation, tests, type declarations) and `/en/plugins/mods/events`. The declarations the engine writes for the installed build win over any docs page when they disagree, as the docs themselves say, and `.claude/CLAUDE.md` → Maintainer and Plugin Scopes → Plugin Tooling |
 | A script a skill or agent runs | `/en/skills` → "Available string substitutions" (the path variables are substituted only in `SKILL.md` and agent bodies, never in `references/` or the Bash environment) |
 
 User docs have their own rules in `.claude/rules/user-docs.md`. Read it before you write them.
