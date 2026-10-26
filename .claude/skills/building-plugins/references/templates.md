@@ -21,14 +21,8 @@ This skill's `assets/` are the templates a new plugin of this repository is buil
 3. When the plugin bundles or derives from third-party material, copy `NOTICE-template.txt` to `plugins/<name>/NOTICE.txt` and fill it: `{{name}}` is the plugin's name; for each source, its name, repository URL, version or commit, SPDX license, every file of the plugin derived from it (one `{{derivedFile}}` line each), and its full license text. For several sources, repeat the block from "This plugin contains material derived from" through the license text once per source. The file opens with the plugin's own copyright and license; keep that line.
 4. Leave `plugin.json`'s `version` at `0.1.0` and the `CHANGELOG.md` `0.1.0` entry as the launch entry; versioning after that is the release procedure's.
 
-Which README sections are required is the open question of DEBT-011: `check-repo.mjs` requires ten sections (`REQUIRED_PLUGIN_SECTIONS` in `scripts/lib.mjs`), and this template has its own. Until DEBT-011 closes, follow this template, which outranks the older checks, and say in your hand-back that `check-repo.mjs` will flag the sections it expects; this skill does not run it.
-
 ## Change them
 
 - Edit an asset only to change what every new plugin gets, and keep its placeholders: they are what a new plugin resolves. A new placeholder needs `scaffold-plugin.py` to fill it, or a line in steps 2 or 3 above telling the author to.
 - A change to an asset brings every plugin file built from it in line in the same change. Those files are plugin files, so that part goes through a pull request.
 - After a change, scaffold a throwaway plugin in a scratchpad copy of the repository (`TCF_ROOT=<copy> scaffold-plugin.py …`) and read what it wrote.
-
-## The older copies
-
-`.claude/templates/plugin/` and `.claude/templates/root-readme.md` hold the templates this repository used before these assets. They stay, frozen, because older parts of the repository still read them until DEBT-011 closes: `check-repo.mjs` enforces the old README shape, and the repository's tests build their fixture from the old README. Never edit them and never create a plugin from them; when DEBT-011 closes they are removed.

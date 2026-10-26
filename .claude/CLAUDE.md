@@ -50,7 +50,7 @@ This repository holds two scopes. They are never mixed: a rule written for one s
 
 - Python: format and lint with Ruff, type-check with Basedpyright, test with unittest or pytest.
 - Markdown, JSON, JavaScript and TypeScript: format and lint with Biome. A plugin's Markdown joins when the plugin next changes, as `building-plugins` step 5 says.
-- Never format these Markdown files, with Biome or any other tool: every `SKILL.md`; `.claude/memory/`, `MEMORY.md` and the files it indexes; every `CLAUDE.md`; `.claude/session-handoff/`; the ADRs in `.claude/maintainer/decisions/`; the ledgers in `.claude/maintainer/technical-debt/`; `.claude/plans/`; `.claude/specs/`; `.claude/rules/`; and `.claude/templates/`. `biome.json` excludes them whenever Markdown is in its `files.includes`.
+- Never format these Markdown files, with Biome or any other tool: every `SKILL.md`; `.claude/memory/`, `MEMORY.md` and the files it indexes; every `CLAUDE.md`; `.claude/session-handoff/`; the ADRs in `.claude/maintainer/decisions/`; the ledgers in `.claude/maintainer/technical-debt/`; `.claude/plans/`; `.claude/specs/`; and `.claude/rules/`. `biome.json` excludes them whenever Markdown is in its `files.includes`.
 - JavaScript and TypeScript: type-check with `tsc` under the strictest settings and `--noEmit`.
 - Shell scripts: format with `shfmt` and lint with ShellCheck.
 - The root `package.json` serves repository-level development tooling only, never plugin runtimes; it stays `"private": true` and exists only while that tooling needs it.

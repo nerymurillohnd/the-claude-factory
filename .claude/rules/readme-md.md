@@ -14,7 +14,6 @@ A `README.md` in this repository is one of four kinds, and each kind has its own
 | :-- | :-- | :-- | :-- |
 | `README.md` at the repository root | The marketplace's front page for users | Maintainer: no pull request | The `maintaining-user-docs` skill |
 | `plugins/<name>/README.md` | One plugin's user guide | Plugin: every change goes through a pull request | The `building-plugins` skill; for a plugin that is or contains a mod, also `building-mods` |
-| `.claude/templates/plugin/README.md` | The older plugin README template, frozen until DEBT-011 closes | Maintainer | The plugin template section below |
 | Any other, such as `scripts/tests/<plugin>/…/README.md` | A maintainer note, never shipped to users | Maintainer | Nothing more: keep it accurate |
 
 ## Root README
@@ -27,7 +26,7 @@ A `README.md` in this repository is one of four kinds, and each kind has its own
 
 ## Plugin README
 
-- **Template:** the one `building-plugins` sets, `assets/README-template.md`. Never start from another plugin's README. The skill's scaffold writes the README from it. Until DEBT-011 closes, `check-repo.mjs` still follows the older `.claude/templates/plugin/README.md`, whose sections differ.
+- **Template:** the one `building-plugins` sets, `assets/README-template.md`. Never start from another plugin's README. The skill's scaffold writes the README from it.
 - **Rules:** `building-plugins` holds them: `references/templates.md` the template's use, its sections and NOTICE, and `references/readme-style.md` the badges, the version numbers allowed, the style and the Compatibility rows.
 - **A plugin with a mod:** the README also carries what `building-mods` section 5 lists: where the mod runs, what turns it off, the organization caveat, what it reaches, and the "Tested with Claude Code X.Y.Z" line.
 - **A `README.md`-only change:** a pull request, no version bump and no CHANGELOG entry. GitHub shows it once it is merged, but the copy a user already installed keeps its old README until the plugin's next version.
@@ -36,7 +35,6 @@ A `README.md` in this repository is one of four kinds, and each kind has its own
 ## The plugin template
 
 - The plugin templates are `building-plugins`' assets; `references/templates.md` there says how to fill and change them.
-- `.claude/templates/plugin/README.md` is the older template, kept frozen because `check-repo.mjs` and the repository's tests still read it until DEBT-011 closes. Never edit it and never build a README from it.
 
 ## Every README
 

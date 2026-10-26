@@ -15,4 +15,3 @@
 ## Change it
 
 - Edit the template only when the front page itself should change shape: a section added, removed, moved or given a new rule. Then bring `README.md` in line in the same change.
-- `.claude/templates/root-readme.md` is the older, frozen copy, kept until DEBT-011 closes. Never edit it, and never follow it.

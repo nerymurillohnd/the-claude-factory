@@ -13,7 +13,7 @@ These files are what a user reads before trusting the marketplace, and nobody re
 
 | In | Out |
 | :-- | :-- |
-| Root `README.md`, outside the generated `<!-- catalog:* -->` and `<!-- plugin-count:* -->` blocks | The files inside `plugins/<name>/` (README, CHANGELOG, LICENSE, NOTICE) and the templates in `.claude/templates/plugin/` |
+| Root `README.md`, outside the generated `<!-- catalog:* -->` and `<!-- plugin-count:* -->` blocks | The files inside `plugins/<name>/` (README, CHANGELOG, LICENSE, NOTICE) and the templates in `building-plugins`' `assets/` |
 | `docs/`: `installation.md`, `managing-plugins.md`, `compatibility.md`, `troubleshooting.md`, `faq.md`, `assets/` | What one plugin tells its users, such as the tools of an MCP server it bundles: that belongs to the plugin, not to the marketplace's docs. `docs/github-mcp-tools.md` is such a file |
 | `SECURITY.md`, `SUPPORT.md`, `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, the root `LICENSE` | The root `CHANGELOG.md` and GitHub Releases |
 | | Issue forms, `.github/ISSUE_TEMPLATE/config.yml`, labels, replies to issues |
@@ -136,7 +136,6 @@ Run steps 3 to 7 on every file in scope, against every Claude Code release since
 ## Gotchas
 
 - Biome formats and lints these files: run `biome check --write <file>` after editing one. It checks headings and fenced-code languages, not links, anchors or prose, so a broken link or anchor shows up only when you open it. It pads tables, except a table right after a `<!-- biome-ignore format: <reason> -->` comment, which the catalog generator writes before each of its tables.
-- `.claude/templates/root-readme.md` is an older, frozen copy of `assets/root-readme-template.md`, kept until DEBT-011 closes. Follow and edit only the asset.
 - The catalog's version column is generated and is the only version number of a plugin in the root README.
 - GitHub reads `SECURITY.md`, `SUPPORT.md`, `CONTRIBUTING.md` and `CODE_OF_CONDUCT.md` from `.github/` first, then the root, then `docs/`. A copy added in `.github/` would silently replace the root one.
 - `docs/compatibility.md` drives the Compatibility cells of every plugin README, so a change to it is never only a docs change.

@@ -51,7 +51,7 @@ Part of step 1 of `building-plugins`, before the scaffold runs.
 ### B. Change a plugin's category
 
 1. Set the new id in `metadata.category` of `plugins/<plugin>/.claude-plugin/plugin.json`. When the first `keywords` entry is the old id, replace it too.
-2. When the plugin README has a Category badge, change its title to the new one, encoded as the badge already is: `%20` for a space, `%26` for `&`, `--` for `-`. A README built from the current `building-plugins` template has no badge until DEBT-011 closes; then there is nothing to change.
+2. When the plugin README has a Category badge, change its title to the new one, encoded as the badge already is: `%20` for a space, `%26` for `&`, `--` for `-`. The scaffold writes the badge for a new plugin, so a README without one predates the template.
 3. Run the checks above.
 4. Who versions it:
    - A published plugin (`git cat-file -e origin/main:plugins/<plugin>/.claude-plugin/plugin.json` succeeds): a pull request and a version bump, through `release-and-versioning`.

@@ -95,4 +95,4 @@ Keep these in view even when you don't open a reference:
 
 ## What to hand back
 
-The files written or changed, the raw output of each check and `claude plugin validate` run, the checks you skipped and the condition that did not hold, each README row or section you deleted and why, that `check-repo.mjs` will flag the README sections it expects (until DEBT-011 closes), decisions the user still has to make (name, category, surfaces), and anything unverified.
+The files written or changed, the raw output of each check and `claude plugin validate` run, the checks you skipped and the condition that did not hold, each README row or section you deleted and why, decisions the user still has to make (name, category, surfaces), and anything unverified.
