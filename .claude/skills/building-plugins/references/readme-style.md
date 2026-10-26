@@ -5,7 +5,7 @@ How a plugin's `README.md` is written in this repository. It applies to every `p
 ## Write it from the template
 
 - Start a plugin README from `../assets/README-template.md`, never from another plugin's README.
-- Replace every `<…>` placeholder of the template, then search the README for `<` to confirm none is left. Delete a row or section only as `templates.md` says.
+- Replace every `<…>` placeholder of the template, then run `grep -nE '<[A-Z][^>]*>' README.md` to confirm none is left: every placeholder the author fills starts with a capital letter, and the template's HTML tags (`<details>`, `<summary>`, `<div>`) are lowercase. Delete a row or section only as `templates.md` says.
 - Keep exactly one Compatibility row per component type the plugin ships.
 - Open with an outcome-first TL;DR.
 

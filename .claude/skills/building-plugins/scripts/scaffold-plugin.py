@@ -173,6 +173,7 @@ def plugin_files(args: Args, display_name: str, surfaces: list[str]) -> dict[str
         asset("README-template.md")
         .replace("<Display Name>", display_name)
         .replace("<owner>/<repo>", REPOSITORY)
+        .replace("<owner>%2F<repo>", REPOSITORY.replace("/", "%2F"))
         .replace("<marketplace-name>", MARKETPLACE_NAME)
         .replace("<plugin>", args.name)
     )
