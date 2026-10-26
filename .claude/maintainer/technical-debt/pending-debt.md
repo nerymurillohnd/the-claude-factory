@@ -44,9 +44,10 @@ Add an item only when all of these hold:
 | DEBT-002 | Version-bump check fails on main after a revert of an unreleased bump and blocks every release | 🟠 Blocked |
 | DEBT-006 | No gate runs the validators of `scripts/validators/`, so CI lost the checks `check-repo.mjs` dropped | 🟡 Pending |
 | DEBT-008 | `main` and the release tags have no GitHub protection | 🟠 Blocked |
-| DEBT-009 | Biome ignores Markdown, so no tool formats or lints the repository's Markdown | 🟡 Pending |
-| DEBT-010 | The mod gates of `scripts/gates.mjs` can miss a mod or report green on a lost test summary | 🟡 Pending |
+| DEBT-009 | Biome ignores Markdown, so no tool formats or lints the repository's Markdown | 🟠 Blocked |
+| DEBT-010 | The mod gates of `scripts/gates.mjs` can miss a mod or report green on a lost test summary | 🟠 Blocked |
 | DEBT-011 | The repository's README checks and plugin READMEs still follow the old plugin template, not the one `building-plugins` sets | 🟠 Blocked |
+| DEBT-012 | The `write-records` skill of `project-maintainer` is not loaded before records are written: it triggers only on events, and nothing reminds or requires it | 🟠 Blocked |
 
 ## 📂 Open items
 
@@ -168,7 +169,7 @@ Add an item only when all of these hold:
 
 | Field | Value |
 | --- | --- |
-| **Status** | 🟡 Pending |
+| **Status** | 🟠 Blocked |
 | **Category** | quality, maintainability |
 | **Owner** | Maintainer tooling (`biome.json`, `.claude/CLAUDE.md` → Maintainer Tooling) |
 | **Logged** | 2026-10-25 |
@@ -195,7 +196,7 @@ Add an item only when all of these hold:
 
 | Field | Value |
 | --- | --- |
-| **Status** | 🟡 Pending |
+| **Status** | 🟠 Blocked |
 | **Category** | reliability, quality |
 | **Owner** | Maintainer tooling (`scripts/gates.mjs`) |
 | **Logged** | 2026-10-25 |
@@ -207,7 +208,6 @@ Add an item only when all of these hold:
   - `scripts/gates.mjs:406-417` creates the `mod-tsc:<plugin>` gate for any plugin with a `tsconfig.json`, and nothing refreshes the engine's declarations before it runs.
   - `scripts/gates.mjs:494` runs every gate with `stdio: ['ignore', 'pipe', 'pipe']`, so `claude plugin test` writes to a pipe.
   - anthropics/claude-code#103055 reports that `claude plugin test` on a pipe can lose the tail of its output, summary included, and exit 0. `testing-mods/scripts/check-mod.sh` writes to a file and fails without the summary.
-  - Before 2026-10-25, `.claude/CLAUDE.md` said `npm run gates` ran these checks "after the declarations are refreshed".
 - **Inferences:**
   - A mod without tests is never run by `claude plugin test` in the gates.
   - A failed test can pass the gate when the summary is lost.
@@ -258,6 +258,34 @@ Add an item only when all of these hold:
   Then move each plugin README, by pull request, and delete `.claude/templates/plugin/` and `.claude/templates/root-readme.md`.
 - **Review condition:** closes when a plugin the scaffold creates passes `check-repo.mjs`, nothing reads the frozen templates, and they are deleted.
 - **Related records:** ADR_2026-10-25_plugin-scaffold-belongs-to-building-plugins.
+
+### DEBT-012 — The `write-records` skill of `project-maintainer` is not loaded before records are written: it triggers only on events, and nothing reminds or requires it
+
+| Field | Value |
+| --- | --- |
+| **Status** | 🟠 Blocked |
+| **Category** | quality, reliability |
+| **Owner** | `plugins/project-maintainer` (skill `write-records`, its mod) |
+| **Logged** | 2026-10-25 |
+
+#### 🔎 Evidence
+
+- **Confirmed facts:**
+  - The skill's description (`plugins/project-maintainer/skills/write-records/SKILL.md:3`) is "Use when an important decision is made, a problem cannot be fixed now, or logged debt is closed." It names events, not the files a record lives in, so updating an existing entry in the middle of other work matches none of them.
+  - The plugin's guardrails check the format of every saved record and ask before a settled record is changed (`plugins/project-maintainer/README.md:35,51`); none reminds or requires the skill when `.claude/maintainer/` is written.
+  - On 2026-10-25, nine records of this repository (ADRs and DEBT-009 to DEBT-011) were written without the skill being loaded, although `.claude/rules/workflow.md` requires it. One debt update was saved with `sed`, which the skill forbids, and DEBT-011 was written as a change log, which its technical-debt reference does not allow. Stated by the user on 2026-10-25 as a defect of the plugin to fix.
+- **Inferences:** any user of the plugin can get records that bypass its procedure the same way, because a skill that is not loaded cannot apply its rules.
+- **Open questions:** whether a path-scoped trigger in the description is enough, or the mod should also remind, or refuse, a write under `.claude/maintainer/` made without the skill loaded; and whether a mod can tell that a skill was loaded in the session.
+
+#### 📈 Impact and next step
+
+- **Impact / risk:** records reach the repository without the skill's checks (placeholders, index, settled records, change-log content, Bash writes), and the format guard catches only part of them.
+- **Why it is not fixed now:** it is a change to a published plugin, which goes through a pull request and a release on Nery's order, outside the documentation work in progress.
+- **Next action:** in a pull request on `plugins/project-maintainer`:
+  - make the `write-records` description also trigger before creating or editing any file under `.claude/maintainer/`;
+  - test against the mods API whether the mod can remind of, or require, the skill on such a write.
+- **Review condition:** closes when a session that edits a record under `.claude/maintainer/`, without being asked to use the skill, loads it first or is told to; shown by a test or a recorded live session.
+- **Related records:** ADR_2026-10-22_mod-guardrails-fail-closed-for-records.
 
 <!--
 Entry format. Copy this block above this comment for each new item and add its row to the Index.
