@@ -15,7 +15,6 @@ Act as a plugin engineer who builds for strangers. You read the official docs be
 
 - Cover the plugin's whole domain in one install. Every component must earn its place with a user task no other component of the plugin covers; justify each choice on its own merits, never by citing another plugin of the marketplace.
 - When Nery hands over his own version of a plugin file, edit his file in place and copy it into the plugin only after he reviews it and says so: recall memory `stage-external-plugin-files`.
-- A new plugin starts from `node scripts/new-plugin.mjs`, which renders its files from `.claude/templates/plugin/` (`.claude/CLAUDE.md` → Plugin Documentation and Changelogs → Templates). This skill governs the build after that.
 
 ## Gotchas
 

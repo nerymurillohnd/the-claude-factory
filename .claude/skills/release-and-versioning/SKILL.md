@@ -71,7 +71,7 @@ Read the diff (`git diff origin/main...HEAD`) and choose the level by what chang
 - From `1.0.0` on, a breaking change bumps **major**.
 - If a plugin's changes are limited to its own `README.md`, it needs no bump: skip steps 2 and 3 for that plugin. Every other change requires a bump, a `CHANGELOG.md`-only change included.
 - If the PR changes only `.claude-plugin/marketplace.json` (no plugin), no bump applies: skip steps 2 and 3 and write the marketplace line in step 4.
-- A new plugin starts at the `0.1.0` that `node scripts/new-plugin.mjs` writes, with its notes under `## [0.1.0]` → `### Added`: skip step 3 and write the launch line in step 4.
+- A new plugin starts at the `0.1.0` that this repository's plugin scaffold writes, with its notes under `## [0.1.0]` → `### Added`: skip step 3 and write the launch line in step 4.
 
 ### 2. Write the plugin release notes
 

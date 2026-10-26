@@ -79,7 +79,7 @@ Rules that keep the scopes apart:
 Categories: `development`, `productivity`, `automation`, `mods`, `testing`, `security`, `documentation`, `data`, `design`, `devops`, `integrations`, `language-support`, `learning`.
 
 - `scripts/categories.json` is the only place a category is defined: its `id`, the title and description the README catalog shows, and the catalog order. Add or change a category there first.
-- Give every plugin exactly one category, chosen by its purpose, in `metadata.category` of its `plugin.json`. `node scripts/new-plugin.mjs --category <id>` sets it for a new plugin.
+- Give every plugin exactly one category, chosen by its purpose, in `metadata.category` of its `plugin.json`. The `building-plugins` skill's scaffold sets it for a new plugin.
 - Put a plugin in `mods` only when it is a mod: its `hooks/hooks.json` lists one hooks module under `modules`. A mod whose purpose is another goes in that category.
 - After setting or changing a category, run `npm run generate`: it writes the category into `marketplace.json` and the README catalog. Never edit the category in either file by hand.
 
@@ -95,7 +95,7 @@ Categories: `development`, `productivity`, `automation`, `mods`, `testing`, `sec
 
 ### Templates
 
-- Create every one of those files from its template in `.claude/templates/plugin/`, never from another plugin's files. `node scripts/new-plugin.mjs` renders them for a new plugin.
+- Create every one of those files with the `building-plugins` skill's scaffold, from that skill's assets, never from another plugin's files. `.claude/templates/plugin/` holds the older templates, frozen until DEBT-011 closes: never edit them or create a plugin from them.
 - Keep every section the template defines. The README needs these sections, which `scripts/check-repo.mjs` checks: Why use it, What's inside, Requirements, Installation, Usage, Updating, Uninstalling, Compatibility, Changelog, License.
 - Resolve every `<!-- TODO -->` and `<!-- TEMPLATE -->` comment before the plugin ships; `check-repo.mjs` fails while one is left.
 - When a template changes, bring every plugin README built from it in line in the same change.
@@ -132,7 +132,7 @@ Categories: `development`, `productivity`, `automation`, `mods`, `testing`, `sec
 - `.claude/skills/`: project skills, the procedures for work on this repository.
 - `.claude/specs/`: specs, written before plans.
 - `.claude/plans/`: implementation plans.
-- `.claude/templates/`: templates for plugin files and the plugin review brief.
+- `.claude/templates/`: the plugin review brief, and the older plugin and root README templates, frozen until DEBT-011 closes.
 - `docs/`: the user guides, covering installation, managing plugins, compatibility, FAQ, troubleshooting and tool references.
 - `plugins/`: the plugins, one self-contained directory per plugin.
 - `scripts/`: maintenance scripts, tests and schemas.

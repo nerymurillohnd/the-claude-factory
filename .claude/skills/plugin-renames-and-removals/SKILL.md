@@ -42,7 +42,7 @@ After the push, a user who still has the old name enabled sees one of these resu
 8. Never merge a PR or push to `main` without listing what it publishes and confirming with Nery (step 12). Never run `gh workflow run release.yml` while Validate is failing.
 9. Do not write GitHub labels until Nery orders it.
 10. Push, open a PR or merge only when Nery authorizes it. Merge only with all CI checks green, all review comments resolved and a `github-operations:pr-tracker` report with no issues.
-11. Never reuse a retired name: `node scripts/new-plugin.mjs` refuses any name that is a key of `renames`, and for a rename `check-new-name.py <new>` refuses a retired, listed or malformed name in step 3.
+11. Never reuse a retired name: this repository's plugin scaffold refuses any name that is a key of `renames`, and for a rename `check-new-name.py <new>` refuses a retired, listed or malformed name in step 3.
 
 ## Scripts
 
