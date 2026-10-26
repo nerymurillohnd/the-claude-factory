@@ -1,6 +1,6 @@
 # Plugin README: template and style
 
-How a plugin's `README.md` is written in this repository, and how its templates are kept. It applies to every `plugins/<name>/README.md` and to the plugin templates. What the README must contain for any public plugin is in `public-readiness.md`; this file adds this repository's style.
+How a plugin's `README.md` is written in this repository. It applies to every `plugins/<name>/README.md`. What the README must contain for any public plugin is in `public-readiness.md`, and how the templates are used and kept is in `templates.md`; this file adds this repository's style.
 
 ## Write it from the template
 
@@ -9,11 +9,6 @@ How a plugin's `README.md` is written in this repository, and how its templates 
 - Keep exactly one Compatibility row per component type the plugin ships.
 - Open with an outcome-first TL;DR.
 - The Version badge reads `version` from `plugin.json`. Never hardcode a version in it.
-
-## Keep the templates
-
-- Edit a template only to change what every plugin README gets, and keep its placeholders and `<!-- TODO -->` comments: they are what a new README resolves.
-- A change to a template brings every plugin README built from it in line in the same change; those READMEs are plugin files, so that part goes through a pull request.
 
 ## Style
 

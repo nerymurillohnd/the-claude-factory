@@ -113,9 +113,10 @@ const fill = (template, vars) =>
 
 /**
  * Create a new plugin the way the repository gets one: its files under plugins/<name>/, then the
- * marketplace and catalog regenerated. The README comes from the old plugin template, kept as a
- * test fixture, because check-repo.mjs still enforces that template's shape (DEBT-011); the other
- * files come from the building-plugins skill's assets, as its scaffold writes them.
+ * marketplace and catalog regenerated. The README comes from the old plugin template in
+ * .claude/templates/plugin/, because check-repo.mjs still enforces that template's shape
+ * (DEBT-011); the other files come from the building-plugins skill's assets, as its scaffold
+ * writes them.
  * @param {string} [name]
  * @param {string} [category]
  * @param {boolean} [claudeCodeOnly]
@@ -152,7 +153,7 @@ function scaffold(name = 'demo-tool', category = 'productivity', claudeCodeOnly 
   )
   write(`plugins/${name}/CHANGELOG.md`, fill(read(`${assets}/CHANGELOG-template.md`), vars))
   write(`plugins/${name}/LICENSE`, read(`${assets}/LICENSE-template`))
-  write(`plugins/${name}/README.md`, fill(read('scripts/tests/fixtures/plugin-README.md'), vars))
+  write(`plugins/${name}/README.md`, fill(read('.claude/templates/plugin/README.md'), vars))
   for (const generator of ['generators/marketplace.mjs', 'generators/catalog.mjs']) {
     const r = run(generator)
     assert.equal(r.code, 0, r.out)

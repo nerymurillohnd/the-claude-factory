@@ -136,6 +136,7 @@ Run steps 3 to 7 on every file in scope, against every Claude Code release since
 ## Gotchas
 
 - No linter reads these files: Biome ignores Markdown here (`biome check README.md` reports it as ignored), so a broken link, anchor or table shows up only when you open it.
+- `.claude/templates/root-readme.md` is an older, frozen copy of `references/root-readme.md`, kept until DEBT-011 closes. Follow and edit only the reference.
 - The catalog's version column is generated and is the only version number of a plugin in the root README.
 - GitHub reads `SECURITY.md`, `SUPPORT.md`, `CONTRIBUTING.md` and `CODE_OF_CONDUCT.md` from `.github/` first, then the root, then `docs/`. A copy added in `.github/` would silently replace the root one.
 - `docs/compatibility.md` drives the Compatibility cells of every plugin README, so a change to it is never only a docs change.
