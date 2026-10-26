@@ -169,7 +169,7 @@ Add an item only when all of these hold:
 | --- | --- |
 | **Status** | 🟠 Blocked |
 | **Category** | quality, maintainability |
-| **Owner** | Maintainer tooling (`scripts/lib.mjs`, `scripts/check-repo.mjs`, `scripts/tests/scripts.test.mjs`), the frozen `.claude/templates/plugin/` and `.claude/templates/root-readme.md`, the README rules of `.claude/CLAUDE.md` → Plugin Documentation and of the `building-plugins` skill, and the plugins' READMEs |
+| **Owner** | Maintainer tooling (`scripts/lib.mjs`, `scripts/check-repo.mjs`, `scripts/tests/scripts.test.mjs`), the frozen `.claude/templates/plugin/` and `.claude/templates/root-readme.md`, the README rules of the `building-plugins` skill, and the plugins' READMEs |
 | **Logged** | 2026-10-25 |
 
 #### 🔎 Evidence
@@ -193,7 +193,7 @@ Add an item only when all of these hold:
 - **Next action:** decide the section set with Nery. Then, in one change:
   - update `REQUIRED_PLUGIN_SECTIONS` and the checks that read Compatibility;
   - build the tests' fixture from the skill's template;
-  - bring the README rules of `.claude/CLAUDE.md` → Plugin Documentation and of `building-plugins` in line with the section set.
+  - bring the README rules of `building-plugins` (`references/readme-style.md` and `references/templates.md`) in line with the section set.
 
   Then move each plugin README, by pull request, and delete `.claude/templates/plugin/` and `.claude/templates/root-readme.md`.
 - **Review condition:** closes when a plugin the scaffold creates passes `check-repo.mjs`, nothing reads the frozen templates, and they are deleted.

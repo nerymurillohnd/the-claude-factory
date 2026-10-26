@@ -28,7 +28,7 @@ A `README.md` in this repository is one of four kinds, and each kind has its own
 ## Plugin README
 
 - **Template:** the one `building-plugins` sets, `assets/README-template.md`. Never start from another plugin's README. The skill's scaffold writes the README from it. Until DEBT-011 closes, `check-repo.mjs` still follows the older `.claude/templates/plugin/README.md`, whose sections differ.
-- **Rules:** `.claude/CLAUDE.md` → Plugin Documentation holds the badges and the one version number allowed. `building-plugins` holds the rest: `references/templates.md` the template's use, its sections and NOTICE, and `references/readme-style.md` the style and the Compatibility rows.
+- **Rules:** `building-plugins` holds them: `references/templates.md` the template's use, its sections and NOTICE, and `references/readme-style.md` the badges, the version numbers allowed, the style and the Compatibility rows.
 - **A plugin with a mod:** the README also carries what `building-mods` section 5 lists: where the mod runs, what turns it off, the organization caveat, what it reaches, and the "Tested with Claude Code X.Y.Z" line.
 - **A `README.md`-only change:** a pull request, no version bump and no CHANGELOG entry. GitHub shows it once it is merged, but the copy a user already installed keeps its old README until the plugin's next version.
 - **Checks:** `node scripts/check-repo.mjs` covers the sections, leftover `TODO` and `TEMPLATE` comments, the "works in" badge and one Compatibility row per component type. `plugin-versions-consistency.py` covers the Version badge. Neither reads the text of the cells or the prose: compare those yourself.

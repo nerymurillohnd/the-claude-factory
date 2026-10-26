@@ -89,19 +89,6 @@ Categories: `development`, `productivity`, `automation`, `mods`, `testing`, `sec
 
 ---
 
-## Plugin Documentation
-
-- `plugin.json` is the only source of the plugin's name, version, description and category.
-- Never write a version number in a plugin README, except, for a plugin with a mod, the Claude Code version it was tested with, in Compatibility (the `building-mods` skill). The badges show values that live in other files:
-  - **Version**: a dynamic shields.io badge that reads `$.version` from this plugin's `plugin.json` on `main`, so a bump shows once it is merged. `plugin-versions-consistency.py` fails on a hardcoded version.
-  - **Works in**: `Claude Code · Claude app` or `Claude Code only`, matching `metadata.surfaces` in `plugin.json`.
-  - **Category**: the title in `scripts/categories.json` of the plugin's `metadata.category`.
-  - **Claude Code**: the minimum Claude Code version, the same one Requirements states.
-  - **License**: links to the plugin's `LICENSE`.
-- When the surfaces, the category or the minimum Claude Code version change, update the badge, the README text that states it and the README catalog (`npm run generate`) in the same change.
-
----
-
 ## Documentation and Maintenance
 
 - `.claude/specs/`: specs, written before plans.

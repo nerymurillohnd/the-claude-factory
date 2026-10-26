@@ -8,14 +8,25 @@ How a plugin's `README.md` is written in this repository. It applies to every `p
 - Replace every `<…>` placeholder of the template, then search the README for `<` to confirm none is left. Delete a row or section only as `templates.md` says.
 - Keep exactly one Compatibility row per component type the plugin ships.
 - Open with an outcome-first TL;DR.
-- The Version badge reads `version` from `plugin.json`. Never hardcode a version in it.
+
+## Badges and the facts they show
+
+`plugin.json` is the only source of the plugin's name, version, description and category; the README follows it.
+
+- Never write the plugin's version in its README: the Version badge shows it. The only version numbers written by hand are Claude Code versions: the minimum (the Claude Code badge, Requirements and each version-gated feature) and, for a plugin with a mod, the version it was tested with, in Compatibility, as `building-mods` says.
+- The badges sit in the hero only, from shields.io, in the brand color `D97757`. Each shows a value that lives in another file:
+  - **Version**: a dynamic badge that reads `$.version` from this plugin's `plugin.json` on `main`, so a bump shows once it is merged. `scripts/validators/plugin-versions-consistency.py` fails on a hardcoded version.
+  - **Works in**: `Claude Code · Claude app` or `Claude Code only`, matching `metadata.surfaces` in `plugin.json`.
+  - **Category**: the title in `scripts/categories.json` of the plugin's `metadata.category`.
+  - **Claude Code**: the minimum Claude Code version, the same one Requirements states.
+  - **License**: links to the plugin's `LICENSE`.
+- When the surfaces, the category or the minimum Claude Code version change, update the badge and the README text that states it in the same change; step 5 of `SKILL.md` then regenerates the catalog.
 
 ## Style
 
 - READMEs sell: lead with the outcome and why to install, then teach. Never mention maintenance, `.claude/`, internal scripts, CI internals or how we work.
 - English, second person, active voice, present tense, short sentences. Benefit first, mechanics second.
 - Emoji-prefixed `##` headings, one emoji per heading, consistent across docs (📥 install, 🔧 manage, 🧭 compatibility, 🩺 troubleshooting, ❓ FAQ, 🔄 update, 🗑️ uninstall, 📝 changelog, 📄 license).
-- Badges in the hero only: shields.io, brand color `D97757`.
 - Tables for comparisons, commands per surface, requirements and options.
 - GitHub alerts (`> [!NOTE]`, `[!TIP]`, `[!IMPORTANT]`, `[!WARNING]`, `[!CAUTION]`), never two back to back without text between.
 - `<details>` for per-surface instructions and FAQs, with the most common option `open`.
