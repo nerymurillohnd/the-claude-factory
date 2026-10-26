@@ -6,6 +6,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.1.3] - 2026-10-26
+
+### Fixed
+
+- A comment in the hook script said a hook that times out lets the command through. With the plugin's settings, a timeout blocks the command, and the comment now says so. What the hook blocks is unchanged.
+
 ## [0.1.2] - 2026-10-24
 
 ### Changed
@@ -29,7 +35,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - Fails closed on a payload or a command it cannot read. Without `jq` it denies the commands that could involve git, says why, and lets the rest run.
 - Needs Claude Code 2.1.295 or later, for the `onFailure` field, and `jq`.
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/block-no-verify--v0.1.2...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/block-no-verify--v0.1.3...HEAD
+[0.1.3]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/block-no-verify--v0.1.3
 [0.1.2]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/block-no-verify--v0.1.2
 [0.1.1]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/block-no-verify--v0.1.1
 [0.1.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/block-no-verify--v0.1.0
