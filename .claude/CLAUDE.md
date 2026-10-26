@@ -104,20 +104,8 @@ Categories: `development`, `productivity`, `automation`, `mods`, `testing`, `sec
 
 ## Documentation and Maintenance
 
-- `.claude/rules/workflow.md`: the workflow rules, which name the skill each stage loads.
-- `.claude/maintainer/decisions/`: ADRs for important decisions.
-- `.claude/maintainer/technical-debt/`: pending and closed debt.
-- `.claude/memory/`: project memory (facts, feedback). Git-ignored.
-- `.claude/session-handoff/`: session handoffs. Git-ignored.
-- `.claude/skills/`: project skills, the procedures for work on this repository.
 - `.claude/specs/`: specs, written before plans.
 - `.claude/plans/`: implementation plans.
-- `.claude/templates/`: the older plugin and root README templates, frozen until DEBT-011 closes.
-- `docs/`: the user guides, covering installation, managing plugins, compatibility, FAQ, troubleshooting and tool references.
-- `plugins/`: the plugins, one self-contained directory per plugin.
-- `scripts/`: maintenance scripts, tests and schemas.
-- `CHANGELOG.md`: the concise project-level changelog.
-- `.claude-plugin/marketplace.json`: the marketplace catalog, regenerated from `plugins/` with `node scripts/generators/marketplace.mjs`. It is never versioned or tagged.
 - Keep these git-ignored in `.gitignore` and never commit them: eval results (`eval-results/` and `**/evals/results/`), `.claude/session-handoff/`, `.claude/memory/` and `.claude/settings.local.json`.
 
 ---
