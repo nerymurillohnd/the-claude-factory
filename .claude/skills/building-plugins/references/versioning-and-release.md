@@ -5,6 +5,7 @@ Checked 2026-10-25 against `/en/plugins/loading` (Versions and updates), `/en/pl
 This is background for building a plugin: what a version does on the user's machine, so the plugin you write ships the way you expect. Choosing the bump, writing the release notes, the pull request, the tag and the release are the release stage of `.claude/rules/workflow.md`; renaming, merging or removing a plugin is its renames stage. This skill does none of them.
 
 ## Contents
+
 - How users receive a release
 - Version in this repository
 - Tags

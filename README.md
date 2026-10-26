@@ -6,7 +6,7 @@
 
 **Production-grade plugins that automate, accelerate and harden the way you work with Claude.**
 
-*Skills · Agents · Hooks · MCP servers · LSP servers · Output styles — packaged, versioned and ready to install.*
+_Skills · Agents · Hooks · MCP servers · LSP servers · Output styles — packaged, versioned and ready to install._
 
 <br>
 
@@ -32,13 +32,13 @@
 
 **The Claude Factory** is a public [plugin marketplace](https://code.claude.com/docs/en/plugins/overview) for **Claude Code** and the **Claude app**. Each plugin solves one real problem end to end — a workflow you repeat, a check you forget, a tool you wish Claude already knew — and installs with a single command.
 
-| | |
-| :-- | :-- |
-| 🎯 **Focused** | One plugin, one job, done well. No kitchen-sink bundles. |
-| 🧪 **Validated** | Every release passes the official `claude plugin validate --strict` plus our own quality gates. |
-| 🔖 **Versioned** | Semantic versioning and a changelog for every plugin, so you always know what changed. |
-| 📖 **Documented** | Every plugin ships a README with requirements, usage, configuration and compatibility. |
-| 🔓 **Open** | MIT-licensed. Read the source of anything before you install it. |
+|                   |                                                                                                 |
+| :---------------- | :---------------------------------------------------------------------------------------------- |
+| 🎯 **Focused**    | One plugin, one job, done well. No kitchen-sink bundles.                                        |
+| 🧪 **Validated**  | Every release passes the official `claude plugin validate --strict` plus our own quality gates. |
+| 🔖 **Versioned**  | Semantic versioning and a changelog for every plugin, so you always know what changed.          |
+| 📖 **Documented** | Every plugin ships a README with requirements, usage, configuration and compatibility.          |
+| 🔓 **Open**       | MIT-licensed. Read the source of anything before you install it.                                |
 
 ## ⚡ Quick start
 
@@ -78,13 +78,13 @@ claude plugin marketplace add nerymurillohnd/the-claude-factory
 
 Pick one from the [catalog](#-catalog), then:
 
-| Where | Command / action |
-| :-- | :-- |
-| 💻 Terminal | `claude plugin install <plugin>@the-claude-factory` |
-| 💬 Claude Code session | `/plugin install <plugin>@the-claude-factory` — or browse `/plugin` → **Discover** |
-| 🖥️ Desktop app | Any of three ways: **+** next to the prompt box → **Add plugins** (or **Plugins** → **Browse plugins**) · **Settings** → **Plugins** → **Discover** · **Customize** in the sidebar → **Plugins** → **Discover** |
-| 🧩 VS Code | Type `/plugins` → **Plugins** tab → **Install** |
-| 🖥️ Claude app | **Customize** → **Plugins** → **Discover** → select the plugin → **Add** |
+| Where                  | Command / action                                                                                                                                                                                                |
+| :--------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 💻 Terminal            | `claude plugin install <plugin>@the-claude-factory`                                                                                                                                                             |
+| 💬 Claude Code session | `/plugin install <plugin>@the-claude-factory` — or browse `/plugin` → **Discover**                                                                                                                              |
+| 🖥️ Desktop app         | Any of three ways: **+** next to the prompt box → **Add plugins** (or **Plugins** → **Browse plugins**) · **Settings** → **Plugins** → **Discover** · **Customize** in the sidebar → **Plugins** → **Discover** |
+| 🧩 VS Code             | Type `/plugins` → **Plugins** tab → **Install**                                                                                                                                                                 |
+| 🖥️ Claude app          | **Customize** → **Plugins** → **Discover** → select the plugin → **Add**                                                                                                                                        |
 
 > [!TIP]
 > **Skip step 1.** Add the marketplace and install in one go:
@@ -200,15 +200,15 @@ _LSP servers and code intelligence for specific languages._
 
 ## 🔧 Manage your plugins
 
-| Task | 💻 Terminal | 💬 In a session |
-| :-- | :-- | :-- |
-| **List installed plugins** | `claude plugin list` | `/plugin` → **Installed** |
-| **See what a plugin adds** | `claude plugin details <plugin>` | `/plugin` → **Installed** → select it |
-| **Update one plugin** | `claude plugin update <plugin>@the-claude-factory` | `/plugin` → **Installed** → **Update now** |
-| **Update everything from here** | — | `/plugin` → **Marketplaces** → **the-claude-factory** → **Update marketplace** |
-| **Disable / enable** | `claude plugin disable <plugin>@the-claude-factory` | `/plugin` → **Installed** → **Space** |
-| **Uninstall** | `claude plugin uninstall <plugin>@the-claude-factory` | `/plugin` → **Installed** → **Uninstall** |
-| **Remove the marketplace** | `claude plugin marketplace remove the-claude-factory` | `/plugin marketplace remove the-claude-factory` |
+| Task                            | 💻 Terminal                                           | 💬 In a session                                                                |
+| :------------------------------ | :---------------------------------------------------- | :----------------------------------------------------------------------------- |
+| **List installed plugins**      | `claude plugin list`                                  | `/plugin` → **Installed**                                                      |
+| **See what a plugin adds**      | `claude plugin details <plugin>`                      | `/plugin` → **Installed** → select it                                          |
+| **Update one plugin**           | `claude plugin update <plugin>@the-claude-factory`    | `/plugin` → **Installed** → **Update now**                                     |
+| **Update everything from here** | —                                                     | `/plugin` → **Marketplaces** → **the-claude-factory** → **Update marketplace** |
+| **Disable / enable**            | `claude plugin disable <plugin>@the-claude-factory`   | `/plugin` → **Installed** → **Space**                                          |
+| **Uninstall**                   | `claude plugin uninstall <plugin>@the-claude-factory` | `/plugin` → **Installed** → **Uninstall**                                      |
+| **Remove the marketplace**      | `claude plugin marketplace remove the-claude-factory` | `/plugin marketplace remove the-claude-factory`                                |
 
 > [!TIP]
 > 🔄 **Get updates automatically.** Third-party marketplaces start with auto-update **off**. Turn it on once: `/plugin` → **Marketplaces** → **the-claude-factory** → **Enable auto-update**.
@@ -222,16 +222,16 @@ In the **Claude app**, manage everything from **Customize** → **Plugins**: sel
 
 The same plugin installs in Claude Code and in the Claude app, but each loads a different subset of components. Every plugin README has its own **Compatibility** table.
 
-| Component | Claude Code | Claude app |
-| :-- | :--: | :--: |
-| 🎯 Skills | ✅ | ✅ |
-| 🤖 Agents | ✅ | ⚠️ in Cowork sessions |
-| 🪝 Hooks | ✅ | ⚠️ in Cowork sessions |
-| 🧩 Mods | ✅ except a Desktop session on WSL | ⚠️ listed for Claude Code only |
-| 🔌 Remote MCP servers | ✅ | 🔗 connect on the plugin's **Connectors** tab |
-| 🖥️ Local MCP servers | ✅ | ⚠️ in Cowork sessions on your computer |
-| 🧠 LSP · 🎨 Output styles · 🌈 Themes | ✅ | ➖ |
-| ⚙️ Executables in `bin/` | ✅ | ❌ |
+| Component                             |            Claude Code             |                  Claude app                   |
+| :------------------------------------ | :--------------------------------: | :-------------------------------------------: |
+| 🎯 Skills                             |                 ✅                 |                      ✅                       |
+| 🤖 Agents                             |                 ✅                 |             ⚠️ in Cowork sessions             |
+| 🪝 Hooks                              |                 ✅                 |             ⚠️ in Cowork sessions             |
+| 🧩 Mods                               | ✅ except a Desktop session on WSL |        ⚠️ listed for Claude Code only         |
+| 🔌 Remote MCP servers                 |                 ✅                 | 🔗 connect on the plugin's **Connectors** tab |
+| 🖥️ Local MCP servers                  |                 ✅                 |    ⚠️ in Cowork sessions on your computer     |
+| 🧠 LSP · 🎨 Output styles · 🌈 Themes |                 ✅                 |                      ➖                       |
+| ⚙️ Executables in `bin/`              |                 ✅                 |                      ❌                       |
 
 <sub>✅ loads · ⚠️ conditional · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. The Claude app (web, desktop and mobile) runs a conversation as a Cowork session when it can and as a chat conversation otherwise; agents, hooks and local MCP servers don't run in a chat conversation. Sources: [Use plugins in Claude](https://support.claude.com/en/articles/13837440-use-plugins-in-claude), [Plugin feature support across platforms](https://claude.com/docs/plugins/platform-support). More in [Compatibility](./docs/compatibility.md).</sub>
 
@@ -245,25 +245,25 @@ Plugins can run hooks, scripts and MCP servers on your machine. Before installin
 
 ## 📚 Documentation
 
-| Guide | What you'll find |
-| :-- | :-- |
-| 📥 [Installation](./docs/installation.md) | Adding the marketplace and installing plugins on every surface, scopes, private setups |
-| 🔧 [Managing plugins](./docs/managing-plugins.md) | Updates, auto-update, disabling, uninstalling, removing the marketplace |
-| 🧭 [Compatibility](./docs/compatibility.md) | What loads in Claude Code and the Claude app |
-| 🩺 [Troubleshooting](./docs/troubleshooting.md) | Fixes for the most common install and loading errors |
-| ❓ [FAQ](./docs/faq.md) | Quick answers about the marketplace, versions and support |
-| 📖 [Official plugin docs](https://code.claude.com/docs/en/plugins/overview) | Anthropic's reference for plugins and marketplaces |
+| Guide                                                                       | What you'll find                                                                       |
+| :-------------------------------------------------------------------------- | :------------------------------------------------------------------------------------- |
+| 📥 [Installation](./docs/installation.md)                                   | Adding the marketplace and installing plugins on every surface, scopes, private setups |
+| 🔧 [Managing plugins](./docs/managing-plugins.md)                           | Updates, auto-update, disabling, uninstalling, removing the marketplace                |
+| 🧭 [Compatibility](./docs/compatibility.md)                                 | What loads in Claude Code and the Claude app                                           |
+| 🩺 [Troubleshooting](./docs/troubleshooting.md)                             | Fixes for the most common install and loading errors                                   |
+| ❓ [FAQ](./docs/faq.md)                                                     | Quick answers about the marketplace, versions and support                              |
+| 📖 [Official plugin docs](https://code.claude.com/docs/en/plugins/overview) | Anthropic's reference for plugins and marketplaces                                     |
 
 ## 💬 Support
 
-| I want to… | Go here |
-| :-- | :-- |
-| 🐞 Report a bug in a plugin | [Open a bug report](https://github.com/nerymurillohnd/the-claude-factory/issues/new?template=bug_report.yml) |
-| ✨ Suggest an improvement | [Request a feature](https://github.com/nerymurillohnd/the-claude-factory/issues/new?template=feature_request.yml) |
-| 💡 Propose a new plugin | [Share a plugin idea](https://github.com/nerymurillohnd/the-claude-factory/issues/new?template=plugin_idea.yml) |
-| 📝 Fix the docs | [Report a docs issue](https://github.com/nerymurillohnd/the-claude-factory/issues/new?template=docs_issue.yml) |
-| ❔ Ask a question | [Ask here](https://github.com/nerymurillohnd/the-claude-factory/issues/new?template=question.yml) |
-| 🔐 Report a vulnerability | [Report privately](https://github.com/nerymurillohnd/the-claude-factory/security/advisories/new) |
+| I want to…                  | Go here                                                                                                           |
+| :-------------------------- | :---------------------------------------------------------------------------------------------------------------- |
+| 🐞 Report a bug in a plugin | [Open a bug report](https://github.com/nerymurillohnd/the-claude-factory/issues/new?template=bug_report.yml)      |
+| ✨ Suggest an improvement   | [Request a feature](https://github.com/nerymurillohnd/the-claude-factory/issues/new?template=feature_request.yml) |
+| 💡 Propose a new plugin     | [Share a plugin idea](https://github.com/nerymurillohnd/the-claude-factory/issues/new?template=plugin_idea.yml)   |
+| 📝 Fix the docs             | [Report a docs issue](https://github.com/nerymurillohnd/the-claude-factory/issues/new?template=docs_issue.yml)    |
+| ❔ Ask a question           | [Ask here](https://github.com/nerymurillohnd/the-claude-factory/issues/new?template=question.yml)                 |
+| 🔐 Report a vulnerability   | [Report privately](https://github.com/nerymurillohnd/the-claude-factory/security/advisories/new)                  |
 
 > [!NOTE]
 > This repository is maintained by its owners and **does not accept pull requests**. Issues are the way to contribute — every report is read and answered. See [Contributing](./CONTRIBUTING.md).
@@ -274,7 +274,7 @@ Marketplace-level changes (plugins added, updated or retired) are in [CHANGELOG.
 
 ## 📄 License
 
-[MIT](./LICENSE) © Nery Murillo. Not affiliated with or endorsed by Anthropic. *Claude* and *Claude Code* are trademarks of Anthropic, PBC.
+[MIT](./LICENSE) © Nery Murillo. Not affiliated with or endorsed by Anthropic. _Claude_ and _Claude Code_ are trademarks of Anthropic, PBC.
 
 <div align="center">
 

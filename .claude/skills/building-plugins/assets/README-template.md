@@ -35,8 +35,8 @@ Then run `/reload-plugins` in any open session.
 
 ## Configuration
 
-| Option | What it sets | Default |
-| :-- | :-- | :-- |
+| Option  | What it sets  | Default   |
+| :------ | :------------ | :-------- |
 | `<key>` | <description> | <default> |
 
 Set options when installing (`claude plugin install <plugin>@<marketplace-name> --config <key>=<value>`) or later with `/plugin configure <plugin>@<marketplace-name>`.

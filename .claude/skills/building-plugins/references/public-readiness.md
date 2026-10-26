@@ -3,6 +3,7 @@
 Checked 2026-10-25 against `/en/plugins/publish`, `/en/plugins/host-marketplace`, `/en/plugins/security`, claude.com `/docs/plugins/build`, `/docs/plugins/pre-submission-checklist`, `/docs/directory/publish`, and the Claude Code changelog through v2.1.310.
 
 ## Contents
+
 - What every public plugin ships
 - README: required sections
 - Secrets, credentials and network calls

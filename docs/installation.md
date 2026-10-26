@@ -8,18 +8,18 @@
 
 ## ✅ Before you start
 
-| You need | Notes |
-| :-- | :-- |
-| **Claude Code** *or* the **Claude app** | Claude Code runs in the terminal, the desktop app's **Code** tab, VS Code and JetBrains. The Claude app runs on the web, desktop and mobile. |
-| A recent Claude Code version | Run `claude --version`. One-step installs need **v2.1.292+** in the shell and **v2.1.275+** in a session. |
-| Network access to `github.com` | The marketplace is a public GitHub repository; no GitHub account or token is needed. |
+| You need                                | Notes                                                                                                                                        |
+| :-------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Claude Code** _or_ the **Claude app** | Claude Code runs in the terminal, the desktop app's **Code** tab, VS Code and JetBrains. The Claude app runs on the web, desktop and mobile. |
+| A recent Claude Code version            | Run `claude --version`. One-step installs need **v2.1.292+** in the shell and **v2.1.275+** in a session.                                    |
+| Network access to `github.com`          | The marketplace is a public GitHub repository; no GitHub account or token is needed.                                                         |
 
 Two names to remember:
 
-| Name | Used for |
-| :-- | :-- |
-| `nerymurillohnd/the-claude-factory` | The **source** — what you type when you *add* the marketplace. |
-| `the-claude-factory` | The **marketplace name** — what goes after `@` when you *install*: `<plugin>@the-claude-factory`. |
+| Name                                | Used for                                                                                          |
+| :---------------------------------- | :------------------------------------------------------------------------------------------------ |
+| `nerymurillohnd/the-claude-factory` | The **source** — what you type when you _add_ the marketplace.                                    |
+| `the-claude-factory`                | The **marketplace name** — what goes after `@` when you _install_: `<plugin>@the-claude-factory`. |
 
 ## 💻 Terminal
 
@@ -85,18 +85,18 @@ The JetBrains plugin runs Claude Code in the IDE's terminal, so follow the [Term
 2. Select **Add** → **Add marketplace** and enter `nerymurillohnd/the-claude-factory` (the full `https://github.com/nerymurillohnd/the-claude-factory` URL also works).
 3. Plugins from The Claude Factory now appear in **Discover** alongside other marketplaces. Select one, then select **Add**.
 
-A plugin you install on your claude.ai account in the Claude app also appears in Claude Code as a synced plugin (`<plugin>@synced`) at your next session start (Claude Code v2.1.273+, signed in with the same claude.ai account); if it says *Plugins changed*, run `/reload-plugins`. If you also install the same plugin in Claude Code, Claude Code loads that copy and reports the synced one as not loaded; disable your terminal copy to use the one from the app.
+A plugin you install on your claude.ai account in the Claude app also appears in Claude Code as a synced plugin (`<plugin>@synced`) at your next session start (Claude Code v2.1.273+, signed in with the same claude.ai account); if it says _Plugins changed_, run `/reload-plugins`. If you also install the same plugin in Claude Code, Claude Code loads that copy and reports the synced one as not loaded; disable your terminal copy to use the one from the app.
 
 > [!IMPORTANT]
 > Not every component loads in the Claude app: agents, hooks and local MCP servers run in Cowork sessions, not in a chat conversation. Check the plugin's **Compatibility** table first — see [Compatibility](./compatibility.md).
 
 ## 🎯 Choose an install scope
 
-| Scope | Who gets the plugin | Recorded in |
-| :-- | :-- | :-- |
-| **User** *(default)* | You, in every project on this machine | `~/.claude/settings.json` |
-| **Project** | Everyone who works in this repository | `.claude/settings.json` (commit it) |
-| **Local** | You, in this repository only | `.claude/settings.local.json` |
+| Scope                | Who gets the plugin                   | Recorded in                         |
+| :------------------- | :------------------------------------ | :---------------------------------- |
+| **User** _(default)_ | You, in every project on this machine | `~/.claude/settings.json`           |
+| **Project**          | Everyone who works in this repository | `.claude/settings.json` (commit it) |
+| **Local**            | You, in this repository only          | `.claude/settings.local.json`       |
 
 From the shell, pass `--scope project` or `--scope local`:
 
@@ -114,7 +114,10 @@ Declare the marketplace and the plugins in your repository's `.claude/settings.j
 {
   "extraKnownMarketplaces": {
     "the-claude-factory": {
-      "source": { "source": "github", "repo": "nerymurillohnd/the-claude-factory" }
+      "source": {
+        "source": "github",
+        "repo": "nerymurillohnd/the-claude-factory"
+      }
     }
   },
   "enabledPlugins": {

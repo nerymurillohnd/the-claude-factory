@@ -19,13 +19,13 @@ Read this when the work involves a hook that matches MCP tools, an `mcp_tool` ho
 
 For plugin `my-plugin`, server `db` and tool `security_scan`:
 
-| Purpose | Value |
-| --- | --- |
-| Plugin MCP configuration key | `db` |
-| `mcp_tool.server` | `plugin:my-plugin:db` |
-| `mcp_tool.tool` | `security_scan` |
-| Callable tool name | `mcp__plugin_my-plugin_db__security_scan` |
-| Matcher for all tools on that server | `^mcp__plugin_my-plugin_db__.*$` |
+| Purpose                              | Value                                     |
+| ------------------------------------ | ----------------------------------------- |
+| Plugin MCP configuration key         | `db`                                      |
+| `mcp_tool.server`                    | `plugin:my-plugin:db`                     |
+| `mcp_tool.tool`                      | `security_scan`                           |
+| Callable tool name                   | `mcp__plugin_my-plugin_db__security_scan` |
+| Matcher for all tools on that server | `^mcp__plugin_my-plugin_db__.*$`          |
 
 ## Hook directions
 
@@ -107,7 +107,9 @@ This plugin hook applies only when plugin `my-plugin` bundles server `db` and th
             "type": "mcp_tool",
             "server": "plugin:my-plugin:db",
             "tool": "security_scan",
-            "input": { "file_path": "${tool_input.file_path}" },
+            "input": {
+              "file_path": "${tool_input.file_path}"
+            },
             "timeout": 30
           }
         ]
@@ -126,11 +128,11 @@ It inspects after the edit; it cannot block a Write or Edit that already ran.
 
 ## Official sources
 
-| Topic | Page |
-| :-- | :-- |
+| Topic                                                                                                            | Page                                                                                                                                                                           |
+| :--------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `mcp_tool` fields, common fields, input and output, exit code 0, decision control, matching MCP tools, debugging | `https://code.claude.com/docs/en/hooks.md` (sections: MCP tool hook fields, Common fields, Hook input and output, Exit code 0, Decision control, Match MCP tools, Debug hooks) |
-| Plugin-provided servers, `cached` status, authentication | `https://code.claude.com/docs/en/mcp.md` (Plugin-provided MCP servers, Server status detail, Authenticate with remote MCP servers) |
-| Timeouts and environment variables | `https://code.claude.com/docs/en/env-vars.md` |
-| MCP components, path variables, persistent data | `https://code.claude.com/docs/en/plugins/components.md`, `https://code.claude.com/docs/en/plugins/manifest-reference.md` |
-| Reload | `https://code.claude.com/docs/en/plugins/cli-reference.md` (reload-plugins) |
-| Changes since the docs | <https://raw.githubusercontent.com/anthropics/claude-code/main/CHANGELOG.md> |
+| Plugin-provided servers, `cached` status, authentication                                                         | `https://code.claude.com/docs/en/mcp.md` (Plugin-provided MCP servers, Server status detail, Authenticate with remote MCP servers)                                             |
+| Timeouts and environment variables                                                                               | `https://code.claude.com/docs/en/env-vars.md`                                                                                                                                  |
+| MCP components, path variables, persistent data                                                                  | `https://code.claude.com/docs/en/plugins/components.md`, `https://code.claude.com/docs/en/plugins/manifest-reference.md`                                                       |
+| Reload                                                                                                           | `https://code.claude.com/docs/en/plugins/cli-reference.md` (reload-plugins)                                                                                                    |
+| Changes since the docs                                                                                           | <https://raw.githubusercontent.com/anthropics/claude-code/main/CHANGELOG.md>                                                                                                   |

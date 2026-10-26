@@ -7,7 +7,7 @@ Only what is needed to obtain, locate and exercise a mod. Sources: https://code.
 - Marketplace file: `.claude-plugin/marketplace.json` at the marketplace root (the directory that contains `.claude-plugin/`). Required top-level: `name`, `owner`, `plugins`. A plugin id is `<plugin>@<marketplace>`.
 - Entry `source` says where the plugin comes from. In scope here: relative path (`"./plugins/x"`, resolved from the marketplace root, not from `.claude-plugin/`; bare names resolve under `metadata.pluginRoot`, v2.1.239+), `github` (`repo`, `ref`, `sha`), `url` (git URL on github.com; `ref`, `sha`), `git-subdir` (`url`, `path`, `ref`, `sha`). `npm`, `archive`, `command` sources are out of scope. `sha` wins over `ref` when both are set.
 - A relative-path source only resolves when Claude Code has the marketplace's files, which is the case for `github`/`git` marketplaces and not for a bare hosted `marketplace.json` URL.
-- `strict` (default `true`): with a `plugin.json` present, entry `hooks` matchers *replace* the manifest's per event; with `strict: false` any entry component field makes the plugin fail with `has conflicting manifests`. Entry-level `hooks` written as a file path or array passes `validate` but never runs (`not yet supported in a marketplace entry`); file-based hooks, including a mod's `hooks/hooks.json` with `modules`, belong in the plugin's own files.
+- `strict` (default `true`): with a `plugin.json` present, entry `hooks` matchers _replace_ the manifest's per event; with `strict: false` any entry component field makes the plugin fail with `has conflicting manifests`. Entry-level `hooks` written as a file path or array passes `validate` but never runs (`not yet supported in a marketplace entry`); file-based hooks, including a mod's `hooks/hooks.json` with `modules`, belong in the plugin's own files.
 - Marketplace/plugin names are limited to letters, digits, `.`, `_`, `-`; reserved names include `inline` (used for `--plugin-dir` plugins, which is why a clone shows as `<name>@inline`).
 
 ## Adding and installing (shell forms)
@@ -31,7 +31,7 @@ Third-party marketplaces have **auto-update off by default** (on for official ma
 
 - An installed plugin from a non-local source is **copied** to `~/.claude/plugins/cache/<marketplace>/<plugin>/<version>/` and that copy is what runs. Editing the repo or the cache copy by hand does not change behavior reliably.
 - The version Claude Code computes is: manifest `version`, else the marketplace entry's `version`, else the commit SHA. If the maintainer pins a `version` and does not bump it, users stay on the cached copy even though the repo changed. When `plugin.json` and the entry both set `version`, `plugin.json` wins (`validate` warns).
-- To test the *repo state* (not the cached install), clone it and use `claude --plugin-dir <clone>`; it hot-reloads on save and reports problems in the transcript.
+- To test the _repo state_ (not the cached install), clone it and use `claude --plugin-dir <clone>`; it hot-reloads on save and reports problems in the transcript.
 - Reproducing what a user has: `claude plugin list --json` for the installed version, then compare with the clone's `version`/HEAD SHA.
 
 ## Inspect before installing

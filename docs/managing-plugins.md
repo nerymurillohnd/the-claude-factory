@@ -10,11 +10,11 @@
 
 Every plugin here declares a semantic version. You receive a new release when the plugin's version changes and you update — on request, or automatically if you turn on [auto-update](#-auto-update).
 
-| Do this | 💻 Terminal | 💬 In a session |
-| :-- | :-- | :-- |
-| Update one plugin | `claude plugin update <plugin>@the-claude-factory` | `/plugin` → **Installed** → plugin → **Update now** |
-| Update every plugin from this marketplace | — | `/plugin` → **Marketplaces** → **the-claude-factory** → **Update marketplace** |
-| Refresh the catalog only | `claude plugin marketplace update the-claude-factory` | `/plugin marketplace update the-claude-factory` |
+| Do this                                   | 💻 Terminal                                           | 💬 In a session                                                                |
+| :---------------------------------------- | :---------------------------------------------------- | :----------------------------------------------------------------------------- |
+| Update one plugin                         | `claude plugin update <plugin>@the-claude-factory`    | `/plugin` → **Installed** → plugin → **Update now**                            |
+| Update every plugin from this marketplace | —                                                     | `/plugin` → **Marketplaces** → **the-claude-factory** → **Update marketplace** |
+| Refresh the catalog only                  | `claude plugin marketplace update the-claude-factory` | `/plugin marketplace update the-claude-factory`                                |
 
 > [!NOTE]
 > A running session keeps the version it already loaded. After an update you'll see `Plugin updated: <name> · Run /reload-plugins to apply`; the next session loads the new version automatically.
@@ -62,12 +62,12 @@ claude plugin marketplace remove the-claude-factory
 
 ## 🔍 Inspect a plugin
 
-| Question | Command |
-| :-- | :-- |
-| What's installed, which version, which scope? | `claude plugin list` |
-| What does a plugin add, and how many tokens does it cost each session? | `claude plugin details <plugin>` |
-| Which plugins haven't I used lately? | `/plugin` → **Installed** → **Not used recently** |
-| Why didn't something load? | `/plugin` → **Errors** |
+| Question                                                               | Command                                           |
+| :--------------------------------------------------------------------- | :------------------------------------------------ |
+| What's installed, which version, which scope?                          | `claude plugin list`                              |
+| What does a plugin add, and how many tokens does it cost each session? | `claude plugin details <plugin>`                  |
+| Which plugins haven't I used lately?                                   | `/plugin` → **Installed** → **Not used recently** |
+| Why didn't something load?                                             | `/plugin` → **Errors**                            |
 
 ## 🖥️ In the Claude app
 
@@ -77,15 +77,15 @@ Everything lives under **Customize** → **Plugins**:
 - **Turn off** — open the plugin and turn off its toggle, labeled **Disable plugin**; turn it on again to enable the plugin.
 - **Remove** — open the plugin, open its menu and select **Remove**.
 
-In Claude Code (v2.1.273+, signed in with the same claude.ai account), these plugins appear as `<plugin>@synced`. Update and uninstall them here; in `/plugin` you can only turn them on or off, unless your organization requires them. Claude Code picks up changes when it starts; if it says *Plugins changed*, run `/reload-plugins`.
+In Claude Code (v2.1.273+, signed in with the same claude.ai account), these plugins appear as `<plugin>@synced`. Update and uninstall them here; in `/plugin` you can only turn them on or off, unless your organization requires them. Claude Code picks up changes when it starts; if it says _Plugins changed_, run `/reload-plugins`.
 
 To keep synced plugins out of Claude Code:
 
-| Scope | How |
-| :-- | :-- |
-| One plugin, for you | `claude plugin disable <plugin>@synced`, or turn it off in `/plugin` → **Installed** |
-| One plugin, for everyone in a project | Add `"<plugin>@synced": false` under `enabledPlugins` in the project's committed `.claude/settings.json` |
-| Every synced plugin on this machine | Set `"syncClaudeAiPlugins": false` in `~/.claude/settings.json`. At the next start, Claude Code moves the ones it already synced to `~/.claude/plugins/.trash/` |
+| Scope                                 | How                                                                                                                                                             |
+| :------------------------------------ | :-------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| One plugin, for you                   | `claude plugin disable <plugin>@synced`, or turn it off in `/plugin` → **Installed**                                                                            |
+| One plugin, for everyone in a project | Add `"<plugin>@synced": false` under `enabledPlugins` in the project's committed `.claude/settings.json`                                                        |
+| Every synced plugin on this machine   | Set `"syncClaudeAiPlugins": false` in `~/.claude/settings.json`. At the next start, Claude Code moves the ones it already synced to `~/.claude/plugins/.trash/` |
 
 A plugin your organization marks as required on claude.ai loads anyway: `claude plugin disable` refuses it, and `claude plugin list` marks it `required by your org`.
 

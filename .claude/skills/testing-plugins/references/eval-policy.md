@@ -6,12 +6,12 @@ Contents: Who runs what · Pilot · Reading a pilot · Writing the suite · Fixt
 
 ## Who runs what
 
-| | Local pilot and smoke | CI full suite |
-| :- | :- | :- |
-| Runs | 1 per case, one arm (`--runs 1 --ablation none`) | Case default (3), both arms, Δ reported |
+|               | Local pilot and smoke                                                                             | CI full suite                                                                                                                         |
+| :------------ | :------------------------------------------------------------------------------------------------ | :------------------------------------------------------------------------------------------------------------------------------------ |
+| Runs          | 1 per case, one arm (`--runs 1 --ablation none`)                                                  | Case default (3), both arms, Δ reported                                                                                               |
 | Which plugins | The one being worked on; the pilot narrows with `--case`, the smoke runs the cases tagged `smoke` | A new plugin with `evals/`, or an existing plugin with `evals/` whose components or dependencies changed; CI skips every other plugin |
-| Purpose | Cases load, run and grade; rubric and tools are right | Score against `--threshold`, trigger rate, Δ vs no plugin, regressions a change causes |
-| Spend | Small, announced first, user says yes | Capped by `--max-cost-usd`, approved when the workflow is added |
+| Purpose       | Cases load, run and grade; rubric and tools are right                                             | Score against `--threshold`, trigger rate, Δ vs no plugin, regressions a change causes                                                |
+| Spend         | Small, announced first, user says yes                                                             | Capped by `--max-cost-usd`, approved when the workflow is added                                                                       |
 
 **New** = the plugin did not exist at the base commit. **Edited** = one of its components or dependencies changed: any file under the plugin directory except its eval directory and the documents `README.md`, `CHANGELOG.md`, `LICENSE*` and `NOTICE*` at its root. Detection by `plugin.json` alone misses an edit that does not bump the manifest; [scripts/changed-eval-plugins.sh](../scripts/changed-eval-plugins.sh) applies this rule. A change to the suite itself, or to those documents only, is checked locally with the pilot. A plugin without evals is never a target, and this skill never adds a suite unasked. Mods are plugins like any other here: their eval suites follow this file, while their `claude plugin test` suites belong to `testing-mods`.
 
@@ -145,21 +145,21 @@ Public repos: GitHub does not give secrets to workflows triggered by `pull_reque
 
 ## Quick error map
 
-| Message | Meaning and fix |
-| :- | :- |
-| `plugin eval is currently in early access` / `currently unavailable` | `claude update`, retry in a fresh session; unavailable = switched off server-side. |
-| `is too old for claude plugin eval` | git < 2.31. Install a newer git. |
-| `No eval cases found` | Run from the plugin root, or filters matched nothing. |
-| Baseline arm shows no plugin / `ablation requested but no plugin resolved` | Add `plugins: ["../.."]` to the case (path from the case dir to the plugin dir). Expected when every case resumes a `history_file`. |
-| `single-arm (no Δ)` on stderr | A `history_file` case with a path target; pass `--ablation with-without` to compare. |
-| `scaffold failed` | The scaffold script exited non-zero or ran over 120 s; that run scores 0. |
-| A case with a `scaffold_script` finds none of its fixtures | The run had no `--scaffold`, so the script never ran. |
-| `not granted` in the progress output | The case asked for a tool beyond the read-only set; grant it with `--allow-tools`. |
-| `[not started: no mock]` | The server has no mock files; add mocks or pass `--allow-real-servers`. |
-| `cases[].arms.with[].aborted` is set | A mock's `expect:`, `abort_when` or the agent-mock budget stopped the run; read `reason`. |
-| `cannot be evaluated where sessions load it` | Name target for a plugin from a local-path marketplace: out of scope; pass `./<dir>` instead. |
-| Everything scores 0 though files exist | Grader targets `files` (paths only); use `{ source: file, path: ... }`. `file_exists` counts only files created during the run, not ones the scaffold created or Claude only edited. |
-| Regex over `trace` never matches | Trace is JSON per line: quotes appear as `\"`. |
-| `--json output path must end in .json` | Target was placed after `--json`. |
-| `Agent type '<plugin>:<agent>' not found` in the without-arm | Expected in the baseline. |
-| `mock call budget exceeded` | Raise `max_turns` (budget = 4 × `max_turns`). |
+| Message                                                                    | Meaning and fix                                                                                                                                                                     |
+| :------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `plugin eval is currently in early access` / `currently unavailable`       | `claude update`, retry in a fresh session; unavailable = switched off server-side.                                                                                                  |
+| `is too old for claude plugin eval`                                        | git < 2.31. Install a newer git.                                                                                                                                                    |
+| `No eval cases found`                                                      | Run from the plugin root, or filters matched nothing.                                                                                                                               |
+| Baseline arm shows no plugin / `ablation requested but no plugin resolved` | Add `plugins: ["../.."]` to the case (path from the case dir to the plugin dir). Expected when every case resumes a `history_file`.                                                 |
+| `single-arm (no Δ)` on stderr                                              | A `history_file` case with a path target; pass `--ablation with-without` to compare.                                                                                                |
+| `scaffold failed`                                                          | The scaffold script exited non-zero or ran over 120 s; that run scores 0.                                                                                                           |
+| A case with a `scaffold_script` finds none of its fixtures                 | The run had no `--scaffold`, so the script never ran.                                                                                                                               |
+| `not granted` in the progress output                                       | The case asked for a tool beyond the read-only set; grant it with `--allow-tools`.                                                                                                  |
+| `[not started: no mock]`                                                   | The server has no mock files; add mocks or pass `--allow-real-servers`.                                                                                                             |
+| `cases[].arms.with[].aborted` is set                                       | A mock's `expect:`, `abort_when` or the agent-mock budget stopped the run; read `reason`.                                                                                           |
+| `cannot be evaluated where sessions load it`                               | Name target for a plugin from a local-path marketplace: out of scope; pass `./<dir>` instead.                                                                                       |
+| Everything scores 0 though files exist                                     | Grader targets `files` (paths only); use `{ source: file, path: ... }`.`file_exists` counts only files created during the run, not ones the scaffold created or Claude only edited. |
+| Regex over `trace` never matches                                           | Trace is JSON per line: quotes appear as `\"`.                                                                                                                                      |
+| `--json output path must end in .json`                                     | Target was placed after `--json`.                                                                                                                                                   |
+| `Agent type '<plugin>:<agent>' not found` in the without-arm               | Expected in the baseline.                                                                                                                                                           |
+| `mock call budget exceeded`                                                | Raise `max_turns` (budget = 4 × `max_turns`).                                                                                                                                       |

@@ -30,6 +30,6 @@ How a plugin's `README.md` is written in this repository. It applies to every `p
 - Tables for comparisons, commands per surface, requirements and options.
 - GitHub alerts (`> [!NOTE]`, `[!TIP]`, `[!IMPORTANT]`, `[!WARNING]`, `[!CAUTION]`), never two back to back without text between.
 - `<details>` for per-surface instructions and FAQs, with the most common option `open`.
-- **Bold** for UI labels exactly as shown in the app (`/plugin` → **Installed** → **Update now**); *italics* for emphasis or terms.
+- **Bold** for UI labels exactly as shown in the app (`/plugin` → **Installed** → **Update now**); _italics_ for emphasis or terms.
 - Relative links inside the repo; absolute `https://` links outside.
 - State the minimum version of every version-gated feature (e.g. "v2.1.292+").

@@ -8,8 +8,8 @@ Tests run from the shell, with no session, sign-in or network: `claude plugin te
 import { expect, test } from 'claude-code/testing'
 
 test('/tally counts tool calls', async ($, on) => {
-  on('tool.call', () => ({ result: 'ok' }))             // stub: answers in Claude Code's place
-  await $.tool.call({ tool: 'Bash', command: 'ls' })   // fires the event through the mod's hooks
+  on('tool.call', () => ({ result: 'ok' })) // stub: answers in Claude Code's place
+  await $.tool.call({ tool: 'Bash', command: 'ls' }) // fires the event through the mod's hooks
   const answer = await $.command.run({ command: 'tally', args: '' })
   expect(answer.text).toBe('Claude has made 1 tool calls since this mod loaded')
 })
@@ -42,31 +42,31 @@ test('/tally counts tool calls', async ($, on) => {
 
 ## Stub result shapes
 
-Mods-API calls → `{ value }` (or `{ deny: 'reason' }` to make the call reject in the mod; a stub that *throws* is skipped instead). Claude Code's events → the event's own result. A bare value or `undefined` from a mods-API stub fails the test (message wording differs by build, see `version-drift.md`). A failed test prints a block headed `the engine reported:`; errors worth recognizing there: `no implementation for <name>` (mod made a call nobody stubbed) and the bare-value error above.
+Mods-API calls → `{ value }` (or `{ deny: 'reason' }` to make the call reject in the mod; a stub that _throws_ is skipped instead). Claude Code's events → the event's own result. A bare value or `undefined` from a mods-API stub fails the test (message wording differs by build, see `version-drift.md`). A failed test prints a block headed `the engine reported:`; errors worth recognizing there: `no implementation for <name>` (mod made a call nobody stubbed) and the bare-value error above.
 
-| Mod calls / passes on | Stub |
-| :- | :- |
-| `$.command.register`, `$.tool.register`, `$.ui.toast`, `$.ui.log`, `$.ui.status`, `$.ui.close`, `$.store.set` | `() => ({ value: undefined })` (text is `e.text` for toast/log) |
-| `$.store.get` | `($, e) => ({ value: saved.get(e.key) })` |
-| `$.fs.read` | `($, e) => ({ value: e.path.endsWith('notes.md') ? '# Notes' : '' })` (`e.path` is absolute; use `endsWith`) |
-| `$.ui.open` | `() => ({ value: { isPlaced: true } })` |
-| `$.ui.ask` | a `tool.call` stub (arrives as `AskUserQuestion`): `($, e) => ({ result: { answers: { [e.questions[0].question]: 'Run it' } } })`; check `e.tool` first |
-| `$.model.complete` | `() => ({ value: { isAnswered: true, text: '...', usage } })` where `usage` = `{ input_tokens, output_tokens, cache_read_input_tokens, cache_creation_input_tokens }` |
-| `$.process.run` | `($, e) => ({ value: { exitCode: 0, stdout: '...', stderr: '' } })` (`e.argv`, `e.init.cwd/timeoutMs`) |
-| any call that should fail | `() => ({ deny: 'the reason' })` |
-| `session.start` | `() => ({ cwd: '/work' })` |
-| `turn.start` | `($, e) => ({ turnId: e.turnId })` |
-| `tool.call` | `() => ({ result: '...' })` |
-| `turn.complete` | `() => ({ text: '' })`; fire with `$.turn.complete({ turnId, answer, durationMs, isAborted: false, usage: null })` |
-| `prompt.submit` | `($, e) => ({ text: e.text })` |
-| `prompt.fill` | `() => ({ isFilled: true })`; `$.prompt.read` → `() => ({ value: { text: '...', cursor: 0 } })` |
-| `$.ui.copy` | `() => ({ value: { isCopied: true } })` |
-| `$.ui.notify` | `() => ({ value: { isSent: true, channel: 'terminal_bell' } })` |
-| `$.session.messages` | `() => ({ value: [{ role: 'assistant', text: '...', toolUses: [] }] })` |
-| `$.session.id`, `$.agent.list` | `() => ({ value: 'abc123' })`, `() => ({ value: [] })` |
-| `session.send` | `() => ({ isDelivered: true })` (`e.to` is a string) |
-| `session.receive` | `($, e) => ({ text: e.text })`; fire with `$.session.receive({ origin: { kind: 'peer-send-message' }, text })` |
-| `ui.render` | `() => ({ type: 'Text', props: {}, children: ['...'] })` |
+| Mod calls / passes on                                                                                         | Stub                                                                                                                                                                  |
+| :------------------------------------------------------------------------------------------------------------ | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `$.command.register`, `$.tool.register`, `$.ui.toast`, `$.ui.log`, `$.ui.status`, `$.ui.close`, `$.store.set` | `() => ({ value: undefined })` (text is `e.text` for toast/log)                                                                                                       |
+| `$.store.get`                                                                                                 | `($, e) => ({ value: saved.get(e.key) })`                                                                                                                             |
+| `$.fs.read`                                                                                                   | `($, e) => ({ value: e.path.endsWith('notes.md') ? '# Notes' : '' })` (`e.path` is absolute; use `endsWith`)                                                          |
+| `$.ui.open`                                                                                                   | `() => ({ value: { isPlaced: true } })`                                                                                                                               |
+| `$.ui.ask`                                                                                                    | a `tool.call` stub (arrives as `AskUserQuestion`): `($, e) => ({ result: { answers: { [e.questions[0].question]: 'Run it' } } })`; check `e.tool` first               |
+| `$.model.complete`                                                                                            | `() => ({ value: { isAnswered: true, text: '...', usage } })` where `usage` = `{ input_tokens, output_tokens, cache_read_input_tokens, cache_creation_input_tokens }` |
+| `$.process.run`                                                                                               | `($, e) => ({ value: { exitCode: 0, stdout: '...', stderr: '' } })` (`e.argv`, `e.init.cwd/timeoutMs`)                                                                |
+| any call that should fail                                                                                     | `() => ({ deny: 'the reason' })`                                                                                                                                      |
+| `session.start`                                                                                               | `() => ({ cwd: '/work' })`                                                                                                                                            |
+| `turn.start`                                                                                                  | `($, e) => ({ turnId: e.turnId })`                                                                                                                                    |
+| `tool.call`                                                                                                   | `() => ({ result: '...' })`                                                                                                                                           |
+| `turn.complete`                                                                                               | `() => ({ text: '' })`; fire with `$.turn.complete({ turnId, answer, durationMs, isAborted: false, usage: null })`                                                    |
+| `prompt.submit`                                                                                               | `($, e) => ({ text: e.text })`                                                                                                                                        |
+| `prompt.fill`                                                                                                 | `() => ({ isFilled: true })`; `$.prompt.read` → `() => ({ value: { text: '...', cursor: 0 } })`                                                                       |
+| `$.ui.copy`                                                                                                   | `() => ({ value: { isCopied: true } })`                                                                                                                               |
+| `$.ui.notify`                                                                                                 | `() => ({ value: { isSent: true, channel: 'terminal_bell' } })`                                                                                                       |
+| `$.session.messages`                                                                                          | `() => ({ value: [{ role: 'assistant', text: '...', toolUses: [] }] })`                                                                                               |
+| `$.session.id`, `$.agent.list`                                                                                | `() => ({ value: 'abc123' })`, `() => ({ value: [] })`                                                                                                                |
+| `session.send`                                                                                                | `() => ({ isDelivered: true })` (`e.to` is a string)                                                                                                                  |
+| `session.receive`                                                                                             | `($, e) => ({ text: e.text })`; fire with `$.session.receive({ origin: { kind: 'peer-send-message' }, text })`                                                        |
+| `ui.render`                                                                                                   | `() => ({ type: 'Text', props: {}, children: ['...'] })`                                                                                                              |
 
 The kit answers `$.ui.invalidate`, `$.state` and `$.session.append` itself. Everything else the mod calls needs a stub.
 
@@ -83,13 +83,13 @@ The kit answers `$.ui.invalidate`, `$.state` and `$.session.append` itself. Ever
 
 `const ui = await $.ui.mount({ plugin, surface, component, requestId, viewport: { columns: 100, rows: 30 }, props })` draws a render site through the mod's `ui.render` hook. `surface` is `terminal`, `desktop`, `vscode` or `mobile`; loop over surfaces to cover several apps. `props` must be what Claude Code passes for that site (render-sites table and the types for the installed build).
 
-| Handle method | Effect |
-| :- | :- |
-| `press({ key })` | press the `Button` with that key |
-| `input({ key, text })` | type into the `Input` and press Enter (`kind: 'change'` to not submit) |
-| `select({ key, value })` | pick an option in the `Select` |
+| Handle method                            | Effect                                                                                      |
+| :--------------------------------------- | :------------------------------------------------------------------------------------------ |
+| `press({ key })`                         | press the `Button` with that key                                                            |
+| `input({ key, text })`                   | type into the `Input` and press Enter (`kind: 'change'` to not submit)                      |
+| `select({ key, value })`                 | pick an option in the `Select`                                                              |
 | `find({ key })` / `find({ type, text })` | first matching element `{ type, props, children }` or `undefined` (`text` string or RegExp) |
-| `unmount()` | remove the drawing |
+| `unmount()`                              | remove the drawing                                                                          |
 
 Methods resolve after the handler finishes, so assert on the next line. A drawing test checks the returned tree and its validity for that app, not how the app paints it. Elements the tests address need a non-empty string `key` (see "needs a key" in troubleshooting).
 

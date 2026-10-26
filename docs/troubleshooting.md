@@ -85,7 +85,7 @@ Work through these in order:
 1. **Is it enabled?** `/plugin` → **Installed**, or `claude plugin list` (look for `Status: ✔ enabled`).
 2. **Any errors?** `/plugin` → **Errors** shows every load failure with a hint.
 3. **Installed during this session?** Run `/reload-plugins`. It prints `Reloaded:` with counts of what loaded.
-4. **Does it need setup?** If the summary says a bundled MCP server *needs configuration*, open `/plugin` → **Installed** → plugin → **Configure**. Plugins with their own settings show **Configure options** there too.
+4. **Does it need setup?** If the summary says a bundled MCP server _needs configuration_, open `/plugin` → **Installed** → plugin → **Configure**. Plugins with their own settings show **Configure options** there too.
 5. **Missing a tool it depends on?** Check the plugin README's **Requirements** table — some plugins need a CLI on your `PATH` or an API key.
 
 <details>
@@ -95,7 +95,7 @@ Claude Code (v2.1.273+) syncs plugins from your claude.ai account once each time
 
 - **Signed in another way?** Plugins sync only in a session signed in with your claude.ai account. They don't sync when `ANTHROPIC_AUTH_TOKEN`, `CLAUDE_CODE_OAUTH_TOKEN` or an `apiKeyHelper` script supplies the credential, when `CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC` is set, in bare mode, with `--safe-mode`, or with a `--setting-sources` list that leaves out `user`.
 - **Signed in on an older version?** Run `/login` again; the sync starts the next time you start Claude Code.
-- **Turned on during this session?** It arrives at the next start. If the session says *Plugins changed*, run `/reload-plugins`.
+- **Turned on during this session?** It arrives at the next start. If the session says _Plugins changed_, run `/reload-plugins`.
 - **Also installed from the marketplace?** Claude Code loads your marketplace copy and reports the synced one as not loaded. Disable the marketplace copy to use the one from the app.
 - **Turned off for everything?** `"syncClaudeAiPlugins": false` in your settings, or in your organization's managed settings, stops every synced plugin.
 
@@ -117,9 +117,9 @@ Adding an MCP server invalidates the prompt cache. Run `/reload-plugins --force`
 
 ## 🔄 Updates not arriving
 
-- `claude plugin update <plugin>@the-claude-factory` says *already at the latest version*: no new release has shipped yet — check the plugin's `CHANGELOG.md`.
+- `claude plugin update <plugin>@the-claude-factory` says _already at the latest version_: no new release has shipped yet — check the plugin's `CHANGELOG.md`.
 - Updated but still seeing old behavior: the running session keeps the loaded version. Run `/reload-plugins` or start a new session.
-- A plugin shown as `<plugin>@synced` came from the Claude app: update it there (**Customize** → **Plugins**), then start Claude Code again or run `/reload-plugins` when it says *Plugins changed*.
+- A plugin shown as `<plugin>@synced` came from the Claude app: update it there (**Customize** → **Plugins**), then start Claude Code again or run `/reload-plugins` when it says _Plugins changed_.
 - Want updates without thinking about it: [enable auto-update](./managing-plugins.md#-auto-update).
 
 ## 🆘 Still stuck?

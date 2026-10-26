@@ -4,13 +4,13 @@ This skill's `assets/` are the templates a new plugin of this repository is buil
 
 ## The assets
 
-| Asset | Becomes | Placeholders | Filled by |
-| :-- | :-- | :-- | :-- |
-| `assets/plugin-template.json` | `plugins/<name>/.claude-plugin/plugin.json` | `{{name}}`, `{{displayName}}`, `{{description}}`, `{{category}}`, `{{surfacesJson}}` | This skill's `scaffold-plugin.py`, every one |
-| `assets/CHANGELOG-template.md` | `plugins/<name>/CHANGELOG.md`, with its `0.1.0` section dated today | `{{name}}`, `{{displayName}}`, `{{date}}` | `scaffold-plugin.py`, every one |
-| `assets/LICENSE-template` | `plugins/<name>/LICENSE` | none | Copied as is |
-| `assets/README-template.md` | `plugins/<name>/README.md` | `<Display Name>`, `<plugin>`, `<owner>/<repo>`, `<marketplace-name>`, and every other `<…>` | `scaffold-plugin.py` fills the first four; you fill the rest |
-| `assets/NOTICE-template.txt` | `plugins/<name>/NOTICE.txt`, only when the plugin bundles or derives from third-party material | `{{name}}`, `{{source}}`, `{{sourceUrl}}`, `{{sourceVersion}}`, `{{sourceLicense}}`, `{{derivedFile}}`, `{{sourceLicenseText}}` | You, by hand; the scaffold never writes it |
+| Asset                          | Becomes                                                                                        | Placeholders                                                                                                                    | Filled by                                                    |
+| :----------------------------- | :--------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------ | :----------------------------------------------------------- |
+| `assets/plugin-template.json`  | `plugins/<name>/.claude-plugin/plugin.json`                                                    | `{{name}}`, `{{displayName}}`, `{{description}}`, `{{category}}`, `{{surfacesJson}}`                                            | This skill's `scaffold-plugin.py`, every one                 |
+| `assets/CHANGELOG-template.md` | `plugins/<name>/CHANGELOG.md`, with its `0.1.0` section dated today                            | `{{name}}`, `{{displayName}}`, `{{date}}`                                                                                       | `scaffold-plugin.py`, every one                              |
+| `assets/LICENSE-template`      | `plugins/<name>/LICENSE`                                                                       | none                                                                                                                            | Copied as is                                                 |
+| `assets/README-template.md`    | `plugins/<name>/README.md`                                                                     | `<Display Name>`, `<plugin>`, `<owner>/<repo>`, `<marketplace-name>`, and every other `<…>`                                     | `scaffold-plugin.py` fills the first four; you fill the rest |
+| `assets/NOTICE-template.txt`   | `plugins/<name>/NOTICE.txt`, only when the plugin bundles or derives from third-party material | `{{name}}`, `{{source}}`, `{{sourceUrl}}`, `{{sourceVersion}}`, `{{sourceLicense}}`, `{{derivedFile}}`, `{{sourceLicenseText}}` | You, by hand; the scaffold never writes it                   |
 
 `plugin-template.json` is not valid JSON until it is rendered (`{{surfacesJson}}` stands unquoted), so `biome.json` excludes it.
 

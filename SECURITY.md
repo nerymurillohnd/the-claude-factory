@@ -26,10 +26,10 @@ Include, if you can:
 
 ## What to expect
 
-| Step | Target |
-| :-- | :-- |
-| Acknowledgement of your report | within **3 business days** |
-| Initial assessment and severity | within **7 days** |
+| Step                                            | Target                                            |
+| :---------------------------------------------- | :------------------------------------------------ |
+| Acknowledgement of your report                  | within **3 business days**                        |
+| Initial assessment and severity                 | within **7 days**                                 |
 | Fix released for confirmed critical/high issues | as fast as possible, typically within **14 days** |
 
 We'll keep you updated, credit you in the release notes if you wish, and publish a security advisory once a fix is available.

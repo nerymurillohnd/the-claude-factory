@@ -3,6 +3,7 @@
 Checked 2026-10-25 against `/en/plugins/create`, `/en/plugins/components`, `/en/plugins/manifest-reference`, `/en/skills`, and claude.com `/docs/plugins/platform-support` (Claude Code v2.1.310). Before writing a component, read its own official page (table at the end); this file holds only what goes wrong in plugins.
 
 ## Contents
+
 - Layout rules
 - plugin.json for a public plugin
 - Paths and path variables
@@ -25,11 +26,17 @@ Checked 2026-10-25 against `/en/plugins/create`, `/en/plugins/components`, `/en/
   "displayName": "Deploy Helper",
   "version": "0.1.0",
   "description": "What it does for the user, in one sentence.",
-  "author": { "name": "Your Name", "url": "https://github.com/you" },
+  "author": {
+    "name": "Your Name",
+    "url": "https://github.com/you"
+  },
   "homepage": "https://github.com/you/deploy-helper#readme",
   "repository": "https://github.com/you/deploy-helper",
   "license": "MIT",
-  "keywords": ["deploy", "ci"]
+  "keywords": [
+    "deploy",
+    "ci"
+  ]
 }
 ```
 
@@ -81,29 +88,29 @@ Checked 2026-10-25 against `/en/plugins/create`, `/en/plugins/components`, `/en/
 
 The same folder installs in Claude Code, claude.ai chat and Cowork, each loading a subset (claude.com `/docs/plugins/platform-support`):
 
-| Component | Chat | Cowork | Claude Code |
-| :-- | :-- | :-- | :-- |
-| Skills | Loads | Loads | Loads |
-| Commands | As a skill | Loads | Loads |
-| Agents, hooks | Ignored | Loads | Loads |
-| Remote MCP (`http`/`sse` fixed URL) | Connectors tab | Connectors tab | Loads |
-| Local MCP (stdio, `.mcpb`) | Ignored | Local sessions only | Loads |
-| MCP with `${user_config.*}` | Ignored if in URL | Ignored if no default | Loads, prompts |
-| Top-level `bin/` | **Refuses plugin** | **Refuses plugin** | Loads |
-| LSP, output styles, themes, `settings` | Ignored | Ignored | Loads |
+| Component                              | Chat               | Cowork                | Claude Code    |
+| :------------------------------------- | :----------------- | :-------------------- | :------------- |
+| Skills                                 | Loads              | Loads                 | Loads          |
+| Commands                               | As a skill         | Loads                 | Loads          |
+| Agents, hooks                          | Ignored            | Loads                 | Loads          |
+| Remote MCP (`http`/`sse` fixed URL)    | Connectors tab     | Connectors tab        | Loads          |
+| Local MCP (stdio, `.mcpb`)             | Ignored            | Local sessions only   | Loads          |
+| MCP with `${user_config.*}`            | Ignored if in URL  | Ignored if no default | Loads, prompts |
+| Top-level `bin/`                       | **Refuses plugin** | **Refuses plugin**    | Loads          |
+| LSP, output styles, themes, `settings` | Ignored            | Ignored               | Loads          |
 
 If the plugin is Claude Code-only, say so in the README so app users aren't surprised.
 
 ## Pages to read per component
 
-| Writing | Read first (Claude Code Docs MCP path, or `https://code.claude.com/docs/en/<page>.md`) |
-| :-- | :-- |
-| Any component, layout | `/en/plugins/components`, `/en/plugins/manifest-reference` |
-| Skills | `/en/skills` |
-| Agents | `/en/sub-agents` |
-| Hooks | `/en/hooks`, `/en/hooks-guide` |
-| MCP servers | `/en/mcp`, then `mcp-servers.md` and `mcp-hooks-and-lifecycle.md` in this skill |
-| LSP | `/en/plugins/code-intelligence` |
-| Output styles | `/en/output-styles` |
-| Mods | `/en/plugins/mods/*` |
-| Dependencies, loading, cache | `/en/plugins/dependencies`, `/en/plugins/loading` |
+| Writing                      | Read first (Claude Code Docs MCP path, or `https://code.claude.com/docs/en/<page>.md`) |
+| :--------------------------- | :------------------------------------------------------------------------------------- |
+| Any component, layout        | `/en/plugins/components`, `/en/plugins/manifest-reference`                             |
+| Skills                       | `/en/skills`                                                                           |
+| Agents                       | `/en/sub-agents`                                                                       |
+| Hooks                        | `/en/hooks`, `/en/hooks-guide`                                                         |
+| MCP servers                  | `/en/mcp`, then `mcp-servers.md` and `mcp-hooks-and-lifecycle.md` in this skill        |
+| LSP                          | `/en/plugins/code-intelligence`                                                        |
+| Output styles                | `/en/output-styles`                                                                    |
+| Mods                         | `/en/plugins/mods/*`                                                                   |
+| Dependencies, loading, cache | `/en/plugins/dependencies`, `/en/plugins/loading`                                      |

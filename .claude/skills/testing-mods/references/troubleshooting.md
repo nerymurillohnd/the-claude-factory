@@ -6,11 +6,11 @@ Source: https://code.claude.com/docs/en/plugins/mods/troubleshoot, plus CHANGELO
 
 When a module does not load, a hook is skipped, or another mod refuses yours, Claude Code writes **one line naming the mod**. Where you read it depends on the session:
 
-| Session | Where the line is |
-| :- | :- |
-| Interactive, started with `--plugin-dir` (or hot-reload enabled for mods Claude wrote) | dim line in the transcript |
-| Any other interactive session, **including a mod installed from a marketplace** | debug log only: start with `claude --debug` or `claude --debug-file <path>` |
-| `claude -p` with `--plugin-dir` | stderr (default text output). A refusal by *another* mod goes to the debug log only |
+| Session                                                                                | Where the line is                                                                   |
+| :------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------- |
+| Interactive, started with `--plugin-dir` (or hot-reload enabled for mods Claude wrote) | dim line in the transcript                                                          |
+| Any other interactive session, **including a mod installed from a marketplace**        | debug log only: start with `claude --debug` or `claude --debug-file <path>`         |
+| `claude -p` with `--plugin-dir`                                                        | stderr (default text output). A refusal by _another_ mod goes to the debug log only |
 
 Then, in order:
 1. `claude plugin validate --strict <clone>` (static: misspelled event, bad manifest, unreadable module).
@@ -22,12 +22,12 @@ Then, in order:
 
 Run `claude plugin test` from a directory that holds **no** mod:
 
-| Output includes | Meaning |
-| :- | :- |
-| `no hooks module to load` | mods can load |
-| `hooks modules are turned off here` | `disableAllHooks` in your settings or org policy |
-| `hooks modules are turned off in this process: the rollout switch served off` | Anthropic switched installed mods off remotely |
-| `... the rollout switch was saved off by an earlier session` | stale saved value; start `claude` once to refresh, rerun |
+| Output includes                                                               | Meaning                                                  |
+| :---------------------------------------------------------------------------- | :------------------------------------------------------- |
+| `no hooks module to load`                                                     | mods can load                                            |
+| `hooks modules are turned off here`                                           | `disableAllHooks` in your settings or org policy         |
+| `hooks modules are turned off in this process: the rollout switch served off` | Anthropic switched installed mods off remotely           |
+| `... the rollout switch was saved off by an earlier session`                  | stale saved value; start `claude` once to refresh, rerun |
 
 `allowManagedModsOnly` (org setting) is not reported by this check; it shows as a refusal when a mod is installed (guard table below).
 
@@ -45,22 +45,22 @@ Run `claude plugin test` from a directory that holds **no** mod:
 
 ### Refusal messages (after `hooks module <name> not loaded:`)
 
-| Starts with | Meaning |
-| :- | :- |
-| `hooks modules are turned off for installed plugins in this process: the rollout switch served off` | remote kill switch for installed mods |
-| `... the rollout switch was saved off by an earlier session` | stale value; restart Claude Code |
-| `disableAllHooks in managed settings` | organization disabled hooks from installed plugins |
-| `only managed plugins and built-in plugins run` | `allowManagedHooksOnly`, or `disableAllHooks` in a non-managed settings file |
-| `installed plugins that are not managed load no hooks module in this mode (--bare)` | started with `--bare` |
-| `another plugin of that name loads first` | another enabled plugin with the same name holds the hooks-module name (only one same-named plugin's module loads; /plugin Errors tab notes this from v2.1.296) |
+| Starts with                                                                                         | Meaning                                                                                                                                                        |
+| :-------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `hooks modules are turned off for installed plugins in this process: the rollout switch served off` | remote kill switch for installed mods                                                                                                                          |
+| `... the rollout switch was saved off by an earlier session`                                        | stale value; restart Claude Code                                                                                                                               |
+| `disableAllHooks in managed settings`                                                               | organization disabled hooks from installed plugins                                                                                                             |
+| `only managed plugins and built-in plugins run`                                                     | `allowManagedHooksOnly`, or `disableAllHooks` in a non-managed settings file                                                                                   |
+| `installed plugins that are not managed load no hooks module in this mode (--bare)`                 | started with `--bare`                                                                                                                                          |
+| `another plugin of that name loads first`                                                           | another enabled plugin with the same name holds the hooks-module name (only one same-named plugin's module loads; /plugin Errors tab notes this from v2.1.296) |
 
 ### Built-in guard (`cc-plugin-sec-default`) on managed machines or Team/Enterprise logins
 
-| Message contains | Meaning | Where |
-| :- | :- | :- |
-| `mods are limited to your organization's by policy (allowManagedModsOnly)` | only the org's own mods allowed; yours refused | debug log; transcript in hot-reload sessions |
-| `tried to lift a deny rule in your settings` | `tool.check` hook approved a call a `deny` rule refuses; call stays denied | transcript + debug log once per mod; `-p`: debug log only |
-| `the deny rules in your settings could not be checked for this call, so it is refused` | guard failed while checking an approved call | reason Claude reads for the denied call |
+| Message contains                                                                       | Meaning                                                                    | Where                                                     |
+| :------------------------------------------------------------------------------------- | :------------------------------------------------------------------------- | :-------------------------------------------------------- |
+| `mods are limited to your organization's by policy (allowManagedModsOnly)`             | only the org's own mods allowed; yours refused                             | debug log; transcript in hot-reload sessions              |
+| `tried to lift a deny rule in your settings`                                           | `tool.check` hook approved a call a `deny` rule refuses; call stays denied | transcript + debug log once per mod; `-p`: debug log only |
+| `the deny rules in your settings could not be checked for this call, so it is refused` | guard failed while checking an approved call                               | reason Claude reads for the denied call                   |
 
 Remedy for org refusals is the administrator's (install as an org mod); a marketplace mod cannot be fixed from its side.
 

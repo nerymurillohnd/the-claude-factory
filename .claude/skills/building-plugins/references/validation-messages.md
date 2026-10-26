@@ -20,28 +20,28 @@ claude plugin validate .                             # the marketplace root
 
 ## Messages and fixes
 
-| Message | Fix |
-| :-- | :-- |
-| `No manifest found in directory. Expected .claude-plugin/marketplace.json or .claude-plugin/plugin.json` / `File not found: <path>` | Run against the directory that contains `.claude-plugin/` |
-| `Invalid JSON syntax: <parse error>` | Fix the JSON in the manifest or `hooks/hooks.json` (a broken `hooks.json` loads the plugin without those hooks) |
-| `Path not found: <path>. The runtime loader will report this as a load failure.` | Fix the component path or create the directory |
-| `Path contains ".." which could be a path traversal attempt: <path>` | Keep every path inside the plugin root, starting with `./` |
-| `Path is a file; skills entries must be directories containing SKILL.md` | Point the `skills` entry at the directory (or `.` for a root `SKILL.md`) |
-| `No frontmatter block found` (warning) / `YAML frontmatter failed to parse: <error>` | Add or fix the `---` frontmatter of the skill, agent or command file |
-| `Unknown field '<key>'` (fails under `--strict`) | Remove or correct it; unknown fields are ignored at load, so a typo silently does nothing |
-| `Plugin name "<name>" is reserved: it passes as one of Anthropic's own` | Rename before the first release (see `repo-layouts.md` → Names) |
-| `Plugin name "<name>" reads as one of Anthropic's own` (warning) | Prefer a name without `claude`/`anthropic` as a word |
-| `Plugin name "<name>" is not kebab-case` (warning) | Lowercase letters, digits and hyphens; claude.ai sync rejects other forms |
-| `Marketplace name impersonates an official Anthropic/Claude marketplace` | Rename the marketplace |
-| `Marketplace name cannot contain spaces…` / `…path separators…` / `…control or bidirectional-formatting characters` | Use letters, digits, `.`, `_`, `-`, starting with a letter or digit |
-| `Duplicate plugin name "<name>" found in marketplace` | Unique entry names |
-| `Path contains "..": <path>` under `plugins[N].source` | Relative sources from the marketplace root, no `..` |
-| `Entry declares version "<a>" but <path>/plugin.json says "<b>"` | Keep `version` only in `plugin.json` |
-| `renames.<name>: chain does not resolve` | Each chain ends at `null` or a listed name, no cycles |
-| `No marketplace description provided` / `Marketplace has no plugins defined` (warnings) | Add `description`; add at least one entry |
-| `CLAUDE.md at the plugin root is not loaded as project context` | Move the instructions into a skill |
-| Unquoted `${CLAUDE_PLUGIN_ROOT}` warning in a shell-form hook | Quote it, or use exec form with `args` |
-| `Marketplace name "<name>" is reserved in Claude Desktop` / `…is not accepted by Claude Desktop` (warnings) | Rename if Desktop users matter: ≤128 chars of letters, digits, `.`, `_`, `-`; not `org`, `org-provisioned`, `unknown` |
+| Message                                                                                                                             | Fix                                                                                                                   |
+| :---------------------------------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------- |
+| `No manifest found in directory. Expected .claude-plugin/marketplace.json or .claude-plugin/plugin.json` / `File not found: <path>` | Run against the directory that contains `.claude-plugin/`                                                             |
+| `Invalid JSON syntax: <parse error>`                                                                                                | Fix the JSON in the manifest or `hooks/hooks.json` (a broken `hooks.json` loads the plugin without those hooks)       |
+| `Path not found: <path>. The runtime loader will report this as a load failure.`                                                    | Fix the component path or create the directory                                                                        |
+| `Path contains ".." which could be a path traversal attempt: <path>`                                                                | Keep every path inside the plugin root, starting with `./`                                                            |
+| `Path is a file; skills entries must be directories containing SKILL.md`                                                            | Point the `skills` entry at the directory (or `.` for a root `SKILL.md`)                                              |
+| `No frontmatter block found` (warning) / `YAML frontmatter failed to parse: <error>`                                                | Add or fix the `---` frontmatter of the skill, agent or command file                                                  |
+| `Unknown field '<key>'` (fails under `--strict`)                                                                                    | Remove or correct it; unknown fields are ignored at load, so a typo silently does nothing                             |
+| `Plugin name "<name>" is reserved: it passes as one of Anthropic's own`                                                             | Rename before the first release (see `repo-layouts.md` → Names)                                                       |
+| `Plugin name "<name>" reads as one of Anthropic's own` (warning)                                                                    | Prefer a name without `claude`/`anthropic` as a word                                                                  |
+| `Plugin name "<name>" is not kebab-case` (warning)                                                                                  | Lowercase letters, digits and hyphens; claude.ai sync rejects other forms                                             |
+| `Marketplace name impersonates an official Anthropic/Claude marketplace`                                                            | Rename the marketplace                                                                                                |
+| `Marketplace name cannot contain spaces…` / `…path separators…` / `…control or bidirectional-formatting characters`                 | Use letters, digits, `.`, `_`, `-`, starting with a letter or digit                                                   |
+| `Duplicate plugin name "<name>" found in marketplace`                                                                               | Unique entry names                                                                                                    |
+| `Path contains "..": <path>` under `plugins[N].source`                                                                              | Relative sources from the marketplace root, no `..`                                                                   |
+| `Entry declares version "<a>" but <path>/plugin.json says "<b>"`                                                                    | Keep `version` only in `plugin.json`                                                                                  |
+| `renames.<name>: chain does not resolve`                                                                                            | Each chain ends at `null` or a listed name, no cycles                                                                 |
+| `No marketplace description provided` / `Marketplace has no plugins defined` (warnings)                                             | Add `description`; add at least one entry                                                                             |
+| `CLAUDE.md at the plugin root is not loaded as project context`                                                                     | Move the instructions into a skill                                                                                    |
+| Unquoted `${CLAUDE_PLUGIN_ROOT}` warning in a shell-form hook                                                                       | Quote it, or use exec form with `args`                                                                                |
+| `Marketplace name "<name>" is reserved in Claude Desktop` / `…is not accepted by Claude Desktop` (warnings)                         | Rename if Desktop users matter: ≤128 chars of letters, digits, `.`, `_`, `-`; not `org`, `org-provisioned`, `unknown` |
 
 For a plugin headed to Anthropic's directory, `claude plugin validate --profile directory <path>` (present in v2.1.310 `--help`; not yet in the docs or changelog) also exits 1 on directory-refusal checks it can run, such as a missing README. The directory runs more checks than this.
 

@@ -8,9 +8,9 @@ Refs #
 
 ## Release impact
 
-| Target | Bump | New version |
-| :-- | :-- | :-- |
-| `<plugin>` | patch / minor / major / none | `x.y.z` |
+| Target     | Bump                         | New version |
+| :--------- | :--------------------------- | :---------- |
+| `<plugin>` | patch / minor / major / none | `x.y.z`     |
 
 ## Checklist
 

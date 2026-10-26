@@ -5,6 +5,7 @@ Checked 2026-10-25 against `/en/mcp`, `/en/plugins/components`, `/en/plugins/man
 A plugin that bundles an MCP server puts its tools in front of every user's Claude, in the main conversation and in every agent, for as long as the plugin is enabled. The server needs credentials that only the user has, and each surface connects it differently. Work as an integration engineer who ships a server to strangers: assume the credential is missing, the Claude app cannot fill it, and the tool names are not what the docs' short examples show, and make each of those visible to the user instead of failing silently.
 
 ## Contents
+
 - Rules
 - Gotchas
 - Order of work

@@ -3,6 +3,7 @@
 Checked 2026-10-25 against `/en/plugins/publish`, `/en/plugins/create-marketplace`, `/en/plugins/host-marketplace`, `/en/plugins/marketplace-reference`, `/en/plugins/manifest-reference` (Claude Code v2.1.310).
 
 ## Contents
+
 - Choose a layout
 - Layout A: one plugin per repo
 - Layout B: a marketplace repo with several plugins
@@ -13,11 +14,11 @@ Checked 2026-10-25 against `/en/plugins/publish`, `/en/plugins/create-marketplac
 
 ## Choose a layout
 
-| Situation | Layout |
-| :-- | :-- |
-| One plugin, its own repo, its own release cadence | A: the plugin at the repo root with a one-entry `marketplace.json` beside its `plugin.json` |
-| Several plugins one author or team maintains together | B: a marketplace repo, each plugin under `plugins/<name>/` as a relative-path entry |
-| A catalog that points at plugins living in other repos | B with `github` or `git-subdir` entries instead of relative paths |
+| Situation                                              | Layout                                                                                      |
+| :----------------------------------------------------- | :------------------------------------------------------------------------------------------ |
+| One plugin, its own repo, its own release cadence      | A: the plugin at the repo root with a one-entry `marketplace.json` beside its `plugin.json` |
+| Several plugins one author or team maintains together  | B: a marketplace repo, each plugin under `plugins/<name>/` as a relative-path entry         |
+| A catalog that points at plugins living in other repos | B with `github` or `git-subdir` entries instead of relative paths                           |
 
 A plugin repo without any `marketplace.json` can still be cloned and loaded with `--plugin-dir`, but users can't install it by name or update it with a command. For a public GitHub audience, always add the marketplace file.
 
@@ -41,10 +42,16 @@ deploy-helper/                 ← repo root = plugin root = marketplace root
 ```json
 {
   "name": "deploy-helper",
-  "owner": { "name": "Your Name", "url": "https://github.com/you" },
+  "owner": {
+    "name": "Your Name",
+    "url": "https://github.com/you"
+  },
   "description": "One-line description of the marketplace",
   "plugins": [
-    { "name": "deploy-helper", "source": "./" }
+    {
+      "name": "deploy-helper",
+      "source": "./"
+    }
   ]
 }
 ```
@@ -70,11 +77,22 @@ my-marketplace/                ← marketplace root (the directory that contains
 ```json
 {
   "name": "my-marketplace",
-  "owner": { "name": "Your Name" },
+  "owner": {
+    "name": "Your Name"
+  },
   "description": "Plugins for …",
   "plugins": [
-    { "name": "formatter", "source": "./plugins/formatter", "description": "…", "category": "development" },
-    { "name": "reviewer",  "source": "./plugins/reviewer",  "description": "…" }
+    {
+      "name": "formatter",
+      "source": "./plugins/formatter",
+      "description": "…",
+      "category": "development"
+    },
+    {
+      "name": "reviewer",
+      "source": "./plugins/reviewer",
+      "description": "…"
+    }
   ]
 }
 ```
@@ -100,12 +118,12 @@ Entry fields beyond `name` and `source`: `description`, `version` (avoid; see ve
 
 ## Plugin sources for a GitHub marketplace
 
-| Source | When | Minimal value |
-| :-- | :-- | :-- |
-| Relative path | Plugin lives in this repo | `"./plugins/formatter"` |
-| `github` | Plugin is its own GitHub repo | `{ "source": "github", "repo": "owner/formatter" }` |
-| `git-subdir` | Plugin is a folder of another repo | `{ "source": "git-subdir", "url": "owner/monorepo", "path": "tools/formatter" }` |
-| `url` | Any git host by full URL | `{ "source": "url", "url": "https://gitlab.com/g/formatter.git" }` |
+| Source        | When                               | Minimal value                                                                    |
+| :------------ | :--------------------------------- | :------------------------------------------------------------------------------- |
+| Relative path | Plugin lives in this repo          | `"./plugins/formatter"`                                                          |
+| `github`      | Plugin is its own GitHub repo      | `{ "source": "github", "repo": "owner/formatter" }`                              |
+| `git-subdir`  | Plugin is a folder of another repo | `{ "source": "git-subdir", "url": "owner/monorepo", "path": "tools/formatter" }` |
+| `url`         | Any git host by full URL           | `{ "source": "url", "url": "https://gitlab.com/g/formatter.git" }`               |
 
 `github`, `url` and `git-subdir` accept `ref` (branch or tag) and `sha` (full 40-char lowercase commit). Pinning `sha` makes the entry serve exactly that commit, which is what curated public catalogs do; it also means every release needs a catalog edit. `npm`, `archive` (v2.1.224+) and `command` (v2.1.229+) sources exist but are rarely right for a GitHub-hosted public plugin.
 
