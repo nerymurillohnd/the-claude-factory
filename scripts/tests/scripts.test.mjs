@@ -204,6 +204,19 @@ describe('check-repo', () => {
     assert.equal(after.code, 0, after.out)
   })
 
+  test('flags a template placeholder left only inside code, not other <…> text in code', () => {
+    scaffoldReady()
+    const p = 'plugins/demo-tool/README.md'
+    write(p, `${read(p)}\nRun \`/demo-tool:<Skill>\`.\n`)
+    const left = run('check-repo.mjs')
+    assert.equal(left.code, 1)
+    assert.match(left.out, /unresolved <…> placeholders \(in code: <Skill>\)/)
+
+    write(p, read(p).replace('`/demo-tool:<Skill>`', '`<YYYY-MM-DD>` and `Promise<Result>`'))
+    const kept = run('check-repo.mjs')
+    assert.equal(kept.code, 0, kept.out)
+  })
+
   test('flags a root package.json that declares runtime dependencies', () => {
     const pkg = json('package.json')
     pkg.dependencies = { lodash: '4.17.21' }

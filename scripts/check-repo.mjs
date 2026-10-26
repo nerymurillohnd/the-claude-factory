@@ -30,6 +30,32 @@ const IMAGE_OR_FONT = /\.(png|jpe?g|gif|webp|svg|woff2?|ttf|otf)$/i
 const MAX_FILE_BYTES = 256 * 1024 // larger files are held for a reviewer
 const MAX_FILES = 512 // more files are held for a reviewer
 
+// ── Author placeholders of the building-plugins README template ──
+const README_TEMPLATE = join(ROOT, '.claude/skills/building-plugins/assets/README-template.md')
+const AUTHOR_PLACEHOLDER = /<[A-Z][^<>\n]*>/g // innermost marks, so nested ones count one by one
+/** @type {Set<string> | undefined} */
+let templateMarks
+
+/**
+ * The author placeholders the README template holds, such as `<Skill>` and `<Display Name>`.
+ * Throws when the template is missing or holds none, so the code check never passes by default.
+ * @returns {Set<string>}
+ */
+function templatePlaceholders() {
+  if (templateMarks === undefined) {
+    if (!existsSync(README_TEMPLATE)) {
+      throw new Error(
+        `${relative(ROOT, README_TEMPLATE)} is missing: the README placeholder check needs it`,
+      )
+    }
+    templateMarks = new Set(readText(README_TEMPLATE).match(AUTHOR_PLACEHOLDER) ?? [])
+    if (templateMarks.size === 0) {
+      throw new Error(`${relative(ROOT, README_TEMPLATE)} holds no <…> placeholders`)
+    }
+  }
+  return templateMarks
+}
+
 /** @typedef {{ path: string, size: number, symlink: boolean }} FileEntry */
 
 /**
@@ -354,10 +380,16 @@ export function checkRepo() {
         err(scope, 'README.md has unresolved TODO/TEMPLATE comments')
       }
       // The building-plugins README template marks what the author fills with a `<` and a capital
-      // letter; code keeps such text on purpose (`<YYYY-MM-DD>`), so it is left out of the search.
+      // letter. Outside code any such mark is reported; inside code only the template's own marks
+      // are, since code keeps other `<…>` text on purpose (`<YYYY-MM-DD>`, `Promise<Result>`).
+      const code = [...readme.matchAll(/^```[\s\S]*?^```|`[^`\n]*`/gm)].map((m) => m[0]).join('\n')
       const prose = readme.replace(/^```[\s\S]*?^```/gm, '').replace(/`[^`\n]*`/g, '')
-      if (/<[A-Z][^>]*>/.test(prose)) {
-        err(scope, 'README.md has unresolved <…> placeholders')
+      const leftInCode = [...new Set(code.match(AUTHOR_PLACEHOLDER) ?? [])].filter((p) =>
+        templatePlaceholders().has(p),
+      )
+      if (/<[A-Z][^>]*>/.test(prose) || leftInCode.length > 0) {
+        const where = leftInCode.length > 0 ? ` (in code: ${leftInCode.join(', ')})` : ''
+        err(scope, `README.md has unresolved <…> placeholders${where}`)
       }
     }
 
