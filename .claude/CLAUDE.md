@@ -118,27 +118,10 @@ Every plugin directory holds these files. `scripts/validators/plugin-required-fi
 
 ### Plugin CHANGELOG.md
 
-- It is the plugin's detailed history, written for its users: what changes for them, not how the code changed. It follows Keep a Changelog 2.0.0, with the change types `Added`, `Changed`, `Deprecated`, `Removed`, `Fixed` and `Security`.
-- Record every change under `## [Unreleased]`, referencing issues as `(#12)`. A breaking change leads its entry with `**Breaking:**`.
-- `bump-version.mjs` turns `[Unreleased]` into the dated `## [X.Y.Z] - YYYY-MM-DD` section and writes its link references; it refuses an empty `[Unreleased]`.
-- A change limited to the README gets no entry, because any entry requires a bump.
 - `plugin-versions-consistency.py` checks that the newest section is the `plugin.json` version, that sections run newest first, and the link references.
 
 ### Root CHANGELOG.md
 
-- It is a concise synthesis of the marketplace, never a copy of a plugin changelog. It has one line for each of these events:
-  - a plugin is created;
-  - a plugin gets a version bump, a patch included;
-  - a plugin is renamed or removed;
-  - the marketplace itself changes, for example the catalog gains a category.
-- Group the lines under `## YYYY-MM-DD`, newest first, then under the Keep a Changelog change type: `### Added`, `### Changed`, `### Fixed`, `### Removed`. Use the date the change lands on `main`.
-- Write each line in the format of its event:
-  - New plugin, under `### Added`: `- **<plugin>** X.Y.Z — summary.`
-  - Version bump, under the change type of the change: `- **<plugin>** X.Y.Z — summary.`
-  - Rename, under `### Changed`: `- **<plugin>** X.Y.Z — renamed from <old>; summary.` The `renames` map in `marketplace.json` gets `"<old>": "<plugin>"`.
-  - Removal, under `### Removed`: `- **<old>** retired: reason.` The `renames` map gets `"<old>": null`.
-  - Merge into another plugin, under `### Removed`: `- **<old>** retired: its <what> is now the `<skill>` skill of **<target>**, and the marketplace renames existing installs. Type `/<target>:<skill>` where you typed `/<old>:<skill>`.` The `renames` map gets `"<old>": "<target>"`.
-  - Marketplace change: `- summary.`, with no plugin name or version.
 - The `X.Y.Z` of a plugin line is a version that plugin's changelog has; `plugin-versions-consistency.py` fails otherwise.
 
 ---
