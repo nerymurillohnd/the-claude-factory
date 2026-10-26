@@ -1,6 +1,6 @@
 # Workflow
 
-These rules set how to work on this project. Depending on the context, resume the work from the stage or area it belongs to, and apply its procedure to what is already built.
+This file is the contract of the work on this project: each stage, the skill that owns it and its key jobs. The procedure of each stage lives in its skill; never copy it here. Depending on the context, resume the work from the stage it belongs to, and apply its skill to what is already built.
 
 1. Management, Maintenance and Quality Gates
 2. Marketplace Plugins
@@ -8,26 +8,53 @@ These rules set how to work on this project. Depending on the context, resume th
 ## Management, Maintenance and Quality Gates
 
 1. Decision records
-   - Every time Nery makes an important decision, load and use the `project-maintainer:write-records` skill.
+   - When: Nery makes an important decision.
+   - Skill: `project-maintainer:write-records`.
+   - Key jobs: write the ADR.
 2. Pending and resolved tasks
-   - Every time an idea, task or conflict resolution could not be carried out, load and use the `project-maintainer:write-records` skill to log it.
-   - Every time a pending item from the point above is withdrawn, completed or closed, load and use the `project-maintainer:write-records` skill to record it.
+   - When: an idea, task or conflict resolution cannot be carried out, or a logged item is withdrawn, completed or closed.
+   - Skill: `project-maintainer:write-records`.
+   - Key jobs: log the pending item; record its closure.
 3. User documentation
-   - To write, update or check the marketplace's own user documentation, load and use the `maintaining-user-docs` skill.
+   - When: the marketplace's own user documentation is written, updated or checked.
+   - Skill: `maintaining-user-docs`.
+   - Key jobs: keep the docs true to the current Claude Code release and the marketplace.
 4. Issue handling and resolution
+   - Skill: none yet; ask Nery.
 5. Local quality gates
+   - Skill: none yet; ask Nery.
 6. Remote quality gates
+   - Skill: none yet; ask Nery.
 
 ## Marketplace Plugins
 
 1. Plugin design and planning
+   - Skill: none yet; ask Nery.
 2. Plugin creation
-   - To create, scaffold, write or fix a plugin, load and use the `building-plugins` skill.
-   - To create, scaffold or edit a mod, or a plugin that contains mods, load and use the `building-mods` skill. For the plugin's other components, also load `building-plugins`.
+   - When: a plugin is created, scaffolded, written or fixed.
+   - Skills: `building-plugins`; also `building-mods` when the plugin is a mod or contains one.
+   - Key jobs:
+     - Settle the identity with Nery: name, category, description, display name and surfaces.
+     - Create the plugin and register it in the marketplace.
+     - Write the components from the current official docs.
+     - Make it public-ready: README, host disclosures, `LICENSE`, `CHANGELOG.md`, third-party notice when it applies.
+     - Validate it.
 3. Plugin testing and evaluation
-   - To build or run the eval suite of any plugin, mods included, to run the live checks of a ready plugin's MCP servers and MCP hooks, or to diagnose a plugin's install, load or marketplace errors, load and use the `testing-plugins` skill.
-   - To run a mod's own tests (`claude plugin test`) and troubleshoot a mod, or a plugin that contains mods, load and use the `testing-mods` skill.
+   - When: evals are requested, a ready plugin has MCP servers or MCP hooks, a mod is tested, or an install, load or marketplace error needs diagnosing.
+   - Skills: `testing-plugins`; `testing-mods` for a mod's own tests and troubleshooting.
+   - Key jobs:
+     - Build and run eval suites, only when asked.
+     - Run the live MCP checks once Nery says the plugin is ready.
+     - Run a mod's own tests.
+     - Diagnose install, load and marketplace errors.
 4. Versioning and releases
-   - Before a new plugin is published, or when an existing plugin has changed, load and use the `release-and-versioning` skill.
+   - When: a new plugin is published, or an existing plugin has changed.
+   - Skill: `release-and-versioning`.
+   - Key jobs:
+     - Choose the version and write the release notes.
+     - Check the release before the merge.
+     - Confirm what users receive after the merge.
 5. Plugin renames and removals
-   - Every time an existing plugin is to be renamed, merged into another, removed, retired or deprecated, load and use the `plugin-renames-and-removals` skill.
+   - When: a plugin is to be renamed, merged into another, removed, retired or deprecated.
+   - Skill: `plugin-renames-and-removals`.
+   - Key jobs: carry the change without breaking existing installs.
