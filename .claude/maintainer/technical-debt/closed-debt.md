@@ -21,6 +21,8 @@
 | 2026-10-22 | DEBT-005 | resolved | project-maintainer guardrails ask in the documented tool.check form and pass 50 of 50 on Claude Code 2.1.307+ | none |
 | 2026-10-25 | DEBT-007 | resolved | The maintainer Node and schema tests pass, and CI runs the schema tests | none |
 | 2026-10-25 | DEBT-004 | obsolete | Dropped by Nery: its next action rested on an eval requirement he never set | none |
+| 2026-10-26 | DEBT-012 | obsolete | Logged in error: project-maintainer's mod already reminds Claude of write-records, and a live session met the review condition | none |
+| 2026-10-26 | DEBT-001 | resolved | pr-tracker inherits the session's tools, so a GitHub MCP server of any name reaches it | none |
 
 ## 🏁 Closed items
 
@@ -145,6 +147,68 @@ Logged in part in error. The eval requirement came from a CLAUDE.md draft applie
 - **Residual risk:** the README claim that Claude "has to fix it before continuing" is still unproven by a controlled test; only everyday use while editing this repository's `.mjs` files suggests it holds.
 - **Closed by:** Nery's decision on 2026-10-25.
 - **Related records:** ADR_2026-10-22_tsc-hook-policy-defaults-user-wins.
+- **Superseded by:** none
+
+### DEBT-012 — Logged in error: project-maintainer's mod already reminds Claude of write-records, and a live session met the review condition
+
+| Field | Value |
+| --- | --- |
+| **Outcome** | obsolete |
+| **Closed on** | 2026-10-26 |
+| **Logged on** | 2026-10-25 |
+| **Owner** | `plugins/project-maintainer` (skill `write-records`, its mod) |
+
+#### ❗ The problem
+
+The pending entry said the `write-records` skill was not loaded before records were written, because its description names events and "nothing reminds or requires it". On 2026-10-25 nine records of this repository were written without the skill. Its review condition: closes when a session that edits a record under `.claude/maintainer/`, without being asked to use the skill, loads it first or is told to; shown by a test or a recorded live session.
+
+#### 🔧 The closure
+
+Logged in error. The mod has reminded Claude of the skill since it was added on 2026-10-19 (commit `0f672e7`, "add a mod that enforces the rules of the records"): after a commit that looks like a decision, it tells Claude to record it with `write-records` (`plugins/project-maintainer/hooks/guard.ts`, `nudgeText`). The claim "nothing reminds" was false when the item was logged. Closed on Nery's order on 2026-10-26.
+
+#### 🧪 Verification
+
+| Check | Evidence |
+| --- | --- |
+| ✅ **Positive:** the closure holds | not applicable |
+| 🚫 **Negative:** the original failure or condition is gone | Live session of 2026-10-26 (project-maintainer 0.2.1, Claude Code 2.1.310): after commit `05c0462`, which touched `.github/workflows/`, the session received "Project Maintainer: the commit just made shows a CI workflow. If it settles a decision or leaves a problem that cannot be fixed now, record it with the write-records skill." Nery had not asked for the skill. Claude loaded `write-records` and then wrote ADR_2026-10-26_claude-workflows-follow-the-official-template and the supersede edit through it. `git log -S "record it with the write-records skill" -- plugins/project-maintainer/hooks/guard.ts` returns `0f672e7 2026-10-19`, six days before the item was logged. |
+
+#### 🔗 Follow-up
+
+- **Residual risk:** the reminder fires after a commit whose files or message look like a decision; a record edited in the middle of other work, before any such commit, still depends on Claude matching the skill's event-based description.
+- **Closed by:** none
+- **Related records:** ADR_2026-10-22_mod-guardrails-fail-closed-for-records, ADR_2026-10-26_claude-workflows-follow-the-official-template.
+- **Superseded by:** none
+
+### DEBT-001 — pr-tracker inherits the session's tools, so a GitHub MCP server of any name reaches it
+
+| Field | Value |
+| --- | --- |
+| **Outcome** | resolved |
+| **Closed on** | 2026-10-26 |
+| **Logged on** | 2026-10-19 |
+| **Owner** | `plugins/github-operations` (agent `pr-tracker`, skill `auto-pr-lifecycle`) |
+
+#### ❗ The problem
+
+`plugins/github-operations/agents/pr-tracker.md` (0.3.1) set `tools:` to `ToolSearch` plus exact MCP tool names under two prefixes only, `mcp__plugin_github-operations_github__*` and `mcp__github__*`. In desktop Code tab sessions on PR #22 (2026-10-19) and PR #36 (2026-10-21) the session's GitHub tools were named `mcp__650eb531-…__*`, so the tracker launched with no GitHub tool and reported `BLOCKED`.
+
+#### 🔧 The closure
+
+On Nery's order the agent's `tools` allowlist was removed with no `disallowedTools`, so it inherits every tool of the session: [PR #37](https://github.com/nerymurillohnd/the-claude-factory/pull/37) (`4d0d65e`, 2026-10-22), shipped in github-operations 0.4.0 and kept in 0.4.1. The README FAQ says the agent can use every session tool and points to deny rules for a hard limit. The pending entry's next action also asked for a `PreToolUse` hook blocking the tracker's write calls and a desktop live run; both went beyond the logged problem, and the hook contradicts Nery's choice of inheritance with user deny rules, so neither is pursued.
+
+#### 🧪 Verification
+
+| Check | Evidence |
+| --- | --- |
+| ✅ **Positive:** the closure holds | On 2026-10-22 the tracker (0.4.0, CLI session) read the checks, reviews, diff and Dependabot alerts of [PR #38](https://github.com/nerymurillohnd/the-claude-factory/pull/38) twice and reported `READY_FOR_MAIN_SESSION`. `/en/sub-agents` (read 2026-10-26): `tools` "Inherits every tool available to subagents if omitted", and "Subagents inherit the built-in tools and MCP tools available in the main conversation", whatever the server's name. |
+| 🚫 **Negative:** the original failure or condition is gone | `grep -n -E "^(tools\|disallowedTools):" plugins/github-operations/agents/pr-tracker.md` finds nothing on 0.4.1 (2026-10-26): the fixed two-prefix allowlist that hid a connector named `mcp__<uuid>__*` no longer exists. |
+
+#### 🔗 Follow-up
+
+- **Residual risk:** the tracker can call every tool of the session, GitHub write methods included; its instructions keep it read-only and the README tells users how to deny tools. No live run from the desktop Code tab with only the Claude app connector has been recorded; the inheritance there rests on the docs.
+- **Closed by:** [PR #37](https://github.com/nerymurillohnd/the-claude-factory/pull/37) (`4d0d65e`).
+- **Related records:** ADR_2026-10-18_fold-pr-diagnostics-into-pr-tracker; PR #22, PR #36 (where it was observed).
 - **Superseded by:** none
 
 <!--

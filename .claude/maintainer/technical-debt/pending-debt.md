@@ -40,49 +40,14 @@ Add an item only when all of these hold:
 
 | ID | Title | Status |
 | --- | --- | --- |
-| DEBT-001 | pr-tracker gets no GitHub tools when the GitHub MCP server has another name | 🔵 In progress |
 | DEBT-002 | Version-bump check fails on main after a revert of an unreleased bump and blocks every release | 🟠 Blocked |
 | DEBT-006 | No gate runs the validators of `scripts/validators/`, so CI lost the checks `check-repo.mjs` dropped | 🟡 Pending |
 | DEBT-008 | `main` and the release tags have no GitHub protection | 🟠 Blocked |
 | DEBT-009 | Biome ignores Markdown, so no tool formats or lints the repository's Markdown | 🟠 Blocked |
 | DEBT-010 | The mod gates of `scripts/gates.mjs` can miss a mod or report green on a lost test summary | 🟠 Blocked |
 | DEBT-011 | The repository's README checks and plugin READMEs still follow the old plugin template, not the one `building-plugins` sets | 🟠 Blocked |
-| DEBT-012 | The `write-records` skill of `project-maintainer` is not loaded before records are written: it triggers only on events, and nothing reminds or requires it | 🟠 Blocked |
 
 ## 📂 Open items
-
-### DEBT-001 — pr-tracker gets no GitHub tools when the GitHub MCP server has another name
-
-| Field | Value |
-| --- | --- |
-| **Status** | 🔵 In progress |
-| **Category** | compatibility, reliability |
-| **Owner** | `plugins/github-operations` (agent `pr-tracker`, skill `auto-pr-lifecycle`) |
-| **Logged** | 2026-10-19 |
-
-#### 🔎 Evidence
-
-- **Confirmed facts:**
-  - `plugins/github-operations/agents/pr-tracker.md` (plugin 0.3.1) sets `tools:` to `ToolSearch` plus exact MCP tool names under two prefixes only: `mcp__plugin_github-operations_github__*` and `mcp__github__*`.
-  - On 2026-10-19, in a Claude Code desktop (Code tab) session on PR #22, the session's GitHub tools were named `mcp__650eb531-f579-4af8-a637-6ce6bd506b6b__*`, and no `mcp__plugin_github-operations_github__*` tool was loaded. The `pr-tracker` launched with only `ToolSearch` (plus its hand-back tool), found no GitHub tool and reported `BLOCKED` with nothing inspected; the main session observed the PR with `gh` instead.
-  - The loaded copy in that session was `github-operations@synced` 0.3.0; the repository's 0.3.1 has the same fixed-name list, so the published version is affected too.
-  - `claude mcp list` in the CLI shows `plugin:github-operations:github` connected with the token set, so the CLI tracker gets its tools.
-  - [sub-agents docs](https://code.claude.com/docs/en/sub-agents) ("Restrict which tools a subagent can use"): `tools` is an allowlist resolved against the session's pool; `disallowedTools` is a denylist that keeps MCP tools inherited; when nothing in `tools` resolves, Claude Code usually refuses to launch the subagent. Here `ToolSearch` resolved, so it launched.
-  - [hooks docs](https://code.claude.com/docs/en/hooks): plugin `PreToolUse` hooks fire inside subagents, and the input carries `agent_type`.
-  - On 2026-10-21 it happened again on [PR #36](https://github.com/nerymurillohnd/the-claude-factory/pull/36) in the desktop Code tab: the tracker found no `mcp__plugin_github-operations_github__*` or `mcp__github__*` tool while the session's GitHub tools were `mcp__650eb531-…__*`, and reported `BLOCKED`.
-  - On 2026-10-21, on branch `fix/pr-tracker-inherit-tools`, Nery had the agent's `tools` allowlist removed with no `disallowedTools`, so it inherits every tool of the session (Bash, Edit, Write and GitHub write methods included); the bullets of its "Tools" section (prefixes, `ToolSearch`, missing-tool handling) were removed, leaving the call table, and its role still calls it a read-only observer. The README FAQ now says the agent can use every session tool and points to deny rules for a hard limit. [sub-agents docs](https://code.claude.com/docs/en/sub-agents): `disallowedTools` wildcards cover one server or all MCP tools (`mcp__*`), not one method across servers, so write methods can't be denied by name for an unknown server.
-  - That change merged with [PR #37](https://github.com/nerymurillohnd/the-claude-factory/pull/37) on 2026-10-22 (`4d0d65e`) and ships in github-operations 0.4.0: `agents/pr-tracker.md` has no `tools:` or `disallowedTools:` line, and the plugin has no `hooks/` folder.
-  - On 2026-10-22 the tracker (0.4.0, CLI session with `plugin:github-operations:github` connected) read the checks, reviews, diff and Dependabot alerts of [PR #38](https://github.com/nerymurillohnd/the-claude-factory/pull/38) twice and reported `READY_FOR_MAIN_SESSION`. This is not the desktop Code tab case the review condition names.
-- **Inferences:** the `650eb531-…` server is the GitHub connector Nery added in the Claude app (not verified). Any user who turns the plugin on in the Claude app, connects the connector and works in the desktop Code tab gets a blind tracker, because the connector's UUID name is unpredictable.
-- **Open questions:** why the desktop session did not load the plugin's own `github` server alongside the connector; whether `agent_type` for a plugin agent arrives as `github-operations:pr-tracker` (to test live).
-
-#### 📈 Impact and next step
-
-- **Impact / risk:** in that setup the PR lifecycle loses its monitoring agent; every tracker round is wasted and the main session must observe with `gh`. The tracker reports the gap honestly, so there is no false "clean" result.
-- **Why it is not fixed now:** on 2026-10-21 Nery asked only for the `tools` change; the hook adds a component (and its tests) to the plugin, and closing needs a live run in the desktop Code tab.
-- **Next action:** finish the fix in github-operations (the tool inheritance shipped in 0.4.0 through PR #37, without the `disallowedTools` of option A, by Nery's choice): add a `PreToolUse` hook in the plugin's `hooks/hooks.json` that blocks write MCP methods (merge, create, update, delete, resolve, rerun) when `agent_type` is the tracker; have `auto-pr-lifecycle` check which GitHub MCP prefix the session has before delegating and go to `gh` when none matches. Test the hook live, including the `agent_type` value.
-- **Review condition:** closes when the tracker, run from the desktop Code tab with only the Claude app connector, reads a PR's checks and reviews, and its write calls are blocked by the hook.
-- **Related records:** PR #22 (where it was observed); ADR_2026-10-18_fold-pr-diagnostics-into-pr-tracker.
 
 ### DEBT-002 — Version-bump check fails on main after a revert of an unreleased bump and blocks every release
 
@@ -260,34 +225,6 @@ Add an item only when all of these hold:
   Then move each plugin README, by pull request, and delete `.claude/templates/plugin/` and `.claude/templates/root-readme.md`.
 - **Review condition:** closes when a plugin the scaffold creates passes `check-repo.mjs`, nothing reads the frozen templates, and they are deleted.
 - **Related records:** ADR_2026-10-25_plugin-scaffold-belongs-to-building-plugins.
-
-### DEBT-012 — The `write-records` skill of `project-maintainer` is not loaded before records are written: it triggers only on events, and nothing reminds or requires it
-
-| Field | Value |
-| --- | --- |
-| **Status** | 🟠 Blocked |
-| **Category** | quality, reliability |
-| **Owner** | `plugins/project-maintainer` (skill `write-records`, its mod) |
-| **Logged** | 2026-10-25 |
-
-#### 🔎 Evidence
-
-- **Confirmed facts:**
-  - The skill's description (`plugins/project-maintainer/skills/write-records/SKILL.md:3`) is "Use when an important decision is made, a problem cannot be fixed now, or logged debt is closed." It names events, not the files a record lives in, so updating an existing entry in the middle of other work matches none of them.
-  - The plugin's guardrails check the format of every saved record and ask before a settled record is changed (`plugins/project-maintainer/README.md:35,51`); none reminds or requires the skill when `.claude/maintainer/` is written.
-  - On 2026-10-25, nine records of this repository (ADRs and DEBT-009 to DEBT-011) were written without the skill being loaded, although `.claude/rules/workflow.md` requires it. One debt update was saved with `sed`, which the skill forbids, and DEBT-011 was written as a change log, which its technical-debt reference does not allow. Stated by the user on 2026-10-25 as a defect of the plugin to fix.
-- **Inferences:** any user of the plugin can get records that bypass its procedure the same way, because a skill that is not loaded cannot apply its rules.
-- **Open questions:** whether a path-scoped trigger in the description is enough, or the mod should also remind, or refuse, a write under `.claude/maintainer/` made without the skill loaded; and whether a mod can tell that a skill was loaded in the session.
-
-#### 📈 Impact and next step
-
-- **Impact / risk:** records reach the repository without the skill's checks (placeholders, index, settled records, change-log content, Bash writes), and the format guard catches only part of them.
-- **Why it is not fixed now:** it is a change to a published plugin, which goes through a pull request and a release on Nery's order, outside the documentation work in progress.
-- **Next action:** in a pull request on `plugins/project-maintainer`:
-  - make the `write-records` description also trigger before creating or editing any file under `.claude/maintainer/`;
-  - test against the mods API whether the mod can remind of, or require, the skill on such a write.
-- **Review condition:** closes when a session that edits a record under `.claude/maintainer/`, without being asked to use the skill, loads it first or is told to; shown by a test or a recorded live session.
-- **Related records:** ADR_2026-10-22_mod-guardrails-fail-closed-for-records.
 
 <!--
 Entry format. Copy this block above this comment for each new item and add its row to the Index.
