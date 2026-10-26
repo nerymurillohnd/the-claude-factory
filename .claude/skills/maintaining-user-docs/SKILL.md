@@ -14,8 +14,9 @@ These files are what a user reads before trusting the marketplace, and nobody re
 | In | Out |
 | :-- | :-- |
 | Root `README.md`, outside the generated `<!-- catalog:* -->` and `<!-- plugin-count:* -->` blocks | The files inside `plugins/<name>/` (README, CHANGELOG, LICENSE, NOTICE) and the templates in `.claude/templates/plugin/` |
-| `docs/`: `installation.md`, `managing-plugins.md`, `compatibility.md`, `troubleshooting.md`, `faq.md`, `github-mcp-tools.md`, `assets/` | The root `CHANGELOG.md` and GitHub Releases |
-| `SECURITY.md`, `SUPPORT.md`, `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, the root `LICENSE` | Issue forms, `.github/ISSUE_TEMPLATE/config.yml`, labels, replies to issues |
+| `docs/`: `installation.md`, `managing-plugins.md`, `compatibility.md`, `troubleshooting.md`, `faq.md`, `assets/` | What one plugin tells its users, such as the tools of an MCP server it bundles: that belongs to the plugin, not to the marketplace's docs. `docs/github-mcp-tools.md` is such a file |
+| `SECURITY.md`, `SUPPORT.md`, `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, the root `LICENSE` | The root `CHANGELOG.md` and GitHub Releases |
+| | Issue forms, `.github/ISSUE_TEMPLATE/config.yml`, labels, replies to issues |
 
 The files marked Out are read here only to check what the docs say about them. When a docs change requires an Out file to change, report it; do not edit it in the same change.
 
@@ -50,7 +51,6 @@ The files marked Out are read here only to check what the docs say about them. W
 | `docs/compatibility.md` | The single source of the component × surface matrix | <https://claude.com/docs/plugins/platform-support> |
 | `docs/troubleshooting.md` | Symptom, cause and fix, with the diagnostic commands | `/en/plugins/troubleshooting`, `/en/plugins/loading` |
 | `docs/faq.md` | Short answers that link to the guides | The guide each answer links to |
-| `docs/github-mcp-tools.md` | The tools of one plugin's MCP server | That plugin's `.mcp.json` and its server's own docs |
 | `SECURITY.md` | Supported versions, private reporting, scope | GitHub's security policy docs; `/en/plugins/security` |
 | `SUPPORT.md` | Where to ask, in order | The issue forms and `config.yml` (read only) |
 | `CONTRIBUTING.md` | No pull requests, issues welcome, what happens after | The issue forms (read only) |
@@ -65,7 +65,7 @@ Claude Code pages live at `https://code.claude.com/docs/en/<page>.md`; `https://
 | :-- | :-- |
 | Compatibility matrix | README → Where plugins work ↔ `docs/compatibility.md`. Every plugin README's Compatibility cells copy it too: report the ones that must follow |
 | Install, update and uninstall commands, with their minimum versions | README → Quick start and Manage your plugins ↔ `docs/installation.md` ↔ `docs/managing-plugins.md` ↔ `docs/troubleshooting.md` |
-| List of guides | README → Documentation ↔ the files in `docs/` |
+| List of guides | README → Documentation ↔ the marketplace guides in `docs/` (the In row of Scope) |
 | How to get help | README → Support ↔ `SUPPORT.md` ↔ the issue forms and `config.yml` links (read only) |
 | No pull requests, issues welcome | README → Support ↔ `CONTRIBUTING.md` ↔ `docs/faq.md` |
 | Private security reporting | `SECURITY.md` ↔ `SUPPORT.md` ↔ `config.yml` (read only) |
