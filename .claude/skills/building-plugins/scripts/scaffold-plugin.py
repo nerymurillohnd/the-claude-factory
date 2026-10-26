@@ -1,18 +1,16 @@
 #!/usr/bin/env python3
 """Scaffold: create plugins/<name>/ for a new plugin of this marketplace.
 
-It checks the arguments first: <name> must be kebab-case, must not pass as one of Anthropic's
-own (as `claude plugin validate` rules), must not be listed in `plugins` of
+It checks the name and the category first: <name> must be kebab-case, must not pass as one of
+Anthropic's own (as `claude plugin validate` rules), must not be listed in `plugins` of
 .claude-plugin/marketplace.json, must not be a key of its `renames` map, and plugins/<name> must
-not exist; --category must be an id of scripts/categories.json; --min-claude-code must be X.Y.Z;
---emoji and --description must not be empty. It writes nothing when a check fails.
+not exist; --category must be an id of scripts/categories.json. It writes nothing when a check
+fails.
 
 Then it writes plugins/<name>/ from this skill's assets: .claude-plugin/plugin.json,
-CHANGELOG.md with today's 0.1.0 section, LICENSE and README.md. The README gets its emoji,
-display name, description, the five badges, the surfaces text and, for a Claude Code-only
-plugin, the note whose reason the author fills in; every TODO comment stays for the author.
-NOTICE.txt is not written: the author creates it from the asset when the plugin derives from
-third-party material.
+CHANGELOG.md with today's 0.1.0 section, LICENSE and README.md, the README with its display name,
+plugin name, repository and marketplace filled in and every other placeholder left for the
+author.
 
 It reads marketplace.json, scripts/categories.json and the assets, and writes only under
 plugins/<name>/. It never registers the plugin, never regenerates the root README catalog, never
@@ -33,7 +31,6 @@ import re
 import shutil
 import sys
 from typing import cast
-from urllib.parse import quote
 
 MARKETPLACE = ".claude-plugin/marketplace.json"
 CATEGORIES = "scripts/categories.json"
@@ -55,26 +52,8 @@ RESERVED = re.compile(
         )
     ),
 )
-# Each surface profile's `metadata.surfaces`, badge text, README text and note, as
-# SURFACE_PROFILES in scripts/lib.mjs, which check-repo.mjs and the catalog read.
+# The `metadata.surfaces` of each profile, as SURFACE_PROFILES in scripts/lib.mjs.
 SURFACES = {"both": ["claude-code", "claude-app"], "claude-code-only": ["claude-code"]}
-SURFACE_BADGE = {
-    "both": "Claude%20Code%20%C2%B7%20Claude%20app",
-    "claude-code-only": "Claude%20Code%20only",
-}
-SURFACE_TEXT = {
-    "both": "💻 Claude Code · 🖥️ Claude app",
-    "claude-code-only": "💻 **Claude Code only**",
-}
-SURFACE_NOTE = {
-    "both": "",
-    "claude-code-only": (
-        '💻 **Claude Code only** — <!-- TODO: say why, e.g. "it ships an LSP server" or'
-        ' "it needs bin/ executables" -->. It doesn\'t install in the Claude app (chat or'
-        " Cowork).\n\n"
-    ),
-}
-VERSION = re.compile(r"\d+\.\d+\.\d+")
 _decode: Callable[[str], object] = json.JSONDecoder().decode
 
 
@@ -84,8 +63,6 @@ class Args(argparse.Namespace):
     name: str = ""
     category: str = ""
     description: str = ""
-    emoji: str = ""
-    min_claude_code: str = ""
     display_name: str | None = None
     claude_code_only: bool = False
 
@@ -129,34 +106,15 @@ def name_errors(name: str) -> list[str]:
     return []
 
 
-def category_title(root: Path, category: str) -> tuple[str, list[str]]:
-    """The title of the category, or why the category is refused."""
+def category_errors(root: Path, category: str) -> list[str]:
+    """Why the category is refused."""
     data, problem = read_object(root / CATEGORIES)
     if problem is not None:
-        return "", [f"[{CATEGORIES}] {problem}"]
-    entries = data.get("categories")
-    ids = names_of(entries, "id")
+        return [f"[{CATEGORIES}] {problem}"]
+    ids = names_of(data.get("categories"), "id")
     if category not in ids:
-        return "", [f'unknown category "{category}"; valid: {", ".join(sorted(ids))}']
-    for entry in cast("list[object]", entries):
-        if isinstance(entry, dict):
-            fields = cast("dict[str, object]", entry)
-            title = fields.get("title")
-            if fields.get("id") == category and isinstance(title, str) and title:
-                return title, []
-    return "", [f'[{CATEGORIES}] category "{category}" has no title']
-
-
-def value_errors(args: Args) -> list[str]:
-    """Why the description, emoji or minimum Claude Code version is refused."""
-    errors: list[str] = []
-    if not args.description.strip():
-        errors.append("--description must not be empty")
-    if not args.emoji.strip():
-        errors.append("--emoji must not be empty")
-    if not VERSION.fullmatch(args.min_claude_code):
-        errors.append(f'--min-claude-code "{args.min_claude_code}" is not X.Y.Z')
-    return errors
+        return [f'unknown category "{category}"; valid: {", ".join(sorted(ids))}']
+    return []
 
 
 def taken_errors(root: Path, name: str) -> list[str]:
@@ -194,17 +152,7 @@ def asset(name: str) -> str:
     return (ASSETS / name).read_text(encoding="utf-8")
 
 
-def badge_text(text: str) -> str:
-    """`text` as the label of a static shields.io badge path segment."""
-    return quote(text.replace("-", "--").replace("_", "__"), safe="")
-
-
-def html_text(text: str) -> str:
-    """`text` escaped to sit inside HTML."""
-    return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
-
-
-def plugin_files(args: Args, display_name: str, profile: str, category: str) -> dict[str, str]:
+def plugin_files(args: Args, display_name: str, surfaces: list[str]) -> dict[str, str]:
     """Each file of the new plugin, by its path inside plugins/<name>/."""
     manifest = render(
         asset("plugin-template.json"),
@@ -213,7 +161,7 @@ def plugin_files(args: Args, display_name: str, profile: str, category: str) -> 
             "displayName": json_text(display_name),
             "description": json_text(args.description),
             "category": json_text(args.category),
-            "surfacesJson": json.dumps(SURFACES[profile]),
+            "surfacesJson": json.dumps(surfaces),
         },
     )
     today = datetime.now(UTC).date().isoformat()
@@ -221,19 +169,12 @@ def plugin_files(args: Args, display_name: str, profile: str, category: str) -> 
         asset("CHANGELOG-template.md"),
         {"name": args.name, "displayName": display_name, "date": today},
     )
-    readme = render(
-        asset("README-template.md"),
-        {
-            "name": args.name,
-            "displayName": display_name,
-            "description": html_text(args.description),
-            "emoji": args.emoji,
-            "surfacesBadge": SURFACE_BADGE[profile],
-            "surfacesText": SURFACE_TEXT[profile],
-            "surfacesNote": SURFACE_NOTE[profile],
-            "categoryBadge": badge_text(category),
-            "minClaudeCode": args.min_claude_code,
-        },
+    readme = (
+        asset("README-template.md")
+        .replace("<Display Name>", display_name)
+        .replace("<owner>/<repo>", REPOSITORY)
+        .replace("<marketplace-name>", MARKETPLACE_NAME)
+        .replace("<plugin>", args.name)
     )
     return {
         ".claude-plugin/plugin.json": manifest,
@@ -262,8 +203,6 @@ def parse(argv: list[str]) -> Args:
     _ = parser.add_argument("--name", required=True)
     _ = parser.add_argument("--category", required=True)
     _ = parser.add_argument("--description", required=True)
-    _ = parser.add_argument("--emoji", required=True)
-    _ = parser.add_argument("--min-claude-code", required=True)
     _ = parser.add_argument("--display-name")
     _ = parser.add_argument("--claude-code-only", action="store_true")
     return parser.parse_args(argv, namespace=Args())
@@ -273,20 +212,17 @@ def main(argv: list[str]) -> int:
     """Check, then create the plugin directory, and return the exit code."""
     args = parse(argv)
     root = repo_root()
-    category, category_problems = category_title(root, args.category)
     errors = [
         *name_errors(args.name),
-        *category_problems,
-        *value_errors(args),
+        *category_errors(root, args.category),
         *taken_errors(root, args.name),
     ]
     if errors:
         _ = sys.stderr.write("\n".join(f"✖ {e}" for e in errors) + "\n")
         return 1
     display_name = args.display_name or " ".join(w.capitalize() for w in args.name.split("-"))
-    profile = "claude-code-only" if args.claude_code_only else "both"
-    files = plugin_files(args, display_name, profile, category)
-    problem = write(root / "plugins" / args.name, files)
+    surfaces = SURFACES["claude-code-only" if args.claude_code_only else "both"]
+    problem = write(root / "plugins" / args.name, plugin_files(args, display_name, surfaces))
     if problem is not None:
         _ = sys.stderr.write(f"✖ {problem}\n")
         return 1
