@@ -14,12 +14,12 @@ How a plugin's `README.md` is written in this repository. It applies to every `p
 `plugin.json` is the only source of the plugin's name, version, description and category; the README follows it.
 
 - Never write the plugin's version in its README: the Version badge shows it. The only version numbers written by hand are Claude Code versions: the minimum (the Claude Code badge, Requirements and each version-gated feature) and, for a plugin with a mod, the version it was tested with, in Compatibility, as `building-mods` says.
-- The badges sit in the hero only, from shields.io, in the brand color `D97757`. Each shows a value that lives in another file:
-  - **Version**: a dynamic badge that reads `$.version` from this plugin's `plugin.json` on `main`, so a bump shows once it is merged. `scripts/validators/plugin-versions-consistency.py` fails on a hardcoded version.
-  - **Works in**: `Claude Code · Claude app` or `Claude Code only`, matching `metadata.surfaces` in `plugin.json`.
-  - **Category**: the title in `scripts/categories.json` of the plugin's `metadata.category`.
-  - **Claude Code**: the minimum Claude Code version, the same one Requirements states.
-  - **License**: links to the plugin's `LICENSE`.
+- The badges sit in the hero only, from shields.io in the flat style, in this order and color. Each shows a value that lives in another file:
+  - **Version** (`D97757`, the brand color): a dynamic badge that reads `$.version` from this plugin's `plugin.json` on `main`, so a bump shows once it is merged; links to `./CHANGELOG.md`. `scripts/validators/plugin-versions-consistency.py` fails on a hardcoded version.
+  - **Works in** (`2563EB`): `Claude Code · Claude app` or `Claude Code only`, matching `metadata.surfaces` in `plugin.json`; links to `#-compatibility`.
+  - **Category** (`6B7280`): the title in `scripts/categories.json` of the plugin's `metadata.category`; links to `../../README.md#-catalog`.
+  - **Claude Code** (`D97757`, with `logo=claude&logoColor=white`): the minimum Claude Code version, the same one Requirements states; links to `https://code.claude.com/docs/en/plugins/install`.
+  - **License** (`22C55E`): links to the plugin's `LICENSE`.
 - When the surfaces, the category or the minimum Claude Code version change, update the badge and the README text that states it in the same change; step 5 of `SKILL.md` then regenerates the catalog.
 
 ## Style
