@@ -114,7 +114,6 @@ List each file outside the scope that must follow (a plugin README's Compatibili
 
 Run from the repository root and show the output:
 - `node scripts/generators/marketplace.mjs --check` and `node scripts/generators/catalog.mjs --check`;
-- `node scripts/check-repo.mjs`;
 - `grep -rnoE 'nerymurillohnd/[A-Za-z0-9._-]+|@[a-z-]*claude-factory'` over the touched files, which must return only the source and the suffix above.
 
 Then open the target of every relative link and `#anchor` in the touched files, and confirm the file and heading exist. No script does this.
@@ -137,7 +136,6 @@ Run steps 3 to 7 on every file in scope, against every Claude Code release since
 ## Gotchas
 
 - No linter reads these files: Biome ignores Markdown here (`biome check README.md` reports it as ignored), so a broken link, anchor or table shows up only when you open it.
-- `check-repo.mjs` checks plugin READMEs, not these files. A clean run says nothing about them.
 - The catalog's version column is generated and is the only version number of a plugin in the root README.
 - GitHub reads `SECURITY.md`, `SUPPORT.md`, `CONTRIBUTING.md` and `CODE_OF_CONDUCT.md` from `.github/` first, then the root, then `docs/`. A copy added in `.github/` would silently replace the root one.
 - `docs/compatibility.md` drives the Compatibility cells of every plugin README, so a change to it is never only a docs change.

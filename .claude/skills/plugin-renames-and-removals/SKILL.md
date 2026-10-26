@@ -120,16 +120,15 @@ Commit as one signed commit (`git commit -S`): the directory change, the `rename
 
 ### 10. Run the checks and show their raw output
 
-Run them after the commit in step 9: `check-version-bump.py` reads committed changes only (`origin/main...HEAD`). `check-repo.mjs` reads the working tree, tracked and new untracked files, so it also sees what is not committed yet.
+Run them after the commit in step 9: `check-version-bump.py` reads committed changes only (`origin/main...HEAD`).
 
 1. `git fetch origin main` and `S=.claude/skills/plugin-renames-and-removals/scripts`
 2. `$S/check-version-bump.py origin/main`
 3. `$S/check-marketplace-unversioned.py`
-4. `node scripts/check-repo.mjs`, for the repository checks this skill does not own.
-5. `node scripts/generators/marketplace.mjs --check`
-6. `node scripts/generators/catalog.mjs --check`
-7. `claude plugin validate --strict .`
-8. Read the renamed or target plugin's `README.md`, `CHANGELOG.md` and `plugin.json` side by side and make them agree with the change: the components, commands, prerequisites and network calls the README states, the Compatibility rows, and the version each file shows. A script passing is not this check.
+4. `node scripts/generators/marketplace.mjs --check`
+5. `node scripts/generators/catalog.mjs --check`
+6. `claude plugin validate --strict .`
+7. Read the renamed or target plugin's `README.md`, `CHANGELOG.md` and `plugin.json` side by side and make them agree with the change: the components, commands, prerequisites and network calls the README states, the Compatibility rows, and the version each file shows. A script passing is not this check.
 
 If any check fails before the push, fix the cause, amend the commit (`git commit -S --amend`) and run all the checks again. After the push, commit the fix as a new signed commit instead: never amend or force-push a pushed commit.
 

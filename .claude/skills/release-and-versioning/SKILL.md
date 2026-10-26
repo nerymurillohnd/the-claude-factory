@@ -103,18 +103,17 @@ Read the diff (`git diff origin/main...HEAD`) and choose the level by what chang
 
 ### 6. Run the checks and show their raw output
 
-Run them after the commit in step 5: `check-version-bump.py` reads committed changes only (`origin/main...HEAD`). `check-repo.mjs` reads the working tree, tracked and new untracked files, so it also sees what is not committed yet.
+Run them after the commit in step 5: `check-version-bump.py` reads committed changes only (`origin/main...HEAD`).
 
 1. `git fetch origin main` and `S=.claude/skills/release-and-versioning/scripts`
 2. `$S/check-version-bump.py origin/main`
 3. `$S/check-marketplace-unversioned.py`
 4. `$S/check-changelog-entry.py <plugin>` for each changed plugin.
-5. `node scripts/check-repo.mjs`, for the repository checks this skill does not own.
-6. `node scripts/generators/catalog.mjs --check`, and `node scripts/generators/marketplace.mjs --check`, which fails while `marketplace.json` does not list a new plugin as `plugins/` holds it.
-7. `claude plugin validate --strict plugins/<plugin>` for each changed plugin, then `claude plugin validate --strict .` for the marketplace.
-8. `git lfs ls-files -- plugins/<plugin>` prints nothing: a git clone never downloads LFS content, so an LFS file reaches users as a pointer file (`/en/plugins/host-marketplace`, "Keep plugin files out of Git LFS").
-9. `find plugins/<plugin> -type l` lists every symlink, and each must resolve inside `plugins/<plugin>/`: a link elsewhere in the repository is copied as its target's content, and a link outside it is skipped without a warning (`/en/plugins/host-marketplace`, "Share files within a marketplace with symlinks").
-10. Read the changed plugin's `README.md`, `CHANGELOG.md` and `plugin.json` side by side and make them agree with the change: the components, commands, prerequisites and network calls the README states, the Compatibility rows, and the version each file shows. A script passing is not this check.
+5. `node scripts/generators/catalog.mjs --check`, and `node scripts/generators/marketplace.mjs --check`, which fails while `marketplace.json` does not list a new plugin as `plugins/` holds it.
+6. `claude plugin validate --strict plugins/<plugin>` for each changed plugin, then `claude plugin validate --strict .` for the marketplace.
+7. `git lfs ls-files -- plugins/<plugin>` prints nothing: a git clone never downloads LFS content, so an LFS file reaches users as a pointer file (`/en/plugins/host-marketplace`, "Keep plugin files out of Git LFS").
+8. `find plugins/<plugin> -type l` lists every symlink, and each must resolve inside `plugins/<plugin>/`: a link elsewhere in the repository is copied as its target's content, and a link outside it is skipped without a warning (`/en/plugins/host-marketplace`, "Share files within a marketplace with symlinks").
+9. Read the changed plugin's `README.md`, `CHANGELOG.md` and `plugin.json` side by side and make them agree with the change: the components, commands, prerequisites and network calls the README states, the Compatibility rows, and the version each file shows. A script passing is not this check.
 
 If any check fails before the push, fix the cause, amend the commit (`git commit -S --amend`) and run all the checks again. After the push, commit the fix as a new signed commit instead: never amend or force-push a pushed commit.
 
