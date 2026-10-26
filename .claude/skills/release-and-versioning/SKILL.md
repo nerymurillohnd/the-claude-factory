@@ -93,7 +93,7 @@ Read the diff (`git diff origin/main...HEAD`) and choose the level by what chang
 1. Add a line in `CHANGELOG.md` (root) when the change is a version bump, a launch or a marketplace-level change.
 2. The root changelog is a summary, never a copy of a plugin changelog. Its structure: `## YYYY-MM-DD` headings, newest first; under each, change-type headings (`### Added`, `### Changed`, `### Fixed`, `### Removed`); under each, one line per event. Create the date heading and the change-type heading if they are missing.
 3. Put the line under today's date and the matching change type:
-   - Version bump or launch: `- **<plugin>** X.Y.Z — one-line summary.`
+   - Version bump or launch: `- **<plugin>** X.Y.Z — one-line summary.` A launch goes under `### Added`; a bump under the change type of its change.
    - Marketplace-level change: `- summary.` (no plugin name, no version)
 
 ### 5. Commit
