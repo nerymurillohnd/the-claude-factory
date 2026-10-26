@@ -11,7 +11,7 @@ Scope: designing, writing and publishing the plugin, including its MCP servers a
 
 ## Precedence
 
-If the repository has its own project instructions for plugin work (a `CLAUDE.md`, `.claude/rules/`, or project skills such as `plugin-development` or `release-and-versioning`), follow them and use this skill only for what they leave out. Project rules know the repo's scripts and decisions; this skill is the general case.
+If the repository has its own project instructions for plugin work (a `CLAUDE.md`, `.claude/rules/`, or project skills such as `release-and-versioning`), follow them and use this skill only for what they leave out. Project rules know the repo's scripts and decisions; this skill is the general case.
 
 ## Ground truth before you rely on a behavior
 

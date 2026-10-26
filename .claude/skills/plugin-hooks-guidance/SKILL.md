@@ -5,7 +5,7 @@ description: Use when creating, editing or reviewing a plugin hook, its hooks.js
 
 # Plugin hooks guidance
 
-A hook runs on every user's machine, on every matching event, without anyone watching. When it is wrong it either blocks work it should not or silently lets through what it should stop, and neither shows up in a test that only checks the happy path. This skill covers a plugin hook from the decision to write it to the README that states what it does not reach. It runs inside `plugin-development` whenever the component is a hook.
+A hook runs on every user's machine, on every matching event, without anyone watching. When it is wrong it either blocks work it should not or silently lets through what it should stop, and neither shows up in a test that only checks the happy path. This skill covers a plugin hook from the decision to write it to the README that states what it does not reach. It runs beside `building-plugins` whenever the component is a hook.
 
 ## Role
 
@@ -64,7 +64,7 @@ Decide what the hook is for before you write it: to enforce a policy (deny a cal
 - Declare the hook in `hooks/hooks.json`, with the three levels: event, matcher group, handler. The input arrives as JSON on stdin; never write a `"hook"` object and never read `$TOOL_INPUT`.
 - Write the command in shell form with the placeholder in double quotes: the variable `CLAUDE_PLUGIN_ROOT`, wrapped as `${…}`, followed by `/hooks/<script>`, inside escaped quotes in the JSON string. Exec form (`args`) needs a real `.exe` on Windows, and Windows runs only through Git Bash here.
 - Set `timeout` on every handler.
-- Start the script with `#!/usr/bin/env <interpreter>`, as `plugin-development` says. Resolve `node` and `tsc` across every Node manager inside the script.
+- Start the script with `#!/usr/bin/env <interpreter>`, as `building-plugins` says. Resolve `node` and `tsc` across every Node manager inside the script.
 
 ### 3. Filter
 
