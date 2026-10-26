@@ -23,7 +23,7 @@ Mods can only run on Claude Code v2.1.287 or later (Desktop 2.1.286), so confirm
 
 ## Source authority (docs lag the binary)
 
-The official docs trail releases by days. When sources disagree, trust in this order: the installed binary's actual output, then the CHANGELOG (raw, `https://raw.githubusercontent.com/anthropics/claude-code/main/CHANGELOG.md`), then the declarations Claude Code writes for the installed build into the mod's `.claude-plugin/types/`, then the docs pages, then the declarations copy on GitHub (`/en/plugins/mods/reference`: trust the copy written for your version over the GitHub one). Anything version-sensitive you state must say where you saw it; mark what you could not verify. `references/version-drift.md` lists the mismatches already found; read it before quoting an error message verbatim.
+The official docs trail releases by days. When sources disagree, trust in this order: the installed binary's actual output, then the CHANGELOG (raw, `https://raw.githubusercontent.com/anthropics/claude-code/main/CHANGELOG.md`), then the declarations Claude Code writes for the installed build into the mod's `.claude-plugin/types/`, then the `reference.md` of the built-in `plugin-authoring` skill, then the docs pages, then the declarations copy on GitHub (`/en/plugins/mods/reference`: trust the copy written for your version over the GitHub one). Anything version-sensitive you state must say where you saw it; mark what you could not verify. `references/version-drift.md` lists the mismatches already found; read it before quoting an error message verbatim.
 
 ## Workflow
 

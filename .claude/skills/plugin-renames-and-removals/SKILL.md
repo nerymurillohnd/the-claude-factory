@@ -107,7 +107,7 @@ Run `node scripts/generators/catalog.mjs` in every case: the bump does not regen
 2. Put the line under today's date:
    - Rename, under `### Changed`: `- **<new>** X.Y.Z — renamed from <old>; one-line summary.`
    - Removal, under `### Removed`: `- **<old>** retired: one-line reason.`
-   - Merge, under `### Removed`: `- **<old>** retired: its <what> is now the `<skill>` skill of **<target>**, and the marketplace renames existing installs. Type `/<target>:<skill>` where you typed `/<old>:<skill>`.` The bump of `<target>` gets its own line under its change type.
+   - Merge, under `### Removed`: ``- **<old>** retired: its <what> is now the `<skill>` skill of **<target>**, and the marketplace renames existing installs. Type `/<target>:<skill>` where you typed `/<old>:<skill>`.`` The bump of `<target>` gets its own line under its change type.
 
 ### 8. Check the GitHub label and installed copies
 

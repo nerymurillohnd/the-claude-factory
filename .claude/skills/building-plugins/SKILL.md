@@ -1,6 +1,6 @@
 ---
 name: building-plugins
-description: Use whenever creating, adding, writing or fixing a plugin. Do not user for testing plugins, writing evals, CI, or mods.
+description: Use whenever creating, adding, writing or fixing a plugin. Do not use for testing plugins, writing evals, CI, or mods.
 ---
 
 # Create plugins for public GitHub marketplaces
