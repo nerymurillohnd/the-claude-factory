@@ -418,15 +418,15 @@ Add an item only when all of these hold:
 
 #### 🔎 Evidence
 
-- **Confirmed facts:** the plugin waits on sveltejs/ai-tools issue #294 and release PR #271; #291 and #290 are related (open since 2026-10-19).
-- **Inferences:** none.
-- **Open questions:** when upstream ships.
+- **Confirmed facts:** upstream has shipped. On 2026-10-26: issue #294 is closed as completed, release PR #271 is merged, and `@sveltejs/mcp` 0.1.27 lists "class directive to clsx attribute fixer" (#269) and the linter cache fix (#295). 0.1.28 is the latest release. #291 is closed and #290 is open. The plugin has not adopted it: `svelte-docs-and-autofixer/SKILL.md:135` and the README FAQ still call 0.1.26 the latest and pass only the major to `--svelte-version`.
+- **Inferences:** the CLI accepts a full version from 0.1.27 on. This is not checked against the installed binary.
+- **Open questions:** none.
 
 #### 📈 Impact and next step
 
-- **Impact / risk:** the plugin cannot offer the full-version local CLI.
-- **Why it is not fixed now:** it waits on an external party.
-- **Next action:** re-check the issue and the PR; update the plugin when the release ships.
+- **Impact / risk:** the plugin's local CLI fallback still misses the `class:` suggestion, and its text names a superseded release.
+- **Why it is not fixed now:** it is a plugin change, which goes through a PR timed by Nery.
+- **Next action:** on Nery's go, open a `svelte-development` PR: check `svelte-mcp --svelte-version 5.x.y` on 0.1.28, update `SKILL.md:135`, the README FAQ and the errata, and bump the version.
 - **Review condition:** closes when upstream ships and the plugin adopts it, or the issue closes otherwise.
 - **Related records:** none.
 
