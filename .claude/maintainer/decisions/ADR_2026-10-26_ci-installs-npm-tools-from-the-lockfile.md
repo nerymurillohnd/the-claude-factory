@@ -47,7 +47,7 @@ Chosen option: **the lockfile for the npm tools**, because `npm run gates:ci` pu
 | What must be true | How it is checked | Result | When to re-check |
 | --- | --- | --- | --- |
 | No global npm tool install remains | `grep -n "install --global\|TYPESCRIPT_VERSION" .github/workflows/*.yml` | Passed on 2026-10-26: no match; `actionlint` clean | Each workflow change |
-| CI's gates pass on the pinned tools | The Validate run after the next push | pending | The next push |
+| CI's gates pass on the pinned tools | The Validate run after the next push | Passed on 2026-10-26: run 40437673870 on `cd4d33c`, all four jobs green | Each change to `validate.yml` or the lockfile |
 
 ## More information
 
