@@ -8,9 +8,27 @@
     "url": "git+https://github.com/nerymurillohnd/the-claude-factory.git"
   },
   "scripts": {
+    "prepare": "husky",
     "gates": "node scripts/gates.mjs",
     "gates:ci": "node scripts/gates.mjs --ci",
+    "test": "node scripts/gates.mjs --only node-tests,pytest-scripts,by-path:",
+    "typecheck": "node scripts/gates.mjs --only tsc-,mod-tsc:,basedpyright-",
+    "typecheck:ts": "node scripts/gates.mjs --only tsc-,mod-tsc:",
+    "typecheck:python": "node scripts/gates.mjs --only basedpyright-",
+    "lint": "node scripts/gates.mjs --only ruff-check-,biome-,shellcheck-,actionlint",
+    "lint:python": "node scripts/gates.mjs --only ruff-check-",
+    "lint:js": "node scripts/gates.mjs --only biome-",
+    "lint:shell": "node scripts/gates.mjs --only shellcheck-",
+    "format": "biome format --write . && ruff format . && shfmt -w .",
+    "format:check": "node scripts/gates.mjs --only ruff-format-,shfmt-,biome-",
+    "fix": "biome check --write . && ruff check --fix . && ruff format . && shfmt -w .",
+    "check:repo": "node scripts/gates.mjs --only check-repo",
+    "check:version-bump": "node scripts/gates.mjs --only version-bump",
     "generate": "node scripts/generators/marketplace.mjs && node scripts/generators/catalog.mjs",
+    "generate:check": "node scripts/gates.mjs --only marketplace,catalog",
+    "setup": "node .claude/hooks/session-setup.mjs",
+    "labels:sync": "node scripts/sync-labels.mjs",
+    "version:bump": "node scripts/bump-version.mjs",
     "validate": "failed=0; for f in scripts/validators/*.py; do \"$f\" || failed=1; done; exit $failed",
     "validate:lsp-json-schema": "scripts/validators/lsp-json-schema.py",
     "validate:marketplace-json-schema": "scripts/validators/marketplace-json-schema.py",
@@ -24,6 +42,8 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.6.3",
-    "@types/node": "26.6.5"
+    "@types/node": "26.6.5",
+    "husky": "9.1.7",
+    "typescript": "6.0.3"
   }
 }
