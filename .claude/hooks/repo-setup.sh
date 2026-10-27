@@ -10,6 +10,16 @@ cd "${root}"
 echo "== npm install"
 npm install --no-audit --no-fund
 
+# A plugin's own package.json holds only its runtime dependencies, which Claude Code installs for
+# users when it caches the plugin. The local gates (tsc-plugins, the plugin's node tests) need them
+# too. --ignore-scripts matches that install: no package code runs.
+for lock in plugins/*/package-lock.json; do
+  [[ -e ${lock} ]] || continue
+  plugin_dir="$(dirname "${lock}")"
+  echo "== npm install (${plugin_dir})"
+  npm install --prefix "${plugin_dir}" --ignore-scripts --no-audit --no-fund
+done
+
 echo "== validators"
 npm run --silent validate
 

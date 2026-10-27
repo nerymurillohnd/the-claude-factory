@@ -1,0 +1,12 @@
+{
+  "name": "tailwind-development",
+  "private": true,
+  "description": "Runtime dependencies of the tailwind-development plugin's MCP server, installed by Claude Code when it caches the plugin.",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/server": "2.3.1",
+    "@tailwindcss/language-server": "0.16.0",
+    "vscode-jsonrpc": "9.0.3",
+    "zod": "4.6.7"
+  }
+}

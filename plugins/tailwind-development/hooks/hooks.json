@@ -1,0 +1,23 @@
+{
+  "description": "After Claude edits or writes a file, the plugin's own MCP server returns the Tailwind CSS language server's diagnostics for it to Claude.",
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "mcp_tool",
+            "server": "plugin:tailwind-development:tailwindcss",
+            "tool": "check_file",
+            "input": {
+              "filePath": "${tool_input.file_path}",
+              "format": "hook"
+            },
+            "timeout": 45,
+            "statusMessage": "Checking Tailwind CSS classes…"
+          }
+        ]
+      }
+    ]
+  }
+}

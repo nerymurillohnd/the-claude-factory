@@ -29,6 +29,14 @@
       "mcp__eabf2343-2549-4e10-930f-f3103c7b25c6"
     ]
   },
+  "deniedMcpServers": [
+    {
+      "serverName": "claude.ai Gmail"
+    },
+    {
+      "serverName": "claude.ai Google Calendar"
+    }
+  ],
   "hooks": {
     "PreToolUse": [
       {
@@ -40,8 +48,8 @@
             "args": [],
             "if": "Bash(git commit*)",
             "timeout": 120,
-            "statusMessage": "Running the maintainer validators before the commit…",
-            "onFailure": "block"
+            "onFailure": "block",
+            "statusMessage": "Running the maintainer validators before the commit…"
           }
         ]
       }
@@ -68,15 +76,8 @@
     "forestal-mt@inline": false,
     "frontend-design@claude-plugins-official": false,
     "frontend-design@synced": false,
-    "frontend-design@inline": false
+    "frontend-design@inline": false,
+    "mcp-server-dev@claude-plugins-official": true
   },
-  "deniedMcpServers": [
-    {
-      "serverName": "claude.ai Gmail"
-    },
-    {
-      "serverName": "claude.ai Google Calendar"
-    }
-  ],
   "autoMemoryDirectory": "~/Claude/repositories/the-claude-factory/.claude/memory"
 }

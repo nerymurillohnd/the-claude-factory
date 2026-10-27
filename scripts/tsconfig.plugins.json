@@ -16,6 +16,7 @@
     "../plugins/*/hooks/**/*.tsx",
     "../plugins/*/tests/**/*.ts",
     "../plugins/*/tests/**/*.tsx",
-    "../plugins/*/.claude-plugin"
+    "../plugins/*/.claude-plugin",
+    "../plugins/*/node_modules"
   ]
 }

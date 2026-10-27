@@ -39,6 +39,14 @@ jobs:
           node-version-file: .nvmrc
       - name: Pinned npm tools (no install scripts)
         run: npm ci --ignore-scripts --no-audit --no-fund
+      # tsc-scripts follows the plugin tests' imports into plugin code, which needs that plugin's
+      # runtime packages (ADR_2026-10-27_plugins-ship-runtime-npm-dependencies-through-claude-code-install).
+      - name: Plugin runtime packages (no install scripts)
+        run: |
+          for lock in plugins/*/package-lock.json; do
+            [[ -e ${lock} ]] || continue
+            npm ci --prefix "$(dirname "${lock}")" --ignore-scripts --no-audit --no-fund
+          done
       - name: shellcheck and shfmt
         env:
           GH_TOKEN: ${{ github.token }}
