@@ -1,7 +1,7 @@
 {
   "name": "tailwind-development",
   "displayName": "Tailwind CSS Development",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Designs, builds and refactors Tailwind CSS v4 interfaces with a product designer's craft, and grounds every utility, variant and configuration in its exact official documentation page before verifying the result in your project.",
   "author": {
     "name": "Nery Murillo",

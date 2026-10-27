@@ -8,6 +8,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The
 
 ### Added
 
+- **tailwind-development** 0.2.0 — after every file Claude edits or writes, the official Tailwind CSS language server checks its classes through a bundled MCP server and hands Claude each conflict, non-canonical class and invalid `theme()` path with the exact fix; four read-only tools and per-file-type options.
 - **tailwind-development** 0.1.0 — designs, builds, refactors and reviews Tailwind CSS v4 interfaces with a product designer's craft, grounds every utility, variant and configuration in its exact official documentation page for the Tailwind version your project resolves, and verifies the result in your project.
 
 ### Changed
