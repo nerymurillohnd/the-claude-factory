@@ -1,10 +1,10 @@
 ---
-status: accepted
+status: superseded
 date: 2026-10-24
 decision-makers:
   - "Nery Samuel Murillo"
 supersedes: ADR_2026-10-20_procedures-live-in-project-skills
-superseded-by: none
+superseded-by: ADR_2026-10-26_workflow-contract-lives-in-claude-md
 ---
 
 # WORKFLOW.md is a stage map; instructions live in rules, procedures in skills
