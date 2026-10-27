@@ -6,7 +6,7 @@ tool call changed, runs the tools on each one with the user's own configuration 
 plugin's defaults in hooks/defaults/ only when ruff or basedpyright would find none) and
 reports: exit 0 with a systemMessage when everything passed, stderr and exit 2 when there
 are findings or a tool could not run. Files of other languages are ignored in silence.
-Python 3.9 or later, standard library only.
+Python 3.12 or later, standard library only.
 """
 
 from __future__ import annotations

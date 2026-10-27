@@ -53,7 +53,7 @@ Skill Diagnostics only audits. To create a skill, use Anthropic's `skill-creator
 | :-- | :-- |
 | **Claude Code** | v2.1.176 or later — check with `claude --version` |
 | **Surfaces** | See [Compatibility](#-compatibility) |
-| **External tools** | Python 3.9 or later on `PATH` as `python3`, for the hook. On Windows, Git for Windows, so the hook runs by its path. `git`, only to audit a skill from a URL. Without Python the audit still runs, but the hook can't start: Claude Code shows a hook error after each `SKILL.md` write |
+| **External tools** | Python 3.12 or later on `PATH` as `python3`, for the hook: check with `python3 --version`, and get it from [python.org](https://www.python.org/downloads/) or your package manager. On Windows, [Git for Windows](https://git-scm.com/downloads/win): the hook runs through Git Bash. `git`, only to audit a skill from a URL. Without Python the audit still runs, but the hook can't start: Claude Code shows a hook error after each `SKILL.md` write |
 | **Network** | Used to verify findings against the official Claude documentation and the Claude Code changelog, and to download a skill you audit from a URL. It fetches pages from `code.claude.com`, `claude.com`, `platform.claude.com`, `support.claude.com` and `agentskills.io`. It only downloads public documentation pages; it never uploads your skill's files to those sites. Without network access the audit still runs; findings that need an official page are marked *not verified live* and the verdict is *provisional* |
 | **Accounts / API keys** | None |
 
