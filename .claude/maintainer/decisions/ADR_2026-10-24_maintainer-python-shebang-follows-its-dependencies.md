@@ -1,10 +1,10 @@
 ---
-status: accepted
+status: superseded
 date: 2026-10-24
 decision-makers:
   - "Nery Samuel Murillo"
 supersedes: ADR_2026-10-24_maintainer-python-entry-points-use-a-uv-shebang
-superseded-by: none
+superseded-by: ADR_2026-10-27_maintainer-uv-shebang-drops-pythonsafepath
 ---
 
 # Maintainer Python shebang follows the script's dependencies

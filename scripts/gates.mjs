@@ -40,7 +40,7 @@ const JS_FAMILY = ['js', 'cjs', 'mjs', 'jsx', 'ts', 'cts', 'mts', 'tsx']
  * against its own interpreter; basedpyright-maintainer-other checks the rest outside plugins/.
  */
 /** The shebang of a maintainer script that runs in its own uv environment (PEP 723). */
-const UV_SHEBANG = '#!/usr/bin/env -S PYTHONSAFEPATH=1 uv run --script'
+const UV_SHEBANG = '#!/usr/bin/env -S uv run --script'
 
 /** The repository variables git exports to a hook; gates resolve the repository from their cwd. */
 const GIT_HOOK_VARIABLES = new Set([
