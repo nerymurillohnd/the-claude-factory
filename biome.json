@@ -215,8 +215,7 @@
     },
     {
       "includes": [
-        "scripts/**",
-        ".claude/hooks/**"
+        "scripts/**"
       ],
       "linter": {
         "rules": {

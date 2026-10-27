@@ -314,13 +314,6 @@ export function gatesFor({ root, ci, base }) {
       args: ['-p', 'scripts/tsconfig.json', '--noEmit'],
     },
     {
-      id: 'tsc-claude-hooks',
-      group: 'policy',
-      title: 'tsc on .claude/hooks/',
-      cmd: 'tsc',
-      args: ['-p', '.claude/hooks/tsconfig.json', '--noEmit'],
-    },
-    {
       id: 'shellcheck-maintainer',
       group: 'policy',
       title: 'ShellCheck outside plugins/ and .github/',

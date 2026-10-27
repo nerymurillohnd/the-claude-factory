@@ -27,7 +27,7 @@
     "check:version-bump": "node scripts/gates.mjs --only version-bump",
     "generate": "node scripts/generators/marketplace.mjs && node scripts/generators/catalog.mjs",
     "generate:check": "node scripts/gates.mjs --only marketplace,catalog",
-    "setup": "node .claude/hooks/session-setup.mjs",
+    "setup": ".claude/hooks/repo-setup.sh",
     "labels:sync": "node scripts/sync-labels.mjs",
     "version:bump": "node scripts/bump-version.mjs",
     "validate": "failed=0; for f in scripts/validators/*.py; do \"$f\" || failed=1; done; exit $failed",
