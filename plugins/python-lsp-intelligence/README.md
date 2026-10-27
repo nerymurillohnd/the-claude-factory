@@ -49,7 +49,7 @@
 | :-- | :-- |
 | **Claude Code** | v2.1.292 or later — check with `claude --version` |
 | **Surfaces** | See [Compatibility](#-compatibility) |
-| **External tools** | On the `PATH` of the shell you start `claude` from: `ruff` and `basedpyright` (`uv tool install ruff` and `uv tool install basedpyright`, or `pip install ruff basedpyright`; `basedpyright-langserver` comes with basedpyright), and `python3` 3.9 or later, which runs the hook. Windows: run Claude Code from Git Bash with the same tools on its `PATH` |
+| **External tools** | On the `PATH` of the shell you start `claude` from: `ruff` and `basedpyright` (`uv tool install ruff` and `uv tool install basedpyright`, or `pip install ruff basedpyright`; `basedpyright-langserver` comes with basedpyright), and `python3` 3.12 or later, which runs the hook (check with `python3 --version`; get it from [python.org](https://www.python.org/downloads/) or your package manager). Windows: run Claude Code from Git Bash with the same tools on its `PATH` |
 | **Accounts / API keys** | None |
 
 The plugin doesn't install the tools; Claude Code starts `basedpyright-langserver` by name and the hook starts `ruff` and `basedpyright` by name from your `PATH`.
