@@ -3,6 +3,25 @@
 
 import { ADR_ID, ADR_NAME, ADR_STATUSES, adrId, normalize } from './paths.ts'
 
+/** A list item of the frontmatter, such as `  - Nery`. */
+const LIST_ITEM = /^\s+-\s+(.*)$/
+/** A `key: value` line of the frontmatter; an empty value opens a list. */
+const KEY_VALUE = /^([A-Za-z][\w-]*):\s*(.*)$/
+/** A template placeholder such as `{name}`. */
+const PLACEHOLDER = /^\{.*\}$/
+/** The first line of the template's guidance comment. */
+const TEMPLATE_INTRO = 'Template for .claude/maintainer/decisions/'
+/** An optional-section comment of the template. */
+const OPTIONAL_COMMENT = /<!--\s*Optional:/
+/** The record's `# ` title. */
+const TITLE = /^# (.+)$/m
+/** Any Markdown heading, level 1 to 6. */
+const HEADING = /^#{1,6} /
+/** The frontmatter keys a settled record may still change. */
+const EDITABLE_KEY = /^(status|superseded-by):/
+/** Everything from the first colon of a line to its end. */
+const AFTER_COLON = /:.*$/
+
 export type Frontmatter = {
   scalars: Map<string, string>
   lists: Map<string, string[]>
@@ -31,12 +50,12 @@ export function parseFrontmatter(text: string): Frontmatter | null {
   const lists = new Map<string, string[]>()
   let listKey: string | null = null
   for (const line of lines.slice(1, end)) {
-    const item = /^\s+-\s+(.*)$/.exec(line)
+    const item = LIST_ITEM.exec(line)
     if (item !== null && listKey !== null) {
       lists.get(listKey)?.push(unquote(item[1] ?? ''))
       continue
     }
-    const pair = /^([A-Za-z][\w-]*):\s*(.*)$/.exec(line)
+    const pair = KEY_VALUE.exec(line)
     if (pair === null) {
       listKey = null
       continue
@@ -54,7 +73,7 @@ export function parseFrontmatter(text: string): Frontmatter | null {
   return { scalars, lists }
 }
 
-const isPlaceholder = (value: string): boolean => /^\{.*\}$/.test(value.trim())
+const isPlaceholder = (value: string): boolean => PLACEHOLDER.test(value.trim())
 
 export type AdrContext = {
   name: string
@@ -62,6 +81,98 @@ export type AdrContext = {
   exists: boolean
   /** The IDs of the ADRs in the folder. */
   ids: ReadonlySet<string>
+}
+
+/** Problems with the status and the date, which must match the date in the file name. */
+function statusAndDateProblems(frontmatter: Frontmatter, fileDate: string): string[] {
+  const problems: string[] = []
+  const status = frontmatter.scalars.get('status') ?? ''
+  if (!(ADR_STATUSES as readonly string[]).includes(status)) {
+    problems.push(`status must be one of ${ADR_STATUSES.join(', ')}. Found "${status}".`)
+  }
+  const date = frontmatter.scalars.get('date') ?? ''
+  if (date !== fileDate) {
+    problems.push(`date must equal the date in the file name (${fileDate}). Found "${date}".`)
+  }
+  return problems
+}
+
+const isBlankOrPlaceholder = (person: string): boolean => person === '' || isPlaceholder(person)
+
+/** Problems with the people the record names: decision-makers, consulted and informed. */
+function peopleProblems(frontmatter: Frontmatter): string[] {
+  const problems: string[] = []
+  const makers = frontmatter.lists.get('decision-makers') ?? []
+  if (makers.length === 0 || makers.some(isBlankOrPlaceholder)) {
+    problems.push(
+      'decision-makers must list at least one real person or role, with no template placeholder.',
+    )
+  }
+  for (const key of ['consulted', 'informed'] as const) {
+    if ((frontmatter.lists.get(key) ?? []).some(isBlankOrPlaceholder)) {
+      problems.push(
+        `Remove the ${key} lines, or name a real person or role: ${key} still holds a template placeholder.`,
+      )
+    }
+  }
+  return problems
+}
+
+/** What is wrong with one link to another record, or null when it is `none` or a valid ID. */
+function linkProblem(
+  key: string,
+  value: string | undefined,
+  selfId: string,
+  ids: ReadonlySet<string>,
+): string | null {
+  if (value === undefined) {
+    return `Add "${key}: none" to the frontmatter.`
+  }
+  if (value === 'none') {
+    return null
+  }
+  if (!ADR_ID.test(value)) {
+    return `${key} holds an ID, the ADR file name without .md. Found "${value}".`
+  }
+  if (value === selfId) {
+    return `${key} cannot point at the record itself.`
+  }
+  if (!ids.has(value)) {
+    return `${key} points at ${value}, which has no file in the decisions folder.`
+  }
+  return null
+}
+
+/** Problems with supersedes and superseded-by, and a superseded record that names no successor. */
+function linkProblems(frontmatter: Frontmatter, context: AdrContext): string[] {
+  const problems: string[] = []
+  const selfId = adrId(context.name)
+  for (const key of ['supersedes', 'superseded-by'] as const) {
+    const problem = linkProblem(key, frontmatter.scalars.get(key), selfId, context.ids)
+    if (problem !== null) {
+      problems.push(problem)
+    }
+  }
+  const status = frontmatter.scalars.get('status') ?? ''
+  if (status === 'superseded' && (frontmatter.scalars.get('superseded-by') ?? 'none') === 'none') {
+    problems.push(
+      'A superseded record needs superseded-by set to the ID of the record that replaces it. Change status and superseded-by in one edit.',
+    )
+  }
+  return problems
+}
+
+/** Problems with the body: leftover template comments and a missing title. */
+function bodyProblems(text: string): string[] {
+  const problems: string[] = []
+  if (text.includes(TEMPLATE_INTRO) || OPTIONAL_COMMENT.test(text)) {
+    problems.push('Remove the template comments from the record.')
+  }
+  const title = TITLE.exec(normalize(text))
+  if (title === null || isPlaceholder(title[1] ?? '')) {
+    problems.push('Give the record a title: one "# " heading that names the decision.')
+  }
+  return problems
 }
 
 /** What is wrong with an ADR as it would be saved. An empty list means the record is well formed. */
@@ -81,63 +192,12 @@ export function validateAdr(text: string, context: AdrContext): string[] {
       'Start the file with the YAML frontmatter of the ADR template: status, date, decision-makers, supersedes and superseded-by.',
     ]
   }
-  const problems: string[] = []
-  const status = frontmatter.scalars.get('status') ?? ''
-  if (!(ADR_STATUSES as readonly string[]).includes(status)) {
-    problems.push(`status must be one of ${ADR_STATUSES.join(', ')}. Found "${status}".`)
-  }
-  const date = frontmatter.scalars.get('date') ?? ''
-  if (date !== nameMatch[1]) {
-    problems.push(
-      `date must equal the date in the file name (${nameMatch[1] ?? ''}). Found "${date}".`,
-    )
-  }
-  const makers = frontmatter.lists.get('decision-makers') ?? []
-  if (makers.length === 0 || makers.some((maker) => maker === '' || isPlaceholder(maker))) {
-    problems.push(
-      'decision-makers must list at least one real person or role, with no template placeholder.',
-    )
-  }
-  for (const key of ['consulted', 'informed'] as const) {
-    if (
-      (frontmatter.lists.get(key) ?? []).some((person) => person === '' || isPlaceholder(person))
-    ) {
-      problems.push(
-        `Remove the ${key} lines, or name a real person or role: ${key} still holds a template placeholder.`,
-      )
-    }
-  }
-  const selfId = adrId(context.name)
-  for (const key of ['supersedes', 'superseded-by'] as const) {
-    const value = frontmatter.scalars.get(key)
-    if (value === undefined) {
-      problems.push(`Add "${key}: none" to the frontmatter.`)
-    } else if (value !== 'none') {
-      if (!ADR_ID.test(value)) {
-        problems.push(`${key} holds an ID, the ADR file name without .md. Found "${value}".`)
-      } else if (value === selfId) {
-        problems.push(`${key} cannot point at the record itself.`)
-      } else if (!context.ids.has(value)) {
-        problems.push(`${key} points at ${value}, which has no file in the decisions folder.`)
-      }
-    }
-  }
-  if (status === 'superseded' && (frontmatter.scalars.get('superseded-by') ?? 'none') === 'none') {
-    problems.push(
-      'A superseded record needs superseded-by set to the ID of the record that replaces it. Change status and superseded-by in one edit.',
-    )
-  }
-  if (
-    /Template for \.claude\/maintainer\/decisions\//.test(text) ||
-    /<!--\s*Optional:/.test(text)
-  ) {
-    problems.push('Remove the template comments from the record.')
-  }
-  const title = /^# (.+)$/m.exec(normalize(text))
-  if (title === null || isPlaceholder(title[1] ?? '')) {
-    problems.push('Give the record a title: one "# " heading that names the decision.')
-  }
-  return problems
+  return [
+    ...statusAndDateProblems(frontmatter, nameMatch[1] ?? ''),
+    ...peopleProblems(frontmatter),
+    ...linkProblems(frontmatter, context),
+    ...bodyProblems(text),
+  ]
 }
 
 /** Drops the one section a settled ADR may still fill in: Confirmation, up to the next heading. */
@@ -146,7 +206,7 @@ function withoutConfirmation(lines: string[]): string[] {
   if (start === -1) {
     return lines
   }
-  const next = lines.findIndex((line, index) => index > start && /^#{1,6} /.test(line))
+  const next = lines.findIndex((line, index) => index > start && HEADING.test(line))
   return [...lines.slice(0, start), ...(next === -1 ? [] : lines.slice(next))]
 }
 
@@ -154,7 +214,7 @@ function withoutConfirmation(lines: string[]): string[] {
 function settledShape(text: string): string {
   const lines = normalize(text).split('\n')
   const masked = lines.map((line) =>
-    /^(status|superseded-by):/.test(line) ? line.replace(/:.*$/, ': _') : line,
+    EDITABLE_KEY.test(line) ? line.replace(AFTER_COLON, ': _') : line,
   )
   return withoutConfirmation(masked).join('\n')
 }

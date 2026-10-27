@@ -5,6 +5,18 @@ import { adrAuthority, validateAdr } from './adr.ts'
 import { closedAuthority, pendingAuthority, validateLedger } from './debt.ts'
 import { classify, type RecordRef, resolvePath } from './paths.ts'
 
+/** An absolute path, POSIX or with a Windows drive, with either slash. */
+const ABSOLUTE_PATH = /^([A-Za-z]:)?[\\/]/
+/** The records folder named in a shell word, with or without a trailing slash. */
+const RECORDS_FOLDER = /\.claude\/maintainer(?![\w-])/i
+const WHITESPACE = /\s+/
+/** A word that starts a redirect, such as `>`, `>>` or `2>file`. */
+const REDIRECT = /^\d*>>?/
+/** A redirect whose target is the next word. */
+const BARE_REDIRECT = /^\d*>>?$/
+/** The in-place flag of sed or perl, alone or among other short flags. */
+const IN_PLACE_FLAG = /^-\w*i|^--in-place/
+
 /** The arguments of a Write or Edit call, narrowed from the unknown input of `tool.check`. */
 export type FileInput = {
   path: string
@@ -56,7 +68,7 @@ export function mayWriteRecord(value: unknown): boolean {
     if (input === null) {
       return false
     }
-    const absolute = /^([A-Za-z]:)?[\\/]/.test(input.path)
+    const absolute = ABSOLUTE_PATH.test(input.path)
     return !absolute || classify(resolvePath(input.path, '/')) !== null
   } catch {
     return true
@@ -141,12 +153,68 @@ export function askReason(file: string, reasons: readonly string[]): string {
 }
 
 /** Whether a piece of a shell command names the records folder, with or without a trailing slash. */
-const mentionsRecords = (piece: string): boolean => /\.claude\/maintainer(?![\w-])/i.test(piece)
+const mentionsRecords = (piece: string): boolean => RECORDS_FOLDER.test(piece)
 
 const unquote = (token: string): string => token.replace(/^['"]|['"]$/g, '')
 const SEGMENTS = /&&|\|\||[;|\n]/
 const REMOVES_OR_MOVES = new Set(['rm', 'mv', 'unlink', 'shred', 'truncate'])
 const WRITES_LAST_ARGUMENT = new Set(['cp', 'install', 'ln'])
+
+/** One piece of a shell command, split into words, with `git` folded into its subcommand. */
+type Segment = {
+  tokens: string[]
+  verb: string
+  args: string[]
+}
+
+function parseSegment(segment: string): Segment {
+  const tokens = segment
+    .trim()
+    .split(WHITESPACE)
+    .map(unquote)
+    .filter((token) => token !== '')
+  const [first = '', ...rest] = tokens
+  return first === 'git'
+    ? { tokens, verb: rest[0] ?? '', args: rest.slice(1) }
+    : { tokens, verb: first, args: rest }
+}
+
+/** Whether a redirect in the segment points into the records folder. */
+function redirectsIntoRecords(tokens: readonly string[]): boolean {
+  return tokens.some(
+    (token, index) =>
+      REDIRECT.test(token) &&
+      (mentionsRecords(token) ||
+        (BARE_REDIRECT.test(token) && mentionsRecords(tokens[index + 1] ?? ''))),
+  )
+}
+
+/** Whether the verb of the segment writes, moves or deletes a file it names in the records. */
+function verbWritesRecords(
+  { verb, args }: Segment,
+  names: boolean,
+  insideRecords: boolean,
+): boolean {
+  const inPlace = (verb === 'sed' || verb === 'perl') && args.some((arg) => IN_PLACE_FLAG.test(arg))
+  return (
+    (REMOVES_OR_MOVES.has(verb) && names) ||
+    (WRITES_LAST_ARGUMENT.has(verb) && (mentionsRecords(args.at(-1) ?? '') || insideRecords)) ||
+    (verb === 'tee' && names) ||
+    (verb === 'dd' &&
+      args.some((arg) => arg.startsWith('of=') && (mentionsRecords(arg) || insideRecords))) ||
+    (inPlace && names)
+  )
+}
+
+/** Whether one segment changes files in the records folder, given whether an earlier `cd` entered it. */
+function segmentChangesRecords(segment: Segment, insideRecords: boolean): boolean {
+  const names = segment.args.some(mentionsRecords) || insideRecords
+  return (
+    redirectsIntoRecords(segment.tokens) ||
+    (insideRecords && segment.tokens.some((token) => REDIRECT.test(token))) ||
+    verbWritesRecords(segment, names, insideRecords)
+  )
+}
 
 /**
  * Whether a shell command rewrites, moves or deletes the records folders, or writes into them.
@@ -154,38 +222,13 @@ const WRITES_LAST_ARGUMENT = new Set(['cp', 'install', 'ln'])
  */
 export function bashReason(command: string): string | null {
   let insideRecords = false
-  for (const segment of command.split(SEGMENTS)) {
-    const tokens = segment
-      .trim()
-      .split(/\s+/)
-      .map(unquote)
-      .filter((token) => token !== '')
-    const [first = '', ...rest] = tokens
-    const verb = first === 'git' ? (rest[0] ?? '') : first
-    const args = first === 'git' ? rest.slice(1) : rest
-    if (verb === 'cd') {
-      insideRecords = insideRecords || args.some(mentionsRecords)
+  for (const piece of command.split(SEGMENTS)) {
+    const segment = parseSegment(piece)
+    if (segment.verb === 'cd') {
+      insideRecords = insideRecords || segment.args.some(mentionsRecords)
       continue
     }
-    const names = args.some(mentionsRecords) || insideRecords
-    const redirect = tokens.some(
-      (token, index) =>
-        /^\d*>>?/.test(token) &&
-        (mentionsRecords(token) ||
-          (/^\d*>>?$/.test(token) && mentionsRecords(tokens[index + 1] ?? ''))),
-    )
-    const inPlace =
-      (verb === 'sed' || verb === 'perl') && args.some((arg) => /^-\w*i|^--in-place/.test(arg))
-    const flagged =
-      redirect ||
-      (insideRecords && tokens.some((token) => /^\d*>>?/.test(token))) ||
-      (REMOVES_OR_MOVES.has(verb) && names) ||
-      (WRITES_LAST_ARGUMENT.has(verb) && (mentionsRecords(args.at(-1) ?? '') || insideRecords)) ||
-      (verb === 'tee' && names) ||
-      (verb === 'dd' &&
-        args.some((arg) => arg.startsWith('of=') && (mentionsRecords(arg) || insideRecords))) ||
-      (inPlace && names)
-    if (flagged) {
+    if (segmentChangesRecords(segment, insideRecords)) {
       return 'The command changes files in .claude/maintainer/. Records are written with the Write and Edit tools, which apply the rules of the records, and not through the shell.'
     }
   }
