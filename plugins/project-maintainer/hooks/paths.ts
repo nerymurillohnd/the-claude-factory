@@ -25,6 +25,10 @@ export type RecordRef = {
 }
 
 const RECORD_PATH = /^(.*\/\.claude\/maintainer)\/(decisions|technical-debt)\/([^/]+)$/i
+/** An absolute path once backslashes are slashes, POSIX or with a Windows drive. */
+const ABSOLUTE_SLASHED = /^([A-Za-z]:)?\//
+/** A Windows drive at the start of a path, such as `C:`. */
+const DRIVE = /^[A-Za-z]:/
 
 /**
  * The absolute path a tool call really writes: relative paths are taken from the session's
@@ -32,10 +36,10 @@ const RECORD_PATH = /^(.*\/\.claude\/maintainer)\/(decisions|technical-debt)\/([
  */
 export function resolvePath(path: string, cwd: string): string {
   const slashed = path.replaceAll('\\', '/')
-  const absolute = /^([A-Za-z]:)?\//.test(slashed)
+  const absolute = ABSOLUTE_SLASHED.test(slashed)
     ? slashed
     : `${cwd.replaceAll('\\', '/')}/${slashed}`
-  const drive = /^[A-Za-z]:/.exec(absolute)?.[0] ?? ''
+  const drive = DRIVE.exec(absolute)?.[0] ?? ''
   const parts: string[] = []
   for (const part of absolute.slice(drive.length).split('/')) {
     if (part === '..') {
@@ -70,7 +74,7 @@ export function classify(path: string): RecordRef | null {
 
 /** The ID of an ADR is its file name without the extension. */
 export function adrId(name: string): string {
-  return name.replace(/\.md$/, '')
+  return name.endsWith('.md') ? name.slice(0, -'.md'.length) : name
 }
 
 /** Line endings and trailing spaces never count as a change. */

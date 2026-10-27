@@ -13,6 +13,7 @@ import {
   authorityReasons,
   bashReason,
   commitSignals,
+  type FileInput,
   fileInput,
   formatProblems,
   mayWriteRecord,
@@ -23,6 +24,11 @@ import {
   withKeepNote,
 } from './guard.ts'
 import { ADR_NAME, adrId, classify, type RecordRef, resolvePath } from './paths.ts'
+
+/** The debt folder at the end of a path, swapped for the decisions folder beside it. */
+const TECHNICAL_DEBT_DIR = /\/technical-debt$/
+/** A Bash command that runs `git commit`. */
+const GIT_COMMIT = /\bgit\s+commit\b/
 
 type Read = {
   /** The text of the file, or null when it does not exist (or could not be read). */
@@ -43,8 +49,7 @@ async function readText($: EngineInterface, path: string): Promise<Read> {
 }
 
 async function around($: EngineInterface, ref: RecordRef): Promise<Surroundings> {
-  const decisions =
-    ref.kind === 'adr' ? ref.dir : ref.dir.replace(/\/technical-debt$/, '/decisions')
+  const decisions = ref.kind === 'adr' ? ref.dir : ref.dir.replace(TECHNICAL_DEBT_DIR, '/decisions')
   let names: string[] = []
   try {
     names = (await $.fs.list(decisions))
@@ -59,6 +64,24 @@ async function around($: EngineInterface, ref: RecordRef): Promise<Surroundings>
   }
   const other = ref.kind === 'pending-debt' ? 'closed-debt.md' : 'pending-debt.md'
   return { otherLedger: (await readText($, `${ref.dir}/${other}`)).text, adrIds }
+}
+
+/** A Write or Edit call that saves a record: its arguments, the resolved path and the record. */
+type Target = {
+  input: FileInput
+  path: string
+  ref: RecordRef
+}
+
+/** The record a Write or Edit call saves, or null when the call is not one or saves another file. */
+async function recordTarget($: EngineInterface, value: unknown): Promise<Target | null> {
+  const input = fileInput(value)
+  if (input === null) {
+    return null
+  }
+  const path = resolvePath(input.path, await $.session.cwd())
+  const ref = classify(path)
+  return ref === null ? null : { input, path, ref }
 }
 
 async function headOf($: EngineInterface, cwd: string): Promise<string> {
@@ -76,12 +99,11 @@ export function register(on: On, options: PluginOptions): void {
 
   // Format guard: runs before the permission check, so a malformed record never reaches a prompt.
   on('tool.call', { tool: ['Write', 'Edit'] }, async ($, e, next) => {
-    const input = fileInput(e)
-    const path = input === null ? null : resolvePath(input.path, await $.session.cwd())
-    const ref = path === null ? null : classify(path)
-    if (input === null || path === null || ref === null) {
+    const target = await recordTarget($, e)
+    if (target === null) {
       return next(e)
     }
+    const { input, path, ref } = target
     const { text: current, failed } = await readText($, path)
     if (failed) {
       return {
@@ -107,12 +129,11 @@ export function register(on: On, options: PluginOptions): void {
   // Authority guard: only the person can approve rewriting a settled record.
   on('tool.check', { tool: ['Write', 'Edit'] }, async ($, e, next) => {
     const decided = await next(e)
-    const input = decided.decision === 'deny' ? null : fileInput(e.input)
-    const path = input === null ? null : resolvePath(input.path, await $.session.cwd())
-    const ref = path === null ? null : classify(path)
-    if (input === null || path === null || ref === null) {
+    const target = decided.decision === 'deny' ? null : await recordTarget($, e.input)
+    if (target === null) {
       return decided
     }
+    const { input, path, ref } = target
     const { text: current, failed } = await readText($, path)
     if (failed) {
       return {
@@ -172,7 +193,7 @@ export function register(on: On, options: PluginOptions): void {
   // After a commit that changes dependencies, schema, CI or infrastructure, or whose message says
   // workaround, temporary or revert, remind Claude that a decision or a debt may be worth recording.
   on('tool.call', { tool: 'Bash' }, async ($, e, next) => {
-    if (!nudge || !/\bgit\s+commit\b/.test(e.command)) {
+    if (!nudge || !GIT_COMMIT.test(e.command)) {
       return next(e)
     }
     const cwd = await $.session.cwd()

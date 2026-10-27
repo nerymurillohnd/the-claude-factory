@@ -2,6 +2,19 @@
 
 import { ADR_ID, DEBT_ID, DEBT_STATUSES, normalize, OUTCOMES } from './paths.ts'
 
+/** The heading that opens an entry, such as `### DEBT-007`. */
+const ENTRY_HEADING = /^### (DEBT-\w+)/
+/** A heading of level 1 to 3, which closes the open entry or section. */
+const SECTION_HEADING = /^#{1,3} /
+/** The heading of the ledger's Index section. */
+const INDEX_HEADING = /^## .*Index/
+/** The separator row under a Markdown table header. */
+const TABLE_RULE = /^\|\s*-/
+/** A date written YYYY-MM-DD. */
+const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/
+/** The "Superseded by" line of a closed entry, the one field it may still change. */
+const SUPERSEDED_BY_LINE = /^(- \*\*Superseded by:\*\*).*$/m
+
 export type Entry = {
   id: string
   text: string
@@ -37,21 +50,21 @@ export function parseLedger(text: string): Ledger {
     }
   }
   for (const line of lines) {
-    const heading = /^### (DEBT-\w+)/.exec(line)
+    const heading = ENTRY_HEADING.exec(line)
     if (heading !== null) {
       close()
       open = { id: heading[1] ?? '', lines: [line] }
       inIndex = false
       continue
     }
-    if (/^#{1,3} /.test(line)) {
+    if (SECTION_HEADING.test(line)) {
       close()
-      inIndex = /^## .*Index/.test(line)
+      inIndex = INDEX_HEADING.test(line)
       continue
     }
     if (open !== null) {
       open.lines.push(line)
-    } else if (inIndex && line.startsWith('|') && !/^\|\s*-/.test(line)) {
+    } else if (inIndex && line.startsWith('|') && !TABLE_RULE.test(line)) {
       index.push(cells(line))
     }
   }
@@ -66,8 +79,7 @@ const field = (entry: string, name: string): string | null => {
   return match === null ? null : (match[1] ?? '')
 }
 
-const isDate = (value: string | null): boolean =>
-  value !== null && /^\d{4}-\d{2}-\d{2}$/.test(value)
+const isDate = (value: string | null): boolean => value !== null && ISO_DATE.test(value)
 
 export type LedgerKind = 'pending-debt' | 'closed-debt'
 
@@ -114,13 +126,20 @@ export function validateLedger(
     problems.push(...entryProblems(kind, entry))
   }
   if (kind === 'closed-debt') {
-    for (const row of after.index) {
-      const outcome = row[2] ?? ''
-      if (row.length > 0 && !(OUTCOMES as readonly string[]).includes(outcome)) {
-        problems.push(
-          `The Index row of ${row[1] ?? 'an item'} has outcome "${outcome}". Use ${OUTCOMES.join(', ')}.`,
-        )
-      }
+    problems.push(...closedIndexProblems(after.index))
+  }
+  return problems
+}
+
+/** The Index rows of the closed ledger whose outcome is not one of the known outcomes. */
+function closedIndexProblems(index: readonly string[][]): string[] {
+  const problems: string[] = []
+  for (const row of index) {
+    const outcome = row[2] ?? ''
+    if (row.length > 0 && !(OUTCOMES as readonly string[]).includes(outcome)) {
+      problems.push(
+        `The Index row of ${row[1] ?? 'an item'} has outcome "${outcome}". Use ${OUTCOMES.join(', ')}.`,
+      )
     }
   }
   return problems
@@ -162,8 +181,7 @@ function entryProblems(kind: LedgerKind, entry: Entry): string[] {
 }
 
 /** The closed entry with its one editable field blanked out. */
-const settledEntry = (text: string): string =>
-  text.replace(/^(- \*\*Superseded by:\*\*).*$/m, '$1 _')
+const settledEntry = (text: string): string => text.replace(SUPERSEDED_BY_LINE, '$1 _')
 
 /** Why an edit to a closed ledger needs the owner's approval: it rewrites a closed record. */
 export function closedAuthority(current: string, resulting: string): string[] {
