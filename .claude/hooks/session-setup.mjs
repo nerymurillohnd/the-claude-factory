@@ -108,8 +108,8 @@ function globalVersion(cmd) {
   }
 }
 
-// @types/node follows the global node major; a tool package must equal its global CLI, and
-// check-repo.mjs allows only @types/* in devDependencies.
+// @types/node follows the global node major; a pinned tool package should equal the global CLI the
+// editor uses, so both report the same findings.
 function compareWithGlobals() {
   const dev =
     /** @type {PackageJson | undefined} */ (readJson('package.json'))?.devDependencies ?? {}
@@ -127,18 +127,29 @@ function compareWithGlobals() {
       const cli = GLOBAL_CLI[/** @type {keyof typeof GLOBAL_CLI} */ (name)]
       const g = globalVersion(cli)
       lines.push(`${g === have ? 'OK' : 'MISMATCH'} ${name} ${have} vs global ${cli} ${g}`)
-      lines.push(`POLICY ${name} is a tool in devDependencies; check-repo.mjs allows only @types/*`)
-    } else if (!name.startsWith('@types/')) {
-      lines.push(`POLICY ${name} ${have} in devDependencies; check-repo.mjs allows only @types/*`)
     }
   }
   return ['- Installed vs global:', ...lines.map((l) => `    ${l}`)].join('\n')
 }
 
+// Husky's prepare sets core.hooksPath on npm ci; a clone set up some other way has no git hooks.
+function reportGitHooks() {
+  const r = run('git', ['config', '--get', 'core.hooksPath'])
+  return r.out === '.husky/_'
+    ? '- Git hooks: Husky is active (pre-commit npm test, pre-push npm run gates).'
+    : `- Git hooks: NOT active (core.hooksPath is "${r.out}"); run npm run prepare.`
+}
+
 if (!existsSync('package.json')) {
   console.log('- Setup skipped: no package.json in the project root.')
 } else {
-  for (const step of [syncNodeModules, runValidators, reportOutdated, compareWithGlobals]) {
+  for (const step of [
+    syncNodeModules,
+    reportGitHooks,
+    runValidators,
+    reportOutdated,
+    compareWithGlobals,
+  ]) {
     try {
       console.log(step())
     } catch (e) {
