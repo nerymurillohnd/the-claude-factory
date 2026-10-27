@@ -1,6 +1,6 @@
 ---
 name: tailwind-ui-design
-description: Designs, builds, refactors and reviews user interfaces in Tailwind CSS v4 with a product designer's craft, starting from a written visual hierarchy and carrying it through design-system tokens in @theme, OKLCH colour ramps, spacing and type scales, elevation, data and action presentation, states and visual verification, so the result never looks like generic generated UI. Use whenever a task builds or redesigns a page, view, component, form, table, dashboard, card or landing section in a Tailwind project, refactors or polishes an existing Tailwind interface, or asks for a design review of one, even when the request only says make it look better.
+description: Designs, builds, refactors and reviews user interfaces in Tailwind CSS v4 with a product designer's craft, starting from a written visual hierarchy and carrying it through design-system tokens in @theme, OKLCH colour ramps, spacing and type scales, elevation, data and action presentation, states and visual verification, so the result never looks like generic generated UI. Use whenever a task builds or redesigns a page, view, component, form, table, dashboard, card, header or landing section in a Tailwind project, refactors or polishes an existing Tailwind interface, reviews its design, or edits classes to change how something looks or reads (make it stand out, less cramped, more polished), even on a small snippet and even when the request only says make it look better.
 license: MIT
 ---
 
@@ -13,7 +13,7 @@ This skill is the craft layer of interface work in Tailwind CSS v4. Its spine is
 It works with two neighbours and never repeats them:
 
 - **Aesthetic direction** (the subject-grounded identity, typeface choice, the plan-review-build-critique loop, interface writing): the `frontend-design` skill when it is installed, or the project's own brief. This skill executes a direction; it does not invent a house style.
-- **Exact Tailwind syntax and behaviour**: the `tailwind-official-docs` skill of this plugin. Whenever a decision needs a class, variant, directive or `@theme` namespace you are not certain of, route there instead of writing it from memory.
+- **Exact Tailwind syntax and behaviour**: the sibling skill `tailwind-development:tailwind-official-docs`. Whenever a decision needs a class, variant, directive or `@theme` namespace you are not certain of, invoke it through the Skill tool by that name instead of writing it from memory.
 
 Precedence, highest first: the project's rules and design system, the user's brief, the aesthetic direction, then this skill's defaults. The defaults here apply only where the project leaves an axis free.
 
@@ -101,7 +101,7 @@ These recur in almost every interface; apply them without waiting to open a refe
 
 The decisions of 5.1 and 5.2 in full: [references/composition.md](references/composition.md). 5.3 to 5.5: [references/surface-and-finish.md](references/surface-and-finish.md).
 
-For each decision whose Tailwind syntax you are not certain of, use `tailwind-official-docs`, which reads the exact page.
+For each decision whose Tailwind syntax you are not certain of, invoke `tailwind-development:tailwind-official-docs`, which reads the exact page.
 
 ## 6. Cover every state and real content
 
@@ -121,7 +121,21 @@ A class list is not a design. When the environment can render:
 - Measure the contrast of rendered text and controls against WCAG 2.2 AA: 4.5:1 for normal text, 3:1 for large text and for the boundaries of controls and focus indicators. Measure the colours as rendered, never infer them from token names.
 - Check focus visibility by keyboard, reduced motion, and the states and content extremes of step 6.
 
-When nothing can be rendered, say which checks did not run. Never claim a visual result from a successful build.
+When there is no project build to render (the Claude app, where an HTML artifact is the only output; a prototype or design proposal before code exists; a before-and-after comparison of a proposed change), render a standalone HTML page with the Tailwind Play CDN:
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.3.3"></script>
+<style type="text/tailwindcss">
+  @theme {
+    --color-brand-600: oklch(0.52 0.19 265);
+  }
+</style>
+```
+
+- Pin an exact version that matches the project's Tailwind when there is one; put the project's tokens in the `@theme` block so the preview uses its system.
+- Tailwind states that the Play CDN "is designed for development purposes only, and is not intended for production". Use it only for previews, and say so. It never replaces the project's build: when a project exists, its own build is the verification.
+
+When nothing can be rendered at all, say which checks did not run. Never claim a visual result from a successful build.
 
 ## 8. Critique before reporting
 

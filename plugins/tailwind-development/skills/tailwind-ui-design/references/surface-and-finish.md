@@ -1,6 +1,6 @@
 # Surface and finish: colour, depth, media, details and states
 
-The decisions of steps 5.3 to 5.5 and 6, applied only once the ranking and spacing already read. Each one follows the written ranking: the strongest colour, the highest elevation and the most finish go to the primary element. Exact utilities: `tailwind-official-docs`.
+The decisions of steps 5.3 to 5.5 and 6, applied only once the ranking and spacing already read. Each one follows the written ranking: the strongest colour, the highest elevation and the most finish go to the primary element. Exact utilities: `tailwind-development:tailwind-official-docs`.
 
 ## Contents
 
@@ -63,7 +63,7 @@ Use colour accents sparingly: a coloured strip on one element (the active naviga
 
 Break monotony with surfaces rather than ornaments: a surface colour change between sections, a subtle gradient of close hues, a low-contrast pattern on a whole section or one edge, one deliberately placed shape. Keep decoration low-contrast so content stays readable.
 
-Use fewer borders. Separate with a shadow when the element differs from the background, with two slightly different surface colours, or with more space. When a border and a background change coincide, remove the border.
+Let separation come from the cheapest signal that works: more space first, then two slightly different surface colours, then a shadow when the element sits above its background. A border is the last resort, and a border that coincides with a background change goes.
 
 Question the default form of each component: a menu can have sections, descriptions and icons; a table can merge columns and carry images and badges; a long settings page can become grouped panels.
 

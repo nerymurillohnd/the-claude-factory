@@ -1,6 +1,6 @@
 # Composition: rank, actions, data, space and type
 
-The decisions of steps 5.1 and 5.2: encode the written ranking of step 1 in structure, space and type before any colour, depth or decoration is added. Exact utilities and variants: `tailwind-official-docs`.
+The decisions of steps 5.1 and 5.2: encode the written ranking of step 1 in structure, space and type before any colour, depth or decoration is added. Exact utilities and variants: `tailwind-development:tailwind-official-docs`.
 
 ## Contents
 

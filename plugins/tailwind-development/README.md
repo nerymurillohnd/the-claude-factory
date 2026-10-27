@@ -39,7 +39,7 @@
 | Component | Name | What it does | How it runs |
 | :-- | :-- | :-- | :-- |
 | 🎯 Skill | `tailwind-development:tailwind-ui-design` | Builds, refactors and reviews interfaces with a product designer's craft: reads your tokens and components first, checks the systems exist, composes hierarchy before colour, depth and finish, covers every state, verifies the rendered result and critiques it against generic-UI tells | Automatically when you build, redesign, polish or review a page, view or component in a Tailwind project, or `/tailwind-development:tailwind-ui-design` |
-| 🎯 Skill | `tailwind-development:tailwind-official-docs` | Reads your installed Tailwind version and setup, plans the exact official page for each utility family, variant and configuration the task touches, implements the change and verifies it with your project's own checks | Automatically when you create, change, review or debug Tailwind classes, or `/tailwind-development:tailwind-official-docs` |
+| 🎯 Skill | `tailwind-development:tailwind-official-docs` | Reads your installed Tailwind version and setup, plans the exact official page for each utility family, variant and configuration the task touches, implements the change and verifies it with your project's own checks | Automatically when the question is how Tailwind works or how to write something in it (classes, variants, `@theme`, missing styles, setup, upgrades), and whenever the design skill needs exact syntax; or `/tailwind-development:tailwind-official-docs` |
 
 ## ✅ Requirements
 
@@ -101,7 +101,7 @@ In the desktop app's **Code** tab you can also click **+** next to the prompt bo
 
 ## 🚀 Usage
 
-You don't need to call anything: `tailwind-ui-design` loads when you build, redesign or review an interface, and `tailwind-official-docs` when you work on Tailwind classes, variants, themes or setup; the design skill hands every syntax question to the docs skill. To call one directly, type `/tailwind-development:tailwind-ui-design` or `/tailwind-development:tailwind-official-docs` followed by your request.
+You don't need to call anything: `tailwind-ui-design` loads when you build, redesign or review an interface or change how something looks, and `tailwind-official-docs` when the question is Tailwind syntax, behaviour, setup or an upgrade; the design skill hands every syntax question to the docs skill. To call one directly, type `/tailwind-development:tailwind-ui-design` or `/tailwind-development:tailwind-official-docs` followed by your request.
 
 ### Redesign a view that looks generic
 
@@ -206,6 +206,8 @@ Run `/reload-plugins`, then type `/tailwind-development:` to list its skills. If
 <summary><b>How does it work with Anthropic's frontend-design skill?</b></summary>
 
 They complement each other. `frontend-design` sets the aesthetic direction: the identity, the typefaces, the look. `tailwind-ui-design` supplies the craft beneath it (hierarchy, systems, colour ramps, depth, states, verification) and its Tailwind v4 implementation. Without `frontend-design`, Claude takes the direction from your project's brand or brief.
+
+`tailwind-ui-design` works best with `frontend-design` installed; it doesn't depend on it, and this plugin never installs it for you.
 
 </details>
 

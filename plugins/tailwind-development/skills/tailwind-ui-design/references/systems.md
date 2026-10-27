@@ -1,6 +1,6 @@
 # Systems: the tokens a design is made from
 
-Build these before composing, or extend them when a task needs a value they lack. In Tailwind v4 a token in `@theme` both stores the value and creates the utilities that use it, so a system expressed as tokens is enforced by which classes exist. Check exact namespaces and syntax with `tailwind-official-docs` (`theme`, `colors`, `font-size`, `box-shadow`, `border-radius`).
+Build these before composing, or extend them when a task needs a value they lack. In Tailwind v4 a token in `@theme` both stores the value and creates the utilities that use it, so a system expressed as tokens is enforced by which classes exist. Check exact namespaces and syntax with `tailwind-development:tailwind-official-docs` (`theme`, `colors`, `font-size`, `box-shadow`, `border-radius`).
 
 ## Contents
 
