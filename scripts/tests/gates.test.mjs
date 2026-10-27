@@ -279,7 +279,7 @@ describe('validator gates', () => {
   test('every validator runs in the CI python group on Python 3.15', () => {
     const gates = gatesFor({ root: ROOT, ci: true, base: '' })
     const files = readdirSync(join(ROOT, 'scripts', 'validators')).filter((f) => f.endsWith('.py'))
-    assert.equal(files.length, 9)
+    assert.equal(files.length, 10)
     for (const file of files) {
       const gate = gates.find((x) => x.id === `validator:${file.replace(/\.py$/, '')}`)
       assert.ok(gate, `no gate for ${file}`)

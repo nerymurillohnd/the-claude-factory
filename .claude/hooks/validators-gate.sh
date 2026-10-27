@@ -59,7 +59,7 @@ if [[ -z ${project_dir} ]]; then
 fi
 cd "${project_dir}"
 
-# The plugin structure validators only: versioning (bumps, changelogs) belongs to the release.
+# The structure validators only: versioning (bumps, changelogs) belongs to the release.
 VALIDATORS=(
   lsp-json-schema.py
   mcp-json-schema.py
@@ -70,6 +70,7 @@ VALIDATORS=(
   plugin-versions-consistency.py
   plugin-names-consistency.py
   readme-catalog-consistency.py
+  skill-references.py
 )
 
 output=""

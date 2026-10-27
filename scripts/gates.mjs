@@ -60,6 +60,7 @@ const MAINTAINER_PYTHON = [
   'scripts/validators',
   'scripts/generators',
   'scripts/tests/schemas',
+  'scripts/tests/validators',
   'scripts/tests/run_pytest.py',
 ]
 
@@ -393,7 +394,7 @@ export function gatesFor({ root, ci, base }) {
       group: 'python',
       title: 'pytest on the maintainer tests, no skips',
       cmd: 'scripts/tests/run_pytest.py',
-      args: ['scripts/tests/schemas'],
+      args: ['scripts/tests/schemas', 'scripts/tests/validators'],
     },
     {
       id: 'claude-validate:marketplace',

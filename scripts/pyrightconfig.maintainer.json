@@ -6,6 +6,7 @@
     "validators",
     "generators",
     "tests/schemas",
+    "tests/validators",
     "tests/run_pytest.py"
   ]
 }

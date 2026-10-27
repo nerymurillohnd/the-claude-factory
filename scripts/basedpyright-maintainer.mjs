@@ -14,7 +14,13 @@ import { fail, isMain, ROOT } from './lib.mjs'
 const CONFIG = 'scripts/pyrightconfig.maintainer.json'
 const PYTEST_RUNNER = 'scripts/tests/run_pytest.py'
 /** The paths the maintainer config includes, relative to the repository root. */
-const COVERED = ['scripts/validators', 'scripts/generators', 'scripts/tests/schemas', PYTEST_RUNNER]
+const COVERED = [
+  'scripts/validators',
+  'scripts/generators',
+  'scripts/tests/schemas',
+  'scripts/tests/validators',
+  PYTEST_RUNNER,
+]
 
 /**
  * The tracked Python files the maintainer config covers.
@@ -35,7 +41,11 @@ export function coveredFiles(root) {
  * @returns {string | null}
  */
 export function environmentFor(root, file) {
-  if (file === PYTEST_RUNNER || file.startsWith('scripts/tests/schemas/')) {
+  if (
+    file === PYTEST_RUNNER ||
+    file.startsWith('scripts/tests/schemas/') ||
+    file.startsWith('scripts/tests/validators/')
+  ) {
     return PYTEST_RUNNER
   }
   const firstLine = readFileSync(join(root, file), 'utf8').split('\n', 1)[0] ?? ''
