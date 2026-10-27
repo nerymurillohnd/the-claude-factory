@@ -144,6 +144,7 @@ test('names and lines draw control and direction characters as U+FFFD, one for o
 
 test('git status reads statuses, renames, branch and upstream under the root', () => {
   const output = [
+    // biome-ignore lint/security/noSecrets: a fake git object id in a test fixture, not a secret
     '# branch.oid 0123456789abcdef',
     '# branch.head main',
     '# branch.upstream origin/main',

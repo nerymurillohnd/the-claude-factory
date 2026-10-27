@@ -731,6 +731,7 @@ test('a file its default app would run is never opened there', async ($, on) => 
 })
 
 test('a file name or a preview line never draws a control character', async ($, on) => {
+  // biome-ignore lint/security/noSecrets: a terminal-escape test fixture, not a secret
   const name = 'a\u001b[2Jb\u202Etxt.md'
   const seen = stubWorld(on, {
     files: { [name]: '\u001b]0;title\u0007hello\r\nline two\u009b31m\r\n' },
