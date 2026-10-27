@@ -49,7 +49,7 @@
 | :-- | :-- |
 | **Claude Code** | v2.1.292 or later — check with `claude --version` |
 | **Surfaces** | See [Compatibility](#-compatibility) |
-| **External tools** | On the `PATH` of the shell you start `claude` from: `ruff` and `basedpyright` (`uv tool install ruff` and `uv tool install basedpyright`, or `pip install ruff basedpyright`; `basedpyright-langserver` comes with basedpyright), and `python3` 3.12 or later, which runs the hook (check with `python3 --version`; get it from [python.org](https://www.python.org/downloads/) or your package manager). Windows: run Claude Code from Git Bash with the same tools on its `PATH` |
+| **External tools** | On the `PATH` of the shell you start `claude` from: `ruff` and `basedpyright` (`uv tool install ruff` and `uv tool install basedpyright`, or `pip install ruff basedpyright`; `basedpyright-langserver` comes with basedpyright), and `python3` 3.12 or later, which runs the hook (check with `python3 --version`; get it from [python.org](https://www.python.org/downloads/) or your package manager). Windows: run Claude Code from Git Bash with the same tools on its `PATH`, and check `python3 --version` there. Python's install manager from python.org adds the `python3` command; the older full installer (`python-3.x.exe`) adds only `python` and `py`, so the hook can't find Python |
 | **Accounts / API keys** | None |
 
 The plugin doesn't install the tools; Claude Code starts `basedpyright-langserver` by name and the hook starts `ruff` and `basedpyright` by name from your `PATH`.
@@ -238,7 +238,7 @@ Each file extension gets one server. When two enabled plugins claim `.py`, the f
 <details>
 <summary><b>Does it work on Windows?</b></summary>
 
-Through Git Bash: start Claude Code from a Git Bash shell that has `python3`, `ruff` and `basedpyright` on its `PATH`.
+Through Git Bash: start Claude Code from a Git Bash shell that has `python3`, `ruff` and `basedpyright` on its `PATH`. Python's install manager from python.org adds the `python3` command; the older full installer (`python-3.x.exe`) adds only `python` and `py`, so the hook can't find Python.
 
 </details>
 
