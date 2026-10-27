@@ -51,7 +51,7 @@
 | :---------------------- | :------------------------------------------------------------------------ |
 | **Claude Code**         | v2.1.292 or later — check with `claude --version`   |
 | **Surfaces**            | See [Compatibility](#-compatibility)                                      |
-| **External tools**      | For the language-server checks: Node.js 20 or later and npm on your `PATH` (check with `node --version` and `npm --version`; install from [nodejs.org](https://nodejs.org)), and `tailwindcss` installed in your project. Claude uses your project's own package manager and scripts to verify changes. Optional: the Context7 MCP server, which Claude queries first for the docs when you have it |
+| **External tools**      | For the language-server checks: Node.js 24 or later and npm on your `PATH` (check with `node --version` and `npm --version`; install from [nodejs.org](https://nodejs.org)), and `tailwindcss` installed in your project. Claude uses your project's own package manager and scripts to verify changes. Optional: the Context7 MCP server, which Claude queries first for the docs when you have it |
 | **Accounts / API keys** | None                                                                      |
 | **Network**             | See [What this plugin runs and sends](#-what-this-plugin-runs-and-sends)  |
 

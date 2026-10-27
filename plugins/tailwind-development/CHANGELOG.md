@@ -11,7 +11,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - Tailwind CSS language-server checks in Claude Code: after every file Claude edits or writes, the official Tailwind CSS language server reviews it and Claude gets each class conflict, non-canonical class and invalid `theme()` path or directive with the exact replacement to apply. It claims no file type, so your TypeScript, Svelte or other language servers keep working.
 - `tailwindcss` MCP server with four read-only tools Claude can call: `check_file` (a file's diagnostics with their fixes), `class_css` (the CSS and resolved color a class generates in your theme), `project_classes` (the classes your theme defines for a prefix, variants included) and `sort_classes` (Tailwind's official class order).
 - Options: one switch per file type for the automatic check (CSS and preprocessors, HTML, JavaScript and TypeScript, Vue, Svelte, Astro, Markdown and MDX, server templates; all on by default), the class functions and class attributes the checks read, and the Tailwind CSS entry point for monorepos, several entry points or `@reference` in CSS modules and `<style>` blocks.
-- Requires Node.js 20 or later and npm for the checks. Claude Code downloads the plugin's pinned packages from the npm registry when it installs or updates the plugin.
+- Requires Node.js 24 or later and npm for the checks. Claude Code downloads the plugin's pinned packages from the npm registry when it installs or updates the plugin.
 
 ## [0.1.0] - 2026-10-27
 
