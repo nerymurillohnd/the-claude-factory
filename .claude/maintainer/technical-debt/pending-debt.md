@@ -297,16 +297,19 @@ Add an item only when all of these hold:
 
 #### 🔎 Evidence
 
-- **Confirmed facts:** run 39733419072 on PR #42 reported `permission_denials_count: 4`; the workflow's `--allowedTools` allows only inline comments.
-- **Inferences:** the reviewer could not read what it needed.
-- **Open questions:** which tools were denied.
+- **Confirmed facts:**
+  - Run 39733419072 on PR #42 reported `permission_denials_count: 4`; the workflow's `--allowedTools` allows only inline comments.
+  - Read on 2026-10-27: runs 40281660797 (2026-10-26, a Dependabot PR) and 40298479231 (2026-10-26, `fix/block-no-verify-timeout-comment`) reported 0 denials; run 40489673742 (2026-10-27, PR #53) reported 3.
+  - The run log prints only the count, not the denied tool names.
+- **Inferences:** the reviewer could not read what it needed; the denials depend on the pull request, not on every run.
+- **Open questions:** which tools were denied, and where Claude Code reports their names for a `claude-code-action` run.
 
 #### 📈 Impact and next step
 
 - **Impact / risk:** weaker automated reviews.
-- **Why it is not fixed now:** the denied tool names are unread.
-- **Next action:** read them in the run's log, then propose to Nery which read-only tools to allow.
-- **Review condition:** closes when a review run reports no denial.
+- **Why it is not fixed now:** the denied tool names are not in the run log.
+- **Next action:** have the workflow print the denied tool names (the action's execution output file, uploaded as an artifact or echoed), then propose to Nery which read-only tools to allow.
+- **Review condition:** closes when review runs on pull requests that edit plugins report no denial.
 - **Related records:** none.
 
 ### DEBT-028 — TypeScript 7 and 5.x were never run against the TypeScript post-edit hook
