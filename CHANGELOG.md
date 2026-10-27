@@ -6,6 +6,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The
 
 ## 2026-10-27
 
+### Added
+
+- **tailwind-development** 0.1.0 — designs, builds, refactors and reviews Tailwind CSS v4 interfaces with a product designer's craft, grounds every utility, variant and configuration in its exact official documentation page for the Tailwind version your project resolves, and verifies the result in your project.
+
 ### Changed
 
 - **bash-lsp-intelligence** 0.2.5 — the post-edit hook always runs through Bash, and the README states one minimum Claude Code version.

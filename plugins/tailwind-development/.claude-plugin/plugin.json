@@ -1,0 +1,34 @@
+{
+  "name": "tailwind-development",
+  "displayName": "Tailwind CSS Development",
+  "version": "0.1.0",
+  "description": "Designs, builds and refactors Tailwind CSS v4 interfaces with a product designer's craft, and grounds every utility, variant and configuration in its exact official documentation page before verifying the result in your project.",
+  "author": {
+    "name": "Nery Murillo",
+    "url": "https://github.com/nerymurillohnd"
+  },
+  "homepage": "https://github.com/nerymurillohnd/the-claude-factory/tree/main/plugins/tailwind-development#readme",
+  "repository": "https://github.com/nerymurillohnd/the-claude-factory",
+  "license": "MIT",
+  "keywords": [
+    "development",
+    "tailwind",
+    "tailwindcss",
+    "css",
+    "utility-classes",
+    "dark-mode",
+    "responsive-design",
+    "documentation",
+    "frontend",
+    "ui-design",
+    "design-system",
+    "refactoring"
+  ],
+  "metadata": {
+    "category": "development",
+    "surfaces": [
+      "claude-code",
+      "claude-app"
+    ]
+  }
+}

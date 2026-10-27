@@ -85,6 +85,12 @@
       "category": "development"
     },
     {
+      "name": "tailwind-development",
+      "source": "./plugins/tailwind-development",
+      "description": "Designs, builds and refactors Tailwind CSS v4 interfaces with a product designer's craft, and grounds every utility, variant and configuration in its exact official documentation page before verifying the result in your project.",
+      "category": "development"
+    },
+    {
       "name": "tool-ledger",
       "source": "./plugins/tool-ledger",
       "description": "Lists every tool call of the session in a live panel: what ran, on what, whether Claude or a subagent made it, and whether it finished, failed or was denied.",
