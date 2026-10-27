@@ -1,7 +1,7 @@
 {
   "name": "skill-diagnostics",
   "displayName": "Skill Diagnostics",
-  "version": "0.1.3",
+  "version": "0.2.0",
   "description": "Audits Claude skills for best-practice conformance, portability and whether a model can run them without guessing, with file-and-line evidence and one verdict.",
   "author": {
     "name": "Nery Murillo",
