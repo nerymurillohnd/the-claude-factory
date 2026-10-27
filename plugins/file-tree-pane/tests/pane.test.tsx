@@ -66,8 +66,12 @@ const stubWorld = (on: On, world: World): Seen => {
       dirs.add(parts.slice(0, i).join('/'))
     }
   }
-  const rel = (path: string): string | null =>
-    path === ROOT ? '' : path.startsWith(`${ROOT}/`) ? path.slice(ROOT.length + 1) : null
+  const rel = (path: string): string | null => {
+    if (path === ROOT) {
+      return ''
+    }
+    return path.startsWith(`${ROOT}/`) ? path.slice(ROOT.length + 1) : null
+  }
 
   mock.env(on, { HOME: '/home/me', VISUAL: 'nvim', ...world.env })
   on('session.start', (_$, e) => ({ cwd: e.cwd }))

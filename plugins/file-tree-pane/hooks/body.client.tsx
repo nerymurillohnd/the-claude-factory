@@ -135,16 +135,25 @@ const Body: ClientModule<BodyProps, Local> = (
 
   const room = Math.max(1, surface.rows)
   const thumb = thumbOf(props.first, props.total, room)
-  const bar = (row: number): RenderElement => (
-    <Text
-      key={`bar-${row}`}
-      color={
-        thumb !== null && row >= thumb.start && row < thumb.end ? props.barColor : props.trackColor
-      }
-    >
-      {thumb === null ? ' ' : row >= thumb.start && row < thumb.end ? '┃' : '│'}
-    </Text>
-  )
+  const bar = (row: number): RenderElement => {
+    const isThumb = thumb !== null && row >= thumb.start && row < thumb.end
+    const glyph = isThumb ? '┃' : '│'
+    return (
+      <Text key={`bar-${row}`} color={isThumb ? props.barColor : props.trackColor}>
+        {thumb === null ? ' ' : glyph}
+      </Text>
+    )
+  }
+
+  const rowBg = (index: number, line: BodyLine): string | undefined => {
+    if (index === props.selected) {
+      return props.selectedBg
+    }
+    if (index === state.hovered) {
+      return props.hoveredBg
+    }
+    return line.bg ?? undefined
+  }
 
   if (props.code !== null) {
     return (
@@ -200,12 +209,7 @@ const Body: ClientModule<BodyProps, Local> = (
     <Box flexDirection="column" height={room}>
       {props.lines.slice(0, room).map((line, row) => {
         const index = props.first + row
-        const bg =
-          index === props.selected
-            ? props.selectedBg
-            : index === state.hovered
-              ? props.hoveredBg
-              : (line.bg ?? undefined)
+        const bg = rowBg(index, line)
         return (
           <Box
             key={line.key}

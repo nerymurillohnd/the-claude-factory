@@ -105,7 +105,10 @@ export const compareNames = (a: string, b: string): number => {
   if (left.length !== right.length) {
     return left.length - right.length
   }
-  return a < b ? -1 : a > b ? 1 : 0
+  if (a === b) {
+    return 0
+  }
+  return a < b ? -1 : 1
 }
 
 /** Folders first, then names in natural order (`file2` before `file10`), case-blind. */

@@ -101,7 +101,10 @@ export const lookOf = (theme: string | undefined, customBase: string | null = nu
     return 'dark'
   }
   if (theme.startsWith('custom:')) {
-    return customBase === null ? 'themed' : /light/i.test(customBase) ? 'light' : 'dark'
+    if (customBase === null) {
+      return 'themed'
+    }
+    return /light/i.test(customBase) ? 'light' : 'dark'
   }
   if (theme === 'auto') {
     return 'themed'
@@ -152,8 +155,10 @@ export const parsePalette = (text: string): { colors: Partial<Palette>; problems
   return { colors, problems }
 }
 
+const PRESETS: Record<Look, Palette> = { dark: DARK, light: LIGHT, themed: THEMED }
+
 /** The palette in force: the theme's, then the person's own colors over it. */
 export const paletteFor = (look: Look, own: Partial<Palette>): Palette => ({
-  ...(look === 'light' ? LIGHT : look === 'themed' ? THEMED : DARK),
+  ...PRESETS[look],
   ...own,
 })

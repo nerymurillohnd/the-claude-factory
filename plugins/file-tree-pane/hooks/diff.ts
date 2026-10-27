@@ -22,13 +22,27 @@ const HUNK = /^@@ -(\d+)(?:,\d+)? \+(\d+)(?:,\d+)? @@ ?(.*)$/
 
 const ESCAPES: Record<string, number> = { a: 7, b: 8, t: 9, n: 10, v: 11, f: 12, r: 13 }
 
+// How many bytes the UTF-8 sequence that starts with `lead` takes.
+const utf8Length = (lead: number): number => {
+  if (lead >= 0xf0) {
+    return 4
+  }
+  if (lead >= 0xe0) {
+    return 3
+  }
+  if (lead >= 0xc0) {
+    return 2
+  }
+  return 1
+}
+
 // UTF-8 bytes to text, without TextDecoder, which a hooks module may not have.
 const fromUtf8 = (bytes: readonly number[]): string => {
   let out = ''
   let i = 0
   while (i < bytes.length) {
     const lead = bytes[i] ?? 0
-    const size = lead >= 0xf0 ? 4 : lead >= 0xe0 ? 3 : lead >= 0xc0 ? 2 : 1
+    const size = utf8Length(lead)
     let code = size === 1 ? lead : lead & (0xff >> (size + 1))
     for (let k = 1; k < size; k += 1) {
       code = (code << 6) | ((bytes[i + k] ?? 0) & 0x3f)

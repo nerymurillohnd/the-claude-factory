@@ -9,7 +9,7 @@ import { readMessage } from './body.ts'
 import type { DiffRow, ParsedDiff } from './diff.ts'
 import { nextStop, parseDiff, withoutHeadings } from './diff.ts'
 import { clip, formatAge, formatDate, formatSize, printable } from './format.ts'
-import type { GitFile, GitSnapshot } from './git.ts'
+import type { FolderCounts, GitFile, GitSnapshot } from './git.ts'
 import {
   countsText,
   EMPTY_TREE,
@@ -22,7 +22,7 @@ import {
 } from './git.ts'
 import type { GlyphSetting, Glyphs } from './glyphs.ts'
 import { decideGlyphs, iconFor, isNerdFontFile } from './glyphs.ts'
-import type { Host, LaunchPlan, OpenTarget } from './launch.ts'
+import type { Host, LaunchPlan, OpenTarget, Platform } from './launch.ts'
 import {
   canEdit,
   diffToolPlan,
@@ -35,7 +35,7 @@ import {
   platformOf,
   quickLookPlan,
 } from './launch.ts'
-import type { Look, Palette } from './palette.ts'
+import type { Look, Palette, Tone } from './palette.ts'
 import { lookOf, paletteFor, parsePalette } from './palette.ts'
 import { searchPaths } from './search.ts'
 import type { Entry, Row } from './tree.ts'
@@ -99,14 +99,19 @@ const GIT_ENV: Record<string, string> = Object.fromEntries([['GIT_OPTIONAL_LOCKS
 // log. The tree runs git on its own, in folders the person may not have vetted, so none of them
 // run: each filter driver the config names is blanked, and the rest are turned off by flag.
 // Claude Code already turns repository hooks off. Names print as they are, not C-quoted.
-export const gitArgv = (args: readonly string[], filterNames: readonly string[] = []): string[] => {
+const withSafeFlags = (args: readonly string[]): string[] => {
   const [sub, ...rest] = args
-  const safe =
-    sub === 'diff'
-      ? ['diff', '--no-ext-diff', '--no-textconv', ...rest]
-      : sub === 'log'
-        ? ['log', '--no-show-signature', ...rest]
-        : [...args]
+  if (sub === 'diff') {
+    return ['diff', '--no-ext-diff', '--no-textconv', ...rest]
+  }
+  if (sub === 'log') {
+    return ['log', '--no-show-signature', ...rest]
+  }
+  return [...args]
+}
+
+export const gitArgv = (args: readonly string[], filterNames: readonly string[] = []): string[] => {
+  const safe = withSafeFlags(args)
   const blanked = filterNames.flatMap((name) => [
     '-c',
     `filter.${name}.clean=`,
@@ -242,12 +247,12 @@ const rightText = (
   folderSizes: ReadonlyMap<string, number>,
 ): string => {
   if (column === 'size') {
-    const size =
-      row.kind === 'dir'
-        ? folderSizes.get(row.path)
-        : row.entry.isGhost
-          ? undefined
-          : row.entry.size
+    let size: number | undefined
+    if (row.kind === 'dir') {
+      size = folderSizes.get(row.path)
+    } else if (!row.entry.isGhost) {
+      size = row.entry.size
+    }
     return size === undefined ? '' : formatSize(size)
   }
   if (row.kind === 'dir' || row.entry.isGhost) {
@@ -257,6 +262,15 @@ const rightText = (
 }
 
 const RIGHT_WIDTH: Record<RightColumn, number> = { date: 12, age: 5, size: 6 }
+
+// A folder's name color: deleted when deletions are all that changed under it, else modified.
+const toneOfFolder = (counts: FolderCounts | undefined, colors: Palette): string | null => {
+  if (counts === undefined) {
+    return null
+  }
+  const isOnlyDeleted = counts.deleted > 0 && counts.modified === 0 && counts.untracked === 0
+  return isOnlyDeleted ? colors.deleted : colors.modified
+}
 
 /** One tree row as the body draws it, fitted to `columns`. */
 export const rowLine = (
@@ -292,14 +306,7 @@ export const rowLine = (
   const name = clip(row.kind === 'dir' ? `${row.name}/` : row.name, nameRoom)
   const used = indent.length + icon.length + name.length + (badge === '' ? 0 : badge.length + 1)
   const gap = Math.max(1, input.columns - used - rightWidth - 1)
-  const nameColor =
-    row.kind === 'dir'
-      ? counts === undefined
-        ? null
-        : counts.deleted > 0 && counts.modified === 0 && counts.untracked === 0
-          ? palette.deleted
-          : palette.modified
-      : toneOfFile(file, palette)
+  const nameColor = row.kind === 'dir' ? toneOfFolder(counts, palette) : toneOfFile(file, palette)
   const segments: Segment[] = [
     segment(indent, null),
     segment(icon, row.kind === 'dir' ? palette.accent : palette.muted),
@@ -321,6 +328,12 @@ export const rowLine = (
   segments.push(segment(`${' '.repeat(gap)}${right.padStart(rightWidth)}`, palette.muted))
   return { key: row.path, segments, nameIndex: 2, shimmer: input.shimmer, bg: null }
 }
+
+type LineKind = 'add' | 'del' | 'ctx'
+
+const DIFF_SIGN: Record<LineKind, string> = { add: '+', del: '-', ctx: ' ' }
+
+const DIFF_BG: Record<LineKind, string | null> = { add: 'diffAdded', del: 'diffRemoved', ctx: null }
 
 /** One diff row as the body draws it: a line number gutter, then the line. */
 export const diffLine = (row: DiffRow, position: number, colors: Palette): BodyLine => {
@@ -351,8 +364,8 @@ export const diffLine = (row: DiffRow, position: number, colors: Palette): BodyL
         bg: null,
       }
     default: {
-      const sign = row.kind === 'add' ? '+' : row.kind === 'del' ? '-' : ' '
-      const bg = row.kind === 'add' ? 'diffAdded' : row.kind === 'del' ? 'diffRemoved' : null
+      const sign = DIFF_SIGN[row.kind]
+      const bg = DIFF_BG[row.kind]
       return {
         key: `d${position}`,
         segments: [segment(`${gutter} `, colors.muted), segment(`${sign}${row.text}`, null)],
@@ -365,6 +378,24 @@ export const diffLine = (row: DiffRow, position: number, colors: Palette): BodyL
 }
 
 type Footer = { text: string; tone: 'running' | 'ok' | 'error'; until: number }
+
+/** The palette tone each footer state draws in. */
+const FOOTER_TONE: Record<Footer['tone'], Tone> = {
+  error: 'deleted',
+  ok: 'added',
+  running: 'muted',
+}
+
+/**
+ * The column the Σ button switches to: sizes from any other column; back from sizes, the Right
+ * column setting (null), or dates when the setting is sizes.
+ */
+const toggledColumn = (column: FileTreeColumn, setting: FileTreeColumn): FileTreeColumn | null => {
+  if (column !== 'size') {
+    return 'size'
+  }
+  return setting === 'size' ? 'date' : null
+}
 
 type Preview = { path: string; lines: string[]; problem: string | null }
 
@@ -753,12 +784,14 @@ const moveSelection = async ($: EngineInterface, by: number | 'first' | 'last'):
   }
   const selected = await read($, selectedAtom)
   const at = rows.findIndex((row) => row.path === selected)
-  const next =
-    by === 'first'
-      ? 0
-      : by === 'last'
-        ? rows.length - 1
-        : Math.min(rows.length - 1, Math.max(0, (at === -1 ? listOffset - 1 : at) + by))
+  let next: number
+  if (by === 'first') {
+    next = 0
+  } else if (by === 'last') {
+    next = rows.length - 1
+  } else {
+    next = Math.min(rows.length - 1, Math.max(0, (at === -1 ? listOffset - 1 : at) + by))
+  }
   await select($, rows[next]?.path ?? null)
 }
 
@@ -1009,6 +1042,17 @@ const edit = async ($: EngineInterface, path: string, line: number): Promise<voi
 
 const isChanged = (row: Row): boolean =>
   row.kind === 'dir' ? (git?.folders.has(row.path) ?? false) : git?.files.has(row.path) === true
+
+/** How many rows the view scrolls through: the tree's rows, the diff's or the preview's lines. */
+const viewTotal = async ($: EngineInterface, view: FileTreeView): Promise<number> => {
+  if (view.kind === 'tree') {
+    return (await rowsNow($)).length
+  }
+  if (view.kind === 'diff') {
+    return diff?.parsed.rows.length ?? 0
+  }
+  return preview?.lines.length ?? 0
+}
 
 /** Scrolls the preview or the diff, whichever the view shows. */
 const scrollView = (kind: 'preview' | 'diff', by: number): void => {
@@ -1365,6 +1409,15 @@ const setFooter = async (
   redraw($)
 }
 
+// A path git prints from the repository's top, made relative to the tree's root (`prefix` below
+// the top), or null when it lies outside it.
+const underPrefix = (file: string, prefix: string): string | null => {
+  if (prefix === '') {
+    return file
+  }
+  return file.startsWith(prefix) ? file.slice(prefix.length) : null
+}
+
 const afterOps = async (
   $: EngineInterface,
   ops: readonly GitOp[],
@@ -1388,9 +1441,7 @@ const afterOps = async (
     const [subject, ...files] = (log ?? '').split('\n').filter((line) => line !== '')
     await setFooter($, `✓ committed ${subject ?? ''}`.trim(), 'ok')
     const committed = files
-      .map((file) =>
-        gitPrefix === '' ? file : file.startsWith(gitPrefix) ? file.slice(gitPrefix.length) : null,
-      )
+      .map((file) => underPrefix(file, gitPrefix))
       .filter((file): file is string => file !== null)
       .map((file) => absoluteOf(file, root))
     await markActivity($, committed, 'commit', COMMIT_MS)
@@ -1401,11 +1452,25 @@ const afterOps = async (
 
 // ---------------------------------------------------------------- session
 
+/** `~` and a leading `~/` in a path the person typed, read as their home folder. */
+const withHome = (path: string, home: string): string => {
+  if (path === '~') {
+    return home
+  }
+  return path.startsWith('~/') ? `${home}${path.slice(1)}` : path
+}
+
+/** The first value that is set and not empty. */
+const firstSet = (...values: readonly (string | undefined)[]): string | undefined =>
+  values.find((value) => value !== undefined && value !== '')
+
 const detectHost = async ($: EngineInterface): Promise<void> => {
   const uname = await quietly(() => $.process.run(['uname', '-s']))
   const os = await $.env.get('OS')
-  const platform =
-    uname?.exitCode === 0 ? platformOf(uname.stdout) : os === 'Windows_NT' ? 'windows' : 'linux'
+  let platform: Platform = os === 'Windows_NT' ? 'windows' : 'linux'
+  if (uname?.exitCode === 0) {
+    platform = platformOf(uname.stdout)
+  }
   const visual = await $.env.get('VISUAL')
   const editor = await $.env.get('EDITOR')
   const tmux = await $.env.get('TMUX')
@@ -1415,12 +1480,7 @@ const detectHost = async ($: EngineInterface): Promise<void> => {
     platform,
     isTmux: tmux !== undefined && tmux !== '',
     herdrPane: herdrEnv === '1' && herdrPane !== undefined && herdrPane !== '' ? herdrPane : null,
-    editor:
-      visual !== undefined && visual !== ''
-        ? visual
-        : editor !== undefined && editor !== ''
-          ? editor
-          : 'vi',
+    editor: firstSet(visual, editor) ?? 'vi',
   }
   if (host.herdrPane !== null) {
     const version = await quietly(() => $.process.run(['herdr', '--version']))
@@ -1592,7 +1652,7 @@ export const register: Register = (on: On, options: PluginOptions): void => {
       await update($, rootAtom, () => '')
     } else {
       const home = (await $.env.get('HOME')) ?? (await $.env.get('USERPROFILE')) ?? ''
-      const expanded = arg === '~' ? home : arg.startsWith('~/') ? `${home}${arg.slice(1)}` : arg
+      const expanded = withHome(arg, home)
       const abs = /^(?:[a-z]:)?[\\/]/i.test(expanded)
         ? normalizePath(expanded)
         : absoluteOf(normalizePath(expanded), cwd)
@@ -1776,12 +1836,7 @@ export const register: Register = (on: On, options: PluginOptions): void => {
         break
       case 'scrollTo': {
         const view = await read($, viewAtom)
-        const total =
-          view.kind === 'tree'
-            ? (await rowsNow($)).length
-            : view.kind === 'diff'
-              ? (diff?.parsed.rows.length ?? 0)
-              : (preview?.lines.length ?? 0)
+        const total = await viewTotal($, view)
         const offset = Math.round(message.ratio * maxOffset(total, room()))
         if (view.kind === 'tree') {
           listOffset = offset
@@ -1864,13 +1919,7 @@ export const register: Register = (on: On, options: PluginOptions): void => {
         }
       }
       const tint = (kind: ActivityKind | undefined): string | null =>
-        kind === 'read'
-          ? colors.read
-          : kind === 'write'
-            ? colors.write
-            : kind === 'commit'
-              ? colors.commit
-              : null
+        kind === undefined ? null : colors[kind]
       rows.slice(first, first + shown).forEach((row) => {
         // A folder shimmers for what lies under it only while it is collapsed.
         const ownMark = activity.get(row.path)?.kind
@@ -1949,9 +1998,7 @@ export const register: Register = (on: On, options: PluginOptions): void => {
           {isTree &&
             tip('sizes', 'Σ', column === 'size' ? 'Show dates' : 'Show sizes', async () => {
               // Back from sizes: the Right column setting, or dates when the setting is sizes.
-              await update($, columnAtom, () =>
-                column !== 'size' ? 'size' : settings.rightColumn === 'size' ? 'date' : null,
-              )
+              await update($, columnAtom, () => toggledColumn(column, settings.rightColumn))
               redraw($)
               await queueSizes($)
             })}
@@ -1981,17 +2028,7 @@ export const register: Register = (on: On, options: PluginOptions): void => {
 
     const footerRow =
       tone === null ? null : (
-        <Text
-          key="footer"
-          wrap="truncate"
-          color={
-            tone.tone === 'error'
-              ? colors.deleted
-              : tone.tone === 'ok'
-                ? colors.added
-                : colors.muted
-          }
-        >
+        <Text key="footer" wrap="truncate" color={colors[FOOTER_TONE[tone.tone]]}>
           {tone.text}
         </Text>
       )
