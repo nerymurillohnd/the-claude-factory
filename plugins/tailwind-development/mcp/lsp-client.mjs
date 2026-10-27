@@ -111,6 +111,10 @@ export class TailwindLanguageServer {
       stdio: ['pipe', 'pipe', 'pipe'],
     })
     this.#child = child
+    // An unhandled 'error' event would end the MCP server itself, which Claude Code then marks
+    // failed until the user reconnects it in /mcp. A dead language server is restarted instead.
+    child.on('error', (error) => this.log(`language server: ${error.message}`))
+    child.stdin.on('error', (error) => this.log(`language server stdin: ${error.message}`))
     child.stderr.on('data', (/** @type {Buffer} */ chunk) => this.log(chunk.toString().trimEnd()))
     const connection = createMessageConnection(
       new StreamMessageReader(child.stdout),
