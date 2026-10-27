@@ -440,17 +440,19 @@ const rootOf = async ($: EngineInterface): Promise<string> => {
 const loadDir = async ($: EngineInterface, root: string, rel: string): Promise<void> => {
   const abs = absoluteOf(rel, root)
   const entries = await $.fs.list(abs)
-  const out: Entry[] = []
-  for (const entry of entries) {
-    let kind = entry.kind
-    if (entry.isLink) {
-      const target = await quietly(() =>
-        $.fs.stat(absoluteOf(rel === '' ? entry.name : `${rel}/${entry.name}`, root)),
-      )
-      kind = target?.kind ?? 'other'
-    }
-    out.push({ name: entry.name, kind, size: entry.size, mtimeMs: entry.mtimeMs, isGhost: false })
-  }
+  // Each link's target is read on its own; Promise.all keeps the listing's order.
+  const out = await Promise.all(
+    entries.map(async (entry): Promise<Entry> => {
+      let kind = entry.kind
+      if (entry.isLink) {
+        const target = await quietly(() =>
+          $.fs.stat(absoluteOf(rel === '' ? entry.name : `${rel}/${entry.name}`, root)),
+        )
+        kind = target?.kind ?? 'other'
+      }
+      return { name: entry.name, kind, size: entry.size, mtimeMs: entry.mtimeMs, isGhost: false }
+    }),
+  )
   listings.set(rel, out)
 }
 
@@ -561,8 +563,12 @@ const refreshGit = async ($: EngineInterface, root: string): Promise<void> => {
     .slice(0, UNTRACKED_COUNTED)
   const stamps = new Map<string, string>()
   const toCount: string[] = []
-  for (const path of untracked) {
-    const stat = await quietly(() => $.fs.stat(absoluteOf(path, root)))
+  // At most UNTRACKED_COUNTED stats, each independent; Promise.all keeps their order.
+  const stats = await Promise.all(
+    untracked.map((path) => quietly(() => $.fs.stat(absoluteOf(path, root)))),
+  )
+  for (const [i, path] of untracked.entries()) {
+    const stat = stats[i]
     if (stat === undefined || stat.kind !== 'file' || stat.size > COUNTED_BYTES) {
       continue
     }
@@ -606,6 +612,7 @@ const refresh = async ($: EngineInterface): Promise<void> => {
   try {
     do {
       isRefreshAgain = false
+      // biome-ignore lint/performance/noAwaitInLoops: one refresh at a time; a refresh asked for meanwhile runs after this one ends
       await refreshOnce($)
     } while (isRefreshAgain)
   } finally {
@@ -617,11 +624,12 @@ const refreshOnce = async ($: EngineInterface): Promise<void> => {
   const root = await ensureRoot($)
   const expanded = await read($, expandedAtom)
   await quietly(() => loadDir($, root, ''))
-  for (const dir of expanded) {
-    if (!isIgnored(dir, ignore)) {
-      await quietly(() => loadDir($, root, dir))
-    }
-  }
+  // Each folder's listing is its own entry of `listings`: they load side by side.
+  await Promise.all(
+    expanded
+      .filter((dir) => !isIgnored(dir, ignore))
+      .map((dir) => quietly(() => loadDir($, root, dir))),
+  )
   // A `git init` the person ran shows as a .git in the folder: look for the repository again.
   if (repo === 'none' && (listings.get('') ?? []).some((entry) => entry.name === '.git')) {
     repo = 'unknown'
@@ -654,6 +662,7 @@ const duBytes = async ($: EngineInterface, abs: string): Promise<number | null> 
   const stack = [abs]
   while (stack.length > 0 && seen < 5000) {
     const dir = stack.pop() ?? ''
+    // biome-ignore lint/performance/noAwaitInLoops: each listing feeds the stack the walk reads next, and the walk stops at 5000 entries
     const entries = (await quietly(() => $.fs.list(dir))) ?? []
     for (const entry of entries) {
       seen += 1
@@ -688,6 +697,7 @@ const queueSizes = async ($: EngineInterface): Promise<void> => {
       void (async (): Promise<void> => {
         while (sizeQueue.length > 0) {
           const path = sizeQueue.shift() ?? ''
+          // biome-ignore lint/performance/noAwaitInLoops: each worker runs one du at a time, so at most SIZE_WORKERS run at once
           const bytes = await duBytes($, absoluteOf(path, root))
           // A cd while du ran: its result names a folder of the old root.
           if (bytes !== null && root === listingsRoot) {
@@ -706,11 +716,9 @@ const queueSizes = async ($: EngineInterface): Promise<void> => {
 const expandTo = async ($: EngineInterface, path: string): Promise<void> => {
   const root = await rootOf($)
   const parents = ancestorsOf(path)
-  for (const dir of parents) {
-    if (!listings.has(dir)) {
-      await quietly(() => loadDir($, root, dir))
-    }
-  }
+  await Promise.all(
+    parents.filter((dir) => !listings.has(dir)).map((dir) => quietly(() => loadDir($, root, dir))),
+  )
   if (parents.length > 0) {
     await update($, expandedAtom, (list) => [...new Set([...list, ...parents])])
   }
@@ -812,6 +820,7 @@ const run = async ($: EngineInterface, plan: LaunchPlan): Promise<void> => {
         const steps = nvim === null ? null : nvimReuseSteps(nvim, plan.file, plan.line)
         if (steps !== null) {
           for (const step of steps) {
+            // biome-ignore lint/performance/noAwaitInLoops: the tmux keystrokes reach nvim in the order sent (normal mode, :edit, Enter), then its window and pane are selected
             await $.process.run(step)
           }
           return
@@ -925,6 +934,7 @@ const openDiff = async ($: EngineInterface, path: string, isDir: boolean): Promi
     .map(([file]) => file)
     .slice(0, DIFF_UNTRACKED_CAP)
   for (const file of untracked) {
+    // biome-ignore lint/performance/noAwaitInLoops: one git process at a time instead of up to DIFF_UNTRACKED_CAP at once
     const added = await quietly(() =>
       $.process.run(
         gitArgv(['diff', '--no-color', '--no-index', '--', '/dev/null', file], drivers),
@@ -1246,6 +1256,7 @@ const buildIndex = async ($: EngineInterface): Promise<void> => {
     const stack = ['']
     while (stack.length > 0 && paths.length < SEARCH_INDEX_CAP) {
       const dir = stack.pop() ?? ''
+      // biome-ignore lint/performance/noAwaitInLoops: each listing feeds the stack the walk reads next, and the walk stops at SEARCH_INDEX_CAP paths
       const entries = (await quietly(() => $.fs.list(absoluteOf(dir, root)))) ?? []
       for (const entry of entries) {
         if (ignore.has(entry.name)) {
@@ -1420,7 +1431,8 @@ const detectHost = async ($: EngineInterface): Promise<void> => {
 const nerdFontTimes = async ($: EngineInterface): Promise<number[]> => {
   const times: number[] = []
   const scan = async (dir: string): Promise<void> => {
-    for (const entry of (await quietly(() => $.fs.list(dir))) ?? []) {
+    const entries = (await quietly(() => $.fs.list(dir))) ?? []
+    for (const entry of entries) {
       if (isNerdFontFile(entry.name)) {
         times.push(entry.mtimeMs)
       }
@@ -1441,12 +1453,11 @@ const nerdFontTimes = async ($: EngineInterface): Promise<number[]> => {
     await scan(`${normalizePath(system ?? 'C:/Windows')}/Fonts`)
   } else {
     const listed = await quietly(() => $.process.run(['fc-list', '--format', '%{file}\n']))
-    for (const file of (listed?.stdout ?? '').split('\n')) {
-      if (isNerdFontFile(baseName(file))) {
-        const stat = await quietly(() => $.fs.stat(file))
-        times.push(stat?.mtimeMs ?? 0)
-      }
-    }
+    const files = (listed?.stdout ?? '')
+      .split('\n')
+      .filter((file) => isNerdFontFile(baseName(file)))
+    const stats = await Promise.all(files.map((file) => quietly(() => $.fs.stat(file))))
+    times.push(...stats.map((stat) => stat?.mtimeMs ?? 0))
   }
   return times
 }
@@ -1461,6 +1472,7 @@ const terminalStartedAt = async ($: EngineInterface): Promise<number | null> => 
   let startedAt: number | null = null
   const now = await $.clock.now()
   for (let hops = 0; hops < 32 && /^\d+$/.test(pid) && pid !== '1' && pid !== '0'; hops += 1) {
+    // biome-ignore lint/performance/noAwaitInLoops: each ps call reads the parent pid the next call asks about
     const info = await quietly(() =>
       $.process.run(['ps', '-o', 'ppid=', '-o', 'etime=', '-p', pid]),
     )
@@ -1683,7 +1695,7 @@ export const register: Register = (on: On, options: PluginOptions): void => {
       return next(e)
     }
     const root = await rootOf($)
-    let mentioned: string | null = null
+    const candidates: { abs: string; rel: string }[] = []
     for (const match of e.text.matchAll(/(?:^|\s)@("[^"]+"|[^\s"]+)/g)) {
       const raw = (match[1] ?? '')
         .replace(/^"|"$/g, '')
@@ -1693,8 +1705,18 @@ export const register: Register = (on: On, options: PluginOptions): void => {
         ? normalizePath(raw)
         : absoluteOf(normalizePath(raw), cwd)
       const rel = relativeTo(abs, root)
-      if (rel !== null && rel !== '' && (await quietly(() => $.fs.exists(abs))) === true) {
-        mentioned = rel
+      if (rel !== null && rel !== '') {
+        candidates.push({ abs, rel })
+      }
+    }
+    // Each mention is checked on its own; the last one that exists is revealed.
+    const exists = await Promise.all(
+      candidates.map((candidate) => quietly(() => $.fs.exists(candidate.abs))),
+    )
+    let mentioned: string | null = null
+    for (const [i, candidate] of candidates.entries()) {
+      if (exists[i] === true) {
+        mentioned = candidate.rel
       }
     }
     if (mentioned !== null) {
