@@ -284,7 +284,7 @@ Check, in order:
 
 1. `tailwindcss` is installed in your project (`npm ls tailwindcss`, or your package manager's equivalent): the language server works only then.
 2. The file type is on in the plugin's options.
-3. `/mcp` lists `plugin:tailwind-development:tailwindcss` as connected. If it shows as failed, its detail view gives the cause on the **Issue** row: check `node --version` (20 or later), then `claude plugin list`, which notes when the plugin's packages were not installed; `claude plugin update tailwind-development@the-claude-factory` retries the install. Then select **Reconnect** in the server's menu in `/mcp`, or run `/mcp reconnect all` (v2.1.284+): Claude Code doesn't restart a failed local server on its own in an interactive session.
+3. `/mcp` lists `plugin:tailwind-development:tailwindcss` as connected. If it shows as failed, its detail view gives the cause on the **Issue** row: check `node --version` (24 or later), then `claude plugin list`, which notes when the plugin's packages were not installed; `claude plugin update tailwind-development@the-claude-factory` retries the install. Then select **Reconnect** in the server's menu in `/mcp`, or run `/mcp reconnect all` (v2.1.284+): Claude Code doesn't restart a failed local server on its own in an interactive session.
 4. Your project uses CSS modules, `<style>` blocks with `@reference`, several entry points or a monorepo: set `config_file` to your main CSS entry point. Claude tells you once per session when Tailwind is installed but no project covers the edited file.
 
 </details>
