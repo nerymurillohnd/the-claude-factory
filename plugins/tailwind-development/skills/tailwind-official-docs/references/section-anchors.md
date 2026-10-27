@@ -271,6 +271,8 @@ Pages: [`styling-with-utility-classes`](#styling-with-utility-classes) · [`hove
 
 ## `upgrade-guide`
 
+A v3 to v4 migration reads every section below, one at a time, as SKILL.md's "Migrating from v3 to v4" says; one question about a single utility reads only its section.
+
 - `#using-the-upgrade-tool` Using the upgrade tool
 - `#upgrading-manually` Upgrading manually
   - `#using-postcss` Using PostCSS
