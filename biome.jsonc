@@ -1,5 +1,7 @@
 // The maintainers' Biome configuration. Each setting that differs from Biome's default says why
-// beside it. Everything else is left to Biome's defaults and its recommended preset.
+// beside it. Everything else is left to Biome's defaults and its recommended preset. Assist has no
+// block because its defaults are the intent: it is on, runs the recommended actions (such as
+// organizeImports), and biome ci fails when one has a change to make.
 {
   "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
   "vcs": {
@@ -31,6 +33,12 @@
       "!.claude/skills/building-plugins/assets/plugin-template.json",
       // npm writes it.
       "!!**/package-lock.json",
+      // The engine's generated types, git-ignored but still indexed by the Scanner, and the largest
+      // files it would read. Biome cannot use them: the mods reach them through typeRoots and an
+      // ambient declare module 'claude-code', which Biome does not resolve; tsc -p still reads them.
+      // Drop this once Biome resolves ambient modules and noUnresolvedImports stops flagging the
+      // mods' claude-code imports.
+      "!!plugins/*/.claude-plugin/types",
       // Markdown Biome never formats: ADR_2026-10-26_biome-never-formats-plugin-and-skill-markdown.
       "!**/CLAUDE.md",
       "!.claude/memory",
@@ -52,6 +60,14 @@
   "linter": {
     // The preset plus Nery's rule set: each entry raises a severity, turns on a rule the preset
     // leaves off, or turns one off. The gates fail on warnings (--error-on-warnings).
+    // The tests run on node:test, which Biome does not detect, so the test domain's recommended
+    // rules are turned on by hand.
+    "domains": {
+      "test": "recommended"
+    },
+    // The project and types domains' recommended sets catch neither an import cycle nor a floating
+    // promise here, so the rules that do are listed one by one below. Any of them starts the
+    // Scanner across the whole repository, for every run and every editor session.
     "rules": {
       "preset": "recommended",
       "correctness": {
@@ -60,7 +76,9 @@
         "noUndeclaredDependencies": "off",
         "noUndeclaredVariables": "error",
         "noUnusedImports": "error",
-        "noChildrenProp": "error"
+        "noChildrenProp": "error",
+        // Scanner: an import of another module's private (@private, @package) export.
+        "noPrivateImports": "error"
       },
       "complexity": {
         "noExtraBooleanCast": "error",
@@ -96,10 +114,20 @@
         "noPrototypeBuiltins": "error",
         "noFocusedTests": "error",
         "noSkippedTests": "warn",
-        "useAdjacentOverloadSignatures": "error"
+        "useAdjacentOverloadSignatures": "error",
+        // Scanner: import cycles, and imports of a symbol marked @deprecated.
+        "noImportCycles": "error",
+        "noDeprecatedImports": "error"
       },
       // The preset never turns on a nursery rule, so each one is listed.
       "nursery": {
+        // Scanner: a module that imports itself.
+        "noSelfImport": "error",
+        // Scanner, with type inference: a dropped promise fails without a trace in an async hook.
+        // These see only the promise types Biome infers inside the repository, not @types/node's.
+        "noFloatingPromises": "error",
+        "noMisusedPromises": "error",
+        "useAwaitThenable": "error",
         "useExplicitType": "warn",
         "useConsistentHeadingLevel": "error",
         "useFencedCodeLanguage": "error",

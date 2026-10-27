@@ -799,12 +799,17 @@ The assist actions rejected are listed in section 7.
    
    Item 35 (`scripts/gates.mjs`): its own commit, before step 8, so the gates show every finding of items 9 to 14. `scripts/tests/gates.test.mjs` does not pin Biome's arguments, so the check is a run of `npm run lint:js` with a planted file that has more than 20 findings, to confirm every one is printed.
 3. **Done.** Item 19 is in one commit: `biome.json` renamed to `biome.jsonc`, a reason beside each non-default setting, and the references updated, with ADR_2026-10-27_biome-config-is-jsonc-with-reasons-inline. Every later commit adds its reason beside its setting. Item 35 is in `038f9f1`.
-4. Item 8: one commit, with item 39 in the same commit, since item 8 is what starts the Scanner.
+4. **Done.** Item 8 and item 39 are in one commit, since item 8 is what starts the Scanner. The same commit says in `biome.jsonc`'s header why assist has no block.
+   - Enabled rules: 242 to 249, exactly the seven scanner rules. `biome rage --linter` does not list the `test` domain's rules; a planted duplicate test title failed with `noIdenticalTestTitle`.
+   - The same 170 files and 4 `useLiteralKeys` infos.
+   - `biome ci .`: 0.09 s before and after, 72 MB to 83 MB. `biome check scripts/lib.mjs`: 0.05 s, 67 MB.
+   - Planted cases, all caught: an import cycle (`noImportCycles`), a floating promise from a local `async` function (`noFloatingPromises`), a self-import (`noSelfImport`) and a duplicate test title.
+   - `npm run lint:js` and `npm test` pass.
 5. Items 16, 17 and 24: one commit, plus `useSortedInterfaceMembers` and `useSortedEnumMembers` if D5 is on. Each assist action enabled here also gets its `source.action.<action>.biome` line in `.vscode/settings.json` (section 12.4). If item 27 is not in yet, that line goes in when item 27 lands.
 6. Item 30: one commit, after D8, with `useLiteralKeys` settled the same way. Item 31: one commit with its maintainer fix; the `file-tree-pane` findings go in that plugin's pull request.
 7. Item 33: one commit, with no fix needed today. Item 40: one commit with its maintainer fixes; the plugin finding goes in that plugin's pull request. Item 25: one commit with the rules and the `scripts/gates.mjs` fix. The `file-tree-pane` findings go in that plugin's pull request.
 8. Item 32: one commit with the `.grit` file, its `plugins` entry and `grit` in `files.includes`.
 9. Items 9 to 14: one commit per rule for maintainer files; one pull request per affected plugin. Item 18 goes in the `file-tree-pane` and `tool-ledger` pull requests.
-10. Item 27: one commit, after step 1, so Biome checks `.vscode/settings.json` under the final configuration. Items 28 and 29 are not repository commits: they change Nery's user settings and `~/.claude/ENVIRONMENT.md`, with his approval.
+10. Item 27: `.vscode/settings.json` is committed, ahead of the planned order, at Nery's request on 2026-10-27, with his Ruff, basedpyright, TypeScript, file and JSON settings beside Biome's. `.vscode/extensions.json` is still pending, and so is the check in VS Code itself. Originally: one commit, after step 1, so Biome checks `.vscode/settings.json` under the final configuration. Items 28 and 29 are not repository commits: they change Nery's user settings and `~/.claude/ENVIRONMENT.md`, with his approval.
 
 Each step runs `npm run lint:js` (the `biome-` gates) before its commit, and records `biome rage --linter`'s enabled-rule count before and after it (section 6.4.1). The pre-push gates run on push.
