@@ -2219,21 +2219,21 @@ export const register: Register = (on: On, options: PluginOptions): void => {
       onPress: () => Promise<void>,
       hotkey?: string,
     ): RenderElement => (
-      <Box key={`tip-${key}`} flexDirection="row">
+      <Box flexDirection="row" key={`tip-${key}`}>
         <Button
           key={key}
-          plain={true}
           label={label}
+          plain={true}
           {...(hotkey === undefined ? {} : { hotkey })}
           onPress={(): void => void onPress()}
         />
         <Box
-          position="absolute"
-          top={1}
-          right={0}
+          backgroundColor={colors.selected}
           display="none"
           hover={{ display: 'flex' }}
-          backgroundColor={colors.selected}
+          position="absolute"
+          right={0}
+          top={1}
         >
           <Text>{hint}</Text>
         </Box>
@@ -2246,7 +2246,7 @@ export const register: Register = (on: On, options: PluginOptions): void => {
     const hasInput = e.surface !== 'mobile'
 
     const renderHeader = (): RenderElement => (
-      <Box key="header" flexDirection="row" justifyContent="space-between">
+      <Box flexDirection="row" justifyContent="space-between" key="header">
         <Text weight="bold" wrap="truncate">
           {printable(heading)}
         </Text>
@@ -2275,17 +2275,17 @@ export const register: Register = (on: On, options: PluginOptions): void => {
 
     const nav = (key: string, label: string): RenderElement => (
       <Button
-        key={`nav-${key}`}
-        plain={true}
         hotkey={key}
+        key={`nav-${key}`}
         label={label}
         onPress={(): void => void act($, key)}
+        plain={true}
       />
     )
 
     const footerRow =
       tone === null ? null : (
-        <Text key="footer" wrap="truncate" color={colors[FOOTER_TONE[tone.tone]]}>
+        <Text color={colors[FOOTER_TONE[tone.tone]]} key="footer" wrap="truncate">
           {tone.text}
         </Text>
       )
@@ -2293,24 +2293,24 @@ export const register: Register = (on: On, options: PluginOptions): void => {
     const renderBody = (): RenderElement => {
       if ((e.surface === 'terminal' || e.surface === 'desktop') && 'Client' in table) {
         const { Client } = table
-        return <Client key="body" module="./body.client.tsx" props={props} flexGrow={1} />
+        return <Client flexGrow={1} key="body" module="./body.client.tsx" props={props} />
       }
       // No Client on this surface (VS Code, mobile): one Button per row, no shimmer animation.
       return (
-        <Box key="body" flexDirection="column" flexGrow={1}>
+        <Box flexDirection="column" flexGrow={1} key="body">
           {code !== null && <Text>{code.source}</Text>}
           {lines.map((line, row) => (
             <Button
               key={`row-${line.key}`}
-              plain={true}
               onPress={(): void => void click($, first + row, false)}
+              plain={true}
             >
               {line.segments.map((part, i) => (
                 <Text
                   key={`p${i}`}
                   {...(part.color === null ? {} : { color: line.shimmer ?? part.color })}
-                  weight={part.isBold ? 'bold' : 'regular'}
                   strikethrough={part.isStruck}
+                  weight={part.isBold ? 'bold' : 'regular'}
                 >
                   {part.text}
                 </Text>
@@ -2325,7 +2325,7 @@ export const register: Register = (on: On, options: PluginOptions): void => {
     return (
       <Box flexDirection="column">
         <Box height={1} />
-        <Box key="frame" flexDirection="column" height={e.props.scroll.bodyRows}>
+        <Box flexDirection="column" height={e.props.scroll.bodyRows} key="frame">
           {header}
           {isTree && settings.hints && repo === 'none' && (
             <Text dimColor={true} wrap="truncate">
@@ -2341,10 +2341,10 @@ export const register: Register = (on: On, options: PluginOptions): void => {
           {isTree && hasInput && 'Input' in table && (
             <table.Input
               key="search"
-              placeholder="Search files (s)"
-              value={query}
               onInput={(value: string): void => void search($, value, false)}
               onSubmit={(value: string): void => void search($, value, true)}
+              placeholder="Search files (s)"
+              value={query}
             />
           )}
           {isTree && query !== '' && (
@@ -2354,7 +2354,7 @@ export const register: Register = (on: On, options: PluginOptions): void => {
           )}
           {isTree && hasInput && settings.searchSpacing && <Text> </Text>}
           {isTree && settings.shortcutRow && (
-            <Box key="nav" flexDirection="row" gap={1}>
+            <Box flexDirection="row" gap={1} key="nav">
               {nav('j', 'j↓')}
               {nav('k', 'k↑')}
               {nav('h', 'h←')}

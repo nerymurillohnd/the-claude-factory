@@ -160,7 +160,7 @@ const Body: ClientModule<BodyProps, Local> = (
     const isThumb = thumb !== null && row >= thumb.start && row < thumb.end
     const glyph = isThumb ? '┃' : '│'
     return (
-      <Text key={`bar-${row}`} color={isThumb ? props.barColor : props.trackColor}>
+      <Text color={isThumb ? props.barColor : props.trackColor} key={`bar-${row}`}>
         {thumb === null ? ' ' : glyph}
       </Text>
     )
@@ -179,10 +179,10 @@ const Body: ClientModule<BodyProps, Local> = (
   if (props.code !== null) {
     return (
       <Box flexDirection="row" height={room}>
-        <Box flexGrow={1} flexDirection="column" overflow="hidden">
+        <Box flexDirection="column" flexGrow={1} overflow="hidden">
           <Code
-            source={props.code.source}
             path={props.code.path}
+            source={props.code.source}
             startLine={props.code.startLine}
             wrap="truncate-end"
           />
@@ -203,8 +203,8 @@ const Body: ClientModule<BodyProps, Local> = (
           key={`s${index}`}
           {...(segment.color === null ? {} : { color: segment.color })}
           dimColor={segment.isDim === true}
-          weight={segment.isBold === true ? 'bold' : 'regular'}
           strikethrough={segment.isStruck === true}
+          weight={segment.isBold === true ? 'bold' : 'regular'}
         >
           {segment.text}
         </Text>,
@@ -216,10 +216,10 @@ const Body: ClientModule<BodyProps, Local> = (
     const at = (state.phase % width) - 3
     return Array.from(segment.text, (char, i) => (
       <Text
-        key={`s${index}-${i}`}
         color={shimmer}
-        weight={Math.abs(i - at) <= 1 ? 'bold' : 'regular'}
         inverse={Math.abs(i - at) === 0}
+        key={`s${index}-${i}`}
+        weight={Math.abs(i - at) <= 1 ? 'bold' : 'regular'}
       >
         {char}
       </Text>
@@ -233,11 +233,11 @@ const Body: ClientModule<BodyProps, Local> = (
         const bg = rowBg(index, line)
         return (
           <Box
-            key={line.key}
             flexDirection="row"
+            key={line.key}
             {...(bg === undefined ? {} : { backgroundColor: bg })}
           >
-            <Box flexGrow={1} flexDirection="row" overflow="hidden">
+            <Box flexDirection="row" flexGrow={1} overflow="hidden">
               {line.segments.flatMap((segment, i) => segmentOf(segment, i, line))}
             </Box>
             {thumb !== null && bar(row)}
