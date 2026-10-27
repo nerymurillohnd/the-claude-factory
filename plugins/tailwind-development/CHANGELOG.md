@@ -1,0 +1,16 @@
+# Changelog
+
+All notable changes to **Tailwind CSS Development** are documented here.
+
+The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and this plugin adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [Unreleased]
+
+## [0.1.0] - 2026-10-27
+
+### Added
+
+- `tailwind-official-docs` skill: implements, reviews, debugs and refactors Tailwind CSS from the exact official page for each utility family, variant and configuration the task touches, for the Tailwind version your project resolves, and verifies the result with your project's own checks. It carries an index of every page of the Tailwind docs and the section anchors of the long concept pages, reads Context7 first when you have it, and reports only the documentation a decision depended on.
+
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/tailwind-development--v0.1.0...HEAD
+[0.1.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/tailwind-development--v0.1.0

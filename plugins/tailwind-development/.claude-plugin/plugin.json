@@ -1,0 +1,31 @@
+{
+  "name": "tailwind-development",
+  "displayName": "Tailwind CSS Development",
+  "version": "0.1.0",
+  "description": "Routes every Tailwind CSS change to the exact official documentation page for each utility, variant and configuration it touches, then verifies the result in your project.",
+  "author": {
+    "name": "Nery Murillo",
+    "url": "https://github.com/nerymurillohnd"
+  },
+  "homepage": "https://github.com/nerymurillohnd/the-claude-factory/tree/main/plugins/tailwind-development#readme",
+  "repository": "https://github.com/nerymurillohnd/the-claude-factory",
+  "license": "MIT",
+  "keywords": [
+    "development",
+    "tailwind",
+    "tailwindcss",
+    "css",
+    "utility-classes",
+    "dark-mode",
+    "responsive-design",
+    "documentation",
+    "frontend"
+  ],
+  "metadata": {
+    "category": "development",
+    "surfaces": [
+      "claude-code",
+      "claude-app"
+    ]
+  }
+}

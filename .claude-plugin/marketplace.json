@@ -85,6 +85,12 @@
       "category": "development"
     },
     {
+      "name": "tailwind-development",
+      "source": "./plugins/tailwind-development",
+      "description": "Routes every Tailwind CSS change to the exact official documentation page for each utility, variant and configuration it touches, then verifies the result in your project.",
+      "category": "development"
+    },
+    {
       "name": "tool-ledger",
       "source": "./plugins/tool-ledger",
       "description": "Lists every tool call of the session in a live panel: what ran, on what, whether Claude or a subagent made it, and whether it finished, failed or was denied.",

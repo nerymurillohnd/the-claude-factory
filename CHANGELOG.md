@@ -6,6 +6,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The
 
 ## 2026-10-27
 
+### Added
+
+- **tailwind-development** 0.1.0 — implements, reviews and debugs Tailwind CSS from the exact official page for each utility, variant and configuration a task touches, for the Tailwind version your project resolves, and verifies the result with your project's own checks.
+
 ### Changed
 
 - **file-tree-pane** 0.1.2 — internal code and test cleanups from stricter lint rules; nothing changes for users.
