@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# PreToolUse hook for `git commit`: runs the plugin validators listed in VALIDATORS and denies the
+# PreToolUse hook for `git commit`: runs every validator in scripts/validators/ and denies the
 # commit when one fails, with the output of each failing validator as the reason. Any other command goes ahead. The
 # Husky pre-push hook runs the full gates; this one checks earlier, at each commit Claude makes.
 # The `if` filter in settings.json is best-effort, so this script checks for a real commit itself.
@@ -59,30 +59,26 @@ if [[ -z ${project_dir} ]]; then
 fi
 cd "${project_dir}"
 
-# The structure validators only: versioning (bumps, changelogs) belongs to the release.
-VALIDATORS=(
-  lsp-json-schema.py
-  mcp-json-schema.py
-  plugin-json-schema.py
-  plugin-required-files.py
-  marketplace-json-schema.py
-  skill-names-consistency.py
-  plugin-versions-consistency.py
-  plugin-names-consistency.py
-  readme-catalog-consistency.py
-  skill-references.py
-)
+# Every validator of scripts/validators/, as `npm run validate` runs them, so a new one is never
+# left out. Versioning (bumps, changelogs) is not a validator: it belongs to the release.
+shopt -s nullglob
+VALIDATORS=(scripts/validators/*.py)
+shopt -u nullglob
+if ((${#VALIDATORS[@]} == 0)); then
+  echo "validators-gate found no validator in scripts/validators/, so it blocks the commit." >&2
+  exit 2
+fi
 
 output=""
 for validator in "${VALIDATORS[@]}"; do
-  if ! result="$("scripts/validators/${validator}" 2>&1)"; then
-    output+="${validator}:"$'\n'"${result}"$'\n'
+  if ! result="$("${validator}" 2>&1)"; then
+    output+="${validator##*/}:"$'\n'"${result}"$'\n'
   fi
 done
 
 if [[ -z ${output} ]]; then
   # No permissionDecision: the commit goes on to the normal permission flow.
-  printf '{"systemMessage":"validators-gate: all %d plugin validators passed"}\n' "${#VALIDATORS[@]}"
+  printf '{"systemMessage":"validators-gate: all %d maintainer validators passed"}\n' "${#VALIDATORS[@]}"
   exit 0
 fi
 
