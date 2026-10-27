@@ -573,6 +573,77 @@ export function selectGates(gates, only, group) {
 }
 
 /**
+ * The exit code of a finished gate and, when it failed without a status of its own, why.
+ * @param {Gate} gate
+ * @param {import('node:child_process').SpawnSyncReturns<string>} r
+ * @returns {{ code: number, problem: string | null }}
+ */
+function outcome(gate, r) {
+  if (r.error) {
+    const missing = /** @type {NodeJS.ErrnoException} */ (r.error).code === 'ENOENT'
+    return { code: 1, problem: missing ? `${gate.cmd} is not on PATH` : r.error.message }
+  }
+  if (r.status === null) {
+    return { code: 1, problem: `killed by ${r.signal ?? 'a signal'}` }
+  }
+  if (r.status !== 0) {
+    return { code: r.status, problem: null }
+  }
+  const problem = gate.after?.(r.stdout, r.stderr) ?? null
+  return { code: problem === null ? 0 : 1, problem }
+}
+
+/**
+ * Runs one gate, writes its result line (and its output when it fails or `verbose` is set), and
+ * returns its exit code; a gate that does not apply returns 0.
+ * @param {Gate} gate
+ * @param {{ root: string, write: (text: string) => void, verbose: boolean }} options
+ * @returns {number}
+ */
+function runGate(gate, { root, write, verbose }) {
+  if (verbose) {
+    write(`▶ ${gate.id} · ${gate.title}`)
+  }
+  if (gate.skipReason !== undefined) {
+    write(`○ ${gate.id} not applicable: ${gate.skipReason}`)
+    return 0
+  }
+  const override = gate.cmd === 'biome' && BIOME_OVERRIDES.find((name) => name in process.env)
+  if (override) {
+    write(
+      `✖ ${gate.id} (exit 1): ${override} is set; unset it, the gates run only the pinned Biome`,
+    )
+    return 1
+  }
+  // A gate starts its own node --test runner even when the gates run inside one, as in their
+  // tests: a child that inherits NODE_TEST_CONTEXT reports to the parent and writes no reporter.
+  // Inside a git hook (Husky), git exports the variables of the repository that started it, such as
+  // GIT_INDEX_FILE=.git/index; a gate that runs git in another repository would act on that one.
+  const { NODE_TEST_CONTEXT: _parentRunner, ...outer } = process.env
+  const inherited = Object.fromEntries(
+    Object.entries(outer).filter(([name]) => !GIT_HOOK_VARIABLES.has(name)),
+  )
+  const r = spawnSync(gate.cmd, gate.args, {
+    cwd: root,
+    encoding: 'utf8',
+    env: { ...inherited, ...gate.env },
+    maxBuffer: 256 * 1024 * 1024,
+    stdio: ['ignore', 'pipe', 'pipe'],
+  })
+  const output = `${r.stdout ?? ''}${r.stderr ?? ''}`.trimEnd()
+  const { code, problem } = outcome(gate, r)
+  if (output !== '' && (verbose || code !== 0)) {
+    write(output)
+  }
+  if (code === 0) {
+    write(`✔ ${gate.id}`)
+  } else {
+    write(`✖ ${gate.id} (exit ${code})${problem === null ? '' : `: ${problem}`}`)
+  }
+  return code
+}
+
+/**
  * Runs the gates in order and returns the exit code of the first failure, or 0.
  * @param {Gate[]} gates
  * A passing gate prints only its check mark; a failing one prints its whole output, so the failure
@@ -584,68 +655,12 @@ export function runGates(gates, { root, keepGoing, write, verbose = false }) {
   /** @type {{ id: string, code: number }[]} */
   const failed = []
   for (const gate of gates) {
-    if (verbose) {
-      write(`▶ ${gate.id} · ${gate.title}`)
-    }
-    if (gate.skipReason !== undefined) {
-      write(`○ ${gate.id} not applicable: ${gate.skipReason}`)
-      continue
-    }
-    const override = gate.cmd === 'biome' && BIOME_OVERRIDES.find((name) => name in process.env)
-    if (override) {
-      write(
-        `✖ ${gate.id} (exit 1): ${override} is set; unset it, the gates run only the pinned Biome`,
-      )
-      failed.push({ id: gate.id, code: 1 })
+    const code = runGate(gate, { root, write, verbose })
+    if (code !== 0) {
+      failed.push({ id: gate.id, code })
       if (!keepGoing) {
         break
       }
-      continue
-    }
-    // A gate starts its own node --test runner even when the gates run inside one, as in their
-    // tests: a child that inherits NODE_TEST_CONTEXT reports to the parent and writes no reporter.
-    // Inside a git hook (Husky), git exports the variables of the repository that started it, such as
-    // GIT_INDEX_FILE=.git/index; a gate that runs git in another repository would act on that one.
-    const { NODE_TEST_CONTEXT: _parentRunner, ...outer } = process.env
-    const inherited = Object.fromEntries(
-      Object.entries(outer).filter(([name]) => !GIT_HOOK_VARIABLES.has(name)),
-    )
-    const r = spawnSync(gate.cmd, gate.args, {
-      cwd: root,
-      encoding: 'utf8',
-      env: { ...inherited, ...gate.env },
-      maxBuffer: 256 * 1024 * 1024,
-      stdio: ['ignore', 'pipe', 'pipe'],
-    })
-    const output = `${r.stdout ?? ''}${r.stderr ?? ''}`.trimEnd()
-    /** @type {string | null} */
-    let problem = null
-    /** @type {number} */
-    let code
-    if (r.error) {
-      const missing = /** @type {NodeJS.ErrnoException} */ (r.error).code === 'ENOENT'
-      problem = missing ? `${gate.cmd} is not on PATH` : r.error.message
-      code = 1
-    } else if (r.status === null) {
-      problem = `killed by ${r.signal ?? 'a signal'}`
-      code = 1
-    } else if (r.status !== 0) {
-      code = r.status
-    } else {
-      problem = gate.after?.(r.stdout, r.stderr) ?? null
-      code = problem === null ? 0 : 1
-    }
-    if (output !== '' && (verbose || code !== 0)) {
-      write(output)
-    }
-    if (code === 0) {
-      write(`✔ ${gate.id}`)
-      continue
-    }
-    write(`✖ ${gate.id} (exit ${code})${problem === null ? '' : `: ${problem}`}`)
-    failed.push({ id: gate.id, code })
-    if (!keepGoing) {
-      break
     }
   }
   if (failed.length > 0) {

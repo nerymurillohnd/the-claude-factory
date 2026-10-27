@@ -18,6 +18,54 @@ import {
 } from '../lib.mjs'
 
 /**
+ * The entry of one plugin folder, or the problems that keep it out.
+ * @param {import('node:fs').Dirent} dirent
+ * @param {Set<string>} categoryIds
+ * @returns {{ entry?: import('../lib.mjs').MarketplaceEntry, problems: string[] }}
+ */
+function entryFor(dirent, categoryIds) {
+  const scope = `plugins/${dirent.name}`
+  /** @type {import('../lib.mjs').Manifest | null} */
+  let manifest
+  try {
+    manifest = loadManifest(dirent.name)
+  } catch (e) {
+    return {
+      problems: [
+        `${scope}: .claude-plugin/plugin.json is not valid JSON: ${e instanceof Error ? e.message : String(e)}`,
+      ],
+    }
+  }
+  if (manifest === null) {
+    return { problems: [`${scope}: .claude-plugin/plugin.json is missing`] }
+  }
+  /** @type {string[]} */
+  const problems = []
+  const { name, description } = manifest
+  const category = manifest.metadata?.category
+  if (name !== dirent.name) {
+    problems.push(`${scope}: name "${String(name)}" does not match its directory`)
+  }
+  if (typeof description !== 'string' || description.trim() === '') {
+    problems.push(`${scope}: description must be a non-empty string`)
+  }
+  if (category === undefined) {
+    problems.push(`${scope}: metadata.category is required`)
+  } else if (typeof category !== 'string' || !categoryIds.has(category)) {
+    problems.push(
+      `${scope}: metadata.category "${String(category)}" is not in categories.json (${[...categoryIds].join(', ')})`,
+    )
+  }
+  if (problems.length > 0 || typeof description !== 'string' || typeof category !== 'string') {
+    return { problems }
+  }
+  return {
+    entry: { name: dirent.name, source: `./plugins/${dirent.name}`, description, category },
+    problems,
+  }
+}
+
+/**
  * One marketplace entry per real directory in plugins/, sorted by name.
  * Throws an Error listing every problem, so nothing is written from a partial read.
  * @returns {import('../lib.mjs').MarketplaceEntry[]}
@@ -29,50 +77,14 @@ export function buildEntries() {
   /** @type {import('../lib.mjs').MarketplaceEntry[]} */
   const entries = []
   for (const dirent of readdirSync(join(ROOT, 'plugins'), { withFileTypes: true })) {
-    const scope = `plugins/${dirent.name}`
     if (dirent.isSymbolicLink()) {
-      problems.push(`${scope}: must be a directory, not a symlink`)
-      continue
-    }
-    if (!dirent.isDirectory()) {
-      continue
-    }
-    /** @type {import('../lib.mjs').Manifest | null} */
-    let manifest
-    try {
-      manifest = loadManifest(dirent.name)
-    } catch (e) {
-      problems.push(
-        `${scope}: .claude-plugin/plugin.json is not valid JSON: ${e instanceof Error ? e.message : String(e)}`,
-      )
-      continue
-    }
-    if (manifest === null) {
-      problems.push(`${scope}: .claude-plugin/plugin.json is missing`)
-      continue
-    }
-    const found = problems.length
-    const { name, description } = manifest
-    const category = manifest.metadata?.category
-    if (name !== dirent.name) {
-      problems.push(`${scope}: name "${String(name)}" does not match its directory`)
-    }
-    if (typeof description !== 'string' || description.trim() === '') {
-      problems.push(`${scope}: description must be a non-empty string`)
-    }
-    if (category === undefined) {
-      problems.push(`${scope}: metadata.category is required`)
-    } else if (typeof category !== 'string' || !categoryIds.has(category)) {
-      problems.push(
-        `${scope}: metadata.category "${String(category)}" is not in categories.json (${[...categoryIds].join(', ')})`,
-      )
-    }
-    if (
-      problems.length === found &&
-      typeof description === 'string' &&
-      typeof category === 'string'
-    ) {
-      entries.push({ name: dirent.name, source: `./plugins/${dirent.name}`, description, category })
+      problems.push(`plugins/${dirent.name}: must be a directory, not a symlink`)
+    } else if (dirent.isDirectory()) {
+      const result = entryFor(dirent, categoryIds)
+      problems.push(...result.problems)
+      if (result.entry !== undefined) {
+        entries.push(result.entry)
+      }
     }
   }
   if (problems.length > 0) {

@@ -77,13 +77,8 @@ export function portabilityProblems(entries) {
   /** @type {Map<string, string>} */
   const seen = new Map()
   for (const { path, size, symlink } of entries) {
-    for (const seg of path.split('/')) {
-      if (SYSTEM_FILES.has(seg.toLowerCase())) {
-        problems.add(`${path} is a macOS or Windows system file — remove it`)
-      }
-      if (seg.includes(':') || /[. ]$/.test(seg) || DEVICE_NAME.test(seg)) {
-        problems.add(`"${seg}" in ${path} is not a valid file name on Windows`)
-      }
+    for (const problem of nameProblems(path)) {
+      problems.add(problem)
     }
     const key = path.toLowerCase()
     if (seen.has(key) && seen.get(key) !== path) {
@@ -101,6 +96,25 @@ export function portabilityProblems(entries) {
     problems.add(`the plugin has ${entries.length} files; the limit is ${MAX_FILES}`)
   }
   return [...problems]
+}
+
+/**
+ * Problems in the names along one path: system files and names Windows cannot hold.
+ * @param {string} path
+ * @returns {string[]}
+ */
+function nameProblems(path) {
+  /** @type {string[]} */
+  const problems = []
+  for (const seg of path.split('/')) {
+    if (SYSTEM_FILES.has(seg.toLowerCase())) {
+      problems.push(`${path} is a macOS or Windows system file — remove it`)
+    }
+    if (seg.includes(':') || /[. ]$/.test(seg) || DEVICE_NAME.test(seg)) {
+      problems.push(`"${seg}" in ${path} is not a valid file name on Windows`)
+    }
+  }
+  return problems
 }
 
 // ── LSP server configs (code.claude.com/docs/en/plugins/manifest-reference#lspservers) ──
@@ -145,27 +159,33 @@ export function lspConfigProblems(config) {
   if (!isRecord(config) || Object.keys(config).length === 0) {
     return ['.lsp.json must map at least one server name to its config']
   }
+  return Object.entries(config).flatMap(([server, cfg]) => lspServerProblems(server, cfg))
+}
+
+/**
+ * @param {string} server
+ * @param {unknown} cfg
+ * @returns {string[]}
+ */
+function lspServerProblems(server, cfg) {
+  if (!isRecord(cfg)) {
+    return [`.lsp.json server "${server}" must be an object`]
+  }
   /** @type {string[]} */
   const problems = []
-  for (const [server, cfg] of Object.entries(config)) {
-    if (!isRecord(cfg)) {
-      problems.push(`.lsp.json server "${server}" must be an object`)
-      continue
+  for (const key of LSP_REQUIRED) {
+    if (!(key in cfg)) {
+      problems.push(`.lsp.json server "${server}" is missing ${key}`)
     }
-    for (const key of LSP_REQUIRED) {
-      if (!(key in cfg)) {
-        problems.push(`.lsp.json server "${server}" is missing ${key}`)
-      }
-    }
-    for (const [key, value] of Object.entries(cfg)) {
-      const valid = LSP_FIELDS[key]
-      if (!valid) {
-        problems.push(
-          `.lsp.json server "${server}" has unknown key "${key}" — Claude Code skips the file`,
-        )
-      } else if (!valid(value)) {
-        problems.push(`.lsp.json server "${server}" has an invalid ${key}`)
-      }
+  }
+  for (const [key, value] of Object.entries(cfg)) {
+    const valid = LSP_FIELDS[key]
+    if (!valid) {
+      problems.push(
+        `.lsp.json server "${server}" has unknown key "${key}" — Claude Code skips the file`,
+      )
+    } else if (!valid(value)) {
+      problems.push(`.lsp.json server "${server}" has an invalid ${key}`)
     }
   }
   return problems
@@ -218,18 +238,34 @@ export function rootPackageProblems(pkg, nodeVersion) {
       problems.push(`must not declare "${field}": it is maintainer tooling, never a plugin runtime`)
     }
   }
-  const scripts = isRecord(pkg.scripts) ? pkg.scripts : {}
-  for (const [name, command] of Object.entries(scripts)) {
-    if (name === 'prepare' && command === 'husky') {
-      continue
-    }
-    if (AUTO_SCRIPTS.has(name) || /^(pre|post)/.test(name)) {
-      problems.push(
-        `script "${name}" runs on its own: name every script so it runs only when called`,
-      )
-    }
-  }
-  const dev = isRecord(pkg.devDependencies) ? pkg.devDependencies : {}
+  problems.push(...autoScriptProblems(isRecord(pkg.scripts) ? pkg.scripts : {}))
+  problems.push(
+    ...devDependencyProblems(isRecord(pkg.devDependencies) ? pkg.devDependencies : {}, nodeVersion),
+  )
+  return problems
+}
+
+/**
+ * @param {Record<string, unknown>} scripts
+ * @returns {string[]}
+ */
+function autoScriptProblems(scripts) {
+  return Object.entries(scripts)
+    .filter(([name, command]) => !(name === 'prepare' && command === 'husky'))
+    .filter(([name]) => AUTO_SCRIPTS.has(name) || /^(pre|post)/.test(name))
+    .map(
+      ([name]) => `script "${name}" runs on its own: name every script so it runs only when called`,
+    )
+}
+
+/**
+ * @param {Record<string, unknown>} dev
+ * @param {string} nodeVersion the content of .nvmrc
+ * @returns {string[]}
+ */
+function devDependencyProblems(dev, nodeVersion) {
+  /** @type {string[]} */
+  const problems = []
   for (const [name, version] of Object.entries(dev)) {
     if (typeof version !== 'string' || !SEMVER.test(version)) {
       problems.push(`devDependency "${name}" must be pinned to an exact version`)
@@ -292,202 +328,278 @@ function walk(dir) {
   )
 }
 
+/**
+ * @param {ReturnType<typeof loadMarketplace>} mp
+ * @returns {string[]}
+ */
+function marketplaceProblems(mp) {
+  /** @type {string[]} */
+  const problems = []
+  if (mp.name !== MARKETPLACE_NAME) {
+    problems.push(`name must stay "${MARKETPLACE_NAME}" (it is permanent)`)
+  }
+  if (!mp.description) {
+    problems.push('missing description')
+  }
+  if ('version' in mp) {
+    problems.push('the marketplace carries no version: remove "version"; plugins are versioned')
+  }
+  if (!Array.isArray(mp.plugins)) {
+    problems.push('plugins must be an array')
+  }
+  return problems
+}
+
+/**
+ * @param {NonNullable<ReturnType<typeof loadManifest>>} manifest
+ * @returns {string[]}
+ */
+function manifestProblems(manifest) {
+  /** @type {string[]} */
+  const problems = []
+  for (const f of /** @type {const} */ (['displayName', 'description', 'author', 'keywords'])) {
+    if (!manifest[f]) {
+      problems.push(`plugin.json missing ${f}`)
+    }
+  }
+  if (manifest.license !== 'MIT') {
+    problems.push('plugin.json license must be "MIT"')
+  }
+  if (manifest.repository !== REPO_URL) {
+    problems.push(`plugin.json repository must be ${REPO_URL}`)
+  }
+  return problems
+}
+
+/**
+ * @param {unknown} e
+ * @returns {string}
+ */
+function messageOf(e) {
+  return e instanceof Error ? e.message : String(e)
+}
+
+/**
+ * Problems in the plugin's .lsp.json and hooks/hooks.json, each checked only when present.
+ * @param {string} dir
+ * @returns {string[]}
+ */
+function configFileProblems(dir) {
+  /** @type {string[]} */
+  const problems = []
+  if (existsSync(join(dir, '.lsp.json'))) {
+    try {
+      problems.push(...lspConfigProblems(readJson(join(dir, '.lsp.json'))))
+    } catch (e) {
+      problems.push(`.lsp.json is not valid JSON: ${messageOf(e)}`)
+    }
+  }
+  if (existsSync(join(dir, 'hooks', 'hooks.json'))) {
+    try {
+      readJson(join(dir, 'hooks', 'hooks.json'))
+    } catch (e) {
+      problems.push(`hooks/hooks.json is not valid JSON: ${messageOf(e)}`)
+    }
+  }
+  return problems
+}
+
+/**
+ * Missing sections and unresolved template text in a plugin README.
+ * @param {string} readme
+ * @returns {string[]}
+ */
+function readmeProblems(readme) {
+  /** @type {string[]} */
+  const problems = []
+  const headings = [...readme.matchAll(/^## (.+)$/gm)].map((m) => m[1] ?? '')
+  for (const section of REQUIRED_PLUGIN_SECTIONS) {
+    if (!headings.some((h) => h.includes(section))) {
+      problems.push(`README.md missing the "${section}" section`)
+    }
+  }
+  if (/\{\{\w+\}\}/.test(readme)) {
+    problems.push('README.md has unresolved {{placeholders}}')
+  }
+  if (/<!--\s*(TODO|TEMPLATE)\b/.test(readme)) {
+    problems.push('README.md has unresolved TODO/TEMPLATE comments')
+  }
+  // The building-plugins README template marks what the author fills with a `<` and a capital
+  // letter. Outside code any such mark is reported; inside code only the template's own marks
+  // are, since code keeps other `<…>` text on purpose (`<YYYY-MM-DD>`, `Promise<Result>`).
+  const code = [...readme.matchAll(/^```[\s\S]*?^```|`[^`\n]*`/gm)].map((m) => m[0]).join('\n')
+  const prose = readme.replace(/^```[\s\S]*?^```/gm, '').replace(/`[^`\n]*`/g, '')
+  const leftInCode = [...new Set(code.match(AUTHOR_PLACEHOLDER) ?? [])].filter((p) =>
+    templatePlaceholders().has(p),
+  )
+  if (/<[A-Z][^>]*>/.test(prose) || leftInCode.length > 0) {
+    const where = leftInCode.length > 0 ? ` (in code: ${leftInCode.join(', ')})` : ''
+    problems.push(`README.md has unresolved <…> placeholders${where}`)
+  }
+  return problems
+}
+
+/**
+ * @param {string} dir
+ * @param {string | undefined} version
+ * @returns {string[]}
+ */
+function changelogProblems(dir, version) {
+  if (!(existsSync(join(dir, 'CHANGELOG.md')) && version)) {
+    return []
+  }
+  /** @type {string[]} */
+  const problems = []
+  const changelog = readText(join(dir, 'CHANGELOG.md'))
+  if (changelogSection(changelog, version) === '') {
+    problems.push(`CHANGELOG.md entry for ${version} is empty`)
+  }
+  if (/\{\{\w+\}\}/.test(changelog)) {
+    problems.push('CHANGELOG.md has unresolved {{placeholders}}')
+  }
+  return problems
+}
+
+/**
+ * Cross-surface declaration (docs/compatibility.md): metadata.surfaces, the bin/ restriction, and
+ * the README's badge, Claude Code-only statement and Compatibility table.
+ * @param {string} name
+ * @param {unknown} surfaces the manifest's metadata.surfaces
+ * @param {string | null} readme
+ * @returns {string[]}
+ */
+function surfaceProblems(name, surfaces, readme) {
+  const profileKey = surfaceProfileKey(surfaces)
+  const components = detectComponents(name)
+  if (!profileKey) {
+    return [
+      `plugin.json metadata.surfaces must be one of: ${Object.values(SURFACE_PROFILES)
+        .map((p) => JSON.stringify(p.surfaces))
+        .join(' or ')}`,
+    ]
+  }
+  /** @type {string[]} */
+  const problems = []
+  if (components.bin && profileKey !== 'claude-code-only') {
+    problems.push(
+      'ships a top-level bin/, which makes the Claude app refuse the plugin — declare metadata.surfaces ["claude-code"] or move the code into a skill\'s scripts/',
+    )
+  }
+  if (readme === null) {
+    return problems
+  }
+  const profile = SURFACE_PROFILES[profileKey]
+  if (!readme.includes(`works%20in-${profile.badge}-`)) {
+    problems.push(
+      `README.md is missing the "works in" badge for ${JSON.stringify(profile.surfaces)}`,
+    )
+  }
+  if (profileKey === 'claude-code-only' && !readme.includes('**Claude Code only**')) {
+    problems.push(
+      'README.md must state "**Claude Code only**" (and why) for a Claude Code-only plugin',
+    )
+  }
+  problems.push(...compatibilityTableProblems(readme, components))
+  return problems
+}
+
+/**
+ * Rows of the README's Compatibility table against the components the plugin ships.
+ * @param {string} readme
+ * @param {ReturnType<typeof detectComponents>} components
+ * @returns {string[]}
+ */
+function compatibilityTableProblems(readme, components) {
+  const compat =
+    readme.match(/^## [^\n]*Compatibility[^\n]*\n([\s\S]*?)(?=^## |(?![\s\S]))/m)?.[1] ?? ''
+  const rows = compat
+    .split('\n')
+    .filter((l) => l.startsWith('|') && !/^\|\s*:?-/.test(l) && !/^\|\s*Component\s*\|/.test(l))
+  /** @type {string[]} */
+  const problems = []
+  for (const t of COMPONENT_TYPES) {
+    const present = rows.some((r) => r.includes(t.row))
+    if (components[t.id] && !present) {
+      problems.push(
+        `README.md Compatibility table has no row for ${t.label}, which the plugin ships`,
+      )
+    }
+    if (!components[t.id] && present) {
+      problems.push(
+        `README.md Compatibility table lists ${t.label}, which the plugin doesn't ship — remove the row`,
+      )
+    }
+  }
+  return problems
+}
+
+/**
+ * Problems of one listed plugin, skipped when its folder or manifest is missing (the validators
+ * report those).
+ * @param {string} name
+ * @returns {string[]}
+ */
+function pluginProblems(name) {
+  const dir = pluginDir(name)
+  if (!existsSync(dir)) {
+    return []
+  }
+  const manifest = loadManifest(name)
+  if (!manifest) {
+    return []
+  }
+  const readmePath = join(dir, 'README.md')
+  const readme = existsSync(readmePath) ? readText(readmePath) : null
+  return [
+    ...manifestProblems(manifest),
+    ...configFileProblems(dir),
+    ...(readme === null ? [] : readmeProblems(readme)),
+    ...changelogProblems(dir, manifest.version),
+    ...surfaceProblems(name, manifest.metadata?.surfaces, readme),
+  ]
+}
+
+/** @returns {string[]} */
+function packageProblems() {
+  try {
+    const pkg = readJson(join(ROOT, 'package.json'))
+    const nodeVersion = readText(join(ROOT, '.nvmrc'))
+    return rootPackageProblems(isRecord(pkg) ? pkg : {}, nodeVersion)
+  } catch (e) {
+    return [messageOf(e)]
+  }
+}
+
 /** @returns {{ errors: string[] }} */
 export function checkRepo() {
   /** @type {string[]} */
   const errors = []
   /**
    * @param {string} scope
-   * @param {string} msg
+   * @param {readonly string[]} problems
    */
-  const err = (scope, msg) => errors.push(`[${scope}] ${msg}`)
+  const report = (scope, problems) => {
+    for (const problem of problems) {
+      errors.push(`[${scope}] ${problem}`)
+    }
+  }
 
-  // ── Marketplace ────────────────────────────────────────────────────────────
   const mp = loadMarketplace()
-  if (mp.name !== MARKETPLACE_NAME) {
-    err('marketplace', `name must stay "${MARKETPLACE_NAME}" (it is permanent)`)
-  }
-  if (!mp.description) {
-    err('marketplace', 'missing description')
-  }
-  if ('version' in mp) {
-    err(
-      'marketplace',
-      'the marketplace carries no version: remove "version"; plugins are versioned',
-    )
-  }
-  if (!Array.isArray(mp.plugins)) {
-    err('marketplace', 'plugins must be an array')
-  }
+  report('marketplace', marketplaceProblems(mp))
+  const listed = new Set((mp.plugins ?? []).map((entry) => entry.name))
 
-  /** @type {Set<string>} */
-  const listed = new Set()
   for (const entry of mp.plugins ?? []) {
-    listed.add(entry.name)
-  }
-
-  // ── Plugin directories ─────────────────────────────────────────────────────
-  for (const entry of mp.plugins ?? []) {
-    const name = entry.name
-    const dir = pluginDir(name)
-    if (!existsSync(dir)) {
-      continue
-    }
-    const scope = `plugins/${name}`
-    const manifest = loadManifest(name)
-    if (!manifest) {
-      continue
-    }
-    for (const f of /** @type {const} */ (['displayName', 'description', 'author', 'keywords'])) {
-      if (!manifest[f]) {
-        err(scope, `plugin.json missing ${f}`)
-      }
-    }
-    if (manifest.license !== 'MIT') {
-      err(scope, 'plugin.json license must be "MIT"')
-    }
-    if (manifest.repository !== REPO_URL) {
-      err(scope, `plugin.json repository must be ${REPO_URL}`)
-    }
-
-    if (existsSync(join(dir, '.lsp.json'))) {
-      try {
-        for (const problem of lspConfigProblems(readJson(join(dir, '.lsp.json')))) {
-          err(scope, problem)
-        }
-      } catch (e) {
-        err(scope, `.lsp.json is not valid JSON: ${e instanceof Error ? e.message : String(e)}`)
-      }
-    }
-
-    if (existsSync(join(dir, 'hooks', 'hooks.json'))) {
-      try {
-        readJson(join(dir, 'hooks', 'hooks.json'))
-      } catch (e) {
-        err(
-          scope,
-          `hooks/hooks.json is not valid JSON: ${e instanceof Error ? e.message : String(e)}`,
-        )
-      }
-    }
-
-    const readmePath = join(dir, 'README.md')
-    const readme = existsSync(readmePath) ? readText(readmePath) : null
-    if (readme !== null) {
-      const headings = [...readme.matchAll(/^## (.+)$/gm)].map((m) => m[1] ?? '')
-      for (const section of REQUIRED_PLUGIN_SECTIONS) {
-        if (!headings.some((h) => h.includes(section))) {
-          err(scope, `README.md missing the "${section}" section`)
-        }
-      }
-      if (/\{\{\w+\}\}/.test(readme)) {
-        err(scope, 'README.md has unresolved {{placeholders}}')
-      }
-      if (/<!--\s*(TODO|TEMPLATE)\b/.test(readme)) {
-        err(scope, 'README.md has unresolved TODO/TEMPLATE comments')
-      }
-      // The building-plugins README template marks what the author fills with a `<` and a capital
-      // letter. Outside code any such mark is reported; inside code only the template's own marks
-      // are, since code keeps other `<…>` text on purpose (`<YYYY-MM-DD>`, `Promise<Result>`).
-      const code = [...readme.matchAll(/^```[\s\S]*?^```|`[^`\n]*`/gm)].map((m) => m[0]).join('\n')
-      const prose = readme.replace(/^```[\s\S]*?^```/gm, '').replace(/`[^`\n]*`/g, '')
-      const leftInCode = [...new Set(code.match(AUTHOR_PLACEHOLDER) ?? [])].filter((p) =>
-        templatePlaceholders().has(p),
-      )
-      if (/<[A-Z][^>]*>/.test(prose) || leftInCode.length > 0) {
-        const where = leftInCode.length > 0 ? ` (in code: ${leftInCode.join(', ')})` : ''
-        err(scope, `README.md has unresolved <…> placeholders${where}`)
-      }
-    }
-
-    if (existsSync(join(dir, 'CHANGELOG.md')) && manifest.version) {
-      const changelog = readText(join(dir, 'CHANGELOG.md'))
-      if (changelogSection(changelog, manifest.version) === '') {
-        err(scope, `CHANGELOG.md entry for ${manifest.version} is empty`)
-      }
-      if (/\{\{\w+\}\}/.test(changelog)) {
-        err(scope, 'CHANGELOG.md has unresolved {{placeholders}}')
-      }
-    }
-
-    // ── Cross-surface declaration (docs/compatibility.md) ──
-    const profileKey = surfaceProfileKey(manifest.metadata?.surfaces)
-    const components = detectComponents(name)
-    if (!profileKey) {
-      err(
-        scope,
-        `plugin.json metadata.surfaces must be one of: ${Object.values(SURFACE_PROFILES)
-          .map((p) => JSON.stringify(p.surfaces))
-          .join(' or ')}`,
-      )
-    } else {
-      if (components.bin && profileKey !== 'claude-code-only') {
-        err(
-          scope,
-          'ships a top-level bin/, which makes the Claude app refuse the plugin — declare metadata.surfaces ["claude-code"] or move the code into a skill\'s scripts/',
-        )
-      }
-      if (readme !== null) {
-        const profile = SURFACE_PROFILES[profileKey]
-        if (!readme.includes(`works%20in-${profile.badge}-`)) {
-          err(
-            scope,
-            `README.md is missing the "works in" badge for ${JSON.stringify(profile.surfaces)}`,
-          )
-        }
-        if (profileKey === 'claude-code-only' && !readme.includes('**Claude Code only**')) {
-          err(
-            scope,
-            'README.md must state "**Claude Code only**" (and why) for a Claude Code-only plugin',
-          )
-        }
-        const compat =
-          readme.match(/^## [^\n]*Compatibility[^\n]*\n([\s\S]*?)(?=^## |(?![\s\S]))/m)?.[1] ?? ''
-        const rows = compat
-          .split('\n')
-          .filter(
-            (l) => l.startsWith('|') && !/^\|\s*:?-/.test(l) && !/^\|\s*Component\s*\|/.test(l),
-          )
-        for (const t of COMPONENT_TYPES) {
-          const present = rows.some((r) => r.includes(t.row))
-          if (components[t.id] && !present) {
-            err(
-              scope,
-              `README.md Compatibility table has no row for ${t.label}, which the plugin ships`,
-            )
-          }
-          if (!components[t.id] && present) {
-            err(
-              scope,
-              `README.md Compatibility table lists ${t.label}, which the plugin doesn't ship — remove the row`,
-            )
-          }
-        }
-      }
-    }
+    report(`plugins/${entry.name}`, pluginProblems(entry.name))
   }
 
   // ── Portability (Anthropic's plugin directory) ─────────────────────────────
   for (const name of listed) {
-    if (!existsSync(pluginDir(name))) {
-      continue
-    }
-    for (const problem of portabilityProblems(pluginEntries(pluginDir(name)))) {
-      err(`plugins/${name}`, problem)
+    if (existsSync(pluginDir(name))) {
+      report(`plugins/${name}`, portabilityProblems(pluginEntries(pluginDir(name))))
     }
   }
 
-  // ── Root package.json ──────────────────────────────────────────────────────
-  try {
-    const pkg = readJson(join(ROOT, 'package.json'))
-    const nodeVersion = readText(join(ROOT, '.nvmrc'))
-    for (const problem of rootPackageProblems(isRecord(pkg) ? pkg : {}, nodeVersion)) {
-      err('package.json', problem)
-    }
-  } catch (e) {
-    err('package.json', e instanceof Error ? e.message : String(e))
-  }
-
+  report('package.json', packageProblems())
   return { errors }
 }
 
