@@ -73,7 +73,7 @@ Every change inside a plugin's directory, its components, dependencies and a `RE
 #### Plugin Tooling
 
 - Target Linux and macOS with POSIX-compatible interfaces. Windows is supported only through Git Bash, and only when the plugin's README declares it.
-- Write plugin Python for any `python3` a user may have; declare a minimum in the README only when a feature requires it. Type-check it with Basedpyright in its default `recommended` mode.
+- Write plugin Python for any `python3` a user may have; declare a minimum in the README only when a feature requires it. Type-check it with Basedpyright in `all` mode, as `pyrightconfig.json` sets for the whole repository.
 
 ### Working Files
 

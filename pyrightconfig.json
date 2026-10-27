@@ -13,5 +13,10 @@
     ".superpowers",
     ".claude/worktrees",
     ".ruff_cache"
-  ]
+  ],
+  "typeCheckingMode": "all",
+  "pythonVersion": "3.15",
+  "pythonPlatform": "All",
+  "deprecateTypingAliases": true,
+  "enableExperimentalFeatures": true
 }
