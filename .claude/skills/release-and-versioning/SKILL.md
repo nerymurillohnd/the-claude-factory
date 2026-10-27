@@ -151,7 +151,7 @@ With Nery's authorization only: push the branch and open the PR, applying only t
 1. Take the merge commit's SHA: `gh pr view <n> --json mergeCommit`.
 2. Wait until `gh run list --workflow validate.yml --commit <sha>` shows the run completed.
 3. Read the release run: `gh run list --workflow release.yml --commit <sha>`. The release run starts only from a Validate run that succeeded on a `push` to `main`. No run while Validate is still running is not a failure. A missing run after Validate succeeded is unexplained: read the trigger in `release.yml` before running anything.
-4. Print the expected tag with `.claude/skills/release-and-versioning/scripts/release-notes.py <plugin> --tag` (never compose it by hand). Without `--tag` it prints the notes the release carries, the same text `release.yml` builds with `scripts/release-notes.mjs`.
+4. Print the expected tag with `.claude/skills/release-and-versioning/scripts/release-notes.py <plugin> --tag` (never compose it by hand). Without `--tag` it prints the notes the release carries: `release.yml` runs this same script to build them.
 5. Confirm the tag and the GitHub Release exist: `gh release view <plugin>--v<version>`, and that the tag matches step 4.
 6. Confirm no other plugin was tagged by the same run unless intended: `gh run view <run-id> --log | grep -oE 'Released [a-z0-9-]+--v[0-9.]+'` lists every tag that run published.
 7. Repeat the branch half of step 8.5 from `nerymurillohnd/the-claude-factory#main`: `plugin list` must show the new version and `plugin details` the same components and `Always-on` figure as before the merge. That is what users receive.
