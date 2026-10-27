@@ -1,7 +1,5 @@
 // The maintainers' Biome configuration. Each setting that differs from Biome's default says why
-// beside it. Everything else is left to Biome's defaults and its recommended preset. Assist has no
-// block because its defaults are the intent: it is on, runs the recommended actions (such as
-// organizeImports), and biome ci fails when one has a change to make.
+// beside it. Everything else is left to Biome's defaults and its recommended preset.
 {
   "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
   "vcs": {
@@ -50,6 +48,19 @@
       "!.claude/skills/**/*.md",
       "!plugins/**/*.md"
     ]
+  },
+  "assist": {
+    // Assist is on and runs its recommended actions (organizeImports) by default, and biome ci
+    // fails when one has a change to make. Each action added here gets its
+    // source.action.<action>.biome line in .vscode/settings.json, so saving applies it too.
+    "actions": {
+      "source": {
+        // package.json fields in sort-package-json's conventional order.
+        "useSortedPackageJson": "on",
+        // A repeated class in a mod's JSX className.
+        "noDuplicateClasses": "on"
+      }
+    }
   },
   "formatter": {
     // Nery's standard line width, the same as ruff.toml.
@@ -131,7 +142,11 @@
         "useExplicitType": "warn",
         "useConsistentHeadingLevel": "error",
         "useFencedCodeLanguage": "error",
-        "useSingleTopLevelHeading": "error"
+        "useSingleTopLevelHeading": "error",
+        // Each Markdown document starts with a level-1 heading (or an HTML block, as READMEs do),
+        // and none starts with a byte order mark, which UTF-8 does not need.
+        "useTopLevelHeading": "error",
+        "useConsistentUnicodeBom": "error"
       }
     }
   },

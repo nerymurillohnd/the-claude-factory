@@ -42,6 +42,7 @@
   // the hooks and the gates do. So biome.lsp.bin and biome.configurationPath stay unset: either
   // would make the editor run another binary or configuration than npm run. The extension reads
   // neither BIOME_BINARY nor BIOME_CONFIG_PATH, which the gates refuse.
+  // requireConfiguration takes effect only with biome.enabled true in the same scope.
   "biome.enabled": true,
   "biome.requireConfiguration": true,
   "biome.suggestInstallingGlobally": false,
@@ -110,13 +111,14 @@
       "source.suppressRule.topLevel.biome": "never"
     }
   },
-  // Assist runs on save only for the actions biome.jsonc enables: organizeImports today. Each
+  // Assist runs on save only for the actions biome.jsonc enables. Each
   // action biome.jsonc turns on later switches from "never" to "explicit" in the same commit.
   // Suppression comments are written by hand, with a reason, never on save.
   "editor.codeActionsOnSave": {
     "source.fixAll.biome": "explicit",
     "source.organizeImports.biome": "explicit",
-    "source.action.noDuplicateClasses.biome": "never",
+    "source.action.useSortedPackageJson.biome": "explicit",
+    "source.action.noDuplicateClasses.biome": "explicit",
     "source.action.useSortedAttributes.biome": "never",
     "source.suppressRule.inline.biome": "never",
     "source.suppressRule.topLevel.biome": "never"
