@@ -159,7 +159,9 @@
         "noDeprecatedImports": "error",
         // Raised from info, like the complexity rules above.
         "noDuplicateFields": "error",
-        "noQuickfixBiome": "error"
+        "noQuickfixBiome": "error",
+        // From the test domain's full set: an expect inside an if can be skipped without failing.
+        "noConditionalExpect": "error"
       },
       // The preset never turns on a nursery rule, so each one is listed.
       "nursery": {

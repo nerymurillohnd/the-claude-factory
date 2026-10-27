@@ -619,22 +619,26 @@ test('git never runs a program a repository config names: fsmonitor, filters, te
   await ui.key({ key: 'd', in: 'body' })
   await $.tool.call({ tool: 'Bash', command: 'git commit -m "x"' })
   const gits = seen.runs.filter(([program, sub]) => program === 'git' && sub !== 'config')
+  const filtered = gits.filter((argv) => argv.includes('status') || argv.includes('diff'))
+  const diffs = gits.filter((argv) => argv.includes('diff'))
+  const logs = gits.filter((argv) => argv.includes('log'))
   expect(gits.some((argv) => argv.includes('status'))).toBe(true)
-  expect(gits.some((argv) => argv.includes('log'))).toBe(true)
+  expect(diffs.length).toBeGreaterThan(0)
+  expect(logs.length).toBeGreaterThan(0)
   for (const argv of gits) {
     expect(argv.slice(1, 3)).toEqual(['-c', 'core.fsmonitor=false'])
-    if (argv.includes('status') || argv.includes('diff')) {
-      expect(argv).toContain('filter.lfs.clean=')
-      expect(argv).toContain('filter.lfs.process=')
-      expect(argv).toContain('filter.lfs.required=false')
-    }
-    if (argv.includes('diff')) {
-      expect(argv).toContain('--no-textconv')
-      expect(argv).toContain('--no-ext-diff')
-    }
-    if (argv.includes('log')) {
-      expect(argv).toContain('--no-show-signature')
-    }
+  }
+  for (const argv of filtered) {
+    expect(argv).toContain('filter.lfs.clean=')
+    expect(argv).toContain('filter.lfs.process=')
+    expect(argv).toContain('filter.lfs.required=false')
+  }
+  for (const argv of diffs) {
+    expect(argv).toContain('--no-textconv')
+    expect(argv).toContain('--no-ext-diff')
+  }
+  for (const argv of logs) {
+    expect(argv).toContain('--no-show-signature')
   }
   await ui.unmount()
 })
