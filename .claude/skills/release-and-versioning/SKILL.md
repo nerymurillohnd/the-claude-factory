@@ -111,7 +111,7 @@ Run them after the commit in step 5: `check-version-bump.py` reads committed cha
 4. `$S/check-changelog-entry.py <plugin>` for each changed plugin.
 5. `node scripts/generators/catalog.mjs --check`, and `node scripts/generators/marketplace.mjs --check`, which fails while `marketplace.json` does not list a new plugin as `plugins/` holds it.
 6. `claude plugin validate --strict plugins/<plugin>` for each changed plugin, then `claude plugin validate --strict .` for the marketplace.
-7. `git lfs ls-files -- plugins/<plugin>` prints nothing: a git clone never downloads LFS content, so an LFS file reaches users as a pointer file (`/en/plugins/host-marketplace`, "Keep plugin files out of Git LFS").
+7. `git lfs ls-files --include='plugins/<plugin>/**'` prints nothing and exits 0 (`git lfs ls-files -- <path>` reads the path as a ref and fails): a git clone never downloads LFS content, so an LFS file reaches users as a pointer file (`/en/plugins/host-marketplace`, "Keep plugin files out of Git LFS").
 8. `find plugins/<plugin> -type l` lists every symlink, and each must resolve inside `plugins/<plugin>/`: a link elsewhere in the repository is copied as its target's content, and a link outside it is skipped without a warning (`/en/plugins/host-marketplace`, "Share files within a marketplace with symlinks").
 9. Read the changed plugin's `README.md`, `CHANGELOG.md` and `plugin.json` side by side and make them agree with the change: the components, commands, prerequisites and network calls the README states, the Compatibility rows, and the version each file shows. A script passing is not this check.
 
@@ -143,7 +143,7 @@ With Nery's authorization only: push the branch and open the PR, applying only t
    - `plugin details` lists the components the plugin ships.
    - The `Always-on` figure of `plugin details` in `B` against `M`: report any increase to Nery, with the component that grew. A new plugin has no figure in `M`; report its figure.
    - A failure here would reach users: fix it before the merge. Delete `B` and `M` afterwards.
-   - **Unverified:** a branch name with `/` after `#`. If the add fails on one, report it to Nery instead of renaming the branch.
+   - A branch name with `/` after `#` works: `fix/file-tree-pane-biome-test-and-nursery-rules` installed this way on v2.1.311.
 6. Merge only when Nery orders it.
 
 ### 9. Verify the release after the merge

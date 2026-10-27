@@ -132,7 +132,7 @@ Run them after the commit in step 9: `check-version-bump.py` reads committed cha
 5. `node scripts/generators/marketplace.mjs --check`
 6. `node scripts/generators/catalog.mjs --check`
 7. `claude plugin validate --strict plugins/<plugin>`, then `claude plugin validate --strict .` for the marketplace.
-8. `git lfs ls-files -- plugins/<plugin>` prints nothing: a git clone never downloads LFS content, so an LFS file reaches users as a pointer file (`/en/plugins/host-marketplace`, "Keep plugin files out of Git LFS").
+8. `git lfs ls-files --include='plugins/<plugin>/**'` prints nothing and exits 0 (`git lfs ls-files -- <path>` reads the path as a ref and fails): a git clone never downloads LFS content, so an LFS file reaches users as a pointer file (`/en/plugins/host-marketplace`, "Keep plugin files out of Git LFS").
 9. `find plugins/<plugin> -type l` lists every symlink, and each must resolve inside `plugins/<plugin>/`: a link elsewhere in the repository is copied as its target's content, and a link outside it is skipped without a warning (`/en/plugins/host-marketplace`, "Share files within a marketplace with symlinks"). For a merge, check the moved components most closely: a link that resolved inside `plugins/<old>/` now points at a deleted directory.
 10. Read the renamed or target plugin's `README.md`, `CHANGELOG.md` and `plugin.json` side by side and make them agree with the change: the components, commands, prerequisites and network calls the README states, the Compatibility rows, and the version each file shows. A script passing is not this check.
 
