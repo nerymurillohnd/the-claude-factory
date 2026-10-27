@@ -42,13 +42,10 @@ Add an item only when all of these hold:
 | --- | --- | --- |
 | DEBT-002 | Version-bump check fails on main after a revert of an unreleased bump and blocks every release | 🟠 Blocked |
 | DEBT-010 | The mod gates of `scripts/gates.mjs` can miss a mod or report green on a lost test summary | 🟠 Blocked |
-| DEBT-013 | The plugins' Markdown is not formatted or linted by Biome until each plugin next changes | 🔴 Risk accepted |
 | DEBT-014 | `release.yml` has not yet built release notes for a new tag with `release-notes.py` | 🟡 Pending |
 | DEBT-015 | `plugin-hooks-guidance` states hook facts that contradict `building-plugins` and the hooks docs | 🟠 Blocked |
 | DEBT-016 | `testing-mods` has no live MCP checks for a mod that ships an MCP server | 🟠 Blocked |
 | DEBT-017 | `testing-plugins` says the full eval suite runs in CI, and no eval workflow exists | 🟠 Blocked |
-| DEBT-018 | The plugin name checks lack a pre-design step and a defined "similar name" scope | 🟠 Blocked |
-| DEBT-019 | The four mod READMEs lack the "Tested with Claude Code X.Y.Z" line | 🟠 Blocked |
 | DEBT-020 | `docs/github-mcp-tools.md` serves one plugin but lives in the marketplace docs | 🟠 Blocked |
 | DEBT-021 | No script checks that the skills and paths the skills and CLAUDE.md name exist | 🟠 Blocked |
 | DEBT-022 | Five open items of an old handoff name skills and files that no longer exist | 🟠 Blocked |
@@ -129,32 +126,6 @@ Add an item only when all of these hold:
   - name `mod-tsc` for what it checks, and check the declarations' `// Written by Claude Code <version>.` header against `claude --version` before `tsc`.
 - **Review condition:** closes when a mod with no tests fails the gate, a test run with its summary removed fails it, and stale declarations are reported.
 - **Related records:** ADR_2026-10-21_gates-run-from-one-script, ADR_2026-10-25_building-mods-skill-holds-mod-authoring.
-
-### DEBT-013 — The plugins' Markdown is not formatted or linted by Biome until each plugin next changes
-
-| Field | Value |
-| --- | --- |
-| **Status** | 🔴 Risk accepted |
-| **Category** | quality, maintainability |
-| **Owner** | `biome.json` (`!plugins/<name>/**/*.md` lines) and each plugin's next change, through `building-plugins` step 5 |
-| **Logged** | 2026-10-26 |
-
-#### 🔎 Evidence
-
-- **Confirmed facts:**
-  - On 2026-10-26, Biome 2.6.3 with Markdown enabled reformatted 202 Markdown files across all 17 plugins in a scratch worktree.
-  - `biome.json` lists one `!plugins/<name>/**/*.md` line per plugin, 17 lines, so `biome ci plugins` reads none of their Markdown.
-  - `building-plugins` step 5 removes a plugin's line and runs `biome check --write plugins/<name>` in that plugin's next change.
-- **Inferences:** a plugin that never changes again keeps its Markdown unformatted and unlinted.
-- **Open questions:** none.
-
-#### 📈 Impact and next step
-
-- **Impact / risk:** a heading jump, a fenced block without a language or a malformed table in a plugin's README, skill reference or changelog passes every check until that plugin changes.
-- **Why it is not fixed now:** formatting all 17 plugins at once would ship 17 versions whose only change is whitespace; Nery chose adoption on each plugin's next change (ADR_2026-10-26_biome-formats-and-lints-maintainer-markdown).
-- **Next action:** in each plugin's next change, follow `building-plugins` step 5 and remove its line from `biome.json`. A lint-only step is ready: on 2026-10-26 a scratch run with an override `plugins/**/*.md` (formatter and assist off) and the 17 lines removed linted all 221 plugin Markdown files with 0 errors, so linting could start now, without a plugin change, if Nery approves.
-- **Review condition:** closes when `biome.json` has no `!plugins/<name>/**/*.md` line left and `biome ci --error-on-warnings plugins` passes.
-- **Related records:** ADR_2026-10-26_biome-formats-and-lints-maintainer-markdown.
 
 ### DEBT-014 — `release.yml` has not yet built release notes for a new tag with `release-notes.py`
 
@@ -253,52 +224,6 @@ Add an item only when all of these hold:
 - **Next action:** ask Nery; then change step 4 to run the full suite locally, or add the workflow with his approval.
 - **Review condition:** closes when the skill and the workflows agree on where the full suite runs.
 - **Related records:** none.
-
-### DEBT-018 — The plugin name checks lack a pre-design step and a defined "similar name" scope
-
-| Field | Value |
-| --- | --- |
-| **Status** | 🟠 Blocked |
-| **Category** | quality |
-| **Owner** | `.claude/skills/building-plugins/`, `.claude/skills/plugin-renames-and-removals/scripts/check-new-name.py` |
-| **Logged** | 2026-10-26 |
-
-#### 🔎 Evidence
-
-- **Confirmed facts:** `check-new-name.py` exists only in `plugin-renames-and-removals`; `building-plugins` has no name check before design. Whether a "similar name" means this marketplace only or the official marketplaces too is undecided (open since 2026-10-25).
-- **Inferences:** a new plugin can take a name close to an existing one.
-- **Open questions:** both points above.
-
-#### 📈 Impact and next step
-
-- **Impact / risk:** confusing or colliding plugin names for users.
-- **Why it is not fixed now:** both are Nery's decisions.
-- **Next action:** ask Nery whether `building-plugins` checks the name before design, with which script, and against which marketplaces.
-- **Review condition:** closes when the name check and its scope are written in `building-plugins`.
-- **Related records:** none.
-
-### DEBT-019 — The four mod READMEs lack the "Tested with Claude Code X.Y.Z" line
-
-| Field | Value |
-| --- | --- |
-| **Status** | 🟠 Blocked |
-| **Category** | quality |
-| **Owner** | `plugins/file-tree-pane`, `plugins/mods-engineering`, `plugins/tool-ledger`, `plugins/turn-meter` (README.md) |
-| **Logged** | 2026-10-26 |
-
-#### 🔎 Evidence
-
-- **Confirmed facts:** `building-mods` section 5 requires the line; `grep -ci "tested with claude code"` returns 0 in all four READMEs (2026-10-26).
-- **Inferences:** none.
-- **Open questions:** none.
-
-#### 📈 Impact and next step
-
-- **Impact / risk:** users cannot tell which Claude Code version a mod was tested on, while the mods API changes often.
-- **Why it is not fixed now:** a README-only plugin change needs a pull request, on Nery's order.
-- **Next action:** on Nery's order, one README-only PR per plugin, or one for the four, adding the line.
-- **Review condition:** closes when the four READMEs carry the line.
-- **Related records:** ADR_2026-10-25_building-mods-skill-holds-mod-authoring.
 
 ### DEBT-020 — `docs/github-mcp-tools.md` serves one plugin but lives in the marketplace docs
 

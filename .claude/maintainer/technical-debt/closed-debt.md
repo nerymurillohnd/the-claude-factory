@@ -27,6 +27,9 @@
 | 2026-10-26 | DEBT-009 | resolved | Biome 2.6.3 formats and lints the Markdown outside `plugins/`, locally and in CI | none |
 | 2026-10-26 | DEBT-011 | resolved | The plugin README template takes the published shape, a scaffolded plugin passes `check-repo.mjs`, and the frozen templates are gone | none |
 | 2026-10-26 | DEBT-006 | resolved | Each validator of `scripts/validators/` is a gate of the CI python group, on Python 3.15 | none |
+| 2026-10-26 | DEBT-013 | accepted | Biome never formats the plugins' Markdown, by Nery's decision | none |
+| 2026-10-26 | DEBT-018 | resolved | building-plugins checks a new name against this marketplace before design | none |
+| 2026-10-26 | DEBT-019 | obsolete | The mod READMEs already state the tested Claude Code version | none |
 
 ## 🏁 Closed items
 
@@ -337,6 +340,99 @@ On 2026-10-24 `check-repo.mjs` handed its plugin-structure checks to the validat
 - **Residual risk:** the CI python job has not run the new gates yet; the next push shows it.
 - **Closed by:** ADR_2026-10-26_npm-tools-and-git-hooks-are-pinned-dev-dependencies.
 - **Related records:** ADR_2026-10-24_repository-checks-move-to-python-validators, ADR_2026-10-21_gates-run-from-one-script.
+- **Superseded by:** none
+
+### DEBT-013 — Biome never formats the plugins' Markdown, by Nery's decision
+
+| Field | Value |
+| --- | --- |
+| **Outcome** | accepted |
+| **Closed on** | 2026-10-26 |
+| **Logged on** | 2026-10-26 |
+| **Owner** | `biome.json` (`!plugins/<name>/**/*.md` lines) and each plugin's next change, through `building-plugins` step 5 |
+
+#### ❗ The problem
+
+`biome.json` listed one `!plugins/<name>/**/*.md` line per plugin, 17 lines, so Biome read none of the plugins' Markdown until each plugin's next change adopted it. A plugin that never changed again kept its Markdown unformatted and unlinted.
+
+#### 🔧 The closure
+
+Nery decided on 2026-10-26 that Biome never formats the Markdown under `plugins/` or `.claude/skills/` (ADR_2026-10-26_biome-never-formats-plugin-and-skill-markdown). The condition is kept for good: one `!plugins/**/*.md` line replaces the 17, and `building-plugins` step 5 no longer adopts Biome (commit fcd793c).
+
+#### 🧪 Verification
+
+| Check | Evidence |
+| --- | --- |
+| ✅ **Positive:** the closure holds | ADR_2026-10-26_biome-never-formats-plugin-and-skill-markdown, status accepted. `biome.json` has `"!plugins/**/*.md"` and `"!.claude/skills/**/*.md"`; `biome ci .` exits 0 and reports `plugins/turn-meter/README.md` as ignored (2026-10-26). |
+| 🚫 **Negative:** the original failure or condition is gone | not applicable |
+
+#### 🔗 Follow-up
+
+- **Residual risk:** heading levels and fenced-code languages in plugin Markdown are checked only by reading.
+- **Closed by:** ADR_2026-10-26_biome-never-formats-plugin-and-skill-markdown, commit fcd793c.
+- **Related records:** ADR_2026-10-26_biome-formats-and-lints-maintainer-markdown (superseded).
+- **Superseded by:** none
+
+### DEBT-018 — building-plugins checks a new name against this marketplace before design
+
+| Field | Value |
+| --- | --- |
+| **Outcome** | resolved |
+| **Closed on** | 2026-10-26 |
+| **Logged on** | 2026-10-26 |
+| **Owner** | `.claude/skills/building-plugins/`, `.claude/skills/plugin-renames-and-removals/scripts/check-new-name.py` |
+
+#### ❗ The problem
+
+`check-new-name.py` existed only in `plugin-renames-and-removals`, and `building-plugins` had no name check before design: the scaffold refused only an exact or retired name, at step 2. Whether a "similar name" meant this marketplace only or the official marketplaces too was undecided.
+
+#### 🔧 The closure
+
+Nery set the scope on 2026-10-26: this marketplace. `building-plugins` gained `scripts/check-plugin-name.py`, run in step 1 before any design. It refuses a name listed in `plugins` or `renames` of `marketplace.json` or present in `plugins/`, and lists names at most 2 edits apart, with the same words in another order, or whose words contain the other's; a similar name goes on only with Nery's OK (commit c2378f9).
+
+#### 🧪 Verification
+
+| Check | Evidence |
+| --- | --- |
+| ✅ **Positive:** the closure holds | Scratch runs on 2026-10-26: `invoice-tracker` exit 0; `turn-meter` exit 1 "taken"; `typescript8-lsp-intelligence` exit 1, similar to typescript6 and typescript7 "(at most 2 edits apart)"; `lsp-python-intelligence` exit 1 "(the same words in another order)"; `hook-engineering-pro` exit 1; a `renames` key exit 1 "a retired name is never reused"; `My_Plugin`, no argument and two arguments exit 2. `ruff check` passed and basedpyright reported `0 errors, 0 warnings, 0 notes`. |
+| 🚫 **Negative:** the original failure or condition is gone | `building-plugins/SKILL.md` step 1 now runs `check-plugin-name.py` before any design (4 mentions in the skill; none before c2378f9). |
+
+#### 🔗 Follow-up
+
+- **Residual risk:** names in other marketplaces, official ones included, are not compared, by Nery's scope.
+- **Closed by:** commit c2378f9.
+- **Related records:** none
+- **Superseded by:** none
+
+### DEBT-019 — The mod READMEs already state the tested Claude Code version
+
+| Field | Value |
+| --- | --- |
+| **Outcome** | obsolete |
+| **Closed on** | 2026-10-26 |
+| **Logged on** | 2026-10-26 |
+| **Owner** | `plugins/file-tree-pane`, `plugins/mods-engineering`, `plugins/tool-ledger`, `plugins/turn-meter` (README.md) |
+
+#### ❗ The problem
+
+The entry said the four mod READMEs lacked the "Tested with Claude Code X.Y.Z" line that `building-mods` section 5 requires, based on `grep -ci "tested with claude code"` returning 0 in all four.
+
+#### 🔧 The closure
+
+Logged in error. The search matched only the literal "tested with claude code": three READMEs state the version in the Claude Code row of their Compatibility table as "Tested with vX.Y.Z.", equal to their CHANGELOG. `mods-engineering` has no `hooks/hooks.json`, so it is not a mod and the rule does not apply to it. `building-mods` section 5 now names the row and the "Tested with vX.Y.Z." wording the READMEs use.
+
+#### 🧪 Verification
+
+| Check | Evidence |
+| --- | --- |
+| ✅ **Positive:** the closure holds | not applicable |
+| 🚫 **Negative:** the original failure or condition is gone | 2026-10-26: `file-tree-pane` README "Tested with v2.1.310." and CHANGELOG "Validated and tested on Claude Code v2.1.310."; `tool-ledger` and `turn-meter` READMEs "Tested with v2.1.308." and CHANGELOGs "Tested with Claude Code v2.1.308"; `plugins/mods-engineering/hooks/hooks.json` does not exist. |
+
+#### 🔗 Follow-up
+
+- **Residual risk:** none
+- **Closed by:** none
+- **Related records:** ADR_2026-10-25_mod-readmes-state-the-tested-claude-code-version.
 - **Superseded by:** none
 
 <!--

@@ -1,10 +1,10 @@
 ---
-status: accepted
+status: superseded
 date: 2026-10-26
 decision-makers:
   - "Nery"
 supersedes: none
-superseded-by: none
+superseded-by: ADR_2026-10-26_biome-never-formats-plugin-and-skill-markdown
 ---
 
 # Biome formats and lints the maintainer Markdown; plugins adopt it on their next change
