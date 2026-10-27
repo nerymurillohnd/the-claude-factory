@@ -150,6 +150,9 @@ export function parseBoolean(name, raw, fallback) {
   throw new Error(`${name} must be true or false, got ${JSON.stringify(raw)}`)
 }
 
+/** What separates the names of a list option written as plain text. */
+const LIST_SEPARATOR = /[,\n]/u
+
 /**
  * Reads a list option: a JSON array of strings, or names separated by commas or new lines.
  * @param {string} name
@@ -176,7 +179,7 @@ export function parseList(name, raw, fallback) {
     return parsed.map((item) => item.trim()).filter((item) => item !== '')
   }
   return value
-    .split(/[,\n]/u)
+    .split(LIST_SEPARATOR)
     .map((item) => item.trim())
     .filter((item) => item !== '')
 }

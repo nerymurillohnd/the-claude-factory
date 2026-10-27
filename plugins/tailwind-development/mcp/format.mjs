@@ -26,12 +26,15 @@ export const MAX_DIAGNOSTICS = 30
 const replacement = (fix) =>
   `line ${fix.line}: replace ${JSON.stringify(fix.oldText)} with ${JSON.stringify(fix.newText)}`
 
+/** The first quoted name at the start of a diagnostic message. */
+const LEADING_QUOTED_NAME = /^'([^']+)'/u
+
 /**
  * The class a cssConflict diagnostic is about: the first quoted name of its message, as in
  * "'flex' applies the same CSS properties as 'block'."
  * @param {Finding} finding
  */
-const conflictClass = (finding) => /^'([^']+)'/u.exec(finding.message)?.[1] ?? finding.message
+const conflictClass = (finding) => LEADING_QUOTED_NAME.exec(finding.message)?.[1] ?? finding.message
 
 /**
  * Groups the findings to list: the server reports a class conflict once per class involved, each
