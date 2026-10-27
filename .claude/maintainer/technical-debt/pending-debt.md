@@ -54,7 +54,6 @@ Add an item only when all of these hold:
 | DEBT-028 | TypeScript 7 and 5.x were never run against the TypeScript post-edit hook | 🟡 Pending |
 | DEBT-030 | The svelte-development full-version local CLI waits on sveltejs/ai-tools #294 and PR #271 | 🟠 Blocked |
 | DEBT-031 | No hook reminds Claude to load an LSP intelligence skill before the first edit | 🔴 Risk accepted |
-| DEBT-032 | Biome's `useLiteralKeys` conflicts with tsc's `noPropertyAccessFromIndexSignature` | 🟠 Blocked |
 | DEBT-035 | `npm run test:plugins` fails when a plugin test family has no gate left | 🔴 Risk accepted |
 | DEBT-036 | `biome check --staged` checks the working-tree copy of a partly staged file | 🔴 Risk accepted |
 
@@ -401,29 +400,6 @@ Add an item only when all of these hold:
 - **Why it is not fixed now:** Nery deferred it on purpose.
 - **Next action:** none until Nery's report.
 - **Review condition:** reassess when Nery reports a skipped skill.
-- **Related records:** none.
-
-### DEBT-032 — Biome's `useLiteralKeys` conflicts with tsc's `noPropertyAccessFromIndexSignature`
-
-| Field | Value |
-| --- | --- |
-| **Status** | 🟠 Blocked |
-| **Category** | quality |
-| **Owner** | `biome.jsonc`, `tsconfig.base.json` |
-| **Logged** | 2026-10-26 |
-
-#### 🔎 Evidence
-
-- **Confirmed facts:** on 2026-10-26 `biome ci` reported 4 `complexity/useLiteralKeys` infos in `scripts/tests/gates.test.mjs` for `process.env['GIT_INDEX_FILE']`, which `tsconfig.base.json`'s `noPropertyAccessFromIndexSignature` requires.
-- **Inferences:** following Biome breaks tsc.
-- **Open questions:** none.
-
-#### 📈 Impact and next step
-
-- **Impact / risk:** noise in Biome's output; a fix that follows it would fail tsc.
-- **Why it is not fixed now:** turning off a rule needs Nery's approval.
-- **Next action:** with Nery's approval, turn `useLiteralKeys` off for JS and TS in `biome.jsonc`, with the reason beside it. Nery approved this on 2026-10-27, as D8 (a) of the Biome spec; it lands with item 30.
-- **Review condition:** closes when Biome reports none and tsc passes.
 - **Related records:** none.
 
 ### DEBT-035 — `npm run test:plugins` fails when a plugin test family has no gate left

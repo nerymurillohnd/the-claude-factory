@@ -89,11 +89,35 @@
         "noUnusedImports": "error",
         "noChildrenProp": "error",
         // Scanner: an import of another module's private (@private, @package) export.
-        "noPrivateImports": "error"
+        "noPrivateImports": "error",
+        // Raised from info, like the complexity rules above.
+        "useParseIntRadix": "error"
       },
       "complexity": {
         "noExtraBooleanCast": "error",
-        "noUselessCatch": "error"
+        "noUselessCatch": "error",
+        // Info-level rules of the preset, raised: info never fails the CLI, even with
+        // --error-on-warnings, so at info they would print and block nothing.
+        "noFlatMapIdentity": "error",
+        "noUselessConstructor": "error",
+        "noUselessContinue": "error",
+        "noUselessEmptyExport": "error",
+        "noUselessEscapeInRegex": "error",
+        "noUselessFragments": "error",
+        "noUselessLabel": "error",
+        "noUselessLoneBlockStatements": "error",
+        "noUselessRename": "error",
+        "noUselessStringRaw": "error",
+        "noUselessSwitchCase": "error",
+        "noUselessTernary": "error",
+        "noUselessThisAlias": "error",
+        "noUselessTypeConstraint": "error",
+        "noUselessUndefinedInitialization": "error",
+        "useFlatMap": "error",
+        "useIndexOf": "error",
+        // Off: tsc's noPropertyAccessFromIndexSignature (tsconfig.base.json) already decides how an
+        // index-signature key is written, and requires the bracket form this rule rewrites.
+        "useLiteralKeys": "off"
       },
       "performance": {
         "noDelete": "error"
@@ -115,7 +139,11 @@
         "useConsistentArrayType": "error",
         "useForOf": "error",
         "useImportType": "error",
-        "useNamingConvention": "warn"
+        "useNamingConvention": "warn",
+        // Raised from info, like the complexity rules above.
+        "useArrayLiterals": "error",
+        "useNodejsImportProtocol": "error",
+        "useShorthandFunctionType": "error"
       },
       "suspicious": {
         "noCatchAssign": "error",
@@ -128,7 +156,10 @@
         "useAdjacentOverloadSignatures": "error",
         // Scanner: import cycles, and imports of a symbol marked @deprecated.
         "noImportCycles": "error",
-        "noDeprecatedImports": "error"
+        "noDeprecatedImports": "error",
+        // Raised from info, like the complexity rules above.
+        "noDuplicateFields": "error",
+        "noQuickfixBiome": "error"
       },
       // The preset never turns on a nursery rule, so each one is listed.
       "nursery": {

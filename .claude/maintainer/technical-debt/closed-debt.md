@@ -36,6 +36,7 @@
 | 2026-10-26 | DEBT-029 | obsolete | Dropped by Nery: the `claude-review` failures on PRs #20, #28 and #29 are no longer investigated | none |
 | 2026-10-26 | DEBT-033 | resolved | `.editorconfig` is the only source of indentation and line endings for Biome | none |
 | 2026-10-27 | DEBT-034 | resolved | Biome checks every tsconfig file, with an `expand: "auto"` override | none |
+| 2026-10-27 | DEBT-032 | resolved | Biome's `useLiteralKeys` is off, so tsc's `noPropertyAccessFromIndexSignature` alone decides index-signature keys | none |
 
 ## 🏁 Closed items
 
@@ -630,6 +631,37 @@ Both `!!` patterns were removed. An override sets `json.formatter.expand: "auto"
 - **Residual risk:** none
 - **Closed by:** ADR_2026-10-27_biome-checks-every-tsconfig-with-auto-expand and the commit that applies it.
 - **Related records:** ADR_2026-10-27_biome-checks-every-tsconfig-with-auto-expand.
+- **Superseded by:** none
+
+### DEBT-032 — Biome's `useLiteralKeys` is off, so tsc's `noPropertyAccessFromIndexSignature` alone decides index-signature keys
+
+| Field | Value |
+| --- | --- |
+| **Outcome** | resolved |
+| **Closed on** | 2026-10-27 |
+| **Logged on** | 2026-10-26 |
+| **Owner** | `biome.jsonc`, `tsconfig.base.json` |
+
+#### ❗ The problem
+
+`biome ci` reported 4 `complexity/useLiteralKeys` infos in `scripts/tests/gates.test.mjs` for `process.env['GIT_INDEX_FILE']`, the bracket form that `tsconfig.base.json`'s `noPropertyAccessFromIndexSignature` requires. Following Biome would have broken tsc, and raising the rule to `"error"` with the other info-level rules would have made the gates contradict the type-check.
+
+#### 🔧 The closure
+
+`biome.jsonc` sets `complexity.useLiteralKeys` to `"off"`, with the reason beside it, in the same commit that raises the other 23 info-level rules of the preset to `"error"`. tsc keeps `noPropertyAccessFromIndexSignature`, the stricter of the two. Nery chose this on 2026-10-27: ADR_2026-10-27_tsc-decides-index-signature-keys-not-biome.
+
+#### 🧪 Verification
+
+| Check | Evidence |
+| --- | --- |
+| ✅ **Positive:** the closure holds | 2026-10-27, Biome 2.6.3: `npm run typecheck:ts` and `npm run lint:js` passed. `biome rage --linter` lists 250 enabled rules, 251 before, the difference being `useLiteralKeys`. |
+| 🚫 **Negative:** the original failure or condition is gone | 2026-10-27: `biome ci . --error-on-warnings` checked 171 files and found no diagnostic, against the 4 `useLiteralKeys` infos before. |
+
+#### 🔗 Follow-up
+
+- **Residual risk:** none
+- **Closed by:** ADR_2026-10-27_tsc-decides-index-signature-keys-not-biome and the commit that applies it.
+- **Related records:** ADR_2026-10-27_tsc-decides-index-signature-keys-not-biome.
 - **Superseded by:** none
 
 <!--
