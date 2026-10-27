@@ -23,6 +23,7 @@
     "validate:skill-names-consistency": "scripts/validators/skill-names-consistency.py"
   },
   "devDependencies": {
+    "@biomejs/biome": "2.6.3",
     "@types/node": "26.6.5"
   }
 }
