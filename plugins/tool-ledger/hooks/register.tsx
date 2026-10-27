@@ -375,9 +375,9 @@ export const register: Register = (on: On, options: PluginOptions): void => {
         ) : (
           lines.map((line) => (
             <Text
+              dimColor={line.status === null}
               key={line.key}
               wrap="truncate"
-              dimColor={line.status === null}
               {...colorOf(line.status)}
             >
               {line.text}
