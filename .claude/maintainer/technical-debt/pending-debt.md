@@ -41,7 +41,6 @@ Add an item only when all of these hold:
 | ID | Title | Status |
 | --- | --- | --- |
 | DEBT-002 | Version-bump check fails on main after a revert of an unreleased bump and blocks every release | 🟠 Blocked |
-| DEBT-006 | No gate runs the validators of `scripts/validators/`, so CI lost the checks `check-repo.mjs` dropped | 🟡 Pending |
 | DEBT-010 | The mod gates of `scripts/gates.mjs` can miss a mod or report green on a lost test summary | 🟠 Blocked |
 | DEBT-013 | The plugins' Markdown is not formatted or linted by Biome until each plugin next changes | 🔴 Risk accepted |
 
@@ -74,33 +73,6 @@ Add an item only when all of these hold:
 - **Next action:** decide with Nery whether `check-version-bump.mjs` compares each plugin with its latest `<plugin>--v*` tag instead of the previous commit. If yes, change it with tests for both cases: a revert to the tagged state passes and an edit without a bump still fails.
 - **Review condition:** closes when a revert of an unreleased bump passes `Validate` on `main` and a plugin change without a bump still fails it.
 - **Related records:** [PR #27](https://github.com/nerymurillohnd/the-claude-factory/pull/27), [PR #31](https://github.com/nerymurillohnd/the-claude-factory/pull/31); the `release-and-versioning` skill.
-
-### DEBT-006 — No gate runs the validators of `scripts/validators/`, so CI lost the checks `check-repo.mjs` dropped
-
-| Field | Value |
-| --- | --- |
-| **Status** | 🟡 Pending |
-| **Category** | quality, reliability |
-| **Owner** | `scripts/gates.mjs`, `.github/workflows/validate.yml` |
-| **Logged** | 2026-10-24 |
-
-#### 🔎 Evidence
-
-- **Confirmed facts:**
-  - On 2026-10-24 `check-repo.mjs` stopped checking entry names, sources, directories, renames, the manifest name and homepage, the required files, SemVer, the entry version, `[Unreleased]`, the current version's section and the root CHANGELOG (commit `942df1e`), because the eight validators of `scripts/validators/` own them.
-  - `scripts/gates.mjs` has no gate for any validator; `grep -n validators scripts/gates.mjs` finds only `MIGRATED_PYTHON`. There are nine validators now (`skill-names-consistency.py` was added on 2026-10-24).
-  - `npm run validate` runs all nine and fails if one fails. The project `PreToolUse` hook `.claude/hooks/validators-gate.sh` runs it before every `git push` made from a Claude Code session in this repository and denies the push on a failure. A push from a plain terminal and every CI run skip them.
-  - The four schema validators and `skill-names-consistency.py` need uv and Python 3.15 (inline metadata); the other four need a `python3` that is 3.15 (`TypeIs`, the `type` statement). CI's `python` job runs `uv python install 3.15`.
-- **Inferences:** a pull request that breaks a plugin name, version or required file passes CI.
-- **Open questions:** which CI group each validator joins, and whether the standard-library ones get a `python3` that is 3.15 there.
-
-#### 📈 Impact and next step
-
-- **Impact / risk:** the checks moved out of `check-repo.mjs` run automatically only on a push from a Claude Code session, never in CI.
-- **Why it is not fixed now:** Nery limited the deduplication to the scripts and asked not to touch gates or CI in that task.
-- **Next action:** add one gate per validator to the `python` group of `scripts/gates.mjs`, run by path, and confirm the CI `python` job runs them on Python 3.15.
-- **Review condition:** closes when `npm run gates:ci -- --group python` runs all nine validators and a defect planted in a copy fails the run.
-- **Related records:** ADR_2026-10-24_repository-checks-move-to-python-validators, ADR_2026-10-21_gates-run-from-one-script.
 
 ### DEBT-010 — The mod gates of `scripts/gates.mjs` can miss a mod or report green on a lost test summary
 

@@ -1,10 +1,10 @@
 ---
-status: accepted
+status: superseded
 date: 2026-10-21
 decision-makers:
   - "Nery Samuel Murillo"
 supersedes: none
-superseded-by: none
+superseded-by: ADR_2026-10-26_npm-tools-and-git-hooks-are-pinned-dev-dependencies
 ---
 
 # A root package.json for maintainer type packages only, never a plugin runtime

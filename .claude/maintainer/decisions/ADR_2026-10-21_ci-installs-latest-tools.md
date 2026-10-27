@@ -1,10 +1,10 @@
 ---
-status: accepted
+status: superseded
 date: 2026-10-21
 decision-makers:
   - "Nery Samuel Murillo"
 supersedes: none
-superseded-by: none
+superseded-by: ADR_2026-10-26_ci-installs-npm-tools-from-the-lockfile
 ---
 
 # CI installs the latest release of every tool; only TypeScript stays pinned, to 6.0.3

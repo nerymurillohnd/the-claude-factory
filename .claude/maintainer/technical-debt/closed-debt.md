@@ -26,6 +26,7 @@
 | 2026-10-26 | DEBT-008 | accepted | `main` and the release tags stay without GitHub protection by Nery's decision | none |
 | 2026-10-26 | DEBT-009 | resolved | Biome 2.6.3 formats and lints the Markdown outside `plugins/`, locally and in CI | none |
 | 2026-10-26 | DEBT-011 | resolved | The plugin README template takes the published shape, a scaffolded plugin passes `check-repo.mjs`, and the frozen templates are gone | none |
+| 2026-10-26 | DEBT-006 | resolved | Each validator of `scripts/validators/` is a gate of the CI python group, on Python 3.15 | none |
 
 ## 🏁 Closed items
 
@@ -305,6 +306,37 @@ Nery chose the published shape (ADR_2026-10-26_plugin-readme-template-takes-the-
 - **Residual risk:** the placeholder check skips code spans and fenced blocks, so a placeholder left only inside code passes.
 - **Closed by:** ADR_2026-10-26_plugin-readme-template-takes-the-published-shape, commits `fdd05ff`, `fab4add`, `64f2af5` and `5836c06`.
 - **Related records:** ADR_2026-10-25_plugin-scaffold-belongs-to-building-plugins.
+- **Superseded by:** none
+
+### DEBT-006 — Each validator of `scripts/validators/` is a gate of the CI python group, on Python 3.15
+
+| Field | Value |
+| --- | --- |
+| **Outcome** | resolved |
+| **Closed on** | 2026-10-26 |
+| **Logged on** | 2026-10-24 |
+| **Owner** | `scripts/gates.mjs`, `.github/workflows/validate.yml` |
+
+#### ❗ The problem
+
+On 2026-10-24 `check-repo.mjs` handed its plugin-structure checks to the validators of `scripts/validators/`, but no gate ran them: only the `PreToolUse` hook `.claude/hooks/validators-gate.sh` did, before a push from a Claude Code session. A push from a terminal and every CI run skipped them, so a pull request that broke a plugin name, version or required file passed CI.
+
+#### 🔧 The closure
+
+`scripts/gates.mjs` builds one gate per file of `scripts/validators/`, `validator:<name>`, in the `python` group CI runs. A PEP 723 validator runs by path in its own uv environment; a standard-library one runs through `uv run --no-project --python 3.15`, because CI's `python3` is 3.12 and those validators need 3.15. The Husky pre-push hook runs `npm run gates`, so a push from any terminal runs them too. Commit `fd2330a`.
+
+#### 🧪 Verification
+
+| Check | Evidence |
+| --- | --- |
+| ✅ **Positive:** the closure holds | On 2026-10-26 `node scripts/gates.mjs --only validator:` ran the nine gates and all passed; the test `every validator runs in the CI python group on Python 3.15` passes in `scripts/tests/gates.test.mjs` (19 of 19). |
+| 🚫 **Negative:** the original failure or condition is gone | With `plugins/turn-meter/LICENSE` moved away, `node scripts/gates.mjs --ci --group python` failed with `✖ [plugins/turn-meter] LICENSE is missing` and `✖ validator:plugin-required-files (exit 1)`; the file was restored. |
+
+#### 🔗 Follow-up
+
+- **Residual risk:** the CI python job has not run the new gates yet; the next push shows it.
+- **Closed by:** ADR_2026-10-26_npm-tools-and-git-hooks-are-pinned-dev-dependencies.
+- **Related records:** ADR_2026-10-24_repository-checks-move-to-python-validators, ADR_2026-10-21_gates-run-from-one-script.
 - **Superseded by:** none
 
 <!--

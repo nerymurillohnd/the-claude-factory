@@ -18,7 +18,7 @@ concurrency:
 env:
   # The npm tools (TypeScript, Biome) come from package-lock.json through npm ci, at the versions
   # the maintainers run; npm run puts node_modules/.bin first on PATH. Every other tool installs at
-  # its latest release (ADR_2026-10-26_npm-tools-and-git-hooks-are-pinned-dev-dependencies).
+  # its latest release (ADR_2026-10-26_ci-installs-npm-tools-from-the-lockfile).
   # Husky installs git hooks only on a maintainer's machine, never here.
   HUSKY: "0"
 
