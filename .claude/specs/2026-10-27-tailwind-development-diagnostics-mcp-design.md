@@ -108,7 +108,7 @@ Inside `mcp/server.mjs`. Framing (`Content-Length`), request ids and notificatio
 
 The server also speaks custom messages under `@/tailwindCSS/` (read from the bundled code of 0.16.0; the same ones the VS Code extension and editor clients such as tailwind-tools.nvim use). The client uses three kinds:
 
-- **Readiness**: `serverReady`, `projectInitialized` and `documentReady` notifications. The client waits for them, within a bound, before it asks for a document's diagnostics, instead of a fixed wait. This answers the cold-start question with a signal rather than retries.
+- **Readiness**: `@/tailwindCSS/getProject` (`{ uri }` → `{ version }`, or null while no loaded project covers the document). The client opens the document, polls it until it answers or a 20-second bound passes, then sends the text again so the server lints it with the loaded project. `serverReady` and `documentReady` exist but the server sends them only in its `testMode` (read in the bundled code of 0.16.0), so they are not used. Measured on a v4.3.3 fixture: 1.5 s to the first diagnostics, 0.5 s warm.
 - **Project facts**: `getProject` and `projectDetails`, to say in an explicit tool answer which entry point or config file and which Tailwind CSS version the server found, or that it found none.
 - **Sorting**: `sortSelection`, the official class order (the one `prettier-plugin-tailwindcss` applies), for `sort_classes` if decision 7 keeps it. Nothing is written to stdout except protocol messages: logs go to stderr only, in the MCP server and from the child.
 
@@ -124,13 +124,14 @@ The server answers `workspace/configuration` itself, so these settings never dep
 | `tailwindCSS.validate`, `codeActions`, `hovers`, `suggestions` | `true` | Fixed |
 | `tailwindCSS.lint.*` | The server's defaults (`suggestCanonicalClasses`, `cssConflict`, `recommendedVariantOrder` as warnings, the rest as errors) | Fixed |
 | `tailwindCSS.showPixelEquivalents`, `rootFontSize` | `true`, `16` | Fixed |
-| `tailwindCSS.emmetCompletions`, `colorDecorators`, `inspectPort` | Off or `null`: editor features with no use here; `inspectPort` would open a debugger port | Fixed |
+| `tailwindCSS.colorDecorators` | `true`: the server answers `textDocument/documentColor` only with it on (measured: an empty list with `false`), and `class_css` reports colors from it | Fixed |
+| `tailwindCSS.emmetCompletions`, `inspectPort` | Off or `null`: an editor feature with no use here; `inspectPort` would open a debugger port | Fixed |
 
 ### 3.9 Local security (`build-mcpb` → `references/local-security.md`)
 
 Tool inputs are untrusted, even from Claude: a prompt-injected page can make Claude call a tool with any path.
 
-- **Roots.** The server asks Claude Code for `roots/list` (the session's launch directory plus every added working directory, kept current through `notifications/roots/list_changed`) and falls back to `CLAUDE_PROJECT_DIR` when the client has no roots capability. Every `file_path` is resolved, its real path taken, and refused when it leaves every root.
+- **Root.** `CLAUDE_PROJECT_DIR`, which Claude Code sets for stdio servers. `roots/list` is not used: protocol revision 2026-07-28 removed server-to-client requests (SEP-2577), so the SDK's `listRoots` throws on that era and the replacement is a multi-round-trip `input_required` result; `@modelcontextprotocol/server` 2.3.1 marks `listRoots` deprecated and advises passing paths as tool parameters or configuration. Directories added with `--add-dir` are therefore outside what the tools read. Every `filePath` is resolved, its real path taken, and refused when it leaves the root.
 - **Read only.** No tool writes, deletes or runs anything the input names. The only process started is the language server, by a fixed argv with no shell.
 - **Caps.** Files above 1 MB are not sent to the language server; the answer says so. Diagnostics per answer are capped, with the count of the rest.
 - **No secrets** are read, logged or returned.
@@ -188,7 +189,7 @@ Live, run by Nery in a separate session with `--plugin-dir` after `npm ci` in th
 
 ## 10. Sources
 
-- `/en/mcp` (raw, 2026-10-27): stdio `CLAUDE_PROJECT_DIR`, `roots/list`, MCP client runtimes v1 and v2.
+- `/en/mcp` (raw, 2026-10-27): stdio `CLAUDE_PROJECT_DIR`, `roots/list`, MCP client runtimes v1 and v2; `@modelcontextprotocol/server` 2.3.1 type declarations (`listRoots` deprecated by SEP-2577).
 - `https://modelcontextprotocol.io/docs/2026-07-28/develop/build-server` (2026-10-27): `@modelcontextprotocol/server`, `serveStdio`, stdout rule, Inspector `--protocol-era`.
 - `/en/hooks` (`mcp_tool`), `/en/plugins/components`, `/en/plugins/manifest-reference`, `/en/plugins/loading` (dependency install), `/en/plugins/code-intelligence`.
 - Skills: `building-plugins` (`references/mcp-servers.md`, `references/mcp-hooks-and-lifecycle.md`), `.claude/rules/plugins/mcp-component.md`, `mcp-server-dev:build-mcp-server` (`tool-design.md`, `server-capabilities.md`), `mcp-server-dev:build-mcpb` (`local-security.md`). The `mcp-server-dev` references were last verified in 2026-03, before revision 2026-07-28; where they differ (the SDK package and `StdioServerTransport`), the 2026-07-28 guide wins.
