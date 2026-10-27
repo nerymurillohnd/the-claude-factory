@@ -110,7 +110,6 @@ _Read_ tools only look. _Write_ tools create or change something on GitHub. _Wri
 | `get_label`                        | Get a specific label from a repository | Read            |                                   |
 | `list_label`                       | List labels from a repository          | Read            | Outside GitHub's default toolsets |
 | `label_write`                      | Write operations on repository labels  | Write · deletes | Outside GitHub's default toolsets |
-| `ui_get`                           | Get UI data                            | Read            |                                   |
 
 ### GitHub Actions
 
