@@ -207,6 +207,9 @@
         "useConsistentUnicodeBom": "error",
         // An import with a native or modern replacement, from e18e's data.
         "noRestrictedDependencies": "error",
+        // new require(…) is always a mistake. Its sibling noUnsafeReturn stays off: in .mjs it ignores
+        // JSDoc types and type guards, so it flags JSON that is already validated.
+        "noNewRequire": "error",
         // The other nursery rules `biome explain` marks as recommended on 2.6.3. Nursery rules are
         // outside semver: each Biome upgrade rechecks this list (the version is pinned, and
         // Dependabot proposes each upgrade as its own pull request).
