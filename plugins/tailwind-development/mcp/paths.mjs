@@ -46,7 +46,7 @@ export async function resolveProjectFile(root, input) {
     real = await realpath(candidate)
   } catch {
     throw new ToolInputError(
-      `${input} does not exist. Pass the path of an existing file in the project.`,
+      `${input} does not exist under the project root ${root}, which is where Claude Code started this session. Pass the path of an existing file inside it.`,
     )
   }
   if (!isInside(root, real)) {
