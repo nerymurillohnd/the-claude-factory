@@ -5,7 +5,7 @@ Reads the hook event on stdin. Mode comes from the plugin option on_skill_write
 (environment variable CLAUDE_PLUGIN_OPTION_ON_SKILL_WRITE): suggest (default), run or off.
 Notifies once per skill directory per session; state lives in CLAUDE_PLUGIN_DATA.
 Never blocks: any problem ends the hook silently with exit 0.
-Requires Python 3.9+, standard library only.
+Requires Python 3.12+, standard library only.
 """
 
 from __future__ import annotations
