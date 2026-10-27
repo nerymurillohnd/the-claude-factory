@@ -37,23 +37,23 @@ Claude Code, the Claude app, the Claude models and every tool the gates run chan
 - When docs and release notes differ, the release notes win: docs lag releases.
 - When components depend on each other, research each side. For example, a plugin hook needs the hooks reference, the plugins reference and the Claude app platform-support page.
 
-# Workflow
+## Workflow
 
-This file is the contract of the work on this project: the scope every file belongs to, where the working files live, and each stage with the skill that owns it and its key jobs. The procedure of each stage lives in its skill; never copy it here. Depending on the context, resume the work from the stage it belongs to, and apply its skill to what is already built. The scope and working-file rules apply to every stage.
+This section is the contract of the work on this project: the scope every file belongs to, where the working files live, and each stage with the skill that owns it and its key jobs. The procedure of each stage lives in its skill; never copy it here. Depending on the context, resume the work from the stage it belongs to, and apply its skill to what is already built. The scope and working-file rules apply to every stage.
 
 1. Maintainer and Plugin Scopes
 2. Working Files
 3. Management, Maintenance and Quality Gates
 4. Marketplace Plugins
 
-## Maintainer and Plugin Scopes
+### Maintainer and Plugin Scopes
 
 This repository holds two scopes. They are never mixed: a rule written for one scope does not apply to the other, and nothing from the maintainer's environment leaks into what a plugin ships or needs. Maintainer tools may check plugin files; that never makes them a plugin dependency. Before acting, identify the scope of every file the task touches; a task that touches both is handled as two parts, each under its own rules.
 
 - **Maintainer scope**: everything outside `plugins/`. Its environment is the tools, versions and binaries on Nery's machine.
 - **Plugin scope**: one self-contained directory per plugin under `plugins/<plugin>/`. Its environment is only what the plugin's `README.md` declares as prerequisites.
 
-### Maintainer Tooling
+#### Maintainer Tooling
 
 - Python: format and lint with Ruff, type-check with Basedpyright, test with unittest or pytest.
 - Markdown, JSON, JavaScript and TypeScript: format and lint with Biome. A plugin's Markdown joins when the plugin next changes, as `building-plugins` step 5 says.
@@ -65,18 +65,18 @@ This repository holds two scopes. They are never mixed: a rule written for one s
 - The root `package.json` serves repository-level development tooling only, never plugin runtimes; it stays `"private": true` and exists only while that tooling needs it.
 - Run `npm ci` in every fresh clone and new worktree, with the `.nvmrc` Node selected.
 
-### Plugin Tooling
+#### Plugin Tooling
 
 - Target Linux and macOS with POSIX-compatible interfaces. Windows is supported only through Git Bash, and only when the plugin's README declares it.
 - Write plugin Python for any `python3` a user may have; declare a minimum in the README only when a feature requires it. Type-check it with Basedpyright in its default `recommended` mode.
 
-## Working Files
+### Working Files
 
 - `.claude/specs/`: specs, written before plans.
 - `.claude/plans/`: implementation plans.
 - Keep these git-ignored in `.gitignore` and never commit them: eval results (`eval-results/` and `**/evals/results/`), `.claude/plans/`, `.claude/session-handoff/`, `.claude/memory/` and `.claude/settings.local.json`.
 
-## Management, Maintenance and Quality Gates
+### Management, Maintenance and Quality Gates
 
 1. Decision records
    - When: Nery makes an important decision.
@@ -99,7 +99,7 @@ This repository holds two scopes. They are never mixed: a rule written for one s
 6. Remote quality gates
    - Skill: none yet; ask Nery.
 
-## Marketplace Plugins
+### Marketplace Plugins
 
 1. Plugin design and planning
    - Skill: none yet; ask Nery.
@@ -139,8 +139,6 @@ This repository holds two scopes. They are never mixed: a rule written for one s
    - When: a plugin is to be renamed, merged into another, removed, retired or deprecated.
    - Skill: `plugin-renames-and-removals`.
    - Key jobs: carry the change without breaking existing installs.
-
----
 
 ## Change Control
 
