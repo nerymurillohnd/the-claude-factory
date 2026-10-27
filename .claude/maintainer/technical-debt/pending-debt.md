@@ -55,6 +55,7 @@ Add an item only when all of these hold:
 | DEBT-031 | No hook reminds Claude to load an LSP intelligence skill before the first edit | 🔴 Risk accepted |
 | DEBT-035 | `npm run test:plugins` fails when a plugin test family has no gate left | 🔴 Risk accepted |
 | DEBT-036 | `biome check --staged` checks the working-tree copy of a partly staged file | 🔴 Risk accepted |
+| DEBT-037 | Sessions skip the project skills the Workflow assigns to the area they work in | 🟠 Blocked |
 
 ## 📂 Open items
 
@@ -426,6 +427,46 @@ Add an item only when all of these hold:
 - **Next action:** check the review condition.
 - **Review condition:** reassess if Biome checks the staged blob, or if a stdin check of a clean file exits 0.
 - **Related records:** ADR_2026-10-26_npm-tools-and-git-hooks-are-pinned-dev-dependencies.
+
+### DEBT-037 — Sessions skip the project skills the Workflow assigns to the area they work in
+
+| Field | Value |
+| --- | --- |
+| **Status** | 🟠 Blocked |
+| **Category** | quality |
+| **Owner** | `.claude/settings.json` and `.claude/hooks/` |
+| **Logged** | 2026-10-27 |
+
+#### 🔎 Evidence
+
+- **Confirmed facts:**
+  - In the 2026-10-27 session that built `tailwind-development`, Claude never invoked two project skills that applied, although the Workflow of `.claude/CLAUDE.md` and `.claude/rules/hooks-and-scripts.md` name them:
+    - `testing-plugins`, while building and running the plugin's eval suite;
+    - `plugin-hooks-guidance`, while designing a plugin `PostToolUse` hook (DESIGN.md section 10.5).
+  - Of the other project skills, only `building-plugins`, `plugin-categories` and `release-and-versioning` were invoked; `testing-plugins` was read in part with `cat`. Claude reported this to Nery on 2026-10-27 when he asked which project skills had been used.
+  - The proposed fix, stated in that session and deferred by Nery on 2026-10-27, is a maintainer `PreToolUse` hook, `.claude/hooks/require-workflow-skill.py`, registered in `.claude/settings.json`. Once per session per skill, it denies the first tool call in an area the Workflow assigns to a skill, with a reason that names the skill; Claude then invokes the skill and repeats the call.
+  - Proposed mapping:
+    - `Edit`/`Write` under `plugins/*/hooks/**`, or Bash with `claude plugin test` → `plugin-hooks-guidance`, or `testing-mods` for a mod;
+    - Bash with `claude plugin eval`, or `Edit`/`Write` under `plugins/*/evals/**` → `testing-plugins`;
+    - `Edit`/`Write` of `plugins/*/.claude-plugin/plugin.json`, a plugin `CHANGELOG.md` or the root `CHANGELOG.md` → `release-and-versioning`;
+    - any other file under `plugins/<plugin>/` → `building-plugins`;
+    - `scripts/categories.json` → `plugin-categories`.
+  - A marker in the session's `scratchpad_dir` records "reminded", not "invoked": `transcript_path` is written asynchronously, and a `PreToolUse` `additionalContext` reaches Claude only after the tool ran (memory `deferred-pretooluse-skill-reminder`).
+- **Inferences:** instruction text alone does not hold over long sessions with many topics; more emphasis in `CLAUDE.md` would not fix it.
+- **Open questions:**
+  - whether the mapping table becomes the single source, with the Workflow of `.claude/CLAUDE.md` pointing at it;
+  - whether a `claude plugin test` call should route to `testing-mods` or `plugin-hooks-guidance` when a plugin is both a mod and has command hooks.
+
+#### 📈 Impact and next step
+
+- **Impact / risk:** work in an area runs without the procedure written for it, so its checks and rules can be missed. In the 2026-10-27 session this left the eval suite unchecked against `testing-plugins` and the hook design unchecked against `plugin-hooks-guidance`.
+- **Why it is not fixed now:** Nery deferred it on 2026-10-27, to keep the session on the `tailwind-development` release and its phase 2.
+- **Next action:** on Nery's go, build the hook with `hook-engineering:hook-development` and `plugin-hooks-guidance`, then:
+  - probe it with three inputs (a first `claude plugin eval` is denied naming `testing-plugins`, the same call later in the session passes, unreadable input passes);
+  - lint `.claude/settings.json`;
+  - confirm it live in a `claude --debug` session.
+- **Review condition:** Nery's go, or another session that skips a Workflow skill.
+- **Related records:** DEBT-031 (the separate, user-facing reminder for the LSP intelligence plugins); DEBT-015 (`plugin-hooks-guidance` contradicts the hooks docs, which the build must account for).
 
 <!--
 Entry format. Copy this block above this comment for each new item and add its row to the Index.
