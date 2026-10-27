@@ -307,6 +307,21 @@
       }
     },
     {
+      // A plugin's package.json holds only its runtime dependencies, which Claude Code installs
+      // for users (ADR_2026-10-27_plugins-ship-runtime-npm-dependencies-through-claude-code-install);
+      // the maintenance scripts live in the root package.json alone.
+      "includes": [
+        "plugins/*/package.json"
+      ],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "useRequiredScripts": "off"
+          }
+        }
+      }
+    },
+    {
       // Console output is the scripts' interface.
       "includes": [
         "scripts/**"
