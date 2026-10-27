@@ -2,7 +2,7 @@
 
 Checked 2026-10-25 against `/en/plugins/loading` (Versions and updates), `/en/plugins/host-marketplace`, `/en/plugins/publish`, `/en/plugins/dependencies`, `/en/plugins/cli-reference` (`plugin tag`), Claude Code v2.1.310.
 
-This is background for building a plugin: what a version does on the user's machine, so the plugin you write ships the way you expect. Choosing the bump, writing the release notes, the pull request, the tag and the release are the release stage of `.claude/rules/workflow.md`; renaming, merging or removing a plugin is its renames stage. This skill does none of them.
+This is background for building a plugin: what a version does on the user's machine, so the plugin you write ships the way you expect. Choosing the bump, writing the release notes, the pull request, the tag and the release are the release stage of the Workflow in `.claude/CLAUDE.md`; renaming, merging or removing a plugin is its renames stage. This skill does none of them.
 
 ## Contents
 
@@ -47,7 +47,7 @@ Tags don't deliver anything. Plugin dependency ranges resolve against tags named
 
 ## Renames and removals
 
-Users' `enabledPlugins` and `pluginConfigs` are keyed by `<name>@<marketplace>`, so a changed `name` breaks every install with `Plugin "<name>" not found in marketplace` unless the marketplace's `renames` map migrates it. That is why a plugin's name is permanent and a new label goes in `displayName`. Renaming, merging or removing a published plugin is the renames stage of `.claude/rules/workflow.md`.
+Users' `enabledPlugins` and `pluginConfigs` are keyed by `<name>@<marketplace>`, so a changed `name` breaks every install with `Plugin "<name>" not found in marketplace` unless the marketplace's `renames` map migrates it. That is why a plugin's name is permanent and a new label goes in `displayName`. Renaming, merging or removing a published plugin is the renames stage of the Workflow in `.claude/CLAUDE.md`.
 
 ## What a marketplace cannot do
 
