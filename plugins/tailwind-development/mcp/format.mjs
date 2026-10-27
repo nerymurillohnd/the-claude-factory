@@ -22,8 +22,51 @@ export const MAX_DIAGNOSTICS = 30
  * @property {Fix[]} fixes
  */
 
+/** @param {Fix} fix */
+const replacement = (fix) =>
+  `line ${fix.line}: replace ${JSON.stringify(fix.oldText)} with ${JSON.stringify(fix.newText)}`
+
 /**
- * The findings as plain text, one block per finding, with each fix's exact replacement.
+ * The class a cssConflict diagnostic is about: the first quoted name of its message, as in
+ * "'flex' applies the same CSS properties as 'block'."
+ * @param {Finding} finding
+ */
+const conflictClass = (finding) => /^'([^']+)'/u.exec(finding.message)?.[1] ?? finding.message
+
+/**
+ * Groups the findings to list: the server reports a class conflict once per class involved, each
+ * with a fix that keeps that class and deletes the others. Those alternatives exclude each other,
+ * so they become one entry to choose from, keyed by the class list their fixes rewrite.
+ * @param {readonly Finding[]} findings
+ * @returns {Finding[][]}
+ */
+function entries(findings) {
+  /** @type {Map<string, Finding[]>} */
+  const conflicts = new Map()
+  /** @type {Finding[][]} */
+  const list = []
+  for (const finding of findings) {
+    const fix = finding.fixes[0]
+    if (finding.rule !== 'cssConflict' || fix === undefined) {
+      list.push([finding])
+      continue
+    }
+    const key = `${fix.line}:${fix.oldText}`
+    const group = conflicts.get(key)
+    if (group === undefined) {
+      const created = [finding]
+      conflicts.set(key, created)
+      list.push(created)
+    } else {
+      group.push(finding)
+    }
+  }
+  return list
+}
+
+/**
+ * The findings as plain text, one entry per problem, with each fix's exact replacement. A class
+ * conflict lists one alternative per class it could keep.
  * @param {string} relativePath
  * @param {readonly Finding[]} findings
  */
@@ -31,23 +74,40 @@ export function findingsText(relativePath, findings) {
   if (findings.length === 0) {
     return `Tailwind CSS: no diagnostics in ${relativePath}.`
   }
-  const shown = findings.slice(0, MAX_DIAGNOSTICS)
+  const all = entries(findings)
+  const shown = all.slice(0, MAX_DIAGNOSTICS)
   const lines = [
-    `Tailwind CSS diagnostics in ${relativePath} (${findings.length}). Apply each fix with Edit:`,
+    `Tailwind CSS diagnostics in ${relativePath} (${all.length}). Each fix is the language server's exact replacement:`,
   ]
-  for (const finding of shown) {
-    lines.push(
-      `- ${relativePath}:${finding.line}:${finding.column} ${finding.severity} [${finding.rule}] ${finding.message}`,
-    )
-    for (const fix of finding.fixes) {
+  for (const group of shown) {
+    const [first] = group
+    if (first === undefined) {
+      continue
+    }
+    const where = `${relativePath}:${first.line}:${first.column} ${first.severity} [${first.rule}]`
+    if (group.length > 1) {
+      const names = group.map((f) => `'${conflictClass(f)}'`).join(', ')
       lines.push(
-        `  fix (${fix.title}), line ${fix.line}: replace ${JSON.stringify(fix.oldText)} with ${JSON.stringify(fix.newText)}`,
+        `- ${where} ${names} apply the same CSS properties. Keep one: apply only the fix of the class you keep.`,
       )
+      group.forEach((finding, index) => {
+        const fix = finding.fixes[0]
+        if (fix !== undefined) {
+          lines.push(
+            `  ${String.fromCodePoint(97 + index)}) keep '${conflictClass(finding)}' (${fix.title}), ${replacement(fix)}`,
+          )
+        }
+      })
+      continue
+    }
+    lines.push(`- ${where} ${first.message}`)
+    for (const fix of first.fixes) {
+      lines.push(`  fix (${fix.title}), ${replacement(fix)}`)
     }
   }
-  if (findings.length > shown.length) {
+  if (all.length > shown.length) {
     lines.push(
-      `… and ${findings.length - shown.length} more; call check_file to list them after fixing these.`,
+      `… and ${all.length - shown.length} more; call check_file to list them after fixing these.`,
     )
   }
   return lines.join('\n')

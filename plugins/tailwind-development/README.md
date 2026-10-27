@@ -181,7 +181,7 @@ The options change only the language-server checks, which run in Claude Code.
 | `class_attributes` | list | `class`, `className`, `ngClass`, `class:list` | HTML attributes whose values hold classes |
 | `config_file` | text | empty | Your Tailwind CSS entry point (the CSS file with `@import "tailwindcss"`, or `tailwind.config.js` on v3), relative to the project root. Leave it empty to detect it; set it in a monorepo, with several entry points, or when CSS modules or `<style>` blocks use `@reference` |
 
-Turning a file type off stops only the automatic check after edits; Claude can still call the tools on any file. Set the options when you install the plugin in a session, later with `/plugin configure tailwind-development@the-claude-factory` or `/plugin` → **Installed** → **Tailwind CSS Development** → **Configure options**, or as rows of `/config` (v2.1.269+; the two lists are set in the dialog only).
+Turning a file type off stops only the automatic check after edits; Claude can still call the tools on any file. Set the options when you install the plugin in a session, later with `/plugin configure tailwind-development@the-claude-factory` or `/plugin` → **Installed** → **Tailwind CSS Development** → **Configure options**, or as rows of `/config` (v2.1.269+; the two lists are set in the dialog only). A change takes effect after `/reload-plugins` or in your next session.
 
 ## 🔍 What this plugin runs and sends
 

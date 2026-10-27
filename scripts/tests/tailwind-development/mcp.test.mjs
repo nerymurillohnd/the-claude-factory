@@ -139,10 +139,29 @@ describe('format', () => {
     assert.match(text, /replace "flex block" with "flex"/u)
   })
 
+  test('lists the two sides of a class conflict as one choice, never as two fixes to apply', () => {
+    const other = {
+      ...finding,
+      column: 18,
+      message: "'block' applies the same CSS properties as 'flex'.",
+      fixes: [{ title: "Delete 'flex'", line: 1, oldText: 'flex block', newText: 'block' }],
+    }
+    const text = format.findingsText('a.html', [finding, other])
+    assert.match(text, /\(1\)/u)
+    assert.match(text, /'flex', 'block' apply the same CSS properties\. Keep one/u)
+    assert.match(text, /a\) keep 'flex' \(Delete 'block'\)/u)
+    assert.match(text, /b\) keep 'block' \(Delete 'flex'\)/u)
+    assert.doesNotMatch(text, /Apply each fix/u)
+  })
+
   test('caps the list and counts the rest', () => {
     const text = format.findingsText(
       'a.html',
-      Array.from({ length: format.MAX_DIAGNOSTICS + 3 }, () => finding),
+      Array.from({ length: format.MAX_DIAGNOSTICS + 3 }, (_, line) => ({
+        ...finding,
+        line,
+        rule: 'suggestCanonicalClasses',
+      })),
     )
     assert.match(text, /and 3 more/u)
   })
