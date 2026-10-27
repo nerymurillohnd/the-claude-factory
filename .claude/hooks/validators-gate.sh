@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
-# PreToolUse hook for `git push`: runs every maintainer validator (`npm run validate`) and denies
-# the push when one fails, with their output as the reason. Any other command goes ahead.
-# The `if` filter in settings.json is best-effort, so this script checks for a real push itself.
+# PreToolUse hook for `git commit`: runs every maintainer validator (`npm run validate`) and denies
+# the commit when one fails, with their output as the reason. Any other command goes ahead. The
+# Husky pre-push hook runs the full gates; this one checks earlier, at each commit Claude makes.
+# The `if` filter in settings.json is best-effort, so this script checks for a real commit itself.
 set -euo pipefail
 
 input="$(cat)"
@@ -16,10 +17,10 @@ else
   exit 2
 fi
 
-push_found=0
+commit_found=0
 
-# Sets push_found=1 when one command of $1 is `git [options] push`.
-detect_git_push() {
+# Sets commit_found=1 when one command of $1 is `git [options] commit`.
+detect_git_commit() {
   local text="$1" part i
   local -a parts words
   local bs=$'\\'
@@ -43,14 +44,14 @@ detect_git_push() {
         *) i=$((i + 1)) ;;
       esac
     done
-    if [[ ${words[i]:-} == push ]]; then
-      push_found=1
+    if [[ ${words[i]:-} == commit ]]; then
+      commit_found=1
     fi
   done
 }
 
-detect_git_push "${command_text}"
-[[ ${push_found} == 1 ]] || exit 0
+detect_git_commit "${command_text}"
+[[ ${commit_found} == 1 ]] || exit 0
 
 project_dir="${CLAUDE_PROJECT_DIR:-}"
 if [[ -z ${project_dir} ]]; then
@@ -59,7 +60,7 @@ fi
 cd "${project_dir}"
 
 if output="$(npm run --silent validate 2>&1)"; then
-  # No permissionDecision: the push goes on to the normal permission flow.
+  # No permissionDecision: the commit goes on to the normal permission flow.
   printf '{"systemMessage":"validators-gate: every maintainer validator passed"}\n'
   exit 0
 fi
@@ -72,7 +73,7 @@ max=8000
 if ((${#output} > max)); then
   output="${output:0:max}"$'\n'"[output truncated; run npm run validate to see all of it]"
 fi
-reason="Push blocked: a maintainer validator failed. Fix each cause below, commit, then push again."$'\n'
+reason="Commit blocked: a maintainer validator failed. Fix each cause below, then commit again."$'\n'
 reason+="${output}"
 
 # A JSON string escapes a backslash, a double quote, a newline and a tab.
@@ -84,4 +85,4 @@ reason="${reason//"${backslash}"/"${backslash}${backslash}"}"
 reason="${reason//"${quote}"/"${backslash}${quote}"}"
 reason="${reason//"${newline}"/"${backslash}n"}"
 reason="${reason//"${tab}"/"${backslash}t"}"
-printf '{"systemMessage":"validators-gate: a maintainer validator failed; push blocked","hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":"%s"}}\n' "${reason}"
+printf '{"systemMessage":"validators-gate: a maintainer validator failed; commit blocked","hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":"%s"}}\n' "${reason}"
