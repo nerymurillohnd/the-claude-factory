@@ -20,9 +20,9 @@
 // A test skipped anywhere fails its gate: a skip means a tool is missing. A skip that is legitimate
 // goes into ALLOWED_SKIPS with its reason, never into a counter.
 //
-// Each gate runs the tool installed on the machine by its bare name, never through npx or uvx.
-// Locally that is the maintainer's install; CI installs the pins of the env block of
-// validate.yml before the gates. The gates are written for macOS and Linux: without a shell,
+// Each gate runs its tool by bare name, never through npx or uvx. Under npm run (npm run gates,
+// the npm scripts, the Husky hooks, CI) node_modules/.bin comes first on PATH, so the npm tools are
+// the versions package-lock.json pins; the other tools are the ones installed on the machine. The gates are written for macOS and Linux: without a shell,
 // Windows cannot start an npm .cmd shim such as tsc.cmd.
 
 import { spawnSync } from 'node:child_process'
@@ -38,6 +38,9 @@ const JS_FAMILY = ['js', 'cjs', 'mjs', 'jsx', 'ts', 'cts', 'mts', 'tsx']
  * The Python that scripts/basedpyright-maintainer.mjs checks under the maintainer config, each file
  * against its own interpreter; basedpyright-maintainer-other checks the rest outside plugins/.
  */
+/** The shebang of a maintainer script that runs in its own uv environment (PEP 723). */
+const UV_SHEBANG = '#!/usr/bin/env -S PYTHONSAFEPATH=1 uv run --script'
+
 /** The repository variables git exports to a hook; gates resolve the repository from their cwd. */
 const GIT_HOOK_VARIABLES = new Set([
   'GIT_DIR',
@@ -368,6 +371,22 @@ export function gatesFor({ root, ci, base }) {
       cmd: 'node',
       args: ['scripts/basedpyright-maintainer.mjs'],
     },
+    // The validators of scripts/validators/ (DEBT-006): a PEP 723 one runs by path in its own uv
+    // environment; a standard-library one runs on Python 3.15 through uv, which CI installs.
+    ...readdirSync(join(root, 'scripts', 'validators'))
+      .filter((f) => f.endsWith('.py'))
+      .sort()
+      .map((f) => {
+        const path = join('scripts', 'validators', f)
+        const pep723 = readFileSync(join(root, path), 'utf8').startsWith(UV_SHEBANG)
+        return /** @type {Gate} */ ({
+          id: `validator:${f.replace(/\.py$/, '')}`,
+          group: 'python',
+          title: `validator ${f}`,
+          cmd: pep723 ? path : 'uv',
+          args: pep723 ? [] : ['run', '--no-project', '--python', '3.15', path],
+        })
+      }),
     {
       id: 'pytest-scripts',
       group: 'python',

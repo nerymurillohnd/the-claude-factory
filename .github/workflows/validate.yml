@@ -16,10 +16,11 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:
-  # Each job installs its tools at their latest release, as the maintainer's machine has them, and
-  # the gates run them by bare name (ADR_2026-10-21_ci-installs-latest-tools). TypeScript is the one
-  # pin: it stays on 6.x, the major the maintainer's machine runs.
-  TYPESCRIPT_VERSION: "6.0.3"
+  # The npm tools (TypeScript, Biome) come from package-lock.json through npm ci, at the versions
+  # the maintainers run; npm run puts node_modules/.bin first on PATH. Every other tool installs at
+  # its latest release (ADR_2026-10-26_npm-tools-and-git-hooks-are-pinned-dev-dependencies).
+  # Husky installs git hooks only on a maintainer's machine, never here.
+  HUSKY: "0"
 
 # Every job runs one group of scripts/gates.mjs, the commands the maintainers run locally with
 # npm run gates. CI checks the maintainer tooling under scripts/ and the plugins' structure; the
@@ -36,10 +37,8 @@ jobs:
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version-file: .nvmrc
-      - name: Maintainer type packages (no install scripts)
+      - name: Pinned npm tools (no install scripts)
         run: npm ci --ignore-scripts --no-audit --no-fund
-      - name: TypeScript
-        run: npm install --global --no-audit --no-fund "typescript@${TYPESCRIPT_VERSION}"
       - name: shellcheck and shfmt
         env:
           GH_TOKEN: ${{ github.token }}
@@ -138,7 +137,7 @@ jobs:
           sudo install -m 755 actionlint /usr/local/bin/actionlint
           rm actionlint actionlint.tar.gz
           actionlint --version
-      - name: Biome
-        run: npm install --global --no-audit --no-fund @biomejs/biome@2.6.3
+      - name: Pinned npm tools (no install scripts)
+        run: npm ci --ignore-scripts --no-audit --no-fund
       - name: Gates
         run: npm run gates:ci -- --group lint

@@ -4,7 +4,7 @@
 //   npm run gates
 
 import assert from 'node:assert/strict'
-import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { afterEach, beforeEach, describe, test } from 'node:test'
@@ -230,13 +230,35 @@ describe('runGates inside a git hook', () => {
         cmd: process.execPath,
         args: ['-e', 'process.exit(process.env.GIT_INDEX_FILE === undefined ? 0 : 1)'],
       }
-      assert.equal(runGates([gate], { root: ROOT, keepGoing: false, write: () => {} }), 0)
+      /** @type {string[]} */
+      const lines = []
+      const code = runGates([gate], { root: ROOT, keepGoing: false, write: (l) => lines.push(l) })
+      assert.equal(code, 0, lines.join('\n'))
     } finally {
       if (saved === undefined) {
         delete process.env['GIT_INDEX_FILE']
       } else {
         process.env['GIT_INDEX_FILE'] = saved
       }
+    }
+  })
+})
+
+describe('validator gates', () => {
+  test('every validator runs in the CI python group on Python 3.15', () => {
+    const gates = gatesFor({ root: ROOT, ci: true, base: '' })
+    const files = readdirSync(join(ROOT, 'scripts', 'validators')).filter((f) => f.endsWith('.py'))
+    assert.equal(files.length, 9)
+    for (const file of files) {
+      const gate = gates.find((x) => x.id === `validator:${file.replace(/\.py$/, '')}`)
+      assert.ok(gate, `no gate for ${file}`)
+      assert.equal(gate.group, 'python')
+      const path = join('scripts', 'validators', file)
+      assert.ok(
+        gate.cmd === path ||
+          (gate.cmd === 'uv' && gate.args.includes('3.15') && gate.args.includes(path)),
+        `${file} runs as ${gate.cmd} ${gate.args.join(' ')}`,
+      )
     }
   })
 })
