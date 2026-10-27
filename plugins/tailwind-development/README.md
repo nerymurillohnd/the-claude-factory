@@ -14,6 +14,7 @@
 [What's inside](#-whats-inside) •
 [Install](#-installation) •
 [Usage](#-usage) •
+[Configuration](#%EF%B8%8F-configuration) •
 [Compatibility](#-compatibility) •
 [FAQ](#-faq--troubleshooting)
 
@@ -22,13 +23,14 @@
 ---
 
 > [!TIP]
-> **TL;DR** — Ask for a component, a page or a redesign in a Tailwind project, and Claude designs it like a product designer (clear hierarchy, real design-system tokens, every state covered) instead of the generic generated look; every utility it writes is checked against the official page for your installed Tailwind version and proven with your build.
+> **TL;DR** — Ask for a component, a page or a redesign in a Tailwind project, and Claude designs it like a product designer (clear hierarchy, real design-system tokens, every state covered) instead of the generic generated look; every utility it writes is checked against the official page for your installed Tailwind version and proven with your build; and in Claude Code the Tailwind CSS language server reviews each file Claude edits.
 
 ## ✨ Why use it
 
 - **Interfaces that look designed** — Claude ranks what matters before it adds colour, styles actions by importance, presents data by meaning instead of label-value walls, groups with space, and frames images and numbers properly, then checks the result against a list of generic-UI tells.
 - **A design system, not one-off values** — type scale, spacing subset, OKLCH colour ramps, elevation and radius live as `@theme` tokens; your project's own tokens, brand and rules always come first.
 - **Seen, not assumed** — when your environment can render, Claude screenshots each appearance mode at narrow and wide widths and measures rendered contrast against WCAG 2.2 AA, and tells you which checks it could not run.
+- **Tailwind's own checks after every edit** — in Claude Code, the official Tailwind CSS language server reviews each file Claude edits and hands Claude every class conflict, non-canonical class and invalid `theme()` path with the exact fix, so Claude corrects it before you see it. It claims no file type, so your TypeScript, Svelte or other language servers keep working, and you choose which file types it checks.
 - **Classes that exist in your version** — Claude reads your resolved Tailwind version from the lockfile and checks each utility, variant and directive against the official page for it, so v3 habits don't leak into a v4 project, or the reverse.
 - **The right page, not a close guess** — a built-in index of all 222 pages of the Tailwind docs, the 19 framework installation guides included, maps each need to its exact page, and to the exact section of the long concept pages, because page names don't follow class names: `blur` lives on `filter-blur`, and `drop-shadow` on `filter-drop-shadow`.
 - **Styles that actually ship** — complete, statically detectable class strings instead of interpolated names, no broad safelists to hide a missing class, and your existing tokens reused before new ones are added.
@@ -39,6 +41,8 @@
 | Component | Name | What it does | How it runs |
 | :-- | :-- | :-- | :-- |
 | 🎯 Skill | `tailwind-development:tailwind-ui-design` | Builds, refactors and reviews interfaces with a product designer's craft: reads your tokens and components first, checks the systems exist, composes hierarchy before colour, depth and finish, covers every state, verifies the rendered result and critiques it against generic-UI tells | Automatically when you build, redesign, polish or review a page, view or component in a Tailwind project, or `/tailwind-development:tailwind-ui-design` |
+| 🔌 MCP server | `tailwindcss` | Runs the official Tailwind CSS language server for your project and answers four read-only tools: `check_file` (diagnostics with exact fixes), `class_css` (the CSS and color a class generates in your theme), `project_classes` (the classes your theme defines for a prefix, such as `bg-` or `hover:text-`) and `sort_classes` (Tailwind's official class order) | Starts with each Claude Code session; the language server starts on the first file it checks |
+| 🪝 Hook | `PostToolUse` on `Edit` and `Write` | Calls `check_file` on the file Claude just edited and gives Claude the diagnostics | After every edit Claude makes, for the file types you leave on |
 | 🎯 Skill | `tailwind-development:tailwind-official-docs` | Reads your installed Tailwind version and setup, plans the exact official page for each utility family, variant and configuration the task touches, implements the change and verifies it with your project's own checks | Automatically when the question is how Tailwind works or how to write something in it (classes, variants, `@theme`, missing styles, setup, upgrades), and whenever the design skill needs exact syntax; or `/tailwind-development:tailwind-official-docs` |
 
 ## ✅ Requirements
@@ -47,7 +51,7 @@
 | :---------------------- | :------------------------------------------------------------------------ |
 | **Claude Code**         | v2.1.292 or later — check with `claude --version`   |
 | **Surfaces**            | See [Compatibility](#-compatibility)                                      |
-| **External tools**      | None. Claude uses your project's own package manager and scripts to verify changes. Optional: the Context7 MCP server, which Claude queries first for the docs when you have it |
+| **External tools**      | For the language-server checks: Node.js 20 or later and npm on your `PATH` (check with `node --version` and `npm --version`; install from [nodejs.org](https://nodejs.org)), and `tailwindcss` installed in your project. Claude uses your project's own package manager and scripts to verify changes. Optional: the Context7 MCP server, which Claude queries first for the docs when you have it |
 | **Accounts / API keys** | None                                                                      |
 | **Network**             | See [What this plugin runs and sends](#-what-this-plugin-runs-and-sends)  |
 
@@ -159,15 +163,36 @@ Use @apply inside the <style> block of Button.svelte.
 
 **Result:** Claude reads `compatibility` and `functions-and-directives`, tells you Tailwind recommends avoiding `<style>` blocks, and when you keep one adds the `@reference` to your global stylesheet that `@apply` needs, or uses your theme's CSS variables instead.
 
+## ⚙️ Configuration
+
+The options change only the language-server checks, which run in Claude Code.
+
+| Option | Type | Default | Description |
+| :-- | :-- | :-- | :-- |
+| `check_css` | boolean | `true` | Check `.css`, `.scss`, `.sass`, `.less`, `.pcss`, `.postcss`, `.styl` and `.sss` files after each edit |
+| `check_html` | boolean | `true` | Check `.html` and `.htm` files |
+| `check_js_ts` | boolean | `true` | Check `.js`, `.mjs`, `.cjs`, `.jsx`, `.ts`, `.mts`, `.cts` and `.tsx` files |
+| `check_vue` | boolean | `true` | Check `.vue` files |
+| `check_svelte` | boolean | `true` | Check `.svelte` files |
+| `check_astro` | boolean | `true` | Check `.astro` files |
+| `check_markdown` | boolean | `true` | Check `.md` and `.mdx` files |
+| `check_templates` | boolean | `true` | Check server templates: `.php`, `.erb`, `.twig`, `.liquid`, `.hbs`, `.handlebars`, `.njk`, `.ejs`, `.haml`, `.slim`, `.heex`, `.razor`, `.cshtml`, `.gohtml`, `.mustache`, `.jade`, `.latte`, `.edge` and `.leaf` |
+| `class_functions` | list | `clsx`, `cn`, `cva`, `tw`, `twMerge` | Functions whose string arguments hold classes; each entry is a regular expression on the function name |
+| `class_attributes` | list | `class`, `className`, `ngClass`, `class:list` | HTML attributes whose values hold classes |
+| `config_file` | text | empty | Your Tailwind CSS entry point (the CSS file with `@import "tailwindcss"`, or `tailwind.config.js` on v3), relative to the project root. Leave it empty to detect it; set it in a monorepo, with several entry points, or when CSS modules or `<style>` blocks use `@reference` |
+
+Turning a file type off stops only the automatic check after edits; Claude can still call the tools on any file. Set the options when you install the plugin in a session, later with `/plugin configure tailwind-development@the-claude-factory` or `/plugin` → **Installed** → **Tailwind CSS Development** → **Configure options**, or as rows of `/config` (v2.1.269+; the two lists are set in the dialog only).
+
 ## 🔍 What this plugin runs and sends
 
-- **Hooks:** none.
-- **MCP servers:** none. When you already have the Context7 MCP server connected, Claude queries it first for Tailwind's docs; the plugin doesn't install or configure it.
-- **Network:** the plugin makes no calls itself. Claude makes these requests with its own tools, each under your usual permission prompts, and none of them carries your code:
+- **Hooks:** `PostToolUse` on `Edit` and `Write` calls the plugin's own MCP tool `check_file` with the path of the file Claude edited. It reads that file and adds its diagnostics to the conversation; it blocks nothing. In a project without `tailwindcss` installed, or for a file type you turned off, it adds nothing.
+- **MCP servers:** `tailwindcss`, a local process the plugin starts with `node` in each Claude Code session. On the first file it checks, it starts a second local process, the official Tailwind CSS language server, which reads your project's CSS entry point and source files and watches them for changes while the session lasts. Both stop when the session ends. The tools read files inside your project folder only, refuse paths outside it, and skip files over 1 MB. When you already have the Context7 MCP server connected, Claude queries it first for Tailwind's docs; the plugin doesn't install or configure it.
+- **Installed packages:** when Claude Code installs or updates the plugin, it downloads five pinned npm packages from the npm registry into the plugin's own folder, without running their install scripts: `@tailwindcss/language-server` (MIT), `@modelcontextprotocol/server` and `@modelcontextprotocol/core` (Apache-2.0), `vscode-jsonrpc` (MIT) and `zod` (MIT). Nothing is installed globally or in your project.
+- **Network:** apart from that package download, the plugin makes no calls itself; its two local processes make none. Claude makes these requests with its own tools, each under your usual permission prompts, and none of them carries your code:
   - documentation pages from `tailwindcss.com` (and `v3.tailwindcss.com` or older versioned sites for older projects), or a short docs query to Context7 when you have it;
   - for questions about which version added a feature, the release posts on `tailwindcss.com/blog` and the releases and changelog of `github.com/tailwindlabs/tailwindcss`;
   - when there is no project build to preview a design in, a standalone preview page that loads Tailwind's Play CDN script from `cdn.jsdelivr.net` in your browser or artifact viewer.
-- **Files written:** none by the plugin. Claude edits your project files only as the task asks, like any other edit. When it checks a design visually, it uses the browser or screenshot tools you already have, under your usual permission prompts.
+- **Files written:** none in your project; the packages above go into the plugin's own folder. Claude edits your project files only as the task asks, like any other edit. When it checks a design visually, it uses the browser or screenshot tools you already have, under your usual permission prompts.
 
 ## 🔄 Updating
 
@@ -192,7 +217,7 @@ Installed with `--scope project`? Add `--scope project` here too. Uninstalling f
 
 In a session: `/plugin` → **Installed** → **Tailwind CSS Development** → **Uninstall**. In the Claude app: **Customize** → **Plugins** → **Tailwind CSS Development** → its menu → **Remove**.
 
-The plugin keeps no data and writes no files, so nothing is left behind.
+The plugin keeps no data and writes nothing outside its own folder, so nothing is left behind.
 
 ## 🧭 Compatibility
 
@@ -201,6 +226,8 @@ The plugin keeps no data and writes no files, so nothing is left behind.
 | Component                              |                         Claude Code                          |                                                                                                                                          Claude app                                                                                                                                           |
 | :------------------------------------- | :----------------------------------------------------------: | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
 | 🎯 Skills                              |                              ✅                              |                                                                                                                                              ✅                                                                                                                                               |
+| 🪝 Hooks                               |                              ✅                              |                                                                                                                       ⚠️ in Cowork sessions, not in a chat conversation                                                                                                                       |
+| 🖥️ Local MCP server                    |                              ✅                              |                                                                                                                          ⚠️ only in Cowork sessions on your computer                                                                                                                          |
 
 <sub>✅ works · ⚠️ partial · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. The Claude app (web, desktop and mobile) runs a conversation as a Cowork session when it can, and as a chat conversation otherwise, for example on a device that can't run Cowork or in the separate Chat mode that Team and Enterprise plans keep for now.</sub>
 
@@ -250,6 +277,25 @@ No. It reads each page once per session and reuses it. A lookup is required for 
 
 </details>
 
+<details>
+<summary><b>Claude gets no Tailwind diagnostics after editing a file.</b></summary>
+
+Check, in order:
+
+1. `tailwindcss` is installed in your project (`npm ls tailwindcss`, or your package manager's equivalent): the language server works only then.
+2. The file type is on in the plugin's options.
+3. `/mcp` lists `plugin:tailwind-development:tailwindcss` as connected. If it doesn't, check `node --version` (20 or later), then `claude plugin list`: it notes when the plugin's packages were not installed, and `claude plugin update tailwind-development@the-claude-factory` retries the install.
+4. Your project uses CSS modules, `<style>` blocks with `@reference`, several entry points or a monorepo: set `config_file` to your main CSS entry point. Claude tells you once per session when Tailwind is installed but no project covers the edited file.
+
+</details>
+
+<details>
+<summary><b>What does the language server not catch?</b></summary>
+
+It reports what Tailwind can prove: conflicting classes, classes with a shorter canonical form, invalid `theme()` paths and directives. A misspelled class or variant, such as `hovr:bg-red-500`, is not an error to Tailwind, which simply generates no CSS for it, so no diagnostic appears; `class_css` reports such a class as "not a class in this project". The hook sees only edits made with Claude's `Edit` and `Write` tools, not changes from shell commands or your editor; Claude can run `check_file` on any file.
+
+</details>
+
 ## 🔗 Related
 
 - 📦 [All plugins in The Claude Factory](../../README.md#-catalog)
@@ -261,6 +307,8 @@ No. It reads each page once per session and reuses it. A lookup is required for 
 ## 🙏 Sources and credits
 
 - **[Tailwind CSS documentation](https://tailwindcss.com/docs)**, © Tailwind Labs Inc. The skills send Claude to these pages; their index lists the site's page URLs and section headings so Claude can open the right one. No documentation text or example is reproduced.
+- **[Tailwind CSS IntelliSense](https://github.com/tailwindlabs/tailwindcss-intellisense)** (MIT, © Tailwind Labs, Inc.): its `@tailwindcss/language-server` package runs the checks; Claude Code downloads it from npm when it installs the plugin.
+- **[MCP TypeScript SDK](https://github.com/modelcontextprotocol/typescript-sdk)** (Apache-2.0), **[vscode-jsonrpc](https://github.com/microsoft/vscode-languageserver-node)** (MIT, © Microsoft) and **[Zod](https://github.com/colinhacks/zod)** (MIT): the MCP server is built on them; they are downloaded the same way.
 - **[Tailwind CSS](https://github.com/tailwindlabs/tailwindcss)** (MIT, © Tailwind Labs, Inc.): its release posts, changelog and GitHub releases answer version questions, and its package READMEs and CLI behaviour informed the skills. No code is copied.
 - **[frontend-design](https://github.com/anthropics/claude-plugins-official/tree/main/plugins/frontend-design)** by Anthropic, the complementary skill for aesthetic direction.
 - **[Refactoring UI](https://www.refactoringui.com)** by Adam Wathan and Steve Schoger, recommended as further reading. The design skill reflects established interface-design practice in its own words and is not derived from the book.

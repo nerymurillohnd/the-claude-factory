@@ -38,6 +38,29 @@ It reproduces no documentation text, code example or figure from them.
   this repository, they are listed here with their changes, and the MIT
   license text is included below, as its terms require.
 
+3. Runtime packages installed with the plugin
+
+  Claude Code downloads these from the npm registry into the plugin's own
+  folder when it installs or updates the plugin, at the exact versions
+  package-lock.json pins. They are not part of this repository. Each package
+  carries its own license file.
+
+  @tailwindcss/language-server 0.16.0
+      MIT, Copyright (c) Tailwind Labs, Inc.
+      https://github.com/tailwindlabs/tailwindcss-intellisense
+  @modelcontextprotocol/server 2.3.1 and @modelcontextprotocol/core 2.3.1
+      Apache License 2.0
+      https://github.com/modelcontextprotocol/typescript-sdk
+  vscode-jsonrpc 9.0.3
+      MIT, Copyright (c) Microsoft Corporation
+      https://github.com/microsoft/vscode-languageserver-node
+  zod 4.6.7
+      MIT, Copyright (c) 2025 Colin McDonnell
+      https://github.com/colinhacks/zod
+
+  mcp/ talks to the language server through its documented protocol and its
+  @/tailwindCSS/ messages; no code from these packages is copied into it.
+
 The Tailwind CSS name is used only to describe compatibility. This plugin is
 not affiliated with or endorsed by Tailwind Labs Inc. Tailwind CSS is a
 trademark of Tailwind Labs Inc.

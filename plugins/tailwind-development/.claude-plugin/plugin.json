@@ -30,5 +30,86 @@
       "claude-code",
       "claude-app"
     ]
+  },
+  "userConfig": {
+    "check_css": {
+      "type": "boolean",
+      "title": "Check CSS and preprocessors after edits",
+      "description": "After Claude edits or writes a .css, .scss, .sass, .less, .pcss, .postcss, .styl, .sss file, report its Tailwind CSS diagnostics to Claude. Turn off when another tool already covers these files.",
+      "default": true
+    },
+    "check_html": {
+      "type": "boolean",
+      "title": "Check HTML after edits",
+      "description": "After Claude edits or writes a .html, .htm file, report its Tailwind CSS diagnostics to Claude. Turn off when another tool already covers these files.",
+      "default": true
+    },
+    "check_js_ts": {
+      "type": "boolean",
+      "title": "Check JavaScript and TypeScript after edits",
+      "description": "After Claude edits or writes a .js, .mjs, .cjs, .jsx, .ts, .mts, .cts, .tsx file, report its Tailwind CSS diagnostics to Claude. Turn off when another tool already covers these files.",
+      "default": true
+    },
+    "check_vue": {
+      "type": "boolean",
+      "title": "Check Vue after edits",
+      "description": "After Claude edits or writes a .vue file, report its Tailwind CSS diagnostics to Claude. Turn off when another tool already covers these files.",
+      "default": true
+    },
+    "check_svelte": {
+      "type": "boolean",
+      "title": "Check Svelte after edits",
+      "description": "After Claude edits or writes a .svelte file, report its Tailwind CSS diagnostics to Claude. Turn off when another tool already covers these files.",
+      "default": true
+    },
+    "check_astro": {
+      "type": "boolean",
+      "title": "Check Astro after edits",
+      "description": "After Claude edits or writes a .astro file, report its Tailwind CSS diagnostics to Claude. Turn off when another tool already covers these files.",
+      "default": true
+    },
+    "check_markdown": {
+      "type": "boolean",
+      "title": "Check Markdown and MDX after edits",
+      "description": "After Claude edits or writes a .md, .mdx file, report its Tailwind CSS diagnostics to Claude. Turn off when another tool already covers these files.",
+      "default": true
+    },
+    "check_templates": {
+      "type": "boolean",
+      "title": "Check Server templates after edits",
+      "description": "After Claude edits or writes a .php, .erb, .twig, .liquid, .hbs, .handlebars, .njk, .ejs, .haml, .slim, .heex, .razor, .cshtml, .gohtml, .mustache, .jade, .latte, .edge, .leaf file, report its Tailwind CSS diagnostics to Claude. Turn off when another tool already covers these files.",
+      "default": true
+    },
+    "class_functions": {
+      "type": "string",
+      "multiple": true,
+      "title": "Class functions",
+      "description": "Functions whose string arguments hold classes, such as clsx or cn. Each entry is a regular expression on the function name.",
+      "default": [
+        "clsx",
+        "cn",
+        "cva",
+        "tw",
+        "twMerge"
+      ]
+    },
+    "class_attributes": {
+      "type": "string",
+      "multiple": true,
+      "title": "Class attributes",
+      "description": "HTML attributes whose values hold classes.",
+      "default": [
+        "class",
+        "className",
+        "ngClass",
+        "class:list"
+      ]
+    },
+    "config_file": {
+      "type": "string",
+      "title": "Tailwind CSS entry point",
+      "description": "Path, relative to the project root, of the CSS file with @import \"tailwindcss\" (v4) or of tailwind.config.js (v3). Leave empty to detect it; set it in a monorepo or a project with several entry points.",
+      "default": ""
+    }
   }
 }

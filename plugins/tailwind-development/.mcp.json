@@ -1,0 +1,23 @@
+{
+  "mcpServers": {
+    "tailwindcss": {
+      "command": "node",
+      "args": [
+        "${CLAUDE_PLUGIN_ROOT}/mcp/server.mjs"
+      ],
+      "env": {
+        "TAILWIND_CHECK_CSS": "${user_config.check_css}",
+        "TAILWIND_CHECK_HTML": "${user_config.check_html}",
+        "TAILWIND_CHECK_JS_TS": "${user_config.check_js_ts}",
+        "TAILWIND_CHECK_VUE": "${user_config.check_vue}",
+        "TAILWIND_CHECK_SVELTE": "${user_config.check_svelte}",
+        "TAILWIND_CHECK_ASTRO": "${user_config.check_astro}",
+        "TAILWIND_CHECK_MARKDOWN": "${user_config.check_markdown}",
+        "TAILWIND_CHECK_TEMPLATES": "${user_config.check_templates}",
+        "TAILWIND_CLASS_FUNCTIONS": "${user_config.class_functions}",
+        "TAILWIND_CLASS_ATTRIBUTES": "${user_config.class_attributes}",
+        "TAILWIND_CONFIG_FILE": "${user_config.config_file}"
+      }
+    }
+  }
+}
