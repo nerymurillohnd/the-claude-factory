@@ -8,7 +8,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The
 
 ### Added
 
-- **tailwind-development** 0.1.0 — implements, reviews and debugs Tailwind CSS from the exact official page for each utility, variant and configuration a task touches, for the Tailwind version your project resolves, and verifies the result with your project's own checks.
+- **tailwind-development** 0.1.0 — designs, builds, refactors and reviews Tailwind CSS v4 interfaces with a product designer's craft, grounds every utility, variant and configuration in its exact official documentation page for the Tailwind version your project resolves, and verifies the result in your project.
 
 ### Changed
 

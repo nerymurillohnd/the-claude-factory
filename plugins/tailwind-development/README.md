@@ -2,7 +2,7 @@
 
 # 🌊 Tailwind CSS Development
 
-<p><strong>Routes every Tailwind CSS change to the exact official documentation page for each utility, variant and configuration it touches, then verifies the result in your project.</strong></p>
+<p><strong>Designs, builds and refactors Tailwind CSS v4 interfaces with a product designer's craft, and grounds every utility, variant and configuration in its exact official documentation page before verifying the result in your project.</strong></p>
 
 [![Version](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Fnerymurillohnd%2Fthe-claude-factory%2Fmain%2Fplugins%2Ftailwind-development%2F.claude-plugin%2Fplugin.json&query=%24.version&label=version&color=D97757)](./CHANGELOG.md)
 [![Works in](https://img.shields.io/badge/works%20in-Claude%20Code%20%C2%B7%20Claude%20app-2563EB)](#-compatibility)
@@ -22,10 +22,13 @@
 ---
 
 > [!TIP]
-> **TL;DR** — Ask for any Tailwind change, and Claude reads the exact official page for every utility, variant and setting it uses, writes it for the Tailwind version your project actually has, and proves it with your build instead of guessing from memory.
+> **TL;DR** — Ask for a component, a page or a redesign in a Tailwind project, and Claude designs it like a product designer (clear hierarchy, real design-system tokens, every state covered) instead of the generic generated look; every utility it writes is checked against the official page for your installed Tailwind version and proven with your build.
 
 ## ✨ Why use it
 
+- **Interfaces that look designed** — Claude ranks what matters before it adds colour, styles actions by importance, presents data by meaning instead of label-value walls, groups with space, and frames images and numbers properly, then checks the result against a list of generic-UI tells.
+- **A design system, not one-off values** — type scale, spacing subset, OKLCH colour ramps, elevation and radius live as `@theme` tokens; your project's own tokens, brand and rules always come first.
+- **Seen, not assumed** — when your environment can render, Claude screenshots each appearance mode at narrow and wide widths and measures rendered contrast against WCAG 2.2 AA, and tells you which checks it could not run.
 - **Classes that exist in your version** — Claude reads your resolved Tailwind version from the lockfile and checks each utility, variant and directive against the official page for it, so v3 habits don't leak into a v4 project, or the reverse.
 - **The right page, not a close guess** — a built-in index of all 203 pages of the Tailwind docs maps each need to its exact page, and to the exact section of the long concept pages, because page names don't follow class names: `blur` lives on `filter-blur`, and `drop-shadow` on `filter-drop-shadow`.
 - **Styles that actually ship** — complete, statically detectable class strings instead of interpolated names, no broad safelists to hide a missing class, and your existing tokens reused before new ones are added.
@@ -35,6 +38,7 @@
 
 | Component | Name | What it does | How it runs |
 | :-- | :-- | :-- | :-- |
+| 🎯 Skill | `tailwind-development:tailwind-ui-design` | Builds, refactors and reviews interfaces with a product designer's craft: reads your tokens and components first, checks the systems exist, composes hierarchy before colour, depth and finish, covers every state, verifies the rendered result and critiques it against generic-UI tells | Automatically when you build, redesign, polish or review a page, view or component in a Tailwind project, or `/tailwind-development:tailwind-ui-design` |
 | 🎯 Skill | `tailwind-development:tailwind-official-docs` | Reads your installed Tailwind version and setup, plans the exact official page for each utility family, variant and configuration the task touches, implements the change and verifies it with your project's own checks | Automatically when you create, change, review or debug Tailwind classes, or `/tailwind-development:tailwind-official-docs` |
 
 ## ✅ Requirements
@@ -97,7 +101,23 @@ In the desktop app's **Code** tab you can also click **+** next to the prompt bo
 
 ## 🚀 Usage
 
-You don't need to call anything: the skill loads when you work on Tailwind classes, variants, themes or setup. To call it directly, type `/tailwind-development:tailwind-official-docs` followed by your request.
+You don't need to call anything: `tailwind-ui-design` loads when you build, redesign or review an interface, and `tailwind-official-docs` when you work on Tailwind classes, variants, themes or setup; the design skill hands every syntax question to the docs skill. To call one directly, type `/tailwind-development:tailwind-ui-design` or `/tailwind-development:tailwind-official-docs` followed by your request.
+
+### Redesign a view that looks generic
+
+```text
+Our settings page looks like every template: identical cards, the same shadow everywhere, nothing stands out. Make it look designed.
+```
+
+**Result:** Claude reads your `@theme` tokens, brand sources and nearby components, screenshots the current page, and works through the view from the biggest problem down: what should read first, which action is primary, labels that only repeat what the value says, spacing that doesn't group anything, values that should be tokens. It keeps your brand, behaviour and markup semantics, adds the states that were missing, and shows before and after screenshots with the contrast it measured.
+
+### Review a design before it ships
+
+```text
+Review the new pricing section for design problems. Don't change anything yet.
+```
+
+**Result:** a prioritized list of findings, ranking first and polish last, each with the file, the line and the fix, including the generic-UI tells the section shows and the states it doesn't cover.
 
 ### Build a component
 
@@ -136,7 +156,7 @@ Use @apply inside the <style> block of Button.svelte.
 - **Hooks:** none.
 - **MCP servers:** none. When you already have the Context7 MCP server connected, Claude queries it first for Tailwind's docs; the plugin doesn't install or configure it.
 - **Network:** the plugin makes no calls itself. Claude reads documentation pages from `tailwindcss.com` (and `v3.tailwindcss.com` or older versioned sites for older projects) with its own web fetch tool, or through Context7 when you have it, each under your usual permission prompts. The requests carry the page address or a short docs query, never your code.
-- **Files written:** none by the plugin. Claude edits your project files only as the task asks, like any other edit.
+- **Files written:** none by the plugin. Claude edits your project files only as the task asks, like any other edit. When it checks a design visually, it uses the browser or screenshot tools you already have, under your usual permission prompts.
 
 ## 🔄 Updating
 
@@ -183,6 +203,20 @@ Run `/reload-plugins`, then type `/tailwind-development:` to list its skills. If
 </details>
 
 <details>
+<summary><b>How does it work with Anthropic's frontend-design skill?</b></summary>
+
+They complement each other. `frontend-design` sets the aesthetic direction: the identity, the typefaces, the look. `tailwind-ui-design` supplies the craft beneath it (hierarchy, systems, colour ramps, depth, states, verification) and its Tailwind v4 implementation. Without `frontend-design`, Claude takes the direction from your project's brand or brief.
+
+</details>
+
+<details>
+<summary><b>Will it override our brand or design system?</b></summary>
+
+No. Your project's tokens, brand sources and design rules always win; the skill's defaults apply only where your project leaves a choice open. When it needs a value your system lacks, it adds a token instead of a one-off value, and tells you.
+
+</details>
+
+<details>
 <summary><b>Does it work without Context7 or web access?</b></summary>
 
 Yes, with less certainty. Without Context7, Claude fetches the official pages with its web fetch tool. With no documentation tool at all, Claude says that verification is blocked and doesn't present what it remembers as checked documentation.
@@ -209,6 +243,7 @@ No. It reads each page once per session and reuses it. A lookup is required for 
 - 📖 [Claude Code plugin docs](https://code.claude.com/docs/en/plugins/overview)
 - 📖 [Claude Code skills](https://code.claude.com/docs/en/skills)
 - 🌊 [Tailwind CSS documentation](https://tailwindcss.com/docs/installation/using-vite)
+- 📘 [Refactoring UI](https://www.refactoringui.com), for a book-length treatment of interface design craft
 
 ## 🐞 Found a problem?
 

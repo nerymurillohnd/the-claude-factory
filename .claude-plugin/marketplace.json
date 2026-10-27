@@ -87,7 +87,7 @@
     {
       "name": "tailwind-development",
       "source": "./plugins/tailwind-development",
-      "description": "Routes every Tailwind CSS change to the exact official documentation page for each utility, variant and configuration it touches, then verifies the result in your project.",
+      "description": "Designs, builds and refactors Tailwind CSS v4 interfaces with a product designer's craft, and grounds every utility, variant and configuration in its exact official documentation page before verifying the result in your project.",
       "category": "development"
     },
     {
