@@ -6,6 +6,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.1.2] - 2026-10-27
+
+### Changed
+
+- Internal code cleanup from stricter lint rules; the panel lists the same calls with the same statuses.
+- Validated and tested on Claude Code v2.1.311.
+
 ## [0.1.1] - 2026-10-24
 
 ### Changed
@@ -22,6 +29,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - A ledger that fails never touches the call: it still runs once and returns its own result.
 - Tested with Claude Code v2.1.308; requires v2.1.295 or later.
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/tool-ledger--v0.1.1...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/tool-ledger--v0.1.2...HEAD
+[0.1.2]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/tool-ledger--v0.1.2
 [0.1.1]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/tool-ledger--v0.1.1
 [0.1.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/tool-ledger--v0.1.0

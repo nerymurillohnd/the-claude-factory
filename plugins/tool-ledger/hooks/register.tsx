@@ -93,20 +93,12 @@ const rowText = (row: LedgerRow, showTargets: boolean, columns: number, indent: 
   return `${head}${target}${duration}`.trimEnd()
 }
 
-// The panel's lines: main-thread calls in order, each subagent's calls grouped under one
-// header placed where that subagent first appeared, then the last ones that fit.
-export const layout = (
-  rows: readonly LedgerRow[],
-  agents: Readonly<Record<string, string>>,
-  isErrorsOnly: boolean,
-  showTargets: boolean,
-  columns: number,
-  room: number,
-): Line[] => {
-  const shown = isErrorsOnly
-    ? rows.filter((r) => r.status === 'error' || r.status === 'denied')
-    : rows
-  const entries: ({ row: LedgerRow } | { agentId: string; rows: LedgerRow[] })[] = []
+type Entry = { row: LedgerRow } | { agentId: string; rows: LedgerRow[] }
+
+// Main-thread calls in order, and each subagent's calls as one entry placed where that subagent
+// first appeared.
+const groupByAgent = (shown: readonly LedgerRow[]): Entry[] => {
+  const entries: Entry[] = []
   const groups = new Map<string, LedgerRow[]>()
   for (const row of shown) {
     if (row.agentId === null) {
@@ -122,37 +114,62 @@ export const layout = (
       group.push(row)
     }
   }
+  return entries
+}
 
-  const lines: Line[] = []
-  for (const entry of entries) {
-    if ('row' in entry) {
-      lines.push({
+// One entry's lines: a main-thread row, or a subagent's header followed by its indented rows.
+const entryLines = (
+  entry: Entry,
+  agents: Readonly<Record<string, string>>,
+  showTargets: boolean,
+  columns: number,
+): Line[] => {
+  if ('row' in entry) {
+    return [
+      {
         key: entry.row.id,
         text: rowText(entry.row, showTargets, columns, 0),
         status: entry.row.status,
         header: null,
-      })
-      continue
-    }
-    const label = agents[entry.agentId] ?? entry.agentId
-    // Without targets, keep only the subagent's type: its description can say as much as a target.
-    const header = showTargets ? label : (label.split(' · ')[0] ?? label)
-    const headerLine: Line = {
-      key: `agent-${entry.agentId}`,
-      text: clip(`▸ ${header}`, columns),
-      status: null,
-      header: null,
-    }
-    lines.push(headerLine)
-    for (const row of entry.rows) {
-      lines.push({
-        key: row.id,
-        text: rowText(row, showTargets, columns, 2),
-        status: row.status,
-        header: headerLine,
-      })
-    }
+      },
+    ]
   }
+  const label = agents[entry.agentId] ?? entry.agentId
+  // Without targets, keep only the subagent's type: its description can say as much as a target.
+  const header = showTargets ? label : (label.split(' · ')[0] ?? label)
+  const headerLine: Line = {
+    key: `agent-${entry.agentId}`,
+    text: clip(`▸ ${header}`, columns),
+    status: null,
+    header: null,
+  }
+  return [
+    headerLine,
+    ...entry.rows.map((row) => ({
+      key: row.id,
+      text: rowText(row, showTargets, columns, 2),
+      status: row.status,
+      header: headerLine,
+    })),
+  ]
+}
+
+// The panel's lines: main-thread calls in order, each subagent's calls grouped under one
+// header placed where that subagent first appeared, then the last ones that fit.
+export const layout = (
+  rows: readonly LedgerRow[],
+  agents: Readonly<Record<string, string>>,
+  isErrorsOnly: boolean,
+  showTargets: boolean,
+  columns: number,
+  room: number,
+): Line[] => {
+  const shown = isErrorsOnly
+    ? rows.filter((r) => r.status === 'error' || r.status === 'denied')
+    : rows
+  const lines = groupByAgent(shown).flatMap((entry) =>
+    entryLines(entry, agents, showTargets, columns),
+  )
   const kept = lines.slice(-Math.max(1, room))
   // A subagent's rows never show without its header: it takes the place of the oldest kept row.
   const first = kept[0]
@@ -178,6 +195,18 @@ export const summary = (rows: readonly LedgerRow[]): string => {
     parts.push(`${denied} denied`)
   }
   return parts.join(' · ')
+}
+
+// A deny seen beneath counts only when the call did not run: a mod above this one can still
+// allow it.
+const finalStatus = (
+  result: { deny?: unknown; isError?: boolean | undefined },
+  wasDeniedBeneath: boolean,
+): LedgerStatus => {
+  if (result.deny !== undefined || (wasDeniedBeneath && result.isError === true)) {
+    return 'denied'
+  }
+  return result.isError === true ? 'error' : 'done'
 }
 
 const COLOR: Record<LedgerStatus, 'green' | 'red' | 'yellow' | undefined> = {
@@ -257,15 +286,7 @@ export const register: Register = (on: On, options: PluginOptions): void => {
     // Always awaited: returning while next(e) is pending would abort the call.
     const result = await next(e)
 
-    // A deny seen beneath counts only when the call did not run: a mod above this one can still
-    // allow it.
-    const wasDeniedBeneath = deniedIds.delete(id)
-    const status: LedgerStatus =
-      result.deny !== undefined || (wasDeniedBeneath && result.isError === true)
-        ? 'denied'
-        : result.isError === true
-          ? 'error'
-          : 'done'
+    const status = finalStatus(result, deniedIds.delete(id))
     const endedAt = startedAt === null ? undefined : await quietly(() => $.clock.now())
     const durationMs =
       startedAt === null || endedAt === undefined || status === 'denied'
@@ -354,9 +375,9 @@ export const register: Register = (on: On, options: PluginOptions): void => {
         ) : (
           lines.map((line) => (
             <Text
+              dimColor={line.status === null}
               key={line.key}
               wrap="truncate"
-              dimColor={line.status === null}
               {...colorOf(line.status)}
             >
               {line.text}
