@@ -37,6 +37,7 @@
 | 2026-10-26 | DEBT-033 | resolved | `.editorconfig` is the only source of indentation and line endings for Biome | none |
 | 2026-10-27 | DEBT-034 | resolved | Biome checks every tsconfig file, with an `expand: "auto"` override | none |
 | 2026-10-27 | DEBT-032 | resolved | Biome's `useLiteralKeys` is off, so tsc's `noPropertyAccessFromIndexSignature` alone decides index-signature keys | none |
+| 2026-10-27 | DEBT-014 | obsolete | `release.yml` published release notes built by `release-notes.py` for two new tags | none |
 
 ## 🏁 Closed items
 
@@ -662,6 +663,37 @@ Both `!!` patterns were removed. An override sets `json.formatter.expand: "auto"
 - **Residual risk:** none
 - **Closed by:** ADR_2026-10-27_tsc-decides-index-signature-keys-not-biome and the commit that applies it.
 - **Related records:** ADR_2026-10-27_tsc-decides-index-signature-keys-not-biome.
+- **Superseded by:** none
+
+### DEBT-014 — `release.yml` published release notes built by `release-notes.py` for two new tags
+
+| Field | Value |
+| --- | --- |
+| **Outcome** | obsolete |
+| **Closed on** | 2026-10-27 |
+| **Logged on** | 2026-10-26 |
+| **Owner** | `.github/workflows/release.yml`, `.claude/skills/release-and-versioning/scripts/release-notes.py` |
+
+#### ❗ The problem
+
+`release.yml` had run `release-notes.py <plugin> --tag` on the runner's python3, but never the notes path (`release-notes.py <plugin> > notes.md`), because no plugin had an untagged version. The first release of a new version could have published without notes, or failed.
+
+#### 🔧 The closure
+
+Release run 40490117853 (2026-10-27), triggered by the merge of [PR #53](https://github.com/nerymurillohnd/the-claude-factory/pull/53), ran the notes path for two new tags and published both releases with notes built by `release-notes.py`. The release was not aimed at this item; it exercised the path the item waited for.
+
+#### 🧪 Verification
+
+| Check | Evidence |
+| --- | --- |
+| ✅ **Positive:** the closure holds | not applicable |
+| 🚫 **Negative:** the original failure or condition is gone | The run's log shows `release-notes.py "${target}" > notes.md` and `gh release create "${tag}" ... --notes-file notes.md`, and lists `Released python-lsp-intelligence--v0.3.0` and `Released skill-diagnostics--v0.2.0`. `diff` of each published release body against the local `release-notes.py <plugin>` output differs only by one trailing blank line. |
+
+#### 🔗 Follow-up
+
+- **Residual risk:** none
+- **Closed by:** [PR #53](https://github.com/nerymurillohnd/the-claude-factory/pull/53), release run 40490117853.
+- **Related records:** ADR_2026-10-25_release-workflow-runs-the-release-skill-script.
 - **Superseded by:** none
 
 <!--

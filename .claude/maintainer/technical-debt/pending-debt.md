@@ -42,7 +42,6 @@ Add an item only when all of these hold:
 | --- | --- | --- |
 | DEBT-002 | Version-bump check fails on main after a revert of an unreleased bump and blocks every release | 🟠 Blocked |
 | DEBT-010 | The mod gates of `scripts/gates.mjs` can miss a mod or report green on a lost test summary | 🟠 Blocked |
-| DEBT-014 | `release.yml` has not yet built release notes for a new tag with `release-notes.py` | 🟡 Pending |
 | DEBT-015 | `plugin-hooks-guidance` states hook facts that contradict `building-plugins` and the hooks docs | 🟠 Blocked |
 | DEBT-016 | `testing-mods` has no live MCP checks for a mod that ships an MCP server | 🟠 Blocked |
 | DEBT-017 | `testing-plugins` says the full eval suite runs in CI, and no eval workflow exists | 🟠 Blocked |
@@ -119,29 +118,6 @@ Add an item only when all of these hold:
   - name `mod-tsc` for what it checks, and check the declarations' `// Written by Claude Code <version>.` header against `claude --version` before `tsc`.
 - **Review condition:** closes when a mod with no tests fails the gate, a test run with its summary removed fails it, and stale declarations are reported.
 - **Related records:** ADR_2026-10-21_gates-run-from-one-script, ADR_2026-10-25_building-mods-skill-holds-mod-authoring.
-
-### DEBT-014 — `release.yml` has not yet built release notes for a new tag with `release-notes.py`
-
-| Field | Value |
-| --- | --- |
-| **Status** | 🟡 Pending |
-| **Category** | reliability |
-| **Owner** | `.github/workflows/release.yml`, `.claude/skills/release-and-versioning/scripts/release-notes.py` |
-| **Logged** | 2026-10-26 |
-
-#### 🔎 Evidence
-
-- **Confirmed facts:** `release.yml` runs `release-notes.py <plugin> --tag` and, for an untagged version, `release-notes.py <plugin> > notes.md`. Release run 40308391454 (2026-10-26) ran `--tag` on the runner's python3 and printed `✔ bash-lsp-intelligence--v0.2.4 already released`; no plugin had an untagged version, so the notes path did not run. The script was checked with ruff targeting Python 3.12, not run on 3.12.
-- **Inferences:** none.
-- **Open questions:** none.
-
-#### 📈 Impact and next step
-
-- **Impact / risk:** the first release of a new plugin version could publish without notes, or fail, if the notes path breaks on the runner.
-- **Why it is not fixed now:** it runs only when a plugin version is released.
-- **Next action:** after the next plugin release, read its Release run and the published notes.
-- **Review condition:** closes when a Release run publishes notes built by `release-notes.py` for a new tag.
-- **Related records:** ADR_2026-10-25_release-workflow-runs-the-release-skill-script.
 
 ### DEBT-015 — `plugin-hooks-guidance` states hook facts that contradict `building-plugins` and the hooks docs
 
