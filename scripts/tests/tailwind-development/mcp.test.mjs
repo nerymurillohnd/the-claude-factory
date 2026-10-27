@@ -153,6 +153,14 @@ describe('format', () => {
     assert.match(output.hookSpecificOutput.additionalContext, /cssConflict/u)
     assert.equal(format.findingsHookOutput('a.html', []), '')
   })
+
+  test('says a file is clean when its previous check had findings', () => {
+    const output = JSON.parse(format.findingsHookOutput('a.html', [], true))
+    assert.equal(
+      output.hookSpecificOutput.additionalContext,
+      'Tailwind CSS: no diagnostics left in a.html.',
+    )
+  })
 })
 
 describe('language-server client', () => {

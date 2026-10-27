@@ -54,19 +54,24 @@ export function findingsText(relativePath, findings) {
 }
 
 /**
- * The PostToolUse hook output: the findings as additionalContext, or an empty string when there is
- * nothing to tell Claude, so the hook adds nothing to the conversation.
+ * The PostToolUse hook output: the findings as additionalContext. Without findings it is empty, so
+ * the hook adds nothing, unless the file's previous check had findings: then it says the file is
+ * clean now, so Claude knows its fix worked instead of reading silence.
  * @param {string} relativePath
  * @param {readonly Finding[]} findings
+ * @param {boolean} [hadFindings] whether the previous check of this file reported any
  */
-export function findingsHookOutput(relativePath, findings) {
-  if (findings.length === 0) {
+export function findingsHookOutput(relativePath, findings, hadFindings = false) {
+  if (findings.length === 0 && !hadFindings) {
     return ''
   }
   return JSON.stringify({
     hookSpecificOutput: {
       hookEventName: 'PostToolUse',
-      additionalContext: findingsText(relativePath, findings),
+      additionalContext:
+        findings.length === 0
+          ? `Tailwind CSS: no diagnostics left in ${relativePath}.`
+          : findingsText(relativePath, findings),
     },
   })
 }

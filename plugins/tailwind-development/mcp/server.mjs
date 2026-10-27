@@ -40,6 +40,12 @@ let shared
 /** Whether the hook has already told Claude that no project covers an edited file. */
 let noProjectHintGiven = false
 
+/** Files whose last check reported findings, so the next clean check can say so. */
+const filesWithFindings = new Set()
+
+/** Numbers the question-only documents, so calls Claude Code runs in parallel never share one. */
+let probeCount = 0
+
 /** The project root and the language-server client, shared by every MCP server instance. */
 function state() {
   shared ??= projectRoot(process.env).then((root) => ({
@@ -160,9 +166,15 @@ async function checkFile({ filePath, format }) {
       ),
     })
   }
+  const hadFindings = filesWithFindings.has(file.path)
+  if (findings.length > 0) {
+    filesWithFindings.add(file.path)
+  } else {
+    filesWithFindings.delete(file.path)
+  }
   return text(
     hook
-      ? findingsHookOutput(file.relativePath, findings)
+      ? findingsHookOutput(file.relativePath, findings, hadFindings)
       : findingsText(file.relativePath, findings),
   )
 }
@@ -176,7 +188,9 @@ async function checkFile({ filePath, format }) {
 async function probeUri(root, filePath) {
   const dir =
     filePath === undefined ? root : dirname((await resolveProjectFile(root, filePath)).path)
-  return pathToFileURL(join(dir, `.tailwind-development-probe-${process.pid}.html`)).href
+  probeCount += 1
+  return pathToFileURL(join(dir, `.tailwind-development-probe-${process.pid}-${probeCount}.html`))
+    .href
 }
 
 const PROBE_PREFIX = '<div class="'
