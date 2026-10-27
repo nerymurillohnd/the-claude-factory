@@ -1,6 +1,6 @@
 ---
 name: tailwind-official-docs
-description: Gets Tailwind CSS syntax and behaviour right by reading the exact official tailwindcss.com page for each utility, variant and configuration a task touches, for the version the project resolves, then verifying the result in the project. Use whenever the question is how Tailwind works or how to write something in it, such as which class or variant does X, why a class does not apply, @apply, @theme and design tokens, dark mode setup, source detection and missing styles, custom CSS, integration with Vite, PostCSS or the CLI, and v3 to v4 upgrades, even when the request never says documentation. Building or redesigning what users look at belongs to tailwind-ui-design, which calls this skill for syntax.
+description: Gets Tailwind CSS syntax and behaviour right by reading the exact official tailwindcss.com page for each utility, variant and configuration a task touches, for the version the project resolves, then verifying the result in the project. Use whenever the question is how Tailwind works or how to write something in it, such as which class or variant does X, why a class does not apply, @apply, @theme and design tokens, dark mode setup, source detection and missing styles, custom CSS, installing Tailwind in a project or framework that has none, editor setup such as IntelliSense and Prettier class sorting, whether a project can adopt v4, integration with Vite, PostCSS or the CLI, and v3 to v4 upgrades, even when the request never says documentation. Building or redesigning what users look at belongs to tailwind-ui-design, which calls this skill for syntax.
 license: MIT
 ---
 
@@ -178,9 +178,23 @@ Use these pages in addition to the property-specific pages. For a long page, go 
 | Tailwind directives, build-time functions, `@apply`, `@reference`, legacy configuration and plugins | `functions-and-directives` |
 | Unexpected resets, unstyled headings and lists, default borders, base element styles | `preflight` |
 | Migration from v3, v3 habits in new code, removed or renamed utilities, dropped PostCSS plugins, the CLI package | `upgrade-guide` |
-| Browser support, Sass, Less and Stylus, CSS modules, `<style>` blocks in Vue, Svelte and Astro components | `compatibility` |
-| Installing Tailwind or changing its integration | The matching `installation/*` page: `installation/using-vite`, `installation/using-postcss`, `installation/tailwind-cli`, `installation/framework-guides` or `installation/play-cdn` |
-| Editor support, class sorting, IntelliSense | `editor-setup` |
+| Whether a project can adopt v4: browser floor, Sass, Less and Stylus, CSS modules, `<style>` blocks in Vue, Svelte and Astro components | `compatibility` (`#browser-support`, `#sass-less-and-stylus`, `#css-modules`, `#vue-svelte-and-astro`) and `upgrade-guide#browser-requirements` |
+| Installing Tailwind in a project that has none, or changing its integration | [Installing Tailwind from zero](#installing-tailwind-from-zero) below |
+| Editor support | `editor-setup`, by section: `#intellisense-for-vs-code`, `#jetbrains-ides`, `#zed`, `#cursor`, `#syntax-support` |
+| Class sorting with Prettier | `editor-setup#class-sorting-with-prettier` |
+
+## Installing Tailwind from zero
+
+When a project has no Tailwind yet, or changes how it integrates Tailwind:
+
+1. **Detect the framework and the package manager.** Read `package.json` dependencies and the framework's config file (`astro.config.*`, `svelte.config.*`, `next.config.*`, `nuxt.config.*`, `angular.json`, `vite.config.*`, `postcss.config.*`) or the server framework's manifest (`Gemfile`, `composer.json`, `mix.exs`). Take the package manager from the lockfile: `package-lock.json` npm, `pnpm-lock.yaml` pnpm, `yarn.lock` yarn, `bun.lock` or `bun.lockb` bun.
+2. **Pick the guide.** When the framework is in the framework-guides list of the topic index, use that page; copy its slug exactly, since two carry a sub-path (`laravel/vite`, `rspack/react`) that the framework name does not predict. When it is not listed, the framework-guides page says: "Don't see your framework of choice? Try using the Tailwind CLI, the Vite plugin, or the PostCSS plugin instead." Choose by what the project already has:
+   - a Vite config → `installation/using-vite`;
+   - a PostCSS config, or a bundler that runs PostCSS → `installation/using-postcss`;
+   - no build tool → `installation/tailwind-cli`.
+   The Play CDN (`installation/play-cdn`) is for prototypes only; Tailwind states it is not intended for production.
+3. **Follow the guide's steps exactly**, translating only the install command to the project's package manager. Add nothing the guide does not ask for: no PostCSS plugins, config files or packages from memory or from v3 habits.
+4. **Verify a first class renders.** Add one utility the project's styles cannot already produce (for example `text-3xl font-bold underline`) to a page, run the project's dev server or build, and confirm the generated CSS contains it, in a browser when one is available. Remove the probe class afterwards unless the user wants it.
 
 ## Topic index
 
@@ -191,6 +205,7 @@ Each entry is an exact page slug: append it to the base URL. Do not derive URLs 
 For each requested behavior, consult the specific property page, not only the category's general page.
 
 - **Getting started:** `installation`, `installation/using-vite`, `installation/using-postcss`, `installation/tailwind-cli`, `installation/framework-guides`, `installation/play-cdn`, `editor-setup`, `compatibility`, `upgrade-guide`
+- **Framework guides** (append each to `installation/framework-guides/`; they are not in the docs navigation): `adonisjs`, `angular`, `astro`, `emberjs`, `gatsby`, `laravel/vite`, `meteor`, `nextjs`, `nuxt`, `parcel`, `phoenix`, `qwik`, `react-router`, `rspack/react`, `ruby-on-rails`, `solidjs`, `sveltekit`, `symfony`, `tanstack-start`
 - **Core concepts:** `styling-with-utility-classes`, `hover-focus-and-other-states`, `responsive-design`, `dark-mode`, `theme`, `colors`, `adding-custom-styles`, `detecting-classes-in-source-files`, `functions-and-directives`
 - **Base styles:** `preflight`
 - **Layout:** `aspect-ratio`, `columns`, `break-after`, `break-before`, `break-inside`, `box-decoration-break`, `box-sizing`, `display`, `float`, `clear`, `isolation`, `object-fit`, `object-position`, `overflow`, `overscroll-behavior`, `position`, `top-right-bottom-left`, `visibility`, `z-index`

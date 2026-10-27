@@ -30,7 +30,7 @@
 - **A design system, not one-off values** — type scale, spacing subset, OKLCH colour ramps, elevation and radius live as `@theme` tokens; your project's own tokens, brand and rules always come first.
 - **Seen, not assumed** — when your environment can render, Claude screenshots each appearance mode at narrow and wide widths and measures rendered contrast against WCAG 2.2 AA, and tells you which checks it could not run.
 - **Classes that exist in your version** — Claude reads your resolved Tailwind version from the lockfile and checks each utility, variant and directive against the official page for it, so v3 habits don't leak into a v4 project, or the reverse.
-- **The right page, not a close guess** — a built-in index of all 203 pages of the Tailwind docs maps each need to its exact page, and to the exact section of the long concept pages, because page names don't follow class names: `blur` lives on `filter-blur`, and `drop-shadow` on `filter-drop-shadow`.
+- **The right page, not a close guess** — a built-in index of all 222 pages of the Tailwind docs, the 19 framework installation guides included, maps each need to its exact page, and to the exact section of the long concept pages, because page names don't follow class names: `blur` lives on `filter-blur`, and `drop-shadow` on `filter-drop-shadow`.
 - **Styles that actually ship** — complete, statically detectable class strings instead of interpolated names, no broad safelists to hide a missing class, and your existing tokens reused before new ones are added.
 - **Checked, not assumed** — Claude runs your project's own build, lint and tests, inspects generated CSS when syntax is uncertain, and tells you exactly what it verified and what it didn't.
 
@@ -126,6 +126,14 @@ Add a responsive product grid: one column on phones, three from md up, cards wit
 ```
 
 **Result:** Claude reads your Tailwind version and how dark mode is set up, then reads `display`, `grid-template-columns`, `gap`, `responsive-design`, `hover-focus-and-other-states`, `dark-mode` and the shadow or outline page for the focus ring. It writes complete class strings, runs your build and checks, and reports the pages each decision rests on.
+
+### Add Tailwind to a project
+
+```text
+Add Tailwind to this SvelteKit app.
+```
+
+**Result:** Claude reads your framework and package manager, opens the official SvelteKit guide and follows its steps exactly, with your package manager's install command. For a framework without its own guide, it uses the Vite plugin, the PostCSS plugin or the CLI, depending on what your project already has. Then it adds one test class to a page and confirms it renders.
 
 ### Fix styles that never appear
 
