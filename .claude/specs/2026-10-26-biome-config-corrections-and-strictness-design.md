@@ -461,6 +461,8 @@ Source: the reference's "Language-specific options" and `javascript` sections. A
 - Every tracked `.ts`, `.mts` and `.tsx` parses under Biome today, since `biome ci .` passes.
 - If a file ever uses syntax newer than 5.9, Biome reports a parse error. A parse error is an error diagnostic, so the gate fails loudly rather than passing a file it cannot read (sections 6.1.1 and 6.4).
 - Nothing to change. A Biome release that raises its supported version is a Dependabot pull request like any other.
+- **JavaScript version**, from the same page: Biome supports ES2024, and adds syntax once a proposal reaches Stage 3, while `scripts/tsconfig.json` targets `es2025` with `ESNext.Collection` and `ESNext.Temporal`. Those are mostly APIs, which Biome does not need to know. A `git grep` found no ES2025-or-later syntax in the tracked code: no import attributes (`with { type: … }`), no `using` declarations, no RegExp modifiers (`(?i:…)`). The same parse-error safeguard applies.
+- **Not applicable:** Google Apps Script (`.gs`), since no such file exists. Embedded CSS and GraphQL snippets, covered in this section.
 
 **Cleanup:**
 
