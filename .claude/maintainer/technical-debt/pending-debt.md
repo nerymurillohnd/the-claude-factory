@@ -47,8 +47,6 @@ Add an item only when all of these hold:
 | DEBT-016 | `testing-mods` has no live MCP checks for a mod that ships an MCP server | 🟠 Blocked |
 | DEBT-017 | `testing-plugins` says the full eval suite runs in CI, and no eval workflow exists | 🟠 Blocked |
 | DEBT-020 | `docs/github-mcp-tools.md` serves one plugin but lives in the marketplace docs | 🟠 Blocked |
-| DEBT-021 | No script checks that the skills and paths the skills and CLAUDE.md name exist | 🟠 Blocked |
-| DEBT-022 | Five open items of an old handoff name skills and files that no longer exist | 🟠 Blocked |
 | DEBT-023 | Gaps from the TypeScript hook audit report are still unaddressed | 🟠 Blocked |
 | DEBT-024 | `block-no-verify` has checks never run: macOS bash 3.2 timing, a final review, ADR candidates | 🟠 Blocked |
 | DEBT-025 | Some repository scripts duplicate a check another script owns | 🟠 Blocked |
@@ -246,52 +244,6 @@ Add an item only when all of these hold:
 - **Why it is not fixed now:** moving it into the plugin is a plugin change, timed by Nery.
 - **Next action:** ask Nery when; then move it into `plugins/github-operations` in a PR and update its links.
 - **Review condition:** closes when `docs/` no longer holds it.
-- **Related records:** none.
-
-### DEBT-021 — No script checks that the skills and paths the skills and CLAUDE.md name exist
-
-| Field | Value |
-| --- | --- |
-| **Status** | 🟠 Blocked |
-| **Category** | maintainability |
-| **Owner** | `.claude/skills/`, `.claude/CLAUDE.md` |
-| **Logged** | 2026-10-26 |
-
-#### 🔎 Evidence
-
-- **Confirmed facts:** on 2026-10-26 a manual `rg` found a dead pointer in `release-and-versioning/SKILL.md:154` to the removed `scripts/release-notes.mjs` (fixed in `cd4d33c`), and five references to the removed `.claude/rules/workflow.md` had to be found by hand. No script or gate checks these names.
-- **Inferences:** the next rename or removal leaves dead pointers again.
-- **Open questions:** whether the check is a skill script or a gate.
-
-#### 📈 Impact and next step
-
-- **Impact / risk:** skills route Claude to files and skills that no longer exist.
-- **Why it is not fixed now:** where it lives is Nery's decision.
-- **Next action:** propose the check to Nery: every backticked skill name and repository path in `.claude/skills/` and `.claude/CLAUDE.md` exists.
-- **Review condition:** closes when the check exists and a planted dead pointer fails it.
-- **Related records:** none.
-
-### DEBT-022 — Five open items of an old handoff name skills and files that no longer exist
-
-| Field | Value |
-| --- | --- |
-| **Status** | 🟠 Blocked |
-| **Category** | maintainability |
-| **Owner** | Session handoffs |
-| **Logged** | 2026-10-26 |
-
-#### 🔎 Evidence
-
-- **Confirmed facts:** items 10, 11, 12, 16 and 22 of the 2026-10-22 07:24 handoff name `plugin-development`, `plugin-consistency`, `github-workflow` or `.claude/WORKFLOW.md`, all removed. The 2026-10-26 05:36 handoff asked Nery whether to drop them; no answer yet.
-- **Inferences:** their goals are covered by the rebuilt skills.
-- **Open questions:** drop them or restate any that still applies.
-
-#### 📈 Impact and next step
-
-- **Impact / risk:** stale work items carried from session to session.
-- **Why it is not fixed now:** dropping them is Nery's call.
-- **Next action:** ask Nery; the recommendation is to drop them.
-- **Review condition:** closes when Nery drops or restates them.
 - **Related records:** none.
 
 ### DEBT-023 — Gaps from the TypeScript hook audit report are still unaddressed

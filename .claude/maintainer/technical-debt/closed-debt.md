@@ -30,6 +30,8 @@
 | 2026-10-26 | DEBT-013 | accepted | Biome never formats the plugins' Markdown, by Nery's decision | none |
 | 2026-10-26 | DEBT-018 | resolved | building-plugins checks a new name against this marketplace before design | none |
 | 2026-10-26 | DEBT-019 | obsolete | The mod READMEs already state the tested Claude Code version | none |
+| 2026-10-26 | DEBT-021 | resolved | A validator fails on dead skill and path references in the project skills and CLAUDE.md | none |
+| 2026-10-26 | DEBT-022 | obsolete | Nery dropped the five handoff items that named removed skills and files | none |
 
 ## 🏁 Closed items
 
@@ -433,6 +435,73 @@ Logged in error. The search matched only the literal "tested with claude code": 
 - **Residual risk:** none
 - **Closed by:** none
 - **Related records:** ADR_2026-10-25_mod-readmes-state-the-tested-claude-code-version.
+- **Superseded by:** none
+
+### DEBT-021 — A validator fails on dead skill and path references in the project skills and CLAUDE.md
+
+| Field | Value |
+| --- | --- |
+| **Outcome** | resolved |
+| **Closed on** | 2026-10-26 |
+| **Logged on** | 2026-10-26 |
+| **Owner** | `.claude/skills/`, `.claude/CLAUDE.md` |
+
+#### ❗ The problem
+
+No script checked that the skills and repository paths cited by `.claude/skills/` and `.claude/CLAUDE.md` exist. A dead pointer to the removed `scripts/release-notes.mjs` and five references to the removed `.claude/rules/workflow.md` were found by hand.
+
+#### 🔧 The closure
+
+Nery chose a validator over a skill script. `scripts/validators/skill-references.py` checks every backticked repository path, skill name and `<plugin>:<name>` reference in those files. Paths resolve from the repository root or from the citing skill's directory. Placeholders, example plugin names and plugin-relative paths are skipped. It runs in the validators-gate commit hook, in `npm run validate` and in the gates, and `scripts/tests/validators/test_skill_references.py` covers it. Commit c1b9759.
+
+#### 🧪 Verification
+
+| Check | Evidence |
+| --- | --- |
+| ✅ **Positive:** the closure holds | 2026-10-26: `npm run validate:skill-references` prints "✔ 101 skill and path reference(s) in .claude/skills and .claude/CLAUDE.md resolve", and `run_pytest.py scripts/tests/schemas scripts/tests/validators` gives 201 passed. |
+| 🚫 **Negative:** the original failure or condition is gone | 2026-10-26: in a copy under `TCF_ROOT`, a line added to `release-and-versioning/SKILL.md` that cites `scripts/release-notes.mjs`, `.claude/rules/workflow.md` and the `plugin-development` skill exits 1 and names all three, with file and line. |
+
+#### 🔗 Follow-up
+
+- **Residual risk:** a skill name mentioned without the word "skill" or a `Skill:` line is not checked. A new built-in skill cited by name needs an `EXTERNAL_SKILLS` entry.
+- **Closed by:** c1b9759
+- **Related records:** none.
+- **Superseded by:** none
+
+### DEBT-022 — Nery dropped the five handoff items that named removed skills and files
+
+| Field | Value |
+| --- | --- |
+| **Outcome** | obsolete |
+| **Closed on** | 2026-10-26 |
+| **Logged on** | 2026-10-26 |
+| **Owner** | Session handoffs |
+
+#### ❗ The problem
+
+Items 10, 11, 12, 16 and 22 of the 2026-10-22 07:24 handoff named `plugin-development`, `plugin-consistency`, `github-workflow` or `.claude/WORKFLOW.md`. All of these were removed, yet the items were carried from session to session.
+
+#### 🔧 The closure
+
+Nery dropped all five on 2026-10-26, and none was restated:
+
+- 12 and 22 depend on the removed `github-workflow` skill and `WORKFLOW.md`.
+- 16 is covered by the Workflow section of `.claude/CLAUDE.md`, which names the skill of each stage or says none exists yet.
+- 11's questions are covered elsewhere: DEBT-015 tracks the plugin-hooks-guidance contradictions, `github-operations:auto-pr-lifecycle` covers review threads and branch cleanup, and the official docs govern the description limit.
+- 10 was a generic check with no condition left to track.
+
+#### 🧪 Verification
+
+| Check | Evidence |
+| --- | --- |
+| ✅ **Positive:** the closure holds | not applicable |
+| 🚫 **Negative:** the original failure or condition is gone | 2026-10-26: `.claude/skills/plugin-development`, `.claude/skills/plugin-consistency`, `.claude/skills/github-workflow` and `.claude/WORKFLOW.md` do not exist, and the current handoff no longer carries the items. |
+
+#### 🔗 Follow-up
+
+- **Residual risk:** none
+- **Closed by:** none
+- **Related records:** DEBT-015.
 - **Superseded by:** none
 
 <!--
