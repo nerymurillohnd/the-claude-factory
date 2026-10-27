@@ -3,6 +3,8 @@
 // (ADR_2026-10-21_gates-run-from-one-script).
 //   npm run gates                    every gate, stopping at the first failure
 //   npm run gates:ci -- --group <g>  the gates of one CI job, going on after a failure
+//   node scripts/gates.mjs --only <p,…>  the gates whose id starts with one of the prefixes, local
+//                                      ones included: the npm scripts of package.json use it
 //
 // What CI runs (ADR_2026-10-21_ci-checks-maintainer-tooling-and-plugin-structure): our own tooling
 // under scripts/ and the plugins' structure, which no user's machine changes. The plugins' behavior
@@ -34,8 +36,22 @@ const JS_FAMILY = ['js', 'cjs', 'mjs', 'jsx', 'ts', 'cts', 'mts', 'tsx']
 
 /**
  * The Python that scripts/basedpyright-maintainer.mjs checks under the maintainer config, each file
- * against its own interpreter; basedpyright-scripts checks the rest of scripts/.
+ * against its own interpreter; basedpyright-maintainer-other checks the rest outside plugins/.
  */
+/** The repository variables git exports to a hook; gates resolve the repository from their cwd. */
+const GIT_HOOK_VARIABLES = new Set([
+  'GIT_DIR',
+  'GIT_WORK_TREE',
+  'GIT_INDEX_FILE',
+  'GIT_PREFIX',
+  'GIT_COMMON_DIR',
+  'GIT_OBJECT_DIRECTORY',
+  'GIT_ALTERNATE_OBJECT_DIRECTORIES',
+])
+
+/** Pathspecs that keep a maintainer gate outside the plugins and outside .github/. */
+const OUTSIDE_PLUGINS = [':(exclude)plugins', ':(exclude).github']
+
 const MAINTAINER_PYTHON = [
   'scripts/validators',
   'scripts/generators',
@@ -205,7 +221,7 @@ export function gatesFor({ root, ci, base }) {
   const maintainerBiome = [
     ...new Set(
       tracked(root, [...JS_FAMILY.map((e) => `*.${e}`), '*.json', '*.jsonc', '*.md'])
-        .filter((f) => !f.startsWith('plugins/'))
+        .filter((f) => !f.startsWith('plugins/') && !f.startsWith('.github/'))
         .map((f) => (f.includes('/') ? f.slice(0, f.indexOf('/')) : f)),
     ),
   ].sort()
@@ -287,42 +303,63 @@ export function gatesFor({ root, ci, base }) {
       args: ['-p', 'scripts/tsconfig.json', '--noEmit'],
     },
     {
-      id: 'shellcheck-scripts',
+      id: 'tsc-claude-hooks',
       group: 'policy',
-      title: 'ShellCheck on scripts/',
+      title: 'tsc on .claude/hooks/',
+      cmd: 'tsc',
+      args: ['-p', '.claude/hooks/tsconfig.json', '--noEmit'],
+    },
+    {
+      id: 'shellcheck-maintainer',
+      group: 'policy',
+      title: 'ShellCheck outside plugins/ and .github/',
       cmd: 'shellcheck',
-      args: [...shellOpts, ...tracked(root, ['scripts/*.sh'])],
+      args: [...shellOpts, ...tracked(root, ['*.sh', ...OUTSIDE_PLUGINS])],
     },
     {
-      id: 'shfmt-scripts',
+      id: 'shfmt-maintainer',
       group: 'policy',
-      title: 'shfmt drift on scripts/',
+      title: 'shfmt drift outside plugins/ and .github/',
       cmd: 'shfmt',
-      args: ['-d', ...tracked(root, ['scripts/*.sh'])],
+      args: ['-d', ...tracked(root, ['*.sh', ...OUTSIDE_PLUGINS])],
     },
     {
-      id: 'ruff-check-scripts',
+      id: 'ruff-check-maintainer',
       group: 'python',
-      title: 'ruff check scripts/',
+      title: 'ruff check outside plugins/ and .github/',
       cmd: 'ruff',
-      args: ['check', 'scripts'],
+      args: ['check', ...tracked(root, ['*.py', ...OUTSIDE_PLUGINS])],
     },
     {
-      id: 'ruff-format-scripts',
+      id: 'ruff-format-maintainer',
       group: 'python',
-      title: 'ruff format --check scripts/',
+      title: 'ruff format --check outside plugins/ and .github/',
       cmd: 'ruff',
-      args: ['format', '--check', 'scripts'],
+      args: ['format', '--check', ...tracked(root, ['*.py', ...OUTSIDE_PLUGINS])],
     },
     {
-      id: 'basedpyright-scripts',
+      id: 'basedpyright-maintainer-other',
       group: 'python',
-      title: 'basedpyright on the plugin tests in scripts/',
+      title: 'basedpyright outside plugins/, .github/ and .claude/, beyond the maintainer config',
       cmd: 'basedpyright',
       args: [
         '--warnings',
-        ...tracked(root, ['scripts/*.py', ...MAINTAINER_PYTHON.map((p) => `:(exclude)${p}`)]),
+        ...tracked(root, [
+          '*.py',
+          ...OUTSIDE_PLUGINS,
+          ':(exclude).claude',
+          ...MAINTAINER_PYTHON.map((p) => `:(exclude)${p}`),
+        ]),
       ],
+    },
+    {
+      // Basedpyright always skips paths under a dot folder relative to its project root, even when
+      // named on the command line, so the skills' Python gets a config rooted inside .claude/skills.
+      id: 'basedpyright-skills',
+      group: 'python',
+      title: 'basedpyright on the project skills in .claude/skills/',
+      cmd: 'basedpyright',
+      args: ['--warnings', '-p', '.claude/skills/pyrightconfig.json'],
     },
     {
       id: 'basedpyright-maintainer',
@@ -469,6 +506,27 @@ export function gatesFor({ root, ci, base }) {
 }
 
 /**
+ * The gates of `group` whose id starts with one of the `only` prefixes, in their order. Throws when
+ * a prefix matches no gate, so a mistyped npm script never passes by running nothing.
+ * @param {Gate[]} gates
+ * @param {string[] | undefined} only
+ * @param {string | undefined} group
+ * @returns {Gate[]}
+ */
+export function selectGates(gates, only, group) {
+  const inGroup = gates.filter((g) => group === undefined || g.group === group)
+  if (only === undefined) {
+    return inGroup
+  }
+  for (const prefix of only) {
+    if (!inGroup.some((g) => g.id.startsWith(prefix))) {
+      throw new Error(`no gate matches "${prefix}"`)
+    }
+  }
+  return inGroup.filter((g) => only.some((prefix) => g.id.startsWith(prefix)))
+}
+
+/**
  * Runs the gates in order and returns the exit code of the first failure, or 0.
  * @param {Gate[]} gates
  * @param {{ root: string, keepGoing: boolean, write: (text: string) => void }} options
@@ -485,7 +543,12 @@ export function runGates(gates, { root, keepGoing, write }) {
     }
     // A gate starts its own node --test runner even when the gates run inside one, as in their
     // tests: a child that inherits NODE_TEST_CONTEXT reports to the parent and writes no reporter.
-    const { NODE_TEST_CONTEXT: _parentRunner, ...inherited } = process.env
+    // Inside a git hook (Husky), git exports the variables of the repository that started it, such as
+    // GIT_INDEX_FILE=.git/index; a gate that runs git in another repository would act on that one.
+    const { NODE_TEST_CONTEXT: _parentRunner, ...outer } = process.env
+    const inherited = Object.fromEntries(
+      Object.entries(outer).filter(([name]) => !GIT_HOOK_VARIABLES.has(name)),
+    )
     const r = spawnSync(gate.cmd, gate.args, {
       cwd: root,
       encoding: 'utf8',
@@ -540,9 +603,17 @@ if (isMain(import.meta.url)) {
   }
   const ci = argv.includes('--ci')
   const group = value('--group')
-  const gates = gatesFor({ root: ROOT, ci, base: value('--base') ?? '' }).filter(
-    (g) => group === undefined || g.group === group,
-  )
+  const only = value('--only')
+    ?.split(',')
+    .filter((p) => p !== '')
+  /** @type {Gate[]} */
+  let gates
+  try {
+    gates = selectGates(gatesFor({ root: ROOT, ci, base: value('--base') ?? '' }), only, group)
+  } catch (e) {
+    console.error(`✖ ${e instanceof Error ? e.message : e}`)
+    process.exit(1)
+  }
   if (gates.length === 0) {
     console.error(`✖ no gate in group "${group}"`)
     process.exit(1)

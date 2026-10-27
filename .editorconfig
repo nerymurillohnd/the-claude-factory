@@ -19,3 +19,7 @@ simplify = true
 binary_next_line = true
 switch_case_indent = true
 space_redirects = true
+
+# shfmt walks the repository but never these folders.
+[{node_modules,.github,.superpowers,.claude/worktrees}/**]
+ignore = true

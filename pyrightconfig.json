@@ -1,0 +1,17 @@
+{
+  "include": [
+    ".",
+    ".claude/hooks",
+    "scripts",
+    "plugins"
+  ],
+  "exclude": [
+    "**/node_modules",
+    "**/__pycache__",
+    ".git",
+    ".github",
+    ".superpowers",
+    ".claude/worktrees",
+    ".ruff_cache"
+  ]
+}

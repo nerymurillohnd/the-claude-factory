@@ -9,7 +9,7 @@ import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { afterEach, beforeEach, describe, test } from 'node:test'
 import { fileURLToPath } from 'node:url'
-import { gatesFor, nodeTestGate, runGates, unittestGate } from '../gates.mjs'
+import { gatesFor, nodeTestGate, runGates, selectGates, unittestGate } from '../gates.mjs'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..')
 
@@ -140,7 +140,8 @@ describe('gate list', () => {
       'check-repo',
       'version-bump',
       'tsc-scripts',
-      'basedpyright-scripts',
+      'basedpyright-maintainer-other',
+      'basedpyright-skills',
       'basedpyright-maintainer',
       'pytest-scripts',
       'claude-validate:marketplace',
@@ -182,6 +183,60 @@ describe('gate list', () => {
   test('every gate runs the installed tool, never npx or uvx', () => {
     for (const gate of gatesFor({ root: ROOT, ci: false, base: '' })) {
       assert.ok(!['npx', 'uvx'].includes(gate.cmd), `${gate.id} runs through ${gate.cmd}`)
+    }
+  })
+})
+
+describe('selectGates', () => {
+  /**
+   * @param {string} id
+   * @param {import('../gates.mjs').Group} group
+   * @returns {import('../gates.mjs').Gate}
+   */
+  const g = (id, group) => ({ id, group, title: id, cmd: 'true', args: [] })
+  const gates = [
+    g('tsc-scripts', 'policy'),
+    g('ruff-check-plugins', 'local'),
+    g('tsc-plugins', 'local'),
+  ]
+
+  test('keeps the gate order and matches ids by prefix, local gates included', () => {
+    const ids = selectGates(gates, ['tsc-'], undefined).map((x) => x.id)
+    assert.deepEqual(ids, ['tsc-scripts', 'tsc-plugins'])
+  })
+
+  test('fails on a prefix that matches no gate, naming it', () => {
+    assert.throws(() => selectGates(gates, ['tsc-', 'nope'], undefined), /no gate matches "nope"/)
+  })
+
+  test('combines --only with --group', () => {
+    assert.deepEqual(
+      selectGates(gates, ['tsc-'], 'local').map((x) => x.id),
+      ['tsc-plugins'],
+    )
+  })
+})
+
+describe('runGates inside a git hook', () => {
+  test('does not pass the repository variables git exports to its hooks', () => {
+    const saved = process.env['GIT_INDEX_FILE']
+    process.env['GIT_INDEX_FILE'] = '.git/index'
+    try {
+      /** @type {import('../gates.mjs').Gate} */
+      const gate = {
+        id: 'env',
+        group: 'local',
+        title: 'env',
+        cmd: process.execPath,
+        args: ['-e', 'process.exit(process.env.GIT_INDEX_FILE === undefined ? 0 : 1)'],
+      }
+      assert.equal(runGates([gate], { root: ROOT, keepGoing: false, write: () => {} }), 0)
+    } finally {
+      if (saved === undefined) {
+        delete process.env['GIT_INDEX_FILE']
+      } else {
+        process.env['GIT_INDEX_FILE'] = saved
+      }
     }
   })
 })
