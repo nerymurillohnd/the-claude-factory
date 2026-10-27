@@ -24,7 +24,9 @@
     ],
     "deny": [
       "Bash(git push --force*)",
-      "Bash(gh repo delete*)"
+      "Bash(gh repo delete*)",
+      "mcp__c02edb2c-a0fd-4313-b2e2-05804c2df0b2",
+      "mcp__eabf2343-2549-4e10-930f-f3103c7b25c6"
     ]
   },
   "hooks": {
@@ -62,7 +64,11 @@
   "enabledPlugins": {
     "plugin-evals@the-claude-factory": true,
     "forestal-mt@forestal-mt": false,
-    "forestal-mt@synced": false
+    "forestal-mt@synced": false,
+    "forestal-mt@inline": false,
+    "frontend-design@claude-plugins-official": false,
+    "frontend-design@synced": false,
+    "frontend-design@inline": false
   },
   "deniedMcpServers": [
     {
