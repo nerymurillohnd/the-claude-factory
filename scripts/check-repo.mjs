@@ -198,10 +198,11 @@ const AUTO_SCRIPTS = new Set([
 ])
 
 /**
- * Problems in the root package.json. It may only pin exact @types/* packages for the
- * maintainers' type checks, with @types/node on the Node major of .nvmrc: a runtime field
- * would let a plugin resolve packages that no user receives, and "type" would change how
- * Node and tsc read the plugins' .js and .ts files.
+ * Problems in the root package.json. It holds only maintainer tooling: every devDependency pinned
+ * to an exact version (the npm tools and the @types/* packages), with @types/node on the Node
+ * major of .nvmrc, and no script npm runs on its own except `"prepare": "husky"`, which installs
+ * the git hooks. A runtime field would let a plugin resolve packages that no user receives, and
+ * "type" would change how Node and tsc read the plugins' .js and .ts files.
  * @param {{ private?: unknown, devDependencies?: unknown, scripts?: unknown } & Record<string, unknown>} pkg
  * @param {string} nodeVersion the content of .nvmrc
  * @returns {string[]}
@@ -218,7 +219,10 @@ export function rootPackageProblems(pkg, nodeVersion) {
     }
   }
   const scripts = isRecord(pkg.scripts) ? pkg.scripts : {}
-  for (const name of Object.keys(scripts)) {
+  for (const [name, command] of Object.entries(scripts)) {
+    if (name === 'prepare' && command === 'husky') {
+      continue
+    }
     if (AUTO_SCRIPTS.has(name) || /^(pre|post)/.test(name)) {
       problems.push(
         `script "${name}" runs on its own: name every script so it runs only when called`,
@@ -227,11 +231,7 @@ export function rootPackageProblems(pkg, nodeVersion) {
   }
   const dev = isRecord(pkg.devDependencies) ? pkg.devDependencies : {}
   for (const [name, version] of Object.entries(dev)) {
-    if (!name.startsWith('@types/')) {
-      problems.push(
-        `devDependency "${name}" is not a type package: tools run as installed, by bare name`,
-      )
-    } else if (typeof version !== 'string' || !SEMVER.test(version)) {
+    if (typeof version !== 'string' || !SEMVER.test(version)) {
       problems.push(`devDependency "${name}" must be pinned to an exact version`)
     }
   }

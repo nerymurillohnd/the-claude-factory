@@ -785,12 +785,26 @@ describe('root package.json rules', () => {
     assert.match(problems, /must not declare "dependencies"/)
     assert.match(problems, /must not declare "main"/)
     assert.match(problems, /must not declare "type"/)
-    assert.match(problems, /"typescript" is not a type package/)
     assert.match(problems, /"@types\/node" must be pinned to an exact version/)
   })
 
+  test('accept exactly pinned tool devDependencies and flag a range', () => {
+    const dev = { ...pkg.devDependencies, typescript: '6.0.3', husky: '^9.1.7' }
+    const problems = rootPackageProblems({ ...pkg, devDependencies: dev }, '26.12.1').join('\n')
+    assert.doesNotMatch(problems, /typescript/)
+    assert.match(problems, /"husky" must be pinned to an exact version/)
+  })
+
+  test('accept the husky prepare script and nothing else under prepare', () => {
+    assert.deepEqual(rootPackageProblems({ ...pkg, scripts: { prepare: 'husky' } }, '26.12.1'), [])
+    assert.match(
+      rootPackageProblems({ ...pkg, scripts: { prepare: 'node x.mjs' } }, '26.12.1').join('\n'),
+      /script "prepare" runs on its own/,
+    )
+  })
+
   test('flag lifecycle scripts, which npm runs on its own', () => {
-    for (const name of ['postinstall', 'prepare', 'pregates', 'postgates']) {
+    for (const name of ['postinstall', 'pregates', 'postgates']) {
       assert.match(
         rootPackageProblems({ ...pkg, scripts: { [name]: 'node x.mjs' } }, '26.12.1').join('\n'),
         new RegExp(`script "${name}" runs on its own`),
