@@ -427,7 +427,7 @@ export function gatesFor({ root, ci, base }) {
       group: 'lint',
       title: 'Biome outside plugins/',
       cmd: 'biome',
-      args: ['ci', '--error-on-warnings', ...maintainerBiome],
+      args: ['ci', '--error-on-warnings', '--max-diagnostics=none', ...maintainerBiome],
     },
     {
       // A deprecated key reaches Biome as an information diagnostic, which passes biome ci even with
@@ -506,7 +506,7 @@ export function gatesFor({ root, ci, base }) {
       group: 'local',
       title: 'Biome on plugins/',
       cmd: 'biome',
-      args: ['ci', '--error-on-warnings', 'plugins'],
+      args: ['ci', '--error-on-warnings', '--max-diagnostics=none', 'plugins'],
     },
     {
       id: 'shellcheck-plugins',
