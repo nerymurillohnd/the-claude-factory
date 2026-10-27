@@ -44,7 +44,7 @@
 
 | Requirement | Details |
 | :-- | :-- |
-| **Claude Code** | v2.1.299 or later — check with `claude --version`. Tested with v2.1.310. |
+| **Claude Code** | v2.1.299 or later — check with `claude --version`. Tested with v2.1.311. |
 | **Surfaces** | See [Compatibility](#-compatibility) |
 | **External tools** | `git` on `PATH` for status, line counts and diffs (the tree works without it). Optional: [tmux](https://github.com/tmux/tmux/wiki) or [herdr](https://herdr.dev) to open a terminal editor or diff tool; a [Nerd Font](https://www.nerdfonts.com) for file icons; a diff tool such as [hunk](https://hunk.dev) or [lazygit](https://github.com/jesseduffield/lazygit) |
 | **Accounts / API keys** | None |

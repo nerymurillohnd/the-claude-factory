@@ -8,6 +8,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The
 
 ### Changed
 
+- **file-tree-pane** 0.1.2 — internal code and test cleanups from stricter lint rules; nothing changes for users.
 - **python-lsp-intelligence** 0.3.0 — the post-edit hook requires Python 3.12 or later and always runs through Bash.
 - **skill-diagnostics** 0.2.0 — the hook requires Python 3.12 or later and runs as `python3` through Bash.
 
