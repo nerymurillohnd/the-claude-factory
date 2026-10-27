@@ -142,7 +142,7 @@ Tool inputs are untrusted, even from Claude: a prompt-injected page can make Cla
 - In every session where the plugin is enabled, a Node process (the MCP server) runs for the session, and after the first matching edit a second one (the language server).
 - The language server reads the project's files to find its Tailwind CSS configuration and watches them while it runs. It writes nothing to the project.
 - After each `Edit` or `Write`, the hook sends the edited file's path to the plugin's own server; nothing leaves the machine. Runtime network use by the language server: none expected, to verify (section 8).
-- Prerequisites: Node 20 or later and npm on `PATH` (`engines` of `@modelcontextprotocol/server`; the language server asks for 18).
+- Prerequisites: Node 24 or later and npm on `PATH`. The packages ask for less (`@modelcontextprotocol/server` 20, the language server 18), but Nery set 24 as the minimum on 2026-10-27.
 
 ## 5. Surfaces
 
