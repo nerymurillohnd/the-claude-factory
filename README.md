@@ -14,6 +14,7 @@ _Skills · Agents · Hooks · MCP servers · LSP servers · Output styles — pa
 [![Plugins](https://img.shields.io/badge/plugins-17-D97757?style=for-the-badge)](#-catalog)
 <!-- plugin-count:end -->
 [![Validate](https://img.shields.io/github/actions/workflow/status/nerymurillohnd/the-claude-factory/validate.yml?branch=main&label=validate&style=for-the-badge)](https://github.com/nerymurillohnd/the-claude-factory/actions/workflows/validate.yml)
+[![Checked with Biome](https://img.shields.io/badge/Checked_with-Biome-60a5fa?style=for-the-badge&logo=biome)](https://biomejs.dev)
 [![License: MIT](https://img.shields.io/badge/license-MIT-22C55E?style=for-the-badge)](./LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-plugins-D97757?style=for-the-badge&logo=claude&logoColor=white)](https://code.claude.com/docs/en/plugins/overview)
 
