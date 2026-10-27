@@ -26,6 +26,7 @@ import {
 // ── Portability rules of Anthropic's plugin directory (claude.com/docs/plugins/pre-submission-checklist) ──
 const SYSTEM_FILES = new Set(['.ds_store', 'thumbs.db', 'desktop.ini', '__macosx'])
 const DEVICE_NAME = /^(con|prn|aux|nul|com[1-9]|lpt[1-9])(\..*)?$/i
+const TRAILING_DOT_OR_SPACE = /[. ]$/
 const IMAGE_OR_FONT = /\.(png|jpe?g|gif|webp|svg|woff2?|ttf|otf)$/i
 const MAX_FILE_BYTES = 256 * 1024 // larger files are held for a reviewer
 const MAX_FILES = 512 // more files are held for a reviewer
@@ -33,6 +34,13 @@ const MAX_FILES = 512 // more files are held for a reviewer
 // ── Author placeholders of the building-plugins README template ──
 const README_TEMPLATE = join(ROOT, '.claude/skills/building-plugins/assets/README-template.md')
 const AUTHOR_PLACEHOLDER = /<[A-Z][^<>\n]*>/g // innermost marks, so nested ones count one by one
+const PROSE_PLACEHOLDER = /<[A-Z][^>]*>/
+const MUSTACHE_PLACEHOLDER = /\{\{\w+\}\}/
+const TODO_COMMENT = /<!--\s*(TODO|TEMPLATE)\b/
+// The body of the README's Compatibility section, up to the next ## heading or the end.
+const COMPATIBILITY_SECTION = /^## [^\n]*Compatibility[^\n]*\n([\s\S]*?)(?=^## |(?![\s\S]))/m
+const TABLE_DIVIDER = /^\|\s*:?-/
+const TABLE_HEADER = /^\|\s*Component\s*\|/
 /** @type {Set<string> | undefined} */
 let templateMarks
 
@@ -110,7 +118,7 @@ function nameProblems(path) {
     if (SYSTEM_FILES.has(seg.toLowerCase())) {
       problems.push(`${path} is a macOS or Windows system file — remove it`)
     }
-    if (seg.includes(':') || /[. ]$/.test(seg) || DEVICE_NAME.test(seg)) {
+    if (seg.includes(':') || TRAILING_DOT_OR_SPACE.test(seg) || DEVICE_NAME.test(seg)) {
       problems.push(`"${seg}" in ${path} is not a valid file name on Windows`)
     }
   }
@@ -216,6 +224,8 @@ const AUTO_SCRIPTS = new Set([
   'version',
   'dependencies',
 ])
+const PRE_OR_POST = /^(pre|post)/
+const NODE_VERSION_PREFIX = /^v/
 
 /**
  * Problems in the root package.json. It holds only maintainer tooling: every devDependency pinned
@@ -252,7 +262,7 @@ export function rootPackageProblems(pkg, nodeVersion) {
 function autoScriptProblems(scripts) {
   return Object.entries(scripts)
     .filter(([name, command]) => !(name === 'prepare' && command === 'husky'))
-    .filter(([name]) => AUTO_SCRIPTS.has(name) || /^(pre|post)/.test(name))
+    .filter(([name]) => AUTO_SCRIPTS.has(name) || PRE_OR_POST.test(name))
     .map(
       ([name]) => `script "${name}" runs on its own: name every script so it runs only when called`,
     )
@@ -272,7 +282,7 @@ function devDependencyProblems(dev, nodeVersion) {
     }
   }
   const types = dev['@types/node']
-  const nodeMajor = nodeVersion.trim().replace(/^v/, '').split('.')[0]
+  const nodeMajor = nodeVersion.trim().replace(NODE_VERSION_PREFIX, '').split('.')[0]
   if (types === undefined) {
     problems.push('must declare "@types/node" in devDependencies for the scripts\' type check')
   } else if (typeof types === 'string' && types.split('.')[0] !== nodeMajor) {
@@ -418,10 +428,10 @@ function readmeProblems(readme) {
       problems.push(`README.md missing the "${section}" section`)
     }
   }
-  if (/\{\{\w+\}\}/.test(readme)) {
+  if (MUSTACHE_PLACEHOLDER.test(readme)) {
     problems.push('README.md has unresolved {{placeholders}}')
   }
-  if (/<!--\s*(TODO|TEMPLATE)\b/.test(readme)) {
+  if (TODO_COMMENT.test(readme)) {
     problems.push('README.md has unresolved TODO/TEMPLATE comments')
   }
   // The building-plugins README template marks what the author fills with a `<` and a capital
@@ -432,7 +442,7 @@ function readmeProblems(readme) {
   const leftInCode = [...new Set(code.match(AUTHOR_PLACEHOLDER) ?? [])].filter((p) =>
     templatePlaceholders().has(p),
   )
-  if (/<[A-Z][^>]*>/.test(prose) || leftInCode.length > 0) {
+  if (PROSE_PLACEHOLDER.test(prose) || leftInCode.length > 0) {
     const where = leftInCode.length > 0 ? ` (in code: ${leftInCode.join(', ')})` : ''
     problems.push(`README.md has unresolved <…> placeholders${where}`)
   }
@@ -454,7 +464,7 @@ function changelogProblems(dir, version) {
   if (changelogSection(changelog, version) === '') {
     problems.push(`CHANGELOG.md entry for ${version} is empty`)
   }
-  if (/\{\{\w+\}\}/.test(changelog)) {
+  if (MUSTACHE_PLACEHOLDER.test(changelog)) {
     problems.push('CHANGELOG.md has unresolved {{placeholders}}')
   }
   return problems
@@ -510,11 +520,10 @@ function surfaceProblems(name, surfaces, readme) {
  * @returns {string[]}
  */
 function compatibilityTableProblems(readme, components) {
-  const compat =
-    readme.match(/^## [^\n]*Compatibility[^\n]*\n([\s\S]*?)(?=^## |(?![\s\S]))/m)?.[1] ?? ''
+  const compat = readme.match(COMPATIBILITY_SECTION)?.[1] ?? ''
   const rows = compat
     .split('\n')
-    .filter((l) => l.startsWith('|') && !/^\|\s*:?-/.test(l) && !/^\|\s*Component\s*\|/.test(l))
+    .filter((l) => l.startsWith('|') && !TABLE_DIVIDER.test(l) && !TABLE_HEADER.test(l))
   /** @type {string[]} */
   const problems = []
   for (const t of COMPONENT_TYPES) {

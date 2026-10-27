@@ -207,13 +207,15 @@ export function pluginTag(name, version) {
   return `${name}--v${version}`
 }
 
+const PRERELEASE_OR_BUILD = /[-+]/
+
 /**
  * The numeric MAJOR.MINOR.PATCH of a version, pre-release and build metadata dropped.
  * @param {string} version
  * @returns {number[]}
  */
 function coreTriple(version) {
-  return (version.split(/[-+]/)[0] ?? '').split('.').map(Number)
+  return (version.split(PRERELEASE_OR_BUILD)[0] ?? '').split('.').map(Number)
 }
 
 /**

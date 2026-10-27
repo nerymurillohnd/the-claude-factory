@@ -22,6 +22,8 @@ import {
 } from './lib.mjs'
 
 const DOC_ONLY = new Set(['README.md'])
+// plugins/<name>/<path inside the plugin>
+const PLUGIN_FILE = /^plugins\/([^/]+)\/(.+)$/
 
 /**
  * @param {string[]} args
@@ -47,7 +49,7 @@ function changedFilesByPlugin(base) {
   /** @type {Map<string, string[]>} */
   const byPlugin = new Map()
   for (const file of git(['diff', '--name-only', `${base}...HEAD`]).split('\n')) {
-    const [, name, rest] = file.match(/^plugins\/([^/]+)\/(.+)$/) ?? []
+    const [, name, rest] = file.match(PLUGIN_FILE) ?? []
     if (name !== undefined && rest !== undefined) {
       byPlugin.set(name, [...(byPlugin.get(name) ?? []), rest])
     }

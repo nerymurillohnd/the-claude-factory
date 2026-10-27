@@ -390,7 +390,7 @@ export function gatesFor({ root, ci, base }) {
         const path = join('scripts', 'validators', f)
         const pep723 = readFileSync(join(root, path), 'utf8').startsWith(UV_SHEBANG)
         return /** @type {Gate} */ ({
-          id: `validator:${f.replace(/\.py$/, '')}`,
+          id: `validator:${f.slice(0, -'.py'.length)}`,
           group: 'python',
           title: `validator ${f}`,
           cmd: pep723 ? path : 'uv',
@@ -455,7 +455,7 @@ export function gatesFor({ root, ci, base }) {
     ...pluginTestFolders(root, (f) => f.endsWith('.test.mjs')).map((p) =>
       nodeTestGate(`node-tests:${p}`, nodeTests(join('scripts', 'tests', p)), tap(p), 'local'),
     ),
-    ...pluginTestFolders(root, (f) => /^test_.*\.py$/.test(f)).map((p) =>
+    ...pluginTestFolders(root, (f) => f.startsWith('test_') && f.endsWith('.py')).map((p) =>
       unittestGate(`unittest:${p}`, join('scripts', 'tests', p)),
     ),
     ...pluginTestFolders(root, (f) => f === 'by_path.sh').map(
@@ -563,7 +563,7 @@ export function selectGates(gates, only, group) {
   }
   /** @param {string} id @param {string} selector */
   const matches = (id, selector) =>
-    /[-:]$/.test(selector) ? id.startsWith(selector) : id === selector
+    selector.endsWith('-') || selector.endsWith(':') ? id.startsWith(selector) : id === selector
   for (const selector of only) {
     if (!inGroup.some((g) => matches(g.id, selector))) {
       throw new Error(`no gate matches "${selector}"`)

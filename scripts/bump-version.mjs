@@ -20,6 +20,9 @@ import {
   writeJson,
 } from './lib.mjs'
 
+const UNRELEASED_HEADING = /^## \[Unreleased\]\s*\n/m
+const UNRELEASED_LINK = /^\[Unreleased\]:.*$/m
+
 const [target, level] = process.argv.slice(2)
 if (!target || !level) {
   fail('Usage: bump-version.mjs <plugin-name> <major|minor|patch>')
@@ -61,17 +64,14 @@ function rollChangelog() {
     fail('[Unreleased] is empty — document the changes before bumping')
   }
 
-  text = text.replace(
-    /^## \[Unreleased\]\s*\n/m,
-    `## [Unreleased]\n\n## [${next}] - ${today()}\n\n`,
-  )
+  text = text.replace(UNRELEASED_HEADING, `## [Unreleased]\n\n## [${next}] - ${today()}\n\n`)
   text = text.replace(/\n{3,}/g, '\n\n')
 
   // Link references: [Unreleased] compares from the new tag; add the new version's tag link.
   const unreleasedLink = `[Unreleased]: ${REPO_URL}/compare/${tag}...HEAD`
   const versionLink = `[${next}]: ${REPO_URL}/releases/tag/${tag}`
-  if (/^\[Unreleased\]:.*$/m.test(text)) {
-    text = text.replace(/^\[Unreleased\]:.*$/m, `${unreleasedLink}\n${versionLink}`)
+  if (UNRELEASED_LINK.test(text)) {
+    text = text.replace(UNRELEASED_LINK, `${unreleasedLink}\n${versionLink}`)
   } else {
     text = `${text.trimEnd()}\n\n${unreleasedLink}\n${versionLink}\n`
   }
