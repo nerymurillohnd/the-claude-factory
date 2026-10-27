@@ -50,11 +50,15 @@ export const normalizePath = (path: string): string => {
   return slashed.length > 1 && slashed.endsWith('/') ? slashed.slice(0, -1) : slashed
 }
 
+const DRIVE_LETTER = /^[a-z]:/i
+const LIST_SEPARATOR = /[\s,]+/
+const LEADING_DIGIT = /^\d/
+
 /** `abs` relative to `root`, or null when it lies outside it. Drive letters compare case-blind. */
 export const relativeTo = (abs: string, root: string): string | null => {
   const path = normalizePath(abs)
   const base = normalizePath(root)
-  const isDrive = /^[a-z]:/i.test(base)
+  const isDrive = DRIVE_LETTER.test(base)
   const a = isDrive ? path.toLowerCase() : path
   const b = isDrive ? base.toLowerCase() : base
   if (a === b) {
@@ -75,7 +79,7 @@ export const absoluteOf = (rel: string, root: string): string => {
 /** The Ignore setting: names separated by spaces or commas, matched exactly. */
 export const parseIgnore = (text: string): Set<string> => {
   const names = new Set(BUILT_IN_IGNORE)
-  for (const name of text.split(/[\s,]+/)) {
+  for (const name of text.split(LIST_SEPARATOR)) {
     if (name !== '') {
       names.add(name)
     }
@@ -92,7 +96,7 @@ const compareRuns = (x: string, y: string): number => {
   if (x === y) {
     return 0
   }
-  const isNumber = /^\d/.test(x) && /^\d/.test(y)
+  const isNumber = LEADING_DIGIT.test(x) && LEADING_DIGIT.test(y)
   if (isNumber && Number(x) !== Number(y)) {
     return Number(x) - Number(y)
   }

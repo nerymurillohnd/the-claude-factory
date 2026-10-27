@@ -19,6 +19,14 @@ export type ParsedDiff = {
 }
 
 const HUNK = /^@@ -(\d+)(?:,\d+)? \+(\d+)(?:,\d+)? @@ ?(.*)$/
+// The three octal digits of a C escape such as `\303`.
+const OCTAL_ESCAPE = /^[0-3][0-7]{2}/
+// The `a/` or `b/` before a path in a `---`/`+++` header.
+const SIDE_PREFIX = /^[ab]\//
+// A C-quoted name at the end of a `diff --git` line.
+const QUOTED_LAST = /"((?:[^"\\]|\\.)*)"$/
+// The new side's name at the end of a `diff --git` line.
+const NEW_SIDE = / b\/(.*)$/
 
 const ESCAPES: Record<string, number> = { a: 7, b: 8, t: 9, n: 10, v: 11, f: 12, r: 13 }
 
@@ -58,7 +66,7 @@ const octalAt = (body: string, i: number): string | undefined => {
   if (body[i] !== '\\') {
     return undefined
   }
-  return /^[0-3][0-7]{2}/.exec(body.slice(i + 1, i + 4))?.[0]
+  return OCTAL_ESCAPE.exec(body.slice(i + 1, i + 4))?.[0]
 }
 
 // The character a C escape such as `\n` stands for; any other escaped character is itself.
@@ -100,7 +108,7 @@ export const unquotePath = (text: string): string => {
 // The name in a `--- a/x` or `+++ b/x` header line, or null for /dev/null.
 const headerName = (line: string): string | null => {
   const name = unquotePath(line.slice(4))
-  return name === '/dev/null' ? null : name.replace(/^[ab]\//, '')
+  return name === '/dev/null' ? null : name.replace(SIDE_PREFIX, '')
 }
 
 /** Where parseDiff is: the rows so far and the line numbers the next hunk line takes. */
@@ -115,9 +123,9 @@ type DiffReader = ParsedDiff & {
 
 // The file name on a `diff --git` line, after the prefix.
 const gitLineName = (rest: string): string => {
-  const quoted = /"((?:[^"\\]|\\.)*)"$/.exec(rest)?.[0]
+  const quoted = QUOTED_LAST.exec(rest)?.[0]
   const name =
-    quoted === undefined ? (/ b\/(.*)$/.exec(rest)?.[1] ?? rest) : headerName(`+++ ${quoted}`)
+    quoted === undefined ? (NEW_SIDE.exec(rest)?.[1] ?? rest) : headerName(`+++ ${quoted}`)
   return name ?? rest
 }
 

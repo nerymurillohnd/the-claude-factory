@@ -17,6 +17,12 @@ export type Touches = {
 
 const NONE: Touches = { reads: [], writes: [], ops: [] }
 
+const WHITESPACE = /\s/
+// A `NAME=value` assignment before a command's name.
+const ASSIGNMENT = /^[A-Za-z_]\w*=/
+// What ends one command of a line: `&&`, `||`, `;`, a pipe or a new line.
+const COMMAND_SEPARATOR = /&&|\|\||[;|\n]/
+
 const stringField = (input: object, key: string): string | undefined => {
   const value: unknown = Reflect.get(input, key)
   return typeof value === 'string' && value !== '' ? value : undefined
@@ -53,7 +59,7 @@ const readPlain = (split: Splitter, line: string, i: number): number => {
     split.hasWord = true
     return 2
   }
-  if (/\s/.test(char)) {
+  if (WHITESPACE.test(char)) {
     if (split.hasWord) {
       split.words.push(split.word)
     }
@@ -194,10 +200,7 @@ const redirectTargets = (segment: string): string[] => {
 // the command's name.
 const commandWords = (segment: string): string[] => {
   const words = splitWords(segment.replace(/\d*>>?\s*("[^"]+"|'[^']+'|[^\s;&|]+)/g, ' '))
-  while (
-    words.length > 0 &&
-    (PREFIXES.has(words[0] ?? '') || /^[A-Za-z_]\w*=/.test(words[0] ?? ''))
-  ) {
+  while (words.length > 0 && (PREFIXES.has(words[0] ?? '') || ASSIGNMENT.test(words[0] ?? ''))) {
     words.shift()
   }
   return words
@@ -219,7 +222,7 @@ const addOperands = (name: string, args: readonly string[], touches: Touches): v
 /** The files a shell command reads and writes, and the git or gh operations it runs. */
 export const parseCommand = (command: string): Touches => {
   const touches: Touches = { reads: [], writes: [], ops: [] }
-  for (const segment of command.split(/&&|\|\||[;|\n]/)) {
+  for (const segment of command.split(COMMAND_SEPARATOR)) {
     touches.writes.push(...redirectTargets(segment))
     const words = commandWords(segment)
     const [name, ...args] = words

@@ -110,6 +110,23 @@ const COUNTED_BYTES = 64 * 1024 * 1024
 // command the person or Claude runs at the same moment.
 const GIT_ENV: Record<string, string> = Object.fromEntries([['GIT_OPTIONAL_LOCKS', '0']])
 
+// A POSIX path or a Windows one, with or without a drive letter.
+const ABSOLUTE_PATH = /^(?:[a-z]:)?[\\/]/i
+// The KiB count `du -sk` starts its line with.
+const LEADING_NUMBER = /^(\d+)/
+// The pane id in the JSON `herdr pane split` prints.
+const PANE_ID = /"pane_id"\s*:\s*"([^"]+)"/
+const LINE_BREAK = /\r?\n/
+const DIGITS = /^\d+$/
+// `ps -o ppid= -o etime=`: the parent pid, then the elapsed time as [[dd-]hh:]mm:ss.
+const PS_LINE = /^\s*(\d+)\s+(?:(\d+)-)?(?:(\d+):)?(\d+):(\d+)\s*$/
+// A custom theme's file name, without a folder in it.
+const THEME_SLUG = /^[\w.-]+$/
+// The `#L12` or `#section` part of an `@path` mention.
+const MENTION_FRAGMENT = /#.*$/
+// Punctuation that ends the sentence an `@path` mention sits in.
+const TRAILING_PUNCTUATION = /[?!.,;:)\]]+$/
+
 // A repository's own config can name programs git runs: an fsmonitor on status, a clean or
 // process filter on status and diff, a textconv or an external diff on diff, a gpg program on
 // log. The tree runs git on its own, in folders the person may not have vetted, so none of them
@@ -734,7 +751,7 @@ const scheduleRefresh = ($: EngineInterface): void => {
 
 const duBytes = async ($: EngineInterface, abs: string): Promise<number | null> => {
   const result = await quietly(() => $.process.run(['du', '-sk', abs], { timeoutMs: 60_000 }))
-  const kib = /^(\d+)/.exec(result?.stdout ?? '')?.[1]
+  const kib = LEADING_NUMBER.exec(result?.stdout ?? '')?.[1]
   if (result?.exitCode === 0 && kib !== undefined) {
     return Number(kib) * 1024
   }
@@ -881,7 +898,7 @@ const runCommand = async ($: EngineInterface, plan: RunPlan): Promise<void> => {
 
 const runHerdr = async ($: EngineInterface, plan: HerdrPlan): Promise<void> => {
   const split = await $.process.run(plan.split)
-  const pane = /"pane_id"\s*:\s*"([^"]+)"/.exec(split.stdout)?.[1]
+  const pane = PANE_ID.exec(split.stdout)?.[1]
   if (split.exitCode !== 0 || pane === undefined) {
     $.ui.toast('herdr could not open a pane.')
     return
@@ -978,7 +995,7 @@ const openPreview = async ($: EngineInterface, path: string): Promise<void> => {
   } else if (content.includes('\0')) {
     preview = { path, lines: [], problem: 'This is a binary file.' }
   } else {
-    preview = { path, lines: content.split(/\r?\n/), problem: null }
+    preview = { path, lines: content.split(LINE_BREAK), problem: null }
   }
   previewOffset = 0
   await update($, viewAtom, (): FileTreeView => ({ kind: 'preview', path }))
@@ -1488,7 +1505,7 @@ const markActivity = async (
   const now = await $.clock.now()
   const touched: string[] = []
   for (const path of paths) {
-    const abs = /^(?:[a-z]:)?[\\/]/i.test(path) ? path : absoluteOf(normalizePath(path), cwd)
+    const abs = absoluteFromCwd(path)
     const rel = relativeTo(abs, root)
     if (rel === null || rel === '' || isIgnored(rel, ignore)) {
       continue
@@ -1641,12 +1658,12 @@ const terminalStartedAt = async ($: EngineInterface): Promise<number | null> => 
   let pid = (me?.stdout ?? '').trim()
   let startedAt: number | null = null
   const now = await $.clock.now()
-  for (let hops = 0; hops < 32 && /^\d+$/.test(pid) && pid !== '1' && pid !== '0'; hops += 1) {
+  for (let hops = 0; hops < 32 && DIGITS.test(pid) && pid !== '1' && pid !== '0'; hops += 1) {
     // biome-ignore lint/performance/noAwaitInLoops: each ps call reads the parent pid the next call asks about
     const info = await quietly(() =>
       $.process.run(['ps', '-o', 'ppid=', '-o', 'etime=', '-p', pid]),
     )
-    const match = /^\s*(\d+)\s+(?:(\d+)-)?(?:(\d+):)?(\d+):(\d+)\s*$/.exec(info?.stdout ?? '')
+    const match = PS_LINE.exec(info?.stdout ?? '')
     if (match === null) {
       break
     }
@@ -1664,7 +1681,7 @@ const terminalStartedAt = async ($: EngineInterface): Promise<number | null> => 
 // A custom theme's `base`, from its file in the Claude config folder; null when unreadable.
 const customBase = async ($: EngineInterface, theme: string): Promise<string | null> => {
   const slug = theme.slice('custom:'.length)
-  if (!/^[\w.-]+$/.test(slug) || slug.startsWith('.')) {
+  if (!THEME_SLUG.test(slug) || slug.startsWith('.')) {
     return null
   }
   const configDir =
@@ -1721,7 +1738,7 @@ const openPane = async ($: EngineInterface): Promise<{ isPlaced: boolean; reason
 
 /** A path Claude's tool names, absolute: as is when absolute, else against the working directory. */
 const absoluteFromCwd = (path: string): string =>
-  /^(?:[a-z]:)?[\\/]/i.test(path) ? path : absoluteOf(normalizePath(path), cwd)
+  ABSOLUTE_PATH.test(path) ? path : absoluteOf(normalizePath(path), cwd)
 
 // Before the call runs: its reads shimmer until it ends, its git operations show as running.
 const beforeToolCall = async ($: EngineInterface, touches: Touches): Promise<void> => {
@@ -1779,11 +1796,9 @@ const mentionsOf = (prompt: string, root: string): { abs: string; rel: string }[
   for (const match of prompt.matchAll(/(?:^|\s)@("[^"]+"|[^\s"]+)/g)) {
     const raw = (match[1] ?? '')
       .replace(/^"|"$/g, '')
-      .replace(/#.*$/, '')
-      .replace(/[?!.,;:)\]]+$/, '')
-    const abs = /^(?:[a-z]:)?[\\/]/i.test(raw)
-      ? normalizePath(raw)
-      : absoluteOf(normalizePath(raw), cwd)
+      .replace(MENTION_FRAGMENT, '')
+      .replace(TRAILING_PUNCTUATION, '')
+    const abs = ABSOLUTE_PATH.test(raw) ? normalizePath(raw) : absoluteOf(normalizePath(raw), cwd)
     const rel = relativeTo(abs, root)
     if (rel !== null && rel !== '') {
       mentions.push({ abs, rel })
@@ -2049,7 +2064,7 @@ export const register: Register = (on: On, options: PluginOptions): void => {
     } else {
       const home = (await $.env.get('HOME')) ?? (await $.env.get('USERPROFILE')) ?? ''
       const expanded = withHome(arg, home)
-      const abs = /^(?:[a-z]:)?[\\/]/i.test(expanded)
+      const abs = ABSOLUTE_PATH.test(expanded)
         ? normalizePath(expanded)
         : absoluteOf(normalizePath(expanded), cwd)
       const stat = await quietly(() => $.fs.stat(abs))

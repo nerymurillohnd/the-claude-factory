@@ -34,6 +34,13 @@ export type GitSnapshot = {
 /** The tree an empty repository diffs against: git's well-known empty tree object. */
 export const EMPTY_TREE = '4b825dc642cb6eb9a060e54bf8d69288fbee4904'
 
+// `# branch.ab +2 -1`: commits ahead of and behind the upstream.
+const BRANCH_AB = /^# branch\.ab \+(\d+) -(\d+)$/
+// A numstat record: lines added, removed (`-` for binary) and the path, which may be empty.
+const NUMSTAT_RECORD = /^(-|\d+)\t(-|\d+)\t(.*)$/s
+// A `wc -l` line: the count and the file name.
+const WC_LINE = /^\s*(\d+)\s(.+)$/
+
 const codeOf = (xy: string): GitCode => {
   if (xy.includes('D')) {
     return 'deleted'
@@ -81,7 +88,7 @@ const readBranchHeader = (head: GitHead, record: string): void => {
   } else if (record.startsWith('# branch.upstream ')) {
     head.upstream = record.slice('# branch.upstream '.length)
   } else if (record.startsWith('# branch.ab ')) {
-    const match = /^# branch\.ab \+(\d+) -(\d+)$/.exec(record)
+    const match = BRANCH_AB.exec(record)
     head.ahead = Number(match?.[1] ?? 0)
     head.behind = Number(match?.[2] ?? 0)
   }
@@ -144,7 +151,7 @@ export const parseNumstat = (
   const records = output.split('\0')
   for (let i = 0; i < records.length; i += 1) {
     const record = records[i] ?? ''
-    const match = /^(-|\d+)\t(-|\d+)\t(.*)$/s.exec(record)
+    const match = NUMSTAT_RECORD.exec(record)
     if (match === null) {
       continue
     }
@@ -167,7 +174,7 @@ export const parseNumstat = (
 export const parseWc = (output: string): Map<string, number> => {
   const counts = new Map<string, number>()
   for (const line of output.split('\n')) {
-    const match = /^\s*(\d+)\s(.+)$/.exec(line)
+    const match = WC_LINE.exec(line)
     if (match !== null && match[2] !== 'total') {
       counts.set(match[2] ?? '', Number(match[1]))
     }

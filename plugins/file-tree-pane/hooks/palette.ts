@@ -91,6 +91,8 @@ export const THEMED: Palette = {
 
 export type Look = 'dark' | 'light' | 'themed'
 
+const LIGHT_THEME = /light/i
+
 /**
  * The palette a theme setting calls for: the built-in presets by name (`light`,
  * `light-daltonized`, `light-ansi` and their dark twins), a custom theme (`custom:<slug>`) by the
@@ -104,13 +106,15 @@ export const lookOf = (theme: string | undefined, customBase: string | null = nu
     if (customBase === null) {
       return 'themed'
     }
-    return /light/i.test(customBase) ? 'light' : 'dark'
+    return LIGHT_THEME.test(customBase) ? 'light' : 'dark'
   }
   if (theme === 'auto') {
     return 'themed'
   }
-  return /light/i.test(theme) ? 'light' : 'dark'
+  return LIGHT_THEME.test(theme) ? 'light' : 'dark'
 }
+
+const LIST_SEPARATOR = /[\s,]+/
 
 const HEX = /^#([0-9a-f]{6})$/i
 
@@ -140,7 +144,7 @@ export const contrast = (a: string, b: string): number => {
 export const parsePalette = (text: string): { colors: Partial<Palette>; problems: string[] } => {
   const colors: Partial<Palette> = {}
   const problems: string[] = []
-  for (const pair of text.split(/[\s,]+/)) {
+  for (const pair of text.split(LIST_SEPARATOR)) {
     if (pair === '') {
       continue
     }

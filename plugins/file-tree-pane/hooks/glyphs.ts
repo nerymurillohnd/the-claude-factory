@@ -7,8 +7,10 @@ export type GlyphSetting = 'auto' | Glyphs
 /** Font file names a Nerd Font ships under: `…NerdFont…`, `… Nerd Font …`, `MesloLGS NF …`. */
 export const NERD_FONT_FILE = /nerd[\s_-]?font|(?:^|[\s_-])NF[MP]?(?:[\s_.-]|$)/i
 
+const FONT_FILE = /\.(ttf|otf|ttc|woff2?)$/i
+
 export const isNerdFontFile = (name: string): boolean =>
-  /\.(ttf|otf|ttc|woff2?)$/i.test(name) && NERD_FONT_FILE.test(name)
+  FONT_FILE.test(name) && NERD_FONT_FILE.test(name)
 
 export type GlyphFacts = {
   setting: GlyphSetting
