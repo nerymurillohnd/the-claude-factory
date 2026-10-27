@@ -3,8 +3,9 @@
 // (ADR_2026-10-21_gates-run-from-one-script).
 //   npm run gates                    every gate, stopping at the first failure
 //   npm run gates:ci -- --group <g>  the gates of one CI job, going on after a failure
-//   node scripts/gates.mjs --only <p,…>  the gates whose id starts with one of the prefixes, local
-//                                      ones included: the npm scripts of package.json use it
+//   node scripts/gates.mjs --only <s,…>  the gates the selectors pick, local ones included: a
+//                                      selector ending in - or : is a prefix, any other one id
+//   --verbose                          print the output of passing gates too
 //
 // What CI runs (ADR_2026-10-21_ci-checks-maintainer-tooling-and-plugin-structure): our own tooling
 // under scripts/ and the plugins' structure, which no user's machine changes. The plugins' behavior
@@ -532,8 +533,9 @@ export function gatesFor({ root, ci, base }) {
 }
 
 /**
- * The gates of `group` whose id starts with one of the `only` prefixes, in their order. Throws when
- * a prefix matches no gate, so a mistyped npm script never passes by running nothing.
+ * The gates of `group` that `only` selects, in their order. A selector ending in "-" or ":" is a
+ * prefix (`tsc-`, `node-tests:`); any other selector is one exact id (`node-tests`). Throws when a
+ * selector matches no gate, so a mistyped npm script never passes by running nothing.
  * @param {Gate[]} gates
  * @param {string[] | undefined} only
  * @param {string | undefined} group
@@ -544,25 +546,32 @@ export function selectGates(gates, only, group) {
   if (only === undefined) {
     return inGroup
   }
-  for (const prefix of only) {
-    if (!inGroup.some((g) => g.id.startsWith(prefix))) {
-      throw new Error(`no gate matches "${prefix}"`)
+  /** @param {string} id @param {string} selector */
+  const matches = (id, selector) =>
+    /[-:]$/.test(selector) ? id.startsWith(selector) : id === selector
+  for (const selector of only) {
+    if (!inGroup.some((g) => matches(g.id, selector))) {
+      throw new Error(`no gate matches "${selector}"`)
     }
   }
-  return inGroup.filter((g) => only.some((prefix) => g.id.startsWith(prefix)))
+  return inGroup.filter((g) => only.some((selector) => matches(g.id, selector)))
 }
 
 /**
  * Runs the gates in order and returns the exit code of the first failure, or 0.
  * @param {Gate[]} gates
- * @param {{ root: string, keepGoing: boolean, write: (text: string) => void }} options
+ * A passing gate prints only its check mark; a failing one prints its whole output, so the failure
+ * is the only thing to read. `verbose` prints every gate's output.
+ * @param {{ root: string, keepGoing: boolean, write: (text: string) => void, verbose?: boolean }} options
  * @returns {number}
  */
-export function runGates(gates, { root, keepGoing, write }) {
+export function runGates(gates, { root, keepGoing, write, verbose = false }) {
   /** @type {{ id: string, code: number }[]} */
   const failed = []
   for (const gate of gates) {
-    write(`▶ ${gate.id} · ${gate.title}`)
+    if (verbose) {
+      write(`▶ ${gate.id} · ${gate.title}`)
+    }
     if (gate.skipReason !== undefined) {
       write(`○ ${gate.id} not applicable: ${gate.skipReason}`)
       continue
@@ -583,9 +592,6 @@ export function runGates(gates, { root, keepGoing, write }) {
       stdio: ['ignore', 'pipe', 'pipe'],
     })
     const output = `${r.stdout ?? ''}${r.stderr ?? ''}`.trimEnd()
-    if (output !== '') {
-      write(output)
-    }
     /** @type {string | null} */
     let problem = null
     let code = 0
@@ -601,6 +607,9 @@ export function runGates(gates, { root, keepGoing, write }) {
     } else {
       problem = gate.after?.(r.stdout) ?? null
       code = problem === null ? 0 : 1
+    }
+    if (output !== '' && (verbose || code !== 0)) {
+      write(output)
     }
     if (code === 0) {
       write(`✔ ${gate.id}`)
@@ -629,9 +638,12 @@ if (isMain(import.meta.url)) {
   }
   const ci = argv.includes('--ci')
   const group = value('--group')
-  const only = value('--only')
-    ?.split(',')
-    .filter((p) => p !== '')
+  const onlyValue = value('--only')
+  if (argv.includes('--only') && (onlyValue === undefined || onlyValue.startsWith('--'))) {
+    console.error('✖ --only needs a prefix list, such as --only tsc-,ruff-')
+    process.exit(1)
+  }
+  const only = onlyValue?.split(',').filter((p) => p !== '')
   /** @type {Gate[]} */
   let gates
   try {
@@ -644,5 +656,12 @@ if (isMain(import.meta.url)) {
     console.error(`✖ no gate in group "${group}"`)
     process.exit(1)
   }
-  process.exit(runGates(gates, { root: ROOT, keepGoing: ci, write: (t) => console.log(t) }))
+  process.exit(
+    runGates(gates, {
+      root: ROOT,
+      keepGoing: ci,
+      verbose: argv.includes('--verbose'),
+      write: (t) => console.log(t),
+    }),
+  )
 }

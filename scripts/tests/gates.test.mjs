@@ -4,6 +4,7 @@
 //   npm run gates
 
 import assert from 'node:assert/strict'
+import { spawnSync } from 'node:child_process'
 import { existsSync, mkdirSync, mkdtempSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
@@ -59,6 +60,28 @@ describe('gates runner', () => {
     assert.ok(existsSync(join(dir, 'ran-a')))
     assert.ok(!existsSync(join(dir, 'ran-c')), 'a gate after the failure ran')
     assert.match(lines.join('\n'), /✖ broken/)
+  })
+
+  test('a passing gate prints only its check mark; a failing one prints its output', () => {
+    const gates = [
+      nodeGate('quiet', "console.log('noise-from-pass')"),
+      nodeGate('loud', "console.log('why-it-failed'); process.exit(2)"),
+    ]
+    runGates(gates, { root: dir, keepGoing: true, write })
+    const out = lines.join('\n')
+    assert.match(out, /✔ quiet/)
+    assert.doesNotMatch(out, /noise-from-pass/)
+    assert.match(out, /why-it-failed/)
+  })
+
+  test('verbose prints the output of passing gates too', () => {
+    runGates([nodeGate('quiet', "console.log('noise-from-pass')")], {
+      root: dir,
+      keepGoing: false,
+      write,
+      verbose: true,
+    })
+    assert.match(lines.join('\n'), /noise-from-pass/)
   })
 
   test('keepGoing runs the rest and returns the first failure code', () => {
@@ -205,6 +228,14 @@ describe('selectGates', () => {
     assert.deepEqual(ids, ['tsc-scripts', 'tsc-plugins'])
   })
 
+  test('a selector without a trailing - or : matches one id exactly', () => {
+    const more = [...gates, g('tsc-scripts-extra', 'local')]
+    assert.deepEqual(
+      selectGates(more, ['tsc-scripts'], undefined).map((x) => x.id),
+      ['tsc-scripts'],
+    )
+  })
+
   test('fails on a prefix that matches no gate, naming it', () => {
     assert.throws(() => selectGates(gates, ['tsc-', 'nope'], undefined), /no gate matches "nope"/)
   })
@@ -260,5 +291,16 @@ describe('validator gates', () => {
         `${file} runs as ${gate.cmd} ${gate.args.join(' ')}`,
       )
     }
+  })
+})
+
+describe('gates.mjs --only', () => {
+  test('fails when --only has no prefix list instead of running every gate', () => {
+    const r = spawnSync(process.execPath, ['scripts/gates.mjs', '--only'], {
+      cwd: ROOT,
+      encoding: 'utf8',
+    })
+    assert.equal(r.status, 1)
+    assert.match(r.stderr, /--only needs a prefix list/)
   })
 })
