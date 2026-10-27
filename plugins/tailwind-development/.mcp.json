@@ -5,6 +5,7 @@
       "args": [
         "${CLAUDE_PLUGIN_ROOT}/mcp/server.mjs"
       ],
+      "timeout": 60000,
       "env": {
         "TAILWIND_CHECK_CSS": "${user_config.check_css}",
         "TAILWIND_CHECK_HTML": "${user_config.check_html}",
