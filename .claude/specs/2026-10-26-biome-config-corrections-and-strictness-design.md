@@ -456,6 +456,12 @@ Source: the reference's "Language-specific options" and `javascript` sections. A
   - `experimentalEmbeddedSnippetsEnabled`: experimental, and there are no `css`, `styled`, `gql` or `graphql` templates;
   - `resolver.experimentalPnpmCatalogs`: the repository uses npm.
 
+**TypeScript version** (language-support page, shared by Nery on 2026-10-27): Biome "supports TypeScript version 5.9", while the repository pins TypeScript 6.0.3 (`package.json`), and `typescript7-lsp-intelligence` serves TypeScript 7 users.
+- Biome parses syntax. tsc stays the authority on types (`npm run typecheck`).
+- Every tracked `.ts`, `.mts` and `.tsx` parses under Biome today, since `biome ci .` passes.
+- If a file ever uses syntax newer than 5.9, Biome reports a parse error. A parse error is an error diagnostic, so the gate fails loudly rather than passing a file it cannot read (sections 6.1.1 and 6.4).
+- Nothing to change. A Biome release that raises its supported version is a Dependabot pull request like any other.
+
 **Cleanup:**
 
 | # | Key | Why it goes |
@@ -477,6 +483,7 @@ Source: the reference's `json` section.
 - `json.parser.allowComments` and `allowTrailingCommas` unset. Reason from `b3ada31`: a comment in a manifest must fail, as it does under `JSON.parse`. Probe: a comment in `turn-meter/.claude-plugin/plugin.json` failed `biome ci` ("Expected a property but instead found '// probe'"), and so did a trailing comma.
   - Unset, Biome follows each file's default. The well-known `tsconfig.json` and `tsconfig.*.json` still accept comments and trailing commas once item 1 lets Biome see them.
   - `biome.jsonc` always accepts both, so D4 (a) changes nothing for the manifests.
+  - The language-support page (shared by Nery on 2026-10-27) adds the defaults for any `.jsonc` file: comments and trailing commas allowed, and the formatter's `trailingCommas` at `none`. No `.jsonc` file is tracked today. `biome.jsonc` (D4) and `.vscode/settings.json` (item 27) would be the first files Biome reads with comments allowed.
   - Every other tracked JSON is parsed strictly: 17 `plugin.json`, 10 `hooks.json`, 5 `.lsp.json`, 2 `.mcp.json`, the JSON schemas, the 3 `pyrightconfig.json`. This is stricter than pyright itself, which accepts JSONC, and no file needs more.
 - `trailingCommas` unset (`"none"`), as the reference requires for strict JSON.
 - `lineWidth` unset, so it inherits the global 100.
