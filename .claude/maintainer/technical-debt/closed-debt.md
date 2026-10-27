@@ -35,6 +35,7 @@
 | 2026-10-26 | DEBT-024 | obsolete | Dropped by Nery: the never-run `block-no-verify` checks are no longer tracked | none |
 | 2026-10-26 | DEBT-029 | obsolete | Dropped by Nery: the `claude-review` failures on PRs #20, #28 and #29 are no longer investigated | none |
 | 2026-10-26 | DEBT-033 | resolved | `.editorconfig` is the only source of indentation and line endings for Biome | none |
+| 2026-10-27 | DEBT-034 | resolved | Biome checks every tsconfig file, with an `expand: "auto"` override | none |
 
 ## 🏁 Closed items
 
@@ -598,6 +599,37 @@ The four keys were removed from `biome.json`; `lineWidth` and `useEditorconfig` 
 - **Residual risk:** none
 - **Closed by:** the commit that removes the keys from `biome.json`.
 - **Related records:** none.
+- **Superseded by:** none
+
+### DEBT-034 — Biome checks every tsconfig file, with an `expand: "auto"` override
+
+| Field | Value |
+| --- | --- |
+| **Outcome** | resolved |
+| **Closed on** | 2026-10-27 |
+| **Logged on** | 2026-10-26 |
+| **Owner** | `biome.json` |
+
+#### ❗ The problem
+
+`biome.json` force-ignored `**/tsconfig.json` and `**/tsconfig.base.json` since commit `b3ada31`, with no recorded reason, so a malformed tsconfig passed Biome. Including them under the JSON-wide `expand: "always"` would have reformatted the four mods' tsconfig files, which needs plugin pull requests.
+
+#### 🔧 The closure
+
+Both `!!` patterns were removed. An override sets `json.formatter.expand: "auto"` for `**/tsconfig.json` and `**/tsconfig.*.json`, and `scripts/tsconfig.json` was formatted once, because its `include` line passed 100 columns. No plugin file changed. Nery chose this option on 2026-10-27: ADR_2026-10-27_biome-checks-every-tsconfig-with-auto-expand.
+
+#### 🧪 Verification
+
+| Check | Evidence |
+| --- | --- |
+| ✅ **Positive:** the closure holds | 2026-10-27, Biome 2.6.3: `biome ci .` checked 170 files, no fixes, 4 infos. `npm run lint:js` passed `biome-maintainer` and `biome-plugins`. `tsc -p scripts/tsconfig.json --noEmit` and `tsc -p scripts/tsconfig.plugins.json --noEmit` exited 0. |
+| 🚫 **Negative:** the original failure or condition is gone | 2026-10-27: `biome.json` has no `tsconfig` exclusion. `biome ci . --verbose` lists all seven tracked tsconfig files among the files processed, against none of the six excluded ones before. |
+
+#### 🔗 Follow-up
+
+- **Residual risk:** none
+- **Closed by:** ADR_2026-10-27_biome-checks-every-tsconfig-with-auto-expand and the commit that applies it.
+- **Related records:** ADR_2026-10-27_biome-checks-every-tsconfig-with-auto-expand.
 - **Superseded by:** none
 
 <!--

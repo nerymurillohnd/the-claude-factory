@@ -7,6 +7,15 @@
     "module": "nodenext",
     "types": ["node"]
   },
-  "include": ["**/*.js", "**/*.cjs", "**/*.mjs", "**/*.jsx", "**/*.ts", "**/*.cts", "**/*.mts", "**/*.tsx"],
+  "include": [
+    "**/*.js",
+    "**/*.cjs",
+    "**/*.mjs",
+    "**/*.jsx",
+    "**/*.ts",
+    "**/*.cts",
+    "**/*.mts",
+    "**/*.tsx"
+  ],
   "exclude": ["tests/svelte-development/kit3-app"]
 }

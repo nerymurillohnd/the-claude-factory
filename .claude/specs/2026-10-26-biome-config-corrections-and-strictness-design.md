@@ -787,7 +787,7 @@ The assist actions rejected are listed in section 7.
 
 ## 15. Order and commits
 
-1. Items 1 and 23: one commit (item 2 is already in `db0dfab`). It adds item 21's override when D1 is (c), or the ADR when D1 is (a). DEBT-034 then closes as resolved.
+1. **Done.** Items 1, 21 and 23 are in one commit, with ADR_2026-10-27_biome-checks-every-tsconfig-with-auto-expand, and DEBT-034 closed as resolved. Item 2 is in `db0dfab`.
 2. Items 3 to 7, 15, 20, 22 and 26: one commit. Item 34 (`package.json`'s `format` script): its own commit. Item 36 (`.husky/pre-commit`): its own commit, checked by committing a change that stages a `.sh` file next to a `.mjs` file. Item 37 (`scripts/gates.mjs`, `scripts/tests/gates.test.mjs`): its own commit, before any Biome upgrade. Item 38 (`scripts/gates.mjs`, `.husky/pre-commit`, `scripts/tests/gates.test.mjs`): its own commit, checked by running `npm run lint:js` with each variable set, to see the refusal, and unset, to see the pass. Item 35 (`scripts/gates.mjs`): its own commit, before step 8, so the gates show every finding of items 9 to 14. `scripts/tests/gates.test.mjs` does not pin Biome's arguments, so the check is a run of `npm run lint:js` with a planted file that has more than 20 findings, to confirm every one is printed.
 3. Item 19: one commit, if D4 is (a). Done before the rules change, so every later commit adds its reason beside its setting.
 4. Item 8: one commit, with item 39 in the same commit, since item 8 is what starts the Scanner.

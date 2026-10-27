@@ -55,7 +55,6 @@ Add an item only when all of these hold:
 | DEBT-030 | The svelte-development full-version local CLI waits on sveltejs/ai-tools #294 and PR #271 | 🟠 Blocked |
 | DEBT-031 | No hook reminds Claude to load an LSP intelligence skill before the first edit | 🔴 Risk accepted |
 | DEBT-032 | Biome's `useLiteralKeys` conflicts with tsc's `noPropertyAccessFromIndexSignature` | 🟠 Blocked |
-| DEBT-034 | Every `tsconfig*.json` is force-ignored by Biome with no recorded reason | 🟠 Blocked |
 | DEBT-035 | `npm run test:plugins` fails when a plugin test family has no gate left | 🔴 Risk accepted |
 | DEBT-036 | `biome check --staged` checks the working-tree copy of a partly staged file | 🔴 Risk accepted |
 
@@ -425,29 +424,6 @@ Add an item only when all of these hold:
 - **Why it is not fixed now:** turning off a rule needs Nery's approval.
 - **Next action:** with Nery's approval, turn `useLiteralKeys` off for JS and TS in `biome.json`, with the reason beside it.
 - **Review condition:** closes when Biome reports none and tsc passes.
-- **Related records:** none.
-
-### DEBT-034 — Every `tsconfig*.json` is force-ignored by Biome with no recorded reason
-
-| Field | Value |
-| --- | --- |
-| **Status** | 🟠 Blocked |
-| **Category** | quality |
-| **Owner** | `biome.json` |
-| **Logged** | 2026-10-26 |
-
-#### 🔎 Evidence
-
-- **Confirmed facts:** `biome.json` force-ignores `**/tsconfig.json` and `**/tsconfig.base.json` since commit `b3ada31`, which gives no reason. A scratch run without the exclusions linted clean and would reformat `scripts/tsconfig.json` and the four mods' `tsconfig.json` (2026-10-26).
-- **Inferences:** none.
-- **Open questions:** whether the maintainer ones join now and the plugin ones on each plugin's next change.
-
-#### 📈 Impact and next step
-
-- **Impact / risk:** a malformed tsconfig passes Biome.
-- **Why it is not fixed now:** the scope is Nery's call.
-- **Next action:** ask Nery; then include the maintainer tsconfigs and format them once.
-- **Review condition:** closes when every tsconfig Nery includes passes `biome ci`.
 - **Related records:** none.
 
 ### DEBT-035 — `npm run test:plugins` fails when a plugin test family has no gate left

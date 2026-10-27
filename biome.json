@@ -16,11 +16,8 @@
       "!!.claude/worktrees",
       "!!.superpowers",
       "!!.github",
-      "!!.claude/settings.json",
       "!!.claude/settings.local.json",
       "!.claude/skills/building-plugins/assets/plugin-template.json",
-      "!!**/tsconfig.json",
-      "!!**/tsconfig.base.json",
       "!!**/package-lock.json",
       "!**/SKILL.md",
       "!**/CLAUDE.md",
@@ -201,6 +198,17 @@
           "suspicious": {
             "noConsole": "off"
           }
+        }
+      }
+    },
+    {
+      "includes": [
+        "**/tsconfig.json",
+        "**/tsconfig.*.json"
+      ],
+      "json": {
+        "formatter": {
+          "expand": "auto"
         }
       }
     }
