@@ -32,6 +32,8 @@
 | 2026-10-26 | DEBT-019 | obsolete | The mod READMEs already state the tested Claude Code version | none |
 | 2026-10-26 | DEBT-021 | resolved | A validator fails on dead skill and path references in the project skills and CLAUDE.md | none |
 | 2026-10-26 | DEBT-022 | obsolete | Nery dropped the five handoff items that named removed skills and files | none |
+| 2026-10-26 | DEBT-024 | obsolete | Dropped by Nery: the never-run `block-no-verify` checks are no longer tracked | none |
+| 2026-10-26 | DEBT-029 | obsolete | Dropped by Nery: the `claude-review` failures on PRs #20, #28 and #29 are no longer investigated | none |
 
 ## 🏁 Closed items
 
@@ -502,6 +504,68 @@ Nery dropped all five on 2026-10-26, and none was restated:
 - **Residual risk:** none
 - **Closed by:** none
 - **Related records:** DEBT-015.
+- **Superseded by:** none
+
+### DEBT-024 — Dropped by Nery: the never-run `block-no-verify` checks are no longer tracked
+
+| Field | Value |
+| --- | --- |
+| **Outcome** | obsolete |
+| **Closed on** | 2026-10-26 |
+| **Logged on** | 2026-10-26 |
+| **Owner** | `plugins/block-no-verify` |
+
+#### ❗ The problem
+
+Three checks of `block-no-verify` were never run, open since 2026-10-20: the handler's own timing under macOS `/bin/bash` 3.2, the final review over the final Bash state, and ADRs for the choice of a Bash handler over a Python port and for the jq 1.6 minimum. The order was waiting on Nery.
+
+#### 🔧 The closure
+
+Nery withdrew the item on 2026-10-26, stated by the user on 2026-10-26. No change was made to the plugin.
+
+#### 🧪 Verification
+
+| Check | Evidence |
+| --- | --- |
+| ✅ **Positive:** the closure holds | not applicable |
+| 🚫 **Negative:** the original failure or condition is gone | 2026-10-26: the item no longer waits on a decision, since Nery dropped it. The timing, the review and the ADRs themselves were not done. |
+
+#### 🔗 Follow-up
+
+- **Residual risk:** the handler's timing under macOS bash 3.2 stays unmeasured, the final review stays unrun, and the two design choices stay without an ADR.
+- **Closed by:** Nery's decision on 2026-10-26.
+- **Related records:** none.
+- **Superseded by:** none
+
+### DEBT-029 — Dropped by Nery: the `claude-review` failures on PRs #20, #28 and #29 are no longer investigated
+
+| Field | Value |
+| --- | --- |
+| **Outcome** | obsolete |
+| **Closed on** | 2026-10-26 |
+| **Logged on** | 2026-10-26 |
+| **Owner** | `.github/workflows/claude-code-review.yml` |
+
+#### ❗ The problem
+
+`claude-review` failed on PR #20 (run 39138684403, job 117708394324) and on Copilot's merge commits of PRs #28 (job 118802109187) and #29, and the logs were never read (open since 2026-10-18). The cause was unknown.
+
+#### 🔧 The closure
+
+Nery withdrew the item on 2026-10-26, stated by the user on 2026-10-26. The logs were not read and the workflow was not changed.
+
+#### 🧪 Verification
+
+| Check | Evidence |
+| --- | --- |
+| ✅ **Positive:** the closure holds | not applicable |
+| 🚫 **Negative:** the original failure or condition is gone | 2026-10-26: the item no longer waits on an investigation, since Nery dropped it. `gh run view 39138684403` still reports `failure`; the cause stays unknown. |
+
+#### 🔗 Follow-up
+
+- **Residual risk:** if the cause still exists, a later pull request can go without the automated review. DEBT-027 still tracks the denied tool calls of the same workflow on PR #42.
+- **Closed by:** Nery's decision on 2026-10-26.
+- **Related records:** DEBT-027.
 - **Superseded by:** none
 
 <!--

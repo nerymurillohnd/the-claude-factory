@@ -48,12 +48,10 @@ Add an item only when all of these hold:
 | DEBT-017 | `testing-plugins` says the full eval suite runs in CI, and no eval workflow exists | 🟠 Blocked |
 | DEBT-020 | `docs/github-mcp-tools.md` serves one plugin but lives in the marketplace docs | 🟠 Blocked |
 | DEBT-023 | Gaps from the TypeScript hook audit report are still unaddressed | 🟠 Blocked |
-| DEBT-024 | `block-no-verify` has checks never run: macOS bash 3.2 timing, a final review, ADR candidates | 🟠 Blocked |
 | DEBT-025 | Some repository scripts duplicate a check another script owns | 🟠 Blocked |
 | DEBT-026 | Unconfirmed that `.claude/rules/readme-md.md` loads when a README is read | 🟡 Pending |
 | DEBT-027 | `claude-review` was denied four tool calls on PR #42 | 🟡 Pending |
 | DEBT-028 | TypeScript 7 and 5.x were never run against the TypeScript post-edit hook | 🟡 Pending |
-| DEBT-029 | `claude-review` failures on PRs #20, #28 and #29 have no known cause | 🟡 Pending |
 | DEBT-030 | The svelte-development full-version local CLI waits on sveltejs/ai-tools #294 and PR #271 | 🟠 Blocked |
 | DEBT-031 | No hook reminds Claude to load an LSP intelligence skill before the first edit | 🔴 Risk accepted |
 | DEBT-032 | Biome's `useLiteralKeys` conflicts with tsc's `noPropertyAccessFromIndexSignature` | 🟠 Blocked |
@@ -269,29 +267,6 @@ Add an item only when all of these hold:
 - **Review condition:** closes when every gap is fixed or dropped by Nery.
 - **Related records:** none.
 
-### DEBT-024 — `block-no-verify` has checks never run: macOS bash 3.2 timing, a final review, ADR candidates
-
-| Field | Value |
-| --- | --- |
-| **Status** | 🟠 Blocked |
-| **Category** | quality, compatibility |
-| **Owner** | `plugins/block-no-verify` |
-| **Logged** | 2026-10-26 |
-
-#### 🔎 Evidence
-
-- **Confirmed facts (open since 2026-10-20):** the handler's own timing under macOS `/bin/bash` 3.2 was never measured; the final review over the final Bash state was never run; the choice of a Bash handler over a Python port and the jq 1.6 minimum have no ADR.
-- **Inferences:** none.
-- **Open questions:** which to run first.
-
-#### 📈 Impact and next step
-
-- **Impact / risk:** a slow or wrong guard on the macOS default shell; undocumented design choices.
-- **Why it is not fixed now:** the order is Nery's.
-- **Next action:** ask Nery which to run first.
-- **Review condition:** closes when the timing is measured, the review is run, and the ADRs are written or dropped.
-- **Related records:** none.
-
 ### DEBT-025 — Some repository scripts duplicate a check another script owns
 
 | Field | Value |
@@ -382,29 +357,6 @@ Add an item only when all of these hold:
 - **Why it is not fixed now:** not run yet.
 - **Next action:** install both in a scratch folder, point the hook at each, and run the hook test suite's compiler cases.
 - **Review condition:** closes when both pass or their gaps are logged.
-- **Related records:** none.
-
-### DEBT-029 — `claude-review` failures on PRs #20, #28 and #29 have no known cause
-
-| Field | Value |
-| --- | --- |
-| **Status** | 🟡 Pending |
-| **Category** | reliability |
-| **Owner** | `.github/workflows/claude-code-review.yml` |
-| **Logged** | 2026-10-26 |
-
-#### 🔎 Evidence
-
-- **Confirmed facts:** it failed on PR #20 (run 39138684403, job 117708394324) and on Copilot's merge commits of PRs #28 (job 118802109187) and #29; the logs were never read (open since 2026-10-18).
-- **Inferences:** none.
-- **Open questions:** the cause.
-
-#### 📈 Impact and next step
-
-- **Impact / risk:** pull requests without the automated review.
-- **Why it is not fixed now:** not investigated yet.
-- **Next action:** read the "Run Claude Code Review" step of job 118802109187, then of the others.
-- **Review condition:** closes when the cause is known and fixed or ruled out.
 - **Related records:** none.
 
 ### DEBT-030 — The svelte-development full-version local CLI waits on sveltejs/ai-tools #294 and PR #271
