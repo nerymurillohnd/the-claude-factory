@@ -133,7 +133,7 @@ When there is no project build to render (the Claude app, where an HTML artifact
 ```
 
 - Pin an exact version that matches the project's Tailwind when there is one; put the project's tokens in the `@theme` block so the preview uses its system.
-- Tailwind states that the Play CDN "is designed for development purposes only, and is not intended for production". Use it only for previews, and say so. It never replaces the project's build: when a project exists, its own build is the verification.
+- Tailwind's Play CDN page (https://tailwindcss.com/docs/installation/play-cdn) limits it to development use, not production. Use it only for previews, and say so. It never replaces the project's build: when a project exists, its own build is the verification.
 
 When nothing can be rendered at all, say which checks did not run. Never claim a visual result from a successful build.
 

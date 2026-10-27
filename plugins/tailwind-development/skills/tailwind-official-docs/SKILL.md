@@ -79,7 +79,7 @@ Never start from a general web search.
 - any later version: its GitHub release and the changelog; check the blog index for a post rather than guessing its URL;
 - never the alpha or beta posts, which describe pre-release states.
 
-A feature newer than the installed version is not available in the project: say so, and name the version that adds it, instead of using it. Browser support depends on the version too: the 4.1 post says v4 degrades "way more gracefully for older browsers" from that release, so a browser-support answer reads the installed version before it applies `compatibility`.
+A feature newer than the installed version is not available in the project: say so, and name the version that adds it, instead of using it. Browser support depends on the version too: the 4.1 post reports that v4 handles older browsers much more gracefully from that release on, so a browser-support answer reads the installed version before it applies `compatibility`.
 
 The cross-cutting pages (the core concepts, `preflight`, `upgrade-guide`, `compatibility` and `editor-setup`) are long, and a whole-page fetch or summary loses the part you need. For them, name the section: [references/section-anchors.md](references/section-anchors.md) lists each page's section anchors and headings, and says how to use them with a fetch tool and with Context7. Copy an anchor from that list; never derive one from a heading.
 
@@ -197,7 +197,7 @@ Use these pages in addition to the property-specific pages. For a long page, go 
 When a project has no Tailwind yet, or changes how it integrates Tailwind:
 
 1. **Detect the framework and the package manager.** Read `package.json` dependencies and the framework's config file (`astro.config.*`, `svelte.config.*`, `next.config.*`, `nuxt.config.*`, `angular.json`, `vite.config.*`, `postcss.config.*`) or the server framework's manifest (`Gemfile`, `composer.json`, `mix.exs`). Take the package manager from the lockfile: `package-lock.json` npm, `pnpm-lock.yaml` pnpm, `yarn.lock` yarn, `bun.lock` or `bun.lockb` bun.
-2. **Pick the guide.** When the framework is in the framework-guides list of the topic index, use that page; copy its slug exactly, since two carry a sub-path (`laravel/vite`, `rspack/react`) that the framework name does not predict. When it is not listed, the framework-guides page says: "Don't see your framework of choice? Try using the Tailwind CLI, the Vite plugin, or the PostCSS plugin instead." Choose by what the project already has:
+2. **Pick the guide.** When the framework is in the framework-guides list of the topic index, use that page; copy its slug exactly, since two carry a sub-path (`laravel/vite`, `rspack/react`) that the framework name does not predict. When it is not listed, the framework-guides page points to the generic paths instead (the CLI, the Vite plugin or the PostCSS plugin). Choose by what the project already has:
    - a Vite config → `installation/using-vite`;
    - a PostCSS config, or a bundler that runs PostCSS → `installation/using-postcss`;
    - no build tool → `installation/tailwind-cli`.

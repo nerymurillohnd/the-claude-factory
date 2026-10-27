@@ -255,6 +255,15 @@ No. It reads each page once per session and reuses it. A lookup is required for 
 - 🌊 [Tailwind CSS documentation](https://tailwindcss.com/docs/installation/using-vite)
 - 📘 [Refactoring UI](https://www.refactoringui.com), for a book-length treatment of interface design craft
 
+## 🙏 Sources and credits
+
+- **[Tailwind CSS documentation](https://tailwindcss.com/docs)**, © Tailwind Labs Inc. The skills send Claude to these pages; their index lists the site's page URLs and section headings so Claude can open the right one. No documentation text or example is reproduced.
+- **[Tailwind CSS](https://github.com/tailwindlabs/tailwindcss)** (MIT, © Tailwind Labs, Inc.): its release posts, changelog and GitHub releases answer version questions, and its package READMEs and CLI behaviour informed the skills. No code is copied.
+- **[frontend-design](https://github.com/anthropics/claude-plugins-official/tree/main/plugins/frontend-design)** by Anthropic, the complementary skill for aesthetic direction.
+- **[Refactoring UI](https://www.refactoringui.com)** by Adam Wathan and Steve Schoger, recommended as further reading. The design skill reflects established interface-design practice in its own words and is not derived from the book.
+
+See [NOTICE.txt](./NOTICE.txt) for the details.
+
 ## 🐞 Found a problem?
 
 [Report a bug](https://github.com/nerymurillohnd/the-claude-factory/issues/new?template=bug_report.yml&plugin=tailwind-development) •
@@ -267,4 +276,4 @@ See [CHANGELOG.md](./CHANGELOG.md) for every release.
 
 ## 📄 License
 
-[MIT](./LICENSE) © Nery Murillo. Not affiliated with or endorsed by Tailwind Labs Inc. _Tailwind CSS_ is a trademark of Tailwind Labs Inc.
+[MIT](./LICENSE) © Nery Murillo. Third-party sources and their licenses are listed in [NOTICE.txt](./NOTICE.txt). Not affiliated with or endorsed by Tailwind Labs Inc. _Tailwind CSS_ is a trademark of Tailwind Labs Inc.

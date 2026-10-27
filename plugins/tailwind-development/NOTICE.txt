@@ -1,0 +1,43 @@
+tailwind-development
+Copyright (c) 2026 Nery Murillo. Licensed under the MIT License (see LICENSE).
+
+This plugin routes Claude to third-party sources and records where they are.
+It reproduces no documentation text, code example or figure from them.
+
+1. Tailwind CSS documentation (tailwindcss.com)
+
+  Site:        https://tailwindcss.com/docs
+  Source:      https://github.com/tailwindlabs/tailwindcss.com
+  License:     none. The repository states that the project is not
+               licensed under an open-source license and is the
+               intellectual property of Tailwind Labs Inc.
+  Checked:     2026-10-27, Tailwind CSS v4.3.3
+
+  Files that list navigation data taken from the site (page URLs, page
+  slugs, section heading ids and section heading labels; no page content):
+
+  skills/tailwind-official-docs/SKILL.md
+      the topic index of 222 page slugs, the framework-guide slugs and the
+      URLs of the release posts it routes version questions to.
+  skills/tailwind-official-docs/references/section-anchors.md
+      the h2 to h4 heading ids and labels of 13 long pages, extracted from
+      the live pages' HTML.
+
+  Everything these files say about how to use the pages is original.
+
+2. Tailwind CSS (tailwindlabs/tailwindcss)
+
+  Repository:  https://github.com/tailwindlabs/tailwindcss
+  Commit:      8cc0551b1217d36dc565840b90920964d37cb46c
+  License:     MIT, Copyright (c) Tailwind Labs, Inc.
+
+  Read as reference, with no material copied into this plugin: the
+  CHANGELOG and GitHub releases (version questions, the 4.2 changes), the
+  package READMEs, and the CLI's own behaviour (measured with
+  @tailwindcss/cli 4.3.3). If later versions of this plugin copy files from
+  this repository, they are listed here with their changes, and the MIT
+  license text is included below, as its terms require.
+
+The Tailwind CSS name is used only to describe compatibility. This plugin is
+not affiliated with or endorsed by Tailwind Labs Inc. Tailwind CSS is a
+trademark of Tailwind Labs Inc.
