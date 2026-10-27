@@ -1,6 +1,6 @@
 # Surface and finish: colour, depth, media, details and states
 
-The decisions of steps 4.3 to 4.5 and 5, applied only once the ranking and spacing already read. Exact utilities: `tailwind-official-docs`.
+The decisions of steps 5.3 to 5.5 and 6, applied only once the ranking and spacing already read. Each one follows the written ranking: the strongest colour, the highest elevation and the most finish go to the primary element. Exact utilities: `tailwind-official-docs`.
 
 ## Contents
 

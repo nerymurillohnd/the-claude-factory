@@ -2,11 +2,12 @@
 
 Work through the groups in this order. The early groups change how the whole view reads; the late ones polish it. Fix the highest group with findings first, take a screenshot, then move down. For a review, report findings in the same order, each with file, line and the fix.
 
-Before starting: a screenshot of the current view in each appearance mode at a narrow and a wide width, and the project's tokens and rules (SKILL.md step 1). Keep behaviour, semantics, accessibility and the component's public interface unchanged.
+Before starting: a screenshot of the current view in each appearance mode at a narrow and a wide width, the project's tokens and rules (SKILL.md step 2), and the ranking recovered from the flat view (SKILL.md step 1). Keep behaviour, semantics, accessibility and the component's public interface unchanged.
 
 ## 1. Ranking
 
-- [ ] Can you name the first, second and third things on the screen? If several elements compete at the same weight, pick the winner and quiet the others.
+- [ ] Does one element clearly win? Name it. If nothing wins, or several elements compete at the same weight, choose the primary from the user's task, write the ranking (primary, secondary, tertiary, remove), and quiet everything that competes with the primary.
+- [ ] Does each later choice (size, weight, colour, space, depth, position) follow that ranking, or does a secondary element get a stronger treatment than the primary?
 - [ ] Does the ranking hold in grayscale?
 - [ ] Is emphasis made by size alone (huge titles, tiny secondary text)? Rebalance with weight and colour.
 - [ ] Is there exactly one primary action, styled as one? Secondary and tertiary actions styled by rank? A destructive action styled as primary where it is not the view's goal?

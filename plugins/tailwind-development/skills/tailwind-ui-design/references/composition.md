@@ -1,6 +1,6 @@
 # Composition: rank, actions, data, space and type
 
-The decisions of step 4.1 and 4.2: make the screen read in the right order before any colour, depth or decoration is added. Exact utilities and variants: `tailwind-official-docs`.
+The decisions of steps 5.1 and 5.2: encode the written ranking of step 1 in structure, space and type before any colour, depth or decoration is added. Exact utilities and variants: `tailwind-official-docs`.
 
 ## Contents
 
@@ -20,7 +20,8 @@ The decisions of step 4.1 and 4.2: make the screen read in the right order befor
 
 ## Rank what matters
 
-- Decide the first, second and third things on the screen. When everything competes, nothing reads.
+- Start from the written ranking: one primary element, a few secondary, the rest tertiary. When everything competes, nothing reads.
+- Give the primary element the strongest treatment on the screen, and no other element an equal one.
 - Rank with three levers together: size, weight and colour. Size alone makes primary text too large and secondary text too small; a bold title can stay modest in size, and secondary text gets a softer colour from the neutral ramp rather than a tiny size.
 - When the important element does not stand out, quiet what competes with it instead of enlarging it: soften inactive navigation, drop the background of a sidebar fighting the main content, lighten icons beside text.
 - Balance weight against contrast: heavy elements (solid icons, bold text) need lower contrast to sit beside regular text; thin elements (a hairline border) gain presence through more width, not a darker colour.

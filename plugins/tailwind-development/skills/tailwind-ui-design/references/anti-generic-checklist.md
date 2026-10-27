@@ -2,7 +2,11 @@
 
 Generated interfaces converge on the same defaults, whatever their subject. Each item below is a legitimate tool for some brief; it is a tell when it appears because it is a default, not a decision. When the project or the brief asks for one of them, follow the brief. Otherwise, remove or replace every one you find, and say what you changed.
 
-The first group calibrates aesthetic direction (owned by `frontend-design` when it is installed); the second and third are craft-level tells this skill checks in the markup.
+Start with the first tell, which most others follow from. The direction tells calibrate aesthetic direction (owned by `frontend-design` when it is installed); the structure and craft tells are the ones this skill checks in the markup.
+
+## The first tell
+
+- [ ] Everything competes equally: no element clearly wins, so the screen reads as a uniform grid of equally weighted blocks. Every other tell below is often a symptom of this one. Fix the ranking first.
 
 ## Direction tells
 
