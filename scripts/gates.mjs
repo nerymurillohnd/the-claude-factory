@@ -620,7 +620,8 @@ export function runGates(gates, { root, keepGoing, write, verbose = false }) {
     const output = `${r.stdout ?? ''}${r.stderr ?? ''}`.trimEnd()
     /** @type {string | null} */
     let problem = null
-    let code = 0
+    /** @type {number} */
+    let code
     if (r.error) {
       const missing = /** @type {NodeJS.ErrnoException} */ (r.error).code === 'ENOENT'
       problem = missing ? `${gate.cmd} is not on PATH` : r.error.message

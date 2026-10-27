@@ -591,6 +591,7 @@ test('a path pins the tree, which then ignores cwd changes until /file-tree alon
     presentation: { isFullscreen: true, columns: 200 },
   })
   expect(pinned).toMatchObject({ text: 'File tree opened; it is pinned to /work/src.' })
+  // biome-ignore lint/nursery/useCapitalizedConstructors: CwdChanged is the name the testing API of Claude Code gives the classic hook event, not a constructor
   await $.classic.CwdChanged({ old_cwd: ROOT, new_cwd: '/elsewhere' })
   const ui = await mountPane($, 'terminal')
   expect(await bodyText(ui)).toContain('lib/')
@@ -796,6 +797,7 @@ test('a cwd change brings the tree back from a preview of the old folder', async
   const ui = await mountPane($, 'terminal')
   await ui.pointer({ type: 'up', x: 4, y: 2, button: 'left', in: 'body' })
   expect(texts(await ui.drawn()).join('')).toContain('· preview')
+  // biome-ignore lint/nursery/useCapitalizedConstructors: CwdChanged is the name the testing API of Claude Code gives the classic hook event, not a constructor
   await $.classic.CwdChanged({ old_cwd: ROOT, new_cwd: `${ROOT}/src` })
   expect(texts(await ui.drawn()).join('')).not.toContain('· preview')
   expect(await bodyText(ui)).toContain('lib/')
