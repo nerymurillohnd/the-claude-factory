@@ -10,7 +10,14 @@ import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { afterEach, beforeEach, describe, test } from 'node:test'
 import { fileURLToPath } from 'node:url'
-import { gatesFor, nodeTestGate, runGates, selectGates, unittestGate } from '../gates.mjs'
+import {
+  BIOME_OVERRIDES,
+  gatesFor,
+  nodeTestGate,
+  runGates,
+  selectGates,
+  unittestGate,
+} from '../gates.mjs'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..')
 
@@ -100,6 +107,16 @@ describe('gates runner', () => {
     const gate = nodeGate('killed', "process.kill(process.pid, 'SIGKILL')")
     assert.equal(runGates([gate], { root: dir, keepGoing: false, write }), 1)
     assert.match(lines.join('\n'), /killed by SIGKILL/)
+  })
+
+  test('an after check reads stderr as well as stdout', () => {
+    /** @type {import('../gates.mjs').Gate} */
+    const gate = {
+      ...nodeGate('stderr', "process.stderr.write('marker-on-stderr')"),
+      after: (stdout, stderr) =>
+        `${stdout}${stderr}`.includes('marker-on-stderr') ? null : 'lost',
+    }
+    assert.equal(runGates([gate], { root: dir, keepGoing: false, write }), 0, lines.join('\n'))
   })
 
   test('a missing tool fails with 1 and names the tool', () => {
@@ -273,6 +290,74 @@ describe('runGates inside a git hook', () => {
       }
     }
   })
+})
+
+describe('Biome gates', () => {
+  const biome = join(ROOT, 'node_modules', '.bin', 'biome')
+  const migrate = gatesFor({ root: ROOT, ci: true, base: '' }).find((g) => g.id === 'biome-migrate')
+
+  test('biome-migrate runs in the CI lint group', () => {
+    assert.equal(migrate?.group, 'lint')
+    assert.deepEqual(migrate?.args, ['migrate', '--colors=off'])
+  })
+
+  test('biome-migrate fails on a deprecated key and passes on an up-to-date biome.json', () => {
+    assert.ok(migrate)
+    const tmp = mkdtempSync(join(tmpdir(), 'gates-migrate-'))
+    try {
+      /** @param {object} rules @returns {number} */
+      const run = (rules) => {
+        writeFileSync(join(tmp, 'biome.json'), JSON.stringify({ linter: { rules } }))
+        /** @type {string[]} */
+        const out = []
+        return runGates([{ ...migrate, cmd: biome }], {
+          root: tmp,
+          keepGoing: false,
+          write: (l) => out.push(l),
+        })
+      }
+      assert.equal(run({ recommended: true }), 1, 'a deprecated key passed')
+      assert.equal(run({ preset: 'recommended' }), 0, 'an up-to-date config failed')
+    } finally {
+      rmSync(tmp, { recursive: true, force: true })
+    }
+  })
+
+  for (const name of BIOME_OVERRIDES) {
+    test(`a Biome gate refuses to run while ${name} is set, naming it but not its value`, () => {
+      const saved = process.env[name]
+      process.env[name] = '/secret/value'
+      /** @type {string[]} */
+      const out = []
+      try {
+        /** @type {import('../gates.mjs').Gate} */
+        const gate = { id: 'b', group: 'lint', title: 'b', cmd: 'biome', args: ['--version'] }
+        /** @type {import('../gates.mjs').Gate} */
+        const other = {
+          id: 'n',
+          group: 'lint',
+          title: 'n',
+          cmd: process.execPath,
+          args: ['-e', ''],
+        }
+        const opts = {
+          root: ROOT,
+          keepGoing: true,
+          write: (/** @type {string} */ l) => out.push(l),
+        }
+        assert.equal(runGates([gate], opts), 1)
+        assert.match(out.join('\n'), new RegExp(`✖ b \\(exit 1\\): ${name} is set`))
+        assert.doesNotMatch(out.join('\n'), /secret/)
+        assert.equal(runGates([other], opts), 0, 'a gate that is not Biome refused too')
+      } finally {
+        if (saved === undefined) {
+          delete process.env[name]
+        } else {
+          process.env[name] = saved
+        }
+      }
+    })
+  }
 })
 
 describe('validator gates', () => {

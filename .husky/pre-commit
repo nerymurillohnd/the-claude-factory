@@ -1,2 +1,10 @@
+# Biome checks only with the pinned binary and biome.json, as the gates do
+# (ADR_2026-10-27_biome-gates-refuse-binary-and-config-overrides).
+for name in BIOME_BINARY BIOME_CONFIG_PATH; do
+  if printenv "${name}" > /dev/null; then
+    echo "✖ pre-commit: ${name} is set; unset it, the hook runs only the pinned Biome" >&2
+    exit 1
+  fi
+done
 biome check --staged --no-errors-on-unmatched
 npm test

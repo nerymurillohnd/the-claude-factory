@@ -788,7 +788,15 @@ The assist actions rejected are listed in section 7.
 ## 15. Order and commits
 
 1. **Done.** Items 1, 21 and 23 are in one commit, with ADR_2026-10-27_biome-checks-every-tsconfig-with-auto-expand, and DEBT-034 closed as resolved. Item 2 is in `db0dfab`.
-2. Items 3 to 7, 15, 20, 22 and 26: one commit. Item 34 (`package.json`'s `format` script): its own commit. Item 36 (`.husky/pre-commit`): its own commit, checked by committing a change that stages a `.sh` file next to a `.mjs` file. Item 37 (`scripts/gates.mjs`, `scripts/tests/gates.test.mjs`): its own commit, before any Biome upgrade. Item 38 (`scripts/gates.mjs`, `.husky/pre-commit`, `scripts/tests/gates.test.mjs`): its own commit, checked by running `npm run lint:js` with each variable set, to see the refusal, and unset, to see the pass. Item 35 (`scripts/gates.mjs`): its own commit, before step 8, so the gates show every finding of items 9 to 14. `scripts/tests/gates.test.mjs` does not pin Biome's arguments, so the check is a run of `npm run lint:js` with a planted file that has more than 20 findings, to confirm every one is printed.
+2. **Done.**
+   - Items 3 to 7, 15, 20, 22 and 26 are in `4f78fe7`: the same 170 files, 242 rules and 4 diagnostics before and after.
+   - Item 34 is in `9ed4264`.
+   - Item 36 is in `6e25ff7`: a staged `.sh` with a `.mjs`, 1 file checked, exit 0.
+   - Items 37 and 38 share one commit, because both change `runGates` and the same test file. That commit adds ADR_2026-10-27_biome-gates-refuse-binary-and-config-overrides, and the tests went from 23 to 28.
+   
+   Still open in this step: item 35.
+   
+   Item 35 (`scripts/gates.mjs`): its own commit, before step 8, so the gates show every finding of items 9 to 14. `scripts/tests/gates.test.mjs` does not pin Biome's arguments, so the check is a run of `npm run lint:js` with a planted file that has more than 20 findings, to confirm every one is printed.
 3. Item 19: one commit, if D4 is (a). Done before the rules change, so every later commit adds its reason beside its setting.
 4. Item 8: one commit, with item 39 in the same commit, since item 8 is what starts the Scanner.
 5. Items 16, 17 and 24: one commit, plus `useSortedInterfaceMembers` and `useSortedEnumMembers` if D5 is on. Each assist action enabled here also gets its `source.action.<action>.biome` line in `.vscode/settings.json` (section 12.4). If item 27 is not in yet, that line goes in when item 27 lands.

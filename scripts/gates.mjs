@@ -53,6 +53,13 @@ const GIT_HOOK_VARIABLES = new Set([
   'GIT_ALTERNATE_OBJECT_DIRECTORIES',
 ])
 
+/**
+ * Variables that make the pinned Biome run another binary or another configuration. A Biome gate
+ * refuses to run while one is set, so it never checks with anything but package-lock.json's Biome
+ * and biome.json (ADR_2026-10-27_biome-gates-refuse-binary-and-config-overrides).
+ */
+export const BIOME_OVERRIDES = ['BIOME_BINARY', 'BIOME_CONFIG_PATH']
+
 /** Pathspecs that keep a maintainer gate outside the plugins and outside .github/. */
 const OUTSIDE_PLUGINS = [':(exclude)plugins', ':(exclude).github']
 
@@ -78,7 +85,8 @@ const ALLOWED_SKIPS = new Map(/** @type {[string, string][]} */ ([]))
  * @property {string[]} args
  * @property {Record<string, string>} [env]
  * @property {string} [skipReason] set when the gate cannot apply here, such as no base commit
- * @property {(stdout: string) => string | null} [after] a failure message for an exit-0 run, or null
+ * @property {(stdout: string, stderr: string) => string | null} [after] a failure message for an
+ *   exit-0 run, or null
  */
 
 /**
@@ -422,6 +430,19 @@ export function gatesFor({ root, ci, base }) {
       args: ['ci', '--error-on-warnings', ...maintainerBiome],
     },
     {
+      // A deprecated key reaches Biome as an information diagnostic, which passes biome ci even with
+      // --error-on-warnings, and biome migrate exits 0 either way: only its message tells.
+      id: 'biome-migrate',
+      group: 'lint',
+      title: 'biome.json needs no migration',
+      cmd: 'biome',
+      args: ['migrate', '--colors=off'],
+      after: (stdout, stderr) =>
+        `${stdout}${stderr}`.includes('no migration needed')
+          ? null
+          : 'biome migrate proposes a configuration change: run it, review the diff, then --write',
+    },
+    {
       id: 'actionlint',
       group: 'lint',
       title: 'actionlint',
@@ -570,6 +591,17 @@ export function runGates(gates, { root, keepGoing, write, verbose = false }) {
       write(`○ ${gate.id} not applicable: ${gate.skipReason}`)
       continue
     }
+    const override = gate.cmd === 'biome' && BIOME_OVERRIDES.find((name) => name in process.env)
+    if (override) {
+      write(
+        `✖ ${gate.id} (exit 1): ${override} is set; unset it, the gates run only the pinned Biome`,
+      )
+      failed.push({ id: gate.id, code: 1 })
+      if (!keepGoing) {
+        break
+      }
+      continue
+    }
     // A gate starts its own node --test runner even when the gates run inside one, as in their
     // tests: a child that inherits NODE_TEST_CONTEXT reports to the parent and writes no reporter.
     // Inside a git hook (Husky), git exports the variables of the repository that started it, such as
@@ -599,7 +631,7 @@ export function runGates(gates, { root, keepGoing, write, verbose = false }) {
     } else if (r.status !== 0) {
       code = r.status
     } else {
-      problem = gate.after?.(r.stdout) ?? null
+      problem = gate.after?.(r.stdout, r.stderr) ?? null
       code = problem === null ? 0 : 1
     }
     if (output !== '' && (verbose || code !== 0)) {
