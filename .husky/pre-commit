@@ -1,4 +1,4 @@
-# Biome checks only with the pinned binary and biome.json, as the gates do
+# Biome checks only with the pinned binary and biome.jsonc, as the gates do
 # (ADR_2026-10-27_biome-gates-refuse-binary-and-config-overrides).
 for name in BIOME_BINARY BIOME_CONFIG_PATH; do
   if printenv "${name}" > /dev/null; then

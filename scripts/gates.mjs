@@ -56,7 +56,7 @@ const GIT_HOOK_VARIABLES = new Set([
 /**
  * Variables that make the pinned Biome run another binary or another configuration. A Biome gate
  * refuses to run while one is set, so it never checks with anything but package-lock.json's Biome
- * and biome.json (ADR_2026-10-27_biome-gates-refuse-binary-and-config-overrides).
+ * and biome.jsonc (ADR_2026-10-27_biome-gates-refuse-binary-and-config-overrides).
  */
 export const BIOME_OVERRIDES = ['BIOME_BINARY', 'BIOME_CONFIG_PATH']
 
@@ -434,7 +434,7 @@ export function gatesFor({ root, ci, base }) {
       // --error-on-warnings, and biome migrate exits 0 either way: only its message tells.
       id: 'biome-migrate',
       group: 'lint',
-      title: 'biome.json needs no migration',
+      title: 'biome.jsonc needs no migration',
       cmd: 'biome',
       args: ['migrate', '--colors=off'],
       after: (stdout, stderr) =>

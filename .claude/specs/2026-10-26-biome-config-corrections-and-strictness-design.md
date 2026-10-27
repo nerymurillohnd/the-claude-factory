@@ -68,7 +68,10 @@ Item 7, by group (from `biome explain` on 2.6.3):
 
 - raise a severity, for example `noUnusedImports` (`warn` to `error`) and `useConst` (`warn` to `error`);
 - enable a rule that is not recommended, for example `useBlockStatements` and `noUndeclaredVariables`;
-- turn a rule off: `noUndeclaredDependencies`, `noNegationElse`.
+- turn a rule off: `noUndeclaredDependencies`.
+  - Correction, found while writing item 19's reasons: neither of the two `"off"` entries is a recommended rule, so the preset already leaves both off.
+  - `noUndeclaredDependencies` stays as a guard. With it on, Biome reports the mods' imports of the engine's `claude-code` module, which no `package.json` declares.
+  - `noNegationElse` was a no-op, and item 19's commit drops it.
 
 The four `nursery` entries also stay, because the preset never enables nursery rules.
 
@@ -794,10 +797,8 @@ The assist actions rejected are listed in section 7.
    - Item 36 is in `6e25ff7`: a staged `.sh` with a `.mjs`, 1 file checked, exit 0.
    - Items 37 and 38 share one commit, because both change `runGates` and the same test file. That commit adds ADR_2026-10-27_biome-gates-refuse-binary-and-config-overrides, and the tests went from 23 to 28.
    
-   Still open in this step: item 35.
-   
    Item 35 (`scripts/gates.mjs`): its own commit, before step 8, so the gates show every finding of items 9 to 14. `scripts/tests/gates.test.mjs` does not pin Biome's arguments, so the check is a run of `npm run lint:js` with a planted file that has more than 20 findings, to confirm every one is printed.
-3. Item 19: one commit, if D4 is (a). Done before the rules change, so every later commit adds its reason beside its setting.
+3. **Done.** Item 19 is in one commit: `biome.json` renamed to `biome.jsonc`, a reason beside each non-default setting, and the references updated, with ADR_2026-10-27_biome-config-is-jsonc-with-reasons-inline. Every later commit adds its reason beside its setting. Item 35 is in `038f9f1`.
 4. Item 8: one commit, with item 39 in the same commit, since item 8 is what starts the Scanner.
 5. Items 16, 17 and 24: one commit, plus `useSortedInterfaceMembers` and `useSortedEnumMembers` if D5 is on. Each assist action enabled here also gets its `source.action.<action>.biome` line in `.vscode/settings.json` (section 12.4). If item 27 is not in yet, that line goes in when item 27 lands.
 6. Item 30: one commit, after D8, with `useLiteralKeys` settled the same way. Item 31: one commit with its maintainer fix; the `file-tree-pane` findings go in that plugin's pull request.

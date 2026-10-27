@@ -12,7 +12,7 @@ This skill's `assets/` are the templates a new plugin of this repository is buil
 | `assets/README-template.md`    | `plugins/<name>/README.md`                                                                     | Lowercase, filled by the scaffold: `<plugin>`, `<owner>/<repo>` and its URL-encoded `<owner>%2F<repo>`, `<marketplace-name>`, `<description>`, `<category-badge>`, `<surfaces-badge>`, `<surfaces-text>`, and the `<app>` / `<code-only>` blocks it keeps or drops by surface; plus `<Display Name>`. Every other `<…>` starts with a capital letter | `scaffold-plugin.py` fills the lowercase ones and `<Display Name>`; you fill the rest |
 | `assets/NOTICE-template.txt`   | `plugins/<name>/NOTICE.txt`, only when the plugin bundles or derives from third-party material | `{{name}}`, `{{source}}`, `{{sourceUrl}}`, `{{sourceVersion}}`, `{{sourceLicense}}`, `{{derivedFile}}`, `{{sourceLicenseText}}`                                                                                                                                                                                                                      | You, by hand; the scaffold never writes it                                            |
 
-`plugin-template.json` is not valid JSON until it is rendered (`{{surfacesJson}}` stands unquoted), so `biome.json` excludes it.
+`plugin-template.json` is not valid JSON until it is rendered (`{{surfacesJson}}` stands unquoted), so `biome.jsonc` excludes it.
 
 ## Create from them
 

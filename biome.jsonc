@@ -1,23 +1,37 @@
+// The maintainers' Biome configuration. Each setting that differs from Biome's default says why
+// beside it. Everything else is left to Biome's defaults and its recommended preset.
 {
   "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
   "vcs": {
+    // Applies .gitignore, including the nested one that hides each mod's generated
+    // .claude-plugin/types/; defaultBranch is the base of --changed.
     "enabled": true,
     "clientKind": "git",
     "useIgnoreFile": true,
     "defaultBranch": "main"
   },
   "files": {
+    // An unknown file type is an error, never skipped in silence.
     "ignoreUnknown": false,
     "includes": [
+      // Every extension the repository holds that Biome reads.
       "**/*.{js,cjs,mjs,jsx,ts,cts,mts,tsx,json,jsonc,md,yml,yaml}",
+      // Build output.
       "!!**/dist",
       "!!**/build",
+      // Worktrees are full checkouts with their own root configuration.
       "!!.claude/worktrees",
+      // The superpowers plugin's local working folder (git-ignored).
       "!!.superpowers",
+      // .claude/CLAUDE.md keeps .github/ out of the maintainer tools; actionlint checks the workflows.
       "!!.github",
+      // Personal, git-ignored.
       "!!.claude/settings.local.json",
+      // Its {{…}} placeholders are not JSON until rendered.
       "!.claude/skills/building-plugins/assets/plugin-template.json",
+      // npm writes it.
       "!!**/package-lock.json",
+      // Markdown Biome never formats: ADR_2026-10-26_biome-never-formats-plugin-and-skill-markdown.
       "!**/CLAUDE.md",
       "!.claude/memory",
       "!.claude/session-handoff",
@@ -30,13 +44,19 @@
     ]
   },
   "formatter": {
+    // Nery's standard line width, the same as ruff.toml.
     "lineWidth": 100,
+    // .editorconfig is the only source of indentation and line endings.
     "useEditorconfig": true
   },
   "linter": {
+    // The preset plus Nery's rule set: each entry raises a severity, turns on a rule the preset
+    // leaves off, or turns one off. The gates fail on warnings (--error-on-warnings).
     "rules": {
       "preset": "recommended",
       "correctness": {
+        // Not recommended, but it would report the mods' imports of the engine's claude-code module,
+        // which no package.json declares, if a project-domain setting ever turned it on.
         "noUndeclaredDependencies": "off",
         "noUndeclaredVariables": "error",
         "noUnusedImports": "error",
@@ -51,7 +71,6 @@
       },
       "style": {
         "noImplicitBoolean": "error",
-        "noNegationElse": "off",
         "noParameterAssign": "warn",
         "noRestrictedGlobals": "error",
         "noShoutyConstants": "warn",
@@ -79,6 +98,7 @@
         "noSkippedTests": "warn",
         "useAdjacentOverloadSignatures": "error"
       },
+      // The preset never turns on a nursery rule, so each one is listed.
       "nursery": {
         "useExplicitType": "warn",
         "useConsistentHeadingLevel": "error",
@@ -88,26 +108,32 @@
     }
   },
   "javascript": {
+    // Nery's standard: single quotes, semicolons only where needed.
     "formatter": {
       "quoteStyle": "single",
       "semicolons": "asNeeded"
     },
+    // Node runs the .js, .mjs and .cjs files, never as JSX.
     "parser": {
       "jsxEverywhere": false
     }
   },
   "json": {
+    // The scripts write JSON with JSON.stringify(…, 2), which always expands.
     "formatter": {
       "expand": "always"
     }
   },
   "markdown": {
+    // Without it, Biome breaks a document's frontmatter by inserting a blank line after the
+    // opening ---.
     "parser": {
       "frontmatter": true
     }
   },
   "overrides": [
     {
+      // Tests print, test booleans directly, and use the hook protocol's snake_case keys.
       "includes": [
         "**/tests/**"
       ],
@@ -124,6 +150,7 @@
       }
     },
     {
+      // Console output is the scripts' interface.
       "includes": [
         "scripts/**"
       ],
@@ -136,6 +163,9 @@
       }
     },
     {
+      // No script writes a tsconfig, so "always" has no reason here, and "auto" checks every
+      // tsconfig without reformatting the plugins' ones:
+      // ADR_2026-10-27_biome-checks-every-tsconfig-with-auto-expand.
       "includes": [
         "**/tsconfig.json",
         "**/tsconfig.*.json"

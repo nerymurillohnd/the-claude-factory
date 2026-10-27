@@ -409,7 +409,7 @@ Add an item only when all of these hold:
 | --- | --- |
 | **Status** | 🟠 Blocked |
 | **Category** | quality |
-| **Owner** | `biome.json`, `tsconfig.base.json` |
+| **Owner** | `biome.jsonc`, `tsconfig.base.json` |
 | **Logged** | 2026-10-26 |
 
 #### 🔎 Evidence
@@ -422,7 +422,7 @@ Add an item only when all of these hold:
 
 - **Impact / risk:** noise in Biome's output; a fix that follows it would fail tsc.
 - **Why it is not fixed now:** turning off a rule needs Nery's approval.
-- **Next action:** with Nery's approval, turn `useLiteralKeys` off for JS and TS in `biome.json`, with the reason beside it.
+- **Next action:** with Nery's approval, turn `useLiteralKeys` off for JS and TS in `biome.jsonc`, with the reason beside it. Nery approved this on 2026-10-27, as D8 (a) of the Biome spec; it lands with item 30.
 - **Review condition:** closes when Biome reports none and tsc passes.
 - **Related records:** none.
 
