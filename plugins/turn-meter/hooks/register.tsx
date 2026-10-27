@@ -48,17 +48,20 @@ export const formatDuration = (ms: number, isShort = false): string => {
   return `${minutes}m${isShort ? '' : ' '}${String(seconds).padStart(2, '0')}s`
 }
 
+// A trailing ".0" left by toFixed(1): "6.0k" reads "6k".
+const TRAILING_ZERO_DECIMAL = /\.0$/
+
 // "6.3k" and "41.2k"; the short form rounds to whole thousands: "47k". The unit is picked after
 // rounding, so 999,999 reads "1M", never "1000k".
 export const formatTokens = (count: number, isShort = false): string => {
   const thousands = isShort ? String(Math.round(count / 1000)) : (count / 1000).toFixed(1)
 
   if (count >= 1000 && Number(thousands) < 1000) {
-    return `${thousands.replace(/\.0$/, '')}k`
+    return `${thousands.replace(TRAILING_ZERO_DECIMAL, '')}k`
   }
 
   if (count >= 1000) {
-    return `${(count / 1_000_000).toFixed(1).replace(/\.0$/, '')}M`
+    return `${(count / 1_000_000).toFixed(1).replace(TRAILING_ZERO_DECIMAL, '')}M`
   }
 
   return String(count)

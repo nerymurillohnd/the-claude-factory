@@ -19,6 +19,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The
 - **python-lsp-intelligence** 0.3.0 — the post-edit hook requires Python 3.12 or later and always runs through Bash.
 - **skill-diagnostics** 0.2.0 — the hook requires Python 3.12 or later and runs as `python3` through Bash.
 - **tool-ledger** 0.1.2 — internal code cleanup from stricter lint rules; nothing changes for users.
+- **turn-meter** 0.1.2 — internal code cleanup from a stricter lint rule; nothing changes for users.
 
 ## 2026-10-26
 

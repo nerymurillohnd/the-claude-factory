@@ -44,7 +44,7 @@
 
 | Requirement | Details |
 | :-- | :-- |
-| **Claude Code** | v2.1.295 or later — check with `claude --version`. Tested with v2.1.308. |
+| **Claude Code** | v2.1.295 or later — check with `claude --version`. Tested with v2.1.311. |
 | **Surfaces** | See [Compatibility](#-compatibility) |
 | **External tools** | None |
 | **Accounts / API keys** | None |
