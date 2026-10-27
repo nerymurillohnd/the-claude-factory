@@ -284,6 +284,9 @@ Source: the CLI reference for `version`, `upgrade`, `rage`, `start`, `stop` and 
     - The editor, the hooks, the gates and CI all read `biome.json` and `.editorconfig`, and nothing else.
   - **The one override:** the pre-commit hook passes `--files-ignore-unknown=true` (since `ac37c2e`), while `biome.json` sets `files.ignoreUnknown: false`. Probe in the scratch copy: with a staged `.sh` file, `biome check --staged --no-errors-on-unmatched` reported no diagnostic, with the flag or without it. The first `files.includes` pattern never selects an unknown extension, so the flag changes nothing today.
     - **Item 36:** drop the flag from `.husky/pre-commit`. The hook then runs under exactly the configuration the gates use.
+    - Biome's git-hooks guide (shared by Nery on 2026-10-27) puts `--files-ignore-unknown=true` in its lint-staged and git-format-staged examples. Those tools pass every staged path (`'*'`), which needs the flag. This hook uses Biome's own `--staged`, which selects files through `files.includes`, so it does not.
+    - The guide's `prepare: "husky"` is already in `package.json`.
+    - Its stdin-based git-format-staged check fails on 2.6.3 even for a clean file. That keeps DEBT-036 a risk accepted; the evidence is now in its entry.
     - If `files.includes` ever widened to `**`, the hook would report an unknown staged file instead of skipping it. That is the strict choice `ignoreUnknown: false` already makes.
   - **JSON-parser flags** (`--json-parse-allow-comments`, `--json-parse-allow-trailing-commas`): never used, which keeps the manifests strict (section 11).
   - **`--watcher-kind`, `--watcher-polling-interval`:** the daemon's file watcher, left at `recommended`. They are the CLI form of the editor's `biome.lsp.watcher.*`, which section 12.4 leaves unset.
@@ -472,6 +475,8 @@ Source: the reference's "Language-specific options" and `javascript` sections. A
 | # | Key | Why it goes |
 | --: | :-- | :-- |
 | 22 | `javascript.formatter.jsxQuoteStyle: "double"` and `trailingCommas: "all"` | Both are the defaults. Measured without them: 163 files, no fixes, the same 4 infos. |
+
+Biome's "Formatter Option Philosophy" page (shared by Nery on 2026-10-27) backs this. Biome follows Prettier's option philosophy. It keeps options such as `arrowParentheses` and `bracketSameLine` only "for compatibility", calls them a cause of "bike-shedding", and adds no new ones. The four non-default formatter settings the repository keeps are `lineWidth`, `json.formatter.expand`, `quoteStyle` and `semicolons`. They are Nery's standard (`809cf90`), and item 19 writes their reasons beside them. Nothing here adds another.
 
 **Not proposed:** the style options with no quality effect.
 - `operatorLinebreak: "before"` would reformat 16 files.

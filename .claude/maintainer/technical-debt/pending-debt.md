@@ -484,7 +484,7 @@ Add an item only when all of these hold:
 
 #### 🔎 Evidence
 
-- **Confirmed facts:** the pre-commit hook runs `biome check --staged`, which reads the files on disk; Biome's git-hooks guide notes the limitation.
+- **Confirmed facts:** the pre-commit hook runs `biome check --staged`, which reads the files on disk; Biome's git-hooks guide notes the limitation. The guide's alternative, `git-format-staged` piping the staged blob through `biome check --stdin-file-path`, does not work as a check on Biome 2.6.3. Without `--write`, the stdin check exits 1 even for a clean file ("The contents aren't fixed. Use the `--write` flag to fix them.", probed on 2026-10-27). With `--write`, it rewrites the staged content during the commit, which is a different policy from a check.
 - **Inferences:** none.
 - **Open questions:** none.
 
@@ -492,8 +492,8 @@ Add an item only when all of these hold:
 
 - **Impact / risk:** a partly staged file passes or fails on content that is not being committed; the pre-push gates check the committed state.
 - **Why it is not fixed now:** it is a Biome limitation; the pre-push gates cover it.
-- **Next action:** none.
-- **Review condition:** reassess if Biome checks the staged blob.
+- **Next action:** check the review condition.
+- **Review condition:** reassess if Biome checks the staged blob, or if a stdin check of a clean file exits 0.
 - **Related records:** ADR_2026-10-26_npm-tools-and-git-hooks-are-pinned-dev-dependencies.
 
 <!--
