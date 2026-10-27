@@ -181,9 +181,7 @@ describe('typescript lsp hook', () => {
   })
 
   test('CI has tsc on PATH, so the compiler cases never skip there', () => {
-    if (IN_CI) {
-      assert.ok(HAVE_TSC, 'install tsc in .github/workflows/validate.yml')
-    }
+    assert.ok(!IN_CI || HAVE_TSC, 'install tsc in .github/workflows/validate.yml')
   })
 
   describe('with tsc', { skip: !HAVE_TSC && !IN_CI }, () => {
