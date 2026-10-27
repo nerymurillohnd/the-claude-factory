@@ -48,7 +48,6 @@ Add an item only when all of these hold:
 | DEBT-020 | `docs/github-mcp-tools.md` serves one plugin but lives in the marketplace docs | 🟠 Blocked |
 | DEBT-023 | Gaps from the TypeScript hook audit report are still unaddressed | 🟠 Blocked |
 | DEBT-025 | Some repository scripts duplicate a check another script owns | 🟠 Blocked |
-| DEBT-026 | Unconfirmed that `.claude/rules/readme-md.md` loads when a README is read | 🟡 Pending |
 | DEBT-027 | `claude-review` was denied four tool calls on PR #42 | 🟡 Pending |
 | DEBT-028 | TypeScript 7 and 5.x were never run against the TypeScript post-edit hook | 🟡 Pending |
 | DEBT-030 | The svelte-development full-version local CLI waits on sveltejs/ai-tools #294 and PR #271 | 🟠 Blocked |
@@ -206,7 +205,12 @@ Add an item only when all of these hold:
 
 #### 🔎 Evidence
 
-- **Confirmed facts:** the file exists (2026-10-26); `maintaining-user-docs` lists it as out of its scope because it belongs to one plugin.
+- **Confirmed facts:**
+  - The file exists (2026-10-26). `maintaining-user-docs` lists it as out of its scope because it belongs to one plugin.
+  - Read on 2026-10-27:
+    - `plugins/github-operations/README.md` lines 45, 191 and 204 and `CHANGELOG.md` line 97 link to it as `../../docs/github-mcp-tools.md`.
+    - An installed copy lives at `cache/the-claude-factory/github-operations/<version>/`, where that path does not exist.
+    - Its tool list had drifted with no skill to catch it: it named `ui_get`, an app-only tool that GitHub's server keeps out of the agent's tool list (`ui.visibility: ["app"]` in `pkg/github/ui_tools.go`). Removed on 2026-10-27; the other 103 rows match the tools this session received.
 - **Inferences:** none.
 - **Open questions:** when to move it.
 
@@ -264,29 +268,6 @@ Add an item only when all of these hold:
 - **Review condition:** closes when each rule has one implementation per layer Nery approves.
 - **Related records:** none.
 
-### DEBT-026 — Unconfirmed that `.claude/rules/readme-md.md` loads when a README is read
-
-| Field | Value |
-| --- | --- |
-| **Status** | 🟡 Pending |
-| **Category** | quality |
-| **Owner** | `.claude/rules/readme-md.md` |
-| **Logged** | 2026-10-26 |
-
-#### 🔎 Evidence
-
-- **Confirmed facts:** the Confirmation of ADR_2026-10-25_every-readme-has-a-path-scoped-rule marks the load as pending; no fresh-session check has run.
-- **Inferences:** it loads, as the earlier path-scoped rules did in a `claude -p` check.
-- **Open questions:** none.
-
-#### 📈 Impact and next step
-
-- **Impact / risk:** README rules silently absent when a README is edited.
-- **Why it is not fixed now:** not run yet.
-- **Next action:** run a `claude -p` that reads a README and check the rule loaded; record it in the ADR's Confirmation.
-- **Review condition:** closes when the check passes.
-- **Related records:** ADR_2026-10-25_every-readme-has-a-path-scoped-rule.
-
 ### DEBT-027 — `claude-review` was denied four tool calls on PR #42
 
 | Field | Value |
@@ -301,6 +282,11 @@ Add an item only when all of these hold:
 - **Confirmed facts:**
   - Run 39733419072 on PR #42 reported `permission_denials_count: 4`; the workflow's `--allowedTools` allows only inline comments.
   - Read on 2026-10-27: runs 40281660797 (2026-10-26, a Dependabot PR) and 40298479231 (2026-10-26, `fix/block-no-verify-timeout-comment`) reported 0 denials; run 40489673742 (2026-10-27, PR #53) reported 3.
+  - Read on 2026-10-27, after the Claude workflows were pinned by SHA:
+    - PR #58: runs 40580144416 and 40581121473 reported 3 and 2;
+    - PR #59: run 40584120102 reported 1;
+    - PR #60, #61 and #62: five runs reported 0;
+    - PR #63: run 40589080828 reported 3.
   - The run log prints only the count, not the denied tool names.
 - **Inferences:** the reviewer could not read what it needed; the denials depend on the pull request, not on every run.
 - **Open questions:** which tools were denied, and where Claude Code reports their names for a `claude-code-action` run.

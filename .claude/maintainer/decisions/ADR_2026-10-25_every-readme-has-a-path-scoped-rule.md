@@ -45,6 +45,10 @@ Chosen option: **a path-scoped rule**, because it loads when a README is read or
 - Good, because a session that opens a README learns its kind, owner skill and template before it writes.
 - Bad, because the rule repeats some facts the skills also state, such as the template's location, and has to change when they change.
 
+## Confirmation
+
+- 2026-10-27, Claude Code 2.1.311: confirmed. In session `f5bdd77c-541a-4187-8bf3-85461bccdf16`, a `Read` of `plugins/tailwind-development/README.md` was followed at 16:09:36Z by a `nested_memory` attachment with the path `.claude/rules/readme-md.md`. The rule loaded on the README read, not at launch. A later `Edit` of the same README in that session also delivered the rule's contents.
+
 ## More information
 
 Decided by Nery on 2026-10-25 in this session. Whether the rule loads on a README read is **pending**: it has not been confirmed in a fresh session the way ADR_2026-10-24_workflow-is-a-stage-map confirmed its rules.

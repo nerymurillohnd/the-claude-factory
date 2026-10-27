@@ -38,6 +38,7 @@
 | 2026-10-27 | DEBT-034 | resolved | Biome checks every tsconfig file, with an `expand: "auto"` override | none |
 | 2026-10-27 | DEBT-032 | resolved | Biome's `useLiteralKeys` is off, so tsc's `noPropertyAccessFromIndexSignature` alone decides index-signature keys | none |
 | 2026-10-27 | DEBT-014 | obsolete | `release.yml` published release notes built by `release-notes.py` for two new tags | none |
+| 2026-10-27 | DEBT-026 | obsolete | `.claude/rules/readme-md.md` loads when a README is read | none |
 
 ## 🏁 Closed items
 
@@ -694,6 +695,37 @@ Release run 40490117853 (2026-10-27), triggered by the merge of [PR #53](https:/
 - **Residual risk:** none
 - **Closed by:** [PR #53](https://github.com/nerymurillohnd/the-claude-factory/pull/53), release run 40490117853.
 - **Related records:** ADR_2026-10-25_release-workflow-runs-the-release-skill-script.
+- **Superseded by:** none
+
+### DEBT-026 — `.claude/rules/readme-md.md` loads when a README is read
+
+| Field | Value |
+| --- | --- |
+| **Outcome** | obsolete |
+| **Closed on** | 2026-10-27 |
+| **Logged on** | 2026-10-26 |
+| **Owner** | `.claude/rules/readme-md.md` |
+
+#### ❗ The problem
+
+The Confirmation of ADR_2026-10-25_every-readme-has-a-path-scoped-rule marked as pending whether the path-scoped rule loads when a README is read. No fresh-session check had run, so README rules could be silently absent when a README was edited.
+
+#### 🔧 The closure
+
+A session that was not aimed at this item showed the load. In session `f5bdd77c-541a-4187-8bf3-85461bccdf16`, on 2026-10-27 with Claude Code 2.1.311, the rule loaded on the read of a plugin README. The ADR's Confirmation now records it.
+
+#### 🧪 Verification
+
+| Check | Evidence |
+| --- | --- |
+| ✅ **Positive:** the closure holds | not applicable |
+| 🚫 **Negative:** the original failure or condition is gone | Session transcript, line 319: `{"ts":"2026-10-27T16:09:36.811Z","ver":"2.1.311","type":"nested_memory","path":".../.claude/rules/readme-md.md"}`. It directly follows the `Read` of `plugins/tailwind-development/README.md` at 16:09:36.704Z. A later `Edit` of that README also returned the rule's contents. |
+
+#### 🔗 Follow-up
+
+- **Residual risk:** none
+- **Closed by:** none
+- **Related records:** ADR_2026-10-25_every-readme-has-a-path-scoped-rule.
 - **Superseded by:** none
 
 <!--
