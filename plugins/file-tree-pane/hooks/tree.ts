@@ -86,21 +86,28 @@ export const parseIgnore = (text: string): Set<string> => {
 export const isIgnored = (path: string, ignore: ReadonlySet<string>): boolean =>
   path.split('/').some((part) => ignore.has(part))
 
+// One run of digits or non-digits against another: numbers by value, the rest as text; 0 only
+// when the two runs are the same.
+const compareRuns = (x: string, y: string): number => {
+  if (x === y) {
+    return 0
+  }
+  const isNumber = /^\d/.test(x) && /^\d/.test(y)
+  if (isNumber && Number(x) !== Number(y)) {
+    return Number(x) - Number(y)
+  }
+  return x < y ? -1 : 1
+}
+
 // Natural order by hand: the hooks environment does not promise Intl.
 export const compareNames = (a: string, b: string): number => {
   const left = a.toLowerCase().match(/\d+|\D+/g) ?? []
   const right = b.toLowerCase().match(/\d+|\D+/g) ?? []
   for (let i = 0; i < Math.min(left.length, right.length); i += 1) {
-    const x = left[i] ?? ''
-    const y = right[i] ?? ''
-    if (x === y) {
-      continue
+    const order = compareRuns(left[i] ?? '', right[i] ?? '')
+    if (order !== 0) {
+      return order
     }
-    const isNumber = /^\d/.test(x) && /^\d/.test(y)
-    if (isNumber && Number(x) !== Number(y)) {
-      return Number(x) - Number(y)
-    }
-    return x < y ? -1 : 1
   }
   if (left.length !== right.length) {
     return left.length - right.length

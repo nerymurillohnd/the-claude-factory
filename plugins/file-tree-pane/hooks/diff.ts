@@ -53,6 +53,18 @@ const fromUtf8 = (bytes: readonly number[]): string => {
   return out
 }
 
+// The three octal digits after a backslash at `body[i]`, or undefined.
+const octalAt = (body: string, i: number): string | undefined => {
+  if (body[i] !== '\\') {
+    return undefined
+  }
+  return /^[0-3][0-7]{2}/.exec(body.slice(i + 1, i + 4))?.[0]
+}
+
+// The character a C escape such as `\n` stands for; any other escaped character is itself.
+const unescaped = (char: string): string =>
+  char in ESCAPES ? String.fromCharCode(ESCAPES[char] ?? 0) : char
+
 /**
  * A path as git prints it in a diff header: as is, or C-quoted (`"caf\303\251"`) when it holds
  * a quote, a backslash, a control character or, under the default `core.quotePath`, a byte past
@@ -67,7 +79,7 @@ export const unquotePath = (text: string): string => {
   let bytes: number[] = []
   for (let i = 0; i < body.length; i += 1) {
     const char = body[i] ?? ''
-    const octal = char === '\\' ? /^[0-3][0-7]{2}/.exec(body.slice(i + 1, i + 4))?.[0] : undefined
+    const octal = octalAt(body, i)
     if (octal !== undefined) {
       bytes.push(Number.parseInt(octal, 8))
       i += 3
@@ -76,8 +88,7 @@ export const unquotePath = (text: string): string => {
     out += fromUtf8(bytes)
     bytes = []
     if (char === '\\') {
-      const next = body[i + 1] ?? ''
-      out += next in ESCAPES ? String.fromCharCode(ESCAPES[next] ?? 0) : next
+      out += unescaped(body[i + 1] ?? '')
       i += 1
     } else {
       out += char
@@ -92,65 +103,99 @@ const headerName = (line: string): string | null => {
   return name === '/dev/null' ? null : name.replace(/^[ab]\//, '')
 }
 
-/** Parses `git diff` output, any number of files. */
-export const parseDiff = (text: string): ParsedDiff => {
-  const rows: DiffRow[] = []
-  const files: number[] = []
-  const hunks: number[] = []
-  let oldLine = 0
-  let newLine = 0
-  let isInHunk = false
+/** Where parseDiff is: the rows so far and the line numbers the next hunk line takes. */
+type DiffReader = ParsedDiff & {
+  oldLine: number
+  newLine: number
+  isInHunk: boolean
   // The file heading's row, named from `diff --git` and renamed from the `---`/`+++` lines, which
   // carry the name alone (the `diff --git` line can't tell `a/x b/y` apart when names hold spaces).
-  let heading: DiffRow | null = null
+  heading: DiffRow | null
+}
+
+// The file name on a `diff --git` line, after the prefix.
+const gitLineName = (rest: string): string => {
+  const quoted = /"((?:[^"\\]|\\.)*)"$/.exec(rest)?.[0]
+  const name =
+    quoted === undefined ? (/ b\/(.*)$/.exec(rest)?.[1] ?? rest) : headerName(`+++ ${quoted}`)
+  return name ?? rest
+}
+
+const startFile = (reader: DiffReader, line: string): void => {
+  reader.files.push(reader.rows.length)
+  reader.heading = {
+    kind: 'file',
+    text: gitLineName(line.slice('diff --git '.length)),
+    line: null,
+  }
+  reader.rows.push(reader.heading)
+  reader.isInHunk = false
+}
+
+const startHunk = (reader: DiffReader, line: string, hunk: RegExpExecArray): void => {
+  reader.oldLine = Number(hunk[1])
+  reader.newLine = Number(hunk[2])
+  reader.hunks.push(reader.rows.length)
+  reader.rows.push({ kind: 'hunk', text: line, line: null })
+  reader.isInHunk = true
+}
+
+// An added, removed, unchanged or `\ No newline` line inside a hunk.
+const readHunkLine = (reader: DiffReader, line: string): void => {
+  if (line.startsWith('+')) {
+    reader.rows.push({ kind: 'add', text: line.slice(1), line: reader.newLine })
+    reader.newLine += 1
+  } else if (line.startsWith('-')) {
+    reader.rows.push({ kind: 'del', text: line.slice(1), line: reader.oldLine })
+    reader.oldLine += 1
+  } else if (line.startsWith(' ')) {
+    reader.rows.push({ kind: 'ctx', text: line.slice(1), line: reader.newLine })
+    reader.oldLine += 1
+    reader.newLine += 1
+  } else if (line.startsWith('\\')) {
+    reader.rows.push({ kind: 'note', text: line.slice(2), line: null })
+  }
+}
+
+// Whether `line` is a `---`/`+++` header of the file being read, before its first hunk.
+const isFileHeader = (reader: DiffReader, line: string): boolean =>
+  !reader.isInHunk &&
+  reader.heading !== null &&
+  (line.startsWith('--- ') || line.startsWith('+++ '))
+
+/** Parses `git diff` output, any number of files. */
+export const parseDiff = (text: string): ParsedDiff => {
+  const reader: DiffReader = {
+    rows: [],
+    files: [],
+    hunks: [],
+    oldLine: 0,
+    newLine: 0,
+    isInHunk: false,
+    heading: null,
+  }
   for (const line of text.split('\n')) {
     if (line.startsWith('diff --git ')) {
-      const rest = line.slice('diff --git '.length)
-      const quoted = /"((?:[^"\\]|\\.)*)"$/.exec(rest)?.[0]
-      const name =
-        quoted === undefined ? (/ b\/(.*)$/.exec(rest)?.[1] ?? rest) : headerName(`+++ ${quoted}`)
-      files.push(rows.length)
-      heading = { kind: 'file', text: name ?? rest, line: null }
-      rows.push(heading)
-      isInHunk = false
+      startFile(reader, line)
       continue
     }
-    if (!isInHunk && heading !== null && (line.startsWith('--- ') || line.startsWith('+++ '))) {
+    if (isFileHeader(reader, line)) {
       const name = headerName(line)
-      if (name !== null) {
-        heading.text = name
+      if (reader.heading !== null && name !== null) {
+        reader.heading.text = name
       }
       continue
     }
     const hunk = HUNK.exec(line)
     if (hunk !== null) {
-      oldLine = Number(hunk[1])
-      newLine = Number(hunk[2])
-      hunks.push(rows.length)
-      rows.push({ kind: 'hunk', text: line, line: null })
-      isInHunk = true
-      continue
-    }
-    if (!isInHunk) {
-      if (line.startsWith('Binary files ')) {
-        rows.push({ kind: 'note', text: 'Binary file changed', line: null })
-      }
-      continue
-    }
-    if (line.startsWith('+')) {
-      rows.push({ kind: 'add', text: line.slice(1), line: newLine })
-      newLine += 1
-    } else if (line.startsWith('-')) {
-      rows.push({ kind: 'del', text: line.slice(1), line: oldLine })
-      oldLine += 1
-    } else if (line.startsWith(' ')) {
-      rows.push({ kind: 'ctx', text: line.slice(1), line: newLine })
-      oldLine += 1
-      newLine += 1
-    } else if (line.startsWith('\\')) {
-      rows.push({ kind: 'note', text: line.slice(2), line: null })
+      startHunk(reader, line, hunk)
+    } else if (reader.isInHunk) {
+      readHunkLine(reader, line)
+    } else if (line.startsWith('Binary files ')) {
+      reader.rows.push({ kind: 'note', text: 'Binary file changed', line: null })
     }
   }
+  const { rows, files, hunks } = reader
   return { rows, files, hunks }
 }
 
