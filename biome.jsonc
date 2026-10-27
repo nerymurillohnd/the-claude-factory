@@ -14,8 +14,8 @@
     // An unknown file type is an error, never skipped in silence.
     "ignoreUnknown": false,
     "includes": [
-      // Every extension the repository holds that Biome reads.
-      "**/*.{js,cjs,mjs,jsx,ts,cts,mts,tsx,json,jsonc,md,yml,yaml}",
+      // Every extension the repository holds that Biome reads, grit for the lint plugins' sources.
+      "**/*.{js,cjs,mjs,jsx,ts,cts,mts,tsx,json,jsonc,md,yml,yaml,grit}",
       // Build output.
       "!!**/dist",
       "!!**/build",
@@ -49,6 +49,19 @@
       "!plugins/**/*.md"
     ]
   },
+  // GritQL lint plugins, for repository conventions no built-in rule covers. Each finding is an
+  // error, so it fails the gates; a suppression is // biome-ignore lint/plugin: <reason>.
+  "plugins": [
+    {
+      // Entry points detect themselves with isMain() from scripts/lib.mjs, never an inline
+      // comparison with process.argv[1]. The plugins under plugins/ never import scripts/lib.mjs.
+      "path": "./scripts/biome-plugins/main-module.grit",
+      "includes": [
+        "scripts/**",
+        "!scripts/lib.mjs"
+      ]
+    }
+  ],
   "assist": {
     // Assist is on and runs its recommended actions (organizeImports) by default, and biome ci
     // fails when one has a change to make. Each action added here gets its

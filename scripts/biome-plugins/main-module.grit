@@ -1,0 +1,6 @@
+// An entry point compared import.meta.url with process.argv[1] inline and, on macOS, ran nothing:
+// temp folders sit under the /var → /private/var link. isMain() in scripts/lib.mjs resolves it.
+`$left === $right` as $comparison where {
+  or { $left <: contains `process.argv[1]`, $right <: contains `process.argv[1]` },
+  register_diagnostic(span=$comparison, message="Use isMain(import.meta.url) from scripts/lib.mjs, not process.argv[1].")
+}
