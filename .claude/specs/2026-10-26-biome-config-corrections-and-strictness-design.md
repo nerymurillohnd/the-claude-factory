@@ -679,10 +679,15 @@ Nery said on 2026-10-26 that Biome is the global default and that `~/.claude/ENV
 
 Item 27's content:
 
-- `.vscode/extensions.json`: `recommendations` of `biomejs.biome` and `editorconfig.editorconfig`.
+- `.vscode/extensions.json`:
+  - `recommendations`: `biomejs.biome` and `editorconfig.editorconfig`;
+  - `unwantedRecommendations`: `dbaeumer.vscode-eslint`, `esbenp.prettier-vscode` and `davidanson.vscode-markdownlint`.
+  
+  The migration guide's "After migrating" step says to replace the other tools' editor extensions with Biome's. The repository has no ESLint, Prettier or Stylelint dependency or configuration, so `biome migrate eslint|prettier|stylelint` has nothing to import (section 6.4.1). Nery keeps those extensions installed for other projects, so this repository turns them off for itself instead of removing them.
 - `.vscode/settings.json`:
   - `[markdown]` and `[yaml]`: `editor.defaultFormatter: "biomejs.biome"` and `editor.codeActionsOnSave` with `source.fixAll.biome: "explicit"`. This holds in any clone or worktree, whatever the user settings say.
   - `js/ts.preferences.quoteStyle: "single"`.
+  - `eslint.enable: false` and `prettier.enable: false`, both `resource`-scoped settings in the installed extensions' manifests. With them, neither extension lints or formats here, whatever the user settings say.
   - `markdownlint.appliesTo: "noFiles"`. The enum is `allFiles`, `projectFiles`, `workspaceFiles`, `noFiles` (the extension's manifest), and Biome lints the Markdown it covers.
   - `source.action.useSortedAttributes.biome: "never"` and `source.action.noDuplicateClasses.biome: "never"`, until items 17 and 18 enable those actions in the configuration, if 28e proves the risk.
   - `source.suppressRule.inline.biome: "never"` and `source.suppressRule.topLevel.biome: "never"` (section 6.5).
