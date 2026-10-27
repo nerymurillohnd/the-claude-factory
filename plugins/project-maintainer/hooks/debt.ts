@@ -114,13 +114,20 @@ export function validateLedger(
     problems.push(...entryProblems(kind, entry))
   }
   if (kind === 'closed-debt') {
-    for (const row of after.index) {
-      const outcome = row[2] ?? ''
-      if (row.length > 0 && !(OUTCOMES as readonly string[]).includes(outcome)) {
-        problems.push(
-          `The Index row of ${row[1] ?? 'an item'} has outcome "${outcome}". Use ${OUTCOMES.join(', ')}.`,
-        )
-      }
+    problems.push(...closedIndexProblems(after.index))
+  }
+  return problems
+}
+
+/** The Index rows of the closed ledger whose outcome is not one of the known outcomes. */
+function closedIndexProblems(index: readonly string[][]): string[] {
+  const problems: string[] = []
+  for (const row of index) {
+    const outcome = row[2] ?? ''
+    if (row.length > 0 && !(OUTCOMES as readonly string[]).includes(outcome)) {
+      problems.push(
+        `The Index row of ${row[1] ?? 'an item'} has outcome "${outcome}". Use ${OUTCOMES.join(', ')}.`,
+      )
     }
   }
   return problems

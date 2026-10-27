@@ -13,6 +13,7 @@ import {
   authorityReasons,
   bashReason,
   commitSignals,
+  type FileInput,
   fileInput,
   formatProblems,
   mayWriteRecord,
@@ -61,6 +62,24 @@ async function around($: EngineInterface, ref: RecordRef): Promise<Surroundings>
   return { otherLedger: (await readText($, `${ref.dir}/${other}`)).text, adrIds }
 }
 
+/** A Write or Edit call that saves a record: its arguments, the resolved path and the record. */
+type Target = {
+  input: FileInput
+  path: string
+  ref: RecordRef
+}
+
+/** The record a Write or Edit call saves, or null when the call is not one or saves another file. */
+async function recordTarget($: EngineInterface, value: unknown): Promise<Target | null> {
+  const input = fileInput(value)
+  if (input === null) {
+    return null
+  }
+  const path = resolvePath(input.path, await $.session.cwd())
+  const ref = classify(path)
+  return ref === null ? null : { input, path, ref }
+}
+
 async function headOf($: EngineInterface, cwd: string): Promise<string> {
   try {
     const head = await $.process.run(['git', 'rev-parse', 'HEAD'], { cwd, timeoutMs: 5000 })
@@ -76,12 +95,11 @@ export function register(on: On, options: PluginOptions): void {
 
   // Format guard: runs before the permission check, so a malformed record never reaches a prompt.
   on('tool.call', { tool: ['Write', 'Edit'] }, async ($, e, next) => {
-    const input = fileInput(e)
-    const path = input === null ? null : resolvePath(input.path, await $.session.cwd())
-    const ref = path === null ? null : classify(path)
-    if (input === null || path === null || ref === null) {
+    const target = await recordTarget($, e)
+    if (target === null) {
       return next(e)
     }
+    const { input, path, ref } = target
     const { text: current, failed } = await readText($, path)
     if (failed) {
       return {
@@ -107,12 +125,11 @@ export function register(on: On, options: PluginOptions): void {
   // Authority guard: only the person can approve rewriting a settled record.
   on('tool.check', { tool: ['Write', 'Edit'] }, async ($, e, next) => {
     const decided = await next(e)
-    const input = decided.decision === 'deny' ? null : fileInput(e.input)
-    const path = input === null ? null : resolvePath(input.path, await $.session.cwd())
-    const ref = path === null ? null : classify(path)
-    if (input === null || path === null || ref === null) {
+    const target = decided.decision === 'deny' ? null : await recordTarget($, e.input)
+    if (target === null) {
       return decided
     }
+    const { input, path, ref } = target
     const { text: current, failed } = await readText($, path)
     if (failed) {
       return {

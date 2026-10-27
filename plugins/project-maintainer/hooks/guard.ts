@@ -148,44 +148,76 @@ const SEGMENTS = /&&|\|\||[;|\n]/
 const REMOVES_OR_MOVES = new Set(['rm', 'mv', 'unlink', 'shred', 'truncate'])
 const WRITES_LAST_ARGUMENT = new Set(['cp', 'install', 'ln'])
 
+/** One piece of a shell command, split into words, with `git` folded into its subcommand. */
+type Segment = {
+  tokens: string[]
+  verb: string
+  args: string[]
+}
+
+function parseSegment(segment: string): Segment {
+  const tokens = segment
+    .trim()
+    .split(/\s+/)
+    .map(unquote)
+    .filter((token) => token !== '')
+  const [first = '', ...rest] = tokens
+  return first === 'git'
+    ? { tokens, verb: rest[0] ?? '', args: rest.slice(1) }
+    : { tokens, verb: first, args: rest }
+}
+
+/** Whether a redirect in the segment points into the records folder. */
+function redirectsIntoRecords(tokens: readonly string[]): boolean {
+  return tokens.some(
+    (token, index) =>
+      /^\d*>>?/.test(token) &&
+      (mentionsRecords(token) ||
+        (/^\d*>>?$/.test(token) && mentionsRecords(tokens[index + 1] ?? ''))),
+  )
+}
+
+/** Whether the verb of the segment writes, moves or deletes a file it names in the records. */
+function verbWritesRecords(
+  { verb, args }: Segment,
+  names: boolean,
+  insideRecords: boolean,
+): boolean {
+  const inPlace =
+    (verb === 'sed' || verb === 'perl') && args.some((arg) => /^-\w*i|^--in-place/.test(arg))
+  return (
+    (REMOVES_OR_MOVES.has(verb) && names) ||
+    (WRITES_LAST_ARGUMENT.has(verb) && (mentionsRecords(args.at(-1) ?? '') || insideRecords)) ||
+    (verb === 'tee' && names) ||
+    (verb === 'dd' &&
+      args.some((arg) => arg.startsWith('of=') && (mentionsRecords(arg) || insideRecords))) ||
+    (inPlace && names)
+  )
+}
+
+/** Whether one segment changes files in the records folder, given whether an earlier `cd` entered it. */
+function segmentChangesRecords(segment: Segment, insideRecords: boolean): boolean {
+  const names = segment.args.some(mentionsRecords) || insideRecords
+  return (
+    redirectsIntoRecords(segment.tokens) ||
+    (insideRecords && segment.tokens.some((token) => /^\d*>>?/.test(token))) ||
+    verbWritesRecords(segment, names, insideRecords)
+  )
+}
+
 /**
  * Whether a shell command rewrites, moves or deletes the records folders, or writes into them.
  * Reading, and copying out of the folder, stay quiet. Best effort: a shell has too many spellings.
  */
 export function bashReason(command: string): string | null {
   let insideRecords = false
-  for (const segment of command.split(SEGMENTS)) {
-    const tokens = segment
-      .trim()
-      .split(/\s+/)
-      .map(unquote)
-      .filter((token) => token !== '')
-    const [first = '', ...rest] = tokens
-    const verb = first === 'git' ? (rest[0] ?? '') : first
-    const args = first === 'git' ? rest.slice(1) : rest
-    if (verb === 'cd') {
-      insideRecords = insideRecords || args.some(mentionsRecords)
+  for (const piece of command.split(SEGMENTS)) {
+    const segment = parseSegment(piece)
+    if (segment.verb === 'cd') {
+      insideRecords = insideRecords || segment.args.some(mentionsRecords)
       continue
     }
-    const names = args.some(mentionsRecords) || insideRecords
-    const redirect = tokens.some(
-      (token, index) =>
-        /^\d*>>?/.test(token) &&
-        (mentionsRecords(token) ||
-          (/^\d*>>?$/.test(token) && mentionsRecords(tokens[index + 1] ?? ''))),
-    )
-    const inPlace =
-      (verb === 'sed' || verb === 'perl') && args.some((arg) => /^-\w*i|^--in-place/.test(arg))
-    const flagged =
-      redirect ||
-      (insideRecords && tokens.some((token) => /^\d*>>?/.test(token))) ||
-      (REMOVES_OR_MOVES.has(verb) && names) ||
-      (WRITES_LAST_ARGUMENT.has(verb) && (mentionsRecords(args.at(-1) ?? '') || insideRecords)) ||
-      (verb === 'tee' && names) ||
-      (verb === 'dd' &&
-        args.some((arg) => arg.startsWith('of=') && (mentionsRecords(arg) || insideRecords))) ||
-      (inPlace && names)
-    if (flagged) {
+    if (segmentChangesRecords(segment, insideRecords)) {
       return 'The command changes files in .claude/maintainer/. Records are written with the Write and Edit tools, which apply the rules of the records, and not through the shell.'
     }
   }
