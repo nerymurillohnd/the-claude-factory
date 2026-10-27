@@ -160,7 +160,7 @@ A refactor keeps the component's behaviour, accessibility and public interface; 
 
 Keep it proportional to the change:
 
-- The ranking, labelled with the words primary, secondary, tertiary and removed so the user can check it against the result; for a refactor, also the ranking the old view had.
+- The ranking, as one line per rank that starts with the literal word, so the user can check it against the result: `Primary:`, `Secondary:`, `Tertiary:`, `Removed:`. For a refactor, also the ranking the old view had. Keep these labels even when the rest of the reply is short, unless the user asked for markup only.
 - What changed, or for a review, the findings in priority order with file and line, each with the fix.
 - The tokens added or changed, and why the existing ones did not cover the need.
 - Verification: what ran and what it showed, including contrast measurements and screenshots taken; what did not run.
