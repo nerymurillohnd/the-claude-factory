@@ -99,7 +99,7 @@ const GIT_ENV: Record<string, string> = Object.fromEntries([['GIT_OPTIONAL_LOCKS
 // log. The tree runs git on its own, in folders the person may not have vetted, so none of them
 // run: each filter driver the config names is blanked, and the rest are turned off by flag.
 // Claude Code already turns repository hooks off. Names print as they are, not C-quoted.
-export const gitArgv = (args: readonly string[], drivers: readonly string[] = []): string[] => {
+export const gitArgv = (args: readonly string[], filterNames: readonly string[] = []): string[] => {
   const [sub, ...rest] = args
   const safe =
     sub === 'diff'
@@ -107,7 +107,7 @@ export const gitArgv = (args: readonly string[], drivers: readonly string[] = []
       : sub === 'log'
         ? ['log', '--no-show-signature', ...rest]
         : [...args]
-  const blanked = drivers.flatMap((name) => [
+  const blanked = filterNames.flatMap((name) => [
     '-c',
     `filter.${name}.clean=`,
     '-c',
@@ -206,28 +206,28 @@ export const shows = (setting: Activity, kind: ActivityKind): boolean =>
 const segment = (
   value: string,
   color: string | null,
-  look: Partial<Omit<Segment, 'text' | 'color'>> = {},
+  style: Partial<Omit<Segment, 'text' | 'color'>> = {},
 ): Segment => ({
   text: printable(value),
   color,
-  isDim: look.isDim ?? false,
-  isBold: look.isBold ?? false,
-  isStruck: look.isStruck ?? false,
+  isDim: style.isDim ?? false,
+  isBold: style.isBold ?? false,
+  isStruck: style.isStruck ?? false,
 })
 
-const toneOfFile = (file: GitFile | undefined, palette: Palette): string | null => {
+const toneOfFile = (file: GitFile | undefined, colors: Palette): string | null => {
   switch (file?.code) {
     case 'modified':
     case 'renamed':
-      return palette.modified
+      return colors.modified
     case 'added':
-      return palette.added
+      return colors.added
     case 'untracked':
-      return palette.untracked
+      return colors.untracked
     case 'deleted':
-      return palette.deleted
+      return colors.deleted
     case 'conflict':
-      return palette.conflict
+      return colors.conflict
     default:
       return null
   }
@@ -239,11 +239,15 @@ const rightText = (
   row: Row,
   column: RightColumn,
   now: number,
-  sizes: ReadonlyMap<string, number>,
+  folderSizes: ReadonlyMap<string, number>,
 ): string => {
   if (column === 'size') {
     const size =
-      row.kind === 'dir' ? sizes.get(row.path) : row.entry.isGhost ? undefined : row.entry.size
+      row.kind === 'dir'
+        ? folderSizes.get(row.path)
+        : row.entry.isGhost
+          ? undefined
+          : row.entry.size
     return size === undefined ? '' : formatSize(size)
   }
   if (row.kind === 'dir' || row.entry.isGhost) {
@@ -319,29 +323,29 @@ export const rowLine = (
 }
 
 /** One diff row as the body draws it: a line number gutter, then the line. */
-export const diffLine = (row: DiffRow, index: number, palette: Palette): BodyLine => {
+export const diffLine = (row: DiffRow, position: number, colors: Palette): BodyLine => {
   const gutter = row.line === null ? '     ' : String(row.line).padStart(4)
   switch (row.kind) {
     case 'file':
       return {
-        key: `d${index}`,
-        segments: [segment(row.text, palette.accent, { isBold: true })],
+        key: `d${position}`,
+        segments: [segment(row.text, colors.accent, { isBold: true })],
         nameIndex: -1,
         shimmer: null,
         bg: null,
       }
     case 'hunk':
       return {
-        key: `d${index}`,
-        segments: [segment(row.text, palette.muted)],
+        key: `d${position}`,
+        segments: [segment(row.text, colors.muted)],
         nameIndex: -1,
         shimmer: null,
         bg: null,
       }
     case 'note':
       return {
-        key: `d${index}`,
-        segments: [segment(`      ${row.text}`, palette.muted, { isDim: true })],
+        key: `d${position}`,
+        segments: [segment(`      ${row.text}`, colors.muted, { isDim: true })],
         nameIndex: -1,
         shimmer: null,
         bg: null,
@@ -350,8 +354,8 @@ export const diffLine = (row: DiffRow, index: number, palette: Palette): BodyLin
       const sign = row.kind === 'add' ? '+' : row.kind === 'del' ? '-' : ' '
       const bg = row.kind === 'add' ? 'diffAdded' : row.kind === 'del' ? 'diffRemoved' : null
       return {
-        key: `d${index}`,
-        segments: [segment(`${gutter} `, palette.muted), segment(`${sign}${row.text}`, null)],
+        key: `d${position}`,
+        segments: [segment(`${gutter} `, colors.muted), segment(`${sign}${row.text}`, null)],
         nameIndex: -1,
         shimmer: null,
         bg,
@@ -1847,7 +1851,7 @@ export const register: Register = (on: On, options: PluginOptions): void => {
               : null
       rows.slice(first, first + shown).forEach((row) => {
         // A folder shimmers for what lies under it only while it is collapsed.
-        const own = activity.get(row.path)?.kind
+        const ownMark = activity.get(row.path)?.kind
         const below = row.kind === 'dir' && !row.isExpanded ? active.get(row.path) : undefined
         lines.push(
           rowLine(row, {
@@ -1858,7 +1862,7 @@ export const register: Register = (on: On, options: PluginOptions): void => {
             sizes,
             palette: colors,
             glyphs,
-            shimmer: tint(own ?? below),
+            shimmer: tint(ownMark ?? below),
           }),
         )
       })
