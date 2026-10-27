@@ -56,7 +56,7 @@ This repository holds two scopes. They are never mixed: a rule written for one s
 #### Maintainer Tooling
 
 - Python: format and lint with Ruff, type-check with Basedpyright, test with unittest or pytest.
-- Markdown, JSON, JavaScript and TypeScript: format and lint with Biome. A plugin's Markdown joins when the plugin next changes, as `building-plugins` step 5 says.
+- Markdown, JSON, YAML, JavaScript and TypeScript: format and lint with Biome. A plugin's Markdown joins when the plugin next changes, as `building-plugins` step 5 says.
 - Never format these Markdown files, with Biome or any other tool: every `SKILL.md`; `.claude/memory/`, `MEMORY.md` and the files it indexes; every `CLAUDE.md`; `.claude/session-handoff/`; the ADRs in `.claude/maintainer/decisions/`; the ledgers in `.claude/maintainer/technical-debt/`; `.claude/plans/`; `.claude/specs/`; and `.claude/rules/`. `biome.json` excludes them whenever Markdown is in its `files.includes`.
 - Every tool covers the whole repository except `node_modules/`, `.github/` and the files above; run at the root, each reads that scope from its own config (`biome.json`, `ruff.toml`, `pyrightconfig.json`, `.editorconfig` for shfmt). Basedpyright always skips dot folders, so `.claude/skills/pyrightconfig.json` covers the skills' Python, and `scripts/basedpyright-maintainer.mjs` checks each PEP 723 script against its own environment.
 - JavaScript and TypeScript: type-check with `tsc` under the strictest settings and `--noEmit`.

@@ -223,7 +223,14 @@ export function gatesFor({ root, ci, base }) {
   // Biome on everything but plugin code: the top-level folders and the root files it reads.
   const maintainerBiome = [
     ...new Set(
-      tracked(root, [...JS_FAMILY.map((e) => `*.${e}`), '*.json', '*.jsonc', '*.md'])
+      tracked(root, [
+        ...JS_FAMILY.map((e) => `*.${e}`),
+        '*.json',
+        '*.jsonc',
+        '*.md',
+        '*.yml',
+        '*.yaml',
+      ])
         .filter((f) => !f.startsWith('plugins/') && !f.startsWith('.github/'))
         .map((f) => (f.includes('/') ? f.slice(0, f.indexOf('/')) : f)),
     ),
