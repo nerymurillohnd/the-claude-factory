@@ -1,6 +1,6 @@
 # Biome configuration: corrections, cleanup and stricter rules
 
-Status: proposal, awaiting Nery's approval; the decisions of section 14 are open. Nothing below is implemented except item 2, committed in `db0dfab`: the change to `biome.json` and DEBT-033's closure in the debt ledgers.
+Status: approved by Nery on 2026-10-27, with every decision of section 14 settled; implementation follows section 15. Nothing below is implemented except item 2, committed in `db0dfab`: the change to `biome.json` and DEBT-033's closure in the debt ledgers.
 
 ## 1. Goal
 
@@ -628,6 +628,28 @@ Source: the rule lists for JSON and Markdown (biomejs.dev/linter), as Nery share
 
 **Not proposed:** `suspicious.noUntrustedLicenses` (2.4.9, `project` domain). With `deny: ["MIT"]` set to force a finding, linting `package.json` reported nothing, so it is unverified which files the rule checks. The four dev dependencies are `MIT OR Apache-2.0` (Biome), `Apache-2.0` (TypeScript), `MIT` (Husky) and `MIT` (`@types/node`). They do not ship to users.
 
+### 11.7 One configuration, and the v2 breaking changes
+
+Sources: the guides "Use Biome in big projects" and "Upgrade to Biome v2: breaking changes", as Nery shared them on 2026-10-27.
+
+**One root configuration, and no nested one:**
+- `biome.json` is the only tracked Biome configuration, and the only one on disk outside `node_modules`.
+- The SvelteKit fixture `scripts/tests/svelte-development/kit3-app` ships only `.example` files.
+- No worktree exists today. A worktree under `.claude/worktrees/` is a full checkout with its own root `biome.json`, which is the guide's "vendored folder" case. `!!.claude/worktrees` already keeps it out, as the guide advises.
+
+**Nested configurations in `plugins/<plugin>/`, rejected:** `extends: "//"` would let a plugin carry its own settings, but a file inside `plugins/<plugin>/` ships to users with the plugin. A maintainer `biome.json` there would put the maintainer's tooling into what users install, which `.claude/CLAUDE.md` forbids (Maintainer and Plugin Scopes). Per-plugin needs go through the root configuration's `overrides`, as item 21 does for the tsconfig files.
+
+**A shared configuration across Nery's repositories** (`extends` with a path, or a published npm package): not adopted. `809cf90` records `biome.json` as "Nery's standard config (from claude-essentials)". That standard could become one extended file, but a public repository cannot extend a local path, and publishing a package adds a release process for one consumer. Revisit when a second repository needs to stay in step with this one. The "publish packages" guide gives the shape for that day: a package whose `exports.biome` points at a `biome-manifest.json`, listed under the `biome-plugin` keyword, with its plugin paths resolved by `resolutionKind: "config"` (section 6.6).
+
+**v2 breaking changes, checked against the tracked files** (`git grep`):
+- **No Rome leftovers:** no `rome.json`, no `rome-ignore`, no `ROME_BINARY`. No old suppression form, `biome-ignore lint(group/rule)`.
+- **No `ignore` or `include` keys:** the configuration uses `includes`, and `biome migrate` reports nothing to migrate (section 6.4.1).
+- **Globs are relative to the configuration, and `*` no longer crosses `/`:** every pattern in this spec is written for that, including item 21's `**/tsconfig.json` and `**/tsconfig.*.json`, and item 32's `scripts/**` (section 11.5).
+- **No `import … assert { … }`:** the old syntax that v2 dropped for `with`.
+- **`style` rules no longer error by default:** the configuration sets each style rule it wants at its own level, and the gates fail on warnings.
+- **The import organizer no longer puts bare Node built-ins first.** No tracked file imports a bare built-in such as `'fs'` or `'path'`: all use the `node:` protocol. Item 30 turns `useNodejsImportProtocol` into an error, which keeps it that way.
+- **`linter.rules.all` was removed in v2,** and `rules.preset: "all"` is its current form. Section 13 rejects it on measured findings, not on the old option.
+
 ## 12. Editor setup (VS Code)
 
 The goal: on save, VS Code does exactly what `npm run format`, the pre-commit hook and the gates do, and never touches a file Biome excludes. VS Code matters here even though Nery does not edit in it: its diagnostics reach Claude Code sessions through the IDE integration (`~/.claude/LESSONS.md`).
@@ -717,6 +739,8 @@ The assist actions rejected are listed in section 7.
 - **JavaScript plugins and per-rule `fix` overrides:** see sections 6.6 and 6.3. GritQL plugins are adopted for one rule (item 32), with section 11.1's `files.includes` change.
 
 ## 14. Decisions for Nery
+
+**Approved by Nery on 2026-10-27, each with its recommendation:** D1 (c), D2 15, D3 the proposed order, D4 (a) `biome.jsonc`, D5 off, D6 (a) commit, D7 (a), D8 (a), D9 (a). Each decision that shapes the configuration gets its ADR in the commit that implements it.
 
 - **D1, the plugin tsconfig files (item 1):**
   - (a) Keep them out with a regular `!plugins/*/tsconfig.json`, recorded in an ADR, as with the plugins' Markdown. No releases.
