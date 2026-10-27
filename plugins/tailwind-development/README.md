@@ -163,7 +163,10 @@ Use @apply inside the <style> block of Button.svelte.
 
 - **Hooks:** none.
 - **MCP servers:** none. When you already have the Context7 MCP server connected, Claude queries it first for Tailwind's docs; the plugin doesn't install or configure it.
-- **Network:** the plugin makes no calls itself. Claude reads documentation pages from `tailwindcss.com` (and `v3.tailwindcss.com` or older versioned sites for older projects) with its own web fetch tool, or through Context7 when you have it, each under your usual permission prompts. The requests carry the page address or a short docs query, never your code.
+- **Network:** the plugin makes no calls itself. Claude makes these requests with its own tools, each under your usual permission prompts, and none of them carries your code:
+  - documentation pages from `tailwindcss.com` (and `v3.tailwindcss.com` or older versioned sites for older projects), or a short docs query to Context7 when you have it;
+  - for questions about which version added a feature, the release posts on `tailwindcss.com/blog` and the releases and changelog of `github.com/tailwindlabs/tailwindcss`;
+  - when there is no project build to preview a design in, a standalone preview page that loads Tailwind's Play CDN script from `cdn.jsdelivr.net` in your browser or artifact viewer.
 - **Files written:** none by the plugin. Claude edits your project files only as the task asks, like any other edit. When it checks a design visually, it uses the browser or screenshot tools you already have, under your usual permission prompts.
 
 ## 🔄 Updating
