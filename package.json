@@ -20,7 +20,7 @@
     "lint:python": "node scripts/gates.mjs --only ruff-check-",
     "lint:js": "node scripts/gates.mjs --only biome-",
     "lint:shell": "node scripts/gates.mjs --only shellcheck-",
-    "format": "biome format --write . && ruff format . && shfmt -w .",
+    "format": "biome check --write --linter-enabled=false . && ruff format . && shfmt -w .",
     "format:check": "node scripts/gates.mjs --only ruff-format-,shfmt-,biome-",
     "fix": "biome check --write . && ruff check --fix . && ruff format . && shfmt -w .",
     "check:repo": "node scripts/gates.mjs --only check-repo",
