@@ -34,6 +34,7 @@
 | 2026-10-26 | DEBT-022 | obsolete | Nery dropped the five handoff items that named removed skills and files | none |
 | 2026-10-26 | DEBT-024 | obsolete | Dropped by Nery: the never-run `block-no-verify` checks are no longer tracked | none |
 | 2026-10-26 | DEBT-029 | obsolete | Dropped by Nery: the `claude-review` failures on PRs #20, #28 and #29 are no longer investigated | none |
+| 2026-10-26 | DEBT-033 | resolved | `.editorconfig` is the only source of indentation and line endings for Biome | none |
 
 ## 🏁 Closed items
 
@@ -566,6 +567,37 @@ Nery withdrew the item on 2026-10-26, stated by the user on 2026-10-26. The logs
 - **Residual risk:** if the cause still exists, a later pull request can go without the automated review. DEBT-027 still tracks the denied tool calls of the same workflow on PR #42.
 - **Closed by:** Nery's decision on 2026-10-26.
 - **Related records:** DEBT-027.
+- **Superseded by:** none
+
+### DEBT-033 — `.editorconfig` is the only source of indentation and line endings for Biome
+
+| Field | Value |
+| --- | --- |
+| **Outcome** | resolved |
+| **Closed on** | 2026-10-26 |
+| **Logged on** | 2026-10-26 |
+| **Owner** | `biome.json` |
+
+#### ❗ The problem
+
+`formatter.indentStyle`, `indentWidth`, `lineEnding` and `markdown.formatter.indentStyle` in `biome.json` repeated `.editorconfig`, which Biome reads with `formatter.useEditorconfig: true`. Settings in `biome.json` take precedence, so the two sources could drift.
+
+#### 🔧 The closure
+
+The four keys were removed from `biome.json`; `lineWidth` and `useEditorconfig` stay, since `.editorconfig` has no line width Biome reads. Biome 2.6.3 reads `indent_style`, `indent_size`, `end_of_line` and `insert_final_newline` from the root `.editorconfig` ([configuration reference](https://biomejs.dev/reference/configuration/#formatteruseeditorconfig), `biome ci --help`).
+
+#### 🧪 Verification
+
+| Check | Evidence |
+| --- | --- |
+| ✅ **Positive:** the closure holds | 2026-10-26, Biome 2.6.3: `npx biome ci .` checked 163 files, no fixes applied, 4 infos, the same result as before the change. |
+| 🚫 **Negative:** the original failure or condition is gone | 2026-10-26: `biome.json` no longer names `indentStyle`, `indentWidth` or `lineEnding`. In a scratch copy without the keys, changing `.editorconfig` alone made `biome ci .` fail: `indent_size = 4` gave 151 errors, `indent_style = tab` 139, `end_of_line = crlf` 163, and a `[*.md]` section with `indent_size = 4` 2. |
+
+#### 🔗 Follow-up
+
+- **Residual risk:** none
+- **Closed by:** the commit that removes the keys from `biome.json`.
+- **Related records:** none.
 - **Superseded by:** none
 
 <!--

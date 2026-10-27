@@ -55,7 +55,6 @@ Add an item only when all of these hold:
 | DEBT-030 | The svelte-development full-version local CLI waits on sveltejs/ai-tools #294 and PR #271 | 🟠 Blocked |
 | DEBT-031 | No hook reminds Claude to load an LSP intelligence skill before the first edit | 🔴 Risk accepted |
 | DEBT-032 | Biome's `useLiteralKeys` conflicts with tsc's `noPropertyAccessFromIndexSignature` | 🟠 Blocked |
-| DEBT-033 | `biome.json` repeats the indentation and line-ending settings `.editorconfig` already sets | 🟡 Pending |
 | DEBT-034 | Every `tsconfig*.json` is force-ignored by Biome with no recorded reason | 🟠 Blocked |
 | DEBT-035 | `npm run test:plugins` fails when a plugin test family has no gate left | 🔴 Risk accepted |
 | DEBT-036 | `biome check --staged` checks the working-tree copy of a partly staged file | 🔴 Risk accepted |
@@ -426,29 +425,6 @@ Add an item only when all of these hold:
 - **Why it is not fixed now:** turning off a rule needs Nery's approval.
 - **Next action:** with Nery's approval, turn `useLiteralKeys` off for JS and TS in `biome.json`, with the reason beside it.
 - **Review condition:** closes when Biome reports none and tsc passes.
-- **Related records:** none.
-
-### DEBT-033 — `biome.json` repeats the indentation and line-ending settings `.editorconfig` already sets
-
-| Field | Value |
-| --- | --- |
-| **Status** | 🟡 Pending |
-| **Category** | maintainability |
-| **Owner** | `biome.json` |
-| **Logged** | 2026-10-26 |
-
-#### 🔎 Evidence
-
-- **Confirmed facts:** `formatter.indentStyle`, `indentWidth`, `lineEnding` and `markdown.formatter.indentStyle` repeat `.editorconfig`, which Biome reads (`useEditorconfig: true`); `biome.json` wins, so the two can drift. A scratch run without them changed none of 240 files (2026-10-26).
-- **Inferences:** none.
-- **Open questions:** none.
-
-#### 📈 Impact and next step
-
-- **Impact / risk:** two sources of the same style.
-- **Why it is not fixed now:** logged with the session's open items on Nery's order.
-- **Next action:** remove the four keys and run `biome ci .`.
-- **Review condition:** closes when `.editorconfig` is the only source and `biome ci .` changes nothing.
 - **Related records:** none.
 
 ### DEBT-034 — Every `tsconfig*.json` is force-ignored by Biome with no recorded reason

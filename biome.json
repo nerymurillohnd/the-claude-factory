@@ -37,9 +37,6 @@
   },
   "formatter": {
     "enabled": true,
-    "indentStyle": "space",
-    "indentWidth": 2,
-    "lineEnding": "lf",
     "lineWidth": 100,
     "useEditorconfig": true
   },
@@ -172,9 +169,6 @@
   "markdown": {
     "parser": {
       "frontmatter": true
-    },
-    "formatter": {
-      "indentStyle": "space"
     }
   },
   "overrides": [
