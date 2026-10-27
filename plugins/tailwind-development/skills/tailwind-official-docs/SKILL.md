@@ -1,6 +1,6 @@
 ---
 name: tailwind-official-docs
-description: Implements, reviews, debugs and refactors Tailwind CSS by reading the exact official tailwindcss.com page for each utility, variant and configuration a task touches, then verifying the result in the project. Use whenever a task creates or changes Tailwind classes, variants, responsive layouts, dark mode, themes and design tokens, custom CSS, @apply or @theme, source detection and missing styles, utilities, build integration or a Tailwind version upgrade, even when the request never says documentation.
+description: Implements, reviews, debugs and refactors Tailwind CSS by reading the exact official tailwindcss.com page for each utility, variant and configuration a task touches, then verifying the result in the project. Use for every Tailwind task, a quick edit to the classes of a snippet included, whenever it creates or changes Tailwind classes, variants, responsive layouts, dark mode, themes and design tokens, custom CSS, @apply or @theme, source detection and missing styles, utilities, build integration or a Tailwind version upgrade, even when the request never says documentation.
 license: MIT
 ---
 
