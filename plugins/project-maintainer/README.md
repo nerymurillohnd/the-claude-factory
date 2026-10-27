@@ -61,7 +61,7 @@ The ADR template follows [MADR 4.0](https://adr.github.io/madr/) and adds a scop
 
 | Requirement | Details |
 | :-- | :-- |
-| **Claude Code** | v2.1.307 or later — check with `claude --version`. The guardrails need it: from that version, Claude Code puts their prompts to you and no classifier can answer them. On an older version, auto mode's classifier can approve the edit for you |
+| **Claude Code** | v2.1.307 or later — check with `claude --version`. The guardrails need it: from that version, Claude Code puts their prompts to you and no classifier can answer them. On an older version, auto mode's classifier can approve the edit for you. Tested with v2.1.311. |
 | **Surfaces** | See [Compatibility](#-compatibility) |
 | **External tools** | `bash` on `PATH`, for the hook and the skills' commands; on Windows, Git for Windows. `ls`, `grep` and `date`, which macOS and Linux include, to search and number records. `git`, so the handoff can record the repository's state; outside a git repository the handoff says so and skips it. `gh` signed in, optional, to list the repository's open pull requests |
 | **Network** | Records: none. The handoff runs `git fetch` to compare your branch with its remote, and `gh pr list` to list pull requests, when the repository has a remote. Without network access it marks those lines as not verified |
