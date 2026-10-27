@@ -3,13 +3,15 @@
 
 <name> is taken when `plugins` of .claude-plugin/marketplace.json lists it, its `renames` map
 has it as a key (a retired name is never reused), or plugins/<name> exists. It is similar to a
-listed name or a plugins/ directory when the two are at most 2 edits apart, hold the same words
+listed name, a retired name or a plugins/ directory when the two are at most 2 edits apart, hold
+the same words
 in another order, or the words of one are all words of the other. Run it before design, when
 the name is chosen: a taken name is refused, and a similar one needs Nery's OK.
 
 It reads marketplace.json and lists plugins/: it never writes, starts a process or uses the
 network.
-Exit 0 = free and unlike every name, 1 = taken or similar, 2 = wrong arguments (it takes one
+Exit 0 = free and unlike every name, 1 = taken, similar, or marketplace.json unreadable or
+without a plugins list of named entries, 2 = wrong arguments (it takes one
 kebab-case name).
 Maintainer tooling with no dependencies: run it by path, with the python3 on PATH.
 TCF_ROOT points it at another copy of the repository (tests).
@@ -45,13 +47,15 @@ def marketplace_names(root: Path) -> tuple[set[str], set[str], str | None]:
     if not isinstance(data, dict):
         return set(), set(), "must be a JSON object"
     marketplace = cast("dict[str, object]", data)
-    listed: set[str] = set()
     plugins = marketplace.get("plugins")
-    if isinstance(plugins, list):
-        for entry in cast("list[object]", plugins):
-            name = cast("dict[str, object]", entry).get("name") if isinstance(entry, dict) else None
-            if isinstance(name, str):
-                listed.add(name)
+    if not isinstance(plugins, list):
+        return set(), set(), "has no plugins list"
+    listed: set[str] = set()
+    for entry in cast("list[object]", plugins):
+        name = cast("dict[str, object]", entry).get("name") if isinstance(entry, dict) else None
+        if not isinstance(name, str):
+            return set(), set(), "has a plugins entry without a string name"
+        listed.add(name)
     renames = marketplace.get("renames")
     retired = set(cast("dict[str, object]", renames)) if isinstance(renames, dict) else set[str]()
     return listed, retired, None
@@ -104,7 +108,7 @@ def check(root: Path, name: str) -> list[str]:
         errors.append(f"taken: plugins/{name} already exists")
     if errors:
         return errors
-    for other in sorted(listed | folders):
+    for other in sorted(listed | retired | folders):
         reason = similarity(name, other)
         if reason is not None:
             errors.append(f'similar: "{other}" ({reason})')
