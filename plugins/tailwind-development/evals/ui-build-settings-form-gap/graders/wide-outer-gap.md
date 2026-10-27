@@ -1,0 +1,4 @@
+---
+type: regex
+pattern: '\bgap-(5|6|8|10)\b'
+---
