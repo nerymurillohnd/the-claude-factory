@@ -72,7 +72,7 @@ Retrieve in this order:
 
 Never start from a general web search.
 
-The cross-cutting pages (the core concepts, `preflight`, `upgrade-guide` and `compatibility`) are long, and a whole-page fetch or summary loses the part you need. For them, name the section: [references/section-anchors.md](references/section-anchors.md) lists each page's section anchors and headings, and says how to use them with a fetch tool and with Context7. Copy an anchor from that list; never derive one from a heading.
+The cross-cutting pages (the core concepts, `preflight`, `upgrade-guide`, `compatibility` and `editor-setup`) are long, and a whole-page fetch or summary loses the part you need. For them, name the section: [references/section-anchors.md](references/section-anchors.md) lists each page's section anchors and headings, and says how to use them with a fetch tool and with Context7. Copy an anchor from that list; never derive one from a heading.
 
 Rules:
 
