@@ -332,10 +332,10 @@ describe('check-repo', () => {
 
   test('in a git checkout, counts tracked and new files but never git-ignored or deleted ones', () => {
     /** @param {...string} args */
-    const git = (...args) => execFileSync('git', ['-C', root, ...args], { stdio: 'ignore' })
-    git('init', '-q')
+    const gitQuiet = (...args) => execFileSync('git', ['-C', root, ...args], { stdio: 'ignore' })
+    gitQuiet('init', '-q')
     write('plugins/skill-diagnostics/gone.md', 'x')
-    git('add', '-A')
+    gitQuiet('add', '-A')
     rmSync(join(root, 'plugins/skill-diagnostics/gone.md'))
     write('plugins/skill-diagnostics/.DS_Store', 'x') // git-ignored: a clone never has it
     assert.equal(run('check-repo.mjs').code, 0)

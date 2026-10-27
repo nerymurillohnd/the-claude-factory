@@ -279,9 +279,9 @@ describe('runGates inside a git hook', () => {
         args: ['-e', 'process.exit(process.env.GIT_INDEX_FILE === undefined ? 0 : 1)'],
       }
       /** @type {string[]} */
-      const lines = []
-      const code = runGates([gate], { root: ROOT, keepGoing: false, write: (l) => lines.push(l) })
-      assert.equal(code, 0, lines.join('\n'))
+      const output = []
+      const code = runGates([gate], { root: ROOT, keepGoing: false, write: (l) => output.push(l) })
+      assert.equal(code, 0, output.join('\n'))
     } finally {
       if (saved === undefined) {
         delete process.env['GIT_INDEX_FILE']
