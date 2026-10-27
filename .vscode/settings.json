@@ -1,0 +1,193 @@
+{
+  // --- Files: the same rules as .editorconfig, for editors and saves that bypass it ---
+  "files.eol": "\n",
+  "files.insertFinalNewline": true,
+  "files.trimFinalNewlines": true,
+  "files.trimTrailingWhitespace": true,
+  // package-lock.json: the repository runs npm only.
+  "npm.packageManager": "npm",
+
+  // A WORKSPACE `js/ts.tsdk.path` DOES NOT SWITCH THE COMPILER BY ITSELF, which is
+  // why this prompt is not optional. VS Code's own description, verbatim: "When
+  // specified as a user setting, the TypeScript version from `js/ts.tsdk.path`
+  // automatically replaces the built-in TypeScript version. When specified as a
+  // workspace setting, `js/ts.tsdk.path` allows you to switch to use that workspace
+  // version of TypeScript for IntelliSense WITH THE `TypeScript: Select TypeScript
+  // version` COMMAND." This file is a workspace setting, so until a human accepts
+  // that prompt the editor types against VS Code's BUILT-IN compiler.
+  "js/ts.tsdk.path": "node_modules/typescript/lib",
+  "js/ts.tsdk.promptToUseWorkspaceVersion": true,
+  // The pinned TypeScript 6 above, never the native TypeScript 7 preview.
+  "js/ts.experimental.useTsgo": false,
+  // Auto-imports of types use import type, which Biome's useImportType requires.
+  "js/ts.preferences.preferTypeOnlyAutoImports": true,
+  "js/ts.preferences.useAliasesForRenames": true,
+  // Errors of every file in each project, not only the open ones, as tsc --noEmit reports them.
+  "js/ts.tsserver.experimental.enableProjectDiagnostics": true,
+  // Headroom for project-wide diagnostics; tsserver's default is 3072 MB.
+  "js/ts.tsserver.maxMemory": 8192,
+  "js/ts.suggest.autoImports": true,
+  "js/ts.suggest.completeFunctionCalls": true,
+  "js/ts.referencesCodeLens.enabled": true,
+  "js/ts.implementationsCodeLens.enabled": true,
+  "js/ts.updateImportsOnFileMove.enabled": "always",
+  "js/ts.updateImportsOnPaste.enabled": true,
+
+  // --- Biome: on save, the editor does what npm run format and biome ci do ---
+  // biome.jsonc's lineWidth.
+  "editor.rulers": [
+    100
+  ],
+  // Biome runs only under biome.jsonc, with the pinned node_modules binary found first, as the CLI,
+  // the hooks and the gates do. So biome.lsp.bin and biome.configurationPath stay unset: either
+  // would make the editor run another binary or configuration than npm run. The extension reads
+  // neither BIOME_BINARY nor BIOME_CONFIG_PATH, which the gates refuse.
+  "biome.enabled": true,
+  "biome.requireConfiguration": true,
+  "biome.suggestInstallingGlobally": false,
+  // Auto-imports in Biome's quote style, so saving causes no churn.
+  "js/ts.preferences.quoteStyle": "single",
+  // Biome is the formatter of every language it checks here, whatever the user settings say. Each
+  // block repeats the suppression "never"s, since a language block may replace the top-level list.
+  // Biome sorts imports; tsserver removes unused ones on save, because Biome's noUnusedImports fix
+  // is unsafe and source.fixAll.biome applies only safe fixes.
+  "[javascript]": {
+    "editor.defaultFormatter": "biomejs.biome",
+    "editor.codeActionsOnSave": {
+      "source.fixAll.biome": "explicit",
+      "source.suppressRule.inline.biome": "never",
+      "source.suppressRule.topLevel.biome": "never",
+      "source.organizeImports.biome": "explicit",
+      "source.removeUnusedImports": "explicit",
+      "source.organizeImports": "never"
+    }
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "biomejs.biome",
+    "editor.codeActionsOnSave": {
+      "source.fixAll.biome": "explicit",
+      "source.suppressRule.inline.biome": "never",
+      "source.suppressRule.topLevel.biome": "never",
+      "source.organizeImports.biome": "explicit",
+      "source.removeUnusedImports": "explicit",
+      "source.organizeImports": "never"
+    }
+  },
+  "[json]": {
+    "editor.defaultFormatter": "biomejs.biome",
+    "editor.codeActionsOnSave": {
+      "source.fixAll.biome": "explicit",
+      "source.suppressRule.inline.biome": "never",
+      "source.suppressRule.topLevel.biome": "never",
+      "source.organizeImports.biome": "explicit"
+    }
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "biomejs.biome",
+    "editor.codeActionsOnSave": {
+      "source.fixAll.biome": "explicit",
+      "source.suppressRule.inline.biome": "never",
+      "source.suppressRule.topLevel.biome": "never",
+      "source.organizeImports.biome": "explicit"
+    }
+  },
+  // Markdown and YAML: Biome leaves its excluded files untouched.
+  "[markdown]": {
+    // .editorconfig keeps trailing whitespace in Markdown, where two spaces end a line.
+    "files.trimTrailingWhitespace": false,
+    "editor.defaultFormatter": "biomejs.biome",
+    "editor.codeActionsOnSave": {
+      "source.fixAll.biome": "explicit",
+      "source.suppressRule.inline.biome": "never",
+      "source.suppressRule.topLevel.biome": "never"
+    }
+  },
+  "[yaml]": {
+    "editor.defaultFormatter": "biomejs.biome",
+    "editor.codeActionsOnSave": {
+      "source.fixAll.biome": "explicit",
+      "source.suppressRule.inline.biome": "never",
+      "source.suppressRule.topLevel.biome": "never"
+    }
+  },
+  // Assist runs on save only for the actions biome.jsonc enables: organizeImports today. Each
+  // action biome.jsonc turns on later switches from "never" to "explicit" in the same commit.
+  // Suppression comments are written by hand, with a reason, never on save.
+  "editor.codeActionsOnSave": {
+    "source.fixAll.biome": "explicit",
+    "source.organizeImports.biome": "explicit",
+    "source.action.noDuplicateClasses.biome": "never",
+    "source.action.useSortedAttributes.biome": "never",
+    "source.suppressRule.inline.biome": "never",
+    "source.suppressRule.topLevel.biome": "never"
+  },
+  // VS Code validates each JSON file against the schema its $schema names, downloaded when it is a
+  // URL. The SchemaStore claude-code-settings schema of .claude/settings.json often lags Claude
+  // Code: a field it flags as unknown is checked against the official docs, never dropped on its
+  // word alone.
+  "json.validate.enable": true,
+  "json.schemaDownload.enable": true,
+  // Outline and folding for the large schemas under scripts/schemas; the default is 5000.
+  "json.maxItemsComputed": 10000,
+  // The repository has no ESLint, Prettier or markdownlint configuration; Biome lints and formats.
+  "eslint.enable": false,
+  "prettier.enable": false,
+  "markdownlint.appliesTo": "noFiles",
+
+  // --- Ruff: on save, the editor does what npm run format and the ruff gates do ---
+  // The ruff on PATH that npm run and the gates run, not the extension's bundled copy.
+  "ruff.path": [
+    "/Users/forestalmt/.local/bin/ruff"
+  ],
+  "ruff.importStrategy": "fromEnvironment",
+  // ruff.toml decides, as for the CLI; no ruff.lint.* or ruff.lineLength setting here.
+  "ruff.configurationPreference": "filesystemFirst",
+  "ruff.lint.enable": true,
+  "ruff.fixAll": true,
+  "ruff.organizeImports": true,
+  "ruff.showSyntaxErrors": true,
+  "[python]": {
+    "editor.defaultFormatter": "charliermarsh.ruff",
+    "editor.formatOnSave": true,
+    // Ruff sorts imports with ruff.toml's isort settings; basedpyright's sort stays off.
+    "editor.codeActionsOnSave": {
+      "source.fixAll.ruff": "explicit",
+      "source.organizeImports.ruff": "explicit",
+      "source.organizeImports": "never"
+    }
+  },
+
+  // --- Core language server controls ---
+  "basedpyright.disableLanguageServices": false,
+  "basedpyright.disableOrganizeImports": false,
+  "basedpyright.disableTaggedHints": false,
+
+  // --- Analysis settings ---
+  "basedpyright.analysis.autoImportCompletions": true,
+  "basedpyright.analysis.autoSearchPaths": true,
+  "basedpyright.analysis.diagnosticMode": "workspace",
+  "basedpyright.analysis.logLevel": "Information",
+
+  // Inlay hints (basedpyright-exclusive)
+  "basedpyright.analysis.inlayHints.variableTypes": true,
+  "basedpyright.analysis.inlayHints.callArgumentNames": true,
+  "basedpyright.analysis.inlayHints.functionReturnTypes": true,
+  "basedpyright.analysis.inlayHints.genericTypes": false,
+
+  // --- Discouraged settings (prefer pyproject.toml / pyrightconfig.json) ---
+  "basedpyright.analysis.typeCheckingMode": "all",
+  "basedpyright.analysis.useLibraryCodeForTypes": true,
+  "basedpyright.analysis.stubPath": "typings",
+  "basedpyright.analysis.include": [],
+  "basedpyright.analysis.exclude": [],
+  "basedpyright.analysis.ignore": [],
+  "basedpyright.analysis.extraPaths": [],
+  "basedpyright.analysis.typeshedPaths": [],
+  "basedpyright.analysis.diagnosticSeverityOverrides": {},
+
+  // Python interpreter
+  "python.defaultInterpreterPath": "/Users/forestalmt/.local/bin/python3",
+
+  // Recommended when using basedpyright as the sole language server
+  "python.languageServer": "None"
+}
