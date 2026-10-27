@@ -28,7 +28,7 @@ import os
 from pathlib import Path
 import re
 import sys
-from typing import TYPE_CHECKING, TypeIs
+from typing import TYPE_CHECKING, TypeGuard
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -64,7 +64,7 @@ def _object(pairs: list[tuple[str, object]]) -> JsonObject:
 _decode: Callable[[str], object] = json.JSONDecoder(object_pairs_hook=_object).decode
 
 
-def is_array(value: object) -> TypeIs[list[object]]:
+def is_array(value: object) -> TypeGuard[list[object]]:
     """Narrow a decoded JSON value to an array; its items are still unchecked objects."""
     return isinstance(value, list)
 
