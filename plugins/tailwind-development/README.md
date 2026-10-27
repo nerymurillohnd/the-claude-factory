@@ -153,7 +153,7 @@ The bg-${color}-500 classes on my badges don't show up in production.
 We're moving this project from Tailwind 3 to 4. What breaks?
 ```
 
-**Result:** Claude starts from `upgrade-guide` and the `installation/*` page for your integration, lists the renamed and removed utilities your code uses, the PostCSS and CLI package changes and the new browser baseline, and changes nothing until you agree to the plan.
+**Result:** Claude reads every breaking change in `upgrade-guide`, not only the renamed and removed utilities, and reports each one against your project: what it changes, what your code doesn't use, and what needs your decision, such as the new default border color or hover on touch screens. It changes nothing until you agree to the plan. When you ask it to migrate, it runs Tailwind's official upgrade tool first, in a new branch, then works through the same list and reports every item.
 
 ### Style a Svelte, Vue or Astro component
 
@@ -191,8 +191,9 @@ Turning a file type off stops only the automatic check after edits; Claude can s
 - **Network:** apart from that package download, the plugin makes no calls itself; its two local processes make none. Claude makes these requests with its own tools, each under your usual permission prompts, and none of them carries your code:
   - documentation pages from `tailwindcss.com` (and `v3.tailwindcss.com` or older versioned sites for older projects), or a short docs query to Context7 when you have it;
   - for questions about which version added a feature, the release posts on `tailwindcss.com/blog` and the releases and changelog of `github.com/tailwindlabs/tailwindcss`;
-  - when there is no project build to preview a design in, a standalone preview page that loads Tailwind's Play CDN script from `cdn.jsdelivr.net` in your browser or artifact viewer.
-- **Files written:** none in your project; the packages above go into the plugin's own folder. Claude edits your project files only as the task asks, like any other edit. When it checks a design visually, it uses the browser or screenshot tools you already have, under your usual permission prompts.
+  - when there is no project build to preview a design in, a standalone preview page that loads Tailwind's Play CDN script from `cdn.jsdelivr.net` in your browser or artifact viewer;
+  - when you ask to migrate a project from v3 to v4, Tailwind's official upgrade tool, `npx @tailwindcss/upgrade`, which downloads from the npm registry and updates your project's dependencies through your package manager.
+- **Files written:** none in your project; the packages above go into the plugin's own folder. Claude edits your project files only as the task asks, like any other edit. In a v3 to v4 migration, the upgrade tool rewrites your config, CSS and template files and your package manifest and lockfile; Claude runs it in a new branch, and asks first when your working tree has uncommitted changes. When it checks a design visually, it uses the browser or screenshot tools you already have, under your usual permission prompts.
 
 ## 🔄 Updating
 
