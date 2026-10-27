@@ -119,10 +119,10 @@ function isDir(path) {
  * @returns {string | null}
  */
 function projectDir(event) {
-  const candidates = [CLAUDE_PROJECT_DIR ?? '', textAt(event, 'cwd'), process.cwd()]
-  for (const candidate of candidates) {
-    if (candidate && isDir(candidate)) {
-      return realpath(candidate)
+  const dirs = [CLAUDE_PROJECT_DIR ?? '', textAt(event, 'cwd'), process.cwd()]
+  for (const dir of dirs) {
+    if (dir && isDir(dir)) {
+      return realpath(dir)
     }
   }
   return null

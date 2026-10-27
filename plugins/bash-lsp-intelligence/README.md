@@ -78,7 +78,7 @@ Add `--scope project` to enable it for everyone working in the current repositor
 /plugin install bash-lsp-intelligence --marketplace nerymurillohnd/the-claude-factory
 ```
 
-Requires Claude Code v2.1.275+. With the marketplace already added, `/plugin install bash-lsp-intelligence@the-claude-factory` opens the plugin's details so you can pick a scope. You can also browse it in `/plugin` → **Discover**.
+Requires Claude Code v2.1.292+. With the marketplace already added, `/plugin install bash-lsp-intelligence@the-claude-factory` opens the plugin's details so you can pick a scope. You can also browse it in `/plugin` → **Discover**.
 
 </details>
 
