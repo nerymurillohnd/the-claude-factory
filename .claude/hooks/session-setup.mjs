@@ -136,7 +136,7 @@ function compareWithGlobals() {
 function reportGitHooks() {
   const r = run('git', ['config', '--get', 'core.hooksPath'])
   return r.out === '.husky/_'
-    ? '- Git hooks: Husky is active (pre-commit npm test, pre-push npm run gates).'
+    ? '- Git hooks: Husky is active (pre-commit biome check --staged and npm test, pre-push npm run gates).'
     : `- Git hooks: NOT active (core.hooksPath is "${r.out}"); run npm run prepare.`
 }
 

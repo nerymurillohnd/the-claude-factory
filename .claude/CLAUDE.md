@@ -65,7 +65,7 @@ This repository holds two scopes. They are never mixed: a rule written for one s
 - Tests of plugin scripts live in `scripts/tests/<plugin>/`, which is maintainer scope: their test dependencies never enter a plugin's runtime.
 - The root `package.json` serves repository-level development tooling only, never plugin runtimes; it stays `"private": true`. Its devDependencies are the npm tools (Biome, TypeScript, Husky) and the `@types/*` packages, each pinned to an exact version.
 - Every maintenance command is an `npm run` script (`test`, `typecheck`, `lint`, `format`, `fix`, `check:*`, `generate`, `validate`, `gates`, `setup`): run the tools through them, so local runs, the git hooks and CI use the pinned versions. In this repository that overrides running a tool by its bare name from PATH; the global installs serve the editor.
-- Husky's git hooks run `npm test` before each commit and `npm run gates` before each push; fix what they report, never skip them.
+- Husky's git hooks run `biome check --staged` and `npm test` before each commit and `npm run gates` before each push; fix what they report, never skip them.
 - Run `npm ci` in every fresh clone and new worktree, with the `.nvmrc` Node selected.
 
 #### Plugin Tooling
