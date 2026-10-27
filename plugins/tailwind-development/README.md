@@ -292,7 +292,22 @@ Check, in order:
 <details>
 <summary><b>What does the language server not catch?</b></summary>
 
-It reports what Tailwind can prove: conflicting classes, classes with a shorter canonical form, invalid `theme()` paths and directives. A misspelled class or variant, such as `hovr:bg-red-500`, is not an error to Tailwind, which simply generates no CSS for it, so no diagnostic appears; `class_css` reports such a class as "not a class in this project". The hook sees only edits made with Claude's `Edit` and `Write` tools, not changes from shell commands or your editor; Claude can run `check_file` on any file.
+It reports what Tailwind can prove: conflicting classes, classes with a shorter canonical form, invalid `theme()` paths and directives. A misspelled class or variant, such as `hovr:bg-red-500`, is not an error to Tailwind, which simply generates no CSS for it, so no diagnostic appears; `class_css` reports such a class as "not a class in this project". The hook sees only edits made with Claude's `Edit` and `Write` tools, not changes from shell commands or your editor; Claude can run `check_file` on any file of the project. The tools read only inside the folder you started Claude Code in: folders added with `--add-dir` or `/add-dir` are outside them.
+
+</details>
+
+<details>
+<summary><b>Claude asks permission to use the Tailwind tools.</b></summary>
+
+The check after each edit never asks: Claude Code runs it, not Claude. When Claude itself calls `check_file`, `class_css`, `project_classes` or `sort_classes`, you get the usual permission prompt for an MCP tool, and the plugin doesn't approve anything on your behalf. All four only read. To stop the prompts, add this rule where it suits you: `~/.claude/settings.json` for every project, `.claude/settings.json` for everyone in a repository, or `.claude/settings.local.json` for you alone in one repository:
+
+```json
+{
+  "permissions": {
+    "allow": ["mcp__plugin_tailwind-development_tailwindcss__*"]
+  }
+}
+```
 
 </details>
 
