@@ -3,6 +3,25 @@
 
 import { ADR_ID, ADR_NAME, ADR_STATUSES, adrId, normalize } from './paths.ts'
 
+/** A list item of the frontmatter, such as `  - Nery`. */
+const LIST_ITEM = /^\s+-\s+(.*)$/
+/** A `key: value` line of the frontmatter; an empty value opens a list. */
+const KEY_VALUE = /^([A-Za-z][\w-]*):\s*(.*)$/
+/** A template placeholder such as `{name}`. */
+const PLACEHOLDER = /^\{.*\}$/
+/** The first line of the template's guidance comment. */
+const TEMPLATE_INTRO = 'Template for .claude/maintainer/decisions/'
+/** An optional-section comment of the template. */
+const OPTIONAL_COMMENT = /<!--\s*Optional:/
+/** The record's `# ` title. */
+const TITLE = /^# (.+)$/m
+/** Any Markdown heading, level 1 to 6. */
+const HEADING = /^#{1,6} /
+/** The frontmatter keys a settled record may still change. */
+const EDITABLE_KEY = /^(status|superseded-by):/
+/** Everything from the first colon of a line to its end. */
+const AFTER_COLON = /:.*$/
+
 export type Frontmatter = {
   scalars: Map<string, string>
   lists: Map<string, string[]>
@@ -31,12 +50,12 @@ export function parseFrontmatter(text: string): Frontmatter | null {
   const lists = new Map<string, string[]>()
   let listKey: string | null = null
   for (const line of lines.slice(1, end)) {
-    const item = /^\s+-\s+(.*)$/.exec(line)
+    const item = LIST_ITEM.exec(line)
     if (item !== null && listKey !== null) {
       lists.get(listKey)?.push(unquote(item[1] ?? ''))
       continue
     }
-    const pair = /^([A-Za-z][\w-]*):\s*(.*)$/.exec(line)
+    const pair = KEY_VALUE.exec(line)
     if (pair === null) {
       listKey = null
       continue
@@ -54,7 +73,7 @@ export function parseFrontmatter(text: string): Frontmatter | null {
   return { scalars, lists }
 }
 
-const isPlaceholder = (value: string): boolean => /^\{.*\}$/.test(value.trim())
+const isPlaceholder = (value: string): boolean => PLACEHOLDER.test(value.trim())
 
 export type AdrContext = {
   name: string
@@ -146,13 +165,10 @@ function linkProblems(frontmatter: Frontmatter, context: AdrContext): string[] {
 /** Problems with the body: leftover template comments and a missing title. */
 function bodyProblems(text: string): string[] {
   const problems: string[] = []
-  if (
-    /Template for \.claude\/maintainer\/decisions\//.test(text) ||
-    /<!--\s*Optional:/.test(text)
-  ) {
+  if (text.includes(TEMPLATE_INTRO) || OPTIONAL_COMMENT.test(text)) {
     problems.push('Remove the template comments from the record.')
   }
-  const title = /^# (.+)$/m.exec(normalize(text))
+  const title = TITLE.exec(normalize(text))
   if (title === null || isPlaceholder(title[1] ?? '')) {
     problems.push('Give the record a title: one "# " heading that names the decision.')
   }
@@ -190,7 +206,7 @@ function withoutConfirmation(lines: string[]): string[] {
   if (start === -1) {
     return lines
   }
-  const next = lines.findIndex((line, index) => index > start && /^#{1,6} /.test(line))
+  const next = lines.findIndex((line, index) => index > start && HEADING.test(line))
   return [...lines.slice(0, start), ...(next === -1 ? [] : lines.slice(next))]
 }
 
@@ -198,7 +214,7 @@ function withoutConfirmation(lines: string[]): string[] {
 function settledShape(text: string): string {
   const lines = normalize(text).split('\n')
   const masked = lines.map((line) =>
-    /^(status|superseded-by):/.test(line) ? line.replace(/:.*$/, ': _') : line,
+    EDITABLE_KEY.test(line) ? line.replace(AFTER_COLON, ': _') : line,
   )
   return withoutConfirmation(masked).join('\n')
 }

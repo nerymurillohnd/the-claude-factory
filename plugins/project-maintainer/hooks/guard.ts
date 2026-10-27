@@ -5,6 +5,18 @@ import { adrAuthority, validateAdr } from './adr.ts'
 import { closedAuthority, pendingAuthority, validateLedger } from './debt.ts'
 import { classify, type RecordRef, resolvePath } from './paths.ts'
 
+/** An absolute path, POSIX or with a Windows drive, with either slash. */
+const ABSOLUTE_PATH = /^([A-Za-z]:)?[\\/]/
+/** The records folder named in a shell word, with or without a trailing slash. */
+const RECORDS_FOLDER = /\.claude\/maintainer(?![\w-])/i
+const WHITESPACE = /\s+/
+/** A word that starts a redirect, such as `>`, `>>` or `2>file`. */
+const REDIRECT = /^\d*>>?/
+/** A redirect whose target is the next word. */
+const BARE_REDIRECT = /^\d*>>?$/
+/** The in-place flag of sed or perl, alone or among other short flags. */
+const IN_PLACE_FLAG = /^-\w*i|^--in-place/
+
 /** The arguments of a Write or Edit call, narrowed from the unknown input of `tool.check`. */
 export type FileInput = {
   path: string
@@ -56,7 +68,7 @@ export function mayWriteRecord(value: unknown): boolean {
     if (input === null) {
       return false
     }
-    const absolute = /^([A-Za-z]:)?[\\/]/.test(input.path)
+    const absolute = ABSOLUTE_PATH.test(input.path)
     return !absolute || classify(resolvePath(input.path, '/')) !== null
   } catch {
     return true
@@ -141,7 +153,7 @@ export function askReason(file: string, reasons: readonly string[]): string {
 }
 
 /** Whether a piece of a shell command names the records folder, with or without a trailing slash. */
-const mentionsRecords = (piece: string): boolean => /\.claude\/maintainer(?![\w-])/i.test(piece)
+const mentionsRecords = (piece: string): boolean => RECORDS_FOLDER.test(piece)
 
 const unquote = (token: string): string => token.replace(/^['"]|['"]$/g, '')
 const SEGMENTS = /&&|\|\||[;|\n]/
@@ -158,7 +170,7 @@ type Segment = {
 function parseSegment(segment: string): Segment {
   const tokens = segment
     .trim()
-    .split(/\s+/)
+    .split(WHITESPACE)
     .map(unquote)
     .filter((token) => token !== '')
   const [first = '', ...rest] = tokens
@@ -171,9 +183,9 @@ function parseSegment(segment: string): Segment {
 function redirectsIntoRecords(tokens: readonly string[]): boolean {
   return tokens.some(
     (token, index) =>
-      /^\d*>>?/.test(token) &&
+      REDIRECT.test(token) &&
       (mentionsRecords(token) ||
-        (/^\d*>>?$/.test(token) && mentionsRecords(tokens[index + 1] ?? ''))),
+        (BARE_REDIRECT.test(token) && mentionsRecords(tokens[index + 1] ?? ''))),
   )
 }
 
@@ -183,8 +195,7 @@ function verbWritesRecords(
   names: boolean,
   insideRecords: boolean,
 ): boolean {
-  const inPlace =
-    (verb === 'sed' || verb === 'perl') && args.some((arg) => /^-\w*i|^--in-place/.test(arg))
+  const inPlace = (verb === 'sed' || verb === 'perl') && args.some((arg) => IN_PLACE_FLAG.test(arg))
   return (
     (REMOVES_OR_MOVES.has(verb) && names) ||
     (WRITES_LAST_ARGUMENT.has(verb) && (mentionsRecords(args.at(-1) ?? '') || insideRecords)) ||
@@ -200,7 +211,7 @@ function segmentChangesRecords(segment: Segment, insideRecords: boolean): boolea
   const names = segment.args.some(mentionsRecords) || insideRecords
   return (
     redirectsIntoRecords(segment.tokens) ||
-    (insideRecords && segment.tokens.some((token) => /^\d*>>?/.test(token))) ||
+    (insideRecords && segment.tokens.some((token) => REDIRECT.test(token))) ||
     verbWritesRecords(segment, names, insideRecords)
   )
 }

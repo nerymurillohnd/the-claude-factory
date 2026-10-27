@@ -25,6 +25,11 @@ import {
 } from './guard.ts'
 import { ADR_NAME, adrId, classify, type RecordRef, resolvePath } from './paths.ts'
 
+/** The debt folder at the end of a path, swapped for the decisions folder beside it. */
+const TECHNICAL_DEBT_DIR = /\/technical-debt$/
+/** A Bash command that runs `git commit`. */
+const GIT_COMMIT = /\bgit\s+commit\b/
+
 type Read = {
   /** The text of the file, or null when it does not exist (or could not be read). */
   text: string | null
@@ -44,8 +49,7 @@ async function readText($: EngineInterface, path: string): Promise<Read> {
 }
 
 async function around($: EngineInterface, ref: RecordRef): Promise<Surroundings> {
-  const decisions =
-    ref.kind === 'adr' ? ref.dir : ref.dir.replace(/\/technical-debt$/, '/decisions')
+  const decisions = ref.kind === 'adr' ? ref.dir : ref.dir.replace(TECHNICAL_DEBT_DIR, '/decisions')
   let names: string[] = []
   try {
     names = (await $.fs.list(decisions))
@@ -189,7 +193,7 @@ export function register(on: On, options: PluginOptions): void {
   // After a commit that changes dependencies, schema, CI or infrastructure, or whose message says
   // workaround, temporary or revert, remind Claude that a decision or a debt may be worth recording.
   on('tool.call', { tool: 'Bash' }, async ($, e, next) => {
-    if (!nudge || !/\bgit\s+commit\b/.test(e.command)) {
+    if (!nudge || !GIT_COMMIT.test(e.command)) {
       return next(e)
     }
     const cwd = await $.session.cwd()
