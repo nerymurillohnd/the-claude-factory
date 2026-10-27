@@ -32,6 +32,9 @@ const READ_ONLY = {
 /** Characters a class list may hold: it is placed inside a class="…" attribute. */
 const CLASS_LIST = /^[^"'<>`\r\n]+$/u
 
+/** What separates class names in a class list. */
+const WHITESPACE = /\s+/u
+
 const options = readOptions(process.env)
 
 /** @type {Promise<{ root: string, server: TailwindLanguageServer }> | undefined} */
@@ -55,8 +58,8 @@ function state() {
   return shared
 }
 
-/** @param {string} text @returns {ToolResult} */
-const text = (text) => ({ content: [{ type: 'text', text }] })
+/** @param {string} body @returns {ToolResult} */
+const text = (body) => ({ content: [{ type: 'text', text: body }] })
 
 /** @param {string} message @returns {ToolResult} */
 const failure = (message) => ({ content: [{ type: 'text', text: message }], isError: true })
@@ -96,76 +99,118 @@ function refusal(error) {
 }
 
 /**
- * @param {{ filePath: string, format: 'text' | 'hook' }} args
- * @returns {Promise<ToolResult>}
+ * The file check_file reads and its language, or the result to return without reading it.
+ * @param {string} root
+ * @param {TailwindLanguageServer} server
+ * @param {string} filePath
+ * @param {boolean} hook
+ * @returns {Promise<{ file: Awaited<ReturnType<typeof resolveProjectFile>>, type: NonNullable<ReturnType<typeof fileType>> } | { result: ToolResult }>}
  */
-async function checkFile({ filePath, format }) {
-  const hook = format === 'hook'
-  const { root, server } = await state()
+async function checkTarget(root, server, filePath, hook) {
   /** @type {Awaited<ReturnType<typeof resolveProjectFile>>} */
   let file
   try {
     file = await resolveProjectFile(root, filePath)
   } catch (error) {
     // The hook runs after every edit, including files outside the project: it stays silent there.
-    return hook && error instanceof ToolInputError ? text('') : refusal(error)
+    return { result: hook && error instanceof ToolInputError ? text('') : refusal(error) }
   }
   const type = fileType(file.extension)
   if (type === null) {
-    return hook
-      ? text('')
-      : failure(
-          `${file.relativePath}: the Tailwind CSS language server does not read ${file.extension} files.`,
-        )
+    return {
+      result: hook
+        ? text('')
+        : failure(
+            `${file.relativePath}: the Tailwind CSS language server does not read ${file.extension} files.`,
+          ),
+    }
   }
   if (hook && !options.enabledGroups.has(type.group)) {
-    return text('')
+    return { result: text('') }
   }
   if (!(await hasTailwindInstall(root, file.path))) {
-    return text(hook ? '' : noProjectText(server, file.relativePath))
+    return { result: text(hook ? '' : noProjectText(server, file.relativePath)) }
   }
+  return { file, type }
+}
+
+/**
+ * What check_file returns when Tailwind CSS is installed, yet no project covers the file.
+ * @param {TailwindLanguageServer} server
+ * @param {string} relativePath
+ * @param {boolean} hook
+ */
+function noProjectResult(server, relativePath, hook) {
+  if (!hook) {
+    return text(noProjectText(server, relativePath))
+  }
+  // Often a CSS module or <style> block with @reference that the server took as the entry point.
+  // Say so once, then stay silent.
+  if (noProjectHintGiven) {
+    return text('')
+  }
+  noProjectHintGiven = true
+  return text(
+    JSON.stringify({
+      hookSpecificOutput: {
+        hookEventName: 'PostToolUse',
+        additionalContext: `Tailwind CSS diagnostics are off for ${relativePath}: ${noProjectText(server, relativePath)} This note is shown once per session.`,
+      },
+    }),
+  )
+}
+
+/**
+ * Each diagnostic with the exact text of its quick fixes. The fixes of every diagnostic are asked
+ * for at once, and the findings keep the diagnostics' order.
+ * @param {TailwindLanguageServer} server
+ * @param {string} uri
+ * @param {string} content
+ * @param {NonNullable<Awaited<ReturnType<TailwindLanguageServer['diagnostics']>>>} diagnostics
+ * @returns {Promise<Finding[]>}
+ */
+function findingsOf(server, uri, content, diagnostics) {
+  return Promise.all(
+    diagnostics.map(async (diagnostic) => {
+      const actions = await server.quickFixes(uri, diagnostic)
+      return {
+        line: diagnostic.range.start.line + 1,
+        column: diagnostic.range.start.character + 1,
+        severity: severityName(diagnostic.severity),
+        rule: String(diagnostic.code ?? 'tailwindcss'),
+        message: diagnostic.message,
+        fixes: actions.flatMap((action) =>
+          (action.edit?.changes?.[uri] ?? []).map((edit) => ({
+            title: action.title,
+            line: edit.range.start.line + 1,
+            oldText: textInRange(content, edit.range),
+            newText: edit.newText,
+          })),
+        ),
+      }
+    }),
+  )
+}
+
+/**
+ * @param {{ filePath: string, format: 'text' | 'hook' }} args
+ * @returns {Promise<ToolResult>}
+ */
+async function checkFile({ filePath, format }) {
+  const hook = format === 'hook'
+  const { root, server } = await state()
+  const target = await checkTarget(root, server, filePath, hook)
+  if ('result' in target) {
+    return target.result
+  }
+  const { file, type } = target
   const content = await readFile(file.path, 'utf8')
   const uri = pathToFileURL(file.path).href
   const diagnostics = await server.diagnostics(uri, type.languageId, content)
   if (diagnostics === null) {
-    if (!hook) {
-      return text(noProjectText(server, file.relativePath))
-    }
-    // Tailwind CSS is installed, yet no project covers the file: often a CSS module or <style> block
-    // with @reference that the server took as the entry point. Say so once, then stay silent.
-    if (noProjectHintGiven) {
-      return text('')
-    }
-    noProjectHintGiven = true
-    return text(
-      JSON.stringify({
-        hookSpecificOutput: {
-          hookEventName: 'PostToolUse',
-          additionalContext: `Tailwind CSS diagnostics are off for ${file.relativePath}: ${noProjectText(server, file.relativePath)} This note is shown once per session.`,
-        },
-      }),
-    )
+    return noProjectResult(server, file.relativePath, hook)
   }
-  /** @type {Finding[]} */
-  const findings = []
-  for (const diagnostic of diagnostics) {
-    const actions = await server.quickFixes(uri, diagnostic)
-    findings.push({
-      line: diagnostic.range.start.line + 1,
-      column: diagnostic.range.start.character + 1,
-      severity: severityName(diagnostic.severity),
-      rule: String(diagnostic.code ?? 'tailwindcss'),
-      message: diagnostic.message,
-      fixes: actions.flatMap((action) =>
-        (action.edit?.changes?.[uri] ?? []).map((edit) => ({
-          title: action.title,
-          line: edit.range.start.line + 1,
-          oldText: textInRange(content, edit.range),
-          newText: edit.newText,
-        })),
-      ),
-    })
-  }
+  const findings = await findingsOf(server, uri, content, diagnostics)
   const hadFindings = filesWithFindings.has(file.path)
   if (findings.length > 0) {
     filesWithFindings.add(file.path)
@@ -222,23 +267,30 @@ async function classCss({ classes, filePath }) {
   } catch (error) {
     return refusal(error)
   }
-  const names = classes.split(/\s+/u).filter((name) => name !== '')
+  const names = classes.split(WHITESPACE).filter((name) => name !== '')
   const line = `${PROBE_PREFIX}${names.join(' ')}"></div>`
-  const answer = await server.withDocument(uri, 'html', line, async (connection) => {
-    const colors = await TailwindLanguageServer.colors(connection, uri)
-    const parts = []
-    let character = PROBE_PREFIX.length
-    for (const name of names) {
-      const css = await TailwindLanguageServer.hover(connection, uri, { line: 0, character })
-      const color = colors.find(
-        (c) => c.range.start.character <= character && character < c.range.end.character,
-      )?.color
-      const colorText = color === undefined ? '' : `\ncolor: ${hexColor(color)}`
-      parts.push(
-        css === null ? `${name}: not a class in this project.` : `${name}:\n${css}${colorText}`,
-      )
-      character += name.length + 1
-    }
+  // Where each name starts in the probe line.
+  let next = PROBE_PREFIX.length
+  const placed = names.map((name) => {
+    const character = next
+    next += name.length + 1
+    return { name, character }
+  })
+  const answer = await server.withDocument(uri, 'html', line, async (lsp) => {
+    const colors = await TailwindLanguageServer.colors(lsp, uri)
+    // Every name's hover is asked for at once; the parts keep the names' order.
+    const parts = await Promise.all(
+      placed.map(async ({ name, character }) => {
+        const css = await TailwindLanguageServer.hover(lsp, uri, { line: 0, character })
+        const color = colors.find(
+          (c) => c.range.start.character <= character && character < c.range.end.character,
+        )?.color
+        const colorText = color === undefined ? '' : `\ncolor: ${hexColor(color)}`
+        return css === null
+          ? `${name}: not a class in this project.`
+          : `${name}:\n${css}${colorText}`
+      }),
+    )
     return parts.join('\n\n')
   })
   return text(answer ?? noProjectText(server, filePath ?? 'the project root'))
@@ -257,8 +309,8 @@ async function projectClasses({ prefix, filePath, limit }) {
     return refusal(error)
   }
   const line = `${PROBE_PREFIX}${prefix}"></div>`
-  const answer = await server.withDocument(uri, 'html', line, async (connection) => {
-    const items = await TailwindLanguageServer.completion(connection, uri, {
+  const answer = await server.withDocument(uri, 'html', line, async (lsp) => {
+    const items = await TailwindLanguageServer.completion(lsp, uri, {
       line: 0,
       character: PROBE_PREFIX.length + prefix.length,
     })
@@ -300,12 +352,9 @@ async function sortClasses({ classes, filePath }) {
   } catch (error) {
     return refusal(error)
   }
-  const list = classes.trim().split(/\s+/u).join(' ')
-  const answer = await server.withDocument(
-    uri,
-    'html',
-    `${PROBE_PREFIX}${list}"></div>`,
-    (connection) => TailwindLanguageServer.sortClasses(connection, uri, [list]),
+  const list = classes.trim().split(WHITESPACE).join(' ')
+  const answer = await server.withDocument(uri, 'html', `${PROBE_PREFIX}${list}"></div>`, (lsp) =>
+    TailwindLanguageServer.sortClasses(lsp, uri, [list]),
   )
   if (answer === null) {
     return text(noProjectText(server, filePath ?? 'the project root'))

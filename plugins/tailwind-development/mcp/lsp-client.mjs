@@ -248,22 +248,32 @@ export class TailwindLanguageServer {
    * @param {string} uri
    * @returns {Promise<{ version: string } | null>}
    */
-  async #project(connection, uri) {
+  #project(connection, uri) {
     const deadline = Date.now() + (this.#loaded ? this.timeouts.grace : this.timeouts.project)
-    for (;;) {
-      /** @type {{ version: string } | null} */
-      const project = await connection.sendRequest('@/tailwindCSS/getProject', { uri })
-      if (project !== null) {
-        this.#loaded = true
-        return project
-      }
-      if (Date.now() >= deadline) {
-        // A cold start that found nothing in time is not retried at full length on every edit.
-        this.#loaded = true
-        return null
-      }
-      await new Promise((done) => setTimeout(done, PROJECT_POLL_MS))
+    return this.#pollProject(connection, uri, deadline)
+  }
+
+  /**
+   * Asks for the document's project, and asks again after a short wait until `deadline`.
+   * @param {MessageConnection} connection
+   * @param {string} uri
+   * @param {number} deadline
+   * @returns {Promise<{ version: string } | null>}
+   */
+  async #pollProject(connection, uri, deadline) {
+    /** @type {{ version: string } | null} */
+    const project = await connection.sendRequest('@/tailwindCSS/getProject', { uri })
+    if (project !== null) {
+      this.#loaded = true
+      return project
     }
+    if (Date.now() >= deadline) {
+      // A cold start that found nothing in time is not retried at full length on every edit.
+      this.#loaded = true
+      return null
+    }
+    await new Promise((done) => setTimeout(done, PROJECT_POLL_MS))
+    return this.#pollProject(connection, uri, deadline)
   }
 
   /**

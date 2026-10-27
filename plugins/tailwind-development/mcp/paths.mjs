@@ -7,6 +7,9 @@ import { dirname, extname, isAbsolute, join, relative, resolve } from 'node:path
 /** Files larger than this are not sent to the language server. */
 export const MAX_FILE_BYTES = 1_000_000
 
+/** Files that show tailwindcss is installed for a folder: an npm package or a Yarn PnP manifest. */
+const INSTALL_MARKERS = ['node_modules/tailwindcss/package.json', '.pnp.cjs', '.pnp.js']
+
 /** A refusal the tool reports to Claude as an error result. */
 export class ToolInputError extends Error {}
 
@@ -74,18 +77,21 @@ export async function resolveProjectFile(root, input) {
  * @param {string} path real path of a file inside it
  */
 export async function hasTailwindInstall(root, path) {
+  const candidates = []
   for (let dir = dirname(path); isInside(root, dir); dir = dirname(dir)) {
-    for (const marker of ['node_modules/tailwindcss/package.json', '.pnp.cjs', '.pnp.js']) {
-      try {
-        await access(join(dir, marker))
-        return true
-      } catch {
-        // Not here; try the parent folder.
-      }
+    for (const marker of INSTALL_MARKERS) {
+      candidates.push(join(dir, marker))
     }
     if (dir === root) {
       break
     }
   }
-  return false
+  try {
+    // Any one marker is enough, so every folder is checked at once.
+    await Promise.any(candidates.map((candidate) => access(candidate)))
+    return true
+  } catch {
+    // None exists (an empty list rejects too).
+    return false
+  }
 }
