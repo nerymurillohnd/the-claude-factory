@@ -20,7 +20,7 @@ type Local = {
   live: { hasShimmer: boolean; total: number; first: number; isPointerOff: boolean }
 }
 
-const FIRST_STATE = (rows: number, columns: number): Local => ({
+const firstState = (rows: number, columns: number): Local => ({
   rows,
   columns,
   hovered: null,
@@ -35,7 +35,7 @@ const Body: ClientModule<BodyProps, Local> = (
   surface: ClientSurface<Local>,
 ): RenderElement => {
   const { Box, Text, Code } = surface.elements
-  const state = surface.state ?? FIRST_STATE(surface.rows, surface.columns)
+  const state = surface.state ?? firstState(surface.rows, surface.columns)
   state.live.hasShimmer = props.lines.some((line) => line.shimmer !== null)
   state.live.total = props.total
   state.live.first = props.first

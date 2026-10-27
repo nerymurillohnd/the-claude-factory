@@ -1786,7 +1786,7 @@ export const register: Register = (on: On, options: PluginOptions): void => {
     const columns = Math.max(10, body.columns > 0 ? body.columns : e.props.bodyColumns)
     const fallbackRoom = Math.max(1, e.props.scroll.bodyRows - 4)
     const lines: BodyLine[] = []
-    let total = 0
+    let total: number
     let first = 0
     let selectedIndex: number | null = null
     let code: BodyProps['code'] = null

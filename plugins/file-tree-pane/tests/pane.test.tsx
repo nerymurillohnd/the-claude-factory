@@ -591,6 +591,7 @@ test('a path pins the tree, which then ignores cwd changes until /file-tree alon
     presentation: { isFullscreen: true, columns: 200 },
   })
   expect(pinned).toMatchObject({ text: 'File tree opened; it is pinned to /work/src.' })
+  // biome-ignore lint/nursery/useCapitalizedConstructors: CwdChanged is the name the testing API of Claude Code gives the classic hook event, not a constructor
   await $.classic.CwdChanged({ old_cwd: ROOT, new_cwd: '/elsewhere' })
   const ui = await mountPane($, 'terminal')
   expect(await bodyText(ui)).toContain('lib/')
@@ -619,22 +620,26 @@ test('git never runs a program a repository config names: fsmonitor, filters, te
   await ui.key({ key: 'd', in: 'body' })
   await $.tool.call({ tool: 'Bash', command: 'git commit -m "x"' })
   const gits = seen.runs.filter(([program, sub]) => program === 'git' && sub !== 'config')
+  const filtered = gits.filter((argv) => argv.includes('status') || argv.includes('diff'))
+  const diffs = gits.filter((argv) => argv.includes('diff'))
+  const logs = gits.filter((argv) => argv.includes('log'))
   expect(gits.some((argv) => argv.includes('status'))).toBe(true)
-  expect(gits.some((argv) => argv.includes('log'))).toBe(true)
+  expect(diffs.length).toBeGreaterThan(0)
+  expect(logs.length).toBeGreaterThan(0)
   for (const argv of gits) {
     expect(argv.slice(1, 3)).toEqual(['-c', 'core.fsmonitor=false'])
-    if (argv.includes('status') || argv.includes('diff')) {
-      expect(argv).toContain('filter.lfs.clean=')
-      expect(argv).toContain('filter.lfs.process=')
-      expect(argv).toContain('filter.lfs.required=false')
-    }
-    if (argv.includes('diff')) {
-      expect(argv).toContain('--no-textconv')
-      expect(argv).toContain('--no-ext-diff')
-    }
-    if (argv.includes('log')) {
-      expect(argv).toContain('--no-show-signature')
-    }
+  }
+  for (const argv of filtered) {
+    expect(argv).toContain('filter.lfs.clean=')
+    expect(argv).toContain('filter.lfs.process=')
+    expect(argv).toContain('filter.lfs.required=false')
+  }
+  for (const argv of diffs) {
+    expect(argv).toContain('--no-textconv')
+    expect(argv).toContain('--no-ext-diff')
+  }
+  for (const argv of logs) {
+    expect(argv).toContain('--no-show-signature')
   }
   await ui.unmount()
 })
@@ -792,6 +797,7 @@ test('a cwd change brings the tree back from a preview of the old folder', async
   const ui = await mountPane($, 'terminal')
   await ui.pointer({ type: 'up', x: 4, y: 2, button: 'left', in: 'body' })
   expect(texts(await ui.drawn()).join('')).toContain('· preview')
+  // biome-ignore lint/nursery/useCapitalizedConstructors: CwdChanged is the name the testing API of Claude Code gives the classic hook event, not a constructor
   await $.classic.CwdChanged({ old_cwd: ROOT, new_cwd: `${ROOT}/src` })
   expect(texts(await ui.drawn()).join('')).not.toContain('· preview')
   expect(await bodyText(ui)).toContain('lib/')

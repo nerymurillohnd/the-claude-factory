@@ -159,7 +159,9 @@
         "noDeprecatedImports": "error",
         // Raised from info, like the complexity rules above.
         "noDuplicateFields": "error",
-        "noQuickfixBiome": "error"
+        "noQuickfixBiome": "error",
+        // From the test domain's full set: an expect inside an if can be skipped without failing.
+        "noConditionalExpect": "error"
       },
       // The preset never turns on a nursery rule, so each one is listed.
       "nursery": {
@@ -177,7 +179,45 @@
         // Each Markdown document starts with a level-1 heading (or an HTML block, as READMEs do),
         // and none starts with a byte order mark, which UTF-8 does not need.
         "useTopLevelHeading": "error",
-        "useConsistentUnicodeBom": "error"
+        "useConsistentUnicodeBom": "error",
+        // The other nursery rules `biome explain` marks as recommended on 2.6.3. Nursery rules are
+        // outside semver: each Biome upgrade rechecks this list (the version is pinned, and
+        // Dependabot proposes each upgrade as its own pull request).
+        "noAccidentalBitwiseOperators": "error",
+        "noArgumentsCallerOrCallee": "error",
+        "noArraySortForMinMax": "error",
+        "noBooleanSortComparator": "error",
+        "noDoubleComparison": "error",
+        // The only YAML rule: without it, the YAML linter runs no rule.
+        "noDuplicateMapKeys": "error",
+        "noEagerArrayMethodsInLoops": "error",
+        "noImpliedEval": "error",
+        "noInvalidPropertyInitValue": "error",
+        "noJsonUnsafeValues": "error",
+        "noMisplacedListElements": "error",
+        "noObsoleteAttributes": "error",
+        "noOctal": "error",
+        "noPathConcat": "error",
+        "noReturnInFinally": "error",
+        "noUnsafeIframeSandbox": "error",
+        "noUselessAssignment": "error",
+        "noUselessCall": "error",
+        "noUselessDateGetTime": "error",
+        "noUselessSplice": "error",
+        "noXorAsExponentiation": "error",
+        "noZeroLengthUnit": "error",
+        "useBigintLiterals": "error",
+        "useBlockStatementOverIife": "error",
+        "useCapitalizedConstructors": "error",
+        "useConsistentObjectKeys": "error",
+        "useFlatMathMinMax": "error",
+        "useMathAbs": "error",
+        "useMathTrunc": "error",
+        "useModernMathApis": "error",
+        "usePackageJsonValidCpu": "error",
+        "usePackageJsonValidEngines": "error",
+        "useSimplifiedBooleanReturn": "error",
+        "useUnaryMinus": "error"
       }
     }
   },

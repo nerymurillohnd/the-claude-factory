@@ -294,7 +294,10 @@ test('a diff names files from their header lines, C-quoted names and spaces incl
 
 test('every light palette text color reaches WCAG AAA on every background it is drawn on', () => {
   const backgrounds = [LIGHT_BACKGROUND, LIGHT.selected, LIGHT.hovered]
-  for (const tone of TONES.filter((t) => !BACKGROUNDS.includes(t))) {
+  for (const tone of TONES) {
+    if (BACKGROUNDS.includes(tone)) {
+      continue
+    }
     for (const background of backgrounds) {
       expect(contrast(LIGHT[tone], background)).toBeGreaterThanOrEqual(7)
     }
