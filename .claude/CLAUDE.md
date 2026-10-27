@@ -53,6 +53,8 @@ This repository holds two scopes. They are never mixed: a rule written for one s
 - **Maintainer scope**: everything outside `plugins/`. Its environment is the tools, versions and binaries on Nery's machine.
 - **Plugin scope**: one self-contained directory per plugin under `plugins/<plugin>/`. Its environment is only what the plugin's `README.md` declares as prerequisites.
 
+Every change inside a plugin's directory, its components, dependencies and a `README.md`-only change included, goes through a pull request. Changes outside `plugins/` need none.
+
 #### Maintainer Tooling
 
 - Python: format and lint with Ruff, type-check with Basedpyright, test with unittest or pytest.
@@ -145,5 +147,4 @@ This repository holds two scopes. They are never mixed: a rule written for one s
 
 ## Change Control
 
-- Every change inside a plugin's directory, its components, dependencies and a `README.md`-only change included, goes through a pull request. Every change outside `plugins/` does not require one.
 - Release tags (`<plugin>--v<version>`) are created unsigned by `release.yml`, under the exemption `~/.claude/CLAUDE.md` gives public plugin marketplaces: users never fetch a tag, and signing in CI would put the signing key in a GitHub secret. Every commit, and every tag created locally, is still SSH-signed.
