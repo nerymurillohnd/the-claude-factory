@@ -72,6 +72,15 @@ Retrieve in this order:
 
 Never start from a general web search.
 
+**Version questions** ("since which version does X exist", "does my installed version have X", "what changed in 4.x") are the one exception to the `src/docs/<slug>.mdx` rule: a docs page shows the current release, not when a feature arrived. For them, read the installed version first (step 1), then the release sources:
+
+- the release posts: https://tailwindcss.com/blog/tailwindcss-v4 (4.0), https://tailwindcss.com/blog/tailwindcss-v4-1 (4.1) and https://tailwindcss.com/blog/tailwindcss-v4-3 (4.3);
+- 4.2 has no release post: read its GitHub release, https://github.com/tailwindlabs/tailwindcss/releases (v4.2.0), and the repository's `CHANGELOG.md`;
+- any later version: its GitHub release and the changelog; check the blog index for a post rather than guessing its URL;
+- never the alpha or beta posts, which describe pre-release states.
+
+A feature newer than the installed version is not available in the project: say so, and name the version that adds it, instead of using it. Browser support depends on the version too: the 4.1 post says v4 degrades "way more gracefully for older browsers" from that release, so a browser-support answer reads the installed version before it applies `compatibility`.
+
 The cross-cutting pages (the core concepts, `preflight`, `upgrade-guide`, `compatibility` and `editor-setup`) are long, and a whole-page fetch or summary loses the part you need. For them, name the section: [references/section-anchors.md](references/section-anchors.md) lists each page's section anchors and headings, and says how to use them with a fetch tool and with Context7. Copy an anchor from that list; never derive one from a heading.
 
 Rules:
