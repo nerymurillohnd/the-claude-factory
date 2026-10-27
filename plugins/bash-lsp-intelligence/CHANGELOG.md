@@ -6,6 +6,17 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.2.5] - 2026-10-27
+
+### Fixed
+
+- The post-edit hook now always runs through Bash. On Windows, a Claude Code without Git Bash could otherwise hand it to PowerShell.
+- The install section now states the same minimum Claude Code version as the rest of the README, v2.1.292.
+
+### Changed
+
+- Internal code cleanup from a stricter lint rule; what the hook checks and reports is unchanged.
+
 ## [0.2.4] - 2026-10-24
 
 ### Changed
@@ -61,7 +72,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - `bash-lsp-intelligence` skill: navigates shell code with the language server; traces direct and transitive `source` chains before trusting same-named functions; respects the script's real dialect; fixes ShellCheck and shfmt findings without changing quoting, globbing or exit-status behavior; and reports each check's status, the scripts covered and what stayed unverified.
 - Optional controls: a bundled runner checks ShellCheck and shfmt against known control files in a temporary folder, without running them or installing anything.
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/bash-lsp-intelligence--v0.2.4...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/bash-lsp-intelligence--v0.2.5...HEAD
+[0.2.5]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/bash-lsp-intelligence--v0.2.5
 [0.2.4]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/bash-lsp-intelligence--v0.2.4
 [0.2.3]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/bash-lsp-intelligence--v0.2.3
 [0.2.2]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/bash-lsp-intelligence--v0.2.2
