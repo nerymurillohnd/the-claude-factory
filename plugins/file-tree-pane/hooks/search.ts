@@ -2,6 +2,21 @@
 
 import { baseName } from './tree.ts'
 
+// 0 for a name that starts with the needle, 1 for a name that holds it, 2 for a path that
+// holds it, -1 for no match. All three are lowercase.
+const scoreOf = (name: string, path: string, needle: string): number => {
+  if (name.startsWith(needle)) {
+    return 0
+  }
+  if (name.includes(needle)) {
+    return 1
+  }
+  if (path.includes(needle)) {
+    return 2
+  }
+  return -1
+}
+
 /**
  * Paths that hold `query`, case-blind, best first: a name that starts with it, then a name
  * that holds it, then a path that holds it; shorter paths first within each.
@@ -15,13 +30,7 @@ export const searchPaths = (paths: readonly string[], query: string, limit: numb
   for (const path of paths) {
     const lower = path.toLowerCase()
     const name = baseName(lower)
-    const score = name.startsWith(needle)
-      ? 0
-      : name.includes(needle)
-        ? 1
-        : lower.includes(needle)
-          ? 2
-          : -1
+    const score = scoreOf(name, lower, needle)
     if (score !== -1) {
       scored.push({ path, score })
     }

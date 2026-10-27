@@ -119,7 +119,7 @@
     "source.organizeImports.biome": "explicit",
     "source.action.useSortedPackageJson.biome": "explicit",
     "source.action.noDuplicateClasses.biome": "explicit",
-    "source.action.useSortedAttributes.biome": "never",
+    "source.action.useSortedAttributes.biome": "explicit",
     "source.suppressRule.inline.biome": "never",
     "source.suppressRule.topLevel.biome": "never"
   },

@@ -71,7 +71,9 @@
         // package.json fields in sort-package-json's conventional order.
         "useSortedPackageJson": "on",
         // A repeated class in a mod's JSX className.
-        "noDuplicateClasses": "on"
+        "noDuplicateClasses": "on",
+        // JSX attributes in one order, so a diff never moves them.
+        "useSortedAttributes": "on"
       }
     }
   },
@@ -128,12 +130,29 @@
         "noUselessUndefinedInitialization": "error",
         "useFlatMap": "error",
         "useIndexOf": "error",
+        // At Biome's default maximum, 15: a function above it is split into named helpers.
+        "noExcessiveCognitiveComplexity": "error",
         // Off: tsc's noPropertyAccessFromIndexSignature (tsconfig.base.json) already decides how an
         // index-signature key is written, and requires the bracket form this rule rewrites.
         "useLiteralKeys": "off"
       },
       "performance": {
-        "noDelete": "error"
+        "noDelete": "error",
+        // Sequential awaits that must stay in order carry a biome-ignore with the reason.
+        "noAwaitInLoops": "error",
+        // A regex literal inside a function is rebuilt on every call.
+        "useTopLevelRegex": "error"
+      },
+      "security": {
+        // 44, above the default 41: the default flags hook event names (PostToolUseFailure), git's
+        // empty-tree id and test fixtures. At 44 it still catches a random 32-character hex, and
+        // the known token patterns (Anthropic, GitHub, AWS, Slack) do not depend on entropy.
+        "noSecrets": {
+          "level": "error",
+          "options": {
+            "entropyThreshold": 44
+          }
+        }
       },
       "style": {
         "noImplicitBoolean": "error",
@@ -150,6 +169,7 @@
         "useSingleVarDeclarator": "error",
         "useTemplate": "warn",
         "useConsistentArrayType": "error",
+        "noNestedTernary": "error",
         "useForOf": "error",
         "useImportType": "error",
         "useNamingConvention": "warn",
@@ -162,6 +182,7 @@
       },
       "suspicious": {
         "noCatchAssign": "error",
+        "noShadow": "error",
         "noConsole": "warn",
         "noEmptyBlockStatements": "error",
         "noExtraNonNullAssertion": "error",
@@ -290,7 +311,9 @@
   },
   "overrides": [
     {
-      // Tests print, test booleans directly, and use the hook protocol's snake_case keys.
+      // Tests print, test booleans directly, and use the hook protocol's snake_case keys. They
+      // await events one after another on purpose, and a one-off assertion pattern reads best
+      // beside its assertion, where it runs once.
       "includes": [
         "**/tests/**"
       ],
@@ -298,6 +321,10 @@
         "rules": {
           "suspicious": {
             "noConsole": "off"
+          },
+          "performance": {
+            "noAwaitInLoops": "off",
+            "useTopLevelRegex": "off"
           },
           "style": {
             "noImplicitBoolean": "off",

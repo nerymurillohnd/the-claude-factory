@@ -66,9 +66,6 @@ const stubWorld = (on: On, world: World): Seen => {
       dirs.add(parts.slice(0, i).join('/'))
     }
   }
-  const rel = (path: string): string | null =>
-    path === ROOT ? '' : path.startsWith(`${ROOT}/`) ? path.slice(ROOT.length + 1) : null
-
   mock.env(on, { HOME: '/home/me', VISUAL: 'nvim', ...world.env })
   on('session.start', (_$, e) => ({ cwd: e.cwd }))
   on('command.register', (_$, e) => ({ value: { command: e.name } }))
@@ -113,22 +110,7 @@ const stubWorld = (on: On, world: World): Seen => {
     if (dir === null || !dirs.has(dir)) {
       return { deny: `ENOENT: ${e.path}` }
     }
-    const names = new Map<string, FsEntry>()
-    for (const path of [...dirs, ...Object.keys(world.files)]) {
-      const parent = path.includes('/') ? path.slice(0, path.lastIndexOf('/')) : ''
-      if (path !== '' && parent === dir) {
-        const name = path.slice(parent === '' ? 0 : parent.length + 1)
-        const isDir = dirs.has(path)
-        names.set(name, {
-          name,
-          kind: isDir ? 'dir' : 'file',
-          size: isDir ? 0 : (world.files[path] ?? '').length,
-          mtimeMs: isDir ? 0 : NOW - 3_600_000,
-          isLink: false,
-        })
-      }
-    }
-    return { value: [...names.values()] }
+    return { value: entriesIn(world, dirs, dir) }
   })
   on('fs.exists', (_$, e) => {
     const path = rel(e.path)
@@ -158,84 +140,107 @@ const stubWorld = (on: On, world: World): Seen => {
   on('process.run', (_$, e) => {
     const argv = [...e.argv]
     seen.runs.push(argv)
-    const [program] = argv
-    // git's own options before the subcommand (`-c core.fsmonitor=false`).
-    const sub = argv.slice(1).find((word, i, rest) => !word.startsWith('-') && rest[i - 1] !== '-c')
-    if (program === 'test') {
-      const path = rel(argv[2] ?? '')
-      return {
-        value: { ...ok(''), exitCode: path !== null && world.executables?.includes(path) ? 0 : 1 },
-      }
-    }
-    if (program === 'uname') {
-      return { value: ok('Darwin\n') }
-    }
-    if (program === 'sh') {
-      return { value: ok('4242\n') }
-    }
-    if (program === 'ps') {
-      return { value: ok(argv.includes('4242') ? '  1  2-00:00:00\n' : '') }
-    }
-    if (program === 'git') {
-      if (world.status === null) {
-        return { value: failed() }
-      }
-      switch (sub) {
-        case 'rev-parse':
-          return { value: ok('\n') }
-        case 'config':
-          return {
-            value: world.filters === undefined ? { ...failed(), exitCode: 1 } : ok(world.filters),
-          }
-        case 'status':
-          return {
-            value: ok(
-              ['# branch.oid abc1234', '# branch.head main', ...world.status, ''].join('\0'),
-            ),
-          }
-        case 'diff':
-          if (argv.includes('--numstat')) {
-            return { value: ok([...(world.numstat ?? []), ''].join('\0')) }
-          }
-          return {
-            value: ok(
-              [
-                'diff --git a/src/a.ts b/src/a.ts',
-                '@@ -1,2 +1,2 @@',
-                ' keep',
-                '-old',
-                '+new',
-                '@@ -9,1 +9,1 @@',
-                '-x',
-                '+y',
-                '',
-              ].join('\n'),
-            ),
-          }
-        case 'log':
-          return { value: ok('abc1234 Fix the parser\nsrc/a.ts\n') }
-        case 'ls-files':
-          return { value: ok([...Object.keys(world.files), ''].join('\0')) }
-        default:
-          return { value: ok('') }
-      }
-    }
-    if (program === 'wc') {
-      return {
-        value: ok(
-          argv
-            .slice(2)
-            .map((path) => `  3 ${path}`)
-            .join('\n'),
-        ),
-      }
-    }
-    if (program === 'du') {
-      return { value: ok(`8\t${argv[2] ?? ''}\n`) }
-    }
-    return { value: ok('') }
+    return { value: runIn(world, argv) }
   })
   return seen
+}
+
+/** A path under the root, relative to it; null outside it. */
+const rel = (path: string): string | null => {
+  if (path === ROOT) {
+    return ''
+  }
+  return path.startsWith(`${ROOT}/`) ? path.slice(ROOT.length + 1) : null
+}
+
+/** The entries of folder `dir` of the world: its files and the folders that hold files. */
+const entriesIn = (world: World, dirs: ReadonlySet<string>, dir: string): FsEntry[] => {
+  const names = new Map<string, FsEntry>()
+  for (const path of [...dirs, ...Object.keys(world.files)]) {
+    const parent = path.includes('/') ? path.slice(0, path.lastIndexOf('/')) : ''
+    if (path === '' || parent !== dir) {
+      continue
+    }
+    const name = path.slice(parent === '' ? 0 : parent.length + 1)
+    const isDir = dirs.has(path)
+    names.set(name, {
+      name,
+      kind: isDir ? 'dir' : 'file',
+      size: isDir ? 0 : (world.files[path] ?? '').length,
+      mtimeMs: isDir ? 0 : NOW - 3_600_000,
+      isLink: false,
+    })
+  }
+  return [...names.values()]
+}
+
+/** What git prints for `argv` in the world. */
+const gitIn = (world: World, argv: readonly string[]): ProcessRunResult => {
+  if (world.status === null) {
+    return failed()
+  }
+  // git's own options before the subcommand (`-c core.fsmonitor=false`).
+  const sub = argv.slice(1).find((word, i, rest) => !word.startsWith('-') && rest[i - 1] !== '-c')
+  switch (sub) {
+    case 'rev-parse':
+      return ok('\n')
+    case 'config':
+      return world.filters === undefined ? { ...failed(), exitCode: 1 } : ok(world.filters)
+    case 'status':
+      return ok(['# branch.oid abc1234', '# branch.head main', ...world.status, ''].join('\0'))
+    case 'diff':
+      if (argv.includes('--numstat')) {
+        return ok([...(world.numstat ?? []), ''].join('\0'))
+      }
+      return ok(
+        [
+          'diff --git a/src/a.ts b/src/a.ts',
+          '@@ -1,2 +1,2 @@',
+          ' keep',
+          '-old',
+          '+new',
+          '@@ -9,1 +9,1 @@',
+          '-x',
+          '+y',
+          '',
+        ].join('\n'),
+      )
+    case 'log':
+      return ok('abc1234 Fix the parser\nsrc/a.ts\n')
+    case 'ls-files':
+      return ok([...Object.keys(world.files), ''].join('\0'))
+    default:
+      return ok('')
+  }
+}
+
+/** What a program the plugin runs prints in the world. */
+const runIn = (world: World, argv: readonly string[]): ProcessRunResult => {
+  switch (argv[0]) {
+    case 'test': {
+      const path = rel(argv[2] ?? '')
+      return { ...ok(''), exitCode: path !== null && world.executables?.includes(path) ? 0 : 1 }
+    }
+    case 'uname':
+      return ok('Darwin\n')
+    case 'sh':
+      return ok('4242\n')
+    case 'ps':
+      return ok(argv.includes('4242') ? '  1  2-00:00:00\n' : '')
+    case 'git':
+      return gitIn(world, argv)
+    case 'wc':
+      return ok(
+        argv
+          .slice(2)
+          .map((path) => `  3 ${path}`)
+          .join('\n'),
+      )
+    case 'du':
+      return ok(`8\t${argv[2] ?? ''}\n`)
+    default:
+      return ok('')
+  }
 }
 
 const start = async ($: Engine, seen: Seen): Promise<void> => {
@@ -731,6 +736,7 @@ test('a file its default app would run is never opened there', async ($, on) => 
 })
 
 test('a file name or a preview line never draws a control character', async ($, on) => {
+  // biome-ignore lint/security/noSecrets: a terminal-escape test fixture, not a secret
   const name = 'a\u001b[2Jb\u202Etxt.md'
   const seen = stubWorld(on, {
     files: { [name]: '\u001b]0;title\u0007hello\r\nline two\u009b31m\r\n' },

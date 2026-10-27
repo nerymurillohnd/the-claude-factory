@@ -43,13 +43,17 @@ export type LaunchPlan = RunPlan | HerdrPlan | TmuxEditorPlan | Notice
 export const NO_TERMINAL =
   'A terminal editor needs a tmux window or a herdr pane to run in; start Claude Code inside tmux or herdr, or set Open with to a GUI command.'
 
+const WINDOWS_SHELL = /mingw|msys|cygwin|windows/
+const WHITESPACE_RUN = /\s+/
+const VERSION_TRIPLE = /(\d+)\.(\d+)\.(\d+)/
+
 /** The platform from `uname -s`; Git Bash and other Windows shells report MINGW, MSYS or CYGWIN. */
 export const platformOf = (uname: string): Platform => {
   const name = uname.trim().toLowerCase()
   if (name.startsWith('darwin')) {
     return 'darwin'
   }
-  if (/mingw|msys|cygwin|windows/.test(name)) {
+  if (WINDOWS_SHELL.test(name)) {
     return 'windows'
   }
   return 'linux'
@@ -196,7 +200,7 @@ export const defaultAppPlan = (host: Host, path: string, target: OpenTarget): Ru
     return refuse("This file's target can't be checked")
   }
   for (const name of [path, real]) {
-    if (/[. ]$/.test(name)) {
+    if (name.endsWith('.') || name.endsWith(' ')) {
       return refuse('A name ending in a dot or a space hides its type')
     }
     const runnable = runsWhenOpened(name)
@@ -376,7 +380,7 @@ export const hasControlCharacter = (text: string): boolean =>
 /** The pane id of a running nvim in `tmux list-panes -s -F '#{pane_id} #{pane_current_command}'`. */
 export const nvimPaneOf = (listing: string): string | null => {
   for (const line of listing.split('\n')) {
-    const [pane, command] = line.trim().split(/\s+/)
+    const [pane, command] = line.trim().split(WHITESPACE_RUN)
     if (pane !== undefined && command === 'nvim') {
       return pane
     }
@@ -386,7 +390,7 @@ export const nvimPaneOf = (listing: string): string | null => {
 
 /** herdr's version from `herdr --version` (`herdr 0.9.5`), as [major, minor, patch]. */
 export const herdrVersionOf = (output: string): [number, number, number] | null => {
-  const match = /(\d+)\.(\d+)\.(\d+)/.exec(output)
+  const match = VERSION_TRIPLE.exec(output)
   return match === null ? null : [Number(match[1]), Number(match[2]), Number(match[3])]
 }
 

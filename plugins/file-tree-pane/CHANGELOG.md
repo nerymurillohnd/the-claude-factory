@@ -6,6 +6,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.1.3] - 2026-10-27
+
+### Changed
+
+- Internal code-quality refactor for stricter lint rules: smaller functions, named patterns and sorted attributes. Nothing changes in what the pane shows or does.
+- A few independent file checks (link targets, untracked file sizes, open folders, font files, `@path` mentions) now run together instead of one after another.
+- Validated and tested on Claude Code v2.1.311.
+
 ## [0.1.2] - 2026-10-27
 
 ### Changed
@@ -33,7 +41,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - Settings in `/config`: Claude activity, Follow Claude, Open at start, Right column, Hints, Search spacing, Shortcut row, Open with, Edit with, Diff with, Ignore, Palette and Glyphs.
 - Validated and tested on Claude Code v2.1.310.
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/file-tree-pane--v0.1.2...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/file-tree-pane--v0.1.3...HEAD
+[0.1.3]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/file-tree-pane--v0.1.3
 [0.1.2]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/file-tree-pane--v0.1.2
 [0.1.1]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/file-tree-pane--v0.1.1
 [0.1.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/file-tree-pane--v0.1.0

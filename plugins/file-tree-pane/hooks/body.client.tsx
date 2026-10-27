@@ -81,78 +81,108 @@ const Body: ClientModule<BodyProps, Local> = (
     const room = Math.max(1, surface.rows)
     const hasBar = now.live.total > room
     const onBar = hasBar && event.x >= surface.columns - 1
-    if (event.type === 'down' && event.button === 'left' && onBar) {
-      surface.setState({ ...now, isDragging: true })
-      surface.post({ type: 'scrollTo', ratio: ratioOf(event.y, room) } satisfies BodyMessage)
-      return
+    if (!dragBar(now, event, onBar, room)) {
+      pointAt(now, event, onBar, room)
     }
-    if (event.type === 'move' && now.isDragging) {
-      surface.post({ type: 'scrollTo', ratio: ratioOf(event.y, room) } satisfies BodyMessage)
-      return
-    }
-    if (event.type === 'up' && now.isDragging) {
-      surface.setState({ ...now, isDragging: false })
-      return
-    }
+  }
+
+  // A hover, the pointer leaving, or a click on the rows.
+  function pointAt(now: Local, event: ClientPointerEvent, onBar: boolean, height: number): void {
     if (event.type === 'move' && event.button === undefined) {
-      const hovered = event.y >= 0 && event.y < room && !onBar ? now.live.first + event.y : null
-      if (hovered !== now.hovered) {
-        surface.setState({ ...now, hovered })
-      }
+      hover(now, onBar ? null : rowAt(now, event.y, height))
       return
     }
     if (event.type === 'leave') {
-      if (now.hovered !== null) {
-        surface.setState({ ...now, hovered: null })
-      }
+      hover(now, null)
       return
     }
     if (event.type === 'up' && event.button === 'left' && !onBar) {
-      if (event.y < 0 || event.y >= room) {
-        return
-      }
-      // A double click is two clicks on the same screen row: the first one may already have
-      // turned the body into the file's preview, whose rows are not the tree's. The hooks module
-      // opens the row the first click picked.
-      const at = Date.now()
-      const index = now.live.first + event.y
-      const isDouble =
-        now.lastClick !== null &&
-        now.lastClick.y === event.y &&
-        at - now.lastClick.at <= DOUBLE_CLICK_MS
-      if (isDouble) {
-        surface.setState({ ...now, lastClick: null })
-        surface.post({ type: 'open', index } satisfies BodyMessage)
-        return
-      }
-      if (index >= now.live.total) {
-        return
-      }
-      surface.setState({ ...now, lastClick: { y: event.y, at } })
-      surface.post({ type: 'click', index } satisfies BodyMessage)
+      clickRow(now, event.y, height)
     }
+  }
+
+  // A press on the scrollbar, and the drag it starts; false for any other event.
+  function dragBar(now: Local, event: ClientPointerEvent, onBar: boolean, height: number): boolean {
+    if (event.type === 'down' && event.button === 'left' && onBar) {
+      surface.setState({ ...now, isDragging: true })
+      surface.post({ type: 'scrollTo', ratio: ratioOf(event.y, height) } satisfies BodyMessage)
+      return true
+    }
+    if (event.type === 'move' && now.isDragging) {
+      surface.post({ type: 'scrollTo', ratio: ratioOf(event.y, height) } satisfies BodyMessage)
+      return true
+    }
+    if (event.type === 'up' && now.isDragging) {
+      surface.setState({ ...now, isDragging: false })
+      return true
+    }
+    return false
+  }
+
+  // The row at screen row `y`, or null past the body's top or bottom.
+  function rowAt(now: Local, y: number, height: number): number | null {
+    return y >= 0 && y < height ? now.live.first + y : null
+  }
+
+  function hover(now: Local, hovered: number | null): void {
+    if (hovered !== now.hovered) {
+      surface.setState({ ...now, hovered })
+    }
+  }
+
+  // A left click on screen row `y`.
+  function clickRow(now: Local, y: number, height: number): void {
+    if (y < 0 || y >= height) {
+      return
+    }
+    // A double click is two clicks on the same screen row: the first one may already have
+    // turned the body into the file's preview, whose rows are not the tree's. The hooks module
+    // opens the row the first click picked.
+    const at = Date.now()
+    const index = now.live.first + y
+    const isDouble =
+      now.lastClick !== null && now.lastClick.y === y && at - now.lastClick.at <= DOUBLE_CLICK_MS
+    if (isDouble) {
+      surface.setState({ ...now, lastClick: null })
+      surface.post({ type: 'open', index } satisfies BodyMessage)
+      return
+    }
+    if (index >= now.live.total) {
+      return
+    }
+    surface.setState({ ...now, lastClick: { y, at } })
+    surface.post({ type: 'click', index } satisfies BodyMessage)
   }
 
   const room = Math.max(1, surface.rows)
   const thumb = thumbOf(props.first, props.total, room)
-  const bar = (row: number): RenderElement => (
-    <Text
-      key={`bar-${row}`}
-      color={
-        thumb !== null && row >= thumb.start && row < thumb.end ? props.barColor : props.trackColor
-      }
-    >
-      {thumb === null ? ' ' : row >= thumb.start && row < thumb.end ? '┃' : '│'}
-    </Text>
-  )
+  const bar = (row: number): RenderElement => {
+    const isThumb = thumb !== null && row >= thumb.start && row < thumb.end
+    const glyph = isThumb ? '┃' : '│'
+    return (
+      <Text color={isThumb ? props.barColor : props.trackColor} key={`bar-${row}`}>
+        {thumb === null ? ' ' : glyph}
+      </Text>
+    )
+  }
+
+  const rowBg = (index: number, line: BodyLine): string | undefined => {
+    if (index === props.selected) {
+      return props.selectedBg
+    }
+    if (index === state.hovered) {
+      return props.hoveredBg
+    }
+    return line.bg ?? undefined
+  }
 
   if (props.code !== null) {
     return (
       <Box flexDirection="row" height={room}>
-        <Box flexGrow={1} flexDirection="column" overflow="hidden">
+        <Box flexDirection="column" flexGrow={1} overflow="hidden">
           <Code
-            source={props.code.source}
             path={props.code.path}
+            source={props.code.source}
             startLine={props.code.startLine}
             wrap="truncate-end"
           />
@@ -173,8 +203,8 @@ const Body: ClientModule<BodyProps, Local> = (
           key={`s${index}`}
           {...(segment.color === null ? {} : { color: segment.color })}
           dimColor={segment.isDim === true}
-          weight={segment.isBold === true ? 'bold' : 'regular'}
           strikethrough={segment.isStruck === true}
+          weight={segment.isBold === true ? 'bold' : 'regular'}
         >
           {segment.text}
         </Text>,
@@ -186,10 +216,10 @@ const Body: ClientModule<BodyProps, Local> = (
     const at = (state.phase % width) - 3
     return Array.from(segment.text, (char, i) => (
       <Text
-        key={`s${index}-${i}`}
         color={shimmer}
-        weight={Math.abs(i - at) <= 1 ? 'bold' : 'regular'}
         inverse={Math.abs(i - at) === 0}
+        key={`s${index}-${i}`}
+        weight={Math.abs(i - at) <= 1 ? 'bold' : 'regular'}
       >
         {char}
       </Text>
@@ -200,19 +230,14 @@ const Body: ClientModule<BodyProps, Local> = (
     <Box flexDirection="column" height={room}>
       {props.lines.slice(0, room).map((line, row) => {
         const index = props.first + row
-        const bg =
-          index === props.selected
-            ? props.selectedBg
-            : index === state.hovered
-              ? props.hoveredBg
-              : (line.bg ?? undefined)
+        const bg = rowBg(index, line)
         return (
           <Box
-            key={line.key}
             flexDirection="row"
+            key={line.key}
             {...(bg === undefined ? {} : { backgroundColor: bg })}
           >
-            <Box flexGrow={1} flexDirection="row" overflow="hidden">
+            <Box flexDirection="row" flexGrow={1} overflow="hidden">
               {line.segments.flatMap((segment, i) => segmentOf(segment, i, line))}
             </Box>
             {thumb !== null && bar(row)}

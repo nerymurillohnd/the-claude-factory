@@ -1,15 +1,22 @@
-import type { EngineInterface, On, PluginOptions, Register, RenderElement } from 'claude-code'
+import type {
+  EngineInterface,
+  FsEntry,
+  On,
+  PluginOptions,
+  Register,
+  RenderElement,
+} from 'claude-code'
 import { atom, read, update } from 'claude-code'
 
 import type { FileTreeColumn, FileTreeView } from '../types'
-import type { ActivityKind, GitOp } from './activity.ts'
+import type { ActivityKind, GitOp, Touches } from './activity.ts'
 import { opLabel, touchesOf } from './activity.ts'
 import type { BodyLine, BodyMessage, BodyProps, Segment } from './body.ts'
 import { readMessage } from './body.ts'
 import type { DiffRow, ParsedDiff } from './diff.ts'
 import { nextStop, parseDiff, withoutHeadings } from './diff.ts'
 import { clip, formatAge, formatDate, formatSize, printable } from './format.ts'
-import type { GitFile, GitSnapshot } from './git.ts'
+import type { FolderCounts, GitFile, GitSnapshot } from './git.ts'
 import {
   countsText,
   EMPTY_TREE,
@@ -19,10 +26,19 @@ import {
   parseStatus,
   parseWc,
   rollUp,
+  underPrefix,
 } from './git.ts'
 import type { GlyphSetting, Glyphs } from './glyphs.ts'
 import { decideGlyphs, iconFor, isNerdFontFile } from './glyphs.ts'
-import type { Host, LaunchPlan, OpenTarget } from './launch.ts'
+import type {
+  HerdrPlan,
+  Host,
+  LaunchPlan,
+  OpenTarget,
+  Platform,
+  RunPlan,
+  TmuxEditorPlan,
+} from './launch.ts'
 import {
   canEdit,
   diffToolPlan,
@@ -35,7 +51,7 @@ import {
   platformOf,
   quickLookPlan,
 } from './launch.ts'
-import type { Look, Palette } from './palette.ts'
+import type { Look, Palette, Tone } from './palette.ts'
 import { lookOf, paletteFor, parsePalette } from './palette.ts'
 import { searchPaths } from './search.ts'
 import type { Entry, Row } from './tree.ts'
@@ -94,20 +110,42 @@ const COUNTED_BYTES = 64 * 1024 * 1024
 // command the person or Claude runs at the same moment.
 const GIT_ENV: Record<string, string> = Object.fromEntries([['GIT_OPTIONAL_LOCKS', '0']])
 
+// A POSIX path or a Windows one, with or without a drive letter.
+const ABSOLUTE_PATH = /^(?:[a-z]:)?[\\/]/i
+// The KiB count `du -sk` starts its line with.
+const LEADING_NUMBER = /^(\d+)/
+// The pane id in the JSON `herdr pane split` prints.
+const PANE_ID = /"pane_id"\s*:\s*"([^"]+)"/
+const LINE_BREAK = /\r?\n/
+const DIGITS = /^\d+$/
+// `ps -o ppid= -o etime=`: the parent pid, then the elapsed time as [[dd-]hh:]mm:ss.
+const PS_LINE = /^\s*(\d+)\s+(?:(\d+)-)?(?:(\d+):)?(\d+):(\d+)\s*$/
+// A custom theme's file name, without a folder in it.
+const THEME_SLUG = /^[\w.-]+$/
+// The `#L12` or `#section` part of an `@path` mention.
+const MENTION_FRAGMENT = /#.*$/
+// Punctuation that ends the sentence an `@path` mention sits in.
+const TRAILING_PUNCTUATION = /[?!.,;:)\]]+$/
+
 // A repository's own config can name programs git runs: an fsmonitor on status, a clean or
 // process filter on status and diff, a textconv or an external diff on diff, a gpg program on
 // log. The tree runs git on its own, in folders the person may not have vetted, so none of them
 // run: each filter driver the config names is blanked, and the rest are turned off by flag.
 // Claude Code already turns repository hooks off. Names print as they are, not C-quoted.
-export const gitArgv = (args: readonly string[], drivers: readonly string[] = []): string[] => {
+const withSafeFlags = (args: readonly string[]): string[] => {
   const [sub, ...rest] = args
-  const safe =
-    sub === 'diff'
-      ? ['diff', '--no-ext-diff', '--no-textconv', ...rest]
-      : sub === 'log'
-        ? ['log', '--no-show-signature', ...rest]
-        : [...args]
-  const blanked = drivers.flatMap((name) => [
+  if (sub === 'diff') {
+    return ['diff', '--no-ext-diff', '--no-textconv', ...rest]
+  }
+  if (sub === 'log') {
+    return ['log', '--no-show-signature', ...rest]
+  }
+  return [...args]
+}
+
+export const gitArgv = (args: readonly string[], filterNames: readonly string[] = []): string[] => {
+  const safe = withSafeFlags(args)
+  const blanked = filterNames.flatMap((name) => [
     '-c',
     `filter.${name}.clean=`,
     '-c',
@@ -206,28 +244,28 @@ export const shows = (setting: Activity, kind: ActivityKind): boolean =>
 const segment = (
   value: string,
   color: string | null,
-  look: Partial<Omit<Segment, 'text' | 'color'>> = {},
+  style: Partial<Omit<Segment, 'text' | 'color'>> = {},
 ): Segment => ({
   text: printable(value),
   color,
-  isDim: look.isDim ?? false,
-  isBold: look.isBold ?? false,
-  isStruck: look.isStruck ?? false,
+  isDim: style.isDim ?? false,
+  isBold: style.isBold ?? false,
+  isStruck: style.isStruck ?? false,
 })
 
-const toneOfFile = (file: GitFile | undefined, palette: Palette): string | null => {
+const toneOfFile = (file: GitFile | undefined, colors: Palette): string | null => {
   switch (file?.code) {
     case 'modified':
     case 'renamed':
-      return palette.modified
+      return colors.modified
     case 'added':
-      return palette.added
+      return colors.added
     case 'untracked':
-      return palette.untracked
+      return colors.untracked
     case 'deleted':
-      return palette.deleted
+      return colors.deleted
     case 'conflict':
-      return palette.conflict
+      return colors.conflict
     default:
       return null
   }
@@ -239,11 +277,15 @@ const rightText = (
   row: Row,
   column: RightColumn,
   now: number,
-  sizes: ReadonlyMap<string, number>,
+  folderSizes: ReadonlyMap<string, number>,
 ): string => {
   if (column === 'size') {
-    const size =
-      row.kind === 'dir' ? sizes.get(row.path) : row.entry.isGhost ? undefined : row.entry.size
+    let size: number | undefined
+    if (row.kind === 'dir') {
+      size = folderSizes.get(row.path)
+    } else if (!row.entry.isGhost) {
+      size = row.entry.size
+    }
     return size === undefined ? '' : formatSize(size)
   }
   if (row.kind === 'dir' || row.entry.isGhost) {
@@ -253,6 +295,32 @@ const rightText = (
 }
 
 const RIGHT_WIDTH: Record<RightColumn, number> = { date: 12, age: 5, size: 6 }
+
+// A folder's name color: deleted when deletions are all that changed under it, else modified.
+const toneOfFolder = (counts: FolderCounts | undefined, colors: Palette): string | null => {
+  if (counts === undefined) {
+    return null
+  }
+  const isOnlyDeleted = counts.deleted > 0 && counts.modified === 0 && counts.untracked === 0
+  return isOnlyDeleted ? colors.deleted : colors.modified
+}
+
+// The badge after a name: a folder's counts in one muted segment, a file's `+12 -3` in green
+// and red.
+const badgeSegments = (badge: string, isDir: boolean, colors: Palette): Segment[] => {
+  if (badge === '') {
+    return []
+  }
+  if (isDir) {
+    return [segment(` ${badge}`, colors.muted)]
+  }
+  const [first = '', second] = badge.split(' ')
+  const parts = [segment(` ${first}`, first.startsWith('+') ? colors.added : colors.deleted)]
+  if (second !== undefined) {
+    parts.push(segment(` ${second}`, colors.deleted))
+  }
+  return parts
+}
 
 /** One tree row as the body draws it, fitted to `columns`. */
 export const rowLine = (
@@ -288,70 +356,57 @@ export const rowLine = (
   const name = clip(row.kind === 'dir' ? `${row.name}/` : row.name, nameRoom)
   const used = indent.length + icon.length + name.length + (badge === '' ? 0 : badge.length + 1)
   const gap = Math.max(1, input.columns - used - rightWidth - 1)
-  const nameColor =
-    row.kind === 'dir'
-      ? counts === undefined
-        ? null
-        : counts.deleted > 0 && counts.modified === 0 && counts.untracked === 0
-          ? palette.deleted
-          : palette.modified
-      : toneOfFile(file, palette)
+  const nameColor = row.kind === 'dir' ? toneOfFolder(counts, palette) : toneOfFile(file, palette)
   const segments: Segment[] = [
     segment(indent, null),
     segment(icon, row.kind === 'dir' ? palette.accent : palette.muted),
     segment(name, nameColor, { isBold: row.kind === 'dir', isStruck: row.entry.isGhost }),
+    ...badgeSegments(badge, row.kind === 'dir', palette),
   ]
-  if (badge !== '') {
-    if (row.kind === 'dir') {
-      segments.push(segment(` ${badge}`, palette.muted))
-    } else {
-      const [first, second] = badge.split(' ')
-      segments.push(
-        segment(` ${first ?? ''}`, (first ?? '').startsWith('+') ? palette.added : palette.deleted),
-      )
-      if (second !== undefined) {
-        segments.push(segment(` ${second}`, palette.deleted))
-      }
-    }
-  }
   segments.push(segment(`${' '.repeat(gap)}${right.padStart(rightWidth)}`, palette.muted))
   return { key: row.path, segments, nameIndex: 2, shimmer: input.shimmer, bg: null }
 }
 
+type LineKind = 'add' | 'del' | 'ctx'
+
+const DIFF_SIGN: Record<LineKind, string> = { add: '+', del: '-', ctx: ' ' }
+
+const DIFF_BG: Record<LineKind, string | null> = { add: 'diffAdded', del: 'diffRemoved', ctx: null }
+
 /** One diff row as the body draws it: a line number gutter, then the line. */
-export const diffLine = (row: DiffRow, index: number, palette: Palette): BodyLine => {
+export const diffLine = (row: DiffRow, position: number, colors: Palette): BodyLine => {
   const gutter = row.line === null ? '     ' : String(row.line).padStart(4)
   switch (row.kind) {
     case 'file':
       return {
-        key: `d${index}`,
-        segments: [segment(row.text, palette.accent, { isBold: true })],
+        key: `d${position}`,
+        segments: [segment(row.text, colors.accent, { isBold: true })],
         nameIndex: -1,
         shimmer: null,
         bg: null,
       }
     case 'hunk':
       return {
-        key: `d${index}`,
-        segments: [segment(row.text, palette.muted)],
+        key: `d${position}`,
+        segments: [segment(row.text, colors.muted)],
         nameIndex: -1,
         shimmer: null,
         bg: null,
       }
     case 'note':
       return {
-        key: `d${index}`,
-        segments: [segment(`      ${row.text}`, palette.muted, { isDim: true })],
+        key: `d${position}`,
+        segments: [segment(`      ${row.text}`, colors.muted, { isDim: true })],
         nameIndex: -1,
         shimmer: null,
         bg: null,
       }
     default: {
-      const sign = row.kind === 'add' ? '+' : row.kind === 'del' ? '-' : ' '
-      const bg = row.kind === 'add' ? 'diffAdded' : row.kind === 'del' ? 'diffRemoved' : null
+      const sign = DIFF_SIGN[row.kind]
+      const bg = DIFF_BG[row.kind]
       return {
-        key: `d${index}`,
-        segments: [segment(`${gutter} `, palette.muted), segment(`${sign}${row.text}`, null)],
+        key: `d${position}`,
+        segments: [segment(`${gutter} `, colors.muted), segment(`${sign}${row.text}`, null)],
         nameIndex: -1,
         shimmer: null,
         bg,
@@ -361,6 +416,24 @@ export const diffLine = (row: DiffRow, index: number, palette: Palette): BodyLin
 }
 
 type Footer = { text: string; tone: 'running' | 'ok' | 'error'; until: number }
+
+/** The palette tone each footer state draws in. */
+const FOOTER_TONE: Record<Footer['tone'], Tone> = {
+  error: 'deleted',
+  ok: 'added',
+  running: 'muted',
+}
+
+/**
+ * The column the Σ button switches to: sizes from any other column; back from sizes, the Right
+ * column setting (null), or dates when the setting is sizes.
+ */
+const toggledColumn = (column: FileTreeColumn, setting: FileTreeColumn): FileTreeColumn | null => {
+  if (column !== 'size') {
+    return 'size'
+  }
+  return setting === 'size' ? 'date' : null
+}
 
 type Preview = { path: string; lines: string[]; problem: string | null }
 
@@ -436,17 +509,19 @@ const rootOf = async ($: EngineInterface): Promise<string> => {
 const loadDir = async ($: EngineInterface, root: string, rel: string): Promise<void> => {
   const abs = absoluteOf(rel, root)
   const entries = await $.fs.list(abs)
-  const out: Entry[] = []
-  for (const entry of entries) {
-    let kind = entry.kind
-    if (entry.isLink) {
-      const target = await quietly(() =>
-        $.fs.stat(absoluteOf(rel === '' ? entry.name : `${rel}/${entry.name}`, root)),
-      )
-      kind = target?.kind ?? 'other'
-    }
-    out.push({ name: entry.name, kind, size: entry.size, mtimeMs: entry.mtimeMs, isGhost: false })
-  }
+  // Each link's target is read on its own; Promise.all keeps the listing's order.
+  const out = await Promise.all(
+    entries.map(async (entry): Promise<Entry> => {
+      let kind = entry.kind
+      if (entry.isLink) {
+        const target = await quietly(() =>
+          $.fs.stat(absoluteOf(rel === '' ? entry.name : `${rel}/${entry.name}`, root)),
+        )
+        kind = target?.kind ?? 'other'
+      }
+      return { name: entry.name, kind, size: entry.size, mtimeMs: entry.mtimeMs, isGhost: false }
+    }),
+  )
   listings.set(rel, out)
 }
 
@@ -495,16 +570,20 @@ const runGit = async ($: EngineInterface, root: string, args: string[]): Promise
   return result.exitCode === 0 ? result.stdout : null
 }
 
-const refreshGit = async ($: EngineInterface, root: string): Promise<void> => {
+/**
+ * Whether git may run here: finds the repository the first time, then reads the filter drivers
+ * to blank. A folder outside a repository, or a driver `-c` cannot blank, turns git off.
+ */
+const prepareGit = async ($: EngineInterface, root: string): Promise<boolean> => {
   if (repo === 'none') {
-    return
+    return false
   }
   if (repo === 'unknown') {
     const top = await quietly(() => runGit($, root, ['rev-parse', '--show-prefix']))
     if (top === undefined || top === null) {
       repo = 'none'
       git = null
-      return
+      return false
     }
     repo = 'repo'
     gitPrefix = top.trim()
@@ -518,9 +597,73 @@ const refreshGit = async ($: EngineInterface, root: string): Promise<void> => {
   if (found === null) {
     repo = 'none'
     git = null
-    return
+    return false
   }
   drivers = found
+  return true
+}
+
+/** The size and modification time of each file wc may count: a regular file of COUNTED_BYTES or less. */
+const stampsOf = async (
+  $: EngineInterface,
+  root: string,
+  paths: readonly string[],
+): Promise<Map<string, string>> => {
+  // At most UNTRACKED_COUNTED stats, each independent; Promise.all keeps their order.
+  const stats = await Promise.all(
+    paths.map((path) => quietly(() => $.fs.stat(absoluteOf(path, root)))),
+  )
+  const stamps = new Map<string, string>()
+  for (const [i, path] of paths.entries()) {
+    const stat = stats[i]
+    if (stat !== undefined && stat.kind === 'file' && stat.size <= COUNTED_BYTES) {
+      stamps.set(path, `${stat.size}:${stat.mtimeMs}`)
+    }
+  }
+  return stamps
+}
+
+/**
+ * Line counts of the untracked files git lists (the first UNTRACKED_COUNTED), set on `files`.
+ * wc reads only the files whose size or modification time moved since it last counted them.
+ */
+const countUntracked = async (
+  $: EngineInterface,
+  root: string,
+  files: Map<string, GitFile>,
+): Promise<void> => {
+  const untracked = [...files]
+    .filter(([, file]) => file.code === 'untracked')
+    .map(([path]) => path)
+    .slice(0, UNTRACKED_COUNTED)
+  const stamps = await stampsOf($, root, untracked)
+  const toCount = untracked.filter(
+    (path) => stamps.has(path) && lineCounts.get(path)?.stamp !== stamps.get(path),
+  )
+  if (toCount.length > 0) {
+    const counted = await quietly(() =>
+      $.process.run(['wc', '-l', '--', ...toCount], { cwd: root }),
+    )
+    for (const [path, lines] of parseWc(counted?.stdout ?? '')) {
+      const stamp = stamps.get(path)
+      if (stamp !== undefined) {
+        lineCounts.set(path, { stamp, lines })
+      }
+    }
+  }
+  for (const path of untracked) {
+    const counted = lineCounts.get(path)
+    const file = files.get(path)
+    if (counted !== undefined && counted.stamp === stamps.get(path) && file !== undefined) {
+      files.set(path, { ...file, added: counted.lines, removed: 0 })
+    }
+  }
+}
+
+const refreshGit = async ($: EngineInterface, root: string): Promise<void> => {
+  if (!(await prepareGit($, root))) {
+    return
+  }
   // A submodule counts as changed when its commit moved; its own working tree is not read, so
   // git starts no process inside it with that submodule's config.
   const status = await runGit($, root, [
@@ -551,41 +694,7 @@ const refreshGit = async ($: EngineInterface, root: string): Promise<void> => {
       files.set(path, { ...file, ...counts })
     }
   }
-  const untracked = [...files]
-    .filter(([, file]) => file.code === 'untracked')
-    .map(([path]) => path)
-    .slice(0, UNTRACKED_COUNTED)
-  const stamps = new Map<string, string>()
-  const toCount: string[] = []
-  for (const path of untracked) {
-    const stat = await quietly(() => $.fs.stat(absoluteOf(path, root)))
-    if (stat === undefined || stat.kind !== 'file' || stat.size > COUNTED_BYTES) {
-      continue
-    }
-    const stamp = `${stat.size}:${stat.mtimeMs}`
-    stamps.set(path, stamp)
-    if (lineCounts.get(path)?.stamp !== stamp) {
-      toCount.push(path)
-    }
-  }
-  if (toCount.length > 0) {
-    const counted = await quietly(() =>
-      $.process.run(['wc', '-l', '--', ...toCount], { cwd: root }),
-    )
-    for (const [path, lines] of parseWc(counted?.stdout ?? '')) {
-      const stamp = stamps.get(path)
-      if (stamp !== undefined) {
-        lineCounts.set(path, { stamp, lines })
-      }
-    }
-  }
-  for (const path of untracked) {
-    const counted = lineCounts.get(path)
-    const file = files.get(path)
-    if (counted !== undefined && counted.stamp === stamps.get(path) && file !== undefined) {
-      files.set(path, { ...file, added: counted.lines, removed: 0 })
-    }
-  }
+  await countUntracked($, root, files)
   git = { head, files, folders: rollUp(files) }
 }
 
@@ -602,6 +711,7 @@ const refresh = async ($: EngineInterface): Promise<void> => {
   try {
     do {
       isRefreshAgain = false
+      // biome-ignore lint/performance/noAwaitInLoops: one refresh at a time; a refresh asked for meanwhile runs after this one ends
       await refreshOnce($)
     } while (isRefreshAgain)
   } finally {
@@ -613,11 +723,12 @@ const refreshOnce = async ($: EngineInterface): Promise<void> => {
   const root = await ensureRoot($)
   const expanded = await read($, expandedAtom)
   await quietly(() => loadDir($, root, ''))
-  for (const dir of expanded) {
-    if (!isIgnored(dir, ignore)) {
-      await quietly(() => loadDir($, root, dir))
-    }
-  }
+  // Each folder's listing is its own entry of `listings`: they load side by side.
+  await Promise.all(
+    expanded
+      .filter((dir) => !isIgnored(dir, ignore))
+      .map((dir) => quietly(() => loadDir($, root, dir))),
+  )
   // A `git init` the person ran shows as a .git in the folder: look for the repository again.
   if (repo === 'none' && (listings.get('') ?? []).some((entry) => entry.name === '.git')) {
     repo = 'unknown'
@@ -640,7 +751,7 @@ const scheduleRefresh = ($: EngineInterface): void => {
 
 const duBytes = async ($: EngineInterface, abs: string): Promise<number | null> => {
   const result = await quietly(() => $.process.run(['du', '-sk', abs], { timeoutMs: 60_000 }))
-  const kib = /^(\d+)/.exec(result?.stdout ?? '')?.[1]
+  const kib = LEADING_NUMBER.exec(result?.stdout ?? '')?.[1]
   if (result?.exitCode === 0 && kib !== undefined) {
     return Number(kib) * 1024
   }
@@ -650,6 +761,7 @@ const duBytes = async ($: EngineInterface, abs: string): Promise<number | null> 
   const stack = [abs]
   while (stack.length > 0 && seen < 5000) {
     const dir = stack.pop() ?? ''
+    // biome-ignore lint/performance/noAwaitInLoops: each listing feeds the stack the walk reads next, and the walk stops at 5000 entries
     const entries = (await quietly(() => $.fs.list(dir))) ?? []
     for (const entry of entries) {
       seen += 1
@@ -684,6 +796,7 @@ const queueSizes = async ($: EngineInterface): Promise<void> => {
       void (async (): Promise<void> => {
         while (sizeQueue.length > 0) {
           const path = sizeQueue.shift() ?? ''
+          // biome-ignore lint/performance/noAwaitInLoops: each worker runs one du at a time, so at most SIZE_WORKERS run at once
           const bytes = await duBytes($, absoluteOf(path, root))
           // A cd while du ran: its result names a folder of the old root.
           if (bytes !== null && root === listingsRoot) {
@@ -702,11 +815,9 @@ const queueSizes = async ($: EngineInterface): Promise<void> => {
 const expandTo = async ($: EngineInterface, path: string): Promise<void> => {
   const root = await rootOf($)
   const parents = ancestorsOf(path)
-  for (const dir of parents) {
-    if (!listings.has(dir)) {
-      await quietly(() => loadDir($, root, dir))
-    }
-  }
+  await Promise.all(
+    parents.filter((dir) => !listings.has(dir)).map((dir) => quietly(() => loadDir($, root, dir))),
+  )
   if (parents.length > 0) {
     await update($, expandedAtom, (list) => [...new Set([...list, ...parents])])
   }
@@ -741,12 +852,14 @@ const moveSelection = async ($: EngineInterface, by: number | 'first' | 'last'):
   }
   const selected = await read($, selectedAtom)
   const at = rows.findIndex((row) => row.path === selected)
-  const next =
-    by === 'first'
-      ? 0
-      : by === 'last'
-        ? rows.length - 1
-        : Math.min(rows.length - 1, Math.max(0, (at === -1 ? listOffset - 1 : at) + by))
+  let next: number
+  if (by === 'first') {
+    next = 0
+  } else if (by === 'last') {
+    next = rows.length - 1
+  } else {
+    next = Math.min(rows.length - 1, Math.max(0, (at === -1 ? listOffset - 1 : at) + by))
+  }
   await select($, rows[next]?.path ?? null)
 }
 
@@ -771,63 +884,72 @@ const toggle = async ($: EngineInterface, path: string, open?: boolean): Promise
 
 // ---------------------------------------------------------------- launching
 
+const runCommand = async ($: EngineInterface, plan: RunPlan): Promise<void> => {
+  const result = await $.process.run(plan.argv, {
+    ...(plan.cwd === undefined ? {} : { cwd: plan.cwd }),
+    ...(plan.env === undefined ? {} : { env: plan.env }),
+  })
+  if (result.exitCode !== 0) {
+    $.ui.toast(
+      `${plan.argv[0] ?? 'The command'} failed: ${printable((result.stderr.trim().split('\n')[0] ?? '').slice(0, 200))}`,
+    )
+  }
+}
+
+const runHerdr = async ($: EngineInterface, plan: HerdrPlan): Promise<void> => {
+  const split = await $.process.run(plan.split)
+  const pane = PANE_ID.exec(split.stdout)?.[1]
+  if (split.exitCode !== 0 || pane === undefined) {
+    $.ui.toast('herdr could not open a pane.')
+    return
+  }
+  await $.process.run(['herdr', 'pane', 'run', pane, plan.command])
+}
+
+// Opens the file in an nvim already running in a tmux pane; false when there is none to reuse.
+const reuseNvim = async ($: EngineInterface, plan: TmuxEditorPlan): Promise<boolean> => {
+  if (baseName(plan.editor[0] ?? '') !== 'nvim') {
+    return false
+  }
+  const panes = await quietly(() =>
+    $.process.run(['tmux', 'list-panes', '-s', '-F', '#{pane_id} #{pane_current_command}']),
+  )
+  const nvim = nvimPaneOf(panes?.stdout ?? '')
+  const steps = nvim === null ? null : nvimReuseSteps(nvim, plan.file, plan.line)
+  if (steps === null) {
+    return false
+  }
+  for (const step of steps) {
+    // biome-ignore lint/performance/noAwaitInLoops: the tmux keystrokes reach nvim in the order sent (normal mode, :edit, Enter), then its window and pane are selected
+    await $.process.run(step)
+  }
+  return true
+}
+
+const runTmuxEditor = async ($: EngineInterface, plan: TmuxEditorPlan): Promise<void> => {
+  if (await reuseNvim($, plan)) {
+    return
+  }
+  await runCommand($, {
+    kind: 'run',
+    argv: ['tmux', 'new-window', '-c', plan.dir, '--', ...plan.editor, `+${plan.line}`, plan.file],
+  })
+}
+
 const run = async ($: EngineInterface, plan: LaunchPlan): Promise<void> => {
   switch (plan.kind) {
     case 'notice':
       $.ui.toast(plan.text)
       return
-    case 'run': {
-      const result = await $.process.run(plan.argv, {
-        ...(plan.cwd === undefined ? {} : { cwd: plan.cwd }),
-        ...(plan.env === undefined ? {} : { env: plan.env }),
-      })
-      if (result.exitCode !== 0) {
-        $.ui.toast(
-          `${plan.argv[0] ?? 'The command'} failed: ${printable((result.stderr.trim().split('\n')[0] ?? '').slice(0, 200))}`,
-        )
-      }
+    case 'run':
+      await runCommand($, plan)
       return
-    }
-    case 'herdr': {
-      const split = await $.process.run(plan.split)
-      const pane = /"pane_id"\s*:\s*"([^"]+)"/.exec(split.stdout)?.[1]
-      if (split.exitCode !== 0 || pane === undefined) {
-        $.ui.toast('herdr could not open a pane.')
-        return
-      }
-      await $.process.run(['herdr', 'pane', 'run', pane, plan.command])
+    case 'herdr':
+      await runHerdr($, plan)
       return
-    }
-    case 'tmux-editor': {
-      const program = baseName(plan.editor[0] ?? '')
-      if (program === 'nvim') {
-        const panes = await quietly(() =>
-          $.process.run(['tmux', 'list-panes', '-s', '-F', '#{pane_id} #{pane_current_command}']),
-        )
-        const nvim = nvimPaneOf(panes?.stdout ?? '')
-        const steps = nvim === null ? null : nvimReuseSteps(nvim, plan.file, plan.line)
-        if (steps !== null) {
-          for (const step of steps) {
-            await $.process.run(step)
-          }
-          return
-        }
-      }
-      await run($, {
-        kind: 'run',
-        argv: [
-          'tmux',
-          'new-window',
-          '-c',
-          plan.dir,
-          '--',
-          ...plan.editor,
-          `+${plan.line}`,
-          plan.file,
-        ],
-      })
+    case 'tmux-editor':
+      await runTmuxEditor($, plan)
       return
-    }
   }
 }
 
@@ -873,7 +995,7 @@ const openPreview = async ($: EngineInterface, path: string): Promise<void> => {
   } else if (content.includes('\0')) {
     preview = { path, lines: [], problem: 'This is a binary file.' }
   } else {
-    preview = { path, lines: content.split(/\r?\n/), problem: null }
+    preview = { path, lines: content.split(LINE_BREAK), problem: null }
   }
   previewOffset = 0
   await update($, viewAtom, (): FileTreeView => ({ kind: 'preview', path }))
@@ -921,6 +1043,7 @@ const openDiff = async ($: EngineInterface, path: string, isDir: boolean): Promi
     .map(([file]) => file)
     .slice(0, DIFF_UNTRACKED_CAP)
   for (const file of untracked) {
+    // biome-ignore lint/performance/noAwaitInLoops: one git process at a time instead of up to DIFF_UNTRACKED_CAP at once
     const added = await quietly(() =>
       $.process.run(
         gitArgv(['diff', '--no-color', '--no-index', '--', '/dev/null', file], drivers),
@@ -996,6 +1119,17 @@ const edit = async ($: EngineInterface, path: string, line: number): Promise<voi
 const isChanged = (row: Row): boolean =>
   row.kind === 'dir' ? (git?.folders.has(row.path) ?? false) : git?.files.has(row.path) === true
 
+/** How many rows the view scrolls through: the tree's rows, the diff's or the preview's lines. */
+const viewTotal = async ($: EngineInterface, view: FileTreeView): Promise<number> => {
+  if (view.kind === 'tree') {
+    return (await rowsNow($)).length
+  }
+  if (view.kind === 'diff') {
+    return diff?.parsed.rows.length ?? 0
+  }
+  return preview?.lines.length ?? 0
+}
+
 /** Scrolls the preview or the diff, whichever the view shows. */
 const scrollView = (kind: 'preview' | 'diff', by: number): void => {
   if (kind === 'diff' && diff !== null) {
@@ -1005,50 +1139,92 @@ const scrollView = (kind: 'preview' | 'diff', by: number): void => {
   }
 }
 
-const actInView = async (
-  $: EngineInterface,
-  view: Exclude<FileTreeView, { kind: 'tree' }>,
-  key: string,
-): Promise<void> => {
-  const page = Math.max(1, room() - 1)
+type FileView = Exclude<FileTreeView, { kind: 'tree' }>
+
+/** How far a scrolling key moves the preview or the diff, or null for any other key. */
+const scrollAmount = (key: string, page: number): number | null => {
   switch (key) {
     case 'down':
-      scrollView(view.kind, 1)
-      break
+      return 1
     case 'up':
-      scrollView(view.kind, -1)
-      break
+      return -1
     case 'f':
     case 'pagedown':
     case 'space':
-      scrollView(view.kind, page)
-      break
+      return page
     case 'b':
     case 'pageup':
-      scrollView(view.kind, -page)
-      break
+      return -page
     case 'home':
-      scrollView(view.kind, -Number.MAX_SAFE_INTEGER)
-      break
+      return -Number.MAX_SAFE_INTEGER
     case 'end':
-      scrollView(view.kind, Number.MAX_SAFE_INTEGER)
-      break
-    case 'j':
-    case 'k': {
-      const direction = key === 'j' ? 1 : -1
-      if (view.kind === 'diff' && diff !== null) {
-        const stops =
-          diff.isDir && diff.parsed.files.length > 1 ? diff.parsed.files : diff.parsed.hunks
-        diffOffset = clampOffset(
-          nextStop(stops, diffOffset, direction),
-          diff.parsed.rows.length,
-          room(),
-        )
-      } else {
-        scrollView(view.kind, direction)
-      }
-      break
+      return Number.MAX_SAFE_INTEGER
+    default:
+      return null
+  }
+}
+
+// j and k: the next or previous file of a folder's diff (hunk of a file's), else one line.
+const jumpInView = (view: FileView, direction: 1 | -1): void => {
+  if (view.kind === 'diff' && diff !== null) {
+    const stops = diff.isDir && diff.parsed.files.length > 1 ? diff.parsed.files : diff.parsed.hunks
+    diffOffset = clampOffset(
+      nextStop(stops, diffOffset, direction),
+      diff.parsed.rows.length,
+      room(),
+    )
+  } else {
+    scrollView(view.kind, direction)
+  }
+}
+
+// d: from a file's diff to its preview, from a folder's diff to the tree, from a preview to its
+// diff.
+const switchDiffInView = async ($: EngineInterface, view: FileView): Promise<void> => {
+  if (view.kind === 'preview') {
+    await openDiff($, view.path, false)
+  } else if (view.isDir) {
+    await backToTree($)
+  } else {
+    await openPreview($, view.path)
+  }
+}
+
+// The file whose heading is at or above `offset` in a folder's diff.
+const fileAbove = (rows: readonly DiffRow[], offset: number): string | undefined => {
+  for (let i: number = offset; i >= 0; i -= 1) {
+    if (rows[i]?.kind === 'file') {
+      return rows[i]?.text
     }
+  }
+  return undefined
+}
+
+// e: the file in view, at the first line on screen.
+const editInView = async ($: EngineInterface, view: FileView): Promise<void> => {
+  if (view.kind === 'preview') {
+    await edit($, view.path, previewOffset + 1)
+  } else if (diff !== null) {
+    const rows = diff.parsed.rows
+    const file = fileAbove(rows, diffOffset) ?? view.path
+    const line = rows.slice(diffOffset).find((row) => row.line !== null)?.line ?? 1
+    await edit($, view.isDir ? file : view.path, line)
+  }
+}
+
+const actInView = async ($: EngineInterface, view: FileView, key: string): Promise<void> => {
+  const amount = scrollAmount(key, Math.max(1, room() - 1))
+  if (amount !== null) {
+    scrollView(view.kind, amount)
+    redraw($)
+    return
+  }
+  switch (key) {
+    case 'j':
+    case 'k':
+      jumpInView(view, key === 'j' ? 1 : -1)
+      redraw($)
+      return
     case 'p':
     case 'h':
     case 'left':
@@ -1056,39 +1232,14 @@ const actInView = async (
       await backToTree($)
       return
     case 'd':
-      if (view.kind === 'diff') {
-        if (!view.isDir) {
-          await openPreview($, view.path)
-          return
-        }
-        await backToTree($)
-        return
-      }
-      if (view.kind === 'preview') {
-        await openDiff($, view.path, false)
-      }
+      await switchDiffInView($, view)
       return
-    case 'e': {
-      if (view.kind === 'preview') {
-        await edit($, view.path, previewOffset + 1)
-      } else if (view.kind === 'diff' && diff !== null) {
-        const rows = diff.parsed.rows
-        let file = view.path
-        for (let i: number = diffOffset; i >= 0; i -= 1) {
-          if (rows[i]?.kind === 'file') {
-            file = rows[i]?.text ?? file
-            break
-          }
-        }
-        const line = rows.slice(diffOffset).find((row) => row.line !== null)?.line ?? 1
-        await edit($, view.isDir ? file : view.path, line)
-      }
+    case 'e':
+      await editInView($, view)
       return
-    }
     default:
       return
   }
-  redraw($)
 }
 
 // The names `onKey` gives a few keys; a typed space may also arrive as the character itself.
@@ -1102,50 +1253,81 @@ const act = async ($: EngineInterface, pressed: string): Promise<void> => {
     return
   }
   const row = await selectedRow($)
-  const page = Math.max(1, room() - 1)
+  const move = selectionMove(key, Math.max(1, room() - 1))
+  if (move !== null) {
+    await moveSelection($, move)
+    return
+  }
+  await actOnRow($, key, row)
+}
+
+/** Where a moving key takes the tree's selection, or null for any other key. */
+const selectionMove = (key: string, page: number): number | 'first' | 'last' | null => {
   switch (key) {
     case 'j':
     case 'down':
-      await moveSelection($, 1)
-      return
+      return 1
     case 'k':
     case 'up':
-      await moveSelection($, -1)
-      return
+      return -1
     case 'f':
     case 'pagedown':
-      await moveSelection($, page)
-      return
+      return page
     case 'b':
     case 'pageup':
-      await moveSelection($, -page)
-      return
+      return -page
     case 'home':
-      await moveSelection($, 'first')
-      return
+      return 'first'
     case 'end':
-      await moveSelection($, 'last')
-      return
+      return 'last'
+    default:
+      return null
+  }
+}
+
+// l: opens a closed folder, or steps into an open one.
+const stepIn = async ($: EngineInterface, row: Row | null): Promise<void> => {
+  if (row?.kind !== 'dir') {
+    return
+  }
+  if (row.isExpanded) {
+    await moveSelection($, 1)
+  } else {
+    await toggle($, row.path, true)
+  }
+}
+
+// h: closes an open folder, or steps out to the folder above.
+const stepOut = async ($: EngineInterface, row: Row | null): Promise<void> => {
+  if (row === null) {
+    return
+  }
+  if (row.kind === 'dir' && row.isExpanded) {
+    await toggle($, row.path, false)
+  } else if (row.depth > 0) {
+    await select($, parentOf(row.path))
+  }
+}
+
+// Space: opens or closes a folder, or shows a file in Quick Look.
+const pressSpace = async ($: EngineInterface, row: Row | null): Promise<void> => {
+  if (row?.kind === 'dir') {
+    await toggle($, row.path)
+  } else if (row !== null) {
+    quickLook($, absoluteOf(row.path, await rootOf($)))
+  }
+}
+
+/** A key other than a move, on the tree's selected row. */
+const actOnRow = async ($: EngineInterface, key: string, row: Row | null): Promise<void> => {
+  switch (key) {
     case 'l':
     case 'right':
-      if (row?.kind === 'dir') {
-        if (row.isExpanded) {
-          await moveSelection($, 1)
-        } else {
-          await toggle($, row.path, true)
-        }
-      }
+      await stepIn($, row)
       return
     case 'h':
     case 'left':
-      if (row === null) {
-        return
-      }
-      if (row.kind === 'dir' && row.isExpanded) {
-        await toggle($, row.path, false)
-      } else if (row.depth > 0) {
-        await select($, parentOf(row.path))
-      }
+      await stepOut($, row)
       return
     case 'o':
     case 'return':
@@ -1154,11 +1336,7 @@ const act = async ($: EngineInterface, pressed: string): Promise<void> => {
       }
       return
     case 'space':
-      if (row?.kind === 'dir') {
-        await toggle($, row.path)
-      } else if (row !== null) {
-        quickLook($, absoluteOf(row.path, await rootOf($)))
-      }
+      await pressSpace($, row)
       return
     case 'p':
       if (row !== null && row.kind !== 'dir' && !row.entry.isGhost) {
@@ -1216,46 +1394,63 @@ const click = async ($: EngineInterface, at: number, isDouble: boolean): Promise
 
 // ---------------------------------------------------------------- search
 
+type Listed = { paths: string[]; isCut: boolean }
+
+// The search index of a repository: the files git tracks plus the untracked ones it does not
+// ignore.
+const listRepository = async ($: EngineInterface, root: string): Promise<Listed> => {
+  const listed = await quietly(() =>
+    $.process.run(
+      gitArgv(['ls-files', '-z', '--cached', '--others', '--exclude-standard'], drivers),
+      { cwd: root, env: GIT_ENV },
+    ),
+  )
+  const names = (listed?.exitCode === 0 ? listed.stdout : '').split('\0')
+  const isCut = listed?.isStdoutTruncated === true
+  if (isCut) {
+    // The output stops mid-name past 4 MiB: drop the partial last one.
+    names.pop()
+  }
+  return { paths: names.filter((path) => path !== '' && !isIgnored(path, ignore)), isCut }
+}
+
+// Adds a folder's listing to the walk: each entry the Ignore setting keeps to `paths`, and each
+// folder that is not a link to `stack`, to be listed next.
+const addListing = (
+  dir: string,
+  entries: readonly FsEntry[],
+  paths: string[],
+  stack: string[],
+): void => {
+  for (const entry of entries) {
+    if (ignore.has(entry.name)) {
+      continue
+    }
+    const path = dir === '' ? entry.name : `${dir}/${entry.name}`
+    paths.push(path)
+    if (entry.kind === 'dir' && !entry.isLink) {
+      stack.push(path)
+    }
+  }
+}
+
+// The search index of a plain folder: a walk of its listings, up to SEARCH_INDEX_CAP paths.
+const walkFolder = async ($: EngineInterface, root: string): Promise<Listed> => {
+  const paths: string[] = []
+  const stack = ['']
+  while (stack.length > 0 && paths.length < SEARCH_INDEX_CAP) {
+    const dir = stack.pop() ?? ''
+    // biome-ignore lint/performance/noAwaitInLoops: each listing feeds the stack the walk reads next, and the walk stops at SEARCH_INDEX_CAP paths
+    const entries = (await quietly(() => $.fs.list(absoluteOf(dir, root)))) ?? []
+    addListing(dir, entries, paths, stack)
+  }
+  return { paths, isCut: stack.length > 0 }
+}
+
 const buildIndex = async ($: EngineInterface): Promise<void> => {
   const root = await rootOf($)
-  const paths: string[] = []
-  let isCut = false
-  if (repo === 'repo') {
-    const listed = await quietly(() =>
-      $.process.run(
-        gitArgv(['ls-files', '-z', '--cached', '--others', '--exclude-standard'], drivers),
-        { cwd: root, env: GIT_ENV },
-      ),
-    )
-    const names = (listed?.exitCode === 0 ? listed.stdout : '').split('\0')
-    if (listed?.isStdoutTruncated === true) {
-      // The output stops mid-name past 4 MiB: drop the partial last one.
-      names.pop()
-      isCut = true
-    }
-    for (const path of names) {
-      if (path !== '' && !isIgnored(path, ignore)) {
-        paths.push(path)
-      }
-    }
-  } else {
-    const stack = ['']
-    while (stack.length > 0 && paths.length < SEARCH_INDEX_CAP) {
-      const dir = stack.pop() ?? ''
-      const entries = (await quietly(() => $.fs.list(absoluteOf(dir, root)))) ?? []
-      for (const entry of entries) {
-        if (ignore.has(entry.name)) {
-          continue
-        }
-        const path = dir === '' ? entry.name : `${dir}/${entry.name}`
-        paths.push(path)
-        if (entry.kind === 'dir' && !entry.isLink) {
-          stack.push(path)
-        }
-      }
-    }
-    isCut = stack.length > 0
-  }
+  const { paths, isCut } =
+    repo === 'repo' ? await listRepository($, root) : await walkFolder($, root)
   if (root === (await rootOf($))) {
     index = paths
     indexAt = await $.clock.now()
@@ -1310,7 +1505,7 @@ const markActivity = async (
   const now = await $.clock.now()
   const touched: string[] = []
   for (const path of paths) {
-    const abs = /^(?:[a-z]:)?[\\/]/i.test(path) ? path : absoluteOf(normalizePath(path), cwd)
+    const abs = absoluteFromCwd(path)
     const rel = relativeTo(abs, root)
     if (rel === null || rel === '' || isIgnored(rel, ignore)) {
       continue
@@ -1373,9 +1568,7 @@ const afterOps = async (
     const [subject, ...files] = (log ?? '').split('\n').filter((line) => line !== '')
     await setFooter($, `✓ committed ${subject ?? ''}`.trim(), 'ok')
     const committed = files
-      .map((file) =>
-        gitPrefix === '' ? file : file.startsWith(gitPrefix) ? file.slice(gitPrefix.length) : null,
-      )
+      .map((file) => underPrefix(file, gitPrefix))
       .filter((file): file is string => file !== null)
       .map((file) => absoluteOf(file, root))
     await markActivity($, committed, 'commit', COMMIT_MS)
@@ -1386,11 +1579,25 @@ const afterOps = async (
 
 // ---------------------------------------------------------------- session
 
+/** `~` and a leading `~/` in a path the person typed, read as their home folder. */
+const withHome = (path: string, home: string): string => {
+  if (path === '~') {
+    return home
+  }
+  return path.startsWith('~/') ? `${home}${path.slice(1)}` : path
+}
+
+/** The first value that is set and not empty. */
+const firstSet = (...values: readonly (string | undefined)[]): string | undefined =>
+  values.find((value) => value !== undefined && value !== '')
+
 const detectHost = async ($: EngineInterface): Promise<void> => {
   const uname = await quietly(() => $.process.run(['uname', '-s']))
   const os = await $.env.get('OS')
-  const platform =
-    uname?.exitCode === 0 ? platformOf(uname.stdout) : os === 'Windows_NT' ? 'windows' : 'linux'
+  let platform: Platform = os === 'Windows_NT' ? 'windows' : 'linux'
+  if (uname?.exitCode === 0) {
+    platform = platformOf(uname.stdout)
+  }
   const visual = await $.env.get('VISUAL')
   const editor = await $.env.get('EDITOR')
   const tmux = await $.env.get('TMUX')
@@ -1400,12 +1607,7 @@ const detectHost = async ($: EngineInterface): Promise<void> => {
     platform,
     isTmux: tmux !== undefined && tmux !== '',
     herdrPane: herdrEnv === '1' && herdrPane !== undefined && herdrPane !== '' ? herdrPane : null,
-    editor:
-      visual !== undefined && visual !== ''
-        ? visual
-        : editor !== undefined && editor !== ''
-          ? editor
-          : 'vi',
+    editor: firstSet(visual, editor) ?? 'vi',
   }
   if (host.herdrPane !== null) {
     const version = await quietly(() => $.process.run(['herdr', '--version']))
@@ -1416,7 +1618,8 @@ const detectHost = async ($: EngineInterface): Promise<void> => {
 const nerdFontTimes = async ($: EngineInterface): Promise<number[]> => {
   const times: number[] = []
   const scan = async (dir: string): Promise<void> => {
-    for (const entry of (await quietly(() => $.fs.list(dir))) ?? []) {
+    const entries = (await quietly(() => $.fs.list(dir))) ?? []
+    for (const entry of entries) {
       if (isNerdFontFile(entry.name)) {
         times.push(entry.mtimeMs)
       }
@@ -1437,12 +1640,11 @@ const nerdFontTimes = async ($: EngineInterface): Promise<number[]> => {
     await scan(`${normalizePath(system ?? 'C:/Windows')}/Fonts`)
   } else {
     const listed = await quietly(() => $.process.run(['fc-list', '--format', '%{file}\n']))
-    for (const file of (listed?.stdout ?? '').split('\n')) {
-      if (isNerdFontFile(baseName(file))) {
-        const stat = await quietly(() => $.fs.stat(file))
-        times.push(stat?.mtimeMs ?? 0)
-      }
-    }
+    const files = (listed?.stdout ?? '')
+      .split('\n')
+      .filter((file) => isNerdFontFile(baseName(file)))
+    const stats = await Promise.all(files.map((file) => quietly(() => $.fs.stat(file))))
+    times.push(...stats.map((stat) => stat?.mtimeMs ?? 0))
   }
   return times
 }
@@ -1456,11 +1658,12 @@ const terminalStartedAt = async ($: EngineInterface): Promise<number | null> => 
   let pid = (me?.stdout ?? '').trim()
   let startedAt: number | null = null
   const now = await $.clock.now()
-  for (let hops = 0; hops < 32 && /^\d+$/.test(pid) && pid !== '1' && pid !== '0'; hops += 1) {
+  for (let hops = 0; hops < 32 && DIGITS.test(pid) && pid !== '1' && pid !== '0'; hops += 1) {
+    // biome-ignore lint/performance/noAwaitInLoops: each ps call reads the parent pid the next call asks about
     const info = await quietly(() =>
       $.process.run(['ps', '-o', 'ppid=', '-o', 'etime=', '-p', pid]),
     )
-    const match = /^\s*(\d+)\s+(?:(\d+)-)?(?:(\d+):)?(\d+):(\d+)\s*$/.exec(info?.stdout ?? '')
+    const match = PS_LINE.exec(info?.stdout ?? '')
     if (match === null) {
       break
     }
@@ -1478,7 +1681,7 @@ const terminalStartedAt = async ($: EngineInterface): Promise<number | null> => 
 // A custom theme's `base`, from its file in the Claude config folder; null when unreadable.
 const customBase = async ($: EngineInterface, theme: string): Promise<string | null> => {
   const slug = theme.slice('custom:'.length)
-  if (!/^[\w.-]+$/.test(slug) || slug.startsWith('.')) {
+  if (!THEME_SLUG.test(slug) || slug.startsWith('.')) {
     return null
   }
   const configDir =
@@ -1531,6 +1734,290 @@ const openPane = async ($: EngineInterface): Promise<{ isPlaced: boolean; reason
   return opened
 }
 
+// ---------------------------------------------------------------- tool calls
+
+/** A path Claude's tool names, absolute: as is when absolute, else against the working directory. */
+const absoluteFromCwd = (path: string): string =>
+  ABSOLUTE_PATH.test(path) ? path : absoluteOf(normalizePath(path), cwd)
+
+// Before the call runs: its reads shimmer until it ends, its git operations show as running.
+const beforeToolCall = async ($: EngineInterface, touches: Touches): Promise<void> => {
+  if (touches.reads.length > 0) {
+    await quietly(() => markActivity($, touches.reads, 'read', 600_000))
+  }
+  if (touches.ops.length > 0) {
+    await quietly(() => setFooter($, `⟳ ${touches.ops.map(opLabel).join(' · ')}`, 'running'))
+  }
+}
+
+// A call that threw (an interrupt): its reads fade and its operations show as stopped.
+const stoppedToolCall = async ($: EngineInterface, touches: Touches): Promise<void> => {
+  if (touches.reads.length > 0) {
+    await markActivity($, touches.reads, 'read', READ_MS)
+  }
+  if (touches.ops.length > 0) {
+    await setFooter($, `✗ ${touches.ops.map(opLabel).join(' · ')} stopped`, 'error')
+  }
+}
+
+// Written files: the sizes of the folders above them and the search index are stale.
+const afterWrites = async ($: EngineInterface, writes: readonly string[]): Promise<void> => {
+  const root = await rootOf($)
+  for (const path of writes) {
+    const rel = relativeTo(absoluteFromCwd(path), root)
+    for (const dir of rel === null ? [] : ['', ...ancestorsOf(rel)]) {
+      sizes.delete(dir)
+    }
+  }
+  index = null
+  await markActivity($, writes, 'write', WRITE_MS)
+}
+
+const afterToolCall = async (
+  $: EngineInterface,
+  touches: Touches,
+  isError: boolean,
+): Promise<void> => {
+  if (touches.reads.length > 0) {
+    await markActivity($, touches.reads, 'read', READ_MS)
+  }
+  if (!isError && touches.writes.length > 0) {
+    await afterWrites($, touches.writes)
+  }
+  await afterOps($, touches.ops, isError)
+  scheduleRefresh($)
+}
+
+// ---------------------------------------------------------------- prompts
+
+/** The `@path` mentions of a prompt that lie under the root, in order. */
+const mentionsOf = (prompt: string, root: string): { abs: string; rel: string }[] => {
+  const mentions: { abs: string; rel: string }[] = []
+  for (const match of prompt.matchAll(/(?:^|\s)@("[^"]+"|[^\s"]+)/g)) {
+    const raw = (match[1] ?? '')
+      .replace(/^"|"$/g, '')
+      .replace(MENTION_FRAGMENT, '')
+      .replace(TRAILING_PUNCTUATION, '')
+    const abs = ABSOLUTE_PATH.test(raw) ? normalizePath(raw) : absoluteOf(normalizePath(raw), cwd)
+    const rel = relativeTo(abs, root)
+    if (rel !== null && rel !== '') {
+      mentions.push({ abs, rel })
+    }
+  }
+  return mentions
+}
+
+/** The last mention that exists on disk, or null. Each is checked on its own. */
+const lastMentioned = async (
+  $: EngineInterface,
+  mentions: readonly { abs: string; rel: string }[],
+): Promise<string | null> => {
+  const exists = await Promise.all(
+    mentions.map((mention) => quietly(() => $.fs.exists(mention.abs))),
+  )
+  let last: string | null = null
+  for (const [i, mention] of mentions.entries()) {
+    if (exists[i] === true) {
+      last = mention.rel
+    }
+  }
+  return last
+}
+
+/** The note about the selection Claude reads with the prompt, or null when the pane is hidden. */
+const selectionNow = async ($: EngineInterface, root: string): Promise<string | null> => {
+  const panes = (await quietly(() => $.ui.panes())) ?? []
+  const selected = await quietly(() => read($, selectedAtom))
+  if (
+    selected === undefined ||
+    selected === null ||
+    !panes.some((pane) => pane.id === PANE && pane.isShown)
+  ) {
+    return null
+  }
+  const row = await quietly(() => selectedRow($))
+  const kind =
+    row?.kind ?? (await quietly(() => $.fs.stat(absoluteOf(selected, root))))?.kind ?? 'file'
+  return selectionNote(kind === 'dir', selected, absoluteOf(selected, root))
+}
+
+// ---------------------------------------------------------------- body messages
+
+// The body measured itself: the tree sends exactly the rows that fit.
+const resizeBody = async ($: EngineInterface, rows: number, columns: number): Promise<void> => {
+  if (rows === body.rows && columns === body.columns) {
+    return
+  }
+  body = { rows, columns }
+  listOffset = clampOffset(listOffset, (await rowsNow($)).length, room())
+  redraw($)
+  void queueSizes($)
+}
+
+// A drag on the scrollbar: `ratio` of the way down the view.
+const scrollToRatio = async ($: EngineInterface, ratio: number): Promise<void> => {
+  const view = await read($, viewAtom)
+  const total = await viewTotal($, view)
+  const offset = Math.round(ratio * maxOffset(total, room()))
+  if (view.kind === 'tree') {
+    listOffset = offset
+  } else if (view.kind === 'diff') {
+    diffOffset = offset
+  } else {
+    previewOffset = offset
+  }
+  redraw($)
+}
+
+// ---------------------------------------------------------------- drawing
+
+type BodyContent = Pick<BodyProps, 'lines' | 'code' | 'first' | 'total' | 'selected'>
+
+type TreeInput = {
+  colors: Palette
+  shown: number
+  columns: number
+  column: FileTreeColumn
+  now: number
+  selected: string | null
+}
+
+// The preview's lines on screen as code, or the reason the file cannot be shown.
+const previewContent = (
+  open: Preview,
+  path: string,
+  colors: Palette,
+  shown: number,
+): BodyContent => {
+  if (open.problem !== null) {
+    const problem: BodyLine = {
+      key: 'problem',
+      segments: [segment(open.problem, colors.muted)],
+      nameIndex: -1,
+      shimmer: null,
+      bg: null,
+    }
+    return { lines: [problem], code: null, first: 0, total: 1, selected: null }
+  }
+  const total = open.lines.length
+  const first = clampOffset(previewOffset, total, shown)
+  const code = {
+    source: open.lines
+      .slice(first, first + shown)
+      .map(printable)
+      .join('\n'),
+    path: printable(path),
+    startLine: first + 1,
+  }
+  return { lines: [], code, first, total, selected: null }
+}
+
+// The diff's rows on screen.
+const diffContent = (open: DiffView, colors: Palette, shown: number): BodyContent => {
+  const total = open.parsed.rows.length
+  const first = clampOffset(diffOffset, total, shown)
+  const lines = open.parsed.rows
+    .slice(first, first + shown)
+    .map((row, i) => diffLine(row, first + i, colors))
+  return { lines, code: null, first, total, selected: null }
+}
+
+/**
+ * What Claude is touching now, each path and the folders above it; marks that ran out are
+ * dropped.
+ */
+const activeMarks = (now: number): Map<string, ActivityKind> => {
+  const active = new Map<string, ActivityKind>()
+  for (const [path, mark] of activity) {
+    if (mark.until <= now) {
+      activity.delete(path)
+      continue
+    }
+    active.set(path, mark.kind)
+    for (const dir of ancestorsOf(path)) {
+      if (!active.has(dir)) {
+        active.set(dir, mark.kind)
+      }
+    }
+  }
+  return active
+}
+
+// The tree's rows on screen, each shimmering for Claude's activity on it.
+const treeContent = (rows: readonly Row[], input: TreeInput): BodyContent => {
+  const { colors, shown } = input
+  const total = rows.length
+  const first = clampOffset(listOffset, total, shown)
+  const active = activeMarks(input.now)
+  const lines = rows.slice(first, first + shown).map((row) => {
+    // A folder shimmers for what lies under it only while it is collapsed.
+    const ownMark = activity.get(row.path)?.kind
+    const below = row.kind === 'dir' && !row.isExpanded ? active.get(row.path) : undefined
+    const mark = ownMark ?? below
+    return rowLine(row, {
+      columns: input.columns - 1,
+      column: input.column,
+      now: input.now,
+      git,
+      sizes,
+      palette: colors,
+      glyphs,
+      shimmer: mark === undefined ? null : colors[mark],
+    })
+  })
+  const at = rows.findIndex((row) => row.path === input.selected)
+  return { lines, code: null, first, total, selected: at === -1 ? null : at }
+}
+
+/** The body for the view: the preview's lines, the diff's rows or the tree's. */
+const bodyContent = async (
+  $: EngineInterface,
+  view: FileTreeView,
+  input: TreeInput,
+): Promise<BodyContent> => {
+  if (view.kind === 'preview' && preview !== null && preview.path === view.path) {
+    return previewContent(preview, view.path, input.colors, input.shown)
+  }
+  if (view.kind === 'diff' && diff !== null && diff.path === view.path) {
+    return diffContent(diff, input.colors, input.shown)
+  }
+  return treeContent(await rowsNow($), input)
+}
+
+/**
+ * The body's width and height in rows: what the body measured, or before it has, the engine's
+ * width and its height less the header's rows.
+ */
+const bodySize = (engineColumns: number, bodyRows: number): { columns: number; shown: number } => ({
+  columns: Math.max(10, body.columns > 0 ? body.columns : engineColumns),
+  shown: body.rows > 0 ? body.rows : Math.max(1, bodyRows - 4),
+})
+
+/** The footer while it lasts, or null once it has run out. */
+const footerAt = (now: number): Footer | null =>
+  footer === null || footer.until <= now ? null : footer
+
+/** The header's title: the root and its branch, or the file in view and what shows it. */
+const headingOf = (view: FileTreeView, root: string): string => {
+  if (view.kind === 'tree') {
+    return `${baseName(root) || root}${git === null ? '' : `  ${headText(git.head)}`}`
+  }
+  return `${view.path}${view.kind === 'diff' ? ' · diff' : ' · preview'}`
+}
+
+/** The line under the search field: searching, no match, or the matches found. */
+const searchStatus = (): string => {
+  if (indexing !== null && index === null) {
+    return 'Searching…'
+  }
+  const cut = isIndexCut ? ' (searched the first part of this folder only)' : ''
+  if (matches.length === 0) {
+    return `No match.${cut}`
+  }
+  const count = `${matches.length}${matches.length === 50 ? '+' : ''}`
+  return `${count} found · Enter jumps to the first: ${printable(matches[0] ?? '')}${cut}`
+}
+
 export const register: Register = (on: On, options: PluginOptions): void => {
   settings = readSettings(options)
   ignore = parseIgnore(settings.ignore)
@@ -1576,8 +2063,8 @@ export const register: Register = (on: On, options: PluginOptions): void => {
       await update($, rootAtom, () => '')
     } else {
       const home = (await $.env.get('HOME')) ?? (await $.env.get('USERPROFILE')) ?? ''
-      const expanded = arg === '~' ? home : arg.startsWith('~/') ? `${home}${arg.slice(1)}` : arg
-      const abs = /^(?:[a-z]:)?[\\/]/i.test(expanded)
+      const expanded = withHome(arg, home)
+      const abs = ABSOLUTE_PATH.test(expanded)
         ? normalizePath(expanded)
         : absoluteOf(normalizePath(expanded), cwd)
       const stat = await quietly(() => $.fs.stat(abs))
@@ -1622,53 +2109,21 @@ export const register: Register = (on: On, options: PluginOptions): void => {
   on('tool.call', async ($, e, next) => {
     const touches = touchesOf(String(e.tool), e)
     const hasWork = touches.reads.length + touches.writes.length + touches.ops.length > 0
-    if (touches.reads.length > 0) {
-      await quietly(() => markActivity($, touches.reads, 'read', 600_000))
-    }
-    if (touches.ops.length > 0) {
-      await quietly(() => setFooter($, `⟳ ${touches.ops.map(opLabel).join(' · ')}`, 'running'))
-    }
+    await beforeToolCall($, touches)
     // Always awaited: returning while next(e) is pending would abort the call. A call that
     // throws (an interrupt) ends its marks and its footer before the error goes on.
     let result: Awaited<ReturnType<typeof next>>
     try {
       result = await next(e)
     } catch (error) {
-      await quietly(async () => {
-        if (touches.reads.length > 0) {
-          await markActivity($, touches.reads, 'read', READ_MS)
-        }
-        if (touches.ops.length > 0) {
-          await setFooter($, `✗ ${touches.ops.map(opLabel).join(' · ')} stopped`, 'error')
-        }
-      })
+      await quietly(() => stoppedToolCall($, touches))
       throw error
     }
     if (!hasWork && String(e.tool) !== 'Bash') {
       return result
     }
     const isError = result.deny !== undefined || result.isError === true
-    await quietly(async () => {
-      if (touches.reads.length > 0) {
-        await markActivity($, touches.reads, 'read', READ_MS)
-      }
-      if (!isError && touches.writes.length > 0) {
-        const root = await rootOf($)
-        for (const path of touches.writes) {
-          const rel = relativeTo(
-            /^(?:[a-z]:)?[\\/]/i.test(path) ? path : absoluteOf(normalizePath(path), cwd),
-            root,
-          )
-          for (const dir of rel === null ? [] : ['', ...ancestorsOf(rel)]) {
-            sizes.delete(dir)
-          }
-        }
-        index = null
-        await markActivity($, touches.writes, 'write', WRITE_MS)
-      }
-      await afterOps($, touches.ops, isError)
-      scheduleRefresh($)
-    })
+    await quietly(() => afterToolCall($, touches, isError))
     return result
   }).catch((_$, e, next) => next(e))
   // Replay-safe: when the hook already called next, this returns that call's result without
@@ -1679,37 +2134,14 @@ export const register: Register = (on: On, options: PluginOptions): void => {
       return next(e)
     }
     const root = await rootOf($)
-    let mentioned: string | null = null
-    for (const match of e.text.matchAll(/(?:^|\s)@("[^"]+"|[^\s"]+)/g)) {
-      const raw = (match[1] ?? '')
-        .replace(/^"|"$/g, '')
-        .replace(/#.*$/, '')
-        .replace(/[?!.,;:)\]]+$/, '')
-      const abs = /^(?:[a-z]:)?[\\/]/i.test(raw)
-        ? normalizePath(raw)
-        : absoluteOf(normalizePath(raw), cwd)
-      const rel = relativeTo(abs, root)
-      if (rel !== null && rel !== '' && (await quietly(() => $.fs.exists(abs))) === true) {
-        mentioned = rel
-      }
-    }
+    const mentioned = await lastMentioned($, mentionsOf(e.text, root))
     if (mentioned !== null) {
-      const path = mentioned
-      await quietly(() => reveal($, path))
+      await quietly(() => reveal($, mentioned))
     }
-    const panes = (await quietly(() => $.ui.panes())) ?? []
-    const selected = await quietly(() => read($, selectedAtom))
-    if (
-      selected === undefined ||
-      selected === null ||
-      !panes.some((pane) => pane.id === PANE && pane.isShown)
-    ) {
+    const note = await selectionNow($, root)
+    if (note === null) {
       return next(e)
     }
-    const row = await quietly(() => selectedRow($))
-    const kind =
-      row?.kind ?? (await quietly(() => $.fs.stat(absoluteOf(selected, root))))?.kind ?? 'file'
-    const note = selectionNote(kind === 'dir', selected, absoluteOf(selected, root))
     return next({ ...e, context: [...(e.context ?? []), note] })
   }).catch((_$, e, next) => next(e))
 
@@ -1734,12 +2166,7 @@ export const register: Register = (on: On, options: PluginOptions): void => {
     }
     switch (message.type) {
       case 'size':
-        if (message.rows !== body.rows || message.columns !== body.columns) {
-          body = { rows: message.rows, columns: message.columns }
-          listOffset = clampOffset(listOffset, (await rowsNow($)).length, room())
-          redraw($)
-          void queueSizes($)
-        }
+        await resizeBody($, message.rows, message.columns)
         break
       case 'click':
       case 'open':
@@ -1748,25 +2175,9 @@ export const register: Register = (on: On, options: PluginOptions): void => {
       case 'key':
         await act($, message.key)
         break
-      case 'scrollTo': {
-        const view = await read($, viewAtom)
-        const total =
-          view.kind === 'tree'
-            ? (await rowsNow($)).length
-            : view.kind === 'diff'
-              ? (diff?.parsed.rows.length ?? 0)
-              : (preview?.lines.length ?? 0)
-        const offset = Math.round(message.ratio * maxOffset(total, room()))
-        if (view.kind === 'tree') {
-          listOffset = offset
-        } else if (view.kind === 'diff') {
-          diffOffset = offset
-        } else {
-          previewOffset = offset
-        }
-        redraw($)
+      case 'scrollTo':
+        await scrollToRatio($, message.ratio)
         break
-      }
     }
     return {}
   })
@@ -1783,95 +2194,17 @@ export const register: Register = (on: On, options: PluginOptions): void => {
     const column = await columnNow($)
     const query = await read($, queryAtom)
     const now = await $.clock.now()
-    const columns = Math.max(10, body.columns > 0 ? body.columns : e.props.bodyColumns)
-    const fallbackRoom = Math.max(1, e.props.scroll.bodyRows - 4)
-    const lines: BodyLine[] = []
-    let total: number
-    let first = 0
-    let selectedIndex: number | null = null
-    let code: BodyProps['code'] = null
-    const shown = body.rows > 0 ? body.rows : fallbackRoom
-
-    if (view.kind === 'preview' && preview !== null && preview.path === view.path) {
-      if (preview.problem !== null) {
-        lines.push({
-          key: 'problem',
-          segments: [segment(preview.problem, colors.muted)],
-          nameIndex: -1,
-          shimmer: null,
-          bg: null,
-        })
-        total = 1
-      } else {
-        total = preview.lines.length
-        first = clampOffset(previewOffset, total, shown)
-        code = {
-          source: preview.lines
-            .slice(first, first + shown)
-            .map(printable)
-            .join('\n'),
-          path: printable(view.path),
-          startLine: first + 1,
-        }
-      }
-    } else if (view.kind === 'diff' && diff !== null && diff.path === view.path) {
-      total = diff.parsed.rows.length
-      first = clampOffset(diffOffset, total, shown)
-      diff.parsed.rows.slice(first, first + shown).forEach((row, i) => {
-        lines.push(diffLine(row, first + i, colors))
-      })
-    } else {
-      const rows = await rowsNow($)
-      total = rows.length
-      first = clampOffset(listOffset, total, shown)
-      const active = new Map<string, ActivityKind>()
-      for (const [path, mark] of activity) {
-        if (mark.until <= now) {
-          activity.delete(path)
-          continue
-        }
-        active.set(path, mark.kind)
-        for (const dir of ancestorsOf(path)) {
-          if (!active.has(dir)) {
-            active.set(dir, mark.kind)
-          }
-        }
-      }
-      const tint = (kind: ActivityKind | undefined): string | null =>
-        kind === 'read'
-          ? colors.read
-          : kind === 'write'
-            ? colors.write
-            : kind === 'commit'
-              ? colors.commit
-              : null
-      rows.slice(first, first + shown).forEach((row) => {
-        // A folder shimmers for what lies under it only while it is collapsed.
-        const own = activity.get(row.path)?.kind
-        const below = row.kind === 'dir' && !row.isExpanded ? active.get(row.path) : undefined
-        lines.push(
-          rowLine(row, {
-            columns: columns - 1,
-            column,
-            now,
-            git,
-            sizes,
-            palette: colors,
-            glyphs,
-            shimmer: tint(own ?? below),
-          }),
-        )
-      })
-      const at = rows.findIndex((row) => row.path === selected)
-      selectedIndex = at === -1 ? null : at
-    }
+    const content = await bodyContent($, view, {
+      ...bodySize(e.props.bodyColumns, e.props.scroll.bodyRows),
+      colors,
+      column,
+      now,
+      selected,
+    })
+    const { lines, code, first } = content
 
     const props: BodyProps = {
-      lines,
-      code,
-      first,
-      total,
-      selected: selectedIndex,
+      ...content,
       selectedBg: colors.selected,
       hoveredBg: colors.hovered,
       barColor: colors.accent,
@@ -1886,21 +2219,21 @@ export const register: Register = (on: On, options: PluginOptions): void => {
       onPress: () => Promise<void>,
       hotkey?: string,
     ): RenderElement => (
-      <Box key={`tip-${key}`} flexDirection="row">
+      <Box flexDirection="row" key={`tip-${key}`}>
         <Button
           key={key}
-          plain={true}
           label={label}
+          plain={true}
           {...(hotkey === undefined ? {} : { hotkey })}
           onPress={(): void => void onPress()}
         />
         <Box
-          position="absolute"
-          top={1}
-          right={0}
+          backgroundColor={colors.selected}
           display="none"
           hover={{ display: 'flex' }}
-          backgroundColor={colors.selected}
+          position="absolute"
+          right={0}
+          top={1}
         >
           <Text>{hint}</Text>
         </Box>
@@ -1908,14 +2241,12 @@ export const register: Register = (on: On, options: PluginOptions): void => {
     )
 
     const isTree = view.kind === 'tree'
-    const heading = isTree
-      ? `${baseName(root) || root}${git === null ? '' : `  ${headText(git.head)}`}`
-      : `${view.path}${view.kind === 'diff' ? ' · diff' : ' · preview'}`
-    const tone = footer === null || footer.until <= now ? null : footer
+    const heading = headingOf(view, root)
+    const tone = footerAt(now)
     const hasInput = e.surface !== 'mobile'
 
-    const header = (
-      <Box key="header" flexDirection="row" justifyContent="space-between">
+    const renderHeader = (): RenderElement => (
+      <Box flexDirection="row" justifyContent="space-between" key="header">
         <Text weight="bold" wrap="truncate">
           {printable(heading)}
         </Text>
@@ -1923,9 +2254,7 @@ export const register: Register = (on: On, options: PluginOptions): void => {
           {isTree &&
             tip('sizes', 'Σ', column === 'size' ? 'Show dates' : 'Show sizes', async () => {
               // Back from sizes: the Right column setting, or dates when the setting is sizes.
-              await update($, columnAtom, () =>
-                column !== 'size' ? 'size' : settings.rightColumn === 'size' ? 'date' : null,
-              )
+              await update($, columnAtom, () => toggledColumn(column, settings.rightColumn))
               redraw($)
               await queueSizes($)
             })}
@@ -1942,55 +2271,46 @@ export const register: Register = (on: On, options: PluginOptions): void => {
         </Box>
       </Box>
     )
+    const header = renderHeader()
 
     const nav = (key: string, label: string): RenderElement => (
       <Button
-        key={`nav-${key}`}
-        plain={true}
         hotkey={key}
+        key={`nav-${key}`}
         label={label}
         onPress={(): void => void act($, key)}
+        plain={true}
       />
     )
 
     const footerRow =
       tone === null ? null : (
-        <Text
-          key="footer"
-          wrap="truncate"
-          color={
-            tone.tone === 'error'
-              ? colors.deleted
-              : tone.tone === 'ok'
-                ? colors.added
-                : colors.muted
-          }
-        >
+        <Text color={colors[FOOTER_TONE[tone.tone]]} key="footer" wrap="truncate">
           {tone.text}
         </Text>
       )
 
-    let bodyElement: RenderElement
-    if ((e.surface === 'terminal' || e.surface === 'desktop') && 'Client' in table) {
-      const { Client } = table
-      bodyElement = <Client key="body" module="./body.client.tsx" props={props} flexGrow={1} />
-    } else {
+    const renderBody = (): RenderElement => {
+      if ((e.surface === 'terminal' || e.surface === 'desktop') && 'Client' in table) {
+        const { Client } = table
+        return <Client flexGrow={1} key="body" module="./body.client.tsx" props={props} />
+      }
       // No Client on this surface (VS Code, mobile): one Button per row, no shimmer animation.
-      bodyElement = (
-        <Box key="body" flexDirection="column" flexGrow={1}>
+      return (
+        <Box flexDirection="column" flexGrow={1} key="body">
           {code !== null && <Text>{code.source}</Text>}
           {lines.map((line, row) => (
             <Button
               key={`row-${line.key}`}
-              plain={true}
               onPress={(): void => void click($, first + row, false)}
+              plain={true}
             >
               {line.segments.map((part, i) => (
                 <Text
                   key={`p${i}`}
                   {...(part.color === null ? {} : { color: line.shimmer ?? part.color })}
-                  weight={part.isBold ? 'bold' : 'regular'}
                   strikethrough={part.isStruck}
+                  weight={part.isBold ? 'bold' : 'regular'}
                 >
                   {part.text}
                 </Text>
@@ -2000,11 +2320,12 @@ export const register: Register = (on: On, options: PluginOptions): void => {
         </Box>
       )
     }
+    const bodyElement = renderBody()
 
     return (
       <Box flexDirection="column">
         <Box height={1} />
-        <Box key="frame" flexDirection="column" height={e.props.scroll.bodyRows}>
+        <Box flexDirection="column" height={e.props.scroll.bodyRows} key="frame">
           {header}
           {isTree && settings.hints && repo === 'none' && (
             <Text dimColor={true} wrap="truncate">
@@ -2020,26 +2341,20 @@ export const register: Register = (on: On, options: PluginOptions): void => {
           {isTree && hasInput && 'Input' in table && (
             <table.Input
               key="search"
-              placeholder="Search files (s)"
-              value={query}
               onInput={(value: string): void => void search($, value, false)}
               onSubmit={(value: string): void => void search($, value, true)}
+              placeholder="Search files (s)"
+              value={query}
             />
           )}
           {isTree && query !== '' && (
             <Text dimColor={true} wrap="truncate">
-              {indexing !== null && index === null
-                ? 'Searching…'
-                : `${
-                    matches.length === 0
-                      ? 'No match.'
-                      : `${matches.length}${matches.length === 50 ? '+' : ''} found · Enter jumps to the first: ${printable(matches[0] ?? '')}`
-                  }${isIndexCut ? ' (searched the first part of this folder only)' : ''}`}
+              {searchStatus()}
             </Text>
           )}
           {isTree && hasInput && settings.searchSpacing && <Text> </Text>}
           {isTree && settings.shortcutRow && (
-            <Box key="nav" flexDirection="row" gap={1}>
+            <Box flexDirection="row" gap={1} key="nav">
               {nav('j', 'j↓')}
               {nav('k', 'k↑')}
               {nav('h', 'h←')}

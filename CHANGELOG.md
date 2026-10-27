@@ -14,6 +14,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The
 ### Changed
 
 - **bash-lsp-intelligence** 0.2.5 — the post-edit hook always runs through Bash, and the README states one minimum Claude Code version.
+- **file-tree-pane** 0.1.3 — internal code-quality refactor for stricter lint rules; nothing changes in what the pane shows or does.
 - **file-tree-pane** 0.1.2 — internal code and test cleanups from stricter lint rules; nothing changes for users.
 - **project-maintainer** 0.2.2 — the start-of-session hook runs through Bash explicitly; internal guardrail cleanups with no change in what they decide.
 - **python-lsp-intelligence** 0.3.0 — the post-edit hook requires Python 3.12 or later and always runs through Bash.

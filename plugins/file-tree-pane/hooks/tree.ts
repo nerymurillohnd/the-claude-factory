@@ -50,11 +50,15 @@ export const normalizePath = (path: string): string => {
   return slashed.length > 1 && slashed.endsWith('/') ? slashed.slice(0, -1) : slashed
 }
 
+const DRIVE_LETTER = /^[a-z]:/i
+const LIST_SEPARATOR = /[\s,]+/
+const LEADING_DIGIT = /^\d/
+
 /** `abs` relative to `root`, or null when it lies outside it. Drive letters compare case-blind. */
 export const relativeTo = (abs: string, root: string): string | null => {
   const path = normalizePath(abs)
   const base = normalizePath(root)
-  const isDrive = /^[a-z]:/i.test(base)
+  const isDrive = DRIVE_LETTER.test(base)
   const a = isDrive ? path.toLowerCase() : path
   const b = isDrive ? base.toLowerCase() : base
   if (a === b) {
@@ -75,7 +79,7 @@ export const absoluteOf = (rel: string, root: string): string => {
 /** The Ignore setting: names separated by spaces or commas, matched exactly. */
 export const parseIgnore = (text: string): Set<string> => {
   const names = new Set(BUILT_IN_IGNORE)
-  for (const name of text.split(/[\s,]+/)) {
+  for (const name of text.split(LIST_SEPARATOR)) {
     if (name !== '') {
       names.add(name)
     }
@@ -86,26 +90,36 @@ export const parseIgnore = (text: string): Set<string> => {
 export const isIgnored = (path: string, ignore: ReadonlySet<string>): boolean =>
   path.split('/').some((part) => ignore.has(part))
 
+// One run of digits or non-digits against another: numbers by value, the rest as text; 0 only
+// when the two runs are the same.
+const compareRuns = (x: string, y: string): number => {
+  if (x === y) {
+    return 0
+  }
+  const isNumber = LEADING_DIGIT.test(x) && LEADING_DIGIT.test(y)
+  if (isNumber && Number(x) !== Number(y)) {
+    return Number(x) - Number(y)
+  }
+  return x < y ? -1 : 1
+}
+
 // Natural order by hand: the hooks environment does not promise Intl.
 export const compareNames = (a: string, b: string): number => {
   const left = a.toLowerCase().match(/\d+|\D+/g) ?? []
   const right = b.toLowerCase().match(/\d+|\D+/g) ?? []
   for (let i = 0; i < Math.min(left.length, right.length); i += 1) {
-    const x = left[i] ?? ''
-    const y = right[i] ?? ''
-    if (x === y) {
-      continue
+    const order = compareRuns(left[i] ?? '', right[i] ?? '')
+    if (order !== 0) {
+      return order
     }
-    const isNumber = /^\d/.test(x) && /^\d/.test(y)
-    if (isNumber && Number(x) !== Number(y)) {
-      return Number(x) - Number(y)
-    }
-    return x < y ? -1 : 1
   }
   if (left.length !== right.length) {
     return left.length - right.length
   }
-  return a < b ? -1 : a > b ? 1 : 0
+  if (a === b) {
+    return 0
+  }
+  return a < b ? -1 : 1
 }
 
 /** Folders first, then names in natural order (`file2` before `file10`), case-blind. */

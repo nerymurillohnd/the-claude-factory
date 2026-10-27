@@ -34,6 +34,13 @@ export type GitSnapshot = {
 /** The tree an empty repository diffs against: git's well-known empty tree object. */
 export const EMPTY_TREE = '4b825dc642cb6eb9a060e54bf8d69288fbee4904'
 
+// `# branch.ab +2 -1`: commits ahead of and behind the upstream.
+const BRANCH_AB = /^# branch\.ab \+(\d+) -(\d+)$/
+// A numstat record: lines added, removed (`-` for binary) and the path, which may be empty.
+const NUMSTAT_RECORD = /^(-|\d+)\t(-|\d+)\t(.*)$/s
+// A `wc -l` line: the count and the file name.
+const WC_LINE = /^\s*(\d+)\s(.+)$/
+
 const codeOf = (xy: string): GitCode => {
   if (xy.includes('D')) {
     return 'deleted'
@@ -63,11 +70,47 @@ const fieldsOf = (record: string, count: number): { fields: string[]; path: stri
 }
 
 /** A path from git (relative to the repository's top) made relative to the tree's root. */
-const underPrefix = (path: string, prefix: string): string | null => {
+export const underPrefix = (path: string, prefix: string): string | null => {
   if (prefix === '') {
     return path
   }
   return path.startsWith(prefix) ? path.slice(prefix.length) : null
+}
+
+// A `# branch.…` header record read into `head`; other headers are left alone.
+const readBranchHeader = (head: GitHead, record: string): void => {
+  if (record.startsWith('# branch.oid ')) {
+    const oid = record.slice('# branch.oid '.length)
+    head.oid = oid === '(initial)' ? null : oid
+  } else if (record.startsWith('# branch.head ')) {
+    const name = record.slice('# branch.head '.length)
+    head.branch = name === '(detached)' ? null : name
+  } else if (record.startsWith('# branch.upstream ')) {
+    head.upstream = record.slice('# branch.upstream '.length)
+  } else if (record.startsWith('# branch.ab ')) {
+    const match = BRANCH_AB.exec(record)
+    head.ahead = Number(match?.[1] ?? 0)
+    head.behind = Number(match?.[2] ?? 0)
+  }
+}
+
+// A changed, renamed, conflicted or untracked file's record: its path and status, or null.
+const entryOf = (record: string): { path: string; code: GitCode } | null => {
+  if (record.startsWith('1 ')) {
+    const { fields, path } = fieldsOf(record, 8)
+    return { path, code: codeOf(fields[1] ?? '') }
+  }
+  if (record.startsWith('2 ')) {
+    const { fields, path } = fieldsOf(record, 9)
+    return { path, code: codeOf(fields[1] ?? '') }
+  }
+  if (record.startsWith('u ')) {
+    return { path: fieldsOf(record, 10).path, code: 'conflict' }
+  }
+  if (record.startsWith('? ')) {
+    return { path: record.slice(2), code: 'untracked' }
+  }
+  return null
 }
 
 /**
@@ -83,42 +126,18 @@ export const parseStatus = (
   const records = output.split('\0')
   for (let i = 0; i < records.length; i += 1) {
     const record = records[i] ?? ''
-    if (record.startsWith('# branch.oid ')) {
-      const oid = record.slice('# branch.oid '.length)
-      head.oid = oid === '(initial)' ? null : oid
-    } else if (record.startsWith('# branch.head ')) {
-      const name = record.slice('# branch.head '.length)
-      head.branch = name === '(detached)' ? null : name
-    } else if (record.startsWith('# branch.upstream ')) {
-      head.upstream = record.slice('# branch.upstream '.length)
-    } else if (record.startsWith('# branch.ab ')) {
-      const match = /^# branch\.ab \+(\d+) -(\d+)$/.exec(record)
-      head.ahead = Number(match?.[1] ?? 0)
-      head.behind = Number(match?.[2] ?? 0)
-    } else if (record.startsWith('1 ')) {
-      const { fields, path } = fieldsOf(record, 8)
-      const rel = underPrefix(path, prefix)
-      if (rel !== null) {
-        files.set(rel, { code: codeOf(fields[1] ?? ''), added: null, removed: null })
-      }
-    } else if (record.startsWith('2 ')) {
-      const { fields, path } = fieldsOf(record, 9)
+    if (record.startsWith('# ')) {
+      readBranchHeader(head, record)
+      continue
+    }
+    if (record.startsWith('2 ')) {
       i += 1 // the original path follows as its own record
-      const rel = underPrefix(path, prefix)
-      if (rel !== null) {
-        files.set(rel, { code: codeOf(fields[1] ?? ''), added: null, removed: null })
-      }
-    } else if (record.startsWith('u ')) {
-      const { path } = fieldsOf(record, 10)
-      const rel = underPrefix(path, prefix)
-      if (rel !== null) {
-        files.set(rel, { code: 'conflict', added: null, removed: null })
-      }
-    } else if (record.startsWith('? ')) {
-      const rel = underPrefix(record.slice(2), prefix)
-      if (rel !== null && !rel.endsWith('/')) {
-        files.set(rel, { code: 'untracked', added: null, removed: null })
-      }
+    }
+    const entry = entryOf(record)
+    const rel = entry === null ? null : underPrefix(entry.path, prefix)
+    // An untracked folder git did not open (a trailing slash) is not a file of its own.
+    if (entry !== null && rel !== null && !(entry.code === 'untracked' && rel.endsWith('/'))) {
+      files.set(rel, { code: entry.code, added: null, removed: null })
     }
   }
   return { head, files }
@@ -132,7 +151,7 @@ export const parseNumstat = (
   const records = output.split('\0')
   for (let i = 0; i < records.length; i += 1) {
     const record = records[i] ?? ''
-    const match = /^(-|\d+)\t(-|\d+)\t(.*)$/s.exec(record)
+    const match = NUMSTAT_RECORD.exec(record)
     if (match === null) {
       continue
     }
@@ -155,7 +174,7 @@ export const parseNumstat = (
 export const parseWc = (output: string): Map<string, number> => {
   const counts = new Map<string, number>()
   for (const line of output.split('\n')) {
-    const match = /^\s*(\d+)\s(.+)$/.exec(line)
+    const match = WC_LINE.exec(line)
     if (match !== null && match[2] !== 'total') {
       counts.set(match[2] ?? '', Number(match[1]))
     }
