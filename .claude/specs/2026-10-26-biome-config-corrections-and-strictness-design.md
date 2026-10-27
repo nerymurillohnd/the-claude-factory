@@ -133,7 +133,7 @@ Probed on the repository and in the scratch copy:
 
 **Gap, item 37:** a deprecated key can reach `main` and stay there until the next major release removes it. A Dependabot bump or a hand edit can bring one in, and no gate says so.
 
-Add a gate, `biome-migrate`, in the `lint` group. It runs `biome migrate` (preview only, never `--write`) and fails unless the output contains "no migration needed".
+Add a gate, `biome-migrate`, in the `lint` group. It runs `biome migrate` (preview only, never `--write`) and fails unless its stdout and stderr together contain "no migration needed". Today a gate's `after` check receives only stdout (`scripts/gates.mjs`), so this gate needs both streams.
 - The gate passes only on the exact up-to-date message. If a later Biome rewords it, the gate fails until it is updated: a false failure, never a silent pass.
 - It is the first Biome gate that reads Biome's output. The phrase is checked on 2.6.3. The gates' tests get a case with a deprecated key planted.
 - It also covers section 11.4's nursery renames, which `biome migrate` rewrites.
@@ -547,6 +547,20 @@ The reference calls nursery rules unstable and says they need an explicit opt-in
 The 34 rules: `noAccidentalBitwiseOperators`, `noArgumentsCallerOrCallee`, `noArraySortForMinMax`, `noBooleanSortComparator`, `noDoubleComparison`, `noDuplicateMapKeys`, `noEagerArrayMethodsInLoops`, `noImpliedEval`, `noInvalidPropertyInitValue`, `noJsonUnsafeValues`, `noMisplacedListElements`, `noObsoleteAttributes`, `noOctal`, `noPathConcat`, `noReturnInFinally`, `noUnsafeIframeSandbox`, `noUselessAssignment`, `noUselessCall`, `noUselessDateGetTime`, `noUselessSplice`, `noXorAsExponentiation`, `noZeroLengthUnit`, `useBigintLiterals`, `useBlockStatementOverIife`, `useCapitalizedConstructors`, `useConsistentObjectKeys`, `useFlatMathMinMax`, `useMathAbs`, `useMathTrunc`, `useModernMathApis`, `usePackageJsonValidCpu`, `usePackageJsonValidEngines`, `useSimplifiedBooleanReturn`, `useUnaryMinus`.
 
 - Each finding is fixed, or suppressed with Nery's approval and a written reason.
+- **The 2.6.3 changelog** (shared by Nery on 2026-10-27) shows how new these rules are. 2.6.3 itself added eleven of the 34: `noArraySortForMinMax`, `noBooleanSortComparator`, `noEagerArrayMethodsInLoops`, `noObsoleteAttributes`, `noPathConcat`, `noUselessSplice`, `noZeroLengthUnit`, `useBlockStatementOverIife`, `useMathAbs`, `useMathTrunc`, `usePackageJsonValidCpu` and `usePackageJsonValidEngines`. It also added item 24's `useConsistentUnicodeBom`. That is why the semver warning below matters.
+- **New in 2.6.3 but not recommended,** measured one at a time with `--only`:
+
+  | Rule | Default | Findings (maintainer / plugins) | Verdict |
+  | :-- | :-- | :-- | :-- |
+  | `noUnsafeReturn` (`types`) | info | 5 / 1 | **Item 40**, at `"error"`: returning an `any`, such as `JSON.parse(…)`, from a function hides an unchecked shape. The scripts read many JSON manifests, and `~/.claude/CLAUDE.md` asks that critical data be validated where it is received. |
+  | `noNewRequire` | warn | 0 / 0 | **Item 40**, at `"error"`: free, and `new require(…)` is always a mistake |
+  | `noUnreadableForOfExpression` | info | 9 / 6 | Rejected: a readability preference with no correctness effect |
+  | `useIteratorZip` | info | 0 / 1 | Rejected: `Iterator.zip()` needs a recent runtime, and plugins run on users' unknown Node versions (`.claude/CLAUDE.md`, Plugin Tooling) |
+  | `noDanglingUnderscore` | info | 0 / 0 | Rejected: it forbids the leading `_` that marks a deliberately unused binding, which Biome's own unused-variable rules accept |
+
+- **Other 2.6.3 fixes that touch this spec:**
+  - Since #12593, the default reporter writes its command summary to stderr. `biome migrate` prints "no migration needed" on both streams on 2.6.3, but item 37's gate checks stdout and stderr together, so a later move cannot hide it.
+  - #12526 and #12509 fixed Markdown formatter defects, two of them with `proseWrap` `"always"` or `"never"`, which this repository does not use (section 11.2). The repository is already on 2.6.3.
 - A Biome upgrade can add, rename or promote nursery rules. The upgrade runs `biome migrate` and rechecks the recommended list with `biome explain`.
 - The linter guide warns that nursery rules "are not subject to semantic version", and may still have bugs or performance problems even when recommended. A patch release can therefore change what items 24 and 25 report. Two things contain the risk:
   - `@biomejs/biome` is pinned to an exact version in `package.json`.
@@ -733,7 +747,7 @@ The assist actions rejected are listed in section 7.
 4. Item 8: one commit, with item 39 in the same commit, since item 8 is what starts the Scanner.
 5. Items 16, 17 and 24: one commit, plus `useSortedInterfaceMembers` and `useSortedEnumMembers` if D5 is on. Each assist action enabled here also gets its `source.action.<action>.biome` line in `.vscode/settings.json` (section 12.4). If item 27 is not in yet, that line goes in when item 27 lands.
 6. Item 30: one commit, after D8, with `useLiteralKeys` settled the same way. Item 31: one commit with its maintainer fix; the `file-tree-pane` findings go in that plugin's pull request.
-7. Item 33: one commit, with no fix needed today. Item 25: one commit with the rules and the `scripts/gates.mjs` fix. The `file-tree-pane` findings go in that plugin's pull request.
+7. Item 33: one commit, with no fix needed today. Item 40: one commit with its maintainer fixes; the plugin finding goes in that plugin's pull request. Item 25: one commit with the rules and the `scripts/gates.mjs` fix. The `file-tree-pane` findings go in that plugin's pull request.
 8. Item 32: one commit with the `.grit` file, its `plugins` entry and `grit` in `files.includes`.
 9. Items 9 to 14: one commit per rule for maintainer files; one pull request per affected plugin. Item 18 goes in the `file-tree-pane` and `tool-ledger` pull requests.
 10. Item 27: one commit, after step 1, so Biome checks `.vscode/settings.json` under the final configuration. Items 28 and 29 are not repository commits: they change Nery's user settings and `~/.claude/ENVIRONMENT.md`, with his approval.
