@@ -1,8 +1,8 @@
 // Path checks for tool input. A path comes from Claude, and a prompt-injected page can make Claude
 // pass any path, so every file is resolved, symlinks included, and must stay inside the project.
 
-import { realpath, stat } from 'node:fs/promises'
-import { extname, isAbsolute, relative, resolve } from 'node:path'
+import { access, realpath, stat } from 'node:fs/promises'
+import { dirname, extname, isAbsolute, join, relative, resolve } from 'node:path'
 
 /** Files larger than this are not sent to the language server. */
 export const MAX_FILE_BYTES = 1_000_000
@@ -64,4 +64,28 @@ export async function resolveProjectFile(root, input) {
     )
   }
   return { path: real, relativePath: relative(root, real), extension: extname(real).toLowerCase() }
+}
+
+/**
+ * Whether tailwindcss is installed for a file: a node_modules/tailwindcss package or a Yarn Plug'n'Play
+ * manifest in its folder or a parent folder up to the project root. The language server activates
+ * only then, so without one the server is not started at all.
+ * @param {string} root real path of the project root
+ * @param {string} path real path of a file inside it
+ */
+export async function hasTailwindInstall(root, path) {
+  for (let dir = dirname(path); isInside(root, dir); dir = dirname(dir)) {
+    for (const marker of ['node_modules/tailwindcss/package.json', '.pnp.cjs', '.pnp.js']) {
+      try {
+        await access(join(dir, marker))
+        return true
+      } catch {
+        // Not here; try the parent folder.
+      }
+    }
+    if (dir === root) {
+      break
+    }
+  }
+  return false
 }

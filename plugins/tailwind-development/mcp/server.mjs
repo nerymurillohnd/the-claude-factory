@@ -13,7 +13,7 @@ import { z } from 'zod'
 import { fileType, readOptions, tailwindSettings } from './config.mjs'
 import { findingsHookOutput, findingsText, severityName } from './format.mjs'
 import { TailwindLanguageServer, textInRange } from './lsp-client.mjs'
-import { projectRoot, resolveProjectFile, ToolInputError } from './paths.mjs'
+import { hasTailwindInstall, projectRoot, resolveProjectFile, ToolInputError } from './paths.mjs'
 
 /** @typedef {import('./format.mjs').Finding} Finding */
 /** @typedef {{ content: { type: 'text', text: string }[], isError?: boolean }} ToolResult */
@@ -36,6 +36,9 @@ const options = readOptions(process.env)
 
 /** @type {Promise<{ root: string, server: TailwindLanguageServer }> | undefined} */
 let shared
+
+/** Whether the hook has already told Claude that no project covers an edited file. */
+let noProjectHintGiven = false
 
 /** The project root and the language-server client, shared by every MCP server instance. */
 function state() {
@@ -112,11 +115,30 @@ async function checkFile({ filePath, format }) {
   if (hook && !options.enabledGroups.has(type.group)) {
     return text('')
   }
+  if (!(await hasTailwindInstall(root, file.path))) {
+    return text(hook ? '' : noProjectText(server, file.relativePath))
+  }
   const content = await readFile(file.path, 'utf8')
   const uri = pathToFileURL(file.path).href
   const diagnostics = await server.diagnostics(uri, type.languageId, content)
   if (diagnostics === null) {
-    return text(hook ? '' : noProjectText(server, file.relativePath))
+    if (!hook) {
+      return text(noProjectText(server, file.relativePath))
+    }
+    // Tailwind CSS is installed, yet no project covers the file: often a CSS module or <style> block
+    // with @reference that the server took as the entry point. Say so once, then stay silent.
+    if (noProjectHintGiven) {
+      return text('')
+    }
+    noProjectHintGiven = true
+    return text(
+      JSON.stringify({
+        hookSpecificOutput: {
+          hookEventName: 'PostToolUse',
+          additionalContext: `Tailwind CSS diagnostics are off for ${file.relativePath}: ${noProjectText(server, file.relativePath)} This note is shown once per session.`,
+        },
+      }),
+    )
   }
   /** @type {Finding[]} */
   const findings = []
@@ -226,8 +248,17 @@ async function projectClasses({ prefix, filePath, limit }) {
       line: 0,
       character: PROBE_PREFIX.length + prefix.length,
     })
+    // After a variant (hover:, md:dark:) the server completes the utility alone, so its labels
+    // carry no variant: match them on the utility part and put the variants back.
+    const variants = prefix.slice(0, prefix.lastIndexOf(':') + 1)
+    const utility = prefix.slice(variants.length)
     const labels = [
-      ...new Set(items.map((item) => item.label).filter((label) => label.startsWith(prefix))),
+      ...new Set(
+        items
+          .map((item) => item.label)
+          .filter((label) => label.startsWith(utility))
+          .map((label) => `${variants}${label}`),
+      ),
     ]
     if (labels.length === 0) {
       return `No class in this project starts with ${prefix}.`

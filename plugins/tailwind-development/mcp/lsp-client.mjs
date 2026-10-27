@@ -31,7 +31,9 @@ export const SERVER_PATH = fileURLToPath(
 
 const PROJECT_POLL_MS = 250
 /** The first project load reads the whole project; later documents of a loaded project are fast. */
-const PROJECT_TIMEOUT_MS = 20_000
+const PROJECT_TIMEOUT_MS = 10_000
+/** Once a project is loaded, a document no project covers is known quickly. */
+const LOADED_PROJECT_GRACE_MS = 1000
 const DIAGNOSTICS_TIMEOUT_MS = 5000
 /** The server's settings section, as workspace/configuration names it. */
 const SETTINGS_SECTION = 'tailwindCSS'
@@ -47,6 +49,8 @@ export class TailwindLanguageServer {
   #listeners = new Set()
   /** @type {ProjectDetails[]} */
   #projects = []
+  /** Whether some project has loaded, so a null getProject answer is final after a short grace. */
+  #loaded = false
   /** @type {import('node:child_process').ChildProcess | undefined} */
   #child
 
@@ -102,6 +106,7 @@ export class TailwindLanguageServer {
     child.on('exit', (code, signal) => {
       this.log(`language server exited (${signal ?? code})`)
       this.#ready = undefined
+      this.#loaded = false
       this.#versions.clear()
       this.#published.clear()
       connection.dispose()
@@ -227,12 +232,18 @@ export class TailwindLanguageServer {
    * @returns {Promise<{ version: string } | null>}
    */
   async #project(connection, uri) {
-    const deadline = Date.now() + PROJECT_TIMEOUT_MS
+    const deadline = Date.now() + (this.#loaded ? LOADED_PROJECT_GRACE_MS : PROJECT_TIMEOUT_MS)
     for (;;) {
       /** @type {{ version: string } | null} */
       const project = await connection.sendRequest('@/tailwindCSS/getProject', { uri })
-      if (project !== null || Date.now() >= deadline) {
+      if (project !== null) {
+        this.#loaded = true
         return project
+      }
+      if (Date.now() >= deadline) {
+        // A cold start that found nothing in time is not retried at full length on every edit.
+        this.#loaded = true
+        return null
       }
       await new Promise((done) => setTimeout(done, PROJECT_POLL_MS))
     }
