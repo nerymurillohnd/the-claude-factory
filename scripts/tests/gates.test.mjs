@@ -301,13 +301,13 @@ describe('Biome gates', () => {
     assert.deepEqual(migrate?.args, ['migrate', '--colors=off'])
   })
 
-  test('biome-migrate fails on a deprecated key and passes on an up-to-date biome.json', () => {
+  test('biome-migrate fails on a deprecated key and passes on an up-to-date biome.jsonc', () => {
     assert.ok(migrate)
     const tmp = mkdtempSync(join(tmpdir(), 'gates-migrate-'))
     try {
       /** @param {object} rules @returns {number} */
       const run = (rules) => {
-        writeFileSync(join(tmp, 'biome.json'), JSON.stringify({ linter: { rules } }))
+        writeFileSync(join(tmp, 'biome.jsonc'), JSON.stringify({ linter: { rules } }))
         /** @type {string[]} */
         const out = []
         return runGates([{ ...migrate, cmd: biome }], {

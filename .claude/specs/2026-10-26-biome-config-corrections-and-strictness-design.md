@@ -4,7 +4,7 @@ Status: approved by Nery on 2026-10-27, with every decision of section 14 settle
 
 ## 1. Goal
 
-Biome's configuration (`biome.json`, or `biome.jsonc` if D4 is (a)):
+Biome's configuration, `biome.jsonc` since item 19 (D4 (a)):
 - follows the Biome 2.6.3 configuration reference to the letter;
 - says each thing once, with no key that repeats a default, the preset or `.editorconfig`;
 - states why each non-default setting exists;
@@ -25,7 +25,7 @@ Every step of section 15 keeps `biome ci .` green and goes in its own commit.
 
 | Files | Scope | Path to `main` |
 | :-- | :-- | :-- |
-| `biome.json`, `package.json`, `.husky/**`, `tsconfig.base.json`, `scripts/**`, `.claude/skills/**`, `.vscode/**` | Maintainer | Direct signed commit |
+| `biome.jsonc`, `package.json`, `.husky/**`, `tsconfig.base.json`, `scripts/**`, `.claude/skills/**`, `.vscode/**` | Maintainer | Direct signed commit |
 | VS Code user settings, `~/.claude/ENVIRONMENT.md` | Nery's machine and global instructions | Outside the repository, only with Nery's approval |
 | `plugins/<plugin>/**` | Plugin | Pull request, version bump and `CHANGELOG.md` entry (`check-version-bump.mjs` exempts only `README.md`) |
 
@@ -284,7 +284,7 @@ Source: the CLI reference for `version`, `upgrade`, `rage`, `start`, `stop` and 
   - **Already right:**
     - No command in `package.json`, `scripts/gates.mjs`, `.github/workflows/` or `.claude/settings.json` passes a configuration, formatter, JSON-parser, VCS or watcher flag.
     - No `BIOME_*` variable is set in this environment (`env`, names only), so `BIOME_CONFIG_PATH`, `BIOME_WATCHER_KIND` and the rest leave the defaults.
-    - The editor, the hooks, the gates and CI all read `biome.json` and `.editorconfig`, and nothing else.
+    - The editor, the hooks, the gates and CI all read `biome.jsonc` (`biome.json` until item 19) and `.editorconfig`, and nothing else.
   - **The one override:** the pre-commit hook passes `--files-ignore-unknown=true` (since `ac37c2e`), while `biome.json` sets `files.ignoreUnknown: false`. Probe in the scratch copy: with a staged `.sh` file, `biome check --staged --no-errors-on-unmatched` reported no diagnostic, with the flag or without it. The first `files.includes` pattern never selects an unknown extension, so the flag changes nothing today.
     - **Item 36:** drop the flag from `.husky/pre-commit`. The hook then runs under exactly the configuration the gates use.
     - Biome's git-hooks guide (shared by Nery on 2026-10-27) puts `--files-ignore-unknown=true` in its lint-staged and git-format-staged examples. Those tools pass every staged path (`'*'`), which needs the flag. This hook uses Biome's own `--staged`, which selects files through `files.includes`, so it does not.
