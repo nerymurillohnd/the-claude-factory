@@ -143,7 +143,9 @@
         // Raised from info, like the complexity rules above.
         "useArrayLiterals": "error",
         "useNodejsImportProtocol": "error",
-        "useShorthandFunctionType": "error"
+        "useShorthandFunctionType": "error",
+        // A JSON file whose top level is not an object or an array.
+        "noTopLevelLiterals": "error"
       },
       "suspicious": {
         "noCatchAssign": "error",
@@ -161,7 +163,30 @@
         "noDuplicateFields": "error",
         "noQuickfixBiome": "error",
         // From the test domain's full set: an expect inside an if can be skipped without failing.
-        "noConditionalExpect": "error"
+        "noConditionalExpect": "error",
+        // package.json and JSON checks the preset leaves off: a dependency listed twice, an empty
+        // file or YAML document, and a "" key.
+        "noDuplicateDependencies": "error",
+        "noEmptySource": "error",
+        "noEmptyObjectKeys": "error",
+        // Every maintenance command is an npm run script (.claude/CLAUDE.md). The rule takes exact
+        // names, so the check:* family stays outside it.
+        "useRequiredScripts": {
+          "level": "error",
+          "options": {
+            "requiredScripts": [
+              "test",
+              "typecheck",
+              "lint",
+              "format",
+              "fix",
+              "validate",
+              "gates",
+              "setup",
+              "generate"
+            ]
+          }
+        }
       },
       // The preset never turns on a nursery rule, so each one is listed.
       "nursery": {
@@ -180,6 +205,8 @@
         // and none starts with a byte order mark, which UTF-8 does not need.
         "useTopLevelHeading": "error",
         "useConsistentUnicodeBom": "error",
+        // An import with a native or modern replacement, from e18e's data.
+        "noRestrictedDependencies": "error",
         // The other nursery rules `biome explain` marks as recommended on 2.6.3. Nursery rules are
         // outside semver: each Biome upgrade rechecks this list (the version is pinned, and
         // Dependabot proposes each upgrade as its own pull request).
