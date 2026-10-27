@@ -61,14 +61,27 @@ export class TailwindLanguageServer {
    * @param {string} [init.serverPath]
    * @param {string[]} [init.serverArgs] arguments after the server path; tests start a stub server
    * @param {(message: string) => void} [init.log] defaults to stderr
+   * @param {{ project?: number, grace?: number, diagnostics?: number }} [init.timeouts] in ms; tests shorten them
    */
-  constructor({ root, settings, serverPath = SERVER_PATH, serverArgs = ['--stdio'], log }) {
+  constructor({
+    root,
+    settings,
+    serverPath = SERVER_PATH,
+    serverArgs = ['--stdio'],
+    log,
+    timeouts = {},
+  }) {
     this.root = root
     this.rootUri = pathToFileURL(root).href
     this.settings = settings
     this.serverPath = serverPath
     this.serverArgs = serverArgs
     this.log = log ?? ((message) => process.stderr.write(`[tailwind-development] ${message}\n`))
+    this.timeouts = {
+      project: timeouts.project ?? PROJECT_TIMEOUT_MS,
+      grace: timeouts.grace ?? LOADED_PROJECT_GRACE_MS,
+      diagnostics: timeouts.diagnostics ?? DIAGNOSTICS_TIMEOUT_MS,
+    }
   }
 
   /** The projects the server has reported, with their config file and Tailwind CSS version. */
@@ -232,7 +245,7 @@ export class TailwindLanguageServer {
    * @returns {Promise<{ version: string } | null>}
    */
   async #project(connection, uri) {
-    const deadline = Date.now() + (this.#loaded ? LOADED_PROJECT_GRACE_MS : PROJECT_TIMEOUT_MS)
+    const deadline = Date.now() + (this.#loaded ? this.timeouts.grace : this.timeouts.project)
     for (;;) {
       /** @type {{ version: string } | null} */
       const project = await connection.sendRequest('@/tailwindCSS/getProject', { uri })
@@ -264,7 +277,7 @@ export class TailwindLanguageServer {
           finish(entry.diagnostics)
         }
       }
-      const timer = setTimeout(() => finish(null), DIAGNOSTICS_TIMEOUT_MS)
+      const timer = setTimeout(() => finish(null), this.timeouts.diagnostics)
       /** @param {Diagnostic[] | null} result */
       const finish = (result) => {
         clearTimeout(timer)
