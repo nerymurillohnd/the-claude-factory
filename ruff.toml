@@ -1,9 +1,15 @@
-# ~/.config/ruff/ruff.toml
+# Ruff + basedpyright
+required-version = ">=0.17.2"
 
 line-length = 100
 indent-width = 4
 
-required-version = ">=0.17.2"
+# Maintainer Python runs on 3.15. Plugin Python runs on any python3 from the floor up, and the
+# skill scripts run on the python3 of CI's ubuntu-24.04 runner (3.12) in the policy job and
+# release.yml (ADR_2026-10-27_python-version-is-set-per-scope).
+target-version = "py315"
+per-file-target-version = { "plugins/**/*.py" = "py312", ".claude/skills/**/*.py" = "py312" }
+
 respect-gitignore = true
 force-exclude = true
 # This repository: .github/ is never linted or formatted (node_modules is git-ignored).
@@ -14,9 +20,8 @@ extend-exclude = [".github"]
 preview = false
 
 [lint]
-
+# select = [...]  # See the Default Rules page for the full listing.
 select = ["ALL"]
-
 ignore = [
     # === Owned by basedpyright ===
 
@@ -63,6 +68,7 @@ ignore = [
     "INP001", # implicit-namespace-package (loose scripts are not packages)
 ]
 
+# Every enabled rule may be fixed when `--fix` is passed.
 fixable = ["ALL"]
 unfixable = []
 
@@ -101,11 +107,23 @@ max-doc-length = 100
 ignore-overlong-task-comments = true
 
 [format]
-
-exclude = ["*.md"]
+# Use double quotes for strings.
 quote-style = "double"
+
+# Indent with spaces, rather than tabs.
 indent-style = "space"
+
+# Respect magic trailing commas.
 skip-magic-trailing-comma = false
-line-ending = "lf"
+
+# Enable auto-formatting of code examples in docstrings.
 docstring-code-format = true
+
+# Set the line length limit used when formatting code snippets in docstrings.
 docstring-code-line-length = 100
+
+# Exclude formatting markdown files.
+exclude = ["*.md"]
+
+# LF everywhere, as .editorconfig's end_of_line; "auto" would keep a file's CRLF.
+line-ending = "lf"

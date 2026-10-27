@@ -40,13 +40,13 @@ A hook that does not meet these rules is fixed in its plugin's next pull request
 
 ### Scripts
 
-- Python: `#!/usr/bin/env python3`, standard library only, written for any `python3` a user may have. Declare a minimum version in the `README.md` only when a feature requires it. Never `uv run`, PEP 723 metadata or a virtual environment: the user may have none of them.
+- Python: `#!/usr/bin/env python3`, standard library only, written for `python3` 3.12 or later, the floor `ruff.toml` and `pyrightconfig.json` check. The `README.md` states that minimum. Never `uv run`, PEP 723 metadata or a virtual environment: the user may have none of them.
 - Shell: `#!/usr/bin/env bash` for Bash, `#!/bin/sh` for POSIX `sh`, and only tools macOS and Linux both ship, unless the `README.md` declares the tool.
 - Node: only `node:` built-in modules, unless the plugin ships its dependencies.
 - A script reads hook input as JSON from stdin, writes its result to stdout, and writes diagnostics to stderr.
 
 ## Maintainer scope
 
-- Python with only the standard library: `#!/usr/bin/env python3`.
+- Python with only the standard library: `#!/usr/bin/env python3`. It targets Python 3.15, except the scripts in `.claude/skills/*/scripts/`: CI runs them on the `python3` of its ubuntu-24.04 runner, so they target 3.12, which `ruff.toml` and `.claude/skills/pyrightconfig.json` check.
 - Python with third-party dependencies: `#!/usr/bin/env -S uv run --script`, with `requires-python = "==3.15.*"` and its `dependencies` in PEP 723 inline metadata. `scripts/gates.mjs` recognises this shebang to run the script in its own environment, and `scripts/basedpyright-maintainer.mjs` type-checks it against that environment.
 - Every maintenance command runs through an `npm run` script, so local runs, the git hooks and CI use the pinned tools.

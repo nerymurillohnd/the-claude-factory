@@ -1,10 +1,10 @@
 ---
-status: accepted
+status: superseded
 date: 2026-10-20
 decision-makers:
   - "Nery Samuel Murillo"
 supersedes: none
-superseded-by: none
+superseded-by: ADR_2026-10-27_python-version-is-set-per-scope
 ---
 
 # Plugin Python has no version floor

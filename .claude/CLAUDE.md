@@ -73,7 +73,7 @@ Every change inside a plugin's directory, its components, dependencies and a `RE
 #### Plugin Tooling
 
 - Target Linux and macOS with POSIX-compatible interfaces. Windows is supported only through Git Bash, and only when the plugin's README declares it.
-- Write plugin Python for any `python3` a user may have; declare a minimum in the README only when a feature requires it. Type-check it with Basedpyright in `all` mode, as `pyrightconfig.json` sets for the whole repository.
+- Write plugin Python for `python3` 3.12 or later, and state that minimum in the README of every plugin that runs Python. Ruff (`per-file-target-version` in `ruff.toml`) and Basedpyright (the `plugins` execution environment in `pyrightconfig.json`) check it against 3.12; Basedpyright runs in `all` mode, as `pyrightconfig.json` sets for the whole repository.
 
 ### Working Files
 

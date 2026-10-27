@@ -1,6 +1,7 @@
 {
   "include": [
     ".",
+    "**/*.py",
     ".claude/hooks",
     "scripts",
     "plugins"
@@ -16,6 +17,12 @@
   ],
   "typeCheckingMode": "all",
   "pythonVersion": "3.15",
+  "executionEnvironments": [
+    {
+      "root": "plugins",
+      "pythonVersion": "3.12"
+    }
+  ],
   "pythonPlatform": "All",
   "deprecateTypingAliases": true,
   "enableExperimentalFeatures": true

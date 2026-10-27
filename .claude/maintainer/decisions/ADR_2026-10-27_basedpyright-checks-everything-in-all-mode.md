@@ -1,10 +1,10 @@
 ---
-status: accepted
+status: superseded
 date: 2026-10-27
 decision-makers:
   - "Nery Samuel Murillo"
 supersedes: ADR_2026-10-24_basedpyright-is-the-only-python-type-checker
-superseded-by: none
+superseded-by: ADR_2026-10-27_python-version-is-set-per-scope
 ---
 
 # Basedpyright is the only Python type checker, in `all` mode everywhere

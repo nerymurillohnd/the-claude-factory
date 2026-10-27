@@ -1,4 +1,4 @@
 {
   "$schema": "https://raw.githubusercontent.com/detachhead/basedpyright/main/packages/vscode-pyright/schemas/pyrightconfig.schema.json",
-  "pythonVersion": "3.15"
+  "pythonVersion": "3.12"
 }
