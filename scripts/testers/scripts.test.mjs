@@ -618,6 +618,18 @@ describe('check-version-bump', () => {
   })
 })
 
+describe('skill copies of the bump rules', () => {
+  // Each skill keeps its own copy of these scripts; the copies must not drift apart.
+  for (const script of ['bump-version.py', 'check-version-bump.py']) {
+    test(`${script} is identical in release-and-versioning and plugin-renames-and-removals`, () => {
+      /** @param {string} skill */
+      const copy = (skill) =>
+        readFileSync(join(REAL_ROOT, '.claude', 'skills', skill, 'scripts', script), 'utf8')
+      assert.equal(copy('plugin-renames-and-removals'), copy('release-and-versioning'))
+    })
+  }
+})
+
 describe('portability rules', () => {
   /**
    * @param {string} path

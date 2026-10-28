@@ -2,10 +2,13 @@
 """Version bump: every plugin whose files changed since <base> has a new version and its entry.
 
 Users get a change only when the plugin.json version changes, so a plugin whose committed files
-differ from <base> (`git diff <base>...HEAD`) must carry a version above the one at <base> and a
-non-empty CHANGELOG.md section for it. A change limited to the plugin's README.md needs no bump;
-every other file does, CHANGELOG.md included. A new plugin (no plugin.json at <base>) and a
-removed one are skipped. It reads committed changes only: commit before running it.
+differ from <base> (`git diff <base>...HEAD`) must carry the next version of the one at <base>,
+exactly one patch, minor or major step above it, and a non-empty CHANGELOG.md section for it. A
+jump that skips a version fails. A step from 0.x to 1.0.0 passes with a note: it needs Nery's
+explicit authorization (release-and-versioning, rule 4). A change limited to the plugin's
+README.md needs no bump; every other file does, CHANGELOG.md included. A new plugin (no
+plugin.json at <base>) and a removed one are skipped. It reads committed changes only: commit
+before running it.
 
 It runs `git diff` and `git show` and reads plugin files: it never writes or uses the network.
 Exit 0 = pass, 1 = at least one error, 2 = wrong arguments (it takes one: the base ref).
@@ -24,7 +27,7 @@ import sys
 from typing import cast
 
 DOC_ONLY = frozenset({"README.md"})
-BUMP = ".claude/skills/plugin-renames-and-removals/scripts/bump-version.py"
+BUMP = ".claude/skills/release-and-versioning/scripts/bump-version.py"
 _decode: Callable[[str], object] = json.JSONDecoder().decode
 
 
@@ -60,6 +63,12 @@ def core(version: str) -> tuple[int, int, int]:
     return nums[0], nums[1], nums[2]
 
 
+def next_versions(version: str) -> tuple[str, str, str]:
+    """The patch, minor and major versions one step above `version`."""
+    major, minor, patch = core(version)
+    return f"{major}.{minor}.{patch + 1}", f"{major}.{minor + 1}.0", f"{major + 1}.0.0"
+
+
 def changelog_section(text: str, version: str) -> str | None:
     """Body of the `## [version]` section, stripped; None when there is no such heading."""
     pattern = rf"^## \[{re.escape(version)}\][^\n]*\n(.*?)(?=^## \[|^\[[^\]]+\]:|\Z)"
@@ -93,10 +102,11 @@ def changed_by_plugin(root: Path, base: str) -> dict[str, list[str]]:
     return by_plugin
 
 
-def check(root: Path, base: str) -> tuple[list[str], list[str]]:
-    """The errors, and the plugins whose files changed."""
+def check(root: Path, base: str) -> tuple[list[str], list[str], list[str]]:
+    """The errors, the cautions that do not fail, and the plugins whose files changed."""
     by_plugin = changed_by_plugin(root, base)
     errors: list[str] = []
+    cautions: list[str] = []
     for name, files in by_plugin.items():
         plugin = root / "plugins" / name
         if not plugin.is_dir() or all(f in DOC_ONLY for f in files):
@@ -113,11 +123,22 @@ def check(root: Path, base: str) -> tuple[list[str], list[str]]:
             changed = f"files changed ({', '.join(files)})"
             errors.append(f"[plugins/{name}] {changed} but version is still {base_version}. {fix}")
             continue
+        allowed = next_versions(base_version)
+        if "{}.{}.{}".format(*core(version)) not in allowed:
+            steps = f"{allowed[0]}, {allowed[1]} or {allowed[2]}"
+            fix = f"Run {BUMP} {name} <level> once from {base_version}."
+            jump = f"version jumps from {base_version} to {version}"
+            errors.append(f"[plugins/{name}] {jump}; one step above is {steps}. {fix}")
+            continue
+        if core(base_version)[0] == 0 and core(version)[0] == 1:
+            promise = f"{base_version} → {version} promises a stable interface"
+            rule = "Nery's explicit authorization (release-and-versioning, rule 4)"
+            cautions.append(f"[plugins/{name}] {promise}: it needs {rule}.")
         changelog = plugin / "CHANGELOG.md"
         notes = changelog.read_text(encoding="utf-8") if changelog.is_file() else ""
         if not changelog_section(notes, version):
             errors.append(f"[plugins/{name}] CHANGELOG.md has no entry for {version}")
-    return errors, list(by_plugin)
+    return errors, cautions, list(by_plugin)
 
 
 def main(argv: list[str]) -> int:
@@ -126,10 +147,12 @@ def main(argv: list[str]) -> int:
         _ = sys.stderr.write("usage: check-version-bump.py <base-ref>\n")
         return 2
     try:
-        errors, checked = check(repo_root(), argv[0])
+        errors, cautions, checked = check(repo_root(), argv[0])
     except GitError as e:
         _ = sys.stderr.write(f"✖ {e}\n")
         return 1
+    if cautions:
+        _ = sys.stderr.write("\n".join(f"! {c}" for c in cautions) + "\n")
     if errors:
         _ = sys.stderr.write("\n".join(f"✖ {e}" for e in errors) + "\n")
         return 1
