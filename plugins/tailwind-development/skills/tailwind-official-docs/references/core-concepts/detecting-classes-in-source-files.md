@@ -1,0 +1,16 @@
+# Detecting classes in source files
+
+For any work, knowledge or guidance on these topics, read https://tailwindcss.com/docs/detecting-classes-in-source-files filtered by the topic:
+
+- [Overview](https://tailwindcss.com/docs/detecting-classes-in-source-files#overview)
+- [How classes are detected](https://tailwindcss.com/docs/detecting-classes-in-source-files#how-classes-are-detected)
+- [Dynamic class names](https://tailwindcss.com/docs/detecting-classes-in-source-files#dynamic-class-names)
+- [Which files are scanned](https://tailwindcss.com/docs/detecting-classes-in-source-files#which-files-are-scanned)
+- [Explicitly registering sources](https://tailwindcss.com/docs/detecting-classes-in-source-files#explicitly-registering-sources)
+- [Setting your base path](https://tailwindcss.com/docs/detecting-classes-in-source-files#setting-your-base-path)
+- [Ignoring specific paths](https://tailwindcss.com/docs/detecting-classes-in-source-files#ignoring-specific-paths)
+- [Disabling automatic detection](https://tailwindcss.com/docs/detecting-classes-in-source-files#disabling-automatic-detection)
+- [Safelisting specific utilities](https://tailwindcss.com/docs/detecting-classes-in-source-files#safelisting-specific-utilities)
+- [Safelisting variants](https://tailwindcss.com/docs/detecting-classes-in-source-files#safelisting-variants)
+- [Safelisting with ranges](https://tailwindcss.com/docs/detecting-classes-in-source-files#safelisting-with-ranges)
+- [Explicitly excluding classes](https://tailwindcss.com/docs/detecting-classes-in-source-files#explicitly-excluding-classes)

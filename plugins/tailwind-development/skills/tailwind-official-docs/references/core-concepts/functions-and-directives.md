@@ -1,0 +1,21 @@
+# Functions and directives
+
+For any work, knowledge or guidance on these topics, read https://tailwindcss.com/docs/functions-and-directives filtered by the topic:
+
+- [Directives](https://tailwindcss.com/docs/functions-and-directives#directives)
+- [@import](https://tailwindcss.com/docs/functions-and-directives#import-directive)
+- [@theme](https://tailwindcss.com/docs/functions-and-directives#theme-directive)
+- [@source](https://tailwindcss.com/docs/functions-and-directives#source-directive)
+- [@utility](https://tailwindcss.com/docs/functions-and-directives#utility-directive)
+- [@variant](https://tailwindcss.com/docs/functions-and-directives#variant-directive)
+- [@custom-variant](https://tailwindcss.com/docs/functions-and-directives#custom-variant-directive)
+- [@apply](https://tailwindcss.com/docs/functions-and-directives#apply-directive)
+- [@reference](https://tailwindcss.com/docs/functions-and-directives#reference-directive)
+- [Subpath Imports](https://tailwindcss.com/docs/functions-and-directives#subpath-imports)
+- [Functions](https://tailwindcss.com/docs/functions-and-directives#functions)
+- [--alpha()](https://tailwindcss.com/docs/functions-and-directives#alpha-function)
+- [--spacing()](https://tailwindcss.com/docs/functions-and-directives#spacing-function)
+- [Compatibility](https://tailwindcss.com/docs/functions-and-directives#compatibility)
+- [@config](https://tailwindcss.com/docs/functions-and-directives#config-directive)
+- [@plugin](https://tailwindcss.com/docs/functions-and-directives#plugin-directive)
+- [theme()](https://tailwindcss.com/docs/functions-and-directives#theme-function)

@@ -1,0 +1,15 @@
+# Colors
+
+For any work, knowledge or guidance on these topics, read https://tailwindcss.com/docs/colors filtered by the topic:
+
+- [Working with colors](https://tailwindcss.com/docs/colors#working-with-colors)
+- [Using color utilities](https://tailwindcss.com/docs/colors#using-color-utilities)
+- [Adjusting opacity](https://tailwindcss.com/docs/colors#adjusting-opacity)
+- [Targeting dark mode](https://tailwindcss.com/docs/colors#targeting-dark-mode)
+- [Referencing in CSS](https://tailwindcss.com/docs/colors#referencing-in-css)
+- [Customizing your colors](https://tailwindcss.com/docs/colors#customizing-your-colors)
+- [Overriding default colors](https://tailwindcss.com/docs/colors#overriding-default-colors)
+- [Disabling default colors](https://tailwindcss.com/docs/colors#disabling-default-colors)
+- [Using a custom palette](https://tailwindcss.com/docs/colors#using-a-custom-palette)
+- [Referencing other variables](https://tailwindcss.com/docs/colors#referencing-other-variables)
+- [Default color palette reference](https://tailwindcss.com/docs/colors#default-color-palette-reference)

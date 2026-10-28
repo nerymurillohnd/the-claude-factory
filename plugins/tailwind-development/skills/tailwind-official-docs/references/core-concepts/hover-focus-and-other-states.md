@@ -1,66 +1,48 @@
-# Style states with variants
+# Hover, focus, and other states
 
-Read the matching section of https://tailwindcss.com/docs/hover-focus-and-other-states.
-Follow it over this file.
+For any work, knowledge or guidance on these topics, read https://tailwindcss.com/docs/hover-focus-and-other-states filtered by the topic:
 
-## `#pseudo-classes`
-
-- Use `focus-visible:` for keyboard focus rings, not `focus:` (`#hover-focus-and-active`).
-- Remember `hover:` applies only on devices that can hover.
-- Use `first:`, `last:`, `odd:`, `even:` instead of index checks in JavaScript.
-- Use `required:`, `disabled:` and the form-state variants for form controls.
-- Use `has-*` and `not-*` instead of JavaScript that toggles classes (`#has`, `#not`).
-
-## `#styling-based-on-parent-state`
-
-- Mark the parent with `group` and style children with `group-*`.
-- Name nested groups: `group/item` and `group-hover/item:`.
-- Read the h4 sections for arbitrary and implicit groups.
-
-## `#styling-based-on-sibling-state`
-
-- Mark the sibling with `peer` and style later siblings with `peer-*`.
-- Place the `peer` element before the elements it styles.
-- Name peers when several share a parent: `peer/name`.
-
-## `#pseudo-elements`
-
-- Use `before:` and `after:` with a `content-` class for decoration.
-- Style native parts with `placeholder:`, `file:`, `marker:`, `selection:`, `backdrop:`.
-- Use `first-line:` and `first-letter:` for typographic openings.
-
-## `#media-and-feature-queries`
-
-- Read `responsive-design` for breakpoints (`#responsive-breakpoints`).
-- Read `dark-mode` for `dark:` (`#prefers-color-scheme`).
-- Wrap animations in `motion-safe:` or `motion-reduce:` (`#prefers-reduced-motion`).
-- Use `contrast-more:` and `forced-colors:` for accessibility modes.
-- Use `pointer-coarse:` for touch targets instead of a breakpoint (`#pointer-and-any-pointer`).
-- Use `print:`, `portrait:`, `landscape:` and `noscript:` for their environments.
-- Use `supports-[…]:` for a feature check (`#supports`).
-- Use `starting:` for entry transitions of dialogs and popovers (`#starting-style`).
-- Check the installed version before a recent variant.
-
-## `#attribute-selectors`
-
-- Use `aria-*` variants for ARIA states (`#aria-states`).
-- Use `data-*` variants for headless library states (`#data-attributes`).
-- Use `rtl:` and `ltr:` only where logical utilities cannot help (`#rtl-support`).
-- Use `open:` for `<details>`, `<dialog>` and popovers (`#openclosed-state`).
-- Use `inert:` for content disabled behind a modal (`#styling-inert-elements`).
-
-## `#child-selectors`
-
-- Use `*:` for direct children you cannot class (`#styling-direct-children`).
-- Use `**:` for all descendants (`#styling-all-descendants`).
-- Prefer classes on the children when you control their markup.
-
-## `#custom-variants`
-
-- Use `[&…]:` for a one-off selector (`#using-arbitrary-variants`).
-- Register a repeated selector with `@custom-variant` (`#registering-a-custom-variant`).
-
-## `#appendix`
-
-- Look up a variant's selector in `#quick-reference`.
-- Read the variant's own entry in `#pseudo-class-reference`.
+- [Pseudo-classes](https://tailwindcss.com/docs/hover-focus-and-other-states#pseudo-classes)
+- [:hover, :focus, and :active](https://tailwindcss.com/docs/hover-focus-and-other-states#hover-focus-and-active)
+- [:first, :last, :odd, and :even](https://tailwindcss.com/docs/hover-focus-and-other-states#first-last-odd-and-even)
+- [:required and :disabled](https://tailwindcss.com/docs/hover-focus-and-other-states#required-and-disabled)
+- [:has()](https://tailwindcss.com/docs/hover-focus-and-other-states#has)
+- [:not()](https://tailwindcss.com/docs/hover-focus-and-other-states#not)
+- [Styling based on parent state](https://tailwindcss.com/docs/hover-focus-and-other-states#styling-based-on-parent-state)
+- [Styling based on sibling state](https://tailwindcss.com/docs/hover-focus-and-other-states#styling-based-on-sibling-state)
+- [Pseudo-elements](https://tailwindcss.com/docs/hover-focus-and-other-states#pseudo-elements)
+- [::before and ::after](https://tailwindcss.com/docs/hover-focus-and-other-states#before-and-after)
+- [::placeholder](https://tailwindcss.com/docs/hover-focus-and-other-states#placeholder)
+- [::file](https://tailwindcss.com/docs/hover-focus-and-other-states#file)
+- [::marker](https://tailwindcss.com/docs/hover-focus-and-other-states#marker)
+- [::selection](https://tailwindcss.com/docs/hover-focus-and-other-states#selection)
+- [::first-line and ::first-letter](https://tailwindcss.com/docs/hover-focus-and-other-states#first-line-and-first-letter)
+- [::backdrop](https://tailwindcss.com/docs/hover-focus-and-other-states#backdrop)
+- [Media and feature queries](https://tailwindcss.com/docs/hover-focus-and-other-states#media-and-feature-queries)
+- [Responsive breakpoints](https://tailwindcss.com/docs/hover-focus-and-other-states#responsive-breakpoints)
+- [prefers-color-scheme](https://tailwindcss.com/docs/hover-focus-and-other-states#prefers-color-scheme)
+- [prefers-reduced-motion](https://tailwindcss.com/docs/hover-focus-and-other-states#prefers-reduced-motion)
+- [prefers-contrast](https://tailwindcss.com/docs/hover-focus-and-other-states#prefers-contrast)
+- [forced-colors](https://tailwindcss.com/docs/hover-focus-and-other-states#forced-colors)
+- [inverted-colors](https://tailwindcss.com/docs/hover-focus-and-other-states#inverted-colors)
+- [pointer and any-pointer](https://tailwindcss.com/docs/hover-focus-and-other-states#pointer-and-any-pointer)
+- [orientation](https://tailwindcss.com/docs/hover-focus-and-other-states#orientation)
+- [scripting](https://tailwindcss.com/docs/hover-focus-and-other-states#scripting)
+- [print](https://tailwindcss.com/docs/hover-focus-and-other-states#print)
+- [@supports](https://tailwindcss.com/docs/hover-focus-and-other-states#supports)
+- [@starting-style](https://tailwindcss.com/docs/hover-focus-and-other-states#starting-style)
+- [Attribute selectors](https://tailwindcss.com/docs/hover-focus-and-other-states#attribute-selectors)
+- [ARIA states](https://tailwindcss.com/docs/hover-focus-and-other-states#aria-states)
+- [Data attributes](https://tailwindcss.com/docs/hover-focus-and-other-states#data-attributes)
+- [RTL support](https://tailwindcss.com/docs/hover-focus-and-other-states#rtl-support)
+- [Open/closed state](https://tailwindcss.com/docs/hover-focus-and-other-states#openclosed-state)
+- [Styling inert elements](https://tailwindcss.com/docs/hover-focus-and-other-states#styling-inert-elements)
+- [Child selectors](https://tailwindcss.com/docs/hover-focus-and-other-states#child-selectors)
+- [Styling direct children](https://tailwindcss.com/docs/hover-focus-and-other-states#styling-direct-children)
+- [Styling all descendants](https://tailwindcss.com/docs/hover-focus-and-other-states#styling-all-descendants)
+- [Custom variants](https://tailwindcss.com/docs/hover-focus-and-other-states#custom-variants)
+- [Using arbitrary variants](https://tailwindcss.com/docs/hover-focus-and-other-states#using-arbitrary-variants)
+- [Registering a custom variant](https://tailwindcss.com/docs/hover-focus-and-other-states#registering-a-custom-variant)
+- [Appendix](https://tailwindcss.com/docs/hover-focus-and-other-states#appendix)
+- [Quick reference](https://tailwindcss.com/docs/hover-focus-and-other-states#quick-reference)
+- [Pseudo-class reference](https://tailwindcss.com/docs/hover-focus-and-other-states#pseudo-class-reference)

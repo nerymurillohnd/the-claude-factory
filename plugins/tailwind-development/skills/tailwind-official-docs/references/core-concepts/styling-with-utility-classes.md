@@ -1,62 +1,23 @@
-# Style with utility classes
+# Styling with utility classes
 
-Read the matching section of https://tailwindcss.com/docs/styling-with-utility-classes.
-Follow it over this file.
+For any work, knowledge or guidance on these topics, read https://tailwindcss.com/docs/styling-with-utility-classes filtered by the topic:
 
-## `#overview` and `#why-not-just-use-inline-styles`
-
-- Replace static `style=` values with utility classes.
-
-## `#thinking-in-utility-classes`
-
-- Read `#styling-hover-and-focus-states` before the first state variant.
-- Read `#media-queries-and-breakpoints` before the first breakpoint.
-- Read `#targeting-dark-mode` before the first `dark:` class.
-- Replace hand-written `:hover`, `@media` and dark rules with variants.
-
-## `#using-class-composition`
-
-- Combine classes that build one property, like filters, gradients and transforms.
-- Replace custom `filter:` or `transform:` rules with composed classes.
-
-## `#using-arbitrary-values` and `#how-does-this-even-work`
-
-- Use `[…]` only for a value outside the theme.
-- Turn an arbitrary value used repeatedly into a theme token.
-- Never build class names by interpolation: Tailwind only sees complete names.
-
-## `#complex-selectors`
-
-- Stack variants for combined conditions: `dark:lg:hover:`.
-- Read `adding-custom-styles#arbitrary-variants` for selectors without a variant.
-
-## `#when-to-use-inline-styles`
-
-- Use inline styles only for values from a database or an API.
-- Pass dynamic values as CSS variables and read them with utilities.
-
-## `#managing-duplication`
-
-- Render repeated markup in a loop (`#using-loops`).
-- Edit repetition in one file with multi-cursor (`#using-multi-cursor-editing`).
-- Extract a component or partial for reuse across files (`#using-components`).
-- Use a small custom class only where a partial is overkill (`#using-custom-css`).
-
-## `#managing-style-conflicts` and `#conflicting-utility-classes`
-
-- Remove one of two classes that set the same property.
-- Never rely on class order: the stylesheet order decides.
-- Render one class or the other conditionally instead.
-
-## `#using-the-important-modifier`
-
-- Add `!` at the end of a class only when specificity leaves no other way.
-
-## `#using-the-important-flag`
-
-- Use `@import "tailwindcss" important;` only beside high-specificity legacy CSS.
-
-## `#using-the-prefix-option`
-
-- Use `prefix(tw)` only when class names collide with other CSS.
-- Write prefixed classes as `tw:flex`, prefix first.
+- [Why not just use inline styles?](https://tailwindcss.com/docs/styling-with-utility-classes#why-not-just-use-inline-styles)
+- [Thinking in utility classes](https://tailwindcss.com/docs/styling-with-utility-classes#thinking-in-utility-classes)
+- [Styling hover and focus states](https://tailwindcss.com/docs/styling-with-utility-classes#styling-hover-and-focus-states)
+- [Media queries and breakpoints](https://tailwindcss.com/docs/styling-with-utility-classes#media-queries-and-breakpoints)
+- [Targeting dark mode](https://tailwindcss.com/docs/styling-with-utility-classes#targeting-dark-mode)
+- [Using class composition](https://tailwindcss.com/docs/styling-with-utility-classes#using-class-composition)
+- [Using arbitrary values](https://tailwindcss.com/docs/styling-with-utility-classes#using-arbitrary-values)
+- [Complex selectors](https://tailwindcss.com/docs/styling-with-utility-classes#complex-selectors)
+- [When to use inline styles](https://tailwindcss.com/docs/styling-with-utility-classes#when-to-use-inline-styles)
+- [Managing duplication](https://tailwindcss.com/docs/styling-with-utility-classes#managing-duplication)
+- [Using loops](https://tailwindcss.com/docs/styling-with-utility-classes#using-loops)
+- [Using multi-cursor editing](https://tailwindcss.com/docs/styling-with-utility-classes#using-multi-cursor-editing)
+- [Using components](https://tailwindcss.com/docs/styling-with-utility-classes#using-components)
+- [Using custom CSS](https://tailwindcss.com/docs/styling-with-utility-classes#using-custom-css)
+- [Managing style conflicts](https://tailwindcss.com/docs/styling-with-utility-classes#managing-style-conflicts)
+- [Conflicting utility classes](https://tailwindcss.com/docs/styling-with-utility-classes#conflicting-utility-classes)
+- [Using the important modifier](https://tailwindcss.com/docs/styling-with-utility-classes#using-the-important-modifier)
+- [Using the important flag](https://tailwindcss.com/docs/styling-with-utility-classes#using-the-important-flag)
+- [Using the prefix option](https://tailwindcss.com/docs/styling-with-utility-classes#using-the-prefix-option)

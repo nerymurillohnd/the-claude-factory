@@ -1,0 +1,19 @@
+# Adding custom styles
+
+For any work, knowledge or guidance on these topics, read https://tailwindcss.com/docs/adding-custom-styles filtered by the topic:
+
+- [Customizing your theme](https://tailwindcss.com/docs/adding-custom-styles#customizing-your-theme)
+- [Using arbitrary values](https://tailwindcss.com/docs/adding-custom-styles#using-arbitrary-values)
+- [Arbitrary properties](https://tailwindcss.com/docs/adding-custom-styles#arbitrary-properties)
+- [Arbitrary variants](https://tailwindcss.com/docs/adding-custom-styles#arbitrary-variants)
+- [Handling whitespace](https://tailwindcss.com/docs/adding-custom-styles#handling-whitespace)
+- [Resolving ambiguities](https://tailwindcss.com/docs/adding-custom-styles#resolving-ambiguities)
+- [Using custom CSS](https://tailwindcss.com/docs/adding-custom-styles#using-custom-css)
+- [Adding base styles](https://tailwindcss.com/docs/adding-custom-styles#adding-base-styles)
+- [Adding component classes](https://tailwindcss.com/docs/adding-custom-styles#adding-component-classes)
+- [Using variants](https://tailwindcss.com/docs/adding-custom-styles#using-variants)
+- [Adding custom utilities](https://tailwindcss.com/docs/adding-custom-styles#adding-custom-utilities)
+- [Simple utilities](https://tailwindcss.com/docs/adding-custom-styles#simple-utilities)
+- [Complex utilities](https://tailwindcss.com/docs/adding-custom-styles#complex-utilities)
+- [Functional utilities](https://tailwindcss.com/docs/adding-custom-styles#functional-utilities)
+- [Adding custom variants](https://tailwindcss.com/docs/adding-custom-styles#adding-custom-variants)
