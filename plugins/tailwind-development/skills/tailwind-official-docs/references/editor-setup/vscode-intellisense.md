@@ -9,7 +9,7 @@ Sources: https://tailwindcss.com/docs/editor-setup and the extension's README, h
 
 ## Editor warnings on `@theme`, `@apply`, `@source`
 
-Open `.css` files in the extension's Tailwind CSS language mode (`files.associations`: `"*.css": "tailwindcss"`) rather than turning CSS validation off. Turn native validation off only if an editor still rejects the syntax.
+Open `.css` files in the extension's Tailwind CSS language mode: `files.associations` with `"*.css": "tailwindcss"`.
 
 ## Settings worth checking
 

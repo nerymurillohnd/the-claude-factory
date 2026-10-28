@@ -27,7 +27,8 @@ A framework listed under framework guides in the topic index has its own page: r
 
 When the task is the editor, read the reference for it:
 
-- VS Code or Cursor, and editor warnings on `@theme` or `@apply`: [vscode-intellisense.md](references/editor-setup/vscode-intellisense.md)
+- Editor warnings or errors on `@theme`, `@apply` or `@source`: [syntax-support.md](references/editor-setup/syntax-support.md)
+- VS Code or Cursor: [vscode-intellisense.md](references/editor-setup/vscode-intellisense.md)
 - Class sorting with Prettier: [prettier-class-sorting.md](references/editor-setup/prettier-class-sorting.md)
 - Zed: [zed.md](references/editor-setup/zed.md)
 - WebStorm, PhpStorm or another JetBrains IDE: [jetbrains.md](references/editor-setup/jetbrains.md)
