@@ -16,10 +16,10 @@ This skill is a documentation router, not a replacement for the documentation. I
 
 Read the matching reference for any installation task: setup, fix or question.
 
-- Vite: [using-vite.md](references/installation/using-vite.md)
-- PostCSS: [using-postcss.md](references/installation/using-postcss.md)
-- No bundler, or no Node.js: [tailwind-cli.md](references/installation/tailwind-cli.md)
-- A browser prototype with no build: [play-cdn.md](references/installation/play-cdn.md)
+**Vite**: `vite.config.*`, Vite frameworks → See [references/installation/using-vite.md](references/installation/using-vite.md)
+**PostCSS**: `postcss.config.*`, Next.js, Angular → See [references/installation/using-postcss.md](references/installation/using-postcss.md)
+**Tailwind CLI**: no bundler, standalone executable → See [references/installation/tailwind-cli.md](references/installation/tailwind-cli.md)
+**Play CDN**: browser prototypes, no build → See [references/installation/play-cdn.md](references/installation/play-cdn.md)
 
 If the framework has its own guide in the topic index, read that page instead.
 
@@ -27,47 +27,47 @@ If the framework has its own guide in the topic index, read that page instead.
 
 Read the matching reference for any editor or formatter task: setup, fix or question.
 
-- Editor warnings on `@theme` or `@apply`: [syntax-support.md](references/editor-setup/syntax-support.md)
-- VS Code or Cursor: [vscode-intellisense.md](references/editor-setup/vscode-intellisense.md)
-- Class sorting with Prettier: [prettier-class-sorting.md](references/editor-setup/prettier-class-sorting.md)
-- Zed: [zed.md](references/editor-setup/zed.md)
-- JetBrains IDEs: [jetbrains.md](references/editor-setup/jetbrains.md)
+**Syntax support**: warnings on `@theme`, `@apply`, `@source` → See [references/editor-setup/syntax-support.md](references/editor-setup/syntax-support.md)
+**VS Code and Cursor**: IntelliSense extension, settings → See [references/editor-setup/vscode-intellisense.md](references/editor-setup/vscode-intellisense.md)
+**Prettier**: class sorting → See [references/editor-setup/prettier-class-sorting.md](references/editor-setup/prettier-class-sorting.md)
+**Zed**: built-in language server → See [references/editor-setup/zed.md](references/editor-setup/zed.md)
+**JetBrains**: WebStorm, PhpStorm → See [references/editor-setup/jetbrains.md](references/editor-setup/jetbrains.md)
 
 ## Compatibility
 
 Read the matching reference for any compatibility task: setup, fix or question.
 
-- Browser support and targets: [browser-support.md](references/compatibility/browser-support.md)
-- Sass, Less or Stylus: [preprocessors.md](references/compatibility/preprocessors.md)
-- CSS modules: [css-modules.md](references/compatibility/css-modules.md)
-- `<style>` blocks in Vue, Svelte or Astro: [component-style-blocks.md](references/compatibility/component-style-blocks.md)
+**Browsers**: browser floor, project targets → See [references/compatibility/browser-support.md](references/compatibility/browser-support.md)
+**Preprocessors**: Sass, Less, Stylus → See [references/compatibility/preprocessors.md](references/compatibility/preprocessors.md)
+**CSS modules**: `@reference`, `@apply` in modules → See [references/compatibility/css-modules.md](references/compatibility/css-modules.md)
+**Component styles**: `<style>` in Vue, Svelte, Astro → See [references/compatibility/component-style-blocks.md](references/compatibility/component-style-blocks.md)
 
 ## Upgrade guide
 
 Read every reference below, in order, to migrate a project.
 Read only the matching reference for one v3 habit or a question.
 
-1. Run the upgrade tool: [upgrade-tool.md](references/upgrade-guide/upgrade-tool.md)
-2. Upgrade by hand if the tool cannot run: [manual-upgrade.md](references/upgrade-guide/manual-upgrade.md)
-3. Check utility changes: [utilities.md](references/upgrade-guide/utilities.md)
-4. Check syntax changes: [syntax.md](references/upgrade-guide/syntax.md)
-5. Check Preflight changes: [preflight.md](references/upgrade-guide/preflight.md)
-6. Check configuration and build changes: [config.md](references/upgrade-guide/config.md)
+1. **Upgrade tool**: run it first → See [references/upgrade-guide/upgrade-tool.md](references/upgrade-guide/upgrade-tool.md)
+2. **Manual upgrade**: when the tool cannot run → See [references/upgrade-guide/manual-upgrade.md](references/upgrade-guide/manual-upgrade.md)
+3. **Utilities**: removed, renamed, defaults → See [references/upgrade-guide/utilities.md](references/upgrade-guide/utilities.md)
+4. **Syntax**: directives, prefix, important, variants → See [references/upgrade-guide/syntax.md](references/upgrade-guide/syntax.md)
+5. **Preflight**: base style changes → See [references/upgrade-guide/preflight.md](references/upgrade-guide/preflight.md)
+6. **Configuration**: JS config, `theme()`, browsers → See [references/upgrade-guide/config.md](references/upgrade-guide/config.md)
 7. Report every section with its verdict: changed, not present, kept, or needs a decision.
 
 ## Core concepts
 
 Read the matching reference for any core concept task: work, knowledge or guidance.
 
-- [Styling with utility classes](references/core-concepts/styling-with-utility-classes.md): utilities vs inline styles, composition, arbitrary values, duplication, conflicts, important, prefix
-- [Hover, focus, and other states](references/core-concepts/hover-focus-and-other-states.md): pseudo-classes, parent and sibling state, pseudo-elements, media and feature queries, ARIA and data attributes, child selectors, custom variants
-- [Responsive design](references/core-concepts/responsive-design.md): mobile-first breakpoints, ranges, custom breakpoints, container queries
-- [Dark mode](references/core-concepts/dark-mode.md): the dark variant, manual toggle by class or data attribute, system theme
-- [Theme variables](references/core-concepts/theme.md): theme variables, namespaces, extending or replacing the theme, keyframes, using tokens in CSS and JS
-- [Colors](references/core-concepts/colors.md): color utilities, opacity, dark mode colors, custom palettes, referencing colors
-- [Adding custom styles](references/core-concepts/adding-custom-styles.md): arbitrary values, properties and variants, custom CSS, custom utilities and variants
-- [Detecting classes in source files](references/core-concepts/detecting-classes-in-source-files.md): how classes are detected, dynamic class names, registering sources, safelisting
-- [Functions and directives](references/core-concepts/functions-and-directives.md): @import, @theme, @source, @utility, @variant, @apply, @reference, functions, v3 compatibility
+**Utility classes**: composition, arbitrary values, conflicts, important, prefix → See [references/core-concepts/styling-with-utility-classes.md](references/core-concepts/styling-with-utility-classes.md)
+**States**: hover, focus, group, peer, pseudo-elements, ARIA, data, custom variants → See [references/core-concepts/hover-focus-and-other-states.md](references/core-concepts/hover-focus-and-other-states.md)
+**Responsive design**: breakpoints, ranges, container queries → See [references/core-concepts/responsive-design.md](references/core-concepts/responsive-design.md)
+**Dark mode**: `dark:`, class or data-attribute toggle, system theme → See [references/core-concepts/dark-mode.md](references/core-concepts/dark-mode.md)
+**Theme variables**: `@theme`, namespaces, tokens in CSS and JS → See [references/core-concepts/theme.md](references/core-concepts/theme.md)
+**Colors**: palette, opacity, custom colors → See [references/core-concepts/colors.md](references/core-concepts/colors.md)
+**Custom styles**: arbitrary values, custom CSS, `@utility`, custom variants → See [references/core-concepts/adding-custom-styles.md](references/core-concepts/adding-custom-styles.md)
+**Class detection**: dynamic class names, `@source`, safelisting → See [references/core-concepts/detecting-classes-in-source-files.md](references/core-concepts/detecting-classes-in-source-files.md)
+**Functions and directives**: `@import`, `@apply`, `@reference`, `--alpha()`, `@config` → See [references/core-concepts/functions-and-directives.md](references/core-concepts/functions-and-directives.md)
 
 ## Workflow
 
