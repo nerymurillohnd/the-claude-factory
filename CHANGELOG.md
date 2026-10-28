@@ -6,6 +6,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The
 
 ## 2026-10-28
 
+### Changed
+
+- **project-maintainer** 0.2.3 — the handoff and records skills keep to the current project, check for evidence that an item is already done before listing it, and cite only installed skills, agents and plugins.
+
 ### Added
 
 - **tailwind-development** 0.3.0 — four agents for docs research, audits, refactors and v3 to v4 migration; the docs skill becomes the first source for any Tailwind task, routed by docs category; and a link check of the docs skill before Claude delegates to an agent.

@@ -6,6 +6,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.2.3] - 2026-10-28
+
+### Changed
+
+- The handoff and records skills now keep to the current project: anything about other projects is dropped, and an item is checked against the git log, changelog, docs and ledgers for evidence that it is already done before it is listed as open or logged as debt. A skill, agent or plugin is cited only after checking that it is installed. Both skills' final checklists confirm each rule.
+
 ## [0.2.2] - 2026-10-27
 
 ### Changed
@@ -52,7 +58,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - Before a compaction, the summary is told to keep decisions, open items and record IDs. After a commit that looks like a decision, such as one that changes dependencies, a schema, CI or infrastructure, Claude gets one reminder to record it. The reminder can be turned off in the plugin's settings.
 - **Requires Claude Code v2.1.304 or later.**
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/project-maintainer--v0.2.2...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/project-maintainer--v0.2.3...HEAD
+[0.2.3]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/project-maintainer--v0.2.3
 [0.2.2]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/project-maintainer--v0.2.2
 [0.2.1]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/project-maintainer--v0.2.1
 [0.2.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/project-maintainer--v0.2.0
