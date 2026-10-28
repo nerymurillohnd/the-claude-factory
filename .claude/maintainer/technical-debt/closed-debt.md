@@ -41,7 +41,6 @@
 | 2026-10-27 | DEBT-026 | obsolete | `.claude/rules/readme-md.md` loads when a README is read | none |
 | 2026-10-28 | DEBT-025 | resolved | The version gate and `npm run version:bump` run the release skill's Python, and the `.mjs` copies are deleted | none |
 | 2026-10-28 | DEBT-038 | resolved | The plugin-renames skill's check-version-bump.py is identical to the release skill's, and a test keeps both skills' copies of the bump scripts identical | none |
-| 2026-10-28 | DEBT-017 | resolved | `testing-plugins` and `release-and-versioning` no longer state where this repository runs evals | none |
 
 ## 🏁 Closed items
 
@@ -791,37 +790,6 @@ The plugin-renames copy of `check-version-bump.py` is replaced by the release sk
 - **Residual risk:** a change to a copy has to be made in both; the test catches a missed one, it does not make the change.
 - **Closed by:** ADR_2026-10-28_skill-bump-copies-stay-identical
 - **Related records:** ADR_2026-10-28_skill-bump-copies-stay-identical, DEBT-025, ADR_2026-10-28_version-gate-runs-the-release-skill-script.
-- **Superseded by:** none
-
-### DEBT-017 — `testing-plugins` and `release-and-versioning` no longer state where this repository runs evals
-
-| Field | Value |
-| --- | --- |
-| **Outcome** | resolved |
-| **Closed on** | 2026-10-28 |
-| **Logged on** | 2026-10-26 |
-| **Owner** | `.claude/skills/testing-plugins/SKILL.md` |
-
-#### ❗ The problem
-
-`testing-plugins/SKILL.md` told Claude to "make sure CI will run the full suite" when a plugin with `evals/` was edited, and `.github/workflows/` holds no eval workflow, so the skill promised a check nobody runs. Nery widened it on 2026-10-28: the same line and the description told Claude to run the pilot whenever a plugin with evals was edited, against the skill's own "Never add evals to a plugin, or run them, on your own initiative"; and `release-and-versioning/SKILL.md` step 8.4 said "No CI runs it", while `testing-plugins` assigned the full suite to CI.
-
-#### 🔧 The closure
-
-By Nery's decision, a skill holds abilities and knowledge, never the state of this project at a given moment. `testing-plugins` lost the "Existing plugin that has `evals/` and was edited" case and the "or a plugin that has evals was edited" trigger of its description, so evals run only when asked; its eval method (local pilot and smoke, full suite through the `assets/evals-ci.yml` template) stays as knowledge. `release-and-versioning` lost step 8.4 (confirm evals passed, "No CI runs it"); steps 8.5 and 8.6 became 8.4 and 8.5, and step 9.7 now cites step 8.4.
-
-#### 🧪 Verification
-
-| Check | Evidence |
-| --- | --- |
-| ✅ **Positive:** the closure holds | `rg -n 'CI' .claude/skills/testing-plugins/SKILL.md .claude/skills/release-and-versioning/SKILL.md` on 2026-10-28 shows only the eval method of `testing-plugins` (lines 8, 24, 38, 45) and the merge rules of `release-and-versioning` (lines 25, 42); no line states whether this repository runs evals in CI. `rg -n 'step 8\.'` finds one reference, `step 8.4 from`, pointing at the install step. |
-| 🚫 **Negative:** the original failure or condition is gone | `rg -n -i 'make sure CI\|No CI runs\|has evals was edited'` over `.claude/skills` returned nothing on 2026-10-28. |
-
-#### 🔗 Follow-up
-
-- **Residual risk:** none
-- **Closed by:** the commit that removes the two lines, 2026-10-28
-- **Related records:** none
 - **Superseded by:** none
 
 <!--
