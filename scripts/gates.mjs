@@ -310,8 +310,11 @@ export function gatesFor({ root, ci, base }) {
       id: 'version-bump',
       group: 'policy',
       title: `version bumps since ${bumpBase || 'the base'}`,
-      cmd: 'node',
-      args: ['scripts/check-version-bump.mjs', bumpBase],
+      cmd: 'python3',
+      args: [
+        join('.claude', 'skills', 'release-and-versioning', 'scripts', 'check-version-bump.py'),
+        bumpBase,
+      ],
       ...(isCommit(root, bumpBase)
         ? {}
         : { skipReason: `no comparable base commit (${bumpBase || 'none'})` }),

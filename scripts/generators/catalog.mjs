@@ -135,7 +135,7 @@ export function buildCountBadge() {
  * @param {string} text
  * @returns {string}
  */
-export function renderReadme(text) {
+function renderReadme(text) {
   let next = replaceBlock(text, 'catalog', buildCatalog())
   next = replaceBlock(next, 'plugin-count', buildCountBadge())
   return next

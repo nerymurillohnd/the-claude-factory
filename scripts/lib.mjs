@@ -197,65 +197,6 @@ export function loadManifest(name) {
   return existsSync(path) ? readJson(path) : null
 }
 
-/**
- * The release tag of a plugin version, as `claude plugin tag` names it.
- * @param {string} name
- * @param {string} version
- * @returns {string}
- */
-export function pluginTag(name, version) {
-  return `${name}--v${version}`
-}
-
-const PRERELEASE_OR_BUILD = /[-+]/
-
-/**
- * The numeric MAJOR.MINOR.PATCH of a version, pre-release and build metadata dropped.
- * @param {string} version
- * @returns {number[]}
- */
-function coreTriple(version) {
-  return (version.split(PRERELEASE_OR_BUILD)[0] ?? '').split('.').map(Number)
-}
-
-/**
- * Compare two semver strings (pre-release ignored for ordering of the core triple).
- * @param {string} a
- * @param {string} b
- * @returns {number}
- */
-export function compareSemver(a, b) {
-  const pa = coreTriple(a)
-  const pb = coreTriple(b)
-  for (let i = 0; i < 3; i += 1) {
-    const x = pa[i] ?? 0
-    const y = pb[i] ?? 0
-    if (x !== y) {
-      return x > y ? 1 : -1
-    }
-  }
-  return 0
-}
-
-/**
- * @param {string} version
- * @param {string} level
- * @returns {string}
- */
-export function bumpSemver(version, level) {
-  const [major = 0, minor = 0, patch = 0] = coreTriple(version)
-  if (level === 'major') {
-    return `${major + 1}.0.0`
-  }
-  if (level === 'minor') {
-    return `${major}.${minor + 1}.0`
-  }
-  if (level === 'patch') {
-    return `${major}.${minor}.${patch + 1}`
-  }
-  throw new Error(`Unknown bump level "${level}" (use major, minor or patch)`)
-}
-
 /** @returns {string} */
 export function today() {
   return new Date().toISOString().slice(0, 10)

@@ -41,7 +41,7 @@
     "validate:readme-catalog-consistency": "scripts/validators/readme-catalog-consistency.py",
     "validate:skill-names-consistency": "scripts/validators/skill-names-consistency.py",
     "validate:skill-references": "scripts/validators/skill-references.py",
-    "version:bump": "node scripts/bump-version.mjs"
+    "version:bump": "python3 .claude/skills/release-and-versioning/scripts/bump-version.py"
   },
   "devDependencies": {
     "@biomejs/biome": "2.6.3",

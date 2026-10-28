@@ -75,6 +75,25 @@ function run(script, args = []) {
   return { code: r.status, out: `${r.stdout}${r.stderr}` }
 }
 
+// The version scripts are the release-and-versioning skill's Python, run by path with TCF_ROOT.
+const BUMP = '.claude/skills/release-and-versioning/scripts/bump-version.py'
+const CHECK = '.claude/skills/release-and-versioning/scripts/check-version-bump.py'
+
+/**
+ * Run a Python script of the temp copy, with the same environment as run().
+ * @param {string} script path inside the temp copy
+ * @param {string[]} [args]
+ * @returns {{ code: number | null, out: string }}
+ */
+function runPy(script, args = []) {
+  const r = spawnSync('python3', [join(root, script), ...args], {
+    cwd: root,
+    encoding: 'utf8',
+    env: { ...process.env, TCF_ROOT: root },
+  })
+  return { code: r.status, out: `${r.stdout}${r.stderr}` }
+}
+
 /** @param {string} p */
 const read = (p) => readFileSync(join(root, p), 'utf8')
 /**
@@ -479,7 +498,7 @@ describe('catalog generator', () => {
 describe('bump-version', () => {
   test('refuses to release an empty [Unreleased] section', () => {
     scaffold()
-    const r = run('bump-version.mjs', ['demo-tool', 'minor'])
+    const r = runPy(BUMP, ['demo-tool', 'minor'])
     assert.equal(r.code, 1)
     assert.match(r.out, /\[Unreleased\] is empty/)
   })
@@ -488,7 +507,7 @@ describe('bump-version', () => {
     scaffold()
     const p = 'plugins/demo-tool/CHANGELOG.md'
     write(p, read(p).replace('## [Unreleased]\n', '## [Unreleased]\n\n### Fixed\n\n- A bug.\n'))
-    const r = run('bump-version.mjs', ['demo-tool', 'minor'])
+    const r = runPy(BUMP, ['demo-tool', 'minor'])
     assert.equal(r.code, 0, r.out)
     assert.equal(json('plugins/demo-tool/.claude-plugin/plugin.json').version, '0.2.0')
     const log = read(p)
@@ -498,12 +517,14 @@ describe('bump-version', () => {
     )
     assert.match(log, /\[Unreleased\]: .*compare\/demo-tool--v0\.2\.0\.\.\.HEAD/)
     assert.match(log, /\[0\.2\.0\]: .*releases\/tag\/demo-tool--v0\.2\.0/)
+    // The bump does not regenerate the README catalog; the step after it does.
+    assert.match(run('generators/catalog.mjs').out, /catalog|README/)
     assert.match(read('README.md'), /`0\.2\.0`/)
   })
 
   test('refuses to bump the marketplace, which has no version', () => {
     const before = read('.claude-plugin/marketplace.json')
-    const r = run('bump-version.mjs', ['marketplace', 'patch'])
+    const r = runPy(BUMP, ['marketplace', 'patch'])
     assert.notEqual(r.code, 0)
     assert.match(r.out, /marketplace has no version/)
     assert.equal(read('.claude-plugin/marketplace.json'), before)
@@ -519,7 +540,7 @@ describe('check-version-bump', () => {
     git('add', '-A')
     git('commit', '-qm', 'change')
 
-    const before = run('check-version-bump.mjs', ['HEAD~1'])
+    const before = runPy(CHECK, ['HEAD~1'])
     assert.equal(before.code, 1)
     assert.match(before.out, /version is still 0\.1\.0/)
 
@@ -528,10 +549,10 @@ describe('check-version-bump', () => {
       p,
       read(p).replace('## [Unreleased]\n', '## [Unreleased]\n\n### Added\n\n- Demo skill.\n'),
     )
-    assert.equal(run('bump-version.mjs', ['demo-tool', 'minor']).code, 0)
+    assert.equal(runPy(BUMP, ['demo-tool', 'minor']).code, 0)
     git('add', '-A')
     git('commit', '-qm', 'bump')
-    const after = run('check-version-bump.mjs', ['HEAD~2'])
+    const after = runPy(CHECK, ['HEAD~2'])
     assert.equal(after.code, 0, after.out)
   })
 
@@ -560,17 +581,17 @@ describe('check-version-bump', () => {
 
   test('fails a bump that skips a version', () => {
     commitVersion('0.3.0')
-    const r = run('check-version-bump.mjs', ['HEAD~1'])
+    const r = runPy(CHECK, ['HEAD~1'])
     assert.equal(r.code, 1)
     assert.match(
       r.out,
-      /version jumps from 0\.1\.0 to 0\.3\.0; one step above 0\.1\.0 is 0\.1\.1, 0\.2\.0, 1\.0\.0/,
+      /version jumps from 0\.1\.0 to 0\.3\.0; one step above is 0\.1\.1, 0\.2\.0 or 1\.0\.0/,
     )
   })
 
   test('passes the promotion to 1.0.0 with a note that it needs authorization', () => {
     commitVersion('1.0.0')
-    const r = run('check-version-bump.mjs', ['HEAD~1'])
+    const r = runPy(CHECK, ['HEAD~1'])
     assert.equal(r.code, 0, r.out)
     assert.match(r.out, /0\.1\.0 → 1\.0\.0 promises a stable interface/)
   })
@@ -581,7 +602,7 @@ describe('check-version-bump', () => {
     git('add', '-A')
     git('commit', '-qm', 'new plugin')
 
-    const r = run('check-version-bump.mjs', ['HEAD~1'])
+    const r = runPy(CHECK, ['HEAD~1'])
     assert.equal(r.code, 0, r.out)
     assert.match(r.out, /Version bumps OK \(demo-tool\)/)
     assert.doesNotMatch(r.out, /fatal:/)
@@ -592,7 +613,7 @@ describe('check-version-bump', () => {
     initRepo()
     write('plugins/demo-tool/README.md', `${read('plugins/demo-tool/README.md')}\nMore docs.\n`)
     git('commit', '-qam', 'docs')
-    const r = run('check-version-bump.mjs', ['HEAD~1'])
+    const r = runPy(CHECK, ['HEAD~1'])
     assert.equal(r.code, 0, r.out)
   })
 })
