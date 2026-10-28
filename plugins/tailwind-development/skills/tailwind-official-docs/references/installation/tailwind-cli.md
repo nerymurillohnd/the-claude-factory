@@ -1,6 +1,4 @@
-# Install with the Tailwind CLI
-
-Read https://tailwindcss.com/docs/installation/tailwind-cli whole. Follow it over this file.
+# [Install with the Tailwind CLI](https://tailwindcss.com/docs/installation/tailwind-cli)
 
 ## Use this path when
 

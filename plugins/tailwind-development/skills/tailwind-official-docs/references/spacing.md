@@ -1,8 +1,6 @@
 # Spacing
 
-## padding
-
-For any work, knowledge or guidance on these topics, read https://tailwindcss.com/docs/padding filtered by the topic:
+## [padding](https://tailwindcss.com/docs/padding)
 
 - [Examples](https://tailwindcss.com/docs/padding#examples)
 - [Basic example](https://tailwindcss.com/docs/padding#basic-example)
@@ -14,9 +12,7 @@ For any work, knowledge or guidance on these topics, read https://tailwindcss.co
 - [Responsive design](https://tailwindcss.com/docs/padding#responsive-design)
 - [Customizing your theme](https://tailwindcss.com/docs/padding#customizing-your-theme)
 
-## margin
-
-For any work, knowledge or guidance on these topics, read https://tailwindcss.com/docs/margin filtered by the topic:
+## [margin](https://tailwindcss.com/docs/margin)
 
 - [Examples](https://tailwindcss.com/docs/margin#examples)
 - [Basic example](https://tailwindcss.com/docs/margin#basic-example)

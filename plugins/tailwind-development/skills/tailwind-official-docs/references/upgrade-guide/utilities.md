@@ -1,6 +1,4 @@
-# Check utility changes
-
-Read each section below on https://tailwindcss.com/docs/upgrade-guide. Follow it over this file.
+# [Check utility changes](https://tailwindcss.com/docs/upgrade-guide)
 
 ## `#removed-deprecated-utilities`
 

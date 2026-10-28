@@ -1,6 +1,4 @@
-# Set up Zed
-
-Read https://zed.dev/docs/languages/tailwindcss. Follow it over this file.
+# [Set up Zed](https://zed.dev/docs/languages/tailwindcss)
 
 - Install nothing: Zed runs the Tailwind language server itself.
 - Put server settings under `lsp.tailwindcss-language-server.settings`.

@@ -27,9 +27,7 @@
 - place-items
 - place-self
 
-## flex-basis
-
-For any work, knowledge or guidance on these topics, read https://tailwindcss.com/docs/flex-basis filtered by the topic:
+## [flex-basis](https://tailwindcss.com/docs/flex-basis)
 
 - [Examples](https://tailwindcss.com/docs/flex-basis#examples)
 - [Using the spacing scale](https://tailwindcss.com/docs/flex-basis#using-the-spacing-scale)
@@ -39,9 +37,7 @@ For any work, knowledge or guidance on these topics, read https://tailwindcss.co
 - [Responsive design](https://tailwindcss.com/docs/flex-basis#responsive-design)
 - [Customizing your theme](https://tailwindcss.com/docs/flex-basis#customizing-your-theme)
 
-## flex-direction
-
-For any work, knowledge or guidance on these topics, read https://tailwindcss.com/docs/flex-direction filtered by the topic:
+## [flex-direction](https://tailwindcss.com/docs/flex-direction)
 
 - [Examples](https://tailwindcss.com/docs/flex-direction#examples)
 - [Row](https://tailwindcss.com/docs/flex-direction#row)
@@ -50,9 +46,7 @@ For any work, knowledge or guidance on these topics, read https://tailwindcss.co
 - [Column reversed](https://tailwindcss.com/docs/flex-direction#column-reversed)
 - [Responsive design](https://tailwindcss.com/docs/flex-direction#responsive-design)
 
-## flex-wrap
-
-For any work, knowledge or guidance on these topics, read https://tailwindcss.com/docs/flex-wrap filtered by the topic:
+## [flex-wrap](https://tailwindcss.com/docs/flex-wrap)
 
 - [Examples](https://tailwindcss.com/docs/flex-wrap#examples)
 - [Don't wrap](https://tailwindcss.com/docs/flex-wrap#dont-wrap)
@@ -60,9 +54,7 @@ For any work, knowledge or guidance on these topics, read https://tailwindcss.co
 - [Wrap reversed](https://tailwindcss.com/docs/flex-wrap#wrap-reversed)
 - [Responsive design](https://tailwindcss.com/docs/flex-wrap#responsive-design)
 
-## flex
-
-For any work, knowledge or guidance on these topics, read https://tailwindcss.com/docs/flex filtered by the topic:
+## [flex](https://tailwindcss.com/docs/flex)
 
 - [Examples](https://tailwindcss.com/docs/flex#examples)
 - [Basic example](https://tailwindcss.com/docs/flex#basic-example)
@@ -72,9 +64,7 @@ For any work, knowledge or guidance on these topics, read https://tailwindcss.co
 - [Using a custom value](https://tailwindcss.com/docs/flex#using-a-custom-value)
 - [Responsive design](https://tailwindcss.com/docs/flex#responsive-design)
 
-## flex-grow
-
-For any work, knowledge or guidance on these topics, read https://tailwindcss.com/docs/flex-grow filtered by the topic:
+## [flex-grow](https://tailwindcss.com/docs/flex-grow)
 
 - [Examples](https://tailwindcss.com/docs/flex-grow#examples)
 - [Allowing items to grow](https://tailwindcss.com/docs/flex-grow#allowing-items-to-grow)
@@ -83,9 +73,7 @@ For any work, knowledge or guidance on these topics, read https://tailwindcss.co
 - [Using a custom value](https://tailwindcss.com/docs/flex-grow#using-a-custom-value)
 - [Responsive design](https://tailwindcss.com/docs/flex-grow#responsive-design)
 
-## flex-shrink
-
-For any work, knowledge or guidance on these topics, read https://tailwindcss.com/docs/flex-shrink filtered by the topic:
+## [flex-shrink](https://tailwindcss.com/docs/flex-shrink)
 
 - [Examples](https://tailwindcss.com/docs/flex-shrink#examples)
 - [Allowing flex items to shrink](https://tailwindcss.com/docs/flex-shrink#allowing-flex-items-to-shrink)
@@ -93,9 +81,7 @@ For any work, knowledge or guidance on these topics, read https://tailwindcss.co
 - [Using a custom value](https://tailwindcss.com/docs/flex-shrink#using-a-custom-value)
 - [Responsive design](https://tailwindcss.com/docs/flex-shrink#responsive-design)
 
-## order
-
-For any work, knowledge or guidance on these topics, read https://tailwindcss.com/docs/order filtered by the topic:
+## [order](https://tailwindcss.com/docs/order)
 
 - [Examples](https://tailwindcss.com/docs/order#examples)
 - [Explicitly setting a sort order](https://tailwindcss.com/docs/order#explicitly-setting-a-sort-order)
@@ -104,9 +90,7 @@ For any work, knowledge or guidance on these topics, read https://tailwindcss.co
 - [Using a custom value](https://tailwindcss.com/docs/order#using-a-custom-value)
 - [Responsive design](https://tailwindcss.com/docs/order#responsive-design)
 
-## grid-template-columns
-
-For any work, knowledge or guidance on these topics, read https://tailwindcss.com/docs/grid-template-columns filtered by the topic:
+## [grid-template-columns](https://tailwindcss.com/docs/grid-template-columns)
 
 - [Examples](https://tailwindcss.com/docs/grid-template-columns#examples)
 - [Specifying the grid columns](https://tailwindcss.com/docs/grid-template-columns#specifying-the-grid-columns)
@@ -114,9 +98,7 @@ For any work, knowledge or guidance on these topics, read https://tailwindcss.co
 - [Using a custom value](https://tailwindcss.com/docs/grid-template-columns#using-a-custom-value)
 - [Responsive design](https://tailwindcss.com/docs/grid-template-columns#responsive-design)
 
-## grid-column
-
-For any work, knowledge or guidance on these topics, read https://tailwindcss.com/docs/grid-column filtered by the topic:
+## [grid-column](https://tailwindcss.com/docs/grid-column)
 
 - [Examples](https://tailwindcss.com/docs/grid-column#examples)
 - [Spanning columns](https://tailwindcss.com/docs/grid-column#spanning-columns)
@@ -124,9 +106,7 @@ For any work, knowledge or guidance on these topics, read https://tailwindcss.co
 - [Using a custom value](https://tailwindcss.com/docs/grid-column#using-a-custom-value)
 - [Responsive design](https://tailwindcss.com/docs/grid-column#responsive-design)
 
-## grid-template-rows
-
-For any work, knowledge or guidance on these topics, read https://tailwindcss.com/docs/grid-template-rows filtered by the topic:
+## [grid-template-rows](https://tailwindcss.com/docs/grid-template-rows)
 
 - [Examples](https://tailwindcss.com/docs/grid-template-rows#examples)
 - [Specifying the grid rows](https://tailwindcss.com/docs/grid-template-rows#specifying-the-grid-rows)
@@ -134,9 +114,7 @@ For any work, knowledge or guidance on these topics, read https://tailwindcss.co
 - [Using a custom value](https://tailwindcss.com/docs/grid-template-rows#using-a-custom-value)
 - [Responsive design](https://tailwindcss.com/docs/grid-template-rows#responsive-design)
 
-## grid-row
-
-For any work, knowledge or guidance on these topics, read https://tailwindcss.com/docs/grid-row filtered by the topic:
+## [grid-row](https://tailwindcss.com/docs/grid-row)
 
 - [Examples](https://tailwindcss.com/docs/grid-row#examples)
 - [Spanning rows](https://tailwindcss.com/docs/grid-row#spanning-rows)
@@ -144,35 +122,27 @@ For any work, knowledge or guidance on these topics, read https://tailwindcss.co
 - [Using a custom value](https://tailwindcss.com/docs/grid-row#using-a-custom-value)
 - [Responsive design](https://tailwindcss.com/docs/grid-row#responsive-design)
 
-## grid-auto-flow
-
-For any work, knowledge or guidance on these topics, read https://tailwindcss.com/docs/grid-auto-flow filtered by the topic:
+## [grid-auto-flow](https://tailwindcss.com/docs/grid-auto-flow)
 
 - [Examples](https://tailwindcss.com/docs/grid-auto-flow#examples)
 - [Basic example](https://tailwindcss.com/docs/grid-auto-flow#basic-example)
 - [Responsive design](https://tailwindcss.com/docs/grid-auto-flow#responsive-design)
 
-## grid-auto-columns
-
-For any work, knowledge or guidance on these topics, read https://tailwindcss.com/docs/grid-auto-columns filtered by the topic:
+## [grid-auto-columns](https://tailwindcss.com/docs/grid-auto-columns)
 
 - [Examples](https://tailwindcss.com/docs/grid-auto-columns#examples)
 - [Basic example](https://tailwindcss.com/docs/grid-auto-columns#basic-example)
 - [Using a custom value](https://tailwindcss.com/docs/grid-auto-columns#using-a-custom-value)
 - [Responsive design](https://tailwindcss.com/docs/grid-auto-columns#responsive-design)
 
-## grid-auto-rows
-
-For any work, knowledge or guidance on these topics, read https://tailwindcss.com/docs/grid-auto-rows filtered by the topic:
+## [grid-auto-rows](https://tailwindcss.com/docs/grid-auto-rows)
 
 - [Examples](https://tailwindcss.com/docs/grid-auto-rows#examples)
 - [Basic example](https://tailwindcss.com/docs/grid-auto-rows#basic-example)
 - [Using a custom value](https://tailwindcss.com/docs/grid-auto-rows#using-a-custom-value)
 - [Responsive design](https://tailwindcss.com/docs/grid-auto-rows#responsive-design)
 
-## gap
-
-For any work, knowledge or guidance on these topics, read https://tailwindcss.com/docs/gap filtered by the topic:
+## [gap](https://tailwindcss.com/docs/gap)
 
 - [Examples](https://tailwindcss.com/docs/gap#examples)
 - [Basic example](https://tailwindcss.com/docs/gap#basic-example)
@@ -180,9 +150,7 @@ For any work, knowledge or guidance on these topics, read https://tailwindcss.co
 - [Using a custom value](https://tailwindcss.com/docs/gap#using-a-custom-value)
 - [Responsive design](https://tailwindcss.com/docs/gap#responsive-design)
 
-## justify-content
-
-For any work, knowledge or guidance on these topics, read https://tailwindcss.com/docs/justify-content filtered by the topic:
+## [justify-content](https://tailwindcss.com/docs/justify-content)
 
 - [Examples](https://tailwindcss.com/docs/justify-content#examples)
 - [Start](https://tailwindcss.com/docs/justify-content#start)
@@ -195,9 +163,7 @@ For any work, knowledge or guidance on these topics, read https://tailwindcss.co
 - [Normal](https://tailwindcss.com/docs/justify-content#normal)
 - [Responsive design](https://tailwindcss.com/docs/justify-content#responsive-design)
 
-## justify-items
-
-For any work, knowledge or guidance on these topics, read https://tailwindcss.com/docs/justify-items filtered by the topic:
+## [justify-items](https://tailwindcss.com/docs/justify-items)
 
 - [Examples](https://tailwindcss.com/docs/justify-items#examples)
 - [Start](https://tailwindcss.com/docs/justify-items#start)
@@ -206,9 +172,7 @@ For any work, knowledge or guidance on these topics, read https://tailwindcss.co
 - [Stretch](https://tailwindcss.com/docs/justify-items#stretch)
 - [Responsive design](https://tailwindcss.com/docs/justify-items#responsive-design)
 
-## justify-self
-
-For any work, knowledge or guidance on these topics, read https://tailwindcss.com/docs/justify-self filtered by the topic:
+## [justify-self](https://tailwindcss.com/docs/justify-self)
 
 - [Examples](https://tailwindcss.com/docs/justify-self#examples)
 - [Auto](https://tailwindcss.com/docs/justify-self#auto)
@@ -218,9 +182,7 @@ For any work, knowledge or guidance on these topics, read https://tailwindcss.co
 - [Stretch](https://tailwindcss.com/docs/justify-self#stretch)
 - [Responsive design](https://tailwindcss.com/docs/justify-self#responsive-design)
 
-## align-content
-
-For any work, knowledge or guidance on these topics, read https://tailwindcss.com/docs/align-content filtered by the topic:
+## [align-content](https://tailwindcss.com/docs/align-content)
 
 - [Examples](https://tailwindcss.com/docs/align-content#examples)
 - [Start](https://tailwindcss.com/docs/align-content#start)
@@ -233,9 +195,7 @@ For any work, knowledge or guidance on these topics, read https://tailwindcss.co
 - [Normal](https://tailwindcss.com/docs/align-content#normal)
 - [Responsive design](https://tailwindcss.com/docs/align-content#responsive-design)
 
-## align-items
-
-For any work, knowledge or guidance on these topics, read https://tailwindcss.com/docs/align-items filtered by the topic:
+## [align-items](https://tailwindcss.com/docs/align-items)
 
 - [Examples](https://tailwindcss.com/docs/align-items#examples)
 - [Stretch](https://tailwindcss.com/docs/align-items#stretch)
@@ -246,9 +206,7 @@ For any work, knowledge or guidance on these topics, read https://tailwindcss.co
 - [Last baseline](https://tailwindcss.com/docs/align-items#last-baseline)
 - [Responsive design](https://tailwindcss.com/docs/align-items#responsive-design)
 
-## align-self
-
-For any work, knowledge or guidance on these topics, read https://tailwindcss.com/docs/align-self filtered by the topic:
+## [align-self](https://tailwindcss.com/docs/align-self)
 
 - [Examples](https://tailwindcss.com/docs/align-self#examples)
 - [Auto](https://tailwindcss.com/docs/align-self#auto)
@@ -260,9 +218,7 @@ For any work, knowledge or guidance on these topics, read https://tailwindcss.co
 - [Last baseline](https://tailwindcss.com/docs/align-self#last-baseline)
 - [Responsive design](https://tailwindcss.com/docs/align-self#responsive-design)
 
-## place-content
-
-For any work, knowledge or guidance on these topics, read https://tailwindcss.com/docs/place-content filtered by the topic:
+## [place-content](https://tailwindcss.com/docs/place-content)
 
 - [Examples](https://tailwindcss.com/docs/place-content#examples)
 - [Center](https://tailwindcss.com/docs/place-content#center)
@@ -274,9 +230,7 @@ For any work, knowledge or guidance on these topics, read https://tailwindcss.co
 - [Stretch](https://tailwindcss.com/docs/place-content#stretch)
 - [Responsive design](https://tailwindcss.com/docs/place-content#responsive-design)
 
-## place-items
-
-For any work, knowledge or guidance on these topics, read https://tailwindcss.com/docs/place-items filtered by the topic:
+## [place-items](https://tailwindcss.com/docs/place-items)
 
 - [Examples](https://tailwindcss.com/docs/place-items#examples)
 - [Start](https://tailwindcss.com/docs/place-items#start)
@@ -285,9 +239,7 @@ For any work, knowledge or guidance on these topics, read https://tailwindcss.co
 - [Stretch](https://tailwindcss.com/docs/place-items#stretch)
 - [Responsive design](https://tailwindcss.com/docs/place-items#responsive-design)
 
-## place-self
-
-For any work, knowledge or guidance on these topics, read https://tailwindcss.com/docs/place-self filtered by the topic:
+## [place-self](https://tailwindcss.com/docs/place-self)
 
 - [Examples](https://tailwindcss.com/docs/place-self#examples)
 - [Auto](https://tailwindcss.com/docs/place-self#auto)

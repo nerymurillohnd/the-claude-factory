@@ -22,9 +22,7 @@
 - visibility
 - z-index
 
-## aspect-ratio
-
-For any work, knowledge or guidance on these topics, read https://tailwindcss.com/docs/aspect-ratio filtered by the topic:
+## [aspect-ratio](https://tailwindcss.com/docs/aspect-ratio)
 
 - [Examples](https://tailwindcss.com/docs/aspect-ratio#examples)
 - [Basic example](https://tailwindcss.com/docs/aspect-ratio#basic-example)
@@ -33,9 +31,7 @@ For any work, knowledge or guidance on these topics, read https://tailwindcss.co
 - [Responsive design](https://tailwindcss.com/docs/aspect-ratio#responsive-design)
 - [Customizing your theme](https://tailwindcss.com/docs/aspect-ratio#customizing-your-theme)
 
-## columns
-
-For any work, knowledge or guidance on these topics, read https://tailwindcss.com/docs/columns filtered by the topic:
+## [columns](https://tailwindcss.com/docs/columns)
 
 - [Examples](https://tailwindcss.com/docs/columns#examples)
 - [Setting by number](https://tailwindcss.com/docs/columns#setting-by-number)
@@ -45,50 +41,38 @@ For any work, knowledge or guidance on these topics, read https://tailwindcss.co
 - [Responsive design](https://tailwindcss.com/docs/columns#responsive-design)
 - [Customizing your theme](https://tailwindcss.com/docs/columns#customizing-your-theme)
 
-## break-after
-
-For any work, knowledge or guidance on these topics, read https://tailwindcss.com/docs/break-after filtered by the topic:
+## [break-after](https://tailwindcss.com/docs/break-after)
 
 - [Examples](https://tailwindcss.com/docs/break-after#examples)
 - [Basic example](https://tailwindcss.com/docs/break-after#basic-example)
 - [Responsive design](https://tailwindcss.com/docs/break-after#responsive-design)
 
-## break-before
-
-For any work, knowledge or guidance on these topics, read https://tailwindcss.com/docs/break-before filtered by the topic:
+## [break-before](https://tailwindcss.com/docs/break-before)
 
 - [Examples](https://tailwindcss.com/docs/break-before#examples)
 - [Basic example](https://tailwindcss.com/docs/break-before#basic-example)
 - [Responsive design](https://tailwindcss.com/docs/break-before#responsive-design)
 
-## break-inside
-
-For any work, knowledge or guidance on these topics, read https://tailwindcss.com/docs/break-inside filtered by the topic:
+## [break-inside](https://tailwindcss.com/docs/break-inside)
 
 - [Examples](https://tailwindcss.com/docs/break-inside#examples)
 - [Basic example](https://tailwindcss.com/docs/break-inside#basic-example)
 - [Responsive design](https://tailwindcss.com/docs/break-inside#responsive-design)
 
-## box-decoration-break
-
-For any work, knowledge or guidance on these topics, read https://tailwindcss.com/docs/box-decoration-break filtered by the topic:
+## [box-decoration-break](https://tailwindcss.com/docs/box-decoration-break)
 
 - [Examples](https://tailwindcss.com/docs/box-decoration-break#examples)
 - [Basic example](https://tailwindcss.com/docs/box-decoration-break#basic-example)
 - [Responsive design](https://tailwindcss.com/docs/box-decoration-break#responsive-design)
 
-## box-sizing
-
-For any work, knowledge or guidance on these topics, read https://tailwindcss.com/docs/box-sizing filtered by the topic:
+## [box-sizing](https://tailwindcss.com/docs/box-sizing)
 
 - [Examples](https://tailwindcss.com/docs/box-sizing#examples)
 - [Including borders and padding](https://tailwindcss.com/docs/box-sizing#including-borders-and-padding)
 - [Excluding borders and padding](https://tailwindcss.com/docs/box-sizing#excluding-borders-and-padding)
 - [Responsive design](https://tailwindcss.com/docs/box-sizing#responsive-design)
 
-## display
-
-For any work, knowledge or guidance on these topics, read https://tailwindcss.com/docs/display filtered by the topic:
+## [display](https://tailwindcss.com/docs/display)
 
 - [Examples](https://tailwindcss.com/docs/display#examples)
 - [Block and Inline](https://tailwindcss.com/docs/display#block-and-inline)
@@ -103,9 +87,7 @@ For any work, knowledge or guidance on these topics, read https://tailwindcss.co
 - [Screen-reader only](https://tailwindcss.com/docs/display#screen-reader-only)
 - [Responsive design](https://tailwindcss.com/docs/display#responsive-design)
 
-## float
-
-For any work, knowledge or guidance on these topics, read https://tailwindcss.com/docs/float filtered by the topic:
+## [float](https://tailwindcss.com/docs/float)
 
 - [Examples](https://tailwindcss.com/docs/float#examples)
 - [Floating elements to the right](https://tailwindcss.com/docs/float#floating-elements-to-the-right)
@@ -114,9 +96,7 @@ For any work, knowledge or guidance on these topics, read https://tailwindcss.co
 - [Disabling a float](https://tailwindcss.com/docs/float#disabling-a-float)
 - [Responsive design](https://tailwindcss.com/docs/float#responsive-design)
 
-## clear
-
-For any work, knowledge or guidance on these topics, read https://tailwindcss.com/docs/clear filtered by the topic:
+## [clear](https://tailwindcss.com/docs/clear)
 
 - [Examples](https://tailwindcss.com/docs/clear#examples)
 - [Clearing left](https://tailwindcss.com/docs/clear#clearing-left)
@@ -126,17 +106,13 @@ For any work, knowledge or guidance on these topics, read https://tailwindcss.co
 - [Disabling clears](https://tailwindcss.com/docs/clear#disabling-clears)
 - [Responsive design](https://tailwindcss.com/docs/clear#responsive-design)
 
-## isolation
-
-For any work, knowledge or guidance on these topics, read https://tailwindcss.com/docs/isolation filtered by the topic:
+## [isolation](https://tailwindcss.com/docs/isolation)
 
 - [Examples](https://tailwindcss.com/docs/isolation#examples)
 - [Basic example](https://tailwindcss.com/docs/isolation#basic-example)
 - [Responsive design](https://tailwindcss.com/docs/isolation#responsive-design)
 
-## object-fit
-
-For any work, knowledge or guidance on these topics, read https://tailwindcss.com/docs/object-fit filtered by the topic:
+## [object-fit](https://tailwindcss.com/docs/object-fit)
 
 - [Examples](https://tailwindcss.com/docs/object-fit#examples)
 - [Resizing to cover](https://tailwindcss.com/docs/object-fit#resizing-to-cover)
@@ -146,18 +122,14 @@ For any work, knowledge or guidance on these topics, read https://tailwindcss.co
 - [Using the original size](https://tailwindcss.com/docs/object-fit#using-the-original-size)
 - [Responsive design](https://tailwindcss.com/docs/object-fit#responsive-design)
 
-## object-position
-
-For any work, knowledge or guidance on these topics, read https://tailwindcss.com/docs/object-position filtered by the topic:
+## [object-position](https://tailwindcss.com/docs/object-position)
 
 - [Examples](https://tailwindcss.com/docs/object-position#examples)
 - [Basic example](https://tailwindcss.com/docs/object-position#basic-example)
 - [Using a custom value](https://tailwindcss.com/docs/object-position#using-a-custom-value)
 - [Responsive design](https://tailwindcss.com/docs/object-position#responsive-design)
 
-## overflow
-
-For any work, knowledge or guidance on these topics, read https://tailwindcss.com/docs/overflow filtered by the topic:
+## [overflow](https://tailwindcss.com/docs/overflow)
 
 - [Examples](https://tailwindcss.com/docs/overflow#examples)
 - [Showing content that overflows](https://tailwindcss.com/docs/overflow#showing-content-that-overflows)
@@ -170,9 +142,7 @@ For any work, knowledge or guidance on these topics, read https://tailwindcss.co
 - [Scrolling in all directions](https://tailwindcss.com/docs/overflow#scrolling-in-all-directions)
 - [Responsive design](https://tailwindcss.com/docs/overflow#responsive-design)
 
-## overscroll-behavior
-
-For any work, knowledge or guidance on these topics, read https://tailwindcss.com/docs/overscroll-behavior filtered by the topic:
+## [overscroll-behavior](https://tailwindcss.com/docs/overscroll-behavior)
 
 - [Examples](https://tailwindcss.com/docs/overscroll-behavior#examples)
 - [Preventing parent overscrolling](https://tailwindcss.com/docs/overscroll-behavior#preventing-parent-overscrolling)
@@ -180,9 +150,7 @@ For any work, knowledge or guidance on these topics, read https://tailwindcss.co
 - [Using the default overscroll behavior](https://tailwindcss.com/docs/overscroll-behavior#using-the-default-overscroll-behavior)
 - [Responsive design](https://tailwindcss.com/docs/overscroll-behavior#responsive-design)
 
-## position
-
-For any work, knowledge or guidance on these topics, read https://tailwindcss.com/docs/position filtered by the topic:
+## [position](https://tailwindcss.com/docs/position)
 
 - [Examples](https://tailwindcss.com/docs/position#examples)
 - [Statically positioning elements](https://tailwindcss.com/docs/position#statically-positioning-elements)
@@ -192,9 +160,7 @@ For any work, knowledge or guidance on these topics, read https://tailwindcss.co
 - [Sticky positioning elements](https://tailwindcss.com/docs/position#sticky-positioning-elements)
 - [Responsive design](https://tailwindcss.com/docs/position#responsive-design)
 
-## top / right / bottom / left
-
-For any work, knowledge or guidance on these topics, read https://tailwindcss.com/docs/top-right-bottom-left filtered by the topic:
+## [top / right / bottom / left](https://tailwindcss.com/docs/top-right-bottom-left)
 
 - [Examples](https://tailwindcss.com/docs/top-right-bottom-left#examples)
 - [Basic example](https://tailwindcss.com/docs/top-right-bottom-left#basic-example)
@@ -204,9 +170,7 @@ For any work, knowledge or guidance on these topics, read https://tailwindcss.co
 - [Responsive design](https://tailwindcss.com/docs/top-right-bottom-left#responsive-design)
 - [Customizing your theme](https://tailwindcss.com/docs/top-right-bottom-left#customizing-your-theme)
 
-## visibility
-
-For any work, knowledge or guidance on these topics, read https://tailwindcss.com/docs/visibility filtered by the topic:
+## [visibility](https://tailwindcss.com/docs/visibility)
 
 - [Examples](https://tailwindcss.com/docs/visibility#examples)
 - [Making elements invisible](https://tailwindcss.com/docs/visibility#making-elements-invisible)
@@ -214,9 +178,7 @@ For any work, knowledge or guidance on these topics, read https://tailwindcss.co
 - [Making elements visible](https://tailwindcss.com/docs/visibility#making-elements-visible)
 - [Responsive design](https://tailwindcss.com/docs/visibility#responsive-design)
 
-## z-index
-
-For any work, knowledge or guidance on these topics, read https://tailwindcss.com/docs/z-index filtered by the topic:
+## [z-index](https://tailwindcss.com/docs/z-index)
 
 - [Examples](https://tailwindcss.com/docs/z-index#examples)
 - [Basic example](https://tailwindcss.com/docs/z-index#basic-example)

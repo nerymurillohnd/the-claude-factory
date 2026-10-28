@@ -1,6 +1,4 @@
-# Colors
-
-For any work, knowledge or guidance on these topics, read https://tailwindcss.com/docs/colors filtered by the topic:
+# [Colors](https://tailwindcss.com/docs/colors)
 
 - [Working with colors](https://tailwindcss.com/docs/colors#working-with-colors)
 - [Using color utilities](https://tailwindcss.com/docs/colors#using-color-utilities)

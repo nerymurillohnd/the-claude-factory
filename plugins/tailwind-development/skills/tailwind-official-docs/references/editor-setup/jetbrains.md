@@ -1,6 +1,4 @@
-# Set up JetBrains IDEs
-
-Read https://www.jetbrains.com/help/webstorm/tailwind-css.html. Follow it over this file.
+# [Set up JetBrains IDEs](https://www.jetbrains.com/help/webstorm/tailwind-css.html)
 
 ## Set it up
 

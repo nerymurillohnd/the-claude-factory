@@ -1,6 +1,4 @@
-# Dark mode
-
-For any work, knowledge or guidance on these topics, read https://tailwindcss.com/docs/dark-mode filtered by the topic:
+# [Dark mode](https://tailwindcss.com/docs/dark-mode)
 
 - [Overview](https://tailwindcss.com/docs/dark-mode#overview)
 - [Toggling dark mode manually](https://tailwindcss.com/docs/dark-mode#toggling-dark-mode-manually)

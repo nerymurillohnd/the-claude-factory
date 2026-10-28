@@ -1,7 +1,4 @@
-# Set up Tailwind CSS IntelliSense in VS Code and Cursor
-
-Read the README for every setting: https://github.com/tailwindlabs/tailwindcss-intellisense
-Follow it over this file.
+# [Set up Tailwind CSS IntelliSense in VS Code and Cursor](https://github.com/tailwindlabs/tailwindcss-intellisense)
 
 ## Install
 

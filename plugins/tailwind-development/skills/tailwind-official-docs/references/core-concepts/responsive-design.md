@@ -1,6 +1,4 @@
-# Responsive design
-
-For any work, knowledge or guidance on these topics, read https://tailwindcss.com/docs/responsive-design filtered by the topic:
+# [Responsive design](https://tailwindcss.com/docs/responsive-design)
 
 - [Overview](https://tailwindcss.com/docs/responsive-design#overview)
 - [Working mobile-first](https://tailwindcss.com/docs/responsive-design#working-mobile-first)

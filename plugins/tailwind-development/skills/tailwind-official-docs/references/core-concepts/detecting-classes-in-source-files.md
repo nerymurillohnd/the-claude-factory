@@ -1,6 +1,4 @@
-# Detecting classes in source files
-
-For any work, knowledge or guidance on these topics, read https://tailwindcss.com/docs/detecting-classes-in-source-files filtered by the topic:
+# [Detecting classes in source files](https://tailwindcss.com/docs/detecting-classes-in-source-files)
 
 - [Overview](https://tailwindcss.com/docs/detecting-classes-in-source-files#overview)
 - [How classes are detected](https://tailwindcss.com/docs/detecting-classes-in-source-files#how-classes-are-detected)

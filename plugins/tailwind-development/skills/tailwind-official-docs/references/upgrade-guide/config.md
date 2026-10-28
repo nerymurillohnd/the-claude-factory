@@ -1,6 +1,4 @@
-# Check configuration and build changes
-
-Read each section below on https://tailwindcss.com/docs/upgrade-guide. Follow it over this file.
+# [Check configuration and build changes](https://tailwindcss.com/docs/upgrade-guide)
 
 ## `#browser-requirements`
 

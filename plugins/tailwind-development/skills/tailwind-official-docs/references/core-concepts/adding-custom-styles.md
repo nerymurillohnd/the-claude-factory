@@ -1,6 +1,4 @@
-# Adding custom styles
-
-For any work, knowledge or guidance on these topics, read https://tailwindcss.com/docs/adding-custom-styles filtered by the topic:
+# [Adding custom styles](https://tailwindcss.com/docs/adding-custom-styles)
 
 - [Customizing your theme](https://tailwindcss.com/docs/adding-custom-styles#customizing-your-theme)
 - [Using arbitrary values](https://tailwindcss.com/docs/adding-custom-styles#using-arbitrary-values)

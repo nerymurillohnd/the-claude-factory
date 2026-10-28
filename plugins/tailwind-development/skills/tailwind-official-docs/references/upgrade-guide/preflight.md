@@ -1,6 +1,4 @@
-# Check Preflight changes
-
-Read https://tailwindcss.com/docs/upgrade-guide#preflight-changes. Follow it over this file.
+# [Check Preflight changes](https://tailwindcss.com/docs/upgrade-guide#preflight-changes)
 
 - Check placeholders that relied on the old gray (`#new-default-placeholder-color`).
 - Check buttons that relied on `cursor: pointer` (`#buttons-use-the-default-cursor`).

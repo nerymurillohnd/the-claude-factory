@@ -1,6 +1,4 @@
-# Fix editor warnings on Tailwind's CSS syntax
-
-Read https://tailwindcss.com/docs/editor-setup#syntax-support. Follow it over this file.
+# [Fix editor warnings on Tailwind's CSS syntax](https://tailwindcss.com/docs/editor-setup#syntax-support)
 
 - Never edit valid CSS to silence the editor.
 - VS Code and Cursor: set `files.associations` to `"*.css": "tailwindcss"`.

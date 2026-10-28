@@ -1,6 +1,4 @@
-# Theme variables
-
-For any work, knowledge or guidance on these topics, read https://tailwindcss.com/docs/theme filtered by the topic:
+# [Theme variables](https://tailwindcss.com/docs/theme)
 
 - [Overview](https://tailwindcss.com/docs/theme#overview)
 - [What are theme variables?](https://tailwindcss.com/docs/theme#what-are-theme-variables)

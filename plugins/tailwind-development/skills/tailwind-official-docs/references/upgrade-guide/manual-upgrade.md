@@ -1,8 +1,4 @@
-# Upgrade by hand
-
-Read https://tailwindcss.com/docs/upgrade-guide#upgrading-manually. Follow it over this file.
-
-Use this when the upgrade tool cannot run or fails.
+# [Upgrade by hand](https://tailwindcss.com/docs/upgrade-guide#upgrading-manually)
 
 ## `#using-postcss`
 

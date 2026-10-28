@@ -1,6 +1,4 @@
-# Check syntax changes
-
-Read each section below on https://tailwindcss.com/docs/upgrade-guide. Follow it over this file.
+# [Check syntax changes](https://tailwindcss.com/docs/upgrade-guide)
 
 ## `#removed-tailwind-directives`
 

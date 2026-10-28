@@ -1,7 +1,4 @@
-# Run the upgrade tool
-
-Read https://tailwindcss.com/docs/upgrade-guide#using-the-upgrade-tool.
-Read `#changes-from-v3` on the same page. Follow both over this file.
+# [Run the upgrade tool](https://tailwindcss.com/docs/upgrade-guide#using-the-upgrade-tool)
 
 1. Ask before running it if the working tree has uncommitted changes.
 2. Ask before running it if the user only asked a question.

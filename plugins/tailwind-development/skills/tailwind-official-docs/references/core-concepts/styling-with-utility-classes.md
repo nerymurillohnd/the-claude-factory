@@ -1,6 +1,4 @@
-# Styling with utility classes
-
-For any work, knowledge or guidance on these topics, read https://tailwindcss.com/docs/styling-with-utility-classes filtered by the topic:
+# [Styling with utility classes](https://tailwindcss.com/docs/styling-with-utility-classes)
 
 - [Why not just use inline styles?](https://tailwindcss.com/docs/styling-with-utility-classes#why-not-just-use-inline-styles)
 - [Thinking in utility classes](https://tailwindcss.com/docs/styling-with-utility-classes#thinking-in-utility-classes)

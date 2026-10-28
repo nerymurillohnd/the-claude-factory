@@ -1,6 +1,4 @@
-# Install through the Vite plugin
-
-Read https://tailwindcss.com/docs/installation/using-vite whole. Follow it over this file.
+# [Install through the Vite plugin](https://tailwindcss.com/docs/installation/using-vite)
 
 ## Use this path when
 

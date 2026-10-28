@@ -1,7 +1,4 @@
-# Set up class sorting with Prettier
-
-Read the README for every option: https://github.com/tailwindlabs/prettier-plugin-tailwindcss
-Follow it over this file.
+# [Set up class sorting with Prettier](https://github.com/tailwindlabs/prettier-plugin-tailwindcss)
 
 ## Set it up
 

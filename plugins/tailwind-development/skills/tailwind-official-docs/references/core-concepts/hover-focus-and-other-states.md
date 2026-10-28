@@ -1,6 +1,4 @@
-# Hover, focus, and other states
-
-For any work, knowledge or guidance on these topics, read https://tailwindcss.com/docs/hover-focus-and-other-states filtered by the topic:
+# [Hover, focus, and other states](https://tailwindcss.com/docs/hover-focus-and-other-states)
 
 - [Pseudo-classes](https://tailwindcss.com/docs/hover-focus-and-other-states#pseudo-classes)
 - [:hover, :focus, and :active](https://tailwindcss.com/docs/hover-focus-and-other-states#hover-focus-and-active)

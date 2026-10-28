@@ -1,6 +1,4 @@
-# Functions and directives
-
-For any work, knowledge or guidance on these topics, read https://tailwindcss.com/docs/functions-and-directives filtered by the topic:
+# [Functions and directives](https://tailwindcss.com/docs/functions-and-directives)
 
 - [Directives](https://tailwindcss.com/docs/functions-and-directives#directives)
 - [@import](https://tailwindcss.com/docs/functions-and-directives#import-directive)

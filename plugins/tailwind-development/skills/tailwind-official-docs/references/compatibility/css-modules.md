@@ -1,6 +1,4 @@
-# Use Tailwind with CSS modules
-
-Read https://tailwindcss.com/docs/compatibility#css-modules. Follow it over this file.
+# [Use Tailwind with CSS modules](https://tailwindcss.com/docs/compatibility#css-modules)
 
 - Prefer utility classes in the markup over new CSS modules.
 - Keep existing CSS modules working; do not rewrite them unasked.

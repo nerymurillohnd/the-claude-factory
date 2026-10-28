@@ -1,8 +1,6 @@
 # Base styles
 
-## Preflight
-
-For any work, knowledge or guidance on these topics, read https://tailwindcss.com/docs/preflight filtered by the topic:
+## [Preflight](https://tailwindcss.com/docs/preflight)
 
 - [Overview](https://tailwindcss.com/docs/preflight#overview)
 - [Margins are removed](https://tailwindcss.com/docs/preflight#margins-are-removed)

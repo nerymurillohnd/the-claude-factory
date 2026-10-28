@@ -1,6 +1,4 @@
-# Use the Play CDN
-
-Read https://tailwindcss.com/docs/installation/play-cdn whole. Follow it over this file.
+# [Use the Play CDN](https://tailwindcss.com/docs/installation/play-cdn)
 
 ## Use it when
 

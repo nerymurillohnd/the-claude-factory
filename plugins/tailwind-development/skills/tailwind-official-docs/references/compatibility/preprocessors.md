@@ -1,6 +1,4 @@
-# Replace Sass, Less and Stylus
-
-Read https://tailwindcss.com/docs/compatibility#sass-less-and-stylus. Follow it over this file.
+# [Replace Sass, Less and Stylus](https://tailwindcss.com/docs/compatibility#sass-less-and-stylus)
 
 - Never run Tailwind v4 through Sass, Less or Stylus.
 - Tell the user the project needs plain `.css` files for Tailwind.

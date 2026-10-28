@@ -15,9 +15,7 @@
 - min-block-size
 - max-block-size
 
-## width
-
-For any work, knowledge or guidance on these topics, read https://tailwindcss.com/docs/width filtered by the topic:
+## [width](https://tailwindcss.com/docs/width)
 
 - [Examples](https://tailwindcss.com/docs/width#examples)
 - [Basic example](https://tailwindcss.com/docs/width#basic-example)
@@ -30,9 +28,7 @@ For any work, knowledge or guidance on these topics, read https://tailwindcss.co
 - [Responsive design](https://tailwindcss.com/docs/width#responsive-design)
 - [Customizing your theme](https://tailwindcss.com/docs/width#customizing-your-theme)
 
-## min-width
-
-For any work, knowledge or guidance on these topics, read https://tailwindcss.com/docs/min-width filtered by the topic:
+## [min-width](https://tailwindcss.com/docs/min-width)
 
 - [Examples](https://tailwindcss.com/docs/min-width#examples)
 - [Basic example](https://tailwindcss.com/docs/min-width#basic-example)
@@ -42,9 +38,7 @@ For any work, knowledge or guidance on these topics, read https://tailwindcss.co
 - [Responsive design](https://tailwindcss.com/docs/min-width#responsive-design)
 - [Customizing your theme](https://tailwindcss.com/docs/min-width#customizing-your-theme)
 
-## max-width
-
-For any work, knowledge or guidance on these topics, read https://tailwindcss.com/docs/max-width filtered by the topic:
+## [max-width](https://tailwindcss.com/docs/max-width)
 
 - [Examples](https://tailwindcss.com/docs/max-width#examples)
 - [Basic example](https://tailwindcss.com/docs/max-width#basic-example)
@@ -55,9 +49,7 @@ For any work, knowledge or guidance on these topics, read https://tailwindcss.co
 - [Responsive design](https://tailwindcss.com/docs/max-width#responsive-design)
 - [Customizing your theme](https://tailwindcss.com/docs/max-width#customizing-your-theme)
 
-## height
-
-For any work, knowledge or guidance on these topics, read https://tailwindcss.com/docs/height filtered by the topic:
+## [height](https://tailwindcss.com/docs/height)
 
 - [Examples](https://tailwindcss.com/docs/height#examples)
 - [Basic example](https://tailwindcss.com/docs/height#basic-example)
@@ -71,9 +63,7 @@ For any work, knowledge or guidance on these topics, read https://tailwindcss.co
 - [Responsive design](https://tailwindcss.com/docs/height#responsive-design)
 - [Customizing your theme](https://tailwindcss.com/docs/height#customizing-your-theme)
 
-## min-height
-
-For any work, knowledge or guidance on these topics, read https://tailwindcss.com/docs/min-height filtered by the topic:
+## [min-height](https://tailwindcss.com/docs/min-height)
 
 - [Examples](https://tailwindcss.com/docs/min-height#examples)
 - [Basic example](https://tailwindcss.com/docs/min-height#basic-example)
@@ -82,9 +72,7 @@ For any work, knowledge or guidance on these topics, read https://tailwindcss.co
 - [Responsive design](https://tailwindcss.com/docs/min-height#responsive-design)
 - [Customizing your theme](https://tailwindcss.com/docs/min-height#customizing-your-theme)
 
-## max-height
-
-For any work, knowledge or guidance on these topics, read https://tailwindcss.com/docs/max-height filtered by the topic:
+## [max-height](https://tailwindcss.com/docs/max-height)
 
 - [Examples](https://tailwindcss.com/docs/max-height#examples)
 - [Basic example](https://tailwindcss.com/docs/max-height#basic-example)
@@ -93,9 +81,7 @@ For any work, knowledge or guidance on these topics, read https://tailwindcss.co
 - [Responsive design](https://tailwindcss.com/docs/max-height#responsive-design)
 - [Customizing your theme](https://tailwindcss.com/docs/max-height#customizing-your-theme)
 
-## inline-size
-
-For any work, knowledge or guidance on these topics, read https://tailwindcss.com/docs/inline-size filtered by the topic:
+## [inline-size](https://tailwindcss.com/docs/inline-size)
 
 - [Examples](https://tailwindcss.com/docs/inline-size#examples)
 - [Basic example](https://tailwindcss.com/docs/inline-size#basic-example)
@@ -107,9 +93,7 @@ For any work, knowledge or guidance on these topics, read https://tailwindcss.co
 - [Responsive design](https://tailwindcss.com/docs/inline-size#responsive-design)
 - [Customizing your theme](https://tailwindcss.com/docs/inline-size#customizing-your-theme)
 
-## min-inline-size
-
-For any work, knowledge or guidance on these topics, read https://tailwindcss.com/docs/min-inline-size filtered by the topic:
+## [min-inline-size](https://tailwindcss.com/docs/min-inline-size)
 
 - [Examples](https://tailwindcss.com/docs/min-inline-size#examples)
 - [Basic example](https://tailwindcss.com/docs/min-inline-size#basic-example)
@@ -119,9 +103,7 @@ For any work, knowledge or guidance on these topics, read https://tailwindcss.co
 - [Responsive design](https://tailwindcss.com/docs/min-inline-size#responsive-design)
 - [Customizing your theme](https://tailwindcss.com/docs/min-inline-size#customizing-your-theme)
 
-## max-inline-size
-
-For any work, knowledge or guidance on these topics, read https://tailwindcss.com/docs/max-inline-size filtered by the topic:
+## [max-inline-size](https://tailwindcss.com/docs/max-inline-size)
 
 - [Examples](https://tailwindcss.com/docs/max-inline-size#examples)
 - [Basic example](https://tailwindcss.com/docs/max-inline-size#basic-example)
@@ -131,9 +113,7 @@ For any work, knowledge or guidance on these topics, read https://tailwindcss.co
 - [Responsive design](https://tailwindcss.com/docs/max-inline-size#responsive-design)
 - [Customizing your theme](https://tailwindcss.com/docs/max-inline-size#customizing-your-theme)
 
-## block-size
-
-For any work, knowledge or guidance on these topics, read https://tailwindcss.com/docs/block-size filtered by the topic:
+## [block-size](https://tailwindcss.com/docs/block-size)
 
 - [Examples](https://tailwindcss.com/docs/block-size#examples)
 - [Basic example](https://tailwindcss.com/docs/block-size#basic-example)
@@ -146,9 +126,7 @@ For any work, knowledge or guidance on these topics, read https://tailwindcss.co
 - [Responsive design](https://tailwindcss.com/docs/block-size#responsive-design)
 - [Customizing your theme](https://tailwindcss.com/docs/block-size#customizing-your-theme)
 
-## min-block-size
-
-For any work, knowledge or guidance on these topics, read https://tailwindcss.com/docs/min-block-size filtered by the topic:
+## [min-block-size](https://tailwindcss.com/docs/min-block-size)
 
 - [Examples](https://tailwindcss.com/docs/min-block-size#examples)
 - [Basic example](https://tailwindcss.com/docs/min-block-size#basic-example)
@@ -157,9 +135,7 @@ For any work, knowledge or guidance on these topics, read https://tailwindcss.co
 - [Responsive design](https://tailwindcss.com/docs/min-block-size#responsive-design)
 - [Customizing your theme](https://tailwindcss.com/docs/min-block-size#customizing-your-theme)
 
-## max-block-size
-
-For any work, knowledge or guidance on these topics, read https://tailwindcss.com/docs/max-block-size filtered by the topic:
+## [max-block-size](https://tailwindcss.com/docs/max-block-size)
 
 - [Examples](https://tailwindcss.com/docs/max-block-size#examples)
 - [Basic example](https://tailwindcss.com/docs/max-block-size#basic-example)

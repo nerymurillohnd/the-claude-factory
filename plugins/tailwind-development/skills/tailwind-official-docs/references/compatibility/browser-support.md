@@ -1,6 +1,4 @@
-# Check browser support
-
-Read https://tailwindcss.com/docs/compatibility#browser-support. Follow it over this file.
+# [Check browser support](https://tailwindcss.com/docs/compatibility#browser-support)
 
 - Read the browser floor on the page; never quote it from memory.
 - Compare it with the project's targets: Browserslist, analytics or the user's requirement.

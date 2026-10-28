@@ -1,6 +1,4 @@
-# Install through the PostCSS plugin
-
-Read https://tailwindcss.com/docs/installation/using-postcss whole. Follow it over this file.
+# [Install through the PostCSS plugin](https://tailwindcss.com/docs/installation/using-postcss)
 
 ## Use this path when
 

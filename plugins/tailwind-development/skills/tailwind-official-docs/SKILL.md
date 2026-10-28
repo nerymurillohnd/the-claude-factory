@@ -14,7 +14,8 @@ This skill is a documentation router, not a replacement for the documentation. I
 
 ## Installation
 
-Read the matching reference for any installation task: setup, fix or question.
+For any installation task (setup, fix or question), read the matching reference and the page its title links.
+Follow the page where they differ.
 
 **Vite**: `vite.config.*`, Vite frameworks → See [references/installation/using-vite.md](references/installation/using-vite.md)
 **PostCSS**: `postcss.config.*`, Next.js, Angular → See [references/installation/using-postcss.md](references/installation/using-postcss.md)
@@ -25,7 +26,8 @@ If the framework has its own guide in the topic index, read that page instead.
 
 ## Editor setup
 
-Read the matching reference for any editor or formatter task: setup, fix or question.
+For any editor or formatter task (setup, fix or question), read the matching reference and the page its title links.
+Follow the page where they differ.
 
 **Syntax support**: warnings on `@theme`, `@apply`, `@source` → See [references/editor-setup/syntax-support.md](references/editor-setup/syntax-support.md)
 **VS Code and Cursor**: IntelliSense extension, settings → See [references/editor-setup/vscode-intellisense.md](references/editor-setup/vscode-intellisense.md)
@@ -35,7 +37,8 @@ Read the matching reference for any editor or formatter task: setup, fix or ques
 
 ## Compatibility
 
-Read the matching reference for any compatibility task: setup, fix or question.
+For any compatibility task (setup, fix or question), read the matching reference and the page section its title links.
+Follow the page where they differ.
 
 **Browsers**: browser floor, project targets → See [references/compatibility/browser-support.md](references/compatibility/browser-support.md)
 **Preprocessors**: Sass, Less, Stylus → See [references/compatibility/preprocessors.md](references/compatibility/preprocessors.md)
@@ -44,8 +47,9 @@ Read the matching reference for any compatibility task: setup, fix or question.
 
 ## Upgrade guide
 
-Read every reference below, in order, to migrate a project.
-Read only the matching reference for one v3 habit or a question.
+To migrate a project, read every reference below in order, with the upgrade-guide sections each one links.
+For one v3 habit or a question, read only the matching reference.
+Follow the page where they differ.
 
 1. **Upgrade tool**: run it first → See [references/upgrade-guide/upgrade-tool.md](references/upgrade-guide/upgrade-tool.md)
 2. **Manual upgrade**: when the tool cannot run → See [references/upgrade-guide/manual-upgrade.md](references/upgrade-guide/manual-upgrade.md)
@@ -57,7 +61,8 @@ Read only the matching reference for one v3 habit or a question.
 
 ## Core concepts
 
-Read the matching reference for any core concept task: work, knowledge or guidance.
+For any work, knowledge or guidance on a core concept, read the matching reference.
+Then read the linked page sections for your topic.
 
 **Utility classes**: composition, arbitrary values, conflicts, important, prefix → See [references/core-concepts/styling-with-utility-classes.md](references/core-concepts/styling-with-utility-classes.md)
 **States**: hover, focus, group, peer, pseudo-elements, ARIA, data, custom variants → See [references/core-concepts/hover-focus-and-other-states.md](references/core-concepts/hover-focus-and-other-states.md)
@@ -71,7 +76,8 @@ Read the matching reference for any core concept task: work, knowledge or guidan
 
 ## Utilities
 
-Read the matching reference for any utility task: work, knowledge or guidance.
+For any work, knowledge or guidance on a utility, read the matching reference.
+Then read the linked page sections for your topic.
 
 **Base styles**: Preflight resets, extending or disabling Preflight → See [references/base-styles.md](references/base-styles.md)
 **Layout**: aspect-ratio, columns, display, float, object-fit, overflow, position, inset, z-index → See [references/layout.md](references/layout.md)
