@@ -40,6 +40,7 @@
 | 2026-10-27 | DEBT-014 | obsolete | `release.yml` published release notes built by `release-notes.py` for two new tags | none |
 | 2026-10-27 | DEBT-026 | obsolete | `.claude/rules/readme-md.md` loads when a README is read | none |
 | 2026-10-28 | DEBT-025 | resolved | The version gate and `npm run version:bump` run the release skill's Python, and the `.mjs` copies are deleted | none |
+| 2026-10-28 | DEBT-038 | resolved | The plugin-renames skill's check-version-bump.py is identical to the release skill's, and a test keeps both skills' copies of the bump scripts identical | none |
 
 ## 🏁 Closed items
 
@@ -758,6 +759,37 @@ Nery decided on 2026-10-28: the gate runs `.claude/skills/release-and-versioning
 - **Residual risk:** the plugin-renames skill keeps its own copies, and its copy of the check is weaker than the release skill's: DEBT-038.
 - **Closed by:** ADR_2026-10-28_version-gate-runs-the-release-skill-script
 - **Related records:** ADR_2026-10-28_version-gate-runs-the-release-skill-script, DEBT-038.
+- **Superseded by:** none
+
+### DEBT-038 — The plugin-renames skill's check-version-bump.py is identical to the release skill's, and a test keeps both skills' copies of the bump scripts identical
+
+| Field | Value |
+| --- | --- |
+| **Outcome** | resolved |
+| **Closed on** | 2026-10-28 |
+| **Logged on** | 2026-10-28 |
+| **Owner** | `.claude/skills/plugin-renames-and-removals/scripts/check-version-bump.py`, `.claude/skills/release-and-versioning/scripts/check-version-bump.py` |
+
+#### ❗ The problem
+
+The plugin-renames skill's `check-version-bump.py` accepted a skipped version (0.1.0 to 0.3.0) that the release skill's copy rejects. Its step-10 row also omitted the one-step rule. The two copies of `bump-version.py` were identical.
+
+#### 🔧 The closure
+
+The plugin-renames copy of `check-version-bump.py` is replaced by the release skill's file, byte for byte. Its step-10 row in `SKILL.md` now states the same rule. The test `skill copies of the bump rules` in `scripts/testers/scripts.test.mjs` asserts that both skills' copies of each bump script are equal, so a later drift fails `npm test` and CI. The decision is recorded in ADR_2026-10-28_skill-bump-copies-stay-identical. Each skill still runs only its own scripts, as memory `skill-checks-are-not-gates` requires.
+
+#### 🧪 Verification
+
+| Check | Evidence |
+| --- | --- |
+| ✅ **Positive:** the closure holds | `node --test --test-name-pattern="skill copies" scripts/testers/scripts.test.mjs`: 2 of 2 pass. `node --test scripts/testers/*.test.mjs`: 111 of 111 pass. `tsc -p scripts/tsconfig.json --noEmit` exited 0. `diff -q` on the two `check-version-bump.py` files printed nothing and `check copies identical` was printed. |
+| 🚫 **Negative:** the original failure or condition is gone | On 2026-10-28 a repository with a 0.1.0 to 0.3.0 bump gave: the release copy exited 1 with `version jumps from 0.1.0 to 0.3.0; one step above is 0.1.1, 0.2.0 or 1.0.0`, and the plugin-renames copy exited 0 with `Version bumps OK (demo)`. The two files are now identical, so the plugin-renames copy has the release result. |
+
+#### 🔗 Follow-up
+
+- **Residual risk:** a change to a copy has to be made in both; the test catches a missed one, it does not make the change.
+- **Closed by:** ADR_2026-10-28_skill-bump-copies-stay-identical
+- **Related records:** ADR_2026-10-28_skill-bump-copies-stay-identical, DEBT-025, ADR_2026-10-28_version-gate-runs-the-release-skill-script.
 - **Superseded by:** none
 
 <!--

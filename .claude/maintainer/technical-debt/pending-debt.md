@@ -54,7 +54,6 @@ Add an item only when all of these hold:
 | DEBT-035 | `npm run test:plugins` fails when a plugin test family has no gate left | 🔴 Risk accepted |
 | DEBT-036 | `biome check --staged` checks the working-tree copy of a partly staged file | 🔴 Risk accepted |
 | DEBT-037 | Sessions skip the project skills the Workflow assigns to the area they work in | 🟠 Blocked |
-| DEBT-038 | The plugin-renames skill's copy of the bump check is weaker than the release skill's | 🟠 Blocked |
 
 ## 📂 Open items
 
@@ -244,29 +243,6 @@ Add an item only when all of these hold:
 - **Next action:** read the report's gap table with Nery and take the chosen gaps in plugin PRs.
 - **Review condition:** closes when every gap is fixed or dropped by Nery.
 - **Related records:** none.
-
-### DEBT-038 — The plugin-renames skill's copy of the bump check is weaker than the release skill's
-
-| Field | Value |
-| --- | --- |
-| **Status** | 🟠 Blocked |
-| **Category** | reliability |
-| **Owner** | `.claude/skills/plugin-renames-and-removals/scripts/check-version-bump.py`, `.claude/skills/release-and-versioning/scripts/check-version-bump.py` |
-| **Logged** | 2026-10-28 |
-
-#### 🔎 Evidence
-
-- **Confirmed facts:** on 2026-10-28, `diff` showed that the two `bump-version.py` copies are identical and the two `check-version-bump.py` copies differ. The plugin-renames copy requires only a version above the one at the base and a `CHANGELOG.md` section; it has no one-step rule and no note for a step from 0.x to 1.0.0. The release copy rejects a skipped version and emits that note.
-- **Inferences:** a plugin version that skips a step (for example 0.1.0 to 0.3.0) passes the plugin-renames check and fails the `version-bump` gate. Not tested.
-- **Open questions:** whether the plugin-renames skill keeps its own copy, updated to the release rule, or runs the release skill's script.
-
-#### 📈 Impact and next step
-
-- **Impact / risk:** the rename and removal procedure can accept a bump that the gate rejects on the same push.
-- **Why it is not fixed now:** skills keep their own copies of the scripts they run (memory `skill-checks-are-not-gates`), so the choice between one shared script and two synced copies is Nery's.
-- **Next action:** ask Nery which option; then align the plugin-renames copy or point it at the release script, and test a skipped version in that skill.
-- **Review condition:** closes when the two `check-version-bump.py` files are identical or one calls the other, and a skipped version fails in both.
-- **Related records:** DEBT-025, ADR_2026-10-28_version-gate-runs-the-release-skill-script.
 
 ### DEBT-027 — `claude-review` was denied four tool calls on PR #42
 
