@@ -315,7 +315,8 @@
       // await events one after another on purpose, and a one-off assertion pattern reads best
       // beside its assertion, where it runs once.
       "includes": [
-        "**/tests/**"
+        "**/tests/**",
+        "scripts/testers/**"
       ],
       "linter": {
         "rules": {

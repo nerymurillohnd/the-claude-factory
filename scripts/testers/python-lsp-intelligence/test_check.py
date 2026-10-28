@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Tests for python-lsp-intelligence's hooks/check.py.
 
-Run: python3 -m unittest discover -s scripts/tests/python-lsp-intelligence -v
+Run: python3 -m unittest discover -s scripts/testers/python-lsp-intelligence -v
 Standard library only. The tool cases need ruff and basedpyright on PATH.
 """
 

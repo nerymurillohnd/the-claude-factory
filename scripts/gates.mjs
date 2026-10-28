@@ -9,7 +9,7 @@
 //
 // What CI runs (ADR_2026-10-21_ci-checks-maintainer-tooling-and-plugin-structure): our own tooling
 // under scripts/ and the plugins' structure, which no user's machine changes. The plugins' behavior
-// (the tests in scripts/tests/<plugin>/, claude plugin test, the mods' tsc) and the static analysis
+// (the tests in scripts/testers/<plugin>/, claude plugin test, the mods' tsc) and the static analysis
 // of plugin code run only here, before the push, because they depend on the interpreter and the
 // tools of whoever installs the plugin. Those gates carry group "local".
 //
@@ -67,9 +67,9 @@ const MAINTAINER_PYTHON = [
   'scripts/validators',
   'scripts/checkers',
   'scripts/generators',
-  'scripts/tests/schemas',
-  'scripts/tests/validators',
-  'scripts/tests/run_pytest.py',
+  'scripts/testers/schemas',
+  'scripts/testers/validators',
+  'scripts/testers/run_pytest.py',
 ]
 
 /** Tests that may be skipped, by Node test name or unittest id, each with why. */
@@ -191,13 +191,13 @@ function tracked(root, patterns) {
 }
 
 /**
- * The plugin folders under scripts/tests that hold a file matching test.
+ * The plugin folders under scripts/testers that hold a file matching test.
  * @param {string} root
  * @param {(name: string) => boolean} test
  * @returns {string[]}
  */
 function pluginTestFolders(root, test) {
-  const base = join(root, 'scripts', 'tests')
+  const base = join(root, 'scripts', 'testers')
   return readdirSync(base, { withFileTypes: true })
     .filter(
       (d) =>
@@ -284,7 +284,7 @@ export function gatesFor({ root, ci, base }) {
     },
 
     // ── Maintainer tooling and plugin structure (CI) ────────────────────────────────────────
-    nodeTestGate('node-tests', nodeTests(join('scripts', 'tests')), tap('maintainer')),
+    nodeTestGate('node-tests', nodeTests(join('scripts', 'testers')), tap('maintainer')),
     {
       id: 'check-repo',
       group: 'policy',
@@ -402,8 +402,8 @@ export function gatesFor({ root, ci, base }) {
       id: 'pytest-scripts',
       group: 'python',
       title: 'pytest on the maintainer tests, no skips',
-      cmd: 'scripts/tests/run_pytest.py',
-      args: ['scripts/tests/schemas', 'scripts/tests/validators'],
+      cmd: 'scripts/testers/run_pytest.py',
+      args: ['scripts/testers/schemas', 'scripts/testers/validators'],
     },
     {
       id: 'claude-validate:marketplace',
@@ -454,10 +454,10 @@ export function gatesFor({ root, ci, base }) {
 
     // ── Plugin behavior and plugin code analysis (local only) ───────────────────────────────
     ...pluginTestFolders(root, (f) => f.endsWith('.test.mjs')).map((p) =>
-      nodeTestGate(`node-tests:${p}`, nodeTests(join('scripts', 'tests', p)), tap(p), 'local'),
+      nodeTestGate(`node-tests:${p}`, nodeTests(join('scripts', 'testers', p)), tap(p), 'local'),
     ),
     ...pluginTestFolders(root, (f) => f.startsWith('test_') && f.endsWith('.py')).map((p) =>
-      unittestGate(`unittest:${p}`, join('scripts', 'tests', p)),
+      unittestGate(`unittest:${p}`, join('scripts', 'testers', p)),
     ),
     ...pluginTestFolders(root, (f) => f === 'by_path.sh').map(
       (p) =>
@@ -465,7 +465,7 @@ export function gatesFor({ root, ci, base }) {
           id: `by-path:${p}`,
           group: 'local',
           title: `${p} scripts run by path`,
-          cmd: join('scripts', 'tests', p, 'by_path.sh'),
+          cmd: join('scripts', 'testers', p, 'by_path.sh'),
           args: [],
         }),
     ),

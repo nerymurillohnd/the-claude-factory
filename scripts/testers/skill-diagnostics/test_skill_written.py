@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Tests for skill-diagnostics' hooks/skill_written.py.
 
-Run: python3 -m unittest discover -s scripts/tests/skill-diagnostics -v
+Run: python3 -m unittest discover -s scripts/testers/skill-diagnostics -v
 Standard library only; runs on the python3 on PATH on Linux, macOS and Windows.
 """
 

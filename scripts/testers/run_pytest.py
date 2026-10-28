@@ -5,7 +5,7 @@
 # ///
 """Run maintainer Python tests on pytest; any skipped, xfailed or xpassed test fails the run.
 
-Usage: scripts/tests/run_pytest.py <test path>... [pytest options]
+Usage: scripts/testers/run_pytest.py <test path>... [pytest options]
 
 A skip means a tool or input is missing, so it is a failure here, at collection time (a module or
 class skipped while collecting) and at run time. The dependencies above are every test suite's:
@@ -58,7 +58,9 @@ class FailOnSkip:
 def main(argv: list[str]) -> int:
     """Run pytest on the given paths and return its exit code."""
     if not argv:
-        _ = sys.stderr.write("usage: scripts/tests/run_pytest.py <test path>... [pytest options]\n")
+        _ = sys.stderr.write(
+            "usage: scripts/testers/run_pytest.py <test path>... [pytest options]\n"
+        )
         return 2
     guard = FailOnSkip()
     code = pytest.main([*OPTIONS, *argv], plugins=[guard])

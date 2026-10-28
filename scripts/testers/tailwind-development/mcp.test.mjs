@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Tests for the tailwind-development MCP server's modules. The language-server client runs against
 // a stub server; the real Tailwind CSS language server is exercised in the live checks.
-//   node --test scripts/tests/tailwind-development/
+//   node --test scripts/testers/tailwind-development/
 
 import assert from 'node:assert/strict'
 import { mkdirSync, mkdtempSync, realpathSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'

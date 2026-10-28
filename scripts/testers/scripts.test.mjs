@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // End-to-end tests for the maintenance scripts. Each test runs against a fresh temp copy of the
 // repository (TCF_ROOT), so the real working tree is never modified.
-//   node --test "scripts/tests/*.test.mjs"
+//   node --test "scripts/testers/*.test.mjs"
 
 import assert from 'node:assert/strict'
 import { execFileSync, spawnSync } from 'node:child_process'

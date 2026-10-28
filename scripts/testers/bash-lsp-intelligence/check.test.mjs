@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Tests for the Node post-edit hook of bash-lsp-intelligence.
-//   node --test "scripts/tests/*.test.mjs"
+//   node --test "scripts/testers/*.test.mjs"
 // Tool cases run only when the tool is on PATH.
 
 import assert from 'node:assert/strict'

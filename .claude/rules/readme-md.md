@@ -14,7 +14,7 @@ A `README.md` in this repository is one of four kinds, and each kind has its own
 | :-- | :-- | :-- | :-- |
 | `README.md` at the repository root | The marketplace's front page for users | Maintainer: no pull request | The `maintaining-user-docs` skill |
 | `plugins/<name>/README.md` | One plugin's user guide | Plugin: every change goes through a pull request | The `building-plugins` skill; for a plugin that is or contains a mod, also `building-mods` |
-| Any other, such as `scripts/tests/<plugin>/…/README.md` | A maintainer note, never shipped to users | Maintainer | Nothing more: keep it accurate |
+| Any other, such as `scripts/testers/<plugin>/…/README.md` | A maintainer note, never shipped to users | Maintainer | Nothing more: keep it accurate |
 
 ## Root README
 

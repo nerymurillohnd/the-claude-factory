@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Tests for the hook-development skill's scripts in plugins/hook-engineering.
 
-Run: python3 -m unittest discover -s scripts/tests/hook-engineering -v
+Run: python3 -m unittest discover -s scripts/testers/hook-engineering -v
 Standard library only. The hook-changes.sh cases need bash on PATH (Git Bash on Windows)
 and use a stub curl, so they make no network calls.
 """

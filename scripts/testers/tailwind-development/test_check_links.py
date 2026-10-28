@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Tests for plugins/tailwind-development/scripts/check-links.py.
+"""Tests for plugins/tailwind-development/skills/tailwind-official-docs/scripts/check-links.py.
 
-Run: python3 -m unittest discover -s scripts/tests/tailwind-development -v
+Run: python3 -m unittest discover -s scripts/testers/tailwind-development -v
 Standard library only. A local HTTP server stands in for the docs site, so no
 test reaches the network.
 """
@@ -19,7 +19,15 @@ from typing import ClassVar, override
 import unittest
 
 REPO = Path(__file__).resolve().parents[3]
-SCRIPT = REPO / "plugins" / "tailwind-development" / "scripts" / "check-links.py"
+SCRIPT = (
+    REPO
+    / "plugins"
+    / "tailwind-development"
+    / "skills"
+    / "tailwind-official-docs"
+    / "scripts"
+    / "check-links.py"
+)
 BAD_ARGUMENT = 2
 PAGE = '<html><body><h2 id="good">Good</h2></body></html>'
 
@@ -73,7 +81,7 @@ class CheckLinksTest(unittest.TestCase):
         """A live page and an id on it exit 0."""
         result = self.run_on(f"- [Good]({self.base}/page.html#good): ok\n")
         assert result.returncode == 0, result.stdout
-        assert "[OK] All 1 links and anchors resolved" in result.stdout
+        assert "1 URLs at 1 places: 1 ok, 0 broken" in result.stdout
 
     def test_redirect_is_followed(self) -> None:
         """A redirect to a live page with the anchor passes."""
@@ -84,20 +92,32 @@ class CheckLinksTest(unittest.TestCase):
         """An anchor the page lacks is reported and exits 1."""
         result = self.run_on(f"[x]({self.base}/page.html#gone)\n")
         assert result.returncode == 1
-        assert f"{self.base}/page.html#gone -> anchor #gone not found on page" in result.stdout
+        assert f"{self.base}/page.html#gone -> anchor #gone not found on the page" in result.stdout
+        assert "reference.md:1" in result.stdout
 
     def test_missing_page_fails(self) -> None:
         """A page that answers 404 is reported and exits 1."""
         result = self.run_on(f"[x]({self.base}/nope.html)\n")
         assert result.returncode == 1
         assert f"{self.base}/nope.html -> HTTP 404" in result.stdout
+        assert "reference.md:1" in result.stdout
 
-    def test_placeholders_and_trailing_punctuation_are_skipped(self) -> None:
-        """URLs with placeholders are not fetched, and a trailing period is dropped."""
-        text = f"`{self.base}/x@<v>` `${{CLAUDE_PLUGIN_ROOT}}/a` {self.base}/page.html.\n"
+    def test_placeholders_are_never_requested(self) -> None:
+        """Templates, examples, localhost and hosts with no domain are never requested."""
+        text = (
+            "`https://github.com/o/r/releases/tag/{{name}}` `https://x.dev/<name>/a` "
+            "https://example.com/a http://sveltekit-prerender http://localhost:3000/\n"
+        )
         result = self.run_on(text)
         assert result.returncode == 0, result.stdout
-        assert "[OK] All 1 links and anchors resolved" in result.stdout
+        assert "0 URLs at 0 places" in result.stdout
+        assert "5 placeholders skipped" in result.stdout
+
+    def test_trailing_punctuation_and_parentheses(self) -> None:
+        """A trailing period is dropped, and a Markdown link's closing parenthesis ends the URL."""
+        result = self.run_on(f"See {self.base}/page.html. [a]({self.base}/page.html#good)\n")
+        assert result.returncode == 0, result.stdout
+        assert "2 URLs at 2 places: 2 ok" in result.stdout
 
     def test_missing_path_exits_2(self) -> None:
         """A path that does not exist exits 2 and names it."""

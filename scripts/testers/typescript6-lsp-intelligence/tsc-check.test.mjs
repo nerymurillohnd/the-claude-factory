@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Tests for the post-edit hook of the TypeScript LSP intelligence plugins, run against the
 // real tsc on PATH. Without tsc the compiler cases are skipped locally; in CI that is a failure.
-//   node --test "scripts/tests/*.test.mjs"
+//   node --test "scripts/testers/*.test.mjs"
 
 import assert from 'node:assert/strict'
 import { spawnSync } from 'node:child_process'

@@ -17,5 +17,5 @@
     "**/*.mts",
     "**/*.tsx"
   ],
-  "exclude": ["tests/svelte-development/kit3-app"]
+  "exclude": ["testers/svelte-development/kit3-app"]
 }
