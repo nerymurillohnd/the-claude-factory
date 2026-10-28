@@ -42,7 +42,7 @@
 
 | Requirement             | Details                                                                                     |
 | :---------------------- | :------------------------------------------------------------------------------------------ |
-| **Claude Code**         | v2.1.287 or later (v2.1.286 in the Desktop app) — check with `claude --version`             |
+| **Claude Code**         | v2.1.287 or later (v2.1.286 in the Desktop app) — check with `claude --version`. Tested with v2.1.312 on macOS 27 (Apple Silicon). |
 | **Surfaces**            | See [Compatibility](#-compatibility)                                                        |
 | **macOS**               | 13.0 or later, Apple Silicon or Intel. On any other system the guard does nothing           |
 | **External tools**      | `git` on your `PATH`, to list the gitignored files under a search folder. Install it with `xcode-select --install` |
@@ -159,8 +159,6 @@ The plugin keeps no data and writes no files, so nothing is left behind.
 | 🧩 Mods                                | ✅ every Claude Code session except a Desktop session on WSL |                                                                                                                   ⚠️ the plugin directory lists a mod for Claude Code only                                                                                                                    |
 
 <sub>✅ works · ⚠️ partial · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. The Claude app (web, desktop and mobile) runs a conversation as a Cowork session when it can, and as a chat conversation otherwise, for example on a device that can't run Cowork or in the separate Chat mode that Team and Enterprise plans keep for now.</sub>
-
-**Tested with** Claude Code v2.1.312 on macOS 27 (Apple Silicon).
 
 ## 🛡️ Where it runs and what turns it off
 

@@ -45,7 +45,7 @@
 
 | Requirement | Details |
 | :-- | :-- |
-| **Claude Code** | v2.1.299 or later — check with `claude --version` |
+| **Claude Code** | v2.1.299 or later — check with `claude --version`. Tested with v2.1.312. |
 | **Surfaces** | See [Compatibility](#-compatibility) |
 | **External tools** | None |
 | **Accounts / API keys** | None |
@@ -204,8 +204,6 @@ The reports you saved stay in `exportDir`; delete them yourself if you no longer
 | 🧩 Mods | ✅ every Claude Code session except a Desktop session on WSL | ⚠️ the plugin directory lists a mod for Claude Code only |
 
 <sub>✅ works · ⚠️ partial · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. The Claude app (web, desktop and mobile) runs a conversation as a Cowork session when it can, and as a chat conversation otherwise, for example on a device that can't run Cowork or in the separate Chat mode that Team and Enterprise plans keep for now.</sub>
-
-Tested with Claude Code v2.1.312.
 
 The pane draws in the terminal, the desktop app's **Code** tab and the VS Code extension (extension v2.1.299+, or v2.1.304+ in a session that doesn't fetch feature flags, such as one on Amazon Bedrock). In VS Code, press the buttons with a click or Enter: hotkeys don't apply there. In `claude -p` and cloud sessions nothing draws; there `/model-trace` answers with a short text summary, and `/model-trace md` or `/model-trace html` still saves the report.
 
