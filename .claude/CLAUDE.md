@@ -53,7 +53,11 @@ This repository holds two scopes. They are never mixed: a rule written for one s
 - **Maintainer scope**: everything outside `plugins/`. Its environment is the tools, versions and binaries on Nery's machine.
 - **Plugin scope**: one self-contained directory per plugin under `plugins/<plugin>/`. Its environment is only what the plugin's `README.md` declares as prerequisites.
 
-Every change inside a plugin's directory, its components, dependencies and a `README.md`-only change included, goes through a pull request. Changes outside `plugins/` need none.
+Pull requests and version bumps (this is the only place that sets them):
+
+- **A plugin's documentation alone** (`README.md`, `LICENSE`, `NOTICE.txt`): commit it signed straight to `main`, with no pull request, version bump or `CHANGELOG.md` entry, because it changes nothing the plugin does. GitHub shows it on push; installed copies keep the old text until the plugin's next version.
+- **Every other file inside a plugin's directory** (its manifest, components, scripts, dependencies, `CHANGELOG.md`): a pull request and a version bump, through `release-and-versioning`.
+- **Everything outside `plugins/`**: no pull request.
 
 #### Maintainer Tooling
 

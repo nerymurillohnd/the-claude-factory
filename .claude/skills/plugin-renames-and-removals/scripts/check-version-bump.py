@@ -6,7 +6,8 @@ differ from <base> (`git diff <base>...HEAD`) must carry the next version of the
 exactly one patch, minor or major step above it, and a non-empty CHANGELOG.md section for it. A
 jump that skips a version fails. A step from 0.x to 1.0.0 passes with a note: it needs Nery's
 explicit authorization (release-and-versioning, rule 4). A change limited to the plugin's
-README.md needs no bump; every other file does, CHANGELOG.md included. A renamed plugin is
+documentation (README.md, LICENSE, NOTICE.txt) needs no bump; every other file does,
+CHANGELOG.md included. A renamed plugin is
 compared with its old name's version at <base>: the rename is a `renames` entry that HEAD adds to
 .claude-plugin/marketplace.json, or a plugin.json that git sees moved from plugins/<old>/. A rename
 breaks the commands users type, so its patch step fails (plugin-renames-and-removals, rule 3), and
@@ -30,7 +31,7 @@ import subprocess
 import sys
 from typing import cast
 
-DOC_ONLY = frozenset({"README.md"})
+DOC_ONLY = frozenset({"README.md", "LICENSE", "NOTICE.txt"})
 BUMP = ".claude/skills/release-and-versioning/scripts/bump-version.py"
 _decode: Callable[[str], object] = json.JSONDecoder().decode
 

@@ -668,13 +668,26 @@ describe('check-version-bump', () => {
     assert.match(r.out, /moved from plugins\/demo-tool; add renames entry "demo-tool": "demo-new"/)
   })
 
-  test('does not require a bump for README-only edits', () => {
+  test('does not require a bump for documentation-only edits', () => {
     scaffold()
     initRepo()
     write('plugins/demo-tool/README.md', `${read('plugins/demo-tool/README.md')}\nMore docs.\n`)
-    git('commit', '-qam', 'docs')
+    write('plugins/demo-tool/LICENSE', `${read('plugins/demo-tool/LICENSE')}\n`)
+    write('plugins/demo-tool/NOTICE.txt', 'Third-party notice.\n')
+    git('add', '-A')
+    git('commit', '-qm', 'docs')
     const r = runPy(CHECK, ['HEAD~1'])
     assert.equal(r.code, 0, r.out)
+  })
+
+  test('still requires a bump for a CHANGELOG-only edit', () => {
+    scaffold()
+    initRepo()
+    write('plugins/demo-tool/CHANGELOG.md', `${read('plugins/demo-tool/CHANGELOG.md')}\nMore.\n`)
+    git('commit', '-qam', 'changelog')
+    const r = runPy(CHECK, ['HEAD~1'])
+    assert.equal(r.code, 1)
+    assert.match(r.out, /version is still 0\.1\.0/)
   })
 })
 

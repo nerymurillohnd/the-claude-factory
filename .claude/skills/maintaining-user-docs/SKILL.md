@@ -108,7 +108,7 @@ Edit each file in one coherent pass, then reread it whole. Change both sides of 
 
 ### 5. Cross-scope
 
-List each file outside the scope that must follow (a plugin README's Compatibility cells, a template, an issue form) with what it must say. It changes in its own change: inside `plugins/` that means a pull request.
+List each file outside the scope that must follow (a plugin README's Compatibility cells, a template, an issue form) with what it must say. It changes in its own change; inside `plugins/`, `.claude/CLAUDE.md` → Maintainer and Plugin Scopes sets whether that change needs a pull request.
 
 ### 6. Check
 

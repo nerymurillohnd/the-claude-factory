@@ -6,14 +6,14 @@ paths:
 
 # README.md files
 
-A `README.md` in this repository is one of four kinds, and each kind has its own owner, template, rules and checks. Identify the kind before you edit, then load what it names.
+A `README.md` in this repository is one of three kinds, and each kind has its own owner, template, rules and checks. Identify the kind before you edit, then load what it names.
 
 ## Which README this is
 
 | File | What it is | Scope | Load |
 | :-- | :-- | :-- | :-- |
 | `README.md` at the repository root | The marketplace's front page for users | Maintainer: no pull request | The `maintaining-user-docs` skill |
-| `plugins/<name>/README.md` | One plugin's user guide | Plugin: every change goes through a pull request | The `building-plugins` skill; for a plugin that is or contains a mod, also `building-mods` |
+| `plugins/<name>/README.md` | One plugin's user guide | Plugin documentation: whether it needs a pull request is set in `.claude/CLAUDE.md` → Maintainer and Plugin Scopes | The `building-plugins` skill; for a plugin that is or contains a mod, also `building-mods` |
 | Any other, such as `scripts/testers/<plugin>/…/README.md` | A maintainer note, never shipped to users | Maintainer | Nothing more: keep it accurate |
 
 ## Root README
@@ -29,7 +29,6 @@ A `README.md` in this repository is one of four kinds, and each kind has its own
 - **Template:** the one `building-plugins` sets, `assets/README-template.md`. Never start from another plugin's README. The skill's scaffold writes the README from it.
 - **Rules:** `building-plugins` holds them: `references/templates.md` the template's use, its sections and NOTICE, and `references/readme-style.md` the badges, the version numbers allowed, the style and the Compatibility rows.
 - **A plugin with a mod:** the README also carries what `building-mods` section 5 lists: where the mod runs, what turns it off, the organization caveat, what it reaches, and the "Tested with Claude Code X.Y.Z" line.
-- **A `README.md`-only change:** a pull request, no version bump and no CHANGELOG entry. GitHub shows it once it is merged, but the copy a user already installed keeps its old README until the plugin's next version.
 - **Checks:** `node scripts/check-repo.mjs` covers the sections, leftover `TODO` and `TEMPLATE` comments, the "works in" badge and one Compatibility row per component type. `plugin-versions-consistency.py` covers the Version badge. Neither reads the text of the cells or the prose: compare those yourself.
 
 ## The plugin template

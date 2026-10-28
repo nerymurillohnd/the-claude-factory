@@ -24,5 +24,5 @@ This skill's `assets/` are the templates a new plugin of this repository is buil
 ## Change them
 
 - Edit an asset only to change what every new plugin gets, and keep its placeholders: they are what a new plugin resolves. A new placeholder needs `scaffold-plugin.py` to fill it, or a line in steps 2 or 3 above telling the author to.
-- A change to an asset brings every plugin file built from it in line in the same change. Those files are plugin files, so that part goes through a pull request.
+- A change to an asset brings every plugin file built from it in line in the same change. Those files are plugin files: whether that part needs a pull request is set in `.claude/CLAUDE.md` → Maintainer and Plugin Scopes.
 - After a change, scaffold a throwaway plugin in a scratchpad copy of the repository (`TCF_ROOT=<copy> scaffold-plugin.py …`) and read what it wrote.
