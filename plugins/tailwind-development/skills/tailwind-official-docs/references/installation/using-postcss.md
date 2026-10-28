@@ -9,7 +9,7 @@ Official page: https://tailwindcss.com/docs/installation/using-postcss. It is th
 
 ## What the setup consists of
 
-1. Three packages: `tailwindcss`, `@tailwindcss/postcss` and `postcss`, installed with the project's package manager (SKILL.md, "Installation", step 1).
+1. Three packages: `tailwindcss`, `@tailwindcss/postcss` and `postcss`, installed with the project's package manager (the one its lockfile names).
 2. The plugin added to the PostCSS configuration, wherever the project keeps it. In an ES module config:
 
    ```js
@@ -34,4 +34,4 @@ Official page: https://tailwindcss.com/docs/installation/using-postcss. It is th
 
 ## Verify
 
-SKILL.md, "Installation", step 3: one probe class that the existing styles cannot produce, the dev server or build, and the generated CSS checked for it.
+Add one class the existing styles cannot produce, run the dev server or build, confirm the generated CSS contains it, then remove it.

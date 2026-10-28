@@ -14,15 +14,14 @@ This skill is a documentation router, not a replacement for the documentation. I
 
 ## Installation
 
-When a project has no Tailwind yet, or changes how it integrates Tailwind:
+Before installing Tailwind or changing how a project integrates it, read the reference that matches the project:
 
-1. Detect the framework and the package manager: `package.json`, the framework's config (`astro.config.*`, `svelte.config.*`, `next.config.*`, `nuxt.config.*`, `angular.json`, `vite.config.*`, `postcss.config.*`) or its manifest (`Gemfile`, `composer.json`, `mix.exs`), and the lockfile.
-2. When the framework has a guide in the framework-guides list of the topic index, read that page whole. Otherwise read the reference for what the project has:
-   - a Vite config: [references/installation/using-vite.md](references/installation/using-vite.md);
-   - a PostCSS config, or a bundler that runs PostCSS: [references/installation/using-postcss.md](references/installation/using-postcss.md);
-   - no build tool, or no Node.js: [references/installation/tailwind-cli.md](references/installation/tailwind-cli.md);
-   - a prototype or preview with no build, never production: [references/installation/play-cdn.md](references/installation/play-cdn.md).
-3. Verify that one class the project could not produce before renders, then remove it.
+- Vite: [using-vite.md](references/installation/using-vite.md)
+- PostCSS: [using-postcss.md](references/installation/using-postcss.md)
+- No bundler, or no Node.js: [tailwind-cli.md](references/installation/tailwind-cli.md)
+- A browser prototype with no build: [play-cdn.md](references/installation/play-cdn.md)
+
+A framework listed under framework guides in the topic index has its own page: read that page instead.
 
 ## Workflow
 
