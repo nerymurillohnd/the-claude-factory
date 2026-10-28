@@ -23,6 +23,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The
 - **tool-ledger** 0.1.2 — internal code cleanup from stricter lint rules; nothing changes for users.
 - **turn-meter** 0.1.2 — internal code cleanup from a stricter lint rule; nothing changes for users.
 
+### Fixed
+
+- **tailwind-development** 0.2.2 — a Tailwind CSS v3 to v4 migration runs the official upgrade tool and checks every breaking change of the upgrade guide against the project, instead of only the removed and renamed utilities.
+
 ## 2026-10-26
 
 ### Fixed
