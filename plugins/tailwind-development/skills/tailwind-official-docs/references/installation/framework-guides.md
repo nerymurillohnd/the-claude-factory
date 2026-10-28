@@ -1,0 +1,21 @@
+# [Framework guides](https://tailwindcss.com/docs/installation/framework-guides)
+
+- [AdonisJS](https://tailwindcss.com/docs/installation/framework-guides/adonisjs): Set up Tailwind CSS in a AdonisJS project
+- [Angular](https://tailwindcss.com/docs/installation/framework-guides/angular): Set up Tailwind CSS in a Angular project
+- [Astro](https://tailwindcss.com/docs/installation/framework-guides/astro): Set up Tailwind CSS in a Astro project
+- [Ember.js](https://tailwindcss.com/docs/installation/framework-guides/emberjs): Set up Tailwind CSS in a Ember.js project
+- [Gatsby](https://tailwindcss.com/docs/installation/framework-guides/gatsby): Set up Tailwind CSS in a Gatsby project
+- [Laravel](https://tailwindcss.com/docs/installation/framework-guides/laravel/vite): Set up Tailwind CSS in a Laravel project
+- [Meteor](https://tailwindcss.com/docs/installation/framework-guides/meteor): Set up Tailwind CSS in a Meteor project
+- [Next.js](https://tailwindcss.com/docs/installation/framework-guides/nextjs): Set up Tailwind CSS in a Next.js project
+- [Nuxt](https://tailwindcss.com/docs/installation/framework-guides/nuxt): Set up Tailwind CSS in a Nuxt project
+- [Parcel](https://tailwindcss.com/docs/installation/framework-guides/parcel): Set up Tailwind CSS in a Parcel project
+- [Phoenix](https://tailwindcss.com/docs/installation/framework-guides/phoenix): Set up Tailwind CSS in a Phoenix project
+- [Qwik](https://tailwindcss.com/docs/installation/framework-guides/qwik): Set up Tailwind CSS in a Qwik project
+- [React Router](https://tailwindcss.com/docs/installation/framework-guides/react-router): Set up Tailwind CSS in a React Router project
+- [Rspack](https://tailwindcss.com/docs/installation/framework-guides/rspack/react): Set up Tailwind CSS in a Rspack project
+- [Ruby on Rails](https://tailwindcss.com/docs/installation/framework-guides/ruby-on-rails): Set up Tailwind CSS in a Ruby on Rails project
+- [SolidJS](https://tailwindcss.com/docs/installation/framework-guides/solidjs): Set up Tailwind CSS in a SolidJS project
+- [SvelteKit](https://tailwindcss.com/docs/installation/framework-guides/sveltekit): Set up Tailwind CSS in a SvelteKit project
+- [Symfony](https://tailwindcss.com/docs/installation/framework-guides/symfony): Set up Tailwind CSS in a Symfony project
+- [TanStack Start](https://tailwindcss.com/docs/installation/framework-guides/tanstack-start): Set up Tailwind CSS in a TanStack Start project
