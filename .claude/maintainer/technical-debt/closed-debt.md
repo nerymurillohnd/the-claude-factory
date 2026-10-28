@@ -41,6 +41,8 @@
 | 2026-10-27 | DEBT-026 | obsolete | `.claude/rules/readme-md.md` loads when a README is read | none |
 | 2026-10-28 | DEBT-025 | resolved | The version gate and `npm run version:bump` run the release skill's Python, and the `.mjs` copies are deleted | none |
 | 2026-10-28 | DEBT-038 | resolved | The plugin-renames skill's check-version-bump.py is identical to the release skill's, and a test keeps both skills' copies of the bump scripts identical | none |
+| 2026-10-28 | DEBT-020 | obsolete | Dropped by Nery: moving `docs/github-mcp-tools.md` into its plugin is no longer tracked | none |
+| 2026-10-28 | DEBT-027 | obsolete | Dropped by Nery: the `claude-review` tool denials are no longer investigated | none |
 
 ## 🏁 Closed items
 
@@ -790,6 +792,68 @@ The plugin-renames copy of `check-version-bump.py` is replaced by the release sk
 - **Residual risk:** a change to a copy has to be made in both; the test catches a missed one, it does not make the change.
 - **Closed by:** ADR_2026-10-28_skill-bump-copies-stay-identical
 - **Related records:** ADR_2026-10-28_skill-bump-copies-stay-identical, DEBT-025, ADR_2026-10-28_version-gate-runs-the-release-skill-script.
+- **Superseded by:** none
+
+### DEBT-020 — Dropped by Nery: moving `docs/github-mcp-tools.md` into its plugin is no longer tracked
+
+| Field | Value |
+| --- | --- |
+| **Outcome** | obsolete |
+| **Closed on** | 2026-10-28 |
+| **Logged on** | 2026-10-26 |
+| **Owner** | `docs/github-mcp-tools.md`, `plugins/github-operations` |
+
+#### ❗ The problem
+
+`docs/github-mcp-tools.md` serves only `github-operations` but lives in the marketplace docs, outside the plugin users install. `plugins/github-operations/README.md` and its `CHANGELOG.md` link to it as `../../docs/github-mcp-tools.md`, a path that does not exist in an installed copy, and no skill maintains its tool list, which had already drifted once. The move into the plugin was waiting on Nery's timing.
+
+#### 🔧 The closure
+
+Nery withdrew the item on 2026-10-28, stated by the user on 2026-10-28. The file was not moved and no plugin file changed.
+
+#### 🧪 Verification
+
+| Check | Evidence |
+| --- | --- |
+| ✅ **Positive:** the closure holds | not applicable |
+| 🚫 **Negative:** the original failure or condition is gone | 2026-10-28: the item no longer waits on a decision, since Nery dropped it. `docs/github-mcp-tools.md` still exists (`ls` on 2026-10-28), so the move itself was not done. |
+
+#### 🔗 Follow-up
+
+- **Residual risk:** the file stays outside the installed plugin, its links from the plugin's README and CHANGELOG still break in an installed copy, and no skill maintains its tool list.
+- **Closed by:** Nery's decision on 2026-10-28.
+- **Related records:** none.
+- **Superseded by:** none
+
+### DEBT-027 — Dropped by Nery: the `claude-review` tool denials are no longer investigated
+
+| Field | Value |
+| --- | --- |
+| **Outcome** | obsolete |
+| **Closed on** | 2026-10-28 |
+| **Logged on** | 2026-10-26 |
+| **Owner** | `.github/workflows/claude-code-review.yml` |
+
+#### ❗ The problem
+
+`claude-review` runs reported permission denials on some pull requests (4 on PR #42, up to 13 on PR #70, 0 on others), because the workflow's `--allowedTools` allows only inline comments. The run log prints only the count, never the denied tool names, so which read-only tools to allow was never settled.
+
+#### 🔧 The closure
+
+Nery withdrew the item on 2026-10-28, stated by the user on 2026-10-28. The workflow was not changed.
+
+#### 🧪 Verification
+
+| Check | Evidence |
+| --- | --- |
+| ✅ **Positive:** the closure holds | not applicable |
+| 🚫 **Negative:** the original failure or condition is gone | 2026-10-28: the item no longer waits on an investigation, since Nery dropped it. The denials themselves were not fixed: run 40773055865 on PR #70 still reported 13. |
+
+#### 🔗 Follow-up
+
+- **Residual risk:** reviews on some pull requests may still run without the reads they need and report "No issues found".
+- **Closed by:** Nery's decision on 2026-10-28.
+- **Related records:** none.
 - **Superseded by:** none
 
 <!--
