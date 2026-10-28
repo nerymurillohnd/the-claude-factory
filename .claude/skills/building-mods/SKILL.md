@@ -51,7 +51,7 @@ Claude Code ships what a mod is written with. Use it before anything this skill 
   - 2.1.307: a hook's `ask` routed to a person;
   - 2.1.309: `turn.step` naming a model by alias.
 
-  Look up any other feature in the changelog. State the minimum in Requirements and in the Claude Code badge.
+  Look up any other feature in the changelog. State the minimum in Prerequisites and in the Claude Code badge.
 - **When sources disagree**, trust in this order:
   1. the installed binary's output;
   2. the changelog, read raw from <https://raw.githubusercontent.com/anthropics/claude-code/main/CHANGELOG.md> (expect missing version headings);
@@ -96,7 +96,7 @@ Put each of these in the template's own sections:
 - **The permission prompt.** Say that the mod cannot restyle it or change what it shows.
 - **Diagnosis.** `/plugin` names the mods the session loaded, and only `claude --debug` shows why one was refused or a hook skipped.
 - **Options.** Set them from the shell with `claude plugin install <plugin>@the-claude-factory --config <key>=<value>`, or in `/config`.
-- **Tested with.** In the **Claude Code** row of the Requirements table, "Tested with vX.Y.Z.", updated in every release, and the same version in that release's CHANGELOG entry. The docs say the README is where to state it (`/en/plugins/mods/create` → Share your mod).
+- **Tested with.** In each release's CHANGELOG entry, "Tested with Claude Code vX.Y.Z.", the version you tested the mod with (`/en/plugins/mods/create` → Share your mod). The README states only the minimum.
 
 ## 6. Sources
 

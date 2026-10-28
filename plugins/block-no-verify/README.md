@@ -12,6 +12,7 @@
 
 [Why use it](#-why-use-it) •
 [What's inside](#-whats-inside) •
+[Prerequisites](#-prerequisites) •
 [Install](#-installation) •
 [Usage](#-usage) •
 [Compatibility](#-compatibility) •
@@ -42,56 +43,276 @@ A pre-commit hook fails, and the quickest way for an agent to get past it is to 
 | :-- | :-- | :-- | :-- |
 | 🪝 Hook | `PreToolUse` on Bash and PowerShell | Reads each command and denies one that runs git so that it skips commit hooks or signing. Every other command passes without a word | Automatically, on every Bash and PowerShell command, in the main conversation and in subagents |
 
-## ✅ Requirements
+## 📋 Prerequisites
 
-| Requirement | Details |
-| :-- | :-- |
-| **Claude Code** | v2.1.295 or later — check with `claude --version`. The hook uses the `onFailure` field, which older versions ignore: a hook that cannot start would then let the command through without a word |
-| **Surfaces** | See [Compatibility](#-compatibility) |
-| **External tools** | `bash` 3.2 or later and `jq` 1.6 or later, on your `PATH` — check with `jq --version`. macOS has both (`/usr/bin/jq`, checked on macOS 27). On Linux, install `jq` with your package manager (`sudo apt install jq`, `sudo dnf install jq`). On Windows, use Git Bash and install `jq` with `winget install jqlang.jq`. `git` is optional: the hook only reads your aliases with it. Without `jq` the hook cannot read Claude's command: see [Limitations](#-limitations) |
-| **Accounts / API keys** | None |
+| Tool | Minimum version | Check |
+| :-- | :-- | :-- |
+| Claude Code | 2.1.295 | `claude --version` |
+| Bash | 3.2 | `bash --version` |
+| jq | 1.6 | `jq --version` |
+| git (optional), to read your git aliases | — | `git --version` |
+
+Claude Code 2.1.295 is the minimum because the hook uses the `onFailure` field, which older versions ignore: a hook that cannot start would then let the command through without a word. Without `jq` the hook cannot read Claude's command: see [Limitations](#-limitations). On Windows, the plugin runs in Git Bash.
+
+### 🤖 Claude Code
+
+Already installed? Bring it to the latest version the way you installed it. New to Claude Code? Follow the [official setup](https://code.claude.com/docs/en/setup).
+
+<details>
+<summary>⬇️ <b>Native installer</b> — macOS, Linux, WSL</summary>
+
+```bash
+claude update
+```
+
+</details>
+<details>
+<summary>🍺 <b>Homebrew</b> — macOS, Linux</summary>
+
+```bash
+brew upgrade claude-code
+```
+
+</details>
+<details>
+<summary>📦 <b>npm</b> — any platform</summary>
+
+```bash
+npm install -g @anthropic-ai/claude-code@latest
+```
+
+</details>
+
+### 🐚 Bash
+
+macOS and Linux include Bash. On Windows, Git Bash comes with Git for Windows.
+
+<details>
+<summary>🪟 <b>Git for Windows (Git Bash), winget</b> — Windows</summary>
+
+```bash
+winget install --id Git.Git -e --source winget
+```
+
+</details>
+<details>
+<summary>🍫 <b>Git for Windows (Git Bash), Chocolatey</b> — Windows</summary>
+
+```bash
+choco install git
+```
+
+</details>
+
+### 🧰 jq
+
+macOS already includes `jq` (`/usr/bin/jq`).
+
+<details>
+<summary>🍺 <b>Homebrew</b> — macOS</summary>
+
+```bash
+brew install jq
+```
+
+</details>
+<details>
+<summary>🚢 <b>MacPorts</b> — macOS</summary>
+
+```bash
+port install jq
+```
+
+</details>
+<details>
+<summary>🐧 <b>apt</b> — Debian, Ubuntu</summary>
+
+```bash
+sudo apt-get install jq
+```
+
+</details>
+<details>
+<summary>🎩 <b>dnf</b> — Fedora</summary>
+
+```bash
+sudo dnf install jq
+```
+
+</details>
+<details>
+<summary>🦎 <b>zypper</b> — openSUSE</summary>
+
+```bash
+sudo zypper install jq
+```
+
+</details>
+<details>
+<summary>🏔️ <b>pacman</b> — Arch Linux</summary>
+
+```bash
+sudo pacman -S jq
+```
+
+</details>
+<details>
+<summary>🐍 <b>conda-forge</b> — macOS, Linux</summary>
+
+```bash
+conda install -c conda-forge jq
+```
+
+</details>
+<details>
+<summary>🪟 <b>winget</b> — Windows</summary>
+
+```bash
+winget install jqlang.jq
+```
+
+</details>
+<details>
+<summary>🥄 <b>Scoop</b> — Windows</summary>
+
+```bash
+scoop install jq
+```
+
+</details>
+<details>
+<summary>🍫 <b>Chocolatey</b> — Windows</summary>
+
+```bash
+choco install jq
+```
+
+</details>
+
+### 🌿 git
+
+<details>
+<summary>🍏 <b>Xcode Command Line Tools</b> — macOS</summary>
+
+```bash
+xcode-select --install
+```
+
+</details>
+<details>
+<summary>🍺 <b>Homebrew</b> — macOS</summary>
+
+```bash
+brew install git
+```
+
+</details>
+<details>
+<summary>🚢 <b>MacPorts</b> — macOS</summary>
+
+```bash
+sudo port install git
+```
+
+</details>
+<details>
+<summary>🐧 <b>apt</b> — Debian, Ubuntu</summary>
+
+```bash
+sudo apt-get install git
+```
+
+</details>
+<details>
+<summary>🐧 <b>Git PPA (latest stable)</b> — Ubuntu</summary>
+
+```bash
+sudo add-apt-repository ppa:git-core/ppa
+sudo apt update
+sudo apt install git
+```
+
+</details>
+<details>
+<summary>🎩 <b>dnf</b> — Fedora</summary>
+
+```bash
+sudo dnf install git
+```
+
+</details>
+<details>
+<summary>🏔️ <b>pacman</b> — Arch Linux</summary>
+
+```bash
+sudo pacman -S git
+```
+
+</details>
+<details>
+<summary>🦎 <b>zypper</b> — openSUSE</summary>
+
+```bash
+sudo zypper install git
+```
+
+</details>
+<details>
+<summary>🪟 <b>winget</b> — Windows</summary>
+
+```bash
+winget install --id Git.Git -e --source winget
+```
+
+</details>
+<details>
+<summary>🍫 <b>Chocolatey</b> — Windows</summary>
+
+```bash
+choco install git
+```
+
+</details>
 
 ## 📥 Installation
 
-<details open>
-<summary><b>💻 Terminal (shell)</b></summary>
+### 💻 Terminal
 
 ```bash
-# One step: adds the marketplace (if needed) and installs the plugin — Claude Code v2.1.292+
-claude plugin install block-no-verify --marketplace nerymurillohnd/the-claude-factory
-
-# Or, with the marketplace already added
+claude plugin marketplace add nerymurillohnd/the-claude-factory
 claude plugin install block-no-verify@the-claude-factory
 ```
 
-Add `--scope project` to enable it for everyone working in the current repository; each collaborator still installs it once on their own machine.
+In one step (Claude Code v2.1.292+):
 
-</details>
-
-<details>
-<summary><b>💬 Inside a Claude Code session</b></summary>
-
-```text
-/plugin install block-no-verify --marketplace nerymurillohnd/the-claude-factory
+```bash
+claude plugin install block-no-verify --marketplace nerymurillohnd/the-claude-factory
 ```
 
-Requires Claude Code v2.1.275+. With the marketplace already added, `/plugin install block-no-verify@the-claude-factory` opens the plugin's details so you can pick a scope. You can also browse it in `/plugin` → **Discover**. Run `/reload-plugins` to start the guard in the session you are in.
+For everyone working in the current repository:
 
-</details>
+```bash
+claude plugin install block-no-verify@the-claude-factory --scope project
+```
 
-<details>
-<summary><b>🖥️ Claude app (web and desktop)</b></summary>
+No GitHub SSH key? Run this first:
+
+```bash
+export CLAUDE_CODE_PLUGIN_PREFER_HTTPS=1
+```
+
+### 💬 Inside a Claude Code session
+
+```text
+/plugin marketplace add nerymurillohnd/the-claude-factory
+/plugin install block-no-verify@the-claude-factory
+```
+
+### 🖥️ Claude app (web and desktop)
 
 1. Open **Customize** in the sidebar, then **Plugins**.
 2. Select **Add** → **Add marketplace** and enter `nerymurillohnd/the-claude-factory`.
 3. Find **Block No Verify** in **Discover** and select **Add**.
-
-In the desktop app's **Code** tab you can also click **+** next to the prompt box → **Add plugins** (or **Plugins** → **Browse plugins**), or open **Settings** → **Plugins** → **Discover**.
-
-</details>
-
-> [!NOTE]
-> New to this marketplace? The [installation guide](../../docs/installation.md) covers every surface step by step.
 
 ## 🚀 Usage
 
@@ -151,7 +372,7 @@ The guard is a barrier for Claude, not a security boundary. Claude Code's own do
 | Some spellings are not read: comma brace lists (`{git,} commit -n`, `git commit --{no-verify,message=x}`), `bash -c -- '…'` and `bash -c -e '…'` with options between `-c` and the script, `xargs git` fed by a heredoc, and `source <(…)` | The command runs | Protect what must hold with CI and branch protection |
 | Values that come from outside the command: functions, earlier exports and scripts run from files | The command runs | Same |
 | Your organization can turn hooks off with `allowManagedHooksOnly`, or you with `disableAllHooks` | The guard does nothing | Check `/plugin` and your settings |
-| No `jq` on `PATH` | A command that could involve git is denied with the message `jq is not installed`; every other command runs | Install `jq` (see [Requirements](#-requirements)) |
+| No `jq` on `PATH` | A command that could involve git is denied with the message `jq is not installed`; every other command runs | Install `jq` (see [Prerequisites](#-prerequisites)) |
 | A command too large to analyze within the hook's time that mentions a bypass | It is denied with that reason | Run smaller commands |
 | The guard itself fails | Claude Code blocks the command and shows the error | Run `/reload-plugins`; if it keeps failing, [report it](#-found-a-problem) |
 | In a Claude app chat conversation hooks do not run | No guard | Use a Cowork session or Claude Code |
@@ -162,12 +383,22 @@ The guard is a barrier for Claude, not a security boundary. Claude Code's own do
 claude plugin update block-no-verify@the-claude-factory
 ```
 
-Or in a session: `/plugin` → **Installed** → **Block No Verify** → **Update now**. Then run `/reload-plugins`.
+Then, in an open session:
+
+```text
+/reload-plugins
+```
 
 Installed from the Claude app? In Claude Code (v2.1.273+, signed in with that claude.ai account) it appears as `block-no-verify@synced`: update and uninstall it in the app (**Customize** → **Plugins**); in `/plugin` you can only turn it on or off, unless your organization requires it.
 
 > [!TIP]
-> Turn on auto-update once for the whole marketplace: `/plugin` → **Marketplaces** → **the-claude-factory** → **Enable auto-update**.
+> Auto-update is off for this marketplace until you turn it on: `/plugin` → **Marketplaces** → **the-claude-factory** → **Enable auto-update**.
+
+Update `jq` and `git` the way you installed them, for example with Homebrew:
+
+```bash
+brew upgrade jq git
+```
 
 ## 🗑️ Uninstalling
 
@@ -175,9 +406,15 @@ Installed from the Claude app? In Claude Code (v2.1.273+, signed in with that cl
 claude plugin uninstall block-no-verify@the-claude-factory
 ```
 
-In a session: `/plugin` → **Installed** → **Block No Verify** → **Uninstall**. In the Claude app: **Customize** → **Plugins** → **Block No Verify** → its menu → **Remove**.
+Installed with `--scope project`:
 
-The plugin keeps no data and writes no files, so nothing is left behind.
+```bash
+claude plugin uninstall block-no-verify@the-claude-factory --scope project
+```
+
+In the Claude app: **Customize** → **Plugins** → **Block No Verify** → its menu → **Remove**.
+
+Uninstalling from the last scope it's installed at also deletes its saved options and data directory, unless you add `--keep-data`. The plugin keeps no data and writes no files, so nothing is left behind.
 
 ## 🧭 Compatibility
 
@@ -231,7 +468,7 @@ By about 30 ms per Bash command: Claude Code logged 26 to 39 ms for the hook ins
 <details>
 <summary><b>The message says "jq is not installed".</b></summary>
 
-The guard needs `jq` to read Claude's command. Install it (see [Requirements](#-requirements)); until then it denies commands that could involve git and lets the others run.
+The guard needs `jq` to read Claude's command. Install it (see [Prerequisites](#-prerequisites)); until then it denies commands that could involve git and lets the others run.
 
 </details>
 

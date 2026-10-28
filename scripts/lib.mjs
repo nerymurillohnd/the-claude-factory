@@ -85,7 +85,7 @@ export const RESERVED_NAME = new RegExp(
 export const REQUIRED_PLUGIN_SECTIONS = [
   'Why use it',
   "What's inside",
-  'Requirements',
+  'Prerequisites',
   'Installation',
   'Usage',
   'Updating',

@@ -12,6 +12,7 @@
 
 [Why use it](#-why-use-it) •
 [What's inside](#-whats-inside) •
+[Prerequisites](#-prerequisites) •
 [Install](#-installation) •
 [Usage](#-usage) •
 [Compatibility](#-compatibility) •
@@ -42,56 +43,80 @@ Most weak prompts come from a vague goal, not from missing tags or headings. Pro
 | :-- | :-- | :-- | :-- |
 | 🎯 Skill | `prompt-writer:prompt-writer` | Acts as your prompt partner: clarifies the goal, researches what the prompt depends on, and delivers one copy-ready prompt, the text of a system prompt, skill, slash command or agent, or a prompt that has Claude build one, with setup advice. It writes the prompt; you run it in another session | Only when you run `/prompt-writer:prompt-writer`; Claude doesn't start it on its own |
 
-## ✅ Requirements
+## 📋 Prerequisites
 
-| Requirement | Details |
-| :-- | :-- |
-| **Claude Code** | v2.1.292 or later — check with `claude --version` |
-| **Surfaces** | See [Compatibility](#-compatibility) |
-| **External tools** | None |
-| **Accounts / API keys** | None. Checking current official documentation needs web access in your session; without it, Claude says which facts it could not verify. |
+| Tool | Minimum version | Check |
+| :-- | :-- | :-- |
+| Claude Code | 2.1.292 | `claude --version` |
+
+### 🤖 Claude Code
+
+Already installed? Bring it to the latest version the way you installed it. New to Claude Code? Follow the [official setup](https://code.claude.com/docs/en/setup).
+
+<details>
+<summary>⬇️ <b>Native installer</b> — macOS, Linux, WSL</summary>
+
+```bash
+claude update
+```
+
+</details>
+<details>
+<summary>🍺 <b>Homebrew</b> — macOS, Linux</summary>
+
+```bash
+brew upgrade claude-code
+```
+
+</details>
+<details>
+<summary>📦 <b>npm</b> — any platform</summary>
+
+```bash
+npm install -g @anthropic-ai/claude-code@latest
+```
+
+</details>
 
 ## 📥 Installation
 
-<details open>
-<summary><b>💻 Terminal (shell)</b></summary>
+### 💻 Terminal
 
 ```bash
-# One step: adds the marketplace (if needed) and installs the plugin — Claude Code v2.1.292+
-claude plugin install prompt-writer --marketplace nerymurillohnd/the-claude-factory
-
-# Or, with the marketplace already added
+claude plugin marketplace add nerymurillohnd/the-claude-factory
 claude plugin install prompt-writer@the-claude-factory
 ```
 
-Add `--scope project` to enable it for everyone working in the current repository; each collaborator still installs it once on their own machine.
+In one step (Claude Code v2.1.292+):
 
-</details>
-
-<details>
-<summary><b>💬 Inside a Claude Code session</b></summary>
-
-```text
-/plugin install prompt-writer --marketplace nerymurillohnd/the-claude-factory
+```bash
+claude plugin install prompt-writer --marketplace nerymurillohnd/the-claude-factory
 ```
 
-Requires Claude Code v2.1.275+. With the marketplace already added, `/plugin install prompt-writer@the-claude-factory` opens the plugin's details so you can pick a scope. You can also browse it in `/plugin` → **Discover**.
+For everyone working in the current repository:
 
-</details>
+```bash
+claude plugin install prompt-writer@the-claude-factory --scope project
+```
 
-<details>
-<summary><b>🖥️ Claude app (web and desktop)</b></summary>
+No GitHub SSH key? Run this first:
+
+```bash
+export CLAUDE_CODE_PLUGIN_PREFER_HTTPS=1
+```
+
+### 💬 Inside a Claude Code session
+
+```text
+/plugin marketplace add nerymurillohnd/the-claude-factory
+/plugin install prompt-writer@the-claude-factory
+```
+
+### 🖥️ Claude app (web and desktop)
 
 1. Open **Customize** in the sidebar, then **Plugins**.
 2. Select **Add** → **Add marketplace** and enter `nerymurillohnd/the-claude-factory`.
 3. Find **Prompt Writer** in **Discover** and select **Add**.
-
-In the desktop app's **Code** tab you can also click **+** next to the prompt box → **Add plugins** (or **Plugins** → **Browse plugins**), or open **Settings** → **Plugins** → **Discover**.
-
-</details>
-
-> [!NOTE]
-> New to this marketplace? The [installation guide](../../docs/installation.md) covers every surface step by step.
 
 ## 🚀 Usage
 
@@ -146,12 +171,16 @@ Start every request with `/prompt-writer:prompt-writer`; Claude doesn't start th
 claude plugin update prompt-writer@the-claude-factory
 ```
 
-Or in a session: `/plugin` → **Installed** → **Prompt Writer** → **Update now**. Then run `/reload-plugins`.
+Then, in an open session:
+
+```text
+/reload-plugins
+```
 
 Installed from the Claude app? In Claude Code (v2.1.273+, signed in with that claude.ai account) it appears as `prompt-writer@synced`: update and uninstall it in the app (**Customize** → **Plugins**); in `/plugin` you can only turn it on or off, unless your organization requires it.
 
 > [!TIP]
-> Turn on auto-update once for the whole marketplace: `/plugin` → **Marketplaces** → **the-claude-factory** → **Enable auto-update**.
+> Auto-update is off for this marketplace until you turn it on: `/plugin` → **Marketplaces** → **the-claude-factory** → **Enable auto-update**.
 
 ## 🗑️ Uninstalling
 
@@ -159,9 +188,15 @@ Installed from the Claude app? In Claude Code (v2.1.273+, signed in with that cl
 claude plugin uninstall prompt-writer@the-claude-factory
 ```
 
-In a session: `/plugin` → **Installed** → **Prompt Writer** → **Uninstall**. In the Claude app: **Customize** → **Plugins** → **Prompt Writer** → its menu → **Remove**.
+Installed with `--scope project`:
 
-Prompts you saved to files stay where you put them.
+```bash
+claude plugin uninstall prompt-writer@the-claude-factory --scope project
+```
+
+In the Claude app: **Customize** → **Plugins** → **Prompt Writer** → its menu → **Remove**.
+
+Uninstalling from the last scope it's installed at also deletes its saved options and data directory, unless you add `--keep-data`. Prompts you saved to files stay where you put them.
 
 ## 🧭 Compatibility
 
@@ -203,7 +238,7 @@ Bring the result back to the conversation. Claude checks it against your goal, t
 <details>
 <summary><b>What happens when the official documentation has changed?</b></summary>
 
-The built-in guidance is a snapshot of Anthropic's prompting documentation dated 2026-10-14. Each time, Claude also reads the target model's current page on what changed. If current official documentation contradicts the snapshot on something your prompt depends on, Claude follows the live page and tells you in the design notes what the snapshot says, what the live page says and how it affects your prompt.
+The built-in guidance is a snapshot of Anthropic's prompting documentation dated 2026-10-14. Each time, Claude also reads the target model's current page on what changed. If current official documentation contradicts the snapshot on something your prompt depends on, Claude follows the live page and tells you in the design notes what the snapshot says, what the live page says and how it affects your prompt. Checking current official documentation needs web access in your session; without it, Claude says which facts it could not verify.
 
 </details>
 

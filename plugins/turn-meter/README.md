@@ -12,6 +12,7 @@
 
 [Why use it](#-why-use-it) •
 [What's inside](#-whats-inside) •
+[Prerequisites](#-prerequisites) •
 [Install](#-installation) •
 [Usage](#-usage) •
 [Compatibility](#-compatibility) •
@@ -40,58 +41,122 @@
 | :-- | :-- | :-- | :-- |
 | 🧩 Mod | `turn-meter` | Counts each turn's tools and tokens, draws the last-turn band above the prompt, alerts on long turns, and adds the `/turn-meter` command | Automatically in every Claude Code session once installed |
 
-## ✅ Requirements
+## 📋 Prerequisites
 
-| Requirement | Details |
-| :-- | :-- |
-| **Claude Code** | v2.1.295 or later — check with `claude --version`. Tested with v2.1.311. |
-| **Surfaces** | See [Compatibility](#-compatibility) |
-| **External tools** | None |
-| **Accounts / API keys** | None |
-| **Native notifications** (optional) | A terminal Claude Code can notify through: iTerm2, kitty or Ghostty, or the terminal bell. Claude Code picks it with its `preferredNotifChannel` setting. Where none is available, the alert falls back to a toast. |
+| Tool | Minimum version | Check |
+| :-- | :-- | :-- |
+| Claude Code | 2.1.295 | `claude --version` |
+| Notifying terminal (optional): iTerm2, kitty or Ghostty, for native notifications | — | — |
 
-> [!NOTE]
-> Turn Meter makes no network calls, runs no commands, and reads or writes no files. It keeps the last turn's summary in the session's memory only, so nothing carries over between sessions.
+Without one, the terminal bell can still notify; where nothing can, the alert falls back to a toast.
+
+### 🤖 Claude Code
+
+Already installed? Bring it to the latest version the way you installed it. New to Claude Code? Follow the [official setup](https://code.claude.com/docs/en/setup).
+
+<details>
+<summary>⬇️ <b>Native installer</b> — macOS, Linux, WSL</summary>
+
+```bash
+claude update
+```
+
+</details>
+<details>
+<summary>🍺 <b>Homebrew</b> — macOS, Linux</summary>
+
+```bash
+brew upgrade claude-code
+```
+
+</details>
+<details>
+<summary>📦 <b>npm</b> — any platform</summary>
+
+```bash
+npm install -g @anthropic-ai/claude-code@latest
+```
+
+</details>
+
+### 🔔 Notifying terminal
+
+Get iTerm2 from its [download page](https://iterm2.com/downloads.html) (macOS). Claude Code picks the channel with its `preferredNotifChannel` setting.
+
+<details>
+<summary>🐱 <b>kitty installer</b> — macOS, Linux</summary>
+
+```bash
+curl -L https://sw.kovidgoyal.net/kitty/installer.sh | sh /dev/stdin
+```
+
+</details>
+<details>
+<summary>👻 <b>Ghostty (Homebrew)</b> — macOS</summary>
+
+```bash
+brew install --cask ghostty
+```
+
+</details>
+<details>
+<summary>👻 <b>Ghostty (distribution package)</b> — Arch Linux</summary>
+
+```bash
+sudo pacman -S ghostty
+```
+
+</details>
+<details>
+<summary>👻 <b>Ghostty (distribution package)</b> — Ubuntu 26.04+</summary>
+
+```bash
+sudo apt install ghostty
+```
+
+</details>
+<details>
+<summary>👻 <b>Ghostty (Snap)</b> — Linux</summary>
+
+```bash
+sudo snap install ghostty --classic
+```
+
+</details>
 
 ## 📥 Installation
 
-<details open>
-<summary><b>💻 Terminal (shell)</b></summary>
+### 💻 Terminal
 
 ```bash
-# One step: adds the marketplace (if needed) and installs the plugin — Claude Code v2.1.292+
-claude plugin install turn-meter --marketplace nerymurillohnd/the-claude-factory
-
-# Or, with the marketplace already added
+claude plugin marketplace add nerymurillohnd/the-claude-factory
 claude plugin install turn-meter@the-claude-factory
 ```
 
-Add `--scope project` to enable it for everyone working in the current repository; each collaborator still installs it once on their own machine.
+In one step (Claude Code v2.1.292+):
 
-</details>
-
-<details>
-<summary><b>💬 Inside a Claude Code session</b></summary>
-
-```text
-/plugin install turn-meter --marketplace nerymurillohnd/the-claude-factory
+```bash
+claude plugin install turn-meter --marketplace nerymurillohnd/the-claude-factory
 ```
 
-Requires Claude Code v2.1.275+. With the marketplace already added, `/plugin install turn-meter@the-claude-factory` opens the plugin's details so you can pick a scope. You can also browse it in `/plugin` → **Discover**.
+For everyone working in the current repository:
 
-</details>
+```bash
+claude plugin install turn-meter@the-claude-factory --scope project
+```
 
-<details>
-<summary><b>🖥️ Claude desktop app — Code tab</b></summary>
+No GitHub SSH key? Run this first:
 
-With the marketplace added, click **+** next to the prompt box → **Add plugins** (or **Plugins** → **Browse plugins**), or open **Settings** → **Plugins** → **Discover**; then select **Turn Meter** and choose a scope.
+```bash
+export CLAUDE_CODE_PLUGIN_PREFER_HTTPS=1
+```
 
-</details>
+### 💬 Inside a Claude Code session
 
-> [!NOTE]
-> New to this marketplace? The [installation guide](../../docs/installation.md) covers every surface step by step.
-
-A mod runs with your permissions and no sandbox. Before you install it, you can see everything it hooks and calls with `claude plugin validate <path to the plugin folder>`.
+```text
+/plugin marketplace add nerymurillohnd/the-claude-factory
+/plugin install turn-meter@the-claude-factory
+```
 
 ## 🚀 Usage
 
@@ -140,16 +205,34 @@ claude plugin install turn-meter@the-claude-factory --config alert=notify --conf
 
 Change them in `/config`, where `alert` is a picker (v2.1.271+), or in `/plugin` → **Installed** → **Turn Meter** → **Configure options**. From the shell, pass `--config <option>=<value>` to `claude plugin install`.
 
+## 🔍 What this plugin runs and sends
+
+- **Hooks:** a mod, with no shell hooks. It hooks the start of each session, the start and end of each turn, each tool call, the band above the prompt and the `/turn-meter` command; see [What does the mod reach on my machine?](#-faq--troubleshooting)
+- **MCP servers:** none.
+- **Network:** none. It runs no commands and never calls the model.
+- **Files written:** none; it reads no files either. It keeps the last turn's summary in the session's memory only, so nothing carries over between sessions.
+- **Before you install:** a mod runs with your permissions and no sandbox; `claude plugin validate <path to the plugin folder>` shows everything it hooks and calls.
+
 ## 🔄 Updating
 
 ```bash
 claude plugin update turn-meter@the-claude-factory
 ```
 
-Or in a session: `/plugin` → **Installed** → **Turn Meter** → **Update now**. Then run `/reload-plugins`.
+Then, in an open session:
+
+```text
+/reload-plugins
+```
 
 > [!TIP]
-> Turn on auto-update once for the whole marketplace: `/plugin` → **Marketplaces** → **the-claude-factory** → **Enable auto-update**.
+> Auto-update is off for this marketplace until you turn it on: `/plugin` → **Marketplaces** → **the-claude-factory** → **Enable auto-update**.
+
+Update your terminal the way you installed it, for example:
+
+```bash
+brew upgrade --cask ghostty
+```
 
 ## 🗑️ Uninstalling
 
@@ -157,7 +240,13 @@ Or in a session: `/plugin` → **Installed** → **Turn Meter** → **Update now
 claude plugin uninstall turn-meter@the-claude-factory
 ```
 
-In a session: `/plugin` → **Installed** → **Turn Meter** → **Uninstall**.
+Installed with `--scope project`:
+
+```bash
+claude plugin uninstall turn-meter@the-claude-factory --scope project
+```
+
+Uninstalling from the last scope it's installed at also deletes its saved options and data directory, unless you add `--keep-data`. The plugin keeps the last turn's summary in the session's memory only, so nothing is left behind.
 
 ## 🧭 Compatibility
 

@@ -185,7 +185,7 @@ def readme_requirements(name: str) -> list[str]:
         f"plugins%2F{name}%2F.claude-plugin%2Fplugin.json",
         f"claude plugin install {name} --marketplace {REPO_SLUG}",
         f"claude plugin install {install}",
-        f"/plugin install {name} --marketplace {REPO_SLUG}",
+        f"/plugin marketplace add {REPO_SLUG}",
         f"/plugin install {install}",
         f"claude plugin update {install}",
         f"claude plugin uninstall {install}",

@@ -12,6 +12,7 @@
 
 [Why use it](#-why-use-it) •
 [What's inside](#-whats-inside) •
+[Prerequisites](#-prerequisites) •
 [Install](#-installation) •
 [Usage](#-usage) •
 [Configuration](#%EF%B8%8F-configuration) •
@@ -49,63 +50,217 @@
 | 🤖 Agent | `tailwind-development:tailwind-refactorer` | Refactors existing Tailwind code to cleaner, token-based markup without changing how it looks, then runs your checks | When Claude delegates a cleanup, or `@agent-tailwind-development:tailwind-refactorer` |
 | 🤖 Agent | `tailwind-development:tailwind-migrator` | Migrates a v3 project to v4 in a separate git worktree, checks every breaking change and reports each with its verdict | When Claude delegates a v3 to v4 upgrade you approved, or `@agent-tailwind-development:tailwind-migrator` |
 
-## ✅ Requirements
+## 📋 Prerequisites
 
-| Requirement             | Details                                                                   |
-| :---------------------- | :------------------------------------------------------------------------ |
-| **Claude Code**         | v2.1.292 or later — check with `claude --version`   |
-| **Surfaces**            | See [Compatibility](#-compatibility)                                      |
-| **External tools**      | For the language-server checks: Node.js 24 or later and npm on your `PATH` (check with `node --version` and `npm --version`; install from [nodejs.org](https://nodejs.org)), and `tailwindcss` installed in your project. For the link check before Claude delegates to an agent: Python 3.12 or later as `python3` (check with `python3 --version`). For a v3 to v4 migration: git, with the project in a git repository, since the migrator works in a git worktree (check with `git --version`). Claude uses your project's own package manager and scripts to verify changes. Optional: the Context7 MCP server, which Claude queries first for the docs when you have it |
-| **Accounts / API keys** | None                                                                      |
-| **Network**             | See [What this plugin runs and sends](#-what-this-plugin-runs-and-sends)  |
+| Tool | Minimum version | Check |
+| :-- | :-- | :-- |
+| Claude Code | 2.1.292 | `claude --version` |
+| Node.js and npm, on your `PATH` | 24 | `node --version` and `npm --version` |
+| Python, as `python3` | 3.12 | `python3 --version` |
+| git (optional: for a v3 to v4 migration) | — | `git --version` |
+| Context7 MCP server (optional) | — | `claude mcp list` |
+
+Node.js runs the language-server checks. Python runs the link check before Claude delegates to an agent. git is needed only for a v3 to v4 migration, with your project in a git repository, since the migrator works in a git worktree. Context7, when you have it, is the first place Claude looks up Tailwind's docs.
+
+### 🤖 Claude Code
+
+Already installed? Bring it to the latest version the way you installed it. New to Claude Code? Follow the [official setup](https://code.claude.com/docs/en/setup).
+
+<details>
+<summary>⬇️ <b>Native installer</b> — macOS, Linux, WSL</summary>
+
+```bash
+claude update
+```
+
+</details>
+<details>
+<summary>🍺 <b>Homebrew</b> — macOS, Linux</summary>
+
+```bash
+brew upgrade claude-code
+```
+
+</details>
+<details>
+<summary>📦 <b>npm</b> — any platform</summary>
+
+```bash
+npm install -g @anthropic-ai/claude-code@latest
+```
+
+</details>
+
+### 🟢 Node.js
+
+<details>
+<summary>⬇️ <b>nvm</b> — macOS, Linux</summary>
+
+```bash
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.8/install.sh | bash
+\. "$HOME/.nvm/nvm.sh"
+nvm install 24
+```
+
+</details>
+<details>
+<summary>⬇️ <b>fnm</b> — macOS, Linux</summary>
+
+```bash
+curl -o- https://fnm.vercel.app/install | bash
+fnm install 24
+```
+
+</details>
+<details>
+<summary>🍺 <b>Homebrew</b> — macOS, Linux</summary>
+
+```bash
+brew install node
+```
+
+</details>
+
+npm comes with Node.js.
+
+### 🐍 Python
+
+<details>
+<summary>🍺 <b>Homebrew</b> — macOS, Linux</summary>
+
+```bash
+brew install python
+```
+
+</details>
+<details>
+<summary>📦 <b>apt</b> — Debian, Ubuntu</summary>
+
+```bash
+sudo apt install python3
+```
+
+</details>
+<details>
+<summary>📦 <b>dnf</b> — Fedora</summary>
+
+```bash
+sudo dnf install python3
+```
+
+</details>
+
+Or download the installer from [python.org](https://www.python.org/downloads/).
+
+### 🔀 git
+
+<details>
+<summary>🍺 <b>Homebrew</b> — macOS</summary>
+
+```bash
+brew install git
+```
+
+</details>
+<details>
+<summary>🛠️ <b>Xcode Command Line Tools</b> — macOS</summary>
+
+```bash
+xcode-select --install
+```
+
+</details>
+<details>
+<summary>🚢 <b>MacPorts</b> — macOS</summary>
+
+```bash
+sudo port install git
+```
+
+</details>
+<details>
+<summary>📦 <b>apt</b> — Debian, Ubuntu</summary>
+
+```bash
+sudo apt-get install git
+```
+
+</details>
+<details>
+<summary>📦 <b>dnf</b> — Fedora</summary>
+
+```bash
+sudo dnf install git
+```
+
+</details>
+<details>
+<summary>📦 <b>pacman</b> — Arch Linux</summary>
+
+```bash
+sudo pacman -S git
+```
+
+</details>
+<details>
+<summary>📦 <b>zypper</b> — openSUSE</summary>
+
+```bash
+sudo zypper install git
+```
+
+</details>
+
+### 📚 Context7 MCP server
+
+<details>
+<summary>⬇️ <b>Context7 setup</b> — macOS, Linux</summary>
+
+```bash
+npx ctx7 setup --claude
+```
+
+</details>
 
 ## 📥 Installation
 
-<details open>
-<summary><b>💻 Terminal (shell)</b></summary>
+### 💻 Terminal
 
 ```bash
-# One step: adds the marketplace (if needed) and installs the plugin — Claude Code v2.1.292+
-claude plugin install tailwind-development --marketplace nerymurillohnd/the-claude-factory
-
-# Or, with the marketplace already added
+claude plugin marketplace add nerymurillohnd/the-claude-factory
 claude plugin install tailwind-development@the-claude-factory
 ```
 
-Add `--scope project` to enable it for everyone working in the current repository; each collaborator still installs it once on their own machine.
+In one step (Claude Code v2.1.292+):
 
-No GitHub SSH key? Set this first, so installs from `/plugin` and updates use HTTPS:
+```bash
+claude plugin install tailwind-development --marketplace nerymurillohnd/the-claude-factory
+```
+
+For everyone working in the current repository:
+
+```bash
+claude plugin install tailwind-development@the-claude-factory --scope project
+```
+
+No GitHub SSH key? Run this first:
 
 ```bash
 export CLAUDE_CODE_PLUGIN_PREFER_HTTPS=1
 ```
 
-</details>
-
-<details>
-<summary><b>💬 Inside a Claude Code session</b></summary>
+### 💬 Inside a Claude Code session
 
 ```text
-/plugin install tailwind-development --marketplace nerymurillohnd/the-claude-factory
+/plugin marketplace add nerymurillohnd/the-claude-factory
+/plugin install tailwind-development@the-claude-factory
 ```
 
-Requires Claude Code v2.1.275+. With the marketplace already added, `/plugin install tailwind-development@the-claude-factory` opens the plugin's details so you can pick a scope. You can also browse it in `/plugin` → **Discover**.
-
-</details>
-
-<details>
-<summary><b>🖥️ Claude app (web and desktop)</b></summary>
+### 🖥️ Claude app (web and desktop)
 
 1. Open **Customize** in the sidebar, then **Plugins**.
 2. Select **Add** → **Add marketplace** and enter `nerymurillohnd/the-claude-factory`.
 3. Find **Tailwind CSS Development** in **Discover** and select **Add**.
-
-In the desktop app's **Code** tab you can also click **+** next to the prompt box → **Add plugins** (or **Plugins** → **Browse plugins**), or open **Settings** → **Plugins** → **Discover**.
-
-</details>
-
-> [!NOTE]
-> New to this marketplace? The [installation guide](../../docs/installation.md) covers every surface step by step.
 
 ## 🚀 Usage
 
@@ -191,8 +346,8 @@ Turning a file type off stops only the automatic check after edits; Claude can s
 
 - **Hooks:** `PostToolUse` on `Edit` and `Write` calls the plugin's own MCP tool `check_file` with the path of the file Claude edited. It reads that file and adds its diagnostics to the conversation; it blocks nothing. In a project without `tailwindcss` installed, or for a file type you turned off, it adds nothing.
 - **Agents:** four subagents that run inside your Claude Code session when Claude delegates to them or you mention them. `tailwind-docs` and `tailwind-auditor` change no files; the auditor runs your project's lint and type-check scripts. `tailwind-refactorer` edits files in the scope you give it and runs your checks. `tailwind-migrator` works in a git worktree Claude Code creates under `.claude/worktrees/` on a new branch, and leaves its changes uncommitted for you to review.
-- **Scripts:** before the first delegation to an agent in a session, Claude runs `python3` on the docs skill's `scripts/check-links.py`, under your usual permission prompt. It reads the skill's own Markdown files, requests each URL they hold, and prints only the broken or unconfirmed ones; it reads nothing in your project and writes no files.
-- **MCP servers:** `tailwindcss`, a local process the plugin starts with `node` in each Claude Code session. On the first file it checks, it starts a second local process, the official Tailwind CSS language server, which reads your project's CSS entry point and source files and watches them for changes while the session lasts. Both stop when the session ends. The tools read files inside your project folder only, refuse paths outside it, and skip files over 1 MB. When you already have the Context7 MCP server connected, Claude queries it first for Tailwind's docs; the plugin doesn't install or configure it.
+- **Scripts:** before the first delegation to an agent in a session, Claude runs `python3` on the docs skill's `scripts/check-links.py`, under your usual permission prompt. It reads the skill's own Markdown files, requests each URL they hold, and prints only the broken or unconfirmed ones; it reads nothing in your project and writes no files. To verify changes, Claude uses your project's own package manager and scripts.
+- **MCP servers:** `tailwindcss`, a local process the plugin starts with `node` in each Claude Code session. On the first file it checks, it starts a second local process, the official Tailwind CSS language server, which reads your project's CSS entry point and source files and watches them for changes while the session lasts. Both stop when the session ends. The language server works only when `tailwindcss` is installed in your project. The tools read files inside your project folder only, refuse paths outside it, and skip files over 1 MB. When you already have the Context7 MCP server connected, Claude queries it first for Tailwind's docs; the plugin doesn't install or configure it.
 - **Installed packages:** when Claude Code installs or updates the plugin, it downloads five pinned npm packages from the npm registry into the plugin's own folder, without running their install scripts: `@tailwindcss/language-server` (MIT), `@modelcontextprotocol/server` and `@modelcontextprotocol/core` (Apache-2.0), `vscode-jsonrpc` (MIT) and `zod` (MIT). Nothing is installed globally or in your project.
 - **Network:** apart from that package download and the link check, the plugin makes no calls itself; its two local processes make none. The link check sends a `HEAD` or `GET` request, with no data from you, to each page the docs skill links: `tailwindcss.com` and its versioned sites, `github.com` and the few other sites the references cite. Claude makes these requests with its own tools, each under your usual permission prompts, and none of them carries your code:
   - documentation pages from `tailwindcss.com` (and `v3.tailwindcss.com` or older versioned sites for older projects), or a short docs query to Context7 when you have it;
@@ -207,12 +362,22 @@ Turning a file type off stops only the automatic check after edits; Claude can s
 claude plugin update tailwind-development@the-claude-factory
 ```
 
-Or in a session: `/plugin` → **Installed** → **Tailwind CSS Development** → **Update now**. Then run `/reload-plugins`.
+Then, in an open session:
 
-Installed from the Claude app? In Claude Code (v2.1.273+, signed in with that claude.ai account) it appears as `tailwind-development@synced`: update and uninstall it in the app (**Customize** → **Plugins**); in `/plugin` you can only turn it on or off, unless your organization requires it.
+```text
+/reload-plugins
+```
+
+Installed from the Claude app? In Claude Code (v2.1.273+, signed in with that claude.ai account) it appears as `tailwind-development@synced`: update and uninstall it in the app (**Customize** → **Plugins**).
 
 > [!TIP]
 > Auto-update is off for this marketplace until you turn it on: `/plugin` → **Marketplaces** → **the-claude-factory** → **Enable auto-update**.
+
+Update Node.js, Python and git the way you installed them, for example with Homebrew:
+
+```bash
+brew upgrade node python git
+```
 
 ## 🗑️ Uninstalling
 
@@ -220,11 +385,15 @@ Installed from the Claude app? In Claude Code (v2.1.273+, signed in with that cl
 claude plugin uninstall tailwind-development@the-claude-factory
 ```
 
-Installed with `--scope project`? Add `--scope project` here too. Uninstalling from the last scope it's installed at also deletes its saved options and data directory, unless you pass `--keep-data`.
+Installed with `--scope project`:
 
-In a session: `/plugin` → **Installed** → **Tailwind CSS Development** → **Uninstall**. In the Claude app: **Customize** → **Plugins** → **Tailwind CSS Development** → its menu → **Remove**.
+```bash
+claude plugin uninstall tailwind-development@the-claude-factory --scope project
+```
 
-The plugin keeps no data and writes nothing outside its own folder, so nothing is left behind.
+In the Claude app: **Customize** → **Plugins** → **Tailwind CSS Development** → its menu → **Remove**.
+
+Uninstalling from the last scope it's installed at also deletes its saved options and data directory, unless you add `--keep-data`. The plugin keeps no data and writes nothing outside its own folder. A migration worktree under `.claude/worktrees/` stays until you remove it, and Node.js, Python and git stay installed.
 
 ## 🧭 Compatibility
 

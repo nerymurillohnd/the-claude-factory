@@ -12,6 +12,7 @@
 
 [Why use it](#-why-use-it) •
 [What's inside](#-whats-inside) •
+[Prerequisites](#-prerequisites) •
 [Install](#-installation) •
 [Usage](#-usage) •
 [Configuration](#%EF%B8%8F-configuration) •
@@ -48,69 +49,128 @@
 | 🔌 MCP server | `svelte` | The Svelte team's remote server at `https://mcp.svelte.dev/mcp`: `list-sections`, `get-documentation`, `svelte-autofixer` and `playground-link`, plus the `svelte-task` prompt and a docs resource for every section | Tools appear as `mcp__plugin_svelte-development_svelte__*`. Nothing to install |
 | 🧠 LSP server | `svelte` | Starts your `svelteserver --stdio` for `.svelte` files: diagnostics after each edit, and go to definition, references, hover, implementations, call hierarchy and symbols | Automatically when Claude opens or edits a `.svelte` file |
 
-## ✅ Requirements
+## 📋 Prerequisites
 
-| Requirement | Details |
-| :-- | :-- |
-| **Claude Code** | v2.1.303 or later — check with `claude --version` |
-| **Surfaces** | See [Compatibility](#-compatibility) |
-| **Network access** | To `https://mcp.svelte.dev` for the docs and the autofixer. Also `svelte.dev`, `raw.githubusercontent.com`, `api.github.com` and the npm registry, for public docs, changelogs and package versions; these requests carry no code |
-| **svelte-language-server** | 0.18.5 or later, installed globally, with `svelteserver` on the `PATH` of the shell you start `claude` from. It needs Node.js 18 or later and brings its own TypeScript (5.9 or 6) |
-| **Your project** | Svelte 5 and SvelteKit 3 for the full feature set; older majors get a migration proposal first. The project check uses the `svelte-check` your project already has |
-| **Accounts / API keys** | None |
+| Tool | Minimum version | Check |
+| :-- | :-- | :-- |
+| Claude Code | 2.1.303 | `claude --version` |
+| svelte-language-server | 0.18.5 | `npm ls -g svelte-language-server` |
+| Node.js | 18 | `node --version` |
 
-Install the language server once:
+Install svelte-language-server globally, with `svelteserver` on the `PATH` of the shell you start `claude` from. It needs Node.js and brings its own TypeScript (5.9 or 6).
+
+### 🤖 Claude Code
+
+Already installed? Bring it to the latest version the way you installed it. New to Claude Code? Follow the [official setup](https://code.claude.com/docs/en/setup).
+
+<details>
+<summary>⬇️ <b>Native installer</b> — macOS, Linux, WSL</summary>
+
+```bash
+claude update
+```
+
+</details>
+<details>
+<summary>🍺 <b>Homebrew</b> — macOS, Linux</summary>
+
+```bash
+brew upgrade claude-code
+```
+
+</details>
+<details>
+<summary>📦 <b>npm</b> — any platform</summary>
+
+```bash
+npm install -g @anthropic-ai/claude-code@latest
+```
+
+</details>
+
+### 🧠 svelte-language-server
+
+<details>
+<summary>📦 <b>npm</b> — any platform</summary>
 
 ```bash
 npm install -g svelte-language-server
 ```
 
-Older servers fail without an error in two common cases: before 0.18.4 they don't read SvelteKit 3's configuration from `vite.config`, and before 0.18.5 they find no configuration in a project under a folder whose name starts with a dot, such as Claude Code's `.claude/worktrees/`. Check yours with `npm ls -g svelte-language-server`.
+</details>
 
-Without the language server the plugin still works: Claude tells you once, navigates by text search and relies on your project check.
+Older servers fail without an error in two common cases: before 0.18.4 they don't read SvelteKit 3's configuration from `vite.config`, and before 0.18.5 they find no configuration in a project under a folder whose name starts with a dot, such as Claude Code's `.claude/worktrees/`.
+
+### 🟢 Node.js
+
+<details>
+<summary>📥 <b>nvm</b> — macOS, Linux</summary>
+
+```bash
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.8/install.sh | bash
+\. "$HOME/.nvm/nvm.sh"
+nvm install --lts
+```
+
+</details>
+<details>
+<summary>🍺 <b>Homebrew</b> — macOS, Linux</summary>
+
+```bash
+brew install node
+```
+
+</details>
+<details>
+<summary>🍫 <b>Chocolatey</b> — Windows, in PowerShell as administrator</summary>
+
+```powershell
+powershell -c "irm https://community.chocolatey.org/install.ps1|iex"
+choco install nodejs
+```
+
+</details>
 
 ## 📥 Installation
 
-<details open>
-<summary><b>💻 Terminal (shell)</b></summary>
+### 💻 Terminal
 
 ```bash
-# One step: adds the marketplace (if needed) and installs the plugin — Claude Code v2.1.292+
-claude plugin install svelte-development --marketplace nerymurillohnd/the-claude-factory
-
-# Or, with the marketplace already added
+claude plugin marketplace add nerymurillohnd/the-claude-factory
 claude plugin install svelte-development@the-claude-factory
 ```
 
-Add `--scope project` to enable it for everyone working in the current repository; each collaborator still installs it once on their own machine.
+In one step (Claude Code v2.1.292+):
 
-</details>
-
-<details>
-<summary><b>💬 Inside a Claude Code session</b></summary>
-
-```text
-/plugin install svelte-development --marketplace nerymurillohnd/the-claude-factory
+```bash
+claude plugin install svelte-development --marketplace nerymurillohnd/the-claude-factory
 ```
 
-Requires Claude Code v2.1.275+. With the marketplace already added, `/plugin install svelte-development@the-claude-factory` opens the plugin's details so you can pick a scope. You can also browse it in `/plugin` → **Discover**.
+For everyone working in the current repository:
 
-</details>
+```bash
+claude plugin install svelte-development@the-claude-factory --scope project
+```
 
-<details>
-<summary><b>🖥️ Claude app (web and desktop)</b></summary>
+No GitHub SSH key? Run this first:
+
+```bash
+export CLAUDE_CODE_PLUGIN_PREFER_HTTPS=1
+```
+
+### 💬 Inside a Claude Code session
+
+```text
+/plugin marketplace add nerymurillohnd/the-claude-factory
+/plugin install svelte-development@the-claude-factory
+```
+
+### 🖥️ Claude app (web and desktop)
 
 1. Open **Customize** in the sidebar, then **Plugins**.
 2. Select **Add** → **Add marketplace** and enter `nerymurillohnd/the-claude-factory`.
 3. Find **Svelte Development** in **Discover** and select **Add**.
 4. On the plugin's **Connectors** tab, connect `svelte` so its docs and autofixer tools are available.
-
-In the desktop app's **Code** tab you can also click **+** next to the prompt box → **Add plugins** (or **Plugins** → **Browse plugins**), or open **Settings** → **Plugins** → **Discover**.
-
-</details>
-
-> [!NOTE]
-> New to this marketplace? The [installation guide](../../docs/installation.md) covers every surface step by step.
 
 To confirm it works, ask Claude in a Svelte project: *"Where is the Counter component used?"* The answer lists each use with its file and line, found by the language server. Run `/mcp` to see `svelte` connected.
 
@@ -184,12 +244,22 @@ The plugin never installs a package. When something is missing (the language ser
 claude plugin update svelte-development@the-claude-factory
 ```
 
-Or in a session: `/plugin` → **Installed** → **Svelte Development** → **Update now**. Then run `/reload-plugins`. Update `svelte-language-server` yourself with `npm install -g svelte-language-server`.
+Then, in an open session:
+
+```text
+/reload-plugins
+```
 
 Installed from the Claude app? In Claude Code (v2.1.273+, signed in with that claude.ai account) it appears as `svelte-development@synced`: update and uninstall it in the app (**Customize** → **Plugins**); in `/plugin` you can only turn it on or off, unless your organization requires it.
 
 > [!TIP]
-> Turn on auto-update once for the whole marketplace: `/plugin` → **Marketplaces** → **the-claude-factory** → **Enable auto-update**.
+> Auto-update is off for this marketplace until you turn it on: `/plugin` → **Marketplaces** → **the-claude-factory** → **Enable auto-update**.
+
+Update the language server the way you installed it, for example:
+
+```bash
+npm install -g svelte-language-server
+```
 
 ## 🗑️ Uninstalling
 
@@ -197,7 +267,15 @@ Installed from the Claude app? In Claude Code (v2.1.273+, signed in with that cl
 claude plugin uninstall svelte-development@the-claude-factory
 ```
 
-In a session: `/plugin` → **Installed** → **Svelte Development** → **Uninstall**. In the Claude app: **Customize** → **Plugins** → **Svelte Development** → its menu → **Remove**. Your `svelte-language-server` and your project's dependencies stay as they are.
+Installed with `--scope project`:
+
+```bash
+claude plugin uninstall svelte-development@the-claude-factory --scope project
+```
+
+In the Claude app: **Customize** → **Plugins** → **Svelte Development** → its menu → **Remove**.
+
+Uninstalling from the last scope it's installed at also deletes its saved options and data directory, unless you add `--keep-data`. Your `svelte-language-server` and your project's dependencies stay as they are.
 
 ## 🧭 Compatibility
 
@@ -224,9 +302,16 @@ Run `/reload-plugins`, then type `/svelte-development:` to list its skills. If i
 </details>
 
 <details>
+<summary><b>Which Svelte and SvelteKit versions does my project need?</b></summary>
+
+Svelte 5 and SvelteKit 3 for the full feature set; on older majors Claude proposes a migration first. The project check uses the `svelte-check` your project already has.
+
+</details>
+
+<details>
 <summary><b>Claude says there is no code intelligence for <code>.svelte</code> files.</b></summary>
 
-Claude Code starts `svelteserver` by name from the `PATH` it was launched with. Run `command -v svelteserver` in the shell you start `claude` from; if nothing prints, run `npm install -g svelte-language-server`, then `/reload-plugins`. Some IDEs and the Windows desktop app don't read your shell profile, which is where nvm, fnm and Volta add Node.js to the `PATH`: start Claude Code from a terminal, or launch the IDE from one. The macOS desktop app reads your shell profile when you open it from the Dock or Finder, so quit and reopen it after installing. `/plugin` → **Errors** shows `Executable not found in $PATH: "svelteserver"` when the binary is missing.
+Claude Code starts `svelteserver` by name from the `PATH` it was launched with. Run `command -v svelteserver` in the shell you start `claude` from; if nothing prints, run `npm install -g svelte-language-server`, then `/reload-plugins`. Some IDEs and the Windows desktop app don't read your shell profile, which is where nvm, fnm and Volta add Node.js to the `PATH`: start Claude Code from a terminal, or launch the IDE from one. The macOS desktop app reads your shell profile when you open it from the Dock or Finder, so quit and reopen it after installing. `/plugin` → **Errors** shows `Executable not found in $PATH: "svelteserver"` when the binary is missing. Without the language server the plugin still works: Claude tells you once, navigates by text search and relies on your project check.
 
 </details>
 
@@ -248,6 +333,13 @@ The Svelte language server keeps the configuration it loaded, and it can lag Sve
 <summary><b>The project check reports nothing after a change that should fail.</b></summary>
 
 In SvelteKit, run `npx svelte-kit sync` first: without SvelteKit's generated types the check misses errors. Also make sure the file is inside the `include` of your `tsconfig.json` and that your `check` script really runs `svelte-check`. Claude runs these checks itself before calling a silent result clean.
+
+</details>
+
+<details>
+<summary><b>What does the plugin send over the network?</b></summary>
+
+The `svelte` MCP server is the Svelte team's remote server at `https://mcp.svelte.dev`: Claude sends it the docs sections it looks up and the code it checks with the autofixer. Claude also reads `svelte.dev`, `raw.githubusercontent.com`, `api.github.com` and the npm registry for public docs, changelogs and package versions; these requests carry no code. To keep your code local, see the next question.
 
 </details>
 

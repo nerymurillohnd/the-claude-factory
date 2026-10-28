@@ -12,6 +12,7 @@
 
 [Why use it](#-why-use-it) •
 [What's inside](#-whats-inside) •
+[Prerequisites](#-prerequisites) •
 [Install](#-installation) •
 [Usage](#-usage) •
 [Compatibility](#-compatibility) •
@@ -38,59 +39,80 @@
 | :-- | :-- | :-- | :-- |
 | 🎯 Skill | `mods-engineering:cc-mods-guidance` | An engineering workflow for mods: scope, evidence, the right official page for each question, design, implementation within the engine's static-analysis rules, validation, tests, debugging and sharing | `/mods-engineering:cc-mods-guidance` or automatically when you work on a mod |
 
-## ✅ Requirements
+## 📋 Prerequisites
 
-| Requirement | Details |
-| :-- | :-- |
-| **Claude Code** | v2.1.292 or later — check with `claude --version`. Mods themselves need v2.1.287 or later. |
-| **Surfaces** | See [Compatibility](#-compatibility) |
-| **External tools** | None. To validate and test a mod, Claude runs the `claude` CLI (`claude plugin validate`, `claude plugin test`). |
-| **Accounts / API keys** | None |
+| Tool | Minimum version | Check |
+| :-- | :-- | :-- |
+| Claude Code | 2.1.292 | `claude --version` |
 
-> [!NOTE]
-> The plugin makes no network calls of its own. The skill tells Claude to read the official mod pages on `code.claude.com`, which it does with your session's web fetch tool when that tool is available.
+### 🤖 Claude Code
+
+Already installed? Bring it to the latest version the way you installed it. New to Claude Code? Follow the [official setup](https://code.claude.com/docs/en/setup).
+
+<details>
+<summary>⬇️ <b>Native installer</b> — macOS, Linux, WSL</summary>
+
+```bash
+claude update
+```
+
+</details>
+<details>
+<summary>🍺 <b>Homebrew</b> — macOS, Linux</summary>
+
+```bash
+brew upgrade claude-code
+```
+
+</details>
+<details>
+<summary>📦 <b>npm</b> — any platform</summary>
+
+```bash
+npm install -g @anthropic-ai/claude-code@latest
+```
+
+</details>
 
 ## 📥 Installation
 
-<details open>
-<summary><b>💻 Terminal (shell)</b></summary>
+### 💻 Terminal
 
 ```bash
-# One step: adds the marketplace (if needed) and installs the plugin — Claude Code v2.1.292+
-claude plugin install mods-engineering --marketplace nerymurillohnd/the-claude-factory
-
-# Or, with the marketplace already added
+claude plugin marketplace add nerymurillohnd/the-claude-factory
 claude plugin install mods-engineering@the-claude-factory
 ```
 
-Add `--scope project` to enable it for everyone working in the current repository; each collaborator still installs it once on their own machine.
+In one step (Claude Code v2.1.292+):
 
-</details>
-
-<details>
-<summary><b>💬 Inside a Claude Code session</b></summary>
-
-```text
-/plugin install mods-engineering --marketplace nerymurillohnd/the-claude-factory
+```bash
+claude plugin install mods-engineering --marketplace nerymurillohnd/the-claude-factory
 ```
 
-Requires Claude Code v2.1.275+. With the marketplace already added, `/plugin install mods-engineering@the-claude-factory` opens the plugin's details so you can pick a scope. You can also browse it in `/plugin` → **Discover**.
+For everyone working in the current repository:
 
-</details>
+```bash
+claude plugin install mods-engineering@the-claude-factory --scope project
+```
 
-<details>
-<summary><b>🖥️ Claude app (web and desktop)</b></summary>
+No GitHub SSH key? Run this first:
+
+```bash
+export CLAUDE_CODE_PLUGIN_PREFER_HTTPS=1
+```
+
+### 💬 Inside a Claude Code session
+
+```text
+/plugin marketplace add nerymurillohnd/the-claude-factory
+/plugin install mods-engineering@the-claude-factory
+```
+
+### 🖥️ Claude app (web and desktop)
 
 1. Open **Customize** in the sidebar, then **Plugins**.
 2. Select **Add** → **Add marketplace** and enter `nerymurillohnd/the-claude-factory`.
 3. Find **Mods Engineering** in **Discover** and select **Add**.
-
-In the desktop app's **Code** tab you can also click **+** next to the prompt box → **Add plugins** (or **Plugins** → **Browse plugins**), or open **Settings** → **Plugins** → **Discover**.
-
-</details>
-
-> [!NOTE]
-> New to this marketplace? The [installation guide](../../docs/installation.md) covers every surface step by step.
 
 ## 🚀 Usage
 
@@ -128,18 +150,30 @@ Should blocking `rm -rf` outside the project be a mod or a settings hook?
 
 **Result:** a recommendation with the trade-off, drawn from the official comparison of mods, settings hooks, skills and MCP servers.
 
+## 🔍 What this plugin runs and sends
+
+- **Hooks:** none.
+- **Commands:** to validate and test a mod, Claude runs the `claude` CLI (`claude plugin validate`, `claude plugin test`).
+- **MCP servers:** none.
+- **Network:** none of its own. The skill tells Claude to read the official mod pages on `code.claude.com`, which it does with your session's web fetch tool when that tool is available.
+- **Files written:** none of its own.
+
 ## 🔄 Updating
 
 ```bash
 claude plugin update mods-engineering@the-claude-factory
 ```
 
-Or in a session: `/plugin` → **Installed** → **Mods Engineering** → **Update now**. Then run `/reload-plugins`.
+Then, in an open session:
+
+```text
+/reload-plugins
+```
 
 Installed from the Claude app? In Claude Code (v2.1.273+, signed in with that claude.ai account) it appears as `mods-engineering@synced`: update and uninstall it in the app (**Customize** → **Plugins**); in `/plugin` you can only turn it on or off, unless your organization requires it.
 
 > [!TIP]
-> Turn on auto-update once for the whole marketplace: `/plugin` → **Marketplaces** → **the-claude-factory** → **Enable auto-update**.
+> Auto-update is off for this marketplace until you turn it on: `/plugin` → **Marketplaces** → **the-claude-factory** → **Enable auto-update**.
 
 ## 🗑️ Uninstalling
 
@@ -147,7 +181,15 @@ Installed from the Claude app? In Claude Code (v2.1.273+, signed in with that cl
 claude plugin uninstall mods-engineering@the-claude-factory
 ```
 
-In a session: `/plugin` → **Installed** → **Mods Engineering** → **Uninstall**. In the Claude app: **Customize** → **Plugins** → **Mods Engineering** → its menu → **Remove**.
+Installed with `--scope project`:
+
+```bash
+claude plugin uninstall mods-engineering@the-claude-factory --scope project
+```
+
+In the Claude app: **Customize** → **Plugins** → **Mods Engineering** → its menu → **Remove**.
+
+Uninstalling from the last scope it's installed at also deletes its saved options and data directory, unless you add `--keep-data`. The plugin keeps no data and writes no files of its own; the mods Claude built with it stay where they are.
 
 ## 🧭 Compatibility
 
@@ -160,7 +202,7 @@ In a session: `/plugin` → **Installed** → **Mods Engineering** → **Uninsta
 <sub>✅ works · ⚠️ partial · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. The Claude app (web, desktop and mobile) runs a conversation as a Cowork session when it can, and as a chat conversation otherwise, for example on a device that can't run Cowork or in the separate Chat mode that Team and Enterprise plans keep for now.</sub>
 
 > [!IMPORTANT]
-> Mods run in Claude Code. In the Claude app the skill helps you design, explain and review a mod, but loading, validating and testing one needs the `claude` CLI, so do those steps in Claude Code.
+> Mods run in Claude Code, v2.1.287 or later. In the Claude app the skill helps you design, explain and review a mod, but loading, validating and testing one needs the `claude` CLI, so do those steps in Claude Code.
 
 ## ❓ FAQ & Troubleshooting
 

@@ -5,7 +5,7 @@
 <details>
 <summary><b>Is it free?</b></summary>
 
-Yes. Every plugin is open source under the [MIT License](../LICENSE). Some plugins connect to third-party services that have their own pricing — their README's **Requirements** table says so.
+Yes. Every plugin is open source under the [MIT License](../LICENSE). Some plugins connect to third-party services that have their own pricing — their README's **Prerequisites** section says so.
 
 </details>
 

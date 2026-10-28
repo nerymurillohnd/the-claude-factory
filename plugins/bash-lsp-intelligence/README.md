@@ -12,6 +12,7 @@
 
 [Why use it](#-why-use-it) •
 [What's inside](#-whats-inside) •
+[Prerequisites](#-prerequisites) •
 [Install](#-installation) •
 [Usage](#-usage) •
 [Configuration](#%EF%B8%8F-configuration) •
@@ -43,47 +44,209 @@
 | 🪝 Hook | `PostToolUse` · `PostToolUseFailure` | Runs `shfmt -w` and `shellcheck` on the shell scripts an Edit, Write or Bash call changed | Automatically after each of those tool calls |
 | 🎯 Skill | `bash-lsp-intelligence:bash-lsp-intelligence` | Teaches Claude to navigate with the language server first, trust its results only after five checks, and work with shfmt and ShellCheck the way your project configures them | Automatically when you work on shell scripts, or `/bash-lsp-intelligence:bash-lsp-intelligence` |
 
-## ✅ Requirements
+## 📋 Prerequisites
 
-| Requirement | Details |
-| :-- | :-- |
-| **Claude Code** | v2.1.292 or later — check with `claude --version` |
-| **Surfaces** | See [Compatibility](#-compatibility) |
-| **External tools** | On the `PATH` of the shell you start `claude` from: `bash-language-server` (`npm install -g bash-language-server`), `shfmt` and `shellcheck` (macOS: `brew install shfmt shellcheck`; Debian/Ubuntu: `sudo apt install shellcheck` and shfmt from its [release binary](https://github.com/mvdan/sh/releases)), and Node.js 20 or later, which runs bash-language-server and the hook. Windows: run Claude Code from Git Bash with the same tools on its `PATH` |
-| **Accounts / API keys** | None |
+| Tool | Minimum version | Check |
+| :-- | :-- | :-- |
+| Claude Code | 2.1.292 | `claude --version` |
+| bash-language-server | — | `bash-language-server --version` |
+| shfmt | — | `shfmt --version` |
+| ShellCheck | — | `shellcheck --version` |
+| Node.js | 20 | `node --version` |
 
-The plugin doesn't install the tools; Claude Code starts `bash-language-server` by name and the hook starts `shfmt` and `shellcheck` by name from your `PATH`.
+Install them on the `PATH` of the shell you start `claude` from. The plugin doesn't install them: Claude Code starts `bash-language-server` by name, and the hook starts `shfmt` and `shellcheck` by name. Node.js runs bash-language-server and the hook. On Windows, run Claude Code from Git Bash with the same tools on its `PATH`.
+
+### 🤖 Claude Code
+
+Already installed? Bring it to the latest version the way you installed it. New to Claude Code? Follow the [official setup](https://code.claude.com/docs/en/setup).
+
+<details>
+<summary>⬇️ <b>Native installer</b> — macOS, Linux, WSL</summary>
+
+```bash
+claude update
+```
+
+</details>
+<details>
+<summary>🍺 <b>Homebrew</b> — macOS, Linux</summary>
+
+```bash
+brew upgrade claude-code
+```
+
+</details>
+<details>
+<summary>📦 <b>npm</b> — any platform</summary>
+
+```bash
+npm install -g @anthropic-ai/claude-code@latest
+```
+
+</details>
+
+### 🧠 bash-language-server
+
+<details>
+<summary>📦 <b>npm</b> — any platform</summary>
+
+```bash
+npm install -g bash-language-server
+```
+
+</details>
+<details>
+<summary>🍺 <b>Homebrew</b> — macOS, Linux</summary>
+
+```bash
+brew install bash-language-server
+```
+
+</details>
+<details>
+<summary>🐧 <b>snap</b> — Ubuntu</summary>
+
+```bash
+sudo snap install bash-language-server --classic
+```
+
+</details>
+<details>
+<summary>🎩 <b>dnf</b> — Fedora</summary>
+
+```bash
+sudo dnf install -y nodejs-bash-language-server
+```
+
+</details>
+
+### 🧹 shfmt
+
+<details>
+<summary>🍺 <b>Homebrew</b> — macOS, Linux</summary>
+
+```bash
+brew install shfmt
+```
+
+</details>
+<details>
+<summary>🐧 <b>apt</b> — Debian 12+, Ubuntu 24.04+</summary>
+
+```bash
+sudo apt install shfmt
+```
+
+</details>
+<details>
+<summary>🐹 <b>Go</b> — any platform</summary>
+
+```bash
+go install mvdan.cc/sh/v3/cmd/shfmt@latest
+```
+
+</details>
+
+Or download a release binary from [GitHub](https://github.com/mvdan/sh/releases).
+
+### 🔍 ShellCheck
+
+<details>
+<summary>🍺 <b>Homebrew</b> — macOS, Linux</summary>
+
+```bash
+brew install shellcheck
+```
+
+</details>
+<details>
+<summary>🐧 <b>apt</b> — Debian, Ubuntu</summary>
+
+```bash
+sudo apt install shellcheck
+```
+
+</details>
+<details>
+<summary>🎩 <b>dnf</b> — Fedora</summary>
+
+```bash
+sudo dnf install ShellCheck
+```
+
+</details>
+<details>
+<summary>🪟 <b>winget</b> — Windows (Git Bash)</summary>
+
+```bash
+winget install --id koalaman.shellcheck
+```
+
+</details>
+
+### 🟢 Node.js
+
+<details>
+<summary>📥 <b>nvm</b> — macOS, Linux</summary>
+
+```bash
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.8/install.sh | bash
+\. "$HOME/.nvm/nvm.sh"
+nvm install --lts
+```
+
+</details>
+<details>
+<summary>🍺 <b>Homebrew</b> — macOS, Linux</summary>
+
+```bash
+brew install node
+```
+
+</details>
+<details>
+<summary>🍫 <b>Chocolatey</b> — Windows, in PowerShell as administrator</summary>
+
+```powershell
+powershell -c "irm https://community.chocolatey.org/install.ps1|iex"
+choco install nodejs
+```
+
+</details>
 
 ## 📥 Installation
 
-<details open>
-<summary><b>💻 Terminal (shell)</b></summary>
+### 💻 Terminal
 
 ```bash
-# One step: adds the marketplace (if needed) and installs the plugin — Claude Code v2.1.292+
-claude plugin install bash-lsp-intelligence --marketplace nerymurillohnd/the-claude-factory
-
-# Or, with the marketplace already added
+claude plugin marketplace add nerymurillohnd/the-claude-factory
 claude plugin install bash-lsp-intelligence@the-claude-factory
 ```
 
-Add `--scope project` to enable it for everyone working in the current repository; each collaborator still installs it once on their own machine.
+In one step (Claude Code v2.1.292+):
 
-</details>
-
-<details>
-<summary><b>💬 Inside a Claude Code session</b></summary>
-
-```text
-/plugin install bash-lsp-intelligence --marketplace nerymurillohnd/the-claude-factory
+```bash
+claude plugin install bash-lsp-intelligence --marketplace nerymurillohnd/the-claude-factory
 ```
 
-Requires Claude Code v2.1.292+. With the marketplace already added, `/plugin install bash-lsp-intelligence@the-claude-factory` opens the plugin's details so you can pick a scope. You can also browse it in `/plugin` → **Discover**.
+For everyone working in the current repository:
 
-</details>
+```bash
+claude plugin install bash-lsp-intelligence@the-claude-factory --scope project
+```
 
-> [!NOTE]
-> New to this marketplace? The [installation guide](../../docs/installation.md) covers every surface step by step.
+No GitHub SSH key? Run this first:
+
+```bash
+export CLAUDE_CODE_PLUGIN_PREFER_HTTPS=1
+```
+
+### 💬 Inside a Claude Code session
+
+```text
+/plugin marketplace add nerymurillohnd/the-claude-factory
+/plugin install bash-lsp-intelligence@the-claude-factory
+```
 
 To confirm it works, ask Claude to write `echo $name` in a script and fix it. Under the edit you see `Found 1 new diagnostic issue in 1 file` from the language server and, once the file is clean, a line like `bash-lsp-intelligence: shfmt, shellcheck passed · scripts/deploy.sh` from the hook.
 
@@ -152,10 +315,21 @@ An `.editorconfig`, a `.shellcheckrc` or `SHELLCHECK_OPTS` of your own replaces 
 claude plugin update bash-lsp-intelligence@the-claude-factory
 ```
 
-Or in a session: `/plugin` → **Installed** → **Bash LSP Intelligence** → **Update now**. Then run `/reload-plugins`.
+Then, in an open session:
+
+```text
+/reload-plugins
+```
 
 > [!TIP]
-> Turn on auto-update once for the whole marketplace: `/plugin` → **Marketplaces** → **the-claude-factory** → **Enable auto-update**.
+> Auto-update is off for this marketplace until you turn it on: `/plugin` → **Marketplaces** → **the-claude-factory** → **Enable auto-update**.
+
+Update bash-language-server, shfmt and ShellCheck the way you installed them, for example:
+
+```bash
+npm install -g bash-language-server@latest
+brew upgrade shfmt shellcheck
+```
 
 ## 🗑️ Uninstalling
 
@@ -163,7 +337,13 @@ Or in a session: `/plugin` → **Installed** → **Bash LSP Intelligence** → *
 claude plugin uninstall bash-lsp-intelligence@the-claude-factory
 ```
 
-In a session: `/plugin` → **Installed** → **Bash LSP Intelligence** → **Uninstall**. bash-language-server, shfmt and ShellCheck stay installed; remove them with the tool you installed them with.
+Installed with `--scope project`:
+
+```bash
+claude plugin uninstall bash-lsp-intelligence@the-claude-factory --scope project
+```
+
+Uninstalling from the last scope it's installed at also deletes its saved options and data directory, unless you add `--keep-data`. bash-language-server, shfmt and ShellCheck stay installed; remove them with the tool you installed them with.
 
 ## 🧭 Compatibility
 

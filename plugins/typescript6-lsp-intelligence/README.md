@@ -12,6 +12,7 @@
 
 [Why use it](#-why-use-it) •
 [What's inside](#-whats-inside) •
+[Prerequisites](#-prerequisites) •
 [Install](#-installation) •
 [Usage](#-usage) •
 [Configuration](#%EF%B8%8F-configuration) •
@@ -44,56 +45,149 @@
 | 🪝 Hook | `PostToolUse` · `PostToolUseFailure` | Runs your `tsc --noEmit` with your project's environment and the plugin's strictest policy on each TypeScript or JavaScript file an Edit, Write, Bash or PowerShell call changed | Automatically after each of those tool calls |
 | 🎯 Skill | `typescript6-lsp-intelligence:ts-lifecycle` | Teaches Claude to research a TypeScript or JavaScript change from official docs and release notes, navigate with the language server and confirm with Grep, trust results only after five checks, and prove the checks with fixtures before calling code clean | Automatically when you work on TypeScript or JavaScript, or `/typescript6-lsp-intelligence:ts-lifecycle` |
 
-## ✅ Requirements
+## 📋 Prerequisites
 
-| Requirement | Details |
-| :-- | :-- |
-| **Claude Code** | v2.1.295 or later — check with `claude --version` |
-| **Surfaces** | See [Compatibility](#-compatibility) |
-| **Node.js** | 22.22.2 or later, the minimum of typescript-language-server. The hook alone runs `tsc` on Node.js 14.17 or later |
-| **TypeScript 6** | In your project's `node_modules`, or installed globally. The hook uses the project's copy first |
-| **typescript-language-server** | Installed globally, on the `PATH` of the shell you start `claude` from |
-| **Windows** | Git Bash. Start Claude Code from a Git Bash shell that has Node.js on its `PATH` |
-| **Accounts / API keys** | None |
+| Tool | Minimum version | Check |
+| :-- | :-- | :-- |
+| Claude Code | 2.1.295 | `claude --version` |
+| Node.js | 22.22.2 | `node --version` |
+| TypeScript 6 | — | `npx tsc --version` |
+| typescript-language-server | — | `typescript-language-server --version` |
 
-Install the language server and TypeScript 6 globally in one step:
+Node.js 22.22.2 is the minimum of typescript-language-server; the hook alone runs `tsc` on Node.js 14.17 or later. TypeScript 6 can sit in your project's `node_modules` or be installed globally; the hook uses the project's copy first. Install typescript-language-server globally, on the `PATH` of the shell you start `claude` from. On Windows, start Claude Code from a Git Bash shell that has Node.js on its `PATH`.
+
+### 🤖 Claude Code
+
+Already installed? Bring it to the latest version the way you installed it. New to Claude Code? Follow the [official setup](https://code.claude.com/docs/en/setup).
+
+<details>
+<summary>⬇️ <b>Native installer</b> — macOS, Linux, WSL</summary>
+
+```bash
+claude update
+```
+
+</details>
+<details>
+<summary>🍺 <b>Homebrew</b> — macOS, Linux</summary>
+
+```bash
+brew upgrade claude-code
+```
+
+</details>
+<details>
+<summary>📦 <b>npm</b> — any platform</summary>
+
+```bash
+npm install -g @anthropic-ai/claude-code@latest
+```
+
+</details>
+
+### 🟢 Node.js
+
+<details>
+<summary>📥 <b>nvm</b> — macOS, Linux</summary>
+
+```bash
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.8/install.sh | bash
+\. "$HOME/.nvm/nvm.sh"
+nvm install --lts
+```
+
+</details>
+<details>
+<summary>🍺 <b>Homebrew</b> — macOS, Linux</summary>
+
+```bash
+brew install node
+```
+
+</details>
+<details>
+<summary>🍫 <b>Chocolatey</b> — Windows, in PowerShell as administrator</summary>
+
+```powershell
+powershell -c "irm https://community.chocolatey.org/install.ps1|iex"
+choco install nodejs
+```
+
+</details>
+
+### 🟦 TypeScript 6
+
+Name the `@6` tag: `npm install -g typescript` now installs TypeScript 7, which has no `tsserver` for this language server. If your project is on TypeScript 7, install [TypeScript 7 LSP Intelligence](../typescript7-lsp-intelligence/README.md) instead.
+
+<details>
+<summary>🌐 <b>npm, global</b> — any platform</summary>
+
+```bash
+npm install -g typescript@6
+```
+
+</details>
+<details>
+<summary>📁 <b>npm, in your project</b> — any platform</summary>
+
+```bash
+npm install --save-dev typescript@6
+```
+
+</details>
+
+### 🧠 typescript-language-server
+
+<details>
+<summary>📦 <b>npm, with TypeScript 6</b> — any platform</summary>
 
 ```bash
 npm install -g typescript-language-server typescript@6
 ```
 
-Name the `@6` tag: `npm install -g typescript` now installs TypeScript 7, which has no `tsserver` for this language server. If your project is on TypeScript 7, install [TypeScript 7 LSP Intelligence](../typescript7-lsp-intelligence/README.md) instead. The plugin checks with whichever TypeScript it finds and doesn't compare versions, so keep the plugin and your TypeScript on the same major version.
+</details>
+<details>
+<summary>📦 <b>npm</b> — any platform</summary>
+
+```bash
+npm install -g typescript-language-server
+```
+
+</details>
 
 ## 📥 Installation
 
-<details open>
-<summary><b>💻 Terminal (shell)</b></summary>
+### 💻 Terminal
 
 ```bash
-# One step: adds the marketplace (if needed) and installs the plugin — Claude Code v2.1.292+
-claude plugin install typescript6-lsp-intelligence --marketplace nerymurillohnd/the-claude-factory
-
-# Or, with the marketplace already added
+claude plugin marketplace add nerymurillohnd/the-claude-factory
 claude plugin install typescript6-lsp-intelligence@the-claude-factory
 ```
 
-Add `--scope project` to enable it for everyone working in the current repository; each collaborator still installs it once on their own machine.
+In one step (Claude Code v2.1.292+):
 
-</details>
-
-<details>
-<summary><b>💬 Inside a Claude Code session</b></summary>
-
-```text
-/plugin install typescript6-lsp-intelligence --marketplace nerymurillohnd/the-claude-factory
+```bash
+claude plugin install typescript6-lsp-intelligence --marketplace nerymurillohnd/the-claude-factory
 ```
 
-Requires Claude Code v2.1.275+. With the marketplace already added, `/plugin install typescript6-lsp-intelligence@the-claude-factory` opens the plugin's details so you can pick a scope. You can also browse it in `/plugin` → **Discover**.
+For everyone working in the current repository:
 
-</details>
+```bash
+claude plugin install typescript6-lsp-intelligence@the-claude-factory --scope project
+```
 
-> [!NOTE]
-> New to this marketplace? The [installation guide](../../docs/installation.md) covers every surface step by step.
+No GitHub SSH key? Run this first:
+
+```bash
+export CLAUDE_CODE_PLUGIN_PREFER_HTTPS=1
+```
+
+### 💬 Inside a Claude Code session
+
+```text
+/plugin marketplace add nerymurillohnd/the-claude-factory
+/plugin install typescript6-lsp-intelligence@the-claude-factory
+```
 
 To confirm it works, ask Claude to add a type error to a TypeScript file and fix it. Under the edit you see `Found 1 new diagnostic issue in 1 file` from the language server and, once the file is clean, a line like `typescript6-lsp-intelligence: tsc 6.0.3 · the edited files pass the strictest policy · src/app.ts`.
 
@@ -182,10 +276,20 @@ The language server starts one TypeScript server process instead of the usual tw
 claude plugin update typescript6-lsp-intelligence@the-claude-factory
 ```
 
-Or in a session: `/plugin` → **Installed** → **TypeScript 6 LSP Intelligence** → **Update now**. Then run `/reload-plugins`. Update TypeScript and the language server yourself, the way you installed them.
+Then, in an open session:
+
+```text
+/reload-plugins
+```
 
 > [!TIP]
-> Turn on auto-update once for the whole marketplace: `/plugin` → **Marketplaces** → **the-claude-factory** → **Enable auto-update**.
+> Auto-update is off for this marketplace until you turn it on: `/plugin` → **Marketplaces** → **the-claude-factory** → **Enable auto-update**.
+
+Update TypeScript and the language server the way you installed them, for example:
+
+```bash
+npm install -g typescript-language-server@latest typescript@6
+```
 
 ## 🗑️ Uninstalling
 
@@ -193,7 +297,13 @@ Or in a session: `/plugin` → **Installed** → **TypeScript 6 LSP Intelligence
 claude plugin uninstall typescript6-lsp-intelligence@the-claude-factory
 ```
 
-In a session: `/plugin` → **Installed** → **TypeScript 6 LSP Intelligence** → **Uninstall**. Your TypeScript, your language server and your project's dependencies stay as they are.
+Installed with `--scope project`:
+
+```bash
+claude plugin uninstall typescript6-lsp-intelligence@the-claude-factory --scope project
+```
+
+Uninstalling from the last scope it's installed at also deletes its saved options and data directory, unless you add `--keep-data`. Your TypeScript, your language server and your project's dependencies stay as they are.
 
 ## 🧭 Compatibility
 
@@ -215,6 +325,13 @@ Claude Code on the web doesn't start plugin language servers either, so there Cl
 <summary><b>The plugin's commands don't show up after installing.</b></summary>
 
 Run `/reload-plugins`, then type `/typescript6-lsp-intelligence:` to list its skill. If it still doesn't appear, open `/plugin` → **Errors** and see the [troubleshooting guide](../../docs/troubleshooting.md).
+
+</details>
+
+<details>
+<summary><b>Which TypeScript does the hook check with?</b></summary>
+
+Whichever TypeScript it finds, your project's copy first, then the global one. It doesn't compare versions, so keep the plugin and your TypeScript on the same major version: on TypeScript 7, use [TypeScript 7 LSP Intelligence](../typescript7-lsp-intelligence/README.md) instead.
 
 </details>
 

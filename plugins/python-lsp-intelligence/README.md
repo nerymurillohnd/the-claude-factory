@@ -12,6 +12,7 @@
 
 [Why use it](#-why-use-it) •
 [What's inside](#-whats-inside) •
+[Prerequisites](#-prerequisites) •
 [Install](#-installation) •
 [Usage](#-usage) •
 [Configuration](#%EF%B8%8F-configuration) •
@@ -43,47 +44,202 @@
 | 🪝 Hook | `PostToolUse` · `PostToolUseFailure` | Runs `ruff check --fix`, `ruff format` and `basedpyright` on the Python files an Edit, Write, NotebookEdit or Bash call changed | Automatically after each of those tool calls |
 | 🎯 Skill | `python-lsp-intelligence:python-lsp-intelligence` | Teaches Claude to navigate with the language server first, trust its results only after five checks, and work with ruff and basedpyright the way your project configures them | Automatically when you work on Python code, or `/python-lsp-intelligence:python-lsp-intelligence` |
 
-## ✅ Requirements
+## 📋 Prerequisites
 
-| Requirement | Details |
-| :-- | :-- |
-| **Claude Code** | v2.1.292 or later — check with `claude --version` |
-| **Surfaces** | See [Compatibility](#-compatibility) |
-| **External tools** | On the `PATH` of the shell you start `claude` from: `ruff` and `basedpyright` (`uv tool install ruff` and `uv tool install basedpyright`, or `pip install ruff basedpyright`; `basedpyright-langserver` comes with basedpyright), and `python3` 3.12 or later, which runs the hook (check with `python3 --version`; get it from [python.org](https://www.python.org/downloads/) or your package manager). Windows: run Claude Code from Git Bash with the same tools on its `PATH`, and check `python3 --version` there. Python's install manager from python.org adds the `python3` command; the older full installer (`python-3.x.exe`) adds only `python` and `py`, so the hook can't find Python |
-| **Accounts / API keys** | None |
+| Tool | Minimum version | Check |
+| :-- | :-- | :-- |
+| Claude Code | 2.1.292 | `claude --version` |
+| Python (`python3`) | 3.12 | `python3 --version` |
+| Ruff | — | `ruff --version` |
+| basedpyright | — | `basedpyright --version` |
 
-The plugin doesn't install the tools; Claude Code starts `basedpyright-langserver` by name and the hook starts `ruff` and `basedpyright` by name from your `PATH`.
+Install them on the `PATH` of the shell you start `claude` from. The plugin doesn't install them: Claude Code starts `basedpyright-langserver`, which comes with basedpyright, by name, and the hook starts `ruff` and `basedpyright` by name. `python3` runs the hook. On Windows, run Claude Code from Git Bash with the same tools on its `PATH`, and check `python3 --version` there.
+
+### 🤖 Claude Code
+
+Already installed? Bring it to the latest version the way you installed it. New to Claude Code? Follow the [official setup](https://code.claude.com/docs/en/setup).
+
+<details>
+<summary>⬇️ <b>Native installer</b> — macOS, Linux, WSL</summary>
+
+```bash
+claude update
+```
+
+</details>
+<details>
+<summary>🍺 <b>Homebrew</b> — macOS, Linux</summary>
+
+```bash
+brew upgrade claude-code
+```
+
+</details>
+<details>
+<summary>📦 <b>npm</b> — any platform</summary>
+
+```bash
+npm install -g @anthropic-ai/claude-code@latest
+```
+
+</details>
+
+### 🐍 Python
+
+<details>
+<summary>🍺 <b>Homebrew</b> — macOS, Linux</summary>
+
+```bash
+brew install python
+```
+
+</details>
+<details>
+<summary>🐧 <b>apt</b> — Debian 13+, Ubuntu 24.04+</summary>
+
+```bash
+sudo apt install python3
+```
+
+</details>
+<details>
+<summary>🪟 <b>Python install manager</b> — Windows (Git Bash)</summary>
+
+```bash
+winget install 9NQ7512CXL7T -e --accept-package-agreements --disable-interactivity
+```
+
+</details>
+
+Or get it from [python.org](https://www.python.org/downloads/).
+
+### ⚡ Ruff
+
+<details>
+<summary>⚡ <b>uv</b> — any platform</summary>
+
+```bash
+uv tool install ruff@latest
+```
+
+</details>
+<details>
+<summary>📦 <b>pipx</b> — any platform</summary>
+
+```bash
+pipx install ruff
+```
+
+</details>
+<details>
+<summary>🍺 <b>Homebrew</b> — macOS, Linux</summary>
+
+```bash
+brew install ruff
+```
+
+</details>
+<details>
+<summary>⬇️ <b>Standalone installer</b> — macOS, Linux</summary>
+
+```bash
+curl -LsSf https://astral.sh/ruff/install.sh | sh
+```
+
+</details>
+<details>
+<summary>⬇️ <b>Standalone installer</b> — Windows</summary>
+
+```powershell
+powershell -c "irm https://astral.sh/ruff/install.ps1 | iex"
+```
+
+</details>
+<details>
+<summary>🐍 <b>pip</b> — any platform</summary>
+
+```bash
+pip install ruff
+```
+
+</details>
+<details>
+<summary>🐍 <b>conda</b> — any platform</summary>
+
+```bash
+conda install -c conda-forge ruff
+```
+
+</details>
+
+### 🔎 basedpyright
+
+<details>
+<summary>⚡ <b>uv</b> — any platform</summary>
+
+```bash
+uv tool install basedpyright
+```
+
+</details>
+<details>
+<summary>🍺 <b>Homebrew</b> — macOS, Linux</summary>
+
+```bash
+brew install basedpyright
+```
+
+</details>
+<details>
+<summary>🐍 <b>pip</b> — any platform</summary>
+
+```bash
+pip install basedpyright
+```
+
+</details>
+<details>
+<summary>🐍 <b>conda</b> — any platform</summary>
+
+```bash
+conda install conda-forge::basedpyright
+```
+
+</details>
 
 ## 📥 Installation
 
-<details open>
-<summary><b>💻 Terminal (shell)</b></summary>
+### 💻 Terminal
 
 ```bash
-# One step: adds the marketplace (if needed) and installs the plugin — Claude Code v2.1.292+
-claude plugin install python-lsp-intelligence --marketplace nerymurillohnd/the-claude-factory
-
-# Or, with the marketplace already added
+claude plugin marketplace add nerymurillohnd/the-claude-factory
 claude plugin install python-lsp-intelligence@the-claude-factory
 ```
 
-Add `--scope project` to enable it for everyone working in the current repository; each collaborator still installs it once on their own machine.
+In one step (Claude Code v2.1.292+):
 
-</details>
-
-<details>
-<summary><b>💬 Inside a Claude Code session</b></summary>
-
-```text
-/plugin install python-lsp-intelligence --marketplace nerymurillohnd/the-claude-factory
+```bash
+claude plugin install python-lsp-intelligence --marketplace nerymurillohnd/the-claude-factory
 ```
 
-Requires Claude Code v2.1.275+. With the marketplace already added, `/plugin install python-lsp-intelligence@the-claude-factory` opens the plugin's details so you can pick a scope. You can also browse it in `/plugin` → **Discover**.
+For everyone working in the current repository:
 
-</details>
+```bash
+claude plugin install python-lsp-intelligence@the-claude-factory --scope project
+```
 
-> [!NOTE]
-> New to this marketplace? The [installation guide](../../docs/installation.md) covers every surface step by step.
+No GitHub SSH key? Run this first:
+
+```bash
+export CLAUDE_CODE_PLUGIN_PREFER_HTTPS=1
+```
+
+### 💬 Inside a Claude Code session
+
+```text
+/plugin marketplace add nerymurillohnd/the-claude-factory
+/plugin install python-lsp-intelligence@the-claude-factory
+```
 
 To confirm it works, ask Claude to add a type error to a Python file and fix it. Under the edit you see `Found 1 new diagnostic issue in 1 file` from the language server and a line like `python-lsp-intelligence: ruff check, ruff format, basedpyright passed · app/models.py` from the hook once the file is clean.
 
@@ -150,10 +306,20 @@ Any configuration file of your own replaces the corresponding default entirely; 
 claude plugin update python-lsp-intelligence@the-claude-factory
 ```
 
-Or in a session: `/plugin` → **Installed** → **Python LSP Intelligence** → **Update now**. Then run `/reload-plugins`.
+Then, in an open session:
+
+```text
+/reload-plugins
+```
 
 > [!TIP]
-> Turn on auto-update once for the whole marketplace: `/plugin` → **Marketplaces** → **the-claude-factory** → **Enable auto-update**.
+> Auto-update is off for this marketplace until you turn it on: `/plugin` → **Marketplaces** → **the-claude-factory** → **Enable auto-update**.
+
+Update Ruff and basedpyright the way you installed them, for example:
+
+```bash
+uv tool upgrade ruff basedpyright
+```
 
 ## 🗑️ Uninstalling
 
@@ -161,7 +327,13 @@ Or in a session: `/plugin` → **Installed** → **Python LSP Intelligence** →
 claude plugin uninstall python-lsp-intelligence@the-claude-factory
 ```
 
-In a session: `/plugin` → **Installed** → **Python LSP Intelligence** → **Uninstall**. ruff and basedpyright stay installed; remove them with the tool you installed them with.
+Installed with `--scope project`:
+
+```bash
+claude plugin uninstall python-lsp-intelligence@the-claude-factory --scope project
+```
+
+Uninstalling from the last scope it's installed at also deletes its saved options and data directory, unless you add `--keep-data`. Ruff and basedpyright stay installed; remove them with the tool you installed them with.
 
 ## 🧭 Compatibility
 

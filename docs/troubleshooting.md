@@ -86,7 +86,7 @@ Work through these in order:
 2. **Any errors?** `/plugin` → **Errors** shows every load failure with a hint.
 3. **Installed during this session?** Run `/reload-plugins`. It prints `Reloaded:` with counts of what loaded.
 4. **Does it need setup?** If the summary says a bundled MCP server _needs configuration_, open `/plugin` → **Installed** → plugin → **Configure**. Plugins with their own settings show **Configure options** there too.
-5. **Missing a tool it depends on?** Check the plugin README's **Requirements** table — some plugins need a CLI on your `PATH` or an API key.
+5. **Missing a tool it depends on?** Check the plugin README's **Prerequisites** section — some plugins need a CLI on your `PATH` or an API key, and it shows how to install each one.
 
 <details>
 <summary>A plugin from the Claude app doesn't appear in Claude Code</summary>

@@ -12,6 +12,7 @@
 
 [Why use it](#-why-use-it) •
 [What's inside](#-whats-inside) •
+[Prerequisites](#-prerequisites) •
 [Install](#-installation) •
 [Usage](#-usage) •
 [Configuration](#-configuration) •
@@ -44,45 +45,224 @@
 | 🤖 Agent | `github-operations:pr-tracker` | Waits for a PR's checks to finish, then reports failures and their root cause, unresolved reviews, breaking changes and secrets in the diff, warnings and security alerts to Claude | Launched by `auto-pr-lifecycle` on every monitoring cycle |
 | 🔌 MCP server | `github` | GitHub's remote MCP server with every toolset and early-access mode: pull requests, issues, Actions, security alerts and more. See [GitHub MCP tools](../../docs/github-mcp-tools.md) | Tools appear as `mcp__plugin_github-operations_github__*` |
 
-## ✅ Requirements
+## 📋 Prerequisites
 
-| Requirement | Details |
-| :-- | :-- |
-| **Claude Code** | v2.1.295 or later — check with `claude --version` |
-| **Surfaces** | Claude Code only. See [Compatibility](#-compatibility) |
-| **External tools** | `git` on `PATH`. `gh` signed in, to read run logs, rerun jobs, enable auto-merge and delete branches, and as the fallback when a GitHub MCP tool is missing. On Windows, Git for Windows |
-| **Accounts / API keys** | A GitHub personal access token, which Claude Code keeps in your system's secure credential store (see [Configuration](#-configuration)). Without it the MCP server doesn't start and Claude uses `gh` |
+| Tool | Minimum version | Check |
+| :-- | :-- | :-- |
+| Claude Code | 2.1.295 | `claude --version` |
+| git, on your `PATH` (on Windows, Git for Windows) | — | `git --version` |
+| GitHub CLI (`gh`), signed in | — | `gh auth status` |
+| GitHub personal access token | — | `/mcp` lists `plugin:github-operations:github` as connected |
+
+`gh` reads run logs, reruns jobs, enables auto-merge and deletes branches, and is the fallback when a GitHub MCP tool is missing.
+
+### 🤖 Claude Code
+
+Already installed? Bring it to the latest version the way you installed it. New to Claude Code? Follow the [official setup](https://code.claude.com/docs/en/setup).
+
+<details>
+<summary>⬇️ <b>Native installer</b> — macOS, Linux, WSL</summary>
+
+```bash
+claude update
+```
+
+</details>
+<details>
+<summary>🍺 <b>Homebrew</b> — macOS, Linux</summary>
+
+```bash
+brew upgrade claude-code
+```
+
+</details>
+<details>
+<summary>📦 <b>npm</b> — any platform</summary>
+
+```bash
+npm install -g @anthropic-ai/claude-code@latest
+```
+
+</details>
+
+### 🔀 git
+
+<details>
+<summary>🍺 <b>Homebrew</b> — macOS</summary>
+
+```bash
+brew install git
+```
+
+</details>
+<details>
+<summary>🛠️ <b>Xcode Command Line Tools</b> — macOS</summary>
+
+```bash
+xcode-select --install
+```
+
+</details>
+<details>
+<summary>🚢 <b>MacPorts</b> — macOS</summary>
+
+```bash
+sudo port install git
+```
+
+</details>
+<details>
+<summary>📦 <b>apt</b> — Debian, Ubuntu</summary>
+
+```bash
+sudo apt-get install git
+```
+
+</details>
+<details>
+<summary>📦 <b>dnf</b> — Fedora</summary>
+
+```bash
+sudo dnf install git
+```
+
+</details>
+<details>
+<summary>📦 <b>pacman</b> — Arch Linux</summary>
+
+```bash
+sudo pacman -S git
+```
+
+</details>
+<details>
+<summary>📦 <b>zypper</b> — openSUSE</summary>
+
+```bash
+sudo zypper install git
+```
+
+</details>
+<details>
+<summary>🪟 <b>Git for Windows (winget)</b> — Windows</summary>
+
+```bash
+winget install --id Git.Git -e --source winget
+```
+
+</details>
+
+### 🐙 GitHub CLI
+
+<details>
+<summary>🍺 <b>Homebrew</b> — macOS, Linux</summary>
+
+```bash
+brew install gh
+```
+
+</details>
+<details>
+<summary>📦 <b>apt</b> — Debian, Ubuntu</summary>
+
+```bash
+(type -p wget >/dev/null || (sudo apt update && sudo apt install wget -y)) \
+	&& sudo mkdir -p -m 755 /etc/apt/keyrings \
+	&& out=$(mktemp) && wget -nv -O$out https://cli.github.com/packages/githubcli-archive-keyring.gpg \
+	&& cat $out | sudo tee /etc/apt/keyrings/githubcli-archive-keyring.gpg > /dev/null \
+	&& sudo chmod go+r /etc/apt/keyrings/githubcli-archive-keyring.gpg \
+	&& sudo mkdir -p -m 755 /etc/apt/sources.list.d \
+	&& echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
+	&& sudo apt update \
+	&& sudo apt install gh -y
+```
+
+</details>
+<details>
+<summary>📦 <b>dnf5</b> — Fedora, RHEL</summary>
+
+```bash
+sudo dnf install dnf5-plugins
+sudo dnf config-manager addrepo --from-repofile=https://cli.github.com/packages/rpm/gh-cli.repo
+sudo dnf install gh
+```
+
+</details>
+<details>
+<summary>📦 <b>dnf4</b> — Fedora, RHEL</summary>
+
+```bash
+sudo dnf install 'dnf-command(config-manager)'
+sudo dnf config-manager --add-repo https://cli.github.com/packages/rpm/gh-cli.repo
+sudo dnf install gh
+```
+
+</details>
+<details>
+<summary>📦 <b>zypper</b> — openSUSE, SUSE</summary>
+
+```bash
+sudo zypper addrepo https://cli.github.com/packages/rpm/gh-cli.repo
+sudo zypper ref
+sudo zypper install gh
+```
+
+</details>
+<details>
+<summary>🪟 <b>winget</b> — Windows</summary>
+
+```bash
+winget install --id GitHub.cli --source winget
+```
+
+</details>
+
+Then sign in:
+
+```bash
+gh auth login
+```
+
+### 🔑 GitHub token
+
+1. Create a [fine-grained personal access token](https://github.com/settings/personal-access-tokens/new) for the repositories you work in, with only the permissions you want Claude to have.
+2. Give it to Claude Code as [Configuration](#-configuration) shows. Claude Code keeps it in your system's secure credential store.
+
+Without the token the GitHub MCP server doesn't start, and Claude uses `gh`.
 
 ## 📥 Installation
 
-<details open>
-<summary><b>💻 Terminal (shell)</b></summary>
+### 💻 Terminal
 
 ```bash
-# One step: adds the marketplace (if needed) and installs the plugin — Claude Code v2.1.292+
-claude plugin install github-operations --marketplace nerymurillohnd/the-claude-factory
-
-# Or, with the marketplace already added
+claude plugin marketplace add nerymurillohnd/the-claude-factory
 claude plugin install github-operations@the-claude-factory
 ```
 
-Add `--scope project` to enable it for everyone working in the current repository; each collaborator still installs it once on their own machine.
+In one step (Claude Code v2.1.292+):
 
-</details>
-
-<details>
-<summary><b>💬 Inside a Claude Code session</b></summary>
-
-```text
-/plugin install github-operations --marketplace nerymurillohnd/the-claude-factory
+```bash
+claude plugin install github-operations --marketplace nerymurillohnd/the-claude-factory
 ```
 
-Requires Claude Code v2.1.275+. With the marketplace already added, `/plugin install github-operations@the-claude-factory` opens the plugin's details so you can pick a scope. You can also browse it in `/plugin` → **Discover**.
+For everyone working in the current repository:
 
-</details>
+```bash
+claude plugin install github-operations@the-claude-factory --scope project
+```
 
-> [!NOTE]
-> New to this marketplace? The [installation guide](../../docs/installation.md) covers it step by step.
+No GitHub SSH key? Run this first:
+
+```bash
+export CLAUDE_CODE_PLUGIN_PREFER_HTTPS=1
+```
+
+### 💬 Inside a Claude Code session
+
+```text
+/plugin marketplace add nerymurillohnd/the-claude-factory
+/plugin install github-operations@the-claude-factory
+```
 
 ### Coming from Git Hygiene?
 
@@ -209,10 +389,20 @@ The plugin connects to GitHub's official remote MCP server at `https://api.githu
 claude plugin update github-operations@the-claude-factory
 ```
 
-Or in a session: `/plugin` → **Installed** → **GitHub Operations** → **Update now**. Then run `/reload-plugins`.
+Then, in an open session:
+
+```text
+/reload-plugins
+```
 
 > [!TIP]
-> Turn on auto-update once for the whole marketplace: `/plugin` → **Marketplaces** → **the-claude-factory** → **Enable auto-update**.
+> Auto-update is off for this marketplace until you turn it on: `/plugin` → **Marketplaces** → **the-claude-factory** → **Enable auto-update**.
+
+Update git and `gh` the way you installed them, for example with Homebrew:
+
+```bash
+brew upgrade git gh
+```
 
 ## 🗑️ Uninstalling
 
@@ -220,7 +410,13 @@ Or in a session: `/plugin` → **Installed** → **GitHub Operations** → **Upd
 claude plugin uninstall github-operations@the-claude-factory
 ```
 
-In a session: `/plugin` → **Installed** → **GitHub Operations** → **Uninstall**.
+Installed with `--scope project`:
+
+```bash
+claude plugin uninstall github-operations@the-claude-factory --scope project
+```
+
+Uninstalling from the last scope it's installed at also deletes its saved options and data directory, unless you add `--keep-data`. That includes your stored GitHub token. The token itself stays valid on GitHub until you delete it there, and git and `gh` stay installed.
 
 ## 🧭 Compatibility
 

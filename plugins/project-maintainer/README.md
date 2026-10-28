@@ -12,6 +12,7 @@
 
 [Why use it](#-why-use-it) •
 [What's inside](#-whats-inside) •
+[Prerequisites](#-prerequisites) •
 [Install](#-installation) •
 [Usage](#-usage) •
 [Compatibility](#-compatibility) •
@@ -57,57 +58,278 @@ The mod runs in every Claude Code session that loads the plugin: the terminal (J
 
 The ADR template follows [MADR 4.0](https://adr.github.io/madr/) and adds a scope, a risks table and a confirmation table.
 
-## ✅ Requirements
+## 📋 Prerequisites
 
-| Requirement | Details |
-| :-- | :-- |
-| **Claude Code** | v2.1.307 or later — check with `claude --version`. The guardrails need it: from that version, Claude Code puts their prompts to you and no classifier can answer them. On an older version, auto mode's classifier can approve the edit for you. Tested with v2.1.311. |
-| **Surfaces** | See [Compatibility](#-compatibility) |
-| **External tools** | `bash` on `PATH`, for the hook and the skills' commands; on Windows, Git for Windows. `ls`, `grep` and `date`, which macOS and Linux include, to search and number records. `git`, so the handoff can record the repository's state; outside a git repository the handoff says so and skips it. `gh` signed in, optional, to list the repository's open pull requests |
-| **Network** | Records: none. The handoff runs `git fetch` to compare your branch with its remote, and `gh pr list` to list pull requests, when the repository has a remote. Without network access it marks those lines as not verified |
-| **Accounts / API keys** | None. `git` and `gh` use the credentials you already have |
+| Tool | Minimum version | Check |
+| :-- | :-- | :-- |
+| Claude Code | 2.1.307 | `claude --version` |
+| Bash, for the hook and the skills' commands | — | `bash --version` |
+| git, so the handoff can record the repository's state | — | `git --version` |
+| GitHub CLI `gh` (optional), to list open pull requests | — | `gh --version` |
+| GitHub CLI sign-in (optional) | — | `gh auth status` |
+
+Claude Code 2.1.307 is the minimum because the guardrails need it: from that version, Claude Code puts their prompts to you and no classifier can answer them. On an older version, auto mode's classifier can approve the edit for you.
+
+The skills also use `ls`, `grep` and `date`, which macOS and Linux include, to search and number records. Outside a git repository the handoff says so and skips the repository's state. On Windows, use Git for Windows, which provides Bash.
+
+### 🤖 Claude Code
+
+Already installed? Bring it to the latest version the way you installed it. New to Claude Code? Follow the [official setup](https://code.claude.com/docs/en/setup).
+
+<details>
+<summary>⬇️ <b>Native installer</b> — macOS, Linux, WSL</summary>
+
+```bash
+claude update
+```
+
+</details>
+<details>
+<summary>🍺 <b>Homebrew</b> — macOS, Linux</summary>
+
+```bash
+brew upgrade claude-code
+```
+
+</details>
+<details>
+<summary>📦 <b>npm</b> — any platform</summary>
+
+```bash
+npm install -g @anthropic-ai/claude-code@latest
+```
+
+</details>
+
+### 🐚 Bash
+
+macOS and Linux include Bash. On Windows, Bash comes with Git for Windows.
+
+<details>
+<summary>🪟 <b>Git for Windows (Git Bash), winget</b> — Windows</summary>
+
+```bash
+winget install --id Git.Git -e --source winget
+```
+
+</details>
+<details>
+<summary>🍫 <b>Git for Windows (Git Bash), Chocolatey</b> — Windows</summary>
+
+```bash
+choco install git
+```
+
+</details>
+
+### 🌿 git
+
+<details>
+<summary>🍏 <b>Xcode Command Line Tools</b> — macOS</summary>
+
+```bash
+xcode-select --install
+```
+
+</details>
+<details>
+<summary>🍺 <b>Homebrew</b> — macOS</summary>
+
+```bash
+brew install git
+```
+
+</details>
+<details>
+<summary>🚢 <b>MacPorts</b> — macOS</summary>
+
+```bash
+sudo port install git
+```
+
+</details>
+<details>
+<summary>🐧 <b>apt</b> — Debian, Ubuntu</summary>
+
+```bash
+sudo apt-get install git
+```
+
+</details>
+<details>
+<summary>🐧 <b>Git PPA (latest stable)</b> — Ubuntu</summary>
+
+```bash
+sudo add-apt-repository ppa:git-core/ppa
+sudo apt update
+sudo apt install git
+```
+
+</details>
+<details>
+<summary>🎩 <b>dnf</b> — Fedora</summary>
+
+```bash
+sudo dnf install git
+```
+
+</details>
+<details>
+<summary>🏔️ <b>pacman</b> — Arch Linux</summary>
+
+```bash
+sudo pacman -S git
+```
+
+</details>
+<details>
+<summary>🦎 <b>zypper</b> — openSUSE</summary>
+
+```bash
+sudo zypper install git
+```
+
+</details>
+<details>
+<summary>🪟 <b>winget</b> — Windows</summary>
+
+```bash
+winget install --id Git.Git -e --source winget
+```
+
+</details>
+<details>
+<summary>🍫 <b>Chocolatey</b> — Windows</summary>
+
+```bash
+choco install git
+```
+
+</details>
+
+### 🐙 GitHub CLI
+
+<details>
+<summary>🍺 <b>Homebrew</b> — macOS, Linux</summary>
+
+```bash
+brew install gh
+```
+
+</details>
+<details>
+<summary>🐧 <b>apt</b> — Debian, Ubuntu</summary>
+
+```bash
+(type -p wget >/dev/null || (sudo apt update && sudo apt install wget -y)) \
+	&& sudo mkdir -p -m 755 /etc/apt/keyrings \
+	&& out=$(mktemp) && wget -nv -O$out https://cli.github.com/packages/githubcli-archive-keyring.gpg \
+	&& cat $out | sudo tee /etc/apt/keyrings/githubcli-archive-keyring.gpg > /dev/null \
+	&& sudo chmod go+r /etc/apt/keyrings/githubcli-archive-keyring.gpg \
+	&& sudo mkdir -p -m 755 /etc/apt/sources.list.d \
+	&& echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
+	&& sudo apt update \
+	&& sudo apt install gh -y
+```
+
+</details>
+<details>
+<summary>🎩 <b>dnf5</b> — Fedora</summary>
+
+```bash
+sudo dnf install dnf5-plugins
+sudo dnf config-manager addrepo --from-repofile=https://cli.github.com/packages/rpm/gh-cli.repo
+sudo dnf install gh
+```
+
+</details>
+<details>
+<summary>🎩 <b>dnf4</b> — Fedora</summary>
+
+```bash
+sudo dnf install 'dnf-command(config-manager)'
+sudo dnf config-manager --add-repo https://cli.github.com/packages/rpm/gh-cli.repo
+sudo dnf install gh
+```
+
+</details>
+<details>
+<summary>🦎 <b>zypper</b> — openSUSE, SUSE</summary>
+
+```bash
+sudo zypper addrepo https://cli.github.com/packages/rpm/gh-cli.repo
+sudo zypper ref
+sudo zypper install gh
+```
+
+</details>
+<details>
+<summary>🏔️ <b>pacman (community package)</b> — Arch Linux</summary>
+
+```bash
+sudo pacman -S github-cli
+```
+
+</details>
+<details>
+<summary>🪟 <b>winget</b> — Windows</summary>
+
+```bash
+winget install --id GitHub.cli --source winget
+```
+
+</details>
+
+### 🔑 GitHub CLI sign-in
+
+`git` and `gh` use the credentials you already have. If `gh auth status` says you are not signed in:
+
+```bash
+gh auth login
+```
 
 ## 📥 Installation
 
-<details open>
-<summary><b>💻 Terminal (shell)</b></summary>
+### 💻 Terminal
 
 ```bash
-# One step: adds the marketplace (if needed) and installs the plugin — Claude Code v2.1.307+
-claude plugin install project-maintainer --marketplace nerymurillohnd/the-claude-factory
-
-# Or, with the marketplace already added
+claude plugin marketplace add nerymurillohnd/the-claude-factory
 claude plugin install project-maintainer@the-claude-factory
 ```
 
-Add `--scope project` to enable it for everyone working in the current repository; each collaborator still installs it once on their own machine.
+In one step (Claude Code v2.1.292+):
 
-</details>
-
-<details>
-<summary><b>💬 Inside a Claude Code session</b></summary>
-
-```text
-/plugin install project-maintainer --marketplace nerymurillohnd/the-claude-factory
+```bash
+claude plugin install project-maintainer --marketplace nerymurillohnd/the-claude-factory
 ```
 
-Requires Claude Code v2.1.307+. With the marketplace already added, `/plugin install project-maintainer@the-claude-factory` opens the plugin's details so you can pick a scope. You can also browse it in `/plugin` → **Discover**.
+For everyone working in the current repository:
 
-</details>
+```bash
+claude plugin install project-maintainer@the-claude-factory --scope project
+```
 
-<details>
-<summary><b>🖥️ Claude app (web and desktop)</b></summary>
+No GitHub SSH key? Run this first:
+
+```bash
+export CLAUDE_CODE_PLUGIN_PREFER_HTTPS=1
+```
+
+### 💬 Inside a Claude Code session
+
+```text
+/plugin marketplace add nerymurillohnd/the-claude-factory
+/plugin install project-maintainer@the-claude-factory
+```
+
+### 🖥️ Claude app (web and desktop)
 
 1. Open **Customize** in the sidebar, then **Plugins**.
 2. Select **Add** → **Add marketplace** and enter `nerymurillohnd/the-claude-factory`.
 3. Find **Project Maintainer** in **Discover** and select **Add**.
 
-In the desktop app's **Code** tab you can also click **+** next to the prompt box → **Add plugins** (or **Plugins** → **Browse plugins**), or open **Settings** → **Plugins** → **Discover**.
-
-</details>
-
 > [!NOTE]
-> New to this marketplace? The [installation guide](../../docs/installation.md) covers every surface step by step. Used the Session Handoff plugin? This plugin replaces it, and the marketplace renames an existing install for you. Its handoffs in `.claude/session-handoff/` keep working. If you installed Session Handoff from another source, turn it off, or you get the start-of-session reminder twice.
+> Used the Session Handoff plugin? This plugin replaces it, and the marketplace renames an existing install for you. Its handoffs in `.claude/session-handoff/` keep working. If you installed Session Handoff from another source, turn it off, or you get the start-of-session reminder twice.
 
 ## 🚀 Usage
 
@@ -256,18 +478,36 @@ It writes no file, makes no network request, calls no model and reads no environ
 > [!NOTE]
 > The guardrails protect your records from Claude's mistakes. They are not a security boundary: a shell command written in a form they do not recognize, or your editor, can still change the files, and you can always edit a record by hand. They run in every Claude Code session that loads the plugin except a Desktop session on WSL, and need v2.1.307 or later. They are off under `--safe-mode`, and with `"disableAllHooks": true` in your settings. If a check itself breaks, it fails closed for the records only: a record that could not be checked is not saved and Claude is told to try again, a settled record that could not be checked asks you, and every other file is saved as usual.
 
+## 🔍 What this plugin runs and sends
+
+- **Hooks:** `SessionStart` on `startup` and `clear` runs `hooks/session-bootstrap.sh`, which finds the newest handoff and has Claude read it. The mod is described in [Guardrails](#-guardrails).
+- **MCP servers:** none.
+- **Network:** records, none. The handoff runs `git fetch` to compare your branch with its remote, and `gh pr list` to list pull requests, when the repository has a remote. Without network access it marks those lines as not verified.
+- **Files written:** the records and handoffs listed in [Where everything is saved](#where-everything-is-saved), and `.claude/maintainer/` in your `.gitignore` if you choose to ignore the records.
+- **Before you install:** a mod runs with your permissions and no sandbox; `claude plugin validate <path to the plugin folder>` shows everything it hooks and calls.
+
 ## 🔄 Updating
 
 ```bash
 claude plugin update project-maintainer@the-claude-factory
 ```
 
-Or in a session: `/plugin` → **Installed** → **Project Maintainer** → **Update now**. Then run `/reload-plugins`.
+Then, in an open session:
+
+```text
+/reload-plugins
+```
 
 Installed from the Claude app? In Claude Code (v2.1.273+, signed in with that claude.ai account) it appears as `project-maintainer@synced`: update and uninstall it in the app (**Customize** → **Plugins**); in `/plugin` you can only turn it on or off, unless your organization requires it.
 
 > [!TIP]
-> Turn on auto-update once for the whole marketplace: `/plugin` → **Marketplaces** → **the-claude-factory** → **Enable auto-update**.
+> Auto-update is off for this marketplace until you turn it on: `/plugin` → **Marketplaces** → **the-claude-factory** → **Enable auto-update**.
+
+Update `git` and `gh` the way you installed them, for example with Homebrew:
+
+```bash
+brew upgrade git gh
+```
 
 ## 🗑️ Uninstalling
 
@@ -275,11 +515,19 @@ Installed from the Claude app? In Claude Code (v2.1.273+, signed in with that cl
 claude plugin uninstall project-maintainer@the-claude-factory
 ```
 
-Installed with `--scope project`? Add `--scope project` here too.
+Installed with `--scope project`:
 
-In a session: `/plugin` → **Installed** → **Project Maintainer** → **Uninstall**. In the Claude app: **Customize** → **Plugins** → **Project Maintainer** → its menu → **Remove**.
+```bash
+claude plugin uninstall project-maintainer@the-claude-factory --scope project
+```
 
-Your records and handoffs stay in your project's `.claude/` folder; they are ordinary Markdown files. Delete `.claude/maintainer/` and `.claude/session-handoff/` if you no longer want them.
+In the Claude app: **Customize** → **Plugins** → **Project Maintainer** → its menu → **Remove**.
+
+Uninstalling from the last scope it's installed at also deletes its saved options and data directory, unless you add `--keep-data`. Your records and handoffs stay in your project's `.claude/` folder; they are ordinary Markdown files. If you no longer want them, delete them from your project's root:
+
+```bash
+rm -rf .claude/maintainer .claude/session-handoff
+```
 
 ## 🧭 Compatibility
 

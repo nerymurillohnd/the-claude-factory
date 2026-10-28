@@ -12,6 +12,7 @@
 
 [Why use it](#-why-use-it) •
 [What's inside](#-whats-inside) •
+[Prerequisites](#-prerequisites) •
 [Install](#-installation) •
 [Usage](#-usage) •
 [Compatibility](#-compatibility) •
@@ -43,46 +44,185 @@ A plugin that works with `claude --plugin-dir` on your machine can still break f
 | 🎯 Skill | `plugin-test-bench:test-install` | Installs your plugin as a copy in a throwaway configuration, compares the copy with your folder, checks it loads, runs your eval suite on the copy, optionally runs real requests, then cleans up | `/plugin-test-bench:test-install [plugin folder]`, or ask Claude to test your plugin the way users install it |
 | 🎯 Skill | `plugin-test-bench:review-evals` | Reviews every case of your eval suite and reports what to keep, fix, rewrite or remove, with the exact fix, before you pay for runs | `/plugin-test-bench:review-evals [plugin folder]`, or ask Claude to review your plugin's eval cases |
 
-## ✅ Requirements
+## 📋 Prerequisites
 
-| Requirement | Details |
-| :-- | :-- |
-| **Claude Code** | v2.1.293 or later — check with `claude --version` |
-| **Surfaces** | Claude Code only. See [Compatibility](#-compatibility) |
-| **External tools** | `git`, with your plugin committed in a repository (without one, Claude offers a throwaway snapshot); git 2.31 or later to run eval suites. Eval cases that grant Bash need the OS sandbox: `bubblewrap` and `socat` on Linux, WSL2 on Windows. A Bash shell. Built and tested on macOS |
-| **Accounts / API keys** | The test configuration signs in on its own: you run the `claude auth login` command Claude gives you, once per test with a paid step, or keep `ANTHROPIC_API_KEY` or your cloud provider's variables set in your shell. Your own login is never copied |
-| **Usage** | Eval runs and test requests are real model calls, counted against your plan or API bill. `claude plugin eval` prints a list-price estimate of each run |
+| Tool | Minimum version | Check |
+| :-- | :-- | :-- |
+| Claude Code | 2.1.293 | `claude --version` |
+| git, with your plugin committed in a repository | 2.31 to run eval suites | `git --version` |
+| Bash | — | `bash --version` |
+| bubblewrap (Linux, for eval cases that grant Bash) | — | `bwrap --version` |
+| socat (Linux, for eval cases that grant Bash) | — | `socat -V` |
+| Claude sign-in for the test configuration | — | — |
+
+Without a git repository, Claude offers a throwaway snapshot of your plugin. Eval cases that grant Bash need the OS sandbox: macOS has it built in, Linux needs `bubblewrap` and `socat`, and on Windows you run Claude Code inside WSL2 and install them there with the Linux commands. The plugin is built and tested on macOS.
+
+### 🤖 Claude Code
+
+Already installed? Bring it to the latest version the way you installed it. New to Claude Code? Follow the [official setup](https://code.claude.com/docs/en/setup).
+
+<details>
+<summary>⬇️ <b>Native installer</b> — macOS, Linux, WSL</summary>
+
+```bash
+claude update
+```
+
+</details>
+<details>
+<summary>🍺 <b>Homebrew</b> — macOS, Linux</summary>
+
+```bash
+brew upgrade claude-code
+```
+
+</details>
+<details>
+<summary>📦 <b>npm</b> — any platform</summary>
+
+```bash
+npm install -g @anthropic-ai/claude-code@latest
+```
+
+</details>
+
+### 🌿 git
+
+<details>
+<summary>🍏 <b>Xcode Command Line Tools</b> — macOS</summary>
+
+```bash
+xcode-select --install
+```
+
+</details>
+<details>
+<summary>🍺 <b>Homebrew</b> — macOS</summary>
+
+```bash
+brew install git
+```
+
+</details>
+<details>
+<summary>🚢 <b>MacPorts</b> — macOS</summary>
+
+```bash
+sudo port install git
+```
+
+</details>
+<details>
+<summary>🐧 <b>apt</b> — Debian, Ubuntu</summary>
+
+```bash
+sudo apt-get install git
+```
+
+</details>
+<details>
+<summary>🐧 <b>Git PPA (latest stable)</b> — Ubuntu</summary>
+
+```bash
+sudo add-apt-repository ppa:git-core/ppa
+sudo apt update
+sudo apt install git
+```
+
+</details>
+<details>
+<summary>🎩 <b>dnf</b> — Fedora</summary>
+
+```bash
+sudo dnf install git
+```
+
+</details>
+<details>
+<summary>🏔️ <b>pacman</b> — Arch Linux</summary>
+
+```bash
+sudo pacman -S git
+```
+
+</details>
+<details>
+<summary>🦎 <b>zypper</b> — openSUSE</summary>
+
+```bash
+sudo zypper install git
+```
+
+</details>
+
+### 🐚 Bash
+
+macOS and Linux include Bash.
+
+### 📦 bubblewrap and socat
+
+<details>
+<summary>🐧 <b>apt</b> — Debian, Ubuntu</summary>
+
+```bash
+sudo apt-get install bubblewrap socat
+```
+
+</details>
+<details>
+<summary>🎩 <b>dnf</b> — Fedora</summary>
+
+```bash
+sudo dnf install bubblewrap socat
+```
+
+</details>
+
+### 🔑 Claude sign-in for the test configuration
+
+The test configuration signs in on its own; your own login is never copied. Use one of these, once per test with a paid step:
+
+1. When Claude asks, run the command it gives you in another terminal. It has this form:
+
+   ```bash
+   claude auth login
+   ```
+
+2. Or keep `ANTHROPIC_API_KEY`, or your cloud provider's variables, set in your shell.
 
 ## 📥 Installation
 
-<details open>
-<summary><b>💻 Terminal (shell)</b></summary>
+### 💻 Terminal
 
 ```bash
-# One step: adds the marketplace (if needed) and installs the plugin — Claude Code v2.1.292+
-claude plugin install plugin-test-bench --marketplace nerymurillohnd/the-claude-factory
-
-# Or, with the marketplace already added
+claude plugin marketplace add nerymurillohnd/the-claude-factory
 claude plugin install plugin-test-bench@the-claude-factory
 ```
 
-Add `--scope project` to enable it for everyone working in the current repository; each collaborator still installs it once on their own machine.
+In one step (Claude Code v2.1.292+):
 
-</details>
-
-<details>
-<summary><b>💬 Inside a Claude Code session</b></summary>
-
-```text
-/plugin install plugin-test-bench --marketplace nerymurillohnd/the-claude-factory
+```bash
+claude plugin install plugin-test-bench --marketplace nerymurillohnd/the-claude-factory
 ```
 
-Requires Claude Code v2.1.275+. With the marketplace already added, `/plugin install plugin-test-bench@the-claude-factory` opens the plugin's details so you can pick a scope. You can also browse it in `/plugin` → **Discover**.
+For everyone working in the current repository:
 
-</details>
+```bash
+claude plugin install plugin-test-bench@the-claude-factory --scope project
+```
 
-> [!NOTE]
-> New to this marketplace? The [installation guide](../../docs/installation.md) covers every surface step by step.
+No GitHub SSH key? Run this first:
+
+```bash
+export CLAUDE_CODE_PLUGIN_PREFER_HTTPS=1
+```
+
+### 💬 Inside a Claude Code session
+
+```text
+/plugin marketplace add nerymurillohnd/the-claude-factory
+/plugin install plugin-test-bench@the-claude-factory
+```
 
 ## 🚀 Usage
 
@@ -124,10 +264,24 @@ My eval suite shows Δ +0.00 on every case. What's wrong with it?
 claude plugin update plugin-test-bench@the-claude-factory
 ```
 
-Or in a session: `/plugin` → **Installed** → **Plugin Test Bench** → **Update now**. Then run `/reload-plugins`.
+Then, in an open session:
+
+```text
+/reload-plugins
+```
 
 > [!TIP]
-> Turn on auto-update once for the whole marketplace: `/plugin` → **Marketplaces** → **the-claude-factory** → **Enable auto-update**.
+> Auto-update is off for this marketplace until you turn it on: `/plugin` → **Marketplaces** → **the-claude-factory** → **Enable auto-update**.
+
+Update `git`, `bubblewrap` and `socat` the way you installed them, for example:
+
+```bash
+brew upgrade git
+```
+
+```bash
+sudo apt-get install --only-upgrade git bubblewrap socat
+```
 
 ## 🗑️ Uninstalling
 
@@ -135,9 +289,13 @@ Or in a session: `/plugin` → **Installed** → **Plugin Test Bench** → **Upd
 claude plugin uninstall plugin-test-bench@the-claude-factory
 ```
 
-Installed with `--scope project`? Add `--scope project` here too.
+Installed with `--scope project`:
 
-In a session: `/plugin` → **Installed** → **Plugin Test Bench** → **Uninstall**.
+```bash
+claude plugin uninstall plugin-test-bench@the-claude-factory --scope project
+```
+
+Uninstalling from the last scope it's installed at also deletes its saved options and data directory, unless you add `--keep-data`. The plugin keeps no data: each test removes what it created, except a zip you asked for.
 
 ## 🧭 Compatibility
 
@@ -191,7 +349,7 @@ No. Claude Code's own `claude plugin eval init` interviews you and drafts the ca
 <details>
 <summary><b>What does a test cost?</b></summary>
 
-The install, the comparison and the load check are free; if an Anthropic profile on your machine (from `ant auth login` or a Console sign-in without an API key) would sign the load check in, Claude asks first. A smoke test of your eval suite is one run per case, plus three judge calls for each `llm` or `baseline` grader. A full comparison against no plugin is six runs per case at the default three runs. Claude states the number of runs and waits for your go-ahead before anything paid runs.
+The install, the comparison and the load check are free; if an Anthropic profile on your machine (from `ant auth login` or a Console sign-in without an API key) would sign the load check in, Claude asks first. A smoke test of your eval suite is one run per case, plus three judge calls for each `llm` or `baseline` grader. A full comparison against no plugin is six runs per case at the default three runs. Eval runs and test requests are real model calls, counted against your plan or API bill, and `claude plugin eval` prints a list-price estimate of each run. Claude states the number of runs and waits for your go-ahead before anything paid runs.
 
 </details>
 

@@ -12,6 +12,7 @@
 
 [Why use it](#-why-use-it) •
 [What's inside](#-whats-inside) •
+[Prerequisites](#-prerequisites) •
 [Install](#-installation) •
 [Usage](#-usage) •
 [Configuration](#%EF%B8%8F-configuration) •
@@ -41,61 +42,74 @@
 | :-- | :-- | :-- | :-- |
 | 🧩 Mod | `model-trace` | Counts each capability Claude uses, draws the Model Trace pane and adds the `/model-trace` command | Automatically in every Claude Code session once installed; the pane opens with `/model-trace` |
 
-## ✅ Requirements
+## 📋 Prerequisites
 
-| Requirement | Details |
-| :-- | :-- |
-| **Claude Code** | v2.1.299 or later — check with `claude --version`. Tested with v2.1.312. |
-| **Surfaces** | See [Compatibility](#-compatibility) |
-| **External tools** | None |
-| **Accounts / API keys** | None |
-| **Network** | See [What this plugin runs and sends](#-what-this-plugin-runs-and-sends) |
+| Tool | Minimum version | Check |
+| :-- | :-- | :-- |
+| Claude Code | 2.1.299 | `claude --version` |
+
+### 🤖 Claude Code
+
+Already installed? Bring it to the latest version the way you installed it. New to Claude Code? Follow the [official setup](https://code.claude.com/docs/en/setup).
+
+<details>
+<summary>⬇️ <b>Native installer</b> — macOS, Linux, WSL</summary>
+
+```bash
+claude update
+```
+
+</details>
+<details>
+<summary>🍺 <b>Homebrew</b> — macOS, Linux</summary>
+
+```bash
+brew upgrade claude-code
+```
+
+</details>
+<details>
+<summary>📦 <b>npm</b> — any platform</summary>
+
+```bash
+npm install -g @anthropic-ai/claude-code@latest
+```
+
+</details>
 
 ## 📥 Installation
 
-<details open>
-<summary><b>💻 Terminal (shell)</b></summary>
+### 💻 Terminal
 
 ```bash
-# One step: adds the marketplace (if needed) and installs the plugin — Claude Code v2.1.292+
-claude plugin install model-trace --marketplace nerymurillohnd/the-claude-factory
-
-# Or, with the marketplace already added
+claude plugin marketplace add nerymurillohnd/the-claude-factory
 claude plugin install model-trace@the-claude-factory
 ```
 
-Add `--scope project` to enable it for everyone working in the current repository; each collaborator still installs it once on their own machine.
+In one step (Claude Code v2.1.292+):
 
-No GitHub SSH key? Set this first, so installs from `/plugin` and updates use HTTPS:
+```bash
+claude plugin install model-trace --marketplace nerymurillohnd/the-claude-factory
+```
+
+For everyone working in the current repository:
+
+```bash
+claude plugin install model-trace@the-claude-factory --scope project
+```
+
+No GitHub SSH key? Run this first:
 
 ```bash
 export CLAUDE_CODE_PLUGIN_PREFER_HTTPS=1
 ```
 
-</details>
-
-<details>
-<summary><b>💬 Inside a Claude Code session</b></summary>
+### 💬 Inside a Claude Code session
 
 ```text
-/plugin install model-trace --marketplace nerymurillohnd/the-claude-factory
+/plugin marketplace add nerymurillohnd/the-claude-factory
+/plugin install model-trace@the-claude-factory
 ```
-
-Requires Claude Code v2.1.275+. With the marketplace already added, `/plugin install model-trace@the-claude-factory` opens the plugin's details so you can pick a scope. You can also browse it in `/plugin` → **Discover**.
-
-</details>
-
-<details>
-<summary><b>🖥️ Claude desktop app — Code tab</b></summary>
-
-With the marketplace added, click **+** next to the prompt box → **Add plugins** (or **Plugins** → **Browse plugins**), or open **Settings** → **Plugins** → **Discover**; then select **Model Trace** and choose a scope.
-
-</details>
-
-> [!NOTE]
-> New to this marketplace? The [installation guide](../../docs/installation.md) covers every surface step by step.
-
-A mod runs with your permissions and no sandbox. Before you install it, you can see everything it hooks and calls with `claude plugin validate <path to the plugin folder>`.
 
 ## 🚀 Usage
 
@@ -169,6 +183,7 @@ Set options when installing (`claude plugin install model-trace@the-claude-facto
 - **MCP servers:** none.
 - **Network:** none. It calls no model and runs no command.
 - **Files written:** only the report you save, in `exportDir`. A permission rule such as `Write(~/Downloads/**)` doesn't apply to a mod, so choose `exportDir` with that in mind. Nothing is kept between sessions: the trace lives in the session's memory, and `/clear`, `/resume` and `/branch` start it over.
+- **Before you install:** a mod runs with your permissions and no sandbox; `claude plugin validate <path to the plugin folder>` shows everything it hooks and calls.
 
 It can't change or restyle the permission prompt, and it doesn't try to.
 
@@ -178,7 +193,11 @@ It can't change or restyle the permission prompt, and it doesn't try to.
 claude plugin update model-trace@the-claude-factory
 ```
 
-Or in a session: `/plugin` → **Installed** → **Model Trace** → **Update now**. Then run `/reload-plugins`.
+Then, in an open session:
+
+```text
+/reload-plugins
+```
 
 > [!TIP]
 > Auto-update is off for this marketplace until you turn it on: `/plugin` → **Marketplaces** → **the-claude-factory** → **Enable auto-update**.
@@ -189,11 +208,13 @@ Or in a session: `/plugin` → **Installed** → **Model Trace** → **Update no
 claude plugin uninstall model-trace@the-claude-factory
 ```
 
-Installed with `--scope project`? Add `--scope project` here too. Uninstalling from the last scope it's installed at also deletes its saved options and data directory, unless you pass `--keep-data`.
+Installed with `--scope project`:
 
-In a session: `/plugin` → **Installed** → **Model Trace** → **Uninstall**.
+```bash
+claude plugin uninstall model-trace@the-claude-factory --scope project
+```
 
-The reports you saved stay in `exportDir`; delete them yourself if you no longer want them. The plugin keeps no other data.
+Uninstalling from the last scope it's installed at also deletes its saved options and data directory, unless you add `--keep-data`. The reports you saved stay in `exportDir`; delete them yourself if you no longer want them. The plugin keeps no other data.
 
 ## 🧭 Compatibility
 

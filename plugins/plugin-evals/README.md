@@ -12,6 +12,7 @@
 
 [Why use it](#-why-use-it) •
 [What's inside](#-whats-inside) •
+[Prerequisites](#-prerequisites) •
 [Install](#-installation) •
 [Usage](#-usage) •
 [Compatibility](#-compatibility) •
@@ -40,57 +41,173 @@
 | :-- | :-- | :-- | :-- |
 | 🎯 Skill | `plugin-evals:plugin-evals` | Designs, writes, runs, debugs and CI-gates `claude plugin eval` suites and reads their results, checked against your installed CLI and the live docs | Automatically whenever your task involves plugin evals, or `/plugin-evals:plugin-evals` |
 
-## ✅ Requirements
+## 📋 Prerequisites
 
-| Requirement | Details |
-| :-- | :-- |
-| **Claude Code** | v2.1.269 or later — check with `claude --version` |
-| **Surfaces** | See [Compatibility](#-compatibility) |
-| **External tools** | To run suites: the `claude` CLI in a terminal; git 2.31 or later if git is installed. Suites that grant Bash need the OS sandbox: `bubblewrap` and `socat` on Linux, WSL2 on Windows |
-| **Accounts / API keys** | None for the plugin. Eval runs and judge graders use the credentials your Claude Code already uses, and count against your plan or API bill |
-| **Web access** | Optional. With it, Claude checks the live docs and changelog; without it, Claude answers from the plugin's references and says what it could not verify |
+| Tool | Minimum version | Check |
+| :-- | :-- | :-- |
+| Claude Code, in a terminal to run suites | 2.1.269 | `claude --version` |
+| git (optional; if installed, eval runs need this version) | 2.31 | `git --version` |
+| bubblewrap (Linux, for suites that grant Bash) | — | `bwrap --version` |
+| socat (Linux, for suites that grant Bash) | — | `socat -V` |
+
+Suites that grant Bash need the OS sandbox: macOS has it built in, Linux needs `bubblewrap` and `socat`, and on Windows you run Claude Code inside WSL2 and install them there with the Linux commands.
+
+### 🤖 Claude Code
+
+Already installed? Bring it to the latest version the way you installed it. New to Claude Code? Follow the [official setup](https://code.claude.com/docs/en/setup).
+
+<details>
+<summary>⬇️ <b>Native installer</b> — macOS, Linux, WSL</summary>
+
+```bash
+claude update
+```
+
+</details>
+<details>
+<summary>🍺 <b>Homebrew</b> — macOS, Linux</summary>
+
+```bash
+brew upgrade claude-code
+```
+
+</details>
+<details>
+<summary>📦 <b>npm</b> — any platform</summary>
+
+```bash
+npm install -g @anthropic-ai/claude-code@latest
+```
+
+</details>
+
+### 🌿 git
+
+<details>
+<summary>🍏 <b>Xcode Command Line Tools</b> — macOS</summary>
+
+```bash
+xcode-select --install
+```
+
+</details>
+<details>
+<summary>🍺 <b>Homebrew</b> — macOS</summary>
+
+```bash
+brew install git
+```
+
+</details>
+<details>
+<summary>🚢 <b>MacPorts</b> — macOS</summary>
+
+```bash
+sudo port install git
+```
+
+</details>
+<details>
+<summary>🐧 <b>apt</b> — Debian, Ubuntu</summary>
+
+```bash
+sudo apt-get install git
+```
+
+</details>
+<details>
+<summary>🐧 <b>Git PPA (latest stable)</b> — Ubuntu</summary>
+
+```bash
+sudo add-apt-repository ppa:git-core/ppa
+sudo apt update
+sudo apt install git
+```
+
+</details>
+<details>
+<summary>🎩 <b>dnf</b> — Fedora</summary>
+
+```bash
+sudo dnf install git
+```
+
+</details>
+<details>
+<summary>🏔️ <b>pacman</b> — Arch Linux</summary>
+
+```bash
+sudo pacman -S git
+```
+
+</details>
+<details>
+<summary>🦎 <b>zypper</b> — openSUSE</summary>
+
+```bash
+sudo zypper install git
+```
+
+</details>
+
+### 📦 bubblewrap and socat
+
+<details>
+<summary>🐧 <b>apt</b> — Debian, Ubuntu</summary>
+
+```bash
+sudo apt-get install bubblewrap socat
+```
+
+</details>
+<details>
+<summary>🎩 <b>dnf</b> — Fedora</summary>
+
+```bash
+sudo dnf install bubblewrap socat
+```
+
+</details>
 
 ## 📥 Installation
 
-<details open>
-<summary><b>💻 Terminal (shell)</b></summary>
+### 💻 Terminal
 
 ```bash
-# One step: adds the marketplace (if needed) and installs the plugin — Claude Code v2.1.292+
-claude plugin install plugin-evals --marketplace nerymurillohnd/the-claude-factory
-
-# Or, with the marketplace already added
+claude plugin marketplace add nerymurillohnd/the-claude-factory
 claude plugin install plugin-evals@the-claude-factory
 ```
 
-Add `--scope project` to enable it for everyone working in the current repository; each collaborator still installs it once on their own machine.
+In one step (Claude Code v2.1.292+):
 
-</details>
-
-<details>
-<summary><b>💬 Inside a Claude Code session</b></summary>
-
-```text
-/plugin install plugin-evals --marketplace nerymurillohnd/the-claude-factory
+```bash
+claude plugin install plugin-evals --marketplace nerymurillohnd/the-claude-factory
 ```
 
-Requires Claude Code v2.1.275+. With the marketplace already added, `/plugin install plugin-evals@the-claude-factory` opens the plugin's details so you can pick a scope. You can also browse it in `/plugin` → **Discover**.
+For everyone working in the current repository:
 
-</details>
+```bash
+claude plugin install plugin-evals@the-claude-factory --scope project
+```
 
-<details>
-<summary><b>🖥️ Claude app (web and desktop)</b></summary>
+No GitHub SSH key? Run this first:
+
+```bash
+export CLAUDE_CODE_PLUGIN_PREFER_HTTPS=1
+```
+
+### 💬 Inside a Claude Code session
+
+```text
+/plugin marketplace add nerymurillohnd/the-claude-factory
+/plugin install plugin-evals@the-claude-factory
+```
+
+### 🖥️ Claude app (web and desktop)
 
 1. Open **Customize** in the sidebar, then **Plugins**.
 2. Select **Add** → **Add marketplace** and enter `nerymurillohnd/the-claude-factory`.
 3. Find **Plugin Evals** in **Discover** and select **Add**.
-
-In the desktop app's **Code** tab you can also click **+** next to the prompt box → **Add plugins** (or **Plugins** → **Browse plugins**), or open **Settings** → **Plugins** → **Discover**.
-
-</details>
-
-> [!NOTE]
-> New to this marketplace? The [installation guide](../../docs/installation.md) covers every surface step by step.
 
 ## 🚀 Usage
 
@@ -134,12 +251,26 @@ Here's my aggregate-result.json. Why is the delta zero on half the cases?
 claude plugin update plugin-evals@the-claude-factory
 ```
 
-Or in a session: `/plugin` → **Installed** → **Plugin Evals** → **Update now**. Then run `/reload-plugins`.
+Then, in an open session:
+
+```text
+/reload-plugins
+```
 
 Installed from the Claude app? In Claude Code (v2.1.273+, signed in with that claude.ai account) it appears as `plugin-evals@synced`: update and uninstall it in the app (**Customize** → **Plugins**); in `/plugin` you can only turn it on or off, unless your organization requires it.
 
 > [!TIP]
-> Turn on auto-update once for the whole marketplace: `/plugin` → **Marketplaces** → **the-claude-factory** → **Enable auto-update**.
+> Auto-update is off for this marketplace until you turn it on: `/plugin` → **Marketplaces** → **the-claude-factory** → **Enable auto-update**.
+
+Update `git`, `bubblewrap` and `socat` the way you installed them, for example:
+
+```bash
+brew upgrade git
+```
+
+```bash
+sudo apt-get install --only-upgrade git bubblewrap socat
+```
 
 ## 🗑️ Uninstalling
 
@@ -147,7 +278,15 @@ Installed from the Claude app? In Claude Code (v2.1.273+, signed in with that cl
 claude plugin uninstall plugin-evals@the-claude-factory
 ```
 
-In a session: `/plugin` → **Installed** → **Plugin Evals** → **Uninstall**. In the Claude app: **Customize** → **Plugins** → **Plugin Evals** → its menu → **Remove**.
+Installed with `--scope project`:
+
+```bash
+claude plugin uninstall plugin-evals@the-claude-factory --scope project
+```
+
+In the Claude app: **Customize** → **Plugins** → **Plugin Evals** → its menu → **Remove**.
+
+Uninstalling from the last scope it's installed at also deletes its saved options and data directory, unless you add `--keep-data`. The plugin keeps no data. The eval suites Claude wrote with you stay in your plugin's folder.
 
 ## 🧭 Compatibility
 
@@ -180,14 +319,14 @@ No. Claude runs `init` and follows the interview it prints, so the authoring rul
 <details>
 <summary><b>What if the docs changed after this plugin was released?</b></summary>
 
-Claude checks your installed CLI with `claude plugin eval --help`, the live docs and the changelog before it relies on anything that changes between releases. When they disagree with what the plugin knew, Claude follows the live source and tells you what changed.
+Claude checks your installed CLI with `claude plugin eval --help`, the live docs and the changelog before it relies on anything that changes between releases. When they disagree with what the plugin knew, Claude follows the live source and tells you what changed. Web access is optional: without it, Claude answers from the plugin's references and says what it could not verify.
 
 </details>
 
 <details>
 <summary><b>Does it run paid evals on its own?</b></summary>
 
-No. Every eval run and every judged grader is a real model call on your account. Claude states how many runs a step needs and waits for your go-ahead.
+No. Every eval run and every judged grader is a real model call on your account: it uses the credentials your Claude Code already uses and counts against your plan or API bill. The plugin itself needs no account or API key. Claude states how many runs a step needs and waits for your go-ahead.
 
 </details>
 

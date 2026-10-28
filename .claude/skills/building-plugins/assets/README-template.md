@@ -12,6 +12,7 @@
 
 [Why use it](#-why-use-it) •
 [What's inside](#-whats-inside) •
+[Prerequisites](#-prerequisites) •
 [Install](#-installation) •
 [Usage](#-usage) •
 [Configuration](#%EF%B8%8F-configuration) •
@@ -45,76 +46,96 @@
 | 🔌 MCP server | `<Server name>`         | <Short description> | Tools appear as `mcp__plugin_<plugin>_<Server name>__*` |
 | 🧠 LSP server | `<Language server>`     | <Short description> | Automatically for matching file types                   |
 
-## ✅ Requirements
+## 📋 Prerequisites
 
-| Requirement             | Details                                                                   |
-| :---------------------- | :------------------------------------------------------------------------ |
-| **Claude Code**         | v<Minimum Claude Code version> or later — check with `claude --version`   |
-| **Surfaces**            | See [Compatibility](#-compatibility)                                      |
-| **External tools**      | <Each tool on PATH, its minimum version and how to install it, or "None"> |
-| **Accounts / API keys** | <For example "A GitHub token (prompted on enable)", or "None">            |
-| **Network**             | See [What this plugin runs and sends](#-what-this-plugin-runs-and-sends)  |
+| Tool | Minimum version | Check |
+| :-- | :-- | :-- |
+| Claude Code | <Minimum Claude Code version> | `claude --version` |
+| <Tool name> | <Tool minimum version> | `<Tool check command>` |
+
+### 🤖 Claude Code
+
+Already installed? Bring it to the latest version the way you installed it. New to Claude Code? Follow the [official setup](https://code.claude.com/docs/en/setup).
+
+<details>
+<summary>⬇️ <b>Native installer</b> — macOS, Linux, WSL</summary>
+
+```bash
+claude update
+```
+
+</details>
+<details>
+<summary>🍺 <b>Homebrew</b> — macOS, Linux</summary>
+
+```bash
+brew upgrade claude-code
+```
+
+</details>
+<details>
+<summary>📦 <b>npm</b> — any platform</summary>
+
+```bash
+npm install -g @anthropic-ai/claude-code@latest
+```
+
+</details>
+
+### <Tool emoji> <Tool name>
+
+<details>
+<summary><Method emoji> <b><Install method></b> — <Platforms it runs on></summary>
+
+```bash
+<Install command>
+```
+
+</details>
+
+<One details block per install method the tool's official docs give; one tool section per row of the table after Claude Code. With no tool beyond Claude Code, delete this line, the tool's row and the tool's section.>
 
 ## 📥 Installation
 
-<details open>
-<summary><b>💻 Terminal (shell)</b></summary>
+### 💻 Terminal
 
 ```bash
-# One step: adds the marketplace (if needed) and installs the plugin — Claude Code v2.1.292+
-claude plugin install <plugin> --marketplace <owner>/<repo>
-
-# Or, with the marketplace already added
+claude plugin marketplace add <owner>/<repo>
 claude plugin install <plugin>@<marketplace-name>
 ```
 
-Add `--scope project` to enable it for everyone working in the current repository; each collaborator still installs it once on their own machine.
+In one step (Claude Code v2.1.292+):
 
-No GitHub SSH key? Set this first, so installs from `/plugin` and updates use HTTPS:
+```bash
+claude plugin install <plugin> --marketplace <owner>/<repo>
+```
+
+For everyone working in the current repository:
+
+```bash
+claude plugin install <plugin>@<marketplace-name> --scope project
+```
+
+No GitHub SSH key? Run this first:
 
 ```bash
 export CLAUDE_CODE_PLUGIN_PREFER_HTTPS=1
 ```
 
-</details>
-
-<details>
-<summary><b>💬 Inside a Claude Code session</b></summary>
+### 💬 Inside a Claude Code session
 
 ```text
-/plugin install <plugin> --marketplace <owner>/<repo>
+/plugin marketplace add <owner>/<repo>
+/plugin install <plugin>@<marketplace-name>
 ```
 
-Requires Claude Code v2.1.275+. With the marketplace already added, `/plugin install <plugin>@<marketplace-name>` opens the plugin's details so you can pick a scope. You can also browse it in `/plugin` → **Discover**.
-
-</details>
-
 <app>
-<details>
-<summary><b>🖥️ Claude app (web and desktop)</b></summary>
+### 🖥️ Claude app (web and desktop)
 
 1. Open **Customize** in the sidebar, then **Plugins**.
 2. Select **Add** → **Add marketplace** and enter `<owner>/<repo>`.
 3. Find **<Display Name>** in **Discover** and select **Add**.
-
-In the desktop app's **Code** tab you can also click **+** next to the prompt box → **Add plugins** (or **Plugins** → **Browse plugins**), or open **Settings** → **Plugins** → **Discover**.
-
-</details>
 </app>
-
-<code-only>
-<details>
-<summary><b>🖥️ Claude desktop app — Code tab</b></summary>
-
-With the marketplace added, click **+** next to the prompt box → **Add plugins** (or **Plugins** → **Browse plugins**), or open **Settings** → **Plugins** → **Discover**; then select **<Display Name>** and choose a scope.
-
-</details>
-</code-only>
-
-> [!NOTE]
-> New to this marketplace? The [installation guide](../../docs/installation.md) covers every surface step by step.
-
-<For a plugin with a mod, keep this paragraph and delete this line; otherwise delete both.> A mod runs with your permissions and no sandbox. Before you install it, you can see everything it hooks and calls with `claude plugin validate <path to the plugin folder>`.
 
 ## 🚀 Usage
 
@@ -140,6 +161,7 @@ Set options when installing (`claude plugin install <plugin>@<marketplace-name> 
 - **MCP servers:** <`<Server name>` — its command or URL, and what it's used for; or "none">.
 - **Network:** <Every destination and the data sent there, or "none">.
 - **Files written:** <Paths, including anything under the plugin data directory, or "none">.
+- **Before you install:** <For a plugin with a mod, keep this bullet and delete this placeholder; otherwise delete the bullet.> a mod runs with your permissions and no sandbox; `claude plugin validate <path to the plugin folder>` shows everything it hooks and calls.
 
 ## 🔄 Updating
 
@@ -147,12 +169,18 @@ Set options when installing (`claude plugin install <plugin>@<marketplace-name> 
 claude plugin update <plugin>@<marketplace-name>
 ```
 
-Or in a session: `/plugin` → **Installed** → **<Display Name>** → **Update now**. Then run `/reload-plugins`. <Name each external tool the user updates on their own, for example "Update `gopls` yourself, the way you installed it.", or delete this sentence.>
+Then, in an open session:
 
-<app>Installed from the Claude app? In Claude Code (v2.1.273+, signed in with that claude.ai account) it appears as `<plugin>@synced`: update and uninstall it in the app (**Customize** → **Plugins**); in `/plugin` you can only turn it on or off, unless your organization requires it.</app>
+```text
+/reload-plugins
+```
+
+<app>Installed from the Claude app? In Claude Code (v2.1.273+, signed in with that claude.ai account) it appears as `<plugin>@synced`: update and uninstall it in the app (**Customize** → **Plugins**).</app>
 
 > [!TIP]
 > Auto-update is off for this marketplace until you turn it on: `/plugin` → **Marketplaces** → **<marketplace-name>** → **Enable auto-update**.
+
+<Update each tool of Prerequisites the way you installed it, for example with `brew upgrade <Homebrew formula>`; delete this line when the plugin needs no tool beyond Claude Code.>
 
 ## 🗑️ Uninstalling
 
@@ -160,11 +188,15 @@ Or in a session: `/plugin` → **Installed** → **<Display Name>** → **Update
 claude plugin uninstall <plugin>@<marketplace-name>
 ```
 
-Installed with `--scope project`? Add `--scope project` here too. Uninstalling from the last scope it's installed at also deletes its saved options and data directory, unless you pass `--keep-data`.
+Installed with `--scope project`:
 
-In a session: `/plugin` → **Installed** → **<Display Name>** → **Uninstall**. <app>In the Claude app: **Customize** → **Plugins** → **<Display Name>** → its menu → **Remove**.</app>
+```bash
+claude plugin uninstall <plugin>@<marketplace-name> --scope project
+```
 
-<What stays behind: data the plugin wrote, files in the user's project, tools the user installed for it; or "The plugin keeps no data and writes no files, so nothing is left behind.">
+<app>In the Claude app: **Customize** → **Plugins** → **<Display Name>** → its menu → **Remove**.</app>
+
+Uninstalling from the last scope it's installed at also deletes its saved options and data directory, unless you add `--keep-data`. <What stays behind: data the plugin wrote, files in the user's project, tools the user installed for it; or "The plugin keeps no data and writes no files, so nothing is left behind.">
 
 ## 🧭 Compatibility
 

@@ -12,6 +12,7 @@
 
 [Why use it](#-why-use-it) •
 [What's inside](#-whats-inside) •
+[Prerequisites](#-prerequisites) •
 [Install](#-installation) •
 [Usage](#-usage) •
 [Compatibility](#-compatibility) •
@@ -47,57 +48,188 @@ A skill can look finished to the person who wrote it and still fail the model th
 
 Skill Diagnostics only audits. To create a skill, use Anthropic's `skill-creator`, then audit the result.
 
-## ✅ Requirements
+## 📋 Prerequisites
 
-| Requirement | Details |
-| :-- | :-- |
-| **Claude Code** | v2.1.176 or later — check with `claude --version` |
-| **Surfaces** | See [Compatibility](#-compatibility) |
-| **External tools** | Python 3.12 or later on `PATH` as `python3`, for the hook: check with `python3 --version`, and get it from [python.org](https://www.python.org/downloads/) or your package manager. On Windows, [Git for Windows](https://git-scm.com/downloads/win): the hook runs through Git Bash, so run `python3 --version` there. Python's install manager from python.org adds the `python3` command; the older full installer (`python-3.x.exe`) adds only `python` and `py`, so the hook can't find Python. `git`, only to audit a skill from a URL. Without Python the audit still runs, but the hook can't start: Claude Code shows a hook error after each `SKILL.md` write |
-| **Network** | Used to verify findings against the official Claude documentation and the Claude Code changelog, and to download a skill you audit from a URL. It fetches pages from `code.claude.com`, `claude.com`, `platform.claude.com`, `support.claude.com` and `agentskills.io`. It only downloads public documentation pages; it never uploads your skill's files to those sites. Without network access the audit still runs; findings that need an official page are marked *not verified live* and the verdict is *provisional* |
-| **Accounts / API keys** | None |
+| Tool | Minimum version | Check |
+| :-- | :-- | :-- |
+| Claude Code | 2.1.176 | `claude --version` |
+| Python, as `python3` on your `PATH` | 3.12 | `python3 --version` |
+| git (optional: to audit a skill from a URL; on Windows, Git for Windows is required) | — | `git --version` |
+
+Python runs the hook. On Windows the hook runs through Git Bash, which comes with [Git for Windows](https://git-scm.com/downloads/win), so run `python3 --version` there.
+
+### 🤖 Claude Code
+
+Already installed? Bring it to the latest version the way you installed it. New to Claude Code? Follow the [official setup](https://code.claude.com/docs/en/setup).
+
+<details>
+<summary>⬇️ <b>Native installer</b> — macOS, Linux, WSL</summary>
+
+```bash
+claude update
+```
+
+</details>
+<details>
+<summary>🍺 <b>Homebrew</b> — macOS, Linux</summary>
+
+```bash
+brew upgrade claude-code
+```
+
+</details>
+<details>
+<summary>📦 <b>npm</b> — any platform</summary>
+
+```bash
+npm install -g @anthropic-ai/claude-code@latest
+```
+
+</details>
+
+### 🐍 Python
+
+<details>
+<summary>🍺 <b>Homebrew</b> — macOS, Linux</summary>
+
+```bash
+brew install python
+```
+
+</details>
+<details>
+<summary>📦 <b>apt</b> — Debian, Ubuntu</summary>
+
+```bash
+sudo apt install python3
+```
+
+</details>
+<details>
+<summary>📦 <b>dnf</b> — Fedora</summary>
+
+```bash
+sudo dnf install python3
+```
+
+</details>
+<details>
+<summary>🪟 <b>Python install manager (winget)</b> — Windows</summary>
+
+```bash
+winget install 9NQ7512CXL7T -e --accept-package-agreements --disable-interactivity
+```
+
+</details>
+
+Or download the installer from [python.org](https://www.python.org/downloads/). On Windows, Python's install manager adds the `python3` command; the older full installer (`python-3.x.exe`) adds only `python` and `py`, so the hook can't find Python.
+
+### 🔀 git
+
+<details>
+<summary>🍺 <b>Homebrew</b> — macOS</summary>
+
+```bash
+brew install git
+```
+
+</details>
+<details>
+<summary>🛠️ <b>Xcode Command Line Tools</b> — macOS</summary>
+
+```bash
+xcode-select --install
+```
+
+</details>
+<details>
+<summary>🚢 <b>MacPorts</b> — macOS</summary>
+
+```bash
+sudo port install git
+```
+
+</details>
+<details>
+<summary>📦 <b>apt</b> — Debian, Ubuntu</summary>
+
+```bash
+sudo apt-get install git
+```
+
+</details>
+<details>
+<summary>📦 <b>dnf</b> — Fedora</summary>
+
+```bash
+sudo dnf install git
+```
+
+</details>
+<details>
+<summary>📦 <b>pacman</b> — Arch Linux</summary>
+
+```bash
+sudo pacman -S git
+```
+
+</details>
+<details>
+<summary>📦 <b>zypper</b> — openSUSE</summary>
+
+```bash
+sudo zypper install git
+```
+
+</details>
+<details>
+<summary>🪟 <b>Git for Windows (winget)</b> — Windows</summary>
+
+```bash
+winget install --id Git.Git -e --source winget
+```
+
+</details>
 
 ## 📥 Installation
 
-<details open>
-<summary><b>💻 Terminal (shell)</b></summary>
+### 💻 Terminal
 
 ```bash
-# One step: adds the marketplace (if needed) and installs the plugin — Claude Code v2.1.292+
-claude plugin install skill-diagnostics --marketplace nerymurillohnd/the-claude-factory
-
-# Or, with the marketplace already added
+claude plugin marketplace add nerymurillohnd/the-claude-factory
 claude plugin install skill-diagnostics@the-claude-factory
 ```
 
-Add `--scope project` to enable it for everyone working in the current repository; each collaborator still installs it once on their own machine.
+In one step (Claude Code v2.1.292+):
 
-</details>
-
-<details>
-<summary><b>💬 Inside a Claude Code session</b></summary>
-
-```text
-/plugin install skill-diagnostics --marketplace nerymurillohnd/the-claude-factory
+```bash
+claude plugin install skill-diagnostics --marketplace nerymurillohnd/the-claude-factory
 ```
 
-Requires Claude Code v2.1.275+. With the marketplace already added, `/plugin install skill-diagnostics@the-claude-factory` opens the plugin's details so you can pick a scope. You can also browse it in `/plugin` → **Discover**.
+For everyone working in the current repository:
 
-</details>
+```bash
+claude plugin install skill-diagnostics@the-claude-factory --scope project
+```
 
-<details>
-<summary><b>🖥️ Claude app (web and desktop)</b></summary>
+No GitHub SSH key? Run this first:
+
+```bash
+export CLAUDE_CODE_PLUGIN_PREFER_HTTPS=1
+```
+
+### 💬 Inside a Claude Code session
+
+```text
+/plugin marketplace add nerymurillohnd/the-claude-factory
+/plugin install skill-diagnostics@the-claude-factory
+```
+
+### 🖥️ Claude app (web and desktop)
 
 1. Open **Customize** in the sidebar, then **Plugins**.
 2. Select **Add** → **Add marketplace** and enter `nerymurillohnd/the-claude-factory`.
 3. Find **Skill Diagnostics** in **Discover** and select **Add**.
-
-In the desktop app's **Code** tab you can also click **+** next to the prompt box → **Add plugins** (or **Plugins** → **Browse plugins**), or open **Settings** → **Plugins** → **Discover**.
-
-</details>
-
-> [!NOTE]
-> New to this marketplace? The [installation guide](../../docs/installation.md) covers every surface step by step. If you install it both in the Claude app and in Claude Code, Claude Code loads its own copy and reports the synced one as not loaded, so update the copy you use.
 
 ## 🚀 Usage
 
@@ -153,12 +285,24 @@ In the Claude app the option can't be changed and keeps its default, `suggest`.
 claude plugin update skill-diagnostics@the-claude-factory
 ```
 
-Or in a session: `/plugin` → **Installed** → **Skill Diagnostics** → **Update now**. Then run `/reload-plugins`.
+Then, in an open session:
 
-Installed from the Claude app? In Claude Code (v2.1.273+, signed in with that claude.ai account) it appears as `skill-diagnostics@synced`: update and uninstall it in the app (**Customize** → **Plugins**); in `/plugin` you can only turn it on or off, unless your organization requires it.
+```text
+/reload-plugins
+```
+
+Installed from the Claude app? In Claude Code (v2.1.273+, signed in with that claude.ai account) it appears as `skill-diagnostics@synced`: update and uninstall it in the app (**Customize** → **Plugins**).
+
+If you install it both in the Claude app and in Claude Code, Claude Code loads its own copy and reports the synced one as not loaded, so update the copy you use.
 
 > [!TIP]
-> Turn on auto-update once for the whole marketplace: `/plugin` → **Marketplaces** → **the-claude-factory** → **Enable auto-update**.
+> Auto-update is off for this marketplace until you turn it on: `/plugin` → **Marketplaces** → **the-claude-factory** → **Enable auto-update**.
+
+Update Python and git the way you installed them, for example with Homebrew:
+
+```bash
+brew upgrade python git
+```
 
 ## 🗑️ Uninstalling
 
@@ -166,9 +310,15 @@ Installed from the Claude app? In Claude Code (v2.1.273+, signed in with that cl
 claude plugin uninstall skill-diagnostics@the-claude-factory
 ```
 
-Installed with `--scope project`? Add `--scope project` here too.
+Installed with `--scope project`:
 
-In a session: `/plugin` → **Installed** → **Skill Diagnostics** → **Uninstall**. In the Claude app: **Customize** → **Plugins** → **Skill Diagnostics** → its menu → **Remove**.
+```bash
+claude plugin uninstall skill-diagnostics@the-claude-factory --scope project
+```
+
+In the Claude app: **Customize** → **Plugins** → **Skill Diagnostics** → its menu → **Remove**.
+
+Uninstalling from the last scope it's installed at also deletes its saved options and data directory, unless you add `--keep-data`. The audit never changes your files, so nothing else is left behind.
 
 ## 🧭 Compatibility
 
@@ -238,6 +388,20 @@ Claude Code cuts each skill's `description` (plus `when_to_use`) in its skill li
 <summary><b>How much does an audit cost?</b></summary>
 
 Each skill is read in full by two agents in parallel, and every finding is then verified against the live documentation, so a large folder of skills uses more of your plan's usage than a single one. Use `--lens` to run one lens, or audit a few skills at a time.
+
+</details>
+
+<details>
+<summary><b>What does it fetch from the internet?</b></summary>
+
+It uses the network to verify findings against the official Claude documentation and the Claude Code changelog, and to download a skill you audit from a URL. It fetches pages from `code.claude.com`, `claude.com`, `platform.claude.com`, `support.claude.com` and `agentskills.io`. It only downloads public documentation pages; it never uploads your skill's files to those sites. Without network access the audit still runs; findings that need an official page are marked *not verified live* and the verdict is *provisional*.
+
+</details>
+
+<details>
+<summary><b>What happens without Python?</b></summary>
+
+The audit still runs, but the hook can't start: Claude Code shows a hook error after each `SKILL.md` write.
 
 </details>
 

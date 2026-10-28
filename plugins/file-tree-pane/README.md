@@ -12,6 +12,7 @@
 
 [Why use it](#-why-use-it) •
 [What's inside](#-whats-inside) •
+[Prerequisites](#-prerequisites) •
 [Install](#-installation) •
 [Usage](#-usage) •
 [Compatibility](#-compatibility) •
@@ -40,57 +41,335 @@
 | :-- | :-- | :-- | :-- |
 | 🧩 Mod | `file-tree-pane` | Draws the file tree pane, highlights Claude's tool calls on it, passes the selected file to Claude, and adds the `/file-tree` command | Automatically in every Claude Code session once installed; the pane opens by itself where it can dock, or with `/file-tree` |
 
-## ✅ Requirements
+## 📋 Prerequisites
 
-| Requirement | Details |
-| :-- | :-- |
-| **Claude Code** | v2.1.299 or later — check with `claude --version`. Tested with v2.1.311. |
-| **Surfaces** | See [Compatibility](#-compatibility) |
-| **External tools** | `git` on `PATH` for status, line counts and diffs (the tree works without it). Optional: [tmux](https://github.com/tmux/tmux/wiki) or [herdr](https://herdr.dev) to open a terminal editor or diff tool; a [Nerd Font](https://www.nerdfonts.com) for file icons; a diff tool such as [hunk](https://hunk.dev) or [lazygit](https://github.com/jesseduffield/lazygit) |
-| **Accounts / API keys** | None |
+| Tool | Minimum version | Check |
+| :-- | :-- | :-- |
+| Claude Code | 2.1.299 | `claude --version` |
+| git | — | `git --version` |
+| [tmux](https://github.com/tmux/tmux/wiki) (optional): opens a terminal editor or diff tool | — | `tmux -V` |
+| [herdr](https://herdr.dev) (optional): opens a terminal editor or diff tool | — (0.9.1 for row clicks) | `herdr --version` |
+| [Nerd Font](https://www.nerdfonts.com) (optional): file icons | — | — |
+| [hunk](https://hunk.dev) (optional): your own diff tool | — | `hunk --version` |
+| [lazygit](https://github.com/jesseduffield/lazygit) (optional): your own diff tool | — | `lazygit --version` |
 
-> [!NOTE]
-> File Tree Pane makes no network calls and never calls the model. It writes no files. It lists the folders you open, reads a file when you preview it, and runs read-only `git` commands (`rev-parse`, `status`, `diff`, `ls-files`, `log`) in the folder it shows, again every 5 seconds while the pane is on screen. The full list is under [What does the mod reach on my machine?](#-faq--troubleshooting)
+`git` on `PATH` gives the tree its status, line counts and diffs; the tree works without it.
+
+### 🤖 Claude Code
+
+Already installed? Bring it to the latest version the way you installed it. New to Claude Code? Follow the [official setup](https://code.claude.com/docs/en/setup).
+
+<details>
+<summary>⬇️ <b>Native installer</b> — macOS, Linux, WSL</summary>
+
+```bash
+claude update
+```
+
+</details>
+<details>
+<summary>🍺 <b>Homebrew</b> — macOS, Linux</summary>
+
+```bash
+brew upgrade claude-code
+```
+
+</details>
+<details>
+<summary>📦 <b>npm</b> — any platform</summary>
+
+```bash
+npm install -g @anthropic-ai/claude-code@latest
+```
+
+</details>
+
+### 🌿 git
+
+<details>
+<summary>🍺 <b>Homebrew</b> — macOS</summary>
+
+```bash
+brew install git
+```
+
+</details>
+<details>
+<summary>⚓ <b>MacPorts</b> — macOS</summary>
+
+```bash
+sudo port install git
+```
+
+</details>
+<details>
+<summary>🛠️ <b>Xcode Command Line Tools</b> — macOS</summary>
+
+```bash
+xcode-select --install
+```
+
+</details>
+<details>
+<summary>🐧 <b>apt</b> — Debian, Ubuntu</summary>
+
+```bash
+sudo apt-get install git
+```
+
+</details>
+<details>
+<summary>🎩 <b>dnf</b> — Fedora</summary>
+
+```bash
+sudo dnf install git
+```
+
+</details>
+<details>
+<summary>🏔️ <b>pacman</b> — Arch Linux</summary>
+
+```bash
+sudo pacman -S git
+```
+
+</details>
+<details>
+<summary>🦎 <b>zypper</b> — openSUSE</summary>
+
+```bash
+sudo zypper install git
+```
+
+</details>
+
+### 🪟 tmux
+
+<details>
+<summary>🍺 <b>Homebrew</b> — macOS</summary>
+
+```bash
+brew install tmux
+```
+
+</details>
+<details>
+<summary>⚓ <b>MacPorts</b> — macOS</summary>
+
+```bash
+sudo port install tmux
+```
+
+</details>
+<details>
+<summary>🐧 <b>apt</b> — Debian, Ubuntu</summary>
+
+```bash
+sudo apt install tmux
+```
+
+</details>
+<details>
+<summary>🎩 <b>dnf</b> — Fedora</summary>
+
+```bash
+sudo dnf install tmux
+```
+
+</details>
+<details>
+<summary>🏔️ <b>pacman</b> — Arch Linux</summary>
+
+```bash
+sudo pacman -S tmux
+```
+
+</details>
+<details>
+<summary>🦎 <b>zypper</b> — openSUSE</summary>
+
+```bash
+sudo zypper install tmux
+```
+
+</details>
+
+### 🐑 herdr
+
+<details>
+<summary>⬇️ <b>Install script</b> — macOS, Linux</summary>
+
+```bash
+curl -fsSL https://herdr.dev/install.sh | sh
+```
+
+</details>
+<details>
+<summary>🍺 <b>Homebrew</b> — macOS, Linux</summary>
+
+```bash
+brew install herdr
+```
+
+</details>
+<details>
+<summary>🧰 <b>mise</b> — macOS, Linux</summary>
+
+```bash
+mise use -g herdr
+```
+
+</details>
+
+### 🔤 Nerd Font
+
+<details>
+<summary>🍺 <b>Homebrew</b> — macOS</summary>
+
+```bash
+brew install font-hack-nerd-font
+```
+
+</details>
+<details>
+<summary>🍺 <b>Homebrew</b> — Linux</summary>
+
+```bash
+brew install --cask font-hack-nerd-font
+```
+
+</details>
+<details>
+<summary>⬇️ <b>Install script</b> — macOS, Linux</summary>
+
+```bash
+curl -s https://raw.githubusercontent.com/ryanoasis/nerd-fonts/master/install.sh -o install.sh
+chmod u+x install.sh
+./install.sh install Hack
+```
+
+</details>
+
+### 🔍 hunk
+
+<details>
+<summary>⬇️ <b>Install script</b> — macOS, Linux</summary>
+
+```bash
+curl -fsSL https://hunk.dev/install.sh | sh
+```
+
+</details>
+<details>
+<summary>🍺 <b>Homebrew</b> — macOS, Linux</summary>
+
+```bash
+brew install hunk
+```
+
+</details>
+<details>
+<summary>📦 <b>npm</b> (Node.js 22+) — macOS, Linux</summary>
+
+```bash
+npm install --global hunkdiff
+```
+
+</details>
+<details>
+<summary>🧰 <b>mise</b> — macOS, Linux</summary>
+
+```bash
+mise use -g hunk
+```
+
+</details>
+
+### 🦥 lazygit
+
+<details>
+<summary>🍺 <b>Homebrew</b> — macOS</summary>
+
+```bash
+brew install lazygit
+```
+
+</details>
+<details>
+<summary>⚓ <b>MacPorts</b> — macOS</summary>
+
+```bash
+sudo port install lazygit
+```
+
+</details>
+<details>
+<summary>🐧 <b>apt</b> — Debian 13+, Ubuntu 25.10+</summary>
+
+```bash
+sudo apt install lazygit
+```
+
+</details>
+<details>
+<summary>🎩 <b>dnf</b> (COPR) — Fedora</summary>
+
+```bash
+sudo dnf copr enable dejan/lazygit
+sudo dnf install lazygit
+```
+
+</details>
+<details>
+<summary>🏔️ <b>pacman</b> — Arch Linux</summary>
+
+```bash
+sudo pacman -S lazygit
+```
+
+</details>
+<details>
+<summary>🐹 <b>Go</b> — macOS, Linux</summary>
+
+```bash
+go install github.com/jesseduffield/lazygit@latest
+```
+
+</details>
 
 ## 📥 Installation
 
-<details open>
-<summary><b>💻 Terminal (shell)</b></summary>
+### 💻 Terminal
 
 ```bash
-# One step: adds the marketplace (if needed) and installs the plugin — Claude Code v2.1.292+
-claude plugin install file-tree-pane --marketplace nerymurillohnd/the-claude-factory
-
-# Or, with the marketplace already added
+claude plugin marketplace add nerymurillohnd/the-claude-factory
 claude plugin install file-tree-pane@the-claude-factory
 ```
 
-Add `--scope project` to enable it for everyone working in the current repository; each collaborator still installs it once on their own machine.
+In one step (Claude Code v2.1.292+):
 
-</details>
-
-<details>
-<summary><b>💬 Inside a Claude Code session</b></summary>
-
-```text
-/plugin install file-tree-pane --marketplace nerymurillohnd/the-claude-factory
+```bash
+claude plugin install file-tree-pane --marketplace nerymurillohnd/the-claude-factory
 ```
 
-Requires Claude Code v2.1.275+. With the marketplace already added, `/plugin install file-tree-pane@the-claude-factory` opens the plugin's details so you can pick a scope. You can also browse it in `/plugin` → **Discover**.
+For everyone working in the current repository:
 
-</details>
+```bash
+claude plugin install file-tree-pane@the-claude-factory --scope project
+```
 
-<details>
-<summary><b>🖥️ Claude desktop app — Code tab</b></summary>
+No GitHub SSH key? Run this first:
 
-With the marketplace added, click **+** next to the prompt box → **Add plugins** (or **Plugins** → **Browse plugins**), or click **Customize** in the sidebar; then select **File Tree Pane** and choose a scope.
+```bash
+export CLAUDE_CODE_PLUGIN_PREFER_HTTPS=1
+```
 
-</details>
+### 💬 Inside a Claude Code session
 
-> [!NOTE]
-> New to this marketplace? The [installation guide](../../docs/installation.md) covers every surface step by step.
-
-A mod runs with your permissions and no sandbox. Before you install it, you can see everything it hooks and calls with `claude plugin validate <path to the plugin folder>`.
+```text
+/plugin marketplace add nerymurillohnd/the-claude-factory
+/plugin install file-tree-pane@the-claude-factory
+```
 
 ## 🚀 Usage
 
@@ -170,16 +449,42 @@ The pane takes its colors from your theme and follows a theme switch. On a light
 
 A terminal editor needs a terminal to run in: a mod can't hand Claude Code's own terminal to another program. Outside tmux and herdr, `editor` and an empty **Edit with** show a notice instead; set a GUI command such as `code -g {path}:{line}` to edit from anywhere. In herdr, the editor opens in a pane to the right of Claude's, in the file's folder, and that pane closes when the editor exits; the file name reaches the editor through the pane's environment, so names with spaces or shell characters are safe.
 
+## 🔍 What this plugin runs and sends
+
+- **Hooks:** a mod, with no shell hooks. It hooks the start of each session, each tool call, each prompt you send, a working directory change, a theme change, the `/file-tree` command and the pane's drawing, scrolling and input.
+- **Commands:** read-only `git` (`rev-parse`, `status`, `diff`, `ls-files`, `log`) in the folder it shows, again every 5 seconds while the pane is on screen, and the others listed under [What does the mod reach on my machine?](#-faq--troubleshooting)
+- **Files read:** the folders you open and the file you preview.
+- **MCP servers:** none.
+- **Network:** none. It never calls the model.
+- **Files written:** none.
+- **Before you install:** a mod runs with your permissions and no sandbox; `claude plugin validate <path to the plugin folder>` shows everything it hooks and calls.
+
 ## 🔄 Updating
 
 ```bash
 claude plugin update file-tree-pane@the-claude-factory
 ```
 
-Or in a session: `/plugin` → **Installed** → **File Tree Pane** → **Update now**. Then run `/reload-plugins`.
+Then, in an open session:
+
+```text
+/reload-plugins
+```
 
 > [!TIP]
-> Turn on auto-update once for the whole marketplace: `/plugin` → **Marketplaces** → **the-claude-factory** → **Enable auto-update**.
+> Auto-update is off for this marketplace until you turn it on: `/plugin` → **Marketplaces** → **the-claude-factory** → **Enable auto-update**.
+
+Update the tools you installed for it the way you installed them, for example a Homebrew formula:
+
+```bash
+brew upgrade tmux
+```
+
+herdr installed with its script updates itself:
+
+```bash
+herdr update
+```
 
 ## 🗑️ Uninstalling
 
@@ -187,7 +492,13 @@ Or in a session: `/plugin` → **Installed** → **File Tree Pane** → **Update
 claude plugin uninstall file-tree-pane@the-claude-factory
 ```
 
-In a session: `/plugin` → **Installed** → **File Tree Pane** → **Uninstall**.
+Installed with `--scope project`:
+
+```bash
+claude plugin uninstall file-tree-pane@the-claude-factory --scope project
+```
+
+Uninstalling from the last scope it's installed at also deletes its saved options and data directory, unless you add `--keep-data`. The plugin keeps no data and writes no files, so nothing is left behind; the tools you installed for it stay.
 
 ## 🧭 Compatibility
 
