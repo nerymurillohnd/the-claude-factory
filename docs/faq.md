@@ -33,14 +33,14 @@ Plugins can run code on your machine, so treat them like any other software: rea
 <details>
 <summary><b>How do I know what changed in an update?</b></summary>
 
-Every plugin keeps a `CHANGELOG.md` and uses semantic versioning: **patch** = fixes, **minor** = new features, **major** = breaking changes. Releases are also listed on the [Releases page](https://github.com/nerymurillohnd/the-claude-factory/releases).
+Every plugin keeps a `CHANGELOG.md` and uses semantic versioning: **patch** = fixes, **minor** = new features, **major** = breaking changes. While a plugin is below 1.0.0, a breaking change bumps **minor** instead. Either way, its changelog entry starts with **Breaking:**, so look for that word before you update. Releases are also listed on the [Releases page](https://github.com/nerymurillohnd/the-claude-factory/releases).
 
 </details>
 
 <details>
 <summary><b>Will a plugin's name ever change?</b></summary>
 
-Plugin names are permanent, because your installs and settings are keyed by them. If a rename is ever unavoidable, Claude Code migrates your install and its settings to the new name and tells you once. Run `/plugin install <new-name>@the-claude-factory` once afterwards, because the renamed plugin reports `not cached` until you do. If your organization enables the plugin in managed settings, your admin updates the name there.
+Plugin names are permanent, because your installs and settings are keyed by them. If a rename is ever unavoidable, Claude Code migrates your install and its settings to the new name and tells you once. A rename is still a breaking change: the plugin's commands, agents and MCP tools take the new name, so `/<old-name>:<skill>` becomes `/<new-name>:<skill>`, and any permission rule or hook matcher you wrote for a tool named `mcp__plugin_<old-name>_…` must be changed to the new name. Run `/plugin install <new-name>@the-claude-factory` once afterwards, because the renamed plugin reports `not cached` until you do. If your organization enables the plugin in managed settings, your admin updates the name there.
 
 If a plugin is folded into another one, the same migration moves you to that plugin. If a plugin is retired with no replacement, Claude Code removes it from your settings and shows `Removed from the "the-claude-factory" marketplace`.
 
