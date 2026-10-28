@@ -12,6 +12,18 @@ Ground every Tailwind implementation decision in the official documentation page
 
 This skill is a documentation router, not a replacement for the documentation. Its topic index is not proof that a feature exists in the installed Tailwind version.
 
+## Installation
+
+When a project has no Tailwind yet, or changes how it integrates Tailwind:
+
+1. Detect the framework and the package manager: `package.json`, the framework's config (`astro.config.*`, `svelte.config.*`, `next.config.*`, `nuxt.config.*`, `angular.json`, `vite.config.*`, `postcss.config.*`) or its manifest (`Gemfile`, `composer.json`, `mix.exs`), and the lockfile.
+2. When the framework has a guide in the framework-guides list of the topic index, read that page whole. Otherwise read the reference for what the project has:
+   - a Vite config: [references/installation/using-vite.md](references/installation/using-vite.md);
+   - a PostCSS config, or a bundler that runs PostCSS: [references/installation/using-postcss.md](references/installation/using-postcss.md);
+   - no build tool, or no Node.js: [references/installation/tailwind-cli.md](references/installation/tailwind-cli.md);
+   - a prototype or preview with no build, never production: [references/installation/play-cdn.md](references/installation/play-cdn.md).
+3. Verify that one class the project could not produce before renders, then remove it.
+
 ## Workflow
 
 ### 1. Inspect the project
@@ -189,23 +201,9 @@ Use these pages in addition to the property-specific pages. For a long page, go 
 | Migrating a project from v3 to v4 | [Migrating from v3 to v4](#migrating-from-v3-to-v4) below: every section of `upgrade-guide` |
 | v3 habits in new code, one removed or renamed utility, dropped PostCSS plugins, the CLI package | `upgrade-guide`, the section that covers it |
 | Whether a project can adopt v4: browser floor, Sass, Less and Stylus, CSS modules, `<style>` blocks in Vue, Svelte and Astro components | `compatibility` (`#browser-support`, `#sass-less-and-stylus`, `#css-modules`, `#vue-svelte-and-astro`) and `upgrade-guide#browser-requirements` |
-| Installing Tailwind in a project that has none, or changing its integration | [Installing Tailwind from zero](#installing-tailwind-from-zero) below |
+| Installing Tailwind in a project that has none, or changing its integration | [Installation](#installation) above |
 | Editor support | `editor-setup`, by section: `#intellisense-for-vs-code`, `#jetbrains-ides`, `#zed`, `#cursor`, `#syntax-support` |
 | Class sorting with Prettier | `editor-setup#class-sorting-with-prettier` |
-
-## Installing Tailwind from zero
-
-When a project has no Tailwind yet, or changes how it integrates Tailwind:
-
-1. **Detect the framework and the package manager.** Read `package.json` dependencies and the framework's config file (`astro.config.*`, `svelte.config.*`, `next.config.*`, `nuxt.config.*`, `angular.json`, `vite.config.*`, `postcss.config.*`) or the server framework's manifest (`Gemfile`, `composer.json`, `mix.exs`). Take the package manager from the lockfile: `package-lock.json` npm, `pnpm-lock.yaml` pnpm, `yarn.lock` yarn, `bun.lock` or `bun.lockb` bun.
-2. **Pick the guide.** When the framework is in the framework-guides list of the topic index, use that page; copy its slug exactly, since two carry a sub-path (`laravel/vite`, `rspack/react`) that the framework name does not predict. When it is not listed, the framework-guides page points to the generic paths instead (the CLI, the Vite plugin or the PostCSS plugin). Choose by what the project already has:
-   - a Vite config → `installation/using-vite`, with [references/installation/using-vite.md](references/installation/using-vite.md);
-   - a PostCSS config, or a bundler that runs PostCSS → `installation/using-postcss`, with [references/installation/using-postcss.md](references/installation/using-postcss.md);
-   - no build tool, or no Node.js → `installation/tailwind-cli`, with [references/installation/tailwind-cli.md](references/installation/tailwind-cli.md), which also covers the standalone executable and the build options.
-   The Play CDN (`installation/play-cdn`, with [references/installation/play-cdn.md](references/installation/play-cdn.md)) is for prototypes only; Tailwind states it is not intended for production.
-   Each reference lists what the setup consists of, what to check in the project and how to verify it. The official page stays the source of truth: read it whole (the installation pages are short numbered steps), and when it differs from the reference, follow the page.
-3. **Follow the guide's steps exactly**, translating only the install command to the project's package manager. Add nothing the guide does not ask for: no PostCSS plugins, config files or packages from memory or from v3 habits.
-4. **Verify a first class renders.** Add one utility the project's styles cannot already produce (for example `text-3xl font-bold underline`) to a page, run the project's dev server or build, and confirm the generated CSS contains it, in a browser when one is available. Remove the probe class afterwards unless the user wants it.
 
 ## Migrating from v3 to v4
 

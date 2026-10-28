@@ -9,7 +9,7 @@ Official page: https://tailwindcss.com/docs/installation/using-vite. It is the s
 
 ## What the setup consists of
 
-1. Two packages: `tailwindcss` and `@tailwindcss/vite`, installed with the project's package manager (SKILL.md, "Installing Tailwind from zero", step 1).
+1. Two packages: `tailwindcss` and `@tailwindcss/vite`, installed with the project's package manager (SKILL.md, "Installation", step 1).
 2. The plugin registered in the Vite config. The import is the package's default export, and the call goes in `plugins`:
 
    ```ts
@@ -33,4 +33,4 @@ Official page: https://tailwindcss.com/docs/installation/using-vite. It is the s
 
 ## Verify
 
-SKILL.md, "Installing Tailwind from zero", step 4: one probe class that the existing styles cannot produce, the dev server or build, and the generated CSS checked for it.
+SKILL.md, "Installation", step 3: one probe class that the existing styles cannot produce, the dev server or build, and the generated CSS checked for it.

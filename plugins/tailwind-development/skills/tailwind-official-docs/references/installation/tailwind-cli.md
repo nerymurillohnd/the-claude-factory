@@ -9,7 +9,7 @@ Official page: https://tailwindcss.com/docs/installation/tailwind-cli. It is the
 
 ## What the setup consists of (npm)
 
-1. Two packages: `tailwindcss` and `@tailwindcss/cli`, installed with the project's package manager (SKILL.md, "Installing Tailwind from zero", step 1).
+1. Two packages: `tailwindcss` and `@tailwindcss/cli`, installed with the project's package manager (SKILL.md, "Installation", step 1).
 2. One line in the input CSS file: `@import "tailwindcss";`.
 3. A build that reads the input file and writes the compiled file, through the project's package runner: `npx @tailwindcss/cli -i <input.css> -o <output.css>`, adding `--watch` while developing. Put the commands in `package.json` scripts when the project has them, so the rest of the team runs the same build.
 4. The output file linked from each page's `<head>`, with the path relative to that page.
@@ -48,4 +48,4 @@ Production builds use `--minify` instead of `--watch`.
 
 ## Verify
 
-SKILL.md, "Installing Tailwind from zero", step 4: one probe class that the existing styles cannot produce, a build, and the output file checked for it.
+SKILL.md, "Installation", step 3: one probe class that the existing styles cannot produce, a build, and the output file checked for it.
