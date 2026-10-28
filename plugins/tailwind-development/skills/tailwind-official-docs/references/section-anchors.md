@@ -9,7 +9,7 @@ Copy an anchor exactly as listed. Never derive one from a heading: the page stri
 
 Each line is `#anchor` followed by the heading text; indentation follows the heading levels. They come from the id attributes of each page's h2 to h4 headings; a repeated anchor on one page is listed once.
 
-Pages: [`styling-with-utility-classes`](#styling-with-utility-classes) · [`hover-focus-and-other-states`](#hover-focus-and-other-states) · [`responsive-design`](#responsive-design) · [`dark-mode`](#dark-mode) · [`theme`](#theme) · [`colors`](#colors) · [`adding-custom-styles`](#adding-custom-styles) · [`detecting-classes-in-source-files`](#detecting-classes-in-source-files) · [`functions-and-directives`](#functions-and-directives) · [`preflight`](#preflight) · [`upgrade-guide`](#upgrade-guide) · [`compatibility`](#compatibility) · [`editor-setup`](#editor-setup)
+Pages: [`styling-with-utility-classes`](#styling-with-utility-classes) · [`hover-focus-and-other-states`](#hover-focus-and-other-states) · [`responsive-design`](#responsive-design) · [`dark-mode`](#dark-mode) · [`theme`](#theme) · [`colors`](#colors) · [`adding-custom-styles`](#adding-custom-styles) · [`detecting-classes-in-source-files`](#detecting-classes-in-source-files) · [`functions-and-directives`](#functions-and-directives) · [`preflight`](#preflight) · [`upgrade-guide`](#upgrade-guide) · [`compatibility`](#compatibility)
 
 ## `styling-with-utility-classes`
 
@@ -329,12 +329,3 @@ A v3 to v4 migration reads every section below, one at a time, as SKILL.md's "Mi
   - `#performance` Performance
   - `#explicit-context-sharing` Explicit context sharing
 - `#vue-svelte-and-astro` Vue, Svelte, and Astro
-
-## `editor-setup`
-
-- `#syntax-support` Syntax support
-- `#cursor` Cursor
-- `#zed` Zed
-- `#intellisense-for-vs-code` IntelliSense for VS Code
-- `#class-sorting-with-prettier` Class sorting with Prettier
-- `#jetbrains-ides` JetBrains IDEs

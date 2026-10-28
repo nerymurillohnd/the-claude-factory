@@ -25,7 +25,7 @@ A framework listed under framework guides in the topic index has its own page: r
 
 ## Editor setup
 
-When the task is the editor, read the reference for it:
+Before setting up an editor or formatter for Tailwind, read the reference that matches it:
 
 - Editor warnings or errors on `@theme`, `@apply` or `@source`: [syntax-support.md](references/editor-setup/syntax-support.md)
 - VS Code or Cursor: [vscode-intellisense.md](references/editor-setup/vscode-intellisense.md)
@@ -102,7 +102,7 @@ Never start from a general web search.
 
 A feature newer than the installed version is not available in the project: say so, and name the version that adds it, instead of using it. Browser support depends on the version too: the 4.1 post reports that v4 handles older browsers much more gracefully from that release on, so a browser-support answer reads the installed version before it applies `compatibility`.
 
-The cross-cutting pages (the core concepts, `preflight`, `upgrade-guide`, `compatibility` and `editor-setup`) are long, and a whole-page fetch or summary loses the part you need. For them, name the section: [references/section-anchors.md](references/section-anchors.md) lists each page's section anchors and headings, and says how to use them with a fetch tool and with Context7. Copy an anchor from that list; never derive one from a heading. Naming sections decides how a page is read, not how much of it: a task the whole page governs, such as a v3 to v4 migration, reads every section, one at a time.
+The cross-cutting pages (the core concepts, `preflight`, `upgrade-guide` and `compatibility`) are long, and a whole-page fetch or summary loses the part you need. For them, name the section: [references/section-anchors.md](references/section-anchors.md) lists each page's section anchors and headings, and says how to use them with a fetch tool and with Context7. Copy an anchor from that list; never derive one from a heading. Naming sections decides how a page is read, not how much of it: a task the whole page governs, such as a v3 to v4 migration, reads every section, one at a time.
 
 Rules:
 
