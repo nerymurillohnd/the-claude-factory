@@ -6,11 +6,29 @@ license: MIT
 
 # Tailwind CSS official documentation
 
-## Objective
+This skill is the contract for Tailwind CSS v4 work.
+It routes each task to the official documentation that governs it.
+Its references hold the exact page and section routes, grouped by category, each with a short reference of what it covers.
+Read the reference that matches the task, then read the linked sections on the live page.
+Trust the live page over training knowledge and over this skill.
+Check every decision against the Tailwind version the project resolves and its actual configuration.
 
-Ground every Tailwind implementation decision in the official documentation page that covers it and in the project's actual configuration.
+When the task also designs, builds or generates an interface, also load `tailwind-development:tailwind-ui-design`.
 
-This skill is a documentation router, not a replacement for the documentation. Its topic index is not proof that a feature exists in the installed Tailwind version.
+## When to use
+
+- Answer any question about Tailwind CSS.
+- Write, edit, review or refactor Tailwind classes, variants or CSS.
+- Install, integrate or configure Tailwind in a project.
+- Set up an editor, IntelliSense or class sorting for Tailwind.
+- Check browser support, preprocessors, CSS modules or component styles.
+- Migrate a project from v3 to v4.
+- Plan any of the above, even when the user does not name Tailwind.
+
+## When not to use
+
+- The project styles with plain CSS, CSS-in-JS or another framework, and the task does not add Tailwind.
+- The task touches no styling, markup classes or Tailwind configuration.
 
 ## Custom variants
 
