@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// @ts-check
 // Detects which component types a plugin ships, from its standard layout and manifest.
 
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'

@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// @ts-check
 // Type-checks the maintainer Python that scripts/pyrightconfig.maintainer.json covers, each file
 // against the interpreter that runs it: a PEP 723 entry point against its own uv environment, the
 // tests against the environment of the pytest runner that imports them, and every other file

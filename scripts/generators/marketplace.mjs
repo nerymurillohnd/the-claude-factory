@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// @ts-check
 // Regenerates the plugins[] of .claude-plugin/marketplace.json from plugins/*/.claude-plugin/plugin.json.
 // Every other top-level field of marketplace.json is kept as it is.
 //   node scripts/generators/marketplace.mjs          → rewrite marketplace.json

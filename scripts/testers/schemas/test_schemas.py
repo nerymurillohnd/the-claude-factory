@@ -1,3 +1,8 @@
+#!/usr/bin/env -S uv run --script
+# /// script
+# requires-python = "==3.15.*"
+# dependencies = ["pytest", "jsonschema[format]", "referencing"]
+# ///
 """The JSON Schemas in scripts/schemas/: metaschema, every real repository file, recorded cases.
 
 No schema declares `$id`: a schema's identity is its file location, and every `$ref` is relative

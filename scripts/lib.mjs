@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// @ts-check
 // Shared helpers for the repository's maintenance scripts.
 // Zero dependencies: runs on the Node.js version in .nvmrc, the one CI uses.
 

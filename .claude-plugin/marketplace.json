@@ -37,6 +37,12 @@
       "category": "automation"
     },
     {
+      "name": "instruction-engineering",
+      "source": "./plugins/instruction-engineering",
+      "description": "Writes, edits, reviews, audits, debugs and refactors Claude Code instruction files (CLAUDE.md, CLAUDE.local.md and .claude/rules at user and project scope) against the current loading rules, with a read-only checker and an independent reviewer agent.",
+      "category": "documentation"
+    },
+    {
       "name": "macos-grep-guard",
       "source": "./plugins/macos-grep-guard",
       "description": "Stops recursive grep from silently skipping gitignored and binary files on macOS, blocks BSD awk's ignored IGNORECASE, and adds the macOS form when a BSD or zsh command fails.",

@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// @ts-check
 // A stand-in for the Tailwind CSS language server: it speaks just enough of the protocol for the
 // MCP server's client. STUB_MODE=no-project answers every getProject with null.
 

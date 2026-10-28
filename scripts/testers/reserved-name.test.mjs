@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// @ts-check
 // Tests for RESERVED_NAME against the plugin-name table of the manifest reference
 // (https://code.claude.com/docs/en/plugins/manifest-reference#name).
 //   node --test "scripts/testers/*.test.mjs"
