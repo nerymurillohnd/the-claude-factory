@@ -87,7 +87,7 @@ A family you already consulted in this session, used the same way, needs no new 
 
 Retrieve in this order:
 
-1. **Context7**, when its tools are available: resolve the Tailwind CSS library whose source is the `tailwindlabs/tailwindcss.com` repository (the tailwindcss.com docs; it was `/tailwindlabs/tailwindcss.com` when this skill was written), then query it one topic at a time. Use a result only when its source is the matching docs page, `src/docs/<slug>.mdx`; a result from a blog post or an older-version page does not describe the current page.
+1. **Context7**, when its tools are available: resolve the Tailwind CSS library whose source is the `tailwindlabs/tailwindcss.com` repository (the tailwindcss.com docs), then query it one topic at a time. Use a result only when its source is the matching docs page, `src/docs/<slug>.mdx`; a result from a blog post or an older-version page does not describe the current page.
 2. **The exact official URL**, `https://tailwindcss.com/docs/<slug>`, when Context7 is unavailable, does not cover the section, or returns nothing from the page you need. When the fetch tool summarizes pages, ask it to quote verbatim the class syntax, the generated CSS and the examples you need, because a paraphrase can drop exactly the detail that decides the implementation.
 
 Never start from a general web search.

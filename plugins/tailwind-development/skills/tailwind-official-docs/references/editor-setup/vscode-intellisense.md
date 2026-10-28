@@ -1,40 +1,27 @@
 # VS Code and Cursor: Tailwind CSS IntelliSense
 
-Sources, checked 2026-10-27: https://tailwindcss.com/docs/editor-setup (`#syntax-support`, `#intellisense-for-vs-code`, `#cursor`) and the extension's README, https://github.com/tailwindlabs/tailwindcss-intellisense (v0.16.0). When they differ from this file, they win.
+Sources: https://tailwindcss.com/docs/editor-setup and the extension's README, https://github.com/tailwindlabs/tailwindcss-intellisense, which lists every setting. Read them for anything this file does not cover; where they differ, follow them.
 
 ## The extension
 
-- `bradlc.vscode-tailwindcss` on the VS Code Marketplace, the official extension. It gives class and directive completions, linting of CSS and markup, the generated CSS on hover, and a Tailwind CSS language mode for stylesheets.
-- Cursor runs VS Code extensions, so the same extension and the Prettier plugin work there. The extension is also published on Open VSX, at the same version, for editors that do not use Microsoft's marketplace.
-- It activates only when `tailwindcss` is installed in the workspace and it finds the project: for v4, a `.css` file that imports Tailwind (`@import "tailwindcss"`); for v3, a `tailwind.config.{js,cjs,mjs,ts,cts,mts}` or a stylesheet with `@config`. Sass, Less and Stylus files do not count: v4 needs a `.css` entry.
+- The official extension is `bradlc.vscode-tailwindcss`. Cursor runs VS Code extensions, so it works there too.
+- It activates only when `tailwindcss` is installed in the workspace and it finds the project: a `.css` file importing Tailwind (v4), or a `tailwind.config.*` or `@config` stylesheet (v3). Sass, Less and Stylus files do not count.
 
 ## Editor warnings on `@theme`, `@apply`, `@source`
 
-VS Code's own CSS mode does not know Tailwind's at-rules and flags them. Open `.css` files in the extension's Tailwind CSS mode instead of turning CSS validation off:
+Open `.css` files in the extension's Tailwind CSS language mode (`files.associations`: `"*.css": "tailwindcss"`) rather than turning CSS validation off. Turn native validation off only if an editor still rejects the syntax.
 
-```json
-"files.associations": { "*.css": "tailwindcss" }
-```
+## Settings worth checking
 
-Only when an editor still rejects the syntax, turn its native CSS validation off, as the docs allow.
+- Detection fails (several entry stylesheets, a monorepo): `tailwindCSS.experimental.configFile`.
+- Classes inside `clsx`, `cva`, `cn` or custom attributes: `tailwindCSS.classFunctions` and `tailwindCSS.classAttributes`.
+- No completions inside strings: `editor.quickSuggestions` with strings on.
 
-## Recommended settings
-
-| Setting | Use |
-| --- | --- |
-| `editor.quickSuggestions` with `"strings": "on"` | Completions inside strings, such as JSX `className` values |
-| `tailwindCSS.experimental.configFile` | The CSS entry point (v4) or config file (v3) when detection fails: several entry points, a monorepo, a stylesheet outside the usual places. A string for one file; an object mapping each file to the glob it covers for several |
-| `tailwindCSS.classFunctions` | Functions whose strings hold classes (`clsx`, `cva`, `cn`, `tw`); each entry is a regular expression on the function name only |
-| `tailwindCSS.classAttributes` | Attributes beyond the defaults `class`, `className`, `ngClass`, `class:list` |
-| `tailwindCSS.includeLanguages` | Map another language to `html`, `css` or `javascript` so the extension serves it |
-| `tailwindCSS.files.exclude` | Globs the extension ignores; it also inherits `files.exclude` |
-| `tailwindCSS.lint.*` | Each rule set to `ignore`, `warning` or `error`. `cssConflict` (two classes setting the same property) and `suggestCanonicalClasses` (a class with a shorter canonical form) are warnings by default |
-
-Write project settings in `.vscode/settings.json` only with the user's agreement: they apply to everyone who opens the repository.
+Project settings in `.vscode/settings.json` apply to everyone who opens the repository: write them only with the user's agreement.
 
 ## When it does not activate
 
-1. Confirm `tailwindcss` is installed (not only declared) and the v4 entry is a `.css` file.
-2. Check that `files.exclude`, `files.watcherExclude` or `tailwindCSS.files.exclude` do not hide the stylesheet or config.
-3. Read the language server log: command palette, `Tailwind CSS: Show Output`.
-4. With several Tailwind installs, configs or entry stylesheets, set `tailwindCSS.experimental.configFile`.
+1. Confirm `tailwindcss` is installed and the v4 entry is a `.css` file.
+2. Check that `files.exclude`, `files.watcherExclude` or `tailwindCSS.files.exclude` do not hide it.
+3. Read the log: command palette, `Tailwind CSS: Show Output`.
+4. With several installs or entry files, set `tailwindCSS.experimental.configFile`.

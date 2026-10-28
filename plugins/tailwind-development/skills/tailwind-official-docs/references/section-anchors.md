@@ -7,7 +7,7 @@ The cross-cutting pages are long: a fetch tool returns or summarizes the whole p
 
 Copy an anchor exactly as listed. Never derive one from a heading: the page strips punctuation in ways you can't predict (Open/closed state is `#openclosed-state`, "::before and ::after" is `#before-and-after`). When a heading you need is missing here, the page changed: read its current headings and use the anchor the page itself shows.
 
-Each line is `#anchor` followed by the heading text; indentation follows the heading levels. Extracted from the id attributes of the h2 to h4 headings of the live pages on 2026-10-27 (Tailwind CSS v4.3); a repeated anchor on one page is listed once.
+Each line is `#anchor` followed by the heading text; indentation follows the heading levels. They come from the id attributes of each page's h2 to h4 headings; a repeated anchor on one page is listed once.
 
 Pages: [`styling-with-utility-classes`](#styling-with-utility-classes) · [`hover-focus-and-other-states`](#hover-focus-and-other-states) · [`responsive-design`](#responsive-design) · [`dark-mode`](#dark-mode) · [`theme`](#theme) · [`colors`](#colors) · [`adding-custom-styles`](#adding-custom-styles) · [`detecting-classes-in-source-files`](#detecting-classes-in-source-files) · [`functions-and-directives`](#functions-and-directives) · [`preflight`](#preflight) · [`upgrade-guide`](#upgrade-guide) · [`compatibility`](#compatibility) · [`editor-setup`](#editor-setup)
 
