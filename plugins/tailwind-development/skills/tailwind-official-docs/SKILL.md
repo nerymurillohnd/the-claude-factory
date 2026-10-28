@@ -213,6 +213,7 @@ Then read the linked page sections for your topic.
 **Transforms**: rotate, scale, skew, translate, perspective, transform origin → See [references/transforms.md](references/transforms.md)
 **Interactivity**: accent and caret color, cursor, field sizing, pointer events, scrolling, scroll snap, touch, user select → See [references/interactivity.md](references/interactivity.md)
 **SVG**: fill, stroke, stroke width → See [references/svg.md](references/svg.md)
+**Accessibility**: forced colors adjustment → See [references/accessibility.md](references/accessibility.md)
 
 ## Workflow
 
@@ -382,7 +383,6 @@ For each requested behavior, consult the specific property page, not only the ca
 
 - **Getting started:** `installation`, `installation/using-vite`, `installation/using-postcss`, `installation/tailwind-cli`, `installation/framework-guides`, `installation/play-cdn`, `editor-setup`, `compatibility`, `upgrade-guide`
 - **Framework guides** (append each to `installation/framework-guides/`; they are not in the docs navigation): `adonisjs`, `angular`, `astro`, `emberjs`, `gatsby`, `laravel/vite`, `meteor`, `nextjs`, `nuxt`, `parcel`, `phoenix`, `qwik`, `react-router`, `rspack/react`, `ruby-on-rails`, `solidjs`, `sveltekit`, `symfony`, `tanstack-start`
-- **Accessibility:** `forced-color-adjust`
 
 ## Disambiguation rules
 
