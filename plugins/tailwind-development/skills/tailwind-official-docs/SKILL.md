@@ -12,6 +12,48 @@ Ground every Tailwind implementation decision in the official documentation page
 
 This skill is a documentation router, not a replacement for the documentation. Its topic index is not proof that a feature exists in the installed Tailwind version.
 
+## Custom variants
+
+Use `@custom-variant` when a selector pattern is truly repeated and deserves to become a styling primitive.
+
+Good candidates:
+
+- app theme wrappers
+- data-attribute driven states
+- repeated container context selectors
+- CMS-specific context wrappers (e.g. dark page section, highlighted block)
+
+Do not create custom variants for one-off selector tricks unless the repetition is real.
+
+## Generated DOM and JS-replaced markup
+
+When styling icons or widgets that are transformed by JavaScript, target the rendered DOM, not only the placeholder markup.
+
+Examples:
+
+- icon libraries that replace `<i>` with `<svg>`
+- component libraries that inject wrappers
+- widgets that rewrite class names or structure
+
+If a shared interaction depends on a specific child element, verify that the final rendered DOM still matches the selector.
+
+This matters a lot for:
+
+- transitions
+- hover effects
+- focus styles
+- icon animation
+- nested selectors in component classes
+
+## Responsive strategy
+
+Prefer mobile-first styling:
+
+- define the base case first
+- add larger breakpoint changes progressively
+
+Use breakpoint tokens intentionally. In v4, `--breakpoint-*` theme variables define which responsive variants exist.
+
 ## Stylesheet structure
 
 For a CSS-first Tailwind v4 setup, this structure is usually sensible:
