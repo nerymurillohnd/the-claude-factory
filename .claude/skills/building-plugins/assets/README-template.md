@@ -31,9 +31,9 @@
 
 ## ✨ Why use it
 
-- **<Benefit title>** — <what pain disappears>.
-- **<Benefit title>** — <what becomes faster or safer>.
-- **<Benefit title>** — <what you no longer have to remember>.
+- **<Benefit title>** — <What pain disappears>.
+- **<Benefit title>** — <What becomes faster or safer>.
+- **<Benefit title>** — <What you no longer have to remember>.
 
 ## 🧩 What's inside
 
