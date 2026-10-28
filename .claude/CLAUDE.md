@@ -2,7 +2,7 @@
 
 Public Claude Code plugin marketplace (`github.com/nerymurillohnd/the-claude-factory`) for users and developers who run projects and operations with Claude. It publishes plugins only, built for Claude Code and, where applicable, the Claude app. Development occurs in Nery’s local clone; distribution occurs from the remote repository. Users participate solely through issues.
 
-This project follows the guidelines in `~/.claude/CLAUDE.md` and the global cross-project lessons in `~/.claude/LESSONS.md`.
+This project follows the guidelines in `~/.claude/CLAUDE.md` and the global cross-project lessons in `@~/.claude/LESSONS.md`.
 
 ## Purpose
 
