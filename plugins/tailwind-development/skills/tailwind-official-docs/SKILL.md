@@ -81,6 +81,187 @@ For any work, knowledge or guidance on these topics, read https://tailwindcss.co
 - [Using the important flag](https://tailwindcss.com/docs/styling-with-utility-classes#using-the-important-flag)
 - [Using the prefix option](https://tailwindcss.com/docs/styling-with-utility-classes#using-the-prefix-option)
 
+### 2. Hover, focus, and other states
+
+For any work, knowledge or guidance on these topics, read https://tailwindcss.com/docs/hover-focus-and-other-states filtered by the topic:
+
+- [Pseudo-classes](https://tailwindcss.com/docs/hover-focus-and-other-states#pseudo-classes)
+- [:hover, :focus, and :active](https://tailwindcss.com/docs/hover-focus-and-other-states#hover-focus-and-active)
+- [:first, :last, :odd, and :even](https://tailwindcss.com/docs/hover-focus-and-other-states#first-last-odd-and-even)
+- [:required and :disabled](https://tailwindcss.com/docs/hover-focus-and-other-states#required-and-disabled)
+- [:has()](https://tailwindcss.com/docs/hover-focus-and-other-states#has)
+- [:not()](https://tailwindcss.com/docs/hover-focus-and-other-states#not)
+- [Styling based on parent state](https://tailwindcss.com/docs/hover-focus-and-other-states#styling-based-on-parent-state)
+- [Styling based on sibling state](https://tailwindcss.com/docs/hover-focus-and-other-states#styling-based-on-sibling-state)
+- [Pseudo-elements](https://tailwindcss.com/docs/hover-focus-and-other-states#pseudo-elements)
+- [::before and ::after](https://tailwindcss.com/docs/hover-focus-and-other-states#before-and-after)
+- [::placeholder](https://tailwindcss.com/docs/hover-focus-and-other-states#placeholder)
+- [::file](https://tailwindcss.com/docs/hover-focus-and-other-states#file)
+- [::marker](https://tailwindcss.com/docs/hover-focus-and-other-states#marker)
+- [::selection](https://tailwindcss.com/docs/hover-focus-and-other-states#selection)
+- [::first-line and ::first-letter](https://tailwindcss.com/docs/hover-focus-and-other-states#first-line-and-first-letter)
+- [::backdrop](https://tailwindcss.com/docs/hover-focus-and-other-states#backdrop)
+- [Media and feature queries](https://tailwindcss.com/docs/hover-focus-and-other-states#media-and-feature-queries)
+- [Responsive breakpoints](https://tailwindcss.com/docs/hover-focus-and-other-states#responsive-breakpoints)
+- [prefers-color-scheme](https://tailwindcss.com/docs/hover-focus-and-other-states#prefers-color-scheme)
+- [prefers-reduced-motion](https://tailwindcss.com/docs/hover-focus-and-other-states#prefers-reduced-motion)
+- [prefers-contrast](https://tailwindcss.com/docs/hover-focus-and-other-states#prefers-contrast)
+- [forced-colors](https://tailwindcss.com/docs/hover-focus-and-other-states#forced-colors)
+- [inverted-colors](https://tailwindcss.com/docs/hover-focus-and-other-states#inverted-colors)
+- [pointer and any-pointer](https://tailwindcss.com/docs/hover-focus-and-other-states#pointer-and-any-pointer)
+- [orientation](https://tailwindcss.com/docs/hover-focus-and-other-states#orientation)
+- [scripting](https://tailwindcss.com/docs/hover-focus-and-other-states#scripting)
+- [print](https://tailwindcss.com/docs/hover-focus-and-other-states#print)
+- [@supports](https://tailwindcss.com/docs/hover-focus-and-other-states#supports)
+- [@starting-style](https://tailwindcss.com/docs/hover-focus-and-other-states#starting-style)
+- [Attribute selectors](https://tailwindcss.com/docs/hover-focus-and-other-states#attribute-selectors)
+- [ARIA states](https://tailwindcss.com/docs/hover-focus-and-other-states#aria-states)
+- [Data attributes](https://tailwindcss.com/docs/hover-focus-and-other-states#data-attributes)
+- [RTL support](https://tailwindcss.com/docs/hover-focus-and-other-states#rtl-support)
+- [Open/closed state](https://tailwindcss.com/docs/hover-focus-and-other-states#openclosed-state)
+- [Styling inert elements](https://tailwindcss.com/docs/hover-focus-and-other-states#styling-inert-elements)
+- [Child selectors](https://tailwindcss.com/docs/hover-focus-and-other-states#child-selectors)
+- [Styling direct children](https://tailwindcss.com/docs/hover-focus-and-other-states#styling-direct-children)
+- [Styling all descendants](https://tailwindcss.com/docs/hover-focus-and-other-states#styling-all-descendants)
+- [Custom variants](https://tailwindcss.com/docs/hover-focus-and-other-states#custom-variants)
+- [Using arbitrary variants](https://tailwindcss.com/docs/hover-focus-and-other-states#using-arbitrary-variants)
+- [Registering a custom variant](https://tailwindcss.com/docs/hover-focus-and-other-states#registering-a-custom-variant)
+- [Appendix](https://tailwindcss.com/docs/hover-focus-and-other-states#appendix)
+- [Quick reference](https://tailwindcss.com/docs/hover-focus-and-other-states#quick-reference)
+- [Pseudo-class reference](https://tailwindcss.com/docs/hover-focus-and-other-states#pseudo-class-reference)
+
+### 3. Responsive design
+
+For any work, knowledge or guidance on these topics, read https://tailwindcss.com/docs/responsive-design filtered by the topic:
+
+- [Overview](https://tailwindcss.com/docs/responsive-design#overview)
+- [Working mobile-first](https://tailwindcss.com/docs/responsive-design#working-mobile-first)
+- [Targeting mobile screens](https://tailwindcss.com/docs/responsive-design#targeting-mobile-screens)
+- [Targeting a breakpoint range](https://tailwindcss.com/docs/responsive-design#targeting-a-breakpoint-range)
+- [Targeting a single breakpoint](https://tailwindcss.com/docs/responsive-design#targeting-a-single-breakpoint)
+- [Using custom breakpoints](https://tailwindcss.com/docs/responsive-design#using-custom-breakpoints)
+- [Customizing your theme](https://tailwindcss.com/docs/responsive-design#customizing-your-theme)
+- [Removing default breakpoints](https://tailwindcss.com/docs/responsive-design#removing-default-breakpoints)
+- [Using arbitrary values](https://tailwindcss.com/docs/responsive-design#using-arbitrary-values)
+- [Container queries](https://tailwindcss.com/docs/responsive-design#container-queries)
+- [What are container queries?](https://tailwindcss.com/docs/responsive-design#what-are-container-queries)
+- [Basic example](https://tailwindcss.com/docs/responsive-design#basic-example)
+- [Max-width container queries](https://tailwindcss.com/docs/responsive-design#max-width-container-queries)
+- [Container query ranges](https://tailwindcss.com/docs/responsive-design#container-query-ranges)
+- [Named containers](https://tailwindcss.com/docs/responsive-design#named-containers)
+- [Using size containers](https://tailwindcss.com/docs/responsive-design#using-size-containers)
+- [Using custom container sizes](https://tailwindcss.com/docs/responsive-design#using-custom-container-sizes)
+- [Using arbitrary values](https://tailwindcss.com/docs/responsive-design#using-arbitrary-container-query-values)
+- [Using container query units](https://tailwindcss.com/docs/responsive-design#using-container-query-units)
+- [Container size reference](https://tailwindcss.com/docs/responsive-design#container-size-reference)
+
+### 4. Dark mode
+
+For any work, knowledge or guidance on these topics, read https://tailwindcss.com/docs/dark-mode filtered by the topic:
+
+- [Overview](https://tailwindcss.com/docs/dark-mode#overview)
+- [Toggling dark mode manually](https://tailwindcss.com/docs/dark-mode#toggling-dark-mode-manually)
+- [Using a data attribute](https://tailwindcss.com/docs/dark-mode#using-a-data-attribute)
+- [With system theme support](https://tailwindcss.com/docs/dark-mode#with-system-theme-support)
+
+### 5. Theme variables
+
+For any work, knowledge or guidance on these topics, read https://tailwindcss.com/docs/theme filtered by the topic:
+
+- [Overview](https://tailwindcss.com/docs/theme#overview)
+- [What are theme variables?](https://tailwindcss.com/docs/theme#what-are-theme-variables)
+- [Relationship to utility classes](https://tailwindcss.com/docs/theme#relationship-to-utility-classes)
+- [Theme variable namespaces](https://tailwindcss.com/docs/theme#theme-variable-namespaces)
+- [Default theme variables](https://tailwindcss.com/docs/theme#default-theme-variables)
+- [Customizing your theme](https://tailwindcss.com/docs/theme#customizing-your-theme)
+- [Extending the default theme](https://tailwindcss.com/docs/theme#extending-the-default-theme)
+- [Overriding the default theme](https://tailwindcss.com/docs/theme#overriding-the-default-theme)
+- [Using a custom theme](https://tailwindcss.com/docs/theme#using-a-custom-theme)
+- [Defining animation keyframes](https://tailwindcss.com/docs/theme#defining-animation-keyframes)
+- [Referencing other variables](https://tailwindcss.com/docs/theme#referencing-other-variables)
+- [Generating all CSS variables](https://tailwindcss.com/docs/theme#generating-all-css-variables)
+- [Sharing across projects](https://tailwindcss.com/docs/theme#sharing-across-projects)
+- [Using your theme variables](https://tailwindcss.com/docs/theme#using-your-theme-variables)
+- [With custom CSS](https://tailwindcss.com/docs/theme#with-custom-css)
+- [With arbitrary values](https://tailwindcss.com/docs/theme#with-arbitrary-values)
+- [Referencing in JavaScript](https://tailwindcss.com/docs/theme#referencing-in-javascript)
+- [Default theme variable reference](https://tailwindcss.com/docs/theme#default-theme-variable-reference)
+
+### 6. Colors
+
+For any work, knowledge or guidance on these topics, read https://tailwindcss.com/docs/colors filtered by the topic:
+
+- [Working with colors](https://tailwindcss.com/docs/colors#working-with-colors)
+- [Using color utilities](https://tailwindcss.com/docs/colors#using-color-utilities)
+- [Adjusting opacity](https://tailwindcss.com/docs/colors#adjusting-opacity)
+- [Targeting dark mode](https://tailwindcss.com/docs/colors#targeting-dark-mode)
+- [Referencing in CSS](https://tailwindcss.com/docs/colors#referencing-in-css)
+- [Customizing your colors](https://tailwindcss.com/docs/colors#customizing-your-colors)
+- [Overriding default colors](https://tailwindcss.com/docs/colors#overriding-default-colors)
+- [Disabling default colors](https://tailwindcss.com/docs/colors#disabling-default-colors)
+- [Using a custom palette](https://tailwindcss.com/docs/colors#using-a-custom-palette)
+- [Referencing other variables](https://tailwindcss.com/docs/colors#referencing-other-variables)
+- [Default color palette reference](https://tailwindcss.com/docs/colors#default-color-palette-reference)
+
+### 7. Adding custom styles
+
+For any work, knowledge or guidance on these topics, read https://tailwindcss.com/docs/adding-custom-styles filtered by the topic:
+
+- [Customizing your theme](https://tailwindcss.com/docs/adding-custom-styles#customizing-your-theme)
+- [Using arbitrary values](https://tailwindcss.com/docs/adding-custom-styles#using-arbitrary-values)
+- [Arbitrary properties](https://tailwindcss.com/docs/adding-custom-styles#arbitrary-properties)
+- [Arbitrary variants](https://tailwindcss.com/docs/adding-custom-styles#arbitrary-variants)
+- [Handling whitespace](https://tailwindcss.com/docs/adding-custom-styles#handling-whitespace)
+- [Resolving ambiguities](https://tailwindcss.com/docs/adding-custom-styles#resolving-ambiguities)
+- [Using custom CSS](https://tailwindcss.com/docs/adding-custom-styles#using-custom-css)
+- [Adding base styles](https://tailwindcss.com/docs/adding-custom-styles#adding-base-styles)
+- [Adding component classes](https://tailwindcss.com/docs/adding-custom-styles#adding-component-classes)
+- [Using variants](https://tailwindcss.com/docs/adding-custom-styles#using-variants)
+- [Adding custom utilities](https://tailwindcss.com/docs/adding-custom-styles#adding-custom-utilities)
+- [Simple utilities](https://tailwindcss.com/docs/adding-custom-styles#simple-utilities)
+- [Complex utilities](https://tailwindcss.com/docs/adding-custom-styles#complex-utilities)
+- [Functional utilities](https://tailwindcss.com/docs/adding-custom-styles#functional-utilities)
+- [Adding custom variants](https://tailwindcss.com/docs/adding-custom-styles#adding-custom-variants)
+
+### 8. Detecting classes in source files
+
+For any work, knowledge or guidance on these topics, read https://tailwindcss.com/docs/detecting-classes-in-source-files filtered by the topic:
+
+- [Overview](https://tailwindcss.com/docs/detecting-classes-in-source-files#overview)
+- [How classes are detected](https://tailwindcss.com/docs/detecting-classes-in-source-files#how-classes-are-detected)
+- [Dynamic class names](https://tailwindcss.com/docs/detecting-classes-in-source-files#dynamic-class-names)
+- [Which files are scanned](https://tailwindcss.com/docs/detecting-classes-in-source-files#which-files-are-scanned)
+- [Explicitly registering sources](https://tailwindcss.com/docs/detecting-classes-in-source-files#explicitly-registering-sources)
+- [Setting your base path](https://tailwindcss.com/docs/detecting-classes-in-source-files#setting-your-base-path)
+- [Ignoring specific paths](https://tailwindcss.com/docs/detecting-classes-in-source-files#ignoring-specific-paths)
+- [Disabling automatic detection](https://tailwindcss.com/docs/detecting-classes-in-source-files#disabling-automatic-detection)
+- [Safelisting specific utilities](https://tailwindcss.com/docs/detecting-classes-in-source-files#safelisting-specific-utilities)
+- [Safelisting variants](https://tailwindcss.com/docs/detecting-classes-in-source-files#safelisting-variants)
+- [Safelisting with ranges](https://tailwindcss.com/docs/detecting-classes-in-source-files#safelisting-with-ranges)
+- [Explicitly excluding classes](https://tailwindcss.com/docs/detecting-classes-in-source-files#explicitly-excluding-classes)
+
+### 9. Functions and directives
+
+For any work, knowledge or guidance on these topics, read https://tailwindcss.com/docs/functions-and-directives filtered by the topic:
+
+- [Directives](https://tailwindcss.com/docs/functions-and-directives#directives)
+- [@import](https://tailwindcss.com/docs/functions-and-directives#import-directive)
+- [@theme](https://tailwindcss.com/docs/functions-and-directives#theme-directive)
+- [@source](https://tailwindcss.com/docs/functions-and-directives#source-directive)
+- [@utility](https://tailwindcss.com/docs/functions-and-directives#utility-directive)
+- [@variant](https://tailwindcss.com/docs/functions-and-directives#variant-directive)
+- [@custom-variant](https://tailwindcss.com/docs/functions-and-directives#custom-variant-directive)
+- [@apply](https://tailwindcss.com/docs/functions-and-directives#apply-directive)
+- [@reference](https://tailwindcss.com/docs/functions-and-directives#reference-directive)
+- [Subpath Imports](https://tailwindcss.com/docs/functions-and-directives#subpath-imports)
+- [Functions](https://tailwindcss.com/docs/functions-and-directives#functions)
+- [--alpha()](https://tailwindcss.com/docs/functions-and-directives#alpha-function)
+- [--spacing()](https://tailwindcss.com/docs/functions-and-directives#spacing-function)
+- [Compatibility](https://tailwindcss.com/docs/functions-and-directives#compatibility)
+- [@config](https://tailwindcss.com/docs/functions-and-directives#config-directive)
+- [@plugin](https://tailwindcss.com/docs/functions-and-directives#plugin-directive)
+- [theme()](https://tailwindcss.com/docs/functions-and-directives#theme-function)
+
 ## Workflow
 
 ### 1. Inspect the project
@@ -150,7 +331,7 @@ Never start from a general web search.
 
 A feature newer than the installed version is not available in the project: say so, and name the version that adds it, instead of using it. Browser support depends on the version too: the 4.1 post reports that v4 handles older browsers much more gracefully from that release on, so a browser-support answer reads the installed version before it applies `compatibility`.
 
-The cross-cutting pages (the core concepts and `preflight`) are long, and a whole-page fetch or summary loses the part you need. For them, name the section: [references/section-anchors.md](references/section-anchors.md) lists each page's section anchors and headings, and says how to use them with a fetch tool and with Context7. Copy an anchor from that list; never derive one from a heading. Naming sections decides how a page is read, not how much of it: a task the whole page governs, such as replacing the theme, reads every section, one at a time.
+The `preflight` page is long, and a whole-page fetch or summary loses the part you need. Name its section: [references/section-anchors.md](references/section-anchors.md) lists each page's section anchors and headings, and says how to use them with a fetch tool and with Context7. Copy an anchor from that list; never derive one from a heading. Naming sections decides how a page is read, not how much of it: a task the whole page governs, such as replacing the theme, reads every section, one at a time.
 
 Rules:
 
