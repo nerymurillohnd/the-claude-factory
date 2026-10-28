@@ -1,6 +1,6 @@
 ---
 name: tailwind-official-docs
-description: Gets Tailwind CSS syntax and behaviour right by reading the exact official tailwindcss.com page for each utility, variant and configuration a task touches, for the version the project resolves, then verifying the result in the project. Use whenever the question is how Tailwind works or how to write something in it, such as which class or variant does X, why a class does not apply, @apply, @theme and design tokens, dark mode setup, source detection and missing styles, custom CSS, installing Tailwind in a project or framework that has none, editor setup such as IntelliSense and Prettier class sorting, whether a project can adopt v4, integration with Vite, PostCSS or the CLI, and v3 to v4 upgrades, even when the request never says documentation. Building or redesigning what users look at belongs to tailwind-ui-design, which calls this skill for syntax.
+description: Official Tailwind CSS docs for the version the project resolves. Use for any Tailwind syntax, behaviour or setup task or question, such as classes, variants, @theme, @apply, dark mode, missing styles, installation, editors, compatibility and v3 to v4 upgrades. Designing or restyling UI belongs to tailwind-ui-design, which calls this skill for syntax.
 license: MIT
 ---
 
