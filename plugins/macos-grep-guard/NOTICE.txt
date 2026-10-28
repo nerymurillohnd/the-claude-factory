@@ -1,0 +1,10 @@
+macOS Grep Guard
+Copyright 2026 Nery Samuel Murillo
+
+The plugin is licensed under the MIT License (see LICENSE).
+
+No third-party material is included. The shell tokenizer in hooks/rules.ts
+was written for this plugin; its approach (quote-aware splitting on
+separators, with leading assignments and command prefixes skipped) follows
+the blast-radius sample mod in anthropics/claude-code-playground, which is
+licensed under Apache-2.0. No code from that sample is copied.

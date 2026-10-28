@@ -37,6 +37,12 @@
       "category": "automation"
     },
     {
+      "name": "macos-grep-guard",
+      "source": "./plugins/macos-grep-guard",
+      "description": "Stops recursive grep from silently skipping gitignored and binary files on macOS, blocks BSD awk's ignored IGNORECASE, and adds the macOS form when a BSD or zsh command fails.",
+      "category": "development"
+    },
+    {
       "name": "mods-engineering",
       "source": "./plugins/mods-engineering",
       "description": "Designs, builds, reviews, tests and debugs Claude Code mods, checking every interface against the current mod docs and the type declarations your own Claude Code build writes.",
