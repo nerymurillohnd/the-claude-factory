@@ -37,6 +37,7 @@ import shutil
 import subprocess
 import sys
 from typing import NoReturn, cast
+import warnings
 
 CHECKED_AGAINST = (
     "code.claude.com/docs/en/memory and changelog through Claude Code v2.1.312 (2026-10-28)"
@@ -322,15 +323,22 @@ def find_brace_group(pattern: str) -> tuple[int, int] | None:
     return None
 
 
-def expand_braces(pattern: str) -> list[str]:
-    """Expand {a,b} groups combinatorially; escaped braces stay literal."""
+def expand_braces(pattern: str, limit: int) -> list[str] | None:
+    """Expand {a,b} groups combinatorially; None once more than `limit` patterns would result.
+
+    Escaped braces stay literal. Stopping at the limit keeps a hostile pattern such as
+    '{a,b}' repeated 30 times from building a billion strings before the budget is checked.
+    """
     span = find_brace_group(pattern)
     if span is None:
-        return [pattern]
+        return [pattern] if limit >= 1 else None
     start, end = span
     out: list[str] = []
     for part in split_top_level_commas(pattern[start + 1 : end]):
-        out.extend(expand_braces(pattern[:start] + part + pattern[end + 1 :]))
+        sub = expand_braces(pattern[:start] + part + pattern[end + 1 :], limit - len(out))
+        if sub is None:
+            return None
+        out.extend(sub)
     return out
 
 
@@ -356,21 +364,33 @@ def bracket_is_valid(pattern: str) -> bool:
     return True
 
 
-def translate_star(pattern: str, i: int) -> tuple[str, int]:
-    """Translate '*' or '**' at index i into regex text and the next index."""
+@dataclass(frozen=True)
+class Token:
+    """One step of a compiled glob: a literal, one character, '*', '**/' or a trailing '**'."""
+
+    kind: str  # lit | one | star | segs | any
+    text: str = ""
+    cls: re.Pattern[str] | None = None  # the single-character class of a 'one' token
+
+
+ONE_CHAR = re.compile(r"[^/]")
+
+
+def star_token(pattern: str, i: int) -> tuple[Token, int]:
+    """Read '*' or '**' at index i: '**' alone in its segment spans directories."""
     n = len(pattern)
     if i + 1 < n and pattern[i + 1] == "*":
         at_segment_start = i == 0 or pattern[i - 1] == "/"
         after = i + 2
         if at_segment_start and after == n:
-            return ".*", after
+            return Token("any"), after
         if at_segment_start and pattern[after] == "/":
-            return "(?:[^/]+/)*", after + 1
-    return "[^/]*", i + 1
+            return Token("segs"), after + 1
+    return Token("star"), i + 1
 
 
-def translate_bracket(pattern: str, i: int) -> tuple[str, int]:
-    """Translate a bracket expression starting at index i."""
+def bracket_token(pattern: str, i: int) -> tuple[Token, int]:
+    """Read a bracket expression at index i; an unclosed '[' is a literal."""
     n = len(pattern)
     j = i + 1
     negate = j < n and pattern[j] in "!^"
@@ -380,47 +400,148 @@ def translate_bracket(pattern: str, i: int) -> tuple[str, int]:
     while k < n and pattern[k] != "]":
         k += 1
     if k >= n:
-        return re.escape("["), i + 1
+        return Token("lit", "["), i + 1
     body = pattern[j:k].replace("\\", "\\\\")
-    return "[" + ("^" if negate else "") + body + "]", k + 1
+    with warnings.catch_warnings():  # '[[' or '--' in a class is literal; re warns about it
+        warnings.simplefilter("ignore", FutureWarning)
+        cls = re.compile("[" + ("^" if negate else "") + body + "]")  # re.error: e.g. '[z-a]'
+    return Token("one", cls=cls), k + 1
 
 
-def glob_to_regex(pattern: str) -> re.Pattern[str]:
-    """Compile one brace-free glob into an anchored regex."""
-    out = "^"
+def glob_tokens(pattern: str) -> tuple[Token, ...]:
+    """Compile one brace-free glob into tokens."""
+    tokens: list[Token] = []
     i = 0
     while i < len(pattern):
         ch = pattern[i]
         if ch == "\\" and i + 1 < len(pattern):
-            out += re.escape(pattern[i + 1])
+            tokens.append(Token("lit", pattern[i + 1]))
             i += 2
         elif ch == "*":
-            text, i = translate_star(pattern, i)
-            out += text
+            token, i = star_token(pattern, i)
+            tokens.append(token)
         elif ch == "?":
-            out += "[^/]"
+            tokens.append(Token("one", cls=ONE_CHAR))
             i += 1
         elif ch == "[":
-            text, i = translate_bracket(pattern, i)
-            out += text
+            token, i = bracket_token(pattern, i)
+            tokens.append(token)
         else:
-            out += re.escape(ch)
+            tokens.append(Token("lit", ch))
             i += 1
-    return re.compile(out + "$")
+    return tuple(tokens)
 
 
-def compile_pattern(pattern: str) -> tuple[list[re.Pattern[str]], int, bool]:
-    """Return regexes for one pattern, its brace-expansion count and whether it is invalid."""
-    expanded = expand_braces(pattern) if "{" in pattern else [pattern]
-    counted = len(expanded) if "{" in pattern else 0
-    if not all(bracket_is_valid(e) for e in expanded):
-        return [], counted, True
-    return [glob_to_regex(e) for e in expanded], counted, False
+State = tuple[int, int]  # (token index, 1 while inside a segment that '**/' is consuming)
 
 
-def matches(regexes: list[re.Pattern[str]], rel: str) -> bool:
-    """True when any regex matches the relative path."""
-    return any(r.match(rel) for r in regexes)
+def epsilon_closure(tokens: tuple[Token, ...], states: set[State]) -> set[State]:
+    """Add every state reachable without reading a character: skipping '*', '**/' and '**'."""
+    out = set(states)
+    stack = list(states)
+    while stack:
+        k, inside = stack.pop()
+        if k == len(tokens):
+            continue
+        kind = tokens[k].kind
+        if kind in ("star", "any") or (kind == "segs" and not inside):
+            nxt = (k + 1, 0)
+            if nxt not in out:
+                out.add(nxt)
+                stack.append(nxt)
+    return out
+
+
+def step(token: Token, state: State, ch: str) -> State | None:
+    """The state after reading one character, or None when the token cannot take it."""
+    k, inside = state
+    kind = token.kind
+    if kind == "lit":
+        return (k + 1, 0) if ch == token.text else None
+    if kind == "one":
+        return (k + 1, 0) if token.cls is not None and token.cls.fullmatch(ch) else None
+    if kind == "star":
+        return (k, 0) if ch != "/" else None
+    if kind == "any":
+        return (k, 0) if ch != "\n" else None
+    if ch != "/":  # segs: a non-empty directory name ...
+        return (k, 1)
+    return (k, 0) if inside else None  # ... ended by '/'
+
+
+@dataclass(frozen=True)
+class Glob:
+    """A brace-free glob matched in time linear in path length times pattern length.
+
+    It matches what the anchored regex '^...$' of the same glob would ('*' within a segment,
+    '**/' as zero or more directories, a trailing '**' as anything), without the backtracking
+    that lets a pattern such as '*a*a*a...b' run for minutes.
+    """
+
+    tokens: tuple[Token, ...]
+
+    def match(self, path: str) -> bool:
+        """True when the whole path matches."""
+        states = epsilon_closure(self.tokens, {(0, 0)})
+        for ch in path:
+            moved = {
+                nxt
+                for state in states
+                if state[0] < len(self.tokens)
+                and (nxt := step(self.tokens[state[0]], state, ch)) is not None
+            }
+            if not moved:
+                return False
+            states = epsilon_closure(self.tokens, moved)
+        return (len(self.tokens), 0) in states
+
+
+def compile_glob(pattern: str) -> Glob:
+    """Compile one brace-free glob."""
+    return Glob(glob_tokens(pattern))
+
+
+@dataclass
+class CompiledPattern:
+    """One `paths` pattern after brace expansion."""
+
+    pattern: str
+    globs: list[Glob]
+    invalid: bool = False  # a '[' that is not a bracket expression: it matches nothing
+    over_budget: bool = False  # past the rule's brace budget: used unexpanded, matches nothing
+
+    def matches(self, rel: str) -> bool:
+        """True when any expansion matches the relative path."""
+        return any(g.match(rel) for g in self.globs)
+
+
+def compile_expansions(expanded: list[str]) -> list[Glob] | None:
+    """Compile every expansion of a pattern; None when a bracket expression is invalid."""
+    if not all(bracket_is_valid(x) for x in expanded):
+        return None
+    try:
+        return [compile_glob(x) for x in expanded]
+    except re.error:  # a class re rejects, such as '[z-a]'
+        return None
+
+
+def compile_paths(patterns: list[str]) -> list[CompiledPattern]:
+    """Compile a rule's patterns, sharing one brace budget across the whole `paths` list."""
+    left = BRACE_BUDGET
+    out: list[CompiledPattern] = []
+    for pat in patterns:
+        if "{" not in pat:
+            expanded: list[str] | None = [pat]
+        else:
+            expanded = expand_braces(pat, left) if left > 0 else None
+            if expanded is None:
+                left = 0
+                out.append(CompiledPattern(pat, [], over_budget=True))
+                continue
+            left -= len(expanded)
+        globs = compile_expansions(expanded)
+        out.append(CompiledPattern(pat, globs or [], invalid=globs is None))
+    return out
 
 
 # ---------------------------------------------------------------------------
@@ -1119,34 +1240,37 @@ def report_no_match(where: str, pat: str, scope: RuleScope, findings: list[Findi
     findings.append(Finding("warning", "glob-no-match", where, msg))
 
 
-def check_pattern(where: str, pat: str, scope: RuleScope, findings: list[Finding]) -> int:
-    """Check one `paths` pattern; return how many patterns its braces expand to."""
-    regexes, expanded, invalid = compile_pattern(pat)
-    if invalid:
+def check_pattern(
+    where: str, compiled: CompiledPattern, scope: RuleScope, findings: list[Finding]
+) -> None:
+    """Check one compiled `paths` pattern against the files under the rule's base."""
+    pat = compiled.pattern
+    if compiled.over_budget:
+        return
+    if compiled.invalid:
         msg = (
             f"'{pat}' has a '[' that is not a valid bracket expression, so it matches nothing; "
             "escape it as '\\['"
         )
         findings.append(Finding("error", "glob-invalid-bracket", where, msg))
-        return expanded
+        return
     if pat.startswith(("./", "/")):
         msg = (
             f"'{pat}' starts with a path prefix; "
             "the docs show patterns relative to the base with no prefix"
         )
         findings.append(Finding("info", "glob-leading-slash", where, msg))
-    if not any(matches(regexes, rel) for rel in scope.rel_files):
+    if not any(compiled.matches(rel) for rel in scope.rel_files):
         report_no_match(where, pat, scope, findings)
     if pat.startswith("*.") and "/" not in pat:
-        deeper_re = glob_to_regex("**/" + pat)
-        deeper = sum(1 for rel in scope.rel_files if "/" in rel and deeper_re.match(rel))
+        deeper_glob = compile_glob("**/" + pat)
+        deeper = sum(1 for rel in scope.rel_files if "/" in rel and deeper_glob.match(rel))
         if deeper:
             msg = (
                 f"'{pat}' matches only the base directory; "
                 f"{deeper} file(s) in subdirectories need '**/{pat}'"
             )
             findings.append(Finding("info", "glob-root-only", where, msg))
-    return expanded
 
 
 def check_rule(f: InstructionFile, scope: RuleScope, findings: list[Finding]) -> None:
@@ -1164,11 +1288,14 @@ def check_rule(f: InstructionFile, scope: RuleScope, findings: list[Finding]) ->
         msg = "`paths` is present but holds no pattern"
         findings.append(Finding("error", "paths-empty", where, msg))
         return
-    expanded_total = sum(check_pattern(where, pat, scope, findings) for pat in patterns)
-    if expanded_total > BRACE_BUDGET:
+    compiled = compile_paths(patterns)
+    for c in compiled:
+        check_pattern(where, c, scope, findings)
+    over = [c.pattern for c in compiled if c.over_budget]
+    if over:
         msg = (
-            f"brace expansion yields {expanded_total} patterns, over the 1,000-pattern budget; "
-            "over-budget patterns are used unexpanded and match nothing"
+            f"brace expansion of `paths` yields more than the 1,000-pattern budget; "
+            f"over-budget patterns are used unexpanded and match nothing: {', '.join(over)}"
         )
         findings.append(Finding("error", "brace-budget", where, msg))
 
@@ -1999,7 +2126,7 @@ def match_rules(
                 if not rel.startswith(prefix):
                     continue
                 rel_to_base = rel[len(prefix) :]
-            if any(matches(compile_pattern(p)[0], rel_to_base) for p in f.paths):
+            if any(c.matches(rel_to_base) for c in compile_paths(f.paths)):
                 loaded.append(str(f.path))
         report[target] = loaded
     return report

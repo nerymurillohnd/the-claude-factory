@@ -227,6 +227,27 @@ class GlobTests(unittest.TestCase):
         assert [Path(p).name for p in match["pkg/main.go"]] == ["go.md"]
         assert match["src/x.ts"] == []
 
+    def test_hostile_patterns_finish_quickly(self) -> None:
+        """A brace bomb, a backtracking glob and a bad class are reported, not run for minutes.
+
+        Each case once hung the checker or crashed it; the 10-second timeout fails the test.
+        """
+        cases = {
+            "brace-budget": "{a,b}" * 26,  # 67 million expansions before the budget check
+            "glob-no-match": "*a" * 25 + "b",  # catastrophic backtracking in a regex matcher
+            "glob-invalid-bracket": "src/[z-a].ts",  # re.error: bad character range
+        }
+        for code, pattern in cases.items():
+            with self.subTest(code=code):
+                root = scratch(self)
+                write(root, {".claude/rules/r.md": rule(f"paths: '{pattern}'"), "a" * 60: "x\n"})
+                cmd = [sys.executable, "-I", str(CHECKER), "--project", str(root), "--no-user"]
+                proc = subprocess.run(
+                    [*cmd, "--json"], capture_output=True, text=True, check=False, timeout=10
+                )
+                assert "Traceback" not in proc.stderr, proc.stderr
+                assert code in Result(proc).codes("r.md")
+
     def test_ancestor_rule_without_match_is_info_about_this_project(self) -> None:
         """A rule above the project is tested only against the project's files, and says so."""
         root = scratch(self)
