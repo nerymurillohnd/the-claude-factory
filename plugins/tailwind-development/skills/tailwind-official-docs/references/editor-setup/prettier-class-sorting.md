@@ -12,5 +12,8 @@ Sources: https://tailwindcss.com/docs/editor-setup#class-sorting-with-prettier a
 ## Traps
 
 - With other Prettier plugins, `prettier-plugin-tailwindcss` must be the last entry in `plugins`, and only the plugins the README lists are compatible. Check both still work.
+- The plugin is ESM-only: a Prettier config that loads it with `require()` fails. Name it in `plugins` instead.
+- On v3, when the plugin cannot find the Tailwind config, it falls back to the default one without warning, and the order ignores the project's customizations. Check that `tailwindConfig` points to the real file.
+- Patterns in `tailwindAttributes` and `tailwindFunctions` are strings wrapped in slashes (`"/data-.*/"`); JavaScript regex literals do not work.
 - It removes duplicate classes by default, which breaks templating languages whose syntax looks like repeated classes; the README names the option that keeps them.
 - The order is not configurable. This plugin's `sort_classes` tool gives the same order without Prettier.
