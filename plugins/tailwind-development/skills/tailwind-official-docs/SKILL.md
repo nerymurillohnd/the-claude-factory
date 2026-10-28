@@ -203,6 +203,14 @@ Then read the linked page sections for your topic.
 **Flexbox and grid**: flex, grid columns and rows, gap, justify, align, place, order → See [references/flexbox-and-grid.md](references/flexbox-and-grid.md)
 **Spacing**: padding, margin → See [references/spacing.md](references/spacing.md)
 **Sizing**: width, height, min and max sizes, logical inline and block sizes → See [references/sizing.md](references/sizing.md)
+**Typography**: font family, size and weight, line height, text color, decoration, wrapping, lists → See [references/typography.md](references/typography.md)
+**Backgrounds**: background color, image, gradients, position, size, clip → See [references/backgrounds.md](references/backgrounds.md)
+**Borders**: border radius, width, color, style, outlines → See [references/borders.md](references/borders.md)
+**Effects**: box and text shadows, opacity, blend modes, masks → See [references/effects.md](references/effects.md)
+**Filters**: blur, brightness, contrast, drop shadow, backdrop filters → See [references/filters.md](references/filters.md)
+**Tables**: border collapse and spacing, table layout, caption side → See [references/tables.md](references/tables.md)
+**Transitions and animation**: transition property, duration, easing, delay, animation → See [references/transitions-and-animation.md](references/transitions-and-animation.md)
+**Transforms**: rotate, scale, skew, translate, perspective, transform origin → See [references/transforms.md](references/transforms.md)
 
 ## Workflow
 
@@ -372,15 +380,6 @@ For each requested behavior, consult the specific property page, not only the ca
 
 - **Getting started:** `installation`, `installation/using-vite`, `installation/using-postcss`, `installation/tailwind-cli`, `installation/framework-guides`, `installation/play-cdn`, `editor-setup`, `compatibility`, `upgrade-guide`
 - **Framework guides** (append each to `installation/framework-guides/`; they are not in the docs navigation): `adonisjs`, `angular`, `astro`, `emberjs`, `gatsby`, `laravel/vite`, `meteor`, `nextjs`, `nuxt`, `parcel`, `phoenix`, `qwik`, `react-router`, `rspack/react`, `ruby-on-rails`, `solidjs`, `sveltekit`, `symfony`, `tanstack-start`
-- **Typography:** `font-family`, `font-size`, `font-smoothing`, `font-style`, `font-weight`, `font-stretch`, `font-variant-numeric`, `font-feature-settings`, `letter-spacing`, `line-clamp`, `line-height`, `list-style-image`, `list-style-position`, `list-style-type`, `text-align`, `color`, `text-decoration-line`, `text-decoration-color`, `text-decoration-style`, `text-decoration-thickness`, `text-underline-offset`, `text-transform`, `text-overflow`, `text-wrap`, `text-indent`, `tab-size`, `vertical-align`, `white-space`, `word-break`, `overflow-wrap`, `hyphens`, `content`
-- **Backgrounds:** `background-attachment`, `background-clip`, `background-color`, `background-image`, `background-origin`, `background-position`, `background-repeat`, `background-size`
-- **Borders and outlines:** `border-radius`, `border-width`, `border-color`, `border-style`, `outline-width`, `outline-color`, `outline-style`, `outline-offset`
-- **Effects:** `box-shadow`, `text-shadow`, `opacity`, `mix-blend-mode`, `background-blend-mode`, `mask-clip`, `mask-composite`, `mask-image`, `mask-mode`, `mask-origin`, `mask-position`, `mask-repeat`, `mask-size`, `mask-type`
-- **Filters, element:** `filter`, `filter-blur`, `filter-brightness`, `filter-contrast`, `filter-drop-shadow`, `filter-grayscale`, `filter-hue-rotate`, `filter-invert`, `filter-saturate`, `filter-sepia`
-- **Filters, backdrop:** `backdrop-filter`, `backdrop-filter-blur`, `backdrop-filter-brightness`, `backdrop-filter-contrast`, `backdrop-filter-grayscale`, `backdrop-filter-hue-rotate`, `backdrop-filter-invert`, `backdrop-filter-opacity`, `backdrop-filter-saturate`, `backdrop-filter-sepia`
-- **Tables:** `border-collapse`, `border-spacing`, `table-layout`, `caption-side`
-- **Transitions and animation:** `transition-property`, `transition-behavior`, `transition-duration`, `transition-timing-function`, `transition-delay`, `animation`
-- **Transforms:** `backface-visibility`, `perspective`, `perspective-origin`, `rotate`, `scale`, `skew`, `transform`, `transform-origin`, `transform-style`, `translate`, `zoom`
 - **Interactivity:** `accent-color`, `appearance`, `caret-color`, `color-scheme`, `cursor`, `field-sizing`, `pointer-events`, `resize`, `scroll-behavior`, `scrollbar-color`, `scrollbar-width`, `scrollbar-gutter`, `scroll-margin`, `scroll-padding`, `scroll-snap-align`, `scroll-snap-stop`, `scroll-snap-type`, `touch-action`, `user-select`, `will-change`
 - **SVG:** `fill`, `stroke`, `stroke-width`
 - **Accessibility:** `forced-color-adjust`
