@@ -42,7 +42,7 @@ Read the matching reference for any compatibility task: setup, fix or question.
 - CSS modules: [css-modules.md](references/compatibility/css-modules.md)
 - `<style>` blocks in Vue, Svelte or Astro: [component-style-blocks.md](references/compatibility/component-style-blocks.md)
 
-## Upgrade from v3 to v4
+## Upgrade guide
 
 Read every reference below, in order, to migrate a project.
 Read only the matching reference for one v3 habit or a question.
@@ -54,6 +54,32 @@ Read only the matching reference for one v3 habit or a question.
 5. Check Preflight changes: [preflight.md](references/upgrade-guide/preflight.md)
 6. Check configuration and build changes: [config.md](references/upgrade-guide/config.md)
 7. Report every section with its verdict: changed, not present, kept, or needs a decision.
+
+## Core concepts
+
+### 1. Styling with utility classes
+
+For any work, knowledge or guidance on these topics, read https://tailwindcss.com/docs/styling-with-utility-classes filtered by the topic:
+
+- [Why not just use inline styles?](https://tailwindcss.com/docs/styling-with-utility-classes#why-not-just-use-inline-styles)
+- [Thinking in utility classes](https://tailwindcss.com/docs/styling-with-utility-classes#thinking-in-utility-classes)
+- [Styling hover and focus states](https://tailwindcss.com/docs/styling-with-utility-classes#styling-hover-and-focus-states)
+- [Media queries and breakpoints](https://tailwindcss.com/docs/styling-with-utility-classes#media-queries-and-breakpoints)
+- [Targeting dark mode](https://tailwindcss.com/docs/styling-with-utility-classes#targeting-dark-mode)
+- [Using class composition](https://tailwindcss.com/docs/styling-with-utility-classes#using-class-composition)
+- [Using arbitrary values](https://tailwindcss.com/docs/styling-with-utility-classes#using-arbitrary-values)
+- [Complex selectors](https://tailwindcss.com/docs/styling-with-utility-classes#complex-selectors)
+- [When to use inline styles](https://tailwindcss.com/docs/styling-with-utility-classes#when-to-use-inline-styles)
+- [Managing duplication](https://tailwindcss.com/docs/styling-with-utility-classes#managing-duplication)
+- [Using loops](https://tailwindcss.com/docs/styling-with-utility-classes#using-loops)
+- [Using multi-cursor editing](https://tailwindcss.com/docs/styling-with-utility-classes#using-multi-cursor-editing)
+- [Using components](https://tailwindcss.com/docs/styling-with-utility-classes#using-components)
+- [Using custom CSS](https://tailwindcss.com/docs/styling-with-utility-classes#using-custom-css)
+- [Managing style conflicts](https://tailwindcss.com/docs/styling-with-utility-classes#managing-style-conflicts)
+- [Conflicting utility classes](https://tailwindcss.com/docs/styling-with-utility-classes#conflicting-utility-classes)
+- [Using the important modifier](https://tailwindcss.com/docs/styling-with-utility-classes#using-the-important-modifier)
+- [Using the important flag](https://tailwindcss.com/docs/styling-with-utility-classes#using-the-important-flag)
+- [Using the prefix option](https://tailwindcss.com/docs/styling-with-utility-classes#using-the-prefix-option)
 
 ## Workflow
 
@@ -94,7 +120,7 @@ Examples:
 - Shared brand color: `theme`, `colors`, and each consuming color utility page.
 - Svelte scoped styles using `@apply`: [component-style-blocks.md](references/compatibility/component-style-blocks.md), `functions-and-directives#reference-directive`, `adding-custom-styles`, and the applied utility pages.
 - Styling the open state of a `<details>` element: `hover-focus-and-other-states#openclosed-state`.
-- Moving a v3 project to v4: [Upgrade from v3 to v4](#upgrade-from-v3-to-v4) above.
+- Moving a v3 project to v4: [Upgrade guide](#upgrade-guide) above.
 
 #### How much to consult
 
@@ -229,7 +255,7 @@ Use these pages in addition to the property-specific pages. For a long page, go 
 | Missing classes, dynamic class construction, monorepos, external packages, explicit sources, safelisting | `detecting-classes-in-source-files` |
 | Tailwind directives, build-time functions, `@apply`, `@reference`, legacy configuration and plugins | `functions-and-directives` |
 | Unexpected resets, unstyled headings and lists, default borders, base element styles | `preflight` |
-| Migrating from v3, v3 habits in new code, removed or renamed utilities | [Upgrade from v3 to v4](#upgrade-from-v3-to-v4) above |
+| Migrating from v3, v3 habits in new code, removed or renamed utilities | [Upgrade guide](#upgrade-guide) above |
 | Whether a project can adopt v4, preprocessors, CSS modules, component `<style>` blocks | [Compatibility](#compatibility) above, and `upgrade-guide#browser-requirements` |
 | Installing Tailwind in a project that has none, or changing its integration | [Installation](#installation) above |
 | Editor support, class sorting with Prettier | [Editor setup](#editor-setup) above |

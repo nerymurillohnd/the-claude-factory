@@ -9,31 +9,7 @@ Copy an anchor exactly as listed. Never derive one from a heading: the page stri
 
 Each line is `#anchor` followed by the heading text; indentation follows the heading levels. They come from the id attributes of each page's h2 to h4 headings; a repeated anchor on one page is listed once.
 
-Pages: [`styling-with-utility-classes`](#styling-with-utility-classes) · [`hover-focus-and-other-states`](#hover-focus-and-other-states) · [`responsive-design`](#responsive-design) · [`dark-mode`](#dark-mode) · [`theme`](#theme) · [`colors`](#colors) · [`adding-custom-styles`](#adding-custom-styles) · [`detecting-classes-in-source-files`](#detecting-classes-in-source-files) · [`functions-and-directives`](#functions-and-directives) · [`preflight`](#preflight)
-
-## `styling-with-utility-classes`
-
-- `#overview` Overview
-  - `#why-not-just-use-inline-styles` Why not just use inline styles?
-- `#thinking-in-utility-classes` Thinking in utility classes
-  - `#styling-hover-and-focus-states` Styling hover and focus states
-  - `#media-queries-and-breakpoints` Media queries and breakpoints
-  - `#targeting-dark-mode` Targeting dark mode
-  - `#using-class-composition` Using class composition
-  - `#using-arbitrary-values` Using arbitrary values
-    - `#how-does-this-even-work` How does this even work?
-  - `#complex-selectors` Complex selectors
-  - `#when-to-use-inline-styles` When to use inline styles
-- `#managing-duplication` Managing duplication
-  - `#using-loops` Using loops
-  - `#using-multi-cursor-editing` Using multi-cursor editing
-  - `#using-components` Using components
-  - `#using-custom-css` Using custom CSS
-- `#managing-style-conflicts` Managing style conflicts
-  - `#conflicting-utility-classes` Conflicting utility classes
-  - `#using-the-important-modifier` Using the important modifier
-  - `#using-the-important-flag` Using the important flag
-  - `#using-the-prefix-option` Using the prefix option
+Pages: [`hover-focus-and-other-states`](#hover-focus-and-other-states) · [`responsive-design`](#responsive-design) · [`dark-mode`](#dark-mode) · [`theme`](#theme) · [`colors`](#colors) · [`adding-custom-styles`](#adding-custom-styles) · [`detecting-classes-in-source-files`](#detecting-classes-in-source-files) · [`functions-and-directives`](#functions-and-directives) · [`preflight`](#preflight)
 
 ## `hover-focus-and-other-states`
 
