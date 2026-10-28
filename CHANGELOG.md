@@ -12,6 +12,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The
 
 ### Added
 
+- **macos-grep-guard** 0.1.0 — on macOS, stops a recursive `grep` until the command says whether gitignored and binary files count, stops `awk` programs that rely on `IGNORECASE`, and gives Claude the macOS form when a BSD or zsh command fails.
 - **tailwind-development** 0.3.0 — four agents for docs research, audits, refactors and v3 to v4 migration; the docs skill becomes the first source for any Tailwind task, routed by docs category; and a link check of the docs skill before Claude delegates to an agent.
 
 ## 2026-10-27
