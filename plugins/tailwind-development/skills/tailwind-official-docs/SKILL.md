@@ -23,6 +23,15 @@ Before installing Tailwind or changing how a project integrates it, read the ref
 
 A framework listed under framework guides in the topic index has its own page: read that page instead.
 
+## Editor setup
+
+When the task is the editor, read the reference for it:
+
+- VS Code or Cursor, and editor warnings on `@theme` or `@apply`: [vscode-intellisense.md](references/editor-setup/vscode-intellisense.md)
+- Class sorting with Prettier: [prettier-class-sorting.md](references/editor-setup/prettier-class-sorting.md)
+- Zed: [zed.md](references/editor-setup/zed.md)
+- WebStorm, PhpStorm or another JetBrains IDE: [jetbrains.md](references/editor-setup/jetbrains.md)
+
 ## Workflow
 
 ### 1. Inspect the project
@@ -201,8 +210,7 @@ Use these pages in addition to the property-specific pages. For a long page, go 
 | v3 habits in new code, one removed or renamed utility, dropped PostCSS plugins, the CLI package | `upgrade-guide`, the section that covers it |
 | Whether a project can adopt v4: browser floor, Sass, Less and Stylus, CSS modules, `<style>` blocks in Vue, Svelte and Astro components | `compatibility` (`#browser-support`, `#sass-less-and-stylus`, `#css-modules`, `#vue-svelte-and-astro`) and `upgrade-guide#browser-requirements` |
 | Installing Tailwind in a project that has none, or changing its integration | [Installation](#installation) above |
-| Editor support | `editor-setup`, by section: `#intellisense-for-vs-code`, `#jetbrains-ides`, `#zed`, `#cursor`, `#syntax-support` |
-| Class sorting with Prettier | `editor-setup#class-sorting-with-prettier` |
+| Editor support, class sorting with Prettier | [Editor setup](#editor-setup) above |
 
 ## Migrating from v3 to v4
 
