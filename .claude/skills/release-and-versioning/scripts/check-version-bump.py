@@ -6,8 +6,12 @@ differ from <base> (`git diff <base>...HEAD`) must carry the next version of the
 exactly one patch, minor or major step above it, and a non-empty CHANGELOG.md section for it. A
 jump that skips a version fails. A step from 0.x to 1.0.0 passes with a note: it needs Nery's
 explicit authorization (release-and-versioning, rule 4). A change limited to the plugin's
-README.md needs no bump; every other file does, CHANGELOG.md included. A new plugin (no
-plugin.json at <base>) and a removed one are skipped. It reads committed changes only: commit
+README.md needs no bump; every other file does, CHANGELOG.md included. A renamed plugin is
+compared with its old name's version at <base>: the rename is a `renames` entry that HEAD adds to
+.claude-plugin/marketplace.json, or a plugin.json that git sees moved from plugins/<old>/. A rename
+breaks the commands users type, so its patch step fails (plugin-renames-and-removals, rule 3), and
+a move git sees without its `renames` entry fails too. A new plugin (no plugin.json at <base> under
+its name or an old one) and a removed one are skipped. It reads committed changes only: commit
 before running it.
 
 It runs `git diff` and `git show` and reads plugin files: it never writes or uses the network.
@@ -88,6 +92,49 @@ def manifest_version(text: str) -> str | None:
     return version if isinstance(version, str) else None
 
 
+def renames_map(root: Path, ref: str) -> dict[str, str | None]:
+    """The `renames` map of .claude-plugin/marketplace.json at `ref`; empty when it has none."""
+    shown = git(root, "show", f"{ref}:.claude-plugin/marketplace.json")
+    try:
+        data = _decode(shown.stdout) if shown.returncode == 0 else None
+    except ValueError:
+        data = None
+    renames = cast("dict[str, object]", data).get("renames") if isinstance(data, dict) else None
+    if not isinstance(renames, dict):
+        return {}
+    entries = cast("dict[object, object]", renames).items()
+    return {k: v for k, v in entries if isinstance(k, str) and (v is None or isinstance(v, str))}
+
+
+def renamed_since(root: Path, base: str) -> tuple[dict[str, str], set[str]]:
+    """The plugins renamed since `base`, and those of them missing their `renames` entry.
+
+    The first is new name -> old name: each `renames` entry HEAD adds, then each plugin.json git
+    sees moved from one plugin directory to another. The second holds the new names git sees moved
+    whose `renames` entry HEAD does not add.
+    """
+    before = renames_map(root, base)
+    added = {old: new for old, new in renames_map(root, "HEAD").items() if old not in before}
+    renamed = {new: old for old, new in added.items() if new is not None}
+    commits = f"{base}...HEAD"
+    manifests = "plugins/*/.claude-plugin/plugin.json"
+    diff = git(root, "diff", "-M", "--name-status", commits, "--", manifests)
+    if diff.returncode != 0:
+        raise GitError("diff -M " + commits, diff.stderr.strip())
+    unregistered: set[str] = set()
+    for line in diff.stdout.splitlines():
+        status, *paths = line.split("\t")
+        if not status.startswith("R") or len(paths) != len(("old", "new")):
+            continue
+        old, new = (re.match(r"^plugins/([^/]+)/", f) for f in paths)
+        if old is None or new is None or old.group(1) == new.group(1):
+            continue
+        if new.group(1) not in renamed and old.group(1) not in added:
+            renamed[new.group(1)] = old.group(1)
+            unregistered.add(new.group(1))
+    return renamed, unregistered
+
+
 def changed_by_plugin(root: Path, base: str) -> dict[str, list[str]]:
     """The committed files changed since `base`, grouped by plugin, paths inside the plugin."""
     commits = f"{base}...HEAD"
@@ -102,33 +149,62 @@ def changed_by_plugin(root: Path, base: str) -> dict[str, list[str]]:
     return by_plugin
 
 
+def base_manifest(root: Path, base: str, name: str, old: str | None) -> str | None:
+    """The plugin.json text at `base`, under the plugin's old name when it was renamed."""
+    for plugin in (name, old):
+        if plugin is not None:
+            shown = git(root, "show", f"{base}:plugins/{plugin}/.claude-plugin/plugin.json")
+            if shown.returncode == 0:
+                return shown.stdout
+    return None
+
+
+def bump_error(
+    name: str, files: list[str], base_version: str, version: str, old: str | None
+) -> str | None:
+    """Why `version` is not the next version of `base_version`, or None when it is."""
+    if core(version) <= core(base_version):
+        fix = f"Run {BUMP} {name} <level>."
+        changed = f"files changed ({', '.join(files)})"
+        return f"[plugins/{name}] {changed} but version is still {base_version}. {fix}"
+    allowed = next_versions(base_version)
+    if "{}.{}.{}".format(*core(version)) not in allowed:
+        steps = f"{allowed[0]}, {allowed[1]} or {allowed[2]}"
+        fix = f"Run {BUMP} {name} <level> once from {base_version}."
+        jump = f"version jumps from {base_version} to {version}"
+        return f"[plugins/{name}] {jump}; one step above is {steps}. {fix}"
+    if old is not None and "{}.{}.{}".format(*core(version)) == allowed[0]:
+        level = "minor" if core(base_version)[0] == 0 else "major"
+        fix = f"Run {BUMP} {name} {level} once from {base_version}."
+        breaking = f"renamed from {old}, a breaking change, but {version} is a patch"
+        return f"[plugins/{name}] {breaking}. {fix}"
+    return None
+
+
 def check(root: Path, base: str) -> tuple[list[str], list[str], list[str]]:
     """The errors, the cautions that do not fail, and the plugins whose files changed."""
     by_plugin = changed_by_plugin(root, base)
+    renamed, unregistered = renamed_since(root, base)
     errors: list[str] = []
     cautions: list[str] = []
     for name, files in by_plugin.items():
         plugin = root / "plugins" / name
         if not plugin.is_dir() or all(f in DOC_ONLY for f in files):
             continue
-        shown = git(root, "show", f"{base}:plugins/{name}/.claude-plugin/plugin.json")
-        if shown.returncode != 0:
+        old = renamed.get(name)
+        shown = base_manifest(root, base, name, old)
+        if shown is None:
             continue  # new plugin: nothing to compare against
-        base_version = manifest_version(shown.stdout) or "0.0.0"
+        if name in unregistered:
+            entry = f'"{old}": "{name}"'
+            errors.append(f"[plugins/{name}] moved from plugins/{old}; add renames entry {entry}")
+        base_version = manifest_version(shown) or "0.0.0"
         manifest = plugin / ".claude-plugin" / "plugin.json"
         text = manifest.read_text(encoding="utf-8") if manifest.is_file() else ""
-        version = manifest_version(text)
-        if version is None or core(version) <= core(base_version):
-            fix = f"Run {BUMP} {name} <level>."
-            changed = f"files changed ({', '.join(files)})"
-            errors.append(f"[plugins/{name}] {changed} but version is still {base_version}. {fix}")
-            continue
-        allowed = next_versions(base_version)
-        if "{}.{}.{}".format(*core(version)) not in allowed:
-            steps = f"{allowed[0]}, {allowed[1]} or {allowed[2]}"
-            fix = f"Run {BUMP} {name} <level> once from {base_version}."
-            jump = f"version jumps from {base_version} to {version}"
-            errors.append(f"[plugins/{name}] {jump}; one step above is {steps}. {fix}")
+        version = manifest_version(text) or "0.0.0"
+        error = bump_error(name, files, base_version, version, old)
+        if error is not None:
+            errors.append(error)
             continue
         if core(base_version)[0] == 0 and core(version)[0] == 1:
             promise = f"{base_version} → {version} promises a stable interface"

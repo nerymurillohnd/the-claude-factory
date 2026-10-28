@@ -609,6 +609,65 @@ describe('check-version-bump', () => {
     assert.doesNotMatch(r.out, /fatal:/)
   })
 
+  /**
+   * Commit demo-tool renamed to demo-new, bumped at `level` (none when null), with or without its
+   * renames entry in marketplace.json.
+   * @param {'patch' | 'minor' | null} level
+   * @param {boolean} [register]
+   */
+  function commitRename(level, register = true) {
+    scaffold()
+    initRepo()
+    git('mv', 'plugins/demo-tool', 'plugins/demo-new')
+    const manifest = 'plugins/demo-new/.claude-plugin/plugin.json'
+    write(manifest, read(manifest).replace('"name": "demo-tool"', '"name": "demo-new"'))
+    if (register) {
+      const marketplace = json('.claude-plugin/marketplace.json')
+      marketplace.renames = { ...marketplace.renames, 'demo-tool': 'demo-new' }
+      write('.claude-plugin/marketplace.json', `${JSON.stringify(marketplace, null, 2)}\n`)
+    }
+    if (level) {
+      const p = 'plugins/demo-new/CHANGELOG.md'
+      write(
+        p,
+        read(p).replace('## [Unreleased]\n', '## [Unreleased]\n\n### Changed\n\n- Renamed.\n'),
+      )
+      const bump = runPy(BUMP, ['demo-new', level])
+      if (bump.code !== 0) {
+        throw new Error(bump.out)
+      }
+    }
+    git('add', '-A')
+    git('commit', '-qm', 'rename')
+  }
+
+  test('fails a rename without a bump: the old name is the base version', () => {
+    commitRename(null)
+    const r = runPy(CHECK, ['HEAD~1'])
+    assert.equal(r.code, 1)
+    assert.match(r.out, /\[plugins\/demo-new\] files changed .* version is still 0\.1\.0/)
+  })
+
+  test('passes a rename with a minor bump', () => {
+    commitRename('minor')
+    const r = runPy(CHECK, ['HEAD~1'])
+    assert.equal(r.code, 0, r.out)
+  })
+
+  test('fails a rename with a patch bump: a rename is breaking', () => {
+    commitRename('patch')
+    const r = runPy(CHECK, ['HEAD~1'])
+    assert.equal(r.code, 1)
+    assert.match(r.out, /renamed from demo-tool, a breaking change, but 0\.1\.1 is a patch/)
+  })
+
+  test('fails a plugin moved without its renames entry', () => {
+    commitRename('minor', false)
+    const r = runPy(CHECK, ['HEAD~1'])
+    assert.equal(r.code, 1)
+    assert.match(r.out, /moved from plugins\/demo-tool; add renames entry "demo-tool": "demo-new"/)
+  })
+
   test('does not require a bump for README-only edits', () => {
     scaffold()
     initRepo()
