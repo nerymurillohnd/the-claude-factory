@@ -12,7 +12,7 @@ superseded-by: none
 ## Scope
 
 - In scope: the maintainer's version bump and bump check. Their implementation: `.claude/skills/release-and-versioning/scripts/bump-version.py` and `check-version-bump.py`; the `version-bump` gate of `scripts/gates.mjs`; the `version:bump` npm script of `package.json`; the tests of these rules in `scripts/testers/scripts.test.mjs`.
-- Out of scope: the copies in `.claude/skills/plugin-renames-and-removals/scripts/`. A skill keeps its own copy of a script it runs (memory `skill-checks-are-not-gates`), and that layer is tracked by DEBT-038, which needs Nery's decision.
+- Out of scope: the copies in `.claude/skills/plugin-renames-and-removals/scripts/`. A skill keeps its own copy of a script it runs, and that layer is tracked by DEBT-038, which needs Nery's decision.
 
 ## Context and problem statement
 

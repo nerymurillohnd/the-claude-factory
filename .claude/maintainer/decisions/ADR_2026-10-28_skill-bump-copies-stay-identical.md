@@ -20,13 +20,13 @@ The release skill and the plugin-renames skill each carry their own copy of the 
 
 ## Decision drivers
 
-- A skill runs the scripts it governs from its own folder. Memory `skill-checks-are-not-gates` records Nery's rule from 2026-10-25: skills and gates do not call each other, and each skill keeps its own script.
+- A skill runs the scripts it governs from its own folder, and each skill keeps its own copy of the scripts it runs. The rule came from Nery's memory of 2026-10-25, removed on 2026-10-28.
 - The two copies must enforce the same rule, and a future change must not reopen the drift silently.
 
 ## Considered options
 
 - **Keep two copies and make them identical; a test compares them**: chosen.
-- **The plugin-renames skill runs the release skill's `check-version-bump.py`**: rejected because one skill would call another's script, which the rule above forbids.
+- **The plugin-renames skill runs the release skill's `check-version-bump.py`**: rejected because one skill would call another's script, against the rule above.
 - **Keep the copies as they are**: rejected because the drift already caused a rule to pass in one skill and fail in the other.
 
 ## Decision outcome
@@ -54,4 +54,4 @@ Chosen option: **identical copies, enforced by a test**, because each skill then
 
 - Decided by Nery Samuel Murillo on 2026-10-28, who left the choice between the two options to the assistant in the session that closed DEBT-025.
 - Logged as DEBT-038 on 2026-10-28; closed as resolved in `.claude/maintainer/technical-debt/closed-debt.md`.
-- Open conflict, not decided here: the `version-bump` gate runs the release skill's script under ADR_2026-10-28_version-gate-runs-the-release-skill-script. Memory `skill-checks-are-not-gates` says gates and skills do not call each other and that gates hold their own copies. Nery decides whether the gate keeps the release skill's script or returns to a copy of its own.
+- The memory that said gates and skills do not call each other was removed on 2026-10-28 by Nery. The `version-bump` gate keeps running the release skill's script, as ADR_2026-10-28_version-gate-runs-the-release-skill-script records.
