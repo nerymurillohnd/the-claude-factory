@@ -24,9 +24,7 @@
     ],
     "deny": [
       "Bash(git push --force*)",
-      "Bash(gh repo delete*)",
-      "mcp__c02edb2c-a0fd-4313-b2e2-05804c2df0b2",
-      "mcp__eabf2343-2549-4e10-930f-f3103c7b25c6"
+      "Bash(gh repo delete*)"
     ]
   },
   "deniedMcpServers": [
