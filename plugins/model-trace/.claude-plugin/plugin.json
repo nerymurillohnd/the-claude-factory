@@ -1,7 +1,7 @@
 {
   "name": "model-trace",
   "displayName": "Model Trace",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Shows, as Claude works, each skill, agent, MCP server, plugin, hook and web tool it uses in the session, how many times and at what time, with an export to Markdown or HTML.",
   "author": {
     "name": "Nery Murillo",

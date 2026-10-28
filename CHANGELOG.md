@@ -6,6 +6,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The
 
 ## 2026-10-28
 
+### Fixed
+
+- **model-trace** 0.1.1 — rows in a narrow pane, such as the desktop app's side panel, keep the whole name, and section titles count the same uses as the header, with hook output named apart.
+
 ### Changed
 
 - **project-maintainer** 0.2.3 — the handoff and records skills keep to the current project, check for evidence that an item is already done before listing it, and cite only installed skills, agents and plugins.
