@@ -19,6 +19,9 @@ description: Writes architecture decision records (ADRs) and keeps a technical-d
 - Record without asking permission. The user installed this plugin for that.
 - Ask only for facts you are missing, and for the questions the procedures name, for example: migrating documents the project already keeps, git, approving an edit to a settled record.
 - Write only what is verified or what the user said.
+- Record only matters of this project. Drop anything about other projects.
+- Before logging a debt item or keeping one pending, check the git log, CHANGELOG, docs and ledgers for evidence that it is already done. Before recording a decision, check that no record or commit already holds it.
+- Never cite a skill, agent or plugin in a record without checking that it is installed.
 - Keep one source of truth. Never leave the same record in two places.
 - Non-interactive means nobody can answer you: you have no question tool, or the prompt says nobody will answer, as in `claude -p`, the Agent SDK or CI. Then write no record that depends on an unanswered question. Return the questions in your final reply.
 
@@ -160,6 +163,8 @@ Check each item before you finish.
 - [ ] The git question was asked once, or was not needed.
 - [ ] `.claude/maintainer/` was searched first. No duplicate exists.
 - [ ] Every claim is verified, stated by the user, or marked pending.
+- [ ] Every record belongs to this project, and the git log, CHANGELOG, docs and ledgers showed no evidence that a logged item is already done or a decision already recorded.
+- [ ] Every skill, agent or plugin cited was checked as installed.
 - [ ] No placeholder or template instruction remains in an entry.
 - [ ] Each ledger index equals its entries.
 - [ ] No settled ADR or closed entry was rewritten.
