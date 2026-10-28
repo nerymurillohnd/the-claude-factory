@@ -250,7 +250,8 @@ Look at the message, then fix the token. Until you do, the monitoring agent has 
 
 | What you see | Why | What to do |
 | :-- | :-- | :-- |
-| `plugin:github-operations:github` is missing from `/mcp` | The token is not set: you skipped the dialog, installed from the shell, or just updated from 0.1.x | Set it as in [Configuration](#-configuration) |
+| `plugin:github-operations:github` is missing from `/mcp`, with no error | The token is not set, or no longer saved: you skipped the dialog, installed from the shell, or just updated from 0.1.x | Set it as in [Configuration](#-configuration) |
+| `claude.ai github` is listed in `/mcp` instead of `plugin:github-operations:github`, and GitHub tools still work | The same missing token. Claude Code then connects your claude.ai GitHub connector in the server's place, so nothing reports an error | Set the token as in [Configuration](#-configuration). Once it is set, the plugin's server connects and hides the connector, because both point at the same URL |
 | `/plugin` lists `github` under **Needs attention** as `failed to load`, with `Plugin option "github_token" isn't set` | You turned the plugin on in claude.ai, and Claude Code doesn't ask for the token of that copy | Run `/plugin configure github-operations@synced`, as in [Configuration](#-configuration) |
 | In the Claude app, the plugin's **Connectors** tab shows `github` as not added, or its form asks for an OAuth client | The app can't read the plugin's token option | Connect it with your token, as in [In the Claude app](#in-the-claude-app) |
 | The server is marked failed, or `401 — token authentication failed` | The token is wrong or expired | Create a new token and set it again with **Configure options** |
