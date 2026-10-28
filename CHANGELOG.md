@@ -4,6 +4,12 @@ All notable changes to **The Claude Factory** marketplace are documented here: p
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The marketplace has no version of its own: entries are grouped by date, newest first, and every plugin carries its own version, changelog and tag. The versions 0.1.0 and 0.2.0 below are the history from before that change; their tags stay.
 
+## 2026-10-28
+
+### Added
+
+- **tailwind-development** 0.3.0 — four agents for docs research, audits, refactors and v3 to v4 migration; the docs skill becomes the first source for any Tailwind task, routed by docs category; and a link check of the docs skill before Claude delegates to an agent.
+
 ## 2026-10-27
 
 ### Added
