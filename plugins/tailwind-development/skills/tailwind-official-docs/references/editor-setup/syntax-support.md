@@ -1,11 +1,11 @@
-# Editor warnings on Tailwind's CSS syntax
+# Fix editor warnings on Tailwind's CSS syntax
 
-Source: https://tailwindcss.com/docs/editor-setup#syntax-support. Read it for anything this file does not cover; where it differs, follow it.
+Read https://tailwindcss.com/docs/editor-setup#syntax-support for anything this file does not cover. Where it differs, follow it.
 
-Editors that do not know Tailwind's at-rules and functions (`@theme`, `@variant`, `@source`, `@apply`, `--alpha()`) flag them as errors in CSS files. Give the CSS files a language mode that knows them, rather than editing valid CSS to silence the editor:
+Editors that do not know Tailwind's at-rules and functions (`@theme`, `@variant`, `@source`, `@apply`, `--alpha()`) flag them as errors. Give the CSS files a language mode that knows them; never edit valid CSS to silence the editor.
 
-- VS Code and Cursor: the IntelliSense extension's Tailwind CSS language mode, through `files.associations` (`"*.css": "tailwindcss"`).
-- Zed: the `tailwindcss-intellisense-css` language server ahead of the default CSS server, as Zed's Tailwind page shows (https://zed.dev/docs/languages/tailwindcss).
-- Other editors, or one that still complains: turn off its native CSS validation, as the page allows. It is an editor setting, so change it only with the user's agreement, and never for the whole machine when the project's settings will do.
+- In VS Code and Cursor, set `files.associations` to `"*.css": "tailwindcss"` to use the IntelliSense extension's Tailwind CSS mode.
+- In Zed, put the `tailwindcss-intellisense-css` language server ahead of the default CSS server, as https://zed.dev/docs/languages/tailwindcss shows.
+- In other editors, or when one still complains, turn off its native CSS validation. Ask the user first, and change the project's settings rather than the whole machine's.
 
-A warning that remains after this is worth reading: it may be a real error, such as an `@apply` of a class that does not exist.
+Read any warning that remains: it may be a real error, such as an `@apply` of a class that does not exist.

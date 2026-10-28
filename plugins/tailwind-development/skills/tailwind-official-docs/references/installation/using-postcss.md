@@ -1,24 +1,24 @@
-# Installing through the PostCSS plugin
+# Install through the PostCSS plugin
 
-Official page: https://tailwindcss.com/docs/installation/using-postcss. Read it whole; where it differs from this file, follow the page.
+Read https://tailwindcss.com/docs/installation/using-postcss whole. Where it differs from this file, follow the page.
 
-## When this path fits
+## Use this path when
 
-- The project has a PostCSS config (a `postcss.config.*` file or PostCSS settings in `package.json`), or its bundler runs PostCSS and the framework has no guide of its own in the framework-guides list.
-- A project built with Vite takes the Vite path instead.
+- The project has a PostCSS config (a `postcss.config.*` file or PostCSS settings in `package.json`), or its bundler runs PostCSS and the framework has no guide in the framework-guides list.
+- Take the Vite path instead when the project builds with Vite.
 
-## What the setup consists of
+## Set it up
 
-1. The packages the page names (`tailwindcss`, `@tailwindcss/postcss`, `postcss`), installed with the package manager the lockfile names.
-2. `@tailwindcss/postcss` added to the PostCSS config, beside the project's other plugins and in the module format the file already uses.
-3. `@import "tailwindcss";` in the CSS file the app already loads.
-4. The project's usual dev or build script, unchanged.
+1. Install the packages the page names (`tailwindcss`, `@tailwindcss/postcss`, `postcss`) with the package manager the lockfile names.
+2. Add `@tailwindcss/postcss` to the PostCSS config, beside the project's other plugins, in the module format the file already uses.
+3. Add `@import "tailwindcss";` to the CSS file the app already loads.
+4. Keep the project's dev and build scripts as they are.
 
-## Check in the project
+## Check the project
 
-- v3 leftovers in the PostCSS config: the `tailwindcss` entry, and `postcss-import` and `autoprefixer`, which v4 no longer needs (`upgrade-guide#using-postcss`). Remove them only when nothing else needs them.
-- `@tailwind` directives in the CSS: replaced by the single import.
+- Remove v3 leftovers from the PostCSS config: the `tailwindcss` entry, and `postcss-import` and `autoprefixer`, which v4 no longer needs (`upgrade-guide#using-postcss`). Keep any of them something else still needs.
+- Replace `@tailwind` directives in the CSS with the single import.
 
 ## Verify
 
-Add one class the existing styles cannot produce, run the dev server or build, confirm the generated CSS contains it, then remove it.
+Add one class the existing styles cannot produce, run the dev server or build, confirm the generated CSS contains it, then remove the class.

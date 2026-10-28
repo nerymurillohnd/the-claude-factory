@@ -14,7 +14,7 @@ This skill is a documentation router, not a replacement for the documentation. I
 
 ## Installation
 
-Whenever installing or integrating Tailwind is involved, whether you set it up in a project, review or fix an existing setup, or answer a question about it, read the reference that matches the case:
+Read the reference that matches the case whenever a task touches installing or integrating Tailwind: setting it up in a project, reviewing or fixing an existing setup, or answering a question about it.
 
 - Vite: [using-vite.md](references/installation/using-vite.md)
 - PostCSS: [using-postcss.md](references/installation/using-postcss.md)
@@ -25,7 +25,7 @@ A framework listed under framework guides in the topic index has its own page: r
 
 ## Editor setup
 
-Whenever an editor or formatter for Tailwind is involved, whether you configure it in a project, fix a problem with it, or answer a question about it, read the reference that matches the case:
+Read the reference that matches the case whenever a task touches an editor or formatter for Tailwind: configuring it in a project, fixing a problem with it, or answering a question about it.
 
 - Editor warnings or errors on `@theme`, `@apply` or `@source`: [syntax-support.md](references/editor-setup/syntax-support.md)
 - VS Code or Cursor: [vscode-intellisense.md](references/editor-setup/vscode-intellisense.md)

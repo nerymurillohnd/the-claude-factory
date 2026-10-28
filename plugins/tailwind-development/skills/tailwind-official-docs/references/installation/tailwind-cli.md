@@ -1,30 +1,30 @@
-# Installing with the Tailwind CLI
+# Install with the Tailwind CLI
 
-Official page: https://tailwindcss.com/docs/installation/tailwind-cli. Read it whole; where it differs from this file, follow the page.
+Read https://tailwindcss.com/docs/installation/tailwind-cli whole. Where it differs from this file, follow the page.
 
-## When this path fits
+## Use this path when
 
 - The project has no bundler (static HTML, server-rendered templates), or wants Tailwind as a separate build step.
-- Without Node.js, the standalone executable replaces the npm packages.
+- The machine has no Node.js: use the standalone executable instead of the npm packages.
 
-## What the setup consists of
+## Set it up
 
-1. The packages the page names (`tailwindcss` and `@tailwindcss/cli`), installed with the package manager the lockfile names.
-2. `@import "tailwindcss";` in the input CSS file.
-3. A build from the input file to an output file, kept in `package.json` scripts when the project has them. Take the options from the installed CLI's `--help`: they change between releases.
-4. The output file linked from each page's `<head>`.
+1. Install the packages the page names (`tailwindcss`, `@tailwindcss/cli`) with the package manager the lockfile names.
+2. Add `@import "tailwindcss";` to the input CSS file.
+3. Build from the input file to an output file, and keep the commands in `package.json` scripts when the project has them. Take the options from the installed CLI's `--help`, since they change between releases.
+4. Link the output file from each page's `<head>`.
 
-## Standalone executable
+## Use the standalone executable
 
-- Download it from https://github.com/tailwindlabs/tailwindcss/releases, at the release that matches the project's `tailwindcss` version (the latest for a new project), choosing the file for the user's platform.
-- Verify it against the release's `sha256sums.txt` before running it.
-- The npm package `@tailwindcss/standalone` is not this executable: never install it.
+1. Download it from https://github.com/tailwindlabs/tailwindcss/releases, at the release that matches the project's `tailwindcss` version (the latest for a new project), in the file for the user's platform.
+2. Verify it against the release's `sha256sums.txt` before running it.
+3. Never install the npm package `@tailwindcss/standalone`: it is not this executable.
 
-## Check in the project
+## Check the project
 
-- `@tailwind` directives and v3 CLI calls (`npx tailwindcss …`): in v4 the CLI is `@tailwindcss/cli` (`upgrade-guide#using-tailwind-cli`).
-- The working directory of the build: the CLI scans from it, so a build started elsewhere can miss classes (`detecting-classes-in-source-files#setting-your-base-path`).
+- Replace `@tailwind` directives and v3 CLI calls (`npx tailwindcss …`): in v4 the CLI is `@tailwindcss/cli` (`upgrade-guide#using-tailwind-cli`).
+- Run the build from the directory that holds the templates: the CLI scans from its working directory and misses classes elsewhere (`detecting-classes-in-source-files#setting-your-base-path`).
 
 ## Verify
 
-Add one class the existing styles cannot produce, run a build, confirm the output file contains it, then remove it.
+Add one class the existing styles cannot produce, run a build, confirm the output file contains it, then remove the class.

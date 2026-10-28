@@ -1,22 +1,22 @@
-# The Play CDN
+# Use the Play CDN
 
-Official page: https://tailwindcss.com/docs/installation/play-cdn. Read it whole; where it differs from this file, follow the page.
+Read https://tailwindcss.com/docs/installation/play-cdn whole. Where it differs from this file, follow the page.
 
-## When it fits
+## Use it when
 
-- A browser prototype, a standalone preview page or a bug reproduction, with no build.
-- Never production: Tailwind states it is for development only. A project that ships takes a build path or its framework guide.
+- The task is a browser prototype, a standalone preview page or a bug reproduction, with no build.
+- Never use it for production: Tailwind states it is for development only. Give a project that ships a build path or its framework guide.
 
-## What it consists of
+## Set it up
 
-- The script tag the page shows, loading `@tailwindcss/browser` from jsDelivr in the page's `<head>`.
-- Custom CSS with Tailwind features goes in a `<style type="text/tailwindcss">` block.
-- To match a project's installed version, pin that exact version in the URL. Only a pinned file can carry a Subresource Integrity hash: point at the package's own `dist/index.global.js`, not the short package URL, whose minified copy jsDelivr generates, and take its SHA-256 from jsDelivr's package API (`https://data.jsdelivr.com/v1/packages/npm/@tailwindcss/browser@<version>?structure=flat`).
+1. Add the script tag the page shows, loading `@tailwindcss/browser` from jsDelivr, to the page's `<head>`.
+2. Put custom CSS with Tailwind features in a `<style type="text/tailwindcss">` block.
+3. Pin the project's exact version in the URL when the preview must match it. To add a Subresource Integrity hash, point at the package's own `dist/index.global.js` instead of the short package URL, whose minified copy jsDelivr generates, and take its SHA-256 from `https://data.jsdelivr.com/v1/packages/npm/@tailwindcss/browser@<version>?structure=flat`.
 
 ## Tell the user
 
 - The page fetches a script from `cdn.jsdelivr.net` each time it opens.
-- Styles are generated in the browser at run time, unlike a built project, so a result here still needs checking in the project's own build.
+- The browser generates the styles at run time, unlike a built project: check the result again in the project's own build.
 
 ## Verify
 

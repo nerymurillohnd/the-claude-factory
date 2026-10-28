@@ -1,8 +1,8 @@
-# Zed
+# Set up Zed
 
-Sources: https://tailwindcss.com/docs/editor-setup#zed and https://zed.dev/docs/languages/tailwindcss. Read them for anything this file does not cover; where they differ, follow them.
+Read https://tailwindcss.com/docs/editor-setup#zed and https://zed.dev/docs/languages/tailwindcss for anything this file does not cover. Where they differ, follow them.
 
-- Zed runs the Tailwind CSS language server itself: no extension to install. Zed's page lists the languages it serves.
-- The server's settings go under `lsp` → `tailwindcss-language-server` → `settings` in Zed's `settings.json`, named as in the IntelliSense README without the `tailwindCSS.` prefix and nested as objects: `experimental.configFile` is written `"experimental": { "configFile": … }`, not as a dotted key. Use them when the server does not pick up classes in a language by default.
-- To stop warnings on `@apply` and `@theme` in CSS files, put `tailwindcss-intellisense-css` before the default CSS language server for the CSS language, as Zed's page shows.
-- Zed runs Prettier itself, so `prettier-plugin-tailwindcss` works once it is in the Prettier config.
+- Install nothing: Zed runs the Tailwind CSS language server itself. Check Zed's page for the languages it serves.
+- Put server settings under `lsp` → `tailwindcss-language-server` → `settings` in Zed's `settings.json` when the server misses classes in a language. Name them as the IntelliSense README does, without the `tailwindCSS.` prefix, and nest them as objects: write `"experimental": { "configFile": … }`, never a dotted key.
+- Put `tailwindcss-intellisense-css` before the default CSS language server for CSS to stop warnings on `@apply` and `@theme`, as Zed's page shows.
+- Add `prettier-plugin-tailwindcss` to the Prettier config for class sorting: Zed runs Prettier itself.
