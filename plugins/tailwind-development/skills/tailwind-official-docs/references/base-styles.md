@@ -1,4 +1,6 @@
-# Preflight
+# Base styles
+
+## Preflight
 
 For any work, knowledge or guidance on these topics, read https://tailwindcss.com/docs/preflight filtered by the topic:
 

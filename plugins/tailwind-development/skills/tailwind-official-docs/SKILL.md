@@ -69,88 +69,15 @@ Read the matching reference for any core concept task: work, knowledge or guidan
 **Class detection**: dynamic class names, `@source`, safelisting → See [references/core-concepts/detecting-classes-in-source-files.md](references/core-concepts/detecting-classes-in-source-files.md)
 **Functions and directives**: `@import`, `@apply`, `@reference`, `--alpha()`, `@config` → See [references/core-concepts/functions-and-directives.md](references/core-concepts/functions-and-directives.md)
 
-## Base styles
+## Utilities
 
-Read the matching reference for any base styles task: work, knowledge or guidance.
+Read the matching reference for any utility task: work, knowledge or guidance.
 
-**Preflight**: base styles, resets, extending or disabling Preflight → See [references/base-styles/preflight.md](references/base-styles/preflight.md)
-
-## Layout
-
-Read the matching reference for any layout task: work, knowledge or guidance.
-
-**aspect-ratio**: `aspect-<ratio>`, `aspect-square` → See [references/layout/aspect-ratio.md](references/layout/aspect-ratio.md)
-**columns**: `columns-<number>`, `columns-3xs` → See [references/layout/columns.md](references/layout/columns.md)
-**break-after**: `break-after-auto`, `break-after-avoid` → See [references/layout/break-after.md](references/layout/break-after.md)
-**break-before**: `break-before-auto`, `break-before-avoid` → See [references/layout/break-before.md](references/layout/break-before.md)
-**break-inside**: `break-inside-auto`, `break-inside-avoid` → See [references/layout/break-inside.md](references/layout/break-inside.md)
-**box-decoration-break**: `box-decoration-clone`, `box-decoration-slice` → See [references/layout/box-decoration-break.md](references/layout/box-decoration-break.md)
-**box-sizing**: `box-border`, `box-content` → See [references/layout/box-sizing.md](references/layout/box-sizing.md)
-**display**: `flex`, `grid`, `block`, `hidden`, `contents` → See [references/layout/display.md](references/layout/display.md)
-**float**: `float-right`, `float-left` → See [references/layout/float.md](references/layout/float.md)
-**clear**: `clear-left`, `clear-right` → See [references/layout/clear.md](references/layout/clear.md)
-**isolation**: `isolate`, `isolation-auto` → See [references/layout/isolation.md](references/layout/isolation.md)
-**object-fit**: `object-contain`, `object-cover` → See [references/layout/object-fit.md](references/layout/object-fit.md)
-**object-position**: `object-top-left`, `object-top` → See [references/layout/object-position.md](references/layout/object-position.md)
-**overflow**: `overflow-auto`, `overflow-hidden` → See [references/layout/overflow.md](references/layout/overflow.md)
-**overscroll-behavior**: `overscroll-auto`, `overscroll-contain` → See [references/layout/overscroll-behavior.md](references/layout/overscroll-behavior.md)
-**position**: `static`, `relative`, `absolute`, `fixed`, `sticky` → See [references/layout/position.md](references/layout/position.md)
-**top / right / bottom / left**: `inset-<number>`, `-inset-<number>` → See [references/layout/top-right-bottom-left.md](references/layout/top-right-bottom-left.md)
-**visibility**: `visible`, `invisible`, `collapse` → See [references/layout/visibility.md](references/layout/visibility.md)
-**z-index**: `z-<number>`, `z-auto` → See [references/layout/z-index.md](references/layout/z-index.md)
-
-## Flexbox and grid
-
-Read the matching reference for any flexbox and grid task: work, knowledge or guidance.
-
-**flex-basis**: `basis-<number>`, `basis-<fraction>` → See [references/flexbox-and-grid/flex-basis.md](references/flexbox-and-grid/flex-basis.md)
-**flex-direction**: `flex-row`, `flex-row-reverse` → See [references/flexbox-and-grid/flex-direction.md](references/flexbox-and-grid/flex-direction.md)
-**flex-wrap**: `flex-nowrap`, `flex-wrap` → See [references/flexbox-and-grid/flex-wrap.md](references/flexbox-and-grid/flex-wrap.md)
-**flex**: `flex-<number>`, `flex-<fraction>` → See [references/flexbox-and-grid/flex.md](references/flexbox-and-grid/flex.md)
-**flex-grow**: `grow`, `grow-<number>` → See [references/flexbox-and-grid/flex-grow.md](references/flexbox-and-grid/flex-grow.md)
-**flex-shrink**: `shrink`, `shrink-<number>` → See [references/flexbox-and-grid/flex-shrink.md](references/flexbox-and-grid/flex-shrink.md)
-**order**: `order-<number>`, `-order-<number>` → See [references/flexbox-and-grid/order.md](references/flexbox-and-grid/order.md)
-**grid-template-columns**: `grid-cols-<number>`, `grid-cols-none` → See [references/flexbox-and-grid/grid-template-columns.md](references/flexbox-and-grid/grid-template-columns.md)
-**grid-column**: `col-span-<number>`, `col-span-full` → See [references/flexbox-and-grid/grid-column.md](references/flexbox-and-grid/grid-column.md)
-**grid-template-rows**: `grid-rows-<number>`, `grid-rows-none` → See [references/flexbox-and-grid/grid-template-rows.md](references/flexbox-and-grid/grid-template-rows.md)
-**grid-row**: `row-span-<number>`, `row-span-full` → See [references/flexbox-and-grid/grid-row.md](references/flexbox-and-grid/grid-row.md)
-**grid-auto-flow**: `grid-flow-row`, `grid-flow-col` → See [references/flexbox-and-grid/grid-auto-flow.md](references/flexbox-and-grid/grid-auto-flow.md)
-**grid-auto-columns**: `auto-cols-auto`, `auto-cols-min` → See [references/flexbox-and-grid/grid-auto-columns.md](references/flexbox-and-grid/grid-auto-columns.md)
-**grid-auto-rows**: `auto-rows-auto`, `auto-rows-min` → See [references/flexbox-and-grid/grid-auto-rows.md](references/flexbox-and-grid/grid-auto-rows.md)
-**gap**: `gap-<number>`, `gap-px` → See [references/flexbox-and-grid/gap.md](references/flexbox-and-grid/gap.md)
-**justify-content**: `justify-start`, `justify-end` → See [references/flexbox-and-grid/justify-content.md](references/flexbox-and-grid/justify-content.md)
-**justify-items**: `justify-items-start`, `justify-items-end` → See [references/flexbox-and-grid/justify-items.md](references/flexbox-and-grid/justify-items.md)
-**justify-self**: `justify-self-auto`, `justify-self-start` → See [references/flexbox-and-grid/justify-self.md](references/flexbox-and-grid/justify-self.md)
-**align-content**: `content-normal`, `content-center` → See [references/flexbox-and-grid/align-content.md](references/flexbox-and-grid/align-content.md)
-**align-items**: `items-start`, `items-end` → See [references/flexbox-and-grid/align-items.md](references/flexbox-and-grid/align-items.md)
-**align-self**: `self-auto`, `self-start` → See [references/flexbox-and-grid/align-self.md](references/flexbox-and-grid/align-self.md)
-**place-content**: `place-content-center`, `place-content-center-safe` → See [references/flexbox-and-grid/place-content.md](references/flexbox-and-grid/place-content.md)
-**place-items**: `place-items-start`, `place-items-end` → See [references/flexbox-and-grid/place-items.md](references/flexbox-and-grid/place-items.md)
-**place-self**: `place-self-auto`, `place-self-start` → See [references/flexbox-and-grid/place-self.md](references/flexbox-and-grid/place-self.md)
-
-## Spacing
-
-Read the matching reference for any spacing task: work, knowledge or guidance.
-
-**padding**: `p-<number>`, `p-px` → See [references/spacing/padding.md](references/spacing/padding.md)
-**margin**: `m-<number>`, `-m-<number>` → See [references/spacing/margin.md](references/spacing/margin.md)
-
-## Sizing
-
-Read the matching reference for any sizing task: work, knowledge or guidance.
-
-**width**: `w-<number>`, `w-<fraction>` → See [references/sizing/width.md](references/sizing/width.md)
-**min-width**: `min-w-<number>`, `min-w-<fraction>` → See [references/sizing/min-width.md](references/sizing/min-width.md)
-**max-width**: `max-w-<number>`, `max-w-<fraction>` → See [references/sizing/max-width.md](references/sizing/max-width.md)
-**height**: `h-<number>`, `h-<fraction>` → See [references/sizing/height.md](references/sizing/height.md)
-**min-height**: `min-h-<number>`, `min-h-<fraction>` → See [references/sizing/min-height.md](references/sizing/min-height.md)
-**max-height**: `max-h-<number>`, `max-h-<fraction>` → See [references/sizing/max-height.md](references/sizing/max-height.md)
-**inline-size**: `inline-<number>`, `inline-<fraction>` → See [references/sizing/inline-size.md](references/sizing/inline-size.md)
-**min-inline-size**: `min-inline-<number>`, `min-inline-<fraction>` → See [references/sizing/min-inline-size.md](references/sizing/min-inline-size.md)
-**max-inline-size**: `max-inline-<number>`, `max-inline-<fraction>` → See [references/sizing/max-inline-size.md](references/sizing/max-inline-size.md)
-**block-size**: `block-<number>`, `block-<fraction>` → See [references/sizing/block-size.md](references/sizing/block-size.md)
-**min-block-size**: `min-block-<number>`, `min-block-<fraction>` → See [references/sizing/min-block-size.md](references/sizing/min-block-size.md)
-**max-block-size**: `max-block-<number>`, `max-block-<fraction>` → See [references/sizing/max-block-size.md](references/sizing/max-block-size.md)
+**Base styles**: Preflight resets, extending or disabling Preflight → See [references/base-styles.md](references/base-styles.md)
+**Layout**: aspect-ratio, columns, display, float, object-fit, overflow, position, inset, z-index → See [references/layout.md](references/layout.md)
+**Flexbox and grid**: flex, grid columns and rows, gap, justify, align, place, order → See [references/flexbox-and-grid.md](references/flexbox-and-grid.md)
+**Spacing**: padding, margin → See [references/spacing.md](references/spacing.md)
+**Sizing**: width, height, min and max sizes, logical inline and block sizes → See [references/sizing.md](references/sizing.md)
 
 ## Workflow
 
