@@ -264,6 +264,19 @@ forced colors adjustment → See [references/accessibility.md](references/access
 
 ## Agents
 
+Before the first delegation of the session, run the link check yourself, never in an agent:
+
+`python3 "${CLAUDE_SKILL_DIR}/scripts/check-links.py"`
+
+Where `${CLAUDE_SKILL_DIR}` is not replaced, run [scripts/check-links.py](scripts/check-links.py) from this skill's folder.
+It checks every URL in this skill's references and prints only the problems, each with its file and line.
+
+- **Exit 0**: delegate.
+- **Exit 1**: tell the user each broken URL with its file and line.
+- **Exit 1**: give the agent that list, and tell it to reach those sections from the live site's navigation.
+- **Unverified lines**: tell the user which URLs the check could not confirm, then delegate.
+- **Exit 2, no command runner or no network**: say the check did not run, then delegate.
+
 Delegate to the matching agent when the session can run agents.
 Give it the task, the project root and the files involved.
 

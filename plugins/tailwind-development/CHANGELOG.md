@@ -6,6 +6,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+### Added
+
+- Before Claude first hands a Tailwind task to one of the plugin's agents in a session, it checks that every link in the docs skill still answers. Broken links come back with their file and line, so you know up front and the agent reaches those sections from the site's navigation instead of failing on a dead page. The check needs Python 3.12 or later as `python3` and asks your permission to run.
+
+### Fixed
+
+- The requirements now list git: moving a project from Tailwind CSS v3 to v4 needs git and the project in a git repository, because the migration runs in a separate git worktree.
+
 ## [0.2.2] - 2026-10-27
 
 ### Fixed
