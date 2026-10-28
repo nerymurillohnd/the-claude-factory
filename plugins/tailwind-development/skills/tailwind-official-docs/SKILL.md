@@ -211,6 +211,8 @@ Then read the linked page sections for your topic.
 **Tables**: border collapse and spacing, table layout, caption side → See [references/tables.md](references/tables.md)
 **Transitions and animation**: transition property, duration, easing, delay, animation → See [references/transitions-and-animation.md](references/transitions-and-animation.md)
 **Transforms**: rotate, scale, skew, translate, perspective, transform origin → See [references/transforms.md](references/transforms.md)
+**Interactivity**: accent and caret color, cursor, field sizing, pointer events, scrolling, scroll snap, touch, user select → See [references/interactivity.md](references/interactivity.md)
+**SVG**: fill, stroke, stroke width → See [references/svg.md](references/svg.md)
 
 ## Workflow
 
@@ -380,8 +382,6 @@ For each requested behavior, consult the specific property page, not only the ca
 
 - **Getting started:** `installation`, `installation/using-vite`, `installation/using-postcss`, `installation/tailwind-cli`, `installation/framework-guides`, `installation/play-cdn`, `editor-setup`, `compatibility`, `upgrade-guide`
 - **Framework guides** (append each to `installation/framework-guides/`; they are not in the docs navigation): `adonisjs`, `angular`, `astro`, `emberjs`, `gatsby`, `laravel/vite`, `meteor`, `nextjs`, `nuxt`, `parcel`, `phoenix`, `qwik`, `react-router`, `rspack/react`, `ruby-on-rails`, `solidjs`, `sveltekit`, `symfony`, `tanstack-start`
-- **Interactivity:** `accent-color`, `appearance`, `caret-color`, `color-scheme`, `cursor`, `field-sizing`, `pointer-events`, `resize`, `scroll-behavior`, `scrollbar-color`, `scrollbar-width`, `scrollbar-gutter`, `scroll-margin`, `scroll-padding`, `scroll-snap-align`, `scroll-snap-stop`, `scroll-snap-type`, `touch-action`, `user-select`, `will-change`
-- **SVG:** `fill`, `stroke`, `stroke-width`
 - **Accessibility:** `forced-color-adjust`
 
 ## Disambiguation rules
