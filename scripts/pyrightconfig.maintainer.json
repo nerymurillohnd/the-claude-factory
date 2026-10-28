@@ -4,9 +4,10 @@
   "pythonVersion": "3.15",
   "include": [
     "validators",
+    "checkers",
     "generators",
-    "tests/schemas",
-    "tests/validators",
-    "tests/run_pytest.py"
+    "testers/schemas",
+    "testers/validators",
+    "testers/run_pytest.py"
   ]
 }

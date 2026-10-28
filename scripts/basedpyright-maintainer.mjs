@@ -12,13 +12,14 @@ import { join } from 'node:path'
 import { fail, isMain, ROOT } from './lib.mjs'
 
 const CONFIG = 'scripts/pyrightconfig.maintainer.json'
-const PYTEST_RUNNER = 'scripts/tests/run_pytest.py'
+const PYTEST_RUNNER = 'scripts/testers/run_pytest.py'
 /** The paths the maintainer config includes, relative to the repository root. */
 const COVERED = [
   'scripts/validators',
+  'scripts/checkers',
   'scripts/generators',
-  'scripts/tests/schemas',
-  'scripts/tests/validators',
+  'scripts/testers/schemas',
+  'scripts/testers/validators',
   PYTEST_RUNNER,
 ]
 
@@ -43,8 +44,8 @@ export function coveredFiles(root) {
 export function environmentFor(root, file) {
   if (
     file === PYTEST_RUNNER ||
-    file.startsWith('scripts/tests/schemas/') ||
-    file.startsWith('scripts/tests/validators/')
+    file.startsWith('scripts/testers/schemas/') ||
+    file.startsWith('scripts/testers/validators/')
   ) {
     return PYTEST_RUNNER
   }

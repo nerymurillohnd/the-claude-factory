@@ -1,6 +1,6 @@
 ---
 name: tailwind-ui-design
-description: Designs, builds, refactors and reviews user interfaces in Tailwind CSS v4 with a product designer's craft, starting from a written visual hierarchy and carrying it through design-system tokens in @theme, OKLCH colour ramps, spacing and type scales, elevation, data and action presentation, states and visual verification, so the result never looks like generic generated UI. Use whenever a task builds or redesigns a page, view, component, form, table, dashboard, card, header or landing section in a Tailwind project, refactors or polishes an existing Tailwind interface, reviews its design, or edits classes to change how something looks or reads (make it stand out, less cramped, more polished), even on a small snippet and even when the request only says make it look better.
+description: Design, build, refactor and review Tailwind CSS v4 interfaces with a product designer's craft, from visual hierarchy and design tokens to every state and visual verification. Always use it to create, redesign, polish or review any page, view or component, and for any class edit that changes how something looks or reads.
 license: MIT
 ---
 

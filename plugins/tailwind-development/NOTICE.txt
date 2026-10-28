@@ -2,7 +2,8 @@ tailwind-development
 Copyright (c) 2026 Nery Murillo. Licensed under the MIT License (see LICENSE).
 
 This plugin routes Claude to third-party sources and records where they are.
-It reproduces no documentation text, code example or figure from them.
+It reproduces no documentation pages, code examples or figures from them.
+The sources it quotes are listed below with what is quoted.
 
 1. Tailwind CSS documentation (tailwindcss.com)
 
@@ -14,14 +15,14 @@ It reproduces no documentation text, code example or figure from them.
   Checked:     2026-10-27, Tailwind CSS v4.3.3
 
   Files that list navigation data taken from the site (page URLs, page
-  slugs, section heading ids and section heading labels; no page content):
+  slugs, section heading ids and labels, and each page's one-line meta
+  description; no page content):
 
   skills/tailwind-official-docs/SKILL.md
-      the topic index of 222 page slugs, the framework-guide slugs and the
-      URLs of the release posts it routes version questions to.
-  skills/tailwind-official-docs/references/section-anchors.md
-      the h2 to h4 heading ids and labels of 13 long pages, extracted from
-      the live pages' HTML.
+      the topic index of page slugs and the framework-guide slugs.
+  skills/tailwind-official-docs/references/core-concepts/*.md,
+  base-styles.md, layout.md, flexbox-and-grid.md, spacing.md, sizing.md
+      each page's URL, meta description and h2 and h3 headings.
 
   Everything these files say about how to use the pages is original.
 
@@ -60,6 +61,49 @@ It reproduces no documentation text, code example or figure from them.
 
   mcp/ talks to the language server through its documented protocol and its
   @/tailwindCSS/ messages; no code from these packages is copied into it.
+
+4. Lombiq Tailwind Agent Skills (lombiq/tailwind-agent-skills)
+
+  Repository:  https://github.com/Lombiq/Tailwind-Agent-Skills
+  File:        skills/tailwind-4-docs/references/engineering-playbook.md
+  License:     BSD 3-Clause, reproduced below as its terms require.
+
+  skills/tailwind-official-docs/SKILL.md reproduces these sections of that
+  file: Custom variants, Generated DOM and JS-replaced markup, Responsive
+  strategy, File organization, Refactor heuristics, Review checklist and
+  Practical defaults. Changes: "File organization" is renamed "Stylesheet
+  structure", and Responsive strategy omits its last sentence.
+
+  Copyright (c) 2026, Lombiq Technologies Ltd. (https://lombiq.com)
+
+  All rights reserved.
+
+  Redistribution and use in source and binary forms, with or without
+  modification, are permitted provided that the following conditions are
+  met:
+
+  - Redistributions of source code must retain the above copyright notice,
+    this list of conditions and the following disclaimer.
+
+  - Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+
+  - Neither the name of the copyright holder nor the names of its
+    contributors may be used to endorse or promote products derived from
+    this software without specific prior written permission.
+
+  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+  IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+  THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+  PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
+  CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+  EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+  PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 The Tailwind CSS name is used only to describe compatibility. This plugin is
 not affiliated with or endorsed by Tailwind Labs Inc. Tailwind CSS is a
