@@ -114,7 +114,7 @@ Decompose the requested change into:
 4. Compilation: source detection, scoped styles, separate stylesheets, framework integration or package boundaries.
 5. Verification: build, generated CSS, browser behavior and relevant tests.
 
-Resolve each part to an exact page with the cross-cutting routing rules, the topic index and the disambiguation rules below.
+Resolve each part with the sections above, the topic index and the disambiguation rules below.
 
 Examples:
 
@@ -145,14 +145,14 @@ Retrieve in this order:
 
 Never start from a general web search.
 
-**Version questions** ("since which version does X exist", "does my installed version have X", "what changed in 4.x") are the one exception to the `src/docs/<slug>.mdx` rule: a docs page shows the current release, not when a feature arrived. For them, read the installed version first (step 1), then the release sources:
+**Version questions** ("since which version", "does my version have X") read release sources, not docs pages:
 
-- the release posts: https://tailwindcss.com/blog/tailwindcss-v4 (4.0), https://tailwindcss.com/blog/tailwindcss-v4-1 (4.1) and https://tailwindcss.com/blog/tailwindcss-v4-3 (4.3);
-- 4.2 has no release post: read its GitHub release, https://github.com/tailwindlabs/tailwindcss/releases (v4.2.0), and the repository's `CHANGELOG.md`;
-- any later version: its GitHub release and the changelog; check the blog index for a post rather than guessing its URL;
-- never the alpha or beta posts, which describe pre-release states.
-
-A feature newer than the installed version is not available in the project: say so, and name the version that adds it, instead of using it. Browser support depends on the version too: the 4.1 post reports that v4 handles older browsers much more gracefully from that release on, so a browser-support answer reads the installed version before it applies `compatibility`.
+- Read the installed version first (step 1).
+- Find the release post on https://tailwindcss.com/blog; never guess its URL.
+- Read the GitHub release and `CHANGELOG.md` when a version has no post.
+- Never read alpha or beta posts.
+- Name the version that adds a feature the project lacks, and do not use it.
+- Read the installed version before any browser-support answer.
 
 Each reference links its page's sections. Fetch the section the task needs and ask the fetch tool to quote it verbatim; with Context7, query the section heading. A task the whole page governs, such as replacing the theme, reads every section, one at a time.
 
@@ -242,27 +242,6 @@ As applicable:
 Do not install packages, replace integrations, regenerate lockfiles or change configuration merely to run an unrelated check.
 
 Report exactly which checks ran, their results, and which checks did not run. A successful build alone is never visual verification.
-
-## Cross-cutting routing rules
-
-Use these pages in addition to the property-specific pages. Reach each section through the page's reference.
-
-| Situation | Required documentation |
-| --- | --- |
-| Utility composition, conflicts, prefixes, important modifiers, general patterns | `styling-with-utility-classes` |
-| Hover, focus, active, disabled, group, peer, attributes, pseudo-elements, arbitrary variants, motion-related conditions | `hover-focus-and-other-states` |
-| Breakpoints, responsive ranges, container queries | `responsive-design` |
-| Dark variants, selector-based themes, system preference | `dark-mode` |
-| Design tokens, token namespaces, generated utilities, shared theme values | `theme` |
-| Palette customization, color representations, color opacity | `colors` plus the consuming property page |
-| Arbitrary values and properties, custom CSS, custom utilities | `adding-custom-styles` plus the affected property page |
-| Missing classes, dynamic class construction, monorepos, external packages, explicit sources, safelisting | `detecting-classes-in-source-files` |
-| Tailwind directives, build-time functions, `@apply`, `@reference`, legacy configuration and plugins | `functions-and-directives` |
-| Unexpected resets, unstyled headings and lists, default borders, base element styles | `preflight` |
-| Migrating from v3, v3 habits in new code, removed or renamed utilities | [Upgrade guide](#upgrade-guide) above |
-| Whether a project can adopt v4, preprocessors, CSS modules, component `<style>` blocks | [Compatibility](#compatibility) above, and `upgrade-guide#browser-requirements` |
-| Installing Tailwind in a project that has none, or changing its integration | [Installation](#installation) above |
-| Editor support, class sorting with Prettier | [Editor setup](#editor-setup) above |
 
 ## Topic index
 
