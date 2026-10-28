@@ -1,4 +1,4 @@
-# Flexbox and grid
+# Flexbox & Grid
 
 ## Contents
 

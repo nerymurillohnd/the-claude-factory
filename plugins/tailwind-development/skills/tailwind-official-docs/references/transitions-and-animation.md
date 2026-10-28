@@ -1,4 +1,4 @@
-# Transitions and animation
+# Transitions & Animation
 
 ## [transition-property](https://tailwindcss.com/docs/transition-property)
 

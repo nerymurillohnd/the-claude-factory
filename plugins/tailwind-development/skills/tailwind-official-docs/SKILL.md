@@ -195,27 +195,69 @@ Then read the linked page sections for your topic.
 **Class detection**: dynamic class names, `@source`, safelisting → See [references/core-concepts/detecting-classes-in-source-files.md](references/core-concepts/detecting-classes-in-source-files.md)
 **Functions and directives**: `@import`, `@apply`, `@reference`, `--alpha()`, `@config` → See [references/core-concepts/functions-and-directives.md](references/core-concepts/functions-and-directives.md)
 
-## Utilities
+## Base styles
 
-For any work, knowledge or guidance on a utility, read the matching reference.
-Then read the linked page sections for your topic.
+Preflight resets, extending or disabling Preflight → See [references/base-styles.md](references/base-styles.md)
 
-**Base styles**: Preflight resets, extending or disabling Preflight → See [references/base-styles.md](references/base-styles.md)
-**Layout**: aspect-ratio, columns, display, float, object-fit, overflow, position, inset, z-index → See [references/layout.md](references/layout.md)
-**Flexbox and grid**: flex, grid columns and rows, gap, justify, align, place, order → See [references/flexbox-and-grid.md](references/flexbox-and-grid.md)
-**Spacing**: padding, margin → See [references/spacing.md](references/spacing.md)
-**Sizing**: width, height, min and max sizes, logical inline and block sizes → See [references/sizing.md](references/sizing.md)
-**Typography**: font family, size and weight, line height, text color, decoration, wrapping, lists → See [references/typography.md](references/typography.md)
-**Backgrounds**: background color, image, gradients, position, size, clip → See [references/backgrounds.md](references/backgrounds.md)
-**Borders**: border radius, width, color, style, outlines → See [references/borders.md](references/borders.md)
-**Effects**: box and text shadows, opacity, blend modes, masks → See [references/effects.md](references/effects.md)
-**Filters**: blur, brightness, contrast, drop shadow, backdrop filters → See [references/filters.md](references/filters.md)
-**Tables**: border collapse and spacing, table layout, caption side → See [references/tables.md](references/tables.md)
-**Transitions and animation**: transition property, duration, easing, delay, animation → See [references/transitions-and-animation.md](references/transitions-and-animation.md)
-**Transforms**: rotate, scale, skew, translate, perspective, transform origin → See [references/transforms.md](references/transforms.md)
-**Interactivity**: accent and caret color, cursor, field sizing, pointer events, scrolling, scroll snap, touch, user select → See [references/interactivity.md](references/interactivity.md)
-**SVG**: fill, stroke, stroke width → See [references/svg.md](references/svg.md)
-**Accessibility**: forced colors adjustment → See [references/accessibility.md](references/accessibility.md)
+## Layout
+
+aspect-ratio, columns, display, float, object-fit, overflow, position, inset, z-index → See [references/layout.md](references/layout.md)
+
+## Flexbox & Grid
+
+flex, grid columns and rows, gap, justify, align, place, order → See [references/flexbox-and-grid.md](references/flexbox-and-grid.md)
+
+## Spacing
+
+padding, margin → See [references/spacing.md](references/spacing.md)
+
+## Sizing
+
+width, height, min and max sizes, logical inline and block sizes → See [references/sizing.md](references/sizing.md)
+
+## Typography
+
+font family, size and weight, line height, text color, decoration, wrapping, lists → See [references/typography.md](references/typography.md)
+
+## Backgrounds
+
+background color, image, gradients, position, size, clip → See [references/backgrounds.md](references/backgrounds.md)
+
+## Borders
+
+border radius, width, color, style, outlines → See [references/borders.md](references/borders.md)
+
+## Effects
+
+box and text shadows, opacity, blend modes, masks → See [references/effects.md](references/effects.md)
+
+## Filters
+
+blur, brightness, contrast, drop shadow, backdrop filters → See [references/filters.md](references/filters.md)
+
+## Tables
+
+border collapse and spacing, table layout, caption side → See [references/tables.md](references/tables.md)
+
+## Transitions & Animation
+
+transition property, duration, easing, delay, animation → See [references/transitions-and-animation.md](references/transitions-and-animation.md)
+
+## Transforms
+
+rotate, scale, skew, translate, perspective, transform origin → See [references/transforms.md](references/transforms.md)
+
+## Interactivity
+
+accent and caret color, cursor, field sizing, pointer events, scrolling, scroll snap, touch, user select → See [references/interactivity.md](references/interactivity.md)
+
+## SVG
+
+fill, stroke, stroke width → See [references/svg.md](references/svg.md)
+
+## Accessibility
+
+forced colors adjustment → See [references/accessibility.md](references/accessibility.md)
 
 ## Agents
 
