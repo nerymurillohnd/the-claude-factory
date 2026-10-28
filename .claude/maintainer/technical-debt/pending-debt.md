@@ -97,10 +97,10 @@ Add an item only when all of these hold:
 
 #### 🔎 Evidence
 
-- **Confirmed facts (read on 2026-10-25):**
-  - `scripts/gates.mjs:392-404` creates the `mod-test:<plugin>` gate only for plugins with tracked `*.test.ts` or `*.test.tsx` files, not for every plugin whose `hooks/hooks.json` lists `modules`.
-  - `scripts/gates.mjs:406-417` creates the `mod-tsc:<plugin>` gate for any plugin with a `tsconfig.json`, and nothing refreshes the engine's declarations before it runs.
-  - `scripts/gates.mjs:494` runs every gate with `stdio: ['ignore', 'pipe', 'pipe']`, so `claude plugin test` writes to a pipe.
+- **Confirmed facts (read on 2026-10-25, line numbers rechecked on 2026-10-28):**
+  - `scripts/gates.mjs:472-485` creates the `mod-test:<plugin>` gate only for plugins with tracked `*.test.ts` or `*.test.tsx` files, not for every plugin whose `hooks/hooks.json` lists `modules`.
+  - `scripts/gates.mjs:486-497` creates the `mod-tsc:<plugin>` gate for any plugin with a `tsconfig.json`, and nothing refreshes the engine's declarations before it runs.
+  - `scripts/gates.mjs:632` runs every gate with `stdio: ['ignore', 'pipe', 'pipe']`, so `claude plugin test` writes to a pipe.
   - anthropics/claude-code#103055 reports that `claude plugin test` on a pipe can lose the tail of its output, summary included, and exit 0. `testing-mods/scripts/check-mod.sh` writes to a file and fails without the summary.
 - **Inferences:**
   - A mod without tests is never run by `claude plugin test` in the gates.
@@ -426,7 +426,7 @@ Add an item only when all of these hold:
 #### 🔎 Evidence
 
 - **Confirmed facts:**
-  - In the 2026-10-27 session that built `tailwind-development`, Claude never invoked two project skills that applied, although the Workflow of `.claude/CLAUDE.md` and `.claude/rules/hooks-and-scripts.md` name them:
+  - In the 2026-10-27 session that built `tailwind-development`, Claude never invoked two project skills that applied, although the Workflow of `.claude/CLAUDE.md` and the hook rule of that day name them (`.claude/rules/hooks-and-scripts.md`, retired on 2026-10-28; `.claude/rules/plugins/plugins-scripts.md` now names `plugin-hooks-guidance`):
     - `testing-plugins`, while building and running the plugin's eval suite;
     - `plugin-hooks-guidance`, while designing a plugin `PostToolUse` hook (DESIGN.md section 10.5).
   - Of the other project skills, only `building-plugins`, `plugin-categories` and `release-and-versioning` were invoked; `testing-plugins` was read in part with `cat`. Claude reported this to Nery on 2026-10-27 when he asked which project skills had been used.
