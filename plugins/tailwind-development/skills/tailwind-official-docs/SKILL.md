@@ -12,6 +12,65 @@ Ground every Tailwind implementation decision in the official documentation page
 
 This skill is a documentation router, not a replacement for the documentation. Its topic index is not proof that a feature exists in the installed Tailwind version.
 
+## Stylesheet structure
+
+For a CSS-first Tailwind v4 setup, this structure is usually sensible:
+
+- entrypoint CSS (`app.css` or `site.css`)
+- `theme.css` for tokens
+- `base.css` for minimal element defaults
+- `utilities.css` for low-level project utilities and variants
+- `components.css` for a small stable component API
+  - Bigger components, e.g. `rich-text.css` for scoped uncontrolled HTML
+
+## Refactor heuristics
+
+When refactoring an existing Tailwind codebase:
+
+1. Remove dead CSS before adding new CSS.
+2. Remove redundant utilities before extracting abstractions.
+3. Normalize obvious repeated primitives first.
+4. Keep the number of component classes intentionally small.
+5. Push page structure back into markup if CSS started owning too much layout.
+6. Merge inconsistent implementations of the same affordance.
+
+Watch for these smells:
+
+- several versions of the same button or card
+- repeated arbitrary shadows, radii, or spacing
+- identical hover interactions implemented in different ways
+- state logic split between a shared class and page-specific one-offs
+- component classes that are really page fragments in disguise
+
+## Review checklist
+
+Before finalizing a Tailwind change, check:
+
+- Are utilities sufficient here, or did I abstract too early?
+- If repetition exists, would extracting markup be better than adding CSS?
+- Should repeated values become tokens?
+- Are custom utilities truly low-level?
+- Are component classes small, stable, and override-friendly?
+- Are state and motion rules consistent across similar UI?
+- Will Tailwind detect every class I used?
+- Are dynamic classes mapped to full strings?
+- Is uncontrolled markup scoped instead of styled globally?
+- Is the responsive behavior mobile-first and intentional?
+- Can any CSS be deleted now?
+
+## Practical defaults
+
+When in doubt:
+
+- keep styling in markup first
+- reuse markup before reusing CSS
+- use tokens before arbitrary repetition
+- use custom utilities before semantic CSS wrappers
+- keep component classes few and durable
+- keep state behavior inside the shared abstraction if the abstraction exists
+- verify that rendered DOM matches your selectors
+- prefer deleting complexity over introducing a clever abstraction
+
 ## Installation
 
 For any installation task (setup, fix or question), read the matching reference and the page its title links.
