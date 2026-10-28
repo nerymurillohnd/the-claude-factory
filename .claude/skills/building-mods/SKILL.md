@@ -96,7 +96,7 @@ Put each of these in the template's own sections:
 - **The permission prompt.** Say that the mod cannot restyle it or change what it shows.
 - **Diagnosis.** `/plugin` names the mods the session loaded, and only `claude --debug` shows why one was refused or a hook skipped.
 - **Options.** Set them from the shell with `claude plugin install <plugin>@the-claude-factory --config <key>=<value>`, or in `/config`.
-- **Tested with.** In the Claude Code row of the Compatibility table, "Tested with vX.Y.Z.", updated in every release, and the same version in that release's CHANGELOG entry. The docs say the README is where to state it (`/en/plugins/mods/create` → Share your mod).
+- **Tested with.** In the **Claude Code** row of the Requirements table, "Tested with vX.Y.Z.", updated in every release, and the same version in that release's CHANGELOG entry. The docs say the README is where to state it (`/en/plugins/mods/create` → Share your mod).
 
 ## 6. Sources
 
