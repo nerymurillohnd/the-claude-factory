@@ -9,7 +9,7 @@ Copy an anchor exactly as listed. Never derive one from a heading: the page stri
 
 Each line is `#anchor` followed by the heading text; indentation follows the heading levels. They come from the id attributes of each page's h2 to h4 headings; a repeated anchor on one page is listed once.
 
-Pages: [`styling-with-utility-classes`](#styling-with-utility-classes) · [`hover-focus-and-other-states`](#hover-focus-and-other-states) · [`responsive-design`](#responsive-design) · [`dark-mode`](#dark-mode) · [`theme`](#theme) · [`colors`](#colors) · [`adding-custom-styles`](#adding-custom-styles) · [`detecting-classes-in-source-files`](#detecting-classes-in-source-files) · [`functions-and-directives`](#functions-and-directives) · [`preflight`](#preflight) · [`upgrade-guide`](#upgrade-guide)
+Pages: [`styling-with-utility-classes`](#styling-with-utility-classes) · [`hover-focus-and-other-states`](#hover-focus-and-other-states) · [`responsive-design`](#responsive-design) · [`dark-mode`](#dark-mode) · [`theme`](#theme) · [`colors`](#colors) · [`adding-custom-styles`](#adding-custom-styles) · [`detecting-classes-in-source-files`](#detecting-classes-in-source-files) · [`functions-and-directives`](#functions-and-directives) · [`preflight`](#preflight)
 
 ## `styling-with-utility-classes`
 
@@ -268,49 +268,3 @@ Pages: [`styling-with-utility-classes`](#styling-with-utility-classes) · [`hove
     - `#elements-with-a-hidden-attribute-stay-hidden` Elements with a hidden attribute stay hidden
 - `#extending-preflight` Extending Preflight
 - `#disabling-preflight` Disabling Preflight
-
-## `upgrade-guide`
-
-A v3 to v4 migration reads every section below, one at a time, as SKILL.md's "Migrating from v3 to v4" says; one question about a single utility reads only its section.
-
-- `#using-the-upgrade-tool` Using the upgrade tool
-- `#upgrading-manually` Upgrading manually
-  - `#using-postcss` Using PostCSS
-  - `#using-vite` Using Vite
-  - `#using-tailwind-cli` Using Tailwind CLI
-- `#changes-from-v3` Changes from v3
-  - `#browser-requirements` Browser requirements
-  - `#removed-tailwind-directives` Removed @tailwind directives
-  - `#removed-deprecated-utilities` Removed deprecated utilities
-  - `#renamed-utilities` Renamed utilities
-    - `#updated-shadow-radius-and-blur-scales` Updated shadow, radius, and blur scales
-    - `#renamed-outline-utility` Renamed outline utility
-    - `#default-ring-width-change` Default ring width change
-  - `#space-between-selector` Space-between selector
-  - `#divide-selector` Divide selector
-  - `#using-variants-with-gradients` Using variants with gradients
-  - `#container-configuration` Container configuration
-  - `#default-border-color` Default border color
-  - `#default-ring-width-and-color` Default ring width and color
-  - `#preflight-changes` Preflight changes
-    - `#new-default-placeholder-color` New default placeholder color
-    - `#buttons-use-the-default-cursor` Buttons use the default cursor
-    - `#dialog-margins-removed` Dialog margins removed
-    - `#hidden-attribute-takes-priority` Hidden attribute takes priority
-  - `#using-a-prefix` Using a prefix
-  - `#the-important-modifier` The important modifier
-  - `#adding-custom-utilities` Adding custom utilities
-  - `#variant-stacking-order` Variant stacking order
-  - `#variables-in-arbitrary-values` Variables in arbitrary values
-  - `#arbitrary-values-in-grid-and-object-position-utilities` Arbitrary values in grid and object-position utilities
-  - `#hover-styles-on-mobile` Hover styles on mobile
-  - `#transitioning-outline-color` Transitioning outline-color
-  - `#individual-transform-properties` Individual transform properties
-    - `#resetting-transforms` Resetting Transforms
-    - `#transitions` Transitions
-  - `#disabling-core-plugins` Disabling core plugins
-  - `#using-the-theme-function` Using the theme() function
-  - `#using-a-javascript-config-file` Using a JavaScript config file
-  - `#theme-values-in-javascript` Theme values in JavaScript
-  - `#using-apply-with-vue-svelte-or-css-modules` Using @apply with Vue, Svelte, or CSS modules
-  - `#using-sass-less-and-stylus` Using Sass, Less, and Stylus

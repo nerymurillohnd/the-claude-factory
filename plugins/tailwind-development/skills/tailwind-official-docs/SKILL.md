@@ -42,6 +42,19 @@ Read the matching reference for any compatibility task: setup, fix or question.
 - CSS modules: [css-modules.md](references/compatibility/css-modules.md)
 - `<style>` blocks in Vue, Svelte or Astro: [component-style-blocks.md](references/compatibility/component-style-blocks.md)
 
+## Upgrade from v3 to v4
+
+Read every reference below, in order, to migrate a project.
+Read only the matching reference for one v3 habit or a question.
+
+1. Run the upgrade tool: [upgrade-tool.md](references/upgrade-guide/upgrade-tool.md)
+2. Upgrade by hand if the tool cannot run: [manual-upgrade.md](references/upgrade-guide/manual-upgrade.md)
+3. Check utility changes: [utilities.md](references/upgrade-guide/utilities.md)
+4. Check syntax changes: [syntax.md](references/upgrade-guide/syntax.md)
+5. Check Preflight changes: [preflight.md](references/upgrade-guide/preflight.md)
+6. Check configuration and build changes: [config.md](references/upgrade-guide/config.md)
+7. Report every section with its verdict: changed, not present, kept, or needs a decision.
+
 ## Workflow
 
 ### 1. Inspect the project
@@ -81,7 +94,7 @@ Examples:
 - Shared brand color: `theme`, `colors`, and each consuming color utility page.
 - Svelte scoped styles using `@apply`: [component-style-blocks.md](references/compatibility/component-style-blocks.md), `functions-and-directives#reference-directive`, `adding-custom-styles`, and the applied utility pages.
 - Styling the open state of a `<details>` element: `hover-focus-and-other-states#openclosed-state`.
-- Moving a v3 project to v4: [Migrating from v3 to v4](#migrating-from-v3-to-v4) below, which covers every section of `upgrade-guide`, not a sample of it.
+- Moving a v3 project to v4: [Upgrade from v3 to v4](#upgrade-from-v3-to-v4) above.
 
 #### How much to consult
 
@@ -111,7 +124,7 @@ Never start from a general web search.
 
 A feature newer than the installed version is not available in the project: say so, and name the version that adds it, instead of using it. Browser support depends on the version too: the 4.1 post reports that v4 handles older browsers much more gracefully from that release on, so a browser-support answer reads the installed version before it applies `compatibility`.
 
-The cross-cutting pages (the core concepts, `preflight` and `upgrade-guide`) are long, and a whole-page fetch or summary loses the part you need. For them, name the section: [references/section-anchors.md](references/section-anchors.md) lists each page's section anchors and headings, and says how to use them with a fetch tool and with Context7. Copy an anchor from that list; never derive one from a heading. Naming sections decides how a page is read, not how much of it: a task the whole page governs, such as a v3 to v4 migration, reads every section, one at a time.
+The cross-cutting pages (the core concepts and `preflight`) are long, and a whole-page fetch or summary loses the part you need. For them, name the section: [references/section-anchors.md](references/section-anchors.md) lists each page's section anchors and headings, and says how to use them with a fetch tool and with Context7. Copy an anchor from that list; never derive one from a heading. Naming sections decides how a page is read, not how much of it: a task the whole page governs, such as replacing the theme, reads every section, one at a time.
 
 Rules:
 
@@ -216,29 +229,10 @@ Use these pages in addition to the property-specific pages. For a long page, go 
 | Missing classes, dynamic class construction, monorepos, external packages, explicit sources, safelisting | `detecting-classes-in-source-files` |
 | Tailwind directives, build-time functions, `@apply`, `@reference`, legacy configuration and plugins | `functions-and-directives` |
 | Unexpected resets, unstyled headings and lists, default borders, base element styles | `preflight` |
-| Migrating a project from v3 to v4 | [Migrating from v3 to v4](#migrating-from-v3-to-v4) below: every section of `upgrade-guide` |
-| v3 habits in new code, one removed or renamed utility, dropped PostCSS plugins, the CLI package | `upgrade-guide`, the section that covers it |
+| Migrating from v3, v3 habits in new code, removed or renamed utilities | [Upgrade from v3 to v4](#upgrade-from-v3-to-v4) above |
 | Whether a project can adopt v4, preprocessors, CSS modules, component `<style>` blocks | [Compatibility](#compatibility) above, and `upgrade-guide#browser-requirements` |
 | Installing Tailwind in a project that has none, or changing its integration | [Installation](#installation) above |
 | Editor support, class sorting with Prettier | [Editor setup](#editor-setup) above |
-
-## Migrating from v3 to v4
-
-A migration changes the dependencies, the integration, the configuration, the CSS and every template, and `upgrade-guide` itself says to go over all of its breaking changes. Reading only the tables of removed and renamed utilities leaves the rest of the project on v3 behavior: borders, rings, placeholders, buttons, gradients, `container`, the prefix, `@layer` utilities, variant order, `theme()` and the JavaScript config.
-
-1. **Establish the starting point.** Step 1 of the workflow: the resolved v3 version, the integration, the config file and its plugins, the CSS entry files, and whether the working tree is clean.
-2. **Read `upgrade-guide#using-the-upgrade-tool` and run the tool first.** It is the documented path: it updates the dependencies, migrates the config file to CSS and rewrites the templates. Run it with the command the section shows, on the Node.js version it requires, in a new branch, as the section recommends. When the working tree has uncommitted changes, or the user has not asked for files to be changed, ask before running it. When it cannot run or fails, report its output and continue by hand with `#upgrading-manually` and the section for the project's integration (`#using-postcss`, `#using-vite` or `#using-tailwind-cli`).
-3. **Read every section under `#changes-from-v3`.** [references/section-anchors.md](references/section-anchors.md) lists them all; read each one, sub-sections included, one at a time. The tool does not finish a migration: a section can need a hand edit, a design decision or a browser check.
-4. **Check each section against the project.** Search the source, CSS and config for what the section changes, and give it one verdict:
-   - **changed**: the edits made, by file;
-   - **not present**: the search that found nothing;
-   - **kept on purpose**: v3 behavior kept with the compatibility CSS the section documents, such as the base styles of `#default-border-color`;
-   - **needs a decision**: a visual or behavioral change the user must choose, such as `#hover-styles-on-mobile` or `#preflight-changes`.
-   A section with no verdict is not migrated.
-5. **Follow the sections into their pages.** Read the pages they hand off to, for what the project uses: `functions-and-directives` (`#config-directive`, `#plugin-directive`, `#theme-function`, `#utility-directive`, `#custom-variant-directive`) for a config or plugins kept in JavaScript; `detecting-classes-in-source-files#safelisting-specific-utilities` for a v3 `safelist`; `theme` for the migrated tokens; `compatibility` for Sass, Less, Stylus, CSS modules and component `<style>` blocks; and each utility page whose family changed.
-6. **Verify.** Workflow step 6, plus a search for each removed or renamed v3 form that the edits leave none behind, a production build, and a browser check of the pages whose borders, rings, shadows, placeholders, buttons, dialogs and hover states changed.
-
-The completion report lists every section of `#changes-from-v3` with its verdict, and the upgrade tool's run or why it did not run. A migration is complete only when no section is missing from that list.
 
 ## Topic index
 
