@@ -129,6 +129,21 @@ const calendar = new Intl.DateTimeFormat('en-CA', {
   day: '2-digit',
 })
 
+/**
+ * A section's count, as the pane and the reports title it: the rows and uses the totals count,
+ * then the hook output they leave out (`2 · 2 uses · 9 output`). Plugins, a roll-up, counts all its rows.
+ */
+export function sectionLabel(section: Section): string {
+  const plural = (n: number): string => `${n} ${n === 1 ? 'use' : 'uses'}`
+  if (section.rollup) {
+    return `${section.rows.length} · ${plural(section.uses)}`
+  }
+  const counted = section.rows.filter((row) => !row.derived)
+  const uses = counted.reduce((n, row) => n + row.count, 0)
+  const output = section.uses - uses
+  return `${counted.length} · ${plural(uses)}${output > 0 ? ` · ${output} output` : ''}`
+}
+
 /** HH:MM:SS in the machine's time zone. */
 export function formatTime(at: number): string {
   return clock.format(at)
