@@ -54,6 +54,8 @@ Add an item only when all of these hold:
 | DEBT-035 | `npm run test:plugins` fails when a plugin test family has no gate left | 🔴 Risk accepted |
 | DEBT-036 | `biome check --staged` checks the working-tree copy of a partly staged file | 🔴 Risk accepted |
 | DEBT-037 | Sessions skip the project skills the Workflow assigns to the area they work in | 🟠 Blocked |
+| DEBT-039 | The `instruction-engineering` checker never ran on Python 3.12, its declared minimum | 🟠 Blocked |
+| DEBT-040 | `scaffold-plugin.py` writes a `plugin.json` that Biome's formatter rejects | 🟠 Blocked |
 
 ## 📂 Open items
 
@@ -263,6 +265,7 @@ Add an item only when all of these hold:
     - PR #59: run 40584120102 reported 1;
     - PR #60, #61 and #62: five runs reported 0;
     - PR #63: run 40589080828 reported 3.
+  - Read on 2026-10-28: PR #65, #67 and #69 reported 0 (runs 40638347955, 40661068856, 40688234698); PR #68 reported 1 (run 40676188349); PR #70, which added the `instruction-engineering` plugin, reported 13 (run 40773055865), the highest count so far, and still ended "No issues found".
   - The run log prints only the count, not the denied tool names.
 - **Inferences:** the reviewer could not read what it needed; the denials depend on the pull request, not on every run.
 - **Open questions:** which tools were denied, and where Claude Code reports their names for a `claude-code-action` run.
@@ -429,6 +432,59 @@ Add an item only when all of these hold:
   - confirm it live in a `claude --debug` session.
 - **Review condition:** Nery's go, or another session that skips a Workflow skill.
 - **Related records:** DEBT-031 (the separate, user-facing reminder for the LSP intelligence plugins); DEBT-015 (`plugin-hooks-guidance` contradicts the hooks docs, which the build must account for).
+
+### DEBT-039 — The `instruction-engineering` checker never ran on Python 3.12, its declared minimum
+
+| Field | Value |
+| --- | --- |
+| **Status** | 🟠 Blocked |
+| **Category** | compatibility |
+| **Owner** | `plugins/instruction-engineering/skills/claude-md-and-rules/scripts/check_instructions.py` |
+| **Logged** | 2026-10-28 |
+
+#### 🔎 Evidence
+
+- **Confirmed facts:**
+  - The plugin README declares `python3` 3.12 or later. Ruff and Basedpyright check the script against 3.12 and pass; the tests in `scripts/testers/instruction-engineering/` run on 3.15.
+  - `uv python list` on 2026-10-28 shows only CPython 3.15.0 on the maintainer machine, and uv runs with `python-downloads = manual`.
+  - Nery declined installing Python 3.12 on 2026-10-28 ("No instalar").
+  - A run on Python 3.9 during the import found a runtime `str | list[str]` union that static tools had not flagged as a 3.9 problem; it was fixed with `empty_frontmatter()`.
+- **Inferences:** a 3.12 runtime failure is unlikely after the static checks, but the 3.9 run shows a runtime check can find what they miss.
+- **Open questions:** none.
+
+#### 📈 Impact and next step
+
+- **Impact / risk:** users on 3.12 or 3.13 run a checker never executed on their version; the release went out on 2026-10-28 as 0.1.0.
+- **Why it is not fixed now:** it needs a Python other than 3.15, which Nery declined.
+- **Next action:** on Nery's yes, run the tests once with `uv run --python 3.12 --no-project` (a one-off download, no environment created).
+- **Review condition:** closes when the checker's tests pass on 3.12, or when Nery drops the 3.12 floor.
+- **Related records:** ADR_2026-10-28_instruction-engineering-joins-the-marketplace, ADR_2026-10-27_python-version-is-set-per-scope.
+
+### DEBT-040 — `scaffold-plugin.py` writes a `plugin.json` that Biome's formatter rejects
+
+| Field | Value |
+| --- | --- |
+| **Status** | 🟠 Blocked |
+| **Category** | quality |
+| **Owner** | `.claude/skills/building-plugins/scripts/scaffold-plugin.py`, `.claude/skills/building-plugins/assets/plugin-template.json` |
+| **Logged** | 2026-10-28 |
+
+#### 🔎 Evidence
+
+- **Confirmed facts:**
+  - The scaffold fills the template with `json.dumps(...)` values (line 191, and `surfacesJson` at line 208), which writes arrays on one line.
+  - On 2026-10-28 the scaffolded `plugins/instruction-engineering/.claude-plugin/plugin.json` failed Biome's format check and was fixed with `npx biome format --write` before commit `c4fdb40`.
+  - Nery stopped the scaffold work on 2026-10-28 to keep the session on the plugin.
+- **Inferences:** every new plugin scaffolded today needs the same manual format step.
+- **Open questions:** whether the scaffold formats its output with Biome or writes the template's layout itself.
+
+#### 📈 Impact and next step
+
+- **Impact / risk:** a manual step on every new plugin; skipping it fails the pre-commit hook.
+- **Why it is not fixed now:** Nery deferred it on 2026-10-28.
+- **Next action:** on Nery's go, make the scaffold write Biome's layout, and add a test that scaffolds into a temporary root and runs `biome format` on the result.
+- **Review condition:** closes when a freshly scaffolded `plugin.json` passes `biome format` unchanged.
+- **Related records:** none.
 
 <!--
 Entry format. Copy this block above this comment for each new item and add its row to the Index.
