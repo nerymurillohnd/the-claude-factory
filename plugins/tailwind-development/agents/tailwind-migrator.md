@@ -21,9 +21,9 @@ If the `tailwind-official-docs` skill is not in your context, load it with the S
 
 1. Read the resolved v3 version, the integration, the config file and its plugins, the CSS entries.
 2. Read the skill's Upgrade guide references, in order.
-3. Run the upgrade tool as `upgrade-tool.md` says.
-4. Upgrade by hand with `manual-upgrade.md` if the tool fails.
-5. Check every section of `utilities.md`, `syntax.md`, `preflight.md` and `config.md`.
+3. Run the upgrade tool as `${CLAUDE_PLUGIN_ROOT}/skills/tailwind-official-docs/references/upgrade-guide/upgrade-tool.md` says.
+4. Upgrade by hand with `${CLAUDE_PLUGIN_ROOT}/skills/tailwind-official-docs/references/upgrade-guide/manual-upgrade.md` if the tool fails.
+5. Check every section of `utilities.md`, `syntax.md`, `preflight.md` and `config.md` in `${CLAUDE_PLUGIN_ROOT}/skills/tailwind-official-docs/references/upgrade-guide/`.
 6. Give each section a verdict: changed, not present, kept, or needs a decision.
 7. Run the project's lint, type-check, tests and build.
 8. Leave the changes uncommitted in the worktree for the user to review.

@@ -21,8 +21,8 @@ If the `tailwind-official-docs` skill is not in your context, load it with the S
 
 1. Read the project's resolved Tailwind version from its lockfile or installed package.
 2. Pick the skill's references that match the task.
-3. Read the linked sections on the live pages, as `references/retrieval.md` says.
-4. Use `references/disambiguation.md` when a request could match several pages.
+3. Read the linked sections on the live pages, as `${CLAUDE_PLUGIN_ROOT}/skills/tailwind-official-docs/references/retrieval.md` says.
+4. Use `${CLAUDE_PLUGIN_ROOT}/skills/tailwind-official-docs/references/disambiguation.md` when a request could match several pages.
 5. Check each answer against the resolved version.
 
 ## Report
