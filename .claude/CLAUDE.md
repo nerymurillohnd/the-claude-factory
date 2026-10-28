@@ -144,7 +144,7 @@ Every change inside a plugin's directory, its components, dependencies and a `RE
 6. Plugin renames and removals
    - When: a plugin is to be renamed, merged into another, removed, retired or deprecated.
    - Skill: `plugin-renames-and-removals`.
-   - Key jobs: carry the change without breaking existing installs.
+   - Key jobs: migrate existing installs through the marketplace's `renames` map, and ship a rename as a breaking change.
 
 ## Change Control
 
