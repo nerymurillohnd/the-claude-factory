@@ -43,6 +43,12 @@
       "category": "development"
     },
     {
+      "name": "model-trace",
+      "source": "./plugins/model-trace",
+      "description": "Shows, as Claude works, each skill, agent, MCP server, plugin, hook and web tool it uses in the session, how many times and at what time, with an export to Markdown or HTML.",
+      "category": "mods"
+    },
+    {
       "name": "mods-engineering",
       "source": "./plugins/mods-engineering",
       "description": "Designs, builds, reviews, tests and debugs Claude Code mods, checking every interface against the current mod docs and the type declarations your own Claude Code build writes.",

@@ -1,0 +1,44 @@
+{
+  "name": "model-trace",
+  "displayName": "Model Trace",
+  "version": "0.1.0",
+  "description": "Shows, as Claude works, each skill, agent, MCP server, plugin, hook and web tool it uses in the session, how many times and at what time, with an export to Markdown or HTML.",
+  "author": {
+    "name": "Nery Murillo",
+    "url": "https://github.com/nerymurillohnd"
+  },
+  "homepage": "https://github.com/nerymurillohnd/the-claude-factory/tree/main/plugins/model-trace#readme",
+  "repository": "https://github.com/nerymurillohnd/the-claude-factory",
+  "license": "MIT",
+  "keywords": [
+    "mods",
+    "usage",
+    "skills",
+    "mcp",
+    "agents",
+    "hooks",
+    "plugins",
+    "observability"
+  ],
+  "types": "./types/index.d.ts",
+  "userConfig": {
+    "exportDir": {
+      "type": "string",
+      "title": "Export folder",
+      "description": "Where Save .md, Save .html and /model-trace md|html write the report. ~ is your home folder. The folder must already exist: Model Trace never creates folders.",
+      "default": "~/Downloads"
+    },
+    "statusLine": {
+      "type": "boolean",
+      "title": "Status line entry",
+      "description": "Also show the session's count in the status line, such as 5 used · 12 uses. Claude Code starts every mod's status line with a warning sign and the plugin's name.",
+      "default": false
+    }
+  },
+  "metadata": {
+    "category": "mods",
+    "surfaces": [
+      "claude-code"
+    ]
+  }
+}
