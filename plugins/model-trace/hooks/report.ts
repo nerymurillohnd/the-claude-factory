@@ -5,6 +5,7 @@ import {
   type Row,
   SECTIONS,
   type Summary,
+  sectionLabel,
   timeZone,
 } from './model'
 
@@ -59,7 +60,7 @@ export function toMarkdown(summary: Summary, now: number): string {
     lines.push('Claude used no skill, agent, MCP server, hook or web tool in this session.', '')
   }
   for (const section of summary.sections) {
-    lines.push(`## ${section.title}: ${section.rows.length}, ${count(section.uses, 'use')}`, '')
+    lines.push(`## ${section.title}: ${sectionLabel(section)}`, '')
     if (section.rollup) {
       lines.push(`_${ROLLUP}_`, '')
     }
@@ -142,7 +143,7 @@ export function toHtml(summary: Summary, now: number): string {
       const bar = section.rollup
         ? ''
         : `<div class="bar" title="${share}% of all uses"><i style="width:${share}%"></i></div>`
-      return `<section><h2>${escapeHtml(section.title)}<small>${section.rows.length} · ${count(section.uses, 'use')}</small></h2>${bar}${rollup}<div class="scroll"><table><thead><tr><th>${nounOf(section.kind)}</th><th>Origin</th><th style="text-align:right">Uses</th><th>Times</th></tr></thead><tbody>${rows}</tbody></table></div></section>`
+      return `<section><h2>${escapeHtml(section.title)}<small>${sectionLabel(section)}</small></h2>${bar}${rollup}<div class="scroll"><table><thead><tr><th>${nounOf(section.kind)}</th><th>Origin</th><th style="text-align:right">Uses</th><th>Times</th></tr></thead><tbody>${rows}</tbody></table></div></section>`
     })
     .join('')
   const events = timeline(summary)

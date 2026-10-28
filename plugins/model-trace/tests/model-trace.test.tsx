@@ -1,7 +1,7 @@
 import type { On } from 'claude-code'
 import { describe, expect, mock, test } from 'claude-code/testing'
 
-import { summarize } from '../hooks/model'
+import { sectionLabel, summarize } from '../hooks/model'
 import { hookDefs, hookName, matches, mcpServer } from '../hooks/names'
 import { toHtml, toMarkdown } from '../hooks/report'
 
@@ -160,6 +160,24 @@ describe('totals', () => {
     expect(summary.sections.find((s) => s.kind === 'hook')?.rows[0]?.count).toBe(1)
   })
 
+  test('a section title separates the hook output the totals leave out', async () => {
+    const summary = summarize(
+      [
+        { kind: 'hook', name: 'lint-after.sh', origin: 'user · PostToolUse', at: NOW },
+        ...Array.from({ length: 9 }, (_, i) => ({
+          kind: 'hook' as const,
+          name: 'PostToolUse',
+          origin: 'hook output',
+          at: NOW + i,
+        })),
+      ],
+      NOW,
+    )
+    const hooks = summary.sections.find((s) => s.kind === 'hook')
+    expect(hooks && sectionLabel(hooks)).toBe('1 · 1 use · 9 output')
+    expect(summary.uses).toBe(1)
+  })
+
   test('only what was used has a section, in the order it first appeared', async () => {
     const summary = summarize(
       [
@@ -245,6 +263,26 @@ describe('the session', () => {
     const row = await ui.find({ key: 'row:hook:user · PostToolUse:lint-after.sh' })
     expect(row?.text).toContain('lint-after.sh')
     expect(await ui.find({ type: 'Text', text: /×1/ })).toBeDefined()
+    await ui.unmount()
+  })
+
+  test('a narrow pane keeps the whole name and shows the origin in the details', async ($, on) => {
+    world(on)
+    const postToolUse = $.classic.PostToolUse
+    await $.session.start({ cwd: '/work', surface: 'desktop', isInteractive: true })
+    await postToolUse({
+      tool_name: 'Bash',
+      tool_input: {},
+      tool_response: {},
+      tool_use_id: 't1',
+    } as never)
+    const narrow = { ...PANE, props: { ...PANE.props, bodyColumns: 30 } }
+    const ui = await $.ui.mount({ ...narrow, surface: 'desktop' })
+    const key = 'row:hook:user · PostToolUse:lint-after.sh'
+    expect((await ui.find({ key }))?.text).toContain('lint-after.sh')
+    expect((await ui.find({ key }))?.text).not.toContain('PostToolUse')
+    await ui.press({ key })
+    expect(await ui.find({ type: 'Text', text: /^user · PostToolUse$/ })).toBeDefined()
     await ui.unmount()
   })
 

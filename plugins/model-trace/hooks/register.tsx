@@ -17,6 +17,7 @@ import {
   type Row,
   type SectionKind,
   type Summary,
+  sectionLabel,
   summarize,
 } from './model'
 import {
@@ -264,7 +265,9 @@ async function renderPane($: Dollar, e: RenderInput<'Pane'>): Promise<RenderElem
   const row = (item: Row): RenderElement => {
     const last = item.times.at(-1)
     const right = last === undefined ? `×${item.count}` : `×${item.count}  ${formatTime(last)}`
-    const room = Math.max(4, width - right.length - item.origin.length - 5)
+    // The name comes first: the origin shares its line only when both fit, else it moves to the details.
+    const room = Math.max(8, width - right.length - 4)
+    const originInline = item.name.length + 1 + item.origin.length <= room
     const isOpen = open.has(item.key)
     return (
       <Box flexDirection="column">
@@ -275,7 +278,8 @@ async function renderPane($: Dollar, e: RenderInput<'Pane'>): Promise<RenderElem
             plain={true}
           >
             {isOpen ? '▾ ' : '▸ '}
-            {truncate(item.name, room)} <Text dimColor={true}>{item.origin}</Text>
+            {truncate(item.name, room)}
+            {originInline ? <Text dimColor={true}>{` ${item.origin}`}</Text> : ''}
           </Button>
           <Text tabular={true}>
             <Text color="claude" weight="semibold">{`×${item.count}`}</Text>
@@ -284,6 +288,11 @@ async function renderPane($: Dollar, e: RenderInput<'Pane'>): Promise<RenderElem
         </Box>
         {isOpen && (
           <Box flexDirection="column" paddingLeft={2}>
+            {!originInline && (
+              <Text dimColor={true} wrap="wrap">
+                {item.origin}
+              </Text>
+            )}
             <Text dimColor={true} tabular={true} wrap="wrap">
               {item.times.map(formatTime).join(' · ')}
             </Text>
@@ -333,7 +342,7 @@ async function renderPane($: Dollar, e: RenderInput<'Pane'>): Promise<RenderElem
       )}
       {summary.sections.map((section): RenderElement => {
         const isFull = full.has(section.kind) || section.rows.length <= PREVIEW_ROWS
-        const count = `${section.rows.length} · ${section.uses} ${section.uses === 1 ? 'use' : 'uses'}`
+        const count = sectionLabel(section)
         return (
           <Box flexDirection="column">
             <Box flexDirection="row" gap={1} justifyContent="space-between">
