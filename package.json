@@ -8,6 +8,7 @@
   },
   "license": "MIT",
   "scripts": {
+    "check:links": "scripts/checkers/markdown-urls.py",
     "check:repo": "node scripts/gates.mjs --only check-repo",
     "check:version-bump": "node scripts/gates.mjs --only version-bump",
     "fix": "biome check --write . && ruff check --fix . && ruff format . && shfmt -w .",

@@ -65,6 +65,7 @@ const OUTSIDE_PLUGINS = [':(exclude)plugins', ':(exclude).github']
 
 const MAINTAINER_PYTHON = [
   'scripts/validators',
+  'scripts/checkers',
   'scripts/generators',
   'scripts/tests/schemas',
   'scripts/tests/validators',

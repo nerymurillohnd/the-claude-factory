@@ -4,6 +4,7 @@
   "pythonVersion": "3.15",
   "include": [
     "validators",
+    "checkers",
     "generators",
     "tests/schemas",
     "tests/validators",

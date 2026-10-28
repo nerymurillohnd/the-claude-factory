@@ -16,6 +16,7 @@ const PYTEST_RUNNER = 'scripts/tests/run_pytest.py'
 /** The paths the maintainer config includes, relative to the repository root. */
 const COVERED = [
   'scripts/validators',
+  'scripts/checkers',
   'scripts/generators',
   'scripts/tests/schemas',
   'scripts/tests/validators',
