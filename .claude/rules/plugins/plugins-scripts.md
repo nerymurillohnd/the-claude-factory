@@ -25,7 +25,7 @@ These rules apply to every script that ships inside a public marketplace plugin.
 
 ## Executability
 
-- Run `chmod +x` on every plugin script, unless the command that runs it names its interpreter.
+- Run `chmod +x` on every hook script, and on every other plugin script unless the command that runs it names its interpreter.
 
 ## Paths and state
 
@@ -52,6 +52,10 @@ These rules apply to every script that ships inside a public marketplace plugin.
 
 ## Hook entry-point scripts
 
+- Simple, direct logic: Bash.
+- Logic beyond that: Python, with the `python3` shebang.
+- Python that needs third-party dependencies: the `uv run --script` shebang with them in PEP 723 inline metadata, or the `python3` shebang with them passed in the hook's `command` (`uv run --with <package> <script>`).
+- When a hook runs `uv` in either form, declare `uv` in the README as a prerequisite, with its install command.
 - Read the hook input as JSON from stdin.
 - Write results to stdout and diagnostics to stderr.
 - Read paths from `CLAUDE_PLUGIN_ROOT`, `CLAUDE_PLUGIN_DATA` and `CLAUDE_PROJECT_DIR`, and options from `CLAUDE_PLUGIN_OPTION_<KEY>`, never from arguments the command would expand.
