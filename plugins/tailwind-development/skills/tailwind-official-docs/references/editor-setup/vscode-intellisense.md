@@ -13,9 +13,11 @@ Open `.css` files in the extension's Tailwind CSS language mode: `files.associat
 
 ## Settings worth checking
 
-- Detection fails (several entry stylesheets, a monorepo): `tailwindCSS.experimental.configFile`.
-- Classes inside `clsx`, `cva`, `cn` or custom attributes: `tailwindCSS.classFunctions` and `tailwindCSS.classAttributes`.
+- Detection fails (several entry stylesheets, a monorepo): `tailwindCSS.experimental.configFile`. One entry is a string; several are an object mapping each entry file to the glob of the files it serves. It is experimental, so read the README's current form before writing it.
+- Classes inside `clsx`, `cva`, `cn` or custom attributes: `tailwindCSS.classFunctions` and `tailwindCSS.classAttributes`. `classFunctions` entries are regular expressions on the function name only; they cannot match what comes before or after it.
+- Classes in a file type the extension does not serve get no completions or linting: map that language to `html`, `css` or `javascript` with `tailwindCSS.includeLanguages`.
 - No completions inside strings: `editor.quickSuggestions` with strings on.
+- Each lint rule's severity is set under `tailwindCSS.lint.*`. Several rules only concern v3 syntax (`@screen`, `@variants`, `@tailwind`); `cssConflict` and `suggestCanonicalClasses` report the same conflicts and non-canonical classes this plugin's checks do.
 
 Project settings in `.vscode/settings.json` apply to everyone who opens the repository: write them only with the user's agreement.
 
