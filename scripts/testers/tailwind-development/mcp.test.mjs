@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// @ts-check
 // Tests for the tailwind-development MCP server's modules. The language-server client runs against
 // a stub server; the real Tailwind CSS language server is exercised in the live checks.
 //   node --test scripts/testers/tailwind-development/

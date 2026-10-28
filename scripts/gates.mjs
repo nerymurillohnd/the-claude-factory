@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// @ts-check
 // The maintainers' gates, in order: the one source of the commands that local runs and CI share
 // (ADR_2026-10-21_gates-run-from-one-script).
 //   npm run gates                    every gate, stopping at the first failure

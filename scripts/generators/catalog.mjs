@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// @ts-check
 // Regenerates the generated blocks in README.md from marketplace.json + plugin manifests.
 //   node scripts/generators/catalog.mjs          → rewrite README.md
 //   node scripts/generators/catalog.mjs --check  → exit 1 if README.md is out of date (CI)

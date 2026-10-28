@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// @ts-check
 // Repository policy checks that `claude plugin validate` and scripts/validators/ do not cover.
 // Exit 0 = pass, exit 1 = at least one error.
 

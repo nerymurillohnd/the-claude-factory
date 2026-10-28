@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// @ts-check
 // Tests for gates.mjs: the runner on throwaway gates in a temporary folder, the skip checks on
 // fixture test files, and the gate list it builds from the real repository (read-only).
 //   npm run gates

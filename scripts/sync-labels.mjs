@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// @ts-check
 // Creates or updates the repository labels from .github/labels.json plus one "plugin: <name>"
 // label per catalog entry. Idempotent. Requires an authenticated `gh` CLI with repo access.
 //   node scripts/sync-labels.mjs [--dry-run]

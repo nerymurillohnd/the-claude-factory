@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// @ts-check
 // Tests for the Node post-edit hook of bash-lsp-intelligence.
 //   node --test "scripts/testers/*.test.mjs"
 // Tool cases run only when the tool is on PATH.

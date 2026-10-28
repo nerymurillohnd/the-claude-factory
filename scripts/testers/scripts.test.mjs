@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// @ts-check
 // End-to-end tests for the maintenance scripts. Each test runs against a fresh temp copy of the
 // repository (TCF_ROOT), so the real working tree is never modified.
 //   node --test "scripts/testers/*.test.mjs"
