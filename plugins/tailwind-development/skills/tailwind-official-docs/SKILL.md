@@ -131,7 +131,9 @@ When in doubt:
 - verify that rendered DOM matches your selectors
 - prefer deleting complexity over introducing a clever abstraction
 
-## Installation
+## Getting started
+
+### [Installation](https://tailwindcss.com/docs/installation)
 
 For any installation task (setup, fix or question), read the matching reference and the page its title links.
 Follow the page where they differ.
@@ -145,7 +147,7 @@ Follow the page where they differ.
 
 Read the framework's guide instead of a generic path when it has one.
 
-## Editor setup
+### [Editor setup](https://tailwindcss.com/docs/editor-setup)
 
 For any editor or formatter task (setup, fix or question), read the matching reference and the page its title links.
 Follow the page where they differ.
@@ -156,7 +158,7 @@ Follow the page where they differ.
 **Zed**: built-in language server → See [references/editor-setup/zed.md](references/editor-setup/zed.md)
 **JetBrains**: WebStorm, PhpStorm → See [references/editor-setup/jetbrains.md](references/editor-setup/jetbrains.md)
 
-## Compatibility
+### [Compatibility](https://tailwindcss.com/docs/compatibility)
 
 For any compatibility task (setup, fix or question), read the matching reference and the page section its title links.
 Follow the page where they differ.
@@ -166,7 +168,7 @@ Follow the page where they differ.
 **CSS modules**: `@reference`, `@apply` in modules → See [references/compatibility/css-modules.md](references/compatibility/css-modules.md)
 **Component styles**: `<style>` in Vue, Svelte, Astro → See [references/compatibility/component-style-blocks.md](references/compatibility/component-style-blocks.md)
 
-## Upgrade guide
+### [Upgrade guide](https://tailwindcss.com/docs/upgrade-guide)
 
 To migrate a project, read every reference below in order, with the upgrade-guide sections each one links.
 For one v3 habit or a question, read only the matching reference.
