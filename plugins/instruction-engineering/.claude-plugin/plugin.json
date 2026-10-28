@@ -1,0 +1,23 @@
+{
+  "name": "instruction-engineering",
+  "displayName": "Instruction Engineering",
+  "version": "0.1.0",
+  "description": "Writes, edits, reviews, audits, debugs and refactors Claude Code instruction files (CLAUDE.md, CLAUDE.local.md and .claude/rules at user and project scope) against the current loading rules, with a read-only checker and an independent reviewer agent.",
+  "author": {
+    "name": "Nery Murillo",
+    "url": "https://github.com/nerymurillohnd"
+  },
+  "homepage": "https://github.com/nerymurillohnd/the-claude-factory/tree/main/plugins/instruction-engineering#readme",
+  "repository": "https://github.com/nerymurillohnd/the-claude-factory",
+  "license": "MIT",
+  "keywords": [
+    "documentation"
+  ],
+  "metadata": {
+    "category": "documentation",
+    "surfaces": [
+      "claude-code",
+      "claude-app"
+    ]
+  }
+}
