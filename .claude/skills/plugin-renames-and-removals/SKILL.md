@@ -34,7 +34,7 @@ After the push, a user who still has the old name enabled sees one of these resu
 
 1. Register every rename or removal in the `renames` map. The map is append-only: add one entry per rename or removal, and never edit or delete an existing entry.
 2. Leave dated history untouched: old changelog lines and specs keep the old name.
-3. A rename changes the commands users type, so it is a breaking change. A removal has nothing to bump.
+3. Ship a rename as a breaking change. `renames` migrates only `enabledPlugins` and `pluginConfigs` (`/en/plugins/host-marketplace`, "Migrate users with a renames map"). The plugin's `name` namespaces its components (`/en/plugins/loading`, "Entry name and manifest name"), so the old commands, agent names and MCP tool names stop working, with the permission rules that name them. Each user also reinstalls once. `check-version-bump.py` fails a rename shipped as a patch. A merge breaks users of `<old>` the same way; step 5 sets the level of `<target>`. A removal has nothing to bump.
 4. Version plugins only: never add a version or a tag to `.claude-plugin/marketplace.json`; `check-marketplace-unversioned.py` enforces it in step 10. Apply bumps with `.claude/skills/plugin-renames-and-removals/scripts/bump-version.py <plugin> <major|minor|patch>`, never by hand, then run `node scripts/generators/catalog.mjs`: the bump does not regenerate the README catalog.
 5. Never promote a plugin to `1.0.0` without Nery's explicit authorization. In `0.x` a breaking change bumps the minor; from `1.0.0` on it bumps the major.
 6. Never tag by hand. `release.yml` creates the tags (format `<plugin>--v<version>`) after Validate succeeds on `main`, and it tags every plugin whose `plugin.json` version has no tag yet, not only the one you changed.
@@ -106,7 +106,7 @@ Run `node scripts/generators/catalog.mjs` in every case: the bump does not regen
 
 1. In `CHANGELOG.md` (root), use the structure: `## YYYY-MM-DD` headings, newest first; under each, change-type headings (`### Added`, `### Changed`, `### Fixed`, `### Removed`); under each, one line per event. Create the date heading and the change-type heading if they are missing.
 2. Put the line under today's date:
-   - Rename, under `### Changed`: `- **<new>** X.Y.Z — renamed from <old>; one-line summary.`
+   - Rename, under `### Changed`: `- **<new>** X.Y.Z — **Breaking:** renamed from <old>; one-line summary.`
    - Removal, under `### Removed`: `- **<old>** retired: one-line reason.`
    - Merge, under `### Removed`: ``- **<old>** retired: its <what> is now the `<skill>` skill of **<target>**, and the marketplace renames existing installs. Type `/<target>:<skill>` where you typed `/<old>:<skill>`.`` The bump of `<target>` gets its own line under its change type.
 

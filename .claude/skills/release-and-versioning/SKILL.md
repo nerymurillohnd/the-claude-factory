@@ -63,7 +63,7 @@ Read the diff (`git diff origin/main...HEAD`) and choose the level by what chang
 
 | Bump | When |
 | :-- | :-- |
-| **major** | Breaking: a removed or renamed skill, agent or command; changed configuration keys; a new mandatory dependency; a change to behavior users rely on |
+| **major** | Breaking: a removed or renamed skill, agent or command; the plugin's own name changed (a rename or merge, done by `plugin-renames-and-removals`); changed configuration keys; a new mandatory dependency; a change to behavior users rely on |
 | **minor** | A new component, option or capability, backward compatible |
 | **patch** | A backward-compatible bug fix, prompt wording improvement, performance improvement or internal refactor with the same behavior |
 
@@ -94,6 +94,7 @@ Read the diff (`git diff origin/main...HEAD`) and choose the level by what chang
 2. The root changelog is a summary, never a copy of a plugin changelog. Its structure: `## YYYY-MM-DD` headings, newest first; under each, change-type headings (`### Added`, `### Changed`, `### Fixed`, `### Removed`); under each, one line per event. Create the date heading and the change-type heading if they are missing.
 3. Put the line under today's date and the matching change type:
    - Version bump or launch: `- **<plugin>** X.Y.Z — one-line summary.` A launch goes under `### Added`; a bump under the change type of its change.
+   - Breaking bump: `- **<plugin>** X.Y.Z — **Breaking:** one-line summary.` Use this marker only, never `(breaking: …)`.
    - Marketplace-level change: `- summary.` (no plugin name, no version)
 
 ### 5. Commit
