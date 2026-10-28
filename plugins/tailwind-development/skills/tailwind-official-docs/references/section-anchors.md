@@ -9,7 +9,7 @@ Copy an anchor exactly as listed. Never derive one from a heading: the page stri
 
 Each line is `#anchor` followed by the heading text; indentation follows the heading levels. They come from the id attributes of each page's h2 to h4 headings; a repeated anchor on one page is listed once.
 
-Pages: [`styling-with-utility-classes`](#styling-with-utility-classes) · [`hover-focus-and-other-states`](#hover-focus-and-other-states) · [`responsive-design`](#responsive-design) · [`dark-mode`](#dark-mode) · [`theme`](#theme) · [`colors`](#colors) · [`adding-custom-styles`](#adding-custom-styles) · [`detecting-classes-in-source-files`](#detecting-classes-in-source-files) · [`functions-and-directives`](#functions-and-directives) · [`preflight`](#preflight) · [`upgrade-guide`](#upgrade-guide) · [`compatibility`](#compatibility)
+Pages: [`styling-with-utility-classes`](#styling-with-utility-classes) · [`hover-focus-and-other-states`](#hover-focus-and-other-states) · [`responsive-design`](#responsive-design) · [`dark-mode`](#dark-mode) · [`theme`](#theme) · [`colors`](#colors) · [`adding-custom-styles`](#adding-custom-styles) · [`detecting-classes-in-source-files`](#detecting-classes-in-source-files) · [`functions-and-directives`](#functions-and-directives) · [`preflight`](#preflight) · [`upgrade-guide`](#upgrade-guide)
 
 ## `styling-with-utility-classes`
 
@@ -314,18 +314,3 @@ A v3 to v4 migration reads every section below, one at a time, as SKILL.md's "Mi
   - `#theme-values-in-javascript` Theme values in JavaScript
   - `#using-apply-with-vue-svelte-or-css-modules` Using @apply with Vue, Svelte, or CSS modules
   - `#using-sass-less-and-stylus` Using Sass, Less, and Stylus
-
-## `compatibility`
-
-- `#browser-support` Browser support
-- `#sass-less-and-stylus` Sass, Less, and Stylus
-  - `#build-time-imports` Build-time imports
-  - `#variables` Variables
-  - `#nesting` Nesting
-  - `#loops` Loops
-  - `#color-and-math-functions` Color and math functions
-- `#css-modules` CSS modules
-  - `#scoping-concerns` Scoping concerns
-  - `#performance` Performance
-  - `#explicit-context-sharing` Explicit context sharing
-- `#vue-svelte-and-astro` Vue, Svelte, and Astro

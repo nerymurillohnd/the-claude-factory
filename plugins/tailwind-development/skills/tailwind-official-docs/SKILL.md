@@ -33,6 +33,15 @@ Read the matching reference for any editor or formatter task: setup, fix or ques
 - Zed: [zed.md](references/editor-setup/zed.md)
 - JetBrains IDEs: [jetbrains.md](references/editor-setup/jetbrains.md)
 
+## Compatibility
+
+Read the matching reference for any compatibility task: setup, fix or question.
+
+- Browser support and targets: [browser-support.md](references/compatibility/browser-support.md)
+- Sass, Less or Stylus: [preprocessors.md](references/compatibility/preprocessors.md)
+- CSS modules: [css-modules.md](references/compatibility/css-modules.md)
+- `<style>` blocks in Vue, Svelte or Astro: [component-style-blocks.md](references/compatibility/component-style-blocks.md)
+
 ## Workflow
 
 ### 1. Inspect the project
@@ -70,7 +79,7 @@ Examples:
 - Dark-mode button with keyboard focus: `background-color`, `color`, `hover-focus-and-other-states`, `dark-mode`, and the relevant outline or shadow page.
 - Missing styles from computed class names: `detecting-classes-in-source-files` and the affected utility pages.
 - Shared brand color: `theme`, `colors`, and each consuming color utility page.
-- Svelte scoped styles using `@apply`: `compatibility#vue-svelte-and-astro`, `functions-and-directives#reference-directive`, `adding-custom-styles`, and the applied utility pages.
+- Svelte scoped styles using `@apply`: [component-style-blocks.md](references/compatibility/component-style-blocks.md), `functions-and-directives#reference-directive`, `adding-custom-styles`, and the applied utility pages.
 - Styling the open state of a `<details>` element: `hover-focus-and-other-states#openclosed-state`.
 - Moving a v3 project to v4: [Migrating from v3 to v4](#migrating-from-v3-to-v4) below, which covers every section of `upgrade-guide`, not a sample of it.
 
@@ -102,7 +111,7 @@ Never start from a general web search.
 
 A feature newer than the installed version is not available in the project: say so, and name the version that adds it, instead of using it. Browser support depends on the version too: the 4.1 post reports that v4 handles older browsers much more gracefully from that release on, so a browser-support answer reads the installed version before it applies `compatibility`.
 
-The cross-cutting pages (the core concepts, `preflight`, `upgrade-guide` and `compatibility`) are long, and a whole-page fetch or summary loses the part you need. For them, name the section: [references/section-anchors.md](references/section-anchors.md) lists each page's section anchors and headings, and says how to use them with a fetch tool and with Context7. Copy an anchor from that list; never derive one from a heading. Naming sections decides how a page is read, not how much of it: a task the whole page governs, such as a v3 to v4 migration, reads every section, one at a time.
+The cross-cutting pages (the core concepts, `preflight` and `upgrade-guide`) are long, and a whole-page fetch or summary loses the part you need. For them, name the section: [references/section-anchors.md](references/section-anchors.md) lists each page's section anchors and headings, and says how to use them with a fetch tool and with Context7. Copy an anchor from that list; never derive one from a heading. Naming sections decides how a page is read, not how much of it: a task the whole page governs, such as a v3 to v4 migration, reads every section, one at a time.
 
 Rules:
 
@@ -209,7 +218,7 @@ Use these pages in addition to the property-specific pages. For a long page, go 
 | Unexpected resets, unstyled headings and lists, default borders, base element styles | `preflight` |
 | Migrating a project from v3 to v4 | [Migrating from v3 to v4](#migrating-from-v3-to-v4) below: every section of `upgrade-guide` |
 | v3 habits in new code, one removed or renamed utility, dropped PostCSS plugins, the CLI package | `upgrade-guide`, the section that covers it |
-| Whether a project can adopt v4: browser floor, Sass, Less and Stylus, CSS modules, `<style>` blocks in Vue, Svelte and Astro components | `compatibility` (`#browser-support`, `#sass-less-and-stylus`, `#css-modules`, `#vue-svelte-and-astro`) and `upgrade-guide#browser-requirements` |
+| Whether a project can adopt v4, preprocessors, CSS modules, component `<style>` blocks | [Compatibility](#compatibility) above, and `upgrade-guide#browser-requirements` |
 | Installing Tailwind in a project that has none, or changing its integration | [Installation](#installation) above |
 | Editor support, class sorting with Prettier | [Editor setup](#editor-setup) above |
 
