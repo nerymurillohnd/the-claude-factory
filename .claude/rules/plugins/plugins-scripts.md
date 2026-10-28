@@ -44,8 +44,6 @@ These rules apply to every script that ships inside a public marketplace plugin.
 
 ## Hook commands in `hooks/hooks.json`
 
-These follow ADR_2026-10-27_plugin-hooks-run-in-shell-form-through-bash.
-
 - Load `plugin-hooks-guidance` before writing or reviewing a hook.
 - Use shell form: omit `args`, because exec form bypasses Git Bash on Windows and ignores `shell`.
 - Set `"shell": "bash"` on every command hook.
