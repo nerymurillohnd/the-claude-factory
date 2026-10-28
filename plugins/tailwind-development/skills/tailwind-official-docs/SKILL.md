@@ -1,6 +1,6 @@
 ---
 name: tailwind-official-docs
-description: Learn current official Tailwind CSS v4 knowledge and guidance. Use it whenever you answer, work on, integrate, install or do anything related to Tailwind CSS. Designing or restyling UI belongs to tailwind-ui-design, which calls this skill for syntax.
+description: Learn current official Tailwind CSS v4 knowledge and guidance. Always use it to answer, work on, integrate, install or do anything related to Tailwind CSS. Designing or restyling UI belongs to tailwind-ui-design, which calls this skill for syntax.
 license: MIT
 ---
 
