@@ -1,24 +1,28 @@
 # Install through the Vite plugin
 
-Read https://tailwindcss.com/docs/installation/using-vite whole. Where it differs from this file, follow the page.
+Read https://tailwindcss.com/docs/installation/using-vite whole. Follow it over this file.
 
 ## Use this path when
 
-- The project has a `vite.config.*`, or its framework builds through Vite and has no guide in the framework-guides list.
-- The project has no build tool: create a Vite project first, and ask before scaffolding one inside an existing repository.
+- The project has a `vite.config.*`.
+- The framework builds with Vite and has no framework guide.
+- The project has no build tool. Ask before creating a Vite project in it.
 
 ## Set it up
 
-1. Install the packages the page names (`tailwindcss`, `@tailwindcss/vite`) with the package manager the lockfile names.
-2. Add the plugin to the Vite config's `plugins`, beside the project's other plugins.
-3. Add `@import "tailwindcss";` to the CSS file the app already loads.
-4. Keep the project's dev and build scripts as they are.
+1. Install `tailwindcss` and `@tailwindcss/vite` with the project's package manager.
+2. Add the plugin to `plugins` in the Vite config.
+3. Add `@import "tailwindcss";` to the CSS file the app loads.
+4. Leave the dev and build scripts as they are.
 
 ## Check the project
 
-- Look for a PostCSS config that also loads Tailwind. With the Vite plugin, Tailwind runs once, through Vite: remove that entry only with the user's agreement.
-- Remove v3 leftovers: `@tailwind` directives, the `tailwindcss` package used as a PostCSS plugin, and `autoprefixer` or `postcss-import` added for Tailwind (`upgrade-guide#using-vite`).
+- Remove Tailwind from any PostCSS config, with the user's agreement.
+- Remove `@tailwind` directives.
+- Remove `autoprefixer` and `postcss-import` if only Tailwind needed them.
 
 ## Verify
 
-Add one class the existing styles cannot produce, run the dev server or build, confirm the generated CSS contains it, then remove the class.
+1. Add one class the project could not produce before.
+2. Run the dev server or the build.
+3. Confirm the generated CSS has it, then remove the class.

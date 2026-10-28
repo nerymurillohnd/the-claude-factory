@@ -14,24 +14,24 @@ This skill is a documentation router, not a replacement for the documentation. I
 
 ## Installation
 
-Read the reference that matches the case whenever a task touches installing or integrating Tailwind: setting it up in a project, reviewing or fixing an existing setup, or answering a question about it.
+Read the matching reference for any installation task: setup, fix or question.
 
 - Vite: [using-vite.md](references/installation/using-vite.md)
 - PostCSS: [using-postcss.md](references/installation/using-postcss.md)
 - No bundler, or no Node.js: [tailwind-cli.md](references/installation/tailwind-cli.md)
 - A browser prototype with no build: [play-cdn.md](references/installation/play-cdn.md)
 
-A framework listed under framework guides in the topic index has its own page: read that page instead.
+If the framework has its own guide in the topic index, read that page instead.
 
 ## Editor setup
 
-Read the reference that matches the case whenever a task touches an editor or formatter for Tailwind: configuring it in a project, fixing a problem with it, or answering a question about it.
+Read the matching reference for any editor or formatter task: setup, fix or question.
 
-- Editor warnings or errors on `@theme`, `@apply` or `@source`: [syntax-support.md](references/editor-setup/syntax-support.md)
+- Editor warnings on `@theme` or `@apply`: [syntax-support.md](references/editor-setup/syntax-support.md)
 - VS Code or Cursor: [vscode-intellisense.md](references/editor-setup/vscode-intellisense.md)
 - Class sorting with Prettier: [prettier-class-sorting.md](references/editor-setup/prettier-class-sorting.md)
 - Zed: [zed.md](references/editor-setup/zed.md)
-- WebStorm, PhpStorm or another JetBrains IDE: [jetbrains.md](references/editor-setup/jetbrains.md)
+- JetBrains IDEs: [jetbrains.md](references/editor-setup/jetbrains.md)
 
 ## Workflow
 

@@ -1,25 +1,30 @@
-# Set up VS Code and Cursor: Tailwind CSS IntelliSense
+# Set up Tailwind CSS IntelliSense in VS Code and Cursor
 
-Read https://tailwindcss.com/docs/editor-setup and the extension's README, https://github.com/tailwindlabs/tailwindcss-intellisense, which lists every setting, for anything this file does not cover. Where they differ, follow them.
+Read the README for every setting: https://github.com/tailwindlabs/tailwindcss-intellisense
+Follow it over this file.
 
 ## Install
 
-- Install the official extension, `bradlc.vscode-tailwindcss`. In Cursor, install the same extension: Cursor runs VS Code extensions.
-- Expect it to activate only when `tailwindcss` is installed in the workspace and it finds a `.css` file importing Tailwind (v4) or a `tailwind.config.*` or `@config` stylesheet (v3). It ignores Sass, Less and Stylus files.
+- Install `bradlc.vscode-tailwindcss` in VS Code or Cursor.
+- Install `tailwindcss` in the workspace, or the extension stays off.
+- Give v4 a `.css` entry file: the extension ignores Sass, Less and Stylus.
 
 ## Configure
 
-- Set `files.associations` to `"*.css": "tailwindcss"` to stop warnings on `@theme`, `@apply` and `@source`.
-- Set `tailwindCSS.experimental.configFile` when detection fails (several entry stylesheets, a monorepo): a string for one entry, an object mapping each entry file to the glob it serves for several. Read its current form in the README first, since it is experimental.
-- Add `clsx`, `cva`, `cn` and other class helpers to `tailwindCSS.classFunctions`, and custom attributes to `tailwindCSS.classAttributes`. Write `classFunctions` entries as regular expressions on the function name only.
-- Map a file type the extension does not serve to `html`, `css` or `javascript` with `tailwindCSS.includeLanguages`.
-- Turn on `editor.quickSuggestions` for strings to get completions inside class strings.
-- Set each lint rule's severity under `tailwindCSS.lint.*`. Ignore the rules for v3 syntax (`@screen`, `@variants`, `@tailwind`) on v4; `cssConflict` and `suggestCanonicalClasses` report what this plugin's checks report.
-- Write project settings to `.vscode/settings.json` only with the user's agreement: they apply to everyone who opens the repository.
+- Set `files.associations` to `"*.css": "tailwindcss"`.
+- Set `tailwindCSS.experimental.configFile` when it does not find the project.
+- Read its current form in the README first: it is experimental.
+- Add class helpers like `clsx` and `cva` to `tailwindCSS.classFunctions`.
+- Write `classFunctions` entries as regexes on the function name only.
+- Add custom class attributes to `tailwindCSS.classAttributes`.
+- Map unserved file types with `tailwindCSS.includeLanguages`.
+- Turn on `editor.quickSuggestions` for strings.
+- Set lint severities under `tailwindCSS.lint.*`.
+- Ask before writing `.vscode/settings.json`: it applies to the whole team.
 
 ## When it does not activate
 
-1. Confirm `tailwindcss` is installed and the v4 entry is a `.css` file.
-2. Check that `files.exclude`, `files.watcherExclude` and `tailwindCSS.files.exclude` do not hide it.
-3. Read the log: run `Tailwind CSS: Show Output` from the command palette.
-4. Set `tailwindCSS.experimental.configFile` when the project has several installs or entry files.
+1. Confirm `tailwindcss` is installed.
+2. Check that no `files.exclude` setting hides the stylesheet.
+3. Run `Tailwind CSS: Show Output` and read the log.
+4. Set `tailwindCSS.experimental.configFile` for several entry files.

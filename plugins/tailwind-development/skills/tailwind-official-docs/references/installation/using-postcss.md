@@ -1,24 +1,28 @@
 # Install through the PostCSS plugin
 
-Read https://tailwindcss.com/docs/installation/using-postcss whole. Where it differs from this file, follow the page.
+Read https://tailwindcss.com/docs/installation/using-postcss whole. Follow it over this file.
 
 ## Use this path when
 
-- The project has a PostCSS config (a `postcss.config.*` file or PostCSS settings in `package.json`), or its bundler runs PostCSS and the framework has no guide in the framework-guides list.
-- Take the Vite path instead when the project builds with Vite.
+- The project has a `postcss.config.*` or PostCSS settings in `package.json`.
+- The bundler runs PostCSS and the framework has no framework guide.
+- Use the Vite path instead if the project builds with Vite.
 
 ## Set it up
 
-1. Install the packages the page names (`tailwindcss`, `@tailwindcss/postcss`, `postcss`) with the package manager the lockfile names.
-2. Add `@tailwindcss/postcss` to the PostCSS config, beside the project's other plugins, in the module format the file already uses.
-3. Add `@import "tailwindcss";` to the CSS file the app already loads.
-4. Keep the project's dev and build scripts as they are.
+1. Install `tailwindcss`, `@tailwindcss/postcss` and `postcss` with the project's package manager.
+2. Add `@tailwindcss/postcss` to the PostCSS config, in the file's module format.
+3. Add `@import "tailwindcss";` to the CSS file the app loads.
+4. Leave the dev and build scripts as they are.
 
 ## Check the project
 
-- Remove v3 leftovers from the PostCSS config: the `tailwindcss` entry, and `postcss-import` and `autoprefixer`, which v4 no longer needs (`upgrade-guide#using-postcss`). Keep any of them something else still needs.
-- Replace `@tailwind` directives in the CSS with the single import.
+- Replace a `tailwindcss` PostCSS entry with `@tailwindcss/postcss`.
+- Remove `autoprefixer` and `postcss-import` if only Tailwind needed them.
+- Replace `@tailwind` directives with the single import.
 
 ## Verify
 
-Add one class the existing styles cannot produce, run the dev server or build, confirm the generated CSS contains it, then remove the class.
+1. Add one class the project could not produce before.
+2. Run the dev server or the build.
+3. Confirm the generated CSS has it, then remove the class.
