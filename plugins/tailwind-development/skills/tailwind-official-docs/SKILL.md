@@ -1,6 +1,6 @@
 ---
 name: tailwind-official-docs
-description: Official Tailwind CSS docs for the version the project resolves. Use for any Tailwind syntax, behaviour or setup task or question, such as classes, variants, @theme, @apply, dark mode, missing styles, installation, editors, compatibility and v3 to v4 upgrades. Designing or restyling UI belongs to tailwind-ui-design, which calls this skill for syntax.
+description: Learn current official Tailwind CSS v4 knowledge and guidance. Use it whenever you answer, work on, integrate, install or do anything related to Tailwind CSS. Designing or restyling UI belongs to tailwind-ui-design, which calls this skill for syntax.
 license: MIT
 ---
 
