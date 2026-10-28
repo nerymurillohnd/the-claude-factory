@@ -12,6 +12,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The
 
 ### Changed
 
+- **tailwind-development** 0.3.1 — the bundled MCP server script is executable, as its shebang declares; Claude Code still starts it with `node`.
 - **project-maintainer** 0.2.3 — the handoff and records skills keep to the current project, check for evidence that an item is already done before listing it, and cite only installed skills, agents and plugins.
 
 ### Added

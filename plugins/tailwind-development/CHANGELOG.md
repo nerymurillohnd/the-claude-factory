@@ -6,6 +6,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-10-28
+
+### Changed
+
+- The MCP server script `mcp/server.mjs` is now executable, as its `#!/usr/bin/env node` line declares, so it can also be run directly. Claude Code keeps starting it with `node`, so nothing changes in how the plugin runs.
+
 ## [0.3.0] - 2026-10-28
 
 ### Added
@@ -52,7 +58,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - `tailwind-ui-design` skill: designs, builds, refactors and reviews interfaces in Tailwind CSS v4 with a product designer's craft. It reads your tokens, brand and components first, checks that the type, spacing, colour, elevation and radius systems exist as `@theme` tokens, composes hierarchy before colour, depth and finish, covers every state, verifies the rendered result in each appearance mode and width with measured WCAG 2.2 AA contrast (in your project's own build, or in a Play CDN preview page where there is none), and critiques it against generic-UI tells. Syntax questions go to `tailwind-official-docs`.
 - `tailwind-official-docs` skill: gets Tailwind CSS syntax and behaviour right by reading the exact official page for each utility, variant and configuration a task touches, for the Tailwind version your project resolves, and verifies the result with your project's own checks. It carries an index of every page of the Tailwind docs, the 19 framework installation guides included, and the section anchors of the long concept pages. It installs Tailwind from zero by following the guide for your framework (or the Vite, PostCSS or CLI path when there is none) and checks that a first class renders, routes editor setup and Prettier class sorting, checks whether a project can adopt v4, and answers which version added a feature from the release posts and changelog, never using a feature newer than your installed version. It reads Context7 first when you have it, and reports only the documentation a decision depended on.
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/tailwind-development--v0.3.0...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/tailwind-development--v0.3.1...HEAD
+[0.3.1]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/tailwind-development--v0.3.1
 [0.3.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/tailwind-development--v0.3.0
 [0.2.2]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/tailwind-development--v0.2.2
 [0.2.1]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/tailwind-development--v0.2.1
