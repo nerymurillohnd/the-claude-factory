@@ -39,6 +39,7 @@
 | 2026-10-27 | DEBT-032 | resolved | Biome's `useLiteralKeys` is off, so tsc's `noPropertyAccessFromIndexSignature` alone decides index-signature keys | none |
 | 2026-10-27 | DEBT-014 | obsolete | `release.yml` published release notes built by `release-notes.py` for two new tags | none |
 | 2026-10-27 | DEBT-026 | obsolete | `.claude/rules/readme-md.md` loads when a README is read | none |
+| 2026-10-28 | DEBT-025 | resolved | The version gate and `npm run version:bump` run the release skill's Python, and the `.mjs` copies are deleted | none |
 
 ## 🏁 Closed items
 
@@ -726,6 +727,37 @@ A session that was not aimed at this item showed the load. In session `f5bdd77c-
 - **Residual risk:** none
 - **Closed by:** none
 - **Related records:** ADR_2026-10-25_every-readme-has-a-path-scoped-rule.
+- **Superseded by:** none
+
+### DEBT-025 — The version gate and `npm run version:bump` run the release skill's Python, and the `.mjs` copies are deleted
+
+| Field | Value |
+| --- | --- |
+| **Outcome** | resolved |
+| **Closed on** | 2026-10-28 |
+| **Logged on** | 2026-10-26 |
+| **Owner** | `scripts/bump-version.mjs`, `scripts/check-version-bump.mjs` |
+
+#### ❗ The problem
+
+`scripts/bump-version.mjs` and `scripts/check-version-bump.mjs` re-implemented the release skill's `bump-version.py` and `check-version-bump.py`. The `version-bump` gate and `npm run version:bump` ran the `.mjs` copies. A rule changed in one copy and not the other would make the gate and the skill disagree.
+
+#### 🔧 The closure
+
+Nery decided on 2026-10-28: the gate runs `.claude/skills/release-and-versioning/scripts/check-version-bump.py`, and `npm run version:bump` runs `bump-version.py`. Both `.mjs` scripts are deleted, with the helpers only they used in `scripts/lib.mjs` and the export of `renderReadme` in `scripts/generators/catalog.mjs`. The version tests in `scripts/testers/scripts.test.mjs` run the `.py` scripts by path. The decision is recorded in ADR_2026-10-28_version-gate-runs-the-release-skill-script. The copies in the plugin-renames skill are not part of this closure: DEBT-038.
+
+#### 🧪 Verification
+
+| Check | Evidence |
+| --- | --- |
+| ✅ **Positive:** the closure holds | `node --test --test-name-pattern="bump" scripts/testers/scripts.test.mjs`: 8 of 8 pass. `node --test scripts/testers/*.test.mjs`: 109 of 109 pass. `python3 .claude/skills/release-and-versioning/scripts/check-version-bump.py origin/main` printed `✔ Version bumps OK (no plugin changes)` and exited 0. `tsc -p scripts/tsconfig.json --noEmit` exited 0. |
+| 🚫 **Negative:** the original failure or condition is gone | `ls scripts/bump-version.mjs scripts/check-version-bump.mjs` reported "No such file or directory" for both. The repository has no live reference to either name (`package.json`, `scripts/`, `.github/`, `.claude/rules`, skills and `CLAUDE.md`); the only mentions are in settled ADRs, a spec and DEBT-002's evidence, which are not rewritten. |
+
+#### 🔗 Follow-up
+
+- **Residual risk:** the plugin-renames skill keeps its own copies, and its copy of the check is weaker than the release skill's: DEBT-038.
+- **Closed by:** ADR_2026-10-28_version-gate-runs-the-release-skill-script
+- **Related records:** ADR_2026-10-28_version-gate-runs-the-release-skill-script, DEBT-038.
 - **Superseded by:** none
 
 <!--

@@ -47,7 +47,6 @@ Add an item only when all of these hold:
 | DEBT-017 | `testing-plugins` says the full eval suite runs in CI, and no eval workflow exists | 🟠 Blocked |
 | DEBT-020 | `docs/github-mcp-tools.md` serves one plugin but lives in the marketplace docs | 🟠 Blocked |
 | DEBT-023 | Gaps from the TypeScript hook audit report are still unaddressed | 🟠 Blocked |
-| DEBT-025 | Some repository scripts duplicate a check another script owns | 🟠 Blocked |
 | DEBT-027 | `claude-review` was denied four tool calls on PR #42 | 🟡 Pending |
 | DEBT-028 | TypeScript 7 and 5.x were never run against the TypeScript post-edit hook | 🟡 Pending |
 | DEBT-030 | The svelte-development full-version local CLI waits on sveltejs/ai-tools #294 and PR #271 | 🟠 Blocked |
@@ -55,6 +54,7 @@ Add an item only when all of these hold:
 | DEBT-035 | `npm run test:plugins` fails when a plugin test family has no gate left | 🔴 Risk accepted |
 | DEBT-036 | `biome check --staged` checks the working-tree copy of a partly staged file | 🔴 Risk accepted |
 | DEBT-037 | Sessions skip the project skills the Workflow assigns to the area they work in | 🟠 Blocked |
+| DEBT-038 | The plugin-renames skill's copy of the bump check is weaker than the release skill's | 🟠 Blocked |
 
 ## 📂 Open items
 
@@ -64,7 +64,7 @@ Add an item only when all of these hold:
 | --- | --- |
 | **Status** | 🟠 Blocked |
 | **Category** | reliability, quality |
-| **Owner** | `scripts/check-version-bump.mjs` and the `version-bump` gate of `scripts/gates.mjs`, run by the `policy` job of `.github/workflows/validate.yml` |
+| **Owner** | `.claude/skills/release-and-versioning/scripts/check-version-bump.py` and the `version-bump` gate of `scripts/gates.mjs`, run by the `policy` job of `.github/workflows/validate.yml` |
 | **Logged** | 2026-10-20 |
 
 #### 🔎 Evidence
@@ -82,7 +82,7 @@ Add an item only when all of these hold:
 
 - **Impact / risk:** one red `Validate` on `main` blocks the release of every plugin until a later push, outside `plugins/`, passes. The next push compares against the red commit, so it recovers by itself, but the failure repeats on the next revert.
 - **Why it is not fixed now:** the rule for reverts, and how the check treats a version that returns to the last tag, is a design decision for Nery. This task was only to get the pending releases out.
-- **Next action:** decide with Nery whether `check-version-bump.mjs` compares each plugin with its latest `<plugin>--v*` tag instead of the previous commit. If yes, change it with tests for both cases: a revert to the tagged state passes and an edit without a bump still fails.
+- **Next action:** decide with Nery whether `check-version-bump.py` compares each plugin with its latest `<plugin>--v*` tag instead of the previous commit. If yes, change it with tests for both cases: a revert to the tagged state passes and an edit without a bump still fails.
 - **Review condition:** closes when a revert of an unreleased bump passes `Validate` on `main` and a plugin change without a bump still fails it.
 - **Related records:** [PR #27](https://github.com/nerymurillohnd/the-claude-factory/pull/27), [PR #31](https://github.com/nerymurillohnd/the-claude-factory/pull/31); the `release-and-versioning` skill.
 
@@ -245,28 +245,28 @@ Add an item only when all of these hold:
 - **Review condition:** closes when every gap is fixed or dropped by Nery.
 - **Related records:** none.
 
-### DEBT-025 — Some repository scripts duplicate a check another script owns
+### DEBT-038 — The plugin-renames skill's copy of the bump check is weaker than the release skill's
 
 | Field | Value |
 | --- | --- |
 | **Status** | 🟠 Blocked |
-| **Category** | maintainability |
-| **Owner** | `scripts/bump-version.mjs`, `scripts/check-version-bump.mjs` |
-| **Logged** | 2026-10-26 |
+| **Category** | reliability |
+| **Owner** | `.claude/skills/plugin-renames-and-removals/scripts/check-version-bump.py`, `.claude/skills/release-and-versioning/scripts/check-version-bump.py` |
+| **Logged** | 2026-10-28 |
 
 #### 🔎 Evidence
 
-- **Confirmed facts:** `scripts/bump-version.mjs` and `scripts/check-version-bump.mjs` re-implement what `release-and-versioning`'s `bump-version.py` and `check-version-bump.py` do; the `version-bump` gate runs the `.mjs` one. The review of Biome's scripts on 2026-10-26 proposed one script per rule, retiring the `.mjs` copies; it was not approved. Skill scripts keep their own copies on purpose (memory `skill-checks-are-not-gates`).
-- **Inferences:** a rule change made in one copy and not the other makes the gate and the skill disagree.
-- **Open questions:** whether the gate keeps its own copy or runs the skill's script.
+- **Confirmed facts:** on 2026-10-28, `diff` showed that the two `bump-version.py` copies are identical and the two `check-version-bump.py` copies differ. The plugin-renames copy requires only a version above the one at the base and a `CHANGELOG.md` section; it has no one-step rule and no note for a step from 0.x to 1.0.0. The release copy rejects a skipped version and emits that note.
+- **Inferences:** a plugin version that skips a step (for example 0.1.0 to 0.3.0) passes the plugin-renames check and fails the `version-bump` gate. Not tested.
+- **Open questions:** whether the plugin-renames skill keeps its own copy, updated to the release rule, or runs the release skill's script.
 
 #### 📈 Impact and next step
 
-- **Impact / risk:** two implementations of the bump rule to keep in step.
-- **Why it is not fixed now:** it touches the agreed split between skills and gates; Nery decides.
-- **Next action:** ask Nery whether the `version-bump` gate runs `check-version-bump.py`.
-- **Review condition:** closes when each rule has one implementation per layer Nery approves.
-- **Related records:** none.
+- **Impact / risk:** the rename and removal procedure can accept a bump that the gate rejects on the same push.
+- **Why it is not fixed now:** skills keep their own copies of the scripts they run (memory `skill-checks-are-not-gates`), so the choice between one shared script and two synced copies is Nery's.
+- **Next action:** ask Nery which option; then align the plugin-renames copy or point it at the release script, and test a skipped version in that skill.
+- **Review condition:** closes when the two `check-version-bump.py` files are identical or one calls the other, and a skipped version fails in both.
+- **Related records:** DEBT-025, ADR_2026-10-28_version-gate-runs-the-release-skill-script.
 
 ### DEBT-027 — `claude-review` was denied four tool calls on PR #42
 
