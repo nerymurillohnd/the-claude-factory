@@ -44,7 +44,6 @@ Add an item only when all of these hold:
 | DEBT-010 | The mod gates of `scripts/gates.mjs` can miss a mod or report green on a lost test summary | 🟠 Blocked |
 | DEBT-015 | `plugin-hooks-guidance` states hook facts that contradict `building-plugins` and the hooks docs | 🟠 Blocked |
 | DEBT-016 | `testing-mods` has no live MCP checks for a mod that ships an MCP server | 🟠 Blocked |
-| DEBT-017 | `testing-plugins` says the full eval suite runs in CI, and no eval workflow exists | 🟠 Blocked |
 | DEBT-020 | `docs/github-mcp-tools.md` serves one plugin but lives in the marketplace docs | 🟠 Blocked |
 | DEBT-023 | Gaps from the TypeScript hook audit report are still unaddressed | 🟠 Blocked |
 | DEBT-027 | `claude-review` was denied four tool calls on PR #42 | 🟡 Pending |
@@ -171,29 +170,6 @@ Add an item only when all of these hold:
 - **Next action:** ask Nery, then add the reference or the pointer to `testing-mods`.
 - **Review condition:** closes when `testing-mods` routes a mod with an MCP server through the live MCP checks.
 - **Related records:** ADR_2026-10-25_testing-plugins-owns-live-mcp-checks.
-
-### DEBT-017 — `testing-plugins` says the full eval suite runs in CI, and no eval workflow exists
-
-| Field | Value |
-| --- | --- |
-| **Status** | 🟠 Blocked |
-| **Category** | quality |
-| **Owner** | `.claude/skills/testing-plugins/SKILL.md` |
-| **Logged** | 2026-10-26 |
-
-#### 🔎 Evidence
-
-- **Confirmed facts:** `testing-plugins/SKILL.md` line 25 says to "make sure CI will run the full suite" and line 38 is headed "Evals: pilot and smoke locally, full suite in CI"; `.github/workflows/` holds only `claude-code-review.yml`, `claude.yml`, `release.yml` and `validate.yml` (2026-10-26). The earlier "this repository's CI" phrase in `eval-policy.md` is gone.
-- **Inferences:** a plugin with evals ships without its full suite ever running.
-- **Open questions:** whether the full suite runs locally until an eval workflow exists, or a workflow is added (it spends money on every pull request that edits a plugin with evals).
-
-#### 📈 Impact and next step
-
-- **Impact / risk:** the skill promises a check nobody runs.
-- **Why it is not fixed now:** the choice, and any CI spend, is Nery's.
-- **Next action:** ask Nery; then change step 4 to run the full suite locally, or add the workflow with his approval.
-- **Review condition:** closes when the skill and the workflows agree on where the full suite runs.
-- **Related records:** none.
 
 ### DEBT-020 — `docs/github-mcp-tools.md` serves one plugin but lives in the marketplace docs
 
