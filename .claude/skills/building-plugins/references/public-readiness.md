@@ -49,7 +49,7 @@ Anthropic's directory blocks a README under 40 words (code blocks don't count), 
 ## Secrets, credentials and network calls
 
 - No API keys, tokens or real credentials in any file, including examples and docs. Every user receives every file.
-- Ask for credentials through `userConfig` with `"sensitive": true` and reference them as `${user_config.KEY}` (MCP/LSP config, exec-form hook `args`) or `CLAUDE_PLUGIN_OPTION_<KEY>` (hook environment).
+- Ask for credentials through `userConfig` with `"sensitive": true` and reference them where `/en/plugins/manifest-reference` → User configuration says each form resolves, which for a hook depends on its form.
 - Don't read credentials already in the user's environment (such as `$GITHUB_TOKEN`) and send them to a server; ask for them explicitly. The directory holds or blocks this, and it surprises users.
 - Make network calls only when the plugin's purpose needs them, and write the README disclosure in the same commit as the call.
 - Use `https://` (or `wss://`) for remote MCP URLs. Claude Code warns on `http://`/`ws://` to a non-loopback host, and the directory blocks other schemes (it also accepts a `${user_config.KEY}` reference or `""`).
@@ -63,7 +63,7 @@ Users install by cloning, so the repo itself must survive a clone on any OS:
 - **Submodules**: Claude Code (v2.1.295+) fetches only submodules inside a plugin's directory; a plugin at the repo root that refers to any submodule path pulls all of them. Avoid submodules for plugin content; commit real files.
 - **Symlinks**: kept inside a plugin; dereferenced across plugins of the same marketplace; skipped when they leave the marketplace. Prefer real files; the directory blocks symlinks the plugin loads.
 - **File names**: valid on Windows and macOS (no `:`, no trailing dot or space, no `con`/`prn`, no two names differing only by case). Remove `.DS_Store`, `Thumbs.db`, `desktop.ini`, `__MACOSX`.
-- **Executable bit**: commit scripts as `100755` (`git update-index --chmod=+x <file>`, then check with `git ls-files -s`). A lost bit fails the hook on every user's machine.
+- **Executable bit**: commit a script that anything runs by its path as `100755` (`git update-index --chmod=+x <file>`, then check with `git ls-files -s`). A lost bit then fails it on every user's machine.
 - **Self-contained**: everything a hook, MCP server or script runs lives inside the plugin directory; installed plugins are copies and can't reach `../`.
 - **`.gitattributes`**: no `export-ignore`, `export-subst`, or content filters (LFS included) affecting the plugin.
 - **No top-level `bin/`** unless Claude Code-only by design.
@@ -95,7 +95,7 @@ If the author's own convention is "never pin tool versions", note the difference
 - [ ] `LICENSE` present; third-party material attributed
 - [ ] No secrets anywhere; credentials via `userConfig` `sensitive: true`
 - [ ] Every network call disclosed; remote MCP over `https://`
-- [ ] Scripts with `#!/usr/bin/env <interpreter>`, committed `100755`, called by path through `${CLAUDE_PLUGIN_ROOT}`
+- [ ] Scripts with `#!/usr/bin/env <interpreter>`, reached through `${CLAUDE_PLUGIN_ROOT}`, committed `100755` when run by path
 - [ ] No LFS, no stray OS files, portable file names, nothing outside the plugin directory
 - [ ] Surfaces stated; no top-level `bin/` unless Claude Code-only
 - [ ] `version` set in `plugin.json` and absent from the marketplace entry (see `versioning-and-release.md`)

@@ -61,8 +61,7 @@ Checked 2026-10-25 against `/en/plugins/create`, `/en/plugins/components`, `/en/
 - Where they resolve: hook `command`/`args`, MCP stdio `command`/`args`/`env`, MCP remote `url`/`headers`/`headersHelper`, LSP fields, monitor `command`, and the Markdown body of skills, commands and agents. Hook, LSP and MCP stdio processes also get all three in their environment. The changelog added `CLAUDE_PROJECT_DIR` for MCP stdio servers, and `/en/mcp` says so; the variables table in `/en/plugins/manifest-reference` still lists only the other two for them, and the changelog wins.
 - They are **not** in the environment of commands Claude runs with the Bash tool. In a skill, write the reference in `SKILL.md` itself; Claude Code substitutes it when the skill loads. Substitution is documented only for the skill's Markdown content and its `allowed-tools`, so don't rely on it in files under `references/` (unverified either way; keep commands that use the variables in `SKILL.md`).
 - `${CLAUDE_SKILL_DIR}` is the skill's own directory (inside the plugin), useful for scripts bundled next to `SKILL.md`.
-- Quoting: in a shell-form hook (`command` without `args`) wrap the path in double quotes, `"\"${CLAUDE_PLUGIN_ROOT}\"/scripts/x.sh"`; `validate` warns when it's unquoted. Exec form (`args`) needs no quoting.
-- `${user_config.KEY}` is rejected in shell-form hook commands, monitor commands and MCP `headersHelper`. Use exec-form `args` or read `CLAUDE_PLUGIN_OPTION_<KEY>` from the hook environment.
+- Quoting, path separators and where `${user_config.KEY}` resolves differ between a shell-form and an exec-form hook. Read `/en/plugins/manifest-reference` → Quoting and path separators and → User configuration for the form the hook uses.
 
 ## Components: what to know per type
 
@@ -76,7 +75,7 @@ Checked 2026-10-25 against `/en/plugins/create`, `/en/plugins/components`, `/en/
 
 **LSP servers.** `.lsp.json` or `lspServers`. See `/en/plugins/code-intelligence`; the language server binary is a user prerequisite to document.
 
-**Executables (`bin/`).** On the Bash tool's `PATH` while enabled, after the user's own entries (can't shadow system commands). A top-level `bin/` makes claude.ai and Cowork refuse the whole plugin; use `scripts/` and call by path unless the plugin is Claude Code-only by design.
+**Executables (`bin/`).** On the Bash tool's `PATH` while enabled, after the user's own entries (can't shadow system commands). A top-level `bin/` makes claude.ai and Cowork refuse the whole plugin; use `scripts/` and reach it through `${CLAUDE_PLUGIN_ROOT}` unless the plugin is Claude Code-only by design.
 
 **Node dependencies.** Claude Code installs them into the cached copy only when the plugin root has `package.json` plus a supported lockfile: text `bun.lock` (lockfileVersion ≤ 2), `npm-shrinkwrap.json` or `package-lock.json` (lockfileVersion 2 or 3). `bun.lockb`, `yarn.lock`, `pnpm-lock.yaml` get no install. Registry packages pinned exactly, no lifecycle scripts, 60 s timeout, no `overrides`. Anything else (Python deps, native builds) installs from a `SessionStart` hook into `${CLAUDE_PLUGIN_DATA}`. `package.json` plus a lockfile in the plugin root is held for review if you submit to Anthropic's directory.
 

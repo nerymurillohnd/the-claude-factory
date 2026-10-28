@@ -30,7 +30,7 @@ These rules apply to every script that ships inside a public marketplace plugin.
 ## Paths and state
 
 - Enclose every path containing `${CLAUDE_PLUGIN_ROOT}`, `${CLAUDE_PLUGIN_DATA}` or `${CLAUDE_PROJECT_DIR}` in double quotes.
-- Never include `${user_config.*}` in `command`; read `CLAUDE_PLUGIN_OPTION_<KEY>` inside the script.
+- In a shell-form hook, read options from `CLAUDE_PLUGIN_OPTION_<KEY>` inside the script: Claude Code rejects `${user_config.*}` in a shell-form `command`.
 - Keep persistent state in `CLAUDE_PLUGIN_DATA`, never in `CLAUDE_PLUGIN_ROOT`, which is replaced with each plugin version.
 
 ## Platforms and prerequisites
@@ -45,10 +45,8 @@ These rules apply to every script that ships inside a public marketplace plugin.
 ## Hook commands in `hooks/hooks.json`
 
 - Load `plugin-hooks-guidance` before writing or reviewing a hook.
-- Use shell form: omit `args`, because exec form bypasses Git Bash on Windows and ignores `shell`.
-- Set `"shell": "bash"` on every command hook.
-- Write `command` as the interpreter, the quoted script path and plain arguments: no pipes, `&&`, redirects, globs or shell-specific syntax.
-- Name the interpreter first (`python3`, `node`, `bash`, or `uv run --script` for a PEP 723 script); never run a script by its path alone.
+- Choose shell form or exec form (`args`) for each hook from what that plugin runs and the platforms its README declares, against `/en/hooks` → Exec form and shell form; no form is the default here.
+- Keep `command` free of pipes, `&&`, redirects, globs and shell-specific syntax.
 - Check every version-dependent hook field against the minimum Claude Code version the README states.
 - Choose `async`, `asyncRewake` and `onFailure` deliberately, by the hook's intended blocking and failure behavior.
 

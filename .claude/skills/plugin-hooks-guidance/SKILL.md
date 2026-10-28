@@ -62,7 +62,7 @@ Decide what the hook is for before you write it: to enforce a policy (deny a cal
 ### 2. Declare
 
 - Declare the hook in `hooks/hooks.json`, with the three levels: event, matcher group, handler. The input arrives as JSON on stdin; never write a `"hook"` object and never read `$TOOL_INPUT`.
-- Write the command in shell form with the placeholder in double quotes: the variable `CLAUDE_PLUGIN_ROOT`, wrapped as `${…}`, followed by `/hooks/<script>`, inside escaped quotes in the JSON string. Exec form (`args`) needs a real `.exe` on Windows, and Windows runs only through Git Bash here.
+- Choose shell or exec form from what the plugin runs and the platforms its README declares, against `/en/hooks` → Exec form and shell form; no form is the default here. In shell form, wrap each path variable (`${CLAUDE_PLUGIN_ROOT}`) in escaped double quotes inside the JSON string.
 - Set `timeout` on every handler.
 - Start the script with `#!/usr/bin/env <interpreter>`, as `building-plugins` says. Resolve `node` and `tsc` across every Node manager inside the script.
 
@@ -92,7 +92,7 @@ Example, a PreToolUse deny:
 
 ### 6. Test
 
-1. Run the script by hand with a minimal environment, once per interpreter manager the hook depends on: `env -i HOME= PATH=/usr/bin:/bin ./hooks/<script> < input.json`, with `input.json` built from a quoted heredoc.
+1. Run the script by hand with a minimal environment, once per interpreter manager the hook depends on: `env -i HOME= PATH=/usr/bin:/bin <the hook's command, with the plugin root replaced by .> < input.json`, with `input.json` built from a quoted heredoc.
 2. Test one call made from a subagent before the README says the hook covers them.
 3. Test in `default` and in `bypassPermissions` mode before the README states what the hook blocks: the docs do not say it runs in both. Start the session in each mode as `/en/permission-modes` describes.
 4. Run `claude plugin validate --strict plugins/<name>` and the plugin's tests, which live in `scripts/testers/<plugin>/`: `node --test` for `*.test.mjs`, and `python3 -m unittest discover` plus `by_path.sh` for a Python script, as `.claude/CLAUDE.md` → Plugin Tooling requires them. Break the rule on purpose once and confirm a test fails.
