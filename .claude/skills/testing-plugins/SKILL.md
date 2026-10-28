@@ -1,6 +1,6 @@
 ---
 name: testing-plugins
-description: Use to build or run the eval suite of any plugin, mods included, when evals are requested for it or a plugin that has evals was edited, to run the live checks of a ready plugin's MCP servers and MCP hooks, and to diagnose install, load or marketplace errors of plugins from a public GitHub marketplace. Not for a mod's own tests and troubleshooting, unit tests, type checks, linters or validate runs.
+description: Use to build or run the eval suite of any plugin, mods included, when evals are requested for it, to run the live checks of a ready plugin's MCP servers and MCP hooks, and to diagnose install, load or marketplace errors of plugins from a public GitHub marketplace. Not for a mod's own tests and troubleshooting, unit tests, type checks, linters or validate runs.
 ---
 
 # GitHub plugin QA
@@ -22,8 +22,8 @@ Out of scope. Say so in one sentence and stop; do not improvise a fix:
 Only when asked. Never add evals to a plugin, or run them, on your own initiative.
 
 - **New plugin, evals requested:** build or complete its suite, run the local pilot, hand the full run to CI.
-- **Existing plugin that has `evals/` and was edited:** run the local pilot on the affected cases, make sure CI will run the full suite.
-- **Existing plugin without evals, edited, and nobody asked for evals:** do nothing about evals. At most mention in one line that it has no suite.- **A user pastes an install, load or marketplace error:** go to part B.
+- **Existing plugin without evals, edited, and nobody asked for evals:** do nothing about evals. At most mention in one line that it has no suite.
+- **A user pastes an install, load or marketplace error:** go to part B.
 - **Nery says a plugin with an MCP server, or with a hook that matches or calls MCP tools, is ready:** go to part C. Never before: while the plugin is being shaped, its build runs static checks only.
 
 ## Ground truth first

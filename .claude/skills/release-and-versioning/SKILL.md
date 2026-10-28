@@ -126,8 +126,7 @@ With Nery's authorization only: push the branch and open the PR, applying only t
 1. List what the merge publishes: every plugin whose `plugin.json` version on the branch differs from `origin/main` (`git diff --name-only origin/main...HEAD -- 'plugins/*/.claude-plugin/plugin.json'`, then compare the versions). Users receive each one as soon as the merge lands.
 2. List the versions on `origin/main` that have no tag yet (`plugin.json` version against `git tag -l '<plugin>--v<version>'`): users already have them, and a missing tag means an earlier release run did not happen. Show Nery both lists and confirm each plugin is meant to ship.
 3. If the PR is still open on a later day than the root changelog line, move the line to that day's section now, before the merge, never in a push after the merge.
-4. For every changed plugin that ships evals, confirm its suite passed on the PR's head. No CI runs it, so the run is a local `claude plugin eval` on Nery's yes, because it spends usage.
-5. Install each published plugin the way a user without a GitHub SSH key gets it: from the pushed PR branch, cloned over HTTPS from GitHub, in throwaway configurations that leave Nery's settings and plugins untouched. `B` holds the branch and `M` the current `main`, for comparison; make both with `mktemp -d` in the session scratchpad.
+4. Install each published plugin the way a user without a GitHub SSH key gets it: from the pushed PR branch, cloned over HTTPS from GitHub, in throwaway configurations that leave Nery's settings and plugins untouched. `B` holds the branch and `M` the current `main`, for comparison; make both with `mktemp -d` in the session scratchpad.
    ```bash
    iso() { local t="$1"; shift; env -u CLAUDE_CODE_PLUGIN_DIRS CLAUDE_CODE_PLUGIN_PREFER_HTTPS=1 CLAUDE_CONFIG_DIR="$t/config" CLAUDE_CODE_PLUGIN_CACHE_DIR="$t/plugins" claude "$@"; }
    B="$(mktemp -d)"; M="$(mktemp -d)"
@@ -144,7 +143,7 @@ With Nery's authorization only: push the branch and open the PR, applying only t
    - The `Always-on` figure of `plugin details` in `B` against `M`: report any increase to Nery, with the component that grew. A new plugin has no figure in `M`; report its figure.
    - A failure here would reach users: fix it before the merge. Delete `B` and `M` afterwards.
    - A branch name with `/` after `#` works: `fix/file-tree-pane-biome-test-and-nursery-rules` installed this way on v2.1.311.
-6. Merge only when Nery orders it.
+5. Merge only when Nery orders it.
 
 ### 9. Verify the release after the merge
 
@@ -154,7 +153,7 @@ With Nery's authorization only: push the branch and open the PR, applying only t
 4. Print the expected tag with `.claude/skills/release-and-versioning/scripts/release-notes.py <plugin> --tag` (never compose it by hand). Without `--tag` it prints the notes the release carries: `release.yml` runs this same script to build them.
 5. Confirm the tag and the GitHub Release exist: `gh release view <plugin>--v<version>`, and that the tag matches step 4.
 6. Confirm no other plugin was tagged by the same run unless intended: `gh run view <run-id> --log | grep -oE 'Released [a-z0-9-]+--v[0-9.]+'` lists every tag that run published.
-7. Repeat the branch half of step 8.5 from `nerymurillohnd/the-claude-factory#main`: `plugin list` must show the new version and `plugin details` the same components and `Always-on` figure as before the merge. That is what users receive.
+7. Repeat the branch half of step 8.4 from `nerymurillohnd/the-claude-factory#main`: `plugin list` must show the new version and `plugin details` the same components and `Always-on` figure as before the merge. That is what users receive.
 8. Report to Nery: the version users receive, the tag and the release exist and match, and nothing unintended was tagged.
 
 ### 10. Recover from a failed Validate
