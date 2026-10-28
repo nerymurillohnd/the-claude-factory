@@ -38,7 +38,7 @@ Checked 2026-10-25 against `/en/plugins/publish`, `/en/plugins/host-marketplace`
 
    Keep it even though `claude plugin install` from the shell falls back to HTTPS on its own (v2.1.288+ on macOS and Linux, v2.1.296+ on Windows): installs from `/plugin` inside a session and plugin updates don't.
 3. **Update** — `claude plugin update <plugin>@<marketplace>`, and that auto-update is off until they enable it under `/plugin` → Marketplaces.
-4. **Prerequisites** — every tool, binary, runtime, account or service the plugin needs, how to install it, and alternatives. Missing tools are a documented prerequisite, never a silent assumption or an in-plugin installer.
+4. **Prerequisites** — every tool, binary, runtime, account or service the plugin needs, how to install it, and alternatives. Missing tools are a documented prerequisite, never a silent assumption. A dependency the plugin installs itself, from a hook into `${CLAUDE_PLUGIN_DATA}` as `/en/plugins/loading` documents, is listed here and under What it runs and sends: what it downloads, from where, and where it writes.
 5. **Configuration** — each `userConfig` option and how to set it from the shell (`--config KEY=VALUE`) or `/plugin configure`.
 6. **What it runs and sends** — every hook (event, matcher, what the script does), every MCP server (command or URL), every monitor, every network destination and what data goes there. Claude Code's trust warning sends users to the plugin's homepage before they install, so this is what they read, and hooks run with their full permissions outside the sandbox.
 7. **Usage** — the skill commands (`/<plugin>:<skill>`) and example prompts that trigger the plugin's skills.
