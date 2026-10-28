@@ -14,6 +14,12 @@ import {
   hintsFor,
 } from './rules'
 
+/**
+ * A git probe never runs a program the searched repository names in its own config:
+ * \`core.fsmonitor\` is run by git when it reads the index, and a cloned repository can set it.
+ */
+const GIT = ['git', '-c', 'core.fsmonitor=false']
+
 /** Every probe runs from `/` with absolute paths and gives up after 5 seconds. */
 const PROBE = { cwd: '/', timeoutMs: 5000 }
 
@@ -73,7 +79,7 @@ async function hasNestedRepository($: EngineInterface, root: string): Promise<bo
 
 /** Steps 2 and 3 for a root that holds a .gitignore: whether ugrep would skip anything there. */
 async function gitignoreHidesFiles($: EngineInterface, root: string): Promise<boolean> {
-  const inside = await probe($, ['git', '-C', root, 'rev-parse', '--is-inside-work-tree'])
+  const inside = await probe($, [...GIT, '-C', root, 'rev-parse', '--is-inside-work-tree'])
   if (inside.exitCode !== 0 || inside.stdout.trim() !== 'true') {
     /** A .gitignore outside a work tree. */
     return true
@@ -84,7 +90,7 @@ async function gitignoreHidesFiles($: EngineInterface, root: string): Promise<bo
   }
   /** Untracked ignored entries, then tracked files that match .gitignore. */
   const others = await probe($, [
-    'git',
+    ...GIT,
     '-C',
     root,
     'ls-files',
@@ -96,7 +102,7 @@ async function gitignoreHidesFiles($: EngineInterface, root: string): Promise<bo
     '.',
   ])
   const cached = await probe($, [
-    'git',
+    ...GIT,
     '-C',
     root,
     'ls-files',

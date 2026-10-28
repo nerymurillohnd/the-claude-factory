@@ -119,7 +119,7 @@ Show the first 4 characters of each line of names.txt, deduplicated with uniq -w
 
 - **Mod:** one `tool.call` hook on `Bash`, [`hooks/register.ts`](hooks/register.ts), with its rules in [`hooks/rules.ts`](hooks/rules.ts). It runs with your permissions and no sandbox. See Where it runs and what turns it off, below.
 - **Reads:** the Bash command and its result, which Claude Code passes to the mod. For a recursive `grep` without explicit choices, the names of files and folders under the search folder (to find `.gitignore` files and nested `.git` folders) and, through `git`, the `.gitignore` files and the repository index there. No file contents.
-- **Processes it starts**, each without a shell and each stopped after 5 seconds: `uname -s` once per session; `awk` once, to check whether `IGNORECASE` works; and, for a recursive `grep` without explicit choices, `/usr/bin/find <folder> -name .gitignore -print -quit`, `/usr/bin/find <folder> -mindepth 2 -name .git -print -quit`, `git -C <folder> rev-parse --is-inside-work-tree` and `git -C <folder> ls-files`.
+- **Processes it starts**, each without a shell and each stopped after 5 seconds: `uname -s` once per session; `awk` once, to check whether `IGNORECASE` works; and, for a recursive `grep` without explicit choices, `/usr/bin/find <folder> -name .gitignore -print -quit`, `/usr/bin/find <folder> -mindepth 2 -name .git -print -quit`, `git -C <folder> rev-parse --is-inside-work-tree` and `git -C <folder> ls-files`. Every `git` call runs with `-c core.fsmonitor=false`, so a program that a cloned repository names in its own config never runs.
 - **MCP servers:** none.
 - **Network:** none.
 - **Files written:** none.

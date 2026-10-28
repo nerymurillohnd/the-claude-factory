@@ -283,3 +283,20 @@ test('an unknown session folder and an absolute root that ignores nothing: the g
   expect(absolute.deny).toBeUndefined()
   expect(roots).toEqual(['/repo', '/repo'])
 })
+
+test('every git probe turns off the repository-configured fsmonitor program', async ($, on) => {
+  const gitCalls: (readonly string[])[] = []
+  on('session.cwd', () => ({ value: '/repo' }))
+  on('process.run', (_$, e) => {
+    if (e.argv[0] === 'git') {
+      gitCalls.push(e.argv)
+    }
+    return { value: answerFor(e.argv, { find: ok('/repo/.gitignore\n') }) }
+  })
+  on('tool.call', () => BASH_OK)
+  await $.tool.call({ tool: 'Bash', command: 'grep -r x . -I' })
+  expect(gitCalls.length).toBe(3)
+  for (const argv of gitCalls) {
+    expect(argv.slice(0, 3)).toEqual(['git', '-c', 'core.fsmonitor=false'])
+  }
+})
