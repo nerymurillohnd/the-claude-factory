@@ -199,10 +199,11 @@ When a project has no Tailwind yet, or changes how it integrates Tailwind:
 
 1. **Detect the framework and the package manager.** Read `package.json` dependencies and the framework's config file (`astro.config.*`, `svelte.config.*`, `next.config.*`, `nuxt.config.*`, `angular.json`, `vite.config.*`, `postcss.config.*`) or the server framework's manifest (`Gemfile`, `composer.json`, `mix.exs`). Take the package manager from the lockfile: `package-lock.json` npm, `pnpm-lock.yaml` pnpm, `yarn.lock` yarn, `bun.lock` or `bun.lockb` bun.
 2. **Pick the guide.** When the framework is in the framework-guides list of the topic index, use that page; copy its slug exactly, since two carry a sub-path (`laravel/vite`, `rspack/react`) that the framework name does not predict. When it is not listed, the framework-guides page points to the generic paths instead (the CLI, the Vite plugin or the PostCSS plugin). Choose by what the project already has:
-   - a Vite config → `installation/using-vite`;
-   - a PostCSS config, or a bundler that runs PostCSS → `installation/using-postcss`;
-   - no build tool → `installation/tailwind-cli`.
-   The Play CDN (`installation/play-cdn`) is for prototypes only; Tailwind states it is not intended for production.
+   - a Vite config → `installation/using-vite`, with [references/installation/using-vite.md](references/installation/using-vite.md);
+   - a PostCSS config, or a bundler that runs PostCSS → `installation/using-postcss`, with [references/installation/using-postcss.md](references/installation/using-postcss.md);
+   - no build tool, or no Node.js → `installation/tailwind-cli`, with [references/installation/tailwind-cli.md](references/installation/tailwind-cli.md), which also covers the standalone executable and the build options.
+   The Play CDN (`installation/play-cdn`, with [references/installation/play-cdn.md](references/installation/play-cdn.md)) is for prototypes only; Tailwind states it is not intended for production.
+   Each reference lists what the setup consists of, what to check in the project and how to verify it. The official page stays the source of truth: read it whole (the installation pages are short numbered steps), and when it differs from the reference, follow the page.
 3. **Follow the guide's steps exactly**, translating only the install command to the project's package manager. Add nothing the guide does not ask for: no PostCSS plugins, config files or packages from memory or from v3 habits.
 4. **Verify a first class renders.** Add one utility the project's styles cannot already produce (for example `text-3xl font-bold underline`) to a page, run the project's dev server or build, and confirm the generated CSS contains it, in a browser when one is available. Remove the probe class afterwards unless the user wants it.
 
