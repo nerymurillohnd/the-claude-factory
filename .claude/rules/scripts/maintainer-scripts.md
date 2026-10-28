@@ -20,6 +20,14 @@ These rules apply only to the scripts that build and maintain this repository, o
 - Strict POSIX shell: `#!/bin/sh`.
 - Node: `#!/usr/bin/env node`.
 
+## Python version
+
+These follow ADR_2026-10-27_python-version-is-set-per-scope.
+
+- Target Python 3.15.
+- Scripts in `.claude/skills/*/scripts/` target Python 3.12 instead, because CI runs them with the `python3` of its `ubuntu-24.04` runner.
+- A PEP 723 script declares `requires-python = "==3.15.*"`; `scripts/gates.mjs` runs it in its own environment and `scripts/basedpyright-maintainer.mjs` type-checks it against that environment.
+
 ## Executability
 
 - Run `chmod +x` on every maintainer script.
