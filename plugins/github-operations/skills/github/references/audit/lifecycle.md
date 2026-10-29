@@ -1,15 +1,6 @@
----
-name: git-cleanup
-description: Exhaustively audit a Git repository from its first commit to today, then clean it up after two user approvals. Covers branches, worktrees, stashes, history, objects, pull requests, issues, Actions, forks and every external link still pointing at it. Use when the user asks to audit, clean up, tidy, prune, or find out what is dead, stale, orphaned or exposed in a repository or its GitHub project.
-argument-hint: "[absolute path to the repository] [problem or focus, optional]"
-disable-model-invocation: true
----
-
-# git-cleanup
+# Audit and cleanup lifecycle
 
 Audit a repository completely, report it in plain language, and change nothing until the user approves twice. Run the commands in the references yourself, from your scratch folder. Nothing is installed and no script is written into the repository or onto the machine.
-
-`$ARGUMENTS` is an absolute repository path, optionally followed by a problem to investigate. With no path, use the current directory.
 
 ## Lifecycle
 
@@ -17,9 +8,9 @@ Create one task per step (TaskCreate) and complete them in order.
 
 | # | Step | Read | Output | Gate |
 | :-: | :-- | :-- | :-- | :-- |
-| 0 | Intake: repository, remote, `gh` identity and permission, which scans outside the repository are allowed | `audit.md` | `context.md` | none |
-| 1 | Audit, read-only: local Git, full history, objects, residue, GitHub, external links | `audit.md`, then `audit-history.md`, `audit-github.md`, `audit-links.md` as the allowed scopes permit | files in the scratch folder | none |
-| 2 | Inventory and classify; keep the coverage ledger | `audit.md` (Step 2) | `findings.md`, `coverage.md` | none |
+| 0 | Intake: repository, remote, `gh` identity and permission, which scans outside the repository are allowed | `intake-local.md` | `context.md` | none |
+| 1 | Audit, read-only: local Git, full history, objects, residue, GitHub, external links | `intake-local.md`, then `history.md`, `github.md`, `links.md` as the allowed scopes permit | files in the scratch folder | none |
+| 2 | Inventory and classify; keep the coverage ledger | `intake-local.md` (Step 2) | `findings.md`, `coverage.md` | none |
 | 3 | Report and recommendations | `report.md` | `report.md` | **Gate 1**: the user approves recommendation IDs |
 | 4 | Implementation plan for the approved IDs only | `plan.md` | `plan.md` | **Gate 2**: the user approves action IDs |
 | 5 | Backup (`A-01`, always) and revalidation | `execute.md` | backup folder | state drift stops the run |
@@ -44,8 +35,8 @@ Read a reference when its step starts, not before. A reference that names anothe
 
 ## Folders
 
-- **Scratch folder:** your session scratchpad if the session names one, otherwise `mktemp -d "${TMPDIR:-/tmp}/git-cleanup-XXXXXX"`. Outside the repository. Holds audit output, `findings.md`, `coverage.md`, `report.md` and `plan-draft.md`. Write outputs to files and read them in pieces; a context compaction then loses nothing.
-- **Backup folder:** chosen by the user at Gate 1 (recommend `~/git-cleanup-backups/<repo>-<date>`, absolute, never inside the repository). Holds the bundle, patches, archives, `manifest.txt`, `plan.md` with statuses, `validation.md` and `results.md`. Never deleted without the user's explicit yes.
+- **Scratch folder:** your session scratchpad if the session names one, otherwise `mktemp -d "${TMPDIR:-/tmp}/repo-cleanup-XXXXXX"`. Outside the repository. Holds audit output, `findings.md`, `coverage.md`, `report.md` and `plan-draft.md`. Write outputs to files and read them in pieces; a context compaction then loses nothing.
+- **Backup folder:** chosen by the user at Gate 1 (recommend `~/repo-cleanup-backups/<repo>-<date>`, absolute, never inside the repository). Holds the bundle, patches, archives, `manifest.txt`, `plan.md` with statuses, `validation.md` and `results.md`. Never deleted without the user's explicit yes.
 
 ## Style of the work
 

@@ -20,12 +20,12 @@ sha256sum "<dir>/all.bundle" > "<dir>/all.bundle.sha256"                       #
 git clone --quiet --mirror "<dir>/all.bundle" "<dir>/restore-test.git"          # the restore test, in a fresh folder
 git -C "<dir>/restore-test.git" fsck --connectivity-only
 git -C "<dir>/restore-test.git" for-each-ref --format='%(refname) %(objectname)' | sort > "<dir>/restored-refs.txt"
-git -C "<repo>" for-each-ref --format='%(refname) %(objectname)' refs/heads refs/tags refs/remotes refs/git-cleanup-backup | grep -v '/HEAD ' | sort > "<dir>/live-refs.txt"
+git -C "<repo>" for-each-ref --format='%(refname) %(objectname)' refs/heads refs/tags refs/remotes refs/repo-cleanup-backup | grep -v '/HEAD ' | sort > "<dir>/live-refs.txt"
 diff "<dir>/live-refs.txt" "<dir>/restored-refs.txt"                           # no difference
 git -C "<repo>" apply --check < "<dir>/uncommitted-<name>.patch"                # only when the tree is as it was when the patch was taken
 ```
 
-Then read the backup's contents with `tar -tf` and `wc -l` and compare them with `manifest.txt`. If any check fails, fix the backup and repeat; if it cannot be fixed, stop the run and tell the user what is not covered. Finally delete the rescue refs (`git update-ref -d refs/git-cleanup-backup/<name>`, one per ref) and confirm `git for-each-ref refs/git-cleanup-backup` prints nothing.
+Then read the backup's contents with `tar -tf` and `wc -l` and compare them with `manifest.txt`. If any check fails, fix the backup and repeat; if it cannot be fixed, stop the run and tell the user what is not covered. Finally delete the rescue refs (`git update-ref -d refs/repo-cleanup-backup/<name>`, one per ref) and confirm `git for-each-ref refs/repo-cleanup-backup` prints nothing.
 
 Remove `restore-test.git` only after the user has kept or discarded the backup at step 8.
 

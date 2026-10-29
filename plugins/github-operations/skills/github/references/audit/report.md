@@ -10,7 +10,7 @@ Ask the user, with `AskUserQuestion` (up to four questions per call, your recomm
 - Whether branches by other authors, or with an open pull request, may be touched at all.
 - What to do with stale pull requests and issues.
 - Whether stashes whose content is already in the base may go.
-- Where the backup goes. Recommend a folder outside the repository, such as `~/git-cleanup-backups/<repo>-<date>`, written as an absolute path. Refuse a folder inside the repository.
+- Where the backup goes. Recommend a folder outside the repository, such as `~/repo-cleanup-backups/<repo>-<date>`, written as an absolute path. Refuse a folder inside the repository.
 - Which of the audit's follow-up work the user wants (refactor, bisect, a fix): see `investigate.md`.
 
 ## Report template

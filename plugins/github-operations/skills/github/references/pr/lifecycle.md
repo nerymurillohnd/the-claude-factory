@@ -1,19 +1,10 @@
----
-name: auto-pr-lifecycle
-description: Use when asked to open a PR, ship or land a change, get a PR merged, babysit or check a PR through to completion, or drive CI failures and review feedback to resolution. Runs branch, validate, commit, push and PR, then observes and repairs until the PR is ready, merges only after explicit approval for the exact head SHA, then cleans up branches and syncs the base. Not for requests that only ask to commit or push.
-argument-hint: "[PR number or URL]"
-compatibility: Needs the GitHub MCP server (bundled with this plugin), local git, an authenticated gh CLI for operations the MCP lacks, and the Agent tool to run github-operations:pr-tracker.
----
-
-# Automatic PR lifecycle
+# PR lifecycle
 
 You own the PR from its starting point to the merge, not just to the push. Run the loop without routine check-ins. The one human gate is the merge approval.
 
 ## Roles
 
 The main session acts and mutates: scope, local git, PR creation and updates, every fix, review replies and thread resolution, the readiness decision, the approval request, the merge, cleanup and the report. The `github-operations:pr-tracker` agent observes and diagnoses, read-only. Launch it with the Agent tool and `subagent_type` set to `github-operations:pr-tracker`. Never authorize it to edit, reply, resolve, rerun, commit, push, merge or change GitHub state. Its recommendations advise; they do not widen the task.
-
-`$ARGUMENTS` is an optional PR number or URL. With one, resume that PR from the phase it is in. With none, work from the current checkout and branch.
 
 ## Lifecycle
 
@@ -32,12 +23,12 @@ Open a PR only when the request calls for one. "Commit", "commit and push" or "p
 
 Read the one for the step you are on:
 
-- [start.md](references/start.md): before the first push of a run. Scope, branch, validation, commit, push, create the PR, labels.
-- [observe.md](references/observe.md): every time you need the PR's state. How to brief the tracker, check its report, map its status to a lifecycle state, act after its wait, and read GitHub yourself when the tracker cannot.
-- [repair-loop.md](references/repair-loop.md): when an observation has actionable findings, the branch is behind its base or conflicts, or you reply to or resolve review threads.
-- [merge-protocol.md](references/merge-protocol.md): when the PR looks ready. Readiness, merge method, approval, landing, cleanup.
-- [tool-matrix.md](references/tool-matrix.md): before the first GitHub operation of a run and whenever a tool call fails. Preflight, and for each write task the preferred layer (MCP or `gh`) with its fallback.
-- [final-report.md](references/final-report.md): when you close the run.
+- `start.md`: before the first push of a run. Scope, branch, validation, commit, push, create the PR, labels.
+- `observe.md`: every time you need the PR's state. How to brief the tracker, check its report, map its status to a lifecycle state, act after its wait, and read GitHub yourself when the tracker cannot.
+- `repair.md`: when an observation has actionable findings, the branch is behind its base or conflicts, or you reply to or resolve review threads.
+- `merge.md`: when the PR looks ready. Readiness, merge method, approval, landing, cleanup.
+- `tooling.md`: before the first GitHub operation of a run and whenever a tool call fails. Preflight, and for each write task the preferred layer (MCP or `gh`) with its fallback.
+- `report.md`: when you close the run.
 
 If a reference disagrees with the tools you have, inspect the actual tool interface and the repository policy. Do not invent tool names, parameters or operations.
 

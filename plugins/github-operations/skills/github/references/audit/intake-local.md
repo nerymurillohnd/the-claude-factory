@@ -6,7 +6,7 @@ The audit is read-only and complete. It covers the repository from its first com
 
 - **Read-only.** Allowed: commands that write nothing to the repository (`status`, `log`, `diff`, `show`, `blame`, `grep`, `rev-list`, `rev-parse`, `for-each-ref`, `cat-file`, `ls-files`, `ls-remote`, `merge-base`, `merge-tree --write-tree` into a temporary object store, `cherry`, `fsck` without `--lost-found`, `count-objects`, `worktree list`, `worktree prune --dry-run`, `stash list`/`show`, `gh` read commands, `gh api` GET). Not allowed: `fetch` (it moves remote-tracking refs), `gc`, `prune`, `clean` without `-n`, `fsck --lost-found`, anything that edits a ref, the index or a file.
 - **No locks.** Run every audit git command as `GIT_OPTIONAL_LOCKS=0 git -C "<repo>" ...` so that `status` does not rewrite the index. Below, `git` means that.
-- **Scratch folder.** Use your session scratchpad directory if the session names one, otherwise `mktemp -d "${TMPDIR:-/tmp}/git-cleanup-XXXXXX"`. It is outside the repository. Write every command's output to a file there and read it in pieces (`wc -l`, `head`, `sort | uniq -c`, `awk`). Never print an unbounded history, ref list or PR list into the conversation. Keep `audit-log.md` (the command and the relevant result) and the findings there. Do not install anything and do not leave files anywhere else.
+- **Scratch folder.** Use your session scratchpad directory if the session names one, otherwise `mktemp -d "${TMPDIR:-/tmp}/repo-cleanup-XXXXXX"`. It is outside the repository. Write every command's output to a file there and read it in pieces (`wc -l`, `head`, `sort | uniq -c`, `awk`). Never print an unbounded history, ref list or PR list into the conversation. Keep `audit-log.md` (the command and the relevant result) and the findings there. Do not install anything and do not leave files anywhere else.
 - **Secrets.** Report secret-like file names only. Never open `.env`, keys, tokens or credential stores, and never print a token. Redact credentials in every URL you show: `sed -E 's#(//)[^/@[:space:]]*@#\1***@#'`.
 - **Failure is not zero.** If a command fails, the fact it would have given is `BLOCKED`, with the failing command and its error. Never read a failed call as an empty result.
 - **Full SHAs** (40 characters) for anything the plan will act on.
@@ -14,7 +14,7 @@ The audit is read-only and complete. It covers the repository from its first com
 
 ## Step 0: intake
 
-1. Resolve the repository from `$ARGUMENTS`: an absolute path to an existing directory is the repository and any text after it is a problem to investigate; with no path, use the current directory. Run `git -C "<path>" rev-parse --show-toplevel` and tell the user if the root differs from what they gave. If it is not a repository, stop.
+1. Resolve the repository from the request, or from the target on the `ARGUMENTS:` line when one is given: an absolute path to an existing directory is the repository and any text after it is a problem to investigate; with no path, use the current directory. Run `git -C "<path>" rev-parse --show-toplevel` and tell the user if the root differs from what they gave. If it is not a repository, stop.
 2. Create the scratch folder and tell the user its path.
 3. Identify the remote and host: `git remote -v` (redacted). If the host is GitHub, take `<owner>/<repo>` from the URL; check `gh auth status` and the viewer's permission with `gh repo view -R <owner>/<repo> --json viewerPermission,visibility,isFork,defaultBranchRef`. Without `gh`, use the read-only tools of a connected GitHub server; with neither, every GitHub fact is `BLOCKED` in the ledger. A host that is not GitHub: the GitHub domains are `not reachable`.
 4. Ask once, with `AskUserQuestion`, which scans outside the repository are allowed: (a) read-only network queries (`git ls-remote`, `gh`, public registries); (b) searching this machine for other clones, workspace files, symlinks and scheduled jobs, and if so which folders to search; (c) listing processes and listening ports to find tunnels. A scope the user declines is recorded as `declined` in the ledger, not skipped silently.
@@ -104,7 +104,7 @@ git range-diff <base>...<ref>                                     # only to matc
 
 To read content, list names first (`git diff --name-only <base>...<ref>`) and exclude secret-like names with `-- . ':(exclude,glob)**/.env'`; committed secrets exist, so never fall back to an unfiltered patch. A branch checked out in a worktree cannot be deleted until that worktree is gone. A remote branch that was never fetched has no local objects: mark it `BLOCKED` and leave it untouched.
 
-For remote branches also record the author (other authors raise the risk: ask), any open pull request (from `audit-github.md`), and the live SHA (`git ls-remote --heads origin`), because execution re-checks it.
+For remote branches also record the author (other authors raise the risk: ask), any open pull request (from `github.md`), and the live SHA (`git ls-remote --heads origin`), because execution re-checks it.
 
 ### 1.5 Worktrees
 
@@ -174,7 +174,7 @@ Compare the two: refs the remote has that were never fetched, tracking refs whos
 
 ## History, objects, GitHub and links
 
-After 1.10, read the other audit references as the user's scopes allow: `audit-history.md` (all history, objects, secrets by name, deferred work), `audit-github.md` (pull requests, issues, discussions, forks, Actions, protection, integrations, alerts), `audit-links.md` (everything outside the repository that still points at it). They write to the same scratch folder.
+After 1.10, read the other audit references as the user's scopes allow: `history.md` (all history, objects, secrets by name, deferred work), `github.md` (pull requests, issues, discussions, forks, Actions, protection, integrations, alerts), `links.md` (everything outside the repository that still points at it). They write to the same scratch folder.
 
 ## Step 2: classify and keep the ledger
 

@@ -52,7 +52,7 @@ Use a bisect only when there is a reliable test that tells good from bad.
 1. Start from the published base in a new branch in a separate worktree: `git -C "<repo>" worktree add -b fix/<topic> "<scratch>/wt-fix" <remote>/<base>`.
 2. Make the smallest change that fixes the finding; keep each topic in its own commit with a message that says what changed and why. Commit with the user's signing configuration (`integrate.md`, "Signing").
 3. Run the repository's own checks (tests, lint, type check, build) and record the raw output. A fix without a passing check is reported as unverified.
-4. Push the branch (plain `git push -u <remote> fix/<topic>`) and open a pull request only if the user authorized it, with the repository's labels. Hand it to the `auto-pr-lifecycle` skill when that skill is available, so reviews and checks are resolved before anything merges.
+4. Push the branch (plain `git push -u <remote> fix/<topic>`) and open a pull request only if the user authorized it, with the repository's labels. Continue with the PR lifecycle in `pr/lifecycle.md`, so reviews and checks are resolved before anything merges.
 5. Remove the worktree when the pull request exists. The branch stays until the pull request is merged or closed.
 
 ## What to write back

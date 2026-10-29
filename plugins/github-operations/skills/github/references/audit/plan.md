@@ -17,7 +17,7 @@ One action per operation: `A-01`, `A-02`, ... Each has:
 - **Expected result.**
 - **Recovery** if it fails: by default the matching `--abort` (`merge`, `cherry-pick`, `rebase`, `revert`).
 - **Containment check** for every deletion, and the **audited SHA** of the item (below).
-- **Validation criterion**: the read-only command and the exact result that prove it worked. Write it now, in step 4, so it cannot be bent after the fact. Examples: "`git rev-parse --verify -q refs/heads/x` prints nothing", "`git ls-remote --heads origin x` prints nothing", "`git merge-base --is-ancestor <tip> origin/main` exits 0", "`git for-each-ref refs/git-cleanup-backup` prints nothing", "`gh workflow list --all` shows `disabled_manually`", "no process matches `cloudflared`".
+- **Validation criterion**: the read-only command and the exact result that prove it worked. Write it now, in step 4, so it cannot be bent after the fact. Examples: "`git rev-parse --verify -q refs/heads/x` prints nothing", "`git ls-remote --heads origin x` prints nothing", "`git merge-base --is-ancestor <tip> origin/main` exits 0", "`git for-each-ref refs/repo-cleanup-backup` prints nothing", "`gh workflow list --all` shows `disabled_manually`", "no process matches `cloudflared`".
 
 ## Classes, in execution order
 
@@ -50,7 +50,7 @@ Two rules make the order safe:
 
 One action, made outside the repository in the folder the user chose, before anything is integrated, pushed, deleted or pruned. Its steps, in order:
 
-1. **Rescue refs** under `refs/git-cleanup-backup/`: one per stash (`stash-N`) and per reflog-only or unreachable commit worth keeping (`lost-<first 10 SHA characters>`), so the bundle contains them: `git update-ref refs/git-cleanup-backup/stash-N 'stash@{N}'`.
+1. **Rescue refs** under `refs/repo-cleanup-backup/`: one per stash (`stash-N`) and per reflog-only or unreachable commit worth keeping (`lost-<first 10 SHA characters>`), so the bundle contains them: `git update-ref refs/repo-cleanup-backup/stash-N 'stash@{N}'`.
 2. **The bundle:** `git -C "<repo>" bundle create "<dir>/all.bundle" --all`. In a shallow clone it can fail or be incomplete: say so and mark the affected items `BLOCKED`.
 3. **Uncommitted work**, for the main checkout (`main-checkout`) and every worktree the plan would remove or switch away from (`wt-<folder name>`): the tracked changes with `git -C "<path>" diff HEAD --binary -- . ':(exclude,glob)**/.env' ':(exclude,glob)**/*.pem' ':(exclude,glob)**/*.key'` (one exclusion per secret-like name found) into `<dir>/uncommitted-<name>.patch`, and the untracked non-secret files into `<dir>/untracked-<name>.tar`:
 
@@ -62,7 +62,7 @@ One action, made outside the repository in the folder the user chose, before any
 4. **`<dir>/manifest.txt`**: every branch and its SHA, every worktree, every stash selector and SHA, the files saved above, the exact restore commands, and the bundle's checksum (`shasum -a 256`, or `sha256sum` where that is what exists).
 5. **Verify** (`execute.md` gives the commands), then **delete the rescue refs** (`git update-ref -d`).
 
-Rollback refs live only in `refs/git-cleanup-backup/` and are removed at the end. The backup folder is the user's recovery copy; the skill never deletes it on its own.
+Rollback refs live only in `refs/repo-cleanup-backup/` and are removed at the end. The backup folder is the user's recovery copy; the skill never deletes it on its own.
 
 ## Specific classes
 

@@ -1,6 +1,6 @@
 # Audit: everything outside the repository that still points at it
 
-A copy or a link of any kind that ties the repository to a place outside it and is still alive: another clone, a mirror, a registry entry, a scheduled job, a tunnel. The audit cannot prove that none exists beyond what these commands see, so each domain ends in the coverage ledger as `checked`, `BLOCKED`, `not reachable` or `declined` (see `audit.md`).
+A copy or a link of any kind that ties the repository to a place outside it and is still alive: another clone, a mirror, a registry entry, a scheduled job, a tunnel. The audit cannot prove that none exists beyond what these commands see, so each domain ends in the coverage ledger as `checked`, `BLOCKED`, `not reachable` or `declined` (see `intake-local.md`).
 
 Three classes decide how each domain is handled:
 
@@ -40,7 +40,7 @@ npm view <name> repository.url                                         # npm
 curl -fsS https://pypi.org/pypi/<name>/json | jq '.info.project_urls'    # PyPI
 ```
 
-A published package whose repository field points here is a live link: report the name and the latest version. Plugin marketplaces that list the repository are found with the code search in `audit-github.md` (`gh search code '"<o>/<r>"' --filename marketplace.json`) and with `gh search code '"<o>/<r>"' --match file`.
+A published package whose repository field points here is a live link: report the name and the latest version. Plugin marketplaces that list the repository are found with the code search in `github.md` (`gh search code '"<o>/<r>"' --filename marketplace.json`) and with `gh search code '"<o>/<r>"' --match file`.
 
 ## This machine, outside the repository (needs consent)
 

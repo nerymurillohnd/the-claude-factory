@@ -19,7 +19,7 @@ Follow the style the audit found in `Shape of the history` (merge commits, squas
 
 ## Preview before the plan, check before the run
 
-Preview without touching the repository: no working tree, ref or index changes. `merge-tree --write-tree` does write tree objects, so point it at the temporary object store the audit uses (`audit.md`, section 1.4: `tmp="<scratch>/objects"`, `shared=$(git -C "<repo>" rev-parse --path-format=absolute --git-path objects)`):
+Preview without touching the repository: no working tree, ref or index changes. `merge-tree --write-tree` does write tree objects, so point it at the temporary object store the audit uses (`intake-local.md`, section 1.4: `tmp="<scratch>/objects"`, `shared=$(git -C "<repo>" rev-parse --path-format=absolute --git-path objects)`):
 
 ```sh
 GIT_OBJECT_DIRECTORY="$tmp" GIT_ALTERNATE_OBJECT_DIRECTORIES="$shared" git -C "<repo>" merge-tree --write-tree --name-only <base> <branch>   # exit 0: clean, prints the resulting tree; exit 1: conflicts, lists the files
@@ -46,7 +46,7 @@ Use the user's own configuration and never override it. Read it (`git config --g
 
 ## Publishing
 
-- `git -C "<repo>" push <remote> <base>`: plain, never with a force flag. If the base is protected or requires pull requests, do not push to it: put the integration on a branch (`git push <remote> <base>:<new branch>` or from a new branch) and open a pull request only if the user authorized one (`gh pr create` with the repository's labels, using the `auto-pr-lifecycle` skill when available). Fixes always travel this way.
+- `git -C "<repo>" push <remote> <base>`: plain, never with a force flag. If the base is protected or requires pull requests, do not push to it: put the integration on a branch (`git push <remote> <base>:<new branch>` or from a new branch) and open a pull request only if the user authorized one (`gh pr create` with the repository's labels, following the PR lifecycle in `pr/lifecycle.md`). Fixes always travel this way.
 - Check: `git ls-remote --heads <remote> <base>` returns the SHA that `git rev-parse <base>` gives.
 - Push tags only if the plan names them: `git push <remote> refs/tags/<tag>`.
 

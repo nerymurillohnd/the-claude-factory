@@ -1,6 +1,6 @@
 # Audit: the whole history, the object store, secrets by name, deferred work
 
-Read-only, like the rest of the audit (see `audit.md` for the ground rules, the scratch folder and the `GIT_OPTIONAL_LOCKS=0` rule). Every query below covers the first commit to now. History-wide queries use `--exclude=refs/stash --all`, because stash internals are not history. On a large repository, write each output to a file in the scratch folder and aggregate; do not print it.
+Read-only, like the rest of the audit (see `intake-local.md` for the ground rules, the scratch folder and the `GIT_OPTIONAL_LOCKS=0` rule). Every query below covers the first commit to now. History-wide queries use `--exclude=refs/stash --all`, because stash internals are not history. On a large repository, write each output to a file in the scratch folder and aggregate; do not print it.
 
 ## Shape of the history
 
