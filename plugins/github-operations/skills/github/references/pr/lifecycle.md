@@ -27,7 +27,7 @@ Read the one for the step you are on:
 - `observe.md`: every time you need the PR's state. How to brief the tracker, check its report, map its status to a lifecycle state, act after its wait, and read GitHub yourself when the tracker cannot.
 - `repair.md`: when an observation has actionable findings, the branch is behind its base or conflicts, or you reply to or resolve review threads.
 - `merge.md`: when the PR looks ready. Readiness, merge method, approval, landing, cleanup.
-- `tooling.md`: before the first GitHub operation of a run and whenever a tool call fails. Preflight, and for each write task the preferred layer (MCP or `gh`) with its fallback.
+- `tooling.md`: before the first GitHub operation of a run and whenever a tool call fails. Routing, preflight, the read and write tools with their fallbacks, and the guardrails.
 - `report.md`: when you close the run.
 
 If a reference disagrees with the tools you have, inspect the actual tool interface and the repository policy. Do not invent tool names, parameters or operations.
