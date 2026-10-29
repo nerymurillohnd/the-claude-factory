@@ -53,6 +53,7 @@ Add an item only when all of these hold:
 | DEBT-037 | Sessions skip the project skills the Workflow assigns to the area they work in | 🟠 Blocked |
 | DEBT-039 | The `instruction-engineering` checker never ran on Python 3.12, its declared minimum | 🟠 Blocked |
 | DEBT-040 | `scaffold-plugin.py` writes a `plugin.json` that Biome's formatter rejects | 🟠 Blocked |
+| DEBT-041 | `skill-names-consistency.py` still reads YAML with PyYAML, not ruamel.yaml nodes | 🟡 Pending |
 
 ## 📂 Open items
 
@@ -399,6 +400,32 @@ Add an item only when all of these hold:
 - **Next action:** on Nery's go, make the scaffold write Biome's layout, and add a test that scaffolds into a temporary root and runs `biome format` on the result.
 - **Review condition:** closes when a freshly scaffolded `plugin.json` passes `biome format` unchanged.
 - **Related records:** none.
+
+### DEBT-041 — `skill-names-consistency.py` still reads YAML with PyYAML, not ruamel.yaml nodes
+
+| Field | Value |
+| --- | --- |
+| **Status** | 🟡 Pending |
+| **Category** | quality, maintainability |
+| **Owner** | `scripts/validators/skill-names-consistency.py` (maintainer scope) |
+| **Logged** | 2026-10-29 |
+
+#### 🔎 Evidence
+
+- **Confirmed facts:**
+  - ADR_2026-10-29_yaml-checks-compose-ruamel-nodes sets the rule: a script that checks YAML composes ruamel.yaml nodes and reports `FILE:LINE:COLUMN: message`. `plugins/github-operations/skills/github/scripts/check-forms.py` follows it.
+  - On 2026-10-29, `rg` over every `*.py` in the repository found one other PyYAML user: `scripts/validators/skill-names-consistency.py`, PEP 723 `dependencies = ["pyyaml"]`, which composes each SKILL.md frontmatter into PyYAML nodes (`yaml.Node`, `yaml.error.Mark`).
+  - Nery kept the session to the plugin's scripts and logged this migration and the full removal of PyYAML as debt.
+- **Inferences:** none.
+- **Open questions:** whether the validator's messages also move to `FILE:LINE:COLUMN`, which the `validator:skill-names-consistency` gate output and its tests would need.
+
+#### 📈 Impact and next step
+
+- **Impact / risk:** two YAML engines stay in the repository, and the validator reports positions in its own form, not the one the ADR sets.
+- **Why it is not fixed now:** Nery scoped the 0.5.0 session to the github-operations plugin's scripts.
+- **Next action:** port `skill-names-consistency.py` to ruamel.yaml `compose()`, keep its tests in `scripts/testers/validators/` green, then confirm `rg -l --no-ignore -g '*.py' 'import yaml|pyyaml'` prints nothing.
+- **Review condition:** closes when that search prints nothing and the validator's gate passes.
+- **Related records:** ADR_2026-10-29_yaml-checks-compose-ruamel-nodes.
 
 <!--
 Entry format. Copy this block above this comment for each new item and add its row to the Index.
