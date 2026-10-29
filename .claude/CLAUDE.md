@@ -61,7 +61,7 @@ Pull requests and version bumps (this is the only place that sets them):
 
 #### Maintainer Tooling
 
-- Python: format and lint with Ruff, type-check with Basedpyright, test with unittest or pytest.
+- Python: format and lint with Ruff, type-check with Basedpyright, test with unittest.
 - Markdown, JSON, YAML, JavaScript and TypeScript: format and lint with Biome.
 - Never format these Markdown files, with Biome or any other tool: every Markdown file under `plugins/`, `.claude/skills/`, `.claude/memory/`, `.claude/session-handoff/`, `.claude/maintainer/`, `.claude/plans/`, `.claude/specs/` and `.claude/rules/`; `MEMORY.md` and the files it indexes; and every `CLAUDE.md`. `biome.jsonc` excludes them whenever Markdown is in its `files.includes`.
 - Every tool covers the whole repository except `node_modules/`, `.github/` and the files above (the CI gates leave out `plugins/`, which the local gates cover); run at the root, each reads that scope from its own config (`biome.jsonc`, `ruff.toml`, `pyrightconfig.json`, `.editorconfig` for shfmt). Basedpyright always skips dot folders, so `.claude/skills/pyrightconfig.json` covers the skills' Python, and `scripts/basedpyright-maintainer.mjs` checks each PEP 723 script against its own environment.
