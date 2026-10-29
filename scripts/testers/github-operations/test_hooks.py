@@ -166,6 +166,10 @@ REVIEWER_WRAPPED = [
     "git {push,}",
     "gh pr $v 1",
     "git $sub",
+    "gh api -iXPOST repos/o/r/issues/1/lock",
+    "gh api -if body=x repos/o/r/issues/1/comments",
+    "gh api --unknown-flag repos/o/r/issues/1/lock",
+    "gh api repos/o/r/issues/1/lock extra",
 ]
 REVIEWER_PASS = [
     "git status",
@@ -184,6 +188,7 @@ REVIEWER_PASS = [
     "gh pr checks 1",
     "gh pr -R o/r view 1",
     "gh api repos/o/r/pulls/1",
+    "gh api -i --paginate --hostname github.com repos/o/r/pulls --jq '.[].number'",
     "gh api graphql -f query='query{viewer{login}}'",
     "ls -la",
     "awk '{print $1}' f.txt",

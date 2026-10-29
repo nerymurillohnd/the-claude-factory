@@ -84,10 +84,27 @@ SHELLS = ("bash", "sh", "zsh")
 GIT_GLOBAL_VALUES = ("-C", "--git-dir", "--work-tree", "--namespace")
 GIT_SETTINGS = ("-c", "--config-env")
 GH_GLOBAL_VALUES = ("-R", "--repo", "--hostname")
-API_SHORTS = ("-X", "-f", "-F")
-SHORT_OPTION = 2
-API_LONGS = ("--method", "--field", "--raw-field", "--input")
-API_VALUES = ("-H", "--header", "-q", "--jq", "-t", "--template", "--cache", "-p", "--preview")
+# gh api's own options, from `gh api --help`; any other option fails closed.
+API_SHORT_FLAGS = frozenset("i")
+API_SHORT_VALUES = frozenset("XfFHqtp")
+API_LONG_FLAGS = frozenset(
+    {"--allow-escape-sequences", "--include", "--paginate", "--silent", "--slurp", "--verbose"}
+)
+API_LONG_VALUES = frozenset(
+    {
+        "--cache",
+        "--field",
+        "--header",
+        "--hostname",
+        "--input",
+        "--jq",
+        "--method",
+        "--preview",
+        "--raw-field",
+        "--template",
+    }
+)
+UNKNOWN = "UNKNOWN"
 
 BRANCH_LONGS = frozenset(
     {
@@ -533,30 +550,59 @@ class ApiCall(NamedTuple):
     has_input: bool
 
 
+def short_api_options(arg: str, following: str) -> tuple[list[tuple[str, str]], bool]:
+    """Expand one -abc cluster of `gh api`; return its pairs and whether it used the next word."""
+    pairs: list[tuple[str, str]] = []
+    for j, letter in enumerate(arg[1:], start=1):
+        name = "-" + letter
+        if letter in API_SHORT_FLAGS:
+            pairs.append((name, ""))
+        elif letter in API_SHORT_VALUES:
+            rest = arg[j + 1 :]
+            pairs.append((name, rest or following))
+            return pairs, not rest
+        else:
+            pairs.append((UNKNOWN, arg))
+            break
+    return pairs, False
+
+
 def api_options(args: list[str]) -> list[tuple[str, str]]:
-    """Pair each `gh api` option with its value; a positional word comes as ("", word)."""
+    """Pair each `gh api` option with its value; a positional word comes as ("", word).
+
+    An option gh api does not define comes back named UNKNOWN, so the call fails closed.
+    """
     pairs: list[tuple[str, str]] = []
     i = 0
     while i < len(args):
         arg = args[i]
+        following = args[i + 1] if i + 1 < len(args) else ""
         i += 1
-        if arg.startswith("--") and "=" in arg:
-            name, value = arg.split("=", 1)
-        elif arg[:SHORT_OPTION] in API_SHORTS and len(arg) > SHORT_OPTION:
-            name, value = arg[:SHORT_OPTION], arg[SHORT_OPTION:]
-        elif arg in (*API_SHORTS, *API_LONGS, *API_VALUES):
-            name, value = arg, args[i] if i < len(args) else ""
-            i += 1
+        if not arg.startswith("-") or arg == "-":
+            pairs.append(("", arg))
+        elif arg.startswith("--"):
+            name, eq, value = arg.partition("=")
+            if name in API_LONG_FLAGS and not eq:
+                pairs.append((name, ""))
+            elif name in API_LONG_VALUES:
+                pairs.append((name, value if eq else following))
+                i += 0 if eq else 1
+            else:
+                pairs.append((UNKNOWN, arg))
         else:
-            name, value = ("", arg) if not arg.startswith("-") else (arg, "")
-        pairs.append((name, value))
+            cluster, used = short_api_options(arg, following)
+            pairs.extend(cluster)
+            i += 1 if used else 0
     return pairs
 
 
 def gh_api(args: list[str]) -> ApiCall:
     """Parse the arguments after `gh api`."""
     pairs = api_options(args)
-    endpoint = next((value for name, value in pairs if not name), "")
+    positionals = [value for name, value in pairs if not name]
+    if len(positionals) > 1 or any(name == UNKNOWN for name, _ in pairs):
+        return ApiCall("", UNKNOWN, [], has_input=True)
+    endpoint = positionals[0] if positionals else ""
     methods = [value for name, value in pairs if name in ("-X", "--method")]
     fields = [value for name, value in pairs if name in ("-f", "-F", "--field", "--raw-field")]
     has_input = any(name == "--input" for name, _ in pairs)
