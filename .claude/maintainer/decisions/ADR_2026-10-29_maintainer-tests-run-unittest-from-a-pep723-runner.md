@@ -56,6 +56,8 @@ Chosen option: **unittest through a PEP 723 runner**, because it removes pytest 
 | An unexpected success (xpass) fails the run | Scratch suite with `@expectedFailure` that passes | passed on 2026-10-29: exit 1 | When the runner changes |
 | No tests fails the run | An empty directory, alone and next to a clean one | passed on 2026-10-29: exit 1 for both | When the runner changes |
 | A warning fails the run | Scratch test raising `DeprecationWarning` | passed on 2026-10-29: exit 1, the warning raised as an error | When the runner changes |
+| An unraisable exception fails the run, as pytest's unraisable-exception check did under `-W error` | Scratch test that leaves a file open | failed on 2026-10-29 (exit 0) in the final review; passed after the runner's `sys.unraisablehook`: exit 1 | When the runner changes |
+| A file named like a test that discovery skips fails the run | Scratch `test*.py` in a subfolder without `__init__.py`, and a `*_test.py` file | failed on 2026-10-29 (exit 0) in the final review; passed after the runner compares those files with the loaded modules: exit 1 for both | When the runner changes |
 | No arguments is a usage error | The runner with no arguments | passed on 2026-10-29: exit 2 | When the runner changes |
 | The converted suites keep their coverage | Subtest count against `run_pytest.py --collect-only` | passed on 2026-10-29: 210 before and after | When a suite changes shape |
 | A broken recorded case fails | One case in `cases.json` flipped, then restored | passed on 2026-10-29: exit 1 | When the schema suite changes |
