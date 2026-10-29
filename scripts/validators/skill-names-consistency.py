@@ -1,7 +1,7 @@
 #!/usr/bin/env -S uv run --script
 # /// script
 # requires-python = "==3.15.*"
-# dependencies = ["pyyaml"]
+# dependencies = ["ruamel.yaml>=0.19.1"]
 # ///
 """Skill names: every SKILL.md names its skill after its directory, as one flat plain name.
 
@@ -25,31 +25,36 @@ The frontmatter is the YAML between a first line `---` and the next `---` line
   lines, an anchor, alias or tag, or a plain value YAML reads as a boolean, number, date or null
   is an error.
 
-PyYAML's safe loader composes the frontmatter into nodes without constructing any object; each
-node keeps its source span, which is compared with the value it reads. It reads files only: it
-never imports or runs plugin code, starts a process or uses the network.
+ruamel.yaml composes the `name` entry into nodes without constructing any object, resolving tags
+as YAML 1.1 does, so a name 1.1 reads as a boolean (`yes`, `on`) fails as well; each node keeps
+its source span, which is compared with the value it reads. It reads files only: it never imports
+or runs plugin code, starts a process or uses the network.
 Exit 0 = pass, 1 = at least one error, 2 = called with arguments (it takes none) or without
-PyYAML.
+ruamel.yaml.
 Maintainer tooling: uv runs it on Python 3.15 from its inline metadata; run it by path or with
 `uv run <script>`. Any interpreter named before the path (`python3 <script>`) skips the shebang,
-so PyYAML is missing and it says so instead of a traceback.
+so ruamel.yaml is missing and it says so instead of a traceback.
 TCF_ROOT points it at another copy of the repository (tests).
 """
 
 from __future__ import annotations
 
 import json
+from operator import attrgetter
 import os
 from pathlib import Path
 import re
 import sys
-from typing import TYPE_CHECKING, Protocol, TypeIs
+from typing import TYPE_CHECKING, TypeIs
 
 try:
-    import yaml
-    from yaml.error import Mark
+    from ruamel.yaml import YAML
+    from ruamel.yaml.error import YAMLError
+    from ruamel.yaml.nodes import MappingNode, Node, ScalarNode
 except ModuleNotFoundError:
-    _ = sys.stderr.write("✖ PyYAML is missing: run this script by path or with uv run <script>\n")
+    _ = sys.stderr.write(
+        "✖ ruamel.yaml is missing: run this script by path or with uv run <script>\n"
+    )
     sys.exit(2)
 
 if TYPE_CHECKING:
@@ -94,35 +99,20 @@ def is_array(value: object) -> TypeIs[list[object]]:
     return isinstance(value, list)
 
 
-class NodeFields(Protocol):
-    """The fields read from a PyYAML node, as unchecked objects: its stubs type them as Any."""
-
-    @property
-    def value(self) -> object:
-        """A scalar's text, or a mapping's list of (key node, value node) pairs."""
-        ...
-
-    @property
-    def start_mark(self) -> object:
-        """Where the node starts in its source, a yaml.error.Mark."""
-        ...
-
-    @property
-    def end_mark(self) -> object:
-        """Where the node ends in its source, a yaml.error.Mark."""
-        ...
+# ruamel.yaml declares no types on its nodes: read each attribute through a typed getter and
+# narrow the value with a real check.
+_value: Callable[[object], object] = attrgetter("value")
+_tag: Callable[[object], object] = attrgetter("tag")
+_start: Callable[[object], object] = attrgetter("start_mark.index")
+_end: Callable[[object], object] = attrgetter("end_mark.index")
+_compose_with: Callable[[object], Callable[[str], object]] = attrgetter("compose")
 
 
-def node_value(node: NodeFields) -> object:
-    """The value of a PyYAML node, typed as the unchecked object it is."""
-    return node.value
-
-
-def scalar_text(node: NodeFields, source: str) -> tuple[str, str] | None:
+def scalar_text(node: ScalarNode, source: str) -> tuple[str, str] | None:
     """(the text YAML reads, the text written in `source`) of a scalar node, or None."""
-    value, start, end = node.value, node.start_mark, node.end_mark
-    if isinstance(value, str) and isinstance(start, Mark) and isinstance(end, Mark):
-        return value, source[start.index : end.index]
+    value, start, end = _value(node), _start(node), _end(node)
+    if isinstance(value, str) and isinstance(start, int) and isinstance(end, int):
+        return value, source[start:end]
     return None
 
 
@@ -198,16 +188,23 @@ def name_entry(lines: list[str]) -> str:
     return "\n".join(lines[starts[0] : end]).rstrip() + "\n"
 
 
-def name_node(entry: str) -> yaml.Node | str:
+def compose(source: str) -> object:
+    """The root node of a YAML document, tags resolved as YAML 1.1 does, or None when empty."""
+    reader = YAML(typ="safe", pure=True)
+    reader.version = (1, 1)
+    return _compose_with(reader)(source)
+
+
+def name_node(entry: str) -> Node | str:
     """The value node of the `name` entry, or why YAML cannot read the entry."""
     try:
-        root = yaml.SafeLoader(entry).get_single_node()
-    except yaml.YAMLError as e:
+        root = compose(entry)
+    except YAMLError as e:
         return f'"name" is not valid YAML: {" ".join(str(e).split())}'
-    pairs = node_value(root) if isinstance(root, yaml.MappingNode) else None
+    pairs = _value(root) if isinstance(root, MappingNode) else None
     if is_array(pairs) and len(pairs) == 1:
         match pairs[0]:
-            case (yaml.ScalarNode(), yaml.Node() as value):
+            case (ScalarNode(), Node() as value):
                 return value
             case _:
                 pass
@@ -227,9 +224,9 @@ def text_problems(value: str) -> list[str]:
     return problems
 
 
-def name_problems(source: str, node: yaml.Node) -> tuple[str | None, list[str]]:
+def name_problems(source: str, node: Node) -> tuple[str | None, list[str]]:
     """(the name, None when unreadable) and why it is not a flat, unquoted, short name."""
-    if not isinstance(node, yaml.ScalarNode):
+    if not isinstance(node, ScalarNode):
         return None, ['"name" must be a string, not a list or a mapping']
     texts = scalar_text(node, source)
     if texts is None:
@@ -240,8 +237,9 @@ def name_problems(source: str, node: yaml.Node) -> tuple[str | None, list[str]]:
     if written != value:
         flat = " ".join(written.split())
         return value, [f'"name" is written as `{flat}`; write the name alone, plain, on one line']
-    if node.tag != STR_TAG:
-        kind = node.tag.rsplit(":", 1)[-1]
+    tag = _tag(node)
+    if tag != STR_TAG:
+        kind = tag.rsplit(":", 1)[-1] if isinstance(tag, str) else "value with no tag"
         return value, [f'"name" "{value}" reads as a YAML {kind}, not as text']
     return value, text_problems(value)
 
