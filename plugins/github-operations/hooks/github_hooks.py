@@ -74,6 +74,7 @@ WRAPPERS: dict[str, frozenset[str]] = {
     "command": frozenset(),
     "nice": frozenset({"-n"}),
     "nohup": frozenset(),
+    "builtin": frozenset(),
 }
 SHELLS = ("bash", "sh", "zsh")
 GIT_GLOBAL_VALUES = ("-C", "--git-dir", "--work-tree", "--namespace")
@@ -578,6 +579,11 @@ def tag_lists(args: list[str]) -> bool:
     return not args or bool(listing & set(args)) or args[0].startswith("--sort")
 
 
+def nameref_flag(word: str) -> bool:
+    """True when an assigner option carries n: a nameref (-n, -xn), or a read or mapfile count."""
+    return word[:1] == "-" and word[:2] != "--" and "n" in word[1:]
+
+
 def sets_git_config(command: Command) -> bool:
     """True when a subcommand points git at other configuration, which can run any program.
 
@@ -590,7 +596,7 @@ def sets_git_config(command: Command) -> bool:
     if (
         words[:1]
         and words[0] in ASSIGNERS
-        and any(CONFIG_TARGET.fullmatch(w) or NAMEREF.match(w) for w in words)
+        and any(CONFIG_TARGET.fullmatch(w) or NAMEREF.match(w) or nameref_flag(w) for w in words)
     ):
         return True
     if words[:1] != ["git"]:

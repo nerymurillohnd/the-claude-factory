@@ -149,6 +149,9 @@ REVIEWER_WRAPPED = [
     "HOME[a[0]]=/tmp/h git x",
     "declare -n r=HOME; r=/tmp/h; git x",
     "local -n r=GIT_CONFIG_GLOBAL; r=/tmp/g; git x",
+    "v=HOME; declare -n r=$v; r=/tmp/h; git x",
+    "builtin declare -xn r; git x",
+    "typeset -n r",
 ]
 REVIEWER_PASS = [
     "git status",
