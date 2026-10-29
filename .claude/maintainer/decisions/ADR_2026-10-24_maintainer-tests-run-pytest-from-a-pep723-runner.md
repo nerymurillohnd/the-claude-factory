@@ -1,10 +1,10 @@
 ---
-status: accepted
+status: superseded
 date: 2026-10-24
 decision-makers:
   - "Nery Samuel Murillo"
 supersedes: none
-superseded-by: none
+superseded-by: ADR_2026-10-29_maintainer-tests-run-unittest-from-a-pep723-runner
 ---
 
 # Maintainer Python tests run on pytest through a PEP 723 runner

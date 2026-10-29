@@ -14,5 +14,4 @@ paths:
 - Define each shape once in its folder and `$ref` it from the others; a copy is a defect (ADR_2026-10-24_one-schema-source-per-shape).
 - Keep `additionalProperties: false` on every known-shape object, because `claude plugin validate` lets unknown keys through (ADR_2026-10-24_schemas-are-strict-on-every-known-shape).
 - Record a valid and an invalid case in `scripts/testers/schemas/cases.json` for each schema change.
-- No validator covers `hooks.json`; only `scripts/testers/run_pytest.py scripts/testers/schemas` checks it.
-- After a change, run `npm run validate` and `scripts/testers/run_pytest.py scripts/testers/schemas`.
+- After a change, run `npm run validate` and `scripts/testers/run_unittest.py scripts/testers/schemas`.
