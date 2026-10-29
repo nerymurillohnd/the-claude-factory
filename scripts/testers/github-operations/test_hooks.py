@@ -146,6 +146,9 @@ REVIEWER_WRAPPED = [
     "declare -x HOME[0]=/tmp/h; git x",
     "printf -vHOME /tmp/h; git x",
     "read -rHOME <<< /tmp/h; git x",
+    "HOME[a[0]]=/tmp/h git x",
+    "declare -n r=HOME; r=/tmp/h; git x",
+    "local -n r=GIT_CONFIG_GLOBAL; r=/tmp/g; git x",
 ]
 REVIEWER_PASS = [
     "git status",
