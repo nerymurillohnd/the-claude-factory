@@ -44,6 +44,9 @@ SHELL_WORD = re.compile(r"(?<![\w.-])(?:bash|sh|zsh)(?![\w.-])")
 SUBSTITUTED = "SUBSTITUTION"
 SUBSTITUTION_OPENERS = ("$(", "<(", ">(")
 SOURCES = ("source", ".")
+SHELL_VALUES = ("-o", "-O", "+o", "+O", "--rcfile", "--init-file")
+EXPORTS = ("export", "declare", "typeset", "readonly", "local")
+CONFIG_VARIABLES = ("GIT_CONFIG", "GIT_EXEC_PATH=", "HOME=", "XDG_CONFIG_HOME=")
 MUTATION = re.compile(r"\bmutation\b")
 MAX_DEPTH = 8
 GH_COMMAND_WORDS = 2
@@ -562,24 +565,39 @@ def tag_lists(args: list[str]) -> bool:
     return not args or bool(listing & set(args)) or args[0].startswith("--sort")
 
 
-def git_config_override(command: Command) -> bool:
-    """True when a git call sets configuration for itself, which can run any alias or program."""
-    subcommand, args = git_parts(command.words)
-    flags = command.words[1 : len(command.words) - len(args) - (1 if subcommand else 0)]
-    return any(f in GIT_SETTINGS or f.startswith("--config-env=") for f in flags) or any(
-        e.startswith("GIT_CONFIG") for e in command.env
-    )
+def sets_git_config(command: Command) -> bool:
+    """True when a subcommand points git at other configuration, which can run any program.
+
+    That is -c or --config-env on a git call, or an assignment or export of a variable git
+    reads its configuration from.
+    """
+    words = command.words
+    exported = words[1:] if words[:1] and words[0] in EXPORTS else []
+    if any(w.startswith(CONFIG_VARIABLES) for w in (*command.env, *exported)):
+        return True
+    if words[:1] != ["git"]:
+        return False
+    subcommand, args = git_parts(words)
+    flags = words[1 : len(words) - len(args) - (1 if subcommand else 0)]
+    return any(f in GIT_SETTINGS or f.startswith("--config-env=") for f in flags)
 
 
 def hidden_script(command: list[str]) -> bool:
     """True when a shell, source or . runs a script the hook cannot read.
 
-    That is a script from stdin (a pipe or a here-string), or from a process substitution.
+    That is a script from stdin (a pipe, a here-string, -s, - or /dev/stdin), or from a
+    process substitution.
     """
     if command[0] not in (*SHELLS, *SOURCES) or nested_script(command) is not None:
         return False
-    script = next((w for w in command[1:] if not w.startswith("-")), "")
-    return script in ("", SUBSTITUTED)
+    i = 1
+    while i < len(command) and command[i][:1] in "-+" and command[i] not in ("-", "--"):
+        if command[0] in SHELLS and command[i][:2] != "--" and "s" in command[i][1:]:
+            return True
+        i += 2 if command[i] in SHELL_VALUES else 1
+    i += 1 if i < len(command) and command[i] == "--" else 0
+    script = command[i] if i < len(command) else ""
+    return script in ("", "-", SUBSTITUTED) or script.startswith(("/dev/", "/proc/"))
 
 
 def git_writes(command: list[str]) -> bool:
@@ -648,9 +666,13 @@ def rule_agents_shell(call: Call, subcommands: list[Command]) -> Decision | None
         if command and hidden_script(command):
             reason = f"{call.agent} is read-only and cannot run `{command[0]}` on a hidden script;"
             return deny(reason + " run the commands directly.")
-        if command[:1] == ["git"] and git_config_override(subcommand):
-            reason = f"{call.agent} is read-only and cannot set git configuration for a call;"
-            return deny(reason + " run git without -c, --config-env or GIT_CONFIG variables.")
+        if sets_git_config(subcommand):
+            reason = (
+                f"{call.agent} is read-only and cannot change where git reads its configuration;"
+            )
+            return deny(
+                reason + " run git without -c, --config-env, GIT_CONFIG, HOME or XDG_CONFIG_HOME."
+            )
         writes = {"git": git_writes, "gh": gh_writes}.get(command[0]) if command else None
         if writes and writes(command):
             shown = " ".join(command)[:80]

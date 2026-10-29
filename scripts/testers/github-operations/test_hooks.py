@@ -124,6 +124,17 @@ REVIEWER_WRAPPED = [
     "cat s.sh | zsh",
     "source <(echo git push)",
     ". <(echo git push)",
+    "echo git push | bash -s x",
+    "echo git push | bash -xs",
+    "echo git push | bash -o pipefail",
+    "echo git push | bash +x",
+    "echo git push | bash /dev/stdin",
+    "echo git push | sh -",
+    "bash --rcfile r /dev/fd/0",
+    "HOME=/tmp/h git x",
+    "XDG_CONFIG_HOME=/tmp/c git x",
+    "export GIT_CONFIG_GLOBAL=/tmp/g; git x",
+    "export HOME=/tmp/h && git x",
 ]
 REVIEWER_PASS = [
     "git status",
@@ -150,6 +161,8 @@ REVIEWER_PASS = [
     "echo found > /tmp/scratch/findings.md",
     "/path/to/branch-states.sh repo main out.tsv",
     "bash /path/to/branch-states.sh repo main out.tsv",
+    "bash -o pipefail /path/to/branch-states.sh repo main out.tsv",
+    "export LC_ALL=C; git log -1",
     "diff <(git log a) <(git log b)",
     "gh api -X GET repos/o/r/pulls -f per_page=100",
 ]
