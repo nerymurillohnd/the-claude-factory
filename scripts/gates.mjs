@@ -179,6 +179,16 @@ function isCommit(root, rev) {
 }
 
 /**
+ * Whether a tracked file is a PEP 723 script that runs in its own uv environment.
+ * @param {string} root
+ * @param {string} file
+ * @returns {boolean}
+ */
+function pep723(root, file) {
+  return readFileSync(join(root, file), 'utf8').startsWith(UV_SHEBANG)
+}
+
+/**
  * The tracked files matching the patterns, sorted.
  * @param {string} root
  * @param {string[]} patterns
@@ -232,6 +242,7 @@ export function gatesFor({ root, ci, base }) {
     .map((d) => d.name)
     .sort()
   const bumpBase = ci ? base : 'origin/main'
+  const pluginPython = tracked(root, ['plugins/*.py'])
   // Biome on everything but plugin code: the top-level folders and the root files it reads.
   const maintainerBiome = [
     ...new Set(
@@ -393,13 +404,13 @@ export function gatesFor({ root, ci, base }) {
       .sort()
       .map((f) => {
         const path = join('scripts', 'validators', f)
-        const pep723 = readFileSync(join(root, path), 'utf8').startsWith(UV_SHEBANG)
+        const byPath = pep723(root, path)
         return /** @type {Gate} */ ({
           id: `validator:${f.slice(0, -'.py'.length)}`,
           group: 'python',
           title: `validator ${f}`,
-          cmd: pep723 ? path : 'uv',
-          args: pep723 ? [] : ['run', '--no-project', '--python', '3.15', path],
+          cmd: byPath ? path : 'uv',
+          args: byPath ? [] : ['run', '--no-project', '--python', '3.15', path],
         })
       }),
     {
@@ -544,10 +555,32 @@ export function gatesFor({ root, ci, base }) {
     {
       id: 'basedpyright-plugins',
       group: 'local',
-      title: 'basedpyright on plugins/',
+      title: 'basedpyright on plugins/, beyond the PEP 723 scripts',
       cmd: 'basedpyright',
-      args: ['--warnings', 'plugins'],
+      args: ['--warnings', ...pluginPython.filter((f) => !pep723(root, f))],
     },
+    // A PEP 723 script imports what its own metadata declares, which the python3 on PATH lacks.
+    ...pluginPython
+      .filter((f) => pep723(root, f))
+      .map(
+        (f) =>
+          /** @type {Gate} */ ({
+            id: `basedpyright-plugins:${f}`,
+            group: 'local',
+            title: `basedpyright on ${f} in its own uv environment`,
+            cmd: 'uv',
+            args: [
+              'run',
+              '--quiet',
+              '--no-project',
+              '--with-requirements',
+              f,
+              'basedpyright',
+              '--warnings',
+              f,
+            ],
+          }),
+      ),
   ]
   return ci ? gates.filter((g) => g.group !== 'local') : gates
 }

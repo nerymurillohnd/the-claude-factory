@@ -193,6 +193,27 @@ describe('gate list', () => {
     }
   })
 
+  test('a PEP 723 plugin script is type-checked in its own uv environment', () => {
+    const script = 'plugins/github-operations/skills/github/scripts/check-forms.py'
+    const local = gatesFor({ root: ROOT, ci: false, base: '' })
+    const all = local.find((g) => g.id === 'basedpyright-plugins')
+    assert.ok(all?.args.includes('plugins/github-operations/hooks/github_hooks.py'))
+    assert.ok(!all?.args.includes(script), 'the shared run cannot see the script dependencies')
+    const own = local.find((g) => g.id === `basedpyright-plugins:${script}`)
+    assert.equal(own?.group, 'local')
+    assert.equal(own?.cmd, 'uv')
+    assert.deepEqual(own?.args, [
+      'run',
+      '--quiet',
+      '--no-project',
+      '--with-requirements',
+      script,
+      'basedpyright',
+      '--warnings',
+      script,
+    ])
+  })
+
   test('the maintainer Node tests leave out the plugin test folders', () => {
     const gate = gatesFor({ root: ROOT, ci: true, base: '' }).find((g) => g.id === 'node-tests')
     assert.ok(gate?.args.some((a) => a.endsWith('scripts.test.mjs')))
