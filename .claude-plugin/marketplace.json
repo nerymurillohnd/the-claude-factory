@@ -27,7 +27,7 @@
     {
       "name": "github-operations",
       "source": "./plugins/github-operations",
-      "description": "Carries a GitHub pull request from open to merge, cleans up a Git repository without losing work, and brings the GitHub MCP server with it.",
+      "description": "One operating contract for GitHub work: takes pull requests from branch to merge, writes PRs, issues and discussions from the repository's templates, repairs CI, and audits and cleans up repositories, with hooks that keep its reviewer agents read-only.",
       "category": "development"
     },
     {

@@ -1,0 +1,61 @@
+{
+  "description": "github-operations: deny the plugin's reviewer agents (pr-tracker, repo-auditor) their named git, gh, GitHub MCP and file writes; name the contract on the first GitHub call; restore lifecycle state after a compaction. The main session and every other agent are never blocked.",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash|PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/run-hook.sh",
+            "args": [
+              "shell"
+            ],
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "matcher": "^mcp__.*[Gg]it[Hh]ub.*__.*$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/run-hook.sh",
+            "args": [
+              "mcp"
+            ],
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/run-hook.sh",
+            "args": [
+              "files"
+            ],
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/run-hook.sh",
+            "args": [
+              "compact"
+            ],
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}

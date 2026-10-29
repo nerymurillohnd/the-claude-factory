@@ -6,6 +6,28 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-10-29
+
+### Changed
+
+- **Breaking:** the `auto-pr-lifecycle` and `git-cleanup` skills are replaced by one skill, `github`, the operating contract for every GitHub task. Type `/github-operations:github pr` where you typed `/github-operations:auto-pr-lifecycle`, and `/github-operations:github cleanup` (or `audit`) where you typed `/github-operations:git-cleanup`. The skill loads before Claude's first GitHub call and holds the rules every task follows: your approval for each push, PR, merge, deletion or settings change, the merge asked at the freshly read head commit, evidence before "done", your own signing setup, no force pushes outside an approved history rewrite, and the repository's own templates first. Each task's procedure is read only when it starts.
+- **Breaking:** the plugin now ships hooks, which need `python3` 3.12 or later. They deny the `pr-tracker` and `repo-auditor` agents the `git` and `gh` commands that change state, the GitHub MCP tools that write (on any server whose name contains `github` or `GitHub`) and file writes in your project. They also name the skill on a session's first GitHub call, and give Claude its pull request or cleanup state back after a compaction. Your own session and every other agent are never blocked.
+- Claude now creates and merges pull requests with `gh`, falling back to the GitHub MCP tools, and a merge goes through only at the head commit you approved.
+- The audit's read-only steps run in the new `repo-auditor` agent. What an agent could not inspect, Claude checks itself in the same run.
+- The `pr-tracker` agent can no longer write files.
+
+### Added
+
+- PR titles, bodies and labels written from the repository's templates, or the plugin's four (standard, bug fix, hotfix, maintenance), and checked by a script before the PR is opened. Squash and merge messages from a template.
+- Issues: written in the layout of the repository's forms, triaged, and marked as duplicates. Discussions: started in the right category or answered.
+- Repository setup: PR templates, eight issue forms, four discussion forms, a label set, Dependabot for GitHub Actions and `CODEOWNERS` through one pull request; missing labels and the default merge message as settings you approve. Files the repository already has are never overwritten.
+- Fixing an issue ends in a pull request that resolves it. CI repair finds the workflows that fail, hang or stopped running on the default branch and lands the fix through a pull request.
+- Seven scripts: PR body check, cleanup plan check, lifecycle state, branch classification, backup verification, issue and discussion form check (through uv), and a label diff.
+
+### Fixed
+
+- Typing the skill without a subject no longer leaves an empty subject in Claude's instructions.
+
 ## [0.4.1] - 2026-10-24
 
 ### Changed
@@ -105,7 +127,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 - `git-cleanup` inventory: `--from` with a saved file that is not a JSON object reports a JSON error and exits 0, instead of ending with a traceback.
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/github-operations--v0.4.1...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/github-operations--v0.5.0...HEAD
+[0.5.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/github-operations--v0.5.0
 [0.4.1]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/github-operations--v0.4.1
 [0.4.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/github-operations--v0.4.0
 [0.3.2]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/github-operations--v0.3.2

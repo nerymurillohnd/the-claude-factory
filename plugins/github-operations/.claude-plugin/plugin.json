@@ -1,8 +1,8 @@
 {
   "name": "github-operations",
   "displayName": "GitHub Operations",
-  "version": "0.4.1",
-  "description": "Carries a GitHub pull request from open to merge, cleans up a Git repository without losing work, and brings the GitHub MCP server with it.",
+  "version": "0.5.0",
+  "description": "One operating contract for GitHub work: takes pull requests from branch to merge, writes PRs, issues and discussions from the repository's templates, repairs CI, and audits and cleans up repositories, with hooks that keep its reviewer agents read-only.",
   "author": {
     "name": "Nery Murillo",
     "url": "https://github.com/nerymurillohnd"
@@ -21,7 +21,12 @@
     "cleanup",
     "branches",
     "worktrees",
-    "stash"
+    "stash",
+    "issues",
+    "discussions",
+    "templates",
+    "labels",
+    "hooks"
   ],
   "metadata": {
     "category": "development",

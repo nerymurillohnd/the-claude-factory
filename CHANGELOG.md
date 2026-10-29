@@ -4,6 +4,12 @@ All notable changes to **The Claude Factory** marketplace are documented here: p
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The marketplace has no version of its own: entries are grouped by date, newest first, and every plugin carries its own version, changelog and tag. The versions 0.1.0 and 0.2.0 below are the history from before that change; their tags stay.
 
+## 2026-10-29
+
+### Changed
+
+- **github-operations** 0.5.0 — **Breaking:** one `github` skill replaces the PR and cleanup skills and adds PR, issue and discussion writing, CI repair and repository setup; hooks keep its reviewer agents read-only.
+
 ## 2026-10-28
 
 ### Fixed

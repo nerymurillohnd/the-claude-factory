@@ -1,0 +1,14 @@
+# Issue template chooser. Replace <OWNER>/<REPO> per repository.
+# GitHub serves this from the default branch, so a change goes live once it is merged there.
+blank_issues_enabled: false
+contact_links:
+  - name: 🔐 Report a security vulnerability
+    url: https://github.com/<OWNER>/<REPO>/security/advisories/new
+    about: Please report vulnerabilities privately; never in a public issue.
+  - name: 💬 Ask or discuss
+    url: https://github.com/<OWNER>/<REPO>/discussions
+    about: Open-ended questions, ideas and show-and-tell belong in Discussions.
+  # Optional, for repositories that build on a third-party product: route its bugs to its owner.
+  # - name: 🧰 Problem with <product> itself
+  #   url: https://github.com/<ORG>/<PRODUCT>/issues
+  #   about: Bugs in <product> (not in this repository) belong to its own tracker.
