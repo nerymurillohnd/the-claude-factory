@@ -1,17 +1,19 @@
 #!/usr/bin/env -S uv run --script
 # /// script
 # requires-python = ">=3.12"
-# dependencies = ["pyyaml", "check-jsonschema"]
+# dependencies = ["ruamel.yaml>=0.18.10", "check-jsonschema>=0.36.0"]
 # ///
 """Check GitHub issue forms, the issue template chooser or discussion forms.
 
 Usage: check-forms.py --kind issue|issue-config|discussion FILE...
 
 Runs check-jsonschema with its built-in GitHub schema for the kind, then checks the rules the
-schema misses, on GitHub's own YAML reading: every body `id` is unique; no label is listed twice;
-no dropdown or checkbox option is `None`; no option is an unquoted `Yes`, `No`, `true`, `false`
-or another word YAML reads as a boolean; the body has at least one field that is not markdown;
-a discussion form has no `name` or `description` key.
+schema misses, reading the YAML as GitHub does (YAML 1.1): every body `id` is unique; no label is
+listed twice; no dropdown or checkbox option is `None`; no option is an unquoted `Yes`, `No`,
+`true`, `false`, `On` or another word YAML 1.1 reads as a boolean; the body has at least one
+field that is not markdown; a discussion form has no `name` or `description` key. Each of those
+findings reads `FILE:LINE:COLUMN: message`; schema errors are passed on as check-jsonschema
+prints them.
 Exit 0 = pass, 1 = at least one finding (on stderr), 2 = usage error, an unreadable file, or
 check-jsonschema cannot run.
 """
@@ -19,12 +21,15 @@ check-jsonschema cannot run.
 from __future__ import annotations
 
 import argparse
+from operator import attrgetter
 from pathlib import Path
 import subprocess
 import sys
-from typing import TYPE_CHECKING, final
+from typing import TYPE_CHECKING
 
-import yaml
+from ruamel.yaml import YAML
+from ruamel.yaml.error import MarkedYAMLError, YAMLError
+from ruamel.yaml.nodes import MappingNode, Node, ScalarNode, SequenceNode
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Sequence
@@ -37,118 +42,159 @@ SCHEMAS = {
 }
 FORM_KINDS = ("issue", "discussion")
 RESERVED_OPTION = "None"
+BOOL_TAG = "tag:yaml.org,2002:bool"
+
+# ruamel.yaml declares no types on its nodes and errors: read each attribute through a typed
+# getter and narrow the value with a real check.
+_value: Callable[[object], object] = attrgetter("value")
+_tag: Callable[[object], object] = attrgetter("tag")
+_start_line: Callable[[object], object] = attrgetter("start_mark.line")
+_start_column: Callable[[object], object] = attrgetter("start_mark.column")
+_problem: Callable[[object], object] = attrgetter("problem")
+_problem_mark: Callable[[object], object] = attrgetter("problem_mark")
+_mark_line: Callable[[object], object] = attrgetter("line")
+_mark_column: Callable[[object], object] = attrgetter("column")
+_compose_with: Callable[[object], Callable[[str], object]] = attrgetter("compose")
 
 
-@final
-class Unquoted(str):
-    """A scalar YAML reads as a boolean, kept as the text the file wrote."""
-
-    __slots__ = ()
-
-
-class FormLoader(yaml.SafeLoader):
-    """A safe loader that keeps boolean scalars as their text, so a finding can quote them."""
-
-
-def keep_boolean_text(loader: FormLoader, node: yaml.ScalarNode) -> Unquoted:
-    """Return a boolean scalar as the text the file wrote."""
-    return Unquoted(loader.construct_scalar(node))
-
-
-FormLoader.add_constructor("tag:yaml.org,2002:bool", keep_boolean_text)
-_single_document: Callable[[FormLoader], object] = FormLoader.get_single_data
-
-
-def is_mapping(value: object) -> TypeIs[dict[object, object]]:
-    """Report whether a loaded YAML value is a mapping."""
-    return isinstance(value, dict)
-
-
-def is_sequence(value: object) -> TypeIs[list[object]]:
-    """Report whether a loaded YAML value is a sequence."""
+def is_array(value: object) -> TypeIs[list[object]]:
+    """Report whether a node's value is a list."""
     return isinstance(value, list)
 
 
-class Form:
-    """One loaded form file and the findings of GitHub's rules on it."""
+def position(line: object, column: object) -> str:
+    """Return a 0-based line and column as 1-based LINE:COLUMN, or "?:?"."""
+    if isinstance(line, int) and isinstance(column, int):
+        return f"{line + 1}:{column + 1}"
+    return "?:?"
 
-    def __init__(self, name: str, document: object) -> None:
-        """Keep the file name and the loaded document."""
+
+def entry(mapping: Node | None, key: str) -> tuple[Node, Node] | None:
+    """Return the key node and value node named key in a mapping node, or None."""
+    if not isinstance(mapping, MappingNode):
+        return None
+    pairs = _value(mapping)
+    for pair in pairs if is_array(pairs) else []:
+        match pair:
+            case (ScalarNode() as key_node, Node() as value_node) if _value(key_node) == key:
+                return key_node, value_node
+            case _:
+                pass
+    return None
+
+
+def value(mapping: Node | None, key: str) -> Node | None:
+    """Return the value node under key in a mapping node, or None."""
+    found = entry(mapping, key)
+    return found[1] if found else None
+
+
+def items(node: Node | None) -> list[Node]:
+    """Return the items of a sequence node, or an empty list."""
+    found = _value(node) if isinstance(node, SequenceNode) else None
+    return [n for n in found if isinstance(n, Node)] if is_array(found) else []
+
+
+def text(node: Node | None) -> str | None:
+    """Return the text of a scalar node as written, or None."""
+    found = _value(node) if isinstance(node, ScalarNode) else None
+    return found if isinstance(found, str) else None
+
+
+class Form:
+    """One composed form file and the findings of GitHub's rules on it."""
+
+    def __init__(self, name: str, root: Node | None) -> None:
+        """Keep the file name and the root node."""
         self.name: str = name
-        self.document: dict[object, object] = document if is_mapping(document) else {}
+        self.root: Node | None = root
         self.found: list[str] = []
 
-    def finding(self, message: str) -> None:
-        """Record one finding, prefixed with the file name."""
-        self.found.append(f"{self.name}: {message}")
+    def finding(self, node: Node, message: str) -> None:
+        """Record one finding at the node's position, as FILE:LINE:COLUMN: message."""
+        where = position(_start_line(node), _start_column(node))
+        self.found.append(f"{self.name}:{where}: {message}")
 
-    def fields(self) -> list[dict[object, object]]:
+    def fields(self) -> list[Node]:
         """Return the body fields that are mappings."""
-        body = self.document.get("body")
-        return [field for field in body if is_mapping(field)] if is_sequence(body) else []
+        return [f for f in items(value(self.root, "body")) if isinstance(f, MappingNode)]
 
     def check_ids(self) -> None:
         """Find body ids used more than once."""
         seen: set[str] = set()
         for field in self.fields():
-            ident = field.get("id")
-            if isinstance(ident, str):
-                if ident in seen:
-                    self.finding(f"duplicate id {ident}")
-                seen.add(ident)
+            ident = value(field, "id")
+            name = text(ident)
+            if ident is None or name is None:
+                continue
+            if name in seen:
+                self.finding(ident, f"duplicate id {name}")
+            seen.add(name)
 
     def check_labels(self) -> None:
         """Find labels listed more than once."""
-        labels = self.document.get("labels")
-        if isinstance(labels, str):
-            names = [label.strip() for label in labels.split(",")]
-        elif is_sequence(labels):
-            names = [label for label in labels if isinstance(label, str)]
+        labels = value(self.root, "labels")
+        listed = text(labels)
+        if labels is not None and listed is not None:
+            names = [(labels, name.strip()) for name in listed.split(",")]
         else:
-            return
+            names = [(n, t) for n in items(labels) if (t := text(n)) is not None]
         seen: set[str] = set()
-        for name in names:
+        for node, name in names:
             if name in seen:
-                self.finding(f"duplicate label {name}")
+                self.finding(node, f"duplicate label {name}")
             seen.add(name)
 
     def check_options(self) -> None:
         """Find options that are reserved or that GitHub reads as booleans."""
         for field in self.fields():
-            attributes = field.get("attributes")
-            options = attributes.get("options") if is_mapping(attributes) else None
-            if not is_sequence(options):
-                continue
-            label = attributes.get("label") if is_mapping(attributes) else None
-            for option in options:
-                text = option.get("label") if is_mapping(option) else option
-                if isinstance(text, Unquoted):
-                    self.finding(
-                        f'field {label}: option {text} parses as a boolean; quote it: "{text}"'
-                    )
-                elif text == RESERVED_OPTION:
-                    self.finding(f"field {label}: option None is reserved by GitHub; rename it")
+            attributes = value(field, "attributes")
+            label = text(value(attributes, "label"))
+            for option in items(value(attributes, "options")):
+                node = value(option, "label") if isinstance(option, MappingNode) else option
+                written = text(node)
+                if node is None or written is None:
+                    continue
+                if _tag(node) == BOOL_TAG:
+                    message = f'option {written} parses as a boolean; quote it: "{written}"'
+                    self.finding(node, f"{message} (field {label})")
+                elif written == RESERVED_OPTION:
+                    reserved = "option None is reserved by GitHub; rename it"
+                    self.finding(node, f"{reserved} (field {label})")
 
     def check_body(self) -> None:
         """Find a body made only of markdown fields."""
-        if all(field.get("type") == "markdown" for field in self.fields()):
-            self.finding("the body needs at least one field that is not markdown")
+        body = value(self.root, "body")
+        if body is not None and all(text(value(f, "type")) == "markdown" for f in self.fields()):
+            self.finding(body, "the body needs at least one field that is not markdown")
 
     def check_discussion_keys(self) -> None:
         """Find keys a discussion form does not accept."""
         for key in ("name", "description"):
-            if key in self.document:
-                self.finding(f"a discussion form takes no {key} key; remove it")
+            found = entry(self.root, key)
+            if found:
+                self.finding(found[0], f"a discussion form takes no {key} key; remove it")
 
 
-def check_form(kind: str, name: str, text: str) -> list[str]:
+def compose(source: str) -> Node | None:
+    """Compose a YAML document into nodes, resolving tags as YAML 1.1 does."""
+    reader = YAML(typ="safe", pure=True)
+    reader.version = (1, 1)
+    root = _compose_with(reader)(source)
+    return root if isinstance(root, Node) else None
+
+
+def check_form(kind: str, name: str, source: str) -> list[str]:
     """Return the findings of GitHub's rules on one form of the kind."""
-    loader = FormLoader(text)
     try:
-        document = _single_document(loader)
-    except yaml.YAMLError as error:
+        root = compose(source)
+    except MarkedYAMLError as error:
+        mark = _problem_mark(error)
+        where = f"{name}:{position(_mark_line(mark), _mark_column(mark))}" if mark else name
+        return [f"{where}: not valid YAML: {_problem(error)}"]
+    except YAMLError as error:
         return [f"{name}: not valid YAML: {error}"]
-    form = Form(name, document)
+    form = Form(name, root)
     if kind in FORM_KINDS:
         form.check_ids()
         form.check_labels()
@@ -193,8 +239,8 @@ def main() -> int:
         _ = sys.stderr.write(f"check-forms: check-jsonschema exited {code}\n{output}")
         return 2
     found = [output.strip()] if code == 1 else []
-    for path, text in texts.items():
-        found.extend(check_form(args.kind, str(path), text))
+    for path, source in texts.items():
+        found.extend(check_form(args.kind, str(path), source))
     for message in found:
         _ = sys.stderr.write(message + "\n")
     return 1 if found else 0

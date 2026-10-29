@@ -132,6 +132,11 @@ FORMS = {
     "bug_report.yml": ISSUE_FORM,
     "unquoted-yes.yml": ISSUE_FORM.replace('"Yes (say which version below)"', "Yes"),
     "duplicate-id.yml": ISSUE_FORM.replace("id: regression", "id: version"),
+    "none-option.yml": ISSUE_FORM.replace(
+        "        - Not sure\n", "        - Not sure\n        - None\n"
+    ),
+    "discussion-name.yml": "name: Idea\n"
+    + ISSUE_FORM.split("\n", 3)[3].replace('labels: ["type: bug"]\n', ""),
     "config.yml": (
         "blank_issues_enabled: false\n"
         "contact_links:\n"
@@ -349,12 +354,22 @@ class CheckForms(Workspace):
     def test_unquoted_yes_fails(self) -> None:
         r = self.check("issue", "unquoted-yes.yml")
         assert r.returncode == 1
-        assert "option Yes parses as a boolean" in r.stderr
+        assert "unquoted-yes.yml:19:11: option Yes parses as a boolean" in r.stderr, r.stderr
 
     def test_duplicate_id_fails(self) -> None:
         r = self.check("issue", "duplicate-id.yml")
         assert r.returncode == 1
-        assert "duplicate id version" in r.stderr
+        assert "duplicate-id.yml:15:9: duplicate id version" in r.stderr, r.stderr
+
+    def test_reserved_none_option_fails(self) -> None:
+        r = self.check("issue", "none-option.yml")
+        assert r.returncode == 1
+        assert "none-option.yml:21:11: option None is reserved" in r.stderr, r.stderr
+
+    def test_discussion_name_key_fails(self) -> None:
+        r = self.check("discussion", "discussion-name.yml")
+        assert r.returncode == 1
+        assert "discussion-name.yml:1:1: a discussion form takes no name key" in r.stderr, r.stderr
 
     def test_config_passes(self) -> None:
         r = self.check("issue-config", "config.yml")
