@@ -76,6 +76,10 @@ WRAPPERS: dict[str, frozenset[str]] = {
     "nohup": frozenset(),
     "builtin": frozenset(),
 }
+# Reserved words a command can follow: they run the next word as the command.
+KEYWORDS = frozenset({"!", "{", "if", "then", "else", "elif", "while", "until", "do"})
+GLOB_CHARS = frozenset("*?[{")
+TEST_COMMANDS = ("[", "[[")
 SHELLS = ("bash", "sh", "zsh")
 GIT_GLOBAL_VALUES = ("-C", "--git-dir", "--work-tree", "--namespace")
 GIT_SETTINGS = ("-c", "--config-env")
@@ -394,6 +398,8 @@ def unwrap(words: list[str]) -> Command:
         if ASSIGNMENT.match(word):
             env.append(word)
             i += 1
+        elif word in KEYWORDS:
+            i += 1
         elif name in WRAPPERS:
             i += 1
             while i < len(words) and (words[i].startswith("-") or ASSIGNMENT.match(words[i])):
@@ -584,9 +590,23 @@ def expanded(word: str) -> bool:
     return "$" in word or "`" in word or SUBSTITUTED in word
 
 
+def unresolved(word: str) -> bool:
+    """True when the shell rewrites a word before running it: an expansion, a glob or braces."""
+    return expanded(word) or bool(GLOB_CHARS & set(word)) or word.startswith("~")
+
+
+def identity_words(words: list[str]) -> list[str]:
+    """Return the words that name what a command does: its name, git's subcommand, gh's verbs."""
+    if words[0] == "git":
+        return [words[0], git_parts(words)[0]]
+    if words[0] == "gh":
+        return [words[0], *gh_words(words)]
+    return [] if words[0] in TEST_COMMANDS else words[:1]
+
+
 def built_from_variables(words: list[str]) -> bool:
-    """True when the command name, or any word of an assigner, comes from an expansion."""
-    if expanded(words[0]):
+    """True when a word naming the command, or any assigner word, is rewritten by the shell."""
+    if any(unresolved(w) for w in identity_words(words)):
         return True
     return words[0] in ASSIGNERS and any(expanded(w) for w in words[1:])
 
