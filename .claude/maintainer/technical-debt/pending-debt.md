@@ -54,6 +54,7 @@ Add an item only when all of these hold:
 | DEBT-039 | The `instruction-engineering` checker never ran on Python 3.12, its declared minimum | 🟠 Blocked |
 | DEBT-040 | `scaffold-plugin.py` writes a `plugin.json` that Biome's formatter rejects | 🟠 Blocked |
 | DEBT-041 | `skill-names-consistency.py` still reads YAML with PyYAML, not ruamel.yaml nodes | 🟡 Pending |
+| DEBT-042 | python-lsp-intelligence's post-edit hook type-checks a PEP 723 script without its dependencies | 🟡 Pending |
 
 ## 📂 Open items
 
@@ -426,6 +427,33 @@ Add an item only when all of these hold:
 - **Next action:** port `skill-names-consistency.py` to ruamel.yaml `compose()`, keep its tests in `scripts/testers/validators/` green, then confirm `rg -l --no-ignore -g '*.py' 'import yaml|pyyaml'` prints nothing.
 - **Review condition:** closes when that search prints nothing and the validator's gate passes.
 - **Related records:** ADR_2026-10-29_yaml-checks-compose-ruamel-nodes.
+
+### DEBT-042 — python-lsp-intelligence's post-edit hook type-checks a PEP 723 script without its dependencies
+
+| Field | Value |
+| --- | --- |
+| **Status** | 🟡 Pending |
+| **Category** | quality, compatibility |
+| **Owner** | `plugins/python-lsp-intelligence/hooks/check.py` (plugin scope, released 0.3.0) |
+| **Logged** | 2026-10-29 |
+
+#### 🔎 Evidence
+
+- **Confirmed facts:**
+  - `hooks/check.py` runs `basedpyright` on the edited file with the project's config (`-p <config> <file>`, around line 339) and the interpreter basedpyright finds by default. It has no branch for a file whose first line is `#!/usr/bin/env -S uv run --script`.
+  - On 2026-10-29, every Edit and Write of `plugins/github-operations/skills/github/scripts/check-forms.py` (PEP 723: `ruamel.yaml`, `check-jsonschema`) made the hook block with `reportMissingImports` on `ruamel.yaml` and about 120 cascading `reportUnknown*` errors. The same file checked with `uv run --quiet --no-project --with-requirements <file> basedpyright --warnings <file>` reported 0 errors, 0 warnings, 0 notes.
+  - The repository's `basedpyright-plugins:<file>` gate (`scripts/gates.mjs`, commit 9ac3b11) already checks each PEP 723 plugin script that way.
+  - The skill's own Gotchas already tell Claude that the server shows false import errors on PEP 723 scripts; the hook does not apply that knowledge.
+- **Inferences:** every user of the plugin who edits a PEP 723 script with third-party dependencies gets the same blocking false errors after each edit.
+- **Open questions:** what the hook does when `uv` is not installed on the user's machine: skip basedpyright for that file with a one-line note, or keep today's run.
+
+#### 📈 Impact and next step
+
+- **Impact / risk:** the post-edit hook blocks every edit of a PEP 723 script with errors that are not real, which trains Claude to ignore the hook's findings and buries real errors in the noise.
+- **Why it is not fixed now:** the change belongs to another plugin, with its own pull request and version bump; Nery queued it after the github-operations 0.5.0 release.
+- **Next action:** in `hooks/check.py`, when the file's first line is the `uv run --script` shebang and `uv` is on `PATH`, run `uv run --quiet --no-project --with-requirements <file> basedpyright -p <config> <file>`; add a test in `scripts/testers/python-lsp-intelligence/` with a PEP 723 fixture that imports a third-party package, RED first; declare `uv` as optional in the README; release through `release-and-versioning`.
+- **Review condition:** closes when an edit of a PEP 723 script with third-party dependencies produces no false `reportMissingImports` from the hook and the new test passes.
+- **Related records:** DEBT-041; the `basedpyright-plugins:` gate in `scripts/gates.mjs`.
 
 <!--
 Entry format. Copy this block above this comment for each new item and add its row to the Index.
