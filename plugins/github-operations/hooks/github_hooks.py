@@ -579,6 +579,18 @@ def tag_lists(args: list[str]) -> bool:
     return not args or bool(listing & set(args)) or args[0].startswith("--sort")
 
 
+def expanded(word: str) -> bool:
+    """True when a word holds a parameter expansion or a substitution the hook cannot resolve."""
+    return "$" in word or "`" in word or SUBSTITUTED in word
+
+
+def built_from_variables(words: list[str]) -> bool:
+    """True when the command name, or any word of an assigner, comes from an expansion."""
+    if expanded(words[0]):
+        return True
+    return words[0] in ASSIGNERS and any(expanded(w) for w in words[1:])
+
+
 def nameref_flag(word: str) -> bool:
     """True when an assigner option carries n: a nameref (-n, -xn), or a read or mapfile count."""
     return word[:1] == "-" and word[:2] != "--" and "n" in word[1:]
@@ -698,6 +710,9 @@ def rule_agents_shell(call: Call, subcommands: list[Command]) -> Decision | None
         return None
     for subcommand in subcommands:
         command = subcommand.words
+        if command and built_from_variables(command):
+            reason = f"{call.agent} is read-only and cannot run a command built from variables;"
+            return deny(reason + " write the command out in full.")
         if command and hidden_script(command, call.cwd):
             reason = f"{call.agent} is read-only and cannot run `{command[0]}` on a hidden script;"
             return deny(reason + " run the commands directly.")

@@ -152,6 +152,12 @@ REVIEWER_WRAPPED = [
     "v=HOME; declare -n r=$v; r=/tmp/h; git x",
     "builtin declare -xn r; git x",
     "typeset -n r",
+    "f=-n; declare $f r=HOME; git x",
+    'v=HOME; printf -v "$v" /tmp/h; git x',
+    'v=HOME; export "$v=/tmp/h"; git x',
+    "c=git; $c push",
+    'eval "$x"',
+    "$(echo git) push",
 ]
 REVIEWER_PASS = [
     "git status",
