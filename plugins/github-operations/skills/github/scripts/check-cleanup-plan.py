@@ -8,7 +8,9 @@ Each action is a `### A-NN <title>` heading followed by these list items:
 `- **Force**: none | approved by name: <flag>[, <flag>...]` and `- **Commands**:` with a fenced
 block. Checks: A-01 is the backup and comes first; every field is present and every class known;
 classes keep their order; every deletion has a containment check; every SHA in Affected items has
-40 characters; every force flag in the commands is approved by name.
+40 characters; every force flag in the git commands (--force, -f, --force-with-lease,
+--force-if-includes, --mirror, -D, --no-verify, a +refspec, reset --hard, clean -x, stash --all,
+stash branch) is approved by name.
 Exit 0 = pass, 1 = at least one finding (one line each on stderr), 2 = usage error.
 """
 
@@ -41,7 +43,9 @@ HEADING = re.compile(r"^### (A-\d{2,})\b(.*)$")
 FIELD = re.compile(r"^- \*\*([A-Za-z ]+)\*\*:\s*(.*)$")
 SHA_LIKE = re.compile(r"\b[0-9a-f]{7,40}\b")
 APPROVED = "approved by name:"
-FORCE_FLAGS = ("--force", "-f", "--force-with-lease", "-D", "--no-verify")
+FORCE_LONGS = ("--force", "--force-with-lease", "--force-if-includes", "--no-verify", "--mirror")
+FORCE_SHORTS = {"f": "-f", "D": "-D"}
+SHORT_CLUSTER = re.compile(r"-[A-Za-z]+")
 
 
 @dataclass
@@ -74,15 +78,31 @@ def parse(text: str) -> list[Action]:
     return actions
 
 
+def short_flags(words: list[str]) -> set[str]:
+    """Return every letter of the -abc clusters among words."""
+    return {ch for w in words if SHORT_CLUSTER.fullmatch(w) for ch in w[1:]}
+
+
 def force_flags(line: str) -> list[str]:
-    """Return the force flags one command line uses."""
+    """Return the force flags one git command line uses; other programs use none."""
     try:
         words = shlex.split(line, comments=True)
     except ValueError:
         words = line.split()
-    used = [w for w in words if w in FORCE_FLAGS or w.startswith("--force-with-lease=")]
-    if "reset" in words and "--hard" in words:
-        used.append("reset --hard")
+    if "git" not in words:
+        return []
+    words = words[words.index("git") + 1 :]
+    shorts = short_flags(words)
+    used = [w for w in words if w.split("=", 1)[0] in FORCE_LONGS]
+    used += [flag for letter, flag in FORCE_SHORTS.items() if letter in shorts]
+    stash_action = words[words.index("stash") + 1 :][:1] if "stash" in words else []
+    checks = {
+        "reset --hard": "reset" in words and "--hard" in words,
+        "clean -x": "clean" in words and "x" in shorts,
+        "stash --all": "stash" in words and ("--all" in words or "a" in shorts),
+        "stash branch": stash_action == ["branch"],
+    }
+    used += [name for name, present in checks.items() if present]
     if "push" in words:
         used.extend(w for w in words if w.startswith("+"))
     return used

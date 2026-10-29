@@ -4,8 +4,9 @@
 Usage: check-pr-body.py --template PATH --body PATH --title TEXT
 
 Checks: every `## ` heading of the template appears in the body; no HTML comment of the
-template is left unanswered in the body; the title reads `type(scope): summary`, starts the
-summary in lower case, has no final period and is at most 72 characters.
+template is left unanswered in the body; the title reads `type(scope): summary` (with `!` before
+the colon for a breaking change), starts the summary in lower case, has no final period and is at
+most 72 characters.
 Exit 0 = pass, 1 = at least one finding (one line each on stderr), 2 = usage error.
 """
 
@@ -17,7 +18,7 @@ import re
 import sys
 
 TITLE = re.compile(
-    r"^(feat|fix|refactor|perf|docs|test|build|ci|chore|revert)(\([a-z0-9-]+\))?: [a-z].*[^.]$"
+    r"^(feat|fix|refactor|perf|docs|test|build|ci|chore|revert)(\([a-z0-9-]+\))?!?: [a-z].*[^.]$"
 )
 TITLE_MAX = 72
 COMMENT = re.compile(r"<!--(.*?)-->", re.DOTALL)

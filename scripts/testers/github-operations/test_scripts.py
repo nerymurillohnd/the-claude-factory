@@ -93,6 +93,16 @@ PLANS = {
         "publish",
         {"force": "approved by name: --force", "commands": "git push --force origin main"},
     ),
+    "clustered-force.md": BACKUP
+    + action(2, "Publish main", "publish", {"commands": "git push -uf origin main"}),
+    "clean-untracked.md": BACKUP
+    + action(2, "Remove build output", "files", {"commands": "git clean -fdx"}),
+    "stash-all.md": BACKUP + action(2, "Stash everything", "prep", {"commands": "git stash --all"}),
+    "stash-branch.md": BACKUP
+    + action(2, "Move the stash", "prep", {"commands": "git stash branch rescued stash@{0}"}),
+    "tar-backup.md": action(
+        1, "Backup", "prep", {"commands": 'tar -cf "<dir>/untracked-main.tar" notes.txt'}
+    ),
     "empty.md": "",
 }
 
@@ -147,12 +157,17 @@ class CheckPrBody(Workspace):
     def test_title_format_fails(self) -> None:
         r = self.check("valid.md", "Fixed stuff")
         assert r.returncode == 1
-        assert "title" in r.stderr
+        assert "title does not read type(scope): summary" in r.stderr
 
     def test_title_over_72_fails(self) -> None:
         r = self.check("valid.md", "fix(api): " + "a" * 63)
         assert r.returncode == 1
-        assert "72" in r.stderr
+        assert "title is 73 characters; the limit is 72" in r.stderr
+        assert "does not read" not in r.stderr
+
+    def test_breaking_change_title_passes(self) -> None:
+        r = self.check("valid.md", "feat(api)!: drop the v1 endpoints")
+        assert r.returncode == 0, r.stderr
 
     def test_missing_file_is_usage_error(self) -> None:
         none = str(self.tmp / "none.md")
@@ -195,6 +210,31 @@ class CheckCleanupPlan(Workspace):
 
     def test_force_approved_by_name_passes(self) -> None:
         r = self.check("force-approved.md")
+        assert r.returncode == 0, r.stderr
+
+    def test_clustered_force_flag_fails(self) -> None:
+        r = self.check("clustered-force.md")
+        assert r.returncode == 1
+        assert "command uses -f" in r.stderr
+
+    def test_clean_untracked_fails(self) -> None:
+        r = self.check("clean-untracked.md")
+        assert r.returncode == 1
+        assert "command uses clean -x" in r.stderr
+        assert "command uses -f" in r.stderr
+
+    def test_stash_all_fails(self) -> None:
+        r = self.check("stash-all.md")
+        assert r.returncode == 1
+        assert "command uses stash --all" in r.stderr
+
+    def test_stash_branch_fails(self) -> None:
+        r = self.check("stash-branch.md")
+        assert r.returncode == 1
+        assert "command uses stash branch" in r.stderr
+
+    def test_non_git_flags_are_not_force(self) -> None:
+        r = self.check("tar-backup.md")
         assert r.returncode == 0, r.stderr
 
     def test_plan_without_actions_fails(self) -> None:
