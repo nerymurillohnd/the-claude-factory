@@ -2,7 +2,7 @@
 // @ts-check
 // Type-checks the maintainer Python that scripts/pyrightconfig.maintainer.json covers, each file
 // against the interpreter that runs it: a PEP 723 entry point against its own uv environment, the
-// tests against the environment of the pytest runner that imports them, and every other file
+// tests against the environment of the test runner that imports them, and every other file
 // against the python3 on PATH. Basedpyright resolves imports from one interpreter per run, so one
 // run over the folder cannot see each script's dependencies.
 //   node scripts/basedpyright-maintainer.mjs   → exit 0 when every group passes
@@ -13,7 +13,7 @@ import { join } from 'node:path'
 import { fail, isMain, ROOT } from './lib.mjs'
 
 const CONFIG = 'scripts/pyrightconfig.maintainer.json'
-const PYTEST_RUNNER = 'scripts/testers/run_pytest.py'
+const TEST_RUNNER = 'scripts/testers/run_unittest.py'
 /** The paths the maintainer config includes, relative to the repository root. */
 const COVERED = [
   'scripts/validators',
@@ -21,7 +21,7 @@ const COVERED = [
   'scripts/generators',
   'scripts/testers/schemas',
   'scripts/testers/validators',
-  PYTEST_RUNNER,
+  TEST_RUNNER,
 ]
 
 /**
@@ -44,11 +44,11 @@ export function coveredFiles(root) {
  */
 export function environmentFor(root, file) {
   if (
-    file === PYTEST_RUNNER ||
+    file === TEST_RUNNER ||
     file.startsWith('scripts/testers/schemas/') ||
     file.startsWith('scripts/testers/validators/')
   ) {
-    return PYTEST_RUNNER
+    return TEST_RUNNER
   }
   const firstLine = readFileSync(join(root, file), 'utf8').split('\n', 1)[0] ?? ''
   return firstLine.includes('uv run --script') ? file : null

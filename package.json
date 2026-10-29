@@ -25,7 +25,7 @@
     "lint:shell": "node scripts/gates.mjs --only shellcheck-",
     "prepare": "husky",
     "setup": ".claude/hooks/repo-setup.sh",
-    "test": "node scripts/gates.mjs --only node-tests,pytest-scripts",
+    "test": "node scripts/gates.mjs --only node-tests,unittest-maintainer",
     "test:plugins": "node scripts/gates.mjs --only node-tests:,unittest:,by-path:,mod-test:",
     "typecheck": "node scripts/gates.mjs --only tsc-,mod-tsc:,basedpyright-",
     "typecheck:python": "node scripts/gates.mjs --only basedpyright-",

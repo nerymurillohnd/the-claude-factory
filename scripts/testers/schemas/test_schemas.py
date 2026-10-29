@@ -1,8 +1,3 @@
-#!/usr/bin/env -S uv run --script
-# /// script
-# requires-python = "==3.15.*"
-# dependencies = ["pytest", "jsonschema[format]", "referencing"]
-# ///
 """The JSON Schemas in scripts/schemas/: metaschema, every real repository file, recorded cases.
 
 No schema declares `$id`: a schema's identity is its file location, and every `$ref` is relative
@@ -20,9 +15,9 @@ from __future__ import annotations
 import json
 from pathlib import Path
 from typing import TYPE_CHECKING, TypeIs
+import unittest
 
 from jsonschema import Draft202012Validator, FormatChecker
-import pytest
 from referencing.jsonschema import DRAFT202012, EMPTY_REGISTRY
 
 if TYPE_CHECKING:
@@ -142,42 +137,51 @@ def case_id(value: object) -> str:
     return str(value["id"]) if is_object(value) else str(value)
 
 
-@pytest.mark.parametrize("path", SCHEMA_FILES, ids=file_id)
-def test_schema_is_valid_2020_12(path: Path) -> None:
-    Draft202012Validator.check_schema(schema_file(path))
+class SchemaTests(unittest.TestCase):
+    def test_schema_is_valid_2020_12(self) -> None:
+        assert SCHEMA_FILES
+        for path in SCHEMA_FILES:
+            with self.subTest(file_id(path)):
+                Draft202012Validator.check_schema(schema_file(path))
 
+    def test_schema_declares_no_id(self) -> None:
+        assert SCHEMA_FILES
+        for path in SCHEMA_FILES:
+            with self.subTest(file_id(path)):
+                assert "$id" not in schema_file(path), "a schema's identity is its file location"
 
-@pytest.mark.parametrize("path", SCHEMA_FILES, ids=file_id)
-def test_schema_declares_no_id(path: Path) -> None:
-    assert "$id" not in schema_file(path), "a schema's identity is its file location"
+    def test_repository_file_is_valid(self) -> None:
+        files = repo_files()
+        assert files
+        for name, path in files:
+            with self.subTest(file_id(path)):
+                paths = error_paths(validator(name).iter_errors(load(path)))
+                assert not paths, f"{path.relative_to(ROOT)}: errors at {sorted(paths)}"
 
+    def test_every_kind_has_repository_files(self) -> None:
+        for name, pattern in REPO_FILES:
+            assert list(ROOT.glob(pattern)), f"no {pattern} to check against {ENTRIES[name]}"
 
-@pytest.mark.parametrize(("name", "path"), repo_files(), ids=file_id)
-def test_repository_file_is_valid(name: str, path: Path) -> None:
-    paths = error_paths(validator(name).iter_errors(load(path)))
-    assert not paths, f"{path.relative_to(ROOT)}: errors at {sorted(paths)}"
+    def test_cases_cover_every_schema_both_ways(self) -> None:
+        seen = {(c["schema"], c["valid"]) for c in cases()}
+        for name in NAMES:
+            assert (f"{name}.schema.json", True) in seen, name
+            assert (f"{name}.schema.json", False) in seen, name
 
-
-def test_every_kind_has_repository_files() -> None:
-    for name, pattern in REPO_FILES:
-        assert list(ROOT.glob(pattern)), f"no {pattern} to check against {ENTRIES[name]}"
-
-
-def test_cases_cover_every_schema_both_ways() -> None:
-    seen = {(c["schema"], c["valid"]) for c in cases()}
-    for name in NAMES:
-        assert (f"{name}.schema.json", True) in seen, name
-        assert (f"{name}.schema.json", False) in seen, name
-
-
-@pytest.mark.parametrize("case", cases(), ids=case_id)
-def test_recorded_case(case: Mapping[str, Json]) -> None:
-    name = case["schema"]
-    assert isinstance(name, str)
-    paths = error_paths(validator(name.removesuffix(".schema.json")).iter_errors(case["data"]))
-    if case["valid"] is True:
-        assert not paths, f"expected valid, errors at {sorted(paths)}"
-    else:
-        expected = case["error_path"]
-        assert paths, "expected invalid, but it validated"
-        assert expected in paths, f"expected an error at {expected}, got {sorted(paths)}"
+    def test_recorded_case(self) -> None:
+        recorded = cases()
+        assert recorded
+        for case in recorded:
+            with self.subTest(case_id(case)):
+                name = case["schema"]
+                assert isinstance(name, str)
+                errors = validator(name.removesuffix(".schema.json")).iter_errors(case["data"])
+                paths = error_paths(errors)
+                if case["valid"] is True:
+                    assert not paths, f"expected valid, errors at {sorted(paths)}"
+                else:
+                    expected = case["error_path"]
+                    assert paths, "expected invalid, but it validated"
+                    assert expected in paths, (
+                        f"expected an error at {expected}, got {sorted(paths)}"
+                    )

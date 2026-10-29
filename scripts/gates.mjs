@@ -70,7 +70,7 @@ const MAINTAINER_PYTHON = [
   'scripts/generators',
   'scripts/testers/schemas',
   'scripts/testers/validators',
-  'scripts/testers/run_pytest.py',
+  'scripts/testers/run_unittest.py',
 ]
 
 /** Tests that may be skipped, by Node test name or unittest id, each with why. */
@@ -414,10 +414,10 @@ export function gatesFor({ root, ci, base }) {
         })
       }),
     {
-      id: 'pytest-scripts',
+      id: 'unittest-maintainer',
       group: 'python',
-      title: 'pytest on the maintainer tests, no skips',
-      cmd: 'scripts/testers/run_pytest.py',
+      title: 'unittest on the maintainer tests, no skips',
+      cmd: 'scripts/testers/run_unittest.py',
       args: ['scripts/testers/schemas', 'scripts/testers/validators'],
     },
     {

@@ -184,13 +184,14 @@ describe('gate list', () => {
       'basedpyright-maintainer-other',
       'basedpyright-skills',
       'basedpyright-maintainer',
-      'pytest-scripts',
+      'unittest-maintainer',
       'claude-validate:marketplace',
       'claude-validate:block-no-verify',
       'biome-maintainer',
     ]) {
       assert.ok(ci.includes(id), `${id} should run in CI`)
     }
+    assert.ok(!ci.includes('pytest-scripts'), 'pytest-scripts should be gone')
   })
 
   test('a PEP 723 plugin script is type-checked in its own uv environment', () => {

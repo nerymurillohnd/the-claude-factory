@@ -8,6 +8,6 @@
     "generators",
     "testers/schemas",
     "testers/validators",
-    "testers/run_pytest.py"
+    "testers/run_unittest.py"
   ]
 }
