@@ -135,6 +135,13 @@ REVIEWER_WRAPPED = [
     "XDG_CONFIG_HOME=/tmp/c git x",
     "export GIT_CONFIG_GLOBAL=/tmp/g; git x",
     "export HOME=/tmp/h && git x",
+    "echo git push | bash -eo pipefail",
+    "echo git push | bash //dev/stdin",
+    "echo git push | bash ../../dev/stdin",
+    "bash no-such-script.sh",
+    "HOME+=x; git x",
+    "read HOME <<< /tmp/h; git x",
+    "printf -v HOME /tmp/h; git x",
 ]
 REVIEWER_PASS = [
     "git status",
@@ -160,8 +167,9 @@ REVIEWER_PASS = [
     "cat f.txt",
     "echo found > /tmp/scratch/findings.md",
     "/path/to/branch-states.sh repo main out.tsv",
-    "bash /path/to/branch-states.sh repo main out.tsv",
-    "bash -o pipefail /path/to/branch-states.sh repo main out.tsv",
+    "bash RUN/branch-states.sh repo main out.tsv",
+    "bash -o pipefail RUN/branch-states.sh repo main out.tsv",
+    "ls $HOME/repo",
     "export LC_ALL=C; git log -1",
     "diff <(git log a) <(git log b)",
     "gh api -X GET repos/o/r/pulls -f per_page=100",
@@ -305,7 +313,8 @@ class Hooks(unittest.TestCase):
     def test_reviewers_keep_everything_else(self) -> None:
         for agent in (TRACKER, AUDITOR):
             for c in REVIEWER_PASS:
-                self.assert_silent(self.shell(c, agent=agent), c)
+                command = c.replace("RUN", str(PLUGIN / "skills" / "github" / "scripts"))
+                self.assert_silent(self.shell(command, agent=agent), command)
 
     def test_reviewer_powershell_is_checked(self) -> None:
         payload = self.payload("PowerShell", {"command": "git commit -m x"}, TRACKER, KNOWN)

@@ -45,8 +45,19 @@ SUBSTITUTED = "SUBSTITUTION"
 SUBSTITUTION_OPENERS = ("$(", "<(", ">(")
 SOURCES = ("source", ".")
 SHELL_VALUES = ("-o", "-O", "+o", "+O", "--rcfile", "--init-file")
-EXPORTS = ("export", "declare", "typeset", "readonly", "local")
-CONFIG_VARIABLES = ("GIT_CONFIG", "GIT_EXEC_PATH=", "HOME=", "XDG_CONFIG_HOME=")
+ASSIGNERS = (
+    "export",
+    "declare",
+    "typeset",
+    "readonly",
+    "local",
+    "read",
+    "mapfile",
+    "readarray",
+    "printf",
+)
+CONFIG_NAME = re.compile(r"HOME|XDG_CONFIG_HOME|GIT_CONFIG\w*|GIT_EXEC_PATH")
+CONFIG_ASSIGNMENT = re.compile(rf"(?:{CONFIG_NAME.pattern})\+?=")
 MUTATION = re.compile(r"\bmutation\b")
 MAX_DEPTH = 8
 GH_COMMAND_WORDS = 2
@@ -568,12 +579,13 @@ def tag_lists(args: list[str]) -> bool:
 def sets_git_config(command: Command) -> bool:
     """True when a subcommand points git at other configuration, which can run any program.
 
-    That is -c or --config-env on a git call, or an assignment or export of a variable git
-    reads its configuration from.
+    That is -c or --config-env on a git call, or any assignment to a variable git reads its
+    configuration from: VAR=, VAR+=, export and its kin, read, mapfile or printf -v.
     """
     words = command.words
-    exported = words[1:] if words[:1] and words[0] in EXPORTS else []
-    if any(w.startswith(CONFIG_VARIABLES) for w in (*command.env, *exported)):
+    if any(CONFIG_ASSIGNMENT.match(w) for w in (*command.env, *words)):
+        return True
+    if words[:1] and words[0] in ASSIGNERS and any(CONFIG_NAME.fullmatch(w) for w in words):
         return True
     if words[:1] != ["git"]:
         return False
@@ -582,22 +594,33 @@ def sets_git_config(command: Command) -> bool:
     return any(f in GIT_SETTINGS or f.startswith("--config-env=") for f in flags)
 
 
-def hidden_script(command: list[str]) -> bool:
+def shell_script(command: list[str]) -> str:
+    """Return the script word a shell, source or . runs, or "" when it reads stdin."""
+    i = 1
+    while i < len(command) and command[i][:1] in "-+" and command[i] not in ("-", "--"):
+        option = command[i]
+        short = option[:2] != "--"
+        if command[0] in SHELLS and short and "s" in option[1:]:
+            return ""
+        takes_value = option in SHELL_VALUES or (short and bool(set(option[1:]) & set("oO")))
+        i += 2 if takes_value else 1
+    i += 1 if i < len(command) and command[i] == "--" else 0
+    return command[i] if i < len(command) else ""
+
+
+def hidden_script(command: list[str], cwd: str) -> bool:
     """True when a shell, source or . runs a script the hook cannot read.
 
-    That is a script from stdin (a pipe, a here-string, -s, - or /dev/stdin), or from a
-    process substitution.
+    Anything but an existing regular file counts: stdin, a pipe, a here-string, a process
+    substitution, a device, or a word that is no file at all.
     """
     if command[0] not in (*SHELLS, *SOURCES) or nested_script(command) is not None:
         return False
-    i = 1
-    while i < len(command) and command[i][:1] in "-+" and command[i] not in ("-", "--"):
-        if command[0] in SHELLS and command[i][:2] != "--" and "s" in command[i][1:]:
-            return True
-        i += 2 if command[i] in SHELL_VALUES else 1
-    i += 1 if i < len(command) and command[i] == "--" else 0
-    script = command[i] if i < len(command) else ""
-    return script in ("", "-", SUBSTITUTED) or script.startswith(("/dev/", "/proc/"))
+    script = shell_script(command)
+    if script in ("", "-", SUBSTITUTED):
+        return True
+    target = (Path(cwd or ".") / script).resolve()
+    return not target.is_file() or target.parts[1:2] in (("dev",), ("proc",))
 
 
 def git_writes(command: list[str]) -> bool:
@@ -663,7 +686,7 @@ def rule_agents_shell(call: Call, subcommands: list[Command]) -> Decision | None
         return None
     for subcommand in subcommands:
         command = subcommand.words
-        if command and hidden_script(command):
+        if command and hidden_script(command, call.cwd):
             reason = f"{call.agent} is read-only and cannot run `{command[0]}` on a hidden script;"
             return deny(reason + " run the commands directly.")
         if sets_git_config(subcommand):
