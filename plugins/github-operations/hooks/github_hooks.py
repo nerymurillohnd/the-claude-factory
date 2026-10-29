@@ -36,7 +36,7 @@ CONTRACT = (
     " (tool choice, approvals, evidence) are in the skill github-operations:github."
 )
 SESSION = re.compile(r"[A-Za-z0-9_-]+")
-ASSIGNMENT = re.compile(r"[A-Za-z_][A-Za-z0-9_]*=")
+ASSIGNMENT = re.compile(r"[A-Za-z_][A-Za-z0-9_]*(?:\[[^\]]*\])?\+?=")
 REVIEWER_INPUT = re.compile(r'"agent_type"\s*:\s*"github-operations:(?:pr-tracker|repo-auditor)"')
 GUARDED_WORD = re.compile(r"(?<![A-Za-z0-9_.-])(git|gh)(?![A-Za-z0-9_-])")
 HEREDOC = re.compile(r"<<(-?)[ \t]*(['\"]?)([A-Za-z_][A-Za-z0-9_]*)\2")
@@ -57,7 +57,8 @@ ASSIGNERS = (
     "printf",
 )
 CONFIG_NAME = re.compile(r"HOME|XDG_CONFIG_HOME|GIT_CONFIG\w*|GIT_EXEC_PATH")
-CONFIG_ASSIGNMENT = re.compile(rf"(?:{CONFIG_NAME.pattern})\+?=")
+CONFIG_ASSIGNMENT = re.compile(rf"(?:{CONFIG_NAME.pattern})(?:\[[^\]]*\])?\+?=")
+CONFIG_TARGET = re.compile(rf"(?:-[A-Za-z]*)?(?:{CONFIG_NAME.pattern})(?:\[.*)?")
 MUTATION = re.compile(r"\bmutation\b")
 MAX_DEPTH = 8
 GH_COMMAND_WORDS = 2
@@ -585,7 +586,7 @@ def sets_git_config(command: Command) -> bool:
     words = command.words
     if any(CONFIG_ASSIGNMENT.match(w) for w in (*command.env, *words)):
         return True
-    if words[:1] and words[0] in ASSIGNERS and any(CONFIG_NAME.fullmatch(w) for w in words):
+    if words[:1] and words[0] in ASSIGNERS and any(CONFIG_TARGET.fullmatch(w) for w in words):
         return True
     if words[:1] != ["git"]:
         return False
