@@ -8,7 +8,7 @@ Tool names below are the bare names of GitHub's official MCP server. In a sessio
 
 1. Confirm the repository, the changes that belong to the task, and the base branch. Take the base from the repository's default branch unless the task or an open PR says otherwise.
 2. Take owner and repo from the checkout's remote when you are inside one; it avoids fork ambiguity. Use `search_repositories` only when the checkout does not say.
-3. If the user gave a PR number or URL, or a PR already exists for the current branch (step 7 explains how to look), resume from the phase that PR is in: commit and push only what is missing, then go to the observation reference. Never create a second PR.
+3. If the user gave a PR number or URL, or a PR already exists for the current branch (step 7 explains how to look), resume from the phase that PR is in: commit and push only what is missing, then go to `observe.md`. Never create a second PR.
 
 Check: you can state repository, base branch and whether a PR already exists.
 
@@ -28,7 +28,7 @@ Check: you can state repository, base branch and whether a PR already exists.
 
 1. Run the repository's own gates (formatter, linter, type check, tests, build) before creating or updating the PR.
 2. Fix deterministic failures now. Do not push what you already know is red.
-3. Keep each gate and its result for the final report. If the required checks are unclear, read the branch rules as the preflight in the tool matrix describes.
+3. Keep each gate and its result for the final report. If the required checks are unclear, read the branch rules as the preflight in `tooling.md` describes.
 
 ## 5. Commit
 
@@ -47,17 +47,12 @@ Check: you can state repository, base branch and whether a PR already exists.
 ## 7. Create or find the PR
 
 1. Look for an open PR from this branch first. With the MCP, use `list_pull_requests` with `head` in the form `<owner>:<branch>`, or `search_pull_requests` with a repository, PR, open and head-branch query. With `gh`, list open PRs filtered by head branch; that filter takes the bare branch name, not `owner:branch`.
-2. Create a PR only when none exists, with `create_pull_request` (owner, repo, title, head, base, and optionally body and draft). Create it ready for review unless the task asks for a draft. Request reviewers only when the task, CODEOWNERS or the repository's conventions call for it.
-3. Build the title and body from the commit history and the repository's PR template: what changed, why, how it was validated, and the risks.
+2. Write the title and body as `authoring/pr-body.md` says, and check them with its script.
+3. Create a PR only when none exists: `gh pr create --title <title> --body-file <body file> --base <base> --head <branch>`, with MCP `create_pull_request` (owner, repo, title, head, base, body) as the fallback. Create it ready for review unless the task asks for a draft. Request reviewers only when the task, CODEOWNERS or the repository's conventions call for it.
 4. Record repository, PR URL and number, base, feature branch and head SHA in the lifecycle record.
 
 ## 8. Label the PR
 
-Every PR carries the labels the repository uses to classify the type of change.
-
-1. List the repository's labels (`list_label`, or the `gh` label list). Look at the labels on recent merged PRs and at `CONTRIBUTING.md` to learn the convention.
-2. Choose the existing labels that fit this change.
-3. Create a label only when the repository has none for this kind of change (`label_write` with `method: create`, or the `gh` label create command). Say in the final report that you created it.
-4. Apply the labels with `issue_write` (`method: update`, `issue_number` set to the PR number, `labels`) or with the `gh` PR edit command. The MCP update replaces the whole label list, so read the labels already on the PR with `pull_request_read` (`method: get`) and send them together with the new ones.
+Every PR carries the labels the repository uses to classify the type of change. Choose and apply them by the label rule in `authoring/pr-body.md`, with the tools in `tooling.md`, `Writes: pull requests`. The MCP label update replaces the whole list, so send the labels already on the PR with the new ones.
 
 Check: the PR shows the intended labels and none that were there before were lost.

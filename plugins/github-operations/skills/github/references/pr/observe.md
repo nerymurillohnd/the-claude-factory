@@ -51,3 +51,5 @@ Do not send routine messages such as "still waiting" or "fixed one issue, contin
 ## 5. When the tracker cannot run, or left a gap
 
 If the Agent tool is unavailable, or the report lists something it could not inspect (a missing MCP tool because the token lacks a scope or fewer toolsets are on), read that data yourself with the tools and the discipline in `tooling.md`, section `Reads`: current head only, data you could not read is "not inspected" and never zero, and every list read to its end.
+
+What the tracker could not do is yours to finish in the same run. Inspect it, fix what it shows through the repair loop, and observe again. Never carry it forward as a pending item or leave it for later; only a gap you also cannot close after trying both tool layers makes the state `blocked`.

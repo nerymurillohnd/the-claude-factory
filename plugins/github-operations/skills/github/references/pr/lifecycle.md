@@ -34,9 +34,17 @@ If a reference disagrees with the tools you have, inspect the actual tool interf
 
 ## Lifecycle record
 
-Keep in working context: repository, PR number and URL, base and feature branches, current head SHA, lifecycle state, commits pushed this run, the latest tracker report and its time, open findings and verification gaps, merge method and queue and deployment implications, and the approval (exact head SHA and action).
+Keep the record in the state file, so it survives a compaction. The skill gives the scripts folder, the data folder and the session id; put them in place of `<skill-dir>`, `<data-dir>` and `<session-id>`.
 
-Refresh the remote head after every push, before each tracker launch, before requesting approval, and immediately before merging. A different head invalidates every head-specific conclusion and any earlier approval.
+1. Write the record after every push, every tracker report and every approval:
+   `<skill-dir>/scripts/lifecycle-state.py write --data-dir "<data-dir>" --session "<session-id>" --set kind=pr --set repository=<owner/repo> --set pr=<number> --set base=<base> --set head=<sha> --set phase=<state>`
+   Add `--set approval=<sha and action>` once the user approves, and `--set next_reference=<file>` for the step that comes next.
+2. After a compaction, read it back with `lifecycle-state.py read` and the same `--data-dir` and `--session`, and resume from its phase.
+3. Clear it with `lifecycle-state.py clear` when the run ends.
+
+Keep in working context what the record does not hold: commits pushed this run, the latest tracker report and its time, open findings and verification gaps, the merge method, queue and deployment implications.
+
+Refresh the remote head after every push, before each tracker launch, before the approval and immediately before merging. A different head invalidates every head-specific conclusion and any earlier approval.
 
 ## States
 
@@ -51,26 +59,20 @@ Refresh the remote head after every push, before each tracker launch, before req
 ## Gates
 
 - **Readiness:** a tracker report on the current head, and your own verification of it; required checks and approvals satisfied; actionable findings addressed; eligible threads resolved; not a draft; no merge conflict; allowed merge methods and queue rules read; deployment implications stated only if verified. A material verification gap means not ready.
-- **Merge approval:** ask the user directly (AskUserQuestion when available), right before the merge, naming repository, PR, base and head branches, the freshly read head SHA, merge method, queue action, automatic deployment implications and the branches cleanup would delete. Approval covers that PR, that SHA and that action. Initial instructions to manage the lifecycle, silence or an earlier PR's approval never count. A new head voids it. If declined or postponed, stop at `ready_without_approval` with no merge or cleanup mutation.
+- **Merge approval:** right before the merge, summarize in chat the repository, PR, base and head branches, the freshly read head SHA, merge method, queue action, automatic deployment implications and the branches cleanup would delete. Then call the merge with the head SHA. The plugin's merge hook turns that call into a permission prompt: the user's answer to it is the approval, for that PR, that SHA and that action. Initial instructions to manage the lifecycle, silence or an earlier PR's approval never count, and a new head voids it. If the user declines the prompt, stop at `ready_without_approval` with no merge or cleanup mutation.
 - **Landing:** only GitHub's own PR state confirms a merge. A queue entry or enabled auto-merge is `awaiting_merge`.
 - **Cleanup:** only after a confirmed merge, and never the base branch, a shared branch or another contributor's branch.
 
-## Tool policy
+## Tools
 
-Before the first GitHub operation of a run, do the preflight in the tool matrix. For each task use the layer the matrix lists first and fall back to the other in either direction. Do not declare a task impossible until its fallback was tried and both errors are in hand; then report them with the concrete unlock and wait for the user. A permission denial from Claude Code itself is the user's decision, not a gap to route around.
+Before the first GitHub operation of a run, do the preflight in `tooling.md`, then use the layer it lists first for each task and its fallback in either direction.
 
-Keep branching, editing, validation, commits, signing and pushes in local git. Commits follow the user's and the repository's signing configuration: if signing is configured and fails, stop and say so; never use `--no-gpg-sign` or commit unsigned to get past it. Do not substitute API-created commits when that would bypass hooks, signing or repository behavior. Never use a fallback to bypass checks, reviews, permissions, hooks, branch protection or queues. Follow the session's permission and confirmation requirements for every operation.
+## Rules
 
-## Hard rules
-
-- Never force-push, rewrite published history or use `--no-verify`.
-- Never bypass hooks, required checks, reviews, branch protection or queues, and never use admin privileges to route around a gate.
-- Never treat inaccessible evidence as a passing result.
 - Never report a queued or scheduled merge as completed.
 - Never merge a different head under an earlier approval.
 - Never weaken tests or security controls, or suppress warnings, only to turn checks green.
 - Never discard unrelated local work.
-- Follow the repository's commit, PR and attribution conventions.
 
 ## Final outcome
 

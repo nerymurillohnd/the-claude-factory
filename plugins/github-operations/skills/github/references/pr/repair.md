@@ -28,7 +28,7 @@ Do not:
 
 Rerun a check only with evidence of a transient failure, or after addressing the condition that stopped it from running.
 
-Every push invalidates head-specific observations and any earlier merge approval. Observe again against the new head, as the observation reference says.
+Every push invalidates head-specific observations and any earlier merge approval. Observe again against the new head, as `observe.md` says.
 
 ## Behind the base, or conflicting
 
