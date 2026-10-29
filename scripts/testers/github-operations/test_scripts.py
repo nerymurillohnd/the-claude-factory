@@ -8,6 +8,7 @@ Standard library only; runs on the python3 on PATH.
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 import subprocess
 import tempfile
@@ -106,11 +107,63 @@ PLANS = {
     "empty.md": "",
 }
 
+ISSUE_FORM = """name: Bug report
+description: Something is broken.
+labels: ["type: bug"]
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for reporting this.
+  - type: input
+    id: version
+    attributes:
+      label: Version
+    validations:
+      required: true
+  - type: dropdown
+    id: regression
+    attributes:
+      label: Did it work before?
+      options:
+        - "Yes (say which version below)"
+        - Not sure
+"""
+FORMS = {
+    "bug_report.yml": ISSUE_FORM,
+    "unquoted-yes.yml": ISSUE_FORM.replace('"Yes (say which version below)"', "Yes"),
+    "duplicate-id.yml": ISSUE_FORM.replace("id: regression", "id: version"),
+    "config.yml": (
+        "blank_issues_enabled: false\n"
+        "contact_links:\n"
+        "  - name: Ask or discuss\n"
+        "    url: https://github.com/octo/demo/discussions\n"
+        "    about: Open-ended questions belong in Discussions.\n"
+    ),
+}
 
-def run(script: str, *args: str) -> subprocess.CompletedProcess[str]:
+LABELS = [
+    {"name": "type: bug", "color": "D73A4A", "description": "Something is broken"},
+    {"name": "status: triage", "color": "FBCA04", "description": "Needs a first look"},
+    {"name": "priority: high", "color": "B60205", "description": "Fix soon"},
+]
+REMOTE_LABELS = [
+    {"name": "type: bug", "color": "d73a4a", "description": "Something is broken"},
+    {"name": "status: triage", "color": "FBCA04", "description": "Waiting"},
+    {"name": "wontfix", "color": "FFFFFF", "description": ""},
+]
+
+
+def run(
+    script: str, *args: str, env: dict[str, str] | None = None
+) -> subprocess.CompletedProcess[str]:
     """Run one skill script by path and capture its output."""
     return subprocess.run(
-        [str(SCRIPTS / script), *args], capture_output=True, text=True, check=False, timeout=30
+        [str(SCRIPTS / script), *args],
+        capture_output=True,
+        text=True,
+        check=False,
+        timeout=120,
+        env=env,
     )
 
 
@@ -283,6 +336,62 @@ class LifecycleState(Workspace):
 
     def test_session_with_a_path_exits_2(self) -> None:
         assert self.state("read", session="../x").returncode == 2
+
+
+class CheckForms(Workspace):
+    def check(self, kind: str, name: str) -> subprocess.CompletedProcess[str]:
+        return run("check-forms.py", "--kind", kind, self.file(name, FORMS[name]))
+
+    def test_valid_issue_form_passes(self) -> None:
+        r = self.check("issue", "bug_report.yml")
+        assert r.returncode == 0, r.stderr
+
+    def test_unquoted_yes_fails(self) -> None:
+        r = self.check("issue", "unquoted-yes.yml")
+        assert r.returncode == 1
+        assert "option Yes parses as a boolean" in r.stderr
+
+    def test_duplicate_id_fails(self) -> None:
+        r = self.check("issue", "duplicate-id.yml")
+        assert r.returncode == 1
+        assert "duplicate id version" in r.stderr
+
+    def test_config_passes(self) -> None:
+        r = self.check("issue-config", "config.yml")
+        assert r.returncode == 0, r.stderr
+
+
+class LabelsDiff(Workspace):
+    def diff(self, stub: str) -> subprocess.CompletedProcess[str]:
+        bin_dir = self.tmp / "bin"
+        bin_dir.mkdir()
+        gh = bin_dir / "gh"
+        _ = gh.write_text("#!/bin/sh\n" + stub, encoding="utf-8")
+        gh.chmod(0o755)
+        env = {**os.environ, "PATH": f"{bin_dir}{os.pathsep}{os.environ.get('PATH', '')}"}
+        labels = self.file("labels.json", json.dumps(LABELS))
+        return run("labels-diff.py", "--repo", "octo/demo", "--labels", labels, env=env)
+
+    def test_labels_diff_reports_missing(self) -> None:
+        remote = self.file("remote.json", json.dumps(REMOTE_LABELS))
+        r = self.diff(f"cat '{remote}'\n")
+        assert r.returncode == 1, r.stderr
+        report = _decode(r.stdout)
+        assert isinstance(report, JsonObject)
+        assert report["missing"] == ["priority: high"]
+        assert report["extra"] == ["wontfix"]
+        assert report["different"] == [
+            {
+                "name": "status: triage",
+                "want": {"color": "FBCA04", "description": "Needs a first look"},
+                "have": {"color": "FBCA04", "description": "Waiting"},
+            }
+        ]
+
+    def test_labels_diff_gh_failure_exits_2(self) -> None:
+        r = self.diff("echo 'HTTP 404: Not Found' >&2\nexit 1\n")
+        assert r.returncode == 2
+        assert "HTTP 404" in r.stderr
 
 
 if __name__ == "__main__":
