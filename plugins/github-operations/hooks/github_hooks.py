@@ -41,7 +41,10 @@ SESSION = re.compile(r"[A-Za-z0-9_-]+")
 ASSIGNMENT = re.compile(r"[A-Za-z_][A-Za-z0-9_]*=")
 GUARDED_WORD = re.compile(r"(?<![A-Za-z0-9_.-])(git|gh|curl)(?![A-Za-z0-9_-])")
 HEREDOC = re.compile(r"<<(-?)[ \t]*(['\"]?)([A-Za-z_][A-Za-z0-9_]*)\2")
-FEEDS_SHELL = re.compile(r"(?:^|[\s;&|(/])(?:bash|sh|zsh)(?:\s+-\S+)*\s*$")
+SHELL_WORD = re.compile(r"(?<![\w.-])(?:bash|sh|zsh)(?![\w.-])")
+GIT_CONFIG_ASSIGNMENT = re.compile(r"GIT_CONFIG(?:_[A-Z0-9_]+)?=")
+SHELL_VARIABLE = re.compile(r"\$\{?[A-Za-z_][A-Za-z0-9_]*\}?")
+SUBSTITUTED = "SUBSTITUTION"
 TOKEN = re.compile(r"(?:ghp|gho|ghu|ghs|ghr)_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}")
 TOKEN_VARIABLES = ("$GH_TOKEN", "$GITHUB_TOKEN", "${GH_TOKEN}", "${GITHUB_TOKEN}")
 PULL_MERGE = re.compile(r"(?:^|/)repos/([^/\s]+)/([^/\s]+)/pulls/(\d+)/merge$")
@@ -70,7 +73,10 @@ WRAPPERS: dict[str, frozenset[str]] = {
     "nohup": frozenset(),
 }
 SHELLS = ("bash", "sh", "zsh")
+DECLARES = ("export", "declare", "typeset", "readonly", "local")
 GIT_GLOBAL_VALUES = ("-C", "--git-dir", "--work-tree", "--namespace")
+GIT_SETTINGS = ("-c", "--config-env")
+GH_GLOBAL_VALUES = ("-R", "--repo", "--hostname")
 
 GIT_READ = frozenset(
     {
@@ -204,6 +210,13 @@ class Decision:
     reason: str
 
 
+class Command(NamedTuple):
+    """One subcommand: the words it runs and the VAR=value assignments set for it."""
+
+    words: list[str]
+    env: list[str]
+
+
 class Options(NamedTuple):
     """The options and positional words of one git subcommand."""
 
@@ -244,7 +257,7 @@ def split_heredocs(command: str) -> tuple[str, list[str]]:
                 if candidate == match.group(3):
                     break
                 body.append(lines[i - 1])
-            if FEEDS_SHELL.search(line[: match.start()]):
+            if SHELL_WORD.search(line):
                 scripts.append("\n".join(body))
     return "\n".join(kept), scripts
 
@@ -291,7 +304,7 @@ def extract_substitutions(text: str) -> tuple[str, list[str]]:
         elif text.startswith("$(", i) or ch == "`":
             end = substitution_end(text, i)
             bodies.append(text[i + (2 if ch == "$" else 1) : end])
-            out.append("SUBSTITUTION")
+            out.append(SUBSTITUTED)
             i = end + 1
         else:
             if ch in "'\"" and quote in ("", ch):
@@ -313,22 +326,25 @@ def tokens(text: str) -> list[str]:
         raise LexError from error
 
 
-def unwrap(words: list[str]) -> list[str]:
-    """Drop leading assignments and wrapper commands; return the command that really runs."""
+def unwrap(words: list[str]) -> Command:
+    """Set aside leading assignments and wrapper commands; return the command that really runs."""
+    env: list[str] = []
     i = 0
     while i < len(words):
         word = words[i]
         name = posixpath.basename(word)
         if ASSIGNMENT.match(word):
+            env.append(word)
             i += 1
         elif name in WRAPPERS:
             i += 1
             while i < len(words) and (words[i].startswith("-") or ASSIGNMENT.match(words[i])):
+                env += [words[i]] if ASSIGNMENT.match(words[i]) else []
                 i += 2 if words[i] in WRAPPERS[name] else 1
         else:
             break
     rest = words[i:]
-    return [posixpath.basename(rest[0]), *rest[1:]] if rest else []
+    return Command([posixpath.basename(rest[0]), *rest[1:]] if rest else [], env)
 
 
 def nested_script(command: list[str]) -> str | None:
@@ -343,22 +359,22 @@ def nested_script(command: list[str]) -> str | None:
     return None
 
 
-def expand(words: list[str], depth: int) -> list[list[str]]:
+def expand(words: list[str], depth: int) -> list[Command]:
     """Return the subcommands one word list runs, nested scripts included."""
     command = unwrap(words)
-    if not command:
-        return []
-    script = nested_script(command)
+    if not command.words:
+        return [command] if command.env else []
+    script = nested_script(command.words)
     return [command] if script is None else [command, *lex_subcommands(script, depth + 1)]
 
 
-def lex_subcommands(command: str, depth: int = 0) -> list[list[str]]:
-    """Split a shell command into the word lists of every subcommand it runs."""
+def lex_subcommands(command: str, depth: int = 0) -> list[Command]:
+    """Split a shell command into every subcommand it runs, with its assignments."""
     if depth > MAX_DEPTH:
         raise LexError
     text, scripts = split_heredocs(command)
     text, bodies = extract_substitutions(text)
-    result: list[list[str]] = []
+    result: list[Command] = []
     for nested in (*scripts, *bodies):
         result.extend(lex_subcommands(nested, depth + 1))
     words: list[str] = []
@@ -413,21 +429,41 @@ def short_cluster(arg: str, short_values: str, shorts: set[str]) -> int:
 
 
 def git_parts(command: list[str]) -> tuple[str, list[str], list[str]]:
-    """Return a git call's subcommand, its arguments and its -c settings."""
+    """Return a git call's subcommand, its arguments and its -c and --config-env settings."""
     i = 1
     settings: list[str] = []
     while i < len(command) and command[i].startswith("-"):
         option = command[i]
-        if option == "-c" and i + 1 < len(command):
+        if option in GIT_SETTINGS and i + 1 < len(command):
             settings.append(command[i + 1])
-        i += 2 if option in (*GIT_GLOBAL_VALUES, "-c") else 1
+        elif option.startswith("--config-env="):
+            settings.append(option.removeprefix("--config-env="))
+        i += 2 if option in (*GIT_GLOBAL_VALUES, *GIT_SETTINGS) else 1
     subcommand = command[i] if i < len(command) else ""
     return subcommand, command[i + 1 :], settings
 
 
+def gh_split(command: list[str]) -> tuple[list[str], list[str]]:
+    """Return a gh call's two command words and the rest of its arguments, in order."""
+    words: list[str] = []
+    rest: list[str] = []
+    i = 1
+    while i < len(command):
+        arg = command[i]
+        i += 1
+        if arg in GH_GLOBAL_VALUES:
+            rest += command[i - 1 : i + 1]
+            i += 1
+        elif len(words) < GH_COMMAND_WORDS and not arg.startswith("-"):
+            words.append(arg)
+        else:
+            rest.append(arg)
+    return words, rest
+
+
 def gh_words(command: list[str]) -> list[str]:
-    """Return a gh call's command words: the first two words that are not options."""
-    return [word for word in command[1:] if not word.startswith("-")][:2]
+    """Return a gh call's command words, such as pr and merge, skipping options and their values."""
+    return gh_split(command)[0]
 
 
 def abbreviates(names: Iterable[str], full: str, shortest: str) -> bool:
@@ -515,7 +551,7 @@ def git_violation(command: list[str]) -> str | None:
     for setting in settings:
         key = setting.split("=", 1)[0].lower()
         if key in ("commit.gpgsign", "core.hookspath"):
-            return f"git -c {key}"
+            return f"setting {key} on the command line"
     if subcommand == "push":
         return push_violation(args)
     if subcommand in ("commit", "merge", "am"):
@@ -538,9 +574,23 @@ def credential_violation(command: list[str]) -> str | None:
     return None
 
 
-def rule_credentials_history(subcommands: list[list[str]]) -> Decision | None:
+def config_violation(command: Command) -> str | None:
+    """Return the GIT_CONFIG_* assignment a subcommand sets, or None."""
+    declared = command.words[1:] if command.words[:1] and command.words[0] in DECLARES else []
+    for word in (*command.env, *declared):
+        if GIT_CONFIG_ASSIGNMENT.match(word):
+            return f"setting {word.split('=', 1)[0]}"
+    return None
+
+
+def rule_credentials_history(subcommands: list[Command]) -> Decision | None:
     """Rule 4: no token reads, tokens in curl, force pushes, --no-verify or unsigned commits."""
-    for command in subcommands:
+    for subcommand in subcommands:
+        if found := config_violation(subcommand):
+            return deny(f"{found} is not allowed: it can switch off git's hooks or signing.")
+        command = subcommand.words
+        if not command:
+            continue
         if found := credential_violation(command):
             return deny(
                 f"{found}; use gh or the GitHub MCP server, which authenticate on their own."
@@ -581,11 +631,22 @@ def pr_merge(args: list[str]) -> Decision:
     )
 
 
+def unreadable_query(api: ApiCall) -> bool:
+    """True when a GraphQL call's query comes from a file, stdin, a variable or a substitution."""
+    queries = [f.removeprefix("query=") for f in api.fields if f.startswith("query=")]
+    return api.has_input or any(
+        q.startswith("@") or SUBSTITUTED in q or SHELL_VARIABLE.fullmatch(q) for q in queries
+    )
+
+
 def api_merge(api: ApiCall) -> Decision | None:
     """Decide on a gh api call that merges, or None when it does not merge."""
+    path = api.endpoint.split("?", 1)[0].split("#", 1)[0].rstrip("/")
     if any(name in field for field in api.fields for name in GRAPHQL_MERGES):
         return deny("merge with gh pr merge --match-head-commit, not a GraphQL mutation.")
-    target = PULL_MERGE.search(api.endpoint)
+    if path.lstrip("/") == "graphql" and unreadable_query(api):
+        return deny("pass the GraphQL query inline with -f query='...', so it can be checked.")
+    target = PULL_MERGE.search(path)
     if target is None or api.method != "PUT":
         return None
     shas = [f.split("=", 1)[1] for f in api.fields if f.startswith("sha=")]
@@ -597,14 +658,15 @@ def api_merge(api: ApiCall) -> Decision | None:
     )
 
 
-def rule_merge_gate_shell(subcommands: list[list[str]]) -> Decision | None:
+def rule_merge_gate_shell(subcommands: list[Command]) -> Decision | None:
     """Rule 3 for shell commands: gh pr merge and merges through gh api."""
-    for command in subcommands:
-        if command[0] != "gh":
+    for subcommand in subcommands:
+        command = subcommand.words
+        if command[:1] != ["gh"]:
             continue
-        words = gh_words(command)
+        words, rest = gh_split(command)
         if words == ["pr", "merge"]:
-            return pr_merge(command[command.index("merge") + 1 :])
+            return pr_merge(rest)
         if words[:1] == ["api"]:
             decision = api_merge(gh_api(command[command.index("api") + 1 :]))
             if decision:
@@ -681,12 +743,13 @@ def gh_reads(command: list[str]) -> bool:
     return len(words) == GH_COMMAND_WORDS and words[1] in GH_READ.get(words[0], frozenset())
 
 
-def rule_agents_shell(call: Call, subcommands: list[list[str]]) -> Decision | None:
+def rule_agents_shell(call: Call, subcommands: list[Command]) -> Decision | None:
     """Rule 2 for shell commands: the agents run only reading git and gh commands."""
     if call.agent not in AGENTS:
         return None
-    for command in subcommands:
-        reads = {"git": git_reads, "gh": gh_reads}.get(command[0])
+    for subcommand in subcommands:
+        command = subcommand.words
+        reads = {"git": git_reads, "gh": gh_reads}.get(command[0]) if command else None
         if reads and not reads(command):
             shown = " ".join(command)[:80]
             reason = f"{call.agent} is read-only; `{shown}` changes state."
@@ -808,6 +871,11 @@ def read_call(raw: str) -> Call:
     )
 
 
+def reaches_github(command: list[str]) -> bool:
+    """True when a subcommand is gh or git push."""
+    return command[:1] == ["gh"] or (command[:1] == ["git"] and git_parts(command)[0] == "push")
+
+
 def shell_decisions(call: Call) -> tuple[list[Decision | None], bool]:
     """Run the shell rules; return their decisions and whether the call reaches GitHub."""
     command = call.tool_input.get("command")
@@ -820,7 +888,7 @@ def shell_decisions(call: Call) -> tuple[list[Decision | None], bool]:
                 deny("this command could not be parsed; split it into simpler commands.")
             ], False
         return [], False
-    github = any(c[0] == "gh" or (c[0] == "git" and git_parts(c)[0] == "push") for c in subcommands)
+    github = any(reaches_github(c.words) for c in subcommands)
     rules = [
         rule_credentials_history(subcommands),
         rule_merge_gate_shell(subcommands),

@@ -55,35 +55,59 @@ class Decision:
 
 
 DENY_EVERYONE = [
-    "gh auth token",
-    "GH_TOKEN=x gh auth token",
-    "echo $(gh auth token)",
-    'curl -H "Authorization: Bearer $(gh auth token)" https://api.github.com/user',
-    "curl -H 'Authorization: token ghp_abcdefghijklmnopqrstuvwxyz0123' https://api.github.com",
-    'curl -H "Authorization: Bearer $GH_TOKEN" https://api.github.com',
-    "gh auth status --show-token",
-    "git push --force origin main",
-    "git push -f",
-    "git push --force-with-lease",
-    "git push --force-if-includes origin x",
-    "git push --mirror backup",
-    "git push origin +main",
-    "git push -uf origin x",
-    "git push --no-verify",
-    "git commit --no-verify -m x",
-    "git commit -n -m x",
-    "git commit -nm x",
-    "git commit --no-veri -m x",
-    "git commit --no-gpg-sign -m x",
-    "git merge --no-verify b",
-    "git am -n p.patch",
-    "git -c core.hooksPath=/dev/null commit -m x",
-    "git -c commit.gpgsign=false commit -m x",
-    "/usr/bin/git push --force",
-    "git -C repo push --force",
-    'git commit -m "x',
+    ("gh pr -R o/r merge 12 --squash", "approved head"),
+    ("gh pr --repo=o/r merge 12 --squash", "approved head"),
+    ("gh api -X PUT 'repos/o/r/pulls/12/merge?x=1'", "sha="),
+    ("gh api --method=put /repos/o/r/pulls/12/merge/", "sha="),
+    ("gh api graphql -F query=@merge.graphql", "inline"),
+    ("gh api graphql --input query.json", "inline"),
+    ('gh api graphql -f query="$(cat merge.graphql)"', "inline"),
+    ('gh api graphql -f query="$Q"', "inline"),
+    ("cat <<'EOF' | bash\ngit push --force\nEOF", "force push"),
+    (
+        "GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=core.hooksPath GIT_CONFIG_VALUE_0=/x git commit -m x",
+        "GIT_CONFIG",
+    ),
+    ("env GIT_CONFIG_PARAMETERS=\"'core.hooksPath'='/dev/null'\" git commit -m x", "GIT_CONFIG"),
+    ("GIT_CONFIG_GLOBAL=/tmp/c git commit -m x", "GIT_CONFIG"),
+    ("export GIT_CONFIG_COUNT=1; git commit -m x", "GIT_CONFIG"),
+    ("git --config-env=core.hooksPath=HOOKS commit -m x", "on the command line"),
+    ("git --config-env core.hooksPath=HOOKS commit -m x", "on the command line"),
+    ("gh auth token", "token"),
+    ("GH_TOKEN=x gh auth token", "token"),
+    ("echo $(gh auth token)", "token"),
+    ('curl -H "Authorization: Bearer $(gh auth token)" https://api.github.com/user', "token"),
+    (
+        "curl -H 'Authorization: token ghp_abcdefghijklmnopqrstuvwxyz0123' https://api.github.com",
+        "token",
+    ),
+    ('curl -H "Authorization: Bearer $GH_TOKEN" https://api.github.com', "token"),
+    ("gh auth status --show-token", "token"),
+    ("git push --force origin main", "force push"),
+    ("git push -f", "force push"),
+    ("git push --force-with-lease", "force push"),
+    ("git push --force-if-includes origin x", "force push"),
+    ("git push --mirror backup", "--mirror"),
+    ("git push origin +main", "+refspec"),
+    ("git push -uf origin x", "force push"),
+    ("git push --no-verify", "--no-verify"),
+    ("git commit --no-verify -m x", "--no-verify"),
+    ("git commit -n -m x", "--no-verify"),
+    ("git commit -nm x", "--no-verify"),
+    ("git commit --no-veri -m x", "--no-verify"),
+    ("git commit --no-gpg-sign -m x", "--no-gpg-sign"),
+    ("git merge --no-verify b", "--no-verify"),
+    ("git am -n p.patch", "--no-verify"),
+    ("git -c core.hooksPath=/dev/null commit -m x", "on the command line"),
+    ("git -c commit.gpgsign=false commit -m x", "on the command line"),
+    ("/usr/bin/git push --force", "force push"),
+    ("git -C repo push --force", "force push"),
+    ('git commit -m "x', "could not be parsed"),
 ]
 PASS_MAIN = [
+    "gh pr view 1 -R o/r",
+    "gh api graphql -f query='query($o:String!){repository(owner:$o,name:\"r\"){id}}' -f o=x",
+    "cat <<'EOF' | grep force\ngit push --force\nEOF",
     "git push origin feat/x",
     "git push -n",
     "git push -u origin x",
@@ -99,18 +123,18 @@ PASS_MAIN = [
     "echo $'it\\'s'",
 ]
 WRAPPED = [
-    "cd r && git push --force",
-    'bash -c "git push -f"',
-    "sudo -n git commit --no-verify -m x",
-    "bash <<'EOF'\ngit push --force\nEOF",
-    "env GH_TOKEN=x gh auth token",
-    "true; git push --force",
-    "ls | xargs echo && git push -f",
-    "eval git push --force",
-    "time nice -n 5 git push --force",
-    "echo `git push --force`",
-    'echo "don\'t $(git push --force)"',
-    f'gh pr merge --body "a b" 12 --squash --match-head-commit {SHA[:7]}',
+    ("cd r && git push --force", "force push"),
+    ('bash -c "git push -f"', "force push"),
+    ("sudo -n git commit --no-verify -m x", "--no-verify"),
+    ("bash <<'EOF'\ngit push --force\nEOF", "force push"),
+    ("env GH_TOKEN=x gh auth token", "token"),
+    ("true; git push --force", "force push"),
+    ("ls | xargs echo && git push -f", "force push"),
+    ("eval git push --force", "force push"),
+    ("time nice -n 5 git push --force", "force push"),
+    ("echo `git push --force`", "force push"),
+    ('echo "don\'t $(git push --force)"', "force push"),
+    (f'gh pr merge --body "a b" 12 --squash --match-head-commit {SHA[:7]}', "approved head"),
 ]
 
 
@@ -206,9 +230,10 @@ class Hooks(unittest.TestCase):
         state.mkdir(parents=True, exist_ok=True)
         _ = (state / f"{session}.json").write_text(json.dumps(values), encoding="utf-8")
 
-    def assert_denied(self, d: Decision, what: str) -> None:
+    def assert_denied(self, d: Decision, what: str, because: str = "") -> None:
         assert d.kind == "deny", f"not denied: {what!r} -> {d.raw!r}"
         assert d.reason.startswith("github-operations: "), d.reason
+        assert because in d.reason, f"denied for another reason: {what!r} -> {d.reason!r}"
 
     def assert_ask(self, d: Decision, what: str) -> None:
         assert d.kind == "ask", f"not asked: {what!r} -> {d.raw!r}"
@@ -218,16 +243,16 @@ class Hooks(unittest.TestCase):
         assert d.raw.strip() == "", f"not silent: {what!r} -> {d.raw!r}"
 
     def test_deny_everyone(self) -> None:
-        for c in DENY_EVERYONE:
-            self.assert_denied(self.shell(c), c)
+        for c, because in DENY_EVERYONE:
+            self.assert_denied(self.shell(c), c, because)
 
     def test_main_session_passes_ordinary_work(self) -> None:
         for c in PASS_MAIN:
             self.assert_silent(self.shell(c), c)
 
     def test_wrapped_forms_are_caught(self) -> None:
-        for c in WRAPPED:
-            self.assert_denied(self.shell(c), c)
+        for c, because in WRAPPED:
+            self.assert_denied(self.shell(c), c, because)
 
     def test_powershell_tool_is_checked(self) -> None:
         payload = self.payload("PowerShell", {"command": "git push --force"}, "", KNOWN)
@@ -243,6 +268,12 @@ class Hooks(unittest.TestCase):
         assert SHA in d.reason
         assert "squash" in d.reason
         assert "12" in d.reason
+
+    def test_merge_with_repo_flag_asks(self) -> None:
+        c = f"gh pr -R o/r merge 12 --squash --match-head-commit {SHA}"
+        d = self.shell(c)
+        self.assert_ask(d, c)
+        assert "PR 12 " in d.reason, d.reason
 
     def test_merge_admin_denied(self) -> None:
         c = f"gh pr merge 12 --admin --squash --match-head-commit {SHA}"
@@ -281,6 +312,7 @@ class Hooks(unittest.TestCase):
             "git remote -v",
             "gh pr view 1",
             "gh pr checks 1",
+            "gh pr -R o/r view 1",
             "gh api repos/o/r/pulls/1",
             "gh api graphql -f query='query{viewer{login}}'",
             "ls -la",
