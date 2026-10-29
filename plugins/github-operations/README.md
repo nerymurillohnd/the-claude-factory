@@ -426,6 +426,7 @@ Uninstalling from the last scope it's installed at also deletes its saved option
 | :-- | :--: | :--: |
 | 🎯 Skills | ✅ | ⚠️ they load, but they need `git`, `gh` and your repository on your computer, so use Claude Code |
 | 🤖 Agents | ✅ | ⚠️ in Cowork sessions, not in a chat conversation |
+| 🪝 Hooks | ✅ needs `python3` 3.12 or later and Claude Code 2.1.295 or later | ⚠️ in Cowork sessions, not in a chat conversation |
 | 🔌 MCP server (remote) | ✅ needs your token, set as in [Configuration](#-configuration) | 🔗 connect it once with your token, as in [In the Claude app](#in-the-claude-app) |
 
 <sub>✅ works · ⚠️ partial · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. The Claude app (web, desktop and mobile) runs a conversation as a Cowork session when it can, and as a chat conversation otherwise, for example on a device that can't run Cowork or in the separate Chat mode that Team and Enterprise plans keep for now.</sub>

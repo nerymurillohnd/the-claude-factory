@@ -1,0 +1,76 @@
+{
+  "description": "github-operations: deny MCP file writes, token reads, force pushes, --no-verify, writes by the plugin's agents and unguarded merges; ask before every merge; name the contract on the first GitHub call; restore lifecycle state after a compaction.",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "mcp__.*__(push_files|create_or_update_file|delete_file)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/deny-mcp-file-writes.sh",
+            "args": [],
+            "timeout": 10,
+            "onFailure": "block"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash|PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/run-hook.sh",
+            "args": [
+              "shell"
+            ],
+            "timeout": 10,
+            "onFailure": "block"
+          }
+        ]
+      },
+      {
+        "matcher": "mcp__.*[Gg]it[Hh]ub.*__.*|mcp__.*__merge_pull_request",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/run-hook.sh",
+            "args": [
+              "mcp"
+            ],
+            "timeout": 10,
+            "onFailure": "block"
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/run-hook.sh",
+            "args": [
+              "files"
+            ],
+            "timeout": 10,
+            "onFailure": "block"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/run-hook.sh",
+            "args": [
+              "compact"
+            ],
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}
