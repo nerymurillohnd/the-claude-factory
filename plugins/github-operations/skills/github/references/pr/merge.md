@@ -31,7 +31,7 @@ Decide from the actual branch history (the PR's commits) and from how the base b
 
 ## 3. Request approval
 
-Stop before the merge and summarize it in chat. Include:
+Stop before the merge and ask the user directly (AskUserQuestion when available). Include:
 
 - Repository.
 - PR number, title and URL.
@@ -43,9 +43,7 @@ Stop before the merge and summarize it in chat. Include:
 - The cleanup that follows: which local and remote feature branches would be deleted.
 - Material non-blocking warnings or inspection limits.
 
-When a queue is required, the approval requested is to enter it, and the summary says so.
-
-Then make the merge call with the head SHA (section 5). The plugin's merge hook stops that call with a permission prompt naming the PR, the SHA and the method; the user's answer to the prompt is the approval. A call without the full head SHA is denied by the hook: add it, never route around it. If the user declines, stop at `ready_without_approval`.
+When a queue is required, the approval requested is to enter it, and the request says so. An answer counts only when the user explicitly approves this PR at this SHA; a closed, timed-out or ambiguous answer is not approval. If the user declines or postpones, stop at `ready_without_approval`.
 
 ## 4. Land and observe
 
@@ -70,7 +68,7 @@ Observe post-merge workflows when the task or repository requires it. A merged P
 
 1. Run `gh pr merge <number> --match-head-commit <sha>` with the method option (`--squash`, `--merge`) the summary named. `--match-head-commit` is the expected-head guard: always pass the approved SHA.
 2. To set the message, pass `--subject` and `--body`. On `gh`, `--body` replaces the default message. Leave both out to keep the repository's default.
-3. Never add `--admin`: it skips the merge requirements, and the hook denies it. Add `--delete-branch` only when the approval named the remote deletion.
+3. Never add `--admin`: it skips the merge requirements. Add `--delete-branch` only when the approval named the remote deletion.
 4. Fallback: MCP `merge_pull_request` with `pullNumber`, `expectedHeadSha`, `merge_method`. Its `commit_message` is appended to the default message, not a replacement; when the repository's default message already holds the PR body, leave `commit_message` out.
 5. Never use the rebase method when signatures matter: GitHub rewrites the commits and drops the user's signatures.
 

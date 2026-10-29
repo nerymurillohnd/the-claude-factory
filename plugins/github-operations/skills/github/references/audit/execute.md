@@ -64,7 +64,7 @@ Run these in order. A failure at any point stops the action, not the whole run, 
 
 **`maintenance`**: `git -C "<repo>" gc` (repository defaults), or the exact approved forms (`git reflog expire --expire=now --all`, `git gc --prune=now`). Nothing else may touch the repository while it runs. Check `git count-objects -vH` before and after and record both.
 
-**`history-rewrite`**: only as `plan.md` describes, in a fresh mirror clone made from the backup, never in the working repository. Prepare everything up to the push, then give the user the exact force-push command to run in their own terminal; never run it yourself.
+**`history-rewrite`**: only as `plan.md` describes, in a fresh mirror clone made from the backup, never in the working repository. Run the force push only as the exact command the approved action names.
 
 ## When something goes wrong
 
