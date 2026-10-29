@@ -1,0 +1,32 @@
+# Question form (GitHub issue forms schema). Public repositories.
+# `labels:` is static; triage applies component labels by hand.
+# GitHub serves forms from the default branch, so a change goes live once merged there.
+name: ❔ Question
+description: Ask how to install, configure or use something.
+title: "[Question] <short summary>"
+labels: ["type: question", "status: triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Happy to help. The [documentation](https://github.com/<OWNER>/<REPO>/tree/main/docs) and the [FAQ](https://github.com/<OWNER>/<REPO>/blob/main/docs/faq.md) answer the most common questions.
+
+  - type: input
+    id: component
+    attributes:
+      label: Component (if any)
+      description: The plugin, package or service, or leave blank for a general question.
+
+  - type: textarea
+    id: question
+    attributes:
+      label: Your question
+      description: What are you trying to do, and what have you tried so far?
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: The version you are using, if relevant.

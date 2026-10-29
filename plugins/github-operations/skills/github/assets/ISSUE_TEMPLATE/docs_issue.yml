@@ -1,0 +1,43 @@
+# Documentation issue form (GitHub issue forms schema). Public and internal repositories.
+# `labels:` is static; triage applies component labels by hand.
+# GitHub serves forms from the default branch, so a change goes live once merged there.
+name: 📝 Documentation issue
+description: Something in a README or guide is wrong, unclear, outdated or missing.
+title: "[Docs] <page>: <short summary>"
+labels: ["type: documentation", "status: triage"]
+body:
+  - type: input
+    id: page
+    attributes:
+      label: Page
+      description: Link to the page or section.
+      placeholder: https://github.com/<OWNER>/<REPO>/blob/main/docs/installation.md
+    validations:
+      required: true
+
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What is the problem?
+      options:
+        - Incorrect or outdated
+        - Unclear or confusing
+        - Missing information
+        - Broken link or image
+        - Typo or formatting
+    validations:
+      required: true
+
+  - type: textarea
+    id: details
+    attributes:
+      label: Details
+      description: What does it say now, and what should it say?
+    validations:
+      required: true
+
+  - type: textarea
+    id: suggestion
+    attributes:
+      label: Suggested fix
+      description: Proposed wording or a link to the correct source, if you have one.

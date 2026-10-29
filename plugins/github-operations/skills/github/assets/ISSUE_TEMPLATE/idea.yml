@@ -1,0 +1,59 @@
+# Idea form (GitHub issue forms schema). Public repositories; for something brand new.
+# `labels:` is static; triage applies component and priority labels by hand.
+# GitHub serves forms from the default branch, so a change goes live once merged there.
+name: 💡 Idea
+description: Propose something brand new.
+title: "[Idea] <short name>"
+labels: ["type: idea", "status: triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        We build things that remove real, recurring friction. The more concrete your workflow, the better the result.
+        Improving something that already exists? Use [Feature request](https://github.com/<OWNER>/<REPO>/issues/new?template=feature-request.yml).
+
+  - type: textarea
+    id: workflow
+    attributes:
+      label: Which workflow should this improve?
+      description: Walk us through what you do today, step by step, and where it hurts.
+      placeholder: |
+        Today I …
+        Then I have to …
+        It takes … / I often forget …
+    validations:
+      required: true
+
+  - type: textarea
+    id: outcome
+    attributes:
+      label: What would it do for you?
+      description: Describe the ideal result. What would you do, and what would happen?
+    validations:
+      required: true
+
+  - type: input
+    id: where
+    attributes:
+      label: Where would you use it?
+      description: Surface, product or environment. Leave blank if not sure.
+
+  - type: textarea
+    id: tools
+    attributes:
+      label: Tools, services or languages involved
+      description: e.g. GitHub, Postgres, Figma, Python, Terraform …
+
+  - type: textarea
+    id: prior-art
+    attributes:
+      label: Existing solutions
+      description: Things that already do part of this, and what they miss.
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before you submit
+      options:
+        - label: I checked the catalog and existing issues for something similar.
+          required: true

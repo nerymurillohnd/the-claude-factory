@@ -1,0 +1,82 @@
+# Maintenance task form (GitHub issue forms schema). Internal repositories.
+# Planned work with no user-facing defect: refactors, dependency rounds, tooling, technical debt.
+# `labels:` is static; triage applies component and priority labels by hand.
+# GitHub serves forms from the default branch, so a change goes live once merged there.
+name: 🔧 Maintenance task
+description: Planned upkeep, cleanup or technical debt with no user-facing defect.
+title: "[Maintenance] <area>: <short summary>"
+labels: ["type: maintenance", "status: triage"]
+body:
+  - type: textarea
+    id: task
+    attributes:
+      label: What needs doing?
+      description: The change, in one or two sentences.
+    validations:
+      required: true
+
+  - type: textarea
+    id: why
+    attributes:
+      label: Why now?
+      description: What it costs to leave it, or what it unblocks.
+    validations:
+      required: true
+
+  - type: input
+    id: area
+    attributes:
+      label: Area
+      description: The component, directory, workflow or service this touches.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: effort
+    attributes:
+      label: Effort
+      options:
+        - Under an hour
+        - A few hours
+        - About a day
+        - Several days
+        - A week or more
+    validations:
+      required: true
+
+  - type: dropdown
+    id: risk
+    attributes:
+      label: Risk if done
+      description: Match this to the risk level of the pull request that will close it.
+      options:
+        - No runtime effect
+        - Low
+        - Medium
+        - High
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Done when
+      description: Checkable criteria, each one with the command or evidence that proves it.
+      value: |
+        - [ ]
+    validations:
+      required: true
+
+  - type: input
+    id: debt
+    attributes:
+      label: Related debt entry or decision record
+      description: Link or id, if this comes from the debt ledger or an ADR.
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before you submit
+      options:
+        - label: I searched existing issues and the debt ledger for a duplicate.
+          required: true

@@ -1,0 +1,56 @@
+# Discussion category form for a custom "RFC" category (slug: rfc).
+# Create the category in Settings → Discussions first; the file name must match its slug.
+# Discussion forms accept only `title`, `labels` and `body`, and `body` needs at least one non-Markdown field.
+# GitHub serves it from the default branch. An accepted RFC becomes an ADR; link it in the closing comment.
+title: "[RFC] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this for a decision that is hard to reverse or affects more than one part of the system. Small, clear changes go straight to an issue or a pull request.
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: The situation and the forces at play. Facts first.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+      description: What you want to decide, stated so it can be accepted or rejected.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: At least one, with why it loses.
+    validations:
+      required: true
+
+  - type: textarea
+    id: consequences
+    attributes:
+      label: Consequences
+      description: Cost, risk, migration, what becomes harder, and how to reverse it.
+    validations:
+      required: true
+
+  - type: input
+    id: decide-by
+    attributes:
+      label: Decide by
+      description: Date after which silence counts as consent, or "no deadline".
+    validations:
+      required: true
+
+  - type: textarea
+    id: open-questions
+    attributes:
+      label: Open questions
+      description: What you still do not know, and who could answer.
