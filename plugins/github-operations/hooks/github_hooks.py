@@ -3,14 +3,13 @@
 
 Usage: github_hooks.py shell|mcp|files|compact
 
-shell   (PreToolUse, Bash and PowerShell): agents read-only, merge gate, credentials and
-        history, contract once.
-mcp     (PreToolUse, GitHub MCP tools and any merge_pull_request): agents read-only, merge gate,
-        contract once.
-files   (PreToolUse, Write, Edit and NotebookEdit): agents read-only.
+shell   (PreToolUse, Bash and PowerShell): reviewer agents' named writes, contract once.
+mcp     (PreToolUse, GitHub MCP tools): reviewer agents' named writes, contract once.
+files   (PreToolUse, Write, Edit and NotebookEdit): reviewer agents' writes in the project.
 compact (SessionStart, compact): the session's lifecycle state as context.
 
-The strictest decision wins: deny, then ask, then context only. Every run exits 0.
+Only the plugin's reviewer agents (pr-tracker, repo-auditor) are ever denied, and only the
+write operations named below; the main session and every other agent pass. Every run exits 0.
 Standard library only; Python 3.12 or later.
 """
 
@@ -28,7 +27,7 @@ import time
 from typing import TYPE_CHECKING, NamedTuple
 
 if TYPE_CHECKING:
-    from collections.abc import Callable, Iterable, Sequence
+    from collections.abc import Callable, Sequence
 
 PREFIX = "github-operations: "
 AGENTS = ("github-operations:pr-tracker", "github-operations:repo-auditor")
@@ -36,28 +35,13 @@ CONTRACT = (
     "This session is acting on GitHub. The github-operations plugin's rules for GitHub work"
     " (tool choice, approvals, evidence) are in the skill github-operations:github."
 )
-SHA40 = re.compile(r"[0-9a-f]{40}")
 SESSION = re.compile(r"[A-Za-z0-9_-]+")
 ASSIGNMENT = re.compile(r"[A-Za-z_][A-Za-z0-9_]*=")
-GUARDED_WORD = re.compile(r"(?<![A-Za-z0-9_.-])(git|gh|curl)(?![A-Za-z0-9_-])")
+REVIEWER_INPUT = re.compile(r'"agent_type"\s*:\s*"github-operations:(?:pr-tracker|repo-auditor)"')
+GUARDED_WORD = re.compile(r"(?<![A-Za-z0-9_.-])(git|gh)(?![A-Za-z0-9_-])")
 HEREDOC = re.compile(r"<<(-?)[ \t]*(['\"]?)([A-Za-z_][A-Za-z0-9_]*)\2")
 SHELL_WORD = re.compile(r"(?<![\w.-])(?:bash|sh|zsh)(?![\w.-])")
-GIT_CONFIG_ASSIGNMENT = re.compile(r"GIT_CONFIG(?:_[A-Z0-9_]+)?=")
-SHELL_VARIABLE = re.compile(r"\$\{?[A-Za-z_][A-Za-z0-9_]*\}?")
 SUBSTITUTED = "SUBSTITUTION"
-TOKEN = re.compile(r"(?:ghp|gho|ghu|ghs|ghr)_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}")
-TOKEN_VARIABLES = ("$GH_TOKEN", "$GITHUB_TOKEN", "${GH_TOKEN}", "${GITHUB_TOKEN}")
-PULL_MERGE = re.compile(r"(?:^|/)repos/([^/\s]+)/([^/\s]+)/pulls/(\d+)/merge$")
-HISTORY_REASON = (
-    "it rewrites published history or skips the repository's hooks or signing."
-    " Run the command without it; if the user approved a history rewrite,"
-    " give them the exact command to run in their own terminal."
-)
-HEAD_GUARD_REASON = (
-    "merge only at the approved head: add --match-head-commit with the head's full"
-    " 40-character SHA, read right before the merge."
-)
-GRAPHQL_MERGES = ("mergePullRequest", "enablePullRequestAutoMerge")
 MAX_DEPTH = 8
 GH_COMMAND_WORDS = 2
 MARKER_DAYS = 7
@@ -73,33 +57,10 @@ WRAPPERS: dict[str, frozenset[str]] = {
     "nohup": frozenset(),
 }
 SHELLS = ("bash", "sh", "zsh")
-DECLARES = ("export", "declare", "typeset", "readonly", "local")
 GIT_GLOBAL_VALUES = ("-C", "--git-dir", "--work-tree", "--namespace")
 GIT_SETTINGS = ("-c", "--config-env")
 GH_GLOBAL_VALUES = ("-R", "--repo", "--hostname")
 
-GIT_READ = frozenset(
-    {
-        "status",
-        "log",
-        "diff",
-        "show",
-        "blame",
-        "grep",
-        "rev-list",
-        "rev-parse",
-        "for-each-ref",
-        "cat-file",
-        "ls-files",
-        "ls-remote",
-        "merge-base",
-        "merge-tree",
-        "cherry",
-        "count-objects",
-        "range-diff",
-        "symbolic-ref",
-    }
-)
 BRANCH_LONGS = frozenset(
     {
         "--all",
@@ -134,61 +95,131 @@ BRANCH_VALUES = frozenset(
         "--format",
     }
 )
-GH_READ: dict[str, frozenset[str]] = {
-    "pr": frozenset({"view", "list", "checks", "diff", "status"}),
-    "issue": frozenset({"view", "list", "status"}),
-    "run": frozenset({"view", "list"}),
-    "workflow": frozenset({"list", "view"}),
-    "repo": frozenset({"view"}),
-    "release": frozenset({"view", "list"}),
-    "label": frozenset({"list"}),
-    "auth": frozenset({"status"}),
-    "secret": frozenset({"list"}),
-    "variable": frozenset({"list"}),
-    "ruleset": frozenset({"list", "view", "check"}),
-    "cache": frozenset({"list"}),
-}
-COMMIT_VALUES = frozenset(
+GIT_WRITE = frozenset(
     {
-        "--message",
-        "--file",
-        "--author",
-        "--date",
-        "--template",
-        "--reuse-message",
-        "--reedit-message",
-        "--fixup",
-        "--squash",
-        "--trailer",
-        "--cleanup",
-        "--pathspec-from-file",
+        "add",
+        "am",
+        "checkout",
+        "cherry-pick",
+        "commit",
+        "commit-tree",
+        "fetch",
+        "filter-branch",
+        "filter-repo",
+        "gc",
+        "init",
+        "maintenance",
+        "merge",
+        "mv",
+        "pack-refs",
+        "prune",
+        "pull",
+        "push",
+        "rebase",
+        "repack",
+        "replace",
+        "reset",
+        "restore",
+        "revert",
+        "rm",
+        "sparse-checkout",
+        "switch",
+        "update-index",
+        "update-ref",
+        "write-tree",
     }
 )
-MERGE_VALUES = frozenset({"--message", "--file", "--strategy", "--strategy-option", "--cleanup"})
-PUSH_VALUES = frozenset({"--push-option", "--repo", "--receive-pack", "--exec"})
-PR_MERGE_VALUES = frozenset(
+GH_WRITE_VERBS = frozenset(
     {
-        "--match-head-commit",
-        "--body",
-        "--body-file",
-        "--subject",
-        "--repo",
-        "--author-email",
-        "-b",
-        "-F",
-        "-t",
-        "-R",
-        "-A",
+        "add",
+        "archive",
+        "cancel",
+        "checkout",
+        "close",
+        "comment",
+        "create",
+        "delete",
+        "develop",
+        "disable",
+        "edit",
+        "enable",
+        "fork",
+        "install",
+        "lock",
+        "login",
+        "logout",
+        "merge",
+        "pin",
+        "ready",
+        "refresh",
+        "remove",
+        "rename",
+        "reopen",
+        "rerun",
+        "review",
+        "revert",
+        "run",
+        "set",
+        "setup-git",
+        "sync",
+        "transfer",
+        "unarchive",
+        "unlock",
+        "unpin",
+        "update-branch",
+        "upgrade",
+        "upload",
     }
 )
-MERGE_METHODS = {
-    "--squash": "squash",
-    "-s": "squash",
-    "--merge": "merge commit",
-    "-m": "merge commit",
-    "--rebase": "rebase",
-    "-r": "rebase",
-}
+MCP_WRITES = frozenset(
+    {
+        "actions_run_trigger",
+        "add_automation_to_group",
+        "add_comment_to_pending_review",
+        "add_issue_comment",
+        "add_reply_to_pull_request_comment",
+        "assign_copilot_to_issue",
+        "assign_copilot_to_issue_with_intent",
+        "create_automation",
+        "create_automation_group",
+        "create_branch",
+        "create_gist",
+        "create_or_update_file",
+        "create_pull_request",
+        "create_pull_request_with_copilot",
+        "create_repository",
+        "create_repository_ruleset",
+        "custom_properties_write",
+        "delete_automation",
+        "delete_file",
+        "delete_repository",
+        "discussion_comment_write",
+        "dismiss_notification",
+        "fork_repository",
+        "issue_dependency_write",
+        "issue_write",
+        "label_write",
+        "manage_notification_subscription",
+        "manage_repository_notification_subscription",
+        "mark_all_notifications_read",
+        "merge_pull_request",
+        "projects_write",
+        "pull_request_review_write",
+        "push_files",
+        "remove_automation_from_group",
+        "request_copilot_review",
+        "run_automation",
+        "run_secret_scanning",
+        "star_repository",
+        "sub_issue_write",
+        "unstar_repository",
+        "update_automation",
+        "update_gist",
+        "update_issue_comment",
+        "update_pull_request",
+        "update_pull_request_branch",
+    }
+)
 
 
 class JsonObject(dict[str, object]):
@@ -428,19 +459,13 @@ def short_cluster(arg: str, short_values: str, shorts: set[str]) -> int:
     return 0
 
 
-def git_parts(command: list[str]) -> tuple[str, list[str], list[str]]:
-    """Return a git call's subcommand, its arguments and its -c and --config-env settings."""
+def git_parts(command: list[str]) -> tuple[str, list[str]]:
+    """Return a git call's subcommand and its arguments, past git's own options."""
     i = 1
-    settings: list[str] = []
     while i < len(command) and command[i].startswith("-"):
-        option = command[i]
-        if option in GIT_SETTINGS and i + 1 < len(command):
-            settings.append(command[i + 1])
-        elif option.startswith("--config-env="):
-            settings.append(option.removeprefix("--config-env="))
-        i += 2 if option in (*GIT_GLOBAL_VALUES, *GIT_SETTINGS) else 1
+        i += 2 if command[i] in (*GIT_GLOBAL_VALUES, *GIT_SETTINGS) else 1
     subcommand = command[i] if i < len(command) else ""
-    return subcommand, command[i + 1 :], settings
+    return subcommand, command[i + 1 :]
 
 
 def gh_split(command: list[str]) -> tuple[list[str], list[str]]:
@@ -466,16 +491,10 @@ def gh_words(command: list[str]) -> list[str]:
     return gh_split(command)[0]
 
 
-def abbreviates(names: Iterable[str], full: str, shortest: str) -> bool:
-    """True when one of names is full or an unambiguous git abbreviation of it."""
-    return any(full.startswith(name) and len(name) >= len(shortest) for name in names)
-
-
 class ApiCall(NamedTuple):
-    """A gh api call: its method, endpoint and fields."""
+    """A gh api call: its method, its fields and whether it reads a request body."""
 
     method: str
-    endpoint: str
     fields: list[str]
     has_input: bool
 
@@ -483,7 +502,6 @@ class ApiCall(NamedTuple):
 def gh_api(args: list[str]) -> ApiCall:
     """Parse the arguments after `gh api`."""
     method = ""
-    endpoint = ""
     fields: list[str] = []
     has_input = False
     i = 0
@@ -502,196 +520,15 @@ def gh_api(args: list[str]) -> ApiCall:
             fields.append(arg.split("=", 1)[1] if arg.startswith("--") else arg[2:])
         elif arg == "--input" or arg.startswith("--input="):
             has_input = True
-        elif not arg.startswith("-") and not endpoint:
-            endpoint = arg
-    return ApiCall(method.upper(), endpoint, fields, has_input)
+    return ApiCall(method.upper(), fields, has_input)
 
 
-# ── Rule 4: credentials and history ─────────────────────────────────────────────────────────
+# ── Rule 2: the plugin's reviewer agents do not write ───────────────────────────────────────
 
 
 def deny(reason: str) -> Decision:
     """A deny with the plugin's prefix."""
     return Decision("deny", PREFIX + reason)
-
-
-def push_violation(args: list[str]) -> str | None:
-    """Return the force or hook-skipping flag of a git push, or None."""
-    parsed = options(args, "o", PUSH_VALUES)
-    if any(name.startswith("--forc") for name in parsed.longs) or "f" in parsed.shorts:
-        return "a force push"
-    if abbreviates(parsed.longs, "--mirror", "--mir"):
-        return "git push --mirror"
-    if any(word.startswith("+") for word in parsed.positionals):
-        return "a force push (a +refspec)"
-    if abbreviates(parsed.longs, "--no-verify", "--no-veri"):
-        return "git push --no-verify"
-    return None
-
-
-def commit_violation(subcommand: str, args: list[str]) -> str | None:
-    """Return the hook- or signing-skipping flag of a commit, merge or am, or None."""
-    short_values, long_values = {
-        "commit": ("mFCct", COMMIT_VALUES),
-        "merge": ("mFsX", MERGE_VALUES),
-        "am": ("", frozenset[str]()),
-    }[subcommand]
-    parsed = options(args, short_values, long_values)
-    skips_hooks = abbreviates(parsed.longs, "--no-verify", "--no-veri")
-    if skips_hooks or (subcommand != "merge" and "n" in parsed.shorts):
-        return f"git {subcommand} --no-verify"
-    if subcommand == "commit" and abbreviates(parsed.longs, "--no-gpg-sign", "--no-g"):
-        return "git commit --no-gpg-sign"
-    return None
-
-
-def git_violation(command: list[str]) -> str | None:
-    """Return what a git call does that the history rule forbids, or None."""
-    subcommand, args, settings = git_parts(command)
-    for setting in settings:
-        key = setting.split("=", 1)[0].lower()
-        if key in ("commit.gpgsign", "core.hookspath"):
-            return f"setting {key} on the command line"
-    if subcommand == "push":
-        return push_violation(args)
-    if subcommand in ("commit", "merge", "am"):
-        return commit_violation(subcommand, args)
-    return None
-
-
-def credential_violation(command: list[str]) -> str | None:
-    """Return how a gh or curl call exposes a token, or None."""
-    if command[0] == "gh":
-        words = gh_words(command)
-        if words == ["auth", "token"]:
-            return "gh auth token prints the token into the conversation"
-        if words == ["auth", "status"] and ("-t" in command or "--show-token" in command):
-            return "gh auth status --show-token prints the token into the conversation"
-    if command[0] == "curl":
-        text = " ".join(command[1:])
-        if any(name in text for name in TOKEN_VARIABLES) or TOKEN.search(text):
-            return "a GitHub token sent with curl passes through the conversation"
-    return None
-
-
-def config_violation(command: Command) -> str | None:
-    """Return the GIT_CONFIG_* assignment a subcommand sets, or None."""
-    declared = command.words[1:] if command.words[:1] and command.words[0] in DECLARES else []
-    for word in (*command.env, *declared):
-        if GIT_CONFIG_ASSIGNMENT.match(word):
-            return f"setting {word.split('=', 1)[0]}"
-    return None
-
-
-def rule_credentials_history(subcommands: list[Command]) -> Decision | None:
-    """Rule 4: no token reads, tokens in curl, force pushes, --no-verify or unsigned commits."""
-    for subcommand in subcommands:
-        if found := config_violation(subcommand):
-            return deny(f"{found} is not allowed: it can switch off git's hooks or signing.")
-        command = subcommand.words
-        if not command:
-            continue
-        if found := credential_violation(command):
-            return deny(
-                f"{found}; use gh or the GitHub MCP server, which authenticate on their own."
-            )
-        if command[0] == "git" and (found := git_violation(command)):
-            return deny(f"{found} is not allowed: {HISTORY_REASON}")
-    return None
-
-
-# ── Rule 3: merge gate ──────────────────────────────────────────────────────────────────────
-
-
-def pr_merge(args: list[str]) -> Decision:
-    """Decide on `gh pr merge ARGS`."""
-    if "--admin" in args:
-        return deny("merging with --admin bypasses the repository's rules; merge without it.")
-    sha = ""
-    pr = ""
-    method = "the default method"
-    i = 0
-    while i < len(args):
-        arg = args[i]
-        i += 1
-        if arg == "--match-head-commit":
-            sha = args[i] if i < len(args) else ""
-        elif arg.startswith("--match-head-commit="):
-            sha = arg.split("=", 1)[1]
-        elif arg in MERGE_METHODS:
-            method = MERGE_METHODS[arg]
-        elif not arg.startswith("-") and not pr:
-            pr = arg
-        i += 1 if arg in PR_MERGE_VALUES else 0
-    if not SHA40.fullmatch(sha):
-        return deny(HEAD_GUARD_REASON)
-    auto = ", auto-merge" if "--auto" in args else ""
-    return Decision(
-        "ask", f"{PREFIX}merge PR {pr or 'of the current branch'} at {sha} by {method}{auto}"
-    )
-
-
-def unreadable_query(api: ApiCall) -> bool:
-    """True when a GraphQL call's query comes from a file, stdin, a variable or a substitution."""
-    queries = [f.removeprefix("query=") for f in api.fields if f.startswith("query=")]
-    return api.has_input or any(
-        q.startswith("@") or SUBSTITUTED in q or SHELL_VARIABLE.fullmatch(q) for q in queries
-    )
-
-
-def api_merge(api: ApiCall) -> Decision | None:
-    """Decide on a gh api call that merges, or None when it does not merge."""
-    path = api.endpoint.split("?", 1)[0].split("#", 1)[0].rstrip("/")
-    if any(name in field for field in api.fields for name in GRAPHQL_MERGES):
-        return deny("merge with gh pr merge --match-head-commit, not a GraphQL mutation.")
-    if path.lstrip("/") == "graphql" and unreadable_query(api):
-        return deny("pass the GraphQL query inline with -f query='...', so it can be checked.")
-    target = PULL_MERGE.search(path)
-    if target is None or api.method != "PUT":
-        return None
-    shas = [f.split("=", 1)[1] for f in api.fields if f.startswith("sha=")]
-    if not shas or not SHA40.fullmatch(shas[0]):
-        return deny("a merge through the API needs -f sha=<the head's full 40-character SHA>.")
-    owner, repo, number = target.groups()
-    return Decision(
-        "ask", f"{PREFIX}merge {owner}/{repo}#{number} at {shas[0]} through the REST API"
-    )
-
-
-def rule_merge_gate_shell(subcommands: list[Command]) -> Decision | None:
-    """Rule 3 for shell commands: gh pr merge and merges through gh api."""
-    for subcommand in subcommands:
-        command = subcommand.words
-        if command[:1] != ["gh"]:
-            continue
-        words, rest = gh_split(command)
-        if words == ["pr", "merge"]:
-            return pr_merge(rest)
-        if words[:1] == ["api"]:
-            decision = api_merge(gh_api(command[command.index("api") + 1 :]))
-            if decision:
-                return decision
-    return None
-
-
-def rule_merge_gate_mcp(call: Call) -> Decision | None:
-    """Rule 3 for MCP: merge_pull_request needs the head SHA and the user's yes."""
-    if call.tool.rsplit("__", 1)[-1] != "merge_pull_request":
-        return None
-    sha = call.tool_input.get("expectedHeadSha")
-    if not isinstance(sha, str) or not SHA40.fullmatch(sha):
-        return deny(
-            "merge only at the approved head: pass expectedHeadSha with the full 40-character SHA."
-        )
-    owner, repo, number, method = (
-        str(call.tool_input.get(key, "?"))
-        for key in ("owner", "repo", "pullNumber", "merge_method")
-    )
-    by = method if method != "?" else "the default method"
-    return Decision("ask", f"{PREFIX}merge {owner}/{repo}#{number} at {sha} by {by}")
-
-
-# ── Rule 2: the plugin's agents stay read-only ──────────────────────────────────────────────
 
 
 def branch_lists(args: list[str]) -> bool:
@@ -702,10 +539,16 @@ def branch_lists(args: list[str]) -> bool:
     return flags_read and (lists or not parsed.positionals)
 
 
-def git_reads(command: list[str]) -> bool:
-    """True when a git call only reads."""
-    subcommand, args, _ = git_parts(command)
-    if subcommand in GIT_READ:
+def tag_lists(args: list[str]) -> bool:
+    """True when git tag only lists."""
+    listing = {"-l", "--list", "-n", "--contains", "--no-contains", "--points-at", "--merged"}
+    return not args or bool(listing & set(args)) or args[0].startswith("--sort")
+
+
+def git_writes(command: list[str]) -> bool:
+    """True when a git call is one of the named write operations."""
+    subcommand, args = git_parts(command)
+    if subcommand in GIT_WRITE:
         return True
     first = args[0] if args else ""
     reads = {
@@ -716,10 +559,16 @@ def git_reads(command: list[str]) -> bool:
         "remote": first in ("", "-v", "--verbose", "get-url", "show"),
         "config": bool({"--get", "--get-all", "--get-regexp", "--list", "-l"} & set(args)),
         "clean": bool({"-n", "--dry-run"} & set(args)),
-        "lfs": first == "ls-files",
+        "lfs": first in ("ls-files", "status", "env"),
         "branch": branch_lists(args),
+        "tag": tag_lists(args),
+        "apply": bool({"--check", "--stat", "--numstat", "--summary"} & set(args)),
+        "reflog": first in ("", "show", "exists"),
+        "notes": first in ("", "list", "show"),
+        "submodule": first in ("", "status", "summary"),
+        "bisect": first in ("", "log", "view", "visualize"),
     }
-    return reads.get(subcommand, False)
+    return not reads.get(subcommand, True)
 
 
 def api_reads(api: ApiCall) -> bool:
@@ -733,41 +582,31 @@ def api_reads(api: ApiCall) -> bool:
     )
 
 
-def gh_reads(command: list[str]) -> bool:
-    """True when a gh call only reads."""
+def gh_writes(command: list[str]) -> bool:
+    """True when a gh call is one of the named write operations."""
     words = gh_words(command)
-    if words[:1] == ["search"]:
-        return True
     if words[:1] == ["api"]:
-        return api_reads(gh_api(command[command.index("api") + 1 :]))
-    return len(words) == GH_COMMAND_WORDS and words[1] in GH_READ.get(words[0], frozenset())
+        return not api_reads(gh_api(command[command.index("api") + 1 :]))
+    return len(words) == GH_COMMAND_WORDS and words[1] in GH_WRITE_VERBS
 
 
 def rule_agents_shell(call: Call, subcommands: list[Command]) -> Decision | None:
-    """Rule 2 for shell commands: the agents run only reading git and gh commands."""
+    """Rule 2 for shell commands: the reviewer agents run no named git or gh write."""
     if call.agent not in AGENTS:
         return None
     for subcommand in subcommands:
         command = subcommand.words
-        reads = {"git": git_reads, "gh": gh_reads}.get(command[0]) if command else None
-        if reads and not reads(command):
+        writes = {"git": git_writes, "gh": gh_writes}.get(command[0]) if command else None
+        if writes and writes(command):
             shown = " ".join(command)[:80]
             reason = f"{call.agent} is read-only; `{shown}` changes state."
             return deny(reason + " Report it to the main session.")
     return None
 
 
-def mcp_reads(tool: str) -> bool:
-    """True when an MCP tool's bare name says it only reads."""
-    name = tool.rsplit("__", 1)[-1]
-    return name.startswith(("get_", "list_", "search_")) or name.endswith(
-        ("_read", "_get", "_list")
-    )
-
-
 def rule_agents_mcp(call: Call) -> Decision | None:
-    """Rule 2 for MCP: the agents call only reading tools."""
-    if call.agent in AGENTS and not mcp_reads(call.tool):
+    """Rule 2 for MCP: the reviewer agents call no named write tool, on any GitHub server."""
+    if call.agent in AGENTS and call.tool.rsplit("__", 1)[-1] in MCP_WRITES:
         return deny(
             f"{call.agent} is read-only and cannot call {call.tool}. Report it to the main session."
         )
@@ -883,28 +722,20 @@ def shell_decisions(call: Call) -> tuple[list[Decision | None], bool]:
     try:
         subcommands = lex_subcommands(command)
     except LexError:
-        if GUARDED_WORD.search(command):
-            return [
-                deny("this command could not be parsed; split it into simpler commands.")
-            ], False
+        if call.agent in AGENTS and GUARDED_WORD.search(command):
+            reason = f"{call.agent} is read-only and this command could not be parsed;"
+            return [deny(reason + " split it into simpler commands.")], False
         return [], False
     github = any(reaches_github(c.words) for c in subcommands)
-    rules = [
-        rule_credentials_history(subcommands),
-        rule_merge_gate_shell(subcommands),
-        rule_agents_shell(call, subcommands),
-    ]
-    return rules, github
+    return [rule_agents_shell(call, subcommands)], github
 
 
 def emit(decisions: Sequence[Decision | None], context: str | None, event: str) -> None:
-    """Print the strictest decision with any context, or nothing."""
+    """Print the first deny with any context, or nothing."""
     output: dict[str, object] = {"hookEventName": event}
-    for kind in ("deny", "ask"):
-        chosen = next((d for d in decisions if d and d.kind == kind), None)
-        if chosen:
-            output |= {"permissionDecision": kind, "permissionDecisionReason": chosen.reason}
-            break
+    chosen = next((d for d in decisions if d), None)
+    if chosen:
+        output |= {"permissionDecision": chosen.kind, "permissionDecisionReason": chosen.reason}
     if context:
         output["additionalContext"] = context
     if len(output) > 1:
@@ -917,10 +748,9 @@ def main(handler: str) -> int:
     try:
         call = read_call(raw)
     except (ValueError, TypeError):
-        if handler != "compact":
-            emit(
-                [deny("the hook could not read its input; try the call again.")], None, "PreToolUse"
-            )
+        if handler != "compact" and REVIEWER_INPUT.search(raw):
+            reason = "a reviewer agent's call could not be read; try the call again."
+            emit([deny(reason)], None, "PreToolUse")
         return 0
     if handler == "compact":
         emit([], rule_compact_state(call.session), "SessionStart")
@@ -928,11 +758,11 @@ def main(handler: str) -> int:
     if handler == "shell":
         decisions, github = shell_decisions(call)
     elif handler == "mcp":
-        decisions, github = [rule_merge_gate_mcp(call), rule_agents_mcp(call)], True
+        decisions, github = [rule_agents_mcp(call)], True
     elif handler == "files":
         decisions, github = [rule_agents_files(call)], False
     else:
-        decisions, github = [deny(f"unknown hook handler {handler!r}.")], False
+        return 0
     emit(decisions, rule_contract_once(call.session, github=github), "PreToolUse")
     return 0
 

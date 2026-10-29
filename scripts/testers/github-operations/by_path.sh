@@ -60,30 +60,33 @@ expect_silent() {
   count=$((count + 1))
 }
 
-bash_call='{"session_id":"s","tool_name":"Bash","tool_input":{"command":"git push --force"},"cwd":"/home/u/github/x"}'
-ls_call='{"session_id":"s","tool_name":"Bash","tool_input":{"command":"ls -la"},"cwd":"/home/u/github/x"}'
+tracker='"agent_type":"github-operations:pr-tracker",'
+force_call='{"session_id":"s","tool_name":"Bash","tool_input":{"command":"git push --force"},"cwd":"/home/u/github/x"}'
+agent_commit="{\"session_id\":\"s\",${tracker}\"tool_name\":\"Bash\",\"tool_input\":{\"command\":\"git commit -m x\"}}"
+agent_ls="{\"session_id\":\"s\",${tracker}\"tool_name\":\"Bash\",\"tool_input\":{\"command\":\"ls -la\"}}"
 merge_call='{"session_id":"s","tool_name":"mcp__github__merge_pull_request","tool_input":{"owner":"o"}}'
-read_call='{"session_id":"s","tool_name":"mcp__github__get_me","tool_input":{}}'
-agent_write='{"session_id":"s","agent_type":"github-operations:pr-tracker","tool_name":"Write","tool_input":{"file_path":"/x"}}'
+agent_merge="{\"session_id\":\"s\",${tracker}\"tool_name\":\"mcp__github__merge_pull_request\",\"tool_input\":{}}"
+agent_write="{\"session_id\":\"s\",${tracker}\"tool_name\":\"Write\",\"tool_input\":{\"file_path\":\"/x\"}}"
 main_write='{"session_id":"s","tool_name":"Write","tool_input":{"file_path":"/x"}}'
 compact='{"session_id":"s","hook_event_name":"SessionStart","source":"compact"}'
 
-run "${bare}" "${plugin}/hooks/deny-mcp-file-writes.sh" "${read_call}"
-expect_deny "deny-mcp-file-writes.sh"
-
+# Without a usable python3, the main session is never blocked and the reviewer agents are denied
+# the git, gh, GitHub MCP and file writes the full hook would check.
 for bin in "${bare}" "${old}"; do
   launcher="${plugin}/hooks/run-hook.sh"
-  run "${bin}" "${launcher}" "${bash_call}" shell
-  expect_deny "shell without python3 (${bin##*/})"
+  run "${bin}" "${launcher}" "${force_call}" shell
+  expect_silent "main shell without python3 (${bin##*/})"
+  run "${bin}" "${launcher}" "${agent_commit}" shell
+  expect_deny "reviewer git without python3 (${bin##*/})"
   [[ ${out} == *'python3 3.12'* ]] || fail "the deny does not name python3 3.12: ${out}"
-  run "${bin}" "${launcher}" "${ls_call}" shell
-  expect_silent "ls without python3 (${bin##*/})"
+  run "${bin}" "${launcher}" "${agent_ls}" shell
+  expect_silent "reviewer ls without python3 (${bin##*/})"
   run "${bin}" "${launcher}" "${merge_call}" mcp
-  expect_deny "merge without python3 (${bin##*/})"
-  run "${bin}" "${launcher}" "${read_call}" mcp
-  expect_silent "MCP read without python3 (${bin##*/})"
+  expect_silent "main merge without python3 (${bin##*/})"
+  run "${bin}" "${launcher}" "${agent_merge}" mcp
+  expect_deny "reviewer MCP without python3 (${bin##*/})"
   run "${bin}" "${launcher}" "${agent_write}" files
-  expect_deny "agent write without python3 (${bin##*/})"
+  expect_deny "reviewer write without python3 (${bin##*/})"
   run "${bin}" "${launcher}" "${main_write}" files
   expect_silent "main write without python3 (${bin##*/})"
   run "${bin}" "${launcher}" "${compact}" compact

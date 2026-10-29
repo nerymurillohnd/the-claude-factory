@@ -54,88 +54,107 @@ class Decision:
     raw: str
 
 
-DENY_EVERYONE = [
-    ("gh pr -R o/r merge 12 --squash", "approved head"),
-    ("gh pr --repo=o/r merge 12 --squash", "approved head"),
-    ("gh api -X PUT 'repos/o/r/pulls/12/merge?x=1'", "sha="),
-    ("gh api --method=put /repos/o/r/pulls/12/merge/", "sha="),
-    ("gh api graphql -F query=@merge.graphql", "inline"),
-    ("gh api graphql --input query.json", "inline"),
-    ('gh api graphql -f query="$(cat merge.graphql)"', "inline"),
-    ('gh api graphql -f query="$Q"', "inline"),
-    ("cat <<'EOF' | bash\ngit push --force\nEOF", "force push"),
-    (
-        "GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=core.hooksPath GIT_CONFIG_VALUE_0=/x git commit -m x",
-        "GIT_CONFIG",
-    ),
-    ("env GIT_CONFIG_PARAMETERS=\"'core.hooksPath'='/dev/null'\" git commit -m x", "GIT_CONFIG"),
-    ("GIT_CONFIG_GLOBAL=/tmp/c git commit -m x", "GIT_CONFIG"),
-    ("export GIT_CONFIG_COUNT=1; git commit -m x", "GIT_CONFIG"),
-    ("git --config-env=core.hooksPath=HOOKS commit -m x", "on the command line"),
-    ("git --config-env core.hooksPath=HOOKS commit -m x", "on the command line"),
-    ("gh auth token", "token"),
-    ("GH_TOKEN=x gh auth token", "token"),
-    ("echo $(gh auth token)", "token"),
-    ('curl -H "Authorization: Bearer $(gh auth token)" https://api.github.com/user', "token"),
-    (
-        "curl -H 'Authorization: token ghp_abcdefghijklmnopqrstuvwxyz0123' https://api.github.com",
-        "token",
-    ),
-    ('curl -H "Authorization: Bearer $GH_TOKEN" https://api.github.com', "token"),
-    ("gh auth status --show-token", "token"),
-    ("git push --force origin main", "force push"),
-    ("git push -f", "force push"),
-    ("git push --force-with-lease", "force push"),
-    ("git push --force-if-includes origin x", "force push"),
-    ("git push --mirror backup", "--mirror"),
-    ("git push origin +main", "+refspec"),
-    ("git push -uf origin x", "force push"),
-    ("git push --no-verify", "--no-verify"),
-    ("git commit --no-verify -m x", "--no-verify"),
-    ("git commit -n -m x", "--no-verify"),
-    ("git commit -nm x", "--no-verify"),
-    ("git commit --no-veri -m x", "--no-verify"),
-    ("git commit --no-gpg-sign -m x", "--no-gpg-sign"),
-    ("git merge --no-verify b", "--no-verify"),
-    ("git am -n p.patch", "--no-verify"),
-    ("git -c core.hooksPath=/dev/null commit -m x", "on the command line"),
-    ("git -c commit.gpgsign=false commit -m x", "on the command line"),
-    ("/usr/bin/git push --force", "force push"),
-    ("git -C repo push --force", "force push"),
-    ('git commit -m "x', "could not be parsed"),
-]
 PASS_MAIN = [
+    "git push --force origin main",
+    "git push -uf origin x",
+    "git commit --no-verify -m x",
+    "git -c commit.gpgsign=false commit -m x",
+    "GIT_CONFIG_GLOBAL=/tmp/c git commit -m x",
+    "gh pr merge 12 --squash",
+    f"gh pr merge 12 --admin --squash --match-head-commit {SHA}",
+    "gh api -X PUT repos/o/r/pulls/12/merge",
+    "gh auth token",
+    'git commit -m "x',
     "gh pr view 1 -R o/r",
-    "gh api graphql -f query='query($o:String!){repository(owner:$o,name:\"r\"){id}}' -f o=x",
-    "cat <<'EOF' | grep force\ngit push --force\nEOF",
     "git push origin feat/x",
-    "git push -n",
-    "git push -u origin x",
-    'git commit -m "docs: mention --no-verify"',
-    "git merge -n feature",
-    "gh auth status",
-    "gh pr view 1",
     "curl https://example.com",
-    'echo "git push --force"',
     "ls -la",
-    "git commit -m \"$(cat <<'EOF'\nfix: x\n\nnever use --force\nEOF\n)\"",
-    "cat <<'EOF' > notes.md\ngit push --force\nEOF",
-    "echo $'it\\'s'",
 ]
-WRAPPED = [
-    ("cd r && git push --force", "force push"),
-    ('bash -c "git push -f"', "force push"),
-    ("sudo -n git commit --no-verify -m x", "--no-verify"),
-    ("bash <<'EOF'\ngit push --force\nEOF", "force push"),
-    ("env GH_TOKEN=x gh auth token", "token"),
-    ("true; git push --force", "force push"),
-    ("ls | xargs echo && git push -f", "force push"),
-    ("eval git push --force", "force push"),
-    ("time nice -n 5 git push --force", "force push"),
-    ("echo `git push --force`", "force push"),
-    ('echo "don\'t $(git push --force)"', "force push"),
-    (f'gh pr merge --body "a b" 12 --squash --match-head-commit {SHA[:7]}', "approved head"),
+REVIEWER_DENIED = [
+    "git commit -m x",
+    "git push origin x",
+    "git push --force",
+    "git branch new-branch",
+    "git branch -D old",
+    "git tag v1.0.0",
+    "git fetch",
+    "git reset --hard HEAD~1",
+    "git checkout main",
+    "git switch -c x",
+    "git stash",
+    "git merge feature",
+    "git rebase main",
+    "git cherry-pick abc",
+    "git clean -fd",
+    "git config user.name x",
+    "git remote add up https://example.com/r.git",
+    "git worktree add ../wt",
+    "git gc",
+    "gh pr merge 12 --squash",
+    "gh pr comment 1 -b x",
+    "gh pr create --title x --body y",
+    "gh issue close 3",
+    "gh label create x",
+    "gh run rerun 1",
+    "gh workflow enable ci.yml",
+    "gh api -X POST repos/o/r/issues/1/comments -f body=x",
+    "gh api repos/o/r/issues/1/comments -f body=x",
+    "gh api graphql -f query='mutation{x}'",
+    'git commit -m "x',
 ]
+REVIEWER_WRAPPED = [
+    "cd r && git commit -m x",
+    'bash -c "git push"',
+    "echo $(git commit -m x)",
+    "bash <<'EOF'\ngit tag v1\nEOF",
+    "GIT_OPTIONAL_LOCKS=0 git -C r commit -m x",
+    "sudo -n git push",
+]
+REVIEWER_PASS = [
+    "git status",
+    "git log --oneline -5",
+    "git branch -a",
+    "git tag -l",
+    "git remote -v",
+    "git stash list",
+    "git worktree list",
+    "git config --get user.name",
+    "git clean -n",
+    "git bundle verify all.bundle",
+    "git whatchanged -1",
+    "GIT_OPTIONAL_LOCKS=0 git -C r for-each-ref refs/heads",
+    "gh pr view 1",
+    "gh pr checks 1",
+    "gh pr -R o/r view 1",
+    "gh api repos/o/r/pulls/1",
+    "gh api graphql -f query='query{viewer{login}}'",
+    "ls -la",
+    "awk '{print $1}' f.txt",
+    "sed -n '1,5p' f.txt",
+    "cat f.txt",
+    "echo found > /tmp/scratch/findings.md",
+    "/path/to/branch-states.sh repo main out.tsv",
+]
+MCP_WRITES = (
+    "merge_pull_request",
+    "push_files",
+    "create_or_update_file",
+    "create_pull_request",
+    "issue_write",
+    "actions_run_trigger",
+    "add_issue_comment",
+    "pull_request_review_write",
+    "label_write",
+)
+MCP_OTHERS = (
+    "pull_request_read",
+    "get_job_logs",
+    "list_pull_requests",
+    "search_code",
+    "github_support_docs_search",
+    "semantic_issue_similarity_search",
+    "web_search",
+)
 
 
 class Hooks(unittest.TestCase):
@@ -235,106 +254,40 @@ class Hooks(unittest.TestCase):
         assert d.reason.startswith("github-operations: "), d.reason
         assert because in d.reason, f"denied for another reason: {what!r} -> {d.reason!r}"
 
-    def assert_ask(self, d: Decision, what: str) -> None:
-        assert d.kind == "ask", f"not asked: {what!r} -> {d.raw!r}"
-        assert d.reason.startswith("github-operations: "), d.reason
-
     def assert_silent(self, d: Decision, what: str) -> None:
         assert d.raw.strip() == "", f"not silent: {what!r} -> {d.raw!r}"
 
-    def test_deny_everyone(self) -> None:
-        for c, because in DENY_EVERYONE:
-            self.assert_denied(self.shell(c), c, because)
-
-    def test_main_session_passes_ordinary_work(self) -> None:
+    def test_main_session_is_never_blocked(self) -> None:
         for c in PASS_MAIN:
             self.assert_silent(self.shell(c), c)
+            self.assert_silent(self.shell(c, agent="executor"), c)
 
-    def test_wrapped_forms_are_caught(self) -> None:
-        for c, because in WRAPPED:
-            self.assert_denied(self.shell(c), c, because)
+    def test_main_session_mcp_is_never_blocked(self) -> None:
+        for t in (*MCP_WRITES, *MCP_OTHERS):
+            self.assert_silent(self.mcp(f"mcp__github__{t}", {}), t)
 
-    def test_powershell_tool_is_checked(self) -> None:
-        payload = self.payload("PowerShell", {"command": "git push --force"}, "", KNOWN)
-        self.assert_denied(self.decide("shell", payload), "PowerShell git push --force")
+    def test_reviewers_denied_named_writes(self) -> None:
+        for agent in (TRACKER, AUDITOR):
+            for c in (*REVIEWER_DENIED, *REVIEWER_WRAPPED):
+                self.assert_denied(self.shell(c, agent=agent), c, "read-only")
 
-    def test_merge_without_guard_denied(self) -> None:
-        self.assert_denied(self.shell("gh pr merge 12 --squash"), "gh pr merge 12 --squash")
+    def test_reviewers_keep_everything_else(self) -> None:
+        for agent in (TRACKER, AUDITOR):
+            for c in REVIEWER_PASS:
+                self.assert_silent(self.shell(c, agent=agent), c)
 
-    def test_merge_with_guard_asks(self) -> None:
-        c = f"gh pr merge 12 --squash --match-head-commit {SHA}"
-        d = self.shell(c)
-        self.assert_ask(d, c)
-        assert SHA in d.reason
-        assert "squash" in d.reason
-        assert "12" in d.reason
+    def test_reviewer_powershell_is_checked(self) -> None:
+        payload = self.payload("PowerShell", {"command": "git commit -m x"}, TRACKER, KNOWN)
+        self.assert_denied(self.decide("shell", payload), "PowerShell git commit")
 
-    def test_merge_with_repo_flag_asks(self) -> None:
-        c = f"gh pr -R o/r merge 12 --squash --match-head-commit {SHA}"
-        d = self.shell(c)
-        self.assert_ask(d, c)
-        assert "PR 12 " in d.reason, d.reason
-
-    def test_merge_admin_denied(self) -> None:
-        c = f"gh pr merge 12 --admin --squash --match-head-commit {SHA}"
-        self.assert_denied(self.shell(c), c)
-
-    def test_merge_short_sha_denied(self) -> None:
-        c = "gh pr merge 12 --squash --match-head-commit 0123abc"
-        self.assert_denied(self.shell(c), c)
-
-    def test_merge_via_api(self) -> None:
-        c = "gh api -X PUT repos/o/r/pulls/12/merge"
-        self.assert_denied(self.shell(c), c)
-        c = f"gh api -X PUT repos/o/r/pulls/12/merge -f sha={SHA}"
-        self.assert_ask(self.shell(c), c)
-
-    def test_merge_via_graphql_denied(self) -> None:
-        mutation = 'mutation{mergePullRequest(input:{pullRequestId:"x"}){clientMutationId}}'
-        c = f"gh api graphql -f query='{mutation}'"
-        self.assert_denied(self.shell(c), c)
-
-    def test_merge_gate_any_server_name(self) -> None:
+    def test_reviewers_mcp(self) -> None:
         for server in ("plugin_github-operations_github", "github", "claude_ai_GitHub"):
-            tool = f"mcp__{server}__merge_pull_request"
-            args: dict[str, object] = {"owner": "o", "repo": "r", "pullNumber": 12}
-            self.assert_denied(self.mcp(tool, args), tool)
-            d = self.mcp(tool, {**args, "expectedHeadSha": SHA, "merge_method": "squash"})
-            self.assert_ask(d, tool)
-            assert "o/r#12" in d.reason
-            assert SHA in d.reason
-
-    def test_tracker_shell(self) -> None:
-        for c in (
-            "git status",
-            "git log --oneline -5",
-            "git branch -a",
-            "git remote -v",
-            "gh pr view 1",
-            "gh pr checks 1",
-            "gh pr -R o/r view 1",
-            "gh api repos/o/r/pulls/1",
-            "gh api graphql -f query='query{viewer{login}}'",
-            "ls -la",
-        ):
-            self.assert_silent(self.shell(c, agent=TRACKER), c)
-        for c in (
-            "git commit -m x",
-            "git branch new-branch",
-            "git fetch",
-            "gh pr comment 1 -b x",
-            "gh run rerun 1",
-            "gh api -X POST repos/o/r/issues/1/comments -f body=x",
-            "gh api repos/o/r/issues/1/comments -f body=x",
-            "gh api graphql -f query='mutation{x}'",
-        ):
-            self.assert_denied(self.shell(c, agent=TRACKER), c)
-
-    def test_tracker_mcp(self) -> None:
-        for t in ("pull_request_read", "get_job_logs", "list_pull_requests", "search_code"):
-            self.assert_silent(self.mcp(f"mcp__github__{t}", {}, agent=TRACKER), t)
-        for t in ("issue_write", "actions_run_trigger", "add_issue_comment"):
-            self.assert_denied(self.mcp(f"mcp__github__{t}", {}, agent=TRACKER), t)
+            for t in MCP_WRITES:
+                tool = f"mcp__{server}__{t}"
+                self.assert_denied(self.mcp(tool, {}, agent=TRACKER), tool, "read-only")
+            for t in MCP_OTHERS:
+                tool = f"mcp__{server}__{t}"
+                self.assert_silent(self.mcp(tool, {}, agent=TRACKER), tool)
 
     def test_auditor_files(self) -> None:
         self.assert_denied(self.files(self.project / "x.md", agent=AUDITOR), "project file")
@@ -346,7 +299,7 @@ class Hooks(unittest.TestCase):
     def test_other_agents_and_main_pass(self) -> None:
         self.assert_silent(self.shell("git commit -m x", agent="Explore"), "Explore commit")
         self.assert_silent(self.files(self.project / "x.md"), "main session write")
-        self.assert_silent(self.mcp("mcp__github__issue_write", {}), "main session MCP write")
+        self.assert_silent(self.files(self.project / "x.md", agent="executor"), "executor write")
 
     def test_contract_once(self) -> None:
         d = self.shell("gh pr view 1", session="S")
@@ -359,7 +312,7 @@ class Hooks(unittest.TestCase):
         assert "github-operations:github" in d.context
 
     def test_contract_rides_with_a_denial(self) -> None:
-        d = self.shell("git push --force", session="W")
+        d = self.shell("git push origin x", agent=TRACKER, session="W")
         assert d.kind == "deny"
         assert "github-operations:github" in d.context
 
@@ -370,7 +323,8 @@ class Hooks(unittest.TestCase):
         self.addCleanup(locked.chmod, 0o700)
         self.assert_silent(self.shell("gh pr view 1", session="S", data_dir=locked), "unwritable")
 
-    def test_bad_input_is_denied_by_guards(self) -> None:
+    def raw(self, text: str) -> str:
+        """Run the shell handler on raw stdin text and return its stdout."""
         env = {
             **os.environ,
             "CLAUDE_PLUGIN_ROOT": str(PLUGIN),
@@ -378,14 +332,22 @@ class Hooks(unittest.TestCase):
         }
         result = subprocess.run(
             [str(LAUNCHER), "shell"],
-            input="not json",
+            input=text,
             capture_output=True,
             text=True,
             env=env,
             check=False,
         )
         assert result.returncode == 0
-        assert text_at(_decode(result.stdout), "hookSpecificOutput", "permissionDecision") == "deny"
+        return result.stdout
+
+    def test_bad_input_passes(self) -> None:
+        out = self.raw("not json")
+        assert out.strip() == "", out
+
+    def test_bad_input_from_a_reviewer_is_denied(self) -> None:
+        out = self.raw(f'{{"agent_type": "{TRACKER}", "tool_input": {{"command": ')
+        assert text_at(_decode(out), "hookSpecificOutput", "permissionDecision") == "deny"
 
     def test_compact_restores_state(self) -> None:
         self.write_state("S", kind="pr", pr="12", phase="observe", head=SHA)
