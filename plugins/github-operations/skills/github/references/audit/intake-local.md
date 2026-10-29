@@ -65,24 +65,10 @@ This lists heads, remote-tracking refs, tags, notes, replace refs, the stash and
 One pass over every local and remote-tracking branch: how far it is ahead and behind, and whether its content is already in the base even though its commits are not (a squash or rebase merge; `branch --merged` and `merge-base --is-ancestor` miss those). `merge-tree --write-tree` writes tree objects, so it is pointed at a temporary object store and the repository gets nothing new.
 
 ```sh
-base=origin/main; repo="<repo>"; tmp="<scratch>/objects"; mkdir -p "$tmp"
-base_sha=$(git -C "$repo" rev-parse --verify "$base^{commit}"); base_tree=$(git -C "$repo" rev-parse "$base^{tree}")
-shared=$(git -C "$repo" rev-parse --path-format=absolute --git-path objects)
-git -C "$repo" for-each-ref --format='%(refname)' refs/heads refs/remotes | grep -v '^refs/remotes/[^/]*/HEAD$' | while read -r ref; do
-  sha=$(git -C "$repo" rev-parse "$ref^{commit}")
-  read -r behind ahead < <(git -C "$repo" rev-list --left-right --count "$base_sha...$sha")
-  if [ "$ahead" = 0 ]; then state=merged
-  elif ! git -C "$repo" merge-base "$base_sha" "$sha" >/dev/null 2>&1; then state=unrelated
-  else
-    out=$(GIT_OBJECT_DIRECTORY="$tmp" GIT_ALTERNATE_OBJECT_DIRECTORIES="$shared" git -C "$repo" merge-tree --write-tree --no-messages "$base_sha" "$sha" 2>/dev/null); code=$?
-    if [ "$code" = 1 ]; then state=conflicts
-    elif [ "$code" != 0 ]; then state="error($code)"
-    elif [ "${out%%$'\n'*}" = "$base_tree" ]; then state=in-base
-    else state=differs; fi
-  fi
-  printf '%s\t%s\t+%s\t-%s\t%s\n' "$state" "$ref" "$ahead" "$behind" "$sha"
-done | sort > branch-states.tsv
+"<skill-dir>/scripts/branch-states.sh" "<repo>" "<base>" "<scratch>/branch-states.tsv"
 ```
+
+It writes one sorted line per branch: state, ref, `+ahead`, `-behind`, SHA, separated by tabs. Exit 1 means the base does not resolve: fix the base name from 1.2 and run it again.
 
 | State | Meaning |
 | :-- | :-- |

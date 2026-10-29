@@ -1,6 +1,6 @@
 # Audit and cleanup lifecycle
 
-Audit a repository completely, report it in plain language, and change nothing until the user approves twice. Run the commands in the references yourself, from your scratch folder. Nothing is installed and no script is written into the repository or onto the machine.
+Audit a repository completely, report it in plain language, and change nothing until the user approves twice. Run the commands from your scratch folder. Nothing is installed and nothing is written into the repository; the skill's own scripts run from the scripts folder the skill gives (`<skill-dir>/scripts`).
 
 ## Lifecycle
 
@@ -20,6 +20,17 @@ Create one task per step (TaskCreate) and complete them in order.
 
 Read a reference when its step starts, not before. A reference that names another one (for example `execute.md` pointing to `integrate.md`) is read when that action class comes up.
 
+## Steps 0 to 2 run in the auditor
+
+1. Ask the intake question of step 0 yourself: which scans outside the repository are allowed (full history and objects, GitHub, external links).
+2. Create the scratch folder, then launch the `github-operations:repo-auditor` agent with the Agent tool. Brief it with the repository path, the remote, the allowed scopes and the scratch folder. It runs steps 0 to 2 read-only and writes `context.md`, the raw output, `findings.md` and `coverage.md` there.
+3. Read only `findings.md` and `coverage.md`, never the raw output. Check that every domain in `coverage.md` is `checked`, `BLOCKED`, `not reachable` or `declined`.
+4. What the auditor could not run is yours to finish: run that part of `intake-local.md`, `history.md`, `github.md` or `links.md` yourself, then update `findings.md` and `coverage.md`. If the Agent tool is unavailable, run steps 0 to 2 yourself.
+
+## Lifecycle record
+
+Keep the run's state in the state file, so a compaction loses nothing. Write it after each step and each gate with `<skill-dir>/scripts/lifecycle-state.py write --data-dir "<data-dir>" --session "<session-id>" --set kind=cleanup --set repository=<repo> --set phase=<step> --set scratch=<scratch folder>`, adding `--set backup=<backup folder>` once the user chose it and `--set approval=<approved IDs>` at each gate. After a compaction, read it back with `lifecycle-state.py read` and resume from its phase. Clear it at step 8.
+
 ## Invariants
 
 - **Steps 0 to 3 change nothing.** No `fetch`, `gc`, `prune`, `clean` (except `-n`), checkout, stash or write of any kind in the repository. Run audit git commands as `GIT_OPTIONAL_LOCKS=0 git -C "<repo>" ...`.
@@ -27,7 +38,7 @@ Read a reference when its step starts, not before. A reference that names anothe
 - **A failed command is `BLOCKED`, never zero.** Every domain ends in the coverage ledger as `checked`, `BLOCKED`, `not reachable` or `declined`. The audit cannot prove that nothing else exists, so the report always carries the ledger.
 - **Backup before anything else.** `A-01` is part of every approval: a bundle of every ref outside the repository, with a restore test and a checksum, plus patches and archives of uncommitted work. Secret-like files are never copied.
 - **Prove before deleting.** Every deletion runs a containment check first (its commits are in the published base, or its content is, or it is in the backup with the user's explicit `backup-only` approval). Remote deletions also re-check the live SHA. Integrations are published before anything they make redundant is deleted.
-- **No force.** No `--force`, `-f`, `+refspec`, `-D`, `reset --hard`, `clean -x`, `stash --all`, `stash branch` or `--no-verify`, except an action the user approved by name. History rewrites are never part of a bulk approval and happen only in a fresh mirror clone.
+- **No force.** No `--force`, `-f`, `+refspec`, `-D`, `reset --hard`, `clean -x`, `stash --all`, `stash branch` or `--no-verify`, except an action the user approved by name. History rewrites are never part of a bulk approval and happen only in a fresh mirror clone. A force push is never yours to run: the plugin's hooks refuse it, so hand the exact command to the user (`plan.md`, `history-rewrite`).
 - **Fixes land through branches and pull requests,** never on the base, and pull requests are opened only when the user authorized them.
 - **Security-sensitive external items are report-only:** deploy keys, tokens, secrets, installed apps, collaborator access. A secret that was ever committed is reported as exposed, by file name, with the instruction to rotate it; never print or open its content.
 - **Never override the user's signing setup.** If signing is configured and unavailable, stop before committing.

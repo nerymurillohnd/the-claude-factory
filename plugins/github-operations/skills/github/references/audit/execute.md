@@ -14,18 +14,10 @@ Run only what Gate 2 approved, in the plan's class order. The audit was read-onl
 Make it as `plan.md` describes, in the folder the user chose, then verify it. All of this must pass before any other action starts:
 
 ```sh
-git -C "<repo>" bundle verify "<dir>/all.bundle"                              # "okay", and "records a complete history"
-git -C "<repo>" bundle list-heads "<dir>/all.bundle" | wc -l                    # the head count is not zero
-sha256sum "<dir>/all.bundle" > "<dir>/all.bundle.sha256"                       # macOS: shasum -a 256
-git clone --quiet --mirror "<dir>/all.bundle" "<dir>/restore-test.git"          # the restore test, in a fresh folder
-git -C "<dir>/restore-test.git" fsck --connectivity-only
-git -C "<dir>/restore-test.git" for-each-ref --format='%(refname) %(objectname)' | sort > "<dir>/restored-refs.txt"
-git -C "<repo>" for-each-ref --format='%(refname) %(objectname)' refs/heads refs/tags refs/remotes refs/repo-cleanup-backup | grep -v '/HEAD ' | sort > "<dir>/live-refs.txt"
-diff "<dir>/live-refs.txt" "<dir>/restored-refs.txt"                           # no difference
-git -C "<repo>" apply --check < "<dir>/uncommitted-<name>.patch"                # only when the tree is as it was when the patch was taken
+"<skill-dir>/scripts/verify-backup.sh" "<repo>" "<dir>"
 ```
 
-Then read the backup's contents with `tar -tf` and `wc -l` and compare them with `manifest.txt`. If any check fails, fix the backup and repeat; if it cannot be fixed, stop the run and tell the user what is not covered. Finally delete the rescue refs (`git update-ref -d refs/repo-cleanup-backup/<name>`, one per ref) and confirm `git for-each-ref refs/repo-cleanup-backup` prints nothing.
+It prints `PASS` or `FAIL` per check, in order: bundle verify, head count, checksum written, restore clone into `restore-test.git`, fsck, refs match, `apply --check` of each patch, `tar -tf` of each archive. It stops at the first failure with exit 1. Then compare the backup's contents with `manifest.txt`. If a check fails, fix the backup and run it again; if it cannot be fixed, stop the run and tell the user what is not covered. A leftover `restore-test.git` fails the restore clone: remove it only when you made it in this run. Finally delete the rescue refs (`git update-ref -d refs/repo-cleanup-backup/<name>`, one per ref) and confirm `git for-each-ref refs/repo-cleanup-backup` prints nothing.
 
 Remove `restore-test.git` only after the user has kept or discarded the backup at step 8.
 
@@ -72,7 +64,7 @@ Run these in order. A failure at any point stops the action, not the whole run, 
 
 **`maintenance`**: `git -C "<repo>" gc` (repository defaults), or the exact approved forms (`git reflog expire --expire=now --all`, `git gc --prune=now`). Nothing else may touch the repository while it runs. Check `git count-objects -vH` before and after and record both.
 
-**`history-rewrite`**: only as `plan.md` describes, in a fresh mirror clone made from the backup, never in the working repository.
+**`history-rewrite`**: only as `plan.md` describes, in a fresh mirror clone made from the backup, never in the working repository. Prepare everything up to the push, then give the user the exact force-push command to run in their own terminal; never run it yourself.
 
 ## When something goes wrong
 

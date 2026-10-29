@@ -19,6 +19,30 @@ One action per operation: `A-01`, `A-02`, ... Each has:
 - **Containment check** for every deletion, and the **audited SHA** of the item (below).
 - **Validation criterion**: the read-only command and the exact result that prove it worked. Write it now, in step 4, so it cannot be bent after the fact. Examples: "`git rev-parse --verify -q refs/heads/x` prints nothing", "`git ls-remote --heads origin x` prints nothing", "`git merge-base --is-ancestor <tip> origin/main` exits 0", "`git for-each-ref refs/repo-cleanup-backup` prints nothing", "`gh workflow list --all` shows `disabled_manually`", "no process matches `cloudflared`".
 
+### Action block format
+
+Write every action in this shape; `check-cleanup-plan.py` reads it. Put the other fields above as more `- **Name**:` items in the same list.
+
+````markdown
+### A-02 Delete the merged branch old-feature
+
+- **Class**: local-delete
+- **Affected items**: refs/heads/old-feature at <full 40-character SHA>
+- **Containment check**: git -C "<repo>" merge-base --is-ancestor <sha> origin/main
+- **Force**: none
+- **Commands**:
+
+```bash
+git -C "<repo>" branch -d old-feature
+```
+````
+
+`Force` is `none`, or `approved by name: <flag>[, <flag>...]` naming each force flag the commands use.
+
+### Check the plan
+
+Run `<skill-dir>/scripts/check-cleanup-plan.py "<scratch>/plan-draft.md"`. Fix every finding it prints and run it again. Ask for Gate 2 only after it passes.
+
 ## Classes, in execution order
 
 | # | Class | Contains |
@@ -73,7 +97,8 @@ Rollback refs live only in `refs/repo-cleanup-backup/` and are removed at the en
 - The tool is `git filter-repo` (not `filter-branch`, whose manual says its use is not recommended). It is a Python script that must be on `PATH`; its README states git 2.36.0 or later and Python 3.6 or later. If it is missing, the plan stops and tells the user how to install it; the skill installs nothing.
 - It refuses to run outside a fresh clone unless `--force` is given, so the rewrite happens in a fresh mirror clone made from the backup, not in the working repository. After the rewrite, check `git remote -v` in the clone and re-add the remote explicitly if it is missing (what filter-repo does with `origin` is unverified).
 - For a removed file: `git filter-repo --sensitive-data-removal --invert-paths --path <path>` (GitHub's documentation requires filter-repo 2.47 or later for that flag; check `git filter-repo --version`). Before pushing, list the `refs/pull/*` refs that will change.
-- The push is `--force-with-lease` per ref, or `git push --force --mirror` as GitHub documents it; `refs/pull/*` refuses pushes because GitHub treats them as read-only, and a branch protection that blocks the other refs may have to be lifted temporarily: that is a separate approved `external-unlink` action.
+- Prepare the mirror clone and the rewrite, then write the exact push command: `--force-with-lease` per ref, or `git push --force --mirror` as GitHub documents it. `refs/pull/*` refuses pushes because GitHub treats them as read-only, and a branch protection that blocks the other refs may have to be lifted temporarily: that is a separate approved `external-unlink` action.
+- Hand the push command to the user to run in their own terminal. The plugin's hooks refuse force pushes from Claude, and the user stays the one who publishes rewritten history. Mark the action `done` only after the user confirms the push and the step 7 check of the remote refs passes.
 - State the consequences before approval: commit hashes change from the first changed commit on, signatures are removed, open pull requests are disrupted, forks and other clones keep the old objects (collaborators must re-clone and must not merge old branches), and GitHub keeps cached views and pull request refs until GitHub Support removes them (it needs the repository name, the affected pull requests and the "First Changed Commit(s)"). The audit lists forks, other clones and pull requests so the plan can name them.
 - `refs/original/*` is not a backup. The real backup is the bundle of `A-01`.
 
