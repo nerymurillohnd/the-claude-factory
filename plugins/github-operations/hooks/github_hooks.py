@@ -80,6 +80,7 @@ WRAPPERS: dict[str, frozenset[str]] = {
 KEYWORDS = frozenset({"!", "{", "if", "then", "else", "elif", "while", "until", "do"})
 GLOB_CHARS = frozenset("*?[{")
 TEST_COMMANDS = ("[", "[[")
+GUARDED = ("git", "gh")
 SHELLS = ("bash", "sh", "zsh")
 GIT_GLOBAL_VALUES = ("-C", "--git-dir", "--work-tree", "--namespace")
 GIT_SETTINGS = ("-c", "--config-env")
@@ -398,7 +399,7 @@ def tokens(text: str) -> list[str]:
     lexer = shlex.shlex(text, posix=True, punctuation_chars="();<>|&\n")
     lexer.whitespace = " \t\r"
     lexer.whitespace_split = True
-    lexer.commenters = ""
+    lexer.commenters = "#"
     try:
         return list(lexer)
     except ValueError as error:
@@ -650,6 +651,11 @@ def identity_words(words: list[str]) -> list[str]:
     return [] if words[0] in TEST_COMMANDS else words[:1]
 
 
+def runs_guarded_word(words: list[str]) -> bool:
+    """True when git or gh is a word of a command that is neither: xargs, find -exec, coproc."""
+    return words[0] not in GUARDED and any(posixpath.basename(w) in GUARDED for w in words[1:])
+
+
 def built_from_variables(words: list[str]) -> bool:
     """True when a word naming the command, or any assigner word, is rewritten by the shell."""
     if any(unresolved(w) for w in identity_words(words)):
@@ -770,30 +776,40 @@ def gh_writes(command: list[str]) -> bool:
     return len(words) == GH_COMMAND_WORDS and words[1] in GH_WRITE_VERBS
 
 
+def writes_state(words: list[str]) -> bool:
+    """True when a git or gh call is one of the named write operations."""
+    writes = {"git": git_writes, "gh": gh_writes}.get(words[0])
+    return bool(writes and writes(words))
+
+
+def why_denied(subcommand: Command, cwd: str) -> str | None:
+    """Return why a reviewer agent may not run one subcommand, or None."""
+    if sets_git_config(subcommand):
+        return (
+            "cannot change where git reads its configuration; run git without -c,"
+            " --config-env, GIT_CONFIG, HOME or XDG_CONFIG_HOME."
+        )
+    words = subcommand.words
+    checks: tuple[tuple[Callable[[list[str]], bool], str], ...] = (
+        (runs_guarded_word, "cannot start git or gh through `{}`; run it as the command itself."),
+        (built_from_variables, "cannot run a command built from variables; write it out in full."),
+        (lambda w: hidden_script(w, cwd), "cannot run `{}` on a hidden script; run its commands."),
+        (writes_state, "cannot run `{}`: it changes state. Report it to the main session."),
+    )
+    for check, message in checks if words else ():
+        if check(words):
+            return message.format(" ".join(words)[:80] if check is writes_state else words[0])
+    return None
+
+
 def rule_agents_shell(call: Call, subcommands: list[Command]) -> Decision | None:
     """Rule 2 for shell commands: the reviewer agents run no named git or gh write."""
     if call.agent not in AGENTS:
         return None
     for subcommand in subcommands:
-        command = subcommand.words
-        if command and built_from_variables(command):
-            reason = f"{call.agent} is read-only and cannot run a command built from variables;"
-            return deny(reason + " write the command out in full.")
-        if command and hidden_script(command, call.cwd):
-            reason = f"{call.agent} is read-only and cannot run `{command[0]}` on a hidden script;"
-            return deny(reason + " run the commands directly.")
-        if sets_git_config(subcommand):
-            reason = (
-                f"{call.agent} is read-only and cannot change where git reads its configuration;"
-            )
-            return deny(
-                reason + " run git without -c, --config-env, GIT_CONFIG, HOME or XDG_CONFIG_HOME."
-            )
-        writes = {"git": git_writes, "gh": gh_writes}.get(command[0]) if command else None
-        if writes and writes(command):
-            shown = " ".join(command)[:80]
-            reason = f"{call.agent} is read-only; `{shown}` changes state."
-            return deny(reason + " Report it to the main session.")
+        why = why_denied(subcommand, call.cwd)
+        if why:
+            return deny(f"{call.agent} is read-only and {why}")
     return None
 
 

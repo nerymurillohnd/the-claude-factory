@@ -170,6 +170,10 @@ REVIEWER_WRAPPED = [
     "gh api -if body=x repos/o/r/issues/1/comments",
     "gh api --unknown-flag repos/o/r/issues/1/lock",
     "gh api repos/o/r/issues/1/lock extra",
+    "coproc git push",
+    "function f { git push; }; f",
+    "echo push | xargs git",
+    "find . -maxdepth 0 -exec git push ;",
 ]
 REVIEWER_PASS = [
     "git status",
@@ -199,6 +203,7 @@ REVIEWER_PASS = [
     "bash RUN/branch-states.sh repo main out.tsv",
     "bash -o pipefail RUN/branch-states.sh repo main out.tsv",
     "ls $HOME/repo",
+    "crontab -l | grep -F repo # git maintenance schedule",
     "git config --get-regexp '^remote\\..*\\.(url|pushurl)$'",
     'git rev-parse --verify -q "$ref^{commit}"',
     "if [ -d r ]; then git -C r status; fi",

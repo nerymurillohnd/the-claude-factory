@@ -477,7 +477,7 @@ The plugin's hooks run on your computer with your permissions, through `python3`
 
 | Event | Calls | What the hook does |
 | :-- | :-- | :-- |
-| Before a tool runs | Bash and PowerShell commands | For the two reviewer agents, denies `git` commands that change state (commit, push, merge, rebase, reset, checkout and the like), `gh` commands that write (create, edit, merge, close, delete, rerun, and `gh api` calls that are not reads), commands that point `git` at other configuration (`-c`, `--config-env`, or setting `GIT_CONFIG*`, `HOME` or `XDG_CONFIG_HOME`), shells that run a script from a pipe, a here-string, a heredoc, standard input or a process substitution, and any command it cannot parse that mentions `git` or `gh`. On a session's first `gh` or `git push`, adds a line that names the `github` skill |
+| Before a tool runs | Bash and PowerShell commands | For the two reviewer agents, denies `git` commands that change state (commit, push, merge, rebase, reset, checkout and the like), `gh` commands that write (create, edit, merge, close, delete, rerun, and `gh api` calls that are not reads), commands that point `git` at other configuration (`-c`, `--config-env`, or setting `GIT_CONFIG*`, `HOME` or `XDG_CONFIG_HOME`), shells that run a script from a pipe, a here-string, a heredoc, standard input or a process substitution, commands that start `git` or `gh` through another program (`xargs`, `find -exec`), and any command it cannot parse that mentions `git` or `gh`. On a session's first `gh` or `git push`, adds a line that names the `github` skill |
 | Before a tool runs | GitHub MCP tools, on any server whose name contains `github` or `GitHub` | For the two reviewer agents, denies the tools that write, such as `create_pull_request`, `merge_pull_request`, `issue_write` or `push_files`. On a session's first GitHub tool call, adds the same line |
 | Before a tool runs | Write, Edit and NotebookEdit | For the two reviewer agents, denies a write to a file inside your project. The agents' own instructions already leave these tools out |
 | After a compaction | Session start, `compact` | Gives Claude the pull request or cleanup run it was in (repository, PR, phase, head commit, approval, next step), so it resumes where it stopped |
@@ -489,7 +489,7 @@ The plugin's hooks run on your computer with your permissions, through `python3`
 ### Limitations
 
 - A hook is a barrier for Claude, not a security boundary. It never sees what you type in your own terminal, and it reads only the commands Claude sends through the Bash and PowerShell tools.
-- Shell commands other than `git` and `gh`, such as `curl` to the GitHub API, are not inspected; neither are `git` and `gh` started by another program (`xargs`, `find -exec`), aliases already defined in your git or `gh` configuration, or a script file run by path.
+- Shell commands other than `git` and `gh`, such as `curl` to the GitHub API, are not inspected; neither are aliases already defined in your git or `gh` configuration, or a script file run by path.
 - A GitHub MCP server whose name contains neither `github` nor `GitHub` is not checked.
 - Hooks don't run when your settings or your organization set `disableAllHooks`, or `allowManagedHooksOnly`.
 - On Windows the hooks need WSL: Claude Code starts their launcher directly, and Windows can't run it without a shell.
