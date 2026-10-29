@@ -16,7 +16,7 @@ The GitHub MCP tools and `gh` overlap. Each table lists the layer that does the 
 
 Before the first GitHub operation of a run, learn what you can do. Do not assume.
 
-1. MCP tools loaded: list them with `ToolSearch` (query `+github`). A tool missing from the live list usually means fewer toolsets than the plugin turns on, or a token without the scope. The Actions, Dependabot, Discussions and Projects tools exist only with all toolsets on, which is how the plugin connects.
+1. MCP tools loaded: list them with `ToolSearch` (query `+github`) when tool search is on; otherwise they are already in the tool list. A tool missing from the live list usually means fewer toolsets than the plugin turns on, or a token without the scope. The Actions, Dependabot, Discussions and Projects tools exist only with all toolsets on, which is how the plugin connects.
 2. Identity: MCP `get_me`, or `gh` auth status, which masks the token and prints its scopes.
 3. Repository permission of the `gh` login: read the repository through `gh api` and look at its `permissions` object (`admin`, `maintain`, `push`, `triage`, `pull`). The MCP server may use a different token, so a permission seen by one layer is not proof for the other.
 4. Rules on the base branch: MCP `repository_ruleset_read` with `level: repository` and `method: get_rules_for_branch`, or the `gh` ruleset check for the branch.

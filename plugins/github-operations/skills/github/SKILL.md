@@ -15,7 +15,7 @@ One set of rules for every GitHub task. This file holds the rules and the routin
 - Get the user's approval before any push, PR, merge, deletion, close, settings change or write to a repository the user does not own. The approval covers that exact target, action and content. A request that names the action is its approval: "commit and push" approves that push and nothing more.
 - Merge only after asking the user directly for that PR at the freshly read head SHA; earlier instructions such as "take it to merge" never count.
 - Work from evidence: mark nothing done without its check, and report a fact you could not read as not inspected, never as zero.
-- Finish in this run what an agent could not inspect or do: read it yourself and fix what it shows. Never leave it pending.
+- When an agent reports something it could not inspect or do, inspect or do it yourself in this run, within the approvals above; report as not inspected only what you cannot reach either, and why.
 - Sign as the user's setup signs; if signing fails, stop and say so.
 - Never force-push, rewrite published history, use `--no-verify` or merge with admin rights. The one exception is a history rewrite the user approved by name, run as the exact command the plan shows.
 - Keep secrets, personal data and customer names out of everything written to GitHub.
@@ -44,7 +44,7 @@ Run the scripts in `<skill-dir>/scripts/` by their path; each prints its usage w
 
 ## Preflight, once per session
 
-1. Load the GitHub MCP tools with `ToolSearch` (query `+github`). Name a tool by its bare name and `method`; its prefix depends on the server.
+1. If the GitHub MCP tools are deferred, load them with `ToolSearch` (query `+github`); when tool search is off, they are already in the tool list. Name a tool by its bare name and `method`; its prefix depends on the server.
 2. Confirm the identity: MCP `get_me` or `gh auth status`.
 3. State the repository, the action, and whether it reads or changes state.
 
@@ -77,4 +77,4 @@ When the task is unclear, ask which one it is before changing anything.
 
 ## Invoke once
 
-To switch to another task in the same session, read its reference directly; do not invoke this skill again.
+These rules stay loaded for the rest of the session. To switch to another task, read its reference directly.
