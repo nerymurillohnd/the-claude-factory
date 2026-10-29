@@ -43,6 +43,7 @@
 | 2026-10-28 | DEBT-038 | resolved | The plugin-renames skill's check-version-bump.py is identical to the release skill's, and a test keeps both skills' copies of the bump scripts identical | none |
 | 2026-10-28 | DEBT-020 | obsolete | Dropped by Nery: moving `docs/github-mcp-tools.md` into its plugin is no longer tracked | none |
 | 2026-10-28 | DEBT-027 | obsolete | Dropped by Nery: the `claude-review` tool denials are no longer investigated | none |
+| 2026-10-29 | DEBT-041 | resolved | `skill-names-consistency.py` composes ruamel.yaml nodes in YAML 1.1 mode, and no Python file uses PyYAML | none |
 
 ## 🏁 Closed items
 
@@ -854,6 +855,40 @@ Nery withdrew the item on 2026-10-28, stated by the user on 2026-10-28. The work
 - **Residual risk:** reviews on some pull requests may still run without the reads they need and report "No issues found".
 - **Closed by:** Nery's decision on 2026-10-28.
 - **Related records:** none.
+- **Superseded by:** none
+
+### DEBT-041 — `skill-names-consistency.py` composes ruamel.yaml nodes in YAML 1.1 mode, and no Python file uses PyYAML
+
+| Field | Value |
+| --- | --- |
+| **Outcome** | resolved |
+| **Closed on** | 2026-10-29 |
+| **Logged on** | 2026-10-29 |
+| **Owner** | `scripts/validators/skill-names-consistency.py` (maintainer scope) |
+
+#### ❗ The problem
+
+`scripts/validators/skill-names-consistency.py` was the last PyYAML user in the repository (PEP 723 `dependencies = ["pyyaml"]`): it composed each SKILL.md `name` entry into PyYAML nodes, while ADR_2026-10-29_yaml-checks-compose-ruamel-nodes had moved YAML checks to ruamel.yaml `compose()`. Two YAML engines stayed in the repository. The pending entry's next action also named tests in `scripts/testers/validators/` that did not exist: the validator had none.
+
+#### 🔧 The closure
+
+- The validator declares `ruamel.yaml>=0.19.1` (the version verified) and composes the `name` entry with `YAML(typ="safe", pure=True)` at version 1.1, the resolution PyYAML applied, so `yes` and `on` still fail as booleans. ruamel.yaml's untyped nodes are read through typed `attrgetter` bindings and narrowed with real checks; a source span comes from `start_mark.index` and `end_mark.index`.
+- Its messages keep the `[scope] message` form. Moving them to `FILE:LINE:COLUMN`, the pending entry's open question, was not part of this change.
+- New characterization tests, `scripts/testers/validators/test_skill_names_consistency.py` (7 tests), run the validator by path on temporary repositories through `TCF_ROOT`: 23 `name` forms, frontmatter shapes, manifest skill paths, the passing count, the argument refusal and this repository. They passed on the PyYAML version before the port and on the ruamel.yaml version after it, under the `unittest-maintainer` runner's directory `scripts/testers/validators`.
+- One test change after the port: the argument-refusal test reads `usage:` from the last stderr line, because uv writes "Installed N packages" to stderr on the first run of a new script environment.
+
+#### 🧪 Verification
+
+| Check | Evidence |
+| --- | --- |
+| ✅ **Positive:** the closure holds | 2026-10-29: `scripts/testers/run_unittest.py scripts/testers/validators` → `Ran 15 tests … OK`. `npm run validate:skill-names-consistency` → `✔ 29 skill name(s) are flat, unquoted and match their directory`. `node scripts/basedpyright-maintainer.mjs` → `scripts/validators/skill-names-consistency.py: 1 file(s)`, `0 errors, 0 warnings, 0 notes`. `ruff check` and `ruff format --check` on both files → `All checks passed!`, `2 files already formatted`. Mutation: a copy without `reader.version = (1, 1)` passed `name: on` and `name: yes` (`✔ 2 skill name(s) …`), which the real script fails (`reads as a YAML bool`). |
+| 🚫 **Negative:** the original failure or condition is gone | 2026-10-29: `rg -l --no-ignore -g '*.py' 'import yaml\|pyyaml'` printed nothing (exit 1). |
+
+#### 🔗 Follow-up
+
+- **Residual risk:** the validator's messages carry no line or column; whether they move to `FILE:LINE:COLUMN` is still Nery's call.
+- **Closed by:** the 2026-10-29 change to `scripts/validators/skill-names-consistency.py` and the new `scripts/testers/validators/test_skill_names_consistency.py`, uncommitted when this entry was written.
+- **Related records:** ADR_2026-10-29_yaml-checks-compose-ruamel-nodes; DEBT-042.
 - **Superseded by:** none
 
 <!--
