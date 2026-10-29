@@ -109,6 +109,21 @@ REVIEWER_WRAPPED = [
     "bash <<'EOF'\ngit tag v1\nEOF",
     "GIT_OPTIONAL_LOCKS=0 git -C r commit -m x",
     "sudo -n git push",
+    "git -c alias.x='!git push' x",
+    "git -c core.hooksPath=/tmp/h status",
+    "git --config-env=alias.x=CMD x",
+    "GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=alias.x GIT_CONFIG_VALUE_0=push git x",
+    "env GIT_CONFIG_PARAMETERS=\"'alias.x=push'\" git x",
+    "gh api repos/o/r/issues/1/comments -f query=x",
+    "gh api graphql -f query='query{a} mutation{b}'",
+    "gh api graphql -F query=@q.graphql",
+    "bash <(echo git push)",
+    "bash <<< 'git push'",
+    "echo git push | bash",
+    "echo git push | sh -s",
+    "cat s.sh | zsh",
+    "source <(echo git push)",
+    ". <(echo git push)",
 ]
 REVIEWER_PASS = [
     "git status",
@@ -134,6 +149,9 @@ REVIEWER_PASS = [
     "cat f.txt",
     "echo found > /tmp/scratch/findings.md",
     "/path/to/branch-states.sh repo main out.tsv",
+    "bash /path/to/branch-states.sh repo main out.tsv",
+    "diff <(git log a) <(git log b)",
+    "gh api -X GET repos/o/r/pulls -f per_page=100",
 ]
 MCP_WRITES = (
     "merge_pull_request",

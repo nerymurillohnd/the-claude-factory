@@ -42,6 +42,9 @@ GUARDED_WORD = re.compile(r"(?<![A-Za-z0-9_.-])(git|gh)(?![A-Za-z0-9_-])")
 HEREDOC = re.compile(r"<<(-?)[ \t]*(['\"]?)([A-Za-z_][A-Za-z0-9_]*)\2")
 SHELL_WORD = re.compile(r"(?<![\w.-])(?:bash|sh|zsh)(?![\w.-])")
 SUBSTITUTED = "SUBSTITUTION"
+SUBSTITUTION_OPENERS = ("$(", "<(", ">(")
+SOURCES = ("source", ".")
+MUTATION = re.compile(r"\bmutation\b")
 MAX_DEPTH = 8
 GH_COMMAND_WORDS = 2
 MARKER_DAYS = 7
@@ -60,6 +63,10 @@ SHELLS = ("bash", "sh", "zsh")
 GIT_GLOBAL_VALUES = ("-C", "--git-dir", "--work-tree", "--namespace")
 GIT_SETTINGS = ("-c", "--config-env")
 GH_GLOBAL_VALUES = ("-R", "--repo", "--hostname")
+API_SHORTS = ("-X", "-f", "-F")
+SHORT_OPTION = 2
+API_LONGS = ("--method", "--field", "--raw-field", "--input")
+API_VALUES = ("-H", "--header", "-q", "--jq", "-t", "--template", "--cache", "-p", "--preview")
 
 BRANCH_LONGS = frozenset(
     {
@@ -310,15 +317,18 @@ def closing_paren(text: str, start: int) -> int:
 
 
 def substitution_end(text: str, i: int) -> int:
-    """Return where the $(...) or `...` that starts at i ends."""
-    end = closing_paren(text, i + 2) if text[i] == "$" else text.find("`", i + 1)
+    """Return where the $(...), <(...), >(...) or `...` that starts at i ends."""
+    end = text.find("`", i + 1) if text[i] == "`" else closing_paren(text, i + 2)
     if end < 0:
         raise LexError
     return end
 
 
 def extract_substitutions(text: str) -> tuple[str, list[str]]:
-    """Replace each $(...) and `...` outside single quotes with a word; return their bodies."""
+    """Replace each $(...), <(...), >(...) and `...` outside single quotes with a word.
+
+    Return the text and the bodies, which a shell runs as scripts of their own.
+    """
     out: list[str] = []
     bodies: list[str] = []
     quote = ""
@@ -332,9 +342,9 @@ def extract_substitutions(text: str) -> tuple[str, list[str]]:
         elif ch == "\\":
             out.append(text[i : i + 2])
             i += 2
-        elif text.startswith("$(", i) or ch == "`":
+        elif text.startswith(SUBSTITUTION_OPENERS, i) or ch == "`":
             end = substitution_end(text, i)
-            bodies.append(text[i + (2 if ch == "$" else 1) : end])
+            bodies.append(text[i + (1 if ch == "`" else 2) : end])
             out.append(SUBSTITUTED)
             i = end + 1
         else:
@@ -492,35 +502,42 @@ def gh_words(command: list[str]) -> list[str]:
 
 
 class ApiCall(NamedTuple):
-    """A gh api call: its method, its fields and whether it reads a request body."""
+    """A gh api call: its endpoint, method, fields and whether it reads a request body."""
 
+    endpoint: str
     method: str
     fields: list[str]
     has_input: bool
 
 
-def gh_api(args: list[str]) -> ApiCall:
-    """Parse the arguments after `gh api`."""
-    method = ""
-    fields: list[str] = []
-    has_input = False
+def api_options(args: list[str]) -> list[tuple[str, str]]:
+    """Pair each `gh api` option with its value; a positional word comes as ("", word)."""
+    pairs: list[tuple[str, str]] = []
     i = 0
     while i < len(args):
         arg = args[i]
-        value = args[i + 1] if i + 1 < len(args) else ""
         i += 1
-        if arg in ("-X", "--method"):
-            method, i = value, i + 1
-        elif arg.startswith(("--method=", "-X")):
-            method = arg.removeprefix("--method=").removeprefix("-X")
-        elif arg in ("-f", "-F", "--field", "--raw-field"):
-            fields.append(value)
+        if arg.startswith("--") and "=" in arg:
+            name, value = arg.split("=", 1)
+        elif arg[:SHORT_OPTION] in API_SHORTS and len(arg) > SHORT_OPTION:
+            name, value = arg[:SHORT_OPTION], arg[SHORT_OPTION:]
+        elif arg in (*API_SHORTS, *API_LONGS, *API_VALUES):
+            name, value = arg, args[i] if i < len(args) else ""
             i += 1
-        elif arg.startswith(("--field=", "--raw-field=", "-f", "-F")):
-            fields.append(arg.split("=", 1)[1] if arg.startswith("--") else arg[2:])
-        elif arg == "--input" or arg.startswith("--input="):
-            has_input = True
-    return ApiCall(method.upper(), fields, has_input)
+        else:
+            name, value = ("", arg) if not arg.startswith("-") else (arg, "")
+        pairs.append((name, value))
+    return pairs
+
+
+def gh_api(args: list[str]) -> ApiCall:
+    """Parse the arguments after `gh api`."""
+    pairs = api_options(args)
+    endpoint = next((value for name, value in pairs if not name), "")
+    methods = [value for name, value in pairs if name in ("-X", "--method")]
+    fields = [value for name, value in pairs if name in ("-f", "-F", "--field", "--raw-field")]
+    has_input = any(name == "--input" for name, _ in pairs)
+    return ApiCall(endpoint, methods[-1].upper() if methods else "", fields, has_input)
 
 
 # ── Rule 2: the plugin's reviewer agents do not write ───────────────────────────────────────
@@ -543,6 +560,26 @@ def tag_lists(args: list[str]) -> bool:
     """True when git tag only lists."""
     listing = {"-l", "--list", "-n", "--contains", "--no-contains", "--points-at", "--merged"}
     return not args or bool(listing & set(args)) or args[0].startswith("--sort")
+
+
+def git_config_override(command: Command) -> bool:
+    """True when a git call sets configuration for itself, which can run any alias or program."""
+    subcommand, args = git_parts(command.words)
+    flags = command.words[1 : len(command.words) - len(args) - (1 if subcommand else 0)]
+    return any(f in GIT_SETTINGS or f.startswith("--config-env=") for f in flags) or any(
+        e.startswith("GIT_CONFIG") for e in command.env
+    )
+
+
+def hidden_script(command: list[str]) -> bool:
+    """True when a shell, source or . runs a script the hook cannot read.
+
+    That is a script from stdin (a pipe or a here-string), or from a process substitution.
+    """
+    if command[0] not in (*SHELLS, *SOURCES) or nested_script(command) is not None:
+        return False
+    script = next((w for w in command[1:] if not w.startswith("-")), "")
+    return script in ("", SUBSTITUTED)
 
 
 def git_writes(command: list[str]) -> bool:
@@ -571,15 +608,27 @@ def git_writes(command: list[str]) -> bool:
     return not reads.get(subcommand, True)
 
 
+def graphql_query(field: str) -> bool:
+    """True when a field is an inline GraphQL query with no mutation in it."""
+    document = field.removeprefix("query=").lstrip()
+    return (
+        field.startswith("query=")
+        and document.startswith(("query", "{"))
+        and not MUTATION.search(document)
+    )
+
+
 def api_reads(api: ApiCall) -> bool:
-    """True when a gh api call only reads."""
+    """True when a gh api call only reads.
+
+    gh sends a call with fields and no method as POST, so only the GraphQL endpoint with
+    inline queries reads that way.
+    """
     if api.has_input or api.method not in ("", "GET"):
         return False
-    return all(
-        field.startswith("query=")
-        and field.removeprefix("query=").lstrip().startswith(("query", "{"))
-        for field in api.fields
-    )
+    if api.method == "GET" or not api.fields:
+        return True
+    return api.endpoint == "graphql" and all(graphql_query(f) for f in api.fields)
 
 
 def gh_writes(command: list[str]) -> bool:
@@ -596,6 +645,12 @@ def rule_agents_shell(call: Call, subcommands: list[Command]) -> Decision | None
         return None
     for subcommand in subcommands:
         command = subcommand.words
+        if command and hidden_script(command):
+            reason = f"{call.agent} is read-only and cannot run `{command[0]}` on a hidden script;"
+            return deny(reason + " run the commands directly.")
+        if command[:1] == ["git"] and git_config_override(subcommand):
+            reason = f"{call.agent} is read-only and cannot set git configuration for a call;"
+            return deny(reason + " run git without -c, --config-env or GIT_CONFIG variables.")
         writes = {"git": git_writes, "gh": gh_writes}.get(command[0]) if command else None
         if writes and writes(command):
             shown = " ".join(command)[:80]
