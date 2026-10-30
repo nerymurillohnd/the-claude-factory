@@ -18,5 +18,5 @@ Refs #
 - [ ] Version bumped with `.claude/skills/release-and-versioning/scripts/bump-version.py` for every plugin whose shipped files changed
 - [ ] Plugin `CHANGELOG.md` and root `CHANGELOG.md` updated
 - [ ] Marketplace and README catalog regenerated (`npm run generate`)
-- [ ] Installed from this branch over HTTPS (`release-and-versioning`, step 8.5) and exercised on the surfaces the README claims
+- [ ] Installed from this branch over HTTPS (`releases`, step 5) and exercised on the surfaces the README claims
 - [ ] No maintenance or internal notes in user-facing docs

@@ -54,9 +54,9 @@ Part of step 1 of `building-plugins`, before the scaffold runs.
 2. When the plugin README has a Category badge, change its title to the new one, encoded as the badge already is: `%20` for a space, `%26` for `&`, `--` for `-`. The scaffold writes the badge for a new plugin, so a README without one predates the template.
 3. Run the checks above.
 4. Who versions it:
-   - A published plugin (`git cat-file -e origin/main:plugins/<plugin>/.claude-plugin/plugin.json` succeeds): a pull request and a version bump, through `release-and-versioning`.
+   - A published plugin (`git cat-file -e origin/main:plugins/<plugin>/.claude-plugin/plugin.json` succeeds): a pull request and a version bump, through `versioning` and `releases`.
    - A plugin never published: no bump; its `0.1.0` launch carries the category.
-   - Part of a merge: `plugin-renames-and-removals` carries the bump and the changelog; do steps 1 to 3 only.
+   - Part of a merge: `remove-a-plugin` carries the merge, and `versioning` the bump and the changelog; do steps 1 to 3 only.
 
 ### C. A plugin gains or loses a mod
 

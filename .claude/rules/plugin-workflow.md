@@ -4,4 +4,6 @@ Operating guide and map of how the plugin skills work together, for everything u
 
 - Load `versioning` to set the initial version of a new plugin or to update the version of an existing plugin that changed.
 - Load `releases` to release a new plugin for the first time or to release an existing plugin that had changes.
-- When both apply, load `versioning` first.
+- Load `rename-a-plugin` to rename a published plugin when keeping its name is not possible.
+- Load `remove-a-plugin` to remove, retire or deprecate a plugin, or to merge it into another.
+- When several apply, load them in this order: `rename-a-plugin` or `remove-a-plugin`, then `versioning` for the plugin whose version changes (the renamed plugin, or the merge target), then `releases`.

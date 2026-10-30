@@ -24,8 +24,8 @@ The Workflow in `.claude/CLAUDE.md` names the skill for each stage. These are th
 | The plugin ships a component type that `docs/compatibility.md` has no row for | `maintaining-user-docs` | Before step 4, so the README copies the updated cells |
 | Nery says the plugin is ready, and it has an MCP server or a hook that matches or calls MCP tools | `testing-plugins` for the live MCP checks this skill never runs; `testing-mods` instead when the plugin is or contains a mod | After step 5, before the release stage |
 | Evals are requested, or an install, load or marketplace error needs diagnosing | `testing-plugins`; `testing-mods` instead when the plugin is or contains a mod | After step 5, only when asked |
-| The plugin is ready to ship: Nery says it is ready, and the live MCP checks above passed when they apply | `release-and-versioning`, for the version, the changelog notes, the root changelog line, the pull request and the release | Step 6 |
-| The plugin is to be renamed, merged, removed, retired or deprecated | `plugin-renames-and-removals` | Instead of this skill |
+| The plugin is ready to ship: Nery says it is ready, and the live MCP checks above passed when they apply | `versioning`, for the version, the changelog notes and the root changelog line; then `releases`, for the pull request and the release | Step 6 |
+| The plugin is to be renamed, merged, removed, retired or deprecated | `rename-a-plugin` for a rename, `remove-a-plugin` for a merge, removal, retirement or deprecation | Instead of this skill |
 
 ## Ground truth before you rely on a behavior
 

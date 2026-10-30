@@ -56,7 +56,7 @@ Pull requests and version bumps (this is the only place that sets them):
 
 - **A plugin's documentation alone** (`README.md`, `LICENSE`, `NOTICE.txt`): commit it signed straight to `main`, with no pull request, version bump or `CHANGELOG.md` entry, because it changes nothing the plugin does. GitHub shows it on push; installed copies keep the old text until the plugin's next version.
 - **A plugin's maintainer files alone** (a mod's tests, an eval suite): a pull request, with no version bump or `CHANGELOG.md` entry, because users never run them; they reach users with the plugin's next version.
-- **Every other file inside a plugin's directory** (its manifest, components, scripts, dependencies, `CHANGELOG.md`): a pull request and a version bump, through `release-and-versioning`.
+- **Every other file inside a plugin's directory** (its manifest, components, scripts, dependencies, `CHANGELOG.md`): a pull request and a version bump, through `versioning` and `releases`.
 - **Everything outside `plugins/`**: no pull request.
 
 #### Maintainer Tooling
@@ -140,14 +140,14 @@ Pull requests and version bumps (this is the only place that sets them):
      - Diagnose install, load and marketplace errors.
 5. Versioning and releases
    - When: a new plugin is published, or an existing plugin has changed.
-   - Skill: `release-and-versioning`.
+   - Skills: `versioning`, `releases`.
    - Key jobs:
      - Choose the version and write the release notes.
      - Check the release before the merge.
      - Confirm what users receive after the merge.
 6. Plugin renames and removals
    - When: a plugin is to be renamed, merged into another, removed, retired or deprecated.
-   - Skill: `plugin-renames-and-removals`.
+   - Skills: `rename-a-plugin`, `remove-a-plugin`.
    - Key jobs: migrate existing installs through the marketplace's `renames` map, and ship a rename as a breaking change.
 
 ## Change Control
