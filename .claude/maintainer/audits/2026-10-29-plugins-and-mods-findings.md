@@ -677,3 +677,32 @@ Note on P-11/P-12: these are shipped files, not teaching content. I include them
 
 Coverage limit: in hook-engineering I read only the parts in scope (plugins, mods, testing), not the full event references.
 
+
+## Reconciliation
+
+Every finding's final state. Commits are on `main`.
+
+| Findings | State | Where |
+| :-- | :-- | :-- |
+| I-1 to I-14 | Fixed | `a736011` (CLAUDE.md, rules). I-5's eval-suite proposal was superseded by the amended D6: suites stay below the plugin |
+| I-15 | No change | The anchor `components#path-variables-and-persistent-data` exists; the docs link it |
+| S-1 to S-15 | Fixed | `2cec0ef`; the lines were then rewritten as single instructions in `67c3124` |
+| R-1, R-2 | Fixed | Memory `tests-are-maintainer-tooling` and `MEMORY.md` (git-ignored) |
+| R-3 to R-5 | Resolved | The handoff's items 1 and 3 no longer apply: `mod-tsc` is removed (`4a7e467`). The next handoff drops them |
+| R-6 | Fixed | DEBT-010 in `245ff8c` |
+| R-7 | Retracted | The docs say to trust the declarations over any page; the ADR stands (`75c284d`) |
+| R-8, R-9 | Superseded in part | Named in ADR_2026-10-29_mods-commit-no-tsconfig and ADR_2026-10-29_remove-the-mod-tsc-gate |
+| R-10 to R-12 | No change | Settled or closed records; their decisions do not depend on the contradicted fact |
+| T-1, T-2 | Fixed | `e96c0c9`, `9cd3042` |
+| T-3 to T-7 | Fixed | `4a7e467` |
+| T-8, T-9 | Fixed | `9cd3042` |
+| T-10 | Fixed | ADR_2026-10-29_in-plugin-maintainer-files-take-a-pull-request-without-a-bump; suites stay and ship inert |
+| T-11 | Fixed | `aa0db14` |
+| T-12 | No change | The render-sites table draws the band only in the terminal and Desktop; turn-meter's README is right |
+| T-13 | No change | ADR_2026-10-25_release-tags-are-created-unsigned-by-ci already rejected `claude plugin tag` in `release.yml`, with its revisit trigger |
+| P-1 to P-7, P-10 | Fixed | `015b3d1` (released in PR #73), then rewritten as single instructions in PR #74 |
+| P-8 | Resolved | The audit was wrong; `--eval-dir` is a directory below the plugin |
+| P-9 | No change | The plugin-evals docs accept a root `plugin.json` |
+| P-11, P-12 | Fixed | `e96c0c9` |
+
+Follow-up beyond the findings: the skill lines written during this refactor were checked against the skill-writing rules and rewritten (PR #74, `67c3124`), and `testing-mods/references/version-drift.md` became a list of measured traps with no copied versions.
