@@ -227,16 +227,16 @@ In the **Claude app**, manage everything from **Customize** → **Plugins**: sel
 
 The same plugin installs in Claude Code and in the Claude app, but each loads a different subset of components. Every plugin README has its own **Compatibility** table.
 
-| Component                             |            Claude Code             |                  Claude app                   |
-| :------------------------------------ | :--------------------------------: | :-------------------------------------------: |
-| 🎯 Skills                             |                 ✅                 |                      ✅                       |
-| 🤖 Agents                             |                 ✅                 |             ⚠️ in Cowork sessions             |
-| 🪝 Hooks                              |                 ✅                 |             ⚠️ in Cowork sessions             |
-| 🧩 Mods                               | ✅ except a Desktop session on WSL |        ⚠️ listed for Claude Code only         |
-| 🔌 Remote MCP servers                 |                 ✅                 | 🔗 connect on the plugin's **Connectors** tab |
-| 🖥️ Local MCP servers                  |                 ✅                 |    ⚠️ in Cowork sessions on your computer     |
-| 🧠 LSP · 🎨 Output styles · 🌈 Themes |                 ✅                 |                      ➖                       |
-| ⚙️ Executables in `bin/`              |                 ✅                 |                      ❌                       |
+| Component                             |                               Claude Code                                |                  Claude app                   |
+| :------------------------------------ | :----------------------------------------------------------------------: | :-------------------------------------------: |
+| 🎯 Skills                             |                                    ✅                                    |                      ✅                       |
+| 🤖 Agents                             |                                    ✅                                    |             ⚠️ in Cowork sessions             |
+| 🪝 Hooks                              |                                    ✅                                    |             ⚠️ in Cowork sessions             |
+| 🧩 Mods                               | ✅ v2.1.287+, except Desktop on WSL; ⚠️ the band doesn't draw in VS Code |        ⚠️ listed for Claude Code only         |
+| 🔌 Remote MCP servers                 |                                    ✅                                    | 🔗 connect on the plugin's **Connectors** tab |
+| 🖥️ Local MCP servers                  |                                    ✅                                    |    ⚠️ in Cowork sessions on your computer     |
+| 🧠 LSP · 🎨 Output styles · 🌈 Themes |                                    ✅                                    |                      ➖                       |
+| ⚙️ Executables in `bin/`              |                                    ✅                                    |                      ❌                       |
 
 <sub>✅ loads · ⚠️ conditional · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. The Claude app (web, desktop and mobile) runs a conversation as a Cowork session when it can and as a chat conversation otherwise; agents, hooks and local MCP servers don't run in a chat conversation. Sources: [Use plugins in Claude](https://support.claude.com/en/articles/13837440-use-plugins-in-claude), [Plugin feature support across platforms](https://claude.com/docs/plugins/platform-support). More in [Compatibility](./docs/compatibility.md).</sub>
 
