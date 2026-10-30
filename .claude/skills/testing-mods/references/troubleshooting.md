@@ -1,6 +1,6 @@
 # Troubleshooting a mod
 
-Source: https://code.claude.com/docs/en/plugins/mods/troubleshoot, plus CHANGELOG items in `version-drift.md`. Scope here is mods installed from a public GitHub marketplace or loaded from a clone with `--plugin-dir`.
+Source: https://code.claude.com/docs/en/plugins/mods/troubleshoot, plus the measured traps in `version-drift.md`. Scope here is mods installed from a public GitHub marketplace or loaded from a clone with `--plugin-dir`.
 
 ## Step 0: where does Claude Code report problems?
 
