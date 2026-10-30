@@ -74,6 +74,9 @@ function templatePlaceholders() {
 
 /** @typedef {{ path: string, size: number, symlink: boolean }} FileEntry */
 
+/** A path inside a plugin's eval results folder, at any eval directory. */
+const EVAL_RESULTS = /(^|\/)evals\/results\//
+
 /**
  * Problems in a plugin's files that make the directory block a submission or hold it for a reviewer.
  * `entries`: `{ path, size, symlink }` with `path` relative to the plugin folder, `/`-separated.
@@ -105,6 +108,27 @@ export function portabilityProblems(entries) {
     problems.add(`the plugin has ${entries.length} files; the limit is ${MAX_FILES}`)
   }
   return [...problems]
+}
+
+/**
+ * Maintainer-only files a clone of the plugin would hold. Everything committed under a plugin
+ * reaches every user's cache: a mod's root tsconfig.json, which Claude Code writes for the editor,
+ * the declarations under .claude-plugin/, and eval results serve no user
+ * (ADR_2026-10-29_mods-commit-no-tsconfig). Tests and eval suites stay: the official tools only
+ * find them inside the plugin.
+ * @param {FileEntry[]} entries
+ * @returns {string[]}
+ */
+export function shippedArtifactProblems(entries) {
+  return entries
+    .map(({ path }) => path)
+    .filter(
+      (path) =>
+        path === 'tsconfig.json' ||
+        (path.startsWith('.claude-plugin/') && path !== '.claude-plugin/plugin.json') ||
+        EVAL_RESULTS.test(path),
+    )
+    .map((path) => `${path} is a maintainer file and would ship to users — remove it from git`)
 }
 
 /**
@@ -605,7 +629,11 @@ export function checkRepo() {
   // ── Portability (Anthropic's plugin directory) ─────────────────────────────
   for (const name of listed) {
     if (existsSync(pluginDir(name))) {
-      report(`plugins/${name}`, portabilityProblems(pluginEntries(pluginDir(name))))
+      const entries = pluginEntries(pluginDir(name))
+      report(`plugins/${name}`, [
+        ...portabilityProblems(entries),
+        ...shippedArtifactProblems(entries),
+      ])
     }
   }
 

@@ -19,7 +19,12 @@ import { tmpdir } from 'node:os'
 import { dirname, join, resolve, sep } from 'node:path'
 import { afterEach, beforeEach, describe, test } from 'node:test'
 import { fileURLToPath } from 'node:url'
-import { lspConfigProblems, portabilityProblems, rootPackageProblems } from '../check-repo.mjs'
+import {
+  lspConfigProblems,
+  portabilityProblems,
+  rootPackageProblems,
+  shippedArtifactProblems,
+} from '../check-repo.mjs'
 import { hooksFileKinds } from '../components.mjs'
 import { anchor } from '../generators/catalog.mjs'
 import { changelogSection } from '../lib.mjs'
@@ -782,6 +787,30 @@ describe('portability rules', () => {
     const many = Array.from({ length: 513 }, (_, i) => entry(`f${i}.md`))
     assert.match(portabilityProblems(many).join('\n'), /513 files; the limit is 512/)
     assert.deepEqual(portabilityProblems(many.slice(0, 512)), [])
+  })
+
+  test('flag maintainer files that would ship, and keep tests, suites and contracts', () => {
+    const problems = shippedArtifactProblems([
+      entry('tsconfig.json'),
+      entry('.claude-plugin/types/claude-code/index.d.ts'),
+      entry('evals/results/run.json'),
+      entry('quality/evals/results/run.json'),
+      entry('.claude-plugin/plugin.json'),
+      entry('tests/mod.test.ts'),
+      entry('hooks/register.test.tsx'),
+      entry('evals/first-case/prompt.md'),
+      entry('types/index.d.ts'),
+      entry('hooks/tsconfig.json'),
+    ]).join('\n')
+    for (const path of [
+      'tsconfig.json',
+      '.claude-plugin/types/claude-code/index.d.ts',
+      'evals/results/run.json',
+      'quality/evals/results/run.json',
+    ]) {
+      assert.ok(problems.includes(`${path} is a maintainer file`), `${path} not flagged`)
+    }
+    assert.equal(problems.split('\n').length, 4, problems)
   })
 })
 

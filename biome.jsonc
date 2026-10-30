@@ -364,8 +364,8 @@
     },
     {
       // No script writes a tsconfig, so "always" has no reason here, and "auto" checks every
-      // tsconfig without reformatting the plugins' ones:
-      // ADR_2026-10-27_biome-checks-every-tsconfig-with-auto-expand.
+      // tsconfig: ADR_2026-10-27_biome-checks-every-tsconfig-with-auto-expand. The one Claude Code
+      // writes at a mod's root is git-ignored, so Biome skips it (ADR_2026-10-29_mods-commit-no-tsconfig).
       "includes": [
         "**/tsconfig.json",
         "**/tsconfig.*.json"
