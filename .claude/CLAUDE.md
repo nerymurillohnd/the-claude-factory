@@ -34,7 +34,7 @@ This standard applies to every session on this repository, including the current
 
 Claude Code, the Claude app, the Claude models and every tool the gates run change faster than training data, recall or project docs. Before any plan, plugin component or scaffold, and before any answer about how they behave, read the current official documentation and release notes.
 
-- When docs and release notes differ, the release notes win: docs lag releases.
+- When sources differ, trust them in this order: the installed binary (`--help`, `claude plugin validate`, `claude plugin test`), then the release notes, then the docs, which lag releases. When a release note and a doc describe different stages (loading versus validation), confirm on the installed build before relying on either.
 - When components depend on each other, research each side. For example, a plugin hook needs the hooks reference, the plugins reference and the Claude app platform-support page.
 
 ## Workflow
@@ -48,14 +48,16 @@ This section is the contract of the work on this project: the scope every file b
 
 ### Maintainer and Plugin Scopes
 
-This repository holds two scopes. They are never mixed: a rule written for one scope does not apply to the other, and nothing from the maintainer's environment leaks into what a plugin ships or needs. Maintainer tools may check plugin files; that never makes them a plugin dependency. Before acting, identify the scope of every file the task touches; a task that touches both is handled as two parts, each under its own rules.
+This repository holds two scopes. They are never mixed: a rule written for one scope does not apply to the other, and nothing from the maintainer's environment becomes something a plugin needs to run. Maintainer tools may check plugin files; that never makes them a plugin dependency. Before acting, identify the scope of every file the task touches; a task that touches both is handled as two parts, each under its own rules.
 
 - **Maintainer scope**: everything outside `plugins/`. Its environment is the tools, versions and binaries on Nery's machine.
-- **Plugin scope**: one self-contained directory per plugin under `plugins/<plugin>/`. Its environment is only what the plugin's `README.md` declares as prerequisites.
+- **Plugin scope**: one self-contained directory per plugin under `plugins/<plugin>/`. Its environment is only what the plugin's `README.md` declares as prerequisites; users' compatibility comes only from the README's declared minimum Claude Code version.
+- **Maintainer files inside a plugin**: a mod's `*.test.ts(x)` and a plugin's eval suite stay in the plugin's directory, because `claude plugin test` and `claude plugin eval` only find them there. They are maintainer tooling, run only on Nery's build, and ship to users as inert files. Everything committed under `plugins/<plugin>/` reaches every user's cache; nothing git-ignored does, so commit no other maintainer-only file there.
 
 Pull requests and version bumps (this is the only place that sets them):
 
 - **A plugin's documentation alone** (`README.md`, `LICENSE`, `NOTICE.txt`): commit it signed straight to `main`, with no pull request, version bump or `CHANGELOG.md` entry, because it changes nothing the plugin does. GitHub shows it on push; installed copies keep the old text until the plugin's next version.
+- **A plugin's maintainer files alone** (a mod's tests, an eval suite): a pull request, with no version bump or `CHANGELOG.md` entry, because users never run them; they reach users with the plugin's next version.
 - **Every other file inside a plugin's directory** (its manifest, components, scripts, dependencies, `CHANGELOG.md`): a pull request and a version bump, through `release-and-versioning`.
 - **Everything outside `plugins/`**: no pull request.
 
@@ -65,12 +67,12 @@ Pull requests and version bumps (this is the only place that sets them):
 - Markdown, JSON, YAML, JavaScript and TypeScript: format and lint with Biome.
 - Never format these Markdown files, with Biome or any other tool: every Markdown file under `plugins/`, `.claude/skills/`, `.claude/memory/`, `.claude/session-handoff/`, `.claude/maintainer/`, `.claude/plans/`, `.claude/specs/` and `.claude/rules/`; `MEMORY.md` and the files it indexes; and every `CLAUDE.md`. `biome.jsonc` excludes them whenever Markdown is in its `files.includes`.
 - Every tool covers the whole repository except `node_modules/`, `.github/` and the files above (the CI gates leave out `plugins/`, which the local gates cover); run at the root, each reads that scope from its own config (`biome.jsonc`, `ruff.toml`, `pyrightconfig.json`, `.editorconfig` for shfmt). Basedpyright always skips dot folders, so `.claude/skills/pyrightconfig.json` covers the skills' Python, and `scripts/basedpyright-maintainer.mjs` checks each PEP 723 script against its own environment.
-- JavaScript and TypeScript: type-check with `tsc` under the strictest settings and `--noEmit`.
+- JavaScript and TypeScript: type-check with `tsc` under the strictest settings and `--noEmit`. A mod's hooks module is checked by `claude plugin validate` and `claude plugin test`, which run the installed engine; no gate type-checks it against the generated `.claude-plugin/types/`.
 - Shell scripts: format with `shfmt` and lint with ShellCheck.
 - Navigate and explore code with the LSP tool, in every file of the repository, plugin files included, and follow the skill for its language: Python with `python-lsp-intelligence:python-lsp-intelligence`; JavaScript and TypeScript with `typescript6-lsp-intelligence:ts-lifecycle`; shell scripts with `bash-lsp-intelligence:bash-lsp-intelligence`.
-- Tests of plugin scripts live in `scripts/testers/<plugin>/`, which is maintainer scope: their test dependencies never enter a plugin's runtime.
+- Tests of plugin scripts live in `scripts/testers/<plugin>/`, which is maintainer scope: their test dependencies never enter a plugin's runtime. A mod's tests are the exception: they live in the mod's `tests/` and import only the mod's files and `claude-code/testing`.
 - The root `package.json` serves repository-level development tooling only, never plugin runtimes; it stays `"private": true`. Its devDependencies are the npm tools (Biome, TypeScript, Husky) and the `@types/*` packages, each pinned to an exact version.
-- A plugin's own `package.json` and `package-lock.json` hold only that plugin's runtime dependencies, pinned exactly; Claude Code installs them for users when it caches the plugin. `npm run setup` installs them in the clone, which `tsc-plugins` and the plugin's node tests need.
+- A plugin's own `package.json` and `package-lock.json` hold only that plugin's runtime dependencies, pinned exactly; Claude Code installs them for users when it caches the plugin, only from registry packages, with install scripts off and no `overrides`, within 60 seconds. `npm run setup` installs them in the clone, which `tsc-plugins` and the plugin's node tests need.
 - Every maintenance command is an `npm run` script (`test`, `typecheck`, `lint`, `format`, `fix`, `check:*`, `generate`, `validate`, `gates`, `setup`): run the tools through them, so local runs, the git hooks and CI use the pinned versions. In this repository that overrides running a tool by its bare name from PATH; the global installs serve the editor. `format` and `fix` also write in `plugins/`: a plugin file they change goes through a pull request.
 - Husky's git hooks run `biome check --staged` and `npm test` before each commit and `npm run gates` before each push; fix what they report, never skip them.
 - Run `npm ci` in every fresh clone and new worktree, with the `.nvmrc` Node selected.
@@ -84,7 +86,7 @@ Pull requests and version bumps (this is the only place that sets them):
 
 - `.claude/specs/`: specs, written before plans.
 - `.claude/plans/`: implementation plans.
-- Keep these git-ignored in `.gitignore` and never commit them: eval results (`eval-results/` and `**/evals/results/`), `.claude/plans/`, `.claude/session-handoff/`, `.claude/memory/` and `.claude/settings.local.json`.
+- Keep these git-ignored in `.gitignore` and never commit them: eval results (`eval-results/` and `**/evals/results/`), `.claude/plans/`, `.claude/session-handoff/`, `.claude/memory/`, `.claude/settings.local.json`, and the `tsconfig.json` Claude Code writes at a mod's root (`plugins/*/tsconfig.json`) beside the git-ignored `.claude-plugin/types/`.
 
 ### Management, Maintenance and Quality Gates
 
@@ -152,4 +154,4 @@ Pull requests and version bumps (this is the only place that sets them):
 
 ## Change Control
 
-- Release tags (`<plugin>--v<version>`) are created unsigned by `release.yml`, under the exemption `~/.claude/CLAUDE.md` gives public plugin marketplaces: users never fetch a tag, and signing in CI would put the signing key in a GitHub secret. Every commit, and every tag created locally, is still SSH-signed.
+- Release tags (`<plugin>--v<version>`) are created unsigned by `release.yml`, as this project's exception to the global signing rule: signing in CI would put the signing key in a GitHub secret. Users' Claude Code resolves dependency version ranges against these tags by name, without verifying signatures. Every commit, and every tag created locally, is still SSH-signed.

@@ -44,4 +44,5 @@ These are not interchangeable names. Each responsibility has its own inputs, out
 - **Success criterion:** The logic produces the expected result under the given conditions.
 - **Typical context:** Testers are functional and behavioral. They execute parts of the system under controlled conditions (black-box or white-box) and verify that the logic produces the expected result.
 - **Objective:** Prevent regressions and ensure the software does exactly what it was intended to do.
+- **Exception:** a mod's tests live in the mod's own `tests/` folder, not here, because `claude plugin test` only finds them inside the mod.
 - **Examples:** A test that feeds a URL-extraction function with trap texts (URLs containing commas, Markdown with escaped parentheses) and verifies that the regular expression extracts precisely what it should.

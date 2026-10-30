@@ -11,6 +11,8 @@ paths:
 
 These rules apply to every script that ships inside a public marketplace plugin. The scripts must be portable across macOS and Linux; never assume Nery's machine.
 
+A mod's hooks module (the file `hooks/hooks.json` names under `modules`) and the files it imports are not scripts, and none of these rules applies to them. Claude Code loads them directly: no shebang, no `chmod +x`, no Node prerequisite, imports only from the plugin by relative path plus `claude-code`, options from `register(on, options)`. Load `building-mods` for them.
+
 ## Shebang
 
 - Python with complex logic: `#!/usr/bin/env python3`, with Python 3.12 as the floor; never hard-code a higher version.
@@ -21,7 +23,7 @@ These rules apply to every script that ships inside a public marketplace plugin.
 - Quote `"$@"` and `"${arr[@]}"` instead of changing `IFS`.
 - Support bash 3.2 (macOS default): guard empty arrays under `set -u` with `${arr[@]+"${arr[@]}"}`.
 - A blocking hook exits `2` on every failure path, or sets `onFailure: "block"`; an `-e` exit is `1` and lets the action through.
-- Mods, or when the plugin integration requires Node: `#!/usr/bin/env node`.
+- Node scripts the plugin runs as commands: `#!/usr/bin/env node`.
 
 ## Executability
 
