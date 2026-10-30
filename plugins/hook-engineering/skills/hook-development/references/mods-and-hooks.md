@@ -1,6 +1,6 @@
 # Mods and hooks
 
-Read when a session loads mods and a hook behaves as if it were skipped or overruled, when a policy or flag turns hooks or mods off, or when deciding between a mod and a settings hook. This file covers how mods interact with hooks; writing a mod is Claude Code's built-in `plugin-authoring` skill and the type declarations of the user's build. Every section carries a `Docs:` line: fetch that section with the method in `docs-map.md` before stating its facts as current. Checked at the baseline in `sources.md`.
+Read when a session loads mods and a hook behaves as if it were skipped or overruled, when a policy or flag turns hooks or mods off, or when deciding between a mod and a settings hook. This file covers how mods interact with hooks; writing a mod is Claude Code's built-in `plugin-authoring` skill and the type declarations of the user's build. Before you state a section's facts as current, fetch its `Docs:` section with the method in `docs-map.md`.
 
 ## Contents
 

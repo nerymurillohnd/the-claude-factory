@@ -99,7 +99,7 @@ Docs: [decision control](https://code.claude.com/docs/en/hooks#decision-control)
 
 Elicitation and ElicitationResult also decline on exit 2 or top-level `decision: "block"` (`events-mcp-elicitation.md`). The deprecated PreToolUse top-level `decision`/`reason` maps `approve` to `allow` and `block` to `deny` (`events-tools.md`).
 
-PostToolUseFailure is unverified here: the docs' [decision control](https://code.claude.com/docs/en/hooks#decision-control) table lists it with top-level `decision`, while its own [decision control](https://code.claude.com/docs/en/hooks#posttoolusefailure-decision-control) section lists only `additionalContext` (both at the docs baseline in `sources.md`). Rely on `additionalContext`, and confirm a `decision: "block"` in the debug log before depending on it.
+PostToolUseFailure is unverified here: the docs' [decision control](https://code.claude.com/docs/en/hooks#decision-control) table lists it with top-level `decision`, while its own [decision control](https://code.claude.com/docs/en/hooks#posttoolusefailure-decision-control) section lists only `additionalContext`. Rely on `additionalContext`, and confirm a `decision: "block"` in the debug log before depending on it.
 
 ## Content rewrites
 

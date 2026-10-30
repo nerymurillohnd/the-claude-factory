@@ -2,7 +2,7 @@
 
 Read when a command hook should run without blocking Claude, or when a background hook's result never arrives.
 
-Every section carries a `Docs:` line: fetch that section with the method in the docs map before stating its facts as current. Checked at the baseline in `sources.md`.
+Before you state a section's facts as current, fetch its `Docs:` section with the method in the docs map.
 
 ## Contents
 

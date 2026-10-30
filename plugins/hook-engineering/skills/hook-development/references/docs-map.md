@@ -29,7 +29,7 @@ Use it before citing, checking or re-verifying any fact about prompt, agent or b
 - **The Claude Code docs server** (preferred): the official Claude Code docs MCP server (<https://code.claude.com/docs/mcp>), which the user adds; this plugin doesn't bundle it. Added in Claude Code under the name the plugin's README gives, its tools are `mcp__claude-code-docs__<tool>`. Added as a Claude app connector, they reach Claude Code as `mcp__claude_ai_<connector name>__<tool>`; when both point at that URL, Claude Code connects the one added in Claude Code and hides the connector. Find the tools with ToolSearch, query `claude_code_docs`, which matches them under any server name, and load them if they are deferred. If none is connected, tell the user once that `claude mcp add --transport http --scope user claude-code-docs https://code.claude.com/docs/mcp` adds it, and use the raw page below. Its filesystem tool serves each page as a file. Find the heading, then read from it:
   `rg -n '^#+ PreToolUse decision control$' /en/hooks.mdx`, then `sed -n '<line>,<line+80>p' /en/hooks.mdx`. Search a topic across pages with `rg -n -i '<words>' /en/`.
   Configuration example: `rg -n '^#+ Matcher patterns$' /en/hooks.mdx`, then `sed -n '<line>,<line+80>p' /en/hooks.mdx`.
-- **Raw page**: when a heading from this map is missing in the server's copy, or a decision rests on the exact text, fetch the page's raw Markdown as below. When the two differ, the raw page wins: at the baseline in `sources.md`, the server's `/en/hooks-guide.mdx` lacked `## Limitations and troubleshooting`, which the raw <https://code.claude.com/docs/en/hooks-guide.md> has.
+- **Raw page**: when a heading from this map is missing in the server's copy, or a decision rests on the exact text, fetch the page's raw Markdown as below. When the two differ, trust the raw page: the server's copy can lack a heading the raw page has.
 - **WebFetch** (last resort): it returns a model's summary, not the source. Use it only to locate a section, never to quote a field, default or version, and mark anything that rests on it `unverified against live docs`.
 - **Search**: if a heading is missing from both the server's copy and the raw page, the page moved. Search the docs for the heading text and use what you find. Never edit this plugin's files; say in your answer that the map is out of date so the user can report it.
 
@@ -287,7 +287,7 @@ Page: <https://code.claude.com/docs/en/hooks-guide> · MCP path: `/en/hooks-guid
 ## How to use the tables below
 
 - Each row gives the **header exactly as it appears in the source**, with its Markdown level, and the **URL with its anchor**. Cite the URL; search the source for the header.
-- **Verified by** says how the anchor was confirmed at the baseline in `sources.md`:
+- **Verified by** says how the anchor was confirmed:
   - `link`: an official docs page links to that exact anchor.
   - `search`: the official docs search returns that exact URL for the section.
   - `slug`: derived from the header by the same rule as the verified anchors around it. Confirm it the first time you cite it.

@@ -15,7 +15,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The
 ### Fixed
 
 - **hook-engineering** 0.2.2 — a Setup hook note names the declarations file Claude Code writes into a mod.
-- **hook-engineering** 0.2.3 — the event references drop dated observations; the Setup note becomes a check you run on your own build.
+- **hook-engineering** 0.2.3 — the skill's configuration rules become one instruction per line, the references stop repeating a dated baseline, and the Setup note becomes a check you run on your own build.
 
 ### Removed
 

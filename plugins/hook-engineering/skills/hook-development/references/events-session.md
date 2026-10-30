@@ -84,7 +84,7 @@ Docs: [event](https://code.claude.com/docs/en/hooks#setup) · [input](https://co
 
 **Output:** none. Can't block on any exit code; all JSON output fields are discarded. With `-p`, stdout/stderr/exit code appear only as `hook_response` events under `--output-format stream-json --verbose`. `CLAUDE_ENV_FILE` is available.
 
-Docs and engine can disagree on `additionalContext`. The docs say Setup discards every JSON output field, while the mod declarations the installed build writes (`.claude-plugin/types/claude-code/index.d.ts`, `ClassicResultFields`) can list it as a field Setup reads. Check the installed build before you rely on either:
+Check the installed build before you rely on a Setup hook's `additionalContext`: the docs say Setup discards every JSON output field, while the build's mod declarations (`.claude-plugin/types/claude-code/index.d.ts`, `ClassicResultFields`) can list it as a field Setup reads.
 
 1. Run `claude --settings <file> --init-only --debug-file <path>` with a Setup hook that prints `additionalContext`.
 2. Look in the log for `Hook Setup (...) provided additionalContext`: it shows the engine reads the field.

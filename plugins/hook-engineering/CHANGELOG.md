@@ -10,9 +10,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ### Changed
 
-- The Setup hook note on `additionalContext` is now a short check you run on your own Claude Code build, instead of a dated observation from one older version.
-- The event references no longer carry the date and version they were last read at; check facts against your installed Claude Code.
-- Every reference now points to the baseline in `sources.md` instead of repeating its date and version.
+- The configuration rules in the skill are now one instruction per line: how to nest handlers, write matchers, use `if`, `once` and `onFailure`, and reach plugin options.
+- The Setup hook note on `additionalContext` is now a short check you run on your own Claude Code build.
+- The references no longer repeat the date and version they were last read at; the skill keeps one baseline in `sources.md`, which its changelog check uses.
 
 ## [0.2.2] - 2026-10-30
 
