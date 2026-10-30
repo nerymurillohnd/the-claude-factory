@@ -169,12 +169,12 @@ This is a digest. Each rule is detailed, with its `Docs:` URL, in the reference 
 Configuration:
 
 - Nest every handler three levels deep: `"hooks": { "<Event>": [ { "matcher": "...", "hooks": [ { handler } ] } ] }`.
-- Never place a handler directly in the event array: Claude Code skips it with a Settings Warning ([settings](https://code.claude.com/docs/en/settings)).
+- Never place a handler directly in the event array: Claude Code skips that entry with a Settings Warning and loads the rest ([settings](https://code.claude.com/docs/en/settings)).
 - Spell each event name exactly, case included: an unknown name such as `stop` never fires.
 - Look for a skipped event name in the Settings Warning of an interactive session, or in the debug log under `-p`.
 - Write a matcher of only letters, digits, `_`, `-`, spaces, `,` and `|` for an exact name or a list.
-- Anchor any other matcher: it is an unanchored JavaScript regex, so `Edit.*` also matches `NotebookEdit`.
-- Give FileChanged and StopFailure matchers only letters, digits, `_` and `|`: they match the exact path.
+- Write any other matcher as a JavaScript regex, anchored with `^` and `$` when you mean one name: unanchored, `Edit.*` also matches `NotebookEdit`.
+- Use only letters, digits, `_` and `|` in FileChanged and StopFailure matchers: they match the exact path.
 - Match an MCP server's tools with `mcp__<server>__.*`: the bare `mcp__<server>` matches no tool.
 - Match a plugin's own MCP server with `mcp__plugin_<plugin>_<server>__.*`.
 - Leave `matcher` off events without matcher support (UserPromptSubmit, Stop, PostToolBatch, TaskCreated…): it is ignored without a message.
@@ -188,10 +188,10 @@ Configuration:
 - Reach plugin options through exec form or `$CLAUDE_PLUGIN_OPTION_<KEY>`: a shell-form plugin hook with `${user_config.*}` fails.
 - Expect hooks from settings, managed settings and plugins to run inside subagents too.
 - Declare a plugin's hooks in `hooks/hooks.json`: a plugin agent ignores frontmatter hooks, and other subagents run theirs only while they run.
-- Never rely on the order of hooks that match one event: they run in parallel and their decisions merge.
+- Never rely on the order of hooks that match one event, or assume the strictest decision wins: they run in parallel and their decisions merge.
 - Rely on precedence only where it is documented: PreToolUse (`deny` > `defer` > `ask` > `allow`), PreModelSwitch (`deny` > `ask` > `allow`) and Elicitation (a decline wins) ([lifecycle.md](references/lifecycle.md)).
 - Don't count on `~/.zshrc` in a hook: hooks run in non-interactive shells, so version-manager tools (`nvm`, `asdf`) may be missing from `PATH` (an inference; [security-and-trust.md](references/security-and-trust.md) § Guards).
-- Turn hooks off with `disableAllHooks`: no switch turns off one hook, and managed hooks turn off only from managed settings.
+- To turn hooks off, use `disableAllHooks`: no switch turns off one hook, and managed hooks turn off only from managed settings.
 - A mod in the session can answer a tool call before non-managed settings `PreToolUse` hooks run (managed ones run before mods), or approve past their block: [mods-and-hooks.md](references/mods-and-hooks.md).
 
 Stdout and exit codes:

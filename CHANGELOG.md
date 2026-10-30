@@ -10,13 +10,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The
 
 - **mods-engineering** 0.1.2 — says which sessions write a mod's type declarations, what a type check, validate and test prove, and to declare the minimum Claude Code version and keep generated files out of a published plugin.
 - **plugin-evals** 0.1.3 — warns that a committed eval suite ships in every user's copy, so its fixtures and replays must hold no secrets.
+- **mods-engineering** 0.1.3 — the guidance on missing declarations, proof and minimum versions is one instruction per line.
+- **plugin-evals** 0.1.4 — the warnings that a committed suite and its replays ship to users are single instructions.
+- **hook-engineering** 0.2.3 — the skill's configuration rules become one instruction per line, the references stop repeating a dated baseline, and the Setup note becomes a check you run on your own build.
 
 ### Fixed
 
 - **hook-engineering** 0.2.2 — a Setup hook note names the declarations file Claude Code writes into a mod.
-- **mods-engineering** 0.1.3 — the guidance on missing declarations, proof and minimum versions is one instruction per line.
-- **plugin-evals** 0.1.4 — the warnings that a committed suite and its replays ship to users are single instructions.
-- **hook-engineering** 0.2.3 — the skill's configuration rules become one instruction per line, the references stop repeating a dated baseline, and the Setup note becomes a check you run on your own build.
 
 ### Removed
 
