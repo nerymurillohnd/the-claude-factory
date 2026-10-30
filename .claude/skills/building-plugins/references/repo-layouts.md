@@ -115,6 +115,8 @@ Entry fields beyond `name` and `source`: `description`, `version` (avoid; see ve
 - For an entry with a relative-path source, Claude Code reads the plugin's `plugin.json` before install for display fields; for any other source type users see only the entry's own fields until they install. In a catalog of remote plugins, put `description` on the entry.
 - `strict: true` (default): `plugin.json` is the authority and entry component fields are appended to it, except `hooks`, whose matchers replace the manifest's per event. `strict: false`: when the plugin has a `plugin.json`, any component field in the entry makes the plugin fail to load. Prefer declaring components only in the plugin.
 - Hooks written in an entry must be an inline object; a path there passes validation but never runs.
+- Keep the entry `name` equal to `plugin.json`'s `name`: when they differ, `enabledPlugins` uses the entry name while the plugin's skills and agents are namespaced under the manifest name, so users enable one name and find the components under another. `scripts/validators/plugin-names-consistency.py` enforces the match; never relax it.
+- The entry's `defaultEnabled` and display fields (`displayName`, `description`, `author`, …) override `plugin.json`'s, whatever `strict` says; `plugin.json`'s `version` overrides the entry's. Set them in `plugin.json`; the entry carries only the `description` that `scripts/generators/marketplace.mjs` copies from it, so the two never differ.
 
 ## Plugin sources for a GitHub marketplace
 

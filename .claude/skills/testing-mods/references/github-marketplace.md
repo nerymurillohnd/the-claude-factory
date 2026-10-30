@@ -25,7 +25,7 @@ claude plugin list [--json]                         # shows Version, Scope, Stat
 
 In a session: `/plugin marketplace add`, `/plugin install <plugin>@<marketplace>` (opens details to review and pick scope), `/plugin` (Installed tab; Errors tab), `/reload-plugins`. Installing or updating does not change the running session: run `/reload-plugins` (or restart). `/reload-plugins` also re-loads a mod whose load failed with `the version loaded before is unloaded`. `claude -p` cannot run `/plugin`; install from the shell first, installed plugins do load.
 
-Third-party marketplaces have **auto-update off by default** (on for official marketplaces), so an installed mod can lag the repo. Users toggle it in `/plugin` → Marketplaces.
+Third-party marketplaces have **auto-update off by default** (on for most of Anthropic's official ones, such as `claude-plugins-official`, but off for `knowledge-work-plugins` and `first-party-plugins`; on for marketplaces added from claude.ai), so an installed mod can lag the repo. Users toggle it in `/plugin` → Marketplaces.
 
 ## What runs after install: the cache
 
