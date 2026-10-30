@@ -1,10 +1,10 @@
 ---
-status: accepted
+status: superseded
 date: 2026-10-25
 decision-makers:
   - "Nery Samuel Murillo"
 supersedes: none
-superseded-by: none
+superseded-by: ADR_2026-10-29_release-tags-stay-unsigned-to-keep-the-key-local
 ---
 
 # Release tags are created unsigned by CI

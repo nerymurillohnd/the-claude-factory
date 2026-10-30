@@ -96,15 +96,13 @@ Add an item only when all of these hold:
 
 #### 🔎 Evidence
 
-- **Confirmed facts (read on 2026-10-25, line numbers rechecked on 2026-10-28):**
-  - `scripts/gates.mjs:472-485` creates the `mod-test:<plugin>` gate only for plugins with tracked `*.test.ts` or `*.test.tsx` files, not for every plugin whose `hooks/hooks.json` lists `modules`.
-  - `scripts/gates.mjs:486-497` creates the `mod-tsc:<plugin>` gate for any plugin with a `tsconfig.json`, and nothing refreshes the engine's declarations before it runs.
-  - `scripts/gates.mjs:632` runs every gate with `stdio: ['ignore', 'pipe', 'pipe']`, so `claude plugin test` writes to a pipe.
+- **Confirmed facts (read on 2026-10-25, line numbers rechecked on 2026-10-29):**
+  - `scripts/gates.mjs:487-500` creates the `mod-test:<plugin>` gate only for plugins with tracked `*.test.ts` or `*.test.tsx` files, not for every plugin whose `hooks/hooks.json` lists `modules`.
+  - `scripts/gates.mjs:657` runs every gate with `stdio: ['ignore', 'pipe', 'pipe']`, so `claude plugin test` writes to a pipe.
   - anthropics/claude-code#103055 reports that `claude plugin test` on a pipe can lose the tail of its output, summary included, and exit 0. `testing-mods/scripts/check-mod.sh` writes to a file and fails without the summary.
 - **Inferences:**
   - A mod without tests is never run by `claude plugin test` in the gates.
   - A failed test can pass the gate when the summary is lost.
-  - `tsc` runs against declarations from an older build after an update.
 - **Open questions:** whether #103055 still reproduces on 2.1.310 through `spawnSync` with pipes.
 
 #### 📈 Impact and next step
@@ -113,10 +111,9 @@ Add an item only when all of these hold:
 - **Why it is not fixed now:** Nery deferred it on 2026-10-25 to keep the session on consolidating the mod documentation.
 - **Next action:**
   - key `mod-test` on `modules` in `hooks/hooks.json`;
-  - run `claude plugin test` with its output in a file, and fail when the `Ran N tests across N files` summary is missing, as `check-mod.sh` does;
-  - name `mod-tsc` for what it checks, and check the declarations' `// Written by Claude Code <version>.` header against `claude --version` before `tsc`.
-- **Review condition:** closes when a mod with no tests fails the gate, a test run with its summary removed fails it, and stale declarations are reported.
-- **Related records:** ADR_2026-10-21_gates-run-from-one-script, ADR_2026-10-25_building-mods-skill-holds-mod-authoring.
+  - run `claude plugin test` with its output in a file, and fail when the `Ran N tests across N files` summary is missing, as `check-mod.sh` does.
+- **Review condition:** closes when a mod with no tests fails the gate and a test run with its summary removed fails it.
+- **Related records:** ADR_2026-10-21_gates-run-from-one-script, ADR_2026-10-25_building-mods-skill-holds-mod-authoring, ADR_2026-10-29_remove-the-mod-tsc-gate.
 
 ### DEBT-015 — `plugin-hooks-guidance` states hook facts that contradict `building-plugins` and the hooks docs
 
