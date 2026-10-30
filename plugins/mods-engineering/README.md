@@ -27,7 +27,7 @@
 
 ## ✨ Why use it
 
-- **No invented APIs** — Claude checks each event, `$` method and element against the declarations your build writes into `.claude-plugin/types/` and the official mod pages, and labels anything it could not verify.
+- **No invented APIs** — Claude checks each event, `$` method and element against the declarations Claude Code writes into `.claude-plugin/types/` when you load the mod from `--plugin-dir` in an interactive session (or when Claude writes it for you), and the official mod pages, and labels anything it could not verify.
 - **The right mechanism first** — before writing code, Claude checks whether a mod is the right tool, or whether a skill, a settings hook or an MCP server fits better, and explains the trade-off.
 - **Mods that pass the engine's reader** — literal event names, explicit `$.namespace.method(...)` calls and no aliased namespaces, so `claude plugin validate` detects every hook and call you meant.
 - **Tests that match the risk** — pass-through, rewrites, refusals, timers, drawings, reset, interruption and policy composition, with mocked tests reported apart from live runs.
@@ -202,7 +202,7 @@ Uninstalling from the last scope it's installed at also deletes its saved option
 <sub>✅ works · ⚠️ partial · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. The Claude app (web, desktop and mobile) runs a conversation as a Cowork session when it can, and as a chat conversation otherwise, for example on a device that can't run Cowork or in the separate Chat mode that Team and Enterprise plans keep for now.</sub>
 
 > [!IMPORTANT]
-> Mods run in Claude Code, v2.1.287 or later. In the Claude app the skill helps you design, explain and review a mod, but loading, validating and testing one needs the `claude` CLI, so do those steps in Claude Code.
+> Mods run in Claude Code v2.1.287 or later in the terminal and v2.1.286 or later in the Desktop app; some features need newer builds, such as drawing in the VS Code extension (v2.1.299+, or v2.1.304+ where feature flags aren't fetched). In the Claude app the skill helps you design, explain and review a mod, but loading, validating and testing one needs the `claude` CLI, so do those steps in Claude Code.
 
 ## ❓ FAQ & Troubleshooting
 

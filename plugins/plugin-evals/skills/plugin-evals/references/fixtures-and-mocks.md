@@ -94,7 +94,7 @@ A `/regex/` value uses a small dialect that is checked when the suite loads:
 
 - **Answers vary.** A `type: agent` mock answers through the judge model, so its output varies between runs and changes when you change `--judge-model`.
 - **Recordings.** After a run that completes without an error or an abort, the agent-mock answers are saved under `results/<timestamp>/mock-recordings/`. `ADOPT.txt` there says which `.replay/<server>/` directory to copy each one into.
-- **Replay.** Later runs answer an identical call from `mocks/.replay/<server>/` with no model call. Commit `mocks/.replay/` so CI is repeatable.
+- **Replay.** Later runs answer an identical call from `mocks/.replay/<server>/` with no model call. Commit `mocks/.replay/` so CI is repeatable. Committed recordings ship in every user's copy of the plugin: check them for secrets and private data first.
 - **Call budget.** All agent-mock calls in a run share one budget of 4 × `max_turns`, which is 40 at the default. Replayed calls count too. A call past the budget aborts the run with score 0 and `mock call budget exceeded`. Raise `max_turns` for flows that call a lot.
 
 ## Running against real servers

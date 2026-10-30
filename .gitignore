@@ -23,6 +23,10 @@ actionlint
 # Plugin eval results
 **/evals/results/
 
+# The tsconfig.json Claude Code writes at a mod's root for the editor, beside the git-ignored
+# .claude-plugin/types/ it extends; it would ship to users for nothing
+plugins/*/tsconfig.json
+
 # Python
 __pycache__/
 *.pyc

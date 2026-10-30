@@ -168,7 +168,7 @@ Show the first 4 characters of each line of names.txt, deduplicated with uniq -w
 - **Network:** none.
 - **Files written:** none.
 - **Never does:** rewrite a command, write a file, call a model or reach the network.
-- **Before you install:** a mod runs with your permissions and no sandbox; `claude plugin validate <path to the plugin folder>` shows everything it hooks and calls.
+- **Before you install:** a mod runs with your permissions and no sandbox. Install it only if you trust this marketplace; this README lists everything it hooks and calls.
 
 ## 🔄 Updating
 

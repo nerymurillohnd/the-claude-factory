@@ -170,7 +170,7 @@ Change them in `/config`, where `autoOpen` is a picker (v2.1.271+), or in `/plug
 - **MCP servers:** none.
 - **Network:** none. It runs no commands and never calls the model.
 - **Files written:** none; it reads no files either. The ledger lives only in the session's memory: nothing is saved to disk or carried to the next session, and `/clear`, `/resume` and `/branch` start it empty. The panel shows what the transcript already shows.
-- **Before you install:** a mod runs with your permissions and no sandbox; `claude plugin validate <path to the plugin folder>` shows everything it hooks and calls.
+- **Before you install:** a mod runs with your permissions and no sandbox. Install it only if you trust this marketplace; this README lists everything it hooks and calls.
 
 ## 🔄 Updating
 

@@ -211,7 +211,7 @@ Change them in `/config`, where `alert` is a picker (v2.1.271+), or in `/plugin`
 - **MCP servers:** none.
 - **Network:** none. It runs no commands and never calls the model.
 - **Files written:** none; it reads no files either. It keeps the last turn's summary in the session's memory only, so nothing carries over between sessions.
-- **Before you install:** a mod runs with your permissions and no sandbox; `claude plugin validate <path to the plugin folder>` shows everything it hooks and calls.
+- **Before you install:** a mod runs with your permissions and no sandbox. Install it only if you trust this marketplace; this README lists everything it hooks and calls.
 
 ## 🔄 Updating
 

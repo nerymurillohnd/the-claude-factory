@@ -6,6 +6,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.1.3] - 2026-10-30
+
+### Removed
+
+- The `tsconfig.json` at the plugin's root, a development file that shipped by mistake: it pointed at type files your copy never has, and the mod never used it. Nothing changes in how the plugin works.
+
 ## [0.1.2] - 2026-10-27
 
 ### Changed
@@ -28,7 +34,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - The `/turn-meter` command and a **Hide** button to hide or show the band.
 - Tested with Claude Code v2.1.308; requires v2.1.295 or later.
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/turn-meter--v0.1.2...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/turn-meter--v0.1.3...HEAD
+[0.1.3]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/turn-meter--v0.1.3
 [0.1.2]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/turn-meter--v0.1.2
 [0.1.1]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/turn-meter--v0.1.1
 [0.1.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/turn-meter--v0.1.0

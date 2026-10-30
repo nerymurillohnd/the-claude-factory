@@ -8,11 +8,11 @@
 
 ## ✅ Before you start
 
-| You need                                | Notes                                                                                                                                        |
-| :-------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Claude Code** _or_ the **Claude app** | Claude Code runs in the terminal, the desktop app's **Code** tab, VS Code and JetBrains. The Claude app runs on the web, desktop and mobile. |
-| A recent Claude Code version            | Run `claude --version`. One-step installs need **v2.1.292+** in the shell and **v2.1.275+** in a session.                                    |
-| Network access to `github.com`          | The marketplace is a public GitHub repository; no GitHub account or token is needed.                                                         |
+| You need                                | Notes                                                                                                                                                            |
+| :-------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Claude Code** _or_ the **Claude app** | Claude Code runs in the terminal, the desktop app's **Code** tab, VS Code and JetBrains. The Claude app runs on the web, desktop and mobile.                     |
+| A recent Claude Code version            | Run `claude --version` and compare it with the minimum in the plugin's README. One-step installs need **v2.1.292+** in the shell and **v2.1.275+** in a session. |
+| Network access to `github.com`          | The marketplace is a public GitHub repository; no GitHub account or token is needed.                                                                             |
 
 Two names to remember:
 

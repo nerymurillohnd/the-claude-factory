@@ -473,7 +473,7 @@ Two small helpers run beside the guardrails:
 | Runs `git rev-parse HEAD` and `git show --name-only` (`$.process.run`) | Only around a `git commit`, while the commit reminder is on |
 | Adds one note to the conversation (`$.session.append`) | Only after a commit that looks like a decision |
 
-It writes no file, makes no network request, calls no model and reads no environment variable. To check this yourself before you install, clone the repository and run `claude plugin validate plugins/project-maintainer`: its `hooks:` and `calls:` lines list the same.
+It writes no file, makes no network request, calls no model and reads no environment variable.
 
 > [!NOTE]
 > The guardrails protect your records from Claude's mistakes. They are not a security boundary: a shell command written in a form they do not recognize, or your editor, can still change the files, and you can always edit a record by hand. They run in every Claude Code session that loads the plugin except a Desktop session on WSL, and need v2.1.307 or later. They are off under `--safe-mode`, and with `"disableAllHooks": true` in your settings. If a check itself breaks, it fails closed for the records only: a record that could not be checked is not saved and Claude is told to try again, a settled record that could not be checked asks you, and every other file is saved as usual.
@@ -484,7 +484,7 @@ It writes no file, makes no network request, calls no model and reads no environ
 - **MCP servers:** none.
 - **Network:** records, none. The handoff runs `git fetch` to compare your branch with its remote, and `gh pr list` to list pull requests, when the repository has a remote. Without network access it marks those lines as not verified.
 - **Files written:** the records and handoffs listed in [Where everything is saved](#where-everything-is-saved), and `.claude/maintainer/` in your `.gitignore` if you choose to ignore the records.
-- **Before you install:** a mod runs with your permissions and no sandbox; `claude plugin validate <path to the plugin folder>` shows everything it hooks and calls.
+- **Before you install:** a mod runs with your permissions and no sandbox. Install it only if you trust this marketplace; this README lists everything it hooks and calls.
 
 ## 🔄 Updating
 

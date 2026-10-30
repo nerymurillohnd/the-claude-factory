@@ -6,6 +6,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.2.4] - 2026-10-30
+
+### Removed
+
+- The `tsconfig.json` at the plugin's root, a development file that shipped by mistake: it pointed at type files your copy never has, and the mod never used it. Nothing changes in how the plugin works.
+
 ## [0.2.3] - 2026-10-28
 
 ### Changed
@@ -58,7 +64,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - Before a compaction, the summary is told to keep decisions, open items and record IDs. After a commit that looks like a decision, such as one that changes dependencies, a schema, CI or infrastructure, Claude gets one reminder to record it. The reminder can be turned off in the plugin's settings.
 - **Requires Claude Code v2.1.304 or later.**
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/project-maintainer--v0.2.3...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/project-maintainer--v0.2.4...HEAD
+[0.2.4]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/project-maintainer--v0.2.4
 [0.2.3]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/project-maintainer--v0.2.3
 [0.2.2]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/project-maintainer--v0.2.2
 [0.2.1]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/project-maintainer--v0.2.1

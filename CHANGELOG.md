@@ -9,6 +9,21 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The
 ### Changed
 
 - **github-operations** 0.5.0 — **Breaking:** one `github` skill replaces the PR and cleanup skills and adds PR, issue and discussion writing, CI repair and repository setup; hooks keep its reviewer agents read-only.
+- **mods-engineering** 0.1.2 — says which sessions write a mod's type declarations, what a type check, validate and test prove, and to declare the minimum Claude Code version and keep generated files out of a published plugin.
+- **plugin-evals** 0.1.3 — warns that a committed eval suite ships in every user's copy, so its fixtures and replays must hold no secrets.
+
+### Fixed
+
+- **hook-engineering** 0.2.2 — a Setup hook note names the declarations file Claude Code writes into a mod.
+
+### Removed
+
+- **file-tree-pane** 0.1.4 — a development `tsconfig.json` that shipped by mistake; nothing changes in how the mod works.
+- **macos-grep-guard** 0.1.1 — a development `tsconfig.json` that shipped by mistake; nothing changes in how the mod works.
+- **model-trace** 0.1.2 — a development `tsconfig.json` that shipped by mistake; nothing changes in how the mod works.
+- **project-maintainer** 0.2.4 — a development `tsconfig.json` that shipped by mistake; nothing changes in how the plugin works.
+- **tool-ledger** 0.1.3 — a development `tsconfig.json` that shipped by mistake; nothing changes in how the mod works.
+- **turn-meter** 0.1.3 — a development `tsconfig.json` that shipped by mistake; nothing changes in how the mod works.
 
 ## 2026-10-28
 
