@@ -5,7 +5,7 @@ description: Use for the initial release of a new plugin and for the release of 
 
 # Releases
 
-Release a plugin of `the-claude-factory`, first release or release of a changed plugin. Users fetch `main` as soon as a merge lands and keep that version until they update again, so every check happens before the merge.
+Release a plugin of `the-claude-factory`, first release or release of a changed plugin. The marketplace is hosted in a public GitHub repository and users add it as `nerymurillohnd/the-claude-factory`, so Claude Code clones the default branch, `main`. Users fetch `main` as soon as a merge lands and keep that version until they update again, so every check happens before the merge.
 
 ## Rules
 
@@ -22,7 +22,8 @@ Release a plugin of `the-claude-factory`, first release or release of a changed 
 
 1. A new plugin holds `0.1.0` with its launch notes.
 2. A changed plugin holds the next version above `origin/main` with a non-empty changelog section.
-3. Stop and tell Nery when either is missing.
+3. A removal has no version and no changelog: `plugins/<old>/` is gone and `renames` holds `"<old>"`.
+4. Stop and tell Nery when what applies is missing.
 
 ### 2. Commit
 
@@ -37,9 +38,12 @@ Run them after the commit, and show Nery the raw output.
 2. Check each changed plugin: exactly one version step above `origin/main` (a new plugin has none), a non-empty changelog section for its version, and no version anywhere in `marketplace.json`.
 3. Run `node scripts/generators/catalog.mjs --check` and `node scripts/generators/marketplace.mjs --check`.
 4. Run `claude plugin validate --strict plugins/<plugin>` for each changed plugin, then `claude plugin validate --strict .`.
-5. Run `git lfs ls-files --include='plugins/<plugin>/**'`: it prints nothing, because LFS files reach users as pointer files.
-6. Run `find plugins/<plugin> -type l`: each symlink resolves inside `plugins/<plugin>/`.
-7. Read the plugin's `README.md`, `CHANGELOG.md` and `plugin.json` side by side and make them agree with the change: components, commands, prerequisites, network calls, Compatibility rows and versions.
+5. Run `claude plugin tag plugins/<plugin> --dry-run` for each changed plugin. It prints the tag `<plugin>--v<version>` and "would create tag" when `plugin.json` and its marketplace entry agree. It refuses a dirty working tree and an existing tag. Never run it without `--dry-run`: only `release.yml` creates tags.
+6. Run `git lfs ls-files --include='plugins/<plugin>/**'`: it prints nothing, because LFS files reach users as pointer files.
+7. Run `find plugins/<plugin> -type l`: each symlink resolves inside `plugins/<plugin>/`. A link to elsewhere in the repository is copied as its target's content, and one outside the repository is skipped, so only a link inside the plugin keeps working for users.
+8. Read the plugin's `README.md`, `CHANGELOG.md` and `plugin.json` side by side and make them agree with the change: components, commands, prerequisites, network calls, Compatibility rows and versions.
+
+A removal has no plugin to check: skip items 2 and 4's plugin run, and items 5 to 8. Keep item 3 and the marketplace run of item 4.
 
 When a check fails before the push, fix the cause, amend the commit (`git commit -S --amend`) and run every check again. After the push, fix with a new signed commit; never amend or force-push.
 
@@ -47,11 +51,11 @@ When a check fails before the push, fix the cause, amend the commit (`git commit
 
 1. Push the branch and open the pull request, with Nery's authorization only.
 2. Apply only labels the repository already has.
-3. For a new plugin, apply its `plugin: <name>` label, which this step may create only on Nery's order. Preview it with `node scripts/sync-labels.mjs --dry-run`.
+3. For a new plugin, apply its `plugin: <name>` label, which this step may create only on Nery's order, with `gh label create "plugin: <name>" --repo nerymurillohnd/the-claude-factory --color EDEDED --description "Issues about the <name> plugin" --force`.
 
 ### 5. Before the merge
 
-1. List every plugin whose version on the branch differs from `origin/main`.
+1. List every plugin whose version on the branch differs from `origin/main`, and every name that leaves `plugins`.
 2. List every version on `origin/main` that has no tag yet: users already have it, and a missing tag means an earlier release did not run.
 3. Show Nery both lists and confirm each plugin is meant to ship.
 4. Move the root changelog line to the merge day's section when the pull request outlives its date.
@@ -68,6 +72,7 @@ When a check fails before the push, fix the cause, amend the commit (`git commit
    iso "$M" plugin details <plugin>
    ```
 6. Check the output: `plugin list --json` shows the new version, `plugin details` lists the components, and the `Always-on` figure in `B` against `M` is reported to Nery with the component that grew. A new plugin has no figure in `M`: report its own.
+   For a removal, install `<old>` in `B` instead: it fails with `not found in marketplace`.
 7. Fix any failure before the merge, then delete `B` and `M`.
 8. Merge only when Nery orders it.
 
@@ -76,9 +81,9 @@ When a check fails before the push, fix the cause, amend the commit (`git commit
 1. Take the merge commit's SHA: `gh pr view <n> --json mergeCommit`.
 2. Wait until `gh run list --workflow validate.yml --commit <sha>` shows the run completed.
 3. Read the release run: `gh run list --workflow release.yml --commit <sha>`. It starts only after Validate succeeds on a push to `main`. No run while Validate is still running is normal. No run after Validate succeeded is unexplained: read the trigger in `release.yml` before running anything.
-4. Confirm the tag `<plugin>--v<version>` and its GitHub Release exist: `gh release view <plugin>--v<version>`.
+4. Confirm the tag `<plugin>--v<version>` and its GitHub Release exist: `gh release view <plugin>--v<version>`. The tag takes `<version>` from `plugin.json`. The Release body is the plugin's changelog section for that version, then `---`, then `**Update:**` and a code block with `claude plugin update <plugin>@the-claude-factory`. A removal gets no new tag.
 5. Confirm the run tagged nothing unintended: `gh run view <run-id> --log | grep -oE 'Released [a-z0-9-]+--v[0-9.]+'`.
-6. Repeat step 5.5 from `nerymurillohnd/the-claude-factory#main`: the version and components match, and `Always-on` equals the figure before the merge.
+6. Repeat step 5.5 from `nerymurillohnd/the-claude-factory#main`: the version and components match, and `Always-on` equals the figure before the merge. For a removal, installing `<old>` fails.
 7. Report to Nery: the version users receive, that the tag and release exist and match, and that nothing unintended was tagged.
 
 ### 7. Recover from a failed Validate
