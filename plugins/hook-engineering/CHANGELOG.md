@@ -12,7 +12,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 - The Setup hook note on `additionalContext` is now a short check you run on your own Claude Code build, instead of a dated observation from one older version.
 - The event references no longer carry the date and version they were last read at; check facts against your installed Claude Code.
-- The JSON output and docs-map references point to the baseline in `sources.md` instead of repeating its date.
+- Every reference now points to the baseline in `sources.md` instead of repeating its date and version.
 
 ## [0.2.2] - 2026-10-30
 

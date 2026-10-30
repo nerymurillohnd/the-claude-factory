@@ -1,6 +1,6 @@
 # Prompt and agent hooks
 
-Read when designing, writing, auditing or debugging a `type: "prompt"` or `type: "agent"` hook. Every section ends its heading block with a `Docs:` line: fetch that section with the method in the docs map before stating its facts as current. Checked against Claude Code 2.1.305 (2026-10-20).
+Read when designing, writing, auditing or debugging a `type: "prompt"` or `type: "agent"` hook. Every section ends its heading block with a `Docs:` line: fetch that section with the method in the docs map before stating its facts as current. Checked at the baseline in `sources.md`.
 
 ## Contents
 

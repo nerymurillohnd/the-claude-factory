@@ -2,7 +2,7 @@
 
 Read when a hook has no effect, has the wrong effect, shows an error notice, or you need to read the debug log. Source: <https://code.claude.com/docs/en/hooks#debug-hooks> and the input/output sections of the same page.
 
-Also read when a prompt, agent or background hook does not fire, fires but has no effect, keeps blocking, loses its output, or is slow. Every section carries a `Docs:` line: fetch that section with the method in `docs-map.md` before stating its facts as current. Checked against Claude Code 2.1.305 (2026-10-20).
+Also read when a prompt, agent or background hook does not fire, fires but has no effect, keeps blocking, loses its output, or is slow. Every section carries a `Docs:` line: fetch that section with the method in `docs-map.md` before stating its facts as current. Checked at the baseline in `sources.md`.
 
 ## Contents
 
