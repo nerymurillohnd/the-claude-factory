@@ -2,7 +2,7 @@
 
 Elicitation · ElicitationResult
 
-Sources: https://code.claude.com/docs/en/hooks (read 2026-10-20) and the Claude Code CHANGELOG.md through v2.1.305; changelog-only facts are tagged *(changelog vX.Y.Z)*. Fields listed are in addition to the common input fields. Both support `command`, `http`, `mcp_tool` handlers only. Matcher → MCP server name.
+Sources: https://code.claude.com/docs/en/hooks and the Claude Code CHANGELOG.md; changelog-only facts are tagged *(changelog vX.Y.Z)*. Fields listed are in addition to the common input fields. Both support `command`, `http`, `mcp_tool` handlers only. Matcher → MCP server name.
 
 Top-level `decision` from these two events was ignored from v2.1.105 until the fix in v2.1.284.
 
