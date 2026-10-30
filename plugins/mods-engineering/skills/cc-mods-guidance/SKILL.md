@@ -454,7 +454,7 @@ For distribution tasks:
 - Declare the result as the minimum Claude Code version in the README.
 - Record the version and surfaces you tested on apart from that minimum.
 - Treat every committed file under the plugin directory as shipped to every user; git-ignored files never ship.
-- Keep `.claude-plugin/types/` git-ignored.
+- Keep `.claude-plugin/types/` git-ignored, and never commit it.
 - Keep the `tsconfig.json` Claude Code adds at the mod's root git-ignored, and never commit it: it extends the generated files, which users never have.
 - Document required configuration and capabilities.
 - Explain installation, updates, disabling, and recovery.

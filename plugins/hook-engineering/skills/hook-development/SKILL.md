@@ -171,12 +171,12 @@ Configuration:
 - Nest every handler three levels deep: `"hooks": { "<Event>": [ { "matcher": "...", "hooks": [ { handler } ] } ] }`.
 - Never place a handler directly in the event array: Claude Code skips that entry with a Settings Warning and loads the rest ([settings](https://code.claude.com/docs/en/settings)).
 - Spell each event name exactly, case included: an unknown name such as `stop` never fires.
-- Look for a skipped event name in the Settings Warning of an interactive session, or in the debug log under `-p`.
+- Look for a skipped event name in the Settings Warning at the start of an interactive session; under `-p` it goes only to the debug log.
 - Write a matcher of only letters, digits, `_`, `-`, spaces, `,` and `|` for an exact name or a list.
 - Write any other matcher as a JavaScript regex, anchored with `^` and `$` when you mean one name: unanchored, `Edit.*` also matches `NotebookEdit`.
 - Use only letters, digits, `_` and `|` in FileChanged and StopFailure matchers: they match the exact path.
 - Match an MCP server's tools with `mcp__<server>__.*`: the bare `mcp__<server>` matches no tool.
-- Match a plugin's own MCP server with `mcp__plugin_<plugin>_<server>__.*`.
+- Match a plugin's own MCP server with `mcp__plugin_<plugin>_<server>__.*`: its bare key never fires.
 - Leave `matcher` off events without matcher support (UserPromptSubmit, Stop, PostToolBatch, TaskCreated…): it is ignored without a message.
 - Use `if` only on PreToolUse, PostToolUse, PostToolUseFailure, PermissionRequest and PermissionDenied: on any other event a handler with `if` never runs.
 - Put exactly one permission rule in `if`, and never use it to enforce a policy: it is best-effort.
@@ -190,7 +190,7 @@ Configuration:
 - Declare a plugin's hooks in `hooks/hooks.json`: a plugin agent ignores frontmatter hooks, and other subagents run theirs only while they run.
 - Never rely on the order of hooks that match one event, or assume the strictest decision wins: they run in parallel and their decisions merge.
 - Rely on precedence only where it is documented: PreToolUse (`deny` > `defer` > `ask` > `allow`), PreModelSwitch (`deny` > `ask` > `allow`) and Elicitation (a decline wins) ([lifecycle.md](references/lifecycle.md)).
-- Don't count on `~/.zshrc` in a hook: hooks run in non-interactive shells, so version-manager tools (`nvm`, `asdf`) may be missing from `PATH` (an inference; [security-and-trust.md](references/security-and-trust.md) § Guards).
+- Don't count on `~/.zshrc` in a hook: hooks run in non-interactive shells, so version-manager tools (`nvm`, `asdf`) may be missing from `PATH` (an inference, not documented; [security-and-trust.md](references/security-and-trust.md) § Guards).
 - To turn hooks off, use `disableAllHooks`: no switch turns off one hook, and managed hooks turn off only from managed settings.
 - A mod in the session can answer a tool call before non-managed settings `PreToolUse` hooks run (managed ones run before mods), or approve past their block: [mods-and-hooks.md](references/mods-and-hooks.md).
 
