@@ -1,7 +1,7 @@
 {
   "name": "file-tree-pane",
   "displayName": "File Tree Pane",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Keeps a live file tree of your project beside the chat: git status and line counts, what Claude reads, writes and commits, search, previews, diffs and your editor one key away.",
   "author": {
     "name": "Nery Murillo",
