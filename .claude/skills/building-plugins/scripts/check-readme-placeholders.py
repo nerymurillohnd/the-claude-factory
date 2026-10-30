@@ -20,7 +20,7 @@ import re
 import sys
 
 TEMPLATE = ".claude/skills/building-plugins/assets/README-template.md"
-KEEP = frozenset({"<path to the plugin folder>"})
+KEEP: frozenset[str] = frozenset()
 HTML_TAGS = frozenset(
     {"a", "b", "br", "code", "details", "div", "em", "i", "img", "kbd", "p", "picture"}
     | {"source", "strong", "sub", "summary", "sup", "table", "td", "th", "tr"}

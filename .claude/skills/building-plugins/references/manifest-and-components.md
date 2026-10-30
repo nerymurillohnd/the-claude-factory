@@ -14,7 +14,7 @@ Checked 2026-10-25 against `/en/plugins/create`, `/en/plugins/components`, `/en/
 ## Layout rules
 
 - Only manifests go in `.claude-plugin/`: `plugin.json`, and in a single-plugin repo also `marketplace.json`. A component saved there doesn't load.
-- Component directories sit at the plugin root: `skills/<name>/SKILL.md`, `commands/*.md` (older form; use skills), `agents/*.md`, `hooks/hooks.json`, `.mcp.json`, `.lsp.json`, `output-styles/`, `themes/`, `monitors/monitors.json`, `bin/`, `settings.json`.
+- Component directories sit at the plugin root: `skills/<name>/SKILL.md`, `commands/*.md` (older form; use skills), `agents/*.md`, `hooks/hooks.json`, `.mcp.json`, `.lsp.json`, `output-styles/`, `workflows/`, `themes/`, `monitors/monitors.json`, `bin/`, `settings.json`.
 - A `CLAUDE.md` at the plugin root is not loaded (`validate` warns). Put instructions in a skill; put rules that must always hold in a hook.
 - A `SKILL.md` at the plugin root loads as one skill only when there is no `skills/` directory and no `skills` key; give it a `name`, or a marketplace install names it after its cache directory.
 
@@ -81,7 +81,7 @@ Checked 2026-10-25 against `/en/plugins/create`, `/en/plugins/components`, `/en/
 
 **Monitors.** Background shell commands with full user permissions; not started under `-p`; never receive `${user_config.*}`.
 
-**Mods.** A plugin whose `hooks/hooks.json` lists a JavaScript module under `modules` (v2.1.287+). Before writing one, load the `building-mods` skill: it owns how a mod is written and which sources rule it. Mods publish through a marketplace exactly like other plugins.
+**Mods.** A plugin whose `hooks/hooks.json` has `modules`, one path to a hooks module (`.js`, `.mjs`, `.cjs`, `.jsx`, `.ts`, `.mts`, `.cts` or `.tsx`). Mods need v2.1.287 in the terminal and v2.1.286 in Desktop; newer mod features carry their own minimum, and the README states the highest one the plugin uses. Before writing one, load the `building-mods` skill: it owns how a mod is written and which sources rule it. Mods publish through a marketplace exactly like other plugins.
 
 ## What loads on which surface
 

@@ -37,6 +37,7 @@ Act as a hook engineer who assumes the hook will meet hostile input, a missing i
 | :-- | :-- |
 | Another skill invoked you | Nothing: hand back to it |
 | The hook matches an MCP tool of this plugin | `building-plugins`, whose `references/mcp-hooks-and-lifecycle.md` gives the scoped tool name |
+| `hooks.json` lists a hooks module under `modules` | `building-mods` for the module, `testing-mods` for its tests |
 
 A skill you invoke hands back to you when it ends: continue at your next step. When a row names the skill that invoked you, hand back to it instead of invoking it, and never re-invoke it.
 
@@ -95,7 +96,7 @@ Example, a PreToolUse deny:
 1. Run the script by hand with a minimal environment, once per interpreter manager the hook depends on: `env -i HOME= PATH=/usr/bin:/bin <the hook's command, with the plugin root replaced by .> < input.json`, with `input.json` built from a quoted heredoc.
 2. Test one call made from a subagent before the README says the hook covers them.
 3. Test in `default` and in `bypassPermissions` mode before the README states what the hook blocks: the docs do not say it runs in both. Start the session in each mode as `/en/permission-modes` describes.
-4. Run `claude plugin validate --strict plugins/<name>` and the plugin's tests, which live in `scripts/testers/<plugin>/`: `node --test` for `*.test.mjs`, and `python3 -m unittest discover` plus `by_path.sh` for a Python script, as `.claude/CLAUDE.md` → Plugin Tooling requires them. Break the rule on purpose once and confirm a test fails.
+4. Run `claude plugin validate --strict plugins/<name>` and the plugin's tests, which live in `scripts/testers/<plugin>/`: `node --test` for `*.test.mjs`, and `python3 -m unittest discover` plus `by_path.sh` for a Python script, as `.claude/CLAUDE.md` → Plugin Tooling requires them. Break the rule on purpose once and confirm a test fails. A mod's tests (`*.test.ts`, `*.test.tsx`) are the exception: they stay inside `plugins/<name>/`, where `claude plugin test plugins/<name>` finds them, as `testing-mods` says.
 5. Reload with `/reload-plugins` after each edit and test again.
 
 ### 7. Document

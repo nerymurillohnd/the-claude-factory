@@ -4,8 +4,9 @@
 # A plugin is a target only if it has an eval directory AND is either
 #   new    - its .claude-plugin/plugin.json did not exist at BASE, or
 #   edited - one of its components or dependencies changed between BASE and HEAD:
-#            any file under its directory except the eval directory and the
-#            documents README.md, CHANGELOG.md, LICENSE* and NOTICE* at its root.
+#            any file under its directory except the eval directory, the
+#            documents README.md, CHANGELOG.md, LICENSE* and NOTICE* at its root,
+#            a root tsconfig.json, and a mod's *.test.ts and *.test.tsx files.
 # Any other plugin with evals is skipped.
 #
 # Usage: changed-eval-plugins.sh BASE HEAD [PLUGINS_DIR] [EVAL_DIR_NAME]
@@ -44,7 +45,7 @@ for dir in "${plugins_dir}"/*/; do
 
   touched="$(printf '%s\n' "${changed}" \
     | grep -E "^${plugins_dir}/${name}/" \
-    | grep -Ev "^${plugins_dir}/${name}/(${eval_dir}/|README\.md$|CHANGELOG\.md$|LICENSE[^/]*$|NOTICE[^/]*$)" || true)"
+    | grep -Ev "^${plugins_dir}/${name}/(${eval_dir}/|README\.md$|CHANGELOG\.md$|LICENSE[^/]*$|NOTICE[^/]*$|tsconfig\.json$|.*\.test\.tsx?$)" || true)"
   [[ -n ${touched} ]] || continue
 
   if git cat-file -e "${base}:${plugins_dir}/${name}/.claude-plugin/plugin.json" 2> /dev/null; then
