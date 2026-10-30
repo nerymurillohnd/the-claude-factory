@@ -23,11 +23,13 @@ Wondering what changed? Each plugin's `CHANGELOG.md` lists every release, and ev
 
 ## 🔁 Auto-update
 
-Auto-update is **off by default** for third-party marketplaces, including this one. Turn it on once and Claude Code refreshes the marketplace after each session starts and updates the plugins you installed from it:
+Auto-update is **off by default** for third-party marketplaces, including this one. Turn it on once and, in each interactive session, Claude Code refreshes the marketplace within about ten minutes of your first message and updates the plugins you installed from it:
 
 1. Run `/plugin`.
 2. Open **Marketplaces** → select **the-claude-factory**.
 3. Select **Enable auto-update**.
+
+The update lands on disk while you keep working; run `/reload-plugins` to switch to it, or start a new session. For a whole team, set it in the repository instead: [Set it up for a whole team](./installation.md#-set-it-up-for-a-whole-team).
 
 ## ⏯️ Enable & disable
 

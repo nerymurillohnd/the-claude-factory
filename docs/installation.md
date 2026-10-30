@@ -108,7 +108,7 @@ When the same plugin is set at several scopes, local overrides project, and proj
 
 ## 👥 Set it up for a whole team
 
-Declare the marketplace and the plugins in your repository's `.claude/settings.json` and commit it. Once a teammate trusts the folder, Claude Code registers the marketplace for them in the background:
+Declare the marketplace and the plugins in your repository's `.claude/settings.json` and commit it. Once a teammate trusts the folder, Claude Code registers the marketplace for them in the background, and `"autoUpdate": true` keeps its plugins updated without each teammate turning auto-update on:
 
 ```json
 {
@@ -117,7 +117,8 @@ Declare the marketplace and the plugins in your repository's `.claude/settings.j
       "source": {
         "source": "github",
         "repo": "nerymurillohnd/the-claude-factory"
-      }
+      },
+      "autoUpdate": true
     }
   },
   "enabledPlugins": {

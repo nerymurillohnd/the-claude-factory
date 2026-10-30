@@ -121,6 +121,9 @@ Adding an MCP server invalidates the prompt cache. Run `/reload-plugins --force`
 - Updated but still seeing old behavior: the running session keeps the loaded version. Run `/reload-plugins` or start a new session.
 - A plugin shown as `<plugin>@synced` came from the Claude app: update it there (**Customize** → **Plugins**), then start Claude Code again or run `/reload-plugins` when it says _Plugins changed_.
 - Want updates without thinking about it: [enable auto-update](./managing-plugins.md#-auto-update).
+- Auto-update is on but nothing changed yet: it runs once per interactive session, up to ten minutes after your first message. Run `claude plugin update <plugin>@the-claude-factory` to update now.
+- **Enable auto-update** is missing from `/plugin`: `DISABLE_UPDATES`, `DISABLE_AUTOUPDATER` or `CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC` is set, which turns plugin auto-update off. Add `FORCE_AUTOUPDATE_PLUGINS=1` to keep plugin updates on, or update by hand.
+- `Plugin "<plugin>" is not installed at scope user`: the plugin is installed for one project only. On Claude Code v2.1.281 and later, run the update from inside that project; on earlier versions, add `--scope project`.
 
 ## 🆘 Still stuck?
 
