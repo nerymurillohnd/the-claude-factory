@@ -287,7 +287,7 @@ Page: <https://code.claude.com/docs/en/hooks-guide> · MCP path: `/en/hooks-guid
 ## How to use the tables below
 
 - Each row gives the **header exactly as it appears in the source**, with its Markdown level, and the **URL with its anchor**. Cite the URL; search the source for the header.
-- **Verified by** says how the anchor was confirmed on 2026-10-20 (Claude Code 2.1.305):
+- **Verified by** says how the anchor was confirmed at the baseline in `sources.md`:
   - `link`: an official docs page links to that exact anchor.
   - `search`: the official docs search returns that exact URL for the section.
   - `slug`: derived from the header by the same rule as the verified anchors around it. Confirm it the first time you cite it.
