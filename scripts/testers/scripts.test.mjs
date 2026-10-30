@@ -101,7 +101,10 @@ const read = (p) => readFileSync(join(root, p), 'utf8')
  * @param {string} p
  * @param {string} s
  */
-const write = (p, s) => writeFileSync(join(root, p), s)
+const write = (p, s) => {
+  mkdirSync(dirname(join(root, p)), { recursive: true })
+  writeFileSync(join(root, p), s)
+}
 /** @param {string} p */
 const json = (p) => JSON.parse(read(p))
 
@@ -678,6 +681,44 @@ describe('check-version-bump', () => {
     git('commit', '-qm', 'docs')
     const r = runPy(CHECK, ['HEAD~1'])
     assert.equal(r.code, 0, r.out)
+  })
+
+  test('does not require a bump for edits to tests and eval suites only', () => {
+    scaffold()
+    initRepo()
+    write('plugins/demo-tool/tests/demo.test.ts', "import { test } from 'claude-code/testing'\n")
+    write('plugins/demo-tool/hooks/register.test.tsx', '// test\n')
+    write('plugins/demo-tool/evals/first-case/prompt.md', 'Prompt.\n')
+    git('add', '-A')
+    git('commit', '-qm', 'tests and evals')
+    const r = runPy(CHECK, ['HEAD~1'])
+    assert.equal(r.code, 0, r.out)
+  })
+
+  test('does not require a bump for a suite in the manifest eval directory', () => {
+    scaffold()
+    initRepo()
+    const manifest = JSON.parse(read('plugins/demo-tool/.claude-plugin/plugin.json'))
+    manifest.experimental = { evals: 'quality/evals' }
+    write('plugins/demo-tool/.claude-plugin/plugin.json', `${JSON.stringify(manifest, null, 2)}\n`)
+    git('commit', '-qam', 'eval dir')
+    write('plugins/demo-tool/quality/evals/first-case/prompt.md', 'Prompt.\n')
+    git('add', '-A')
+    git('commit', '-qm', 'evals')
+    const r = runPy(CHECK, ['HEAD~1'])
+    assert.equal(r.code, 0, r.out)
+  })
+
+  test('still requires a bump when tests change with a component', () => {
+    scaffold()
+    initRepo()
+    write('plugins/demo-tool/tests/demo.test.ts', "import { test } from 'claude-code/testing'\n")
+    write('plugins/demo-tool/hooks/extra.json', '{}\n')
+    git('add', '-A')
+    git('commit', '-qm', 'tests and a component')
+    const r = runPy(CHECK, ['HEAD~1'])
+    assert.equal(r.code, 1)
+    assert.match(r.out, /version is still 0\.1\.0/)
   })
 
   test('still requires a bump for a CHANGELOG-only edit', () => {

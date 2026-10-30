@@ -6,8 +6,9 @@ differ from <base> (`git diff <base>...HEAD`) must carry the next version of the
 exactly one patch, minor or major step above it, and a non-empty CHANGELOG.md section for it. A
 jump that skips a version fails. A step from 0.x to 1.0.0 passes with a note: it needs Nery's
 explicit authorization (release-and-versioning, rule 4). A change limited to the plugin's
-documentation (README.md, LICENSE, NOTICE.txt) needs no bump; every other file does,
-CHANGELOG.md included. A renamed plugin is
+documentation (README.md, LICENSE, NOTICE.txt) and its maintainer files (a mod's tests under
+tests/ or named *.test.ts(x), and the eval suite under evals/ or the manifest's experimental.evals)
+needs no bump; every other file does, CHANGELOG.md included. A renamed plugin is
 compared with its old name's version at <base>: the rename is a `renames` entry that HEAD adds to
 .claude-plugin/marketplace.json, or a plugin.json that git sees moved from plugins/<old>/. A rename
 breaks the commands users type, so its patch step fails (plugin-renames-and-removals, rule 3), and
@@ -150,6 +151,30 @@ def changed_by_plugin(root: Path, base: str) -> dict[str, list[str]]:
     return by_plugin
 
 
+def eval_dir(plugin: Path) -> str:
+    """The plugin's eval directory: the manifest's experimental.evals, else evals."""
+    try:
+        manifest = _decode((plugin / ".claude-plugin" / "plugin.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return "evals"
+    if not isinstance(manifest, dict):
+        return "evals"
+    experimental = cast("dict[str, object]", manifest).get("experimental")
+    if not isinstance(experimental, dict):
+        return "evals"
+    evals = cast("dict[str, object]", experimental).get("evals")
+    return evals.strip("./") if isinstance(evals, str) and evals.strip("./") else "evals"
+
+
+def needs_no_bump(plugin: Path, path: str) -> bool:
+    """Whether a changed file inside the plugin is documentation or a maintainer file."""
+    return (
+        path in DOC_ONLY
+        or path.startswith(("tests/", eval_dir(plugin) + "/"))
+        or path.endswith((".test.ts", ".test.tsx"))
+    )
+
+
 def base_manifest(root: Path, base: str, name: str, old: str | None) -> str | None:
     """The plugin.json text at `base`, under the plugin's old name when it was renamed."""
     for plugin in (name, old):
@@ -190,7 +215,7 @@ def check(root: Path, base: str) -> tuple[list[str], list[str], list[str]]:
     cautions: list[str] = []
     for name, files in by_plugin.items():
         plugin = root / "plugins" / name
-        if not plugin.is_dir() or all(f in DOC_ONLY for f in files):
+        if not plugin.is_dir() or all(needs_no_bump(plugin, f) for f in files):
             continue
         old = renamed.get(name)
         shown = base_manifest(root, base, name, old)

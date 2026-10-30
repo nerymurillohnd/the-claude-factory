@@ -69,7 +69,7 @@ Read the diff (`git diff origin/main...HEAD`) and choose the level by what chang
 
 - During `0.x`, a breaking change bumps **minor**, not major, and its changelog entry starts with `**Breaking:**`.
 - From `1.0.0` on, a breaking change bumps **major**.
-- If a plugin's changes are limited to its documentation files, it needs no bump: skip steps 2 and 3 for that plugin. `.claude/CLAUDE.md` → Maintainer and Plugin Scopes sets which files those are and which changes need a pull request.
+- If a plugin's changes are limited to its documentation files or its in-plugin maintainer files (a mod's tests, its eval suite), it needs no bump: skip steps 2 and 3 for that plugin. `.claude/CLAUDE.md` → Maintainer and Plugin Scopes sets which files those are and which changes need a pull request.
 - If the PR changes only `.claude-plugin/marketplace.json` (no plugin), no bump applies: skip steps 2 and 3 and write the marketplace line in step 4.
 - A new plugin starts at the `0.1.0` that this repository's plugin scaffold writes, with its notes under `## [0.1.0]` → `### Added`: skip step 3 and write the launch line in step 4.
 
