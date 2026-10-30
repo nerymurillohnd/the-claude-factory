@@ -183,7 +183,7 @@ Set options when installing (`claude plugin install model-trace@the-claude-facto
 - **MCP servers:** none.
 - **Network:** none. It calls no model and runs no command.
 - **Files written:** only the report you save, in `exportDir`. A permission rule such as `Write(~/Downloads/**)` doesn't apply to a mod, so choose `exportDir` with that in mind. Nothing is kept between sessions: the trace lives in the session's memory, and `/clear`, `/resume` and `/branch` start it over.
-- **Before you install:** a mod runs with your permissions and no sandbox; `claude plugin validate <path to the plugin folder>` shows everything it hooks and calls.
+- **Before you install:** a mod runs with your permissions and no sandbox. Install it only if you trust this marketplace; this README lists everything it hooks and calls.
 
 It can't change or restyle the permission prompt, and it doesn't try to.
 

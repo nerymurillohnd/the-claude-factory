@@ -457,7 +457,7 @@ A terminal editor needs a terminal to run in: a mod can't hand Claude Code's own
 - **MCP servers:** none.
 - **Network:** none. It never calls the model.
 - **Files written:** none.
-- **Before you install:** a mod runs with your permissions and no sandbox; `claude plugin validate <path to the plugin folder>` shows everything it hooks and calls.
+- **Before you install:** a mod runs with your permissions and no sandbox. Install it only if you trust this marketplace; this README lists everything it hooks and calls.
 
 ## 🔄 Updating
 
@@ -561,7 +561,7 @@ It hooks the start of each session (to add `/file-tree` and open the pane), each
 
 It reads directory listings, the file you preview, your `theme` setting through `/config` (and, for a custom theme, its file in `~/.claude/themes/`, or under `CLAUDE_CONFIG_DIR`), and your font folders (`~/Library/Fonts` and `/Library/Fonts` on macOS, the Windows font folders, `fc-list` on Linux). It runs `git` (read-only, with every program a repository's own config can name turned off: fsmonitor, clean and process filters, textconv, external diff and signature checks; it reads the filter names with `git config` first, skips git in a repository whose filter names it can't turn off, and never runs git inside a submodule's working tree), `wc -l` on untracked files, `du -sk` for folder sizes, `uname -s`, `herdr --version` at session start inside herdr, and, when it finds a Nerd Font, `ps` with `sh -c 'echo $PPID'` to learn when your terminal started. When you ask, it runs `test -x` on macOS and Linux to check that a file isn't executable, then `open`, `xdg-open` or PowerShell's `Start-Process` for the default app, `qlmanage -p` and `killall qlmanage` for Quick Look, `tmux`, `herdr` or `xdg-terminal-exec` for an editor or diff tool, and the commands you set in **Open with**, **Edit with** and **Diff with**. It reads the `HOME`, `CLAUDE_CONFIG_DIR`, `VISUAL`, `EDITOR`, `TMUX`, `HERDR_ENV`, `HERDR_PANE_ID`, `SSH_CONNECTION`, `SSH_TTY`, `OS`, `LOCALAPPDATA`, `SystemRoot` and `USERPROFILE` environment variables.
 
-It never writes files, never reaches the network and never calls the model. Run `claude plugin validate` on the plugin's folder to list the same hooks and calls yourself.
+It never writes files, never reaches the network and never calls the model.
 
 </details>
 
