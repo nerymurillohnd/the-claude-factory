@@ -6,6 +6,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.2.3] - 2026-10-30
+
+### Changed
+
+- The configuration rules in the skill are now one instruction per line: how to nest handlers, write matchers, use `if`, `once` and `onFailure`, and reach plugin options.
+- The Setup hook note on `additionalContext` is now a short check you run on your own Claude Code build.
+- The references no longer repeat the date and version they were last read at; the skill keeps one baseline in `sources.md`, which its changelog check uses.
+
 ## [0.2.2] - 2026-10-30
 
 ### Fixed
@@ -38,7 +46,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - Helper scripts: a linter for hooks configuration files, a probe that predicts how Claude Code reads a command hook's result, and a changelog script that lists the hook-related entries newer than your installed version.
 - The `claude-code-docs` MCP server (`https://code.claude.com/docs/mcp`), so Claude reads the official hooks pages instead of recalling them.
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/hook-engineering--v0.2.2...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/hook-engineering--v0.2.3...HEAD
+[0.2.3]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/hook-engineering--v0.2.3
 [0.2.2]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/hook-engineering--v0.2.2
 [0.2.1]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/hook-engineering--v0.2.1
 [0.2.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/hook-engineering--v0.2.0

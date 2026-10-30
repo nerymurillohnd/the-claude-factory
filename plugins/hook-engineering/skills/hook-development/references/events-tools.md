@@ -2,7 +2,7 @@
 
 PreToolUse · PermissionRequest · PostToolUse · PostToolUseFailure · PostToolBatch · PermissionDenied
 
-Sources: https://code.claude.com/docs/en/hooks (read 2026-10-20) and the Claude Code CHANGELOG.md through v2.1.305; changelog-only facts are tagged *(changelog vX.Y.Z)*. Fields listed are in addition to the common input fields.
+Sources: https://code.claude.com/docs/en/hooks and the Claude Code CHANGELOG.md; changelog-only facts are tagged *(changelog vX.Y.Z)*. Fields listed are in addition to the common input fields.
 
 **Matcher (all except PostToolBatch) → tool name:** built-ins such as `Bash`, `PowerShell`, `Edit`, `Write`, `Read`, `Glob`, `Grep`, `Agent`, `Workflow`, `WebFetch`, `WebSearch`, `AskUserQuestion`, `ExitPlanMode`, `SubagentHandback`, and MCP tools (`mcp__<server>__<tool>`). `EndConversation` never fires any of these events. Use the handler `if` field (`Bash(git *)`, `Edit(*.ts)`) to filter on arguments too.
 

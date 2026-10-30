@@ -2,7 +2,7 @@
 
 SessionStart · Setup · InstructionsLoaded · SessionEnd
 
-Sources: https://code.claude.com/docs/en/hooks (read 2026-10-20) and the Claude Code CHANGELOG.md through v2.1.305; changelog-only facts are tagged *(changelog vX.Y.Z)*. Fields listed are in addition to the common input fields.
+Sources: https://code.claude.com/docs/en/hooks and the Claude Code CHANGELOG.md; changelog-only facts are tagged *(changelog vX.Y.Z)*. Fields listed are in addition to the common input fields.
 
 ---
 
@@ -84,7 +84,13 @@ Docs: [event](https://code.claude.com/docs/en/hooks#setup) · [input](https://co
 
 **Output:** none. Can't block on any exit code; all JSON output fields are discarded. With `-p`, stdout/stderr/exit code appear only as `hook_response` events under `--output-format stream-json --verbose`. `CLAUDE_ENV_FILE` is available.
 
-Docs and engine disagree on `additionalContext`: the type declarations Claude Code v2.1.305 writes into a mod's `.claude-plugin/types/claude-code/index.d.ts` (`ClassicResultFields`) list it as a field Setup reads, while the docs say every JSON output field is discarded. Observed on v2.1.305 (`claude --settings <file> --init-only --debug-file <path>`, 2026-10-20): the debug log shows `Successfully parsed and validated hook JSON output` and `Hook Setup (...) provided additionalContext (17 chars)`, so the engine reads the field. `--init-only` opens no conversation, so whether that text reaches Claude under `-p --init` is unverified. Don't design a hook that depends on it, and report the disagreement.
+Check the installed build before you rely on a Setup hook's `additionalContext`: the docs say Setup discards every JSON output field, while the build's mod declarations (`.claude-plugin/types/claude-code/index.d.ts`, `ClassicResultFields`) can list it as a field Setup reads.
+
+1. Run `claude --settings <file> --init-only --debug-file <path>` with a Setup hook that prints `additionalContext`.
+2. Look in the log for `Successfully parsed and validated hook JSON output` and `Hook Setup (...) provided additionalContext`: together they show the engine reads the field.
+3. Treat whether that text reaches Claude under `-p --init` as unverified: `--init-only` opens no conversation.
+
+Don't design a hook that depends on it, and report the disagreement.
 
 **Plugin pattern:** don't rely on Setup to install a plugin dependency, since it rarely runs. Check on first use and install on miss (e.g. test `${CLAUDE_PLUGIN_DATA}/node_modules`). Marketplace plugins may get eligible Node.js dependencies installed automatically when cached.
 

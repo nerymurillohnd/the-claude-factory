@@ -2,7 +2,7 @@
 
 Read when a hook runs a script, ships inside a repository, plugin, skill or subagent, runs under `claude -p` or the SDK, or targets Windows PowerShell.
 
-Every section carries a `Docs:` line: fetch that section with the method in the docs map before stating its facts as current. Checked against Claude Code 2.1.305 (2026-10-20).
+Before you state a section's facts as current, fetch its `Docs:` section with the method in the docs map.
 
 ## Contents
 
@@ -69,7 +69,7 @@ Exec form on Windows needs `command` to be a real executable such as `node.exe`;
 
 Docs: <https://code.claude.com/docs/en/hooks#block-the-action-when-a-hook-fails> · <https://code.claude.com/docs/en/hooks#exit-code-2> · <https://code.claude.com/docs/en/hooks-guide#shell-profile-output-before-the-json>
 
-For a hook that enforces a policy. The first two items are our practice, tested on 2026-10-20 (not a documented rule); the third mixes documented behavior with an inference, marked.
+For a hook that enforces a policy. The first two items are our tested practice, not a documented rule; the third mixes documented behavior with an inference, marked.
 
 - **Fail closed.** A guard that cannot read its input must block and say why. Exit 0 with no output approves nothing but lets the call go through, so a guard that swallows a parse error fails open. On unreadable input or a missing `jq`, exit 2 with the reason on stderr: exit 2 needs no JSON encoder, so it still works when `jq` is the missing piece. Add `"onFailure": "block"` for what the script cannot report itself (a crash, a timeout, a missing script). The example in `SKILL.md` does both.
 - **Filter on words, not on text.** The shell joins quotes, so `g"i"t commit --no-verify` runs `git` and contains no `git` substring. Split the command with a lexer (`shlex.split` gives `['git', 'commit', '--no-verify']`) and compare the first word and the flags. `shlex` does not expand `$(...)`, variables or aliases and does not look inside `bash -c '...'` or `eval`, so this is still a barrier for Claude, not a boundary: enforcement belongs in permission rules.

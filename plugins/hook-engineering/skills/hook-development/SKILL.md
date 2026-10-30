@@ -168,18 +168,30 @@ This is a digest. Each rule is detailed, with its `Docs:` URL, in the reference 
 
 Configuration:
 
-- Three levels: `"hooks": { "<Event>": [ { "matcher": "...", "hooks": [ { handler } ] } ] }`. A handler placed directly in the event array never runs: Claude Code skips that entry with a Settings Warning and keeps the rest (observed in v2.1.305; see [settings](https://code.claude.com/docs/en/settings)).
-- An unknown event name, including a wrong case such as `stop`, is skipped with a Settings Warning at the start of an interactive session; in `-p` runs it goes only to the debug log. Either way the hook never fires.
-- A matcher of only letters, digits, `_`, `-`, spaces, `,` and `|` is an exact string or list. Anything else is an **unanchored** JavaScript regex: `Edit.*` also matches `NotebookEdit`. FileChanged and StopFailure allow only letters, digits, `_` and `|` on the exact path.
-- `mcp__memory` matches no tool; write `mcp__memory__.*`. A plugin's own server is `mcp__plugin_<plugin>_<server>__.*`; the bare key never fires.
-- A matcher on an event without matcher support (UserPromptSubmit, Stop, PostToolBatch, TaskCreated…) is ignored without a message.
-- `if` is evaluated only on PreToolUse, PostToolUse, PostToolUseFailure, PermissionRequest and PermissionDenied. On any other event a handler with `if` **never runs**. It holds exactly one permission rule, and it is best-effort: never use it to enforce a policy.
-- `once` works only in skill frontmatter. `onFailure` works on command and http hooks, not on Stop, SubagentStop, TaskCompleted, TeammateIdle or async hooks. Set it on policy hooks only: a crashing advisory `UserPromptSubmit` hook with `block` stops every prompt.
-- Shell form: wrap each path placeholder in double quotes, as the example in [handler-fields.md](references/handler-fields.md) → Exec form and shell form shows. Exec form: `command` is one executable, everything else goes in `args`. A shell-form plugin hook with `${user_config.*}` fails; use exec form or `$CLAUDE_PLUGIN_OPTION_<KEY>`.
-- Hooks from settings, managed settings and plugins also run inside subagents. Frontmatter hooks in a subagent run only while it runs, and in a plugin agent they are ignored: a plugin declares hooks in `hooks/hooks.json`.
-- Hooks that match one event run in parallel and their decisions are merged. The precedence is documented only for PreToolUse (`deny` > `defer` > `ask` > `allow`), PreModelSwitch (`deny` > `ask` > `allow`) and Elicitation (a decline wins); for other events don't rely on order or assume the strictest wins ([lifecycle.md](references/lifecycle.md)).
-- Hooks run in non-interactive shells: don't count on `~/.zshrc` having run. That a version manager's tools (`nvm`, `asdf`) are then missing from `PATH` is an inference, not documented ([security-and-trust.md](references/security-and-trust.md) § Guards).
-- `disableAllHooks` turns hooks off; there is no switch for one hook. Managed hooks are disabled only from managed settings.
+- Nest every handler three levels deep: `"hooks": { "<Event>": [ { "matcher": "...", "hooks": [ { handler } ] } ] }`.
+- Never place a handler directly in the event array: Claude Code skips that entry with a Settings Warning and loads the rest ([settings](https://code.claude.com/docs/en/settings)).
+- Spell each event name exactly, case included: an unknown name such as `stop` never fires.
+- Look for a skipped event name in the Settings Warning at the start of an interactive session; under `-p` it goes only to the debug log.
+- Write a matcher of only letters, digits, `_`, `-`, spaces, `,` and `|` for an exact name or a list.
+- Write any other matcher as a JavaScript regex, anchored with `^` and `$` when you mean one name: unanchored, `Edit.*` also matches `NotebookEdit`.
+- Use only letters, digits, `_` and `|` in FileChanged and StopFailure matchers: they match the exact path.
+- Match an MCP server's tools with `mcp__<server>__.*`: the bare `mcp__<server>` matches no tool.
+- Match a plugin's own MCP server with `mcp__plugin_<plugin>_<server>__.*`: its bare key never fires.
+- Leave `matcher` off events without matcher support (UserPromptSubmit, Stop, PostToolBatch, TaskCreated…): it is ignored without a message.
+- Use `if` only on PreToolUse, PostToolUse, PostToolUseFailure, PermissionRequest and PermissionDenied: on any other event a handler with `if` never runs.
+- Put exactly one permission rule in `if`, and never use it to enforce a policy: it is best-effort.
+- Use `once` only in skill frontmatter.
+- Use `onFailure` only on command and http hooks, never on Stop, SubagentStop, TaskCompleted, TeammateIdle or async hooks.
+- Set `onFailure` only on policy hooks: a crashing advisory `UserPromptSubmit` hook with `block` stops every prompt.
+- In shell form, wrap each path placeholder in double quotes, as [handler-fields.md](references/handler-fields.md) → Exec form and shell form shows.
+- In exec form, put one executable in `command` and everything else in `args`.
+- Reach plugin options through exec form or `$CLAUDE_PLUGIN_OPTION_<KEY>`: a shell-form plugin hook with `${user_config.*}` fails.
+- Expect hooks from settings, managed settings and plugins to run inside subagents too.
+- Declare a plugin's hooks in `hooks/hooks.json`: a plugin agent ignores frontmatter hooks, and other subagents run theirs only while they run.
+- Never rely on the order of hooks that match one event, or assume the strictest decision wins: they run in parallel and their decisions merge.
+- Rely on precedence only where it is documented: PreToolUse (`deny` > `defer` > `ask` > `allow`), PreModelSwitch (`deny` > `ask` > `allow`) and Elicitation (a decline wins) ([lifecycle.md](references/lifecycle.md)).
+- Don't count on `~/.zshrc` in a hook: hooks run in non-interactive shells, so version-manager tools (`nvm`, `asdf`) may be missing from `PATH` (an inference, not documented; [security-and-trust.md](references/security-and-trust.md) § Guards).
+- To turn hooks off, use `disableAllHooks`: no switch turns off one hook, and managed hooks turn off only from managed settings.
 - A mod in the session can answer a tool call before non-managed settings `PreToolUse` hooks run (managed ones run before mods), or approve past their block: [mods-and-hooks.md](references/mods-and-hooks.md).
 
 Stdout and exit codes:
