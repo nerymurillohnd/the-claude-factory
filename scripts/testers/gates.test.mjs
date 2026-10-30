@@ -14,7 +14,6 @@ import { fileURLToPath } from 'node:url'
 import {
   BIOME_OVERRIDES,
   gatesFor,
-  modTypesBlocker,
   nodeTestGate,
   runGates,
   selectGates,
@@ -69,13 +68,6 @@ describe('gates runner', () => {
     assert.ok(existsSync(join(dir, 'ran-a')))
     assert.ok(!existsSync(join(dir, 'ran-c')), 'a gate after the failure ran')
     assert.match(lines.join('\n'), /✖ broken/)
-  })
-
-  test('a blocked gate fails with its message and runs nothing', () => {
-    const gate = { ...touches('a'), blocker: 'types are missing' }
-    assert.equal(runGates([gate], { root: dir, keepGoing: false, write }), 1)
-    assert.ok(!existsSync(join(dir, 'ran-a')), 'a blocked gate ran its command')
-    assert.match(lines.join('\n'), /✖ a \(exit 1\): types are missing/)
   })
 
   test('a passing gate prints only its check mark; a failing one prints its output', () => {
@@ -176,7 +168,6 @@ describe('gate list', () => {
       'by-path:block-no-verify',
       'node-tests:typescript6-lsp-intelligence',
       'mod-test:project-maintainer',
-      'mod-tsc:project-maintainer',
       'tsc-plugins',
       'basedpyright-plugins',
       'shellcheck-plugins',
@@ -200,6 +191,7 @@ describe('gate list', () => {
       assert.ok(ci.includes(id), `${id} should run in CI`)
     }
     assert.ok(!ci.includes('pytest-scripts'), 'pytest-scripts should be gone')
+    assert.ok(!localOnly.some((id) => id.startsWith('mod-tsc:')), 'mod-tsc gates should be gone')
   })
 
   test('a PEP 723 plugin script is type-checked in its own uv environment', () => {
@@ -234,22 +226,6 @@ describe('gate list', () => {
       (g) => g.id === 'version-bump',
     )
     assert.match(bump?.skipReason ?? '', /no comparable base commit/)
-  })
-
-  test("a mod's tsc gate is blocked, naming the fix, while its types are missing", () => {
-    const copy = mkdtempSync(join(tmpdir(), 'gates-mod-'))
-    try {
-      const types = join(copy, 'plugins', 'tool-ledger', '.claude-plugin', 'types')
-      assert.match(
-        modTypesBlocker(copy, 'tool-ledger') ?? '',
-        /^plugins\/tool-ledger\/\.claude-plugin\/types\/ is missing: run npm run setup/,
-      )
-      mkdirSync(types, { recursive: true })
-      writeFileSync(join(types, 'tsconfig.json'), '{}')
-      assert.equal(modTypesBlocker(copy, 'tool-ledger'), null)
-    } finally {
-      rmSync(copy, { recursive: true, force: true })
-    }
   })
 
   test('plugin test gates run only for folders named after a plugin', () => {

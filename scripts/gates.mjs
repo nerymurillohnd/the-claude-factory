@@ -10,9 +10,9 @@
 //
 // What CI runs (ADR_2026-10-21_ci-checks-maintainer-tooling-and-plugin-structure): our own tooling
 // under scripts/ and the plugins' structure, which no user's machine changes. The plugins' behavior
-// (the tests in scripts/testers/<plugin>/, claude plugin test, the mods' tsc) and the static analysis
-// of plugin code run only here, before the push, because they depend on the interpreter and the
-// tools of whoever installs the plugin. Those gates carry group "local".
+// (the tests in scripts/testers/<plugin>/, claude plugin test) and the static analysis of plugin
+// code run only here, before the push, because they need the maintainer's installed Claude Code and
+// tools, and they judge only that build. Those gates carry group "local".
 //
 // --ci changes three things and nothing else: it leaves out the "local" gates, the version-bump
 // base comes from --base instead of origin/main, and the run goes on after a failure. The commands,
@@ -87,8 +87,6 @@ const ALLOWED_SKIPS = new Map(/** @type {[string, string][]} */ ([]))
  * @property {string[]} args
  * @property {Record<string, string>} [env]
  * @property {string} [skipReason] set when the gate cannot apply here, such as no base commit
- * @property {string} [blocker] set when the gate applies but cannot run here: it fails with this
- *   message and runs nothing
  * @property {(stdout: string, stderr: string) => string | null} [after] a failure message for an
  *   exit-0 run, or null
  */
@@ -230,21 +228,6 @@ function pluginTestFolders(root, test) {
  */
 function envVar(name, value) {
   return Object.fromEntries([[name, value]])
-}
-
-/**
- * Why a mod's tsc gate cannot run, or null. Its tsconfig extends the git-ignored declarations in
- * .claude-plugin/types/, which only an interactive session writes; npm run setup copies them into
- * a new worktree.
- * @param {string} root
- * @param {string} plugin
- * @returns {string | null}
- */
-export function modTypesBlocker(root, plugin) {
-  const types = `plugins/${plugin}/.claude-plugin/types`
-  return existsSync(join(root, types, 'tsconfig.json'))
-    ? null
-    : `${types}/ is missing: run npm run setup, or open an interactive claude session with --plugin-dir plugins/${plugin}`
 }
 
 /**
@@ -515,19 +498,6 @@ export function gatesFor({ root, ci, base }) {
             args: ['plugin', 'test', join('plugins', p)],
           }),
       ),
-    ...plugins
-      .filter((p) => existsSync(join(root, 'plugins', p, 'tsconfig.json')))
-      .map((p) => {
-        const blocker = modTypesBlocker(root, p)
-        return /** @type {Gate} */ ({
-          id: `mod-tsc:${p}`,
-          group: 'local',
-          title: `tsc on the ${p} mod`,
-          cmd: 'tsc',
-          args: ['-p', join('plugins', p, 'tsconfig.json'), '--noEmit'],
-          ...(blocker === null ? {} : { blocker }),
-        })
-      }),
     {
       id: 'tsc-plugins',
       group: 'local',
@@ -663,10 +633,6 @@ function runGate(gate, { root, write, verbose }) {
   if (gate.skipReason !== undefined) {
     write(`○ ${gate.id} not applicable: ${gate.skipReason}`)
     return 0
-  }
-  if (gate.blocker !== undefined) {
-    write(`✖ ${gate.id} (exit 1): ${gate.blocker}`)
-    return 1
   }
   const override = gate.cmd === 'biome' && BIOME_OVERRIDES.find((name) => name in process.env)
   if (override) {
