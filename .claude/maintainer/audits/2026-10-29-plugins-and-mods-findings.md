@@ -1,6 +1,6 @@
 # Findings against the plugins and mods live-sources audit
 
-Date: 2026-10-29. Ground truth: `2026-10-29-plugins-and-mods-live-sources-audit.md` (D6 amended after `claude plugin eval --help`). Five read-only auditors, one section each, reports kept as delivered. Status at consolidation: R-1 and R-2 fixed (memory edited); P-8 resolved (the audit was wrong, the plugin is right). Nothing else has been changed.
+Date: 2026-10-29. Ground truth: `2026-10-29-plugins-and-mods-live-sources-audit.md` (D6 amended after `claude plugin eval --help`). Five read-only auditors, one section each, reports kept as delivered. Status at consolidation: R-1 and R-2 fixed (memory edited); P-8 resolved (the audit was wrong, the plugin is right). R-7 retracted on review: plugins/mods/create says "trust these files over any page, this one included, when they disagree", so the ADR's authority claim is right and the ADR stays (the audit's F8.1 now quotes it). P-9 needed no change (the plugin-evals docs accept a root `plugin.json`). Nothing else has been changed.
 
 Verification: every one of the 67 entries was checked against its cited file. 59 quotes were matched by script, and the other 8 by hand (T-2, T-6, T-8, T-9, T-10, P-1, P-11, P-12: multi-line, escaped or `.jsonc` quotes). All 67 exist as quoted. The judgments (conflict, severity, correction) are the auditors' and are settled in review.
 

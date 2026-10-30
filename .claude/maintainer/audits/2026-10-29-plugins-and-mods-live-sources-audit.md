@@ -229,7 +229,8 @@ Administrators can stop user-installed mods with `allowManagedModsOnly`, `allowM
 **F8.1 What they are.**
 > "When Claude Code loads a mod from `--plugin-dir` in an interactive session, or a mod Claude wrote for you, it writes TypeScript declaration files into the mod's `.claude-plugin/types/` directory… so your editor can autocomplete and type-check your hooks." (plugins/mods/create)
 
-They are an authoring aid for the build the developer runs. The docs give them no role in loading, installing or running a mod.
+They are an authoring aid for the build the developer runs. The docs give them no role in loading, installing or running a mod. For the facts of the mods API they are the authority over the docs pages:
+> "The events and methods can change between releases, so trust these files over any page, this one included, when they disagree." (plugins/mods/create, Get type definitions for your version)
 
 **F8.2 Only development sessions write them.** 2.1.295: "Fixed generated type files being written into a `--plugin-dir` plugin's folder in `-p` and SDK sessions; they are now written only where a mod is being developed."
 
@@ -267,6 +268,11 @@ That root file is not git-ignored. Once committed, it reaches users (F3.3), wher
 - `mods/README.md` and the GitHub declarations' header say the declarations are "Written by `/plugin-types`; regenerate with that command".
 - No current docs page and no release note in the range mentions that command. The string `plugin-types` appears in the 2.1.314 binary, but whether a user-facing command exists was not confirmed.
 - Treat it as unverified; do not build on it.
+- Closed after the first pass: a GitHub code search of `anthropics/claude-code` finds `plugin-types` only in `mods/README.md`, and the repository's full `CHANGELOG.md` never mentions it. It is not a documented user command; never tell a user or a skill to run it.
+
+**D7. The built-in `plugin-authoring` skill's declarations.**
+- `building-mods` cites a `types/claude-code.d.ts` that `plugin-authoring` writes as it loads, as a source when no `--plugin-dir` session has written `.claude-plugin/types/`. The first pass did not cover it.
+- The 2.1.314 binary holds the skill's loader with `var ve="${CLAUDE_SKILL_DIR}";var He="types/claude-code.d.ts"`: the skill writes that file into its own skill directory when it loads. The citation in `building-mods` stands. The file describes the installed build, like `.claude-plugin/types/`, and the same limits apply (F8.5).
 
 **D3. Validate notes about where hooks run.** 2.1.299 added a note naming hooks skipped under organization management; 2.1.304 removed "the notes … that predicted where a mod's hooks would run". Whether the 2.1.304 removal includes the 2.1.299 note is not stated. Do not rely on either note.
 
