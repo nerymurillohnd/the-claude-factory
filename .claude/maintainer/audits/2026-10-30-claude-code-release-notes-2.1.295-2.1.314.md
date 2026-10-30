@@ -7,33 +7,34 @@
 - **Text:** every entry is copied verbatim from the release body, by script, with no rewording. The `[patch:position]` id is the entry's 1-based position in its release (`[299:128]` is the 128th entry of 2.1.299).
 - **Inclusion rule 1, keywords.** An entry is listed when its text contains one of: mod, plugin, LSP (or language server), MCP, rule, CLAUDE.md, marketplace, skill, test (tests, testing, tested), plugin.json, hook, tool. Plural forms count, and so do identifiers split into words (`enabledMcpjsonServers` counts as MCP, `PreToolUse` as tool, `disableAllHooks` as hooks). The tag after each entry names the keywords it matched.
 - **Inclusion rule 2, named tool.** An entry is also listed when it names a built-in Claude Code tool (Read, Edit, Write, NotebookEdit, Bash, PowerShell, Grep, Glob, WebFetch, WebSearch, AskUserQuestion, PushNotification, SendMessage, TaskStop, ScheduleWakeup, Workflow, Agent card) as the subject of the change, without the word "tool". Its tag is `tools (named tool)`.
-- **Reviewed and not listed:** entries that only concern subagents, managed settings, the VS Code extension, Cloud sessions, Claude Tag, Code Review, the Claude apps gateway, sandboxing or terminal rendering match no requested topic. Entries that touch a requested topic without using its keyword or a tool name are in Appendix B for Nery to rule on.
+- **Inclusion rule 3, decision.** 14 entries touch a requested topic without using its keyword or a tool name: bundled skills such as `/claude-api`, `/code-review` and `/verify`, command files, custom agent frontmatter, and shell permission prompts of the Bash tool. Nery decided to include them. Their tag is `added by decision`, followed by what each one is.
+- **Not listed:** entries that only concern subagents, managed settings, the VS Code extension, Cloud sessions, Claude Tag, Code Review, the Claude apps gateway, sandboxing or terminal rendering match no requested topic.
 
 ## Coverage
 
-| Version | Published (UTC) | Entries in the release | Listed by keyword | Listed by named tool | Total listed |
-| :-- | :-- | --: | --: | --: | --: |
-| 2.1.295 | 2026-10-08 19:48 | 143 | 64 | 7 | 71 |
-| 2.1.296 | 2026-10-09 19:28 | 79 | 33 | 2 | 35 |
-| 2.1.297 | none | none | none | none | none |
-| 2.1.298 | none | none | none | none | none |
-| 2.1.299 | 2026-10-14 02:49 | 190 | 79 | 6 | 85 |
-| 2.1.300 | 2026-10-14 18:24 | 88 | 30 | 2 | 32 |
-| 2.1.301 | 2026-10-15 19:22 | 51 | 21 | 4 | 25 |
-| 2.1.302 | 2026-10-16 20:53 | 63 | 17 | 0 | 17 |
-| 2.1.303 | 2026-10-18 22:26 | 1 | 0 | 0 | 0 |
-| 2.1.304 | 2026-10-19 21:34 | 76 | 27 | 5 | 32 |
-| 2.1.305 | 2026-10-20 20:46 | 38 | 12 | 3 | 15 |
-| 2.1.306 | 2026-10-21 03:16 | 2 | 1 | 0 | 1 |
-| 2.1.307 | 2026-10-21 22:17 | 43 | 14 | 1 | 15 |
-| 2.1.308 | 2026-10-22 04:34 | 1 | 0 | 0 | 0 |
-| 2.1.309 | 2026-10-22 22:18 | 79 | 26 | 8 | 34 |
-| 2.1.310 | 2026-10-23 23:39 | 26 | 4 | 0 | 4 |
-| 2.1.311 | 2026-10-26 21:51 | 92 | 28 | 3 | 31 |
-| 2.1.312 | 2026-10-27 20:24 | 39 | 5 | 1 | 6 |
-| 2.1.313 | none | none | none | none | none |
-| 2.1.314 | 2026-10-30 01:06 | 119 | 29 | 3 | 32 |
-| **Total** | | **1130** | **390** | **45** | **435** |
+| Version | Published (UTC) | Entries in the release | Listed by keyword | Listed by named tool | Added by decision | Total listed |
+| :-- | :-- | --: | --: | --: | --: | --: |
+| 2.1.295 | 2026-10-08 19:48 | 143 | 64 | 7 | 0 | 71 |
+| 2.1.296 | 2026-10-09 19:28 | 79 | 33 | 2 | 3 | 38 |
+| 2.1.297 | none | none | none | none | none | none |
+| 2.1.298 | none | none | none | none | none | none |
+| 2.1.299 | 2026-10-14 02:49 | 190 | 79 | 6 | 2 | 87 |
+| 2.1.300 | 2026-10-14 18:24 | 88 | 30 | 2 | 1 | 33 |
+| 2.1.301 | 2026-10-15 19:22 | 51 | 21 | 4 | 0 | 25 |
+| 2.1.302 | 2026-10-16 20:53 | 63 | 17 | 0 | 0 | 17 |
+| 2.1.303 | 2026-10-18 22:26 | 1 | 0 | 0 | 0 | 0 |
+| 2.1.304 | 2026-10-19 21:34 | 76 | 27 | 5 | 2 | 34 |
+| 2.1.305 | 2026-10-20 20:46 | 38 | 12 | 3 | 0 | 15 |
+| 2.1.306 | 2026-10-21 03:16 | 2 | 1 | 0 | 0 | 1 |
+| 2.1.307 | 2026-10-21 22:17 | 43 | 14 | 1 | 1 | 16 |
+| 2.1.308 | 2026-10-22 04:34 | 1 | 0 | 0 | 0 | 0 |
+| 2.1.309 | 2026-10-22 22:18 | 79 | 26 | 8 | 0 | 34 |
+| 2.1.310 | 2026-10-23 23:39 | 26 | 4 | 0 | 1 | 5 |
+| 2.1.311 | 2026-10-26 21:51 | 92 | 28 | 3 | 2 | 33 |
+| 2.1.312 | 2026-10-27 20:24 | 39 | 5 | 1 | 2 | 8 |
+| 2.1.313 | none | none | none | none | none | none |
+| 2.1.314 | 2026-10-30 01:06 | 119 | 29 | 3 | 0 | 32 |
+| **Total** | | **1130** | **390** | **45** | **14** | **449** |
 
 Versions 2.1.297, 2.1.298 and 2.1.313 were never published: `get_release_by_tag` returns 404 for each, `list_tags` has no such tag, and the `CHANGELOG.md` at the `v2.1.314` commit has no section for them. They have no entries to list.
 
@@ -54,6 +55,7 @@ Versions 2.1.297, 2.1.298 and 2.1.313 were never published: `get_release_by_tag`
 | hooks | 98 |
 | tools | 130 |
 | tools (named tool) | 45 |
+| added by decision | 14 |
 
 An entry that matches several keywords is counted under each of them.
 
@@ -252,6 +254,8 @@ Published 2026-10-09 19:28 UTC. Source: [release v2.1.296](https://github.com/an
   _Matches: hooks_
 - [296:037] Fixed Claude calling cloud sessions non-interactive and suggesting `/mcp` or `claude mcp` when an MCP server needs authentication  
   _Matches: MCP_
+- [296:038] Fixed `/code-review` ending on a raw JSON array in cloud sessions, the Agent SDK and IDE integrations; the findings now print as a numbered list  
+  _Matches: added by decision: `/code-review` is a bundled command; the entry names no requested keyword_
 - [296:040] Fixed skills synced from claude.ai never finishing their install, and being downloaded again at every sync, when several sessions share a config directory  
   _Matches: skills_
 - [296:041] Fixed a plugin synced from claude.ai being disabled when the marketplace dependency it declares was also synced from claude.ai  
@@ -268,6 +272,10 @@ Published 2026-10-09 19:28 UTC. Source: [release v2.1.296](https://github.com/an
   _Matches: MCP_
 - [296:049] Windows: Fixed `claude plugin install` failing for GitHub `owner/repo` plugin sources on machines with no GitHub SSH key; the clone is now retried over HTTPS  
   _Matches: plugins_
+- [296:050] Windows: Fixed `rm -rf /c/Users/<name>` in Git Bash not asking in bypass permissions mode  
+  _Matches: added by decision: Bash permission behavior; the entry names no tool_
+- [296:055] Improved `--debug` output to name unrecognized frontmatter fields in custom agent files, with a hint for likely typos  
+  _Matches: added by decision: custom agent files, not skills or plugins_
 - [296:056] Improved auto mode: a tool call that wasn't run because auto mode's check had no usable answer now shows as a dim "Not run" row instead of a red error  
   _Matches: tools_
 - [296:057] Improved `--debug` output for hooks: command hooks on tool calls, prompts, SessionStart and Stop now log their command, plugin, outcome and duration when they finish, so a slow hook is identifiable  
@@ -317,6 +325,8 @@ Published 2026-10-14 02:49 UTC. Source: [release v2.1.299](https://github.com/an
   _Matches: mods, hooks_
 - [299:027] Fixed a sandboxed shell command being able to write into a `--plugin-dir` folder, whose code Claude Code reloads and runs outside the sandbox  
   _Matches: plugins_
+- [299:030] Fixed rm prompts on shell `-c` scripts that don't run `rm`. An rm built at run time in a script Claude Code can't read no longer prompts unless `CLAUDE_CODE_STRICT_INLINE_SHELL_RM_PROMPT=1`  
+  _Matches: added by decision: shell permission prompts; the entry names no tool_
 - [299:032] Fixed `claude mcp list`, `claude doctor` and `/status` reporting an empty `.mcp.json` as invalid  
   _Matches: MCP_
 - [299:035] Fixed scheduled wakeups (ScheduleWakeup) not firing while a background task was running in Agent SDK, IDE and `claude remote-control` sessions  
@@ -387,6 +397,8 @@ Published 2026-10-14 02:49 UTC. Source: [release v2.1.299](https://github.com/an
   _Matches: MCP, tools_
 - [299:110] Fixed `claude mcp add <name> -- <command> --background` being started as a background session  
   _Matches: MCP_
+- [299:112] Fixed a custom slash command's embedded shell line running twice when a newer message interrupted the command while its prompt was being checked  
+  _Matches: added by decision: custom slash command; the entry names no requested keyword_
 - [299:116] Fixed MCP OAuth sign-in, token refresh and sign-out not sending configured `headers`/`headersHelper` values, which broke servers behind an authenticating proxy  
   _Matches: MCP_
 - [299:117] Fixed the Artifact tool reporting a spurious one-line difference against the live page, and refusing the publish, when a large page with a line break after `<head>` is published again unchanged  
@@ -500,6 +512,8 @@ Published 2026-10-14 18:24 UTC. Source: [release v2.1.300](https://github.com/an
   _Matches: MCP, tools_
 - [300:038] Fixed Claude not being told about an MCP server's tools and instructions until its next tool call, when the server finished connecting after a compaction  
   _Matches: MCP, tools_
+- [300:041] Fixed Claude polling a background command's output file or sleeping while it runs  
+  _Matches: added by decision: background command behavior; the entry names no tool_
 - [300:045] Fixed Write, Edit and NotebookEdit in Cowork cloud sessions reporting success for a path on your own computer, where the file never arrived  
   _Matches: tools (named tool)_
 - [300:046] Fixed Claude searching for deferred tools already loaded earlier in the conversation when a session resumes a history that never listed them  
@@ -634,8 +648,12 @@ Published 2026-10-19 21:34 UTC. Source: [release v2.1.304](https://github.com/an
   _Matches: mods, tools_
 - [304:003] Added `e.isReadOnly` to a mod's `tool.check` event, set when the tool call is read-only  
   _Matches: mods, tools_
+- [304:005] Added `/claude-api managed-agents-secure`, which compares a Managed Agents agent's settings with Anthropic's published security guide, without changing anything  
+  _Matches: added by decision: `/claude-api` is a bundled skill; the entry does not say skill_
 - [304:006] Added the names of the tools called earlier to the compaction summary in the transcript view (Ctrl+O)  
   _Matches: tools_
+- [304:010] Fixed `rm -r` of a mounted drive or a folder at its top level (`/Volumes`, `/media`, WSL's `/mnt/c`) not getting the safety prompt that `rm -rf /Applications` gets  
+  _Matches: added by decision: shell safety prompt; the entry names no tool_
 - [304:012] Fixed a plugin keeping a headless run going past `--max-turns`, Stop, or ended input by spawning subagents or re-running a finished one  
   _Matches: plugins_
 - [304:013] Fixed a failed mod reload removing the tools and commands of the version that stays loaded, and its messages being wrong or silent about whether the previous version is still loaded  
@@ -739,6 +757,8 @@ Published 2026-10-21 03:16 UTC. Source: [release v2.1.306](https://github.com/an
 
 Published 2026-10-21 22:17 UTC. Source: [release v2.1.307](https://github.com/anthropics/claude-code/releases/tag/v2.1.307).
 
+- [307:001] Added `/claude-api api-version` to move Claude API code to API version `2026-10-21`  
+  _Matches: added by decision: `/claude-api` is a bundled skill; the entry does not say skill_
 - [307:002] Added the `claude_code.safety_event` OpenTelemetry event for each tool call a permission rule, auto mode, a safety check, a hook or the sandbox stopped, prompted or sent back  
   _Matches: rules, hooks, tools_
 - [307:005] Fixed MCP servers showing "needs authentication" in `claude -p` on macOS while the login keychain was locked; they now say why, and the next run after an unlock connects without a new sign-in  
@@ -854,6 +874,8 @@ Published 2026-10-23 23:39 UTC. Source: [release v2.1.310](https://github.com/an
 
 - [310:001] Added the Monitor tool and plugin monitors on Bedrock, Vertex, and Foundry, and when telemetry or nonessential traffic is disabled; long foreground sleeps are now blocked there too  
   _Matches: plugins, tools_
+- [310:005] Fixed file read permission prompts not showing where a symbolic link leads  
+  _Matches: added by decision: read permission prompt; the entry names no tool_
 - [310:007] Windows: Fixed PreToolUse and PermissionRequest hooks letting a tool call through when Git Bash is missing and the hook's command is only quoted strings, such as a quoted path  
   _Matches: hooks, tools_
 - [310:010] Improved a mod's `Image` to draw inside tmux with `allow-passthrough` and `focus-events` on, in kitty, Ghostty, and iTerm2 3.5+ with fullscreen rendering, where it showed only its `alt` text  
@@ -907,6 +929,8 @@ Published 2026-10-26 21:51 UTC. Source: [release v2.1.311](https://github.com/an
   _Matches: tools (named tool)_
 - [311:050] Linux: Fixed sandboxed Bash commands failing with `bwrap: Can't create file` when a `--plugin-dir` folder was also an added directory and `permissions.blockReadsOutsideWorkingDirectories` was on  
   _Matches: plugins_
+- [311:056] Improved shell commands that reach their timeout: the result now shows the output so far and says the command is still running in the background  
+  _Matches: added by decision: shell command behavior; the entry names no tool_
 - [311:058] Improved the Artifact tool's choice between a page and a document: explainers and visual or interactive work become artifact pages; documents are for writing people keep editing or pass around  
   _Matches: tools_
 - [311:061] Improved screen reader mode: deleting a rule in /permissions says "Deleted allow rule …" right away  
@@ -915,6 +939,8 @@ Published 2026-10-26 21:51 UTC. Source: [release v2.1.311](https://github.com/an
   _Matches: rules_
 - [311:070] Changed startup warnings about permission rules in settings files to show once per user until the rule changes  
   _Matches: rules_
+- [311:071] Changed `/code-review` to tell Claude to put the effort level first and use max only when asked  
+  _Matches: added by decision: `/code-review` is a bundled command; the entry names no requested keyword_
 - [311:072] Changed `DISABLE_COMPACT` in settings files and in a mod's `$.env.set` so they can only turn compaction off, not back on  
   _Matches: mods_
 - [311:074] Changed sessions that set `CLAUDE_CODE_SYNC_SKILLS` with feature-flag fetching off to reuse a claude.ai skills list up to 10 minutes old that another session on the machine fetched  
@@ -936,8 +962,12 @@ Published 2026-10-27 20:24 UTC. Source: [release v2.1.312](https://github.com/an
   _Matches: rules, CLAUDE.md_
 - [312:005] Fixed per-directory and `paths:` skills not being found after a Bash `cd` deeper into a git repository  
   _Matches: skills_
+- [312:007] Fixed a command with an invalid name stopping all commands from loading, which could leave `claude -p` with no output  
+  _Matches: added by decision: command files; the entry names no requested keyword_
 - [312:008] Fixed the Read tool sometimes failing on PDF pages with "pdftoppm failed: Could not write image" when the clean-up of old session files ran at the same time  
   _Matches: tools_
+- [312:015] Fixed `/verify` showing a long description meant for Claude in `/help` and the `/` command menu instead of a short one  
+  _Matches: added by decision: `/verify` is a bundled skill; the entry does not say skill_
 - [312:017] Improved WebFetch errors in cloud sessions: a host that does not resolve is now explained as possibly outside the allowed network domains, so Claude names the host to allow  
   _Matches: tools (named tool)_
 - [312:022] Changed prompt and agent hooks to run at most 24 at a time per session, sub-agents included, plus at most 12 that have waited longer than their event's timeout; a `timeout` under 1 second now counts as 1 second  
@@ -1018,41 +1048,8 @@ Published 2026-10-30 01:06 UTC. Source: [release v2.1.314](https://github.com/an
 
 - 2.1.297, 2.1.298 and 2.1.313: not published (see Coverage).
 
-## Appendix B: near-miss entries not listed
-
-These entries touch a requested topic but contain none of its keywords and name no built-in tool. Nery decides whether to add them.
-
-- [296:038] Fixed `/code-review` ending on a raw JSON array in cloud sessions, the Agent SDK and IDE integrations; the findings now print as a numbered list  
-  _Not listed: `/code-review` is a bundled command; the entry names no requested keyword._
-- [296:050] Windows: Fixed `rm -rf /c/Users/<name>` in Git Bash not asking in bypass permissions mode  
-  _Not listed: Bash permission behavior; the entry names no tool._
-- [296:055] Improved `--debug` output to name unrecognized frontmatter fields in custom agent files, with a hint for likely typos  
-  _Not listed: custom agent files, not skills or plugins._
-- [299:030] Fixed rm prompts on shell `-c` scripts that don't run `rm`. An rm built at run time in a script Claude Code can't read no longer prompts unless `CLAUDE_CODE_STRICT_INLINE_SHELL_RM_PROMPT=1`  
-  _Not listed: shell permission prompts; the entry names no tool._
-- [299:112] Fixed a custom slash command's embedded shell line running twice when a newer message interrupted the command while its prompt was being checked  
-  _Not listed: custom slash command; the entry names no requested keyword._
-- [300:041] Fixed Claude polling a background command's output file or sleeping while it runs  
-  _Not listed: background command behavior; the entry names no tool._
-- [304:005] Added `/claude-api managed-agents-secure`, which compares a Managed Agents agent's settings with Anthropic's published security guide, without changing anything  
-  _Not listed: `/claude-api` is a bundled skill; the entry does not say skill._
-- [304:010] Fixed `rm -r` of a mounted drive or a folder at its top level (`/Volumes`, `/media`, WSL's `/mnt/c`) not getting the safety prompt that `rm -rf /Applications` gets  
-  _Not listed: shell safety prompt; the entry names no tool._
-- [307:001] Added `/claude-api api-version` to move Claude API code to API version `2026-10-21`  
-  _Not listed: `/claude-api` is a bundled skill; the entry does not say skill._
-- [310:005] Fixed file read permission prompts not showing where a symbolic link leads  
-  _Not listed: read permission prompt; the entry names no tool._
-- [311:056] Improved shell commands that reach their timeout: the result now shows the output so far and says the command is still running in the background  
-  _Not listed: shell command behavior; the entry names no tool._
-- [311:071] Changed `/code-review` to tell Claude to put the effort level first and use max only when asked  
-  _Not listed: `/code-review` is a bundled command; the entry names no requested keyword._
-- [312:007] Fixed a command with an invalid name stopping all commands from loading, which could leave `claude -p` with no output  
-  _Not listed: command files; the entry names no requested keyword._
-- [312:015] Fixed `/verify` showing a long description meant for Claude in `/help` and the `/` command menu instead of a short one  
-  _Not listed: `/verify` is a bundled skill; the entry does not say skill._
-
 ## Verification
 
 - Entries read, version by version, from the release bodies: 1130 across 17 versions. The CHANGELOG sections hold the same 1130 entries.
-- Listed: 435 (390 by keyword and 45 by named tool). Near-miss, not listed: 14. Reviewed and outside the requested topics: 681.
-- 435 + 14 + 681 = 1130.
+- Listed: 449 (390 by keyword, 45 by named tool and 14 by decision). Reviewed and outside the requested topics: 681.
+- 449 + 681 = 1130.
