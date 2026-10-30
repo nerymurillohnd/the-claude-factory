@@ -73,8 +73,9 @@ evals/
 - Defaults: `max_turns` 10, `timeout_seconds` 300 (up to 3600), `runs` 3. A one-shot answer needs about 5 turns; reading a repo and writing a report 25–40.
 - Runs are isolated: each is a `claude -p` child process with only the plugin loaded, and no `CLAUDE.md`, settings, memory, other plugins, or personal MCP servers. Put everything a case needs in the plugin's components or the case's fixtures.
 - A mod's hooks run in eval runs, because they run in `claude -p`; what the mod draws does not (`/en/plugins/mods/overview` → Where mods run). Grade a mod's effect on the session, never its drawing.
-- An eval directory other than `evals/`: `"experimental": { "evals": "quality/evals" }` in `plugin.json`, or `--eval-dir` on both `init` and the run. Either way the suite stays below the plugin (`--help` calls `--eval-dir` a "Directory name (below the plugin)").
-- A committed suite reaches every user's cached copy of the plugin as inert files and never runs there. Keep secrets and large files out of it.
+- Set an eval directory other than `evals/` with `"experimental": { "evals": "quality/evals" }` in `plugin.json`, or `--eval-dir` on both `init` and the run.
+- Keep the suite below the plugin: `claude plugin eval --help` names `--eval-dir` a directory below it.
+- Keep secrets and large files out of a committed suite: it reaches every user's cached copy of the plugin, where it never runs.
 
 ## Fixtures
 

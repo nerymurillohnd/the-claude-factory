@@ -14,10 +14,10 @@ Claude Code ships what a mod is written with. Use it before anything this skill 
 | Need | Native tool |
 | :-- | :-- |
 | How to write a hooks module: events, `$`, elements, state, examples | The built-in skill `plugin-authoring`. Load it with the Skill tool before the first edit of a hooks module; its `SKILL.md`, `reference.md` and `examples/` are written for the installed build |
-| The exact API of the installed build | Its declarations: `plugins/<mod>/.claude-plugin/types/claude-code/index.d.ts` once the mod has loaded in an interactive `claude --plugin-dir plugins/<mod>` session (never `claude -p`, the SDK, `claude plugin test` or `claude plugin validate`), or, before that, the `types/claude-code.d.ts` that `plugin-authoring` writes as it loads. Grep them for the event or method at hand; they win over any page |
+| The exact API of the installed build | Its declarations: `plugins/<mod>/.claude-plugin/types/claude-code/index.d.ts`, which only an interactive `claude --plugin-dir plugins/<mod>` session writes; before that, the `types/claude-code.d.ts` that `plugin-authoring` writes as it loads. Grep them for the event or method, and trust them over any page |
 | What Claude Code reads from the mod, and what it refuses | `claude plugin validate --strict plugins/<mod>`; `--json` adds `gatingHooks` and `hasCatch` |
 | The mod's tests | `claude plugin test plugins/<mod>`, which runs its `*.test.ts` and `*.test.tsx` against `claude-code/testing` |
-| Type check, optional | `tsc -p plugins/<mod> --noEmit`, through the git-ignored `tsconfig.json` Claude Code writes for the editor. An editor aid that holds only for the build that wrote `.claude-plugin/types/`; never a required step or a proof |
+| Type check, an editor aid only | `tsc -p plugins/<mod> --noEmit`, through the git-ignored `tsconfig.json` Claude Code writes; never a required step or a proof |
 | Load it and reload on save | `claude --plugin-dir plugins/<mod>`, in an interactive session |
 | Why it does nothing | `claude --debug-file <log>`, or `claude --debug=hooks` |
 | Which mods a session loaded | `/plugin`: the dim line `N mod active · <names>`; **Installed** → **Built-in** lists Claude Code's own mods |
@@ -35,13 +35,25 @@ Claude Code ships what a mod is written with. Use it before anything this skill 
 ## 3. Decide what to do
 
 - **A new mod.** Create the plugin first with this repository's plugin scaffold, which sets its category; give it `mods` only when a mod is the plugin's purpose, as `plugin-categories` says. When a mod is added to or removed from an existing plugin, check its category with `plugin-categories` (situation C). Then add the files `plugin-authoring` describes: `hooks/hooks.json` with one path under `modules`, the hooks module, and `types/index.d.ts` when the mod keeps `$.state` values or adds a noun to `$`. Never use `claude plugin init`: it scaffolds a plugin of command hooks under `~/.claude/skills/`, not a mod (`claude plugin --help` on 2.1.310: "Scaffold a new plugin at ~/.claude/skills/<name>/"; `plugin-authoring`'s `reference.md`: "one of command hooks under `~/.claude/skills`").
-- **An edit to a mod in `plugins/`.** Edits load, and the declarations are written, only in an interactive session started with `claude --plugin-dir plugins/<mod>` (`/en/plugins/mods/create` → "Change a mod with Claude"). In a session started without it, write the change, prove it with `claude plugin validate --strict` and `claude plugin test`, the checks of record, which run the installed engine, and ask Nery for a `--plugin-dir` session before claiming it works live.
+- **An edit to a mod in `plugins/`.**
+  - Load the edit in an interactive `claude --plugin-dir plugins/<mod>` session: only that session loads edits and writes the declarations (`/en/plugins/mods/create` → "Change a mod with Claude").
+  - Without that session, prove the change with `claude plugin validate --strict` and `claude plugin test`.
+  - Ask Nery for a `--plugin-dir` session before you claim the change works live.
 - **Edits ask for approval.** A folder loaded with `--plugin-dir` is a protected path: in `default` and `acceptEdits` modes each edit asks, and `permissions.allow` rules do not pre-approve it (`/en/permission-modes` → Protected paths). A sandboxed shell command cannot write there (2.1.299).
-- **Types without an interactive session** (`claude -p`, an SDK host, a mod that has not loaded yet). `claude -p` never writes `.claude-plugin/types/` (2.1.295). For editor help only, type-check against the `types/claude-code.d.ts` of `plugin-authoring`, with the `tsconfig.json` from that file's header kept outside `plugins/<mod>/`; it holds only for that build.
-- **What is committed.** Commit `types/index.d.ts`, the mod's contract. Never commit `.claude-plugin/types/` or a `tsconfig.json` in `plugins/<mod>/`: Claude Code writes both for the editor in an interactive `--plugin-dir` session, git-ignored, and everything committed under `plugins/<mod>/` reaches every user's copy.
+- **Types without an interactive session** (`claude -p`, an SDK host, a mod that has not loaded yet).
+  - Never wait for `claude -p` or an SDK session to write `.claude-plugin/types/`: they don't.
+  - For editor help, type-check against `plugin-authoring`'s `types/claude-code.d.ts`, with the `tsconfig.json` from its header kept outside `plugins/<mod>/`.
+- **What is committed.**
+  - Commit `types/index.d.ts`, the mod's contract.
+  - Never commit `.claude-plugin/types/` or a `tsconfig.json` in `plugins/<mod>/`: everything committed there reaches every user's copy.
 - **The mod's own contract.** `types/index.d.ts` declares each `$.state` value and any noun the mod adds to `$`. It is not the engine's `.claude-plugin/types/`. From 2.1.299 the manifest's `types` field can be left out when the contract sits at `./types/index.d.ts`.
 - **The module's files.** Only `.ts`, `.tsx`, `.jsx`, `.js`, `.mjs`, `.cjs`, `.mts` and `.cts` load, each as an ES module: no `import()`, no `require`, and a bare import only of `claude-code`.
-- **Where `$` may go.** Declare every function that receives `$`, and the module state they share, at the top level of the file: validate refuses `$` passed to a closure declared inside `register` (verified on v2.1.308). Treat a function imported from another file of the mod that receives `$` as unsupported until `claude plugin validate` on the installed build passes it: a 2.1.299 fix speaks of loading, and the docs page still says it fails validation. When you then rely on it, state 2.1.299 as the minimum. Re-derivable caches (listings, snapshots) may live at the top level and redraw with `$.ui.invalidate`; the person's own choices stay in `$.state`.
+- **Where `$` may go.**
+  - Declare every function that receives `$`, and the module state they share, at the top level of the file: validate refuses `$` passed to a closure inside `register`.
+  - Treat a function imported from another file that receives `$` as unsupported until `claude plugin validate` on the installed build passes it.
+  - When you rely on such an import, read its minimum version from the changelog and state it in the README.
+  - Keep re-derivable caches (listings, snapshots) at the top level, and redraw them with `$.ui.invalidate`.
+  - Keep the person's own choices in `$.state`.
 - **A tool a build may not have.** Compare it through `String(e.tool)`: `Glob` and `Grep` are not registered on native macOS and Linux builds.
 - **The plugin's name.** Distinctive and permanent. Validate refuses names that start with `claude-`, `anthropic-`, `anthropics-` or `cc-plugin-`. Only one plugin of a given name loads a hooks module (2.1.296+).
 - **APIs for managed mods only.** A mod installed from this marketplace cannot use `$.prompt.media` or `$.session.identity` (2.1.299). Never call `next.to` either: a plugin copied from a GitHub source always runs among users' mods (`/en/plugins/mods/admin`), and a user mod that calls it does not load at all, although validate passes it (verified on v2.1.310).
@@ -88,12 +100,14 @@ Put each of these in the template's own sections:
 
 - **Where it runs**, from `/en/plugins/mods/overview` → Where mods run. Don't take surfaces from validate: it stopped predicting them in 2.1.304.
 - **What turns it off.** `disableAllHooks` and an organization's `allowManagedModsOnly` stop the mod and keep the rest of the plugin (skills, commands, agents, MCP servers) loaded. `--safe-mode` and `--bare` start Claude Code without the plugin's mod, and `--safe-mode` without any customization.
-- **Organizations.** With managed settings or a Team or Enterprise login, the built-in guard `cc-plugin-sec-default` loads ahead of user mods: it can refuse the mod or keep a deny the mod tried to lift. `allowManagedModsOnly` refuses any mod installed from a GitHub source, even one the organization enables. Take these effects from `/en/plugins/mods/admin`, never from validate's notes: 2.1.304 removed the notes that predicted where hooks run.
+- **Organizations.** Take these effects from `/en/plugins/mods/admin`, never from validate's notes:
+  - say that with managed settings or a Team or Enterprise login, the built-in guard `cc-plugin-sec-default` loads ahead of user mods and can refuse the mod or keep a deny it tried to lift;
+  - say that `allowManagedModsOnly` refuses any mod installed from a GitHub source, even one the organization enables.
 - **What it reaches.** Build the list from validate's `hooks:`, `calls:`, `env reads:` and `state` lines and from reading the module, because the lines are cut at about 1,000 characters (anthropics/claude-code#105020). Then:
   - name every file it reads, since a permission deny rule such as `Read(.env)` does not cover `$.fs`;
   - name every network call, since a WebFetch deny does not stop `$.http.fetch`;
   - say what it never does (writes, network, model calls);
-  - never ask users to run validate, tests or type checks: this list is their disclosure, and the minimum Claude Code version their compatibility.
+  - point users to this list and the README's minimum version, never to validate, tests or type checks.
 - **The permission prompt.** Say that the mod cannot restyle it or change what it shows.
 - **Diagnosis.** `/plugin` names the mods the session loaded, and only `claude --debug` shows why one was refused or a hook skipped.
 - **Options.** Set them from the shell with `claude plugin install <plugin>@the-claude-factory --config <key>=<value>`, or in `/config`.
