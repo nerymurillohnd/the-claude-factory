@@ -6,6 +6,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+### Changed
+
+- The warnings that a committed suite and its recorded replays ship to users are now separate, single-action instructions.
+
 ## [0.1.3] - 2026-10-30
 
 ### Changed

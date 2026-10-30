@@ -57,7 +57,8 @@ Read the one reference the row names; read a second only when the task spans two
 - **`target: files` lists created paths, not contents:** grade contents with `{ source: file, path: <path> }`, and grant `Write` or `Edit`.
 - **Granting Bash forces the OS sandbox:** `bubblewrap` and `socat` on Linux, WSL2 on Windows. With no backend, each run is refused instead of running unconfined.
 - **Runs are isolated:** no `CLAUDE.md`, settings, memory, other plugins or your MCP servers. Ship everything a case needs in the plugin.
-- **A committed suite ships.** The eval directory always sits below the plugin, so a marketplace install copies everything committed there into each user's plugin cache, where it never runs. Keep secrets, credentials and private data out of prompts, fixtures, transcripts, mocks and `mocks/.replay/`, and tell the user before committing a suite.
+- **A committed suite ships.** Keep secrets, credentials and private data out of prompts, fixtures, transcripts and mocks: the eval directory always sits below the plugin, so every committed file reaches each user's copy.
+- **Commit with consent.** Tell the user before you commit a suite.
 - **Scoped names** (`mcp__plugin_<plugin>_<server>__<tool>`, `<plugin>:<agent>`) are in [case-format.md](references/case-format.md); requirements, errors and the results folder are in the references for that task.
 
 ## 5. Answer format

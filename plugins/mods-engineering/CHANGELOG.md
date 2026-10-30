@@ -6,6 +6,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+### Changed
+
+- The guidance on missing declarations, what a check proves and how to declare a mod's minimum version is now one instruction per line.
+
 ## [0.1.2] - 2026-10-30
 
 ### Changed
