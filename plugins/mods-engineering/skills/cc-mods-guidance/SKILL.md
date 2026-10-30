@@ -80,9 +80,13 @@ When sources disagree:
 - Verify runtime behavior with a focused test where possible.
 - Stop short of unsupported compatibility or security claims.
 
-If declarations are absent, follow the creation guide's documented
-workflow for generating them. Loading a mod runs code: obtain
-authorization before loading an unreviewed mod.
+If declarations are absent, generate them as the creation guide
+documents (`#get-the-types-for-your-build`): load the mod from
+--plugin-dir in an interactive session, or have Claude write the mod.
+Do not expect -p or SDK sessions, claude plugin test, or
+claude plugin validate to write them.
+Loading a mod runs code: obtain authorization before loading an
+unreviewed mod.
 
 If full documentation cannot be retrieved, label the missing evidence.
 Proceed only on verified portions; do not fill gaps with invented APIs.
@@ -407,6 +411,12 @@ Use the repository's existing type-checking workflow against generated
 declarations when available. Do not install a compiler merely to make
 an unverified command work.
 
+Report a type check as proof only for the build that wrote the
+declarations; validate and test prove the installed build only.
+Never present either as proof for other users' builds:
+the README's declared minimum version speaks to them.
+Never make TypeScript, a compiler, or tsconfig.json a user prerequisite.
+
 Select tests relevant to the change:
 
 - Successful behavior.
@@ -442,7 +452,16 @@ For distribution tasks:
 
 - Develop against source, not an installed cache.
 - Verify manifest identity and version.
-- Record the actual tested Claude Code version and surfaces.
+- Declare the minimum Claude Code version in the README.
+  Start from the mods floor for each surface (overview `#where-mods-run`).
+  Raise it for every feature the mod uses that names a later version
+  (reference `#files`, interface `#draw-in-the-vs-code-extension`).
+- Record the version and surfaces you tested on separately from that minimum.
+- Treat everything committed under the plugin directory as shipped:
+  it reaches every user's installed copy; git-ignored files never do.
+- Keep .claude-plugin/types/ git-ignored; never commit it.
+- Keep the tsconfig.json Claude Code adds at the mod's root git-ignored;
+  it extends the generated files, so never commit it.
 - Document required configuration and capabilities.
 - Explain installation, updates, disabling, and recovery.
 - Review marketplace and managed-policy requirements separately.
