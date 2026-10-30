@@ -27,9 +27,22 @@ Drop the host from the shorthand (`nerymurillohnd/the-claude-factory`), or use t
 </details>
 
 <details>
+<summary><code>SSH authentication failed</code> or <code>SSH host key is not in your known_hosts file</code></summary>
+
+When an SSH key for github.com looks configured, Claude Code clones over SSH, with prompts turned off and only hosts already in `known_hosts`. This marketplace is public, so you don't need SSH: add it by its HTTPS URL, or set `CLAUDE_CODE_PLUGIN_PREFER_HTTPS=1` so `owner/repo` sources always clone over HTTPS.
+
+```bash
+claude plugin marketplace add https://github.com/nerymurillohnd/the-claude-factory.git
+```
+
+To keep SSH instead, run `ssh -T git@github.com` once to accept GitHub's host key, and make sure your key works without a passphrase prompt.
+
+</details>
+
+<details>
 <summary>The add hangs or fails behind a proxy or firewall</summary>
 
-Claude Code clones the repository with your local `git`. Confirm `git ls-remote https://github.com/nerymurillohnd/the-claude-factory.git` works from the same shell. If SSH to GitHub is blocked on your network, set `CLAUDE_CODE_PLUGIN_PREFER_HTTPS=1` so Claude Code always clones over HTTPS.
+Claude Code clones the repository with your local `git`. Confirm `git ls-remote https://github.com/nerymurillohnd/the-claude-factory.git` works from the same shell. If SSH to GitHub is blocked on your network, set `CLAUDE_CODE_PLUGIN_PREFER_HTTPS=1` so Claude Code always clones over HTTPS. On a slow connection, `Git clone timed out after 120s` means the clone needs longer: raise the limit with `export CLAUDE_CODE_PLUGIN_GIT_TIMEOUT_MS=300000` and retry in the same shell.
 
 </details>
 
