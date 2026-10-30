@@ -4,17 +4,18 @@ All notable changes to **The Claude Factory** marketplace are documented here: p
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The marketplace has no version of its own: entries are grouped by date, newest first, and every plugin carries its own version, changelog and tag. The versions 0.1.0 and 0.2.0 below are the history from before that change; their tags stay.
 
-## 2026-10-29
+## 2026-10-30
 
 ### Changed
 
-- **github-operations** 0.5.0 — **Breaking:** one `github` skill replaces the PR and cleanup skills and adds PR, issue and discussion writing, CI repair and repository setup; hooks keep its reviewer agents read-only.
 - **mods-engineering** 0.1.2 — says which sessions write a mod's type declarations, what a type check, validate and test prove, and to declare the minimum Claude Code version and keep generated files out of a published plugin.
 - **plugin-evals** 0.1.3 — warns that a committed eval suite ships in every user's copy, so its fixtures and replays must hold no secrets.
 
 ### Fixed
 
 - **hook-engineering** 0.2.2 — a Setup hook note names the declarations file Claude Code writes into a mod.
+- **mods-engineering** 0.1.3 — the guidance on missing declarations, proof and minimum versions is one instruction per line.
+- **plugin-evals** 0.1.4 — the warnings that a committed suite and its replays ship to users are single instructions.
 - **hook-engineering** 0.2.3 — the skill's configuration rules become one instruction per line, the references stop repeating a dated baseline, and the Setup note becomes a check you run on your own build.
 
 ### Removed
@@ -25,6 +26,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The
 - **project-maintainer** 0.2.4 — a development `tsconfig.json` that shipped by mistake; nothing changes in how the plugin works.
 - **tool-ledger** 0.1.3 — a development `tsconfig.json` that shipped by mistake; nothing changes in how the mod works.
 - **turn-meter** 0.1.3 — a development `tsconfig.json` that shipped by mistake; nothing changes in how the mod works.
+
+## 2026-10-29
+
+### Changed
+
+- **github-operations** 0.5.0 — **Breaking:** one `github` skill replaces the PR and cleanup skills and adds PR, issue and discussion writing, CI repair and repository setup; hooks keep its reviewer agents read-only.
 
 ## 2026-10-28
 
