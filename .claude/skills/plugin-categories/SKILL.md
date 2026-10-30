@@ -71,7 +71,7 @@ On Nery's decision (rule 3). It is a maintainer change outside `plugins/`: commi
 
 - **Add**: one object with a kebab-case `id`, an `emoji`, a `title` and a one-sentence `description`, at the place in the list Nery chooses. It shows in the catalog once a plugin uses it.
 - **Reorder**: move the objects.
-- **Reword** the `description`: it changes only the catalog. The `title` or the `emoji`: it also changes the catalog's links, so hand any link to them in the root README or `docs/` to `maintaining-user-docs`, and every plugin README whose Category badge shows the old title changes in a `README.md`-only pull request, with no bump.
+- **Reword** the `description`: it changes only the catalog. The `title` or the `emoji`: it also changes the catalog's links, so hand any link to them in the root README or `docs/` to `maintaining-user-docs`, and update the Category badge of every plugin README that shows the old title.
 - **Rename an id or remove a category**, in this order, because `marketplace.mjs` writes nothing while a plugin uses an id that `categories.json` lacks:
   1. Add the new category, unless the plugins move to an existing one, and commit it to `main`.
   2. Move every plugin that uses the old id, as B says, on branches started from that `main`. List them with `jq -r 'select(.metadata.category == "<old-id>") | .name' plugins/*/.claude-plugin/plugin.json`.
