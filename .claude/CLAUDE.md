@@ -52,12 +52,7 @@ This repository holds two scopes. They are never mixed: a rule written for one s
 - **Plugin scope**: one self-contained directory per plugin under `plugins/<plugin>/`. Its environment is only what the plugin's `README.md` declares as prerequisites; users' compatibility comes only from the README's declared minimum Claude Code version.
 - **Maintainer files inside a plugin**: a mod's `*.test.ts(x)` and a plugin's eval suite stay in the plugin's directory, because `claude plugin test` and `claude plugin eval` only find them there. They are maintainer tooling, run only on Nery's build, and ship to users as inert files. Everything committed under `plugins/<plugin>/` reaches every user's cache; nothing git-ignored does, so commit no other maintainer-only file there.
 
-Pull requests and version bumps (this is the only place that sets them):
-
-- **A plugin's documentation alone** (`README.md`, `LICENSE`, `NOTICE.txt`): commit it signed straight to `main`, with no pull request, version bump or `CHANGELOG.md` entry, because it changes nothing the plugin does. GitHub shows it on push; installed copies keep the old text until the plugin's next version.
-- **A plugin's maintainer files alone** (a mod's tests, an eval suite): a pull request, with no version bump or `CHANGELOG.md` entry, because users never run them; they reach users with the plugin's next version.
-- **Every other file inside a plugin's directory** (its manifest, components, scripts, dependencies, `CHANGELOG.md`): a pull request and a version bump, through `versioning` and `releases`.
-- **Everything outside `plugins/`**: no pull request.
+`.claude/rules/operating-standard.md` sets which changes take a pull request and a version bump.
 
 #### Maintainer Tooling
 
