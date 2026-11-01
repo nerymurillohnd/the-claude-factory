@@ -54,6 +54,7 @@ Add an item only when all of these hold:
 | DEBT-039 | The `instruction-engineering` checker never ran on Python 3.12, its declared minimum | 🟠 Blocked |
 | DEBT-040 | `scaffold-plugin.py` writes a `plugin.json` that Biome's formatter rejects | 🟠 Blocked |
 | DEBT-042 | python-lsp-intelligence's post-edit hook type-checks a PEP 723 script without its dependencies | 🟡 Pending |
+| DEBT-043 | No CI workflow runs the eval suites that `operating-standard.md` requires | 🟠 Blocked |
 
 ## 📂 Open items
 
@@ -83,7 +84,7 @@ Add an item only when all of these hold:
 - **Why it is not fixed now:** the rule for reverts, and how the check treats a version that returns to the last tag, is a design decision for Nery. This task was only to get the pending releases out.
 - **Next action:** decide with Nery whether `check-version-bump.py` compares each plugin with its latest `<plugin>--v*` tag instead of the previous commit. If yes, change it with tests for both cases: a revert to the tagged state passes and an edit without a bump still fails.
 - **Review condition:** closes when a revert of an unreleased bump passes `Validate` on `main` and a plugin change without a bump still fails it.
-- **Related records:** [PR #27](https://github.com/nerymurillohnd/the-claude-factory/pull/27), [PR #31](https://github.com/nerymurillohnd/the-claude-factory/pull/31); the `release-and-versioning` skill.
+- **Related records:** [PR #27](https://github.com/nerymurillohnd/the-claude-factory/pull/27), [PR #31](https://github.com/nerymurillohnd/the-claude-factory/pull/31); the `versioning` and `releases` skills.
 
 ### DEBT-010 — The mod gates of `scripts/gates.mjs` can miss a mod or report green on a lost test summary
 
@@ -325,7 +326,7 @@ Add an item only when all of these hold:
   - Proposed mapping:
     - `Edit`/`Write` under `plugins/*/hooks/**`, or Bash with `claude plugin test` → `plugin-hooks-guidance`, or `testing-mods` for a mod;
     - Bash with `claude plugin eval`, or `Edit`/`Write` under `plugins/*/evals/**` → `testing-plugins`;
-    - `Edit`/`Write` of `plugins/*/.claude-plugin/plugin.json`, a plugin `CHANGELOG.md` or the root `CHANGELOG.md` → `release-and-versioning`;
+    - `Edit`/`Write` of `plugins/*/.claude-plugin/plugin.json`, a plugin `CHANGELOG.md` or the root `CHANGELOG.md` → `versioning`;
     - any other file under `plugins/<plugin>/` → `building-plugins`;
     - `scripts/categories.json` → `plugin-categories`.
   - A marker in the session's `scratchpad_dir` records "reminded", not "invoked": `transcript_path` is written asynchronously, and a `PreToolUse` `additionalContext` reaches Claude only after the tool ran (memory `deferred-pretooluse-skill-reminder`).
@@ -421,9 +422,36 @@ Add an item only when all of these hold:
 
 - **Impact / risk:** the post-edit hook blocks every edit of a PEP 723 script with errors that are not real, which trains Claude to ignore the hook's findings and buries real errors in the noise.
 - **Why it is not fixed now:** the change belongs to another plugin, with its own pull request and version bump; Nery queued it after the github-operations 0.5.0 release.
-- **Next action:** in `hooks/check.py`, when the file's first line is the `uv run --script` shebang and `uv` is on `PATH`, run `uv run --quiet --no-project --with-requirements <file> basedpyright -p <config> <file>`; add a test in `scripts/testers/python-lsp-intelligence/` with a PEP 723 fixture that imports a third-party package, RED first; declare `uv` as optional in the README; release through `release-and-versioning`.
+- **Next action:** in `hooks/check.py`, when the file's first line is the `uv run --script` shebang and `uv` is on `PATH`, run `uv run --quiet --no-project --with-requirements <file> basedpyright -p <config> <file>`; add a test in `scripts/testers/python-lsp-intelligence/` with a PEP 723 fixture that imports a third-party package, RED first; declare `uv` as optional in the README; version and release it through `versioning` and `releases`.
 - **Review condition:** closes when an edit of a PEP 723 script with third-party dependencies produces no false `reportMissingImports` from the hook and the new test passes.
 - **Related records:** DEBT-041; the `basedpyright-plugins:` gate in `scripts/gates.mjs`.
+
+### DEBT-043 — No CI workflow runs the eval suites that `operating-standard.md` requires
+
+| Field | Value |
+| --- | --- |
+| **Status** | 🟠 Blocked |
+| **Category** | quality, cost |
+| **Owner** | Nery |
+| **Logged** | 2026-11-01 |
+
+#### 🔎 Evidence
+
+- **Confirmed facts:**
+  - `.claude/rules/operating-standard.md` → Evals in CI requires the whole suite of a plugin with evals the first time and every time the plugin has changes that take a pull request.
+  - `plugins/project-maintainer/evals` and `plugins/skill-diagnostics/evals` exist; `grep -ln 'plugin eval' .github/workflows/*` prints nothing. The workflows are `claude-code-review.yml`, `claude.yml`, `release.yml` and `validate.yml`.
+  - The previous `evals.yml` was removed in commit c748041 (2026-10-25), to be rebuilt from the `testing-plugins` skill; that skill ships the template `assets/evals-ci.yml` and the checklist in `references/eval-policy.md`.
+  - On 2026-11-01 Nery chose to keep the rule and log the missing workflow as debt, to be built once he approves the spend.
+- **Inferences:** none.
+- **Open questions:** the `--max-cost-usd` cap per run.
+
+#### 📈 Impact and next step
+
+- **Impact / risk:** a pull request that changes `project-maintainer` or `skill-diagnostics` merges without its eval suite, so a regression in what those plugins teach reaches users unmeasured, against the rule.
+- **Why it is not fixed now:** the workflow spends Claude usage on every pull request that edits a plugin with evals, and needs Nery's approval of that spend.
+- **Next action:** on Nery's approval, adapt `testing-plugins/assets/evals-ci.yml` into `.github/workflows/evals.yml` with the checklist in `references/eval-policy.md`, then commit it only after he approves.
+- **Review condition:** closes when a pull request that changes a plugin with evals runs its whole suite in CI and a pull request that changes no such plugin skips it.
+- **Related records:** ADR_2026-10-21_ci-installs-claude-code-from-signed-apt; ADR_2026-10-28_withdrawn-debt-leaves-no-closed-entry.
 
 <!--
 Entry format. Copy this block above this comment for each new item and add its row to the Index.
