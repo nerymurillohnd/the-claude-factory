@@ -21,6 +21,10 @@
     {
       "root": "plugins",
       "pythonVersion": "3.12"
+    },
+    {
+      "root": "scripts/release",
+      "pythonVersion": "3.12"
     }
   ],
   "pythonPlatform": "All",

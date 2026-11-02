@@ -5,13 +5,13 @@ Users get a change only when the plugin.json version changes, so a plugin whose 
 differ from <base> (`git diff <base>...HEAD`) must carry the next version of the one at <base>,
 exactly one patch, minor or major step above it, and a non-empty CHANGELOG.md section for it. A
 jump that skips a version fails. A step from 0.x to 1.0.0 passes with a note: it needs Nery's
-explicit authorization (release-and-versioning, rule 4). A change limited to the plugin's
+explicit authorization (versioning, rule 3). A change limited to the plugin's
 documentation (README.md, LICENSE, NOTICE.txt) and its maintainer files (a mod's tests under
 tests/ or named *.test.ts(x), and the eval suite under evals/ or the manifest's experimental.evals)
 needs no bump; every other file does, CHANGELOG.md included. A renamed plugin is
 compared with its old name's version at <base>: the rename is a `renames` entry that HEAD adds to
 .claude-plugin/marketplace.json, or a plugin.json that git sees moved from plugins/<old>/. A rename
-breaks the commands users type, so its patch step fails (plugin-renames-and-removals, rule 3), and
+breaks the commands users type, so its patch step fails (rename-a-plugin, rule 3), and
 a move git sees without its `renames` entry fails too. A new plugin (no plugin.json at <base> under
 its name or an old one) and a removed one are skipped. It reads committed changes only: commit
 before running it.
@@ -33,7 +33,7 @@ import sys
 from typing import cast
 
 DOC_ONLY = frozenset({"README.md", "LICENSE", "NOTICE.txt"})
-BUMP = ".claude/skills/release-and-versioning/scripts/bump-version.py"
+BUMP = "scripts/release/bump-version.py"
 _decode: Callable[[str], object] = json.JSONDecoder().decode
 
 
@@ -48,7 +48,7 @@ class GitError(Exception):
 def repo_root() -> Path:
     """The repository root, or TCF_ROOT when set."""
     override = os.environ.get("TCF_ROOT")
-    return Path(override) if override else Path(__file__).resolve().parents[4]
+    return Path(override) if override else Path(__file__).resolve().parents[2]
 
 
 def git(root: Path, *args: str) -> subprocess.CompletedProcess[str]:
@@ -234,7 +234,7 @@ def check(root: Path, base: str) -> tuple[list[str], list[str], list[str]]:
             continue
         if core(base_version)[0] == 0 and core(version)[0] == 1:
             promise = f"{base_version} → {version} promises a stable interface"
-            rule = "Nery's explicit authorization (release-and-versioning, rule 4)"
+            rule = "Nery's explicit authorization (versioning, rule 3)"
             cautions.append(f"[plugins/{name}] {promise}: it needs {rule}.")
         changelog = plugin / "CHANGELOG.md"
         notes = changelog.read_text(encoding="utf-8") if changelog.is_file() else ""

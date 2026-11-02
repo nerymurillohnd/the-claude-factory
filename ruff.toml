@@ -5,10 +5,10 @@ line-length = 100
 indent-width = 4
 
 # Maintainer Python runs on 3.15. Plugin Python runs on any python3 from the floor up, and the
-# skill scripts run on the python3 of CI's ubuntu-24.04 runner (3.12) in the policy job and
-# release.yml (ADR_2026-10-27_python-version-is-set-per-scope).
+# skill scripts and the release scripts run on the python3 of CI's ubuntu-24.04 runner (3.12) in
+# the policy job and release.yml (ADR_2026-10-27_python-version-is-set-per-scope).
 target-version = "py315"
-per-file-target-version = { "plugins/**/*.py" = "py312", ".claude/skills/**/*.py" = "py312" }
+per-file-target-version = { "plugins/**/*.py" = "py312", ".claude/skills/**/*.py" = "py312", "scripts/release/**/*.py" = "py312" }
 
 respect-gitignore = true
 force-exclude = true

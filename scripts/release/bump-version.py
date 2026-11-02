@@ -34,7 +34,7 @@ _decode: Callable[[str], object] = json.JSONDecoder().decode
 def repo_root() -> Path:
     """The repository root, or TCF_ROOT when set."""
     override = os.environ.get("TCF_ROOT")
-    return Path(override) if override else Path(__file__).resolve().parents[4]
+    return Path(override) if override else Path(__file__).resolve().parents[2]
 
 
 def bumped(version: str, level: str) -> str:
