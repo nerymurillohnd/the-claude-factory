@@ -29,7 +29,7 @@ These rules apply only to the scripts that build and maintain this repository, o
 ## Python version
 
 - Target Python 3.15.
-- Scripts in `.claude/skills/*/scripts/` target Python 3.12.
+- Scripts in `.claude/skills/*/scripts/` and `scripts/release/` target Python 3.12: they run on the `python3` of CI's runner.
 
 ## Executability
 

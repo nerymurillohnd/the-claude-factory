@@ -12,6 +12,8 @@ Before you create or save any maintenance script, decide which of the four respo
 - `scripts/checkers/`
 - `scripts/testers/`
 
+The one exception is `scripts/release/`: the version and release scripts that `release.yml`, the version gate and `npm run version:bump` run. They stay together because they run on the `python3` of CI's runner and target Python 3.12, unlike the other folders.
+
 These are not interchangeable names. Each responsibility has its own inputs, outputs, and place in the software lifecycle. Validators, checkers, and testers all evaluate something, but their scope, context, and consequences are different. Choose the correct folder and stay consistent.
 
 ## Generators — `scripts/generators/`
