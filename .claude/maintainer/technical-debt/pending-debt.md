@@ -71,9 +71,9 @@ Add an item only when all of these hold:
 #### 🔎 Evidence
 
 - **Confirmed facts:**
-  - `.github/workflows/validate.yml` runs `check-version-bump.mjs` against `github.event.before` on a push and against the PR base on a pull request. `release.yml` runs only when `Validate` succeeds on a push to `main`, and it then tags every plugin whose current version has no tag.
+  - The `policy` job of `.github/workflows/validate.yml` runs `npm run gates:ci -- --group policy --base <BASE>`, with `BASE` the PR base on a pull request and `github.event.before` on a push (lines 68-70). Its `version-bump` gate (`scripts/gates.mjs:322-326`) runs `scripts/release/check-version-bump.py <BASE>`, which diffs `<BASE>...HEAD` and compares each changed plugin's version with its version at `<BASE>`, never with its latest tag (`check-version-bump.py:140-195`, read on 2026-11-01). `release.yml` runs only when `Validate` succeeds on a push to `main`, and it then tags every plugin whose current version has no tag.
   - On 2026-10-20 [PR #31](https://github.com/nerymurillohnd/the-claude-factory/pull/31) reverted [PR #27](https://github.com/nerymurillohnd/the-claude-factory/pull/27), so `plugins/bash-lsp-intelligence` went from 0.2.2 (never tagged) back to 0.2.1. The "Repository policy & script tests" job failed on the PR and on the push of `ad3951f` (run 39476280906) at the version-bump step: `files changed (...) but version is still 0.2.2`.
-  - Reproduced locally on `ad3951f` with `node .github/scripts/check-version-bump.mjs a223707`: exit 1 with that message. With base `origin/main` it passes.
+  - Reproduced locally on `ad3951f` with that day's script (`node .github/scripts/check-version-bump.mjs a223707`): exit 1 with that message. With base `origin/main` it passes. The Python script that replaced it keeps the same comparison.
   - `git diff bash-lsp-intelligence--v0.2.1 origin/main -- plugins/bash-lsp-intelligence` is empty: the plugin is byte-identical to its last release, so no bump is warranted.
   - Because `Validate` is red on `main`, `Release` stays skipped. On 2026-10-20 no tag existed for python-lsp-intelligence 0.2.2, typescript6-lsp-intelligence 0.2.1 or typescript7-lsp-intelligence 0.3.1, all merged the same day.
 - **Inferences:** any revert of a bump that was never released fails the same way, because the check compares with the previous commit, not with the last published tag (not tested beyond this case).
@@ -98,14 +98,14 @@ Add an item only when all of these hold:
 
 #### 🔎 Evidence
 
-- **Confirmed facts (read on 2026-10-25, line numbers rechecked on 2026-10-29):**
-  - `scripts/gates.mjs:487-500` creates the `mod-test:<plugin>` gate only for plugins with tracked `*.test.ts` or `*.test.tsx` files, not for every plugin whose `hooks/hooks.json` lists `modules`.
-  - `scripts/gates.mjs:657` runs every gate with `stdio: ['ignore', 'pipe', 'pipe']`, so `claude plugin test` writes to a pipe.
-  - anthropics/claude-code#103055 reports that `claude plugin test` on a pipe can lose the tail of its output, summary included, and exit 0. `testing-mods/scripts/check-mod.sh` writes to a file and fails without the summary.
+- **Confirmed facts (read on 2026-10-25, line numbers rechecked on 2026-11-01):**
+  - `scripts/gates.mjs:486-491` creates the `mod-test:<plugin>` gate only for plugins with tracked `*.test.ts` or `*.test.tsx` files, not for every plugin whose `hooks/hooks.json` lists `modules`.
+  - `scripts/gates.mjs:654` runs every gate with `stdio: ['ignore', 'pipe', 'pipe']`, so `claude plugin test` writes to a pipe.
+  - anthropics/claude-code#103055 reports that `claude plugin test` on a pipe can lose the tail of its output, summary included, and exit 0. It is still open on 2026-11-01. `testing-mods/scripts/check-mod.sh` writes to a file and fails without the summary.
 - **Inferences:**
   - A mod without tests is never run by `claude plugin test` in the gates.
   - A failed test can pass the gate when the summary is lost.
-- **Open questions:** whether #103055 still reproduces on 2.1.310 through `spawnSync` with pipes.
+- **Open questions:** whether #103055 reproduces on 2.1.316 through `spawnSync` with pipes.
 
 #### 📈 Impact and next step
 
@@ -128,13 +128,13 @@ Add an item only when all of these hold:
 
 #### 🔎 Evidence
 
-- **Confirmed facts (2026-10-26, compared with `hook-engineering:hook-development` 0.2.1 and the hooks docs it cites):**
+- **Confirmed facts (2026-10-26, compared with `hook-engineering:hook-development` 0.2.1 and the hooks docs it cites; line numbers rechecked on 2026-11-01):**
   - Line 29 says the strictest decision wins on every event; the docs document that order only for PreToolUse, PreModelSwitch and Elicitation.
   - Line 32 states as fact that plugin hooks get no shell profile, so version-manager tools are missing; the docs say hooks run in non-interactive shells, and the missing tools are an inference.
-  - Line 67 tells a hook script to resolve `node` and `tsc` across every Node manager, against `building-plugins`' rule not to add hand-written fallback paths.
-  - Line 77 says "Exit 1 never blocks"; with `"onFailure": "block"` it does, as the skill's own step 5 says.
+  - Line 68 tells a hook script to resolve `node` and `tsc` across every Node manager, against `building-plugins`' rule not to add hand-written fallback paths.
+  - Line 78 says "Exit 1 never blocks"; with `"onFailure": "block"` it does, as the skill's own step 5 says.
   - It omits plugin-relevant rules: a shell-form hook with `${user_config.*}` fails; `if` runs only on five events; a regex matcher is unanchored; agent-frontmatter hooks in a plugin are ignored.
-  - Neither `.claude/CLAUDE.md` → Workflow nor `building-plugins`' Other skills table names the skill.
+  - Neither `.claude/CLAUDE.md` → Workflow nor `building-plugins`' Other skills table names the skill; only `.claude/rules/plugins/plugins-scripts.md:49` does.
 - **Inferences:** a hook written from the skill can ship wrong behavior to users.
 - **Open questions:** none.
 
@@ -180,15 +180,22 @@ Add an item only when all of these hold:
 
 #### 🔎 Evidence
 
-- **Confirmed facts:** the gap table of `~/Claude/projects/the-claude-factory-research/reports/Auditoría del hook TypeScript.md` lists items not yet taken (open since 2026-10-22).
-- **Inferences:** none.
-- **Open questions:** which gaps to take, and in which order.
+- **Confirmed facts:**
+  - The report `~/Claude/projects/the-claude-factory-research/reports/Auditoría del hook TypeScript.md` (2026-10-22) no longer exists: neither that path nor a file of that name anywhere under `~` (`find`, `mdfind`, 2026-11-01). Its five open gaps survive in earlier handoffs, which list them with "None blocks".
+  - State of each gap in `hooks/hooks.json` and `hooks/tsc-check.sh`, identical in both plugins, on 2026-11-01:
+    1. The 120-second `timeout` ends the hook with no output of its own: the script has no deadline of its own (no match for one in `tsc-check.sh`). Open.
+    2. Windows without Git Bash cannot start the hook. The README declares Git Bash as the Windows requirement (`README.md:60`, `:423-425`), as `.claude/CLAUDE.md` → Plugin Tooling allows.
+    3. Both TypeScript plugins installed together check each edit twice. The README says to enable only one TypeScript plugin (`README.md:227`).
+    4. The `changedFiles` regex scans the whole event text (`tsc-check.sh:927-929`). Open.
+    5. The hooks use shell form (`bash "${CLAUDE_PLUGIN_ROOT}/hooks/tsc-check.sh"`), where the report said the docs prefer exec form. Open.
+- **Inferences:** gaps 2 and 3 are covered by the README's declarations, so no code change is needed for them.
+- **Open questions:** which gaps to take, and in which order; whether gaps 2 and 3 are dropped.
 
 #### 📈 Impact and next step
 
 - **Impact / risk:** known weaknesses in a hook that runs on every TypeScript edit of every user.
 - **Why it is not fixed now:** the choice is Nery's.
-- **Next action:** read the report's gap table with Nery and take the chosen gaps in plugin PRs.
+- **Next action:** ask Nery which of gaps 1, 4 and 5 to take, and whether 2 and 3 are dropped; take the chosen gaps in plugin PRs.
 - **Review condition:** closes when every gap is fixed or dropped by Nery.
 - **Related records:** none.
 
@@ -203,7 +210,9 @@ Add an item only when all of these hold:
 
 #### 🔎 Evidence
 
-- **Confirmed facts:** the hook's policy filter and no-config defaults were tested with TypeScript 6 only (open since 2026-10-22).
+- **Confirmed facts:**
+  - The hook's policy filter and no-config defaults were tested with TypeScript 6 only (open since 2026-10-22).
+  - `scripts/testers/typescript6-lsp-intelligence/tsc-check.test.mjs:562` stubs a `tsc` that prints `Version 7.0.2`: it tests the hook's message for an option TypeScript 7 removed, not a real TypeScript 7 compiler. No TypeScript 5.x case exists.
 - **Inferences:** none.
 - **Open questions:** none.
 
@@ -226,7 +235,7 @@ Add an item only when all of these hold:
 
 #### 🔎 Evidence
 
-- **Confirmed facts:** upstream has shipped. On 2026-10-26: issue #294 is closed as completed, release PR #271 is merged, and `@sveltejs/mcp` 0.1.27 lists "class directive to clsx attribute fixer" (#269) and the linter cache fix (#295). 0.1.28 is the latest release. #291 is closed and #290 is open. The plugin has not adopted it: `svelte-docs-and-autofixer/SKILL.md:135` and the README FAQ still call 0.1.26 the latest and pass only the major to `--svelte-version`.
+- **Confirmed facts:** upstream has shipped. On 2026-10-26: issue #294 is closed as completed, release PR #271 is merged, and `@sveltejs/mcp` 0.1.27 lists "class directive to clsx attribute fixer" (#269) and the linter cache fix (#295). 0.1.28 is the latest release, and still is on 2026-11-01 (`npm view @sveltejs/mcp version`). #291 is closed and #290 is open. The plugin has not adopted it: `svelte-docs-and-autofixer/SKILL.md:135` and the README FAQ still call 0.1.26 the latest and pass only the major to `--svelte-version`.
 - **Inferences:** the CLI accepts a full version from 0.1.27 on. This is not checked against the installed binary.
 - **Open questions:** none.
 
@@ -295,7 +304,7 @@ Add an item only when all of these hold:
 
 #### 🔎 Evidence
 
-- **Confirmed facts:** the pre-commit hook runs `biome check --staged`, which reads the files on disk; Biome's git-hooks guide notes the limitation. The guide's alternative, `git-format-staged` piping the staged blob through `biome check --stdin-file-path`, does not work as a check on Biome 2.6.3. Without `--write`, the stdin check exits 1 even for a clean file ("The contents aren't fixed. Use the `--write` flag to fix them.", probed on 2026-10-27). With `--write`, it rewrites the staged content during the commit, which is a different policy from a check.
+- **Confirmed facts:** the pre-commit hook runs `biome check --staged`, which reads the files on disk; Biome's git-hooks guide notes the limitation. The guide's alternative, `git-format-staged` piping the staged blob through `biome check --stdin-file-path`, does not work as a check on Biome 2.6.3 or 2.6.4. Without `--write`, the stdin check exits 1 even for a clean file ("The contents aren't fixed. Use the `--write` flag to fix them.", probed on 2026-10-27 and again on 2.6.4 on 2026-11-01). With `--write`, it rewrites the staged content during the commit, which is a different policy from a check.
 - **Inferences:** none.
 - **Open questions:** none.
 
@@ -360,7 +369,7 @@ Add an item only when all of these hold:
 
 - **Confirmed facts:**
   - The plugin README declares `python3` 3.12 or later. Ruff and Basedpyright check the script against 3.12 and pass; the tests in `scripts/testers/instruction-engineering/` run on 3.15.
-  - `uv python list` on 2026-10-28 shows only CPython 3.15.0 on the maintainer machine, and uv runs with `python-downloads = manual`.
+  - `uv python list --only-installed` shows only CPython 3.15 on the maintainer machine (3.15.0 on 2026-10-28, 3.15.2 on 2026-11-01), and uv runs with `python-downloads = manual`.
   - Nery declined installing Python 3.12 on 2026-10-28 ("No instalar").
   - A run on Python 3.9 during the import found a runtime `str | list[str]` union that static tools had not flagged as a 3.9 problem; it was fixed with `empty_frontmatter()`.
 - **Inferences:** a 3.12 runtime failure is unlikely after the static checks, but the 3.9 run shows a runtime check can find what they miss.
@@ -372,7 +381,7 @@ Add an item only when all of these hold:
 - **Why it is not fixed now:** it needs a Python other than 3.15, which Nery declined.
 - **Next action:** on Nery's yes, run the tests once with `uv run --python 3.12 --no-project` (a one-off download, no environment created).
 - **Review condition:** closes when the checker's tests pass on 3.12, or when Nery drops the 3.12 floor.
-- **Related records:** ADR_2026-10-28_instruction-engineering-joins-the-marketplace, ADR_2026-10-27_python-version-is-set-per-scope.
+- **Related records:** ADR_2026-10-28_instruction-engineering-joins-the-marketplace (superseded by ADR_2026-11-01_instruction-engineering-keeps-no-evals), ADR_2026-10-27_python-version-is-set-per-scope.
 
 ### DEBT-040 — `scaffold-plugin.py` writes a `plugin.json` that Biome's formatter rejects
 
@@ -389,7 +398,8 @@ Add an item only when all of these hold:
   - The scaffold fills the template with `json.dumps(...)` values (line 191, and `surfacesJson` at line 208), which writes arrays on one line.
   - On 2026-10-28 the scaffolded `plugins/instruction-engineering/.claude-plugin/plugin.json` failed Biome's format check and was fixed with `npx biome format --write` before commit `c4fdb40`.
   - Nery stopped the scaffold work on 2026-10-28 to keep the session on the plugin.
-- **Inferences:** every new plugin scaffolded today needs the same manual format step.
+  - Reproduced on 2026-11-01: a plugin scaffolded into a scratch `TCF_ROOT` and piped through `biome format --stdin-file-path=plugins/<name>/.claude-plugin/plugin.json` comes back with `keywords` and `metadata.surfaces` spread over several lines.
+- **Inferences:** none.
 - **Open questions:** whether the scaffold formats its output with Biome or writes the template's layout itself.
 
 #### 📈 Impact and next step
@@ -406,13 +416,13 @@ Add an item only when all of these hold:
 | --- | --- |
 | **Status** | 🟡 Pending |
 | **Category** | quality, compatibility |
-| **Owner** | `plugins/python-lsp-intelligence/hooks/check.py` (plugin scope, released 0.3.0) |
+| **Owner** | `plugins/python-lsp-intelligence/hooks/check.py` (plugin scope; unchanged since 0.3.0, current 0.3.1) |
 | **Logged** | 2026-10-29 |
 
 #### 🔎 Evidence
 
 - **Confirmed facts:**
-  - `hooks/check.py` runs `basedpyright` on the edited file with the project's config (`-p <config> <file>`, around line 339) and the interpreter basedpyright finds by default. It has no branch for a file whose first line is `#!/usr/bin/env -S uv run --script`.
+  - `hooks/check.py` runs `basedpyright` on the edited file with the project's config (`-p <config> <file>`, line 339 on 2026-11-01) and the interpreter basedpyright finds by default. It has no branch for a file whose first line is `#!/usr/bin/env -S uv run --script`.
   - On 2026-10-29, every Edit and Write of `plugins/github-operations/skills/github/scripts/check-forms.py` (PEP 723: `ruamel.yaml`, `check-jsonschema`) made the hook block with `reportMissingImports` on `ruamel.yaml` and about 120 cascading `reportUnknown*` errors. The same file checked with `uv run --quiet --no-project --with-requirements <file> basedpyright --warnings <file>` reported 0 errors, 0 warnings, 0 notes.
   - The repository's `basedpyright-plugins:<file>` gate (`scripts/gates.mjs`, commit 9ac3b11) already checks each PEP 723 plugin script that way.
   - The skill's own Gotchas already tell Claude that the server shows false import errors on PEP 723 scripts; the hook does not apply that knowledge.
@@ -422,7 +432,7 @@ Add an item only when all of these hold:
 #### 📈 Impact and next step
 
 - **Impact / risk:** the post-edit hook blocks every edit of a PEP 723 script with errors that are not real, which trains Claude to ignore the hook's findings and buries real errors in the noise.
-- **Why it is not fixed now:** the change belongs to another plugin, with its own pull request and version bump; Nery queued it after the github-operations 0.5.0 release.
+- **Why it is not fixed now:** the change belongs to another plugin, with its own pull request and version bump. Nery queued it after the github-operations 0.5.0 release, which was tagged on 2026-10-29, and no session has taken it since.
 - **Next action:** in `hooks/check.py`, when the file's first line is the `uv run --script` shebang and `uv` is on `PATH`, run `uv run --quiet --no-project --with-requirements <file> basedpyright -p <config> <file>`; add a test in `scripts/testers/python-lsp-intelligence/` with a PEP 723 fixture that imports a third-party package, RED first; declare `uv` as optional in the README; version and release it through `versioning` and `releases`.
 - **Review condition:** closes when an edit of a PEP 723 script with third-party dependencies produces no false `reportMissingImports` from the hook and the new test passes.
 - **Related records:** DEBT-041; the `basedpyright-plugins:` gate in `scripts/gates.mjs`.
