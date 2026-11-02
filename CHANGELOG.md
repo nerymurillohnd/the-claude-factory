@@ -64,8 +64,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The
 - **file-tree-pane** 0.1.3 — internal code-quality refactor for stricter lint rules; nothing changes in what the pane shows or does.
 - **file-tree-pane** 0.1.2 — internal code and test cleanups from stricter lint rules; nothing changes for users.
 - **project-maintainer** 0.2.2 — the start-of-session hook runs through Bash explicitly; internal guardrail cleanups with no change in what they decide.
-- **python-lsp-intelligence** 0.3.0 — the post-edit hook requires Python 3.12 or later and always runs through Bash.
-- **skill-diagnostics** 0.2.0 — the hook requires Python 3.12 or later and runs as `python3` through Bash.
+- **python-lsp-intelligence** 0.3.0 — **Breaking:** the post-edit hook requires Python 3.12 or later and always runs through Bash.
+- **skill-diagnostics** 0.2.0 — **Breaking:** the hook requires Python 3.12 or later and runs as `python3` through Bash.
 - **tailwind-development** 0.2.1 — the checks ask the language server for fixes and class CSS in parallel; internal cleanup from stricter lint rules, with the same answers.
 - **tool-ledger** 0.1.2 — internal code cleanup from stricter lint rules; nothing changes for users.
 - **turn-meter** 0.1.2 — internal code cleanup from a stricter lint rule; nothing changes for users.
@@ -121,8 +121,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The
 
 - **project-maintainer** 0.2.0 — **Breaking:** requires Claude Code v2.1.307 or later, which puts every guardrail prompt to you with no classifier able to answer it; a broken check now fails closed for the records only, and the README says what each piece does and prevents and how to check that the guardrails run.
 - **hook-engineering** 0.2.0 — **Breaking:** the Claude Code docs server is no longer bundled: add it once with `claude mcp add` or as a Claude app connector; the `hook-engineer` agent now uses it under any name, and without it the plugin reads the raw docs pages.
-- **typescript6-lsp-intelligence** 0.3.0 — the post-edit hook treats its strictest policy as defaults your config overrides (breaking: an explicit `false` is now yours), keeps the policy inside the hook with no environment of its own, passes each option only to a `tsc` that knows it, reports deprecated config options, and finds Bash changes in worktrees and files only a sibling `tsconfig.<name>.json` lists.
-- **typescript7-lsp-intelligence** 0.4.0 — the post-edit hook treats its strictest policy as defaults your config overrides (breaking: an explicit `false` is now yours), keeps the policy inside the hook with no environment of its own, passes each option only to a `tsc` that knows it, reports deprecated config options, and finds Bash changes in worktrees and files only a sibling `tsconfig.<name>.json` lists.
+- **typescript6-lsp-intelligence** 0.3.0 — **Breaking:** the post-edit hook treats its strictest policy as defaults your config overrides, so an explicit `false` is now yours; keeps the policy inside the hook with no environment of its own, passes each option only to a `tsc` that knows it, reports deprecated config options, and finds Bash changes in worktrees and files only a sibling `tsconfig.<name>.json` lists.
+- **typescript7-lsp-intelligence** 0.4.0 — **Breaking:** the post-edit hook treats its strictest policy as defaults your config overrides, so an explicit `false` is now yours; keeps the policy inside the hook with no environment of its own, passes each option only to a `tsc` that knows it, reports deprecated config options, and finds Bash changes in worktrees and files only a sibling `tsconfig.<name>.json` lists.
 - 🧭 The compatibility matrix lists mods: they run in every Claude Code session except a Desktop session on WSL, and the Claude app's plugin directory lists them for Claude Code only.
 - 🩺 The troubleshooting guide explains why a plugin from the Claude app can be missing in Claude Code, and the management guide shows how to keep synced plugins out, one at a time, per project or all at once.
 
@@ -167,7 +167,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The
 
 ### Changed
 
-- **session-handoff** 1.0.0 — **Breaking:** a six-section handoff written in a plain seven-step flow, and a start-of-session hook that works from it as background
+- **session-handoff** 1.0.0 — **Breaking:** a six-section handoff written in a plain seven-step flow, and a start-of-session hook that works from it as background.
 - **github-operations** 0.3.2 — the `pr-tracker` instructions are organized in short modules with a role, mission and rules, and the GitHub MCP tool reference is trimmed to what the PR skill needs
 
 ## 2026-10-18
@@ -190,8 +190,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The
 
 ### Changed
 
-- **typescript6-lsp-intelligence** 0.2.0 — uses your own TypeScript 6 and language server instead of pinned copies; a Bash hook holds every edit to a strictest policy with your project's environment and finds `tsc` across Node version managers; the skill is now `ts-lifecycle`; a compiler crash or a project `noCheck` can no longer pass as checked.
-- **typescript7-lsp-intelligence** 0.3.0 — uses your own TypeScript 7 instead of a pinned copy; a Bash hook runs the native compiler without Node.js and holds every edit to a strictest policy with your project's environment; the skill is now `ts-lifecycle`, shared with the TypeScript 6 plugin; a compiler crash or a project `noCheck` can no longer pass as checked.
+- **typescript6-lsp-intelligence** 0.2.0 — **Breaking:** uses your own TypeScript 6 and language server instead of pinned copies; a Bash hook holds every edit to a strictest policy with your project's environment and finds `tsc` across Node version managers; the skill is now `ts-lifecycle`; a compiler crash or a project `noCheck` can no longer pass as checked.
+- **typescript7-lsp-intelligence** 0.3.0 — **Breaking:** uses your own TypeScript 7 instead of a pinned copy; a Bash hook runs the native compiler without Node.js and holds every edit to a strictest policy with your project's environment; the skill is now `ts-lifecycle`, shared with the TypeScript 6 plugin; a compiler crash or a project `noCheck` can no longer pass as checked.
 
 ## 2026-10-15
 
