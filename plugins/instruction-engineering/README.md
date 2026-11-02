@@ -48,6 +48,8 @@
 | Python, as `python3` on your `PATH` | 3.12 | `python3 --version` |
 | git (optional: checks whether `CLAUDE.local.md` is ignored) | — | `git --version` |
 
+Claude Code 2.1.271 is the minimum because the reviewer agent runs without your `CLAUDE.md` files through `omitClaudeMd`, which 2.1.271 added.
+
 Python runs the checker. The Claude Code features the skill points you to have their own minimums: `AGENTS.md` support v2.1.277+, `/doctor prompt-audit` v2.1.283+.
 
 ### 🤖 Claude Code

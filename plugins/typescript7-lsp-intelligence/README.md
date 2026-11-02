@@ -35,7 +35,7 @@
 - **No noise from code nobody touched** — the strictest policy applies to the edited files only. An error in another file is reported only when your own config also finds it, because the edit probably caused it. A broken `tsconfig.json` is reported instead of letting everything pass.
 - **Your TypeScript, wherever you installed it** — the hook uses your project's `node_modules` first, then a global install, and finds `tsc` through nvm, fnm, Volta, asdf, mise, n, Homebrew, pnpm, Bun or a custom npm prefix, even when Claude Code starts without your shell profile. The plugin installs nothing.
 - **The native compiler, no Node.js in the way** — the hook runs the platform binary that ships with the `typescript` package directly, so the check works even where Node.js isn't on the `PATH`.
-- **Symbol navigation on TypeScript 7** — go to definition, references, hover, call hierarchy and workspace symbols through the native server. It pushes no diagnostics after edits, so the hook is where type errors come from.
+- **Symbol navigation on TypeScript 7** — go to definition, references, hover, call hierarchy and workspace symbols through the native server. It pushes no diagnostics for your source files after edits, only errors in your `tsconfig.json`, so the hook is where type errors come from.
 - **Fixes, not silencing** — no `@ts-ignore`, `any`, `as unknown as T` or non-null `!` just to make an error disappear.
 
 ## 🧩 What's inside
@@ -43,8 +43,8 @@
 | Component | Name | What it does | How it runs |
 | :-- | :-- | :-- | :-- |
 | 🧠 LSP server | `typescript` | Starts your TypeScript 7 server (`tsc --lsp --stdio`) for `.ts`, `.tsx`, `.mts`, `.cts`, `.js`, `.jsx`, `.mjs` and `.cjs` files | Automatically when Claude opens or edits one of those files |
-| 🪝 Hook | `PostToolUse` · `PostToolUseFailure` | Runs your native `tsc --noEmit` with your project's environment and the plugin's strictest policy on each TypeScript or JavaScript file an Edit, Write, Bash or PowerShell call changed | Automatically after each of those tool calls |
-| 🎯 Skill | `typescript7-lsp-intelligence:ts-lifecycle` | Teaches Claude that the TypeScript 7 server pushes no diagnostics, to research a TypeScript or JavaScript change from official docs and release notes, navigate with the language server and confirm with Grep, trust results only after five checks, and prove the checks with fixtures before calling code clean | Automatically when you work on TypeScript or JavaScript, or `/typescript7-lsp-intelligence:ts-lifecycle` |
+| 🪝 Hook | `PostToolUse` · `PostToolUseFailure` | Runs your native `tsc --noEmit` with your project's environment and the plugin's strictest policy on each TypeScript or JavaScript file an Edit, Write, Bash or PowerShell call changed | Automatically after each Edit, Write, Bash or PowerShell call, and after a Bash or PowerShell call that fails |
+| 🎯 Skill | `typescript7-lsp-intelligence:ts-lifecycle` | Teaches Claude that the TypeScript 7 server pushes no diagnostics for your source files, to research a TypeScript or JavaScript change from official docs and release notes, navigate with the language server and confirm with Grep, trust results only after five checks, and prove the checks with fixtures before calling code clean | Automatically when you work on TypeScript or JavaScript, or `/typescript7-lsp-intelligence:ts-lifecycle` |
 
 ## 📋 Prerequisites
 
@@ -53,8 +53,11 @@
 | Claude Code | 2.1.295 | `claude --version` |
 | TypeScript 7 | — | `tsc --version` |
 | Node.js | 16.20.0 | `node --version` |
+| Git (optional) | — | `git --version` |
 
-The language server is a global TypeScript 7 `tsc` on the `PATH` of the shell you start `claude` from; the hook uses your project's TypeScript in `node_modules` first, then the global one. Node.js runs the `tsc` command that starts the language server; the hook runs the native compiler without it. On Windows, start Claude Code from a Git Bash shell that has Node.js on its `PATH`.
+Claude Code 2.1.295 is the minimum because the hook uses the `onFailure` field: a hook that cannot start then blocks the edit instead of letting it through unchecked.
+
+The language server is a global TypeScript 7 `tsc` on the `PATH` of the shell you start `claude` from; the hook uses your project's TypeScript in `node_modules` first, then the global one. Node.js runs the `tsc` command that starts the language server; the hook runs the native compiler without it. Claude Code runs the hook with `bash` 3.2 or later, which macOS and Linux ship. Git is optional: in a Git repository the hook asks Git which files a Bash or PowerShell command changed, and without it the hook compares modification times. On Windows, start Claude Code from a Git Bash shell that has Node.js on its `PATH`.
 
 ### 🤖 Claude Code
 
@@ -135,6 +138,35 @@ choco install nodejs
 ```
 
 </details>
+
+### 🌿 Git (optional)
+
+<details>
+<summary>🍺 <b>Homebrew</b> — macOS, Linux</summary>
+
+```bash
+brew install git
+```
+
+</details>
+<details>
+<summary>🐧 <b>apt</b> — Debian, Ubuntu</summary>
+
+```bash
+sudo apt install git
+```
+
+</details>
+<details>
+<summary>🎩 <b>dnf</b> — Fedora</summary>
+
+```bash
+sudo dnf install git
+```
+
+</details>
+
+On Windows, Git for Windows includes Git Bash and Git: download it from [git-scm.com](https://git-scm.com/downloads/win).
 
 ## 📥 Installation
 
@@ -230,16 +262,16 @@ Your project decides the environment; the plugin decides how strict the edited c
 | Several changed files share a program | One `tsc` run for that program |
 | The file isn't in any program | Checked alone on top of the nearest config, with its `types` and path aliases, and the report says so |
 | A JavaScript file | Type-checked: `checkJs` is part of the strictest policy, so a `.js` file in your `include` is checked in its program when your config sets neither `checkJs` nor `allowJs`, or only `allowJs`. A `checkJs` or `allowJs` your config sets itself is yours |
-| No config above the file | Checked alone with your compiler's own defaults for `target` and `module` (with TypeScript 6, `es2025` and `esnext`; with TypeScript 5, ES5 and CommonJS) and the strictest options; the plugin sets no environment of its own |
+| No config above the file | Checked alone with your compiler's own defaults for `target` and `module` (with TypeScript 7, `es2025` and ES module output) and the strictest options; the plugin sets no environment of its own |
 | Your project's `tsc` is older than an option of the policy, such as `strictBuiltinIteratorReturn` (TypeScript 5.6) | That option is left out, so the check still runs instead of failing on an unknown option, and Claude is told which options were not applied |
 | Your config itself has errors | Reported, so a broken config never looks like a clean check |
-| Your config uses an option deprecated in TypeScript 6, such as `baseUrl` | Reported and blocking, since it stops working in TypeScript 7; an `ignoreDeprecations` you set yourself is respected |
+| Your config uses an option TypeScript 7 removed, such as `baseUrl`, `moduleResolution: node10` or `target: es5` | Reported and blocking as a config error, since TypeScript 7 refuses the option; `ignoreDeprecations` doesn't silence it in TypeScript 7 |
 | The project sets `noCheck` | Ignored: the policy passes `noCheck false`, so the type check always runs |
 | `tsc` crashes or exits non-zero without a TypeScript error | Reported to Claude as not checked, with the compiler's first output lines, never as a pass |
 | An edited file is gone, or sits in `node_modules`, `.venv`, `venv` or `site-packages` | Claude is told it wasn't checked |
 | No usable Node.js or TypeScript is found | Not blocking: you get one message per session listing where the hook searched, and Claude is told the file wasn't checked |
 
-The plugin never creates or edits a `tsconfig.json`, and it never runs a formatter or linter: Biome, Prettier and ESLint stay your project's tools, and the skill teaches Claude to run them as your `package.json` scripts do.
+The plugin never edits your `tsconfig.json`. The only one it creates in your project is the temporary fixture config the skill's script writes and deletes, as [What this plugin runs and sends](#-what-this-plugin-runs-and-sends) describes. It never runs a formatter or linter: Biome, Prettier and ESLint stay your project's tools, and the skill teaches Claude to run them as your `package.json` scripts do.
 
 **Optional, recommended:** let the hook see exactly which files a Bash command changed by adding this to your user settings (`~/.claude/settings.json`); without it the hook finds them by modification time:
 
@@ -248,6 +280,13 @@ The plugin never creates or edits a `tsconfig.json`, and it never runs a formatt
   "bashEditDiffEnabled": true
 }
 ```
+
+## 🔍 What this plugin runs and sends
+
+- **Hooks:** `PostToolUse` on `Edit|Write|Bash|PowerShell` and `PostToolUseFailure` on `Bash|PowerShell` run `hooks/tsc-check.sh` with `bash`, with a 120-second limit. It finds the files the call changed: the Edit or Write file; for Bash or PowerShell, the files Claude Code lists, or else `git ls-files --modified --others --exclude-standard` and `git diff --cached --name-only` in a Git repository, or `find` for files changed since the command started otherwise (at most 20,000, never in your home folder or the disk root). It looks for `tsc` in your project's `node_modules`, on your `PATH` and in the folders of common Node version managers, and installs nothing. It runs your native `tsc --showConfig` to read your config chain, `tsc --noEmit -p <config>` with the strictest policy and, when other files have errors, `tsc --noEmit -p <config>` again under your own config.
+- **MCP servers:** none.
+- **Network:** the hook makes no network calls. The skill tells Claude to read official docs and release notes through the first that works: WebFetch or WebSearch, `curl` to the official domain (such as typescriptlang.org), or `gh` on the official GitHub repository (such as `microsoft/TypeScript`). Each runs under your own permission rules.
+- **Files written:** the hook writes its temporary configs and build-info files to a temporary folder and deletes it when it exits. When no usable compiler is found, it writes one empty marker file per session to `${CLAUDE_PLUGIN_DATA}/notices/`, or, when that variable is unset, to `typescript7-lsp-intelligence/notices/` in `$TMPDIR` (else `/tmp`), so you get that notice once per session. The skill's `scripts/run-fixtures.sh` creates one `lsp-fixture-XXXXXX/` folder at a time in your program's `rootDir`, or beside the owning `tsconfig.json`; each holds a fixture `.ts` file and its own `tsconfig.json`, which extends yours, and the script deletes it after the check. With `--outside`, it uses a temporary folder outside your project instead. Claude Code asks you before the skill runs this script; choose **Yes, and don't ask again** to let it run the script without asking. Neither the hook nor the skill edits your source files or your `tsconfig.json`.
 
 ## 🔄 Updating
 
@@ -291,10 +330,13 @@ Uninstalling from the last scope it's installed at also deletes its saved option
 | Component | Claude Code | Claude app |
 | :-- | :--: | :--: |
 | 🎯 Skills | ✅ | ⚠️ loads, but it relies on the language server, which the Claude app doesn't run |
-| 🪝 Hooks | ✅ | ➖ runs only in Claude Code, next to your TypeScript |
+| 🪝 Hooks | ✅ | ⚠️ in Cowork sessions, not in a chat conversation |
 | 🧠 LSP server | ✅ | ➖ |
 
 <sub>✅ works · ⚠️ partial · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. The Claude app (web, desktop and mobile) runs a conversation as a Cowork session when it can, and as a chat conversation otherwise, for example on a device that can't run Cowork or in the separate Chat mode that Team and Enterprise plans keep for now.</sub>
+
+> [!NOTE]
+> The hook runs the native TypeScript 7 `tsc`, so it works only on a machine where TypeScript 7 is installed. In Claude Code that's your computer.
 
 Claude Code on the web doesn't start plugin language servers either, so there Claude gets no diagnostics or code navigation from this plugin.
 
@@ -331,7 +373,7 @@ Claude Code starts `tsc --lsp --stdio` by name from the `PATH` it was launched w
 <details>
 <summary><b>No <code>Found N new diagnostic issues</code> line appears for TypeScript files. Is the server working?</b></summary>
 
-Yes. The native TypeScript 7 server answers navigation requests but doesn't push diagnostics after edits, so that line never appears for these files. Type errors reach Claude through the hook's check of each edit instead, and the skill teaches Claude to run the compiler itself when it needs a whole program or a caller in another file checked.
+Yes. The native TypeScript 7 server answers navigation requests, but it pushes diagnostics only for your `tsconfig.json`: for source files it gives them only when asked, so that line doesn't appear after an edit to one. Type errors reach Claude through the hook's check of each edit instead, and the skill teaches Claude to run the compiler itself when it needs a whole program or a caller in another file checked.
 
 </details>
 

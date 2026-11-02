@@ -42,7 +42,7 @@
 | Component | Name | What it does | How it runs |
 | :-- | :-- | :-- | :-- |
 | 🧠 LSP server | `typescript` | Starts your `typescript-language-server` for `.ts`, `.tsx`, `.mts`, `.cts`, `.js`, `.jsx`, `.mjs` and `.cjs` files; it uses your project's TypeScript when the project has one, else the TypeScript installed beside it | Automatically when Claude opens or edits one of those files |
-| 🪝 Hook | `PostToolUse` · `PostToolUseFailure` | Runs your `tsc --noEmit` with your project's environment and the plugin's strictest policy on each TypeScript or JavaScript file an Edit, Write, Bash or PowerShell call changed | Automatically after each of those tool calls |
+| 🪝 Hook | `PostToolUse` · `PostToolUseFailure` | Runs your `tsc --noEmit` with your project's environment and the plugin's strictest policy on each TypeScript or JavaScript file an Edit, Write, Bash or PowerShell call changed | Automatically after each Edit, Write, Bash or PowerShell call, and after a Bash or PowerShell call that fails |
 | 🎯 Skill | `typescript6-lsp-intelligence:ts-lifecycle` | Teaches Claude to research a TypeScript or JavaScript change from official docs and release notes, navigate with the language server and confirm with Grep, trust results only after five checks, and prove the checks with fixtures before calling code clean | Automatically when you work on TypeScript or JavaScript, or `/typescript6-lsp-intelligence:ts-lifecycle` |
 
 ## 📋 Prerequisites
@@ -53,8 +53,11 @@
 | Node.js | 22.22.2 | `node --version` |
 | TypeScript 6 | — | `npx tsc --version` |
 | typescript-language-server | — | `typescript-language-server --version` |
+| Git (optional) | — | `git --version` |
 
-Node.js 22.22.2 is the minimum of typescript-language-server; the hook alone runs `tsc` on Node.js 14.17 or later. TypeScript 6 can sit in your project's `node_modules` or be installed globally; the hook uses the project's copy first. Install typescript-language-server globally, on the `PATH` of the shell you start `claude` from. On Windows, start Claude Code from a Git Bash shell that has Node.js on its `PATH`.
+Claude Code 2.1.295 is the minimum because the hook uses the `onFailure` field: a hook that cannot start then blocks the edit instead of letting it through unchecked.
+
+Node.js 22.22.2 is the minimum of typescript-language-server; the hook alone runs `tsc` on Node.js 14.17 or later. TypeScript 6 can sit in your project's `node_modules` or be installed globally; the hook uses the project's copy first. Install typescript-language-server globally, on the `PATH` of the shell you start `claude` from. Claude Code runs the hook with `bash` 3.2 or later, which macOS and Linux ship. Git is optional: in a Git repository the hook asks Git which files a Bash or PowerShell command changed, and without it the hook compares modification times. On Windows, start Claude Code from a Git Bash shell that has Node.js on its `PATH`.
 
 ### 🤖 Claude Code
 
@@ -154,6 +157,35 @@ npm install -g typescript-language-server
 ```
 
 </details>
+
+### 🌿 Git (optional)
+
+<details>
+<summary>🍺 <b>Homebrew</b> — macOS, Linux</summary>
+
+```bash
+brew install git
+```
+
+</details>
+<details>
+<summary>🐧 <b>apt</b> — Debian, Ubuntu</summary>
+
+```bash
+sudo apt install git
+```
+
+</details>
+<details>
+<summary>🎩 <b>dnf</b> — Fedora</summary>
+
+```bash
+sudo dnf install git
+```
+
+</details>
+
+On Windows, Git for Windows includes Git Bash and Git: download it from [git-scm.com](https://git-scm.com/downloads/win).
 
 ## 📥 Installation
 
@@ -258,7 +290,7 @@ Your project decides the environment; the plugin decides how strict the edited c
 | An edited file is gone, or sits in `node_modules`, `.venv`, `venv` or `site-packages` | Claude is told it wasn't checked |
 | No usable Node.js or TypeScript is found | Not blocking: you get one message per session listing where the hook searched, and Claude is told the file wasn't checked |
 
-The plugin never creates or edits a `tsconfig.json`, and it never runs a formatter or linter: Biome, Prettier and ESLint stay your project's tools, and the skill teaches Claude to run them as your `package.json` scripts do.
+The plugin never edits your `tsconfig.json`. The only one it creates in your project is the temporary fixture config the skill's script writes and deletes, as [What this plugin runs and sends](#-what-this-plugin-runs-and-sends) describes. It never runs a formatter or linter: Biome, Prettier and ESLint stay your project's tools, and the skill teaches Claude to run them as your `package.json` scripts do.
 
 The language server starts one TypeScript server process instead of the usual two: `.lsp.json` sets `useSyntaxServer` to `never`, so a single semantic server answers every request and less memory is used.
 
@@ -269,6 +301,13 @@ The language server starts one TypeScript server process instead of the usual tw
   "bashEditDiffEnabled": true
 }
 ```
+
+## 🔍 What this plugin runs and sends
+
+- **Hooks:** `PostToolUse` on `Edit|Write|Bash|PowerShell` and `PostToolUseFailure` on `Bash|PowerShell` run `hooks/tsc-check.sh` with `bash`, with a 120-second limit. It finds the files the call changed: the Edit or Write file; for Bash or PowerShell, the files Claude Code lists, or else `git ls-files --modified --others --exclude-standard` and `git diff --cached --name-only` in a Git repository, or `find` for files changed since the command started otherwise (at most 20,000, never in your home folder or the disk root). It looks for Node.js and `tsc` in your project's `node_modules`, on your `PATH` and in the folders of common Node version managers, and installs nothing. It runs your `tsc --showConfig` to read your config chain, `tsc --noEmit -p <config>` with the strictest policy and, when other files have errors, `tsc --noEmit -p <config>` again under your own config.
+- **MCP servers:** none.
+- **Network:** the hook makes no network calls. The skill tells Claude to read official docs and release notes through the first that works: WebFetch or WebSearch, `curl` to the official domain (such as typescriptlang.org), or `gh` on the official GitHub repository (such as `microsoft/TypeScript`). Each runs under your own permission rules.
+- **Files written:** the hook writes its temporary configs and build-info files to a temporary folder and deletes it when it exits. When no usable compiler is found, it writes one empty marker file per session to `${CLAUDE_PLUGIN_DATA}/notices/`, or, when that variable is unset, to `typescript6-lsp-intelligence/notices/` in `$TMPDIR` (else `/tmp`), so you get that notice once per session. The skill's `scripts/run-fixtures.sh` creates one `lsp-fixture-XXXXXX/` folder at a time in your program's `rootDir`, or beside the owning `tsconfig.json`; each holds a fixture `.ts` file and its own `tsconfig.json`, which extends yours, and the script deletes it after the check. With `--outside`, it uses a temporary folder outside your project instead. Claude Code asks you before the skill runs this script; choose **Yes, and don't ask again** to let it run the script without asking. Neither the hook nor the skill edits your source files or your `tsconfig.json`.
 
 ## 🔄 Updating
 
@@ -312,10 +351,13 @@ Uninstalling from the last scope it's installed at also deletes its saved option
 | Component | Claude Code | Claude app |
 | :-- | :--: | :--: |
 | 🎯 Skills | ✅ | ⚠️ loads, but it relies on the language server, which the Claude app doesn't run |
-| 🪝 Hooks | ✅ | ➖ runs only in Claude Code, next to your TypeScript |
+| 🪝 Hooks | ✅ | ⚠️ in Cowork sessions, not in a chat conversation |
 | 🧠 LSP server | ✅ | ➖ |
 
 <sub>✅ works · ⚠️ partial · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. The Claude app (web, desktop and mobile) runs a conversation as a Cowork session when it can, and as a chat conversation otherwise, for example on a device that can't run Cowork or in the separate Chat mode that Team and Enterprise plans keep for now.</sub>
+
+> [!NOTE]
+> The hook runs `tsc` with Node.js, so it works only on a machine where TypeScript 6 and Node.js are installed. In Claude Code that's your computer.
 
 Claude Code on the web doesn't start plugin language servers either, so there Claude gets no diagnostics or code navigation from this plugin.
 
