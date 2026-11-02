@@ -34,7 +34,7 @@
 - **Know when it happened** — every use keeps its exact time; press a row to see them all.
 - **Spot the habits** — the skill Claude calls on every turn, the MCP server it leans on, the hook that fires on every edit.
 - **Keep a record** — save the session as a Markdown or a self-contained HTML report, or copy it as Markdown.
-- **Never in the way** — it only observes: it doesn't block, rewrite or approve anything, and if it fails, Claude Code goes on as if it weren't installed. No names of tools, commands, arguments or prompts: only capability names and counts.
+- **Never in the way** — it only observes: it doesn't block, rewrite or approve anything, and if it fails, Claude Code goes on as if it weren't installed. It records no commands, arguments or prompts: only capability names, such as a skill, a server or the WebSearch and WebFetch tools, with their counts and times.
 
 ## 🧩 What's inside
 
@@ -47,6 +47,8 @@
 | Tool | Minimum version | Check |
 | :-- | :-- | :-- |
 | Claude Code | 2.1.299 | `claude --version` |
+
+Claude Code 2.1.299 is the minimum because the report's text uses weights and tabular figures that older versions don't draw, and its skill and agent rows read event fields that 2.1.299 added.
 
 ### 🤖 Claude Code
 
@@ -183,6 +185,7 @@ Set options when installing (`claude plugin install model-trace@the-claude-facto
 - **MCP servers:** none.
 - **Network:** none. It calls no model and runs no command.
 - **Files written:** only the report you save, in `exportDir`. A permission rule such as `Write(~/Downloads/**)` doesn't apply to a mod, so choose `exportDir` with that in mind. Nothing is kept between sessions: the trace lives in the session's memory, and `/clear`, `/resume` and `/branch` start it over.
+- **Clipboard:** only when you press **Copy Markdown**, the report replaces what your clipboard holds.
 - **Before you install:** a mod runs with your permissions and no sandbox. Install it only if you trust this marketplace; this README lists everything it hooks and calls.
 
 It can't change or restyle the permission prompt, and it doesn't try to.

@@ -15,6 +15,7 @@
 [Prerequisites](#-prerequisites) •
 [Install](#-installation) •
 [Usage](#-usage) •
+[Configuration](#%EF%B8%8F-configuration) •
 [Compatibility](#-compatibility) •
 [FAQ](#-faq--troubleshooting)
 
@@ -52,6 +53,8 @@
 | [Nerd Font](https://www.nerdfonts.com) (optional): file icons | — | — |
 | [hunk](https://hunk.dev) (optional): your own diff tool | — | `hunk --version` |
 | [lazygit](https://github.com/jesseduffield/lazygit) (optional): your own diff tool | — | `lazygit --version` |
+
+Claude Code 2.1.299 is the minimum because the pane's text uses weights and sizes that older versions don't draw.
 
 `git` on `PATH` gives the tree its status, line counts and diffs; the tree works without it.
 
@@ -452,8 +455,8 @@ A terminal editor needs a terminal to run in: a mod can't hand Claude Code's own
 ## 🔍 What this plugin runs and sends
 
 - **Hooks:** a mod, with no shell hooks. It hooks the start of each session, each tool call, each prompt you send, a working directory change, a theme change, the `/file-tree` command and the pane's drawing, scrolling and input.
-- **Commands:** read-only `git` (`rev-parse`, `status`, `diff`, `ls-files`, `log`) in the folder it shows, again every 5 seconds while the pane is on screen, and the others listed under [What does the mod reach on my machine?](#-faq--troubleshooting)
-- **Files read:** the folders you open and the file you preview.
+- **Commands:** read-only `git` in the folder it shows. `git config --get-regexp`, `git status` and `git diff --numstat` run when a session starts, right after Claude's tool calls, and every 5 seconds while the pane is on screen. `git rev-parse` runs when it looks for the repository, `git log -1` after Claude commits, `git ls-files` when you search, and `git diff` (with `--no-index` for an untracked file) when you open a diff. The other commands are listed under [What does the mod reach on my machine?](#-faq--troubleshooting)
+- **Files read:** the listings of the folders you open (and, when you search outside a git repository, of the folders under it), the file you preview, your `theme` setting and a custom theme's file, and your font folders, as [What does the mod reach on my machine?](#-faq--troubleshooting) details.
 - **MCP servers:** none.
 - **Network:** none. It never calls the model.
 - **Files written:** none.

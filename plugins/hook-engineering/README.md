@@ -7,7 +7,7 @@
 [![Version](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Fnerymurillohnd%2Fthe-claude-factory%2Fmain%2Fplugins%2Fhook-engineering%2F.claude-plugin%2Fplugin.json&query=%24.version&label=version&color=D97757)](./CHANGELOG.md)
 [![Works in](https://img.shields.io/badge/works%20in-Claude%20Code%20%C2%B7%20Claude%20app-2563EB)](#-compatibility)
 [![Category](https://img.shields.io/badge/category-Automation-6B7280)](../../README.md#-catalog)
-[![Claude Code](https://img.shields.io/badge/Claude%20Code-%E2%89%A5%202.1.292-D97757?logo=claude&logoColor=white)](https://code.claude.com/docs/en/plugins/install)
+[![Claude Code](https://img.shields.io/badge/Claude%20Code-%E2%89%A5%202.1.222-D97757?logo=claude&logoColor=white)](https://code.claude.com/docs/en/plugins/install)
 [![License: MIT](https://img.shields.io/badge/license-MIT-22C55E)](./LICENSE)
 
 [Why use it](#-why-use-it) •
@@ -47,11 +47,13 @@ A hook looks simple until it never fires, fires on the wrong calls, or returns a
 
 | Tool | Minimum version | Check |
 | :-- | :-- | :-- |
-| Claude Code | 2.1.292 (the one-step install command needs it) | `claude --version` |
-| Python, as `python3` | 3 | `python3 --version` |
+| Claude Code | 2.1.222 | `claude --version` |
+| Python, as `python3` | 3.12 | `python3 --version` |
 | `bash`, `curl` and `awk` | — | `bash --version` |
 | `jq` (for the hooks it writes) | — | `jq --version` |
 | Claude Code docs MCP server (recommended) | — | `claude mcp list` |
+
+Claude Code 2.1.222 is the minimum because the plugin's manifest uses the `metadata` field, which older versions don't accept. The one-step install command needs 2.1.292; on an older version, add the marketplace first, then install.
 
 Python runs the config linter and the hook probe; `bash`, `curl` and `awk` run the changelog script; all must be on your `PATH`. `jq` is what the hooks the plugin writes use to read their input. The docs server is Anthropic's official docs MCP server, so Claude reads the current hooks pages instead of recalling them; you add it once, the plugin doesn't install it.
 
@@ -279,6 +281,17 @@ My SessionEnd hook uploads the session log to S3. It works by hand, but when I e
 
 **Result:** Claude collects your configured command and timeout, your version and the debug log, reads the hook instead of running it (it never runs a hook that sends data over the network), and names the cause with the evidence that shows it, such as the time limit Claude Code gives `SessionEnd` hooks.
 
+## 🔍 What this plugin runs and sends
+
+- **Hooks:** none of its own. The hook probe runs the hook script you point it at, with the input you give it and nothing else; the agent runs it only on scripts that read no secrets and change nothing outside a temporary directory.
+- **MCP servers:** none of its own. The Claude Code docs server is one you add yourself (see [Claude Code docs server](#-claude-code-docs-server)).
+- **Network:** these calls and no others; the linter and the probe make none:
+  - `https://code.claude.com/docs/mcp`, the docs server once you add it, whenever Claude reads the official docs for a hook question. It gets the search terms and page paths Claude asks for, with no credentials. From the Claude app, the call goes through Anthropic's servers.
+  - `https://code.claude.com/docs/en/<page>.md`, a plain `GET` with `curl` or WebFetch when the docs server is not connected or a heading is missing from its copy, and `https://code.claude.com/docs/en/changelog` for a version-gated rule.
+  - `https://raw.githubusercontent.com/anthropics/claude-code/main/CHANGELOG.md`, a plain `GET` when the skill or the agent runs `hook-changes.sh` to compare your installed version with the changelog.
+  - `https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md`, a plain `GET` with WebFetch when the docs changelog doesn't list your installed version yet.
+- **Files written:** none by the plugin; `hook-changes.sh` keeps nothing and prints only the hook-related entries. Claude writes hooks only at your request, as [Will it change my hooks or my settings?](#-faq--troubleshooting) explains.
+
 ## 🔄 Updating
 
 ```bash
@@ -335,19 +348,6 @@ The docs server isn't part of the plugin: you add it yourself in Claude Code or 
 
 <sub>✅ works · ⚠️ partial · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. The Claude app (web, desktop and mobile) runs a conversation as a Cowork session when it can, and as a chat conversation otherwise, for example on a device that can't run Cowork or in the separate Chat mode that Team and Enterprise plans keep for now.</sub>
 
-## 🌐 Network calls
-
-The plugin makes these calls and no others:
-
-| Call | When | What it sends |
-| :-- | :-- | :-- |
-| `https://code.claude.com/docs/mcp` (Anthropic's Claude Code docs server, once you add it) | Whenever Claude reads the official docs for a hook question | The search terms and page paths Claude asks for. No credentials. From the Claude app, the call goes through Anthropic's servers |
-| `https://code.claude.com/docs/en/<page>.md` | When the docs server is not connected, or a heading is missing from its copy, Claude fetches the raw page with `curl` or WebFetch; it also reads `https://code.claude.com/docs/en/changelog` for a version-gated rule | A plain `GET` for that page |
-| `https://raw.githubusercontent.com/anthropics/claude-code/main/CHANGELOG.md` | When the skill or the agent runs `hook-changes.sh` to compare your installed version with the changelog | A plain `GET`; the script keeps nothing and prints only the hook-related entries |
-| `https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md` | When the docs changelog doesn't list your installed version yet, Claude opens the GitHub changelog with WebFetch | A plain `GET` for that page |
-
-The linter and the probe make no network calls. The probe runs the hook script you point it at, with the input you give it and nothing else; the agent runs it only on scripts that read no secrets and change nothing outside a temporary directory.
-
 ## ❓ FAQ & Troubleshooting
 
 <details>
@@ -402,7 +402,7 @@ Agents run in Cowork sessions, not in a chat conversation. In a chat conversatio
 <details>
 <summary><b>Does it work without the docs server or one of the tools?</b></summary>
 
-Yes. Without the docs server, the plugin tells you the command in [Claude Code docs server](#-claude-code-docs-server) once, then reads the raw docs pages (see [Network calls](#-network-calls)). If a tool is missing, the plugin tells you which check it could not run and marks the affected conclusions as unverified.
+Yes. Without the docs server, the plugin tells you the command in [Claude Code docs server](#-claude-code-docs-server) once, then reads the raw docs pages (see [What this plugin runs and sends](#-what-this-plugin-runs-and-sends)). If a tool is missing, the plugin tells you which check it could not run and marks the affected conclusions as unverified.
 
 </details>
 

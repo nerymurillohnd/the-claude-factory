@@ -7,7 +7,7 @@
 [![Version](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Fnerymurillohnd%2Fthe-claude-factory%2Fmain%2Fplugins%2Ftool-ledger%2F.claude-plugin%2Fplugin.json&query=%24.version&label=version&color=D97757)](./CHANGELOG.md)
 [![Works in](https://img.shields.io/badge/works%20in-Claude%20Code%20only-2563EB)](#-compatibility)
 [![Category](https://img.shields.io/badge/category-Mods-6B7280)](../../README.md#-catalog)
-[![Claude Code](https://img.shields.io/badge/Claude%20Code-%E2%89%A5%202.1.295-D97757?logo=claude&logoColor=white)](https://code.claude.com/docs/en/plugins/install)
+[![Claude Code](https://img.shields.io/badge/Claude%20Code-%E2%89%A5%202.1.299-D97757?logo=claude&logoColor=white)](https://code.claude.com/docs/en/plugins/install)
 [![License: MIT](https://img.shields.io/badge/license-MIT-22C55E)](./LICENSE)
 
 [Why use it](#-why-use-it) •
@@ -15,6 +15,7 @@
 [Prerequisites](#-prerequisites) •
 [Install](#-installation) •
 [Usage](#-usage) •
+[Configuration](#%EF%B8%8F-configuration) •
 [Compatibility](#-compatibility) •
 [FAQ](#-faq--troubleshooting)
 
@@ -45,7 +46,9 @@
 
 | Tool | Minimum version | Check |
 | :-- | :-- | :-- |
-| Claude Code | 2.1.295 | `claude --version` |
+| Claude Code | 2.1.299 | `claude --version` |
+
+Claude Code 2.1.299 is the minimum because the panel's text uses weights that older versions don't draw: on 2.1.295 to 2.1.298 the panel stays empty.
 
 ### 🤖 Claude Code
 
@@ -152,7 +155,7 @@ Press **Errors only** in the panel. It shows failed and denied calls, and the bu
 claude plugin install tool-ledger@the-claude-factory --config autoOpen=sidebar
 ```
 
-**Result:** where the panel can dock beside the transcript, it opens by itself once per session: in a fullscreen terminal from 144 columns wide, or on another surface that reports it docks panels. When you open it yourself with `/tool-ledger`, it fits any width.
+**Result:** where the panel can dock beside the transcript, in a fullscreen terminal or on another surface that reports it docks panels, it opens by itself once per session. Claude Code draws a panel that opens by itself only from 144 columns wide, or from 110 once you have opened it yourself and not closed it by hand since; on a narrower terminal it waits until you widen the terminal or run `/tool-ledger`. When you open it yourself with `/tool-ledger`, it fits any width.
 
 ## ⚙️ Configuration
 
@@ -242,7 +245,7 @@ It never changes them. Before each call it does a few quick bookkeeping steps in
 <details>
 <summary><b>What does the mod reach on my machine?</b></summary>
 
-It hooks the start of each session (to add `/tool-ledger`), each tool call, the `PreToolUse` and permission-check decisions (to tell denied calls apart), the `/tool-ledger` command, the panel and the band above the prompt (to open the sidebar when you choose `autoOpen`). It calls only Claude Code's interface: the clock, the list of subagents, registering the command, the session's own memory, and opening and drawing the panel. It never touches files, processes, the network or the model. `claude plugin validate` lists the same hooks and calls.
+It hooks the start of each session (to add `/tool-ledger`), each tool call, the `PreToolUse` and permission-check decisions (to tell denied calls apart), the `/tool-ledger` command, the panel and the band above the prompt (to open the sidebar when you choose `autoOpen`). It calls only Claude Code's interface: the clock, the list of subagents, registering the command, the session's own memory, and opening and drawing the panel. It never touches files, processes, the network or the model.
 
 </details>
 

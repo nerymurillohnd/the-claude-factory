@@ -7,7 +7,7 @@
 [![Version](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Fnerymurillohnd%2Fthe-claude-factory%2Fmain%2Fplugins%2Fskill-diagnostics%2F.claude-plugin%2Fplugin.json&query=%24.version&label=version&color=D97757)](./CHANGELOG.md)
 [![Works in](https://img.shields.io/badge/works%20in-Claude%20Code%20%C2%B7%20Claude%20app-2563EB)](#-compatibility)
 [![Category](https://img.shields.io/badge/category-Testing%20%26%20Quality-6B7280)](../../README.md#-catalog)
-[![Claude Code](https://img.shields.io/badge/Claude%20Code-%E2%89%A5%202.1.176-D97757?logo=claude&logoColor=white)](https://code.claude.com/docs/en/plugins/install)
+[![Claude Code](https://img.shields.io/badge/Claude%20Code-%E2%89%A5%202.1.271-D97757?logo=claude&logoColor=white)](https://code.claude.com/docs/en/plugins/install)
 [![License: MIT](https://img.shields.io/badge/license-MIT-22C55E)](./LICENSE)
 
 [Why use it](#-why-use-it) •
@@ -15,6 +15,7 @@
 [Prerequisites](#-prerequisites) •
 [Install](#-installation) •
 [Usage](#-usage) •
+[Configuration](#%EF%B8%8F-configuration) •
 [Compatibility](#-compatibility) •
 [FAQ](#-faq--troubleshooting)
 
@@ -44,7 +45,7 @@ A skill can look finished to the person who wrote it and still fail the model th
 | 🎯 Skill | `skill-diagnostics:audit` | Lists the skill's files, launches both lenses in parallel, verifies and merges the results, and gives the verdict | `/skill-diagnostics:audit <path>`, or ask Claude to audit, review or check a skill |
 | 🤖 Agent | `skill-diagnostics:conformance-auditor` | Checks one skill against the documented rules and recommendations, on all four surfaces | Launched by the skill, one per skill |
 | 🤖 Agent | `skill-diagnostics:executability-auditor` | Traces every workflow of one skill as the model that must run it | Launched by the skill, one per skill |
-| 🪝 Hook | `PostToolUse` | After a `SKILL.md` is written or edited, asks Claude to offer an audit once the skill is finished (or to run it, if you [configure](#️-configuration) that) | Automatically, once per skill per session |
+| 🪝 Hook | `PostToolUse` | After a `SKILL.md` is written or edited, asks Claude to offer an audit once the skill is finished (or to run it, if you [configure](#️-configuration) that) | Automatically, once per skill per session; never for a `SKILL.md` in Claude Code's `~/.claude/plugins` or `~/.claude/skills/synced` folders or in this plugin, which Claude Code overwrites |
 
 Skill Diagnostics only audits. To create a skill, use Anthropic's `skill-creator`, then audit the result.
 
@@ -52,9 +53,11 @@ Skill Diagnostics only audits. To create a skill, use Anthropic's `skill-creator
 
 | Tool | Minimum version | Check |
 | :-- | :-- | :-- |
-| Claude Code | 2.1.176 | `claude --version` |
+| Claude Code | 2.1.271 | `claude --version` |
 | Python, as `python3` on your `PATH` | 3.12 | `python3 --version` |
 | git (optional: to audit a skill from a URL; on Windows, Git for Windows is required) | — | `git --version` |
+
+Claude Code 2.1.271 is the minimum because the two auditor agents run without your `CLAUDE.md` files through `omitClaudeMd`, which 2.1.271 added.
 
 Python runs the hook. On Windows the hook runs through Git Bash, which comes with [Git for Windows](https://git-scm.com/downloads/win), so run `python3 --version` there.
 
@@ -279,6 +282,13 @@ Create or edit a skill as usual, for example with `skill-creator`. When the skil
 
 In the Claude app the option can't be changed and keeps its default, `suggest`.
 
+## 🔍 What this plugin runs and sends
+
+- **Hooks:** `PostToolUse` on a `Write` or `Edit` of a `SKILL.md` runs `python3 hooks/skill_written.py`. It reads the event Claude Code passes it and adds one line to Claude's context that asks Claude to offer the audit, or to run it with `on_skill_write` set to `run`. It never blocks a tool call and sends nothing.
+- **MCP servers:** none.
+- **Network:** the audit reads public pages from `code.claude.com` (the docs and the changelog), `claude.com`, `platform.claude.com`, `support.claude.com` and `agentskills.io` to verify its findings. For a skill you audit from a URL, `git ls-remote` and `git clone` reach `github.com`, or the repository host you give. It never uploads your skill's files.
+- **Files written:** the hook keeps one small file per session in the plugin's data directory, `notified/<hashed session ID>.txt`, with the skill folders it already announced, so it asks once; it deletes these files after 30 days. An audit from a URL clones into a temporary folder made with `mktemp -d` and deletes it after the report. The audit writes nothing in your workspace.
+
 ## 🔄 Updating
 
 ```bash
@@ -318,7 +328,7 @@ claude plugin uninstall skill-diagnostics@the-claude-factory --scope project
 
 In the Claude app: **Customize** → **Plugins** → **Skill Diagnostics** → its menu → **Remove**.
 
-Uninstalling from the last scope it's installed at also deletes its saved options and data directory, unless you add `--keep-data`. The audit never changes your files, so nothing else is left behind.
+Uninstalling from the last scope it's installed at also deletes its saved options and data directory, with the hook's per-session files in it, unless you add `--keep-data`. The audit never changes your files, so nothing else is left behind.
 
 ## 🧭 Compatibility
 
@@ -394,7 +404,7 @@ Each skill is read in full by two agents in parallel, and every finding is then 
 <details>
 <summary><b>What does it fetch from the internet?</b></summary>
 
-It uses the network to verify findings against the official Claude documentation and the Claude Code changelog, and to download a skill you audit from a URL. It fetches pages from `code.claude.com`, `claude.com`, `platform.claude.com`, `support.claude.com` and `agentskills.io`. It only downloads public documentation pages; it never uploads your skill's files to those sites. Without network access the audit still runs; findings that need an official page are marked *not verified live* and the verdict is *provisional*.
+Public pages only: the official Claude documentation and the Claude Code changelog, to verify findings, and a skill you audit from a URL. [What this plugin runs and sends](#-what-this-plugin-runs-and-sends) lists every site. It never uploads your skill's files. Without network access the audit still runs; findings that need an official page are marked *not verified live* and the verdict is *provisional*.
 
 </details>
 

@@ -7,7 +7,7 @@
 [![Version](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Fnerymurillohnd%2Fthe-claude-factory%2Fmain%2Fplugins%2Fmods-engineering%2F.claude-plugin%2Fplugin.json&query=%24.version&label=version&color=D97757)](./CHANGELOG.md)
 [![Works in](https://img.shields.io/badge/works%20in-Claude%20Code%20%C2%B7%20Claude%20app-2563EB)](#-compatibility)
 [![Category](https://img.shields.io/badge/category-Development-6B7280)](../../README.md#-catalog)
-[![Claude Code](https://img.shields.io/badge/Claude%20Code-%E2%89%A5%202.1.292-D97757?logo=claude&logoColor=white)](https://code.claude.com/docs/en/plugins/install)
+[![Claude Code](https://img.shields.io/badge/Claude%20Code-%E2%89%A5%202.1.295-D97757?logo=claude&logoColor=white)](https://code.claude.com/docs/en/plugins/install)
 [![License: MIT](https://img.shields.io/badge/license-MIT-22C55E)](./LICENSE)
 
 [Why use it](#-why-use-it) •
@@ -43,7 +43,9 @@
 
 | Tool | Minimum version | Check |
 | :-- | :-- | :-- |
-| Claude Code | 2.1.292 | `claude --version` |
+| Claude Code | 2.1.295 | `claude --version` |
+
+Claude Code 2.1.295 is the minimum because the skill teaches that `-p` and SDK sessions, `claude plugin test` and `claude plugin validate` never write a mod's type files, which holds from that version. Mods themselves run from 2.1.287 (2.1.286 in the Desktop app).
 
 ### 🤖 Claude Code
 

@@ -7,7 +7,7 @@
 [![Version](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Fnerymurillohnd%2Fthe-claude-factory%2Fmain%2Fplugins%2Fblock-no-verify%2F.claude-plugin%2Fplugin.json&query=%24.version&label=version&color=D97757)](./CHANGELOG.md)
 [![Works in](https://img.shields.io/badge/works%20in-Claude%20Code%20%C2%B7%20Claude%20app-2563EB)](#-compatibility)
 [![Category](https://img.shields.io/badge/category-Security-6B7280)](../../README.md#-catalog)
-[![Claude Code](https://img.shields.io/badge/Claude%20Code-%E2%89%A5%202.1.295-D97757?logo=claude&logoColor=white)](https://code.claude.com/docs/en/plugins/install)
+[![Claude Code](https://img.shields.io/badge/Claude%20Code-%E2%89%A5%202.1.314-D97757?logo=claude&logoColor=white)](https://code.claude.com/docs/en/plugins/install)
 [![License: MIT](https://img.shields.io/badge/license-MIT-22C55E)](./LICENSE)
 
 [Why use it](#-why-use-it) •
@@ -32,8 +32,9 @@ A pre-commit hook fails, and the quickest way for an agent to get past it is to 
 - **Your gates keep their meaning** — a hook that fails gets fixed, not skipped. Claude cannot talk its way past a check that runs before the command does.
 - **Claude gets the reason, not a dead end** — the denial names what it found and says what to do: run the command without it and fix the cause.
 - **It reads the command, not just the flag** — it catches `-n` on `git commit`, the abbreviations git accepts (`--no-veri`), `sudo`, `env`, `time` and `exec` in front, a subshell, a brace group, `if` and loops, `$(…)` and backticks, `$'…'` quoting, `bash -c` and `eval`, and a heredoc that a shell runs.
-- **It guards the configuration too** — `git config commit.gpgsign false`, `-c core.hooksPath=/dev/null`, `HUSKY=0`, `GIT_CONFIG_*` and an inline `-c alias.ci='commit --no-verify'` are stopped like the flag.
-- **Normal work is untouched** — a commit message that mentions `--no-verify`, `git push -n`, a heredoc that only writes a file, and Claude's usual `git commit -m "$(cat <<'EOF' …)"` all pass.
+- **It guards the configuration too** — `git config commit.gpgsign false`, `-c core.hooksPath=/dev/null`, `-c gpg.program=…`, `-c include.path=…`, `HUSKY=0`, `GIT_CONFIG_*`, `HOME=…` in front of `git commit` and an inline `-c alias.ci='commit --no-verify'` are stopped like the flag.
+- **It guards the hooks themselves** — `rm`, `unlink`, `truncate`, `shred` or `mv` on a hook file, `chmod -x` on one, `pre-commit uninstall` and its lefthook, husky and overcommit forms, and `git commit-tree`, which makes a commit without hooks, are stopped too.
+- **Normal work is untouched** — a commit message that mentions `--no-verify`, `git push -n`, a heredoc that only writes a file, installing or adding hooks, and Claude's usual `git commit -m "$(cat <<'EOF' …)"` all pass.
 - **Nothing to set up** — one hook, no accounts, no network, no files written. It also checks the PowerShell tool.
 - **Fast** — about 30 ms per Bash command, measured inside a Claude Code session.
 
@@ -41,18 +42,18 @@ A pre-commit hook fails, and the quickest way for an agent to get past it is to 
 
 | Component | Name | What it does | How it runs |
 | :-- | :-- | :-- | :-- |
-| 🪝 Hook | `PreToolUse` on Bash and PowerShell | Reads each command and denies one that runs git so that it skips commit hooks or signing. Every other command passes without a word | Automatically, on every Bash and PowerShell command, in the main conversation and in subagents |
+| 🪝 Hook | `PreToolUse` on Bash and PowerShell | Reads each command and denies one that runs git so that it skips commit hooks or signing, or that removes or disables the repository's hooks. Every other command passes without a word | Automatically, on every Bash and PowerShell command, in the main conversation and in subagents |
 
 ## 📋 Prerequisites
 
 | Tool | Minimum version | Check |
 | :-- | :-- | :-- |
-| Claude Code | 2.1.295 | `claude --version` |
+| Claude Code | 2.1.314 | `claude --version` |
 | Bash | 3.2 | `bash --version` |
 | jq | 1.6 | `jq --version` |
 | git (optional), to read your git aliases | — | `git --version` |
 
-Claude Code 2.1.295 is the minimum because the hook uses the `onFailure` field, which older versions ignore: a hook that cannot start would then let the command through without a word. Without `jq` the hook cannot read Claude's command: see [Limitations](#-limitations). On Windows, the plugin runs in Git Bash.
+Claude Code 2.1.314 is the minimum because from that version hooks that match Bash also check the shell commands the Monitor tool starts; on an older version, a `--no-verify` sent through Monitor gets through. The hook also relies on the `onFailure` field (2.1.295), so a hook that cannot start blocks the command instead of letting it through. Without `jq` the hook cannot read Claude's command: see [Limitations](#-limitations). On Windows, the plugin runs in Git Bash.
 
 ### 🤖 Claude Code
 
@@ -341,6 +342,9 @@ Claude Code labels the message `PreToolUse:Bash hook error`. That is how it show
 | `git commit --no-veri -m "x"` | 🚫 Denied: git runs the abbreviation as the full flag |
 | `git commit --no-gpg-sign`, `git -c commit.gpgsign=false commit`, `git -c commit.gpgsign= commit`, `git -c tag.gpgsign=off tag v1` | 🚫 Denied: unsigned commits and tags, with every spelling of false that git reads |
 | `git config commit.gpgsign false`, `git -c core.hooksPath=/dev/null commit`, `HUSKY=0 git commit` | 🚫 Denied: signing or hooks switched off through configuration |
+| `git -c gpg.program=true commit`, `git -c include.path=other.cfg commit`, `HOME=/tmp git commit`, `GIT_CONFIG_GLOBAL=/dev/null git commit` | 🚫 Denied: a replaced signing program, injected configuration or a redirected configuration file |
+| `rm .git/hooks/pre-commit`, `mv .husky/pre-commit /tmp`, `chmod -x .git/hooks/pre-commit`, `pre-commit uninstall`, `lefthook uninstall` | 🚫 Denied: the hooks are removed or switched off |
+| `git commit-tree HEAD^{tree} -m "x"` | 🚫 Denied: it makes a commit without running hooks or signing |
 | `sudo -n git commit --no-verify`, `env git commit --no-verify`, `time git commit --no-verify`, `exec git commit --no-verify` | 🚫 Denied: what stands in front is looked through |
 | `(git commit --no-verify)`, `{ git commit --no-verify; }`, `if true; then git commit --no-verify; fi`, `sleep 1 & git commit --no-verify` | 🚫 Denied: grouping, control flow and background are looked through |
 | `echo "$(git commit --no-verify)"`, `` echo `git commit -n` ``, `git commit $'--no-verify'`, `g"i"t commit --no-verify` | 🚫 Denied: substitutions and quoting are read |
@@ -352,15 +356,12 @@ Claude Code labels the message `PreToolUse:Bash hook error`. That is how it show
 
 A command the guard cannot read, such as an unterminated quote, is denied with that reason, so a parse failure never lets a bypass through.
 
-## 🔐 Permissions
+## 🔍 What this plugin runs and sends
 
-| Access | What the plugin does |
-| :-- | :-- |
-| Read | The command Claude is about to run, which Claude Code passes to the hook. To resolve an alias it runs `git config --get alias.<name>` in the call's folder, which only reads |
-| Write | None |
-| Process | `jq` to read the payload, and the read-only `git config` above. It never runs, changes or re-runs your command |
-| Network | None |
-| Credentials | None |
+- **Hooks:** `PreToolUse` on `Bash` and `PowerShell` runs `bash hooks/block-no-verify.sh`, which reads the command Claude is about to run from what Claude Code passes it. It runs `jq` to read that input, `tr` to lowercase and strip quotes from the command text, and, to resolve a git alias, `git config --get alias.<name>` in the call's folder, which only reads. It never runs, changes or re-runs your command, and reads no credentials.
+- **MCP servers:** none.
+- **Network:** none.
+- **Files written:** none.
 
 ## 🚧 Limitations
 
@@ -454,7 +455,7 @@ Run the command yourself in your terminal: the guard only watches Claude. To tur
 <details>
 <summary><b>Does it block <code>git push --force</code>?</b></summary>
 
-No. It only blocks what skips commit hooks or signing: `--no-verify`, `--no-gpg-sign`, `-n` on `commit` and `am`, and a false signing setting or a hooks setting that points away from your repository.
+No. It only blocks what skips, removes or switches off commit hooks or signing: `--no-verify`, `--no-gpg-sign`, `-n` on `commit` and `am`, `git commit-tree`, a false signing setting, a replaced `gpg.program`, injected or redirected Git configuration, a hooks setting that points away from your repository, and deleting, moving, un-executing or uninstalling your hook files. `git push --force` does none of these.
 
 </details>
 

@@ -7,7 +7,7 @@
 [![Version](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Fnerymurillohnd%2Fthe-claude-factory%2Fmain%2Fplugins%2Fsvelte-development%2F.claude-plugin%2Fplugin.json&query=%24.version&label=version&color=D97757)](./CHANGELOG.md)
 [![Works in](https://img.shields.io/badge/works%20in-Claude%20Code%20%C2%B7%20Claude%20app-2563EB)](#-compatibility)
 [![Category](https://img.shields.io/badge/category-Development-6B7280)](../../README.md#-catalog)
-[![Claude Code](https://img.shields.io/badge/Claude%20Code-%E2%89%A5%202.1.303-D97757?logo=claude&logoColor=white)](https://code.claude.com/docs/en/plugins/install)
+[![Claude Code](https://img.shields.io/badge/Claude%20Code-%E2%89%A5%202.1.288-D97757?logo=claude&logoColor=white)](https://code.claude.com/docs/en/plugins/install)
 [![License: MIT](https://img.shields.io/badge/license-MIT-22C55E)](./LICENSE)
 
 [Why use it](#-why-use-it) •
@@ -53,11 +53,14 @@
 
 | Tool | Minimum version | Check |
 | :-- | :-- | :-- |
-| Claude Code | 2.1.303 | `claude --version` |
+| Claude Code | 2.1.288 | `claude --version` |
 | svelte-language-server | 0.18.5 | `npm ls -g svelte-language-server` |
 | Node.js | 18 | `node --version` |
+| curl (optional: for changelogs, and for the docs when the `svelte` server is unreachable) | — | `curl --version` |
 
-Install svelte-language-server globally, with `svelteserver` on the `PATH` of the shell you start `claude` from. It needs Node.js and brings its own TypeScript (5.9 or 6).
+Claude Code 2.1.288 is the minimum because from that version a language-server request times out after 60 seconds instead of hanging when the server stops responding.
+
+Install svelte-language-server globally, with `svelteserver` on the `PATH` of the shell you start `claude` from. It needs Node.js and brings its own TypeScript (5.9 or 6). Claude reads changelogs and raw docs pages with `curl`, never with WebFetch, which returns a summary; without `curl` it can't read them.
 
 ### 🤖 Claude Code
 
@@ -127,6 +130,27 @@ brew install node
 ```powershell
 powershell -c "irm https://community.chocolatey.org/install.ps1|iex"
 choco install nodejs
+```
+
+</details>
+
+### 🌐 curl
+
+macOS includes `curl`, and so does Git Bash on Windows.
+
+<details>
+<summary>🐧 <b>apt</b> — Debian, Ubuntu</summary>
+
+```bash
+sudo apt-get install curl
+```
+
+</details>
+<details>
+<summary>🎩 <b>dnf</b> — Fedora</summary>
+
+```bash
+sudo dnf install curl
 ```
 
 </details>
@@ -238,6 +262,13 @@ The plugin never installs a package. When something is missing (the language ser
 
 **Editor diagnostics:** when Claude Code is connected to VS Code or a JetBrains IDE, the agents also read the editor's diagnostics for each file they change or audit. Without a connected IDE they rely on the language server and your project check.
 
+## 🔍 What this plugin runs and sends
+
+- **Hooks:** none.
+- **MCP servers:** `svelte`, the Svelte team's remote server at `https://mcp.svelte.dev/mcp`, for the docs, the autofixer and playground links.
+- **Network:** the `svelte` server receives the docs sections Claude looks up and the whole code of each Svelte file the autofixer checks (see the warning in [Configuration](#%EF%B8%8F-configuration)). With `curl`, Claude reads public docs from `svelte.dev`, and changelogs and source files of the Svelte, Astro and Tailwind CSS projects from `raw.githubusercontent.com` and `api.github.com`; with `npm view`, it reads package versions from the npm registry. These requests carry no code. A playground link carries the code in its URL, and Claude makes one only when you ask.
+- **Files written:** none by the plugin. Claude and the editor agent change only the files your request covers, and the auditor changes none. In a SvelteKit project the project check can run `svelte-kit sync`, which writes SvelteKit's generated files.
+
 ## 🔄 Updating
 
 ```bash
@@ -339,7 +370,7 @@ In SvelteKit, run `npx svelte-kit sync` first: without SvelteKit's generated typ
 <details>
 <summary><b>What does the plugin send over the network?</b></summary>
 
-The `svelte` MCP server is the Svelte team's remote server at `https://mcp.svelte.dev`: Claude sends it the docs sections it looks up and the code it checks with the autofixer. Claude also reads `svelte.dev`, `raw.githubusercontent.com`, `api.github.com` and the npm registry for public docs, changelogs and package versions; these requests carry no code. To keep your code local, see the next question.
+The code the autofixer checks goes to the Svelte team's server; every other request reads public docs, changelogs and package versions and carries no code. [What this plugin runs and sends](#-what-this-plugin-runs-and-sends) lists each destination. To keep your code local, see the next question.
 
 </details>
 

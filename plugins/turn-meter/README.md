@@ -15,6 +15,7 @@
 [Prerequisites](#-prerequisites) •
 [Install](#-installation) •
 [Usage](#-usage) •
+[Configuration](#%EF%B8%8F-configuration) •
 [Compatibility](#-compatibility) •
 [FAQ](#-faq--troubleshooting)
 
@@ -47,6 +48,8 @@
 | :-- | :-- | :-- |
 | Claude Code | 2.1.295 | `claude --version` |
 | Notifying terminal (optional): iTerm2, kitty or Ghostty, for native notifications | — | — |
+
+Claude Code 2.1.295 is the minimum because the alerts use `$.ui.notify`, which 2.1.295 added.
 
 Without one, the terminal bell can still notify; where nothing can, the alert falls back to a toast.
 
@@ -174,10 +177,12 @@ Last turn: 3m 12s · 24 tools (9 in 2 subagents) · 41.2k in / 6.3k out   [ Hide
 
 | How the turn ended | The band reads |
 | :-- | :-- |
-| You pressed Esc | `Last turn: interrupted after 1m 05s · 7 tools` |
-| An API error ended it | `Last turn: ended by API error after 40s · 3 tools` |
-| The model refused | `Last turn: refused after 12s` |
+| You pressed Esc | `Last turn: interrupted after 1m 05s · 7 tools · 18.4k in / 1.1k out` |
+| An API error ended it | `Last turn: ended by API error after 40s · 3 tools · 9.8k in / 600 out` |
+| The model refused | `Last turn: refused after 12s · 5.1k in / 42 out` |
 | A narrow band (under 60 columns of room) | `3m12s · 24 tools · 48k tok` |
+
+The token figure is left out when `showTokens` is off or the turn spent no tokens.
 
 ### Example: hide or show the band
 
@@ -287,7 +292,7 @@ Claude Code could not send a native notification: your terminal has no notificat
 <details>
 <summary><b>What does the mod reach on my machine?</b></summary>
 
-It hooks the start of each session (to add `/turn-meter`), the start and end of each turn, each tool call, the band above the prompt, and the `/turn-meter` command. It calls only Claude Code's interface: registering the command, the session's own memory, drawing, toasts and notifications. It never changes a prompt, a tool call or a reply, and it never touches files, processes, the network or the model. `claude plugin validate` lists the same hooks and calls.
+It hooks the start of each session (to add `/turn-meter`), the start and end of each turn, each tool call, the band above the prompt, and the `/turn-meter` command. It calls only Claude Code's interface: registering the command, the session's own memory, drawing, toasts and notifications. It never changes a prompt, a tool call or a reply, and it never touches files, processes, the network or the model.
 
 </details>
 

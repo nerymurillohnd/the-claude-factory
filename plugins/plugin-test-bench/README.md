@@ -7,7 +7,7 @@
 [![Version](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Fnerymurillohnd%2Fthe-claude-factory%2Fmain%2Fplugins%2Fplugin-test-bench%2F.claude-plugin%2Fplugin.json&query=%24.version&label=version&color=D97757)](./CHANGELOG.md)
 [![Works in](https://img.shields.io/badge/works%20in-Claude%20Code%20only-2563EB)](#-compatibility)
 [![Category](https://img.shields.io/badge/category-Testing%20%26%20Quality-6B7280)](../../README.md#-catalog)
-[![Claude Code](https://img.shields.io/badge/Claude%20Code-%E2%89%A5%202.1.293-D97757?logo=claude&logoColor=white)](https://code.claude.com/docs/en/plugins/install)
+[![Claude Code](https://img.shields.io/badge/Claude%20Code-%E2%89%A5%202.1.299-D97757?logo=claude&logoColor=white)](https://code.claude.com/docs/en/plugins/install)
 [![License: MIT](https://img.shields.io/badge/license-MIT-22C55E)](./LICENSE)
 
 [Why use it](#-why-use-it) •
@@ -48,12 +48,14 @@ A plugin that works with `claude --plugin-dir` on your machine can still break f
 
 | Tool | Minimum version | Check |
 | :-- | :-- | :-- |
-| Claude Code | 2.1.293 | `claude --version` |
+| Claude Code | 2.1.299 | `claude --version` |
 | git, with your plugin committed in a repository | 2.31 to run eval suites | `git --version` |
 | Bash | — | `bash --version` |
 | bubblewrap (Linux, for eval cases that grant Bash) | — | `bwrap --version` |
 | socat (Linux, for eval cases that grant Bash) | — | `socat -V` |
 | Claude sign-in for the test configuration | — | — |
+
+Claude Code 2.1.299 is the minimum because from that version an eval run that ends on an API error scores 0 and fails instead of passing. 2.1.293 also stopped `claude plugin eval` from refusing every run that grants Bash on a Mac with Docker Desktop.
 
 Without a git repository, Claude offers a throwaway snapshot of your plugin. Eval cases that grant Bash need the OS sandbox: macOS has it built in, Linux needs `bubblewrap` and `socat`, and on Windows you run Claude Code inside WSL2 and install them there with the Linux commands. The plugin is built and tested on macOS.
 

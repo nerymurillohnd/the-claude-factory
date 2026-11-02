@@ -7,7 +7,7 @@
 [![Version](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Fnerymurillohnd%2Fthe-claude-factory%2Fmain%2Fplugins%2Ftailwind-development%2F.claude-plugin%2Fplugin.json&query=%24.version&label=version&color=D97757)](./CHANGELOG.md)
 [![Works in](https://img.shields.io/badge/works%20in-Claude%20Code%20%C2%B7%20Claude%20app-2563EB)](#-compatibility)
 [![Category](https://img.shields.io/badge/category-Development-6B7280)](../../README.md#-catalog)
-[![Claude Code](https://img.shields.io/badge/Claude%20Code-%E2%89%A5%202.1.292-D97757?logo=claude&logoColor=white)](https://code.claude.com/docs/en/plugins/install)
+[![Claude Code](https://img.shields.io/badge/Claude%20Code-%E2%89%A5%202.1.281-D97757?logo=claude&logoColor=white)](https://code.claude.com/docs/en/plugins/install)
 [![License: MIT](https://img.shields.io/badge/license-MIT-22C55E)](./LICENSE)
 
 [Why use it](#-why-use-it) •
@@ -54,13 +54,15 @@
 
 | Tool | Minimum version | Check |
 | :-- | :-- | :-- |
-| Claude Code | 2.1.292 | `claude --version` |
+| Claude Code | 2.1.281 | `claude --version` |
 | Node.js and npm, on your `PATH` | 24 | `node --version` and `npm --version` |
 | Python, as `python3` | 3.12 | `python3 --version` |
 | git (optional: for a v3 to v4 migration) | — | `git --version` |
 | Context7 MCP server (optional) | — | `claude mcp list` |
 
-Node.js runs the language-server checks. Python runs the link check before Claude delegates to an agent. git is needed only for a v3 to v4 migration, with your project in a git repository, since the migrator works in a git worktree. Context7, when you have it, is the first place Claude looks up Tailwind's docs.
+Claude Code 2.1.281 is the minimum because that version fixed hooks that call an MCP tool being skipped while the server was still connecting.
+
+Node.js runs the language-server checks. Node.js 24 is the minimum this plugin supports; the plugin sets it, not its packages, which declare Node.js 20 or later. Python runs the link check before Claude delegates to an agent. git is needed only for a v3 to v4 migration, with your project in a git repository, since the migrator works in a git worktree. Context7, when you have it, is the first place Claude looks up Tailwind's docs.
 
 ### 🤖 Claude Code
 

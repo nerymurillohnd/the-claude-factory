@@ -7,7 +7,7 @@
 [![Version](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Fnerymurillohnd%2Fthe-claude-factory%2Fmain%2Fplugins%2Fplugin-evals%2F.claude-plugin%2Fplugin.json&query=%24.version&label=version&color=D97757)](./CHANGELOG.md)
 [![Works in](https://img.shields.io/badge/works%20in-Claude%20Code%20%C2%B7%20Claude%20app-2563EB)](#-compatibility)
 [![Category](https://img.shields.io/badge/category-Testing%20%26%20Quality-6B7280)](../../README.md#-catalog)
-[![Claude Code](https://img.shields.io/badge/Claude%20Code-%E2%89%A5%202.1.269-D97757?logo=claude&logoColor=white)](https://code.claude.com/docs/en/plugins/install)
+[![Claude Code](https://img.shields.io/badge/Claude%20Code-%E2%89%A5%202.1.299-D97757?logo=claude&logoColor=white)](https://code.claude.com/docs/en/plugins/install)
 [![License: MIT](https://img.shields.io/badge/license-MIT-22C55E)](./LICENSE)
 
 [Why use it](#-why-use-it) •
@@ -45,10 +45,12 @@
 
 | Tool | Minimum version | Check |
 | :-- | :-- | :-- |
-| Claude Code, in a terminal to run suites | 2.1.269 | `claude --version` |
+| Claude Code, in a terminal to run suites | 2.1.299 | `claude --version` |
 | git (optional; if installed, eval runs need this version) | 2.31 | `git --version` |
 | bubblewrap (Linux, for suites that grant Bash) | — | `bwrap --version` |
 | socat (Linux, for suites that grant Bash) | — | `socat -V` |
+
+Claude Code 2.1.299 is the minimum because from that version a run that ends on an API error scores 0 and fails the suite instead of passing. 2.1.293 also stopped `claude plugin eval` from refusing every run that grants Bash on a Mac with Docker Desktop.
 
 Suites that grant Bash need the OS sandbox: macOS has it built in, Linux needs `bubblewrap` and `socat`, and on Windows you run Claude Code inside WSL2 and install them there with the Linux commands.
 
@@ -244,6 +246,13 @@ Here's my aggregate-result.json. Why is the delta zero on half the cases?
 ```
 
 **Result:** a case-by-case reading that separates cases Claude passes without your plugin, a skill that didn't trigger on that wording, graders on the wrong target, and a small judge failing correct answers. Each comes with its fix.
+
+## 🔍 What this plugin runs and sends
+
+- **Hooks:** none.
+- **MCP servers:** none.
+- **Network:** the plugin itself makes no calls. Its skill has Claude read the live docs and the changelog on `code.claude.com` with `curl -sL` or WebFetch, a plain `GET` with nothing of yours in it, and it may open the related pages it cites on `platform.claude.com`, `agentskills.io` and `github.com`. To check your CLI, Claude runs `claude --version` and `claude plugin eval --help`, which stay on your computer. The eval runs, judged graders and agent mocks that Claude starts only after your go-ahead call the model on the account your Claude Code uses. On a claude.ai subscription, a run you start in a terminal also publishes its report as a private artifact unless the command has `--no-publish`; a run started from a Claude Code session keeps it local unless the command has `--publish-report`.
+- **Files written:** none by the plugin. At your request, Claude writes the suite in your plugin's eval directory (`evals/` unless you choose another), and each `claude plugin eval` run writes `results/<timestamp>/` there, with `aggregate-result.json` and `report.html`; a plugin evaluated by name writes to `./evals/results/` in your current folder.
 
 ## 🔄 Updating
 
