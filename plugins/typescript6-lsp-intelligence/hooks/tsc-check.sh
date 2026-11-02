@@ -59,7 +59,7 @@ case "${PLUGIN}" in
     readonly NODE_MIN=14.17.0
     ;;
 esac
-readonly README_URL="https://github.com/nerymurillohnd/the-claude-factory/tree/main/plugins/${PLUGIN}#-requirements"
+readonly README_URL="https://github.com/nerymurillohnd/the-claude-factory/tree/main/plugins/${PLUGIN}#-prerequisites"
 
 # Canonical, so the paths tsc prints relative to it resolve back to the same files.
 WORK="$(mktemp -d)"
@@ -862,6 +862,8 @@ check_group() {
   fi
   if [[ ${config_errors} == *" is deprecated "* ]]; then
     parts="${parts}The TypeScript config (${found#uncovered }) uses options that are deprecated in TypeScript 6 and stop working in TypeScript 7; tsc reports them as errors:${NL}${config_errors}${NL}"
+  elif [[ ${config_errors} == *" has been removed"* ]]; then
+    parts="${parts}The TypeScript config (${found#uncovered }) uses options that TypeScript 7 removed; tsc reports them as errors until they are taken out of the config:${NL}${config_errors}${NL}"
   elif [[ -n ${config_errors} ]]; then
     parts="${parts}The TypeScript config (${found#uncovered }) has errors, so tsc could not check the code as configured:${NL}${config_errors}${NL}"
   fi

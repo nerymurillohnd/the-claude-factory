@@ -7,7 +7,7 @@
 [![Version](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Fnerymurillohnd%2Fthe-claude-factory%2Fmain%2Fplugins%2Fprompt-writer%2F.claude-plugin%2Fplugin.json&query=%24.version&label=version&color=D97757)](./CHANGELOG.md)
 [![Works in](https://img.shields.io/badge/works%20in-Claude%20Code%20%C2%B7%20Claude%20app-2563EB)](#-compatibility)
 [![Category](https://img.shields.io/badge/category-Productivity-6B7280)](../../README.md#-catalog)
-[![Claude Code](https://img.shields.io/badge/Claude%20Code-%E2%89%A5%202.1.292-D97757?logo=claude&logoColor=white)](https://code.claude.com/docs/en/plugins/install)
+[![Claude Code](https://img.shields.io/badge/Claude%20Code-%E2%89%A5%202.1.294-D97757?logo=claude&logoColor=white)](https://code.claude.com/docs/en/plugins/install)
 [![License: MIT](https://img.shields.io/badge/license-MIT-22C55E)](./LICENSE)
 
 [Why use it](#-why-use-it) •
@@ -42,12 +42,15 @@ Most weak prompts come from a vague goal, not from missing tags or headings. Pro
 | Component | Name | What it does | How it runs |
 | :-- | :-- | :-- | :-- |
 | 🎯 Skill | `prompt-writer:prompt-writer` | Acts as your prompt partner: clarifies the goal, researches what the prompt depends on, and delivers one copy-ready prompt, the text of a system prompt, skill, slash command or agent, or a prompt that has Claude build one, with setup advice. It writes the prompt; you run it in another session | Only when you run `/prompt-writer:prompt-writer`; Claude doesn't start it on its own |
+| 🪝 Hook | `Stop`, in the skill | After a reply that delivers a prompt, an agent hook reads the session transcript and checks that each source the reply cites was read and each checklist item marked verified was checked; it sends Claude back to fix a claim without evidence | Automatically after each reply, once you've run the skill in the session |
 
 ## 📋 Prerequisites
 
 | Tool | Minimum version | Check |
 | :-- | :-- | :-- |
-| Claude Code | 2.1.292 | `claude --version` |
+| Claude Code | 2.1.294 | `claude --version` |
+
+Claude Code 2.1.294 is the minimum because that version fixed hooks written as instructions, as the skill's check is, letting through what they should stop.
 
 ### 🤖 Claude Code
 
@@ -165,6 +168,13 @@ Start every request with `/prompt-writer:prompt-writer`; Claude doesn't start th
 > [!TIP]
 > Your conversation stays in your own language, and prompts are written in English unless you ask otherwise. The language the target model answers in is a separate choice, and Claude asks about it when it matters.
 
+## 🔍 What this plugin runs and sends
+
+- **Hooks:** the skill carries its own `Stop` hook of type `agent`, which Claude Code registers once you run the skill in a session. After each reply, it starts a checking agent with a 120-second limit. A reply without a "Verification checklist" section passes at once. For a delivery, the agent reads the whole session transcript and checks the reply's claims against the tool calls in it: every URL under "Sources" was read, the target model's change page was read when the checklist says so, and no file was written or edited except the prompt file you asked for. It answers pass, or sends Claude back with the claims that lack evidence. Its instructions are to read the transcript and answer, nothing else.
+- **MCP servers:** none.
+- **Network:** the hook's agent is a model call through the same Claude account or provider as your session, and it receives the session transcript. The skill tells Claude to read current official pages on `platform.claude.com` and `code.claude.com` with `curl` or WebFetch, under your own permission rules.
+- **Files written:** none, unless you ask for the prompt in a file; then Claude writes that one file where you say.
+
 ## 🔄 Updating
 
 ```bash
@@ -205,10 +215,11 @@ Uninstalling from the last scope it's installed at also deletes its saved option
 | Component | Claude Code | Claude app |
 | :-- | :--: | :--: |
 | 🎯 Skills | ✅ | ✅ |
+| 🪝 Hooks | ✅ | ⚠️ in Cowork sessions, not in a chat conversation |
 
 <sub>✅ works · ⚠️ partial · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. The Claude app (web, desktop and mobile) runs a conversation as a Cowork session when it can, and as a chat conversation otherwise, for example on a device that can't run Cowork or in the separate Chat mode that Team and Enterprise plans keep for now.</sub>
 
-In Claude Code, after each delivery a check compares what the reply claims, such as the pages it cites and the verified checklist items, with what Claude actually did in the session, and sends Claude back to fix any claim without evidence. The check adds a short wait after each reply while the skill is in use. Elsewhere the checklist is Claude's own.
+Where the skill's `Stop` hook runs, after each delivery a check compares what the reply claims, such as the pages it cites and the verified checklist items, with what Claude actually did in the session, and sends Claude back to fix any claim without evidence. The check adds a short wait after each reply while the skill is in use. Where hooks don't run, as in a chat conversation, the checklist is Claude's own.
 
 The skill works the same in a Cowork session and in a chat conversation. Saving a prompt to a file needs a session that can reach a folder on your computer; elsewhere Claude gives you the prompt in a code block.
 

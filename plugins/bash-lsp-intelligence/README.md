@@ -7,7 +7,7 @@
 [![Version](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Fnerymurillohnd%2Fthe-claude-factory%2Fmain%2Fplugins%2Fbash-lsp-intelligence%2F.claude-plugin%2Fplugin.json&query=%24.version&label=version&color=D97757)](./CHANGELOG.md)
 [![Works in](https://img.shields.io/badge/works%20in-Claude%20Code%20only-2563EB)](#-compatibility)
 [![Category](https://img.shields.io/badge/category-Language%20Support-6B7280)](../../README.md#-catalog)
-[![Claude Code](https://img.shields.io/badge/Claude%20Code-%E2%89%A5%202.1.292-D97757?logo=claude&logoColor=white)](https://code.claude.com/docs/en/plugins/install)
+[![Claude Code](https://img.shields.io/badge/Claude%20Code-%E2%89%A5%202.1.288-D97757?logo=claude&logoColor=white)](https://code.claude.com/docs/en/plugins/install)
 [![License: MIT](https://img.shields.io/badge/license-MIT-22C55E)](./LICENSE)
 
 [Why use it](#-why-use-it) •
@@ -41,20 +41,23 @@
 | Component | Name | What it does | How it runs |
 | :-- | :-- | :-- | :-- |
 | 🧠 LSP server | `shellscript` | Connects `bash-language-server` for `.sh`, `.inc`, `.bash` and `.command` files, indexing `.github/` and `.claude/` too | Automatically when Claude opens or edits a shell file |
-| 🪝 Hook | `PostToolUse` · `PostToolUseFailure` | Runs `shfmt -w` and `shellcheck` on the shell scripts an Edit, Write or Bash call changed | Automatically after each of those tool calls |
+| 🪝 Hook | `PostToolUse` · `PostToolUseFailure` | Runs `shfmt -w` and `shellcheck` on the shell scripts an Edit, Write or Bash call changed | Automatically after each Edit, Write or Bash call, and after a Bash call that fails |
 | 🎯 Skill | `bash-lsp-intelligence:bash-lsp-intelligence` | Teaches Claude to navigate with the language server first, trust its results only after five checks, and work with shfmt and ShellCheck the way your project configures them | Automatically when you work on shell scripts, or `/bash-lsp-intelligence:bash-lsp-intelligence` |
 
 ## 📋 Prerequisites
 
 | Tool | Minimum version | Check |
 | :-- | :-- | :-- |
-| Claude Code | 2.1.292 | `claude --version` |
+| Claude Code | 2.1.288 | `claude --version` |
 | bash-language-server | — | `bash-language-server --version` |
 | shfmt | — | `shfmt --version` |
 | ShellCheck | — | `shellcheck --version` |
 | Node.js | 20 | `node --version` |
+| Git (optional) | — | `git --version` |
 
-Install them on the `PATH` of the shell you start `claude` from. The plugin doesn't install them: Claude Code starts `bash-language-server` by name, and the hook starts `shfmt` and `shellcheck` by name. Node.js runs bash-language-server and the hook. On Windows, run Claude Code from Git Bash with the same tools on its `PATH`.
+Claude Code 2.1.288 is the minimum because from that version a language-server request times out after 60 seconds instead of hanging when the server stops responding. The one-step install command needs 2.1.292; on an older version, add the marketplace first, then install.
+
+Install them on the `PATH` of the shell you start `claude` from. The plugin doesn't install them: Claude Code starts `bash-language-server` by name, and the hook starts `shfmt` and `shellcheck` by name. Node.js runs bash-language-server, which needs Node.js 20 or later, and the hook, which runs on Node.js 18 or later. Claude Code starts the hook with `bash`. Git is optional: in a Git repository the hook asks Git which files a Bash command changed, and without it the hook compares modification times. On Windows, run Claude Code from Git Bash with the same tools on its `PATH`.
 
 ### 🤖 Claude Code
 
@@ -214,6 +217,35 @@ choco install nodejs
 
 </details>
 
+### 🌿 Git (optional)
+
+<details>
+<summary>🍺 <b>Homebrew</b> — macOS, Linux</summary>
+
+```bash
+brew install git
+```
+
+</details>
+<details>
+<summary>🐧 <b>apt</b> — Debian, Ubuntu</summary>
+
+```bash
+sudo apt install git
+```
+
+</details>
+<details>
+<summary>🎩 <b>dnf</b> — Fedora</summary>
+
+```bash
+sudo dnf install git
+```
+
+</details>
+
+On Windows, Git for Windows includes Git Bash and Git: download it from [git-scm.com](https://git-scm.com/downloads/win).
+
 ## 📥 Installation
 
 ### 💻 Terminal
@@ -297,7 +329,7 @@ The hook runs the tools the way you would from a terminal, so **your configurati
 | Tool | What it reads | When you have none |
 | :-- | :-- | :-- |
 | shfmt | `.editorconfig`, searched from the script's folder upward (`[[shell]]` keys such as `indent_size`, `switch_case_indent`, `binary_next_line`) | `shfmt -i 2 -ci -bn`: two-space indent, indented `case` branches, binary operators at line start |
-| ShellCheck | The first `.shellcheckrc` from the script's folder upward, then `~/.shellcheckrc` or `$XDG_CONFIG_HOME/shellcheckrc`, plus `SHELLCHECK_OPTS` | `shellcheck -o all -S style -x -a -P SCRIPTDIR`: every optional check, style severity, sourced files followed and checked |
+| ShellCheck | The first `.shellcheckrc` or `shellcheckrc` from the script's folder upward, then `~/.shellcheckrc` or `$XDG_CONFIG_HOME/shellcheckrc`, plus `SHELLCHECK_OPTS` | `shellcheck -o all -S style -x -a -P SCRIPTDIR`: every optional check, style severity, sourced files followed and checked |
 
 An `.editorconfig`, a `.shellcheckrc` or `SHELLCHECK_OPTS` of your own replaces the corresponding default entirely; the plugin never creates or edits one.
 
@@ -308,6 +340,13 @@ An `.editorconfig`, a `.shellcheckrc` or `SHELLCHECK_OPTS` of your own replaces 
   "bashEditDiffEnabled": true
 }
 ```
+
+## 🔍 What this plugin runs and sends
+
+- **Hooks:** `PostToolUse` on `Edit|Write|Bash` and `PostToolUseFailure` on `Bash` run `hooks/check.mjs` with `node`, started by `bash`. It finds the shell scripts the call changed: the Edit or Write file; for Bash, the files Claude Code lists, or else `git rev-parse --is-inside-work-tree` and `git ls-files --modified --others --exclude-standard` in a Git repository, or a walk of at most 20,000 files of the project otherwise (never your home folder or the disk root). It finds `shfmt` and `shellcheck` with `sh -c 'command -v …'`, then runs `shfmt -w` and `shellcheck` on at most 20 scripts per call, each with a 50-second limit. It skips `node_modules`, `.venv`, `venv` and `site-packages`.
+- **MCP servers:** none.
+- **Network:** none.
+- **Files written:** `shfmt -w` rewrites the shell scripts it formats, in place. The plugin writes nothing else.
 
 ## 🔄 Updating
 
@@ -352,10 +391,13 @@ Uninstalling from the last scope it's installed at also deletes its saved option
 | Component | Claude Code | Claude app |
 | :-- | :--: | :--: |
 | 🎯 Skills | ✅ | ⚠️ loads, but it relies on the language server, which the Claude app doesn't run |
-| 🪝 Hooks | ✅ | ➖ needs shfmt and ShellCheck on your machine and runs only where Claude Code runs language servers |
+| 🪝 Hooks | ✅ | ⚠️ in Cowork sessions, not in a chat conversation |
 | 🧠 LSP server | ✅ | ➖ |
 
 <sub>✅ works · ⚠️ partial · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. The Claude app (web, desktop and mobile) runs a conversation as a Cowork session when it can, and as a chat conversation otherwise, for example on a device that can't run Cowork or in the separate Chat mode that Team and Enterprise plans keep for now.</sub>
+
+> [!NOTE]
+> The hook runs `node`, `shfmt` and `shellcheck`, so it works only on a machine where they're installed. In Claude Code that's your computer.
 
 Claude Code on the web doesn't start plugin language servers either, so there Claude gets no diagnostics or code navigation from this plugin.
 
@@ -378,7 +420,7 @@ Open `/plugin` → **Errors**. `Executable not found in $PATH: "bash-language-se
 <details>
 <summary><b>The hook says a tool is not installed.</b></summary>
 
-The message names the tool and where to get it, for example `shfmt is not installed, so no shell file was checked. Install it: brew install shfmt (macOS) or your distribution package`. Install it on the `PATH` of the shell that starts `claude`; the next edit is checked.
+The message names the tool and where to get it, for example `shfmt is not installed, so no shell file was checked. Install it: brew install shfmt (macOS) or your distribution package, see the README`. Install it on the `PATH` of the shell that starts `claude`; the next edit is checked.
 
 </details>
 

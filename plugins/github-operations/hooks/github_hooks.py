@@ -786,8 +786,8 @@ def why_denied(subcommand: Command, cwd: str) -> str | None:
     """Return why a reviewer agent may not run one subcommand, or None."""
     if sets_git_config(subcommand):
         return (
-            "cannot change where git reads its configuration; run git without -c,"
-            " --config-env, GIT_CONFIG, HOME or XDG_CONFIG_HOME."
+            "cannot change where git reads its configuration or its programs; run git"
+            " without -c, --config-env, GIT_CONFIG, GIT_EXEC_PATH, HOME or XDG_CONFIG_HOME."
         )
     words = subcommand.words
     checks: tuple[tuple[Callable[[list[str]], bool], str], ...] = (

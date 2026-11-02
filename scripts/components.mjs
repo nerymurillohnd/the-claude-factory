@@ -84,6 +84,50 @@ export function hooksFileKinds(text) {
   return { hooks: 'hooks' in parsed, mods: 'modules' in parsed }
 }
 
+/** The frontmatter block at the start of a Markdown file, without its `---` lines. */
+const FRONTMATTER = /^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/
+/** A top-level `hooks` key in a frontmatter block. */
+const HOOKS_KEY = /^hooks:/m
+
+/**
+ * Whether a skill's or an agent's Markdown declares hooks: a top-level `hooks` key in the
+ * frontmatter between its opening and closing `---` lines. Such hooks ship with the plugin even
+ * without a hooks/hooks.json.
+ * @param {string} text
+ * @returns {boolean}
+ */
+export function frontmatterHasHooks(text) {
+  const match = FRONTMATTER.exec(text)
+  return match !== null && HOOKS_KEY.test(match[1] ?? '')
+}
+
+/**
+ * Whether any SKILL.md under skills/ or any agent file under agents/ of a plugin declares hooks.
+ * @param {string} dir
+ * @returns {boolean}
+ */
+function markdownHooks(dir) {
+  /** @type {string[]} */
+  const files = []
+  /** @param {string} folder @param {(f: string) => boolean} keep */
+  const walk = (folder, keep) => {
+    if (!existsSync(folder)) {
+      return
+    }
+    for (const entry of readdirSync(folder, { withFileTypes: true })) {
+      const path = join(folder, entry.name)
+      if (entry.isDirectory()) {
+        walk(path, keep)
+      } else if (keep(entry.name)) {
+        files.push(path)
+      }
+    }
+  }
+  walk(join(dir, 'skills'), (f) => f === 'SKILL.md')
+  walk(join(dir, 'agents'), (f) => f.endsWith('.md'))
+  return files.some((f) => frontmatterHasHooks(readFileSync(f, 'utf8')))
+}
+
 /**
  * Returns { skills: 2, agents: 1, ... } with only the component types present.
  * @param {string} name
@@ -114,7 +158,7 @@ export function detectComponents(name) {
   const kinds = existsSync(hooksPath)
     ? hooksFileKinds(readFileSync(hooksPath, 'utf8'))
     : { hooks: false, mods: false }
-  set('hooks', kinds.hooks || manifest.hooks ? 1 : 0)
+  set('hooks', kinds.hooks || manifest.hooks || markdownHooks(dir) ? 1 : 0)
   set('mods', kinds.mods ? 1 : 0)
   set('mcp', existsSync(join(dir, '.mcp.json')) || manifest.mcpServers ? 1 : 0)
   set('lsp', existsSync(join(dir, '.lsp.json')) || manifest.lspServers ? 1 : 0)

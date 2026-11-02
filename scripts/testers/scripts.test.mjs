@@ -25,7 +25,7 @@ import {
   rootPackageProblems,
   shippedArtifactProblems,
 } from '../check-repo.mjs'
-import { hooksFileKinds } from '../components.mjs'
+import { frontmatterHasHooks, hooksFileKinds } from '../components.mjs'
 import { anchor } from '../generators/catalog.mjs'
 import { changelogSection } from '../lib.mjs'
 
@@ -918,6 +918,13 @@ describe('component detection', () => {
   test('a hooks.json that is not a JSON object counts as settings hooks', () => {
     assert.deepEqual(hooksFileKinds('{ not json'), { hooks: true, mods: false })
     assert.deepEqual(hooksFileKinds('[]'), { hooks: true, mods: false })
+  })
+
+  test('a skill or agent declares hooks only through a top-level hooks key in its frontmatter', () => {
+    assert.equal(frontmatterHasHooks('---\nname: x\nhooks:\n  Stop: []\n---\nbody\n'), true)
+    assert.equal(frontmatterHasHooks('---\nname: x\n---\nhooks: in the body\n'), false)
+    assert.equal(frontmatterHasHooks('---\ndescription: |\n  hooks: quoted\n---\n'), false)
+    assert.equal(frontmatterHasHooks('no frontmatter\nhooks:\n'), false)
   })
 })
 

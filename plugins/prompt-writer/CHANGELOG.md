@@ -6,6 +6,16 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.2.2] - 2026-11-02
+
+### Changed
+
+- The README names the skill's `Stop` check as a hook, says what it reads and sends, adds it to the Compatibility table, and gives Claude Code 2.1.294 as the minimum, the version that fixed hooks written as instructions letting through what they should stop.
+
+### Fixed
+
+- The changelog moves the explicit start with `/prompt-writer:prompt-writer`, marked breaking, and the verification checklist to 0.1.1, where they shipped.
+
 ## [0.2.1] - 2026-10-24
 
 ### Changed
@@ -26,12 +36,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - When the next step depends on a result nobody has seen yet, you get the first prompt plus drafts of the next ones, each marked as a draft and saying what output it waits for. Bring the output back and Claude checks it against your goal, then revises the prompt, the setup or the next draft. If your first message is an output that disappointed you, Claude asks for the prompt behind it, the model and where it ran.
 - A fixed automated sequence comes as all its stages at once, each with its input, output and stage number.
 - Skills that would help the task are named in the prompt and in the setup advice, once Claude confirms they exist on your surface.
-- Every delivery ends with the checklist Claude verified the prompt against; an item Claude could not verify stays unchecked with its reason. The **Sources** and **Verification checklist** headings stay in English in every reply language. In Claude Code, a check then compares the reply's claims, such as the pages it cites and the verified items, with what Claude actually did, and sends Claude back to fix any claim without evidence.
 - Audits list the problems found before the fixed prompt, and the design notes say how each was fixed and name anything added beyond your request.
 
 ### Changed
 
-- The skill starts only when you run `/prompt-writer:prompt-writer`: asking for a prompt in plain words no longer starts it, so begin your request with the command.
 - Model choice: Opus 5.5 is the default recommendation, Fable 5.1 for the hardest or longest work, Sonnet 5.5 when speed matters most; Fable 5 and Opus 5 when you are tied to them or migrating a prompt tuned for them.
 - The built-in guidance is each covered model's official prompting page and Anthropic's prompting best practices, rewritten as instructions for Claude and dated 2026-10-14.
 
@@ -52,6 +60,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [0.1.1] - 2026-10-13
 
+### Added
+
+- Every delivery ends with the checklist Claude verified the prompt against; an item Claude could not verify stays unchecked with its reason. The **Sources** and **Verification checklist** headings stay in English in every reply language. In Claude Code, a check then compares the reply's claims, such as the pages it cites and the verified items, with what Claude actually did, and sends Claude back to fix any claim without evidence.
+
+### Changed
+
+- **Breaking:** the skill starts only when you run `/prompt-writer:prompt-writer`: asking for a prompt in plain words no longer starts it, so begin your request with the command.
+
 ### Fixed
 
 - The skill now reads its reference files from exact paths that resolve in Claude Code and in the Claude app, so Claude no longer searches the file system for them or fails to read them.
@@ -65,7 +81,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - Works on new prompts, drafts to refine, existing prompts to audit and prompts to migrate to another target model, and saves the prompt to a file when you ask for one.
 - Built-in references for prompting principles, agentic patterns, reliability and safety, and model selection and configuration, with a drift report when live official documentation contradicts them.
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/prompt-writer--v0.2.1...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/prompt-writer--v0.2.2...HEAD
+[0.2.2]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/prompt-writer--v0.2.2
 [0.2.1]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/prompt-writer--v0.2.1
 [0.2.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/prompt-writer--v0.2.0
 [0.1.1]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/prompt-writer--v0.1.1

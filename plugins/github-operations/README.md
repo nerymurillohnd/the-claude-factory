@@ -7,7 +7,7 @@
 [![Version](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Fnerymurillohnd%2Fthe-claude-factory%2Fmain%2Fplugins%2Fgithub-operations%2F.claude-plugin%2Fplugin.json&query=%24.version&label=version&color=D97757)](./CHANGELOG.md)
 [![Works in](https://img.shields.io/badge/works%20in-Claude%20Code%20only-2563EB)](#-compatibility)
 [![Category](https://img.shields.io/badge/category-Development-6B7280)](../../README.md#-catalog)
-[![Claude Code](https://img.shields.io/badge/Claude%20Code-%E2%89%A5%202.1.295-D97757?logo=claude&logoColor=white)](https://code.claude.com/docs/en/plugins/install)
+[![Claude Code](https://img.shields.io/badge/Claude%20Code-%E2%89%A5%202.1.314-D97757?logo=claude&logoColor=white)](https://code.claude.com/docs/en/plugins/install)
 [![License: MIT](https://img.shields.io/badge/license-MIT-22C55E)](./LICENSE)
 
 [Why use it](#-why-use-it) •
@@ -16,7 +16,7 @@
 [Install](#-installation) •
 [Usage](#-usage) •
 [Configuration](#-configuration) •
-[Hooks](#-hooks) •
+[What it runs and sends](#-what-this-plugin-runs-and-sends) •
 [Compatibility](#-compatibility) •
 [FAQ](#-faq--troubleshooting)
 
@@ -47,21 +47,24 @@
 | 🎯 Skill | `github-operations:github` | The operating contract for GitHub work: the rules, the tool choice and a route to the procedure for each task (pull request to merge, PR and merge-message writing, issues, discussions, CI repair, repository setup, audit and cleanup). It ships templates, issue and discussion forms, a label set and seven scripts | `/github-operations:github [pr\|issue\|discussion\|ci\|setup\|audit\|cleanup]`, or automatically before Claude's first GitHub call. An audit or cleanup starts only when you ask for one |
 | 🤖 Agent | `github-operations:pr-tracker` | Waits for a PR's checks to finish, then reports failures and their root cause, unresolved reviews, breaking changes and secrets in the diff, warnings and security alerts to Claude | Launched by the skill on every monitoring cycle of a pull request |
 | 🤖 Agent | `github-operations:repo-auditor` | Runs the read-only part of a repository audit (intake, local Git, history, GitHub, links) and writes its findings and coverage to a scratch folder | Launched by the skill at the start of an audit or cleanup |
-| 🪝 Hooks | four handlers | Deny the two agents above their writes, name the skill on a session's first GitHub call, and restore a pull request or cleanup run after a compaction. See [Hooks](#-hooks) | Run by Claude Code on the tool calls and events listed in [Hooks](#-hooks) |
+| 🪝 Hooks | four handlers | Deny the two agents above their writes, name the skill on a session's first GitHub call, and restore a pull request or cleanup run after a compaction. See [What this plugin runs and sends](#-what-this-plugin-runs-and-sends) | Run by Claude Code on the tool calls and events listed there |
 | 🔌 MCP server | `github` | GitHub's remote MCP server with every toolset and early-access mode: pull requests, issues, Actions, security alerts and more. See [GitHub MCP tools](../../docs/github-mcp-tools.md) | Tools appear as `mcp__plugin_github-operations_github__*` |
 
 ## 📋 Prerequisites
 
 | Tool | Minimum version | Check |
 | :-- | :-- | :-- |
-| Claude Code | 2.1.295 | `claude --version` |
+| Claude Code | 2.1.314 | `claude --version` |
 | git, on your `PATH` (on Windows, Git for Windows) | — | `git --version` |
 | GitHub CLI (`gh`), signed in | — | `gh auth status` |
 | GitHub personal access token | — | `/mcp` lists `plugin:github-operations:github` as connected |
 | Python 3, on your `PATH` as `python3` | 3.12 | `python3 --version` |
+| bash, on your `PATH` | — | `bash --version` |
 | uv, only to check issue forms, discussion forms and Dependabot files | — | `uv --version` |
 
-`gh` creates and merges pull requests, reads run logs, reruns jobs, enables auto-merge and deletes branches, and is the fallback when a GitHub MCP tool is missing. `python3` runs the hooks and the skill's Python scripts; without it, the hooks deny the plugin's two reviewer agents their `git`, `gh`, GitHub tool and file calls, and your own session is never blocked. uv runs those checks, which download `check-jsonschema` and `ruamel.yaml` from PyPI on their first run.
+Claude Code 2.1.314 is the minimum because from that version hooks that match Bash also check the shell commands the Monitor tool starts; on an older version, a reviewer agent could run a write through Monitor.
+
+`gh` creates and merges pull requests, reads run logs, reruns jobs, enables auto-merge and deletes branches, and is the fallback when a GitHub MCP tool is missing. `python3` runs the hooks and the skill's Python scripts, and each hook starts through a `bash` launcher, which macOS and Linux ship; [What this plugin runs and sends](#-what-this-plugin-runs-and-sends) says what the hooks do without them. uv runs those checks.
 
 ### 🤖 Claude Code
 
@@ -274,6 +277,19 @@ uv python install --default
 
 </details>
 
+### 🐚 bash
+
+macOS and most Linux distributions include it: check with `bash --version`. A minimal image, such as Alpine, may not.
+
+<details>
+<summary>🏔️ <b>apk</b> — Alpine</summary>
+
+```bash
+apk add bash
+```
+
+</details>
+
 ### ⚡ uv
 
 Needed only when Claude checks issue forms, discussion forms or a Dependabot file. See [installing uv](https://docs.astral.sh/uv/getting-started/installation/).
@@ -342,7 +358,7 @@ The two skills became one, `github`, and their commands are gone:
 | `/github-operations:auto-pr-lifecycle` | `/github-operations:github pr` |
 | `/github-operations:git-cleanup` | `/github-operations:github cleanup` (or `audit`) |
 
-The pull request loop and the cleanup work as before, with two changes: Claude now creates and merges pull requests with `gh`, and the audit's read-only steps run in the new `repo-auditor` agent. The plugin also ships hooks, which need `python3` 3.12 or later: see [Hooks](#-hooks).
+The pull request loop and the cleanup work as before, with two changes: Claude now creates and merges pull requests with `gh`, and the audit's read-only steps run in the new `repo-auditor` agent. The plugin also ships hooks, which need `python3` 3.12 or later: see [What this plugin runs and sends](#-what-this-plugin-runs-and-sends).
 
 ## 🚀 Usage
 
@@ -456,7 +472,7 @@ Then restart Claude Code. `jq` reads the variable itself, so the token never app
 
 ### What the GitHub server includes
 
-The plugin connects to GitHub's official remote MCP server at `https://api.githubcopilot.com/mcp/` with **every toolset** (`X-MCP-Toolsets: all`) and GitHub's **early-access mode** (`X-MCP-Insiders: true`). That covers pull requests, reviews, issues, Actions (including rerunning and cancelling runs), security alerts, projects, discussions, notifications and more, including the tools that create, merge and delete. The full list, tool by tool, with the ones that only read marked, is in [GitHub MCP tools](../../docs/github-mcp-tools.md).
+The plugin's `github` server asks for **every toolset** (`X-MCP-Toolsets: all`) and GitHub's **early-access mode** (`X-MCP-Insiders: true`). That covers pull requests, reviews, issues, Actions (including rerunning and cancelling runs), security alerts, projects, discussions, notifications and more, including the tools that create, merge and delete. The full list, tool by tool, with the ones that only read marked, is in [GitHub MCP tools](../../docs/github-mcp-tools.md).
 
 > [!IMPORTANT]
 > **Your token decides what works.** The server offers these tools, but GitHub only lets a tool do what your token is allowed to do, and it can hide tools your token can't use. Manage Claude's reach through the token's repositories and permissions.
@@ -471,20 +487,34 @@ The plugin connects to GitHub's official remote MCP server at `https://api.githu
 
 [GitHub MCP tools](../../docs/github-mcp-tools.md#️-reduce-what-claude-can-use) has the settings and the `.mcp.json` to copy. The pull request loop reads job logs and Dependabot alerts through the Actions and security tools; when you remove them, Claude reads that data through `gh` instead.
 
-## 🪝 Hooks
+## 🔍 What this plugin runs and sends
 
-The plugin's hooks run on your computer with your permissions, through `python3` 3.12 or later, and make no network calls. They deny only the plugin's two reviewer agents, `pr-tracker` and `repo-auditor`; your own session and every other agent are never blocked. A hook that fails lets the call go ahead.
+- **Hooks:** four handlers, in the table below. They run on your computer with your permissions, through a `bash` launcher and `python3` 3.12 or later. They deny only the plugin's two reviewer agents, `pr-tracker` and `repo-auditor`; your own session and every other agent are never blocked. A hook that fails lets the call go ahead.
+- **MCP servers:** `github`, GitHub's official remote server at `https://api.githubcopilot.com/mcp/`, which Claude Code reaches with your token as `Authorization: Bearer`. [What the GitHub server includes](#what-the-github-server-includes) lists the toolsets it asks for.
+- **Network:** the hooks make no network calls. The GitHub server sends your requests and token to `api.githubcopilot.com`. `git` and `gh` reach GitHub and your remotes. The issue form, discussion form and Dependabot checks run through `uv`, which downloads `check-jsonschema` and `ruamel.yaml` from PyPI on their first run.
+- **Files written:** the skill keeps one small JSON file for a pull request or cleanup run while it lasts, and the hooks keep one empty folder per session so the skill line comes only once, both in the plugin's data folder under `~/.claude/plugins/data/`. A session's folder is removed after seven days, at the first GitHub call of a later session. Uninstalling the plugin deletes the data folder. A cleanup also writes the backup and the scratch folder the FAQ describes, outside your repository.
 
 | Event | Calls | What the hook does |
 | :-- | :-- | :-- |
-| Before a tool runs | Bash and PowerShell commands | For the two reviewer agents, denies `git` commands that change state (commit, push, merge, rebase, reset, checkout and the like), `gh` commands that write (create, edit, merge, close, delete, rerun, and `gh api` calls that are not reads), commands that point `git` at other configuration (`-c`, `--config-env`, or setting `GIT_CONFIG*`, `HOME` or `XDG_CONFIG_HOME`), shells that run a script from a pipe, a here-string, a heredoc, standard input or a process substitution, commands that start `git` or `gh` through another program (`xargs`, `find -exec`), and any command it cannot parse that mentions `git` or `gh`. On a session's first `gh` or `git push`, adds a line that names the `github` skill |
+| Before a tool runs | Bash and PowerShell commands | For the two reviewer agents, denies the commands listed under **What the reviewer agents can't run**, below this table. On a session's first `gh` or `git push`, adds a line that names the `github` skill |
 | Before a tool runs | GitHub MCP tools, on any server whose name contains `github` or `GitHub` | For the two reviewer agents, denies the tools that write, such as `create_pull_request`, `merge_pull_request`, `issue_write` or `push_files`. On a session's first GitHub tool call, adds the same line |
 | Before a tool runs | Write, Edit and NotebookEdit | For the two reviewer agents, denies a write to a file inside your project. The agents' own instructions already leave these tools out |
 | After a compaction | Session start, `compact` | Gives Claude the pull request or cleanup run it was in (repository, PR, phase, head commit, approval, next step), so it resumes where it stopped |
 
-**What they write.** The skill keeps one small JSON file for a pull request or cleanup run while it lasts, and the hooks keep one empty folder per session so the skill line comes only once, both in the plugin's data folder under `~/.claude/plugins/data/`. A session's folder is removed after seven days, at the first GitHub call of a later session. Uninstalling the plugin deletes the data folder.
+**What the reviewer agents can't run.** In a Bash or PowerShell command, the hook denies `pr-tracker` and `repo-auditor`:
 
-**Without `python3` 3.12 or later**, the hooks deny the two reviewer agents every `git`, `gh`, GitHub tool and file write call, with a message that says to install it, and they don't restore a run after a compaction. Your own session is not affected.
+- `git` commands that change state: `add`, `am`, `checkout`, `cherry-pick`, `commit`, `commit-tree`, `fetch`, `filter-branch`, `filter-repo`, `gc`, `init`, `maintenance`, `merge`, `mv`, `pack-refs`, `prune`, `pull`, `push`, `rebase`, `repack`, `replace`, `reset`, `restore`, `revert`, `rm`, `sparse-checkout`, `switch`, `update-index`, `update-ref` and `write-tree`.
+- `git apply`, `bisect`, `branch`, `bundle`, `clean`, `config`, `fsck`, `lfs`, `notes`, `reflog`, `remote`, `stash`, `submodule`, `tag` and `worktree`, unless the call only reads or lists, such as `git branch --list`, `git config --get`, `git stash list` or `git clean --dry-run`.
+- `gh <command> <verb>` calls whose verb writes: `add`, `archive`, `cancel`, `checkout`, `close`, `comment`, `create`, `delete`, `develop`, `disable`, `edit`, `enable`, `fork`, `install`, `lock`, `login`, `logout`, `merge`, `pin`, `ready`, `refresh`, `remove`, `rename`, `reopen`, `rerun`, `review`, `revert`, `run`, `set`, `setup-git`, `sync`, `transfer`, `unarchive`, `unlock`, `unpin`, `update-branch`, `upgrade` and `upload`.
+- `gh api` calls other than a `GET`, a call with no fields, or a `graphql` call whose fields are queries with no mutation; a call with `--input` or an option the hook doesn't know is denied too.
+- Commands that point `git` at other configuration or programs: `-c` or `--config-env` on `git`, or setting `GIT_CONFIG*`, `GIT_EXEC_PATH`, `HOME` or `XDG_CONFIG_HOME`.
+- Any command whose name, or whose `git` or `gh` subcommand, is built from a variable, a command substitution, a glob, braces or a leading `~`.
+- `export`, `declare`, `typeset`, `readonly`, `local`, `read`, `mapfile`, `readarray` or `printf` with an expansion in its arguments.
+- A shell, `source` or `.` that runs a script from a pipe, a here-string, a heredoc, standard input, a process substitution, a device or a file that doesn't exist.
+- Commands that start `git` or `gh` through another program, such as `xargs` or `find -exec`.
+- Any command the hook cannot parse that mentions `git` or `gh`.
+
+**Without `python3` 3.12 or later**, the hooks deny the two reviewer agents every `git`, `gh`, GitHub tool and file write call, with a message that says to install it, and they don't restore a run after a compaction. Your own session is not affected. **Without `bash`**, the hooks can't start, so they deny nothing.
 
 ### Limitations
 
@@ -516,7 +546,6 @@ The plugin can't ship permission rules. To block an action for every session and
 ```
 
 A deny rule on a tool name removes that tool from Claude's context. Bash rules match the command as written, so a reworded command can slip past them: see [Bash rule limits](https://code.claude.com/docs/en/permissions#bash-rule-limits).
-
 
 ## 🔄 Updating
 
@@ -561,7 +590,7 @@ Uninstalling from the last scope it's installed at also deletes its saved option
 | :-- | :--: | :--: |
 | 🎯 Skills | ✅ | ⚠️ they load, but they need `git`, `gh` and your repository on your computer, so use Claude Code |
 | 🤖 Agents | ✅ | ⚠️ in Cowork sessions, not in a chat conversation |
-| 🪝 Hooks | ✅ needs `python3` 3.12 or later; on Windows, WSL | ⚠️ in Cowork sessions, not in a chat conversation |
+| 🪝 Hooks | ✅ needs `bash` and `python3` 3.12 or later; on Windows, WSL | ⚠️ in Cowork sessions, not in a chat conversation |
 | 🔌 MCP server (remote) | ✅ needs your token, set as in [Configuration](#-configuration) | 🔗 connect it once with your token, as in [In the Claude app](#in-the-claude-app) |
 
 <sub>✅ works · ⚠️ partial · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. The Claude app (web, desktop and mobile) runs a conversation as a Cowork session when it can, and as a chat conversation otherwise, for example on a device that can't run Cowork or in the separate Chat mode that Team and Enterprise plans keep for now.</sub>
@@ -601,7 +630,7 @@ No. It always stops and asks before the merge, naming the PR, the commit, the me
 <details>
 <summary><b>Can the monitoring agent change anything on GitHub?</b></summary>
 
-No. Its job is to read and report: Claude makes every comment, reply, rerun and merge. The agent gets every tool your session has except Write, Edit and NotebookEdit, and the plugin's [hooks](#-hooks) deny it the `git` and `gh` commands that change state and the GitHub tools that write, on any server whose name contains `github` or `GitHub`. The same holds for the `repo-auditor` agent. A hook is a barrier, not a security boundary: for a hard limit, add the deny rules in [Add hard limits yourself](#add-hard-limits-yourself), which apply to every agent too.
+No. Its job is to read and report: Claude makes every comment, reply, rerun and merge. The agent gets every tool your session has except Write, Edit and NotebookEdit, and the plugin's [hooks](#-what-this-plugin-runs-and-sends) deny it the `git` and `gh` commands that change state and the GitHub tools that write, on any server whose name contains `github` or `GitHub`. The same holds for the `repo-auditor` agent. A hook is a barrier, not a security boundary: for a hard limit, add the deny rules in [Add hard limits yourself](#add-hard-limits-yourself), which apply to every agent too.
 
 </details>
 

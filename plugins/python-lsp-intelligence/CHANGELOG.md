@@ -6,6 +6,18 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-11-02
+
+### Changed
+
+- The README now says what the hook runs and sends: `git` to find changed files (optional), at most 20 files per call, `ruff check --show-settings`, and a temporary `pyrightconfig.json` it deletes after the check. It also names extensionless files with a Python shebang and `[tool.pyright]`, and gives Claude Code 2.1.288 as the minimum, the version from which a language-server request times out instead of hanging.
+- The Compatibility table gives the Claude app's Hooks cell from the marketplace matrix and names the programs the hook needs where it runs.
+
+### Fixed
+
+- The README no longer says `basedpyright` checks notebooks: `.ipynb` files get `ruff check --fix` and `ruff format` only.
+- The changelog marks the new `python3` requirement and the removal of the control runner in 0.2.0 as breaking.
+
 ## [0.3.0] - 2026-10-27
 
 ### Changed
@@ -42,7 +54,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ### Added
 
-- Post-edit hook: after each Edit, Write, NotebookEdit or Bash call, the Python files it changed go through `ruff check --fix`, `ruff format` and `basedpyright` with your own configuration (the plugin's strict defaults only when you have none). Findings reach Claude as an error to fix; a clean run confirms with one line.
+- **Breaking:** post-edit hook, which needs `python3` 3.9 or later on `PATH`: after each Edit, Write, NotebookEdit or Bash call, the Python files it changed go through `ruff check --fix`, `ruff format` and `basedpyright` with your own configuration (the plugin's strict defaults only when you have none). Findings reach Claude as an error to fix; a clean run confirms with one line.
 
 ### Changed
 
@@ -50,7 +62,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ### Removed
 
-- The control runner (`verify-fixtures.sh`) and `fixtures.json`; the fixtures now come with `fixtures.md`, which says how to run each one with the project's configuration.
+- **Breaking:** the control runner (`verify-fixtures.sh`) and `fixtures.json`. If you ran the runner, run each fixture as `fixtures.md` says, with the project's configuration.
 
 ## [0.1.0] - 2026-10-12
 
@@ -60,7 +72,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - `python-lsp-intelligence` skill: navigates Python code with the language server; checks aliases, re-exports, entry points and dynamic consumers before a rename or deletion; fixes basedpyright and Ruff findings by validating untrusted data instead of casting, suppressing or weakening rules; and reports each check's status, the files covered and what stayed unverified.
 - Optional controls: a bundled runner checks basedpyright and Ruff against known control files in a temporary folder, without running them or installing anything.
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/python-lsp-intelligence--v0.3.0...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/python-lsp-intelligence--v0.3.1...HEAD
+[0.3.1]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/python-lsp-intelligence--v0.3.1
 [0.3.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/python-lsp-intelligence--v0.3.0
 [0.2.3]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/python-lsp-intelligence--v0.2.3
 [0.2.2]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/python-lsp-intelligence--v0.2.2
