@@ -21,6 +21,7 @@ How a plugin's `README.md` is written in this repository. It applies to every `p
   - **Claude Code** (`D97757`, with `logo=claude&logoColor=white`): the minimum Claude Code version, the same one Prerequisites states; links to `https://code.claude.com/docs/en/plugins/install`.
   - **License** (`22C55E`): links to the plugin's `LICENSE`.
 - When the surfaces, the category or the minimum Claude Code version change, update the badge and the README text that states it in the same change; step 5 of `SKILL.md` then regenerates the catalog.
+- The minimum Claude Code version is the lowest one on which the plugin runs without friction or deficiency. Take the highest of the versions that added each feature the plugin uses and that fixed each bug it would hit, from the release notes, and never the current version only because it is current. Raise it only when a later release removes or changes a feature in a way that breaks the plugin. Prerequisites states the feature that sets it.
 
 ## Style
 

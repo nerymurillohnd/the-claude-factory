@@ -58,7 +58,7 @@ When a check fails before the push, fix the cause, amend the commit (`git commit
 1. List every plugin whose version on the branch differs from `origin/main`, and every name that leaves `plugins`.
 2. List every version on `origin/main` that has no tag yet: users already have it, and a missing tag means an earlier release did not run.
 3. Show Nery both lists and confirm each plugin is meant to ship.
-4. Move the root changelog line to the merge day's section when the pull request outlives its date.
+4. Date each release with the UTC day of its tag, the day `release.yml` runs after the merge: set each plugin's `## [X.Y.Z] - YYYY-MM-DD` heading, and the root changelog line's `## YYYY-MM-DD` section, to today's UTC date. Never change the date of a section that already has a tag.
 5. Install each published plugin from the pushed branch over HTTPS, in throwaway configurations that leave Nery's settings and plugins untouched. `B` holds the branch and `M` the current `main`; create both with `mktemp -d` in the session scratchpad.
    ```bash
    iso() { local t="$1"; shift; env -u CLAUDE_CODE_PLUGIN_DIRS CLAUDE_CODE_PLUGIN_PREFER_HTTPS=1 CLAUDE_CONFIG_DIR="$t/config" CLAUDE_CODE_PLUGIN_CACHE_DIR="$t/plugins" claude "$@"; }
@@ -81,7 +81,7 @@ When a check fails before the push, fix the cause, amend the commit (`git commit
 1. Take the merge commit's SHA: `gh pr view <n> --json mergeCommit`.
 2. Wait until `gh run list --workflow validate.yml --commit <sha>` shows the run completed.
 3. Read the release run: `gh run list --workflow release.yml --commit <sha>`. It starts only after Validate succeeds on a push to `main`. No run while Validate is still running is normal. No run after Validate succeeded is unexplained: read the trigger in `release.yml` before running anything.
-4. Confirm the tag `<plugin>--v<version>` and its GitHub Release exist: `gh release view <plugin>--v<version>`. The tag takes `<version>` from `plugin.json`. The Release body is the plugin's changelog section for that version, then `---`, then `**Update:**` and a code block with `claude plugin update <plugin>@the-claude-factory`. A removal gets no new tag.
+4. Confirm the tag `<plugin>--v<version>` and its GitHub Release exist: `gh release view <plugin>--v<version>`. The tag takes `<version>` from `plugin.json`. The Release body is the plugin's changelog section for that version, then `---`, then `**Update:**` and a code block with `claude plugin update <plugin>@the-claude-factory`. Compare the body with that section in the merge commit's `CHANGELOG.md`: a mismatch means the section changed after the tag, and the body changes only on Nery's order. A removal gets no new tag.
 5. Confirm the run tagged nothing unintended: `gh run view <run-id> --log | grep -oE 'Released [a-z0-9-]+--v[0-9.]+'`.
 6. Repeat step 5.5 from `nerymurillohnd/the-claude-factory#main`: the version and components match, and `Always-on` equals the figure before the merge. For a removal, installing `<old>` fails.
 7. Report to Nery: the version users receive, that the tag and release exist and match, and that nothing unintended was tagged.
