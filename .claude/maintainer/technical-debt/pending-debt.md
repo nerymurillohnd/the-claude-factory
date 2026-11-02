@@ -182,21 +182,19 @@ Add an item only when all of these hold:
 
 - **Confirmed facts:**
   - The report `~/Claude/projects/the-claude-factory-research/reports/Auditoría del hook TypeScript.md` (2026-10-22) no longer exists: neither that path nor a file of that name anywhere under `~` (`find`, `mdfind`, 2026-11-01). Its five open gaps survive in earlier handoffs, which list them with "None blocks".
-  - State of each gap in `hooks/hooks.json` and `hooks/tsc-check.sh`, identical in both plugins, on 2026-11-01:
-    1. The 120-second `timeout` ends the hook with no output of its own: the script has no deadline of its own (no match for one in `tsc-check.sh`). Open.
-    2. Windows without Git Bash cannot start the hook. The README declares Git Bash as the Windows requirement (`README.md:60`, `:423-425`), as `.claude/CLAUDE.md` → Plugin Tooling allows.
-    3. Both TypeScript plugins installed together check each edit twice. The README says to enable only one TypeScript plugin (`README.md:227`).
-    4. The `changedFiles` regex scans the whole event text (`tsc-check.sh:927-929`). Open.
-    5. The hooks use shell form (`bash "${CLAUDE_PLUGIN_ROOT}/hooks/tsc-check.sh"`), where the report said the docs prefer exec form. Open.
-- **Inferences:** gaps 2 and 3 are covered by the README's declarations, so no code change is needed for them.
-- **Open questions:** which gaps to take, and in which order; whether gaps 2 and 3 are dropped.
+  - Open gaps in `hooks/tsc-check.sh`, identical in both plugins, on 2026-11-01:
+    1. The 120-second `timeout` in `hooks/hooks.json` ends the hook before it reports what `tsc` found so far: the script has no deadline of its own (no match for one in `tsc-check.sh`).
+    2. The `changedFiles` regex scans the whole event text instead of reading the field (`tsc-check.sh:927-929`). No failing case is known.
+  - Nery dropped the report's other three gaps on 2026-11-01: Windows without Git Bash cannot start the hook (the README declares Git Bash on Windows, `README.md:60`, `:423-425`); both TypeScript plugins installed together check each edit twice (the README says to enable only one, `README.md:227`); the hooks use shell form, where the report said the docs prefer exec form.
+- **Inferences:** none.
+- **Open questions:** none.
 
 #### 📈 Impact and next step
 
-- **Impact / risk:** known weaknesses in a hook that runs on every TypeScript edit of every user.
-- **Why it is not fixed now:** the choice is Nery's.
-- **Next action:** ask Nery which of gaps 1, 4 and 5 to take, and whether 2 and 3 are dropped; take the chosen gaps in plugin PRs.
-- **Review condition:** closes when every gap is fixed or dropped by Nery.
+- **Impact / risk:** on a program `tsc` cannot check within 120 seconds, Claude learns of the timeout but gets none of the errors found; the regex is a fragile parse in a hook that runs on every TypeScript edit of every user.
+- **Why it is not fixed now:** the fix is a change to both plugins, with a pull request and a version bump each, timed by Nery.
+- **Next action:** on Nery's go, give `tsc-check.sh` a deadline below the hook's `timeout` that reports what it found, and read `changedFiles` as a field; add a test for each in `scripts/testers/typescript6-lsp-intelligence/`, RED first; release both plugins through `versioning` and `releases`.
+- **Review condition:** closes when both gaps are fixed, or Nery drops them.
 - **Related records:** none.
 
 ### DEBT-028 — TypeScript 7 and 5.x were never run against the TypeScript post-edit hook
