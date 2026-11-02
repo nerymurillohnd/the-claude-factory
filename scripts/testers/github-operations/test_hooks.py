@@ -353,6 +353,10 @@ class Hooks(unittest.TestCase):
                 command = c.replace("RUN", str(PLUGIN / "skills" / "github" / "scripts"))
                 self.assert_silent(self.shell(command, agent=agent), command)
 
+    def test_reviewer_config_denial_names_every_blocked_variable(self) -> None:
+        d = self.shell("GIT_EXEC_PATH=/tmp/x git status", agent=TRACKER)
+        self.assert_denied(d, "GIT_EXEC_PATH", "GIT_EXEC_PATH")
+
     def test_reviewer_powershell_is_checked(self) -> None:
         payload = self.payload("PowerShell", {"command": "git commit -m x"}, TRACKER, KNOWN)
         self.assert_denied(self.decide("shell", payload), "PowerShell git commit")

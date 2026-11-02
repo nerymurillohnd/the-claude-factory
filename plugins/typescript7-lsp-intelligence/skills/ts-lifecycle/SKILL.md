@@ -1,7 +1,6 @@
 ---
 name: ts-lifecycle
 description: Researches, writes, edits, reviews and verifies TypeScript and JavaScript code with official sources, LSP code intelligence and behavioral evidence. Use for every task that writes, edits, audits or answers questions about TypeScript or JavaScript code, including scripts, tsconfig and jsconfig, modules, declarations, migrations, type errors, editor and tsc disagreements, broken builds, failing checks and cross-tool behavior. Not for other languages, comment-only or formatting-only edits, or syntax explanations that depend on neither the project nor a version.
-allowed-tools: Bash(bash ${CLAUDE_SKILL_DIR}/scripts/run-fixtures.sh *)
 ---
 
 # TypeScript/JavaScript Lifecycle Execution

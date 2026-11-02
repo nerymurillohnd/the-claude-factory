@@ -510,6 +510,20 @@ for (const plugin of SKILL_PLUGINS) {
     })
     afterEach(() => ws.cleanup())
 
+    test('the notice link lands on a heading of the README', () => {
+      const anchor = readFileSync(hook, 'utf8').match(/README_URL="[^"#]*#([^"]+)"/)?.[1]
+      assert.ok(anchor, 'README_URL has no #anchor')
+      const readme = readFileSync(join(ROOT, 'plugins', plugin, 'README.md'), 'utf8')
+      // GitHub's heading anchors: lowercase, punctuation and emoji dropped, spaces as hyphens.
+      const anchors = [...readme.matchAll(/^#{1,6} (.+)$/gm)].map(([, h]) =>
+        (h ?? '')
+          .toLowerCase()
+          .replace(/[^\p{L}\p{N} -]/gu, '')
+          .replace(/ /g, '-'),
+      )
+      assert.ok(anchors.includes(anchor), `#${anchor} is not a heading of ${plugin}/README.md`)
+    })
+
     /**
      * A project whose compiler is a stub: it lists the file, then prints `errors` type errors
      * (none for a clean pass).
@@ -536,6 +550,28 @@ for (const plugin of SKILL_PLUGINS) {
       chmodSync(stub, 0o755)
       return file
     }
+
+    test('an option TypeScript 7 removed blocks as a config error that names the removal', () => {
+      ws.write('r/tsconfig.json', '{ "compilerOptions": { "strict": true, "baseUrl": "." } }')
+      const file = ws.write('r/a.ts', 'export const x = 1;\n')
+      const stub = ws.write(
+        'r/node_modules/.bin/tsc',
+        [
+          '#!/bin/sh',
+          'case "$*" in',
+          '  *--version*) echo "Version 7.0.2" ;;',
+          `  *--listFilesOnly*) echo "${file}" ;;`,
+          `  *) echo "tsconfig.json(1,40): error TS5102: Option 'baseUrl' has been removed. Please remove it from your configuration."; exit 2 ;;`,
+          'esac',
+          '',
+        ].join('\n'),
+      )
+      chmodSync(stub, 0o755)
+      const out = parsed(fire(ws.edit(file), ws.env, hook).out)
+      assert.equal(out.decision, 'block')
+      assert.match(out.reason, /TS5102/)
+      assert.match(out.reason, /uses options that TypeScript 7 removed/)
+    })
 
     test('a type error blocks, and the reason ends with the hint', () => {
       const r = fire(ws.edit(project(1)), ws.env, hook)
