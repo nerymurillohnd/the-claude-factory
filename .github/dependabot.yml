@@ -19,6 +19,9 @@ updates:
     ignore:
       - dependency-name: "@types/node"
         update-types: ["version-update:semver-major"]
+      # A new TypeScript major moves the global tsc, the editor and CI together, by Nery's decision.
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
     labels:
       - "area: ci"
       - "type: dependencies"

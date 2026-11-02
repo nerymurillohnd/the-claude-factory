@@ -17,6 +17,9 @@ jobs:
     #   github.event.pull_request.user.login == 'external-contributor' ||
     #   github.event.pull_request.user.login == 'new-developer' ||
     #   github.event.pull_request.author_association == 'FIRST_TIME_CONTRIBUTOR'
+    # Dependabot's runs get only Dependabot secrets, so CLAUDE_CODE_OAUTH_TOKEN is empty there and the
+    # action refuses the bot actor: skip its pull requests instead of failing them.
+    if: github.event.pull_request.user.login != 'dependabot[bot]'
 
     runs-on: ubuntu-24.04
     permissions:
