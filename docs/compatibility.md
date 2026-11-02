@@ -24,6 +24,9 @@ Claude Code and the Claude app (web, desktop and mobile) can both install the sa
 
 **Legend:** ✅ loads · ⚠️ partial · 🔗 needs a manual step · ➖ ignored on that surface · ❌ the whole plugin can't be installed there
 
+> [!NOTE]
+> A hook that runs a program, such as a formatter, a linter or a compiler, works only where that program is installed. In Claude Code it runs on your computer, so it uses the copy you installed. The Claude app's docs don't say where a Cowork session runs a hook, so such a hook may find nothing to run there. Each plugin's README names the programs its hooks need.
+
 ## 💬 Cowork sessions and chat conversations
 
 Chat and Cowork are now one Claude app. When you send a message, the app runs it as a **Cowork session** when it can, with the full set of plugin components above, and as a **chat conversation** otherwise: for example on a device that can't run Cowork, or in the separate **Chat** mode that Team and Enterprise plans keep for now. In a chat conversation, a plugin's skills, commands and remote connectors work, but its agents, hooks and local MCP servers don't run.
