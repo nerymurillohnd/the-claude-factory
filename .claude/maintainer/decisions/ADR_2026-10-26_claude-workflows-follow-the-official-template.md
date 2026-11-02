@@ -1,10 +1,10 @@
 ---
-status: accepted
+status: superseded
 date: 2026-10-26
 decision-makers:
   - "Nery"
 supersedes: ADR_2026-10-22_claude-code-action-stays-pinned-by-sha
-superseded-by: none
+superseded-by: ADR_2026-11-01_claude-workflows-pin-by-sha-and-skip-dependabot
 ---
 
 # The Claude workflows follow the official `/install-github-app` template

@@ -55,6 +55,7 @@ Add an item only when all of these hold:
 | DEBT-040 | `scaffold-plugin.py` writes a `plugin.json` that Biome's formatter rejects | 🟠 Blocked |
 | DEBT-042 | python-lsp-intelligence's post-edit hook type-checks a PEP 723 script without its dependencies | 🟡 Pending |
 | DEBT-043 | No CI workflow runs the eval suites that `operating-standard.md` requires | 🟠 Blocked |
+| DEBT-044 | tailwind-development phase 2 exists only in a local stash on a pre-0.2.0 base | 🟠 Blocked |
 
 ## 📂 Open items
 
@@ -64,7 +65,7 @@ Add an item only when all of these hold:
 | --- | --- |
 | **Status** | 🟠 Blocked |
 | **Category** | reliability, quality |
-| **Owner** | `.claude/skills/release-and-versioning/scripts/check-version-bump.py` and the `version-bump` gate of `scripts/gates.mjs`, run by the `policy` job of `.github/workflows/validate.yml` |
+| **Owner** | `scripts/release/check-version-bump.py` and the `version-bump` gate of `scripts/gates.mjs`, run by the `policy` job of `.github/workflows/validate.yml` |
 | **Logged** | 2026-10-20 |
 
 #### 🔎 Evidence
@@ -442,8 +443,10 @@ Add an item only when all of these hold:
   - `plugins/project-maintainer/evals` and `plugins/skill-diagnostics/evals` exist; `grep -ln 'plugin eval' .github/workflows/*` prints nothing. The workflows are `claude-code-review.yml`, `claude.yml`, `release.yml` and `validate.yml`.
   - The previous `evals.yml` was removed in commit c748041 (2026-10-25), to be rebuilt from the `testing-plugins` skill; that skill ships the template `assets/evals-ci.yml` and the checklist in `references/eval-policy.md`.
   - On 2026-11-01 Nery chose to keep the rule and log the missing workflow as debt, to be built once he approves the spend.
+  - Commit a57621d92a421f3e4c6e9b1965aac4c64810a8a7, "ci(evals): run the suite … with grants per plugin", is unreachable in the clone: c748041 replaced it 4 minutes later. It holds a per-plugin `.github/evals/*.json` layout and a rewritten `evals.yml`. Its grants and cost caps are also in `c748041^:scripts/evals-config.json`. It is kept as `refs/repo-cleanup-backup/lost-a57621d` in `~/Claude/backups/the-claude-factory/2026-11-01-audit/all.bundle`.
+  - `instruction-engineering` has no eval suite, by ADR_2026-11-01_instruction-engineering-keeps-no-evals.
 - **Inferences:** none.
-- **Open questions:** the `--max-cost-usd` cap per run.
+- **Open questions:** the `--max-cost-usd` cap per run; whether a57621d's per-plugin layout is worth reusing.
 
 #### 📈 Impact and next step
 
@@ -452,6 +455,34 @@ Add an item only when all of these hold:
 - **Next action:** on Nery's approval, adapt `testing-plugins/assets/evals-ci.yml` into `.github/workflows/evals.yml` with the checklist in `references/eval-policy.md`, then commit it only after he approves.
 - **Review condition:** closes when a pull request that changes a plugin with evals runs its whole suite in CI and a pull request that changes no such plugin skips it.
 - **Related records:** ADR_2026-10-21_ci-installs-claude-code-from-signed-apt; ADR_2026-10-28_withdrawn-debt-leaves-no-closed-entry.
+
+### DEBT-044 — tailwind-development phase 2 exists only in a local stash on a pre-0.2.0 base
+
+| Field | Value |
+| --- | --- |
+| **Status** | 🟠 Blocked |
+| **Category** | quality |
+| **Owner** | Nery |
+| **Logged** | 2026-11-01 |
+
+#### 🔎 Evidence
+
+- **Confirmed facts:**
+  - `stash@{0}` (38661b87354105489693c11c565fc93e334a2436), "tailwind-development phase 2 WIP", was made on `feat/tailwind-development` on base 42ca474 (2026-10-27), before `tailwind-development` 0.2.0. Its content sits in its untracked parent e76475f, so `git stash show --stat` prints nothing.
+  - It holds three files, 532 lines: `plugins/tailwind-development/scripts/lib/project.mjs` (321), `plugins/tailwind-development/shared/v4-traps.md` (52) and `scripts/tests/tailwind-development/project.test.mjs` (159).
+  - None of them exists on `main`, in the six `tailwind-development--v*` tags (0.1.0 to 0.3.1) or anywhere else in the object store. The branch no longer exists, and a stash does not reach GitHub.
+  - It is out of date: the test folder is now `scripts/testers/`, `v4-traps.md` names a `scan-v4-traps.mjs` that was never written, and its trap table was checked against Tailwind 4.3.3 on 2026-10-27. The plan is `.claude/plans/2026-10-27-tailwind-development-phase-2-inputs.md`.
+  - Backed up on 2026-11-01 in `~/Claude/backups/the-claude-factory/2026-11-01-audit/`: `all.bundle` (ref `refs/repo-cleanup-backup/stash-0`) and `stash-0.patch`, with `manifest.txt` holding their checksums. On 2026-11-01 Nery chose to keep the stash.
+- **Inferences:** landing it needs the files rebuilt on 0.3.1, the trap table checked again against the current Tailwind v4, and a minor bump.
+- **Open questions:** whether phase 2 is still wanted.
+
+#### 📈 Impact and next step
+
+- **Impact / risk:** the only copies of the phase 2 work are a local stash and a local backup; a `git stash drop` or a lost machine loses it.
+- **Why it is not fixed now:** landing it is feature work on `tailwind-development`, and dropping it is Nery's call; he chose to keep it for now.
+- **Next action:** ask Nery whether phase 2 goes ahead. If yes, rebuild it on `main` from the stash on a feature branch, through `building-plugins`, `versioning` and `releases`. If no, drop the stash and close this item as accepted.
+- **Review condition:** closes when the phase 2 files land on `main` in a release, or when Nery drops phase 2.
+- **Related records:** none.
 
 <!--
 Entry format. Copy this block above this comment for each new item and add its row to the Index.

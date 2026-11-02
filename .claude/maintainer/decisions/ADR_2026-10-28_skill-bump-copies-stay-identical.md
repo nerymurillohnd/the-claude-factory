@@ -1,10 +1,10 @@
 ---
-status: accepted
+status: superseded
 date: 2026-10-28
 decision-makers:
   - "Nery Samuel Murillo"
 supersedes: none
-superseded-by: none
+superseded-by: ADR_2026-11-01_release-scripts-live-in-scripts-release
 ---
 
 # The release and plugin-renames skills keep identical copies of the bump scripts, and a test keeps them identical

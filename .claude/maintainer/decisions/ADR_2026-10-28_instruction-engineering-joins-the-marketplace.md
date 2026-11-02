@@ -1,10 +1,10 @@
 ---
-status: accepted
+status: superseded
 date: 2026-10-28
 decision-makers:
   - "Nery Samuel Murillo"
 supersedes: none
-superseded-by: none
+superseded-by: ADR_2026-11-01_instruction-engineering-keeps-no-evals
 ---
 
 # instruction-engineering joins the marketplace as a documentation plugin, without its evals
