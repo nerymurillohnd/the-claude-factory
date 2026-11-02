@@ -4,6 +4,19 @@ All notable changes to **The Claude Factory** marketplace are documented here: p
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The marketplace has no version of its own: entries are grouped by date, newest first, and every plugin carries its own version, changelog and tag. The versions 0.1.0 and 0.2.0 below are the history from before that change; their tags stay.
 
+## 2026-11-02
+
+### Changed
+
+- **bash-lsp-intelligence** 0.2.6 — the README says what the hook runs and needs, with Claude Code 2.1.288 as the minimum.
+- **python-lsp-intelligence** 0.3.1 — the README says what the hook runs and needs, no longer claims `basedpyright` checks notebooks, and gives Claude Code 2.1.288 as the minimum.
+- **typescript6-lsp-intelligence** 0.3.2 — the skill asks before it runs its fixture script, the no-compiler notice links to Prerequisites, and an option TypeScript 7 removed is reported as removed.
+- **typescript7-lsp-intelligence** 0.4.2 — the same fixes as TypeScript 6, and the README gives TypeScript 7's defaults and diagnostics.
+- **github-operations** 0.5.1 — the README lists every command the reviewer agents cannot run and gives Claude Code 2.1.314 as the minimum; the denial message names `GIT_EXEC_PATH`.
+- **prompt-writer** 0.2.2 — the README discloses the skill's `Stop` hook and gives Claude Code 2.1.294 as the minimum; the changelog dates the explicit start to 0.1.1.
+- **macos-grep-guard** 0.1.2 — sharper keywords, Claude Code 2.1.292 as the minimum, and a FAQ that no longer names skills it doesn't have.
+- **instruction-engineering** 0.1.1 — sharper keywords and a changelog that says what 0.1.0 shipped.
+
 ## 2026-10-30
 
 ### Changed
@@ -175,7 +188,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The
 ### Changed
 
 - **github-operations** 0.3.1 — the `pr-tracker` agent writes every report in one fixed template, led by an eight-line summary; the README shows how to connect the GitHub server in the Claude app with your token.
-- **github-operations** 0.3.0 — **Breaking:** the internal `pr-diagnostics` skill is folded into the `pr-tracker` agent, whose reports now lead with a summary, flag outside blockers as `BLOCKED` and re-read everything each round; the README shows how to set the token for a plugin turned on in claude.ai.
+- **github-operations** 0.3.0 — the internal `pr-diagnostics` skill is folded into the `pr-tracker` agent, whose reports now lead with a summary, flag outside blockers as `BLOCKED` and re-read everything each round; the README shows how to set the token for a plugin turned on in claude.ai.
 - **github-operations** 0.2.0 — **Breaking:** the GitHub token is now a sensitive plugin option kept in your secure credential store instead of `GITHUB_PAT`, so the MCP server also connects from the Claude Code desktop app; the guard also blocks reading that store.
 
 ## 2026-10-17

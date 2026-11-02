@@ -6,6 +6,18 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.4.2] - 2026-11-02
+
+### Changed
+
+- The `ts-lifecycle` skill no longer pre-approves its fixture script: Claude Code asks you before it runs `run-fixtures.sh`, and **Yes, and don't ask again** lets it run without asking.
+- The README now says what the plugin runs and sends, gives TypeScript 7's own defaults, and says the native server pushes diagnostics only for `tsconfig.json`, never for your source files.
+
+### Fixed
+
+- The notice shown when no compiler is found links to the README's Prerequisites section instead of the top of the page.
+- A config option that TypeScript 7 removed, such as `baseUrl` or `target: es5`, is now reported as a removed option instead of as a generic config error.
+
 ## [0.4.1] - 2026-10-24
 
 ### Changed
@@ -77,7 +89,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - `typescript7-lsp-intelligence` skill: navigates TypeScript and JavaScript with the language server; checks program membership and effective configuration before trusting a diagnostic; tells TypeScript 6 `tsserver` tooling apart from the TypeScript 7 native server; fixes compiler findings by narrowing `unknown` instead of using assertions, `any` or suppressions; and reports each check's status, the programs covered and what stayed unverified.
 - Optional controls: a bundled runner compiles known control files with the compiler you choose, in a temporary folder, without running them or installing anything.
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/typescript7-lsp-intelligence--v0.4.1...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/typescript7-lsp-intelligence--v0.4.2...HEAD
+[0.4.2]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/typescript7-lsp-intelligence--v0.4.2
 [0.4.1]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/typescript7-lsp-intelligence--v0.4.1
 [0.4.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/typescript7-lsp-intelligence--v0.4.0
 [0.3.1]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/typescript7-lsp-intelligence--v0.3.1

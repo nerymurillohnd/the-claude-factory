@@ -1,7 +1,7 @@
 {
   "name": "macos-grep-guard",
   "displayName": "macOS Grep Guard",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Stops recursive grep from silently skipping gitignored and binary files on macOS, blocks BSD awk's ignored IGNORECASE, and adds the macOS form when a BSD or zsh command fails.",
   "author": {
     "name": "Nery Murillo",
@@ -11,7 +11,12 @@
   "repository": "https://github.com/nerymurillohnd/the-claude-factory",
   "license": "MIT",
   "keywords": [
-    "development"
+    "development",
+    "macos",
+    "grep",
+    "awk",
+    "bsd",
+    "zsh"
   ],
   "metadata": {
     "category": "development",

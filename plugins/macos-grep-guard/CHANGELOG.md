@@ -6,6 +6,18 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.1.2] - 2026-11-02
+
+### Changed
+
+- The plugin's keywords now name what it guards: `macos`, `grep`, `awk`, `bsd` and `zsh`.
+- The README gives Claude Code 2.1.292 as the minimum in the terminal and the Desktop app, the version from which the guard sees a Bash call's repaired arguments, and describes each process the guard starts and when.
+
+### Fixed
+
+- The README's FAQ no longer tells you to list skills the plugin doesn't have.
+- The changelog describes what 0.1.0 shipped.
+
 ## [0.1.1] - 2026-10-30
 
 ### Removed
@@ -16,8 +28,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ### Added
 
-- Initial release.
+- A mod that checks every Bash call on macOS, in the main session and in subagents:
+  - It stops a recursive `grep` that would silently skip gitignored and binary files, until the command states whether they count.
+  - It stops an `awk` program that relies on `IGNORECASE`, which macOS awk ignores, and suggests `tolower($0) ~ /pattern/`.
+  - When a command fails with a known BSD or zsh error, such as `uniq -w`, `stat -c`, GNU-style `sed -i`, `timeout` or an unmatched glob, it adds the macOS form next to the error so Claude retries it.
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/macos-grep-guard--v0.1.1...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/macos-grep-guard--v0.1.2...HEAD
+[0.1.2]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/macos-grep-guard--v0.1.2
 [0.1.1]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/macos-grep-guard--v0.1.1
 [0.1.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/macos-grep-guard--v0.1.0

@@ -6,6 +6,17 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.5.1] - 2026-11-02
+
+### Changed
+
+- The README lists every command the reviewer agents cannot run, `git fetch` and `GIT_EXEC_PATH` included, names `bash` as a prerequisite of the hooks, and gives Claude Code 2.1.314 as the minimum: from that version the hooks also check the shell commands the Monitor tool starts.
+
+### Fixed
+
+- A reviewer agent's denied configuration change now names `GIT_EXEC_PATH` among the variables it cannot set.
+- The changelog no longer marks the removal of the internal `pr-diagnostics` skill in 0.3.0 as breaking, counts seven issue forms in 0.5.0, folds 0.4.0's restored agent into Changed, and states the `python3` requirement of 0.1.0's `git-cleanup` guard.
+
 ## [0.5.0] - 2026-10-29
 
 ### Changed
@@ -20,7 +31,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 - PR titles, bodies and labels written from the repository's templates, or the plugin's four (standard, bug fix, hotfix, maintenance), and checked by a script before the PR is opened. Squash and merge messages from a template.
 - Issues: written in the layout of the repository's forms, triaged, and marked as duplicates. Discussions: started in the right category or answered.
-- Repository setup: PR templates, eight issue forms, four discussion forms, a label set, Dependabot for GitHub Actions and `CODEOWNERS` through one pull request; missing labels and the default merge message as settings you approve. Files the repository already has are never overwritten.
+- Repository setup: PR templates, seven issue forms with their `config.yml`, four discussion forms, a label set, Dependabot for GitHub Actions and `CODEOWNERS` through one pull request; missing labels and the default merge message as settings you approve. Files the repository already has are never overwritten.
 - Fixing an issue ends in a pull request that resolves it. CI repair finds the workflows that fail, hang or stopped running on the default branch and lands the fix through a pull request.
 - Seven scripts: PR body check, cleanup plan check, lifecycle state, branch classification, backup verification, issue and discussion form check (through uv), and a label diff.
 
@@ -41,11 +52,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - **Breaking:** `git-cleanup` is rewritten as an exhaustive audit and a nine-step lifecycle with two approval gates. The audit now covers the whole history from the first commit, every ref against the base (merged, squash or rebase already in the base, conflicting, unrelated), worktrees, stashes, residue of interrupted operations, large files and secret-like file names, and, through `gh`, pull requests in all states, issues, discussions, forks, Actions (failed and never re-run, stuck, scheduled, artifacts and caches), protection and rulesets, integrations and alerts. It also looks for every clone, mirror, registry entry, scheduled job and tunnel that still points at the repository. What it cannot see is listed in a coverage ledger as blocked, not reachable or declined.
 - You now approve twice: first the recommendations, then the exact actions. The plan orders actions by class (backup first, then investigate, fix, integrate, publish, deletions, closing, unlinking, files, maintenance), runs a containment check before every deletion, and defines each action's proof before it runs. Validation re-reads everything and quotes raw output.
 - The skill is only `SKILL.md` and ten references with the commands. It runs ordinary `git` and `gh` commands from a scratch folder, writes no scripts and installs nothing. Findings that need a bisect, a refactor or a fix go through the same report, plan and approval.
-- The `pr-tracker` agent now waits for the PR's checks to finish, for up to 30 minutes or the limit you set, and then reports once, instead of returning while jobs still run. Its report adds workflows that should have run and didn't, skipped, cancelled, slow, stuck and retried jobs, runner problems, whether a failure also happens on the base branch, breaking changes, out-of-scope changes and secrets in the diff, and a comparison with the previous report. `auto-pr-lifecycle` no longer waits on its own: when the agent's wait ends with jobs still running, Claude asks you whether to keep waiting.
-
-### Restored
-
-- The `pr-tracker` agent, removed in the previous commit, is back as the read-only observer, and `auto-pr-lifecycle` delegates every observation to it again. The skill briefs it, checks its report against a fixed list, maps its status to a lifecycle state and decides readiness itself. When the agent's wait ends with jobs still running, the skill reports `timeout` and asks you whether to keep waiting.
+- The `pr-tracker` agent now waits for the PR's checks to finish, for up to 30 minutes or the limit you set, and then reports once, instead of returning while jobs still run. Its report adds workflows that should have run and didn't, skipped, cancelled, slow, stuck and retried jobs, runner problems, whether a failure also happens on the base branch, breaking changes, out-of-scope changes and secrets in the diff, and a comparison with the previous report.
+- `auto-pr-lifecycle` no longer waits on its own and delegates every observation to the read-only `pr-tracker` agent. The skill briefs it, checks its report against a fixed list, maps its status to a lifecycle state and decides readiness itself. When the agent's wait ends with jobs still running, the skill reports `timeout` and asks you whether to keep waiting.
 
 ### Fixed
 
@@ -82,7 +90,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ### Removed
 
-- **Breaking:** the `github-operations:pr-diagnostics` skill. Only the `pr-tracker` agent loaded it, and its content now lives in the agent itself. Nothing changes in how you use the plugin.
+- The internal `github-operations:pr-diagnostics` skill, which you could not invoke: only the `pr-tracker` agent loaded it, and its content now lives in the agent itself. Nothing changes in how you use the plugin.
 
 ### Fixed
 
@@ -117,7 +125,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - `github-operations:pr-tracker` agent: a read-only monitor with no shell. It reports failed jobs with their step and log excerpt, job durations, review findings, deprecation warnings and Dependabot alerts, with each cause labeled confirmed, likely or uncertain.
 - `github-operations:pr-diagnostics` skill: the inspection procedure and report format the agent follows, preloaded into it.
 - The GitHub MCP server, bundled. It reads your token from the `GITHUB_PAT` environment variable and connects with every toolset and GitHub's early-access mode. The README explains where to keep the token and how to reduce what Claude can use, and [GitHub MCP tools](../../docs/github-mcp-tools.md) lists every tool.
-- `github-operations:git-cleanup` skill, started only with `/github-operations:git-cleanup [path] [problem]`: audits a repository end to end (context, every local and remote branch with its exclusive work, linked worktrees, stashes, pull requests, files and noise, history, reflog), presents findings and a numbered cleanup plan with a mandatory backup that is part of every approval, and executes and verifies only the actions you approve. It includes the read-only `inventory.py` and a `PreToolUse` guard that refuses force-pushes, deleting `main` on the remote, history-rewriting tools, `git clean -x`, default-branch changes and secret reads, and asks before every command that changes state.
+- `github-operations:git-cleanup` skill, started only with `/github-operations:git-cleanup [path] [problem]`: audits a repository end to end (context, every local and remote branch with its exclusive work, linked worktrees, stashes, pull requests, files and noise, history, reflog), presents findings and a numbered cleanup plan with a mandatory backup that is part of every approval, and executes and verifies only the actions you approve. It includes the read-only `inventory.py` and a `PreToolUse` guard that refuses force-pushes, deleting `main` on the remote, history-rewriting tools, `git clean -x`, default-branch changes and secret reads, and asks before every command that changes state. Its guard hook and `inventory.py` need `python3` 3.9 or later on `PATH`; without it the guard blocks every action.
 
 ### Changed
 
@@ -127,7 +135,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 - `git-cleanup` inventory: `--from` with a saved file that is not a JSON object reports a JSON error and exits 0, instead of ending with a traceback.
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/github-operations--v0.5.0...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/github-operations--v0.5.1...HEAD
+[0.5.1]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/github-operations--v0.5.1
 [0.5.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/github-operations--v0.5.0
 [0.4.1]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/github-operations--v0.4.1
 [0.4.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/github-operations--v0.4.0

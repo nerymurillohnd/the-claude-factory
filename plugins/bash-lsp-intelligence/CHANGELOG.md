@@ -6,6 +6,17 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.2.6] - 2026-11-02
+
+### Changed
+
+- The README now says what the hook runs and sends: the `git` calls it uses to find changed scripts (git is optional), the `sh -c 'command -v …'` probe, its limits and that `shfmt -w` rewrites files in place. It also names `shellcheckrc` next to `.shellcheckrc`, says the failure event matches only Bash, and gives Claude Code 2.1.288 as the minimum, the version from which a language-server request times out instead of hanging.
+- The Compatibility table gives the Claude app's Hooks cell from the marketplace matrix and names the programs the hook needs where it runs.
+
+### Fixed
+
+- The changelog marks the removal of the control runner in 0.2.0 as breaking.
+
 ## [0.2.5] - 2026-10-27
 
 ### Fixed
@@ -62,7 +73,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ### Removed
 
-- The control runner (`verify-fixtures.sh`) and `fixtures.json`; the fixtures now come with `fixtures.md`, which says how to run each one with the project's configuration.
+- **Breaking:** the control runner (`verify-fixtures.sh`) and `fixtures.json`. If you ran the runner, run each fixture as `fixtures.md` says, with the project's configuration.
 
 ## [0.1.0] - 2026-10-12
 
@@ -72,7 +83,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - `bash-lsp-intelligence` skill: navigates shell code with the language server; traces direct and transitive `source` chains before trusting same-named functions; respects the script's real dialect; fixes ShellCheck and shfmt findings without changing quoting, globbing or exit-status behavior; and reports each check's status, the scripts covered and what stayed unverified.
 - Optional controls: a bundled runner checks ShellCheck and shfmt against known control files in a temporary folder, without running them or installing anything.
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/bash-lsp-intelligence--v0.2.5...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/bash-lsp-intelligence--v0.2.6...HEAD
+[0.2.6]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/bash-lsp-intelligence--v0.2.6
 [0.2.5]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/bash-lsp-intelligence--v0.2.5
 [0.2.4]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/bash-lsp-intelligence--v0.2.4
 [0.2.3]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/bash-lsp-intelligence--v0.2.3
