@@ -1,6 +1,6 @@
 ---
 name: github-files-setup
-description: Writes a GitHub repository's own collaboration files, adapted to that repository from reference models, such as pull request templates, issue forms, discussion forms, labels, the Dependabot configuration, CODEOWNERS and the merge-message setting. Use when the user wants to set up, add or update issue or PR templates, discussion forms, labels or Dependabot, or to make a repository ready for contributors, even if they only say that issues arrive without the information they need. Not for filing or triaging individual issues, taking a pull request to merge, auditing or cleaning up a repository, or writing GitHub Actions workflows, which this plugin's other skills cover.
+description: Writes a GitHub repository's own collaboration files, adapted to that repository from reference models, such as pull request templates, issue forms, discussion forms, labels, the Dependabot configuration, CODEOWNERS and the merge-message setting. Use when the user wants to set up, add or update issue or PR templates, discussion forms, labels or Dependabot, or to make a repository ready for contributors, even if they only say that issues arrive without the information they need. Not for filing or triaging individual issues, taking a pull request to merge, auditing or cleaning up a repository, or auditing and fixing GitHub Actions workflows, which this plugin's other skills cover.
 ---
 
 # GitHub files setup
@@ -51,7 +51,7 @@ GitHub reads each file only at its own path and name. Before writing, look in ev
 
 ## Rules
 
-- Hand off what this plugin's other skills cover, and follow that skill instead: opening, fixing or merging a pull request, this setup's own pull request included; a repository audit or cleanup; writing or fixing GitHub Actions workflows. This skill writes forms, not the issues or discussions posted through them.
+- Hand off what this plugin's other skills cover, and follow that skill instead: opening, fixing or merging a pull request, this setup's own pull request included; a repository audit or cleanup; auditing, hardening or fixing GitHub Actions workflows. This skill writes forms, not the issues or discussions posted through them.
 - Never overwrite a file the repository already has. Show the change as a diff and ask.
 - Never work on the default branch: create one setup branch off it.
 - Show the user the files you chose for each kind, and why, before you write them.

@@ -1,6 +1,6 @@
 ---
 name: auto-pr-lifecycle
-description: Takes a GitHub pull request from its current stage to merge. Opens it, watches its checks and reviews, fixes failing CI and review findings, answers and resolves review threads, and merges it, asking the user before every push and before the merge. Use when the user wants to open a pull request for a branch, ship or land a branch, babysit or check on a PR, fix a PR's failing checks, address review comments, get a PR merged, or resume a stalled PR, even if they only say "ship this" or "why is my PR red". Not for a plain commit or push, a repository's templates, forms or labels, a repository audit or cleanup, or writing GitHub Actions workflows, which this plugin's other skills cover.
+description: Takes a GitHub pull request from its current stage to merge. Opens it, watches its checks and reviews, fixes failing CI and review findings, answers and resolves review threads, and merges it, asking the user before every push and before the merge. Use when the user wants to open a pull request for a branch, ship or land a branch, babysit or check on a PR, fix a PR's failing checks, address review comments, get a PR merged, or resume a stalled PR, even if they only say "ship this" or "why is my PR red". Not for a plain commit or push, a repository's templates, forms or labels, a repository audit or cleanup, or auditing and hardening GitHub Actions workflows, which this plugin's other skills cover.
 ---
 
 # Auto PR lifecycle
@@ -57,7 +57,7 @@ Each agent runs a checklist against its own workflow before it returns, and its 
 
 ## Your own limits
 
-- Hand off what this plugin's other skills cover, and follow that skill instead: a repository's templates, forms, labels, Dependabot or CODEOWNERS; a repository audit, cleanup, lost work or the commit that introduced a bug; writing or hardening GitHub Actions workflows, or a failure caused by a workflow definition or a Claude step in CI. Hand that skill the run, attempt, job, commit and log lines the tracker reported, and land the patch it proposes through this skill's push and merge gates.
+- Hand off what this plugin's other skills cover, and follow that skill instead: a repository's templates, forms, labels, Dependabot or CODEOWNERS; a repository audit, cleanup, lost work or the commit that introduced a bug; auditing, hardening or repairing GitHub Actions workflows, or a failure caused by a workflow definition or a Claude step in CI. Hand that skill the run, attempt, job, commit and log lines the tracker reported, and land the patch it proposes through this skill's push and merge gates.
 - A request only to commit, or to commit and push: do that and stop. Never open a pull request on your own.
 - A one-off question about a pull request, such as its status: read it yourself, or deploy pr-tracker alone.
 - Ask the user before you create the pull request, before every push and before the merge. An approval covers that action at that head SHA; a new head voids it.
