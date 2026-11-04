@@ -30,7 +30,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 ### Removed
 
 - **Breaking:** the `github-operations:pr-tracker` agent. Use `github-operations:pr-lifecycle:pr-tracker`, which reports the same findings and adds the failure's run and attempt, its cause class, and a rerun only for a failure shown to be transient.
-- **Breaking:** the `github-operations:github` skill. Its tasks moved: `pr` to `auto-pr-lifecycle`, `audit` and `cleanup` to `cleanup-and-debug`, `setup` to `github-files-setup`, and `ci` to `claude-github-actions`. Writing issues and discussions (`issue`, `discussion`) is not part of this version. Its template models now ship with `github-files-setup`.
+- **Breaking:** the `github-operations:github` skill. Its tasks moved: `pr` to `auto-pr-lifecycle`, `audit` and `cleanup` to `cleanup-and-debug`, `setup` to `github-files-setup`, and `ci` to `claude-github-actions`. Writing, triaging and answering issues and discussions (`issue`, `discussion`), and fixing an issue through a pull request ("fix issue #N"), are not part of this version. Its template models now ship with `github-files-setup`.
 - **Breaking:** the `github-operations:repo-auditor` agent. The cleanup's audit runs in `github-operations:repo-hygiene:health-diagnostics`.
 
 ## [0.5.1] - 2026-11-02

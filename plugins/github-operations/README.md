@@ -352,6 +352,7 @@ The single `github` skill became four skills:
 | `/github-operations:github setup` | `/github-operations:github-files-setup` |
 | `/github-operations:github ci` | `/github-operations:claude-github-actions` |
 | `/github-operations:github issue` or `discussion` | Not part of this version |
+| *"Fix issue #N"*, which ended in a pull request | Not part of this version |
 
 What else changed:
 
