@@ -6,6 +6,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-11-04
+
+### Added
+
+- A `/github-operations:init-pr-lifecycle` command that takes a pull request from the stage it is in to merge-ready, asking you before each push and before the merge.
+- A `pr-lifecycle` team of three agents: `pr-tracker` watches a pull request and reports what it finds, `pr-fixer` fixes reported failures and review findings in your local clone without pushing, and `pr-finalizer` answers the review threads, resolves the ones bots opened, and reports whether the pull request is ready to merge.
+
 ## [0.5.1] - 2026-11-02
 
 ### Changed
@@ -135,7 +142,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 - `git-cleanup` inventory: `--from` with a saved file that is not a JSON object reports a JSON error and exits 0, instead of ending with a traceback.
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/github-operations--v0.5.1...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/github-operations--v0.6.0...HEAD
+[0.6.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/github-operations--v0.6.0
 [0.5.1]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/github-operations--v0.5.1
 [0.5.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/github-operations--v0.5.0
 [0.4.1]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/github-operations--v0.4.1
