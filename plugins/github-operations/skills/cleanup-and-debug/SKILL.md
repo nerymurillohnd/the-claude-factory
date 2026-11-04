@@ -1,9 +1,24 @@
 ---
 name: cleanup-and-debug
-description: Audits a Git repository and its GitHub project exhaustively, local and remote, for everything left behind, such as stale, unmerged or diverged branches, orphaned worktrees, forgotten stashes, abandoned pull requests, failed or stuck workflows, failed Dependabot updates, dangling commits, oversized blobs, secrets ever committed, broken symlinks, residue of interrupted operations and external links. Then plans and runs the cleanup and debugging the user approves, behind a verified backup. Use when the user asks to audit, clean up or tidy a repository, prune merged branches, compare local with GitHub, find lost work, recover a stash, or find the commit that introduced a bug. Does not review code quality or documentation.
+description: Audits a Git repository and its GitHub project exhaustively, local and remote, for everything left behind, such as stale, unmerged or diverged branches, orphaned worktrees, forgotten stashes, abandoned pull requests, failed or stuck workflows, failed Dependabot updates, dangling commits, oversized blobs, secrets ever committed, broken symlinks, residue of interrupted operations and external links. Then plans and runs the cleanup and debugging the user approves, behind a verified backup. Use when the user asks to audit, clean up or tidy a repository, prune merged branches, compare local with GitHub, find lost work, recover a stash, or find the commit that introduced a bug. Does not review code quality or documentation. Not for taking a pull request to merge (auto-pr-lifecycle), setting up templates, forms or labels (github-files-setup), or writing GitHub Actions workflows (claude-github-actions).
 ---
 
 # Cleanup and debug
+
+## When to use
+
+- The user asks to audit, clean up or tidy a repository, locally, on GitHub, or both.
+- The user asks to prune merged or stale branches, worktrees or stashes, or to compare the local clone with GitHub.
+- The user asks to find lost work, recover a stash or a dangling commit, or find the commit that introduced a bug.
+
+## When not to use
+
+When the request belongs to another skill of this plugin, do not run this one: load that skill and follow it.
+
+- Opening, watching, fixing or merging a pull request, including the failing checks and review comments of an open pull request: load `github-operations:auto-pr-lifecycle`.
+- Creating or updating a repository's PR templates, issue or discussion forms, labels, Dependabot or CODEOWNERS: load `github-operations:github-files-setup`. This skill reports a missing or broken one; that skill writes it.
+- Writing, auditing, hardening or diagnosing GitHub Actions workflows, including Claude steps in CI: load `github-operations:claude-github-actions`. This skill reports failed or stuck workflow runs as residue; that skill fixes the workflow.
+- Reviewing code quality or documentation: no skill of this plugin does that.
 
 ## Overview
 

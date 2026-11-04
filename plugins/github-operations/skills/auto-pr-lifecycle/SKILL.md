@@ -1,6 +1,6 @@
 ---
 name: auto-pr-lifecycle
-description: Orchestrates a GitHub pull request from its current stage to merge-ready with three agents, github-operations:pr-lifecycle:pr-tracker, github-operations:pr-lifecycle:pr-fixer and github-operations:pr-lifecycle:pr-finalizer, asking the user before every push and before the merge. Use to open, babysit, fix, finalize or merge a pull request, or to resume one that stalled.
+description: Orchestrates a GitHub pull request from its current stage to merge-ready with three agents, github-operations:pr-lifecycle:pr-tracker, github-operations:pr-lifecycle:pr-fixer and github-operations:pr-lifecycle:pr-finalizer, asking the user before every push and before the merge. Use to open, babysit, fix, finalize or merge a pull request, or to resume one that stalled. Not for setting up templates, forms or labels (github-files-setup), auditing or cleaning up a repository (cleanup-and-debug), or writing GitHub Actions workflows (claude-github-actions).
 ---
 
 # Auto PR lifecycle
@@ -19,9 +19,16 @@ description: Orchestrates a GitHub pull request from its current stage to merge-
 
 ## When not to use
 
-- The user asks only to commit, or to commit and push: do that and stop. Never open a pull request on your own.
-- The task is about issues, discussions, repository setup or a repository audit, with no pull request to take to merge.
-- The user wants a one-off answer about a pull request, such as its status, with no action after it: read it yourself, or deploy `github-operations:pr-lifecycle:pr-tracker` alone.
+When the request belongs to another skill of this plugin, do not run this one: load that skill and follow it.
+
+- Setting up or updating a repository's PR templates, issue or discussion forms, labels, Dependabot or CODEOWNERS: load `github-operations:github-files-setup`. It hands its finished files back to this skill as a pull request.
+- Auditing a repository, cleaning up branches, stashes or worktrees, finding lost work, or finding the commit that introduced a bug: load `github-operations:cleanup-and-debug`.
+- Writing, auditing or hardening GitHub Actions workflows, or a failure whose cause is a workflow definition or a Claude step in CI: load `github-operations:claude-github-actions`.
+
+Also not for:
+
+- A request only to commit, or to commit and push: do that and stop. Never open a pull request on your own.
+- A one-off answer about a pull request, such as its status, with no action after it: read it yourself, or deploy `github-operations:pr-lifecycle:pr-tracker` alone.
 
 ## Overview
 
