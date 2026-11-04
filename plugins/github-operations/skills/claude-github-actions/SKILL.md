@@ -47,7 +47,7 @@ description: Diagnoses, audits, hardens and repairs GitHub Actions workflows, sp
 
 ## Routes
 
-Run the route the request names. Each lists the references to read when it starts; read no other.
+Run the route the request names. When it names none, use the diagnosis route for a named run or step that failed or did nothing, the audit route for a request about workflow files, and the repair route for "CI is broken" on the default branch. Each route lists the references to read when it starts; read no other.
 
 ### Diagnose a Claude step
 
