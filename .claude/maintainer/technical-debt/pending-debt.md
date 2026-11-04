@@ -56,6 +56,9 @@ Add an item only when all of these hold:
 | DEBT-042 | python-lsp-intelligence's post-edit hook type-checks a PEP 723 script without its dependencies | 🟡 Pending |
 | DEBT-043 | No CI workflow runs the eval suites that `operating-standard.md` requires | 🟠 Blocked |
 | DEBT-044 | tailwind-development phase 2 exists only in a local stash on a pre-0.2.0 base | 🟠 Blocked |
+| DEBT-045 | `claude-github-actions` cannot write a Claude workflow from scratch | 🟠 Blocked |
+| DEBT-046 | Nothing detects when claude-code-action changes the facts `claude-github-actions` relies on | 🟠 Blocked |
+| DEBT-047 | `claude-github-actions` has no eval suite | 🟠 Blocked |
 
 ## 📂 Open items
 
@@ -491,6 +494,84 @@ Add an item only when all of these hold:
 - **Next action:** ask Nery whether phase 2 goes ahead. If yes, rebuild it on `main` from the stash on a feature branch, through `building-plugins`, `versioning` and `releases`. If no, drop the stash and close this item as accepted.
 - **Review condition:** closes when the phase 2 files land on `main` in a release, or when Nery drops phase 2.
 - **Related records:** none.
+
+### DEBT-045 — `claude-github-actions` cannot write a Claude workflow from scratch
+
+| Field | Value |
+| --- | --- |
+| **Status** | 🟠 Blocked |
+| **Category** | quality |
+| **Owner** | Nery |
+| **Logged** | 2026-11-04 |
+
+#### 🔎 Evidence
+
+- **Confirmed facts:**
+  - On 2026-11-04 (commit d7d9912), `plugins/github-operations/skills/claude-github-actions/SKILL.md` gained routes that diagnose a Claude step, audit and harden workflow files, and repair CI on the default branch. Its rules still say "Writing a new workflow from scratch is not covered yet".
+  - The CI/CD Engineering blueprint (rev 13.1), which Nery shared in that session, defines the missing authoring playbooks: 1, a mention assistant; 2, automated PR review, with a default profile on Anthropic's `code-review` plugin and a strict profile with no shell; 4, migration of a legacy workflow.
+  - Nery chose, through the approved plan, to defer authoring to the next change.
+- **Inferences:** a request such as "add a workflow so Claude reviews every PR" is answered as out of scope.
+- **Open questions:** which playbooks go first; whether the `code-review` plugin's skip conditions can be verified, since they were not found in `anthropics/claude-code@26382c0`.
+
+#### 📈 Impact and next step
+
+- **Impact / risk:** users who want Claude in their CI get no generated workflow, and may copy upstream examples that pin `@v6` or `@main`, interpolate `structured_output` into `run:` and name retired model IDs.
+- **Why it is not fixed now:** deferred by Nery's decision; it needs the playbooks verified live, as the audit and diagnosis references were.
+- **Next action:** ask Nery to choose the first authoring playbook, then build it in `claude-github-actions/references/`, following the verification rule of the 2026-11-04 plan.
+- **Review condition:** closes when `claude-github-actions` can write at least the automated PR review workflow, with every reference verified at the then-current action commit.
+- **Related records:** DEBT-046, DEBT-047.
+
+### DEBT-046 — Nothing detects when claude-code-action changes the facts `claude-github-actions` relies on
+
+| Field | Value |
+| --- | --- |
+| **Status** | 🟠 Blocked |
+| **Category** | maintainability |
+| **Owner** | Nery |
+| **Logged** | 2026-11-04 |
+
+#### 🔎 Evidence
+
+- **Confirmed facts:**
+  - The references `sharp-edges.md`, `action-contract.md`, `trust-boundaries.md`, `auth-and-permissions.md` and `workflow-audit.md` under `plugins/github-operations/skills/claude-github-actions/references/` state the action's inputs, modes, actor gates, restored paths, log signals and GitHub MCP tool names. They were verified at `anthropics/claude-code-action@c0949c5` on 2026-11-04.
+  - In that session, the blueprint's snapshot `6d5ae52`, from 2026-10-30, was already behind `c0949c5`.
+  - No workflow under `.github/workflows/` watches the action (`claude-code-review.yml`, `claude.yml`, `release.yml`, `validate.yml`).
+- **Inferences:** the action ships releases often, so a stated input, signal or tool name can go stale between plugin releases without anyone noticing.
+- **Open questions:** whether the watch runs daily or on each action release, and whether it also watches `github/github-mcp-server`.
+
+#### 📈 Impact and next step
+
+- **Impact / risk:** the skill can tell users a fact the current action no longer holds, such as a removed input or a renamed log signal, and match a failure to the wrong sharp edge.
+- **Why it is not fixed now:** it is maintainer automation outside this change and needs Nery's go-ahead for a new workflow in the marketplace repository.
+- **Next action:** propose a scheduled workflow that resolves the action's latest release, diffs `action.yml` and the source files those references depend on against `c0949c5`, and opens or updates one issue when they changed. It uses `gh api` and `git diff` only, with `permissions: {}` and `contents: read` plus `issues: write` on the job.
+- **Review condition:** closes when that watch runs in the marketplace repository and its first issue, or its first clean run, is recorded.
+- **Related records:** DEBT-045.
+
+### DEBT-047 — `claude-github-actions` has no eval suite
+
+| Field | Value |
+| --- | --- |
+| **Status** | 🟠 Blocked |
+| **Category** | quality |
+| **Owner** | Nery |
+| **Logged** | 2026-11-04 |
+
+#### 🔎 Evidence
+
+- **Confirmed facts:**
+  - `plugins/github-operations/evals` does not exist.
+  - The diagnosis, audit and repair routes added on 2026-11-04 were checked only structurally: frontmatter, links and `claude plugin validate --strict`.
+  - Nery asked that no tests or evals be run or created in that work.
+- **Inferences:** whether the skill triggers on "the Claude review posted nothing" and stays silent on "fix the failing unit test" is untested.
+- **Open questions:** none.
+
+#### 📈 Impact and next step
+
+- **Impact / risk:** a wrong trigger, a missed sharp edge or an unsafe patch reaches users without a case that would catch it.
+- **Why it is not fixed now:** Nery deferred evals.
+- **Next action:** when Nery asks for evals, build a pilot suite through `testing-plugins`. Its first cases: one diagnosis case per log signal family, one audit case on a fixture workflow with seeded findings, and four trigger cases (two must load, two must not).
+- **Review condition:** closes when the suite exists and has run once under `claude plugin eval`.
+- **Related records:** DEBT-043, DEBT-045.
 
 <!--
 Entry format. Copy this block above this comment for each new item and add its row to the Index.
