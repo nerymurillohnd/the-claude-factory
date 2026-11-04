@@ -53,17 +53,39 @@ Run the route the request names. When it names none, use the diagnosis route for
 
 For a claude-code-action step that failed, did nothing, posted nothing or behaved unexpectedly.
 
+```text
+Progress:
+- [ ] 1. Identify the run, attempt, job, step and commit
+- [ ] 2. Read the workflow and action.yml at the commits the run used
+- [ ] 3. Match the sharp-edge catalog
+- [ ] 4. Rank the remaining hypotheses, or hand off a code cause
+- [ ] 5. Propose the patch, and validate it as the audit route does
+```
+
 1. Read [references/claude-step-diagnosis.md](references/claude-step-diagnosis.md), [references/sharp-edges.md](references/sharp-edges.md), [references/action-contract.md](references/action-contract.md) and [references/ci-tooling.md](references/ci-tooling.md).
 2. Follow the diagnosis steps; name the matched sharp-edge ID, or say that none matched.
-3. When the fix touches the workflow, continue with the audit route's patch rules.
+3. When the fix touches the workflow, apply and validate it with step 3 of the audit route.
 
 ### Audit and harden workflow files
 
 For a request to review, audit, harden or migrate workflow files, or a workflow-file finding another skill handed over.
 
 1. Read [references/workflow-audit.md](references/workflow-audit.md) and [references/trust-boundaries.md](references/trust-boundaries.md). When a workflow runs claude-code-action, also read [references/action-contract.md](references/action-contract.md), [references/auth-and-permissions.md](references/auth-and-permissions.md) and [references/sharp-edges.md](references/sharp-edges.md).
+```text
+Progress:
+- [ ] 1. Read every workflow, composite action and called workflow, and the Actions policy
+- [ ] 2. Run every check and write each finding with its patch
+- [ ] 3. Get the user's approval of the patches
+- [ ] 4. Apply them and pass the validation loop
+- [ ] 5. Land them through the pull request skill
+```
+
 2. Run every check; give each finding its file and line, preconditions, impact, severity, exact patch and residual risk.
-3. Apply the approved patches on a branch, run the linters again, and land them through the pull request skill.
+3. Apply the approved patches on a branch, then validate before moving on:
+   1. Run `actionlint` and `zizmor` on the patched files when they are on `PATH`.
+   2. Check each patched file again against every check in `workflow-audit.md`: the reference is the validator when no linter is installed.
+   3. When anything fails, read the message, fix the patch and run steps 1 and 2 again.
+   4. Land the patches through the pull request skill only when every check passes, and report each linter not run as such.
 
 ### Repair CI on the default branch
 
