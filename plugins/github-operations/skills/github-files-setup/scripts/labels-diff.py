@@ -29,6 +29,8 @@ class JsonObject(dict[str, object]):
     """A decoded JSON object: the decoder builds every object as this type."""
 
 
+LIST_LIMIT = 1000
+
 _decode: Callable[[str], object] = json.JSONDecoder(object_hook=JsonObject).decode
 
 
@@ -89,28 +91,61 @@ class Args(argparse.Namespace):
     labels: Path = Path()
 
 
+class ComparisonError(Exception):
+    """A reason the comparison cannot run, written to stderr before exit 2."""
+
+
+def wanted(path: Path) -> dict[str, Label]:
+    """Read the labels file."""
+    try:
+        return labels(path.read_text(encoding="utf-8"))
+    except OSError as error:
+        msg = f"cannot read the labels file: {error}"
+        raise ComparisonError(msg) from error
+    except (ValueError, TypeError) as error:
+        msg = f"{path} is not a JSON list of labels: {error}"
+        raise ComparisonError(msg) from error
+
+
+def present(repo: str) -> dict[str, Label]:
+    """Read the repository's labels with gh."""
+    command = ["gh", "label", "list", "-R", repo, "--limit", str(LIST_LIMIT)]
+    command += ["--json", "name,color,description"]
+    try:
+        listed = subprocess.run(command, capture_output=True, text=True, check=False)
+    except FileNotFoundError as error:
+        msg = "gh is not on PATH. Install the GitHub CLI and run `gh auth login`."
+        raise ComparisonError(msg) from error
+    except OSError as error:
+        msg = f"gh cannot run: {error}"
+        raise ComparisonError(msg) from error
+    if listed.returncode != 0:
+        msg = f"gh exited {listed.returncode}\n{listed.stderr.rstrip()}"
+        raise ComparisonError(msg)
+    try:
+        return labels(listed.stdout)
+    except (ValueError, TypeError) as error:
+        msg = f"cannot read gh's output: {error}"
+        raise ComparisonError(msg) from error
+
+
 def main() -> int:
     """Read both label sets, compare them and report."""
     parser = argparse.ArgumentParser(description="Compare a repository's labels with a file.")
     _ = parser.add_argument("--repo", required=True)
     _ = parser.add_argument("--labels", required=True, type=Path)
     args = parser.parse_args(namespace=Args())
-    command = ["gh", "label", "list", "-R", args.repo, "--limit", "500"]
-    command += ["--json", "name,color,description"]
     try:
-        want = labels(args.labels.read_text(encoding="utf-8"))
-        listed = subprocess.run(command, capture_output=True, text=True, check=False)
-    except (OSError, ValueError, TypeError) as error:
+        want = wanted(args.labels)
+        have = present(args.repo)
+    except ComparisonError as error:
         _ = sys.stderr.write(f"labels-diff: {error}\n")
         return 2
-    if listed.returncode != 0:
-        _ = sys.stderr.write(f"labels-diff: gh exited {listed.returncode}\n{listed.stderr}")
-        return 2
-    try:
-        have = labels(listed.stdout)
-    except (ValueError, TypeError) as error:
-        _ = sys.stderr.write(f"labels-diff: cannot read gh's output: {error}\n")
-        return 2
+    if len(have) >= LIST_LIMIT:
+        warning = (
+            f"labels-diff: {LIST_LIMIT}+ labels listed; `missing` may name labels past the cut.\n"
+        )
+        _ = sys.stderr.write(warning)
     report = diff(want, have)
     _ = sys.stdout.write(json.dumps(report, indent=2) + "\n")
     return 1 if report["missing"] or report["different"] else 0
