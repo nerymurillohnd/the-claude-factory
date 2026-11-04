@@ -1,0 +1,37 @@
+# Discussion category form for the "Ideas" category (slug: ideas).
+# The file name must match the category slug. Discussion forms accept only `title`, `labels` and `body`,
+# and `body` needs at least one non-Markdown field. GitHub serves it from the default branch.
+title: "[Idea] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Share an idea while it is still open. If it is already concrete and ready to be tracked, open an issue instead.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem or opportunity do you see?
+      description: The situation first, then why it matters.
+    validations:
+      required: true
+
+  - type: textarea
+    id: idea
+    attributes:
+      label: What is your idea?
+      description: A rough shape is enough.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives and prior art
+      description: What exists, what you tried, what is missing.
+
+  - type: textarea
+    id: feedback
+    attributes:
+      label: What feedback would help most?
+      description: A decision, a missing viewpoint, a reality check.

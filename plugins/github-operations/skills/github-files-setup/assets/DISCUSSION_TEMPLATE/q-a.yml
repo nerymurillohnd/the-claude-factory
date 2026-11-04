@@ -1,0 +1,35 @@
+# Discussion category form for the "Q&A" category (slug: q-a).
+# The file name must match the category slug. Discussion forms accept only `title`, `labels` and `body`,
+# and `body` needs at least one non-Markdown field. GitHub serves it from the default branch.
+title: "[Question] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Check the documentation and the FAQ first. Something is broken? Open a bug report instead of a question.
+
+  - type: textarea
+    id: goal
+    attributes:
+      label: What are you trying to do?
+    validations:
+      required: true
+
+  - type: textarea
+    id: tried
+    attributes:
+      label: What have you tried?
+      description: Commands, settings or pages you already used. Remove secrets and personal data first.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect, and what happened?
+
+  - type: input
+    id: version
+    attributes:
+      label: Version and environment
+      description: Only if relevant.

@@ -1,0 +1,81 @@
+# Incident form (GitHub issue forms schema). Internal repositories.
+# Production is broken or degraded now. The fix PR uses the Hotfix template.
+# `labels:` is static, so the priority is fixed at high; triage adds the component label by hand.
+# GitHub serves forms from the default branch, so a change goes live once merged there.
+name: 🚑 Incident
+description: Production is broken or degraded right now.
+title: "[Incident] <area>: <short summary>"
+labels: ["type: incident", "status: triage", "priority: high"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Stop the damage first, then fill this in. One line per field is enough.
+        Security exposure? Use the [private advisory](https://github.com/<OWNER>/<REPO>/security/advisories/new) instead of a public issue.
+
+  - type: textarea
+    id: broken
+    attributes:
+      label: What is broken?
+      description: What users or systems see.
+    validations:
+      required: true
+
+  - type: input
+    id: since
+    attributes:
+      label: Since when
+      description: Time and timezone of the first sign, and what changed around then (deploy, config, dependency).
+    validations:
+      required: true
+
+  - type: textarea
+    id: affected
+    attributes:
+      label: Who or what is affected
+      description: Users, routes, jobs, data.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      options:
+        - Degraded, most things still work
+        - Partial outage
+        - Full outage
+        - Data at risk
+    validations:
+      required: true
+
+  - type: dropdown
+    id: state
+    attributes:
+      label: Current state
+      options:
+        - Investigating
+        - Mitigated, root cause open
+        - Resolved
+    validations:
+      required: true
+
+  - type: input
+    id: evidence
+    attributes:
+      label: Evidence link
+      description: Alert, error-tracker issue, failing run or thread.
+
+  - type: textarea
+    id: mitigation
+    attributes:
+      label: Mitigation so far
+      description: What was tried or rolled back, and the result.
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before you submit
+      options:
+        - label: This contains no secrets, personal data or client-identifying information.
+          required: true

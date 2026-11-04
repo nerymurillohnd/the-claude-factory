@@ -1,0 +1,34 @@
+# Discussion category form for the "Show and tell" category (slug: show-and-tell).
+# The file name must match the category slug. Discussion forms accept only `title`, `labels` and `body`,
+# and `body` needs at least one non-Markdown field. GitHub serves it from the default branch.
+title: "[Show and tell] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Show what you built or how you use this. Real setups help others more than any guide.
+
+  - type: textarea
+    id: what
+    attributes:
+      label: What did you build or set up?
+    validations:
+      required: true
+
+  - type: textarea
+    id: how
+    attributes:
+      label: How does it work?
+      description: The key steps, settings or commands. Remove secrets and personal data first.
+
+  - type: textarea
+    id: result
+    attributes:
+      label: What did it change for you?
+      description: Time saved, problems removed, things you learned.
+
+  - type: input
+    id: link
+    attributes:
+      label: Link
+      description: Repository, post or demo, if public.

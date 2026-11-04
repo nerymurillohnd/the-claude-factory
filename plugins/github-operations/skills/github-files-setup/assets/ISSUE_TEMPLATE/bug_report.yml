@@ -1,0 +1,139 @@
+# Bug report form (GitHub issue forms schema). Public and internal repositories.
+#
+# Triage facts come first and are required: component, the exact version that ran,
+# and where it ran. `labels:` is static, so triage applies the component and
+# priority labels by hand (the impact dropdown is the priority signal).
+# GitHub serves forms from the default branch, so a change goes live once merged there.
+name: 🐞 Bug report
+description: Something is broken or behaves differently from what is documented.
+title: "[Bug] <component>: <short summary>"
+labels: ["type: bug", "status: triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting this. A precise report gets a precise fix.
+
+        > **Before you start:** update to the latest version and check the documentation.
+        > Found a **security** problem? [Report it privately](https://github.com/<OWNER>/<REPO>/security/advisories/new) instead.
+
+  - type: input
+    id: component
+    attributes:
+      label: Component
+      description: The plugin, package, page or service where it happened.
+      placeholder: e.g. checkout, api
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: The version you actually ran, not "latest". For an unreleased build, give the commit.
+      placeholder: e.g. 1.2.0
+    validations:
+      required: true
+
+  - type: input
+    id: environment
+    attributes:
+      label: Where did it happen?
+      description: Operating system, browser or runtime, and how it was run (CLI, app, CI, production).
+      placeholder: e.g. macOS 15, Safari 19, production
+    validations:
+      required: true
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Describe the problem. Paste error messages verbatim.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect?
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Numbered steps from a clean start.
+      value: |
+        1.
+        2.
+        3.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: frequency
+    attributes:
+      label: How often does it happen?
+      options:
+        - Always
+        - Intermittent
+        - Happened once
+        - Not sure
+        - Not applicable
+    validations:
+      required: true
+
+  - type: dropdown
+    id: regression
+    attributes:
+      label: Did it work before?
+      options:
+        - "Yes (say which version below)"
+        - "No, it never worked"
+        - Not sure
+        - Not applicable
+
+  - type: input
+    id: last-working-version
+    attributes:
+      label: Last version that worked
+      description: Leave blank if unknown or not applicable.
+
+  - type: dropdown
+    id: impact
+    attributes:
+      label: Impact
+      description: How much damage it does. Triage maps this to a priority.
+      options:
+        - Cosmetic
+        - Degrades a feature, has a workaround
+        - Blocks a feature
+        - Data loss, security exposure or outage
+    validations:
+      required: true
+
+  - type: textarea
+    id: workaround
+    attributes:
+      label: Workaround
+      description: What you do today to get around it, if anything.
+
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Logs or diagnostics
+      description: Error output, logs, or the command output the documentation asks for. Remove tokens, secrets and personal data first.
+      render: text
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before you submit
+      options:
+        - label: I searched existing issues and this is not a duplicate.
+          required: true
+        - label: I am on the latest version, or I say above why not.
+          required: true
+        - label: I removed tokens, keys, personal data and client-identifying information from everything above.
+          required: true

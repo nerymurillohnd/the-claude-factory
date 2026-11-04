@@ -1,0 +1,13 @@
+# Dependabot version updates for GitHub Actions. Copy to .github/dependabot.yml.
+# Add one entry per other package ecosystem the repository uses (npm, pip, cargo, ...).
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    labels:
+      - "type: dependencies"
+      - "area: ci"
+    commit-message:
+      prefix: "ci"
