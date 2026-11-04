@@ -19,7 +19,7 @@ Create the GitHub files a repository lacks, written for that repository. The rep
 2. Read the visibility: `gh repo view --json isPrivate,visibility,hasDiscussionsEnabled,defaultBranchRef`.
 3. Learn the repository: its `README`, `CONTRIBUTING`, `CLAUDE.md` or `AGENTS.md`, its manifests (`package.json`, `pyproject.toml`, `Cargo.toml`, `go.mod` and the like), its CI files, its release process, its existing labels and its recent issues and pull requests.
 4. Create one branch off the default branch for the whole setup, such as `chore/repository-templates`. Never work on the default branch.
-5. For each kind below, look for the repository's own files first. If any exist, stop for that kind: show the user what you would change as a diff, and ask.
+5. For each kind below, look for the repository's own files first, in every place the "Where each file goes" table of `SKILL.md` lists. If any exist, stop for that kind: show the user what you would change as a diff, and ask.
 6. Show the user the set of files you chose for each kind, and why, before you write them.
 
 ## 1. PR templates

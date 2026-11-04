@@ -35,6 +35,21 @@ The work ends in one pull request. The user approves the set of files, every lab
 
 In the references, `<skill-dir>` stands for `${CLAUDE_SKILL_DIR}`.
 
+## Where each file goes
+
+GitHub reads each file only at its own path and name, so write each one where this table says. Before writing, look in every place the third column lists: a file found there is the repository's own, and it wins.
+
+| Model in `${CLAUDE_SKILL_DIR}/assets/` | Written in the repository as | The repository's own copy can be at | Section of `references/setup/templates.md` |
+| :-- | :-- | :-- | :-- |
+| `PULL_REQUEST_TEMPLATE/<kind>.md` | `.github/PULL_REQUEST_TEMPLATE/<kind>.md`, and the default one also as `.github/pull_request_template.md` | `pull_request_template.md` or a `PULL_REQUEST_TEMPLATE/` folder, in `.github/`, the root or `docs/` | 1 |
+| `ISSUE_TEMPLATE/<form>.yml` | `.github/ISSUE_TEMPLATE/<form>.yml` | `.github/ISSUE_TEMPLATE/`, forms or Markdown templates | 2 |
+| `ISSUE_TEMPLATE/config.yml` | `.github/ISSUE_TEMPLATE/config.yml`, with exactly that name | `.github/ISSUE_TEMPLATE/config.yml` | 2 |
+| `DISCUSSION_TEMPLATE/<category>.yml` | `.github/DISCUSSION_TEMPLATE/<category slug>.yml`, named by the slug of a category the repository has | `.github/DISCUSSION_TEMPLATE/` | 3 |
+| `labels.json` | No file: labels are created on GitHub, or written to the repository's label-sync file when it has one | The repository's labels on GitHub; a label-sync file | 4 |
+| `dependabot.yml` | `.github/dependabot.yml` | `.github/dependabot.yml` or `.github/dependabot.yaml` | 6 |
+| None: written from the repository's owners | `.github/CODEOWNERS` | `CODEOWNERS` in `.github/`, the root or `docs/`; GitHub uses the first it finds in that order | 7 |
+| `MERGE_TEMPLATE/merge-message.md` | No file: it is the model of a merge commit message. The repository setting that message follows is section 5 | — | 5 |
+
 ## Rules
 
 - Never overwrite a file the repository already has. Show the change as a diff and ask.
@@ -47,7 +62,7 @@ In the references, `<skill-dir>` stands for `${CLAUDE_SKILL_DIR}`.
 
 ## Gotchas
 
-- Issue and discussion forms are read from the default branch only: nothing applies until the pull request merges.
+- PR templates, issue forms, discussion forms and `dependabot.yml` are read from the default branch only, and CODEOWNERS from each pull request's base branch: nothing applies until the setup pull request merges.
 - `required: true` is enforced only in public repositories.
 - GitHub skips a label a form names when the label does not exist, without a warning.
 - A folder of PR templates alone shows no chooser: GitHub opens `.github/pull_request_template.md` by default.
