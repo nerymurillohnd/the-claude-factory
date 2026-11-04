@@ -9,6 +9,8 @@ argument-hint: "[run URL, workflow file or PR number]"
 ## Contents
 
 - Before you start
+- When to use
+- When not to use
 - Rules
 - Gotchas
 - Routes: diagnose a Claude step, audit and harden, repair CI on the default branch
@@ -19,11 +21,22 @@ argument-hint: "[run URL, workflow file or PR number]"
 - When the user started this skill, go ahead.
 - When you loaded it on your own, ask the user first which route to run, naming the repository and the workflow or run. Start only after the user says yes.
 
+## When to use
+
+- A claude-code-action step failed, did nothing, posted nothing or behaved unexpectedly, on the default branch or on a pull request.
+- The user asks to review, audit, harden or migrate workflow files, or another skill hands over a workflow-file finding.
+- CI on the default branch is failing, hanging or stopped running.
+
+## When not to use
+
+- A pull request's failures whose cause is its own code or tests, and its reviews and merge: load `github-operations:auto-pr-lifecycle`.
+- A sweep of run state, artifacts, caches and runners, which is a repository audit: load `github-operations:cleanup-and-debug`.
+- A repository's templates, forms or labels: load `github-operations:github-files-setup`.
+- Writing a new workflow from scratch: not covered yet; tell the user.
+
 ## Rules
 
-- Hand off what this plugin's other skills cover, and follow that skill instead: a pull request's failures whose cause is its own code or tests; a sweep of run state, artifacts, caches and runners, which is a repository audit; a repository's templates, forms or labels.
-- This skill owns every failure whose cause is a workflow definition or a Claude action step, on the default branch and on a pull request. On a pull request, diagnose read-only and land the patch through the pull request skill.
-- Writing a new workflow from scratch is not covered yet: tell the user.
+- This skill owns every failure whose cause is a workflow definition or a Claude action step, on the default branch and on a pull request. On a pull request, diagnose read-only and land the patch through `github-operations:auto-pr-lifecycle`.
 - Ask the user before any rerun, any workflow change, enabling or disabling a workflow, and every push. Changing a workflow's permissions, triggers or secrets is its own approval.
 - Fix the cause with the smallest change. Never weaken a test or a check, suppress a warning, or broaden a workflow's permissions to get a green run.
 - When a change adds or changes a `uses:` line, resolve the action's current release when you write it, never from memory, documentation or examples, and pin it to the full commit SHA with the version in a comment:
@@ -78,7 +91,7 @@ Progress:
 - [ ] 2. Run every check and write each finding with its patch
 - [ ] 3. Get the user's approval of the patches
 - [ ] 4. Apply them and pass the validation loop
-- [ ] 5. Land them through the pull request skill
+- [ ] 5. Land them through `github-operations:auto-pr-lifecycle`
 ```
 
 2. Run every check; give each finding its file and line, preconditions, impact, severity, exact patch and residual risk.
@@ -86,7 +99,7 @@ Progress:
    1. Check each patched file again against every check in `workflow-audit.md`: that reference is the validator.
    2. Confirm every new `uses:` is pinned as the pinning rule above says.
    3. When anything fails, fix the patch and run steps 1 and 2 again.
-   4. Land the patches through the pull request skill only when every check passes.
+   4. Land the patches through `github-operations:auto-pr-lifecycle` only when every check passes.
 
 ### Repair CI on the default branch
 
@@ -103,7 +116,7 @@ Progress:
 1. **Find them.** Read [references/ci-repair.md](references/ci-repair.md), section 1, and [references/ci-tooling.md](references/ci-tooling.md).
 2. **Diagnose each failure.** Follow section 2 of `ci-repair.md`. For a Claude step, use the diagnosis route instead. Report a cause outside the repository, such as an expired secret, a revoked app or an offline runner, with what unlocks it.
 3. **Repair.** Follow section 3 of `ci-repair.md`. Use the write tools of `ci-tooling.md` only with the user's approval.
-4. **Land each fix.** Follow section 4 of `ci-repair.md`: one pull request per cause, through this plugin's pull request skill, then confirm the next run passes.
+4. **Land each fix.** Follow section 4 of `ci-repair.md`: one pull request per cause, through `github-operations:auto-pr-lifecycle`, then confirm the next run passes.
 
 ## Report
 

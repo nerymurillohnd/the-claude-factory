@@ -9,6 +9,7 @@ description: Writes a GitHub repository's own collaboration files, adapted to th
 
 - Before you start
 - When to use
+- When not to use
 - Overview
 - Where each file goes
 - Rules
@@ -25,6 +26,13 @@ description: Writes a GitHub repository's own collaboration files, adapted to th
 
 - The user asks to set up or update a repository's PR templates, issue or discussion forms, labels, Dependabot or CODEOWNERS.
 - A new kind of issue, component, label group or package ecosystem needs those files updated.
+
+## When not to use
+
+- Opening, fixing or merging a pull request, this setup's own pull request included: load `github-operations:auto-pr-lifecycle`.
+- Auditing or cleaning up a repository: load `github-operations:cleanup-and-debug`.
+- Auditing, hardening or fixing GitHub Actions workflows: load `github-operations:claude-github-actions`.
+- Filing, triaging or answering an individual issue or discussion: this skill writes the forms, not the posts.
 
 ## Overview
 
@@ -51,7 +59,6 @@ GitHub reads each file only at its own path and name. Before writing, look in ev
 
 ## Rules
 
-- Hand off what this plugin's other skills cover, and follow that skill instead: opening, fixing or merging a pull request, this setup's own pull request included; a repository audit or cleanup; auditing, hardening or fixing GitHub Actions workflows. This skill writes forms, not the issues or discussions posted through them.
 - Never overwrite a file the repository already has. Show the change as a diff and ask.
 - Never work on the default branch: create one setup branch off it.
 - Show the user the files you chose for each kind, and why, before you write them.
@@ -111,7 +118,7 @@ Progress:
 8. **Dependabot.** Read [references/dependabot.md](references/dependabot.md) and follow it.
 9. **CODEOWNERS.** When the user wants one, write it from the repository's real owners: one line naming the owner (`* @<owner>`), plus a line per area when the user names its maintainers.
 10. **Land the setup.**
-    1. Commit, then ask the user before you push, and open the pull request through this plugin's pull request skill, with the repository's new maintenance template when it has one.
+    1. Commit, then ask the user before you push, and open the pull request through `github-operations:auto-pr-lifecycle`, with the repository's new maintenance template when it has one.
 
 Close with this report:
 

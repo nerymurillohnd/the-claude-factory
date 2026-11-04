@@ -26,6 +26,6 @@ For each failing workflow, read the failed job's log (MCP `get_job_logs` with `f
 
 ## 4. Land the fix
 
-1. Land each cause in its own pull request, through this plugin's pull request skill.
+1. Land each cause in its own pull request, through `github-operations:auto-pr-lifecycle`.
 2. Re-enable a scheduled workflow GitHub disabled only with the user's approval, after the fix lands: `gh workflow enable <workflow>`.
 3. After the merge, confirm the next run on the default branch passes.

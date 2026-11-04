@@ -10,6 +10,7 @@ argument-hint: "[PR number or URL]"
 
 - Before you start
 - When to use
+- When not to use
 - Overview
 - The agents
 - Your own limits
@@ -32,6 +33,14 @@ argument-hint: "[PR number or URL]"
 - The user asks to watch, check, fix or finish an existing pull request: "babysit the PR", "fix the PR's CI", "address the review comments", "get it merged".
 - A pull request stalled at some stage and has to be resumed.
 - The user runs `/github-operations:init-pr-lifecycle`.
+
+## When not to use
+
+- Setting up or updating a repository's PR templates, issue or discussion forms, labels, Dependabot or CODEOWNERS: load `github-operations:github-files-setup`. It hands its finished files back to this skill as a pull request.
+- Auditing a repository, cleaning up branches, stashes or worktrees, recovering lost work, or finding the commit that introduced a bug: load `github-operations:cleanup-and-debug`.
+- Auditing, hardening or repairing GitHub Actions workflows, or a failure caused by a workflow definition or a Claude step in CI: load `github-operations:claude-github-actions`. Hand it the run, attempt, job, commit and log lines the tracker reported, and land the patch it proposes through this skill's push and merge gates.
+- A request only to commit, or to commit and push: do that and stop. Never open a pull request on your own.
+- A one-off question about a pull request, such as its status: read it yourself, or deploy pr-tracker alone.
 
 ## Overview
 
@@ -59,9 +68,6 @@ Each agent runs a checklist against its own workflow before it returns, and its 
 
 ## Your own limits
 
-- Hand off what this plugin's other skills cover, and follow that skill instead: a repository's templates, forms, labels, Dependabot or CODEOWNERS; a repository audit, cleanup, lost work or the commit that introduced a bug; auditing, hardening or repairing GitHub Actions workflows, or a failure caused by a workflow definition or a Claude step in CI. Hand that skill the run, attempt, job, commit and log lines the tracker reported, and land the patch it proposes through this skill's push and merge gates.
-- A request only to commit, or to commit and push: do that and stop. Never open a pull request on your own.
-- A one-off question about a pull request, such as its status: read it yourself, or deploy pr-tracker alone.
 - Ask the user before you create the pull request, before every push and before the merge. An approval covers that action at that head SHA; a new head voids it.
 - Push without force, and only to the pull request's head branch. Never push to the base branch, and never merge with admin rights.
 - On a repository the user does not own, also ask before replies are posted, and tell the finalizer in its brief.

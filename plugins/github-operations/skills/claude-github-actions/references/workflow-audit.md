@@ -55,7 +55,7 @@ Read every file under `.github/workflows/`, every composite action (`action.yml`
 
 ## Apply the patches
 
-Only after the user approves them. Apply them on a branch, check each patched file again against every check above, and land the change through this plugin's pull request skill. Changing a workflow's permissions, triggers or secrets is a separate approval from the rest of the patch.
+Only after the user approves them. Apply them on a branch, check each patched file again against every check above, and land the change through `github-operations:auto-pr-lifecycle`. Changing a workflow's permissions, triggers or secrets is a separate approval from the rest of the patch.
 
 ## Verify against
 

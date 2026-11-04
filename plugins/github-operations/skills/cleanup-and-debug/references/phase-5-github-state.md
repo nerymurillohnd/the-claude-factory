@@ -60,7 +60,7 @@ List disabled workflows too: `gh workflow list --all`. A filtered run list retur
 - The approval policy for workflows from fork pull requests: `.../actions/permissions/fork-pr-contributor-approval` (`approval_policy`).
 - On a private repository, whether fork pull requests run workflows and receive write tokens or secrets: `.../actions/permissions/fork-pr-workflows-private-repos` (`run_workflows_from_fork_pull_requests`, `send_write_tokens_to_workflows`). Write tokens sent to fork pull requests are a security finding, report-only.
 
-Security findings inside workflow files (injection, permissions, unpinned actions, `pull_request_target`, claude-code-action configuration) are not part of this inventory: they go to the plugin's Actions skill.
+Security findings inside workflow files (injection, permissions, unpinned actions, `pull_request_target`, claude-code-action configuration) are not part of this inventory: they go to `github-operations:claude-github-actions`.
 
 ## Storage
 

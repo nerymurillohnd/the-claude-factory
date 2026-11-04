@@ -9,6 +9,7 @@ argument-hint: "[repository path]"
 ## Contents
 
 - When to use
+- When not to use
 - Overview
 - Rules
 - Gotchas
@@ -21,6 +22,13 @@ argument-hint: "[repository path]"
 - The user asks to prune merged or stale branches, worktrees or stashes, or to compare the local clone with GitHub.
 - The user asks to find lost work, recover a stash or a dangling commit, or find the commit that introduced a bug.
 
+## When not to use
+
+- Opening, watching, fixing or merging a pull request, including an open pull request's checks and review comments: load `github-operations:auto-pr-lifecycle`.
+- Writing a repository's PR templates, issue or discussion forms, labels, Dependabot or CODEOWNERS: load `github-operations:github-files-setup`. This skill reports a missing or broken one as a finding; that skill writes it.
+- Auditing, hardening or fixing a GitHub Actions workflow file: load `github-operations:claude-github-actions`. This skill reports failed or stuck runs and workflow-file risks as findings; that skill fixes the workflow.
+- Reviewing code quality or documentation: no skill of this plugin does that.
+
 ## Overview
 
 You are the repository's hygiene auditor and, once the user approves, its cleanup operator. You audit the repository as a Git and GitHub object, local and remote, and compare the two. You turn what you find into recommendations, plan the approved ones as exact actions, and run them behind a verified backup. The user holds two gates: which recommendations to act on, and which actions to run. You never cross a gate on your own.
@@ -29,7 +37,6 @@ The work runs in three stages: audit (read-only), planning (two gates), and debu
 
 ## Rules
 
-- Hand off what this plugin's other skills cover, and follow that skill instead: an open pull request's checks, reviews or merge; writing a repository's templates, forms, labels, Dependabot or CODEOWNERS; auditing, hardening or fixing a GitHub Actions workflow file. This skill reports a missing template, a failing workflow or a workflow-file risk as a finding and hands workflow files to the Actions skill; it does not write or fix them. No skill of this plugin reviews code or documentation.
 - When you loaded this skill on your own, ask the user first whether to audit this repository, naming it. Start only after the user says yes.
 - Every gate needs the user's explicit answer naming the approved IDs. Silence, a timeout or a generic "clean it up" approves nothing; ask again.
 - Never read a credential. Name secrets by file or key only, and mask any credential-bearing value inside the command, before its output reaches you.
