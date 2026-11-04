@@ -99,7 +99,7 @@ Inputs per agent:
 
 - **pr-tracker:** `owner/repo`, pull request number, head SHA, base branch, the previous tracker report or the findings ledger, what changed since, known blockers and access limits, the wait limit when it is not 30 minutes.
 - **pr-fixer:** repository path, `owner/repo`, pull request number, base and head branches, head SHA, the verified findings to fix with their evidence and URLs, the findings ledger with earlier attempts, whether the head is the user's own or another author's and whether its commands may run, the validation commands when you know them.
-- **pr-finalizer:** `owner/repo`, pull request number, the head SHA reported ready, every tracker report and every fixer report of this pull request, the findings ledger with each disposition and fix commit, whether replies are approved.
+- **pr-finalizer:** `owner/repo`, pull request number, the head SHA reported ready, every tracker report and every fixer report of this pull request, the findings ledger with each disposition and fix commit, and `Replies approved: yes` or `no`: `yes` on the user's own repository, and elsewhere only after the user approved replies.
 
 Keep the findings ledger yourself, across rounds: each finding, its source and URL, its disposition, the fix commit and how it was fixed.
 
