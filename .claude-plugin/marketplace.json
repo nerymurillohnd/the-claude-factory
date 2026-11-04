@@ -27,7 +27,7 @@
     {
       "name": "github-operations",
       "source": "./plugins/github-operations",
-      "description": "Runs GitHub work through focused skills: takes pull requests from branch to merge with a tracker, a fixer and a finalizer agent, writes a repository's templates, forms, labels and Dependabot setup adapted to it, and audits and cleans up repositories, local and remote, behind a verified backup.",
+      "description": "Runs GitHub work through focused skills: takes pull requests from branch to merge with a tracker, a fixer and a finalizer agent, writes a repository's templates, forms, labels and Dependabot setup adapted to it, repairs failing CI on the default branch, and audits and cleans up repositories, local and remote, behind a verified backup.",
       "category": "development"
     },
     {

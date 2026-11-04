@@ -14,6 +14,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - A `/github-operations:init-pr-lifecycle` command that starts that lifecycle on the current pull request, or the one you name.
 - A `pr-lifecycle` team of three agents: `pr-tracker` watches a pull request and reports what it finds, `pr-fixer` fixes reported failures and review findings in your local clone without pushing, and `pr-finalizer` answers the review threads, resolves the ones bots opened, and reports whether the pull request is ready to merge.
 - The `cleanup-and-debug` skill audits a repository, local and remote, in fourteen phases, then plans and runs only the cleanup you approve at two gates, behind a backup bundle it proves restores. The `/github-operations:init-cleanup-and-debug` command starts it, and the read-only `repo-hygiene:health-diagnostics` agent runs its audit phases, several at once on a large repository.
+- The `claude-github-actions` skill repairs failing CI on the default branch: it reads each workflow's latest run, diagnoses each failure from its log, and lands each fix through its own pull request, asking before any rerun, workflow change or push.
 - The `github-files-setup` skill writes a repository's own PR templates, issue and discussion forms, labels, Dependabot file and `CODEOWNERS`, adapted to that repository from the plugin's models, and sets the merge message you approve. It maps each model to the exact path GitHub reads, and looks for the repository's own copy in every place GitHub accepts one before writing anything.
 
 ### Changed
@@ -25,7 +26,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 ### Removed
 
 - **Breaking:** the `github-operations:pr-tracker` agent. Use `github-operations:pr-lifecycle:pr-tracker`, which reports the same findings and adds the failure's run and attempt, its cause class, and a rerun only for a failure shown to be transient.
-- **Breaking:** CI repair (`/github-operations:github ci`) leaves the `github` skill. It returns in a later version with the GitHub Actions skill.
+- **Breaking:** CI repair (`/github-operations:github ci`) leaves the `github` skill for the new `claude-github-actions` skill.
 - The template models inside the `github` skill. The same models now ship with `github-files-setup`.
 
 ## [0.5.1] - 2026-11-02

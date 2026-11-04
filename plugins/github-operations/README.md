@@ -46,6 +46,7 @@
 | 🎯 Skill | `github-operations:auto-pr-lifecycle` | Takes a pull request from its current stage to merge with three agents, asking you before every push and before the merge | `/github-operations:auto-pr-lifecycle`, or when you ask to open, babysit, fix or merge a pull request |
 | 🎯 Skill | `github-operations:cleanup-and-debug` | Audits a repository local and remote, plans the cleanup and debugging you approve, and runs it behind a verified backup | `/github-operations:cleanup-and-debug`, or when you ask to audit or clean up a repository. It asks before it starts |
 | 🎯 Skill | `github-operations:github-files-setup` | Writes a repository's PR templates, issue and discussion forms, labels, Dependabot, `CODEOWNERS` and merge-message setting, adapted to it, and lands them through a pull request | `/github-operations:github-files-setup`, or when you ask to set up templates, forms or labels |
+| 🎯 Skill | `github-operations:claude-github-actions` | Repairs failing CI on the default branch: finds the workflows whose latest run failed or stopped, diagnoses each from its log, and lands each fix through its own pull request, asking before any rerun, workflow change or push | `/github-operations:claude-github-actions`, or when you ask to fix CI on the default branch |
 | ⌨️ Command | `/github-operations:init-pr-lifecycle` | Picks up the current pull request at the stage it is in and runs the PR lifecycle from there | You type it |
 | ⌨️ Command | `/github-operations:init-cleanup-and-debug` | Picks up a repository at its cleanup stage (not audited, audited, planned, approved, executed) and runs from there | You type it |
 | 🤖 Agent | `github-operations:pr-lifecycle:pr-tracker` | Waits for a pull request's checks, then reports failures and their root cause, review threads, breaking changes, secrets in the diff, warnings and Dependabot alerts | Launched by the PR lifecycle after a pull request opens and after every push |
@@ -341,14 +342,15 @@ Git Hygiene is now part of this plugin and no longer exists on its own. The mark
 
 ### Coming from 0.5.x?
 
-The single `github` skill became three skills, each with its own agents:
+The single `github` skill became four skills:
 
 | You typed | Type now |
 | :-- | :-- |
 | `/github-operations:github pr` | `/github-operations:auto-pr-lifecycle`, or `/github-operations:init-pr-lifecycle` to pick up a pull request where it stands |
 | `/github-operations:github audit` or `cleanup` | `/github-operations:cleanup-and-debug`, or `/github-operations:init-cleanup-and-debug` |
 | `/github-operations:github setup` | `/github-operations:github-files-setup` |
-| `/github-operations:github issue`, `discussion` or `ci` | Not part of this version |
+| `/github-operations:github ci` | `/github-operations:claude-github-actions` |
+| `/github-operations:github issue` or `discussion` | Not part of this version |
 
 What else changed:
 
