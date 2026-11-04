@@ -44,6 +44,7 @@
 | 2026-10-28 | DEBT-020 | obsolete | Dropped by Nery: moving `docs/github-mcp-tools.md` into its plugin is no longer tracked | none |
 | 2026-10-28 | DEBT-027 | obsolete | Dropped by Nery: the `claude-review` tool denials are no longer investigated | none |
 | 2026-10-29 | DEBT-041 | resolved | `skill-names-consistency.py` composes ruamel.yaml nodes in YAML 1.1 mode, and no Python file uses PyYAML | none |
+| 2026-11-04 | DEBT-052 | resolved | Discussion form setup no longer depends on GraphQL to get category slugs | none |
 
 ## 🏁 Closed items
 
@@ -889,6 +890,37 @@ Nery withdrew the item on 2026-10-28, stated by the user on 2026-10-28. The work
 - **Residual risk:** the validator's messages carry no line or column; whether they move to `FILE:LINE:COLUMN` is still Nery's call.
 - **Closed by:** the 2026-10-29 change to `scripts/validators/skill-names-consistency.py` and the new `scripts/testers/validators/test_skill_names_consistency.py`, uncommitted when this entry was written.
 - **Related records:** ADR_2026-10-29_yaml-checks-compose-ruamel-nodes; DEBT-042.
+- **Superseded by:** none
+
+### DEBT-052 — Discussion form setup no longer depends on GraphQL to get category slugs
+
+| Field | Value |
+| --- | --- |
+| **Outcome** | resolved |
+| **Closed on** | 2026-11-04 |
+| **Logged on** | 2026-11-04 |
+| **Owner** | Nery |
+
+#### ❗ The problem
+
+Step 2 of `plugins/github-operations/skills/github-files-setup/references/discussion-forms.md` got the category slugs, which GitHub requires as form file names, only through a `gh api graphql` query that had never run. In a Claude Code web session GraphQL answered HTTP 403, so a wrong query or a blocked GraphQL stopped discussion form setup at step 2.
+
+#### 🔧 The closure
+
+Commit e054109 rewrote step 2 as its goal plus every route, in order: `gh api graphql` when it works, then the slug the user pastes from the category URL `https://github.com/<owner>/<repo>/discussions/categories/<slug>`. It states that the MCP `list_discussion_categories` tool returns names and IDs but no slug (`pkg/github/discussions.go` on `main`, read 2026-11-04), and never to derive a slug from a name. `issue-forms.md` no longer rests its after-merge check on GraphQL either. Nery decided on 2026-11-04 that a skill gives Claude every route and forces none on the user, and asked to close this item.
+
+#### 🧪 Verification
+
+| Check | Evidence |
+| --- | --- |
+| ✅ **Positive:** the closure holds | `discussion-forms.md:17`: "When GraphQL is unavailable or fails, ask the user to open each category in the repository's Discussions tab and paste its URL: the slug is the last part of `https://github.com/<owner>/<repo>/discussions/categories/<slug>`." `claude plugin validate --strict plugins/github-operations` passed after the change. |
+| 🚫 **Negative:** the original failure or condition is gone | Step 2 no longer stops when GraphQL is blocked: GraphQL is one of two routes, and the second needs only the user's browser. `issue-forms.md:66` makes the GraphQL read an extra check "when it works". |
+
+#### 🔗 Follow-up
+
+- **Residual risk:** the GraphQL query itself has still never run against a real repository; if it is wrong, step 2 falls back to the URL route.
+- **Closed by:** commit e054109.
+- **Related records:** DEBT-046.
 - **Superseded by:** none
 
 <!--

@@ -63,7 +63,6 @@ Add an item only when all of these hold:
 | DEBT-049 | github-operations ships without an icon or a privacy policy URL, and turns on the GitHub MCP server's Insiders mode | 🟠 Blocked |
 | DEBT-050 | A new cloud session starts on Node 22 without shfmt, and npm refuses to run on Node 22 since the devEngines pin | 🟠 Blocked |
 | DEBT-051 | The pre-push signatures gate cannot pass in a cloud session, so every push there skips every pre-push gate | 🟠 Blocked |
-| DEBT-052 | The gh api graphql query that reads discussion category slugs has never run | 🟠 Blocked |
 
 ## 📂 Open items
 
@@ -689,33 +688,6 @@ Add an item only when all of these hold:
 - **Next action:** ask Nery to choose the verification method, then change the `signatures` gate with a test in `scripts/testers/`.
 - **Review condition:** closes when a push from a cloud session passes `npm run gates` without `--no-verify`, and an unsigned commit still fails the gate.
 - **Related records:** DEBT-050.
-
-### DEBT-052 — The gh api graphql query that reads discussion category slugs has never run
-
-| Field | Value |
-| --- | --- |
-| **Status** | 🟠 Blocked |
-| **Category** | quality |
-| **Owner** | Nery |
-| **Logged** | 2026-11-04 |
-
-#### 🔎 Evidence
-
-- **Confirmed facts:**
-  - Commit 285bf41 made step 2 of `plugins/github-operations/skills/github-files-setup/references/discussion-forms.md` run `gh api graphql` for `hasDiscussionsEnabled` and each category's `name` and `slug`.
-  - Its fields exist in GitHub's public schema (`docs.github.com/public/fpt/schema.docs.graphql`, read 2026-11-04): `Repository.hasDiscussionsEnabled: Boolean!`, `Repository.discussionCategories(first: Int): DiscussionCategoryConnection!`, `DiscussionCategory.slug: String!`.
-  - The query was never executed: in the cloud session, `gh api graphql` answered HTTP 403, "GitHub GraphQL is not available from Claude Code sessions; use the REST API".
-  - The same step has no other way to get the slug, and `issue-forms.md:66` also uses GraphQL to confirm `config.yml`.
-- **Inferences:** whether the 403 hits every Claude Code session on the web, or only this environment, is not verified; if it hits all of them, users there cannot name discussion forms.
-- **Open questions:** whether the 403 applies to all web sessions.
-
-#### 📈 Impact and next step
-
-- **Impact / risk:** a wrong query, or a blocked GraphQL, stops discussion form setup at step 2.
-- **Why it is not fixed now:** running the query needs a GitHub GraphQL access this environment does not have.
-- **Next action:** run the step 2 query once against a repository with discussions, from a session or workflow with GraphQL access, and record the output. A fallback for blocked GraphQL, such as asking the user for the slug shown in the category URL `/discussions/categories/<slug>`, can be done now and was reported to Nery as a plugin change.
-- **Review condition:** closes when the query has returned the categories and slugs of a real repository.
-- **Related records:** DEBT-046.
 
 <!--
 Entry format. Copy this block above this comment for each new item and add its row to the Index.
