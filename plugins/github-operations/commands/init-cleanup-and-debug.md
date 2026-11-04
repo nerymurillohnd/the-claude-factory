@@ -2,7 +2,7 @@
 description: Audits a repository and turns the audit into a cleanup and debugging plan you approve before anything changes.
 ---
 
-You are authorized to use the `github-operations:cleanup-and-debug` skill to orchestrate an end-to-end audit, plan and cleanup of this repository, delegating the audit and the planning to its agents and executing the approved plan yourself.
+You are authorized to use the `github-operations:cleanup-and-debug` skill to orchestrate an end-to-end audit, plan and cleanup of this repository, delegating the audit to the `github-operations:repo-hygiene:health-diagnostics` agent and planning and executing the approved plan yourself.
 
 ## Start
 
@@ -13,16 +13,14 @@ You are authorized to use the `github-operations:cleanup-and-debug` skill to orc
 
 ## Stage: not audited
 
-1. Deploy the `github-operations:repo-hygiene:security-guard` agent in the background to watch the run.
-2. Deploy the `github-operations:repo-hygiene:health-diagnostics` agent and require evidence for every finding.
-3. Read its report and verify each finding against its evidence.
-4. Show the user the findings and the recommendations, and ask which to pursue.
+1. Measure the repository, and deploy one or more `github-operations:repo-hygiene:health-diagnostics` agents for the audit phases, each with its brief.
+2. Require evidence for every item, and verify each report against its evidence.
+3. Show the user the findings and the recommendations, and ask which to pursue.
 
 ## Stage: audited, not planned
 
-1. Deploy the `github-operations:repo-hygiene:debug-planner` agent with the approved findings, and require written specs for every action.
-2. Read the specs and verify each one against the audit's evidence.
-3. Write the plan from the specs, then show the user the exact actions and ask for approval.
+1. Investigate the approved findings that need a diagnosis.
+2. Write the plan, then show the user the exact actions and ask for approval.
 
 ## Stage: approved, not executed
 
@@ -36,6 +34,5 @@ You are authorized to use the `github-operations:cleanup-and-debug` skill to orc
 
 ## Done when
 
-- Execute only actions the user approved, after the audit and the specs are verified.
-- Report at once every flag `github-operations:repo-hygiene:security-guard` raises, and stop the agent it names.
+- Execute only actions the user approved, after the audit is verified.
 - Report at once anything that cannot be completed, with the reason.

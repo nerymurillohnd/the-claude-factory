@@ -14,6 +14,16 @@ Establish what is being audited, with which tools and which access, before colle
 - Ref storage: `files` or `reftable`, read with `git rev-parse --show-ref-format` ([git-init][git-init], [git-rev-parse][git-rev-parse]).
 - Object format: SHA-1 or SHA-256, which sets the length of every object ID ([git-rev-parse `--show-object-format`][git-rev-parse]).
 
+## Size
+
+Measure the repository, to decide how to split the audit:
+
+- Commit count, and the number of branches, tags, worktrees and stashes.
+- Object store size, loose and packed.
+- Pull requests, issues and discussions, by state.
+- Workflows and their run count.
+- Forks.
+
 ## Tooling and identity
 
 - The git and gh versions in use, checked against the minimums the README declares. Mark a domain `BLOCKED` when the installed version lacks the command it needs.
@@ -33,6 +43,7 @@ Record each domain's reachability in the coverage ledger. A refused consent scop
 
 - [ ] The repository, its remotes (redacted), default branch and base branch are recorded.
 - [ ] The clone type, ref storage and object format are recorded.
+- [ ] The repository's size is measured.
 - [ ] The git and gh versions are recorded, and every domain they cannot serve is `BLOCKED`.
 - [ ] The GitHub identity and its permission are recorded.
 - [ ] Every audit domain has its reachability in the coverage ledger.
