@@ -20,7 +20,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 ### Changed
 
 - **Breaking:** GitHub work runs through focused skills instead of one `github` contract: the pull request lifecycle, repository setup, and repository audit and cleanup. Each skill hands a request it does not cover to the one that does.
-- **Breaking:** the plugin no longer ships hooks, and no longer needs `python3` for them. The agents' limits (the tracker, the auditor and the finalizer change no code, the fixer never pushes) are now enforced only by their instructions; the README shows how to add hard limits yourself.
+- **Breaking:** the plugin no longer ships hooks, and no longer needs `python3` for them. Claude Code still removes some tools from the PR lifecycle agents: none of them can launch another agent, and the tracker and the finalizer cannot use the file-writing tools. Their other limits (the tracker, the auditor and the finalizer change no code, the fixer never pushes) are kept only by their instructions; the README shows how to add hard limits yourself.
+- The PR lifecycle no longer requires signed commits: Claude and the fixer commit as your git setup does, signed when it signs, so a repository without commit signing no longer stops the lifecycle.
 - `python3` 3.12 and uv are needed only for the repository setup's label comparison and form checks.
 
 ### Removed

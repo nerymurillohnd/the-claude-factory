@@ -111,7 +111,6 @@ Progress:
 8. **Dependabot.** Read [references/dependabot.md](references/dependabot.md) and follow it.
 9. **CODEOWNERS.** When the user wants one, write it from the repository's real owners: one line naming the owner (`* @<owner>`), plus a line per area when the user names its maintainers.
 10. **Land the setup.**
-    1. Commit with the repository's signing setup.
-    2. Ask the user before you push, then open the pull request through this plugin's pull request skill, with the repository's new maintenance template when it has one.
+    1. Commit, then ask the user before you push, and open the pull request through this plugin's pull request skill, with the repository's new maintenance template when it has one.
 
 Close with a report: each file created or proposed, with its model and what you adapted; each label and setting changed, with its approval; the pull request link; and that the files apply only after the pull request merges into the default branch.

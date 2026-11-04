@@ -31,7 +31,7 @@
 
 ## ✨ Why use it
 
-- **A pull request that finishes itself** — three agents share the work: one watches CI and reviews and finds each failure's root cause, one fixes the failures and review findings in your clone and commits them signed, and one verifies every fix, answers the review threads and resolves the ones bots opened. Claude checks each report against its evidence before acting on it.
+- **A pull request that finishes itself** — three agents share the work: one watches CI and reviews and finds each failure's root cause, one fixes the failures and review findings in your clone and commits them, and one verifies every fix, answers the review threads and resolves the ones bots opened. Claude checks each report against its evidence before acting on it.
 - **You hold every push and the merge** — after each round of fixes, Claude shows you what failed, what changed and how it was checked, then asks: push, push without asking again on this pull request, or don't push. The merge waits for your approval of that exact pull request at that exact commit.
 - **Reports you can act on** — failed jobs with the failing step, the first error and its root cause, whether the same job fails on the base branch, required checks, warnings, review threads with their links, breaking changes and secrets in the diff, and Dependabot alerts.
 - **Templates written for your repository** — PR templates, issue and discussion forms, labels, Dependabot and `CODEOWNERS` are written from tested models but with your components, versions, environments, commands and labels. Your own files always win: Claude proposes changes to them and never overwrites them.
@@ -50,7 +50,7 @@
 | ⌨️ Command | `/github-operations:init-pr-lifecycle` | Picks up the current pull request at the stage it is in and runs the PR lifecycle from there | You type it |
 | ⌨️ Command | `/github-operations:init-cleanup-and-debug` | Picks up a repository at its cleanup stage (not audited, audited, planned, approved, executed) and runs from there | You type it |
 | 🤖 Agent | `github-operations:pr-lifecycle:pr-tracker` | Waits for a pull request's checks, then reports failures and their root cause, review threads, breaking changes, secrets in the diff, warnings and Dependabot alerts | Launched by the PR lifecycle after a pull request opens and after every push |
-| 🤖 Agent | `github-operations:pr-lifecycle:pr-fixer` | Fixes the verified failures and review findings in your local clone, validates each fix and commits it signed. It never pushes | Launched by the PR lifecycle when findings need a fix |
+| 🤖 Agent | `github-operations:pr-lifecycle:pr-fixer` | Fixes the verified failures and review findings in your local clone, validates each fix and commits it. It never pushes | Launched by the PR lifecycle when findings need a fix |
 | 🤖 Agent | `github-operations:pr-lifecycle:pr-finalizer` | Verifies each finding at the current head, replies to review threads, resolves the threads bots opened, and gives the merge verdict | Launched by the PR lifecycle once the checks pass |
 | 🤖 Agent | `github-operations:repo-hygiene:health-diagnostics` | Audits one assigned part of a repository read-only and reports every item with its evidence | Launched by the cleanup, one or several at a time depending on the repository's size |
 | 🔌 MCP server | `github` | GitHub's remote MCP server with every toolset and early-access mode: pull requests, issues, Actions, security alerts and more. See [GitHub MCP tools](../../docs/github-mcp-tools.md) | Tools appear as `mcp__plugin_github-operations_github__*` |
@@ -379,11 +379,11 @@ You can also say "open a PR for this", "fix the PR's CI", "address the review co
 **Result:** when there is no pull request yet, Claude validates and commits your work, then asks before it pushes and before it opens the PR with your repository's template and labels. Then the loop runs:
 
 1. **Track.** The tracker waits for the checks and reports what failed and why, every review thread, and the risks in the diff.
-2. **Fix.** The fixer corrects the verified findings in your clone and commits each fix signed. It never pushes.
+2. **Fix.** The fixer corrects the verified findings in your clone and commits each fix. It never pushes.
 3. **Your push.** Claude shows you what was found, what was fixed and how it was validated, then asks:
 
 ```text
-PR #42 "Add invoice export": 2 failures fixed in 2 signed commits (tests pass), 1 review finding fixed.
+PR #42 "Add invoice export": 2 failures fixed in 2 commits (tests pass), 1 review finding fixed.
 Push · Push without asking again on this pull request · Don't push
 ```
 
@@ -497,12 +497,12 @@ The plugin's `github` server asks for **every toolset** (`X-MCP-Toolsets: all`) 
 
 ### The agents' limits
 
-The plugin can't enforce what its agents may do: each agent keeps to its role through its own instructions, and Claude checks each report against its evidence before acting on it.
+Claude Code removes some tools from the PR lifecycle agents: none of the three can launch another agent, and the tracker and the finalizer have no file-writing tools (Write, Edit, NotebookEdit). Everything else, such as which shell commands they run or what they write to GitHub, is kept only by each agent's instructions, and Claude checks each report against its evidence before acting on it.
 
 | Agent | May | May not |
 | :-- | :-- | :-- |
 | `pr-lifecycle:pr-tracker` | Read everything and run commands that only read | Change files, commit, push or write anything to GitHub |
-| `pr-lifecycle:pr-fixer` | Edit files, run your validation commands and commit signed in your clone | Push, write anything to GitHub, change your git configuration, rewrite pushed history or skip your commit hooks |
+| `pr-lifecycle:pr-fixer` | Edit files, run your validation commands and commit in your clone | Push, write anything to GitHub, change your git configuration, rewrite pushed history or skip your commit hooks |
 | `pr-lifecycle:pr-finalizer` | Reply in review threads and resolve review threads | Edit files, commit, push, submit reviews or approvals, or merge |
 | `repo-hygiene:health-diagnostics` | Read everything and run commands that only read; write notes in a folder outside your repository | Change anything in your repository, on GitHub or on your machine |
 
