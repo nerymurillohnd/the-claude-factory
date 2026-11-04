@@ -5,7 +5,6 @@
 - Scope and inputs
 - Checks every workflow gets
 - Checks for steps that run claude-code-action
-- Linters
 - Each finding
 - Apply the patches
 - Verify against
@@ -46,10 +45,6 @@ Read every file under `.github/workflows/`, every composite action (`action.yml`
 - A PR head passed with `--add-dir` without neutralizing its `.claude/` (`trust-boundaries.md`).
 - An OAuth token passed through `anthropic_api_key`.
 
-## Linters
-
-Run `actionlint`, `zizmor` and `shellcheck` only when they are already on `PATH`, and record each one's version. When one is missing, report it as not run, with the reason; never install it. A clean lint is not proof that a workflow behaves as intended.
-
 ## Each finding
 
 - File and line.
@@ -60,12 +55,11 @@ Run `actionlint`, `zizmor` and `shellcheck` only when they are already on `PATH`
 
 ## Apply the patches
 
-Only after the user approves them. Apply them on a branch, run the linters again under the rule above, and land the change through this plugin's pull request skill. Changing a workflow's permissions, triggers or secrets is a separate approval from the rest of the patch.
+Only after the user approves them. Apply them on a branch, check each patched file again against every check above, and land the change through this plugin's pull request skill. Changing a workflow's permissions, triggers or secrets is a separate approval from the rest of the patch.
 
 ## Verify against
 
 - GitHub, secure use of Actions: https://docs.github.com/en/actions/reference/security/secure-use
 - GitHub, workflow syntax: https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax
-- actionlint: https://github.com/rhysd/actionlint · zizmor: https://docs.zizmor.sh
 
 Written on 4 November 2026 from `anthropics/claude-code-action@c0949c5`.

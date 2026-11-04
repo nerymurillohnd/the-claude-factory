@@ -43,4 +43,4 @@
 
 | Check | Result | Reason |
 | :-- | :-- | :-- |
-| <actionlint, zizmor, the next run on the default branch…> | <passed, failed, not run or blocked> | <why, for anything but passed> |
+| <each check of the audit reference on the patched files, the next run on the default branch…> | <passed, failed, not run or blocked> | <why, for anything but passed> |

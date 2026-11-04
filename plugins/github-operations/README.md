@@ -449,7 +449,7 @@ The option isn't listed in `/config`, because Claude Code keeps sensitive option
 
 ### Diagnose, audit or repair GitHub Actions workflows
 
-Ask *"Why did the Claude review on PR 42 post nothing?"*, *"Audit our workflows"* or *"CI on main is broken"*. Claude reads the run's log and the workflow file at the commit it ran, matches them against the known failure patterns of `anthropics/claude-code-action`, and names the cause with the log lines that prove it. An audit lists each finding with its file and line, what triggers it, its impact and the exact patch. Claude changes a workflow only after you approve the patch, pins every action it writes to a full commit, and lands the change through a pull request. Linters such as actionlint and zizmor run only if you already have them installed. Writing a new workflow from scratch is not covered yet.
+Ask *"Why did the Claude review on PR 42 post nothing?"*, *"Audit our workflows"* or *"CI on main is broken"*. Claude reads the run's log and the workflow file at the commit it ran, matches them against the known failure patterns of `anthropics/claude-code-action`, and names the cause with the log lines that prove it. An audit lists each finding with its file and line, what triggers it, its impact and the exact patch. Claude changes a workflow only after you approve the patch, pins every action it writes to a full commit, and lands the change through a pull request. Writing a new workflow from scratch is not covered yet.
 
 ### In the Claude app
 
