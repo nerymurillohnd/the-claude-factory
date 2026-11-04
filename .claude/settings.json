@@ -39,6 +39,19 @@
         "hooks": [
           {
             "type": "command",
+            "command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/block-pip.sh",
+            "args": [],
+            "timeout": 10,
+            "onFailure": "block",
+            "statusMessage": "Checking the command for pip…"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
             "command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/validators-gate.sh",
             "args": [],
             "if": "Bash(git commit*)",
