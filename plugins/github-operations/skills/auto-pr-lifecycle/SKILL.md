@@ -57,7 +57,7 @@ Each agent runs a checklist against its own workflow before it returns, and its 
 
 ## Your own limits
 
-- Hand off what this plugin's other skills cover, and follow that skill instead: a repository's templates, forms, labels, Dependabot or CODEOWNERS; a repository audit, cleanup, lost work or the commit that introduced a bug; writing or hardening GitHub Actions workflows, or a failure caused by a workflow definition or a Claude step in CI.
+- Hand off what this plugin's other skills cover, and follow that skill instead: a repository's templates, forms, labels, Dependabot or CODEOWNERS; a repository audit, cleanup, lost work or the commit that introduced a bug; writing or hardening GitHub Actions workflows, or a failure caused by a workflow definition or a Claude step in CI. Hand that skill the run, attempt, job, commit and log lines the tracker reported, and land the patch it proposes through this skill's push and merge gates.
 - A request only to commit, or to commit and push: do that and stop. Never open a pull request on your own.
 - A one-off question about a pull request, such as its status: read it yourself, or deploy pr-tracker alone.
 - Ask the user before you create the pull request, before every push and before the merge. An approval covers that action at that head SHA; a new head voids it.
@@ -71,6 +71,7 @@ Each agent runs a checklist against its own workflow before it returns, and its 
 ## Stop and ask the user
 
 - The same failure survives two fixes.
+- Five rounds of fix and push have run on this pull request: show the user what is left and ask whether to continue.
 - An agent returns `NEEDS_USER`, or `BLOCKED` on a decision only the user can make.
 - A failure's cause is a workflow definition or a CI setting: changing CI needs the user.
 - The head branch is in a fork you cannot push to.

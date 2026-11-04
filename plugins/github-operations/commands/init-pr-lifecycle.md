@@ -25,7 +25,7 @@ You are authorized to use the `github-operations:auto-pr-lifecycle` skill to orc
 4. Show the user what was fixed and what was not, then ask whether to push.
 5. Push at once when the user approves, then continue at "Opened, not reviewed yet" to track the new head.
 6. Stop and ask the user how to proceed when the user declines.
-7. Repeat these rounds as many times as the findings require.
+7. Repeat these rounds until nothing is left to fix. After five rounds, show the user what is left and ask whether to continue.
 
 ## Stage: fixed, readiness not checked
 

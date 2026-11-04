@@ -43,7 +43,8 @@ Rules:
 - Workflows triggered by a comment or a review run on the default branch, not on the head: `gh pr checks` never shows them.
 - Some review bots report progress as a pending commit status rather than a check run, and post their review only after it turns green.
 - A green AI-review check can be a no-op.
-- Fork and Dependabot runs get no secrets: a credential failure there is configuration, not code.
+- Fork and Dependabot runs get no secrets and no OIDC token: a credential failure there is configuration, not code.
+- A Claude step can fail on who triggered it, not on credentials: "Workflow initiated by non-human actor" (a bot not allowed) or "Actor does not have write permissions to the repository". Report the line as it appears.
 - A job that passed on a retry is possibly flaky, not fixed.
 
 ## Workflow
@@ -84,17 +85,17 @@ Rules:
 6. [Required checks] Check the base branch's required checks against the head.
    - Identify the checks the base branch requires, from its rulesets and classic protection.
    - Determine each one's state at the head: passing, failing, pending or missing.
-   - Spot required checks that a path filter skips.
+   - Spot required checks that a path filter or an `if:` skips: a required check that never reports blocks the merge.
 7. [Workflow files] Read and audit the workflow files the head runs.
    - Detect workflows that should have run and didn't, and the trigger or filter that stopped them.
    - Review the workflow files the pull request changes.
-   - Check AI-review steps that did nothing or lacked credentials.
+   - Check AI-review steps that did nothing or lacked credentials. When a failure or a no-op comes from a Claude step or a workflow definition, say so under **Next** with its run, attempt, job, commit and the log lines: the main session hands it to this plugin's Actions skill.
 8. [Warnings] Collect warnings and deprecations.
-   - Collect the annotations of every check run: errors, warnings and notices.
+   - Collect the annotations of every check run: errors, warnings and notices. An "Unexpected input(s)" warning on a step means an input the action ignores.
    - Collect the warnings in the logs.
    - Spot deprecated actions, runtimes and runner images.
 9. [Reviews] Audit what every reviewer produced, the reviews, review threads and comments, and each finding's state at the head.
-   - For each automated reviewer that worked on the head (a review app, an AI-review workflow, a bot requested as reviewer), find what it produced: a review (`pull_request_read`, method `get_reviews`; else `gh pr view <n> -R <owner>/<repo> --json reviews`), review comments (`get_review_comments`; else `gh api repos/<owner>/<repo>/pulls/<n>/comments --paginate`), a pull request comment (`get_comments`; else `gh pr view <n> -R <owner>/<repo> --json comments`), its check run's summary (`gh api repos/<owner>/<repo>/check-runs/<id> --jq .output`, because `get_check_runs` does not return it), its job summary or annotations, or an issue it opened that names the pull request. One that finished and produced nothing is a no-op: say so.
+   - For each automated reviewer that worked on the head (a review app, an AI-review workflow, a bot requested as reviewer), find what it produced: a review (`pull_request_read`, method `get_reviews`; else `gh pr view <n> -R <owner>/<repo> --json reviews`), review comments (`get_review_comments`; else `gh api repos/<owner>/<repo>/pulls/<n>/comments --paginate`), a pull request comment (`get_comments`; else `gh pr view <n> -R <owner>/<repo> --json comments`), its check run's summary (`gh api repos/<owner>/<repo>/check-runs/<id> --jq .output`, because `get_check_runs` does not return it), its job summary or annotations, or an issue it opened that names the pull request. When none of these holds anything, read the step's run log (`get_job_logs`; else `gh run view <run id> -R <owner>/<repo> --log --job <job id>`): findings left only in the log, or "No trigger found", are not a review. A reviewer that produced nothing is a no-op: list it under **Blocker**, never count it as a review.
    - Collect the reviews and their state.
    - Identify each thread's author, and whether it is a bot or a person from the author's `__typename` (`Bot`). When the MCP threads lack it, read it with `gh api graphql --paginate -F owner=<owner> -F name=<repo> -F number=<n> -f query='query($owner:String!,$name:String!,$number:Int!,$endCursor:String){repository(owner:$owner,name:$name){pullRequest(number:$number){reviewThreads(first:50,after:$endCursor){pageInfo{hasNextPage endCursor} nodes{id isResolved isOutdated path line comments(first:50){nodes{databaseId author{login __typename} body url}}}}}}}'`.
    - Note each thread's resolved and outdated flags.
