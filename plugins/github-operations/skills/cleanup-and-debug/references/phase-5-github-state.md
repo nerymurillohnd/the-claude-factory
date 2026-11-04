@@ -1,0 +1,36 @@
+# Phase 5: GitHub state
+
+- **Pull requests, in every state** (open, draft, closed and merged), each with its head and base SHAs, age, author, review state and checks. Flag these:
+  - open or draft and abandoned;
+  - closed without merging while their branch still exists;
+  - merged while their branch still exists;
+  - from forks.
+- **Issues and discussions:** open for a long time, waiting for an answer, stale, or with no labels.
+- **Branches on GitHub:**
+  - stale branches;
+  - branches whose pull request was merged or closed;
+  - protections and rulesets, with their bypass lists.
+- **Actions:**
+  - every workflow, enabled or disabled, with its latest result;
+  - workflows whose last run on the default branch failed, with no success after it;
+  - failed jobs that were never rerun or fixed;
+  - scheduled workflows that stopped running;
+  - runs stuck in queued or in progress;
+  - runs waiting for approval;
+  - workflows that point to deleted branches, files or secrets.
+- **Storage:** artifacts and caches, with size and age.
+- **Environments:** each one and its protection rules.
+- **Secrets and variables:** names only.
+- **Runners:** self-hosted runners that are offline or unused.
+- **Dependabot:**
+  - open alerts;
+  - update pull requests that are open, failed or ignored;
+  - update jobs that failed (version and security updates), with their error;
+  - its configuration.
+- **Other security alerts:** secret scanning and code scanning.
+- **Integrations and access:** webhooks (with failed deliveries), deploy keys (with last use), installed GitHub Apps, collaborators, invitations and teams.
+- **Distribution:** releases and their assets, packages, Pages, Codespaces and wiki.
+- **Forks:**
+  - the whole fork network;
+  - each fork ahead of or behind this repository's default branch, by commit count;
+  - forks holding work that was never sent back.

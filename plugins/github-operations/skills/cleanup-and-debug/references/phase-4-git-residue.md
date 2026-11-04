@@ -1,0 +1,21 @@
+# Phase 4: Git-native residue and risk surfaces
+
+- **Hooks:** active hooks in `.git/hooks` and in `core.hooksPath`, and hooks that call services or paths outside the repository.
+- **Configuration in every scope** (system, global, local, worktree, conditional includes), with the origin of each value and credentials masked:
+  - `insteadOf` rewrites;
+  - `hooksPath`, `worktree`, fsmonitor;
+  - filters;
+  - registered maintenance;
+  - the names of credential helpers, never their values.
+- **Leftovers of interrupted operations:**
+  - `ORIG_HEAD`, `MERGE_HEAD`, `CHERRY_PICK_HEAD`, `REBASE_HEAD`, `REVERT_HEAD`;
+  - rebase directories (`rebase-merge`, `rebase-apply`, which `git am` also leaves);
+  - bisect leftovers: `refs/bisect/*`, `BISECT_LOG`, `BISECT_START` and the other `BISECT_*` files;
+  - `refs/original/*`, the backups `filter-branch` leaves;
+  - `refs/replace/*`, which silently changes what history Git shows;
+  - stale `.lock` files;
+  - `gc.log` and `gc.pid`;
+  - an old `FETCH_HEAD`.
+- **Attributes:** filters (LFS and others) whose tool is not installed.
+- **Stray files:** `*.patch`, `*.mbox` and `*.orig`.
+- **Serving the repository:** daemon, instaweb, `git-daemon-export-ok`, files left by `update-server-info`, and fsmonitor daemons.
