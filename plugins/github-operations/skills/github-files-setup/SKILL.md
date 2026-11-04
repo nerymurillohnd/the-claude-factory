@@ -1,6 +1,6 @@
 ---
 name: github-files-setup
-description: Creates or updates a GitHub repository's own collaboration files, written for that repository from reference models, such as pull request templates, issue forms and their chooser, discussion forms, labels, the Dependabot configuration, CODEOWNERS and the merge-message setting. Studies the repository, chooses the models that fit it, adapts them to its facts, validates them and lands them through a pull request. Use when the user asks to set up, add or update issue templates, PR templates, discussion forms, labels or Dependabot in a repository. Not for taking a pull request to merge (auto-pr-lifecycle), auditing or cleaning up a repository (cleanup-and-debug), or writing GitHub Actions workflows (claude-github-actions).
+description: Writes a GitHub repository's own collaboration files, adapted to that repository from reference models, such as pull request templates, issue forms, discussion forms, labels, the Dependabot configuration, CODEOWNERS and the merge-message setting. Use when the user wants to set up, add or update issue or PR templates, discussion forms, labels or Dependabot, or to make a repository ready for contributors, even if they only say that issues arrive without the information they need. Not for filing or triaging individual issues, taking a pull request to merge (auto-pr-lifecycle), auditing or cleaning up a repository (cleanup-and-debug), or writing GitHub Actions workflows (claude-github-actions).
 ---
 
 # GitHub files setup

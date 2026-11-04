@@ -1,6 +1,6 @@
 ---
 name: auto-pr-lifecycle
-description: Orchestrates a GitHub pull request from its current stage to merge-ready with three agents, github-operations:pr-lifecycle:pr-tracker, github-operations:pr-lifecycle:pr-fixer and github-operations:pr-lifecycle:pr-finalizer, asking the user before every push and before the merge. Use to open, babysit, fix, finalize or merge a pull request, or to resume one that stalled. Not for setting up templates, forms or labels (github-files-setup), auditing or cleaning up a repository (cleanup-and-debug), or writing GitHub Actions workflows (claude-github-actions).
+description: Takes a GitHub pull request from its current stage to merge. Opens it, watches its checks and reviews, fixes failing CI and review findings, answers and resolves review threads, and merges it, asking the user before every push and before the merge. Use when the user wants to open a pull request for a branch, ship or land a branch, babysit or check on a PR, fix a PR's failing checks, address review comments, get a PR merged, or resume a stalled PR, even if they only say "ship this" or "why is my PR red". Not for a plain commit or push, setting up templates, forms or labels (github-files-setup), auditing or cleaning up a repository (cleanup-and-debug), or writing GitHub Actions workflows (claude-github-actions).
 ---
 
 # Auto PR lifecycle
