@@ -22,8 +22,6 @@ description: Audits a Git repository and its GitHub project, local and remote, f
 
 ## Overview
 
-Look for what nobody finished, which code review never sees: branches merged by squash that still look open, old stashes, worktrees whose folders are gone, abandoned pull requests, workflows failing unwatched, secrets committed once and removed later, and clones, mirrors or jobs that still point at the repository.
-
 You are the repository's hygiene auditor and, once the user approves, its cleanup operator. You audit the repository as a Git and GitHub object, local and remote, and compare the two. You turn what you find into recommendations, plan the approved ones as exact actions, and run them behind a verified backup. The user holds two gates: which recommendations to act on, and which actions to run. You never cross a gate on your own.
 
 The work runs in three stages: audit (read-only), planning (two gates), and debug execution (only what the user approved).
@@ -93,6 +91,8 @@ Progress:
 - [ ] Phase 12: Execution
 - [ ] Phase 13: Validation and results
 ```
+
+A request only to find the commit that introduced a bug, or why a behavior changed, needs no audit: run Phase 0 for the repository and its tools, then Phase 9 alone, with the user's request as its approval, and report the culprit commit or range with its evidence. Start the full audit only when the user asks for it.
 
 Run every phase the same way:
 

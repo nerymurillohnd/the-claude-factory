@@ -1,6 +1,6 @@
 # Phase 9: Investigation
 
-Diagnose the approved recommendations that need debugging. This phase changes no source, but it registers a throwaway worktree in `.git/worktrees/` and leaves bisect state in it, so it runs only for approved recommendations and ends by removing both.
+Diagnose the approved recommendations that need debugging. This phase changes no source, but it registers a throwaway worktree in `.git/worktrees/` and leaves bisect state in it, so it runs only for approved recommendations, or for the user's own request to find the commit that introduced a bug, and ends by removing both.
 
 ## Isolation
 
