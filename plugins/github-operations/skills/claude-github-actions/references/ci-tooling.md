@@ -12,7 +12,7 @@ Read the latest state of each run, report data you could not read as "not inspec
 | Jobs | `actions_list`, method `list_workflow_jobs`, `resource_id` = run id, `workflow_jobs_filter.filter` = `latest` | Run view with the jobs JSON field |
 | Failure logs | `get_job_logs` with `run_id`, `failed_only`, `return_content`, `tail_lines` | Run view, failed logs |
 
-The Actions tools exist only when the GitHub MCP server runs with its Actions toolset on.
+The Actions tools exist only when the GitHub MCP server runs with its Actions toolset on. Like every GitHub MCP tool, they load on demand: load them with `ToolSearch` (query `+github`) before the first call, and use `gh` when the server failed to connect.
 
 ## Writes
 

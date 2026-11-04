@@ -1,7 +1,19 @@
 # Discussion forms
 
 1. Discussions must be on. When they are off, tell the user: enabling them is a repository setting and needs approval.
-2. List the categories and slugs with MCP `list_discussion_categories`.
+2. List the categories with their slugs, which name the form files:
+
+   ```bash
+   gh api graphql -f owner=<owner> -f name=<repo> -f query='
+     query($owner: String!, $name: String!) {
+       repository(owner: $owner, name: $name) {
+         hasDiscussionsEnabled
+         discussionCategories(first: 25) { nodes { name slug } }
+       }
+     }'
+   ```
+
+   `hasDiscussionsEnabled: false` is the case in step 1. The MCP `list_discussion_categories` tool returns each category's ID and name but no slug, so it cannot name the files.
 3. Choose a model from `<skill-dir>/assets/DISCUSSION_TEMPLATE/` for each category the repository uses:
 
    | Category use | Model |
