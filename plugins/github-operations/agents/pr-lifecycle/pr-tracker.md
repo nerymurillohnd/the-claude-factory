@@ -58,10 +58,10 @@ Rules:
    - Compare its head SHA with the brief's.
    - Note its mergeability, merge state and labels.
 3. [Wait] Wait until no check and no automated reviewer is still working on the head, up to the wait limit.
-   - Find what is still working with the GitHub MCP tools, which answer in one call each; use `gh` only where they cannot:
-     - check runs on the head that are queued or in progress: `pull_request_read`, method `get_check_runs`;
-     - commit statuses still pending, which some review bots use: `pull_request_read`, method `get_status`;
-     - workflows the pull request's comments or reviews triggered, which run on the default branch and never appear among the head's checks: `actions_list`, method `list_workflow_runs`, with `workflow_runs_filter` set to `event: issue_comment` (then `pull_request_review_comment`, `pull_request_review`) and `status: in_progress` (then `queued`, `waiting`), keeping those created since the head was pushed;
+   - Find what is still working with the GitHub MCP tools, which answer in one call each. When an MCP call fails (the tool is missing, it errors, it returns 403 or 404, or nothing where data must exist), run the `gh` command given with it before you report anything as not inspected:
+     - check runs on the head that are queued or in progress: `pull_request_read`, method `get_check_runs`; else `gh pr checks <n> -R <owner>/<repo> --json name,state,bucket,workflow,link`;
+     - commit statuses still pending, which some review bots use: `pull_request_read`, method `get_status`; else `gh api repos/<owner>/<repo>/commits/<head SHA>/status`;
+     - workflows the pull request's comments or reviews triggered, which run on the default branch and never appear among the head's checks: `actions_list`, method `list_workflow_runs`, with `workflow_runs_filter` set to `event: issue_comment` (then `pull_request_review_comment`, `pull_request_review`) and `status: in_progress` (then `queued`, `waiting`), keeping those created since the head was pushed; else `gh run list -R <owner>/<repo> --event <event> --status <status> --json databaseId,workflowName,createdAt,url`;
      - bot or app reviewers still requested: `gh pr view <n> -R <owner>/<repo> --json reviewRequests`, because the MCP `get` method does not return them.
    - Wait with blocking commands, never by reading again and again: each read costs a turn, and the MCP tools cannot block. Run `gh pr checks <n> -R <owner>/<repo> --watch --interval 60` with the Bash tool's longest timeout (10 minutes), and `gh run watch <run id> -R <owner>/<repo> --interval 60` for a triggered run. When a call times out, read once what is still working, then watch again. At most three watch calls cover the 30-minute default.
    - A requested bot reviewer has no command to watch: read the review requests again after each watch call, and stop waiting for it when the checks are done and it is still listed.
@@ -93,7 +93,7 @@ Rules:
    - Collect the warnings in the logs.
    - Spot deprecated actions, runtimes and runner images.
 9. [Reviews] Audit what every reviewer produced, the reviews, review threads and comments, and each finding's state at the head.
-   - For each automated reviewer that worked on the head (a review app, an AI-review workflow, a bot requested as reviewer), find what it produced: a review (`pull_request_read`, method `get_reviews`), review comments (`get_review_comments`), a pull request comment (`get_comments`), its check run's summary (`gh api repos/<owner>/<repo>/check-runs/<id> --jq .output`, because `get_check_runs` does not return it), its job summary or annotations, or an issue it opened that names the pull request. One that finished and produced nothing is a no-op: say so.
+   - For each automated reviewer that worked on the head (a review app, an AI-review workflow, a bot requested as reviewer), find what it produced: a review (`pull_request_read`, method `get_reviews`; else `gh pr view <n> -R <owner>/<repo> --json reviews`), review comments (`get_review_comments`; else `gh api repos/<owner>/<repo>/pulls/<n>/comments --paginate`), a pull request comment (`get_comments`; else `gh pr view <n> -R <owner>/<repo> --json comments`), its check run's summary (`gh api repos/<owner>/<repo>/check-runs/<id> --jq .output`, because `get_check_runs` does not return it), its job summary or annotations, or an issue it opened that names the pull request. One that finished and produced nothing is a no-op: say so.
    - Collect the reviews and their state.
    - Identify each thread's author, and whether it is a bot or a person.
    - Note each thread's resolved and outdated flags.

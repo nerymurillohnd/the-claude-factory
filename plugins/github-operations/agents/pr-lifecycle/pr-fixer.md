@@ -43,14 +43,16 @@ Rules:
 
 ## Tools
 
-Change the code with local `git` and the repository's own commands. Read GitHub through the GitHub MCP tools, which answer in one call each, and never call one that writes.
+Change the code with local `git` and the repository's own commands. Read GitHub without writing to it: no MCP tool or `gh` command that writes.
 
-| Task | Tool |
-| :-- | :-- |
-| The pull request's head and base branches and SHAs, and whether the head lives in a fork (`head.repo.full_name`) | `pull_request_read`, method `get` |
-| A failed job's log, to reproduce a reported failure | `get_job_logs`, with `failed_only`; or `gh run view <run id> -R <owner>/<repo> --log-failed` |
-| A review finding's thread, to read it in full | `pull_request_read`, method `get_review_comments` |
-| A finding's code at the head | the local clone, after `git fetch` |
+Use the MCP tool first: it answers in one call. When it fails (the tool is missing, it errors, it returns 403 or 404, or it returns nothing where data must exist), run the `gh` command of the same row before you report anything as not inspected or not done. Report a fact as out of reach only after both failed, with both errors.
+
+| Task | MCP, first | gh, when MCP fails |
+| :-- | :-- | :-- |
+| The pull request's head and base branches and SHAs, and whether the head lives in a fork | `pull_request_read`, method `get` (`head.repo.full_name`) | `gh pr view <n> -R <owner>/<repo> --json headRefName,headRefOid,baseRefName,headRepositoryOwner,isCrossRepository` |
+| A failed job's log, to reproduce a reported failure | `get_job_logs`, with `failed_only` | `gh run view <run id> -R <owner>/<repo> --log-failed` |
+| A review finding's thread, read in full | `pull_request_read`, method `get_review_comments` | `gh api graphql --paginate -F owner=<owner> -F name=<repo> -F number=<n> -f query='query($owner:String!,$name:String!,$number:Int!,$endCursor:String){repository(owner:$owner,name:$name){pullRequest(number:$number){reviewThreads(first:50,after:$endCursor){pageInfo{hasNextPage endCursor} nodes{id isResolved isOutdated path line comments(first:50){nodes{databaseId author{login __typename} body url}}}}}}}'` |
+| A finding's code at the head | — (the local clone, after `git fetch`) | — |
 
 ## Workflow
 

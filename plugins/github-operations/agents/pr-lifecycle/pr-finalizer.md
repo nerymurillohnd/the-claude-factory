@@ -42,19 +42,19 @@ Rules:
 
 ## Tools
 
-Read and write through the GitHub MCP tools: each answers in one call. Use `gh` only where they cannot, as the table says.
+Use the MCP tool first: it answers in one call. When it fails (the tool is missing, it errors, it returns 403 or 404, or it returns nothing where data must exist), run the `gh` command of the same row before you report anything as not inspected or not done. Report a fact as out of reach only after both failed, with both errors.
 
-| Task | Tool |
-| :-- | :-- |
-| Head SHA | `pull_request_read`, method `get` (`head.sha`) |
-| Checks and statuses at the head | `pull_request_read`, methods `get_check_runs` and `get_status` |
-| Which checks are required | `gh pr checks <n> -R <owner>/<repo> --required`: MCP does not say which checks the branch rules require |
-| Review threads, with each thread's node ID, resolved and outdated flags, path, line and comments | `pull_request_read`, method `get_review_comments`, every page through its `after` cursor |
-| Reviews and approvals | `pull_request_read`, method `get_reviews`; the review decision: `gh pr view <n> -R <owner>/<repo> --json reviewDecision` |
-| The diff at the head | `pull_request_read`, method `get_diff` |
-| Reply in a thread | `add_reply_to_pull_request_comment`, with `commentId` the numeric ID of the thread's first comment, not the thread's node ID |
-| Resolve a thread | `resolve_review_thread` with the thread's node ID (`PRRT_…`), or `pull_request_review_write`, method `resolve_thread`, where the server names it that way |
-| Read a resolution back | `pull_request_read`, method `get_review_comments` |
+| Task | MCP, first | gh, when MCP fails |
+| :-- | :-- | :-- |
+| Head SHA | `pull_request_read`, method `get` (`head.sha`) | `gh pr view <n> -R <owner>/<repo> --json headRefOid` |
+| Checks and statuses at the head | `pull_request_read`, methods `get_check_runs` and `get_status` | `gh pr checks <n> -R <owner>/<repo> --json name,state,bucket,link` |
+| Which checks are required | — (MCP does not read the branch rules) | `gh pr checks <n> -R <owner>/<repo> --required` |
+| Review threads, with each thread's node ID, resolved and outdated flags, path, line and comments | `pull_request_read`, method `get_review_comments`, every page through its `after` cursor | `gh api graphql --paginate -F owner=<owner> -F name=<repo> -F number=<n> -f query='query($owner:String!,$name:String!,$number:Int!,$endCursor:String){repository(owner:$owner,name:$name){pullRequest(number:$number){reviewThreads(first:50,after:$endCursor){pageInfo{hasNextPage endCursor} nodes{id isResolved isOutdated path line comments(first:50){nodes{databaseId author{login __typename} body url}}}}}}}'` |
+| Reviews and the review decision | `pull_request_read`, method `get_reviews` | `gh pr view <n> -R <owner>/<repo> --json reviews,reviewDecision`; the decision always comes from here |
+| The diff at the head | `pull_request_read`, method `get_diff` | `gh pr diff <n> -R <owner>/<repo>` |
+| Reply in a thread | `add_reply_to_pull_request_comment`, with `commentId` the numeric ID of the thread's first comment, not the thread's node ID | `gh api -X POST repos/<owner>/<repo>/pulls/<n>/comments/<comment id>/replies -f body='<reply>'` |
+| Resolve a thread | `resolve_review_thread` with the thread's node ID (`PRRT_…`), or `pull_request_review_write`, method `resolve_thread`, where the server names it that way | `gh api graphql -f query='mutation{resolveReviewThread(input:{threadId:"<node id>"}){thread{isResolved}}}'` |
+| Read a resolution back | `pull_request_read`, method `get_review_comments` | the review-threads query above |
 
 ## Workflow
 
