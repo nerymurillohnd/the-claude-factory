@@ -1,9 +1,20 @@
 ---
 name: github-files-setup
-description: Writes a GitHub repository's own collaboration files, adapted to that repository from reference models, such as pull request templates, issue forms, discussion forms, labels, the Dependabot configuration, CODEOWNERS and the merge-message setting. Use when the user wants to set up, add or update issue or PR templates, discussion forms, labels or Dependabot, or to make a repository ready for contributors, even if they only say that issues arrive without the information they need. Not for filing or triaging individual issues, taking a pull request to merge (auto-pr-lifecycle), auditing or cleaning up a repository (cleanup-and-debug), or writing GitHub Actions workflows (claude-github-actions).
+description: Writes a GitHub repository's own collaboration files, adapted to that repository from reference models, such as pull request templates, issue forms, discussion forms, labels, the Dependabot configuration, CODEOWNERS and the merge-message setting. Use when the user wants to set up, add or update issue or PR templates, discussion forms, labels or Dependabot, or to make a repository ready for contributors, even if they only say that issues arrive without the information they need. Not for filing or triaging individual issues, taking a pull request to merge, auditing or cleaning up a repository, or writing GitHub Actions workflows, which this plugin's other skills cover.
 ---
 
 # GitHub files setup
+
+## Contents
+
+- Before you start
+- When to use
+- Overview
+- Where each file goes
+- Rules
+- Gotchas
+- Scripts
+- Workflow and the closing report
 
 ## Before you start
 
@@ -15,15 +26,6 @@ description: Writes a GitHub repository's own collaboration files, adapted to th
 - The user asks to set up a repository for collaboration: "add issue templates", "set up PR templates", "add discussion forms", "sync the labels", "add Dependabot", "add CODEOWNERS".
 - The user asks to update those files when a new situation appears: a new kind of issue, a new component, a new label group, a new package ecosystem.
 - A repository has no PR template, issue forms or labels, and the user wants them.
-
-## When not to use
-
-When the request belongs to another skill of this plugin, do not run this one: load that skill and follow it.
-
-- Opening, watching, fixing, finalizing or merging a pull request, or writing a pull request's body or merge message: load `github-operations:auto-pr-lifecycle`. This skill hands its own pull request to that one when the files are ready.
-- Auditing a repository, cleaning up branches, stashes or worktrees, finding lost work, or finding the commit that introduced a bug: load `github-operations:cleanup-and-debug`.
-- Writing, auditing, hardening or diagnosing GitHub Actions workflows, including Claude steps in CI: load `github-operations:claude-github-actions`.
-- Filing, triaging or answering an individual issue or discussion: this skill creates the forms, not the posts.
 
 ## Overview
 
@@ -52,6 +54,7 @@ GitHub reads each file only at its own path and name, so write each one where th
 
 ## Rules
 
+- Hand off what this plugin's other skills cover, and follow that skill instead: opening, fixing or merging a pull request, this setup's own pull request included; a repository audit or cleanup; writing or fixing GitHub Actions workflows. This skill writes forms, not the issues or discussions posted through them.
 - Never overwrite a file the repository already has. Show the change as a diff and ask.
 - Never work on the default branch: create one setup branch off it.
 - Show the user the files you chose for each kind, and why, before you write them.
@@ -70,11 +73,16 @@ GitHub reads each file only at its own path and name, so write each one where th
 - YAML 1.1 reads unquoted `Yes`, `No`, `On` and `Off` as booleans, so an option written that way breaks the form. `check-forms.py` catches it.
 - Issues and discussions created through the API or `gh` skip the forms.
 
-## Tools
+## Scripts
 
-- `gh` reads the repository and creates labels; `${CLAUDE_SKILL_DIR}/scripts/labels-diff.py` needs it.
-- `${CLAUDE_SKILL_DIR}/scripts/check-forms.py` runs with `uv` (`uv run --script`), which installs its dependencies.
-- The Dependabot file is validated with `uvx check-jsonschema`.
+Both live in `${CLAUDE_SKILL_DIR}/scripts/`. Run each by its full path, never through `python3`, from the repository's root. Each prints its usage when called with no arguments, and exits 0 when it passes, 1 on a finding and 2 on a usage error or a tool that cannot run.
+
+| Script | Run it | Needs |
+| :-- | :-- | :-- |
+| `${CLAUDE_SKILL_DIR}/scripts/check-forms.py --kind issue\|issue-config\|discussion <file>...` | After writing or changing any issue form, `config.yml` or discussion form (workflow steps 4 and 5), and again after every fix, until it exits 0 | `uv`, which installs its dependencies from the script's own metadata |
+| `${CLAUDE_SKILL_DIR}/scripts/labels-diff.py --repo <owner>/<repo> --labels <labels file>` | Before proposing labels (workflow step 6), and after creating them, to confirm none is missing | `python3` and an authenticated `gh` |
+
+`gh` also reads the repository and creates labels. The Dependabot file is checked with `uvx check-jsonschema`, as section 6 of `references/setup/templates.md` says.
 
 ## Workflow
 
@@ -109,7 +117,7 @@ Skip a step the user did not ask for, and say so.
 
 Validate every form before you land it:
 
-1. Run `check-forms.py` on the forms you wrote.
+1. Run `${CLAUDE_SKILL_DIR}/scripts/check-forms.py` on the forms you wrote, with the `--kind` of each.
 2. Fix every finding.
 3. Run it again. Only move on when it exits 0, then check by reading what the script cannot, as section 2 says.
 

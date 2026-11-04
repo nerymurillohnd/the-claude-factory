@@ -1,24 +1,24 @@
 ---
 name: cleanup-and-debug
-description: Audits a Git repository and its GitHub project, local and remote, for what was left behind, then plans and runs the cleanup the user approves, behind a verified backup. Finds stale, merged or diverged branches, orphaned worktrees, forgotten stashes, abandoned pull requests, failed or stuck workflow runs, dangling commits, oversized blobs, secrets ever committed and leftovers of interrupted operations. Use when the user wants to audit, clean up or tidy a repository, prune old branches, compare the local clone with GitHub, recover lost work or a stash, or find the commit that introduced a bug, even if they only say the repository is a mess. Not for reviewing code or docs, taking a pull request to merge (auto-pr-lifecycle), setting up templates, forms or labels (github-files-setup), or fixing GitHub Actions workflows (claude-github-actions).
+description: Audits a Git repository and its GitHub project, local and remote, for what was left behind, then plans and runs the cleanup the user approves, behind a verified backup. Finds stale, merged or diverged branches, orphaned worktrees, forgotten stashes, abandoned pull requests, failed or stuck workflow runs, dangling commits, oversized blobs, secrets ever committed and leftovers of interrupted operations. Use when the user wants to audit, clean up or tidy a repository, prune old branches, compare the local clone with GitHub, recover lost work or a stash, or find the commit that introduced a bug, even if they only say the repository is a mess. Not for reviewing code or docs, taking a pull request to merge, setting up templates, forms or labels, or fixing GitHub Actions workflows, which this plugin's other skills cover.
 ---
 
 # Cleanup and debug
+
+## Contents
+
+- When to use
+- Overview
+- Rules
+- Gotchas
+- The auditor agent
+- Workflow: audit (Phases 0 to 6), planning (Phases 7 to 10), debug execution (Phases 11 to 13)
 
 ## When to use
 
 - The user asks to audit, clean up or tidy a repository, locally, on GitHub, or both.
 - The user asks to prune merged or stale branches, worktrees or stashes, or to compare the local clone with GitHub.
 - The user asks to find lost work, recover a stash or a dangling commit, or find the commit that introduced a bug.
-
-## When not to use
-
-When the request belongs to another skill of this plugin, do not run this one: load that skill and follow it.
-
-- Opening, watching, fixing or merging a pull request, including the failing checks and review comments of an open pull request: load `github-operations:auto-pr-lifecycle`.
-- Creating or updating a repository's PR templates, issue or discussion forms, labels, Dependabot or CODEOWNERS: load `github-operations:github-files-setup`. This skill reports a missing or broken one; that skill writes it.
-- Writing, auditing, hardening or diagnosing GitHub Actions workflows, including Claude steps in CI: load `github-operations:claude-github-actions`. This skill reports failed or stuck workflow runs as residue; that skill fixes the workflow.
-- Reviewing code quality or documentation: no skill of this plugin does that.
 
 ## Overview
 
@@ -30,6 +30,7 @@ The work runs in three stages: audit (read-only), planning (two gates), and debu
 
 ## Rules
 
+- Hand off what this plugin's other skills cover, and follow that skill instead: an open pull request's checks, reviews or merge; writing a repository's templates, forms, labels, Dependabot or CODEOWNERS; fixing a GitHub Actions workflow. This skill reports a missing template or a failing workflow as a finding; it does not write or fix them. No skill of this plugin reviews code or documentation.
 - When you loaded this skill on your own, ask the user first whether to audit this repository, naming it. Start only after the user says yes.
 - Every gate needs the user's explicit answer naming the approved IDs. Silence, a timeout or a generic "clean it up" approves nothing; ask again.
 - Never read a credential. Name secrets by file or key only, and mask any credential-bearing value inside the command, before its output reaches you.

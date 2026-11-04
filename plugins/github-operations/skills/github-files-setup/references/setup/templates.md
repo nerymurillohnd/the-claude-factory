@@ -1,6 +1,17 @@
 # Set up a repository's templates, labels and settings
 
-Contents: How the assets are used · Before any file · 1. PR templates · 2. Issue forms · 3. Discussion forms · 4. Labels · 5. Merge message setting · 6. Dependabot · 7. CODEOWNERS · 8. Land the setup
+## Contents
+
+- How the assets are used
+- Before any file
+- PR templates (section 1)
+- Issue forms (section 2)
+- Discussion forms (section 3)
+- Labels (section 4)
+- Merge message setting (section 5)
+- Dependabot (section 6)
+- CODEOWNERS (section 7)
+- Land the setup (section 8)
 
 Create the GitHub files a repository lacks, written for that repository. The repository's own files win: never overwrite one.
 
@@ -125,5 +136,5 @@ When `.github/CODEOWNERS` is missing and the user wants one, write it from the r
 ## 8. Land the setup
 
 1. Commit with the repository's signing setup.
-2. Ask the user before you push. Open the pull request with the `github-operations:auto-pr-lifecycle` skill, using the repository's new maintenance template when it has one.
+2. Ask the user before you push. Open the pull request with this plugin's pull request skill, using the repository's new maintenance template when it has one.
 3. Tell the user the templates and forms apply only after the PR merges into the default branch.
