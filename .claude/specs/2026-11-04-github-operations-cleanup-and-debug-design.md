@@ -67,15 +67,24 @@ Audit one repository exhaustively as a Git and GitHub object, local and remote, 
   - upstream gone, or never set;
   - stale.
 - **Tags:** lightweight or annotated, signed or not, and what each one points to.
-- **Other ref namespaces:** notes, replace refs, `refs/original`, `refs/bisect`, `refs/pull`, and tool refs.
+- **Other ref namespaces:** notes, `refs/pull` and tool refs. `refs/original`, `refs/replace` and `refs/bisect` are residue and belong to Phase 4.
 
 ### Phase 2: Local versus remote
 
+Every comparison is made by full object ID.
+
 - Live remote heads and tags, read without fetching.
-- Remote-tracking refs that are out of date, or whose branch was deleted on the remote.
-- Branches that exist only locally, or only on the remote.
-- Diverged branches and unpushed commits.
-- Tags that differ in either direction.
+- **Sync state of every branch,** local against its live remote counterpart. Each branch gets exactly one state:
+  - identical;
+  - local only;
+  - remote only;
+  - ahead (unpushed commits);
+  - behind;
+  - diverged.
+- **Tags** whose SHA differs between local and remote, and tags present on only one side.
+- **Upstreams:** the remote branch was deleted (upstream gone), or no upstream was ever set.
+- **Remote-tracking refs** that are out of date against the live remote.
+- **Pull request heads:** each open pull request's head SHA against the local branch of the same name.
 - Integration state of every branch against the live base, tested in this order:
   1. merged;
   2. patch-equivalent (rebased);
@@ -110,7 +119,10 @@ Audit one repository exhaustively as a Git and GitHub object, local and remote, 
   - the names of credential helpers, never their values.
 - **Leftovers of interrupted operations:**
   - `ORIG_HEAD`, `MERGE_HEAD`, `CHERRY_PICK_HEAD`, `REBASE_HEAD`, `REVERT_HEAD`;
-  - rebase directories;
+  - rebase directories (`rebase-merge`, `rebase-apply`, which `git am` also leaves);
+  - bisect leftovers: `refs/bisect/*`, `BISECT_LOG`, `BISECT_START` and the other `BISECT_*` files;
+  - `refs/original/*`, the backups `filter-branch` leaves;
+  - `refs/replace/*`, which silently changes what history Git shows;
   - stale `.lock` files;
   - `gc.log` and `gc.pid`;
   - an old `FETCH_HEAD`.
@@ -120,11 +132,11 @@ Audit one repository exhaustively as a Git and GitHub object, local and remote, 
 
 ### Phase 5: GitHub state
 
-- **Pull requests:**
-  - open, draft and abandoned ones, with age, author, review state and checks;
+- **Pull requests, in every state** (open, draft, closed and merged), each with its head and base SHAs, age, author, review state and checks. Flag these:
+  - open or draft and abandoned;
   - closed without merging while their branch still exists;
   - merged while their branch still exists;
-  - pull requests from forks.
+  - from forks.
 - **Issues and discussions:** open for a long time, waiting for an answer, stale, or with no labels.
 - **Branches on GitHub:**
   - stale branches;
@@ -145,12 +157,14 @@ Audit one repository exhaustively as a Git and GitHub object, local and remote, 
 - **Dependabot:**
   - open alerts;
   - update pull requests that are open, failed or ignored;
+  - update jobs that failed (version and security updates), with their error;
   - its configuration.
 - **Other security alerts:** secret scanning and code scanning.
 - **Integrations and access:** webhooks (with failed deliveries), deploy keys (with last use), installed GitHub Apps, collaborators, invitations and teams.
 - **Distribution:** releases and their assets, packages, Pages, Codespaces and wiki.
 - **Forks:**
   - the whole fork network;
+  - each fork ahead of or behind this repository's default branch, by commit count;
   - forks holding work that was never sent back.
 
 ### Phase 6: External links
