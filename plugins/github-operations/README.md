@@ -2,7 +2,7 @@
 
 # 🐙 GitHub Operations
 
-<p><strong>One operating contract for GitHub work: takes pull requests from branch to merge, writes PRs, issues and discussions from the repository's templates, repairs CI, and audits and cleans up repositories, with hooks that keep its reviewer agents read-only.</strong></p>
+<p><strong>Runs GitHub work through focused skills: takes pull requests from branch to merge with a tracker, a fixer and a finalizer agent, writes a repository's templates, forms, labels and Dependabot setup adapted to it, and audits and cleans up repositories, local and remote, behind a verified backup.</strong></p>
 
 [![Version](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Fnerymurillohnd%2Fthe-claude-factory%2Fmain%2Fplugins%2Fgithub-operations%2F.claude-plugin%2Fplugin.json&query=%24.version&label=version&color=D97757)](./CHANGELOG.md)
 [![Works in](https://img.shields.io/badge/works%20in-Claude%20Code%20only-2563EB)](#-compatibility)
@@ -27,27 +27,31 @@
 💻 **Claude Code only** — it works on repositories on your computer through `git` and `gh`, which a chat conversation in the Claude app can't run. The plugin is built and tested for Claude Code only. In the Claude app you can still use its GitHub server once you connect it with your token: see [In the Claude app](#in-the-claude-app).
 
 > [!TIP]
-> **TL;DR** — Ask for any GitHub task in your own words, or type `/github-operations:github pr`, and Claude follows one set of rules for it: it takes your pull request all the way to merge and stops only to ask you before the merge, writes PRs, issues and discussions from your repository's templates, repairs failing CI, sets up templates and labels, and audits a whole repository before changing it only after you approve twice.
+> **TL;DR** — Say "open a PR for this", "set up issue templates" or "clean up this repository". Claude takes the pull request to merge, asking you before every push and before the merge; writes your repository's own templates, forms and labels from tested models; or audits the whole repository and cleans up only what you approve, after a backup it has proven it can restore.
 
 ## ✨ Why use it
 
-- **One set of rules for every GitHub task** — the `github` skill loads before Claude's first GitHub call and holds the rules every task follows: your approval for each push, PR, merge, deletion or settings change, evidence for every "done", your own signing setup, no force pushes, and your repository's own templates and conventions first.
-- **A pull request that finishes itself** — Claude opens or picks up the PR, then loops: a read-only agent watches CI, runs and reviews and reports what failed and why, Claude fixes it, pushes and sends the agent again, until everything is green and no findings remain.
-- **You keep the one decision that matters** — Claude asks for your approval right before the merge, for that exact PR and that exact commit. A new push voids the approval.
-- **Reports you can act on** — failed jobs with the step, the log excerpt and the root cause, whether the same job also fails on the base branch, slow or stuck jobs, unresolved review findings, breaking changes and secrets in the diff, deprecation warnings and Dependabot alerts.
-- **Writing that matches the repository** — PR titles, bodies and labels, issues, discussions and squash messages follow the repository's own templates, or the plugin's when it has none. A script checks each PR body before it is sent.
-- **Nothing valuable gets lost in a cleanup** — the audit covers history, branches, worktrees, stashes, pull requests, issues, Actions, forks and every copy or link outside the repository that is still alive. You approve the recommendations, then the exact actions. A backup that was restore-tested comes first, and every deletion is checked against what is already safe.
-- **Reviewer agents that cannot write** — hooks stop the plugin's two reviewer agents from running `git` or `gh` commands that change state, calling GitHub tools that write, or writing files in your project. Your own session is never blocked.
-- **GitHub tools ready to use** — the GitHub MCP server comes with the plugin, so Claude reads GitHub through structured tools, and uses `git` and `gh` for what touches your clone.
+- **A pull request that finishes itself** — three agents share the work: one watches CI and reviews and finds each failure's root cause, one fixes the failures and review findings in your clone and commits them signed, and one verifies every fix, answers the review threads and resolves the ones bots opened. Claude checks each report against its evidence before acting on it.
+- **You hold every push and the merge** — after each round of fixes, Claude shows you what failed, what changed and how it was checked, then asks: push, push without asking again on this pull request, or don't push. The merge waits for your approval of that exact pull request at that exact commit.
+- **Reports you can act on** — failed jobs with the failing step, the first error and its root cause, whether the same job fails on the base branch, required checks, warnings, review threads with their links, breaking changes and secrets in the diff, and Dependabot alerts.
+- **Templates written for your repository** — PR templates, issue and discussion forms, labels, Dependabot and `CODEOWNERS` are written from tested models but with your components, versions, environments, commands and labels. Your own files always win: Claude proposes changes to them and never overwrites them.
+- **Nothing valuable gets lost in a cleanup** — the audit compares your clone with GitHub branch by branch and commit by commit, and covers worktrees, stashes, history, lost commits, pull requests, workflows, Dependabot, forks and every link outside the repository. You approve the recommendations, then the exact actions. A backup comes first, and Claude proves it restores before it changes anything.
+- **Each skill knows its place** — the PR lifecycle, the repository setup and the cleanup are separate skills. When you ask one for another's job, it hands you to the right one.
+- **GitHub tools ready to use** — the GitHub MCP server comes with the plugin, so Claude reads GitHub through structured tools and uses `git` and `gh` for what touches your clone.
 
 ## 🧩 What's inside
 
 | Component | Name | What it does | How it runs |
 | :-- | :-- | :-- | :-- |
-| 🎯 Skill | `github-operations:github` | The operating contract for GitHub work: the rules, the tool choice and a route to the procedure for each task (pull request to merge, PR and merge-message writing, issues, discussions, CI repair, repository setup, audit and cleanup). It ships templates, issue and discussion forms, a label set and seven scripts | `/github-operations:github [pr\|issue\|discussion\|ci\|setup\|audit\|cleanup]`, or automatically before Claude's first GitHub call. An audit or cleanup starts only when you ask for one |
-| 🤖 Agent | `github-operations:pr-tracker` | Waits for a PR's checks to finish, then reports failures and their root cause, unresolved reviews, breaking changes and secrets in the diff, warnings and security alerts to Claude | Launched by the skill on every monitoring cycle of a pull request |
-| 🤖 Agent | `github-operations:repo-auditor` | Runs the read-only part of a repository audit (intake, local Git, history, GitHub, links) and writes its findings and coverage to a scratch folder | Launched by the skill at the start of an audit or cleanup |
-| 🪝 Hooks | four handlers | Deny the two agents above their writes, name the skill on a session's first GitHub call, and restore a pull request or cleanup run after a compaction. See [What this plugin runs and sends](#-what-this-plugin-runs-and-sends) | Run by Claude Code on the tool calls and events listed there |
+| 🎯 Skill | `github-operations:auto-pr-lifecycle` | Takes a pull request from its current stage to merge with three agents, asking you before every push and before the merge | `/github-operations:auto-pr-lifecycle`, or when you ask to open, babysit, fix or merge a pull request |
+| 🎯 Skill | `github-operations:cleanup-and-debug` | Audits a repository local and remote, plans the cleanup and debugging you approve, and runs it behind a verified backup | `/github-operations:cleanup-and-debug`, or when you ask to audit or clean up a repository. It asks before it starts |
+| 🎯 Skill | `github-operations:github-files-setup` | Writes a repository's PR templates, issue and discussion forms, labels, Dependabot, `CODEOWNERS` and merge-message setting, adapted to it, and lands them through a pull request | `/github-operations:github-files-setup`, or when you ask to set up templates, forms or labels |
+| ⌨️ Command | `/github-operations:init-pr-lifecycle` | Picks up the current pull request at the stage it is in and runs the PR lifecycle from there | You type it |
+| ⌨️ Command | `/github-operations:init-cleanup-and-debug` | Picks up a repository at its cleanup stage (not audited, audited, planned, approved, executed) and runs from there | You type it |
+| 🤖 Agent | `github-operations:pr-lifecycle:pr-tracker` | Waits for a pull request's checks, then reports failures and their root cause, review threads, breaking changes, secrets in the diff, warnings and Dependabot alerts | Launched by the PR lifecycle after a pull request opens and after every push |
+| 🤖 Agent | `github-operations:pr-lifecycle:pr-fixer` | Fixes the verified failures and review findings in your local clone, validates each fix and commits it signed. It never pushes | Launched by the PR lifecycle when findings need a fix |
+| 🤖 Agent | `github-operations:pr-lifecycle:pr-finalizer` | Verifies each finding at the current head, replies to review threads, resolves the threads bots opened, and gives the merge verdict | Launched by the PR lifecycle once the checks pass |
+| 🤖 Agent | `github-operations:repo-hygiene:health-diagnostics` | Audits one assigned part of a repository read-only and reports every item with its evidence | Launched by the cleanup, one or several at a time depending on the repository's size |
 | 🔌 MCP server | `github` | GitHub's remote MCP server with every toolset and early-access mode: pull requests, issues, Actions, security alerts and more. See [GitHub MCP tools](../../docs/github-mcp-tools.md) | Tools appear as `mcp__plugin_github-operations_github__*` |
 
 ## 📋 Prerequisites
@@ -58,13 +62,12 @@
 | git, on your `PATH` (on Windows, Git for Windows) | — | `git --version` |
 | GitHub CLI (`gh`), signed in | — | `gh auth status` |
 | GitHub personal access token | — | `/mcp` lists `plugin:github-operations:github` as connected |
-| Python 3, on your `PATH` as `python3` | 3.12 | `python3 --version` |
-| bash, on your `PATH` | — | `bash --version` |
-| uv, only to check issue forms, discussion forms and Dependabot files | — | `uv --version` |
+| Python 3, on your `PATH` as `python3`, only to compare labels when setting up a repository | 3.12 | `python3 --version` |
+| uv, only to check issue forms, discussion forms and Dependabot files when setting up a repository | — | `uv --version` |
 
-Claude Code 2.1.314 is the minimum because from that version hooks that match Bash also check the shell commands the Monitor tool starts; on an older version, a reviewer agent could run a write through Monitor.
+Claude Code 2.1.314 or later is required.
 
-`gh` creates and merges pull requests, reads run logs, reruns jobs, enables auto-merge and deletes branches, and is the fallback when a GitHub MCP tool is missing. `python3` runs the hooks and the skill's Python scripts, and each hook starts through a `bash` launcher, which macOS and Linux ship; [What this plugin runs and sends](#-what-this-plugin-runs-and-sends) says what the hooks do without them. uv runs those checks.
+`gh` creates and merges pull requests, reads run logs, creates labels and is the fallback when a GitHub MCP tool is missing. `python3` runs the label comparison of the repository setup. uv runs the form and Dependabot checks of the same setup.
 
 ### 🤖 Claude Code
 
@@ -242,7 +245,7 @@ Without the token the GitHub MCP server doesn't start, and Claude uses `gh`.
 
 ### 🐍 Python 3.12 or later
 
-Your system may already have it: check with `python3 --version`. An older release's package manager can install a version below 3.12; then use the [official installers](https://www.python.org/downloads/) or uv.
+Needed only when Claude compares your repository's labels during a setup. Your system may already have it: check with `python3 --version`. An older release's package manager can install a version below 3.12; then use the [official installers](https://www.python.org/downloads/) or uv.
 
 <details>
 <summary>🍺 <b>Homebrew</b> — macOS, Linux</summary>
@@ -277,22 +280,9 @@ uv python install --default
 
 </details>
 
-### 🐚 bash
-
-macOS and most Linux distributions include it: check with `bash --version`. A minimal image, such as Alpine, may not.
-
-<details>
-<summary>🏔️ <b>apk</b> — Alpine</summary>
-
-```bash
-apk add bash
-```
-
-</details>
-
 ### ⚡ uv
 
-Needed only when Claude checks issue forms, discussion forms or a Dependabot file. See [installing uv](https://docs.astral.sh/uv/getting-started/installation/).
+Needed only when Claude checks issue forms, discussion forms or a Dependabot file during a setup. See [installing uv](https://docs.astral.sh/uv/getting-started/installation/).
 
 <details>
 <summary>🍺 <b>Homebrew</b> — macOS, Linux</summary>
@@ -347,79 +337,87 @@ export CLAUDE_CODE_PLUGIN_PREFER_HTTPS=1
 
 ### Coming from Git Hygiene?
 
-Git Hygiene is now part of this plugin and no longer exists on its own. The marketplace renames it, so an existing install moves to GitHub Operations by itself. The command changed: type `/github-operations:github cleanup` where you used to type `/git-hygiene:cleanup`.
+Git Hygiene is now part of this plugin and no longer exists on its own. The marketplace renames it, so an existing install moves to GitHub Operations by itself. The cleanup is now the `cleanup-and-debug` skill: type `/github-operations:cleanup-and-debug` where you used to type `/git-hygiene:cleanup`.
 
-### Coming from 0.4.x?
+### Coming from 0.5.x?
 
-The two skills became one, `github`, and their commands are gone:
+The single `github` skill became three skills, each with its own agents:
 
 | You typed | Type now |
 | :-- | :-- |
-| `/github-operations:auto-pr-lifecycle` | `/github-operations:github pr` |
-| `/github-operations:git-cleanup` | `/github-operations:github cleanup` (or `audit`) |
+| `/github-operations:github pr` | `/github-operations:auto-pr-lifecycle`, or `/github-operations:init-pr-lifecycle` to pick up a pull request where it stands |
+| `/github-operations:github audit` or `cleanup` | `/github-operations:cleanup-and-debug`, or `/github-operations:init-cleanup-and-debug` |
+| `/github-operations:github setup` | `/github-operations:github-files-setup` |
+| `/github-operations:github issue`, `discussion` or `ci` | Not part of this version |
 
-The pull request loop and the cleanup work as before, with two changes: Claude now creates and merges pull requests with `gh`, and the audit's read-only steps run in the new `repo-auditor` agent. The plugin also ships hooks, which need `python3` 3.12 or later: see [What this plugin runs and sends](#-what-this-plugin-runs-and-sends).
+What else changed:
+
+- **Every push asks you first.** Fixes are made in your clone by the `pr-fixer` agent and pushed only after you approve them, or after you choose not to be asked again on that pull request.
+- **Review threads people opened stay open** for their reviewer. Claude resolves only the threads bots and AI reviewers opened, once the fix is verified.
+- **The `pr-tracker` and `repo-auditor` agents were replaced** by `pr-lifecycle:pr-tracker` and `repo-hygiene:health-diagnostics`.
+- **The plugin no longer ships hooks.** The agents keep to their limits through their own instructions; see [What this plugin runs and sends](#-what-this-plugin-runs-and-sends).
+- **Templates are written for your repository**, not copied as they are.
 
 ## 🚀 Usage
 
-Ask in your own words, such as "open a PR for this", "why did the workflow fail" or "file a bug for this crash". Claude loads the `github` skill before its first GitHub call and picks the procedure from what you asked. To name the task yourself, type the skill with a mode and an optional target (a number, a URL or a path):
-
-| Mode | What Claude does |
-| :-- | :-- |
-| `pr` | Takes a pull request from your branch to merge (below) |
-| `issue` | Writes an issue in the layout of the repository's forms, triages issues, or marks a duplicate |
-| `discussion` | Starts a discussion in the right category, or answers one |
-| `ci` | Finds the workflows that fail, hang or stopped running on the default branch, fixes their cause and lands the fix through a pull request |
-| `setup` | Adds what the repository lacks: PR templates, issue and discussion forms, Dependabot and `CODEOWNERS` through one pull request; missing labels and the default merge message as repository settings, each after you approve. Files the repository already has are never overwritten |
-| `audit`, `cleanup` | Audits the repository, then cleans it up only after you approve twice (below). Claude starts it only when you ask for it |
-
-Asking to fix an issue ("fix issue 17") ends in a pull request that resolves it, opened after you approve the push and the PR. Asking only to commit, or to commit and push, never opens a pull request.
+Ask in your own words. Claude picks the skill from what you asked, and when it loaded a skill on its own, it asks you before it starts. To pick it yourself, type the skill or one of the two commands.
 
 ### Take a pull request to merge
 
 ```text
-/github-operations:github pr
+/github-operations:auto-pr-lifecycle
 ```
 
-You can also just say "open a PR for this", "get this PR merged" or "babysit PR 42". **Result:** Claude validates and pushes your work, opens the PR with a title, body and labels that follow your repository's templates, and starts the loop. While checks run, nothing interrupts you. When something fails, Claude reads the cause, fixes it, pushes and checks again. When everything is green and every review thread is answered, it stops with one question:
+You can also say "open a PR for this", "fix the PR's CI", "address the review comments" or "get PR 42 merged". To pick up an existing pull request at whatever stage it is in:
 
 ```text
-PR #42 "Add invoice export" — head 4675bb2, squash merge into main.
-All 9 checks pass, 0 unresolved threads, 1 non-blocking deprecation warning.
-Merge this PR at this commit?
+/github-operations:init-pr-lifecycle 42
 ```
 
-Answer yes and Claude merges, deletes the branch and syncs your local `main`. Say no or not yet and it stops there, with nothing merged.
+**Result:** when there is no pull request yet, Claude validates and commits your work, then asks before it pushes and before it opens the PR with your repository's template and labels. Then the loop runs:
 
-### Clean up a repository
+1. **Track.** The tracker waits for the checks and reports what failed and why, every review thread, and the risks in the diff.
+2. **Fix.** The fixer corrects the verified findings in your clone and commits each fix signed. It never pushes.
+3. **Your push.** Claude shows you what was found, what was fixed and how it was validated, then asks:
 
 ```text
-/github-operations:github cleanup
+PR #42 "Add invoice export": 2 failures fixed in 2 signed commits (tests pass), 1 review finding fixed.
+Push · Push without asking again on this pull request · Don't push
 ```
 
-**Result:** Claude audits the repository from its first commit to today, read-only, and writes down everything it finds: branches and whether each one's work is already safe, worktrees, stashes, history, large files and secret-like file names, open and stale pull requests, issues and discussions, failed workflows nobody re-ran, forks, and every clone, mirror, registry entry, scheduled job or tunnel on your machine and on GitHub that still points at the repository. Anything it cannot see is listed as not checked, with the reason.
+4. **Finalize.** Once the checks pass, the finalizer verifies each fix in the diff, replies to the review threads and resolves the ones bots opened.
+5. **Your merge.** Claude stops with one question, naming the pull request, the commit, the merge method and the threads left open for people.
+
+Asking only to commit, or to commit and push, never opens a pull request.
+
+### Set up a repository's GitHub files
+
+```text
+/github-operations:github-files-setup
+```
+
+You can also say "add issue templates", "set up PR templates", "sync the labels" or "add Dependabot". **Result:** Claude reads your repository first (its README, contribution guide, manifests, CI, labels and recent issues and pull requests), then shows you which files it would write and why. After you agree, it writes them for your repository: dropdowns with your components and versions, PR checklists with your real test and lint commands, labels in your naming style, and a Dependabot entry for each package ecosystem it finds. It checks every form until it passes, asks before it creates a label or changes a repository setting, and opens one pull request with the whole setup. Files your repository already has are never overwritten: Claude shows you the change as a diff and asks.
+
+### Audit and clean up a repository
+
+```text
+/github-operations:cleanup-and-debug
+```
+
+To pick up a cleanup at the stage it is in:
+
+```text
+/github-operations:init-cleanup-and-debug
+```
+
+**Result:** Claude audits the repository read-only, from its first commit to today: every branch and whether its work is already in the base, even after a squash merge; your clone compared with GitHub; worktrees, stashes, lost commits, large files and secrets ever committed; leftovers of interrupted merges and rebases; open and stale pull requests, failed or stuck workflows, failed Dependabot updates and forks; and every clone, mirror or scheduled job that still points at the repository. It asks before it looks outside the repository. Anything it cannot see is listed as blocked or not reachable, with the reason, never as empty.
 
 Then it stops twice:
 
-1. **Report and recommendations.** A plain-language report with numbered findings and recommendations (`R-1`, `R-2`, ...). You approve by ID; "clean it up" approves nothing.
-2. **Plan.** For the IDs you approved, a numbered plan of exact actions, like this:
+1. **Report.** Findings (`F-1`, `F-2`, …) and recommendations (`R-1`, `R-2`, …), each with its risk and whether it can be undone. You approve recommendations by ID; "clean it up" approves nothing.
+2. **Plan.** For the recommendations you approved, the exact actions (`A-1`, `A-2`, …) with their commands, in a fixed order: backup first, then fixes, integration, a plain push, deletions, maintenance last. You approve actions by ID.
 
-```text
-A-01  prep           Back up every ref, stash and uncommitted file at risk to ~/repo-cleanup-backups/my-repo-2026-10-14
-A-02  integrate      Merge feat/invoices into main (clean merge preview, 3 exclusive commits)
-A-03  publish        Push main to origin (a plain push, never a force-push)
-A-04  local-delete   Delete local branch feat/old-login (content already in main; patch-equivalent)
-A-05  local-delete   Remove the worktree ../wt-hotfix (clean; branch merged)
-A-06  remote-delete  Delete origin/feat/old-login (no open pull request, you are the only author)
-```
-
-Approve the whole plan, tell Claude which IDs to run, or stop with the audit only. The backup (A-01) always comes first and is part of every approval. Claude runs the actions in order, checks each one before it runs, and finishes with fresh read-only proof and a results report. If the audit finds something that needs a refactor, a bisect or a fix, it goes into the same report and plan.
-
-Pass an absolute path to clean another repository:
-
-```text
-/github-operations:github cleanup /Users/ada/code/other-repo
-```
+Before the first action, Claude bundles every ref outside the repository and proves the bundle restores. It runs only the approved actions, checks each one before it runs, stops an action and everything that depends on it when one fails, and ends with fresh proof and a results report. A fix found during the audit, such as a bug to bisect, is made on a new branch and lands through a pull request, never straight on your base branch.
 
 ## 🔧 Configuration
 
@@ -485,49 +483,32 @@ The plugin's `github` server asks for **every toolset** (`X-MCP-Toolsets: all`) 
 | Block tools in your settings | A deny rule such as `mcp__plugin_github-operations_github__delete_file` or `mcp__plugin_github-operations_github__delete_repository` removes that tool from Claude's context. Use `mcp__plugin_github-operations_github` for the whole server |
 | Use your own server | Turn this one off in `/mcp` and add yours with headers such as `X-MCP-Readonly: true` or a shorter `X-MCP-Toolsets` list |
 
-[GitHub MCP tools](../../docs/github-mcp-tools.md#️-reduce-what-claude-can-use) has the settings and the `.mcp.json` to copy. The pull request loop reads job logs and Dependabot alerts through the Actions and security tools; when you remove them, Claude reads that data through `gh` instead.
+[GitHub MCP tools](../../docs/github-mcp-tools.md#️-reduce-what-claude-can-use) has the settings and the `.mcp.json` to copy. The PR tracker reads job logs and Dependabot alerts through the Actions and security tools; when you remove them, it reads that data through `gh` instead.
 
 ## 🔍 What this plugin runs and sends
 
-- **Hooks:** four handlers, in the table below. They run on your computer with your permissions, through a `bash` launcher and `python3` 3.12 or later. They deny only the plugin's two reviewer agents, `pr-tracker` and `repo-auditor`; your own session and every other agent are never blocked. A hook that fails lets the call go ahead.
+- **Hooks:** none.
 - **MCP servers:** `github`, GitHub's official remote server at `https://api.githubcopilot.com/mcp/`, which Claude Code reaches with your token as `Authorization: Bearer`. [What the GitHub server includes](#what-the-github-server-includes) lists the toolsets it asks for.
-- **Network:** the hooks make no network calls. The GitHub server sends your requests and token to `api.githubcopilot.com`. `git` and `gh` reach GitHub and your remotes. The issue form, discussion form and Dependabot checks run through `uv`, which downloads `check-jsonschema` and `ruamel.yaml` from PyPI on their first run.
-- **Files written:** the skill keeps one small JSON file for a pull request or cleanup run while it lasts, and the hooks keep one empty folder per session so the skill line comes only once, both in the plugin's data folder under `~/.claude/plugins/data/`. A session's folder is removed after seven days, at the first GitHub call of a later session. Uninstalling the plugin deletes the data folder. A cleanup also writes the backup and the scratch folder the FAQ describes, outside your repository.
+- **Commands it runs:** `git` and `gh` in your repository, through Claude Code's Bash tool, so your permission settings and prompts apply to each one. The repository setup also runs its two scripts: a label comparison with `python3`, and a form check through `uv`.
+- **Network:** the GitHub server sends your requests and token to `api.githubcopilot.com`. `git` and `gh` reach GitHub and your remotes. The form and Dependabot checks run through `uv`, which downloads `check-jsonschema` and `ruamel.yaml` from PyPI on their first run.
+- **Files written:** the PR lifecycle writes only your own commits, in your clone. The repository setup writes its files on a new branch of your repository. The cleanup writes a backup bundle and its working notes to folders outside your repository; it tells you where the backup is and asks whether to keep it.
 
-| Event | Calls | What the hook does |
+### The agents' limits
+
+The plugin can't enforce what its agents may do: each agent keeps to its role through its own instructions, and Claude checks each report against its evidence before acting on it.
+
+| Agent | May | May not |
 | :-- | :-- | :-- |
-| Before a tool runs | Bash and PowerShell commands | For the two reviewer agents, denies the commands listed under **What the reviewer agents can't run**, below this table. On a session's first `gh` or `git push`, adds a line that names the `github` skill |
-| Before a tool runs | GitHub MCP tools, on any server whose name contains `github` or `GitHub` | For the two reviewer agents, denies the tools that write, such as `create_pull_request`, `merge_pull_request`, `issue_write` or `push_files`. On a session's first GitHub tool call, adds the same line |
-| Before a tool runs | Write, Edit and NotebookEdit | For the two reviewer agents, denies a write to a file inside your project. The agents' own instructions already leave these tools out |
-| After a compaction | Session start, `compact` | Gives Claude the pull request or cleanup run it was in (repository, PR, phase, head commit, approval, next step), so it resumes where it stopped |
+| `pr-lifecycle:pr-tracker` | Read everything and run commands that only read | Change files, commit, push or write anything to GitHub |
+| `pr-lifecycle:pr-fixer` | Edit files, run your validation commands and commit signed in your clone | Push, write anything to GitHub, change your git configuration, rewrite pushed history or skip your commit hooks |
+| `pr-lifecycle:pr-finalizer` | Reply in review threads and resolve review threads | Edit files, commit, push, submit reviews or approvals, or merge |
+| `repo-hygiene:health-diagnostics` | Read everything and run commands that only read; write notes in a folder outside your repository | Change anything in your repository, on GitHub or on your machine |
 
-**What the reviewer agents can't run.** In a Bash or PowerShell command, the hook denies `pr-tracker` and `repo-auditor`:
-
-- `git` commands that change state: `add`, `am`, `checkout`, `cherry-pick`, `commit`, `commit-tree`, `fetch`, `filter-branch`, `filter-repo`, `gc`, `init`, `maintenance`, `merge`, `mv`, `pack-refs`, `prune`, `pull`, `push`, `rebase`, `repack`, `replace`, `reset`, `restore`, `revert`, `rm`, `sparse-checkout`, `switch`, `update-index`, `update-ref` and `write-tree`.
-- `git apply`, `bisect`, `branch`, `bundle`, `clean`, `config`, `fsck`, `lfs`, `notes`, `reflog`, `remote`, `stash`, `submodule`, `tag` and `worktree`, unless the call only reads or lists, such as `git branch --list`, `git config --get`, `git stash list` or `git clean --dry-run`.
-- `gh <command> <verb>` calls whose verb writes: `add`, `archive`, `cancel`, `checkout`, `close`, `comment`, `create`, `delete`, `develop`, `disable`, `edit`, `enable`, `fork`, `install`, `lock`, `login`, `logout`, `merge`, `pin`, `ready`, `refresh`, `remove`, `rename`, `reopen`, `rerun`, `review`, `revert`, `run`, `set`, `setup-git`, `sync`, `transfer`, `unarchive`, `unlock`, `unpin`, `update-branch`, `upgrade` and `upload`.
-- `gh api` calls other than a `GET`, a call with no fields, or a `graphql` call whose fields are queries with no mutation; a call with `--input` or an option the hook doesn't know is denied too.
-- Commands that point `git` at other configuration or programs: `-c` or `--config-env` on `git`, or setting `GIT_CONFIG*`, `GIT_EXEC_PATH`, `HOME` or `XDG_CONFIG_HOME`.
-- Any command whose name, or whose `git` or `gh` subcommand, is built from a variable, a command substitution, a glob, braces or a leading `~`.
-- `export`, `declare`, `typeset`, `readonly`, `local`, `read`, `mapfile`, `readarray` or `printf` with an expansion in its arguments.
-- A shell, `source` or `.` that runs a script from a pipe, a here-string, a heredoc, standard input, a process substitution, a device or a file that doesn't exist.
-- Commands that start `git` or `gh` through another program, such as `xargs` or `find -exec`.
-- Any command the hook cannot parse that mentions `git` or `gh`.
-
-**Without `python3` 3.12 or later**, the hooks deny the two reviewer agents every `git`, `gh`, GitHub tool and file write call, with a message that says to install it, and they don't restore a run after a compaction. Your own session is not affected. **Without `bash`**, the hooks can't start, so they deny nothing.
-
-### Limitations
-
-- A hook is a barrier for Claude, not a security boundary. It never sees what you type in your own terminal, and it reads only the commands Claude sends through the Bash and PowerShell tools.
-- Shell commands other than `git` and `gh`, such as `curl` to the GitHub API, are not inspected; neither are aliases already defined in your git or `gh` configuration, or a script file run by path.
-- A GitHub MCP server whose name contains neither `github` nor `GitHub` is not checked.
-- Hooks don't run when your settings or your organization set `disableAllHooks`, or `allowManagedHooksOnly`.
-- On Windows the hooks need WSL: Claude Code starts their launcher directly, and Windows can't run it without a shell.
-- In the Claude app they run only in Cowork sessions: see [Compatibility](#-compatibility).
+Before running a command from a pull request whose code is another author's, the fixer stops and asks you, because a command such as a test run executes that code. For a hard limit, add the deny rules in [Add hard limits yourself](#add-hard-limits-yourself): they apply to every agent too.
 
 ### Add hard limits yourself
 
-The plugin can't ship permission rules. To block an action for every session and agent, whatever the hooks do, add `deny` or `ask` rules to your own `~/.claude/settings.json` or the project's `.claude/settings.json`, for example:
+The plugin can't ship permission rules. To block an action for every session and agent, add `deny` or `ask` rules to your own `~/.claude/settings.json` or the project's `.claude/settings.json`, for example:
 
 ```json
 {
@@ -540,7 +521,7 @@ The plugin can't ship permission rules. To block an action for every session and
       "Bash(git push -f*)",
       "Bash(* --no-verify*)"
     ],
-    "ask": ["Bash(gh pr merge *)", "mcp__*__merge_pull_request"]
+    "ask": ["Bash(git push *)", "Bash(gh pr merge *)", "mcp__*__merge_pull_request"]
   }
 }
 ```
@@ -580,7 +561,7 @@ Installed with `--scope project`:
 claude plugin uninstall github-operations@the-claude-factory --scope project
 ```
 
-Uninstalling from the last scope it's installed at also deletes its saved options and data directory, unless you add `--keep-data`. That includes your stored GitHub token. The token itself stays valid on GitHub until you delete it there, and git and `gh` stay installed.
+Uninstalling from the last scope it's installed at also deletes its saved options and data directory, unless you add `--keep-data`. That includes your stored GitHub token. The token itself stays valid on GitHub until you delete it there, and git and `gh` stay installed. A cleanup backup you chose to keep stays where Claude told you it is.
 
 ## 🧭 Compatibility
 
@@ -598,16 +579,16 @@ Uninstalling from the last scope it's installed at also deletes its saved option
 ## ❓ FAQ & Troubleshooting
 
 <details>
-<summary><b>The plugin's commands don't show up after installing.</b></summary>
+<summary><b>The plugin's skills don't show up after installing.</b></summary>
 
-Run `/reload-plugins`, then type `/github-operations:` to see the `github` skill. If it still doesn't appear, open `/plugin` → **Errors** and see the [troubleshooting guide](../../docs/troubleshooting.md).
+Run `/reload-plugins`, then type `/github-operations:` to see the skills and commands. If they still don't appear, open `/plugin` → **Errors** and see the [troubleshooting guide](../../docs/troubleshooting.md).
 
 </details>
 
 <details>
 <summary><b>The GitHub server is missing, failed or "needs authentication" in <code>/mcp</code>.</b></summary>
 
-Look at the message, then fix the token. Until you do, the monitoring agent has no GitHub tools, so Claude reads GitHub through `gh` itself.
+Look at the message, then fix the token. Until you do, the agents have no GitHub tools, so they read GitHub through `gh`.
 
 | What you see | Why | What to do |
 | :-- | :-- | :-- |
@@ -621,79 +602,65 @@ Look at the message, then fix the token. Until you do, the monitoring agent has 
 </details>
 
 <details>
-<summary><b>Will Claude merge my PR without asking?</b></summary>
+<summary><b>Will Claude push or merge without asking?</b></summary>
 
-No. It always stops and asks before the merge, naming the PR, the commit, the merge method and any automatic deployment it knows about. Your approval covers that commit only: if anyone pushes again, Claude asks again. It never force-pushes, skips hooks or required checks, or uses admin rights to get around a rule.
-
-</details>
-
-<details>
-<summary><b>Can the monitoring agent change anything on GitHub?</b></summary>
-
-No. Its job is to read and report: Claude makes every comment, reply, rerun and merge. The agent gets every tool your session has except Write, Edit and NotebookEdit, and the plugin's [hooks](#-what-this-plugin-runs-and-sends) deny it the `git` and `gh` commands that change state and the GitHub tools that write, on any server whose name contains `github` or `GitHub`. The same holds for the `repo-auditor` agent. A hook is a barrier, not a security boundary: for a hard limit, add the deny rules in [Add hard limits yourself](#add-hard-limits-yourself), which apply to every agent too.
+No. It asks before every push, unless you chose **Push without asking again on this pull request**, which covers later rounds of that pull request only and never a commit that changes tests, CI, dependencies or files outside the pull request. It always asks before the merge, naming the pull request, the commit and the merge method; a new push voids that approval. It never force-pushes, pushes to the base branch, or merges with admin rights.
 
 </details>
 
 <details>
-<summary><b>Which GitHub tools does the monitoring agent use?</b></summary>
+<summary><b>Why are some review threads still open after the merge question?</b></summary>
 
-The ones your session already has, whatever the server is called: this plugin's `github` server, a GitHub server you added yourself, or the GitHub connector of the Claude app. You don't need to rename or duplicate a server for the agent to see it.
+Claude resolves only the threads that bots and AI reviewers opened, once it has verified the fix in the diff. On a thread a person opened, it replies and leaves it open, because resolving it is that reviewer's call. The merge question lists those threads for you.
 
 </details>
 
 <details>
 <summary><b>How long will Claude wait for a slow pipeline?</b></summary>
 
-The PR tracker waits for the checks to finish, for up to 30 minutes or the limit you set. When the limit ends with jobs still running, it reports what it knows and which jobs are still running, and Claude asks you whether to keep waiting, so it never hangs on a pipeline that takes too long.
+The PR tracker waits for the checks to finish, for up to 30 minutes or the limit you set. When the limit ends with jobs still running, it reports what it knows and which jobs are still running, and Claude asks you whether to keep waiting.
+
+</details>
+
+<details>
+<summary><b>Will the setup overwrite my existing templates or labels?</b></summary>
+
+No. When your repository already has a file of a kind, Claude shows you what it would change as a diff and asks. It creates a label or changes a repository setting only after you approve that change, and it never edits or deletes your existing labels unless you ask.
 
 </details>
 
 <details>
 <summary><b>What does the cleanup refuse to do, even if I approve?</b></summary>
 
-It never runs `git clean -x`, never deletes a branch with `-D` unless you approve that exact action, and never force-pushes or rewrites published history as part of a bulk approval. A history rewrite (to remove a secret or a huge file) happens only when you ask for it by name, in a fresh mirror clone made from the backup, and its force push runs only as the exact command the plan showed you. Deploy keys, tokens, secrets, installed apps and collaborator access are reported, never changed.
+It never runs `git reset --hard`, a `checkout` or `restore` that discards work, or `git clean -x`, and never force-pushes outside a history rewrite you asked for by name. A history rewrite (to remove a secret or a huge file) is never part of a bulk approval. Deploy keys, tokens, secrets, installed apps and collaborator access are reported, never changed, and other people's branches, forks, comments and pull requests are never touched.
 
 </details>
 
 <details>
-<summary><b>Does the cleanup read my <code>.env</code> files?</b></summary>
+<summary><b>Does the cleanup read my secrets?</b></summary>
 
-No. Files that look like secrets (`.env`, keys, certificates, token and credential files) are listed by name only and are never opened or copied into the backup. A secret that was ever committed is reported as exposed, with the instruction to rotate it.
-
-</details>
-
-<details>
-<summary><b>Does the cleanup install anything or write scripts?</b></summary>
-
-It installs nothing and writes no scripts. Claude runs ordinary `git` and `gh` commands, plus the plugin's own scripts that classify branches, verify the backup and check the plan, from a scratch folder outside your repository, and removes it at the end. A command that is not available is reported as not checked.
+No. Files that look like secrets are named by file only and never read. A secret that was ever committed is reported as exposed, with the instruction to rotate it first, because rewriting history doesn't remove it from clones, forks or cached views.
 
 </details>
 
 <details>
-<summary><b>Should I run the cleanup in bypass-permissions mode?</b></summary>
+<summary><b>Should I run these in bypass-permissions mode?</b></summary>
 
-No. Use the default permission mode, so Claude Code asks you before each command that changes something. Approving the plan and approving a prompt are two separate checks.
+No. Use the default permission mode, so Claude Code asks you before each command that changes something. Approving a plan or a push and approving a prompt are two separate checks.
 
 </details>
 
 <details>
 <summary><b>Can I run them with <code>claude -p</code>?</b></summary>
 
-Only the read-only cleanup audit is meant for it. The cleanup plan needs your approval and every command that changes anything needs your confirmation, and the pull request loop needs your approval before the merge. A headless run has nobody to give any of them, so Claude Code refuses them. Run both in an interactive session.
+Only a read-only audit is meant for it. Every push, the merge, the cleanup plan and every command that changes anything need your approval, and a headless run has nobody to give it. Run them in an interactive session.
 
 </details>
 
 <details>
 <summary><b>My remote is not on GitHub.</b></summary>
 
-The cleanup of branches, worktrees, stashes and files works with any remote. Pull requests, repository visibility and branch protections come from GitHub; for other hosts they are reported as blocked and nothing that depends on them is touched. The pull request loop is GitHub only.
-
-</details>
-
-<details>
-<summary><b>Where is the cleanup backup, and when is it deleted?</b></summary>
-
-In a folder outside the repository that you choose in the plan. Claude never deletes it on its own: when the cleanup is verified it asks whether to keep or remove it, and removes it only after an explicit yes.
+The cleanup of branches, worktrees, stashes and history works with any remote. Pull requests, workflows, Dependabot and forks come from GitHub; for other hosts they are reported as not reachable and nothing that depends on them is touched. The PR lifecycle and the repository setup are GitHub only.
 
 </details>
 
@@ -717,7 +684,7 @@ See [CHANGELOG.md](./CHANGELOG.md) for every release.
 
 This plugin ships none of GitHub's software. It connects Claude Code to the hosted remote server of the official [GitHub MCP Server](https://github.com/github/github-mcp-server) (MIT license, © GitHub). The URL forms, toolsets and tool names come from GitHub's documentation: the [remote server guide](https://github.com/github/github-mcp-server/blob/main/docs/remote-server.md) and the guide to [installing it in Claude applications](https://github.com/github/github-mcp-server/blob/main/docs/installation-guides/install-claude.md). We re-checked them against the live server, and if GitHub changes them, GitHub's documentation is the reference.
 
-GitHub also publishes its own [agent plugin](https://github.com/github/github-mcp-server/tree/main/agent-plugin) for the same server, which declares only the server connection. This plugin adds the operating contract and its workflows around that server (pull requests, writing, CI repair, setup, audit and cleanup), with a token option, a choice of tool set and hooks for its agents.
+GitHub also publishes its own [agent plugin](https://github.com/github/github-mcp-server/tree/main/agent-plugin) for the same server, which declares only the server connection. This plugin adds the skills and agents around that server (the pull request lifecycle, the repository setup, and the audit and cleanup), with a token option and a choice of tool set.
 
 ## 📄 License
 
