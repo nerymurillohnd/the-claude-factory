@@ -63,7 +63,7 @@ Write each chosen form to `.github/ISSUE_TEMPLATE/`:
 
 ## After the merge
 
-Confirm GitHub read `config.yml` with `gh api graphql -f query='query { repository(owner:"<owner>", name:"<repo>") { contactLinks { name url } } }'`, and ask the user to open `https://github.com/<owner>/<repo>/issues/new/choose` signed in.
+Ask the user to open `https://github.com/<owner>/<repo>/issues/new/choose` signed in and confirm that the forms and contact links appear. When `gh api graphql` works, also check that GitHub read `config.yml`'s contact links: `gh api graphql -f query='query { repository(owner:"<owner>", name:"<repo>") { contactLinks { name url } } }'`. When it is unavailable, the user's check is enough.
 
 ## Limits
 
