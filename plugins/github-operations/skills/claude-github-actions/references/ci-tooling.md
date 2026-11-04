@@ -1,10 +1,10 @@
-# CI tools: reads and the rerun
+# CI tools: reads and writes
 
 The GitHub MCP tools and `gh` overlap. Each row lists the layer that does the task best first. Check a `gh` command's own help for its exact options before its first use in a run. Reads go MCP, then `gh`, then `gh api`; a write falls back in either direction when its first layer is missing or fails.
 
 ## Reads
 
-Read the current head only, report data you could not read as "not inspected", never zero, and read every list to its end.
+Read the latest state of each run, report data you could not read as "not inspected", never zero, and read every list to its end.
 
 | Fact | MCP | gh |
 | :-- | :-- | :-- |
