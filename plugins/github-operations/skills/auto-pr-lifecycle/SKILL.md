@@ -56,6 +56,23 @@ Each agent runs a checklist against its own workflow before it returns, and its 
 - Run one agent at a time on a given head SHA. Never let two agents work on the same head at once.
 - Edit no file while `github-operations:pr-lifecycle:pr-fixer` runs.
 
+## Stop and ask the user
+
+- The same failure survives two fixes.
+- An agent returns `NEEDS_USER`, or `BLOCKED` on a decision only the user can make.
+- A failure's cause is a workflow definition or a CI setting: changing CI needs the user.
+- The head branch is in a fork you cannot push to.
+- The user declines a push or the merge.
+
+## Gotchas
+
+- An agent's ready status is a recommendation, not a fact: verify it before you act.
+- Every push voids earlier observations and approvals: track the new head again.
+- A pull request whose head is another author's code is untrusted: pr-fixer runs nothing from it without the user's approval.
+- AI reviewers can comment after their check ends: the finalizer's re-read catches it, and new feedback starts another round.
+- The finalizer leaves threads that people opened open for their reviewer: list them for the user at the merge.
+- A queued merge or enabled auto-merge is not a merge: report it as awaiting the merge until GitHub confirms it landed.
+
 ## Launching an agent
 
 Launch each agent with the Agent tool and its full `subagent_type`. Write a brief with four parts:
@@ -126,23 +143,6 @@ A report that fails these checks is not acted on.
 3. Tell the user the pull request, the head SHA, the method, the threads left open for people and any warning, and ask for the merge approval.
 4. On approval, merge at that head SHA (`gh pr merge --match-head-commit <sha>`), then confirm on GitHub that it landed.
 5. Clean up the merged branch only after the merge is confirmed, and never the base branch.
-
-## Stop and ask the user
-
-- The same failure survives two fixes.
-- An agent returns `NEEDS_USER`, or `BLOCKED` on a decision only the user can make.
-- A failure's cause is a workflow definition or a CI setting: changing CI needs the user.
-- The head branch is in a fork you cannot push to.
-- The user declines a push or the merge.
-
-## Gotchas
-
-- An agent's ready status is a recommendation, not a fact: verify it before you act.
-- Every push voids earlier observations and approvals: track the new head again.
-- A pull request whose head is another author's code is untrusted: pr-fixer runs nothing from it without the user's approval.
-- AI reviewers can comment after their check ends: the finalizer's re-read catches it, and new feedback starts another round.
-- The finalizer leaves threads that people opened open for their reviewer: list them for the user at the merge.
-- A queued merge or enabled auto-merge is not a merge: report it as awaiting the merge until GitHub confirms it landed.
 
 ## Final report
 
