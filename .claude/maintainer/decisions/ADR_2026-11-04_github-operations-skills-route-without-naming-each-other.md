@@ -1,10 +1,10 @@
 ---
-status: accepted
+status: superseded
 date: 2026-11-04
 decision-makers:
   - "Nery"
 supersedes: none
-superseded-by: none
+superseded-by: ADR_2026-11-04_github-operations-skills-name-each-other-in-their-bodies
 ---
 
 # github-operations' skills route to each other in their rules, without naming each other
