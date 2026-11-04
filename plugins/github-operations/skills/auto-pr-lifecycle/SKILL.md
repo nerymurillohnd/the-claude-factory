@@ -47,11 +47,11 @@ Deploy each one with the Agent tool, using its full name below as `subagent_type
 | `github-operations:pr-lifecycle:pr-fixer` | A verified report lists failures or review findings to fix | Read everything, run commands, edit files and commit signed in the local clone | Push, write anything to GitHub, change git configuration, rewrite pushed history |
 | `github-operations:pr-lifecycle:pr-finalizer` | The checks pass at the head and the fixes are pushed | Read everything, reply in review threads, resolve review threads | Edit files, commit, push, submit reviews or approvals, merge |
 
-What each one runs, in short:
+What each one returns:
 
-- **pr-tracker:** intake → snapshot → wait for checks → runs → failures and their root cause → required checks → workflow files → warnings and annotations → reviews, threads and comments with their URLs → diff → Dependabot → comparison with the previous report → report. Statuses: `ACTION_REQUIRED`, `PENDING`, `BLOCKED`, `READY_FOR_MAIN_SESSION`, `MERGED_OR_CLOSED`.
-- **pr-fixer:** intake → preconditions → revalidate each finding → triage → fix → validate → commit → base update when asked → self-check → report. Statuses: `FIXED`, `PARTIAL`, `NEEDS_USER`, `NO_CHANGE`, `STALE`.
-- **pr-finalizer:** intake → head and checks → threads → verify each finding → reply → resolve bot threads → re-read → approvals → verdict. Verdicts: `READY_TO_MERGE`, `NEW_FEEDBACK`, `BLOCKED`, `STALE`.
+- **pr-tracker:** `ACTION_REQUIRED`, `PENDING`, `BLOCKED`, `READY_FOR_MAIN_SESSION` or `MERGED_OR_CLOSED`.
+- **pr-fixer:** `FIXED`, `PARTIAL`, `NEEDS_USER`, `NO_CHANGE` or `STALE`.
+- **pr-finalizer:** `READY_TO_MERGE`, `NEW_FEEDBACK`, `BLOCKED` or `STALE`.
 
 Each agent runs a checklist against its own workflow before it returns, and its report follows a fixed template. Use both to verify what it returns.
 
