@@ -1,31 +1,13 @@
 # Repair failing CI on the default branch
 
-Find the workflows that fail, hang or stopped running on the default branch, fix their cause, and land the fix through a pull request. The tools for reading runs, jobs and logs, and for a rerun, are in `../references/ci-tooling.md`.
+Find the workflows that fail, hang or stopped running on the default branch, fix their cause, and land the fix through a pull request. This finds what to repair, not every leftover of the repository's automation: a full sweep of runs, artifacts, caches and runners is a repository audit.
 
 ## 1. Find them
 
-```sh
-gh workflow list -R <o>/<r> --all --json id,name,state,path        # includes disabled workflows
-gh api repos/<o>/<r>/actions/permissions
-```
-
-A filtered run list returns at most 1,000 results. To be complete, split by creation date until each window returns fewer than 1,000:
-
-```sh
-gh run list -R <o>/<r> --branch <default branch> --created '<from>..<to>' --limit 1000 --json databaseId,workflowName,event,status,conclusion,createdAt,headSha,url >> runs-default-branch.json
-```
-
-Then, per workflow, find the ones whose latest run on the default branch failed and was never followed by a success:
-
-```sh
-jq -s 'add | group_by(.workflowName) | map({workflow:.[0].workflowName, last:(sort_by(.createdAt)|last|{at:.createdAt,conclusion:.conclusion,url:.url}), lastSuccess:([.[]|select(.conclusion=="success")]|sort_by(.createdAt)|last|.createdAt)}) | map(select(.last.conclusion!="success"))' runs-default-branch.json
-```
-
-Also look for:
-
-- **Scheduled workflows that stopped running**: `schedule` runs (`--event schedule`) whose newest run is older than the schedule says it should be. GitHub disables schedules after a period of repository inactivity: verify the current period in the GitHub docs before stating it.
-- **Runs stuck** in `queued`, `waiting` or `in_progress` for more than a day: `gh run list -R <o>/<r> --status queued --limit 1000`, and the same for the others.
-- **Workflows that reference things that no longer exist**: branches in `on:` filters, secret names in `${{ secrets.NAME }}` that `gh secret list` does not show, files under `paths:`.
+1. List the workflows, disabled ones included: `gh workflow list -R <o>/<r> --all --json id,name,state,path`.
+2. For each active workflow, read its latest run on the default branch: `gh run list -R <o>/<r> --workflow <id> --branch <default branch> --limit 1 --json databaseId,status,conclusion,createdAt,headSha,url`. A latest run that did not succeed is a failure to repair.
+3. For each scheduled workflow, check that its latest run is as recent as its schedule says. In a public repository, GitHub disables scheduled workflows after 60 days with no repository activity.
+4. For a failing workflow, check what its file references: branches in `on:` filters, secret names in `${{ secrets.NAME }}` that `gh secret list` does not show, files under `paths:`.
 
 ## 2. Diagnose each failure
 
