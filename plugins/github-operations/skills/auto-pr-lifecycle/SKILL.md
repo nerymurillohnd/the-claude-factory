@@ -90,13 +90,7 @@ Each agent runs a checklist against its own workflow before it returns, and its 
 
 ## Deploying an agent
 
-You are in control of every agent you deploy. Deploy one when its stage comes, and give it a prompt built from what it must do now:
-
-1. **Goal:** what this run must achieve.
-2. **Inputs:** everything its intake asks for, with exact values and paths.
-3. **Limits:** restate what it may and may not do, and the constraints of this case: an approval the user gave or refused, a head that is another author's code, a wait limit, replies not approved.
-4. **Evidence:** demand proof for every claim: URLs, commits, commands and their results.
-5. **Done when:** the report it must return, with its checklist run.
+Deploy an agent when its stage comes. Its brief holds the inputs below, plus the constraints of this case: an approval the user gave or refused, a head that is another author's code, a wait limit, replies not approved.
 
 Inputs per agent:
 
