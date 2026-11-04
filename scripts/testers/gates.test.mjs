@@ -195,11 +195,13 @@ describe('gate list', () => {
   })
 
   test('a PEP 723 plugin script is type-checked in its own uv environment', () => {
-    const script = 'plugins/github-operations/skills/github/scripts/check-forms.py'
+    const script = 'plugins/github-operations/skills/github-files-setup/scripts/check-forms.py'
     const local = gatesFor({ root: ROOT, ci: false, base: '' })
     const all = local.find((g) => g.id === 'basedpyright-plugins')
     assert.ok(
-      all?.args.includes('plugins/github-operations/skills/github/scripts/check-pr-body.py'),
+      all?.args.includes(
+        'plugins/github-operations/skills/github-files-setup/scripts/labels-diff.py',
+      ),
     )
     assert.ok(!all?.args.includes(script), 'the shared run cannot see the script dependencies')
     const own = local.find((g) => g.id === `basedpyright-plugins:${script}`)
