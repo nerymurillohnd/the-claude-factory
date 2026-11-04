@@ -32,7 +32,9 @@ Inventory pull requests in every state (open, draft, closed and merged), each wi
 - Scheduled workflows that stopped running.
 - Runs stuck in queued or in progress.
 - Runs waiting for approval.
-- Workflows that point to deleted branches, files or secrets.
+- Workflows that point to deleted branches, files or secrets: branches in `on:` filters, secret names that `gh secret list` does not show, files under `paths:`.
+
+List disabled workflows too: `gh workflow list --all`. A filtered run list returns at most 1,000 results ([GitHub REST: workflow runs][workflow-runs]), so split the runs of the default branch by creation date (`gh run list --branch <default> --created '<from>..<to>' --limit 1000`) until each window returns fewer than 1,000. In a public repository, GitHub disables scheduled workflows after 60 days with no repository activity ([GitHub: disabling workflows][disable-workflows]).
 
 ## Storage
 
@@ -42,7 +44,7 @@ Inventory pull requests in every state (open, draft, closed and merged), each wi
 
 - Environments and their protection rules.
 - Secrets and variables, by name only.
-- Self-hosted runners that are offline or unused.
+- Self-hosted runners that are offline or unused, with their labels.
 
 ## Dependabot
 
@@ -87,5 +89,9 @@ Inventory pull requests in every state (open, draft, closed and merged), each wi
 Checked on 2026-11-04.
 
 - [GitHub REST: deploy keys][deploy-keys]: the response includes "last_used: string or null, format: date-time".
+- [GitHub REST: workflow runs][workflow-runs]: "This endpoint will return up to 1,000 results for each search when using the following parameters: actor, branch, check_suite_id, created, event, head_sha, status."
+- [GitHub: disabling workflows][disable-workflows]: "In a public repository, scheduled workflows are automatically disabled when no repository activity has occurred in 60 days."
 
 [deploy-keys]: https://docs.github.com/en/rest/deploy-keys/deploy-keys
+[workflow-runs]: https://docs.github.com/en/rest/actions/workflow-runs
+[disable-workflows]: https://docs.github.com/en/actions/how-tos/manage-workflow-runs/disable-and-enable-workflows

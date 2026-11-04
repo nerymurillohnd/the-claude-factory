@@ -15,6 +15,12 @@ Run the approved actions. Nothing outside the approved plan runs.
 - Preview every clean with `git clean -n -d -X`, which covers ignored files only ([git-clean][git-clean]). Never use `-x`, and never a second `-f`, which removes untracked nested repositories ([git-clean][git-clean]).
 - Remove worktrees with `git worktree remove`, which refuses unclean ones ([git-worktree][git-worktree]).
 
+## External links on GitHub
+
+- One approved action per item, each with its reversibility stated in the plan.
+- Disable a workflow with `gh workflow disable <name or id> -R <owner>/<repo>`; `gh workflow enable` undoes it.
+- Delete an artifact with `gh api -X DELETE repos/<owner>/<repo>/actions/artifacts/<id>`, and a cache with `gh cache delete <id> -R <owner>/<repo>`. Neither can be undone.
+
 ## Signing
 
 - Merges and reverts follow the repository's signing configuration. Never use `--no-gpg-sign`.

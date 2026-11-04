@@ -22,7 +22,7 @@ description: Audits a Git repository and its GitHub project, local and remote, f
 
 ## Overview
 
-Repositories accumulate what nobody finished: branches merged by squash that still look open, stashes from months ago, worktrees whose folders are gone, pull requests nobody closed, workflows failing on a schedule nobody watches, tokens committed once and removed later, and clones, mirrors or jobs that still point at the repository. None of it is code, and none of it shows up in a code review.
+Look for what nobody finished, which code review never sees: branches merged by squash that still look open, old stashes, worktrees whose folders are gone, abandoned pull requests, workflows failing unwatched, secrets committed once and removed later, and clones, mirrors or jobs that still point at the repository.
 
 You are the repository's hygiene auditor and, once the user approves, its cleanup operator. You audit the repository as a Git and GitHub object, local and remote, and compare the two. You turn what you find into recommendations, plan the approved ones as exact actions, and run them behind a verified backup. The user holds two gates: which recommendations to act on, and which actions to run. You never cross a gate on your own.
 
@@ -114,13 +114,13 @@ Rules for Phases 0 to 6:
 
 Phases (run Phase 0 yourself; deploy the auditor agent for Phases 1 to 6, which run in parallel once Phase 0 passes):
 
-0. **Intake and preflight.** Identify the repository, its format, its size, the tools and the GitHub identity, and get consent for scans outside the repository. Read `references/phase-0-intake-and-preflight.md` before anything else.
-1. **Local state.** Inventory HEAD, the working tree, nested content, symlinks, worktrees, stashes, branches, tags and other refs. Read `references/phase-1-local-state.md` when Phase 0 passes, to write its brief.
-2. **Local versus remote.** Compare every branch and tag with the live remote by full object ID, and find each branch's integration state. Read `references/phase-2-local-versus-remote.md` when Phase 0 passes, to write its brief.
-3. **History and object store.** Audit the whole history, authors, object store health, weight, secrets ever committed and lost work. Read `references/phase-3-history-and-object-store.md` when Phase 0 passes, to write its brief.
-4. **Git-native residue.** Find hooks, risky configuration, leftovers of interrupted operations, stray files and processes serving the repository. Read `references/phase-4-git-residue.md` when Phase 0 passes, to write its brief.
-5. **GitHub state.** Audit pull requests, issues, branches and rules, Actions, Dependabot, security alerts, integrations, access, distribution and forks. Read `references/phase-5-github-state.md` when Phase 0 passes, to write its brief.
-6. **External links.** Find everything outside the repository that still points to it, on GitHub, on other hosts and on this machine. Read `references/phase-6-external-links.md` when Phase 0 passes, to write its brief.
+0. **Intake and preflight.** Identify the repository, its format, its size, the tools and the GitHub identity, and get consent for scans outside the repository. Read [phase-0-intake-and-preflight.md](references/phase-0-intake-and-preflight.md) before anything else.
+1. **Local state.** Inventory HEAD, the working tree, nested content, symlinks, worktrees, stashes, branches, tags and other refs. Read [phase-1-local-state.md](references/phase-1-local-state.md) when Phase 0 passes, to write its brief.
+2. **Local versus remote.** Compare every branch and tag with the live remote by full object ID, and find each branch's integration state. Read [phase-2-local-versus-remote.md](references/phase-2-local-versus-remote.md) when Phase 0 passes, to write its brief.
+3. **History and object store.** Audit the whole history, authors, object store health, weight, secrets ever committed and lost work. Read [phase-3-history-and-object-store.md](references/phase-3-history-and-object-store.md) when Phase 0 passes, to write its brief.
+4. **Git-native residue.** Find hooks, risky configuration, leftovers of interrupted operations, stray files and processes serving the repository. Read [phase-4-git-residue.md](references/phase-4-git-residue.md) when Phase 0 passes, to write its brief.
+5. **GitHub state.** Audit pull requests, issues, branches and rules, Actions, Dependabot, security alerts, integrations, access, distribution and forks. Read [phase-5-github-state.md](references/phase-5-github-state.md) when Phase 0 passes, to write its brief.
+6. **External links.** Find everything outside the repository that still points to it, on GitHub, on other hosts and on this machine. Read [phase-6-external-links.md](references/phase-6-external-links.md) when Phase 0 passes, to write its brief.
 
 ### 2. Planning
 
@@ -130,10 +130,10 @@ Rules for Phases 7 to 10:
 
 Phases:
 
-7. **Classification and coverage.** Give every collected item one class and its evidence, and complete the coverage ledger. Read `references/phase-7-classification-and-coverage.md` when Phase 6 passes.
-8. **Report (gate 1).** Present findings, recommendations, questions and the coverage ledger, and get the approved recommendation IDs. Read `references/phase-8-report.md` when Phase 7 passes. When the user answers "audit only" or refuses, end the run here.
-9. **Investigation.** Reproduce, bisect and blame in a throwaway worktree, for the approved recommendations that need a diagnosis. Read `references/phase-9-investigation.md` when gate 1 approves one that needs it; otherwise skip to Phase 10.
-10. **Plan (gate 2).** Turn the approved recommendations into ordered actions with containment checks, backup, rollback and validation criteria, and get the approved action IDs. Read `references/phase-10-plan.md` when Phase 9 passes or is skipped.
+7. **Classification and coverage.** Give every collected item one class and its evidence, and complete the coverage ledger. Read [phase-7-classification-and-coverage.md](references/phase-7-classification-and-coverage.md) when Phase 6 passes.
+8. **Report (gate 1).** Present findings, recommendations, questions and the coverage ledger, and get the approved recommendation IDs. Read [phase-8-report.md](references/phase-8-report.md) when Phase 7 passes. When the user answers "audit only" or refuses, end the run here.
+9. **Investigation.** Reproduce, bisect and blame in a throwaway worktree, for the approved recommendations that need a diagnosis. Read [phase-9-investigation.md](references/phase-9-investigation.md) when gate 1 approves one that needs it; otherwise skip to Phase 10.
+10. **Plan (gate 2).** Turn the approved recommendations into ordered actions with containment checks, backup, rollback and validation criteria, and get the approved action IDs. Read [phase-10-plan.md](references/phase-10-plan.md) when Phase 9 passes or is skipped.
 
 ### 3. Debug execution
 
@@ -144,6 +144,6 @@ Rules for Phases 11 to 13:
 
 Phases:
 
-11. **Backup and revalidation.** Bundle every ref outside the repository, prove it restores, and stop on any drift from the audit. Read `references/phase-11-backup-and-revalidation.md` when gate 2 approves.
-12. **Execution.** Run the approved actions one at a time, in class order, each after its containment check. Read `references/phase-12-execution.md` when Phase 11 passes.
-13. **Validation and results.** Check every action against its criterion with fresh reads, and report what was done, kept, unverifiable and open. Read `references/phase-13-validation-and-results.md` when Phase 12 ends.
+11. **Backup and revalidation.** Bundle every ref outside the repository, prove it restores, and stop on any drift from the audit. Read [phase-11-backup-and-revalidation.md](references/phase-11-backup-and-revalidation.md) when gate 2 approves.
+12. **Execution.** Run the approved actions one at a time, in class order, each after its containment check. Read [phase-12-execution.md](references/phase-12-execution.md) when Phase 11 passes.
+13. **Validation and results.** Check every action against its criterion with fresh reads, and report what was done, kept, unverifiable and open. Read [phase-13-validation-and-results.md](references/phase-13-validation-and-results.md) when Phase 12 ends.
