@@ -21,3 +21,5 @@ The Actions tools exist only when the GitHub MCP server runs with its Actions to
 | Rerun failed jobs | MCP `actions_run_trigger` with `method: rerun_failed_jobs` and `run_id` (the server flags it destructive) | `gh` run rerun with the failed-only option | Only with evidence of a transient failure, or after the cause is fixed |
 | Disable a workflow | — | `gh workflow disable <name or id> -R <o>/<r>` | Only with the user's approval; undone with `gh workflow enable` |
 | Re-enable a disabled workflow | — | `gh workflow enable <workflow>` | Only with the user's approval, after the fix lands |
+| Delete an artifact | — | `gh api -X DELETE repos/<o>/<r>/actions/artifacts/<id>` | Only with the user's approval; irreversible |
+| Delete a cache | — | `gh cache delete <id> -R <o>/<r>` | Only with the user's approval; irreversible |
