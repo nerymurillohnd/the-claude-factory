@@ -21,7 +21,7 @@ description: Orchestrates a GitHub pull request from its current stage to merge-
 
 - The user asks only to commit, or to commit and push: do that and stop. Never open a pull request on your own.
 - The task is about issues, discussions, repository setup or a repository audit, with no pull request to take to merge.
-- The user wants a one-off answer about a pull request, such as its status, with no action after it: read it yourself, or launch `github-operations:pr-lifecycle:pr-tracker` alone.
+- The user wants a one-off answer about a pull request, such as its status, with no action after it: read it yourself, or deploy `github-operations:pr-lifecycle:pr-tracker` alone.
 
 ## Overview
 
@@ -73,14 +73,15 @@ Each agent runs a checklist against its own workflow before it returns, and its 
 - The finalizer leaves threads that people opened open for their reviewer: list them for the user at the merge.
 - A queued merge or enabled auto-merge is not a merge: report it as awaiting the merge until GitHub confirms it landed.
 
-## Launching an agent
+## Deploying an agent
 
-Launch each agent with the Agent tool and its full `subagent_type`. Write a brief with four parts:
+You are in control of every agent you deploy. Deploy one when its stage comes, and give it a prompt built from what it must do now:
 
-1. **Goal:** one sentence on what this run must achieve.
-2. **Inputs:** everything the agent's intake asks for, with exact values and paths.
-3. **Constraints:** what is specific to this case: an approval the user gave or refused, a head that is another author's code, a wait limit, replies not approved.
-4. **Done when:** the report the agent must return.
+1. **Goal:** what this run must achieve.
+2. **Inputs:** everything its intake asks for, with exact values and paths.
+3. **Limits:** restate what it may and may not do, and the constraints of this case: an approval the user gave or refused, a head that is another author's code, a wait limit, replies not approved.
+4. **Evidence:** demand proof for every claim: URLs, commits, commands and their results.
+5. **Done when:** the report it must return, with its checklist run.
 
 Inputs per agent:
 
@@ -90,17 +91,18 @@ Inputs per agent:
 
 Keep the findings ledger yourself, across rounds: each finding, its source and URL, its disposition, the fix commit and how it was fixed.
 
-## Receiving a report
+## Holding the agent to its work
 
-Before you act on any report:
+Never take a report on trust. Before you act on one:
 
-1. Check that it uses the agent's template and returns exactly one of its statuses or verdicts.
-2. Check that its head SHA is the head you gave it. If it differs, someone else pushed: launch `github-operations:pr-lifecycle:pr-tracker` again on the new head.
-3. Check that every claim carries its evidence: a URL, a commit, a command and its result.
-4. Check every "not inspected", `needs-user`, `external` or unverified item. When it was within the agent's reach, send the agent back with that gap named, or read it yourself.
-5. Update the findings ledger.
+1. Check that it follows the agent's template, returns exactly one of its statuses or verdicts, and shows its checklist complete.
+2. Check that its head SHA is the head you gave it. If it differs, someone else pushed: deploy the tracker again on the new head.
+3. Check every claim against its evidence. Open the URLs, read the commits, check the results yourself where it matters.
+4. Check that it stayed inside its limits: the tracker changed nothing, the fixer did not push or write to GitHub, the finalizer wrote only replies and resolutions.
+5. Check every "not inspected", `needs-user`, `external` or unverified item. When it was within the agent's reach, it is not acceptable.
+6. Update the findings ledger.
 
-A report that fails these checks is not acted on.
+When a report fails any check, send the agent back with each gap named and demand the work done right. Act only on a report that passes.
 
 ## Scenarios
 
@@ -108,9 +110,9 @@ A report that fails these checks is not acted on.
 1. Confirm the branch, validate it locally, and commit signed.
 2. Ask the user, then push.
 3. Ask the user, then create the pull request with the repository's template and labels.
-4. Launch `github-operations:pr-lifecycle:pr-tracker`.
+4. Deploy `github-operations:pr-lifecycle:pr-tracker`.
 
-**Opened or pushed, not reviewed yet.** Launch `github-operations:pr-lifecycle:pr-tracker`, then act on its status:
+**Opened or pushed, not reviewed yet.** Deploy `github-operations:pr-lifecycle:pr-tracker`, then act on its status:
 
 - `ACTION_REQUIRED`: verify the findings, then go to "Findings to fix".
 - `PENDING` with jobs still running: tell the user and ask whether to keep waiting. With only a person's review missing: tell the user who must act.
@@ -118,24 +120,24 @@ A report that fails these checks is not acted on.
 - `READY_FOR_MAIN_SESSION`: go to "Ready to finalize".
 - `MERGED_OR_CLOSED`: confirm it on GitHub and report the outcome.
 
-**Findings to fix.** Launch `github-operations:pr-lifecycle:pr-fixer` with the verified findings, wait for it, then act on its status:
+**Findings to fix.** Deploy `github-operations:pr-lifecycle:pr-fixer` with the verified findings, wait for it, then act on its status:
 
 - `FIXED` or `PARTIAL`:
   1. Check its commits: `git status` clean, every commit after `origin/<head branch>` listed in the report and signed, the diff inside its dispositions, no test, CI or dependency change without the user.
   2. Tell the user what was found, what was fixed and how, what was not and why.
   3. Ask: **Push**, **Push without asking again on this pull request**, or **Don't push**. The second option covers later rounds of this pull request only, and never a commit that changes tests, CI, dependencies or files outside the pull request.
-  4. On approval, push, then launch `github-operations:pr-lifecycle:pr-tracker` on the new head.
+  4. On approval, push, then deploy `github-operations:pr-lifecycle:pr-tracker` on the new head.
   5. When the user declines, stop and ask how to proceed.
 - `NEEDS_USER`: put each decision to the user.
-- `NO_CHANGE`: check the evidence for each decline; if it holds, launch `github-operations:pr-lifecycle:pr-tracker` or go to "Ready to finalize".
-- `STALE`: launch `github-operations:pr-lifecycle:pr-tracker` on the current head.
+- `NO_CHANGE`: check the evidence for each decline; if it holds, deploy `github-operations:pr-lifecycle:pr-tracker` or go to "Ready to finalize".
+- `STALE`: deploy `github-operations:pr-lifecycle:pr-tracker` on the current head.
 
-**Ready to finalize.** Launch `github-operations:pr-lifecycle:pr-finalizer` with the whole history, wait for it, then act on its verdict:
+**Ready to finalize.** Deploy `github-operations:pr-lifecycle:pr-finalizer` with the whole history, wait for it, then act on its verdict:
 
 - `READY_TO_MERGE`: go to "Merge".
 - `NEW_FEEDBACK`: add each item to the findings ledger and go to "Findings to fix".
 - `BLOCKED`: tell the user why, what happened and what is left, and let the user decide.
-- `STALE`: launch `github-operations:pr-lifecycle:pr-tracker` on the current head.
+- `STALE`: deploy `github-operations:pr-lifecycle:pr-tracker` on the current head.
 
 **Merge.**
 1. Read the head SHA again.
