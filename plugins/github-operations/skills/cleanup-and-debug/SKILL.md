@@ -131,9 +131,9 @@ Rules for Phases 7 to 10:
 Phases:
 
 7. **Classification and coverage.** Give every collected item one class and its evidence, and complete the coverage ledger. Read [phase-7-classification-and-coverage.md](references/phase-7-classification-and-coverage.md) when Phase 6 passes.
-8. **Report (gate 1).** Present findings, recommendations, questions and the coverage ledger, and get the approved recommendation IDs. Read [phase-8-report.md](references/phase-8-report.md) when Phase 7 passes. When the user answers "audit only" or refuses, end the run here.
+8. **Report (gate 1).** Present findings, recommendations, questions and the coverage ledger, and get the approved recommendation IDs. Read [phase-8-report.md](references/phase-8-report.md) when Phase 7 passes, and write the report from [assets/audit-report.md](assets/audit-report.md). When the user answers "audit only" or refuses, end the run here.
 9. **Investigation.** Reproduce, bisect and blame in a throwaway worktree, for the approved recommendations that need a diagnosis. Read [phase-9-investigation.md](references/phase-9-investigation.md) when gate 1 approves one that needs it; otherwise skip to Phase 10.
-10. **Plan (gate 2).** Turn the approved recommendations into ordered actions with containment checks, backup, rollback and validation criteria, and get the approved action IDs. Read [phase-10-plan.md](references/phase-10-plan.md) when Phase 9 passes or is skipped.
+10. **Plan (gate 2).** Turn the approved recommendations into ordered actions with containment checks, backup, rollback and validation criteria, and get the approved action IDs. Read [phase-10-plan.md](references/phase-10-plan.md) when Phase 9 passes or is skipped, and write the plan from [assets/cleanup-plan.md](assets/cleanup-plan.md).
 
 ### 3. Debug execution
 
@@ -146,4 +146,4 @@ Phases:
 
 11. **Backup and revalidation.** Bundle every ref outside the repository, prove it restores, and stop on any drift from the audit. Read [phase-11-backup-and-revalidation.md](references/phase-11-backup-and-revalidation.md) when gate 2 approves.
 12. **Execution.** Run the approved actions one at a time, in class order, each after its containment check. Read [phase-12-execution.md](references/phase-12-execution.md) when Phase 11 passes.
-13. **Validation and results.** Check every action against its criterion with fresh reads, and report what was done, kept, unverifiable and open. Read [phase-13-validation-and-results.md](references/phase-13-validation-and-results.md) when Phase 12 ends.
+13. **Validation and results.** Check every action against its criterion with fresh reads, and report what was done, kept, unverifiable and open. Read [phase-13-validation-and-results.md](references/phase-13-validation-and-results.md) when Phase 12 ends, and write the results from [assets/results-report.md](assets/results-report.md).
