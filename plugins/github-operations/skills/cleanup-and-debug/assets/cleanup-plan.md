@@ -1,7 +1,7 @@
 # Cleanup plan: <owner>/<repo>
 
 **Approved at gate 1:** <R-IDs>
-**Backup first:** a bundle of every ref, outside the repository, proven to restore before any action runs
+**Backup first:** a bundle of every ref, with a rescue ref for every stash, outside the repository, proven to restore before any action runs
 **Your decision:** approve actions by their IDs; anything not approved does not run
 
 <!-- One block per action, in class order. -->

@@ -4,12 +4,17 @@ Make every approved change recoverable, and confirm the repository still matches
 
 ## Backup
 
+- Before the bundle, give every stash and every commit worth keeping that no ref holds a rescue ref, because `--all` packages refs only: of the stashes it keeps only the newest, `refs/stash`, and the older ones live only in its reflog.
+  - One per stash: `git update-ref refs/repo-cleanup-backup/stash-<N> 'stash@{<N>}'`, for every `<N>` that `git stash list` shows.
+  - One per reflog-only or unreachable commit the audit found worth keeping: `git update-ref refs/repo-cleanup-backup/lost-<first 10 characters of its SHA> <full SHA>`.
 - Bundle every ref, outside the repository: `git bundle create <path>/backup.bundle --all` ([git-bundle][git-bundle]).
+- Check that the bundle lists every rescue ref: `git bundle list-heads <path>/backup.bundle` shows each `refs/repo-cleanup-backup/` name.
 - Record the bundle's checksum.
 - Prove it restores: `git bundle verify` exits zero for a valid bundle, and a clone from the bundle into a throwaway location succeeds ([git-bundle][git-bundle]).
 - Save patches and copies of uncommitted work, and of the ignored files the plan names.
 - `git stash --all` is not a backup: it changes the working tree.
 - When the plan includes a history rewrite, also make a full mirror clone.
+- Once the restore clone has passed, delete the rescue refs (`git update-ref -d refs/repo-cleanup-backup/<name>`, one each) and confirm that `git for-each-ref refs/repo-cleanup-backup` prints nothing.
 
 ## Revalidation
 
@@ -19,9 +24,11 @@ Make every approved change recoverable, and confirm the repository still matches
 
 ## Done when
 
+- [ ] Every stash and every lost commit worth keeping had a rescue ref, and the bundle lists them all.
 - [ ] The bundle exists outside the repository, with its checksum.
 - [ ] `git bundle verify` passed, and the restore clone succeeded.
 - [ ] Every uncommitted change and named ignored file is saved.
+- [ ] No rescue ref remains in the repository.
 - [ ] Revalidation found no drift, or the plan was rebuilt and approved again.
 
 ## Sources
