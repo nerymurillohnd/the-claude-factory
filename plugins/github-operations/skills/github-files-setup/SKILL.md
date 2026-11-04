@@ -113,4 +113,20 @@ Progress:
 10. **Land the setup.**
     1. Commit, then ask the user before you push, and open the pull request through this plugin's pull request skill, with the repository's new maintenance template when it has one.
 
-Close with a report: each file created or proposed, with its model and what you adapted; each label and setting changed, with its approval; the pull request link; and that the files apply only after the pull request merges into the default branch.
+Close with this report:
+
+```markdown
+**Setup:** <owner>/<repo> · branch `<setup branch>` · pull request <link>
+**Applies:** only after the pull request merges into `<default branch>`
+
+| File | Model | What was adapted | Status |
+| :-- | :-- | :-- | :-- |
+| `<path in the repository>` | `<asset>`, or `none` | <components, versions, commands, labels> | <created, proposed as a diff, skipped: why> |
+
+| Label or setting | Change | Approved |
+| :-- | :-- | :-- |
+| <name> | <created, changed: from → to> | <yes, when> |
+
+**Validation:** <check-forms.py and check-jsonschema results: passed, failed, not run or blocked, with the reason>
+**Left for you:** <categories to create, settings to approve, checks to run after the merge>, or `nothing`
+```
