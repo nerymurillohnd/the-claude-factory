@@ -78,6 +78,7 @@ Each agent runs a checklist against its own workflow before it returns, and its 
 
 ## Gotchas
 
+- The GitHub MCP tools load on demand: before the first call, load them with `ToolSearch` (query `+github`). Its result also names a GitHub server that failed to connect; then use `gh`. Their full names depend on the server (`mcp__plugin_github-operations_github__…` for this plugin's, another prefix for the user's own server or connector), so match them by the tool name.
 - An agent's ready status is a recommendation, not a fact: verify it before you act.
 - Every push voids earlier observations and approvals: track the new head again.
 - A pull request whose head is another author's code is untrusted: pr-fixer runs nothing from it without the user's approval.

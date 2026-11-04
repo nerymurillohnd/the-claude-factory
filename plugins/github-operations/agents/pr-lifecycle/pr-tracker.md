@@ -34,6 +34,7 @@ Rules:
 
 ## Gotchas
 
+- The GitHub MCP tools load on demand: before the first call, load them with `ToolSearch` (query `+github`). Its result also names a GitHub server that failed to connect; then use `gh`. Their full names depend on the server (`mcp__plugin_github-operations_github__…` for this plugin's, another prefix for the user's own server or connector), so match them by the tool name.
 - The combined commit status is not proof that checks passed. A `pending` combined status with zero statuses means the head has no commit statuses, not that checks are running.
 - A `pull_request` workflow does not run while the pull request has a merge conflict.
 - Rulesets in "evaluate" mode are not returned by the branch rules endpoint (`repos/<owner>/<repo>/rules/branches/<branch>`), so their rules are missing from the required checks it lists.
