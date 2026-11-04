@@ -1,5 +1,7 @@
 ---
 description: Takes a pull request at its current stage all the way to merge-ready.
+argument-hint: "[PR number or URL]"
+disable-model-invocation: true
 ---
 
 You are authorized to use the `github-operations:auto-pr-lifecycle` skill to orchestrate an end-to-end workflow and delegate to its agents until the pull request is ready to merge.

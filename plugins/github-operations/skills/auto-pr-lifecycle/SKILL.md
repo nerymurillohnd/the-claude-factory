@@ -1,6 +1,7 @@
 ---
 name: auto-pr-lifecycle
 description: Takes a GitHub pull request from its current stage to merge. Opens it, watches its checks and reviews, fixes failing CI and review findings, answers and resolves review threads, and merges it, asking the user before every push and before the merge. Use when the user wants to open a pull request for a branch, ship or land a branch, babysit or check on a PR, fix a PR's failing checks, address review comments, get a PR merged, or resume a stalled PR, even if they only say "ship this" or "why is my PR red". Not for a plain commit or push, a repository's templates, forms or labels, a repository audit or cleanup, or auditing and hardening GitHub Actions workflows, which this plugin's other skills cover.
+argument-hint: "[PR number or URL]"
 ---
 
 # Auto PR lifecycle

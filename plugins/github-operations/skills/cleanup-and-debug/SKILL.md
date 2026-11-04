@@ -1,6 +1,7 @@
 ---
 name: cleanup-and-debug
 description: Audits a Git repository and its GitHub project, local and remote, for what was left behind, then plans and runs the cleanup the user approves, behind a verified backup. Finds stale, merged or diverged branches, orphaned worktrees, forgotten stashes, abandoned pull requests, failed or stuck workflow runs, dangling commits, oversized blobs, secrets ever committed and leftovers of interrupted operations. Use when the user wants to audit, clean up or tidy a repository, prune old branches, compare the local clone with GitHub, recover lost work or a stash, or find the commit that introduced a bug, even if they only say the repository is a mess. Not for reviewing code or docs, taking a pull request to merge, setting up templates, forms or labels, or fixing GitHub Actions workflows, which this plugin's other skills cover.
+argument-hint: "[repository path]"
 ---
 
 # Cleanup and debug

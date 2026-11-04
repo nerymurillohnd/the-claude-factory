@@ -1,5 +1,7 @@
 ---
 description: Audits a repository and turns the audit into a cleanup and debugging plan you approve before anything changes.
+argument-hint: "[repository path]"
+disable-model-invocation: true
 ---
 
 You are authorized to use the `github-operations:cleanup-and-debug` skill to orchestrate an end-to-end audit, plan and cleanup of this repository, delegating the audit to the `github-operations:repo-hygiene:health-diagnostics` agent and planning and executing the approved plan yourself.

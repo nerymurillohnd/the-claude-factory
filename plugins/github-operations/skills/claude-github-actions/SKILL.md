@@ -1,6 +1,7 @@
 ---
 name: claude-github-actions
 description: Diagnoses, audits, hardens and repairs GitHub Actions workflows, specializing in workflows that run Claude through anthropics/claude-code-action. Finds why a Claude step failed, did nothing or posted nothing; audits workflow files for injection, excess permissions, unpinned actions and claude-code-action misconfiguration, with an exact patch per finding; and repairs failing CI on the default branch, asking the user before any rerun, workflow change or push. Use when the user asks why a claude-code-action step failed or never commented, wants a workflow reviewed, audited or hardened, or wants the default branch green again, even if they only say "CI is broken" or "the Claude review did nothing". Not for a pull request's failing tests or code, a repository cleanup, or writing templates and forms, which this plugin's other skills cover.
+argument-hint: "[run URL, workflow file or PR number]"
 ---
 
 # Claude GitHub Actions
