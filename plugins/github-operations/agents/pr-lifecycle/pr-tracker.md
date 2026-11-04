@@ -39,6 +39,8 @@ Rules:
 - Rulesets in "evaluate" mode are not returned by the branch rules endpoint (`repos/<owner>/<repo>/rules/branches/<branch>`), so their rules are missing from the required checks it lists.
 - A reply, an outdated thread or a passing check does not prove a finding is addressed. Read the code at its `path:line` on the head.
 - A run waiting for approval is neither passing nor failing.
+- Workflows triggered by a comment or a review run on the default branch, not on the head: `gh pr checks` never shows them.
+- Some review bots report progress as a pending commit status rather than a check run, and post their review only after it turns green.
 - A green AI-review check can be a no-op.
 - Fork and Dependabot runs get no secrets: a credential failure there is configuration, not code.
 - A job that passed on a retry is possibly flaky, not fixed.
@@ -55,10 +57,12 @@ Rules:
    - Identify its base and head branches.
    - Compare its head SHA with the brief's.
    - Note its mergeability, merge state and labels.
-3. [Wait] Wait for the checks on the head to finish, up to the wait limit.
-   - Track the runs and jobs still queued or running.
-   - Spot the runs waiting for approval.
-   - Stop at the wait limit.
+3. [Wait] Wait until no check and no automated reviewer is still working on the head, up to the wait limit.
+   - Find what is still working, in one read: checks and commit statuses on the head that are queued, in progress or pending (`gh pr checks <n> -R <owner>/<repo> --json name,state,bucket,workflow,link`); bot or app reviewers still listed as requested (`gh pr view <n> -R <owner>/<repo> --json reviewRequests`); and workflows the pull request's comments or reviews triggered, which run on the default branch and do not appear among the head's checks (`gh run list -R <owner>/<repo> --event issue_comment` and `--event pull_request_review_comment`, those created since the head was pushed).
+   - Wait with blocking commands, never by reading again and again: each read costs a turn. Run `gh pr checks <n> -R <owner>/<repo> --watch --interval 60` with the Bash tool's longest timeout (10 minutes), and `gh run watch <run id> -R <owner>/<repo> --interval 60` for a triggered run. When a call times out, read once what is still working, then watch again. At most three watch calls cover the 30-minute default.
+   - A requested bot reviewer has no command to watch: read the review requests again after each watch call, and stop waiting for it when the checks are done and it is still listed.
+   - Spot the runs waiting for approval: they do not finish on their own.
+   - Stop at the wait limit, and list what was still working.
 4. [Runs] Audit the workflow runs, jobs and runners on the head.
    - List every workflow and job on the head as ran, skipped or did not run, with its conclusion.
    - Identify each job that failed, was skipped, was cancelled or ended neutral, and why.
@@ -84,7 +88,8 @@ Rules:
    - Collect the annotations of every check run: errors, warnings and notices.
    - Collect the warnings in the logs.
    - Spot deprecated actions, runtimes and runner images.
-9. [Reviews] Audit the reviews, review threads and comments, and each finding's state at the head.
+9. [Reviews] Audit what every reviewer produced, the reviews, review threads and comments, and each finding's state at the head.
+   - For each automated reviewer that worked on the head (a review app, an AI-review workflow, a bot requested as reviewer), find what it produced: a review, review comments, a pull request comment, its check run's summary (`gh api repos/<owner>/<repo>/check-runs/<id> --jq .output`), its job summary or annotations, or an issue it opened that names the pull request. One that finished and produced nothing is a no-op: say so.
    - Collect the reviews and their state.
    - Identify each thread's author, and whether it is a bot or a person.
    - Note each thread's resolved and outdated flags.
@@ -175,12 +180,13 @@ Checklist against your workflow, before you return. Fix every false box first.
 
 - [ ] Intake: the brief was complete, or the status is `BLOCKED` naming what is missing.
 - [ ] Snapshot: the head SHA in the report is the one inspected, and its match with the brief is stated.
-- [ ] Wait: jobs still running at the limit are listed, or there are none.
+- [ ] Wait: the wait used blocking watch commands, and the checks, triggered runs and bot reviewers still working at the limit are listed, or there are none.
 - [ ] Runs: every workflow and job appears as ran, skipped or did not run, with its conclusion, duration and URL.
 - [ ] Failures: every failed job's log was read; each failure has its run and attempt, step, error, cause, class, base-branch result and URL, root failures first; a rerun is recommended only with evidence that the failure was transient.
 - [ ] Warnings: every check run's annotations were read.
 - [ ] Required checks: each one appears with its state at the head.
 - [ ] Workflow files: every workflow that should have run and didn't is explained.
+- [ ] Reviewers: every automated reviewer that worked on the head has what it produced listed, or is marked as a no-op.
 - [ ] Reviews: every review, thread and comment that reports an issue is in the table, with its author, type, state at the head and URL.
 - [ ] Diff: breaking changes carry their migration path, or the report says what was examined.
 - [ ] Dependabot: alerts are listed, or marked "not inspected" with the reason.
