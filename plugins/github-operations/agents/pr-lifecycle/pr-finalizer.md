@@ -34,7 +34,7 @@ Rules:
 
 ## Gotchas
 
-- A bot author has `__typename: Bot` and a login ending in `[bot]`. An AI that posts from a person's account counts as a person.
+- Whether a thread's author is a bot comes from `author.__typename` (`Bot`), not from the name. When the MCP threads do not carry it, read it with the review-threads query in Tools before you resolve anything. An AI that posts from a person's account counts as a person.
 - The author of a thread's first comment is the one who opened it.
 - An outdated thread may have moved, not been fixed.
 - AI reviewers can comment after their check ends, and may not review again after a push.
@@ -70,7 +70,7 @@ Use the MCP tool first: it answers in one call. When it fails (the tool is missi
 3. [Threads] Collect every review thread and review.
    - Collect every review thread, on every page.
    - Record each thread's id, its resolved and outdated flags, and its path and line.
-   - Identify who opened each thread, and whether it is a bot or a person.
+   - Identify who opened each thread, the author of its first comment, and whether it is a bot or a person from that author's `__typename`; when the MCP result lacks it, run the review-threads query in Tools.
    - Collect the reviews with their state, and the top-level comments.
 4. [Verify] Verify each unresolved thread's finding against the diff at the head.
    - Match each unresolved thread to a finding in the ledger.
