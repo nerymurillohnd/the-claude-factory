@@ -72,7 +72,7 @@ GitHub reads each file only at its own path and name. Before writing, look in ev
 
 ## Scripts
 
-Run each from the repository's root by its full path, never through `python3`. Each prints its usage when called with no arguments, and exits 0 when it passes, 1 on a finding and 2 on a usage error or a tool that cannot run.
+Run each from the repository's root by its full path, never through `python3`. Each documents its flags, exit codes and examples in `--help`, and writes its result on stdout and its errors on stderr: exit 0 when it passes, 1 on a finding, 2 on a usage error or a tool that cannot run.
 
 | Script | Run it | Needs |
 | :-- | :-- | :-- |

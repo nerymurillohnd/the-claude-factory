@@ -1,7 +1,7 @@
 #!/usr/bin/env -S uv run --script
 # /// script
 # requires-python = ">=3.12"
-# dependencies = ["ruamel.yaml>=0.18.10", "check-jsonschema>=0.36.0"]
+# dependencies = ["ruamel.yaml==0.19.1", "check-jsonschema==0.39.0"]
 # ///
 """Check GitHub issue forms, the issue template chooser or discussion forms.
 
@@ -14,8 +14,8 @@ listed twice; no dropdown or checkbox option is `None`; no option is an unquoted
 field that is not markdown; a discussion form has no `name` or `description` key. Each of those
 findings reads `FILE:LINE:COLUMN: message`; schema errors are passed on as check-jsonschema
 prints them.
-Exit 0 = pass, 1 = at least one finding (on stderr), 2 = usage error, an unreadable file, or
-check-jsonschema cannot run.
+Exit 0 = pass, 1 = at least one finding (on stdout), 2 = usage error, an unreadable file, or
+check-jsonschema cannot run (on stderr).
 """
 
 from __future__ import annotations
@@ -34,6 +34,23 @@ from ruamel.yaml.nodes import MappingNode, Node, ScalarNode, SequenceNode
 if TYPE_CHECKING:
     from collections.abc import Callable, Sequence
     from typing import TypeIs
+
+DESCRIPTION = """\
+Check GitHub issue forms, the issue template chooser or discussion forms against GitHub's
+schema and the rules it misses. Prints one finding per line on stdout."""
+KIND_HELP = """\
+issue: forms in .github/ISSUE_TEMPLATE/; issue-config: its config.yml; discussion: forms in
+.github/DISCUSSION_TEMPLATE/"""
+EPILOG = """\
+exit codes:
+  0  every file passes
+  1  at least one finding, printed on stdout as FILE:LINE:COLUMN: message
+  2  usage error, an unreadable file, or check-jsonschema cannot run (on stderr)
+
+examples:
+  check-forms.py --kind issue .github/ISSUE_TEMPLATE/bug_report.yml
+  check-forms.py --kind issue-config .github/ISSUE_TEMPLATE/config.yml
+  check-forms.py --kind discussion .github/DISCUSSION_TEMPLATE/*.yml"""
 
 SCHEMAS = {
     "issue": "vendor.github-issue-forms",
@@ -221,9 +238,20 @@ class Args(argparse.Namespace):
 
 def main() -> int:
     """Parse the arguments, run both checks and report."""
-    parser = argparse.ArgumentParser(description="Check GitHub issue and discussion forms.")
-    _ = parser.add_argument("--kind", required=True, choices=tuple(SCHEMAS))
-    _ = parser.add_argument("files", nargs="+", type=Path, metavar="FILE")
+    parser = argparse.ArgumentParser(
+        description=DESCRIPTION,
+        epilog=EPILOG,
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    _ = parser.add_argument(
+        "--kind",
+        required=True,
+        choices=tuple(SCHEMAS),
+        help=KIND_HELP,
+    )
+    _ = parser.add_argument(
+        "files", nargs="+", type=Path, metavar="FILE", help="the form files to check"
+    )
     args = parser.parse_args(namespace=Args())
     try:
         texts = {path: path.read_text(encoding="utf-8") for path in args.files}
@@ -242,7 +270,7 @@ def main() -> int:
     for path, source in texts.items():
         found.extend(check_form(args.kind, str(path), source))
     for message in found:
-        _ = sys.stderr.write(message + "\n")
+        _ = sys.stdout.write(message + "\n")
     return 1 if found else 0
 
 

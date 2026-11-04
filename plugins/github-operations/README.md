@@ -497,7 +497,7 @@ The plugin's `github` server asks for **every toolset** (`X-MCP-Toolsets: all`) 
 - **Hooks:** none.
 - **MCP servers:** `github`, GitHub's official remote server at `https://api.githubcopilot.com/mcp/`, which Claude Code reaches with your token as `Authorization: Bearer`. [What the GitHub server includes](#what-the-github-server-includes) lists the toolsets it asks for.
 - **Commands it runs:** `git` and `gh` in your repository, through Claude Code's Bash tool, so your permission settings and prompts apply to each one. The repository setup also runs its two scripts: a label comparison with `python3`, and a form check through `uv`.
-- **Network:** the GitHub server sends your requests and token to `api.githubcopilot.com`. `git` and `gh` reach GitHub and your remotes. The form and Dependabot checks run through `uv`, which downloads `check-jsonschema` and `ruamel.yaml` from PyPI on their first run.
+- **Network:** the GitHub server sends your requests and token to `api.githubcopilot.com`. `git` and `gh` reach GitHub and your remotes. The form and Dependabot checks run through `uv`, which downloads `check-jsonschema` 0.39.0 and `ruamel.yaml` 0.19.1, pinned exactly, from PyPI on their first run.
 - **Files written:** the PR lifecycle writes only your own commits, in your clone. The repository setup writes its files on a new branch of your repository. The cleanup writes a backup bundle and its working notes to folders outside your repository; it tells you where the backup is and asks whether to keep it.
 
 ### The agents' limits

@@ -30,6 +30,17 @@ class JsonObject(dict[str, object]):
 
 
 LIST_LIMIT = 1000
+DESCRIPTION = """\
+Compare a repository's labels with a labels file, through gh. Prints one JSON object on
+stdout: missing, extra and different."""
+EPILOG = """\
+exit codes:
+  0  nothing missing or different
+  1  something missing or different (see the JSON)
+  2  usage error, an unreadable labels file, or gh failed or is missing (on stderr)
+
+example:
+  labels-diff.py --repo octo-org/octo-repo --labels labels.json"""
 
 _decode: Callable[[str], object] = json.JSONDecoder(object_hook=JsonObject).decode
 
@@ -131,9 +142,18 @@ def present(repo: str) -> dict[str, Label]:
 
 def main() -> int:
     """Read both label sets, compare them and report."""
-    parser = argparse.ArgumentParser(description="Compare a repository's labels with a file.")
-    _ = parser.add_argument("--repo", required=True)
-    _ = parser.add_argument("--labels", required=True, type=Path)
+    parser = argparse.ArgumentParser(
+        description=DESCRIPTION,
+        epilog=EPILOG,
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    _ = parser.add_argument("--repo", required=True, help="the repository, as OWNER/REPO")
+    _ = parser.add_argument(
+        "--labels",
+        required=True,
+        type=Path,
+        help="a JSON list of {name, color, description} objects",
+    )
     args = parser.parse_args(namespace=Args())
     try:
         want = wanted(args.labels)
