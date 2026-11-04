@@ -258,7 +258,7 @@ const NODE_VERSION_PREFIX = /^v/
  * major of .nvmrc, and no script npm runs on its own except `"prepare": "husky"`, which installs
  * the git hooks. A runtime field would let a plugin resolve packages that no user receives, and
  * "type" would change how Node and tsc read the plugins' .js and .ts files.
- * @param {{ private?: unknown, devDependencies?: unknown, scripts?: unknown } & Record<string, unknown>} pkg
+ * @param {{ private?: unknown, devDependencies?: unknown, devEngines?: unknown, scripts?: unknown } & Record<string, unknown>} pkg
  * @param {string} nodeVersion the content of .nvmrc
  * @returns {string[]}
  */
@@ -274,9 +274,43 @@ export function rootPackageProblems(pkg, nodeVersion) {
     }
   }
   problems.push(...autoScriptProblems(isRecord(pkg.scripts) ? pkg.scripts : {}))
+  problems.push(...devEnginesProblems(pkg.devEngines, nodeVersion))
   problems.push(
     ...devDependencyProblems(isRecord(pkg.devDependencies) ? pkg.devDependencies : {}, nodeVersion),
   )
+  return problems
+}
+
+/**
+ * The Node pin npm enforces before install, ci and run: devEngines.runtime, one object naming
+ * node, at ^ plus the .nvmrc version, failing on a mismatch. .nvmrc stays CI's exact version; the
+ * caret lets a newer 26.x pass locally while Node 22 or 27 stops every npm command and git hook.
+ * @param {unknown} devEngines
+ * @param {string} nodeVersion the content of .nvmrc
+ * @returns {string[]}
+ */
+function devEnginesProblems(devEngines, nodeVersion) {
+  const want = `^${nodeVersion.trim().replace(NODE_VERSION_PREFIX, '')}`
+  const runtime = isRecord(devEngines) ? devEngines['runtime'] : undefined
+  if (runtime === undefined) {
+    return [
+      `must declare "devEngines": { "runtime": { "name": "node", "version": "${want}", "onFail": "error" } }`,
+    ]
+  }
+  if (!isRecord(runtime)) {
+    return ['devEngines.runtime must be one object, not a list']
+  }
+  /** @type {string[]} */
+  const problems = []
+  if (runtime['name'] !== 'node') {
+    problems.push('devEngines.runtime.name must be "node"')
+  }
+  if (runtime['version'] !== want) {
+    problems.push(`devEngines.runtime.version must be "${want}", the .nvmrc version with a caret`)
+  }
+  if (runtime['onFail'] !== 'error') {
+    problems.push('devEngines.runtime.onFail must be "error", so a wrong Node stops npm')
+  }
   return problems
 }
 
