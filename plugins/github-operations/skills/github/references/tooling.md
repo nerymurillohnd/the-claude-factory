@@ -1,6 +1,6 @@
 # Tooling: which tool does each GitHub operation
 
-Contents: Routing · Preflight · Reads · Writes: pull requests · Writes: CI · Writes: reviews · Writes: merge · Fallbacks · Guardrails · Beyond the lifecycle
+Contents: Routing · Preflight · Reads · Writes: pull requests · Writes: reviews · Writes: merge · Fallbacks · Guardrails · Beyond the lifecycle
 
 The GitHub MCP tools and `gh` overlap. Each table lists the layer that does the task best first; "best" means the structured result or the shorter path, not a measured speed. Check a `gh` command's own help for its exact options before its first use in a run.
 
@@ -49,12 +49,6 @@ Never treat the combined commit status as proof that checks pass (a `pending` co
 | Apply labels | MCP `issue_write` with `method: update`, `issue_number` = PR number, `labels` | `gh` PR edit with the add-label option | The MCP update replaces the label list: send the existing labels too. The `gh` form only adds |
 | Mark a draft ready | MCP `update_pull_request` with `draft: false` | `gh` PR ready | Notifies reviewers |
 | Bring the branch up to date with its base | MCP `update_pull_request_branch` with `expectedHeadSha` | `gh` PR update-branch | Merges the base into the branch. Never use the rebase option: it rewrites published commits |
-
-## Writes: CI
-
-| Task | First | Fallback | Notes |
-| :-- | :-- | :-- | :-- |
-| Rerun failed jobs | MCP `actions_run_trigger` with `method: rerun_failed_jobs` and `run_id` (the server flags it destructive) | `gh` run rerun with the failed-only option | Only with evidence of a transient failure, or after the cause is fixed |
 
 ## Writes: reviews
 

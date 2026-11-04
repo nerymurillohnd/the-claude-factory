@@ -1,6 +1,6 @@
 # Repair failing CI on the default branch
 
-Find the workflows that fail, hang or stopped running on the default branch, fix their cause, and land the fix through a pull request.
+Find the workflows that fail, hang or stopped running on the default branch, fix their cause, and land the fix through a pull request. The tools for reading runs, jobs and logs, and for a rerun, are in `../references/ci-tooling.md`.
 
 ## 1. Find them
 
