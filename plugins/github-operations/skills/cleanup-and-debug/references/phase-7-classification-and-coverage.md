@@ -10,7 +10,7 @@ Give every item exactly one class:
 - **Dirty:** uncommitted or unpushed changes.
 - **Orphaned:** refs, worktrees or registrations whose target is gone.
 - **Dead:** branches, tags, workflows or files that nothing uses.
-- **Deferred:** work started and never finished: abandoned pull requests, stale stashes, failed jobs never rerun.
+- **Deferred:** work started and never finished: abandoned pull requests, stale stashes, failed jobs never fixed. A job that was never rerun is not unfinished by itself: a rerun without evidence of a transient failure fixes nothing.
 - **External link:** anything outside the repository that still points to it.
 - **Needs investigation:** a problem whose cause is unknown and needs a bisect, a blame or a reproduction.
 
