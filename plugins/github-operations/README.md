@@ -36,7 +36,8 @@
 - **Reports you can act on** — failed jobs with the failing step, the first error and its root cause, whether the same job fails on the base branch, required checks, warnings, review threads with their links, breaking changes and secrets in the diff, and Dependabot alerts.
 - **Templates written for your repository** — PR templates, issue and discussion forms, labels, Dependabot and `CODEOWNERS` are written from tested models but with your components, versions, environments, commands and labels. Your own files always win: Claude proposes changes to them and never overwrites them.
 - **Nothing valuable gets lost in a cleanup** — the audit compares your clone with GitHub branch by branch and commit by commit, and covers worktrees, stashes, history, lost commits, pull requests, workflows, Dependabot, forks and every link outside the repository. You approve the recommendations, then the exact actions. A backup comes first, and Claude proves it restores before it changes anything.
-- **Each skill knows its place** — the PR lifecycle, the repository setup and the cleanup are separate skills. When you ask one for another's job, it hands you to the right one.
+- **Workflows that run Claude, checked against the action's real behavior** — Claude matches a failed or silent claude-code-action step against fourteen known failure patterns, and audits workflow files for shell injection, excess permissions, unpinned actions, unsafe `pull_request_target` designs and claude-code-action misconfiguration, with the exact patch for each finding. Action versions and model IDs are looked up when they are written, never copied from examples, which lag behind.
+- **Each skill knows its place** — the PR lifecycle, the repository setup, the cleanup and the Actions work are separate skills. When you ask one for another's job, it hands you to the right one.
 - **GitHub tools ready to use** — the GitHub MCP server comes with the plugin, so Claude reads GitHub through structured tools and uses `git` and `gh` for what touches your clone.
 
 ## 🧩 What's inside
@@ -46,7 +47,7 @@
 | 🎯 Skill | `github-operations:auto-pr-lifecycle` | Takes a pull request from its current stage to merge with three agents, asking you before every push and before the merge | `/github-operations:auto-pr-lifecycle`, or when you ask to open, babysit, fix or merge a pull request |
 | 🎯 Skill | `github-operations:cleanup-and-debug` | Audits a repository local and remote, plans the cleanup and debugging you approve, and runs it behind a verified backup | `/github-operations:cleanup-and-debug`, or when you ask to audit or clean up a repository. It asks before it starts |
 | 🎯 Skill | `github-operations:github-files-setup` | Writes a repository's PR templates, issue and discussion forms, labels, Dependabot, `CODEOWNERS` and merge-message setting, adapted to it, and lands them through a pull request | `/github-operations:github-files-setup`, or when you ask to set up templates, forms or labels |
-| 🎯 Skill | `github-operations:claude-github-actions` | Repairs failing CI on the default branch: finds the workflows whose latest run failed or stopped, diagnoses each from its log, and lands each fix through its own pull request, asking before any rerun, workflow change or push | `/github-operations:claude-github-actions`, or when you ask to fix CI on the default branch |
+| 🎯 Skill | `github-operations:claude-github-actions` | Diagnoses a Claude step in GitHub Actions that failed, did nothing or posted nothing; audits and hardens workflow files with an exact patch per finding; and repairs failing CI on the default branch, asking before any rerun, workflow change or push | `/github-operations:claude-github-actions`, or when you ask why a Claude workflow did nothing, to audit a workflow, or to fix CI on the default branch |
 | ⌨️ Command | `/github-operations:init-pr-lifecycle` | Picks up the current pull request at the stage it is in and runs the PR lifecycle from there | You type it |
 | ⌨️ Command | `/github-operations:init-cleanup-and-debug` | Picks up a repository at its cleanup stage (not audited, audited, planned, approved, executed) and runs from there | You type it |
 | 🤖 Agent | `github-operations:pr-lifecycle:pr-tracker` | Waits for a pull request's checks, then reports failures and their root cause, review threads, breaking changes, secrets in the diff, warnings and Dependabot alerts | Launched by the PR lifecycle after a pull request opens and after every push |
@@ -446,6 +447,10 @@ The plugin has one option, your GitHub token.
 
 The option isn't listed in `/config`, because Claude Code keeps sensitive options out of it. Uninstalling the plugin from every scope it's installed in deletes the stored token.
 
+### Diagnose, audit or repair GitHub Actions workflows
+
+Ask *"Why did the Claude review on PR 42 post nothing?"*, *"Audit our workflows"* or *"CI on main is broken"*. Claude reads the run's log and the workflow file at the commit it ran, matches them against the known failure patterns of `anthropics/claude-code-action`, and names the cause with the log lines that prove it. An audit lists each finding with its file and line, what triggers it, its impact and the exact patch. Claude changes a workflow only after you approve the patch, pins every action it writes to a full commit, and lands the change through a pull request. Linters such as actionlint and zizmor run only if you already have them installed. Writing a new workflow from scratch is not covered yet.
+
 ### In the Claude app
 
 The Claude app can't read the plugin's token option. When you turn the plugin on there, the app lists its GitHub server as a connector that is not added yet, and its form starts on an OAuth sign-in that asks for an OAuth app you would have to register with GitHub yourself. Connect it with your token instead, once. On a Team or Enterprise plan only an Owner (or, on Enterprise, a role with **Manage access to Libraries**) can add it; on the Free plan it counts as your one custom connector.
@@ -685,6 +690,8 @@ See [CHANGELOG.md](./CHANGELOG.md) for every release.
 ## 🙏 Credits
 
 This plugin ships none of GitHub's software. It connects Claude Code to the hosted remote server of the official [GitHub MCP Server](https://github.com/github/github-mcp-server) (MIT license, © GitHub). The URL forms, toolsets and tool names come from GitHub's documentation: the [remote server guide](https://github.com/github/github-mcp-server/blob/main/docs/remote-server.md) and the guide to [installing it in Claude applications](https://github.com/github/github-mcp-server/blob/main/docs/installation-guides/install-claude.md). We re-checked them against the live server, and if GitHub changes them, GitHub's documentation is the reference.
+
+The Actions skill's knowledge of [`anthropics/claude-code-action`](https://github.com/anthropics/claude-code-action) (MIT license, © Anthropic) was read from its source code and documentation, and of GitHub Actions from [GitHub's documentation](https://docs.github.com/en/actions), and rewritten in this plugin's own words; no upstream text or example is copied. The version each fact was checked against is named at the end of each reference file.
 
 GitHub also publishes its own [agent plugin](https://github.com/github/github-mcp-server/tree/main/agent-plugin) for the same server, which declares only the server connection. This plugin adds the skills and agents around that server (the pull request lifecycle, the repository setup, and the audit and cleanup), with a token option and a choice of tool set.
 
