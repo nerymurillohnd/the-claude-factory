@@ -10,8 +10,23 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ### Added
 
-- A `/github-operations:init-pr-lifecycle` command that takes a pull request from the stage it is in to merge-ready, asking you before each push and before the merge.
+- The `auto-pr-lifecycle` skill takes a pull request from the stage it is in to merge: it opens it, has its agents watch, fix and finalize it, and asks you before every push and before the merge. After each fix round you choose **Push**, **Push without asking again on this pull request** or **Don't push**.
+- A `/github-operations:init-pr-lifecycle` command that starts that lifecycle on the current pull request, or the one you name.
 - A `pr-lifecycle` team of three agents: `pr-tracker` watches a pull request and reports what it finds, `pr-fixer` fixes reported failures and review findings in your local clone without pushing, and `pr-finalizer` answers the review threads, resolves the ones bots opened, and reports whether the pull request is ready to merge.
+- The `cleanup-and-debug` skill audits a repository, local and remote, in fourteen phases, then plans and runs only the cleanup you approve at two gates, behind a backup bundle it proves restores. The `/github-operations:init-cleanup-and-debug` command starts it, and the read-only `repo-hygiene:health-diagnostics` agent runs its audit phases, several at once on a large repository.
+- The `github-files-setup` skill writes a repository's own PR templates, issue and discussion forms, labels, Dependabot file and `CODEOWNERS`, adapted to that repository from the plugin's models, and sets the merge message you approve. It maps each model to the exact path GitHub reads, and looks for the repository's own copy in every place GitHub accepts one before writing anything.
+
+### Changed
+
+- **Breaking:** GitHub work runs through focused skills instead of one `github` contract: the pull request lifecycle, repository setup, and repository audit and cleanup. Each skill hands a request it does not cover to the one that does.
+- **Breaking:** the plugin no longer ships hooks, and no longer needs `python3` for them. The agents' limits (the tracker, the auditor and the finalizer change no code, the fixer never pushes) are now enforced only by their instructions; the README shows how to add hard limits yourself.
+- `python3` 3.12 and uv are needed only for the repository setup's label comparison and form checks.
+
+### Removed
+
+- **Breaking:** the `github-operations:pr-tracker` agent. Use `github-operations:pr-lifecycle:pr-tracker`, which reports the same findings and adds the failure's run and attempt, its cause class, and a rerun only for a failure shown to be transient.
+- **Breaking:** CI repair (`/github-operations:github ci`) leaves the `github` skill. It returns in a later version with the GitHub Actions skill.
+- The template models inside the `github` skill. The same models now ship with `github-files-setup`.
 
 ## [0.5.1] - 2026-11-02
 
