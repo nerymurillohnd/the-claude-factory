@@ -55,7 +55,6 @@ Run these in order. A failure at any point stops the action, not the whole run, 
 - Nothing is deleted, and other people's comments are not touched. Closing is reversible by reopening (`gh pr reopen`, `gh issue reopen`).
 
 **`external-unlink`** (one action per item)
-- Disable a workflow: `gh workflow disable <name or id> -R <o>/<r>`; undone with `gh workflow enable`.
 - Delete an artifact or cache: `gh api -X DELETE repos/<o>/<r>/actions/artifacts/<id>`; `gh cache delete <id> -R <o>/<r>`. Irreversible: the plan says so.
 - Remove a webhook: `gh api -X DELETE repos/<o>/<r>/hooks/<id>`. Irreversible; the plan records its URL (credentials redacted) and events so the user can recreate it.
 - Stop a tunnel or job: only the process or entry the plan names (`kill <pid>` after re-checking that the pid still runs the audited command; `launchctl bootout` / `crontab` edits only for the exact entry). Never `kill -9` as a first move.
