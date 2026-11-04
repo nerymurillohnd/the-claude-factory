@@ -47,6 +47,32 @@
             "statusMessage": "Running the maintainer validators before the commit…"
           }
         ]
+      },
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/skill-frontmatter.py",
+            "args": [],
+            "if": "Write(**/SKILL.md)",
+            "timeout": 60,
+            "statusMessage": "Checking the SKILL.md frontmatter as strict YAML…"
+          }
+        ]
+      },
+      {
+        "matcher": "Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/skill-frontmatter.py",
+            "args": [],
+            "if": "Edit(**/SKILL.md)",
+            "timeout": 60,
+            "statusMessage": "Checking the SKILL.md frontmatter as strict YAML…"
+          }
+        ]
       }
     ],
     "SessionStart": [
@@ -58,6 +84,34 @@
             "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/checkout.sh",
             "timeout": 180,
             "statusMessage": "Syncing node_modules, running the validators and checking tool versions…"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/skill-frontmatter.py",
+            "args": [],
+            "if": "Write(**/SKILL.md)",
+            "timeout": 60,
+            "statusMessage": "Re-checking the saved SKILL.md frontmatter…"
+          }
+        ]
+      },
+      {
+        "matcher": "Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/skill-frontmatter.py",
+            "args": [],
+            "if": "Edit(**/SKILL.md)",
+            "timeout": 60,
+            "statusMessage": "Re-checking the saved SKILL.md frontmatter…"
           }
         ]
       }
