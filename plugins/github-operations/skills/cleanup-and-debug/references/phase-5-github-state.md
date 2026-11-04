@@ -1,6 +1,6 @@
 # Phase 5: GitHub state
 
-Audit the repository on GitHub. This phase is read-only: every list is paginated and aware of rate limits, and every call the identity cannot make goes to the coverage ledger ([Phase 0](phase-0-intake-and-preflight.md#reachability-and-consent)).
+Audit the repository on GitHub. This phase is read-only: every list is paginated and aware of rate limits, and every call the identity cannot make goes to the coverage ledger.
 
 ## Pull requests
 
@@ -74,6 +74,13 @@ Inventory pull requests in every state (open, draft, closed and merged), each wi
 - The whole fork network.
 - Each fork ahead of or behind this repository's default branch, by commit count.
 - Forks holding work that was never sent back.
+
+## Done when
+
+- [ ] Pull requests in every state are listed with their SHAs, read from every page.
+- [ ] Every section above was read from every page, or is in the coverage ledger with the call that failed.
+- [ ] Secrets and variables appear by name only.
+- [ ] Every fork has its ahead and behind counts, or is in the coverage ledger.
 
 ## Sources
 

@@ -1,6 +1,6 @@
 # Phase 1: Local state
 
-Inventory everything in the local clone. This phase is read-only, and every command runs as [Phase 0](phase-0-intake-and-preflight.md#side-effect-free-inventory) sets.
+Inventory everything in the local clone. This phase is read-only.
 
 ## HEAD
 
@@ -54,7 +54,19 @@ Inventory everything in the local clone. This phase is read-only, and every comm
 ## Other ref namespaces
 
 - Notes, `refs/pull` and tool refs.
-- `refs/original`, `refs/replace` and `refs/bisect` are residue, audited in [Phase 4](phase-4-git-residue.md#leftovers-of-interrupted-operations).
+- `refs/original`, `refs/replace` and `refs/bisect` are residue, audited in Phase 4.
+
+## Done when
+
+- [ ] HEAD and any operation in progress are recorded.
+- [ ] Every working-tree category is collected, including ignored files and tracked files that match ignore rules.
+- [ ] Every nested repository, submodule, subtree and LFS object is listed.
+- [ ] Every symlink is classified as inside, broken or pointing outside.
+- [ ] Every worktree registration is listed with its state.
+- [ ] Every stash is listed with its tracked changes, its `^3` untracked files and whether it is in the base.
+- [ ] Every local branch and tag is listed with its full object ID.
+- [ ] Every other ref namespace is listed.
+- [ ] Every section that could not be collected is in the coverage ledger.
 
 ## Sources
 

@@ -4,7 +4,7 @@ Compare the local clone with the live remote. This phase is read-only: it reads 
 
 ## Rules
 
-- Compare by full object ID, never by abbreviated SHA. Its length follows the object format found in [Phase 0](phase-0-intake-and-preflight.md#repository-format).
+- Compare by full object ID, never by abbreviated SHA. Its length follows the object format recorded in Phase 0.
 - Read live remote heads and tags without fetching.
 
 ## Branch sync state
@@ -49,6 +49,16 @@ States 3 and 4 come from `git merge-tree --write-tree`: exit status 0 means a cl
 
 - Local and remote default branches that disagree.
 - Renamed or transferred repositories whose old URLs are still in the remotes.
+
+## Done when
+
+- [ ] The live remote heads and tags were read without fetching.
+- [ ] Every branch has exactly one sync state.
+- [ ] Every tag that differs or exists on only one side is listed.
+- [ ] Every gone or missing upstream and every out-of-date remote-tracking ref is listed.
+- [ ] Every open pull request's head is compared with its local branch.
+- [ ] Every branch has an integration state, tested in order, with the repository's object store untouched.
+- [ ] Every section that could not be collected is in the coverage ledger.
 
 ## Sources
 

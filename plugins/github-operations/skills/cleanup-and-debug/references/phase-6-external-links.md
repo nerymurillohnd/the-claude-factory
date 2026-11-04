@@ -1,6 +1,6 @@
 # Phase 6: External links
 
-Find everything outside the repository that still points to it. This phase is read-only. Scans on this machine run only within the consent given in [Phase 0](phase-0-intake-and-preflight.md#reachability-and-consent).
+Find everything outside the repository that still points to it. This phase is read-only. Scans on this machine run only within the consent recorded in Phase 0.
 
 ## Other GitHub repositories
 
@@ -35,6 +35,13 @@ Only with consent:
 - IDE workspace files.
 - cron, launchd and systemd jobs that reference the path or the remote.
 - Tunnels and listening ports that serve from the repository or forward to it.
+
+## Done when
+
+- [ ] Every code-search query ran to completion or was split, and what code search cannot see is in the coverage ledger.
+- [ ] Every mirror, other host and committed service configuration is listed.
+- [ ] Every registry package that points to this repository is listed.
+- [ ] Every scan on this machine stayed inside the approved roots, and every refused scope is in the coverage ledger.
 
 ## Sources
 

@@ -1,6 +1,6 @@
 # Phase 3: History and object store
 
-Audit the whole history, from the first commit, and the health of the object store. This phase is read-only, and every command runs as [Phase 0](phase-0-intake-and-preflight.md#side-effect-free-inventory) sets.
+Audit the whole history, from the first commit, and the health of the object store. This phase is read-only.
 
 ## History
 
@@ -41,6 +41,16 @@ Audit the whole history, from the first commit, and the health of the object sto
 
 - What can only be recovered from a reflog.
 - When it expires: reflog entries after 90 days, or 30 days when unreachable; unreachable objects are pruned after 2 weeks ([git-gc][git-gc]).
+
+## Done when
+
+- [ ] The history figures cover every commit from every root.
+- [ ] Author identities and unsigned commits are listed.
+- [ ] Object counts are compared with the repository's own `gc` thresholds, and `fsck` ran without `--lost-found`.
+- [ ] The largest blobs and the files that exist only in history are listed.
+- [ ] Every secret-like file name ever committed is listed, with no content.
+- [ ] Every unreachable commit is checked against refs, reflogs, stashes and bundles.
+- [ ] Every section that could not be collected is in the coverage ledger.
 
 ## Sources
 

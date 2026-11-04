@@ -1,6 +1,6 @@
 # Phase 4: Git-native residue and risk surfaces
 
-Find the places inside `.git` and in Git's configuration where old state or live links hide. This phase is read-only, and every command runs as [Phase 0](phase-0-intake-and-preflight.md#side-effect-free-inventory) sets.
+Find the places inside `.git` and in Git's configuration where old state or live links hide. This phase is read-only.
 
 ## Hooks
 
@@ -45,6 +45,15 @@ Read every scope (system, global, local, worktree and conditional includes) with
 - `git-daemon-export-ok`.
 - Files left by `update-server-info`.
 - fsmonitor daemons.
+
+## Done when
+
+- [ ] Every active hook is listed, and each one that calls outside the repository is marked as an external link.
+- [ ] Every configuration scope was read with its origins, and no credential value appears in the output.
+- [ ] Every leftover of an interrupted operation is listed.
+- [ ] Every attribute filter without its tool is listed.
+- [ ] Every stray file and every process serving the repository is listed.
+- [ ] Every section that could not be collected is in the coverage ledger.
 
 ## Sources
 
