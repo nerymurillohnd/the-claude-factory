@@ -16,6 +16,7 @@ description: Takes a GitHub pull request from its current stage to merge. Opens 
 - Gotchas
 - Deploying an agent
 - Holding the agent to its work
+- Progress
 - Scenarios: no pull request yet, opened or pushed, findings to fix, ready to finalize, merge
 - Final report
 
@@ -117,6 +118,22 @@ Never take a report on trust. Before you act on one:
 6. Update the findings ledger.
 
 When a report fails any check, send the agent back with each gap named and demand the work done right. Act only on a report that passes.
+
+## Progress
+
+Copy this checklist into your response and update it as the pull request moves. Each line passes only when its gate holds.
+
+```text
+Progress:
+- [ ] 1. Pull request open (the user approved the push and the creation)
+- [ ] 2. Tracked at the current head (report verified)
+- [ ] 3. Fix rounds done (each push approved; at most five rounds before asking)
+- [ ] 4. Finalized (verdict READY_TO_MERGE, report verified)
+- [ ] 5. Merged at the approved head (GitHub confirms it landed)
+- [ ] 6. Final report sent
+```
+
+A step that fails its gate goes back to the step the scenario below names; never skip ahead.
 
 ## Scenarios
 
