@@ -23,34 +23,31 @@ description: Writes a GitHub repository's own collaboration files, adapted to th
 
 ## When to use
 
-- The user asks to set up a repository for collaboration: "add issue templates", "set up PR templates", "add discussion forms", "sync the labels", "add Dependabot", "add CODEOWNERS".
-- The user asks to update those files when a new situation appears: a new kind of issue, a new component, a new label group, a new package ecosystem.
-- A repository has no PR template, issue forms or labels, and the user wants them.
+- The user asks to set up or update a repository's PR templates, issue or discussion forms, labels, Dependabot or CODEOWNERS.
+- A new kind of issue, component, label group or package ecosystem needs those files updated.
 
 ## Overview
 
-A repository's collaboration files decide what every issue, discussion and pull request asks for. Generic copies ask the wrong questions, so this skill writes them for the repository.
-
-You are the repository's setup author. `${CLAUDE_SKILL_DIR}/assets/` holds reference models; you study the repository, choose the models that fit it, and write its own files from them, with its components, versions, environments, commands and labels. The repository's own files always win: you propose changes to them, never overwrite them.
+You write the repository's own collaboration files from the models in `assets/`. The models are not files to copy: for each kind, read its models, choose the ones that fit the repository (who contributes, what it ships, how it is tested and released), keep each model's structure and required fields, replace every generic part with the repository's facts (components, versions, environments, commands, labels), and drop what does not apply.
 
 The work ends in one pull request. The user approves the set of files, every label and setting change, and the push.
 
-In the references, `<skill-dir>` stands for `${CLAUDE_SKILL_DIR}`.
+Run commands with `${CLAUDE_SKILL_DIR}` in front of `scripts/` and `assets/`, because they run from the repository's root. The references write it as `<skill-dir>`.
 
 ## Where each file goes
 
-GitHub reads each file only at its own path and name, so write each one where this table says. Before writing, look in every place the third column lists: a file found there is the repository's own, and it wins.
+GitHub reads each file only at its own path and name. Before writing, look in every place the third column lists: a file found there is the repository's own, and it wins.
 
-| Model in `${CLAUDE_SKILL_DIR}/assets/` | Written in the repository as | The repository's own copy can be at | Section of `references/setup/templates.md` |
-| :-- | :-- | :-- | :-- |
-| `PULL_REQUEST_TEMPLATE/<kind>.md` | `.github/PULL_REQUEST_TEMPLATE/<kind>.md`, and the default one also as `.github/pull_request_template.md` | `pull_request_template.md` or a `PULL_REQUEST_TEMPLATE/` folder, in `.github/`, the root or `docs/` | 1 |
-| `ISSUE_TEMPLATE/<form>.yml` | `.github/ISSUE_TEMPLATE/<form>.yml` | `.github/ISSUE_TEMPLATE/`, forms or Markdown templates | 2 |
-| `ISSUE_TEMPLATE/config.yml` | `.github/ISSUE_TEMPLATE/config.yml`, with exactly that name | `.github/ISSUE_TEMPLATE/config.yml` | 2 |
-| `DISCUSSION_TEMPLATE/<category>.yml` | `.github/DISCUSSION_TEMPLATE/<category slug>.yml`, named by the slug of a category the repository has | `.github/DISCUSSION_TEMPLATE/` | 3 |
-| `labels.json` | No file: labels are created on GitHub, or written to the repository's label-sync file when it has one | The repository's labels on GitHub; a label-sync file | 4 |
-| `dependabot.yml` | `.github/dependabot.yml` | `.github/dependabot.yml` or `.github/dependabot.yaml` | 6 |
-| None: written from the repository's owners | `.github/CODEOWNERS` | `CODEOWNERS` in `.github/`, the root or `docs/`; GitHub uses the first it finds in that order | 7 |
-| `MERGE_TEMPLATE/merge-message.md` | No file: it is the model of a merge commit message. The repository setting that message follows is section 5 | — | 5 |
+| Model in `assets/` | Written in the repository as | The repository's own copy can be at |
+| :-- | :-- | :-- |
+| `PULL_REQUEST_TEMPLATE/<kind>.md` | `.github/PULL_REQUEST_TEMPLATE/<kind>.md`, and the default one also as `.github/pull_request_template.md` | `pull_request_template.md` or a `PULL_REQUEST_TEMPLATE/` folder, in `.github/`, the root or `docs/` |
+| `ISSUE_TEMPLATE/<form>.yml` | `.github/ISSUE_TEMPLATE/<form>.yml` | `.github/ISSUE_TEMPLATE/`, forms or Markdown templates |
+| `ISSUE_TEMPLATE/config.yml` | `.github/ISSUE_TEMPLATE/config.yml`, with exactly that name | `.github/ISSUE_TEMPLATE/config.yml` |
+| `DISCUSSION_TEMPLATE/<category>.yml` | `.github/DISCUSSION_TEMPLATE/<category slug>.yml` | `.github/DISCUSSION_TEMPLATE/` |
+| `labels.json` | No file: labels are created on GitHub, or written to the repository's label-sync file when it has one | The repository's labels on GitHub; a label-sync file |
+| `dependabot.yml` | `.github/dependabot.yml` | `.github/dependabot.yml` or `.github/dependabot.yaml` |
+| None: written from the repository's owners | `.github/CODEOWNERS` | `CODEOWNERS` in `.github/`, the root or `docs/`; GitHub uses the first it finds in that order |
+| `MERGE_TEMPLATE/merge-message.md` | No file: the model of a merge commit message, which the merge message setting follows | — |
 
 ## Rules
 
@@ -75,18 +72,16 @@ GitHub reads each file only at its own path and name, so write each one where th
 
 ## Scripts
 
-Both live in `${CLAUDE_SKILL_DIR}/scripts/`. Run each by its full path, never through `python3`, from the repository's root. Each prints its usage when called with no arguments, and exits 0 when it passes, 1 on a finding and 2 on a usage error or a tool that cannot run.
+Run each from the repository's root by its full path, never through `python3`. Each prints its usage when called with no arguments, and exits 0 when it passes, 1 on a finding and 2 on a usage error or a tool that cannot run.
 
 | Script | Run it | Needs |
 | :-- | :-- | :-- |
-| `${CLAUDE_SKILL_DIR}/scripts/check-forms.py --kind issue\|issue-config\|discussion <file>...` | After writing or changing any issue form, `config.yml` or discussion form (workflow steps 4 and 5), and again after every fix, until it exits 0 | `uv`, which installs its dependencies from the script's own metadata |
-| `${CLAUDE_SKILL_DIR}/scripts/labels-diff.py --repo <owner>/<repo> --labels <labels file>` | Before proposing labels (workflow step 6), and after creating them, to confirm none is missing | `python3` and an authenticated `gh` |
-
-`gh` also reads the repository and creates labels. The Dependabot file is checked with `uvx check-jsonschema`, as section 6 of `references/setup/templates.md` says.
+| `${CLAUDE_SKILL_DIR}/scripts/check-forms.py --kind issue\|issue-config\|discussion <file>...` | After writing or changing any issue form, `config.yml` or discussion form (steps 4 and 5), and again after every fix, until it exits 0 | `uv`, which installs its dependencies from the script's own metadata |
+| `${CLAUDE_SKILL_DIR}/scripts/labels-diff.py --repo <owner>/<repo> --labels <labels file>` | Before proposing labels (step 6), and after creating them, to confirm none is missing | `python3` and an authenticated `gh` |
 
 ## Workflow
 
-Copy this checklist into your response and check off each step once it passes:
+Copy this checklist into your response and check off each step once it passes. Skip a step the user did not ask for, and say so.
 
 ```text
 Progress:
@@ -102,23 +97,21 @@ Progress:
 - [ ] 10. Land the setup
 ```
 
-Skip a step the user did not ask for, and say so.
+1. **Learn the repository.**
+   1. Confirm a git repository (`git rev-parse --show-toplevel`) and read the owner and name from `git remote get-url origin`.
+   2. Read the visibility, Discussions and default branch: `gh repo view --json isPrivate,visibility,hasDiscussionsEnabled,defaultBranchRef`.
+   3. Read its `README`, `CONTRIBUTING`, `CLAUDE.md` or `AGENTS.md`, its manifests, its CI files, its release process, its labels and its recent issues and pull requests.
+   4. Create one branch off the default branch for the whole setup, such as `chore/repository-templates`.
+2. **Choose the files.** For each kind the user asked for, look for the repository's own files in every place the table above lists. Where one exists, show the change as a diff and ask. Then show the user the models you chose and why, and write nothing before the user agrees.
+3. **PR templates.** Read [references/pr-templates.md](references/pr-templates.md) and follow it.
+4. **Issue forms.** Read [references/issue-forms.md](references/issue-forms.md) and follow it, through its validation loop.
+5. **Discussion forms.** Read [references/discussion-forms.md](references/discussion-forms.md) and follow it, through its validation loop.
+6. **Labels.** Read [references/labels.md](references/labels.md) once the forms and templates are written, because it creates the labels they name.
+7. **Merge message setting.** Read [references/merge-message-setting.md](references/merge-message-setting.md) and follow it.
+8. **Dependabot.** Read [references/dependabot.md](references/dependabot.md) and follow it.
+9. **CODEOWNERS.** When the user wants one, write it from the repository's real owners: one line naming the owner (`* @<owner>`), plus a line per area when the user names its maintainers.
+10. **Land the setup.**
+    1. Commit with the repository's signing setup.
+    2. Ask the user before you push, then open the pull request through this plugin's pull request skill, with the repository's new maintenance template when it has one.
 
-1. **Learn the repository.** Read `references/setup/templates.md` before anything else, and do its "How the assets are used" and "Before any file" sections.
-2. **Choose the files.** For each kind the user asked for, choose the models that fit, and show the user the set and why. Write nothing before the user agrees.
-3. **PR templates.** Do section 1 of `references/setup/templates.md`.
-4. **Issue forms.** Do section 2 of `references/setup/templates.md`. Read `references/authoring/issue.md` when you write the forms' content.
-5. **Discussion forms.** Do section 3 of `references/setup/templates.md`. Read `references/authoring/discussion.md` when you write the forms' content.
-6. **Labels.** Do section 4 of `references/setup/templates.md`.
-7. **Merge message setting.** Do section 5 of `references/setup/templates.md`.
-8. **Dependabot.** Do section 6 of `references/setup/templates.md`.
-9. **CODEOWNERS.** Do section 7 of `references/setup/templates.md`.
-10. **Land the setup.** Do section 8 of `references/setup/templates.md`.
-
-Validate every form before you land it:
-
-1. Run `${CLAUDE_SKILL_DIR}/scripts/check-forms.py` on the forms you wrote, with the `--kind` of each.
-2. Fix every finding.
-3. Run it again. Only move on when it exits 0, then check by reading what the script cannot, as section 2 says.
-
-Close with a report: each file created or proposed, with its model and what you adapted; each label and setting changed, with its approval; the pull request link; and what applies only after the merge.
+Close with a report: each file created or proposed, with its model and what you adapted; each label and setting changed, with its approval; the pull request link; and that the files apply only after the pull request merges into the default branch.
