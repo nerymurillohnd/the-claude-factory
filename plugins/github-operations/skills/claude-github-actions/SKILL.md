@@ -37,7 +37,7 @@ argument-hint: "[run URL, workflow file or PR number]"
 
 ## Gotchas
 
-- The official materials lag the actions they use. On 4 November 2026, `actions/checkout` was at v7.0.1 while the Claude Code GitHub Actions docs and nine example workflows in `anthropics/claude-code-action` (commit `c0949c5`) used `@v6`, two examples pointed at `@main`, and its docs interpolated `structured_output` into `run:` and named retired model IDs. Resolve every version and ID live, and never copy an upstream example as it is.
+- The official materials lag the actions they use: the Claude Code GitHub Actions docs and the examples in `anthropics/claude-code-action` pin older major versions, point some actions at `@main`, interpolate `structured_output` into `run:` and name retired model IDs. Resolve every version and ID live, and never copy an upstream example as it is.
 - The action's own prompt tells Claude not to approve or merge, but that is an instruction, not a control: once a GitHub MCP tool is granted, the approve and merge tools are reachable unless `--disallowedTools` names them.
 - A green Claude step can be a no-op ("No trigger found") or can have left its findings only in the log. Read the log before calling a run successful.
 - A filtered run list returns at most 1,000 results. Read each workflow's latest run instead of the whole history.

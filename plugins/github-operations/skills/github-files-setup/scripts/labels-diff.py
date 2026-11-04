@@ -29,6 +29,8 @@ class JsonObject(dict[str, object]):
     """A decoded JSON object: the decoder builds every object as this type."""
 
 
+# gh label list returns 30 labels unless --limit is set. 1000 covers any repository's label set
+# with room to spare; a list that reaches it may be cut short, and the script warns.
 LIST_LIMIT = 1000
 DESCRIPTION = """\
 Compare a repository's labels with a labels file, through gh. Prints one JSON object on
