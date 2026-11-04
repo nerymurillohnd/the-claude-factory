@@ -62,7 +62,6 @@ The task, or the first word after `ARGUMENTS:`, picks the reference; the rest of
 | `issue`: write, triage, mark a duplicate | [references/authoring/issue.md](references/authoring/issue.md) | none |
 | Fix issue #N | [references/work/issue-to-pr.md](references/work/issue-to-pr.md); it ends in a PR, opened after the user approves the push and the PR | `github-operations:pr-tracker` |
 | `discussion` | [references/authoring/discussion.md](references/authoring/discussion.md) | none |
-| `ci`: failing, stuck or stopped workflows | [references/work/ci-repair.md](references/work/ci-repair.md) | none |
 | `setup`: templates, forms, labels, settings | [references/setup/templates.md](references/setup/templates.md) | none |
 | `audit`, `cleanup`, on an explicit request only | [references/audit/lifecycle.md](references/audit/lifecycle.md) | `github-operations:repo-auditor` |
 
