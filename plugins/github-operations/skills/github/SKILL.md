@@ -1,8 +1,8 @@
 ---
 name: github
-description: The operating contract for any GitHub task in this session, from a pull request to merge, issues, discussions, CI repair and repository setup to a full repository audit and cleanup. Use whenever work reads or changes a GitHub repository or its clone through git, gh or the GitHub MCP tools, before the first such call.
-when_to_use: Open a PR, ship or land this, babysit the PR, get it merged, fix CI, why did the workflow fail, rerun the failed jobs, fix issue 17, file a bug, triage issues, mark a duplicate, start or answer a discussion, write the PR description or the squash message, set up issue forms or PR templates, sync labels, add dependabot, audit or clean up the repository, prune merged branches, recover lost work.
-argument-hint: "[pr|issue|discussion|ci|setup|audit|cleanup] [number, URL or path]"
+description: The operating contract for any GitHub task in this session, from a pull request to merge, issues, discussions and repository setup to a full repository audit and cleanup. Use whenever work reads or changes a GitHub repository or its clone through git, gh or the GitHub MCP tools, before the first such call.
+when_to_use: Open a PR, ship or land this, babysit the PR, get it merged, fix issue 17, file a bug, triage issues, mark a duplicate, start or answer a discussion, write the PR description or the squash message, set up issue forms or PR templates, sync labels, add dependabot, audit or clean up the repository, prune merged branches, recover lost work.
+argument-hint: "[pr|issue|discussion|setup|audit|cleanup] [number, URL or path]"
 ---
 
 # GitHub operating contract

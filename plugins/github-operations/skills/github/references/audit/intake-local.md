@@ -160,7 +160,7 @@ Compare the two: refs the remote has that were never fetched, tracking refs whos
 
 ## History, objects, GitHub and links
 
-After 1.10, read the other audit references as the user's scopes allow: `history.md` (all history, objects, secrets by name, deferred work), `github.md` (pull requests, issues, discussions, forks, Actions, protection, integrations, alerts), `links.md` (everything outside the repository that still points at it). They write to the same scratch folder.
+After 1.10, read the other audit references as the user's scopes allow: `history.md` (all history, objects, secrets by name, deferred work), `github.md` (pull requests, issues, discussions, forks, protection, integrations, alerts), `links.md` (everything outside the repository that still points at it). They write to the same scratch folder.
 
 ## Step 2: classify and keep the ledger
 
@@ -175,7 +175,7 @@ Give every ref, file, worktree, stash, submodule and external item one bucket, w
 
 Anything the audit finds that calls for a refactor, a cleanup, a bisect, debugging or other work is a finding too; it goes to the report and, once approved, to the plan (`investigate.md`).
 
-Write `coverage.md`: one line per domain (refs, branches against base, worktrees, stashes, working tree, residue, hooks and config, remote live, history, objects, secrets by name, deferred work, pull requests, issues, discussions, forks, Actions, protection and rulesets, integrations, alerts, mentions, other clones, jobs, tunnels, registries) with exactly one of:
+Write `coverage.md`: one line per domain (refs, branches against base, worktrees, stashes, working tree, residue, hooks and config, remote live, history, objects, secrets by name, deferred work, pull requests, issues, discussions, forks, protection and rulesets, integrations, alerts, mentions, other clones, jobs, tunnels, registries) with exactly one of:
 
 - `checked`: collected, with the file that holds it.
 - `BLOCKED`: the failed command and its error.

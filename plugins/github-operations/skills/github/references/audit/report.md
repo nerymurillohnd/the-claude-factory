@@ -51,7 +51,7 @@ what is simply clutter, and the statement that nothing has been changed.]
 Approve by ID, for example "approve R-1 and R-3, keep R-2". "Clean it up" approves nothing.
 ```
 
-Findings are grouped: context and risks first; then branches (integrated / holding work / conflicting / unrelated / unknown); worktrees; stashes; tags; pull requests, issues and discussions; Actions and automation; external links and integrations; files and noise; history, objects and secrets by name; deferred work; refactors, bisects or debugging the audit calls for; everything `BLOCKED`. Summarize fully merged branches as a count with their list in the scratch folder, and list individually only what needs a decision. Use tables for branches (ref, state, ahead, behind, last commit, author, open pull request, recommendation), prose only where reasoning is needed.
+Findings are grouped: context and risks first; then branches (integrated / holding work / conflicting / unrelated / unknown); worktrees; stashes; tags; pull requests, issues and discussions; external links and integrations; files and noise; history, objects and secrets by name; deferred work; refactors, bisects or debugging the audit calls for; everything `BLOCKED`. Summarize fully merged branches as a count with their list in the scratch folder, and list individually only what needs a decision. Use tables for branches (ref, state, ahead, behind, last commit, author, open pull request, recommendation), prose only where reasoning is needed.
 
 A secret that was ever committed is reported as exposed, with the instruction to rotate it; the report names the file, never the content.
 
