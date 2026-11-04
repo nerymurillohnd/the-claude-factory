@@ -4,6 +4,7 @@ description: Verifies that every review finding on one GitHub pull request is ad
 model: sonnet
 effort: high
 color: green
+disallowedTools: Agent, Write, Edit, NotebookEdit
 maxTurns: 60
 ---
 

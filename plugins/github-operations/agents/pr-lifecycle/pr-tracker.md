@@ -4,6 +4,7 @@ description: Watches one GitHub pull request at a given head SHA until its check
 model: sonnet
 effort: high
 color: blue
+disallowedTools: Agent, Write, Edit, NotebookEdit
 maxTurns: 60
 ---
 
