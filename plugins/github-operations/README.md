@@ -589,6 +589,7 @@ Uninstalling from the last scope it's installed at also deletes its saved option
 | Component | Claude Code | Claude app |
 | :-- | :--: | :--: |
 | 🎯 Skills | ✅ | ⚠️ they load, but they need `git`, `gh` and your repository on your computer, so use Claude Code |
+| ⌨️ Commands | ✅ | ⚠️ they load, but they need `git`, `gh` and your repository on your computer, so use Claude Code |
 | 🤖 Agents | ✅ | ⚠️ in Cowork sessions, not in a chat conversation |
 | 🪝 Hooks | ✅ needs `bash` and `python3` 3.12 or later; on Windows, WSL | ⚠️ in Cowork sessions, not in a chat conversation |
 | 🔌 MCP server (remote) | ✅ needs your token, set as in [Configuration](#-configuration) | 🔗 connect it once with your token, as in [In the Claude app](#in-the-claude-app) |
