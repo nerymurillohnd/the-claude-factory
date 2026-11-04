@@ -84,11 +84,4 @@ Progress:
 
 ## Report
 
-Every route closes with:
-
-1. **Result and scope:** what was examined and what was found or changed.
-2. **Evidence:** run, attempt, job and commit; log lines; file and line; the matched sharp-edge ID.
-3. **Changes:** each patch, with the permission, tool and authentication change it makes, including tools a plugin command grants outside the workflow file.
-4. **Version provenance:** for every `uses:`, model ID or marketplace pinned, the tag, the commit SHA, and where and when it was resolved.
-5. **Validation:** for each check and linter, passed, failed, not run or blocked, with the reason.
-6. **Left for the user:** residual risks, decisions only the user can make, and causes outside the repository, each with the next action.
+Every route closes with the report in [assets/report.md](assets/report.md): read it when the route's work is done, and fill every section that has content. It carries the result and scope, the evidence with the matched sharp-edge ID, each finding with its file and line, preconditions, impact, severity, patch and residual risk, each change with its permission, tool and authentication delta, the version provenance of every `uses:`, model ID or marketplace pinned, the validation results, and what is left for the user.
