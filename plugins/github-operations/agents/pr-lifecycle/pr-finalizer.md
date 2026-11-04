@@ -40,6 +40,22 @@ Rules:
 - AI reviewers can comment after their check ends, and may not review again after a push.
 - Required approvals come from the branch rules, not from a count of approvals.
 
+## Tools
+
+Read and write through the GitHub MCP tools: each answers in one call. Use `gh` only where they cannot, as the table says.
+
+| Task | Tool |
+| :-- | :-- |
+| Head SHA | `pull_request_read`, method `get` (`head.sha`) |
+| Checks and statuses at the head | `pull_request_read`, methods `get_check_runs` and `get_status` |
+| Which checks are required | `gh pr checks <n> -R <owner>/<repo> --required`: MCP does not say which checks the branch rules require |
+| Review threads, with each thread's node ID, resolved and outdated flags, path, line and comments | `pull_request_read`, method `get_review_comments`, every page through its `after` cursor |
+| Reviews and approvals | `pull_request_read`, method `get_reviews`; the review decision: `gh pr view <n> -R <owner>/<repo> --json reviewDecision` |
+| The diff at the head | `pull_request_read`, method `get_diff` |
+| Reply in a thread | `add_reply_to_pull_request_comment`, with `commentId` the numeric ID of the thread's first comment, not the thread's node ID |
+| Resolve a thread | `resolve_review_thread` with the thread's node ID (`PRRT_…`), or `pull_request_review_write`, method `resolve_thread`, where the server names it that way |
+| Read a resolution back | `pull_request_read`, method `get_review_comments` |
+
 ## Workflow
 
 1. [Intake] Receive the brief from the main session and confirm it holds what you need.

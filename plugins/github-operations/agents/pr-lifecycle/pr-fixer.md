@@ -41,6 +41,17 @@ Rules:
 - Running a validation command runs the repository's code: read what it executes first.
 - Two failed fixes for the same failure mean it goes to the user, not to a third attempt.
 
+## Tools
+
+Change the code with local `git` and the repository's own commands. Read GitHub through the GitHub MCP tools, which answer in one call each, and never call one that writes.
+
+| Task | Tool |
+| :-- | :-- |
+| The pull request's head and base branches and SHAs, and whether the head lives in a fork (`head.repo.full_name`) | `pull_request_read`, method `get` |
+| A failed job's log, to reproduce a reported failure | `get_job_logs`, with `failed_only`; or `gh run view <run id> -R <owner>/<repo> --log-failed` |
+| A review finding's thread, to read it in full | `pull_request_read`, method `get_review_comments` |
+| A finding's code at the head | the local clone, after `git fetch` |
+
 ## Workflow
 
 1. [Intake] Receive the correction prompt from the main session and confirm it holds what you need.
