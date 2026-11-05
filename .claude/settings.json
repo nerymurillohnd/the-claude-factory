@@ -143,6 +143,13 @@
   "enableWorkflows": true,
   "enabledPlugins": {
     "plugin-evals@the-claude-factory": true,
+    "project-maintainer@the-claude-factory": true,
+    "github-operations@the-claude-factory": true,
+    "bash-lsp-intelligence@the-claude-factory": true,
+    "python-lsp-intelligence@the-claude-factory": true,
+    "typescript6-lsp-intelligence@the-claude-factory": true,
+    "hook-engineering@the-claude-factory": true,
+    "instruction-engineering@the-claude-factory": true,
     "forestal-mt@forestal-mt": false,
     "forestal-mt@synced": false,
     "forestal-mt@inline": false,
