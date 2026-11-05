@@ -54,20 +54,91 @@ This repository holds two scopes. They are never mixed: a rule written for one s
 
 ## Commands
 
-Run Biome and `tsc` only through `npm run`, which uses the versions `package-lock.json` pins; never by bare name. Ruff, Basedpyright, shfmt, ShellCheck and actionlint may run directly to check one file, but `npm run gates` is the verdict: it holds each tool's scope and flags, as CI and Husky run them.
+The repository's scripts, in the order of the project's phases, with what triggers each one.
 
-- Use `npm install`, with the `.nvmrc` Node selected, to install the maintainer tools.
-- Use `npm run format` to format Markdown, JSON, YAML, JavaScript and TypeScript with Biome, Python with Ruff and shell scripts with shfmt.
-- Use `npm run lint` to lint with Biome, Ruff, ShellCheck and actionlint.
-- Use `npm run fix` to apply the formatters' and linters' safe fixes.
-- Use `npm run typecheck` to type-check TypeScript with `tsc` (strictest settings, `--noEmit`) and Python with Basedpyright.
-- Use `npm test` to run the maintainer tests (`node --test` and unittest), and `npm run test:plugins` for the plugins' tests.
-- Use `npm run validate` to run the validators in `scripts/validators/`.
-- Use `npm run generate` to rebuild `marketplace.json` and the README catalog, and `npm run generate:check` to confirm they are current.
-- Use `npm run gates` to run every gate, as the pre-push hook does.
-- Use `claude plugin validate` and `claude plugin test` to check a mod's hooks module; no gate type-checks it against `.claude-plugin/types/`.
-- `format` and `fix` also write in `plugins/`.
-- Husky runs `biome check --staged` and `npm test` before each commit and `npm run gates` before each push. The Claude Code hooks in `.claude/settings.json` check commits and `SKILL.md` writes. Fix what they report; never skip them.
+### Phase 0: Environment and session
+
+| Script | What it does | Triggered by |
+| :-- | :-- | :-- |
+| `.claude/hooks/checkout.sh` | Reports the branch, ahead/behind against `main` and the tool versions | SessionStart hook |
+| `npm install` → `prepare` (Husky) | Installs the pinned maintainer tools and the git hooks | Manual |
+
+### Phase 1: Creating a plugin (skill `building-plugins`)
+
+| Script | What it does |
+| :-- | :-- |
+| `.claude/skills/building-plugins/scripts/check-plugin-name.py` | The name is free and unlike every name the marketplace uses |
+| `.claude/skills/building-plugins/scripts/scaffold-plugin.py` | Creates `plugins/<name>/` from the templates |
+| `.claude/skills/building-plugins/scripts/check-required-files.py` | The manifest, README, changelog and license exist |
+| `.claude/skills/building-plugins/scripts/check-manifest-schema.py`, `check-mcp-schema.py`, `check-lsp-schema.py` | The plugin's manifest, MCP and LSP files conform to the repository schemas |
+| `.claude/skills/building-plugins/scripts/check-skill-names.py` | Every skill is named after its directory |
+| `.claude/skills/building-plugins/scripts/check-readme-placeholders.py` | No README template placeholder is left |
+| `.claude/skills/plugin-categories/scripts/check-catalog-categories.py` | The README catalog lists each plugin once, under its category |
+
+### Phase 2: Development and editing
+
+| Script | What it does | Triggered by |
+| :-- | :-- | :-- |
+| `.claude/hooks/skill-frontmatter.py` | Checks `SKILL.md` frontmatter as strict YAML | PreToolUse and PostToolUse hooks on `SKILL.md` edits |
+| `npm run format` / `npm run fix` | Biome, Ruff and shfmt | Manual |
+| `npm run lint` / `npm run typecheck` → `scripts/gates.mjs` | Biome, Ruff, ShellCheck, actionlint, `tsc` and Basedpyright | Manual |
+| `scripts/basedpyright-maintainer.mjs` | Type-checks the maintainer Python, each file against the interpreter that runs it | `scripts/gates.mjs` |
+| `.claude/skills/testing-mods/scripts/check-mod.sh`, `fetch-github-mod.sh` | Runs `claude plugin validate --strict` and `claude plugin test` on a mod; clones an outside mod for comparison | Skill `testing-mods` |
+
+### Phase 3: Tests
+
+| Script | What it does | Triggered by |
+| :-- | :-- | :-- |
+| `npm test` → `scripts/testers/*.test.mjs` and `scripts/testers/run_unittest.py` | Tests of the maintainer tooling (scripts, gates, schemas, validators) | Husky pre-commit |
+| `npm run test:plugins` → `scripts/testers/<plugin>/*` (`by_path.sh`, `test_*.py`, `*.test.mjs`) and `mod-test` | Each plugin's behavior | Local only |
+| `.claude/skills/testing-plugins/scripts/changed-eval-plugins.sh` | Selects the plugins that get the full eval suite in CI | Nothing calls it yet |
+
+### Phase 4: Structure and consistency checks
+
+| Script | What it does | Triggered by |
+| :-- | :-- | :-- |
+| `scripts/validators/*.py` (10) | Schemas (plugin, marketplace, MCP, LSP), names, versions, required files, catalog, skills and references | `npm run validate`, `scripts/gates.mjs`, the commit hook |
+| `scripts/check-repo.mjs` (with `scripts/components.mjs`) | Repository policies that neither `claude plugin validate` nor the validators cover | `scripts/gates.mjs` |
+| `scripts/checkers/markdown-urls.py` | Every http(s) URL in the Markdown files answers | Manual only (`npm run check:links`) |
+
+### Phase 5: Versioning
+
+| Script | What it does | Triggered by |
+| :-- | :-- | :-- |
+| `scripts/release/bump-version.py` | Raises a plugin's version and turns `[Unreleased]` into the dated section | Manual (`npm run version:bump`) |
+| `scripts/release/check-version-bump.py` | Every plugin whose files changed has a new version and its entry | `scripts/gates.mjs` (local and CI) |
+| `scripts/release/check-changelog-entry.py` | The plugin's `CHANGELOG.md` has a non-empty section for its current version | Nothing calls it |
+| `scripts/release/check-marketplace-unversioned.py` | `marketplace.json` carries no version | Nothing calls it |
+
+### Phase 6: Catalog generation
+
+| Script | What it does | Triggered by |
+| :-- | :-- | :-- |
+| `scripts/generators/marketplace.mjs`, `scripts/generators/catalog.mjs` | Rebuild `marketplace.json` and the README catalog | `npm run generate` |
+| `npm run generate:check` | Confirms both are current | `scripts/gates.mjs` |
+
+### Phase 7: Commit and push
+
+| Script | What it does | Triggered by |
+| :-- | :-- | :-- |
+| `.claude/hooks/validators-gate.sh` | Runs the validators and blocks the commit when one fails | PreToolUse hook on `git commit` |
+| `.husky/pre-commit` | `biome check --staged` and `npm test` | Git |
+| `.husky/pre-push` → `scripts/gates.mjs` | Every gate, the local-only ones (branch, status, signatures) included | Git |
+
+### Phase 8: CI and release
+
+| Script | What it does | Triggered by |
+| :-- | :-- | :-- |
+| `.github/workflows/validate.yml` → `scripts/gates.mjs --ci` | The same gates without the local-only ones, in one job per group (policy, python, claude, lint) | Push to `main` and pull requests |
+| `.github/workflows/release.yml` → `scripts/release/release-notes.py` | Creates the `<plugin>--vX.Y.Z` tag and its GitHub Release with the notes | Validate green on `main` |
+
+### Phase 9: Repository upkeep
+
+| Script | What it does | Triggered by |
+| :-- | :-- | :-- |
+| `scripts/sync-labels.mjs` | Creates and updates the labels from `.github/labels.json`, plus one `plugin: <name>` label per plugin | Manual only (`npm run labels:sync`) |
+
+Shared support, never run on its own: `scripts/lib.mjs`, `scripts/components.mjs`, `scripts/schemas/**`, `scripts/biome-plugins/main-module.grit`, `scripts/tsconfig*.json` and `scripts/pyrightconfig.maintainer.json`.
 
 ## Change Control
 
