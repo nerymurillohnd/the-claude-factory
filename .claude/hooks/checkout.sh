@@ -4,6 +4,8 @@
 # A cloud session clones only its working branch, shallowly, so origin/main can be missing or share
 # no history with HEAD; ensure_main_ref fetches what the ahead/behind count needs. A full clone with
 # origin/main already present makes no network request.
+# No `set -euo pipefail`: a failing probe, an unset variable or a broken pipe must fall back to its
+# default, never end the hook before it reports.
 
 root="${CLAUDE_PROJECT_DIR:-$(pwd)}"
 cd "${root}" 2> /dev/null || exit 0

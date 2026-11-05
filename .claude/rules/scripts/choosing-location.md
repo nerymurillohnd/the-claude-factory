@@ -14,6 +14,16 @@ Before you create or save any maintenance script, decide which of the four respo
 
 The one exception is `scripts/release/`: the version and release scripts that `release.yml`, the version gate and `npm run version:bump` run. They stay together because they run on the `python3` of CI's runner and target Python 3.12, unlike the other folders.
 
+These stay where they are, outside the four folders, because they are not one of the four responsibilities:
+
+- `scripts/gates.mjs`, the gate runner every `npm run` script and CI job calls.
+- `scripts/lib.mjs` and `scripts/components.mjs`, libraries the other scripts import.
+- `scripts/check-repo.mjs` and `scripts/sync-labels.mjs`, which `package.json` and the gates run by these paths.
+- `scripts/basedpyright-maintainer.mjs`, the wrapper of the `basedpyright-` gates.
+- `scripts/schemas/` (the JSON schemas the validators read), `scripts/biome-plugins/`, `scripts/categories.json` and the `tsconfig` files: data and configuration, not scripts.
+
+A new script goes in one of the four folders; never add another to the root of `scripts/`.
+
 These are not interchangeable names. Each responsibility has its own inputs, outputs, and place in the software lifecycle. Validators, checkers, and testers all evaluate something, but their scope, context, and consequences are different. Choose the correct folder and stay consistent.
 
 ## Generators — `scripts/generators/`
@@ -46,5 +56,5 @@ These are not interchangeable names. Each responsibility has its own inputs, out
 - **Success criterion:** The logic produces the expected result under the given conditions.
 - **Typical context:** Testers are functional and behavioral. They execute parts of the system under controlled conditions (black-box or white-box) and verify that the logic produces the expected result.
 - **Objective:** Prevent regressions and ensure the software does exactly what it was intended to do.
-- **Exception:** a mod's tests live in the mod's own `tests/` folder, not here, because `claude plugin test` only finds them inside the mod.
+- **Exception:** a mod's tests stay in the plugin, as `.claude/CLAUDE.md` → Maintainer files inside a plugin sets.
 - **Examples:** A test that feeds a URL-extraction function with trap texts (URLs containing commas, Markdown with escaped parentheses) and verifies that the regular expression extracts precisely what it should.
