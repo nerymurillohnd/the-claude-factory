@@ -784,6 +784,8 @@ describe('portability rules', () => {
       entry('evals/results/run.json'),
       entry('quality/evals/results/run.json'),
       entry('.claude-plugin/plugin.json'),
+      entry('.claude-plugin/icon.png'),
+      entry('.claude-plugin/logo.png'),
       entry('tests/mod.test.ts'),
       entry('hooks/register.test.tsx'),
       entry('evals/first-case/prompt.md'),
@@ -795,10 +797,11 @@ describe('portability rules', () => {
       '.claude-plugin/types/claude-code/index.d.ts',
       'evals/results/run.json',
       'quality/evals/results/run.json',
+      '.claude-plugin/logo.png',
     ]) {
       assert.ok(problems.includes(`${path} is a maintainer file`), `${path} not flagged`)
     }
-    assert.equal(problems.split('\n').length, 4, problems)
+    assert.equal(problems.split('\n').length, 5, problems)
   })
 })
 
