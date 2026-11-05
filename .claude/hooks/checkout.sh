@@ -37,6 +37,12 @@ report_session_state() {
   worktrees="$(count_lines "${worktree_out}")"
   echo "- Uncommitted entries: ${dirty}; stashes: ${stashes}; worktrees: ${worktrees}."
   echo "- Node: ${node_have} (.nvmrc ${node_want}); claude: ${claude_out%% *}."
+  if [[ ${node_have} != "${node_want}" ]]; then
+    # npm bundled with an older Node rewrites package-lock.json (npm 10 drops the libc fields);
+    # devEngines in package.json makes npm refuse to install under a Node outside ^.nvmrc.
+    echo "- Warning: Node is not the .nvmrc version. Do not run npm install or the gates here;" \
+      "select ${node_want} first, or package-lock.json may be rewritten."
+  fi
 }
 
 report_session_state
