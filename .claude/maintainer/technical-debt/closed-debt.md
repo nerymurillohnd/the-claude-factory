@@ -46,6 +46,7 @@
 | 2026-10-29 | DEBT-041 | resolved | `skill-names-consistency.py` composes ruamel.yaml nodes in YAML 1.1 mode, and no Python file uses PyYAML | none |
 | 2026-11-04 | DEBT-052 | resolved | Discussion form setup no longer depends on GraphQL to get category slugs | none |
 | 2026-11-05 | DEBT-051 | resolved | Cloud-session pushes run every pre-push gate again | none |
+| 2026-11-05 | DEBT-050 | resolved | Cloud sessions start on Node 26.13.0 with shfmt, and npm test passes | none |
 
 ## 🏁 Closed items
 
@@ -953,6 +954,37 @@ Commit fb5bf6a added `signatureProblem`: in a cloud session (`CLAUDE_CODE_REMOTE
 - **Residual risk:** in a cloud session the gate proves a signature is present, not valid; GitHub's verification after the push is the check.
 - **Closed by:** commit fb5bf6a.
 - **Related records:** DEBT-050; ADR_2026-11-05_cloud-sessions-check-commit-signatures-by-presence.
+- **Superseded by:** none
+
+### DEBT-050 — Cloud sessions start on Node 26.13.0 with shfmt, and npm test passes
+
+| Field | Value |
+| --- | --- |
+| **Outcome** | resolved |
+| **Closed on** | 2026-11-05 |
+| **Logged on** | 2026-11-04 |
+| **Owner** | Nery |
+
+#### ❗ The problem
+
+A new cloud session started on the image's Node 22.23.4 and npm 10.9.9 (`/opt/node22`) while `.nvmrc` says 26.13.0, and `shfmt` was not on `PATH`. Since commit 2506755 pinned `devEngines.runtime` to `^26.13.0` with `onFail: error`, npm stopped with `EBADDEVENGINES`, so `npm install`, `npm test` and the Husky hooks could not run in a new cloud session, Nery's only way to work while his machine is down.
+
+#### 🔧 The closure
+
+Nery's personal cloud environment `the-claude-factory` now lists `nerymurillohnd/the-claude-factory`, and its setup script installs Node from `.nvmrc` (checked against nodejs.org's SHASUMS256.txt) and relinks it over `/opt/node22/bin`, updates npm to 12.2.1, and installs shfmt, actionlint, ShellCheck, ruff, basedpyright, Biome and TypeScript. The 2026-11-05 audit session ran on that environment (`get_environment`: `is_current: true`, `repositories: ["nerymurillohnd/the-claude-factory"]`, `has_setup_script: true`).
+
+#### 🧪 Verification
+
+| Check | Evidence |
+| --- | --- |
+| ✅ **Positive:** the closure holds | In that session on 2026-11-05: `node --version` gave `v26.13.0`, `npm --version` gave `12.2.1`, `command -v shfmt` gave `/usr/local/bin/shfmt` (`v3.14.1`), and `npm test` ended `✔ node-tests`, `✔ unittest-maintainer`, `✔ All gates passed` with exit 0. The Husky pre-push `npm run gates` also passed every gate, `shfmt-maintainer` and `shfmt-plugins` included, before `git push -u origin ccr-8f7402e3-niczou`. |
+| 🚫 **Negative:** the original failure or condition is gone | The Node 22 binary is no longer reached: `readlink -f "$(command -v node)"` and `readlink -f /opt/node22/bin/node` both resolve to `/opt/node-v26.13.0/bin/node`, so npm no longer meets the `devEngines` mismatch, and no `EBADDEVENGINES` stopped `npm test` or the hooks. The session-start hook reported `Node: v26.13.0 (.nvmrc v26.13.0)`. |
+
+#### 🔗 Follow-up
+
+- **Residual risk:** the setup script exits 0 even when a download fails, so a later session could start without a tool; its summary marks such a tool `MISSING`, and the session-start hook reports the Node version.
+- **Closed by:** none (the change is the cloud environment's setup script and repository list, edited by Nery in the environment settings; no commit).
+- **Related records:** ADR_2026-11-04_node-pinned-in-package-json-through-devengines; DEBT-051.
 - **Superseded by:** none
 
 <!--

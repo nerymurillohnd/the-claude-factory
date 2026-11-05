@@ -61,7 +61,6 @@ Add an item only when all of these hold:
 | DEBT-047 | `claude-github-actions` has no eval suite | 🟠 Blocked |
 | DEBT-048 | github-operations 0.6.0 no longer writes, triages or answers issues and discussions, or turns an issue into a pull request | 🟠 Blocked |
 | DEBT-049 | github-operations ships without an icon or a privacy policy URL, and turns on the GitHub MCP server's Insiders mode | 🟠 Blocked |
-| DEBT-050 | A new cloud session starts on Node 22 without shfmt, and npm refuses to run on Node 22 since the devEngines pin | 🔵 In progress |
 
 ## 📂 Open items
 
@@ -630,36 +629,6 @@ Add an item only when all of these hold:
 - **Next action:** ask Nery for a square PNG of 512 to 2048 px (saved inside the plugin, at `.claude-plugin/icon.png`), the privacy policy URL, and whether to keep `X-MCP-Insiders`; then apply them in a plugin change through `versioning` and `releases`.
 - **Review condition:** closes when `claude plugin validate --strict` shows neither warning and the Insiders choice is applied and recorded.
 - **Related records:** none.
-
-### DEBT-050 — A new cloud session starts on Node 22 without shfmt, and npm refuses to run on Node 22 since the devEngines pin
-
-| Field | Value |
-| --- | --- |
-| **Status** | 🔵 In progress |
-| **Category** | maintainability, compatibility |
-| **Owner** | Nery |
-| **Logged** | 2026-11-04 |
-
-#### 🔎 Evidence
-
-- **Confirmed facts:**
-  - Maintainer scope only: this concerns the cloud environment where Nery works on this repository, never a plugin or a user's machine.
-  - On 2026-11-05 Nery created the personal cloud environment `the-claude-factory` (`env_01HumVFyT51CDf6AJdszJVkA`) with a setup script that installs Node from `.nvmrc`, npm 12.2.1, Python 3.15, ruff, basedpyright, ShellCheck, shfmt, actionlint, and Biome and TypeScript globally; it has no repository on its list yet. In the current container, shfmt v3.14.1 was installed with `go install mvdan.cc/sh/v3/cmd/shfmt@latest`.
-  - The cloud container of 2026-11-04 started with Node 22.23.4 and npm 10.9.9 (`/opt/node22`), while `.nvmrc` says 26.13.0; `shfmt` was not on `PATH`, so the `shfmt-maintainer` and `shfmt-plugins` gates could not run.
-  - Commit 2506755 set `devEngines.runtime` to `^26.13.0` with `onFail: error`. npm enforces `devEngines` since 10.9.0 (npm CHANGELOG, 2024-10-03).
-  - With Node 24.22.1, both npm 11.19.1 and npm 12.2.1 stopped `npm run check:repo` with `EBADDEVENGINES`.
-  - The session-start hook runs `npm install`, and the Husky hooks run `npm` scripts.
-  - Stated by Nery on 2026-11-04: his MacBook is out of service, so he works only through Claude Code on the web.
-- **Inferences:** in a new cloud session, `npm install`, `npm test` and the Husky hooks fail until Node 26 is installed. Not reproduced, because Node 22 was removed from this container.
-- **Open questions:** none.
-
-#### 📈 Impact and next step
-
-- **Impact / risk:** every new cloud session starts unable to install the maintainer tools or commit through the hooks, which is Nery's only way to work while his machine is down.
-- **Why it is not fixed now:** the cloud environment's Setup script is changed only by Nery, in the environment's settings on claude.ai (the cloud environment menu in the session's title bar, then Edit).
-- **Next action:** add `nerymurillohnd/the-claude-factory` to the environment's repository list, start a new session on it, check that the setup summary shows no `MISSING` tool, then run `node --version` and `npm test`.
-- **Review condition:** closes when a new cloud session starts on Node 26.13.0 with shfmt on `PATH`, and `npm test` passes there.
-- **Related records:** ADR_2026-11-04_node-pinned-in-package-json-through-devengines; DEBT-051.
 
 <!--
 Entry format. Copy this block above this comment for each new item and add its row to the Index.
