@@ -50,7 +50,7 @@ This repository holds two scopes. They are never mixed: a rule written for one s
 
 - **Maintainer scope**: everything outside `plugins/`. Its environment is the tools, versions and binaries on Nery's machine.
 - **Plugin scope**: one self-contained directory per plugin under `plugins/<plugin>/`. Its environment is only what the plugin's `README.md` declares as prerequisites; users' compatibility comes only from the README's declared minimum Claude Code version.
-- **Maintainer files inside a plugin**: a mod's `*.test.ts(x)` and a plugin's eval suite stay in the plugin's directory, because `claude plugin test` and `claude plugin eval` only find them there. They are maintainer tooling, run only on Nery's build, and ship to users as inert files. Everything committed under `plugins/<plugin>/` reaches every user's cache; nothing git-ignored does, so commit no other maintainer-only file there.
+- **Maintainer files inside a plugin**: a mod's `*.test.ts(x)` (in the mod's `tests/`, importing only the mod's files and `claude-code/testing`) and a plugin's eval suite stay in the plugin's directory, because `claude plugin test` and `claude plugin eval` only find them there. They are maintainer tooling, run only on Nery's build, and ship to users as inert files. Everything committed under `plugins/<plugin>/` reaches every user's cache; nothing git-ignored does, so commit no other maintainer-only file there.
 
 `.claude/rules/operating-standard.md` sets which changes take a pull request and a version bump.
 
@@ -63,16 +63,16 @@ This repository holds two scopes. They are never mixed: a rule written for one s
 - JavaScript and TypeScript: type-check with `tsc` under the strictest settings and `--noEmit`. A mod's hooks module is checked by `claude plugin validate` and `claude plugin test`, which run the installed engine; no gate type-checks it against the generated `.claude-plugin/types/`.
 - Shell scripts: format with `shfmt` and lint with ShellCheck.
 - Navigate and explore code with the LSP tool, in every file of the repository, plugin files included, and follow the skill for its language. The tool and these skills come from this marketplace's LSP plugins, which `.claude/settings.json` does not enable; where the session has no LSP tool, say so and navigate with Grep and Read: Python with `python-lsp-intelligence:python-lsp-intelligence`; JavaScript and TypeScript with `typescript6-lsp-intelligence:ts-lifecycle`; shell scripts with `bash-lsp-intelligence:bash-lsp-intelligence`.
-- Tests of plugin scripts live in `scripts/testers/<plugin>/`, which is maintainer scope: their test dependencies never enter a plugin's runtime. A mod's tests are the exception: they live in the mod's `tests/` and import only the mod's files and `claude-code/testing`.
+- Tests of plugin scripts live in `scripts/testers/<plugin>/`, which is maintainer scope: their test dependencies never enter a plugin's runtime. A mod's tests are the exception (Maintainer files inside a plugin).
 - The root `package.json` serves repository-level development tooling only, never plugin runtimes; it stays `"private": true`. Its devDependencies are the npm tools (Biome, TypeScript, Husky) and the `@types/*` packages, each pinned to an exact version.
 - A plugin's own `package.json` and `package-lock.json` hold only that plugin's runtime dependencies, pinned exactly; Claude Code installs them for users when it caches the plugin, only from registry packages, with install scripts off and no `overrides`, within 60 seconds. In the clone, install them with `npm install --prefix plugins/<plugin> --ignore-scripts` for each plugin that has a `package-lock.json`; `tsc-plugins` and the plugin's node tests need them, and CI installs them with `npm ci --prefix`.
-- Every maintenance command is an `npm run` script (`test`, `typecheck`, `lint`, `format`, `fix`, `check:*`, `generate`, `validate`, `gates`): run the tools through them, never by bare name from PATH, so the npm tools are the versions `package-lock.json` pins; the global installs serve the editor. Ruff, Basedpyright, shfmt, ShellCheck and actionlint are not pinned: the gates run the ones installed on the machine, and CI installs their latest releases. `format` and `fix` also write in `plugins/`: a plugin file they change goes through a pull request.
+- Every maintenance command is an `npm run` script (`test`, `typecheck`, `lint`, `format`, `fix`, `check:*`, `generate`, `validate`, `gates`): when you run a tool yourself, run it through its script, never by its bare name from PATH, so the npm tools are the versions `package-lock.json` pins; the global installs serve the editor. Ruff, Basedpyright, shfmt, ShellCheck and actionlint are not pinned: the gates run the ones installed on the machine, and CI installs their latest releases. Code inside a maintainer script calls tools by bare name, as `.claude/rules/scripts/maintainer-scripts.md` sets. `format` and `fix` also write in `plugins/`; what a plugin file they change needs is set in `.claude/rules/operating-standard.md`.
 - Husky's git hooks run `biome check --staged` and `npm test` before each commit and `npm run gates` before each push, and the project's Claude Code hooks in `.claude/settings.json` check commits and `SKILL.md` writes; fix what they report, never skip them.
 - Install the dependencies with `npm install`, with the `.nvmrc` Node selected. Commit a `package-lock.json` change only with the dependency change that caused it. CI keeps `npm ci`, which fails when the lockfile and `package.json` disagree.
 
 #### Plugin Tooling
 
-- Target Linux and macOS with POSIX-compatible interfaces. Windows is supported only through Git Bash, and only when the plugin's README declares it.
+- Target Linux and macOS with POSIX-compatible interfaces. Windows is supported only through Git Bash, and only when the plugin's README declares it; never add PowerShell, `cmd.exe` or native Windows paths.
 - Write plugin Python for `python3` 3.12 or later, and state that minimum in the README of every plugin that runs Python. Ruff (`per-file-target-version` in `ruff.toml`) and Basedpyright (the `plugins` execution environment in `pyrightconfig.json`) check it against 3.12; Basedpyright runs in `all` mode, as `pyrightconfig.json` sets for the whole repository.
 
 ### Working Files
@@ -127,15 +127,16 @@ This repository holds two scopes. They are never mixed: a rule written for one s
      - Keep `scripts/categories.json` the only definition, and `metadata.category` the only place a plugin's category is set.
      - Regenerate the marketplace and the catalog after every change.
 4. Plugin testing and evaluation
-   - When: evals are requested, a ready plugin has MCP servers or MCP hooks, a mod is tested, or an install, load or marketplace error needs diagnosing.
+   - When: evals are requested, a plugin with evals changes, a ready plugin has MCP servers or MCP hooks, a mod is tested, or an install, load or marketplace error needs diagnosing.
    - Skills: `testing-plugins`; `testing-mods` for a mod's own tests and troubleshooting.
    - Key jobs:
-     - Build and run eval suites, only when asked.
+     - Build an eval suite only when asked.
+     - When a plugin with evals changes, run a small smoke run locally; CI runs the full suite (`.claude/rules/operating-standard.md` → Evals in CI).
      - Run the live MCP checks once Nery says the plugin is ready.
      - Run a mod's own tests.
      - Diagnose install, load and marketplace errors.
 5. Versioning and releases
-   - When: a new plugin is published, or an existing plugin has changed.
+   - When: a new plugin is published, or an existing plugin has a change that `.claude/rules/operating-standard.md` says takes a version bump.
    - Skills: `versioning`, `releases`.
    - Key jobs:
      - Choose the version and write the release notes.
@@ -145,6 +146,7 @@ This repository holds two scopes. They are never mixed: a rule written for one s
    - When: a plugin is to be renamed, merged into another, removed, retired or deprecated.
    - Skills: `rename-a-plugin`, `remove-a-plugin`.
    - Key jobs: migrate existing installs through the marketplace's `renames` map, and ship a rename as a breaking change.
+   - When this stage and Versioning and releases both apply, load `rename-a-plugin` or `remove-a-plugin` first, then `versioning` for the plugin whose version changes (the renamed plugin, or the merge target), then `releases`.
 
 ## Change Control
 
