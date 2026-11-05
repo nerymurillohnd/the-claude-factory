@@ -61,8 +61,8 @@ Add an item only when all of these hold:
 | DEBT-047 | `claude-github-actions` has no eval suite | 🟠 Blocked |
 | DEBT-048 | github-operations 0.6.0 no longer writes, triages or answers issues and discussions, or turns an issue into a pull request | 🟠 Blocked |
 | DEBT-049 | github-operations ships without an icon or a privacy policy URL, and turns on the GitHub MCP server's Insiders mode | 🟠 Blocked |
-| DEBT-050 | A new cloud session starts on Node 22 without shfmt, and npm refuses to run on Node 22 since the devEngines pin | 🟠 Blocked |
-| DEBT-051 | The pre-push signatures gate cannot pass in a cloud session, so every push there skips every pre-push gate | 🟠 Blocked |
+| DEBT-050 | A new cloud session starts on Node 22 without shfmt, and npm refuses to run on Node 22 since the devEngines pin | 🔵 In progress |
+| DEBT-051 | The pre-push signatures gate cannot pass in a cloud session, so every push there skips every pre-push gate | 🔵 In progress |
 
 ## 📂 Open items
 
@@ -636,7 +636,7 @@ Add an item only when all of these hold:
 
 | Field | Value |
 | --- | --- |
-| **Status** | 🟠 Blocked |
+| **Status** | 🔵 In progress |
 | **Category** | maintainability, compatibility |
 | **Owner** | Nery |
 | **Logged** | 2026-11-04 |
@@ -645,6 +645,7 @@ Add an item only when all of these hold:
 
 - **Confirmed facts:**
   - Maintainer scope only: this concerns the cloud environment where Nery works on this repository, never a plugin or a user's machine.
+  - On 2026-11-05 Nery created the personal cloud environment `the-claude-factory` (`env_01HumVFyT51CDf6AJdszJVkA`) with a setup script that installs Node from `.nvmrc`, npm 12.2.1, Python 3.15, ruff, basedpyright, ShellCheck, shfmt, actionlint, and Biome and TypeScript globally; it has no repository on its list yet. In the current container, shfmt v3.14.1 was installed with `go install mvdan.cc/sh/v3/cmd/shfmt@latest`.
   - The cloud container of 2026-11-04 started with Node 22.23.4 and npm 10.9.9 (`/opt/node22`), while `.nvmrc` says 26.13.0; `shfmt` was not on `PATH`, so the `shfmt-maintainer` and `shfmt-plugins` gates could not run.
   - Commit 2506755 set `devEngines.runtime` to `^26.13.0` with `onFail: error`. npm enforces `devEngines` since 10.9.0 (npm CHANGELOG, 2024-10-03).
   - With Node 24.22.1, both npm 11.19.1 and npm 12.2.1 stopped `npm run check:repo` with `EBADDEVENGINES`.
@@ -657,7 +658,7 @@ Add an item only when all of these hold:
 
 - **Impact / risk:** every new cloud session starts unable to install the maintainer tools or commit through the hooks, which is Nery's only way to work while his machine is down.
 - **Why it is not fixed now:** the cloud environment's Setup script is changed only by Nery, in the environment's settings on claude.ai (the cloud environment menu in the session's title bar, then Edit).
-- **Next action:** add to the Setup script the install of Node 26.13.0 (for example `nvm install 26.13.0 && nvm alias default 26.13.0`) and of shfmt, then start a new session and run `node --version` and `npm test`.
+- **Next action:** add `nerymurillohnd/the-claude-factory` to the environment's repository list, start a new session on it, check that the setup summary shows no `MISSING` tool, then run `node --version` and `npm test`.
 - **Review condition:** closes when a new cloud session starts on Node 26.13.0 with shfmt on `PATH`, and `npm test` passes there.
 - **Related records:** ADR_2026-11-04_node-pinned-in-package-json-through-devengines; DEBT-051.
 
@@ -665,7 +666,7 @@ Add an item only when all of these hold:
 
 | Field | Value |
 | --- | --- |
-| **Status** | 🟠 Blocked |
+| **Status** | 🔵 In progress |
 | **Category** | security, maintainability |
 | **Owner** | Nery |
 | **Logged** | 2026-11-04 |
@@ -678,14 +679,15 @@ Add an item only when all of these hold:
   - In the cloud container, commits are signed through `gpg.ssh.program=/tmp/code-sign`, but `/home/claude/.ssh/commit_signing_key.pub` is 0 bytes and `gpg.ssh.allowedSignersFile` is unset, so `%G?` prints `N` for every commit.
   - GitHub reports the same commits as signed: `verification.verified: true`, `reason: valid` for c0d0edd, 285bf41, 90a78db, 7608e57, 2506755 and 81e3fc5 (`gh api repos/nerymurillohnd/the-claude-factory/commits/<sha>`, 2026-11-04).
   - Every push from a cloud session on 2026-11-04 needed `--no-verify`, which also skips the other pre-push gates.
+  - On 2026-11-05 Nery chose the method, and `signatureProblem` in `scripts/gates.mjs` now passes, in a cloud session only, a commit git cannot verify (`N` or `E`) that carries an SSH signature header (ADR_2026-11-05_cloud-sessions-check-commit-signatures-by-presence). `npm run gates -- --only signatures` passed in the cloud session and still failed with `CLAUDE_CODE_REMOTE` unset.
 - **Inferences:** with Nery working only in the cloud (DEBT-050), the pre-push gates never run before a push unless a session runs them by hand.
-- **Open questions:** how the gate should verify signatures in a cloud session.
+- **Open questions:** none.
 
 #### 📈 Impact and next step
 
 - **Impact / risk:** a push can reach GitHub without the gates that guard it, because the one gate that cannot pass forces all of them off.
 - **Why it is not fixed now:** how to verify signatures in the cloud is Nery's decision: for example, the gate asks GitHub for each commit's verification when `CLAUDE_CODE_REMOTE` is `true`, or the environment provides the public key for an allowed signers file.
-- **Next action:** ask Nery to choose the verification method, then change the `signatures` gate with a test in `scripts/testers/`.
+- **Next action:** push from the cloud session with the hooks on, and close this item when the pre-push `npm run gates` passes.
 - **Review condition:** closes when a push from a cloud session passes `npm run gates` without `--no-verify`, and an unsigned commit still fails the gate.
 - **Related records:** DEBT-050.
 
