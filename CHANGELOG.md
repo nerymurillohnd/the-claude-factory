@@ -6,6 +6,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The
 
 ## 2026-11-05
 
+### Changed
+
+- **github-operations** 0.7.0 — **Breaking:** the plugin no longer bundles the GitHub MCP server or its token option; the README shows how to add GitHub's remote server to Claude Code and the Claude app yourself.
+
 ### Fixed
 
 - **github-operations** 0.6.1 — the read-only audit agent can no longer launch agents or edit files, and the pull request agents read job logs and review threads correctly and wait for commands moved to the background.

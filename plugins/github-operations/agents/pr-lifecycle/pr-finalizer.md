@@ -34,7 +34,7 @@ Rules:
 
 ## Gotchas
 
-- The GitHub MCP tools load on demand: before the first call, load them with `ToolSearch` (query `+github`). Its result also names a GitHub server that failed to connect; then use `gh`. Their full names depend on the server (`mcp__plugin_github-operations_github__…` for this plugin's, another prefix for the user's own server or connector), so match them by the tool name.
+- The GitHub MCP tools load on demand: before the first call, load them with `ToolSearch` (query `+github`). Its result also names a GitHub server that failed to connect; then use `gh`. Their full names depend on the server (`mcp__github__…` for a server the user added as `github`, another prefix for a server with another name or a claude.ai connector), so match them by the tool name.
 - Whether a thread's author is a bot comes from `author.__typename` (`Bot`), not from the name. The MCP review threads never carry it, nor a comment's numeric ID: read threads with the review-threads query in Tools before you reply or resolve anything. An AI that posts from a person's account counts as a person.
 - The author of a thread's first comment is the one who opened it.
 - An outdated thread may have moved, not been fixed.

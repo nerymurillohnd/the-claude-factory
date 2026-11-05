@@ -36,7 +36,7 @@ Rules:
 
 ## Gotchas
 
-- The GitHub MCP tools load on demand: before the first call, load them with `ToolSearch` (query `+github`). Its result also names a GitHub server that failed to connect; then use `gh`. Their full names depend on the server (`mcp__plugin_github-operations_github__…` for this plugin's, another prefix for the user's own server or connector), so match them by the tool name.
+- The GitHub MCP tools load on demand: before the first call, load them with `ToolSearch` (query `+github`). Its result also names a GitHub server that failed to connect; then use `gh`. Their full names depend on the server (`mcp__github__…` for a server the user added as `github`, another prefix for a server with another name or a claude.ai connector), so match them by the tool name.
 - A finding can be stale: the code may have changed since it was reported.
 - A failure that also happens on the base branch predates the pull request.
 - Running a validation command runs the repository's code: read what it executes first.

@@ -6,6 +6,17 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-11-05
+
+### Removed
+
+- **Breaking:** the plugin no longer bundles the GitHub MCP server, nor the `github_token` option that held its token. After you update, `plugin:github-operations:github` leaves `/mcp`, and Claude works through `gh` until you add GitHub's server yourself. The README's Prerequisites give the `claude mcp add-json` command, with `claude mcp add` as the fallback, both with every toolset and early-access mode as before, and say which header to change for fewer toolsets or no early access. The token you saved in the plugin is no longer read: create a new one, and delete the old one on GitHub.
+
+### Changed
+
+- **Breaking:** the GitHub tools take the name of the server you add. For a server added as `github`, deny rules name `mcp__github__…` instead of `mcp__plugin_github-operations_github__…`.
+- The README shows how to add GitHub's server to the desktop app's chat and Cowork as a custom connector with request headers, and says the Code tab uses the server you added in the terminal.
+
 ## [0.6.1] - 2026-11-05
 
 ### Fixed
@@ -172,7 +183,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 - `git-cleanup` inventory: `--from` with a saved file that is not a JSON object reports a JSON error and exits 0, instead of ending with a traceback.
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/github-operations--v0.6.1...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/github-operations--v0.7.0...HEAD
+[0.7.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/github-operations--v0.7.0
 [0.6.1]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/github-operations--v0.6.1
 [0.6.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/github-operations--v0.6.0
 [0.5.1]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/github-operations--v0.5.1
