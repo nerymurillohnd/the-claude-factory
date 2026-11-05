@@ -43,20 +43,27 @@ This repository holds two scopes. They are never mixed: a rule written for one s
 - **Plugin scope**: one self-contained directory per plugin under `plugins/<plugin>/`. Its environment is only what the plugin's `README.md` declares as prerequisites; users' compatibility comes only from the README's declared minimum Claude Code version.
 - **Maintainer files inside a plugin**: a mod's `*.test.ts(x)` (in the mod's `tests/`, importing only the mod's files and `claude-code/testing`) and a plugin's eval suite stay in the plugin's directory, because `claude plugin test` and `claude plugin eval` only find them there. They are maintainer tooling, run only on Nery's build, and ship to users as inert files. Everything committed under `plugins/<plugin>/` reaches every user's cache; nothing git-ignored does, so commit no other maintainer-only file there.
 
-### Maintainer Tooling
+## Commands
 
-- Python: format and lint with Ruff, type-check with Basedpyright, test with unittest.
-- Markdown, JSON, YAML, JavaScript and TypeScript: format and lint with Biome.
-- Never format these Markdown files, with Biome or any other tool: every Markdown file under `plugins/`, `.claude/skills/`, `.claude/memory/`, `.claude/session-handoff/`, `.claude/maintainer/`, `.claude/plans/`, `.claude/specs/` and `.claude/rules/`; `MEMORY.md` and the files it indexes; and every `CLAUDE.md`. `biome.jsonc` excludes them whenever Markdown is in its `files.includes`.
-- Every tool covers the whole repository except `node_modules/`, `.github/` and the files above (CI checks the plugins' structure but leaves out the analysis and tests of plugin code, which the local gates cover); run at the root, each reads that scope from its own config (`biome.jsonc`, `ruff.toml`, `pyrightconfig.json`, `.editorconfig` for shfmt). Basedpyright always skips dot folders, so `.claude/skills/pyrightconfig.json` covers the skills' Python, and `scripts/basedpyright-maintainer.mjs` checks each PEP 723 script against its own environment.
-- JavaScript and TypeScript: type-check with `tsc` under the strictest settings and `--noEmit`. A mod's hooks module is checked by `claude plugin validate` and `claude plugin test`, which run the installed engine; no gate type-checks it against the generated `.claude-plugin/types/`.
-- Shell scripts: format with `shfmt` and lint with ShellCheck.
-- Navigate and explore code with the LSP tool, in every file of the repository, plugin files included, and follow the skill for its language. The tool and these skills come from this marketplace's LSP plugins, which `.claude/settings.json` enables and each machine must have installed; where the session has no LSP tool, say so and navigate with Grep and Read: Python with `python-lsp-intelligence:python-lsp-intelligence`; JavaScript and TypeScript with `typescript6-lsp-intelligence:ts-lifecycle`; shell scripts with `bash-lsp-intelligence:bash-lsp-intelligence`.
-- The root `package.json` serves repository-level development tooling only, never plugin runtimes; it stays `"private": true`. Its devDependencies are the npm tools (Biome, TypeScript, Husky) and the `@types/*` packages, each pinned to an exact version.
-- A plugin's own `package.json` and `package-lock.json` hold only that plugin's runtime dependencies, pinned exactly; Claude Code installs them for users when it caches the plugin, only from registry packages, with install scripts off and no `overrides`, within 60 seconds. In the clone, install them with `npm install --prefix plugins/<plugin> --ignore-scripts` for each plugin that has a `package-lock.json`; `tsc-plugins` and the plugin's node tests need them, and CI installs them with `npm ci --prefix`.
-- Every maintenance command is an `npm run` script (`test`, `typecheck`, `lint`, `format`, `fix`, `check:*`, `generate`, `validate`, `gates`): when you run a tool yourself, run it through its script, never by its bare name from PATH, so the npm tools are the versions `package-lock.json` pins; the global installs serve the editor. Ruff, Basedpyright, shfmt, ShellCheck and actionlint are not pinned: the gates run the ones installed on the machine, and CI installs their latest releases. `format` and `fix` also write in `plugins/`.
-- Husky's git hooks run `biome check --staged` and `npm test` before each commit and `npm run gates` before each push, and the project's Claude Code hooks in `.claude/settings.json` check commits and `SKILL.md` writes; fix what they report, never skip them.
-- Install the dependencies with `npm install`, with the `.nvmrc` Node selected. Commit a `package-lock.json` change only with the dependency change that caused it. CI keeps `npm ci`, which fails when the lockfile and `package.json` disagree.
+Run Biome and `tsc` only through `npm run`, which uses the versions `package-lock.json` pins; never by bare name. Ruff, Basedpyright, shfmt, ShellCheck and actionlint may run directly to check one file, but `npm run gates` is the verdict: it holds each tool's scope and flags, as CI and Husky run them.
+
+- Use `npm install`, with the `.nvmrc` Node selected, to install the maintainer tools.
+- Use `npm run format` to format Markdown, JSON, YAML, JavaScript and TypeScript with Biome, Python with Ruff and shell scripts with shfmt.
+- Use `npm run lint` to lint with Biome, Ruff, ShellCheck and actionlint.
+- Use `npm run fix` to apply the formatters' and linters' safe fixes.
+- Use `npm run typecheck` to type-check TypeScript with `tsc` (strictest settings, `--noEmit`) and Python with Basedpyright.
+- Use `npm test` to run the maintainer tests (`node --test` and unittest), and `npm run test:plugins` for the plugins' tests.
+- Use `npm run validate` to run the validators in `scripts/validators/`.
+- Use `npm run generate` to rebuild `marketplace.json` and the README catalog, and `npm run generate:check` to confirm they are current.
+- Use `npm run gates` to run every gate, as the pre-push hook does.
+- Use `claude plugin validate` and `claude plugin test` to check a mod's hooks module; no gate type-checks it against `.claude-plugin/types/`.
+- `format` and `fix` also write in `plugins/`.
+- Never format these Markdown files with any tool: everything under `plugins/`, `.claude/skills/`, `.claude/memory/`, `.claude/session-handoff/`, `.claude/maintainer/`, `.claude/plans/`, `.claude/specs/` and `.claude/rules/`; `MEMORY.md` and the files it indexes; every `CLAUDE.md`. `biome.jsonc` excludes them.
+- Every tool skips `node_modules/`, `.github/` and those files, and reads its scope from its own config (`biome.jsonc`, `ruff.toml`, `pyrightconfig.json`, `.editorconfig` for shfmt).
+- Basedpyright skips dot folders: `.claude/skills/pyrightconfig.json` covers the skills' Python, and `scripts/basedpyright-maintainer.mjs` checks each PEP 723 script in its own environment.
+- CI checks the plugins' structure only; the local gates cover the analysis and tests of plugin code.
+- Husky runs `biome check --staged` and `npm test` before each commit and `npm run gates` before each push. The Claude Code hooks in `.claude/settings.json` check commits and `SKILL.md` writes. Fix what they report; never skip them.
+- Navigate code with the LSP tool and the skill for its language: `python-lsp-intelligence:python-lsp-intelligence`, `typescript6-lsp-intelligence:ts-lifecycle`, `bash-lsp-intelligence:bash-lsp-intelligence`. They come from this marketplace's LSP plugins, which `.claude/settings.json` enables. Without the LSP tool, say so and use Grep and Read.
 
 ## Change Control
 
