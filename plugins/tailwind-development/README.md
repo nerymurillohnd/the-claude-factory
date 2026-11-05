@@ -357,6 +357,7 @@ Turning a file type off stops only the automatic check after edits; Claude can s
   - when there is no project build to preview a design in, a standalone preview page that loads Tailwind's Play CDN script from `cdn.jsdelivr.net` in your browser or artifact viewer;
   - when you ask to migrate a project from v3 to v4, Tailwind's official upgrade tool, `npx @tailwindcss/upgrade`, which downloads from the npm registry and updates your project's dependencies through your package manager.
 - **Files written:** none in your project; the packages above go into the plugin's own folder. Claude edits your project files only as the task asks, like any other edit. The migrator's worktree stays under `.claude/worktrees/` until you remove it. In a v3 to v4 migration, the upgrade tool rewrites your config, CSS and template files and your package manifest and lockfile; Claude runs it in a new branch, and asks first when your working tree has uncommitted changes. When it checks a design visually, it uses the browser or screenshot tools you already have, under your usual permission prompts.
+- **Privacy:** the author collects no data. The marketplace's [privacy policy](https://github.com/nerymurillohnd/the-claude-factory/blob/main/PRIVACY.md) covers this plugin and the outside services it can reach.
 
 ## 🔄 Updating
 
