@@ -42,6 +42,16 @@ This repository holds two scopes. They are never mixed: a rule written for one s
 - **Plugin scope**: one self-contained directory per plugin under `plugins/<plugin>/`. Its environment is only what the plugin's `README.md` declares as prerequisites; users' compatibility comes only from the README's declared minimum Claude Code version.
 - **Maintainer files inside a plugin**: a mod's `*.test.ts(x)` (in the mod's `tests/`, importing only the mod's files and `claude-code/testing`) and a plugin's eval suite stay in the plugin's directory, because `claude plugin test` and `claude plugin eval` only find them there. They are maintainer tooling, run only on Nery's build, and ship to users as inert files. Everything committed under `plugins/<plugin>/` reaches every user's cache; nothing git-ignored does, so commit no other maintainer-only file there.
 
+## Repository Layout
+
+- `.claude/specs/`: Specification documents. Specs are written before implementation plans.
+- `.claude/plans/`: Implementation plans derived from approved specs.
+- `.claude/maintainer/`: Decision records and technical-debt tracking.
+- `scripts/`: Maintainer scripts that build, check, and release this repository.
+- `plugins/`: The plugins that are developed, published, and maintained in this repository.
+- `docs/`: Reference documentation and repository information intended for users and third parties.
+- `.claude-plugin/marketplace.json`: The marketplace manifest.
+
 ## Commands
 
 Run Biome and `tsc` only through `npm run`, which uses the versions `package-lock.json` pins; never by bare name. Ruff, Basedpyright, shfmt, ShellCheck and actionlint may run directly to check one file, but `npm run gates` is the verdict: it holds each tool's scope and flags, as CI and Husky run them.
