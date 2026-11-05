@@ -72,7 +72,7 @@
         ]
       },
       {
-        "matcher": "Write",
+        "matcher": "Edit|Write",
         "hooks": [
           {
             "type": "command",
@@ -81,12 +81,7 @@
             "if": "Write(**/SKILL.md)",
             "timeout": 60,
             "statusMessage": "Checking the SKILL.md frontmatter as strict YAML…"
-          }
-        ]
-      },
-      {
-        "matcher": "Edit",
-        "hooks": [
+          },
           {
             "type": "command",
             "command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/skill-frontmatter.py",
@@ -113,7 +108,7 @@
     ],
     "PostToolUse": [
       {
-        "matcher": "Write",
+        "matcher": "Edit|Write",
         "hooks": [
           {
             "type": "command",
@@ -122,12 +117,7 @@
             "if": "Write(**/SKILL.md)",
             "timeout": 60,
             "statusMessage": "Re-checking the saved SKILL.md frontmatter…"
-          }
-        ]
-      },
-      {
-        "matcher": "Edit",
-        "hooks": [
+          },
           {
             "type": "command",
             "command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/skill-frontmatter.py",
