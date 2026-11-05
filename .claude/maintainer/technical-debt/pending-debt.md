@@ -56,6 +56,12 @@ Add an item only when all of these hold:
 | DEBT-042 | python-lsp-intelligence's post-edit hook type-checks a PEP 723 script without its dependencies | 🟡 Pending |
 | DEBT-043 | No CI workflow runs the eval suites that `operating-standard.md` requires | 🟠 Blocked |
 | DEBT-044 | tailwind-development phase 2 exists only in a local stash on a pre-0.2.0 base | 🟠 Blocked |
+| DEBT-045 | `claude-github-actions` cannot write a Claude workflow from scratch | 🟠 Blocked |
+| DEBT-046 | Nothing detects when claude-code-action changes the facts `claude-github-actions` relies on | 🟠 Blocked |
+| DEBT-047 | `claude-github-actions` has no eval suite | 🟠 Blocked |
+| DEBT-048 | github-operations 0.6.0 no longer writes, triages or answers issues and discussions, or turns an issue into a pull request | 🟠 Blocked |
+| DEBT-049 | github-operations ships without an icon or a privacy policy URL, and turns on the GitHub MCP server's Insiders mode | 🟠 Blocked |
+| DEBT-050 | A new cloud session starts on Node 22 without shfmt, and npm refuses to run on Node 22 since the devEngines pin | 🔵 In progress |
 
 ## 📂 Open items
 
@@ -422,6 +428,8 @@ Add an item only when all of these hold:
 - **Confirmed facts:**
   - `hooks/check.py` runs `basedpyright` on the edited file with the project's config (`-p <config> <file>`, line 339 on 2026-11-01) and the interpreter basedpyright finds by default. It has no branch for a file whose first line is `#!/usr/bin/env -S uv run --script`.
   - On 2026-10-29, every Edit and Write of `plugins/github-operations/skills/github/scripts/check-forms.py` (PEP 723: `ruamel.yaml`, `check-jsonschema`) made the hook block with `reportMissingImports` on `ruamel.yaml` and about 120 cascading `reportUnknown*` errors. The same file checked with `uv run --quiet --no-project --with-requirements <file> basedpyright --warnings <file>` reported 0 errors, 0 warnings, 0 notes.
+  - That path no longer exists: commit b4109a2 (2026-11-04) removed the `github` skill. The script now lives at `plugins/github-operations/skills/github-files-setup/scripts/check-forms.py`, and on 2026-11-04 the hook blocked its edits with the same false errors; checked in its own uv environment it was clean.
+  - On 2026-11-04, `hooks/check.py` still runs `basedpyright -p <config> <file>` at line 339 and has no `uv run` branch (0 matches); python-lsp-intelligence is still 0.3.1.
   - The repository's `basedpyright-plugins:<file>` gate (`scripts/gates.mjs`, commit 9ac3b11) already checks each PEP 723 plugin script that way.
   - The skill's own Gotchas already tell Claude that the server shows false import errors on PEP 723 scripts; the hook does not apply that knowledge.
 - **Inferences:** every user of the plugin who edits a PEP 723 script with third-party dependencies gets the same blocking false errors after each edit.
@@ -491,6 +499,167 @@ Add an item only when all of these hold:
 - **Next action:** ask Nery whether phase 2 goes ahead. If yes, rebuild it on `main` from the stash on a feature branch, through `building-plugins`, `versioning` and `releases`. If no, drop the stash and close this item as accepted.
 - **Review condition:** closes when the phase 2 files land on `main` in a release, or when Nery drops phase 2.
 - **Related records:** none.
+
+### DEBT-045 — `claude-github-actions` cannot write a Claude workflow from scratch
+
+| Field | Value |
+| --- | --- |
+| **Status** | 🟠 Blocked |
+| **Category** | quality |
+| **Owner** | Nery |
+| **Logged** | 2026-11-04 |
+
+#### 🔎 Evidence
+
+- **Confirmed facts:**
+  - On 2026-11-04 (commit d7d9912), `plugins/github-operations/skills/claude-github-actions/SKILL.md` gained routes that diagnose a Claude step, audit and harden workflow files, and repair CI on the default branch. Since commit c0d0edd its "When not to use" section says "Writing a new workflow from scratch: not covered yet; tell the user." (line 35), and `plugins/github-operations/README.md:452` says "Writing a new workflow from scratch is not covered yet." No sibling skill is handed that work.
+  - The CI/CD Engineering blueprint (rev 13.1), which Nery shared in that session, defines the missing authoring playbooks: 1, a mention assistant; 2, automated PR review, with a default profile on Anthropic's `code-review` plugin and a strict profile with no shell; 4, migration of a legacy workflow.
+  - Nery chose, through the approved plan, to defer authoring to the next change.
+- **Inferences:** a request such as "add a workflow so Claude reviews every PR" is answered as out of scope.
+- **Open questions:** which playbooks go first; whether the `code-review` plugin's skip conditions can be verified, since they were not found in `anthropics/claude-code@26382c0`.
+
+#### 📈 Impact and next step
+
+- **Impact / risk:** users who want Claude in their CI get no generated workflow, and may copy upstream examples that pin `@v6` or `@main`, interpolate `structured_output` into `run:` and name retired model IDs.
+- **Why it is not fixed now:** deferred by Nery's decision; it needs the playbooks verified live, as the audit and diagnosis references were.
+- **Next action:** ask Nery to choose the first authoring playbook, then build it in `claude-github-actions/references/`, following the verification rule of the 2026-11-04 plan.
+- **Review condition:** closes when `claude-github-actions` can write at least the automated PR review workflow, with every reference verified at the then-current action commit.
+- **Related records:** DEBT-046, DEBT-047.
+
+### DEBT-046 — Nothing detects when claude-code-action changes the facts `claude-github-actions` relies on
+
+| Field | Value |
+| --- | --- |
+| **Status** | 🟠 Blocked |
+| **Category** | maintainability |
+| **Owner** | Nery |
+| **Logged** | 2026-11-04 |
+
+#### 🔎 Evidence
+
+- **Confirmed facts:**
+  - The references `sharp-edges.md`, `action-contract.md`, `trust-boundaries.md`, `auth-and-permissions.md` and `workflow-audit.md` under `plugins/github-operations/skills/claude-github-actions/references/` state the action's inputs, modes, actor gates, restored paths, log signals and GitHub MCP tool names. They were verified at `anthropics/claude-code-action@c0949c5` on 2026-11-04.
+  - In that session, the blueprint's snapshot `6d5ae52`, from 2026-10-30, was already behind `c0949c5`.
+  - No workflow under `.github/workflows/` watches the action (`claude-code-review.yml`, `claude.yml`, `release.yml`, `validate.yml`).
+  - The plugin also relies on facts about `github/github-mcp-server`, and one was already wrong: on 2026-11-04 `github-files-setup/references/discussion-forms.md` listed category slugs with MCP `list_discussion_categories`, but its source (`pkg/github/discussions.go` on `main`) queries and returns only each category's `id` and `name`. Commit 285bf41 moved the step to `gh api graphql`.
+- **Inferences:** the action and the MCP server both ship releases often, so a stated input, signal or tool name can go stale between plugin releases without anyone noticing.
+- **Open questions:** whether the watch runs daily or on each release.
+
+#### 📈 Impact and next step
+
+- **Impact / risk:** the skill can tell users a fact the current action no longer holds, such as a removed input or a renamed log signal, and match a failure to the wrong sharp edge.
+- **Why it is not fixed now:** it is maintainer automation outside this change and needs Nery's go-ahead for a new workflow in the marketplace repository.
+- **Next action:** propose a scheduled workflow that resolves the action's latest release, diffs `action.yml` and the source files those references depend on against `c0949c5`, does the same for the `github/github-mcp-server` tool definitions the plugin names, and opens or updates one issue when they changed. It uses `gh api` and `git diff` only, with `permissions: {}` and `contents: read` plus `issues: write` on the job.
+- **Review condition:** closes when that watch runs in the marketplace repository and its first issue, or its first clean run, is recorded.
+- **Related records:** DEBT-045.
+
+### DEBT-047 — `claude-github-actions` has no eval suite
+
+| Field | Value |
+| --- | --- |
+| **Status** | 🟠 Blocked |
+| **Category** | quality |
+| **Owner** | Nery |
+| **Logged** | 2026-11-04 |
+
+#### 🔎 Evidence
+
+- **Confirmed facts:**
+  - `plugins/github-operations/evals` does not exist (rechecked on 2026-11-04 after commits c0d0edd and 285bf41).
+  - The diagnosis, audit and repair routes added on 2026-11-04 were checked only structurally: frontmatter, links and `claude plugin validate --strict`.
+  - Nery asked that no tests or evals be run or created in that work.
+- **Inferences:** whether the skill triggers on "the Claude review posted nothing" and stays silent on "fix the failing unit test" is untested.
+- **Open questions:** none.
+
+#### 📈 Impact and next step
+
+- **Impact / risk:** a wrong trigger, a missed sharp edge or an unsafe patch reaches users without a case that would catch it.
+- **Why it is not fixed now:** Nery deferred evals.
+- **Next action:** when Nery asks for evals, build a pilot suite through `testing-plugins`. Its first cases: one diagnosis case per log signal family, one audit case on a fixture workflow with seeded findings, and four trigger cases (two must load, two must not).
+- **Review condition:** closes when the suite exists and has run once under `claude plugin eval`.
+- **Related records:** DEBT-043, DEBT-045.
+
+### DEBT-048 — github-operations 0.6.0 no longer writes, triages or answers issues and discussions, or turns an issue into a pull request
+
+| Field | Value |
+| --- | --- |
+| **Status** | 🟠 Blocked |
+| **Category** | quality, compatibility |
+| **Owner** | Nery |
+| **Logged** | 2026-11-04 |
+
+#### 🔎 Evidence
+
+- **Confirmed facts:**
+  - At tag `github-operations--v0.5.1`, the `github` skill routed `issue` (write, triage, mark a duplicate) to `references/authoring/issue.md`, "Fix issue #N" to `references/work/issue-to-pr.md`, and `discussion` to `references/authoring/discussion.md` (its SKILL.md lines 62 to 64).
+  - Commit b4109a2 (2026-11-04) removed the `github` skill with those references. None of the four 0.6.0 skills or their agents covers them.
+  - `plugins/github-operations/CHANGELOG.md:33` says "Writing issues and discussions (`issue`, `discussion`) is not part of this version", and the README's "Coming from 0.5.x?" table says "Not part of this version" for `issue` and `discussion`.
+- **Inferences:** a 0.5.x user who updates and asks to file a bug, triage issues or fix issue #N gets no skill for it.
+- **Open questions:** whether the capability comes back, and as its own skill or inside an existing one.
+
+#### 📈 Impact and next step
+
+- **Impact / risk:** 0.6.0 removes capabilities 0.5.x users had; until a decision, those requests fall outside the plugin.
+- **Why it is not fixed now:** rebuilding them is a scope decision only Nery can make; ADR_2026-11-04_github-operations-0-6-0-ships-as-one-release keeps 0.6.0 to the four skills.
+- **Next action:** ask Nery whether issue and discussion work returns, and where; then build it through `building-plugins`, `versioning` and `releases`.
+- **Review condition:** closes when a release covers that work, or when Nery decides it stays out for good (closed as accepted, with an ADR).
+- **Related records:** ADR_2026-11-04_github-operations-splits-into-focused-skills; ADR_2026-11-04_github-operations-0-6-0-ships-as-one-release.
+
+### DEBT-049 — github-operations ships without an icon or a privacy policy URL, and turns on the GitHub MCP server's Insiders mode
+
+| Field | Value |
+| --- | --- |
+| **Status** | 🟠 Blocked |
+| **Category** | quality, compatibility |
+| **Owner** | Nery |
+| **Logged** | 2026-11-04 |
+
+#### 🔎 Evidence
+
+- **Confirmed facts:**
+  - On 2026-11-04, `claude plugin validate --strict plugins/github-operations` (Claude Code 2.1.318) passed with two plugin directory warnings: ICON_MISSING and PRIVACY_URL_MISSING ("This plugin connects to a remote MCP server or HTTP hook but declares no privacy policy URL").
+  - `plugins/github-operations/.mcp.json:9` sends `X-MCP-Insiders: true`. GitHub's `docs/server-configuration.md:348` (github/github-mcp-server, `main`, read 2026-11-04): "Features in Insiders Mode may change, evolve, or be removed based on user feedback."
+  - The README discloses the early-access mode (lines 57 and 480).
+- **Inferences:** the warnings do not change the validation result, but a submission to the plugin directory would need both fields; Insiders features can change under users between plugin releases.
+- **Open questions:** which privacy policy the URL points to; whether Insiders mode stays.
+
+#### 📈 Impact and next step
+
+- **Impact / risk:** the listing has no icon or privacy link for a plugin that sends the user's token to a remote server, and users depend on experimental GitHub MCP features.
+- **Why it is not fixed now:** the icon is an asset only Nery can supply, and the privacy URL and the Insiders choice are his decisions.
+- **Next action:** ask Nery for a square PNG of 512 to 2048 px (saved inside the plugin, at `.claude-plugin/icon.png`), the privacy policy URL, and whether to keep `X-MCP-Insiders`; then apply them in a plugin change through `versioning` and `releases`.
+- **Review condition:** closes when `claude plugin validate --strict` shows neither warning and the Insiders choice is applied and recorded.
+- **Related records:** none.
+
+### DEBT-050 — A new cloud session starts on Node 22 without shfmt, and npm refuses to run on Node 22 since the devEngines pin
+
+| Field | Value |
+| --- | --- |
+| **Status** | 🔵 In progress |
+| **Category** | maintainability, compatibility |
+| **Owner** | Nery |
+| **Logged** | 2026-11-04 |
+
+#### 🔎 Evidence
+
+- **Confirmed facts:**
+  - Maintainer scope only: this concerns the cloud environment where Nery works on this repository, never a plugin or a user's machine.
+  - On 2026-11-05 Nery created the personal cloud environment `the-claude-factory` (`env_01HumVFyT51CDf6AJdszJVkA`) with a setup script that installs Node from `.nvmrc`, npm 12.2.1, Python 3.15, ruff, basedpyright, ShellCheck, shfmt, actionlint, and Biome and TypeScript globally; it has no repository on its list yet. In the current container, shfmt v3.14.1 was installed with `go install mvdan.cc/sh/v3/cmd/shfmt@latest`.
+  - The cloud container of 2026-11-04 started with Node 22.23.4 and npm 10.9.9 (`/opt/node22`), while `.nvmrc` says 26.13.0; `shfmt` was not on `PATH`, so the `shfmt-maintainer` and `shfmt-plugins` gates could not run.
+  - Commit 2506755 set `devEngines.runtime` to `^26.13.0` with `onFail: error`. npm enforces `devEngines` since 10.9.0 (npm CHANGELOG, 2024-10-03).
+  - With Node 24.22.1, both npm 11.19.1 and npm 12.2.1 stopped `npm run check:repo` with `EBADDEVENGINES`.
+  - The session-start hook runs `npm install`, and the Husky hooks run `npm` scripts.
+  - Stated by Nery on 2026-11-04: his MacBook is out of service, so he works only through Claude Code on the web.
+- **Inferences:** in a new cloud session, `npm install`, `npm test` and the Husky hooks fail until Node 26 is installed. Not reproduced, because Node 22 was removed from this container.
+- **Open questions:** none.
+
+#### 📈 Impact and next step
+
+- **Impact / risk:** every new cloud session starts unable to install the maintainer tools or commit through the hooks, which is Nery's only way to work while his machine is down.
+- **Why it is not fixed now:** the cloud environment's Setup script is changed only by Nery, in the environment's settings on claude.ai (the cloud environment menu in the session's title bar, then Edit).
+- **Next action:** add `nerymurillohnd/the-claude-factory` to the environment's repository list, start a new session on it, check that the setup summary shows no `MISSING` tool, then run `node --version` and `npm test`.
+- **Review condition:** closes when a new cloud session starts on Node 26.13.0 with shfmt on `PATH`, and `npm test` passes there.
+- **Related records:** ADR_2026-11-04_node-pinned-in-package-json-through-devengines; DEBT-051.
 
 <!--
 Entry format. Copy this block above this comment for each new item and add its row to the Index.

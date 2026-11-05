@@ -1,8 +1,8 @@
 {
   "name": "github-operations",
   "displayName": "GitHub Operations",
-  "version": "0.5.1",
-  "description": "One operating contract for GitHub work: takes pull requests from branch to merge, writes PRs, issues and discussions from the repository's templates, repairs CI, and audits and cleans up repositories, with hooks that keep its reviewer agents read-only.",
+  "version": "0.6.0",
+  "description": "Runs GitHub work through focused skills: takes pull requests from branch to merge with a tracker, a fixer and a finalizer agent, writes a repository's templates, forms, labels and Dependabot setup adapted to it, repairs failing CI on the default branch, and audits and cleans up repositories, local and remote, behind a verified backup.",
   "author": {
     "name": "Nery Murillo",
     "url": "https://github.com/nerymurillohnd"
@@ -26,7 +26,8 @@
     "discussions",
     "templates",
     "labels",
-    "hooks"
+    "dependabot",
+    "audit"
   ],
   "metadata": {
     "category": "development",

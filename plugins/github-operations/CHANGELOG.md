@@ -6,6 +6,33 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-11-04
+
+### Added
+
+- The `auto-pr-lifecycle` skill takes a pull request from the stage it is in to merge: it opens it, has its agents watch, fix and finalize it, and asks you before every push and before the merge. After each fix round you choose **Push**, **Push without asking again on this pull request** or **Don't push**.
+- A `/github-operations:init-pr-lifecycle` command that starts that lifecycle on the current pull request, or the one you name.
+- A `pr-lifecycle` team of three agents: `pr-tracker` watches a pull request and reports what it finds, `pr-fixer` fixes reported failures and review findings in your local clone without pushing, and `pr-finalizer` answers the review threads, resolves the ones bots opened, and reports whether the pull request is ready to merge.
+- The `cleanup-and-debug` skill audits a repository, local and remote, in fourteen phases, then plans and runs only the cleanup you approve at two gates, behind a backup bundle it proves restores. The `/github-operations:init-cleanup-and-debug` command starts it, and the read-only `repo-hygiene:health-diagnostics` agent runs its audit phases, several at once on a large repository.
+- The `claude-github-actions` skill works on GitHub Actions workflows, specializing in those that run Claude: it diagnoses a claude-code-action step that failed, did nothing or posted nothing against fourteen known failure patterns, audits and hardens workflow files with an exact patch per finding (shell injection, excess permissions, unpinned actions, `pull_request_target` designs, claude-code-action misconfiguration), and repairs failing CI on the default branch. It pins every action it writes to a full commit and looks up versions and model IDs when it writes them; it asks before any rerun, workflow change or push.
+- The `github-files-setup` skill writes a repository's own PR templates, issue and discussion forms, labels, Dependabot file and `CODEOWNERS`, adapted to that repository from the plugin's models, and sets the merge message you approve. It maps each model to the exact path GitHub reads, and looks for the repository's own copy in every place GitHub accepts one before writing anything.
+
+### Changed
+
+- **Breaking:** GitHub work runs through focused skills instead of one `github` contract: the pull request lifecycle, repository setup, and repository audit and cleanup. Each skill hands a request it does not cover to the one that does.
+- **Breaking:** the plugin no longer ships hooks, and no longer needs `python3` for them. Claude Code still removes some tools from the PR lifecycle agents: none of them can launch another agent, and the tracker and the finalizer cannot use the file-writing tools. Their other limits (the tracker, the auditor and the finalizer change no code, the fixer never pushes) are kept only by their instructions; the README shows how to add hard limits yourself.
+- The PR tracker reads a green AI reviewer's run log before calling it a no-op, lists a reviewer that produced nothing as a blocker, tells a claude-code-action actor-gate failure or a missing OIDC token apart from missing secrets, and hands Claude-step and workflow failures to the Actions skill with the run, job, commit and log lines.
+- The PR lifecycle stops after five fix rounds and asks you whether to continue, and the fixer reads the hooks a commit runs before committing on another author's code.
+- The cleanup audit also reads the repository's Actions settings, including whether fork pull requests receive write tokens, and hands workflow-file risks to the Actions skill.
+- The PR lifecycle no longer requires signed commits: Claude and the fixer commit as your git setup does, signed when it signs, so a repository without commit signing no longer stops the lifecycle.
+- `python3` 3.12 and uv are needed only for the repository setup's label comparison and form checks.
+
+### Removed
+
+- **Breaking:** the `github-operations:pr-tracker` agent. Use `github-operations:pr-lifecycle:pr-tracker`, which reports the same findings and adds the failure's run and attempt, its cause class, and a rerun only for a failure shown to be transient.
+- **Breaking:** the `github-operations:github` skill. Its tasks moved: `pr` to `auto-pr-lifecycle`, `audit` and `cleanup` to `cleanup-and-debug`, `setup` to `github-files-setup`, and `ci` to `claude-github-actions`. Writing, triaging and answering issues and discussions (`issue`, `discussion`), and fixing an issue through a pull request ("fix issue #N"), are not part of this version. Its template models now ship with `github-files-setup`.
+- **Breaking:** the `github-operations:repo-auditor` agent. The cleanup's audit runs in `github-operations:repo-hygiene:health-diagnostics`.
+
 ## [0.5.1] - 2026-11-02
 
 ### Changed
@@ -135,7 +162,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 - `git-cleanup` inventory: `--from` with a saved file that is not a JSON object reports a JSON error and exits 0, instead of ending with a traceback.
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/github-operations--v0.5.1...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/github-operations--v0.6.0...HEAD
+[0.6.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/github-operations--v0.6.0
 [0.5.1]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/github-operations--v0.5.1
 [0.5.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/github-operations--v0.5.0
 [0.4.1]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/github-operations--v0.4.1

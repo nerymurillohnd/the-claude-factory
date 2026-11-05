@@ -165,6 +165,34 @@ function git(root, args) {
   return r.stdout
 }
 
+// The header line git writes into a commit signed with an SSH key.
+const SSH_SIGNATURE = /^gpgsig -----BEGIN SSH SIGNATURE-----$/m
+
+/**
+ * The signatures gate's verdict on `git log --format='%G? %h %s'` output, or null when it
+ * passes. Locally every commit must verify (`G`). A Claude Code cloud session
+ * (`CLAUDE_CODE_REMOTE=true`) signs commits with a key it does not expose, so git cannot verify
+ * them and prints `N` or `E`: there a commit that carries an SSH signature passes, and GitHub
+ * verifies it after the push. A bad, untrusted, expired or revoked signature, and an unsigned
+ * commit, fail everywhere (ADR_2026-11-05_cloud-sessions-check-commit-signatures-by-presence).
+ * @param {string} out
+ * @param {{ remote: boolean, sshSigned: (sha: string) => boolean }} options
+ * @returns {string | null}
+ */
+export function signatureProblem(out, { remote, sshSigned }) {
+  const failing = out
+    .split('\n')
+    .filter((line) => line !== '')
+    .filter((line) => {
+      const [code = '', sha = ''] = line.split(' ', 2)
+      if (code === 'G') {
+        return false
+      }
+      return !(remote && (code === 'N' || code === 'E') && sshSigned(sha))
+    })
+  return failing.length === 0 ? null : `not signed with G: ${failing.join('; ')}`
+}
+
 /**
  * @param {string} root
  * @param {string} rev
@@ -289,10 +317,11 @@ export function gatesFor({ root, ci, base }) {
       cmd: 'git',
       args: ['log', '--format=%G? %h %s', 'origin/main..HEAD'],
       ...(isCommit(root, 'origin/main') ? {} : { skipReason: 'origin/main does not exist' }),
-      after: (out) => {
-        const unsigned = out.split('\n').filter((l) => l !== '' && !l.startsWith('G '))
-        return unsigned.length === 0 ? null : `not signed with G: ${unsigned.join('; ')}`
-      },
+      after: (out) =>
+        signatureProblem(out, {
+          remote: process.env['CLAUDE_CODE_REMOTE'] === 'true',
+          sshSigned: (sha) => SSH_SIGNATURE.test(git(root, ['cat-file', 'commit', sha])),
+        }),
     },
 
     // ── Maintainer tooling and plugin structure (CI) ────────────────────────────────────────

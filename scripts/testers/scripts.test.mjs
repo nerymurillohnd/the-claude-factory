@@ -829,10 +829,56 @@ describe('lsp config rules', () => {
 })
 
 describe('root package.json rules', () => {
-  const pkg = { private: true, devDependencies: { '@types/node': '26.6.5' } }
+  const runtime = { name: 'node', version: '^26.12.1', onFail: 'error' }
+  const pkg = {
+    private: true,
+    devEngines: { runtime },
+    devDependencies: { '@types/node': '26.6.5' },
+  }
 
   test('accept the maintainer-only package', () => {
     assert.deepEqual(rootPackageProblems(pkg, '26.12.1'), [])
+  })
+
+  test('accept a .nvmrc version written with a leading v and a newline', () => {
+    assert.deepEqual(rootPackageProblems(pkg, 'v26.12.1\n'), [])
+  })
+
+  test('flag a missing devEngines.runtime', () => {
+    const { devEngines: _ignored, ...bare } = pkg
+    assert.match(
+      rootPackageProblems(bare, '26.12.1').join('\n'),
+      /must declare "devEngines": \{ "runtime": \{ "name": "node", "version": "\^26\.12\.1", "onFail": "error" \} \}/,
+    )
+    assert.match(
+      rootPackageProblems({ ...pkg, devEngines: {} }, '26.12.1').join('\n'),
+      /must declare "devEngines"/,
+    )
+  })
+
+  test('flag a devEngines.runtime version that is not ^ plus the .nvmrc version', () => {
+    for (const version of ['26.12.1', '^26.0.0', '>=26.12.1', undefined]) {
+      assert.match(
+        rootPackageProblems(
+          { ...pkg, devEngines: { runtime: { ...runtime, version } } },
+          '26.12.1',
+        ).join('\n'),
+        /devEngines\.runtime\.version must be "\^26\.12\.1", the \.nvmrc version/,
+        String(version),
+      )
+    }
+  })
+
+  test('flag a devEngines.runtime that is not node, does not fail, or is a list', () => {
+    const problems = (/** @type {unknown} */ value) =>
+      rootPackageProblems({ ...pkg, devEngines: { runtime: value } }, '26.12.1').join('\n')
+    assert.match(problems({ ...runtime, name: 'bun' }), /devEngines\.runtime\.name must be "node"/)
+    assert.match(
+      problems({ ...runtime, onFail: 'warn' }),
+      /devEngines\.runtime\.onFail must be "error"/,
+    )
+    assert.match(problems({ name: 'node', version: '^26.12.1' }), /onFail must be "error"/)
+    assert.match(problems([runtime]), /devEngines\.runtime must be one object/)
   })
 
   test('flag anything that could make it a plugin runtime', () => {

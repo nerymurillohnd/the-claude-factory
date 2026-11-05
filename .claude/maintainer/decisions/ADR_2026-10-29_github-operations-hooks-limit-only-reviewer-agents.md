@@ -1,10 +1,10 @@
 ---
-status: accepted
+status: superseded
 date: 2026-10-29
 decision-makers:
   - "Nery Samuel Murillo"
 supersedes: ADR_2026-10-29_github-operations-hooks-enforce-its-own-rules
-superseded-by: none
+superseded-by: ADR_2026-11-04_github-operations-ships-no-hooks
 ---
 
 # github-operations hooks deny only the reviewer agents' named writes

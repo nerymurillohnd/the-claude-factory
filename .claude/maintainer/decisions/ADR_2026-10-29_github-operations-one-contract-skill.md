@@ -1,10 +1,10 @@
 ---
-status: accepted
+status: superseded
 date: 2026-10-29
 decision-makers:
   - "Nery Samuel Murillo"
 supersedes: none
-superseded-by: none
+superseded-by: ADR_2026-11-04_github-operations-splits-into-focused-skills
 ---
 
 # github-operations ships one contract skill, github, in place of its PR and cleanup skills

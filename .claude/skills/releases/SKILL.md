@@ -12,7 +12,7 @@ Release a plugin of `the-claude-factory`, first release or release of a changed 
 1. Never tag by hand. `release.yml` tags every plugin whose version has no tag yet, after Validate succeeds on `main`.
 2. Put the release in the plugin's pull request: version, changelog entries and regenerated catalog in one signed commit. Commit nothing for the release after the merge.
 3. Push, open a pull request or merge only when Nery authorizes it.
-4. Merge only with all CI checks green, all review comments resolved and a `github-operations:pr-tracker` report with no issues.
+4. Merge only with all CI checks green, all review comments resolved and a `github-operations:pr-lifecycle:pr-tracker` report with no issues.
 5. Never merge or push to `main` before listing what it publishes and confirming with Nery that each plugin is meant to ship.
 6. Never run `release.yml` by hand while Validate is failing.
 
