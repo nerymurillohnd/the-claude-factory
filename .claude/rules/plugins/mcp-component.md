@@ -11,7 +11,7 @@ paths:
 - Apply plugin-specific lifecycle, path substitution, and naming rules only to plugin-provided servers.
 - Consult the official references below before introducing fields or relying on version-specific behavior, and verify against the sources in the order `.claude/CLAUDE.md` → Current Claude Code features sets.
 - For configuration design, review and static validation, invoke `building-plugins` and read its `references/mcp-servers.md` (and `references/mcp-hooks-and-lifecycle.md` for hooks, connection state and timeouts).
-- For live connection checks and diagnosing an install, load or connection error, invoke `testing-plugins`, as `.claude/CLAUDE.md` → Plugin testing and evaluation sets.
+- For live connection checks and diagnosing an install, load or connection error, invoke `testing-plugins`.
 
 ## Configuration and Portability
 

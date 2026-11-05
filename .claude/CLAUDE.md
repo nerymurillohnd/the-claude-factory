@@ -35,16 +35,7 @@ Claude Code, the Claude app, the Claude models and every tool the gates run chan
 - When sources differ, trust them in this order: the installed binary (`--help`, `claude plugin validate`, `claude plugin test`), then the release notes, then the docs, which lag releases. When a release note and a doc describe different stages (loading versus validation), confirm on the installed build before relying on either.
 - When components depend on each other, research each side. For example, a plugin hook needs the hooks reference, the plugins reference and the Claude app platform-support page.
 
-## Workflow
-
-This section is the contract of the work on this project: the scope every file belongs to, where the working files live, and each stage with the skill that owns it and its key jobs. The procedure of each stage lives in its skill; never copy it here. Depending on the context, resume the work from the stage it belongs to, and apply its skill to what is already built. The scope and working-file rules apply to every stage.
-
-1. Maintainer and Plugin Scopes
-2. Working Files
-3. Management, Maintenance and Quality Gates
-4. Marketplace Plugins
-
-### Maintainer and Plugin Scopes
+## Maintainer and Plugin Scopes
 
 This repository holds two scopes. They are never mixed: a rule written for one scope does not apply to the other, and nothing from the maintainer's environment becomes something a plugin needs to run. Maintainer tools may check plugin files; that never makes them a plugin dependency. Before acting, identify the scope of every file the task touches; a task that touches both is handled as two parts, each under its own rules.
 
@@ -52,7 +43,7 @@ This repository holds two scopes. They are never mixed: a rule written for one s
 - **Plugin scope**: one self-contained directory per plugin under `plugins/<plugin>/`. Its environment is only what the plugin's `README.md` declares as prerequisites; users' compatibility comes only from the README's declared minimum Claude Code version.
 - **Maintainer files inside a plugin**: a mod's `*.test.ts(x)` (in the mod's `tests/`, importing only the mod's files and `claude-code/testing`) and a plugin's eval suite stay in the plugin's directory, because `claude plugin test` and `claude plugin eval` only find them there. They are maintainer tooling, run only on Nery's build, and ship to users as inert files. Everything committed under `plugins/<plugin>/` reaches every user's cache; nothing git-ignored does, so commit no other maintainer-only file there.
 
-#### Maintainer Tooling
+### Maintainer Tooling
 
 - Python: format and lint with Ruff, type-check with Basedpyright, test with unittest.
 - Markdown, JSON, YAML, JavaScript and TypeScript: format and lint with Biome.
@@ -66,84 +57,6 @@ This repository holds two scopes. They are never mixed: a rule written for one s
 - Every maintenance command is an `npm run` script (`test`, `typecheck`, `lint`, `format`, `fix`, `check:*`, `generate`, `validate`, `gates`): when you run a tool yourself, run it through its script, never by its bare name from PATH, so the npm tools are the versions `package-lock.json` pins; the global installs serve the editor. Ruff, Basedpyright, shfmt, ShellCheck and actionlint are not pinned: the gates run the ones installed on the machine, and CI installs their latest releases. `format` and `fix` also write in `plugins/`.
 - Husky's git hooks run `biome check --staged` and `npm test` before each commit and `npm run gates` before each push, and the project's Claude Code hooks in `.claude/settings.json` check commits and `SKILL.md` writes; fix what they report, never skip them.
 - Install the dependencies with `npm install`, with the `.nvmrc` Node selected. Commit a `package-lock.json` change only with the dependency change that caused it. CI keeps `npm ci`, which fails when the lockfile and `package.json` disagree.
-
-#### Plugin Tooling
-
-- Target Linux and macOS with POSIX-compatible interfaces. Windows is supported only through Git Bash, and only when the plugin's README declares it; never add PowerShell, `cmd.exe` or native Windows paths.
-- Write plugin Python for `python3` 3.12 or later, and state that minimum in the README of every plugin that runs Python. Ruff (`per-file-target-version` in `ruff.toml`) and Basedpyright (the `plugins` execution environment in `pyrightconfig.json`) check it against 3.12; Basedpyright runs in `all` mode, as `pyrightconfig.json` sets for the whole repository.
-
-### Working Files
-
-- `.claude/specs/`: specs, written before plans.
-- `.claude/plans/`: implementation plans.
-- `.claude/maintainer/`: decision records and technical-debt ledgers, written through `project-maintainer:write-records`, and audits.
-- Keep these git-ignored in `.gitignore` and never commit them: eval results (`eval-results/` and `**/evals/results/`), `.claude/plans/`, `.claude/session-handoff/`, `.claude/memory/`, `.claude/settings.local.json`, and the `tsconfig.json` Claude Code writes at a mod's root (`plugins/*/tsconfig.json`) and the declarations it writes in a mod's `.claude-plugin/types/` (`plugins/*/.claude-plugin/types/`).
-
-### Management, Maintenance and Quality Gates
-
-1. Decision records
-   - When: Nery makes an important decision.
-   - Skill: `project-maintainer:write-records`.
-   - Key jobs: write the ADR.
-2. Pending and resolved tasks
-   - When: an idea, task or conflict resolution cannot be carried out, or a logged item is withdrawn, completed or closed.
-   - Skill: `project-maintainer:write-records`.
-   - Key jobs: log the pending item; record its closure.
-3. User documentation
-   - When: the marketplace's own user documentation is written, updated or checked.
-   - Skill: `maintaining-user-docs`.
-   - Key jobs: keep the docs true to the current Claude Code release and the marketplace.
-4. Issue handling and resolution
-   - Skill: none yet; ask Nery.
-   - Key jobs: label each issue only with the labels the repository already has.
-5. Local quality gates
-   - Skill: none yet; ask Nery.
-   - Key jobs: check each changed file with the tooling of its scope (Maintainer and Plugin Scopes).
-6. Remote quality gates
-   - Skill: none yet; ask Nery.
-
-### Marketplace Plugins
-
-1. Plugin design and planning
-   - Skill: none yet; ask Nery.
-   - Key jobs: write the spec, then the plan, where Working Files says.
-2. Plugin creation
-   - When: a plugin is created, scaffolded, written or fixed.
-   - Skills: `building-plugins`; also `building-mods` when the plugin is a mod or contains one.
-   - Key jobs:
-     - Settle the identity with Nery: name, category (with `plugin-categories`), description, display name and surfaces.
-     - Create the plugin and register it in the marketplace.
-     - Write the components from the current official docs.
-     - Make it public-ready: README, `LICENSE`, `CHANGELOG.md`, third-party notice when it applies.
-     - Validate it.
-3. Plugin categories
-   - When: a new plugin needs its category, a plugin's category changes, a plugin gains or loses a mod, or `scripts/categories.json` changes.
-   - Skill: `plugin-categories`.
-   - Key jobs:
-     - Give every plugin one category, chosen by its purpose.
-     - Keep `scripts/categories.json` the only definition, and `metadata.category` the only place a plugin's category is set.
-     - Regenerate the marketplace and the catalog after every change.
-4. Plugin testing and evaluation
-   - When: evals are requested, a plugin with evals changes, a ready plugin has MCP servers or MCP hooks, a mod is tested, or an install, load or marketplace error needs diagnosing.
-   - Skills: `testing-plugins`; `testing-mods` for a mod's own tests and troubleshooting.
-   - Key jobs:
-     - Build an eval suite only when asked.
-     - When a plugin with evals changes, run a small smoke run locally; CI runs the full suite.
-     - Run the live MCP checks once Nery says the plugin is ready.
-     - Run a mod's own tests.
-     - Diagnose install, load and marketplace errors.
-5. Versioning and releases
-   - When: a new plugin is published, or an existing plugin has changed.
-   - Skills: `versioning`, `releases`.
-   - Key jobs:
-     - Choose the version and write the release notes.
-     - Check the release before the merge.
-     - Confirm what users receive after the merge.
-6. Plugin renames and removals
-   - When: a plugin is to be renamed, merged into another, removed, retired or deprecated.
-   - Skills: `rename-a-plugin`, `remove-a-plugin`.
-   - Key jobs: migrate existing installs through the marketplace's `renames` map, and ship a rename as a breaking change.
-   - When this stage and Versioning and releases both apply, load `rename-a-plugin` or `remove-a-plugin` first, then `versioning` for the plugin whose version changes (the renamed plugin, or the merge target), then `releases`.
 
 ## Change Control
 

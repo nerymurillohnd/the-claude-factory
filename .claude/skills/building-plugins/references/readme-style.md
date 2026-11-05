@@ -13,7 +13,7 @@ How a plugin's `README.md` is written in this repository. It applies to every `p
 
 `plugin.json` is the only source of the plugin's name, version, description and category; the README follows it.
 
-- Never write the plugin's version in its README: the Version badge shows it. The only version numbers written by hand are Claude Code versions: the minimum (the Claude Code badge, Prerequisites and each version-gated feature); and the minimum version of an external tool in Prerequisites, such as `python3` 3.12 or later for a plugin that runs Python, as `.claude/CLAUDE.md` → Plugin Tooling requires.
+- Never write the plugin's version in its README: the Version badge shows it. The only version numbers written by hand are Claude Code versions: the minimum (the Claude Code badge, Prerequisites and each version-gated feature); and the minimum version of an external tool in Prerequisites, such as `python3` 3.12 or later for a plugin that runs Python.
 - The badges sit in the hero only, from shields.io in the flat style, in this order and color. Each shows a value that lives in another file:
   - **Version** (`D97757`, the brand color): a dynamic badge that reads `$.version` from this plugin's `plugin.json` on `main`, so a bump shows once it is merged; links to `./CHANGELOG.md`. `scripts/validators/plugin-versions-consistency.py` fails on a hardcoded version.
   - **Works in** (`2563EB`): `Claude Code · Claude app` or `Claude Code only`, matching `metadata.surfaces` in `plugin.json`; links to `#-compatibility`.
