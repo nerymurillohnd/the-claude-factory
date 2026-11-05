@@ -35,7 +35,7 @@ Rules:
 ## Gotchas
 
 - The GitHub MCP tools load on demand: before the first call, load them with `ToolSearch` (query `+github`). Its result also names a GitHub server that failed to connect; then use `gh`. Their full names depend on the server (`mcp__plugin_github-operations_github__…` for this plugin's, another prefix for the user's own server or connector), so match them by the tool name.
-- Whether a thread's author is a bot comes from `author.__typename` (`Bot`), not from the name. When the MCP threads do not carry it, read it with the review-threads query in Tools before you resolve anything. An AI that posts from a person's account counts as a person.
+- Whether a thread's author is a bot comes from `author.__typename` (`Bot`), not from the name. The MCP review threads never carry it, nor a comment's numeric ID: read threads with the review-threads query in Tools before you reply or resolve anything. An AI that posts from a person's account counts as a person.
 - The author of a thread's first comment is the one who opened it.
 - An outdated thread may have moved, not been fixed.
 - AI reviewers can comment after their check ends, and may not review again after a push.
@@ -43,17 +43,17 @@ Rules:
 
 ## Tools
 
-Use the MCP tool first: it answers in one call. When it fails (the tool is missing, it errors, it returns 403 or 404, or it returns nothing where data must exist), run the `gh` command of the same row before you report anything as not inspected or not done. Report a fact as out of reach only after both failed, with both errors.
+Use the MCP tool first: it answers in one call. Review threads are the exception: read them with the `gh` query first, because only it returns each comment's numeric ID and its author's `__typename`. When it fails (the tool is missing, it errors, it returns 403 or 404, or it returns nothing where data must exist), run the `gh` command of the same row before you report anything as not inspected or not done. Report a fact as out of reach only after both failed, with both errors.
 
 | Task | MCP, first | gh, when MCP fails |
 | :-- | :-- | :-- |
 | Head SHA | `pull_request_read`, method `get` (`head.sha`) | `gh pr view <n> -R <owner>/<repo> --json headRefOid` |
 | Checks and statuses at the head | `pull_request_read`, methods `get_check_runs` and `get_status` | `gh pr checks <n> -R <owner>/<repo> --json name,state,bucket,link` |
 | Which checks are required | — (MCP does not read the branch rules) | `gh pr checks <n> -R <owner>/<repo> --required` |
-| Review threads, with each thread's node ID, resolved and outdated flags, path, line and comments | `pull_request_read`, method `get_review_comments`, every page through its `after` cursor | `gh api graphql --paginate -F owner=<owner> -F name=<repo> -F number=<n> -f query='query($owner:String!,$name:String!,$number:Int!,$endCursor:String){repository(owner:$owner,name:$name){pullRequest(number:$number){reviewThreads(first:50,after:$endCursor){pageInfo{hasNextPage endCursor} nodes{id isResolved isOutdated path line comments(first:50){nodes{databaseId author{login __typename} body url}}}}}}}'` |
+| Review threads, with each thread's node ID, resolved and outdated flags, path, line and comments | Fallback only: `pull_request_read`, method `get_review_comments`, every page through its `after` cursor. It has no author type, so resolve nothing from it; a comment's numeric ID is the number after `#discussion_r` in its `html_url` | First: `gh api graphql --paginate -F owner=<owner> -F name=<repo> -F number=<n> -f query='query($owner:String!,$name:String!,$number:Int!,$endCursor:String){repository(owner:$owner,name:$name){pullRequest(number:$number){reviewThreads(first:50,after:$endCursor){pageInfo{hasNextPage endCursor} nodes{id isResolved isOutdated path line comments(first:50){nodes{databaseId author{login __typename} body url}}}}}}}'` |
 | Reviews and the review decision | `pull_request_read`, method `get_reviews` | `gh pr view <n> -R <owner>/<repo> --json reviews,reviewDecision`; the decision always comes from here |
 | The diff at the head | `pull_request_read`, method `get_diff` | `gh pr diff <n> -R <owner>/<repo>` |
-| Reply in a thread | `add_reply_to_pull_request_comment`, with `commentId` the numeric ID of the thread's first comment, not the thread's node ID | `gh api -X POST repos/<owner>/<repo>/pulls/<n>/comments/<comment id>/replies -f body='<reply>'` |
+| Reply in a thread | `add_reply_to_pull_request_comment`, with `commentId` the numeric ID of the thread's first comment (`databaseId` in the review-threads query), not the thread's node ID | `gh api -X POST repos/<owner>/<repo>/pulls/<n>/comments/<comment id>/replies -f body='<reply>'` |
 | Resolve a thread | `resolve_review_thread` with the thread's node ID (`PRRT_…`), or `pull_request_review_write`, method `resolve_thread`, where the server names it that way | `gh api graphql -f query='mutation{resolveReviewThread(input:{threadId:"<node id>"}){thread{isResolved}}}'` |
 | Read a resolution back | `pull_request_read`, method `get_review_comments` | the review-threads query above |
 
@@ -71,7 +71,7 @@ Use the MCP tool first: it answers in one call. When it fails (the tool is missi
 3. [Threads] Collect every review thread and review.
    - Collect every review thread, on every page.
    - Record each thread's id, its resolved and outdated flags, and its path and line.
-   - Identify who opened each thread, the author of its first comment, and whether it is a bot or a person from that author's `__typename`; when the MCP result lacks it, run the review-threads query in Tools.
+   - Identify who opened each thread, the author of its first comment, and whether it is a bot or a person from that author's `__typename`, read with the review-threads query in Tools.
    - Collect the reviews with their state, and the top-level comments.
 4. [Verify] Verify each unresolved thread's finding against the diff at the head.
    - Match each unresolved thread to a finding in the ledger.
