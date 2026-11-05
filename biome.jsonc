@@ -216,7 +216,6 @@
               "fix",
               "validate",
               "gates",
-              "setup",
               "generate"
             ]
           }

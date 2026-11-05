@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 # SessionStart hook for The Claude Factory checkout: reports the checkout and toolchain state
-# to Claude as plain-text context, then runs repo-setup.sh (npm install, validators, outdated
-# packages, repository versus global tool versions). It never fails the session: every probe falls back and it exits 0.
+# to Claude as plain-text context. It never fails the session: every probe falls back and it exits 0.
 
 root="${CLAUDE_PROJECT_DIR:-$(pwd)}"
 cd "${root}" 2> /dev/null || exit 0
@@ -41,5 +40,4 @@ report_session_state() {
 }
 
 report_session_state
-"${root}/.claude/hooks/repo-setup.sh"
 exit 0
