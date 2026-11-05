@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 # SessionStart hook for The Claude Factory checkout: reports the checkout and toolchain state
 # to Claude as plain-text context. It never fails the session: every probe falls back and it exits 0.
+# A cloud session clones only its working branch, shallowly, so origin/main can be missing or share
+# no history with HEAD; ensure_main_ref fetches what the ahead/behind count needs. A full clone with
+# origin/main already present makes no network request.
 
 root="${CLAUDE_PROJECT_DIR:-$(pwd)}"
 cd "${root}" 2> /dev/null || exit 0
@@ -13,6 +16,28 @@ count_lines() {
     done <<< "$1"
   fi
   echo "${n}"
+}
+
+# Runs git with a time limit where timeout(1) exists (Linux; not stock macOS), and never prompts.
+git_bounded() {
+  if command -v timeout > /dev/null 2>&1; then
+    GIT_TERMINAL_PROMPT=0 timeout 60 git "$@"
+  else
+    GIT_TERMINAL_PROMPT=0 git "$@"
+  fi
+}
+
+ensure_main_ref() {
+  git remote get-url origin > /dev/null 2>&1 || return 0
+  if ! git rev-parse --verify --quiet refs/remotes/origin/main > /dev/null; then
+    git_bounded fetch --quiet --no-tags origin +refs/heads/main:refs/remotes/origin/main 2> /dev/null || return 0
+  fi
+  git merge-base HEAD refs/remotes/origin/main > /dev/null 2>&1 && return 0
+  local shallow
+  shallow="$(git rev-parse --is-shallow-repository 2> /dev/null)" || shallow=""
+  if [[ ${shallow} == true ]]; then
+    git_bounded fetch --quiet --no-tags --unshallow origin 2> /dev/null || true
+  fi
 }
 
 report_session_state() {
@@ -63,5 +88,6 @@ node_in_caret_range() {
   ((10#${h2} == 10#${w2} && 10#${h3} >= 10#${w3}))
 }
 
+ensure_main_ref
 report_session_state
 exit 0
