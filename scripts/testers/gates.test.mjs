@@ -17,6 +17,7 @@ import {
   nodeTestGate,
   runGates,
   selectGates,
+  signatureProblem,
   unittestGate,
 } from '../gates.mjs'
 
@@ -414,5 +415,39 @@ describe('gates.mjs --only', () => {
     })
     assert.equal(r.status, 1)
     assert.match(r.stderr, /--only needs a prefix list/)
+  })
+})
+
+describe('signatures gate', () => {
+  const log = (/** @type {string[]} */ codes) =>
+    codes.map((code, i) => `${code} abc${i} commit ${i}`).join('\n')
+  const signed = () => true
+  const unsigned = () => false
+
+  test('locally, every commit must verify as G', () => {
+    assert.equal(signatureProblem(log(['G', 'G']), { remote: false, sshSigned: signed }), null)
+    assert.equal(signatureProblem('', { remote: false, sshSigned: signed }), null)
+    assert.match(
+      signatureProblem(log(['G', 'N']), { remote: false, sshSigned: signed }) ?? '',
+      /not signed with G: N abc1 commit 1/,
+    )
+  })
+
+  test('in a cloud session, an SSH-signed commit git cannot verify passes', () => {
+    assert.equal(signatureProblem(log(['N', 'E', 'G']), { remote: true, sshSigned: signed }), null)
+  })
+
+  test('in a cloud session, an unsigned or badly signed commit still fails', () => {
+    assert.match(
+      signatureProblem(log(['N']), { remote: true, sshSigned: unsigned }) ?? '',
+      /N abc0 commit 0/,
+    )
+    for (const code of ['B', 'X', 'Y', 'R', 'U']) {
+      assert.match(
+        signatureProblem(log([code]), { remote: true, sshSigned: signed }) ?? '',
+        new RegExp(`${code} abc0`),
+        code,
+      )
+    }
   })
 })
