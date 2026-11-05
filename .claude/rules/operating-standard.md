@@ -8,15 +8,16 @@ Mandatory conventions for working on this project. This file is the only place t
 - **A plugin's documentation changed with its other files**: it goes in that change's pull request.
 - **A plugin's maintainer files alone** (a mod's tests, an eval suite): a pull request, with no version bump or `CHANGELOG.md` entry, because users never run them; they reach users with the plugin's next version.
 - **Every other file inside a plugin's directory** (its manifest, components, scripts, dependencies, `CHANGELOG.md`): a pull request and a version bump, through `versioning` and `releases`.
-- **Everything outside `plugins/`**: no pull request.
+- **Everything outside `plugins/`**: no pull request by default: commit it signed to `main` and push it once Nery authorizes the push. Open a pull request only when Nery asks for one for that change.
 
 ## Evals in CI
 
 Applies only to plugins with evals.
 
-- Run the whole suite the first time.
-- Run the whole suite every time a plugin has changes that take a pull request.
-- Do not run it for a plugin with evals that has no changes.
+- When a plugin with evals has changes that take a pull request, run a small smoke run of its suite locally before you open the pull request.
+- CI runs the whole suite of each plugin with evals that the pull request changes, and of a plugin's suite the first time it is added.
+- Never run the suite of a plugin with evals that has no changes, locally or in CI.
+- No CI job runs evals yet: until one exists, say in the pull request that the whole suite did not run.
 
 ## Version bumps
 
