@@ -1,7 +1,7 @@
 {
   "name": "turn-meter",
   "displayName": "Turn Meter",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Shows how long each turn took, how many tools it used in the main thread and in subagents, and the tokens it spent, in a band above the prompt, and alerts you when a long turn ends.",
   "author": {
     "name": "Nery Murillo",
@@ -9,6 +9,10 @@
   },
   "homepage": "https://github.com/nerymurillohnd/the-claude-factory/tree/main/plugins/turn-meter#readme",
   "repository": "https://github.com/nerymurillohnd/the-claude-factory",
+  "icon": "./.claude-plugin/icon.png",
+  "documentationUrl": "https://github.com/nerymurillohnd/the-claude-factory/tree/main/plugins/turn-meter#readme",
+  "supportUrl": "https://github.com/nerymurillohnd/the-claude-factory/issues/new/choose",
+  "privacyPolicyUrl": "https://github.com/nerymurillohnd/the-claude-factory/blob/main/PRIVACY.md",
   "license": "MIT",
   "keywords": [
     "mods",
