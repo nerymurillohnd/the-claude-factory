@@ -68,7 +68,7 @@ This repository holds two scopes. They are never mixed: a rule written for one s
 - A plugin's own `package.json` and `package-lock.json` hold only that plugin's runtime dependencies, pinned exactly; Claude Code installs them for users when it caches the plugin, only from registry packages, with install scripts off and no `overrides`, within 60 seconds. `npm run setup` installs them in the clone, which `tsc-plugins` and the plugin's node tests need.
 - Every maintenance command is an `npm run` script (`test`, `typecheck`, `lint`, `format`, `fix`, `check:*`, `generate`, `validate`, `gates`, `setup`): run the tools through them, so local runs, the git hooks and CI use the pinned versions. In this repository that overrides running a tool by its bare name from PATH; the global installs serve the editor. `format` and `fix` also write in `plugins/`: a plugin file they change goes through a pull request.
 - Husky's git hooks run `biome check --staged` and `npm test` before each commit and `npm run gates` before each push; fix what they report, never skip them.
-- Run `npm ci` in every fresh clone and new worktree, with the `.nvmrc` Node selected.
+- Install the dependencies with `npm install`, with the `.nvmrc` Node selected; the session-start hook (`.claude/hooks/repo-setup.sh`) runs it in the clone and in each plugin with a lockfile. Commit a `package-lock.json` change only with the dependency change that caused it. CI keeps `npm ci`, which fails when the lockfile and `package.json` disagree.
 
 #### Plugin Tooling
 
