@@ -1,7 +1,7 @@
 {
   "name": "hook-engineering",
   "displayName": "Hook Engineering",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "Designs, writes, audits and debugs Claude Code hooks end to end: the event and configuration that decide when a hook runs, the input and output contract that decides what it does, prompt, agent and background hooks, workspace trust and security, and how mods interact with hooks, checked against the current docs and changelog.",
   "author": {
     "name": "Nery Murillo",
@@ -9,6 +9,10 @@
   },
   "homepage": "https://github.com/nerymurillohnd/the-claude-factory/tree/main/plugins/hook-engineering#readme",
   "repository": "https://github.com/nerymurillohnd/the-claude-factory",
+  "icon": "./.claude-plugin/icon.png",
+  "documentationUrl": "https://github.com/nerymurillohnd/the-claude-factory/tree/main/plugins/hook-engineering#readme",
+  "supportUrl": "https://github.com/nerymurillohnd/the-claude-factory/issues/new/choose",
+  "privacyPolicyUrl": "https://github.com/nerymurillohnd/the-claude-factory/blob/main/PRIVACY.md",
   "license": "MIT",
   "keywords": [
     "automation",

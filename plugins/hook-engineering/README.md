@@ -291,6 +291,7 @@ My SessionEnd hook uploads the session log to S3. It works by hand, but when I e
   - `https://raw.githubusercontent.com/anthropics/claude-code/main/CHANGELOG.md`, a plain `GET` when the skill or the agent runs `hook-changes.sh` to compare your installed version with the changelog.
   - `https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md`, a plain `GET` with WebFetch when the docs changelog doesn't list your installed version yet.
 - **Files written:** none by the plugin; `hook-changes.sh` keeps nothing and prints only the hook-related entries. Claude writes hooks only at your request, as [Will it change my hooks or my settings?](#-faq--troubleshooting) explains.
+- **Privacy:** the author collects no data. The marketplace's [privacy policy](https://github.com/nerymurillohnd/the-claude-factory/blob/main/PRIVACY.md) covers this plugin and the outside services it can reach.
 
 ## 🔄 Updating
 
