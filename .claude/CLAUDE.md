@@ -45,7 +45,7 @@ This repository holds two scopes. They are never mixed: a rule written for one s
 ## Repository Layout
 
 - `.claude/specs/`: Specification documents. Specs are written before implementation plans.
-- `.claude/plans/`: Implementation plans derived from approved specs.
+- `.claude/plans/`: Implementation plans derived from approved specs. The folder is created with the first plan.
 - `.claude/maintainer/`: Decision records and technical-debt tracking.
 - `scripts/`: Maintainer scripts that build, check, and release this repository.
 - `plugins/`: The plugins that are developed, published, and maintained in this repository.
@@ -122,8 +122,8 @@ Run Biome and `tsc` only through `npm run`, which uses the versions `package-loc
 - **No bump**: Allowed only for changes limited to a plugin’s documentation files or its in-plugin maintainer files (for example, tests or the eval suite).
 
 ### Category
-- Every plugin must declare a category chosen according to its purpose.
-- The category must appear in both:
+- Every plugin must declare a category chosen according to its purpose, in `metadata.category` of its `.claude-plugin/plugin.json`.
+- `npm run generate` copies the category into both:
   - the corresponding entry in `.claude-plugin/marketplace.json`
   - the root README catalog
 
@@ -132,9 +132,10 @@ Run Biome and `tsc` only through `npm run`, which uses the versions `package-loc
 - Plugins target only Linux and macOS with POSIX-compatible interfaces. Windows is supported exclusively through Git Bash.
 
 ### Runtime and script conventions
-- Every plugin that ships scripts for Claude hooks must:
+- Every plugin that ships scripts run by command hooks must:
   - use the shebang `#!/usr/bin/env bash`, `#!/usr/bin/env python3`, or `#!/usr/bin/env node`
   - have those scripts marked executable (`chmod +x`)
+- A mod's hooks module (`.ts` or `.tsx`, loaded by Claude Code) takes no shebang and no executable bit.
 - Shell scripts may use only tools that ship with both macOS and Linux, unless the plugin README explicitly declares additional requirements.
 - Node scripts may use only Node.js built-in modules (`node:`), unless the plugin ships its own dependencies.
 - Python scripts that use the `python3` shebang may use only the Python standard library.
@@ -165,12 +166,8 @@ Run Biome and `tsc` only through `npm run`, which uses the versions `package-loc
 
 ## Formatting Exclusions
 
-The following Markdown files must be excluded from formatting by Ruff, Biome, and Prettier:
+Biome must not format the following Markdown files. `biome.jsonc` excludes them:
 
-- All Markdown files under `.claude/` (`**/.claude/**/*.md`)
-- All Markdown files under the following plugin subdirectories:
-- `plugins/**/skills/**/*.md`
-- `plugins/**/references/**/*.md`
-- `plugins/**/agents/**/*.md`
-- `plugins/**/assets/**/*.md`
+- All Markdown files under `.claude/`
+- All Markdown files under `plugins/` (`plugins/**/*.md`)
 - Every `CLAUDE.md` file in the repository
