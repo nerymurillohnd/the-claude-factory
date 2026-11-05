@@ -1,6 +1,7 @@
 ---
 paths:
   - ".claude/hooks/**"
+  - ".claude/settings.json"
 ---
 
 # Local Claude Code hook scripts
