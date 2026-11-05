@@ -62,7 +62,6 @@ Add an item only when all of these hold:
 | DEBT-048 | github-operations 0.6.0 no longer writes, triages or answers issues and discussions, or turns an issue into a pull request | 🟠 Blocked |
 | DEBT-049 | github-operations ships without an icon or a privacy policy URL, and turns on the GitHub MCP server's Insiders mode | 🟠 Blocked |
 | DEBT-050 | A new cloud session starts on Node 22 without shfmt, and npm refuses to run on Node 22 since the devEngines pin | 🔵 In progress |
-| DEBT-051 | The pre-push signatures gate cannot pass in a cloud session, so every push there skips every pre-push gate | 🔵 In progress |
 
 ## 📂 Open items
 
@@ -661,35 +660,6 @@ Add an item only when all of these hold:
 - **Next action:** add `nerymurillohnd/the-claude-factory` to the environment's repository list, start a new session on it, check that the setup summary shows no `MISSING` tool, then run `node --version` and `npm test`.
 - **Review condition:** closes when a new cloud session starts on Node 26.13.0 with shfmt on `PATH`, and `npm test` passes there.
 - **Related records:** ADR_2026-11-04_node-pinned-in-package-json-through-devengines; DEBT-051.
-
-### DEBT-051 — The pre-push signatures gate cannot pass in a cloud session, so every push there skips every pre-push gate
-
-| Field | Value |
-| --- | --- |
-| **Status** | 🔵 In progress |
-| **Category** | security, maintainability |
-| **Owner** | Nery |
-| **Logged** | 2026-11-04 |
-
-#### 🔎 Evidence
-
-- **Confirmed facts:**
-  - Maintainer scope only: `scripts/gates.mjs` and the Husky pre-push hook, never a plugin.
-  - The `signatures` gate (`scripts/gates.mjs`, id `signatures`) runs `git log --format=%G? %h %s origin/main..HEAD` and fails on any line that does not start with `G`.
-  - In the cloud container, commits are signed through `gpg.ssh.program=/tmp/code-sign`, but `/home/claude/.ssh/commit_signing_key.pub` is 0 bytes and `gpg.ssh.allowedSignersFile` is unset, so `%G?` prints `N` for every commit.
-  - GitHub reports the same commits as signed: `verification.verified: true`, `reason: valid` for c0d0edd, 285bf41, 90a78db, 7608e57, 2506755 and 81e3fc5 (`gh api repos/nerymurillohnd/the-claude-factory/commits/<sha>`, 2026-11-04).
-  - Every push from a cloud session on 2026-11-04 needed `--no-verify`, which also skips the other pre-push gates.
-  - On 2026-11-05 Nery chose the method, and `signatureProblem` in `scripts/gates.mjs` now passes, in a cloud session only, a commit git cannot verify (`N` or `E`) that carries an SSH signature header (ADR_2026-11-05_cloud-sessions-check-commit-signatures-by-presence). `npm run gates -- --only signatures` passed in the cloud session and still failed with `CLAUDE_CODE_REMOTE` unset.
-- **Inferences:** with Nery working only in the cloud (DEBT-050), the pre-push gates never run before a push unless a session runs them by hand.
-- **Open questions:** none.
-
-#### 📈 Impact and next step
-
-- **Impact / risk:** a push can reach GitHub without the gates that guard it, because the one gate that cannot pass forces all of them off.
-- **Why it is not fixed now:** how to verify signatures in the cloud is Nery's decision: for example, the gate asks GitHub for each commit's verification when `CLAUDE_CODE_REMOTE` is `true`, or the environment provides the public key for an allowed signers file.
-- **Next action:** push from the cloud session with the hooks on, and close this item when the pre-push `npm run gates` passes.
-- **Review condition:** closes when a push from a cloud session passes `npm run gates` without `--no-verify`, and an unsigned commit still fails the gate.
-- **Related records:** DEBT-050.
 
 <!--
 Entry format. Copy this block above this comment for each new item and add its row to the Index.

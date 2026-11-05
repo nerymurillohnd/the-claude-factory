@@ -45,6 +45,7 @@
 | 2026-10-28 | DEBT-027 | obsolete | Dropped by Nery: the `claude-review` tool denials are no longer investigated | none |
 | 2026-10-29 | DEBT-041 | resolved | `skill-names-consistency.py` composes ruamel.yaml nodes in YAML 1.1 mode, and no Python file uses PyYAML | none |
 | 2026-11-04 | DEBT-052 | resolved | Discussion form setup no longer depends on GraphQL to get category slugs | none |
+| 2026-11-05 | DEBT-051 | resolved | Cloud-session pushes run every pre-push gate again | none |
 
 ## 🏁 Closed items
 
@@ -921,6 +922,37 @@ Commit e054109 rewrote step 2 as its goal plus every route, in order: `gh api gr
 - **Residual risk:** the GraphQL query itself has still never run against a real repository; if it is wrong, step 2 falls back to the URL route.
 - **Closed by:** commit e054109.
 - **Related records:** DEBT-046.
+- **Superseded by:** none
+
+### DEBT-051 — Cloud-session pushes run every pre-push gate again
+
+| Field | Value |
+| --- | --- |
+| **Outcome** | resolved |
+| **Closed on** | 2026-11-05 |
+| **Logged on** | 2026-11-04 |
+| **Owner** | Nery |
+
+#### ❗ The problem
+
+The `signatures` gate of `scripts/gates.mjs` required `%G?` = `G` for every commit since `origin/main`. A Claude Code cloud session signs commits through `/tmp/code-sign` with a key it does not expose, so git printed `N` for every commit and the gate failed every cloud push. Pushing needed `--no-verify`, which skipped every pre-push gate.
+
+#### 🔧 The closure
+
+Commit fb5bf6a added `signatureProblem`: in a cloud session (`CLAUDE_CODE_REMOTE=true`) it passes a commit marked `N` or `E` that carries a `gpgsig -----BEGIN SSH SIGNATURE-----` header, and GitHub verifies the signature after the push; `G` is still required locally, and an unsigned commit or a `B`, `U`, `X`, `Y` or `R` signature fails everywhere (ADR_2026-11-05_cloud-sessions-check-commit-signatures-by-presence).
+
+#### 🧪 Verification
+
+| Check | Evidence |
+| --- | --- |
+| ✅ **Positive:** the closure holds | On 2026-11-05 `git push -u origin claude/audit-new-plugin-kvbrcv` from the cloud session ran the Husky pre-push `npm run gates` with `✔ signatures` and every other gate green, and exited 0 without `--no-verify`. GitHub reports fe009b6 and 61d8b79 as `verified: true`, `reason: valid`. |
+| 🚫 **Negative:** the original failure or condition is gone | Cloud pushes no longer need `--no-verify`, as the push above shows. Under local rules the gate still fails: `env -u CLAUDE_CODE_REMOTE npm run gates -- --only signatures` gave `✖ signatures (exit 1): not signed with G`. The `signatures gate` tests in `scripts/testers/gates.test.mjs` fail an unsigned commit and a bad signature in a cloud session. |
+
+#### 🔗 Follow-up
+
+- **Residual risk:** in a cloud session the gate proves a signature is present, not valid; GitHub's verification after the push is the check.
+- **Closed by:** commit fb5bf6a.
+- **Related records:** DEBT-050; ADR_2026-11-05_cloud-sessions-check-commit-signatures-by-presence.
 - **Superseded by:** none
 
 <!--
