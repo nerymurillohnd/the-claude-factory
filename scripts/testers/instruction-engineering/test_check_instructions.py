@@ -111,8 +111,8 @@ class FrontmatterTests(unittest.TestCase):
         ):
             with self.subTest(line=line):
                 codes = self.codes_for(line)
-                assert "frontmatter-invalid" not in codes
-                assert "frontmatter-unchecked" not in codes
+                self.assertNotIn("frontmatter-invalid", codes)
+                self.assertNotIn("frontmatter-unchecked", codes)
 
     def test_invalid_yaml_is_an_error(self) -> None:
         """Each of these makes Claude Code ignore the frontmatter."""
@@ -134,19 +134,19 @@ class FrontmatterTests(unittest.TestCase):
             "  paths: x",
         ):
             with self.subTest(line=line):
-                assert "frontmatter-invalid" in self.codes_for(line)
+                self.assertIn("frontmatter-invalid", self.codes_for(line))
 
     def test_unsupported_yaml_is_a_warning(self) -> None:
         """Valid YAML the parser does not interpret is reported, not judged."""
         for line in ("paths: &anchor src/**", 'paths: "a"\npaths: "b"', "paths:\n  key: v"):
             with self.subTest(line=line):
-                assert "frontmatter-unchecked" in self.codes_for(line)
+                self.assertIn("frontmatter-unchecked", self.codes_for(line))
 
     def test_unclosed_frontmatter(self) -> None:
         """An opening --- without a closing one is invalid."""
         root = scratch(self)
         write(root, {".claude/rules/r.md": '---\npaths: "x"\nno close\n'})
-        assert "frontmatter-invalid" in check(root).codes("r.md")
+        self.assertIn("frontmatter-invalid", check(root).codes("r.md"))
 
     def test_block_scalar_then_paths(self) -> None:
         """A | block scalar ends at the next top-level key, which still parses."""
@@ -154,20 +154,20 @@ class FrontmatterTests(unittest.TestCase):
         text = '---\ndescription: |\n  some text\n  more\npaths: "src/**"\n---\nx\n'
         write(root, {".claude/rules/r.md": text, "src/a.ts": "x\n"})
         result = check(root)
-        assert result.file("r.md")["paths"] == ["src/**"]
-        assert result.finding("frontmatter-ignored-key", "r.md")["severity"] == "warning"
+        self.assertEqual(result.file("r.md")["paths"], ["src/**"])
+        self.assertEqual(result.finding("frontmatter-ignored-key", "r.md")["severity"], "warning")
 
     def test_foreign_scoping_key_without_paths_is_an_error(self) -> None:
         """A Cursor-style key leaves the rule global when `paths` is missing."""
         root = scratch(self)
         write(root, {".claude/rules/r.md": rule("globs: src/**/*.ts")})
-        assert check(root).finding("frontmatter-ignored-key")["severity"] == "error"
+        self.assertEqual(check(root).finding("frontmatter-ignored-key")["severity"], "error")
 
     def test_empty_paths(self) -> None:
         """`paths` with no pattern is an error."""
         root = scratch(self)
         write(root, {".claude/rules/r.md": rule("paths:")})
-        assert "paths-empty" in check(root).codes()
+        self.assertIn("paths-empty", check(root).codes())
 
 
 class GlobTests(unittest.TestCase):
@@ -197,12 +197,12 @@ class GlobTests(unittest.TestCase):
             },
         )
         result = check(root)
-        assert result.finding("glob-no-match", "none.md")["severity"] == "warning"
-        assert "glob-root-only" in result.codes("root.md")
-        assert "glob-leading-slash" in result.codes("slash.md")
-        assert "glob-invalid-bracket" in result.codes("bracket.md")
-        assert "brace-budget" not in result.codes("at-budget.md")
-        assert "brace-budget" in result.codes("over-budget.md")
+        self.assertEqual(result.finding("glob-no-match", "none.md")["severity"], "warning")
+        self.assertIn("glob-root-only", result.codes("root.md"))
+        self.assertIn("glob-leading-slash", result.codes("slash.md"))
+        self.assertIn("glob-invalid-bracket", result.codes("bracket.md"))
+        self.assertNotIn("brace-budget", result.codes("at-budget.md"))
+        self.assertIn("brace-budget", result.codes("over-budget.md"))
 
     def test_match_lists_scoped_rules(self) -> None:
         """--match reports which scoped rules load for each file, nested rules included."""
@@ -221,11 +221,11 @@ class GlobTests(unittest.TestCase):
         )
         files = ["src/api/v2/users.ts", "README.md", "docs/a/b.mdx", "pkg/main.go", "src/x.ts"]
         match = cast("dict[str, list[str]]", check(root, "--match", *files).data["match"])
-        assert [Path(p).name for p in match["src/api/v2/users.ts"]] == ["api.md"]
-        assert [Path(p).name for p in match["README.md"]] == ["md.md"]
-        assert [Path(p).name for p in match["docs/a/b.mdx"]] == ["md.md"]
-        assert [Path(p).name for p in match["pkg/main.go"]] == ["go.md"]
-        assert match["src/x.ts"] == []
+        self.assertEqual([Path(p).name for p in match["src/api/v2/users.ts"]], ["api.md"])
+        self.assertEqual([Path(p).name for p in match["README.md"]], ["md.md"])
+        self.assertEqual([Path(p).name for p in match["docs/a/b.mdx"]], ["md.md"])
+        self.assertEqual([Path(p).name for p in match["pkg/main.go"]], ["go.md"])
+        self.assertEqual(match["src/x.ts"], [])
 
     def test_hostile_patterns_finish_quickly(self) -> None:
         """A brace bomb, a backtracking glob and a bad class are reported, not run for minutes.
@@ -245,8 +245,8 @@ class GlobTests(unittest.TestCase):
                 proc = subprocess.run(
                     [*cmd, "--json"], capture_output=True, text=True, check=False, timeout=10
                 )
-                assert "Traceback" not in proc.stderr, proc.stderr
-                assert code in Result(proc).codes("r.md")
+                self.assertNotIn("Traceback", proc.stderr, msg=proc.stderr)
+                self.assertIn(code, Result(proc).codes("r.md"))
 
     def test_ancestor_rule_without_match_is_info_about_this_project(self) -> None:
         """A rule above the project is tested only against the project's files, and says so."""
@@ -260,9 +260,9 @@ class GlobTests(unittest.TestCase):
             },
         )
         found = check(root / "sub").finding("glob-no-match", "mcp.md")
-        assert found["severity"] == "info"
-        assert "of this project" in str(found["message"])
-        assert "no file under" not in str(found["message"])
+        self.assertEqual(found["severity"], "info")
+        self.assertIn("of this project", str(found["message"]))
+        self.assertNotIn("no file under", str(found["message"]))
 
 
 class DiscoveryTests(unittest.TestCase):
@@ -283,22 +283,22 @@ class DiscoveryTests(unittest.TestCase):
             },
         )
         result = check(root)
-        assert result.file("/CLAUDE.md")["loads"] == "launch"
-        assert result.file("docs/CLAUDE.md")["loads"] == "on-demand"
-        assert result.file("always.md")["loads"] == "launch"
-        assert result.file("scoped.md")["loads"] == "conditional"
-        assert result.file("nested.md")["loads"] == "on-demand"
+        self.assertEqual(result.file("/CLAUDE.md")["loads"], "launch")
+        self.assertEqual(result.file("docs/CLAUDE.md")["loads"], "on-demand")
+        self.assertEqual(result.file("always.md")["loads"], "launch")
+        self.assertEqual(result.file("scoped.md")["loads"], "conditional")
+        self.assertEqual(result.file("nested.md")["loads"], "on-demand")
 
     def test_agents_md(self) -> None:
         """AGENTS.md loads directly alone, and is shadowed by a CLAUDE.md."""
         alone = scratch(self)
         write(alone, {"AGENTS.md": "Agents.\n"})
-        assert check(alone).file("AGENTS.md")["loads"] == "launch"
+        self.assertEqual(check(alone).file("AGENTS.md")["loads"], "launch")
         shadowed = scratch(self)
         write(shadowed, {"AGENTS.md": "Agents.\n", "CLAUDE.md": "Claude.\n"})
         result = check(shadowed)
-        assert result.file("AGENTS.md")["loads"] == "not-by-default"
-        assert "agents-md-shadowed" in result.codes("AGENTS.md")
+        self.assertEqual(result.file("AGENTS.md")["loads"], "not-by-default")
+        self.assertIn("agents-md-shadowed", result.codes("AGENTS.md"))
 
     def test_backup_in_rules_and_symlinked_rule(self) -> None:
         """A backup under rules loads; a symlink out of the project is noted."""
@@ -306,8 +306,8 @@ class DiscoveryTests(unittest.TestCase):
         write(root, {"proj/.claude/rules/old/legacy.md": "Old.\n", "shared/s.md": "Shared.\n"})
         (root / "proj/.claude/rules/linked.md").symlink_to(root / "shared/s.md")
         result = check(root / "proj")
-        assert "rule-backup-loaded" in result.codes("legacy.md")
-        assert "rule-symlink-external" in result.codes("linked.md")
+        self.assertIn("rule-backup-loaded", result.codes("legacy.md"))
+        self.assertIn("rule-symlink-external", result.codes("linked.md"))
 
     def test_launch_count_includes_imports(self) -> None:
         """Imported lines count toward the launch set; missing imports are errors."""
@@ -321,8 +321,8 @@ class DiscoveryTests(unittest.TestCase):
         )
         result = check(root)
         launch = cast("dict[str, int]", result.data["launch_set"])
-        assert launch["lines_including_imports"] == 5
-        assert "import-missing" in result.codes("CLAUDE.md")
+        self.assertEqual(launch["lines_including_imports"], 5)
+        self.assertIn("import-missing", result.codes("CLAUDE.md"))
 
 
 HEURISTIC_LINES = [
@@ -366,12 +366,12 @@ class ContentTests(unittest.TestCase):
             },
         )
         result = check(root)
-        assert result.returncode == 1
+        self.assertEqual(result.returncode, 1)
         missing = [x for x in result.findings() if x["code"] == "script-missing"]
-        assert len(missing) == 1
-        assert "gone" in str(missing[0]["message"])
-        assert "npm-needs-run" in result.codes()
-        assert "command-unverified" not in result.codes()
+        self.assertEqual(len(missing), 1)
+        self.assertIn("gone", str(missing[0]["message"]))
+        self.assertIn("npm-needs-run", result.codes())
+        self.assertNotIn("command-unverified", result.codes())
 
     def test_package_json_not_utf8_does_not_crash(self) -> None:
         """An unreadable package.json is skipped instead of ending the run with a traceback."""
@@ -379,8 +379,8 @@ class ContentTests(unittest.TestCase):
         write(root, {"CLAUDE.md": "Run `npm run x`.\n"})
         _ = (root / "package.json").write_bytes(b"\xff\xfe{}")
         proc = run(root)
-        assert proc.returncode == 0, proc.stderr
-        assert "Traceback" not in proc.stderr
+        self.assertEqual(proc.returncode, 0, msg=proc.stderr)
+        self.assertNotIn("Traceback", proc.stderr)
 
     def test_heuristics(self) -> None:
         """Each heuristic flags its pattern in an always-on CLAUDE.md."""
@@ -410,7 +410,7 @@ class ContentTests(unittest.TestCase):
             "discoverable-layout",
         ):
             with self.subTest(code=code):
-                assert code in codes
+                self.assertIn(code, codes)
 
     def test_duplicates_across_files(self) -> None:
         """Identical lines, near-duplicates and identical files are reported."""
@@ -426,7 +426,7 @@ class ContentTests(unittest.TestCase):
             },
         )
         codes = check(root).codes()
-        assert {"duplicate-line", "near-duplicate", "duplicate-file"} <= codes
+        self.assertLessEqual({"duplicate-line", "near-duplicate", "duplicate-file"}, codes)
 
     def test_local_file_must_be_ignored(self) -> None:
         """CLAUDE.local.md in a git repository without an ignore entry is a warning."""
@@ -437,9 +437,9 @@ class ContentTests(unittest.TestCase):
         root = scratch(self)
         write(root, {"CLAUDE.local.md": "Personal.\n"})
         _ = subprocess.run([git, "init", "-q"], cwd=root, check=True)
-        assert "local-not-ignored" in check(root).codes()
+        self.assertIn("local-not-ignored", check(root).codes())
         write(root, {".gitignore": "CLAUDE.local.md\n"})
-        assert "local-not-ignored" not in check(root).codes()
+        self.assertNotIn("local-not-ignored", check(root).codes())
 
 
 class OutputTests(unittest.TestCase):
@@ -449,15 +449,15 @@ class OutputTests(unittest.TestCase):
         """0 without errors, 1 with an error, 2 for bad arguments."""
         root = scratch(self)
         write(root, {"CLAUDE.md": "Fine.\n"})
-        assert run(root).returncode == 0
+        self.assertEqual(run(root).returncode, 0)
         write(root, {".claude/rules/r.md": rule("paths: *.ts")})
-        assert run(root).returncode == 1
-        assert run(root, "--bogus").returncode == 2
-        assert run(root / "missing").returncode == 2
+        self.assertEqual(run(root).returncode, 1)
+        self.assertEqual(run(root, "--bogus").returncode, 2)
+        self.assertEqual(run(root / "missing").returncode, 2)
 
     def test_runs_by_path(self) -> None:
         """The script runs through its own shebang, as the skill documents."""
-        assert os.access(CHECKER, os.X_OK), "check_instructions.py is not executable"
+        self.assertTrue(os.access(CHECKER, os.X_OK), msg="check_instructions.py is not executable")
         root = scratch(self)
         write(root, {"CLAUDE.md": "Fine.\n"})
         proc = subprocess.run(
@@ -467,8 +467,8 @@ class OutputTests(unittest.TestCase):
             check=False,
             timeout=60,
         )
-        assert proc.returncode == 0, proc.stderr
-        assert "Findings: none" in proc.stdout
+        self.assertEqual(proc.returncode, 0, msg=proc.stderr)
+        self.assertIn("Findings: none", proc.stdout)
 
     def test_text_report_points_to_existing_references(self) -> None:
         """Every reference the report asks the reader to open exists in the skill."""
@@ -476,13 +476,13 @@ class OutputTests(unittest.TestCase):
         write(root, {"CLAUDE.md": "Never edit generated files.\n1. a\n2. b\n3. c\n4. d\n5. e\n"})
         result = check(root)
         refs = cast("list[dict[str, object]]", result.data["read_before_reporting"])
-        assert refs
+        self.assertTrue(refs)
         for ref in refs:
             path = Path(str(ref["reference"]))
             with self.subTest(reference=path.name):
-                assert path.is_file()
-                assert path.parent == SKILL / "references"
-        assert "Read before reporting" in run(root).stdout
+                self.assertTrue(path.is_file())
+                self.assertEqual(path.parent, SKILL / "references")
+        self.assertIn("Read before reporting", run(root).stdout)
 
 
 if __name__ == "__main__":

@@ -109,6 +109,8 @@ def manifest(plugin: Path, skills: object) -> None:
 
 
 class SkillNamesTests(unittest.TestCase):
+    """The validator on small repositories under a temporary directory, then on this one."""
+
     tmp: Path = Path()
 
     @override
@@ -119,24 +121,26 @@ class SkillNamesTests(unittest.TestCase):
         (self.tmp / "plugins").mkdir()
 
     def test_each_name_form(self) -> None:
+        """Each form of a skill name passes or fails as expected."""
         skills = self.tmp / "plugins" / "forms" / "skills"
         for directory, entry in NAMES.items():
             skill(skills / directory, f"{entry}\ndescription: A skill.")
         result = run(self.tmp)
-        assert result.returncode == 1, result.stderr
+        self.assertEqual(result.returncode, 1, msg=result.stderr)
         found = errors(result.stderr)
         for directory in NAMES:
             scope = f"plugins/forms/skills/{directory}/SKILL.md"
             got = found.pop(scope, [])
             want = EXPECTED.get(directory)
             if want is None:
-                assert got == [], (directory, got)
+                self.assertEqual(got, [], msg=(directory, got))
             else:
-                assert len(got) == 1, (directory, got)
-                assert got[0].startswith(want), (directory, got[0])
-        assert found == {}, found
+                self.assertEqual(len(got), 1, msg=(directory, got))
+                self.assertTrue(got[0].startswith(want), msg=(directory, got[0]))
+        self.assertEqual(found, {}, msg=found)
 
     def test_frontmatter_shape(self) -> None:
+        """Each frontmatter shape passes or fails as expected."""
         skills = self.tmp / "plugins" / "shape" / "skills"
         skill(skills / "unnamed", "description: No name.")
         skill(skills / "twice", "name: twice\nname: twice")
@@ -145,24 +149,30 @@ class SkillNamesTests(unittest.TestCase):
         (skills / "open").mkdir(parents=True)
         _ = (skills / "open" / "SKILL.md").write_text("---\nname: open\n", encoding="utf-8")
         found = errors(run(self.tmp).stderr)
-        assert found == {
-            "plugins/shape/skills/unnamed/SKILL.md": ['has no "name" field'],
-            "plugins/shape/skills/twice/SKILL.md": ['"name" is defined more than once'],
-            "plugins/shape/skills/bare/SKILL.md": [
-                'has no frontmatter between a first line "---" and a closing "---"'
-            ],
-            "plugins/shape/skills/open/SKILL.md": [
-                'has no frontmatter between a first line "---" and a closing "---"'
-            ],
-        }, found
+        self.assertEqual(
+            found,
+            {
+                "plugins/shape/skills/unnamed/SKILL.md": ['has no "name" field'],
+                "plugins/shape/skills/twice/SKILL.md": ['"name" is defined more than once'],
+                "plugins/shape/skills/bare/SKILL.md": [
+                    'has no frontmatter between a first line "---" and a closing "---"'
+                ],
+                "plugins/shape/skills/open/SKILL.md": [
+                    'has no frontmatter between a first line "---" and a closing "---"'
+                ],
+            },
+            msg=found,
+        )
 
     def test_other_fields_are_not_parsed(self) -> None:
+        """Other fields are not parsed."""
         text = "name: lenient\ndescription: Use it: whenever, even with: colons\nmetadata:\n  a: b"
         skill(self.tmp / "plugins" / "p" / "skills" / "lenient", text)
         result = run(self.tmp)
-        assert result.returncode == 0, result.stderr
+        self.assertEqual(result.returncode, 0, msg=result.stderr)
 
     def test_manifest_paths(self) -> None:
+        """The skill paths a plugin manifest lists are checked."""
         rooted = self.tmp / "plugins" / "rooted"
         skill(rooted, "name: rooted")
         manifest(rooted, "./")
@@ -172,25 +182,34 @@ class SkillNamesTests(unittest.TestCase):
         skill(self.tmp / ".claude" / "skills" / "project", "name: project")
         result = run(self.tmp)
         found = errors(result.stderr)
-        assert found == {
-            "plugins/listed plugin.json skills": [
-                '"../outside" resolves outside the plugin',
-                '"./missing" names a directory that does not exist',
-            ]
-        }, found
+        self.assertEqual(
+            found,
+            {
+                "plugins/listed plugin.json skills": [
+                    '"../outside" resolves outside the plugin',
+                    '"./missing" names a directory that does not exist',
+                ]
+            },
+            msg=found,
+        )
 
     def test_passing_repository_counts_its_skills(self) -> None:
+        """A passing repository counts its skills."""
         skill(self.tmp / "plugins" / "p" / "skills" / "one", "name: one")
         skill(self.tmp / ".claude" / "skills" / "two", "name: two")
         result = run(self.tmp)
-        assert result.returncode == 0, result.stderr
-        assert result.stdout == "✔ 2 skill name(s) are flat, unquoted and match their directory\n"
+        self.assertEqual(result.returncode, 0, msg=result.stderr)
+        self.assertEqual(
+            result.stdout, "✔ 2 skill name(s) are flat, unquoted and match their directory\n"
+        )
 
     def test_arguments_are_refused(self) -> None:
+        """Arguments are refused."""
         result = run(self.tmp, "extra")
-        assert result.returncode == 2
-        assert result.stderr.splitlines()[-1].startswith("usage:"), result.stderr
+        self.assertEqual(result.returncode, 2)
+        self.assertTrue(result.stderr.splitlines()[-1].startswith("usage:"), msg=result.stderr)
 
     def test_repository_passes(self) -> None:
+        """This repository passes."""
         result = run(ROOT)
-        assert result.returncode == 0, result.stderr
+        self.assertEqual(result.returncode, 0, msg=result.stderr)

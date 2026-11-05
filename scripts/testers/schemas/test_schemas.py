@@ -85,7 +85,8 @@ def load(path: Path) -> Json:
 def schema_file(path: Path) -> dict[str, Json]:
     """One decoded schema file; a schema that is not a JSON object is a broken repository."""
     value = load(path)
-    assert isinstance(value, dict), path
+    if not isinstance(value, dict):
+        raise TypeError(path)
     return dict(value)
 
 
@@ -118,7 +119,9 @@ def error_paths(errors: Iterable[ValidationError]) -> set[str]:
 def cases() -> list[Mapping[str, Json]]:
     """The recorded cases."""
     value = load(CASES)
-    assert isinstance(value, list)
+    if not isinstance(value, list):
+        msg = f"{CASES} is not a JSON array"
+        raise TypeError(msg)
     return [case for case in value if isinstance(case, dict)]
 
 
@@ -138,50 +141,63 @@ def case_id(value: object) -> str:
 
 
 class SchemaTests(unittest.TestCase):
+    """Each schema against the metaschema, the repository's files and the recorded cases."""
+
     def test_schema_is_valid_2020_12(self) -> None:
-        assert SCHEMA_FILES
+        """Each schema is valid JSON Schema 2020-12."""
+        self.assertTrue(SCHEMA_FILES)
         for path in SCHEMA_FILES:
             with self.subTest(file_id(path)):
                 Draft202012Validator.check_schema(schema_file(path))
 
     def test_schema_declares_no_id(self) -> None:
-        assert SCHEMA_FILES
+        """No schema declares `$id`."""
+        self.assertTrue(SCHEMA_FILES)
         for path in SCHEMA_FILES:
             with self.subTest(file_id(path)):
-                assert "$id" not in schema_file(path), "a schema's identity is its file location"
+                self.assertNotIn(
+                    "$id", schema_file(path), msg="a schema's identity is its file location"
+                )
 
     def test_repository_file_is_valid(self) -> None:
+        """Repository file is valid."""
         files = repo_files()
-        assert files
+        self.assertTrue(files)
         for name, path in files:
             with self.subTest(file_id(path)):
                 paths = error_paths(validator(name).iter_errors(load(path)))
-                assert not paths, f"{path.relative_to(ROOT)}: errors at {sorted(paths)}"
+                self.assertFalse(paths, msg=f"{path.relative_to(ROOT)}: errors at {sorted(paths)}")
 
     def test_every_kind_has_repository_files(self) -> None:
+        """Every kind has repository files."""
         for name, pattern in REPO_FILES:
-            assert list(ROOT.glob(pattern)), f"no {pattern} to check against {ENTRIES[name]}"
+            self.assertTrue(
+                list(ROOT.glob(pattern)), msg=f"no {pattern} to check against {ENTRIES[name]}"
+            )
 
     def test_cases_cover_every_schema_both_ways(self) -> None:
+        """Cases cover every schema both ways."""
         seen = {(c["schema"], c["valid"]) for c in cases()}
         for name in NAMES:
-            assert (f"{name}.schema.json", True) in seen, name
-            assert (f"{name}.schema.json", False) in seen, name
+            self.assertIn((f"{name}.schema.json", True), seen, msg=name)
+            self.assertIn((f"{name}.schema.json", False), seen, msg=name)
 
     def test_recorded_case(self) -> None:
+        """Each recorded case passes or fails with the error path it records."""
         recorded = cases()
-        assert recorded
+        self.assertTrue(recorded)
         for case in recorded:
             with self.subTest(case_id(case)):
                 name = case["schema"]
-                assert isinstance(name, str)
+                if not isinstance(name, str):
+                    self.fail(f"case schema is not a string: {name!r}")
                 errors = validator(name.removesuffix(".schema.json")).iter_errors(case["data"])
                 paths = error_paths(errors)
                 if case["valid"] is True:
-                    assert not paths, f"expected valid, errors at {sorted(paths)}"
+                    self.assertFalse(paths, msg=f"expected valid, errors at {sorted(paths)}")
                 else:
                     expected = case["error_path"]
-                    assert paths, "expected invalid, but it validated"
-                    assert expected in paths, (
-                        f"expected an error at {expected}, got {sorted(paths)}"
+                    self.assertTrue(paths, msg="expected invalid, but it validated")
+                    self.assertIn(
+                        expected, paths, msg=f"expected an error at {expected}, got {sorted(paths)}"
                     )

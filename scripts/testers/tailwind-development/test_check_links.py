@@ -80,27 +80,29 @@ class CheckLinksTest(unittest.TestCase):
     def test_valid_page_and_anchor_pass(self) -> None:
         """A live page and an id on it exit 0."""
         result = self.run_on(f"- [Good]({self.base}/page.html#good): ok\n")
-        assert result.returncode == 0, result.stdout
-        assert "1 URLs at 1 places: 1 ok, 0 broken" in result.stdout
+        self.assertEqual(result.returncode, 0, msg=result.stdout)
+        self.assertIn("1 URLs at 1 places: 1 ok, 0 broken", result.stdout)
 
     def test_redirect_is_followed(self) -> None:
         """A redirect to a live page with the anchor passes."""
         result = self.run_on(f"See {self.base}/old#good.\n")
-        assert result.returncode == 0, result.stdout
+        self.assertEqual(result.returncode, 0, msg=result.stdout)
 
     def test_missing_anchor_fails(self) -> None:
         """An anchor the page lacks is reported and exits 1."""
         result = self.run_on(f"[x]({self.base}/page.html#gone)\n")
-        assert result.returncode == 1
-        assert f"{self.base}/page.html#gone -> anchor #gone not found on the page" in result.stdout
-        assert "reference.md:1" in result.stdout
+        self.assertEqual(result.returncode, 1)
+        self.assertIn(
+            f"{self.base}/page.html#gone -> anchor #gone not found on the page", result.stdout
+        )
+        self.assertIn("reference.md:1", result.stdout)
 
     def test_missing_page_fails(self) -> None:
         """A page that answers 404 is reported and exits 1."""
         result = self.run_on(f"[x]({self.base}/nope.html)\n")
-        assert result.returncode == 1
-        assert f"{self.base}/nope.html -> HTTP 404" in result.stdout
-        assert "reference.md:1" in result.stdout
+        self.assertEqual(result.returncode, 1)
+        self.assertIn(f"{self.base}/nope.html -> HTTP 404", result.stdout)
+        self.assertIn("reference.md:1", result.stdout)
 
     def test_placeholders_are_never_requested(self) -> None:
         """Templates, examples, localhost and hosts with no domain are never requested."""
@@ -109,21 +111,21 @@ class CheckLinksTest(unittest.TestCase):
             "https://example.com/a http://sveltekit-prerender http://localhost:3000/\n"
         )
         result = self.run_on(text)
-        assert result.returncode == 0, result.stdout
-        assert "0 URLs at 0 places" in result.stdout
-        assert "5 placeholders skipped" in result.stdout
+        self.assertEqual(result.returncode, 0, msg=result.stdout)
+        self.assertIn("0 URLs at 0 places", result.stdout)
+        self.assertIn("5 placeholders skipped", result.stdout)
 
     def test_trailing_punctuation_and_parentheses(self) -> None:
         """A trailing period is dropped, and a Markdown link's closing parenthesis ends the URL."""
         result = self.run_on(f"See {self.base}/page.html. [a]({self.base}/page.html#good)\n")
-        assert result.returncode == 0, result.stdout
-        assert "2 URLs at 2 places: 2 ok" in result.stdout
+        self.assertEqual(result.returncode, 0, msg=result.stdout)
+        self.assertIn("2 URLs at 2 places: 2 ok", result.stdout)
 
     def test_missing_path_exits_2(self) -> None:
         """A path that does not exist exits 2 and names it."""
         result = run_script("/no/such/file.md")
-        assert result.returncode == 2
-        assert "/no/such/file.md" in result.stderr
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("/no/such/file.md", result.stderr)
 
 
 if __name__ == "__main__":

@@ -81,14 +81,17 @@ def probe(root: Path, event: str, code: int, stdout: str = "", *extra: str) -> s
     hook = f"import sys; sys.stdout.write({stdout!r}); sys.stderr.write('reason'); sys.exit({code})"
     command = [sys.executable, str(PROBE), "--input", str(sample), *extra, "--"]
     result = run([*command, sys.executable, "-c", hook])
-    assert result.returncode == 0, result.stderr
+    if result.returncode != 0:
+        msg = result.stderr
+        raise AssertionError(msg)
     return result.stdout
 
 
 def outcome(report: str) -> str:
     """Return the text of the single outcome line."""
     lines = [line for line in report.splitlines() if line.startswith("outcome: ")]
-    assert len(lines) == 1, report
+    if len(lines) != 1:
+        raise AssertionError(report)
     return lines[0].removeprefix("outcome: ")
 
 
@@ -114,25 +117,25 @@ class LintTest(unittest.TestCase):
     def test_valid_config_exits_zero(self) -> None:
         """A well-formed hooks object has no ERROR."""
         result = lint(write_json(scratch(self) / "ok.json", VALID))
-        assert result.returncode == 0, result.stdout
-        assert "ERROR" not in result.stdout
+        self.assertEqual(result.returncode, 0, msg=result.stdout)
+        self.assertNotIn("ERROR", result.stdout)
 
     def test_unknown_event_and_flat_handler_are_errors(self) -> None:
         """A wrong-case event and a handler outside a group both fail."""
         bad = {"hooks": {"PreToolUse": [{"type": "command", "command": "x"}], "stop": []}}
         result = lint(write_json(scratch(self) / "bad.json", bad))
-        assert result.returncode == 1
-        assert "unknown event 'stop'" in result.stdout
-        assert "handler outside a group's 'hooks' array" in result.stdout
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("unknown event 'stop'", result.stdout)
+        self.assertIn("handler outside a group's 'hooks' array", result.stdout)
 
     def test_missing_file_is_an_error_and_the_next_file_is_linted(self) -> None:
         """An unreadable file is reported and does not stop the run."""
         root = scratch(self)
         ok = write_json(root / "ok.json", VALID)
         result = lint(root / "missing.json", ok)
-        assert result.returncode == 1
-        assert "cannot read the file" in result.stdout
-        assert f"== {ok}:" in result.stdout
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("cannot read the file", result.stdout)
+        self.assertIn(f"== {ok}:", result.stdout)
 
     def test_plugin_manifest_that_is_not_an_object(self) -> None:
         """A plugin.json array is an ERROR for that file, not a crash."""
@@ -141,10 +144,10 @@ class LintTest(unittest.TestCase):
         _ = write_json(root / "plugin" / ".claude-plugin" / "plugin.json", [])
         ok = write_json(root / "other.json", VALID)
         result = lint(hooks, ok)
-        assert "Traceback" not in result.stderr, result.stderr
-        assert result.returncode == 1
-        assert "cannot read the plugin manifest" in result.stdout
-        assert f"== {ok}:" in result.stdout
+        self.assertNotIn("Traceback", result.stderr, msg=result.stderr)
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("cannot read the plugin manifest", result.stdout)
+        self.assertIn(f"== {ok}:", result.stdout)
 
     def test_invalid_plugin_mcp_json(self) -> None:
         """A broken .mcp.json next to a plugin is an ERROR, and the next file is linted."""
@@ -154,9 +157,9 @@ class LintTest(unittest.TestCase):
         _ = (root / "plugin" / ".mcp.json").write_text("{bad", encoding="utf-8")
         ok = write_json(root / "other.json", VALID)
         result = lint(hooks, ok)
-        assert "Traceback" not in result.stderr, result.stderr
-        assert "cannot read the plugin manifest" in result.stdout
-        assert f"== {ok}:" in result.stdout
+        self.assertNotIn("Traceback", result.stderr, msg=result.stderr)
+        self.assertIn("cannot read the plugin manifest", result.stdout)
+        self.assertIn(f"== {ok}:", result.stdout)
 
 
 class ProbeTest(unittest.TestCase):
@@ -165,24 +168,24 @@ class ProbeTest(unittest.TestCase):
     def test_exit2_blocks_on_pretooluse(self) -> None:
         """Exit 2 on PreToolUse is a blocking error."""
         text = outcome(probe(scratch(self), "PreToolUse", 2))
-        assert text == "blocking error: stderr is the reason"
+        self.assertEqual(text, "blocking error: stderr is the reason")
 
     def test_exit2_does_not_block_where_the_event_ignores_it(self) -> None:
         """Exit 2 on PermissionRequest and PostToolUse is not reported as a block."""
         for event in ("PermissionRequest", "PostToolUse"):
             with self.subTest(event=event):
                 text = outcome(probe(scratch(self), event, 2))
-                assert text.startswith("exit 2 does not block"), text
+                self.assertTrue(text.startswith("exit 2 does not block"), msg=text)
 
     def test_on_failure_block_denies_a_permission_request(self) -> None:
         """A failing PermissionRequest hook with onFailure block denies the request."""
         report = probe(scratch(self), "PermissionRequest", 1, "", "--on-failure", "block")
-        assert "permission request is denied" in outcome(report)
+        self.assertIn("permission request is denied", outcome(report))
 
     def test_on_failure_block_on_pretooluse(self) -> None:
         """A failing PreToolUse hook with onFailure block acts like exit 2."""
         report = probe(scratch(self), "PreToolUse", 1, "", "--on-failure", "block")
-        assert "acts like exit 2" in outcome(report)
+        self.assertIn("acts like exit 2", outcome(report))
 
     def test_json_deny_is_read_as_json(self) -> None:
         """One JSON object on stdout is classified as JSON."""
@@ -195,12 +198,12 @@ class ProbeTest(unittest.TestCase):
                 }
             }
         )
-        assert "stdout: json" in probe(scratch(self), "PreToolUse", 0, deny)
+        self.assertIn("stdout: json", probe(scratch(self), "PreToolUse", 0, deny))
 
     def test_banner_before_json_is_plain_text(self) -> None:
         """A line before the JSON object turns stdout into plain text."""
         report = probe(scratch(self), "PreToolUse", 0, 'hello\n{"continue": true}')
-        assert "stdout: plain" in report
+        self.assertIn("stdout: plain", report)
 
 
 @unittest.skipUnless(shutil.which("bash"), "bash is not on PATH")
@@ -210,38 +213,38 @@ class ChangesTest(unittest.TestCase):
     def test_lists_entries_after_the_baseline_and_tags_newer(self) -> None:
         """Entries above since are listed; those above installed are tagged."""
         result = changes(scratch(self), CHANGELOG, 0, "2.1.304", "2.1.305")
-        assert result.returncode == 0, result.stderr
-        assert "## 2.1.306 [newer than installed]" in result.stdout
-        assert "- Fixed a PreToolUse hook bug" in result.stdout
-        assert "## 2.1.305\n- Added a Stop hook field" in result.stdout
-        assert "Unrelated fix" not in result.stdout
-        assert "Older hook entry" not in result.stdout
+        self.assertEqual(result.returncode, 0, msg=result.stderr)
+        self.assertIn("## 2.1.306 [newer than installed]", result.stdout)
+        self.assertIn("- Fixed a PreToolUse hook bug", result.stdout)
+        self.assertIn("## 2.1.305\n- Added a Stop hook field", result.stdout)
+        self.assertNotIn("Unrelated fix", result.stdout)
+        self.assertNotIn("Older hook entry", result.stdout)
 
     def test_no_entries_after_the_newest(self) -> None:
         """Nothing after the newest version prints the no-entries line."""
         result = changes(scratch(self), CHANGELOG, 0, "2.1.306")
-        assert result.returncode == 0, result.stderr
-        assert "No hook-related changelog entries after 2.1.306." in result.stdout
+        self.assertEqual(result.returncode, 0, msg=result.stderr)
+        self.assertIn("No hook-related changelog entries after 2.1.306.", result.stdout)
 
     def test_download_failure_exits_3_without_claiming_no_changes(self) -> None:
         """A failed download is an error, never "no changes"."""
         result = changes(scratch(self), "", 7, "2.1.300")
-        assert result.returncode == 3
-        assert "could not download" in result.stderr
-        assert "No hook-related" not in result.stdout
+        self.assertEqual(result.returncode, 3)
+        self.assertIn("could not download", result.stderr)
+        self.assertNotIn("No hook-related", result.stdout)
 
     def test_page_without_versions_exits_3(self) -> None:
         """A body with no version headings is not read as "no changes"."""
         result = changes(scratch(self), "<html>rate limited</html>\n", 0, "2.1.300")
-        assert result.returncode == 3
-        assert "has no version headings" in result.stderr
-        assert "No hook-related" not in result.stdout
+        self.assertEqual(result.returncode, 3)
+        self.assertIn("has no version headings", result.stderr)
+        self.assertNotIn("No hook-related", result.stdout)
 
     def test_rejects_a_leading_v(self) -> None:
         """A version with a leading v is a usage error."""
         result = changes(scratch(self), CHANGELOG, 0, "v2.1.305")
-        assert result.returncode == 2
-        assert "not a bare version number" in result.stderr
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("not a bare version number", result.stderr)
 
 
 if __name__ == "__main__":

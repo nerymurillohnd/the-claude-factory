@@ -20,14 +20,19 @@ VALIDATOR = ROOT / "scripts" / "validators" / "skill-references.py"
 
 
 class Validator(Protocol):
-    def check(self, root: Path) -> tuple[list[str], int]: ...
+    """The part of the validator module these tests call."""
+
+    def check(self, root: Path) -> tuple[list[str], int]:
+        """Every dead reference, in a stable order, and how many references were checked."""
+        ...
 
 
 def load() -> Validator:
     """The validator module, imported from its hyphenated file name."""
     spec = importlib.util.spec_from_file_location("skill_references", VALIDATOR)
-    assert spec is not None
-    assert spec.loader is not None
+    if spec is None or spec.loader is None:
+        msg = f"cannot load {VALIDATOR}"
+        raise ImportError(msg)
     module: ModuleType = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return cast("Validator", cast("object", module))
@@ -49,10 +54,13 @@ def repo(tmp_path: Path, skill_text: str, claude_md: str = "# Project\n") -> Pat
 
 
 def errors(tmp_path: Path, skill_text: str, claude_md: str = "# Project\n") -> list[str]:
+    """The errors the validator reports for a repository built from the given texts."""
     return load().check(repo(tmp_path, skill_text, claude_md))[0]
 
 
 class SkillReferenceTests(unittest.TestCase):
+    """The validator's check on small repositories, then on this one."""
+
     tmp: Path = Path()
 
     @override
@@ -62,53 +70,61 @@ class SkillReferenceTests(unittest.TestCase):
         self.tmp = Path(handle.name)
 
     def test_dead_path_fails(self) -> None:
+        """Dead path fails."""
         found = errors(self.tmp, "Run `scripts/release-notes.mjs` first.\n")
-        assert len(found) == 1
-        assert ".claude/skills/alpha/SKILL.md:1" in found[0]
-        assert "scripts/release-notes.mjs" in found[0]
+        self.assertEqual(len(found), 1)
+        self.assertIn(".claude/skills/alpha/SKILL.md:1", found[0])
+        self.assertIn("scripts/release-notes.mjs", found[0])
 
     def test_dead_path_in_claude_md_fails(self) -> None:
+        """A dead path in CLAUDE.md fails."""
         found = errors(self.tmp, "ok\n", claude_md="See `.claude/rules/workflow.md`.\n")
-        assert len(found) == 1
-        assert ".claude/CLAUDE.md:1" in found[0]
+        self.assertEqual(len(found), 1)
+        self.assertIn(".claude/CLAUDE.md:1", found[0])
 
     def test_dead_skill_name_fails(self) -> None:
+        """Dead skill name fails."""
         found = errors(
             self.tmp, "Use the `plugin-development` skill.\nSkills: `alpha`; also `gone`.\n"
         )
-        assert len(found) == 2
-        assert "plugin-development" in found[0]
-        assert "gone" in found[1]
+        self.assertEqual(len(found), 2)
+        self.assertIn("plugin-development", found[0])
+        self.assertIn("gone", found[1])
 
     def test_dead_plugin_skill_fails(self) -> None:
+        """Dead plugin skill fails."""
         found = errors(self.tmp, "Apply `beta:missing`, then `beta:gamma`.\n")
-        assert len(found) == 1
-        assert "beta:missing" in found[0]
+        self.assertEqual(len(found), 1)
+        self.assertIn("beta:missing", found[0])
 
     def test_live_references_pass(self) -> None:
+        """Live references pass."""
         text = (
             "The `alpha` skill runs `scripts/run.py` and reads `scripts/lib.mjs:12`.\n"
             "Skill: `plugin-authoring`. Apply `other-plugin:skill`"
             " and `plugins/beta/skills/gamma`.\n"
         )
-        assert errors(self.tmp, text) == []
+        self.assertEqual(errors(self.tmp, text), [])
 
     def test_examples_and_plugin_relative_paths_are_ignored(self) -> None:
+        """Examples and plugin relative paths are ignored."""
         text = (
             "Write `plugins/my-plugin/README.md`, `plugins/<name>/LICENSE`,"
             " `.claude-plugin/plugin.json`, `scripts/*.py`, `~/.claude/x.md`,"
             " `.claude/settings.local.json` and `scripts/a b`.\n"
         )
-        assert errors(self.tmp, text) == []
+        self.assertEqual(errors(self.tmp, text), [])
 
     def test_allowed_entry_passes(self) -> None:
+        """Allowed entry passes."""
         root = repo(self.tmp, "ok\n")
         policy = root / ".claude" / "skills" / "testing-plugins" / "references"
         policy.mkdir(parents=True)
         _ = (policy / "eval-policy.md").write_text("1. Copy it to `.github/workflows/evals.yml`.\n")
-        assert load().check(root)[0] == []
+        self.assertEqual(load().check(root)[0], [])
 
     def test_repository_passes(self) -> None:
+        """This repository passes."""
         found, count = load().check(ROOT)
-        assert found == []
-        assert count > 0
+        self.assertEqual(found, [])
+        self.assertGreater(count, 0)

@@ -66,22 +66,19 @@ ignore = [
     "D104",   # missing-docstring-in-public-package
     "S603",   # subprocess-without-shell-equals-true (fires on every subprocess call)
     "INP001", # implicit-namespace-package (loose scripts are not packages)
+
+    # === Not used: pytest ===
+
+    # The tests run on unittest (scripts/testers/run_unittest.py); pytest is not part of this
+    # repository, so its linter, flake8-pytest-style, is left out of "ALL". Its PT009 and PT027
+    # would demand pytest's bare assert and pytest.raises over TestCase.assert* (bare assert is
+    # S101, which stays on: -O strips it).
+    "PT", # flake8-pytest-style
 ]
 
 # Every enabled rule may be fixed when `--fix` is passed.
 fixable = ["ALL"]
 unfixable = []
-
-[lint.per-file-ignores]
-"**/{tests,test,testers}/**/*.py" = [
-    "S101",    # assert is the pytest idiom
-    "PLR2004", # magic-value-comparison in expected values
-    "D",       # test docstrings
-    "SLF001",  # private member access in white-box tests
-    "A001", # builtin-variable-shadowing: names mirror the runtime module
-    "A002", # builtin-argument-shadowing
-    "N",    # pep8-naming: third-party names are not ours to choose
-]
 
 [lint.isort]
 
