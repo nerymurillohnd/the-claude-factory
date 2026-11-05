@@ -6,6 +6,30 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The
 
 ## 2026-11-05
 
+### Added
+
+- **bash-lsp-intelligence** 0.2.7 — a listing icon and links to the README, the issue forms and the marketplace [privacy policy](PRIVACY.md), which Anthropic's plugin directory shows on the plugin's page; Claude Code ignores them at load time.
+- **block-no-verify** 0.1.4 — a listing icon and links to the README, the issue forms and the marketplace [privacy policy](PRIVACY.md), which Anthropic's plugin directory shows on the plugin's page; Claude Code ignores them at load time.
+- **file-tree-pane** 0.1.5 — a listing icon and links to the README, the issue forms and the marketplace [privacy policy](PRIVACY.md), which Anthropic's plugin directory shows on the plugin's page; Claude Code ignores them at load time.
+- **github-operations** 0.7.1 — a listing icon and links to the README, the issue forms and the marketplace [privacy policy](PRIVACY.md), which Anthropic's plugin directory shows on the plugin's page; Claude Code ignores them at load time.
+- **hook-engineering** 0.2.4 — a listing icon and links to the README, the issue forms and the marketplace [privacy policy](PRIVACY.md), which Anthropic's plugin directory shows on the plugin's page; Claude Code ignores them at load time.
+- **instruction-engineering** 0.1.2 — a listing icon and links to the README, the issue forms and the marketplace [privacy policy](PRIVACY.md), which Anthropic's plugin directory shows on the plugin's page; Claude Code ignores them at load time.
+- **macos-grep-guard** 0.1.3 — a listing icon and links to the README, the issue forms and the marketplace [privacy policy](PRIVACY.md), which Anthropic's plugin directory shows on the plugin's page; Claude Code ignores them at load time.
+- **model-trace** 0.1.3 — a listing icon and links to the README, the issue forms and the marketplace [privacy policy](PRIVACY.md), which Anthropic's plugin directory shows on the plugin's page; Claude Code ignores them at load time.
+- **mods-engineering** 0.1.4 — a listing icon and links to the README, the issue forms and the marketplace [privacy policy](PRIVACY.md), which Anthropic's plugin directory shows on the plugin's page; Claude Code ignores them at load time.
+- **plugin-evals** 0.1.5 — a listing icon and links to the README, the issue forms and the marketplace [privacy policy](PRIVACY.md), which Anthropic's plugin directory shows on the plugin's page; Claude Code ignores them at load time.
+- **plugin-test-bench** 0.1.2 — a listing icon and links to the README, the issue forms and the marketplace [privacy policy](PRIVACY.md), which Anthropic's plugin directory shows on the plugin's page; Claude Code ignores them at load time.
+- **project-maintainer** 0.2.5 — a listing icon and links to the README, the issue forms and the marketplace [privacy policy](PRIVACY.md), which Anthropic's plugin directory shows on the plugin's page; Claude Code ignores them at load time.
+- **prompt-writer** 0.2.3 — a listing icon and links to the README, the issue forms and the marketplace [privacy policy](PRIVACY.md), which Anthropic's plugin directory shows on the plugin's page; Claude Code ignores them at load time.
+- **python-lsp-intelligence** 0.3.2 — a listing icon and links to the README, the issue forms and the marketplace [privacy policy](PRIVACY.md), which Anthropic's plugin directory shows on the plugin's page; Claude Code ignores them at load time.
+- **skill-diagnostics** 0.2.1 — a listing icon and links to the README, the issue forms and the marketplace [privacy policy](PRIVACY.md), which Anthropic's plugin directory shows on the plugin's page; Claude Code ignores them at load time.
+- **svelte-development** 0.1.2 — a listing icon and links to the README, the issue forms and the marketplace [privacy policy](PRIVACY.md), which Anthropic's plugin directory shows on the plugin's page; Claude Code ignores them at load time.
+- **tailwind-development** 0.3.2 — a listing icon and links to the README, the issue forms and the marketplace [privacy policy](PRIVACY.md), which Anthropic's plugin directory shows on the plugin's page; Claude Code ignores them at load time.
+- **tool-ledger** 0.1.4 — a listing icon and links to the README, the issue forms and the marketplace [privacy policy](PRIVACY.md), which Anthropic's plugin directory shows on the plugin's page; Claude Code ignores them at load time.
+- **turn-meter** 0.1.4 — a listing icon and links to the README, the issue forms and the marketplace [privacy policy](PRIVACY.md), which Anthropic's plugin directory shows on the plugin's page; Claude Code ignores them at load time.
+- **typescript6-lsp-intelligence** 0.3.3 — a listing icon and links to the README, the issue forms and the marketplace [privacy policy](PRIVACY.md), which Anthropic's plugin directory shows on the plugin's page; Claude Code ignores them at load time.
+- **typescript7-lsp-intelligence** 0.4.3 — a listing icon and links to the README, the issue forms and the marketplace [privacy policy](PRIVACY.md), which Anthropic's plugin directory shows on the plugin's page; Claude Code ignores them at load time.
+
 ### Changed
 
 - **github-operations** 0.7.0 — **Breaking:** the plugin no longer bundles the GitHub MCP server or its token option; the README shows how to add GitHub's remote server to Claude Code and the Claude app yourself.
