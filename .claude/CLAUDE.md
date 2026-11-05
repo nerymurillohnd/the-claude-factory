@@ -110,7 +110,7 @@ This repository holds two scopes. They are never mixed: a rule written for one s
    - Key jobs: write the spec, then the plan, where Working Files says.
 2. Plugin creation
    - When: a plugin is created, scaffolded, written or fixed.
-   - Skills: `building-plugins`; also `building-mods` when the plugin is a mod or contains one, and `plugin-hooks-guidance` when it has hooks.
+   - Skills: `building-plugins`; also `building-mods` when the plugin is a mod or contains one; hooks follow `.claude/rules/plugins/plugins-claude-hooks.md`.
    - Key jobs:
      - Settle the identity with Nery: name, category (with `plugin-categories`), description, display name and surfaces.
      - Create the plugin and register it in the marketplace.
