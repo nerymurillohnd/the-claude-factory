@@ -33,6 +33,7 @@
     "validate:lsp-json-schema": "scripts/validators/lsp-json-schema.py",
     "validate:marketplace-json-schema": "scripts/validators/marketplace-json-schema.py",
     "validate:mcp-json-schema": "scripts/validators/mcp-json-schema.py",
+    "validate:plugin-icons": "scripts/validators/plugin-icons.py",
     "validate:plugin-json-schema": "scripts/validators/plugin-json-schema.py",
     "validate:plugin-names-consistency": "scripts/validators/plugin-names-consistency.py",
     "validate:plugin-required-files": "scripts/validators/plugin-required-files.py",
