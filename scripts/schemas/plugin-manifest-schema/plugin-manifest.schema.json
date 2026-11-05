@@ -8,6 +8,15 @@
   "required": [
     "name"
   ],
+  "$defs": {
+    "directoryUrl": {
+      "type": "string",
+      "format": "uri",
+      "pattern": "^https://[^\\s/]+(?:/\\S*)?$",
+      "description": "An https:// URL that Anthropic's directory shows on the plugin's listing.",
+      "x-source": "https://code.claude.com/docs/en/plugins/manifest-reference#directory-listing-fields ('each of the four URL fields to an https:// URL')"
+    }
+  },
   "properties": {
     "$schema": {
       "type": "string",
@@ -621,19 +630,21 @@
       "x-cli-unknown-keys": "ignores (keys other than agent and subagentStatusLine are dropped at load)"
     },
     "privacyPolicyUrl": {
-      "description": "Listing metadata key accepted by claude plugin validate (no unknown-field warning since v2.1.281). Not documented; the CLI does not check its type. Conventionally a URL string.",
-      "x-source": "changelog 2.1.281 (fix: 'privacyPolicyUrl, supportUrl and other listing metadata keys ... as unknown fields')",
-      "x-docs-status": "changelog-only"
+      "$ref": "#/$defs/directoryUrl",
+      "description": "Privacy policy link for the plugin's listing in Anthropic's directory. Claude Code ignores it at load time.",
+      "x-source": "https://code.claude.com/docs/en/plugins/manifest-reference#directory-listing-fields"
     },
     "supportUrl": {
-      "description": "Listing metadata key accepted by claude plugin validate (no unknown-field warning since v2.1.281). Not documented; the CLI does not check its type. Conventionally a URL string.",
-      "x-source": "changelog 2.1.281 (same entry as privacyPolicyUrl)",
-      "x-docs-status": "changelog-only"
+      "$ref": "#/$defs/directoryUrl",
+      "description": "Support link for the plugin's listing in Anthropic's directory. Claude Code ignores it at load time.",
+      "x-source": "https://code.claude.com/docs/en/plugins/manifest-reference#directory-listing-fields"
     },
     "icon": {
-      "description": "Listing metadata key on the CLI's tolerated-key whitelist (CLI 2.1.281 validator): claude plugin validate does not warn about it. Not documented anywhere; value type is not checked.",
-      "x-source": "CLI 2.1.281 validator whitelist (implied by changelog 2.1.281 'and other listing metadata keys')",
-      "x-docs-status": "cli-tolerated"
+      "type": "string",
+      "pattern": "^\\./(?:[^/\\s]+/)*[^/\\s]+\\.(?:png|jpe?g)$",
+      "description": "Icon for the plugin's listing in Anthropic's directory: the path of an image file inside the plugin, such as ./logo.png. Claude Code ignores it at load time. The directory accepts a square PNG or JPEG of 512 to 2048 px under 2 MB (claude plugin validate --strict, ICON_MISSING fix text); scripts/validators/plugin-icons.py checks the file.",
+      "x-source": "https://code.claude.com/docs/en/plugins/manifest-reference#directory-listing-fields",
+      "x-policy": "Repository policy, stricter than the docs: a relative ./ path to a .png, .jpg or .jpeg file, the formats the directory accepts."
     },
     "screenshots": {
       "description": "Listing metadata key on the CLI's tolerated-key whitelist (CLI 2.1.281 validator): claude plugin validate does not warn about it. Not documented anywhere; value type is not checked.",
@@ -666,9 +677,9 @@
       "x-docs-status": "cli-tolerated"
     },
     "termsOfServiceUrl": {
-      "description": "Listing metadata key on the CLI's tolerated-key whitelist (CLI 2.1.281 validator): claude plugin validate does not warn about it. Not documented anywhere; value type is not checked.",
-      "x-source": "CLI 2.1.281 validator whitelist (implied by changelog 2.1.281 'and other listing metadata keys')",
-      "x-docs-status": "cli-tolerated"
+      "$ref": "#/$defs/directoryUrl",
+      "description": "Terms of service link for the plugin's listing in Anthropic's directory. Claude Code ignores it at load time.",
+      "x-source": "https://code.claude.com/docs/en/plugins/manifest-reference#directory-listing-fields"
     },
     "terms_of_service": {
       "description": "Listing metadata key on the CLI's tolerated-key whitelist (CLI 2.1.281 validator): claude plugin validate does not warn about it. Not documented anywhere; value type is not checked.",
@@ -676,9 +687,9 @@
       "x-docs-status": "cli-tolerated"
     },
     "documentationUrl": {
-      "description": "Listing metadata key on the CLI's tolerated-key whitelist (CLI 2.1.281 validator): claude plugin validate does not warn about it. Not documented anywhere; value type is not checked.",
-      "x-source": "CLI 2.1.281 validator whitelist (implied by changelog 2.1.281 'and other listing metadata keys')",
-      "x-docs-status": "cli-tolerated"
+      "$ref": "#/$defs/directoryUrl",
+      "description": "Documentation link for the plugin's listing in Anthropic's directory. Claude Code ignores it at load time.",
+      "x-source": "https://code.claude.com/docs/en/plugins/manifest-reference#directory-listing-fields"
     },
     "docs": {
       "description": "Listing metadata key on the CLI's tolerated-key whitelist (CLI 2.1.281 validator): claude plugin validate does not warn about it. Not documented anywhere; value type is not checked.",
