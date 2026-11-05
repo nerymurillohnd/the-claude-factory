@@ -1,7 +1,7 @@
 {
   "name": "bash-lsp-intelligence",
   "displayName": "Bash LSP Intelligence",
-  "version": "0.2.6",
+  "version": "0.2.7",
   "description": "Gives Claude Code bash-language-server for Bash and POSIX shell scripts, formats and checks every script Claude edits with shfmt and ShellCheck using your own configuration, and teaches Claude to trace sourced files and same-named functions before a rename.",
   "author": {
     "name": "Nery Murillo",
@@ -9,6 +9,10 @@
   },
   "homepage": "https://github.com/nerymurillohnd/the-claude-factory/tree/main/plugins/bash-lsp-intelligence#readme",
   "repository": "https://github.com/nerymurillohnd/the-claude-factory",
+  "icon": "./.claude-plugin/icon.png",
+  "documentationUrl": "https://github.com/nerymurillohnd/the-claude-factory/tree/main/plugins/bash-lsp-intelligence#readme",
+  "supportUrl": "https://github.com/nerymurillohnd/the-claude-factory/issues/new/choose",
+  "privacyPolicyUrl": "https://github.com/nerymurillohnd/the-claude-factory/blob/main/PRIVACY.md",
   "license": "MIT",
   "keywords": [
     "lsp",
