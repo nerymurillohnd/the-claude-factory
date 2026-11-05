@@ -52,8 +52,6 @@ This repository holds two scopes. They are never mixed: a rule written for one s
 - **Plugin scope**: one self-contained directory per plugin under `plugins/<plugin>/`. Its environment is only what the plugin's `README.md` declares as prerequisites; users' compatibility comes only from the README's declared minimum Claude Code version.
 - **Maintainer files inside a plugin**: a mod's `*.test.ts(x)` (in the mod's `tests/`, importing only the mod's files and `claude-code/testing`) and a plugin's eval suite stay in the plugin's directory, because `claude plugin test` and `claude plugin eval` only find them there. They are maintainer tooling, run only on Nery's build, and ship to users as inert files. Everything committed under `plugins/<plugin>/` reaches every user's cache; nothing git-ignored does, so commit no other maintainer-only file there.
 
-`.claude/rules/operating-standard.md` sets which changes take a pull request and a version bump.
-
 #### Maintainer Tooling
 
 - Python: format and lint with Ruff, type-check with Basedpyright, test with unittest.
@@ -66,7 +64,7 @@ This repository holds two scopes. They are never mixed: a rule written for one s
 - Tests of plugin scripts live in `scripts/testers/<plugin>/`, which is maintainer scope: their test dependencies never enter a plugin's runtime. A mod's tests are the exception (Maintainer files inside a plugin).
 - The root `package.json` serves repository-level development tooling only, never plugin runtimes; it stays `"private": true`. Its devDependencies are the npm tools (Biome, TypeScript, Husky) and the `@types/*` packages, each pinned to an exact version.
 - A plugin's own `package.json` and `package-lock.json` hold only that plugin's runtime dependencies, pinned exactly; Claude Code installs them for users when it caches the plugin, only from registry packages, with install scripts off and no `overrides`, within 60 seconds. In the clone, install them with `npm install --prefix plugins/<plugin> --ignore-scripts` for each plugin that has a `package-lock.json`; `tsc-plugins` and the plugin's node tests need them, and CI installs them with `npm ci --prefix`.
-- Every maintenance command is an `npm run` script (`test`, `typecheck`, `lint`, `format`, `fix`, `check:*`, `generate`, `validate`, `gates`): when you run a tool yourself, run it through its script, never by its bare name from PATH, so the npm tools are the versions `package-lock.json` pins; the global installs serve the editor. Ruff, Basedpyright, shfmt, ShellCheck and actionlint are not pinned: the gates run the ones installed on the machine, and CI installs their latest releases. Code inside a maintainer script calls tools by bare name, as `.claude/rules/maintainer/scripts.md` sets. `format` and `fix` also write in `plugins/`; what a plugin file they change needs is set in `.claude/rules/operating-standard.md`.
+- Every maintenance command is an `npm run` script (`test`, `typecheck`, `lint`, `format`, `fix`, `check:*`, `generate`, `validate`, `gates`): when you run a tool yourself, run it through its script, never by its bare name from PATH, so the npm tools are the versions `package-lock.json` pins; the global installs serve the editor. Ruff, Basedpyright, shfmt, ShellCheck and actionlint are not pinned: the gates run the ones installed on the machine, and CI installs their latest releases. Code inside a maintainer script calls tools by bare name, as `.claude/rules/maintainer/scripts.md` sets. `format` and `fix` also write in `plugins/`.
 - Husky's git hooks run `biome check --staged` and `npm test` before each commit and `npm run gates` before each push, and the project's Claude Code hooks in `.claude/settings.json` check commits and `SKILL.md` writes; fix what they report, never skip them.
 - Install the dependencies with `npm install`, with the `.nvmrc` Node selected. Commit a `package-lock.json` change only with the dependency change that caused it. CI keeps `npm ci`, which fails when the lockfile and `package.json` disagree.
 
@@ -131,12 +129,12 @@ This repository holds two scopes. They are never mixed: a rule written for one s
    - Skills: `testing-plugins`; `testing-mods` for a mod's own tests and troubleshooting.
    - Key jobs:
      - Build an eval suite only when asked.
-     - When a plugin with evals changes, run a small smoke run locally; CI runs the full suite (`.claude/rules/operating-standard.md` → Evals in CI).
+     - When a plugin with evals changes, run a small smoke run locally; CI runs the full suite.
      - Run the live MCP checks once Nery says the plugin is ready.
      - Run a mod's own tests.
      - Diagnose install, load and marketplace errors.
 5. Versioning and releases
-   - When: a new plugin is published, or an existing plugin has a change that `.claude/rules/operating-standard.md` says takes a version bump.
+   - When: a new plugin is published, or an existing plugin has changed.
    - Skills: `versioning`, `releases`.
    - Key jobs:
      - Choose the version and write the release notes.
