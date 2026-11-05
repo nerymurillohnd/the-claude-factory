@@ -46,8 +46,6 @@ A mod's hooks module (the file `hooks/hooks.json` names under `modules`) and the
 ## Hook commands in `hooks/hooks.json`
 
 - Load `plugin-hooks-guidance` before writing or reviewing a hook.
-- Choose shell form or exec form (`args`) for each hook from what that plugin runs and the platforms its README declares, against `/en/hooks` → Exec form and shell form; no form is the default here.
-- Keep `command` free of pipes, `&&`, redirects, globs and shell-specific syntax.
 - Check every version-dependent hook field against the minimum Claude Code version the README states.
 - Choose `async`, `asyncRewake` and `onFailure` deliberately, by the hook's intended blocking and failure behavior.
 
