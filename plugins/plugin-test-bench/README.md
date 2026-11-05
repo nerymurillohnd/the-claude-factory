@@ -260,6 +260,15 @@ My eval suite shows Δ +0.00 on every case. What's wrong with it?
 
 **Result:** the review explains, case by case, whether Claude already passes without your plugin, whether a grader is excluded from the score, or whether the skill never triggered on the prompt's wording.
 
+## 🔍 What this plugin runs and sends
+
+- **Hooks:** none.
+- **MCP servers:** none.
+- **Commands it runs:** through Claude Code's Bash tool, under your permission settings: the `claude` CLI with `CLAUDE_CONFIG_DIR` set to a throwaway configuration (`claude plugin marketplace add`, `claude plugin install`, `claude plugin validate`, `claude plugin eval`, `claude auth logout`), read-only `git` in your repository (`git status`, `git rev-parse`, `git ls-tree`), and `mktemp -d`. With your go-ahead, review-evals runs your eval cases' scaffold scripts in an empty temporary folder. Without a git repository, a throwaway snapshot runs `git init`, `git add` and `git commit` in a temporary copy; to try the plugin in the Claude app, `git archive` builds a zip.
+- **Network:** the load check runs with no credentials and never calls the model. Eval runs and real requests call the model through the account you sign in to in the throwaway configuration, or a credential already set in your shell, and count against your plan or API bill; nothing paid runs before you agree. Eval results are not published (`--no-publish`). The skills read the official docs on `code.claude.com` through your session's web tools.
+- **Files written:** three throwaway folders made with `mktemp -d` (plus a snapshot folder when your plugin is not in git), all deleted at the end, even after a failure, after `claude auth logout` removes the test sign-in. It never changes your own Claude Code configuration or project. Each eval run writes its results in the throwaway project. A zip for the Claude app goes where you choose and stays yours. review-evals changes your eval cases only after you approve the fixes.
+- **Privacy:** the author collects no data. The marketplace's [privacy policy](https://github.com/nerymurillohnd/the-claude-factory/blob/main/PRIVACY.md) covers this plugin and the outside services it can reach.
+
 ## 🔄 Updating
 
 ```bash
