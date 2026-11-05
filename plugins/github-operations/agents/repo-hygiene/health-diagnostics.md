@@ -4,6 +4,7 @@ description: Audits one assigned part of a Git repository and its GitHub project
 model: sonnet
 effort: high
 color: cyan
+disallowedTools: Agent, Edit, NotebookEdit
 maxTurns: 100
 ---
 
