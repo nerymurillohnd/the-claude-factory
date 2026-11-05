@@ -50,10 +50,13 @@ report_session_state() {
 node_in_caret_range() {
   local pattern='^v([0-9]+)\.([0-9]+)\.([0-9]+)$'
   local h1 h2 h3
-  [[ $1 =~ ${pattern} ]] || return 0
-  h1="${BASH_REMATCH[1]}" h2="${BASH_REMATCH[2]}" h3="${BASH_REMATCH[3]}"
   [[ $2 =~ ${pattern} ]] || return 0
   local w1="${BASH_REMATCH[1]}" w2="${BASH_REMATCH[2]}" w3="${BASH_REMATCH[3]}"
+  if [[ $1 =~ ^v[0-9]+\.[0-9]+\.[0-9]+-[0-9A-Za-z.-]+$ ]]; then
+    return 1
+  fi
+  [[ $1 =~ ${pattern} ]] || return 0
+  h1="${BASH_REMATCH[1]}" h2="${BASH_REMATCH[2]}" h3="${BASH_REMATCH[3]}"
   ((10#${h1} == 10#${w1})) || return 1
   ((10#${h2} > 10#${w2})) && return 0
   ((10#${h2} == 10#${w2} && 10#${h3} >= 10#${w3}))
