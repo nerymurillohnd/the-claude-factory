@@ -1,7 +1,7 @@
 {
   "name": "project-maintainer",
   "displayName": "Project Maintainer",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "description": "Keeps a project's memory in its .claude folder: decisions recorded as ADRs, technical debt tracked in a ledger, and a handoff that carries each session's state to the next one.",
   "author": {
     "name": "Nery Murillo",
@@ -9,6 +9,10 @@
   },
   "homepage": "https://github.com/nerymurillohnd/the-claude-factory/tree/main/plugins/project-maintainer#readme",
   "repository": "https://github.com/nerymurillohnd/the-claude-factory",
+  "icon": "./.claude-plugin/icon.png",
+  "documentationUrl": "https://github.com/nerymurillohnd/the-claude-factory/tree/main/plugins/project-maintainer#readme",
+  "supportUrl": "https://github.com/nerymurillohnd/the-claude-factory/issues/new/choose",
+  "privacyPolicyUrl": "https://github.com/nerymurillohnd/the-claude-factory/blob/main/PRIVACY.md",
   "license": "MIT",
   "keywords": [
     "documentation",

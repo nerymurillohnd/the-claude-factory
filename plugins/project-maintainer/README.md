@@ -493,6 +493,7 @@ Set options when installing (`claude plugin install project-maintainer@the-claud
 - **MCP servers:** none.
 - **Network:** records, none. The handoff runs `git fetch` to compare your branch with its remote, and `gh pr list` to list pull requests, when the repository has a remote. Without network access it marks those lines as not verified. When you accept its offer to commit and push the handoff, `git push` sends that commit to your remote; it never pushes without asking.
 - **Files written:** the records and handoffs listed in [Where everything is saved](#where-everything-is-saved), and `.claude/maintainer/` in your `.gitignore` if you choose to ignore the records.
+- **Privacy:** the author collects no data. The marketplace's [privacy policy](https://github.com/nerymurillohnd/the-claude-factory/blob/main/PRIVACY.md) covers this plugin and the outside services it can reach.
 - **Before you install:** a mod runs with your permissions and no sandbox. Install it only if you trust this marketplace; this README lists everything it hooks and calls.
 
 ## 🔄 Updating
