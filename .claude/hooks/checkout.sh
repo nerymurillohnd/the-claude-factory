@@ -45,8 +45,9 @@ report_session_state() {
   fi
 }
 
-# Succeeds when $1 (vX.Y.Z) satisfies ^$2 (vX.Y.Z): same major, and not older. Succeeds too when
-# either version cannot be read, so a missing node or .nvmrc prints no warning.
+# Succeeds when $1 (vX.Y.Z) satisfies ^$2 (vX.Y.Z): same major, and not older. A prerelease such
+# as v26.13.0-rc.1 fails, as npm's ^ range excludes it. Succeeds too when either version cannot
+# be read, so a missing node or .nvmrc prints no warning.
 node_in_caret_range() {
   local pattern='^v([0-9]+)\.([0-9]+)\.([0-9]+)$'
   local h1 h2 h3
