@@ -41,6 +41,7 @@ Rules:
 - A failure that also happens on the base branch predates the pull request.
 - Running a validation command runs the repository's code: read what it executes first.
 - Two failed fixes for the same failure mean it goes to the user, not to a third attempt.
+- A command whose result says it was moved to the background has not finished: wait for its completion notice, then read its output file, before you record its result, commit or report.
 
 ## Tools
 

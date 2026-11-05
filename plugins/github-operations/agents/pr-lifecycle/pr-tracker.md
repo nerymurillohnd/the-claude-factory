@@ -46,6 +46,7 @@ Rules:
 - Fork and Dependabot runs get no secrets and no OIDC token: a credential failure there is configuration, not code.
 - A Claude step can fail on who triggered it, not on credentials: "Workflow initiated by non-human actor" (a bot not allowed) or "Actor does not have write permissions to the repository". Report the line as it appears.
 - A job that passed on a retry is possibly flaky, not fixed.
+- A command whose result says it was moved to the background has not finished: wait for its completion notice, then read its output file, before you record its result or report.
 
 ## Workflow
 
@@ -65,7 +66,7 @@ Rules:
      - commit statuses still pending, which some review bots use: `pull_request_read`, method `get_status`; else `gh api repos/<owner>/<repo>/commits/<head SHA>/status`;
      - workflows the pull request's comments or reviews triggered, which run on the default branch and never appear among the head's checks: `actions_list`, method `list_workflow_runs`, with `workflow_runs_filter` set to `event: issue_comment` (then `pull_request_review_comment`, `pull_request_review`) and `status: in_progress` (then `queued`, `waiting`), keeping those created since the head was pushed; else `gh run list -R <owner>/<repo> --event <event> --status <status> --json databaseId,workflowName,createdAt,url`;
      - bot or app reviewers still requested: `gh pr view <n> -R <owner>/<repo> --json reviewRequests`, which also lists requested teams; the MCP `get` method's `requested_reviewers` holds logins only and leaves teams out, so use it only when `gh` fails.
-   - Wait with blocking commands, never by reading again and again: each read costs a turn, and the MCP tools cannot block. Run `gh pr checks <n> -R <owner>/<repo> --watch --interval 60` with the Bash tool's longest timeout (10 minutes), and `gh run watch <run id> -R <owner>/<repo> --interval 60` for a triggered run. When a call times out, read once what is still working, then watch again. At most three watch calls cover the 30-minute default.
+   - Wait with blocking commands, never by reading again and again: each read costs a turn, and the MCP tools cannot block. Run `gh pr checks <n> -R <owner>/<repo> --watch --interval 60` with the Bash tool's longest timeout (10 minutes), and `gh run watch <run id> -R <owner>/<repo> --interval 60` for a triggered run. When a call times out or its command moves to the background, read once what is still working, then watch again. Count the wait limit by elapsed time from the start of this step, not by the number of watch calls.
    - A requested bot reviewer has no command to watch: read the review requests again after each watch call, and stop waiting for it when the checks are done and it is still listed.
    - Spot the runs waiting for approval: they do not finish on their own.
    - Stop at the wait limit, and list what was still working.
