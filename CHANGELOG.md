@@ -6,9 +6,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The
 
 ## 2026-11-04
 
-### Added
+### Changed
 
-- **github-operations** 0.6.0 — adds the `init-pr-lifecycle` command and the `pr-lifecycle` team of pull request agents: tracker, fixer and finalizer.
+- **github-operations** 0.6.0 — **Breaking:** four focused skills (`auto-pr-lifecycle`, `cleanup-and-debug`, `github-files-setup`, `claude-github-actions`) replace the `github` skill, with pull request and repository-audit agents and no hooks; issue and discussion writing is not part of this version.
 
 ## 2026-11-02
 
