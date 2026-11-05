@@ -4,6 +4,12 @@ All notable changes to **The Claude Factory** marketplace are documented here: p
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The marketplace has no version of its own: entries are grouped by date, newest first, and every plugin carries its own version, changelog and tag. The versions 0.1.0 and 0.2.0 below are the history from before that change; their tags stay.
 
+## 2026-11-05
+
+### Fixed
+
+- **github-operations** 0.6.1 — the read-only audit agent can no longer launch agents or edit files, and the pull request agents read job logs and review threads correctly and wait for commands moved to the background.
+
 ## 2026-11-04
 
 ### Changed
