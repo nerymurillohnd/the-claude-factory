@@ -39,3 +39,6 @@ eval-results/
 
 # Session handoffs (machine-local; they can hold personal and cross-project notes)
 .claude/session-handoff/
+
+# The declarations Claude Code writes into a mod for the installed build; never shipped to users
+plugins/*/.claude-plugin/types/
