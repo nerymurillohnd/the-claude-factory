@@ -58,12 +58,7 @@ Run Biome and `tsc` only through `npm run`, which uses the versions `package-loc
 - Use `npm run gates` to run every gate, as the pre-push hook does.
 - Use `claude plugin validate` and `claude plugin test` to check a mod's hooks module; no gate type-checks it against `.claude-plugin/types/`.
 - `format` and `fix` also write in `plugins/`.
-- Never format these Markdown files with any tool: everything under `plugins/`, `.claude/skills/`, `.claude/memory/`, `.claude/session-handoff/`, `.claude/maintainer/`, `.claude/plans/`, `.claude/specs/` and `.claude/rules/`; `MEMORY.md` and the files it indexes; every `CLAUDE.md`. `biome.jsonc` excludes them.
-- Every tool skips `node_modules/`, `.github/` and those files, and reads its scope from its own config (`biome.jsonc`, `ruff.toml`, `pyrightconfig.json`, `.editorconfig` for shfmt).
-- Basedpyright skips dot folders: `.claude/skills/pyrightconfig.json` covers the skills' Python, and `scripts/basedpyright-maintainer.mjs` checks each PEP 723 script in its own environment.
-- CI checks the plugins' structure only; the local gates cover the analysis and tests of plugin code.
 - Husky runs `biome check --staged` and `npm test` before each commit and `npm run gates` before each push. The Claude Code hooks in `.claude/settings.json` check commits and `SKILL.md` writes. Fix what they report; never skip them.
-- Navigate code with the LSP tool and the skill for its language: `python-lsp-intelligence:python-lsp-intelligence`, `typescript6-lsp-intelligence:ts-lifecycle`, `bash-lsp-intelligence:bash-lsp-intelligence`. They come from this marketplace's LSP plugins, which `.claude/settings.json` enables. Without the LSP tool, say so and use Grep and Read.
 
 ## Change Control
 
