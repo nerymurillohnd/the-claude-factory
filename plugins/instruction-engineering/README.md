@@ -271,6 +271,7 @@ Exit code `0` means no error-level finding, `1` at least one, `2` bad arguments.
 - **The agent** is told to stay read-only. It has Read, Grep, Glob and Bash; its Bash calls go through your normal permission settings, since a plugin agent can't set its own permission mode, and it is told to run only the checker and read-only commands (`ls`, `cat`, `wc`, `git status --short`, `git diff`, `git show`). It starts without your user, project and local `CLAUDE.md` files (`omitClaudeMd`); managed policy files still load, and a subdirectory's `CLAUDE.md` or matching rules still load when it reads files there.
 - **Network:** none from the plugin. When your Claude Code is newer than the version the skill's loader facts were checked against, the skill asks Claude to read the official changelog, which uses your session's web access if you allow it.
 - **Files written:** only the instruction files you ask Claude to change.
+- **Privacy:** the author collects no data. The marketplace's [privacy policy](https://github.com/nerymurillohnd/the-claude-factory/blob/main/PRIVACY.md) covers this plugin and the outside services it can reach.
 
 ## 🔄 Updating
 
