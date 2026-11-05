@@ -22,7 +22,7 @@ This marketplace is public. Published plugins execute on other people’s machin
 This standard applies to every session on this repository, including the current one:
 
 - Ship nothing that has not been verified against current Claude Code official documentation and the latest release notes. Out-of-date knowledge or negligence that reaches a user constitutes the failure this project exists to prevent.
-- Treat every action a plugin performs on a user’s machine (files, commands, network, hooks, permissions, data) as high-risk. Prefer the least invasive design and require the README to state exactly what the plugin does on the host.
+- Treat every action a plugin performs on a user’s machine (files, commands, network, hooks, permissions, data) as high-risk. Prefer the least invasive design.
 - When safety for users cannot be determined with certainty, state the uncertainty and obtain Nery’s explicit approval before shipping. Never publish on a guess.
 - Report problems immediately upon discovery, including one’s own errors and defects in already-published work.
 - Improve the working system, not only the delivered artifacts. When a session reveals a gap in this file, a rule, a gate, or a skill, propose the corrective change in the same session.
@@ -61,10 +61,9 @@ This repository holds two scopes. They are never mixed: a rule written for one s
 - JavaScript and TypeScript: type-check with `tsc` under the strictest settings and `--noEmit`. A mod's hooks module is checked by `claude plugin validate` and `claude plugin test`, which run the installed engine; no gate type-checks it against the generated `.claude-plugin/types/`.
 - Shell scripts: format with `shfmt` and lint with ShellCheck.
 - Navigate and explore code with the LSP tool, in every file of the repository, plugin files included, and follow the skill for its language. The tool and these skills come from this marketplace's LSP plugins, which `.claude/settings.json` enables and each machine must have installed; where the session has no LSP tool, say so and navigate with Grep and Read: Python with `python-lsp-intelligence:python-lsp-intelligence`; JavaScript and TypeScript with `typescript6-lsp-intelligence:ts-lifecycle`; shell scripts with `bash-lsp-intelligence:bash-lsp-intelligence`.
-- Tests of plugin scripts live in `scripts/testers/<plugin>/`, which is maintainer scope: their test dependencies never enter a plugin's runtime. A mod's tests are the exception (Maintainer files inside a plugin).
 - The root `package.json` serves repository-level development tooling only, never plugin runtimes; it stays `"private": true`. Its devDependencies are the npm tools (Biome, TypeScript, Husky) and the `@types/*` packages, each pinned to an exact version.
 - A plugin's own `package.json` and `package-lock.json` hold only that plugin's runtime dependencies, pinned exactly; Claude Code installs them for users when it caches the plugin, only from registry packages, with install scripts off and no `overrides`, within 60 seconds. In the clone, install them with `npm install --prefix plugins/<plugin> --ignore-scripts` for each plugin that has a `package-lock.json`; `tsc-plugins` and the plugin's node tests need them, and CI installs them with `npm ci --prefix`.
-- Every maintenance command is an `npm run` script (`test`, `typecheck`, `lint`, `format`, `fix`, `check:*`, `generate`, `validate`, `gates`): when you run a tool yourself, run it through its script, never by its bare name from PATH, so the npm tools are the versions `package-lock.json` pins; the global installs serve the editor. Ruff, Basedpyright, shfmt, ShellCheck and actionlint are not pinned: the gates run the ones installed on the machine, and CI installs their latest releases. Code inside a maintainer script calls tools by bare name, as `.claude/rules/maintainer/scripts.md` sets. `format` and `fix` also write in `plugins/`.
+- Every maintenance command is an `npm run` script (`test`, `typecheck`, `lint`, `format`, `fix`, `check:*`, `generate`, `validate`, `gates`): when you run a tool yourself, run it through its script, never by its bare name from PATH, so the npm tools are the versions `package-lock.json` pins; the global installs serve the editor. Ruff, Basedpyright, shfmt, ShellCheck and actionlint are not pinned: the gates run the ones installed on the machine, and CI installs their latest releases. `format` and `fix` also write in `plugins/`.
 - Husky's git hooks run `biome check --staged` and `npm test` before each commit and `npm run gates` before each push, and the project's Claude Code hooks in `.claude/settings.json` check commits and `SKILL.md` writes; fix what they report, never skip them.
 - Install the dependencies with `npm install`, with the `.nvmrc` Node selected. Commit a `package-lock.json` change only with the dependency change that caused it. CI keeps `npm ci`, which fails when the lockfile and `package.json` disagree.
 
@@ -110,12 +109,12 @@ This repository holds two scopes. They are never mixed: a rule written for one s
    - Key jobs: write the spec, then the plan, where Working Files says.
 2. Plugin creation
    - When: a plugin is created, scaffolded, written or fixed.
-   - Skills: `building-plugins`; also `building-mods` when the plugin is a mod or contains one; hooks follow `.claude/rules/plugins/plugins-claude-hooks.md`.
+   - Skills: `building-plugins`; also `building-mods` when the plugin is a mod or contains one.
    - Key jobs:
      - Settle the identity with Nery: name, category (with `plugin-categories`), description, display name and surfaces.
      - Create the plugin and register it in the marketplace.
      - Write the components from the current official docs.
-     - Make it public-ready: README, host disclosures, `LICENSE`, `CHANGELOG.md`, third-party notice when it applies.
+     - Make it public-ready: README, `LICENSE`, `CHANGELOG.md`, third-party notice when it applies.
      - Validate it.
 3. Plugin categories
    - When: a new plugin needs its category, a plugin's category changes, a plugin gains or loses a mod, or `scripts/categories.json` changes.
