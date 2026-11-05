@@ -10,7 +10,7 @@ paths:
 
 # JSON Schemas
 
-- A field its schema in `scripts/schemas/` lacks fails `npm run validate` and the commit; add it to the schema from the official docs instead of dropping it.
+- A field its schema in `scripts/schemas/` lacks fails `npm run validate`, every commit Claude makes (the `validators-gate.sh` PreToolUse hook) and the push (Husky's `pre-push` runs `npm run gates`); add it to the schema from the official docs instead of dropping it.
 - Define each shape once in its folder and `$ref` it from the others; a copy is a defect (ADR_2026-10-24_one-schema-source-per-shape).
 - Keep `additionalProperties: false` on every known-shape object, because `claude plugin validate` lets unknown keys through (ADR_2026-10-24_schemas-are-strict-on-every-known-shape).
 - Record a valid and an invalid case in `scripts/testers/schemas/cases.json` for each schema change.
