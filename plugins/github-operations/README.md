@@ -543,6 +543,7 @@ With the commands in [GitHub MCP server](#-github-mcp-server-recommended), the s
 - **Commands it runs:** `git` and `gh` in your repository, through Claude Code's Bash tool, so your permission settings and prompts apply to each one. The repository setup also runs its two scripts: a label comparison with `python3`, and a form check through `uv`.
 - **Network:** `git` and `gh` reach GitHub and your remotes. The GitHub MCP server you add yourself sends your requests and token to `api.githubcopilot.com`. The form and Dependabot checks run through `uv`, which downloads `check-jsonschema` 0.39.0 and `ruamel.yaml` 0.19.1, pinned exactly, from PyPI on their first run.
 - **Files written:** the PR lifecycle writes only your own commits, in your clone. The repository setup writes its files on a new branch of your repository. The cleanup writes a backup bundle and its working notes to folders outside your repository; it tells you where the backup is and asks whether to keep it.
+- **Privacy:** the author collects no data. The marketplace's [privacy policy](https://github.com/nerymurillohnd/the-claude-factory/blob/main/PRIVACY.md) covers this plugin and the outside services it can reach.
 
 ### The agents' limits
 
