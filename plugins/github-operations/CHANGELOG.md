@@ -6,6 +6,16 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.6.1] - 2026-11-05
+
+### Fixed
+
+- The read-only `repo-hygiene:health-diagnostics` agent can no longer launch other agents or edit files: Claude Code now removes its Agent, Edit and NotebookEdit tools, and it keeps only Write, for its notes outside your repository. Before, it could start an agent able to change your repository during an audit.
+- `pr-tracker` and `pr-fixer` read a failed job's log as text, including the first error, instead of receiving download links or only its last 500 lines.
+- `pr-tracker` no longer works from a wrong claim about where a pull request's requested reviewers come from.
+- `pr-finalizer` reads review threads with the query that carries each comment's ID and whether its author is a bot, so it replies and resolves without a wasted call first.
+- The agents no longer treat a command that Claude Code moved to the background as finished: they wait for it before recording a result, committing or reporting, and `pr-tracker` counts its wait limit by elapsed time.
+
 ## [0.6.0] - 2026-11-04
 
 ### Added
@@ -162,7 +172,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 - `git-cleanup` inventory: `--from` with a saved file that is not a JSON object reports a JSON error and exits 0, instead of ending with a traceback.
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/github-operations--v0.6.0...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/github-operations--v0.6.1...HEAD
+[0.6.1]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/github-operations--v0.6.1
 [0.6.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/github-operations--v0.6.0
 [0.5.1]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/github-operations--v0.5.1
 [0.5.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/github-operations--v0.5.0

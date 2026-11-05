@@ -503,14 +503,14 @@ The plugin's `github` server asks for **every toolset** (`X-MCP-Toolsets: all`) 
 
 ### The agents' limits
 
-Claude Code removes some tools from the PR lifecycle agents: none of the three can launch another agent, and the tracker and the finalizer have no file-writing tools (Write, Edit, NotebookEdit). Everything else, such as which shell commands they run or what they write to GitHub, is kept only by each agent's instructions, and Claude checks each report against its evidence before acting on it.
+Claude Code removes some tools from the agents: none of the four can launch another agent, the tracker and the finalizer have no file-writing tools (Write, Edit, NotebookEdit), and the auditor keeps only Write, for its notes, with no Edit or NotebookEdit. Everything else, such as which shell commands they run or what they write to GitHub, is kept only by each agent's instructions, and Claude checks each report against its evidence before acting on it.
 
 | Agent | May | May not |
 | :-- | :-- | :-- |
 | `pr-lifecycle:pr-tracker` | Read everything and run commands that only read | Change files, commit, push or write anything to GitHub |
 | `pr-lifecycle:pr-fixer` | Edit files, run your validation commands and commit in your clone | Push, write anything to GitHub, change your git configuration, rewrite pushed history or skip your commit hooks |
 | `pr-lifecycle:pr-finalizer` | Reply in review threads and resolve review threads | Edit files, commit, push, submit reviews or approvals, or merge |
-| `repo-hygiene:health-diagnostics` | Read everything and run commands that only read; write notes in a folder outside your repository | Change anything in your repository, on GitHub or on your machine |
+| `repo-hygiene:health-diagnostics` | Read everything and run commands that only read; write notes in a folder outside your repository | Change anything in your repository, on GitHub or on your machine, or launch another agent |
 
 Before running a command from a pull request whose code is another author's, the fixer stops and asks you, because a command such as a test run executes that code. For a hard limit, add the deny rules in [Add hard limits yourself](#add-hard-limits-yourself): they apply to every agent too.
 

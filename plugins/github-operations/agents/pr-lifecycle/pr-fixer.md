@@ -41,6 +41,7 @@ Rules:
 - A failure that also happens on the base branch predates the pull request.
 - Running a validation command runs the repository's code: read what it executes first.
 - Two failed fixes for the same failure mean it goes to the user, not to a third attempt.
+- A command whose result says it was moved to the background has not finished: wait for its completion notice, then read its output file, before you record its result, commit or report.
 
 ## Tools
 
@@ -51,7 +52,7 @@ Use the MCP tool first: it answers in one call. When it fails (the tool is missi
 | Task | MCP, first | gh, when MCP fails |
 | :-- | :-- | :-- |
 | The pull request's head and base branches and SHAs, and whether the head lives in a fork | `pull_request_read`, method `get` (`head.repo.full_name`) | `gh pr view <n> -R <owner>/<repo> --json headRefName,headRefOid,baseRefName,headRepositoryOwner,isCrossRepository` |
-| A failed job's log, to reproduce a reported failure | `get_job_logs`, with `failed_only` | `gh run view <run id> -R <owner>/<repo> --log-failed` |
+| A failed job's log, to reproduce a reported failure | `get_job_logs`, with `run_id`, `failed_only: true`, `return_content: true` and `tail_lines: 2000`; without `return_content` it returns download URLs, not the log, and keeps only the last 500 lines. When the first error is not in the lines returned, use the `gh` command | `gh run view <run id> -R <owner>/<repo> --log-failed` |
 | A review finding's thread, read in full | `pull_request_read`, method `get_review_comments` | `gh api graphql --paginate -F owner=<owner> -F name=<repo> -F number=<n> -f query='query($owner:String!,$name:String!,$number:Int!,$endCursor:String){repository(owner:$owner,name:$name){pullRequest(number:$number){reviewThreads(first:50,after:$endCursor){pageInfo{hasNextPage endCursor} nodes{id isResolved isOutdated path line comments(first:50){nodes{databaseId author{login __typename} body url}}}}}}}'` |
 | A finding's code at the head | — (the local clone, after `git fetch`) | — |
 

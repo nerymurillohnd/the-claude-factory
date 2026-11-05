@@ -4,6 +4,7 @@ description: Audits one assigned part of a Git repository and its GitHub project
 model: sonnet
 effort: high
 color: cyan
+disallowedTools: Agent, Edit, NotebookEdit
 maxTurns: 100
 ---
 
@@ -40,6 +41,7 @@ Rules:
 - `git merge-tree --write-tree` writes tree objects: point it at the temporary object store the brief names.
 - A 403 or 404 from GitHub usually means missing permission, not an empty result.
 - A failed call never makes its domain empty.
+- A command whose result says it was moved to the background has not finished: wait for its completion notice, then read its output file, before you record its result or report.
 
 ## Workflow
 
