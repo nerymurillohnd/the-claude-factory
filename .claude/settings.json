@@ -106,7 +106,7 @@
             "type": "command",
             "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/checkout.sh",
             "timeout": 180,
-            "statusMessage": "Syncing node_modules, running the validators and checking tool versions…"
+            "statusMessage": "Reporting the checkout and toolchain state…"
           }
         ]
       }

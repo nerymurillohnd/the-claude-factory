@@ -37,6 +37,30 @@ report_session_state() {
   worktrees="$(count_lines "${worktree_out}")"
   echo "- Uncommitted entries: ${dirty}; stashes: ${stashes}; worktrees: ${worktrees}."
   echo "- Node: ${node_have} (.nvmrc ${node_want}); claude: ${claude_out%% *}."
+  if ! node_in_caret_range "${node_have}" "${node_want}"; then
+    # npm bundled with an older Node rewrites package-lock.json (npm 10 drops the libc fields);
+    # devEngines in package.json (^ plus the .nvmrc version) makes npm refuse to install here.
+    echo "- Warning: Node is outside ^${node_want#v} (devEngines). Do not run npm install or the" \
+      "gates here; select ${node_want} first, or package-lock.json may be rewritten."
+  fi
+}
+
+# Succeeds when $1 (vX.Y.Z) satisfies ^$2 (vX.Y.Z): same major, and not older. A prerelease such
+# as v26.13.0-rc.1 fails, as npm's ^ range excludes it. Succeeds too when either version cannot
+# be read, so a missing node or .nvmrc prints no warning.
+node_in_caret_range() {
+  local pattern='^v([0-9]+)\.([0-9]+)\.([0-9]+)$'
+  local h1 h2 h3
+  [[ $2 =~ ${pattern} ]] || return 0
+  local w1="${BASH_REMATCH[1]}" w2="${BASH_REMATCH[2]}" w3="${BASH_REMATCH[3]}"
+  if [[ $1 =~ ^v[0-9]+\.[0-9]+\.[0-9]+-[0-9A-Za-z.-]+$ ]]; then
+    return 1
+  fi
+  [[ $1 =~ ${pattern} ]] || return 0
+  h1="${BASH_REMATCH[1]}" h2="${BASH_REMATCH[2]}" h3="${BASH_REMATCH[3]}"
+  ((10#${h1} == 10#${w1})) || return 1
+  ((10#${h2} > 10#${w2})) && return 0
+  ((10#${h2} == 10#${w2} && 10#${h3} >= 10#${w3}))
 }
 
 report_session_state
