@@ -12,7 +12,7 @@ Publish plugins that automate and optimize everyday workflows.
 
 This marketplace is public. Published plugins execute on other people’s machines, inside their projects and operations. Nery is the sole owner and author and remains personally accountable for any harm a plugin causes a user, however minor.
 
-- Nery and Claude Code are the only parties responsible for this marketplace and the only parties who work on it. There are no external collaborators.
+- Nery and Claude Code are the only parties responsible for this marketplace and the only parties who work on it. There are no external collaborators. GitHub Copilot acts only at Nery's explicit request in a pull request (reviews, and the commits Nery asks for) and never works on its own; treat its reviews and commits as Nery-directed work.
 - Users contribute only by opening issues. Triaging, confirming, fixing, verifying, and releasing every fix is the exclusive work of Nery and Claude Code; the reporter has no further obligation.
 - No third-party review occurs before users install a plugin. Every push, release, and issue reply is the final gate before public exposure.
 
