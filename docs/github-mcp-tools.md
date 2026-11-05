@@ -1,22 +1,22 @@
 # 🧰 GitHub MCP tools
 
-> Every GitHub tool Claude gets when you install **GitHub Operations**, grouped by what it does, with whether each one only reads or can change things on GitHub.
+> Every GitHub tool Claude gets from GitHub's MCP server when you add it for **GitHub Operations**, grouped by what it does, with whether each one only reads or can change things on GitHub.
 
-The plugin connects Claude Code to GitHub's official remote MCP server with every toolset turned on, plus GitHub's early-access mode. Claude can use any tool below, within what your token allows. The plugin's [README](../plugins/github-operations/README.md) covers installing and using it.
+The plugin's README shows how to add GitHub's official remote MCP server to Claude Code with every toolset turned on, plus GitHub's early-access mode. Claude can then use any tool below, within what your token allows. The plugin's [README](../plugins/github-operations/README.md) covers installing and using it.
 
 ---
 
-## 🔌 What the plugin connects
+## 🔌 What the README's commands set
 
 | Setting          | Value                                                                                |
 | :--------------- | :----------------------------------------------------------------------------------- |
-| Server           | `https://api.githubcopilot.com/mcp/`                                                 |
-| Your token       | The plugin's `github_token` option, sent as `Authorization: Bearer`                  |
+| Server           | `https://api.githubcopilot.com/mcp/`, added to Claude Code as `github`               |
+| Your token       | Sent as `Authorization: Bearer`                                                      |
 | `X-MCP-Toolsets` | `all`: every toolset GitHub offers                                                   |
 | `X-MCP-Insiders` | `true`: GitHub's early-access mode, which adds the tools marked _Early access_ below |
 
 > [!IMPORTANT]
-> Claude Code asks for the token when you install the plugin from a session and keeps it in your system's secure credential store. The README's [Configuration](../plugins/github-operations/README.md#-configuration) shows how to set or change it. Until it is set, the plugin's GitHub server is missing from `/mcp` and Claude reads GitHub through `gh`.
+> The plugin doesn't install this server. The README's [GitHub MCP server](../plugins/github-operations/README.md#-github-mcp-server-recommended) section gives the commands. Until you add it, Claude reads GitHub through `gh`.
 
 ## 🔐 Your token decides what works
 
@@ -217,34 +217,22 @@ A deny rule removes a tool from Claude's context. Add the rules to your Claude C
 {
   "permissions": {
     "deny": [
-      "mcp__plugin_github-operations_github__delete_file",
-      "mcp__plugin_github-operations_github__delete_repository",
-      "mcp__plugin_github-operations_github__create_*"
+      "mcp__github__delete_file",
+      "mcp__github__delete_repository",
+      "mcp__github__create_*"
     ]
   }
 }
 ```
 
-Use `mcp__plugin_github-operations_github` to block the whole server. When a tool is missing, the pull request loop reads that data through `gh` instead.
+These names fit a server named `github`; for another name, use `mcp__<name>__…`. Use `mcp__github` to block the whole server. When a tool is missing, the pull request loop reads that data through `gh` instead.
 
-### 3. Use your own server instead
+### 3. Offer fewer tools
 
-Turn the plugin's server off in `/mcp`, then add your own to the project's `.mcp.json`. Name it `github`, so the tracker agent can use its tools. This example offers every toolset but only the tools that read. It reads the token from a `GITHUB_PAT` environment variable, so start Claude Code from a shell that sets it:
+Remove the server with `claude mcp remove --scope user github`, then add it again with other headers. This example offers every toolset but only the tools that read:
 
-```json
-{
-  "mcpServers": {
-    "github": {
-      "type": "http",
-      "url": "https://api.githubcopilot.com/mcp/",
-      "headers": {
-        "Authorization": "Bearer ${GITHUB_PAT}",
-        "X-MCP-Toolsets": "all",
-        "X-MCP-Readonly": "true"
-      }
-    }
-  }
-}
+```bash
+claude mcp add-json --scope user github '{"type":"http","url":"https://api.githubcopilot.com/mcp/","headers":{"Authorization":"Bearer <your token>","X-MCP-Toolsets":"all","X-MCP-Readonly":"true"}}'
 ```
 
 Change `X-MCP-Toolsets` to a comma-separated list to narrow it, for example `issues`. Prefer the headers to a URL ending in `/readonly`: any `X-MCP-Readonly` value other than `false`, `f`, `no`, `n`, `0`, `off` or empty (spaces and letter case are ignored) counts as read-only, so a typo keeps you read-only, while a misspelled `/readonly` in the URL is ignored and leaves the write tools on. A misspelled toolset name is ignored too, and connects with no tools.

@@ -24,7 +24,7 @@
 
 ---
 
-💻 **Claude Code only** — it works on repositories on your computer through `git` and `gh`, which a chat conversation in the Claude app can't run. The plugin is built and tested for Claude Code only. In the Claude app you can still use its GitHub server once you connect it with your token: see [In the Claude app](#in-the-claude-app).
+💻 **Claude Code only** — it works on repositories on your computer through `git` and `gh`, which a chat conversation in the Claude app can't run. The plugin is built and tested for Claude Code only. In the Claude app you can still use GitHub's MCP server once you add it as a connector with your token: see [In the Claude app](#in-the-claude-app).
 
 > [!TIP]
 > **TL;DR** — Say "open a PR for this", "set up issue templates" or "clean up this repository". Claude takes the pull request to merge, asking you before every push and before the merge; writes your repository's own templates, forms and labels from tested models; or audits the whole repository and cleans up only what you approve, after a backup it has proven it can restore.
@@ -38,7 +38,7 @@
 - **Nothing valuable gets lost in a cleanup** — the audit compares your clone with GitHub branch by branch and commit by commit, and covers worktrees, stashes, history, lost commits, pull requests, workflows, Dependabot, forks and every link outside the repository. You approve the recommendations, then the exact actions. A backup comes first, and Claude proves it restores before it changes anything.
 - **Workflows that run Claude, checked against the action's real behavior** — Claude matches a failed or silent claude-code-action step against fourteen known failure patterns, and audits workflow files for shell injection, excess permissions, unpinned actions, unsafe `pull_request_target` designs and claude-code-action misconfiguration, with the exact patch for each finding. Action versions and model IDs are looked up when they are written, never copied from examples, which lag behind.
 - **Each skill knows its place** — the PR lifecycle, the repository setup, the cleanup and the Actions work are separate skills. When you ask one for another's job, it hands you to the right one.
-- **GitHub tools ready to use** — the GitHub MCP server comes with the plugin, so Claude reads GitHub through structured tools and uses `git` and `gh` for what touches your clone.
+- **Works with GitHub's own MCP server** — add GitHub's official remote MCP server once, as [Prerequisites](#-github-mcp-server-recommended) shows, and Claude reads GitHub through its structured tools; without it, Claude does the same work through `gh`. `git` and `gh` handle what touches your clone.
 
 ## 🧩 What's inside
 
@@ -54,7 +54,6 @@
 | 🤖 Agent | `github-operations:pr-lifecycle:pr-fixer` | Fixes the verified failures and review findings in your local clone, validates each fix and commits it. It never pushes | Launched by the PR lifecycle when findings need a fix |
 | 🤖 Agent | `github-operations:pr-lifecycle:pr-finalizer` | Verifies each finding at the current head, replies to review threads, resolves the threads bots opened, and gives the merge verdict | Launched by the PR lifecycle once the checks pass |
 | 🤖 Agent | `github-operations:repo-hygiene:health-diagnostics` | Audits one assigned part of a repository read-only and reports every item with its evidence | Launched by the cleanup, one or several at a time depending on the repository's size |
-| 🔌 MCP server | `github` | GitHub's remote MCP server with every toolset and early-access mode: pull requests, issues, Actions, security alerts and more. See [GitHub MCP tools](../../docs/github-mcp-tools.md) | Tools appear as `mcp__plugin_github-operations_github__*` |
 
 ## 📋 Prerequisites
 
@@ -63,13 +62,13 @@
 | Claude Code | 2.1.314 | `claude --version` |
 | git, on your `PATH` (on Windows, Git for Windows) | — | `git --version` |
 | GitHub CLI (`gh`), signed in | — | `gh auth status` |
-| GitHub personal access token | — | `/mcp` lists `plugin:github-operations:github` as connected |
+| GitHub MCP server, recommended | — | `claude mcp get github` |
 | Python 3, on your `PATH` as `python3`, only to compare labels when setting up a repository | 3.12 | `python3 --version` |
 | uv, only to check issue forms, discussion forms and Dependabot files when setting up a repository | — | `uv --version` |
 
 Claude Code 2.1.314 or later is required.
 
-`gh` creates and merges pull requests, reads run logs, creates labels and is the fallback when a GitHub MCP tool is missing. `python3` runs the label comparison of the repository setup. uv runs the form and Dependabot checks of the same setup.
+`gh` creates and merges pull requests, reads run logs, creates labels and is the fallback when a GitHub MCP tool is missing. The GitHub MCP server is optional: the plugin doesn't install it, and works through `gh` without it. `python3` runs the label comparison of the repository setup. uv runs the form and Dependabot checks of the same setup.
 
 ### 🤖 Claude Code
 
@@ -238,12 +237,62 @@ Then sign in:
 gh auth login
 ```
 
-### 🔑 GitHub token
+### 🔌 GitHub MCP server (recommended)
 
-1. Create a [fine-grained personal access token](https://github.com/settings/personal-access-tokens/new) for the repositories you work in, with only the permissions you want Claude to have.
-2. Give it to Claude Code as [Configuration](#-configuration) shows. Claude Code keeps it in your system's secure credential store.
+The plugin doesn't install an MCP server. With GitHub's official remote MCP server added to Claude Code, Claude reads GitHub through structured tools; without it, Claude does the same work through `gh`. You add the server once, and it serves every project.
 
-Without the token the GitHub MCP server doesn't start, and Claude uses `gh`.
+**Step 1. Create a token.** Make a [fine-grained personal access token](https://github.com/settings/personal-access-tokens/new) for the repositories you work in, with only the permissions you want Claude to have. GitHub only lets a tool do what this token allows.
+
+**Step 2. Add the server.** Run option A in your terminal, not inside a Claude Code session, with `<your token>` replaced by the token. If it fails, for example with `Invalid input`, which GitHub's guide reports on Windows, run option B instead. Both add the same server, named `github`, for you in every project (`--scope user`). If option A worked, skip option B: Claude Code refuses it with `MCP server github already exists in user config`.
+
+Option A, the form GitHub's [installation guide](https://github.com/github/github-mcp-server/blob/main/docs/installation-guides/install-claude.md) gives for Claude Code 2.1.1 and later:
+
+```bash
+claude mcp add-json --scope user github '{"type":"http","url":"https://api.githubcopilot.com/mcp/","headers":{"Authorization":"Bearer <your token>","X-MCP-Toolsets":"all","X-MCP-Insiders":"true"}}'
+```
+
+Option B, the fallback when option A fails, with one flag per header:
+
+```bash
+claude mcp add --scope user --transport http github https://api.githubcopilot.com/mcp/ \
+  -H "Authorization: Bearer <your token>" \
+  -H "X-MCP-Toolsets: all" \
+  -H "X-MCP-Insiders: true"
+```
+
+Claude Code saves the server, token included, in `~/.claude.json` (on Windows, `%USERPROFILE%\.claude.json`), its file for your personal MCP servers. Keep that file private and never commit or share it.
+
+Keep `github` in the server's name: the plugin's agents find the GitHub tools by searching for `github`.
+
+**Keep the token out of `~/.claude.json` (optional).** Write `${GITHUB_PAT}` in place of the token, inside single quotes so your shell doesn't replace it, and set `GITHUB_PAT` to your token in the environment Claude Code starts from. Claude Code saves the reference and reads the variable each time it connects:
+
+```bash
+claude mcp add-json --scope user github '{"type":"http","url":"https://api.githubcopilot.com/mcp/","headers":{"Authorization":"Bearer ${GITHUB_PAT}","X-MCP-Toolsets":"all","X-MCP-Insiders":"true"}}'
+```
+
+```bash
+claude mcp add --scope user --transport http github https://api.githubcopilot.com/mcp/ \
+  -H 'Authorization: Bearer ${GITHUB_PAT}' \
+  -H "X-MCP-Toolsets: all" \
+  -H "X-MCP-Insiders: true"
+```
+
+> [!NOTE]
+> Claude Code sees the variable only when it starts from a shell that sets it. Started from the desktop app, an editor or your system's app launcher, it may not have it, and the server then fails with `401`. If that happens, add the server with the token itself, as in Step 2.
+
+**Step 3. Check it.** Run `claude mcp get github`, then `/mcp` in a session, and look for `github` marked as connected.
+
+**Choose what the server offers.** The commands send two optional headers. Change them before you run the command:
+
+| Header | In the commands | What it does | To change it |
+| :-- | :-- | :-- | :-- |
+| `X-MCP-Toolsets` | `all` | Every toolset: pull requests, reviews, issues, Actions, security alerts, projects, discussions, notifications and more, including the tools that create, merge and delete | Put a comma-separated list instead, such as `repos,issues,pull_requests,actions`. Remove the header to get GitHub's default toolsets. The toolset names are in GitHub's [remote server guide](https://github.com/github/github-mcp-server/blob/main/docs/remote-server.md). A misspelled name is ignored, with no error |
+| `X-MCP-Insiders` | `true` | GitHub's early-access mode: new tools and changes before they reach everyone. Optional | Remove the header to use only GitHub's released tools |
+| `X-MCP-Readonly` | not sent | Offers only the tools that read | Add `-H "X-MCP-Readonly: true"` (option B) or `"X-MCP-Readonly":"true"` (option A) |
+
+The pull request loop uses the pull request, Actions and security tools when they are there, and `gh` when they are not. To change the token or the headers later, run `claude mcp remove --scope user github` and add the server again. To stop using it, run only the `remove`, and delete the token on GitHub.
+
+The desktop app's Code tab reads the same `~/.claude.json`, so the server is there too. For the app's chat and Cowork, add it as a connector: see [In the Claude app](#in-the-claude-app).
 
 ### 🐍 Python 3.12 or later
 
@@ -362,6 +411,17 @@ What else changed:
 - **The plugin no longer ships hooks.** The agents keep to their limits through their own instructions; see [What this plugin runs and sends](#-what-this-plugin-runs-and-sends).
 - **Templates are written for your repository**, not copied as they are.
 
+### Coming from 0.6.x?
+
+The plugin no longer brings the GitHub MCP server or asks for a token. After you update, `plugin:github-operations:github` leaves `/mcp`, and Claude uses `gh` until you add GitHub's server yourself:
+
+1. Create a new [fine-grained token](https://github.com/settings/personal-access-tokens/new). Claude Code never shows the token you saved in the plugin again, so you can't copy it.
+2. Add the server as in [GitHub MCP server](#-github-mcp-server-recommended). It keeps every toolset and early-access mode, as before.
+3. Delete the old token on GitHub.
+4. Rename deny rules that name `mcp__plugin_github-operations_github__…` to `mcp__github__…`.
+
+In the Claude app, a GitHub connector you already added keeps working. To add one, see [In the Claude app](#in-the-claude-app).
+
 ## 🚀 Usage
 
 Ask in your own words. Claude picks the skill from what you asked, and when it loaded a skill on its own, it asks you before it starts. To pick it yourself, type the skill or one of the two commands.
@@ -425,28 +485,7 @@ Before the first action, Claude bundles every ref outside the repository and pro
 
 ## 🔧 Configuration
 
-The plugin has one option, your GitHub token.
-
-| Option | Type | Default | Description |
-| :-- | :-- | :-- | :-- |
-| `github_token` | string, sensitive, required | none | The token the bundled GitHub MCP server sends as `Authorization: Bearer`. Claude Code keeps it in your system's secure credential store, the same place it keeps your Claude Code sign-in, never in `settings.json`, and never shows it again once saved |
-
-**Step 1. Create a token.** Make a [fine-grained personal access token](https://github.com/settings/personal-access-tokens/new) for the repositories you work in, with only the permissions you want Claude to have.
-
-**Step 2. Give it to Claude Code.** Pick one:
-
-| Where | How |
-| :-- | :-- |
-| In a session | Installing with `/plugin install` opens **Configure GitHub Operations** right away: paste the token, then choose **Save configuration**. To set or change it later, run `/plugin configure github-operations@the-claude-factory`, or open `/plugin` → **Installed** → **GitHub Operations** → **Configure options**. Claude Code reloads the plugin as soon as you save |
-| In your shell | `claude plugin install` doesn't ask; it tells you the option is not set yet. Run `claude plugin configure github-operations@the-claude-factory --values-stdin`, paste `{"github_token": "<your token>"}` and press `Ctrl+D`, then restart Claude Code. The token stays out of your shell history |
-| Added in the Claude app | Claude Code loads a plugin you turned on in claude.ai as `github-operations@synced`, and as of v2.1.302 it doesn't ask for that copy's token, so `/plugin` → **Installed** lists `github` under **Needs attention** as `failed to load`. Run `/plugin configure github-operations@synced`, paste the token and save, then run `/reload-plugins` (or `/reload-plugins --force` if it asks). If you also installed the plugin from the marketplace, Claude Code loads that copy instead, so set the token there |
-
-> [!WARNING]
-> In Claude Code v2.1.302 the **Configure** dialog shows the token while you paste it. Paste it when nobody can see your screen, or use the shell form.
-
-**Step 3. Check it.** Run `/mcp` and look for `plugin:github-operations:github` marked as connected.
-
-The option isn't listed in `/config`, because Claude Code keeps sensitive options out of it. Uninstalling the plugin from every scope it's installed in deletes the stored token.
+The plugin has no options. The GitHub MCP server is yours to add and configure: see [GitHub MCP server](#-github-mcp-server-recommended).
 
 ### Diagnose, audit or repair GitHub Actions workflows
 
@@ -454,31 +493,35 @@ Ask *"Why did the Claude review on PR 42 post nothing?"*, *"Audit our workflows"
 
 ### In the Claude app
 
-The Claude app can't read the plugin's token option. When you turn the plugin on there, the app lists its GitHub server as a connector that is not added yet, and its form starts on an OAuth sign-in that asks for an OAuth app you would have to register with GitHub yourself. Connect it with your token instead, once. On a Team or Enterprise plan only an Owner (or, on Enterprise, a role with **Manage access to Libraries**) can add it; on the Free plan it counts as your one custom connector.
+- **Desktop app, Code tab (local sessions):** it reads the same `~/.claude.json` as the terminal, so the server you added in [GitHub MCP server](#-github-mcp-server-recommended) is already there. Check it with `/mcp` in a Code tab session.
+- **Chat and Cowork, in the desktop app or on claude.ai:** they don't read `~/.claude.json`. Add GitHub's server once as a custom connector. On a Team or Enterprise plan only an Owner (or, on Enterprise, a role that manages the organization's libraries) can add it; on the Free plan it counts as your one custom connector.
 
-1. Go to **Customize** → **Plugins** → **GitHub Operations**, open the **Connectors** tab and choose **Connect** next to `github`.
-2. Leave the name and URL as they are and go on to the next step.
-3. Under **Authentication**, choose **No sign in**.
-4. Under **Request headers**, add a header, pick `authorization` as its name and enter `Bearer <your token>` as the value, with one space after `Bearer`, for example `Bearer github_pat_11AB…`. Use a [fine-grained token](https://github.com/settings/personal-access-tokens/new), as in Step 1 above. Keep the `x-mcp-toolsets` and `x-mcp-insiders` headers the plugin already filled in, even though the form warns about custom header names.
-5. Add the connector, then ask Claude in a new conversation: *"Use the GitHub get_me tool and tell me my username."*
+1. Go to **Customize** → **Connectors** and choose **Add custom connector**. On a Team or Enterprise plan, the Owner adds it under **Organization settings** → **Connectors** → **Add** → **Custom**, and members then choose **Connect**.
+2. Name it `github` and enter this URL:
 
-The app stores this token encrypted with your claude.ai connectors, apart from the copy Claude Code keeps, so changing one doesn't change the other. It reaches GitHub from Anthropic's cloud, not from your computer, and Claude Code's deny rules don't apply there: limit what Claude can do in the app through the token's repositories and permissions. On a Team or Enterprise plan, everyone who uses the connector reaches GitHub with that same token.
+   ```text
+   https://api.githubcopilot.com/mcp/
+   ```
 
-### Coming from 0.1.x?
+3. Under **Authentication**, choose **No sign-in**.
+4. Under **Request headers**, add these headers. For `x-mcp-toolsets` and `x-mcp-insiders`, choose **Custom header** and type the name; keep them even if the form warns about custom header names.
 
-Version 0.1.x read the token from a `GITHUB_PAT` environment variable. From 0.2.0 the plugin reads only its own `github_token` option, so the GitHub server also connects when you start Claude Code from the desktop app or an editor instead of a terminal. Updating doesn't ask for the token or copy it: until you set it, the GitHub server is missing from `/mcp`, with no error.
+   | Header | Value | |
+   | :-- | :-- | :-- |
+   | `authorization` | `Bearer <your token>`, with one space after `Bearer`, for example `Bearer github_pat_11AB…`. Use a [fine-grained token](https://github.com/settings/personal-access-tokens/new) | Required |
+   | `x-mcp-toolsets` | `all`, or a comma-separated list from GitHub's [remote server guide](https://github.com/github/github-mcp-server/blob/main/docs/remote-server.md) | Optional. Without it, GitHub's default toolsets |
+   | `x-mcp-insiders` | `true` | Optional. GitHub's early-access mode |
 
-If `GITHUB_PAT` is still set in your shell, move it in one step with [`jq`](https://jqlang.org/download/):
+5. Choose **Add**, then ask Claude in a new conversation: *"Use the GitHub get_me tool and tell me my username."*
 
-```bash
-jq -n '{github_token: env.GITHUB_PAT}' | claude plugin configure github-operations@the-claude-factory --values-stdin
-```
+> [!IMPORTANT]
+> Anthropic's [custom connector guide](https://claude.com/docs/connectors/custom) describes **Request headers** as a beta available to a limited set of organizations. If the dialog has no **Request headers** section, the app can't send your token to GitHub's server. You can't change a connector's headers after you add it: remove it and add it again.
 
-Then restart Claude Code. `jq` reads the variable itself, so the token never appears on a command line. You can remove `GITHUB_PAT` from your shell startup file once nothing else uses it.
+The app keeps this token with your claude.ai connectors, apart from the copy in `~/.claude.json`, so changing one doesn't change the other. It reaches GitHub from Anthropic's cloud, not from your computer, and Claude Code's deny rules don't apply there: limit what Claude can do in the app through the token's repositories and permissions. On a Team or Enterprise plan, everyone who uses the connector reaches GitHub with that same token.
 
 ### What the GitHub server includes
 
-The plugin's `github` server asks for **every toolset** (`X-MCP-Toolsets: all`) and GitHub's **early-access mode** (`X-MCP-Insiders: true`). That covers pull requests, reviews, issues, Actions (including rerunning and cancelling runs), security alerts, projects, discussions, notifications and more, including the tools that create, merge and delete. The full list, tool by tool, with the ones that only read marked, is in [GitHub MCP tools](../../docs/github-mcp-tools.md).
+With the commands in [GitHub MCP server](#-github-mcp-server-recommended), the server offers **every toolset** (`X-MCP-Toolsets: all`) and GitHub's **early-access mode** (`X-MCP-Insiders: true`). That covers pull requests, reviews, issues, Actions (including rerunning and cancelling runs), security alerts, projects, discussions, notifications and more, including the tools that create, merge and delete. The full list, tool by tool, with the ones that only read marked, is in [GitHub MCP tools](../../docs/github-mcp-tools.md).
 
 > [!IMPORTANT]
 > **Your token decides what works.** The server offers these tools, but GitHub only lets a tool do what your token is allowed to do, and it can hide tools your token can't use. Manage Claude's reach through the token's repositories and permissions.
@@ -488,17 +531,17 @@ The plugin's `github` server asks for **every toolset** (`X-MCP-Toolsets: all`) 
 | Way | What it does |
 | :-- | :-- |
 | Limit the token | Fewer repositories or permissions. GitHub enforces it whatever Claude asks for |
-| Block tools in your settings | A deny rule such as `mcp__plugin_github-operations_github__delete_file` or `mcp__plugin_github-operations_github__delete_repository` removes that tool from Claude's context. Use `mcp__plugin_github-operations_github` for the whole server |
-| Use your own server | Turn this one off in `/mcp` and add yours with headers such as `X-MCP-Readonly: true` or a shorter `X-MCP-Toolsets` list |
+| Block tools in your settings | A deny rule such as `mcp__github__delete_file` or `mcp__github__delete_repository` removes that tool from Claude's context. Use `mcp__github` for the whole server. These names fit a server named `github`; for another name, use `mcp__<name>__…` |
+| Change the headers | Remove the server and add it again with `X-MCP-Readonly: true` or a shorter `X-MCP-Toolsets` list |
 
-[GitHub MCP tools](../../docs/github-mcp-tools.md#️-reduce-what-claude-can-use) has the settings and the `.mcp.json` to copy. The PR tracker reads job logs and Dependabot alerts through the Actions and security tools; when you remove them, it reads that data through `gh` instead.
+[GitHub MCP tools](../../docs/github-mcp-tools.md#️-reduce-what-claude-can-use) has the settings to copy. The PR tracker reads job logs and Dependabot alerts through the Actions and security tools; when you remove them, it reads that data through `gh` instead.
 
 ## 🔍 What this plugin runs and sends
 
 - **Hooks:** none.
-- **MCP servers:** `github`, GitHub's official remote server at `https://api.githubcopilot.com/mcp/`, which Claude Code reaches with your token as `Authorization: Bearer`. [What the GitHub server includes](#what-the-github-server-includes) lists the toolsets it asks for.
+- **MCP servers:** none. When you add GitHub's remote server yourself, as [GitHub MCP server](#-github-mcp-server-recommended) shows, the skills and agents use its tools.
 - **Commands it runs:** `git` and `gh` in your repository, through Claude Code's Bash tool, so your permission settings and prompts apply to each one. The repository setup also runs its two scripts: a label comparison with `python3`, and a form check through `uv`.
-- **Network:** the GitHub server sends your requests and token to `api.githubcopilot.com`. `git` and `gh` reach GitHub and your remotes. The form and Dependabot checks run through `uv`, which downloads `check-jsonschema` 0.39.0 and `ruamel.yaml` 0.19.1, pinned exactly, from PyPI on their first run.
+- **Network:** `git` and `gh` reach GitHub and your remotes. The GitHub MCP server you add yourself sends your requests and token to `api.githubcopilot.com`. The form and Dependabot checks run through `uv`, which downloads `check-jsonschema` 0.39.0 and `ruamel.yaml` 0.19.1, pinned exactly, from PyPI on their first run.
 - **Files written:** the PR lifecycle writes only your own commits, in your clone. The repository setup writes its files on a new branch of your repository. The cleanup writes a backup bundle and its working notes to folders outside your repository; it tells you where the backup is and asks whether to keep it.
 
 ### The agents' limits
@@ -569,7 +612,7 @@ Installed with `--scope project`:
 claude plugin uninstall github-operations@the-claude-factory --scope project
 ```
 
-Uninstalling from the last scope it's installed at also deletes its saved options and data directory, unless you add `--keep-data`. That includes your stored GitHub token. The token itself stays valid on GitHub until you delete it there, and git and `gh` stay installed. A cleanup backup you chose to keep stays where Claude told you it is.
+Uninstalling from the last scope it's installed at also deletes its data directory, unless you add `--keep-data`. The GitHub MCP server you added stays: remove it with `claude mcp remove --scope user github`, and delete the token on GitHub. git and `gh` stay installed. A cleanup backup you chose to keep stays where Claude told you it is.
 
 ## 🧭 Compatibility
 
@@ -580,7 +623,6 @@ Uninstalling from the last scope it's installed at also deletes its saved option
 | 🎯 Skills | ✅ | ⚠️ they load, but they need `git`, `gh` and your repository on your computer, so use Claude Code |
 | ⌨️ Commands | ✅ | ⚠️ they load, but they need `git`, `gh` and your repository on your computer, so use Claude Code |
 | 🤖 Agents | ✅ | ⚠️ in Cowork sessions, not in a chat conversation |
-| 🔌 MCP server (remote) | ✅ needs your token, set as in [Configuration](#-configuration) | 🔗 connect it once with your token, as in [In the Claude app](#in-the-claude-app) |
 
 <sub>✅ works · ⚠️ partial · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. The Claude app (web, desktop and mobile) runs a conversation as a Cowork session when it can, and as a chat conversation otherwise, for example on a device that can't run Cowork or in the separate Chat mode that Team and Enterprise plans keep for now.</sub>
 
@@ -596,16 +638,16 @@ Run `/reload-plugins`, then type `/github-operations:` to see the skills and com
 <details>
 <summary><b>The GitHub server is missing, failed or "needs authentication" in <code>/mcp</code>.</b></summary>
 
-Look at the message, then fix the token. Until you do, the agents have no GitHub tools, so they read GitHub through `gh`.
+Look at the message, then fix the server. Until you do, the agents have no GitHub tools, so they read GitHub through `gh`.
 
 | What you see | Why | What to do |
 | :-- | :-- | :-- |
-| `plugin:github-operations:github` is missing from `/mcp`, with no error | The token is not set, or no longer saved: you skipped the dialog, installed from the shell, or just updated from 0.1.x | Set it as in [Configuration](#-configuration) |
-| `claude.ai github` is listed in `/mcp` instead of `plugin:github-operations:github`, and GitHub tools still work | The same missing token. Claude Code then connects your claude.ai GitHub connector in the server's place, so nothing reports an error | Set the token as in [Configuration](#-configuration). Once it is set, the plugin's server connects and hides the connector, because both point at the same URL |
-| `/plugin` lists `github` under **Needs attention** as `failed to load`, with `Plugin option "github_token" isn't set` | You turned the plugin on in claude.ai, and Claude Code doesn't ask for the token of that copy | Run `/plugin configure github-operations@synced`, as in [Configuration](#-configuration) |
-| In the Claude app, the plugin's **Connectors** tab shows `github` as not added, or its form asks for an OAuth client | The app can't read the plugin's token option | Connect it with your token, as in [In the Claude app](#in-the-claude-app) |
-| The server is marked failed, or `401 — token authentication failed` | The token is wrong or expired | Create a new token and set it again with **Configure options** |
+| `github` is missing from `/mcp` | The server isn't added, or was added at local scope in another project | Add it as in [GitHub MCP server](#-github-mcp-server-recommended), with `--scope user` |
+| `plugin:github-operations:github` disappeared after updating | From 0.7.0 the plugin no longer brings the server | Add it yourself, as in [Coming from 0.6.x?](#coming-from-06x) |
+| `claude.ai github` is listed in `/mcp`, and GitHub tools work | Claude Code is using your claude.ai GitHub connector | Nothing to do, or add the server to Claude Code with its own token |
+| The server is marked failed, or `401` | The token is wrong or expired, or `${GITHUB_PAT}` isn't set where Claude Code started | Remove the server and add it again with a new token, or start Claude Code from a shell that sets `GITHUB_PAT` |
 | Some tools work and others don't | The token lacks a permission those tools need | Add the permission to the token |
+| In the Claude app, the connector dialog has no **Request headers** section | Request headers are a beta not open to your organization yet | Use the server from Claude Code; the app can't send your token yet |
 
 </details>
 
@@ -690,11 +732,11 @@ See [CHANGELOG.md](./CHANGELOG.md) for every release.
 
 ## 🙏 Credits
 
-This plugin ships none of GitHub's software. It connects Claude Code to the hosted remote server of the official [GitHub MCP Server](https://github.com/github/github-mcp-server) (MIT license, © GitHub). The URL forms, toolsets and tool names come from GitHub's documentation: the [remote server guide](https://github.com/github/github-mcp-server/blob/main/docs/remote-server.md) and the guide to [installing it in Claude applications](https://github.com/github/github-mcp-server/blob/main/docs/installation-guides/install-claude.md). We re-checked them against the live server, and if GitHub changes them, GitHub's documentation is the reference.
+This plugin ships none of GitHub's software. Its skills and agents use the hosted remote server of the official [GitHub MCP Server](https://github.com/github/github-mcp-server) (MIT license, © GitHub). The URL forms, toolsets and tool names come from GitHub's documentation: the [remote server guide](https://github.com/github/github-mcp-server/blob/main/docs/remote-server.md) and the guide to [installing it in Claude applications](https://github.com/github/github-mcp-server/blob/main/docs/installation-guides/install-claude.md). We re-checked them against the live server, and if GitHub changes them, GitHub's documentation is the reference.
 
 The Actions skill's knowledge of [`anthropics/claude-code-action`](https://github.com/anthropics/claude-code-action) (MIT license, © Anthropic) was read from its source code and documentation, and of GitHub Actions from [GitHub's documentation](https://docs.github.com/en/actions), and rewritten in this plugin's own words; no upstream text or example is copied. The version each fact was checked against is named at the end of each reference file.
 
-GitHub also publishes its own [agent plugin](https://github.com/github/github-mcp-server/tree/main/agent-plugin) for the same server, which declares only the server connection. This plugin adds the skills and agents around that server (the pull request lifecycle, the repository setup, and the audit and cleanup), with a token option and a choice of tool set.
+GitHub also publishes its own [agent plugin](https://github.com/github/github-mcp-server/tree/main/agent-plugin) for the same server, which declares only the server connection. This plugin adds the skills and agents around that server (the pull request lifecycle, the repository setup, and the audit and cleanup), and leaves the server connection to you.
 
 ## 📄 License
 

@@ -1,7 +1,7 @@
 {
   "name": "github-operations",
   "displayName": "GitHub Operations",
-  "version": "0.6.1",
+  "version": "0.7.0",
   "description": "Runs GitHub work through focused skills: takes pull requests from branch to merge with a tracker, a fixer and a finalizer agent, writes a repository's templates, forms, labels and Dependabot setup adapted to it, repairs failing CI on the default branch, and audits and cleans up repositories, local and remote, behind a verified backup.",
   "author": {
     "name": "Nery Murillo",
@@ -34,14 +34,5 @@
     "surfaces": [
       "claude-code"
     ]
-  },
-  "userConfig": {
-    "github_token": {
-      "type": "string",
-      "title": "GitHub token",
-      "description": "A fine-grained personal access token (github.com/settings/personal-access-tokens/new) for the repositories you work in, with only the permissions you want Claude to have. The bundled GitHub MCP server sends it as a Bearer header. Stored in your system's secure credential store, not in settings.json.",
-      "required": true,
-      "sensitive": true
-    }
   }
 }
