@@ -6,6 +6,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.1.5] - 2026-11-05
+
+### Added
+
+- A listing icon and links to this README, the issue forms and the marketplace's privacy policy, which Anthropic's plugin directory shows on the plugin's page. Claude Code ignores these fields when it loads the plugin, so nothing changes in how it works.
+
 ## [0.1.4] - 2026-10-30
 
 ### Removed
@@ -47,7 +53,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - Settings in `/config`: Claude activity, Follow Claude, Open at start, Right column, Hints, Search spacing, Shortcut row, Open with, Edit with, Diff with, Ignore, Palette and Glyphs.
 - Validated and tested on Claude Code v2.1.310.
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/file-tree-pane--v0.1.4...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/file-tree-pane--v0.1.5...HEAD
+[0.1.5]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/file-tree-pane--v0.1.5
 [0.1.4]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/file-tree-pane--v0.1.4
 [0.1.3]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/file-tree-pane--v0.1.3
 [0.1.2]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/file-tree-pane--v0.1.2

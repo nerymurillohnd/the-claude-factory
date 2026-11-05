@@ -1,7 +1,7 @@
 {
   "name": "file-tree-pane",
   "displayName": "File Tree Pane",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Keeps a live file tree of your project beside the chat: git status and line counts, what Claude reads, writes and commits, search, previews, diffs and your editor one key away.",
   "author": {
     "name": "Nery Murillo",
@@ -9,6 +9,10 @@
   },
   "homepage": "https://github.com/nerymurillohnd/the-claude-factory/tree/main/plugins/file-tree-pane#readme",
   "repository": "https://github.com/nerymurillohnd/the-claude-factory",
+  "icon": "./.claude-plugin/icon.png",
+  "documentationUrl": "https://github.com/nerymurillohnd/the-claude-factory/tree/main/plugins/file-tree-pane#readme",
+  "supportUrl": "https://github.com/nerymurillohnd/the-claude-factory/issues/new/choose",
+  "privacyPolicyUrl": "https://github.com/nerymurillohnd/the-claude-factory/blob/main/PRIVACY.md",
   "license": "MIT",
   "keywords": [
     "mods",
