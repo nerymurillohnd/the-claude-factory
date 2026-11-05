@@ -1,6 +1,5 @@
 ---
 paths:
-  - ".mcp.json"
   - "**/.mcp.json"
 ---
 
@@ -10,10 +9,9 @@ paths:
 
 - Determine whether the file configures project-level servers or plugin-provided servers before changing it.
 - Apply plugin-specific lifecycle, path substitution, and naming rules only to plugin-provided servers.
-- Keep plugin MCP configuration independent of maintainer tools, environments, and machine-specific paths.
-- Consult the official references below before introducing fields or relying on version-specific behavior.
-- Corroborate every documented behavior against the changelog and the release notes for the installed `claude --version`; when they disagree with the docs, the changelog and release notes win.
-- Invoke the `building-plugins` skill and read its `references/mcp-servers.md` (and `references/mcp-hooks-and-lifecycle.md` for hooks, connection state and timeouts) before answering questions or planning, implementing, reviewing, validating, or debugging MCP behavior in hooks or plugins.
+- Consult the official references below before introducing fields or relying on version-specific behavior, and verify against the sources in the order `.claude/CLAUDE.md` → Current Claude Code features sets.
+- For configuration design, review and static validation, invoke `building-plugins` and read its `references/mcp-servers.md` (and `references/mcp-hooks-and-lifecycle.md` for hooks, connection state and timeouts).
+- For live connection checks and diagnosing an install, load or connection error, invoke `testing-plugins`, as `.claude/CLAUDE.md` → Plugin testing and evaluation sets.
 
 ## Configuration and Portability
 
@@ -83,8 +81,6 @@ paths:
   https://code.claude.com/docs/en/errors#skipping-connection-recent-failure-cached
 - Validate reload behavior against:
   https://code.claude.com/docs/en/plugins/cli-reference#reload-plugins
-- Validate Agent SDK server-list replacement against:
-  https://code.claude.com/docs/en/agent-sdk/typescript#mcpsetserversresult
 - Validate directory-change behavior against:
   https://code.claude.com/docs/en/permissions#move-the-session-to-another-directory
 - Validate cloud-session behavior against:

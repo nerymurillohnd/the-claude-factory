@@ -23,7 +23,7 @@ A `README.md` in this repository is one of three kinds, and each kind has its ow
 - **Generated blocks:** never edit the `<!-- catalog:* -->` and `<!-- plugin-count:* -->` blocks by hand; run `npm run generate`. The catalog's version column is the only plugin version the root README shows.
 - **Plugin details:** none beyond the catalog row; they belong in each plugin's README.
 - **Compatibility:** "Where plugins work" must match `docs/compatibility.md`.
-- **Checks:** both generators with `--check`, and opening every relative link and `#anchor` you touched. No script reads this file's prose.
+- **Checks:** both generators with `--check` (`npm run generate:check`), `scripts/validators/readme-catalog-consistency.py` for the catalog rows and their category sections, and opening every relative link and `#anchor` you touched. No script reads this file's prose.
 
 ## Plugin README
 
@@ -32,14 +32,10 @@ A `README.md` in this repository is one of three kinds, and each kind has its ow
 - **A plugin with a mod:** the README also carries what `building-mods` section 5 lists: where the mod runs, what turns it off, the organization caveat and what it reaches.
 - **Checks:** `node scripts/check-repo.mjs` covers the sections, leftover `TODO` and `TEMPLATE` comments, the "works in" badge and one Compatibility row per component type. `plugin-versions-consistency.py` covers the Version badge. Neither reads the text of the cells or the prose: compare those yourself.
 
-## The plugin template
-
-- The plugin templates are `building-plugins`' assets; `references/templates.md` there says how to fill and change them.
-
 ## Every README
 
 - English, written for users. Never mention this repository's maintenance, `.claude/`, scripts or CI. A user's own `.claude/settings.json` may be mentioned.
-- Check every command, flag, UI path and minimum version against the live official docs and the release notes before you write it. When they differ, the release notes win.
+- Check every command, flag, UI path and minimum version before you write it, against the sources in the order `.claude/CLAUDE.md` → Current Claude Code features sets.
 - One fact has one value everywhere. `docs/compatibility.md` is the single source of the component × surface matrix, and the marketplace is `nerymurillohnd/the-claude-factory` with the suffix `@the-claude-factory`.
-- Write no version number by hand, except the ones the rules above allow.
+- Write no version number by hand, except the ones `building-plugins`' `references/readme-style.md` → Badges and the facts they show allows.
 - Disclose every network call, hook and file the plugin writes, and every prerequisite with how to install it.
