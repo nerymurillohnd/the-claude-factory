@@ -174,6 +174,7 @@ Start every request with `/prompt-writer:prompt-writer`; Claude doesn't start th
 - **MCP servers:** none.
 - **Network:** the hook's agent is a model call through the same Claude account or provider as your session, and it receives the session transcript. The skill tells Claude to read current official pages on `platform.claude.com` and `code.claude.com` with `curl` or WebFetch, under your own permission rules.
 - **Files written:** none, unless you ask for the prompt in a file; then Claude writes that one file where you say.
+- **Privacy:** the author collects no data. The marketplace's [privacy policy](https://github.com/nerymurillohnd/the-claude-factory/blob/main/PRIVACY.md) covers this plugin and the outside services it can reach.
 
 ## 🔄 Updating
 
