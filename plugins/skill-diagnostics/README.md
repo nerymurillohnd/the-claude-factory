@@ -288,6 +288,7 @@ In the Claude app the option can't be changed and keeps its default, `suggest`.
 - **MCP servers:** none.
 - **Network:** the audit reads public pages from `code.claude.com` (the docs and the changelog), `claude.com`, `platform.claude.com`, `support.claude.com` and `agentskills.io` to verify its findings. For a skill you audit from a URL, `git ls-remote` and `git clone` reach `github.com`, or the repository host you give. It never uploads your skill's files.
 - **Files written:** the hook keeps one small file per session in the plugin's data directory, `notified/<hashed session ID>.txt`, with the skill folders it already announced, so it asks once; it deletes these files after 30 days. An audit from a URL clones into a temporary folder made with `mktemp -d` and deletes it after the report. The audit writes nothing in your workspace.
+- **Privacy:** the author collects no data. The marketplace's [privacy policy](https://github.com/nerymurillohnd/the-claude-factory/blob/main/PRIVACY.md) covers this plugin and the outside services it can reach.
 
 ## 🔄 Updating
 
