@@ -54,6 +54,12 @@ This repository holds two scopes. They are never mixed: a rule written for one s
 
 ## Commands
 
+- Run Biome and `tsc` only through `npm run`, which uses the versions `package-lock.json` pins; never by bare name.
+- Ruff, Basedpyright, shfmt, ShellCheck and actionlint may run directly to check one file, but `npm run gates` is the verdict: it holds each tool's scope and flags, as CI and Husky run them.
+- Use `claude plugin validate` and `claude plugin test` to check a mod's hooks module; no gate type-checks it against `.claude-plugin/types/`.
+- `format` and `fix` also write in `plugins/`.
+- Fix what the Husky hooks and the Claude Code hooks in `.claude/settings.json` report; never skip them.
+
 The repository's scripts, in the order of the project's phases, with what triggers each one.
 
 ### Phase 0: Environment and session
