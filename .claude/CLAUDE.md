@@ -103,7 +103,7 @@ The repository's scripts, in the order of the project's phases, with what trigge
 
 | Script | What it does | Triggered by |
 | :-- | :-- | :-- |
-| `scripts/validators/*.py` (11) | Schemas (plugin, marketplace, MCP, LSP), names, versions, required files, icons, catalog, skills and references | `npm run validate`, `scripts/gates.mjs`, the commit hook |
+| `scripts/validators/*.py` (12) | Schemas (plugin, marketplace, MCP, LSP), names, versions, required files, icons, catalog, skills, `SKILL.md` argument placeholders and references | `npm run validate`, `scripts/gates.mjs`, the commit hook |
 | `scripts/check-repo.mjs` (with `scripts/components.mjs`) | Repository policies that neither `claude plugin validate` nor the validators cover | `scripts/gates.mjs` |
 | `scripts/checkers/markdown-urls.py` | Every http(s) URL in the Markdown files answers | Manual only (`npm run check:links`) |
 
