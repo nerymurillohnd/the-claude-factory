@@ -6,6 +6,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.2.5] - 2026-11-06
+
+### Fixed
+
+- When you start the skill with text after its name, such as `/prompt-writer:prompt-writer write a prompt for…`, the filter it uses to read model pages through Bash now drops the SDK code samples again. Claude Code had replaced part of the filter with the first word you typed, so those samples were kept, and a long page could be stored in a file instead of reaching Claude.
+
 ## [0.2.4] - 2026-11-06
 
 ### Changed
@@ -93,7 +99,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - Works on new prompts, drafts to refine, existing prompts to audit and prompts to migrate to another target model, and saves the prompt to a file when you ask for one.
 - Built-in references for prompting principles, agentic patterns, reliability and safety, and model selection and configuration, with a drift report when live official documentation contradicts them.
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/prompt-writer--v0.2.4...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/prompt-writer--v0.2.5...HEAD
+[0.2.5]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/prompt-writer--v0.2.5
 [0.2.4]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/prompt-writer--v0.2.4
 [0.2.3]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/prompt-writer--v0.2.3
 [0.2.2]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/prompt-writer--v0.2.2

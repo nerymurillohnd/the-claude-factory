@@ -136,7 +136,7 @@ _Everyday workflows, planning and knowledge work._
 | Plugin | What it does | Works in | Version | Includes |
 | :-- | :-- | :-- | :--: | :-- |
 | [**File Tree Pane**](./plugins/file-tree-pane#readme)<br>`file-tree-pane@the-claude-factory` | A live file explorer panel beside the chat: your project's file tree with git status, diffs and line counts, what Claude reads, writes and commits, search, file previews and your editor one key away. A Claude Code mod for productivity. | 💻 Code only | `0.1.6` | 🧩 Mods |
-| [**Prompt Writer**](./plugins/prompt-writer#readme)<br>`prompt-writer@the-claude-factory` | Prompt engineering for Claude: turns a goal, idea or draft into one copy-ready prompt or system prompt tuned to the target Claude model and effort, clarifies intent, checks current official facts, helps with model migration and recommends the setup to run it with. | 💻 Code · 🖥️ Claude app | `0.2.4` | 🎯 Skills · 🪝 Hooks |
+| [**Prompt Writer**](./plugins/prompt-writer#readme)<br>`prompt-writer@the-claude-factory` | Prompt engineering for Claude: turns a goal, idea or draft into one copy-ready prompt or system prompt tuned to the target Claude model and effort, clarifies intent, checks current official facts, helps with model migration and recommends the setup to run it with. | 💻 Code · 🖥️ Claude app | `0.2.5` | 🎯 Skills · 🪝 Hooks |
 
 ### 🤖 Automation
 

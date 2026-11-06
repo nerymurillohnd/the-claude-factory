@@ -10,6 +10,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The
 
 - **typescript6-lsp-intelligence** 0.3.5 — in the TypeScript 6 and 7 side-by-side setup the hook checks with the project's TypeScript 6 (`tsc6`), and Bash commands that change more than 200 files get every file checked (#87).
 - **typescript7-lsp-intelligence** 0.4.5 — the hook runs the native compiler of a TypeScript 7 installed under the `@typescript/native` alias, and Bash commands that change more than 200 files get every file checked (#88).
+- **prompt-writer** 0.2.5 — the filter that reads model pages through Bash drops SDK code samples again when the skill is started with text after its name.
 
 ### Changed
 
