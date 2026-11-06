@@ -96,7 +96,7 @@ Prompt progress:
 - Read the target's change page live and whole, as "Check for changes" in [MODEL_SELECTION.md](references/MODEL_SELECTION.md) lists it. With Bash, read it through this filter, which drops SDK code samples and keeps `text`, `xml`, `json`, `yaml` and `markdown` blocks:
 
   ```bash
-  curl -sL "<page URL>.md" | awk '/^[[:space:]]*```/{if(!f){f=1;s=($0~/```(bash|sh|shell|python|typescript|javascript|ruby|php|java|go|csharp)([[:space:]]|$)/);if(s)next}else{f=0;if(s){s=0;next}}}!s'
+  curl -sL "<page URL>.md" | awk '/^[[:space:]]*```/{if(!f){f=1;s=(/```(bash|sh|shell|python|typescript|javascript|ruby|php|java|go|csharp)([[:space:]]|$)/);if(s)next}else{f=0;if(s){s=0;next}}}!s'
   ```
 
   - For a page a reference file says to read by sections, put `sed -n '/^## <Section>/,/^## /p'` (or `sed -n '/^### <Subsection>/,/^##\{1,2\} /p'`) between `curl` and the filter: output over about 30,000 characters is stored in a file instead of reaching you.
