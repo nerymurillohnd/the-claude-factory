@@ -42,8 +42,6 @@ Add an item only when all of these hold:
 | --- | --- | --- |
 | DEBT-002 | Version-bump check fails on main after a revert of an unreleased bump and blocks every release | 🟠 Blocked |
 | DEBT-010 | The mod gates of `scripts/gates.mjs` can miss a mod or report green on a lost test summary | 🟠 Blocked |
-| DEBT-015 | `plugin-hooks-guidance` states hook facts that contradict `building-plugins` and the hooks docs | 🟠 Blocked |
-| DEBT-016 | `testing-mods` has no live MCP checks for a mod that ships an MCP server | 🟠 Blocked |
 | DEBT-023 | Gaps from the TypeScript hook audit report are still unaddressed | 🟠 Blocked |
 | DEBT-028 | TypeScript 7 and 5.x were never run against the TypeScript post-edit hook | 🟡 Pending |
 | DEBT-030 | The svelte-development full-version local CLI waits on sveltejs/ai-tools #294 and PR #271 | 🟠 Blocked |
@@ -51,7 +49,6 @@ Add an item only when all of these hold:
 | DEBT-035 | `npm run test:plugins` fails when a plugin test family has no gate left | 🔴 Risk accepted |
 | DEBT-036 | `biome check --staged` checks the working-tree copy of a partly staged file | 🔴 Risk accepted |
 | DEBT-037 | Sessions skip the project skills the Workflow assigns to the area they work in | 🟠 Blocked |
-| DEBT-039 | The `instruction-engineering` checker never ran on Python 3.12, its declared minimum | 🟠 Blocked |
 | DEBT-040 | `scaffold-plugin.py` writes a `plugin.json` that Biome's formatter rejects | 🟠 Blocked |
 | DEBT-042 | python-lsp-intelligence's post-edit hook type-checks a PEP 723 script without its dependencies | 🟡 Pending |
 | DEBT-043 | No CI workflow runs the eval suites that `operating-standard.md` requires | 🟠 Blocked |
@@ -120,58 +117,6 @@ Add an item only when all of these hold:
   - run `claude plugin test` with its output in a file, and fail when the `Ran N tests across N files` summary is missing, as `check-mod.sh` does.
 - **Review condition:** closes when a mod with no tests fails the gate and a test run with its summary removed fails it.
 - **Related records:** ADR_2026-10-21_gates-run-from-one-script, ADR_2026-10-25_building-mods-skill-holds-mod-authoring, ADR_2026-10-29_remove-the-mod-tsc-gate.
-
-### DEBT-015 — `plugin-hooks-guidance` states hook facts that contradict `building-plugins` and the hooks docs
-
-| Field | Value |
-| --- | --- |
-| **Status** | 🟠 Blocked |
-| **Category** | quality, compatibility |
-| **Owner** | `.claude/skills/plugin-hooks-guidance/SKILL.md` |
-| **Logged** | 2026-10-26 |
-
-#### 🔎 Evidence
-
-- **Confirmed facts (2026-10-26, compared with `hook-engineering:hook-development` 0.2.1 and the hooks docs it cites; line numbers rechecked on 2026-11-01):**
-  - Line 29 says the strictest decision wins on every event; the docs document that order only for PreToolUse, PreModelSwitch and Elicitation.
-  - Line 32 states as fact that plugin hooks get no shell profile, so version-manager tools are missing; the docs say hooks run in non-interactive shells, and the missing tools are an inference.
-  - Line 68 tells a hook script to resolve `node` and `tsc` across every Node manager, against `building-plugins`' rule not to add hand-written fallback paths.
-  - Line 78 says "Exit 1 never blocks"; with `"onFailure": "block"` it does, as the skill's own step 5 says.
-  - It omits plugin-relevant rules: a shell-form hook with `${user_config.*}` fails; `if` runs only on five events; a regex matcher is unanchored; agent-frontmatter hooks in a plugin are ignored.
-  - Neither `.claude/CLAUDE.md` → Workflow nor `building-plugins`' Other skills table names the skill; only `.claude/rules/plugins/plugins-scripts.md:49` does.
-- **Inferences:** a hook written from the skill can ship wrong behavior to users.
-- **Open questions:** none.
-
-#### 📈 Impact and next step
-
-- **Impact / risk:** wrong guidance for the riskiest component a plugin ships.
-- **Why it is not fixed now:** the plan agreed on 2026-10-26 waits on Nery's go: a PR to `hook-engineering` adds five generic points (an interpreter launcher, an `env -i` test, a subagent test, `default` and `bypassPermissions` tests, the README limitations), then `plugin-hooks-guidance` keeps only this marketplace's rules and points to `hook-engineering:hook-development` for hook facts.
-- **Next action:** on Nery's go, open the `hook-engineering` PR, then reduce the skill and register it in the Workflow and in `building-plugins`.
-- **Review condition:** closes when the skill states no hook fact the docs contradict and the Workflow routes hook work to it.
-- **Related records:** none.
-
-### DEBT-016 — `testing-mods` has no live MCP checks for a mod that ships an MCP server
-
-| Field | Value |
-| --- | --- |
-| **Status** | 🟠 Blocked |
-| **Category** | quality |
-| **Owner** | `.claude/skills/testing-mods/`, `.claude/skills/testing-plugins/references/mcp-live-checks.md` |
-| **Logged** | 2026-10-26 |
-
-#### 🔎 Evidence
-
-- **Confirmed facts:** `building-plugins` sends a plugin that is or contains a mod to `testing-mods` for its live checks; `grep -rl "mcp-live-checks\|live MCP" .claude/skills/testing-mods` finds nothing (2026-10-26). The live MCP checks live in `testing-plugins/references/mcp-live-checks.md`.
-- **Inferences:** a mod with an MCP server reaches release without its MCP checks.
-- **Open questions:** whether `testing-mods` takes the reference or points to it.
-
-#### 📈 Impact and next step
-
-- **Impact / risk:** an MCP server bundled in a mod ships untested live.
-- **Why it is not fixed now:** the choice between copying and pointing is Nery's.
-- **Next action:** ask Nery, then add the reference or the pointer to `testing-mods`.
-- **Review condition:** closes when `testing-mods` routes a mod with an MCP server through the live MCP checks.
-- **Related records:** ADR_2026-10-25_testing-plugins-owns-live-mcp-checks.
 
 ### DEBT-023 — Gaps from the TypeScript hook audit report are still unaddressed
 
@@ -357,33 +302,6 @@ Add an item only when all of these hold:
   - confirm it live in a `claude --debug` session.
 - **Review condition:** Nery's go, or another session that skips a Workflow skill.
 - **Related records:** DEBT-031 (the separate, user-facing reminder for the LSP intelligence plugins); DEBT-015 (`plugin-hooks-guidance` contradicts the hooks docs, which the build must account for).
-
-### DEBT-039 — The `instruction-engineering` checker never ran on Python 3.12, its declared minimum
-
-| Field | Value |
-| --- | --- |
-| **Status** | 🟠 Blocked |
-| **Category** | compatibility |
-| **Owner** | `plugins/instruction-engineering/skills/claude-md-and-rules/scripts/check_instructions.py` |
-| **Logged** | 2026-10-28 |
-
-#### 🔎 Evidence
-
-- **Confirmed facts:**
-  - The plugin README declares `python3` 3.12 or later. Ruff and Basedpyright check the script against 3.12 and pass; the tests in `scripts/testers/instruction-engineering/` run on 3.15.
-  - `uv python list --only-installed` shows only CPython 3.15 on the maintainer machine (3.15.0 on 2026-10-28, 3.15.2 on 2026-11-01), and uv runs with `python-downloads = manual`.
-  - Nery declined installing Python 3.12 on 2026-10-28 ("No instalar").
-  - A run on Python 3.9 during the import found a runtime `str | list[str]` union that static tools had not flagged as a 3.9 problem; it was fixed with `empty_frontmatter()`.
-- **Inferences:** a 3.12 runtime failure is unlikely after the static checks, but the 3.9 run shows a runtime check can find what they miss.
-- **Open questions:** none.
-
-#### 📈 Impact and next step
-
-- **Impact / risk:** users on 3.12 or 3.13 run a checker never executed on their version; the release went out on 2026-10-28 as 0.1.0.
-- **Why it is not fixed now:** it needs a Python other than 3.15, which Nery declined.
-- **Next action:** on Nery's yes, run the tests once with `uv run --python 3.12 --no-project` (a one-off download, no environment created).
-- **Review condition:** closes when the checker's tests pass on 3.12, or when Nery drops the 3.12 floor.
-- **Related records:** ADR_2026-10-28_instruction-engineering-joins-the-marketplace (superseded by ADR_2026-11-01_instruction-engineering-keeps-no-evals), ADR_2026-10-27_python-version-is-set-per-scope.
 
 ### DEBT-040 — `scaffold-plugin.py` writes a `plugin.json` that Biome's formatter rejects
 

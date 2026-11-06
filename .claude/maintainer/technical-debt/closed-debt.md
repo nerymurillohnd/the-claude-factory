@@ -48,6 +48,9 @@
 | 2026-11-05 | DEBT-051 | resolved | Cloud-session pushes run every pre-push gate again | none |
 | 2026-11-05 | DEBT-050 | resolved | Cloud sessions start on Node 26.13.0 with shfmt, and npm test passes | none |
 | 2026-11-06 | DEBT-049 | resolved | github-operations has a listing icon and privacy link, and leaves Insiders mode to the user | none |
+| 2026-11-06 | DEBT-039 | resolved | The `instruction-engineering` checker's tests pass on Python 3.12 | none |
+| 2026-11-06 | DEBT-015 | obsolete | The `plugin-hooks-guidance` skill is gone, and its replacement rule no longer says exit 1 never blocks | none |
+| 2026-11-06 | DEBT-016 | resolved | `testing-mods` sends a mod with an MCP server to the live MCP checks | none |
 
 ## 🏁 Closed items
 
@@ -1018,6 +1021,99 @@ On 2026-11-04 `claude plugin validate --strict plugins/github-operations` (Claud
 - **Residual risk:** users who copy the README command get Insiders mode by default, and GitHub can change those features between plugin releases. The README marks the header optional and says how to remove it.
 - **Closed by:** [PR #85](https://github.com/nerymurillohnd/the-claude-factory/pull/85) (e57d559) and [PR #83](https://github.com/nerymurillohnd/the-claude-factory/pull/83) (23b9b9e).
 - **Related records:** ADR_2026-11-05_every-plugin-ships-a-directory-icon; ADR_2026-11-05_plugins-share-one-root-privacy-policy.
+- **Superseded by:** none
+
+### DEBT-039 — The `instruction-engineering` checker's tests pass on Python 3.12
+
+| Field | Value |
+| --- | --- |
+| **Outcome** | resolved |
+| **Closed on** | 2026-11-06 |
+| **Logged on** | 2026-10-28 |
+| **Owner** | `plugins/instruction-engineering/skills/claude-md-and-rules/scripts/check_instructions.py` |
+
+#### ❗ The problem
+
+The plugin README declares `python3` 3.12 or later, but the checker's tests had only run on Python 3.15: the maintainer machine had no other CPython, and Nery declined installing 3.12 on 2026-10-28. Users on 3.12 or 3.13 ran a checker never executed on their version.
+
+#### 🔧 The closure
+
+The project's cloud container ships CPython 3.12.3 at `/usr/bin/python3.12`, so nothing was installed. The test suite runs the checker through `sys.executable` (`test_check_instructions.py:48`), so running the suite under 3.12 executes the checker itself on 3.12. Nery approved this run as the check on 2026-11-06. The checker is unchanged since 8606361 (2026-11-01); instruction-engineering is 0.1.3.
+
+#### 🧪 Verification
+
+| Check | Evidence |
+| --- | --- |
+| ✅ **Positive:** the closure holds | On 2026-11-06, on `main` at b98db29: `/usr/bin/python3.12 --version` → `Python 3.12.3`; `python3.12 -B -m unittest discover -s scripts/testers/instruction-engineering` → `Ran 23 tests in 5.396s` / `OK`. |
+| 🚫 **Negative:** the original failure or condition is gone | The condition was that the checker had never run on 3.12; the same 23 tests now pass on 3.12.3, run twice that day. |
+
+#### 🔗 Follow-up
+
+- **Residual risk:** Python 3.13 and 3.14 are still untested by a runtime run; the static checks target 3.12.
+- **Closed by:** none (a verification run, no code change).
+- **Related records:** ADR_2026-10-27_python-version-is-set-per-scope.
+- **Superseded by:** none
+
+### DEBT-015 — The `plugin-hooks-guidance` skill is gone, and its replacement rule no longer says exit 1 never blocks
+
+| Field | Value |
+| --- | --- |
+| **Outcome** | obsolete |
+| **Closed on** | 2026-11-06 |
+| **Logged on** | 2026-10-26 |
+| **Owner** | `.claude/skills/plugin-hooks-guidance/SKILL.md` |
+
+#### ❗ The problem
+
+`plugin-hooks-guidance` stated hook facts that contradicted `building-plugins` and the hooks docs: that the strictest decision wins on every event, that plugin hooks get no shell profile, that a hook script should resolve `node` and `tsc` across every Node manager, and that "Exit 1 never blocks". No Workflow routed hook work to it.
+
+#### 🔧 The closure
+
+Commit c4e57fc (2026-11-05) replaced the skill with the path-scoped rule `.claude/rules/plugins/plugins-claude-hooks.md` (`paths: plugins/*/hooks/**`), so it loads whenever a plugin hook is edited. That rule carried one of the old claims over: line 14 said "Exit 1 never blocks", which contradicts its own lines 12 and 13. On 2026-11-06 it was reworded to "Exit 1 is a failure: it blocks only when the hook sets `"onFailure": "block"`. To block on purpose, exit 2." The hooks docs (`https://code.claude.com/docs/en/hooks#block-the-action-when-a-hook-fails`, read 2026-11-06) list "Exit code other than 0 or 2" as a failure and say "With `"block"` set, a failure does what exit code 2 does on that event"; the 2.1.295 changelog entry (8 October 2026) adds `onFailure: "block"` so that a hook that "exits with an unexpected code blocks the action". Nery approved closing the item on 2026-11-06.
+
+#### 🧪 Verification
+
+| Check | Evidence |
+| --- | --- |
+| ✅ **Positive:** the closure holds | not applicable |
+| 🚫 **Negative:** the original failure or condition is gone | `ls .claude/skills/plugin-hooks-guidance` → `No such file or directory`; `grep -rn plugin-hooks-guidance .claude/CLAUDE.md .claude/rules .claude/skills` → no output; the rule matches none of "Exit 1 never blocks", "shell profile" or "every Node manager"; its "strictest decision wins" line sits under `## PreToolUse`. |
+
+#### 🔗 Follow-up
+
+- **Residual risk:** DEBT-037 still names `plugin-hooks-guidance` in its mapping; it needs rewording when it is next worked on.
+- **Closed by:** c4e57fc, and the commit that reworded line 14.
+- **Related records:** DEBT-037.
+- **Superseded by:** none
+
+### DEBT-016 — `testing-mods` sends a mod with an MCP server to the live MCP checks
+
+| Field | Value |
+| --- | --- |
+| **Outcome** | resolved |
+| **Closed on** | 2026-11-06 |
+| **Logged on** | 2026-10-26 |
+| **Owner** | `.claude/skills/testing-mods/`, `.claude/skills/testing-plugins/references/mcp-live-checks.md` |
+
+#### ❗ The problem
+
+`building-plugins` sends a plugin that is or contains a mod to `testing-mods`, which never mentioned the live MCP checks; those live only in `testing-plugins/references/mcp-live-checks.md`. A mod with an MCP server could reach release without them.
+
+#### 🔧 The closure
+
+Nery chose a pointer over a copy on 2026-11-06, keeping one source as ADR_2026-10-25_testing-plugins-owns-live-mcp-checks decides. Step 6 of `testing-mods/SKILL.md` now sends a mod that ships an MCP server, or a hook that matches or calls MCP tools, to `.claude/skills/testing-plugins/references/mcp-live-checks.md`, under that file's own conditions.
+
+#### 🧪 Verification
+
+| Check | Evidence |
+| --- | --- |
+| ✅ **Positive:** the closure holds | `grep -rn "mcp-live-checks" .claude/skills/testing-mods` → `.claude/skills/testing-mods/SKILL.md` step 6; the referenced file exists. |
+| 🚫 **Negative:** the original failure or condition is gone | On `main` at b98db29 the same `grep -rln "mcp-live-checks\|live MCP" .claude/skills/testing-mods` printed nothing. |
+
+#### 🔗 Follow-up
+
+- **Residual risk:** none of this marketplace's six mods ships an MCP server today, so the step has not been exercised.
+- **Closed by:** the commit that added the step.
+- **Related records:** ADR_2026-10-25_testing-plugins-owns-live-mcp-checks.
 - **Superseded by:** none
 
 <!--
