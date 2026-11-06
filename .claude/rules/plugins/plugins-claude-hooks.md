@@ -11,7 +11,7 @@ Apply this whenever you write or change a plugin hook: its entry in `hooks/hooks
 
 - A policy hook sets `"onFailure": "block"`. An advisory or observing hook leaves it at `"continue"`.
 - `onFailure: "block"` needs v2.1.295+ and works on `command` and `http` only. It has no effect on `Stop`, `SubagentStop`, `TaskCompleted`, `TeammateIdle`, or `async`/`asyncRewake` hooks.
-- Failure means: can't start, exit code other than 0 or 2, timeout, or invalid JSON. Exit 1 never blocks.
+- Failure means: can't start, exit code other than 0 or 2, timeout, or invalid JSON. Exit 1 is a failure: it blocks only when the hook sets `"onFailure": "block"`. To block on purpose, exit 2.
 - A hook that runs an interpreter checks it first. If it is missing, print `systemMessage` and exit 0. Exception: a deny guard denies and names what to install.
 - On Windows without Git Bash, a shell-form hook runs in PowerShell. A failing `PreToolUse` or `PermissionRequest` hook with `onFailure` unset then blocks the call.
 
