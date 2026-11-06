@@ -159,6 +159,7 @@ Should blocking `rm -rf` outside the project be a mod or a settings hook?
 - **MCP servers:** none.
 - **Network:** none of its own. The skill tells Claude to read the official mod pages on `code.claude.com`, which it does with your session's web fetch tool when that tool is available.
 - **Files written:** none of its own.
+- **Privacy:** the author collects no data. The marketplace's [privacy policy](https://github.com/nerymurillohnd/the-claude-factory/blob/main/PRIVACY.md) covers this plugin and the outside services it can reach.
 
 ## 🔄 Updating
 

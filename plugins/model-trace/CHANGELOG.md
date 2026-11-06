@@ -6,6 +6,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.1.3] - 2026-11-05
+
+### Added
+
+- A listing icon and links to this README, the issue forms and the marketplace's privacy policy, which Anthropic's plugin directory shows on the plugin's page. Claude Code ignores these fields when it loads the plugin, so nothing changes in how it works.
+
 ## [0.1.2] - 2026-10-30
 
 ### Removed
@@ -29,7 +35,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - An optional status line entry with the session's count (`statusLine`, off by default).
 - Requires Claude Code v2.1.299 or later. Tested with Claude Code v2.1.312.
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/model-trace--v0.1.2...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/model-trace--v0.1.3...HEAD
+[0.1.3]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/model-trace--v0.1.3
 [0.1.2]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/model-trace--v0.1.2
 [0.1.1]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/model-trace--v0.1.1
 [0.1.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/model-trace--v0.1.0

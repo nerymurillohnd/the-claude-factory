@@ -6,6 +6,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.7.1] - 2026-11-05
+
+### Added
+
+- A listing icon and links to this README, the issue forms and the marketplace's privacy policy, which Anthropic's plugin directory shows on the plugin's page. Claude Code ignores these fields when it loads the plugin, so nothing changes in how it works.
+
 ## [0.7.0] - 2026-11-05
 
 ### Removed
@@ -183,7 +189,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 - `git-cleanup` inventory: `--from` with a saved file that is not a JSON object reports a JSON error and exits 0, instead of ending with a traceback.
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/github-operations--v0.7.0...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/github-operations--v0.7.1...HEAD
+[0.7.1]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/github-operations--v0.7.1
 [0.7.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/github-operations--v0.7.0
 [0.6.1]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/github-operations--v0.6.1
 [0.6.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/github-operations--v0.6.0

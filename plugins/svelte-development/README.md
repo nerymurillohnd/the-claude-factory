@@ -268,6 +268,7 @@ The plugin never installs a package. When something is missing (the language ser
 - **MCP servers:** `svelte`, the Svelte team's remote server at `https://mcp.svelte.dev/mcp`, for the docs, the autofixer and playground links.
 - **Network:** the `svelte` server receives the docs sections Claude looks up and the whole code of each Svelte file the autofixer checks (see the warning in [Configuration](#%EF%B8%8F-configuration)). With `curl`, Claude reads public docs from `svelte.dev`, and changelogs and source files of the Svelte, Astro and Tailwind CSS projects from `raw.githubusercontent.com` and `api.github.com`; with `npm view`, it reads package versions from the npm registry. These requests carry no code. A playground link carries the code in its URL, and Claude makes one only when you ask.
 - **Files written:** none by the plugin. Claude and the editor agent change only the files your request covers, and the auditor changes none. In a SvelteKit project the project check can run `svelte-kit sync`, which writes SvelteKit's generated files.
+- **Privacy:** the author collects no data. The marketplace's [privacy policy](https://github.com/nerymurillohnd/the-claude-factory/blob/main/PRIVACY.md) covers this plugin and the outside services it can reach.
 
 ## 🔄 Updating
 

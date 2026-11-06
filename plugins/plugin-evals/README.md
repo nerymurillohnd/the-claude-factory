@@ -253,6 +253,7 @@ Here's my aggregate-result.json. Why is the delta zero on half the cases?
 - **MCP servers:** none.
 - **Network:** the plugin itself makes no calls. Its skill has Claude read the live docs and the changelog on `code.claude.com` with `curl -sL` or WebFetch, a plain `GET` with nothing of yours in it, and it may open the related pages it cites on `platform.claude.com`, `agentskills.io` and `github.com`. To check your CLI, Claude runs `claude --version` and `claude plugin eval --help`, which stay on your computer. The eval runs, judged graders and agent mocks that Claude starts only after your go-ahead call the model on the account your Claude Code uses. On a claude.ai subscription, a run you start in a terminal also publishes its report as a private artifact unless the command has `--no-publish`; a run started from a Claude Code session keeps it local unless the command has `--publish-report`.
 - **Files written:** none by the plugin. At your request, Claude writes the suite in your plugin's eval directory (`evals/` unless you choose another), and each `claude plugin eval` run writes `results/<timestamp>/` there, with `aggregate-result.json` and `report.html`; a plugin evaluated by name writes to `./evals/results/` in your current folder.
+- **Privacy:** the author collects no data. The marketplace's [privacy policy](https://github.com/nerymurillohnd/the-claude-factory/blob/main/PRIVACY.md) covers this plugin and the outside services it can reach.
 
 ## 🔄 Updating
 

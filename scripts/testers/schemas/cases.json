@@ -1057,6 +1057,39 @@
     }
   },
   {
+    "id": "plugin-59-valid",
+    "schema": "plugin.schema.json",
+    "valid": true,
+    "data": {
+      "name": "demo",
+      "icon": "./.claude-plugin/icon.png",
+      "documentationUrl": "https://example.com/docs",
+      "supportUrl": "https://github.com/example/demo/issues",
+      "privacyPolicyUrl": "https://example.com/privacy",
+      "termsOfServiceUrl": "https://example.com/terms"
+    }
+  },
+  {
+    "id": "plugin-60-invalid",
+    "schema": "plugin.schema.json",
+    "valid": false,
+    "data": {
+      "name": "demo",
+      "supportUrl": "http://example.com/support"
+    },
+    "error_path": "$.supportUrl"
+  },
+  {
+    "id": "plugin-61-invalid",
+    "schema": "plugin.schema.json",
+    "valid": false,
+    "data": {
+      "name": "demo",
+      "icon": "./assets/icon.svg"
+    },
+    "error_path": "$.icon"
+  },
+  {
     "id": "mcp-59-valid",
     "schema": "mcp.schema.json",
     "valid": true,

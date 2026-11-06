@@ -362,6 +362,7 @@ A command the guard cannot read, such as an unterminated quote, is denied with t
 - **MCP servers:** none.
 - **Network:** none.
 - **Files written:** none.
+- **Privacy:** the author collects no data. The marketplace's [privacy policy](https://github.com/nerymurillohnd/the-claude-factory/blob/main/PRIVACY.md) covers this plugin and the outside services it can reach.
 
 ## 🚧 Limitations
 

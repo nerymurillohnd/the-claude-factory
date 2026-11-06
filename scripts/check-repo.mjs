@@ -28,6 +28,8 @@ import {
 const SYSTEM_FILES = new Set(['.ds_store', 'thumbs.db', 'desktop.ini', '__macosx'])
 const DEVICE_NAME = /^(con|prn|aux|nul|com[1-9]|lpt[1-9])(\..*)?$/i
 const TRAILING_DOT_OR_SPACE = /[. ]$/
+// The files of .claude-plugin/ that reach users: the manifest and the directory listing icon.
+const SHIPPED_MANIFEST_FILES = new Set(['.claude-plugin/plugin.json', '.claude-plugin/icon.png'])
 const IMAGE_OR_FONT = /\.(png|jpe?g|gif|webp|svg|woff2?|ttf|otf)$/i
 const MAX_FILE_BYTES = 256 * 1024 // larger files are held for a reviewer
 const MAX_FILES = 512 // more files are held for a reviewer
@@ -115,7 +117,8 @@ export function portabilityProblems(entries) {
  * reaches every user's cache: a mod's root tsconfig.json, which Claude Code writes for the editor,
  * the declarations under .claude-plugin/, and eval results serve no user
  * (ADR_2026-10-29_mods-commit-no-tsconfig). Tests and eval suites stay: the official tools only
- * find them inside the plugin.
+ * find them inside the plugin. .claude-plugin/icon.png stays: the directory reads it as the
+ * listing icon (ADR_2026-11-05_every-plugin-ships-a-directory-icon).
  * @param {FileEntry[]} entries
  * @returns {string[]}
  */
@@ -125,7 +128,7 @@ export function shippedArtifactProblems(entries) {
     .filter(
       (path) =>
         path === 'tsconfig.json' ||
-        (path.startsWith('.claude-plugin/') && path !== '.claude-plugin/plugin.json') ||
+        (path.startsWith('.claude-plugin/') && !SHIPPED_MANIFEST_FILES.has(path)) ||
         EVAL_RESULTS.test(path),
     )
     .map((path) => `${path} is a maintainer file and would ship to users — remove it from git`)

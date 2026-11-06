@@ -347,6 +347,7 @@ An `.editorconfig`, a `.shellcheckrc` or `SHELLCHECK_OPTS` of your own replaces 
 - **MCP servers:** none.
 - **Network:** none.
 - **Files written:** `shfmt -w` rewrites the shell scripts it formats, in place. The plugin writes nothing else.
+- **Privacy:** the author collects no data. The marketplace's [privacy policy](https://github.com/nerymurillohnd/the-claude-factory/blob/main/PRIVACY.md) covers this plugin and the outside services it can reach.
 
 ## 🔄 Updating
 

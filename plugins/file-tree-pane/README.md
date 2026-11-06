@@ -460,6 +460,7 @@ A terminal editor needs a terminal to run in: a mod can't hand Claude Code's own
 - **MCP servers:** none.
 - **Network:** none. It never calls the model.
 - **Files written:** none.
+- **Privacy:** the author collects no data. The marketplace's [privacy policy](https://github.com/nerymurillohnd/the-claude-factory/blob/main/PRIVACY.md) covers this plugin and the outside services it can reach.
 - **Before you install:** a mod runs with your permissions and no sandbox. Install it only if you trust this marketplace; this README lists everything it hooks and calls.
 
 ## 🔄 Updating

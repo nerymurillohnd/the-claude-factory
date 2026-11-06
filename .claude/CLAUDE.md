@@ -103,7 +103,7 @@ The repository's scripts, in the order of the project's phases, with what trigge
 
 | Script | What it does | Triggered by |
 | :-- | :-- | :-- |
-| `scripts/validators/*.py` (10) | Schemas (plugin, marketplace, MCP, LSP), names, versions, required files, catalog, skills and references | `npm run validate`, `scripts/gates.mjs`, the commit hook |
+| `scripts/validators/*.py` (11) | Schemas (plugin, marketplace, MCP, LSP), names, versions, required files, icons, catalog, skills and references | `npm run validate`, `scripts/gates.mjs`, the commit hook |
 | `scripts/check-repo.mjs` (with `scripts/components.mjs`) | Repository policies that neither `claude plugin validate` nor the validators cover | `scripts/gates.mjs` |
 | `scripts/checkers/markdown-urls.py` | Every http(s) URL in the Markdown files answers | Manual only (`npm run check:links`) |
 
@@ -116,12 +116,13 @@ The repository's scripts, in the order of the project's phases, with what trigge
 | `scripts/release/check-changelog-entry.py` | The plugin's `CHANGELOG.md` has a non-empty section for its current version | Nothing calls it |
 | `scripts/release/check-marketplace-unversioned.py` | `marketplace.json` carries no version | Nothing calls it |
 
-### Phase 6: Catalog generation
+### Phase 6: Catalog and icon generation
 
 | Script | What it does | Triggered by |
 | :-- | :-- | :-- |
 | `scripts/generators/marketplace.mjs`, `scripts/generators/catalog.mjs` | Rebuild `marketplace.json` and the README catalog | `npm run generate` |
 | `npm run generate:check` | Confirms both are current | `scripts/gates.mjs` |
+| `scripts/generators/plugin-icons.mjs [plugin...]` | Renders `scripts/generators/plugin-icons/<plugin>.svg` into the plugin's `.claude-plugin/icon.png`; needs Playwright's Chromium, ImageMagick and the JetBrains Mono font | Manual only, after an SVG source changes |
 
 ### Phase 7: Commit and push
 
@@ -156,8 +157,10 @@ Shared support, never run on its own: `scripts/lib.mjs`, `scripts/components.mjs
 ### Required existence
 - Every plugin directory under `plugins/` must contain:
   - `.claude-plugin/plugin.json`
+  - `.claude-plugin/icon.png`, the directory listing icon, declared as `"icon": "./.claude-plugin/icon.png"` in `plugin.json`
   - `CHANGELOG.md`
   - `README.md`
+- Every plugin icon is rendered from its own SVG source, `scripts/generators/plugin-icons/<plugin>.svg`, drawn on the shared frame of the existing sources, with no Claude, Anthropic or third-party logo. Edit the SVG and re-render; never edit the PNG.
 - Every plugin must have a corresponding entry in `.claude-plugin/marketplace.json`.
 - The marketplace must contain `.claude-plugin/marketplace.json`.
 - The repository root must contain a generated catalog section in `README.md`.

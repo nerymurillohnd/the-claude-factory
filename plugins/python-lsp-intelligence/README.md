@@ -338,6 +338,7 @@ Any configuration file of your own replaces the corresponding default entirely; 
 - **MCP servers:** none.
 - **Network:** none.
 - **Files written:** `ruff check --fix` and `ruff format` rewrite the Python files they fix or format, in place. When you have no basedpyright configuration, the hook writes a `pyrightconfig.json` bound to your project into a temporary folder (`python-lsp-intelligence-*` under your system's temporary directory) and deletes it after the check. Nothing is written to your project's configuration.
+- **Privacy:** the author collects no data. The marketplace's [privacy policy](https://github.com/nerymurillohnd/the-claude-factory/blob/main/PRIVACY.md) covers this plugin and the outside services it can reach.
 
 ## 🔄 Updating
 

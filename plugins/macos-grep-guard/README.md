@@ -169,6 +169,7 @@ Show the first 4 characters of each line of names.txt, deduplicated with uniq -w
 - **MCP servers:** none.
 - **Network:** none.
 - **Files written:** none.
+- **Privacy:** the author collects no data. The marketplace's [privacy policy](https://github.com/nerymurillohnd/the-claude-factory/blob/main/PRIVACY.md) covers this plugin and the outside services it can reach.
 - **Never does:** rewrite a command, write a file, call a model or reach the network.
 - **Before you install:** a mod runs with your permissions and no sandbox. Install it only if you trust this marketplace; this README lists everything it hooks and calls.
 

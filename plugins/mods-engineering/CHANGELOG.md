@@ -6,6 +6,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.1.4] - 2026-11-05
+
+### Added
+
+- A listing icon and links to this README, the issue forms and the marketplace's privacy policy, which Anthropic's plugin directory shows on the plugin's page. Claude Code ignores these fields when it loads the plugin, so nothing changes in how it works.
+
 ## [0.1.3] - 2026-10-30
 
 ### Changed
@@ -33,7 +39,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 - `cc-mods-guidance` skill: an engineering workflow for Claude Code mods that routes each question to the right official page, checks every interface against the declarations your build writes, and covers design, implementation within the engine's static-analysis rules, validation, tests, debugging, organization policy and sharing.
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/mods-engineering--v0.1.3...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/mods-engineering--v0.1.4...HEAD
+[0.1.4]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/mods-engineering--v0.1.4
 [0.1.3]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/mods-engineering--v0.1.3
 [0.1.2]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/mods-engineering--v0.1.2
 [0.1.1]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/mods-engineering--v0.1.1
