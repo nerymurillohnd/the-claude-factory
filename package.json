@@ -39,6 +39,7 @@
     "validate:plugin-required-files": "scripts/validators/plugin-required-files.py",
     "validate:plugin-versions-consistency": "scripts/validators/plugin-versions-consistency.py",
     "validate:readme-catalog-consistency": "scripts/validators/readme-catalog-consistency.py",
+    "validate:skill-argument-placeholders": "scripts/validators/skill-argument-placeholders.py",
     "validate:skill-names-consistency": "scripts/validators/skill-names-consistency.py",
     "validate:skill-references": "scripts/validators/skill-references.py",
     "version:bump": "python3 scripts/release/bump-version.py"
