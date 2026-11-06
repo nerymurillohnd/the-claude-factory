@@ -1,8 +1,8 @@
 {
   "name": "mods-engineering",
   "displayName": "Mods Engineering",
-  "version": "0.1.4",
-  "description": "Designs, builds, reviews, tests and debugs Claude Code mods, checking every interface against the current mod docs and the type declarations your own Claude Code build writes.",
+  "version": "0.1.5",
+  "description": "Designs, builds, reviews, tests and debugs Claude Code mods: panes, bands, function hooks and the hooks module, checking every interface against the current mods API docs and the type declarations your own Claude Code build writes. Plugin development for the Claude Code interface.",
   "author": {
     "name": "Nery Murillo",
     "url": "https://github.com/nerymurillohnd"

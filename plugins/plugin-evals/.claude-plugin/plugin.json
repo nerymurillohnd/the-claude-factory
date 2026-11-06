@@ -1,8 +1,8 @@
 {
   "name": "plugin-evals",
   "displayName": "Plugin Evals",
-  "version": "0.1.5",
-  "description": "Makes Claude an expert in Claude Code plugin evals: designs suites that prove what a plugin adds, writes cases, graders and mocks, runs and gates them in CI, and reads the results, always checked against the CLI and docs you have today.",
+  "version": "0.1.6",
+  "description": "Makes Claude an expert in Claude Code plugin evals: designs eval suites and benchmarks that prove what a plugin or its skills add, writes cases, graders and mocks, runs and gates them in CI, and reads the results, always checked against the CLI and docs you have today. Testing and quality for plugins.",
   "author": {
     "name": "Nery Murillo",
     "url": "https://github.com/nerymurillohnd"

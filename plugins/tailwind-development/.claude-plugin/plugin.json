@@ -1,8 +1,8 @@
 {
   "name": "tailwind-development",
   "displayName": "Tailwind CSS Development",
-  "version": "0.3.2",
-  "description": "Designs, builds and refactors Tailwind CSS v4 interfaces with a product designer's craft, and grounds every utility, variant and configuration in its exact official documentation page before verifying the result in your project.",
+  "version": "0.3.3",
+  "description": "Designs, builds and refactors Tailwind CSS v4 (tailwindcss) frontend interfaces with a product designer's craft: UI design, design-system tokens, responsive design and dark mode, every utility class and variant grounded in its exact official documentation page and verified in your project.",
   "author": {
     "name": "Nery Murillo",
     "url": "https://github.com/nerymurillohnd"

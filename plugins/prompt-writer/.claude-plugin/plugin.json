@@ -1,8 +1,8 @@
 {
   "name": "prompt-writer",
   "displayName": "Prompt Writer",
-  "version": "0.2.3",
-  "description": "Turns a goal, idea or draft into one copy-ready prompt tuned to the target Claude model and effort: it clarifies intent, checks current official facts and recommends the setup to run it with.",
+  "version": "0.2.4",
+  "description": "Prompt engineering for Claude: turns a goal, idea or draft into one copy-ready prompt or system prompt tuned to the target Claude model and effort, clarifies intent, checks current official facts, helps with model migration and recommends the setup to run it with.",
   "author": {
     "name": "Nery Murillo",
     "url": "https://github.com/nerymurillohnd"

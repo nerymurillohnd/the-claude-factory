@@ -1,8 +1,8 @@
 {
   "name": "macos-grep-guard",
   "displayName": "macOS Grep Guard",
-  "version": "0.1.3",
-  "description": "Stops recursive grep from silently skipping gitignored and binary files on macOS, blocks BSD awk's ignored IGNORECASE, and adds the macOS form when a BSD or zsh command fails.",
+  "version": "0.1.4",
+  "description": "Development guard for macOS: stops recursive grep from silently skipping gitignored and binary files, blocks BSD awk's ignored IGNORECASE, and adds the macOS form when a BSD or zsh command fails.",
   "author": {
     "name": "Nery Murillo",
     "url": "https://github.com/nerymurillohnd"

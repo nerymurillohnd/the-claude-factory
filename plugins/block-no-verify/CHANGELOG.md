@@ -6,6 +6,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.1.5] - 2026-11-06
+
+### Changed
+
+- The plugin's description now names the tools and terms people type when they search for a plugin like this one in `/plugin`, which matches only the plugin's name, display name and description. Nothing changes in how the plugin works.
+
 ## [0.1.4] - 2026-11-05
 
 ### Added
@@ -41,7 +47,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - Fails closed on a payload or a command it cannot read. Without `jq` it denies the commands that could involve git, says why, and lets the rest run.
 - Needs Claude Code 2.1.295 or later, for the `onFailure` field, and `jq`.
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/block-no-verify--v0.1.4...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/block-no-verify--v0.1.5...HEAD
+[0.1.5]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/block-no-verify--v0.1.5
 [0.1.4]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/block-no-verify--v0.1.4
 [0.1.3]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/block-no-verify--v0.1.3
 [0.1.2]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/block-no-verify--v0.1.2

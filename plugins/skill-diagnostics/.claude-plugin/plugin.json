@@ -1,8 +1,8 @@
 {
   "name": "skill-diagnostics",
   "displayName": "Skill Diagnostics",
-  "version": "0.2.1",
-  "description": "Audits Claude skills for best-practice conformance, portability and whether a model can run them without guessing, with file-and-line evidence and one verdict.",
+  "version": "0.2.2",
+  "description": "Skill audit and testing for Claude skills: checks best practices, conformance, portability across Claude Code, claude.ai and Cowork, and whether a model can run them without guessing, with file-and-line evidence and one verdict.",
   "author": {
     "name": "Nery Murillo",
     "url": "https://github.com/nerymurillohnd"

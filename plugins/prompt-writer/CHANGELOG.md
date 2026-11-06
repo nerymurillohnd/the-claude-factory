@@ -6,6 +6,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.2.4] - 2026-11-06
+
+### Changed
+
+- The plugin's description now names the tools and terms people type when they search for a plugin like this one in `/plugin`, which matches only the plugin's name, display name and description. Nothing changes in how the plugin works.
+
 ## [0.2.3] - 2026-11-05
 
 ### Added
@@ -87,7 +93,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - Works on new prompts, drafts to refine, existing prompts to audit and prompts to migrate to another target model, and saves the prompt to a file when you ask for one.
 - Built-in references for prompting principles, agentic patterns, reliability and safety, and model selection and configuration, with a drift report when live official documentation contradicts them.
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/prompt-writer--v0.2.3...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/prompt-writer--v0.2.4...HEAD
+[0.2.4]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/prompt-writer--v0.2.4
 [0.2.3]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/prompt-writer--v0.2.3
 [0.2.2]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/prompt-writer--v0.2.2
 [0.2.1]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/prompt-writer--v0.2.1
