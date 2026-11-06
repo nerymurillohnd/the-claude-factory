@@ -1080,9 +1080,9 @@ Commit c4e57fc (2026-11-05) replaced the skill with the path-scoped rule `.claud
 
 #### 🔗 Follow-up
 
-- **Residual risk:** DEBT-037 still names `plugin-hooks-guidance` in its mapping; it needs rewording when it is next worked on.
+- **Residual risk:** none.
 - **Closed by:** c4e57fc, and the commit that reworded line 14.
-- **Related records:** DEBT-037.
+- **Related records:** DEBT-037, withdrawn on 2026-11-06 (ADR_2026-11-06_debt-037-is-withdrawn).
 - **Superseded by:** none
 
 ### DEBT-016 — `testing-mods` sends a mod with an MCP server to the live MCP checks
