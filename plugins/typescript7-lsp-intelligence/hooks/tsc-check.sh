@@ -35,6 +35,8 @@ readonly MAX_REPORT_CHARS=9000
 readonly BASH_SLACK_S=2
 readonly FALLBACK_WINDOW_S=30
 readonly MAX_WALK_FILES=20000
+# The cap on tool_response.bashEditDiff.changedFiles in the hooks reference.
+readonly MAX_CHANGED_FILES=200
 readonly TS_FILE_PATTERN='\.(ts|tsx|mts|cts|js|jsx|mjs|cjs)$'
 readonly NL=$'\n'
 
@@ -406,6 +408,23 @@ set_tsc() {
   fi
 }
 
+# Sets PACKAGE_7 to yes when folder $1 holds the typescript package at major 7 or later, else
+# no. The folder name does not count: npm aliases such as "@typescript/native":
+# "npm:typescript@^7" install the package under another name.
+PACKAGE_7=no
+typescript_7_package() {
+  local manifest="$1/package.json" name version
+  PACKAGE_7=no
+  [[ -f ${manifest} ]] || return 0
+  name="$(grep -o '"name"[[:space:]]*:[[:space:]]*"[^"]*"' "${manifest}" | head -n 1 \
+    | sed 's/.*:[[:space:]]*"\([^"]*\)"$/\1/' || true)"
+  version="$(grep -o '"version"[[:space:]]*:[[:space:]]*"[^"]*"' "${manifest}" | head -n 1 \
+    | sed 's/.*:[[:space:]]*"\([^"]*\)"$/\1/' || true)"
+  [[ ${name} == typescript && ${version} =~ ^[0-9]+\. ]] || return 0
+  version_at_least "${version}" 7.0.0
+  PACKAGE_7="${AT_LEAST}"
+}
+
 # Sets FOUND_ID to the identity of tsc candidate $1, empty when it cannot run. Each candidate
 # is probed once per run.
 FOUND_ID=""
@@ -420,11 +439,11 @@ use_tsc() {
   fi
   SEARCHED="${SEARCHED}${tsc}${NL}"
   resolve_link "${tsc}"
-  case "${CANONICAL}" in
-    */typescript/bin/tsc) package="${CANONICAL%/bin/tsc}" ;;
-    *) ;;
-  esac
-  if [[ ${NATIVE} == yes && -n ${package} ]]; then
+  if [[ ${NATIVE} == yes && ${CANONICAL} == */bin/tsc ]]; then
+    typescript_7_package "${CANONICAL%/bin/tsc}"
+    [[ ${PACKAGE_7} == yes ]] && package="${CANONICAL%/bin/tsc}"
+  fi
+  if [[ -n ${package} ]]; then
     native_compiler "${package}"
     if [[ -n ${NATIVE_TSC} ]]; then
       version="$("${NATIVE_TSC}" --version 2> /dev/null || true)"
@@ -445,13 +464,19 @@ use_tsc() {
 }
 
 # Sets TSC for file $1: the project's node_modules above it first, then a global tsc. Each
-# file gets its own, so files of different packages run their own compilers.
+# file gets its own, so files of different packages run their own compilers. In the
+# TypeScript 6 and 7 side-by-side setup ("typescript": "npm:@typescript/typescript6", plus
+# "@typescript/native": "npm:typescript@^7"), TypeScript 6 installs as tsc6 and tsc is 7:
+# typescript6-lsp-intelligence tries tsc6 first, typescript7-lsp-intelligence never does.
 find_tsc() {
-  local dir candidate
+  local dir candidate names=()
   set_tsc ""
   dir="$(dirname "$1")"
   while :; do
-    for candidate in "${dir}/node_modules/.bin/tsc" "${dir}/node_modules/typescript/bin/tsc"; do
+    names=()
+    [[ ${NATIVE} == yes ]] || names=("${dir}/node_modules/.bin/tsc6" "${dir}/node_modules/typescript/bin/tsc6")
+    names+=("${dir}/node_modules/.bin/tsc" "${dir}/node_modules/typescript/bin/tsc")
+    for candidate in "${names[@]}"; do
       [[ -f ${candidate} ]] || continue
       use_tsc "${candidate}"
       if [[ -n ${FOUND_ID} ]]; then
@@ -911,7 +936,7 @@ changed_since() {
 
 # Prints the files the tool call changed, one per line.
 candidates() {
-  local tool project duration window inner rest item re='^[^"]*"(([^"\\]|\\.)*)"(.*)$'
+  local tool project duration window inner rest item count=0 re='^[^"]*"(([^"\\]|\\.)*)"(.*)$'
   json_string tool_name
   tool="${VALUE}"
   case "${tool}" in
@@ -934,9 +959,14 @@ candidates() {
       json_unescape "${item}"
       to_posix "${UNESCAPED}"
       printf '%s\n' "${POSIX}"
+      count=$((count + 1))
     done
-    # An incomplete or skipped list is a floor, not the answer: add the recent changes.
-    [[ ${EVENT} =~ \"(unavailable|skipped)\"[[:space:]]*:[[:space:]]*true ]] || return 0
+    # An incomplete or skipped list is a floor, not the answer: add the recent changes. Claude
+    # Code lists at most MAX_CHANGED_FILES paths and sets no flag when it stops there, so a
+    # full list may be cut.
+    if ((count < MAX_CHANGED_FILES)); then
+      [[ ${EVENT} =~ \"(unavailable|skipped)\"[[:space:]]*:[[:space:]]*true ]] || return 0
+    fi
   fi
   # cwd follows Claude into a worktree or after a cd; CLAUDE_PROJECT_DIR stays where the
   # session started, so it is only the fallback.
