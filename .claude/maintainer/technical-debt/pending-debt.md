@@ -60,7 +60,6 @@ Add an item only when all of these hold:
 | DEBT-046 | Nothing detects when claude-code-action changes the facts `claude-github-actions` relies on | 🟠 Blocked |
 | DEBT-047 | `claude-github-actions` has no eval suite | 🟠 Blocked |
 | DEBT-048 | github-operations 0.6.0 no longer writes, triages or answers issues and discussions, or turns an issue into a pull request | 🟠 Blocked |
-| DEBT-049 | github-operations ships without an icon or a privacy policy URL, and turns on the GitHub MCP server's Insiders mode | 🟠 Blocked |
 
 ## 📂 Open items
 
@@ -603,32 +602,6 @@ Add an item only when all of these hold:
 - **Next action:** ask Nery whether issue and discussion work returns, and where; then build it through `building-plugins`, `versioning` and `releases`.
 - **Review condition:** closes when a release covers that work, or when Nery decides it stays out for good (closed as accepted, with an ADR).
 - **Related records:** ADR_2026-11-04_github-operations-splits-into-focused-skills; ADR_2026-11-04_github-operations-0-6-0-ships-as-one-release.
-
-### DEBT-049 — github-operations ships without an icon or a privacy policy URL, and turns on the GitHub MCP server's Insiders mode
-
-| Field | Value |
-| --- | --- |
-| **Status** | 🟠 Blocked |
-| **Category** | quality, compatibility |
-| **Owner** | Nery |
-| **Logged** | 2026-11-04 |
-
-#### 🔎 Evidence
-
-- **Confirmed facts:**
-  - On 2026-11-04, `claude plugin validate --strict plugins/github-operations` (Claude Code 2.1.318) passed with two plugin directory warnings: ICON_MISSING and PRIVACY_URL_MISSING ("This plugin connects to a remote MCP server or HTTP hook but declares no privacy policy URL").
-  - `plugins/github-operations/.mcp.json:9` sends `X-MCP-Insiders: true`. GitHub's `docs/server-configuration.md:348` (github/github-mcp-server, `main`, read 2026-11-04): "Features in Insiders Mode may change, evolve, or be removed based on user feedback."
-  - The README discloses the early-access mode (lines 57 and 480).
-- **Inferences:** the warnings do not change the validation result, but a submission to the plugin directory would need both fields; Insiders features can change under users between plugin releases.
-- **Open questions:** which privacy policy the URL points to; whether Insiders mode stays.
-
-#### 📈 Impact and next step
-
-- **Impact / risk:** the listing has no icon or privacy link for a plugin that sends the user's token to a remote server, and users depend on experimental GitHub MCP features.
-- **Why it is not fixed now:** the icon is an asset only Nery can supply, and the privacy URL and the Insiders choice are his decisions.
-- **Next action:** ask Nery for a square PNG of 512 to 2048 px (saved inside the plugin, at `.claude-plugin/icon.png`), the privacy policy URL, and whether to keep `X-MCP-Insiders`; then apply them in a plugin change through `versioning` and `releases`.
-- **Review condition:** closes when `claude plugin validate --strict` shows neither warning and the Insiders choice is applied and recorded.
-- **Related records:** none.
 
 <!--
 Entry format. Copy this block above this comment for each new item and add its row to the Index.

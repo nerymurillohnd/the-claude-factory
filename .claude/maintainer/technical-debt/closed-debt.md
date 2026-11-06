@@ -47,6 +47,7 @@
 | 2026-11-04 | DEBT-052 | resolved | Discussion form setup no longer depends on GraphQL to get category slugs | none |
 | 2026-11-05 | DEBT-051 | resolved | Cloud-session pushes run every pre-push gate again | none |
 | 2026-11-05 | DEBT-050 | resolved | Cloud sessions start on Node 26.13.0 with shfmt, and npm test passes | none |
+| 2026-11-06 | DEBT-049 | resolved | github-operations has a listing icon and privacy link, and leaves Insiders mode to the user | none |
 
 ## 🏁 Closed items
 
@@ -985,6 +986,38 @@ Nery's personal cloud environment `the-claude-factory` now lists `nerymurillohnd
 - **Residual risk:** the setup script exits 0 even when a download fails, so a later session could start without a tool; its summary marks such a tool `MISSING`, and the session-start hook reports the Node version.
 - **Closed by:** none (the change is the cloud environment's setup script and repository list, edited by Nery in the environment settings; no commit).
 - **Related records:** ADR_2026-11-04_node-pinned-in-package-json-through-devengines; DEBT-051.
+- **Superseded by:** none
+
+### DEBT-049 — github-operations has a listing icon and privacy link, and leaves Insiders mode to the user
+
+| Field | Value |
+| --- | --- |
+| **Outcome** | resolved |
+| **Closed on** | 2026-11-06 |
+| **Logged on** | 2026-11-04 |
+| **Owner** | Nery |
+
+#### ❗ The problem
+
+On 2026-11-04 `claude plugin validate --strict plugins/github-operations` (Claude Code 2.1.318) passed with two plugin directory warnings, ICON_MISSING and PRIVACY_URL_MISSING, for a plugin that sent the user's token to GitHub's remote MCP server. Its bundled `.mcp.json` also turned on `X-MCP-Insiders: true`, GitHub's early-access mode, whose features "may change, evolve, or be removed based on user feedback".
+
+#### 🔧 The closure
+
+- Icon and privacy link: PR #85 (merged as e57d559) added `"icon": "./.claude-plugin/icon.png"` and `"privacyPolicyUrl": "https://github.com/nerymurillohnd/the-claude-factory/blob/main/PRIVACY.md"` to the plugin's `plugin.json`, released as 0.7.1.
+- Insiders choice: Nery decided on 2026-11-05 that github-operations 0.7.0 ships no MCP server. PR #83 (23b9b9e) removed the bundled `.mcp.json` and the `github_token` option, so the plugin no longer turns on Insiders mode. The README's Prerequisites tell users to add GitHub's server themselves, with `X-MCP-Insiders: true` in the suggested command and documented in the headers table as "Optional", with "Remove the header to use only GitHub's released tools". Nery approved closing this item on 2026-11-06.
+
+#### 🧪 Verification
+
+| Check | Evidence |
+| --- | --- |
+| ✅ **Positive:** the closure holds | On 2026-11-06, on `main` at 44d2bde (github-operations 0.7.2), `claude plugin validate --strict plugins/github-operations` on Claude Code 2.1.318 printed `√ Validation passed` with no warning line. `plugin.json` reads `icon` = `./.claude-plugin/icon.png` and `privacyPolicyUrl` = the root `PRIVACY.md` URL. |
+| 🚫 **Negative:** the original failure or condition is gone | The same run printed neither ICON_MISSING nor PRIVACY_URL_MISSING. `plugins/github-operations/.mcp.json` no longer exists (`test -e` false), so no file in the plugin sends `X-MCP-Insiders`. The header appears only in README lines 251–290, as a setting the user chooses. |
+
+#### 🔗 Follow-up
+
+- **Residual risk:** users who copy the README command get Insiders mode by default, and GitHub can change those features between plugin releases. The README marks the header optional and says how to remove it.
+- **Closed by:** [PR #85](https://github.com/nerymurillohnd/the-claude-factory/pull/85) (e57d559) and [PR #83](https://github.com/nerymurillohnd/the-claude-factory/pull/83) (23b9b9e).
+- **Related records:** ADR_2026-11-05_every-plugin-ships-a-directory-icon; ADR_2026-11-05_plugins-share-one-root-privacy-policy.
 - **Superseded by:** none
 
 <!--
