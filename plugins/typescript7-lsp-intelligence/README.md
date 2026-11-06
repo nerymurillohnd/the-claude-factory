@@ -283,7 +283,7 @@ The plugin never edits your `tsconfig.json`. The only one it creates in your pro
 
 ## 🔍 What this plugin runs and sends
 
-- **Hooks:** `PostToolUse` on `Edit|Write|Bash|PowerShell` and `PostToolUseFailure` on `Bash|PowerShell` run `hooks/tsc-check.sh` with `bash`, with a 120-second limit. It finds the files the call changed: the Edit or Write file; for Bash or PowerShell, the files Claude Code lists, or else `git ls-files --modified --others --exclude-standard` and `git diff --cached --name-only` in a Git repository, or `find` for files changed since the command started otherwise (at most 20,000, never in your home folder or the disk root). It looks for `tsc` in your project's `node_modules`, on your `PATH` and in the folders of common Node version managers, and installs nothing. It runs your native `tsc --showConfig` to read your config chain, `tsc --noEmit -p <config>` with the strictest policy and, when other files have errors, `tsc --noEmit -p <config>` again under your own config.
+- **Hooks:** `PostToolUse` on `Edit|Write|Bash|PowerShell` and `PostToolUseFailure` on `Bash|PowerShell` run `hooks/tsc-check.sh` with `bash`, with a 120-second limit. It finds the files the call changed: the Edit or Write file; for Bash or PowerShell, the files Claude Code lists, plus, when that list is missing, incomplete or at its 200-path cap, `git ls-files --modified --others --exclude-standard` and `git diff --cached --name-only` in a Git repository, or `find` for files changed since the command started otherwise (at most 20,000, never in your home folder or the disk root). It looks for `tsc` in your project's `node_modules`, on your `PATH` and in the folders of common Node version managers, and installs nothing. It runs your native `tsc --showConfig` to read your config chain, `tsc --noEmit -p <config>` with the strictest policy and, when other files have errors, `tsc --noEmit -p <config>` again under your own config.
 - **MCP servers:** none.
 - **Network:** the hook makes no network calls. The skill tells Claude to read official docs and release notes through the first that works: WebFetch or WebSearch, `curl` to the official domain (such as typescriptlang.org), or `gh` on the official GitHub repository (such as `microsoft/TypeScript`). Each runs under your own permission rules.
 - **Files written:** the hook writes its temporary configs and build-info files to a temporary folder and deletes it when it exits. When no usable compiler is found, it writes one empty marker file per session to `${CLAUDE_PLUGIN_DATA}/notices/`, or, when that variable is unset, to `typescript7-lsp-intelligence/notices/` in `$TMPDIR` (else `/tmp`), so you get that notice once per session. The skill's `scripts/run-fixtures.sh` creates one `lsp-fixture-XXXXXX/` folder at a time in your program's `rootDir`, or beside the owning `tsconfig.json`; each holds a fixture `.ts` file and its own `tsconfig.json`, which extends yours, and the script deletes it after the check. With `--outside`, it uses a temporary folder outside your project instead. Claude Code asks you before the skill runs this script; choose **Yes, and don't ask again** to let it run the script without asking. Neither the hook nor the skill edits your source files or your `tsconfig.json`.
@@ -354,6 +354,24 @@ Run `/reload-plugins`, then type `/typescript7-lsp-intelligence:` to list its sk
 <summary><b>Which TypeScript does the hook check with?</b></summary>
 
 Whichever TypeScript it finds, your project's copy first, then the global one. It doesn't compare versions, so keep the plugin and your TypeScript on the same major version: on TypeScript 6, use [TypeScript 6 LSP Intelligence](../typescript6-lsp-intelligence/README.md) instead.
+
+</details>
+
+<details>
+<summary><b>My project keeps TypeScript 6 for its tools and runs <code>tsc</code> on TypeScript 7.</b></summary>
+
+That is the side-by-side setup the TypeScript 7 announcement recommends for tools that still need the TypeScript 6 API:
+
+```json
+"devDependencies": {
+  "@typescript/native": "npm:typescript@^7.0.2",
+  "typescript": "npm:@typescript/typescript6@^6.0.2"
+}
+```
+
+This plugin fits it: the project's `tsc` is TypeScript 7, and the hook runs its native compiler directly, under the `@typescript/native` name too. The language server doesn't come from the project: Claude Code starts `tsc --lsp` by name from the `PATH` it was launched with, so it still needs a global TypeScript 7 (`npm install -g typescript@7`).
+
+Only one global `tsc` can be on your `PATH`. In this setup [TypeScript 6 LSP Intelligence](../typescript6-lsp-intelligence/README.md) needs a global `typescript@6`, and this plugin a global `typescript@7`, so if you work on projects of both majors, keep only one of the two plugins enabled at a time (`claude plugin disable <plugin>`, `claude plugin enable <plugin>`), with the global TypeScript that plugin asks for.
 
 </details>
 

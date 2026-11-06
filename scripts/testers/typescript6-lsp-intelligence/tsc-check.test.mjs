@@ -15,6 +15,7 @@ import {
   readFileSync,
   realpathSync,
   rmSync,
+  symlinkSync,
   writeFileSync,
 } from 'node:fs'
 import { tmpdir } from 'node:os'
@@ -783,5 +784,137 @@ for (const plugin of SKILL_PLUGINS) {
       assert.doesNotMatch(args, /^--strictBuiltinIteratorReturn$/m)
       assert.match(args, /^--exactOptionalPropertyTypes\ntrue$/m)
     })
+
+    /**
+     * Writes an executable stub compiler at `name` that reports `version`, lists every .ts file
+     * of its project folder and passes them all.
+     * @param {string} name
+     * @param {string} version
+     */
+    function fakeCompiler(name, version) {
+      const path = ws.write(
+        name,
+        [
+          '#!/bin/sh',
+          'case "$*" in',
+          `  *--version*) echo "Version ${version}" ;;`,
+          '  *--listFilesOnly*) for f in "$PWD"/*.ts; do echo "$f"; done ;;',
+          '  *) ;;',
+          'esac',
+          '',
+        ].join('\n'),
+      )
+      chmodSync(path, 0o755)
+    }
+
+    test('in the TypeScript 6 and 7 side-by-side setup, tsc6 is the TypeScript 6 compiler', () => {
+      ws.write('s/tsconfig.json', STRICT)
+      const file = ws.write('s/a.ts', 'export const x = 1;\n')
+      fakeCompiler('s/node_modules/.bin/tsc', '7.0.2')
+      fakeCompiler('s/node_modules/.bin/tsc6', '6.0.3')
+      const message = parsed(fire(ws.edit(file), ws.env, hook).out).systemMessage
+      const expected = plugin.startsWith('typescript6') ? '6.0.3' : '7.0.2'
+      assert.match(message, new RegExp(`tsc ${expected.replaceAll('.', '\\.')} · `))
+    })
+
+    test('a Bash change list at the 200-path cap is a floor: the files past it are checked', () => {
+      ws.write('c/tsconfig.json', STRICT)
+      fakeCompiler('c/node_modules/.bin/tsc', '6.0.3')
+      const listed = Array.from({ length: 200 }, (_, i) =>
+        ws.write(`c/a${i}.ts`, 'export const x = 1;\n'),
+      )
+      ws.write('c/z.ts', 'export const z = 1;\n')
+      /** @param {string[]} changedFiles */
+      const checked = (changedFiles) =>
+        parsed(
+          fire(
+            event('Bash', {
+              cwd: join(ws.root, 'c'),
+              tool_input: { command: 'x' },
+              duration_ms: 1000,
+              tool_response: { bashEditDiff: { changedFiles } },
+            }),
+            ws.env,
+            hook,
+          ).out,
+        ).systemMessage
+      assert.match(checked(listed), /\/z\.ts(,|$)/)
+      // Below the cap the list is the answer, as before.
+      assert.doesNotMatch(checked(listed.slice(1)), /\/z\.ts(,|$)/)
+    })
   })
 }
+
+describe('typescript7-lsp-intelligence finds the native compiler', () => {
+  const hook = join(ROOT, 'plugins', 'typescript7-lsp-intelligence', 'hooks', 'tsc-check.sh')
+  /** @type {Record<string, string>} */
+  const OS = { darwin: 'darwin', linux: 'linux', win32: 'win32' }
+  /** @type {Record<string, string>} */
+  const ARCH = { arm64: 'arm64', x64: 'x64' }
+  const os = OS[process.platform]
+  const arch = ARCH[process.arch]
+  /** @type {Workspace} */
+  let ws
+  beforeEach(() => {
+    ws = makeWorkspace()
+  })
+  afterEach(() => ws.cleanup())
+
+  /**
+   * Installs the typescript package `version` under the npm alias @typescript/native, as the
+   * TypeScript 7 announcement recommends, with a stub platform compiler beside it. Returns the
+   * edited file and the marker the platform compiler writes when it runs.
+   * @param {string} version
+   */
+  function aliased(version) {
+    ws.write('n/tsconfig.json', STRICT)
+    const file = ws.write('n/a.ts', 'export const x = 1;\n')
+    const marker = join(ws.root, 'native-ran')
+    ws.write(
+      'n/node_modules/@typescript/native/package.json',
+      JSON.stringify({ name: 'typescript', version }, null, 4),
+    )
+    for (const [name, says] of [
+      ['n/node_modules/@typescript/native/bin/tsc', `node launcher ${version}`],
+      [`n/node_modules/@typescript/typescript-${os}-${arch}/lib/tsc`, 'native 7.0.2'],
+    ]) {
+      const path = ws.write(
+        name ?? '',
+        [
+          '#!/bin/sh',
+          says?.startsWith('native') ? `touch "${marker}"` : ':',
+          'case "$*" in',
+          `  *--version*) echo "Version ${says?.split(' ').pop()}" ;;`,
+          `  *--listFilesOnly*) echo "${file}" ;;`,
+          '  *) ;;',
+          'esac',
+          '',
+        ].join('\n'),
+      )
+      chmodSync(path, 0o755)
+    }
+    mkdirSync(join(ws.root, 'n/node_modules/.bin'))
+    symlinkSync('../@typescript/native/bin/tsc', join(ws.root, 'n/node_modules/.bin/tsc'))
+    return { file, marker }
+  }
+
+  test('a TypeScript 7 package under the @typescript/native alias runs the native compiler', {
+    skip: !os || !arch,
+  }, () => {
+    const { file, marker } = aliased('7.0.2')
+    const r = fire(ws.edit(file), ws.env, hook)
+    assert.equal(r.code, 0)
+    assert.match(parsed(r.out).systemMessage, /tsc 7\.0\.2 · /)
+    assert.ok(existsSync(marker), 'the platform compiler did not run')
+  })
+
+  test('a package below TypeScript 7 never runs a platform compiler found beside it', {
+    skip: !os || !arch,
+  }, () => {
+    const { file, marker } = aliased('6.0.3')
+    const r = fire(ws.edit(file), ws.env, hook)
+    assert.equal(r.code, 0)
+    assert.match(parsed(r.out).systemMessage, /tsc 6\.0\.3 · /)
+    assert.ok(!existsSync(marker), 'the platform compiler ran for a TypeScript 6 package')
+  })
+})

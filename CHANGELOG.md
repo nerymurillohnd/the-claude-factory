@@ -6,6 +6,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The
 
 ## 2026-11-06
 
+### Fixed
+
+- **typescript6-lsp-intelligence** 0.3.5 — in the TypeScript 6 and 7 side-by-side setup the hook checks with the project's TypeScript 6 (`tsc6`), and Bash commands that change more than 200 files get every file checked (#87).
+- **typescript7-lsp-intelligence** 0.4.5 — the hook runs the native compiler of a TypeScript 7 installed under the `@typescript/native` alias, and Bash commands that change more than 200 files get every file checked (#88).
+
 ### Changed
 
 - **bash-lsp-intelligence** 0.2.8 — the description names the terms people type when they search `/plugin`, which matches only a plugin's name, display name and description; nothing changes in how the plugin works.

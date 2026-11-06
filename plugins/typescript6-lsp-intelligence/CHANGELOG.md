@@ -6,6 +6,17 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.3.5] - 2026-11-06
+
+### Fixed
+
+- In a project that keeps TypeScript 6 as `typescript` (`npm:@typescript/typescript6`) and runs `tsc` on TypeScript 7 (`@typescript/native`), the setup the TypeScript 7 announcement recommends, the hook now checks with the project's TypeScript 6 compiler, `tsc6`, instead of TypeScript 7 (#87).
+- When a Bash command changes more files than the 200 that Claude Code lists, the hook now also checks the ones past that limit instead of skipping them without a word (#87).
+
+### Changed
+
+- The README explains the TypeScript 6 and 7 side-by-side setup, including why the language server then needs a global `typescript@6`, and says more precisely what `useSyntaxServer: "never"` changes: the first navigation answers of a session come from the full server (#87).
+
 ## [0.3.4] - 2026-11-06
 
 ### Changed
@@ -85,7 +96,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - Post-edit hook: after each Edit, Write or Bash call, the pinned `tsc --noEmit` checks the `tsconfig.json` program of every TypeScript or JavaScript file it changed; errors in the edited file first, breakage elsewhere in the program after, a file outside every program reported, compiler defaults when no `tsconfig.json` exists.
 - `typescript6-lsp-intelligence` skill: LSP operations first with a routing table against Grep, five checks before trusting a reference result, the blind spots to grep, an impact checklist for renames and deletions, server gotchas verified on fixtures, and a `toolchain.md` reference for the pinned compiler, TypeScript 6 vs 7, configuration, a strict profile, CI and IDE.
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/typescript6-lsp-intelligence--v0.3.4...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/typescript6-lsp-intelligence--v0.3.5...HEAD
+[0.3.5]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/typescript6-lsp-intelligence--v0.3.5
 [0.3.4]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/typescript6-lsp-intelligence--v0.3.4
 [0.3.3]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/typescript6-lsp-intelligence--v0.3.3
 [0.3.2]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/typescript6-lsp-intelligence--v0.3.2
