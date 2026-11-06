@@ -1,8 +1,8 @@
 {
   "name": "bash-lsp-intelligence",
   "displayName": "Bash LSP Intelligence",
-  "version": "0.2.7",
-  "description": "Gives Claude Code bash-language-server for Bash and POSIX shell scripts, formats and checks every script Claude edits with shfmt and ShellCheck using your own configuration, and teaches Claude to trace sourced files and same-named functions before a rename.",
+  "version": "0.2.8",
+  "description": "Bash and shell script code intelligence for Claude Code: connects bash-language-server (LSP), formats and lints every script Claude edits with shfmt and ShellCheck using your own configuration, reports the diagnostics, and teaches Claude to trace sourced files and same-named functions before a rename.",
   "author": {
     "name": "Nery Murillo",
     "url": "https://github.com/nerymurillohnd"

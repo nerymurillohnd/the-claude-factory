@@ -1,8 +1,8 @@
 {
   "name": "plugin-test-bench",
   "displayName": "Plugin Test Bench",
-  "version": "0.1.2",
-  "description": "Proves your Claude Code plugin works the way your users receive it: installs a copy in a throwaway config, checks it loads, runs your eval suite against that copy, and reviews your eval cases so they measure what the plugin adds.",
+  "version": "0.1.3",
+  "description": "Testing for Claude Code plugins before release: installs a copy the way your users receive it in a throwaway config, checks it loads, runs your plugin eval suite against that copy, and reviews your evals so they measure what the plugin adds. Quality you can prove.",
   "author": {
     "name": "Nery Murillo",
     "url": "https://github.com/nerymurillohnd"

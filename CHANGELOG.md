@@ -4,6 +4,32 @@ All notable changes to **The Claude Factory** marketplace are documented here: p
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The marketplace has no version of its own: entries are grouped by date, newest first, and every plugin carries its own version, changelog and tag. The versions 0.1.0 and 0.2.0 below are the history from before that change; their tags stay.
 
+## 2026-11-06
+
+### Changed
+
+- **bash-lsp-intelligence** 0.2.8 — the description names the terms people type when they search `/plugin`, which matches only a plugin's name, display name and description; nothing changes in how the plugin works.
+- **block-no-verify** 0.1.5 — the description names the terms people type when they search `/plugin`, which matches only a plugin's name, display name and description; nothing changes in how the plugin works.
+- **file-tree-pane** 0.1.6 — the description names the terms people type when they search `/plugin`, which matches only a plugin's name, display name and description; nothing changes in how the plugin works.
+- **github-operations** 0.7.2 — the description names the terms people type when they search `/plugin`, which matches only a plugin's name, display name and description; nothing changes in how the plugin works.
+- **hook-engineering** 0.2.5 — the description names the terms people type when they search `/plugin`, which matches only a plugin's name, display name and description; nothing changes in how the plugin works.
+- **instruction-engineering** 0.1.3 — the description names the terms people type when they search `/plugin`, which matches only a plugin's name, display name and description; nothing changes in how the plugin works.
+- **macos-grep-guard** 0.1.4 — the description names the terms people type when they search `/plugin`, which matches only a plugin's name, display name and description; nothing changes in how the plugin works.
+- **model-trace** 0.1.4 — the description names the terms people type when they search `/plugin`, which matches only a plugin's name, display name and description; nothing changes in how the plugin works.
+- **mods-engineering** 0.1.5 — the description names the terms people type when they search `/plugin`, which matches only a plugin's name, display name and description; nothing changes in how the plugin works.
+- **plugin-evals** 0.1.6 — the description names the terms people type when they search `/plugin`, which matches only a plugin's name, display name and description; nothing changes in how the plugin works.
+- **plugin-test-bench** 0.1.3 — the description names the terms people type when they search `/plugin`, which matches only a plugin's name, display name and description; nothing changes in how the plugin works.
+- **project-maintainer** 0.2.6 — the description names the terms people type when they search `/plugin`, which matches only a plugin's name, display name and description; nothing changes in how the plugin works.
+- **prompt-writer** 0.2.4 — the description names the terms people type when they search `/plugin`, which matches only a plugin's name, display name and description; nothing changes in how the plugin works.
+- **python-lsp-intelligence** 0.3.3 — the description names the terms people type when they search `/plugin`, which matches only a plugin's name, display name and description; nothing changes in how the plugin works.
+- **skill-diagnostics** 0.2.2 — the description names the terms people type when they search `/plugin`, which matches only a plugin's name, display name and description; nothing changes in how the plugin works.
+- **svelte-development** 0.1.3 — the description names the terms people type when they search `/plugin`, which matches only a plugin's name, display name and description; nothing changes in how the plugin works.
+- **tailwind-development** 0.3.3 — the description names the terms people type when they search `/plugin`, which matches only a plugin's name, display name and description; nothing changes in how the plugin works.
+- **tool-ledger** 0.1.5 — the description names the terms people type when they search `/plugin`, which matches only a plugin's name, display name and description; nothing changes in how the plugin works.
+- **turn-meter** 0.1.5 — the description names the terms people type when they search `/plugin`, which matches only a plugin's name, display name and description; nothing changes in how the plugin works.
+- **typescript6-lsp-intelligence** 0.3.4 — the description names the terms people type when they search `/plugin`, which matches only a plugin's name, display name and description; nothing changes in how the plugin works.
+- **typescript7-lsp-intelligence** 0.4.4 — the description names the terms people type when they search `/plugin`, which matches only a plugin's name, display name and description; nothing changes in how the plugin works.
+
 ## 2026-11-05
 
 ### Added

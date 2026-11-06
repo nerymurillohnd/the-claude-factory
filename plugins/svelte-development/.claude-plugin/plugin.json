@@ -1,8 +1,8 @@
 {
   "name": "svelte-development",
   "displayName": "Svelte Development",
-  "version": "0.1.2",
-  "description": "Writes, reviews and migrates Svelte 5 and SvelteKit 3 code by current practice, checking every change against the official Svelte docs and autofixer, the Svelte language server and your project's own check.",
+  "version": "0.1.3",
+  "description": "Writes and reviews Svelte 5 and SvelteKit 3 frontend code by current practice (runes, snippets, Astro and Tailwind CSS projects) and runs the migration from Svelte 4 and SvelteKit 2, checking every change against the official Svelte docs MCP server and autofixer, the Svelte language server (LSP) and your project's own svelte-check.",
   "author": {
     "name": "Nery Murillo",
     "url": "https://github.com/nerymurillohnd"

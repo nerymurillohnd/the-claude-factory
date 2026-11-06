@@ -1,8 +1,8 @@
 {
   "name": "hook-engineering",
   "displayName": "Hook Engineering",
-  "version": "0.2.4",
-  "description": "Designs, writes, audits and debugs Claude Code hooks end to end: the event and configuration that decide when a hook runs, the input and output contract that decides what it does, prompt, agent and background hooks, workspace trust and security, and how mods interact with hooks, checked against the current docs and changelog.",
+  "version": "0.2.5",
+  "description": "Designs, writes, audits and debugs Claude Code hooks: hook events, matchers and configuration, exit codes and JSON decision control, prompt, agent and async hooks, MCP tool hooks, security and workspace trust, and how mods interact with hooks, checked against the current docs and changelog. Automation you can trust.",
   "author": {
     "name": "Nery Murillo",
     "url": "https://github.com/nerymurillohnd"

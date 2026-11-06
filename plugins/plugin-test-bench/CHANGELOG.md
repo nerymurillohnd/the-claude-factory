@@ -6,6 +6,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.1.3] - 2026-11-06
+
+### Changed
+
+- The plugin's description now names the tools and terms people type when they search for a plugin like this one in `/plugin`, which matches only the plugin's name, display name and description. Nothing changes in how the plugin works.
+
 ## [0.1.2] - 2026-11-05
 
 ### Added
@@ -25,7 +31,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - `test-install` skill: installs the plugin from a commit into a throwaway Claude Code configuration, as a marketplace install copies it; reports files the copy lacks; checks the load in Claude Code's startup report; runs the eval suite against the installed copy; optionally runs real requests and packages a zip for the Claude app; removes everything it created, including its sign-in.
 - `review-evals` skill: reviews every eval case for what it proves, how its graders score with and without the plugin, triggering measured as a rate, run isolation and fixtures, and reports a verdict and exact fix per case; dry-runs fixture scripts for free and applies fixes, each only after you approve.
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/plugin-test-bench--v0.1.2...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/plugin-test-bench--v0.1.3...HEAD
+[0.1.3]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/plugin-test-bench--v0.1.3
 [0.1.2]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/plugin-test-bench--v0.1.2
 [0.1.1]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/plugin-test-bench--v0.1.1
 [0.1.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/plugin-test-bench--v0.1.0

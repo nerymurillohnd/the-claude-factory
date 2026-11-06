@@ -1,8 +1,8 @@
 {
   "name": "instruction-engineering",
   "displayName": "Instruction Engineering",
-  "version": "0.1.2",
-  "description": "Writes, edits, reviews, audits, debugs and refactors Claude Code instruction files (CLAUDE.md, CLAUDE.local.md and .claude/rules at user and project scope) against the current loading rules, with a read-only checker and an independent reviewer agent.",
+  "version": "0.1.3",
+  "description": "Writes, edits, reviews, audits, debugs and refactors Claude Code instructions and memory files (CLAUDE.md, CLAUDE.local.md and .claude/rules at user and project scope) against the current loading rules, with a read-only checker and an independent reviewer agent. Documentation that Claude actually follows.",
   "author": {
     "name": "Nery Murillo",
     "url": "https://github.com/nerymurillohnd"

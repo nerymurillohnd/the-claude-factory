@@ -1,8 +1,8 @@
 {
   "name": "project-maintainer",
   "displayName": "Project Maintainer",
-  "version": "0.2.5",
-  "description": "Keeps a project's memory in its .claude folder: decisions recorded as ADRs, technical debt tracked in a ledger, and a handoff that carries each session's state to the next one.",
+  "version": "0.2.6",
+  "description": "Keeps a project's memory and documentation in its .claude folder: architecture decisions recorded as ADRs, technical debt tracked in a ledger, and a session handoff that carries each session's state to the next one for continuity.",
   "author": {
     "name": "Nery Murillo",
     "url": "https://github.com/nerymurillohnd"

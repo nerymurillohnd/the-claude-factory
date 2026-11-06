@@ -1,8 +1,8 @@
 {
   "name": "turn-meter",
   "displayName": "Turn Meter",
-  "version": "0.1.4",
-  "description": "Shows how long each turn took, how many tools it used in the main thread and in subagents, and the tokens it spent, in a band above the prompt, and alerts you when a long turn ends.",
+  "version": "0.1.5",
+  "description": "Shows how long each turn took (duration), how many tools it used in the main thread and in subagents, and the tokens it spent, in a status band above the prompt, with usage at a glance and a notification when a long turn ends. A Claude Code mod.",
   "author": {
     "name": "Nery Murillo",
     "url": "https://github.com/nerymurillohnd"
