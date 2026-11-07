@@ -252,6 +252,28 @@ class SkillArgumentPlaceholdersTests(unittest.TestCase):
             "✔ 2 SKILL.md body(ies) and 3 command(s) hold no bare $N argument placeholder\n",
         )
 
+    def test_malformed_commands_are_skipped(self) -> None:
+        """A NUL path, a number and a map entry with non-string fields do not crash the run."""
+        plugin = self.tmp / "plugins" / "p"
+        manifest(
+            plugin,
+            commands={
+                "number": {"source": 5, "content": 7},
+                "nul": {"source": "./a\x00b"},
+                "list": {"source": ["./a\x00b", 3, None]},
+            },
+        )
+        manifest(self.tmp / "plugins" / "q", commands=["./a\x00b", 5])
+        manifest(self.tmp / "plugins" / "r", commands=5)
+        manifest(self.tmp / "plugins" / "s", skills=["./a\x00b"])
+        result = run(self.tmp)
+        self.assertEqual(result.returncode, 0, msg=result.stderr)
+        self.assertNotIn("Traceback", result.stderr)
+        self.assertEqual(
+            result.stdout,
+            "✔ 0 SKILL.md body(ies) and 0 command(s) hold no bare $N argument placeholder\n",
+        )
+
     def test_arguments_are_refused(self) -> None:
         """Any argument is a usage error."""
         result = run(self.tmp, "extra")
