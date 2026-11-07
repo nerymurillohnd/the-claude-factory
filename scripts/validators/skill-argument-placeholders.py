@@ -75,6 +75,8 @@ COMMANDS_DIR = "commands"
 COMMANDS_FIELD = "commands"
 COMMAND_SUFFIX = ".md"
 FRONTMATTER = "---"
+# What Path.resolve() raises for a path it cannot resolve (an embedded NUL, a symlink loop).
+UNRESOLVABLE = (OSError, ValueError)
 # A dollar, ASCII digits, and no ASCII word character after them: the form Claude Code replaces.
 PLACEHOLDER = re.compile(r"\$[0-9]+(?![A-Za-z0-9_])")
 
@@ -221,9 +223,16 @@ def string_items(value: object) -> list[str]:
 
 
 def inside(plugin: Path, declared: str) -> Path | None:
-    """`plugin`/`declared` when it resolves inside the plugin, else None."""
+    """`plugin`/`declared` when it resolves inside the plugin, else None.
+
+    A path that cannot be resolved at all (an embedded NUL, a symlink loop) is treated as one
+    that does not resolve inside the plugin.
+    """
     target = plugin / declared
-    return target if target.resolve().is_relative_to(plugin.resolve()) else None
+    try:
+        return target if target.resolve().is_relative_to(plugin.resolve()) else None
+    except UNRESOLVABLE:
+        return None
 
 
 def plugin_skill_files(plugin: Path, manifest: JsonObject | None) -> list[Path]:
