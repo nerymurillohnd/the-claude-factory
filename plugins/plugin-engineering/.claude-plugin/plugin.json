@@ -1,0 +1,29 @@
+{
+  "name": "plugin-engineering",
+  "displayName": "Plugin Engineering",
+  "version": "0.1.0",
+  "description": "Complete, version-aware reference for the Claude Code plugin CLI: every claude plugin and claude plugin marketplace subcommand, every /plugin form, /reload-plugins and the --plugin-dir and --plugin-url flags, with exact flags, defaults, messages, JSON fields, exit codes and minimum versions, so Claude installs, updates, validates, tags, releases and debugs plugins and marketplaces right the first time.",
+  "icon": "./.claude-plugin/icon.png",
+  "author": {
+    "name": "Nery Murillo",
+    "url": "https://github.com/nerymurillohnd"
+  },
+  "homepage": "https://github.com/nerymurillohnd/the-claude-factory/tree/main/plugins/plugin-engineering#readme",
+  "repository": "https://github.com/nerymurillohnd/the-claude-factory",
+  "license": "MIT",
+  "keywords": [
+    "development",
+    "claude-code",
+    "plugins",
+    "marketplace",
+    "cli",
+    "reference"
+  ],
+  "metadata": {
+    "category": "development",
+    "surfaces": [
+      "claude-code",
+      "claude-app"
+    ]
+  }
+}
