@@ -21,6 +21,7 @@ Every `claude plugin <subcommand>` you run from a shell or a script, outside a C
 - plugin tag
 - plugin test
 - plugin validate
+- Synced plugins (`@synced`)
 
 ## Shared rules
 
@@ -175,7 +176,9 @@ Output:
 
 Fails for a plugin still required:
 - Another enabled plugin depends on it: the command names the dependents to disable first (and prints a chained command that disables both in the right order).
-- Your organization requires it as a synced plugin: fails and saves nothing.
+- Your organization requires it as a synced plugin: fails and saves nothing, with `Plugin "<name>@synced" is required by your organization and can't be disabled here. Contact your admin to change it.`
+
+Disabling a synced plugin (`<name>@synced`), here or on the Installed tab, saves `"<name>@synced": false` in your user-level `enabledPlugins`. See Synced plugins below.
 
 ## plugin update
 
@@ -216,7 +219,7 @@ Human-readable groups:
 - `Installed plugins:`: installed from a marketplace.
 - `Session-only plugins (--plugin-dir / --plugin-url):`: loaded by those flags in the same command, as in `claude --plugin-dir ./my-plugin plugin list`.
 - `Skills-directory plugins (.claude/skills/*):`: found in a skills directory.
-- `Synced from claude.ai`: synced from your claude.ai account.
+- `Synced from claude.ai`: synced from your claude.ai account. A plugin your organization requires is marked `required by your org`.
 - Nothing in any group: ``No plugins installed. Use `claude plugin install` to install a plugin.``
 
 `--json`: an array, one object per installation. Always present: `id`, `version`, `scope`, `enabled`, `installPath`. The others only when they apply:
@@ -448,3 +451,34 @@ Advice on the README (requires v2.1.295 or later):
 - An existing line counts when `plugin install`, or `plugin i`, is followed on the same line by `<plugin>@<marketplace>` (`/plugin install deploy-helper@acme-tools`) or by the plugin's name and `--marketplace <source>` (`/plugin install deploy-helper --marketplace acme/tools`). The `/plugin` and `claude plugin` spellings both count.
 
 Example: `claude plugin validate ./my-plugin --strict`
+
+## Synced plugins (`@synced`)
+
+Plugins turned on for a claude.ai account, by the user or by their organization. Source: `https://code.claude.com/docs/en/plugins/loading.md`, "Plugins synced from claude.ai", and the changelog.
+
+What they are:
+- Each loads as `<name>@synced`, with no marketplace and no install record. In terminal sessions their skills, agents, hooks, MCP servers and LSP servers all load, with the same trust as an installed marketplace plugin.
+- The sync goes one way only: `claude plugin install` and `/plugin` installs stay on the machine and never reach the claude.ai account.
+- `synced` is a reserved origin name: no marketplace can be named `inline`, `skills-dir` or `synced`.
+- Precedence: a synced plugin loads last. When an enabled plugin from any other origin has the same manifest name, that plugin loads and the synced copy is reported as not loaded. To use the claude.ai copy, disable your own copy.
+
+When they sync:
+- Cowork: downloaded into the session's own environment when the session starts. In a cloud Cowork session, a plugin turned on or off mid-session may arrive after a few messages; if nothing changes, start a new session.
+- Terminal sessions: each start of Claude Code syncs once in the background, downloading new and updated plugins and removing the ones turned off. Requires Claude Code v2.1.273 or later.
+- The background sync can finish after the session starts. In an interactive session it then shows `Plugins changed. Run /reload-plugins to activate.` Run `/reload-plugins`, or leave it for the next start.
+- A plugin turned on or off on claude.ai during a terminal session is downloaded or removed the next time Claude Code starts.
+
+When a synced plugin is missing (the terminal neither downloads nor loads synced plugins, even after `/login`):
+- The session isn't signed in with the claude.ai account: plugins sync only in sessions that are.
+- `ANTHROPIC_AUTH_TOKEN`, `CLAUDE_CODE_OAUTH_TOKEN` or an `apiKeyHelper` script supplies the credential in place of that sign-in.
+- The session doesn't fetch feature flags from Anthropic, such as with `CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC` set.
+- Bare mode, or a session started with `--safe-mode`.
+- A `--setting-sources` list that leaves out `user`.
+- A sign-in made on an earlier Claude Code version doesn't cover plugins until Claude Code renews it in the background. Run `/login` again; sync starts at the next start of Claude Code.
+- `syncClaudeAiPlugins` is `false` in user or managed settings, or the organization turned off Skills on claude.ai.
+
+Controlling them:
+- One plugin: `claude plugin disable <name>@synced`, or the Installed tab of `/plugin`, saves `"<name>@synced": false` in the user-level `enabledPlugins`. To keep it out of a project in every environment, set the same key in the project's committed `.claude/settings.json`.
+- Every synced plugin on a machine: set `syncClaudeAiPlugins` to `false` in user settings (an organization can set it in managed settings). Claude Code stops downloading and, at the next start, moves the plugins it already synced to `~/.claude/plugins/.trash/` and no longer loads them. `syncClaudeAiSkills: false` opts out of synced skills the same way (changelog 2.1.275).
+- A plugin the organization marks as required on claude.ai loads even if disabled earlier. `claude plugin disable` refuses it with `Plugin "<name>@synced" is required by your organization and can't be disabled here. Contact your admin to change it.`, and `claude plugin list` marks it `required by your org`.
+- Remove one: turn it off on claude.ai (Customize > Plugins), as the install guide says; it has no install record to uninstall.

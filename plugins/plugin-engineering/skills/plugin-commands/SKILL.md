@@ -43,6 +43,8 @@ Never write version checks or fallback paths into a script for the user. When a 
 - `/plugin` doesn't run in `claude -p` or other non-interactive runs (`/plugin isn't available in this environment.`). Use `claude plugin` from the shell. `/reload-plugins` does run there (v2.1.260+).
 - `/marketplace` is an alias of `/plugin`, so `/marketplace list` lists plugins. Use `/plugin marketplace list`.
 - `/plugin help` printed nothing on 2.1.319. Use `claude plugin --help`.
+- A synced plugin (`<name>@synced`) missing from the terminal: it syncs only when the session is signed in with the claude.ai account, and never with `ANTHROPIC_AUTH_TOKEN`, `CLAUDE_CODE_OAUTH_TOKEN` or `apiKeyHelper`, with `CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC`, in bare or `--safe-mode` sessions, with `--setting-sources` lacking `user`, or with `syncClaudeAiPlugins: false`. It also loses to any enabled plugin of the same name. The checklist is in the Synced plugins section of `references/plugin-commands.md`.
+- A plugin the organization requires on claude.ai can't be disabled: `claude plugin disable` refuses it.
 - A `--plugin-dir` plugin silently replaces a same-named installed plugin for that session, and `claude plugin list` still shows the installed row as enabled.
 - `--plugin-dir` at a marketplace root loads nothing and shows no error. Point it at the plugin directory.
 
@@ -67,7 +69,7 @@ Never write version checks or fallback paths into a script for the user. When a 
 
 ## Which reference to load
 
-- `references/plugin-commands.md`: every `claude plugin` subcommand (init, install, uninstall, enable, disable, update, list, details, configure, prune, eval, eval init, tag, test, validate), the shared exit codes, scopes and aliases, and the `--json` result format.
+- `references/plugin-commands.md`: every `claude plugin` subcommand (init, install, uninstall, enable, disable, update, list, details, configure, prune, eval, eval init, tag, test, validate), the shared exit codes, scopes and aliases, the `--json` result format, and synced plugins (`@synced`).
 - `references/marketplace-commands.md`: `claude plugin marketplace add|list|remove|update`, every source form, private marketplace credentials and claude.ai marketplaces.
 - `references/session-commands.md`: every `/plugin` form, where `/plugin` runs on each surface, the panel tabs, and `/reload-plugins`.
 - `references/session-flags.md`: `--plugin-dir`, `--plugin-url`, `CLAUDE_CODE_PLUGIN_DIRS`, `@inline` plugins and their precedence.
