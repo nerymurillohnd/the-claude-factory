@@ -61,6 +61,12 @@
       "category": "development"
     },
     {
+      "name": "plugin-engineering",
+      "source": "./plugins/plugin-engineering",
+      "description": "Complete, version-aware reference for the Claude Code plugin CLI: every claude plugin and claude plugin marketplace subcommand, every /plugin form, /reload-plugins and the --plugin-dir and --plugin-url flags, with exact flags, defaults, messages, JSON fields, exit codes and minimum versions, so Claude installs, updates, validates, tags, releases and debugs plugins and marketplaces right the first time.",
+      "category": "development"
+    },
+    {
       "name": "plugin-evals",
       "source": "./plugins/plugin-evals",
       "description": "Makes Claude an expert in Claude Code plugin evals: designs eval suites and benchmarks that prove what a plugin or its skills add, writes cases, graders and mocks, runs and gates them in CI, and reads the results, always checked against the CLI and docs you have today. Testing and quality for plugins.",
