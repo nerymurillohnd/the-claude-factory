@@ -1,4 +1,4 @@
-"""scripts/validators/skill-argument-placeholders.py: a bare $N in a SKILL.md body fails.
+"""scripts/validators/skill-argument-placeholders.py: a bare $N in a skill or command body fails.
 
 Each test runs the validator by path on a small repository under a temporary directory
 (TCF_ROOT); the last one runs it on this repository, which must pass. The forms and their
@@ -23,6 +23,11 @@ LITERAL_2 = '"\\$2" for a literal "$2"'
 SHELL_2 = '"${2}" for a shell parameter'
 PROBLEM_2 = 'bare "$2" is replaced by the skill\'s argument 2'
 MESSAGE_FOR_2 = f"{PROBLEM_2}; write {ARGUMENT_2}, {LITERAL_2}, or {SHELL_2}"
+ARGUMENT_1 = '"$ARGUMENTS[1]" for the argument'
+LITERAL_1 = '"\\$1" for a literal "$1"'
+SHELL_1 = '"${1}" for a shell parameter'
+COMMAND_PROBLEM_1 = 'bare "$1" is replaced by the command\'s argument 1'
+COMMAND_MESSAGE_FOR_1 = f"{COMMAND_PROBLEM_1}; write {ARGUMENT_1}, {LITERAL_1}, or {SHELL_1}"
 
 # Body lines Claude Code replaces: each must fail, at the column of its `$`.
 BARE = {
@@ -67,6 +72,19 @@ def errors(stderr: str) -> dict[str, list[str]]:
             scope, _, message = line.removeprefix(ERROR).partition("] ")
             found.setdefault(scope, []).append(message)
     return found
+
+
+def manifest(plugin: Path, **fields: object) -> None:
+    """Write `plugin`/.claude-plugin/plugin.json with `fields` after its name."""
+    (plugin / ".claude-plugin").mkdir(parents=True, exist_ok=True)
+    text = json.dumps({"name": plugin.name, **fields})
+    _ = (plugin / ".claude-plugin" / "plugin.json").write_text(text, encoding="utf-8")
+
+
+def command(path: Path, body: str, frontmatter: str = "description: A command.") -> None:
+    """Write the command file `path` with `frontmatter` and `body`."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    _ = path.write_text(f"---\n{frontmatter}\n---\n{body}", encoding="utf-8")
 
 
 def skill(directory: Path, body: str, frontmatter: str = "name: x\ndescription: A skill.") -> None:
@@ -136,9 +154,7 @@ class SkillArgumentPlaceholdersTests(unittest.TestCase):
         skill(plugin / "skills" / "default", "$1\n")
         skill(plugin / "extra" / "listed", "$1\n")
         skill(plugin, "$1\n")
-        (plugin / ".claude-plugin").mkdir()
-        manifest = json.dumps({"name": "p", "skills": ["./extra", "./"]})
-        _ = (plugin / ".claude-plugin" / "plugin.json").write_text(manifest, encoding="utf-8")
+        manifest(plugin, skills=["./extra", "./"])
         skill(self.tmp / ".claude" / "skills" / "project", "$1\n")
         found = errors(run(self.tmp).stderr)
         self.assertEqual(
@@ -152,13 +168,111 @@ class SkillArgumentPlaceholdersTests(unittest.TestCase):
             msg=found,
         )
 
-    def test_passing_repository_counts_its_skills(self) -> None:
-        """A passing repository counts its SKILL.md files."""
-        skill(self.tmp / "plugins" / "p" / "skills" / "one", "${1}\n")
-        skill(self.tmp / ".claude" / "skills" / "two", "\\$1\n")
+    def test_default_and_nested_commands(self) -> None:
+        """The default commands/ folder is read at every depth, with the command's message."""
+        plugin = self.tmp / "plugins" / "p"
+        command(plugin / "commands" / "top.md", "Run $2.\n")
+        command(plugin / "commands" / "sub" / "deep" / "low.md", "$1\n")
+        _ = (plugin / "commands" / "notes.txt").write_text("$1\n", encoding="utf-8")
+        found = errors(run(self.tmp).stderr)
+        message = MESSAGE_FOR_2.replace("skill's", "command's")
+        self.assertEqual(
+            found,
+            {
+                "plugins/p/commands/top.md:4:5": [message],
+                "plugins/p/commands/sub/deep/low.md:4:1": [COMMAND_MESSAGE_FOR_1],
+            },
+            msg=found,
+        )
+
+    def test_manifest_commands_replace_the_default(self) -> None:
+        """A declared file, folder and map source are read; the default folder no longer is."""
+        plugin = self.tmp / "plugins" / "p"
+        command(plugin / "commands" / "ignored.md", "$1\n")
+        command(plugin / "files" / "one.md", "$1\n")
+        command(plugin / "extra" / "deep" / "two.md", "$1\n")
+        command(plugin / "mapped" / "three.md", "$1\n")
+        command(self.tmp / "outside.md", "$1\n")
+        manifest(plugin, commands=["./files/one.md", "./extra/", "../../outside.md"])
+        found = errors(run(self.tmp).stderr)
+        self.assertEqual(
+            set(found),
+            {"plugins/p/files/one.md:4:1", "plugins/p/extra/deep/two.md:4:1"},
+            msg=found,
+        )
+        manifest(
+            plugin,
+            commands={
+                "three": {"source": "./mapped/three.md"},
+                "inline": {"content": "First line.\nUse $3 here.\n"},
+            },
+        )
+        found = errors(run(self.tmp).stderr)
+        self.assertEqual(
+            set(found),
+            {
+                "plugins/p/mapped/three.md:4:1",
+                "plugins/p/.claude-plugin/plugin.json:commands.inline:2:5",
+            },
+            msg=found,
+        )
+
+    def test_project_commands(self) -> None:
+        """.claude/commands/ is read at every depth."""
+        command(self.tmp / ".claude" / "commands" / "probe.md", "$1\n")
+        command(self.tmp / ".claude" / "commands" / "ns" / "deep.md", "$1\n")
+        found = errors(run(self.tmp).stderr)
+        self.assertEqual(
+            set(found),
+            {".claude/commands/probe.md:4:1", ".claude/commands/ns/deep.md:4:1"},
+            msg=found,
+        )
+
+    def test_command_frontmatter_is_not_read(self) -> None:
+        """A $N in a command's frontmatter passes, as in a skill's."""
+        command(
+            self.tmp / "plugins" / "p" / "commands" / "front.md",
+            "Body.\n",
+            "description: Costs $5 per run, see $1.\nargument-hint: $1",
+        )
         result = run(self.tmp)
         self.assertEqual(result.returncode, 0, msg=result.stderr)
-        self.assertIn("✔ 2 SKILL.md", result.stdout)
+
+    def test_passing_repository_counts_skills_and_commands(self) -> None:
+        """A passing repository counts its SKILL.md files and its commands apart."""
+        skill(self.tmp / "plugins" / "p" / "skills" / "one", "${1}\n")
+        skill(self.tmp / ".claude" / "skills" / "two", "\\$1\n")
+        command(self.tmp / "plugins" / "p" / "commands" / "c.md", "$ARGUMENTS[1]\n")
+        command(self.tmp / ".claude" / "commands" / "d.md", "${1}\n")
+        manifest(self.tmp / "plugins" / "q", commands={"e": {"content": "\\$1"}})
+        result = run(self.tmp)
+        self.assertEqual(result.returncode, 0, msg=result.stderr)
+        self.assertEqual(
+            result.stdout,
+            "✔ 2 SKILL.md body(ies) and 3 command(s) hold no bare $N argument placeholder\n",
+        )
+
+    def test_malformed_commands_are_skipped(self) -> None:
+        """A NUL path, a number and a map entry with non-string fields do not crash the run."""
+        plugin = self.tmp / "plugins" / "p"
+        manifest(
+            plugin,
+            commands={
+                "number": {"source": 5, "content": 7},
+                "nul": {"source": "./a\x00b"},
+                "list": {"source": ["./a\x00b", 3, None]},
+            },
+        )
+        manifest(self.tmp / "plugins" / "q", commands=["./a\x00b", 5])
+        manifest(self.tmp / "plugins" / "r", commands=5)
+        manifest(self.tmp / "plugins" / "s", skills=["./a\x00b"])
+        result = run(self.tmp)
+        self.assertEqual(result.returncode, 0, msg=result.stderr)
+        self.assertNotIn("Traceback", result.stderr)
+        self.assertEqual(
+            result.stdout,
+            "✔ 0 SKILL.md body(ies) and 0 command(s) hold no bare $N argument placeholder\n",
+        )
 
     def test_arguments_are_refused(self) -> None:
         """Any argument is a usage error."""
