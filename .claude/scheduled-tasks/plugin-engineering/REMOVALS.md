@@ -1864,3 +1864,15 @@ The `cli-commands-guide` skill of the same plugin holds the full command referen
 - 9 sections keep the facts the skill lacks verbatim: the example command blocks of uninstall, enable, disable, update, details, prune and marketplace update, the five interview steps of `plugin eval init`, and the full example output of Advice on the README.
 - The Documentation Index block was replaced by `## Contents` and `## Documentation References`, as in the rewritten files. The fact-by-fact coverage table used for the decision is a maintainer scratch file and does not ship.
 
+## Large plugins-core files, stage 2 (2026-11-09)
+
+`01-plugins-core/components.md`, `manifest-reference.md`, `plugin-evals.md` and `troubleshooting.md` were rewritten for Claude under the same rules as the 46 files of 2026-11-08, with a stricter reading protocol for long files: each agent read its file in chunks of at most 250 lines, re-read each section before rewriting it, re-read the result, and kept a map of every original heading. A separate verifier read all eight files in full and checked them section by section.
+
+- Code blocks (including those inside blockquotes and tabs) and table rows are identical to the originals, except nine table rows of `plugin-evals.md` whose only change is a repointed internal link.
+- Internal links that did not resolve in the pruned copies now point at the heading that holds the content: 4 uses in `components.md` (`#user-configuration`, `#path-variables-and-persistent-data`), 31 uses of 10 anchors in `plugin-evals.md`, and 8 in `troubleshooting.md`.
+- `components.md`: the leftover text of the interactive plugin-directory explorer was removed and each example got a bold label with its path.
+- `plugin-evals.md`: two Troubleshooting headings lost their second person ("…for one of the plugin's agents", "…doesn't match visible text").
+- `troubleshooting.md`: the intro moved under a new `## How to use this file`; each "once it works" line starts with "Success:".
+- Next steps and See also sections were replaced by `## Documentation References`.
+- Verifier findings fixed: in `troubleshooting.md`, "so do not delete them by hand" restored to its original sense ("there is no need to delete them by hand"), an added "No action is needed." removed, and an extra trailing blank line removed; in `manifest-reference.md`, the llms.txt entry removed from Documentation References.
+

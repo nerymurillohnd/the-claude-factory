@@ -26,23 +26,23 @@ Sizes in KB (1 KB = 1,024 bytes), including each file's index block. The 64 page
 - `cli-hints.md`: 0.4 KB, 11 lines
 - `cli-reference.md`: 29.6 KB, 365 lines
 - `code-intelligence.md`: 9.1 KB, 114 lines
-- `components.md`: 40.3 KB, 690 lines; assets: `components-channel-example.json` (0.5 KB)
+- `components.md`: 43.7 KB, 697 lines; assets: `components-channel-example.json` (0.5 KB)
 - `create-marketplace.md`: 16.1 KB, 248 lines
 - `create.md`: 27.3 KB, 409 lines
 - `dependencies.md`: 16.0 KB, 226 lines
 - `host-marketplace.md`: 20.9 KB, 262 lines
 - `install.md`: 28.8 KB, 365 lines
 - `loading.md`: 35.2 KB, 357 lines
-- `manifest-reference.md`: 42.1 KB, 665 lines; assets: `manifest-full-example.json` (1.4 KB), `manifest-channel-example.json` (0.5 KB)
+- `manifest-reference.md`: 44.8 KB, 692 lines; assets: `manifest-full-example.json` (1.4 KB), `manifest-channel-example.json` (0.5 KB)
 - `marketplace-reference.md`: 38.9 KB, 419 lines
 - `measure.md`: 8.8 KB, 127 lines
 - `org.md`: 26.1 KB, 272 lines
 - `overview.md`: 15.3 KB, 142 lines; assets: `plugin-directory.png` (64.3 KB), `plugins-model.png` (40.5 KB)
-- `plugin-evals.md`: 64.8 KB, 799 lines; assets: `plugin-eval-report.png` (185.6 KB)
+- `plugin-evals.md`: 67.6 KB, 800 lines; assets: `plugin-eval-report.png` (185.6 KB)
 - `publish.md`: 12.7 KB, 158 lines
 - `relevance.md`: 12.1 KB, 204 lines
 - `security.md`: 13.4 KB, 162 lines
-- `troubleshooting.md`: 92.6 KB, 1181 lines
+- `troubleshooting.md`: 99.7 KB, 1198 lines
 
 ### 02-mods
 
