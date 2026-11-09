@@ -16,14 +16,15 @@ Two cases, named below:
 1. Register every removal in the `renames` map. The map is append-only: add one entry per removal, and never edit or delete an existing one.
 2. Never remove a plugin while another plugin depends on it or links to it. Change the dependent first.
 3. Leave dated history untouched: old changelog lines and specs keep the old name.
-4. Never reuse a retired name.
-5. Never delete or move the old tag or its GitHub Release. They stay as history.
-6. Setting `forceRemoveDeletedPlugins` is Nery's decision.
+4. Keep the history out of `<target>`'s README: it describes the plugin as it is now. The old name, the old commands and the migration step go in the changelog and the release notes.
+5. Never reuse a retired name.
+6. Never delete or move the old tag or its GitHub Release. They stay as history.
+7. Setting `forceRemoveDeletedPlugins` is Nery's decision.
 
 ## What users see after the push
 
 - Removal (`"<old>": null`): Claude Code drops the old key from `enabledPlugins` and `pluginConfigs` and shows `Removed from the "the-claude-factory" marketplace`.
-- Merge (`"<old>": "<target>"`): Claude Code rewrites the old key to `<target>` and shows the rename notice once. Each user runs `/plugin install <target>@the-claude-factory` once if `<target>` is not cached.
+- Merge (`"<old>": "<target>"`): Claude Code rewrites the old key to `<target>` and shows the rename notice once. It does not install `<target>`: the plugin reports `Plugin "<target>" not cached` until the user runs `/plugin install <target>@the-claude-factory` once, and on Claude Code 2.1.319 `claude plugin list` leaves it out and `claude plugin update` fails with `is not installed` even when `<target>` is already in the cache.
 - An organization that enables the plugin in managed settings sees the notice on every session until an administrator changes `enabledPlugins` there.
 - A new install by the old name fails with `not found in marketplace`.
 
@@ -68,10 +69,10 @@ Decide removal or merge, and keep using `<old>` and `<target>` below.
 ### 7. Write the release notes content
 
 1. Removal: `<old>` has no version to bump and no changelog to write.
-2. Merge: write the notes of `<target>` in `plugins/<target>/CHANGELOG.md`, and tell users of `<old>` which command replaces theirs.
+2. Merge: write the notes of `<target>` in `plugins/<target>/CHANGELOG.md`, tell users of `<old>` which command replaces theirs, and tell them to run `/plugin install <target>@the-claude-factory` once.
 3. Write the root changelog line under `### Removed`:
    - Removal: `- **<old>** retired: one-line reason.`
-   - Merge: `` - **<old>** retired: its <what> is now the `<skill>` skill of **<target>**, and the marketplace renames existing installs. Type `/<target>:<skill>` where you typed `/<old>:<skill>`. ``
+   - Merge: `` - **<old>** retired: its <what> is now the `<skill>` skill of **<target>**, and the marketplace renames existing installs; run `/plugin install <target>@the-claude-factory` once. Type `/<target>:<skill>` where you typed `/<old>:<skill>`. ``
 
 ### 8. Tell Nery about installed copies
 

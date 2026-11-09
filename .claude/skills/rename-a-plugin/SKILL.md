@@ -53,7 +53,7 @@ Rename a published plugin of `the-claude-factory`, a marketplace hosted in a pub
 ### 5. Change the live uses
 
 1. Move the directory: `git mv plugins/<old> plugins/<new>`.
-2. Change `name` and `homepage` in `plugin.json`, the skill names, the README commands and badges, and the mentions in `docs/`.
+2. Change `name` and `homepage` in `plugin.json`, the skill names, the README commands and badges, and the mentions in `docs/`. The README describes the plugin as it is now: add no note about the old name. The old name, the old commands and the reinstall step go in the changelog (step 7).
 3. Move its test folder: `git mv scripts/testers/<old> scripts/testers/<new>`.
 4. Change the `dependencies` entries and symlinks found in step 4.
 
