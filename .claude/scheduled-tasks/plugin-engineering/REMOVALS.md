@@ -1846,3 +1846,21 @@ On 2026-11-08 the 46 files of 500 lines or fewer were rewritten for Claude as th
 - Each image keeps its official Markdown line and alt text. Under it, one added line points to the local copy: `> **View the image** [`assets/<name>.png`](../../assets/<name>.png) **to** <what the image shows>.`
 - In `01-plugins-core/overview.md` and `02-mods/mod-gallery.md`, that line replaces the longer text description added on 2026-11-08; the summary line at the top of `mod-gallery.md` now names the `assets/` folder instead of the descriptions.
 - In the other six files (`plugin-evals.md`, `mod-interface.md`, `channels-reference.md`, `hooks.md`, `platform-skills-best-practices.md`, `platform-skills-overview.md`), the pointer lines are the only change; nothing was removed.
+
+## Large plugins-core files, stage 1 (2026-11-09)
+
+### JSON examples moved to assets
+
+No page holds a JSON Schema. The rule applied: a fenced JSON block that is a complete, standalone document of 20 lines or more moves to the skill's `assets/` folder; shorter snippets stay inline because they illustrate the sentence next to them. Each moved block is replaced by one line, `> **Read the example** [`assets/<name>.json`](../../assets/<name>.json) for <what it shows>.` The JSON values are identical to the official block; Biome reformatted the layout (arrays one item per line) so the repository's lint gate passes.
+
+- `01-plugins-core/manifest-reference.md`: the example manifest that sets most keys of the Fields table (51 lines) → `manifest-full-example.json`; the channel manifest under `channels` (23 lines) → `manifest-channel-example.json`.
+- `01-plugins-core/components.md`: the channel manifest under Channels (23 lines) → `components-channel-example.json`.
+
+### cli-reference.md slimmed to pointers
+
+The `cli-commands-guide` skill of the same plugin holds the full command reference, checked against Claude Code 2.1.319. `01-plugins-core/cli-reference.md` went from 947 to 365 lines. Every heading was kept except Next steps, which became `## Documentation References`.
+
+- 30 sections whose every fact the skill holds keep one to three governance sentences from the original, then a pointer: load `/plugin-engineering:cli-commands-guide` and read the named file and heading, or the section on the official page.
+- 9 sections keep the facts the skill lacks verbatim: the example command blocks of uninstall, enable, disable, update, details, prune and marketplace update, the five interview steps of `plugin eval init`, and the full example output of Advice on the README.
+- The Documentation Index block was replaced by `## Contents` and `## Documentation References`, as in the rewritten files. The fact-by-fact coverage table used for the decision is a maintainer scratch file and does not ship.
+

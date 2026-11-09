@@ -18,22 +18,22 @@ Removed: Anthropic's official directory and its submission flow (`manifest-refer
 
 ## Inventory
 
-Sizes in KB (1 KB = 1,024 bytes), including each file's index block. The 64 pages total 2,197.5 KB and 31,129 lines (as of 2026-11-09). The skill's `assets/` folder holds 29 PNG images, 1,369.6 KB in total, each listed after the page that shows it. `REMOVALS.md` adds 178.0 KB and 1,842 lines.
+Sizes in KB (1 KB = 1,024 bytes), including each file's index block. The 64 pages total 2,161.1 KB and 30,447 lines (as of 2026-11-09). The skill's `assets/` folder holds 29 PNG images and 3 JSON examples, 1,372.0 KB in total, each listed after the page that uses it. `REMOVALS.md` adds 178.0 KB and 1,842 lines.
 
 ### 01-plugins-core
 
 - `anthropic-marketplaces.md`: 3.0 KB, 38 lines
 - `cli-hints.md`: 0.4 KB, 11 lines
-- `cli-reference.md`: 64.3 KB, 947 lines
+- `cli-reference.md`: 29.6 KB, 365 lines
 - `code-intelligence.md`: 9.1 KB, 114 lines
-- `components.md`: 40.6 KB, 714 lines
+- `components.md`: 40.3 KB, 690 lines; assets: `components-channel-example.json` (0.5 KB)
 - `create-marketplace.md`: 16.1 KB, 248 lines
 - `create.md`: 27.3 KB, 409 lines
 - `dependencies.md`: 16.0 KB, 226 lines
 - `host-marketplace.md`: 20.9 KB, 262 lines
 - `install.md`: 28.8 KB, 365 lines
 - `loading.md`: 35.2 KB, 357 lines
-- `manifest-reference.md`: 43.6 KB, 741 lines
+- `manifest-reference.md`: 42.1 KB, 665 lines; assets: `manifest-full-example.json` (1.4 KB), `manifest-channel-example.json` (0.5 KB)
 - `marketplace-reference.md`: 38.9 KB, 419 lines
 - `measure.md`: 8.8 KB, 127 lines
 - `org.md`: 26.1 KB, 272 lines
