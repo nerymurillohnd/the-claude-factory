@@ -47,6 +47,17 @@ const TABLE_HEADER = /^\|\s*Component\s*\|/
 /** @type {Set<string> | undefined} */
 let templateMarks
 
+// ── Compatibility cells and conformance lines of plugin READMEs ──
+const COMPATIBILITY_DOC = join(ROOT, 'docs/compatibility.md')
+// The matrix in docs/compatibility.md, from its heading to its legend.
+const DOC_MATRIX = /^## [^\n]*Components by surface[^\n]*\n([\s\S]*?)^\*\*Legend:\*\*/m
+// Plugins whose README is being rewritten in another change. The badge and conformance checks
+// skip them until that change lands; remove a name as soon as its README follows the template.
+const README_ALIGNMENT_PENDING = new Set(['skill-diagnostics'])
+const TABLE_EDGE_PIPES = /^\||\|$/g
+const WHITESPACE_RUN = /\s+/
+const PLATFORMS_LINE = /^\*\*Platforms:\*\* macOS and Linux(, and Windows through Git Bash)?\.$/m
+
 /**
  * The author placeholders the README template holds, such as `<Skill name>` and `<Display Name>`.
  * Throws when the template is missing or holds none, so the code check never passes by default,
@@ -554,7 +565,7 @@ function surfaceProblems(name, surfaces, readme) {
   const problems = []
   if (components.bin && profileKey !== 'claude-code-only') {
     problems.push(
-      'ships a top-level bin/, which makes the Claude app refuse the plugin — declare metadata.surfaces ["claude-code"] or move the code into a skill\'s scripts/',
+      'ships a top-level bin/, which makes Claude refuse the plugin — declare metadata.surfaces ["claude-code"] or move the code into a skill\'s scripts/',
     )
   }
   if (readme === null) {
@@ -605,6 +616,111 @@ function compatibilityTableProblems(readme, components) {
 }
 
 /**
+ * The cells of a Compatibility table, keyed by the emoji that starts each row.
+ * @param {string} text the table, or the section that holds it
+ * @returns {Map<string, [string, string]>}
+ */
+export function compatibilityCells(text) {
+  /** @type {Map<string, [string, string]>} */
+  const cells = new Map()
+  for (const line of text.split('\n')) {
+    if (!line.startsWith('|') || TABLE_DIVIDER.test(line) || TABLE_HEADER.test(line)) {
+      continue
+    }
+    const c = line
+      .trim()
+      .replace(TABLE_EDGE_PIPES, '')
+      .split('|')
+      .map((cell) => cell.trim())
+    if (c.length >= 3) {
+      cells.set(c[0]?.split(WHITESPACE_RUN)[0] ?? '', [c[1] ?? '', c[2] ?? ''])
+    }
+  }
+  return cells
+}
+
+/** @type {Map<string, [string, string]> | undefined} */
+let docCells
+
+/**
+ * The component × surface matrix of docs/compatibility.md.
+ * @returns {Map<string, [string, string]>}
+ */
+function compatibilityMatrix() {
+  if (docCells === undefined) {
+    const body = existsSync(COMPATIBILITY_DOC)
+      ? readText(COMPATIBILITY_DOC).match(DOC_MATRIX)?.[1]
+      : undefined
+    if (body === undefined) {
+      throw new Error(`${relative(ROOT, COMPATIBILITY_DOC)} has no "Components by surface" matrix`)
+    }
+    docCells = compatibilityCells(body)
+  }
+  return docCells
+}
+
+/**
+ * Compatibility rows whose cells differ from docs/compatibility.md, the source every README and
+ * the template copy.
+ * @param {string} text a README or the template
+ * @param {string} what how a problem names the file
+ * @returns {string[]}
+ */
+export function compatibilityCellProblems(text, what) {
+  const matrix = compatibilityMatrix()
+  const rows = compatibilityCells(text.match(COMPATIBILITY_SECTION)?.[1] ?? '')
+  /** @type {string[]} */
+  const problems = []
+  for (const [key, [code, app]] of rows) {
+    const want = matrix.get(key)
+    if (!want) {
+      problems.push(`${what} Compatibility row "${key}" is not in docs/compatibility.md`)
+      continue
+    }
+    if (code !== want[0]) {
+      problems.push(`${what} Compatibility row "${key}": the Claude Code cell must be "${want[0]}"`)
+    }
+    if (app !== want[1]) {
+      problems.push(`${what} Compatibility row "${key}": the Claude cell must be "${want[1]}"`)
+    }
+  }
+  return problems
+}
+
+/**
+ * The template's Compatibility table against docs/compatibility.md: same rows, same cells.
+ * @returns {string[]}
+ */
+function templateCompatibilityProblems() {
+  if (!existsSync(README_TEMPLATE)) {
+    return []
+  }
+  const template = readText(README_TEMPLATE)
+  const rows = compatibilityCells(template.match(COMPATIBILITY_SECTION)?.[1] ?? '')
+  const missing = [...compatibilityMatrix().keys()].filter((key) => !rows.has(key))
+  return [
+    ...compatibilityCellProblems(template, "the template's"),
+    ...missing.map((key) => `the template's Compatibility table has no "${key}" row`),
+  ]
+}
+
+/**
+ * The lines every plugin README states: Compatibility cells copied from docs/compatibility.md
+ * and the Platforms line.
+ * @param {string} readme
+ * @returns {string[]}
+ */
+export function readmeConformanceProblems(readme) {
+  const problems = compatibilityCellProblems(readme, 'README.md')
+  if (!PLATFORMS_LINE.test(readme)) {
+    problems.push(
+      'README.md must state "**Platforms:** macOS and Linux." (with ", and Windows through Git Bash" when it runs there) under Compatibility',
+    )
+  }
+  return problems
+}
+
+/**
  * Problems of one listed plugin, skipped when its folder or manifest is missing (the validators
  * report those).
  * @param {string} name
@@ -621,12 +737,16 @@ function pluginProblems(name) {
   }
   const readmePath = join(dir, 'README.md')
   const readme = existsSync(readmePath) ? readText(readmePath) : null
+  const pending = README_ALIGNMENT_PENDING.has(name)
   return [
     ...manifestProblems(manifest),
     ...configFileProblems(dir),
     ...(readme === null ? [] : readmeProblems(readme)),
+    ...(readme === null || pending ? [] : readmeConformanceProblems(readme)),
     ...changelogProblems(dir, manifest.version),
-    ...surfaceProblems(name, manifest.metadata?.surfaces, readme),
+    ...surfaceProblems(name, manifest.metadata?.surfaces, readme).filter(
+      (problem) => !(pending && problem.includes('"works in" badge')),
+    ),
   ]
 }
 
@@ -657,6 +777,7 @@ export function checkRepo() {
 
   const mp = loadMarketplace()
   report('marketplace', marketplaceProblems(mp))
+  report('.claude/templates', templateCompatibilityProblems())
   const listed = new Set((mp.plugins ?? []).map((entry) => entry.name))
 
   for (const entry of mp.plugins ?? []) {
