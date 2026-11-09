@@ -38,6 +38,7 @@ Invocation control, substitutions, pre-approved tools, dynamic context, forked s
 
 - **Match the whole command line.** `Bash()` rules "match the whole command line" \[CP\], so the pattern repeats the command form the body uses `req`. With the default form ([scripts.md](scripts.md#how-to-call-a-script)), the body runs `python3 ${CLAUDE_SKILL_DIR}/scripts/render.py` and the rule is `allowed-tools: Bash(python3 ${CLAUDE_SKILL_DIR}/scripts/render.py *)` `default`; a shell script uses `bash` in both places. A skill that runs a script directly, by its shebang and executable bit, needs the direct pattern, as in the skills page's example: `Bash(${CLAUDE_SKILL_DIR}/scripts/render.sh *)` \[CC\].
 - **Scope of the grant.** The grant lasts one turn, isn't gated by workspace trust, and is ignored under `allowManagedPermissionRulesOnly` \[CC\].
+- **Not after a subagent's result.** A subagent's result reaches Claude in a later turn, where the grant no longer applies, and invoking the skill again in that turn didn't restore it \[SD\] `observed` (Claude Code 2.1.319, 2026-11-09). Run every pre-approved command before the skill launches its subagents, or give the user another approval path for the commands after them ([workflows.md](workflows.md#when-a-skill-runs-other-agents)) `req`.
 - **Name the exact command.** A bare `allowed-tools: Bash` pre-approves every shell command for that turn \[SD\] `rec`.
 
 ## Dynamic context

@@ -12,6 +12,7 @@ Sequential steps, copyable checklists, validation loops and the other workflow p
 - [Fit each pattern to the skill](#fit-each-pattern-to-the-skill)
 - [Conditional workflow](#conditional-workflow)
 - [Say when the work is done](#say-when-the-work-is-done)
+- [When a skill runs other agents](#when-a-skill-runs-other-agents)
 
 ## When to use these patterns
 
@@ -123,3 +124,21 @@ Branch at decision points ("Creating new content? → Creation workflow. Editing
 ## Say when the work is done
 
 Multi-step work names its completion condition, so the agent neither stops early nor loops \[SD\] `rec`.
+
+## When a skill runs other agents
+
+A skill that hands work to other agents chooses who holds the plan. Claude Code offers four ways, and the official comparison decides between them by "who holds the plan" \[CC\]:
+
+| | Subagents | Skills | Agent teams | Workflows |
+| --- | --- | --- | --- | --- |
+| What it is | A worker Claude spawns | Instructions Claude follows | A lead agent supervising peer sessions | A script the runtime executes |
+| Who decides what runs next | Claude, turn by turn | Claude, following the prompt | The lead agent, turn by turn | The script |
+| Where intermediate results live | Claude's context window | Claude's context window | A shared task list | Script variables |
+| Scale | A few delegated tasks per turn | Same as subagents | A handful of long-running peers | Dozens to hundreds of agents per run |
+
+- **Subagents for a few focused workers.** Use them when "the task produces verbose output you don't need in your main context", for tool restrictions, or for self-contained work that "can return a summary"; keep the main conversation for back-and-forth and phases that share context \[CC\] `rec`.
+- **A workflow when the plan must hold every time.** A workflow "moves the plan into code" and can "have independent agents adversarially review each other's findings before they're reported" \[CC\]. It runs in the background, needs the user's approval to start (in `claude -p`, a `Workflow` allow rule), and on Pro must be turned on in `/config` \[CC\]. A plugin ships one in its `workflows/` folder \[CC\] `rec`.
+- **Agent teams only where teammates must talk.** They are "experimental and disabled by default", and in `claude -p` "Claude doesn't spawn teammates" \[CC\]: a skill meant for any user can't rely on them `req`.
+- **Results arrive in a later turn.** "With nothing configured, a subagent that Claude spawns from your main conversation starts in the background", and its results "reach Claude as a completion notification in a later turn"; in an interactive session Claude can wait only after the user turns fork mode off \[CC\]. So the skill's `allowed-tools` grant, which lasts only the invoking turn, doesn't cover a command run after the results ([claude-code-features.md](claude-code-features.md#substitutions-and-pre-approved-tools)) `req`.
+- **Nested agents.** A subagent can spawn its own, up to three layers below the main conversation, for a delegated task that "itself splits into parallel subtasks" \[CC\]. It starts without the user's conversation, and "plugin subagents don't support the `hooks`, `mcpServers`, or `permissionMode` frontmatter fields" \[CC\] `default`.
+
