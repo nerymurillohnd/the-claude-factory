@@ -40,9 +40,9 @@ Every plugin keeps a `CHANGELOG.md` and uses semantic versioning: **patch** = fi
 <details>
 <summary><b>Will a plugin's name ever change?</b></summary>
 
-Plugin names are permanent, because your installs and settings are keyed by them. If a rename is ever unavoidable, Claude Code migrates your install and its settings to the new name and tells you once. A rename is still a breaking change: the plugin's commands, agents and MCP tools take the new name, so `/<old-name>:<skill>` becomes `/<new-name>:<skill>`, and any permission rule or hook matcher you wrote for a tool named `mcp__plugin_<old-name>_…` must be changed to the new name. Run `/plugin install <new-name>@the-claude-factory` once afterwards, because the renamed plugin reports `not cached` until you do. If your organization enables the plugin in managed settings, your admin updates the name there.
+Plugin names are permanent, because your installs and settings are keyed by them. If a rename is ever unavoidable, Claude Code moves your settings to the new name and tells you once, but it does not install the plugin under that name for you. A rename is still a breaking change: the plugin's commands, agents and MCP tools take the new name, so `/<old-name>:<skill>` becomes `/<new-name>:<skill>`, and any permission rule or hook matcher you wrote for a tool named `mcp__plugin_<old-name>_…` must be changed to the new name. Run `/plugin install <new-name>@the-claude-factory` once afterwards, because until you do the renamed plugin reports `not cached` and updates fail with `is not installed`. If your organization enables the plugin in managed settings, your admin updates the name there.
 
-If a plugin is folded into another one, the same migration moves you to that plugin. If a plugin is retired with no replacement, Claude Code removes it from your settings and shows `Removed from the "the-claude-factory" marketplace`.
+If a plugin is folded into another one, the same migration moves your settings to that plugin, and you run `/plugin install <that-plugin>@the-claude-factory` once, the same way. If a plugin is retired with no replacement, Claude Code removes it from your settings and shows `Removed from the "the-claude-factory" marketplace`.
 
 </details>
 
