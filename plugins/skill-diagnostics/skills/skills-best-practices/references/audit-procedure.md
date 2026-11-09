@@ -10,6 +10,7 @@ How the orchestrator runs an audit, from the validation scripts to the recorded 
 - [Script result format](#script-result-format)
 - [Skill profile](#skill-profile)
 - [Agents](#agents)
+- [Why the audit runs subagents](#why-the-audit-runs-subagents)
 - [Rules for every brief](#rules-for-every-brief)
 - [Saving the reports](#saving-the-reports)
 - [Checking an agent report](#checking-an-agent-report)
@@ -109,8 +110,12 @@ Six read-only plugin agents. Only the orchestrator launches them, all six in eve
 | Instructions reviewer | `skill-diagnostics:instructions-reviewer` | [lens-instructions.md](lens-instructions.md) | `assets/reviewer-report.md` | See [checklist.md](checklist.md#owners-at-a-glance) |
 | Scripts-and-runtime reviewer | `skill-diagnostics:scripts-runtime-reviewer` | [lens-scripts-runtime.md](lens-scripts-runtime.md) | `assets/reviewer-report.md` | See [checklist.md](checklist.md#owners-at-a-glance) |
 | Security reviewer | `skill-diagnostics:security-reviewer` | [lens-security.md](lens-security.md) | `assets/reviewer-report.md` | See [checklist.md](checklist.md#owners-at-a-glance) |
-| Cold executor | `skill-diagnostics:cold-executor` | [executability-trace.md](executability-trace.md) | `assets/executor-report.md` | `EX-1` |
-| Adversarial verifier | `skill-diagnostics:adversarial-verifier` | [evidence-and-verdict.md](evidence-and-verdict.md) | `assets/verifier-report.md` | None: it rules on the others' findings |
+| Cold executor | `skill-diagnostics:cold-executor` | [executability-trace.md](executability-trace.md) | The template in its agent file | `EX-1` |
+| Adversarial verifier | `skill-diagnostics:adversarial-verifier` | [evidence-and-verdict.md](evidence-and-verdict.md) | The template in its agent file | None: it rules on the others' findings |
+
+## Why the audit runs subagents
+
+`default`. The audit is a few focused workers whose long reports would flood the main conversation, so it runs them as subagents with the main session as the orchestrator, by the comparison in [workflows.md](workflows.md#when-a-skill-runs-other-agents). Agent teams are off by default and absent in `claude -p`; a workflow would hold the order in code but needs the user's approval to start, must be turned on in Pro and has no chat equivalent; an orchestrator subagent would lose the user's conversation. The reviewers' results arrive in later turns, where this skill's `allowed-tools` grant no longer applies.
 
 ## Rules for every brief
 
@@ -151,7 +156,7 @@ A report that fails goes back once to its agent with the failed points: resume t
 
 ## Adversarial verification
 
-Pass every finding to the adversarial verifier, with its evidence and without the reviewer's reasoning (drop the Defect line; keep ID, Item, Severity, Location, Evidence, Basis and Fix; for each cold-executor point, first fill Item `EX-1`, its severity from [executability-trace.md](executability-trace.md#executability-severity), Basis and Fix as [Mapping findings to the checklist](#mapping-findings-to-the-checklist) says, and drop The guess), together with the Claude Code release, the skill's absolute path, its origin, the surfaces it reaches and the profile from the briefs, so the verifier can reread each cited line and judge whether the rule applies. The verifier fills `assets/verifier-report.md` by [evidence-and-verdict.md](evidence-and-verdict.md#verifying-a-finding).
+Pass every finding to the adversarial verifier, with its evidence and without the reviewer's reasoning (drop the Defect line; keep ID, Item, Severity, Location, Evidence, Basis and Fix; for each cold-executor point, first fill Item `EX-1`, its severity from [executability-trace.md](executability-trace.md#executability-severity), Basis and Fix as [Mapping findings to the checklist](#mapping-findings-to-the-checklist) says, and drop The guess), together with the Claude Code release, the skill's absolute path, its origin, the surfaces it reaches and the profile from the briefs, so the verifier can reread each cited line and judge whether the rule applies. The verifier fills the template in its agent file by [evidence-and-verdict.md](evidence-and-verdict.md#verifying-a-finding).
 
 - A finding the verifier disputes goes back once to the reviewer that made it, with the evidence against it; what still fails is withdrawn.
 - A finding ruled "not verified against the official source" is neither upheld nor withdrawn on that ground; when a source that was tried couldn't be reached, the verdict is provisional ([evidence-and-verdict.md](evidence-and-verdict.md#severity-and-verdict)).
@@ -186,7 +191,7 @@ Chat loads the skill and ignores agents and hooks \[CP\]. There the audit runs i
 1. Run the three scripts in the code execution sandbox when it is available, as `python3 scripts/<script>.py`, with paths relative to `SKILL.md`, on the audited skill's folder as uploaded or attached to the conversation. When the sandbox isn't available, or the audited skill's files aren't in it, the scripts couldn't run and the verdict is not determinable.
 2. Write the skill profile ([Skill profile](#skill-profile)), and list the checks the scripts proved and the leads they reported, as a brief would. Each lens reads them from here. The Claude Code release is `unknown`.
 3. Apply the four lens files one after another: [lens-description.md](lens-description.md), [lens-instructions.md](lens-instructions.md), [lens-scripts-runtime.md](lens-scripts-runtime.md), [lens-security.md](lens-security.md). Record each in `assets/reviewer-report.md`, self-check included. These records are working notes: keep them out of the reply unless the user asks for them; the report carries the findings.
-4. Follow [executability-trace.md](executability-trace.md) on the skill and record it in `assets/executor-report.md`.
-5. Check each finding against [evidence-and-verdict.md](evidence-and-verdict.md) yourself and record it in `assets/verifier-report.md`.
+4. Follow [executability-trace.md](executability-trace.md) on the skill and record each point as a finding with Item `EX-1`, its severity by [Executability severity](executability-trace.md#executability-severity), Location, Evidence and Fix.
+5. Check each finding against [evidence-and-verdict.md](evidence-and-verdict.md#verifying-a-finding) yourself, and write the ruling and its source in the finding's Verifier field of the report.
 6. Write the report from `assets/report-template.md`, with the Accounting table over the findings of steps 3 to 5. It says that no independent reviewers, cold executor or verifier ran, so the trace was done by the same context that read the rules, and that no report was saved.
 7. Don't run `record-verdict.py`: no gate reads it in chat.

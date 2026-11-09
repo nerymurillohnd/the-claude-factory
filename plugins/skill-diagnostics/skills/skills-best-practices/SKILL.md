@@ -135,7 +135,7 @@ Assets:
 
 - [skill-template.md](assets/skill-template.md): the start of every new `SKILL.md`.
 - [brief-template.md](assets/brief-template.md): one brief per reviewer and one for the cold executor.
-- [reviewer-report.md](assets/reviewer-report.md), [executor-report.md](assets/executor-report.md), [verifier-report.md](assets/verifier-report.md): the templates the agents fill, and that you fill in a chat audit.
+- [reviewer-report.md](assets/reviewer-report.md): the template the four reviewers fill, and that you fill for each lens in a chat audit. The cold executor's and the verifier's templates are in their own agent files.
 - [report-template.md](assets/report-template.md): the final audit report.
 
 Scripts, run with the commands above:

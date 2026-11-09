@@ -43,4 +43,4 @@ Read every file below from its first line to its last.
 Follow ${CLAUDE_PLUGIN_ROOT}/skills/skills-best-practices/references/executability-trace.md on this task, on every workflow and every variant that changes the output.
 
 ## Return
-Fill ${CLAUDE_PLUGIN_ROOT}/skills/skills-best-practices/assets/executor-report.md exactly, and complete its self-check before returning.
+Return the report template in your agent file, filled exactly, and complete its self-check before returning.
