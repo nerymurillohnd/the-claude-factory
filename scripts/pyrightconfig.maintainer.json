@@ -6,6 +6,7 @@
     "validators",
     "checkers",
     "generators",
+    "testers/checkers",
     "testers/schemas",
     "testers/validators",
     "testers/run_unittest.py"

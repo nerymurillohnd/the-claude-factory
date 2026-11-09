@@ -68,6 +68,7 @@ const MAINTAINER_PYTHON = [
   'scripts/validators',
   'scripts/checkers',
   'scripts/generators',
+  'scripts/testers/checkers',
   'scripts/testers/schemas',
   'scripts/testers/validators',
   'scripts/testers/run_unittest.py',
@@ -444,7 +445,7 @@ export function gatesFor({ root, ci, base }) {
       group: 'python',
       title: 'unittest on the maintainer tests, no skips',
       cmd: 'scripts/testers/run_unittest.py',
-      args: ['scripts/testers/schemas', 'scripts/testers/validators'],
+      args: ['scripts/testers/checkers', 'scripts/testers/schemas', 'scripts/testers/validators'],
     },
     {
       id: 'claude-validate:marketplace',
