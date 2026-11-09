@@ -2,7 +2,7 @@
 
 > Keep plugins from **The Claude Factory** up to date, turn them on and off, and remove them cleanly.
 
-**On this page:** [Updates](#-updates) · [Auto-update](#-auto-update) · [Enable & disable](#️-enable--disable) · [Uninstall](#️-uninstall) · [Remove the marketplace](#-remove-the-marketplace) · [Inspect a plugin](#-inspect-a-plugin) · [Claude app](#️-in-the-claude-app)
+**On this page:** [Updates](#-updates) · [Auto-update](#-auto-update) · [Enable & disable](#️-enable--disable) · [Uninstall](#️-uninstall) · [Remove the marketplace](#-remove-the-marketplace) · [Inspect a plugin](#-inspect-a-plugin) · [Claude](#️-in-claude)
 
 ---
 
@@ -71,7 +71,7 @@ claude plugin marketplace remove the-claude-factory
 | Which plugins haven't I used lately?                                   | `/plugin` → **Installed** → **Not used recently** |
 | Why didn't something load?                                             | `/plugin` → **Errors**                            |
 
-## 🖥️ In the Claude app
+## 🖥️ In Claude
 
 Everything lives under **Customize** → **Plugins**:
 

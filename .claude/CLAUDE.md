@@ -1,6 +1,6 @@
 # The Claude Factory
 
-Public Claude Code plugin marketplace (`github.com/nerymurillohnd/the-claude-factory`) for users and developers who run projects and operations with Claude. It publishes plugins only, built for Claude Code and, where applicable, the Claude app. Development occurs in Nery’s local clone; distribution occurs from the remote repository. Users participate solely through issues.
+Public Claude Code plugin marketplace (`github.com/nerymurillohnd/the-claude-factory`) for users and developers who run projects and operations with Claude. It publishes plugins only, built for Claude Code and, where applicable, Claude. Development occurs in Nery’s local clone; distribution occurs from the remote repository. Users participate solely through issues.
 
 ## Purpose
 
@@ -29,10 +29,10 @@ This standard applies to every session on this repository, including the current
 
 ## Current Claude Code features, capabilities, and guidance enforcement
 
-Claude Code, the Claude app, the Claude models and every tool the gates run change faster than training data, recall or project docs. Before any plan, plugin component or scaffold, and before any answer about how they behave, read the current official documentation and release notes.
+Claude Code, Claude, the Claude models and every tool the gates run change faster than training data, recall or project docs. Before any plan, plugin component or scaffold, and before any answer about how they behave, read the current official documentation and release notes.
 
 - When sources differ, trust them in this order: the installed binary (`--help`, `claude plugin validate`, `claude plugin test`), then the release notes, then the docs, which lag releases. When a release note and a doc describe different stages (loading versus validation), confirm on the installed build before relying on either.
-- When components depend on each other, research each side. For example, a plugin hook needs the hooks reference, the plugins reference and the Claude app platform-support page.
+- When components depend on each other, research each side. For example, a plugin hook needs the hooks reference, the plugins reference and claude.com's plugin platform-support page.
 
 ## Maintainer and Plugin Scopes
 
@@ -237,6 +237,7 @@ Shared support, never run on its own: `scripts/lib.mjs`, `scripts/components.mjs
 - Write every user README in English, for users. Never mention this repository's maintenance, `.claude/`, scripts, CI internals or release mechanics; a user's own `.claude/settings.json` may be mentioned.
 - Write user READMEs in the second person, active voice, present tense and short sentences. Use GitHub alerts (`> [!NOTE]`, `[!TIP]`, `[!IMPORTANT]`, `[!WARNING]`, `[!CAUTION]`), never two back to back without text between; **bold** for UI labels exactly as the app shows them (`/plugin` → **Installed** → **Update now**) and _italics_ for emphasis or terms; relative links inside the repository and absolute `https://` links outside it.
 - Check every command, flag, UI path and minimum version against the sources, in the order "Current Claude Code features, capabilities, and guidance enforcement" sets, before you write it.
+- Name the two surfaces **Claude Code** (the terminal, the IDE extensions, the desktop app's **Code** tab and cloud sessions) and **Claude** (web, desktop and mobile), never "the Claude app", "chat conversation" or "Cowork" as a surface name. Where a component loads in only some Claude conversations, say "where Claude can run tasks", as `docs/compatibility.md` does.
 - Give one fact one value everywhere: `docs/compatibility.md` is the only source of the component × surface matrix, and the marketplace is `nerymurillohnd/the-claude-factory` with the suffix `@the-claude-factory`.
 - Update a plugin's README in the same change as its components, prerequisites, surfaces, configuration or minimum Claude Code version. When `docs/compatibility.md` changes, every plugin README's Compatibility cells follow it.
 - A maintainer README outside `plugins/` only has to stay accurate.

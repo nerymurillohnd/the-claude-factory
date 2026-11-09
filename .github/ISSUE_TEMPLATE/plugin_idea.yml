@@ -51,7 +51,7 @@ body:
       multiple: true
       options:
         - Claude Code (terminal, desktop, IDE)
-        - Claude app (web, desktop, mobile)
+        - Claude (web, desktop, mobile)
     validations:
       required: true
 

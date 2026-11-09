@@ -5,7 +5,7 @@
 <p><strong>Blocks Claude's git commands that skip commit hooks or signing (--no-verify, --no-gpg-sign, commit.gpgsign=false), so your quality gates always run.</strong></p>
 
 [![Version](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Fnerymurillohnd%2Fthe-claude-factory%2Fmain%2Fplugins%2Fblock-no-verify%2F.claude-plugin%2Fplugin.json&query=%24.version&label=version&color=D97757)](./CHANGELOG.md)
-[![Works in](https://img.shields.io/badge/works%20in-Claude%20Code%20%C2%B7%20Claude%20app-2563EB)](#-compatibility)
+[![Works in](https://img.shields.io/badge/works%20in-Claude%20Code%20%C2%B7%20Claude-2563EB)](#-compatibility)
 [![Category](https://img.shields.io/badge/category-Security-6B7280)](../../README.md#-catalog)
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-%E2%89%A5%202.1.314-D97757?logo=claude&logoColor=white)](https://code.claude.com/docs/en/plugins/install)
 [![License: MIT](https://img.shields.io/badge/license-MIT-22C55E)](./LICENSE)
@@ -25,9 +25,9 @@
 > [!TIP]
 > **TL;DR** — Install it once. When Claude tries `git commit --no-verify`, `--no-gpg-sign` or `-c commit.gpgsign=false`, the command is stopped before it runs, and Claude is told to run it properly and fix the failing hook instead. There is nothing to configure.
 
-## ✨ Why use it
+A pre-commit hook fails, and the quickest way for an agent to get past it is to skip it. Your linter, your tests, your secret scan and your commit signing then check nothing. Block No Verify is one hook that reads every command Claude is about to run and stops the ones that skip, remove or switch off your commit hooks or signing, so a failing check gets fixed instead of bypassed.
 
-A pre-commit hook fails, and the quickest way for an agent to get past it is to skip it. Your linter, your tests, your secret scan and your commit signing then check nothing.
+## ✨ Why use it
 
 - **Your gates keep their meaning** — a hook that fails gets fixed, not skipped. Claude cannot talk its way past a check that runs before the command does.
 - **Claude gets the reason, not a dead end** — the denial names what it found and says what to do: run the command without it and fix the cause.
@@ -36,7 +36,7 @@ A pre-commit hook fails, and the quickest way for an agent to get past it is to 
 - **It guards the hooks themselves** — `rm`, `unlink`, `truncate`, `shred` or `mv` on a hook file, `chmod -x` on one, `pre-commit uninstall` and its lefthook, husky and overcommit forms, and `git commit-tree`, which makes a commit without hooks, are stopped too.
 - **Normal work is untouched** — a commit message that mentions `--no-verify`, `git push -n`, a heredoc that only writes a file, installing or adding hooks, and Claude's usual `git commit -m "$(cat <<'EOF' …)"` all pass.
 - **Nothing to set up** — one hook, no accounts, no network, no files written. It also checks the PowerShell tool.
-- **Fast** — about 30 ms per Bash command, measured inside a Claude Code session.
+- **Fast** — about 30 ms per Bash command.
 
 ## 🧩 What's inside
 
@@ -53,7 +53,9 @@ A pre-commit hook fails, and the quickest way for an agent to get past it is to 
 | jq | 1.6 | `jq --version` |
 | git (optional), to read your git aliases | — | `git --version` |
 
-Claude Code 2.1.314 is the minimum because from that version hooks that match Bash also check the shell commands the Monitor tool starts; on an older version, a `--no-verify` sent through Monitor gets through. The hook also relies on the `onFailure` field (2.1.295), so a hook that cannot start blocks the command instead of letting it through. Without `jq` the hook cannot read Claude's command: see [Limitations](#-limitations). On Windows, the plugin runs in Git Bash.
+Without `jq` the hook cannot read Claude's command: see [Limitations](#-limitations).
+
+The plugin also uses `tr`, which comes with macOS and Linux.
 
 ### 🤖 Claude Code
 
@@ -121,7 +123,7 @@ brew install jq
 <summary>🚢 <b>MacPorts</b> — macOS</summary>
 
 ```bash
-port install jq
+sudo port install jq
 ```
 
 </details>
@@ -309,7 +311,7 @@ export CLAUDE_CODE_PLUGIN_PREFER_HTTPS=1
 /plugin install block-no-verify@the-claude-factory
 ```
 
-### 🖥️ Claude app (web and desktop)
+### 🖥️ Claude (web and desktop)
 
 1. Open **Customize** in the sidebar, then **Plugins**.
 2. Select **Add** → **Add marketplace** and enter `nerymurillohnd/the-claude-factory`.
@@ -358,26 +360,11 @@ A command the guard cannot read, such as an unterminated quote, is denied with t
 
 ## 🔍 What this plugin runs and sends
 
-- **Hooks:** `PreToolUse` on `Bash` and `PowerShell` runs `bash hooks/block-no-verify.sh`, which reads the command Claude is about to run from what Claude Code passes it. It runs `jq` to read that input, `tr` to lowercase and strip quotes from the command text, and, to resolve a git alias, `git config --get alias.<name>` in the call's folder, which only reads. It never runs, changes or re-runs your command, and reads no credentials.
+- **Hooks:** `PreToolUse` on `Bash|PowerShell` runs `bash hooks/block-no-verify.sh`, which reads the command Claude is about to run and denies it when it skips, removes or switches off commit hooks or signing. It runs `jq` to read the hook input, `tr` to lowercase and strip quotes from the command text, and, to resolve a git alias, `git config --get alias.<name>` in the call's folder, which only reads. It never runs, changes or re-runs your command, and reads no credentials. If the hook cannot start, Claude Code blocks the command. Hooks run on their own, with your access and without a permission prompt.
 - **MCP servers:** none.
 - **Network:** none.
 - **Files written:** none.
 - **Privacy:** the author collects no data. The marketplace's [privacy policy](https://github.com/nerymurillohnd/the-claude-factory/blob/main/PRIVACY.md) covers this plugin and the outside services it can reach.
-
-## 🚧 Limitations
-
-The guard is a barrier for Claude, not a security boundary. Claude Code's own documentation says to enforce a hard allow or deny through [permissions](https://code.claude.com/docs/en/permissions); use branch protection and CI for what must hold for everyone.
-
-| Limitation | What you see | What to do |
-| :-- | :-- | :-- |
-| It only sees commands Claude runs | A bypass you type in your own terminal runs | Nothing: that is your decision |
-| Some spellings are not read: comma brace lists (`{git,} commit -n`, `git commit --{no-verify,message=x}`), `bash -c -- '…'` and `bash -c -e '…'` with options between `-c` and the script, `xargs git` fed by a heredoc, and `source <(…)` | The command runs | Protect what must hold with CI and branch protection |
-| Values that come from outside the command: functions, earlier exports and scripts run from files | The command runs | Same |
-| Your organization can turn hooks off with `allowManagedHooksOnly`, or you with `disableAllHooks` | The guard does nothing | Check `/plugin` and your settings |
-| No `jq` on `PATH` | A command that could involve git is denied with the message `jq is not installed`; every other command runs | Install `jq` (see [Prerequisites](#-prerequisites)) |
-| A command too large to analyze within the hook's time that mentions a bypass | It is denied with that reason | Run smaller commands |
-| The guard itself fails | Claude Code blocks the command and shows the error | Run `/reload-plugins`; if it keeps failing, [report it](#-found-a-problem) |
-| In a Claude app chat conversation hooks do not run | No guard | Use a Cowork session or Claude Code |
 
 ## 🔄 Updating
 
@@ -391,7 +378,7 @@ Then, in an open session:
 /reload-plugins
 ```
 
-Installed from the Claude app? In Claude Code (v2.1.273+, signed in with that claude.ai account) it appears as `block-no-verify@synced`: update and uninstall it in the app (**Customize** → **Plugins**); in `/plugin` you can only turn it on or off, unless your organization requires it.
+Installed from Claude? In Claude Code (v2.1.273+, signed in with that claude.ai account) it appears as `block-no-verify@synced`: update and uninstall it in Claude (**Customize** → **Plugins**); in `/plugin` you can only turn it on or off, unless your organization requires it.
 
 > [!TIP]
 > Auto-update is off for this marketplace until you turn it on: `/plugin` → **Marketplaces** → **the-claude-factory** → **Enable auto-update**.
@@ -414,28 +401,51 @@ Installed with `--scope project`:
 claude plugin uninstall block-no-verify@the-claude-factory --scope project
 ```
 
-In the Claude app: **Customize** → **Plugins** → **Block No Verify** → its menu → **Remove**.
+In Claude: **Customize** → **Plugins** → **Block No Verify** → its menu → **Remove**.
 
-Uninstalling from the last scope it's installed at also deletes its saved options and data directory, unless you add `--keep-data`. The plugin keeps no data and writes no files, so nothing is left behind.
+Uninstalling from the last scope it's installed at also deletes its saved options and data directory, unless you add `--keep-data`. The plugin keeps nothing in its data directory. It writes no files, so nothing is left in your projects; `jq` and `git` stay installed.
 
 ## 🧭 Compatibility
 
-**Works in:** 💻 Claude Code · 🖥️ Claude app
+**Works in:** 💻 Claude Code · 🖥️ Claude
 
-| Component | Claude Code | Claude app |
+| Component | Claude Code | Claude |
 | :-- | :--: | :--: |
-| 🪝 Hooks | ✅ | ⚠️ in Cowork sessions, not in a chat conversation |
+| 🪝 Hooks | ✅ | ⚠️ only in conversations where Claude can run tasks |
 
-<sub>✅ works · ⚠️ partial · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. The Claude app (web, desktop and mobile) runs a conversation as a Cowork session when it can, and as a chat conversation otherwise, for example on a device that can't run Cowork or in the separate Chat mode that Team and Enterprise plans keep for now.</sub>
+<sub>✅ works · ⚠️ partial · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. Claude runs agents, hooks and local MCP servers only in conversations where it can run tasks; anything on your computer needs Claude Desktop open.</sub>
 
-In Claude Code the guard also covers subagents, and it keeps running under `bypassPermissions`.
+In Claude Code the guard also covers subagents, and it keeps running under `bypassPermissions`. The hook needs `jq` wherever it runs.
+
+**Platforms:** macOS and Linux, and Windows through Git Bash.
+
+## 🚧 Limitations
+
+The guard is a barrier for Claude, not a security boundary. Claude Code's own documentation says to enforce a hard allow or deny through [permissions](https://code.claude.com/docs/en/permissions); use branch protection and CI for what must hold for everyone.
+
+| Limitation | What you see | What to do |
+| :-- | :-- | :-- |
+| It only sees commands Claude runs | A bypass you type in your own terminal runs | Nothing: that is your decision |
+| Some spellings are not read: comma brace lists (`{git,} commit -n`, `git commit --{no-verify,message=x}`), `bash -c -- '…'` and `bash -c -e '…'` with options between `-c` and the script, `xargs git` fed by a heredoc, and `source <(…)` | The command runs | Protect what must hold with CI and branch protection |
+| Values that come from outside the command: functions, earlier exports and scripts run from files | The command runs | Same |
+| Your organization can turn hooks off with `allowManagedHooksOnly`, or you with `disableAllHooks` | The guard does nothing | Check `/plugin` and your settings |
+| No `jq` on `PATH` | A command that could involve git is denied with the message `jq is not installed`; every other command runs | Install `jq` (see [Prerequisites](#-prerequisites)) |
+| A command too large to analyze within the hook's time that mentions a bypass | It is denied with that reason | Run smaller commands |
+| The guard itself fails | Claude Code blocks the command and shows the error | Run `/reload-plugins`; if it keeps failing, [report it](#-found-a-problem) |
+| In a Claude conversation where Claude can't run tasks, hooks do not run | No guard | Use Claude Code, or a conversation where Claude can run tasks |
 
 ## ❓ FAQ & Troubleshooting
 
 <details>
 <summary><b>How do I know it is working?</b></summary>
 
-In a scratch repository, ask Claude to run `git commit --no-verify -m test`. It should come back with the message shown in [Usage](#-usage), and no commit should appear in `git log`. A plain `git commit -m test` is not touched.
+In a scratch repository, ask Claude:
+
+```text
+Run git commit --no-verify -m test
+```
+
+It should come back with the message shown in [Usage](#-usage), and no commit should appear in `git log`. A plain `git commit -m test` is not touched.
 
 </details>
 
@@ -449,7 +459,11 @@ A message in quotes, a heredoc that only writes text and Claude's `git commit -m
 <details>
 <summary><b>I need to skip a hook once. What do I do?</b></summary>
 
-Run the command yourself in your terminal: the guard only watches Claude. To turn it off for good, run `claude plugin disable block-no-verify@the-claude-factory`.
+Run the command yourself in your terminal: the guard only watches Claude. To turn it off for good, run:
+
+```bash
+claude plugin disable block-no-verify@the-claude-factory
+```
 
 </details>
 
@@ -463,7 +477,7 @@ No. It only blocks what skips, removes or switches off commit hooks or signing: 
 <details>
 <summary><b>Does it slow Claude down?</b></summary>
 
-By about 30 ms per Bash command: Claude Code logged 26 to 39 ms for the hook inside a live session. A command that has nothing to do with git or hooks is let through before any parsing.
+By about 30 ms per Bash command. A command that has nothing to do with git or hooks is let through before any parsing.
 
 </details>
 
@@ -477,6 +491,7 @@ The guard needs `jq` to read Claude's command. Install it (see [Prerequisites](#
 ## 🔗 Related
 
 - 📦 [All plugins in The Claude Factory](../../README.md#-catalog)
+- 📖 [Claude Code plugin docs](https://code.claude.com/docs/en/plugins/overview)
 - 📖 [Claude Code hooks reference](https://code.claude.com/docs/en/hooks)
 - 🐙 [GitHub Operations](../github-operations/README.md) — takes a pull request from branch to merge, and pairs with a guard that keeps its commits honest
 
@@ -492,4 +507,4 @@ See [CHANGELOG.md](./CHANGELOG.md) for every release.
 
 ## 📄 License
 
-[MIT](./LICENSE) © Nery Murillo
+[MIT](./LICENSE) © Nery Murillo. Not affiliated with or endorsed by Anthropic. _Claude_ and _Claude Code_ are trademarks of Anthropic.

@@ -2,17 +2,17 @@
 
 > Add **The Claude Factory** to Claude and install its plugins — on every surface, step by step.
 
-**On this page:** [Before you start](#-before-you-start) · [Terminal](#-terminal) · [Claude Code session](#-inside-a-claude-code-session) · [Desktop app](#️-claude-desktop-app--code-tab) · [VS Code](#-vs-code) · [JetBrains](#-jetbrains) · [Claude app](#️-claude-app) · [Choose a scope](#-choose-an-install-scope) · [Teams](#-set-it-up-for-a-whole-team) · [Verify](#-verify-the-install)
+**On this page:** [Before you start](#-before-you-start) · [Terminal](#-terminal) · [Claude Code session](#-inside-a-claude-code-session) · [Desktop app](#️-claude-desktop-app--code-tab) · [VS Code](#-vs-code) · [JetBrains](#-jetbrains) · [Claude](#️-claude) · [Choose a scope](#-choose-an-install-scope) · [Teams](#-set-it-up-for-a-whole-team) · [Verify](#-verify-the-install)
 
 ---
 
 ## ✅ Before you start
 
-| You need                                | Notes                                                                                                                                                            |
-| :-------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Claude Code** _or_ the **Claude app** | Claude Code runs in the terminal, the desktop app's **Code** tab, VS Code and JetBrains. The Claude app runs on the web, desktop and mobile.                     |
-| A recent Claude Code version            | Run `claude --version` and compare it with the minimum in the plugin's README. One-step installs need **v2.1.292+** in the shell and **v2.1.275+** in a session. |
-| Network access to `github.com`          | The marketplace is a public GitHub repository; no GitHub account or token is needed.                                                                             |
+| You need                        | Notes                                                                                                                                                            |
+| :------------------------------ | :--------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Claude Code** _or_ **Claude** | Claude Code runs in the terminal, the desktop app's **Code** tab, VS Code and JetBrains. Claude runs on the web, desktop and mobile.                             |
+| A recent Claude Code version    | Run `claude --version` and compare it with the minimum in the plugin's README. One-step installs need **v2.1.292+** in the shell and **v2.1.275+** in a session. |
+| Network access to `github.com`  | The marketplace is a public GitHub repository; no GitHub account or token is needed.                                                                             |
 
 Two names to remember:
 
@@ -58,7 +58,7 @@ In a local or SSH session, open the plugins in any of three ways:
 
 - **From the prompt box:** click **+** next to it → **Add plugins**. If the menu shows **Plugins** instead, select **Plugins** → **Browse plugins**.
 - **From Settings:** open **Settings** → **Plugins**. **Yours** lists what you have, including the plugins of the current project, and **Discover** lists the rest; **Add** adds a marketplace or a plugin.
-- **From the sidebar:** open **Customize** → **Plugins** → **Discover**. This installs the plugin on your claude.ai account, as in the [Claude app](#️-claude-app) below.
+- **From the sidebar:** open **Customize** → **Plugins** → **Discover**. This installs the plugin on your claude.ai account, as in [Claude](#️-claude) below.
 
 Then find the plugin, select it and choose a scope.
 
@@ -79,16 +79,16 @@ Open sessions reload their plugins after you save changes.
 
 The JetBrains plugin runs Claude Code in the IDE's terminal, so follow the [Terminal](#-terminal) or [session](#-inside-a-claude-code-session) steps there.
 
-## 🖥️ Claude app
+## 🖥️ Claude
 
 1. Open **Customize** in the sidebar, then **Plugins**.
 2. Select **Add** → **Add marketplace** and enter `nerymurillohnd/the-claude-factory` (the full `https://github.com/nerymurillohnd/the-claude-factory` URL also works).
 3. Plugins from The Claude Factory now appear in **Discover** alongside other marketplaces. Select one, then select **Add**.
 
-A plugin you install on your claude.ai account in the Claude app also appears in Claude Code as a synced plugin (`<plugin>@synced`) at your next session start (Claude Code v2.1.273+, signed in with the same claude.ai account); if it says _Plugins changed_, run `/reload-plugins`. If you also install the same plugin in Claude Code, Claude Code loads that copy and reports the synced one as not loaded; disable your terminal copy to use the one from the app.
+A plugin you install on your claude.ai account in Claude also appears in Claude Code as a synced plugin (`<plugin>@synced`) at your next session start (Claude Code v2.1.273+, signed in with the same claude.ai account); if it says _Plugins changed_, run `/reload-plugins`. If you also install the same plugin in Claude Code, Claude Code loads that copy and reports the synced one as not loaded; disable your terminal copy to use the one from the app.
 
 > [!IMPORTANT]
-> Not every component loads in the Claude app: agents, hooks and local MCP servers run in Cowork sessions, not in a chat conversation. Check the plugin's **Compatibility** table first — see [Compatibility](./compatibility.md).
+> Not every component loads in Claude: agents, hooks and local MCP servers run only in conversations where Claude can run tasks. Check the plugin's **Compatibility** table first — see [Compatibility](./compatibility.md).
 
 ## 🎯 Choose an install scope
 

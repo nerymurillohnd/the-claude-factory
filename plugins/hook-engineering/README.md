@@ -5,7 +5,7 @@
 <p><strong>Designs, writes, audits and debugs Claude Code hooks end to end: the event and configuration that decide when a hook runs, the input and output contract that decides what it does, prompt, agent and background hooks, workspace trust and security, and how mods interact with hooks, checked against the current docs and changelog.</strong></p>
 
 [![Version](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Fnerymurillohnd%2Fthe-claude-factory%2Fmain%2Fplugins%2Fhook-engineering%2F.claude-plugin%2Fplugin.json&query=%24.version&label=version&color=D97757)](./CHANGELOG.md)
-[![Works in](https://img.shields.io/badge/works%20in-Claude%20Code%20%C2%B7%20Claude%20app-2563EB)](#-compatibility)
+[![Works in](https://img.shields.io/badge/works%20in-Claude%20Code%20%C2%B7%20Claude-2563EB)](#-compatibility)
 [![Category](https://img.shields.io/badge/category-Automation-6B7280)](../../README.md#-catalog)
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-%E2%89%A5%202.1.222-D97757?logo=claude&logoColor=white)](https://code.claude.com/docs/en/plugins/install)
 [![License: MIT](https://img.shields.io/badge/license-MIT-22C55E)](./LICENSE)
@@ -25,9 +25,9 @@
 > [!TIP]
 > **TL;DR** — Describe the hook you want, or the hook that misbehaves, and get a working configuration, an audit or a root cause, each checked against the official hooks docs and the changelog for your Claude Code version. Type `/hook-engineering:hook-development` followed by your request, or ask for the `hook-engineer` agent.
 
-## ✨ Why use it
+A hook looks simple until it never fires, fires on the wrong calls, or returns a block that Claude Code quietly ignores: whether it works depends on the event, the matcher and the handler lining up, and its effect depends on the exit code, the shape of stdout and the event it runs on. Hooks also change in most Claude Code releases, and the docs lag behind. Hook Engineering gives you a skill and an agent that design, write, audit and debug your hooks against the current docs and changelog, so you get a hook that works for your version instead of one recalled from memory.
 
-A hook looks simple until it never fires, fires on the wrong calls, or returns a block that Claude Code quietly ignores. Whether a hook works depends on three things lining up: the event, the matcher and the handler. Its effect depends on the exit code, the shape of stdout and the event it runs on. Hooks also change in most Claude Code releases, and the docs lag behind.
+## ✨ Why use it
 
 - **The right event first** — you describe a goal; the plugin picks the event, the matcher, the handler type and the location, and says why the nearest alternatives would not work.
 - **Output you can trust** — every design comes with the exact stdin it reads, the exit code or JSON it returns for each outcome, what a failure does and a test plan. A linter and a probe check the result before you get it.
@@ -49,13 +49,14 @@ A hook looks simple until it never fires, fires on the wrong calls, or returns a
 | :-- | :-- | :-- |
 | Claude Code | 2.1.222 | `claude --version` |
 | Python, as `python3` | 3.12 | `python3 --version` |
-| `bash`, `curl` and `awk` | — | `bash --version` |
+| Bash | — | `bash --version` |
+| curl | — | `curl --version` |
 | `jq` (for the hooks it writes) | — | `jq --version` |
 | Claude Code docs MCP server (recommended) | — | `claude mcp list` |
 
-Claude Code 2.1.222 is the minimum because the plugin's manifest uses the `metadata` field, which older versions don't accept. The one-step install command needs 2.1.292; on an older version, add the marketplace first, then install.
+The plugin also uses `awk`, which comes with macOS and Linux.
 
-Python runs the config linter and the hook probe; `bash`, `curl` and `awk` run the changelog script; all must be on your `PATH`. `jq` is what the hooks the plugin writes use to read their input. The docs server is Anthropic's official docs MCP server, so Claude reads the current hooks pages instead of recalling them; you add it once, the plugin doesn't install it.
+Python runs the config linter and the hook probe; Bash, `curl` and `awk` run the changelog script; all must be on your `PATH`. `jq` is what the hooks the plugin writes use to read their input. The docs server is Anthropic's official docs MCP server, so Claude reads the current hooks pages instead of recalling them; you add it once, the plugin doesn't install it.
 
 ### 🤖 Claude Code
 
@@ -123,15 +124,36 @@ winget install 9NQ7512CXL7T -e --accept-package-agreements --disable-interactivi
 
 Or download the installer from [python.org](https://www.python.org/downloads/).
 
-### 🐚 bash, curl and awk
+### 🐚 Bash
 
-They come with macOS and most Linux distributions; otherwise install them with your package manager. On Windows, Git for Windows provides Git Bash with all three:
+macOS and Linux include Bash. On Windows, Git for Windows provides it in Git Bash, together with `curl` and `awk`:
 
 <details>
 <summary>🪟 <b>Git for Windows (winget)</b> — Windows</summary>
 
 ```bash
 winget install --id Git.Git -e --source winget
+```
+
+</details>
+
+### 🌐 curl
+
+macOS, most Linux distributions and Git Bash on Windows include `curl`. Otherwise:
+
+<details>
+<summary>📦 <b>apt</b> — Debian, Ubuntu</summary>
+
+```bash
+sudo apt-get install curl
+```
+
+</details>
+<details>
+<summary>📦 <b>dnf</b> — Fedora</summary>
+
+```bash
+sudo dnf install curl
 ```
 
 </details>
@@ -200,11 +222,15 @@ claude mcp add --transport http --scope user claude-code-docs https://code.claud
 
 </details>
 
-Check it with `claude mcp list`: `claude-code-docs` should show `✔ Connected`. It needs no sign-in and no credentials.
+Check it; `claude-code-docs` should show `✔ Connected`. It needs no sign-in and no credentials.
+
+```bash
+claude mcp list
+```
 
 Use the name `claude-code-docs`, the one the [official MCP quickstart](https://code.claude.com/docs/en/mcp-quickstart) uses: the skill and the `hook-engineer` agent look for `mcp__claude-code-docs__*` first. Another name works too, because they find the docs tools by the tools' own names.
 
-In the Claude app, add it as a custom connector instead:
+In Claude, add it as a custom connector instead:
 
 1. On a Pro or Max plan: **Customize** → **Connectors** → **+ Add** → **Add custom connector**.
 2. Enter a name such as `Claude Code Docs` and the URL `https://code.claude.com/docs/mcp`, select **Continue**, check the detected settings and select **Continue** again.
@@ -213,7 +239,7 @@ In the Claude app, add it as a custom connector instead:
 On a Team or Enterprise plan, an Owner adds it under **Organization settings** → **Connectors** → **Add** → **Custom** → **Web**, and you select **Connect** on it in **Customize** → **Connectors**. A Free plan allows one custom connector. Source: [Get started with custom connectors using remote MCP](https://support.claude.com/en/articles/11175166-get-started-with-custom-connectors-using-remote-mcp).
 
 > [!NOTE]
-> A connector you add in the Claude app also reaches Claude Code when you sign in there with the same claude.ai account, with tools named `mcp__claude_ai_<connector name>__*`. The skill and the `hook-engineer` agent find and use it under that name. If you also add `claude-code-docs` in Claude Code, Claude Code connects that one and hides the connector, because both point at the same URL.
+> A connector you add in Claude also reaches Claude Code when you sign in there with the same claude.ai account, with tools named `mcp__claude_ai_<connector name>__*`. The skill and the `hook-engineer` agent find and use it under that name. If you also add `claude-code-docs` in Claude Code, Claude Code connects that one and hides the connector, because both point at the same URL.
 
 ## 📥 Installation
 
@@ -249,7 +275,7 @@ export CLAUDE_CODE_PLUGIN_PREFER_HTTPS=1
 /plugin install hook-engineering@the-claude-factory
 ```
 
-### 🖥️ Claude app (web and desktop)
+### 🖥️ Claude (web and desktop)
 
 1. Open **Customize** in the sidebar, then **Plugins**.
 2. Select **Add** → **Add marketplace** and enter `nerymurillohnd/the-claude-factory`.
@@ -286,7 +312,7 @@ My SessionEnd hook uploads the session log to S3. It works by hand, but when I e
 - **Hooks:** none of its own. The hook probe runs the hook script you point it at, with the input you give it and nothing else; the agent runs it only on scripts that read no secrets and change nothing outside a temporary directory.
 - **MCP servers:** none of its own. The Claude Code docs server is one you add yourself (see [Claude Code docs server](#-claude-code-docs-server)).
 - **Network:** these calls and no others; the linter and the probe make none:
-  - `https://code.claude.com/docs/mcp`, the docs server once you add it, whenever Claude reads the official docs for a hook question. It gets the search terms and page paths Claude asks for, with no credentials. From the Claude app, the call goes through Anthropic's servers.
+  - `https://code.claude.com/docs/mcp`, the docs server once you add it, whenever Claude reads the official docs for a hook question. It gets the search terms and page paths Claude asks for, with no credentials. From Claude, the call goes through Anthropic's servers.
   - `https://code.claude.com/docs/en/<page>.md`, a plain `GET` with `curl` or WebFetch when the docs server is not connected or a heading is missing from its copy, and `https://code.claude.com/docs/en/changelog` for a version-gated rule.
   - `https://raw.githubusercontent.com/anthropics/claude-code/main/CHANGELOG.md`, a plain `GET` when the skill or the agent runs `hook-changes.sh` to compare your installed version with the changelog.
   - `https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md`, a plain `GET` with WebFetch when the docs changelog doesn't list your installed version yet.
@@ -305,7 +331,7 @@ Then, in an open session:
 /reload-plugins
 ```
 
-Installed from the Claude app? In Claude Code (v2.1.273+, signed in with that claude.ai account) it appears as `hook-engineering@synced`: update and uninstall it in the app (**Customize** → **Plugins**).
+Installed from Claude? In Claude Code (v2.1.273+, signed in with that claude.ai account) it appears as `hook-engineering@synced`: update and uninstall it in Claude (**Customize** → **Plugins**).
 
 > [!TIP]
 > Auto-update is off for this marketplace until you turn it on: `/plugin` → **Marketplaces** → **the-claude-factory** → **Enable auto-update**.
@@ -328,9 +354,9 @@ Installed with `--scope project`:
 claude plugin uninstall hook-engineering@the-claude-factory --scope project
 ```
 
-In the Claude app: **Customize** → **Plugins** → **Hook Engineering** → its menu → **Remove**.
+In Claude: **Customize** → **Plugins** → **Hook Engineering** → its menu → **Remove**.
 
-Uninstalling from the last scope it's installed at also deletes its saved options and data directory, unless you add `--keep-data`. The plugin keeps no data of its own. Hooks Claude wrote at your request stay in your settings, and the docs server stays until you remove it:
+Uninstalling from the last scope it's installed at also deletes its saved options and data directory, unless you add `--keep-data`. The plugin keeps nothing in its data directory. Hooks Claude wrote at your request stay in your settings, and the docs server stays until you remove it:
 
 ```bash
 claude mcp remove claude-code-docs --scope user
@@ -338,21 +364,23 @@ claude mcp remove claude-code-docs --scope user
 
 ## 🧭 Compatibility
 
-**Works in:** 💻 Claude Code · 🖥️ Claude app
+**Works in:** 💻 Claude Code · 🖥️ Claude
 
-| Component | Claude Code | Claude app |
+| Component | Claude Code | Claude |
 | :-- | :--: | :--: |
 | 🎯 Skills | ✅ | ✅ |
-| 🤖 Agents | ✅ | ⚠️ in Cowork sessions, not in a chat conversation |
+| 🤖 Agents | ✅ | ⚠️ only in conversations where Claude can run tasks |
 
-The docs server isn't part of the plugin: you add it yourself in Claude Code or as a connector in the Claude app (see [Claude Code docs server](#-claude-code-docs-server)).
+<sub>✅ works · ⚠️ partial · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. Claude runs agents, hooks and local MCP servers only in conversations where it can run tasks; anything on your computer needs Claude Desktop open.</sub>
 
-<sub>✅ works · ⚠️ partial · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. The Claude app (web, desktop and mobile) runs a conversation as a Cowork session when it can, and as a chat conversation otherwise, for example on a device that can't run Cowork or in the separate Chat mode that Team and Enterprise plans keep for now.</sub>
+The docs server isn't part of the plugin: you add it yourself in Claude Code or as a connector in Claude (see [Claude Code docs server](#-claude-code-docs-server)).
+
+**Platforms:** macOS and Linux, and Windows through Git Bash.
 
 ## ❓ FAQ & Troubleshooting
 
 <details>
-<summary><b>The plugin's commands don't show up after installing.</b></summary>
+<summary><b>The plugin's skills don't show up after installing.</b></summary>
 
 Run `/reload-plugins`, then type `/hook-engineering:` to list its skills. If it still doesn't appear, open `/plugin` → **Errors** and see the [troubleshooting guide](../../docs/troubleshooting.md).
 
@@ -382,21 +410,21 @@ How a hook is wired and what its output does. Not what the hook should decide: w
 <details>
 <summary><b>How current are its answers?</b></summary>
 
-The references were checked against the Claude Code docs and changelog on 2026-10-20, through v2.1.305. Before it answers, the agent compares your installed version with the changelog at run time, and the skill does the same whenever a rule is version-gated. If it can't reach the changelog, it says so and marks the version-sensitive conclusions as unverified.
+Before it answers, the agent compares your installed version with the changelog at run time, and the skill does the same whenever a rule is version-gated. If it can't reach the changelog, it says so and marks the version-sensitive conclusions as unverified.
 
 </details>
 
 <details>
-<summary><b>I added the docs server as a connector in the Claude app. Do I need it in Claude Code too?</b></summary>
+<summary><b>I added the docs server as a connector in Claude. Do I need it in Claude Code too?</b></summary>
 
 No. Signed in to Claude Code with the same claude.ai account, the connector reaches Claude Code with tools named `mcp__claude_ai_<connector name>__*`, and both the skill and the `hook-engineer` agent use it. Connectors don't load when Claude Code signs in another way, such as an API key or a cloud provider; add `claude-code-docs` there with the command in [Claude Code docs server](#-claude-code-docs-server). With both, Claude Code connects the one you added in Claude Code and hides the connector.
 
 </details>
 
 <details>
-<summary><b>The hook-engineer agent isn't available in the Claude app.</b></summary>
+<summary><b>The hook-engineer agent isn't available in Claude.</b></summary>
 
-Agents run in Cowork sessions, not in a chat conversation. In a chat conversation the skill still works; ask for it directly instead of the agent.
+Claude runs agents only in conversations where it can run tasks. In other conversations the skill still works; ask for it directly instead of the agent.
 
 </details>
 
@@ -425,4 +453,4 @@ See [CHANGELOG.md](./CHANGELOG.md) for every release.
 
 ## 📄 License
 
-[MIT](./LICENSE) © Nery Murillo
+[MIT](./LICENSE) © Nery Murillo. Parts are derived from Anthropic's Claude Code documentation; see [NOTICE.txt](./NOTICE.txt). Not affiliated with or endorsed by Anthropic. _Claude_ and _Claude Code_ are trademarks of Anthropic.

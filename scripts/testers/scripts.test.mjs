@@ -166,6 +166,8 @@ function resolvePlaceholders(name, text = 'x') {
   while (/<[A-Z][^>]*>/.test(readme)) {
     readme = readme.replace(/<[A-Z][^>]*>/g, text)
   }
+  // The Platforms line closes on its placeholder; a real README ends it after "Linux".
+  readme = readme.replace(/^\*\*Platforms:\*\* .*$/m, '**Platforms:** macOS and Linux.')
   write(p, readme)
 }
 
@@ -299,10 +301,7 @@ describe('check-repo', () => {
     const p = 'plugins/demo-tool/.claude-plugin/plugin.json'
     const m = json(p)
     assert.deepEqual(m.metadata.surfaces, ['claude-code', 'claude-app'])
-    assert.match(
-      read('plugins/demo-tool/README.md'),
-      /works%20in-Claude%20Code%20%C2%B7%20Claude%20app-/,
-    )
+    assert.match(read('plugins/demo-tool/README.md'), /works%20in-Claude%20Code%20%C2%B7%20Claude-/)
     m.metadata.surfaces = ['claude-code', 'cowork']
     write(p, `${JSON.stringify(m, null, 2)}\n`)
     const r = run('check-repo.mjs')
@@ -316,7 +315,7 @@ describe('check-repo', () => {
     write('plugins/demo-tool/bin/tool', '#!/bin/sh\necho hi\n')
     const r = run('check-repo.mjs')
     assert.equal(r.code, 1)
-    assert.match(r.out, /bin\/, which makes the Claude app refuse the plugin/)
+    assert.match(r.out, /bin\/, which makes Claude refuse the plugin/)
     assert.match(r.out, /no row for Executables/)
   })
 
@@ -335,6 +334,38 @@ describe('check-repo', () => {
     assert.match(read('README.md'), /💻 Code only/)
     const r = run('check-repo.mjs')
     assert.equal(r.code, 0, r.out)
+  })
+
+  test('flags a Compatibility cell that differs from docs/compatibility.md', () => {
+    scaffoldReady()
+    const p = 'plugins/demo-tool/README.md'
+    write(
+      p,
+      read(p).replace(/^\| 🎯 Skills \|(.*)\|(.*)\|$/m, '| 🎯 Skills |$1| ⚠️ loads, but differs |'),
+    )
+    const r = run('check-repo.mjs')
+    assert.equal(r.code, 1)
+    assert.match(r.out, /Compatibility row "🎯": the Claude cell must be "✅"/)
+  })
+
+  test('flags a README without the Platforms line', () => {
+    scaffoldReady()
+    const p = 'plugins/demo-tool/README.md'
+    write(p, read(p).replace(/^\*\*Platforms:\*\* .*$/m, 'Runs anywhere.'))
+    const r = run('check-repo.mjs')
+    assert.equal(r.code, 1)
+    assert.match(r.out, /must state "\*\*Platforms:\*\* macOS and Linux\."/)
+  })
+
+  test('flags a template Compatibility table that drifts from docs/compatibility.md', () => {
+    const tpl = '.claude/templates/plugin-readme-template.md'
+    write(tpl, read(tpl).replace(/^\| 🧠 LSP servers \|.*$/m, '| 🧠 LSP servers | ✅ | ✅ |'))
+    const r = run('check-repo.mjs')
+    assert.equal(r.code, 1)
+    assert.match(
+      r.out,
+      /\[\.claude\/templates\] the template's Compatibility row "🧠": the Claude cell must be "➖"/,
+    )
   })
 
   test('flags Compatibility rows for components the plugin does not ship', () => {

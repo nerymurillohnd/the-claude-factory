@@ -5,7 +5,7 @@
 <p><strong>Designs, builds, reviews, tests and debugs Claude Code mods, checking every interface against the current mod docs and the type declarations your own Claude Code build writes.</strong></p>
 
 [![Version](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Fnerymurillohnd%2Fthe-claude-factory%2Fmain%2Fplugins%2Fmods-engineering%2F.claude-plugin%2Fplugin.json&query=%24.version&label=version&color=D97757)](./CHANGELOG.md)
-[![Works in](https://img.shields.io/badge/works%20in-Claude%20Code%20%C2%B7%20Claude%20app-2563EB)](#-compatibility)
+[![Works in](https://img.shields.io/badge/works%20in-Claude%20Code%20%C2%B7%20Claude-2563EB)](#-compatibility)
 [![Category](https://img.shields.io/badge/category-Development-6B7280)](../../README.md#-catalog)
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-%E2%89%A5%202.1.295-D97757?logo=claude&logoColor=white)](https://code.claude.com/docs/en/plugins/install)
 [![License: MIT](https://img.shields.io/badge/license-MIT-22C55E)](./LICENSE)
@@ -24,6 +24,8 @@
 
 > [!TIP]
 > **TL;DR** — Ask Claude to build, review or fix a mod, and it works from the exact events, mods API methods and elements your Claude Code version supports, then proves the result with `claude plugin validate` and `claude plugin test`.
+
+Mods Engineering is a skill for anyone who writes Claude Code mods: panes, bands, function hooks and the hooks module. Mod interfaces change between releases, so the skill has Claude check every event, method and element against the current mod docs and the type declarations your own Claude Code build writes, instead of guessing. It covers the whole job, from choosing whether a mod is the right tool to validation, tests, debugging and sharing.
 
 ## ✨ Why use it
 
@@ -44,8 +46,6 @@
 | Tool | Minimum version | Check |
 | :-- | :-- | :-- |
 | Claude Code | 2.1.295 | `claude --version` |
-
-Claude Code 2.1.295 is the minimum because the skill teaches that `-p` and SDK sessions, `claude plugin test` and `claude plugin validate` never write a mod's type files, which holds from that version. Mods themselves run from 2.1.287 (2.1.286 in the Desktop app).
 
 ### 🤖 Claude Code
 
@@ -110,7 +110,7 @@ export CLAUDE_CODE_PLUGIN_PREFER_HTTPS=1
 /plugin install mods-engineering@the-claude-factory
 ```
 
-### 🖥️ Claude app (web and desktop)
+### 🖥️ Claude (web and desktop)
 
 1. Open **Customize** in the sidebar, then **Plugins**.
 2. Select **Add** → **Add marketplace** and enter `nerymurillohnd/the-claude-factory`.
@@ -173,7 +173,7 @@ Then, in an open session:
 /reload-plugins
 ```
 
-Installed from the Claude app? In Claude Code (v2.1.273+, signed in with that claude.ai account) it appears as `mods-engineering@synced`: update and uninstall it in the app (**Customize** → **Plugins**); in `/plugin` you can only turn it on or off, unless your organization requires it.
+Installed from Claude? In Claude Code (v2.1.273+, signed in with that claude.ai account) it appears as `mods-engineering@synced`: update and uninstall it in Claude (**Customize** → **Plugins**); in `/plugin` you can only turn it on or off, unless your organization requires it.
 
 > [!TIP]
 > Auto-update is off for this marketplace until you turn it on: `/plugin` → **Marketplaces** → **the-claude-factory** → **Enable auto-update**.
@@ -190,27 +190,29 @@ Installed with `--scope project`:
 claude plugin uninstall mods-engineering@the-claude-factory --scope project
 ```
 
-In the Claude app: **Customize** → **Plugins** → **Mods Engineering** → its menu → **Remove**.
+In Claude: **Customize** → **Plugins** → **Mods Engineering** → its menu → **Remove**.
 
-Uninstalling from the last scope it's installed at also deletes its saved options and data directory, unless you add `--keep-data`. The plugin keeps no data and writes no files of its own; the mods Claude built with it stay where they are.
+Uninstalling from the last scope it's installed at also deletes its saved options and data directory, unless you add `--keep-data`. The plugin keeps nothing in its data directory. The mods Claude built with it stay where they are.
 
 ## 🧭 Compatibility
 
-**Works in:** 💻 Claude Code · 🖥️ Claude app
+**Works in:** 💻 Claude Code · 🖥️ Claude
 
-| Component | Claude Code | Claude app |
+| Component | Claude Code | Claude |
 | :-- | :--: | :--: |
 | 🎯 Skills | ✅ | ✅ |
 
-<sub>✅ works · ⚠️ partial · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. The Claude app (web, desktop and mobile) runs a conversation as a Cowork session when it can, and as a chat conversation otherwise, for example on a device that can't run Cowork or in the separate Chat mode that Team and Enterprise plans keep for now.</sub>
+<sub>✅ works · ⚠️ partial · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. Claude runs agents, hooks and local MCP servers only in conversations where it can run tasks; anything on your computer needs Claude Desktop open.</sub>
 
 > [!IMPORTANT]
-> Mods run in Claude Code v2.1.287 or later in the terminal and v2.1.286 or later in the Desktop app; some features need newer builds, such as drawing in the VS Code extension (v2.1.299+, or v2.1.304+ where feature flags aren't fetched). In the Claude app the skill helps you design, explain and review a mod, but loading, validating and testing one needs the `claude` CLI, so do those steps in Claude Code.
+> Mods run in Claude Code v2.1.287+ in the terminal and v2.1.286+ in the Desktop app; some features need newer builds, such as drawing in the VS Code extension (v2.1.299+, or v2.1.304+ where feature flags aren't fetched). In Claude the skill helps you design, explain and review a mod, but loading, validating and testing one needs the `claude` CLI, so do those steps in Claude Code.
+
+**Platforms:** macOS and Linux.
 
 ## ❓ FAQ & Troubleshooting
 
 <details>
-<summary><b>The plugin's commands don't show up after installing.</b></summary>
+<summary><b>The plugin's skills don't show up after installing.</b></summary>
 
 Run `/reload-plugins`, then type `/mods-engineering:` to list its skills. If it still doesn't appear, open `/plugin` → **Errors** and see the [troubleshooting guide](../../docs/troubleshooting.md).
 
@@ -240,8 +242,9 @@ Events and methods change between releases. The declarations Claude Code writes 
 ## 🔗 Related
 
 - 📦 [All plugins in The Claude Factory](../../README.md#-catalog)
-- 📖 [Claude Code mods docs](https://code.claude.com/docs/en/plugins/mods/overview)
 - 📖 [Claude Code plugin docs](https://code.claude.com/docs/en/plugins/overview)
+- 📖 [Claude Code mods docs](https://code.claude.com/docs/en/plugins/mods/overview)
+- 📖 [Skills in Claude Code](https://code.claude.com/docs/en/skills)
 
 ## 🐞 Found a problem?
 
@@ -255,4 +258,4 @@ See [CHANGELOG.md](./CHANGELOG.md) for every release.
 
 ## 📄 License
 
-[MIT](./LICENSE) © Nery Murillo
+[MIT](./LICENSE) © Nery Murillo. Not affiliated with or endorsed by Anthropic. _Claude_ and _Claude Code_ are trademarks of Anthropic.

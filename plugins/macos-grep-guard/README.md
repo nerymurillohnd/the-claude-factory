@@ -22,10 +22,12 @@
 
 ---
 
-💻 **Claude Code only** — it ships a mod, which runs inside Claude Code. It doesn't install in the Claude app (chat or Cowork). It acts only on macOS and does nothing on Linux or Windows.
+💻 **Claude Code only** — it ships a mod, which runs inside Claude Code. Claude can install it, but the mod doesn't run there. It acts only on macOS and does nothing on Linux or Windows.
 
 > [!TIP]
 > **TL;DR** — On a Mac, a recursive `grep` never returns a quietly incomplete answer: Claude states in the command whether gitignored and binary files count, and BSD or zsh errors come back with the macOS fix.
+
+On macOS, the `grep` in Claude's shell skips gitignored and binary files during a recursive search, BSD `awk` ignores `IGNORECASE`, and many GNU-style commands fail with errors Claude doesn't expect. macOS Grep Guard is a Claude Code mod that reviews every Bash call: it stops a search that would quietly miss files until the command says which files count, stops an `awk` program that relies on `IGNORECASE`, and adds the macOS form next to a known BSD or zsh error. Claude's answers stay complete, and its retries land on the first try.
 
 ## ✨ Why use it
 
@@ -47,9 +49,7 @@
 | macOS, Apple Silicon or Intel | 13.0 | `sw_vers -productVersion` |
 | git, to list the gitignored files under a search folder | — | `git --version` |
 
-Claude Code 2.1.292 is the minimum, in the terminal and in the Desktop app, because from that version a mod's hook sees a Bash call's arguments after Claude Code repairs misnamed ones, so the guard checks the command that runs. 2.1.288 also fixed such a hook making Bash fail in subagents that run in a worktree.
-
-On any system other than macOS the guard does nothing.
+The plugin also uses `uname`, `awk` and `find`, which come with macOS and Linux. On any system other than macOS the guard does nothing.
 
 ### 🤖 Claude Code
 
@@ -163,15 +163,17 @@ Show the first 4 characters of each line of names.txt, deduplicated with uniq -w
 
 ## 🔍 What this plugin runs and sends
 
-- **Mod:** one `tool.call` hook on `Bash`, [`hooks/register.ts`](hooks/register.ts), with its rules in [`hooks/rules.ts`](hooks/rules.ts). It runs with your permissions and no sandbox. See Where it runs and what turns it off, below.
-- **Reads:** the Bash command and its result, which Claude Code passes to the mod. For a recursive `grep` without explicit choices, the names of files and folders under the search folder (to find `.gitignore` files and nested `.git` folders) and, through `git`, the `.gitignore` files and the repository index there. No file contents.
-- **Processes it starts**, each without a shell and each stopped after 5 seconds: `uname -s` on the first Bash call, and again on each later call while `uname` can't start; `awk` once, the first time a command uses `IGNORECASE`, to check whether it works; and, for a recursive `grep` without explicit choices, `/usr/bin/find <folder> -name .gitignore -print -quit`. When that finds a `.gitignore`, it runs `git -C <folder> rev-parse --is-inside-work-tree`, and inside a work tree `/usr/bin/find <folder> -mindepth 2 -name .git -print -quit`, then `git -C <folder> ls-files --others --ignored --exclude-per-directory=.gitignore --directory -- .` and `git -C <folder> ls-files --cached --ignored --exclude-per-directory=.gitignore -- .`. Every `git` call runs with `-c core.fsmonitor=false`, so a program that a cloned repository names in its own config never runs.
+- **Hooks:** none; the plugin has no command hooks, only the mod below.
+- **Mod:** one `tool.call` hook on `Bash`, [`hooks/register.ts`](hooks/register.ts), with its rules in [`hooks/rules.ts`](hooks/rules.ts). What turns it off and how organizations affect it are under [Limitations](#-limitations).
+  - **Reads:** the Bash command and its result, which Claude Code passes to the mod. For a recursive `grep` without explicit choices, the names of files and folders under the search folder (to find `.gitignore` files and nested `.git` folders) and, through `git`, the `.gitignore` files and the repository index there. No file contents.
+  - **Processes it starts**, each without a shell and each stopped after 5 seconds: `uname -s` on the first Bash call, and again on each later call while `uname` can't start; `awk` once, the first time a command uses `IGNORECASE`, to check whether it works; and, for a recursive `grep` without explicit choices, `/usr/bin/find <folder> -name .gitignore -print -quit`. When that finds a `.gitignore`, it runs `git -C <folder> rev-parse --is-inside-work-tree`, and inside a work tree `/usr/bin/find <folder> -mindepth 2 -name .git -print -quit`, then `git -C <folder> ls-files --others --ignored --exclude-per-directory=.gitignore --directory -- .` and `git -C <folder> ls-files --cached --ignored --exclude-per-directory=.gitignore -- .`. Every `git` call runs with `-c core.fsmonitor=false`, so a program that a cloned repository names in its own config never runs.
+  - **Never does:** rewrite a command, write a file, call a model or reach the network.
+  - It runs inside Claude Code with your access and no sandbox.
 - **MCP servers:** none.
 - **Network:** none.
 - **Files written:** none.
 - **Privacy:** the author collects no data. The marketplace's [privacy policy](https://github.com/nerymurillohnd/the-claude-factory/blob/main/PRIVACY.md) covers this plugin and the outside services it can reach.
-- **Never does:** rewrite a command, write a file, call a model or reach the network.
-- **Before you install:** a mod runs with your permissions and no sandbox. Install it only if you trust this marketplace; this README lists everything it hooks and calls.
+- **Before you install:** a mod runs with your permissions and no sandbox. Install it only if you trust this marketplace; the Mod line above lists everything it reaches.
 
 ## 🔄 Updating
 
@@ -206,27 +208,28 @@ Installed with `--scope project`:
 claude plugin uninstall macos-grep-guard@the-claude-factory --scope project
 ```
 
-Uninstalling from the last scope it's installed at also deletes its saved options and data directory, unless you add `--keep-data`. The plugin keeps no data and writes no files, so nothing is left behind.
+Uninstalling from the last scope it's installed at also deletes its saved options and data directory, unless you add `--keep-data`. The plugin keeps nothing in its data directory. It writes no files, so nothing is left in your projects; `git` stays installed.
 
 ## 🧭 Compatibility
 
 **Works in:** 💻 **Claude Code only**
 
-| Component                              |                         Claude Code                          |                                                                                                                                          Claude app                                                                                                                                           |
-| :------------------------------------- | :----------------------------------------------------------: | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
-| 🧩 Mods                                | ✅ every Claude Code session except a Desktop session on WSL |                                                                                                                   ⚠️ the plugin directory lists a mod for Claude Code only                                                                                                                    |
+| Component | Claude Code | Claude |
+| :-- | :--: | :--: |
+| 🧩 Mods | ✅ v2.1.287+ (Desktop v2.1.286+); hooks run in every session except Desktop on WSL; ⚠️ drawing depends on where: panes in the terminal, Desktop and VS Code (extension v2.1.299+, v2.1.304+ without feature flags), the band above the prompt only in the terminal and Desktop | ⚠️ the plugin directory lists a mod for Claude Code only |
 
-<sub>✅ works · ⚠️ partial · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. The Claude app (web, desktop and mobile) runs a conversation as a Cowork session when it can, and as a chat conversation otherwise, for example on a device that can't run Cowork or in the separate Chat mode that Team and Enterprise plans keep for now.</sub>
+<sub>✅ works · ⚠️ partial · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. Claude runs agents, hooks and local MCP servers only in conversations where it can run tasks; anything on your computer needs Claude Desktop open.</sub>
 
-## 🛡️ Where it runs and what turns it off
+The guard needs Claude Code 2.1.292 or later and draws nothing. It acts in every Claude Code session on macOS, in the terminal and in the Desktop app, except a Desktop session on WSL. On Linux and Windows it checks `uname` on the first Bash call and does nothing; where `uname` can't start, it checks again on each Bash call and still does nothing.
 
-- **Where it runs:** every Claude Code session on macOS, in the terminal and in the Desktop app, except a Desktop session on WSL. On Linux and Windows it checks `uname` on the first Bash call and does nothing; where `uname` can't start, it checks again on each Bash call and still does nothing.
-- **What turns it off:** `disableAllHooks`, and an organization's `allowManagedModsOnly`, which refuses any mod installed from a GitHub source, even one the organization enables. `--safe-mode` and `--bare` start Claude Code without the plugin's mod.
-- **Organizations:** with managed settings or a Team or Enterprise login, Claude Code's built-in guard `cc-plugin-sec-default` loads ahead of user mods and can refuse the mod or keep a deny the mod tried to lift.
-- **The permission prompt:** the mod cannot restyle it or change what it shows. It only allows a command or stops it with a message for Claude.
-- **Diagnosis:** `/plugin` shows `1 mod active · macos-grep-guard` under the tabs when the mod loaded. Only `claude --debug` shows why a mod was refused or a hook skipped.
+**Platforms:** macOS and Linux.
 
 ## 🚧 Limitations
+
+- **What turns it off:** `disableAllHooks` in your settings or managed settings, and an organization's `allowManagedModsOnly`, which refuses any mod installed from a GitHub source, even one the organization enables. `--safe-mode` and `--bare` start Claude Code without the plugin's mod.
+- **Organizations:** with managed settings or a Team or Enterprise login, Claude Code's built-in guard `cc-plugin-sec-default` loads ahead of user mods and can refuse the mod or keep a deny the mod tried to lift.
+- **The permission prompt:** the mod cannot restyle it or change what it shows. It only allows a command or stops it with a message for Claude.
+- **Diagnosis:** `/plugin` shows `1 mod active · macos-grep-guard` under the tabs when the mod loaded. Only Claude Code's debug log shows why a mod was refused or a hook skipped (see [FAQ](#-faq--troubleshooting)).
 
 | Limitation | What you see | Safe recovery |
 | :--------- | :----------- | :------------ |
@@ -236,14 +239,24 @@ Uninstalling from the last scope it's installed at also deletes its saved option
 | In a subagent, a recursive `grep` on a relative path is stopped, because a subagent's Bash folder does not follow the session's | Claude retries with the flags or an absolute path | Same as above |
 | A command run in the background returns no error output | No hint after a background command fails | Read the background task's output |
 | Calls to the Grep and Glob tools, `Monitor` commands, and `length()` on accented text are not checked | Nothing from this plugin | Use Bash for searches; use perl for multibyte text |
-| The mods API can change between Claude Code releases | The guard may stop working after an update; a failed hook lets the command run, except a recursive `grep`, which is stopped | Run `claude plugin update macos-grep-guard@the-claude-factory` |
+| The mods API can change between Claude Code releases | The guard may stop working after an update; a failed hook lets the command run, except a recursive `grep`, which is stopped | Update the plugin, as below |
+
+```bash
+claude plugin update macos-grep-guard@the-claude-factory
+```
 
 ## ❓ FAQ & Troubleshooting
 
 <details>
 <summary><b>The guard doesn't seem to run after installing.</b></summary>
 
-The plugin has no skills or commands, so nothing appears when you type `/macos-grep-guard:`. Run `/reload-plugins`, then open `/plugin`: `1 mod active · macos-grep-guard` under the tabs means the mod loaded. If it's missing, open `/plugin` → **Errors**, start Claude Code with `claude --debug` to see why the mod was refused, and see the [troubleshooting guide](../../docs/troubleshooting.md).
+The plugin has no skills or commands, so nothing appears when you type `/macos-grep-guard:`. Run `/reload-plugins`, then open `/plugin`: `1 mod active · macos-grep-guard` under the tabs means the mod loaded. If it's missing, open `/plugin` → **Errors**, then start Claude Code in debug mode to see why the mod was refused:
+
+```bash
+claude --debug
+```
+
+See also the [troubleshooting guide](../../docs/troubleshooting.md).
 
 </details>
 
@@ -293,4 +306,4 @@ See [CHANGELOG.md](./CHANGELOG.md) for every release.
 
 ## 📄 License
 
-[MIT](./LICENSE) © Nery Murillo The approach to shell parsing is credited in [NOTICE.txt](./NOTICE.txt).
+[MIT](./LICENSE) © Nery Murillo. The approach to its shell parsing is credited in [NOTICE.txt](./NOTICE.txt). Not affiliated with or endorsed by Anthropic. _Claude_ and _Claude Code_ are trademarks of Anthropic.

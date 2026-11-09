@@ -5,7 +5,7 @@
 <p><strong>Turns a goal, idea or draft into one copy-ready prompt tuned to the target Claude model and effort: it clarifies intent, checks current official facts and recommends the setup to run it with.</strong></p>
 
 [![Version](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Fnerymurillohnd%2Fthe-claude-factory%2Fmain%2Fplugins%2Fprompt-writer%2F.claude-plugin%2Fplugin.json&query=%24.version&label=version&color=D97757)](./CHANGELOG.md)
-[![Works in](https://img.shields.io/badge/works%20in-Claude%20Code%20%C2%B7%20Claude%20app-2563EB)](#-compatibility)
+[![Works in](https://img.shields.io/badge/works%20in-Claude%20Code%20%C2%B7%20Claude-2563EB)](#-compatibility)
 [![Category](https://img.shields.io/badge/category-Productivity-6B7280)](../../README.md#-catalog)
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-%E2%89%A5%202.1.294-D97757?logo=claude&logoColor=white)](https://code.claude.com/docs/en/plugins/install)
 [![License: MIT](https://img.shields.io/badge/license-MIT-22C55E)](./LICENSE)
@@ -25,9 +25,9 @@
 > [!TIP]
 > **TL;DR** — Run `/prompt-writer:prompt-writer`, describe what you want a prompt to achieve, even loosely, and Claude interviews you about the situation, then hands back one complete prompt written for the model you will run it on, plus the model, effort and session setup to use with it.
 
-## ✨ Why use it
+Prompt Writer is a prompt partner you run in Claude Code or Claude. Most weak prompts come from a vague goal, not from missing tags or headings, so it starts from the outcome you want and works backwards. It asks about the situation, checks the facts your prompt depends on against current official sources, and delivers one prompt written for the model you will run it on.
 
-Most weak prompts come from a vague goal, not from missing tags or headings. Prompt Writer starts from the outcome you want and works backwards.
+## ✨ Why use it
 
 - **Say it loosely** — you describe the goal in plain language. Claude decides the structure, length and techniques, and asks you about the situation, the audience and what "good" looks like, never about XML tags or effort levels.
 - **Written for the model that will run it** — guidance for Claude Fable 5.1, Fable 5, Opus 5.5, Opus 5 and Sonnet 5.5 is built in, so a prompt for one model does not carry habits that backfire on another.
@@ -49,8 +49,9 @@ Most weak prompts come from a vague goal, not from missing tags or headings. Pro
 | Tool | Minimum version | Check |
 | :-- | :-- | :-- |
 | Claude Code | 2.1.294 | `claude --version` |
+| curl (optional: without it, Claude reads pages with WebFetch) | any | `curl --version` |
 
-Claude Code 2.1.294 is the minimum because that version fixed hooks written as instructions, as the skill's check is, letting through what they should stop.
+The skill also has Claude use `awk` and `sed` to trim the pages it reads, which come with macOS and Linux.
 
 ### 🤖 Claude Code
 
@@ -80,6 +81,39 @@ npm install -g @anthropic-ai/claude-code@latest
 ```
 
 </details>
+
+### 🌐 curl
+
+macOS and most Linux distributions include curl.
+
+<details>
+<summary>🍺 <b>Homebrew</b> — macOS, Linux</summary>
+
+```bash
+brew install curl
+```
+
+</details>
+<details>
+<summary>📦 <b>apt</b> — Debian, Ubuntu</summary>
+
+```bash
+sudo apt install curl
+```
+
+</details>
+<details>
+<summary>📦 <b>dnf</b> — Fedora, RHEL</summary>
+
+```bash
+sudo dnf install curl
+```
+
+</details>
+
+```bash
+curl --version
+```
 
 ## 📥 Installation
 
@@ -115,7 +149,7 @@ export CLAUDE_CODE_PLUGIN_PREFER_HTTPS=1
 /plugin install prompt-writer@the-claude-factory
 ```
 
-### 🖥️ Claude app (web and desktop)
+### 🖥️ Claude (web and desktop)
 
 1. Open **Customize** in the sidebar, then **Plugins**.
 2. Select **Add** → **Add marketplace** and enter `nerymurillohnd/the-claude-factory`.
@@ -123,7 +157,7 @@ export CLAUDE_CODE_PLUGIN_PREFER_HTTPS=1
 
 ## 🚀 Usage
 
-Start every request with `/prompt-writer:prompt-writer`; Claude doesn't start the skill on its own. In the Claude app, type `/` or select **+** to pick it from your plugins' skills.
+Start every request with `/prompt-writer:prompt-writer`; Claude doesn't start the skill on its own. In Claude, type `/` or select **+** to pick it from your plugins' skills.
 
 ### Example: a prompt from a loose idea
 
@@ -170,7 +204,7 @@ Start every request with `/prompt-writer:prompt-writer`; Claude doesn't start th
 
 ## 🔍 What this plugin runs and sends
 
-- **Hooks:** the skill carries its own `Stop` hook of type `agent`, which Claude Code registers once you run the skill in a session. After each reply, it starts a checking agent with a 120-second limit. A reply without a "Verification checklist" section passes at once. For a delivery, the agent reads the whole session transcript and checks the reply's claims against the tool calls in it: every URL under "Sources" was read, the target model's change page was read when the checklist says so, and no file was written or edited except the prompt file you asked for. It answers pass, or sends Claude back with the claims that lack evidence. Its instructions are to read the transcript and answer, nothing else.
+- **Hooks:** `Stop` (no matcher), registered by the skill once you run it in a session, runs an agent hook: a model call with a 120-second limit, not a shell command. After a reply with a "Verification checklist", it reads the session transcript and checks that every URL under "Sources" was read, the target model's change page was read when the checklist says so, and no file was written except the prompt file you asked for; it passes, or sends Claude back with the claims that lack evidence. Hooks run on their own, with your access and without a permission prompt.
 - **MCP servers:** none.
 - **Network:** the hook's agent is a model call through the same Claude account or provider as your session, and it receives the session transcript. The skill tells Claude to read current official pages on `platform.claude.com` and `code.claude.com` with `curl` or WebFetch, under your own permission rules.
 - **Files written:** none, unless you ask for the prompt in a file; then Claude writes that one file where you say.
@@ -188,10 +222,16 @@ Then, in an open session:
 /reload-plugins
 ```
 
-Installed from the Claude app? In Claude Code (v2.1.273+, signed in with that claude.ai account) it appears as `prompt-writer@synced`: update and uninstall it in the app (**Customize** → **Plugins**); in `/plugin` you can only turn it on or off, unless your organization requires it.
+Installed from Claude? In Claude Code (v2.1.273+, signed in with that claude.ai account) it appears as `prompt-writer@synced`: update and uninstall it in Claude (**Customize** → **Plugins**); in `/plugin` you can only turn it on or off, unless your organization requires it.
 
 > [!TIP]
 > Auto-update is off for this marketplace until you turn it on: `/plugin` → **Marketplaces** → **the-claude-factory** → **Enable auto-update**.
+
+Update curl the way you installed it, for example with Homebrew:
+
+```bash
+brew upgrade curl
+```
 
 ## 🗑️ Uninstalling
 
@@ -205,29 +245,31 @@ Installed with `--scope project`:
 claude plugin uninstall prompt-writer@the-claude-factory --scope project
 ```
 
-In the Claude app: **Customize** → **Plugins** → **Prompt Writer** → its menu → **Remove**.
+In Claude: **Customize** → **Plugins** → **Prompt Writer** → its menu → **Remove**.
 
-Uninstalling from the last scope it's installed at also deletes its saved options and data directory, unless you add `--keep-data`. Prompts you saved to files stay where you put them.
+Uninstalling from the last scope it's installed at also deletes its saved options and data directory, unless you add `--keep-data`. The plugin keeps nothing in its data directory. Prompts you saved to files stay where you put them.
 
 ## 🧭 Compatibility
 
-**Works in:** 💻 Claude Code · 🖥️ Claude app
+**Works in:** 💻 Claude Code · 🖥️ Claude
 
-| Component | Claude Code | Claude app |
+| Component | Claude Code | Claude |
 | :-- | :--: | :--: |
 | 🎯 Skills | ✅ | ✅ |
-| 🪝 Hooks | ✅ | ⚠️ in Cowork sessions, not in a chat conversation |
+| 🪝 Hooks | ✅ | ⚠️ only in conversations where Claude can run tasks |
 
-<sub>✅ works · ⚠️ partial · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. The Claude app (web, desktop and mobile) runs a conversation as a Cowork session when it can, and as a chat conversation otherwise, for example on a device that can't run Cowork or in the separate Chat mode that Team and Enterprise plans keep for now.</sub>
+<sub>✅ works · ⚠️ partial · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. Claude runs agents, hooks and local MCP servers only in conversations where it can run tasks; anything on your computer needs Claude Desktop open.</sub>
 
-Where the skill's `Stop` hook runs, after each delivery a check compares what the reply claims, such as the pages it cites and the verified checklist items, with what Claude actually did in the session, and sends Claude back to fix any claim without evidence. The check adds a short wait after each reply while the skill is in use. Where hooks don't run, as in a chat conversation, the checklist is Claude's own.
+Where the skill's `Stop` hook runs, after each delivery a check compares what the reply claims, such as the pages it cites and the verified checklist items, with what Claude actually did in the session, and sends Claude back to fix any claim without evidence. The check adds a short wait after each reply while the skill is in use. Where hooks don't run, the checklist is Claude's own.
 
-The skill works the same in a Cowork session and in a chat conversation. Saving a prompt to a file needs a session that can reach a folder on your computer; elsewhere Claude gives you the prompt in a code block.
+The skill works the same in every Claude conversation. Saving a prompt to a file needs a session that can reach a folder on your computer; elsewhere Claude gives you the prompt in a code block.
+
+**Platforms:** macOS and Linux.
 
 ## ❓ FAQ & Troubleshooting
 
 <details>
-<summary><b>The plugin's commands don't show up after installing.</b></summary>
+<summary><b>The plugin's skills don't show up after installing.</b></summary>
 
 Run `/reload-plugins`, then type `/prompt-writer:` to list its skills. If it still doesn't appear, open `/plugin` → **Errors** and see the [troubleshooting guide](../../docs/troubleshooting.md).
 
@@ -278,8 +320,9 @@ It also writes the complete text of something Claude loads, such as a system pro
 ## 🔗 Related
 
 - 📦 [All plugins in The Claude Factory](../../README.md#-catalog)
-- 🩺 [Skill Diagnostics](../skill-diagnostics#readme) — audit the skills you write
 - 📖 [Claude Code plugin docs](https://code.claude.com/docs/en/plugins/overview)
+- 🩺 [Skill Diagnostics](../skill-diagnostics#readme) — audit the skills you write
+- 📖 [Skills](https://code.claude.com/docs/en/skills) and [hooks](https://code.claude.com/docs/en/hooks) in Claude Code
 
 ## 🐞 Found a problem?
 
@@ -293,4 +336,4 @@ See [CHANGELOG.md](./CHANGELOG.md) for every release.
 
 ## 📄 License
 
-[MIT](./LICENSE) © Nery Murillo
+[MIT](./LICENSE) © Nery Murillo. Not affiliated with or endorsed by Anthropic. _Claude_ and _Claude Code_ are trademarks of Anthropic.

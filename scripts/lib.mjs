@@ -103,9 +103,9 @@ export const REQUIRED_PLUGIN_SECTIONS = [
 export const SURFACE_PROFILES = {
   both: {
     surfaces: ['claude-code', 'claude-app'],
-    badge: 'Claude%20Code%20%C2%B7%20Claude%20app',
-    text: '💻 Claude Code · 🖥️ Claude app',
-    catalog: '💻 Code · 🖥️ Claude app',
+    badge: 'Claude%20Code%20%C2%B7%20Claude',
+    text: '💻 Claude Code · 🖥️ Claude',
+    catalog: '💻 Code · 🖥️ Claude',
     note: '',
   },
   'claude-code-only': {
@@ -113,7 +113,7 @@ export const SURFACE_PROFILES = {
     badge: 'Claude%20Code%20only',
     text: '💻 **Claude Code only**',
     catalog: '💻 Code only',
-    note: '💻 **Claude Code only** — <!-- TODO: say why, e.g. "it ships an LSP server" or "it needs bin/ executables" -->. It doesn\'t install in the Claude app (chat or Cowork).\n\n',
+    note: '💻 **Claude Code only** — <!-- TODO: say why, e.g. "it ships an LSP server" or "it needs bin/ executables" -->.\n\n',
   },
 }
 

@@ -55,7 +55,7 @@ Read [references/troubleshooting.md](references/troubleshooting.md).
 
 ## C. Live MCP checks
 
-Read [references/mcp-live-checks.md](references/mcp-live-checks.md) and work through it: load with the option unset, set it and reload, call a tool from the main conversation and from an agent, the Claude app steps, and the cases of hooks that match or call MCP tools. They start the plugin's servers and call real tools, so they run only after the static checks pass and only on Nery's word that the plugin is ready.
+Read [references/mcp-live-checks.md](references/mcp-live-checks.md) and work through it: load with the option unset, set it and reload, call a tool from the main conversation and from an agent, the Claude steps, and the cases of hooks that match or call MCP tools. They start the plugin's servers and call real tools, so they run only after the static checks pass and only on Nery's word that the plugin is ready.
 
 ## Answer format
 

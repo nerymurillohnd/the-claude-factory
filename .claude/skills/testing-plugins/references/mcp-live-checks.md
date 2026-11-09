@@ -16,9 +16,9 @@ Run these only when Nery says a plugin with an MCP server, or with a hook that m
 2. Set the option (`/plugin` → **Installed** → **Configure**, or `/plugin configure <plugin>@<marketplace>`), run `/reload-plugins`, and confirm `/mcp` shows the server as `plugin:<plugin>:<server>`, connected.
 3. Call a tool from the main conversation, and from an agent that lists it in `tools` by its scoped name (`mcp__plugin_<plugin>_<server>__<tool>`). A bare-key name in `tools` must not reach it.
 
-## The Claude app
+## Claude
 
-For a remote server with `${user_config.*}` in headers, take the Claude app steps (the plugin's **Connectors** tab, **No sign in**, and an `authorization` header) from the official claude.com and support.claude.com pages. Nery runs no per-plugin Claude app check: state in the README or the report what was not observed live as unverified, and never log it as debt or a blocker.
+For a remote server with `${user_config.*}` in headers, take the Claude steps (the plugin's **Connectors** tab, **No sign in**, and an `authorization` header) from the official claude.com and support.claude.com pages. Nery runs no per-plugin Claude check: state in the README or the report what was not observed live as unverified, and never log it as debt or a blocker.
 
 ## Hooks that match or call MCP tools
 

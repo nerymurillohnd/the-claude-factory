@@ -62,11 +62,11 @@ RESERVED = re.compile(
 # in scripts/lib.mjs.
 SURFACES = {"both": ["claude-code", "claude-app"], "claude-code-only": ["claude-code"]}
 SURFACE_BADGE = {
-    "both": "Claude%20Code%20%C2%B7%20Claude%20app",
+    "both": "Claude%20Code%20%C2%B7%20Claude",
     "claude-code-only": "Claude%20Code%20only",
 }
 SURFACE_TEXT = {
-    "both": "💻 Claude Code · 🖥️ Claude app",
+    "both": "💻 Claude Code · 🖥️ Claude",
     "claude-code-only": "💻 **Claude Code only**",
 }
 # README blocks the scaffold keeps for one surface profile and drops for the other.
