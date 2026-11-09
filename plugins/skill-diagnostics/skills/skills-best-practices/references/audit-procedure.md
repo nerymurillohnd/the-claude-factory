@@ -36,7 +36,7 @@ After an edit and before a release alike, the audit runs all four validation scr
 
 ## Validation scripts
 
-Run each script with its interpreter as a prefix, in this order, each writing its result with `--output` to a file in one new folder in the system's temporary folder, so the next script can read it through `--previous`. Don't redirect the output with `>`: Claude Code checks a redirect's target against the edit rules and would ask the user. Claude Code fills in `${CLAUDE_SKILL_DIR}` and `${CLAUDE_PLUGIN_DATA}` only in `SKILL.md` and its `allowed-tools`, not in this file, and the Bash tool's environment doesn't hold them: run the commands as `SKILL.md` gives them. Their form is:
+Run each script with its interpreter as a prefix, in this order, each writing its result with `--output` to a file in the audit folder `SKILL.md` names, so the next script can read it through `--previous`; the scripts create the folder, so never run `mkdir` for it. Don't redirect the output with `>`: Claude Code checks a redirect's target against the edit rules and would ask the user. Claude Code fills in `${CLAUDE_SKILL_DIR}` and `${CLAUDE_PLUGIN_DATA}` only in `SKILL.md` and its `allowed-tools`, not in this file, and the Bash tool's environment doesn't hold them: run the commands as `SKILL.md` gives them. Their form is:
 
 ```text
 python3 ${CLAUDE_SKILL_DIR}/scripts/check-metadata.py <skill-dir> --output <tmp>/metadata.json
@@ -117,7 +117,7 @@ Six read-only plugin agents. Only the orchestrator launches them, all six in eve
 
 ## Why the audit runs subagents
 
-`default`. The audit is a few focused workers whose long reports would flood the main conversation, so it runs them as subagents with the main session as the orchestrator, by the comparison in [workflows.md](workflows.md#when-a-skill-runs-other-agents). Agent teams are off by default and absent in `claude -p`; a workflow would hold the order in code but needs the user's approval to start, must be turned on in Pro and has no chat equivalent; an orchestrator subagent would lose the user's conversation. The reviewers' results arrive in later turns, where this skill's `allowed-tools` grant no longer applies.
+`default`. The audit is a few focused workers whose long reports would flood the main conversation, so it runs them as subagents with the main session as the orchestrator, by the comparison in [workflows.md](workflows.md#when-a-skill-runs-other-agents). Agent teams are off by default and absent in `claude -p`; a workflow would hold the order in code but needs the user's approval to start, must be turned on in Pro and has no chat equivalent; an orchestrator subagent would lose the user's conversation. The reviewers' results arrive in later turns, where this skill's `allowed-tools` grant no longer applies: there the plugin's `PermissionRequest` hook approves the skill's own scripts, run exactly as `SKILL.md` gives them, and nothing else.
 
 ## Rules for every brief
 
@@ -138,12 +138,10 @@ Six read-only plugin agents. Only the orchestrator launches them, all six in eve
 
 `default`. The report the user reads is a synthesis, so every agent report is kept as it arrived, and the Accounting table in the final report shows what happened to each of its findings. Together they let the user check that no finding was dropped.
 
-- **Where.** In the same new folder as the script results, the one shown as `<tmp>` above: each agent report as `<tmp>/agents/<agent name>.md` (such as `agents/security-reviewer.md`), and the final report as `<tmp>/report.md`. A report sent back and returned again is saved as `<agent name>-2.md`, next to the first.
-- **How.** With `save-report.py`, in the command form `SKILL.md` gives, passing the report on standard input through a quoted here-document, so the shell changes nothing in it. Choose a closing word that doesn't appear alone on a line of the report; `END_OF_REPORT` is the default. Don't save with the Write tool and don't redirect with `>`: both write outside the working directories and ask the user each time, while the pre-approved script doesn't.
-- **When.** Each agent report as soon as it arrives, before you check or use it, and the verifier's report too. The final report after it is written, before the verdict is recorded.
-- **Unchanged.** Save the text exactly as the agent returned it. Never summarize, reorder or correct a report before saving it.
-- **If saving fails.** `save-report.py` exits 0 and prints `{"saved", "bytes"}` when the file is written. On exit 2, fix the command and run it again; on exit 1, go on with the audit and write the error in the report's What ran block. A failed save doesn't change the verdict.
-- **Temporary.** The folder is temporary: the system can remove it, and a cloud session loses it when it ends. Copy it into the user's project only when the user asks, to the place they name. Never save reports in the plugin's data folder.
+- **Who saves them.** The plugin's hooks, not you. When one of the six agents finishes, a `SubagentStop` hook writes its report unchanged to `${CLAUDE_PLUGIN_DATA}/audits/<session id>/agents/<agent>-<agent id>.md`; in auto mode, where an agent delivers its report through `SubagentHandback`, a `PostToolUse` hook on that tool writes the same file. No tool call of yours is involved, so no permission is asked and the text can't be changed on the way. A report sent back and returned again has a new agent id and its own file.
+- **Unchanged.** The file is the agent's text as Claude Code handed it to the hook, ending with one newline. Never edit a saved report.
+- **If a report is missing.** Without `jq`, or when the hook fails, no file appears. Go on with the audit and say in the report's What ran block which reports weren't saved; it doesn't change the verdict. In chat no hook runs and nothing is saved.
+- **How long.** The plugin deletes audit files after 7 days, and uninstalling the plugin deletes the folder. Copy it into the user's project only when the user asks, to the place they name.
 
 ## Checking an agent report
 
@@ -172,7 +170,7 @@ Pass every finding to the adversarial verifier, with its evidence and without th
 - An item is n/a only when the profile or the origin makes its rule not apply, or when the skill has nothing the rule governs (for example `CF-6` with no `hooks` in the frontmatter, or `CF-5` without `context: fork`); say which.
 - Executability points from the cold executor map to `EX-1`, with the severity of [executability-trace.md](executability-trace.md#executability-severity). In the report, each point's Basis is `executability-trace.md` and its type, and its Fix is the one change that removes the guess, such as stating the missing value or the step's condition.
 - Read every item's ID from `checklist.md` at this step; never write an item from memory.
-- **Accounting.** In the report's Accounting table, list every finding ID of every saved agent report, the cold executor's points included, and every failed proved check and confirmed lead, once each, with one outcome: `kept as <ID>`, `merged into <ID>`, or `withdrawn` (the reason goes under Withdrawn). Count the findings in each saved report and check that the table has the same number for that agent; a finding with no row is a defect of the report, not of the skill.
+- **Accounting.** In the report's Accounting table, list every finding ID of every agent report, the cold executor's points included, and every failed proved check and confirmed lead, once each, with one outcome: `kept as <ID>`, `merged into <ID>`, or `withdrawn` (the reason goes under Withdrawn). Count the findings in each saved report and check that the table has the same number for that agent; a finding with no row is a defect of the report, not of the skill.
 
 ## Verdict and recording it
 

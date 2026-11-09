@@ -50,6 +50,8 @@ A skill can look finished to the person who wrote it and still fail the model th
 | 🪝 Hook | `SessionStart` | Marks the session's start time and clears its own state older than 7 days | Automatically when a session starts |
 | 🪝 Hook | `PostToolUse` | After a `Write` or `Edit` inside a skill folder, records the skill and tells Claude to audit it (or to offer an audit) | Automatically on matching tool calls |
 | 🪝 Hook | `Stop` | Keeps Claude working until every changed skill has an audit verdict newer than the change | Automatically when Claude is about to end its turn |
+| 🪝 Hook | `SubagentStop`, `PostToolUse` on `SubagentHandback` | Saves each audit agent's report unchanged, so the final report can be checked against what every agent found | Automatically when one of this plugin's agents finishes |
+| 🪝 Hook | `PermissionRequest` on `Bash` | Approves the skill's own scripts, run exactly as the skill writes them, when Claude Code would otherwise ask you in a later turn of an audit | Automatically when Claude Code is about to ask for permission |
 | 🔁 Workflow | `skill-diagnostics:evals` | Runs trigger and output-quality evals on one skill and reports the results | `/skill-diagnostics:evals`, on request only |
 
 All six agents are read-only: they have the Read, Glob and Grep tools, and the verifier also WebFetch. None of them can change a file.
@@ -311,11 +313,12 @@ In the Claude app the option can't be changed and keeps its default, `gate`.
 
 ## 🔍 What this plugin runs and sends
 
-- **Hooks:** three Bash scripts, run as `bash` with `"shell": "bash"`, so on Windows they run in Git Bash. Each reads the event Claude Code passes it with `jq`, never blocks a tool call, and on any failure writes one line to stderr and exits 1, so Claude Code shows a hook error and goes on. With `on_skill_write` set to `off`, each exits at once.
-  - `SessionStart` runs `hooks/session-start.sh` (10 s timeout). It creates an empty marker file named after the session, whose time is the session start; a compaction keeps the old time. It also deletes this plugin's session files untouched for more than 7 days. Prints nothing.
+- **Hooks:** five Bash scripts, run as `bash` with `"shell": "bash"`, so on Windows they run in Git Bash. Each reads the event Claude Code passes it with `jq`, never blocks a tool call, and on any failure writes one line to stderr and exits 1, so Claude Code shows a hook error and goes on. With `on_skill_write` set to `off`, the gate's three scripts exit at once (`session-start.sh` still deletes old audit folders); the report and approval scripts serve the audit itself, so they run in every mode.
+  - `SessionStart` runs `hooks/session-start.sh` (10 s timeout). It creates an empty marker file named after the session, whose time is the session start; a compaction keeps the old time. It also deletes this plugin's session files and audit files untouched for more than 7 days. Prints nothing.
   - `PostToolUse` on `Write|Edit` runs `hooks/skill-changed.sh` (10 s timeout), also for tool calls made by subagents. It finds the skill folder of the written file (the nearest folder upwards that holds `SKILL.md`), adds it to the session's pending list, and the first time in the session adds one line to Claude's context: in `gate` mode, to audit the skill before finishing; in `suggest` mode, to offer you an audit. It skips files outside any skill, skills inside Claude Code's `plugins/` and `skills/synced/` folders (which Claude Code overwrites), and this plugin's own files.
   - `Stop` runs `hooks/audit-gate.sh` (15 s timeout), in `gate` mode only. It looks for skill folders changed since the session started under your project folder and under `~/.claude/skills`, skipping `.git`, `node_modules`, `.venv`, `venv`, `__pycache__`, `dist`, `build` and `target`, and adds them to the pending list. A pending skill is cleared once its verdict file is newer than every file in it, or when it's gone. For the rest, it tells Claude to run the audit before finishing. After 2 such reminders for a skill that hasn't changed since, it lets Claude stop and shows you a warning that the skill wasn't audited.
-- **The skill's scripts:** `check-metadata.py`, `check-structure.py`, `check-runtime.py` and `check-size.py` read the skill you audit or write, and print their results; Claude saves each result to a temporary file for the next script. `save-report.py` saves each agent's report, unchanged, and the final report in that same temporary folder, so you can check the final report against what each agent found. `record-verdict.py` writes the audit's verdict. The skill pre-approves exactly these six `python3` commands.
+  - `SubagentStop`, matched on this plugin's six agents, and `PostToolUse` on `SubagentHandback` (how a subagent reports in auto mode) run `hooks/save-agent-report.sh` (10 s timeout). It writes the agent's report, exactly as the agent wrote it, to the session's audit folder. Reports of other agents are ignored. Prints nothing.
+  - `PermissionRequest` on `Bash` runs `hooks/approve-own-scripts.sh` (10 s timeout) only when Claude Code is about to ask you to approve a `python3` command. It answers "allow" only when the command is `python3` followed by the full path of one of the skill's five scripts in this plugin's folder, with no shell operator, substitution, redirect or line break after it. Anything else prints nothing, so you're asked as usual. It never denies, never adds a permission rule to your settings, and your own deny and ask rules still apply before it. Without `jq` it prints nothing and you're asked.- **The skill's scripts:** `check-metadata.py`, `check-structure.py`, `check-runtime.py` and `check-size.py` read the skill you audit or write, print their results and write them to the session's audit folder for the next script. `record-verdict.py` writes the audit's verdict. The skill pre-approves exactly these five `python3` commands for the turn that invokes it; in the audit's later turns, where that approval has ended, the `PermissionRequest` hook approves the same commands.
 - **MCP servers:** none.
 - **Network:** the adversarial verifier reads public pages from `code.claude.com`, `claude.com`, `platform.claude.com`, `support.claude.com`, `agentskills.io` and the Claude Code changelog on `github.com` to check findings. The hooks and scripts make no network calls. Nothing from your skill is uploaded. The evals workflow starts `claude -p` sessions, which use your plan like any other session.
 - **Files written:** in the plugin's data directory (`~/.claude/plugins/data/<id>/`):
@@ -323,8 +326,9 @@ In the Claude app the option can't be changed and keeps its default, `gate`.
   - `pending/<session id>`: the skill folders that still need an audit, one per line; short-lived work files next to it are deleted when the gate finishes.
   - `guard/<session id>/<skill key>`: how many times the gate has reminded Claude about that skill.
   - `verdicts/<skill key>`: the last verdict for that skill, as `{"skill", "verdict", "recorded_at"}`.
+  - `audits/<session id>/`: each audit's script results (under the skill's name) and `agents/<agent>-<agent id>.md`, each agent's report as the agent wrote it.
 
-  The `<skill key>` is the skill's full path with `/`, `:` and `%` encoded. Files under `sessions/`, `pending/` and `guard/` are deleted after 7 days; verdict files stay until you uninstall. Writing a skill changes files only inside the skill folder you named. The evals workflow writes its runs in a `<skill>-workspace` folder next to the skill. An audit writes nothing in your project: its reports stay in a temporary folder, which the report names, and Claude copies them into your project only when you ask.
+  The `<skill key>` is the skill's full path with `/`, `:` and `%` encoded. Files under `sessions/`, `pending/`, `guard/` and `audits/` are deleted after 7 days; verdict files stay until you uninstall. Writing a skill changes files only inside the skill folder you named. The evals workflow writes its runs in a `<skill>-workspace` folder next to the skill. An audit writes nothing in your project: its results and reports stay in the audit folder, which the report names, and Claude copies them into your project only when you ask.
 - **Privacy:** the author collects no data. The marketplace's [privacy policy](https://github.com/nerymurillohnd/the-claude-factory/blob/main/PRIVACY.md) covers this plugin and the outside services it can reach.
 
 ### Limits of the gate
@@ -337,6 +341,7 @@ In the Claude app the option can't be changed and keeps its default, `gate`.
 - If you press `Esc` while Claude is writing a skill, or interrupt the turn, the skill may not be recorded or the gate may not run until Claude next stops.
 - A skill whose full path is longer than about 200 characters may give a verdict or guard file name longer than your file system allows; the gate then shows a hook error.
 - Under an organization's `allowManagedPermissionRulesOnly`, the skill's pre-approved commands may not apply: Claude asks before running the scripts, and in `dontAsk` mode they are denied, so the verdict can't be recorded.
+- With hooks turned off, the agents' reports aren't saved (the report says which are missing), and in an audit's later turns Claude Code asks you before running the skill's scripts.
 
 ## 🔄 Updating
 
@@ -369,6 +374,7 @@ This version replaces the earlier one, which had the `/skill-diagnostics:audit` 
 - **`on_skill_write` takes `gate`, `suggest` or `off`, and the default is now `gate`** (it was `suggest`). `run` is gone. If you want the old behavior, set it to `suggest`.
 - **New prerequisites:** Bash and `jq` run the hooks. Python 3.12 or later is still needed, now for the skill's scripts.
 - **The old agents are removed:** `conformance-auditor` and `executability-auditor` are replaced by the six agents in [What's inside](#-whats-inside).
+- **New hooks:** besides the gate, the plugin saves each audit agent's report and approves the skill's own scripts in an audit's later turns ([What this plugin runs and sends](#-what-this-plugin-runs-and-sends)).
 
 ## 🗑️ Uninstalling
 

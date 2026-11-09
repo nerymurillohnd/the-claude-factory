@@ -50,15 +50,17 @@ new_case() {
   mkdir -p "${proj}" "${cfg}"
 }
 
-# command_for EVENT: the command hooks.json declares for the event.
+# command_for EVENT [GROUP]: the command hooks.json declares for the event's matcher group.
 command_for() {
-  jq -r --arg event "$1" '.hooks[$event][0].hooks[0].command' "${hooks_json}"
+  jq -r --arg event "$1" --argjson group "${2:-0}" '.hooks[$event][$group].hooks[0].command' \
+    "${hooks_json}"
 }
 
-# run_hook EVENT INPUT: runs the declared command; sets rc, and leaves stdout and stderr in files.
+# run_hook EVENT INPUT [GROUP]: runs the declared command; sets rc, and leaves stdout and stderr
+# in files.
 run_hook() {
   local command
-  command=$(command_for "$1")
+  command=$(command_for "$1" "${3:-0}")
   local -a envs=(
     "CLAUDE_PLUGIN_ROOT=${plugin_root}"
     "CLAUDE_PLUGIN_DATA=${data}"
@@ -221,18 +223,26 @@ fi
 bad=$(jq -r '
   def want($f; $t): {type: "command", shell: "bash",
     command: ("bash \"${CLAUDE_PLUGIN_ROOT}/hooks/" + $f + "\""), timeout: $t};
-  [ (.hooks.PostToolUse | length == 1 and .[0].matcher == "Write|Edit"
-       and (.[0].hooks == [want("skill-changed.sh"; 10)])),
+  [ (.hooks.PostToolUse | length == 2 and .[0].matcher == "Write|Edit"
+       and (.[0].hooks == [want("skill-changed.sh"; 10)])
+       and .[1].matcher == "SubagentHandback"
+       and (.[1].hooks == [want("save-agent-report.sh"; 10)])),
+    (.hooks.SubagentStop | length == 1
+       and .[0].matcher == "^skill-diagnostics:(description-reviewer|instructions-reviewer|scripts-runtime-reviewer|security-reviewer|cold-executor|adversarial-verifier)$"
+       and (.[0].hooks == [want("save-agent-report.sh"; 10)])),
+    (.hooks.PermissionRequest | length == 1 and .[0].matcher == "Bash"
+       and (.[0].hooks == [want("approve-own-scripts.sh"; 10) + {if: "Bash(python3 *)"}])),
     (.hooks.SessionStart | length == 1 and (.[0] | has("matcher") | not)
        and (.[0].hooks == [want("session-start.sh"; 10)])),
     (.hooks.Stop | length == 1 and (.[0] | has("matcher") | not)
        and (.[0].hooks == [want("audit-gate.sh"; 15)])),
-    (.hooks | keys == ["PostToolUse", "SessionStart", "Stop"]) ]
+    (.hooks | keys == ["PermissionRequest", "PostToolUse", "SessionStart", "Stop", "SubagentStop"]) ]
   | all | not' "${hooks_json}")
 if [[ ${bad} != false ]]; then
   fail 'hooks.json differs from the specified handlers'
 fi
-for script in session-start.sh skill-changed.sh audit-gate.sh; do
+for script in session-start.sh skill-changed.sh audit-gate.sh save-agent-report.sh \
+  approve-own-scripts.sh; do
   first=''
   if [[ -f "${plugin}/hooks/${script}" ]]; then
     first=$(head -n 1 "${plugin}/hooks/${script}")
@@ -437,6 +447,119 @@ expect_rc 0
 expect_silent
 if [[ -e ${data} ]]; then
   fail 'off mode wrote plugin data'
+fi
+pass
+
+new_case audits-pruned-in-every-mode
+for m in gate off; do
+  mode=${m}
+  mkdir -p "${data}/audits/old/agents" "${data}/audits/new"
+  : > "${data}/audits/old/agents/a.md"
+  touch -t 202001010000 "${data}/audits/old/agents/a.md"
+  : > "${data}/audits/new/size.json"
+  start_raw s1
+  expect_rc 0
+  expect_silent
+  if [[ -e "${data}/audits/old" ]]; then
+    fail "${m} mode kept an audit folder older than 7 days"
+  fi
+  if [[ ! -f "${data}/audits/new/size.json" ]]; then
+    fail "${m} mode removed a recent audit file"
+  fi
+done
+pass
+
+# stop_of AGENT_TYPE AGENT_ID MESSAGE: SubagentStop input.
+stop_of() {
+  jq -cn --arg type "$1" --arg id "$2" --arg msg "$3" \
+    '{session_id: "s1", hook_event_name: "SubagentStop", agent_type: $type, agent_id: $id,
+      stop_hook_active: false, last_assistant_message: $msg}'
+}
+
+new_case agent-report-saved
+report=$'## security-reviewer: demo\n\nStatus: complete\n\n#### S1\n- quote: "$HOME `x`"'
+input=$(stop_of skill-diagnostics:security-reviewer a1 "${report}")
+run_hook SubagentStop "${input}"
+expect_rc 0
+expect_silent
+saved="${data}/audits/s1/agents/security-reviewer-a1.md"
+content=''
+if [[ -f ${saved} ]]; then
+  content=$(cat "${saved}")
+fi
+if [[ ${content} != "${report}" ]]; then
+  fail 'the report was not saved unchanged'
+fi
+input=$(stop_of general-purpose a2 'not ours')
+run_hook SubagentStop "${input}"
+expect_rc 0
+if [[ -e "${data}/audits/s1/agents/general-purpose-a2.md" ]]; then
+  fail 'saved the report of an agent that is not the plugin'"'"'s'
+fi
+input=$(stop_of skill-diagnostics:security-reviewer '../x' 'bad id')
+run_hook SubagentStop "${input}"
+if [[ ${rc} != 1 ]]; then
+  fail 'an unusable agent_id did not fail'
+fi
+pass
+
+new_case handback-report-wins
+input=$(jq -cn '{session_id: "s1", hook_event_name: "PostToolUse", tool_name: "SubagentHandback",
+  agent_type: "skill-diagnostics:cold-executor", agent_id: "a9",
+  tool_input: {message: "## cold-executor: demo\nfull report"}, tool_response: {}}')
+run_hook PostToolUse "${input}" 1
+expect_rc 0
+input=$(stop_of skill-diagnostics:cold-executor a9 'Done.')
+run_hook SubagentStop "${input}"
+expect_rc 0
+content=$(cat "${data}/audits/s1/agents/cold-executor-a9.md")
+if [[ ${content} != $'## cold-executor: demo\nfull report' ]]; then
+  fail 'the closing text replaced the handed-back report'
+fi
+pass
+
+# permission_input COMMAND: PermissionRequest input for one Bash command.
+permission_input() {
+  jq -cn --arg c "$1" '{session_id: "s1", hook_event_name: "PermissionRequest", tool_name: "Bash",
+    tool_input: {command: $c},
+    permission_suggestions: [{type: "addRules", behavior: "allow", destination: "localSettings"}]}'
+}
+
+new_case approve-own-scripts
+scripts_dir="${plugin}/skills/skills-best-practices/scripts"
+for cmd in \
+  "python3 ${scripts_dir}/record-verdict.py --data-dir /d /p/my skill fail" \
+  "python3 ${scripts_dir}/check-size.py /p/skill --previous /a/runtime.json --output /a/size.json"; do
+  input=$(permission_input "${cmd}")
+  run_hook PermissionRequest "${input}"
+  expect_rc 0
+  content=$(jq -c . "${base}/out")
+  if [[ ${content} != '{"hookSpecificOutput":{"hookEventName":"PermissionRequest","decision":{"behavior":"allow"}}}' ]]; then
+    fail "did not allow: ${cmd}"
+  fi
+done
+for cmd in \
+  "python3 ${scripts_dir}/record-verdict.py x; rm -rf /" \
+  "python3 ${scripts_dir}/record-verdict.py \$(id)" \
+  "python3 ${scripts_dir}/record-verdict.py x > /etc/passwd" \
+  "python3 ${scripts_dir}/record-verdict.py x | sh" \
+  "python3 ${scripts_dir}/record-verdict.pyx" \
+  "python3 ${scripts_dir}/../../../hooks/x.py" \
+  "python3 ${scripts_dir}/other.py" \
+  "python3 /elsewhere/skills/skills-best-practices/scripts/record-verdict.py x" \
+  "sudo python3 ${scripts_dir}/record-verdict.py x" \
+  $'python3 '"${scripts_dir}"$'/record-verdict.py x\nrm -rf /'; do
+  input=$(permission_input "${cmd}")
+  run_hook PermissionRequest "${input}"
+  expect_rc 0
+  expect_silent
+done
+path_override='/nonexistent'
+input=$(permission_input "python3 ${scripts_dir}/record-verdict.py x")
+run_hook PermissionRequest "${input}"
+path_override=''
+if [[ -s "${base}/out" ]]; then
+  fail 'allowed without jq'
 fi
 pass
 

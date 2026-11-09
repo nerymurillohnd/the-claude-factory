@@ -22,7 +22,7 @@ Agents: <each agent · complete | incomplete: <reason>>, or "inline in chat: no 
 
 Changelog read: <versions> · Unread: <versions, or none>
 
-Reports saved: <the folder, with `agents/` and `report.md` | not saved: <the error> | in chat: not saved>
+Reports saved: <the folder that holds `agents/` | missing: <which agents> | in chat: not saved>
 
 Verdict recorded: <yes | no: the error | not in chat>, filled after the verdict is recorded
 

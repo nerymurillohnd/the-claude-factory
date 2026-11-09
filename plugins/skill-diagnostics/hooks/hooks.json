@@ -11,6 +11,17 @@
             "timeout": 10
           }
         ]
+      },
+      {
+        "matcher": "SubagentHandback",
+        "hooks": [
+          {
+            "type": "command",
+            "shell": "bash",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/save-agent-report.sh\"",
+            "timeout": 10
+          }
+        ]
       }
     ],
     "SessionStart": [
@@ -33,6 +44,33 @@
             "shell": "bash",
             "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/audit-gate.sh\"",
             "timeout": 15
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "matcher": "^skill-diagnostics:(description-reviewer|instructions-reviewer|scripts-runtime-reviewer|security-reviewer|cold-executor|adversarial-verifier)$",
+        "hooks": [
+          {
+            "type": "command",
+            "shell": "bash",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/save-agent-report.sh\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PermissionRequest": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "shell": "bash",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/approve-own-scripts.sh\"",
+            "timeout": 10,
+            "if": "Bash(python3 *)"
           }
         ]
       }
