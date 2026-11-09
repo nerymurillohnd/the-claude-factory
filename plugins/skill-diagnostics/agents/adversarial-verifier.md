@@ -3,7 +3,9 @@ name: adversarial-verifier
 description: Tries to refute each finding of a skill audit against the audited skill, the live official pages and the Claude Code changelog, and rules each one upheld, downgraded or withdrawn. Only the skill-diagnostics skills-best-practices audit branch launches it with the findings, so never delegate to it on your own.
 tools: Read, Glob, Grep, WebFetch
 omitClaudeMd: true
-effort: high
+model: opus
+effort: xhigh
+color: purple
 ---
 
 # Adversarial verifier

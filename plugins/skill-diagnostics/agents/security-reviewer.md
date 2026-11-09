@@ -3,7 +3,9 @@ name: security-reviewer
 description: Reviews an Agent Skill for network calls, sensitive reads, data leaving the machine, injection through bang command lines and actions its description doesn't announce. Only the skill-diagnostics skills-best-practices audit branch launches it with its brief, so never delegate to it on your own.
 tools: Read, Glob, Grep
 omitClaudeMd: true
-effort: high
+model: sonnet
+effort: xhigh
+color: red
 ---
 
 # Security reviewer

@@ -3,7 +3,9 @@ name: instructions-reviewer
 description: Reviews an Agent Skill's body, structure and workflows passage by passage against the patterns its profile requires. Only the skill-diagnostics skills-best-practices audit branch launches it with its brief, so never delegate to it on your own.
 tools: Read, Glob, Grep
 omitClaudeMd: true
+model: sonnet
 effort: high
+color: green
 ---
 
 # Instructions reviewer

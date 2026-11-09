@@ -40,7 +40,7 @@ A skill can look finished to the person who wrote it and still fail the model th
 
 | Component | Name | What it does | How it runs |
 | :-- | :-- | :-- | :-- |
-| 🎯 Skill | `skill-diagnostics:skills-best-practices` | Audits a skill with 4 scripts, 4 reviewers, a cold executor and an adversarial verifier, and gives one report and one verdict | `/skill-diagnostics:skills-best-practices`, automatically when you ask Claude to review or audit a skill, and after Claude creates or changes one |
+| 🎯 Skill | `skill-diagnostics:skills-best-practices` | Audits a skill, and its evals when it has them, with 5 scripts, 4 reviewers, a cold executor and an adversarial verifier, and gives one report and one verdict | `/skill-diagnostics:skills-best-practices`, automatically when you ask Claude to review or audit a skill, and after Claude creates or changes one |
 | 🤖 Agent | `skill-diagnostics:description-reviewer` | Reviews the description, frontmatter and the surfaces the skill reaches | Launched by the skill during an audit only |
 | 🤖 Agent | `skill-diagnostics:instructions-reviewer` | Reviews the body, structure and workflows passage by passage | Launched by the skill during an audit only |
 | 🤖 Agent | `skill-diagnostics:scripts-runtime-reviewer` | Reviews bundled scripts and Claude Code runtime features | Launched by the skill during an audit only |
@@ -55,6 +55,8 @@ A skill can look finished to the person who wrote it and still fail the model th
 | 🔁 Workflow | `skill-diagnostics:evals` | Runs trigger and output-quality evals on one skill and reports the results | `/skill-diagnostics:evals`, on request only |
 
 All six agents are read-only: they have the Read, Glob and Grep tools, and the verifier also WebFetch. None of them can change a file.
+
+Each agent sets its own model and effort level, whatever your session uses: the four reviewers run on Sonnet, the cold executor and the verifier on Opus; the description and instructions reviewers and the cold executor at `high` effort, the scripts-and-runtime and security reviewers and the verifier at `xhigh`. If one of these models isn't available to your account, Claude Code switches that agent to another model only when you've configured a [fallback model chain](https://code.claude.com/docs/en/model-config#fallback-model-chains). `CLAUDE_CODE_EFFORT_LEVEL`, when you set it, overrides every agent's level, and `maxEffortLevel` or your organization's limit caps it.
 
 ## 📋 Prerequisites
 
@@ -449,7 +451,7 @@ No. The plugin only audits and changes no file of your skill. Fixes, and evals i
 <details>
 <summary><b>How much does an audit cost?</b></summary>
 
-Each audit runs six agents over every file of the skill and checks findings against the live docs, so it uses noticeably more of your plan than a single reply. The evals workflow runs dozens of `claude -p` sessions and costs more still; run it before a release, not after every edit.
+Each audit runs six agents over every file of the skill and checks findings against the live docs, so it uses noticeably more of your plan than a single reply, and two of its agents run on Opus. The evals workflow runs dozens of `claude -p` sessions and costs more still; run it before a release, not after every edit.
 
 </details>
 

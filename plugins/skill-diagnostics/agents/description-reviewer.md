@@ -3,7 +3,9 @@ name: description-reviewer
 description: Reviews an Agent Skill's description, frontmatter and the surfaces it reaches for triggering, invocation settings and scope boundaries. Only the skill-diagnostics skills-best-practices audit branch launches it with its brief, so never delegate to it on your own.
 tools: Read, Glob, Grep
 omitClaudeMd: true
+model: sonnet
 effort: high
+color: blue
 ---
 
 # Description reviewer

@@ -3,7 +3,9 @@ name: scripts-runtime-reviewer
 description: Reviews an Agent Skill's bundled scripts and its Claude Code runtime features, such as placeholders, allowed-tools, forks and frontmatter hooks. Only the skill-diagnostics skills-best-practices audit branch launches it with its brief, so never delegate to it on your own.
 tools: Read, Glob, Grep
 omitClaudeMd: true
-effort: high
+model: sonnet
+effort: xhigh
+color: orange
 ---
 
 # Scripts-and-runtime reviewer

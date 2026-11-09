@@ -3,7 +3,9 @@ name: cold-executor
 description: Follows an Agent Skill as a naive executor on one realistic task, from trigger to completion, and marks every point where it would have to guess. Only the skill-diagnostics skills-best-practices audit branch launches it with its brief, so never delegate to it on your own.
 tools: Read, Glob, Grep
 omitClaudeMd: true
+model: opus
 effort: high
+color: cyan
 ---
 
 # Cold executor
