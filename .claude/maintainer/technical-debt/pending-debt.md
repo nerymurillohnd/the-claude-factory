@@ -56,6 +56,7 @@ Add an item only when all of these hold:
 | DEBT-046 | Nothing detects when claude-code-action changes the facts `claude-github-actions` relies on | 🟠 Blocked |
 | DEBT-047 | `claude-github-actions` has no eval suite | 🟠 Blocked |
 | DEBT-048 | github-operations 0.6.0 no longer writes, triages or answers issues and discussions, or turns an issue into a pull request | 🟠 Blocked |
+| DEBT-053 | Nothing measures whether `auto-pr-lifecycle` loads on its own for pull request work | 🟠 Blocked |
 
 ## 📂 Open items
 
@@ -278,6 +279,7 @@ Add an item only when all of these hold:
   - On 2026-10-28 the scaffolded `plugins/instruction-engineering/.claude-plugin/plugin.json` failed Biome's format check and was fixed with `npx biome format --write` before commit `c4fdb40`.
   - Nery stopped the scaffold work on 2026-10-28 to keep the session on the plugin.
   - Reproduced on 2026-11-01: a plugin scaffolded into a scratch `TCF_ROOT` and piped through `biome format --stdin-file-path=plugins/<name>/.claude-plugin/plugin.json` comes back with `keywords` and `metadata.surfaces` spread over several lines.
+  - Reproduced again on 2026-11-09, with Biome 2.6.4 and then 2.6.5 (after PR #95). Scaffolds of both surface profiles (`both` and `--claude-code-only`) were made into a scratch `TCF_ROOT` copy of HEAD and passed through `npm exec --no -- biome format --stdin-file-path=…`. Both came back with `keywords` and `metadata.surfaces` expanded over several lines. The 2026-11-07 handoff note that it "did not reproduce" does not hold. The scaffold and its template have not changed since 2026-11-05 (2f1566e, a docs commit).
 - **Inferences:** none.
 - **Open questions:** whether the scaffold formats its output with Biome or writes the template's layout itself.
 
@@ -479,6 +481,32 @@ Add an item only when all of these hold:
 - **Next action:** ask Nery whether issue and discussion work returns, and where; then build it through `building-plugins`, `versioning` and `releases`.
 - **Review condition:** closes when a release covers that work, or when Nery decides it stays out for good (closed as accepted, with an ADR).
 - **Related records:** ADR_2026-11-04_github-operations-splits-into-focused-skills; ADR_2026-11-04_github-operations-0-6-0-ships-as-one-release.
+
+### DEBT-053 — Nothing measures whether `auto-pr-lifecycle` loads on its own for pull request work
+
+| Field | Value |
+| --- | --- |
+| **Status** | 🟠 Blocked |
+| **Category** | quality |
+| **Owner** | `plugins/github-operations/skills/auto-pr-lifecycle` |
+| **Logged** | 2026-11-09 |
+
+#### 🔎 Evidence
+
+- **Confirmed facts:**
+  - On 2026-11-09, in a Claude Code cloud session with github-operations installed (synced), Claude opened PR #97, watched its CI and re-ran a failed job by hand without loading `github-operations:auto-pr-lifecycle`. The skill's description matches that work: "open a pull request for a branch … babysit or check on a PR, fix a PR's failing checks … why is my PR red". Nery called it out as a deficiency any user of the plugin could hit. The skill and its agents ran correctly once he started them with `/github-operations:init-pr-lifecycle` (PRs #97, #98 and #99).
+  - Competing instructions in that session: the cloud harness injects its own "PR Activity Events" procedure (subscribe, re-run once, comment). The repo's `releases` skill (step 4) opens the pull request itself and names only `pr-tracker` before merge. The skill's "Before you start" asks the user first when Claude loads it on its own.
+  - `plugins/github-operations/evals` does not exist, so no case measures whether the skill loads.
+- **Inferences:** users in cloud sessions get the same harness procedure and may see the same behavior. Users in a local CLI do not get it, and their trigger rate is unknown.
+- **Open questions:** the trigger rate on each surface; whether the description, the ask-first rule or both need to change.
+
+#### 📈 Impact and next step
+
+- **Impact / risk:** users who install the plugin for PR work may get ad hoc handling instead of the tracked, verified lifecycle: no tracker report before merge, and re-runs without evidence.
+- **Why it is not fixed now:** a trigger eval spends Claude usage and is Nery's call. Changing the description or the ask-first rule without a measured baseline would be a guess.
+- **Next action:** on Nery's go, build trigger cases through `testing-plugins`, run them locally and in a cloud session, then adjust the description or the "Before you start" rule from the measured rate. Cases: two that must load the skill ("open a PR for this branch", "why is my PR red") and two that must not ("commit this", "what's the status of PR 5").
+- **Review condition:** closes when the trigger cases exist, have run on both surfaces, and the skill loads on the must-load cases.
+- **Related records:** DEBT-043, DEBT-047.
 
 <!--
 Entry format. Copy this block above this comment for each new item and add its row to the Index.
