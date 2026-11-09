@@ -58,6 +58,8 @@ A channel is an [MCP](https://modelcontextprotocol.io) server that runs on the s
 
 ![Architecture diagram showing external systems connecting to your local channel server, which communicates with Claude Code over stdio](https://mintcdn.com/claude-code/9FG0ZKj9uKYiHmbi/images/channel-architecture.svg?fit=max\&auto=format\&n=9FG0ZKj9uKYiHmbi\&q=85\&s=9a037b7da80184ae49015c0256b21a1f)
 
+> **View the image** [`assets/channel-architecture.png`](../../assets/channel-architecture.png) **to** see how external systems, your channel server, and Claude Code connect.
+
 ## What you need
 
 The only hard requirement is the [`@modelcontextprotocol/sdk`](https://www.npmjs.com/package/@modelcontextprotocol/sdk) package and a Node.js-compatible runtime. [Bun](https://bun.sh), [Node](https://nodejs.org), and [Deno](https://deno.com) all work. The pre-built plugins in the research preview use Bun, but your channel doesn't have to.
@@ -475,6 +477,8 @@ When a permission prompt opens, the relay loop has four steps:
 The local terminal dialog stays open through all of this. If someone at the terminal answers before the remote verdict arrives, that answer is applied instead and the pending remote request is dropped.
 
 ![Sequence diagram: Claude Code sends a permission\_request notification to the channel server, the server formats and sends the prompt to the chat app, the human replies with a verdict, and the server parses that reply into a permission notification back to Claude Code](https://mintcdn.com/claude-code/9FG0ZKj9uKYiHmbi/images/channel-permission-relay.svg?fit=max\&auto=format\&n=9FG0ZKj9uKYiHmbi\&q=85\&s=97d57f128f0da55f105ab1e3a7e10240)
+
+> **View the image** [`assets/channel-permission-relay.png`](../../assets/channel-permission-relay.png) **to** see the message sequence of a permission request relayed through a chat app.
 
 ### Permission request fields
 

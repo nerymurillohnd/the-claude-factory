@@ -134,6 +134,8 @@ Diagram (image): Agent Skills architecture, showing how Skills integrate with th
 
 ![Agent Skills architecture, showing how Skills integrate with the agent's configuration and virtual machine](https://platform.claude.com/docs/images/agent-skills-architecture.svg)
 
+> **View the image** [`assets/agent-skills-architecture.png`](../../assets/agent-skills-architecture.png) **to** see how skills live in the agent's file system next to its configuration.
+
 **How Claude accesses Skill content:**
 
 When a Skill is triggered, Claude uses bash to read `SKILL.md` from the filesystem, bringing its instructions into the context window. If those instructions reference other files (such as `FORMS.md` or a database schema), Claude reads those files too using additional bash commands. When instructions mention executable scripts, Claude runs them through bash and receives only the output (the script code itself never enters context).
@@ -157,6 +159,8 @@ This is how Claude loads and uses the custom `pdf-processing` Skill from the ear
 Diagram (image): Skills loading into the context window: the progressive loading of Skill metadata and content.
 
 ![Skills loading into the context window: the progressive loading of Skill metadata and content](https://platform.claude.com/docs/images/agent-skills-context-window.svg)
+
+> **View the image** [`assets/agent-skills-context-window.png`](../../assets/agent-skills-context-window.png) **to** see how skill metadata and content load into the context window in stages.
 
 ## Where Skills work
 

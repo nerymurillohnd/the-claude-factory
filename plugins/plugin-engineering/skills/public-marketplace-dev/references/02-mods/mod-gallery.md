@@ -1,6 +1,6 @@
 # Interface gallery for mods
 
-The interface elements a Claude Code mod can draw, such as text, buttons, fields, Markdown, code, and diffs, with sample code and descriptions of terminal screenshots.
+The interface elements a Claude Code mod can draw, such as text, buttons, fields, Markdown, code, and diffs, with sample code and terminal screenshots stored in the skill's `assets/` folder.
 
 ## Contents
 
@@ -146,7 +146,7 @@ Box({
 
 ![A pane with nine lines of text, each named for its style: plain, bold, italic, underline, strikethrough, dimColor in gray, inverse, color red, and backgroundColor blue.](https://mintcdn.com/claude-code/EXkwf0kKMewZsyod/images/mods-el-text-light.png?fit=max\&auto=format\&n=EXkwf0kKMewZsyod\&q=85\&s=90724ce3953d9347b61b6a9266fda451)
 
-> **Description of the screenshot:** Inside a light outer frame with a pale gray rounded border, a white pane with a thin dark rounded border and a small gray "×" at its top right. Monospaced, left-aligned text, one style per line, no blank rows: "Plain text" in regular black; "bold" in heavy black; "italic" slanted; "underline" with a line under the word; "strikethrough" with a line through the word; "dimColor" in medium gray; "inverse" as white letters on a black block exactly as wide as the word; "color: 'red'" in red letters on white; "backgroundColor: 'blue'" in dark letters on a bright blue fill that ends where the text ends, leaving the rest of that row white. The rest of the pane is empty.
+> **View the image** [`assets/mods-el-text-light.png`](../../assets/mods-el-text-light.png) **to** see how each text style renders in a terminal pane.
 
 `dimColor` draws the text in gray. `backgroundColor` fills only as wide as the text.
 
@@ -162,7 +162,7 @@ Markdown({
 
 ![A pane with a bold heading, Release notes, then a sentence with one bold word and one colored code word, a two-item list, and a quote drawn in italics with a bar on its left.](https://mintcdn.com/claude-code/EXkwf0kKMewZsyod/images/mods-el-markdown-light.png?fit=max\&auto=format\&n=EXkwf0kKMewZsyod\&q=85\&s=e40eacc4e3fbe06eb003f4463f552ec1)
 
-> **Description of the screenshot:** Inside a light outer frame with a pale gray rounded border, a white pane with a thin dark rounded border and a small gray "×" at its top right. From the top: "Release notes" in bold with no "##" marks; a blank row; "This build has two fixes and one flag:" in regular black, with "two" in bold and "flag" in blue-violet with no backticks; a blank row; "- Faster start" and "- Fewer prompts" on consecutive rows, each starting with a literal hyphen; a blank row; "Quoted text" in italics, indented by two columns, with a short vertical gray bar at the left edge of that row and no ">" mark.
+> **View the image** [`assets/mods-el-markdown-light.png`](../../assets/mods-el-markdown-light.png) **to** see how the Markdown element renders headings, emphasis, code, lists, and quotes.
 
 A heading draws in bold without its `#` marks. Inline code draws in color without its backticks. A quote draws in italics with a bar on its left.
 
@@ -176,7 +176,7 @@ Link({ href: 'https://code.claude.com/docs', label: 'Claude Code docs' })
 
 ![A pane with one line: the label Claude Code docs, then the URL in gray.](https://mintcdn.com/claude-code/EXkwf0kKMewZsyod/images/mods-el-link-light.png?fit=max\&auto=format\&n=EXkwf0kKMewZsyod\&q=85\&s=8217bd2dfb561a8ba57023c6d89ea977)
 
-> **Description of the screenshot:** Inside a light outer frame with a pale gray rounded border, a white pane with a thin dark rounded border and a small gray "×" at its top right. A single row: "Claude Code docs" in black, one space, then "https://code.claude.com/docs" in gray. Neither part is underlined or otherwise styled; the rest of the row is empty.
+> **View the image** [`assets/mods-el-link-light.png`](../../assets/mods-el-link-light.png) **to** see how a link renders: its label, then the URL in gray.
 
 The terminal draws the URL as text after the label. Whether a click opens it depends on the user's terminal.
 
@@ -198,7 +198,7 @@ Code({
 
 ![A pane with two numbered lines of JavaScript in syntax colors.](https://mintcdn.com/claude-code/EXkwf0kKMewZsyod/images/mods-el-code-light.png?fit=max\&auto=format\&n=EXkwf0kKMewZsyod\&q=85\&s=4e13f5d506d3fdcc59d6d9524f48d2a9)
 
-> **Description of the screenshot:** Inside a light outer frame with a pale gray rounded border, a white pane with a thin dark rounded border and a small gray "×" at its top right. Two rows, each with a gray line number ("1", "2") left of the code. Row 1: "const name = 'mods'" with "const" in crimson, "name" and "=" in black, and "'mods'" in dark blue. Row 2: "console.log('hello ' + name)" with "console" in teal, "." in black, "log" in purple, "'hello '" in dark blue, and "(", "+", "name" and ")" in black.
+> **View the image** [`assets/mods-el-code-light.png`](../../assets/mods-el-code-light.png) **to** see how the code element renders numbered, syntax-colored lines.
 
 The colors come from the user's theme.
 
@@ -215,7 +215,7 @@ Code({
 
 ![A pane with a four-line diff. The removed line is shaded red and the added line green, each with its line number. In the added line, the words that runs code have a stronger shade.](https://mintcdn.com/claude-code/EXkwf0kKMewZsyod/images/mods-el-diff-light.png?fit=max\&auto=format\&n=EXkwf0kKMewZsyod\&q=85\&s=4f12c9f7229ceccd9b4f47479a7235dd)
 
-> **Description of the screenshot:** Inside a light outer frame with a pale gray rounded border, a white pane with a thin dark rounded border and a small gray "×" at its top right. Four rows, each starting with a line number: "1" in gray, then "# Mods" on white; "2" in red, then a red "-" and "A mod is a plugin." on a pale red band; "2" in green, then a green "+" and "A mod is a plugin that runs code." on a pale green band, where " that runs code" (with its leading space) sits on a darker green highlight and the final "." does not; "3" in gray, then "Read on." on white. The red and green bands stretch from the line number almost to the pane's right border. No "@@" header row is shown.
+> **View the image** [`assets/mods-el-diff-light.png`](../../assets/mods-el-diff-light.png) **to** see how the diff element shades removed and added lines.
 
 Claude Code draws line numbers in place of the `@@` line. Where a removed line and an added line are alike, the words that changed get a stronger shade.
 
@@ -246,7 +246,7 @@ Box({
 
 ![A pane with three words in a row, four columns apart, then a blank row, then a rounded border around one line of text. The border runs the full width of the pane.](https://mintcdn.com/claude-code/EXkwf0kKMewZsyod/images/mods-el-box-light.png?fit=max\&auto=format\&n=EXkwf0kKMewZsyod\&q=85\&s=cb9263bb02f5c8afb6e5b8450e0cdadc)
 
-> **Description of the screenshot:** Inside a light outer frame with a pale gray rounded border, a white pane with a thin dark rounded border and a small gray "×" at its top right. First row: "a row", "of three", "items" in plain black, separated by equal gaps of about four character columns. Then one blank row. Then a nested box with a thin dark border and rounded corners, inset slightly from the pane's left and right edges so it spans nearly the full pane width, holding one row of text, "borderStyle: 'round'", with one column of padding before it. Nothing else is drawn.
+> **View the image** [`assets/mods-el-box-light.png`](../../assets/mods-el-box-light.png) **to** see how a row of boxes spaces its children and how a bordered box draws.
 
 The border stretches to the width of the pane.
 
@@ -273,13 +273,13 @@ Box({
 
 ![A pane with three buttons, one per line: Save in brackets, n: Next without brackets and with the n in color, and Skip in brackets in gray.](https://mintcdn.com/claude-code/EXkwf0kKMewZsyod/images/mods-el-button-light.png?fit=max\&auto=format\&n=EXkwf0kKMewZsyod\&q=85\&s=8c638c15e12d9736f327dfcaa797b512)
 
-> **Description of the screenshot:** Inside a light outer frame with a pale gray rounded border, a white pane with a thin dark rounded border and a small gray "×" at its top right. Three left-aligned rows with no gaps: "[ Save ]" in bold black, brackets with one space on each side of the label; "n: Next" with the "n" in blue-violet and ": Next" in regular black, no brackets; "[ Skip ]" in bold gray, bracketed like Save. No button is highlighted.
+> **View the image** [`assets/mods-el-button-light.png`](../../assets/mods-el-button-light.png) **to** see how the three button styles render unfocused.
 
 A button that has the focus draws in inverse video. Here the user has pressed Tab twice:
 
 ![The same three buttons, with the second one, n: Next, drawn in inverse video.](https://mintcdn.com/claude-code/EXkwf0kKMewZsyod/images/mods-el-button-plain-focused-light.png?fit=max\&auto=format\&n=EXkwf0kKMewZsyod\&q=85\&s=a6224e58d10752a894615047d9824ad9)
 
-> **Description of the screenshot:** Inside a light outer frame with a pale gray rounded border, a white pane with a thin dark rounded border and a small gray "×" at its top right. Same three rows as the previous screenshot: "[ Save ]" bold black and "[ Skip ]" bold gray are unchanged. The middle row is highlighted: ": Next" is white on a black block that ends right after "Next", and the "n" cell is white on a blue-violet block, so the hotkey letter keeps its color as a background.
+> **View the image** [`assets/mods-el-button-plain-focused-light.png`](../../assets/mods-el-button-plain-focused-light.png) **to** see how a plain button looks when it has focus.
 
 ### `Input`
 
@@ -300,19 +300,19 @@ Without the focus, the field shows its label and its placeholder:
 
 ![A pane with one line: the label Title, then the placeholder Type a title and press Enter in gray.](https://mintcdn.com/claude-code/EXkwf0kKMewZsyod/images/mods-el-input-light.png?fit=max\&auto=format\&n=EXkwf0kKMewZsyod\&q=85\&s=7d580be1aaf5507032e1962b9167d725)
 
-> **Description of the screenshot:** Inside a light outer frame with a pale gray rounded border, a white pane with a thin dark rounded border and a small gray "×" at its top right. A single row: "Title:" in regular-weight black, including the colon, one space, then "Type a title and press Enter" in gray. No cursor, no return sign and no "save" are shown.
+> **View the image** [`assets/mods-el-input-light.png`](../../assets/mods-el-input-light.png) **to** see how a text field renders with its label and placeholder.
 
 With the focus, the label turns bold, a cursor appears, and the `submitLabel` shows after `⏎`:
 
 ![The same field with its label in bold, a block cursor on the first letter of the placeholder, and a return sign followed by the word save.](https://mintcdn.com/claude-code/EXkwf0kKMewZsyod/images/mods-el-input-focused-light.png?fit=max\&auto=format\&n=EXkwf0kKMewZsyod\&q=85\&s=dcfcce0174480cc624d06c8521734fe7)
 
-> **Description of the screenshot:** Inside a light outer frame with a pale gray rounded border, a white pane with a thin dark rounded border and a small gray "×" at its top right. A single row: "Title:" now in bold black; the first placeholder letter "T" drawn white on a black block cursor; the rest, "ype a title and press Enter", in gray; then a gray return-arrow sign "⏎" and the word "save" in dark gray, one space apart, directly after the placeholder.
+> **View the image** [`assets/mods-el-input-focused-light.png`](../../assets/mods-el-input-focused-light.png) **to** see how a text field looks when it has focus.
 
 Typing replaces the placeholder:
 
 ![The same field holding the typed letters Rel, followed by the return sign and the word save.](https://mintcdn.com/claude-code/EXkwf0kKMewZsyod/images/mods-el-input-typed-light.png?fit=max\&auto=format\&n=EXkwf0kKMewZsyod\&q=85\&s=4eb6d4443763a21415dad4e426bc747a)
 
-> **Description of the screenshot:** Inside a light outer frame with a pale gray rounded border, a white pane with a thin dark rounded border and a small gray "×" at its top right. A single row: "Title:" in bold black, then "Rel" in regular black, then a black block cursor in the empty cell right after "Rel", then a gray "⏎" and "save" in dark gray. The gray placeholder text is gone.
+> **View the image** [`assets/mods-el-input-typed-light.png`](../../assets/mods-el-input-typed-light.png) **to** see how a text field looks while the user types.
 
 For a field that holds several lines, such as a note or a commit message, set `rows` to 2 or more:
 
@@ -358,19 +358,19 @@ Closed, it shows its label and the current option:
 
 ![A pane with one line: the label Format, the current option Markdown, and a small down arrow.](https://mintcdn.com/claude-code/EXkwf0kKMewZsyod/images/mods-el-select-light.png?fit=max\&auto=format\&n=EXkwf0kKMewZsyod\&q=85\&s=4e3b18268ffd87d2cad06442e6d661a9)
 
-> **Description of the screenshot:** Inside a light outer frame with a pale gray rounded border, a white pane with a thin dark rounded border and a small gray "×" at its top right. A single row: "Format:" in regular weight, one space, "Markdown" in black, then after a space a small gray down-pointing triangle "▾". No option list is shown.
+> **View the image** [`assets/mods-el-select-light.png`](../../assets/mods-el-select-light.png) **to** see how a closed picker shows its current option.
 
 Open, it lists its options and marks one:
 
 ![The picker open, with its three options listed under the label. The second option, HTML, is drawn in inverse video.](https://mintcdn.com/claude-code/EXkwf0kKMewZsyod/images/mods-el-select-moved-light.png?fit=max\&auto=format\&n=EXkwf0kKMewZsyod\&q=85\&s=deb6ce0a49d213235feedaa79ac658c0)
 
-> **Description of the screenshot:** Inside a light outer frame with a pale gray rounded border, a white pane with a thin dark rounded border and a small gray "×" at its top right. Four rows. Header row: "Format:" in bold, "Markdown" in regular black, then a small gray up-pointing triangle "▴". Below it, indented by two columns: "Markdown", "HTML", "Plain text". The "HTML" row is white text on a black block that starts at the left text edge (covering the indent) and ends right after the "L"; the other two options are plain black. The header still reads "Markdown".
+> **View the image** [`assets/mods-el-select-moved-light.png`](../../assets/mods-el-select-moved-light.png) **to** see how an open picker lists its options and marks the highlighted one.
 
 After the user picks an option, the list closes:
 
 ![The picker closed again, now showing HTML as the current option.](https://mintcdn.com/claude-code/EXkwf0kKMewZsyod/images/mods-el-select-picked-light.png?fit=max\&auto=format\&n=EXkwf0kKMewZsyod\&q=85\&s=f065ab5bc479868f03088dc736f17097)
 
-> **Description of the screenshot:** Inside a light outer frame with a pale gray rounded border, a white pane with a thin dark rounded border and a small gray "×" at its top right. A single row: "Format:" in bold, then "HTML" as white letters on a black block exactly as wide as the word, then a small gray down-pointing triangle "▾". The option list is gone.
+> **View the image** [`assets/mods-el-select-picked-light.png`](../../assets/mods-el-select-picked-light.png) **to** see how the picker looks after an option is picked.
 
 ## Draw pictures
 
@@ -392,7 +392,7 @@ Raster({
 
 ![A pane with a small grid of colored blocks, two rows of three: green, amber, and red, then green, green, and amber.](https://mintcdn.com/claude-code/EXkwf0kKMewZsyod/images/mods-el-raster-light.png?fit=max\&auto=format\&n=EXkwf0kKMewZsyod\&q=85\&s=5ed719481d3dd45b568bab696e57bf16)
 
-> **Description of the screenshot:** Inside a light outer frame with a pale gray rounded border, a white pane with a thin dark rounded border and a small gray "×" at its top right. At the top left of the pane, a tiny block three cells wide and two cells tall, each cell a tall narrow rectangle the size of a character cell, with no gaps or borders between cells. Top row: dark green, amber, red. Bottom row: dark green, dark green, amber, so the two bottom-left greens and the top-left green merge into one green shape. The rest of the pane is empty white.
+> **View the image** [`assets/mods-el-raster-light.png`](../../assets/mods-el-raster-light.png) **to** see how the raster element draws a grid of colored cells.
 
 A `Raster` rounds each color to a smaller palette, so `0x2e7d32` draws as `#337733`.
 

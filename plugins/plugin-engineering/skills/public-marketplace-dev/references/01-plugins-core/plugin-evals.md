@@ -487,6 +487,8 @@ Every run with at least one case writes a `results/<timestamp>/` directory insid
 
 ![Top of an eval report: a verdict line reading "Plugin effect: +33.3 pts vs baseline, improved 2, flat 1, regressed 0 of 3 cases", five summary tiles for suite score, ablation delta, baseline score, cases passing the threshold, and perfect runs, then the first case with its delta, score bar, and one run whose two graders both show pass](https://mintcdn.com/claude-code/qq7LHDi_F0aeFHgk/images/plugin-eval-report.png?fit=max\&auto=format\&n=qq7LHDi_F0aeFHgk\&q=85\&s=106eb6e6a70a6565f891ea3a4564f87d)
 
+> **View the image** [`assets/plugin-eval-report.png`](../../assets/plugin-eval-report.png) **to** see how an eval report lays out its verdict line, summary tiles, and per-case results.
+
 Read it from the top down:
 
 * **The verdict line and tiles** answer whether the plugin helped across the whole suite. Suite score is the mean of the per-case with-plugin scores, Ablation Δ is how far that is above or below the baseline score, and Cases counts how many met the threshold. Perfect runs is the share of with-plugin runs where every grader passed.

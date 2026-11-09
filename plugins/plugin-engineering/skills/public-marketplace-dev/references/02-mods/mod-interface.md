@@ -52,6 +52,8 @@ This map shows where a mod can draw in a terminal session:
 
 ![Map of a Claude Code terminal session in fullscreen rendering. A mod can add a pane as a sidebar on the right, a toast at the top right of the transcript, a log line in the transcript, a band above the prompt, and a status line under the prompt. A mod can redraw messages, tool call rows, and the spinner. The prompt is Claude Code's own.](https://mintcdn.com/claude-code/dgiVO_Od1X1faduV/images/mods-screen-map.svg?fit=max\&auto=format\&n=dgiVO_Od1X1faduV\&q=85\&s=5fda26b6609c62b68c6f9e528c1590ea)
 
+> **View the image** [`assets/mods-screen-map.png`](../../assets/mods-screen-map.png) **to** see where on the screen a mod can add or redraw each surface.
+
 In a narrower terminal, the pane sits above the prompt instead of beside the transcript.
 
 Build your [first mod](https://code.claude.com/docs/en/plugins/mods/create.md) before you start here. Begin with the worked example, which builds a pane with two tabs and a counter, then read the section for each piece you want to change.
@@ -539,6 +541,8 @@ on('ui.render', { component: 'Pane' }, async ($, e, next) => {
 In the terminal, the pane shows the grid:
 
 ![A pane in the terminal that holds a small grid of colored blocks, two rows of three. The top row is green, amber, and red. The bottom row is green, green, and amber.](https://mintcdn.com/claude-code/dgiVO_Od1X1faduV/images/mods-heat-map.svg?fit=max\&auto=format\&n=dgiVO_Od1X1faduV\&q=85\&s=b91bcce3bad74bc851149133d4acc5d5)
+
+> **View the image** [`assets/mods-heat-map.png`](../../assets/mods-heat-map.png) **to** see the grid of colored blocks this example pane draws.
 
 The `rows` array is the part you'd change, and `cellsOf` turns it into the packed string. The hook draws only in a pane whose `id` is `heat`, so open one with `$.ui.open({ id: 'heat' })` from a command, as the [`hello-tabs` example](#build-a-pane-with-tabs) opens its pane.
 
