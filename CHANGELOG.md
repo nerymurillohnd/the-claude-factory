@@ -8,7 +8,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The
 
 ### Changed
 
-- **plugin-engineering** 0.2.2 — `public-marketplace-dev` tells Claude to declare `options` on a `userConfig` field that a plugin hook reads as one of a few fixed values.
+- **plugin-engineering** 0.2.2 — `public-marketplace-dev` tells Claude to declare `options` on a `userConfig` field that a plugin hook reads as one of a few fixed values, and `cli-commands-guide` says `--plugin-dir` goes before the subcommand.
 - **plugin-engineering** 0.2.1 — `public-marketplace-dev` loads the `cli-commands-guide` skill before Claude runs, writes or explains a plugin command.
 
 ## 2026-11-08

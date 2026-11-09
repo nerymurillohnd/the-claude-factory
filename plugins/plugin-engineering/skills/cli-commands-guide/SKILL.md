@@ -47,6 +47,7 @@ Never write version checks or fallback paths into a script for the user. When a 
 - A plugin the organization requires on claude.ai can't be disabled: `claude plugin disable` refuses it.
 - A `--plugin-dir` plugin silently replaces a same-named installed plugin for that session, and `claude plugin list` still shows the installed row as enabled.
 - `--plugin-dir` at a marketplace root loads nothing and shows no error. Point it at the plugin directory.
+- `--plugin-dir` and `--plugin-url` go before the subcommand: `claude --plugin-dir <path> plugin details <name>`. `claude plugin details <name> --plugin-dir <path>` fails with `error: unknown option '--plugin-dir'`.
 
 ## Which command fits the task
 

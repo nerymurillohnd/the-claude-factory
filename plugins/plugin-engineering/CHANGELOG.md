@@ -11,6 +11,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 ### Changed
 
 - `public-marketplace-dev` now tells Claude to declare `options` on a `userConfig` field that a plugin hook reads as one of a few fixed values, instead of leaving it free text.
+- `cli-commands-guide` now says that `--plugin-dir` and `--plugin-url` must come before the subcommand, as in `claude --plugin-dir <path> plugin details <name>`, with the `unknown option` error the other order gives, and that `plugin details` has no `--json` and lists skills, agents and commands in one rounded table.
 
 ## [0.2.1] - 2026-11-09
 
