@@ -1,6 +1,6 @@
 ---
 description: "Trigger rate, improve: a plain-words request to improve an existing skill's triggering, with no slash command and no skill name. The description names improving a skill, its description or its triggering, so skills-best-practices must be invoked: the audit says what to fix."
-tags: [trigger, improve]
+tags: [trigger, improve, train]
 max_turns: 4
 timeout_seconds: 180
 allowed_tools: [Read, Glob, Grep, Skill]
