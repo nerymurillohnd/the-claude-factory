@@ -12,6 +12,7 @@ The work is done when every fact you state or write comes from one of these file
 ## Standing rules
 
 - These copies are a dated snapshot: the pages were downloaded on 2026-11-07, and the hooks files were checked against the release notes up to Claude Code 2.1.319 on 2026-11-09. When the live page or the release notes differ from a copy, follow the live source.
+- Before you run, write or explain a plugin command (`claude plugin …`, `claude plugin marketplace …`, any `/plugin` form, `/reload-plugins`, `--plugin-dir` or `--plugin-url`), in a shell, a script, CI, a README or an answer, Step 6 included, invoke this plugin's `cli-commands-guide` skill with the Skill tool and follow it. Once it is loaded, don't invoke it again unless the conversation was compacted. If the skill is not available, read `https://code.claude.com/docs/en/plugins/cli-reference.md` instead.
 - Start every reference file at its `## Contents` list, then read only the sections the task needs.
 - The first entry of each file's `## Documentation References` section is its source page. Fetch it when a section is missing, thin or possibly outdated.
 - A topic missing from these copies is not proof that it is undocumented: read the source page before you say so.
@@ -21,7 +22,7 @@ The work is done when every fact you state or write comes from one of these file
 
 - The pruning removed these topics on purpose: Anthropic's official directory and its submission flow (the manifest reference keeps the directory listing fields), private repositories and their credentials, hosts other than GitHub, self-hosted and GitHub Enterprise Server marketplaces, the `url`, `npm`, `archive` and `command` plugin sources, local-folder or zip distribution, and administrator deployment procedures. For any of them, read the source page.
 - Two files are named `cli-reference.md`: the one in `01-plugins-core/` covers the plugin commands, the one in `05-cli-diagnostics/` the general `claude` command line.
-- The exact flags, defaults, outputs and exit codes of the plugin commands are in this plugin's `cli-commands-guide` skill. The plugin commands file points to it section by section, and names the official page to read when that skill is not available.
+- The exact flags, defaults, outputs and exit codes of the plugin commands are in this plugin's `cli-commands-guide` skill; the standing rules say when to load it. The plugin commands file points to it section by section, and names the official page to read when that skill is not available.
 - The hooks page is split in two. [references/03-feature-references/hooks.md](references/03-feature-references/hooks.md) holds configuration, handlers, exit codes, JSON output, security and debugging, and opens with the things to know about hooks in plugins. [references/03-feature-references/hooks-events.md](references/03-feature-references/hooks-events.md) holds each event's matcher, input and decision control. Both are trimmed: a line marked **Key facts** replaces a removed example or section and keeps only what it held that is new.
 - Links to other docs pages are absolute URLs to the live site, and some point at sections these copies removed. Follow them when the task needs that section.
 - A line that starts with `> **View the image**` or `> **Read the example**` points to a file in `assets/`. Open it when the section needs what it shows. The index below names each asset with its page.
@@ -57,7 +58,7 @@ The result is a draft with each fact traced to its file and section.
 
 **Step 5: Validate the facts.** Run the validation loop below on every version-sensitive fact in the draft.
 
-**Step 6: Validate the files.** Only when Step 4 changed plugin or marketplace files: run `claude plugin validate --strict <directory>` on each changed plugin directory and on the marketplace root. It passes when it exits `0` and prints `Validation passed`. On exit `1`, read each error and warning with its path, fix the file, and run it again. Exit `2` means the validator itself failed, such as on an unreadable path. Where the `claude` CLI isn't available, as in claude.ai chat, say that this step was skipped. For the flags and the `--json` report, read `plugin validate` in the `cli-commands-guide` skill.
+**Step 6: Validate the files.** Only when Step 4 changed plugin or marketplace files: run `claude plugin validate --strict <directory>` on each changed plugin directory and on the marketplace root. It passes when it exits `0` and prints `Validation passed`. On exit `1`, read each error and warning with its path, fix the file, and run it again. Exit `2` means the validator itself failed, such as on an unreadable path. Where the `claude` CLI isn't available, as in claude.ai chat, say that this step was skipped. For the flags and the `--json` report, read `plugin validate` in the `cli-commands-guide` skill, which the standing rules load before this run.
 
 **Step 7: Deliver.** Give the result with the source page URL of each fact, and say which facts the release notes changed.
 
