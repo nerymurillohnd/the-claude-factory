@@ -25,7 +25,7 @@ A source tag says where a rule comes from.
 
 - **\[SD\] alone.** An item tagged \[SD\] without a \[CC\], \[CL\], \[PL\], \[AS\] or \[CP\] tag has no official source behind it.
 - **\[CL\] items** come from the changelog, with the release that brought them; no docs page states them.
-- **`observed` items** rest only on a test on Claude Code 2.1.296.
+- **`observed` items** rest only on a test on an installed Claude Code build, named with the item.
 
 The URL of each source is in [sources.md](sources.md).
 

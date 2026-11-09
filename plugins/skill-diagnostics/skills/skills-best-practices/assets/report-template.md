@@ -17,6 +17,8 @@ Scripts:
 - check-metadata · <ran | couldn't run: <error>>
 - check-structure · <ran | couldn't run: <error>>
 - check-runtime · <ran | couldn't run: <error>>
+- check-size · <ran | couldn't run: <error>>
+- check-evals · <ran | couldn't run: <error>>
 
 Agents: <each agent · complete | incomplete: <reason>>, or "inline in chat: no independent reviewers, cold executor or verifier ran"
 

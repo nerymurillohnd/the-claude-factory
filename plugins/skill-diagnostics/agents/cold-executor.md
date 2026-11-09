@@ -70,6 +70,7 @@ Not inspected: <file · reason, such as a binary file>, or none
 - Never opened: <files, or none>
 - Read more than once: <files, or none>
 - Read out of order: <files and the order, or none>
+- Self-audit: <when the audited skill is the auditing skill itself, say that its references were read as files under test, not applied as rules; otherwise none>
 
 ### Self-check
 - [ ] Every workflow and every variant that changes the output traced from trigger to completion

@@ -43,7 +43,7 @@ Read every file below from its first line to its last.
 <relative path> · <lines> · <executable: yes | no>
 
 ## Task
-<one realistic task, and where it came from: the skill's evals when they exist>
+<one realistic task, and where it came from: the skill's evals when they exist, otherwise the user's request or the skill's main workflow>
 Follow ${CLAUDE_PLUGIN_ROOT}/skills/skills-best-practices/references/executability-trace.md on this task, on every workflow and every variant that changes the output.
 
 ## Return

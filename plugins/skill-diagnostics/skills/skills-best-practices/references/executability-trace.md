@@ -11,7 +11,7 @@ How to follow a skill as its only executor, from trigger to completion, and reco
 
 ## The trace
 
-Follow it on one realistic task, taken from the skill's evals when they exist, and on every workflow and every variant that changes the output. Read no rule files (the references of the skill that audits, other than this file) and run none of the audited skill's scripts, though you read their source like any other file. When the audited skill is the auditing skill itself, its references are the files under test: read them as the brief's inventory says, apply none of them as rules, and say so in the report's navigation section: what a naive executor trips on is what any agent would trip on.
+Follow it on one realistic task, taken from the skill's evals when they exist (otherwise the brief names where it came from), and on every workflow and every variant that changes the output. Read no rule files (the references of the skill that audits, other than this file) and run none of the audited skill's scripts, though you read their source like any other file. When the audited skill is the auditing skill itself, its references are the files under test: read them as the brief's inventory says, apply none of them as rules, and say so in the report's navigation section: what a naive executor trips on is what any agent would trip on.
 
 1. **Inventory.** List every file, hidden ones included, with whether each script is executable; a link that leaves the skill is an external dependency, never read.
 2. **Read everything.** Read every file from its first line to its last; record a file that can't be read, and why.

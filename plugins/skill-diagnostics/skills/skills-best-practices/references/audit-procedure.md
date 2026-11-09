@@ -21,7 +21,7 @@ How the orchestrator runs an audit, from the validation scripts to the recorded 
 
 ## Every audit is complete
 
-After an edit and before a release alike, the audit runs all five validation scripts and all six agents on every file of the skill, whichever files changed. No run audits a subset: a change can break a file it didn't touch, such as a script that now contradicts `SKILL.md`. Every audit runs at this one level of rigor, whatever the gate's mode.
+After an edit and before a release alike, the audit runs all five validation scripts and all six agents on every file of the skill, whichever files changed. No run audits a subset: a change can break a file it didn't touch, such as a script that now contradicts `SKILL.md`. Every audit runs at this one level of rigor, whatever the plugin's `on_skill_write` option is set to.
 
 ## How an audit runs
 
@@ -31,7 +31,7 @@ After an edit and before a release alike, the audit runs all five validation scr
 4. **Briefs.** Write one brief for each of the four reviewers and the cold executor from `assets/brief-template.md`, filling every field ([Rules for every brief](#rules-for-every-brief)).
 5. **Review.** Launch the four reviewers and the cold executor in one message, so they run in parallel; each returns its report template filled, self-check included. Claude Code refuses a 21st running subagent by default \[CC\]. Save each report as it arrives ([Saving the reports](#saving-the-reports)), then check it before using it ([Checking an agent report](#checking-an-agent-report)).
 6. **Adversarial verification.** Pass every finding to the adversarial verifier ([Adversarial verification](#adversarial-verification)).
-7. **Verdict.** Map the surviving findings onto [checklist.md](checklist.md) ([Mapping findings to the checklist](#mapping-findings-to-the-checklist)), give the verdict, write the report from `assets/report-template.md` with its Accounting table, save it, and record the verdict ([Verdict and recording it](#verdict-and-recording-it)).
+7. **Verdict.** Map the surviving findings onto [checklist.md](checklist.md) ([Mapping findings to the checklist](#mapping-findings-to-the-checklist)), give the verdict, write the report from `assets/report-template.md` with its Accounting table, give it in the reply, and record the verdict ([Verdict and recording it](#verdict-and-recording-it)).
 8. **Gate.** In Claude Code and Cowork, the gate lets Claude end its turn only when a verdict exists that is newer than the skill's last change.
 
 ## Validation scripts
@@ -67,7 +67,7 @@ Each script prints one JSON object on stdout:
   "ran": true,
   "checks": [
     {
-      "check": "<M|S|R>-<n>",
+      "check": "<M|S|R|Z|V>-<n>",
       "item": "<checklist ID>",
       "kind": "proved | lead",
       "status": "pass | fail | lead",
@@ -135,7 +135,7 @@ Six read-only plugin agents. Only the orchestrator launches them, all six in eve
 - **Full paths.** Replace `${CLAUDE_PLUGIN_ROOT}/skills/skills-best-practices` in the brief with the absolute path of this skill's folder, the folder that holds this file's `references/`.
 - **Evals.** "Evals" lists the skill's `evals/evals.json` and the plugin eval cases that name it, from `check-evals.py`'s `evals` object, since plugin cases sit outside the skill's folder and its inventory. The reviewers that own `TE` items judge them by [evaluation.md](evaluation.md).
 - **No list of changed files.** The brief doesn't name the files that changed, so no agent narrows its review to them.
-- **The cold executor's brief** uses the second template in `assets/brief-template.md`: one realistic task, taken from the skill's evals when they exist, and the instruction to follow the trace on every workflow and every variant that changes the output. It carries no scope, no proved checks and no leads.
+- **The cold executor's brief** uses the second template in `assets/brief-template.md`: one realistic task, taken from the skill's evals when they exist, otherwise from the user's request or, without one, from the skill's main workflow, and the instruction to follow the trace on every workflow and every variant that changes the output. It carries no scope, no proved checks and no leads.
 
 ## Saving the reports
 
@@ -191,8 +191,8 @@ python3 ${CLAUDE_SKILL_DIR}/scripts/record-verdict.py --data-dir ${CLAUDE_PLUGIN
 
 Chat loads the skill and ignores agents and hooks \[CP\]. There the audit runs inline:
 
-1. Run the five scripts in the code execution sandbox when it is available, as `python3 scripts/<script>.py`, with paths relative to `SKILL.md`, on the audited skill's folder as uploaded or attached to the conversation. When the sandbox isn't available, or the audited skill's files aren't in it, the scripts couldn't run and the verdict is not determinable.
-2. Write the skill profile ([Skill profile](#skill-profile)), and list the checks the scripts proved and the leads they reported, as a brief would. Each lens reads them from here. The Claude Code release is `unknown`.
+1. Run the five scripts in the code execution sandbox when it is available, as `python3 scripts/<script>.py`, with paths relative to `SKILL.md`, on the audited skill's folder as uploaded or attached to the conversation, in the same order as in Claude Code: `check-metadata.py`, `check-structure.py`, `check-runtime.py`, `check-size.py`, `check-evals.py`, each without `--output` or `--previous`, reading each result from its output. When the sandbox isn't available, or the audited skill's files aren't in it, the scripts couldn't run and the verdict is not determinable.
+2. Write the skill profile ([Skill profile](#skill-profile)), with the surfaces chat and any the user names, and list the checks the scripts proved and the leads they reported, as a brief would. Each lens reads them from here. The Claude Code release is `unknown`.
 3. Apply the four lens files one after another: [lens-description.md](lens-description.md), [lens-instructions.md](lens-instructions.md), [lens-scripts-runtime.md](lens-scripts-runtime.md), [lens-security.md](lens-security.md). Record each in `assets/reviewer-report.md`, self-check included. These records are working notes: keep them out of the reply unless the user asks for them; the report carries the findings.
 4. Follow [executability-trace.md](executability-trace.md) on the skill and record each point as a finding with Item `EX-1`, its severity by [Executability severity](executability-trace.md#executability-severity), Location, Evidence and Fix.
 5. Check each finding against [evidence-and-verdict.md](evidence-and-verdict.md#verifying-a-finding) yourself, and write the ruling and its source in the finding's Verifier field of the report.
