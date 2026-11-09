@@ -103,6 +103,6 @@ Scripts, run with the commands above:
 - `scripts/check-metadata.py`: first, on every audit.
 - `scripts/check-structure.py`: second, with `--previous` set to the first result.
 - `scripts/check-runtime.py`: third, with `--previous` set to the second result.
-- `scripts/check-size.py`: fourth, with `--previous` set to the third result; measures `SKILL.md`'s lines and its body's estimated tokens.
+- `scripts/check-size.py`: fourth, with `--previous` set to the third result; measures `SKILL.md`'s lines and its body's tokens (Claude Code's figure when it can give one, else an estimate).
 - `scripts/check-evals.py`: fifth, with `--previous` set to the fourth result; checks the skill's `evals/evals.json` and the plugin eval cases that invoke it.
 - `scripts/record-verdict.py`: last step of an audit in Claude Code and Cowork.

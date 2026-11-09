@@ -9,11 +9,13 @@ it as a separate process.
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
+import stat
 import subprocess
 import sys
 import tempfile
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING, cast, override
 import unittest
 
 if TYPE_CHECKING:
@@ -170,6 +172,117 @@ class CheckSize(unittest.TestCase):
         )
         self.assertEqual(result.returncode, 1)
         self.assertIn("UTF-8", result.stderr)
+
+
+DETAILS = """Tiny (tiny-plugin) 0.1.0
+  Source: tiny-plugin@inline
+
+Per-component (rounded)
+  component      always-on  on-invoke
+  tiny-skill          ~90       {figure}
+  helper              ~90       ~1.2k
+
+  On-invoke cost is paid each time a skill or agent fires.
+"""
+
+
+class PluginDetails(unittest.TestCase):
+    """The figure from `claude plugin details`, and the fallback to characters / 2.8."""
+
+    root: Path = Path()
+
+    @override
+    def setUp(self) -> None:
+        """A plugin with one skill of 28 body characters (10 estimated tokens)."""
+        self.root = Path(self.enterContext(tempfile.TemporaryDirectory()))
+        plugin = self.root / "tiny-plugin"
+        (plugin / ".claude-plugin").mkdir(parents=True)
+        _ = (plugin / ".claude-plugin" / "plugin.json").write_text(
+            '{"name": "tiny-plugin"}', encoding="utf-8"
+        )
+        skill = plugin / "skills" / "tiny-skill"
+        skill.mkdir(parents=True)
+        _ = (skill / "SKILL.md").write_text(HEAD + "a" * 28, encoding="utf-8")
+
+    def fake_claude(self, output: str, code: int = 0) -> Path:
+        """A claude that logs its arguments, prints output and exits with code."""
+        folder = self.root / "bin"
+        folder.mkdir(exist_ok=True)
+        script = folder / "claude"
+        log = self.root / "args.txt"
+        head = f'#!/bin/sh\nprintf "%s\\n" "$@" > "{log}"\n'
+        body = f"/bin/cat <<'END_OF_DETAILS'\n{output}END_OF_DETAILS\nexit {code}\n"
+        _ = script.write_text(head + body, encoding="utf-8")
+        script.chmod(script.stat().st_mode | stat.S_IXUSR)
+        return folder
+
+    def size(self, skill: Path, bin_dir: Path | None) -> JsonObject:
+        """The size object of a run with bin_dir (or no claude) on PATH."""
+        path = str(Path(sys.executable).parent)
+        env = dict(os.environ, PATH=f"{bin_dir}{os.pathsep}{path}" if bin_dir else path)
+        result = subprocess.run(
+            [sys.executable, str(SCRIPT), str(skill)],
+            capture_output=True,
+            text=True,
+            check=False,
+            env=env,
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        size = as_object(result.stdout).get("size")
+        if not isinstance(size, JsonObject):
+            message = "no size object"
+            raise TypeError(message)
+        return size
+
+    @property
+    def skill(self) -> Path:
+        """The skill folder."""
+        return self.root / "tiny-plugin" / "skills" / "tiny-skill"
+
+    def test_details_figure_is_used(self) -> None:
+        """Inside a plugin, the on-invoke figure wins and --plugin-dir comes first."""
+        size = self.size(self.skill, self.fake_claude(DETAILS.format(figure="~5.1k")))
+        self.assertEqual(size.get("token_source"), "claude plugin details")
+        self.assertEqual(size.get("body_tokens"), 5100)
+        self.assertEqual(size.get("details_tokens"), 5100)
+        self.assertEqual(size.get("estimated_tokens"), 10)
+        args = (self.root / "args.txt").read_text(encoding="utf-8").split("\n")
+        self.assertEqual(args[0], "--plugin-dir")
+        self.assertEqual(args[2:5], ["plugin", "details", "tiny-plugin"])
+
+    def test_below_rounding_figure(self) -> None:
+        """A '< 20' figure reads as 20."""
+        size = self.size(self.skill, self.fake_claude(DETAILS.format(figure="< 20")))
+        self.assertEqual(size.get("body_tokens"), 20)
+
+    def test_failed_call_falls_back(self) -> None:
+        """A non-zero exit falls back to the estimate and says why."""
+        size = self.size(self.skill, self.fake_claude("", code=1))
+        self.assertEqual(size.get("token_source"), "characters / 2.8")
+        self.assertEqual(size.get("body_tokens"), 10)
+        self.assertIsNone(size.get("details_tokens"))
+        self.assertIn("exited 1", str(size.get("details_note")))
+
+    def test_unknown_layout_falls_back(self) -> None:
+        """Output without the per-component table falls back."""
+        size = self.size(self.skill, self.fake_claude("something else\n"))
+        self.assertEqual(size.get("token_source"), "characters / 2.8")
+        self.assertIn("no single on-invoke row", str(size.get("details_note")))
+
+    def test_no_claude_falls_back(self) -> None:
+        """Without claude on PATH the estimate is used."""
+        size = self.size(self.skill, None)
+        self.assertEqual(size.get("token_source"), "characters / 2.8")
+        self.assertEqual(size.get("details_note"), "claude is not on PATH")
+
+    def test_outside_a_plugin_falls_back(self) -> None:
+        """A skill in no plugin never calls claude."""
+        alone = self.root / "alone" / "tiny-skill"
+        alone.mkdir(parents=True)
+        _ = (alone / "SKILL.md").write_text(HEAD + "a" * 28, encoding="utf-8")
+        size = self.size(alone, self.fake_claude(DETAILS.format(figure="~9k")))
+        self.assertEqual(size.get("details_note"), "the skill is not inside a plugin")
+        self.assertFalse((self.root / "args.txt").exists())
 
 
 if __name__ == "__main__":
