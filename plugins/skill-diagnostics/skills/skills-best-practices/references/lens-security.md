@@ -18,6 +18,7 @@ Each line names the checklist item from [checklist.md](checklist.md), then the a
 - `SE-4` · [claude-code-features.md#dynamic-context](claude-code-features.md#dynamic-context) · **Never put an argument placeholder inside a `!` command.**
 - `SE-4` · [claude-code-features.md#substitutions-and-pre-approved-tools](claude-code-features.md#substitutions-and-pre-approved-tools) · **Name the exact command.**
 - Severity of every security finding · [security.md#severity-of-a-security-finding](security.md#severity-of-a-security-finding)
+- `SU-4` · [surfaces.md#names-and-folders](surfaces.md#names-and-folders) · **A skill folder that is a plugin.**
 
 ## Method
 
@@ -29,3 +30,4 @@ Each line names the checklist item from [checklist.md](checklist.md), then the a
 6. For each file read, check whether the path can leave the skill and the project: credentials, keys, `~/.ssh`, `.env`, browser or shell history.
 7. For each `!` line, check whether an argument reaches the command; for each `allowed-tools` grant, check what else it would let run.
 8. Confirm or reject each script lead on network calls and on reads of credentials or history.
+9. When the skill folder holds `.claude-plugin/plugin.json`, read what that plugin adds (agents, hooks, MCP servers) and check that the description announces it.

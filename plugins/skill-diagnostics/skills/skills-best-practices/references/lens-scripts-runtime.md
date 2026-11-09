@@ -31,6 +31,7 @@ Each line names the checklist item from [checklist.md](checklist.md), then the a
 - `CF-8` · [claude-code-features.md#substitutions-and-pre-approved-tools](claude-code-features.md#substitutions-and-pre-approved-tools) · **Not after a subagent's result.**
 - `CF-5` · [claude-code-features.md#forked-subagents](claude-code-features.md#forked-subagents) · **Forked subagent**
 - `CF-5` · [claude-code-features.md#forked-subagents](claude-code-features.md#forked-subagents) · **Forks on Explore or Plan.**
+- `TE-8` · [evaluation.md#plugin-eval-suites](evaluation.md#plugin-eval-suites)
 
 ## Method
 
@@ -41,3 +42,4 @@ Each line names the checklist item from [checklist.md](checklist.md), then the a
 5. For each dependency a script or command needs, check that the skill declares it and that every surface the brief lists can provide it.
 6. Read `allowed-tools` against every command the body runs: each grant names an exact command, and nothing broader.
 7. When the skill runs forked (`context: fork`), read it as the subagent would, without the conversation: it has an explicit task and, on Explore or Plan, every rule it needs.
+8. Plugin eval cases: for each case the brief lists, read `prompt.md`, `case.yaml` and its graders as `claude plugin eval` would run them, against the rules of the plugin eval suites.

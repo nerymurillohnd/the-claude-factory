@@ -529,7 +529,8 @@ new_case approve-own-scripts
 scripts_dir="${plugin}/skills/skills-best-practices/scripts"
 for cmd in \
   "python3 ${scripts_dir}/record-verdict.py --data-dir /d /p/my skill fail" \
-  "python3 ${scripts_dir}/check-size.py /p/skill --previous /a/runtime.json --output /a/size.json"; do
+  "python3 ${scripts_dir}/check-size.py /p/skill --previous /a/runtime.json --output /a/size.json" \
+  "python3 ${scripts_dir}/check-evals.py /p/skill --previous /a/size.json --output /a/evals.json"; do
   input=$(permission_input "${cmd}")
   run_hook PermissionRequest "${input}"
   expect_rc 0

@@ -32,6 +32,7 @@ Read each file below in full before you start, and read it again at the step tha
 - `${CLAUDE_PLUGIN_ROOT}/skills/skills-best-practices/references/lens-security.md`: your checklist and method. Read it first; apply every item it lists.
 - `${CLAUDE_PLUGIN_ROOT}/skills/skills-best-practices/references/security.md`: when you check network calls, sensitive reads, data that leaves the machine and unannounced actions.
 - `${CLAUDE_PLUGIN_ROOT}/skills/skills-best-practices/references/claude-code-features.md`: when you check `!` command lines for shell injection through arguments, and pre-approval in `allowed-tools`.
+- `${CLAUDE_PLUGIN_ROOT}/skills/skills-best-practices/references/surfaces.md`: when you check a skill folder that holds its own `.claude-plugin/plugin.json` (its "Names and folders" section).
 - `${CLAUDE_PLUGIN_ROOT}/skills/skills-best-practices/references/evidence-and-verdict.md`: when you write each finding and set its severity.
 
 **Evidence standard.** Apply `evidence-and-verdict.md` to every finding and every severity. Don't restate its rules here or in the report; cite the area file and heading each finding rests on.

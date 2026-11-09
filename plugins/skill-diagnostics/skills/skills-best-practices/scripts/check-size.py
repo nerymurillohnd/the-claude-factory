@@ -9,7 +9,7 @@ Prints one JSON object on stdout:
    "checks": [{"check", "item", "kind", "status", "location", "detail"}], "truncated": <int>}
 Diagnostics go to stderr. Exit codes: 0 the script ran (findings included); 2 usage error
 (no such folder, no SKILL.md, bad arguments); 1 could not run (an unexpected error, on stderr).
---previous is accepted so the four scripts share one command form; this script doesn't read it.
+--previous is accepted so the five scripts share one command form; this script doesn't read it.
 
 Check ids and the checklist item each one serves (references/checklist.md):
   Z-1 BS-14 proved  SKILL.md has at most 500 lines

@@ -22,6 +22,9 @@ Each line names the checklist item from [checklist.md](checklist.md), then the a
 - `SU-1` · [surfaces.md#repository-skills-in-cloud-sessions](surfaces.md#repository-skills-in-cloud-sessions)
 - `SU-1` · [surfaces.md#plugin-components-by-surface](surfaces.md#plugin-components-by-surface) · **State what the skill does without its agents and hooks.**
 - `SU-1` · [surfaces.md#how-the-body-behaves-by-surface](surfaces.md#how-the-body-behaves-by-surface) · **Depending on a skipped feature is a defect.**
+- `SU-3` · [surfaces.md#names-and-folders](surfaces.md#names-and-folders) · **Same name, which one runs.**, **Shadowing a bundled skill or a command.** and **`verify` and `simplify`.**
+- `TE-2` · [evaluation.md#trigger-queries](evaluation.md#trigger-queries)
+- `TE-7` · [evaluation.md#both-ways-a-skill-is-invoked](evaluation.md#both-ways-a-skill-is-invoked)
 
 ## Method
 
@@ -32,3 +35,5 @@ Each line names the checklist item from [checklist.md](checklist.md), then the a
 5. Order: check that the main use case comes first, where a cut listing still shows it.
 6. Invocation: decide whether the skill is reference content or task content, and whether it has side effects; check that who may invoke it fits that.
 7. Surfaces: for each surface the brief lists, walk the body's instructions and mark each one that depends on something that surface skips (agents and hooks in chat, `!` lines in synced skills, Claude Code-only features in chat and the API).
+8. Names: check the skill's name against the bundled skills and built-in commands of the release in the brief, and against same-named skills at other locations the brief lists; flag `verify` and `simplify`.
+9. Evals: read the trigger queries, when there are any, against the description and the near misses you found in step 4; check that the evals invoke the skill both ways. A skill with no evals is `check-evals`' finding, not yours.

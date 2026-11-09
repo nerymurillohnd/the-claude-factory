@@ -10,7 +10,7 @@ Prints one JSON object on stdout:
 The inventory lists every file, hidden ones included, sorted by path; lines is null for a binary
 file. Diagnostics go to stderr. Exit codes: 0 the script ran (findings included); 2 usage error
 (no such folder, no SKILL.md, bad arguments); 1 could not run (an unexpected error, on stderr).
---previous is accepted so the four scripts share one command form; this script doesn't read it.
+--previous is accepted so the five scripts share one command form; this script doesn't read it.
 
 Check ids and the checklist item each one serves (references/checklist.md); all are proved.
 SKILL.md's length is check-size.py's (Z-1); S-1 is retired so the other ids stay stable:

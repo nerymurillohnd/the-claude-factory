@@ -32,6 +32,7 @@ Read each file below in full before you start, and read it again at the step tha
 - `${CLAUDE_PLUGIN_ROOT}/skills/skills-best-practices/references/lens-instructions.md`: your checklist and method. Read it first; apply every item it lists.
 - `${CLAUDE_PLUGIN_ROOT}/skills/skills-best-practices/references/body-and-structure.md`: when you check the passages, the level of control, the block order and how referenced files are pointed to.
 - `${CLAUDE_PLUGIN_ROOT}/skills/skills-best-practices/references/workflows.md`: when you check the workflow patterns the profile requires.
+- `${CLAUDE_PLUGIN_ROOT}/skills/skills-best-practices/references/evaluation.md`: when you judge the output cases and assertions in the evals the brief lists.
 - `${CLAUDE_PLUGIN_ROOT}/skills/skills-best-practices/references/evidence-and-verdict.md`: when you write each finding and set its severity.
 
 **Evidence standard.** Apply `evidence-and-verdict.md` to every finding and every severity. Don't restate its rules here or in the report; cite the area file and heading each finding rests on.

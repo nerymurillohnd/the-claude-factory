@@ -9,6 +9,7 @@ How a skill loads, where it runs, and what each surface loads, copies, replaces 
 - [Preloading into subagents](#preloading-into-subagents)
 - [Origins and the surfaces they reach](#origins-and-the-surfaces-they-reach)
 - [Where skills load](#where-skills-load)
+- [Names and folders](#names-and-folders)
 - [Repository skills in cloud sessions](#repository-skills-in-cloud-sessions)
 - [Plugin components by surface](#plugin-components-by-surface)
 - [Plugin skills in chat](#plugin-skills-in-chat)
@@ -56,6 +57,16 @@ A skill is checked for every surface, but its origin decides which surfaces it r
 
 - **Locations** \[CC\]: personal `~/.claude/skills/`, project `.claude/skills/`, nested, `--add-dir`, plugin `skills/` (as `/plugin:skill`), enterprise, and claude.ai-synced skills. Project skills don't load in Claude Code project cloud threads; personal skills don't load in Cowork or cloud sessions.
 - **Bash sandbox and nested folders.** With the Bash sandbox on, skills in `.claude/skills` folders below the starting folder load only if Claude Code starts there or `/cd` moves there \[CL\] (2.1.319; not on the skills page) `req`.
+
+## Names and folders
+
+Owned by `SU-3` and `SU-4` in [checklist.md](checklist.md) \[CC\].
+
+- **Same name, which one runs.** Enterprise wins over personal, and personal over project: with `deploy` in both `~/.claude/skills/` and the project, `/deploy` runs the personal one. A skill and a `.claude/commands/` file with one name: the skill. Plugin skills never clash, being namespaced `/plugin-name:skill-name`.
+- **Shadowing a bundled skill or a command.** A personal or project skill named like a bundled skill or a built-in command replaces it, but not its aliases: "A project `code-review` skill replaces `/code-review`, and the bundled alias `/review` never runs your skill". A collision that isn't the point of the skill is a defect.
+- **`verify` and `simplify`.** When a session starts with a skill named `verify` or `simplify` that Claude can invoke, from the enterprise, personal, project or added-directory location or a `.claude/commands/` file, Claude's commit instructions tell it to run that skill "right before each commit, except for changes to docs or tests" (v2.1.286+). Plugin skills, synced skills and the bundled ones don't count; `disable-model-invocation: true` turns it off. A skill with one of these names must mean to run before every commit.
+- **Symlinked folders.** In the enterprise, personal and project locations a skill folder can be a symlink; Claude Code reads the target and loads it once even when several locations point at it. Plugin skills handle symlinks differently.
+- **A skill folder that is a plugin.** A personal or project skill folder that holds `.claude-plugin/plugin.json` can load as a plugin named `<name>@skills-dir`, "with its own agents, hooks, and MCP servers"; in a project this needs the workspace trust dialog, and administrators can block it. What it runs beyond the skill must be announced like any other action.
 
 ## Repository skills in cloud sessions
 

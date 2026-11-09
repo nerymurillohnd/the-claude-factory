@@ -34,6 +34,7 @@ Read each file below in full before you start, and read it again at the step tha
 - `${CLAUDE_PLUGIN_ROOT}/skills/skills-best-practices/references/frontmatter.md`: when you check the frontmatter fields.
 - `${CLAUDE_PLUGIN_ROOT}/skills/skills-best-practices/references/claude-code-features.md`: when you check who may invoke the skill (its "Invocation control" section).
 - `${CLAUDE_PLUGIN_ROOT}/skills/skills-best-practices/references/description.md`: when you check the description's wording, coverage, order and boundary.
+- `${CLAUDE_PLUGIN_ROOT}/skills/skills-best-practices/references/evaluation.md`: when you judge the trigger queries and the direct invocations in the evals the brief lists.
 - `${CLAUDE_PLUGIN_ROOT}/skills/skills-best-practices/references/evidence-and-verdict.md`: when you write each finding and set its severity.
 
 **Evidence standard.** Apply `evidence-and-verdict.md` to every finding and every severity. Don't restate its rules here or in the report; cite the area file and heading each finding rests on.

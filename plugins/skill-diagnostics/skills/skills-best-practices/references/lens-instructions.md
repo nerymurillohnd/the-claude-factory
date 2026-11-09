@@ -41,6 +41,8 @@ Each line names the checklist item from [checklist.md](checklist.md), then the a
 - `BS-12` · [body-and-structure.md#writing-the-body](body-and-structure.md#writing-the-body) · **State what running the skill authorizes.**
 - `BS-12` · [body-and-structure.md#writing-the-body](body-and-structure.md#writing-the-body) · **Give a forked or preloaded skill a closed contract.**
 - `BS-13` · [body-and-structure.md#order-of-blocks-in-skillmd](body-and-structure.md#order-of-blocks-in-skillmd)
+- `TE-6` · [evaluation.md#output-cases](evaluation.md#output-cases)
+- `TE-6` · [evaluation.md#assertions](evaluation.md#assertions)
 
 ## Method
 
@@ -52,3 +54,4 @@ Each line names the checklist item from [checklist.md](checklist.md), then the a
 6. Read `SKILL.md` top to bottom and note where each rule first appears; a rule that first appears after the step it governs is a finding.
 7. For each rule written in prose as one that must always hold, check whether it should be a hook.
 8. Track the terms the skill uses for each concept across all files; a concept with two names is a finding.
+9. Evals: read each output case in `evals/evals.json` and each plugin eval case the brief lists against what the body promises: list the promised capabilities a case exercises and those none does, and judge each prompt, expected output and assertion by its rules.

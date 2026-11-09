@@ -9,6 +9,10 @@ Profile: <each profile question with its answer>
 Read every file below from its first line to its last.
 <relative path> · <lines> · <executable: yes | no>
 
+## Evals
+The skill's evals, from check-evals: read every file of each when an item you own judges evals.
+<evals/evals.json, or "none"> · <the absolute path of each plugin eval case folder that names the skill, or "none">
+
 ## In scope
 Apply every item of ${CLAUDE_PLUGIN_ROOT}/skills/skills-best-practices/references/<lens file> to every file in the inventory.
 Items you own: <checklist item IDs>

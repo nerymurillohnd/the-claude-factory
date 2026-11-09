@@ -4,8 +4,8 @@
 # commands would ask the user. This hook answers that prompt with allow, and only when the command
 # is exactly one of the skill's own scripts run the way SKILL.md writes it:
 #   python3 <plugin root>/skills/skills-best-practices/scripts/<script>.py <arguments>
-# with <script> one of check-metadata, check-structure, check-runtime, check-size and
-# record-verdict, and no shell operator, substitution or redirect in the arguments.
+# with <script> one of check-metadata, check-structure, check-runtime, check-size, check-evals
+# and record-verdict, and no shell operator, substitution or redirect in the arguments.
 # Anything else prints nothing, so the user is asked as usual. It never denies, never adds a
 # permission rule (it ignores permission_suggestions, which would write to the user's settings),
 # and the user's deny and ask rules still apply before it.
@@ -27,7 +27,7 @@ prefix="python3 ${root%/}/skills/skills-best-practices/scripts/"
 rest=${command#"${prefix}"}
 script=${rest%%[[:space:]]*}
 case "${script}" in
-  check-metadata.py | check-structure.py | check-runtime.py | check-size.py | record-verdict.py) ;;
+  check-metadata.py | check-structure.py | check-runtime.py | check-size.py | check-evals.py | record-verdict.py) ;;
   *) exit 0 ;;
 esac
 arguments=${rest#"${script}"}

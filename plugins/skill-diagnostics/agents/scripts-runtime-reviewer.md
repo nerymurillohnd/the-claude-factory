@@ -35,6 +35,7 @@ Read each file below in full before you start, and read it again at the step tha
 - `${CLAUDE_PLUGIN_ROOT}/skills/skills-best-practices/references/surfaces.md`: when you check that each script's packages and interpreters are available on the surfaces the brief names.
 - `${CLAUDE_PLUGIN_ROOT}/skills/skills-best-practices/references/body-and-structure.md`: when you check whether the text says to run or read each script.
 - `${CLAUDE_PLUGIN_ROOT}/skills/skills-best-practices/references/workflows.md`: when you check that critical operations have a validation step.
+- `${CLAUDE_PLUGIN_ROOT}/skills/skills-best-practices/references/evaluation.md`: when you judge the plugin eval cases the brief lists.
 - `${CLAUDE_PLUGIN_ROOT}/skills/skills-best-practices/references/evidence-and-verdict.md`: when you write each finding and set its severity.
 
 **Evidence standard.** Apply `evidence-and-verdict.md` to every finding and every severity. Don't restate its rules here or in the report; cite the area file and heading each finding rests on.

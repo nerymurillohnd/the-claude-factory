@@ -1,6 +1,6 @@
 # Skill checklist
 
-The single list of what a finished skill must meet. Every audit report maps its findings onto these items, and every item has exactly one owner: one of the four validation scripts, one of the four reviewers, the cold executor, or the evals. An owner of `evals` means no static audit can show the item; the audit report marks it "not assessed by this audit" and names the evaluation in [evaluation.md](evaluation.md) that would.
+The single list of what a finished skill must meet. Every audit report maps its findings onto these items, and every item has exactly one owner: one of the five validation scripts, one of the four reviewers, the cold executor, or the evals. An owner of `evals` means no static audit can show the item, because only running the evals does; the audit report marks it "not assessed by this audit" and names the evaluation in [evaluation.md](evaluation.md) that would.
 
 Strength labels and source tags are defined in [evidence-and-verdict.md](evidence-and-verdict.md). The area file named in each section holds the rule in full.
 
@@ -21,7 +21,7 @@ Strength labels and source tags are defined in [evidence-and-verdict.md](evidenc
 
 `ID` · the condition the skill must meet · sources · strength · owner.
 
-Owners: `check-metadata`, `check-structure`, `check-runtime` (the scripts), `description-reviewer`, `instructions-reviewer`, `scripts-runtime-reviewer`, `security-reviewer`, `cold-executor`, `evals`. A script may also report a lead on an item a reviewer owns; the reviewer confirms or rejects it.
+Owners: `check-metadata`, `check-structure`, `check-runtime`, `check-size`, `check-evals` (the scripts), `description-reviewer`, `instructions-reviewer`, `scripts-runtime-reviewer`, `security-reviewer`, `cold-executor`, `evals`. A script may also report a lead on an item a reviewer owns; the reviewer confirms or rejects it.
 
 ## Frontmatter and description
 
@@ -86,10 +86,15 @@ Area file: [claude-code-features.md](claude-code-features.md).
 
 Area file: [evaluation.md](evaluation.md).
 
-- `TE-1` · At least three evaluations, with a no-skill baseline · \[PL\]\[AS\] · `rec` · evals
-- `TE-2` · A trigger eval with should and should-not queries and a train/validation split · \[AS\] · `rec` · evals
+- `TE-1` · The skill has at least three evals: cases in `evals/evals.json` or plugin eval cases that invoke it · \[PL\]\[AS\]\[CC\] · `rec` · check-evals
+- `TE-2` · Trigger queries, when the skill can be invoked by Claude: about 20, both classes, realistic, non-obvious positives and no trivial ones, near-miss negatives, a fixed train/validation split with both classes · \[AS\] · `rec` · description-reviewer
 - `TE-3` · Tested with every model the skill will run on · \[PL\] · `rec` · evals
 - `TE-4` · Tested on real usage in a fresh session; feedback incorporated · \[PL\]\[CC\] · `rec` · evals
+- `TE-5` · `evals/evals.json` follows the open-standard format: it names the skill, ids are unique, each case has a prompt and an expected output, listed files exist in the skill, assertions are a list of statements · \[AS\] · `req` · check-evals
+- `TE-6` · Output cases are realistic, varied, include an edge case, need the skill and cover what the body promises; assertions are checkable, neither vague nor brittle, and objective · \[AS\]\[PL\]\[CC\] · `rec` · instructions-reviewer
+- `TE-7` · The evals test both ways the skill is invoked: natural requests that don't name it, and `/<name>` when the user may invoke it · \[CC\] · `rec` · description-reviewer
+- `TE-8` · Plugin eval cases for the skill grade the result and the steps, use stable graders with concrete rubrics and the right target, and give the run what the task needs · \[CC\] · `rec` · scripts-runtime-reviewer
+- `TE-9` · Plugin eval cases for the skill load and score as meant: each has a grader, no regex uses inline `(?i)`, and a must-not-invoke `Skill` grader sets `arm: both` · \[CC\] · `req` · check-evals
 
 ## Security
 
@@ -106,6 +111,8 @@ Area file: [surfaces.md](surfaces.md).
 
 - `SU-1` · Nothing an instruction depends on is skipped by a surface the skill reaches; a plugin skill says what it does without its agents and hooks in chat · \[CC\]\[CP\] · `req` · description-reviewer
 - `SU-2` · A plugin skill that reaches chat keeps every file it reads or runs inside its own folder and names references by paths relative to `SKILL.md` · \[CP\] · `req` · check-structure
+- `SU-3` · The skill's name doesn't shadow a bundled skill, a built-in command or a same-named skill by accident, and a skill named `verify` or `simplify` means to run before each commit · \[CC\] · `rec` · description-reviewer
+- `SU-4` · A personal or project skill folder that holds `.claude-plugin/plugin.json` says that it loads as a plugin with its own agents, hooks and MCP servers · \[CC\] · `req` · security-reviewer
 
 ## Executability
 
@@ -121,9 +128,10 @@ Method file: [executability-trace.md](executability-trace.md).
 | check-structure | BS-1, BS-3, BS-9, BS-11, SC-9, SU-2 |
 | check-runtime | BS-4, SC-7, SC-8, CF-1, CF-3, CF-4, CF-6 |
 | check-size | BS-14 |
-| description-reviewer | FM-3, FM-7, FM-8, SU-1 |
-| instructions-reviewer | BS-2, BS-5, BS-6, BS-7, BS-8, BS-10, BS-12, BS-13 |
-| scripts-runtime-reviewer | SC-1, SC-2, SC-3, SC-4, SC-5, SC-6, CF-2, CF-5, CF-7, CF-8 |
-| security-reviewer | SE-1, SE-2, SE-3, SE-4 |
+| check-evals | TE-1, TE-5, TE-9 |
+| description-reviewer | FM-3, FM-7, FM-8, SU-1, SU-3, TE-2, TE-7 |
+| instructions-reviewer | BS-2, BS-5, BS-6, BS-7, BS-8, BS-10, BS-12, BS-13, TE-6 |
+| scripts-runtime-reviewer | SC-1, SC-2, SC-3, SC-4, SC-5, SC-6, CF-2, CF-5, CF-7, CF-8, TE-8 |
+| security-reviewer | SE-1, SE-2, SE-3, SE-4, SU-4 |
 | cold-executor | EX-1 |
-| evals | TE-1, TE-2, TE-3, TE-4 |
+| evals | TE-3, TE-4 |
