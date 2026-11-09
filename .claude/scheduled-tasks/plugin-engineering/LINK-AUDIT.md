@@ -1,0 +1,346 @@
+# Link audit
+
+Audit of every link in the 64 pruned files, run on 2026-11-08. Line numbers are approximate: they point to the start of the paragraph, list item or table that holds the link.
+
+## Summary
+
+- Links to a section of the same file: 1055 resolve and 197 were already broken in the official page. None is broken by pruning: the 74 links whose target section pruning removed now point at that section on the live page.
+- Links to another page of the docs that this vault holds: 1867 resolve in the vault; 231 point at a section the vault removed but the live page still has (the 74 repointed links are among them); 183 point at an anchor already missing from the official page.
+- External URLs: 184 unique. 149 returned HTTP 200. The 34 that returned 403 were blocked by this environment's network filter, not by the sites: all GitHub paths were confirmed with git and the GitHub API, and the npm package with the npm registry. The 5 claude.ai URLs require sign-in and could not be checked. One link targets localhost by design.
+- Anchors on documentation pages outside this vault: 14 not found on the live page (listed below); all come from the official text.
+- Dead links (target gone): none found.
+- On 2026-11-08, 63 of the 64 source pages were byte-identical to the live pages; the support article has no Markdown version to compare.
+
+## Repointed to the live page
+
+Same-file links whose target section pruning removed. Only the link target changed.
+
+- `01-plugins-core/host-marketplace.md`: `#authenticate-archive-downloads`
+- `01-plugins-core/loading.md`: `#check-why-a-repository-plugin-didnt-load`
+- `01-plugins-core/measure.md`: `#measure-across-a-fleet`
+- `02-mods/mod-admin.md`: `#enforce-a-policy-with-a-mod-of-your-own`
+- `03-components/channels.md`: `#how-channels-compare`
+- `03-components/hooks.md`: `#defer-a-tool-call-for-later`
+- `03-components/mcp.md`: `#how-connectors-reach-claude-code`, `#local-scope`, `#project-scope`, `#use-pre-configured-oauth-credentials`, `#user-scope`
+- `03-components/model-config.md`: `#block-specific-models-or-versions`, `#default-model-setting`, `#organization-effort-limits`
+- `03-components/output-styles.md`: `#built-in-output-styles`
+- `03-components/skills.md`: `#find-unused-skills`, `#how-claude-code-handles-the-body-of-a-synced-skill`
+- `03-components/statusline.md`: `#context-window-fields`
+- `03-components/sub-agents.md`: `#disable-specific-subagents`, `#fork-the-current-conversation`, `#let-claude-wait-for-a-subagent`, `#permission-modes`, `#run-every-subagent-on-one-model`
+- `03-components/workflows.md`: `#bundled-workflows`, `#let-claude-decide-with-ultracode`, `#set-a-size-guideline`, `#when-a-run-hits-your-usage-limit`
+- `04-settings-admin/managed-settings.md`: `#keys-read-from-every-admin-source`
+- `04-settings-admin/permissions.md`: `#network-paths`, `#working-directories`
+- `04-settings-admin/server-managed-settings.md`: `#fetch-and-caching-behavior`
+- `04-settings-admin/settings-reference.md`: `#allow-only-the-official-marketplace`, `#filesuggestion`, `#global-config-settings`, `#managedmcpservers`, `#plugintrustmessage`, `#skilloverrides`, `#viewmode`
+- `05-cli-diagnostics/errors.md`: `#directory-couldnt-be-resolved-to-a-real-location`, `#issuer-mismatch-in-authorization-response`, `#managed-settings-block-the-default-model`, `#mcp-server-is-disabled`, `#mcp-tool-call-timed-out-with-the-servers-question-unanswered`, `#no-such-tool-available`, `#refusing-to-send-credentials-to-non-https-token-endpoint`, `#usage-limits`
+- `05-cli-diagnostics/headless.md`: `#auto-approve-tools`, `#continue-conversations`
+- `06-agent-sdk/sdk-skills.md`: `#invalid-skill-name-error`
+
+## Sections removed from the vault but present on the live page
+
+- `01-plugins-core/cli-reference.md` near line 126: `https://code.claude.com/docs/en/plugins/host-marketplace#how-users-accept-a-headershelper-command`
+- `01-plugins-core/cli-reference.md` near line 866: `https://code.claude.com/docs/en/skills#find-unused-skills`
+- `01-plugins-core/components.md` near line 414: `https://code.claude.com/docs/en/mcp#project-scope`
+- `01-plugins-core/components.md` near line 621: `https://code.claude.com/docs/en/env-vars.md#features-that-need-feature-flag-fetching`
+- `01-plugins-core/create.md` near line 240: `https://code.claude.com/docs/en/settings-reference.md#variables-claude-code-ignores-in-env`
+- `01-plugins-core/host-marketplace.md` near line 76: `https://code.claude.com/docs/en/plugins/marketplace-reference#command-plugin-source`
+- `01-plugins-core/host-marketplace.md` near line 102: `https://code.claude.com/docs/en/plugins/host-marketplace#authenticate-archive-downloads`
+- `01-plugins-core/host-marketplace.md` near line 254: `https://code.claude.com/docs/en/plugins/host-marketplace#authenticate-archive-downloads`
+- `01-plugins-core/install.md` near line 334: `https://code.claude.com/docs/en/plugins/marketplace-reference#command-plugin-source`
+- `01-plugins-core/loading.md` near line 118: `https://code.claude.com/docs/en/plugins/loading#check-why-a-repository-plugin-didnt-load`
+- `01-plugins-core/loading.md` near line 144: `https://code.claude.com/docs/en/plugins/org.md#seed-containers-and-ci`
+- `01-plugins-core/loading.md` near line 158: `https://code.claude.com/docs/en/settings-reference#cleanupperioddays`
+- `01-plugins-core/manifest-reference.md` near line 239: `https://code.claude.com/docs/en/plugins/publish.md#submit-to-anthropics-directory`
+- `01-plugins-core/marketplace-reference.md` near line 300: `https://code.claude.com/docs/en/plugins/host-marketplace.md#stay-within-the-download-limits-for-hosted-files`
+- `01-plugins-core/measure.md` near line 26: `https://code.claude.com/docs/en/plugins/measure#measure-across-a-fleet`
+- `01-plugins-core/measure.md` near line 116: `https://code.claude.com/docs/en/skills.md#find-unused-skills`
+- `01-plugins-core/org.md` near line 115: `https://code.claude.com/docs/en/settings-reference.md#syncclaudeaiplugins`
+- `01-plugins-core/org.md` near line 137: `https://code.claude.com/docs/en/github-enterprise-server.md#allowlist-ghes-marketplaces-in-managed-settings`
+- `01-plugins-core/overview.md` near line 132: `https://code.claude.com/docs/en/plugins/publish.md#submit-to-anthropics-directory`
+- `01-plugins-core/plugin-evals.md` near line 729: `https://code.claude.com/docs/en/sub-agents.md#built-in-subagents`
+- `01-plugins-core/publish.md` near line 109: `https://code.claude.com/docs/en/plugins/host-marketplace.md#roll-out-to-a-whole-company`
+- `01-plugins-core/relevance.md` near line 181: `https://code.claude.com/docs/en/plugins/org#require-a-marketplace-and-its-plugins`
+- `01-plugins-core/troubleshooting.md` near line 174: `https://code.claude.com/docs/en/troubleshoot-install.md#verify-your-path`
+- `01-plugins-core/troubleshooting.md` near line 728: `https://code.claude.com/docs/en/settings-reference#cleanupperioddays`
+- `01-plugins-core/troubleshooting.md` near line 736: `https://code.claude.com/docs/en/settings-reference#cleanupperioddays`
+- `02-mods/mod-admin.md` near line 67: `https://code.claude.com/docs/en/plugins/mods/admin#enforce-a-policy-with-a-mod-of-your-own`
+- `02-mods/mod-api.md` near line 239: `https://code.claude.com/docs/en/settings-reference#preferrednotifchannel`
+- `02-mods/mod-api.md` near line 484: `https://code.claude.com/docs/en/managed-settings.md#how-claude-code-combines-managed-sources`
+- `02-mods/mod-create.md` near line 74: `https://code.claude.com/docs/en/settings-reference#cleanupperioddays`
+- `02-mods/mod-create.md` near line 371: `https://code.claude.com/docs/en/plugins/publish.md#submit-to-anthropics-directory`
+- `02-mods/mod-events.md` near line 405: `https://code.claude.com/docs/en/settings-reference#spinnertipsenabled`
+- `02-mods/mod-events.md` near line 496: `https://code.claude.com/docs/en/plugins/mods/admin.md#refuse-mods-when-your-check-fails`
+- `02-mods/mod-interface.md` near line 379: `https://code.claude.com/docs/en/env-vars.md#features-that-need-feature-flag-fetching`
+- `02-mods/mod-interface.md` near line 793: `https://code.claude.com/docs/en/settings-reference#cleanupperioddays`
+- `02-mods/mod-overview.md` near line 205: `https://code.claude.com/docs/en/env-vars.md#features-that-need-feature-flag-fetching`
+- `02-mods/mod-reference.md` near line 102: `https://code.claude.com/docs/en/mcp.md#organization-controls-on-connector-tools`
+- `02-mods/mod-reference.md` near line 220: `https://code.claude.com/docs/en/plugins/mods/admin#enforce-a-policy-with-a-mod-of-your-own`
+- `02-mods/mod-reference.md` near line 275: `https://code.claude.com/docs/en/env-vars.md#features-that-need-feature-flag-fetching`
+- `02-mods/mod-troubleshoot.md` near line 192: `https://code.claude.com/docs/en/settings-reference#askuserquestiontimeout`
+- `02-mods/mod-troubleshoot.md` near line 380: `https://code.claude.com/docs/en/env-vars.md#features-that-need-feature-flag-fetching`
+- `03-components/channels-reference.md` near line 73: `https://code.claude.com/docs/en/channels.md#supported-channels`
+- `03-components/channels-reference.md` near line 796: `https://code.claude.com/docs/en/channels.md#supported-channels`
+- `03-components/channels.md` near line 29: `https://code.claude.com/docs/en/channels#how-channels-compare`
+- `03-components/hooks-guide.md` near line 222: `https://code.claude.com/docs/en/settings-reference#autocontinueatusagelimit`
+- `03-components/hooks-guide.md` near line 492: `https://code.claude.com/docs/en/permissions#managed-settings`
+- `03-components/hooks-guide.md` near line 661: `https://code.claude.com/docs/en/permissions.md#network-paths`
+- `03-components/hooks-guide.md` near line 664: `https://code.claude.com/docs/en/mcp#organization-controls-on-connector-tools`
+- `03-components/hooks-guide.md` near line 668: `https://code.claude.com/docs/en/hooks.md#defer-a-tool-call-for-later`
+- `03-components/hooks-guide.md` near line 996: `https://code.claude.com/docs/en/permissions.md#network-paths`
+- `03-components/hooks-guide.md` near line 999: `https://code.claude.com/docs/en/mcp#organization-controls-on-connector-tools`
+- `03-components/hooks.md` near line 434: `https://code.claude.com/docs/en/managed-settings.md#how-claude-code-combines-managed-sources`
+- `03-components/hooks.md` near line 443: `https://code.claude.com/docs/en/settings-reference#filesuggestion`
+- `03-components/hooks.md` near line 872: `https://code.claude.com/docs/en/sub-agents.md#hooks-in-subagent-frontmatter`
+- `03-components/hooks.md` near line 878: `https://code.claude.com/docs/en/skills.md#bundled-skills`
+- `03-components/hooks.md` near line 918: `https://code.claude.com/docs/en/model-config.md#when-a-new-effort-level-starts`
+- `03-components/hooks.md` near line 1095: `https://code.claude.com/docs/en/agent-sdk/hooks.md#block-the-action-when-a-callback-fails`
+- `03-components/hooks.md` near line 1583: `https://code.claude.com/docs/en/hooks#defer-a-tool-call-for-later`
+- `03-components/hooks.md` near line 1965: `https://code.claude.com/docs/en/settings-reference#basheditdiffenabled`
+- `03-components/hooks.md` near line 2132: `https://code.claude.com/docs/en/headless.md#turn-off-permission-prompts-in-unattended-runs`
+- `03-components/hooks.md` near line 2132: `https://code.claude.com/docs/en/hooks#defer-a-tool-call-for-later`
+- `03-components/hooks.md` near line 2132: `https://code.claude.com/docs/en/permissions.md#network-paths`
+- `03-components/hooks.md` near line 2276: `https://code.claude.com/docs/en/permissions#managed-settings`
+- `03-components/hooks.md` near line 2530: `https://code.claude.com/docs/en/errors.md#auto-mode-cannot-determine-the-safety-of-an-action`
+- `03-components/hooks.md` near line 2574: `https://code.claude.com/docs/en/errors.md#auto-mode-cannot-determine-the-safety-of-an-action`
+- `03-components/hooks.md` near line 2582: `https://code.claude.com/docs/en/settings-reference#autocontinueatusagelimit`
+- `03-components/hooks.md` near line 3039: `https://code.claude.com/docs/en/settings-reference#wslinheritswindowssettings`
+- `03-components/hooks.md` near line 3404: `https://code.claude.com/docs/en/model-config.md#set-the-auto-compact-window`
+- `03-components/hooks.md` near line 3404: `https://code.claude.com/docs/en/settings-reference.md#idlecompaction`
+- `03-components/hooks.md` near line 3440: `https://code.claude.com/docs/en/model-config.md#set-the-auto-compact-window`
+- `03-components/hooks.md` near line 3440: `https://code.claude.com/docs/en/settings-reference.md#idlecompaction`
+- `03-components/hooks.md` near line 3474: `https://code.claude.com/docs/en/model-config.md#automatic-model-fallback`
+- `03-components/hooks.md` near line 3624: `https://code.claude.com/docs/en/model-config.md#automatic-model-fallback`
+- `03-components/hooks.md` near line 3625: `https://code.claude.com/docs/en/model-config#opusplan-model-setting`
+- `03-components/hooks.md` near line 3628: `https://code.claude.com/docs/en/model-config.md#fallback-model-chains`
+- `03-components/mcp.md` near line 161: `https://code.claude.com/docs/en/permissions.md#working-directories`
+- `03-components/mcp.md` near line 259: `https://code.claude.com/docs/en/errors.md#no-such-tool-available`
+- `03-components/mcp.md` near line 267: `https://code.claude.com/docs/en/mcp#how-connectors-reach-claude-code`
+- `03-components/mcp.md` near line 272: `https://code.claude.com/docs/en/settings-reference#disabledmcpjsonservers`
+- `03-components/mcp.md` near line 272: `https://code.claude.com/docs/en/settings-reference#enabledmcpjsonservers`
+- `03-components/mcp.md` near line 278: `https://code.claude.com/docs/en/env-vars.md#features-that-need-feature-flag-fetching`
+- `03-components/mcp.md` near line 286: `https://code.claude.com/docs/en/errors.md#refusing-to-send-credentials-to-non-https-token-endpoint`
+- `03-components/mcp.md` near line 320: `https://code.claude.com/docs/en/agent-sdk/mcp.md#error-handling`
+- `03-components/mcp.md` near line 320: `https://code.claude.com/docs/en/agent-sdk/mcp.md#error-handling`
+- `03-components/mcp.md` near line 321: `https://code.claude.com/docs/en/agent-sdk/mcp.md#error-handling`
+- `03-components/mcp.md` near line 337: `https://code.claude.com/docs/en/agent-sdk/mcp.md#error-handling`
+- `03-components/mcp.md` near line 461: `https://code.claude.com/docs/en/env-vars.md#features-that-need-feature-flag-fetching`
+- `03-components/mcp.md` near line 471: `https://code.claude.com/docs/en/headless.md#mcp-work-when-a-non-interactive-run-ends`
+- `03-components/mcp.md` near line 627: `https://code.claude.com/docs/en/permissions#move-the-session-to-another-directory`
+- `03-components/mcp.md` near line 662: `https://code.claude.com/docs/en/mcp#local-scope`
+- `03-components/mcp.md` near line 662: `https://code.claude.com/docs/en/mcp#project-scope`
+- `03-components/mcp.md` near line 662: `https://code.claude.com/docs/en/mcp#user-scope`
+- `03-components/mcp.md` near line 812: `https://code.claude.com/docs/en/mcp#use-pre-configured-oauth-credentials`
+- `03-components/mcp.md` near line 947: `https://code.claude.com/docs/en/permissions#move-the-session-to-another-directory`
+- `03-components/mcp.md` near line 949: `https://code.claude.com/docs/en/mcp#local-scope`
+- `03-components/mcp.md` near line 949: `https://code.claude.com/docs/en/mcp#user-scope`
+- `03-components/mcp.md` near line 949: `https://code.claude.com/docs/en/permissions.md#working-directories`
+- `03-components/mcp.md` near line 963: `https://code.claude.com/docs/en/mcp#local-scope`
+- `03-components/mcp.md` near line 963: `https://code.claude.com/docs/en/mcp#user-scope`
+- `03-components/mcp.md` near line 971: `https://code.claude.com/docs/en/mcp#local-scope`
+- `03-components/mcp.md` near line 974: `https://code.claude.com/docs/en/errors#headershelper-not-run`
+- `03-components/mcp.md` near line 977: `https://code.claude.com/docs/en/sub-agents.md#scope-mcp-servers-to-a-subagent`
+- `03-components/mcp.md` near line 1077: `https://code.claude.com/docs/en/env-vars.md#features-that-need-feature-flag-fetching`
+- `03-components/mcp.md` near line 1300: `https://code.claude.com/docs/en/settings-reference#env`
+- `03-components/mcp.md` near line 1348: `https://code.claude.com/docs/en/skills.md#names-reserved-for-synced-skills`
+- `03-components/model-config.md` near line 31: `https://code.claude.com/docs/en/model-config#default-model-setting`
+- `03-components/model-config.md` near line 51: `https://code.claude.com/docs/en/model-config#block-specific-models-or-versions`
+- `03-components/model-config.md` near line 77: `https://code.claude.com/docs/en/model-config#organization-effort-limits`
+- `03-components/model-config.md` near line 101: `https://code.claude.com/docs/en/model-config#organization-effort-limits`
+- `03-components/model-config.md` near line 101: `https://code.claude.com/docs/en/settings-reference#maxeffortlevel`
+- `03-components/model-config.md` near line 101: `https://code.claude.com/docs/en/settings-reference#maxeffortlevel`
+- `03-components/model-config.md` near line 109: `https://code.claude.com/docs/en/sub-agents#run-every-subagent-on-one-model`
+- `03-components/output-styles.md` near line 42: `https://code.claude.com/docs/en/output-styles#built-in-output-styles`
+- `03-components/output-styles.md` near line 134: `https://code.claude.com/docs/en/sub-agents.md#fork-the-current-conversation`
+- `03-components/skills.md` near line 509: `https://code.claude.com/docs/en/skills#how-claude-code-handles-the-body-of-a-synced-skill`
+- `03-components/skills.md` near line 549: `https://code.claude.com/docs/en/model-config.md#use-ultrathink-for-one-off-deep-reasoning`
+- `03-components/skills.md` near line 599: `https://code.claude.com/docs/en/sub-agents.md#fork-the-current-conversation`
+- `03-components/skills.md` near line 946: `https://code.claude.com/docs/en/permissions#move-the-session-to-another-directory`
+- `03-components/skills.md` near line 973: `https://code.claude.com/docs/en/skills#find-unused-skills`
+- `03-components/statusline.md` near line 46: `https://code.claude.com/docs/en/statusline#context-window-fields`
+- `03-components/statusline.md` near line 46: `https://code.claude.com/docs/en/sub-agents#built-in-subagents`
+- `03-components/statusline.md` near line 46: `https://code.claude.com/docs/en/sub-agents.md#subagent-names`
+- `03-components/sub-agents.md` near line 132: `https://code.claude.com/docs/en/sub-agents#permission-modes`
+- `03-components/sub-agents.md` near line 192: `https://code.claude.com/docs/en/model-config.md#extended-context`
+- `03-components/sub-agents.md` near line 197: `https://code.claude.com/docs/en/sub-agents#run-every-subagent-on-one-model`
+- `03-components/sub-agents.md` near line 212: `https://code.claude.com/docs/en/model-config.md#extended-thinking`
+- `03-components/sub-agents.md` near line 230: `https://code.claude.com/docs/en/sub-agents#fork-the-current-conversation`
+- `03-components/sub-agents.md` near line 232: `https://code.claude.com/docs/en/sub-agents#fork-the-current-conversation`
+- `03-components/sub-agents.md` near line 236: `https://code.claude.com/docs/en/sub-agents#permission-modes`
+- `03-components/sub-agents.md` near line 314: `https://code.claude.com/docs/en/sub-agents#disable-specific-subagents`
+- `03-components/sub-agents.md` near line 486: `https://code.claude.com/docs/en/settings-reference.md#includegitinstructions`
+- `03-components/sub-agents.md` near line 490: `https://code.claude.com/docs/en/cli-reference.md#system-prompt-flags-in-resumed-conversations`
+- `03-components/sub-agents.md` near line 490: `https://code.claude.com/docs/en/errors.md#session-agent-no-longer-available`
+- `03-components/sub-agents.md` near line 528: `https://code.claude.com/docs/en/sub-agents#let-claude-wait-for-a-subagent`
+- `03-components/sub-agents.md` near line 544: `https://code.claude.com/docs/en/errors.md#the-response-above-may-be-incomplete`
+- `03-components/sub-agents.md` near line 557: `https://code.claude.com/docs/en/model-config.md#fallback-model-chains`
+- `03-components/sub-agents.md` near line 581: `https://code.claude.com/docs/en/sub-agents#fork-the-current-conversation`
+- `03-components/sub-agents.md` near line 593: `https://code.claude.com/docs/en/sub-agents#fork-the-current-conversation`
+- `03-components/sub-agents.md` near line 622: `https://code.claude.com/docs/en/sub-agents#fork-the-current-conversation`
+- `03-components/sub-agents.md` near line 631: `https://code.claude.com/docs/en/sub-agents#fork-the-current-conversation`
+- `03-components/sub-agents.md` near line 638: `https://code.claude.com/docs/en/settings-reference#includegitinstructions`
+- `03-components/sub-agents.md` near line 650: `https://code.claude.com/docs/en/sub-agents#fork-the-current-conversation`
+- `03-components/sub-agents.md` near line 709: `https://code.claude.com/docs/en/model-config.md#context-window-and-auto-compaction`
+- `03-components/sub-agents.md` near line 710: `https://code.claude.com/docs/en/model-config.md#set-the-auto-compact-window`
+- `03-components/workflows.md` near line 95: `https://code.claude.com/docs/en/workflows#let-claude-decide-with-ultracode`
+- `03-components/workflows.md` near line 97: `https://code.claude.com/docs/en/workflows#bundled-workflows`
+- `03-components/workflows.md` near line 120: `https://code.claude.com/docs/en/permissions.md#add-a-comment-when-you-answer-a-permission-prompt`
+- `03-components/workflows.md` near line 141: `https://code.claude.com/docs/en/sub-agents.md#permission-modes`
+- `03-components/workflows.md` near line 257: `https://code.claude.com/docs/en/skills.md#bundled-skills`
+- `03-components/workflows.md` near line 276: `https://code.claude.com/docs/en/permissions#working-directories`
+- `03-components/workflows.md` near line 288: `https://code.claude.com/docs/en/workflows#when-a-run-hits-your-usage-limit`
+- `03-components/workflows.md` near line 326: `https://code.claude.com/docs/en/workflows#when-a-run-hits-your-usage-limit`
+- `03-components/workflows.md` near line 350: `https://code.claude.com/docs/en/workflows#set-a-size-guideline`
+- `04-settings-admin/env-vars.md` near line 112: `https://code.claude.com/docs/en/settings-reference#env`
+- `04-settings-admin/env-vars.md` near line 112: `https://code.claude.com/docs/en/settings-reference#how-env-values-interact-with-your-shell`
+- `04-settings-admin/env-vars.md` near line 112: `https://code.claude.com/docs/en/settings-reference#when-claude-code-applies-env-values`
+- `04-settings-admin/env-vars.md` near line 126: `https://code.claude.com/docs/en/settings-reference.md#variables-claude-code-ignores-in-env`
+- `04-settings-admin/managed-settings.md` near line 31: `https://code.claude.com/docs/en/model-config.md#surface-coverage`
+- `04-settings-admin/managed-settings.md` near line 41: `https://code.claude.com/docs/en/managed-settings#keys-read-from-every-admin-source`
+- `04-settings-admin/managed-settings.md` near line 41: `https://code.claude.com/docs/en/settings-reference#plugintrustmessage`
+- `04-settings-admin/permissions.md` near line 55: `https://code.claude.com/docs/en/permissions#working-directories`
+- `04-settings-admin/permissions.md` near line 85: `https://code.claude.com/docs/en/mcp#organization-controls-on-connector-tools`
+- `04-settings-admin/permissions.md` near line 85: `https://code.claude.com/docs/en/permissions#network-paths`
+- `04-settings-admin/permissions.md` near line 155: `https://code.claude.com/docs/en/errors.md#has-a-wildcard-before-the-rest-of-the-command`
+- `04-settings-admin/permissions.md` near line 285: `https://code.claude.com/docs/en/permissions#working-directories`
+- `04-settings-admin/permissions.md` near line 311: `https://code.claude.com/docs/en/permissions#working-directories`
+- `04-settings-admin/permissions.md` near line 316: `https://code.claude.com/docs/en/permissions#working-directories`
+- `04-settings-admin/permissions.md` near line 355: `https://code.claude.com/docs/en/errors.md#file-is-covered-by-a-read-deny-rule`
+- `04-settings-admin/permissions.md` near line 399: `https://code.claude.com/docs/en/permissions#working-directories`
+- `04-settings-admin/permissions.md` near line 563: `https://code.claude.com/docs/en/mcp#organization-controls-on-connector-tools`
+- `04-settings-admin/permissions.md` near line 563: `https://code.claude.com/docs/en/permissions#network-paths`
+- `04-settings-admin/permissions.md` near line 579: `https://code.claude.com/docs/en/sub-agents.md#hooks-in-subagent-frontmatter`
+- `04-settings-admin/server-managed-settings.md` near line 28: `https://code.claude.com/docs/en/server-managed-settings#fetch-and-caching-behavior`
+- `04-settings-admin/settings-reference.md` near line 67: `https://code.claude.com/docs/en/settings-reference#global-config-settings`
+- `04-settings-admin/settings-reference.md` near line 71: `https://code.claude.com/docs/en/settings-reference#global-config-settings`
+- `04-settings-admin/settings-reference.md` near line 73: `https://code.claude.com/docs/en/settings-reference#plugintrustmessage`
+- `04-settings-admin/settings-reference.md` near line 73: `https://code.claude.com/docs/en/settings-reference#skilloverrides`
+- `04-settings-admin/settings-reference.md` near line 113: `https://code.claude.com/docs/en/output-styles.md#built-in-output-styles`
+- `04-settings-admin/settings-reference.md` near line 132: `https://code.claude.com/docs/en/managed-settings.md#let-an-embedding-host-add-policy`
+- `04-settings-admin/settings-reference.md` near line 141: `https://code.claude.com/docs/en/skills.md#where-synced-skills-load`
+- `04-settings-admin/settings-reference.md` near line 146: `https://code.claude.com/docs/en/managed-settings.md#let-an-embedding-host-add-policy`
+- `04-settings-admin/settings-reference.md` near line 149: `https://code.claude.com/docs/en/skills#names-reserved-for-synced-skills`
+- `04-settings-admin/settings-reference.md` near line 265: `https://code.claude.com/docs/en/settings-reference#viewmode`
+- `04-settings-admin/settings-reference.md` near line 313: `https://code.claude.com/docs/en/settings-reference#filesuggestion`
+- `04-settings-admin/settings-reference.md` near line 319: `https://code.claude.com/docs/en/settings-reference#filesuggestion`
+- `04-settings-admin/settings-reference.md` near line 573: `https://code.claude.com/docs/en/settings-reference#allow-only-the-official-marketplace`
+- `04-settings-admin/settings-reference.md` near line 648: `https://code.claude.com/docs/en/settings-reference#managedmcpservers`
+- `04-settings-admin/settings-reference.md` near line 778: `https://code.claude.com/docs/en/mcp.md#how-connectors-reach-claude-code`
+- `04-settings-admin/settings-reference.md` near line 780: `https://code.claude.com/docs/en/settings-reference#managedmcpservers`
+- `04-settings-admin/settings-reference.md` near line 823: `https://code.claude.com/docs/en/mcp.md#how-connectors-reach-claude-code`
+- `04-settings-admin/settings-reference.md` near line 823: `https://code.claude.com/docs/en/settings-reference#managedmcpservers`
+- `04-settings-admin/settings.md` near line 96: `https://code.claude.com/docs/en/settings-reference.md#global-config-settings`
+- `04-settings-admin/settings.md` near line 112: `https://code.claude.com/docs/en/permissions.md#when-your-local-settings-file-needs-trust`
+- `04-settings-admin/settings.md` near line 123: `https://code.claude.com/docs/en/permissions#move-the-session-to-another-directory`
+- `04-settings-admin/settings.md` near line 123: `https://code.claude.com/docs/en/permissions.md#working-directories`
+- `04-settings-admin/settings.md` near line 127: `https://code.claude.com/docs/en/managed-settings.md#what-a-developer-can-change`
+- `04-settings-admin/settings.md` near line 191: `https://code.claude.com/docs/en/errors.md#managed-settings-document-could-not-be-parsed`
+- `04-settings-admin/settings.md` near line 201: `https://code.claude.com/docs/en/settings-reference#availablemodels`
+- `04-settings-admin/settings.md` near line 201: `https://code.claude.com/docs/en/settings-reference#deniedmodels`
+- `04-settings-admin/settings.md` near line 201: `https://code.claude.com/docs/en/settings-reference#model`
+- `04-settings-admin/settings.md` near line 215: `https://code.claude.com/docs/en/settings-reference#spinnertipsenabled`
+- `04-settings-admin/settings.md` near line 237: `https://code.claude.com/docs/en/settings-reference#env`
+- `04-settings-admin/settings.md` near line 244: `https://code.claude.com/docs/en/model-config.md#a-new-session-starts-on-a-different-model-than-you-picked`
+- `04-settings-admin/settings.md` near line 252: `https://code.claude.com/docs/en/settings-reference#variables-claude-code-ignores-in-env`
+- `04-settings-admin/settings.md` near line 253: `https://code.claude.com/docs/en/settings-reference#env`
+- `05-cli-diagnostics/cli-reference.md` near line 40: `https://code.claude.com/docs/en/model-config.md#automatic-model-fallback`
+- `05-cli-diagnostics/cli-reference.md` near line 40: `https://code.claude.com/docs/en/permissions.md#network-paths`
+- `05-cli-diagnostics/cli-reference.md` near line 40: `https://code.claude.com/docs/en/settings-reference#viewmode`
+- `05-cli-diagnostics/cli-reference.md` near line 40: `https://code.claude.com/docs/en/settings-reference.md#permission-rule-syntax`
+- `05-cli-diagnostics/debug-your-config.md` near line 27: `https://code.claude.com/docs/en/skills.md#bundled-skills`
+- `05-cli-diagnostics/errors.md` near line 72: `https://code.claude.com/docs/en/errors#directory-couldnt-be-resolved-to-a-real-location`
+- `05-cli-diagnostics/errors.md` near line 72: `https://code.claude.com/docs/en/errors#issuer-mismatch-in-authorization-response`
+- `05-cli-diagnostics/errors.md` near line 72: `https://code.claude.com/docs/en/errors#mcp-server-is-disabled`
+- `05-cli-diagnostics/errors.md` near line 72: `https://code.claude.com/docs/en/errors#mcp-tool-call-timed-out-with-the-servers-question-unanswered`
+- `05-cli-diagnostics/errors.md` near line 72: `https://code.claude.com/docs/en/errors#no-such-tool-available`
+- `05-cli-diagnostics/errors.md` near line 72: `https://code.claude.com/docs/en/errors#refusing-to-send-credentials-to-non-https-token-endpoint`
+- `05-cli-diagnostics/errors.md` near line 72: `https://code.claude.com/docs/en/plugins/troubleshooting.md#an-npm-plugin-source-must-name-a-registry-package`
+- `05-cli-diagnostics/errors.md` near line 169: `https://code.claude.com/docs/en/errors#usage-limits`
+- `05-cli-diagnostics/errors.md` near line 261: `https://code.claude.com/docs/en/agent-sdk/mcp.md#oauth2-authentication`
+- `05-cli-diagnostics/errors.md` near line 315: `https://code.claude.com/docs/en/env-vars.md#features-that-need-feature-flag-fetching`
+- `05-cli-diagnostics/errors.md` near line 345: `https://code.claude.com/docs/en/errors#managed-settings-block-the-default-model`
+- `05-cli-diagnostics/errors.md` near line 345: `https://code.claude.com/docs/en/model-config#block-specific-models-or-versions`
+- `05-cli-diagnostics/errors.md` near line 361: `https://code.claude.com/docs/en/model-config.md#organization-model-restrictions`
+- `05-cli-diagnostics/errors.md` near line 397: `https://code.claude.com/docs/en/settings-reference#showthinkingsummaries`
+- `05-cli-diagnostics/errors.md` near line 417: `https://code.claude.com/docs/en/settings-reference#managedmcpservers`
+- `05-cli-diagnostics/errors.md` near line 887: `https://code.claude.com/docs/en/sub-agents.md#let-claude-wait-for-a-subagent`
+- `05-cli-diagnostics/errors.md` near line 944: `https://code.claude.com/docs/en/skills.md#names-reserved-for-synced-skills`
+- `05-cli-diagnostics/headless.md` near line 40: `https://code.claude.com/docs/en/headless#continue-conversations`
+- `05-cli-diagnostics/headless.md` near line 41: `https://code.claude.com/docs/en/headless#auto-approve-tools`
+- `05-cli-diagnostics/headless.md` near line 140: `https://code.claude.com/docs/en/agent-sdk/mcp.md#connection-timing`
+- `06-agent-sdk/sdk-skills.md` near line 67: `https://code.claude.com/docs/en/skills.md#bundled-skills`
+- `06-agent-sdk/sdk-skills.md` near line 78: `https://code.claude.com/docs/en/agent-sdk/skills#invalid-skill-name-error`
+
+## Inherited from the official pages
+
+Already broken in the official documentation as downloaded; pruning did not cause them.
+
+- `01-plugins-core/cli-reference.md`: 22
+- `01-plugins-core/components.md`: 9
+- `01-plugins-core/create.md`: 7
+- `01-plugins-core/dependencies.md`: 3
+- `01-plugins-core/host-marketplace.md`: 3
+- `01-plugins-core/install.md`: 1
+- `01-plugins-core/loading.md`: 11
+- `01-plugins-core/manifest-reference.md`: 3
+- `01-plugins-core/marketplace-reference.md`: 5
+- `01-plugins-core/measure.md`: 3
+- `01-plugins-core/org.md`: 2
+- `01-plugins-core/overview.md`: 2
+- `01-plugins-core/plugin-evals.md`: 31
+- `01-plugins-core/publish.md`: 1
+- `01-plugins-core/relevance.md`: 1
+- `01-plugins-core/security.md`: 2
+- `01-plugins-core/troubleshooting.md`: 11
+- `02-mods/mod-admin.md`: 8
+- `02-mods/mod-api.md`: 9
+- `02-mods/mod-create.md`: 2
+- `02-mods/mod-events.md`: 20
+- `02-mods/mod-gallery.md`: 2
+- `02-mods/mod-interface.md`: 6
+- `02-mods/mod-overview.md`: 3
+- `02-mods/mod-reference.md`: 15
+- `02-mods/mod-test.md`: 3
+- `02-mods/mod-troubleshoot.md`: 18
+- `03-components/channels.md`: 1
+- `03-components/hooks-guide.md`: 4
+- `03-components/hooks.md`: 15
+- `03-components/mcp.md`: 28
+- `03-components/model-config.md`: 3
+- `03-components/skills.md`: 10
+- `03-components/statusline.md`: 1
+- `03-components/sub-agents.md`: 15
+- `04-settings-admin/env-vars.md`: 6
+- `04-settings-admin/permissions.md`: 11
+- `04-settings-admin/settings-reference.md`: 41
+- `04-settings-admin/settings.md`: 5
+- `05-cli-diagnostics/cli-reference.md`: 1
+- `05-cli-diagnostics/debug-your-config.md`: 1
+- `05-cli-diagnostics/errors.md`: 30
+- `05-cli-diagnostics/headless.md`: 1
+- `06-agent-sdk/sdk-skills.md`: 2
+- `07-cross-platform-external/platform-support.md`: 2
+
+## Anchors not found on live pages outside this vault
+
+- `https://code.claude.com/docs/en/agent-view.md#from-inside-a-session`
+- `https://code.claude.com/docs/en/best-practices.md#keep-claude-md-short`
+- `https://code.claude.com/docs/en/claude-code-on-the-web#from-terminal-to-cloud`
+- `https://code.claude.com/docs/en/claude-directory#ce-claude-json`
+- `https://code.claude.com/docs/en/costs#using-the-/usage-command`
+- `https://code.claude.com/docs/en/desktop.md#what%E2%80%99s-not-available-in-desktop`
+- `https://code.claude.com/docs/en/interactive-mode#side-questions-with-%2Fbtw`
+- `https://code.claude.com/docs/en/managed-mcp#exclusive-control-with-managed-mcp-json`
+- `https://code.claude.com/docs/en/memory#agents-md`
+- `https://code.claude.com/docs/en/memory.md#how-claude-md-files-load`
+- `https://code.claude.com/docs/en/permission-modes.md#eliminate-prompts-with-auto-mode`
+- `https://code.claude.com/docs/en/permission-modes.md#how-the-classifier-evaluates-actions`
+- `https://code.claude.com/docs/en/self-hosted-environments-configuration.md#connection-timing`
+- `https://platform.claude.com/docs/en/build-with-claude/refusals-and-fallback#refusal-response`
+
+## Not verifiable from this environment
+
+- `https://claude.ai` (requires sign-in)
+- `https://claude.ai/admin-settings/claude-code` (requires sign-in)
+- `https://claude.ai/admin-settings/plugins` (requires sign-in)
+- `https://claude.ai/customize/connectors` (requires sign-in)
+- `https://claude.ai/customize/plugins` (requires sign-in)

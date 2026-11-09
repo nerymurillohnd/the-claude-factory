@@ -1,5 +1,5 @@
 ---
-name: plugin-commands
+name: cli-commands-guide
 description: Exact reference for the Claude Code plugin CLI - every claude plugin and claude plugin marketplace subcommand, every /plugin form, /reload-plugins, --plugin-dir and --plugin-url, with flags, defaults, aliases, output and error messages, JSON fields, exit codes, scopes and minimum versions. Use when installing, uninstalling, enabling, disabling, updating, configuring, listing, validating, tagging, releasing, evaluating, testing or pruning plugins; adding, refreshing or removing marketplaces of any source type; reloading plugins in a session; loading a plugin for one session; scripting plugin commands with --json; or debugging a plugin command's output, error or exit code.
 ---
 

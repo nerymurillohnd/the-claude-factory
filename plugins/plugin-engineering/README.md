@@ -36,7 +36,7 @@
 
 | Component     | Name                    | What it does        | How it runs                                             |
 | :------------ | :---------------------- | :------------------ | :------------------------------------------------------ |
-| 🎯 Skill      | `plugin-engineering:plugin-commands` | The complete Claude Code plugin CLI reference: plugin commands, marketplace commands, `/plugin` and `/reload-plugins`, and the session-only flags | Automatically when you work with plugins or marketplaces, or `/plugin-engineering:plugin-commands` |
+| 🎯 Skill      | `plugin-engineering:cli-commands-guide` | The complete Claude Code plugin CLI reference: plugin commands, marketplace commands, `/plugin` and `/reload-plugins`, and the session-only flags | Automatically when you work with plugins or marketplaces, or `/plugin-engineering:cli-commands-guide` |
 
 ## 📋 Prerequisites
 
@@ -119,7 +119,7 @@ export CLAUDE_CODE_PLUGIN_PREFER_HTTPS=1
 You don't need to call the skill: Claude loads it when a task involves plugins or marketplaces. To load it yourself:
 
 ```text
-/plugin-engineering:plugin-commands
+/plugin-engineering:cli-commands-guide
 ```
 
 ### Install a plugin for the whole team

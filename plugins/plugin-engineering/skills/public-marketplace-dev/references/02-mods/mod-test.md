@@ -1,0 +1,366 @@
+# Test a mod
+
+> How to write automated tests for a Claude Code mod that fire events, stub Claude Code's answers, and press buttons, with no session, sign-in, or network.
+
+## Contents
+
+- [Write a test](#write-a-test)
+  - [Stub what Claude Code would answer](#stub-what-claude-code-would-answer)
+  - [Follow the test kit's rules](#follow-the-test-kits-rules)
+  - [Look up what a stub returns](#look-up-what-a-stub-returns)
+- [Test a timer](#test-a-timer)
+- [Test a drawing](#test-a-drawing)
+  - [Test a drawing after `/clear`](#test-a-drawing-after-clear)
+- [Documentation References](#documentation-references)
+
+Write automated tests for a mod and run them from the shell with [`claude plugin test`](https://code.claude.com/docs/en/plugins/mods/reference#commands). A test fires the events the mod's hooks handle and checks what the hooks did, so a problem is caught before it reaches a session. The first example tests the mod from [Create a mod](https://code.claude.com/docs/en/plugins/mods/create.md).
+
+## Write a test
+
+A test loads the mod, sends events through its hooks the way Claude Code would, and checks what the hooks did, without a session, a sign-in, or a network. Run tests from the shell with `claude plugin test`. Each test file imports the test kit, a test library in the `claude-code/testing` module.
+
+Name each test file with the suffix `.test.ts`, such as `first-mod.test.ts`, and save it anywhere in the plugin directory. Every test file needs at least one `test()`; otherwise the run fails with `declares no test(): nothing ran`. A test file can import the mod's own files and sibling `.ts` helpers, so plain functions, such as a game's rules, can be unit tested without the kit.
+
+This test fires two tool calls, runs the `/tally` command from [Create a mod](https://code.claude.com/docs/en/plugins/mods/create.md), and checks that the reply counts both. Its first line is a [stub](#stub-what-claude-code-would-answer), which answers the tool calls in Claude Code's place. Save it as `first-mod/tests/first-mod.test.ts`:
+
+```typescript first-mod/tests/first-mod.test.ts theme={null}
+import { expect, test } from 'claude-code/testing'
+
+test('/tally reports the tool calls the mod has seen', async ($, on) => {
+  // Answer each tool call in Claude Code's place, so no tool runs
+  on('tool.call', () => ({ result: 'ok' }))
+
+  // Fire two tool calls, which the mod's tool.call hook counts
+  await $.tool.call({ tool: 'Bash', command: 'ls' })
+  await $.tool.call({ tool: 'Read', file_path: 'README.md' })
+
+  // Run /tally and check the text its hook returns
+  const answer = await $.command.run({ command: 'tally', args: '' })
+  expect(answer.text).toBe('Claude has made 2 tool calls since this mod loaded')
+})
+```
+
+In the shell, run the tests from the `first-mod` directory:
+
+```bash theme={null}
+claude plugin test
+```
+
+The output names each test and whether it passed, with timings that vary from run to run:
+
+```text theme={null}
+tests/first-mod.test.ts:
+(pass) /tally reports the tool calls the mod has seen [22.87ms]
+
+ 1 pass
+ 0 fail
+Ran 1 test across 1 file. [0.19s]
+```
+
+Each `$.tool.call` went through the mod's [`tool.call`](https://code.claude.com/docs/en/plugins/mods/reference#tools) hook, which added one to its count and passed the call on to the stub. No `ls` ran and no file was read. `$.command.run` then went to the mod's [`command.run`](https://code.claude.com/docs/en/plugins/mods/reference#commands-and-configuration) hook, and `answer` is the object that hook returned.
+
+The command exits with status 1 when a test fails, so it works in CI. If the user's own mods cannot load in the shell that runs it, it prints a line starting `claude plugin test: hooks modules are turned off` with the reason, and exits with status 1.
+
+### Stub what Claude Code would answer
+
+No model, store, or tool runs in a test, so wherever the mod expects Claude Code to answer, the test supplies the answer with a stub. A test function receives two arguments for that:
+
+* **`$`**: the test's own `$`, which acts as Claude Code. It is not the [mods API](https://code.claude.com/docs/en/plugins/mods/reference.md#mods-api-methods) that a hook receives. Each of its methods fires the event of the same name, sends it through the mod's hooks, and resolves to the result: `$.tool.call({ tool: 'Bash', command: 'ls' })` fires `tool.call`. `$.command.run`, `$.prompt.submit`, `$.session.start`, and `$.turn.complete` work the same way, and `$.classic.Stop` and the other `$.classic` methods fire a [settings hook event](https://code.claude.com/docs/en/plugins/mods/events.md#hook-the-settings-hook-events). A test cannot fire a mods API call such as `ui.close` directly. Trigger it through the mod instead, for example by pressing the button that closes the pane.
+* **`on`**: call it to register stubs, which are hooks that answer in Claude Code's place. Name a stub for a mods API call without the `$.`, so a stub registered as `store.get` answers the mod's `$.store.get`. When the mod calls [`$.model.complete`](https://code.claude.com/docs/en/plugins/mods/api#call-a-model) or [`$.store.get`](https://code.claude.com/docs/en/plugins/mods/interface#keep-state), a stub supplies the answer.
+
+This example stubs a model call. The hook belongs to a mod named `grader`, and handles a `/grade` command that sends a sentence to a model and reports whether the reply starts with `PASS`. The file holds only the hook under test, so the mod also needs a `plugin.json` and a `hooks.json`, as in [Create a mod](https://code.claude.com/docs/en/plugins/mods/create.md#write-a-mod-yourself). For `/grade` to be typed in a session, the mod also has to [register the command](https://code.claude.com/docs/en/plugins/mods/api.md#add-a-command):
+
+```javascript grader/hooks/register.js theme={null}
+export function register(on) {
+  on('command.run', { command: 'grade' }, async ($, e) => {
+    // e.args is the text typed after /grade
+    const reply = await $.model.complete({
+      model: 'haiku',
+      system: 'Grade the sentence. Start your reply with PASS or FAIL.',
+      prompt: e.args,
+    })
+    const passed = reply.isAnswered && reply.text.startsWith('PASS')
+    return { text: passed ? 'Passed' : 'Try again' }
+  })
+}
+```
+
+This test stubs the model call to check what the hook does with a passing reply:
+
+```typescript grader/tests/grader.test.ts theme={null}
+import { expect, test } from 'claude-code/testing'
+
+test('a passing grade is reported', async ($, on) => {
+  // Answer the mod's $.model.complete call with a fixed reply, so no model runs
+  on('model.complete', () => ({
+    value: {
+      isAnswered: true,
+      text: 'PASS\nNice sentence.',
+      usage: { input_tokens: 10, output_tokens: 5, cache_read_input_tokens: 0, cache_creation_input_tokens: 0 },
+    },
+  }))
+
+  // Run /grade, which makes the mod call the model
+  const answer = await $.command.run({ command: 'grade', args: 'The cat sat on the mat.' })
+  expect(answer.text).toBe('Passed')
+})
+```
+
+The test passes because the hook's `reply` is the object under `value`, whose `text` starts with `PASS`. To check the other branch, add a second test whose stub returns a `text` that starts with `FAIL`, and expect `Try again`.
+
+A stub for a mods API call returns an object with a `value` field, which holds what the call resolves to in the mod: `{ value: 7 }` makes `$.store.get` resolve to `7`. A stub for one of Claude Code's events, such as [`turn.step`](https://code.claude.com/docs/en/plugins/mods/reference#turns) or `tool.call`, returns that event's own result, such as `{ result: 'ok' }`. `$.session.send` and `$.prompt.fill` take their event's result too, as the table shows. [Look up what a stub returns](#look-up-what-a-stub-returns) shows which form each common name takes.
+
+These errors mean a stub is wrong or missing. A failed test's output includes a block headed `the engine reported:`, and each error appears there:
+
+* `returned neither { value } nor { deny }`: a stub for a mods API call returned a bare value, which fails the test
+* `no implementation for` followed by a name: the mod made that call and no stub answers it
+
+The kit also exports ready-made mocks for the clock, the store, environment variables, and rows appended to the conversation:
+
+* **`mock.clock(on)`**: answers [`$.clock`](https://code.claude.com/docs/en/plugins/mods/api#run-work-in-the-background) and returns a mock clock that the test advances, so a test of a timer does not wait.
+* **`mock.store(on, { count: 7 })`**: answers `$.store` from a store that starts with those entries. It returns nothing, so to check what the mod saved, write the two `store` stubs by hand as the [drawing test](#test-a-drawing) does.
+* **`mock.env(on, { CI: 'true' })`**: answers `$.env.get` from those variables.
+* **`mock.session(on)`**: returns a mock session whose `appended()` method lists the rows the mod added with [`$.session.append`](https://code.claude.com/docs/en/plugins/mods/reference#session), oldest first. It requires Claude Code v2.1.293 or later.
+
+### Follow the test kit's rules
+
+The test kit has a few rules of its own. Breaking one produces the errors new test authors hit first:
+
+* **Register every stub before the test's first call on `$`.** Calling `on` after that throws an error such as `on("ui.render") after the test first called $`.
+
+* **[`session.start`](https://code.claude.com/docs/en/plugins/mods/reference#session) does not run by itself.** Each test starts with the module freshly loaded and none of its hooks called, so module-level variables hold their initial values. When a hook depends on what `session.start` sets up, fire it first:
+
+  ```typescript theme={null}
+  // Answer the event after your hook passes it on with next(e)
+  on('session.start', () => ({ cwd: '/work' }))
+  // Answer the $.command.register call your hook makes
+  on('command.register', () => ({ value: undefined }))
+  // Fire the event, which runs your session.start hook
+  await $.session.start({ surface: 'terminal', isInteractive: true, cwd: '/work' })
+  ```
+
+  The second stub answers the `$.command.register` call that a `session.start` hook such as the [tutorial's](https://code.claude.com/docs/en/plugins/mods/create.md#write-a-mod-yourself) makes. Without it, that call rejects with `no implementation for command.register` and the kit skips the hook, so nothing after the call in the hook runs. The test does not fail at that point. The skipped hook is listed under `the engine reported:` only if a later check fails.
+
+* **A hook that returns `next(e)` needs a stub to answer.** When a [`ui.render`](https://code.claude.com/docs/en/plugins/mods/reference#interface) hook returns `next(e)`, for example to draw nothing while Claude is idle, [mounting it](#test-a-drawing) fails with `no implementation for ui.render`. Register a stub that returns an element as plain data:
+
+  ```typescript theme={null}
+  // Stands for what Claude Code would draw at the site
+  on('ui.render', () => ({ type: 'Text', props: {}, children: ['drawn by Claude Code'] }))
+  ```
+
+  With the stub registered, the mount succeeds, and `ui.find({ type: 'Text' })` returns that element whenever the hook returned `next(e)`.
+
+* **A stub for `turn.step` is an async generator**, and the test reads the stream to its end to get the result:
+
+  ```typescript theme={null}
+  on('turn.step', async function* ($, e) {
+    // Each yield is one piece of the model's streamed reply
+    yield { kind: 'text', index: 0, text: 'ok' }
+    // The return value is the result of the whole request
+    return { turnId: e.turnId, index: e.index, answer: 'ok', toolUses: [], stopReason: 'end_turn', usage: null }
+  })
+
+  // Fire one request to the model, which runs your turn.step hook
+  const stream = $.turn.step({ turnId: 't', index: 0, model: 'claude-test', messageCount: 1 })
+  // Read every piece until the stream says it's done
+  let step = await stream.next()
+  while (step.done !== true) step = await stream.next()
+  const result = step.value
+  ```
+
+  When the loop ends, `result` is the object the stub returned, after the mod's `turn.step` hook has had the chance to change it. Here `result.answer` is `'ok'`.
+
+* **Fire a tool call with the tool's name and arguments as fields**, such as `await $.tool.call({ tool: 'Bash', command: 'ls' })`, and register a `tool.call` stub that returns `{ result }`.
+
+### Look up what a stub returns
+
+Every mods API call the mod makes in a test needs a stub that answers in Claude Code's place, except the few the kit answers itself: [`$.ui.invalidate`](https://code.claude.com/docs/en/plugins/mods/interface#redraw-when-something-changes), [`$.state`](https://code.claude.com/docs/en/plugins/mods/interface#keep-state), and `$.session.append` calls. For `$.clock` calls, use `mock.clock(on)`; otherwise the mod's `$.clock.now()` fails with `no implementation for clock.now`.
+
+This table lists the calls and events mods use most. The first column is the call the mod makes or the event it passes on with `next(e)`. The second is the function to pass to `on` under that name, so the `$.store.get` row becomes `on('store.get', ($, e) => ({ value: saved.get(e.key) }))`. A `'...'` in a stub marks text to fill in:
+
+| Your mod calls or passes on | Stub |
+| :- | :- |
+| `$.command.register`, `$.tool.register`, `$.ui.toast`, `$.ui.log`, `$.ui.status`, `$.ui.close`, `$.store.set` | `() => ({ value: undefined })`. For `ui.toast` and `ui.log`, the text is `e.text`. |
+| `$.store.get` | `($, e) => ({ value: saved.get(e.key) })` |
+| `$.fs.read` | `($, e) => ({ value: e.path.endsWith('notes.md') ? '# Notes' : '' })`. `e.path` arrives as an absolute path, so compare with `endsWith`. |
+| `$.ui.open` | `() => ({ value: { isPlaced: true } })` |
+| `$.ui.ask` | A `tool.call` stub, because the question reaches it as a call to the `AskUserQuestion` tool: `($, e) => ({ result: { answers: { [e.questions[0].question]: 'Run it' } } })`. Check `e.tool` first if your mod passes on other tool calls. |
+| `$.model.complete` | `() => ({ value: { isAnswered: true, text: '...', usage } })` |
+| `$.process.run` | `($, e) => ({ value: { exitCode: 0, stdout: '...', stderr: '' } })`. `e.argv` is the argument list and `e.init` holds `cwd` and `timeoutMs`. |
+| Any mods API call that should fail | `() => ({ deny: 'the reason' })`, which makes the call reject in your mod. A stub that throws is skipped instead. |
+| `session.start` | `() => ({ cwd: '/work' })` |
+| `turn.start` | `($, e) => ({ turnId: e.turnId })` |
+| `tool.call` | `() => ({ result: '...' })` |
+| `turn.complete` | `() => ({ text: '' })`. Fire it with `$.turn.complete({ turnId, answer, durationMs, isAborted: false, usage: null })`. |
+| `prompt.submit` | `($, e) => ({ text: e.text })` |
+| `prompt.fill` | `() => ({ isFilled: true })` |
+| `$.prompt.read` | `() => ({ value: { text: '...', cursor: 0 } })` |
+| `$.ui.copy` | `() => ({ value: { isCopied: true } })` |
+| `$.ui.notify` | `() => ({ value: { isSent: true, channel: 'terminal_bell' } })`. The text is `e.text` and the title is `e.title`. |
+| `$.session.messages` | `() => ({ value: [{ role: 'assistant', text: '...', toolUses: [] }] })` |
+| `$.session.id`, `$.agent.list` | `() => ({ value: 'abc123' })`, `() => ({ value: [] })` |
+| `session.send` | `() => ({ isDelivered: true })`. `e.to` arrives as a string even when your mod passed `{ sessionId }`. |
+| `session.receive` | `($, e) => ({ text: e.text })`. Fire it with `$.session.receive({ origin: { kind: 'peer-send-message' }, text })`. |
+| `ui.render` | `() => ({ type: 'Text', props: {}, children: ['...'] })` |
+
+`expect` has the assertions `toBe`, `toEqual`, `toMatch`, `toMatchObject`, `toContain`, `toBeDefined`, `toBeUndefined`, and `toThrow`, and `.not` before any of them.
+
+When an `expect` fails inside a stub or hook passed to `on` as a plain function rather than an async generator, the test fails. The engine skips that hook, and the failure output names it, such as `in the test's store.set hook`.
+
+## Test a timer
+
+A mod that runs work on a timer needs a clock the test controls, so the test can move time forward instead of waiting. `const clock = mock.clock(on)` returns a mock clock that starts at `0` and moves only when the test moves it. To start at another time, pass it in milliseconds, as in `mock.clock(on, { now: 5000 })`. The clock has these methods:
+
+| Method | What it does |
+| :- | :- |
+| `await clock.advance(1000)` | Moves the time forward by that many milliseconds and runs each timer that comes due |
+| `await clock.set(5000)` | Moves the time forward to that value, as `advance` would |
+| `clock.now()` | Returns the time, which is what your mod's `$.clock.now()` resolves to |
+| `await clock.settle()` | Runs timers that are already due, such as a chain of zero-delay `$.clock.after` calls, without moving the time |
+| `await clock.sleep(2000)` | Inside a stub, makes that stub answer only once the test has advanced that far, which is how you simulate a slow model or process |
+
+This hook belongs to a mod named `countdown`, and handles a `/countdown` command that takes a number of seconds, starts a one-second `$.clock.every` timer, and shows a toast at zero. As with `grader`, the file holds only the hook under test and does not register the command:
+
+```javascript countdown/hooks/register.js theme={null}
+export function register(on) {
+  on('command.run', { command: 'countdown' }, async ($, e) => {
+    // e.args is the text typed after /countdown
+    let left = Number(e.args)
+    const timer = $.clock.every(1000, () => {
+      left -= 1
+      if (left === 0) {
+        timer.cancel()
+        $.ui.toast('Time is up')
+      }
+    })
+    // Print nothing in the transcript
+    return {}
+  })
+}
+```
+
+This test runs `/countdown 3` and moves the mock clock, so it checks three seconds of behavior without waiting three seconds:
+
+```typescript countdown/tests/countdown.test.ts theme={null}
+import { expect, mock, test } from 'claude-code/testing'
+
+test('the countdown ends with a toast', async ($, on) => {
+  // Answer every $.clock call from a clock the test controls
+  const clock = mock.clock(on)
+  // Collect the text of each toast the mod shows
+  const toasts: string[] = []
+  on('ui.toast', ($, e) => {
+    toasts.push(e.text)
+    return { value: undefined }
+  })
+
+  await $.command.run({ command: 'countdown', args: '3' })
+  // After two seconds the timer has fired twice, and no toast is due
+  await clock.advance(2000)
+  expect(toasts).toEqual([])
+  // The third second brings the count to zero
+  await clock.advance(1000)
+  expect(toasts).toEqual(['Time is up'])
+})
+```
+
+The first `expect` shows that the toast does not come early, and the second shows that it comes once. Each `advance` resolves after the timers that came due have run, so the check on the next line sees their effect.
+
+## Test a drawing
+
+A test can draw one of the mod's [render sites](https://code.claude.com/docs/en/plugins/mods/reference.md#render-sites), then press, type into, and find the elements it drew. `$.ui.mount` draws the site through the mod's `ui.render` hook and returns a handle with a method for each of those actions. To cover several apps in one test, set `surface` to the app to draw for. This test opens the pane from [Build a pane with tabs](https://code.claude.com/docs/en/plugins/mods/interface.md#build-a-pane-with-tabs), switches tabs, presses the button, and checks the count in the terminal and the Desktop app:
+
+```typescript hello-tabs/tests/hello-tabs.test.ts theme={null}
+import { expect, test } from 'claude-code/testing'
+
+// What Claude Code passes to a ui.render hook for this pane, apart from the app
+const PANE = {
+  plugin: 'hello-tabs',
+  component: 'Pane',
+  requestId: 'hello-tabs',
+  viewport: { columns: 100, rows: 30 },
+  props: {
+    title: 'Hello tabs',
+    isFocused: true,
+    bodyColumns: 60,
+    placement: 'inline',
+    scroll: { offset: 0, bodyRows: 10 },
+    view: {},
+  },
+} as const
+
+test('the second tab counts presses and saves the count', async ($, on) => {
+  // Stub $.store with a Map, so the test can read what the mod saved
+  const saved = new Map<string, unknown>()
+  on('store.get', ($, e) => ({ value: saved.get(e.key) }))
+  on('store.set', ($, e) => {
+    saved.set(e.key, e.value)
+    return { value: undefined }
+  })
+
+  // Draw the pane once for each app
+  for (const surface of ['terminal', 'desktop'] as const) {
+    const ui = await $.ui.mount({ ...PANE, surface })
+    // Press the buttons by the key the mod gave them
+    await ui.press({ key: 'tab-two' })
+    await ui.press({ key: 'more' })
+    // The second tab's count line is in the drawing
+    expect(await ui.find({ type: 'Text', text: /^Count: \d+$/ })).toBeDefined()
+    await ui.unmount()
+  }
+
+  // One press in each app makes two
+  expect(saved.get('count')).toBe(2)
+})
+```
+
+In the shell, run `claude plugin test` from the `hello-tabs` directory. The test passes when both apps draw the count line and the mod has saved `2`. The count carries over from the first app to the second because both mounts use the same loaded module.
+
+The handle that `$.ui.mount` returns has these methods, which address elements by the `key` the mod gave them:
+
+| Method | What it does |
+| :- | :- |
+| `press({ key: 'more' })` | Presses the `Button` with that key |
+| `input({ key: 'new-note', text: 'buy milk' })` | Types the text into the `Input` with that key and presses Enter. Add `kind: 'change'` to type without submitting. For a field with `rows`, the text can hold `\n`. |
+| `select({ key: 'size', value: 'large' })` | Picks the option with that value in the `Select` with that key |
+| `find({ key: 'more' })` or `find({ type: 'Text', text: 'Count: 2' })` | Returns the first matching element as `{ type, props, children }`, or `undefined`. `text` can be a string or a regular expression. |
+| `unmount()` | Removes the drawing |
+
+Each method resolves after the mod's handler has finished, so the result can be checked on the next line. Set `props` to what Claude Code would pass for that site. The [render sites table](https://code.claude.com/docs/en/plugins/mods/reference.md#render-sites) lists each site's props, and [the types for your build](https://code.claude.com/docs/en/plugins/mods/create.md#get-the-types-for-your-build) have their types.
+
+To catch an [element tree](https://code.claude.com/docs/en/plugins/mods/interface.md#build-a-tree-from-elements) that is not valid for the app named in `surface`, use `find` to check for an element the hook adds. The test does not check how the app paints a tree, so also look at a new layout in a real session.
+
+### Test a drawing after `/clear`
+
+Each test starts with every `$.state` value at its default, which is how `/clear` leaves them. To test what the mod does next, skip `session.start`, fire `classic.SessionStart` with `source: 'clear'`, and check what the mod draws.
+
+This test checks the module from [Load a saved value again after `/clear`](https://code.claude.com/docs/en/plugins/mods/interface#load-a-saved-value-again-after-clear). Add it to the file from [Test a drawing](#test-a-drawing), where `PANE` is defined. That file's first test expects the button to save the count, as the button in [Save from more than one session](https://code.claude.com/docs/en/plugins/mods/interface.md#save-from-more-than-one-session) does:
+
+```typescript hello-tabs/tests/hello-tabs.test.ts theme={null}
+test('the saved count comes back after /clear', async ($, on) => {
+  // The store already holds a count of 7
+  on('store.get', () => ({ value: 7 }))
+  // Answer the event after your hook passes it on with next(e)
+  on('classic.SessionStart', () => ({}))
+
+  // Fire the event that follows /clear, which runs your hook
+  await $.classic.SessionStart({ source: 'clear' })
+
+  const ui = await $.ui.mount({ ...PANE, surface: 'terminal' })
+  await ui.press({ key: 'tab-two' })
+  // The pane shows the stored count, not the default of 0
+  expect(await ui.find({ type: 'Text', text: 'Count: 7' })).toBeDefined()
+})
+```
+
+The test passes when the mod's `classic.SessionStart` hook has copied the stored `7` into `$.state` before the pane draws. Without that hook in the module, the pane draws `Count: 0`, `find` returns `undefined`, and the test fails at `toBeDefined`.
+
+## Documentation References
+
+- Source page: <https://code.claude.com/docs/en/plugins/mods/test>
+- <https://code.claude.com/docs/en/plugins/mods/reference.md>: the `claude plugin test` command, every event's input and result, mods API methods and render sites, for writing stubs
+- <https://code.claude.com/docs/en/plugins/mods/create.md>: the `first-mod` tutorial, writing a mod by hand, and getting the types for the installed build
+- <https://code.claude.com/docs/en/plugins/mods/events.md>: hooking the settings hook events
+- <https://code.claude.com/docs/en/plugins/mods/api>: calling a model, adding a command, running work in the background
+- <https://code.claude.com/docs/en/plugins/mods/interface>: keeping state, redrawing, building a pane with tabs, element trees, saving from more than one session, loading a saved value after `/clear`
+- <https://code.claude.com/docs/en/plugins/mods/troubleshoot.md>: finding out why a mod does nothing in a session
