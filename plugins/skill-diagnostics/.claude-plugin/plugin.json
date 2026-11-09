@@ -2,7 +2,7 @@
   "name": "skill-diagnostics",
   "displayName": "Skill Diagnostics",
   "version": "0.3.0",
-  "description": "Audits Claude skills against the official best practices and gates them: four validation scripts, four independent reviewers, a cold executor and an adversarial verifier give one report with file-and-line evidence and one verdict, and a gate has Claude audit every skill it creates or changes before it finishes.",
+  "description": "Audits Claude skills against the official best practices and gates them: five validation scripts, four independent reviewers, a cold executor and an adversarial verifier give one report with file-and-line evidence and one verdict, and a gate has Claude audit every skill it creates or changes before it finishes.",
   "author": {
     "name": "Nery Murillo",
     "url": "https://github.com/nerymurillohnd"
