@@ -58,7 +58,13 @@ Invocation control, substitutions, pre-approved tools, dynamic context, forked s
 
 A skill's `hooks` frontmatter registers its hooks when the skill is invoked and keeps them for the rest of the session; before the first invocation they don't exist \[CC\]. `once: true` removes a hook after its first successful run \[CC\].
 
-- **Paths.** Hook commands resolve `${CLAUDE_PROJECT_DIR}`, `${CLAUDE_PLUGIN_ROOT}` and `${CLAUDE_PLUGIN_DATA}`; `${CLAUDE_SKILL_DIR}` is not among them, so a plugin skill reaches its own script through the plugin root \[CC\] `req`. A plugin hook reaches a script through `${CLAUDE_PLUGIN_ROOT}` `default`.
+- **Paths.** Hook commands resolve `${CLAUDE_PROJECT_DIR}`, `${CLAUDE_PLUGIN_ROOT}` and `${CLAUDE_PLUGIN_DATA}`; `${CLAUDE_SKILL_DIR}` is not among them, so a plugin skill reaches its own script through the plugin root \[CC\] `req`. In a skill's frontmatter they differ from a plugin's `hooks/hooks.json` \[SD\] `observed` (Claude Code 2.1.319, 2026-11-09):
+  - `${CLAUDE_PLUGIN_DATA}`: Claude Code refuses the hook ("only ${CLAUDE_PLUGIN_ROOT} is available for skill hooks"), so a skill hook that needs the data folder belongs in the plugin's `hooks/hooks.json`.
+  - `${CLAUDE_PLUGIN_ROOT}`: the plugin root in a plugin skill (its own scripts are under `skills/<skill>/scripts/`), and the skill's own folder in a project or personal skill.
+  - `${CLAUDE_SKILL_DIR}` is empty, and a relative path such as `./scripts/x.sh` resolves against the project folder, not the skill.
+  - A `SubagentStop` hook in a skill's frontmatter didn't fire; one in `hooks/hooks.json` did. A skill that must act when its subagents finish puts that hook in the plugin.
+
+  A plugin hook reaches a script through `${CLAUDE_PLUGIN_ROOT}` `default`.
 - **Quoting.** Prefer exec form (`args`) for any hook that references a path placeholder; in shell form, wrap each placeholder in double quotes \[CC\] `req`.
 - **`onFailure: "block"`** makes a `command` or `http` hook block the action when it can't start, times out or fails; it has no effect on `Stop`, `SubagentStop`, `TaskCompleted` and `TeammateIdle` hooks \[CC\] `req`.
 - **Managed lock.** Under the managed setting `strictPluginOnlyCustomization` with `hooks`, frontmatter hooks run only in plugin skills, bundled skills and managed skills, and a personal or project skill whose frontmatter declares `hooks` also loses its `allowed-tools` pre-approval \[CC\] (2.1.304).

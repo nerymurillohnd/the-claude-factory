@@ -29,8 +29,8 @@ Check ids and the checklist item each one serves (references/checklist.md):
   R-10 CF-3 proved  every Bash(...) pattern in allowed-tools matches a command the body runs
   R-11 CF-3 proved  every script command the body runs matches a Bash(...) pattern, when
                     allowed-tools is set
-  R-12 CF-6 proved  frontmatter hook commands reach files through the plugin root, the project
-                    folder or the plugin data folder, never CLAUDE_SKILL_DIR or a relative path
+  R-12 CF-6 proved  frontmatter hook commands reach files through the plugin root or the project
+                    folder, never CLAUDE_SKILL_DIR, CLAUDE_PLUGIN_DATA or a relative path
   R-13 CF-6 proved  shell-form hook commands double-quote every placeholder
   R-14 CF-6 proved  no onFailure on Stop, SubagentStop, TaskCompleted or TeammateIdle hooks
   R-15 SE-1 lead    network signals in a file (curl, wget, fetch(), requests, urllib, WebFetch,
@@ -632,7 +632,7 @@ INTERPRETERS = frozenset(
 )
 SHELL_FENCES = frozenset({"", "bash", "sh", "shell", "zsh", "console", "terminal", "!"})
 STOP_EVENTS = frozenset({"Stop", "SubagentStop", "TaskCompleted", "TeammateIdle"})
-HOOK_ROOTS = ("CLAUDE_PLUGIN_ROOT", "CLAUDE_PROJECT_DIR", "CLAUDE_PLUGIN_DATA")
+HOOK_ROOTS = ("CLAUDE_PLUGIN_ROOT", "CLAUDE_PROJECT_DIR")
 SCRIPT_SUFFIXES = (".py", ".sh", ".bash", ".zsh", ".js", ".mjs", ".cjs", ".ts", ".rb", ".pl")
 
 FENCE_RE = re.compile(r" {0,3}(`{3,}|~{3,})\s*([^`\s]*)")
@@ -1068,12 +1068,14 @@ def check_hook(report: Report, hook: Hook) -> None:
         report.fail(
             "R-12", where, "hook commands don't get CLAUDE_SKILL_DIR; use CLAUDE_PLUGIN_ROOT"
         )
+    elif any("CLAUDE_PLUGIN_DATA" in t for t in texts):
+        detail = "Claude Code refuses a skill hook that names CLAUDE_PLUGIN_DATA (plugin-only)"
+        report.fail("R-12", where, detail)
     else:
         for token in (tok for t in texts for tok in t.split()):
             if bad_path(token):
                 detail = (
-                    f"{token[:80]} isn't reached through "
-                    "CLAUDE_PLUGIN_ROOT, CLAUDE_PROJECT_DIR or CLAUDE_PLUGIN_DATA"
+                    f"{token[:80]} isn't reached through CLAUDE_PLUGIN_ROOT or CLAUDE_PROJECT_DIR"
                 )
                 report.fail("R-12", where, detail)
                 break

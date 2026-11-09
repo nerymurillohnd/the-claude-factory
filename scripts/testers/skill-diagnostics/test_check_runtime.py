@@ -337,6 +337,11 @@ class Hooks(Base):
         result = self.hook("PostToolUse", 'command: "bash \\"${CLAUDE_SKILL_DIR}/x.sh\\""')
         self.assertEqual(result.locations("R-12"), ["SKILL.md:8"])
 
+    def test_plugin_data_in_hook(self) -> None:
+        """Claude Code refuses a skill hook that names ${CLAUDE_PLUGIN_DATA}."""
+        result = self.hook("PostToolUse", "command: 'bash \"${CLAUDE_PLUGIN_DATA}/x.sh\"'")
+        self.assertEqual(result.locations("R-12"), ["SKILL.md:8"])
+
     def test_relative_path_in_hook(self) -> None:
         """A relative path resolves against the session folder."""
         result = self.hook("PostToolUse", "command: bash scripts/check.sh")
