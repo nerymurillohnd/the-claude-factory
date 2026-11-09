@@ -22,14 +22,14 @@
 
 ---
 
-💻 **Claude Code only** — it tests plugins by running the `claude` command in your terminal: installs, a separate sign-in, `claude plugin eval`. Install it where you build plugins, in Claude Code.
+💻 **Claude Code only** — it tests plugins by running the `claude` command in your terminal: installs, a separate sign-in, `claude plugin eval`. Claude can install it, but its skills' steps can't run there without that command.
 
 > [!TIP]
 > **TL;DR** — Type `/plugin-test-bench:test-install` before you publish, and find out whether your plugin loads and works for someone who installs it, not just on your machine. Type `/plugin-test-bench:review-evals` to make your eval cases measure what your plugin adds.
 
-## ✨ Why use it
+A plugin that works with `claude --plugin-dir` on your machine can still break for your users. They get a copy in their plugin cache, without your git-ignored files, your settings, your other plugins or your `CLAUDE.md`. Plugin Test Bench installs your plugin the way they do, in a throwaway configuration, checks that copy and runs your eval suite against it, then reviews your eval cases so their scores mean something.
 
-A plugin that works with `claude --plugin-dir` on your machine can still break for your users. They get a copy in their plugin cache, without your git-ignored files, your settings, your other plugins or your `CLAUDE.md`.
+## ✨ Why use it
 
 - **Test what your users get** — the plugin is installed from a commit into a separate Claude Code configuration, exactly as a marketplace install copies it, and every file your folder has but the copy lacks is reported.
 - **Your setup stays out of it** — the test uses its own Claude Code configuration and an empty project folder, without your settings, plugins, memory or claude.ai plugins and connectors, and everything it creates, including its sign-in, is removed at the end.
@@ -55,9 +55,9 @@ A plugin that works with `claude --plugin-dir` on your machine can still break f
 | socat (Linux, for eval cases that grant Bash) | — | `socat -V` |
 | Claude sign-in for the test configuration | — | — |
 
-Claude Code 2.1.299 is the minimum because from that version an eval run that ends on an API error scores 0 and fails instead of passing. 2.1.293 also stopped `claude plugin eval` from refusing every run that grants Bash on a Mac with Docker Desktop.
+The plugin also uses `mktemp`, `chmod` and `rm`, which come with macOS and Linux.
 
-Without a git repository, Claude offers a throwaway snapshot of your plugin. Eval cases that grant Bash need the OS sandbox: macOS has it built in, Linux needs `bubblewrap` and `socat`, and on Windows you run Claude Code inside WSL2 and install them there with the Linux commands. The plugin is built and tested on macOS.
+Without a git repository, Claude offers a throwaway snapshot of your plugin. Eval cases that grant Bash need the OS sandbox: macOS has it built in, and Linux needs `bubblewrap` and `socat`.
 
 ### 🤖 Claude Code
 
@@ -264,9 +264,9 @@ My eval suite shows Δ +0.00 on every case. What's wrong with it?
 
 - **Hooks:** none.
 - **MCP servers:** none.
-- **Commands it runs:** through Claude Code's Bash tool, under your permission settings: the `claude` CLI with `CLAUDE_CONFIG_DIR` set to a throwaway configuration (`claude plugin marketplace add`, `claude plugin install`, `claude plugin validate`, `claude plugin eval`, `claude auth logout`), read-only `git` in your repository (`git status`, `git rev-parse`, `git ls-tree`), and `mktemp -d`. With your go-ahead, review-evals runs your eval cases' scaffold scripts in an empty temporary folder. Without a git repository, a throwaway snapshot runs `git init`, `git add` and `git commit` in a temporary copy; to try the plugin in the Claude app, `git archive` builds a zip.
+- **Commands it runs:** through Claude Code's Bash tool, under your permission settings: the `claude` CLI with `CLAUDE_CONFIG_DIR` set to a throwaway configuration (`claude plugin marketplace add`, `claude plugin install`, `claude plugin validate`, `claude plugin eval`, `claude auth logout`), read-only `git` in your repository (`git status`, `git rev-parse`, `git ls-tree`), `mktemp -d`, and `chmod` and `rm` to delete the throwaway folders. With your go-ahead, review-evals runs your eval cases' scaffold scripts in an empty temporary folder. Without a git repository, a throwaway snapshot runs `git init`, `git add` and `git commit` in a temporary copy; to try the plugin in Claude, `git archive` builds a zip.
 - **Network:** the load check runs with no credentials and never calls the model. Eval runs and real requests call the model through the account you sign in to in the throwaway configuration, or a credential already set in your shell, and count against your plan or API bill; nothing paid runs before you agree. Eval results are not published (`--no-publish`). The skills read the official docs on `code.claude.com` through your session's web tools.
-- **Files written:** three throwaway folders made with `mktemp -d` (plus a snapshot folder when your plugin is not in git), all deleted at the end, even after a failure, after `claude auth logout` removes the test sign-in. It never changes your own Claude Code configuration or project. Each eval run writes its results in the throwaway project. A zip for the Claude app goes where you choose and stays yours. review-evals changes your eval cases only after you approve the fixes.
+- **Files written:** three throwaway folders made with `mktemp -d` (plus a snapshot folder when your plugin is not in git), all deleted at the end, even after a failure, after `claude auth logout` removes the test sign-in. It never changes your own Claude Code configuration or project. Each eval run writes its results in the throwaway project. A zip for Claude goes where you choose and stays yours. review-evals changes your eval cases only after you approve the fixes.
 - **Privacy:** the author collects no data. The marketplace's [privacy policy](https://github.com/nerymurillohnd/the-claude-factory/blob/main/PRIVACY.md) covers this plugin and the outside services it can reach.
 
 ## 🔄 Updating
@@ -306,24 +306,28 @@ Installed with `--scope project`:
 claude plugin uninstall plugin-test-bench@the-claude-factory --scope project
 ```
 
-Uninstalling from the last scope it's installed at also deletes its saved options and data directory, unless you add `--keep-data`. The plugin keeps no data: each test removes what it created, except a zip you asked for.
+Uninstalling from the last scope it's installed at also deletes its saved options and data directory, unless you add `--keep-data`. The plugin keeps nothing in its data directory. Each test removes what it created, except a zip you asked for, which stays where you put it.
 
 ## 🧭 Compatibility
 
 **Works in:** 💻 **Claude Code only**
 
-| Component | Claude Code | Claude app |
+| Component | Claude Code | Claude |
 | :-- | :--: | :--: |
-| 🎯 Skills | ✅ | ⚠️ loads, but its steps need the `claude` command in your terminal |
+| 🎯 Skills | ✅ | ✅ |
 
-<sub>✅ works · ⚠️ partial · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. The Claude app (web, desktop and mobile) runs a conversation as a Cowork session when it can, and as a chat conversation otherwise, for example on a device that can't run Cowork or in the separate Chat mode that Team and Enterprise plans keep for now.</sub>
+<sub>✅ works · ⚠️ partial · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. Claude runs agents, hooks and local MCP servers only in conversations where it can run tasks; anything on your computer needs Claude Desktop open.</sub>
 
-Building a plugin for the Claude app too? When your plugin's README says it works there, `test-install` offers to package your committed plugin as a zip for you to upload in the app (**Customize** → **Plugins** → **Add** → **Upload plugin**) and try there.
+The skills load in Claude, but their steps need the `claude` command in your terminal. Eval cases that grant Bash need the OS sandbox, which native Windows lacks: on Windows, run Claude Code inside WSL2 and install `bubblewrap` and `socat` there with the Linux commands.
+
+Building a plugin for Claude too? When your plugin's README says it works there, `test-install` offers to package your committed plugin as a zip for you to upload in Claude (**Customize** → **Plugins** → **Add** → **Upload plugin**) and try there.
+
+**Platforms:** macOS and Linux.
 
 ## ❓ FAQ & Troubleshooting
 
 <details>
-<summary><b>The plugin's commands don't show up after installing.</b></summary>
+<summary><b>The plugin's skills don't show up after installing.</b></summary>
 
 Run `/reload-plugins`, then type `/plugin-test-bench:` to list its skills. If it still doesn't appear, open `/plugin` → **Errors** and see the [troubleshooting guide](../../docs/troubleshooting.md).
 
@@ -374,6 +378,7 @@ Not your setup: every command runs with a separate configuration folder and in a
 ## 🔗 Related
 
 - 📦 [All plugins in The Claude Factory](../../README.md#-catalog)
+- 📖 [Claude Code plugin docs](https://code.claude.com/docs/en/plugins/overview)
 - 🧪 [Skill Diagnostics](../skill-diagnostics#readme) — audit the skills inside your plugin before you test it
 - 📖 [Test plugins with evals](https://code.claude.com/docs/en/plugin-evals)
 - 📖 [Publish a plugin](https://code.claude.com/docs/en/plugins/publish)
@@ -390,4 +395,4 @@ See [CHANGELOG.md](./CHANGELOG.md) for every release.
 
 ## 📄 License
 
-[MIT](./LICENSE) © Nery Murillo
+[MIT](./LICENSE) © Nery Murillo. Not affiliated with or endorsed by Anthropic. _Claude_ and _Claude Code_ are trademarks of Anthropic.

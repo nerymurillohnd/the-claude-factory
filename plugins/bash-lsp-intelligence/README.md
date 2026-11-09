@@ -23,10 +23,12 @@
 
 ---
 
-💻 **Claude Code only** — it connects a language server and a post-edit hook, and only Claude Code runs language servers. Install it where you write shell scripts, in Claude Code.
+💻 **Claude Code only** — it connects a language server, and only Claude Code runs language servers. Claude can install it, but there the language server doesn't start and the post-edit hook runs only where Claude can run tasks and finds `node`, `shfmt` and `shellcheck`.
 
 > [!TIP]
 > **TL;DR** — Install bash-language-server, shfmt and ShellCheck, add this plugin, and every shell script Claude edits comes back formatted and checked with your own `.editorconfig` and `.shellcheckrc`, while Claude tells same-named functions apart by what each script sources.
+
+Bash LSP Intelligence connects bash-language-server to Claude Code and adds a hook that formats and lints every shell script Claude changes with shfmt and ShellCheck. Your own `.editorconfig`, `.shellcheckrc` and `SHELLCHECK_OPTS` decide the style and rules; a strict baseline applies only when you have none. A skill teaches Claude to trace `source` chains before it trusts a same-named function, so a rename touches only the callers that really reach it.
 
 ## ✨ Why use it
 
@@ -53,9 +55,10 @@
 | shfmt | — | `shfmt --version` |
 | ShellCheck | — | `shellcheck --version` |
 | Node.js | 20 | `node --version` |
+| Bash | — | `bash --version` |
 | Git (optional) | — | `git --version` |
 
-Claude Code 2.1.288 is the minimum because from that version a language-server request times out after 60 seconds instead of hanging when the server stops responding. The one-step install command needs 2.1.292; on an older version, add the marketplace first, then install.
+The plugin also uses `sh`, which comes with macOS and Linux.
 
 Install them on the `PATH` of the shell you start `claude` from. The plugin doesn't install them: Claude Code starts `bash-language-server` by name, and the hook starts `shfmt` and `shellcheck` by name. Node.js runs bash-language-server, which needs Node.js 20 or later, and the hook, which runs on Node.js 18 or later. Claude Code starts the hook with `bash`. Git is optional: in a Git repository the hook asks Git which files a Bash command changed, and without it the hook compares modification times. On Windows, run Claude Code from Git Bash with the same tools on its `PATH`.
 
@@ -217,6 +220,19 @@ choco install nodejs
 
 </details>
 
+### 🐚 Bash
+
+macOS and Linux ship Bash. On Windows, Git for Windows includes Git Bash; download it from [git-scm.com](https://git-scm.com/downloads/win) or install it with winget.
+
+<details>
+<summary>🪟 <b>winget, Git for Windows</b> — Windows</summary>
+
+```powershell
+winget install --id Git.Git -e --source winget
+```
+
+</details>
+
 ### 🌿 Git (optional)
 
 <details>
@@ -343,7 +359,11 @@ An `.editorconfig`, a `.shellcheckrc` or `SHELLCHECK_OPTS` of your own replaces 
 
 ## 🔍 What this plugin runs and sends
 
-- **Hooks:** `PostToolUse` on `Edit|Write|Bash` and `PostToolUseFailure` on `Bash` run `hooks/check.mjs` with `node`, started by `bash`. It finds the shell scripts the call changed: the Edit or Write file; for Bash, the files Claude Code lists, or else `git rev-parse --is-inside-work-tree` and `git ls-files --modified --others --exclude-standard` in a Git repository, or a walk of at most 20,000 files of the project otherwise (never your home folder or the disk root). It finds `shfmt` and `shellcheck` with `sh -c 'command -v …'`, then runs `shfmt -w` and `shellcheck` on at most 20 scripts per call, each with a 50-second limit. It skips `node_modules`, `.venv`, `venv` and `site-packages`.
+- **Hooks:**
+  - `PostToolUse` on `Edit|Write|Bash` runs `node hooks/check.mjs` through `bash` (60-second limit), which runs `shfmt -w` (it rewrites the file in place) and then `shellcheck` on each shell script the call changed and tells Claude to fix what they find.
+  - `PostToolUseFailure` on `Bash` runs the same script after a command that fails, so scripts a failed command changed are checked too.
+
+  To find the changed scripts of a Bash call, the script uses the list Claude Code passes, or else `git rev-parse --is-inside-work-tree` and `git ls-files --modified --others --exclude-standard` in a Git repository, or a walk of at most 20,000 files of the project otherwise (never your home folder or the disk root). It finds `shfmt` and `shellcheck` with `sh -c 'command -v …'`, then runs them on at most 20 scripts per call, each with a 50-second limit. It skips `node_modules`, `.venv`, `venv` and `site-packages`. Hooks run on their own, with your access and without a permission prompt.
 - **MCP servers:** none.
 - **Network:** none.
 - **Files written:** `shfmt -w` rewrites the shell scripts it formats, in place. The plugin writes nothing else.
@@ -383,29 +403,28 @@ Installed with `--scope project`:
 claude plugin uninstall bash-lsp-intelligence@the-claude-factory --scope project
 ```
 
-Uninstalling from the last scope it's installed at also deletes its saved options and data directory, unless you add `--keep-data`. bash-language-server, shfmt and ShellCheck stay installed; remove them with the tool you installed them with.
+Uninstalling from the last scope it's installed at also deletes its saved options and data directory, unless you add `--keep-data`. The plugin keeps nothing in its data directory. bash-language-server, shfmt and ShellCheck stay installed; remove them with the tool you installed them with.
 
 ## 🧭 Compatibility
 
 **Works in:** 💻 **Claude Code only**
 
-| Component | Claude Code | Claude app |
+| Component | Claude Code | Claude |
 | :-- | :--: | :--: |
-| 🎯 Skills | ✅ | ⚠️ loads, but it relies on the language server, which the Claude app doesn't run |
-| 🪝 Hooks | ✅ | ⚠️ in Cowork sessions, not in a chat conversation |
-| 🧠 LSP server | ✅ | ➖ |
+| 🎯 Skills | ✅ | ✅ |
+| 🪝 Hooks | ✅ | ⚠️ only in conversations where Claude can run tasks |
+| 🧠 LSP servers | ✅ | ➖ |
 
-<sub>✅ works · ⚠️ partial · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. The Claude app (web, desktop and mobile) runs a conversation as a Cowork session when it can, and as a chat conversation otherwise, for example on a device that can't run Cowork or in the separate Chat mode that Team and Enterprise plans keep for now.</sub>
+<sub>✅ works · ⚠️ partial · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. Claude runs agents, hooks and local MCP servers only in conversations where it can run tasks; anything on your computer needs Claude Desktop open.</sub>
 
-> [!NOTE]
-> The hook runs `node`, `shfmt` and `shellcheck`, so it works only on a machine where they're installed. In Claude Code that's your computer.
+The skill loads in Claude, but it relies on the language server, which Claude doesn't run. The hook runs `node`, `shfmt` and `shellcheck`, so it works only on a machine where they're installed; in Claude Code that's your computer. Claude Code on the web doesn't start plugin language servers either, so there Claude gets no diagnostics or code navigation from this plugin.
 
-Claude Code on the web doesn't start plugin language servers either, so there Claude gets no diagnostics or code navigation from this plugin.
+**Platforms:** macOS and Linux, and Windows through Git Bash.
 
 ## ❓ FAQ & Troubleshooting
 
 <details>
-<summary><b>The plugin's commands don't show up after installing.</b></summary>
+<summary><b>The plugin's skills don't show up after installing.</b></summary>
 
 Run `/reload-plugins`, then type `/bash-lsp-intelligence:` to list its skill. If it still doesn't appear, open `/plugin` → **Errors** and see the [troubleshooting guide](../../docs/troubleshooting.md).
 
@@ -414,14 +433,26 @@ Run `/reload-plugins`, then type `/bash-lsp-intelligence:` to list its skill. If
 <details>
 <summary><b>Claude never reports diagnostics for shell files.</b></summary>
 
-Open `/plugin` → **Errors**. `Executable not found in $PATH: "bash-language-server"` means the server isn't installed or isn't on the `PATH` of the shell you started `claude` from. Install it, check with `which bash-language-server`, and start a new session. ShellCheck must be on the same `PATH` for the server to report its findings.
+Open `/plugin` → **Errors**. `Executable not found in $PATH: "bash-language-server"` means the server isn't installed or isn't on the `PATH` of the shell you started `claude` from. Install it, check it with this command, and start a new session:
+
+```bash
+which bash-language-server
+```
+
+ShellCheck must be on the same `PATH` for the server to report its findings.
 
 </details>
 
 <details>
 <summary><b>The hook says a tool is not installed.</b></summary>
 
-The message names the tool and where to get it, for example `shfmt is not installed, so no shell file was checked. Install it: brew install shfmt (macOS) or your distribution package, see the README`. Install it on the `PATH` of the shell that starts `claude`; the next edit is checked.
+The message names the tool and where to get it, for example:
+
+```text
+shfmt is not installed, so no shell file was checked. Install it: brew install shfmt (macOS) or your distribution package, see the README
+```
+
+Install it on the `PATH` of the shell that starts `claude`; the next edit is checked.
 
 </details>
 
@@ -463,6 +494,7 @@ Through Git Bash: start Claude Code from a Git Bash shell that has `node`, `shfm
 ## 🔗 Related
 
 - 📦 [All plugins in The Claude Factory](../../README.md#-catalog)
+- 📖 [Claude Code plugin docs](https://code.claude.com/docs/en/plugins/overview)
 - 🐍 [Python LSP Intelligence](../python-lsp-intelligence/README.md) · 🟦 [TypeScript 7 LSP Intelligence](../typescript7-lsp-intelligence/README.md) · 🟦 [TypeScript 6 LSP Intelligence](../typescript6-lsp-intelligence/README.md)
 - 📖 [Claude Code code intelligence docs](https://code.claude.com/docs/en/plugins/code-intelligence)
 - 📖 [ShellCheck wiki](https://www.shellcheck.net/wiki/) · [shfmt](https://github.com/mvdan/sh) · [bash-language-server](https://github.com/bash-lsp/bash-language-server)
@@ -479,4 +511,4 @@ See [CHANGELOG.md](./CHANGELOG.md) for every release.
 
 ## 📄 License
 
-[MIT](./LICENSE) © Nery Murillo
+[MIT](./LICENSE) © Nery Murillo. Not affiliated with or endorsed by Anthropic. _Claude_ and _Claude Code_ are trademarks of Anthropic.

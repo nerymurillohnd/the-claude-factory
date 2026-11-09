@@ -23,10 +23,12 @@
 
 ---
 
-💻 **Claude Code only** — it is a mod: it draws a pane in Claude Code's own interface, which the Claude app doesn't load. It doesn't install in the Claude app (chat or Cowork).
+💻 **Claude Code only** — it is a mod: it draws a pane in Claude Code's own interface. Claude can install it, but the mod doesn't run there: the plugin directory lists a mod for Claude Code only.
 
 > [!TIP]
 > **TL;DR** — Type `/model-trace` and watch, live, which of your skills, agents, MCP servers, plugins, hooks and web tools Claude reaches for, how often, and exactly when.
+
+Model Trace is a Claude Code mod that keeps a live record of the capabilities Claude uses in your session: skills, agents, MCP servers, plugins, hooks and the web tools. It shows each one with its count and the time of every use, in a pane beside the transcript, and saves the session as a Markdown or HTML report. It only observes, so you learn what your setup really does for you without changing how Claude works.
 
 ## ✨ Why use it
 
@@ -47,8 +49,6 @@
 | Tool | Minimum version | Check |
 | :-- | :-- | :-- |
 | Claude Code | 2.1.299 | `claude --version` |
-
-Claude Code 2.1.299 is the minimum because the report's text uses weights and tabular figures that older versions don't draw, and its skill and agent rows read event fields that 2.1.299 added.
 
 ### 🤖 Claude Code
 
@@ -167,7 +167,15 @@ Press **Save .md** or **Save .html** in the pane, or run:
 
 ### Check what you never use
 
-Model Trace shows only what Claude uses. To find skills and plugins that never run, and what they cost you in context, use Claude Code's own `/skill-doctor`, `/doctor` and `/usage`, and the **Not used recently** list in `/plugin` → **Installed**.
+Model Trace shows only what Claude uses. To find skills and plugins that never run, and what they cost you in context, use Claude Code's own commands:
+
+```text
+/skill-doctor
+/doctor
+/usage
+```
+
+Then check the **Not used recently** list in `/plugin` → **Installed**.
 
 ## ⚙️ Configuration
 
@@ -176,20 +184,29 @@ Model Trace shows only what Claude uses. To find skills and plugins that never r
 | `exportDir` | string | `~/Downloads` | The folder reports are saved to. `~` is your home folder. The folder must already exist: Model Trace never creates folders |
 | `statusLine` | boolean | `false` | Also show the count in the status line, such as `5 used · 12 uses`. Claude Code starts every mod's status line with a warning sign and the plugin's name |
 
-Set options when installing (`claude plugin install model-trace@the-claude-factory --config exportDir=~/Documents/reports`), later with `/plugin configure model-trace@the-claude-factory`, or in `/plugin` → **Installed** → **Model Trace** → **Configure options**. In `/config`, each option is a row of its own.
+Set an option when you install:
+
+```bash
+claude plugin install model-trace@the-claude-factory --config exportDir=~/Documents/reports
+```
+
+Change it later:
+
+```text
+/plugin configure model-trace@the-claude-factory
+```
+
+Or open `/plugin` → **Installed** → **Model Trace** → **Configure options**. In `/config`, each option is a row of its own.
 
 ## 🔍 What this plugin runs and sends
 
-- **Hooks:** a mod, with no shell commands. It observes `session.start`, `classic.*` (your settings hook events), `skill.prompt`, `agent.spawn`, `tool.call`, `session.append`, its own `/model-trace` command and its own pane. Each hook passes the event on unchanged and only records a name and a time.
-- **Settings read:** the `hooks` of your settings files (user, project, local, `--settings` and managed), to name your hooks. It never reads other files.
+- **Hooks:** none; the plugin runs no shell commands.
+- **Mod:** it hooks `session.start`, `classic.SessionStart` (on clear, resume and fork), `classic.*` (your settings hook events), `skill.prompt`, `agent.spawn`, `tool.call`, `session.append`, its own `/model-trace` command and the drawing of its own pane. Each hook passes the event on unchanged and only records a capability name and a time. It reads the `hooks` of your settings files (user, project, local, `--settings` and managed), to name your hooks; the `HOME` environment variable, to expand `~` in `exportDir`; and whether the `exportDir` folder exists before it saves. It writes only the report you save, in `exportDir`, and puts the report on your clipboard only when you press **Copy Markdown**. It never reads other files, runs no command, makes no network call and calls no model. It runs inside Claude Code with your access and no sandbox.
 - **MCP servers:** none.
-- **Network:** none. It calls no model and runs no command.
+- **Network:** none.
 - **Files written:** only the report you save, in `exportDir`. A permission rule such as `Write(~/Downloads/**)` doesn't apply to a mod, so choose `exportDir` with that in mind. Nothing is kept between sessions: the trace lives in the session's memory, and `/clear`, `/resume` and `/branch` start it over.
 - **Privacy:** the author collects no data. The marketplace's [privacy policy](https://github.com/nerymurillohnd/the-claude-factory/blob/main/PRIVACY.md) covers this plugin and the outside services it can reach.
-- **Clipboard:** only when you press **Copy Markdown**, the report replaces what your clipboard holds.
-- **Before you install:** a mod runs with your permissions and no sandbox. Install it only if you trust this marketplace; this README lists everything it hooks and calls.
-
-It can't change or restyle the permission prompt, and it doesn't try to.
+- **Before you install:** a mod runs with your permissions and no sandbox. Install it only if you trust this marketplace; the Mod line above lists everything it reaches.
 
 ## 🔄 Updating
 
@@ -218,41 +235,52 @@ Installed with `--scope project`:
 claude plugin uninstall model-trace@the-claude-factory --scope project
 ```
 
-Uninstalling from the last scope it's installed at also deletes its saved options and data directory, unless you add `--keep-data`. The reports you saved stay in `exportDir`; delete them yourself if you no longer want them. The plugin keeps no other data.
+Uninstalling from the last scope it's installed at also deletes its saved options and data directory, unless you add `--keep-data`. The plugin keeps nothing in its data directory. The reports you saved stay in `exportDir`; delete them yourself if you no longer want them.
 
 ## 🧭 Compatibility
 
 **Works in:** 💻 **Claude Code only**
 
-| Component | Claude Code | Claude app |
+| Component | Claude Code | Claude |
 | :-- | :--: | :--: |
-| 🧩 Mods | ✅ every Claude Code session except a Desktop session on WSL | ⚠️ the plugin directory lists a mod for Claude Code only |
+| 🧩 Mods | ✅ v2.1.287+ (Desktop v2.1.286+); hooks run in every session except Desktop on WSL; ⚠️ drawing depends on where: panes in the terminal, Desktop and VS Code (extension v2.1.299+, v2.1.304+ without feature flags), the band above the prompt only in the terminal and Desktop | ⚠️ the plugin directory lists a mod for Claude Code only |
 
-<sub>✅ works · ⚠️ partial · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. The Claude app (web, desktop and mobile) runs a conversation as a Cowork session when it can, and as a chat conversation otherwise, for example on a device that can't run Cowork or in the separate Chat mode that Team and Enterprise plans keep for now.</sub>
+<sub>✅ works · ⚠️ partial · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. Claude runs agents, hooks and local MCP servers only in conversations where it can run tasks; anything on your computer needs Claude Desktop open.</sub>
 
-The pane draws in the terminal, the desktop app's **Code** tab and the VS Code extension (extension v2.1.299+, or v2.1.304+ in a session that doesn't fetch feature flags, such as one on Amazon Bedrock). In VS Code, press the buttons with a click or Enter: hotkeys don't apply there. In `claude -p` and cloud sessions nothing draws; there `/model-trace` answers with a short text summary, and `/model-trace md` or `/model-trace html` still saves the report.
+Model Trace itself needs Claude Code 2.1.299 or later. Its pane draws in the terminal, the desktop app's **Code** tab and the VS Code extension (extension v2.1.299+, or v2.1.304+ in a session that doesn't fetch feature flags, such as one on Amazon Bedrock). In VS Code, press the buttons with a click or Enter: hotkeys don't apply there. In `claude -p` and cloud sessions nothing draws; there `/model-trace` answers with a short text summary, and its `md` and `html` forms still save the report.
 
-### Limitations
+**Platforms:** macOS and Linux.
+
+## 🚧 Limitations
 
 - **Plugin hooks:** Claude Code doesn't tell a mod which plugin a hook belongs to, so hooks from plugins show only as hook output by event, and a plugin that works only through hooks doesn't appear under Plugins.
 - **Hooks with an `if` condition:** the count is how often the hook's event and matcher selected it, so it's an upper bound; the row says so.
-- **Organizations:** with managed settings or a Team or Enterprise login, Claude Code's built-in guard runs ahead of every mod. There it withholds settings hook events and skill expansions from mods you install: Hooks stays empty, a `/skill` you type isn't counted, and a skill's origin is read from its name. Skills Claude calls, agents, MCP servers, plugins and web tools are still counted. The guard can also refuse to load the mod.
-- **What turns it off:** `disableAllHooks`, and `allowManagedModsOnly` or `allowManagedHooksOnly` in managed settings; starting Claude Code with `--safe-mode` or `--bare`.
+- **Organizations:** with managed settings or a Team or Enterprise login, Claude Code's built-in guard `cc-plugin-sec-default` loads ahead of user mods. It can refuse to load the mod, and it withholds settings hook events and skill expansions from mods you install: Hooks stays empty, a `/skill` you type isn't counted, and a skill's origin is read from its name. Skills Claude calls, agents, MCP servers, plugins and web tools are still counted.
+- **Managed mods only:** an organization's `allowManagedModsOnly` refuses any mod installed from a GitHub source, such as this marketplace, even one the organization enables.
+- **What turns it off:** `disableAllHooks` in your settings or managed settings, and `allowManagedModsOnly` or `allowManagedHooksOnly` in managed settings; starting Claude Code with `--safe-mode` or `--bare`.
+- **The permission prompt:** the mod can't restyle the permission prompt or change what it shows, and it doesn't try to.
+- **Diagnosis:** `/plugin` names the mods the session loaded; only Claude Code's debug log shows why one was refused or a hook skipped (see [FAQ](#-faq--troubleshooting)).
 - **A reload mid-call:** if the plugin reloads while Claude is calling a skill, such as when you update it, that one skill may show "user or built-in" instead of its origin.
 
 ## ❓ FAQ & Troubleshooting
 
-<details open>
+<details>
 <summary><b><code>/model-trace</code> doesn't open a pane.</b></summary>
 
-Run `/plugin` and check that the dim line under its tabs, such as `1 mod active · model-trace`, names it. If it doesn't, start Claude Code with `claude --debug` and look in the debug log for `model-trace`: a line names why the module wasn't loaded or a hook was skipped. In `claude -p`, cloud sessions and a Desktop session on WSL, no pane draws.
+Run `/plugin` and check that the dim line under its tabs, such as `1 mod active · model-trace`, names it. If it doesn't, start Claude Code in debug mode:
+
+```bash
+claude --debug
+```
+
+Then look in the debug log for `model-trace`: a line names why the module wasn't loaded or a hook was skipped. In `claude -p`, cloud sessions and a Desktop session on WSL, no pane draws.
 
 </details>
 
 <details>
 <summary><b>The Hooks section is empty.</b></summary>
 
-It lists hooks from your settings files and the hook output Claude received. It stays empty when no such hook ran yet, and always where an organization's built-in guard runs (see [Limitations](#limitations)).
+It lists hooks from your settings files and the hook output Claude received. It stays empty when no such hook ran yet, and always where an organization's built-in guard runs (see [Limitations](#-limitations)).
 
 </details>
 
@@ -289,4 +317,4 @@ See [CHANGELOG.md](./CHANGELOG.md) for every release.
 
 ## 📄 License
 
-[MIT](./LICENSE) © Nery Murillo
+[MIT](./LICENSE) © Nery Murillo. Not affiliated with or endorsed by Anthropic. _Claude_ and _Claude Code_ are trademarks of Anthropic.

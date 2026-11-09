@@ -23,10 +23,12 @@
 
 ---
 
-💻 **Claude Code only** — it is a mod: it draws a panel in Claude Code's own interface, which the Claude app's chat and Cowork don't load.
+💻 **Claude Code only** — it is a mod: it draws a panel in Claude Code's own interface. Claude can install it, but the mod runs only in Claude Code, so there's no ledger there.
 
 > [!TIP]
 > **TL;DR** — Type `/tool-ledger` and see, call by call, what Claude and each of its subagents actually ran, and which calls your hooks or permission rules stopped.
+
+Tool Ledger is a mod that adds a live panel to Claude Code and records every tool call of the session as it happens. The transcript collapses subagent work and doesn't set denied calls apart from failed ones; the ledger groups each call under whoever made it, with its status and duration, so you can audit a session at a glance.
 
 ## ✨ Why use it
 
@@ -47,8 +49,6 @@
 | Tool | Minimum version | Check |
 | :-- | :-- | :-- |
 | Claude Code | 2.1.299 | `claude --version` |
-
-Claude Code 2.1.299 is the minimum because the panel's text uses weights that older versions don't draw: on 2.1.295 to 2.1.298 the panel stays empty.
 
 ### 🤖 Claude Code
 
@@ -165,16 +165,29 @@ claude plugin install tool-ledger@the-claude-factory --config autoOpen=sidebar
 | `showTargets` | boolean | `true` | Turn it off to hide commands, paths, patterns and subagent tasks, for example while you share your screen |
 | `maxRows` | number, 10 to 2000 | `500` | How many of the latest calls the session keeps |
 
-Change them in `/config`, where `autoOpen` is a picker (v2.1.271+), or in `/plugin` → **Installed** → **Tool Ledger** → **Configure options**. From the shell, pass `--config <option>=<value>` to `claude plugin install`.
+Set an option when you install:
+
+```bash
+claude plugin install tool-ledger@the-claude-factory --config showTargets=false
+```
+
+Change it later:
+
+```text
+/plugin configure tool-ledger@the-claude-factory
+```
+
+Or open `/plugin` → **Installed** → **Tool Ledger** → **Configure options**, or `/config`, where `autoOpen` is a picker.
 
 ## 🔍 What this plugin runs and sends
 
-- **Hooks:** a mod, with no shell hooks. It hooks the start of each session, each tool call, the `PreToolUse` and permission-check decisions, the `/tool-ledger` command, its panel and the band above the prompt; see [What does the mod reach on my machine?](#-faq--troubleshooting)
+- **Hooks:** none.
+- **Mod:** it hooks the start of each session (`session.start`, to add `/tool-ledger`), each tool call (`tool.call`), the `PreToolUse` and permission-check decisions (`classic.PreToolUse`, `tool.check`, to tell denied calls apart), the `/tool-ledger` command (`command.run`), and its panel and the band above the prompt (`ui.render`, to open the sidebar when you choose `autoOpen`). It calls only Claude Code's interface: the clock, the list of subagents, registering the command, the session's own memory, and opening and drawing the panel. It reads no files and no environment variables, starts no process, makes no network call, writes nothing and never calls the model. It runs inside Claude Code with your access and no sandbox.
 - **MCP servers:** none.
 - **Network:** none. It runs no commands and never calls the model.
 - **Files written:** none; it reads no files either. The ledger lives only in the session's memory: nothing is saved to disk or carried to the next session, and `/clear`, `/resume` and `/branch` start it empty. The panel shows what the transcript already shows.
 - **Privacy:** the author collects no data. The marketplace's [privacy policy](https://github.com/nerymurillohnd/the-claude-factory/blob/main/PRIVACY.md) covers this plugin and the outside services it can reach.
-- **Before you install:** a mod runs with your permissions and no sandbox. Install it only if you trust this marketplace; this README lists everything it hooks and calls.
+- **Before you install:** a mod runs with your permissions and no sandbox. Install it only if you trust this marketplace; the Mod line above lists everything it reaches.
 
 ## 🔄 Updating
 
@@ -203,36 +216,50 @@ Installed with `--scope project`:
 claude plugin uninstall tool-ledger@the-claude-factory --scope project
 ```
 
-Uninstalling from the last scope it's installed at also deletes its saved options and data directory, unless you add `--keep-data`. The ledger lives only in the session's memory, so nothing is left behind.
+Uninstalling from the last scope it's installed at also deletes its saved options and data directory, unless you add `--keep-data`. The plugin keeps nothing in its data directory. The ledger lives only in the session's memory, so nothing is left behind.
 
 ## 🧭 Compatibility
 
 **Works in:** 💻 **Claude Code only**
 
-| Component | Claude Code | Claude app |
+| Component | Claude Code | Claude |
 | :-- | :--: | :--: |
-| 🧩 Mods | ✅ every Claude Code session except a Desktop session on WSL | ⚠️ the plugin directory lists a mod for Claude Code only |
+| 🧩 Mods | ✅ v2.1.287+ (Desktop v2.1.286+); hooks run in every session except Desktop on WSL; ⚠️ drawing depends on where: panes in the terminal, Desktop and VS Code (extension v2.1.299+, v2.1.304+ without feature flags), the band above the prompt only in the terminal and Desktop | ⚠️ the plugin directory lists a mod for Claude Code only |
 
-<sub>✅ works · ⚠️ partial · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. The Claude app (web, desktop and mobile) runs a conversation as a Cowork session when it can, and as a chat conversation otherwise, for example on a device that can't run Cowork or in the separate Chat mode that Team and Enterprise plans keep for now.</sub>
+<sub>✅ works · ⚠️ partial · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. Claude runs agents, hooks and local MCP servers only in conversations where it can run tasks; anything on your computer needs Claude Desktop open.</sub>
 
-The panel draws in the terminal, the desktop app's **Code** tab and the VS Code extension (extension v2.1.299+, or v2.1.304+ in a session that doesn't fetch feature flags, such as one on Amazon Bedrock). `autoOpen` doesn't open it in VS Code: open it there with `/tool-ledger`. In `claude -p` and cloud sessions nothing draws: the mod still records calls, but you can't see the ledger.
+The mod records calls in every Claude Code session except a Desktop session on WSL. The panel draws in the terminal, the desktop app's **Code** tab and the VS Code extension (extension v2.1.299+, or v2.1.304+ in a session that doesn't fetch feature flags, such as one on Amazon Bedrock). `autoOpen` doesn't open it in VS Code: open it there with `/tool-ledger`. In `claude -p` and cloud sessions nothing draws: the mod still records calls, but you can't see the ledger.
 
-### Limitations
+**Platforms:** macOS and Linux.
+
+## 🚧 Limitations
 
 - **Denied** covers a `{ deny }` from another mod, a `PreToolUse` hook in your settings, and a deny rule that refuses the call at the permission check, such as `Bash(cat:*)`. A Read, Edit or Write of a path a deny rule covers is refused earlier, by the tool's own input check, so it shows as `error`. A call you decline at a permission prompt shows as `error`, and its duration includes the time the prompt waited for you.
 - A `PreToolUse` hook in managed settings runs ahead of every mod, so a call it denies shows as `error`.
 - A call that is interrupted before it returns can stay at `runs`.
 - If the plugin reloads in the middle of a call, such as when you update it, that call's row may not close.
 - Claude Code's own internal tools, such as the one a subagent uses to hand its report back, appear as rows too.
-- These settings turn the mod off: `disableAllHooks`, `allowManagedModsOnly` and `allowManagedHooksOnly` in managed settings, and starting Claude Code with `--safe-mode` or `--bare`.
-- In organizations with managed settings or a Team or Enterprise login, Claude Code's built-in guard runs ahead of every mod and can refuse to load it.
+- These turn the mod off: `disableAllHooks` in your own settings or in managed settings, an organization's `allowManagedModsOnly` or `allowManagedHooksOnly` in managed settings, and starting Claude Code with `--safe-mode` or `--bare`.
+- With managed settings or a Team or Enterprise login, Claude Code's built-in guard `cc-plugin-sec-default` loads ahead of user mods and can refuse to load this one.
+- `allowManagedModsOnly` refuses any mod installed from a GitHub source, even one the organization enables, so it refuses this one.
+- The mod can't restyle the permission prompt or change what it shows.
 
 ## ❓ FAQ & Troubleshooting
 
-<details open>
+<details>
 <summary><b><code>/tool-ledger</code> says the panel is open but not shown.</b></summary>
 
-The surface you are on can't place panels yet, or the terminal is too narrow for a panel that opened by itself. The reply names the reason. Panels show in the terminal, the desktop app's **Code** tab and the VS Code extension. Run `/plugin` to check that `tool-ledger` is listed among active mods; if it is missing, start Claude Code with `claude --debug` and look in the debug log for `tool-ledger`, where a line names why the module was not loaded or a hook was skipped.
+The surface you are on can't place panels, or the terminal is too narrow for a panel that opened by itself. The reply names the reason. Panels show in the terminal, the desktop app's **Code** tab and the VS Code extension. Check that `tool-ledger` is listed among active mods:
+
+```text
+/plugin
+```
+
+If it is missing, start Claude Code with debug output and look in the debug log for `tool-ledger`, where a line names why the module was not loaded or a hook was skipped:
+
+```bash
+claude --debug
+```
 
 </details>
 
@@ -253,6 +280,7 @@ It hooks the start of each session (to add `/tool-ledger`), each tool call, the 
 ## 🔗 Related
 
 - 📦 [All plugins in The Claude Factory](../../README.md#-catalog)
+- 📖 [Claude Code plugin docs](https://code.claude.com/docs/en/plugins/overview)
 - 📖 [Claude Code mods docs](https://code.claude.com/docs/en/plugins/mods/overview)
 - 📖 [Claude Code permissions](https://code.claude.com/docs/en/permissions)
 
@@ -268,4 +296,4 @@ See [CHANGELOG.md](./CHANGELOG.md) for every release.
 
 ## 📄 License
 
-[MIT](./LICENSE) © Nery Murillo
+[MIT](./LICENSE) © Nery Murillo. Not affiliated with or endorsed by Anthropic. _Claude_ and _Claude Code_ are trademarks of Anthropic.

@@ -5,7 +5,7 @@
 <p><strong>Writes, edits, reviews, audits, debugs and refactors Claude Code instruction files (CLAUDE.md, CLAUDE.local.md and .claude/rules at user and project scope) against the current loading rules, with a read-only checker and an independent reviewer agent.</strong></p>
 
 [![Version](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Fnerymurillohnd%2Fthe-claude-factory%2Fmain%2Fplugins%2Finstruction-engineering%2F.claude-plugin%2Fplugin.json&query=%24.version&label=version&color=D97757)](./CHANGELOG.md)
-[![Works in](https://img.shields.io/badge/works%20in-Claude%20Code%20%C2%B7%20Claude%20app-2563EB)](#-compatibility)
+[![Works in](https://img.shields.io/badge/works%20in-Claude%20Code%20%C2%B7%20Claude-2563EB)](#-compatibility)
 [![Category](https://img.shields.io/badge/category-Documentation%20%26%20Writing-6B7280)](../../README.md#-catalog)
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-%E2%89%A5%202.1.271-D97757?logo=claude&logoColor=white)](https://code.claude.com/docs/en/plugins/install)
 [![License: MIT](https://img.shields.io/badge/license-MIT-22C55E)](./LICENSE)
@@ -25,6 +25,8 @@
 > [!TIP]
 > **TL;DR** — Ask Claude to write, fix or audit your `CLAUDE.md` and `.claude/rules`, and get instructions that load when they should, say each thing once, and hold only what changes Claude's behavior.
 
+Instruction files are easy to write and hard to get right: a rule with the wrong frontmatter never loads, two files can repeat or contradict each other, and a procedure or a must-never line often belongs in a skill or a hook instead. Instruction Engineering gives Claude the current loading rules, a read-only checker and an independent reviewer agent, so every change is checked against the whole instruction set before it lands.
+
 ## ✨ Why use it
 
 - **Instructions that actually load** — Claude checks every rule against the current loader: only `paths` is read in rule frontmatter, an unquoted glob makes a scoped rule load everywhere, and `globs:` or `alwaysApply:` are silently ignored.
@@ -36,8 +38,7 @@
 
 | Component     | Name                    | What it does        | How it runs                                             |
 | :------------ | :---------------------- | :------------------ | :------------------------------------------------------ |
-| 🎯 Skill      | `instruction-engineering:claude-md-and-rules` | Method and references for writing, editing, reviewing, auditing, debugging and refactoring instruction files at user and project scope: placement, wording, layout, loading rules, cross-file analysis, and when a procedure belongs in a skill or a rule in a hook | `/instruction-engineering:claude-md-and-rules` or automatically when your request is about instruction files |
-| 🐍 Script     | `skills/claude-md-and-rules/scripts/check_instructions.py` | Read-only checker: inventory of what loads, rule frontmatter, glob matches, `--match` scope tests, imports, missing package scripts, duplicates, size limits, `AGENTS.md` shadowing, plus heuristic leads such as near-duplicates and procedures | Run by the skill or the agent through Bash, or by you |
+| 🎯 Skill      | `instruction-engineering:claude-md-and-rules` | Method and references for writing, editing, reviewing, auditing, debugging and refactoring instruction files at user and project scope: placement, wording, layout, loading rules, cross-file analysis, and when a procedure belongs in a skill or a rule in a hook. Includes a read-only checker, `scripts/check_instructions.py`, that the skill, the agent or you run: inventory of what loads, rule frontmatter, glob matches, `--match` scope tests, imports, missing package scripts, duplicates, size limits, `AGENTS.md` shadowing, plus heuristic leads such as near-duplicates and procedures | `/instruction-engineering:claude-md-and-rules` or automatically when your request is about instruction files |
 | 🤖 Agent      | `instruction-engineering:reviewer` | Independent, read-only review of instruction changes in a fresh context, including a check that a refactor lost no requirement | Delegated by Claude, or "use the instruction-engineering reviewer agent" |
 
 ## 📋 Prerequisites
@@ -47,8 +48,6 @@
 | Claude Code | 2.1.271 | `claude --version` |
 | Python, as `python3` on your `PATH` | 3.12 | `python3 --version` |
 | git (optional: checks whether `CLAUDE.local.md` is ignored) | — | `git --version` |
-
-Claude Code 2.1.271 is the minimum because the reviewer agent runs without your `CLAUDE.md` files through `omitClaudeMd`, which 2.1.271 added.
 
 Python runs the checker. The Claude Code features the skill points you to have their own minimums: `AGENTS.md` support v2.1.277+, `/doctor prompt-audit` v2.1.283+.
 
@@ -203,7 +202,7 @@ export CLAUDE_CODE_PLUGIN_PREFER_HTTPS=1
 /plugin install instruction-engineering@the-claude-factory
 ```
 
-### 🖥️ Claude app (web and desktop)
+### 🖥️ Claude (web and desktop)
 
 1. Open **Customize** in the sidebar, then **Plugins**.
 2. Select **Add** → **Add marketplace** and enter `nerymurillohnd/the-claude-factory`.
@@ -265,7 +264,9 @@ Exit code `0` means no error-level finding, `1` at least one, `2` bad arguments.
 
 ## 🔍 What this plugin runs and sends
 
-- **Hooks:** none. **MCP servers:** none. **Background processes:** none.
+- **Hooks:** none.
+- **MCP servers:** none.
+- **Background processes:** none.
 - **The checker** only reads. It reads the instruction files (`CLAUDE.md`, `CLAUDE.local.md`, `.claude/CLAUDE.md`, `AGENTS.md`, `.claude/rules/**/*.md`) of the project you pass, of every directory above it up to the filesystem root, and of `~/.claude` (or `$CLAUDE_CONFIG_DIR`; skip it with `--no-user`). It reads files those instruction files `@import` when they sit inside the project or the user configuration directory; imports anywhere else are only checked for existence. It reads `package.json` files to verify script names and lists file names under the project to test globs (skipping `.git`, `node_modules` and `.claude/worktrees`). It runs `git check-ignore -q CLAUDE.local.md` when that file exists. It writes nothing, runs nothing from the files it reads, and its report shows paths, counts and findings, not file contents.
 - **The skill** edits instruction files only when you ask for a write, edit or refactor. Audits stay read-only until you approve an edit set. It asks before running any project command (tests, linters) and before changing user-scope files, which affect every project. It never changes settings, hooks, permissions or source code on its own; it proposes them with exact snippets.
 - **The agent** is told to stay read-only. It has Read, Grep, Glob and Bash; its Bash calls go through your normal permission settings, since a plugin agent can't set its own permission mode, and it is told to run only the checker and read-only commands (`ls`, `cat`, `wc`, `git status --short`, `git diff`, `git show`). It starts without your user, project and local `CLAUDE.md` files (`omitClaudeMd`); managed policy files still load, and a subdirectory's `CLAUDE.md` or matching rules still load when it reads files there.
@@ -285,7 +286,7 @@ Then, in an open session:
 /reload-plugins
 ```
 
-Installed from the Claude app? In Claude Code (v2.1.273+, signed in with that claude.ai account) it appears as `instruction-engineering@synced`: update and uninstall it in the app (**Customize** → **Plugins**).
+Installed from Claude? In Claude Code (v2.1.273+, signed in with that claude.ai account) it appears as `instruction-engineering@synced`: update and uninstall it in Claude (**Customize** → **Plugins**).
 
 > [!TIP]
 > Auto-update is off for this marketplace until you turn it on: `/plugin` → **Marketplaces** → **the-claude-factory** → **Enable auto-update**.
@@ -308,41 +309,57 @@ Installed with `--scope project`:
 claude plugin uninstall instruction-engineering@the-claude-factory --scope project
 ```
 
-In the Claude app: **Customize** → **Plugins** → **Instruction Engineering** → its menu → **Remove**.
+In Claude: **Customize** → **Plugins** → **Instruction Engineering** → its menu → **Remove**.
 
-Uninstalling from the last scope it's installed at also deletes its saved options and data directory, unless you add `--keep-data`. The plugin keeps no data of its own. Instruction files Claude changed at your request stay in your projects.
+Uninstalling from the last scope it's installed at also deletes its saved options and data directory, unless you add `--keep-data`. The plugin keeps nothing in its data directory. Instruction files Claude changed at your request stay in your projects.
 
 ## 🧭 Compatibility
 
-**Works in:** 💻 Claude Code · 🖥️ Claude app
+**Works in:** 💻 Claude Code · 🖥️ Claude
 
-| Component                              |                         Claude Code                          |                                                                                                                                          Claude app                                                                                                                                           |
-| :------------------------------------- | :----------------------------------------------------------: | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
-| 🎯 Skills                              |                              ✅                              |                                                                                                                                              ✅                                                                                                                                               |
-| 🤖 Agents                              |                              ✅                              |                                                                                                                       ⚠️ in Cowork sessions, not in a chat conversation                                                                                                                       |
+| Component | Claude Code | Claude |
+| :-- | :--: | :--: |
+| 🎯 Skills | ✅ | ✅ |
+| 🤖 Agents | ✅ | ⚠️ only in conversations where Claude can run tasks |
 
-<sub>✅ works · ⚠️ partial · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. The Claude app (web, desktop and mobile) runs a conversation as a Cowork session when it can, and as a chat conversation otherwise, for example on a device that can't run Cowork or in the separate Chat mode that Team and Enterprise plans keep for now.</sub>
+<sub>✅ works · ⚠️ partial · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. Claude runs agents, hooks and local MCP servers only in conversations where it can run tasks; anything on your computer needs Claude Desktop open.</sub>
+
+In Claude, the checker runs only where Claude can run `python3` 3.12+ on your files; elsewhere the skill still guides the work.
+
+**Platforms:** macOS and Linux.
 
 ## ❓ FAQ & Troubleshooting
 
 <details>
-<summary><b>The plugin's commands don't show up after installing.</b></summary>
+<summary><b>The plugin's skills don't show up after installing.</b></summary>
 
 Run `/reload-plugins`, then type `/instruction-engineering:` to list its skills. If it still doesn't appear, open `/plugin` → **Errors** and see the [troubleshooting guide](../../docs/troubleshooting.md).
 
 </details>
 
 <details>
-<summary><b>What works in a Claude app chat conversation?</b></summary>
+<summary><b>What works in Claude?</b></summary>
 
-The skill loads and guides the work. The `instruction-engineering:reviewer` agent runs only in Cowork sessions and Claude Code, and the checker runs only where Claude can run `python3` 3.12+ on your files.
+The skill loads and guides the work in every conversation. The `instruction-engineering:reviewer` agent runs in Claude Code and in conversations where Claude can run tasks, and the checker runs only where Claude can run `python3` 3.12+ on your files.
 
 </details>
 
 <details>
 <summary><b>The checker says a rule matches, but Claude doesn't seem to follow it.</b></summary>
 
-Discovery is not proof of loading. The checker's glob matcher approximates Claude Code's, and a match says the rule *should* load. Confirm in a session with `/context`, the `Loaded` line shown for subdirectory files, an `InstructionsLoaded` hook, or `claude --debug` for frontmatter parse errors. A rule that loads and is still ignored is a wording or mechanism problem: ask Claude why it keeps doing X.
+Discovery is not proof of loading. The checker's glob matcher approximates Claude Code's, and a match says the rule *should* load. Confirm it in a session, with the `Loaded` line shown for subdirectory files or an `InstructionsLoaded` hook, or with this command:
+
+```text
+/context
+```
+
+For frontmatter parse errors, start Claude Code with debug output:
+
+```bash
+claude --debug
+```
+
+A rule that loads and is still ignored is a wording or mechanism problem: ask Claude why it keeps doing X.
 
 </details>
 
@@ -356,7 +373,13 @@ Managed policy files, auto memory, plugins, skills and `claudeMdExcludes`. It al
 <details>
 <summary><b>My Claude Code is newer than the version the plugin was checked against.</b></summary>
 
-Loader behavior changes between releases. When `claude --version` is newer, the skill tells Claude to read the changelog entries about `CLAUDE.md`, rules and `paths` before relying on a detail.
+Loader behavior changes between releases. Check your version:
+
+```bash
+claude --version
+```
+
+When it is newer, the skill tells Claude to read the changelog entries about `CLAUDE.md`, rules and `paths` before relying on a detail.
 
 </details>
 
@@ -379,4 +402,4 @@ See [CHANGELOG.md](./CHANGELOG.md) for every release.
 
 ## 📄 License
 
-[MIT](./LICENSE) © Nery Murillo
+[MIT](./LICENSE) © Nery Murillo. Not affiliated with or endorsed by Anthropic. _Claude_ and _Claude Code_ are trademarks of Anthropic.

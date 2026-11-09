@@ -23,10 +23,12 @@
 
 ---
 
-💻 **Claude Code only** — it connects a language server and a post-edit hook, and only Claude Code runs language servers. Install it where you write Python, in Claude Code.
+💻 **Claude Code only** — it connects a language server, and only Claude Code runs language servers. Claude can install it, but there the language server doesn't start and the post-edit hook runs only where Claude can run tasks and finds `python3`, `ruff` and `basedpyright`.
 
 > [!TIP]
 > **TL;DR** — Install ruff and basedpyright, add this plugin, and every Python file Claude edits comes back linted, formatted and type-checked with your own configuration, while Claude navigates your code by symbol instead of by text search.
+
+Python LSP Intelligence connects the basedpyright language server you install to Claude Code and adds a hook that runs ruff and basedpyright on every Python file Claude changes. Your own `ruff.toml`, `pyproject.toml` or `pyrightconfig.json` decides the rules; a strict baseline applies only when you have none. A skill teaches Claude to navigate by symbol, resolve aliases and imports before a rename, and fix findings instead of suppressing them.
 
 ## ✨ Why use it
 
@@ -49,14 +51,13 @@
 | Tool | Minimum version | Check |
 | :-- | :-- | :-- |
 | Claude Code | 2.1.288 | `claude --version` |
+| Bash | — | `bash --version` |
 | Python (`python3`) | 3.12 | `python3 --version` |
 | Ruff | — | `ruff --version` |
 | basedpyright | — | `basedpyright --version` |
 | Git (optional) | — | `git --version` |
 
-Claude Code 2.1.288 is the minimum because from that version a language-server request times out after 60 seconds instead of hanging when the server stops responding. The one-step install command needs 2.1.292; on an older version, add the marketplace first, then install.
-
-Install them on the `PATH` of the shell you start `claude` from. The plugin doesn't install them: Claude Code starts `basedpyright-langserver`, which comes with basedpyright, by name, and the hook starts `ruff` and `basedpyright` by name. `python3` runs the hook, and Claude Code starts it with `bash`. Git is optional: in a Git repository the hook asks Git which files a Bash command changed, and without it the hook compares modification times. On Windows, run Claude Code from Git Bash with the same tools on its `PATH`, and check `python3 --version` there.
+Install them on the `PATH` of the shell you start `claude` from. The plugin doesn't install them: Claude Code starts `basedpyright-langserver`, which comes with basedpyright, by name, and the hook starts `ruff` and `basedpyright` by name. `python3` runs the hook, and Claude Code starts it with `bash`. Git is optional: in a Git repository the hook asks Git which files a Bash command changed, and without it the hook compares modification times. On Windows, run Claude Code from Git Bash with the same tools on its `PATH`, and run the Python check from the table there.
 
 ### 🤖 Claude Code
 
@@ -83,6 +84,19 @@ brew upgrade claude-code
 
 ```bash
 npm install -g @anthropic-ai/claude-code@latest
+```
+
+</details>
+
+### 🐚 Bash
+
+macOS and Linux ship Bash. On Windows, Git for Windows includes Git Bash; download it from [git-scm.com](https://git-scm.com/downloads/win) or install it with winget.
+
+<details>
+<summary>🪟 <b>winget, Git for Windows</b> — Windows</summary>
+
+```powershell
+winget install --id Git.Git -e --source winget
 ```
 
 </details>
@@ -334,7 +348,11 @@ Any configuration file of your own replaces the corresponding default entirely; 
 
 ## 🔍 What this plugin runs and sends
 
-- **Hooks:** `PostToolUse` on `Edit|Write|NotebookEdit|Bash` and `PostToolUseFailure` on `Bash` run `hooks/check.py` with `python3`, started by `bash`. It finds the Python files the call changed: the edited file or notebook; for Bash, the files Claude Code lists, or else `git rev-parse --is-inside-work-tree` and `git ls-files --modified --others --exclude-standard` in a Git repository, or a walk of at most 20,000 files of the project otherwise (never your home folder or the disk root). It checks at most 20 files per call. For each one it runs `ruff check --show-settings` to see whether you have a ruff configuration, then `ruff check --fix`, `ruff format` and, except on notebooks, `basedpyright -p <config>`, each with a 50-second limit. It skips `node_modules`, `.venv`, `venv` and `site-packages`.
+- **Hooks:**
+  - `PostToolUse` on `Edit|Write|NotebookEdit|Bash` runs `python3 hooks/check.py` through `bash` (60-second limit), which runs `ruff check --fix`, `ruff format` and, except on notebooks, `basedpyright` on each Python file the call changed and tells Claude to fix what they find.
+  - `PostToolUseFailure` on `Bash` runs the same script after a command that fails, so files a failed command changed are checked too.
+
+  To find the changed files of a Bash call, the script uses the list Claude Code passes, or else `git rev-parse --is-inside-work-tree` and `git ls-files --modified --others --exclude-standard` in a Git repository, or a walk of at most 20,000 files of the project otherwise (never your home folder or the disk root). It checks at most 20 files per call. For each one it runs `ruff check --show-settings` to see whether you have a ruff configuration, then `ruff check --fix`, `ruff format` and `basedpyright -p <config>`, each with a 50-second limit. It skips `node_modules`, `.venv`, `venv` and `site-packages`. Hooks run on their own, with your access and without a permission prompt.
 - **MCP servers:** none.
 - **Network:** none.
 - **Files written:** `ruff check --fix` and `ruff format` rewrite the Python files they fix or format, in place. When you have no basedpyright configuration, the hook writes a `pyrightconfig.json` bound to your project into a temporary folder (`python-lsp-intelligence-*` under your system's temporary directory) and deletes it after the check. Nothing is written to your project's configuration.
@@ -373,29 +391,28 @@ Installed with `--scope project`:
 claude plugin uninstall python-lsp-intelligence@the-claude-factory --scope project
 ```
 
-Uninstalling from the last scope it's installed at also deletes its saved options and data directory, unless you add `--keep-data`. Ruff and basedpyright stay installed; remove them with the tool you installed them with.
+Uninstalling from the last scope it's installed at also deletes its saved options and data directory, unless you add `--keep-data`. The plugin keeps nothing in its data directory. Ruff and basedpyright stay installed; remove them with the tool you installed them with.
 
 ## 🧭 Compatibility
 
 **Works in:** 💻 **Claude Code only**
 
-| Component | Claude Code | Claude app |
+| Component | Claude Code | Claude |
 | :-- | :--: | :--: |
-| 🎯 Skills | ✅ | ⚠️ loads, but it relies on the language server, which the Claude app doesn't run |
-| 🪝 Hooks | ✅ | ⚠️ in Cowork sessions, not in a chat conversation |
-| 🧠 LSP server | ✅ | ➖ |
+| 🎯 Skills | ✅ | ✅ |
+| 🪝 Hooks | ✅ | ⚠️ only in conversations where Claude can run tasks |
+| 🧠 LSP servers | ✅ | ➖ |
 
-<sub>✅ works · ⚠️ partial · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. The Claude app (web, desktop and mobile) runs a conversation as a Cowork session when it can, and as a chat conversation otherwise, for example on a device that can't run Cowork or in the separate Chat mode that Team and Enterprise plans keep for now.</sub>
+<sub>✅ works · ⚠️ partial · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. Claude runs agents, hooks and local MCP servers only in conversations where it can run tasks; anything on your computer needs Claude Desktop open.</sub>
 
-> [!NOTE]
-> The hook runs `python3`, `ruff` and `basedpyright`, so it works only on a machine where they're installed. In Claude Code that's your computer.
+The skill loads in Claude, but it relies on the language server, which Claude doesn't run. The hook runs `python3`, `ruff` and `basedpyright`, so it works only on a machine where they're installed; in Claude Code that's your computer. Claude Code on the web doesn't start plugin language servers either, so there Claude gets no diagnostics or code navigation from this plugin.
 
-Claude Code on the web doesn't start plugin language servers either, so there Claude gets no diagnostics or code navigation from this plugin.
+**Platforms:** macOS and Linux, and Windows through Git Bash.
 
 ## ❓ FAQ & Troubleshooting
 
 <details>
-<summary><b>The plugin's commands don't show up after installing.</b></summary>
+<summary><b>The plugin's skills don't show up after installing.</b></summary>
 
 Run `/reload-plugins`, then type `/python-lsp-intelligence:` to list its skill. If it still doesn't appear, open `/plugin` → **Errors** and see the [troubleshooting guide](../../docs/troubleshooting.md).
 
@@ -404,14 +421,24 @@ Run `/reload-plugins`, then type `/python-lsp-intelligence:` to list its skill. 
 <details>
 <summary><b>Claude never reports diagnostics for Python files.</b></summary>
 
-Open `/plugin` → **Errors**. `Executable not found in $PATH: "basedpyright-langserver"` means basedpyright isn't installed or isn't on the `PATH` of the shell you started `claude` from. Install it, check with `which basedpyright-langserver`, and start a new session.
+Open `/plugin` → **Errors**. `Executable not found in $PATH: "basedpyright-langserver"` means basedpyright isn't installed or isn't on the `PATH` of the shell you started `claude` from. Install it, check it with this command, and start a new session:
+
+```bash
+which basedpyright-langserver
+```
 
 </details>
 
 <details>
 <summary><b>The hook says a tool is not installed.</b></summary>
 
-The message names the tool and its install command, for example `ruff is not installed, so no Python file was checked. Install it: uv tool install ruff`. Install it on the `PATH` of the shell that starts `claude`; the next edit is checked.
+The message names the tool and its install command, for example:
+
+```text
+ruff is not installed, so no Python file was checked. Install it: uv tool install ruff
+```
+
+Install it on the `PATH` of the shell that starts `claude`; the next edit is checked.
 
 </details>
 
@@ -460,6 +487,7 @@ Through Git Bash: start Claude Code from a Git Bash shell that has `python3`, `r
 ## 🔗 Related
 
 - 📦 [All plugins in The Claude Factory](../../README.md#-catalog)
+- 📖 [Claude Code plugin docs](https://code.claude.com/docs/en/plugins/overview)
 - 🐚 [Bash LSP Intelligence](../bash-lsp-intelligence/README.md) · 🟦 [TypeScript 7 LSP Intelligence](../typescript7-lsp-intelligence/README.md) · 🟦 [TypeScript 6 LSP Intelligence](../typescript6-lsp-intelligence/README.md)
 - 📖 [Claude Code code intelligence docs](https://code.claude.com/docs/en/plugins/code-intelligence)
 - 📖 [basedpyright docs](https://docs.basedpyright.com/latest/) · [Ruff docs](https://docs.astral.sh/ruff/)
@@ -476,4 +504,4 @@ See [CHANGELOG.md](./CHANGELOG.md) for every release.
 
 ## 📄 License
 
-[MIT](./LICENSE) © Nery Murillo
+[MIT](./LICENSE) © Nery Murillo. Not affiliated with or endorsed by Anthropic. _Claude_ and _Claude Code_ are trademarks of Anthropic.

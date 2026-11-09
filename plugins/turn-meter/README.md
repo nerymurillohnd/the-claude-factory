@@ -23,10 +23,12 @@
 
 ---
 
-💻 **Claude Code only** — it is a mod: it draws in Claude Code's own interface, which the Claude app's chat and Cowork don't load.
+💻 **Claude Code only** — it is a mod: it draws in Claude Code's own interface. Claude can install it, but the mod runs only in Claude Code, so there's no band and no alert there.
 
 > [!TIP]
 > **TL;DR** — After every turn, one line above the prompt tells you how long it took, how many tools Claude and its subagents ran and how many tokens it spent, and a long turn alerts you when it ends: a toast by default, or a native notification.
+
+Turn Meter is a mod that adds one line above Claude Code's prompt and updates it each time a turn ends. Without it, you find out what a turn cost by opening `/cost` or reading back through the transcript, and a long turn ends silently while you are in another window. The band answers both at a glance, and the alert calls you back when a long turn is done.
 
 ## ✨ Why use it
 
@@ -49,9 +51,7 @@
 | Claude Code | 2.1.295 | `claude --version` |
 | Notifying terminal (optional): iTerm2, kitty or Ghostty, for native notifications | — | — |
 
-Claude Code 2.1.295 is the minimum because the alerts use `$.ui.notify`, which 2.1.295 added.
-
-Without one, the terminal bell can still notify; where nothing can, the alert falls back to a toast.
+Without a notifying terminal, the terminal bell can still notify; where nothing can, the alert falls back to a toast.
 
 ### 🤖 Claude Code
 
@@ -84,8 +84,16 @@ npm install -g @anthropic-ai/claude-code@latest
 
 ### 🔔 Notifying terminal
 
-Get iTerm2 from its [download page](https://iterm2.com/downloads.html) (macOS). Claude Code picks the channel with its `preferredNotifChannel` setting.
+Claude Code picks the channel with its `preferredNotifChannel` setting. iTerm2 is also on its [download page](https://iterm2.com/downloads.html).
 
+<details>
+<summary>🍎 <b>iTerm2 (Homebrew)</b> — macOS</summary>
+
+```bash
+brew install --cask iterm2
+```
+
+</details>
 <details>
 <summary>🐱 <b>kitty installer</b> — macOS, Linux</summary>
 
@@ -208,16 +216,29 @@ claude plugin install turn-meter@the-claude-factory --config alert=notify --conf
 | `alertAfterSeconds` | number, at least 1 | `120` | A main turn that runs at least this long alerts you |
 | `showTokens` | boolean | `true` | Show the turn's tokens in the band; turn it off to see only time and tools |
 
-Change them in `/config`, where `alert` is a picker (v2.1.271+), or in `/plugin` → **Installed** → **Turn Meter** → **Configure options**. From the shell, pass `--config <option>=<value>` to `claude plugin install`.
+Set an option when you install:
+
+```bash
+claude plugin install turn-meter@the-claude-factory --config alert=notify
+```
+
+Change it later:
+
+```text
+/plugin configure turn-meter@the-claude-factory
+```
+
+Or open `/plugin` → **Installed** → **Turn Meter** → **Configure options**, or `/config`, where `alert` is a picker.
 
 ## 🔍 What this plugin runs and sends
 
-- **Hooks:** a mod, with no shell hooks. It hooks the start of each session, the start and end of each turn, each tool call, the band above the prompt and the `/turn-meter` command; see [What does the mod reach on my machine?](#-faq--troubleshooting)
+- **Hooks:** none.
+- **Mod:** it hooks the start of each session (`session.start`, to add `/turn-meter`), the start and end of each turn (`turn.start`, `turn.complete`), each tool call (`tool.call`), the band above the prompt (`ui.render`) and the `/turn-meter` command (`command.run`). It calls only Claude Code's interface: registering the command, the session's own memory, drawing, toasts and notifications. It reads no files and no environment variables, starts no process, makes no network call, writes nothing, never calls the model and never changes a prompt, a tool call or a reply. It runs inside Claude Code with your access and no sandbox.
 - **MCP servers:** none.
 - **Network:** none. It runs no commands and never calls the model.
 - **Files written:** none; it reads no files either. It keeps the last turn's summary in the session's memory only, so nothing carries over between sessions.
 - **Privacy:** the author collects no data. The marketplace's [privacy policy](https://github.com/nerymurillohnd/the-claude-factory/blob/main/PRIVACY.md) covers this plugin and the outside services it can reach.
-- **Before you install:** a mod runs with your permissions and no sandbox. Install it only if you trust this marketplace; this README lists everything it hooks and calls.
+- **Before you install:** a mod runs with your permissions and no sandbox. Install it only if you trust this marketplace; the Mod line above lists everything it reaches.
 
 ## 🔄 Updating
 
@@ -252,34 +273,54 @@ Installed with `--scope project`:
 claude plugin uninstall turn-meter@the-claude-factory --scope project
 ```
 
-Uninstalling from the last scope it's installed at also deletes its saved options and data directory, unless you add `--keep-data`. The plugin keeps the last turn's summary in the session's memory only, so nothing is left behind.
+Uninstalling from the last scope it's installed at also deletes its saved options and data directory, unless you add `--keep-data`. The plugin keeps nothing in its data directory. It keeps the last turn's summary in the session's memory only, so nothing is left behind.
 
 ## 🧭 Compatibility
 
 **Works in:** 💻 **Claude Code only**
 
-| Component | Claude Code | Claude app |
+| Component | Claude Code | Claude |
 | :-- | :--: | :--: |
-| 🧩 Mods | ✅ every Claude Code session except a Desktop session on WSL | ⚠️ the plugin directory lists a mod for Claude Code only |
+| 🧩 Mods | ✅ v2.1.287+ (Desktop v2.1.286+); hooks run in every session except Desktop on WSL; ⚠️ drawing depends on where: panes in the terminal, Desktop and VS Code (extension v2.1.299+, v2.1.304+ without feature flags), the band above the prompt only in the terminal and Desktop | ⚠️ the plugin directory lists a mod for Claude Code only |
 
-<sub>✅ works · ⚠️ partial · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. The Claude app (web, desktop and mobile) runs a conversation as a Cowork session when it can, and as a chat conversation otherwise, for example on a device that can't run Cowork or in the separate Chat mode that Team and Enterprise plans keep for now.</sub>
+<sub>✅ works · ⚠️ partial · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. Claude runs agents, hooks and local MCP servers only in conversations where it can run tasks; anything on your computer needs Claude Desktop open.</sub>
 
-The band draws in the terminal and the desktop app's **Code** tab. The VS Code extension does not draw it yet: there the mod still counts and alerts, and `/turn-meter` still works.
+The mod counts and alerts in every Claude Code session except a Desktop session on WSL. The band draws in the terminal and the desktop app's **Code** tab. The VS Code extension doesn't draw the band: there the mod still counts and alerts, and `/turn-meter` still works.
 
-### Limitations
+**Platforms:** macOS and Linux.
+
+## 🚧 Limitations
 
 - A tool call counts when Claude makes it, even if a permission rule or a hook then denies it.
 - A background subagent that finishes after its turn ended counts toward the next turn.
 - If the plugin reloads in the middle of a turn, such as when you update it, that turn's counts start over.
-- These settings turn the mod off: `disableAllHooks`, `allowManagedModsOnly` and `allowManagedHooksOnly` in managed settings, and starting Claude Code with `--safe-mode` or `--bare`.
-- In organizations with managed settings or a Team or Enterprise login, Claude Code's built-in guard runs ahead of every mod and can refuse to load it.
+- These turn the mod off: `disableAllHooks` in your own settings or in managed settings, an organization's `allowManagedModsOnly` or `allowManagedHooksOnly` in managed settings, and starting Claude Code with `--safe-mode` or `--bare`.
+- With managed settings or a Team or Enterprise login, Claude Code's built-in guard `cc-plugin-sec-default` loads ahead of user mods and can refuse to load this one.
+- `allowManagedModsOnly` refuses any mod installed from a GitHub source, even one the organization enables, so it refuses this one.
+- The mod can't restyle the permission prompt or change what it shows.
 
 ## ❓ FAQ & Troubleshooting
 
-<details open>
+<details>
 <summary><b>The band doesn't show up.</b></summary>
 
-The band appears only after the first turn of a session ends, and it steps aside while Claude Code shows a survey above the prompt. If you hid it, type `/turn-meter`. Then run `/plugin`: it lists active mods as `N mod active · <names>`. If `turn-meter` is missing there, start Claude Code with `claude --debug` and look in the debug log for `turn-meter`: a line saying the module was not loaded, or a hook was skipped, names the reason.
+The band appears only after the first turn of a session ends, and it steps aside while Claude Code shows a survey above the prompt. If you hid it, show it again:
+
+```text
+/turn-meter
+```
+
+Then check the active mods, which `/plugin` lists as `N mod active · <names>`:
+
+```text
+/plugin
+```
+
+If `turn-meter` is missing there, start Claude Code with debug output and look in the debug log for `turn-meter`: a line saying the module was not loaded, or a hook was skipped, names the reason.
+
+```bash
+claude --debug
+```
 
 </details>
 
@@ -300,8 +341,8 @@ It hooks the start of each session (to add `/turn-meter`), the start and end of 
 ## 🔗 Related
 
 - 📦 [All plugins in The Claude Factory](../../README.md#-catalog)
-- 📖 [Claude Code mods docs](https://code.claude.com/docs/en/plugins/mods/overview)
 - 📖 [Claude Code plugin docs](https://code.claude.com/docs/en/plugins/overview)
+- 📖 [Claude Code mods docs](https://code.claude.com/docs/en/plugins/mods/overview)
 
 ## 🐞 Found a problem?
 
@@ -315,4 +356,4 @@ See [CHANGELOG.md](./CHANGELOG.md) for every release.
 
 ## 📄 License
 
-[MIT](./LICENSE) © Nery Murillo
+[MIT](./LICENSE) © Nery Murillo. Not affiliated with or endorsed by Anthropic. _Claude_ and _Claude Code_ are trademarks of Anthropic.
