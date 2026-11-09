@@ -57,7 +57,7 @@ Sizes in KB (1 KB = 1,024 bytes), including each file's index block. The 64 page
 - `mod-test.md`: 24.6 KB, 366 lines
 - `mod-troubleshoot.md`: 45.1 KB, 493 lines
 
-### 03-components
+### 03-feature-references
 
 - `channels-reference.md`: 45.4 KB, 809 lines; assets: `channel-architecture.png` (41.7 KB), `channel-permission-relay.png` (34.1 KB)
 - `channels.md`: 13.8 KB, 178 lines

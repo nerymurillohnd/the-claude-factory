@@ -264,21 +264,21 @@ Passages removed from each file on 2026-11-07, with the reason given by the revi
 
 - nothing removed
 
-## 03-components/channels-reference.md
+## 03-feature-references/channels-reference.md
 
 - nothing removed
 
-## 03-components/channels.md
+## 03-feature-references/channels.md
 
 - lines 23-220: setup walkthroughs for Anthropic's own Telegram/Discord/iMessage plugins from claude-plugins-official; not part of building, publishing or installing plugins from the public marketplace
 - lines 350-365: conceptual comparison with cloud sessions, Slack, Remote Control; nothing the maintainer or user acts on for the marketplace
 - lines 371-372: links to Remote Control and scheduled tasks, unrelated to plugin channels in the marketplace
 
-## 03-components/hooks-guide.md
+## 03-feature-references/hooks-guide.md
 
 - lines 817-817: Managed policy settings row: org-wide admin-controlled hook location, managed-only distribution [confirmed on admin re-review]
 
-## 03-components/hooks.md
+## 03-feature-references/hooks.md
 
 - lines 246-246: Managed policy settings row: org-wide admin-controlled location, managed-only [confirmed on admin re-review]
 - lines 261-262: command and archive plugin sources excluded by user decision 2026-11-08
@@ -295,7 +295,7 @@ Passages removed from each file on 2026-11-07, with the reason given by the revi
 - lines 3092-3092: Matcher for SDK client register_repo_root control request; SDK integration only
 - lines 3117-3117: Output handling for SDK register_repo_root source only
 
-## 03-components/mcp.md
+## 03-feature-references/mcp.md
 
 - lines 15-25: Generic end-user use-case examples of MCP; nothing the maintainer or plugin user acts on
 - lines 28-33: Browsing Anthropic Directory connectors and adding them by hand; not part of building or installing marketplace plugins
@@ -330,7 +330,7 @@ Passages removed from each file on 2026-11-07, with the reason given by the revi
 - lines 1798-1804: Google Cloud Agent Platform model-specific tool search behavior; third-party provider only
 - lines 1837-1849: Tool search through an LLM gateway; gateway deployments are outside the scenario
 
-## 03-components/model-config.md
+## 03-feature-references/model-config.md
 
 - lines 11-24: Session model setting per cloud provider and gateway routing; not used to build or install plugins
 - lines 42-58: Per-provider alias resolution and gateway Fable details; personal/provider session configuration
@@ -354,7 +354,7 @@ Passages removed from each file on 2026-11-07, with the reason given by the revi
 - lines 946-949: Alias-mapping env vars for Fable/Opus/Sonnet/Haiku; user/provider configuration, not plugin components
 - lines 951-1112: Third-party provider pinning, pinned model display/capabilities, enterprise modelOverrides, prompt caching env vars and alias version history; provider/admin deployment or personal settings [confirmed on admin re-review]
 
-## 03-components/output-styles.md
+## 03-feature-references/output-styles.md
 
 - lines 13-13: Pointer to built-in styles, which are not plugin content
 - lines 24-90: Descriptions of Claude Code's built-in output styles; neither built nor installed through a plugin marketplace
@@ -363,7 +363,7 @@ Passages removed from each file on 2026-11-07, with the reason given by the revi
 - lines 182-182: --append-system-prompt launch flag; not a plugin component
 - lines 202-202: Link about the built-in Proactive style vs auto mode; not plugin related
 
-## 03-components/skills.md
+## 03-feature-references/skills.md
 
 - lines 21-96: Bundled skills (/doctor, /run, /verify, pre-commit verify, /claude-api): built-in Claude Code features, not used to build, publish or install marketplace plugins
 - lines 158-162: Enterprise, personal, project, nested and add-dir skill locations: not the plugin distribution channel [confirmed on admin re-review]
@@ -392,14 +392,14 @@ Passages removed from each file on 2026-11-07, with the reason given by the revi
 - lines 1255-1255: Memory/CLAUDE.md link: unrelated to plugin skills
 - lines 1258-1258: Claude Tag channel project skills: different channel
 
-## 03-components/statusline.md
+## 03-feature-references/statusline.md
 
 - lines 9-1087: Main statusLine: configured only in the user's own or project settings (plugins can ship subagentStatusLine, not statusLine), so its setup, JSON fields, examples and Windows config are not used to build or install marketplace plugins
 - lines 1128-1135: Tips and community statusline projects for the main status line
 - lines 1138-1160: Troubleshooting specific to the main status line (not appearing, empty values, context percentage)
 - lines 1206-1213: Notifications sharing the main status line row
 
-## 03-components/sub-agents.md
+## 03-feature-references/sub-agents.md
 
 - lines 13-24: Pointers to background agents/agent teams and generic benefit list (user-level reuse); not used to build or install marketplace plugins
 - lines 29-149: Built-in subagents and a quickstart creating a personal ~/.claude/agents subagent; not plugin authoring or installation
@@ -427,7 +427,7 @@ Passages removed from each file on 2026-11-07, with the reason given by the revi
 - lines 1404-1469: Example relies on frontmatter hooks, which plugin subagents ignore
 - lines 1475-1476: Next steps for headless SDK and MCP servers for subagents (mcpServers ignored for plugin subagents)
 
-## 03-components/workflows.md
+## 03-feature-references/workflows.md
 
 - lines 34-81: Walkthrough of the built-in /deep-research workflow; not plugin authoring or installation
 - lines 125-159: Dismissing the ultracode keyword, where it triggers, and session ultracode mode; user session settings
@@ -1805,11 +1805,11 @@ Passages removed from each file on 2026-11-07, with the reason given by the revi
 - `01-plugins-core/host-marketplace.md` lines 151-151: Bullet sits under a private-marketplace intro (line 148, kept with it), but KEEP_MARKETPLACE_ON_FAILURE also helps when a public remote is unreachable
 - `01-plugins-core/install.md` lines 242-245: Kept under the private-marketplace heading (237-239) for SSH/known_hosts and owner/repo SSH-vs-HTTPS probe rules that also govern public GitHub clones
 - `02-mods/mod-reference.md` lines 425-427: built-in sec-default guard loads under managed settings or Team/Enterprise login; may affect how a public mod behaves for some users, but is admin-oriented
-- `03-components/hooks.md` lines 251-251: Mixes cloud-session plugin/hook carry-over (possibly relevant to users) with self-hosted runner and managed-tier details (not relevant)
-- `03-components/skills.md` lines 100-150: First-skill tutorial teaches SKILL.md authoring and testing, useful for plugin skills, but uses the personal ~/.claude/skills location
-- `03-components/skills.md` lines 418-435: Frontmatter portability outside Claude Code (claude.ai upload, Skills API); relevant only if the maintainer also targets Claude app distribution of the same skills
-- `03-components/statusline.md` lines 1197-1204: Script exit-code/hang behaviour is described for the main status line; unclear if it applies the same way to a plugin-shipped subagentStatusLine
-- `03-components/sub-agents.md` lines 991-1002: Output scanning of subagent reports: may help a maintainer debug plugin agent reports, but is runtime behavior rather than authoring
+- `03-feature-references/hooks.md` lines 251-251: Mixes cloud-session plugin/hook carry-over (possibly relevant to users) with self-hosted runner and managed-tier details (not relevant)
+- `03-feature-references/skills.md` lines 100-150: First-skill tutorial teaches SKILL.md authoring and testing, useful for plugin skills, but uses the personal ~/.claude/skills location
+- `03-feature-references/skills.md` lines 418-435: Frontmatter portability outside Claude Code (claude.ai upload, Skills API); relevant only if the maintainer also targets Claude app distribution of the same skills
+- `03-feature-references/statusline.md` lines 1197-1204: Script exit-code/hang behaviour is described for the main status line; unclear if it applies the same way to a plugin-shipped subagentStatusLine
+- `03-feature-references/sub-agents.md` lines 991-1002: Output scanning of subagent reports: may help a maintainer debug plugin agent reports, but is runtime behavior rather than authoring
 - `04-settings-admin/settings-reference.md` lines 691-707: outputStyle is general, but it is how a user selects an output style a plugin ships; kept as possibly relied on
 - `04-settings-admin/settings-reference.md` lines 3279-3297: verbose setting kept because it is suggested for debugging hooks/MCP servers, which a plugin maintainer may use; marginal
 - `04-settings-admin/settings-reference.md` lines 3777-3794: disableSkillShellExecution can disable a plugin skill's inline shell; kept as a debugging aid for maintainers but it is a user/policy setting
@@ -1825,7 +1825,7 @@ Passages removed from each file on 2026-11-07, with the reason given by the revi
 
 ## Rewrite of 2026-11-08
 
-On 2026-11-08 the 46 files of 500 lines or fewer were rewritten for Claude as their reader. After this rewrite those 46 files are no longer line-for-line copies of the official pages; the line numbers in the sections above refer to the files as downloaded on 2026-11-07, not to the rewritten files. The 18 files over 500 lines were not rewritten and remain byte-identical to the pruned copies of 2026-11-07: `01-plugins-core/` `cli-reference.md`, `components.md`, `manifest-reference.md`, `plugin-evals.md` and `troubleshooting.md`; `02-mods/` `mod-events.md` and `mod-interface.md`; `03-components/` `channels-reference.md`, `hooks-guide.md`, `hooks.md`, `mcp.md`, `skills.md` and `sub-agents.md`; `04-settings-admin/` `permissions.md` and `settings-reference.md`; `05-cli-diagnostics/` `changelog.md` and `errors.md`; `07-cross-platform-external/` `platform-skills-best-practices.md`.
+On 2026-11-08 the 46 files of 500 lines or fewer were rewritten for Claude as their reader. After this rewrite those 46 files are no longer line-for-line copies of the official pages; the line numbers in the sections above refer to the files as downloaded on 2026-11-07, not to the rewritten files. The 18 files over 500 lines were not rewritten and remain byte-identical to the pruned copies of 2026-11-07: `01-plugins-core/` `cli-reference.md`, `components.md`, `manifest-reference.md`, `plugin-evals.md` and `troubleshooting.md`; `02-mods/` `mod-events.md` and `mod-interface.md`; `03-feature-references/` `channels-reference.md`, `hooks-guide.md`, `hooks.md`, `mcp.md`, `skills.md` and `sub-agents.md`; `04-settings-admin/` `permissions.md` and `settings-reference.md`; `05-cli-diagnostics/` `changelog.md` and `errors.md`; `07-cross-platform-external/` `platform-skills-best-practices.md`.
 
 ### What changed in every rewritten file
 
@@ -1875,4 +1875,3 @@ The `cli-commands-guide` skill of the same plugin holds the full command referen
 - `troubleshooting.md`: the intro moved under a new `## How to use this file`; each "once it works" line starts with "Success:".
 - Next steps and See also sections were replaced by `## Documentation References`.
 - Verifier findings fixed: in `troubleshooting.md`, "so do not delete them by hand" restored to its original sense ("there is no need to delete them by hand"), an added "No action is needed." removed, and an extra trailing blank line removed; in `manifest-reference.md`, the llms.txt entry removed from Documentation References.
-
