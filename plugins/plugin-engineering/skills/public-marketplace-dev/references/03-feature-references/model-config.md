@@ -93,7 +93,7 @@ The effort scale is calibrated per model, so the same level name does not repres
 
 Effort can be changed through any of the following:
 
-* **Skill and subagent frontmatter**: set `effort` in a [skill](https://code.claude.com/docs/en/skills.md#frontmatter-reference) or [subagent](https://code.claude.com/docs/en/sub-agents.md#supported-frontmatter-fields) markdown file to override the effort level when that skill or subagent runs
+* **Skill and subagent frontmatter**: set `effort` in a [skill](https://code.claude.com/docs/en/skills.md#frontmatter-reference) or [subagent](https://code.claude.com/docs/en/sub-agents.md#frontmatter-reference) markdown file to override the effort level when that skill or subagent runs
 
 How long a frontmatter `effort` applies:
 
