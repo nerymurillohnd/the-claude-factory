@@ -57,7 +57,8 @@ jobs:
             --jq '.assets[] | select(.name | endswith("_linux_amd64")) | "\(.browser_download_url) \(.digest)"')"
           read -r url digest <<< "${asset}"
           [[ -n ${url} && ${digest} == sha256:* ]] || { echo "no release asset or digest for mvdan/sh" >&2; exit 1; }
-          curl -sSfL -o shfmt "${url}"
+          # GitHub answers release downloads with transient 504s; curl retries those (408, 429, 500, 502, 503, 504) with backoff.
+          curl -sSfL --retry 6 -o shfmt "${url}"
           echo "${digest#sha256:}  shfmt" | sha256sum --check --strict
           sudo install -m 755 shfmt /usr/local/bin/shfmt
           rm shfmt
@@ -139,7 +140,8 @@ jobs:
             --jq '.assets[] | select(.name | endswith("_linux_amd64.tar.gz")) | "\(.browser_download_url) \(.digest)"')"
           read -r url digest <<< "${asset}"
           [[ -n ${url} && ${digest} == sha256:* ]] || { echo "no release asset or digest for rhysd/actionlint" >&2; exit 1; }
-          curl -sSfL -o actionlint.tar.gz "${url}"
+          # GitHub answers release downloads with transient 504s; curl retries those (408, 429, 500, 502, 503, 504) with backoff.
+          curl -sSfL --retry 6 -o actionlint.tar.gz "${url}"
           echo "${digest#sha256:}  actionlint.tar.gz" | sha256sum --check --strict
           tar -xzf actionlint.tar.gz actionlint
           sudo install -m 755 actionlint /usr/local/bin/actionlint
