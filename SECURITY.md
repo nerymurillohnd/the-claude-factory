@@ -41,5 +41,5 @@ We'll keep you updated, credit you in the release notes if you wish, and publish
 
 ## Out of scope
 
-- Vulnerabilities in Claude Code, the Claude apps or Anthropic services — report those to [Anthropic](https://www.anthropic.com/responsible-disclosure-policy).
+- Vulnerabilities in Claude Code, Claude or Anthropic services — report those to [Anthropic](https://www.anthropic.com/responsible-disclosure-policy).
 - Vulnerabilities in third-party services a plugin connects to — report those to the service owner.

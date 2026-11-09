@@ -6,7 +6,7 @@
 | :--------------------------------------------- | :------------------------------------------------------------- |
 | [Installation](./docs/installation.md)         | Adding the marketplace and installing plugins on every surface |
 | [Managing plugins](./docs/managing-plugins.md) | Updates, auto-update, disabling and uninstalling               |
-| [Compatibility](./docs/compatibility.md)       | What works in Claude Code and the Claude app                   |
+| [Compatibility](./docs/compatibility.md)       | What works in Claude Code and Claude                           |
 | [Troubleshooting](./docs/troubleshooting.md)   | Fixes for common errors                                        |
 | [FAQ](./docs/faq.md)                           | Quick answers                                                  |
 
@@ -30,4 +30,4 @@ Never report vulnerabilities in public issues — follow the [Security policy](.
 
 ## 🧰 Not a plugin problem?
 
-Issues with Claude Code itself, `/plugin`, or the Claude apps belong to [anthropics/claude-code](https://github.com/anthropics/claude-code/issues).
+Issues with Claude Code itself, `/plugin`, or Claude belong to [anthropics/claude-code](https://github.com/anthropics/claude-code/issues).

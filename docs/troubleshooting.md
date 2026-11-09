@@ -85,9 +85,9 @@ The first message comes from `/plugin install` in a session, the second from `cl
 </details>
 
 <details>
-<summary>The Claude app refuses to install the plugin</summary>
+<summary>Claude refuses to install the plugin</summary>
 
-The plugin ships executables in a `bin/` folder, which the Claude app can't install. Use it from Claude Code instead — the plugin's **Compatibility** table says so.
+The plugin ships executables in a `bin/` folder, which Claude can't install. Use it from Claude Code instead — the plugin's **Compatibility** table says so.
 
 </details>
 
@@ -115,7 +115,7 @@ In a session, run `/plugin install <name>@the-claude-factory` instead.
 </details>
 
 <details>
-<summary>A plugin from the Claude app doesn't appear in Claude Code</summary>
+<summary>A plugin from Claude doesn't appear in Claude Code</summary>
 
 Claude Code (v2.1.273+) syncs plugins from your claude.ai account once each time it starts, in the background, and loads them as `<plugin>@synced`. If one is missing:
 
@@ -145,7 +145,7 @@ Adding an MCP server invalidates the prompt cache. Run `/reload-plugins --force`
 
 - `claude plugin update <plugin>@the-claude-factory` says _already at the latest version_: no new release has shipped yet — check the plugin's `CHANGELOG.md`.
 - Updated but still seeing old behavior: the running session keeps the loaded version. Run `/reload-plugins` or start a new session.
-- A plugin shown as `<plugin>@synced` came from the Claude app: update it there (**Customize** → **Plugins**), then start Claude Code again or run `/reload-plugins` when it says _Plugins changed_.
+- A plugin shown as `<plugin>@synced` came from Claude: update it there (**Customize** → **Plugins**), then start Claude Code again or run `/reload-plugins` when it says _Plugins changed_.
 - Want updates without thinking about it: [enable auto-update](./managing-plugins.md#-auto-update).
 - Auto-update is on but nothing changed yet: it runs once per interactive session, up to ten minutes after your first message. Run `claude plugin update <plugin>@the-claude-factory` to update now.
 - **Enable auto-update** is missing from `/plugin`: `DISABLE_UPDATES`, `DISABLE_AUTOUPDATER` or `CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC` is set, which turns plugin auto-update off. Add `FORCE_AUTOUPDATE_PLUGINS=1` to keep plugin updates on, or update by hand.

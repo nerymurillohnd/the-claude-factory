@@ -12,7 +12,7 @@ Yes. Every plugin is open source under the [MIT License](../LICENSE). Some plugi
 <details>
 <summary><b>Do I need a GitHub account to install plugins?</b></summary>
 
-No. The repository is public, so Claude Code and the Claude app can read it without signing in to GitHub. You only need an account to open issues.
+No. The repository is public, so Claude Code and Claude can read it without signing in to GitHub. You only need an account to open issues.
 
 </details>
 
@@ -47,9 +47,9 @@ If a plugin is folded into another one, the same migration moves your settings t
 </details>
 
 <details>
-<summary><b>Do plugins work in the Claude app?</b></summary>
+<summary><b>Do plugins work in Claude?</b></summary>
 
-Mostly. Skills work everywhere; agents and hooks work in Claude Code and in Cowork sessions of the Claude app, not in a chat conversation; LSP servers and output styles are Claude Code-only. See [Compatibility](./compatibility.md) and each plugin's own table.
+Mostly. Skills work everywhere; agents and hooks work in Claude Code, and in Claude where it can run tasks; LSP servers and output styles are Claude Code-only. See [Compatibility](./compatibility.md) and each plugin's own table.
 
 </details>
 

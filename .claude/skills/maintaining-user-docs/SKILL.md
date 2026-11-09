@@ -46,7 +46,7 @@ The files marked Out are read here only to check what the docs say about them. W
 | File | Job | Primary sources |
 | :-- | :-- | :-- |
 | `docs/installation.md` | Add the marketplace and install, per surface; scopes; set up a team | `/en/plugins/install`, `/en/plugins/host-marketplace` → Register the marketplace for everyone in a repository, `/en/plugins/loading` → Plugins synced from claude.ai |
-| `docs/managing-plugins.md` | Update, auto-update, enable and disable, uninstall, remove the marketplace, inspect, the Claude app | `/en/plugins/install` → Manage installed plugins, Keep plugins updated, Manage marketplaces; `/en/plugins/cli-reference`; `/en/plugins/loading` → Versions and updates |
+| `docs/managing-plugins.md` | Update, auto-update, enable and disable, uninstall, remove the marketplace, inspect, Claude | `/en/plugins/install` → Manage installed plugins, Keep plugins updated, Manage marketplaces; `/en/plugins/cli-reference`; `/en/plugins/loading` → Versions and updates |
 | `docs/compatibility.md` | The single source of the component × surface matrix | <https://claude.com/docs/plugins/platform-support> |
 | `docs/troubleshooting.md` | Symptom, cause and fix, with the diagnostic commands | `/en/plugins/troubleshooting`, `/en/plugins/loading` |
 | `docs/faq.md` | Short answers that link to the guides | The guide each answer links to |
@@ -56,7 +56,7 @@ The files marked Out are read here only to check what the docs say about them. W
 | `CODE_OF_CONDUCT.md` | Standards and enforcement | Its attributed source |
 | Root `LICENSE` | MIT | — |
 
-Claude Code pages live at `https://code.claude.com/docs/en/<page>.md`; `https://code.claude.com/docs/llms.txt` lists them all. Claude app claims need a claude.com or support.claude.com source, such as <https://support.claude.com/en/articles/13837440-use-plugins-in-claude>.
+Claude Code pages live at `https://code.claude.com/docs/en/<page>.md`; `https://code.claude.com/docs/llms.txt` lists them all. Claude claims need a claude.com or support.claude.com source, such as <https://support.claude.com/en/articles/13837440-use-plugins-in-claude>.
 
 ## Pairs that must agree
 
