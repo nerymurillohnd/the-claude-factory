@@ -15,7 +15,7 @@ Each line names the checklist item from [checklist.md](checklist.md), then the a
 - `FM-3` · [description.md#writing-the-description](description.md#writing-the-description) · **Too broad or too narrow.**
 - `FM-3` · [description.md#writing-the-description](description.md#writing-the-description) · **Tell sibling skills apart by the kind of request**
 - `FM-3` · [description.md#writing-the-description](description.md#writing-the-description) · **Avoid vague descriptions**
-- `FM-7` · [description.md#writing-the-description](description.md#writing-the-description) · **Don't summarize the procedure.**
+- `FM-7` · [description.md#writing-the-description](description.md#writing-the-description) · **When, not how.**
 - `FM-7` · [description.md#writing-the-description](description.md#writing-the-description) · **Cover every capability the body offers.**
 - `FM-8` · [claude-code-features.md#invocation-control](claude-code-features.md#invocation-control) · **Two kinds of content** and **Which setting to use.**
 - `SU-1` · [surfaces.md#origins-and-the-surfaces-they-reach](surfaces.md#origins-and-the-surfaces-they-reach)

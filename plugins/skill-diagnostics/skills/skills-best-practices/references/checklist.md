@@ -33,7 +33,7 @@ Area files: [frontmatter.md](frontmatter.md), [description.md](description.md).
 - `FM-4` · The frontmatter starts on line 1 and parses · \[CC\]\[AS\] · `req` · check-metadata
 - `FM-5` · No strict-YAML trap in a plain value; `metadata` is a map · \[SD\]\[CC\] · `spec` · check-metadata
 - `FM-6` · No combination of fields that disables the skill · \[CC\] · `req` · check-metadata
-- `FM-7` · The description doesn't summarize the procedure and covers every capability the body offers · \[SD\] · `default` · description-reviewer
+- `FM-7` · The description doesn't summarize the procedure and covers every capability the body offers · \[PL\]\[SD\] · `default` · description-reviewer
 - `FM-8` · Who may invoke the skill fits what it does · \[CC\] · `rec` · description-reviewer
 
 ## Body and structure

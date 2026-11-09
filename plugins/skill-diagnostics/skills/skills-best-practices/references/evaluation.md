@@ -24,7 +24,7 @@ Test two things separately: whether the skill triggers on the right prompts, and
 
 These test the description \[AS\].
 
-1. Write about 20 realistic queries: 8–10 that should trigger and 8–10 that shouldn't. Vary phrasing, explicitness, detail and complexity; use real paths, personal context and typos. The best negatives are near-misses that share keywords but need something else.
+1. Write about 20 realistic queries: 8–10 that should trigger and 8–10 that shouldn't. Vary phrasing, explicitness, detail and complexity; use real paths, personal context and typos. The most useful positives are requests the skill would help with where the connection isn't obvious from the query alone; the best negatives are near-misses that share keywords but need something else.
 2. Run each query 3 times and compute a trigger rate; pass = above 0.5 for should-trigger, below 0.5 for should-not. In Claude Code, detect a `Skill` tool call in `claude -p "<query>" --output-format json`.
 3. Split about 60% train and 40% validation, with positives and negatives in both, fixed across iterations.
 4. Loop: evaluate both sets, fix only train failures (broaden if positives fail, add boundaries if negatives fire), generalize instead of pasting keywords, try a different structure when stuck, stay under 1,024 characters.
