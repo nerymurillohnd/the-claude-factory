@@ -10,6 +10,7 @@ How to test whether a skill triggers on the right prompts and whether its output
 - [Output-quality evals](#output-quality-evals)
 - [Claude A and Claude B](#claude-a-and-claude-b)
 - [Tools](#tools)
+- [When to offer evals](#when-to-offer-evals)
 
 ## Two things to test
 
@@ -56,3 +57,12 @@ These test the description \[AS\].
 - **The `skill-creator` plugin** (`/plugin install skill-creator@claude-plugins-official`) runs the same loop inside a conversation: isolated subagent runs, grading, benchmark, blind A/B between versions, description tuning and an HTML review viewer. Its `evals/evals.json` format is not interchangeable with `claude plugin eval`.
 - **Baseline without the skill.** To disable a personal or project skill for the baseline run, set it to `"off"` in `skillOverrides`, which doesn't apply to plugin skills. `/skill-doctor` reports each skill's context cost and usage.
 - **Seeded-defect fixture.** A seeded-defect fixture tests an audit or a review skill: plant one output-deciding defect in a multi-file skill (for example a script that rejects a value the reference table allows) and grade whether the reply reports it, in both arms \[SD\].
+
+## When to offer evals
+
+An audit can't show the `evals` items of [checklist.md](checklist.md); evals can. Whether a skill gets them is the user's decision \[SD\] `default`.
+
+- **When.** After the report and the recorded verdict, only when the audited skill has no `evals/` folder. Never before or during the audit, which changes no file of the skill.
+- **How.** One `AskUserQuestion` question, with two options: add evals (output cases, and trigger queries when the description is in question) or not now. Write the question in the user's language.
+- **Yes.** Writing evals is a separate step, outside the audit: with a skill-writing skill such as `skill-creator`, which writes `evals/evals.json` and runs the loop. In Claude Code the `/skill-diagnostics:evals` workflow measures triggering and output on request, without changing the skill. Neither changes the audit's verdict.
+- **Where it can't ask.** `AskUserQuestion` exists only in the main conversation: subagents never have it, `claude -p` offers it only with a permission host, and `dontAsk` mode denies it \[CC\]. A forked or preloaded run never asks. In those cases, or in a chat without the tool, don't write evals: end the report with one line saying the skill has none and which evaluation in [Tools](#tools) would add them.
