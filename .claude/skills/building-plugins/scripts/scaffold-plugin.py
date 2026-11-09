@@ -7,17 +7,18 @@ Anthropic's own (as `claude plugin validate` rules), must not be listed in `plug
 not exist; --category must be an id of scripts/categories.json. It writes nothing when a check
 fails.
 
-Then it writes plugins/<name>/ from this skill's assets: .claude-plugin/plugin.json,
-CHANGELOG.md with today's 0.1.0 section, LICENSE and README.md. In the README it fills what the
-command line already says: the display name, the plugin name, the repository and marketplace,
-the description, the Category and Works in badges, the Works in line, and the parts that apply
-to the plugin's surfaces (the <app> or <code-only> blocks). It leaves for the author every
+Then it writes plugins/<name>/: .claude-plugin/plugin.json, CHANGELOG.md with today's 0.1.0
+section and LICENSE from this skill's assets, and README.md from
+.claude/templates/plugin-readme-template.md. In the README it fills what the command line
+already says: the display name, the plugin name, the repository and marketplace, the
+description, the Category and Works in badges, the Works in line, and the parts that apply to
+the plugin's surfaces (the <app> or <code-only> blocks). It leaves for the author every
 placeholder that starts with a capital letter.
 
-It reads marketplace.json, scripts/categories.json and the assets, and writes only under
-plugins/<name>/. It never registers the plugin, never regenerates the root README catalog, never
-starts a process and never uses the network: registering and the catalog are repository
-maintenance, done afterwards with `npm run generate`.
+It reads marketplace.json, scripts/categories.json, the assets and the README template, and
+writes only under plugins/<name>/. It never registers the plugin, never regenerates the root
+README catalog, never starts a process and never uses the network: registering and the catalog
+are repository maintenance, done afterwards with `npm run generate`.
 Exit 0 = created, 1 = a check failed or a file could not be written, 2 = wrong arguments.
 Maintainer tooling with no dependencies: run it by path, with the python3 on PATH.
 TCF_ROOT points it at another copy of the repository (tests).
@@ -40,6 +41,7 @@ CATEGORIES = "scripts/categories.json"
 REPOSITORY = "nerymurillohnd/the-claude-factory"
 MARKETPLACE_NAME = "the-claude-factory"
 ASSETS = Path(__file__).resolve().parents[1] / "assets"
+README_TEMPLATE = Path(__file__).resolve().parents[3] / "templates" / "plugin-readme-template.md"
 # Same rule as `claude plugin validate`: lowercase letters, digits and single hyphens.
 MAX_NAME = 64
 KEBAB = re.compile(r"[a-z0-9]+(?:-[a-z0-9]+)*")
@@ -213,7 +215,7 @@ def plugin_files(args: Args, display_name: str, profile: str, category: str) -> 
         asset("CHANGELOG-template.md"),
         {"name": args.name, "displayName": display_name, "date": today},
     )
-    readme = surface_blocks(asset("README-template.md"), profile)
+    readme = surface_blocks(README_TEMPLATE.read_text(encoding="utf-8"), profile)
     readme = (
         readme.replace("<Display Name>", display_name)
         .replace("<description>", args.description)

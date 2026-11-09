@@ -45,6 +45,7 @@
       "!.claude/plans",
       "!.claude/specs",
       "!.claude/rules",
+      "!.claude/templates",
       // Scheduled-task folders hold copies of official docs and their notes: neither formatted nor linted.
       "!.claude/scheduled-tasks",
       "!.claude/skills/**/*.md",

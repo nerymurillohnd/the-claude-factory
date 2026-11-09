@@ -34,8 +34,8 @@ const IMAGE_OR_FONT = /\.(png|jpe?g|gif|webp|svg|woff2?|ttf|otf)$/i
 const MAX_FILE_BYTES = 256 * 1024 // larger files are held for a reviewer
 const MAX_FILES = 512 // more files are held for a reviewer
 
-// ── Author placeholders of the building-plugins README template ──
-const README_TEMPLATE = join(ROOT, '.claude/skills/building-plugins/assets/README-template.md')
+// ── Author placeholders of the plugin README template ──
+const README_TEMPLATE = join(ROOT, '.claude/templates/plugin-readme-template.md')
 const AUTHOR_PLACEHOLDER = /<[A-Z][^<>\n]*>/g // innermost marks, so nested ones count one by one
 const PROSE_PLACEHOLDER = /<[A-Z][^>]*>/
 const MUSTACHE_PLACEHOLDER = /\{\{\w+\}\}/

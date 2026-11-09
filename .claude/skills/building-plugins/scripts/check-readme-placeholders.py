@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """README placeholders: plugins/<plugin>/README.md keeps no placeholder of the README template.
 
-It reads every `<...>` of .claude/skills/building-plugins/assets/README-template.md that is not
+It reads every `<...>` of .claude/templates/plugin-readme-template.md that is not
 an HTML tag, whatever its case, and fails when the plugin's README still holds one of them. The
 scaffold's lowercase placeholders and the author's capitalized ones are checked alike, so a
 placeholder written in any case cannot reach users. KEEP lists the placeholders the template
@@ -19,7 +19,7 @@ from pathlib import Path
 import re
 import sys
 
-TEMPLATE = ".claude/skills/building-plugins/assets/README-template.md"
+TEMPLATE = ".claude/templates/plugin-readme-template.md"
 KEEP: frozenset[str] = frozenset()
 HTML_TAGS = frozenset(
     {"a", "b", "br", "code", "details", "div", "em", "i", "img", "kbd", "p", "picture"}
