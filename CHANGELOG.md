@@ -11,6 +11,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The
 - **plugin-engineering** 0.2.2 — `public-marketplace-dev` tells Claude to declare `options` on a `userConfig` field that a plugin hook reads as one of a few fixed values, and `cli-commands-guide` says `--plugin-dir` goes before the subcommand.
 - **plugin-engineering** 0.2.1 — `public-marketplace-dev` loads the `cli-commands-guide` skill before Claude runs, writes or explains a plugin command.
 
+### Fixed
+
+- **github-operations** 0.7.3 — `pr-finalizer` and `pr-tracker` compare the branch with the base branch as it is now and test the merge, take each workflow run's own conclusion, including jobs that never started, and no longer pass a pull request because its base requires no checks; `auto-pr-lifecycle` reads the base again before the merge.
+
 ## 2026-11-08
 
 ### Changed
