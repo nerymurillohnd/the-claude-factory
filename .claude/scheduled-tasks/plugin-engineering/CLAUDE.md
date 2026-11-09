@@ -1,16 +1,17 @@
 # Claude Code plugin docs vault (pruned)
 
-This vault holds 63 official Claude and Claude Code documentation pages, downloaded on 2026-11-07 and pruned by removing whole lines, and one procedure written for the skill, `official-source-validation.md`, which replaced the pruned copy of the changelog on 2026-11-09. The pages keep only what applies to developing, testing, publishing and maintaining Claude Code plugins in a marketplace hosted in a public GitHub repository and installed by third parties on their own machines. They are the `references/` of the `public-marketplace-dev` skill, and their images and long JSON examples are in the skill's `assets/` folder.
+This vault holds 63 official Claude and Claude Code documentation pages (the hooks page split into `hooks.md` and `hooks-events.md`), downloaded on 2026-11-07 and pruned by removing whole lines, and one procedure written for the skill, `official-source-validation.md`, which replaced the pruned copy of the changelog on 2026-11-09. The pages keep only what applies to developing, testing, publishing and maintaining Claude Code plugins in a marketplace hosted in a public GitHub repository and installed by third parties on their own machines. They are the `references/` of the `public-marketplace-dev` skill, and their images and long JSON examples are in the skill's `assets/` folder.
 
-- 62 pages are rewritten for Claude as their reader: a directive voice, a `## Contents` list of every heading, and a `## Documentation References` section at the end that starts with the source page. Their code blocks and tables are the official ones; `REMOVALS.md` records every other change.
-- 1 page, marked "not yet rewritten" below, keeps the pruned official text: every kept line is identical to the official page, except links that pointed at a removed section of the same file, which now point at that section on the live page. It starts with a `Documentation Index` block.
+- Every file has the same layout: a title, a one-line description of what it covers, a `## Contents` list of every heading from `##` to `####`, and a `## Documentation References` section at the end that starts with the source page and lists the other official pages the file links to.
+- 62 pages are rewritten for Claude as their reader, in a directive voice. Their code blocks and tables are the official ones; `REMOVALS.md` records every other change.
+- The hooks page, `hooks.md` plus `hooks-events.md`, is not rewritten in that voice. `hooks.md` has the plugin hook notes as its first section. The page is trimmed to what a model does not already know: removed examples and known sections are replaced by a pointer to the live anchor and the new facts they held, marked **Key facts**. Every other kept line is the official text.
 
 ## How to use these files
 
-- Start each file at its `## Contents` list, or at its `Documentation Index` block if it is not yet rewritten. The source URL is the first entry of `## Documentation References`, or the `Source:` line of the index block.
+- Start each file at its `## Contents` list. The source URL is the first entry of `## Documentation References`.
 - Before concluding that something is undocumented, check `REMOVALS.md` in this folder: it lists every removed line range with its reason, and the passages kept under doubt.
 - Treat this vault as a dated snapshot. For behavior or versions that may have changed, fetch the file's source URL; when the live page or the changelog differs from this vault, follow the live source.
-- Links to another page of the docs are absolute URLs to the live site; some point at sections that this vault removed but the live page still has. `LINK-AUDIT.md` in this folder lists them, along with anchors already broken in the official pages.
+- Links to another page of the docs are absolute URLs to the live site; some point at sections that this vault removed but the live page still has. `LINK-AUDIT.md` in this folder lists them as of 2026-11-08. On 2026-11-09 every anchor was checked again: all links within and between these files resolve, and every anchor on another site matches the live page except `claude-directory#ce-claude-json`, which the official settings page also uses; `REMOVALS.md` records the links repointed that day.
 - Seven files hold little content after pruning: `cli-hints.md`, `github-enterprise-server.md`, `sdk-hooks.md` and `support-chat-and-cowork.md` keep only their title, description and source; `troubleshoot-install.md` and `sdk-mcp.md` keep a few lines; `sdk-plugins.md` keeps the plugin directory layout. Load them only when their topic comes up.
 - A line that starts with `> **View the image**` or `> **Read the example**` points to a file in the skill's `assets/` folder: open it when the section needs what it shows.
 
@@ -22,7 +23,7 @@ Removed: Anthropic's official directory and its submission flow (`manifest-refer
 
 ## Inventory
 
-Sizes in KB (1 KB = 1,024 bytes). The 64 files total 2,113.7 KB and 28,363 lines (as of 2026-11-09). The skill's `assets/` folder holds 29 PNG images and 3 JSON examples, 1,372.0 KB in total; each is listed under the page that points to it. `REMOVALS.md` adds 188.5 KB and 1,906 lines.
+Sizes in KB (1 KB = 1,024 bytes). The 65 files total 2,120.7 KB and 27,459 lines (as of 2026-11-09). The skill's `assets/` folder holds 29 PNG images and 3 JSON examples, 1,372.0 KB in total; each is listed under the page that points to it. `REMOVALS.md` adds 196.5 KB and 1,942 lines.
 
 ### 01-plugins-core
 
@@ -32,7 +33,7 @@ Sizes in KB (1 KB = 1,024 bytes). The 64 files total 2,113.7 KB and 28,363 lines
 - `code-intelligence.md`: 9.1 KB, 114 lines
 - `components.md`: 43.7 KB, 697 lines
   - asset `components-channel-example.json`: 0.5 KB
-- `create-marketplace.md`: 16.1 KB, 248 lines
+- `create-marketplace.md`: 16.2 KB, 248 lines
 - `create.md`: 27.3 KB, 409 lines
 - `dependencies.md`: 16.0 KB, 226 lines
 - `host-marketplace.md`: 20.9 KB, 262 lines
@@ -90,8 +91,9 @@ Sizes in KB (1 KB = 1,024 bytes). The 64 files total 2,113.7 KB and 28,363 lines
   - asset `channel-architecture.png`: 41.7 KB
   - asset `channel-permission-relay.png`: 34.1 KB
 - `channels.md`: 13.8 KB, 178 lines
+- `hooks-events.md`: 153.0 KB, 2103 lines; the per-event part of the hooks page, split from `hooks.md`; official text trimmed, not rewritten
 - `hooks-guide.md`: 71.1 KB, 1130 lines
-- `hooks.md`: 278.6 KB, 4370 lines; not yet rewritten
+- `hooks.md`: 132.6 KB, 1363 lines; plugin hook notes as the first section; official text trimmed to what a model does not already know, not rewritten
   - asset `hooks-lifecycle.png`: 165.0 KB
   - asset `hook-resolution.png`: 51.8 KB
 - `mcp.md`: 121.8 KB, 1420 lines
@@ -99,7 +101,7 @@ Sizes in KB (1 KB = 1,024 bytes). The 64 files total 2,113.7 KB and 28,363 lines
 - `output-styles.md`: 12.7 KB, 158 lines
 - `skills.md`: 79.7 KB, 1004 lines
 - `statusline.md`: 8.0 KB, 117 lines
-- `sub-agents.md`: 70.5 KB, 872 lines
+- `sub-agents.md`: 70.6 KB, 872 lines
 - `workflows.md`: 31.4 KB, 396 lines
 
 ### 04-settings-admin
@@ -114,11 +116,11 @@ Sizes in KB (1 KB = 1,024 bytes). The 64 files total 2,113.7 KB and 28,363 lines
 
 ### 05-cli-diagnostics
 
-- `official-source-validation.md`: 11.5 KB, 169 lines; how to validate version-sensitive claims against the official release notes and read only the releases that matter
 - `cli-reference.md`: 12.0 KB, 79 lines
 - `debug-your-config.md`: 14.0 KB, 160 lines
 - `errors.md`: 95.0 KB, 1075 lines
 - `headless.md`: 16.4 KB, 198 lines
+- `official-source-validation.md`: 11.5 KB, 169 lines; how to validate version-sensitive claims against the official release notes and read only the releases that matter
 - `troubleshoot-install.md`: 1.2 KB, 23 lines
 
 ### 06-agent-sdk
