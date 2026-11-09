@@ -569,31 +569,7 @@ This theme recolors the prompt accent and error text on the dark preset:
 
 A [channel](https://code.claude.com/docs/en/channels.md) lets an outside system such as a chat app send messages into a session. In a plugin, a channel is one of the MCP servers plus a `channels` entry that binds to it and can prompt for its own configuration. This manifest binds a channel to a `telegram` server and asks for a bot token:
 
-```json .claude-plugin/plugin.json theme={null}
-{
-  "name": "my-plugin",
-  "mcpServers": {
-    "telegram": {
-      "command": "node",
-      "args": ["${CLAUDE_PLUGIN_ROOT}/server.js"],
-      "env": { "BOT_TOKEN": "${user_config.bot_token}" }
-    }
-  },
-  "channels": [
-    {
-      "server": "telegram",
-      "userConfig": {
-        "bot_token": {
-          "type": "string",
-          "title": "Bot token",
-          "description": "Telegram bot token",
-          "sensitive": true
-        }
-      }
-    }
-  ]
-}
-```
+> **Read the example** [`assets/components-channel-example.json`](../../assets/components-channel-example.json) for the `.claude-plugin/plugin.json` that binds a channel to a `telegram` server and asks for a bot token.
 
 `server` must match a key in `mcpServers`. The per-channel `userConfig` takes the same shape as the [top-level `userConfig` key](#user-configuration).
 

@@ -78,59 +78,7 @@ Save the manifest at `.claude-plugin/plugin.json` under the plugin root. Put eve
 
 The following example sets most of the keys in the [Fields table](#fields). It passes validation in a plugin directory that contains each referenced path.
 
-```json theme={null}
-{
-  "name": "deploy-tools",
-  "displayName": "Deploy Tools",
-  "version": "1.2.0",
-  "description": "Deployment commands, a review agent, and a status monitor",
-  "author": {
-    "name": "Example Team",
-    "email": "dev@example.com",
-    "url": "https://example.com"
-  },
-  "homepage": "https://example.com/docs/deploy-tools",
-  "repository": "https://github.com/example/deploy-tools",
-  "license": "MIT",
-  "keywords": ["deployment", "ci"],
-  "defaultEnabled": true,
-  "dependencies": ["secrets-vault"],
-  "metadata": { "catalogId": "cat-123" },
-  "skills": ["./extra-skills/"],
-  "commands": {
-    "status": {
-      "source": "./commands/status.md",
-      "description": "Show the current deployment status"
-    },
-    "about": {
-      "content": "Explain what the deploy-tools plugin provides.",
-      "description": "Describe this plugin"
-    }
-  },
-  "agents": ["./agents/reviewer.md"],
-  "hooks": "./config/extra-hooks.json",
-  "mcpServers": {
-    "deploy-api": {
-      "command": "node",
-      "args": ["${CLAUDE_PLUGIN_ROOT}/server.js"]
-    }
-  },
-  "lspServers": "./.lsp.json",
-  "outputStyles": "./styles/",
-  "experimental": {
-    "themes": "./themes/",
-    "monitors": "./config/monitors.json"
-  },
-  "userConfig": {
-    "api_token": {
-      "type": "string",
-      "title": "API token",
-      "description": "Token for the deployment API",
-      "sensitive": true
-    }
-  }
-}
-```
+> **Read the example** [`assets/manifest-full-example.json`](../../assets/manifest-full-example.json) for a `plugin.json` that sets most of the keys in the [Fields table](#fields).
 
 ### Unrecognized fields
 
@@ -566,31 +514,7 @@ Each entry is a strict object bound to one of the plugin's MCP servers, with the
 
 This manifest binds a channel to the plugin's `telegram` MCP server and prompts for a bot token that substitutes into the server's `env`:
 
-```json theme={null}
-{
-  "mcpServers": {
-    "telegram": {
-      "command": "node",
-      "args": ["${CLAUDE_PLUGIN_ROOT}/server.js"],
-      "env": { "BOT_TOKEN": "${user_config.bot_token}" }
-    }
-  },
-  "channels": [
-    {
-      "server": "telegram",
-      "displayName": "Telegram",
-      "userConfig": {
-        "bot_token": {
-          "type": "string",
-          "title": "Bot token",
-          "description": "Telegram bot token",
-          "sensitive": true
-        }
-      }
-    }
-  ]
-}
-```
+> **Read the example** [`assets/manifest-channel-example.json`](../../assets/manifest-channel-example.json) for the manifest that binds the channel to the `telegram` MCP server and prompts for the bot token.
 
 ## Environment variables
 
