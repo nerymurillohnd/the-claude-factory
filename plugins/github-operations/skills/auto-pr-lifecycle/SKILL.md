@@ -113,10 +113,11 @@ Never take a report on trust. Before you act on one:
 
 1. Check that it follows the agent's template, returns exactly one of its statuses or verdicts, and shows its checklist complete.
 2. Check that its head SHA is the head you gave it. If it differs, someone else pushed: deploy the tracker again on the new head.
-3. Check every claim against its evidence. Open the URLs, read the commits, check the results yourself where it matters.
-4. Check that it stayed inside its limits: the tracker changed nothing, the fixer did not push or write to GitHub, the finalizer wrote only replies and resolutions.
-5. Check every "not inspected", `needs-user`, `external` or unverified item. When it was within the agent's reach, it is not acceptable.
-6. Update the findings ledger.
+3. For pr-tracker and pr-finalizer, check that the base SHA they compared against is the base branch's current SHA. If the base moved since, their merge test and run results no longer hold: deploy the same agent again.
+4. Check every claim against its evidence. Open the URLs, read the commits, check the results yourself where it matters.
+5. Check that it stayed inside its limits: the tracker changed nothing, the fixer did not push or write to GitHub, the finalizer wrote only replies and resolutions.
+6. Check every "not inspected", `needs-user`, `external` or unverified item. When it was within the agent's reach, it is not acceptable.
+7. Update the findings ledger.
 
 When a report fails any check, send the agent back with each gap named and demand the work done right. Act only on a report that passes.
 
@@ -172,9 +173,9 @@ A step that fails its gate goes back to the step the scenario below names; never
 - `STALE`: deploy pr-tracker on the current head.
 
 **Merge.**
-1. Read the head SHA again.
+1. Read the head SHA and the base branch's current SHA again. When the head moved, deploy pr-tracker on the new head. When the base moved since the finalizer's report, deploy pr-finalizer again: its merge test covered the old base only.
 2. Choose the merge method the repository allows: squash when the history is incremental, a merge commit when its commits matter.
-3. Tell the user the pull request, the head SHA, the method, the threads left open for people and any warning, and ask for the merge approval.
+3. Tell the user the pull request, the head SHA, the base SHA, the method, the threads left open for people and any warning, and ask for the merge approval. When the finalizer names base commits that the checks do not cover, say so, and offer **Update the branch first** as the recommended option: GitHub warns that checks may fail after the merge when the base changed. Updating the branch is a push: it needs its own approval, and the lifecycle tracks the new head.
 4. On approval, merge at that head SHA (`gh pr merge --match-head-commit <sha>`), then confirm on GitHub that it landed.
 5. Clean up the merged branch only after the merge is confirmed, and never the base branch.
 

@@ -84,6 +84,7 @@ Use the MCP tool first: it answers in one call. Review threads are the exception
    - List every workflow run at the head and take each run's own conclusion as its result. Only `success` passes; `skipped` or `neutral` passes only with the reason shown; any other conclusion fails, whatever its jobs and check runs show.
    - Compare each run's jobs with the jobs its workflow file defines at the head (the run's `path`), with each matrix expanded. A defined job with no job record, that no `if:` or skipped `needs:` explains, never started: name it.
    - Determine each required check's state at the head, and each other check's. When the base requires none, say so: every check at the head must still pass.
+   - Determine whether the base requires branches to be up to date before merging: `gh api repos/<owner>/<repo>/rules/branches/<base branch> --jq '.[] | select(.type == "required_status_checks") | .parameters.strict_required_status_checks_policy'` for rulesets, and `gh api repos/<owner>/<repo>/branches/<base branch>/protection/required_status_checks --jq .strict` for classic protection, where a 404 means the branch has no classic protection. When it does and the head is behind the base, the pull request cannot merge.
 3. [Threads] Collect every review thread and review.
    - Collect every review thread, on every page.
    - Record each thread's id, its resolved and outdated flags, and its path and line.
@@ -126,7 +127,7 @@ Return exactly one verdict:
 | :-- | :-- |
 | `READY_TO_MERGE` | The head merges into the current base without conflict, verified against that base's SHA; every workflow run at the head passed by its own conclusion, with every job its file defines accounted for; every check at the head passes, required or not; every bot thread is resolved; every finding is addressed; and the required approvals are in place. Threads people opened may stay open for their reviewer: list them |
 | `NEW_FEEDBACK` | New feedback arrived, or a thread is `unverified`: list each item for `github-operations:pr-lifecycle:pr-fixer` |
-| `BLOCKED` | The head conflicts with the current base or the merge stays unverified, a workflow run failed or a job never started, a check fails, a required approval is missing, a change request stands, or a finding needs the user |
+| `BLOCKED` | The head conflicts with the current base or the merge stays unverified, the head is behind a base that requires branches to be up to date, a workflow run failed or a job never started, a check fails, a required approval is missing, a change request stands, or a finding needs the user |
 | `STALE` | The head moved since the brief |
 
 Template:
@@ -162,7 +163,7 @@ Checklist against your workflow, before you return. Fix every false box first.
 - [ ] Head: the head SHA matched the brief, or the verdict is `STALE`.
 - [ ] Base: the base SHA was read during this run, not taken from the brief, a report or `base.sha`; the merge with it is clean, or the verdict is `BLOCKED` with the conflicted files or the reason it stayed unverified.
 - [ ] Runs: every workflow run at the head is listed with its own conclusion and its jobs created against those defined; any run that did not pass or job that never started makes the verdict `BLOCKED`.
-- [ ] Checks: every check at the head passed, required or not, or the verdict is `BLOCKED`; an empty required set was not treated as a pass.
+- [ ] Checks: every check at the head passed, required or not, or the verdict is `BLOCKED`; an empty required set was not treated as a pass; a head behind a base that requires branches to be up to date made the verdict `BLOCKED`.
 - [ ] Threads: every unresolved thread at the start appears in the table, read from every page.
 - [ ] Verify: every `Verified: yes` row cites the change (path and lines) or the ledger's evidence.
 - [ ] Reply: every thread whose findings are all fixed got a reply that says what was wrong, what changed and how, with the commit, or its reply is under "Replies not posted".

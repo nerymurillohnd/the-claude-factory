@@ -101,6 +101,7 @@ Rules:
    - Identify the checks the base branch requires, from its rulesets and classic protection.
    - Determine each one's state at the head: passing, failing, pending or missing.
    - When the base requires no check, say so. An empty required set is never a pass: every workflow run and check at the head must still pass.
+   - Determine whether the base requires branches to be up to date before merging: `gh api repos/<owner>/<repo>/rules/branches/<base branch> --jq '.[] | select(.type == "required_status_checks") | .parameters.strict_required_status_checks_policy'` for rulesets, and `gh api repos/<owner>/<repo>/branches/<base branch>/protection/required_status_checks --jq .strict` for classic protection, where a 404 means the branch has no classic protection. When it does, a head behind the base cannot merge: return `ACTION_REQUIRED` for a branch update.
    - Spot required checks that a path filter or an `if:` skips: a required check that never reports blocks the merge.
 8. [Workflow files] Read and audit the workflow files the head runs.
    - Detect workflows that should have run and didn't, and the trigger or filter that stopped them.
@@ -145,7 +146,7 @@ Return exactly one status:
 
 | Status | When |
 | :-- | :-- |
-| `ACTION_REQUIRED` | A failure, a failed workflow run, an open finding, a breaking change or a conflict with the current base needs a change in the branch |
+| `ACTION_REQUIRED` | A failure, a failed workflow run, an open finding, a breaking change, a conflict with the current base, or a head behind a base that requires branches to be up to date needs a change in the branch |
 | `PENDING` | Jobs were still running when the wait ended, or only a person's review or approval is missing, and nothing needs a change |
 | `BLOCKED` | Something outside the pull request stops progress or inspection: a missing input, access, permissions, a secret, a runner or service outage, or a merge with the current base that stays unverified |
 | `READY_FOR_MAIN_SESSION` | Every workflow run at the head passed by its own conclusion, with every job its file defines accounted for; every check passed, required or not; the head merges into the current base without conflict; and no finding is open |
@@ -212,7 +213,7 @@ Checklist against your workflow, before you return. Fix every false box first.
 - [ ] Runs: every workflow and job appears as ran, skipped or did not run, with its conclusion, duration and URL.
 - [ ] Failures: every failed job's log was read; each failure has its run and attempt, step, error, cause, class, base-branch result and URL, root failures first; a rerun is recommended only with evidence that the failure was transient.
 - [ ] Warnings: every check run's annotations were read.
-- [ ] Required checks: each one appears with its state at the head; with none required, the report says so and no check was treated as optional.
+- [ ] Required checks: each one appears with its state at the head; with none required, the report says so and no check was treated as optional; whether the base requires branches to be up to date is stated, or why it could not be read.
 - [ ] Workflow files: every workflow that should have run and didn't is explained.
 - [ ] Reviewers: every automated reviewer that worked on the head has what it produced listed, or is marked as a no-op.
 - [ ] Reviews: every review, thread and comment that reports an issue is in the table, with its author, type, state at the head and URL.

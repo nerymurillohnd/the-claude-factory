@@ -480,7 +480,7 @@ Push · Push without asking again on this pull request · Don't push
 ```
 
 4. **Finalize.** Once the checks pass, the finalizer confirms that every workflow run passed and that the branch merges into your base branch as it is now, verifies each fix in the diff, replies to the review threads and resolves the ones bots opened.
-5. **Your merge.** Claude stops with one question, naming the pull request, the commit, the merge method and the threads left open for people.
+5. **Your merge.** Claude reads the branch and your base branch again, then stops with one question, naming the pull request, the commit, the merge method and the threads left open for people. When your base branch changed after the checks ran, Claude says so and recommends updating the branch before the merge.
 
 Asking only to commit, or to commit and push, never opens a pull request.
 
