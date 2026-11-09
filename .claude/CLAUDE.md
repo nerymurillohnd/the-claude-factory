@@ -106,6 +106,7 @@ The repository's scripts, in the order of the project's phases, with what trigge
 | `scripts/validators/*.py` (12) | Schemas (plugin, marketplace, MCP, LSP), names, versions, required files, icons, catalog, skills, skill and command argument placeholders, `SKILL.md` references | `npm run validate`, `scripts/gates.mjs`, the commit hook |
 | `scripts/check-repo.mjs` (with `scripts/components.mjs`) | Repository policies that neither `claude plugin validate` nor the validators cover | `scripts/gates.mjs` |
 | `scripts/checkers/markdown-urls.py` | Every http(s) URL in the Markdown files answers | Manual only (`npm run check:links`) |
+| `scripts/checkers/reference-pages.py [--links-only] DIR...` | Every Markdown page under DIR has its `## Contents` and `## Documentation References` layout, and its relative links and anchors resolve | Manual only (`npm run check:references`) |
 
 ### Phase 5: Versioning
 
