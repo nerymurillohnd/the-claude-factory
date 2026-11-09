@@ -2,8 +2,8 @@
 
 This vault holds 63 official Claude and Claude Code documentation pages, downloaded on 2026-11-07 and pruned by removing whole lines, and one procedure written for the skill, `official-source-validation.md`, which replaced the pruned copy of the changelog on 2026-11-09. The pages keep only what applies to developing, testing, publishing and maintaining Claude Code plugins in a marketplace hosted in a public GitHub repository and installed by third parties on their own machines. They are the `references/` of the `public-marketplace-dev` skill, and their images and long JSON examples are in the skill's `assets/` folder.
 
-- 51 pages are rewritten for Claude as their reader: a directive voice, a `## Contents` list of every heading, and a `## Documentation References` section at the end that starts with the source page. Their code blocks and tables are the official ones; `REMOVALS.md` records every other change.
-- 12 pages, marked "not yet rewritten" below, keep the pruned official text: every kept line is identical to the official page, except links that pointed at a removed section of the same file, which now point at that section on the live page. They start with a `Documentation Index` block.
+- 62 pages are rewritten for Claude as their reader: a directive voice, a `## Contents` list of every heading, and a `## Documentation References` section at the end that starts with the source page. Their code blocks and tables are the official ones; `REMOVALS.md` records every other change.
+- 1 page, marked "not yet rewritten" below, keeps the pruned official text: every kept line is identical to the official page, except links that pointed at a removed section of the same file, which now point at that section on the live page. It starts with a `Documentation Index` block.
 
 ## How to use these files
 
@@ -22,7 +22,7 @@ Removed: Anthropic's official directory and its submission flow (`manifest-refer
 
 ## Inventory
 
-Sizes in KB (1 KB = 1,024 bytes). The 64 files total 2,068.9 KB and 28,118 lines (as of 2026-11-09). The skill's `assets/` folder holds 29 PNG images and 3 JSON examples, 1,372.0 KB in total; each is listed under the page that points to it. `REMOVALS.md` adds 184.9 KB and 1,892 lines.
+Sizes in KB (1 KB = 1,024 bytes). The 64 files total 2,113.7 KB and 28,363 lines (as of 2026-11-09). The skill's `assets/` folder holds 29 PNG images and 3 JSON examples, 1,372.0 KB in total; each is listed under the page that points to it. `REMOVALS.md` adds 188.5 KB and 1,906 lines.
 
 ### 01-plugins-core
 
@@ -59,7 +59,7 @@ Sizes in KB (1 KB = 1,024 bytes). The 64 files total 2,068.9 KB and 28,118 lines
 - `mod-admin.md`: 25.1 KB, 238 lines
 - `mod-api.md`: 42.4 KB, 484 lines
 - `mod-create.md`: 24.1 KB, 368 lines
-- `mod-events.md`: 37.7 KB, 505 lines; not yet rewritten
+- `mod-events.md`: 40.7 KB, 534 lines
 - `mod-gallery.md`: 25.1 KB, 478 lines
   - asset `mods-el-text-light.png`: 9.5 KB
   - asset `mods-el-markdown-light.png`: 8.4 KB
@@ -76,7 +76,7 @@ Sizes in KB (1 KB = 1,024 bytes). The 64 files total 2,068.9 KB and 28,118 lines
   - asset `mods-el-select-moved-light.png`: 5.1 KB
   - asset `mods-el-select-picked-light.png`: 2.5 KB
   - asset `mods-el-raster-light.png`: 1.9 KB
-- `mod-interface.md`: 53.3 KB, 937 lines; not yet rewritten
+- `mod-interface.md`: 54.6 KB, 935 lines
   - asset `mods-screen-map.png`: 36.6 KB
   - asset `mods-heat-map.png`: 1.8 KB
 - `mod-overview.md`: 25.4 KB, 276 lines
@@ -86,20 +86,20 @@ Sizes in KB (1 KB = 1,024 bytes). The 64 files total 2,068.9 KB and 28,118 lines
 
 ### 03-feature-references
 
-- `channels-reference.md`: 45.4 KB, 809 lines; not yet rewritten
+- `channels-reference.md`: 46.1 KB, 811 lines
   - asset `channel-architecture.png`: 41.7 KB
   - asset `channel-permission-relay.png`: 34.1 KB
 - `channels.md`: 13.8 KB, 178 lines
-- `hooks-guide.md`: 66.7 KB, 1110 lines; not yet rewritten
+- `hooks-guide.md`: 71.1 KB, 1130 lines
 - `hooks.md`: 278.6 KB, 4370 lines; not yet rewritten
   - asset `hooks-lifecycle.png`: 165.0 KB
   - asset `hook-resolution.png`: 51.8 KB
-- `mcp.md`: 115.0 KB, 1385 lines; not yet rewritten
+- `mcp.md`: 121.8 KB, 1420 lines
 - `model-config.md`: 11.8 KB, 130 lines
 - `output-styles.md`: 12.7 KB, 158 lines
-- `skills.md`: 75.6 KB, 995 lines; not yet rewritten
+- `skills.md`: 79.7 KB, 1004 lines
 - `statusline.md`: 8.0 KB, 117 lines
-- `sub-agents.md`: 64.3 KB, 839 lines; not yet rewritten
+- `sub-agents.md`: 70.5 KB, 872 lines
 - `workflows.md`: 31.4 KB, 396 lines
 
 ### 04-settings-admin
@@ -107,9 +107,9 @@ Sizes in KB (1 KB = 1,024 bytes). The 64 files total 2,068.9 KB and 28,118 lines
 - `env-vars.md`: 22.1 KB, 171 lines
 - `github-enterprise-server.md`: 0.6 KB, 13 lines
 - `managed-settings.md`: 7.0 KB, 56 lines
-- `permissions.md`: 52.2 KB, 586 lines; not yet rewritten
+- `permissions.md`: 55.4 KB, 604 lines
 - `server-managed-settings.md`: 3.3 KB, 36 lines
-- `settings-reference.md`: 64.7 KB, 899 lines; not yet rewritten
+- `settings-reference.md`: 70.5 KB, 973 lines
 - `settings.md`: 31.1 KB, 266 lines
 
 ### 05-cli-diagnostics
@@ -117,7 +117,7 @@ Sizes in KB (1 KB = 1,024 bytes). The 64 files total 2,068.9 KB and 28,118 lines
 - `official-source-validation.md`: 11.5 KB, 169 lines; how to validate version-sensitive claims against the official release notes and read only the releases that matter
 - `cli-reference.md`: 12.0 KB, 79 lines
 - `debug-your-config.md`: 14.0 KB, 160 lines
-- `errors.md`: 87.9 KB, 1036 lines; not yet rewritten
+- `errors.md`: 95.0 KB, 1075 lines
 - `headless.md`: 16.4 KB, 198 lines
 - `troubleshoot-install.md`: 1.2 KB, 23 lines
 
@@ -131,7 +131,7 @@ Sizes in KB (1 KB = 1,024 bytes). The 64 files total 2,068.9 KB and 28,118 lines
 ### 07-cross-platform-external
 
 - `build.md`: 17.2 KB, 257 lines
-- `platform-skills-best-practices.md`: 43.2 KB, 1241 lines; not yet rewritten
+- `platform-skills-best-practices.md`: 45.1 KB, 1229 lines
   - asset `agent-skills-simple-file.png`: 93.7 KB
   - asset `agent-skills-bundling-content.png`: 210.1 KB
   - asset `agent-skills-executable-scripts.png`: 130.1 KB
