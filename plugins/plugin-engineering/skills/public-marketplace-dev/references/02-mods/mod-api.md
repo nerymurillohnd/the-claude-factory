@@ -168,7 +168,7 @@ If both fields stay at zero on calls the model answered, nothing was cached. Che
 * **The prefix is too short**: the API doesn't cache a prefix under the model's [minimum length](https://platform.claude.com/docs/en/build-with-claude/prompt-caching#cache-limitations), and it returns no error.
 * **Prompt caching is disabled**: when a [`DISABLE_PROMPT_CACHING` variable](https://code.claude.com/docs/en/prompt-caching#disable-prompt-caching) applies to the model, Claude Code removes the breakpoints and sends the text uncached.
 * **The gateway strips `cache_control`**: a gateway can [remove the field and still return success](https://code.claude.com/docs/en/prompt-caching.md#where-the-cache-lives).
-* **Another mod rewrites the start of the text**: Claude Code then [sends it without breakpoints](#what-a-model-complete-hook-receives).
+* **Another mod rewrites the start of the text**: Claude Code then [sends it without breakpoints](#what-a-modelcomplete-hook-receives).
 
 ### What a `model.complete` hook receives
 
@@ -308,7 +308,7 @@ For a call that rejects, such as `$.command.run`, catch the error and test its m
 
 #### What refused calls return
 
-In the results, `<reason>` stands for the reason the call was refused. After an interruption, that's `the session was stopped and nobody has sent input since`. For other reasons, see [Calls refused in `claude -p` runs and Agent SDK sessions](#calls-refused-in-non-interactive-runs).
+In the results, `<reason>` stands for the reason the call was refused. After an interruption, that's `the session was stopped and nobody has sent input since`. For other reasons, see [Calls refused in `claude -p` runs and Agent SDK sessions](#calls-refused-in-claude--p-runs-and-agent-sdk-sessions).
 
 | Some refused calls | Result |
 | :- | :- |
@@ -358,7 +358,7 @@ To make the run end on its own, add either flag to the command in the shell. If 
 claude -p "find the TODOs" --max-turns 5
 ```
 
-Once the run reaches that limit, the mod's next prompt is [refused](#calls-refused-in-non-interactive-runs) instead of starting a turn, and the run ends.
+Once the run reaches that limit, the mod's next prompt is [refused](#calls-refused-in-claude--p-runs-and-agent-sdk-sessions) instead of starting a turn, and the run ends.
 
 If the run still goes past the limit, run `claude --version` in the shell, and [update Claude Code](https://code.claude.com/docs/en/setup.md#update-claude-code) if the installed version is earlier than v2.1.304. The mod's prompts are refused at the limit from v2.1.299. If the mod spawns subagents, their turns count toward `--max-turns` from v2.1.304.
 
@@ -411,7 +411,7 @@ A mod reaches the file system, processes, and the network through the mods API, 
 | `$.http` | `fetch(url, init)` over `http` or `https`. It resolves to `{ status, ok, headers, text }` once the body is read. |
 | `$.store` | A JSON key-value store of your plugin's own, kept between sessions |
 | `$.env` | `get` and `set` environment variables. Write the name as a string literal. |
-| `$.settings` | `read()` resolves to all settings, merged into one object. With `{ source }` or `{ key }`, it resolves to [one source's settings or one key's value](#read-one-source-or-one-key) instead. |
+| `$.settings` | `read()` resolves to all settings, merged into one object. With `{ source }` or `{ key }`, it resolves to [one source's settings or one key's value](#read-all-settings-one-source-or-one-key) instead. |
 | `$.session` | `messages()` returns the transcript as a list of `{ role, text, toolUses }`. Also the working directory, model, and more. [`usage()`](https://code.claude.com/docs/en/plugins/mods/reference#mods-api-methods) returns context window use and plan limits. |
 | `$.mcp` | `call` a tool on a connected MCP server |
 

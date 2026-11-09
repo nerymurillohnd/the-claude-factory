@@ -24,8 +24,8 @@ A model alias selects model settings without an exact version number:
 | Model alias | Behavior |
 | - | - |
 | **`default`** | Special value that clears any model override and reverts to the [runtime default for your account](https://code.claude.com/docs/en/model-config#default-model-setting). Not itself a model alias |
-| **`best`** | Uses the model the [`fable` alias resolves to](#fable-alias-resolution) where Fable is available to you, otherwise the same model as `opus` |
-| **`fable`** | Uses the [Fable model for your provider](#fable-alias-resolution) for your hardest and longest-running tasks |
+| **`best`** | Uses the model the [`fable` alias resolves to](https://code.claude.com/docs/en/model-config#fable-alias-resolution) where Fable is available to you, otherwise the same model as `opus` |
+| **`fable`** | Uses the [Fable model for your provider](https://code.claude.com/docs/en/model-config#fable-alias-resolution) for your hardest and longest-running tasks |
 | **`sonnet`** | Uses the latest Sonnet model for daily coding tasks |
 | **`opus`** | Uses the latest Opus model for complex reasoning tasks |
 | **`haiku`** | Uses the fast and efficient Haiku model for simple tasks |

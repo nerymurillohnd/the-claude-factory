@@ -95,7 +95,7 @@ The table lists every key Claude Code reads from `marketplace.json`. `name`, `ow
 
 Each object in the top-level `plugins` array of `marketplace.json` names a plugin and says where to fetch it. `name` and `source` are required.
 
-Apart from the [directory listing fields](https://code.claude.com/docs/en/plugins/manifest-reference.md#directory-listing-fields), an entry also accepts every [`plugin.json` field](https://code.claude.com/docs/en/plugins/manifest-reference), such as `description`, `version`, `author`, `commands`, and `hooks`. For when those fields apply, see [How an entry combines with plugin.json](#entry-and-plugin-json).
+Apart from the [directory listing fields](https://code.claude.com/docs/en/plugins/manifest-reference.md#directory-listing-fields), an entry also accepts every [`plugin.json` field](https://code.claude.com/docs/en/plugins/manifest-reference), such as `description`, `version`, `author`, `commands`, and `hooks`. For when those fields apply, see [How an entry combines with plugin.json](#how-an-entry-combines-with-pluginjson).
 
 The table lists the entry's own fields and the manifest fields whose meaning changes in an entry.
 
@@ -136,7 +136,7 @@ Before install, Claude Code can read `plugin.json` only for entries with a [rela
 
 ### Strict mode
 
-`strict` decides what happens when the fetched plugin has its own `plugin.json` and the entry also declares any of the [component fields](#entry-and-plugin-json): `commands`, `agents`, `skills`, `hooks`, `outputStyles`, or `themes`. With `strict: true`, the default, Claude Code appends the entry's component fields to `plugin.json`, except `hooks`, whose matchers replace the manifest's per event. With `strict: false`, an entry that declares any component field is a conflict, and the plugin fails to load. The table shows each combination of `strict`, `plugin.json`, and the entry's component fields.
+`strict` decides what happens when the fetched plugin has its own `plugin.json` and the entry also declares any of the [component fields](#how-an-entry-combines-with-pluginjson): `commands`, `agents`, `skills`, `hooks`, `outputStyles`, or `themes`. With `strict: true`, the default, Claude Code appends the entry's component fields to `plugin.json`, except `hooks`, whose matchers replace the manifest's per event. With `strict: false`, an entry that declares any component field is a conflict, and the plugin fails to load. The table shows each combination of `strict`, `plugin.json`, and the entry's component fields.
 
 | `strict` | `plugin.json` | Entry component fields | Result |
 | :- | :- | :- | :- |

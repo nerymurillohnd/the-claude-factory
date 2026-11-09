@@ -307,7 +307,7 @@ The running session keeps the versions it already loaded. After an update, the u
 
 These are the auto-update defaults for each kind of marketplace:
 
-* **On by default**: `claude-plugins-official` and the other [official marketplace names](https://code.claude.com/docs/en/plugins/security.md#official-marketplace-names) except `knowledge-work-plugins` and `first-party-plugins`, plus [marketplaces added from claude.ai](#add-from-claude-ai).
+* **On by default**: `claude-plugins-official` and the other [official marketplace names](https://code.claude.com/docs/en/plugins/security.md#official-marketplace-names) except `knowledge-work-plugins` and `first-party-plugins`, plus [marketplaces added from claude.ai](https://code.claude.com/docs/en/plugins/install#add-from-claude-ai).
 * **Off by default**: every other marketplace, including the community marketplace, third-party marketplaces, and local development marketplaces.
 
 For when auto-update runs, which plugins it skips, and the environment variables that turn it off, read [When auto-update runs](https://code.claude.com/docs/en/plugins/loading.md#when-auto-update-runs).

@@ -83,7 +83,7 @@ Older clients still load a marketplace that uses `relevance` fields they don't r
 | Field | Type | Description |
 | :- | :- | :- |
 | `topic` | string | Optional. The phrase that fills "Working with *topic*?" in the spinner tip. Defaults to the plugin name with each hyphen segment capitalized. Maximum 64 characters. |
-| `signals` | object | Matchers that determine when the plugin is relevant. Claude Code suggests the plugin only if at least one signal is set. See [`relevance.signals`](#relevance-signals). |
+| `signals` | object | Matchers that determine when the plugin is relevant. Claude Code suggests the plugin only if at least one signal is set. See [`relevance.signals`](#relevancesignals). |
 
 The `topic` is often the product name, for example `Terraform`. Use a domain such as `design` when the plugin name doesn't sound natural as a topic.
 

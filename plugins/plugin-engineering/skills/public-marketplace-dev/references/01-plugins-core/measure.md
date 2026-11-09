@@ -83,7 +83,7 @@ For what each component type contributes, see [plugin components](https://code.c
 
 Claude Code does not report a plugin's usage back to its author. Usage is recorded on the machine of each person who installed the plugin, so what the author can learn depends on the author's relationship to those people:
 
-* **They're teammates you can ask**: each user's own Claude Code shows them whether they still use the plugin, in four places: the [`/plugin` panel](#not-used-recently-in-/plugin), [`/skill-doctor`](#find-skills-that-never-run), [`/doctor`](#unused-plugins-in-/doctor), and [`/usage`](#usage-share-in-/usage). All four are commands the user runs at the Claude Code prompt in a session on their own machine.
+* **They're teammates you can ask**: each user's own Claude Code shows them whether they still use the plugin, in four places: the [`/plugin` panel](#not-used-recently-in-plugin), [`/skill-doctor`](#find-skills-that-never-run), [`/doctor`](#unused-plugins-in-doctor), and [`/usage`](#usage-share-in-usage). All four are commands the user runs at the Claude Code prompt in a session on their own machine.
 * **Neither**: the author has no usage signal from Claude Code for that plugin.
 
 ### Not used recently in `/plugin`

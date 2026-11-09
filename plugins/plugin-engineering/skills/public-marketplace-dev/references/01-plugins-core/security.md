@@ -17,7 +17,7 @@ What a plugin can do on a user's machine, how to tell Anthropic's marketplaces f
 
 An installed Claude Code plugin can execute arbitrary code on the user's machine with the user's privileges.
 
-Plugins are installed from a marketplace, which is the catalog Claude Code fetches them from. Some marketplace names are [reserved for Anthropic's own marketplaces](#marketplace-tiers), and every other marketplace is third-party. A marketplace's name tells who publishes the catalog, not what each plugin in it does, so [review a plugin before installing it](#review-a-plugin-before-you-install) whichever marketplace it comes from.
+Plugins are installed from a marketplace, which is the catalog Claude Code fetches them from. Some marketplace names are [reserved for Anthropic's own marketplaces](#identify-anthropics-marketplaces-by-name), and every other marketplace is third-party. A marketplace's name tells who publishes the catalog, not what each plugin in it does, so [review a plugin before installing it](#review-a-plugin-before-you-install) whichever marketplace it comes from.
 
 This file applies when deciding whether to install a plugin, when reviewing tools before a team can use them, and when designing a plugin that users will review this way.
 
@@ -25,7 +25,7 @@ This file applies when deciding whether to install a plugin, when reviewing tool
 >
 > * **Claude Code's own security model**: see [Security](https://code.claude.com/docs/en/security.md)
 
-Start with [what a plugin can do](#understand-what-a-plugin-can-do) and [which marketplaces are Anthropic's](#marketplace-tiers), then [review the plugin before installing it](#review-a-plugin-before-you-install).
+Start with [what a plugin can do](#understand-what-a-plugin-can-do) and [which marketplaces are Anthropic's](#identify-anthropics-marketplaces-by-name), then [review the plugin before installing it](#review-a-plugin-before-you-install).
 
 ## Understand what a plugin can do
 

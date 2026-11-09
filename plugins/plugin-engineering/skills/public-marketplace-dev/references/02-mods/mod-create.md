@@ -32,7 +32,7 @@ If it isn't settled whether a mod is the right tool, read the [comparison on the
 
 When the user describes a mod in an interactive Claude Code session, Claude writes it. Claude works from a built-in [skill](https://code.claude.com/docs/en/skills.md) named `plugin-authoring`, which tells it where to write the mod, which events and methods the running version has, and how the mod gets loaded. Claude can load the skill when the user asks for a mod, or the user can load it by running `/plugin-authoring` at the Claude Code prompt.
 
-The mod runs once the user approves it, except in [sessions where a mod Claude writes can't load](#sessions-that-skip-the-approval).
+The mod runs once the user approves it, except in [sessions where a mod Claude writes can't load](#sessions-where-a-mod-claude-writes-cant-load).
 
 **1. Describe the mod**
 

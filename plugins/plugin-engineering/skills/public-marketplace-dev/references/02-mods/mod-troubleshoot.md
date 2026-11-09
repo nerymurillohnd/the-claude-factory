@@ -280,7 +280,7 @@ There is one band above the prompt, and every mod shares it. Cause: a mod that r
 
 To find that mod, [write a debug log](#read-the-debug-log) and search it for `answered ui.render without next()`. A line such as `other-mod (user) answered ui.render without next()` names a mod that returned its tree without calling `next(e)`. It does not name the [render site](https://code.claude.com/docs/en/plugins/mods/reference.md#render-sites), so a pane-only mod can appear too. A mod that calls `next(e)` and drops the result gets no line, so check the hooks that run before this mod's hook too.
 
-A mod's band is also missing when the tree its own hook returned does not validate, and the other mods' bands stay. To find which mod and why, [write a debug log](#read-the-debug-log) and search it for [`ui.render hook skipped`](#a-pane-or-band-is-empty).
+A mod's band is also missing when the tree its own hook returned does not validate, and the other mods' bands stay. To find which mod and why, [write a debug log](#read-the-debug-log) and search it for [`ui.render hook skipped`](#a-pane-or-band-is-empty-or-shows-claude-codes-usual-content).
 
 ### A pane or band is empty or shows Claude Code's usual content
 
@@ -292,7 +292,7 @@ first-mod: ui.render hook skipped: returned the wrong shape (a tree Pane refuses
 
 Fix what the reason names. If the reason is cut short, [write a debug log](#read-the-debug-log) and search it for `a hook returned a tree that does not validate` to read the rest.
 
-If the line instead says `refused:` right after the site's name, as in `ui.render (Pane) refused:`, see [A `ui.render` line says `refused`](#ui-render-refused).
+If the line instead says `refused:` right after the site's name, as in `ui.render (Pane) refused:`, see [A `ui.render` line says `refused`](#a-uirender-line-says-refused).
 
 ### A `ui.render` line says `refused`
 
@@ -360,7 +360,7 @@ Fix: to expand the band, press the keys the row names, Ctrl+X then Ctrl+A by def
 Cause: the pane or band does not have keyboard focus, the button is in a collapsed band, or the drawing is in the VS Code extension, where buttons have no hotkeys. Apply the matching fix:
 
 * **No keyboard focus**: press Ctrl+X then Tab or, in [fullscreen rendering](https://code.claude.com/docs/en/fullscreen.md), click the pane or band. To have the pane take focus when it opens, open it with `focus: true` from a command.
-* **The button is in a collapsed band**: the band shows one dim row that starts with `▸ plugin panel hidden`. Press the keys the row names, Ctrl+X then Ctrl+A by default, to [expand it](#plugin-panel-hidden).
+* **The button is in a collapsed band**: the band shows one dim row that starts with `▸ plugin panel hidden`. Press the keys the row names, Ctrl+X then Ctrl+A by default, to [expand it](#the-band-shows-plugin-panel-hidden).
 * **In the VS Code extension**: click the button, or press Enter on it once it has focus
 
 ### A drawing works in the terminal and not in the Desktop app or VS Code
@@ -403,10 +403,10 @@ For another key, check [which mods get `settings.read` and from which version](h
 | :- | :- |
 | `settings.read hook skipped`, after your mod's name | Your hook failed. [Fix the error the line reports](#hook-skipped). |
 | `settings.read bypassed by cc-plugin-sec-default`, on a line that names your mod ahead of it | The [built-in guard](https://code.claude.com/docs/en/plugins/mods/admin.md#know-what-happens-by-default) skipped your hook. Ask your organization's administrator to [install the mod as one of the organization's mods](https://code.claude.com/docs/en/plugins/mods/admin.md#install-your-organizations-mods). |
-| `settings.read: the answer for <key> is no value the key can hold` | Claude Code refused the value a hook returned for that key. The hook may be yours or another mod's. Follow [the step for your case](#settings-read-key-refused). |
+| `settings.read: the answer for <key> is no value the key can hold` | Claude Code refused the value a hook returned for that key. The hook may be yours or another mod's. Follow [the step for your case](#the-answer-for-key-is-no-value-the-key-can-hold). |
 | `settings.read: the merge never settles for <key>` | The keys the line names keep the settings sources' values. Set them in a settings file. |
 | `answered settings.read without next()`, after a mod's name | Your hook is affected if the named mod [runs before yours](https://code.claude.com/docs/en/plugins/mods/events.md#the-order-mods-run-in). Then your hook didn't run on that read. [Turn that mod off](https://code.claude.com/docs/en/plugins/mods/overview.md#turn-mods-on-or-off), or if your organization deployed it, ask its administrator to. |
-| `settings.read: refused to the engine` | Your value didn't apply because Claude Code's own read was refused. [Find what refused it](#settings-read-refused). |
+| `settings.read: refused to the engine` | Your value didn't apply because Claude Code's own read was refused. [Find what refused it](#settingsread-refused-to-the-engine). |
 
 If no line explains the key, check the mods that run before this mod for a `settings.read` hook that [changes the key](https://code.claude.com/docs/en/plugins/mods/events.md#settings-read-example). Turn that mod off, or ask the organization's administrator to. If no hook does, set the key in a settings file.
 
@@ -421,7 +421,7 @@ settings.read: the answer for <key> is no value the key can hold; the settings' 
 Cause: the value returned for the named key did not fit that key's schema, for example by type or by range.
 
 * **The mod's value does not fit the key's schema**: return one the key's [settings reference](https://code.claude.com/docs/en/settings-reference.md) entry allows.
-* **The mod's value fits**: the value that does not fit came from another mod's `settings.read` hook. To find that mod, follow [the steps to turn off mods one at a time](#settings-read-refused), and search each new log for this line instead of `refused to the engine`.
+* **The mod's value fits**: the value that does not fit came from another mod's `settings.read` hook. To find that mod, follow [the steps to turn off mods one at a time](#settingsread-refused-to-the-engine), and search each new log for this line instead of `refused to the engine`.
 
 While the value does not fit, the key keeps the value merged from the settings sources before any hook answered. The line calls it the settings' own value.
 
