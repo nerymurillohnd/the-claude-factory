@@ -2,9 +2,9 @@
 """Bump version: raise a plugin's version and turn [Unreleased] into the dated section.
 
 Writes plugins/<plugin>/.claude-plugin/plugin.json (the new version) and
-plugins/<plugin>/CHANGELOG.md (the `## [X.Y.Z] - YYYY-MM-DD` section below an empty
-`## [Unreleased]`, and the link references of both). It refuses `marketplace`, an unknown
-level, a missing manifest or version, and a missing or empty [Unreleased]; on a refusal it
+plugins/<plugin>/CHANGELOG.md (the `## [X.Y.Z] - YYYY-MM-DD` section, dated in America/Tegucigalpa,
+below an empty `## [Unreleased]`, and the link references of both). It refuses `marketplace`, an
+unknown level, a missing manifest or version, and a missing or empty [Unreleased]; on a refusal it
 writes nothing. It does not regenerate the README catalog: run
 `node scripts/generators/catalog.mjs` next.
 
@@ -15,15 +15,18 @@ TCF_ROOT points it at another copy of the repository (tests).
 """
 
 from collections.abc import Callable
-from datetime import UTC, datetime
+from datetime import datetime
 import json
 import os
 from pathlib import Path
 import re
 import sys
 from typing import cast
+from zoneinfo import ZoneInfo
 
 REPO_URL = "https://github.com/nerymurillohnd/the-claude-factory"
+# Release dates follow the maintainer's time zone, like every other record of the project.
+TIME_ZONE = ZoneInfo("America/Tegucigalpa")
 LEVELS = ("major", "minor", "patch")
 MARKETPLACE_REFUSAL = (
     "The marketplace has no version. Add a line under today's date heading in CHANGELOG.md instead."
@@ -107,7 +110,7 @@ def bump(root: Path, name: str, level: str) -> tuple[str, str | None]:
     if not unreleased:
         return "", "[Unreleased] is empty — document the changes before bumping"
     new = bumped(current, level)
-    day = datetime.now(UTC).date().isoformat()
+    day = datetime.now(TIME_ZONE).date().isoformat()
     _ = changelog.write_text(rolled(text, name, new, day), encoding="utf-8")
     manifest["version"] = new
     body = json.dumps(manifest, indent=2, ensure_ascii=False) + "\n"
