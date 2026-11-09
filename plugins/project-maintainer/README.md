@@ -575,7 +575,7 @@ In a session, run `/plugin install project-maintainer@the-claude-factory` instea
 <details>
 <summary><b>The start-of-session reminder appears twice.</b></summary>
 
-Another enabled plugin also reads `.claude/session-handoff/` when a session starts, such as a copy installed from another marketplace. Find it in `claude plugin list` and turn it off with `claude plugin disable <plugin>@<marketplace>`.
+Another enabled plugin also reads `.claude/session-handoff/` when a session starts, such as a copy installed from another marketplace. Find it in `claude plugin list`, then turn it off with `claude plugin disable`, followed by the name and marketplace that list shows for it, written as `name@marketplace`.
 
 </details>
 
