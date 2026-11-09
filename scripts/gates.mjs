@@ -426,15 +426,18 @@ export function gatesFor({ root, ci, base }) {
     },
     // The validators of scripts/validators/ (DEBT-006): a PEP 723 one runs by path in its own uv
     // environment; a standard-library one runs on Python 3.15 through uv, which CI installs.
+    // skill-size.py reads `claude plugin details`, so it runs by path in the claude group, the
+    // only CI job that installs Claude Code (it has no uv; the runner's python3 runs it).
     ...readdirSync(join(root, 'scripts', 'validators'))
       .filter((f) => f.endsWith('.py'))
       .sort()
       .map((f) => {
         const path = join('scripts', 'validators', f)
-        const byPath = pep723(root, path)
+        const needsClaude = f === 'skill-size.py'
+        const byPath = needsClaude || pep723(root, path)
         return /** @type {Gate} */ ({
           id: `validator:${f.slice(0, -'.py'.length)}`,
-          group: 'python',
+          group: needsClaude ? 'claude' : 'python',
           title: `validator ${f}`,
           cmd: byPath ? path : 'uv',
           args: byPath ? [] : ['run', '--no-project', '--python', '3.15', path],

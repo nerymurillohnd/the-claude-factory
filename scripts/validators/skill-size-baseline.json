@@ -1,0 +1,10 @@
+{
+  "hook-engineering/hook-development": 10000,
+  "mods-engineering/cc-mods-guidance": 7800,
+  "plugin-engineering/public-marketplace-dev": 7100,
+  "svelte-development/svelte-best-practices": 8900,
+  "svelte-development/svelte-lsp-intelligence": 8700,
+  "tailwind-development/tailwind-official-docs": 5100,
+  "typescript6-lsp-intelligence/ts-lifecycle": 8200,
+  "typescript7-lsp-intelligence/ts-lifecycle": 6800
+}
