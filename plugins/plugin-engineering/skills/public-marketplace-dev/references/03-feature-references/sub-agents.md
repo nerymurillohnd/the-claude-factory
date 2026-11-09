@@ -528,7 +528,7 @@ Subagents run in the foreground or the background:
 With nothing configured, a subagent that Claude spawns from the main conversation starts in the background.
 
 * **`claude -p` and the Agent SDK**: Claude can wait, on its own judgment or when asked.
-* **Interactive terminal session, VS Code, and desktop app sessions on the user's machine**: to let Claude wait for a subagent, [turn off fork mode](https://code.claude.com/docs/en/sub-agents#let-claude-wait-for-a-subagent), which is [on by default](https://code.claude.com/docs/en/sub-agents#turn-fork-mode-off).
+* **Interactive terminal session, VS Code, and desktop app sessions on the user's machine**: to let Claude wait for a subagent, [turn off fork mode](https://code.claude.com/docs/en/sub-agents#let-claude-wait-for-a-subagent), which is [on by default](https://code.claude.com/docs/en/sub-agents#turn-fork-mode-on-or-off).
 
 For a skill with `context: fork`, Claude Code follows the rules in [Run skills in a subagent](https://code.claude.com/docs/en/skills.md#run-skills-in-a-subagent) instead, whether or not fork mode is on.
 
@@ -598,7 +598,7 @@ By default, a subagent can spawn subagents of its own, up to three layers below 
 Nested subagents suit a delegated task that itself splits into parallel subtasks, such as a reviewer subagent that dispatches a verifier per finding. By default the spawning subagent waits for each nested subagent's report:
 
 * **Interactive terminal session**: only the top-level subagent's summary returns to the user, because a subagent that launches background subagents waits for their results before it finishes.
-* **`claude -p` and the Agent SDK**: the spawning subagent waits while [fork mode](https://code.claude.com/docs/en/sub-agents#turn-fork-mode-off) is on. With fork mode off, nested subagents start in the [background](#run-subagents-in-foreground-or-background) instead. The spawning subagent doesn't wait for a background nested subagent, which reports to the main conversation if it outlasts the spawning subagent.
+* **`claude -p` and the Agent SDK**: the spawning subagent waits while [fork mode](https://code.claude.com/docs/en/sub-agents#turn-fork-mode-on-or-off) is on. With fork mode off, nested subagents start in the [background](#run-subagents-in-foreground-or-background) instead. The spawning subagent doesn't wait for a background nested subagent, which reports to the main conversation if it outlasts the spawning subagent.
 
 To change the limit, set [`CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH`](https://code.claude.com/docs/en/env-vars) to the number of subagent layers wanted below the main conversation. For example, this entry in [`settings.json`](https://code.claude.com/docs/en/settings) caps nesting at two layers:
 

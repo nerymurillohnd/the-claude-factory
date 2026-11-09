@@ -332,12 +332,12 @@ Plugin agent files can sit in subfolders of `agents/`. Claude Code [loads them r
 
 A plugin agent's frontmatter follows these rules:
 
-* **Supported fields**: `name`, `description`, `model`, `effort`, `maxTurns`, `autoCompactWindow`, `tools`, `disallowedTools`, `skills`, `memory`, `background`, `omitClaudeMd`, `isolation`, `color`, and the `cacheTtl` key of `experimental`. The only valid `isolation` value is `"worktree"`. See [supported frontmatter fields](https://code.claude.com/docs/en/sub-agents.md#frontmatter-reference) for what each one does
+* **Supported fields**: `name`, `description`, `model`, `effort`, `maxTurns`, `autoCompactWindow`, `tools`, `disallowedTools`, `skills`, `memory`, `background`, `omitClaudeMd`, `isolation`, `color`, and the `cacheTtl` key of `experimental`. The only valid `isolation` value is `"worktree"`. See [supported frontmatter fields](https://code.claude.com/docs/en/sub-agents.md#supported-frontmatter-fields) for what each one does
 * **Ignored fields**: `permissionMode`, `hooks`, `mcpServers`, and `initialPrompt`. An agent file can't add hooks or MCP servers on its own, so add those as plugin [hooks](#hooks) and [MCP servers](#mcp-servers) instead
 * **A `name` longer than 256 characters**: Claude Code ignores it and names the agent after its file, as it does when the field is missing
 * **Frontmatter that doesn't parse**: the agent still loads with every field ignored. It's named after the file, and its description reads `Agent from my-plugin plugin`. To find these files, run [`claude plugin validate`](https://code.claude.com/docs/en/plugins/cli-reference#plugin-validate) in the shell
 
-For what each field does and the precedence rules, read [Subagents](https://code.claude.com/docs/en/sub-agents.md#frontmatter-reference).
+For what each field does and the precedence rules, read [Subagents](https://code.claude.com/docs/en/sub-agents.md#supported-frontmatter-fields).
 
 ### Hooks
 

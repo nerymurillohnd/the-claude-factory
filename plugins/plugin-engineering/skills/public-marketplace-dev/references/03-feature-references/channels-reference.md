@@ -54,7 +54,7 @@ The server must:
 
 1. Declare the `claude/channel` capability, so Claude Code registers a notification listener.
 2. Emit `notifications/claude/channel` events when something happens.
-3. Connect over [stdio transport](https://modelcontextprotocol.io/docs/concepts/transports#standard-io).
+3. Connect over [stdio transport](https://modelcontextprotocol.io/specification/2026-07-28/basic/transports/stdio).
 
 [Server options](#server-options) and [Notification format](#notification-format) cover each requirement in detail. [Example: build a webhook receiver](#example-build-a-webhook-receiver) is a full walkthrough.
 
@@ -121,7 +121,7 @@ Bun.serve({
 The file does three things, in this order:
 
 * **Server configuration**: creates the MCP server with `claude/channel` in its capabilities, which tells Claude Code that the server is a channel. Claude Code delivers the [`instructions`](#server-options) string to Claude as context when the server connects. Use it to tell Claude what events to expect, whether to reply, and, if it should reply, how to route replies.
-* **Stdio connection**: connects to Claude Code over stdin/stdout, as any [MCP server](https://modelcontextprotocol.io/docs/concepts/transports#standard-io) does.
+* **Stdio connection**: connects to Claude Code over stdin/stdout, as any [MCP server](https://modelcontextprotocol.io/specification/2026-07-28/basic/transports/stdio) does.
 * **HTTP listener**: starts a local web server on port 8788. Every POST body is forwarded to Claude as a channel event through `mcp.notification()`. The `content` becomes the event body, and each `meta` entry becomes an attribute on the `<channel>` tag. The listener needs access to the `mcp` instance, so it runs in the same process. A larger project can split it into separate modules.
 
 **3. Register the server with Claude Code**

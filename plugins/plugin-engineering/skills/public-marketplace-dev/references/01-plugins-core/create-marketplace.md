@@ -5,7 +5,7 @@ Build a plugin marketplace from a `marketplace.json` file and test it locally be
 ## Contents
 
 - [Overview](#overview)
-- [Create a marketplace](#create-a-marketplace)
+- [Create a marketplace](#create-a-marketplace-1)
 - [Add plugin entries](#add-plugin-entries)
 - [Rules for plugin entries](#rules-for-plugin-entries)
   - [Write relative paths from the marketplace root](#write-relative-paths-from-the-marketplace-root)
@@ -28,7 +28,7 @@ A plugin marketplace is a directory or repository with a `.claude-plugin/marketp
 >
 > * **Using a plugin yourself**: load it with `--plugin-dir` or save it in the skills directory. Read [Develop without a marketplace](https://code.claude.com/docs/en/plugins/create.md#develop-without-a-marketplace).
 
-Start with [Create a marketplace](#create-a-marketplace) to build one on the local machine and install a plugin from it, then [add more plugin entries](#add-plugin-entries).
+Start with [Create a marketplace](#create-a-marketplace-1) to build one on the local machine and install a plugin from it, then [add more plugin entries](#add-plugin-entries).
 
 ## Create a marketplace
 
@@ -131,7 +131,7 @@ To run the skill, start a session and enter `/my-first-plugin:hello`. Claude res
 Every distributed plugin is one object in the `plugins` array of `marketplace.json`. To add a second plugin, add a second object. These fields cover most entries:
 
 * `name`: the identifier users type before `@` when they install. [Plugin entries](https://code.claude.com/docs/en/plugins/marketplace-reference.md#plugin-entries) gives the characters a name can use.
-* `source`: where Claude Code fetches the plugin from. Write a relative path string for a plugin inside the marketplace directory, as in [the walkthrough](#create-a-marketplace), or a source object for a plugin outside it. Read [Choose a plugin source](#choose-a-plugin-source).
+* `source`: where Claude Code fetches the plugin from. Write a relative path string for a plugin inside the marketplace directory, as in [the walkthrough](#create-a-marketplace-1), or a source object for a plugin outside it. Read [Choose a plugin source](#choose-a-plugin-source).
 * `description`: the line users see next to the plugin when they browse the marketplace in `/plugin`.
 
 For the full field list, read [Plugin entries](https://code.claude.com/docs/en/plugins/marketplace-reference.md#plugin-entries), which also covers the [`plugin.json`](https://code.claude.com/docs/en/plugins/manifest-reference) fields an entry can set and when they apply.
@@ -142,7 +142,7 @@ Most failed installs from a new marketplace come from a relative path written fr
 
 ### Write relative paths from the marketplace root
 
-The marketplace root is the directory that contains `.claude-plugin/`. In [the walkthrough](#create-a-marketplace), that's `my-marketplace/`, so the entry's `source` is `"./plugins/my-first-plugin"`. The path doesn't start inside `.claude-plugin/`, so don't use `..` to leave it.
+The marketplace root is the directory that contains `.claude-plugin/`. In [the walkthrough](#create-a-marketplace-1), that's `my-marketplace/`, so the entry's `source` is `"./plugins/my-first-plugin"`. The path doesn't start inside `.claude-plugin/`, so don't use `..` to leave it.
 
 A path with `..` and a path to a missing directory fail at different commands:
 
@@ -217,7 +217,7 @@ Problems that `claude plugin validate` doesn't report appear when the marketplac
 
 ### Test an edit to a plugin
 
-In [the walkthrough](#create-a-marketplace), `my-marketplace` was added from a local directory with a relative-path `source`. With that setup, Claude Code reads the plugin's files directly from `my-marketplace/plugins/`. Edits take effect at the next session start or after running `/reload-plugins` in a session, with no change to the plugin's `version`.
+In [the walkthrough](#create-a-marketplace-1), `my-marketplace` was added from a local directory with a relative-path `source`. With that setup, Claude Code reads the plugin's files directly from `my-marketplace/plugins/`. Edits take effect at the next session start or after running `/reload-plugins` in a session, with no change to the plugin's `version`.
 
 Users who install from the hosted marketplace get a copy in the plugin cache instead. For how they receive a new version, read [Keep users up to date](https://code.claude.com/docs/en/plugins/host-marketplace.md#keep-users-up-to-date).
 
@@ -227,9 +227,9 @@ To remove everything and start over, run `claude plugin marketplace remove my-ma
 
 ## Host your marketplace
 
-Once a plugin installs from the marketplace on the local machine, as in [Create a marketplace](#create-a-marketplace), push the marketplace directory to a git host. Before pushing, give the marketplace a top-level `name` that other authors are unlikely to pick, because a user [can't have two marketplaces with the same name](https://code.claude.com/docs/en/plugins/marketplace-reference.md#marketplace-file).
+Once a plugin installs from the marketplace on the local machine, as in [Create a marketplace](#create-a-marketplace-1), push the marketplace directory to a git host. Before pushing, give the marketplace a top-level `name` that other authors are unlikely to pick, because a user [can't have two marketplaces with the same name](https://code.claude.com/docs/en/plugins/marketplace-reference.md#marketplace-file).
 
-Users then run `claude plugin marketplace add <owner>/<repo>` in their shell for a GitHub repository, or the same command with the repository URL. They then install a plugin by name as in [the walkthrough](#create-a-marketplace).
+Users then run `claude plugin marketplace add <owner>/<repo>` in their shell for a GitHub repository, or the same command with the repository URL. They then install a plugin by name as in [the walkthrough](#create-a-marketplace-1).
 
 For private-repository access, updates, versioning, and renaming or removing entries, read [Host and maintain a marketplace](https://code.claude.com/docs/en/plugins/host-marketplace.md).
 

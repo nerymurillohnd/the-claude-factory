@@ -856,7 +856,7 @@ These errors come from Claude's tool calls. Claude corrects most tool errors on 
 
 ### Agent would be spawned with zero tools
 
-Every entry in the subagent's [`tools` list](https://code.claude.com/docs/en/sub-agents#frontmatter-reference) failed to match a usable tool, so Claude Code refused to launch the subagent: with no tools, it could not act. The message groups the entries by what went wrong:
+Every entry in the subagent's [`tools` list](https://code.claude.com/docs/en/sub-agents#supported-frontmatter-fields) failed to match a usable tool, so Claude Code refused to launch the subagent: with no tools, it could not act. The message groups the entries by what went wrong:
 
 * **Unrecognized**: the entry matches no tool name, usually a typo such as `Grpe` for `Grep`.
 * **Not available to subagents**: the entry names a real tool that [subagents can't use](https://code.claude.com/docs/en/sub-agents.md#available-tools). Background subagents keep a smaller built-in tool set, so an entry that only a foreground subagent can use lands here when the subagent would run in the background, which is the default. A listed `Agent` is reported under the next group instead.
