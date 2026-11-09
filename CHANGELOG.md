@@ -4,6 +4,12 @@ All notable changes to **The Claude Factory** marketplace are documented here: p
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The marketplace has no version of its own: entries are grouped by date, newest first, and every plugin carries its own version, changelog and tag. The versions 0.1.0 and 0.2.0 below are the history from before that change; their tags stay.
 
+## 2026-11-08
+
+### Changed
+
+- **plugin-engineering** 0.2.0 — adds the `public-marketplace-dev` skill: the official docs for building and maintaining plugins in a public GitHub marketplace, with 65 references, the official images and example manifests, and a procedure for checking facts against the latest Claude Code release notes. **Breaking:** the `plugin-commands` skill is now `cli-commands-guide`, with the same content.
+
 ## 2026-11-07
 
 ### Added

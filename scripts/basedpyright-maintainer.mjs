@@ -19,6 +19,7 @@ const COVERED = [
   'scripts/validators',
   'scripts/checkers',
   'scripts/generators',
+  'scripts/testers/checkers',
   'scripts/testers/schemas',
   'scripts/testers/validators',
   TEST_RUNNER,
@@ -45,6 +46,7 @@ export function coveredFiles(root) {
 export function environmentFor(root, file) {
   if (
     file === TEST_RUNNER ||
+    file.startsWith('scripts/testers/checkers/') ||
     file.startsWith('scripts/testers/schemas/') ||
     file.startsWith('scripts/testers/validators/')
   ) {

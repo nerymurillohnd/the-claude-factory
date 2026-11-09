@@ -1,0 +1,68 @@
+# Plugin feature support across platforms
+
+Lookup tables for which plugin components and install paths work in claude.ai chat, Cowork, and Claude Code, and why a plugin behaves differently on each.
+
+The same plugin folder installs everywhere Claude runs, but chat, Cowork, and Claude Code each load a different subset of what the folder can contain. A surface skips a component it doesn't load, so a plugin can look complete in one place and partial in another. Check a component or behavior here before relying on it, whether installing, building, or submitting a plugin to the directory.
+
+> **Note:**
+>
+> * To install and manage plugins, see [Plugins](https://claude.com/docs/plugins/overview.md).
+> * To build a plugin, see [Plugin structure and testing](https://claude.com/docs/plugins/build.md).
+> * For Claude Desktop running on the user's own model provider, see its [Feature matrix](https://claude.com/docs/third-party/claude-desktop/feature-matrix.md) for feature availability.
+
+## Contents
+
+- [Compare component support by app](#compare-component-support-by-app)
+- [Compare installation, sync, and admin controls](#compare-installation-sync-and-admin-controls)
+- [Documentation References](#documentation-references)
+
+## Compare component support by app
+
+The tables in this file use these column names:
+
+* **Chat**: conversations in claude.ai on the web, in the Claude desktop app, and in the mobile apps
+* **Cowork**: Cowork tasks in the desktop app
+* **Claude Code**: the terminal, the IDE extensions, and the desktop app's Code tab
+
+A component marked "Ignored" is skipped on that surface. A component marked "Can't be installed" makes that surface refuse the whole plugin.
+
+| Component | Chat | Cowork | Claude Code | Notes |
+| :- | :- | :- | :- | :- |
+| Skills (`skills/<name>/SKILL.md`) | Loads | Loads | Loads | [Create custom skills](https://claude.com/docs/skills/how-to.md) |
+| Commands (`commands/*.md`) | Loads as a skill; Claude applies it when it fits | Loads; you run it by typing `/plugin-name:command` | Loads | |
+| Agents (`agents/*.md`) | Ignored | Loads | Loads | |
+| Hooks (`hooks/hooks.json`) | Ignored | Loads | Loads | [Hooks](https://code.claude.com/docs/en/plugins/components#hooks) in the Claude Code docs |
+| Remote MCP server, `http` or `sse` with a fixed URL | Listed on the plugin's **Connectors** tab; works once you add or connect it there | Loads; connect it from the plugin's **Connectors** tab | Loads | [Bundle a connector with its skill](https://claude.com/docs/plugins/build.md#bundle-an-mcp-connector-with-its-skill) |
+| Local MCP server, a command the app starts, including `.mcpb` bundles | Ignored | Loads when the Cowork session runs on your computer | Loads | On the web, the plugin's **Connectors** tab marks it **Runs in each session** |
+| MCP server that references `${user_config.*}` values | Ignored when the URL contains the reference | Ignored when a referenced option has no default; Cowork doesn't prompt for values | Loads; prompts you for the values | [User configuration](https://code.claude.com/docs/en/plugins/components#user-configuration) |
+| Executables in a top-level `bin/` directory | Can't be installed | Can't be installed | Loads | |
+| LSP servers, output styles, themes, `settings` | Ignored | Ignored | Loads | [Plugin components](https://code.claude.com/docs/en/plugins/components) |
+
+## Compare installation, sync, and admin controls
+
+Chat and Cowork read plugins from the user's claude.ai account. Claude Code reads them from the machine it runs on.
+
+| | Chat and Cowork | Claude Code | Notes |
+| :- | :- | :- | :- |
+| Where you add plugins | [**Customize > Plugins**](https://claude.ai/customize/plugins) in claude.ai or the desktop app | `/plugin` in a session, or `claude plugin install` | [Plugins](https://claude.com/docs/plugins/overview.md), [Install plugins](https://code.claude.com/docs/en/plugins/install) |
+| What an install is attached to | Your account, for the organization you're in | The machine, at user, project, or local scope | |
+| Which way installs travel | A plugin you install on your account also appears in Claude Code as a synced plugin at the next session start | A plugin you install from the command line stays on that machine and isn't added to your account | [Synced plugins](https://code.claude.com/docs/en/plugins/loading#synced-plugins) |
+| Hosts for a marketplace you add yourself | GitHub and GitHub Enterprise repositories, and public GitLab and Bitbucket repositories | Any Git repository, GitHub shorthand, URL, or local path | Repositories your organization syncs to distribute plugins follow [different rules](https://claude.com/docs/plugins/org-sync.md#plugin-sources-that-organization-sync-accepts) |
+| Marketplace and plugin limits | Up to 25 marketplaces that you add yourself, counted for your account in each organization. Each plugin can contain up to 5,000 files and 200 MB, and 200 MB is also the largest file that **Upload plugin** accepts. | No account limits apply; installs are per machine | |
+| Install from a file | **Add > Upload plugin** with a zip of the folder | `claude --plugin-dir <path>` for one session | [Plugin structure and testing](https://claude.com/docs/plugins/build.md#test-the-plugin-on-each-surface) |
+| Organization controls | An Owner sets each plugin to **Not available**, **Available to install**, **Installed by default**, or **Required** | In managed settings, an admin allowlists or blocks marketplaces and force-installs plugins | [Manage plugins for your organization](https://claude.com/docs/plugins/admin.md), and the [Claude Code equivalent](https://code.claude.com/docs/en/plugins/org) |
+
+## Documentation References
+
+- Source page: https://claude.com/docs/plugins/platform-support — the full plugin feature support page.
+- https://claude.com/docs/plugins/overview.md — installing and managing plugins on claude.ai and Cowork.
+- https://claude.com/docs/plugins/build.md — laying out the plugin folder and writing the manifest that all three surfaces load, bundling a connector, and testing on each surface (also listed in the removed "Related resources" section).
+- https://claude.com/docs/third-party/claude-desktop/feature-matrix.md — Claude Desktop feature availability on the user's own model provider.
+- https://claude.com/docs/skills/how-to.md — creating custom skills.
+- https://code.claude.com/docs/en/plugins/components — every plugin component type, including the Claude Code-only ones, hooks and user configuration (also listed in the removed "Related resources" section).
+- https://claude.ai/customize/plugins — the claude.ai **Customize > Plugins** page.
+- https://code.claude.com/docs/en/plugins/install — installing plugins in Claude Code.
+- https://code.claude.com/docs/en/plugins/loading — how Claude Code loads plugins, including synced plugins.
+- https://claude.com/docs/plugins/org-sync.md — organization sync and the plugin sources it accepts.
+- https://claude.com/docs/plugins/admin.md — managing plugins for an organization on claude.ai.
+- https://code.claude.com/docs/en/plugins/org — the Claude Code equivalent of organization plugin controls.

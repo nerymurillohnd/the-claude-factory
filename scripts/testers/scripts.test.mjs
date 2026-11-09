@@ -520,10 +520,11 @@ describe('bump-version', () => {
     assert.equal(r.code, 0, r.out)
     assert.equal(json('plugins/demo-tool/.claude-plugin/plugin.json').version, '0.2.0')
     const log = read(p)
-    assert.match(
-      log,
-      /## \[Unreleased\]\n\n## \[0\.2\.0\] - \d{4}-\d{2}-\d{2}\n\n### Fixed\n\n- A bug\./,
+    // Dated in the maintainer's time zone, not UTC.
+    const day = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Tegucigalpa' }).format(
+      new Date(),
     )
+    assert.ok(log.includes(`## [Unreleased]\n\n## [0.2.0] - ${day}\n\n### Fixed\n\n- A bug.`), log)
     assert.match(log, /\[Unreleased\]: .*compare\/demo-tool--v0\.2\.0\.\.\.HEAD/)
     assert.match(log, /\[0\.2\.0\]: .*releases\/tag\/demo-tool--v0\.2\.0/)
     // The bump does not regenerate the README catalog; the step after it does.
