@@ -19,7 +19,8 @@ Check ids and the checklist item each one serves (references/checklist.md); all 
   V-3 TE-5  every case has a unique id, a non-empty prompt and a non-empty expected_output
   V-4 TE-5  every path in a case's files is relative, stays in the skill and exists
   V-5 TE-5  a case's assertions, when present, is a list of non-empty strings
-  V-6 TE-9  every plugin eval case for the skill has at least one grader
+  V-6 TE-9  every plugin eval case for the skill has at least one grader, and its grader files
+            and case.yaml can be read
   V-7 TE-9  no grader of those cases puts an inline flag group such as (?i) in a regex
   V-8 TE-9  a must-not-invoke grader (tool_used on Skill, min 0, max 0) sets arm: both when its
             case has another grader
@@ -310,21 +311,43 @@ class Grader:
     fields: dict[str, str]
 
 
-def graders_of(case: Path, plugin: Path) -> tuple[list[Grader], str]:
-    """The case's graders/*.md files, and its case.yaml text."""
+@dataclass
+class CaseFiles:
+    """A case's graders, its case.yaml text, and the files of both that couldn't be read."""
+
+    graders: list[Grader]
+    case_yaml: str
+    unreadable: list[str]
+
+
+def read_or_note(path: Path, plugin: Path, unreadable: list[str]) -> str:
+    """The file's text; on failure, note it, say so on stderr and return empty text."""
+    text = read_text(path)
+    if text is None:
+        where = path.relative_to(plugin).as_posix()
+        unreadable.append(where)
+        _ = sys.stderr.write(f"check-evals: could not read {where} as UTF-8 text\n")
+        return ""
+    return text
+
+
+def graders_of(case: Path, plugin: Path) -> CaseFiles:
+    """The case's graders/*.md files and case.yaml, with the files that couldn't be read."""
     graders: list[Grader] = []
+    unreadable: list[str] = []
     folder = case / "graders"
     if folder.is_dir():
         for path in sorted(folder.glob("*.md")):
-            text = read_text(path) or ""
+            text = read_or_note(path, plugin, unreadable)
             fields: dict[str, str] = {}
             for line in frontmatter(text).splitlines():
                 match = FIELD_RE.match(line)
                 if match:
                     fields[match.group(1)] = match.group(2).strip("'\"")
             graders.append(Grader(path.relative_to(plugin).as_posix(), text, fields))
-    case_yaml = read_text(case / "case.yaml") or ""
-    return graders, case_yaml
+    yaml_path = case / "case.yaml"
+    case_yaml = read_or_note(yaml_path, plugin, unreadable) if yaml_path.is_file() else ""
+    return CaseFiles(graders, case_yaml, unreadable)
 
 
 def must_not_invoke(grader: Grader) -> bool:
@@ -341,7 +364,10 @@ def must_not_invoke(grader: Grader) -> bool:
 def check_case_graders(case: Path, plugin: Path, report: Report) -> None:
     """V-6, V-7 and V-8 for one case."""
     where = case.relative_to(plugin).as_posix()
-    graders, case_yaml = graders_of(case, plugin)
+    files = graders_of(case, plugin)
+    graders, case_yaml = files.graders, files.case_yaml
+    for location in files.unreadable:
+        report.fail("V-6", location, "can't be read as UTF-8 text, so its graders weren't checked")
     inline = re.search(r"^graders\s*:", case_yaml, re.MULTILINE) is not None
     if not graders and not inline:
         report.fail("V-6", where, "the case has no grader, so it fails to load")
@@ -374,8 +400,8 @@ def check_plugin_cases(root: Path, name: str, report: Report) -> tuple[dict[str,
     word = re.compile(r"(?<![\w-])" + re.escape(name) + r"(?![\w-])")
     mine: list[Path] = []
     for case in find_cases(base):
-        graders, case_yaml = graders_of(case, plugin)
-        if word.search(case_yaml) or any(word.search(g.text) for g in graders):
+        files = graders_of(case, plugin)
+        if word.search(files.case_yaml) or any(word.search(g.text) for g in files.graders):
             mine.append(case)
     for cid in ("V-6", "V-7", "V-8"):
         report.ran(cid, f"{len(mine)} plugin eval case(s) for the skill load and score as meant")

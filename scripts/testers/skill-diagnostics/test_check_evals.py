@@ -192,6 +192,15 @@ class CheckEvals(unittest.TestCase):
         _ = self.write("evals/bare/case.yaml", f"prompt: Use {NAME} on the report\n")
         self.assertEqual(statuses(self.checked())["V-6"], ["fail"])
 
+    def test_unreadable_grader(self) -> None:
+        """V-6 fails on a grader file that isn't UTF-8 text, and stderr names it."""
+        self.plugin_case("evals/broken", INVOKED)
+        _ = (self.plugin / "evals/broken/graders/g1.md").write_bytes(b"\xff\xfe bad")
+        result = self.run_on()
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(statuses(as_object(result.stdout))["V-6"], ["fail"])
+        self.assertIn("evals/broken/graders/g1.md", result.stderr)
+
     def test_inline_flags(self) -> None:
         """V-7 fails on a regex with an inline (?i) group."""
         self.plugin_case("evals/flags", INVOKED, RESULT.replace("report", "(?i)report"))
