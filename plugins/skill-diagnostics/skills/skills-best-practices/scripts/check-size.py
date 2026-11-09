@@ -22,8 +22,9 @@ How the size is measured:
   no frontmatter. It is what Claude receives when the skill is invoked, and what Claude Code
   re-attaches after compaction up to the first 5,000 tokens.
 - Tokens are estimated as the body's characters divided by 2.8, rounded up. No tokenizer ships
-  with the standard library; on the skills this was calibrated on, the estimate stayed within
-  the rounding of the figure `claude plugin details` prints for a plugin's skills.
+  with the standard library. Against the figure `claude plugin details` prints for 25 plugin
+  skills, the estimate was within 9% either way, and within 3% for most; near the limit, read
+  that figure when Claude Code is available.
 --output FILE also writes the same JSON object to FILE (UTF-8, overwritten, parent folders
 created). stdout is unchanged. If FILE can't be written, the script prints nothing on stdout,
 names FILE on stderr and exits 1. Standard library only.
