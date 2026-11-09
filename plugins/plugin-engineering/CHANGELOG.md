@@ -6,6 +6,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.2.2] - 2026-11-09
+
+### Changed
+
+- `public-marketplace-dev` now tells Claude to declare `options` on a `userConfig` field that a plugin hook reads as one of a few fixed values, instead of leaving it free text.
+- `cli-commands-guide` now says that `--plugin-dir` and `--plugin-url` must come before the subcommand, as in `claude --plugin-dir <path> plugin details <name>`, with the `unknown option` error the other order gives, and that `plugin details` has no `--json` and lists skills, agents and commands in one rounded table.
+
 ## [0.2.1] - 2026-11-09
 
 ### Changed
@@ -31,7 +38,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - Gotchas Claude keeps in view, such as `/plugin install` with a path installing nothing, `marketplace remove` uninstalling that marketplace's plugins, and reloads that change MCP tools needing `--force`.
 - Before relying on a version-gated flag, Claude checks `--help` on your Claude Code version and the live docs, and tells you what differs.
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/plugin-engineering--v0.2.1...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/plugin-engineering--v0.2.2...HEAD
+[0.2.2]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/plugin-engineering--v0.2.2
 [0.2.1]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/plugin-engineering--v0.2.1
 [0.2.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/plugin-engineering--v0.2.0
 [0.1.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/plugin-engineering--v0.1.0

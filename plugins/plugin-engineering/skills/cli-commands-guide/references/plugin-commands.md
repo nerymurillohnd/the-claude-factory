@@ -256,13 +256,13 @@ Built-in plugins (`@builtin`) never appear in `claude plugin list`; they show on
 
 ## plugin details
 
-`claude plugin details <name>`. Shows a plugin's component inventory and projected token cost. No flags beyond `--help`.
+`claude plugin details <name>`. Shows a plugin's component inventory and projected token cost. No flags beyond `--help`, and no `--json`.
 
-- The plugin must be loaded: installed, found in a skills directory, or passed with `--plugin-dir` or `--plugin-url` in the same command. `<name>` is a `name` or `name@marketplace`.
+- The plugin must be loaded: installed, found in a skills directory, or passed with `--plugin-dir` or `--plugin-url` before the subcommand in the same command, as in `claude --plugin-dir ./my-plugin plugin details my-plugin`. After the subcommand the flag fails with `error: unknown option '--plugin-dir'`, exit `1` (verified on 2.1.319). `<name>` is a `name` or `name@marketplace`.
 - Output: name, version, description and source, then:
   - `Component inventory`: skills, agents, hooks, MCP servers and LSP servers.
   - `Projected token cost`: the always-on tokens the plugin adds to every session (the `Always-on` line).
-  - `Per-component (rounded)`: always-on and on-invoke estimates per skill, agent and command. Omitted when the plugin has none.
+  - `Per-component (rounded)`: always-on and on-invoke estimates per skill, agent and command, in one table with no type column, rounded as in `~240` and `~7.1k`. Omitted when the plugin has none.
 - Not loaded, exit `1`: ``Plugin "formatter" not found. Run `claude plugin list` to see installed plugins, or pass --plugin-dir <path> to load one from disk.``
 - An ID ending in `@builtin` that isn't found: ``Plugin "<name>@builtin" not found. Built-in plugins don't appear in `claude plugin list`. To see the ones available in a session, run /plugin in Claude Code and open the Installed tab.`` (changelog 2.1.302).
 
