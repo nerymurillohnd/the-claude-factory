@@ -31,7 +31,7 @@
 A skill can look finished to the person who wrote it and still fail the model that runs it: a description that never triggers, a placeholder nothing defines, a reference that contradicts `SKILL.md`, a field that one surface rejects.
 
 - **Write it right the first time** — Claude builds a new skill from a template, step by step, by Anthropic's published best practices for the description, frontmatter, body, workflows, scripts and security, then checks it with a validation loop.
-- **An audit you can trust** — three scripts check what can be checked mechanically, four reviewers each judge one area, a cold executor follows the skill as a model that has nothing else, and an adversarial verifier tries to refute every finding against your files and the live official docs. You get one report and one verdict.
+- **An audit you can trust** — four scripts check what can be checked mechanically, four reviewers each judge one area, a cold executor follows the skill as a model that has nothing else, and an adversarial verifier tries to refute every finding against your files and the live official docs. You get one report and one verdict.
 - **Evidence, not opinions** — every finding quotes the exact text with its file and line and says how to fix it.
 - **Nothing slips through** — in Claude Code, a gate makes Claude audit every skill it creates or changes before it ends its turn, including skills written by a shell command.
 - **Measure before you release** — the `/skill-diagnostics:evals` workflow runs a skill's trigger and output-quality evals, with and without the skill, and reports pass rates, time and tokens.
@@ -40,7 +40,7 @@ A skill can look finished to the person who wrote it and still fail the model th
 
 | Component | Name | What it does | How it runs |
 | :-- | :-- | :-- | :-- |
-| 🎯 Skill | `skill-diagnostics:skills-best-practices` | Writes or edits a skill by the best practices; audits a skill with 3 scripts, 4 reviewers, a cold executor and an adversarial verifier, and gives one report and one verdict | `/skill-diagnostics:skills-best-practices`, or automatically when you ask Claude to write, review or audit a skill |
+| 🎯 Skill | `skill-diagnostics:skills-best-practices` | Writes or edits a skill by the best practices; audits a skill with 4 scripts, 4 reviewers, a cold executor and an adversarial verifier, and gives one report and one verdict | `/skill-diagnostics:skills-best-practices`, or automatically when you ask Claude to write, review or audit a skill |
 | 🤖 Agent | `skill-diagnostics:description-reviewer` | Reviews the description, frontmatter and the surfaces the skill reaches | Launched by the skill during an audit only |
 | 🤖 Agent | `skill-diagnostics:instructions-reviewer` | Reviews the body, structure and workflows passage by passage | Launched by the skill during an audit only |
 | 🤖 Agent | `skill-diagnostics:scripts-runtime-reviewer` | Reviews bundled scripts and Claude Code runtime features | Launched by the skill during an audit only |
@@ -271,7 +271,7 @@ export CLAUDE_CODE_PLUGIN_PREFER_HTTPS=1
 /skill-diagnostics:skills-best-practices audit ~/.claude/skills/release-notes
 ```
 
-**Result:** a report in the conversation with the verdict (**pass**, **pass with warnings**, **fail** or **not determinable**), the findings by severity, each with its file, line, quoted text and fix, and what couldn't be checked. Every audit is complete: all three scripts and all six agents read every file of the skill, whichever files changed. The audit changes nothing in the skill; fixing the findings is a separate step you ask for.
+**Result:** a report in the conversation with the verdict (**pass**, **pass with warnings**, **fail** or **not determinable**), the findings by severity, each with its file, line, quoted text and fix, and what couldn't be checked. Every audit is complete: all four scripts and all six agents read every file of the skill, whichever files changed. The audit changes nothing in the skill; fixing the findings is a separate step you ask for.
 
 You can also just ask: "review my skill in `./skills/invoice-note` before I publish it".
 
@@ -315,7 +315,7 @@ In the Claude app the option can't be changed and keeps its default, `gate`.
   - `SessionStart` runs `hooks/session-start.sh` (10 s timeout). It creates an empty marker file named after the session, whose time is the session start; a compaction keeps the old time. It also deletes this plugin's session files untouched for more than 7 days. Prints nothing.
   - `PostToolUse` on `Write|Edit` runs `hooks/skill-changed.sh` (10 s timeout), also for tool calls made by subagents. It finds the skill folder of the written file (the nearest folder upwards that holds `SKILL.md`), adds it to the session's pending list, and the first time in the session adds one line to Claude's context: in `gate` mode, to audit the skill before finishing; in `suggest` mode, to offer you an audit. It skips files outside any skill, skills inside Claude Code's `plugins/` and `skills/synced/` folders (which Claude Code overwrites), and this plugin's own files.
   - `Stop` runs `hooks/audit-gate.sh` (15 s timeout), in `gate` mode only. It looks for skill folders changed since the session started under your project folder and under `~/.claude/skills`, skipping `.git`, `node_modules`, `.venv`, `venv`, `__pycache__`, `dist`, `build` and `target`, and adds them to the pending list. A pending skill is cleared once its verdict file is newer than every file in it, or when it's gone. For the rest, it tells Claude to run the audit before finishing. After 2 such reminders for a skill that hasn't changed since, it lets Claude stop and shows you a warning that the skill wasn't audited.
-- **The skill's scripts:** `check-metadata.py`, `check-structure.py` and `check-runtime.py` read the skill you audit or write, and print their results; Claude saves each result to a temporary file for the next script. `save-report.py` saves each agent's report, unchanged, and the final report in that same temporary folder, so you can check the final report against what each agent found. `record-verdict.py` writes the audit's verdict. The skill pre-approves exactly these five `python3` commands.
+- **The skill's scripts:** `check-metadata.py`, `check-structure.py`, `check-runtime.py` and `check-size.py` read the skill you audit or write, and print their results; Claude saves each result to a temporary file for the next script. `save-report.py` saves each agent's report, unchanged, and the final report in that same temporary folder, so you can check the final report against what each agent found. `record-verdict.py` writes the audit's verdict. The skill pre-approves exactly these six `python3` commands.
 - **MCP servers:** none.
 - **Network:** the adversarial verifier reads public pages from `code.claude.com`, `claude.com`, `platform.claude.com`, `support.claude.com`, `agentskills.io` and the Claude Code changelog on `github.com` to check findings. The hooks and scripts make no network calls. Nothing from your skill is uploaded. The evals workflow starts `claude -p` sessions, which use your plan like any other session.
 - **Files written:** in the plugin's data directory (`~/.claude/plugins/data/<id>/`):
@@ -411,7 +411,7 @@ Or, inside a session:
 
 <sub>✅ works · ⚠️ partial · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. The Claude app (web, desktop and mobile) runs a conversation as a Cowork session when it can, and as a chat conversation otherwise, for example on a device that can't run Cowork or in the separate Chat mode that Team and Enterprise plans keep for now.</sub>
 
-In a chat conversation, where agents and hooks don't run, the skill still writes skills and audits them inline: Claude applies the four reviewers' checks, the cold executor's trace and the verification itself, one after another, and the report says that no independent agents ran. The three scripts need the code execution sandbox; without it they can't run and the verdict is *not determinable*. No gate runs there, so ask for the audit yourself after writing a skill. In a Cowork session the hooks run where Cowork runs them, so they need Bash and `jq` there.
+In a chat conversation, where agents and hooks don't run, the skill still writes skills and audits them inline: Claude applies the four reviewers' checks, the cold executor's trace and the verification itself, one after another, and the report says that no independent agents ran. The four scripts need the code execution sandbox; without it they can't run and the verdict is *not determinable*. No gate runs there, so ask for the audit yourself after writing a skill. In a Cowork session the hooks run where Cowork runs them, so they need Bash and `jq` there.
 
 ## ❓ FAQ & Troubleshooting
 

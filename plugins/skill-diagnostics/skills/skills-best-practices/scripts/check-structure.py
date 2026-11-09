@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Check a skill's files: inventory, size, links, pointers, tables of contents and scripts.
+"""Check a skill's files: inventory, links, pointers, tables of contents and scripts.
 
 Usage: python3 check-structure.py <skill-dir> [--previous <json file>] [--output FILE]
 
@@ -10,10 +10,10 @@ Prints one JSON object on stdout:
 The inventory lists every file, hidden ones included, sorted by path; lines is null for a binary
 file. Diagnostics go to stderr. Exit codes: 0 the script ran (findings included); 2 usage error
 (no such folder, no SKILL.md, bad arguments); 1 could not run (an unexpected error, on stderr).
---previous is accepted so the three scripts share one command form; this script doesn't read it.
+--previous is accepted so the four scripts share one command form; this script doesn't read it.
 
-Check ids and the checklist item each one serves (references/checklist.md); all are proved:
-  S-1  BS-1   SKILL.md has at most 500 lines
+Check ids and the checklist item each one serves (references/checklist.md); all are proved.
+SKILL.md's length is check-size.py's (Z-1); S-1 is retired so the other ids stay stable:
   S-2  BS-11  every local Markdown link resolves to a file
   S-3  BS-11  every #anchor of a link, and every file.md#anchor pointer, names a heading
   S-4  BS-1   no file is linked only from a file other than SKILL.md (one level deep)
@@ -76,7 +76,6 @@ MAX_INVENTORY = 1000  # inventory entries printed; the rest are counted, so a sk
 # assets/ folder doesn't flood the orchestrator's context with file names
 MAX_READ = 2 * 1024 * 1024  # bytes of one file read for content checks; a skill's text files are
 # far smaller, and the bound keeps a stray large file from slowing the walk
-SKILL_MD_MAX = 500  # [AS][PL][CC]
 TOC_THRESHOLD = 100  # [PL]
 SECTION_LEVEL = 2  # "##": the first heading level below a file's title
 SCRIPT_SUFFIXES = frozenset({".py", ".sh", ".bash", ".zsh", ".js", ".mjs", ".cjs", ".ts", ".rb"})
@@ -105,7 +104,6 @@ SLUG_DROP_RE = re.compile(r"[^\w\- ]")
 HEADING_LINK_RE = re.compile(r"!?\[([^\]]*)\]\([^)]*\)")
 
 CHECKS: dict[str, tuple[str, str]] = {
-    "S-1": ("BS-1", "proved"),
     "S-2": ("BS-11", "proved"),
     "S-3": ("BS-11", "proved"),
     "S-4": ("BS-1", "proved"),
@@ -119,7 +117,6 @@ CHECKS: dict[str, tuple[str, str]] = {
     "S-12": ("SU-2", "proved"),
 }
 PASS_DETAILS = {
-    "S-1": "SKILL.md is within 500 lines",
     "S-2": "every local link resolves",
     "S-3": "every anchor and pointer names a heading",
     "S-4": "every linked file is linked from SKILL.md",
@@ -646,9 +643,6 @@ def run_checks(skill: Skill, report: Report) -> None:
     """Every check, in id order."""
     for cid, detail in PASS_DETAILS.items():
         report.ran(cid, detail)
-    lines = skill.files["SKILL.md"].lines or 0
-    if lines > SKILL_MD_MAX:
-        report.fail("S-1", "SKILL.md:1", f"SKILL.md has {lines} lines; keep it within 500")
     for doc in skill.docs.values():
         check_links(skill, report, doc)
     for doc in skill.docs.values():

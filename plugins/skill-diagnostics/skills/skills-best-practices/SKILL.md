@@ -1,7 +1,7 @@
 ---
 name: skills-best-practices
 description: Writes, edits and audits Claude agent skills (a SKILL.md folder with its references, scripts and assets) by Anthropic's official best practices, for Claude Code, plugins, the Claude app and the API. Use when the user asks to create, write, scaffold, restructure or improve a skill, its description or its evals, to audit, review, check or diagnose a skill or each skill of a plugin before release or install, or when a hook asks for an audit of a skill that was just changed. Not for running trigger or output benchmarks on a skill, packaging or publishing a plugin, or writing CLAUDE.md files, hooks or subagents that are not part of a skill.
-allowed-tools: Bash(python3 ${CLAUDE_SKILL_DIR}/scripts/check-metadata.py *) Bash(python3 ${CLAUDE_SKILL_DIR}/scripts/check-structure.py *) Bash(python3 ${CLAUDE_SKILL_DIR}/scripts/check-runtime.py *) Bash(python3 ${CLAUDE_SKILL_DIR}/scripts/record-verdict.py *) Bash(python3 ${CLAUDE_SKILL_DIR}/scripts/save-report.py *)
+allowed-tools: Bash(python3 ${CLAUDE_SKILL_DIR}/scripts/check-metadata.py *) Bash(python3 ${CLAUDE_SKILL_DIR}/scripts/check-structure.py *) Bash(python3 ${CLAUDE_SKILL_DIR}/scripts/check-runtime.py *) Bash(python3 ${CLAUDE_SKILL_DIR}/scripts/check-size.py *) Bash(python3 ${CLAUDE_SKILL_DIR}/scripts/record-verdict.py *) Bash(python3 ${CLAUDE_SKILL_DIR}/scripts/save-report.py *)
 ---
 
 # Skills best practices
@@ -27,7 +27,7 @@ Done when:
 - In the Claude app there are no plugin agents and no hooks: the audit runs inline, by [the audit in chat](references/audit-procedure.md#the-audit-in-chat), and nothing gates it.
 - The gate exists only in Claude Code and Cowork. It clears a skill only on this skill's verdict, recorded by `record-verdict.py`; an audit without that last step leaves the skill pending.
 - Links and paths in this skill are relative to `SKILL.md`. Claude Code substitutes `${CLAUDE_SKILL_DIR}`, `${CLAUDE_PLUGIN_ROOT}` and `${CLAUDE_PLUGIN_DATA}` in two places only: this file's text and the `Bash()` rules in `allowed-tools`. A reference or an asset reaches you with the placeholder as literal text, and the Bash tool's environment doesn't hold them, so run every command exactly as this file gives it. The same placeholder in the command and in `allowed-tools` is what lets the scripts run without a permission prompt. The same rule applies to the skills you write and audit ([claude-code-features.md](references/claude-code-features.md#substitutions-and-pre-approved-tools)).
-- In Claude Code and Cowork, every audit is complete: all three scripts and all six agents on every file of the skill, whichever files changed. Never narrow it to the changed files.
+- In Claude Code and Cowork, every audit is complete: all four scripts and all six agents on every file of the skill, whichever files changed. Never narrow it to the changed files.
 
 ## Choose the branch
 
@@ -62,15 +62,16 @@ Skill progress:
 
 ### Validation loop
 
-1. Run the three scripts on the skill folder, in order. Each writes its result to the file after `--output`, and the next one reads it through `--previous`; use one new folder in the system's temporary folder for these files, such as `/tmp/skill-audit-<skill-name>/`:
+1. Run the four scripts on the skill folder, in order. Each writes its result to the file after `--output`, and the next one reads it through `--previous`; use one new folder in the system's temporary folder for these files, such as `/tmp/skill-audit-<skill-name>/`:
    ```bash
    python3 ${CLAUDE_SKILL_DIR}/scripts/check-metadata.py <skill-dir> --output <tmp>/metadata.json
    python3 ${CLAUDE_SKILL_DIR}/scripts/check-structure.py <skill-dir> --previous <tmp>/metadata.json --output <tmp>/structure.json
    python3 ${CLAUDE_SKILL_DIR}/scripts/check-runtime.py <skill-dir> --previous <tmp>/structure.json --output <tmp>/runtime.json
+   python3 ${CLAUDE_SKILL_DIR}/scripts/check-size.py <skill-dir> --previous <tmp>/runtime.json --output <tmp>/size.json
    ```
 2. Read [checklist.md](references/checklist.md) and check the skill against every item a script doesn't own. Items owned by `evals` are not assessed by this loop (step 7 covers them), and `EX-1` is left to the audit's cold executor.
 3. Fix each failed check and each item that fails, then go back to 1.
-4. Stop when all three scripts exit `0`, no script check fails, each lead is confirmed or rejected against its item, and every other item passes or doesn't apply. A script that exits `1` or `2` made no checks and never counts as a pass: on `2` fix the command, on `1` fix the cause, then rerun from that script ([Validation scripts](references/audit-procedure.md#validation-scripts)). In Claude Code and Cowork, run the audit branch next: in the default gate mode the turn can't end until the skill has a verdict.
+4. Stop when all four scripts exit `0`, no script check fails, each lead is confirmed or rejected against its item, and every other item passes or doesn't apply. A script that exits `1` or `2` made no checks and never counts as a pass: on `2` fix the command, on `1` fix the cause, then rerun from that script ([Validation scripts](references/audit-procedure.md#validation-scripts)). In Claude Code and Cowork, run the audit branch next: in the default gate mode the turn can't end until the skill has a verdict.
 
 ## Auditing a skill
 
@@ -88,8 +89,8 @@ Audit progress:
 
 Read [audit-procedure.md](references/audit-procedure.md) first. Keep this order:
 
-1. **Scripts, one after another.** Run the three commands of the validation loop above on the skill folder, and read each result before the next. A script that exits `1` couldn't run: the verdict is not determinable, but run the rest of the audit so the report shows every other finding; the next script then runs without `--previous` ([Validation scripts](references/audit-procedure.md#validation-scripts)).
-2. **Profile and briefs.** Only when all three have returned, write the [skill profile](references/audit-procedure.md#skill-profile), then one brief for each of the four reviewers and the cold executor from [assets/brief-template.md](assets/brief-template.md), by [the rules for every brief](references/audit-procedure.md#rules-for-every-brief). Wherever the template or an agent names a file of this skill through the plugin-root placeholder, give the absolute path of this skill's folder, `${CLAUDE_SKILL_DIR}`. Fill `Claude Code release` from `claude --version` when you can run it, or write `unknown`. Launch no agent before every brief is written.
+1. **Scripts, one after another.** Run the four commands of the validation loop above on the skill folder, and read each result before the next. A script that exits `1` couldn't run: the verdict is not determinable, but run the rest of the audit so the report shows every other finding; the next script then runs without `--previous` ([Validation scripts](references/audit-procedure.md#validation-scripts)).
+2. **Profile and briefs.** Only when all four have returned, write the [skill profile](references/audit-procedure.md#skill-profile), then one brief for each of the four reviewers and the cold executor from [assets/brief-template.md](assets/brief-template.md), by [the rules for every brief](references/audit-procedure.md#rules-for-every-brief). Wherever the template or an agent names a file of this skill through the plugin-root placeholder, give the absolute path of this skill's folder, `${CLAUDE_SKILL_DIR}`. Fill `Claude Code release` from `claude --version` when you can run it, or write `unknown`. Launch no agent before every brief is written.
 3. **Review.** Launch `skill-diagnostics:description-reviewer`, `skill-diagnostics:instructions-reviewer`, `skill-diagnostics:scripts-runtime-reviewer`, `skill-diagnostics:security-reviewer` and `skill-diagnostics:cold-executor` in one message. Save each report exactly as you received it, before you check or use it, by [Saving the reports](references/audit-procedure.md#saving-the-reports), in the folder of the script results:
    ```bash
    python3 ${CLAUDE_SKILL_DIR}/scripts/save-report.py --output <tmp>/agents/<agent>.md <<'END_OF_REPORT'
@@ -143,5 +144,6 @@ Scripts, run with the commands above:
 - `scripts/check-metadata.py`: first, on every audit and validation loop.
 - `scripts/check-structure.py`: second, with `--previous` set to the first result.
 - `scripts/check-runtime.py`: third, with `--previous` set to the second result.
+- `scripts/check-size.py`: fourth, with `--previous` set to the third result; measures `SKILL.md`'s lines and its body's estimated tokens.
 - `scripts/save-report.py`: in an audit in Claude Code and Cowork, once for each agent report as it arrives and once for the final report.
 - `scripts/record-verdict.py`: last step of an audit in Claude Code and Cowork.

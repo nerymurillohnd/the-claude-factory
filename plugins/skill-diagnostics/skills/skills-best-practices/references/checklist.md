@@ -1,6 +1,6 @@
 # Skill checklist
 
-The single list of what a finished skill must meet. Every audit report maps its findings onto these items, and every item has exactly one owner: one of the three validation scripts, one of the four reviewers, the cold executor, or the evals. An owner of `evals` means no static audit can show the item; the audit report marks it "not assessed by this audit" and names the evaluation in [evaluation.md](evaluation.md) that would.
+The single list of what a finished skill must meet. Every audit report maps its findings onto these items, and every item has exactly one owner: one of the four validation scripts, one of the four reviewers, the cold executor, or the evals. An owner of `evals` means no static audit can show the item; the audit report marks it "not assessed by this audit" and names the evaluation in [evaluation.md](evaluation.md) that would.
 
 Strength labels and source tags are defined in [evidence-and-verdict.md](evidence-and-verdict.md). The area file named in each section holds the rule in full.
 
@@ -40,7 +40,7 @@ Area files: [frontmatter.md](frontmatter.md), [description.md](description.md).
 
 Area files: [body-and-structure.md](body-and-structure.md), [workflows.md](workflows.md).
 
-- `BS-1` · `SKILL.md` is under 500 lines and every reference file is linked directly from `SKILL.md`, one level deep · \[PL\]\[AS\]\[CC\] · `rec` · check-structure
+- `BS-1` · Every reference file is linked directly from `SKILL.md`, one level deep · \[PL\]\[AS\]\[CC\] · `rec` · check-structure
 - `BS-2` · Each file Claude reads is linked with a relative Markdown link and the condition for reading it · \[PL\]\[AS\]\[CC\] · `rec` · instructions-reviewer
 - `BS-3` · No `${CLAUDE_SKILL_DIR}` inside a Markdown link · \[CP\] · `default` · check-structure
 - `BS-4` · In a plugin skill, `${CLAUDE_SKILL_DIR}` names the skill's own folder and the path after it is relative to the skill · \[CC\] · `req` · check-runtime
@@ -53,6 +53,7 @@ Area files: [body-and-structure.md](body-and-structure.md), [workflows.md](workf
 - `BS-11` · Every local link and pointer resolves, and no file in the skill is unused (`evals/` exempt) · \[SD\] · `req` · check-structure
 - `BS-12` · A skill with side effects states what it authorizes; a forked or preloaded skill states its input and single output and never asks · \[SD\] · `rec` · instructions-reviewer
 - `BS-13` · The blocks of `SKILL.md` follow the recommended order, and no rule first appears after the step it governs · \[CC\]\[AS\]\[PL\] · `default` · instructions-reviewer
+- `BS-14` · `SKILL.md` is at most 500 lines and its body at most 5,000 tokens, so the whole body survives compaction · \[PL\]\[AS\]\[CC\] · `rec` · check-size
 
 ## Scripts
 
@@ -119,6 +120,7 @@ Method file: [executability-trace.md](executability-trace.md).
 | check-metadata | FM-1, FM-2, FM-4, FM-5, FM-6 |
 | check-structure | BS-1, BS-3, BS-9, BS-11, SC-9, SU-2 |
 | check-runtime | BS-4, SC-7, SC-8, CF-1, CF-3, CF-4, CF-6 |
+| check-size | BS-14 |
 | description-reviewer | FM-3, FM-7, FM-8, SU-1 |
 | instructions-reviewer | BS-2, BS-5, BS-6, BS-7, BS-8, BS-10, BS-12, BS-13 |
 | scripts-runtime-reviewer | SC-1, SC-2, SC-3, SC-4, SC-5, SC-6, CF-2, CF-5, CF-7, CF-8 |

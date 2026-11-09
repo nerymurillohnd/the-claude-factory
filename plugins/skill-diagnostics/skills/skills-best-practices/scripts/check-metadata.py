@@ -8,7 +8,7 @@ Prints one JSON object on stdout:
    "checks": [{"check", "item", "kind", "status", "location", "detail"}], "truncated": <int>}
 Diagnostics go to stderr. Exit codes: 0 the script ran (findings included); 2 usage error (no
 such folder, no SKILL.md, bad arguments); 1 could not run (an unexpected error, on stderr).
---previous is accepted so the three scripts share one command form; this script doesn't read it.
+--previous is accepted so the four scripts share one command form; this script doesn't read it.
 
 Check ids and the checklist item each one serves (references/checklist.md):
   M-1  FM-4 proved  The frontmatter opens with --- on line 1 and closes with ---

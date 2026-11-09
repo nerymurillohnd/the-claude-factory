@@ -21,12 +21,12 @@ How the orchestrator runs an audit, from the validation scripts to the recorded 
 
 ## Every audit is complete
 
-After an edit and before a release alike, the audit runs all three validation scripts and all six agents on every file of the skill, whichever files changed. No run audits a subset: a change can break a file it didn't touch, such as a script that now contradicts `SKILL.md`. Every audit runs at this one level of rigor, whatever the gate's mode.
+After an edit and before a release alike, the audit runs all four validation scripts and all six agents on every file of the skill, whichever files changed. No run audits a subset: a change can break a file it didn't touch, such as a script that now contradicts `SKILL.md`. Every audit runs at this one level of rigor, whatever the gate's mode.
 
 ## How an audit runs
 
 1. **Trigger.** In Claude Code and Cowork, after a write or an edit inside a skill, the plugin's hooks record the skill as pending and ask Claude to audit it; at the end of the turn the gate also finds skills changed by other means. The user can also run the audit directly.
-2. **Scripts, one after another.** Run `check-metadata.py` and read its result, then `check-structure.py`, then `check-runtime.py` ([Validation scripts](#validation-scripts)). Each result shapes the next run: the origin and surfaces from the first decide which rules apply, and the inventory from the second is the file list the third scans. Launch no agent until all three have returned and their results are read. A script that couldn't run makes the verdict not determinable, because the checks it owns were never made. Still run the other scripts and the agents, so the report shows every other finding; a high finding still makes the verdict fail.
+2. **Scripts, one after another.** Run `check-metadata.py` and read its result, then `check-structure.py`, then `check-runtime.py`, then `check-size.py` ([Validation scripts](#validation-scripts)). Each result shapes the next run: the origin and surfaces from the first decide which rules apply, and the inventory from the second is the file list the third scans. Launch no agent until all four have returned and their results are read. A script that couldn't run makes the verdict not determinable, because the checks it owns were never made. Still run the other scripts and the agents, so the report shows every other finding; a high finding still makes the verdict fail.
 3. **Profile.** From the script results and the skill's text, write the skill profile ([Skill profile](#skill-profile)), which decides which patterns the skill needs.
 4. **Briefs.** Write one brief for each of the four reviewers and the cold executor from `assets/brief-template.md`, filling every field ([Rules for every brief](#rules-for-every-brief)).
 5. **Review.** Launch the four reviewers and the cold executor in one message, so they run in parallel; each returns its report template filled, self-check included. Claude Code refuses a 21st running subagent by default \[CC\]. Save each report as it arrives ([Saving the reports](#saving-the-reports)), then check it before using it ([Checking an agent report](#checking-an-agent-report)).
@@ -42,13 +42,15 @@ Run each script with its interpreter as a prefix, in this order, each writing it
 python3 ${CLAUDE_SKILL_DIR}/scripts/check-metadata.py <skill-dir> --output <tmp>/metadata.json
 python3 ${CLAUDE_SKILL_DIR}/scripts/check-structure.py <skill-dir> --previous <tmp>/metadata.json --output <tmp>/structure.json
 python3 ${CLAUDE_SKILL_DIR}/scripts/check-runtime.py <skill-dir> --previous <tmp>/structure.json --output <tmp>/runtime.json
+python3 ${CLAUDE_SKILL_DIR}/scripts/check-size.py <skill-dir> --previous <tmp>/runtime.json --output <tmp>/size.json
 ```
 
 | Order | Script | Checks | Hands on |
 | --- | --- | --- | --- |
 | 1 | `check-metadata.py` | Frontmatter starts on line 1 and parses as strict YAML (a strict subset, checked by the script itself); `name` and `description` limits and reserved words; fields each surface rejects; strict-YAML traps; combinations that disable the skill | The skill's origin and the surfaces it reaches |
-| 2 | `check-structure.py` | Full file inventory, hidden files included, with each script's executable bit; `SKILL.md` over 500 lines; reference files over 100 lines without a table of contents, and table-of-contents entries that don't match a heading; links more than one level from `SKILL.md`; broken links and unused files; pointers of the form `file.md#anchor` whose file or heading doesn't exist; backslashes in paths; shebang lines | The inventory every reviewer reads |
+| 2 | `check-structure.py` | Full file inventory, hidden files included, with each script's executable bit; reference files over 100 lines without a table of contents, and table-of-contents entries that don't match a heading; links more than one level from `SKILL.md`; broken links and unused files; pointers of the form `file.md#anchor` whose file or heading doesn't exist; backslashes in paths; shebang lines | The inventory every reviewer reads |
 | 3 | `check-runtime.py` | Unescaped `$` before a digit, `ARGUMENTS` or a name declared in `arguments`; `arguments` names not used; argument placeholders inside `!` commands; bare `allowed-tools: Bash`; scripts not called through `${CLAUDE_SKILL_DIR}`; each `Bash()` pattern in `allowed-tools` that doesn't match the form of the command the body runs; hook fields in the frontmatter (paths, quoting, `onFailure` on Stop-type events); signals of network calls and of reads of credentials or history | Leads for the scripts-and-runtime and security reviewers |
+| 4 | `check-size.py` | `SKILL.md` over 500 lines; a body over 5,000 tokens, estimated as characters divided by 2.8; a lead between 4,500 and 5,000 | The size the instructions reviewer weighs when it proposes moving detail into references |
 
 Exit codes: `0` the script ran, even when checks failed; `2` a usage error; `1` it could not run. On `2`, fix the command and run it again. On `1`, the verdict is not determinable; record the script as "couldn't run" in the report.
 
@@ -188,7 +190,7 @@ python3 ${CLAUDE_SKILL_DIR}/scripts/record-verdict.py --data-dir ${CLAUDE_PLUGIN
 
 Chat loads the skill and ignores agents and hooks \[CP\]. There the audit runs inline:
 
-1. Run the three scripts in the code execution sandbox when it is available, as `python3 scripts/<script>.py`, with paths relative to `SKILL.md`, on the audited skill's folder as uploaded or attached to the conversation. When the sandbox isn't available, or the audited skill's files aren't in it, the scripts couldn't run and the verdict is not determinable.
+1. Run the four scripts in the code execution sandbox when it is available, as `python3 scripts/<script>.py`, with paths relative to `SKILL.md`, on the audited skill's folder as uploaded or attached to the conversation. When the sandbox isn't available, or the audited skill's files aren't in it, the scripts couldn't run and the verdict is not determinable.
 2. Write the skill profile ([Skill profile](#skill-profile)), and list the checks the scripts proved and the leads they reported, as a brief would. Each lens reads them from here. The Claude Code release is `unknown`.
 3. Apply the four lens files one after another: [lens-description.md](lens-description.md), [lens-instructions.md](lens-instructions.md), [lens-scripts-runtime.md](lens-scripts-runtime.md), [lens-security.md](lens-security.md). Record each in `assets/reviewer-report.md`, self-check included. These records are working notes: keep them out of the reply unless the user asks for them; the report carries the findings.
 4. Follow [executability-trace.md](executability-trace.md) on the skill and record each point as a finding with Item `EX-1`, its severity by [Executability severity](executability-trace.md#executability-severity), Location, Evidence and Fix.

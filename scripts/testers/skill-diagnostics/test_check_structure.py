@@ -167,20 +167,6 @@ class Inventory(Base):
         self.assertEqual(result.json().get("script"), "check-structure")
 
 
-class Size(Base):
-    """BS-1: SKILL.md stays under 500 lines."""
-
-    def test_skill_md_over_500_lines(self) -> None:
-        """501 lines fails S-1."""
-        result = self.check({"SKILL.md": HEAD + "x\n" * 495})
-        self.assertTrue(result.having("S-1", "fail"))
-
-    def test_skill_md_at_500_lines(self) -> None:
-        """500 lines passes S-1."""
-        result = self.check({"SKILL.md": HEAD + "x\n" * 494})
-        self.assertTrue(result.having("S-1", "pass"))
-
-
 class Links(Base):
     """BS-11: links and pointers resolve, relative to the file that holds them."""
 
