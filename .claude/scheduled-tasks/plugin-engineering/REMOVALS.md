@@ -1835,8 +1835,14 @@ On 2026-11-08 the 46 files of 500 lines or fewer were rewritten for Claude as th
 
 ### File-specific changes
 
-- `01-plugins-core/overview.md`: the two diagrams are described in text under each image.
-- `02-mods/mod-gallery.md`: the 15 screenshots are described in text under each image.
+- `01-plugins-core/overview.md`, `02-mods/mod-gallery.md`: the text descriptions first added under the 17 images were replaced on 2026-11-09 by pointers to local copies; see Image assets below.
 - `02-mods/mod-overview.md`: a duplicated description of the recording was removed.
 - `02-mods/mod-create.md`, `02-mods/mod-reference.md`: four corrections where the official pages lag Claude Code 2.1.319, each marked in the text with the evidence (binary, bundled types, changelog or a `claude plugin test` run): the wording and answers of the hot-reload question (changed in 2.1.304); a failed hook of a mod Claude wrote coming back to Claude as a notice; `next.error.kind` declared only as `'throw' | 'timeout'` with no `cause` field, and re-entry not reaching `.catch`; the `mobile` render surface missing from the official tables.
 - `02-mods/mod-api.md`, `02-mods/mod-reference.md`, `02-mods/mod-create.md`: 16 sections whose content the built-in `plugin-authoring` skill of Claude Code 2.1.319 holds in full were shortened to a pointer: load that skill and search its `claude-code.d.ts` for the named types, or read the named section on the official page. Headings were kept, and facts the skill does not hold stay in the text (the `Box` border styles table, the telemetry `{ to: 'collector' }` validation rule, confirmed on 2.1.319, and the calling-hook context of methods added in `engine.create`). Sections shortened: in `mod-api.md`, the intro, the `session.start` note, Send one prompt (its `/triage` code block replaced by a one-line description), What a `model.complete` hook receives, Start a turn from a background job and Stop background work; in `mod-reference.md`, the Events intro, Turns, Other mods, Telemetry, Settings hook events, Mods API calls and `Box` border styles; in `mod-create.md`, How the example mod works and Get type definitions for your version.
+
+## Image assets of 2026-11-09
+
+- The 29 images of the official pages (16 PNG screenshots and 13 SVG diagrams) are stored as PNG files in the skill's `assets/` folder, named after the official file, because Claude's Read tool shows PNG and JPG images but reads an SVG as XML text. The SVG diagrams were rendered to PNG; each copy was checked against the official file (pixel-identical for the PNGs, same aspect ratio and only antialiasing differences for the rendered SVGs).
+- Each image keeps its official Markdown line and alt text. Under it, one added line points to the local copy: `> **View the image** [`assets/<name>.png`](../../assets/<name>.png) **to** <what the image shows>.`
+- In `01-plugins-core/overview.md` and `02-mods/mod-gallery.md`, that line replaces the longer text description added on 2026-11-08; the summary line at the top of `mod-gallery.md` now names the `assets/` folder instead of the descriptions.
+- In the other six files (`plugin-evals.md`, `mod-interface.md`, `channels-reference.md`, `hooks.md`, `platform-skills-best-practices.md`, `platform-skills-overview.md`), the pointer lines are the only change; nothing was removed.
