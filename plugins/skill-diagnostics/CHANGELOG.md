@@ -12,6 +12,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 - The `skills-best-practices` skill writes and edits skills by the official best practices, starting from a template, with a validation loop against one checklist.
 - A full audit: three validation scripts, four independent reviewers (description, instructions, scripts and runtime, security), a cold executor that follows every workflow without guessing, and an adversarial verifier that checks every finding against the official sources. It returns one report with file-and-line evidence and one verdict.
+- Each audit report has an Accounting table that gives every finding of every agent one outcome (kept, merged or withdrawn), and the audit saves each agent's report unchanged, with the final report, in a temporary folder the report names, so you can check that no finding was dropped.
+- The skill checks that a skill writes every command that uses `${CLAUDE_SKILL_DIR}`, `${CLAUDE_PLUGIN_ROOT}` or `${CLAUDE_PLUGIN_DATA}` in `SKILL.md`, since Claude Code doesn't substitute them in the files a skill links to.
 - A gate: after Claude writes or edits a skill, it audits the skill before it finishes the turn. A Stop hook also finds skills changed by shell commands.
 - The `/skill-diagnostics:evals` workflow measures whether a skill triggers on the right requests and improves the output, with and without the skill. It runs only on request and changes no file of the skill.
 

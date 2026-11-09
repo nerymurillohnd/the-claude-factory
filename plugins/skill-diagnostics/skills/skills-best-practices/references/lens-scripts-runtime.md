@@ -26,6 +26,7 @@ Each line names the checklist item from [checklist.md](checklist.md), then the a
 - `SC-6` · [scripts.md#design-for-an-agent](scripts.md#design-for-an-agent) · **Exit 0 when Claude needs the output.**
 - `CF-2` · [claude-code-features.md#substitutions-and-pre-approved-tools](claude-code-features.md#substitutions-and-pre-approved-tools) · **Name the exact command.**
 - `CF-2` · [claude-code-features.md#substitutions-and-pre-approved-tools](claude-code-features.md#substitutions-and-pre-approved-tools) · **Scope of the grant.**
+- `CF-7` · [claude-code-features.md#substitutions-and-pre-approved-tools](claude-code-features.md#substitutions-and-pre-approved-tools) · **Where the path placeholders are substituted.**
 - `CF-5` · [claude-code-features.md#forked-subagents](claude-code-features.md#forked-subagents) · **Forked subagent**
 - `CF-5` · [claude-code-features.md#forked-subagents](claude-code-features.md#forked-subagents) · **Forks on Explore or Plan.**
 

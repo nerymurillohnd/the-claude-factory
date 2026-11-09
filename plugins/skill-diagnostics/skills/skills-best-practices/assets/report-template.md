@@ -22,6 +22,8 @@ Agents: <each agent · complete | incomplete: <reason>>, or "inline in chat: no 
 
 Changelog read: <versions> · Unread: <versions, or none>
 
+Reports saved: <the folder, with `agents/` and `report.md` | not saved: <the error> | in chat: not saved>
+
 Verdict recorded: <yes | no: the error | not in chat>, filled after the verdict is recorded
 
 ## Checklist
@@ -52,6 +54,14 @@ Order: high, then medium, then low. Write `No findings.` when there are none.
 ### Low
 
 <same fields>
+
+## Accounting
+
+Every finding ID of every agent report, the cold executor's points included, and every failed proved check and confirmed lead, once each. The count per agent matches its saved report.
+
+| Finding | From | Outcome |
+| --- | --- | --- |
+| <ID in the agent report> | <agent name, script or orchestrator> | <kept as <ID> | merged into <ID> | withdrawn> |
 
 ## Withdrawn
 

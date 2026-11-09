@@ -78,6 +78,7 @@ Area file: [claude-code-features.md](claude-code-features.md).
 - `CF-4` · No argument placeholder inside a `!` command · \[SD\] · `observed` · check-runtime
 - `CF-5` · A fork has an explicit task; on Explore or Plan it states every rule it needs · \[CC\] · `req` · scripts-runtime-reviewer
 - `CF-6` · Hook commands in the frontmatter use the plugin or project root, are quoted or in exec form, and don't rely on `onFailure` on `Stop`-type events · \[CC\] · `req` · check-runtime
+- `CF-7` · Every command that uses `${CLAUDE_SKILL_DIR}`, `${CLAUDE_PLUGIN_ROOT}` or `${CLAUDE_PLUGIN_DATA}` is written in `SKILL.md`, not in a file it links to · \[CC\]\[SD\] · `req` · scripts-runtime-reviewer
 
 ## Testing
 
@@ -119,7 +120,7 @@ Method file: [executability-trace.md](executability-trace.md).
 | check-runtime | BS-4, SC-7, SC-8, CF-1, CF-3, CF-4, CF-6 |
 | description-reviewer | FM-3, FM-7, FM-8, SU-1 |
 | instructions-reviewer | BS-2, BS-5, BS-6, BS-7, BS-8, BS-10, BS-12, BS-13 |
-| scripts-runtime-reviewer | SC-1, SC-2, SC-3, SC-4, SC-5, SC-6, CF-2, CF-5 |
+| scripts-runtime-reviewer | SC-1, SC-2, SC-3, SC-4, SC-5, SC-6, CF-2, CF-5, CF-7 |
 | security-reviewer | SE-1, SE-2, SE-3, SE-4 |
 | cold-executor | EX-1 |
 | evals | TE-1, TE-2, TE-3, TE-4 |

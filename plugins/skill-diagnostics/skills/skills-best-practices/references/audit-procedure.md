@@ -11,6 +11,7 @@ How the orchestrator runs an audit, from the validation scripts to the recorded 
 - [Skill profile](#skill-profile)
 - [Agents](#agents)
 - [Rules for every brief](#rules-for-every-brief)
+- [Saving the reports](#saving-the-reports)
 - [Checking an agent report](#checking-an-agent-report)
 - [Adversarial verification](#adversarial-verification)
 - [Mapping findings to the checklist](#mapping-findings-to-the-checklist)
@@ -27,14 +28,14 @@ After an edit and before a release alike, the audit runs all three validation sc
 2. **Scripts, one after another.** Run `check-metadata.py` and read its result, then `check-structure.py`, then `check-runtime.py` ([Validation scripts](#validation-scripts)). Each result shapes the next run: the origin and surfaces from the first decide which rules apply, and the inventory from the second is the file list the third scans. Launch no agent until all three have returned and their results are read. A script that couldn't run makes the verdict not determinable, because the checks it owns were never made. Still run the other scripts and the agents, so the report shows every other finding; a high finding still makes the verdict fail.
 3. **Profile.** From the script results and the skill's text, write the skill profile ([Skill profile](#skill-profile)), which decides which patterns the skill needs.
 4. **Briefs.** Write one brief for each of the four reviewers and the cold executor from `assets/brief-template.md`, filling every field ([Rules for every brief](#rules-for-every-brief)).
-5. **Review.** Launch the four reviewers and the cold executor in one message, so they run in parallel; each returns its report template filled, self-check included. Claude Code refuses a 21st running subagent by default \[CC\]. Check each report before using it ([Checking an agent report](#checking-an-agent-report)).
+5. **Review.** Launch the four reviewers and the cold executor in one message, so they run in parallel; each returns its report template filled, self-check included. Claude Code refuses a 21st running subagent by default \[CC\]. Save each report as it arrives ([Saving the reports](#saving-the-reports)), then check it before using it ([Checking an agent report](#checking-an-agent-report)).
 6. **Adversarial verification.** Pass every finding to the adversarial verifier ([Adversarial verification](#adversarial-verification)).
-7. **Verdict.** Map the surviving findings onto [checklist.md](checklist.md) ([Mapping findings to the checklist](#mapping-findings-to-the-checklist)), give the verdict, write the report from `assets/report-template.md`, and record the verdict ([Verdict and recording it](#verdict-and-recording-it)).
+7. **Verdict.** Map the surviving findings onto [checklist.md](checklist.md) ([Mapping findings to the checklist](#mapping-findings-to-the-checklist)), give the verdict, write the report from `assets/report-template.md` with its Accounting table, save it, and record the verdict ([Verdict and recording it](#verdict-and-recording-it)).
 8. **Gate.** In Claude Code and Cowork, the gate lets Claude end its turn only when a verdict exists that is newer than the skill's last change.
 
 ## Validation scripts
 
-Run each script with its interpreter as a prefix, in this order, each writing its result with `--output` to a file in one new folder in the system's temporary folder, so the next script can read it through `--previous`. Don't redirect the output with `>`: Claude Code checks a redirect's target against the edit rules and would ask the user. Claude Code fills in `${CLAUDE_SKILL_DIR}` and `${CLAUDE_PLUGIN_DATA}` only in `SKILL.md`, not in this file: run the commands as `SKILL.md` gives them. Their form is:
+Run each script with its interpreter as a prefix, in this order, each writing its result with `--output` to a file in one new folder in the system's temporary folder, so the next script can read it through `--previous`. Don't redirect the output with `>`: Claude Code checks a redirect's target against the edit rules and would ask the user. Claude Code fills in `${CLAUDE_SKILL_DIR}` and `${CLAUDE_PLUGIN_DATA}` only in `SKILL.md` and its `allowed-tools`, not in this file, and the Bash tool's environment doesn't hold them: run the commands as `SKILL.md` gives them. Their form is:
 
 ```text
 python3 ${CLAUDE_SKILL_DIR}/scripts/check-metadata.py <skill-dir> --output <tmp>/metadata.json
@@ -126,6 +127,17 @@ Six read-only plugin agents. Only the orchestrator launches them, all six in eve
 - **No list of changed files.** The brief doesn't name the files that changed, so no agent narrows its review to them.
 - **The cold executor's brief** uses the second template in `assets/brief-template.md`: one realistic task, taken from the skill's evals when they exist, and the instruction to follow the trace on every workflow and every variant that changes the output. It carries no scope, no proved checks and no leads.
 
+## Saving the reports
+
+`default`. The report the user reads is a synthesis, so every agent report is kept as it arrived, and the Accounting table in the final report shows what happened to each of its findings. Together they let the user check that no finding was dropped.
+
+- **Where.** In the same new folder as the script results, the one shown as `<tmp>` above: each agent report as `<tmp>/agents/<agent name>.md` (such as `agents/security-reviewer.md`), and the final report as `<tmp>/report.md`. A report sent back and returned again is saved as `<agent name>-2.md`, next to the first.
+- **How.** With `save-report.py`, in the command form `SKILL.md` gives, passing the report on standard input through a quoted here-document, so the shell changes nothing in it. Choose a closing word that doesn't appear alone on a line of the report; `END_OF_REPORT` is the default. Don't save with the Write tool and don't redirect with `>`: both write outside the working directories and ask the user each time, while the pre-approved script doesn't.
+- **When.** Each agent report as soon as it arrives, before you check or use it, and the verifier's report too. The final report after it is written, before the verdict is recorded.
+- **Unchanged.** Save the text exactly as the agent returned it. Never summarize, reorder or correct a report before saving it.
+- **If saving fails.** `save-report.py` exits 0 and prints `{"saved", "bytes"}` when the file is written. On exit 2, fix the command and run it again; on exit 1, go on with the audit and write the error in the report's What ran block. A failed save doesn't change the verdict.
+- **Temporary.** The folder is temporary: the system can remove it, and a cloud session loses it when it ends. Copy it into the user's project only when the user asks, to the place they name. Never save reports in the plugin's data folder.
+
 ## Checking an agent report
 
 Before you use a report, check it against its template:
@@ -153,6 +165,7 @@ Pass every finding to the adversarial verifier, with its evidence and without th
 - An item is n/a only when the profile or the origin makes its rule not apply, or when the skill has nothing the rule governs (for example `CF-6` with no `hooks` in the frontmatter, or `CF-5` without `context: fork`); say which.
 - Executability points from the cold executor map to `EX-1`, with the severity of [executability-trace.md](executability-trace.md#executability-severity). In the report, each point's Basis is `executability-trace.md` and its type, and its Fix is the one change that removes the guess, such as stating the missing value or the step's condition.
 - Read every item's ID from `checklist.md` at this step; never write an item from memory.
+- **Accounting.** In the report's Accounting table, list every finding ID of every saved agent report, the cold executor's points included, and every failed proved check and confirmed lead, once each, with one outcome: `kept as <ID>`, `merged into <ID>`, or `withdrawn` (the reason goes under Withdrawn). Count the findings in each saved report and check that the table has the same number for that agent; a finding with no row is a defect of the report, not of the skill.
 
 ## Verdict and recording it
 
@@ -175,5 +188,5 @@ Chat loads the skill and ignores agents and hooks \[CP\]. There the audit runs i
 3. Apply the four lens files one after another: [lens-description.md](lens-description.md), [lens-instructions.md](lens-instructions.md), [lens-scripts-runtime.md](lens-scripts-runtime.md), [lens-security.md](lens-security.md). Record each in `assets/reviewer-report.md`, self-check included. These records are working notes: keep them out of the reply unless the user asks for them; the report carries the findings.
 4. Follow [executability-trace.md](executability-trace.md) on the skill and record it in `assets/executor-report.md`.
 5. Check each finding against [evidence-and-verdict.md](evidence-and-verdict.md) yourself and record it in `assets/verifier-report.md`.
-6. Write the report from `assets/report-template.md`. It says that no independent reviewers, cold executor or verifier ran, so the trace was done by the same context that read the rules.
+6. Write the report from `assets/report-template.md`, with the Accounting table over the findings of steps 3 to 5. It says that no independent reviewers, cold executor or verifier ran, so the trace was done by the same context that read the rules, and that no report was saved.
 7. Don't run `record-verdict.py`: no gate reads it in chat.
