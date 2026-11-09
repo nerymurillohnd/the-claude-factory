@@ -5,7 +5,7 @@
 <p><strong>Audits Claude skills against the official best practices and gates them: five validation scripts, four independent reviewers, a cold executor and an adversarial verifier give one report with file-and-line evidence and one verdict, and a gate has Claude audit every skill it creates or changes before it finishes.</strong></p>
 
 [![Version](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Fnerymurillohnd%2Fthe-claude-factory%2Fmain%2Fplugins%2Fskill-diagnostics%2F.claude-plugin%2Fplugin.json&query=%24.version&label=version&color=D97757)](./CHANGELOG.md)
-[![Works in](https://img.shields.io/badge/works%20in-Claude%20Code%20%C2%B7%20Claude%20app-2563EB)](#-compatibility)
+[![Works in](https://img.shields.io/badge/works%20in-Claude%20Code%20%C2%B7%20Claude-2563EB)](#-compatibility)
 [![Category](https://img.shields.io/badge/category-Testing%20%26%20Quality-6B7280)](../../README.md#-catalog)
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-%E2%89%A5%202.1.271-D97757?logo=claude&logoColor=white)](https://code.claude.com/docs/en/plugins/install)
 [![License: MIT](https://img.shields.io/badge/license-MIT-22C55E)](./LICENSE)
@@ -26,9 +26,9 @@
 > [!TIP]
 > **TL;DR** — Ask Claude to audit a skill, or type `/skill-diagnostics:skills-best-practices`, and get one report with the exact line behind every finding and one verdict. In Claude Code, every skill Claude changes is audited before Claude finishes its turn.
 
-## ✨ Why use it
+A skill can look finished to the person who wrote it and still fail the model that runs it: a description that never triggers, a placeholder nothing defines, a reference that contradicts `SKILL.md`, a field that one surface rejects. Skill Diagnostics reads a finished skill and tells you, with evidence, what to fix before you release it, and in Claude Code it makes Claude audit every skill it creates or changes.
 
-A skill can look finished to the person who wrote it and still fail the model that runs it: a description that never triggers, a placeholder nothing defines, a reference that contradicts `SKILL.md`, a field that one surface rejects.
+## ✨ Why use it
 
 - **Audit only** — it writes no skill. Write or edit a skill with any skill-writing skill, such as Anthropic's `skill-creator`, or by hand; then this plugin checks it against Anthropic's published best practices for the description, frontmatter, body, workflows, scripts and security.
 - **An audit you can trust** — five scripts check what can be checked mechanically, four reviewers each judge one area, a cold executor follows the skill as a model that has nothing else, and an adversarial verifier tries to refute every finding against your files and the live official docs. You get one report and one verdict.
@@ -67,15 +67,7 @@ Each agent sets its own model and effort level, whatever your session uses: the 
 | jq (the hooks read and write JSON with it) | — | `jq --version` |
 | Python, as `python3` on your `PATH` (runs the skill's scripts) | 3.12 | `python3 --version` |
 
-Claude Code 2.1.271 is the minimum because the six agents run without your `CLAUDE.md` files through `omitClaudeMd`, and the `on_skill_write` option offers a fixed list of values, both added in 2.1.271.
-
-The hooks also call `cat`, `find`, `mkdir`, `mv`, `rm`, `rmdir`, `sed`, `touch` and `tr`. They ship with macOS, Linux and Git Bash; check them with:
-
-```bash
-command -v cat find mkdir mv rm rmdir sed touch tr
-```
-
-**Platforms:** Linux and macOS are supported. Windows is supported only through Git Bash, which comes with [Git for Windows](https://git-scm.com/downloads/win): the hooks run there, so check `bash`, `jq` and `python3` in a Git Bash window.
+The plugin also uses `cat`, `find`, `mkdir`, `mv`, `rm`, `rmdir`, `sed`, `touch` and `tr`, which come with macOS and Linux, and with Git Bash on Windows.
 
 ### 🤖 Claude Code
 
@@ -253,7 +245,7 @@ export CLAUDE_CODE_PLUGIN_PREFER_HTTPS=1
 /plugin install skill-diagnostics@the-claude-factory
 ```
 
-### 🖥️ Claude app (web and desktop)
+### 🖥️ Claude (web and desktop)
 
 1. Open **Customize** in the sidebar, then **Plugins**.
 2. Select **Add** → **Add marketplace** and enter `nerymurillohnd/the-claude-factory`.
@@ -303,7 +295,7 @@ Later, in a session, open the options dialog:
 
 You can also use `/plugin` → **Installed** → **Skill Diagnostics** → **Configure options**, or the plugin's row in `/config` (v2.1.269+). From the shell (v2.1.285+), `claude plugin configure skill-diagnostics@the-claude-factory` shows the current state; restart Claude Code after saving a value there.
 
-In the Claude app the option can't be changed and keeps its default, `gate`.
+In Claude the option can't be changed and keeps its default, `gate`.
 
 ## 🔍 What this plugin runs and sends
 
@@ -326,18 +318,6 @@ In the Claude app the option can't be changed and keeps its default, `gate`.
   The `<skill key>` is the skill's full path with `/`, `:` and `%` encoded. Files under `sessions/`, `pending/`, `guard/` and `audits/` are deleted after 7 days; verdict files stay until you uninstall. The plugin never changes your skill. The evals workflow writes its runs in a `<skill>-workspace` folder next to the skill. An audit writes nothing in your project: its results and reports stay in the audit folder, which the report names, and Claude copies them into your project only when you ask.
 - **Privacy:** the author collects no data. The marketplace's [privacy policy](https://github.com/nerymurillohnd/the-claude-factory/blob/main/PRIVACY.md) covers this plugin and the outside services it can reach.
 
-### Limits of the gate
-
-- The gate works in Claude Code and in Cowork sessions. Hooks don't run in a chat conversation in the Claude app, so nothing gates a skill there.
-- It's a barrier for Claude, not a guarantee. If a gate script fails, for example because `jq` is missing, Claude Code shows a hook error and Claude can stop without an audit.
-- `disableAllHooks` in your settings turns the hooks off, and an organization's `allowManagedHooksOnly` blocks them unless managed settings force-enable this plugin.
-- Claude Code ends a turn after 8 consecutive `Stop` continuations with no tool call between them, whatever the gate says. The `CLAUDE_CODE_STOP_HOOK_BLOCK_CAP` environment variable raises that cap.
-- The scan for skills written by shell commands or other programs covers your project folder and `~/.claude/skills` only. When the project folder is your home folder or `/`, only `~/.claude/skills` is scanned, because the whole tree can't be searched in time.
-- If you press `Esc` while Claude is changing a skill, or interrupt the turn, the skill may not be recorded or the gate may not run until Claude next stops.
-- A skill whose full path is longer than about 200 characters may give a verdict or guard file name longer than your file system allows; the gate then shows a hook error.
-- Under an organization's `allowManagedPermissionRulesOnly`, the skill's pre-approved commands may not apply: Claude asks before running the scripts, and in `dontAsk` mode they are denied, so the verdict can't be recorded.
-- With hooks turned off, the agents' reports aren't saved (the report says which are missing), and in an audit's later turns Claude Code asks you before running the skill's scripts.
-
 ## 🔄 Updating
 
 ```bash
@@ -350,7 +330,7 @@ Then, in an open session:
 /reload-plugins
 ```
 
-Installed from the Claude app? In Claude Code (v2.1.273+, signed in with that claude.ai account) it appears as `skill-diagnostics@synced`: update and uninstall it in the app (**Customize** → **Plugins**).
+Installed from Claude? In Claude Code (v2.1.273+, signed in with that claude.ai account) it appears as `skill-diagnostics@synced`: update and uninstall it in Claude (**Customize** → **Plugins**).
 
 > [!TIP]
 > Auto-update is off for this marketplace until you turn it on: `/plugin` → **Marketplaces** → **the-claude-factory** → **Enable auto-update**.
@@ -373,7 +353,7 @@ Installed with `--scope project`:
 claude plugin uninstall skill-diagnostics@the-claude-factory --scope project
 ```
 
-In the Claude app: **Customize** → **Plugins** → **Skill Diagnostics** → its menu → **Remove**.
+In Claude: **Customize** → **Plugins** → **Skill Diagnostics** → its menu → **Remove**.
 
 Uninstalling from the last scope it's installed at also deletes its saved options and data directory, with the session files and verdicts in it, unless you add `--keep-data`. Skills you wrote with it and `<skill>-workspace` folders from the evals workflow stay; delete them yourself if you no longer need them. jq and Python stay installed.
 
@@ -391,23 +371,37 @@ Or, inside a session:
 
 ## 🧭 Compatibility
 
-**Works in:** 💻 Claude Code · 🖥️ Claude app
+**Works in:** 💻 Claude Code · 🖥️ Claude
 
-| Component | Claude Code | Claude app |
+| Component | Claude Code | Claude |
 | :-- | :--: | :--: |
 | 🎯 Skills | ✅ | ✅ |
-| 🤖 Agents | ✅ | ⚠️ in Cowork sessions, not in a chat conversation |
-| 🪝 Hooks | ✅ | ⚠️ in Cowork sessions, not in a chat conversation |
-| 🔁 Workflows | ✅ on paid plans and with API access; on Pro, turn on **Dynamic workflows** in `/config` | ➖ the Claude app's plugin docs don't list workflows; they run in Claude Code |
+| 🤖 Agents | ✅ | ⚠️ only in conversations where Claude can run tasks |
+| 🪝 Hooks | ✅ | ⚠️ only in conversations where Claude can run tasks |
+| 🔁 Workflows | ✅ | ➖ not documented for Claude |
 
-<sub>✅ works · ⚠️ partial · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. The Claude app (web, desktop and mobile) runs a conversation as a Cowork session when it can, and as a chat conversation otherwise, for example on a device that can't run Cowork or in the separate Chat mode that Team and Enterprise plans keep for now.</sub>
+<sub>✅ works · ⚠️ partial · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. Claude runs agents, hooks and local MCP servers only in conversations where it can run tasks; anything on your computer needs Claude Desktop open.</sub>
 
-In a chat conversation, where agents and hooks don't run, the skill still audits inline: Claude applies the four reviewers' checks, the cold executor's trace and the verification itself, one after another, and the report says that no independent agents ran. The five scripts need the code execution sandbox; without it they can't run and the verdict is *not determinable*. No gate runs there, so ask for the audit yourself after writing a skill. In a Cowork session the hooks run where Cowork runs them, so they need Bash and `jq` there.
+Where Claude can't run tasks, agents and hooks don't run, and the skill still audits inline: Claude applies the four reviewers' checks, the cold executor's trace and the verification itself, one after another, and the report says that no independent agents ran. The five scripts need the code execution sandbox; without it they can't run and the verdict is *not determinable*. No gate runs there, so ask for the audit yourself after writing a skill. Where Claude can run tasks, the hooks run where Claude runs them, so they need Bash and `jq` there. The `/skill-diagnostics:evals` workflow runs only in Claude Code, on paid plans and with API access; on Pro, turn on **Dynamic workflows** in `/config` first.
+
+**Platforms:** macOS and Linux, and Windows through Git Bash, which comes with [Git for Windows](https://git-scm.com/downloads/win): the hooks run there, so check `bash`, `jq` and `python3` in a Git Bash window.
+
+## 🚧 Limitations
+
+- The gate works in Claude Code and in conversations where Claude can run tasks. Elsewhere in Claude hooks don't run, so nothing gates a skill there.
+- It's a barrier for Claude, not a guarantee. If a gate script fails, for example because `jq` is missing, Claude Code shows a hook error and Claude can stop without an audit.
+- `disableAllHooks` in your settings turns the hooks off, and an organization's `allowManagedHooksOnly` blocks them unless managed settings force-enable this plugin.
+- Claude Code ends a turn after 8 consecutive `Stop` continuations with no tool call between them, whatever the gate says. The `CLAUDE_CODE_STOP_HOOK_BLOCK_CAP` environment variable raises that cap.
+- The scan for skills written by shell commands or other programs covers your project folder and `~/.claude/skills` only. When the project folder is your home folder or `/`, only `~/.claude/skills` is scanned, because the whole tree can't be searched in time.
+- If you press `Esc` while Claude is changing a skill, or interrupt the turn, the skill may not be recorded or the gate may not run until Claude next stops.
+- A skill whose full path is longer than about 200 characters may give a verdict or guard file name longer than your file system allows; the gate then shows a hook error.
+- Under an organization's `allowManagedPermissionRulesOnly`, the skill's pre-approved commands may not apply: Claude asks before running the scripts, and in `dontAsk` mode they are denied, so the verdict can't be recorded.
+- With hooks turned off, the agents' reports aren't saved (the report says which are missing), and in an audit's later turns Claude Code asks you before running the skill's scripts.
 
 ## ❓ FAQ & Troubleshooting
 
 <details>
-<summary><b>The plugin's commands don't show up after installing.</b></summary>
+<summary><b>The plugin's skills don't show up after installing.</b></summary>
 
 Run `/reload-plugins`, then type `/skill-diagnostics:` to list its skill and workflow. If it still doesn't appear, open `/plugin` → **Errors** and see the [troubleshooting guide](../../docs/troubleshooting.md).
 
@@ -437,7 +431,7 @@ Claude was reminded twice and still didn't record a verdict, so the gate let it 
 <details>
 <summary><b>The verdict is "not determinable".</b></summary>
 
-Something the audit needs couldn't be checked: a script couldn't run (for example without `python3`, or in a chat conversation without the code execution sandbox), a file couldn't be read, or an agent's report stayed incomplete. The report names what was missing.
+Something the audit needs couldn't be checked: a script couldn't run (for example without `python3`, or where Claude can't run tasks and has no code execution sandbox), a file couldn't be read, or an agent's report stayed incomplete. The report names what was missing.
 
 </details>
 
@@ -475,4 +469,4 @@ See [CHANGELOG.md](./CHANGELOG.md) for every release.
 
 ## 📄 License
 
-[MIT](./LICENSE) © Nery Murillo
+[MIT](./LICENSE) © Nery Murillo. Not affiliated with or endorsed by Anthropic. _Claude_ and _Claude Code_ are trademarks of Anthropic.
