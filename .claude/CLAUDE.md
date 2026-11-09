@@ -47,6 +47,8 @@ This repository holds two scopes. They are never mixed: a rule written for one s
 - `.claude/specs/`: Specification documents. Specs are written before implementation plans.
 - `.claude/plans/`: Implementation plans derived from approved specs. The folder is created with the first plan.
 - `.claude/maintainer/`: Decision records and technical-debt tracking.
+- `.claude/rules/`: Path-scoped rules; each one loads when Claude reads or edits a file its `paths` cover.
+- `.claude/templates/`: The README templates: `root-readme-template.md` for the root `README.md` and `plugin-readme-template.md` for each `plugins/<plugin>/README.md`.
 - `scripts/`: Maintainer scripts that build, check, and release this repository.
 - `plugins/`: The plugins that are developed, published, and maintained in this repository.
 - `docs/`: Reference documentation and repository information intended for users and third parties.
@@ -221,15 +223,23 @@ Shared support, never run on its own: `scripts/lib.mjs`, `scripts/components.mjs
 - Node scripts may use only Node.js built-in modules (`node:`), unless the plugin ships its own dependencies.
 - Python scripts that use the `python3` shebang may use only the Python standard library.
 
-### README content requirements
-- Every `README.md` in the repository must be written in English and addressed to end users. It must not mention maintainer tasks, internal processes, or reminders.
-- Every plugin `README.md` must declare:
-  - prerequisites (when Python is required, it must be stated as Python 3.12 or later)
-  - how to install the prerequisites
-  - how to add and remove the marketplace
-  - how to install, update, and uninstall the plugin
-  - the platform support policy (Linux and macOS primary; Windows only via Git Bash)
-  - every external program invoked by the plugin’s hooks or scripts, each accompanied by a command that verifies its presence
+### README files
+- A README describes what exists now: what the marketplace or the plugin is, what it contains and how to use it. Old names, merges, removed features and the steps to migrate from an earlier version go in the CHANGELOG and the release notes, never in a README.
+- Each kind of README has its own rule, which loads when you edit it, and its own template:
+
+  | File | Reader | Rule | Template |
+  | :-- | :-- | :-- | :-- |
+  | `README.md` at the root | Marketplace users | `.claude/rules/maintainer/root-readme.md` | `.claude/templates/root-readme-template.md` |
+  | `plugins/<plugin>/README.md` | The plugin's users | `.claude/rules/plugins/plugin-readme.md` | `.claude/templates/plugin-readme-template.md` |
+  | Any other README inside `plugins/<plugin>/`, such as in `tests/` or `evals/` | Users, who find it in their plugin cache | None | None |
+  | Any README outside `plugins/`, such as under `scripts/testers/` | Maintainers | None | None |
+
+- Write every user README in English, for users. Never mention this repository's maintenance, `.claude/`, scripts, CI internals or release mechanics; a user's own `.claude/settings.json` may be mentioned.
+- Write user READMEs in the second person, active voice, present tense and short sentences. Use GitHub alerts (`> [!NOTE]`, `[!TIP]`, `[!IMPORTANT]`, `[!WARNING]`, `[!CAUTION]`), never two back to back without text between; **bold** for UI labels exactly as the app shows them (`/plugin` → **Installed** → **Update now**) and _italics_ for emphasis or terms; relative links inside the repository and absolute `https://` links outside it.
+- Check every command, flag, UI path and minimum version against the sources, in the order "Current Claude Code features, capabilities, and guidance enforcement" sets, before you write it.
+- Give one fact one value everywhere: `docs/compatibility.md` is the only source of the component × surface matrix, and the marketplace is `nerymurillohnd/the-claude-factory` with the suffix `@the-claude-factory`.
+- Update a plugin's README in the same change as its components, prerequisites, surfaces, configuration or minimum Claude Code version. When `docs/compatibility.md` changes, every plugin README's Compatibility cells follow it.
+- A maintainer README outside `plugins/` only has to stay accurate.
 
 ### Evals
 - Not every plugin is required to contain evals. The decision to include evals for a given plugin rests solely with the maintainer.

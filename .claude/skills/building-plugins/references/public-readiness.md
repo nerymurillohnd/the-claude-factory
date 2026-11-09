@@ -5,7 +5,7 @@ Checked 2026-10-25 against `/en/plugins/publish`, `/en/plugins/host-marketplace`
 ## Contents
 
 - What every public plugin ships
-- README: required sections
+- README
 - Secrets, credentials and network calls
 - Repository hygiene for git-based installs
 - What users need on their machine
@@ -20,31 +20,9 @@ Checked 2026-10-25 against `/en/plugins/publish`, `/en/plugins/host-marketplace`
 - Filled metadata: `description`, `author`, `homepage` (must be a valid URL), `repository`, `license`, `keywords`.
 - `NOTICE.txt` when the plugin bundles or derives from third-party material, with each source's repo, version or commit, and license.
 
-## README: required sections
+## README
 
-1. **What it does** for the user, in plain words, and on which surfaces (Claude Code only, or also claude.ai/Cowork). In this repository the README states them as `docs/compatibility.md` does per component type; the surface table in `manifest-and-components.md` explains why.
-2. **Install** — the exact lines, with your real names. Since v2.1.295, `claude plugin validate` prints the line to paste when a README has none (advice only; it never fails the run):
-
-   ```bash
-   claude plugin marketplace add owner/repo
-   claude plugin install <plugin>@<marketplace-name>
-   ```
-
-   Also give the one-step forms (`claude plugin install <plugin> --marketplace owner/repo`, v2.1.292+; `/plugin install <plugin> --marketplace owner/repo` in a session, v2.1.275+), and the note for users without a GitHub SSH key:
-
-   ```bash
-   export CLAUDE_CODE_PLUGIN_PREFER_HTTPS=1
-   ```
-
-   Keep it even though `claude plugin install` from the shell falls back to HTTPS on its own (v2.1.288+ on macOS and Linux, v2.1.296+ on Windows): installs from `/plugin` inside a session and plugin updates don't.
-3. **Update** — `claude plugin update <plugin>@<marketplace>`, and that auto-update is off until they enable it under `/plugin` → Marketplaces.
-4. **Prerequisites** — every tool, binary, runtime, account or service the plugin needs, how to install it, and alternatives. Missing tools are a documented prerequisite, never a silent assumption. A dependency the plugin installs itself, from a hook into `${CLAUDE_PLUGIN_DATA}` as `/en/plugins/loading` documents, is listed here and under What it runs and sends: what it downloads, from where, and where it writes.
-5. **Configuration** — each `userConfig` option and how to set it from the shell (`--config KEY=VALUE`) or `/plugin configure`.
-6. **What it runs and sends** — every hook (event, matcher, what the script does), every MCP server (command or URL), every monitor, every network destination and what data goes there. Claude Code's trust warning sends users to the plugin's homepage before they install, so this is what they read, and hooks run with their full permissions outside the sandbox.
-7. **Usage** — the skill commands (`/<plugin>:<skill>`) and example prompts that trigger the plugin's skills.
-8. **Uninstall** — `claude plugin uninstall <plugin>@<marketplace>`, and what `${CLAUDE_PLUGIN_DATA}` holds (deleted on last uninstall unless `--keep-data`).
-
-Anthropic's directory blocks a README under 40 words (code blocks don't count), and its security scan looks for behavior the README doesn't disclose; covering what it does, how to use it and what it sends is a good floor for any public plugin.
+The plugin's README follows `.claude/rules/plugins/plugin-readme.md` and `.claude/templates/plugin-readme-template.md`, which hold what every public plugin README states. Anthropic's directory blocks a README under 40 words (code blocks don't count), and its security scan looks for behavior the README doesn't disclose.
 
 ## Secrets, credentials and network calls
 
@@ -91,7 +69,7 @@ If the author's own convention is "never pin tool versions", note the difference
 
 - [ ] Permanent kebab-case `name` that passes the reserved-name rules; `displayName` set
 - [ ] `description`, `author`, `homepage` (valid URL), `repository`, `license`, `keywords` filled
-- [ ] README with install, HTTPS note, update, prerequisites, configuration, what it runs and sends, usage, uninstall
+- [ ] README written to `.claude/rules/plugins/plugin-readme.md`
 - [ ] `LICENSE` present; third-party material attributed
 - [ ] No secrets anywhere; credentials via `userConfig` `sensitive: true`
 - [ ] Every network call disclosed; remote MCP over `https://`

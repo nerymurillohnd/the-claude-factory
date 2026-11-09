@@ -102,6 +102,19 @@ Work through these in order:
 5. **Missing a tool it depends on?** Check the plugin README's **Prerequisites** section — some plugins need a CLI on your `PATH` or an API key, and it shows how to install each one.
 
 <details>
+<summary><code>Plugin "&lt;name&gt;" not cached</code> or <code>is not installed</code> after a plugin was renamed</summary>
+
+When a plugin you use is renamed, or folded into another plugin, Claude Code moves your settings to the new name and shows `Renamed to "<name>" in the "the-claude-factory" marketplace` once. It doesn't install the plugin under the new name for you. Until you do, `claude plugin list` leaves it out, **Errors** can show `Plugin "<name>" not cached`, and `claude plugin update <name>@the-claude-factory` fails with `Plugin "<name>" is not installed`. Install it once, then run `/reload-plugins`:
+
+```bash
+claude plugin install <name>@the-claude-factory
+```
+
+In a session, run `/plugin install <name>@the-claude-factory` instead.
+
+</details>
+
+<details>
 <summary>A plugin from the Claude app doesn't appear in Claude Code</summary>
 
 Claude Code (v2.1.273+) syncs plugins from your claude.ai account once each time it starts, in the background, and loads them as `<plugin>@synced`. If one is missing:

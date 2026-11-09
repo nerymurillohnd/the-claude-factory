@@ -249,7 +249,7 @@ describe('check-repo', () => {
   })
 
   test('refuses a one-word placeholder in the README template', () => {
-    const tpl = '.claude/skills/building-plugins/assets/README-template.md'
+    const tpl = '.claude/templates/plugin-readme-template.md'
     write(tpl, `${read(tpl)}\n<Type>\n`)
     const r = run('check-repo.mjs')
     assert.notEqual(r.code, 0)
