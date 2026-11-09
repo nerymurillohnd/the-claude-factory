@@ -1,9 +1,9 @@
 # Claude Code plugin docs vault (pruned)
 
-This vault holds 64 official Claude and Claude Code documentation pages, downloaded on 2026-11-07 and pruned by removing whole lines. The pages keep only what applies to developing, testing, publishing and maintaining Claude Code plugins in a marketplace hosted in a public GitHub repository and installed by third parties on their own machines. They are the `references/` of the `public-marketplace-dev` skill, and their images and long JSON examples are in the skill's `assets/` folder.
+This vault holds 63 official Claude and Claude Code documentation pages, downloaded on 2026-11-07 and pruned by removing whole lines, and one procedure written for the skill, `official-source-validation.md`, which replaced the pruned copy of the changelog on 2026-11-09. The pages keep only what applies to developing, testing, publishing and maintaining Claude Code plugins in a marketplace hosted in a public GitHub repository and installed by third parties on their own machines. They are the `references/` of the `public-marketplace-dev` skill, and their images and long JSON examples are in the skill's `assets/` folder.
 
 - 51 pages are rewritten for Claude as their reader: a directive voice, a `## Contents` list of every heading, and a `## Documentation References` section at the end that starts with the source page. Their code blocks and tables are the official ones; `REMOVALS.md` records every other change.
-- 13 pages, marked "not yet rewritten" below, keep the pruned official text: every kept line is identical to the official page, except links that pointed at a removed section of the same file, which now point at that section on the live page. They start with a `Documentation Index` block.
+- 12 pages, marked "not yet rewritten" below, keep the pruned official text: every kept line is identical to the official page, except links that pointed at a removed section of the same file, which now point at that section on the live page. They start with a `Documentation Index` block.
 
 ## How to use these files
 
@@ -22,7 +22,7 @@ Removed: Anthropic's official directory and its submission flow (`manifest-refer
 
 ## Inventory
 
-Sizes in KB (1 KB = 1,024 bytes). The 64 pages total 2,177.2 KB and 30,499 lines (as of 2026-11-09). The skill's `assets/` folder holds 29 PNG images and 3 JSON examples, 1,372.0 KB in total; each is listed under the page that points to it. `REMOVALS.md` adds 183.1 KB and 1,877 lines.
+Sizes in KB (1 KB = 1,024 bytes). The 64 files total 2,068.9 KB and 28,118 lines (as of 2026-11-09). The skill's `assets/` folder holds 29 PNG images and 3 JSON examples, 1,372.0 KB in total; each is listed under the page that points to it. `REMOVALS.md` adds 184.9 KB and 1,892 lines.
 
 ### 01-plugins-core
 
@@ -114,7 +114,7 @@ Sizes in KB (1 KB = 1,024 bytes). The 64 pages total 2,177.2 KB and 30,499 lines
 
 ### 05-cli-diagnostics
 
-- `changelog.md`: 119.8 KB, 2550 lines; not yet rewritten
+- `official-source-validation.md`: 11.5 KB, 169 lines; how to validate version-sensitive claims against the official release notes and read only the releases that matter
 - `cli-reference.md`: 12.0 KB, 79 lines
 - `debug-your-config.md`: 14.0 KB, 160 lines
 - `errors.md`: 87.9 KB, 1036 lines; not yet rewritten

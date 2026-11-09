@@ -158,8 +158,8 @@ I ran /plugin install ./my-plugin and nothing happened.
 
 - **Hooks:** none.
 - **MCP servers:** none.
-- **Scripts:** none. The plugin ships only a skill and its reference files.
-- **Network:** none from the plugin itself. Before relying on a version-gated flag, the skill tells Claude to read the live Claude Code docs (`code.claude.com`) or changelog (`github.com/anthropics/claude-code`) with Claude's own web tools; nothing about you is sent there.
+- **Scripts:** none. The plugin ships only skills and their reference files.
+- **Network:** none from the plugin itself. When Claude checks whether something changed in a newer Claude Code release, the skill tells it to download the public Claude Code changelog (`raw.githubusercontent.com/anthropics/claude-code/main/CHANGELOG.md`) with `curl` to a temporary file, read only the releases it needs, and delete the file; or to read the live Claude Code docs (`code.claude.com`) and release notes with Claude's own web tools. Nothing about you is sent there.
 - **Commands run:** only the `claude plugin` commands your task needs, through Claude's Bash tool and its usual permission prompts. The skill tells Claude to confirm before a command that deletes data, such as `claude plugin marketplace remove` or `claude plugin uninstall`.
 - **Files written:** none.
 

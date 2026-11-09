@@ -1875,3 +1875,18 @@ The `cli-commands-guide` skill of the same plugin holds the full command referen
 - `troubleshooting.md`: the intro moved under a new `## How to use this file`; each "once it works" line starts with "Success:".
 - Next steps and See also sections were replaced by `## Documentation References`.
 - Verifier findings fixed: in `troubleshooting.md`, "so do not delete them by hand" restored to its original sense ("there is no need to delete them by hand"), an added "No action is needed." removed, and an extra trailing blank line removed; in `manifest-reference.md`, the llms.txt entry removed from Documentation References.
+
+## Changelog replaced by a validation procedure (2026-11-09)
+
+At Nery's request, `05-cli-diagnostics/changelog.md` (the pruned copy of https://code.claude.com/docs/en/changelog, 2,550 lines, 119.8 KB) was deleted. A copy of the changelog goes stale with every release, and the full changelog is over 1 MB. In its place:
+
+- `05-cli-diagnostics/official-source-validation.md`: the procedure Nery supplied for validating version-sensitive claims against seven official sources, with these corrections checked on 2026-11-09:
+  - the docs.anthropic.com and docs.claude.com release-notes pages redirect (301) to platform.claude.com, so they are not stale copies;
+  - the system-prompts URL redirects (307) to `.../release-notes/system-prompts/overview`;
+  - the Claude Code RSS feed holds only the latest releases (15 items);
+  - the plain-text CHANGELOG.md has no dates.
+- It adds a table of which sources apply to a plugin, a section that reads a release range without loading the whole changelog (`curl` to a temporary file, `awk` to cut the range, `grep` to filter to plugin topics, then delete the file; tested with mawk 1.3.4 on 2.1.316 to 2.1.319: 3 releases, 326 lines), fallbacks (GitHub MCP server, docs changelog, RSS), and, at Nery's request, a closing section telling Claude not to stop when a command or source fails but to find another way that works where it runs. The claim that the Help Center has no feed is marked as not verified.
+
+A Python script for the range was written and tested first, then dropped at Nery's decision: it added a Python prerequisite (often `python` or `py`, not `python3`, on Windows) and handled fewer proxy setups than `curl`.
+
+The removal list of the old copy (section `## 05-cli-diagnostics/changelog.md` above, and its "Kept under doubt" lines) is kept as history; it no longer describes a file of the skill.
