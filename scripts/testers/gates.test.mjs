@@ -389,13 +389,16 @@ describe('Biome gates', () => {
 })
 
 describe('validator gates', () => {
-  test('every validator runs in the CI python group on Python 3.15, skill-size in the claude group', () => {
+  test('every validator runs in the CI python group on Python 3.15, skill-size only locally', () => {
     const gates = gatesFor({ root: ROOT, ci: true, base: '' })
     const files = readdirSync(join(ROOT, 'scripts', 'validators')).filter((f) => f.endsWith('.py'))
     assert.equal(files.length, 13)
-    const size = gates.find((x) => x.id === 'validator:skill-size')
-    assert.ok(size, 'no gate for skill-size.py')
-    assert.equal(size.group, 'claude')
+    assert.ok(!gates.some((x) => x.id === 'validator:skill-size'), 'skill-size runs in CI')
+    const size = gatesFor({ root: ROOT, ci: false, base: '' }).find(
+      (x) => x.id === 'validator:skill-size',
+    )
+    assert.ok(size, 'no local gate for skill-size.py')
+    assert.equal(size.group, 'local')
     assert.equal(size.cmd, join('scripts', 'validators', 'skill-size.py'))
     for (const file of files) {
       if (file === 'skill-size.py') {

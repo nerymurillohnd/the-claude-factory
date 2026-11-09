@@ -29,8 +29,11 @@ so a new release can't make the check pass silently.
 
 Exit 0 = pass (warnings allowed), 1 = at least one error, 2 = called with arguments, claude not
 on PATH, a `plugin details` call failed or its layout changed, or the baseline is unreadable.
-Maintainer tooling with no dependencies: run it by path. It needs the claude binary, so the gates
-run it in the claude group. TCF_ROOT points it at another copy of the repository (tests).
+Maintainer tooling with no dependencies: run it by path. It needs a signed-in claude binary, so
+the gates run it only locally (group "local": the pre-push hook runs it, CI doesn't). Without a
+sign-in, as in CI, `plugin details` falls back to an estimate of about characters / 4, lower than
+the signed-in figures the baseline records. TCF_ROOT points it at another copy of the repository
+(tests).
 """
 
 from __future__ import annotations
