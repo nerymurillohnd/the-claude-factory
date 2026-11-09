@@ -1,8 +1,8 @@
 {
   "name": "skill-diagnostics",
   "displayName": "Skill Diagnostics",
-  "version": "0.2.2",
-  "description": "Skill audit and testing for Claude skills: checks best practices, conformance, portability across Claude Code, claude.ai and Cowork, and whether a model can run them without guessing, with file-and-line evidence and one verdict.",
+  "version": "0.3.0",
+  "description": "Writes and audits Claude skills by the official best practices: an authoring guide, a full audit by scripts, four independent reviewers, a cold executor and a verifier with file-and-line evidence and one verdict, and a gate that has Claude audit every skill it changes before it finishes.",
   "author": {
     "name": "Nery Murillo",
     "url": "https://github.com/nerymurillohnd"
@@ -18,6 +18,7 @@
     "testing",
     "skills",
     "skill-audit",
+    "skill-authoring",
     "best-practices",
     "portability",
     "cowork"
@@ -33,8 +34,13 @@
     "on_skill_write": {
       "type": "string",
       "title": "When a skill is written",
-      "description": "What Claude does after a SKILL.md is created or changed: suggest (offer an audit), run (audit when the skill is finished) or off.",
-      "default": "suggest"
+      "description": "What happens after Claude creates or changes a skill: gate (Claude audits it before it finishes its turn), suggest (Claude offers an audit) or off.",
+      "options": [
+        "gate",
+        "suggest",
+        "off"
+      ],
+      "default": "gate"
     }
   }
 }
