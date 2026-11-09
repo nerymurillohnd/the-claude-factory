@@ -248,6 +248,6 @@ Shared support, never run on its own: `scripts/lib.mjs`, `scripts/components.mjs
 
 Biome must not format the following Markdown files. `biome.jsonc` excludes them:
 
-- All Markdown files under `.claude/`
+- All Markdown files under `.claude/`. `biome.jsonc` lists each `.claude/` folder by name, so add a new folder there when you create it; `.claude/scheduled-tasks/` is excluded whole, from formatting and linting
 - All Markdown files under `plugins/` (`plugins/**/*.md`)
 - Every `CLAUDE.md` file in the repository
