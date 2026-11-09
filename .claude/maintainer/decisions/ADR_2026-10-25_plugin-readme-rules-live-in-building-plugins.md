@@ -1,10 +1,10 @@
 ---
-status: accepted
+status: superseded
 date: 2026-10-25
 decision-makers:
   - "Nery Samuel Murillo"
 supersedes: ADR_2026-10-25_marketplace-user-docs-have-their-own-skill
-superseded-by: none
+superseded-by: ADR_2026-11-09_readme-rules-and-templates-live-in-rules-and-claude-templates
 ---
 
 # Plugin README rules live in building-plugins; the marketplace's docs stay in maintaining-user-docs
