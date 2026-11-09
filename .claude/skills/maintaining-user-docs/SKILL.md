@@ -1,6 +1,6 @@
 ---
 name: maintaining-user-docs
-description: Use to write, update or check the marketplace's own user documentation, meaning the root README outside its generated blocks, docs/, SECURITY, SUPPORT, CONTRIBUTING, CODE_OF_CONDUCT and the root LICENSE, when a Claude Code release, a docs report or a marketplace change can make them wrong, and for a freshness sweep. Not for the files a plugin ships, the root CHANGELOG, or issues and issue forms.
+description: Use to write, update or check the marketplace's own user documentation, meaning docs/, SECURITY, SUPPORT, CONTRIBUTING, CODE_OF_CONDUCT and the root LICENSE, when a Claude Code release, a docs report or a marketplace change can make them wrong, and for a freshness sweep. Not for the root README, which has its own rule and template, the files a plugin ships, the root CHANGELOG, or issues and issue forms.
 ---
 
 # Maintaining user docs
@@ -13,9 +13,10 @@ These files are what a user reads before trusting the marketplace, and nobody re
 
 | In | Out |
 | :-- | :-- |
-| Root `README.md`, outside the generated `<!-- catalog:* -->` and `<!-- plugin-count:* -->` blocks | The files inside `plugins/<name>/` (README, CHANGELOG, LICENSE, NOTICE) and the templates in `building-plugins`' `assets/` |
-| `docs/`: `installation.md`, `managing-plugins.md`, `compatibility.md`, `troubleshooting.md`, `faq.md`, `assets/` | What one plugin tells its users, such as the tools of an MCP server it bundles: that belongs to the plugin, not to the marketplace's docs. `docs/github-mcp-tools.md` is such a file |
-| `SECURITY.md`, `SUPPORT.md`, `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, the root `LICENSE` | The root `CHANGELOG.md` and GitHub Releases |
+| `docs/`: `installation.md`, `managing-plugins.md`, `compatibility.md`, `troubleshooting.md`, `faq.md`, `assets/` | The root `README.md`: `.claude/rules/maintainer/root-readme.md` and `.claude/templates/root-readme-template.md` say how to write it |
+| `SECURITY.md`, `SUPPORT.md`, `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, the root `LICENSE` | The files inside `plugins/<name>/` (README, CHANGELOG, LICENSE, NOTICE) and the templates in `.claude/templates/` and `building-plugins`' `assets/` |
+| | What one plugin tells its users, such as the tools of an MCP server it bundles: that belongs to the plugin, not to the marketplace's docs. `docs/github-mcp-tools.md` is such a file |
+| | The root `CHANGELOG.md` and GitHub Releases |
 | | Issue forms, `.github/ISSUE_TEMPLATE/config.yml`, labels, replies to issues |
 
 The files marked Out are read here only to check what the docs say about them. When a docs change requires an Out file to change, report it; do not edit it in the same change.
@@ -25,7 +26,6 @@ The files marked Out are read here only to check what the docs say about them. W
 - Write for users. Never mention maintenance, `.claude/`, scripts, CI internals, release mechanics or how we work. A user's own `.claude/settings.json` may be mentioned.
 - Check every command, flag, UI path, setting and minimum version against the live official sources in step 3, never against memory or the file itself. When the docs and the release notes differ, the release notes win.
 - One fact has one value everywhere. When two files state it, both change in the same commit.
-- Never edit the generated blocks. Run `npm run generate`.
 - State the minimum Claude Code version of every version-gated feature, and recheck it whenever the file is touched.
 - Mark what you could not verify as **unverified**, and say what it affects.
 - These files are outside `plugins/`, so they need no pull request. Commit signed, one topic per commit, and push only on Nery's order.
@@ -45,7 +45,6 @@ The files marked Out are read here only to check what the docs say about them. W
 
 | File | Job | Primary sources |
 | :-- | :-- | :-- |
-| Root `README.md` | The front page, in the order of the template [assets/root-readme-template.md](assets/root-readme-template.md); [references/root-readme.md](references/root-readme.md) says how to use and change it | Every source below, by section |
 | `docs/installation.md` | Add the marketplace and install, per surface; scopes; set up a team | `/en/plugins/install`, `/en/plugins/host-marketplace` → Register the marketplace for everyone in a repository, `/en/plugins/loading` → Plugins synced from claude.ai |
 | `docs/managing-plugins.md` | Update, auto-update, enable and disable, uninstall, remove the marketplace, inspect, the Claude app | `/en/plugins/install` → Manage installed plugins, Keep plugins updated, Manage marketplaces; `/en/plugins/cli-reference`; `/en/plugins/loading` → Versions and updates |
 | `docs/compatibility.md` | The single source of the component × surface matrix | <https://claude.com/docs/plugins/platform-support> |
@@ -57,7 +56,7 @@ The files marked Out are read here only to check what the docs say about them. W
 | `CODE_OF_CONDUCT.md` | Standards and enforcement | Its attributed source |
 | Root `LICENSE` | MIT | — |
 
-Claude Code pages live at `https://code.claude.com/docs/en/<page>.md`; `https://code.claude.com/docs/llms.txt` lists them all. Claude app claims need a claude.com or support.claude.com source, such as <https://support.claude.com/en/articles/13837440-use-plugins-in-claude>. The README's Trust & safety section follows `/en/plugins/security` → Review a plugin before you install.
+Claude Code pages live at `https://code.claude.com/docs/en/<page>.md`; `https://code.claude.com/docs/llms.txt` lists them all. Claude app claims need a claude.com or support.claude.com source, such as <https://support.claude.com/en/articles/13837440-use-plugins-in-claude>.
 
 ## Pairs that must agree
 
@@ -96,7 +95,7 @@ Name what changed:
 
 ### 2. Files
 
-From the two tables above, list every file and every pair the trigger reaches. A plugin added, renamed or removed changes the generated catalog: run `npm run generate` rather than editing it, then check the prose around it (counts, examples, the documentation table).
+From the two tables above, list every file and every pair the trigger reaches. A plugin added, renamed or removed changes the root README's generated catalog, which its own rule covers; check every doc here that counts, lists or names plugins.
 
 ### 3. Sources
 
@@ -108,12 +107,11 @@ Edit each file in one coherent pass, then reread it whole. Change both sides of 
 
 ### 5. Cross-scope
 
-List each file outside the scope that must follow (a plugin README's Compatibility cells, a template, an issue form) with what it must say. It changes in its own change.
+List each file outside the scope that must follow (the root README, a plugin README's Compatibility cells, a template, an issue form) with what it must say. It changes in its own change.
 
 ### 6. Check
 
 Run from the repository root and show the output:
-- `node scripts/generators/marketplace.mjs --check` and `node scripts/generators/catalog.mjs --check`;
 - `grep -rnoE 'nerymurillohnd/[A-Za-z0-9._-]+|@[a-z-]*claude-factory'` over the touched files, which must return only the source and the suffix above.
 
 Then open the target of every relative link and `#anchor` in the touched files, and confirm the file and heading exist. No script does this.
@@ -136,7 +134,6 @@ Run steps 3 to 7 on every file in scope, against every Claude Code release since
 ## Gotchas
 
 - Biome formats and lints these files: run `biome check --write <file>` after editing one. It checks headings and fenced-code languages, not links, anchors or prose, so a broken link or anchor shows up only when you open it. It pads tables, except a table right after a `<!-- biome-ignore format: <reason> -->` comment, which the catalog generator writes before each of its tables.
-- The catalog's version column is generated and is the only version number of a plugin in the root README.
 - GitHub reads `SECURITY.md`, `SUPPORT.md`, `CONTRIBUTING.md` and `CODE_OF_CONDUCT.md` from `.github/` first, then the root, then `docs/`. A copy added in `.github/` would silently replace the root one.
 - `docs/compatibility.md` drives the Compatibility cells of every plugin README, so a change to it is never only a docs change.
 - The minimum versions in the install commands (`claude plugin install … --marketplace` from the shell, `/plugin install … --marketplace` in a session) come from `/en/plugins/publish` → Tell users how to install and `/en/plugins/install`; recheck them on every change to those commands.
