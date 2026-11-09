@@ -2,7 +2,7 @@
 
 # 🩺 Skill Diagnostics
 
-<p><strong>Writes and audits Claude skills by the official best practices: an authoring guide, a full audit by scripts, four independent reviewers, a cold executor and a verifier with file-and-line evidence and one verdict, and a gate that has Claude audit every skill it changes before it finishes.</strong></p>
+<p><strong>Audits Claude skills against the official best practices and gates them: four validation scripts, four independent reviewers, a cold executor and an adversarial verifier give one report with file-and-line evidence and one verdict, and a gate has Claude audit every skill it creates or changes before it finishes.</strong></p>
 
 [![Version](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Fnerymurillohnd%2Fthe-claude-factory%2Fmain%2Fplugins%2Fskill-diagnostics%2F.claude-plugin%2Fplugin.json&query=%24.version&label=version&color=D97757)](./CHANGELOG.md)
 [![Works in](https://img.shields.io/badge/works%20in-Claude%20Code%20%C2%B7%20Claude%20app-2563EB)](#-compatibility)
@@ -24,13 +24,13 @@
 ---
 
 > [!TIP]
-> **TL;DR** — Ask Claude to write or audit a skill, or type `/skill-diagnostics:skills-best-practices`, and get a skill built by the official best practices, or one report with the exact line behind every finding and one verdict. In Claude Code, every skill Claude changes is audited before Claude finishes its turn.
+> **TL;DR** — Ask Claude to audit a skill, or type `/skill-diagnostics:skills-best-practices`, and get one report with the exact line behind every finding and one verdict. In Claude Code, every skill Claude changes is audited before Claude finishes its turn.
 
 ## ✨ Why use it
 
 A skill can look finished to the person who wrote it and still fail the model that runs it: a description that never triggers, a placeholder nothing defines, a reference that contradicts `SKILL.md`, a field that one surface rejects.
 
-- **Write it right the first time** — Claude builds a new skill from a template, step by step, by Anthropic's published best practices for the description, frontmatter, body, workflows, scripts and security, then checks it with a validation loop.
+- **Audit only** — it writes no skill. Write or edit a skill with any skill-writing skill, such as Anthropic's `skill-creator`, or by hand; then this plugin checks it against Anthropic's published best practices for the description, frontmatter, body, workflows, scripts and security.
 - **An audit you can trust** — four scripts check what can be checked mechanically, four reviewers each judge one area, a cold executor follows the skill as a model that has nothing else, and an adversarial verifier tries to refute every finding against your files and the live official docs. You get one report and one verdict.
 - **Evidence, not opinions** — every finding quotes the exact text with its file and line and says how to fix it.
 - **Nothing slips through** — in Claude Code, a gate makes Claude audit every skill it creates or changes before it ends its turn, including skills written by a shell command.
@@ -40,7 +40,7 @@ A skill can look finished to the person who wrote it and still fail the model th
 
 | Component | Name | What it does | How it runs |
 | :-- | :-- | :-- | :-- |
-| 🎯 Skill | `skill-diagnostics:skills-best-practices` | Writes or edits a skill by the best practices; audits a skill with 4 scripts, 4 reviewers, a cold executor and an adversarial verifier, and gives one report and one verdict | `/skill-diagnostics:skills-best-practices`, or automatically when you ask Claude to write, review or audit a skill |
+| 🎯 Skill | `skill-diagnostics:skills-best-practices` | Audits a skill with 4 scripts, 4 reviewers, a cold executor and an adversarial verifier, and gives one report and one verdict | `/skill-diagnostics:skills-best-practices`, automatically when you ask Claude to review or audit a skill, and after Claude creates or changes one |
 | 🤖 Agent | `skill-diagnostics:description-reviewer` | Reviews the description, frontmatter and the surfaces the skill reaches | Launched by the skill during an audit only |
 | 🤖 Agent | `skill-diagnostics:instructions-reviewer` | Reviews the body, structure and workflows passage by passage | Launched by the skill during an audit only |
 | 🤖 Agent | `skill-diagnostics:scripts-runtime-reviewer` | Reviews bundled scripts and Claude Code runtime features | Launched by the skill during an audit only |
@@ -259,21 +259,13 @@ export CLAUDE_CODE_PLUGIN_PREFER_HTTPS=1
 
 ## 🚀 Usage
 
-### Write a new skill
-
-```text
-/skill-diagnostics:skills-best-practices write a skill that drafts release notes from the merged pull requests since the last tag
-```
-
-**Result:** Claude asks only what it can't infer (what the skill produces, what should and shouldn't trigger it, where it will run), creates the skill folder from a template, writes the description, body, scripts and three evals, and runs the validation loop until it passes. In Claude Code the audit follows before Claude finishes.
-
 ### Audit a skill
 
 ```text
 /skill-diagnostics:skills-best-practices audit ~/.claude/skills/release-notes
 ```
 
-**Result:** a report in the conversation with the verdict (**pass**, **pass with warnings**, **fail** or **not determinable**), the findings by severity, each with its file, line, quoted text and fix, and what couldn't be checked. Every audit is complete: all four scripts and all six agents read every file of the skill, whichever files changed. The audit changes nothing in the skill; fixing the findings is a separate step you ask for.
+**Result:** a report in the conversation with the verdict (**pass**, **pass with warnings**, **fail** or **not determinable**), the findings by severity, each with its file, line, quoted text and fix, and what couldn't be checked. Every audit is complete: all four scripts and all six agents read every file of the skill, whichever files changed. The audit changes nothing in the skill; fixing the findings is a separate step you ask for. When the skill has no evals, Claude then asks whether you want some; it's your call.
 
 You can also just ask: "review my skill in `./skills/invoice-note` before I publish it".
 
@@ -328,7 +320,7 @@ In the Claude app the option can't be changed and keeps its default, `gate`.
   - `verdicts/<skill key>`: the last verdict for that skill, as `{"skill", "verdict", "recorded_at"}`.
   - `audits/<session id>/`: each audit's script results (under the skill's name) and `agents/<agent>-<agent id>.md`, each agent's report as the agent wrote it.
 
-  The `<skill key>` is the skill's full path with `/`, `:` and `%` encoded. Files under `sessions/`, `pending/`, `guard/` and `audits/` are deleted after 7 days; verdict files stay until you uninstall. Writing a skill changes files only inside the skill folder you named. The evals workflow writes its runs in a `<skill>-workspace` folder next to the skill. An audit writes nothing in your project: its results and reports stay in the audit folder, which the report names, and Claude copies them into your project only when you ask.
+  The `<skill key>` is the skill's full path with `/`, `:` and `%` encoded. Files under `sessions/`, `pending/`, `guard/` and `audits/` are deleted after 7 days; verdict files stay until you uninstall. The plugin never changes your skill. The evals workflow writes its runs in a `<skill>-workspace` folder next to the skill. An audit writes nothing in your project: its results and reports stay in the audit folder, which the report names, and Claude copies them into your project only when you ask.
 - **Privacy:** the author collects no data. The marketplace's [privacy policy](https://github.com/nerymurillohnd/the-claude-factory/blob/main/PRIVACY.md) covers this plugin and the outside services it can reach.
 
 ### Limits of the gate
@@ -338,7 +330,7 @@ In the Claude app the option can't be changed and keeps its default, `gate`.
 - `disableAllHooks` in your settings turns the hooks off, and an organization's `allowManagedHooksOnly` blocks them unless managed settings force-enable this plugin.
 - Claude Code ends a turn after 8 consecutive `Stop` continuations with no tool call between them, whatever the gate says. The `CLAUDE_CODE_STOP_HOOK_BLOCK_CAP` environment variable raises that cap.
 - The scan for skills written by shell commands or other programs covers your project folder and `~/.claude/skills` only. When the project folder is your home folder or `/`, only `~/.claude/skills` is scanned, because the whole tree can't be searched in time.
-- If you press `Esc` while Claude is writing a skill, or interrupt the turn, the skill may not be recorded or the gate may not run until Claude next stops.
+- If you press `Esc` while Claude is changing a skill, or interrupt the turn, the skill may not be recorded or the gate may not run until Claude next stops.
 - A skill whose full path is longer than about 200 characters may give a verdict or guard file name longer than your file system allows; the gate then shows a hook error.
 - Under an organization's `allowManagedPermissionRulesOnly`, the skill's pre-approved commands may not apply: Claude asks before running the scripts, and in `dontAsk` mode they are denied, so the verdict can't be recorded.
 - With hooks turned off, the agents' reports aren't saved (the report says which are missing), and in an audit's later turns Claude Code asks you before running the skill's scripts.
@@ -370,7 +362,7 @@ brew upgrade jq python
 
 This version replaces the earlier one, which had the `/skill-diagnostics:audit` command, and changes how you use it:
 
-- **The command is new.** `/skill-diagnostics:audit` is gone; use `/skill-diagnostics:skills-best-practices`, which also writes skills.
+- **The command is new.** `/skill-diagnostics:audit` is gone; use `/skill-diagnostics:skills-best-practices`. Like the old command, it only audits; write skills with a skill-writing skill such as `skill-creator`.
 - **`on_skill_write` takes `gate`, `suggest` or `off`, and the default is now `gate`** (it was `suggest`). `run` is gone. If you want the old behavior, set it to `suggest`.
 - **New prerequisites:** Bash and `jq` run the hooks. Python 3.12 or later is still needed, now for the skill's scripts.
 - **The old agents are removed:** `conformance-auditor` and `executability-auditor` are replaced by the six agents in [What's inside](#-whats-inside).
@@ -417,7 +409,7 @@ Or, inside a session:
 
 <sub>✅ works · ⚠️ partial · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. The Claude app (web, desktop and mobile) runs a conversation as a Cowork session when it can, and as a chat conversation otherwise, for example on a device that can't run Cowork or in the separate Chat mode that Team and Enterprise plans keep for now.</sub>
 
-In a chat conversation, where agents and hooks don't run, the skill still writes skills and audits them inline: Claude applies the four reviewers' checks, the cold executor's trace and the verification itself, one after another, and the report says that no independent agents ran. The four scripts need the code execution sandbox; without it they can't run and the verdict is *not determinable*. No gate runs there, so ask for the audit yourself after writing a skill. In a Cowork session the hooks run where Cowork runs them, so they need Bash and `jq` there.
+In a chat conversation, where agents and hooks don't run, the skill still audits inline: Claude applies the four reviewers' checks, the cold executor's trace and the verification itself, one after another, and the report says that no independent agents ran. The four scripts need the code execution sandbox; without it they can't run and the verdict is *not determinable*. No gate runs there, so ask for the audit yourself after writing a skill. In a Cowork session the hooks run where Cowork runs them, so they need Bash and `jq` there.
 
 ## ❓ FAQ & Troubleshooting
 
@@ -459,7 +451,7 @@ Something the audit needs couldn't be checked: a script couldn't run (for exampl
 <details>
 <summary><b>Does it change my skill?</b></summary>
 
-An audit never does. Writing or editing a skill changes files only inside the skill folder you named; anything else, such as a plugin manifest or a README, needs your word first.
+No. The plugin only audits and changes no file of your skill. Fixes, and evals if you want them, are separate steps you ask for.
 
 </details>
 

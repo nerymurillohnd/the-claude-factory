@@ -1,6 +1,6 @@
 ---
-description: "Trigger rate, authoring: a plain-words request to write or improve a skill, with no slash command and no skill name. Authoring is in the skill's scope since 0.3.0, so skills-best-practices must be invoked."
-tags: [trigger, authoring]
+description: "Trigger rate, near miss: a plain-words request to turn a manual routine into a new skill. The plugin only audits and its description excludes writing a skill from scratch, so skills-best-practices must not be invoked, in either arm."
+tags: [trigger, negative]
 max_turns: 4
 timeout_seconds: 180
 allowed_tools: [Read, Glob, Grep, Skill]

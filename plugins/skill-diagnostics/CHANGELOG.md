@@ -10,7 +10,6 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ### Added
 
-- The `skills-best-practices` skill writes and edits skills by the official best practices, starting from a template, with a validation loop against one checklist.
 - A full audit: four validation scripts, four independent reviewers (description, instructions, scripts and runtime, security), a cold executor that follows every workflow without guessing, and an adversarial verifier that checks every finding against the official sources. It returns one report with file-and-line evidence and one verdict.
 - Each audit report has an Accounting table that gives every finding of every agent one outcome (kept, merged or withdrawn). A `SubagentStop` hook, and a `PostToolUse` hook on `SubagentHandback` in auto mode, save each agent's report unchanged in the session's audit folder in the plugin's data directory, which the report names, so you can check that no finding was dropped. Claude makes no tool call to save them. Audit folders are deleted after 7 days.
 - A `PermissionRequest` hook approves the skill's own five scripts, run exactly as the skill writes them, in an audit's later turns, where the skill's pre-approval has ended and Claude Code would otherwise ask you. It approves nothing else, never denies and never adds a permission rule.
@@ -18,12 +17,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - The skill checks that a skill's frontmatter hooks don't name `${CLAUDE_PLUGIN_DATA}`, which Claude Code refuses in a skill hook, and its references say what each placeholder and a relative path resolve to in a skill hook.
 - The skill checks how a skill that runs other agents runs them (subagents, workflows, agent teams) against the official comparison, and that no pre-approved command depends on running after a subagent's result, since the skill's pre-approval covers only the turn that invokes it.
 - The skill checks the size of `SKILL.md`: at most 500 lines, and a body of at most 5,000 tokens (estimated from its characters), the part Claude Code re-attaches after compaction; it flags a body above 4,500 tokens.
-- A gate: after Claude writes or edits a skill, it audits the skill before it finishes the turn. A Stop hook also finds skills changed by shell commands.
+- A gate: after Claude writes or edits a skill, it audits the skill before it finishes the turn.
+- After an audit, when the skill has no evals, Claude asks whether you want some; writing them is a separate step you choose. A Stop hook also finds skills changed by shell commands.
 - The `/skill-diagnostics:evals` workflow measures whether a skill triggers on the right requests and improves the output, with and without the skill. It runs only on request and changes no file of the skill.
 
 ### Changed
 
-- **Breaking:** `/skill-diagnostics:audit` is replaced by `/skill-diagnostics:skills-best-practices`, which also writes skills.
+- **Breaking:** `/skill-diagnostics:audit` is replaced by `/skill-diagnostics:skills-best-practices`. It still only audits; to write a skill, Claude uses a skill-writing skill such as `skill-creator`.
+- The plugin's and the skill's descriptions say what the audit is and when it runs: after any skill, in a plugin, user, project or local folder, is created or edited, and whenever you ask to audit, review or improve one.
 - **Breaking:** `on_skill_write` now takes only `gate`, `suggest` or `off`, and the default is `gate` (it was `suggest`). Any other value is no longer accepted, so an unknown value can't silently fall back to another mode.
 - **Breaking:** the hooks now need Bash and `jq`. If `jq` is missing, the hooks report an error and don't gate. Python 3.12 or later as `python3` is still needed, now for the skill's scripts.
 - **Breaking:** an audit covers one skill folder per run; auditing a skill from a URL or every skill of a plugin folder in one run is no longer offered.

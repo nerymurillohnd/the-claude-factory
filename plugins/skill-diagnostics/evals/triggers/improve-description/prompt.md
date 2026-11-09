@@ -1,6 +1,6 @@
 ---
-description: "Trigger rate, authoring: a plain-words request to write or improve a skill, with no slash command and no skill name. Authoring is in the skill's scope since 0.3.0, so skills-best-practices must be invoked."
-tags: [trigger, authoring]
+description: "Trigger rate, improve: a plain-words request to improve an existing skill's triggering, with no slash command and no skill name. The description names improving a skill, its description or its triggering, so skills-best-practices must be invoked: the audit says what to fix."
+tags: [trigger, improve]
 max_turns: 4
 timeout_seconds: 180
 allowed_tools: [Read, Glob, Grep, Skill]
