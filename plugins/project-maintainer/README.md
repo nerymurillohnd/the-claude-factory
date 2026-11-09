@@ -329,9 +329,6 @@ export CLAUDE_CODE_PLUGIN_PREFER_HTTPS=1
 2. Select **Add** → **Add marketplace** and enter `nerymurillohnd/the-claude-factory`.
 3. Find **Project Maintainer** in **Discover** and select **Add**.
 
-> [!NOTE]
-> Used the Session Handoff plugin? This plugin replaces it, and the marketplace renames an existing install for you. Its handoffs in `.claude/session-handoff/` keep working. If you installed Session Handoff from another source, turn it off, or you get the start-of-session reminder twice.
-
 ## 🚀 Usage
 
 ### Record a decision
@@ -559,6 +556,26 @@ Records and handoffs live in your project folder, so the plugin needs a session 
 <summary><b>The plugin's commands don't show up after installing.</b></summary>
 
 Run `/reload-plugins`, then type `/project-maintainer:` to list its skills. If it still doesn't appear, open `/plugin` → **Errors** and see the [troubleshooting guide](../../docs/troubleshooting.md).
+
+</details>
+
+<details>
+<summary><b>Updating says the plugin is not installed, or <code>claude plugin list</code> leaves it out.</b></summary>
+
+Claude Code moved your settings to Project Maintainer from a plugin the marketplace retired, but it doesn't install Project Maintainer for you. Until you do, updates fail with `Plugin "project-maintainer" is not installed` and **Errors** can show `Plugin "project-maintainer" not cached`. Install it once, then run `/reload-plugins`:
+
+```bash
+claude plugin install project-maintainer@the-claude-factory
+```
+
+In a session, run `/plugin install project-maintainer@the-claude-factory` instead.
+
+</details>
+
+<details>
+<summary><b>The start-of-session reminder appears twice.</b></summary>
+
+Another enabled plugin also reads `.claude/session-handoff/` when a session starts, such as a copy installed from another marketplace. Find it in `claude plugin list` and turn it off with `claude plugin disable <plugin>@<marketplace>`.
 
 </details>
 

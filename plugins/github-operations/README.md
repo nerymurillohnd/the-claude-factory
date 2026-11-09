@@ -386,10 +386,6 @@ export CLAUDE_CODE_PLUGIN_PREFER_HTTPS=1
 /plugin install github-operations@the-claude-factory
 ```
 
-### Coming from Git Hygiene?
-
-Git Hygiene is now part of this plugin and no longer exists on its own. The marketplace renames it, so an existing install moves to GitHub Operations by itself. The cleanup is now the `cleanup-and-debug` skill: type `/github-operations:cleanup-and-debug` where you used to type `/git-hygiene:cleanup`.
-
 ### Coming from 0.5.x?
 
 The single `github` skill became four skills:
@@ -635,6 +631,19 @@ Uninstalling from the last scope it's installed at also deletes its data directo
 <summary><b>The plugin's skills don't show up after installing.</b></summary>
 
 Run `/reload-plugins`, then type `/github-operations:` to see the skills and commands. If they still don't appear, open `/plugin` → **Errors** and see the [troubleshooting guide](../../docs/troubleshooting.md).
+
+</details>
+
+<details>
+<summary><b>Updating says the plugin is not installed, or <code>claude plugin list</code> leaves it out.</b></summary>
+
+Claude Code moved your settings to GitHub Operations from a plugin the marketplace retired, but it doesn't install GitHub Operations for you. Until you do, updates fail with `Plugin "github-operations" is not installed` and **Errors** can show `Plugin "github-operations" not cached`. Install it once, then run `/reload-plugins`:
+
+```bash
+claude plugin install github-operations@the-claude-factory
+```
+
+In a session, run `/plugin install github-operations@the-claude-factory` instead.
 
 </details>
 
