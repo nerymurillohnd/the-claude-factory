@@ -17,6 +17,10 @@
     "../plugins/*/tests/**/*.ts",
     "../plugins/*/tests/**/*.tsx",
     "../plugins/*/.claude-plugin",
-    "../plugins/*/node_modules"
+    "../plugins/*/node_modules",
+    // Workflow scripts run as the body of an async function, with a top-level return and injected
+    // globals (agent, parallel, pipeline, phase, log, args); scripts/testers/<plugin>/workflow.test.mjs
+    // checks them instead.
+    "../plugins/*/workflows/**"
   ]
 }
