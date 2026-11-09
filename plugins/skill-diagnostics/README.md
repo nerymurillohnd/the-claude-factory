@@ -359,16 +359,6 @@ Update jq and Python the way you installed them, for example with Homebrew:
 brew upgrade jq python
 ```
 
-### Upgrading from an earlier version
-
-This version replaces the earlier one, which had the `/skill-diagnostics:audit` command, and changes how you use it:
-
-- **The command is new.** `/skill-diagnostics:audit` is gone; use `/skill-diagnostics:skills-best-practices`. Like the old command, it only audits; write skills with a skill-writing skill such as `skill-creator`.
-- **`on_skill_write` takes `gate`, `suggest` or `off`, and the default is now `gate`** (it was `suggest`). `run` is gone. If you want the old behavior, set it to `suggest`.
-- **New prerequisites:** Bash and `jq` run the hooks. Python 3.12 or later is still needed, now for the skill's scripts.
-- **The old agents are removed:** `conformance-auditor` and `executability-auditor` are replaced by the six agents in [What's inside](#-whats-inside).
-- **New hooks:** besides the gate, the plugin saves each audit agent's report and approves the skill's own scripts in an audit's later turns ([What this plugin runs and sends](#-what-this-plugin-runs-and-sends)).
-
 ## 🗑️ Uninstalling
 
 ```bash

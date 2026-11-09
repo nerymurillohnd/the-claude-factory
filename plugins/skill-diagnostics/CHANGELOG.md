@@ -27,7 +27,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 - **Breaking:** `/skill-diagnostics:audit` is replaced by `/skill-diagnostics:skills-best-practices`. It still only audits; to write a skill, Claude uses a skill-writing skill such as `skill-creator`.
 - The plugin's and the skill's descriptions say what the audit is and when it runs: after any skill, in a plugin, user, project or local folder, is created or edited, and whenever you ask to audit, review or improve one.
-- **Breaking:** `on_skill_write` now takes only `gate`, `suggest` or `off`, and the default is `gate` (it was `suggest`). Any other value is no longer accepted, so an unknown value can't silently fall back to another mode.
+- **Breaking:** `on_skill_write` now takes only `gate`, `suggest` or `off`, and the default is `gate` (it was `suggest`); set it to `suggest` to keep the old behavior. `run` is gone, and any other value is no longer accepted, so an unknown value can't silently fall back to another mode.
 - **Breaking:** the hooks now need Bash and `jq`. If `jq` is missing, the hooks report an error and don't gate. Python 3.12 or later as `python3` is still needed, now for the skill's scripts.
 - **Breaking:** an audit covers one skill folder per run; auditing a skill from a URL or every skill of a plugin folder in one run is no longer offered.
 
