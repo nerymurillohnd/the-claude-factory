@@ -6,6 +6,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-11-09
+
+### Changed
+
+- `public-marketplace-dev` now loads the `cli-commands-guide` skill before Claude runs, writes or explains a plugin command, including the `claude plugin validate --strict` run after a change, so its exact flags, gotchas and exit codes apply. Answers that use no plugin command don't load it.
+
 ## [0.2.0] - 2026-11-08
 
 ### Added
@@ -25,6 +31,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - Gotchas Claude keeps in view, such as `/plugin install` with a path installing nothing, `marketplace remove` uninstalling that marketplace's plugins, and reloads that change MCP tools needing `--force`.
 - Before relying on a version-gated flag, Claude checks `--help` on your Claude Code version and the live docs, and tells you what differs.
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/plugin-engineering--v0.2.0...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/plugin-engineering--v0.2.1...HEAD
+[0.2.1]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/plugin-engineering--v0.2.1
 [0.2.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/plugin-engineering--v0.2.0
 [0.1.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/plugin-engineering--v0.1.0
