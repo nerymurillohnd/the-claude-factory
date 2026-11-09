@@ -6,17 +6,33 @@
         "hooks": [
           {
             "type": "command",
-            "if": "Write(//**/SKILL.md)",
             "shell": "bash",
-            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/skill_written.py\"",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/skill-changed.sh\"",
             "timeout": 10
-          },
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
           {
             "type": "command",
-            "if": "Edit(//**/SKILL.md)",
             "shell": "bash",
-            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/skill_written.py\"",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/session-start.sh\"",
             "timeout": 10
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "shell": "bash",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/audit-gate.sh\"",
+            "timeout": 15
           }
         ]
       }
