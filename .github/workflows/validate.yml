@@ -54,11 +54,14 @@ jobs:
           sudo apt-get install -y --no-install-recommends shellcheck
           # The latest shfmt release binary, checked against the digest GitHub records for it.
           asset="$(gh api repos/mvdan/sh/releases/latest \
-            --jq '.assets[] | select(.name | endswith("_linux_amd64")) | "\(.browser_download_url) \(.digest)"')"
+            --jq '.assets[] | select(.name | endswith("_linux_amd64")) | "\(.url) \(.digest)"')"
           read -r url digest <<< "${asset}"
           [[ -n ${url} && ${digest} == sha256:* ]] || { echo "no release asset or digest for mvdan/sh" >&2; exit 1; }
-          # GitHub answers release downloads with transient 504s; curl retries those (408, 429, 500, 502, 503, 504) with backoff.
-          curl -sSfL --retry 6 -o shfmt "${url}"
+          # Download through the REST asset endpoint with the job token: GitHub answers anonymous
+          # /releases/download/ requests with 504s during incidents, while authenticated ones keep
+          # working. curl retries 408, 429, 500, 502, 503, 504 and timeouts, and sends the token only to api.github.com.
+          curl -sSfL --retry 6 -H "Accept: application/octet-stream" -H "Authorization: Bearer ${GH_TOKEN}" \
+            -o shfmt "${url}"
           echo "${digest#sha256:}  shfmt" | sha256sum --check --strict
           sudo install -m 755 shfmt /usr/local/bin/shfmt
           rm shfmt
@@ -137,11 +140,14 @@ jobs:
         run: |
           # The latest actionlint release, checked against the digest GitHub records for it.
           asset="$(gh api repos/rhysd/actionlint/releases/latest \
-            --jq '.assets[] | select(.name | endswith("_linux_amd64.tar.gz")) | "\(.browser_download_url) \(.digest)"')"
+            --jq '.assets[] | select(.name | endswith("_linux_amd64.tar.gz")) | "\(.url) \(.digest)"')"
           read -r url digest <<< "${asset}"
           [[ -n ${url} && ${digest} == sha256:* ]] || { echo "no release asset or digest for rhysd/actionlint" >&2; exit 1; }
-          # GitHub answers release downloads with transient 504s; curl retries those (408, 429, 500, 502, 503, 504) with backoff.
-          curl -sSfL --retry 6 -o actionlint.tar.gz "${url}"
+          # Download through the REST asset endpoint with the job token: GitHub answers anonymous
+          # /releases/download/ requests with 504s during incidents, while authenticated ones keep
+          # working. curl retries 408, 429, 500, 502, 503, 504 and timeouts, and sends the token only to api.github.com.
+          curl -sSfL --retry 6 -H "Accept: application/octet-stream" -H "Authorization: Bearer ${GH_TOKEN}" \
+            -o actionlint.tar.gz "${url}"
           echo "${digest#sha256:}  actionlint.tar.gz" | sha256sum --check --strict
           tar -xzf actionlint.tar.gz actionlint
           sudo install -m 755 actionlint /usr/local/bin/actionlint
