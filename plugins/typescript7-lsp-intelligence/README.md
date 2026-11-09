@@ -371,7 +371,19 @@ That is the side-by-side setup the TypeScript 7 announcement recommends for tool
 
 This plugin fits it: the project's `tsc` is TypeScript 7, and the hook runs its native compiler directly, under the `@typescript/native` name too. The language server doesn't come from the project: Claude Code starts `tsc --lsp` by name from the `PATH` it was launched with, so it still needs a global TypeScript 7 (`npm install -g typescript@7`).
 
-Only one global `tsc` can be on your `PATH`. In this setup [TypeScript 6 LSP Intelligence](../typescript6-lsp-intelligence/README.md) needs a global `typescript@6`, and this plugin a global `typescript@7`, so if you work on projects of both majors, keep only one of the two plugins enabled at a time (`claude plugin disable <plugin>`, `claude plugin enable <plugin>`), with the global TypeScript that plugin asks for.
+Only one global `tsc` can be on your `PATH`. In this setup [TypeScript 6 LSP Intelligence](../typescript6-lsp-intelligence/README.md) needs a global `typescript@6`, and this plugin a global `typescript@7`, so if you work on projects of both majors, keep only one of the two plugins enabled at a time, with the global TypeScript that plugin asks for. To turn this plugin off:
+
+```bash
+claude plugin disable typescript7-lsp-intelligence@the-claude-factory
+```
+
+To turn it on again:
+
+```bash
+claude plugin enable typescript7-lsp-intelligence@the-claude-factory
+```
+
+Turn TypeScript 6 LSP Intelligence off and on the same way, with its own name.
 
 </details>
 

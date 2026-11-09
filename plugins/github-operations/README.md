@@ -386,38 +386,6 @@ export CLAUDE_CODE_PLUGIN_PREFER_HTTPS=1
 /plugin install github-operations@the-claude-factory
 ```
 
-### Coming from 0.5.x?
-
-The single `github` skill became four skills:
-
-| You typed | Type now |
-| :-- | :-- |
-| `/github-operations:github pr` | `/github-operations:auto-pr-lifecycle`, or `/github-operations:init-pr-lifecycle` to pick up a pull request where it stands |
-| `/github-operations:github audit` or `cleanup` | `/github-operations:cleanup-and-debug`, or `/github-operations:init-cleanup-and-debug` |
-| `/github-operations:github setup` | `/github-operations:github-files-setup` |
-| `/github-operations:github ci` | `/github-operations:claude-github-actions` |
-| `/github-operations:github issue` or `discussion` | Not part of this version |
-| *"Fix issue #N"*, which ended in a pull request | Not part of this version |
-
-What else changed:
-
-- **Every push asks you first.** Fixes are made in your clone by the `pr-fixer` agent and pushed only after you approve them, or after you choose not to be asked again on that pull request.
-- **Review threads people opened stay open** for their reviewer. Claude resolves only the threads bots and AI reviewers opened, once the fix is verified.
-- **The `pr-tracker` and `repo-auditor` agents were replaced** by `pr-lifecycle:pr-tracker` and `repo-hygiene:health-diagnostics`.
-- **The plugin no longer ships hooks.** The agents keep to their limits through their own instructions; see [What this plugin runs and sends](#-what-this-plugin-runs-and-sends).
-- **Templates are written for your repository**, not copied as they are.
-
-### Coming from 0.6.x?
-
-The plugin no longer brings the GitHub MCP server or asks for a token. After you update, `plugin:github-operations:github` leaves `/mcp`, and Claude uses `gh` until you add GitHub's server yourself:
-
-1. Create a new [fine-grained token](https://github.com/settings/personal-access-tokens/new). Claude Code never shows the token you saved in the plugin again, so you can't copy it.
-2. Add the server as in [GitHub MCP server](#-github-mcp-server-recommended). It keeps every toolset and early-access mode, as before.
-3. Delete the old token on GitHub.
-4. Rename deny rules that name `mcp__plugin_github-operations_github__…` to `mcp__github__…`.
-
-In the Claude app, a GitHub connector you already added keeps working. To add one, see [In the Claude app](#in-the-claude-app).
-
 ## 🚀 Usage
 
 Ask in your own words. Claude picks the skill from what you asked, and when it loaded a skill on its own, it asks you before it starts. To pick it yourself, type the skill or one of the two commands.
@@ -655,7 +623,7 @@ Look at the message, then fix the server. Until you do, the agents have no GitHu
 | What you see | Why | What to do |
 | :-- | :-- | :-- |
 | `github` is missing from `/mcp` | The server isn't added, or was added at local scope in another project | Add it as in [GitHub MCP server](#-github-mcp-server-recommended), with `--scope user` |
-| `plugin:github-operations:github` disappeared after updating | From 0.7.0 the plugin no longer brings the server | Add it yourself, as in [Coming from 0.6.x?](#coming-from-06x) |
+| `plugin:github-operations:github` disappeared after updating | From 0.7.0 the plugin no longer brings the server | Add it yourself, as in [GitHub MCP server](#-github-mcp-server-recommended) |
 | `claude.ai github` is listed in `/mcp`, and GitHub tools work | Claude Code is using your claude.ai GitHub connector | Nothing to do, or add the server to Claude Code with its own token |
 | The server is marked failed, or `401` | The token is wrong or expired, or `${GITHUB_PAT}` isn't set where Claude Code started | Remove the server and add it again with a new token, or start Claude Code from a shell that sets `GITHUB_PAT` |
 | Some tools work and others don't | The token lacks a permission those tools need | Add the permission to the token |
