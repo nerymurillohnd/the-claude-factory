@@ -80,9 +80,9 @@ Copy this checklist and tick each item as you complete it:
 Audit progress:
 - [ ] Step 1: Scripts, one after another (`scripts/check-*.py`)
 - [ ] Step 2: Profile and briefs (`references/audit-procedure.md`, `assets/brief-template.md`)
-- [ ] Step 3: Review by five agents, reports checked
-- [ ] Step 4: Adversarial verification, report checked
-- [ ] Step 5: Verdict and report (`references/checklist.md`, `references/evidence-and-verdict.md`, `assets/report-template.md`)
+- [ ] Step 3: Review by five agents, each report saved with `save-report.py`, then checked
+- [ ] Step 4: Adversarial verification, its report saved, then checked
+- [ ] Step 5: Verdict and report with its Accounting table, report saved (`references/checklist.md`, `references/evidence-and-verdict.md`, `assets/report-template.md`)
 - [ ] Step 6: Verdict recorded
 ```
 
@@ -96,7 +96,7 @@ Read [audit-procedure.md](references/audit-procedure.md) first. Keep this order:
    <the report, exactly as received>
    END_OF_REPORT
    ```
-   Check each report by [Checking an agent report](references/audit-procedure.md#checking-an-agent-report) before using it; send a failed report back once.
+   Save only through this command: the Write tool and a `>` redirect write outside the working directories and ask the user for every file, while this command is pre-approved. `END_OF_REPORT` must not appear alone on a line of the report, or the saved text stops there; if it does, pick another closing word and use it on both lines. Check each report by [Checking an agent report](references/audit-procedure.md#checking-an-agent-report) before using it; send a failed report back once.
 4. **Verification.** Pass every finding to `skill-diagnostics:adversarial-verifier` by [Adversarial verification](references/audit-procedure.md#adversarial-verification), with the skill's path, origin, surfaces, profile and release, save its report like the others, and check it.
 5. **Verdict.** Map the surviving findings onto [checklist.md](references/checklist.md) by [Mapping findings to the checklist](references/audit-procedure.md#mapping-findings-to-the-checklist), set the verdict by [evidence-and-verdict.md](references/evidence-and-verdict.md), and write the report from [assets/report-template.md](assets/report-template.md). Its Accounting table gives every finding of every saved report one outcome; then save it with `save-report.py` as `<tmp>/report.md`, in the same command form.
 6. **Record.** In Claude Code and Cowork, record the verdict (`pass`, `pass-with-warnings`, `fail` or `not-determinable`) and check it by [Verdict and recording it](references/audit-procedure.md#verdict-and-recording-it):
