@@ -8,6 +8,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The
 
 ### Changed
 
+- **skill-diagnostics** 0.3.0 — **Breaking:** the plugin is rebuilt around one skill, `skills-best-practices`, which writes and audits skills by the official best practices with scripts, six independent agents and one verdict; `/skill-diagnostics:audit` is replaced, `on_skill_write` takes only `gate`, `suggest` or `off` with `gate` as the default, and the hooks now need Bash and `jq`.
 - **plugin-engineering** 0.2.1 — `public-marketplace-dev` loads the `cli-commands-guide` skill before Claude runs, writes or explains a plugin command.
 
 ## 2026-11-08

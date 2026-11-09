@@ -168,7 +168,7 @@ _Tests, audits, linting and quality gates._
 | :-- | :-- | :-- | :--: | :-- |
 | [**Plugin Evals**](./plugins/plugin-evals#readme)<br>`plugin-evals@the-claude-factory` | Makes Claude an expert in Claude Code plugin evals: designs eval suites and benchmarks that prove what a plugin or its skills add, writes cases, graders and mocks, runs and gates them in CI, and reads the results, always checked against the CLI and docs you have today. Testing and quality for plugins. | 💻 Code · 🖥️ Claude app | `0.1.6` | 🎯 Skills |
 | [**Plugin Test Bench**](./plugins/plugin-test-bench#readme)<br>`plugin-test-bench@the-claude-factory` | Testing for Claude Code plugins before release: installs a copy the way your users receive it in a throwaway config, checks it loads, runs your plugin eval suite against that copy, and reviews your evals so they measure what the plugin adds. Quality you can prove. | 💻 Code only | `0.1.3` | 🎯 Skills |
-| [**Skill Diagnostics**](./plugins/skill-diagnostics#readme)<br>`skill-diagnostics@the-claude-factory` | Skill audit and testing for Claude skills: checks best practices, conformance, portability across Claude Code, claude.ai and Cowork, and whether a model can run them without guessing, with file-and-line evidence and one verdict. | 💻 Code · 🖥️ Claude app | `0.2.2` | 🎯 Skills · 🤖 Agents · 🪝 Hooks |
+| [**Skill Diagnostics**](./plugins/skill-diagnostics#readme)<br>`skill-diagnostics@the-claude-factory` | Writes and audits Claude skills by the official best practices: an authoring guide, a full audit by scripts, four independent reviewers, a cold executor and a verifier with file-and-line evidence and one verdict, and a gate that has Claude audit every skill it changes before it finishes. | 💻 Code · 🖥️ Claude app | `0.3.0` | 🎯 Skills · 🤖 Agents · 🪝 Hooks · 🔁 Workflows |
 
 ### 🛡️ Security
 
@@ -237,6 +237,7 @@ The same plugin installs in Claude Code and in the Claude app, but each loads a 
 | 🔌 Remote MCP servers                 |                                    ✅                                    | 🔗 connect on the plugin's **Connectors** tab |
 | 🖥️ Local MCP servers                  |                                    ✅                                    |    ⚠️ in Cowork sessions on your computer     |
 | 🧠 LSP · 🎨 Output styles · 🌈 Themes |                                    ✅                                    |                      ➖                       |
+| 🔁 Workflows                          |               ✅ paid plans; on Pro, turn on in `/config`                |                      ➖                       |
 | ⚙️ Executables in `bin/`              |                                    ✅                                    |                      ❌                       |
 
 <sub>✅ loads · ⚠️ conditional · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. The Claude app (web, desktop and mobile) runs a conversation as a Cowork session when it can and as a chat conversation otherwise; agents, hooks and local MCP servers don't run in a chat conversation. Sources: [Use plugins in Claude](https://support.claude.com/en/articles/13837440-use-plugins-in-claude), [Plugin feature support across platforms](https://claude.com/docs/plugins/platform-support). More in [Compatibility](./docs/compatibility.md).</sub>

@@ -6,6 +6,26 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-11-09
+
+### Added
+
+- The `skills-best-practices` skill writes and edits skills by the official best practices, starting from a template, with a validation loop against one checklist.
+- A full audit: three validation scripts, four independent reviewers (description, instructions, scripts and runtime, security), a cold executor that follows every workflow without guessing, and an adversarial verifier that checks every finding against the official sources. It returns one report with file-and-line evidence and one verdict.
+- A gate: after Claude writes or edits a skill, it audits the skill before it finishes the turn. A Stop hook also finds skills changed by shell commands.
+- The `/skill-diagnostics:evals` workflow measures whether a skill triggers on the right requests and improves the output, with and without the skill. It runs only on request and changes no file of the skill.
+
+### Changed
+
+- **Breaking:** `/skill-diagnostics:audit` is replaced by `/skill-diagnostics:skills-best-practices`, which also writes skills.
+- **Breaking:** `on_skill_write` now takes only `gate`, `suggest` or `off`, and the default is `gate` (it was `suggest`). Any other value is no longer accepted, so an unknown value can't silently fall back to another mode.
+- **Breaking:** the hooks now need Bash and `jq`. If `jq` is missing, the hooks report an error and don't gate. Python 3.12 or later as `python3` is still needed, now for the skill's scripts.
+- **Breaking:** an audit covers one skill folder per run; auditing a skill from a URL or every skill of a plugin folder in one run is no longer offered.
+
+### Removed
+
+- **Breaking:** the `conformance-auditor` and `executability-auditor` agents and the Python hook, replaced by the six new agents and the Bash hooks.
+
 ## [0.2.2] - 2026-11-06
 
 ### Changed
@@ -58,7 +78,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - Verification gate: before the verdict, every finding is checked against the skill's files, the live official documentation and the Claude Code changelog from the user's version on (the five releases before it and every newer one); findings that don't hold up go back to their lens once; the verdict is marked provisional only when an official page or the changelog could not be reached.
 - Hook that offers an audit after a `SKILL.md` is created or changed, configurable with `on_skill_write` (`suggest`, `run`, `off`); it needs Python 3.9+ as `python3`.
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/skill-diagnostics--v0.2.2...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/skill-diagnostics--v0.3.0...HEAD
+[0.3.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/skill-diagnostics--v0.3.0
 [0.2.2]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/skill-diagnostics--v0.2.2
 [0.2.1]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/skill-diagnostics--v0.2.1
 [0.2.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/skill-diagnostics--v0.2.0
