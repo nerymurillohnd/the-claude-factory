@@ -75,7 +75,7 @@ function writePrompt(step, plugin, facts) {
     `Change, as the main session describes it: ${change || 'not given; read the diff'}`,
     `Values supplied for this situation: ${JSON.stringify(values)}`,
     `Facts returned by earlier agents in this chain: ${JSON.stringify(facts)}`,
-    'Follow your contract for this situation. Put the output of your check commands in "checks".',
+    'Follow your contract for this situation.',
   ].join('\n')
 }
 
@@ -96,7 +96,6 @@ function correctionPrompt(plugin, findings) {
     `Event: ${event}`,
     'An independent review found these problems in your document. Check each one against the plugin\'s files, fix the ones that are right, and say which you rejected and why in "summary".',
     JSON.stringify(findings),
-    'Put the output of your check commands in "checks".',
   ].join('\n')
 }
 
@@ -129,6 +128,8 @@ async function runPlugin(plugin) {
   if (!files.length) return { plugin, status: 'no_change', reports }
 
   let review = null
+  let rounds = 0
+  const corrections = []
   for (let round = 0; round <= MAX_CORRECTION_ROUNDS; round++) {
     review = await agent(reviewPrompt(plugin, files, reports), {
       agentType: REVIEWER,
@@ -136,12 +137,14 @@ async function runPlugin(plugin) {
       phase: 'Review',
       label: `review · ${plugin} · ${round + 1}`,
     })
-    if (!review) return { plugin, status: 'failed', files, reports }
+    if (!review) return { plugin, status: 'failed', files, rounds, corrections, reports }
+    rounds = round + 1
     if (review.pass || round === MAX_CORRECTION_ROUNDS) break
 
     const owners = [...new Set(review.findings.map(finding => finding.owner))].filter(owner => writers.includes(owner))
     if (!owners.length) break
     log(`${plugin}: ${review.findings.length} finding(s), correction round ${round + 1}`)
+    corrections.push({ round: round + 1, findings: review.findings })
     await parallel(
       owners.map(owner => () =>
         agent(correctionPrompt(plugin, review.findings.filter(finding => finding.owner === owner)), {
@@ -158,6 +161,8 @@ async function runPlugin(plugin) {
     plugin,
     status: review.pass ? 'passed' : 'needs_attention',
     files,
+    rounds,
+    corrections,
     findings: review.pass ? [] : review.findings,
     unverified: review.unverified || [],
     reports,
