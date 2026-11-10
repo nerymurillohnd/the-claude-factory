@@ -61,6 +61,21 @@ Conventions that apply to the whole project. Each section groups the conventions
 - A plugin with evals runs a reduced smoke suite locally, through the official testing modes.
 - In CI, the full eval suite of a plugin runs the first time, and afterwards only when a plugin that has evals changes in a way that needs a pull request. Every other run skips the eval workflow.
 
+## Models and effort
+
+- Executors and simple auditors run on Sonnet.
+- Adversarial reviewers, orchestrators, and reviewers of critical, complex or broad work run on Opus.
+- Every project agent declares `model` and `effort` in its frontmatter.
+- Every delegation to a built-in agent, such as `general-purpose`, passes the model for its role, because a built-in agent otherwise runs on the session's model.
+- Effort is set per task, following the official recommendations for the model, and adjusted with eval evidence.
+
+## Documentation governance
+
+- Each governed document has one owning agent in `.claude/agents/docs/`. Only that agent writes or edits it.
+- The governed documents are: a plugin's `README.md`, `CHANGELOG.md`, `LICENSE`, `NOTICE.txt` and `.claude-plugin/plugin.json`; and the repository's `README.md`, `CHANGELOG.md`, `LICENSE`, `CODE_OF_CONDUCT.md`, `SECURITY.md`, `CONTRIBUTING.md`, `SUPPORT.md` and `PRIVACY.md`.
+- The `documentation-governance` skill holds the registry: which agent owns which document, the situations each one handles, and the chain of documents each event sets off. Load it before any documentation work.
+- A change that sets off a chain is not finished until the chain has run and its review has passed.
+
 ## Project memory
 
 - The project's memories, such as feedback, facts, learnings, lessons and future work, are stored in `.claude/memory/`, the auto memory directory that `autoMemoryDirectory` sets in `.claude/settings.json`.
