@@ -65,16 +65,7 @@ Conventions that apply to the whole project. Each section groups the conventions
 
 - Executors and simple auditors run on Sonnet.
 - Adversarial reviewers, orchestrators, and reviewers of critical, complex or broad work run on Opus.
-- Every project agent declares `model` and `effort` in its frontmatter.
-- Every delegation to a built-in agent, such as `general-purpose`, passes the model for its role, because a built-in agent otherwise runs on the session's model.
-- Effort is set per task, following the official recommendations for the model, and adjusted with eval evidence.
-
-## Documentation governance
-
-- Each governed document has one owning agent in `.claude/agents/docs/`. Only that agent writes or edits it.
-- The governed documents are: a plugin's `README.md`, `CHANGELOG.md`, `LICENSE`, `NOTICE.txt` and `.claude-plugin/plugin.json`; and the repository's `README.md`, `CHANGELOG.md`, `LICENSE`, `CODE_OF_CONDUCT.md`, `SECURITY.md`, `CONTRIBUTING.md`, `SUPPORT.md` and `PRIVACY.md`.
-- The `documentation-governance` skill holds the registry: which agent owns which document, the situations each one handles, and the chain of documents each event sets off. Load it before any documentation work.
-- A change that sets off a chain is not finished until the chain has run and its review has passed.
+- Effort is set per task, following the official best practices and recommendations for the model.
 
 ## Project memory
 

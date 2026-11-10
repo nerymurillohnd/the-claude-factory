@@ -6,38 +6,37 @@
   "syncClaudeAiSkills": true,
   "syncClaudeAiPlugins": true,
   "env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
     "CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR": "1",
+    "CLAUDE_CODE_SUBAGENT_MODEL": "sonnet",
     "CLAUDE_CODE_ENABLE_TASKS": "1"
   },
   "permissions": {
     "allow": [
-      "Agent",
-      "AskUserQuestion",
-      "Bash(.claude/skills/documentation-governance/scripts/check-document.sh *)",
+      "Bash(node scripts/*)",
+      "Bash(node --test *)",
+      "Bash(npm run gates)",
+      "Bash(claude plugin validate *)",
       "Bash(claude plugin details *)",
       "Bash(claude plugin list*)",
-      "Bash(claude plugin validate *)",
       "Bash(gh issue list*)",
       "Bash(gh issue view*)",
       "Bash(gh label list*)",
       "Bash(gh release list*)",
       "Bash(gh run list*)",
       "Bash(gh run view*)",
-      "Bash(git commit *)",
-      "Bash(kill *)",
-      "Bash(node --test *)",
-      "Bash(node scripts/*)",
-      "Bash(npm run gates)",
-      "Bash(rg *)",
-      "Bash(tree *)",
-      "Edit(/plugins/*/CHANGELOG.md)",
-      "Edit(/plugins/*/README.md)",
-      "Grep",
-      "LSP",
-      "Monitor",
       "WebFetch",
       "WebSearch",
-      "Workflow"
+      "Monitor",
+      "LSP",
+      "Workflow",
+      "Agent",
+      "AskUserQuestion",
+      "Grep",
+      "Bash(rg *)",
+      "Bash(tree *)",
+      "Bash(kill *)",
+      "Bash(git commit *)"
     ],
     "deny": [
       "Bash(git push --force*)",
@@ -75,67 +74,5 @@
     "mcp-server-dev@claude-plugins-official": true
   },
   "autoMemoryDirectory": "~/Claude/repositories/the-claude-factory/.claude/memory",
-  "autoMemoryEnabled": true,
-  "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Write|Edit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/docs-owner-gate.sh",
-            "args": []
-          }
-        ]
-      }
-    ],
-    "PostToolUse": [
-      {
-        "matcher": "Write|Edit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/docs-check.sh",
-            "args": [
-              "--hook"
-            ]
-          },
-          {
-            "type": "command",
-            "command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/docs-pending.sh",
-            "args": [
-              "--hook"
-            ]
-          }
-        ]
-      }
-    ],
-    "SubagentStop": [
-      {
-        "matcher": "changelog-writer|plugin-readme-writer",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/docs-check.sh",
-            "args": [
-              "--hook"
-            ]
-          }
-        ]
-      }
-    ],
-    "Stop": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/docs-pending.sh",
-            "args": [
-              "--hook"
-            ]
-          }
-        ]
-      }
-    ]
-  }
+  "autoMemoryEnabled": true
 }
