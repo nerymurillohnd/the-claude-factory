@@ -71,8 +71,25 @@
     "frontend-design@claude-plugins-official": false,
     "frontend-design@synced": false,
     "frontend-design@inline": false,
-    "mcp-server-dev@claude-plugins-official": true
+    "mcp-server-dev@claude-plugins-official": true,
+    "skill-diagnostics@the-claude-factory": true,
+    "plugin-engineering@the-claude-factory": true
   },
   "autoMemoryDirectory": "~/Claude/repositories/the-claude-factory/.claude/memory",
-  "autoMemoryEnabled": true
+  "autoMemoryEnabled": true,
+  "extraKnownMarketplaces": {
+    "claude-plugins-official": {
+      "source": {
+        "source": "github",
+        "repo": "anthropics/claude-plugins-official"
+      }
+    },
+    "the-claude-factory": {
+      "source": {
+        "source": "github",
+        "repo": "nerymurillohnd/the-claude-factory"
+      },
+      "autoUpdate": true
+    }
+  }
 }
