@@ -22,9 +22,9 @@ Conventions that apply to the whole project. Each section groups the conventions
 
 - Every plugin in this marketplace is built exclusively for Claude Code, for Claude, or for both.
 - The two surfaces are named **Claude Code** and **Claude**, and no other surface name is used.
-  - **Claude** is the unified chat and Cowork experience. Anthropic merged Cowork and chat into one Claude on 2026-09-16 ("Starting today, Claude Cowork and chat are merging into one Claude", https://claude.com/blog/cowork-is-now-claude; https://support.claude.com/en/articles/16761823-claude-cowork-and-chat-are-one-claude).
-  - **Claude Code** remains a separate product; the merge did not include it ("The model picker and the "Code" tab are where they were", same help article).
-- The merge is rolling out gradually, and some accounts still show separate Chat and Cowork options, so a plugin's compatibility notes still state where in Claude a component works, for example only where Claude runs tasks on the user's computer.
+  - **Claude** is the unified chat and Cowork experience.
+  - **Claude Code** is a separate product.
+- When a component does not work everywhere in Claude, the plugin's compatibility notes state where it works, for example only where Claude runs tasks on the user's computer.
 
 ## Audience and distribution
 
