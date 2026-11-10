@@ -16,6 +16,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 ### Changed
 
 - `cli-commands-guide` now loads for any work on Claude Code plugins, mods or marketplaces, with or without a repository, and not only when Claude runs a plugin command.
+- `public-marketplace-dev` now loads `cli-commands-guide` at the start of every task it handles, not only before Claude runs, writes or explains a plugin command.
 - `cli-commands-guide` is checked against Claude Code 2.1.321. It covers the 2.1.321 managed-marketplace rules, the `Git clone timed out after 120s` and seed-managed marketplace messages and their environment variables, the variables that turn auto-update off, the dependencies an install adds, where the Context cost estimates show, and a pointer to the official troubleshooting page for any command error.
 
 ## [0.2.2] - 2026-11-09
