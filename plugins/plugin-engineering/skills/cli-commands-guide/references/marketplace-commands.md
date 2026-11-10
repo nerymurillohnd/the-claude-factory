@@ -1,6 +1,6 @@
 # `claude plugin marketplace` commands
 
-Every `claude plugin marketplace <subcommand>` you run from a shell to add, list, refresh and remove the marketplaces plugins install from. Facts come from the CLI reference page, the install guide, the `--help` of Claude Code 2.1.319 and runs of these commands on 2.1.319. A line marked "(binary 2.1.319)" or "(changelog X)" is newer than the docs page or absent from it.
+Every `claude plugin marketplace <subcommand>` you run from a shell to add, list, refresh and remove the marketplaces plugins install from. Facts come from the CLI reference page, the install guide, the `--help` of Claude Code 2.1.319 (checked again on 2.1.321), runs of these commands on 2.1.319 and the changelog through 2.1.321. A line marked "(binary X)" or "(changelog X)" is newer than the docs page or absent from it. Under each heading, `Official page:` links the matching section of the official docs: read it when a fact here looks outdated, and for anything this file doesn't cover.
 
 ## Contents
 
@@ -15,12 +15,16 @@ Every `claude plugin marketplace <subcommand>` you run from a shell to add, list
 
 ## Shared rules
 
+Official page: <https://code.claude.com/docs/en/plugins/cli-reference#claude-plugin-marketplace-commands>
+
 - Exit codes follow the plugin commands: `0` on success, `1` on failure.
 - `--scope` has no `-s` short form here.
 - The marketplace `<name>` the other commands take is the `name` from the marketplace's own `marketplace.json`, as `plugin marketplace list` shows it, not the source you passed to `add`.
 - Users install plugins as `<plugin>@<marketplace-name>`.
 
 ## JSON result format for marketplace commands
+
+Official page: <https://code.claude.com/docs/en/plugins/cli-reference#json-result-for-marketplace-commands>
 
 On `add`, `remove` and `update`, `--json` prints one JSON object on the last line of stdout with `command`, `outcome` and `message`. Requires Claude Code v2.1.287 or later.
 
@@ -35,6 +39,8 @@ Example (`claude plugin marketplace remove your-marketplace --json`):
 `{"command":"marketplace-remove","outcome":"ok","marketplace":"your-marketplace","message":"Successfully removed marketplace: your-marketplace"}`
 
 ## plugin marketplace add
+
+Official page: <https://code.claude.com/docs/en/plugins/cli-reference#plugin-marketplace-add>
 
 `claude plugin marketplace add <source> [options]`. Adds a marketplace from a GitHub repository, a git URL, a hosted `marketplace.json` or a local path, and declares it in a settings file. Afterwards Claude Code installs any dependencies your installed plugins were missing.
 
@@ -69,7 +75,13 @@ Examples:
 
 `--add-dir` directories register plugin marketplaces only once that directory's own trust dialog has been accepted (changelog 2.1.319).
 
+Managed settings (changelog 2.1.321): when your organization declares a marketplace name in managed `extraKnownMarketplaces`, that name can't be added from another source, an entry for it from elsewhere is hidden, and the plugins the declared marketplace lists are reinstalled from it. Options and secrets the take-over set aside come back with `claude plugin restore-set-aside` (see `references/plugin-commands.md`).
+
+A clone or re-clone that takes longer than 120 seconds fails with `Git clone timed out after 120s` and a hint to set `CLAUDE_CODE_PLUGIN_GIT_TIMEOUT_MS`, the limit in milliseconds, such as `300000`. For a monorepo, use `--sparse` instead (troubleshooting page).
+
 ## plugin marketplace list
+
+Official page: <https://code.claude.com/docs/en/plugins/cli-reference#plugin-marketplace-list>
 
 `claude plugin marketplace list [options]`. Lists every marketplace you've added, with its source.
 
@@ -92,6 +104,8 @@ Output:
 
 ## plugin marketplace remove
 
+Official page: <https://code.claude.com/docs/en/plugins/cli-reference#plugin-marketplace-remove>
+
 `claude plugin marketplace remove <name> [options]` (alias `rm`). Removes a marketplace's declaration from your settings.
 
 Warning: removing a marketplace from the last scope that declares it also deletes its cache and uninstalls every plugin installed from it, and deletes their saved options, secrets and data where it can. To refresh a marketplace without losing its plugins, run `plugin marketplace update` instead. Confirm with the user before running it.
@@ -109,6 +123,8 @@ Example: `claude plugin marketplace remove your-marketplace`
 
 ## plugin marketplace update
 
+Official page: <https://code.claude.com/docs/en/plugins/cli-reference#plugin-marketplace-update>
+
 `claude plugin marketplace update [name] [options]`. Refreshes one marketplace, or every marketplace, from its source to fetch new plugins and versions. A marketplace added with a branch or tag `ref` updates to the latest commit of that ref, not the repository's default branch.
 
 Flags:
@@ -118,18 +134,25 @@ Output:
 - `Successfully updated marketplace: your-marketplace`.
 - Without a name: a count such as `Successfully updated 2 marketplaces`.
 - A local directory marketplace prints `Validating local marketplace` first (binary 2.1.319).
+- A marketplace an operator pre-populated through `CLAUDE_CODE_PLUGIN_SEED_DIR` is read-only: updating it by name fails with `Marketplace '<name>' is seed-managed (<dir>)` and a hint to ask your admin, and an update without a name skips it (troubleshooting page).
+- Offline, a session's background refresh of a marketplace with auto-update on tries to re-clone it. `CLAUDE_CODE_PLUGIN_KEEP_MARKETPLACE_ON_FAILURE=1` skips that re-clone and keeps the existing checkout, when it already holds `.claude-plugin/marketplace.json` (troubleshooting page).
 
 What it does not do: with no name, it refreshes every marketplace's listing but leaves installed plugins at their current versions. Update plugins with `claude plugin update <plugin>@<marketplace>`, or with Update marketplace on the Marketplaces tab of `/plugin`.
 
 ## Private marketplaces and credentials
+
+Official page: <https://code.claude.com/docs/en/plugins/install#add-a-private-marketplace>
 
 The same `add` command adds a private marketplace. Claude Code clones it with the git credentials already on the machine and never prompts:
 - HTTPS: git credential helpers apply (`gh auth login`, macOS Keychain, `git-credential-store`). Git's prompts and askpass programs are off, including `GIT_ASKPASS`, so the clone fails instead of prompting.
 - SSH: the host must be in `known_hosts` and the key must work without a passphrase prompt. An SSH program set in `GIT_SSH_COMMAND`, `GIT_SSH` or git's `core.sshCommand` is run.
 - GitHub `owner/repo` shorthand: Claude Code checks whether the SSH key authenticates to `github.com`, then clones over SSH if it does and HTTPS if not. `CLAUDE_CODE_PLUGIN_PREFER_HTTPS=1` skips the check and always clones over HTTPS.
 - The same credentials apply to `/plugin install`, `/plugin marketplace update` and `claude plugin update`.
+- A GitHub Enterprise Server host has its own credential rules for each operation: `https://code.claude.com/docs/en/github-enterprise-server#plugin-marketplaces-on-ghes`.
 
 ## Marketplaces from claude.ai
+
+Official page: <https://code.claude.com/docs/en/plugins/install#add-from-claude-ai>
 
 - In terminal sessions where plugins sync from the claude.ai account, claude.ai can list marketplaces for you (an organization's plugin library, your own uploads). Requires Claude Code v2.1.273 or later.
 - Shell: `claude plugin marketplace list` prints them under `From claude.ai:`; add one with `claude plugin marketplace add --claudeai <name>`.
