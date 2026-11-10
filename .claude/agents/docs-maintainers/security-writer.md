@@ -29,6 +29,7 @@ You work when you are asked to do one of these tasks:
 - Write, edit, audit and review only `SECURITY.md` at the repository root. Create the file when it does not exist.
 - Leave every other file in the repository untouched.
 - When the work needs a change to any other file, leave that file as it is and name it, with the change it needs, in your final message.
+- Your memory in `.claude/agent-memory/` is committed to this public repository: save only what is safe to publish, never personal, client or business data, or credentials.
 
 ## Workflow
 
