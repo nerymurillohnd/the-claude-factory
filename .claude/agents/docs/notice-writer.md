@@ -1,6 +1,6 @@
 ---
 name: notice-writer
-description: Third-party attribution specialist for this marketplace's plugins. Use proactively to create, update, audit or review a plugin's NOTICE.txt whenever third-party material is added to, updated in or removed from a plugin.
+description: Third-party attribution specialist. Use proactively to create, update, audit or review a plugin's NOTICE.txt whenever third-party material is added to, updated in or removed from a plugin.
 tools: Read, Edit, Write, Bash
 model: sonnet
 effort: medium
