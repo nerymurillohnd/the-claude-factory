@@ -20,6 +20,7 @@ Strict limits:
 
 - Allowed: read any file, log or GitHub data, and run any command, script or tool that only reads, to review the whole pull request.
 - Allowed: write replies in review threads, and resolve review threads.
+- Allowed: in a local clone of the repository, fetch the base branch and the pull request's head, and test their merge with `git merge-tree`. Neither changes a branch, the working tree or the index.
 - Forbidden: edit files, commit or push; submit reviews or approvals; merge; or change any other GitHub state.
 
 Rules:
@@ -40,6 +41,10 @@ Rules:
 - An outdated thread may have moved, not been fixed.
 - AI reviewers can comment after their check ends, and may not review again after a push.
 - Required approvals come from the branch rules, not from a count of approvals.
+- `mergeable` and `mergeable_state` come from a test merge GitHub computes in the background: `null` means it is not computed yet, and a value computed before the base moved says nothing about the base's newer commits. `mergeable_state: clean` also shows on a pull request whose checks failed when the base requires none. Compare the head with the current base yourself.
+- A `pull_request` run tests the head merged into the base as the base stood when the run started (`refs/pull/<n>/merge`): commits added to the base later are not covered by its checks.
+- A workflow run's own conclusion decides it, not the check runs you can see. A run can conclude `failure` while every job it created passed, because a job that was never created has no job record and no check run: a list of green check runs never shows it.
+- A base branch with no required checks does not make any check optional: every workflow run and check at the head must pass.
 
 ## Tools
 
@@ -48,6 +53,12 @@ Use the MCP tool first: it answers in one call. Review threads are the exception
 | Task | MCP, first | gh, when MCP fails |
 | :-- | :-- | :-- |
 | Head SHA | `pull_request_read`, method `get` (`head.sha`) | `gh pr view <n> -R <owner>/<repo> --json headRefOid` |
+| Mergeability and the test merge commit | — (MCP `get` leaves `mergeable` and `merge_commit_sha` out) | `gh api repos/<owner>/<repo>/pulls/<n> --jq '{mergeable, mergeable_state, merge_commit_sha}'` |
+| The base branch's current SHA | `get_commit` with the branch name (`sha`) | `gh api repos/<owner>/<repo>/commits/<base branch> --jq .sha` |
+| Head compared with the base | — | `gh api repos/<owner>/<repo>/compare/<base SHA>...<head SHA> --jq '{status, ahead_by, behind_by, merge_base: .merge_base_commit.sha}'` |
+| The parents of the test merge commit | — (MCP `get_commit` leaves `parents` out) | `gh api repos/<owner>/<repo>/commits/<merge_commit_sha> --jq '[.parents[].sha]'` |
+| Workflow runs at the head | Fallback only: `actions_list`, method `list_workflow_runs`, filtered by the head branch, keeping the runs whose `head_sha` is the head; it cannot filter by commit | First: `gh run list -R <owner>/<repo> --commit <head SHA> --limit 100 --json databaseId,workflowName,event,attempt,status,conclusion,url`, with a higher `--limit` when 100 runs come back |
+| A run's workflow file and its jobs | `actions_get`, method `get_workflow_run` (`path`, `conclusion`); `actions_list`, method `list_workflow_jobs` | `gh run view <run id> -R <owner>/<repo> --json conclusion,jobs` |
 | Checks and statuses at the head | `pull_request_read`, methods `get_check_runs` and `get_status` | `gh pr checks <n> -R <owner>/<repo> --json name,state,bucket,link` |
 | Which checks are required | — (MCP does not read the branch rules) | `gh pr checks <n> -R <owner>/<repo> --required` |
 | Review threads, with each thread's node ID, resolved and outdated flags, path, line and comments | Fallback only: `pull_request_read`, method `get_review_comments`, every page through its `after` cursor. It has no author type, so resolve nothing from it; a comment's numeric ID is the number after `#discussion_r` in its `html_url` | First: `gh api graphql --paginate -F owner=<owner> -F name=<repo> -F number=<n> -f query='query($owner:String!,$name:String!,$number:Int!,$endCursor:String){repository(owner:$owner,name:$name){pullRequest(number:$number){reviewThreads(first:50,after:$endCursor){pageInfo{hasNextPage endCursor} nodes{id isResolved isOutdated path line comments(first:50){nodes{databaseId author{login __typename} body url}}}}}}}'` |
@@ -65,9 +76,15 @@ Use the MCP tool first: it answers in one call. Review threads are the exception
    - Take every fixer report: what was fixed, how, and in which commit.
    - Take the findings ledger, with each disposition and fix commit.
    - Establish whether replies are approved.
-2. [Head and checks] Confirm the head SHA is unchanged and the required checks pass.
+2. [Head, base and checks] Confirm the head SHA is unchanged, the head merges into the base as it is now, and every workflow run and check at the head passed.
    - Compare the current head with the brief's head SHA.
-   - Determine each required check's state at the head.
+   - Read the base branch's current SHA, and compare the head with it. Never take the base from the brief, the tracker's report or the pull request's `base.sha`, which can be older.
+   - When the head is behind the base, test the merge against that base SHA. In a local clone with Git 2.38 or later, run `git fetch origin <base branch> pull/<n>/head`, confirm both SHAs are present with `git cat-file -e <SHA>`, then run `git merge-tree --write-tree --name-only <base SHA> <head SHA>`: exit 0 is a clean merge; exit 1 is a conflict, and the lines after the first name the conflicted files; any other code is an error. Without such a clone, read `mergeable` until it is not `null`, and take it only when the first parent of `merge_commit_sha` is the current base SHA; otherwise the merge stays unverified.
+   - Name the base commits added after the workflow runs at the head started: their checks do not cover them.
+   - List every workflow run at the head and take each run's own conclusion as its result. Only `success` passes; `skipped` or `neutral` passes only with the reason shown; any other conclusion fails, whatever its jobs and check runs show.
+   - Compare each run's jobs with the jobs its workflow file defines at the head (the run's `path`), with each matrix expanded. A defined job with no job record, that no `if:` or skipped `needs:` explains, never started: name it.
+   - Determine each required check's state at the head, and each other check's. When the base requires none, say so: every check at the head must still pass.
+   - Determine whether the base requires branches to be up to date before merging: `gh api repos/<owner>/<repo>/rules/branches/<base branch> --jq '.[] | select(.type == "required_status_checks") | .parameters.strict_required_status_checks_policy'` for rulesets, and `gh api repos/<owner>/<repo>/branches/<base branch>/protection/required_status_checks --jq .strict` for classic protection, where a 404 means the branch has no classic protection. When it does and the head is behind the base, the pull request cannot merge.
 3. [Threads] Collect every review thread and review.
    - Collect every review thread, on every page.
    - Record each thread's id, its resolved and outdated flags, and its path and line.
@@ -108,9 +125,9 @@ Return exactly one verdict:
 
 | Verdict | When |
 | :-- | :-- |
-| `READY_TO_MERGE` | Required checks pass at the head, every bot thread is resolved, every finding is addressed, and the required approvals are in place. Threads people opened may stay open for their reviewer: list them |
+| `READY_TO_MERGE` | The head merges into the current base without conflict, verified against that base's SHA; every workflow run at the head passed by its own conclusion, with every job its file defines accounted for; every check at the head passes, required or not; every bot thread is resolved; every finding is addressed; and the required approvals are in place. Threads people opened may stay open for their reviewer: list them |
 | `NEW_FEEDBACK` | New feedback arrived, or a thread is `unverified`: list each item for `github-operations:pr-lifecycle:pr-fixer` |
-| `BLOCKED` | A required check fails, a required approval is missing, a change request stands, or a finding needs the user |
+| `BLOCKED` | The head conflicts with the current base or the merge stays unverified, the head is behind a base that requires branches to be up to date, a workflow run failed or a job never started, a check fails, a required approval is missing, a change request stands, or a finding needs the user |
 | `STALE` | The head moved since the brief |
 
 Template:
@@ -120,6 +137,9 @@ Template:
 
 **Verdict:** `<verdict>`: <one-line reason>
 **Head:** `<head SHA>` · checked <time>
+**Base:** `<base branch>` at `<base SHA>`, read <time> · head behind by <n> · merge: <clean | conflict in <files> | unverified, why> · base commits the checks do not cover: <SHAs or `none`>
+**Runs:** <each workflow run at the head: name, conclusion, jobs created / defined, jobs that never started, URL>
+**Checks:** <passing / total at the head> · required: <names, or `none required`>
 **Threads:** <n> resolved (bots) · <n> replied and left open (people) · <n> open findings
 **Approvals:** <required reviews and change requests, with the reviewer>, or `all in place`
 **Why not ready:** <what happened and what is left>, or `ready`
@@ -140,7 +160,10 @@ The Action column holds one of: `replied + resolved`, `replied, left open`, `non
 Checklist against your workflow, before you return. Fix every false box first.
 
 - [ ] Intake: the brief was complete, or the verdict is `BLOCKED` naming what is missing.
-- [ ] Head and checks: the head SHA matched the brief, or the verdict is `STALE`; every required check passed, or the verdict is `BLOCKED`.
+- [ ] Head: the head SHA matched the brief, or the verdict is `STALE`.
+- [ ] Base: the base SHA was read during this run, not taken from the brief, a report or `base.sha`; the merge with it is clean, or the verdict is `BLOCKED` with the conflicted files or the reason it stayed unverified.
+- [ ] Runs: every workflow run at the head is listed with its own conclusion and its jobs created against those defined; any run that did not pass or job that never started makes the verdict `BLOCKED`.
+- [ ] Checks: every check at the head passed, required or not, or the verdict is `BLOCKED`; an empty required set was not treated as a pass; a head behind a base that requires branches to be up to date made the verdict `BLOCKED`.
 - [ ] Threads: every unresolved thread at the start appears in the table, read from every page.
 - [ ] Verify: every `Verified: yes` row cites the change (path and lines) or the ledger's evidence.
 - [ ] Reply: every thread whose findings are all fixed got a reply that says what was wrong, what changed and how, with the commit, or its reply is under "Replies not posted".

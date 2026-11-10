@@ -6,6 +6,17 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.7.3] - 2026-11-09
+
+### Fixed
+
+- `pr-finalizer` no longer reports a pull request ready to merge when it conflicts with commits added to the base branch after GitHub last checked it. It reads the base branch as it is now, compares the branch with it and tests the merge, and never relies on GitHub's `mergeable_state` alone. `pr-tracker` does the same and reports the result.
+- `pr-finalizer` and `pr-tracker` no longer treat a pull request as passing when a workflow run failed but every check they could see was green. They take each workflow run's own conclusion at the head, and name the jobs a workflow defines that never started, which leave no check behind.
+- A base branch with no required checks no longer makes every check count as passing: both agents now require every workflow run and check at the head to pass, and say when the base requires none.
+- The reports show the base commit compared, whether the branch merges cleanly, and the base commits added after the checks ran, which those checks do not cover.
+- When your base branch requires branches to be up to date before merging, a branch behind it is no longer reported as ready.
+- Before the merge, the `auto-pr-lifecycle` skill reads your base branch again, not only the branch, and runs the finalizer again when the base moved. When the base changed after the checks ran, it tells you and recommends updating the branch first.
+
 ## [0.7.2] - 2026-11-06
 
 ### Changed
@@ -195,7 +206,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 - `git-cleanup` inventory: `--from` with a saved file that is not a JSON object reports a JSON error and exits 0, instead of ending with a traceback.
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/github-operations--v0.7.2...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/github-operations--v0.7.3...HEAD
+[0.7.3]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/github-operations--v0.7.3
 [0.7.2]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/github-operations--v0.7.2
 [0.7.1]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/github-operations--v0.7.1
 [0.7.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/github-operations--v0.7.0
