@@ -60,6 +60,7 @@
 | 🪝 Hook        | `{{hookEvent}}`          | {{componentSummary}} | Automatically on matching tool calls                     |
 | 🧩 Mod         | `{{modName}}`            | {{componentSummary}} | Inside Claude Code, on the events it hooks               |
 | 🔌 MCP server  | `{{serverName}}`         | {{componentSummary}} | Tools appear as `mcp__plugin_{{name}}_{{serverName}}__*` |
+| 📨 Channel     | `{{channelServer}}`      | {{componentSummary}} | When you start Claude Code with `--channels plugin:{{name}}@{{marketplaceName}}` |
 | 🧠 LSP server  | `{{languageServer}}`     | {{componentSummary}} | Automatically for matching file types                    |
 | 📡 Monitor     | `{{monitorName}}`        | {{componentSummary}} | In the background while the session runs                 |
 | 🔁 Workflow    | `/{{name}}:{{workflowName}}` | {{componentSummary}} | You type it                                          |
@@ -275,6 +276,7 @@ Uninstalling from the last scope it's installed at also deletes its saved option
 | 🎨 Output styles | ✅ | ➖ |
 | 🌈 Themes | ✅ | ➖ |
 | 🛠️ Default `settings` | ✅ | ➖ |
+| 📨 Channels | ⚠️ research preview; you turn a channel on for each session with `--channels`, and the plugin must be on Anthropic's channel allowlist or on your organization's | ➖ not documented for Claude |
 | 📡 Monitors | ✅ | ➖ not documented for Claude |
 | 🔁 Workflows | ✅ | ➖ not documented for Claude |
 | ⚙️ Executables (`bin/`) | ✅ | ❌ |
