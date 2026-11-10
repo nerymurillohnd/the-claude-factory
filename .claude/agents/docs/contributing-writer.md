@@ -1,6 +1,6 @@
 ---
 name: contributing-writer
-description: Contribution guide specialist. Use proactively to create, update, audit or review the root CONTRIBUTING.md, such as when the issue forms or the way users report problems change.
+description: Contribution guide specialist. Writes, updates and audits CONTRIBUTING.md. Use proactively when the issue forms or the way users report problems change.
 tools: Read, Edit, Write, Bash
 model: sonnet
 effort: medium

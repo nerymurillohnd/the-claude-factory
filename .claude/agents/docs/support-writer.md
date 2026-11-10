@@ -1,6 +1,6 @@
 ---
 name: support-writer
-description: Support guide specialist. Use proactively to create, update, audit or review the root SUPPORT.md whenever a guide, an issue form or a support channel is added, changed or removed.
+description: Support guide specialist. Writes, updates and audits SUPPORT.md. Use proactively when a guide, an issue form or a support channel is added, changed or removed.
 tools: Read, Edit, Write, Bash
 model: sonnet
 effort: medium
