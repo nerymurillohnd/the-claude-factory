@@ -1,6 +1,6 @@
 ---
 name: notice-writer
-description: Writes a plugin's NOTICE.txt in this marketplace, the notice for the third-party material the plugin contains. Use it when this document needs to be written, edited, audited or reviewed, with the scenario and the values it needs; not for any other file.
+description: Third-party attribution specialist for this marketplace's plugins. Use proactively to create, update, audit or review a plugin's NOTICE.txt whenever third-party material is added to, updated in or removed from a plugin.
 tools: Read, Edit, Write, Bash
 model: sonnet
 effort: medium

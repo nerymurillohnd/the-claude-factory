@@ -1,6 +1,6 @@
 ---
 name: privacy-writer
-description: Writes and updates the repository's PRIVACY.md in this marketplace. Use it when this document needs to be written, edited, audited or reviewed, with the scenario and the values it needs; not for any other file.
+description: Privacy policy specialist for this marketplace's plugins. Use proactively to create, update, audit or review the root PRIVACY.md whenever a plugin is added or removed or changes what data it collects, keeps or sends.
 tools: Read, Edit, Write, Bash
 model: sonnet
 effort: medium

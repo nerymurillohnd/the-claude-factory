@@ -1,6 +1,6 @@
 ---
 name: plugin-readme-writer
-description: Writes and updates a plugin's README.md in this marketplace. Use it when this document needs to be written, edited, audited or reviewed, with the scenario and the values it needs; not for any other file.
+description: Plugin README specialist for this marketplace. Use proactively to create, update, audit or review a plugin's README.md whenever a plugin is added, changes its components, configuration or behavior, or gets a new version.
 tools: Read, Edit, Write, Bash
 model: sonnet
 effort: high

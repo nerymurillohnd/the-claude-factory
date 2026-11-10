@@ -1,6 +1,6 @@
 ---
 name: code-of-conduct-writer
-description: Writes and updates the repository's CODE_OF_CONDUCT.md in this marketplace. Use it when this document needs to be written, edited, audited or reviewed, with the scenario and the values it needs; not for any other file.
+description: Contributor Covenant specialist for this marketplace. Use proactively to create, update, audit or review the root CODE_OF_CONDUCT.md, such as when the reporting channel or the enforcement policy changes.
 tools: Read, Edit, Write, Bash
 model: sonnet
 effort: medium

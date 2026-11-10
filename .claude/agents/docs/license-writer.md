@@ -1,6 +1,6 @@
 ---
 name: license-writer
-description: Writes the LICENSE file at the repository root and in each plugin of this marketplace. Use it when this document needs to be written, edited, audited or reviewed, with the scenario and the values it needs; not for any other file.
+description: MIT license specialist for this marketplace. Use proactively to create, update, audit or review the root LICENSE or a plugin's LICENSE, such as when a plugin is added or the copyright line changes.
 tools: Read, Edit, Write, Bash
 model: sonnet
 effort: medium

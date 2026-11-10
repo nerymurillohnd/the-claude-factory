@@ -1,6 +1,6 @@
 ---
 name: support-writer
-description: Writes and updates the repository's SUPPORT.md in this marketplace. Use it when this document needs to be written, edited, audited or reviewed, with the scenario and the values it needs; not for any other file.
+description: Support guide specialist for this marketplace. Use proactively to create, update, audit or review the root SUPPORT.md whenever a guide, an issue form or a support channel is added, changed or removed.
 tools: Read, Edit, Write, Bash
 model: sonnet
 effort: medium

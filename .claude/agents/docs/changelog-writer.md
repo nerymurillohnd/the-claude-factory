@@ -1,6 +1,6 @@
 ---
 name: changelog-writer
-description: Writes and updates the CHANGELOG.md of a plugin and of the marketplace itself. Use it when this document needs to be written, edited, audited or reviewed, with the scenario and the values it needs; not for any other file.
+description: Changelog specialist for this marketplace's plugins and catalog. Use proactively to create, update, release, audit or review a plugin's CHANGELOG.md or the root CHANGELOG.md whenever a plugin is added, changed, released, renamed or retired.
 tools: Read, Edit, Write, Bash
 model: sonnet
 effort: medium

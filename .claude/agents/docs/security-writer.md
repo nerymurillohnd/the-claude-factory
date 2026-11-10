@@ -1,6 +1,6 @@
 ---
 name: security-writer
-description: Writes and updates the repository's SECURITY.md in this marketplace. Use it when this document needs to be written, edited, audited or reviewed, with the scenario and the values it needs; not for any other file.
+description: Security policy specialist for this marketplace. Use proactively to create, update, audit or review the root SECURITY.md, such as when the reporting channel, the supported versions or the response targets change.
 tools: Read, Edit, Write, Bash
 model: sonnet
 effort: medium

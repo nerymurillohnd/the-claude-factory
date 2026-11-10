@@ -1,6 +1,6 @@
 ---
 name: contributing-writer
-description: Writes and updates the repository's CONTRIBUTING.md in this marketplace. Use it when this document needs to be written, edited, audited or reviewed, with the scenario and the values it needs; not for any other file.
+description: Contribution guide specialist for this marketplace. Use proactively to create, update, audit or review the root CONTRIBUTING.md, such as when the issue forms or the way users report problems change.
 tools: Read, Edit, Write, Bash
 model: sonnet
 effort: medium
