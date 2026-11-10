@@ -12,6 +12,12 @@ Conventions that apply to the whole project. Each section groups the conventions
 - The repository and its plugins are built for macOS and Linux.
 - Windows is supported only when a plugin, current or future, is meant to run there, and then only through Git Bash.
 
+## Portability and prerequisites
+
+- Every plugin created and published here runs on its own on a user's machine. It never depends on the tools, software, configuration or versions installed on the owner's terminal or machine.
+- Code is always written to be portable.
+- Every tool, software, integration or dependency a plugin needs to run, and every specific or minimum version it requires, is declared as a prerequisite in the Prerequisites section of that plugin's README.
+
 ## Target surfaces
 
 - Every plugin in this marketplace is built exclusively for Claude Code, for Claude, or for both.
@@ -51,6 +57,7 @@ Conventions that apply to the whole project. Each section groups the conventions
 ## Evals
 
 - Whether a plugin has evals is the owner's decision. Claude may suggest adding them to a plugin, and says when and why.
+- When the owner decides a plugin gets evals, Claude discusses every eval case with the owner before writing it, and never creates cases on its own.
 - A plugin with evals runs a reduced smoke suite locally, through the official testing modes.
 - In CI, the full eval suite of a plugin runs the first time, and afterwards only when a plugin that has evals changes in a way that needs a pull request. Every other run skips the eval workflow.
 
