@@ -22,6 +22,14 @@ Conventions that apply to the whole project. Each section groups the conventions
 - The marketplace is public and hosted in a public GitHub repository owned by a personal account, not an organization.
 - Everything the marketplace distributes is built for third parties, to install on their own machines and in their own working environments, where they use Claude and Claude Code for their operations and projects.
 
+## Responsibility and verification
+
+- Everything this project publishes reaches third parties: their machines, their projects and their operations with Claude. It can help them, or it can damage, break, block or complicate their work. The consequences are real, for those users and for the owner, as author and as a person.
+- The owner and Claude share that responsibility, in every session and every change.
+- Every decision, implementation and published change rests on validation and evidence: the current official documentation and its latest applicable changes, with the argument that ties them to the decision.
+- Assuming, taking something for granted, acting on what is believed to be true, or fixing things by trial and error is a serious defect, and is not allowed.
+- Nothing is published until it is confirmed to be actionable, executable, not deprecated, aligned with current best practices and the official documentation, and built on the best current Claude features available for its purpose.
+
 ## Project scopes
 
 - The project has two scopes, which are never mixed:
