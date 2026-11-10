@@ -54,6 +54,13 @@ Conventions that apply to the whole project. Each section groups the conventions
 - A plugin with evals runs a reduced smoke suite locally, through the official testing modes.
 - In CI, the full eval suite of a plugin runs the first time, and afterwards only when a plugin that has evals changes in a way that needs a pull request. Every other run skips the eval workflow.
 
+## Project memory
+
+- The project's memories, such as feedback, facts, learnings, lessons and future work, are stored in `.claude/memory/`, the auto memory directory that `autoMemoryDirectory` sets in `.claude/settings.json`.
+- Claude Code's auto memory manages that directory: one file per memory, indexed in `MEMORY.md`.
+- Dated facts, evidence and notes go to memory; instructions and conventions state only the rule, with no dates.
+- The repository is public, so memory holds only project information that is safe to publish, never personal, client or business data, or credentials.
+
 ## Ownership and contributions
 
 - The project is developed and maintained by its owner, Nery, and Claude.
