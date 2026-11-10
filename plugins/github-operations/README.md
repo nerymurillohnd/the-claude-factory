@@ -33,7 +33,7 @@ GitHub Operations is a set of skills, commands and agents for the GitHub work ar
 
 - **A pull request that finishes itself** — three agents share the work: one watches CI and reviews and finds each failure's root cause, one fixes the failures and review findings in your clone and commits them, and one verifies every fix, answers the review threads and resolves the ones bots opened. Claude checks each report against its evidence before acting on it.
 - **You hold every push and the merge** — after each round of fixes, Claude shows you what failed, what changed and how it was checked, then asks: push, push without asking again on this pull request, or don't push. The merge waits for your approval of that exact pull request at that exact commit.
-- **Reports you can act on** — failed jobs with the failing step, the first error and its root cause, whether the same job fails on the base branch, required checks, warnings, review threads with their links, breaking changes and secrets in the diff, and Dependabot alerts.
+- **Reports you can act on** — failed jobs with the failing step, the first error and its root cause, whether the same job fails on the base branch, workflow runs that failed or whose jobs never started, whether the branch still merges into your base branch as it is now, required checks, warnings, review threads with their links, breaking changes and secrets in the diff, and Dependabot alerts.
 - **Templates written for your repository** — PR templates, issue and discussion forms, labels, Dependabot and `CODEOWNERS` are written from reference models but with your components, versions, environments, commands and labels. Your own files always win: Claude proposes changes to them and never overwrites them.
 - **Nothing valuable gets lost in a cleanup** — the audit compares your clone with GitHub branch by branch and commit by commit, and covers worktrees, stashes, history, lost commits, pull requests, workflows, Dependabot, forks and every link outside the repository. You approve the recommendations, then the exact actions. A backup comes first, and Claude proves it restores before it changes anything.
 - **Workflows that run Claude, checked against the action's real behavior** — Claude matches a failed or silent claude-code-action step against fourteen known failure patterns, and audits workflow files for shell injection, excess permissions, unpinned actions, unsafe `pull_request_target` designs and claude-code-action misconfiguration, with the exact patch for each finding. Action versions and model IDs are looked up when they are written, never copied from examples, which lag behind.
@@ -479,8 +479,8 @@ PR #42 "Add invoice export": 2 failures fixed in 2 commits (tests pass), 1 revie
 Push · Push without asking again on this pull request · Don't push
 ```
 
-4. **Finalize.** Once the checks pass, the finalizer verifies each fix in the diff, replies to the review threads and resolves the ones bots opened.
-5. **Your merge.** Claude stops with one question, naming the pull request, the commit, the merge method and the threads left open for people.
+4. **Finalize.** Once the checks pass, the finalizer confirms that every workflow run passed and that the branch merges into your base branch as it is now, verifies each fix in the diff, replies to the review threads and resolves the ones bots opened.
+5. **Your merge.** Claude reads the branch and your base branch again, then stops with one question, naming the pull request, the commit, the merge method and the threads left open for people. When your base branch changed after the checks ran, Claude says so and recommends updating the branch before the merge.
 
 Asking only to commit, or to commit and push, never opens a pull request.
 
