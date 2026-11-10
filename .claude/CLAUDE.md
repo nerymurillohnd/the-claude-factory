@@ -2,7 +2,7 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-@architecture/project-conventions.md
+The project's conventions are in `.claude/rules/project-conventions.md`, a rule that loads in every session.
 
 ## What this repository is
 

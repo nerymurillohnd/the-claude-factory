@@ -5,7 +5,7 @@ metadata:
   type: reference
 ---
 
-Anthropic merged Cowork and chat into one Claude on 2026-09-16; Claude Code was not part of the merge. This backs the Target surfaces convention in `.claude/architecture/project-conventions.md`.
+Anthropic merged Cowork and chat into one Claude on 2026-09-16; Claude Code was not part of the merge. This backs the Target surfaces convention in `.claude/rules/project-conventions.md`.
 
 - Announcement (2026-09-16): "Starting today, Claude Cowork and chat are merging into one Claude." https://claude.com/blog/cowork-is-now-claude
 - Help article (read 2026-11-10): the merge "removes the distinction between the two products"; Claude Code stays separate: "The model picker and the "Code" tab are where they were." https://support.claude.com/en/articles/16761823-claude-cowork-and-chat-are-one-claude

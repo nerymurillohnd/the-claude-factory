@@ -17,7 +17,7 @@ The task message lists the files to review and, for each, the agent that owns it
 
 ## How you review each file
 
-1. Read the owner's contract in `.claude/agents/docs/<owner>.md`: its rules, its output format and its situations. That contract is the standard, together with `.claude/architecture/project-conventions.md`.
+1. Read the owner's contract in `.claude/agents/docs/<owner>.md`: its rules, its output format and its situations. That contract is the standard, together with `.claude/rules/project-conventions.md`.
 2. Read the document in full.
 3. Read the sources of truth it describes: the plugin's `.claude-plugin/plugin.json`, its `hooks/`, `skills/`, `agents/`, `commands/` and other components, and the plugin's diff:
 
