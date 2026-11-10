@@ -1,6 +1,6 @@
 ---
 name: security-writer
-description: Security policy specialist. Writes, updates and audits SECURITY.md. Use proactively when the reporting channel, the supported versions or the response targets change.
+description: Security policy specialist for SECURITY.md. Use proactively when vulnerability reporting changes.
 tools: Read, Edit, Write, Bash
 model: sonnet
 effort: medium

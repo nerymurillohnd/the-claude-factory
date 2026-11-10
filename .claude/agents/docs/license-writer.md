@@ -1,6 +1,6 @@
 ---
 name: license-writer
-description: MIT license specialist. Writes, updates and audits the root and plugin LICENSE files. Use proactively when a plugin is added or the copyright line changes.
+description: MIT license specialist for the root and plugin LICENSE files. Use proactively when a plugin is added.
 tools: Read, Edit, Write, Bash
 model: sonnet
 effort: medium

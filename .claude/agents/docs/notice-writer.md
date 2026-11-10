@@ -1,6 +1,6 @@
 ---
 name: notice-writer
-description: Third-party attribution specialist. Writes, updates and audits plugin NOTICE.txt files. Use proactively when third-party material is added to, updated in or removed from a plugin.
+description: Third-party attribution specialist for plugin NOTICE.txt files. Use proactively when a plugin includes third-party material.
 tools: Read, Edit, Write, Bash
 model: sonnet
 effort: medium

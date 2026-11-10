@@ -1,6 +1,6 @@
 ---
 name: plugin-readme-writer
-description: Plugin README specialist. Writes, updates and audits each plugin's README.md. Use proactively when a plugin is added, changes its components, configuration or behavior, or gets a new version.
+description: Plugin README specialist. Use proactively when a plugin is added or changes.
 tools: Read, Edit, Write, Bash
 model: sonnet
 effort: high

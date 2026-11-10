@@ -1,6 +1,6 @@
 ---
 name: changelog-writer
-description: Changelog specialist. Writes, updates and audits plugin changelogs and the root CHANGELOG.md. Use proactively when a plugin is added, changed, released, renamed or retired.
+description: Changelog specialist for plugin and root changelogs. Use proactively when a plugin changes or gets a new version.
 tools: Read, Edit, Write, Bash
 model: sonnet
 effort: medium

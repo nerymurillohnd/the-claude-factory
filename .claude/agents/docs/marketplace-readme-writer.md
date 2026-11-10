@@ -1,6 +1,6 @@
 ---
 name: marketplace-readme-writer
-description: Marketplace front-page specialist. Writes, updates and audits the root README.md and its plugin catalog. Use proactively when a plugin is added, renamed or retired, or changes its description or version.
+description: Marketplace README and catalog specialist. Use proactively when a plugin is added, renamed or retired.
 tools: Read, Edit, Write, Bash
 model: sonnet
 effort: high

@@ -1,6 +1,6 @@
 ---
 name: code-of-conduct-writer
-description: Contributor Covenant specialist. Writes, updates and audits CODE_OF_CONDUCT.md. Use proactively when the reporting channel or the enforcement policy changes.
+description: Code of conduct specialist for CODE_OF_CONDUCT.md. Use proactively when the reporting or enforcement rules change.
 tools: Read, Edit, Write, Bash
 model: sonnet
 effort: medium

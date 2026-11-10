@@ -1,6 +1,6 @@
 ---
 name: privacy-writer
-description: Privacy policy specialist. Writes, updates and audits PRIVACY.md. Use proactively when a plugin is added, removed or changes what data it collects, keeps or sends.
+description: Privacy policy specialist for PRIVACY.md. Use proactively when a plugin's data handling changes.
 tools: Read, Edit, Write, Bash
 model: sonnet
 effort: medium
