@@ -1,0 +1,24 @@
+{
+  "documents": [
+    {
+      "pattern": "^plugins/[^/]+/README\\.md$",
+      "owner": "plugin-readme-writer",
+      "kind": "plugin-readme"
+    },
+    {
+      "pattern": "^plugins/[^/]+/CHANGELOG\\.md$",
+      "owner": "changelog-writer",
+      "kind": "plugin-changelog"
+    }
+  ],
+  "chains": {
+    "component-change": {
+      "trigger": "A plugin's components, dependencies or configuration changed.",
+      "scope": "plugin",
+      "stages": [
+        [{ "agent": "changelog-writer", "situation": "unreleased-entry" }],
+        [{ "agent": "plugin-readme-writer", "situation": "update" }]
+      ]
+    }
+  }
+}
