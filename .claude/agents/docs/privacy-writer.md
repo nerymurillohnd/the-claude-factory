@@ -199,7 +199,9 @@ When a value is not in its source and the prompt does not give it, leave the fil
 - Claude Code's own telemetry and error reporting are Anthropic's, are described in the Claude Code docs under "Telemetry services", and are turned off with `DISABLE_TELEMETRY`, `DISABLE_ERROR_REPORTING` or `CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC`. The policy points to Anthropic's policy for them and does not restate them.
 - When the official pages change on any of these points, follow the official page, keep the template's structure, and report the conflict.
 
-### Update scenario
+### Steps by scenario
+
+#### Update
 
 1. Re-run the inventory for the plugins the prompt names, and for any plugin added to or removed from `marketplace.json`.
 2. Add, change or remove only the rows, bullets and sentences the change touches.
@@ -207,7 +209,7 @@ When a value is not in its source and the prompt does not give it, leave the fil
 4. Set the effective date to the date of this change.
 5. Report each plugin README and `plugin.json` that needs a matching change.
 
-### Audit and review scenario
+#### Audit and review
 
 1. Run the inventory.
 2. Compare `PRIVACY.md` with the template, section by section, and with the inventory.
@@ -220,7 +222,7 @@ When a value is not in its source and the prompt does not give it, leave the fil
 
 Instruction comments (`<!-- ... -->`) and `{{placeholders}}` never remain in the output.
 
-### PRIVACY.md
+### `PRIVACY.md`
 
 ````markdown
 <!--

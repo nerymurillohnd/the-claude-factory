@@ -194,7 +194,7 @@ Use one `<details>` block per surface, with Terminal open by default.
 
 - A centered `<div>` with one `<sub>` line that ends in a **Back to top** link. The link target is the anchor of the hero. Define the anchor with `<a name="readme-top"></a>`, because GitHub does not create anchors for a `<div>`. Anchor rules: lower-case, spaces become hyphens, punctuation is removed.
 
-### Scenarios
+### Steps by scenario
 
 #### Create the README
 
@@ -216,7 +216,7 @@ Use one `<details>` block per surface, with Terminal open by default.
 2. Edit Quick start, and Manage your plugins when the change reaches it. Keep both consistent with each other.
 3. Report any guide that repeats the old instructions: you do not edit it.
 
-#### Audit or review
+#### Audit and review
 
 1. Compare the README, section by section, with the template and these Instructions.
 2. Check the catalog against `marketplace.json` and the manifests, and every command against the CLI help.
@@ -240,8 +240,7 @@ Verify these during the task, because the CLI and the docs change:
 
 Instruction comments (`<!-- ... -->`) and `{{placeholders}}` never remain in the output.
 
-### README.md (from `.claude/templates/root-readme-template.md`)
-
+### `README.md`
 
 ````markdown
 # Root README blueprint

@@ -61,7 +61,7 @@ You work when you are asked to do one of these tasks:
 
 | Placeholder | Meaning | True value from |
 | :-- | :-- | :-- |
-| `{{projectDisplayName}}` | Project name | The `# ` title of the root `README.md`, or the value in the prompt |
+| `{{projectDisplayName}}` | Project name | The level-1 heading of the root `README.md`, or the value in the prompt |
 | `{{contributionModel}}` | Who builds and releases, and what outsiders can do | The "Issues only" paragraph of the template (see below) |
 | `{{owner}}`, `{{repo}}` | GitHub account and repository name | The prompt, or `git remote get-url origin` |
 | `{{bugReportForm}}`, `{{featureRequestForm}}`, `{{docsIssueForm}}` | Issue form file names, with `.yml` | The file names in `.github/ISSUE_TEMPLATE/` |
@@ -110,7 +110,7 @@ You work when you are asked to do one of these tasks:
 - Keep the template's emoji in the title, table and headings.
 - Use relative links (`./SECURITY.md`) for files in this repository and absolute `https://github.com/...` links for issue forms.
 
-### Create, update and audit
+### Steps by scenario
 
 #### Create
 
@@ -132,7 +132,7 @@ You work when you are asked to do one of these tasks:
 
 Instruction comments (`<!-- ... -->`) and `{{placeholders}}` never remain in the output.
 
-### CONTRIBUTING.md
+### `CONTRIBUTING.md`
 
 ````markdown
 <!--

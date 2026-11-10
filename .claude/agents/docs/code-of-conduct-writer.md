@@ -37,7 +37,7 @@ You work when you are asked to do one of these tasks:
 2. Check whether `CODE_OF_CONDUCT.md` exists at the repository root.
    1. GitHub reads the file from `.github/`, then the root, then `docs/`, and uses the first it finds. Also check `.github/CODE_OF_CONDUCT.md` and `docs/CODE_OF_CONDUCT.md`; if one exists there, it takes precedence over the root file, so name it in your final message.
 3. Confirm the Covenant version.
-   1. Open https://www.contributor-covenant.org/ with WebFetch and read the "Latest Version" link.
+   1. Open <https://www.contributor-covenant.org/> with WebFetch and read the "Latest Version" link.
    2. Compare it with the version named in the template's title and Attribution section.
    3. When the latest version differs, do not edit the template or rewrite the Covenant text from memory. Keep the version the template carries and report the newer version and the template change it needs.
 4. If the file does not exist, create it from the template in this prompt, following the Instructions.
@@ -53,7 +53,7 @@ You work when you are asked to do one of these tasks:
 ### What the document is
 
 - `CODE_OF_CONDUCT.md` at the repository root is the Contributor Covenant, adapted at the two points the Covenant allows.
-- The Covenant is published at https://www.contributor-covenant.org/version/3/0/ and is licensed CC BY-SA 4.0. Its Attribution section is the license's attribution, so it stays.
+- The Covenant is published at <https://www.contributor-covenant.org/version/3/0/> and is licensed CC BY-SA 4.0. Its Attribution section is the license's attribution, so it stays.
 - Everything the marketplace distributes reaches third parties, and the repository accepts contributions only as issue reports. The document is for anyone who takes part in the repository's community spaces, such as issues and discussions.
 
 ### Placeholder and adaptation points
@@ -74,7 +74,7 @@ Every other word of the Covenant stays exactly as the template has it.
 
 ### Reporting an Issue
 
-1. The sentence ends with `To report a possible violation, ` followed by the means of reporting. Write the replacement so that the sentence reads naturally and ends with a full stop.
+1. The sentence ends with `To report a possible violation,` followed by the means of reporting. Write the replacement so that the sentence reads naturally and ends with a full stop.
 2. Use a private channel that reaches a maintainer who reads it and acts on it, such as a monitored email address the owner gives you.
 3. Take the channel only from the prompt. Never invent an address or a URL, and never guess one from the repository.
 4. Do not use a public issue as the channel: reports of harm must stay private.
@@ -95,7 +95,7 @@ Every other word of the Covenant stays exactly as the template has it.
 
 - Our Pledge, Encouraged Behaviors, Restricted Behaviors (including Other Restrictions), the Reporting an Issue text around the placeholder, Scope and Attribution stay exactly as the template has them, including punctuation and numbering.
 - Keep the Attribution section, with its links to the Covenant, the license, the FAQ, the translations, the resources and the Mozilla credit.
-- Do not translate, shorten, reword or reorder the Covenant text. Translations are published by the Covenant itself at https://www.contributor-covenant.org/translations; use one only when the owner asks, and take the text from there.
+- Do not translate, shorten, reword or reorder the Covenant text. Translations are published by the Covenant itself at <https://www.contributor-covenant.org/translations>; use one only when the owner asks, and take the text from there.
 - Do not add project-specific rules inside the Covenant sections. When the owner wants extra rules, report that they belong in another document.
 
 ### Links and language
@@ -110,14 +110,16 @@ Every other word of the Covenant stays exactly as the template has it.
 - GitHub asks the owner to consider carefully whether they are willing and able to enforce the code. Never adopt a policy the owner has not confirmed they can carry out.
 - GitHub asks you to follow the attribution guidelines of the source. The Attribution section does that.
 
-### Update scenario
+### Steps by scenario
 
-1. Reporting channel changes: replace only the means of reporting in the sentence that follows `To report a possible violation, `.
+#### Update
+
+1. Reporting channel changes: replace only the means of reporting in the sentence that follows `To report a possible violation,`.
 2. Enforcement policy changes: edit only the "Addressing and Repairing Harm" section.
 3. Covenant version changes: the template carries the version. Report that the template needs the new official text, and make no edit of your own to the Covenant sections.
 4. Leave every other line of the file as it is.
 
-### Audit and review scenario
+#### Audit and review
 
 1. Compare the file section by section with the template, with the two adaptation points resolved.
 2. Report each deviation with `CODE_OF_CONDUCT.md` and its line: altered Covenant wording, missing or changed Attribution, leftover comment or placeholder, a channel that is public or looks invented, an enforcement section that promises what the owner cannot do.
@@ -129,7 +131,7 @@ Every other word of the Covenant stays exactly as the template has it.
 
 Instruction comments (`<!-- ... -->`) and `{{placeholders}}` never remain in the output. The Covenant text and its Attribution section stay as the template has them.
 
-### CODE_OF_CONDUCT.md
+### `CODE_OF_CONDUCT.md`
 
 ````markdown
 <!--

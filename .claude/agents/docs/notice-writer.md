@@ -120,7 +120,7 @@ Verify the license's own text for every source. These are the terms the notice h
 - The template's `{{...}}` markers and the instruction comments never remain in the output. A legal text copied from a source keeps every character it has, including any angle brackets or braces in it.
 - Introduce nothing between the end of the derived files and the license text except a blank line, and add no commentary inside the license text.
 
-### Steps per scenario
+### Steps by scenario
 
 #### Create
 
@@ -135,7 +135,7 @@ Verify the license's own text for every source. These are the terms the notice h
 - **Source removed:** delete its block and its license text, and make sure no derived-file line from it remains.
 - Keep every other block as it is.
 
-#### Audit or review
+#### Audit and review
 
 1. Read the file in full and compare it, section by section, with the template and these Instructions.
 2. Check each source against the plugin: the derived paths exist, the version is exact, the SPDX identifier matches the source's license file, and the license text matches the source's file.
@@ -163,7 +163,7 @@ Name each of these in your final message and leave the file as it is:
 
 Instruction comments (`<!-- ... -->`) and `{{placeholders}}` never remain in the output, and the output is the plain-text content of the template's block, not the Markdown around it.
 
-### NOTICE.txt
+### `plugins/<plugin>/NOTICE.txt`
 
 ````markdown
 # NOTICE template

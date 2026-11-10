@@ -76,13 +76,6 @@ You work when you are asked to do one of these tasks:
 - When the prompt gives several holders, write them on the same line in the order given.
 - Keep the same year and holders in the root `LICENSE` and in every plugin `LICENSE`.
 
-### Creating a file
-
-1. Copy the template's `text` block, line by line, into the target file.
-2. Replace the two placeholders on the `Copyright (c)` line.
-3. End the file with one newline after `SOFTWARE.` and no blank line after it.
-4. Leave the rest of the text byte for byte as the template has it.
-
 ### The license text
 
 - The text is copied verbatim: no rewrapping, no reformatting, no changed quotes, no added or removed lines.
@@ -90,13 +83,22 @@ You work when you are asked to do one of these tasks:
 - Line breaks stay where the template has them. GitHub compares the file with the published text, and a changed text can stop the detection.
 - Never add a second license, a notice, a link or a note to this file.
 
-### Changing the copyright line
+### Steps by scenario
+
+#### Create
+
+1. Copy the template's `text` block, line by line, into the target file.
+2. Replace the two placeholders on the `Copyright (c)` line.
+3. End the file with one newline after `SOFTWARE.` and no blank line after it.
+4. Leave the rest of the text byte for byte as the template has it.
+
+#### Change the copyright line
 
 - The year and the holders change only when the owner decides so and the prompt says so.
 - Edit only the `Copyright (c)` line, in every `LICENSE` file, so the files stay identical to each other.
 - Changing the license itself is a change of terms for users and is outside this task. Report it in your final message and leave the files as they are.
 
-### Audit and review
+#### Audit and review
 
 - Compare each file with the template line by line: title, copyright line, body, final newline.
 - Report each deviation as `path:line` with what it holds and what the template holds.
@@ -114,7 +116,7 @@ You work when you are asked to do one of these tasks:
 
 Instruction comments (`<!-- ... -->`) and `{{placeholders}}` never remain in the output. The output is only the content of the template's `text` block, with the two placeholders filled.
 
-### LICENSE-template.md (produces `LICENSE` at the root and `plugins/<plugin>/LICENSE`)
+### `LICENSE` and `plugins/<plugin>/LICENSE`
 
 ````markdown
 # MIT License template

@@ -100,7 +100,7 @@ You work when you are asked to do one of these tasks:
 
 #### Not a problem with this project?
 
-- Name the platform tracker and link it. For problems in Claude Code itself, use the Claude Code issue tracker, https://github.com/anthropics/claude-code/issues.
+- Name the platform tracker and link it. For problems in Claude Code itself, use the Claude Code issue tracker, <https://github.com/anthropics/claude-code/issues>.
 - Name Claude separately only when the prompt gives its support channel.
 - List only channels that exist and are answered.
 
@@ -115,7 +115,7 @@ You work when you are asked to do one of these tasks:
 - Use relative links for files in this repository and absolute `https://github.com/...` links for issue forms and external pages.
 - Mention only things that exist in the repository: no scripts, commands or files you did not list with `ls`.
 
-### Scenarios
+### Steps by scenario
 
 #### Create
 
@@ -129,7 +129,7 @@ You work when you are asked to do one of these tasks:
 2. Apply only the requested change: add, rename or remove a guide row, an issue row or a channel.
 3. Check the rest of the file against the files on disk, and fix any link that no longer resolves.
 
-#### Audit or review
+#### Audit and review
 
 1. Compare each part of the file with the template and these Instructions.
 2. Report each deviation as `SUPPORT.md:<line>`, with what is wrong and the fix.
@@ -141,7 +141,7 @@ You work when you are asked to do one of these tasks:
 
 Instruction comments (`<!-- ... -->`) and `{{placeholders}}` never remain in the output.
 
-### SUPPORT.md
+### `SUPPORT.md`
 
 ````markdown
 <!--

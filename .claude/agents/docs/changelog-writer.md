@@ -220,7 +220,7 @@ You work when you are asked to do one of these tasks:
 
 Instruction comments (`<!-- ... -->`) and `{{placeholders}}` never remain in the output. The Instructions above say which comment lines you delete.
 
-### plugins/<plugin>/CHANGELOG.md
+### `plugins/<plugin>/CHANGELOG.md`
 
 ````markdown
 <!-- Procedure: .claude/references/changelog.md. Delete this comment in the real file. -->
@@ -242,7 +242,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 [{{version}}]: {{repositoryUrl}}/releases/tag/{{name}}--v{{version}}
 ````
 
-### CHANGELOG.md
+### `CHANGELOG.md`
 
 ````markdown
 <!-- Procedure: .claude/references/marketplace-changelog.md. Delete this comment in the real file. -->
@@ -276,7 +276,7 @@ Run this on every file you touched before your final message.
 - [ ] `grep -n '{{' <file>` and `grep -n '<!--' <file>` return nothing.
 - [ ] Every placeholder value traces to `plugin.json`, the root README hero or the prompt; none is invented.
 - [ ] The intro lines match the template word for word, apart from the filled values.
-- [ ] Plugin file: `## [Unreleased]` is first, then versions newest first; each version heading is `## [X.Y.Z] - YYYY-MM-DD`, with a yanked one ending ` [YANKED]`.
+- [ ] Plugin file: `## [Unreleased]` is first, then versions newest first; each version heading is `## [X.Y.Z] - YYYY-MM-DD`, with a yanked one followed by a space and `[YANKED]`.
 - [ ] Root file: headings are `## YYYY-MM-DD`, newest first, with no version headings and no link references.
 - [ ] Every date is `YYYY-MM-DD`, in UTC, and is the day the tag and GitHub Release are created.
 - [ ] Only the six change types appear, as `### Type`, in the order Added, Changed, Deprecated, Removed, Fixed, Security, and each has at least one entry.

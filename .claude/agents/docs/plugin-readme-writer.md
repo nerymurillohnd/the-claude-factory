@@ -253,7 +253,7 @@ You work when you are asked to do one of these tasks:
   - Always keep the Anthropic sentence for _Claude_ and _Claude Code_.
 - Copy the license identifier and the holders from `LICENSE`; do not reword legal text.
 
-### Scenarios
+### Steps by scenario
 
 #### New plugin
 
@@ -273,7 +273,7 @@ You work when you are asked to do one of these tasks:
 2. Leave the Version badge as it is: it reads `plugin.json`.
 3. Write no version number, release date or "new in" note.
 
-#### Audit or review
+#### Audit and review
 
 1. Compare each README with the template and the Instructions: section order, headings and emoji, badges, surface blocks, placeholders, comments, Compatibility rows, Platforms line, links, commands, words outside code blocks.
 2. Compare the prose with the plugin's files: components, hooks, options, prerequisites, data directory and network claims.
@@ -283,7 +283,7 @@ You work when you are asked to do one of these tasks:
 
 Instruction comments (`<!-- ... -->`) and `{{placeholders}}` never remain in the output.
 
-### plugins/<plugin>/README.md
+### `plugins/<plugin>/README.md`
 
 ````markdown
 <!--

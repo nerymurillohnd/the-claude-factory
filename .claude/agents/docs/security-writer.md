@@ -141,7 +141,7 @@ Never invent a value. A value the prompt does not give is a missing value: repor
 - Every `<!-- ... -->` comment and every `{{placeholder}}` is removed from the output; the template's first comment goes too.
 - `SECURITY.md` has no legal or official text that keeps comments.
 
-### Scenarios
+### Steps by scenario
 
 #### Create
 
@@ -156,7 +156,7 @@ Never invent a value. A value the prompt does not give is a missing value: repor
 - When targets change, change only the table values. Do not add commitments the prompt does not give.
 - Keep every other line as it is.
 
-#### Audit or review
+#### Audit and review
 
 1. Compare `SECURITY.md` with the template: headings, order, the CAUTION alert, the list of details, the table shape.
 2. Compare it with these Instructions: values, links, per-plugin policy, update command, targets only as the owner commits, scope bullets with where-to-report-instead.
@@ -167,7 +167,7 @@ Never invent a value. A value the prompt does not give is a missing value: repor
 
 Instruction comments (`<!-- ... -->`) and `{{placeholders}}` never remain in the output. This document keeps no legal or official text that needs them.
 
-### SECURITY.md
+### `SECURITY.md`
 
 ````markdown
 <!--
