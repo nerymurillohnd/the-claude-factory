@@ -1,1 +1,2 @@
 - [Claude surfaces merge](reference_claude-surfaces-merge.md) — evidence for the Claude Code / Claude naming: Cowork+chat merged 2026-09-16, rollout still gradual
+- [Documentation standards sources](reference_documentation-standards-sources.md) — external standards behind the CHANGELOG and README contracts, read 2026-11-10
