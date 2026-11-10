@@ -8,6 +8,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The
 
 ### Changed
 
+- **plugin-engineering** 0.2.3 — `cli-commands-guide` loads for any work on plugins, mods or marketplaces, is checked against Claude Code 2.1.321, covers the new `claude plugin restore-set-aside`, and links every section to its official docs section.
 - **skill-diagnostics** 0.3.0 — **Breaking:** the plugin is rebuilt around one skill, `skills-best-practices`, which audits skills, and their evals when they have them, against the official best practices with scripts, six independent agents and one verdict; writing a skill is left to a skill-writing skill such as `skill-creator`. `/skill-diagnostics:audit` is replaced, `on_skill_write` takes only `gate`, `suggest` or `off` with `gate` as the default, and the hooks now need Bash and `jq`.
 - **plugin-engineering** 0.2.2 — `public-marketplace-dev` tells Claude to declare `options` on a `userConfig` field that a plugin hook reads as one of a few fixed values, and `cli-commands-guide` says `--plugin-dir` goes before the subcommand.
 - **plugin-engineering** 0.2.1 — `public-marketplace-dev` loads the `cli-commands-guide` skill before Claude runs, writes or explains a plugin command.

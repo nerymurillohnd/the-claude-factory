@@ -6,6 +6,18 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.2.3] - 2026-11-09
+
+### Added
+
+- `cli-commands-guide` covers `claude plugin restore-set-aside`, new in Claude Code 2.1.321, which gives a plugin back the options and secrets set aside when a marketplace your organization declares replaces the plugin's source, or deletes them with `--discard`.
+- Every section of the `cli-commands-guide` references links its section of the official docs, so Claude can check a fact against the live page. The skill also names the official pages for manifest fields, components, `marketplace.json`, dependencies, evals, loading and error messages.
+
+### Changed
+
+- `cli-commands-guide` now loads for any work on Claude Code plugins, mods or marketplaces, with or without a repository, and not only when Claude runs a plugin command.
+- `cli-commands-guide` is checked against Claude Code 2.1.321. It covers the 2.1.321 managed-marketplace rules, the `Git clone timed out after 120s` and seed-managed marketplace messages and their environment variables, the variables that turn auto-update off, the dependencies an install adds, where the Context cost estimates show, and a pointer to the official troubleshooting page for any command error.
+
 ## [0.2.2] - 2026-11-09
 
 ### Changed
@@ -38,7 +50,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - Gotchas Claude keeps in view, such as `/plugin install` with a path installing nothing, `marketplace remove` uninstalling that marketplace's plugins, and reloads that change MCP tools needing `--force`.
 - Before relying on a version-gated flag, Claude checks `--help` on your Claude Code version and the live docs, and tells you what differs.
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/plugin-engineering--v0.2.2...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/plugin-engineering--v0.2.3...HEAD
+[0.2.3]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/plugin-engineering--v0.2.3
 [0.2.2]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/plugin-engineering--v0.2.2
 [0.2.1]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/plugin-engineering--v0.2.1
 [0.2.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/plugin-engineering--v0.2.0
