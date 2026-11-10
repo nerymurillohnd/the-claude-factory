@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
-# Shared helpers for the documentation governance hooks. Sourced, never run.
-# Every hook that sources this file fails open: a missing tool or registry
-# lets the action through, so a broken hook never blocks work.
+# Shared helpers for the documentation governance scripts and hooks. Sourced,
+# never run.
+# Everything that sources this file fails open: a missing tool or registry
+# lets the action through, so a broken script never blocks work.
 
 # Print the repository root.
 docs_root() {
@@ -12,7 +13,7 @@ docs_root() {
   fi
 }
 
-# Set DOCS_ROOT and DOCS_REGISTRY, or exit 0 from the calling hook when jq or
+# Set DOCS_ROOT and DOCS_REGISTRY, or exit 0 from the caller when jq or
 # the registry is missing.
 docs_require() {
   if ! command -v jq >/dev/null 2>&1; then

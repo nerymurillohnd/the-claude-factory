@@ -3,8 +3,8 @@
 # the agent that owns it. Reads the hook input on stdin.
 set -uo pipefail
 here="$(dirname "$0")"
-# shellcheck source=.claude/hooks/docs-lib.sh
-. "${here}/docs-lib.sh"
+# shellcheck source=.claude/skills/documentation-governance/scripts/lib.sh
+. "${here}/../skills/documentation-governance/scripts/lib.sh"
 docs_require
 
 input="$(cat)"

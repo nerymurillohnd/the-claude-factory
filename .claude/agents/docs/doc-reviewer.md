@@ -26,10 +26,10 @@ git diff @{upstream} -- plugins/<plugin>
 ```
 
    When the branch has no upstream, compare with `HEAD`.
-4. Run the scripted checks and include their output:
+4. Run the scripted checks and include their output. The writers do not run them: hooks do, on each write. You write nothing, so no hook runs for you, and a writer's second attempt is let through even when a check still fails.
 
 ```bash
-.claude/hooks/docs-check.sh <file>
+.claude/skills/documentation-governance/scripts/check-document.sh <file>
 ```
 
 5. Look for what the script cannot see:

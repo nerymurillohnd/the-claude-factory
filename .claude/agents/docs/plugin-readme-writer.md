@@ -61,7 +61,7 @@ A category that is not in the table goes in `missing`.
 For a plugin that has just been scaffolded and has no components yet.
 
 1. Write the README from the output format, filling every value `plugin.json` already provides.
-2. Keep the sections whose content depends on components that do not exist yet, with their `{{values}}`, and list each one in `missing`. A skeleton is not publishable and the checks will say so; that is expected, and `finalize` completes it.
+2. Keep the sections whose content depends on components that do not exist yet, with their `{{values}}`, and list each one in `missing`. A skeleton is not publishable and the hook will say so when you stop; that is expected, and `finalize` completes it.
 
 ### finalize
 
@@ -123,16 +123,17 @@ git status --short -- plugins/<plugin>
 
 ## Before you finish
 
-1. Consult the advisor on whether every claim in what you wrote is supported by the plugin's files. If no advisor is available, re-read each changed statement against its source yourself.
-2. Run the checks and fix every line they report:
+1. Re-read each statement you wrote or changed against its source in the plugin's files.
+2. Confirm the plugin still loads with the README beside it, and fix what it reports:
 
 ```bash
-.claude/hooks/docs-check.sh plugins/<plugin>/README.md
 claude plugin validate --strict plugins/<plugin>
 ```
 
 3. Open every relative link and `#anchor` you wrote or changed and confirm its target exists.
 4. Re-read the whole file once.
+
+A hook checks the file's structure each time you write it and again when you stop. When it reports problems, fix each line it names.
 
 ## What you return
 
@@ -142,7 +143,7 @@ claude plugin validate --strict plugins/<plugin>
 - `facts`: for the next agent in the chain: `{"description", "category", "surfaces", "minimumClaudeCodeVersion"}` as the README now states them.
 - `missing`: values or files you needed and did not find, including a link target that does not exist.
 - Sections, rows or bullets you deleted, each with its reason.
-- The output of the check commands.
+- The output of `claude plugin validate`.
 
 ## Memory
 

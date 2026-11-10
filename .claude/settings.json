@@ -14,8 +14,7 @@
     "allow": [
       "Agent",
       "AskUserQuestion",
-      "Bash(.claude/hooks/docs-check.sh *)",
-      "Bash(.claude/hooks/docs-pending.sh)",
+      "Bash(.claude/skills/documentation-governance/scripts/check-document.sh *)",
       "Bash(claude plugin details *)",
       "Bash(claude plugin list*)",
       "Bash(claude plugin validate *)",
@@ -78,7 +77,6 @@
   },
   "autoMemoryDirectory": "~/Claude/repositories/the-claude-factory/.claude/memory",
   "autoMemoryEnabled": true,
-  "advisorModel": "opus",
   "hooks": {
     "PreToolUse": [
       {

@@ -114,14 +114,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## Before you finish
 
-1. Consult the advisor on whether each entry states an effect a user would notice and sits under the right change type. If no advisor is available, re-read each entry against the diff yourself.
-2. Run the checks and fix every line they report:
+1. Re-read each entry against the diff: it states an effect a user would notice, it is true of the plugin as it now is, and it sits under the right change type.
+2. Re-read the whole file once.
 
-```bash
-.claude/hooks/docs-check.sh plugins/<plugin>/CHANGELOG.md
-```
-
-3. Re-read the whole file once.
+A hook checks the file's structure each time you write it and again when you stop. When it reports problems, fix each line it names.
 
 ## What you return
 
@@ -130,7 +126,6 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - `summary`: what you wrote and why, in two or three sentences.
 - `facts`: for the next agent in the chain: `{"entries": [the bullets you added], "breaking": true or false, "minimumClaudeCodeVersion": the version if this change set it}`.
 - `missing`: what you needed and did not have, when blocked.
-- The output of the check command.
 
 ## Memory
 

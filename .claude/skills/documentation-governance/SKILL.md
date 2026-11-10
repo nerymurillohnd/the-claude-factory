@@ -28,13 +28,7 @@ A chain is the ordered set of documents one event sets off. Stages run in order;
 | :-- | :-- | :-- |
 | A plugin's components, dependencies or configuration changed | `component-change` | CHANGELOG (`unreleased-entry`) → README (`update`) |
 
-To see which chains the working tree has set off:
-
-```bash
-.claude/hooks/docs-pending.sh
-```
-
-It prints one line per pending chain, as `<chain> <plugin>`. A hook runs the same check after each change to a plugin and before the turn ends.
+A hook reports the chains the working tree has set off, one per line as `<chain> <plugin>`, after each change to a plugin and before the turn ends. You do not run that check yourself. It stays silent while a chain is running.
 
 ## Run a chain
 
@@ -55,7 +49,7 @@ It prints one line per pending chain, as `<chain> <plugin>`. A hook runs the sam
    - `plugins` takes several plugins when the same event applies to each; they run in parallel.
    - `change` carries what only this conversation knows: the intent, and any decision the owner made. The agents cannot see the conversation.
    - `values` carries what a situation needs and the files do not hold, such as `{"version": "0.2.0", "date": "2026-11-12"}` for a release. Leave it empty otherwise.
-4. The workflow runs each stage, sends the result to `doc-reviewer`, and returns one result per plugin. Read it before you report.
+4. The workflow runs in the background. It runs each stage, sends the result to `doc-reviewer`, and returns one result per plugin. Wait for it; do not launch it twice for the same plugin. Read the result before you report.
 
 ## Read the result
 
@@ -67,7 +61,7 @@ It prints one line per pending chain, as `<chain> <plugin>`. A hook runs the sam
 | `blocked` | An agent lacked a value it needs | Report the `missing` items to the owner and ask for them |
 | `failed` | An agent or the workflow stopped | Report what stopped and relaunch the workflow once the cause is clear |
 
-Report the review's `unverified` items too: they are what nobody checked.
+Each result carries `rounds`, the number of reviews that ran, and `corrections`, the findings a writer was sent back to fix. Report both: a chain that passed on its second review found and fixed something. Report the review's `unverified` items too: they are what nobody checked.
 
 ## One document, outside a chain
 
@@ -79,5 +73,5 @@ A hook denies any write to a governed document that does not come from its owner
 
 ## Limits
 
-- The hooks check writes made with the Write and Edit tools. A file changed through a shell command is caught only by the review and by the checks the agents run.
-- The checks a script can run cover structure, leftover placeholders and headings. Whether a statement is true is checked by the agents and the reviewer against the plugin's files.
+- The hooks check writes made with the Write and Edit tools. A file changed through a shell command is caught only by the review.
+- The scripted checks cover structure, leftover placeholders and headings. Whether a statement is true is checked by the agents and the reviewer against the plugin's files.
