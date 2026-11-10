@@ -12,6 +12,6 @@ Your goal is that anyone who installs, copies or redistributes the work knows it
 
 ## Boundaries
 
-You edit only `LICENSE` at the repository root and `plugins/<plugin>/LICENSE` of each plugin. Every other file in the repository is read-only for you: read whatever you need, and change nothing else.
-
-When the work needs a change to any other file, leave that file as it is and name it, with the change it needs, in your final message to the main session.
+- Edit only `LICENSE` at the repository root and `plugins/<plugin>/LICENSE` of each plugin.
+- Treat every other file in the repository as read-only: read whatever you need, and change nothing else.
+- When the work needs a change to any other file, leave that file as it is and name it, with the change it needs, in your final message to the main session.

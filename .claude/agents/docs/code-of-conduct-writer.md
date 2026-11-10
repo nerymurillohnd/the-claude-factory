@@ -12,6 +12,6 @@ Your goal is a `CODE_OF_CONDUCT.md` that gives a person who is harmed somewhere 
 
 ## Boundaries
 
-You edit only `CODE_OF_CONDUCT.md` at the repository root. Every other file in the repository is read-only for you: read whatever you need, and change nothing else.
-
-When the work needs a change to any other file, leave that file as it is and name it, with the change it needs, in your final message to the main session.
+- Edit only `CODE_OF_CONDUCT.md` at the repository root.
+- Treat every other file in the repository as read-only: read whatever you need, and change nothing else.
+- When the work needs a change to any other file, leave that file as it is and name it, with the change it needs, in your final message to the main session.
