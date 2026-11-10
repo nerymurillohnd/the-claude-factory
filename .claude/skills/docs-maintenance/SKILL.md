@@ -56,6 +56,25 @@ Two rules keep parallel work safe:
 - Never run two subagents on the same file at the same time. Every file has one owner, so this only happens if you launch the same subagent twice for one file.
 - Subagents start in the background. Wait for their completion notices instead of doing their work in the meantime.
 
+## Commands you run
+
+The subagents check their own facts. These commands are yours, because they check the files you own or the state the subagents read. Run them from the repository root and read the exit code (`0` passes, `1` fails), not the symbols: without a terminal, ✔ ⚠ ✘ print as √ ‼ ×.
+
+| Command | When | What it tells you |
+| :-- | :-- | :-- |
+| `claude --version` and `claude plugin <subcommand> --help` | Before you rely on a flag below | The installed CLI is the authority on which flags exist |
+| `claude plugin validate plugins/<plugin> --strict` | After you change a plugin's `plugin.json`, before you launch any subagent that reads it | The manifest the subagents will copy values from is valid |
+| `claude plugin validate . --strict` | After you change `marketplace.json` | The catalog is valid, and each entry's version agrees with its `plugin.json` |
+| `claude plugin validate plugins/<plugin> --strict --profile directory` | After a plugin's README is written or rewritten | Exit `1` when the README is missing or too short for Anthropic's directory. Also read the `Advice` lines: one appears when the README has no install-from-marketplace line, and it never changes the exit code |
+| `claude --plugin-dir plugins/<plugin> plugin details <name>` | Before you brief `plugin-readme-writer` on a new or changed plugin | The plugin's real component inventory, to check the brief against. A mod's hooks module shows as `Hooks (0)` |
+| `claude plugin tag plugins/<plugin> --dry-run` | Before you brief `changelog-writer` on a release | The version `plugin.json` and the marketplace entry agree on, and the tag name `<name>--v<version>` the changelog links use. It creates nothing |
+
+Three things these commands do not do:
+
+- A marketplace run (`validate .`) does not open each plugin's skills, agents, hooks or servers. Validate each changed plugin directory too.
+- `validate` accepts a `renames` key that is still a listed plugin. Check it yourself after a rename or a retirement.
+- Creating the tag (`claude plugin tag plugins/<plugin>`) and pushing it (`--push`) are the release itself. Run them only when the owner authorizes the release; the tag needs a clean working tree, so commit the documents first.
+
 ## Events and the subagents they need
 
 "Stage 1, 2, 3" means order. Subagents named in the same stage run in parallel.
@@ -75,6 +94,8 @@ Gather all owner values before stage 1: the copyright line, the reporting channe
 
 A directory appears under `plugins/` with its `plugin.json`, and is listed in `marketplace.json`.
 
+Before stage 1, run `claude plugin validate plugins/<plugin> --strict` and `claude plugin validate . --strict`, and fix what they report. After stage 2, run `claude plugin validate plugins/<plugin> --strict --profile directory`.
+
 1. Stage 1: `license-writer` (the plugin's `LICENSE`), `changelog-writer` (the plugin's `CHANGELOG.md`), and `notice-writer` only if the plugin contains third-party material.
 2. Stage 2: `plugin-readme-writer`. The README states the license and links the changelog.
 3. Stage 3: `marketplace-readme-writer` adds the plugin to the catalog, `changelog-writer` records the launch in the root `CHANGELOG.md` once the plugin's first version is dated, and `privacy-writer` adds the plugin to `PRIVACY.md`, the single policy that covers every plugin.
@@ -86,7 +107,7 @@ A plugin that is not released yet gets its changelog with "Initial release." und
 Its components, commands, configuration, prerequisites or behavior change, before a version bump.
 
 1. Stage 1: `changelog-writer`: record each change under `## [Unreleased]`. Give it each change in user terms, its type (Added, Changed, Deprecated, Removed, Fixed or Security) and whether it is breaking.
-2. Stage 2: `plugin-readme-writer`, if the change alters anything the README describes.
+2. Stage 2: `plugin-readme-writer`, if the change alters anything the README describes. Run `claude --plugin-dir plugins/<plugin> plugin details <name>` first when components were added or removed, so your brief matches the real inventory.
 3. Add the events "Third-party material changes" or "Data handling changes" when they apply.
 
 A change limited to formatting, tests or internal refactoring with no effect for users needs no changelog entry.
@@ -95,23 +116,27 @@ A change limited to formatting, tests or internal refactoring with no effect for
 
 You have set the new `version` in `plugin.json`, and the release (tag and GitHub Release) happens now.
 
+Before stage 1, run `claude plugin tag plugins/<plugin> --dry-run`: it must exit `0` and show the version you set. A mismatch with the marketplace entry is yours to fix first.
+
 1. Stage 1: `changelog-writer`: turn `## [Unreleased]` into the version's section. Pass the version and the release date: the UTC day the tag and GitHub Release are created, never the day the bump was prepared.
 2. Stage 2: `plugin-readme-writer`, to bring version-dependent content in line (badges, minimum versions, update notes).
 3. Stage 3: `changelog-writer` records the release in the root `CHANGELOG.md`, and `marketplace-readme-writer` updates the catalog row if it shows the version.
 
 If `## [Unreleased]` is empty, the release has nothing to record: stop and ask the owner what the version changes.
 
+Once the documents are committed, the owner decides when to create and push the tag and the GitHub Release. Do it the same UTC day as the date written in the changelog.
+
 ### A plugin is renamed
 
 A rename makes it a different plugin to every existing install, so users must install the new name.
 
-1. You: update `plugin.json` and the `marketplace.json` entry.
+1. You: update `plugin.json` and the `marketplace.json` entry, then run `claude plugin validate plugins/<new-name> --strict` and `claude plugin validate . --strict`. Check that the old name is not still listed as a plugin.
 2. Stage 1: `changelog-writer` records the rename as a breaking change in the plugin's changelog, and `plugin-readme-writer` updates every command and name in the README.
 3. Stage 2: `marketplace-readme-writer` updates the catalog, and `changelog-writer` records the rename in the root `CHANGELOG.md`.
 
 ### A plugin is retired
 
-1. You: remove its entry from `marketplace.json`, as the owner decides.
+1. You: remove its entry from `marketplace.json`, as the owner decides, then run `claude plugin validate . --strict`.
 2. Stage 1: `marketplace-readme-writer` removes it from the catalog, `changelog-writer` records the retirement in the root `CHANGELOG.md`, and `privacy-writer` removes what the policy says about it.
 3. Leave the plugin's own directory and documents to the owner's decision: retiring it from the catalog does not delete them.
 
@@ -194,7 +219,8 @@ For every subagent, before you rely on its result:
    - **Findings** (audit): take them to the owner before any fix.
 2. **Check what it touched.** `git status --short` must show only the files the subagent owns, plus its memory under `.claude/agent-memory/`. If it changed anything else, restore that file with `git checkout -- <file>` and tell the owner.
 3. **Check for leftovers** in each file it wrote: `grep -n '{{' <file>` and `grep -n '<!--' <file>` should find nothing, except where the subagent's own rules keep them.
-4. **Read the diff.** Make sure it says what the change is, and that it states nothing the plugin's files or the owner did not give.
+4. **Validate the plugin** when the subagent wrote one of its documents: `claude plugin validate plugins/<plugin> --strict --profile directory`.
+5. **Read the diff.** Make sure it says what the change is, and that it states nothing the plugin's files or the owner did not give.
 
 When a result is wrong, launch the subagent again with what is wrong and what to do. Do not fix the document yourself.
 
