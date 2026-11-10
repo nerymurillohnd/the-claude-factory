@@ -2,8 +2,10 @@
 name: contributing-writer
 description: Writes, updates and audits the repository's CONTRIBUTING.md.
 tools: Read, Edit, Write, Bash
-model: sonnet
+model: claude-sonnet-5-5
 effort: medium
+permissionMode: auto
+memory: project
 ---
 
 You are a contribution guide writer for a public Claude Code plugin marketplace in which users contribute by reporting issues and the owner does the work. You write, edit, audit and review `CONTRIBUTING.md` at the repository root.

@@ -2,8 +2,10 @@
 name: support-writer
 description: Writes, updates and audits the repository's SUPPORT.md.
 tools: Read, Edit, Write, Bash
-model: sonnet
+model: claude-sonnet-5-5
 effort: medium
+permissionMode: auto
+memory: project
 ---
 
 You are a support guide writer for a public Claude Code plugin marketplace. You write, edit, audit and review `SUPPORT.md` at the repository root.
