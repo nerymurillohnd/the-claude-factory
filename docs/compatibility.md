@@ -38,7 +38,7 @@ You can install the same plugin in Claude Code and in Claude, but each one loads
 
 Claude runs a conversation with the full set of plugin components above when it can run tasks there, and with skills, commands and remote connectors otherwise, for example on a device that can't run tasks or on a plan that doesn't have the unified Claude experience yet. Anything on your computer, such as a local MCP server, needs Claude Desktop open. Claude's plugin docs don't list monitors or workflows, so treat them as Claude Code only.
 
-<sub>Sources: Anthropic, [Use plugins in Claude](https://support.claude.com/en/articles/13837440-use-plugins-in-claude), [Claude Cowork and chat are one Claude](https://support.claude.com/en/articles/16761823), [Plugin feature support across platforms](https://claude.com/docs/plugins/platform-support), [Claude Code on the web](https://code.claude.com/docs/en/claude-code-on-the-web).</sub>
+<sub>Sources: Anthropic, [Use plugins in Claude](https://support.claude.com/en/articles/13837440-use-plugins-in-claude), [Claude Cowork and chat are one Claude](https://support.claude.com/en/articles/16761823), [Plugin feature support across platforms](https://claude.com/docs/plugins/platform-support), [Claude Code on the web](https://code.claude.com/docs/en/claude-code-on-the-web), [Workflows](https://code.claude.com/docs/en/workflows).</sub>
 
 ## 🗺️ Where you add plugins
 

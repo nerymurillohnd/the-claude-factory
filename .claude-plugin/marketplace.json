@@ -99,7 +99,7 @@
     {
       "name": "skill-diagnostics",
       "source": "./plugins/skill-diagnostics",
-      "description": "Skill audit and testing for Claude skills: checks best practices, conformance, portability across Claude Code, claude.ai and Cowork, and whether a model can run them without guessing, with file-and-line evidence and one verdict.",
+      "description": "Audits Claude skills against the official best practices and gates them: five validation scripts, four independent reviewers, a cold executor and an adversarial verifier give one report with file-and-line evidence and one verdict, and a gate has Claude audit every skill it creates or changes before it finishes.",
       "category": "testing"
     },
     {

@@ -6,6 +6,36 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-11-09
+
+### Added
+
+- A full audit: five validation scripts, four independent reviewers (description, instructions, scripts and runtime, security), a cold executor that follows every workflow without guessing, and an adversarial verifier that checks every finding against the official sources. It returns one report with file-and-line evidence and one verdict.
+- Each audit report has an Accounting table that gives every finding of every agent one outcome (kept, merged or withdrawn). A `SubagentStop` hook, and a `PostToolUse` hook on `SubagentHandback` in auto mode, save each agent's report unchanged in the session's audit folder in the plugin's data directory, which the report names, so you can check that no finding was dropped. Claude makes no tool call to save them. Audit folders are deleted after 7 days.
+- A `PermissionRequest` hook approves the skill's own six scripts, run exactly as the skill writes them, in an audit's later turns, where the skill's pre-approval has ended and Claude Code would otherwise ask you. It approves nothing else, never denies and never adds a permission rule.
+- The skill checks that a skill writes every command that uses `${CLAUDE_SKILL_DIR}`, `${CLAUDE_PLUGIN_ROOT}` or `${CLAUDE_PLUGIN_DATA}` in `SKILL.md`, since Claude Code doesn't substitute them in the files a skill links to.
+- The skill checks that a skill's frontmatter hooks don't name `${CLAUDE_PLUGIN_DATA}`, which Claude Code refuses in a skill hook, and its references say what each placeholder and a relative path resolve to in a skill hook.
+- The skill checks how a skill that runs other agents runs them (subagents, workflows, agent teams) against the official comparison, and that no pre-approved command depends on running after a subagent's result, since the skill's pre-approval covers only the turn that invokes it.
+- The skill checks the size of `SKILL.md`: at most 500 lines, and a body of at most 5,000 tokens (Claude Code's figure from `claude plugin details` when the skill is in a plugin and `claude` is installed, otherwise estimated from its characters), the part Claude Code re-attaches after compaction; it flags a body above 4,500 tokens.
+- The skill audits a skill's evals, when it has them, against the official eval best practices: its `evals/evals.json` (format, ids, input files, assertions) and the `claude plugin eval` cases that invoke it (graders, regex flags, must-not-invoke cases) by script, and the realism, coverage, trigger queries and direct invocations of its cases by the reviewers. Running the evals stays outside the audit.
+- The skill checks a skill's name against the other skills and built-in commands it can shadow, a skill named `verify` or `simplify` (which Claude Code runs before each commit), and a skill folder that holds its own `.claude-plugin/plugin.json` and so loads its own agents, hooks and MCP servers.
+- Each audit agent sets its own model and effort: the four reviewers on Sonnet and the cold executor and adversarial verifier on Opus; `xhigh` effort for the scripts-and-runtime and security reviewers and the verifier, `high` for the others.
+- A gate: after Claude writes or edits a skill, it audits the skill before it finishes the turn.
+- After an audit, when the skill has no evals, Claude asks whether you want some; writing them is a separate step you choose. A Stop hook also finds skills changed by shell commands.
+- The `/skill-diagnostics:evals` workflow measures whether a skill triggers on the right requests and improves the output, with and without the skill. It runs only on request and changes no file of the skill.
+
+### Changed
+
+- **Breaking:** `/skill-diagnostics:audit` is replaced by `/skill-diagnostics:skills-best-practices`. It still only audits; to write a skill, Claude uses a skill-writing skill such as `skill-creator`.
+- The plugin's and the skill's descriptions say what the audit is and when it runs: after any skill, in a plugin, user, project or local folder, is created or edited, and whenever you ask to audit, review or improve one.
+- **Breaking:** `on_skill_write` now takes only `gate`, `suggest` or `off`, and the default is `gate` (it was `suggest`); set it to `suggest` to keep the old behavior. `run` is gone, and any other value is no longer accepted, so an unknown value can't silently fall back to another mode.
+- **Breaking:** the hooks now need Bash and `jq`. If `jq` is missing, the hooks report an error and don't gate. Python 3.12 or later as `python3` is still needed, now for the skill's scripts.
+- **Breaking:** an audit covers one skill folder per run; auditing a skill from a URL or every skill of a plugin folder in one run is no longer offered.
+
+### Removed
+
+- **Breaking:** the `conformance-auditor` and `executability-auditor` agents and the Python hook, replaced by the six new agents and the Bash hooks.
+
 ## [0.2.2] - 2026-11-06
 
 ### Changed
@@ -58,7 +88,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - Verification gate: before the verdict, every finding is checked against the skill's files, the live official documentation and the Claude Code changelog from the user's version on (the five releases before it and every newer one); findings that don't hold up go back to their lens once; the verdict is marked provisional only when an official page or the changelog could not be reached.
 - Hook that offers an audit after a `SKILL.md` is created or changed, configurable with `on_skill_write` (`suggest`, `run`, `off`); it needs Python 3.9+ as `python3`.
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/skill-diagnostics--v0.2.2...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/skill-diagnostics--v0.3.0...HEAD
+[0.3.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/skill-diagnostics--v0.3.0
 [0.2.2]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/skill-diagnostics--v0.2.2
 [0.2.1]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/skill-diagnostics--v0.2.1
 [0.2.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/skill-diagnostics--v0.2.0

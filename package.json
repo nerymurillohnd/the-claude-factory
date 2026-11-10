@@ -43,6 +43,7 @@
     "validate:skill-argument-placeholders": "scripts/validators/skill-argument-placeholders.py",
     "validate:skill-names-consistency": "scripts/validators/skill-names-consistency.py",
     "validate:skill-references": "scripts/validators/skill-references.py",
+    "validate:skill-size": "scripts/validators/skill-size.py",
     "version:bump": "python3 scripts/release/bump-version.py"
   },
   "devDependencies": {

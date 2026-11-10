@@ -37,6 +37,11 @@
       // Drop this once Biome resolves ambient modules and noUnresolvedImports stops flagging the
       // mods' claude-code imports.
       "!!plugins/*/.claude-plugin/types",
+      // Workflow scripts: Claude Code runs each as the body of an async function, with a
+      // top-level return and the injected globals agent, parallel, pipeline, phase, log and args,
+      // so they do not parse as a module or a script. scripts/testers/<plugin>/workflow.test.mjs
+      // checks them instead.
+      "!!plugins/*/workflows",
       // Markdown Biome never formats: ADR_2026-10-26_biome-never-formats-plugin-and-skill-markdown.
       "!**/CLAUDE.md",
       "!.claude/memory",
