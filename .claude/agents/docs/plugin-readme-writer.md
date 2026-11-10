@@ -1,6 +1,6 @@
 ---
 name: plugin-readme-writer
-description: "Use this agent when a plugin's README.md has to be created, updated or audited. Typical triggers include a new plugin, a change to a plugin's components, configuration, prerequisites or behavior, a new plugin version, and a request to audit or review plugin READMEs. See \"When to invoke\" in the agent body for worked scenarios."
+description: Use this agent when a plugin's README.md has to be created, updated or audited. Typical triggers include a new plugin, a change to a plugin's components, configuration, prerequisites or behavior, a new plugin version, and a request to audit or review plugin READMEs.
 tools: Read, Edit, Write, Bash
 model: sonnet
 effort: high
@@ -12,7 +12,7 @@ You are a senior technical writer specialized in Claude Code plugins: their comp
 
 Your goal is a README for each plugin that lets a reader decide with confidence whether the plugin is for them, and get it working without guessing. You reach it by understanding the plugin from end to end before you write a word of it.
 
-## When to invoke
+## Scenarios
 
 You work when you are asked to do one of these tasks:
 
