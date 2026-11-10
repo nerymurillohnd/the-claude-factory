@@ -1,8 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
-<defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0F1E33"/><stop offset="1" stop-color="#1B2F4A"/></linearGradient>
-<linearGradient id="g" gradientUnits="userSpaceOnUse" x1="0" y1="200" x2="0" y2="840"><stop offset="0" stop-color="#5EEAD4"/><stop offset="1" stop-color="#14B8A6"/></linearGradient>
-<pattern id="grid" width="64" height="64" patternUnits="userSpaceOnUse"><path d="M64 0H0V64" fill="none" stroke="#FFFFFF" stroke-opacity="0.045" stroke-width="2"/></pattern>
-<clipPath id="frame"><rect width="1024" height="1024" rx="224"/></clipPath></defs>
-<g clip-path="url(#frame)"><rect width="1024" height="1024" fill="url(#bg)"/><rect width="1024" height="1024" fill="url(#grid)"/>
-<rect x="12" y="12" width="1000" height="1000" rx="212" fill="none" stroke="#FFFFFF" stroke-opacity="0.08" stroke-width="8"/>
-<rect x="447" y="230" width="130" height="540" rx="40" transform="rotate(-32 512 740)" fill="url(#g)" fill-opacity="0.55" stroke="#0F1E33" stroke-width="14"/><rect x="447" y="230" width="130" height="540" rx="40" transform="rotate(0 512 740)" fill="url(#g)" fill-opacity="0.8" stroke="#0F1E33" stroke-width="14"/><rect x="447" y="230" width="130" height="540" rx="40" transform="rotate(32 512 740)" fill="url(#g)" fill-opacity="1" stroke="#0F1E33" stroke-width="14"/><circle cx="512" cy="680" r="24" fill="#0F1E33"/></g></svg>
