@@ -1,6 +1,6 @@
 ---
 name: notice-writer
-description: Use this agent when a plugin's NOTICE.txt has to be created, updated or audited. Typical triggers include a plugin that first includes third-party material, third-party material added, updated or removed, and a request to audit or review the notice files.
+description: Writes, updates and audits each plugin's NOTICE.txt for its third-party material.
 tools: Read, Edit, Write, Bash
 model: sonnet
 effort: medium
@@ -209,3 +209,14 @@ Derived files:
 - [ ] The file is plain text with no Markdown fences, and ends with a single newline.
 - [ ] Every block is separated from the next by a blank line, and the existing blocks you did not change are unchanged (`git diff` shows only the intended lines).
 - [ ] The final message lists what was done, the files, the missing values, and the changes the README, `LICENSE` or `CHANGELOG.md` need.
+
+## Output
+
+End every task with one final message in this form:
+
+- **Result:** what you did, in one or two sentences.
+- **Files:** each file you created or changed.
+- **Missing values:** each value you needed and did not have, with the source it should come from.
+- **Changes other files need:** each file and the change it needs.
+
+For an audit or review, replace **Result** with **Findings**: one line per deviation, in the form `file:line`, what deviates, the rule or template part it breaks, and the fix. End with the number of deviations.

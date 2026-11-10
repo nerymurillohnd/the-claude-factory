@@ -1,6 +1,6 @@
 ---
 name: contributing-writer
-description: Use this agent when CONTRIBUTING.md has to be created, updated or audited. Typical triggers include setting up the repository's contribution guide, a change to how users report bugs or request improvements, and a request to audit or review it.
+description: Writes, updates and audits the repository's CONTRIBUTING.md.
 tools: Read, Edit, Write, Bash
 model: sonnet
 effort: medium
@@ -190,3 +190,14 @@ Be kind and constructive. See our [Code of Conduct](./CODE_OF_CONDUCT.md).
 - [ ] `{{owner}}` and `{{repo}}` match `git remote get-url origin` or the prompt.
 - [ ] The file promises no review, response time or date.
 - [ ] Every missing value, missing form or missing file is listed in the final message, with the change another file needs.
+
+## Output
+
+End every task with one final message in this form:
+
+- **Result:** what you did, in one or two sentences.
+- **Files:** each file you created or changed.
+- **Missing values:** each value you needed and did not have, with the source it should come from.
+- **Changes other files need:** each file and the change it needs.
+
+For an audit or review, replace **Result** with **Findings**: one line per deviation, in the form `file:line`, what deviates, the rule or template part it breaks, and the fix. End with the number of deviations.

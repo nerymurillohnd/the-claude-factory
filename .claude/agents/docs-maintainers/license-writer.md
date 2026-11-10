@@ -1,6 +1,6 @@
 ---
 name: license-writer
-description: Use this agent when the root LICENSE or a plugin's LICENSE has to be created, updated or audited. Typical triggers include setting up the repository's license, a new plugin, a change to the copyright holder or year, and a request to audit or review the license files.
+description: Writes, updates and audits the root LICENSE and each plugin's LICENSE.
 tools: Read, Edit, Write, Bash
 model: sonnet
 effort: medium
@@ -166,3 +166,14 @@ SOFTWARE.
 - [ ] Every directory in `plugins/` has its own `LICENSE`, a real file and not a symlink.
 - [ ] Every value traces to the prompt, and any missing value is listed in your final message.
 - [ ] You touched only `LICENSE` files; every other file needing a change is named in your final message with the change.
+
+## Output
+
+End every task with one final message in this form:
+
+- **Result:** what you did, in one or two sentences.
+- **Files:** each file you created or changed.
+- **Missing values:** each value you needed and did not have, with the source it should come from.
+- **Changes other files need:** each file and the change it needs.
+
+For an audit or review, replace **Result** with **Findings**: one line per deviation, in the form `file:line`, what deviates, the rule or template part it breaks, and the fix. End with the number of deviations.

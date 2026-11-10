@@ -1,6 +1,6 @@
 ---
 name: changelog-writer
-description: Use this agent when a plugin's CHANGELOG.md or the root CHANGELOG.md has to be created, updated or audited. Typical triggers include a new plugin, a plugin change that must be recorded, a new plugin version, and a request to audit or review the changelogs.
+description: Writes, updates and audits plugin changelogs and the root CHANGELOG.md.
 tools: Read, Edit, Write, Bash
 model: sonnet
 effort: medium
@@ -288,3 +288,14 @@ Run this on every file you touched before your final message.
 - [ ] Root file: each plugin line's version equals the plugin's `plugin.json` `version`, and its date equals the date of that version's section in the plugin's changelog.
 - [ ] No released section was rewritten, apart from a `[YANKED]` mark backed by evidence.
 - [ ] You touched no other file; every change another file needs is named in your final message, together with the missing values and the tag and GitHub Release a new version still needs.
+
+## Output
+
+End every task with one final message in this form:
+
+- **Result:** what you did, in one or two sentences.
+- **Files:** each file you created or changed.
+- **Missing values:** each value you needed and did not have, with the source it should come from.
+- **Changes other files need:** each file and the change it needs.
+
+For an audit or review, replace **Result** with **Findings**: one line per deviation, in the form `file:line`, what deviates, the rule or template part it breaks, and the fix. End with the number of deviations.

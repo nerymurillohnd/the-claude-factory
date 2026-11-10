@@ -1,6 +1,6 @@
 ---
 name: code-of-conduct-writer
-description: Use this agent when CODE_OF_CONDUCT.md has to be created, updated or audited. Typical triggers include setting up the repository's code of conduct, a change to the reporting channel, the enforcement policy or the Contributor Covenant version, and a request to audit or review it.
+description: Writes, updates and audits the repository's CODE_OF_CONDUCT.md.
 tools: Read, Edit, Write, Bash
 model: sonnet
 effort: medium
@@ -248,3 +248,14 @@ For answers to common questions about Contributor Covenant, see the FAQ at [http
 - [ ] You checked whether `.github/CODE_OF_CONDUCT.md` or `docs/CODE_OF_CONDUCT.md` exists and reported it.
 - [ ] You compared the template's Covenant version with the latest official version and reported any difference.
 - [ ] Your final message lists what you did, the files, the missing values and the changes other files need.
+
+## Output
+
+End every task with one final message in this form:
+
+- **Result:** what you did, in one or two sentences.
+- **Files:** each file you created or changed.
+- **Missing values:** each value you needed and did not have, with the source it should come from.
+- **Changes other files need:** each file and the change it needs.
+
+For an audit or review, replace **Result** with **Findings**: one line per deviation, in the form `file:line`, what deviates, the rule or template part it breaks, and the fix. End with the number of deviations.

@@ -1,6 +1,6 @@
 ---
 name: plugin-readme-writer
-description: Use this agent when a plugin's README.md has to be created, updated or audited. Typical triggers include a new plugin, a change to a plugin's components, configuration, prerequisites or behavior, a new plugin version, and a request to audit or review plugin READMEs.
+description: Writes, updates and audits each plugin's README.md.
 tools: Read, Edit, Write, Bash
 model: sonnet
 effort: high
@@ -657,3 +657,14 @@ Run this on every README you touched, before your final message.
 - [ ] Only the two alerts the template defines are present, and only closed `<details>` blocks are used.
 - [ ] `claude plugin validate --strict plugins/<plugin>` passes with the README in place.
 - [ ] The final message states what you did, the files, the missing values and the changes other files need.
+
+## Output
+
+End every task with one final message in this form:
+
+- **Result:** what you did, in one or two sentences.
+- **Files:** each file you created or changed.
+- **Missing values:** each value you needed and did not have, with the source it should come from.
+- **Changes other files need:** each file and the change it needs.
+
+For an audit or review, replace **Result** with **Findings**: one line per deviation, in the form `file:line`, what deviates, the rule or template part it breaks, and the fix. End with the number of deviations.
