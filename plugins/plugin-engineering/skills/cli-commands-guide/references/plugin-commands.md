@@ -1,6 +1,6 @@
 # `claude plugin` commands
 
-Every `claude plugin <subcommand>` you run from a shell or a script, outside a Claude Code session. Facts come from the CLI reference page (`https://code.claude.com/docs/en/plugins/cli-reference.md`), the `--help` of Claude Code 2.1.319, and the Claude Code changelog through 2.1.319. A line marked "(binary 2.1.319)" or "(changelog X)" is newer than the docs page or absent from it.
+Every `claude plugin <subcommand>` you run from a shell or a script, outside a Claude Code session. Facts come from the CLI reference page (`https://code.claude.com/docs/en/plugins/cli-reference.md`), the `--help` of Claude Code 2.1.319 (every subcommand's `--help` checked again on 2.1.321), and the Claude Code changelog through 2.1.321. A line marked "(binary X)" or "(changelog X)" is newer than the docs page or absent from it. Under each heading, `Official page:` links the matching section of the official docs: read it when a fact here looks outdated, and for anything this file doesn't cover.
 
 ## Contents
 
@@ -16,6 +16,7 @@ Every `claude plugin <subcommand>` you run from a shell or a script, outside a C
 - plugin details
 - plugin configure
 - plugin prune
+- plugin restore-set-aside
 - plugin eval
 - plugin eval init
 - plugin tag
@@ -25,6 +26,8 @@ Every `claude plugin <subcommand>` you run from a shell or a script, outside a C
 
 ## Shared rules
 
+Official page: <https://code.claude.com/docs/en/plugins/cli-reference#claude-plugin-commands>
+
 - `claude plugins` is an alias for `claude plugin`.
 - Exit codes: `0` on success and `1` on failure. `validate` adds `2` for an unexpected error. `eval` adds its own codes (see plugin eval).
 - Plugin arguments: a `<plugin>` is a plugin `name` or `name@marketplace`. When two marketplaces offer the same name, use the qualified form. `configure` takes only the qualified form.
@@ -33,11 +36,13 @@ Every `claude plugin <subcommand>` you run from a shell or a script, outside a C
   - `project`: `.claude/settings.json`, committed, for everyone in the repository. Committing it enables the plugin for collaborators but does not download it: each one still runs `claude plugin install <name>@<marketplace> --scope project`.
   - `local`: `.claude/settings.local.json`, this repository, you only.
   - When the same plugin is set at several scopes, local overrides project, and project overrides user.
-- Aliases (all verified on binary 2.1.319): `init` = `new`; `install` = `i`; `uninstall` = `remove` = `rm` (`rm` is accepted but not shown in `--help`); `prune` = `autoremove`.
+- Aliases (all verified on binary 2.1.319): `init` = `new`; `install` = `i`; `uninstall` = `remove` = `rm` (`rm` is accepted but not shown in `--help`); `prune` = `autoremove`. `restore-set-aside` has none (binary 2.1.321).
 - Usage errors, such as an invalid `--scope`, print no JSON result line and exit `1` with the reason on stderr.
 - Run `claude plugin --help` for the subcommands your version has, and `claude plugin <subcommand> --help` for a subcommand's full option list. The docs tables list only commonly used options.
 
 ## JSON result format
+
+Official page: <https://code.claude.com/docs/en/plugins/cli-reference#plugin-json-result>
 
 Applies to `--json` on `install`, `uninstall`, `update`, `enable` and `disable`.
 
@@ -49,12 +54,16 @@ Applies to `--json` on `install`, `uninstall`, `update`, `enable` and `disable`.
 
 ### Accept a displayed install command (`shownCommand`)
 
+Official page: <https://code.claude.com/docs/en/plugins/cli-reference#accept-a-displayed-install-command>
+
 - When a `--json` run displays a marketplace-declared command (a command-source install, or the `headersHelper` that fetches the archive) and doesn't run it, the `failed` result carries a `shownCommand` object: the command as displayed, the plugin it belongs to, and its `sha256`.
 - Re-run with `--accept-command <sha256>` from your own terminal. Requires Claude Code v2.1.271 or later.
 - The `sha256` counts as acceptance for exactly that command, that plugin and that marketplace catalog. If any of them changed, including a change the run's own marketplace refresh fetches, Claude Code refuses the `sha256` and shows the command again, to be shown to a person again.
 - `shownCommand.acceptCommandMatched: false` means the `sha256` you passed doesn't match the command now displayed. Review that command before re-running with its `sha256`.
 
 ## plugin init
+
+Official page: <https://code.claude.com/docs/en/plugins/cli-reference#plugin-init>
 
 `claude plugin init <name> [options]` (alias `new`). Scaffolds a new plugin at `~/.claude/skills/<name>/`. Unless an administrator blocked skills-directory plugins, it loads in the next session as `<name>@skills-dir` with no install step.
 
@@ -79,6 +88,8 @@ Example: `claude plugin init my-helper --with skills hooks`
 
 ## plugin install
 
+Official page: <https://code.claude.com/docs/en/plugins/cli-reference#plugin-install>
+
 `claude plugin install <plugin> [options]` (alias `i`). Installs a plugin from one of your marketplaces.
 
 Flags:
@@ -102,6 +113,8 @@ Output:
 - You decline a command-source prompt: `Aborted.`, exit `1`.
 - You decline a `headersHelper` prompt, or it can't be confirmed without a TTY: `Aborted — the command was not run.`, exit `1`.
 
+Dependencies: Claude Code also installs and enables the plugin's declared dependencies at the same scope, and the success message lists them (install guide, Plugins with dependencies).
+
 When it loads: the next time Claude Code starts, or after `/reload-plugins` in a running session.
 
 On a new machine where no interactive session has run yet, the official marketplace isn't registered: a script runs `claude plugin marketplace add anthropics/claude-plugins-official` before installing from it.
@@ -111,6 +124,8 @@ Examples:
 - `claude plugin install deploy-helper --marketplace your-org/plugins`
 
 ## plugin uninstall
+
+Official page: <https://code.claude.com/docs/en/plugins/cli-reference#plugin-uninstall>
 
 `claude plugin uninstall <plugin> [options]` (aliases `remove`, `rm`). Removes an installed plugin from one scope.
 
@@ -137,6 +152,8 @@ Auto-installed dependencies stay after an uninstall until `claude plugin prune` 
 
 ## plugin enable
 
+Official page: <https://code.claude.com/docs/en/plugins/cli-reference#plugin-enable>
+
 `claude plugin enable <plugin> [options]`. Enables a disabled plugin. For a plugin synced from claude.ai, pass `<name>@synced`.
 
 Flags:
@@ -161,6 +178,8 @@ A plugin whose manifest sets `defaultEnabled` to off installs but stays off unti
 
 ## plugin disable
 
+Official page: <https://code.claude.com/docs/en/plugins/cli-reference#plugin-disable>
+
 `claude plugin disable [plugin] [options]`. Disables a plugin without uninstalling it. For a synced plugin, pass `<name>@synced`.
 
 Flags:
@@ -181,6 +200,8 @@ Fails for a plugin still required:
 Disabling a synced plugin (`<name>@synced`), here or on the Installed tab, saves `"<name>@synced": false` in your user-level `enabledPlugins`. See Synced plugins below.
 
 ## plugin update
+
+Official page: <https://code.claude.com/docs/en/plugins/cli-reference#plugin-update>
 
 `claude plugin update <plugin> [options]`. Updates a plugin to the latest version its marketplace offers. The new version loads in the next session, or after `/reload-plugins` in a running one. (The binary's help line says "restart required to apply"; the docs page and the install guide state `/reload-plugins` applies it in a running session.)
 
@@ -207,6 +228,8 @@ Output:
 There is no command that updates every plugin at once. `claude plugin marketplace update` with no name refreshes every marketplace's listing but leaves installed plugins at their current versions. To update all plugins from one marketplace, use the Marketplaces tab of `/plugin` → Update marketplace (it skips command-source and `headersHelper` plugins, which are updated one by one).
 
 ## plugin list
+
+Official page: <https://code.claude.com/docs/en/plugins/cli-reference#plugin-list>
 
 `claude plugin list [options]`. Lists installed plugins with version, scope and status.
 
@@ -256,6 +279,8 @@ Built-in plugins (`@builtin`) never appear in `claude plugin list`; they show on
 
 ## plugin details
 
+Official page: <https://code.claude.com/docs/en/plugins/cli-reference#plugin-details>
+
 `claude plugin details <name>`. Shows a plugin's component inventory and projected token cost. No flags beyond `--help`, and no `--json`.
 
 - The plugin must be loaded: installed, found in a skills directory, or passed with `--plugin-dir` or `--plugin-url` before the subcommand in the same command, as in `claude --plugin-dir ./my-plugin plugin details my-plugin`. After the subcommand the flag fails with `error: unknown option '--plugin-dir'`, exit `1` (verified on 2.1.319). `<name>` is a `name` or `name@marketplace`.
@@ -267,6 +292,8 @@ Built-in plugins (`@builtin`) never appear in `claude plugin list`; they show on
 - An ID ending in `@builtin` that isn't found: ``Plugin "<name>@builtin" not found. Built-in plugins don't appear in `claude plugin list`. To see the ones available in a session, run /plugin in Claude Code and open the Installed tab.`` (changelog 2.1.302).
 
 ## plugin configure
+
+Official page: <https://code.claude.com/docs/en/plugins/cli-reference#plugin-configure>
 
 `claude plugin configure <plugin> [options]`. Shows an installed plugin's `userConfig` options and which are set, or saves values piped on stdin. Requires Claude Code v2.1.285 or later.
 
@@ -288,6 +315,8 @@ A bundled MCP server's own settings are set with `claude plugin install --config
 
 ## plugin prune
 
+Official page: <https://code.claude.com/docs/en/plugins/cli-reference#plugin-prune>
+
 `claude plugin prune [options]` (alias `autoremove`). Removes auto-installed dependencies that no installed plugin needs anymore. Never removes a plugin you installed yourself.
 
 Flags:
@@ -302,7 +331,27 @@ Behavior:
 - Non-TTY stdin or stdout, no `-y`: prints the list and ``Not a TTY — run `claude plugin prune -y` to remove.``, removing nothing.
 - Exit `0` whatever you answer at the prompt.
 
+## plugin restore-set-aside
+
+Official page: none. The command is in the `--help` and the changelog of Claude Code 2.1.321, not on the docs page.
+
+`claude plugin restore-set-aside <plugin> [options]`. Gives a plugin id back the options and secrets that Claude Code set aside when a marketplace your organization declares in managed `extraKnownMarketplaces` replaced the source the plugin came from. Requires Claude Code v2.1.321 or later.
+
+Why things are set aside (changelog 2.1.321):
+- A managed take-over from an undeclared source sets the plugin's saved data aside for `cleanupPeriodDays`, and its options and secrets until you run this command.
+- The take-over notice says: `They stay until you choose: claude plugin restore-set-aside <plugin> gives them to the plugin now under that id, and adding --discard deletes them.` (binary 2.1.321).
+
+Flags:
+- `--discard`: delete what is set aside instead of restoring it. It deletes saved options and secrets: confirm with the user first.
+
+Output (binary 2.1.321):
+- Nothing set aside: `No options or secrets are set aside for <plugin>.`, exit `0`. It answers the same for a bare name or an id that doesn't exist (verified on 2.1.321), so this line doesn't prove the id is right: pass the `name@marketplace` id as `claude plugin list` shows it.
+- Restored: a line that starts `Restored the options and secrets set aside for`. Discarded: a line that starts `Discarded the options and secrets set aside for`. Both are message strings in the 2.1.321 binary, not observed in a run.
+- No `/plugin` form: `/plugin restore-set-aside` opens the Discover tab, as any unrecognized word does (verified on 2.1.321).
+
 ## plugin eval
+
+Official page: <https://code.claude.com/docs/en/plugins/cli-reference#plugin-eval>
 
 `claude plugin eval [target] [options]`. Runs a plugin's eval cases and reports scored results. Requires Claude Code v2.1.269 or later. Case format, graders, results and CI usage: `https://code.claude.com/docs/en/plugin-evals.md`.
 
@@ -318,7 +367,7 @@ Target (optional, defaults to the current directory):
 
 Put the target before `--tag`, `--allow-tools` and `--json`. Each of these takes the words that follow it as its value, so a target written after one of them is read as a tag, a tool name or the JSON output path.
 
-Options (full set on binary 2.1.319):
+Options (full set on binary 2.1.321):
 - `--runs <n>`: runs per case in each arm. Default: each case's `runs`, else `3`.
 - `-j, --concurrency <n>`: agent runs at once, `1` to `8`. Default `1`. Each run is a full claude child on your credential; they share one rate limit.
 - `--model <model>`: model for the agent under test. Default: each case's `model`, else `ANTHROPIC_MODEL` if set, else Claude Code's default.
@@ -353,6 +402,8 @@ Exit codes:
 
 ## plugin eval init
 
+Official page: <https://code.claude.com/docs/en/plugins/cli-reference#plugin-eval-init>
+
 `claude plugin eval init [name] [options]`. Creates an eval suite for the plugin in the current directory. Requires Claude Code v2.1.269 or later.
 
 - Run it from the plugin's root folder, the one that holds `.claude-plugin/plugin.json` or the skill's `SKILL.md`. To scaffold elsewhere on purpose, pass `--eval-dir`.
@@ -367,6 +418,8 @@ Options:
 - `--eval-dir <dir>`: directory below the current directory to write cases into. Default: `experimental.evals` from the `plugin.json` in the current directory, else `evals`.
 
 ## plugin tag
+
+Official page: <https://code.claude.com/docs/en/plugins/cli-reference#plugin-tag>
 
 `claude plugin tag [path] [options]`. Creates an annotated git tag named `<name>--v<version>` for a plugin release. Before tagging, it checks that the plugin's `plugin.json` and any marketplace entry that lists it agree on the version.
 
@@ -388,6 +441,8 @@ Example: `claude plugin tag plugins/formatter --dry-run`
 
 ## plugin test
 
+Official page: <https://code.claude.com/docs/en/plugins/cli-reference#plugin-test>
+
 `claude plugin test [dir]`. Runs the tests of a mod (a plugin whose code registers event handlers). Needs no session, sign-in or network.
 
 - `[dir]`: the mod's folder, default the current folder.
@@ -398,6 +453,8 @@ Example: `claude plugin tag plugins/formatter --dry-run`
 Example: `claude plugin test ./first-mod`
 
 ## plugin validate
+
+Official page: <https://code.claude.com/docs/en/plugins/cli-reference#plugin-validate>
 
 `claude plugin validate <path> [options]`. Validates a plugin manifest, a marketplace manifest, or the skills, agents and commands in a directory, with an exit code CI can act on.
 
@@ -453,6 +510,8 @@ Advice on the README (requires v2.1.295 or later):
 Example: `claude plugin validate ./my-plugin --strict`
 
 ## Synced plugins (`@synced`)
+
+Official page: <https://code.claude.com/docs/en/plugins/loading#synced-plugins>
 
 Plugins turned on for a claude.ai account, by the user or by their organization. Source: `https://code.claude.com/docs/en/plugins/loading.md`, "Plugins synced from claude.ai", and the changelog.
 

@@ -1,7 +1,7 @@
 {
   "name": "plugin-engineering",
   "displayName": "Plugin Engineering",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Builds and maintains a public Claude Code plugin marketplace on GitHub from the official docs, distilled for plugins that third parties install: marketplaces, manifests, skills, agents, hooks, mods, MCP servers, settings, validation and releases, checked against the latest release notes. Includes the complete plugin CLI reference: every claude plugin and claude plugin marketplace subcommand, /plugin form and session flag, with exact flags, messages, JSON fields, exit codes and minimum versions.",
   "icon": "./.claude-plugin/icon.png",
   "author": {
