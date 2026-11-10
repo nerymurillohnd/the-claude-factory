@@ -29,6 +29,20 @@ Conventions that apply to the whole project. Each section groups the conventions
   - **Plugin scope:** what each plugin distributes to its users.
 - A rule, tool or file of one scope does not apply to, or become a requirement of, the other.
 
+## Pull requests
+
+- A pull request is opened only at the owner's request. When a change needs one under these rules, Claude asks the owner for permission before opening it.
+- Changes outside `plugins/` need no pull request, unless the owner asks for one.
+- Inside `plugins/`:
+  - A change that creates or edits a plugin's components, dependencies or configuration always goes through a pull request. Skill, agent and command files are components, even though they are Markdown.
+  - A change limited to a plugin's general documentation, which alters neither the plugin's behavior nor what users have installed on their machines, needs no pull request, unless the owner asks for one.
+
+## Evals
+
+- Whether a plugin has evals is the owner's decision. Claude may suggest adding them to a plugin, and says when and why.
+- A plugin with evals runs a reduced smoke suite locally, through the official testing modes.
+- In CI, the full eval suite of a plugin runs the first time, and afterwards only when a plugin that has evals changes in a way that needs a pull request. Every other run skips the eval workflow.
+
 ## Ownership and contributions
 
 - The project is developed and maintained by its owner, Nery, and Claude.
