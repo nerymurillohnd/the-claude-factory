@@ -1,0 +1,14 @@
+{
+  "name": "the-claude-factory-maintainer",
+  "private": true,
+  "description": "Maintainer tooling for The Claude Factory marketplace. Not published.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nerymurillohnd/the-claude-factory.git"
+  },
+  "bugs": {
+    "url": "https://github.com/nerymurillohnd/the-claude-factory/issues"
+  },
+  "homepage": "https://github.com/nerymurillohnd/the-claude-factory#readme"
+}
