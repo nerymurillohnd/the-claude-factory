@@ -12,6 +12,8 @@
   },
   "homepage": "https://github.com/nerymurillohnd/the-claude-factory#readme",
   "devDependencies": {
-    "@biomejs/biome": "2.6.6"
+    "@biomejs/biome": "2.6.6",
+    "typescript": "6.0.3",
+    "typescript-language-server": "6.0.3"
   }
 }
