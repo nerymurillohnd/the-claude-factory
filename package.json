@@ -10,5 +10,8 @@
   "bugs": {
     "url": "https://github.com/nerymurillohnd/the-claude-factory/issues"
   },
-  "homepage": "https://github.com/nerymurillohnd/the-claude-factory#readme"
+  "homepage": "https://github.com/nerymurillohnd/the-claude-factory#readme",
+  "devDependencies": {
+    "@biomejs/biome": "2.6.6"
+  }
 }
