@@ -68,6 +68,11 @@ A form applies only the labels in its top-level `labels:`. A dropdown answer, su
 - **Triage by hand:** the maintainers read the answer and apply the label. Nothing to add.
 - **One form per component:** each form names its component label in `labels:`. Fits two or three components, not more.
 - **A workflow that labels from the form:** a GitHub Actions workflow on `issues: opened` reads the answer under its `### <field label>` heading and adds the label with `gh issue edit "$NUMBER" --add-label "<label>"`. Every label it applies must exist. The workflow runs on untrusted input from any reporter: write it only when the user wants it, and audit it with `github-operations:claude-github-actions` before the pull request.
+- **Triage by Claude:** Claude reads each new issue, body included, and applies the labels that already exist, without commenting. Two ways to run it, both outside this skill:
+  - A GitHub Actions workflow with `anthropics/claude-code-action`, modeled on Anthropic's own `claude-issue-triage.yml` and its `/triage-issue` command in the `anthropics/claude-code` repository. It needs a Claude credential in the repository's secrets. Audit it with `github-operations:claude-github-actions` before it lands.
+  - A cloud scheduled task with a GitHub trigger on issue events, which the user creates in Claude Code on the web. It needs the Claude GitHub App on the repository, and no workflow or secret in the repository.
+
+  Either way, create the labels it applies first, by [labels.md](labels.md).
 
 ## Validate
 
