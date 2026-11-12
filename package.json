@@ -2,15 +2,30 @@
   "name": "the-claude-factory-maintainer",
   "private": true,
   "description": "Maintainer tooling for The Claude Factory marketplace. Not published.",
-  "license": "MIT",
+  "homepage": "https://github.com/nerymurillohnd/the-claude-factory#readme",
+  "bugs": {
+    "url": "https://github.com/nerymurillohnd/the-claude-factory/issues"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/nerymurillohnd/the-claude-factory.git"
   },
-  "bugs": {
-    "url": "https://github.com/nerymurillohnd/the-claude-factory/issues"
+  "license": "MIT",
+  "scripts": {
+    "check": "npm run lint && npm run typecheck && npm run validate",
+    "fix": "biome check --write . && uv run --locked ruff check --fix . && uv run --locked ruff format . && shfmt -w .",
+    "format": "biome format --write . && uv run --locked ruff format . && shfmt -w .",
+    "lint": "npm run lint:js && npm run lint:python && npm run lint:shell && npm run lint:workflows",
+    "lint:js": "biome check --error-on-warnings --max-diagnostics=none .",
+    "lint:python": "uv run --locked ruff check . && uv run --locked ruff format --check .",
+    "lint:shell": "shfmt -f . | xargs shellcheck -S style -a && shfmt -d .",
+    "lint:workflows": "actionlint && uv run --locked zizmor --offline .",
+    "prepare": "git config core.hooksPath .githooks",
+    "typecheck": "npm run typecheck:ts && npm run typecheck:python",
+    "typecheck:python": "uv run --locked basedpyright",
+    "typecheck:ts": "tsc -p tsconfig.json",
+    "validate": "for d in plugins/*/; do claude plugin validate --strict \"$d\" || exit 1; done && claude plugin validate --strict ."
   },
-  "homepage": "https://github.com/nerymurillohnd/the-claude-factory#readme",
   "devDependencies": {
     "@biomejs/biome": "2.6.6",
     "@types/node": "26.6.6",

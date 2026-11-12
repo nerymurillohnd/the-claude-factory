@@ -1,0 +1,4 @@
+#!/bin/sh
+# Runs every maintainer check before a push.
+set -e
+exec npm run check

@@ -1,0 +1,4 @@
+#!/bin/sh
+# Checks the staged files with Biome before each commit.
+set -e
+exec npx --no-install biome check --staged --error-on-warnings --no-errors-on-unmatched --files-ignore-unknown=true
