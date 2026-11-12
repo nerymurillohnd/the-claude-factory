@@ -5,7 +5,7 @@ A CODEOWNERS file names who is asked to review changes to each path. GitHub read
 1. **Find the owners.** Ask the user who owns the repository and each area; never guess them from the commit history.
    - In a repository owned by an organization, name teams (`@<org>/<team>`) or named users; the organization itself (`@<org>`) is not a valid owner.
    - In a personal repository, name the owner (`@<user>`) and any collaborators the user names.
-   - Every owner needs explicit write access to the repository, and a team must be visible. Read the collaborators and their permission with `gh api repos/<owner>/<repo>/collaborators --jq '.[] | {login, role_name}'` when the user cannot confirm it; an owner without write access is silently skipped.
+   - Every owner needs explicit write access to the repository, and a team must be visible. When the user cannot confirm it, read each proposed user's permission with `gh api repos/<owner>/<repo>/collaborators/<user>/permission --jq '{permission, role_name}'`, which counts every grant, teams and organization included: a `permission` of `write` or `admin` can own (GitHub reports the maintain role as `write`). A team's access is on `gh api orgs/<org>/teams/<team>/repos/<owner>/<repo>`, or ask the user. An owner without write access is silently skipped.
 2. **Write the rules.** One line per path pattern, then its owners on the same line, separated by spaces:
 
    ```text
