@@ -45,6 +45,9 @@ Conventions that apply to the whole project. Each section groups the conventions
   - **Maintainer scope:** the development, creation, publishing and upkeep of the project itself.
   - **Plugin scope:** what each plugin distributes to its users.
 - A rule, tool or file of one scope does not apply to, or become a requirement of, the other.
+- Each scope is checked where it belongs:
+  - **Maintainer scope:** the tools, scripts, configuration and workflows that maintain the project are checked in CI and locally.
+  - **Plugin scope:** each plugin's code and behavior are checked locally, with the plugin's own testing methods, in isolated environments that do not depend on the maintainer's tools or versions. In CI, only the evals run, as the Evals section states.
 
 ## Pull requests
 
