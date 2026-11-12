@@ -31,12 +31,12 @@ GitHub Operations is a set of skills, commands and agents for the GitHub work ar
 
 ## ✨ Why use it
 
-- **A pull request that finishes itself** — three agents share the work: one watches CI and reviews and finds each failure's root cause, one fixes the failures and review findings in your clone and commits them, and one verifies every fix, answers the review threads and resolves the ones bots opened. Claude checks each report against its evidence before acting on it.
+- **A pull request that finishes itself** — three agents share the work: one watches CI and reviews and finds each failure's root cause, one fixes the failures and review findings in your clone and commits them, and one verifies every fix, answers the review threads and resolves the ones bots opened. Claude checks each report against its evidence before acting on it. Where GitHub's GraphQL API is blocked, such as Claude Code on the web, the same loop runs through the GitHub MCP server and REST.
 - **You hold every push and the merge** — after each round of fixes, Claude shows you what failed, what changed and how it was checked, then asks: push, push without asking again on this pull request, or don't push. The merge waits for your approval of that exact pull request at that exact commit.
 - **Reports you can act on** — failed jobs with the failing step, the first error and its root cause, whether the same job fails on the base branch, workflow runs that failed or whose jobs never started, whether the branch still merges into your base branch as it is now, required checks, warnings, review threads with their links, breaking changes and secrets in the diff, and Dependabot alerts.
 - **Templates written for your repository** — PR templates, issue and discussion forms, labels, Dependabot and `CODEOWNERS` are written from reference models but with your components, versions, environments, commands and labels. Your own files always win: Claude proposes changes to them and never overwrites them.
 - **Nothing valuable gets lost in a cleanup** — the audit compares your clone with GitHub branch by branch and commit by commit, and covers worktrees, stashes, history, lost commits, pull requests, workflows, Dependabot, forks and every link outside the repository. You approve the recommendations, then the exact actions. A backup comes first, and Claude proves it restores before it changes anything.
-- **Workflows that run Claude, checked against the action's real behavior** — Claude matches a failed or silent claude-code-action step against fourteen known failure patterns, and audits workflow files for shell injection, excess permissions, unpinned actions, unsafe `pull_request_target` designs and claude-code-action misconfiguration, with the exact patch for each finding. Action versions and model IDs are looked up when they are written, never copied from examples, which lag behind.
+- **Workflows that run Claude, checked against the action's real behavior** — Claude matches a failed or silent claude-code-action step against seventeen known failure patterns, repairs failing CI on the default branch, including runs that hang past their `timeout-minutes` or GitHub's runner limits, and audits workflow files for shell injection, excess permissions, unpinned actions, unsafe `pull_request_target` designs and claude-code-action misconfiguration, with the exact patch for each finding. Action versions and model IDs are looked up when they are written, never copied from examples, which lag behind.
 - **Each skill knows its place** — the PR lifecycle, the repository setup, the cleanup and the Actions work are separate skills. When you ask one for another's job, it hands you to the right one.
 - **Works with GitHub's own MCP server** — add GitHub's official remote MCP server once, to Claude Code as [Prerequisites](#-github-mcp-server-recommended) shows or to Claude as a [custom connector](#in-claude), and Claude reads GitHub through its structured tools; without it, Claude Code does the same work through `gh`. `git` and `gh` handle what touches your clone.
 
@@ -46,8 +46,8 @@ GitHub Operations is a set of skills, commands and agents for the GitHub work ar
 | :--------- | :-------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | :----------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 🎯 Skill    | `github-operations:auto-pr-lifecycle`               | Takes a pull request from its current stage to merge with three agents, asking you before every push and before the merge                                                                                                                               | `/github-operations:auto-pr-lifecycle`, or when you ask to open, babysit, fix or merge a pull request                                                  |
 | 🎯 Skill    | `github-operations:cleanup-and-debug`               | Audits a repository local and remote, plans the cleanup and debugging you approve, and runs it behind a verified backup                                                                                                                                 | `/github-operations:cleanup-and-debug`, or when you ask to audit or clean up a repository. It asks before it starts                                    |
-| 🎯 Skill    | `github-operations:github-files-setup`              | Writes a repository's PR templates, issue and discussion forms, labels, Dependabot and `CODEOWNERS`, adapted to it; sets its merge message and, with approval, its merge methods; and lands the files through a pull request                            | `/github-operations:github-files-setup`, or when you ask to set up templates, forms or labels                                                          |
-| 🎯 Skill    | `github-operations:claude-github-actions`           | Diagnoses a Claude step in GitHub Actions that failed, did nothing or posted nothing; audits and hardens workflow files with an exact patch per finding; and repairs failing CI on the default branch, asking before any rerun, workflow change or push | `/github-operations:claude-github-actions`, or when you ask why a Claude workflow did nothing, to audit a workflow, or to fix CI on the default branch |
+| 🎯 Skill    | `github-operations:github-files-setup`              | Writes a repository's PR templates, issue and discussion forms, labels, Dependabot and `CODEOWNERS`, adapted to it; sets its merge message and, with approval, its merge methods; lands the files through a pull request, and, only if you accept, leaves the repository its own copy of its two checks | `/github-operations:github-files-setup`, or when you ask to set up templates, forms or labels                                                          |
+| 🎯 Skill    | `github-operations:claude-github-actions`           | Diagnoses a Claude step in GitHub Actions that failed, did nothing or posted nothing; audits and hardens workflow files with an exact patch per finding; and repairs failing or hung CI on the default branch, asking before any rerun, workflow change or push | `/github-operations:claude-github-actions`, or when you ask why a Claude workflow did nothing, to audit a workflow, or to fix CI on the default branch |
 | ⌨️ Command | `/github-operations:init-pr-lifecycle`              | Picks up the current pull request at the stage it is in and runs the PR lifecycle from there                                                                                                                                                            | You type it                                                                                                                                            |
 | ⌨️ Command | `/github-operations:init-cleanup-and-debug`         | Picks up a repository at its cleanup stage (not audited, audited, planned, approved, executed) and runs from there                                                                                                                                      | You type it                                                                                                                                            |
 | 🤖 Agent    | `github-operations:pr-lifecycle:pr-tracker`         | Waits for a pull request's checks, then reports failures and their root cause, review threads, breaking changes, secrets in the diff, warnings and Dependabot alerts                                                                                    | Launched by the PR lifecycle after a pull request opens and after every push                                                                           |
@@ -64,11 +64,13 @@ GitHub Operations is a set of skills, commands and agents for the GitHub work ar
 | GitHub CLI (`gh`), signed in                                                          | —               | `gh auth status`                                   |
 | GitHub MCP server, recommended                                                        | —               | `claude mcp get github`                            |
 | Python 3, on your `PATH` as `python3`, only to run the repository setup's two scripts | 3.12            | `python3 --version`                                |
-| `ruamel.yaml` and `check-jsonschema`, optional, only for the setup's form check       | 0.19.1, 0.39.0  | `python3 -m pip show ruamel.yaml check-jsonschema` |
+| `ruamel.yaml` and `check-jsonschema`, optional, only for the setup's form check, in a virtual environment | 0.19.1, 0.39.0  | `<dir>/bin/python3 -m pip show ruamel.yaml check-jsonschema` |
 
 Claude Code 2.1.314 or later is required.
 
-`gh` creates and merges pull requests, reads run logs, creates and updates labels, changes merge settings and is the fallback when a GitHub MCP tool is missing. The GitHub MCP server is optional: the plugin doesn't install it, and works through `gh` without it. Without `gh`, the repository setup reads GitHub and creates labels through the GitHub MCP server, but changing merge settings needs `gh` or your own change in GitHub's settings. `python3` runs the repository setup's two scripts: the label comparison and the check of forms and the Dependabot file. The two Python packages are optional: the form check needs them in the Python that runs it, and without them Claude checks the forms by reading them instead.
+`gh` reads run logs, creates and updates labels, changes merge settings and is the fallback when a GitHub MCP tool is missing. The GitHub MCP server is optional: the plugin doesn't install it, and works through `gh` without it. Without `gh`, the repository setup reads GitHub and creates labels through the GitHub MCP server, but changing merge settings needs `gh` or your own change in GitHub's settings. Where GitHub's GraphQL API is blocked, such as Claude Code on the web, the PR lifecycle merges through the GitHub MCP server or GitHub's REST API instead of `gh pr merge`.
+
+`python3` runs the repository setup's two scripts: `labels-sync.py`, the label comparison, which needs Python 3.12 or later and `gh`, and `check-forms.py`, the check of forms and the Dependabot file. The two Python packages are needed only for the form check, in the Python that runs it. Without them, or with an older Python, Claude checks the files by hand against the plugin's [form rules](./skills/github-files-setup/references/form-rules.md) and the setup continues.
 
 ### 🤖 Claude Code
 
@@ -340,7 +342,7 @@ With the commands above, the server offers **every toolset** (`X-MCP-Toolsets: a
 
 ### 🐍 Python 3.12 or later
 
-Needed only when Claude runs the repository setup's scripts: the label comparison and the form check. Any Python 3.12 or later works, from any installer. Each script checks the version and stops with a message on an older Python. Your system may already have it:
+Needed only when Claude runs the repository setup's scripts: the label comparison and the form check. Any Python 3.12 or later works, from any installer. Each script checks the version and stops with a message on an older Python; the setup then checks the files by hand, or follows the GitHub MCP route for labels. Your system may already have it:
 
 ```bash
 python3 --version
@@ -375,16 +377,31 @@ sudo dnf install python3
 
 ### 🧪 ruamel.yaml and check-jsonschema
 
-Optional. The setup's form check, `check-forms.py`, needs `ruamel.yaml` 0.19.1 and `check-jsonschema` 0.39.0 installed in the Python that runs it, `python3`. Without them it stops with the install command, and Claude checks the forms by reading them instead. The script never installs anything. Many Linux systems refuse a system-wide `pip install` (PEP 668), so install them in a virtual environment, and make that environment's `python3` the one Claude Code runs.
+Optional, and only for the form check. `check-forms.py` needs `ruamel.yaml` 0.19.1 and `check-jsonschema` 0.39.0 installed in the Python that runs it. Without them, or with a Python older than 3.12, it stops and checks nothing: Claude then checks your files by hand against the plugin's [form rules](./skills/github-files-setup/references/form-rules.md), and the setup continues. The script never installs anything.
+
+Many systems' own Python refuses `pip install` into it (PEP 668), which is why you install the packages in a virtual environment. Pick any folder outside your repository; this example uses `~/.venvs/github-files-setup`.
 
 <details>
-<summary>📦 <b>pip</b> — macOS, Linux</summary>
+<summary>📦 <b>venv and pip</b> — macOS, Linux</summary>
 
 ```bash
-python3 -m pip install 'ruamel.yaml==0.19.1' 'check-jsonschema==0.39.0'
+python3 -m venv ~/.venvs/github-files-setup
+~/.venvs/github-files-setup/bin/python3 -m pip install 'ruamel.yaml==0.19.1' 'check-jsonschema==0.39.0'
 ```
 
 </details>
+
+Then tell Claude to run the checks with that Python, for example:
+
+```text
+Run the form checks with ~/.venvs/github-files-setup/bin/python3.
+```
+
+Check it:
+
+```bash
+~/.venvs/github-files-setup/bin/python3 -m pip show ruamel.yaml check-jsonschema
+```
 
 ## 📥 Installation
 
@@ -458,7 +475,11 @@ Asking only to commit, or to commit and push, never opens a pull request.
 /github-operations:github-files-setup
 ```
 
-You can also say "add issue templates", "set up PR templates", "sync the labels" or "add Dependabot". **Result:** Claude reads your repository first (its README, contribution guide, manifests, CI, labels and recent issues and pull requests), then shows you which files it would write and why. After you agree, it writes them for your repository: dropdowns with your components and versions, PR checklists with your real test and lint commands, labels in your naming style, a Dependabot entry for each package ecosystem it finds, a `CODEOWNERS` file that names only owners you confirm, and, only after you approve each change, its merge message setting, which follows your repository's commit-title convention, and which merge methods it allows. It checks every form and the Dependabot file until they pass, asks before it creates or updates a label or changes a repository setting, never deletes a label, commits the whole setup on one branch and, after you approve the push, opens one pull request. When you decline the push, the branch stays committed and no pull request is opened. It doesn't write `CONTRIBUTING`, `SECURITY`, `SUPPORT`, code of conduct or README files. It writes on the branch you are on when that is not the default branch, and creates a new branch only when you are on the default branch. It reads and writes GitHub through the GitHub MCP server first, then through `gh api` REST, so it also works where GitHub's GraphQL API is blocked or `gh` is missing, except for merge settings, which need `gh` or your own change in GitHub's settings. Files your repository already has are never overwritten: Claude shows you the change as a diff and asks.
+You can also say "add issue templates", "set up PR templates", "sync the labels" or "add Dependabot". **Result:** Claude reads your repository first (its README, contribution guide, manifests, CI, labels and recent issues and pull requests), then shows you which files it would write and why. After you agree, it writes them for your repository: dropdowns with your components and versions, PR checklists with your real test and lint commands, labels in your naming style, a Dependabot entry for each package ecosystem it finds, a `CODEOWNERS` file that names only owners you confirm, and, only after you approve each change, its merge message setting, which follows your repository's commit-title convention, and which merge methods it allows. It checks every form and the Dependabot file until they pass, with `check-forms.py` when it can run and by hand when it can't (see [ruamel.yaml and check-jsonschema](#-ruamelyaml-and-check-jsonschema)), asks before it creates or updates a label or changes a repository setting, never deletes a label, commits the whole setup on one branch and, after you approve the push, opens one pull request. When you decline the push, the branch stays committed and no pull request is opened. It doesn't write `CONTRIBUTING`, `SECURITY`, `SUPPORT`, code of conduct or README files. It writes on the branch you are on when that is not the default branch, and creates a new branch only when you are on the default branch. It reads and writes GitHub through the GitHub MCP server first, then through `gh api` REST, so it also works where GitHub's GraphQL API is blocked or `gh` is missing, except for merge settings, which need `gh` or your own change in GitHub's settings. Files your repository already has are never overwritten: Claude shows you the change as a diff and asks.
+
+Labels compare the way GitHub does: `Bug` and `bug` are one label, and a change of case is reported as a difference. A label you leave without a color or description keeps the repository's value, and a label the repository archived is reported, because nobody can pick it until you unarchive it.
+
+When your repository will keep editing these files, Claude can also offer to leave it its own copy of the two checks, so its maintainers can validate a form or sync labels without this plugin. Only if you accept, it copies `check-forms.py` and `labels-sync.py` unchanged into `.github/scripts/` (or the folder where the repository keeps its tooling), writes the label list as `.github/labels.json`, adds a README for maintainers next to the scripts, and declares the two pinned packages where the repository declares its development tools. It installs nothing without your approval. The copies are a snapshot of the plugin version you used: later fixes don't reach them.
 
 ### Audit and clean up a repository
 
@@ -499,9 +520,9 @@ Or _"Audit our workflows"_ or _"CI on main is broken"_. **Result:** Claude reads
 
 - **Hooks:** none.
 - **MCP servers:** none. When you add GitHub's remote server yourself, as [GitHub MCP server](#-github-mcp-server-recommended) shows, the skills and agents use its tools.
-- **Commands it runs:** `git` and `gh` in your repository, through Claude Code's Bash tool, so your permission settings and prompts apply, except for the two script runs named below. The repository setup also runs two scripts with `python3`. `labels-sync.py` takes `--dry-run` or `--apply`, never both. `--dry-run` compares your labels with a list through `gh api` (REST), or from a saved GitHub MCP `list_label` output, and changes nothing. `--apply` creates the missing labels and updates the different ones through `gh api`, for the labels you approved. It never deletes or renames a label and uses only Python's standard library. `check-forms.py` checks issue forms, discussion forms and `dependabot.yml` with `ruamel.yaml` and `check-jsonschema`, which must be installed in your Python; it installs nothing and stops with the `pip` command when they are missing. Both scripts exit 0 when they ran, with a summary, and 2 when they couldn't run. The skill pre-approves only `check-forms.py` and `labels-sync.py --dry-run`, and only in the turn that starts the skill, so Claude Code doesn't ask before those runs; later runs may ask, and you can allow them for the session. `labels-sync.py --apply` isn't pre-approved: it asks.
-- **Network:** `git` and `gh` reach GitHub and your remotes. The GitHub MCP server you add yourself sends your requests and token to `api.githubcopilot.com`. `labels-sync.py` calls GitHub's REST API through `gh`; it sends nothing else. `check-forms.py` sends nothing. `pip` contacts PyPI only when you install `ruamel.yaml` and `check-jsonschema` yourself.
-- **Files written:** the PR lifecycle writes only your own commits, in your clone. The repository setup writes its files on the branch you are on when it isn't the default branch, and on a new branch when you are on the default branch; it never writes on the default branch. The cleanup writes a backup bundle and its working notes to folders outside your repository; it tells you where the backup is and asks whether to keep it.
+- **Commands it runs:** `git` and `gh` in your repository, through Claude Code's Bash tool, so your permission settings and prompts apply. The repository setup also runs two scripts with `python3` (or the Python of your virtual environment, when you name it), and Claude Code asks permission for them like any command: you can allow them for the session. `labels-sync.py` takes `--dry-run` or `--apply`, never both. `--dry-run` compares your labels with a list through `gh api` (REST), or from a saved GitHub MCP `list_label` output, and changes nothing. `--apply` creates the missing labels and updates the different ones through `gh api`, for the labels you approved. It never deletes a label, renames one only to change its case, and uses only Python's standard library. `check-forms.py` checks issue forms, discussion forms and `dependabot.yml` with `ruamel.yaml` and `check-jsonschema`, which must be installed in your Python; it installs nothing and, when they are missing, stops with the `pip` command. Both scripts exit 0 when they ran, with a summary, and 2 when they couldn't run. When you accept the repository tooling, the setup also runs one `mkdir -p` and `cp` to copy the two scripts into your repository; it declares the two packages with the tool your repository already uses (for a `uv.lock` repository, `uv add --dev`) only with your approval. For merging, the PR lifecycle uses the GitHub MCP server's `merge_pull_request` or `gh api` REST at the approved head SHA first, and `gh pr merge` last.
+- **Network:** `git` and `gh` reach GitHub and your remotes. The GitHub MCP server you add yourself sends your requests and token to `api.githubcopilot.com`. `labels-sync.py` calls GitHub's REST API through `gh`; it sends nothing else. `check-forms.py` sends nothing. `pip` (or `uv`) contacts PyPI only when you install `ruamel.yaml` and `check-jsonschema` yourself or approve the setup declaring them.
+- **Files written:** the PR lifecycle writes only your own commits, in your clone. The repository setup writes its files on the branch you are on when it isn't the default branch, and on a new branch when you are on the default branch; it never writes on the default branch. The cleanup writes a backup bundle and its working notes to folders outside your repository; it tells you where the backup is and asks whether to keep it. Only if you accept the repository tooling, the setup also writes into your repository the two scripts (`.github/scripts/` or your tooling folder), `.github/labels.json` (or your existing label file), a README next to the scripts, and the two pinned packages in the file where your repository declares development tools (a new `requirements.txt` next to the scripts when it has none).
 - **Privacy:** the author collects no data. The marketplace's [privacy policy](https://github.com/nerymurillohnd/the-claude-factory/blob/main/PRIVACY.md) covers this plugin and the outside services it can reach.
 
 ### The agents' limits
@@ -564,7 +585,9 @@ Update git, `gh` and Python the way you installed them, for example with Homebre
 brew upgrade git gh python
 ```
 
-The form check's packages are pinned to the versions the Prerequisites table lists. When an update changes them, run the pip command from [ruamel.yaml and check-jsonschema](#-ruamelyaml-and-check-jsonschema) again, in the environment where you installed them.
+The form check's packages are pinned to the versions the Prerequisites table lists. When an update changes them, run the `pip install` command from [ruamel.yaml and check-jsonschema](#-ruamelyaml-and-check-jsonschema) again with your virtual environment's Python.
+
+The copy of the checks that the setup left in a repository doesn't update with the plugin. To refresh it, run the repository setup again from the newer plugin version; it replaces the copies after showing you a diff.
 
 ## 🗑️ Uninstalling
 
@@ -578,7 +601,7 @@ Installed with `--scope project`:
 claude plugin uninstall github-operations@the-claude-factory --scope project
 ```
 
-Uninstalling from the last scope it's installed at also deletes its saved options and data directory, unless you add `--keep-data`. The plugin keeps nothing in its data directory. A cleanup backup you chose to keep stays where Claude told you it is, and git, `gh`, Python and the form check's packages stay installed. The GitHub MCP server you added stays too; remove it, then delete the token on GitHub:
+Uninstalling from the last scope it's installed at also deletes its saved options and data directory, unless you add `--keep-data`. The plugin keeps nothing in its data directory. A cleanup backup you chose to keep stays where Claude told you it is, and git, `gh`, Python and the form check's packages stay installed. Files the repository setup wrote into your repositories, including the copies of the checks, stay there; delete them yourself. The GitHub MCP server you added stays too; remove it, then delete the token on GitHub:
 
 ```bash
 claude mcp remove --scope user github
@@ -645,7 +668,7 @@ Look at the message, then fix the server. Until you do, the agents have no GitHu
 <details>
 <summary><b>GitHub answers "GraphQL is not available", or <code>gh</code> is missing.</b></summary>
 
-Some environments block GitHub's GraphQL API and answer `HTTP 403: GitHub GraphQL is not available`. That 403 is a blocked route, not a missing permission. The repository setup, the PR agents and the cleanup then read GitHub through the GitHub MCP server or `gh api` REST paths instead. A fact with no REST route, such as a pull request's review decision, is reported as out of reach with the errors, never as empty. Without `gh`, the setup still reads GitHub and creates labels through the GitHub MCP server. Merge settings are the exception: no MCP tool changes them, so the setup needs `gh`, or you change them yourself in **Settings** → **General** → **Pull Requests** on GitHub.
+Some environments block GitHub's GraphQL API and answer `HTTP 403: GitHub GraphQL is not available`. That 403 is a blocked route, not a missing permission. The repository setup, the PR agents and the cleanup then read GitHub through the GitHub MCP server or `gh api` REST paths instead. The PR lifecycle merges through the GitHub MCP server or REST at the approved head SHA, reads, classifies and resolves review threads without GraphQL, and waits for checks through the head's workflow runs. A fact with no REST route, such as a pull request's review decision, is reported as out of reach with the errors, never as empty. Without `gh`, the setup still reads GitHub and creates labels through the GitHub MCP server. Merge settings are the exception: no MCP tool changes them, so the setup needs `gh`, or you change them yourself in **Settings** → **General** → **Pull Requests** on GitHub.
 
 </details>
 
@@ -673,7 +696,21 @@ The PR tracker waits for the checks to finish, for up to 30 minutes or the limit
 <details>
 <summary><b>Will the setup overwrite my existing templates or labels?</b></summary>
 
-No. When your repository already has a file of a kind, Claude shows you what it would change as a diff and asks. It creates or updates a label, or changes a repository setting, only after you approve that change. It never deletes or renames a label, and leaves labels the repository has and the list lacks as they are unless you ask.
+No. When your repository already has a file of a kind, Claude shows you what it would change as a diff and asks. It creates or updates a label, or changes a repository setting, only after you approve that change. It never deletes a label, renames one only to change its case, and leaves labels the repository has and the list lacks as they are unless you ask. Names compare without case, a label you leave without a color or description keeps the repository's value, and archived labels are reported.
+
+</details>
+
+<details>
+<summary><b>Claude says it couldn't run the form check.</b></summary>
+
+`check-forms.py` needs Python 3.12 or later with `ruamel.yaml` and `check-jsonschema` installed. When it can't run, Claude checks your files by hand against the plugin's [form rules](./skills/github-files-setup/references/form-rules.md), records the check as not run with the reason, and the setup continues. To get the script check, follow [ruamel.yaml and check-jsonschema](#-ruamelyaml-and-check-jsonschema).
+
+</details>
+
+<details>
+<summary><b>Claude asks permission before running the checks.</b></summary>
+
+That is expected: `check-forms.py` and `labels-sync.py` ask like any command. Allow them for the session if you don't want to be asked again.
 
 </details>
 
