@@ -6,6 +6,35 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+### Added
+
+- A `labels-sync.py` script for the `github-files-setup` skill. It compares the repository's labels with a label list through REST, or through the GitHub MCP server's `list_label` output with `--current`. With `--apply`, it creates the missing labels and updates the ones that differ. It never deletes or renames a label. The skill no longer only reports label differences: it can apply the labels you approve.
+- `check-forms.py` catches more of GitHub's form rules: similar or blocked field labels (for example "password"), "n/a" as a dropdown default, form names of 3 characters or fewer that GitHub hides, and unreplaced placeholders such as `<OWNER>`. It also checks `dependabot.yml` with `--kind dependabot`.
+- A `CODEOWNERS` reference for `github-files-setup`: valid owners (teams, or users with write access, never an organization), rule order, the 3 MB limit, self-protection, and checking for errors after the merge.
+
+### Changed
+
+- Scripts run as `python3 <script>` on any Python 3.12 or later, whoever installed it. `check-forms.py` no longer needs uv through its shebang. When `ruamel.yaml` or `check-jsonschema` is missing, it reruns itself through uv if uv is installed. Otherwise it stops and prints the exact install command. It never installs packages into your Python. Both scripts stop with a clear message on a Python older than 3.12.
+- The `github-files-setup` skill keeps the branch you are on when it is not the default branch, instead of always creating a new branch.
+- Dependabot guidance follows GitHub's current options: both `dependabot.yml` and `.yaml`, cooldown (3 days by default for version updates since 2026-07-14), groups, multi-ecosystem groups, the uv ecosystem and the full ecosystem list. The Dependabot model now adds a cooldown and a group.
+- The merge message setting reads the repository's commit-title convention first. It offers all four squash options and the merge-commit options with their trade-offs, including that "title and description" copies the whole PR template into history. It no longer assumes Conventional Commits.
+- Issue form guidance explains that a dropdown answer applies no label, and gives three ways to label by component. It also covers issue types, projects, upload fields, dropdown defaults, `min_length`, ids that stay stable for prefill, and chooser order. It links only to features that are on (private vulnerability reporting, Discussions).
+- The PR template models no longer assume CI: the checks line follows where the repository's checks run (CI, local or both).
+- While the `github-files-setup` skill is active, Claude Code runs `check-forms.py` without a permission prompt, because the skill pre-approves it through `allowed-tools`. The check is read-only. `labels-sync.py` can write labels with `--apply`, so it still asks.
+
+### Removed
+
+- The `labels-diff.py` script, replaced by `labels-sync.py`. Only the skill ran it, so nothing changes for you.
+
+### Fixed
+
+- `github-files-setup` works where `gh` is missing or GitHub's GraphQL API is blocked, for example in Claude Code on the web, where GitHub answers HTTP 403 "GitHub GraphQL is not available". It reads and writes GitHub through the GitHub MCP server first, then through `gh api` REST, and says what to change in GitHub's settings when neither works. The new `skills/github-files-setup/references/github-access.md` holds the steps.
+- `pr-fixer`, `pr-tracker` and `pr-finalizer`, and the `cleanup-and-debug` skill with its `health-diagnostics` agent, read through REST when GraphQL is blocked, instead of reporting a missing permission.
+- `github-files-setup` creates labels after it writes every other file, so the labels named by Dependabot and the PR templates are created too.
+- `github-files-setup` no longer writes `* @<owner>` to `CODEOWNERS`, which is invalid for an organization-owned repository. It writes only valid owners.
+- `check-forms.py` no longer flags the documented `min_length` key.
+- The Idea issue form model linked to `feature-request.yml`, a file that does not exist. It now links to `feature_request.yml`. Links that hard-coded `main` no longer do.
+
 ## [0.7.3] - 2026-11-09
 
 ### Fixed

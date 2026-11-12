@@ -63,12 +63,12 @@ GitHub Operations is a set of skills, commands and agents for the GitHub work ar
 | git, on your `PATH` (on Windows, Git for Windows)                                                 | —               | `git --version`         |
 | GitHub CLI (`gh`), signed in                                                                      | —               | `gh auth status`        |
 | GitHub MCP server, recommended                                                                    | —               | `claude mcp get github` |
-| Python 3, on your `PATH` as `python3`, only to compare labels when setting up a repository        | 3.12            | `python3 --version`     |
-| uv, only to check issue forms, discussion forms and Dependabot files when setting up a repository | —               | `uv --version`          |
+| Python 3, on your `PATH` as `python3`, only to run the repository setup's two scripts             | 3.12            | `python3 --version`     |
+| uv, optional, only to give the setup's form check its packages when your Python lacks them        | —               | `uv --version`          |
 
 Claude Code 2.1.314 or later is required.
 
-`gh` creates and merges pull requests, reads run logs, creates labels and is the fallback when a GitHub MCP tool is missing. The GitHub MCP server is optional: the plugin doesn't install it, and works through `gh` without it. `python3` runs the label comparison of the repository setup. uv runs the form and Dependabot checks of the same setup.
+`gh` creates and merges pull requests, reads run logs, creates and updates labels, changes merge settings and is the fallback when a GitHub MCP tool is missing. The GitHub MCP server is optional: the plugin doesn't install it, and works through `gh` without it. Without `gh`, the repository setup reads GitHub and creates labels through the GitHub MCP server, but changing merge settings needs `gh` or your own change in GitHub's settings. `python3` runs the repository setup's two scripts: the label comparison and the check of forms and the Dependabot file. uv is optional: when your Python lacks the packages the form check needs, uv fetches them; without uv, Claude checks the forms by reading them.
 
 ### 🤖 Claude Code
 
@@ -356,7 +356,7 @@ With the commands above, the server offers **every toolset** (`X-MCP-Toolsets: a
 
 ### 🐍 Python 3.12 or later
 
-Needed only when Claude compares your repository's labels during a setup. Your system may already have it:
+Needed only when Claude runs the repository setup's scripts: the label comparison and the form check. Any Python 3.12 or later works, from any installer. Each script checks the version and stops with a message on an older Python. Your system may already have it:
 
 ```bash
 python3 --version
@@ -399,7 +399,7 @@ uv python install --default
 
 ### ⚡ uv
 
-Needed only when Claude checks issue forms, discussion forms or a Dependabot file during a setup. See [installing uv](https://docs.astral.sh/uv/getting-started/installation/).
+Optional. The form check needs the packages `ruamel.yaml` 0.19.1 and `check-jsonschema` 0.39.0. When your Python lacks them and uv is installed, the check runs itself again through uv, which fetches those versions into its cache. Without uv, it stops and prints the install command, and Claude checks the forms by reading them instead. It never installs anything into your Python. See [installing uv](https://docs.astral.sh/uv/getting-started/installation/).
 
 <details>
 <summary>🍺 <b>Homebrew</b> — macOS, Linux</summary>
@@ -490,7 +490,7 @@ Asking only to commit, or to commit and push, never opens a pull request.
 /github-operations:github-files-setup
 ```
 
-You can also say "add issue templates", "set up PR templates", "sync the labels" or "add Dependabot". **Result:** Claude reads your repository first (its README, contribution guide, manifests, CI, labels and recent issues and pull requests), then shows you which files it would write and why. After you agree, it writes them for your repository: dropdowns with your components and versions, PR checklists with your real test and lint commands, labels in your naming style, and a Dependabot entry for each package ecosystem it finds. It checks every form until it passes, asks before it creates a label or changes a repository setting, and opens one pull request with the whole setup. Files your repository already has are never overwritten: Claude shows you the change as a diff and asks.
+You can also say "add issue templates", "set up PR templates", "sync the labels" or "add Dependabot". **Result:** Claude reads your repository first (its README, contribution guide, manifests, CI, labels and recent issues and pull requests), then shows you which files it would write and why. After you agree, it writes them for your repository: dropdowns with your components and versions, PR checklists with your real test and lint commands, labels in your naming style, and a Dependabot entry for each package ecosystem it finds. It checks every form and the Dependabot file until they pass, asks before it creates or updates a label or changes a repository setting, never deletes a label, and opens one pull request with the whole setup. It writes on the branch you are on when that is not the default branch, and creates a new branch only when you are on the default branch. It reads and writes GitHub through the GitHub MCP server first, then through `gh api` REST, so it also works where GitHub's GraphQL API is blocked or `gh` is missing, except for merge settings, which need `gh` or your own change in GitHub's settings. Files your repository already has are never overwritten: Claude shows you the change as a diff and asks.
 
 ### Audit and clean up a repository
 
@@ -531,9 +531,9 @@ Or _"Audit our workflows"_ or _"CI on main is broken"_. **Result:** Claude reads
 
 - **Hooks:** none.
 - **MCP servers:** none. When you add GitHub's remote server yourself, as [GitHub MCP server](#-github-mcp-server-recommended) shows, the skills and agents use its tools.
-- **Commands it runs:** `git` and `gh` in your repository, through Claude Code's Bash tool, so your permission settings and prompts apply to each one. The repository setup also runs its two scripts: a label comparison with `python3`, and a form check through `uv`.
-- **Network:** `git` and `gh` reach GitHub and your remotes. The GitHub MCP server you add yourself sends your requests and token to `api.githubcopilot.com`. The form and Dependabot checks run through `uv`, which downloads `check-jsonschema` 0.39.0 and `ruamel.yaml` 0.19.1, pinned exactly, from PyPI on their first run.
-- **Files written:** the PR lifecycle writes only your own commits, in your clone. The repository setup writes its files on a new branch of your repository. The cleanup writes a backup bundle and its working notes to folders outside your repository; it tells you where the backup is and asks whether to keep it.
+- **Commands it runs:** `git` and `gh` in your repository, through Claude Code's Bash tool, so your permission settings and prompts apply, except for the one script named below. The repository setup also runs two scripts with `python3`. `labels-sync.py` compares your labels with a list through `gh api` (REST), or from a saved GitHub MCP `list_label` output, and, only with `--apply` for the labels you approved, creates the missing ones and updates the different ones through `gh api`. It never deletes or renames a label and uses only Python's standard library. `check-forms.py` checks issue forms, discussion forms and `dependabot.yml`; when your Python lacks `ruamel.yaml` and `check-jsonschema` and uv is installed, it runs itself again through `uv run --no-config --script`. The skill pre-approves `check-forms.py`, so Claude Code doesn't ask before it runs; `labels-sync.py` goes through your permission prompts.
+- **Network:** `git` and `gh` reach GitHub and your remotes. The GitHub MCP server you add yourself sends your requests and token to `api.githubcopilot.com`. `labels-sync.py` calls GitHub's REST API through `gh`; it sends nothing else. `check-forms.py` sends nothing itself. When it reruns through `uv`, uv downloads `check-jsonschema` 0.39.0 and `ruamel.yaml` 0.19.1, pinned exactly, from PyPI on the first run, and, when it finds no Python 3.12 or later, a Python build from Astral's python-build-standalone project.
+- **Files written:** the PR lifecycle writes only your own commits, in your clone. The repository setup writes its files on the branch you are on when it isn't the default branch, and on a new branch when you are on the default branch; it never writes on the default branch. When `uv` reruns the form check, it stores the packages in uv's cache and any Python it downloads in its own folders. The cleanup writes a backup bundle and its working notes to folders outside your repository; it tells you where the backup is and asks whether to keep it.
 - **Privacy:** the author collects no data. The marketplace's [privacy policy](https://github.com/nerymurillohnd/the-claude-factory/blob/main/PRIVACY.md) covers this plugin and the outside services it can reach.
 
 ### The agents' limits
@@ -614,7 +614,7 @@ Installed with `--scope project`:
 claude plugin uninstall github-operations@the-claude-factory --scope project
 ```
 
-Uninstalling from the last scope it's installed at also deletes its saved options and data directory, unless you add `--keep-data`. The plugin keeps nothing in its data directory. A cleanup backup you chose to keep stays where Claude told you it is, and git, `gh`, Python and uv stay installed. The GitHub MCP server you added stays too; remove it, then delete the token on GitHub:
+Uninstalling from the last scope it's installed at also deletes its saved options and data directory, unless you add `--keep-data`. The plugin keeps nothing in its data directory. A cleanup backup you chose to keep stays where Claude told you it is, and git, `gh`, Python and uv stay installed, with what uv fetched for the form check in its cache. The GitHub MCP server you added stays too; remove it, then delete the token on GitHub:
 
 ```bash
 claude mcp remove --scope user github
@@ -679,6 +679,13 @@ Look at the message, then fix the server. Until you do, the agents have no GitHu
 </details>
 
 <details>
+<summary><b>GitHub answers "GraphQL is not available", or <code>gh</code> is missing.</b></summary>
+
+Some environments block GitHub's GraphQL API and answer `HTTP 403: GitHub GraphQL is not available`. That 403 is a blocked route, not a missing permission. The repository setup, the PR agents and the cleanup then read GitHub through the GitHub MCP server or `gh api` REST paths instead. Without `gh`, the setup still reads GitHub and creates labels through the GitHub MCP server. Merge settings are the exception: no MCP tool changes them, so the setup needs `gh`, or you change them yourself in **Settings** → **General** → **Pull Requests** on GitHub.
+
+</details>
+
+<details>
 <summary><b>Will Claude push or merge without asking?</b></summary>
 
 No. It asks before every push, unless you chose **Push without asking again on this pull request**, which covers later rounds of that pull request only and never a commit that changes tests, CI, dependencies or files outside the pull request. It always asks before the merge, naming the pull request, the commit and the merge method; a new push voids that approval. It never force-pushes, pushes to the base branch, or merges with admin rights.
@@ -702,7 +709,7 @@ The PR tracker waits for the checks to finish, for up to 30 minutes or the limit
 <details>
 <summary><b>Will the setup overwrite my existing templates or labels?</b></summary>
 
-No. When your repository already has a file of a kind, Claude shows you what it would change as a diff and asks. It creates a label or changes a repository setting only after you approve that change, and it never edits or deletes your existing labels unless you ask.
+No. When your repository already has a file of a kind, Claude shows you what it would change as a diff and asks. It creates or updates a label, or changes a repository setting, only after you approve that change. It never deletes or renames a label, and leaves labels the repository has and the list lacks as they are unless you ask.
 
 </details>
 
