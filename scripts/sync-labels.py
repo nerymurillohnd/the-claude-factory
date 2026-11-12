@@ -217,6 +217,13 @@ def run_gh(args: list[str]) -> str:
     return result.stdout
 
 
+def resolve_repo(repo: str) -> str:
+    """Return OWNER/NAME; gh fills {owner}/{repo} only in `gh api` paths, not in --repo."""
+    if "{" not in repo:
+        return repo
+    return run_gh(["api", f"repos/{repo}", "--jq", ".full_name"]).strip()
+
+
 def current_labels(repo: str) -> dict[str, Label]:
     """Read the repository's labels through REST; `gh label list` needs GraphQL."""
     output = run_gh(
@@ -294,11 +301,12 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv, namespace=Args())
 
     try:
-        plan = make_plan(wanted_labels(), current_labels(args.repo))
+        repo = resolve_repo(args.repo)
+        plan = make_plan(wanted_labels(), current_labels(repo))
         _ = sys.stdout.write(plan.to_json() + "\n")
         if not args.apply:
             return 1 if plan.pending() else 0
-        apply(args.repo, plan)
+        apply(repo, plan)
     except SyncError as error:
         _ = sys.stderr.write(f"error: {error}\n")
         return 2
