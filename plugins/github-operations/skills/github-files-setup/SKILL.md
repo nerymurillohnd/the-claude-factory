@@ -88,7 +88,7 @@ Run each from the repository's root with `python3` and its full path, exactly as
 
 | Script | Run it | Needs |
 | :-- | :-- | :-- |
-| `python3 ${CLAUDE_SKILL_DIR}/scripts/check-forms.py --kind issue\|issue-config\|discussion <file>...` | After writing or changing any issue form, `config.yml` or discussion form (steps 4 and 5), and again after every fix, until it exits 0 | ruamel.yaml and check-jsonschema. When they are missing it runs itself through `uv`; without `uv` it exits 2 with the install line: tell the user, and check the forms by reading the reference instead |
+| `python3 ${CLAUDE_SKILL_DIR}/scripts/check-forms.py --kind issue\|issue-config\|discussion\|dependabot <file>...` | After writing or changing any issue form, `config.yml`, discussion form or `dependabot.yml` (steps 4 to 6), and again after every fix, until it exits 0 | ruamel.yaml 0.19.1 and check-jsonschema 0.39.0 in the Python that runs it. When they are missing it exits 2 with the install command: never install them yourself; tell the user, and check the files by reading the reference instead |
 | `python3 ${CLAUDE_SKILL_DIR}/scripts/labels-sync.py --repo <owner>/<repo> --labels <file> [--current <file>] [--apply]` | Before proposing labels and after creating them (step 8). It changes nothing without `--apply`, and never deletes a label | `gh` signed in, for reading through REST and for `--apply`; without `gh`, pass the MCP `list_label` output as `--current` and create labels with `label_write` |
 
 ## Workflow

@@ -1,11 +1,4 @@
 #!/usr/bin/env python3
-# /// script
-# requires-python = ">=3.12"
-# dependencies = ["ruamel.yaml==0.19.1", "check-jsonschema==0.39.0"]
-#
-# [tool.uv]
-# exclude-newer = "2026-11-01T00:00:00Z"
-# ///
 """Check GitHub issue forms, the issue template chooser, discussion forms or dependabot.yml.
 
 Usage: python3 check-forms.py --kind issue|issue-config|discussion|dependabot FILE...
@@ -14,10 +7,9 @@ Runs check-jsonschema with its built-in GitHub schema for the kind, then checks 
 schema misses, reading the YAML as GitHub does (YAML 1.1). Each finding reads
 `FILE:LINE:COLUMN: message`; schema errors are passed on as check-jsonschema prints them.
 
-Needs Python 3.12 or later and two packages, ruamel.yaml and check-jsonschema. When this Python
-lacks them and uv is on PATH, the script runs itself again through `uv run --no-config --script`,
-which installs the versions pinned above in uv's cache; otherwise it exits 2 and says how to get
-them. It never installs anything into the Python that runs it.
+Needs Python 3.12 or later and two packages in the Python that runs it: ruamel.yaml 0.19.1 and
+check-jsonschema 0.39.0. When either is missing it exits 2 and prints the command that installs
+them; it never installs anything itself.
 Exit 0 = pass, 1 = at least one finding (on stdout), 2 = usage error, an unreadable file, a
 missing requirement, or check-jsonschema cannot run (on stderr).
 """
@@ -28,10 +20,8 @@ import argparse
 import importlib
 import importlib.util
 from operator import attrgetter
-import os
 from pathlib import Path
 import re
-import shutil
 import subprocess
 import sys
 from typing import TYPE_CHECKING
@@ -63,8 +53,8 @@ rules checked beyond the schema:
   <PLACEHOLDER> such as <OWNER> is left in the file.
 
 requirements:
-  Python 3.12+, ruamel.yaml and check-jsonschema. Without the two packages the script reruns
-  itself through uv when uv is on PATH, or exits 2 with how to install them.
+  Python 3.12+ with ruamel.yaml 0.19.1 and check-jsonschema 0.39.0 installed. Without them the
+  script exits 2 and prints the command that installs them.
 
 exit codes:
   0  every file passes
@@ -77,9 +67,8 @@ examples:
   python3 check-forms.py --kind discussion .github/DISCUSSION_TEMPLATE/*.yml
   python3 check-forms.py --kind dependabot .github/dependabot.yml"""
 MISSING_HELP = """\
-Install uv (https://docs.astral.sh/uv/) and run the same command again: uv fetches the pinned
-packages into its own cache. Or install them, in a virtual environment, into the Python that
-runs this script: python3 -m pip install {pinned}
+Install them into the Python that runs this script, preferably in a virtual environment, then
+run the same command again: python3 -m pip install {pinned}
 """
 
 SCHEMAS = {
@@ -100,7 +89,6 @@ PLACEHOLDER = re.compile(r"<[A-Z][A-Z0-9_]*>")
 # The vendored issue-forms schema predates `min_length`, which GitHub documents for input and
 # textarea validations; that one schema error is a false positive and is dropped.
 KNOWN_SCHEMA_GAPS = ("'min_length' was unexpected",)
-UV_GUARD = "CHECK_FORMS_VIA_UV"
 REQUIREMENTS = ("ruamel.yaml==0.19.1", "check-jsonschema==0.39.0")
 
 # ruamel.yaml declares no types on its nodes and errors: every attribute is read through a typed
@@ -413,24 +401,6 @@ def schema_check(kind: str, files: Sequence[Path]) -> tuple[int, str]:
     return done.returncode, done.stdout + done.stderr
 
 
-def rerun_with_uv() -> int | None:
-    """Run this script again through uv, which provides the pinned packages.
-
-    Return its exit code, or None when uv is not on PATH or this run already came from uv.
-    """
-    uv = shutil.which("uv")
-    if uv is None or os.environ.get(UV_GUARD) == "1":
-        return None
-    # --no-config: settings in the user's project (uv.toml, pyproject.toml) must not change how
-    # this script resolves its own dependencies.
-    command = [uv, "run", "--no-config", "--quiet", "--script", __file__, *sys.argv[1:]]
-    try:
-        done = subprocess.run(command, env={**os.environ, UV_GUARD: "1"}, check=False)
-    except OSError:
-        return None
-    return done.returncode
-
-
 def missing_requirement(reason: str) -> int:
     """Explain how to provide the missing packages and return exit code 2."""
     pinned = " ".join(f"'{r}'" for r in REQUIREMENTS)
@@ -462,8 +432,7 @@ def main() -> int:
         yaml = Yaml()
         require_check_jsonschema()
     except MissingRequirementError as error:
-        code = rerun_with_uv()
-        return missing_requirement(str(error)) if code is None else code
+        return missing_requirement(str(error))
     try:
         texts = {path: path.read_text(encoding="utf-8") for path in args.files}
     except OSError as error:

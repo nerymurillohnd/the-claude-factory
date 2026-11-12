@@ -75,7 +75,7 @@ A form applies only the labels in its top-level `labels:`. A dropdown answer, su
    - `python3 <skill-dir>/scripts/check-forms.py --kind issue .github/ISSUE_TEMPLATE/<form>.yml ...` on every form but `config.yml`;
    - `python3 <skill-dir>/scripts/check-forms.py --kind issue-config .github/ISSUE_TEMPLATE/config.yml`.
 2. Fix every finding and run both again. Move on only when both exit 0.
-3. When the script exits 2 because ruamel.yaml or check-jsonschema is missing and uv is not installed, tell the user what it printed, then check each form by reading it against this page and GitHub's form syntax, and say in the report that the script did not run.
+3. When the script exits 2 because ruamel.yaml or check-jsonschema is missing, tell the user what it printed, without installing anything yourself, then check each form by reading it against this page and GitHub's form syntax, and say in the report that the script did not run.
 
 ## After the merge
 
