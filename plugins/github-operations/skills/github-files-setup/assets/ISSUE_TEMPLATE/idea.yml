@@ -10,7 +10,7 @@ body:
     attributes:
       value: |
         We build things that remove real, recurring friction. The more concrete your workflow, the better the result.
-        Improving something that already exists? Use [Feature request](https://github.com/<OWNER>/<REPO>/issues/new?template=feature-request.yml).
+        Improving something that already exists? Use [Feature request](https://github.com/<OWNER>/<REPO>/issues/new?template=feature_request.yml).
 
   - type: textarea
     id: workflow

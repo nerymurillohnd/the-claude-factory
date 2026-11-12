@@ -1,4 +1,7 @@
-# Issue template chooser. Replace <OWNER>/<REPO> per repository.
+# Issue template chooser. Replace every upper-case placeholder in angle brackets per repository.
+# Keep a link only when its target is on: the advisory link needs private vulnerability
+# reporting (otherwise link SECURITY.md or remove it), the Discussions link needs Discussions.
+# People with write access still see a blank issue, marked "Maintainers only".
 # GitHub serves this from the default branch, so a change goes live once it is merged there.
 blank_issues_enabled: false
 contact_links:

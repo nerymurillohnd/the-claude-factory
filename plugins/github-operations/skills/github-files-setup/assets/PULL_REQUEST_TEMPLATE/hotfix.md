@@ -29,6 +29,6 @@
 
 ## 🚦 Before merge
 - [ ] I read the whole diff
-- [ ] CI is green, or each failing check is named with why it is safe
+- [ ] Checks are green (CI and the project checks above), or each failing check is named with why it is safe
 - [ ] Commits are signed if the repository requires it
 - [ ] Labels applied (including `type: hotfix`)

@@ -1,5 +1,6 @@
 # Feature request form (GitHub issue forms schema). Public and internal repositories.
 # `labels:` is static; triage applies component and priority labels by hand.
+# Keep the Idea line only when the repository also gets idea.yml.
 # GitHub serves forms from the default branch, so a change goes live once merged there.
 name: ✨ Feature request
 description: Suggest an improvement to something that already exists.

@@ -1,8 +1,11 @@
 # Bug report form (GitHub issue forms schema). Public and internal repositories.
 #
 # Triage facts come first and are required: component, the exact version that ran,
-# and where it ran. `labels:` is static, so triage applies the component and
-# priority labels by hand (the impact dropdown is the priority signal).
+# and where it ran. `labels:` is static and a dropdown answer applies no label, so
+# triage applies the component and priority labels by hand (the impact dropdown is
+# the priority signal), or a workflow does it (references/issue-forms.md).
+# Keep the security line only when private vulnerability reporting is on; otherwise
+# link the repository's SECURITY.md, or remove the line.
 # GitHub serves forms from the default branch, so a change goes live once merged there.
 name: 🐞 Bug report
 description: Something is broken or behaves differently from what is documented.
