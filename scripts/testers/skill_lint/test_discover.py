@@ -41,6 +41,18 @@ class LoadSkillTest(unittest.TestCase):
         self.assertEqual(loaded.kind, "standalone")
         self.assertEqual(loaded.command, "demo-skill")
 
+    def test_load_skill_parses_body(self) -> None:
+        """The SKILL.md body is parsed with file line numbers."""
+        with tempfile.TemporaryDirectory() as tmp:
+            skill = build_skill(Path(tmp), {"SKILL.md": VALID_SKILL_MD})
+            loaded = load_skill(skill / "SKILL.md")
+        self.assertEqual(loaded.frontmatter.body_start, 5)
+        heading = loaded.body.headings[0]
+        self.assertEqual(
+            (heading.text, heading.line, heading.slug), ("Demo skill", 6, "demo-skill")
+        )
+        self.assertEqual(loaded.body.prose[-1], (8, "Say hello."))
+
     def test_binary_file_listed_not_text(self) -> None:
         """A binary file is listed in files but not read as text."""
         with tempfile.TemporaryDirectory() as tmp:

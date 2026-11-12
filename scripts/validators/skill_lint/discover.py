@@ -9,7 +9,8 @@ import shutil
 import subprocess
 from typing import TYPE_CHECKING
 
-from validators.skill_lint.frontmatter import Frontmatter, parse_frontmatter
+from validators.skill_lint.frontmatter import BOM, Frontmatter, parse_frontmatter
+from validators.skill_lint.markdown import MarkdownDoc, parse_markdown
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Mapping
@@ -61,6 +62,8 @@ class Skill:
     """The files that decode as UTF-8."""
     modes: Mapping[str, str]
     frontmatter: Frontmatter
+    body: MarkdownDoc
+    """The SKILL.md body, the lines from frontmatter.body_start on, with file line numbers."""
 
     def is_executable(self, rel: str) -> tuple[bool, bool]:
         """Return (executable, tracked), using the git mode when tracked, else stat."""
@@ -115,12 +118,21 @@ def _frontmatter(text: Mapping[str, str]) -> Frontmatter:
     return parse_frontmatter(text["SKILL.md"])
 
 
+def _body(text: Mapping[str, str], frontmatter: Frontmatter) -> MarkdownDoc:
+    """Parse the SKILL.md lines from body_start on, split as parse_frontmatter splits them."""
+    source = text.get("SKILL.md", "").removeprefix(BOM).replace("\r\n", "\n")
+    start = max(frontmatter.body_start, 1)
+    body = "\n".join(source.split("\n")[start - 1 :])
+    return parse_markdown(body, first_line=start)
+
+
 def load_skill(skill_md: Path, *, mode_reader: ModeReader = git_modes) -> Skill:
     """Load the skill whose SKILL.md is given."""
     root = skill_md.parent
     kind, plugin, command, plugin_root = _identify(skill_md)
     files = _list_files(root)
     text = _read_text(root, files)
+    frontmatter = _frontmatter(text)
     return Skill(
         root=root,
         kind=kind,
@@ -130,7 +142,8 @@ def load_skill(skill_md: Path, *, mode_reader: ModeReader = git_modes) -> Skill:
         files=files,
         text=text,
         modes=dict(mode_reader(root)),
-        frontmatter=_frontmatter(text),
+        frontmatter=frontmatter,
+        body=_body(text, frontmatter),
     )
 
 
