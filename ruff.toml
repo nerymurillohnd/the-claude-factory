@@ -1,5 +1,5 @@
 # Ruff + basedpyright
-required-version = ">=0.17.3"
+required-version = ">=0.17.4,<0.18"
 
 line-length = 100
 indent-width = 4
@@ -23,28 +23,33 @@ preview = false
 # select = [...]  # See the Default Rules page for the full listing.
 select = ["ALL"]
 ignore = [
+    # Each check has one owner. basedpyright (pyrightconfig.json, typeCheckingMode "all") owns
+    # type-aware checks, and Ruff ignores its own copy of them. Ruff owns the lint checks that both
+    # report, and pyrightconfig.json turns basedpyright's copy off.
+
     # === Owned by basedpyright ===
 
-    # flake8-annotations: only the parameter and `Any` rules have a basedpyright owner.
-    # The return-annotation rules (ANN201, ANN202, ANN204, ANN205, ANN206) stay ON:
+    # flake8-annotations: basedpyright owns parameter annotations and Any. The return-annotation
+    # rules (ANN201-ANN206) stay on: basedpyright has no missing-return-annotation rule.
     "ANN001",  # missing-type-function-argument -> reportMissingParameterType
     "ANN002",  # missing-type-args -> reportMissingParameterType
     "ANN003",  # missing-type-kwargs -> reportMissingParameterType
-    "ANN401",  # any-type -> reportAny
-    "PLE0605", # invalid-all-format -> basedpyright validates __all__
-    "RUF013",  # implicit-optional -> strictParameterNoneValue
-    "RUF016",  # invalid-index-type -> type-aware indexing checks
-    "UP006",   # non-pep585-annotation -> deprecateTypingAliases (List, Dict, ...)
-    "UP007",   # non-pep604-annotation-union -> deprecateTypingAliases (typing.Union)
-    "UP035",   # deprecated-import -> deprecateTypingAliases + reportDeprecated
-    "UP045",   # non-pep604-annotation-optional -> deprecateTypingAliases (typing.Optional)
-    "D418",    # overload-with-docstring -> basedpyright shows per-overload docstrings
-    "PLC0414", # useless-import-alias -> conflicts: `x as x` is the explicit re-export
-    #            form reportPrivateLocalImportUsage requires
+    "ANN401",  # any-type -> reportExplicitAny
+    "RUF013",  # implicit-optional -> strictParameterNoneValue, reported as reportArgumentType
+    "RUF016",  # invalid-index-type -> reportCallIssue and reportArgumentType
+    "PLE0604", # invalid-all-object -> reportUnsupportedDunderAll
+    "PLE0605", # invalid-all-format -> reportUnsupportedDunderAll
+    "F822",    # undefined-export -> reportUnsupportedDunderAll
+    "F811",    # redefined-while-unused -> reportRedeclaration and reportDuplicateImport
+    "N804",    # invalid-first-argument-name-for-class-method -> reportSelfClsParameterName
+    "N805",    # invalid-first-argument-name-for-method -> reportSelfClsParameterName
+    "SLF001",  # private-member-access -> reportPrivateUsage (type-aware, allows subclasses)
     "ISC001",  # single-line-implicit-string-concatenation -> reportImplicitStringConcatenation
+    "ISC002",  # multi-line-implicit-string-concatenation -> reportImplicitStringConcatenation
     "ISC004",  # implicit concat in collection literal -> reportImplicitStringConcatenation
-    #            (ISC002/ISC003 stay on: basedpyright exempts parenthesized multi-line
-    #            implicit concatenation, which is exactly what ISC003 asks for)
+
+    # === Conflicts with the Ruff formatter (docs/formatter.md, "Conflicting lint rules") ===
+
     "W191",   # tab-indentation
     "E111",   # indentation-with-invalid-multiple
     "E114",   # indentation-with-invalid-multiple-comment
@@ -59,20 +64,16 @@ ignore = [
     "COM812", # missing-trailing-comma
     "COM819", # prohibited-trailing-comma
 
-    # === Global standalone-script policy ===
+    # === Project policy ===
 
-    "CPY001", # missing-copyright-notice (stable since 0.16.0); enable per project
-    "D100",   # missing-docstring-in-public-module
-    "D104",   # missing-docstring-in-public-package
-    "S603",   # subprocess-without-shell-equals-true (fires on every subprocess call)
-    "INP001", # implicit-namespace-package (loose scripts are not packages)
+    "CPY001", # missing-copyright-notice: each plugin's LICENSE carries the notice
+    "S603",   # subprocess-without-shell-equals-true: fires on every subprocess call
 
     # === Not used: pytest ===
 
-    # The tests run on unittest (scripts/testers/run_unittest.py); pytest is not part of this
-    # repository, so its linter, flake8-pytest-style, is left out of "ALL". Its PT009 and PT027
-    # would demand pytest's bare assert and pytest.raises over TestCase.assert* (bare assert is
-    # S101, which stays on: -O strips it).
+    # pytest is not part of this repository, so flake8-pytest-style is left out of "ALL". Its
+    # PT009 and PT027 would demand pytest's bare assert and pytest.raises over TestCase.assert*
+    # (bare assert is S101, which stays on: -O strips it).
     "PT", # flake8-pytest-style
 ]
 
