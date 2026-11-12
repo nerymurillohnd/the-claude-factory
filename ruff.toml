@@ -81,6 +81,10 @@ ignore = [
 fixable = ["ALL"]
 unfixable = []
 
+[lint.per-file-ignores]
+# hyphenated entry script run by path, never imported
+"scripts/validators/skill-lint.py" = ["N999"]
+
 [lint.isort]
 
 force-sort-within-sections = true

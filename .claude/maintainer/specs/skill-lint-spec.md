@@ -136,7 +136,7 @@ The manifest always lists these.
 
 ### Not checked here (owned elsewhere)
 
-- **Python syntax at the 3.12 floor:** ruff covers it. `ruff.toml` sets `per-file-target-version` to `py312` for `plugins/**/*.py` and `.claude/skills/**/*.py`. Confirm during implementation that ruff reports syntax newer than the target; add a rule here only if it doesn't.
+- **Python syntax at the 3.12 floor:** ruff covers it. `ruff.toml` sets `per-file-target-version` to `py312` for `plugins/**/*.py` and `.claude/skills/**/*.py`. Confirmed: ruff reports syntax newer than py312. `ruff check --no-cache --isolated --target-version py312` on `def f[T = int](): ...` exits 1 with `invalid-syntax: Cannot set default type for a type parameter on Python 3.12 (syntax was added in Python 3.13)`. No rule is needed here.
 - **Basic frontmatter parsing:** `claude plugin validate`.
 - **Semantics:** agents and `/doctor prompt-audit`.
 - **Cross-checks against files outside the skill folder** (the README surface badge, Prerequisites): excluded by the skill-folder-only rule. If the owner wants them, they become a separate script.
@@ -188,9 +188,11 @@ scripts/testers/
 - **Imports in tests:** the tests import `skill_lint` from `scripts/validators`, so they need two things:
   - The unittest command adds that directory: `-t scripts`, plus a `sys.path` setup in `scripts/testers/skill_lint/__init__.py`, or the equivalent.
   - basedpyright resolves it: `"extraPaths": ["validators"]` in `scripts/pyrightconfig.json`.
-- **Confirm in step 1 of the plan:**
-  - Which of these two works under `uv run` and `basedpyright -p scripts`.
-  - Whether ruff reports N999 or INP001 on the hyphenated entry script or the new packages.
+- **Settled in step 1 of the plan (observed):**
+  - `npm run test:scripts` runs `uv run python -m unittest discover -s scripts/testers -t scripts -p 'test_*.py'`. With `-t scripts`, `from validators.skill_lint import ...` resolves in the tests with no `sys.path` change and no `sys.path` setup in `scripts/testers/skill_lint/__init__.py`.
+  - `basedpyright -p scripts` resolves `validators.skill_lint` in the tests with no `extraPaths` entry. The entry script `scripts/validators/skill-lint.py` (`from skill_lint.cli import main`) needed `"extraPaths": ["validators"]` in `scripts/pyrightconfig.json`: without it basedpyright reported `reportImplicitRelativeImport`. `"."` was not needed.
+  - ruff reported N999 on `skill-lint.py` and did not report INP001 on it or on the new packages (each has an `__init__.py`). `ruff.toml` now has `[lint.per-file-ignores]` with `"scripts/validators/skill-lint.py" = ["N999"]`.
+  - ruff D104 requires a docstring in every `__init__.py`, so the package `__init__.py` files hold a one-line docstring and are not empty.
 
 ### Checks
 
