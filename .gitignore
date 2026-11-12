@@ -9,11 +9,10 @@ Thumbs.db
 node_modules/
 npm-debug.log*
 
-# Python: bytecode and the ruff and mypy caches, at any depth
+# Python: bytecode and the ruff cache, at any depth
 __pycache__/
 *.pyc
 .ruff_cache/
-.mypy_cache/
 
 # Claude Code: personal and machine-local state
 .claude/settings.local.json
