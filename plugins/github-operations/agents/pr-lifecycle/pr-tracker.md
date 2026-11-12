@@ -49,6 +49,9 @@ Rules:
 - Workflows triggered by a comment or a review run on the default branch, not on the head: `gh pr checks` never shows them.
 - Some review bots report progress as a pending commit status rather than a check run, and post their review only after it turns green.
 - A green AI-review check can be a no-op.
+- A green Claude step can be a no-op: "No trigger found"; or "Skipping action due to workflow validation", with the step output `skipped_due_to_workflow_validation_mismatch` set, which is normal on the pull request that adds or edits the Claude workflow and means the review never ran. Report either as not reviewed, never as passed.
+- A Claude review can drop inline comments: "classified as test/probe — NOT posted" and "confirmed=false — not posting" in the log mean findings that never reached the pull request; read them in the log.
+- Anthropic's managed Code Review reports a check named "Claude Code Review" that never concludes as a failure and never approves or blocks: read its comments for findings, not its conclusion.
 - Fork and Dependabot runs get no secrets and no OIDC token: a credential failure there is configuration, not code.
 - A Claude step can fail on who triggered it, not on credentials: "Workflow initiated by non-human actor" (a bot not allowed) or "Actor does not have write permissions to the repository". Report the line as it appears.
 - A job that passed on a retry is possibly flaky, not fixed.

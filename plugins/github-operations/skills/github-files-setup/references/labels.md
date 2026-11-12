@@ -10,7 +10,7 @@ Before any file is written, decide the label names the files will use, so the fo
 2. Otherwise use GitHub's default label when one has the meaning: a new repository has `bug`, `documentation`, `duplicate`, `enhancement`, `good first issue`, `help wanted`, `invalid`, `question`, `wontfix` and `accessibility`, and `good first issue` feeds the repository's `/contribute` page.
 3. Otherwise take the name from `assets/labels.json`, such as `status: triage` or `type: maintenance`.
 4. For a component group (`area: <component>`), take the components from the repository: its packages, plugins or services.
-5. When the repository has or wants an issue triage automation (a workflow, a cloud scheduled task or a stale-issue bot), use the exact lifecycle label names it applies. Anthropic's own triage applies `needs-info` and `needs-repro`, which its repository closes after 7 days without an answer, and removes `stale` and `autoclose` when a person answers; the model's `status: needs-info` and `status: needs-repro` fit a triage written in this repository's own style.
+5. When the repository has or wants an issue triage automation (a workflow, a cloud scheduled task or a stale-issue bot), use the exact lifecycle label names it applies. Anthropic's own triage applies `needs-info` and `needs-repro`; the model's `status: needs-info` and `status: needs-repro` fit a triage written in this repository's own style. A label never closes an issue by itself: closing after a timeout needs a separate closer, such as a stale-issue workflow, so promise it only when the repository has one.
 
 ## Create them (step 8)
 
