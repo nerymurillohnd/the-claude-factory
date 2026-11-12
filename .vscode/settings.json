@@ -7,14 +7,11 @@
   // package-lock.json: the repository runs npm only.
   "npm.packageManager": "npm",
 
-  // A WORKSPACE `js/ts.tsdk.path` DOES NOT SWITCH THE COMPILER BY ITSELF, which is
-  // why this prompt is not optional. VS Code's own description, verbatim: "When
-  // specified as a user setting, the TypeScript version from `js/ts.tsdk.path`
-  // automatically replaces the built-in TypeScript version. When specified as a
-  // workspace setting, `js/ts.tsdk.path` allows you to switch to use that workspace
-  // version of TypeScript for IntelliSense WITH THE `TypeScript: Select TypeScript
-  // version` COMMAND." This file is a workspace setting, so until a human accepts
-  // that prompt the editor types against VS Code's BUILT-IN compiler.
+  // A workspace `js/ts.tsdk.path` doesn't switch the compiler by itself, so the prompt below
+  // stays on. VS Code's description: "When specified as a workspace setting, `js/ts.tsdk.path`
+  // allows you to switch to use that workspace version of TypeScript for IntelliSense with the
+  // `TypeScript: Select TypeScript version` command." Until someone accepts that prompt, the
+  // editor types against VS Code's built-in compiler.
   "js/ts.tsdk.path": "node_modules/typescript/lib",
   "js/ts.tsdk.promptToUseWorkspaceVersion": true,
   // The pinned TypeScript 6 above, never the native TypeScript 7 preview.
@@ -38,10 +35,9 @@
   "editor.rulers": [
     100
   ],
-  // Biome runs only under biome.jsonc, with the pinned node_modules binary found first, as the CLI,
-  // the hooks and the gates do. So biome.lsp.bin and biome.configurationPath stay unset: either
-  // would make the editor run another binary or configuration than npm run. The extension reads
-  // neither BIOME_BINARY nor BIOME_CONFIG_PATH, which the gates refuse.
+  // Biome runs only under biome.jsonc, with the pinned node_modules binary found first, as
+  // npm run does. So biome.lsp.bin and biome.configurationPath stay unset: either would make the
+  // editor run another binary or configuration than npm run.
   // requireConfiguration takes effect only with biome.enabled true in the same scope.
   "biome.enabled": true,
   "biome.requireConfiguration": true,
@@ -129,18 +125,16 @@
   // word alone.
   "json.validate.enable": true,
   "json.schemaDownload.enable": true,
-  // Outline and folding for the large schemas under scripts/schemas; the default is 5000.
+  // Outline and folding for large JSON files, such as schemas; the default is 5000.
   "json.maxItemsComputed": 10000,
   // The repository has no ESLint, Prettier or markdownlint configuration; Biome lints and formats.
   "eslint.enable": false,
   "prettier.enable": false,
   "markdownlint.appliesTo": "noFiles",
 
-  // --- Ruff: on save, the editor does what npm run format and the ruff gates do ---
-  // The ruff on PATH that npm run and the gates run, not the extension's bundled copy.
-  "ruff.path": [
-    "/Users/forestalmt/.local/bin/ruff"
-  ],
+  // --- Ruff: on save, the editor does what npm run format and npm run lint:python do ---
+  // No ruff.path: the extension looks in the active Python environment, then on PATH, where the
+  // ruff that tools:install pins lives, and uses its bundled copy only when neither has one.
   "ruff.importStrategy": "fromEnvironment",
   // ruff.toml decides, as for the CLI; no ruff.lint.* or ruff.lineLength setting here.
   "ruff.configurationPreference": "filesystemFirst",
@@ -175,22 +169,13 @@
   "basedpyright.analysis.inlayHints.callArgumentNames": true,
   "basedpyright.analysis.inlayHints.functionReturnTypes": true,
   "basedpyright.analysis.inlayHints.genericTypes": false,
+  // Type checking is configured in pyrightconfig.json and scripts/pyrightconfig.json only, as
+  // basedpyright's docs recommend, so the editor checks what the basedpyright CLI checks.
 
-  // --- Discouraged settings (prefer pyproject.toml / pyrightconfig.json) ---
-  "basedpyright.analysis.typeCheckingMode": "all",
-  "basedpyright.analysis.useLibraryCodeForTypes": true,
-  "basedpyright.analysis.stubPath": "typings",
-  "basedpyright.analysis.include": [],
-  "basedpyright.analysis.exclude": [],
-  "basedpyright.analysis.ignore": [],
-  "basedpyright.analysis.extraPaths": [],
-  "basedpyright.analysis.typeshedPaths": [],
-  "basedpyright.analysis.diagnosticSeverityOverrides": {},
-
-  // Python interpreter
-  "python.defaultInterpreterPath": "/Users/forestalmt/.local/bin/python3",
-
-  // Recommended when using basedpyright as the sole language server
+  // --- Python environment: the .venv that uv run creates (pyproject.toml, uv.lock) ---
+  "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
+  // basedpyright is the only Python language server.
   "python.languageServer": "None",
-  "python-envs.defaultEnvManager": "ms-python.python:system"
+  // The venv manager, which also covers environments uv creates.
+  "python-envs.defaultEnvManager": "ms-python.python:venv"
 }
