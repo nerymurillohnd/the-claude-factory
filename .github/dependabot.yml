@@ -16,6 +16,7 @@ updates:
       - "type: dependencies"
     commit-message:
       prefix: "ci"
+      include: "scope"
 
   # The root package.json holds only the maintainer tooling, pinned exactly (.npmrc save-exact).
   - package-ecosystem: npm
@@ -41,3 +42,24 @@ updates:
       - "type: dependencies"
     commit-message:
       prefix: "chore"
+      include: "scope"
+
+  # The maintainer scripts' Python dependencies (pyproject.toml dev group, uv.lock). The maintainer
+  # tools themselves are uv tools pinned in the tools:install npm script, which Dependabot does not
+  # read: bump those by hand.
+  - package-ecosystem: uv
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+      semver-major-days: 14
+    groups:
+      uv-minor-patch:
+        update-types: ["minor", "patch"]
+    labels:
+      - "area: ci"
+      - "type: dependencies"
+    commit-message:
+      prefix: "chore"
+      include: "scope"
