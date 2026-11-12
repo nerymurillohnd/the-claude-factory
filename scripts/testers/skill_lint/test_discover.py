@@ -64,6 +64,28 @@ class LoadSkillTest(unittest.TestCase):
             self.assertEqual(loaded.is_executable("run.sh"), (True, False))
             self.assertEqual(loaded.is_executable("doc.md"), (False, False))
 
+    def test_is_executable_tracked_uses_git_mode(self) -> None:
+        """A tracked file's git mode wins over its permission bits."""
+        with tempfile.TemporaryDirectory() as tmp:
+            skill = build_skill(Path(tmp), {"SKILL.md": VALID_SKILL_MD, "x.sh": "#!/bin/sh\n"})
+            (skill / "x.sh").chmod(0o755)
+            loaded = load_skill(skill / "SKILL.md", mode_reader=lambda _: {"x.sh": "100644"})
+            self.assertEqual(loaded.is_executable("x.sh"), (False, True))
+
+    def test_symlinks_listed_but_outside_target_not_read(self) -> None:
+        """Symlinks are listed; one pointing outside the folder is not read as text."""
+        with tempfile.TemporaryDirectory() as tmp:
+            outside = Path(tmp) / "outside.txt"
+            _ = outside.write_text("secret", encoding="utf-8")
+            skill = build_skill(Path(tmp), {"SKILL.md": VALID_SKILL_MD, "inner.md": "in"})
+            (skill / "out.txt").symlink_to(outside)
+            (skill / "in.md").symlink_to(skill / "inner.md")
+            loaded = load_skill(skill / "SKILL.md", mode_reader=lambda _: {})
+        self.assertIn("out.txt", loaded.files)
+        self.assertIn("in.md", loaded.files)
+        self.assertNotIn("out.txt", loaded.text)
+        self.assertEqual(loaded.text["in.md"], "in")
+
 
 class DiscoverTest(unittest.TestCase):
     """Repository discovery and git modes."""
@@ -84,6 +106,16 @@ class DiscoverTest(unittest.TestCase):
         """A folder outside any repository gives no modes."""
         with tempfile.TemporaryDirectory() as tmp:
             self.assertEqual(git_modes(Path(tmp)), {})
+
+    def test_git_modes_path_with_space(self) -> None:
+        """A tracked path containing a space is reported verbatim."""
+        git = shutil.which("git") or "git"
+        with tempfile.TemporaryDirectory() as tmp:
+            skill = build_skill(Path(tmp), {"SKILL.md": VALID_SKILL_MD, "my notes.md": "x"})
+            for args in (["init", "-q"], ["add", "."]):
+                _ = subprocess.run([git, "-C", tmp, *args], check=True, capture_output=True)
+            modes = git_modes(skill)
+        self.assertEqual(modes["my notes.md"], "100644")
 
     def test_git_modes_in_temp_repo(self) -> None:
         """Tracked files report their git mode."""

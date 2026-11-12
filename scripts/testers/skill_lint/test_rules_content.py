@@ -31,3 +31,11 @@ class Co01Test(unittest.TestCase):
             skill = build_skill(Path(tmp), {"SKILL.md": VALID_SKILL_MD})
             findings = check(load_skill(skill / "SKILL.md", mode_reader=lambda _: {}))
         self.assertEqual(findings, [])
+
+    def test_non_utf8_skill_md_reports_co01(self) -> None:
+        """A SKILL.md that is not UTF-8 gives CO-01 without raising."""
+        with tempfile.TemporaryDirectory() as tmp:
+            skill = build_skill(Path(tmp), {"SKILL.md": b"---\nname: \xff\xfe\n---\n"})
+            findings = check(load_skill(skill / "SKILL.md", mode_reader=lambda _: {}))
+        self.assertEqual([f.rule for f in findings], ["CO-01"])
+        self.assertIn("not valid UTF-8", findings[0].message)

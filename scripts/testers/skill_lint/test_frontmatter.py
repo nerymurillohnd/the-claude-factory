@@ -26,6 +26,8 @@ class ParseFrontmatterTest(unittest.TestCase):
         self.assertIsNone(fm.error)
         data = fm.data or {}
         self.assertEqual(data["name"], "demo-skill")
+        self.assertEqual(fm.key_lines["name"], 2)
+        self.assertEqual(fm.body_start, 4)
 
     def test_missing_open(self) -> None:
         """Frontmatter must open on line 1."""
@@ -36,7 +38,9 @@ class ParseFrontmatterTest(unittest.TestCase):
     def test_missing_close(self) -> None:
         """Frontmatter must be closed."""
         fm = parse_frontmatter("---\nname: x\n")
-        self.assertIsNotNone(fm.error)
+        line, message = fm.error or (0, "")
+        self.assertEqual(line, 1)
+        self.assertIn("never closed", message)
         self.assertIsNone(fm.data)
 
     def test_duplicate_key(self) -> None:
@@ -49,11 +53,15 @@ class ParseFrontmatterTest(unittest.TestCase):
     def test_list_not_mapping(self) -> None:
         """A YAML list is not a mapping."""
         fm = parse_frontmatter("---\n- a\n- b\n---\n")
-        self.assertIsNotNone(fm.error)
+        line, message = fm.error or (0, "")
+        self.assertEqual(line, 2)
+        self.assertIn("must be a mapping, found", message)
         self.assertIsNone(fm.data)
 
     def test_empty_block(self) -> None:
         """An empty block is not a mapping."""
         fm = parse_frontmatter("---\n---\n")
-        self.assertIsNotNone(fm.error)
+        line, message = fm.error or (0, "")
+        self.assertEqual(line, 2)
+        self.assertIn("found empty", message)
         self.assertIsNone(fm.data)

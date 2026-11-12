@@ -55,8 +55,7 @@ def _error_line(exc: YAMLError) -> int:
 def _error_text(exc: YAMLError) -> str:
     """Return a one-line message for a YAML error, naming duplicate keys as such."""
     problem = cast("str | None", exc.problem) if isinstance(exc, MarkedYAMLError) else None
-    text = (problem or str(exc)).strip().splitlines()[0]
-    return f"duplicate key: {text}" if "duplicate key" in str(exc) else text
+    return (problem or str(exc)).strip().splitlines()[0]
 
 
 def _load(yaml_text: str) -> Frontmatter:

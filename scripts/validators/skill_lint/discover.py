@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import os
 from pathlib import Path
 import shutil
 import subprocess
@@ -32,15 +33,14 @@ def git_modes(skill_dir: Path) -> dict[str, str]:
             [git, "-C", str(skill_dir), "ls-files", "-s", "-z", "--", "."],
             capture_output=True,
             check=False,
-            text=True,
         )
     except OSError:
         return {}
     if result.returncode != 0:
         return {}
     modes: dict[str, str] = {}
-    for entry in result.stdout.split("\0"):
-        meta, _, path = entry.partition("\t")
+    for entry in result.stdout.split(b"\0"):
+        meta, _, path = os.fsdecode(entry).partition("\t")
         if path:
             modes[path] = meta.split(" ", 1)[0]
     return modes
@@ -95,14 +95,24 @@ def _list_files(root: Path) -> tuple[str, ...]:
 def _read_text(root: Path, files: tuple[str, ...]) -> dict[str, str]:
     """Read the UTF-8 files, skipping caches and OS litter."""
     texts: dict[str, str] = {}
+    real_root = root.resolve()
     for rel in files:
         if SKIPPED_TEXT & set(rel.split("/")):
+            continue
+        if not (root / rel).resolve().is_relative_to(real_root):
             continue
         try:
             texts[rel] = (root / rel).read_text(encoding="utf-8")
         except UnicodeDecodeError, OSError:
             continue
     return texts
+
+
+def _frontmatter(text: Mapping[str, str]) -> Frontmatter:
+    """Parse SKILL.md, or report that it cannot be read as UTF-8 text."""
+    if "SKILL.md" not in text:
+        return Frontmatter(None, {}, 1, (1, "SKILL.md is not valid UTF-8 text"))
+    return parse_frontmatter(text["SKILL.md"])
 
 
 def load_skill(skill_md: Path, *, mode_reader: ModeReader = git_modes) -> Skill:
@@ -120,7 +130,7 @@ def load_skill(skill_md: Path, *, mode_reader: ModeReader = git_modes) -> Skill:
         files=files,
         text=text,
         modes=dict(mode_reader(root)),
-        frontmatter=parse_frontmatter(text.get("SKILL.md", "")),
+        frontmatter=_frontmatter(text),
     )
 
 
