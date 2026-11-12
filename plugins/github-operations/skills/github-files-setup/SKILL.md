@@ -53,7 +53,6 @@ GitHub reads each file only at its own path and name. Before writing, look in ev
 | `labels.json` | No file: labels are created on GitHub, or written to the repository's label file when it has one | The repository's labels on GitHub; a label file |
 | `dependabot.yml` | `.github/dependabot.yml` | `.github/dependabot.yml` or `.github/dependabot.yaml` |
 | None: written from the repository's owners | `.github/CODEOWNERS` | `CODEOWNERS` in `.github/`, the root or `docs/`; GitHub uses the first it finds in that order |
-| [MERGE_TEMPLATE/merge-message.md](assets/MERGE_TEMPLATE/merge-message.md) | No file: the trade-offs of the merge message setting | — |
 
 ## Rules
 
