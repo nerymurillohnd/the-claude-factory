@@ -1,10 +1,10 @@
 ---
-status: accepted
+status: superseded
 date: 2026-11-12
 decision-makers:
   - "Nery (project owner)"
 supersedes: ADR_2026-11-12_uv-project-pins-maintainer-python-tools
-superseded-by: none
+superseded-by: ADR_2026-11-12_maintainer-scripts-run-through-uv-run
 ---
 
 # Install the maintainer Python tools as pinned uv tools and run maintainer scripts with the .venv Python
