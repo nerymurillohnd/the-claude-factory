@@ -63,9 +63,8 @@ The chooser lists forms in alphanumeric order of file name, YAML forms before Ma
 
 ## Labels by component
 
-A form applies only the labels in its top-level `labels:`. A dropdown answer, such as the component a reporter picks, goes into the issue's body as text and applies no label. To label issues by component, offer the user one of:
+A form applies only the labels in its top-level `labels:`. A dropdown answer, such as the component a reporter picks, goes into the issue's body as text and applies no label. Labeling issues by component defaults to **triage by hand**: the maintainers read the answer and apply the label, and the setup adds nothing. Offer the other ways only when the user asks for component labels applied automatically, or when the repository already runs a triage workflow or task:
 
-- **Triage by hand:** the maintainers read the answer and apply the label. Nothing to add.
 - **One form per component:** each form names its component label in `labels:`. Fits two or three components, not more.
 - **A workflow that labels from the form:** a GitHub Actions workflow on `issues: opened` reads the answer under its `### <field label>` heading and adds the label with `gh issue edit "$NUMBER" --add-label "<label>"`. Every label it applies must exist. The workflow runs on untrusted input from any reporter: write it only when the user wants it, and audit it with `github-operations:claude-github-actions` before the pull request.
 - **Triage by Claude:** Claude reads each new issue, body included, and applies the labels that already exist, without commenting. Two ways to run it, both outside this skill:
