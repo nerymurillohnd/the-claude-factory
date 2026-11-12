@@ -98,5 +98,15 @@
     "name": "area: ci",
     "color": "BFD4F2",
     "description": "Workflows, scripts and quality gates"
+  },
+  {
+    "name": "area: docs",
+    "color": "BFD4F2",
+    "description": "Guides, READMEs and other documentation"
+  },
+  {
+    "name": "accessibility",
+    "color": "F143AB",
+    "description": "Barrier affecting people with disabilities"
   }
 ]
