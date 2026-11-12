@@ -69,3 +69,31 @@ class CodeTest(unittest.TestCase):
         kinds = [(c.text, c.line, c.lang, c.inline) for c in doc.code]
         self.assertEqual(kinds, [("x.py", 5, None, True), ("echo hi\n", 6, "bash", False)])
         self.assertEqual(doc.prose, ((5, "Run  now."),))
+
+
+class ReviewFixTest(unittest.TestCase):
+    """Fix round 1: code spans in slugs, list fences, fragments and prose."""
+
+    def test_slug_keeps_code_underscores(self) -> None:
+        """Underscores inside a code span survive, as on GitHub."""
+        doc = parse_markdown("## Run `__init__.py`\n")
+        self.assertEqual(doc.headings[0].slug, "run-__init__py")
+
+    def test_indented_list_fence_is_code(self) -> None:
+        """A fence indented inside a list item hides its links and ! commands."""
+        text = "- step\n\n    ```md\n    [a](x.md)\n    !`date`\n    ```\n- next [b](y.md)\n"
+        doc = parse_markdown(text)
+        self.assertEqual([link.target for link in doc.links], ["y.md"])
+        self.assertEqual(doc.bang_commands, ())
+        block = next(c for c in doc.code if not c.inline)
+        self.assertEqual((block.text, block.line, block.lang), ("[a](x.md)\n!`date`\n", 3, "md"))
+
+    def test_fragment_split_before_decoding(self) -> None:
+        """An encoded # stays in the path; the fragment is decoded on its own."""
+        doc = parse_markdown("[a](a%23b.md#Sec%20x)\n")
+        self.assertEqual(doc.links[0].target, "a%23b.md#Sec x")
+
+    def test_prose_keeps_link_text_only(self) -> None:
+        """Prose holds a link's text, not its target."""
+        doc = parse_markdown("See [the guide](guide.md) and ![logo](logo.png).\n")
+        self.assertEqual(doc.prose, ((1, "See the guide and logo."),))

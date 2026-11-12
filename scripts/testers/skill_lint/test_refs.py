@@ -5,6 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 import tempfile
 import unittest
+import warnings
 
 from validators.skill_lint.discover import load_skill
 from validators.skill_lint.refs import (
@@ -129,3 +130,71 @@ class GraphTest(unittest.TestCase):
             used = imported_or_sourced(skill)
         self.assertEqual(graph["scripts/run.sh"], {"scripts/lib.sh", "scripts/lib/more.sh"})
         self.assertEqual(used, {"scripts/lib.sh", "scripts/lib/more.sh"})
+
+
+class ReviewFixTest(unittest.TestCase):
+    """Fix round 1: link resolution, shell sources, URLs, variables and warnings."""
+
+    def test_link_resolves_from_its_folder_only(self) -> None:
+        """A link is read from its own file's folder, never from the skill root."""
+        files = {
+            "SKILL.md": VALID_SKILL_MD,
+            "references/a.md": "[b](references/b.md)\n",
+            "references/b.md": "y",
+        }
+        with tempfile.TemporaryDirectory() as tmp:
+            skill = load_skill(build_skill(Path(tmp), files) / "SKILL.md")
+            self.assertIsNone(resolve(skill, "references/b.md", "references/a.md", link=True))
+            self.assertEqual(
+                resolve(skill, "b.md", "references/a.md", link=True), "references/b.md"
+            )
+            graph = reference_graph(skill)
+        self.assertEqual(graph["references/a.md"], set())
+
+    def test_shell_source_through_variable_folder(self) -> None:
+        """Source "$D/lib.sh", with D the script's folder, is a reference."""
+        script = '#!/usr/bin/env bash\nD="$(cd "$(dirname "$0")" && pwd)"\nsource "$D/lib.sh"\n'
+        files = {"SKILL.md": VALID_SKILL_MD, "scripts/run.sh": script, "scripts/lib.sh": "x\n"}
+        with tempfile.TemporaryDirectory() as tmp:
+            skill = load_skill(build_skill(Path(tmp), files) / "SKILL.md")
+            graph = reference_graph(skill)
+            used = imported_or_sourced(skill)
+        self.assertEqual(graph["scripts/run.sh"], {"scripts/lib.sh"})
+        self.assertEqual(used, {"scripts/lib.sh"})
+
+    def test_shell_source_first_argument(self) -> None:
+        """The first word is the sourced file; later words are its arguments."""
+        files = {
+            "SKILL.md": VALID_SKILL_MD,
+            "scripts/run.sh": "#!/bin/sh\n. ./lib.sh arg.txt\n",
+            "scripts/lib.sh": "x\n",
+            "scripts/arg.txt": "y\n",
+        }
+        with tempfile.TemporaryDirectory() as tmp:
+            skill = load_skill(build_skill(Path(tmp), files) / "SKILL.md")
+            used = imported_or_sourced(skill)
+        self.assertEqual(used, {"scripts/lib.sh"})
+
+    def test_url_paths_and_bare_variable_ignored(self) -> None:
+        """Paths inside URLs, and ${VAR} not followed by /, name no file."""
+        body = "\nSee https://h.io/a/../scripts/run.py and `${CLAUDE_SKILL_DIR}scripts/run.py`.\n"
+        files = {"SKILL.md": VALID_SKILL_MD + body, "scripts/run.py": "print(1)\n"}
+        with tempfile.TemporaryDirectory() as tmp:
+            skill = load_skill(build_skill(Path(tmp), files) / "SKILL.md")
+            self.assertIsNone(resolve(skill, "${CLAUDE_SKILL_DIR}scripts/run.py", "SKILL.md"))
+            graph = reference_graph(skill)
+        self.assertEqual(graph["SKILL.md"], set())
+
+    def test_python_syntax_warning_ignored(self) -> None:
+        """A SyntaxWarning while parsing neither escapes nor drops the file's imports."""
+        files = {
+            "SKILL.md": VALID_SKILL_MD,
+            "scripts/main.py": 'import helper\nPATTERN = "\\d"\n',
+            "scripts/helper.py": "X = 1\n",
+        }
+        with tempfile.TemporaryDirectory() as tmp:
+            skill = load_skill(build_skill(Path(tmp), files) / "SKILL.md")
+            with warnings.catch_warnings():
+                warnings.simplefilter("error")
+                used = imported_or_sourced(skill)
+        self.assertEqual(used, {"scripts/helper.py"})

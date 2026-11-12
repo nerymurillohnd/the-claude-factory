@@ -6,16 +6,21 @@ from dataclasses import dataclass
 import re
 from urllib.parse import unquote
 
-FENCE_OPEN = re.compile(r"^ {0,3}(`{3,}|~{3,})(.*)$")
+FENCE_OPEN = re.compile(r"^( *)(`{3,}|~{3,})(.*)$")
+"""Any indent: a list item's fence is indented, and outside a list a fence indented 4 or
+more spaces sits in an indented code block, so its lines are code either way."""
 INLINE_CODE = re.compile(r"(?<!`)(`+)(?!`)(.+?)(?<!`)\1(?!`)")
-LINK_TARGET = r"(<[^<>\n]*>|[^\s()<>]*(?:\([^\s()]*\)[^\s()]*)*)"
+LINK_TARGET = r"(?P<target><[^<>\n]*>|[^\s()<>]*(?:\([^\s()]*\)[^\s()]*)*)"
 LINK_TITLE = r"""(?:\s+(?:"[^"]*"|'[^']*'|\([^)]*\)))?"""
-INLINE_LINK = re.compile(r"\[(?:[^\[\]]|\[[^\]]*\])*\]\(\s*" + LINK_TARGET + LINK_TITLE + r"\s*\)")
+INLINE_LINK = re.compile(
+    r"!?\[(?P<text>(?:[^\[\]]|\[[^\]]*\])*)\]\(\s*" + LINK_TARGET + LINK_TITLE + r"\s*\)"
+)
 REF_DEFINITION = re.compile(r"^ {0,3}\[([^\]]+)\]:\s*(<[^<>\n]*>|\S+)" + LINK_TITLE + r"\s*$")
 ATX_HEADING = re.compile(r"^ {0,3}(#{1,6})(?:[ \t]+(.*?))?(?:[ \t]+#+)?[ \t]*$")
 SETEXT_UNDERLINE = re.compile(r"^ {0,3}(?:=+|-+)[ \t]*$")
 NOT_PARAGRAPH = re.compile(r"^ {0,3}(?:[-*+>]|\d+[.)]|#|\||<)")
 EXPLICIT_ANCHOR = re.compile(r"""<a\s[^>]*?\b(?:id|name)\s*=\s*["']([^"']+)["']""", re.IGNORECASE)
+FRAGMENT = re.compile(r"^([^#?]*)(.*)$", re.DOTALL)
 SKIPPED_SCHEMES = re.compile(r"^(?:https?|mailto):", re.IGNORECASE)
 SLUG_DROP = re.compile(r"[^\w\- ]")
 MARKUP_LINK = re.compile(r"!?\[([^\]]*)\]\([^)]*\)")
@@ -87,21 +92,35 @@ def github_slug(text: str, seen: dict[str, int]) -> str:
     return slug
 
 
-def _plain(text: str) -> str:
-    """Strip inline markup from heading text the way GitHub renders it."""
+def _strip_markup(text: str) -> str:
+    """Strip link, tag, * and _ emphasis markup from text outside code spans."""
     text = MARKUP_LINK.sub(r"\1", text)
-    text = MARKUP_TAG.sub("", text).replace("`", "").replace("*", "")
-    return MARKUP_EMPHASIS.sub(r"\1", text).strip()
+    text = MARKUP_TAG.sub("", text).replace("*", "")
+    return MARKUP_EMPHASIS.sub(r"\1", text)
+
+
+def _plain(text: str) -> str:
+    """Render heading text as GitHub does: code spans verbatim, markup stripped elsewhere."""
+    parts: list[str] = []
+    end = 0
+    for match in INLINE_CODE.finditer(text):
+        parts.extend((_strip_markup(text[end : match.start()]), match.group(2).strip()))
+        end = match.end()
+    parts.append(_strip_markup(text[end:]))
+    return "".join(parts).strip()
 
 
 def _target(raw: str) -> str | None:
     """Unwrap and decode a link target; None for external or empty targets."""
     if raw.startswith("<") and raw.endswith(">"):
         raw = raw[1:-1]
-    target = unquote(raw.strip())
-    if not target or SKIPPED_SCHEMES.match(target):
+    raw = raw.strip()
+    if not raw or SKIPPED_SCHEMES.match(raw):
         return None
-    return target
+    split = FRAGMENT.match(raw)
+    path, rest = (split.group(1), split.group(2)) if split else (raw, "")
+    path = unquote(path).replace("#", "%23").replace("?", "%3F")
+    return path + unquote(rest)
 
 
 class _Builder:
@@ -142,9 +161,10 @@ class _Builder:
             return
         prose = INLINE_CODE.sub(lambda match: self._inline(raw, match, line), raw)
         for match in INLINE_LINK.finditer(prose):
-            target = _target(match.group(1))
+            target = _target(match.group("target"))
             if target is not None:
                 self.links.append(Link(target, line))
+        prose = INLINE_LINK.sub(lambda match: match.group("text"), prose)
         self.anchors.update(found.group(1) for found in EXPLICIT_ANCHOR.finditer(prose))
         if prose.strip():
             self.prose.append((line, prose.strip()))
@@ -174,13 +194,22 @@ class _Builder:
         )
 
 
-def _close(lines: list[str], start: int, marker: str) -> int:
-    """Return the index of the line closing a fence, or len(lines) when it never closes."""
-    closing = re.compile(rf"^ {{0,3}}{re.escape(marker[0])}{{{len(marker)},}}[ \t]*$")
+def _close(lines: list[str], start: int, marker: str, indent: int) -> int:
+    """Return the index of the line closing a fence, or len(lines) when it never closes.
+
+    The closing fence may be indented up to 3 spaces more than the opening one.
+    """
+    char = re.escape(marker[0])
+    closing = re.compile(rf"^ {{0,{indent + 3}}}{char}{{{len(marker)},}}[ \t]*$")
     for index in range(start, len(lines)):
         if closing.match(lines[index]):
             return index
     return len(lines)
+
+
+def _dedent(row: str, indent: int) -> str:
+    """Remove up to indent leading spaces from a fence content line."""
+    return row[min(indent, len(row) - len(row.lstrip(" "))) :]
 
 
 def _setext(lines: list[str], index: int) -> bool:
@@ -203,9 +232,11 @@ def parse_markdown(text: str, first_line: int = 1) -> MarkdownDoc:
         raw = lines[index]
         line = first_line + index
         fence = FENCE_OPEN.match(raw)
-        if fence is not None and not (fence.group(1)[0] == "`" and "`" in fence.group(2)):
-            end = _close(lines, index + 1, fence.group(1))
-            found.fence(fence.group(2).strip(), lines[index + 1 : end], line)
+        if fence is not None and not (fence.group(2)[0] == "`" and "`" in fence.group(3)):
+            indent = len(fence.group(1))
+            end = _close(lines, index + 1, fence.group(2), indent)
+            body = [_dedent(row, indent) for row in lines[index + 1 : end]]
+            found.fence(fence.group(3).strip(), body, line)
             index = end + 1
             continue
         heading = ATX_HEADING.match(raw)

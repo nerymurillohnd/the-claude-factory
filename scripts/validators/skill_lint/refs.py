@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import ast
 from collections import deque
 import os
 from pathlib import Path
@@ -11,6 +10,7 @@ import re
 from typing import TYPE_CHECKING
 
 from validators.skill_lint.markdown import parse_markdown
+from validators.skill_lint.script_refs import is_shell, python_imports, sourced_paths
 
 if TYPE_CHECKING:
     from collections.abc import Iterable, Mapping
@@ -21,19 +21,17 @@ if TYPE_CHECKING:
 PATH_TOKEN = re.compile(r"[\w${}./-]+\.\w+")
 PREFIX_TOKEN = re.compile(r"(?:\$\{?CLAUDE_(?:SKILL_DIR|PLUGIN_ROOT)\}?|\.\.?)/[\w${}./-]*")
 """Tokens that start with a known prefix, even without a file extension."""
-VARIABLE = re.compile(
-    r"^\$(?:\{(CLAUDE_SKILL_DIR|CLAUDE_PLUGIN_ROOT)\}|(CLAUDE_SKILL_DIR|CLAUDE_PLUGIN_ROOT)\b)/?"
-)
-SOURCE = re.compile(r"(?:^|[\s;&|(])(?:source|\.)[ \t]+([^\n;&|]+)")
-SOURCE_PATH = re.compile(r"[\w.-]+(?:/[\w.-]+)*\.\w+")
+URL = re.compile(r"[A-Za-z][\w+.-]*://\S+")
+VARIABLE_NAME = r"(CLAUDE_SKILL_DIR|CLAUDE_PLUGIN_ROOT)"
+VARIABLE = re.compile(rf"^\$(?:\{{{VARIABLE_NAME}\}}|{VARIABLE_NAME})(?:/|$)")
 MARKDOWN = (".md", ".markdown")
-SHELL = (".sh", ".bash", ".zsh")
 SKILL_MD = "SKILL.md"
 
 
 def _path_part(token: str) -> str:
-    """Drop a #fragment and a ?query from a token."""
-    return token.split("#", 1)[0].split("?", 1)[0]
+    """Drop a #fragment and a ?query from a token, then restore an encoded # or ?."""
+    path = token.split("#", 1)[0].split("?", 1)[0]
+    return path.replace("%23", "#").replace("%3F", "?")
 
 
 def _is_absolute(path: str) -> bool:
@@ -58,32 +56,53 @@ def _variable_base(skill: Skill, path: str) -> tuple[Path | None, str] | None:
     return None, rest
 
 
-def _candidates(skill: Skill, path: str, from_file: str) -> list[Path]:
-    """List the places a path may point to, in the order they are tried."""
-    variable = _variable_base(skill, path)
-    if variable is not None:
-        base, rest = variable
-        return [] if base is None else [base / rest]
-    if _is_absolute(path):
-        return []
-    return [skill.root / posixpath.dirname(from_file) / path, skill.root / path]
+class _Resolver:
+    """Resolves tokens against one skill, with its file set and root computed once."""
 
+    def __init__(self, skill: Skill) -> None:
+        """Index the skill's files and normalize its root."""
+        self.skill: Skill = skill
+        self.files: frozenset[str] = frozenset(skill.files)
+        self.root: Path = Path(os.path.normpath(skill.root))
+        self.real_root: Path = skill.root.resolve()
 
-def resolve(skill: Skill, token: str, from_file: str) -> str | None:
-    """Return the relative POSIX path of the skill file a token names, or None."""
-    path = _path_part(token)
-    if not path:
+    def candidates(self, path: str, from_file: str, *, link: bool) -> list[Path]:
+        """List the places a path may point to, in the order they are tried."""
+        variable = _variable_base(self.skill, path)
+        if variable is not None:
+            base, rest = variable
+            return [] if base is None else [base / rest]
+        if _is_absolute(path):
+            return []
+        near = self.skill.root / posixpath.dirname(from_file) / path
+        return [near] if link else [near, self.skill.root / path]
+
+    def resolve(self, token: str, from_file: str, *, link: bool = False) -> str | None:
+        """Return the relative POSIX path of the skill file a token names, or None."""
+        path = _path_part(token)
+        if not path:
+            return None
+        for candidate in self.candidates(path, from_file, link=link):
+            target = Path(os.path.normpath(candidate))
+            if not target.is_relative_to(self.root):
+                continue
+            rel = target.relative_to(self.root).as_posix()
+            if (
+                rel in self.files
+                and target.is_file()
+                and target.resolve().is_relative_to(self.real_root)
+            ):
+                return rel
         return None
-    root = Path(os.path.normpath(skill.root))
-    real_root = skill.root.resolve()
-    for candidate in _candidates(skill, path, from_file):
-        target = Path(os.path.normpath(candidate))
-        if not target.is_relative_to(root):
-            continue
-        rel = target.relative_to(root).as_posix()
-        if rel in skill.files and target.is_file() and target.resolve().is_relative_to(real_root):
-            return rel
-    return None
+
+
+def resolve(skill: Skill, token: str, from_file: str, *, link: bool = False) -> str | None:
+    """Return the relative POSIX path of the skill file a token names, or None.
+
+    A Markdown link (link=True) is read only from from_file's folder, as GitHub and Claude
+    read it. Any other relative token is read from that folder, then from the skill root.
+    """
+    return _Resolver(skill).resolve(token, from_file, link=link)
 
 
 def escapes(skill: Skill, token: str, from_file: str) -> bool:
@@ -105,11 +124,12 @@ def escapes(skill: Skill, token: str, from_file: str) -> bool:
 
 
 def _tokens(texts: Iterable[str]) -> set[str]:
-    """Collect the path-looking tokens of some texts."""
+    """Collect the path-looking tokens of some texts, ignoring URLs."""
     found: set[str] = set()
     for text in texts:
-        found.update(PATH_TOKEN.findall(text))
-        found.update(PREFIX_TOKEN.findall(text))
+        local = URL.sub(" ", text)
+        found.update(PATH_TOKEN.findall(local))
+        found.update(PREFIX_TOKEN.findall(local))
     return found
 
 
@@ -122,90 +142,51 @@ def _markdown_texts(skill: Skill, rel: str, doc: MarkdownDoc) -> list[str]:
     return texts
 
 
-def _imported_modules(tree: ast.AST) -> list[str]:
-    """List the module names a Python tree imports, absolutely or from its own package."""
-    modules: list[str] = []
-    for node in ast.walk(tree):
-        if isinstance(node, ast.Import):
-            modules.extend(alias.name for alias in node.names)
-        elif isinstance(node, ast.ImportFrom) and node.level <= 1:
-            if node.module is not None:
-                modules.append(node.module)
-            elif node.level == 1:
-                modules.extend(alias.name for alias in node.names)
-    return modules
-
-
-def _python_refs(skill: Skill, rel: str, text: str) -> set[str]:
-    """Return the sibling modules a Python file imports; none when it does not parse."""
-    try:
-        tree = ast.parse(text)
-    except SyntaxError, ValueError:
-        return set()
-    folder = posixpath.dirname(rel)
-    found: set[str] = set()
-    for module in _imported_modules(tree):
-        stem = posixpath.join(folder, module.replace(".", "/"))
-        found.update(c for c in (f"{stem}.py", f"{stem}/__init__.py") if c in skill.files)
-    return found
-
-
-def _is_shell(rel: str, text: str) -> bool:
-    """Tell whether a file is a shell script, by extension or shebang."""
-    first = text.split("\n", 1)[0]
-    return rel.endswith(SHELL) or (first.startswith("#!") and "sh" in first.rsplit("/", 1)[-1])
-
-
-def _shell_refs(skill: Skill, rel: str, text: str) -> set[str]:
-    """Return the skill files a shell script sources with source or ."""
-    if not _is_shell(rel, text):
-        return set()
-    found: set[str] = set()
-    for line in text.split("\n"):
-        if line.lstrip().startswith("#"):
-            continue
-        for match in SOURCE.finditer(line):
-            paths: list[str] = SOURCE_PATH.findall(match.group(1))
-            target = resolve(skill, paths[-1], rel) if paths else None
-            if target is not None:
-                found.add(target)
-    return found
-
-
-def _script_refs(skill: Skill, rel: str) -> set[str]:
+def _script_refs(resolver: _Resolver, rel: str) -> set[str]:
     """Return the files a script imports or sources."""
-    text = skill.text.get(rel)
+    text = resolver.skill.text.get(rel)
     if text is None:
         return set()
-    refs = _shell_refs(skill, rel, text)
+    refs: set[str] = set()
+    if is_shell(rel, text):
+        for path in sourced_paths(text):
+            target = resolver.resolve(path, rel, link=True)
+            if target is not None:
+                refs.add(target)
     if rel.endswith(".py"):
-        refs |= _python_refs(skill, rel, text)
-    return refs
+        refs |= python_imports(rel, text, resolver.files)
+    return refs - {rel}
 
 
-def _file_refs(skill: Skill, rel: str) -> set[str]:
+def _file_refs(resolver: _Resolver, rel: str) -> set[str]:
     """Return the files one skill file references."""
+    skill = resolver.skill
     text = skill.text.get(rel)
     if text is None:
         return set()
-    found = _script_refs(skill, rel)
+    found = _script_refs(resolver, rel)
+    tokens: Iterable[str]
     if rel.endswith(MARKDOWN):
         doc = skill.body if rel == SKILL_MD else parse_markdown(text)
-        targets = [link.target for link in doc.links]
-        targets.extend(_tokens(_markdown_texts(skill, rel, doc)))
+        for link in doc.links:
+            found.add(resolver.resolve(link.target, rel, link=True) or rel)
+        tokens = _tokens(_markdown_texts(skill, rel, doc))
     else:
-        targets = sorted(_tokens([text]))
-    for token in targets:
-        target = resolve(skill, token, rel)
-        if target is not None:
-            found.add(target)
+        tokens = _tokens([text])
+    for token in tokens:
+        found.add(resolver.resolve(token, rel) or rel)
     found.discard(rel)
     return found
 
 
 def reference_graph(skill: Skill) -> dict[str, set[str]]:
-    """Map every file of the skill, binary ones included, to the files it references."""
-    return {rel: _file_refs(skill, rel) for rel in skill.files}
+    """Map every file of the skill, binary ones included, to the files it references.
+
+    Markdown links are read from their file's folder only; path tokens in code, prose,
+    frontmatter and scripts also from the skill root. Tokens that name no file are ignored.
+    """
+    resolver = _Resolver(skill)
+    return {rel: _file_refs(resolver, rel) for rel in skill.files}
 
 
 def depths(graph: Mapping[str, set[str]], start: str = SKILL_MD) -> dict[str, int]:
@@ -223,7 +204,8 @@ def depths(graph: Mapping[str, set[str]], start: str = SKILL_MD) -> dict[str, in
 
 def imported_or_sourced(skill: Skill) -> set[str]:
     """Return the files another file of the skill imports (Python) or sources (shell)."""
+    resolver = _Resolver(skill)
     found: set[str] = set()
     for rel in skill.files:
-        found |= _script_refs(skill, rel) - {rel}
+        found |= _script_refs(resolver, rel)
     return found
