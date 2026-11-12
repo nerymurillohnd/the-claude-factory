@@ -13,7 +13,7 @@ from validators.skill_lint.script_refs import is_shell
 if TYPE_CHECKING:
     from collections.abc import Iterator
 
-    from validators.skill_lint.markdown import MarkdownDoc
+    from validators.skill_lint.markdown_model import MarkdownDoc
 
 RUN_LANGS = frozenset({"bash", "sh", "shell", "console", "zsh"})
 INTERPRETER_WORDS = frozenset({"python3", "python", "uv", "bash", "sh", "node"})

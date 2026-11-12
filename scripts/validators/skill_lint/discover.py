@@ -10,11 +10,12 @@ import subprocess
 from typing import TYPE_CHECKING
 
 from validators.skill_lint.frontmatter import BOM, Frontmatter, parse_frontmatter
-from validators.skill_lint.markdown import MarkdownDoc, parse_markdown
+from validators.skill_lint.markdown import parse_markdown
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Mapping
 
+    from validators.skill_lint.markdown_model import MarkdownDoc
     from validators.skill_lint.model import SkillKind
 
 type ModeReader = Callable[[Path], Mapping[str, str]]

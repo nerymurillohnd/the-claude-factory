@@ -8,11 +8,12 @@ import fnmatch
 import re
 from typing import TYPE_CHECKING, cast
 
-from validators.skill_lint.markdown import BangCommand, parse_markdown
+from validators.skill_lint.markdown import parse_markdown
 from validators.skill_lint.model import Finding, Severity
 
 if TYPE_CHECKING:
     from validators.skill_lint.discover import Skill
+    from validators.skill_lint.markdown_model import BangCommand
 
 SKILLS_DOC = "https://code.claude.com/docs/en/skills"
 SOURCES: dict[str, str] = {

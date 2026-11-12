@@ -1,197 +1,29 @@
-"""A line-based model of a skill's Markdown: links, headings, anchors, code, ! commands, prose."""
+"""A line-based scan of a skill's Markdown into a MarkdownDoc: blocks, comments, headings."""
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 import re
-from urllib.parse import unquote
+
+from validators.skill_lint.markdown_model import INLINE_CODE, DocBuilder, MarkdownDoc
 
 FENCE_OPEN = re.compile(r"^( *)(`{3,}|~{3,})(.*)$")
-"""Any indent: a list item's fence is indented, and outside a list a fence indented 4 or
-more spaces sits in an indented code block, so its lines are code either way."""
-INLINE_CODE = re.compile(r"(?<!`)(`+)(?!`)(.+?)(?<!`)\1(?!`)")
-LINK_TARGET = r"(?P<target><[^<>\n]*>|[^\s()<>]*(?:\([^\s()]*\)[^\s()]*)*)"
-LINK_TITLE = r"""(?:\s+(?:"[^"]*"|'[^']*'|\([^)]*\)))?"""
-INLINE_LINK = re.compile(
-    r"!?\[(?P<text>(?:[^\[\]]|\[[^\]]*\])*)\]\(\s*" + LINK_TARGET + LINK_TITLE + r"\s*\)"
-)
-REF_DEFINITION = re.compile(r"^ {0,3}\[([^\]]+)\]:\s*(<[^<>\n]*>|\S+)" + LINK_TITLE + r"\s*$")
+"""Any indent: a list item's fence is indented, so its lines are code either way."""
 ATX_HEADING = re.compile(r"^ {0,3}(#{1,6})(?:[ \t]+(.*?))?(?:[ \t]+#+)?[ \t]*$")
 SETEXT_UNDERLINE = re.compile(r"^ {0,3}(?:=+|-+)[ \t]*$")
 NOT_PARAGRAPH = re.compile(r"^ {0,3}(?:[-*+>]|\d+[.)]|#|\||<)")
-EXPLICIT_ANCHOR = re.compile(r"""<a\s[^>]*?\b(?:id|name)\s*=\s*["']([^"']+)["']""", re.IGNORECASE)
-FRAGMENT = re.compile(r"^([^#?]*)(.*)$", re.DOTALL)
-SKIPPED_SCHEMES = re.compile(r"^(?:https?|mailto):", re.IGNORECASE)
-SLUG_DROP = re.compile(r"[^\w\- ]")
-MARKUP_LINK = re.compile(r"!?\[([^\]]*)\]\([^)]*\)")
-MARKUP_TAG = re.compile(r"<[^>]+>")
-MARKUP_EMPHASIS = re.compile(r"(?<!\w)_+([^_]+)_+(?!\w)")
-BANG_INFO = "!"
+LIST_ITEM = re.compile(r"^ {0,3}(?:[-*+]|\d{1,9}[.)])(?:[ \t]|$)")
+COMMENT_OPEN = "<!--"
+COMMENT_CLOSE = "-->"
+CODE_INDENT = 4
+"""The indent of an indented code block line."""
+LIST_CONTENT_INDENT = 2
+"""The least indent of a line that continues a list item after a blank line."""
 
 
-@dataclass(frozen=True)
-class Link:
-    """A link target outside code: unwrapped from <...>, without title, percent-decoded."""
-
-    target: str
-    line: int
-
-
-@dataclass(frozen=True)
-class Heading:
-    """A heading, with its GitHub slug."""
-
-    text: str
-    line: int
-    slug: str
-
-
-@dataclass(frozen=True)
-class BangCommand:
-    """A ``!`cmd` `` (block False) or a fence with the info string ``!`` (block True).
-
-    A block command's line is the line of its opening fence.
-    """
-
-    command: str
-    line: int
-    block: bool
-
-
-@dataclass(frozen=True)
-class CodeSnippet:
-    """Inline code or a fenced block; a block's line is the line of its opening fence."""
-
-    text: str
-    line: int
-    lang: str | None
-    inline: bool
-
-
-@dataclass(frozen=True)
-class MarkdownDoc:
-    """Everything the rules read from one Markdown text."""
-
-    links: tuple[Link, ...]
-    headings: tuple[Heading, ...]
-    anchors: frozenset[str]
-    bang_commands: tuple[BangCommand, ...]
-    code: tuple[CodeSnippet, ...]
-    prose: tuple[tuple[int, str], ...]
-    """Non-blank lines outside fences, with inline code removed."""
-
-
-def github_slug(text: str, seen: dict[str, int]) -> str:
-    """Return GitHub's anchor slug for a heading's text, numbering repeats through seen."""
-    base = SLUG_DROP.sub("", text.lower()).replace(" ", "-")
-    slug = base
-    while slug in seen:
-        seen[base] += 1
-        slug = f"{base}-{seen[base]}"
-    seen[slug] = 0
-    return slug
-
-
-def _strip_markup(text: str) -> str:
-    """Strip link, tag, * and _ emphasis markup from text outside code spans."""
-    text = MARKUP_LINK.sub(r"\1", text)
-    text = MARKUP_TAG.sub("", text).replace("*", "")
-    return MARKUP_EMPHASIS.sub(r"\1", text)
-
-
-def _plain(text: str) -> str:
-    """Render heading text as GitHub does: code spans verbatim, markup stripped elsewhere."""
-    parts: list[str] = []
-    end = 0
-    for match in INLINE_CODE.finditer(text):
-        parts.extend((_strip_markup(text[end : match.start()]), match.group(2).strip()))
-        end = match.end()
-    parts.append(_strip_markup(text[end:]))
-    return "".join(parts).strip()
-
-
-def _target(raw: str) -> str | None:
-    """Unwrap and decode a link target; None for external or empty targets."""
-    if raw.startswith("<") and raw.endswith(">"):
-        raw = raw[1:-1]
-    raw = raw.strip()
-    if not raw or SKIPPED_SCHEMES.match(raw):
-        return None
-    split = FRAGMENT.match(raw)
-    path, rest = (split.group(1), split.group(2)) if split else (raw, "")
-    path = unquote(path).replace("#", "%23").replace("?", "%3F")
-    return path + unquote(rest)
-
-
-class _Builder:
-    """Accumulates the parts of a MarkdownDoc while lines are scanned."""
-
-    def __init__(self) -> None:
-        """Start with nothing found."""
-        self.links: list[Link] = []
-        self.headings: list[Heading] = []
-        self.anchors: set[str] = set()
-        self.bangs: list[BangCommand] = []
-        self.code: list[CodeSnippet] = []
-        self.prose: list[tuple[int, str]] = []
-        self.seen: dict[str, int] = {}
-
-    def heading(self, raw: str, line: int) -> None:
-        """Record a heading and its slug."""
-        text = _plain(raw)
-        slug = github_slug(text, self.seen)
-        self.headings.append(Heading(text, line, slug))
-        self.anchors.add(slug)
-
-    def fence(self, info: str, body: list[str], line: int) -> None:
-        """Record a fenced block, and a block ! command when the info string is !."""
-        text = "".join(f"{row}\n" for row in body)
-        lang = info.split(maxsplit=1)[0] if info.split() else None
-        self.code.append(CodeSnippet(text, line, lang, inline=False))
-        if info == BANG_INFO:
-            self.bangs.append(BangCommand(text, line, block=True))
-
-    def text_line(self, raw: str, line: int) -> None:
-        """Record the inline code, ! commands, links, anchors and prose of a line."""
-        definition = REF_DEFINITION.match(raw)
-        if definition is not None and not definition.group(1).startswith("^"):
-            target = _target(definition.group(2))
-            if target is not None:
-                self.links.append(Link(target, line))
-            return
-        prose = INLINE_CODE.sub(lambda match: self._inline(raw, match, line), raw)
-        for match in INLINE_LINK.finditer(prose):
-            target = _target(match.group("target"))
-            if target is not None:
-                self.links.append(Link(target, line))
-        prose = INLINE_LINK.sub(lambda match: match.group("text"), prose)
-        self.anchors.update(found.group(1) for found in EXPLICIT_ANCHOR.finditer(prose))
-        if prose.strip():
-            self.prose.append((line, prose.strip()))
-
-    def _inline(self, raw: str, match: re.Match[str], line: int) -> str:
-        """Record one inline code span and return the text that replaces it in prose."""
-        content = match.group(2)
-        if len(content) > 1 and content.startswith(" ") and content.endswith(" "):
-            content = content[1:-1]
-        self.code.append(CodeSnippet(content, line, None, inline=True))
-        start = match.start()
-        before = raw[start - 1] if start else ""
-        bang = raw[start - 2] if start > 1 else ""
-        if before == BANG_INFO and (start == 1 or bang.isspace()):
-            self.bangs.append(BangCommand(content, line, block=False))
-        return ""
-
-    def build(self) -> MarkdownDoc:
-        """Freeze what was found."""
-        return MarkdownDoc(
-            links=tuple(self.links),
-            headings=tuple(self.headings),
-            anchors=frozenset(self.anchors),
-            bang_commands=tuple(self.bangs),
-            code=tuple(self.code),
-            prose=tuple(self.prose),
-        )
+def _indent(row: str) -> int:
+    """Return a line's leading indent in columns, with tabs at 4."""
+    expanded = row.expandtabs(CODE_INDENT)
+    return len(expanded) - len(expanded.lstrip(" "))
 
 
 def _close(lines: list[str], start: int, marker: str, indent: int) -> int:
@@ -207,8 +39,28 @@ def _close(lines: list[str], start: int, marker: str, indent: int) -> int:
     return len(lines)
 
 
+def _container_end(lines: list[str], start: int, indent: int) -> int:
+    """Return the index of the first non-blank line indented less than indent."""
+    for index in range(start, len(lines)):
+        if lines[index].strip() and _indent(lines[index]) < indent:
+            return index
+    return len(lines)
+
+
+def _indented_end(lines: list[str], start: int) -> int:
+    """Return the index after the last line of the indented code block starting at start."""
+    last = start
+    for index in range(start, len(lines)):
+        if not lines[index].strip():
+            continue
+        if _indent(lines[index]) < CODE_INDENT:
+            break
+        last = index
+    return last + 1
+
+
 def _dedent(row: str, indent: int) -> str:
-    """Remove up to indent leading spaces from a fence content line."""
+    """Remove up to indent leading spaces from a code content line."""
     return row[min(indent, len(row) - len(row.lstrip(" "))) :]
 
 
@@ -223,30 +75,101 @@ def _setext(lines: list[str], index: int) -> bool:
     )
 
 
+def _split_comments(raw: str, *, inside: bool) -> tuple[str, str, bool]:
+    """Split a line into its text outside and inside HTML comments.
+
+    Markers inside inline code count for nothing. Returns (outside, inside text, whether a
+    comment is still open at the end of the line).
+    """
+    masked = INLINE_CODE.sub(lambda match: " " * len(match.group(0)), raw)
+    outside: list[str] = []
+    hidden: list[str] = []
+    pos = 0
+    while True:
+        marker = COMMENT_CLOSE if inside else COMMENT_OPEN
+        found = masked.find(marker, pos)
+        part = raw[pos:] if found < 0 else raw[pos:found]
+        (hidden if inside else outside).append(part)
+        if found < 0:
+            return "".join(outside), " ".join(hidden), inside
+        pos = found + len(marker)
+        inside = not inside
+
+
+class _Scanner:
+    """Walks the lines once, tracking open comments, lists and blank lines."""
+
+    def __init__(self, text: str, first_line: int) -> None:
+        """Split the text into lines and start before the first one."""
+        self.lines: list[str] = text.replace("\r\n", "\n").split("\n")
+        self.first_line: int = first_line
+        self.found: DocBuilder = DocBuilder()
+        self.in_comment: bool = False
+        self.in_list: bool = False
+        self.after_blank: bool = True
+
+    def run(self) -> MarkdownDoc:
+        """Scan every line and return what was found."""
+        index = 0
+        while index < len(self.lines):
+            raw = self.lines[index]
+            if not raw.strip():
+                self.after_blank = True
+                index += 1
+                continue
+            index = self._block(index) or self._text(index)
+            self.after_blank = False
+        return self.found.build()
+
+    def _block(self, index: int) -> int:
+        """Record an indented code block or a fence starting at index; 0 when there is none."""
+        if self.in_comment:
+            return 0
+        raw = self.lines[index]
+        line = self.first_line + index
+        if _indent(raw) >= CODE_INDENT and self.after_blank and not self.in_list:
+            end = _indented_end(self.lines, index)
+            body = [_dedent(row, CODE_INDENT) for row in self.lines[index:end]]
+            self.found.fence("", body, line)
+            return end
+        fence = FENCE_OPEN.match(raw)
+        if fence is None or (fence.group(2)[0] == "`" and "`" in fence.group(3)):
+            return 0
+        indent = len(fence.group(1))
+        close = _close(self.lines, index + 1, fence.group(2), indent)
+        end = close
+        if close == len(self.lines) and indent > 0:
+            end = _container_end(self.lines, index + 1, indent)
+        body = [_dedent(row, indent) for row in self.lines[index + 1 : end]]
+        self.found.fence(fence.group(3).strip(), body, line)
+        return end + 1 if end == close else end
+
+    def _text(self, index: int) -> int:
+        """Record a heading or text line at index and return the next index."""
+        raw = self.lines[index]
+        line = self.first_line + index
+        started_inside = self.in_comment
+        outside, hidden, self.in_comment = _split_comments(raw, inside=started_inside)
+        if started_inside or raw.lstrip().startswith(COMMENT_OPEN):
+            self.found.text_line(outside, line, hidden)
+            return index + 1
+        heading = ATX_HEADING.match(outside)
+        if heading is not None:
+            self.in_list = False
+            self.found.heading(heading.group(2) or "", line)
+        elif _setext(self.lines, index):
+            self.in_list = False
+            self.found.heading(outside.strip(), line)
+            self.found.text_line(outside, line, hidden)
+            return index + 2
+        elif LIST_ITEM.match(raw):
+            self.in_list = True
+        elif self.after_blank and _indent(raw) < LIST_CONTENT_INDENT:
+            self.in_list = False
+        self.found.text_line(outside, line, hidden)
+        return index + 1
+
+
 def parse_markdown(text: str, first_line: int = 1) -> MarkdownDoc:
     """Parse Markdown text whose first line is file line first_line."""
-    lines = text.replace("\r\n", "\n").split("\n")
-    found = _Builder()
-    index = 0
-    while index < len(lines):
-        raw = lines[index]
-        line = first_line + index
-        fence = FENCE_OPEN.match(raw)
-        if fence is not None and not (fence.group(2)[0] == "`" and "`" in fence.group(3)):
-            indent = len(fence.group(1))
-            end = _close(lines, index + 1, fence.group(2), indent)
-            body = [_dedent(row, indent) for row in lines[index + 1 : end]]
-            found.fence(fence.group(3).strip(), body, line)
-            index = end + 1
-            continue
-        heading = ATX_HEADING.match(raw)
-        if heading is not None:
-            found.heading(heading.group(2) or "", line)
-        elif _setext(lines, index):
-            found.heading(raw.strip(), line)
-            found.text_line(raw, line)
-            index += 2
-            continue
-        found.text_line(raw, line)
-        index += 1
-    return found.build()
+    return _Scanner(text, first_line).run()

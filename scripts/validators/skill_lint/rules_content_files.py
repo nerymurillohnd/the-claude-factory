@@ -8,12 +8,13 @@ import re
 from typing import TYPE_CHECKING
 from urllib.parse import unquote
 
-from validators.skill_lint.markdown import MarkdownDoc, parse_markdown
+from validators.skill_lint.markdown import parse_markdown
 from validators.skill_lint.model import Finding, Severity
 from validators.skill_lint.refs import depths, escapes, reference_graph, resolve
 
 if TYPE_CHECKING:
     from validators.skill_lint.discover import Skill
+    from validators.skill_lint.markdown_model import MarkdownDoc
 
 SKILLS_DOC = "https://code.claude.com/docs/en/skills"
 BEST_PRACTICES_DOC = (

@@ -16,7 +16,7 @@ paths:
 
 - Edit `skill_lint/cli.py` to change arguments, the order of the checks or the exit codes; keep `scripts/validators/skill-lint.py` a shim that only puts `scripts/` on the import path and runs `validators.skill_lint.cli` with `runpy`.
 - Edit `discover.py` to change which skills are found or what a `Skill` loads; keep the two globs `plugins/*/skills/*/SKILL.md` and `.claude/skills/*/SKILL.md`.
-- Edit `frontmatter.py` for YAML parsing, `markdown.py` for links, headings, code and `!` commands, `refs.py` for path resolution and the reference graph, `script_refs.py` for Python imports and shell `source` lines, and `commands.py` for the commands Markdown runs and scripts call.
+- Edit `frontmatter.py` for YAML parsing, `markdown.py` for the line scan (fences, indented code, HTML comments, headings), `markdown_model.py` for the `MarkdownDoc` parts, slugs, links, inline code and `!` commands, `refs.py` for path resolution and the reference graph, `script_refs.py` for Python imports and shell `source` lines, and `commands.py` for the commands Markdown runs and scripts call.
 - Add or change a rule in its family's module:
   - CO-01 to CO-06: `rules_content.py`.
   - CO-07 to CO-12: `rules_content_files.py`.
@@ -33,4 +33,4 @@ paths:
 - Read only files inside the skill folder; never write to a skill.
 - Build test skills in a `tempfile.TemporaryDirectory` with `build_skill()` and `load()` from `scripts/testers/skill_lint/helpers.py`; never commit fixture skills.
 - Write the failing test first, then the code; confirm the test fails with the rule disabled.
-- Split a module that grows past about 250 lines by responsibility, as `rules_content_files.py` and `commands.py` split from their parents, and update this rule in the same commit.
+- Split a module that grows past about 250 lines by responsibility, as `rules_content_files.py`, `commands.py` and `markdown_model.py` split from their parents, and update this rule in the same commit.

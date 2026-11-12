@@ -5,11 +5,12 @@ from __future__ import annotations
 import re
 from typing import TYPE_CHECKING
 
-from validators.skill_lint.markdown import MarkdownDoc, parse_markdown
+from validators.skill_lint.markdown import parse_markdown
 from validators.skill_lint.model import Finding, Severity
 
 if TYPE_CHECKING:
     from validators.skill_lint.discover import Skill
+    from validators.skill_lint.markdown_model import MarkdownDoc
 
 SKILLS_DOC = "https://code.claude.com/docs/en/skills"
 OVERVIEW_DOC = "https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview"

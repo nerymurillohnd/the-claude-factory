@@ -4,7 +4,8 @@ from __future__ import annotations
 
 import unittest
 
-from validators.skill_lint.markdown import github_slug, parse_markdown
+from validators.skill_lint.markdown import parse_markdown
+from validators.skill_lint.markdown_model import github_slug
 
 
 class LinkTest(unittest.TestCase):
@@ -97,3 +98,105 @@ class ReviewFixTest(unittest.TestCase):
         """Prose holds a link's text, not its target."""
         doc = parse_markdown("See [the guide](guide.md) and ![logo](logo.png).\n")
         self.assertEqual(doc.prose, ((1, "See the guide and logo."),))
+
+
+class CommentTest(unittest.TestCase):
+    """HTML comments: no links, headings, anchors or fences; their text stays prose."""
+
+    def test_link_in_one_line_comment(self) -> None:
+        """A link inside a comment is not a link, and the comment text is still prose."""
+        doc = parse_markdown("<!-- see [old](gone.md) -->\n[x](real.md)\n")
+        self.assertEqual([link.target for link in doc.links], ["real.md"])
+        self.assertIn("see", doc.prose[0][1])
+
+    def test_multi_line_comment_hides_heading_and_fence(self) -> None:
+        """Headings, fences and links inside a multi-line comment are not read."""
+        text = '<!--\n# Hidden\n<a id="gone"></a>\n```bash\n[a](x.md)\n-->\n## Shown\n'
+        doc = parse_markdown(text)
+        self.assertEqual([h.text for h in doc.headings], ["Shown"])
+        self.assertEqual((doc.links, doc.code), ((), ()))
+        self.assertNotIn("gone", doc.anchors)
+
+    def test_text_after_comment_close(self) -> None:
+        """Text after --> on the same line is read again."""
+        doc = parse_markdown("<!-- a --> [x](y.md)\n")
+        self.assertEqual([link.target for link in doc.links], ["y.md"])
+
+    def test_comment_marker_in_inline_code(self) -> None:
+        """A <!-- inside inline code opens no comment."""
+        doc = parse_markdown("Use `<!--` to start.\n[x](real.md)\n")
+        self.assertEqual([link.target for link in doc.links], ["real.md"])
+
+
+class SchemeTest(unittest.TestCase):
+    """Targets with a URI scheme or a network path are external."""
+
+    def test_any_scheme_and_network_path_skipped(self) -> None:
+        """Ftp, vscode and //host targets are skipped; a drive letter stays a path."""
+        text = "[a](ftp://h/x.md)\n[b](vscode:extension/x)\n[c](//host/x.md)\n[d](C:\\x.md)\n"
+        doc = parse_markdown(text)
+        self.assertEqual([link.target for link in doc.links], ["C:\\x.md"])
+
+
+class IndentedCodeTest(unittest.TestCase):
+    """Unclosed indented fences and indented code blocks."""
+
+    def test_unclosed_list_fence_ends_with_its_item(self) -> None:
+        """An unclosed fence in a list item ends at the first less-indented line."""
+        text = "- item\n\n    ```bash\n    echo\n\n## After\n[x](y.md)\n"
+        doc = parse_markdown(text)
+        self.assertEqual([h.text for h in doc.headings], ["After"])
+        self.assertEqual([link.target for link in doc.links], ["y.md"])
+
+    def test_unclosed_top_level_fence_runs_to_end(self) -> None:
+        """An unclosed fence at column 0 runs to the end of the document."""
+        doc = parse_markdown("```\n# x\n[a](b.md)\n")
+        self.assertEqual((doc.headings, doc.links), ((), ()))
+
+    def test_indented_code_block(self) -> None:
+        """Lines indented 4 spaces after a blank line, outside a list, are code."""
+        text = "Para.\n\n    [a](x.md)\n    # not heading\n\nAfter [b](y.md)\n"
+        doc = parse_markdown(text)
+        self.assertEqual([link.target for link in doc.links], ["y.md"])
+        self.assertEqual(doc.headings, ())
+        block = next(c for c in doc.code if not c.inline)
+        self.assertEqual((block.text, block.line), ("[a](x.md)\n# not heading\n", 3))
+
+    def test_unclosed_fence_in_indented_code(self) -> None:
+        """A fence opener inside an indented code block opens nothing."""
+        text = "Para.\n\n    ```\n    code\n\n## After\n[x](y.md)\n"
+        doc = parse_markdown(text)
+        self.assertEqual([h.text for h in doc.headings], ["After"])
+        self.assertEqual([link.target for link in doc.links], ["y.md"])
+
+    def test_list_continuation_stays_prose(self) -> None:
+        """A 4-space continuation paragraph of a list item is prose, with its links."""
+        doc = parse_markdown("- item\n\n    more [a](x.md)\n")
+        self.assertEqual([link.target for link in doc.links], ["x.md"])
+
+
+class SlugSourceTest(unittest.TestCase):
+    """Slugs follow github-slugger 2.0.0: drop punctuation, symbols and Other_Number."""
+
+    def test_entity_decoded_before_slug(self) -> None:
+        """&amp; renders as &, which the slug drops."""
+        doc = parse_markdown("## A &amp; B\n")
+        self.assertEqual(doc.headings[0].slug, "a--b")
+
+    def test_entity_kept_in_code_span(self) -> None:
+        """An entity inside a code span renders literally."""
+        doc = parse_markdown("## Show `&lt;`\n")
+        self.assertEqual(doc.headings[0].slug, "show-lt")
+
+    def test_emoji_dropped(self) -> None:
+        """An emoji is a symbol and is dropped."""
+        self.assertEqual(github_slug("Ready 🚀", {}), "ready-")
+
+    def test_combining_marks_kept(self) -> None:
+        """Combining marks are not in the dropped categories."""
+        self.assertEqual(github_slug("नमस्ते", {}), "नमस्ते")
+        self.assertEqual(github_slug("Cafe\u0301", {}), "cafe\u0301")
+
+    def test_other_number_dropped(self) -> None:
+        """Superscript digits are Other_Number and are dropped; decimal digits stay."""
+        self.assertEqual(github_slug("x² 2", {}), "x-2")

@@ -16,7 +16,7 @@ if TYPE_CHECKING:
     from collections.abc import Iterable, Mapping
 
     from validators.skill_lint.discover import Skill
-    from validators.skill_lint.markdown import MarkdownDoc
+    from validators.skill_lint.markdown_model import MarkdownDoc
 
 PATH_TOKEN = re.compile(r"[\w${}./-]+\.\w+")
 PREFIX_TOKEN = re.compile(r"(?:\$\{?CLAUDE_(?:SKILL_DIR|PLUGIN_ROOT)\}?|\.\.?)/[\w${}./-]*")

@@ -86,7 +86,7 @@ Each finding carries a rule id, family, severity, `file:line`, message and sourc
 | CO-04 | ✗ | `description` + `when_to_use` are at most 1,536 characters. Claude Code truncates beyond that and doesn't reject, so the message says "truncated" |
 | CO-05 | ✗ | `compatibility` is at most 500 characters. `metadata` is a map of strings |
 | CO-06 | ✗ | The SKILL.md body (the lines after the closing `---`) has fewer than 500 lines; 500 fails, matching "under 500 lines" |
-| CO-07 | ✗ | Every relative link and `#anchor` resolves (GitHub slugs; links in code are ignored) |
+| CO-07 | ✗ | Every relative link and `#anchor` resolves (slugs as github-slugger 2.0.0 builds them; links in code and in HTML comments are ignored; a target with a URI scheme of two or more characters, or starting with `//`, is external and not checked) |
 | CO-08 | ✗ | No link or path leaves the skill folder |
 | CO-09 | ✗ | Depth: a `.md` file that is reached only through another bundled file, never linked from SKILL.md (depth > 1) |
 | CO-10 | ✗ | A reference file over 100 lines has a table of contents: within the first 20 non-blank lines after its first heading, at least 2 list items that link to `#anchors` in the same file |
@@ -153,7 +153,8 @@ scripts/validators/
     ├── model.py             # Skill, Finding, Severity, Family
     ├── discover.py          # the two skill globs; plugin or project from the path; git ls-files -s modes
     ├── frontmatter.py       # ruamel.yaml strict load (duplicate keys), line numbers
-    ├── markdown.py          # links, anchors, headings, fences, inline code, ! commands
+    ├── markdown.py          # line scan: fences, indented code, HTML comments, headings
+    ├── markdown_model.py    # the MarkdownDoc parts, slugs, links, inline code, ! commands
     ├── refs.py              # reference graph: links, path mentions, imports, source lines
     ├── rules_content.py
     ├── rules_portability.py
