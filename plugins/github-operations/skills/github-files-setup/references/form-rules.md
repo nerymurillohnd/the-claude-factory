@@ -36,9 +36,9 @@ Sources, read on 12 November 2026: GitHub's [Syntax for issue forms](https://doc
 
 ## Values that YAML reads as something else
 
-GitHub reads forms as YAML 1.1. An unquoted value in this list becomes a boolean, not text: `y`, `Y`, `yes`, `Yes`, `YES`, `n`, `N`, `no`, `No`, `NO`, `true`, `True`, `TRUE`, `false`, `False`, `FALSE`, `on`, `On`, `ON`, `off`, `Off` and `OFF`. An unquoted number, such as `1.3`, becomes a number.
+GitHub reads forms as YAML 1.1. An unquoted value in this list becomes a boolean, not text: `y`, `Y`, `yes`, `Yes`, `YES`, `n`, `N`, `no`, `No`, `NO`, `true`, `True`, `TRUE`, `false`, `False`, `FALSE`, `on`, `On`, `ON`, `off`, `Off` and `OFF`. An unquoted number, such as `1.3`, becomes a number, and an unquoted date, such as `2025-02-03`, becomes a date.
 
-- In every text value (`name`, `description`, `title`, `id`, `label`, `placeholder`, `value`, `assignees`, each option and each label name), quote such a value: `"Yes"`, `"1.3"`.
+- In every text value (`name`, `description`, `title`, `id`, `label`, `placeholder`, `value`, `assignees`, each option and each label name), quote such a value: `"Yes"`, `"1.3"`, `"2025-02-03"`.
 - `required` and `multiple` are booleans: write `true` or `false`.
 
 ## Options
@@ -49,7 +49,7 @@ GitHub reads forms as YAML 1.1. An unquoted value in this list becomes a boolean
 ## Labels and placeholders
 
 - The form's `labels:` names each label once, compared without regard to case. Every label it names must exist in the repository, or GitHub skips it without warning: the labels step creates them.
-- No upper-case placeholder such as `<OWNER>` or `<FAQ_PATH>` is left. Lower-case prompts in a `title`, such as `<short summary>`, stay.
+- No upper-case placeholder such as `<OWNER>` or `<FAQ_PATH>` is left. Upper-case HTML tags such as `<BR>` are not placeholders. Lower-case prompts in a `title`, such as `<short summary>`, stay.
 
 ## config.yml
 

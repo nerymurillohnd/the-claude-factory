@@ -53,10 +53,11 @@ issue: forms in .github/ISSUE_TEMPLATE/; issue-config: its config.yml; discussio
 .github/DISCUSSION_TEMPLATE/; dependabot: .github/dependabot.yml or .yaml"""
 EPILOG = """\
 schema errors:
-  printed at the line and column of the node they name. Left out where GitHub's documentation
-  allows what the schema refuses: min_length under the validations of an issue form's input or
-  textarea; validations holding only required on a checkboxes field; and a value the schema
-  wants as a boolean written as an unquoted word YAML 1.1 reads as one (yes, off, ...).
+  printed at the line and column of the node they name, or as FILE: PATH: message when that
+  node can't be found. Left out where GitHub's documentation allows what the schema refuses:
+  min_length under the validations of an issue form's input or textarea; validations holding
+  only required on a checkboxes field; and, in dependabot.yml, a package-ecosystem the
+  Dependabot options reference lists but the schema lacks (apm).
 
 rules checked beyond the schema, in issue and discussion forms:
   every body id is unique; a label without an id does not give the same reference (as Rails
@@ -65,13 +66,24 @@ rules checked beyond the schema, in issue and discussion forms:
   no label in labels is listed twice (ignoring case); no dropdown option is None, or n/a when
   the dropdown sets a default, and none is listed twice; no string value (name, description,
   title, id, label, placeholder, value, and the items of options, labels and assignees) is an
-  unquoted word YAML 1.1 reads as a boolean (y, Yes, OFF, ...) or as a number, or is empty or
-  only whitespace; the body has a field that is not markdown; an input or textarea label holds
+  unquoted word YAML 1.1 reads as a boolean (y, Yes, OFF, ...), a number or a date, or is empty
+  or only whitespace; the body has a field that is not markdown; an input or textarea label holds
   no blocked word (password). Issue forms only: the name is more than 3 characters, and no two
   files checked in one run share a name (ignoring case). Discussion forms only: no name or
   description key. Every kind: no <PLACEHOLDER> of two or more capitals, digits or underscores,
-  such as <OWNER>, is left in the file. The setup skill's references/form-rules.md lists the
-  same rules.
+  such as <OWNER>, is left in the file (upper-case HTML tags such as <BR> or <DETAILS> are not
+  placeholders).
+
+GitHub's pages behind these rules:
+  Syntax for issue forms: https://docs.github.com/en/communities/using-templates-to-encourage-
+    useful-issues-and-pull-requests/syntax-for-issue-forms
+  Syntax for GitHub's form schema: https://docs.github.com/en/communities/using-templates-to-
+    encourage-useful-issues-and-pull-requests/syntax-for-githubs-form-schema
+  Common validation errors when creating issue forms: https://docs.github.com/en/communities/
+    using-templates-to-encourage-useful-issues-and-pull-requests/common-validation-errors-when-
+    creating-issue-forms
+  Dependabot options reference: https://docs.github.com/en/code-security/reference/supply-
+    chain-security/dependabot-options-reference
 
 requirements:
   Python 3.12+ with ruamel.yaml 0.19.1 and check-jsonschema 0.39.0 installed, at exactly those
@@ -110,8 +122,10 @@ BOOLEAN_WORDS = frozenset(
     for spelling in (word, word.capitalize(), word.upper())
 )
 # The same page ("Body[i]: label must be a string") warns that unquoted integers and decimals
-# are not strings either; YAML 1.1 resolves those plain scalars to these tags.
+# are not strings either; YAML 1.1 resolves those plain scalars to these tags. A plain date or
+# time (2025-02-03) resolves to a timestamp, which is not a string either.
 NUMBER_TAGS = ("tag:yaml.org,2002:int", "tag:yaml.org,2002:float")
+DATE_TAG = "tag:yaml.org,2002:timestamp"
 # Keys whose value GitHub expects as a string, at any depth of a form; under the list keys, each
 # item is such a string (or the whole value is, as a comma-separated list).
 STRING_KEYS = frozenset(("name", "description", "title", "id", "label", "placeholder", "value"))
@@ -123,10 +137,19 @@ RESERVED_WITH_DEFAULT = ("none", "n/a")
 BLOCKED_LABEL_WORDS = ("password",)
 MINIMUM_NAME_LENGTH = 4
 PLACEHOLDER = re.compile(r"<[A-Z][A-Z0-9_]+>")
+# Upper-case HTML element names a form's Markdown may hold; they are not placeholders.
+INLINE_TAGS = ("BR", "HR", "B", "I", "P", "A", "EM", "STRONG", "KBD", "SUB", "SUP", "CODE", "IMG")
+BLOCK_TAGS = ("DIV", "SPAN", "PRE", "UL", "OL", "LI", "DETAILS", "SUMMARY")
+TABLE_TAGS = ("TABLE", "TR", "TD", "TH")
+HEADING_TAGS = ("H1", "H2", "H3", "H4", "H5", "H6")
+HTML_TAGS = frozenset((*INLINE_TAGS, *BLOCK_TAGS, *TABLE_TAGS, *HEADING_TAGS))
 # Schema errors that GitHub's form schema documentation contradicts (see Form.allows).
 MIN_LENGTH_GAP = "Additional properties are not allowed ('min_length' was unexpected)"
 CHECKBOX_GAP = "Additional properties are not allowed ('validations' was unexpected)"
-NOT_BOOLEAN = re.compile(r"'(.*)' is not of type 'boolean'")
+# The Dependabot options reference ("package-ecosystem" table) lists these values, which the
+# Dependabot schema vendored in check-jsonschema 0.39.0 does not accept yet.
+DOCUMENTED_ECOSYSTEMS_MISSING_FROM_SCHEMA = frozenset(("apm",))
+ECOSYSTEM_PATH = re.compile(r"\$\.updates\[\d+\]\['package-ecosystem'\]")
 BODY_FIELD = re.compile(r"\$\.body\[(\d+)\]")
 BODY_VALIDATIONS = re.compile(r"\$\.body\[(\d+)\]\.validations")
 # One step of check-jsonschema's JSON path: .key, [index] or ['quoted key'].
@@ -302,14 +325,39 @@ def path_steps(path: str) -> list[str | int] | None:
 def reference(label: str) -> str:
     """Return the reference GitHub builds from a label, as Rails parameterize does.
 
-    Accented Latin letters lose their accents, every run of characters other than ASCII letters,
-    digits, "-" and "_" becomes one "-", repeated "-" are squeezed, "-" is stripped from both
-    ends, and the result is lower case.
+    Latin letters that do not decompose are spelled out as Rails' default I18n transliteration
+    does (ß becomes ss, Æ becomes AE, ...), accented Latin letters lose their accents, every run
+    of characters other than ASCII letters, digits, "-" and "_" becomes one "-", repeated "-"
+    are squeezed, "-" is stripped from both ends, and the result is lower case.
     """
-    decomposed = unicodedata.normalize("NFKD", label)
+    decomposed = unicodedata.normalize("NFKD", label.translate(LATIN_LETTERS))
     plain = "".join(c for c in decomposed if not unicodedata.combining(c))
     dashed = re.sub(r"[^A-Za-z0-9_-]+", "-", plain)
     return re.sub(r"-{2,}", "-", dashed).strip("-").lower()
+
+
+# Latin letters NFKD leaves whole, with the ASCII spelling Rails' default I18n transliteration
+# gives them.
+LATIN_LETTERS = str.maketrans(
+    {
+        "ß": "ss",
+        "ẞ": "SS",
+        "æ": "ae",
+        "Æ": "AE",
+        "ø": "o",
+        "Ø": "O",
+        "œ": "oe",
+        "Œ": "OE",
+        "ł": "l",
+        "Ł": "L",
+        "đ": "d",
+        "Đ": "D",
+        "þ": "th",
+        "Þ": "TH",
+        "ð": "d",
+        "Ð": "D",
+    }
+)
 
 
 class Findings:
@@ -553,7 +601,7 @@ class Form:
             self.check_strings(value)
 
     def check_string(self, key: str, node: object) -> None:
-        """Find a scalar that YAML 1.1 reads as a boolean or a number, or that is blank."""
+        """Find a scalar YAML 1.1 reads as a boolean, a number or a date, or that is blank."""
         text = self.text(node)
         if text is None:
             return
@@ -561,6 +609,8 @@ class Form:
             self.finding(node, f"{key} {text} is read as a boolean; quote it")
         elif _style(node) is None and _tag(node) in NUMBER_TAGS:
             self.finding(node, f"{key} {text} is read as a number; quote it")
+        elif _style(node) is None and _tag(node) == DATE_TAG:
+            self.finding(node, f"{key} {text} is read as a date; quote it")
         if not text.strip():
             self.finding(node, f"{key} is empty or only whitespace; write a value or remove it")
 
@@ -587,17 +637,15 @@ class Form:
 
     def field_type_at(self, index: str) -> str | None:
         """Return the type of the body field at a 0-based index written as digits, or None."""
-        return self.kind_of(self.node_at(["body", int(index)]))
+        field = self.node_at(["body", int(index)])
+        return self.kind_of(field) if field is not None else None
 
     def allows(self, error: SchemaError, kind: str) -> bool:
-        """Report whether GitHub's documentation allows what a schema error refuses.
-
-        Only issue and discussion forms: the documentation behind each case is about forms.
-        """
+        """Report whether GitHub's documentation allows what a schema error refuses."""
+        if kind == "dependabot":
+            return self.ecosystem_allowed(error)
         return kind in FORM_KINDS and (
-            self.min_length_allowed(error, kind)
-            or self.checkbox_validations_allowed(error)
-            or self.boolean_word_allowed(error)
+            self.min_length_allowed(error, kind) or self.checkbox_validations_allowed(error)
         )
 
     def min_length_allowed(self, error: SchemaError, kind: str) -> bool:
@@ -613,17 +661,21 @@ class Form:
         if error.message != CHECKBOX_GAP or found is None:
             return False
         field = self.node_at(["body", int(found.group(1))])
+        if field is None:
+            return False
         keys = [self.text(key) for key, _ in self.pairs(self.value(field, "validations"))]
         return self.kind_of(field) == "checkboxes" and keys == ["required"]
 
-    def boolean_word_allowed(self, error: SchemaError) -> bool:
-        """Allow an unquoted YAML 1.1 boolean word where the schema wants a boolean."""
-        found = NOT_BOOLEAN.fullmatch(error.message)
+    def ecosystem_allowed(self, error: SchemaError) -> bool:
+        """Allow a documented package-ecosystem the vendored Dependabot schema lacks."""
         steps = path_steps(error.path or "")
-        if found is None or steps is None or found.group(1) not in BOOLEAN_WORDS:
+        if steps is None or not ECOSYSTEM_PATH.fullmatch(error.path or ""):
             return False
         node = self.node_at(steps)
-        return _style(node) is None and self.text(node) == found.group(1)
+        ecosystem = self.text(node) if node is not None else None
+        if ecosystem not in DOCUMENTED_ECOSYSTEMS_MISSING_FROM_SCHEMA:
+            return False
+        return error.message.startswith(f"{ecosystem!r} is not one of ")
 
     def schema_line(self, error: SchemaError) -> str:
         """Return a schema error as FILE:LINE:COLUMN: message, or FILE: PATH: message."""
@@ -639,6 +691,8 @@ def placeholders(name: str, source: str) -> list[str]:
     found: list[str] = []
     for number, line in enumerate(source.splitlines(), start=1):
         for match in PLACEHOLDER.finditer(line):
+            if match.group()[1:-1] in HTML_TAGS:
+                continue
             where = f"{name}:{number}:{match.start() + 1}"
             found.append(f"{where}: placeholder {match.group()} was not replaced")
     return found
