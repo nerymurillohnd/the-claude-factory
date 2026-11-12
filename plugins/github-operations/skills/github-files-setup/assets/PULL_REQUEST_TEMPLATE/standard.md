@@ -1,4 +1,4 @@
-# ✨ Change
+# ✨ Standard
 
 <!-- Fill every section. Write "N/A: <reason>" instead of deleting one. Link evidence; never paste secrets or client-identifying data. -->
 
