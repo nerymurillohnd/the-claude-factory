@@ -6,9 +6,9 @@
 # [tool.uv]
 # exclude-newer = "2026-11-01T00:00:00Z"
 # ///
-"""Check GitHub issue forms, the issue template chooser or discussion forms.
+"""Check GitHub issue forms, the issue template chooser, discussion forms or dependabot.yml.
 
-Usage: python3 check-forms.py --kind issue|issue-config|discussion FILE...
+Usage: python3 check-forms.py --kind issue|issue-config|discussion|dependabot FILE...
 
 Runs check-jsonschema with its built-in GitHub schema for the kind, then checks the rules the
 schema misses, reading the YAML as GitHub does (YAML 1.1). Each finding reads
@@ -47,11 +47,12 @@ if TYPE_CHECKING:
     from typing import TypeGuard
 
 DESCRIPTION = """\
-Check GitHub issue forms, the issue template chooser or discussion forms against GitHub's
-schema and the rules it misses. Prints one finding per line on stdout."""
+Check GitHub issue forms, the issue template chooser, discussion forms or the Dependabot
+configuration against their schema and the rules it misses. Prints one finding per line on
+stdout."""
 KIND_HELP = """\
 issue: forms in .github/ISSUE_TEMPLATE/; issue-config: its config.yml; discussion: forms in
-.github/DISCUSSION_TEMPLATE/"""
+.github/DISCUSSION_TEMPLATE/; dependabot: .github/dependabot.yml or .yaml"""
 EPILOG = """\
 rules checked beyond the schema:
   every body id is unique; field labels are unique and not too similar; no label is listed
@@ -73,7 +74,8 @@ exit codes:
 examples:
   python3 check-forms.py --kind issue .github/ISSUE_TEMPLATE/bug_report.yml
   python3 check-forms.py --kind issue-config .github/ISSUE_TEMPLATE/config.yml
-  python3 check-forms.py --kind discussion .github/DISCUSSION_TEMPLATE/*.yml"""
+  python3 check-forms.py --kind discussion .github/DISCUSSION_TEMPLATE/*.yml
+  python3 check-forms.py --kind dependabot .github/dependabot.yml"""
 MISSING_HELP = """\
 Install uv (https://docs.astral.sh/uv/) and run the same command again: uv fetches the pinned
 packages into its own cache. Or install them, in a virtual environment, into the Python that
@@ -84,6 +86,7 @@ SCHEMAS = {
     "issue": "vendor.github-issue-forms",
     "issue-config": "vendor.github-issue-config",
     "discussion": "vendor.github-discussion",
+    "dependabot": "vendor.dependabot",
 }
 FORM_KINDS = ("issue", "discussion")
 BOOL_TAG = "tag:yaml.org,2002:bool"
