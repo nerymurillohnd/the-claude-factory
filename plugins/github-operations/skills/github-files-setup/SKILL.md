@@ -88,10 +88,16 @@ GitHub reads each file only at its own path and name. Before writing, look in ev
 
 Run each from the repository's root with `python3` and its full path, exactly as below. Each needs Python 3.12 or later and checks it first. Each documents its flags, output and examples in `--help`, which works even without the packages. Each exits 0 when it ran, with its result on stdout and a summary on its last line or in its `summary` field, and exits 2 when it could not run, with the reason on stderr.
 
-| Script | Run it | Needs |
-| :-- | :-- | :-- |
-| `python3 ${CLAUDE_SKILL_DIR}/scripts/check-forms.py --kind issue\|issue-config\|discussion\|dependabot <file>...` | After writing or changing any issue form, `config.yml`, discussion form or `dependabot.yml` (steps 4 to 6), and again after every fix, until its summary reads `check-forms: pass` | ruamel.yaml 0.19.1 and check-jsonschema 0.39.0 in the Python that runs it. When they are missing it exits 2 with the install command: never install them yourself; tell the user, and check the files by hand against the rules `--help` lists and the reference |
-| `python3 ${CLAUDE_SKILL_DIR}/scripts/labels-sync.py --dry-run --repo <owner>/<repo> --labels <file> [--current <file>]` | Before proposing labels and after creating them (step 8). It changes nothing. To create and update the approved labels, run the same command with `--apply` in place of `--dry-run`: that run writes to GitHub and asks for permission. It never deletes a label | `gh` signed in, for reading through REST and for `--apply`; without `gh`, pass the output of the MCP tool `mcp__<server>__list_label` as `--current` and create labels with `mcp__<server>__label_write` ([references/github-access.md](references/github-access.md) names `<server>`) |
+| Script | What it does | Run it | When |
+| :-- | :-- | :-- | :-- |
+| `check-forms.py` | Checks issue forms, `config.yml`, discussion forms and `dependabot.yml` against GitHub's schemas and the rules `--help` lists | `python3 ${CLAUDE_SKILL_DIR}/scripts/check-forms.py --kind <kind> <file>...` | After writing or changing any of those files (steps 4 to 6), and again after every fix, until its summary reads `check-forms: pass` |
+| `labels-sync.py` | Compares a label list with the repository's labels, and with `--apply` creates and updates them | `python3 ${CLAUDE_SKILL_DIR}/scripts/labels-sync.py --dry-run --repo <owner>/<repo> --labels <file> [--current <file>]` | Before proposing labels and after creating them (step 8) |
+
+`<kind>` is `issue`, `issue-config`, `discussion` or `dependabot`.
+
+`check-forms.py` needs ruamel.yaml 0.19.1 and check-jsonschema 0.39.0 in the Python that runs it. When they are missing it exits 2 with the install command: never install them yourself; tell the user, and check the files by hand against the rules `--help` lists and the reference.
+
+`labels-sync.py --dry-run` changes nothing. To create and update the approved labels, run the same command with `--apply` in place of `--dry-run`: that run writes to GitHub and asks for permission. It never deletes a label. It needs `gh` signed in, for reading through REST and for `--apply`; without `gh`, pass the output of the MCP tool `mcp__<server>__list_label` as `--current` and create labels with `mcp__<server>__label_write` ([references/github-access.md](references/github-access.md) names `<server>`).
 
 Only the checks are pre-approved, and only in the turn that starts the skill. After the user answers at step 2, a check may ask for permission again: the user can allow it for the session.
 
@@ -137,7 +143,7 @@ When a check fails, return to the step that wrote the file, fix it, and run the 
     1. Commit on the branch.
     2. Ask the user before you push. When the user approves, push and open the pull request through `github-operations:auto-pr-lifecycle`, with the repository's new maintenance template when it has one. When the user declines, stop with the branch committed, and report the pull request as not opened.
 
-Close with this report:
+Close with this report, in exactly this structure. When a table has no rows, keep its header and write one row: `none`.
 
 ```markdown
 **Setup:** <owner>/<repo> · branch `<branch>` · pull request <link, or "not opened: push declined">
