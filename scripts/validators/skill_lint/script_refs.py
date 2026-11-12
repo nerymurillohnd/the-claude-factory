@@ -11,7 +11,9 @@ import warnings
 if TYPE_CHECKING:
     from collections.abc import Set as AbstractSet
 
-SOURCE = re.compile(r"(?:^|[\s;&|(])(?:source|\.)[ \t]+([^;&|]+)")
+SOURCE = re.compile(r"(?:^|[;&|({]|\b(?:then|do|else))[ \t]*(?:source|\.)[ \t]+([^;&|]+)")
+"""source or . in command position: at line start, or after a separator or then/do/else."""
+SHELL_NAMES = frozenset({"sh", "bash", "zsh", "dash", "ksh"})
 SHELL_FOLDER = re.compile(r"^\$(?:\{([A-Za-z_]\w*)[^}]*\}|([A-Za-z_]\w*)|\(\))/")
 """A leading $NAME/, ${NAME...}/ or $(...)/ segment of a sourced path."""
 BACKTICKS = re.compile(r"`[^`]*`")
@@ -49,10 +51,23 @@ def python_imports(rel: str, text: str, files: AbstractSet[str]) -> set[str]:
     return found
 
 
+def _shebang_program(first: str) -> str | None:
+    """Return the program a shebang line runs, looking through env and its options."""
+    if not first.startswith("#!"):
+        return None
+    words = first[2:].split()
+    if not words:
+        return None
+    program = posixpath.basename(words[0])
+    if program == "env":
+        rest = [word for word in words[1:] if not word.startswith("-") and "=" not in word]
+        return rest[0] if rest else None
+    return program
+
+
 def is_shell(rel: str, text: str) -> bool:
-    """Tell whether a file is a shell script, by extension or shebang."""
-    first = text.split("\n", 1)[0]
-    return rel.endswith(SHELL) or (first.startswith("#!") and "sh" in first.rsplit("/", 1)[-1])
+    """Tell whether a file is a shell script, by extension or shebang interpreter."""
+    return rel.endswith(SHELL) or _shebang_program(text.split("\n", 1)[0]) in SHELL_NAMES
 
 
 def _drop_substitutions(line: str) -> str:
@@ -89,7 +104,8 @@ def sourced_paths(text: str) -> list[str]:
     """Return the path each source or . line of a shell script loads, in order.
 
     Leading $NAME/, ${NAME}/ and $(...)/ folders are dropped, so the rest is read from the
-    script's own folder; ${CLAUDE_SKILL_DIR} and ${CLAUDE_PLUGIN_ROOT} are kept.
+    script's own folder, then from the skill root, since bash reads it from the working
+    directory; ${CLAUDE_SKILL_DIR} and ${CLAUDE_PLUGIN_ROOT} are kept.
     """
     paths: list[str] = []
     for line in text.split("\n"):

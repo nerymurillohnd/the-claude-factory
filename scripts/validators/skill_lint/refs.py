@@ -150,7 +150,7 @@ def _script_refs(resolver: _Resolver, rel: str) -> set[str]:
     refs: set[str] = set()
     if is_shell(rel, text):
         for path in sourced_paths(text):
-            target = resolver.resolve(path, rel, link=True)
+            target = resolver.resolve(path, rel)
             if target is not None:
                 refs.add(target)
     if rel.endswith(".py"):
@@ -183,7 +183,8 @@ def reference_graph(skill: Skill) -> dict[str, set[str]]:
     """Map every file of the skill, binary ones included, to the files it references.
 
     Markdown links are read from their file's folder only; path tokens in code, prose,
-    frontmatter and scripts also from the skill root. Tokens that name no file are ignored.
+    frontmatter and scripts, and sourced shell paths, also from the skill root. Tokens that
+    name no file are ignored.
     """
     resolver = _Resolver(skill)
     return {rel: _file_refs(resolver, rel) for rel in skill.files}
