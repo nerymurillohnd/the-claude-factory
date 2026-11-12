@@ -57,18 +57,18 @@ GitHub Operations is a set of skills, commands and agents for the GitHub work ar
 
 ## 📋 Prerequisites
 
-| Tool                                                                                              | Minimum version | Check                   |
-| :------------------------------------------------------------------------------------------------ | :-------------- | :---------------------- |
-| Claude Code                                                                                       | 2.1.314         | `claude --version`      |
-| git, on your `PATH` (on Windows, Git for Windows)                                                 | —               | `git --version`         |
-| GitHub CLI (`gh`), signed in                                                                      | —               | `gh auth status`        |
-| GitHub MCP server, recommended                                                                    | —               | `claude mcp get github` |
-| Python 3, on your `PATH` as `python3`, only to run the repository setup's two scripts             | 3.12            | `python3 --version`     |
-| uv, optional, only to give the setup's form check its packages when your Python lacks them        | —               | `uv --version`          |
+| Tool                                                                                  | Minimum version | Check                                              |
+| :------------------------------------------------------------------------------------ | :-------------- | :------------------------------------------------- |
+| Claude Code                                                                           | 2.1.314         | `claude --version`                                 |
+| git, on your `PATH` (on Windows, Git for Windows)                                     | —               | `git --version`                                    |
+| GitHub CLI (`gh`), signed in                                                          | —               | `gh auth status`                                   |
+| GitHub MCP server, recommended                                                        | —               | `claude mcp get github`                            |
+| Python 3, on your `PATH` as `python3`, only to run the repository setup's two scripts | 3.12            | `python3 --version`                                |
+| `ruamel.yaml` and `check-jsonschema`, optional, only for the setup's form check       | 0.19.1, 0.39.0  | `python3 -m pip show ruamel.yaml check-jsonschema` |
 
 Claude Code 2.1.314 or later is required.
 
-`gh` creates and merges pull requests, reads run logs, creates and updates labels, changes merge settings and is the fallback when a GitHub MCP tool is missing. The GitHub MCP server is optional: the plugin doesn't install it, and works through `gh` without it. Without `gh`, the repository setup reads GitHub and creates labels through the GitHub MCP server, but changing merge settings needs `gh` or your own change in GitHub's settings. `python3` runs the repository setup's two scripts: the label comparison and the check of forms and the Dependabot file. uv is optional: when your Python lacks the packages the form check needs, uv fetches them; without uv, Claude checks the forms by reading them.
+`gh` creates and merges pull requests, reads run logs, creates and updates labels, changes merge settings and is the fallback when a GitHub MCP tool is missing. The GitHub MCP server is optional: the plugin doesn't install it, and works through `gh` without it. Without `gh`, the repository setup reads GitHub and creates labels through the GitHub MCP server, but changing merge settings needs `gh` or your own change in GitHub's settings. `python3` runs the repository setup's two scripts: the label comparison and the check of forms and the Dependabot file. The two Python packages are optional: the form check needs them in the Python that runs it, and without them Claude checks the forms by reading them instead.
 
 ### 🤖 Claude Code
 
@@ -362,7 +362,7 @@ Needed only when Claude runs the repository setup's scripts: the label compariso
 python3 --version
 ```
 
-An older release's package manager can install a version below 3.12; then use the [official installers](https://www.python.org/downloads/) or uv.
+An older release's package manager can install a version below 3.12; then use the [official installers](https://www.python.org/downloads/).
 
 <details>
 <summary>🍺 <b>Homebrew</b> — macOS, Linux</summary>
@@ -388,32 +388,16 @@ sudo dnf install python3
 ```
 
 </details>
-<details>
-<summary>⚡ <b>uv</b> — any platform, once uv is installed</summary>
 
-```bash
-uv python install --default
-```
+### 🧪 ruamel.yaml and check-jsonschema
 
-</details>
-
-### ⚡ uv
-
-Optional. The form check needs the packages `ruamel.yaml` 0.19.1 and `check-jsonschema` 0.39.0. When your Python lacks them and uv is installed, the check runs itself again through uv, which fetches those versions into its cache. Without uv, it stops and prints the install command, and Claude checks the forms by reading them instead. It never installs anything into your Python. See [installing uv](https://docs.astral.sh/uv/getting-started/installation/).
+Optional. The setup's form check, `check-forms.py`, needs `ruamel.yaml` 0.19.1 and `check-jsonschema` 0.39.0 installed in the Python that runs it, `python3`. Without them it stops with the install command, and Claude checks the forms by reading them instead. The script never installs anything. Many Linux systems refuse a system-wide `pip install` (PEP 668), so install them in a virtual environment, and make that environment's `python3` the one Claude Code runs.
 
 <details>
-<summary>🍺 <b>Homebrew</b> — macOS, Linux</summary>
+<summary>📦 <b>pip</b> — macOS, Linux</summary>
 
 ```bash
-brew install uv
-```
-
-</details>
-<details>
-<summary>📜 <b>Standalone installer</b> — macOS, Linux</summary>
-
-```bash
-curl -LsSf https://astral.sh/uv/install.sh | sh
+python3 -m pip install 'ruamel.yaml==0.19.1' 'check-jsonschema==0.39.0'
 ```
 
 </details>
@@ -531,9 +515,9 @@ Or _"Audit our workflows"_ or _"CI on main is broken"_. **Result:** Claude reads
 
 - **Hooks:** none.
 - **MCP servers:** none. When you add GitHub's remote server yourself, as [GitHub MCP server](#-github-mcp-server-recommended) shows, the skills and agents use its tools.
-- **Commands it runs:** `git` and `gh` in your repository, through Claude Code's Bash tool, so your permission settings and prompts apply, except for the one script named below. The repository setup also runs two scripts with `python3`. `labels-sync.py` compares your labels with a list through `gh api` (REST), or from a saved GitHub MCP `list_label` output, and, only with `--apply` for the labels you approved, creates the missing ones and updates the different ones through `gh api`. It never deletes or renames a label and uses only Python's standard library. `check-forms.py` checks issue forms, discussion forms and `dependabot.yml`; when your Python lacks `ruamel.yaml` and `check-jsonschema` and uv is installed, it runs itself again through `uv run --no-config --script`. The skill pre-approves `check-forms.py`, so Claude Code doesn't ask before it runs; `labels-sync.py` goes through your permission prompts.
-- **Network:** `git` and `gh` reach GitHub and your remotes. The GitHub MCP server you add yourself sends your requests and token to `api.githubcopilot.com`. `labels-sync.py` calls GitHub's REST API through `gh`; it sends nothing else. `check-forms.py` sends nothing itself. When it reruns through `uv`, uv downloads `check-jsonschema` 0.39.0 and `ruamel.yaml` 0.19.1, pinned exactly, from PyPI on the first run, and, when it finds no Python 3.12 or later, a Python build from Astral's python-build-standalone project.
-- **Files written:** the PR lifecycle writes only your own commits, in your clone. The repository setup writes its files on the branch you are on when it isn't the default branch, and on a new branch when you are on the default branch; it never writes on the default branch. When `uv` reruns the form check, it stores the packages in uv's cache and any Python it downloads in its own folders. The cleanup writes a backup bundle and its working notes to folders outside your repository; it tells you where the backup is and asks whether to keep it.
+- **Commands it runs:** `git` and `gh` in your repository, through Claude Code's Bash tool, so your permission settings and prompts apply, except for the one script named below. The repository setup also runs two scripts with `python3`. `labels-sync.py` compares your labels with a list through `gh api` (REST), or from a saved GitHub MCP `list_label` output, and, only with `--apply` for the labels you approved, creates the missing ones and updates the different ones through `gh api`. It never deletes or renames a label and uses only Python's standard library. `check-forms.py` checks issue forms, discussion forms and `dependabot.yml` with `ruamel.yaml` and `check-jsonschema`, which must be installed in your Python; it installs nothing and stops with the `pip` command when they are missing. The skill pre-approves `check-forms.py`, so Claude Code doesn't ask before it runs; `labels-sync.py` goes through your permission prompts.
+- **Network:** `git` and `gh` reach GitHub and your remotes. The GitHub MCP server you add yourself sends your requests and token to `api.githubcopilot.com`. `labels-sync.py` calls GitHub's REST API through `gh`; it sends nothing else. `check-forms.py` sends nothing. `pip` contacts PyPI only when you install `ruamel.yaml` and `check-jsonschema` yourself.
+- **Files written:** the PR lifecycle writes only your own commits, in your clone. The repository setup writes its files on the branch you are on when it isn't the default branch, and on a new branch when you are on the default branch; it never writes on the default branch. The cleanup writes a backup bundle and its working notes to folders outside your repository; it tells you where the backup is and asks whether to keep it.
 - **Privacy:** the author collects no data. The marketplace's [privacy policy](https://github.com/nerymurillohnd/the-claude-factory/blob/main/PRIVACY.md) covers this plugin and the outside services it can reach.
 
 ### The agents' limits
@@ -590,17 +574,13 @@ Then, in an open session:
 > [!TIP]
 > Auto-update is off for this marketplace until you turn it on: `/plugin` → **Marketplaces** → **the-claude-factory** → **Enable auto-update**.
 
-Update git, `gh`, Python and uv the way you installed them, for example with Homebrew:
+Update git, `gh` and Python the way you installed them, for example with Homebrew:
 
 ```bash
-brew upgrade git gh python uv
+brew upgrade git gh python
 ```
 
-uv from its standalone installer updates itself:
-
-```bash
-uv self update
-```
+The form check's packages are pinned to the versions the Prerequisites table lists. When an update changes them, run the pip command from [ruamel.yaml and check-jsonschema](#-ruamelyaml-and-check-jsonschema) again, in the environment where you installed them.
 
 ## 🗑️ Uninstalling
 
@@ -614,7 +594,7 @@ Installed with `--scope project`:
 claude plugin uninstall github-operations@the-claude-factory --scope project
 ```
 
-Uninstalling from the last scope it's installed at also deletes its saved options and data directory, unless you add `--keep-data`. The plugin keeps nothing in its data directory. A cleanup backup you chose to keep stays where Claude told you it is, and git, `gh`, Python and uv stay installed, with what uv fetched for the form check in its cache. The GitHub MCP server you added stays too; remove it, then delete the token on GitHub:
+Uninstalling from the last scope it's installed at also deletes its saved options and data directory, unless you add `--keep-data`. The plugin keeps nothing in its data directory. A cleanup backup you chose to keep stays where Claude told you it is, and git, `gh`, Python and the form check's packages stay installed. The GitHub MCP server you added stays too; remove it, then delete the token on GitHub:
 
 ```bash
 claude mcp remove --scope user github
