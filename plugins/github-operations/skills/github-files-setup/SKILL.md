@@ -90,7 +90,7 @@ Run each from the repository's root with `python3` and its full path, exactly as
 
 `check-forms.py` needs ruamel.yaml 0.19.1 and check-jsonschema 0.39.0 in the Python that runs it. When they are missing it exits 2 with the install command: never install them yourself; tell the user, and check the files by hand against the rules `--help` lists and the reference.
 
-`labels-sync.py --dry-run` changes nothing. To create and update the approved labels, run the same command with `--apply` in place of `--dry-run`: that run writes to GitHub and asks for permission. It never deletes a label. It needs `gh` signed in, for reading through REST and for `--apply`; without `gh`, pass the output of the MCP tool `mcp__<server>__list_label` as `--current` and create labels with `mcp__<server>__label_write` ([references/github-access.md](references/github-access.md) names `<server>`).
+`labels-sync.py --dry-run` changes nothing; the same command with `--apply` creates and updates the approved labels, never deletes one, and asks for permission. It needs `gh` signed in; without `gh`, follow [references/labels.md](references/labels.md).
 
 Only the checks are pre-approved, and only in the turn that starts the skill. After the user answers at step 2, a check may ask for permission again: the user can allow it for the session.
 
