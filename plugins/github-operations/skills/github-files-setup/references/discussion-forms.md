@@ -1,5 +1,7 @@
 # Discussion forms
 
+MCP tools are named `mcp__<server>__<tool>`; find `<server>` as [github-access.md](github-access.md#order-of-routes) says.
+
 1. Discussions must be on: `has_discussions` from step 1. When they are off, tell the user: enabling them is a repository setting and needs approval.
 2. Get each category's slug: GitHub names a form file after it. Use the first route that works ([github-access.md](github-access.md)):
    - `gh api graphql`, the only API that returns slugs:
@@ -13,7 +15,7 @@
        }'
      ```
 
-   - When GraphQL is blocked or fails, list the categories with the MCP `list_discussion_categories` tool (names and IDs, no slug), then ask the user to open each one in the repository's Discussions tab and paste its URL: the slug is the last part of `https://github.com/<owner>/<repo>/discussions/categories/<slug>`.
+   - When GraphQL is blocked or fails, list the categories with the MCP tool `mcp__<server>__list_discussion_categories` (names and IDs, no slug), then ask the user to open each one in the repository's Discussions tab and paste its URL: the slug is the last part of `https://github.com/<owner>/<repo>/discussions/categories/<slug>`.
 
    Never derive a slug from a category's name: GitHub does not document the rule.
 3. Choose a model for each category the repository uses:
