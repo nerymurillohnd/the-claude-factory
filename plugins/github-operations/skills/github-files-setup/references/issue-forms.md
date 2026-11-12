@@ -82,7 +82,7 @@ A form applies only the labels in its top-level `labels:`. A dropdown answer, su
 
 ## After the merge
 
-Ask the user to open `https://github.com/<owner>/<repo>/issues/new/choose` signed in and confirm that the forms and contact links appear. A user with write access also sees a blank issue, marked **Maintainers only**: that is expected.
+Ask the user to open `https://github.com/<owner>/<repo>/issues/new/choose` signed in and confirm that the forms and contact links appear. A user with write access also sees a blank issue, marked **Maintainers only**: that is expected. Issues created through the API or `gh` skip the forms' layout and labels: tell the user.
 
 ## Current behavior (checked on 2026-11-12; verify before relying on it)
 

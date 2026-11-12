@@ -48,6 +48,7 @@ GitHub reads each file only at its own path and name. Before writing, look in ev
 | `ISSUE_TEMPLATE/config.yml` | `.github/ISSUE_TEMPLATE/config.yml`, with exactly that name | `.github/ISSUE_TEMPLATE/config.yml`; inherited the same way |
 | `DISCUSSION_TEMPLATE/<category>.yml` | `.github/DISCUSSION_TEMPLATE/<category slug>.yml` | `.github/DISCUSSION_TEMPLATE/`; inherited from `.github/DISCUSSION_TEMPLATE/` of the owner's `.github` repository |
 | `labels.json` | No file: labels are created on GitHub, or written to the repository's label file when it has one | The repository's labels on GitHub; a label file |
+| `tooling/README.md`, with this skill's two scripts | Optional, by [references/tooling.md](references/tooling.md): `.github/scripts/` | The repository's own tooling folder |
 | `dependabot.yml` | `.github/dependabot.yml` | `.github/dependabot.yml` or `.github/dependabot.yaml` |
 | None: written from the repository's owners | `.github/CODEOWNERS` | `CODEOWNERS` in `.github/`, the root or `docs/`; GitHub uses the first it finds in that order |
 
@@ -65,31 +66,23 @@ GitHub reads each file only at its own path and name. Before writing, look in ev
 ## Gotchas
 
 - PR templates, issue forms, discussion forms and `dependabot.yml` are read from the default branch only, and CODEOWNERS from each pull request's base branch: nothing applies until the setup pull request merges.
-- A repository with any valid issue template or `config.yml` of its own stops inheriting all of them from the owner's `.github` repository.
 - `required: true` is enforced only in public repositories.
-- GitHub skips a label a form names when the label does not exist, without a warning. A form's dropdown answer applies no label: only the form's top-level `labels:` does.
-- There is no chooser for PR templates: GitHub opens `pull_request_template.md`, and another template only through a link with `?template=<file>.md`.
-- `blank_issues_enabled: false` hides the blank issue from contributors, but people with write access still see it, marked **Maintainers only**.
-- A discussion form's file name must equal its category's slug, and no API creates a category.
 - YAML 1.1 reads unquoted `Yes`, `No`, `On` and `Off` as booleans, so an option written that way breaks the form. `check-forms.py` catches it, and [references/form-rules.md](references/form-rules.md) lists every such value.
-- Issues and discussions created through the API or `gh` skip the forms: tell the user.
 
 ## Scripts
 
-Run each from the repository's root with its full path, exactly as below. `python3` is the default interpreter: when the user names another, such as the `python3` of a virtual environment that holds the packages, write its path in place of `python3`. Each needs Python 3.12 or later and checks it first. Each documents its flags, output and examples in `--help`. Each exits 0 when it ran, with its result on stdout and a summary on its last line or in its `summary` field, and exits 2 when it could not run, with the reason on stderr.
+Run each from the repository's root with its full path, exactly as below. `python3` is the default interpreter: when the user names another, such as the `python3` of a virtual environment that holds the packages, write its path in place of `python3`. Each needs Python 3.12 or later and checks it first. Each documents its flags, output and examples in `--help`. Each exits 0 when it ran, with a summary on its last line or in its `summary` field, and 2 when it could not run, with the reason on stderr.
 
 | Script | What it does | Run it | When |
 | :-- | :-- | :-- | :-- |
-| `check-forms.py` | Checks issue forms, `config.yml`, discussion forms and `dependabot.yml` against GitHub's schemas and the rules `--help` lists | `python3 ${CLAUDE_SKILL_DIR}/scripts/check-forms.py --kind <kind> <file>...` | After writing or changing any of those files (steps 4 to 6), and again after every fix, until its summary reads `check-forms: pass` |
-| `labels-sync.py` | Compares a label list with the repository's labels, and with `--apply` creates and updates them | `python3 ${CLAUDE_SKILL_DIR}/scripts/labels-sync.py --dry-run --repo <owner>/<repo> --labels <file> [--current <file>]` | Before proposing labels and after creating them (step 8) |
+| `check-forms.py` | Checks forms, `config.yml` and `dependabot.yml` against GitHub's schemas and form rules | `python3 ${CLAUDE_SKILL_DIR}/scripts/check-forms.py --kind <kind> <file>...` | Steps 4 to 6, after each write and each fix, until it reads `check-forms: pass` |
+| `labels-sync.py` | Compares a label list with the repository's labels | `python3 ${CLAUDE_SKILL_DIR}/scripts/labels-sync.py --dry-run --repo <owner>/<repo> --labels <file> [--current <file>]` | Step 8, before proposing labels and after creating them |
 
 `<kind>` selects the check: `issue`, `issue-config`, `discussion` or `dependabot`.
 
 `check-forms.py` needs ruamel.yaml 0.19.1 and check-jsonschema 0.39.0 in the Python that runs it. When it exits 2, it checked nothing: never install anything yourself. Tell the user what it printed, check the files by hand against [references/form-rules.md](references/form-rules.md), and record the check as not run, with the reason.
 
 `labels-sync.py --dry-run` changes nothing; the same command with `--apply` creates and updates the approved labels and never deletes one. It needs `gh` signed in; without `gh`, and when `--apply` exits 2, follow [references/labels.md](references/labels.md).
-
-Each run asks for the user's permission like any command, unless the user allowed it.
 
 ## Workflow
 
@@ -110,7 +103,8 @@ Progress:
 - [ ] 8. Labels (references/labels.md)
 - [ ] 8b. Labels compared again after creating them: 0 missing, 0 different
 - [ ] 9. Merge message setting (references/merge-message-setting.md)
-- [ ] 10. Land the setup
+- [ ] 10. Repository tooling, when the user wants it (references/tooling.md)
+- [ ] 11. Land the setup
 ```
 
 When a check finds something, return to the step that wrote the file, fix it, and run the check again. When a script exits 2, it checked nothing: use the step's fallback instead of running it again.
@@ -121,7 +115,7 @@ When a check finds something, return to the step that wrote the file, fix it, an
    3. Read whether the owner's `.github` repository holds `.github/ISSUE_TEMPLATE/` or `.github/DISCUSSION_TEMPLATE/`.
    4. Read its `README`, `CONTRIBUTING`, `CLAUDE.md` or `AGENTS.md`, its manifests, its CI files and the local commands it runs as checks, its release process, its labels and label file, and its recent issues, pull requests and commit titles.
    5. Check the branch (`git branch --show-current`). On the default branch, create one branch off it for the whole setup, such as `chore/repository-templates`; on any other branch, work there and tell the user which.
-2. **Choose the files.** For each file type the user asked for, look for the repository's own files in every place the table above lists. Where one exists, show the change as a diff and ask. Choose the models by the choosing tables in [references/pr-templates.md](references/pr-templates.md), [references/issue-forms.md](references/issue-forms.md#choose-the-forms) and [references/discussion-forms.md](references/discussion-forms.md), and decide the label names the files will use by [references/labels.md](references/labels.md). Then show the user the models you chose and why, and write nothing before the user agrees.
+2. **Choose the files.** For each file type the user asked for, look for the repository's own files in every place the table above lists. Where one exists, show the change as a diff and ask. Choose the models by the choosing tables in [references/pr-templates.md](references/pr-templates.md), [references/issue-forms.md](references/issue-forms.md#choose-the-forms) and [references/discussion-forms.md](references/discussion-forms.md), and decide the label names the files will use by [references/labels.md](references/labels.md). Offer repository tooling when [references/tooling.md](references/tooling.md) says it fits. Then show the user the models you chose and why, and write nothing before the user agrees.
 3. **PR templates.** Follow [references/pr-templates.md](references/pr-templates.md).
 4. **Issue forms.** Follow [references/issue-forms.md](references/issue-forms.md), through its validation loop.
 5. **Discussion forms.** Follow [references/discussion-forms.md](references/discussion-forms.md), through its validation loop.
@@ -129,7 +123,15 @@ When a check finds something, return to the step that wrote the file, fix it, an
 7. **CODEOWNERS.** When the user wants one, follow [references/codeowners.md](references/codeowners.md).
 8. **Labels.** Follow [references/labels.md](references/labels.md) once every other file is written, because it creates the labels they name.
 9. **Merge message setting.** Follow [references/merge-message-setting.md](references/merge-message-setting.md).
-10. **Land the setup.**
+10. **Repository tooling.** When the user accepted it at step 2, follow [references/tooling.md](references/tooling.md), and copy the scripts unchanged from the repository's root, with `<folder>` the folder it names:
+
+    ```bash
+    mkdir -p <folder> && cp ${CLAUDE_SKILL_DIR}/scripts/check-forms.py ${CLAUDE_SKILL_DIR}/scripts/labels-sync.py <folder>/
+    ```
+
+    The tooling README names the plugin version, the `version` in `${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json`.
+
+11. **Land the setup.**
     1. Commit on the branch.
     2. Ask the user before you push. When the user approves, push and open the pull request through `github-operations:auto-pr-lifecycle`, with the repository's new maintenance template when it has one. When the user declines, stop with the branch committed, and report the pull request as not opened.
 
