@@ -145,23 +145,27 @@ The manifest always lists these.
 
 ```text
 scripts/validators/
-├── skill-lint.py            # CLI entry: argparse, run, exit code
+├── __init__.py
+├── skill-lint.py            # thin shim: from skill_lint.cli import main
 └── skill_lint/
     ├── __init__.py
+    ├── cli.py               # argparse, run, exit code
     ├── model.py             # Skill, Finding, Severity, Family
     ├── discover.py          # the two skill globs; plugin or project from the path; git ls-files -s modes
     ├── frontmatter.py       # ruamel.yaml strict load (duplicate keys), line numbers
     ├── markdown.py          # links, anchors, headings, fences, inline code, ! commands
+    ├── refs.py              # reference graph: links, path mentions, imports, source lines
     ├── rules_content.py
     ├── rules_portability.py
     ├── rules_scripts.py
     ├── rules_capabilities.py
     └── report.py            # table, details, --manifest, --json
 scripts/testers/
+├── __init__.py
 └── skill_lint/              # importable name, so unittest discovery reaches it
     ├── __init__.py
-    ├── test_*.py
-    └── fixtures/<case>/SKILL.md …
+    ├── helpers.py           # builds each fixture skill in a temporary directory
+    └── test_*.py
 ```
 
 ### Runtime and conventions
@@ -175,7 +179,7 @@ scripts/testers/
 ### Discovery
 
 - **Globs:** only `plugins/*/skills/*/SKILL.md` and `.claude/skills/*/SKILL.md`. Today they match 26 skills: 25 plugin skills and 1 project skill.
-- **Fixtures:** the fixture skills under `scripts/testers/` are never discovered. Tests pass them as explicit paths.
+- **Fixtures:** tests build each fixture skill in a temporary directory, so no broken skill is committed and none can be discovered.
 - **Command names:** each skill's command name is `plugin:skill` or `project:skill`. That name tells apart the two `ts-lifecycle` skills (typescript6 and typescript7).
 
 ### Testability
@@ -217,13 +221,15 @@ scripts/testers/
 - **New:**
   - `scripts/validators/skill-lint.py`
   - `scripts/validators/skill_lint/*.py`
-  - `scripts/testers/skill_lint/` (`__init__.py`, `test_*.py`, `fixtures/**`)
+  - `scripts/validators/__init__.py` and `scripts/testers/__init__.py`
+  - `scripts/testers/skill_lint/` (`__init__.py`, `helpers.py`, `test_*.py`)
 - **Changed:**
   - `package.json`: the `lint:skills` and `test:scripts` scripts.
   - `scripts/pyrightconfig.json`: `extraPaths`, if step 1 confirms it is needed.
-  - `ruff.toml`, `biome.jsonc` and the shellcheck/shfmt ignores: exclude the deliberately broken fixtures.
+  - `ruff.toml`: a per-file ignore for the shim, only if step 1 shows N999 or INP001 fire.
 - **Records:**
   - `.claude/maintainer/specs/skill-lint-spec.md`: this design, committed.
+  - `.claude/maintainer/plans/2026-11-12-skill-lint.md`: the implementation plan.
   - One ADR through `project-maintainer:write-records`. It records the own linter, the severity model, the skill-folder-only scope and one owner per check.
 - **Removed:** the `.gitkeep` files in `scripts/validators/` and `scripts/testers/`, once real files exist.
 - **Unchanged:** no file under `plugins/` changes.

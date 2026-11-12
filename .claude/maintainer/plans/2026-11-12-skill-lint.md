@@ -47,7 +47,7 @@
 
 - **Rule metadata:** each finding's `source` is the spec URL for its rule. Each rules module keeps a `SOURCES: dict[str, str]` that maps rule ids to URLs, taken from the spec's Sources section.
 
-## Deviations from the spec (owner to confirm at plan review)
+## Deviations from the first spec (approved by the owner 2026-11-12; the spec now matches)
 
 1. **No committed fixture tree.** The tests build each fixture skill in a `tempfile.TemporaryDirectory`, through `testers/skill_lint/helpers.py`.
    - Broken SKILL.md files therefore never land in the repository.
