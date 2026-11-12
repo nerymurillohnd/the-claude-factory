@@ -6,16 +6,17 @@ Usage: python3 labels-sync.py --dry-run|--apply --repo OWNER/REPO --labels FILE 
 Reads the repository's labels through GitHub's REST API with `gh api` (no GraphQL), or from
 --current, a JSON file of the repository's labels such as the GitHub MCP server's `list_label`
 pages, when gh is not available. Names compare without case. Prints one JSON object on stdout:
-`summary`, `missing` (in the file, not in the repository), `different` (same name ignoring case,
-with a `changes` entry per field whose value differs, as `from` and `to`), `extra_count` (in the
-repository, not in the file; never changed) and `archived` (archived in the repository; never
-changed).
+`summary`, `missing` (in the file, not in the repository), `missing_color` (missing labels the
+file gives no color), `different` (same name ignoring case, with a `changes` entry per field
+whose value differs, as `from` and `to`), `case_only` (same label, only the case of its name
+differs; never changed), `extra_count` (in the repository, not in the file; never changed) and
+`archived` (archived in the repository; never changed).
 
 A label in the file may leave out color or description: the repository's value is then kept.
---dry-run changes nothing. --apply creates every missing label and updates every different one
-through `gh api`, then reports `created` and `updated`. It never deletes a label, and renames
-one only to change the case of its name. Colors compare without case. Needs Python 3.12 or
-later and only its standard library; gh only to read through the API or to apply.
+--dry-run changes nothing. --apply creates every missing label and updates the color and
+description of every different one through `gh api`, then reports `created` and `updated`. It
+never deletes or renames a label. Colors compare without case. Needs Python 3.12 or later and
+only its standard library; gh only to read through the API or to apply.
 """
 
 import sys
@@ -48,8 +49,9 @@ labels file:
   a JSON list of {"name", "color", "description"} objects. Names must be unique, ignoring case.
   color (6 hex digits without "#") and description (at most 100 characters; null means none)
   are optional: a key left out keeps the repository's value, so only the keys present are
-  compared and written. A label the repository lacks needs a color to be created; when one has
-  none, the run exits 2 before anything is written.
+  compared and written. A label the repository lacks needs a color to be created: --dry-run
+  lists the ones without a color under "missing_color", and --apply exits 2 before anything is
+  written while any is left.
 
 --current file:
   the repository's labels when gh is not available, in one of these forms: a JSON list of label
@@ -60,25 +62,33 @@ labels file:
   (ignoring case) with other values.
 
 names and archived labels:
-  names compare without case. A label whose name differs only in case is listed under
-  "different" with a "name" change, and --apply renames it with the REST API's new_name; that
-  GitHub accepts a rename that changes only case is not verified. A repository label with
-  archived_at set counts as present and is listed under "archived"; --apply never creates or
-  changes it. When the labels file names one, the summary says so: unarchive it in GitHub.
+  names compare without case, and no label is ever renamed. A label whose only difference is
+  the case of its name is listed under "case_only" and left as it is; change the case in
+  GitHub, or in the labels file, if it matters. When other fields differ too, the label is
+  listed under "different" with "in_repository" naming its current spelling, and --apply
+  updates those fields under that name. A repository label with archived_at set counts as
+  present and is listed under "archived"; --apply never creates or changes it. When the labels
+  file names one, the summary says so: unarchive it in GitHub. Only the gh REST route reports
+  archived labels: the GitHub MCP server's list_label output carries no archived_at, so a
+  --current file built from it lists archived labels as ordinary ones.
 
 output:
-  one JSON object. "summary" reads "<n> missing, <n> different, <n> extra, <n> archived", plus
-  "; <n> created, <n> updated" after --apply. "missing" lists the names to create; "different"
-  lists {"name", "changes": {FIELD: {"from", "to"}}}; "extra_count" counts the repository's
-  labels the file lacks (--show-extra also lists them under "extra"); "archived" lists the
-  repository's archived labels.
+  one JSON object. "summary" reads "<n> missing, <n> different, <n> differ only in case (not
+  changed), <n> extra, <n> archived", plus "; <n> to create have no color" when some do, and
+  "; <n> created, <n> updated" after --apply. "missing" lists the names to create and
+  "missing_color" those of them without a color; "different" lists {"name", "changes": {FIELD:
+  {"from", "to"}}}, plus "in_repository" when the repository spells the name in another case;
+  "case_only" lists {"name", "in_repository"}; "extra_count" counts the repository's labels the
+  file lacks (--show-extra also lists them under "extra"); "archived" lists the repository's
+  archived labels.
 
 exit codes:
   0  the comparison ran (read the summary), or --apply created and updated every label it had to
   2  could not run: usage error, an invalid labels or --current file, a label to create without
-     a color, gh missing or failing, or --apply stopped part way (stderr names the label that
-     failed). exit 2 after --apply can mean some labels were written: read created and updated,
-     fix the cause, and run --dry-run then --apply again; the run recomputes what is left.
+     a color under --apply, gh missing or failing, or --apply stopped part way (stderr names the
+     label that failed). exit 2 after --apply can mean some labels were written: read created
+     and updated, fix the cause, and run --dry-run then --apply again;
+     the run recomputes what is left.
 
 examples:
   python3 labels-sync.py --dry-run --repo octo-org/octo-repo --labels .github/labels.json
@@ -314,7 +324,10 @@ def present(repo: str) -> dict[str, Label]:
 
 
 class Change(NamedTuple):
-    """A label of the file that differs from the repository's: field -> (from, to)."""
+    """A label of the file that differs from the repository's: field -> (from, to).
+
+    fields is empty for a label whose only difference is the case of its name.
+    """
 
     want: Label
     have: Label
@@ -326,16 +339,18 @@ class Plan(NamedTuple):
 
     missing: list[Label]
     different: list[Change]
+    case_only: list[Change]
     extra: list[Label]
     archived: list[Label]
     archived_named: list[Label]
 
 
 def changes(want: Label, have: Label) -> dict[str, tuple[str, str]]:
-    """Return each field the file sets to another value than the repository's, as (from, to)."""
+    """Return each field the file sets to another value than the repository's, as (from, to).
+
+    The name is not one of them: a name that differs only in case is never changed.
+    """
     found: dict[str, tuple[str, str]] = {}
-    if want.name != have.name:
-        found["name"] = (have.name, want.name)
     if want.color is not None and want.color != have.color:
         found["color"] = (have.color or "", want.color)
     if want.description is not None and want.description != have.description:
@@ -343,19 +358,26 @@ def changes(want: Label, have: Label) -> dict[str, tuple[str, str]]:
     return found
 
 
+def place(plan: Plan, label: Label, current: Label | None) -> None:
+    """Put one label of the file in the plan, given the repository's label of that name."""
+    if current is None:
+        plan.missing.append(label)
+        return
+    if current.archived:
+        plan.archived_named.append(current)
+        return
+    fields = changes(label, current)
+    if fields:
+        plan.different.append(Change(label, current, fields))
+    elif label.name != current.name:
+        plan.case_only.append(Change(label, current, fields))
+
+
 def compare(want: dict[str, Label], have: dict[str, Label]) -> Plan:
     """Compare the file's labels with the repository's, both indexed by name without case."""
-    plan = Plan([], [], [], [], [])
+    plan = Plan([], [], [], [], [], [])
     for key, label in want.items():
-        current = have.get(key)
-        if current is None:
-            plan.missing.append(label)
-        elif current.archived:
-            plan.archived_named.append(current)
-        else:
-            fields = changes(label, current)
-            if fields:
-                plan.different.append(Change(label, current, fields))
+        place(plan, label, have.get(key))
     for key, label in have.items():
         if label.archived:
             plan.archived.append(label)
@@ -364,24 +386,46 @@ def compare(want: dict[str, Label], have: dict[str, Label]) -> Plan:
     return plan
 
 
-def report_of(plan: Plan, *, show_extra: bool) -> dict[str, object]:
-    """Return the JSON report of a comparison."""
-    counts = [len(plan.missing), len(plan.different), len(plan.extra), len(plan.archived)]
-    summary = "{} missing, {} different, {} extra, {} archived".format(*counts)
+def lacking_color(plan: Plan) -> list[str]:
+    """Return the names of the labels to create that the labels file gives no color."""
+    return [label.name for label in plan.missing if label.color is None]
+
+
+def summary_of(plan: Plan) -> str:
+    """Return the one-line summary of a comparison."""
+    summary = (
+        f"{len(plan.missing)} missing, {len(plan.different)} different, "
+        f"{len(plan.case_only)} differ only in case (not changed), {len(plan.extra)} extra, "
+        f"{len(plan.archived)} archived"
+    )
+    if lacking_color(plan):
+        summary += f"; {len(lacking_color(plan))} to create have no color"
     if plan.archived_named:
         names = ", ".join(label.name for label in plan.archived_named)
         summary += f"; the labels file names archived labels ({names}): unarchive them in GitHub"
-    different: list[object] = [
-        {
-            "name": change.want.name,
-            "changes": {f: {"from": old, "to": new} for f, (old, new) in change.fields.items()},
-        }
-        for change in plan.different
-    ]
+    return summary
+
+
+def entry_of(change: Change) -> dict[str, object]:
+    """Return one different or case_only label as a JSON object."""
+    entry: dict[str, object] = {"name": change.want.name}
+    if change.fields:
+        entry["changes"] = {f: {"from": old, "to": new} for f, (old, new) in change.fields.items()}
+    if change.have.name != change.want.name:
+        entry["in_repository"] = change.have.name
+    return entry
+
+
+def report_of(plan: Plan, *, show_extra: bool) -> dict[str, object]:
+    """Return the JSON report of a comparison."""
+    different: list[object] = [entry_of(change) for change in plan.different]
+    case_only: list[object] = [entry_of(change) for change in plan.case_only]
     report: dict[str, object] = {
-        "summary": summary,
+        "summary": summary_of(plan),
         "missing": [label.name for label in plan.missing],
+        "missing_color": lacking_color(plan),
         "different": different,
+        "case_only": case_only,
         "extra_count": len(plan.extra),
         "archived": [label.name for label in plan.archived],
     }
@@ -392,7 +436,7 @@ def report_of(plan: Plan, *, show_extra: bool) -> dict[str, object]:
 
 def require_colors(plan: Plan) -> None:
     """Raise SyncError, before any write, when a label to create has no color."""
-    lacking = [label.name for label in plan.missing if label.color is None]
+    lacking = lacking_color(plan)
     if lacking:
         msg = f"labels to create need a color in the labels file: {', '.join(lacking)}"
         raise SyncError(msg)
@@ -419,9 +463,9 @@ def apply(repo: str, plan: Plan, done: tuple[list[str], list[str]]) -> None:
     for change in plan.different:
         fields: list[str] = []
         for field, (_, new) in change.fields.items():
-            fields += ["-f", f"{'new_name' if field == 'name' else field}={new}"]
-        # The repository's current spelling addresses the label; new_name sets the file's.
-        # That GitHub accepts a new_name that changes only the case of the name is not verified.
+            fields += ["-f", f"{field}={new}"]
+        # The repository's current spelling addresses the label, and the name is never sent:
+        # whether GitHub accepts a new_name that changes only case is not verified.
         target = f"repos/{repo}/labels/{quote(change.have.name, safe='')}"
         write(change.want.name, ["api", "--method", "PATCH", target, *fields])
         updated.append(change.want.name)
@@ -486,8 +530,8 @@ def main() -> int:
         have = present(args.repo) if args.current is None else read_current(args.current)
         plan = compare(want, have)
         report = report_of(plan, show_extra=args.show_extra)
-        require_colors(plan)
         if done is not None:
+            require_colors(plan)
             apply(args.repo, plan, done)
     except SyncError as error:
         if report:
