@@ -1,10 +1,10 @@
 ---
-status: accepted
+status: superseded
 date: 2026-11-12
 decision-makers:
   - "Nery (project owner)"
 supersedes: none
-superseded-by: none
+superseded-by: ADR_2026-11-12_maintainer-tools-as-pinned-uv-tools
 ---
 
 # Pin the maintainer Python tools with a non-package uv project
@@ -44,7 +44,7 @@ Chosen option: **a non-package uv project with a locked dev group**, because it 
 | What must be true | How it is checked | Result | When to re-check |
 | --- | --- | --- | --- |
 | The lock matches pyproject.toml | `uv lock --check` | Passed on 2026-11-12 | Each tool bump |
-| Dependabot updates uv.lock | A `uv` entry in `.github/dependabot.yml` | Pending: the entry is not added yet | When Dependabot is next changed |
+| Dependabot updates uv.lock | A `uv` entry in `.github/dependabot.yml` | Added on 2026-11-12; `check-jsonschema --builtin-schema vendor.dependabot` passed | First Dependabot run |
 
 ## More information
 

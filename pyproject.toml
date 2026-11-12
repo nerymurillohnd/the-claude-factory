@@ -1,6 +1,6 @@
-# Maintainer Python tooling only. This repository is not a Python package: nothing here is built,
-# installed or shipped to plugin users. Plugin scripts declare their own dependencies inline
-# (PEP 723), and uv ignores this project when it runs them.
+# The maintainer scripts' Python environment (.venv, Python from .python-version). This repository
+# is not a Python package: nothing here is built, installed or shipped to plugin users. Plugin
+# scripts use only the standard library and run with the user's own python3.
 [project]
 name = "the-claude-factory-maintainer"
 version = "0"
@@ -8,10 +8,11 @@ requires-python = ">=3.15"
 dependencies = []
 
 [dependency-groups]
+# Only the packages that the maintainer scripts in scripts/ import. The maintainer tools
+# (ruff, basedpyright, zizmor, check-jsonschema) are uv tools, pinned in the tools:install
+# npm script.
 dev = [
-    "basedpyright==1.40.2",
-    "ruff==0.17.4",
-    "zizmor==1.32.0",
+    "ruamel.yaml==0.19.1",
 ]
 
 [tool.uv]
