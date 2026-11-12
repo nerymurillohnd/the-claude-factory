@@ -6,6 +6,7 @@ from collections.abc import Mapping
 import re
 from typing import TYPE_CHECKING, cast
 
+from validators.skill_lint import rules_content_files
 from validators.skill_lint.model import Finding, Severity
 
 if TYPE_CHECKING:
@@ -148,4 +149,4 @@ def check(skill: Skill) -> list[Finding]:
     if data is not None:
         findings += _co02(skill, data) + _co03(skill, data) + _co04(skill, data)
         findings += _co05(skill, data) + _co06(skill)
-    return findings
+    return findings + rules_content_files.check(skill)

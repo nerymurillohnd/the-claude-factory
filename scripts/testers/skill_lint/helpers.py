@@ -4,10 +4,13 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from validators.skill_lint.discover import load_skill
+
 if TYPE_CHECKING:
     from collections.abc import Mapping
     from pathlib import Path
 
+    from validators.skill_lint.discover import Skill
     from validators.skill_lint.model import SkillKind
 
 VALID_SKILL_MD = """\
@@ -50,3 +53,9 @@ def build_skill(
         else:
             _ = target.write_text(content, encoding="utf-8")
     return skill
+
+
+def load(skill_dir: Path, modes: Mapping[str, str] | None = None) -> Skill:
+    """Load a built skill with fixed git modes (none by default: every file untracked)."""
+    fixed = dict(modes or {})
+    return load_skill(skill_dir / "SKILL.md", mode_reader=lambda _: fixed)
