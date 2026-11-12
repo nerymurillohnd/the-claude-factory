@@ -50,9 +50,9 @@ argument-hint: "[run URL, workflow file or PR number]"
 
 ## Gotchas
 
-- The official materials lag the actions they use: the Claude Code GitHub Actions docs and the examples in `anthropics/claude-code-action` pin older major versions, point some actions at `@main`, interpolate `structured_output` into `run:` and name retired model IDs. Resolve every version and ID live, and never copy an upstream example as it is.
+- The official materials lag the actions they use: the Claude Code GitHub Actions docs and the examples in `anthropics/claude-code-action` pin moving major tags, point some actions at `@main` and name retired model IDs; released examples also interpolated `structured_output` into `run:`. Resolve every version and ID live, and never copy an upstream example as it is.
 - The action's own prompt tells Claude not to approve or merge, but that is an instruction, not a control: once a GitHub MCP tool is granted, the approve and merge tools are reachable unless `--disallowedTools` names them.
-- A green Claude step can be a no-op ("No trigger found") or can have left its findings only in the log. Read the log before calling a run successful.
+- A green Claude step can be a no-op ("No trigger found", SE-04, or a workflow-validation skip, SE-15, typical on the pull request that changes the workflow), can have dropped its inline comments (SE-16), or can have left its findings only in the log. Read the log before calling a run successful.
 - A filtered run list returns at most 1,000 results. Read each workflow's latest run instead of the whole history.
 - In a public repository, GitHub disables scheduled workflows after 60 days with no repository activity: a schedule that stopped may be disabled, not broken.
 - A green rerun is not a fix. Rerun only with evidence that the failure was transient, and a Claude step at most once.

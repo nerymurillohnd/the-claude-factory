@@ -29,13 +29,15 @@ Read `action.yml` at the commit the workflow pins, or will pin, and pass only th
 
 - Issue and pull request events, and `workflow_run`, require the triggering actor, and for `workflow_run` the upstream run's actor, to have write access (SE-03).
 - `allowed_non_write_users` bypasses that check only when `github_token` is provided.
-- Actors that are not `User` accounts are rejected unless listed in `allowed_bots` (SE-02).
+- Actors that are not `User` accounts are rejected unless listed in `allowed_bots`, on every event, scheduled runs included, which GitHub attributes to the user who last changed the `cron` (SE-02).
+- An actor whose login ends in `[bot]` passes the write check, so an `allowed_bots` entry runs without write access (SE-03).
+- With the default GitHub App token, a workflow that differs from the default branch's copy is skipped green (SE-15).
 - `include_comments_by_actor` and `exclude_comments_by_actor` limit whose comments reach Claude.
 
 ## Comment and review surfaces
 
 - Tag mode keeps one tracking comment. Agent mode writes to the run log unless the prompt asks Claude to post and a posting tool is granted (SE-13).
-- Inline review comments go through `mcp__github_inline_comment__create_inline_comment`, whose server starts only when `--allowedTools` names it (SE-08). `classify_inline_comments` defaults to `true` and buffers comments until the session ends; `include_fix_links` defaults to `true`.
+- Inline review comments go through `mcp__github_inline_comment__create_inline_comment`. Its server starts only on a pull request, when `--allowedTools` names an inline-comment tool or a GitHub MCP tool (SE-08). `classify_inline_comments` defaults to `true`: comments are buffered until the session ends, then classified, which needs the `anthropic_api_key` input (SE-16). `include_fix_links` defaults to `true`.
 - The action does not block formal reviews, approvals or merges: its prompt tells Claude not to, which is an instruction, not a control. Once `--allowedTools` names `mcp__github` or any `mcp__github__*` tool, the action starts the GitHub MCP server it pins with the run's token. At the snapshot that server exposes `create_and_submit_pull_request_review`, `submit_pending_pull_request_review`, `merge_pull_request`, `update_pull_request`, `update_pull_request_branch`, `create_pull_request` and `request_copilot_review`. The policy for them is in `trust-boundaries.md`.
 - Branches: triggered from an issue, Claude works on a new branch (`branch_prefix`, default `claude/`); on an open pull request it pushes to that branch.
 
@@ -54,6 +56,7 @@ Read `action.yml` at the commit the workflow pins, or will pin, and pass only th
 ## Plugins and skills on runners
 
 - `plugin_marketplaces` takes newline-separated entries: an `https://` URL ending in `.git`, with no ref, or a local path starting with `./`, `../` or `/`. A URL installs the marketplace's moving default branch on every run, so check the marketplace out at a resolved commit and pass the local path instead.
+- Anthropic's plugins, `code-review` among them, live in `anthropics/claude-plugins-official` (marketplace name `claude-plugins-official`), which publishes no version tags: pin it by commit. The `claude-code-plugins` marketplace in `anthropics/claude-code` only redirects each entry there, adding a second moving branch.
 - `plugins` takes `plugin-name@marketplace-name`, where the marketplace name comes from its manifest, not from the repository URL.
 - Check the repository out before the action step when the prompt runs a repository skill.
 
@@ -83,4 +86,4 @@ A dropped `disallowed_tools` or `experimental_allowed_domains` is a security reg
 - `anthropics/claude-code-action`: `action.yml` and `src/` (https://github.com/anthropics/claude-code-action)
 - Anthropic models overview: https://platform.claude.com/docs/en/about-claude/models/overview
 
-Verified at `anthropics/claude-code-action@c0949c5` on 4 November 2026. That commit pins `github/github-mcp-server` at `sha-23fa0dd`.
+Verified at `anthropics/claude-code-action@4fa93a8` (v1.0.271) on 12 November 2026: 39 inputs and 6 outputs, and the GitHub MCP server pinned at `sha-23fa0dd`.

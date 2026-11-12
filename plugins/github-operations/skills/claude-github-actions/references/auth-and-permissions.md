@@ -14,10 +14,10 @@ Use the profile the repository already uses. When none is configured, the docume
 
 - Claude API key: the `anthropic_api_key` input.
 - Subscription OAuth token: the `claude_code_oauth_token` input, generated with `claude setup-token`. It is tied to the subscription of the person who generated it, so a secret shared across repositories uses an API key instead. Never pass an OAuth token through `anthropic_api_key`.
-- Anthropic workload identity federation: `anthropic_federation_rule_id` and `anthropic_organization_id`, with optional `anthropic_service_account_id` and `anthropic_workspace_id`. It needs `id-token: write`. The IDs are not credentials and may live in the workflow or in repository variables.
+- Anthropic workload identity federation: `anthropic_federation_rule_id` and `anthropic_organization_id`, with optional `anthropic_service_account_id`, `anthropic_workspace_id` and `anthropic_oidc_audience` (default `https://api.anthropic.com`). It needs `id-token: write`. The IDs are not credentials and may live in the workflow or in repository variables. Never set `anthropic_api_key` or `claude_code_oauth_token` beside them: a static credential takes precedence. Inline-comment classification is then skipped (SE-16).
 - Amazon Bedrock, Google Vertex AI and Microsoft Foundry through OIDC: `use_bedrock`, `use_vertex`, `use_foundry`, each with `id-token: write`.
 
-None of these works on fork or Dependabot pull requests (SE-11).
+Set exactly one profile; a missing or mixed one fails before Claude starts (SE-17). None of these works on fork or Dependabot pull requests (SE-11).
 
 ## GitHub authentication
 
@@ -42,7 +42,8 @@ Explain each one on its own; none replaces another.
 ## Permission mode
 
 - It is a capability setting, not a hardening control by itself. In a run nobody can answer, a tool call that needs permission and that no allow rule covers does not run.
-- The action sets `--permission-mode acceptEdits` for mention runs and appends the user's `claude_args` after it. Whether a later mode flag replaces it is `[unverified]`.
+- Which mode a run starts in: the action runs Claude Code through the Agent SDK, whose built-in starting mode is `default` (Manual). Since Claude Code 2.1.302 such a run with no mode set starts in Manual and denies every call that no allow rule covers; before 2.1.302 it could start in `auto` when it didn't fetch feature flags (a third-party provider, `DISABLE_TELEMETRY`). The `auto` default of interactive terminal and VS Code sessions doesn't apply. A `permissions.defaultMode` passed through the `settings` input applies.
+- For mention runs the action sets `--permission-mode acceptEdits` and appends the user's `claude_args` after it; a later `--permission-mode` in `claude_args` replaces it.
 - `--permission-mode auto` lets a call run when Claude Code's safety review passes it, so it widens what the agent can do compared with explicit allow lists. Auto mode is available on all plans; it needs, on the Anthropic API, Claude Opus 4.6 or later, Sonnet 4.6 or later, Haiku 5.5 or a Fable model, and on Bedrock, Vertex and Foundry, Sonnet 5 or later, Opus 4.7 or later, Haiku 5.5 or a Fable model. An organization can turn it off.
 - Rules for workflows this skill writes or fixes:
   - set no permission mode unless the user asks for one;
@@ -56,4 +57,4 @@ Explain each one on its own; none replaces another.
 - GitHub, `GITHUB_TOKEN`: https://docs.github.com/en/actions/concepts/security/github_token
 - `anthropics/claude-code-action`, `action.yml`, `docs/setup.md` and `src/github/token.ts`: https://github.com/anthropics/claude-code-action
 
-Verified at `anthropics/claude-code-action@c0949c5` and the documentation above on 4 November 2026.
+Verified at `anthropics/claude-code-action@4fa93a8` (v1.0.271) and the documentation above on 12 November 2026.

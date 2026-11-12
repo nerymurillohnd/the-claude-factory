@@ -3,7 +3,7 @@
 ## Contents
 
 - How to use this catalog
-- SE-01 to SE-14
+- SE-01 to SE-17
 - Verify against
 
 ## How to use this catalog
@@ -21,15 +21,15 @@ Each entry gives the symptom, the log signal, the cause and the fix. Match a run
 
 - Symptom: runs triggered by Dependabot, Renovate, `github-actions[bot]`, Copilot or another app fail at once.
 - Signal: "Workflow initiated by non-human actor: <name> (type: Bot)" or "(actor not found on GitHub)".
-- Cause: `allowed_bots` is empty by default, and any actor whose account type is not `User`, or that the Users API cannot resolve, is rejected.
-- Fix: decide per bot whether Claude should run. Skip unwanted bot events with a job-level `if:` before a runner starts, and list only the needed bots in `allowed_bots`. Never `*` by default.
+- Cause: `allowed_bots` is empty by default, and any actor whose account type is not `User`, or that the Users API cannot resolve, is rejected. The check runs on every event, scheduled runs included: GitHub attributes a scheduled run to a repository user, usually the one who last changed the workflow's `cron`, and a bot there is rejected too.
+- Fix: decide per bot whether Claude should run. Skip unwanted bot events with a job-level `if:` before a runner starts, and list only the needed bots in `allowed_bots`. Never `*` by default. For a scheduled workflow last edited by a bot, list that bot or have a person edit the schedule.
 
 ## SE-03. The write-access gate, and a bypass that does nothing
 
 - Symptom: runs for contributors without write access fail, even with `allowed_non_write_users` set.
 - Signal: "Actor does not have write permissions to the repository".
-- Cause: issue, pull request and `workflow_run` events check the actor's write access, and for `workflow_run` the upstream run's actor too. `allowed_non_write_users` is honored only when the `github_token` input is provided; otherwise the bypass is skipped.
-- Fix: use the bypass only with `github_token: ${{ secrets.GITHUB_TOKEN }}`, minimal permissions and minimal tools, never with a personal access token.
+- Cause: issue, pull request and `workflow_run` events check the actor's write access, and for `workflow_run` the upstream run's actor too. `allowed_non_write_users` is honored only when the `github_token` input is provided; otherwise the bypass is skipped. An actor whose login ends in `[bot]` passes the write check without one, and the action's security notes say allowed bots are not checked for repository permissions: an `allowed_bots` entry lets that bot run Claude without write access.
+- Fix: use the bypass only with `github_token: ${{ secrets.GITHUB_TOKEN }}`, minimal permissions and minimal tools, never with a personal access token. On a public repository, treat every `allowed_bots` entry as a grant to an actor without write access.
 
 ## SE-04. Mode surprises and green no-ops
 
@@ -61,8 +61,8 @@ Each entry gives the symptom, the log signal, the cause and the fix. Match a run
 ## SE-08. Review findings in the log, nothing on the PR
 
 - Symptom: a review run is green and its log holds findings, but the PR shows no inline comments.
-- Cause: the inline-comment server starts only when `--allowedTools` names `mcp__github_inline_comment__create_inline_comment`. With `classify_inline_comments` at its default `true`, comments are buffered and classified after the session; `confirmed: true` posts at once.
-- Fix: name the tool in `claude_args`.
+- Cause: the inline-comment server starts only on a pull request, and only when `--allowedTools` names an inline-comment tool (`mcp__github_inline_comment` or `mcp__github_inline_comment__…`) or a GitHub MCP tool (`mcp__github` or `mcp__github__…`). Without either, no tool can post inline. With `classify_inline_comments` at its default `true`, comments are buffered and classified after the session (SE-16); `confirmed: true` posts at once.
+- Fix: name `mcp__github_inline_comment__create_inline_comment` in `claude_args`.
 
 ## SE-09. Run outcome edge cases
 
@@ -102,9 +102,30 @@ Each entry gives the symptom, the log signal, the cause and the fix. Match a run
 - Cause: the input is no longer declared in `action.yml`. A dropped `disallowed_tools` widens what the agent may do, and a dropped `experimental_allowed_domains` removes the network restriction: both are security regressions. The replacements are in `action-contract.md`.
 - Fix: replace every input the resolved `action.yml` does not declare.
 
+## SE-15. Workflow validation skip: green, and nothing ran
+
+- Symptom: the Claude step is green, posts nothing and leaves no Claude output, typically on the pull request that adds or edits the Claude workflow.
+- Signal: "Skipping action due to workflow validation: <message>", then "Exiting due to workflow validation skip"; the step output `skipped_due_to_workflow_validation_mismatch` is `true`.
+- Cause: on the default GitHub App path (no `github_token` input), the action exchanges the job's OIDC token for an App token. GitHub's validation refuses it when the workflow differs from the one on the default branch (`workflow_not_found_on_default_branch`, or a 401 saying "workflow validation failed"), and the action treats that as a skip that succeeds. With `github_token` set, this path never runs.
+- Fix: merge the workflow change to the default branch first and judge the workflow on the next run there; report the skip as a no-op, never as a pass. Accept the skip on the pull request that changes the workflow.
+
+## SE-16. Inline comments dropped, or posted unfiltered
+
+- Symptom: a review run's log shows inline comments that never reach the pull request, or test-like comments appear on it.
+- Signal: "::warning::<n> buffered comment(s) classified as test/probe — NOT posted", "<n> with confirmed=false — not posting", or "ANTHROPIC_API_KEY not set — skipping classification, posting all unconfirmed comments".
+- Cause: after the session, buffered comments are classified by `claude-haiku-4-5`; comments judged to be probes are dropped and `confirmed: false` comments are never posted. Classification runs only when the `anthropic_api_key` input is set. With an OAuth token, workload identity federation, Bedrock, Vertex or Foundry it is skipped and every unconfirmed comment is posted; a failed classification call does the same.
+- Fix: read the warning lines before concluding that the review found nothing; with a non-API-key profile, expect unfiltered comments, or set `classify_inline_comments: false` knowingly.
+
+## SE-17. Authentication fails before Claude starts
+
+- Symptom: the step fails at once, before any Claude output.
+- Signal: "Environment variable validation failed:" followed by one of: "Cannot use multiple providers simultaneously", "Workload identity federation requires both ANTHROPIC_FEDERATION_RULE_ID and ANTHROPIC_ORGANIZATION_ID to be set", "Either ANTHROPIC_API_KEY, CLAUDE_CODE_OAUTH_TOKEN, or workload identity federation (...) is required when using direct Anthropic API", "AWS_REGION is required when using AWS Bedrock", a missing Vertex variable (`ANTHROPIC_VERTEX_PROJECT_ID`, `CLOUD_ML_REGION`), or a missing Foundry resource; or "Could not fetch an OIDC token. Did you remember to add `id-token: write` to your workflow permissions?".
+- Cause: no credential, a partial workload identity configuration, more than one provider, a provider's required variable missing, or no `id-token: write` on the job that needs the OIDC token (the default App token, workload identity, cloud providers).
+- Fix: set exactly one profile as `auth-and-permissions.md` describes, with its variables, and grant `id-token: write` when the profile needs it. An empty secret on a fork or Dependabot run is SE-11.
+
 ## Verify against
 
 - `anthropics/claude-code-action`, source and `action.yml`: https://github.com/anthropics/claude-code-action
 - GitHub, `GITHUB_TOKEN`: https://docs.github.com/en/actions/concepts/security/github_token
 
-Verified at `anthropics/claude-code-action@c0949c5` and GitHub's documentation on 4 November 2026.
+Verified at `anthropics/claude-code-action@4fa93a8` (v1.0.271) and GitHub's documentation on 12 November 2026.
