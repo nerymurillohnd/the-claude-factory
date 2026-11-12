@@ -27,16 +27,17 @@ When a GraphQL call returns 403 while REST works, the route is blocked, not your
 
 ## Operations
 
-| Operation | MCP, first | `gh api` REST, next | Otherwise |
+| Operation | MCP | `gh api` REST | Otherwise |
 | :-- | :-- | :-- | :-- |
-| Visibility, default branch, Discussions on, your permission | — | `gh api repos/<owner>/<repo> --jq '{visibility, private, default_branch, has_discussions, has_issues, permissions}'` | Ask the user |
+| Visibility, default branch, Discussions on, your permission, merge settings | — | `gh api repos/<owner>/<repo> --jq '{visibility, private, default_branch, has_discussions, has_issues, permissions, allow_squash_merge, allow_merge_commit, allow_rebase_merge, squash_merge_commit_title, squash_merge_commit_message, merge_commit_title, merge_commit_message}'` | Ask the user |
 | Private vulnerability reporting on | — | `gh api repos/<owner>/<repo>/private-vulnerability-reporting --jq .enabled` | Ask the user whether private vulnerability reporting is on in the repository's security settings |
 | Files on the default branch, including the owner's `.github` repository | `mcp__<server>__get_file_contents` | `gh api repos/<owner>/<repo>/contents/<path>` | Read the local clone |
 | Compare the repository's labels with a list | `mcp__<server>__list_label` (paginate with `after`), saved and passed to `labels-sync.py --current`, only when `gh` is missing | First for labels: `labels-sync.py --dry-run` reads them through REST and compares in one checked step ([labels.md](labels.md)) | — |
 | Create or update a label | `mcp__<server>__label_write` (`method: create` or `update`; color without `#`), only when `gh` is missing | First for labels: `labels-sync.py --apply` | Ask the user to create it in **Issues → Labels** |
-| Merge settings, read and change | No MCP tool edits them | `gh api repos/<owner>/<repo>` to read; `gh api --method PATCH repos/<owner>/<repo> -f …` to change ([merge-message-setting.md](merge-message-setting.md)) | **Settings → General → Pull Requests** |
+| Merge settings, change | No MCP tool edits them | `gh api --method PATCH repos/<owner>/<repo> -f …` ([merge-message-setting.md](merge-message-setting.md)) | **Settings → General → Pull Requests** |
+| Rules on the default branch | — | `gh api repos/<owner>/<repo>/rules/branches/<branch>` | **Settings → Rules** |
 | Discussion categories and their slugs | `mcp__<server>__list_discussion_categories` lists names and IDs only, with no slug | No REST endpoint | `gh api graphql` ([discussion-forms.md](discussion-forms.md)), or the slug from each category's URL |
-| Issue types the repository can use (organization and personal accounts) | — | `gh api repos/<owner>/<repo>/issue-types --jq '.[].name'` | Ask the user |
+| Issue types the repository can use (organization and personal accounts) | — | `gh api repos/<owner>/<repo>/issue-types --jq '.[] | select(.is_enabled) | .name'` | Ask the user |
 | CODEOWNERS errors after the merge | — | `gh api "repos/<owner>/<repo>/codeowners/errors?ref=<branch>"` | The file's page on GitHub highlights errors |
 | Community profile of a public repository | — | `gh api repos/<owner>/<repo>/community/profile` | **Insights → Community standards** |
 
