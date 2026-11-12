@@ -5,7 +5,7 @@ Find the workflows that fail, hang or stopped running on the default branch, fix
 ## 1. Find them
 
 1. List the workflows, disabled ones included: `gh workflow list -R <o>/<r> --all --json id,name,state,path`.
-2. For each active workflow, read its latest run on the default branch: `gh run list -R <o>/<r> --workflow <id> --branch <default branch> --limit 1 --json databaseId,status,conclusion,createdAt,headSha,url`. A latest run that did not succeed is a failure to repair.
+2. For each active workflow, read its latest run on the default branch: `gh run list -R <o>/<r> --workflow <id> --branch <default branch> --limit 1 --json databaseId,status,conclusion,createdAt,headSha,url`. Judge it by its state: a run is a failure to repair only when its `status` is `completed` and its `conclusion` is `failure`, `timed_out` or `startup_failure`. `success`, `skipped` and `neutral` are successful conclusions; a `queued` or `in_progress` run is still running; `cancelled` is a separate question, usually a concurrency group or a person, so read why before treating it as a failure; `action_required` waits for approval (SE-10).
 3. For each scheduled workflow, check that its latest run is as recent as its schedule says. In a public repository, GitHub disables scheduled workflows after 60 days with no repository activity.
 4. For a failing workflow, check what its file references: branches in `on:` filters, secret names in `${{ secrets.NAME }}` that `gh secret list` does not show, files under `paths:`.
 

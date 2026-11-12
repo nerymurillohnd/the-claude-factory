@@ -23,7 +23,7 @@ Read every file under `.github/workflows/`, every composite action (`action.yml`
 - `secrets: inherit`; secrets echoed, `set -x`, `env` or `printenv` in a step that holds a secret; `ACTIONS_STEP_DEBUG`.
 - Deployment credentials in a workflow whose agent or build job untrusted events can start.
 - Jobs without `timeout-minutes`; review workflows without a `concurrency` group that cancels superseded runs.
-- A required check skipped by a `paths` filter or an `if:`: it never reports and blocks the merge.
+- A required check whose workflow can be skipped by `paths`, `branches` or a commit-message filter at workflow level: it never reports, stays pending and blocks the merge. A required job that an `if:` can skip is the opposite risk: GitHub reports it as `Success`, so the requirement can be bypassed.
 - References to branches, secrets or paths that no longer exist.
 - Actions the repository's allowed-actions policy does not permit.
 
@@ -37,11 +37,13 @@ Read every file under `.github/workflows/`, every composite action (`action.yml`
 - `use_sticky_comment` with `github_token` or a custom app (SE-06).
 - CI tools expected without `actions: read` in the job, or on events that are not pull requests (SE-07).
 - `structured_output` consumers without `--json-schema` or without an empty guard (SE-01).
-- An inline-comment review without the tool in `--allowedTools` (SE-08); a prompt that asks Claude to post with no posting tool granted (SE-13).
+- An inline-comment review without the tool in `--allowedTools` (SE-08); a prompt that asks Claude to post with no posting tool granted (SE-13); a review whose authentication isn't an API key, so inline comments post unclassified (SE-16).
+- A scheduled Claude workflow last edited by a bot that isn't in `allowed_bots` (SE-02); any `allowed_bots` entry on a public repository, which runs without write access (SE-03).
+- More than one inference profile, or a profile without the variables or `id-token: write` it needs (SE-17).
 - `mcp__github` granted as a wildcard, or `--disallowedTools` missing the approval and merge tools (`trust-boundaries.md`).
 - A permission mode set without the user's request; `bypassPermissions` or `--dangerously-skip-permissions` anywhere.
 - `--model` with an ID not resolved live; `show_full_output: true` or `--debug` on a public repository.
-- A marketplace passed as a URL instead of a pinned local checkout.
+- A marketplace passed as a URL instead of a pinned local checkout, or Anthropic's plugins taken through the `claude-code-plugins` redirect instead of `claude-plugins-official` (`action-contract.md`).
 - A PR head passed with `--add-dir` without neutralizing its `.claude/` (`trust-boundaries.md`).
 - An OAuth token passed through `anthropic_api_key`.
 
@@ -61,5 +63,6 @@ Only after the user approves them. Apply them on a branch, check each patched fi
 
 - GitHub, secure use of Actions: https://docs.github.com/en/actions/reference/security/secure-use
 - GitHub, workflow syntax: https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax
+- GitHub, conditions and required checks: https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/control-jobs-with-conditions and https://docs.github.com/en/pull-requests/how-tos/merge-and-close-pull-requests/troubleshooting-required-status-checks
 
-Written on 4 November 2026 from `anthropics/claude-code-action@c0949c5`.
+Updated on 12 November 2026 from `anthropics/claude-code-action@4fa93a8` (v1.0.271).
