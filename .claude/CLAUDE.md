@@ -49,6 +49,15 @@ Conventions that apply to the whole project. Each section groups the conventions
   - **Maintainer scope:** the tools, scripts, configuration and workflows that maintain the project are checked in CI and locally.
   - **Plugin scope:** each plugin's code and behavior are checked locally, with the plugin's own testing methods, in isolated environments that do not depend on the maintainer's tools or versions. In CI, only the evals run, as the Evals section states.
 
+## Maintainer tooling
+
+- `package.json` is the single entry point: run every maintainer command through its npm script (`npm run <script>`; `npm run` alone lists them). A new maintainer script, Python included, gets its npm script before it is run.
+- Node 26 (`.nvmrc`) and npm 12, which `devEngines` in `package.json` enforces. Install with `npm ci`; its `prepare` script points Git at the tracked `.githooks/`.
+- Python is 3.15, set in `.python-version` and installed with `uv python install`.
+- npm scripts run maintainer Python as `uv run python scripts/<file>.py`, never bare `python3` (each machine's OS Python) or `.venv/bin/python`: only `uv run` and `uv sync` create `.venv` and keep `uv.lock` current.
+- Add a package a maintainer script imports with `uv add --dev <package>`, which updates `pyproject.toml` and `uv.lock` together; commit both, and never edit `uv.lock` by hand.
+- ruff, basedpyright, zizmor and check-jsonschema are uv tools pinned in the `tools:install` npm script and called bare, not project dependencies. Biome and TypeScript are pinned dev dependencies in `package.json`.
+
 ## Pull requests
 
 - A pull request is opened only at the owner's request. When a change needs one under these rules, Claude asks the owner for permission before opening it.
