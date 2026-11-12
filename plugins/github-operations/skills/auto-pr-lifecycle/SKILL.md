@@ -176,7 +176,7 @@ A step that fails its gate goes back to the step the scenario below names; never
 1. Read the head SHA and the base branch's current SHA again. When the head moved, deploy pr-tracker on the new head. When the base moved since the finalizer's report, deploy pr-finalizer again: its merge test covered the old base only.
 2. Choose the merge method the repository allows: squash when the history is incremental, a merge commit when its commits matter.
 3. Tell the user the pull request, the head SHA, the base SHA, the method, the threads left open for people and any warning, and ask for the merge approval. When the finalizer names base commits that the checks do not cover, say so, and offer **Update the branch first** as the recommended option: GitHub warns that checks may fail after the merge when the base changed. Updating the branch is a push: it needs its own approval, and the lifecycle tracks the new head.
-4. On approval, merge at that head SHA (`gh pr merge --match-head-commit <sha>`), then confirm on GitHub that it landed.
+4. On approval, merge at that head SHA by the first route that works: the MCP `merge_pull_request` with `expectedHeadSha` and `merge_method`; else `gh api --method PUT repos/<owner>/<repo>/pulls/<n>/merge -f sha=<sha> -f merge_method=<method>`; else `gh pr merge --match-head-commit <sha>`, which uses GraphQL and fails in Claude Code on the web. Then confirm on GitHub that it landed.
 5. Clean up the merged branch only after the merge is confirmed, and never the base branch.
 
 ## Final report
