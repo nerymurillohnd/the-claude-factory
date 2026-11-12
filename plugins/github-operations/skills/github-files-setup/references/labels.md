@@ -18,7 +18,7 @@ Before any file is written, decide the label names the files will use, so the fo
 
 1. Collect every label name the written files use.
 2. Write the label list as a JSON list of `{"name", "color", "description"}` objects: each color as 6 hex digits without `#`, each description in 100 characters or fewer. When the repository keeps a label file (such as `.github/labels.json`), the list is that file, updated. Otherwise write the list outside the repository, in a scratch folder, so it stays out of the pull request.
-3. Compare the list with the repository: `labels-sync.py --dry-run`, with the command in the Scripts table of `SKILL.md`. Its `summary` gives the missing, different and extra counts, and it changes nothing. Without `gh`, read the labels with the MCP tool `mcp__<server>__list_label`, save its output (all pages) and pass it as `--current <file>`.
+3. Compare the list with the repository: `labels-sync.py --dry-run`, with the command in the Scripts section of `SKILL.md`. Its `summary` gives the missing, different and extra counts, and it changes nothing. Without `gh`, read the labels with the MCP tool `mcp__<server>__list_label`, save its output (all pages) and pass it as `--current <file>`.
 4. Show the user the labels to create and to change. Creating or changing a label changes the repository: ask first, and keep only what the user approves in the list.
 5. For each label the user declines that a written file still names: remove it from that file and run the file's check again, or, if the user wants the file as it is, list it under **Left for you** in the report.
 6. After approval, apply the approved list:

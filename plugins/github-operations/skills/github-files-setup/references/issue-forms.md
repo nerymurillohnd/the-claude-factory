@@ -75,9 +75,10 @@ A form applies only the labels in its top-level `labels:`. A dropdown answer, su
 
 ## Validate
 
-1. Run `check-forms.py` from the repository's root with the commands in the Scripts table of `SKILL.md`: `--kind issue` on every form but `config.yml`, and `--kind issue-config` on `config.yml`.
+1. Run `check-forms.py` from the repository's root with the commands in the Scripts section of `SKILL.md`: `--kind issue` on every form in `.github/ISSUE_TEMPLATE/` but `config.yml`, the repository's existing forms included, so form names are compared across all of them; and `--kind issue-config` on `config.yml`.
 2. Fix every finding and run both again. Move on only when both summaries read `check-forms: pass`.
-3. When the script exits 2 because ruamel.yaml or check-jsonschema is missing, tell the user what it printed, without installing anything yourself. Run it with `--help`, which works without the packages and lists every rule it checks, and check each form by hand against those rules and this page. Say in the report that the script did not run.
+3. Compare each form's `name` with the names of the repository's Markdown issue templates (their `name:` front matter): the script reads only forms.
+4. When the script exits 2, it checked nothing. Tell the user what it printed, without installing anything yourself, check each form and `config.yml` by hand against [form-rules.md](form-rules.md), and say in the report that the script did not run and why.
 
 ## After the merge
 

@@ -47,7 +47,7 @@ GitHub reads the configuration from `.github/dependabot.yml` or `.github/dependa
 
 ## Validate
 
-Run `check-forms.py --kind dependabot` on `.github/dependabot.yml` (or `.yaml`) from the repository's root, with the command in the Scripts table of `SKILL.md`. Fix every error and run it again; move on only when its summary reads `check-forms: pass`. When it exits 2 for a missing requirement, read the file against GitHub's Dependabot options reference instead, and say so in the report.
+Run `check-forms.py --kind dependabot` on `.github/dependabot.yml` (or `.yaml`) from the repository's root, with the command in the Scripts section of `SKILL.md`. Fix every error and run it again; move on only when its summary reads `check-forms: pass`. When it exits 2, it checked nothing: read the file against GitHub's Dependabot options reference instead, and say in the report that the script did not run and why.
 
 ## Limits
 

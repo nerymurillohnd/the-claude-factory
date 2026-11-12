@@ -1,9 +1,6 @@
 ---
 name: github-files-setup
 description: Writes a GitHub repository's pull request templates, issue forms, discussion forms, labels, Dependabot configuration and CODEOWNERS, adapted to that repository from reference models, and sets its merge message and, with approval, which merge methods it allows. Use when the user wants to set up, add or update any of these, or to make a repository's issues and pull requests arrive with the information maintainers need, even if they only say that issues arrive incomplete. Not for CONTRIBUTING, SECURITY, SUPPORT, code of conduct or README files, filing or triaging individual issues, taking a pull request to merge, auditing or cleaning up a repository, or auditing and fixing GitHub Actions workflows, which this plugin's other skills cover.
-allowed-tools:
-  - Bash(python3 ${CLAUDE_SKILL_DIR}/scripts/check-forms.py *)
-  - Bash(python3 ${CLAUDE_SKILL_DIR}/scripts/labels-sync.py --dry-run *)
 ---
 
 # GitHub files setup
@@ -38,7 +35,7 @@ You write the repository's own collaboration files from the models in `assets/`.
 
 The work ends on one branch, committed. With the user's approval it is pushed and opened as one pull request. The user approves the set of files, every label and setting change, and the push.
 
-Run the scripts with `python3` and `${CLAUDE_SKILL_DIR}` in front of `scripts/`, exactly as the Scripts table writes them, because they run from the repository's root. The references name models and scripts by their path from this skill's folder, such as `assets/ISSUE_TEMPLATE/bug_report.yml`. Read and write GitHub by the routes in [references/github-access.md](references/github-access.md): the GitHub MCP server first, then `gh api` REST, so the skill works where `gh` is missing or GraphQL is blocked.
+Run the scripts with `${CLAUDE_SKILL_DIR}` in front of `scripts/`, exactly as the Scripts section writes them, because they run from the repository's root. The references name models and scripts by their path from this skill's folder, such as `assets/ISSUE_TEMPLATE/bug_report.yml`. Read and write GitHub by the routes in [references/github-access.md](references/github-access.md): the GitHub MCP server first, then `gh api` REST, so the skill works where `gh` is missing or GraphQL is blocked.
 
 ## Where each file goes
 
@@ -74,12 +71,12 @@ GitHub reads each file only at its own path and name. Before writing, look in ev
 - There is no chooser for PR templates: GitHub opens `pull_request_template.md`, and another template only through a link with `?template=<file>.md`.
 - `blank_issues_enabled: false` hides the blank issue from contributors, but people with write access still see it, marked **Maintainers only**.
 - A discussion form's file name must equal its category's slug, and no API creates a category.
-- YAML 1.1 reads unquoted `Yes`, `No`, `On` and `Off` as booleans, so an option written that way breaks the form. `check-forms.py` catches it.
+- YAML 1.1 reads unquoted `Yes`, `No`, `On` and `Off` as booleans, so an option written that way breaks the form. `check-forms.py` catches it, and [references/form-rules.md](references/form-rules.md) lists every such value.
 - Issues and discussions created through the API or `gh` skip the forms: tell the user.
 
 ## Scripts
 
-Run each from the repository's root with `python3` and its full path, exactly as below. Each needs Python 3.12 or later and checks it first. Each documents its flags, output and examples in `--help`, which works even without the packages. Each exits 0 when it ran, with its result on stdout and a summary on its last line or in its `summary` field, and exits 2 when it could not run, with the reason on stderr.
+Run each from the repository's root with its full path, exactly as below. `python3` is the default interpreter: when the user names another, such as the `python3` of a virtual environment that holds the packages, write its path in place of `python3`. Each needs Python 3.12 or later and checks it first. Each documents its flags, output and examples in `--help`. Each exits 0 when it ran, with its result on stdout and a summary on its last line or in its `summary` field, and exits 2 when it could not run, with the reason on stderr.
 
 | Script | What it does | Run it | When |
 | :-- | :-- | :-- | :-- |
@@ -88,11 +85,11 @@ Run each from the repository's root with `python3` and its full path, exactly as
 
 `<kind>` selects the check: `issue`, `issue-config`, `discussion` or `dependabot`.
 
-`check-forms.py` needs ruamel.yaml 0.19.1 and check-jsonschema 0.39.0 in the Python that runs it. When they are missing it exits 2 with the install command: never install them yourself; tell the user, and check the files by hand against the rules `--help` lists and the reference.
+`check-forms.py` needs ruamel.yaml 0.19.1 and check-jsonschema 0.39.0 in the Python that runs it. When it exits 2, it checked nothing: never install anything yourself. Tell the user what it printed, check the files by hand against [references/form-rules.md](references/form-rules.md), and record the check as not run, with the reason.
 
-`labels-sync.py --dry-run` changes nothing; the same command with `--apply` creates and updates the approved labels, never deletes one, and asks for permission. It needs `gh` signed in; without `gh`, follow [references/labels.md](references/labels.md).
+`labels-sync.py --dry-run` changes nothing; the same command with `--apply` creates and updates the approved labels and never deletes one. It needs `gh` signed in; without `gh`, and when `--apply` exits 2, follow [references/labels.md](references/labels.md).
 
-Only the checks are pre-approved, and only in the turn that starts the skill. After the user answers at step 2, a check may ask for permission again: the user can allow it for the session.
+Each run asks for the user's permission like any command, unless the user allowed it.
 
 ## Workflow
 
@@ -104,19 +101,19 @@ Progress:
 - [ ] 2. Choose the files (the choosing tables in references/pr-templates.md, issue-forms.md, discussion-forms.md)
 - [ ] 3. PR templates (references/pr-templates.md)
 - [ ] 4. Issue forms (references/issue-forms.md)
-- [ ] 4b. check-forms.py --kind issue and issue-config: pass
+- [ ] 4b. Issue forms and config.yml checked: check-forms.py passes, or it could not run and they were checked by hand
 - [ ] 5. Discussion forms (references/discussion-forms.md)
-- [ ] 5b. check-forms.py --kind discussion: pass
+- [ ] 5b. Discussion forms checked: check-forms.py passes, or it could not run and they were checked by hand
 - [ ] 6. Dependabot (references/dependabot.md)
-- [ ] 6b. check-forms.py --kind dependabot: pass
+- [ ] 6b. dependabot.yml checked: check-forms.py passes, or it could not run and it was checked by hand
 - [ ] 7. CODEOWNERS (references/codeowners.md)
 - [ ] 8. Labels (references/labels.md)
-- [ ] 8b. labels-sync.py --dry-run after --apply: 0 missing, 0 different
+- [ ] 8b. Labels compared again after creating them: 0 missing, 0 different
 - [ ] 9. Merge message setting (references/merge-message-setting.md)
 - [ ] 10. Land the setup
 ```
 
-When a check fails, return to the step that wrote the file, fix it, and run the check again.
+When a check finds something, return to the step that wrote the file, fix it, and run the check again. When a script exits 2, it checked nothing: use the step's fallback instead of running it again.
 
 1. **Learn the repository.**
    1. Confirm a git repository (`git rev-parse --show-toplevel`) and read the owner and name from `git remote get-url origin`.

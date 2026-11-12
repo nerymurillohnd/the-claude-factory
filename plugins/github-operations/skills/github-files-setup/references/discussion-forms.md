@@ -34,7 +34,7 @@ MCP tools are named `mcp__<server>__<tool>`; find `<server>` as [github-access.m
    - Mark a field `required: true` only when a post is useless without it, and remove the fields that do not apply.
    - Write field labels that read well as headings: a submitted form becomes one `### <field label>` heading per field.
    - Write each description so it sends people to the right place: something broken is a bug issue; a concrete idea ready to track is an issue; a small, clear change needs no RFC.
-5. Run `check-forms.py --kind discussion` on `.github/DISCUSSION_TEMPLATE/*.yml` from the repository's root, with the command in the Scripts table of `SKILL.md`. Fix every finding and run it again; move on only when its summary reads `check-forms: pass`. When it exits 2 for a missing requirement, check the forms by hand as [issue-forms.md](issue-forms.md#validate) says.
+5. Run `check-forms.py --kind discussion` on `.github/DISCUSSION_TEMPLATE/*.yml` from the repository's root, with the command in the Scripts section of `SKILL.md`. Fix every finding and run it again; move on only when its summary reads `check-forms: pass`. When it exits 2, it checked nothing: check the forms by hand against [form-rules.md](form-rules.md), and say in the report that the script did not run and why.
 6. After the merge, ask the user to open `https://github.com/<owner>/<repo>/discussions/new/choose` signed in.
 
 Discussion forms have no polls.
