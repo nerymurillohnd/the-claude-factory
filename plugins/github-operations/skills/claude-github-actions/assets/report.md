@@ -10,12 +10,15 @@
 | :-- | :-- | :-- | :-- | :-- |
 | <run id> / <n> | <job> / <step> | `<short SHA>` | "<exact line>" | SE-<nn>, or `none matched` |
 
+**Detection layers** (audit route): code scanning <run: n alerts on workflows | not set up | not inspected: reason> · zizmor <version | not installed | not run: reason> · actionlint <version | not installed | not run: reason>; <the repository silences some zizmor findings, when it does>
+
 ## Findings
 
 <!-- Audit route: one block per finding. Diagnosis and repair routes: one block per cause. -->
 
 ### <F-1>: <title>
 
+- **Check:** <W-nn, C-nn, an auto-mode layer, or a scanner's rule ID> · **Seen by:** <code scanning, zizmor, actionlint, the audit's checks>
 - **Where:** `<file>:<line>`
 - **Triggered when:** <what an attacker or a failure needs>
 - **Impact:** <what happens> · **Severity:** <critical | high | medium | low>
