@@ -10,8 +10,10 @@ schema misses, reading the YAML as GitHub does (YAML 1.1). Each finding reads
 Needs Python 3.12 or later and two packages in the Python that runs it: ruamel.yaml 0.19.1 and
 check-jsonschema 0.39.0. When either is missing it exits 2 and prints the command that installs
 them; it never installs anything itself.
-Exit 0 = pass, 1 = at least one finding (on stdout), 2 = usage error, an unreadable file, a
-missing requirement, or check-jsonschema cannot run (on stderr).
+Exit 0 = the check ran: the findings, if any, are on stdout and its last line is the summary,
+"check-forms: pass" or "check-forms: <k> of <n> files have findings". Exit 2 = it could not run:
+usage error, an unreadable file, a missing requirement, or check-jsonschema cannot run (on
+stderr).
 """
 
 from __future__ import annotations
@@ -26,10 +28,14 @@ import subprocess
 import sys
 from typing import TYPE_CHECKING
 
+# The marketplace's floor for plugin Python: the oldest release still supported upstream when
+# the floor was set, and the python3 of current LTS distributions.
 MINIMUM_PYTHON = (3, 12)
 if sys.version_info < MINIMUM_PYTHON:
     FOUND_PYTHON = ".".join(map(str, sys.version_info[:3]))
+    NEXT_STEP = "Run it with a newer python3, or check the files by reading them instead."
     _ = sys.stderr.write(f"check-forms: needs Python 3.12 or later; this is {FOUND_PYTHON}.\n")
+    _ = sys.stderr.write(f"{NEXT_STEP}\n")
     sys.exit(2)
 
 if TYPE_CHECKING:
@@ -57,9 +63,10 @@ requirements:
   script exits 2 and prints the command that installs them.
 
 exit codes:
-  0  every file passes
-  1  at least one finding, printed on stdout as FILE:LINE:COLUMN: message
-  2  usage error, an unreadable file, a missing requirement, or check-jsonschema cannot run
+  0  the check ran. Findings are printed on stdout as FILE:LINE:COLUMN: message, and the last
+     line is the summary: "check-forms: pass", or "check-forms: <k> of <n> files have findings"
+  2  could not run: usage error, an unreadable file, a missing requirement, or check-jsonschema
+     cannot run (on stderr)
 
 examples:
   python3 check-forms.py --kind issue .github/ISSUE_TEMPLATE/bug_report.yml
@@ -435,8 +442,8 @@ def main() -> int:
         return missing_requirement(str(error))
     try:
         texts = {path: path.read_text(encoding="utf-8") for path in args.files}
-    except OSError as error:
-        _ = sys.stderr.write(f"check-forms: cannot read a file: {error}\n")
+    except (OSError, UnicodeDecodeError) as error:
+        _ = sys.stderr.write(f"check-forms: cannot read a file as UTF-8 text: {error}\n")
         return 2
     try:
         code, output = schema_check(args.kind, args.files)
@@ -451,7 +458,12 @@ def main() -> int:
         found.extend(check_form(yaml, args.kind, str(path), source))
     for message in found:
         _ = sys.stdout.write(message + "\n")
-    return 1 if found else 0
+    flagged = sum(1 for path in texts if any(line.lstrip().startswith(str(path)) for line in found))
+    if found and not flagged:
+        flagged = len(texts)
+    summary = f"{flagged} of {len(texts)} files have findings" if found else "pass"
+    _ = sys.stdout.write(f"check-forms: {summary}\n")
+    return 0
 
 
 if __name__ == "__main__":

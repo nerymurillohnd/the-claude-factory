@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
 """Compare a repository's labels with a labels file, and create or update the ones that differ.
 
-Usage: python3 labels-sync.py --repo OWNER/REPO --labels FILE [--current FILE] [--apply]
+Usage: python3 labels-sync.py --dry-run|--apply --repo OWNER/REPO --labels FILE [--current FILE]
 
 Reads the repository's labels through GitHub's REST API with `gh api` (no GraphQL), or from
 --current, a JSON file of the repository's labels such as the GitHub MCP server's `list_label`
-output, when gh is not available. Prints one JSON object on stdout: `missing` (in the file, not
-in the repository), `different` (same name, another color or description, as `want` and
-`have`) and `extra` (in the repository, not in the file; never changed).
+output, when gh is not available. Prints one JSON object on stdout: `summary`, `missing` (in
+the file, not in the repository), `different` (same name, another color or description, as
+`want` and `have`) and `extra_count` (in the repository, not in the file; never changed).
 
-Without --apply it changes nothing. With --apply it creates every missing label and updates
-every different one through `gh api`, then reports `created` and `updated`. It never deletes or
-renames a label. Colors compare without case. Needs Python 3.12 or later and only its standard
-library; gh only to read through the API or to apply.
+--dry-run changes nothing. --apply creates every missing label and updates every different one
+through `gh api`, then reports `created` and `updated`. It never deletes or renames a label.
+Colors compare without case. Needs Python 3.12 or later and only its standard library; gh only
+to read through the API or to apply.
 """
 
 from __future__ import annotations
@@ -27,10 +27,14 @@ import sys
 from typing import TYPE_CHECKING
 from urllib.parse import quote
 
+# The marketplace's floor for plugin Python: the oldest release still supported upstream when
+# the floor was set, and the python3 of current LTS distributions.
 MINIMUM_PYTHON = (3, 12)
 if sys.version_info < MINIMUM_PYTHON:
     FOUND_PYTHON = ".".join(map(str, sys.version_info[:3]))
+    NEXT_STEP = "Run it with a newer python3, or use the GitHub MCP server's label tools."
     _ = sys.stderr.write(f"labels-sync: needs Python 3.12 or later; this is {FOUND_PYTHON}.\n")
+    _ = sys.stderr.write(f"{NEXT_STEP}\n")
     sys.exit(2)
 
 if TYPE_CHECKING:
@@ -38,8 +42,8 @@ if TYPE_CHECKING:
     from typing import TypeGuard
 
 DESCRIPTION = """\
-Compare a repository's labels with a labels file through GitHub's REST API, and with --apply
-create the missing labels and update the different ones. Never deletes a label."""
+Compare a repository's labels with a labels file through GitHub's REST API (--dry-run), or
+create the missing labels and update the different ones (--apply). Never deletes a label."""
 EPILOG = """\
 labels file:
   a JSON list of {"name", "color", "description"} objects. color is 6 hex digits without "#";
@@ -49,19 +53,26 @@ labels file:
   the repository's labels when gh is not available: a JSON list of label objects, or an object
   whose "labels" key holds that list (the GitHub MCP server's list_label output; join its pages).
 
+output:
+  one JSON object. "summary" reads "<n> missing, <n> different, <n> extra", plus
+  "; <n> created, <n> updated" after --apply. --show-extra also lists the extra names.
+
 exit codes:
-  0  nothing missing or different, or --apply created and updated every label it had to
-  1  something missing or different (see the JSON); nothing was changed
-  2  usage error, an invalid labels file, gh missing or failing, or --apply stopped part way
-     (the JSON names what was created and updated before the error)
+  0  the comparison ran (read the summary), or --apply created and updated every label it had to
+  2  could not run: usage error, an invalid labels file, gh missing or failing, or --apply
+     stopped part way (the JSON names what was created and updated, and stderr the label
+     that failed)
 
 examples:
-  python3 labels-sync.py --repo octo-org/octo-repo --labels .github/labels.json
-  python3 labels-sync.py --repo octo-org/octo-repo --labels .github/labels.json --apply
-  python3 labels-sync.py --repo octo-org/octo-repo --labels labels.json --current current.json"""
+  python3 labels-sync.py --dry-run --repo octo-org/octo-repo --labels .github/labels.json
+  python3 labels-sync.py --apply --repo octo-org/octo-repo --labels .github/labels.json
+  python3 labels-sync.py --dry-run --repo octo-org/octo-repo --labels l.json --current now.json"""
 
+# REST returns at most 100 labels per page; 100 pages (10,000 labels) is a safety stop far above
+# any real label set, so a pagination bug can't loop for ever.
 PAGE_SIZE = 100
 MAX_PAGES = 100
+# GitHub's REST limit for a label description.
 MAX_DESCRIPTION = 100
 COLOR = re.compile(r"[0-9A-Fa-f]{6}")
 REPO = re.compile(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+")
@@ -156,7 +167,8 @@ def gh(arguments: Sequence[str]) -> str:
         msg = f"gh cannot run: {error}"
         raise SyncError(msg) from error
     if done.returncode != 0:
-        msg = f"gh {' '.join(arguments[:3])} exited {done.returncode}\n{done.stderr.rstrip()}"
+        output = "\n".join(part.strip() for part in (done.stderr, done.stdout) if part.strip())
+        msg = f"gh {' '.join(arguments)} exited {done.returncode}\n{output}"
         raise SyncError(msg)
     return done.stdout
 
@@ -180,42 +192,67 @@ def present(repo: str) -> dict[str, Label]:
     raise SyncError(msg)
 
 
-def diff(want: dict[str, Label], have: dict[str, Label]) -> dict[str, list[object]]:
-    """Return the missing, different and extra labels."""
+def diff(want: dict[str, Label], have: dict[str, Label], *, show_extra: bool) -> dict[str, object]:
+    """Return the summary and the missing, different and extra labels."""
+    missing = [name for name in want if name not in have]
     different: list[object] = [
         {"name": name, "want": label.fields(), "have": have[name].fields()}
         for name, label in want.items()
         if name in have and label.fields() != have[name].fields()
     ]
-    return {
-        "missing": [name for name in want if name not in have],
+    extra = [name for name in have if name not in want]
+    report: dict[str, object] = {
+        "summary": f"{len(missing)} missing, {len(different)} different, {len(extra)} extra",
+        "missing": missing,
         "different": different,
-        "extra": [name for name in have if name not in want],
+        "extra_count": len(extra),
     }
+    if show_extra:
+        report["extra"] = extra
+    return report
+
+
+def write(name: str, arguments: Sequence[str]) -> None:
+    """Run one label write through gh, naming the label when it fails."""
+    try:
+        _ = gh(arguments)
+    except SyncError as error:
+        msg = f"label {name!r} was not written: {error}"
+        raise SyncError(msg) from error
 
 
 def apply(
-    repo: str, want: dict[str, Label], have: dict[str, Label], report: dict[str, list[object]]
+    repo: str,
+    want: dict[str, Label],
+    have: dict[str, Label],
+    done: tuple[list[str], list[str]],
 ) -> None:
-    """Create the missing labels and update the different ones, recording each in the report."""
-    created: list[object] = []
-    updated: list[object] = []
-    report["created"] = created
-    report["updated"] = updated
+    """Create the missing labels and update the different ones, recording each name in done."""
+    created, updated = done
     for name, label in want.items():
         if name in have:
             continue
         fields = ["-f", f"name={label.name}", "-f", f"color={label.color}"]
         fields += ["-f", f"description={label.description}"]
-        _ = gh(["api", "--method", "POST", f"repos/{repo}/labels", *fields])
+        write(name, ["api", "--method", "POST", f"repos/{repo}/labels", *fields])
         created.append(name)
     for name, label in want.items():
         if name not in have or label.fields() == have[name].fields():
             continue
         fields = ["-f", f"color={label.color}", "-f", f"description={label.description}"]
         target = f"repos/{repo}/labels/{quote(name, safe='')}"
-        _ = gh(["api", "--method", "PATCH", target, *fields])
+        write(name, ["api", "--method", "PATCH", target, *fields])
         updated.append(name)
+
+
+def finish(report: dict[str, object], done: tuple[list[str], list[str]] | None) -> None:
+    """Add what --apply did to the report and its summary."""
+    if done is None:
+        return
+    created, updated = done
+    report["created"] = created
+    report["updated"] = updated
+    report["summary"] = f"{report['summary']}; {len(created)} created, {len(updated)} updated"
 
 
 class Args(argparse.Namespace):
@@ -225,6 +262,8 @@ class Args(argparse.Namespace):
     labels: Path = Path()
     current: Path | None = None
     apply: bool = False
+    dry_run: bool = False
+    show_extra: bool = False
 
 
 def parse() -> Args:
@@ -239,8 +278,13 @@ def parse() -> Args:
     _ = parser.add_argument(
         "--current", type=Path, help="the repository's labels as JSON, instead of reading them"
     )
-    _ = parser.add_argument(
+    mode = parser.add_mutually_exclusive_group(required=True)
+    _ = mode.add_argument("--dry-run", action="store_true", help="compare only; change nothing")
+    _ = mode.add_argument(
         "--apply", action="store_true", help="create missing labels and update different ones"
+    )
+    _ = parser.add_argument(
+        "--show-extra", action="store_true", help="also list the labels the file lacks"
     )
     args = parser.parse_args(namespace=Args())
     if not REPO.fullmatch(args.repo):
@@ -253,25 +297,26 @@ def parse() -> Args:
 def main() -> int:
     """Read both label sets, compare them, apply when asked and report."""
     args = parse()
-    report: dict[str, list[object]] = {}
+    report: dict[str, object] = {}
+    done: tuple[list[str], list[str]] | None = ([], []) if args.apply else None
     try:
         want = read_labels(args.labels, strict=True)
         if args.current is None:
             have = present(args.repo)
         else:
             have = read_labels(args.current, strict=False)
-        report = diff(want, have)
-        if args.apply:
-            apply(args.repo, want, have, report)
+        report = diff(want, have, show_extra=args.show_extra)
+        if done is not None:
+            apply(args.repo, want, have, done)
     except SyncError as error:
         if report:
+            finish(report, done)
             _ = sys.stdout.write(json.dumps(report, indent=2) + "\n")
         _ = sys.stderr.write(f"labels-sync: {error}\n")
         return 2
+    finish(report, done)
     _ = sys.stdout.write(json.dumps(report, indent=2) + "\n")
-    if args.apply:
-        return 0
-    return 1 if report["missing"] or report["different"] else 0
+    return 0
 
 
 if __name__ == "__main__":
