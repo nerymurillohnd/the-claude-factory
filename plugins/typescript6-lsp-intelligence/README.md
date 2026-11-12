@@ -41,22 +41,22 @@ TypeScript 6 LSP Intelligence connects the TypeScript 6 language server you inst
 
 ## 🧩 What's inside
 
-| Component | Name | What it does | How it runs |
-| :-- | :-- | :-- | :-- |
-| 🧠 LSP server | `typescript` | Starts your `typescript-language-server` for `.ts`, `.tsx`, `.mts`, `.cts`, `.js`, `.jsx`, `.mjs` and `.cjs` files; it uses your project's TypeScript when the project has one, else the TypeScript installed beside it | Automatically when Claude opens or edits one of those files |
-| 🪝 Hook | `PostToolUse` · `PostToolUseFailure` | Runs your `tsc --noEmit` with your project's environment and the plugin's strictest policy on each TypeScript or JavaScript file an Edit, Write, Bash or PowerShell call changed | Automatically after each Edit, Write, Bash or PowerShell call, and after a Bash or PowerShell call that fails |
-| 🎯 Skill | `typescript6-lsp-intelligence:ts-lifecycle` | Teaches Claude to research a TypeScript or JavaScript change from official docs and release notes, navigate with the language server and confirm with Grep, trust results only after five checks, and prove the checks with fixtures before calling code clean | Automatically when you work on TypeScript or JavaScript, or `/typescript6-lsp-intelligence:ts-lifecycle` |
+| Component     | Name                                        | What it does                                                                                                                                                                                                                                                   | How it runs                                                                                                   |
+| :------------ | :------------------------------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------ |
+| 🧠 LSP server | `typescript`                                | Starts your `typescript-language-server` for `.ts`, `.tsx`, `.mts`, `.cts`, `.js`, `.jsx`, `.mjs` and `.cjs` files; it uses your project's TypeScript when the project has one, else the TypeScript installed beside it                                        | Automatically when Claude opens or edits one of those files                                                   |
+| 🪝 Hook       | `PostToolUse` · `PostToolUseFailure`        | Runs your `tsc --noEmit` with your project's environment and the plugin's strictest policy on each TypeScript or JavaScript file an Edit, Write, Bash or PowerShell call changed                                                                               | Automatically after each Edit, Write, Bash or PowerShell call, and after a Bash or PowerShell call that fails |
+| 🎯 Skill      | `typescript6-lsp-intelligence:ts-lifecycle` | Teaches Claude to research a TypeScript or JavaScript change from official docs and release notes, navigate with the language server and confirm with Grep, trust results only after five checks, and prove the checks with fixtures before calling code clean | Automatically when you work on TypeScript or JavaScript, or `/typescript6-lsp-intelligence:ts-lifecycle`      |
 
 ## 📋 Prerequisites
 
-| Tool | Minimum version | Check |
-| :-- | :-- | :-- |
-| Claude Code | 2.1.295 | `claude --version` |
-| Bash | 3.2 | `bash --version` |
-| Node.js | 22.22.2 | `node --version` |
-| TypeScript 6 | — | `npx --no-install tsc --version` (project copy) or `tsc --version` (global) |
-| typescript-language-server | — | `typescript-language-server --version` |
-| Git (optional) | — | `git --version` |
+| Tool                       | Minimum version | Check                                                                       |
+| :------------------------- | :-------------- | :-------------------------------------------------------------------------- |
+| Claude Code                | 2.1.295         | `claude --version`                                                          |
+| Bash                       | 3.2             | `bash --version`                                                            |
+| Node.js                    | 22.22.2         | `node --version`                                                            |
+| TypeScript 6               | —               | `npx --no-install tsc --version` (project copy) or `tsc --version` (global) |
+| typescript-language-server | —               | `typescript-language-server --version`                                      |
+| Git (optional)             | —               | `git --version`                                                             |
 
 The plugin also uses `sed`, `awk`, `grep`, `tr`, `cut`, `head`, `sort`, `find`, `dirname`, `mktemp` and `date`, which come with macOS and Linux.
 
@@ -288,23 +288,23 @@ Add scripts/migrate.ts that renames the old config keys.
 
 Your project decides the environment; the plugin decides how strict the edited code must be:
 
-| Situation | What the hook does |
-| :-- | :-- |
-| A `tsconfig.json` or `jsconfig.json` exists above the file | `tsc --noEmit -p <that config>` with each strictest option your config chain leaves unset passed on the command line |
-| Your config, or a config it extends, sets an option of the policy, at any value | Yours wins: the hook reads your config with `tsc --showConfig` and passes only the options you leave unset. Setting `strict` keeps the whole strict family yours, and an option `tsc` would reject next to your choice, such as `exactOptionalPropertyTypes` with `strictNullChecks: false`, is left out |
-| That config is a solution file (`files: []` with `references`) | The referenced programs are followed to the one that lists the file |
+| Situation                                                                                                                                                         | What the hook does                                                                                                                                                                                                                                                                                                                                                          |
+| :---------------------------------------------------------------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A `tsconfig.json` or `jsconfig.json` exists above the file                                                                                                        | `tsc --noEmit -p <that config>` with each strictest option your config chain leaves unset passed on the command line                                                                                                                                                                                                                                                        |
+| Your config, or a config it extends, sets an option of the policy, at any value                                                                                   | Yours wins: the hook reads your config with `tsc --showConfig` and passes only the options you leave unset. Setting `strict` keeps the whole strict family yours, and an option `tsc` would reject next to your choice, such as `exactOptionalPropertyTypes` with `strictNullChecks: false`, is left out                                                                    |
+| That config is a solution file (`files: []` with `references`)                                                                                                    | The referenced programs are followed to the one that lists the file                                                                                                                                                                                                                                                                                                         |
 | That config excludes the file and a sibling `tsconfig.<name>.json` or `jsconfig.<name>.json` beside it includes it, such as a `tsconfig.tests.json` for the tests | After the config and its references, the `tsconfig.<name>.json` files and then the `jsconfig.<name>.json` files are tried in name order, and the first program that lists the file checks it, with its own ambient declarations. A sibling `tsc` can't read is skipped, and so is one the config extends, such as a `tsconfig.base.json`, which is a base and not a program |
-| Several changed files share a program | One `tsc` run for that program |
-| The file isn't in any program | Checked alone on top of the nearest config, with its `types` and path aliases, and the report says so |
-| A JavaScript file | Type-checked: `checkJs` is part of the strictest policy, so a `.js` file in your `include` is checked in its program when your config sets neither `checkJs` nor `allowJs`, or only `allowJs`. A `checkJs` or `allowJs` your config sets itself is yours |
-| No config above the file | Checked alone with your compiler's own defaults for `target` and `module` (with TypeScript 6, `es2025` and `esnext`; with TypeScript 5, ES5 and CommonJS) and the strictest options; the plugin sets no environment of its own |
-| Your project's `tsc` is older than an option of the policy, such as `strictBuiltinIteratorReturn` (TypeScript 5.6) | That option is left out, so the check still runs instead of failing on an unknown option, and Claude is told which options were not applied |
-| Your config itself has errors | Reported, so a broken config never looks like a clean check |
-| Your config uses an option deprecated in TypeScript 6, such as `baseUrl` | Reported and blocking, since it stops working in TypeScript 7; an `ignoreDeprecations` you set yourself is respected |
-| The project sets `noCheck` | Ignored: the policy passes `noCheck false`, so the type check always runs |
-| `tsc` crashes or exits non-zero without a TypeScript error | Reported to Claude as not checked, with the compiler's first output lines, never as a pass |
-| An edited file is gone, or sits in `node_modules`, `.venv`, `venv` or `site-packages` | Claude is told it wasn't checked |
-| No usable Node.js or TypeScript is found | Not blocking: you get one message per session listing where the hook searched, and Claude is told the file wasn't checked |
+| Several changed files share a program                                                                                                                             | One `tsc` run for that program                                                                                                                                                                                                                                                                                                                                              |
+| The file isn't in any program                                                                                                                                     | Checked alone on top of the nearest config, with its `types` and path aliases, and the report says so                                                                                                                                                                                                                                                                       |
+| A JavaScript file                                                                                                                                                 | Type-checked: `checkJs` is part of the strictest policy, so a `.js` file in your `include` is checked in its program when your config sets neither `checkJs` nor `allowJs`, or only `allowJs`. A `checkJs` or `allowJs` your config sets itself is yours                                                                                                                    |
+| No config above the file                                                                                                                                          | Checked alone with your compiler's own defaults for `target` and `module` (with TypeScript 6, `es2025` and `esnext`; with TypeScript 5, ES5 and CommonJS) and the strictest options; the plugin sets no environment of its own                                                                                                                                              |
+| Your project's `tsc` is older than an option of the policy, such as `strictBuiltinIteratorReturn` (TypeScript 5.6)                                                | That option is left out, so the check still runs instead of failing on an unknown option, and Claude is told which options were not applied                                                                                                                                                                                                                                 |
+| Your config itself has errors                                                                                                                                     | Reported, so a broken config never looks like a clean check                                                                                                                                                                                                                                                                                                                 |
+| Your config uses an option deprecated in TypeScript 6, such as `baseUrl`                                                                                          | Reported and blocking, since it stops working in TypeScript 7; an `ignoreDeprecations` you set yourself is respected                                                                                                                                                                                                                                                        |
+| The project sets `noCheck`                                                                                                                                        | Ignored: the policy passes `noCheck false`, so the type check always runs                                                                                                                                                                                                                                                                                                   |
+| `tsc` crashes or exits non-zero without a TypeScript error                                                                                                        | Reported to Claude as not checked, with the compiler's first output lines, never as a pass                                                                                                                                                                                                                                                                                  |
+| An edited file is gone, or sits in `node_modules`, `.venv`, `venv` or `site-packages`                                                                             | Claude is told it wasn't checked                                                                                                                                                                                                                                                                                                                                            |
+| No usable Node.js or TypeScript is found                                                                                                                          | Not blocking: you get one message per session listing where the hook searched, and Claude is told the file wasn't checked                                                                                                                                                                                                                                                   |
 
 The plugin never edits your `tsconfig.json`. The only one it creates in your project is the temporary fixture config the skill's script writes and deletes, as [What this plugin runs and sends](#-what-this-plugin-runs-and-sends) describes. It never runs a formatter or linter: Biome, Prettier and ESLint stay your project's tools, and the skill teaches Claude to run them as your `package.json` scripts do.
 
@@ -369,11 +369,11 @@ Uninstalling from the last scope it's installed at also deletes its saved option
 
 **Works in:** 💻 **Claude Code only**
 
-| Component | Claude Code | Claude |
-| :-- | :--: | :--: |
-| 🎯 Skills | ✅ | ✅ |
-| 🪝 Hooks | ✅ | ⚠️ only in conversations where Claude can run tasks |
-| 🧠 LSP servers | ✅ | ➖ |
+| Component      | Claude Code |                       Claude                        |
+| :------------- | :---------: | :-------------------------------------------------: |
+| 🎯 Skills      |     ✅      |                         ✅                          |
+| 🪝 Hooks       |     ✅      | ⚠️ only in conversations where Claude can run tasks |
+| 🧠 LSP servers |     ✅      |                         ➖                          |
 
 <sub>✅ works · ⚠️ partial · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. Claude runs agents, hooks and local MCP servers only in conversations where it can run tasks; anything on your computer needs Claude Desktop open.</sub>
 

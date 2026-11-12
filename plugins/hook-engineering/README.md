@@ -38,21 +38,21 @@ A hook looks simple until it never fires, fires on the wrong calls, or returns a
 
 ## 🧩 What's inside
 
-| Component | Name | What it does | How it runs |
-| :-- | :-- | :-- | :-- |
-| 🎯 Skill | `hook-engineering:hook-development` | Workflows to design, write, audit and debug hooks, with condensed references for every event and handler type, a config linter, a hook probe and a changelog script | `/hook-engineering:hook-development <request>` or automatically when you work on a hook |
-| 🤖 Agent | `hook-engineering:hook-engineer` | A hooks specialist that works from your task message in one of four modes (design, write, audit, debug) and reports what it changed, checked and could not verify | Delegated by Claude, or "use the hook-engineer agent to audit my hooks" |
+| Component | Name                                | What it does                                                                                                                                                        | How it runs                                                                             |
+| :-------- | :---------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------ | :-------------------------------------------------------------------------------------- |
+| 🎯 Skill  | `hook-engineering:hook-development` | Workflows to design, write, audit and debug hooks, with condensed references for every event and handler type, a config linter, a hook probe and a changelog script | `/hook-engineering:hook-development <request>` or automatically when you work on a hook |
+| 🤖 Agent  | `hook-engineering:hook-engineer`    | A hooks specialist that works from your task message in one of four modes (design, write, audit, debug) and reports what it changed, checked and could not verify   | Delegated by Claude, or "use the hook-engineer agent to audit my hooks"                 |
 
 ## 📋 Prerequisites
 
-| Tool | Minimum version | Check |
-| :-- | :-- | :-- |
-| Claude Code | 2.1.222 | `claude --version` |
-| Python, as `python3` | 3.12 | `python3 --version` |
-| Bash | — | `bash --version` |
-| curl | — | `curl --version` |
-| `jq` (for the hooks it writes) | — | `jq --version` |
-| Claude Code docs MCP server (recommended) | — | `claude mcp list` |
+| Tool                                      | Minimum version | Check               |
+| :---------------------------------------- | :-------------- | :------------------ |
+| Claude Code                               | 2.1.222         | `claude --version`  |
+| Python, as `python3`                      | 3.12            | `python3 --version` |
+| Bash                                      | —               | `bash --version`    |
+| curl                                      | —               | `curl --version`    |
+| `jq` (for the hooks it writes)            | —               | `jq --version`      |
+| Claude Code docs MCP server (recommended) | —               | `claude mcp list`   |
 
 The plugin also uses `awk`, which comes with macOS and Linux.
 
@@ -366,10 +366,10 @@ claude mcp remove claude-code-docs --scope user
 
 **Works in:** 💻 Claude Code · 🖥️ Claude
 
-| Component | Claude Code | Claude |
-| :-- | :--: | :--: |
-| 🎯 Skills | ✅ | ✅ |
-| 🤖 Agents | ✅ | ⚠️ only in conversations where Claude can run tasks |
+| Component | Claude Code |                       Claude                        |
+| :-------- | :---------: | :-------------------------------------------------: |
+| 🎯 Skills |     ✅      |                         ✅                          |
+| 🤖 Agents |     ✅      | ⚠️ only in conversations where Claude can run tasks |
 
 <sub>✅ works · ⚠️ partial · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. Claude runs agents, hooks and local MCP servers only in conversations where it can run tasks; anything on your computer needs Claude Desktop open.</sub>
 

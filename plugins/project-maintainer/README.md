@@ -32,7 +32,7 @@ Months later, nobody remembers why the project uses one database over another, o
 
 - **Remember why, not only what** — each decision keeps its context, the options you rejected and the consequences you accepted, in one file per decision.
 - **Debt that waits does not disappear** — each entry holds its evidence, owner, next action and the condition that lets you close it, so a problem you chose to postpone stays visible.
-- **Closed means proven** — a debt item closes in one of three ways, each with its evidence: *resolved* (a check shows the fix works and a second check shows the old failure is gone), *obsolete* (the code or the architecture changed and the problem no longer exists) or *accepted* (you decided to live with it, and an ADR says so).
+- **Closed means proven** — a debt item closes in one of three ways, each with its evidence: _resolved_ (a check shows the fix works and a second check shows the old failure is gone), _obsolete_ (the code or the architecture changed and the problem no longer exists) or _accepted_ (you decided to live with it, and an ADR says so).
 - **History stays true** — a settled record is never rewritten. A new decision supersedes the old one and both point at each other.
 - **Rules that hold** — Claude cannot save a malformed record, and it needs your approval to change a decision you already settled or to drop a debt item without a closed entry. [Guardrails](#what-the-guardrails-check) enforce this in code, not only in instructions.
 - **Start where you stopped** — the handoff carries what was done, decided, corrected, learned and left open, and the next session reads it before it does what you ask.
@@ -45,15 +45,15 @@ Months later, nobody remembers why the project uses one database over another, o
 
 The two skills teach Claude how to keep your project's memory. The hook and the mod make sure that memory stays reliable even when Claude forgets an instruction or makes a mistake: the important rules are checked in code, not left to the model.
 
-| Component | Name | What it does | How it runs |
-| :-- | :-- | :-- | :-- |
-| 🎯 Skill | `project-maintainer:write-records` | Writes decisions as ADRs from a template and keeps a pending and a closed debt ledger, so decisions and postponed problems don't live only in a chat that is gone. It searches for an existing record first, asks only for facts it is missing, and tells you in one line what it saved and where | Automatically when a decision is made or a problem is postponed, or `/project-maintainer:write-records` |
-| 🎯 Skill | `project-maintainer:write-handoff` | Reads the project's state, summarizes the session, compares it with the previous handoff and with your records, drafts the new handoff with you, saves it in `.claude/session-handoff/` and offers to commit and push it, so no session ends without a record of what was done, decided or left open | `/project-maintainer:write-handoff`, or ask Claude to write a handoff when you wrap up |
-| 🪝 Hook | `SessionStart` | Shows you a one-line notice naming the newest handoff, has Claude read it in full, do what you ask and end its reply with the open items, and says which records changed after the handoff was written | Automatically, at the start of a session and after `/clear` |
-| 🧩 Mod | Format guard | Checks every save of an ADR or a debt ledger against the format and refuses a broken one (a missing field, a repeated debt ID, a closed entry without an outcome, a link to a record that does not exist), telling Claude what to fix. Nobody can waive it | Inside Claude Code, on every save of a record |
-| 🧩 Mod | Authority guard | Asks you before a settled record changes, and before a shell command rewrites, moves or deletes the records folders, so Claude can't quietly rewrite history. Only you, or a `PermissionRequest` hook you set up, can approve | Inside Claude Code, on every save and shell command that touches the records |
-| 🧩 Mod | Compaction note | Tells Claude Code's summary to keep your decisions, the open items and every record ID, so a long conversation doesn't lose the thread of the records | Inside Claude Code, before a compaction in a project with records or handoffs |
-| 🧩 Mod | Commit reminder | After a commit that changes dependencies, a schema, CI or infrastructure, or whose message says workaround, temporary or revert, reminds Claude to record the decision or the debt behind it. It uses no model call, and you can turn it off | Inside Claude Code, after such a commit |
+| Component | Name                               | What it does                                                                                                                                                                                                                                                                                         | How it runs                                                                                             |
+| :-------- | :--------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------ |
+| 🎯 Skill  | `project-maintainer:write-records` | Writes decisions as ADRs from a template and keeps a pending and a closed debt ledger, so decisions and postponed problems don't live only in a chat that is gone. It searches for an existing record first, asks only for facts it is missing, and tells you in one line what it saved and where    | Automatically when a decision is made or a problem is postponed, or `/project-maintainer:write-records` |
+| 🎯 Skill  | `project-maintainer:write-handoff` | Reads the project's state, summarizes the session, compares it with the previous handoff and with your records, drafts the new handoff with you, saves it in `.claude/session-handoff/` and offers to commit and push it, so no session ends without a record of what was done, decided or left open | `/project-maintainer:write-handoff`, or ask Claude to write a handoff when you wrap up                  |
+| 🪝 Hook   | `SessionStart`                     | Shows you a one-line notice naming the newest handoff, has Claude read it in full, do what you ask and end its reply with the open items, and says which records changed after the handoff was written                                                                                               | Automatically, at the start of a session and after `/clear`                                             |
+| 🧩 Mod    | Format guard                       | Checks every save of an ADR or a debt ledger against the format and refuses a broken one (a missing field, a repeated debt ID, a closed entry without an outcome, a link to a record that does not exist), telling Claude what to fix. Nobody can waive it                                           | Inside Claude Code, on every save of a record                                                           |
+| 🧩 Mod    | Authority guard                    | Asks you before a settled record changes, and before a shell command rewrites, moves or deletes the records folders, so Claude can't quietly rewrite history. Only you, or a `PermissionRequest` hook you set up, can approve                                                                        | Inside Claude Code, on every save and shell command that touches the records                            |
+| 🧩 Mod    | Compaction note                    | Tells Claude Code's summary to keep your decisions, the open items and every record ID, so a long conversation doesn't lose the thread of the records                                                                                                                                                | Inside Claude Code, before a compaction in a project with records or handoffs                           |
+| 🧩 Mod    | Commit reminder                    | After a commit that changes dependencies, a schema, CI or infrastructure, or whose message says workaround, temporary or revert, reminds Claude to record the decision or the debt behind it. It uses no model call, and you can turn it off                                                         | Inside Claude Code, after such a commit                                                                 |
 
 The mod runs in every Claude Code session that loads the plugin: the terminal (JetBrains included), the Desktop app's Code tab, the VS Code extension, `claude -p`, the Agent SDK, Remote Control and cloud sessions that receive the plugin, but not a Desktop session on WSL. The hook also runs in Claude, where Claude can run tasks. Where the mod does not run, the rules of the records are instructions Claude follows, not checks. See [Compatibility](#-compatibility).
 
@@ -61,13 +61,13 @@ The ADR template follows [MADR 4.0](https://adr.github.io/madr/) and adds a scop
 
 ## 📋 Prerequisites
 
-| Tool | Minimum version | Check |
-| :-- | :-- | :-- |
-| Claude Code | 2.1.307 | `claude --version` |
-| Bash, for the hook and the skills' commands | — | `bash --version` |
-| git, so the handoff can record the repository's state | — | `git --version` |
-| GitHub CLI `gh` (optional), to list open pull requests | — | `gh --version` |
-| GitHub CLI sign-in (optional) | — | `gh auth status` |
+| Tool                                                   | Minimum version | Check              |
+| :----------------------------------------------------- | :-------------- | :----------------- |
+| Claude Code                                            | 2.1.307         | `claude --version` |
+| Bash, for the hook and the skills' commands            | —               | `bash --version`   |
+| git, so the handoff can record the repository's state  | —               | `git --version`    |
+| GitHub CLI `gh` (optional), to list open pull requests | —               | `gh --version`     |
+| GitHub CLI sign-in (optional)                          | —               | `gh auth status`   |
 
 The plugin also uses `ls`, `grep`, `sed`, `awk`, `sort`, `uniq`, `comm`, `tail` and `date` to search, number and compare records, which come with macOS and Linux. Outside a git repository the handoff says so and skips the repository's state.
 
@@ -371,7 +371,7 @@ We removed the export job, so DEBT-001 no longer applies.
 We will live with DEBT-001 for good.
 ```
 
-**Result:** Claude records that decision as an ADR (or links the one that exists) and closes the item as `accepted`. A risk you keep for now but still review stays open with the status *Risk accepted*.
+**Result:** Claude records that decision as an ADR (or links the one that exists) and closes the item as `accepted`. A risk you keep for now but still review stays open with the status _Risk accepted_.
 
 ### Change a decision
 
@@ -421,12 +421,12 @@ The first time Claude is about to create a records folder, it looks through your
 
 ### Where everything is saved
 
-| What | Where |
-| :-- | :-- |
-| Decisions | `.claude/maintainer/decisions/ADR_<YYYY-MM-DD>_<slug>.md`, one file per decision |
-| Pending debt | `.claude/maintainer/technical-debt/pending-debt.md` |
-| Closed debt | `.claude/maintainer/technical-debt/closed-debt.md` |
-| Handoffs | `.claude/session-handoff/<YYYY-MM-DD-HHMM>.md`, one file per handoff, never overwritten |
+| What         | Where                                                                                   |
+| :----------- | :-------------------------------------------------------------------------------------- |
+| Decisions    | `.claude/maintainer/decisions/ADR_<YYYY-MM-DD>_<slug>.md`, one file per decision        |
+| Pending debt | `.claude/maintainer/technical-debt/pending-debt.md`                                     |
+| Closed debt  | `.claude/maintainer/technical-debt/closed-debt.md`                                      |
+| Handoffs     | `.claude/session-handoff/<YYYY-MM-DD-HHMM>.md`, one file per handoff, never overwritten |
 
 The files live in the `.claude/` folder of your project because they are Claude's working documentation about it. The locations are fixed, so every session finds them in the same place.
 
@@ -436,12 +436,12 @@ The first time Claude is about to create `.claude/maintainer/` in a git reposito
 
 Claude Code protects the `.claude/` folder, so the first record or handoff you save in a session can open a permission prompt. Reading them never asks.
 
-| Your permission mode | What happens when Claude saves a record or a handoff |
-| :-- | :-- |
-| Default or accept edits | Claude Code asks. Choose **Yes, and allow Claude to edit files in this project's .claude folder for this session** and it stops asking until the session ends. |
-| Auto | A classifier decides instead of you. |
-| Bypass permissions | No prompt. |
-| Non-interactive (`claude -p`, don't ask) | Nobody can answer the prompt, so Claude shows you the record as a draft. |
+| Your permission mode                     | What happens when Claude saves a record or a handoff                                                                                                           |
+| :--------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Default or accept edits                  | Claude Code asks. Choose **Yes, and allow Claude to edit files in this project's .claude folder for this session** and it stops asking until the session ends. |
+| Auto                                     | A classifier decides instead of you.                                                                                                                           |
+| Bypass permissions                       | No prompt.                                                                                                                                                     |
+| Non-interactive (`claude -p`, don't ask) | Nobody can answer the prompt, so Claude shows you the record as a draft.                                                                                       |
 
 > [!NOTE]
 > A rule in your `settings.json`, such as `Edit(.claude/**)`, does not remove this prompt: Claude Code checks protected folders before it reads allow rules. See [Protected paths](https://code.claude.com/docs/en/permission-modes#protected-paths) in the Claude Code docs.
@@ -450,17 +450,17 @@ Claude Code protects the `.claude/` folder, so the first record or handoff you s
 
 The plugin's mod runs inside Claude Code and checks every save of a record. It turns the rules of the records from instructions Claude may forget into checks it cannot skip.
 
-| What Claude tries to do | What happens |
-| :-- | :-- |
-| Save an ADR or a debt ledger that breaks the format: a status outside the list, a date that differs from the file name, no decision maker, a link to a record that does not exist, a repeated or invalid `DEBT-NNN`, a closed entry without an outcome | Refused, with the reason. Claude fixes the record and saves it again. There is nothing for you to approve |
-| Rewrite a settled ADR beyond its status, its `superseded-by` link and its Confirmation section | Claude Code asks you |
-| Change a closed debt entry beyond its "Superseded by" field | Claude Code asks you |
-| Remove an item from `pending-debt.md` while `closed-debt.md` has no entry with an outcome for it (for *accepted*, an ADR that exists) | Claude Code asks you |
-| Rewrite, move or delete the records folders with a shell command | Claude Code asks you. Copying out of the folder and reading it stay quiet. Records are written with the Write and Edit tools, which apply these rules |
+| What Claude tries to do                                                                                                                                                                                                                                | What happens                                                                                                                                          |
+| :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Save an ADR or a debt ledger that breaks the format: a status outside the list, a date that differs from the file name, no decision maker, a link to a record that does not exist, a repeated or invalid `DEBT-NNN`, a closed entry without an outcome | Refused, with the reason. Claude fixes the record and saves it again. There is nothing for you to approve                                             |
+| Rewrite a settled ADR beyond its status, its `superseded-by` link and its Confirmation section                                                                                                                                                         | Claude Code asks you                                                                                                                                  |
+| Change a closed debt entry beyond its "Superseded by" field                                                                                                                                                                                            | Claude Code asks you                                                                                                                                  |
+| Remove an item from `pending-debt.md` while `closed-debt.md` has no entry with an outcome for it (for _accepted_, an ADR that exists)                                                                                                                  | Claude Code asks you                                                                                                                                  |
+| Rewrite, move or delete the records folders with a shell command                                                                                                                                                                                       | Claude Code asks you. Copying out of the folder and reading it stay quiet. Records are written with the Write and Edit tools, which apply these rules |
 
 Approve only an edit you asked for. Choosing **Yes, and allow Claude to edit files in this project's .claude folder for this session** does not switch the guardrails off: the next change to a settled record asks you again. Where nobody can answer, as in `claude -p` or the `dontAsk` mode, the edit is refused and Claude is told to write the new record instead. In every other permission mode, auto mode included, the prompt comes to you, or to a `PermissionRequest` hook or the permission callback of an Agent SDK app when one is set up, and no classifier can approve it for you.
 
-Everything else stays quiet: a new ADR, a new debt item, a `proposed` ADR that changes, a status moving from *accepted* to *superseded* or *deprecated*, results in the Confirmation section, and a pending item that leaves after its closed entry exists.
+Everything else stays quiet: a new ADR, a new debt item, a `proposed` ADR that changes, a status moving from _accepted_ to _superseded_ or _deprecated_, results in the Confirmation section, and a pending item that leaves after its closed entry exists.
 
 Two small helpers run beside the guardrails:
 
@@ -469,9 +469,9 @@ Two small helpers run beside the guardrails:
 
 ## ⚙️ Configuration
 
-| Option | Type | Default | Description |
-| :-- | :-- | :-- | :-- |
-| `commitNudge` | boolean | `true` | The commit reminder, shown in `/config` and the install dialog as **Remind Claude after a commit that looks like a decision**. With `true`, after a `git commit` that creates a commit, the mod reads its subject and changed files and, when they look like a decision, adds one note that reminds Claude to record a decision or a debt. With `false`, there is no reminder and the mod runs no `git` command around commits. The guardrails work either way |
+| Option        | Type    | Default | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| :------------ | :------ | :------ | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `commitNudge` | boolean | `true`  | The commit reminder, shown in `/config` and the install dialog as **Remind Claude after a commit that looks like a decision**. With `true`, after a `git commit` that creates a commit, the mod reads its subject and changed files and, when they look like a decision, adds one note that reminds Claude to record a decision or a debt. With `false`, there is no reminder and the mod runs no `git` command around commits. The guardrails work either way |
 
 Set an option when you install:
 
@@ -544,11 +544,11 @@ rm -rI -- ./.claude/maintainer ./.claude/session-handoff
 
 **Works in:** 💻 Claude Code · 🖥️ Claude
 
-| Component | Claude Code | Claude |
-| :-- | :--: | :--: |
-| 🎯 Skills | ✅ | ✅ |
-| 🪝 Hooks | ✅ | ⚠️ only in conversations where Claude can run tasks |
-| 🧩 Mods | ✅ v2.1.287+ (Desktop v2.1.286+); hooks run in every session except Desktop on WSL; ⚠️ drawing depends on where: panes in the terminal, Desktop and VS Code (extension v2.1.299+, v2.1.304+ without feature flags), the band above the prompt only in the terminal and Desktop | ⚠️ the plugin directory lists a mod for Claude Code only |
+| Component |                                                                                                                                  Claude Code                                                                                                                                   |                          Claude                          |
+| :-------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :------------------------------------------------------: |
+| 🎯 Skills |                                                                                                                                       ✅                                                                                                                                       |                            ✅                            |
+| 🪝 Hooks  |                                                                                                                                       ✅                                                                                                                                       |   ⚠️ only in conversations where Claude can run tasks    |
+| 🧩 Mods   | ✅ v2.1.287+ (Desktop v2.1.286+); hooks run in every session except Desktop on WSL; ⚠️ drawing depends on where: panes in the terminal, Desktop and VS Code (extension v2.1.299+, v2.1.304+ without feature flags), the band above the prompt only in the terminal and Desktop | ⚠️ the plugin directory lists a mod for Claude Code only |
 
 <sub>✅ works · ⚠️ partial · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. Claude runs agents, hooks and local MCP servers only in conversations where it can run tasks; anything on your computer needs Claude Desktop open.</sub>
 

@@ -40,23 +40,23 @@ Bash LSP Intelligence connects bash-language-server to Claude Code and adds a ho
 
 ## 🧩 What's inside
 
-| Component | Name | What it does | How it runs |
-| :-- | :-- | :-- | :-- |
-| 🧠 LSP server | `shellscript` | Connects `bash-language-server` for `.sh`, `.inc`, `.bash` and `.command` files, indexing `.github/` and `.claude/` too | Automatically when Claude opens or edits a shell file |
-| 🪝 Hook | `PostToolUse` · `PostToolUseFailure` | Runs `shfmt -w` and `shellcheck` on the shell scripts an Edit, Write or Bash call changed | Automatically after each Edit, Write or Bash call, and after a Bash call that fails |
-| 🎯 Skill | `bash-lsp-intelligence:bash-lsp-intelligence` | Teaches Claude to navigate with the language server first, trust its results only after five checks, and work with shfmt and ShellCheck the way your project configures them | Automatically when you work on shell scripts, or `/bash-lsp-intelligence:bash-lsp-intelligence` |
+| Component     | Name                                          | What it does                                                                                                                                                                 | How it runs                                                                                     |
+| :------------ | :-------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------- |
+| 🧠 LSP server | `shellscript`                                 | Connects `bash-language-server` for `.sh`, `.inc`, `.bash` and `.command` files, indexing `.github/` and `.claude/` too                                                      | Automatically when Claude opens or edits a shell file                                           |
+| 🪝 Hook       | `PostToolUse` · `PostToolUseFailure`          | Runs `shfmt -w` and `shellcheck` on the shell scripts an Edit, Write or Bash call changed                                                                                    | Automatically after each Edit, Write or Bash call, and after a Bash call that fails             |
+| 🎯 Skill      | `bash-lsp-intelligence:bash-lsp-intelligence` | Teaches Claude to navigate with the language server first, trust its results only after five checks, and work with shfmt and ShellCheck the way your project configures them | Automatically when you work on shell scripts, or `/bash-lsp-intelligence:bash-lsp-intelligence` |
 
 ## 📋 Prerequisites
 
-| Tool | Minimum version | Check |
-| :-- | :-- | :-- |
-| Claude Code | 2.1.288 | `claude --version` |
-| bash-language-server | — | `bash-language-server --version` |
-| shfmt | — | `shfmt --version` |
-| ShellCheck | — | `shellcheck --version` |
-| Node.js | 20 | `node --version` |
-| Bash | — | `bash --version` |
-| Git (optional) | — | `git --version` |
+| Tool                 | Minimum version | Check                            |
+| :------------------- | :-------------- | :------------------------------- |
+| Claude Code          | 2.1.288         | `claude --version`               |
+| bash-language-server | —               | `bash-language-server --version` |
+| shfmt                | —               | `shfmt --version`                |
+| ShellCheck           | —               | `shellcheck --version`           |
+| Node.js              | 20              | `node --version`                 |
+| Bash                 | —               | `bash --version`                 |
+| Git (optional)       | —               | `git --version`                  |
 
 The plugin also uses `sh`, which comes with macOS and Linux.
 
@@ -342,9 +342,9 @@ Format scripts/backup.sh.
 
 The hook runs the tools the way you would from a terminal, so **your configuration wins**:
 
-| Tool | What it reads | When you have none |
-| :-- | :-- | :-- |
-| shfmt | `.editorconfig`, searched from the script's folder upward (`[[shell]]` keys such as `indent_size`, `switch_case_indent`, `binary_next_line`) | `shfmt -i 2 -ci -bn`: two-space indent, indented `case` branches, binary operators at line start |
+| Tool       | What it reads                                                                                                                                                  | When you have none                                                                                                        |
+| :--------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------ |
+| shfmt      | `.editorconfig`, searched from the script's folder upward (`[[shell]]` keys such as `indent_size`, `switch_case_indent`, `binary_next_line`)                   | `shfmt -i 2 -ci -bn`: two-space indent, indented `case` branches, binary operators at line start                          |
 | ShellCheck | The first `.shellcheckrc` or `shellcheckrc` from the script's folder upward, then `~/.shellcheckrc` or `$XDG_CONFIG_HOME/shellcheckrc`, plus `SHELLCHECK_OPTS` | `shellcheck -o all -S style -x -a -P SCRIPTDIR`: every optional check, style severity, sourced files followed and checked |
 
 An `.editorconfig`, a `.shellcheckrc` or `SHELLCHECK_OPTS` of your own replaces the corresponding default entirely; the plugin never creates or edits one.
@@ -409,11 +409,11 @@ Uninstalling from the last scope it's installed at also deletes its saved option
 
 **Works in:** 💻 **Claude Code only**
 
-| Component | Claude Code | Claude |
-| :-- | :--: | :--: |
-| 🎯 Skills | ✅ | ✅ |
-| 🪝 Hooks | ✅ | ⚠️ only in conversations where Claude can run tasks |
-| 🧠 LSP servers | ✅ | ➖ |
+| Component      | Claude Code |                       Claude                        |
+| :------------- | :---------: | :-------------------------------------------------: |
+| 🎯 Skills      |     ✅      |                         ✅                          |
+| 🪝 Hooks       |     ✅      | ⚠️ only in conversations where Claude can run tasks |
+| 🧠 LSP servers |     ✅      |                         ➖                          |
 
 <sub>✅ works · ⚠️ partial · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. Claude runs agents, hooks and local MCP servers only in conversations where it can run tasks; anything on your computer needs Claude Desktop open.</sub>
 

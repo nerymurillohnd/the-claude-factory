@@ -40,15 +40,15 @@ Model Trace is a Claude Code mod that keeps a live record of the capabilities Cl
 
 ## 🧩 What's inside
 
-| Component | Name | What it does | How it runs |
-| :-- | :-- | :-- | :-- |
-| 🧩 Mod | `model-trace` | Counts each capability Claude uses, draws the Model Trace pane and adds the `/model-trace` command | Automatically in every Claude Code session once installed; the pane opens with `/model-trace` |
+| Component | Name          | What it does                                                                                       | How it runs                                                                                   |
+| :-------- | :------------ | :------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------- |
+| 🧩 Mod    | `model-trace` | Counts each capability Claude uses, draws the Model Trace pane and adds the `/model-trace` command | Automatically in every Claude Code session once installed; the pane opens with `/model-trace` |
 
 ## 📋 Prerequisites
 
-| Tool | Minimum version | Check |
-| :-- | :-- | :-- |
-| Claude Code | 2.1.299 | `claude --version` |
+| Tool        | Minimum version | Check              |
+| :---------- | :-------------- | :----------------- |
+| Claude Code | 2.1.299         | `claude --version` |
 
 ### 🤖 Claude Code
 
@@ -144,14 +144,14 @@ m: Save .md   h: Save .html   c: Copy Markdown
 
 A section appears the first time Claude uses something of its kind, and each row the first time that capability is used. Press a row to see the time of every use. Up to eight rows show per section; **+ N more** shows the rest.
 
-| Section | What counts as a use |
-| :-- | :-- |
-| Skills | A skill Claude calls, a `/skill` you type, and a skill a subagent starts with |
-| Agents | Each subagent or teammate Claude starts, by its type |
-| MCP servers | Each call to a server's tools, shown under the server's name only |
-| Plugins | The uses of a plugin's skills, agents and MCP servers, regrouped under the plugin |
-| Hooks | Each time a hook from your settings files runs, by its status message or the name of the script it runs; and the hook output Claude received, by event |
-| Web | Each WebSearch and WebFetch call |
+| Section     | What counts as a use                                                                                                                                   |
+| :---------- | :----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Skills      | A skill Claude calls, a `/skill` you type, and a skill a subagent starts with                                                                          |
+| Agents      | Each subagent or teammate Claude starts, by its type                                                                                                   |
+| MCP servers | Each call to a server's tools, shown under the server's name only                                                                                      |
+| Plugins     | The uses of a plugin's skills, agents and MCP servers, regrouped under the plugin                                                                      |
+| Hooks       | Each time a hook from your settings files runs, by its status message or the name of the script it runs; and the hook output Claude received, by event |
+| Web         | Each WebSearch and WebFetch call                                                                                                                       |
 
 A call that a permission rule or a hook refused is not counted. The header counts each use once: the Plugins section and the hook output rows regroup uses that other rows already count, so they are left out of it.
 
@@ -179,10 +179,10 @@ Then check the **Not used recently** list in `/plugin` → **Installed**.
 
 ## ⚙️ Configuration
 
-| Option | Type | Default | Description |
-| :-- | :-- | :-- | :-- |
-| `exportDir` | string | `~/Downloads` | The folder reports are saved to. `~` is your home folder. The folder must already exist: Model Trace never creates folders |
-| `statusLine` | boolean | `false` | Also show the count in the status line, such as `5 used · 12 uses`. Claude Code starts every mod's status line with a warning sign and the plugin's name |
+| Option       | Type    | Default       | Description                                                                                                                                              |
+| :----------- | :------ | :------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `exportDir`  | string  | `~/Downloads` | The folder reports are saved to. `~` is your home folder. The folder must already exist: Model Trace never creates folders                               |
+| `statusLine` | boolean | `false`       | Also show the count in the status line, such as `5 used · 12 uses`. Claude Code starts every mod's status line with a warning sign and the plugin's name |
 
 Set an option when you install:
 
@@ -241,9 +241,9 @@ Uninstalling from the last scope it's installed at also deletes its saved option
 
 **Works in:** 💻 **Claude Code only**
 
-| Component | Claude Code | Claude |
-| :-- | :--: | :--: |
-| 🧩 Mods | ✅ v2.1.287+ (Desktop v2.1.286+); hooks run in every session except Desktop on WSL; ⚠️ drawing depends on where: panes in the terminal, Desktop and VS Code (extension v2.1.299+, v2.1.304+ without feature flags), the band above the prompt only in the terminal and Desktop | ⚠️ the plugin directory lists a mod for Claude Code only |
+| Component |                                                                                                                                  Claude Code                                                                                                                                   |                          Claude                          |
+| :-------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :------------------------------------------------------: |
+| 🧩 Mods   | ✅ v2.1.287+ (Desktop v2.1.286+); hooks run in every session except Desktop on WSL; ⚠️ drawing depends on where: panes in the terminal, Desktop and VS Code (extension v2.1.299+, v2.1.304+ without feature flags), the band above the prompt only in the terminal and Desktop | ⚠️ the plugin directory lists a mod for Claude Code only |
 
 <sub>✅ works · ⚠️ partial · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. Claude runs agents, hooks and local MCP servers only in conversations where it can run tasks; anything on your computer needs Claude Desktop open.</sub>
 

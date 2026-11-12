@@ -37,19 +37,19 @@
 
 ## 🧩 What's inside
 
-| Component | Name | What it does | How it runs |
-| :-- | :-- | :-- | :-- |
-| 🎯 Skill | `plugin-evals:plugin-evals` | Designs, writes, runs, debugs and CI-gates `claude plugin eval` suites and reads their results, checked against your installed CLI and the live docs | Automatically whenever your task involves plugin evals, or `/plugin-evals:plugin-evals` |
+| Component | Name                        | What it does                                                                                                                                         | How it runs                                                                             |
+| :-------- | :-------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------- |
+| 🎯 Skill  | `plugin-evals:plugin-evals` | Designs, writes, runs, debugs and CI-gates `claude plugin eval` suites and reads their results, checked against your installed CLI and the live docs | Automatically whenever your task involves plugin evals, or `/plugin-evals:plugin-evals` |
 
 ## 📋 Prerequisites
 
-| Tool | Minimum version | Check |
-| :-- | :-- | :-- |
-| Claude Code, in a terminal to run suites | 2.1.299 | `claude --version` |
-| git (optional; if installed, eval runs need this version) | 2.31 | `git --version` |
-| bubblewrap (Linux, for suites that grant Bash) | — | `bwrap --version` |
-| socat (Linux, for suites that grant Bash) | — | `socat -V` |
-| curl (optional; Claude reads the live docs with it or with WebFetch) | — | `curl --version` |
+| Tool                                                                 | Minimum version | Check              |
+| :------------------------------------------------------------------- | :-------------- | :----------------- |
+| Claude Code, in a terminal to run suites                             | 2.1.299         | `claude --version` |
+| git (optional; if installed, eval runs need this version)            | 2.31            | `git --version`    |
+| bubblewrap (Linux, for suites that grant Bash)                       | —               | `bwrap --version`  |
+| socat (Linux, for suites that grant Bash)                            | —               | `socat -V`         |
+| curl (optional; Claude reads the live docs with it or with WebFetch) | —               | `curl --version`   |
 
 Suites that grant Bash need the OS sandbox: macOS has it built in, and Linux needs `bubblewrap` and `socat`.
 
@@ -331,8 +331,8 @@ Uninstalling from the last scope it's installed at also deletes its saved option
 **Works in:** 💻 Claude Code · 🖥️ Claude
 
 | Component | Claude Code | Claude |
-| :-- | :--: | :--: |
-| 🎯 Skills | ✅ | ✅ |
+| :-------- | :---------: | :----: |
+| 🎯 Skills |     ✅      |   ✅   |
 
 <sub>✅ works · ⚠️ partial · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. Claude runs agents, hooks and local MCP servers only in conversations where it can run tasks; anything on your computer needs Claude Desktop open.</sub>
 

@@ -41,26 +41,26 @@ Tailwind CSS Development teaches Claude to design interfaces with a product desi
 
 ## 🧩 What's inside
 
-| Component | Name | What it does | How it runs |
-| :-- | :-- | :-- | :-- |
-| 🎯 Skill | `tailwind-development:tailwind-ui-design` | Builds, refactors and reviews interfaces with a product designer's craft: reads your tokens and components first, checks the systems exist, composes hierarchy before colour, depth and finish, covers every state, verifies the rendered result and critiques it against generic-UI tells | Automatically when you build, redesign, polish or review a page, view or component in a Tailwind project, or `/tailwind-development:tailwind-ui-design` |
-| 🔌 MCP server | `tailwindcss` | Runs the official Tailwind CSS language server for your project and answers four read-only tools: `check_file` (diagnostics with exact fixes), `class_css` (the CSS and color a class generates in your theme), `project_classes` (the classes your theme defines for a prefix, such as `bg-` or `hover:text-`) and `sort_classes` (Tailwind's official class order) | Starts with each Claude Code session; the language server starts on the first file it checks |
-| 🪝 Hook | `PostToolUse` on `Edit` and `Write` | Calls `check_file` on the file Claude just edited and gives Claude the diagnostics | After every edit Claude makes, for the file types you leave on |
-| 🎯 Skill | `tailwind-development:tailwind-official-docs` | Reads your installed Tailwind version and setup, plans the exact official page for each utility family, variant and configuration the task touches, implements the change and verifies it with your project's own checks; before it hands work to an agent, it checks that every link in its references still answers | Automatically for any Tailwind question or task, before other skills; or `/tailwind-development:tailwind-official-docs` |
-| 🤖 Agent | `tailwind-development:tailwind-docs` | Researches the official docs for a question or task and returns the exact syntax with cited sections; changes no files | When Claude delegates a Tailwind question, or `@agent-tailwind-development:tailwind-docs` |
-| 🤖 Agent | `tailwind-development:tailwind-auditor` | Audits Tailwind code against the docs and returns prioritized findings with fixes; runs your lint and type-check scripts and changes no files | When Claude delegates a review, or `@agent-tailwind-development:tailwind-auditor` |
-| 🤖 Agent | `tailwind-development:tailwind-refactorer` | Refactors existing Tailwind code to cleaner, token-based markup without changing how it looks, then runs your checks | When Claude delegates a cleanup, or `@agent-tailwind-development:tailwind-refactorer` |
-| 🤖 Agent | `tailwind-development:tailwind-migrator` | Migrates a v3 project to v4 in a separate git worktree, checks every breaking change and reports each with its verdict | When Claude delegates a v3 to v4 upgrade you approved, or `@agent-tailwind-development:tailwind-migrator` |
+| Component     | Name                                          | What it does                                                                                                                                                                                                                                                                                                                                                         | How it runs                                                                                                                                             |
+| :------------ | :-------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 🎯 Skill      | `tailwind-development:tailwind-ui-design`     | Builds, refactors and reviews interfaces with a product designer's craft: reads your tokens and components first, checks the systems exist, composes hierarchy before colour, depth and finish, covers every state, verifies the rendered result and critiques it against generic-UI tells                                                                           | Automatically when you build, redesign, polish or review a page, view or component in a Tailwind project, or `/tailwind-development:tailwind-ui-design` |
+| 🔌 MCP server | `tailwindcss`                                 | Runs the official Tailwind CSS language server for your project and answers four read-only tools: `check_file` (diagnostics with exact fixes), `class_css` (the CSS and color a class generates in your theme), `project_classes` (the classes your theme defines for a prefix, such as `bg-` or `hover:text-`) and `sort_classes` (Tailwind's official class order) | Starts with each Claude Code session; the language server starts on the first file it checks                                                            |
+| 🪝 Hook       | `PostToolUse` on `Edit` and `Write`           | Calls `check_file` on the file Claude just edited and gives Claude the diagnostics                                                                                                                                                                                                                                                                                   | After every edit Claude makes, for the file types you leave on                                                                                          |
+| 🎯 Skill      | `tailwind-development:tailwind-official-docs` | Reads your installed Tailwind version and setup, plans the exact official page for each utility family, variant and configuration the task touches, implements the change and verifies it with your project's own checks; before it hands work to an agent, it checks that every link in its references still answers                                                | Automatically for any Tailwind question or task, before other skills; or `/tailwind-development:tailwind-official-docs`                                 |
+| 🤖 Agent      | `tailwind-development:tailwind-docs`          | Researches the official docs for a question or task and returns the exact syntax with cited sections; changes no files                                                                                                                                                                                                                                               | When Claude delegates a Tailwind question, or `@agent-tailwind-development:tailwind-docs`                                                               |
+| 🤖 Agent      | `tailwind-development:tailwind-auditor`       | Audits Tailwind code against the docs and returns prioritized findings with fixes; runs your lint and type-check scripts and changes no files                                                                                                                                                                                                                        | When Claude delegates a review, or `@agent-tailwind-development:tailwind-auditor`                                                                       |
+| 🤖 Agent      | `tailwind-development:tailwind-refactorer`    | Refactors existing Tailwind code to cleaner, token-based markup without changing how it looks, then runs your checks                                                                                                                                                                                                                                                 | When Claude delegates a cleanup, or `@agent-tailwind-development:tailwind-refactorer`                                                                   |
+| 🤖 Agent      | `tailwind-development:tailwind-migrator`      | Migrates a v3 project to v4 in a separate git worktree, checks every breaking change and reports each with its verdict                                                                                                                                                                                                                                               | When Claude delegates a v3 to v4 upgrade you approved, or `@agent-tailwind-development:tailwind-migrator`                                               |
 
 ## 📋 Prerequisites
 
-| Tool | Minimum version | Check |
-| :-- | :-- | :-- |
-| Claude Code | 2.1.281 | `claude --version` |
-| Node.js and npm, on your `PATH` | 24 | `node --version` and `npm --version` |
-| Python, as `python3` | 3.12 | `python3 --version` |
-| git (optional: for a v3 to v4 migration) | — | `git --version` |
-| Context7 MCP server (optional) | — | `claude mcp list` |
+| Tool                                     | Minimum version | Check                                |
+| :--------------------------------------- | :-------------- | :----------------------------------- |
+| Claude Code                              | 2.1.281         | `claude --version`                   |
+| Node.js and npm, on your `PATH`          | 24              | `node --version` and `npm --version` |
+| Python, as `python3`                     | 3.12            | `python3 --version`                  |
+| git (optional: for a v3 to v4 migration) | —               | `git --version`                      |
+| Context7 MCP server (optional)           | —               | `claude mcp list`                    |
 
 Node.js 24 or later runs the language-server checks. Python runs the link check before Claude delegates to an agent. git is needed only for a v3 to v4 migration, with your project in a git repository, since the migrator works in a git worktree. Context7, when you have it, is the first place Claude looks up Tailwind's docs.
 
@@ -333,19 +333,19 @@ Use @apply inside the <style> block of Button.svelte.
 
 The options change only the language-server checks.
 
-| Option | Type | Default | Description |
-| :-- | :-- | :-- | :-- |
-| `check_css` | boolean | `true` | Check `.css`, `.scss`, `.sass`, `.less`, `.pcss`, `.postcss`, `.styl` and `.sss` files after each edit |
-| `check_html` | boolean | `true` | Check `.html` and `.htm` files |
-| `check_js_ts` | boolean | `true` | Check `.js`, `.mjs`, `.cjs`, `.jsx`, `.ts`, `.mts`, `.cts` and `.tsx` files |
-| `check_vue` | boolean | `true` | Check `.vue` files |
-| `check_svelte` | boolean | `true` | Check `.svelte` files |
-| `check_astro` | boolean | `true` | Check `.astro` files |
-| `check_markdown` | boolean | `true` | Check `.md` and `.mdx` files |
-| `check_templates` | boolean | `true` | Check server templates: `.php`, `.erb`, `.twig`, `.liquid`, `.hbs`, `.handlebars`, `.njk`, `.ejs`, `.haml`, `.slim`, `.heex`, `.razor`, `.cshtml`, `.gohtml`, `.mustache`, `.jade`, `.latte`, `.edge` and `.leaf` |
-| `class_functions` | list | `clsx`, `cn`, `cva`, `tw`, `twMerge` | Functions whose string arguments hold classes; each entry is a regular expression on the function name |
-| `class_attributes` | list | `class`, `className`, `ngClass`, `class:list` | HTML attributes whose values hold classes |
-| `config_file` | text | empty | Your Tailwind CSS entry point (the CSS file with `@import "tailwindcss"`, or `tailwind.config.js` on v3), relative to the project root. Leave it empty to detect it; set it in a monorepo, with several entry points, or when CSS modules or `<style>` blocks use `@reference` |
+| Option             | Type    | Default                                       | Description                                                                                                                                                                                                                                                                    |
+| :----------------- | :------ | :-------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `check_css`        | boolean | `true`                                        | Check `.css`, `.scss`, `.sass`, `.less`, `.pcss`, `.postcss`, `.styl` and `.sss` files after each edit                                                                                                                                                                         |
+| `check_html`       | boolean | `true`                                        | Check `.html` and `.htm` files                                                                                                                                                                                                                                                 |
+| `check_js_ts`      | boolean | `true`                                        | Check `.js`, `.mjs`, `.cjs`, `.jsx`, `.ts`, `.mts`, `.cts` and `.tsx` files                                                                                                                                                                                                    |
+| `check_vue`        | boolean | `true`                                        | Check `.vue` files                                                                                                                                                                                                                                                             |
+| `check_svelte`     | boolean | `true`                                        | Check `.svelte` files                                                                                                                                                                                                                                                          |
+| `check_astro`      | boolean | `true`                                        | Check `.astro` files                                                                                                                                                                                                                                                           |
+| `check_markdown`   | boolean | `true`                                        | Check `.md` and `.mdx` files                                                                                                                                                                                                                                                   |
+| `check_templates`  | boolean | `true`                                        | Check server templates: `.php`, `.erb`, `.twig`, `.liquid`, `.hbs`, `.handlebars`, `.njk`, `.ejs`, `.haml`, `.slim`, `.heex`, `.razor`, `.cshtml`, `.gohtml`, `.mustache`, `.jade`, `.latte`, `.edge` and `.leaf`                                                              |
+| `class_functions`  | list    | `clsx`, `cn`, `cva`, `tw`, `twMerge`          | Functions whose string arguments hold classes; each entry is a regular expression on the function name                                                                                                                                                                         |
+| `class_attributes` | list    | `class`, `className`, `ngClass`, `class:list` | HTML attributes whose values hold classes                                                                                                                                                                                                                                      |
+| `config_file`      | text    | empty                                         | Your Tailwind CSS entry point (the CSS file with `@import "tailwindcss"`, or `tailwind.config.js` on v3), relative to the project root. Leave it empty to detect it; set it in a monorepo, with several entry points, or when CSS modules or `<style>` blocks use `@reference` |
 
 Set an option when you install:
 
@@ -421,12 +421,12 @@ Uninstalling from the last scope it's installed at also deletes its saved option
 
 **Works in:** 💻 Claude Code · 🖥️ Claude
 
-| Component | Claude Code | Claude |
-| :-- | :--: | :--: |
-| 🎯 Skills | ✅ | ✅ |
-| 🤖 Agents | ✅ | ⚠️ only in conversations where Claude can run tasks |
-| 🪝 Hooks | ✅ | ⚠️ only in conversations where Claude can run tasks |
-| 🖥️ Local MCP server | ✅ | ⚠️ only in conversations that run tasks on your computer, with Claude Desktop open |
+| Component                              |        Claude Code        |                                                                                                                                                      Claude                                                                                                                                                       |
+| :------------------------------------- | :-----------------------: | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
+| 🎯 Skills                              |            ✅             |                                                                                                                                                        ✅                                                                                                                                                         |
+| 🤖 Agents                              |            ✅             |                                                                                                                                ⚠️ only in conversations where Claude can run tasks                                                                                                                                |
+| 🪝 Hooks                               |            ✅             |                                                                                                                                ⚠️ only in conversations where Claude can run tasks                                                                                                                                |
+| 🖥️ Local MCP server                    |            ✅             |                                                                                                                ⚠️ only in conversations that run tasks on your computer, with Claude Desktop open                                                                                                                 |
 | 🔐 MCP server using `${user_config.*}` | ✅ prompts you for values | 🔗 Claude doesn't prompt for the values: it skips the server when an option it references has no default, or, where Claude can't run tasks, when its URL holds the reference; with the values in headers, the **Connectors** tab lists the server as not added until you connect it there and enter them yourself |
 
 <sub>✅ works · ⚠️ partial · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. Claude runs agents, hooks and local MCP servers only in conversations where it can run tasks; anything on your computer needs Claude Desktop open.</sub>
@@ -533,7 +533,9 @@ The check after each edit never asks: Claude Code runs it, not Claude. When Clau
 ```json
 {
   "permissions": {
-    "allow": ["mcp__plugin_tailwind-development_tailwindcss__*"]
+    "allow": [
+      "mcp__plugin_tailwind-development_tailwindcss__*"
+    ]
   }
 }
 ```

@@ -42,29 +42,29 @@ GitHub Operations is a set of skills, commands and agents for the GitHub work ar
 
 ## 🧩 What's inside
 
-| Component | Name | What it does | How it runs |
-| :-- | :-- | :-- | :-- |
-| 🎯 Skill | `github-operations:auto-pr-lifecycle` | Takes a pull request from its current stage to merge with three agents, asking you before every push and before the merge | `/github-operations:auto-pr-lifecycle`, or when you ask to open, babysit, fix or merge a pull request |
-| 🎯 Skill | `github-operations:cleanup-and-debug` | Audits a repository local and remote, plans the cleanup and debugging you approve, and runs it behind a verified backup | `/github-operations:cleanup-and-debug`, or when you ask to audit or clean up a repository. It asks before it starts |
-| 🎯 Skill | `github-operations:github-files-setup` | Writes a repository's PR templates, issue and discussion forms, labels, Dependabot, `CODEOWNERS` and merge-message setting, adapted to it, and lands them through a pull request | `/github-operations:github-files-setup`, or when you ask to set up templates, forms or labels |
-| 🎯 Skill | `github-operations:claude-github-actions` | Diagnoses a Claude step in GitHub Actions that failed, did nothing or posted nothing; audits and hardens workflow files with an exact patch per finding; and repairs failing CI on the default branch, asking before any rerun, workflow change or push | `/github-operations:claude-github-actions`, or when you ask why a Claude workflow did nothing, to audit a workflow, or to fix CI on the default branch |
-| ⌨️ Command | `/github-operations:init-pr-lifecycle` | Picks up the current pull request at the stage it is in and runs the PR lifecycle from there | You type it |
-| ⌨️ Command | `/github-operations:init-cleanup-and-debug` | Picks up a repository at its cleanup stage (not audited, audited, planned, approved, executed) and runs from there | You type it |
-| 🤖 Agent | `github-operations:pr-lifecycle:pr-tracker` | Waits for a pull request's checks, then reports failures and their root cause, review threads, breaking changes, secrets in the diff, warnings and Dependabot alerts | Launched by the PR lifecycle after a pull request opens and after every push |
-| 🤖 Agent | `github-operations:pr-lifecycle:pr-fixer` | Fixes the verified failures and review findings in your local clone, validates each fix and commits it. It never pushes | Launched by the PR lifecycle when findings need a fix |
-| 🤖 Agent | `github-operations:pr-lifecycle:pr-finalizer` | Verifies each finding at the current head, replies to review threads, resolves the threads bots opened, and gives the merge verdict | Launched by the PR lifecycle once the checks pass |
-| 🤖 Agent | `github-operations:repo-hygiene:health-diagnostics` | Audits one assigned part of a repository read-only and reports every item with its evidence | Launched by the cleanup, one or several at a time depending on the repository's size |
+| Component  | Name                                                | What it does                                                                                                                                                                                                                                            | How it runs                                                                                                                                            |
+| :--------- | :-------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | :----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 🎯 Skill   | `github-operations:auto-pr-lifecycle`               | Takes a pull request from its current stage to merge with three agents, asking you before every push and before the merge                                                                                                                               | `/github-operations:auto-pr-lifecycle`, or when you ask to open, babysit, fix or merge a pull request                                                  |
+| 🎯 Skill   | `github-operations:cleanup-and-debug`               | Audits a repository local and remote, plans the cleanup and debugging you approve, and runs it behind a verified backup                                                                                                                                 | `/github-operations:cleanup-and-debug`, or when you ask to audit or clean up a repository. It asks before it starts                                    |
+| 🎯 Skill   | `github-operations:github-files-setup`              | Writes a repository's PR templates, issue and discussion forms, labels, Dependabot, `CODEOWNERS` and merge-message setting, adapted to it, and lands them through a pull request                                                                        | `/github-operations:github-files-setup`, or when you ask to set up templates, forms or labels                                                          |
+| 🎯 Skill   | `github-operations:claude-github-actions`           | Diagnoses a Claude step in GitHub Actions that failed, did nothing or posted nothing; audits and hardens workflow files with an exact patch per finding; and repairs failing CI on the default branch, asking before any rerun, workflow change or push | `/github-operations:claude-github-actions`, or when you ask why a Claude workflow did nothing, to audit a workflow, or to fix CI on the default branch |
+| ⌨️ Command | `/github-operations:init-pr-lifecycle`              | Picks up the current pull request at the stage it is in and runs the PR lifecycle from there                                                                                                                                                            | You type it                                                                                                                                            |
+| ⌨️ Command | `/github-operations:init-cleanup-and-debug`         | Picks up a repository at its cleanup stage (not audited, audited, planned, approved, executed) and runs from there                                                                                                                                      | You type it                                                                                                                                            |
+| 🤖 Agent   | `github-operations:pr-lifecycle:pr-tracker`         | Waits for a pull request's checks, then reports failures and their root cause, review threads, breaking changes, secrets in the diff, warnings and Dependabot alerts                                                                                    | Launched by the PR lifecycle after a pull request opens and after every push                                                                           |
+| 🤖 Agent   | `github-operations:pr-lifecycle:pr-fixer`           | Fixes the verified failures and review findings in your local clone, validates each fix and commits it. It never pushes                                                                                                                                 | Launched by the PR lifecycle when findings need a fix                                                                                                  |
+| 🤖 Agent   | `github-operations:pr-lifecycle:pr-finalizer`       | Verifies each finding at the current head, replies to review threads, resolves the threads bots opened, and gives the merge verdict                                                                                                                     | Launched by the PR lifecycle once the checks pass                                                                                                      |
+| 🤖 Agent   | `github-operations:repo-hygiene:health-diagnostics` | Audits one assigned part of a repository read-only and reports every item with its evidence                                                                                                                                                             | Launched by the cleanup, one or several at a time depending on the repository's size                                                                   |
 
 ## 📋 Prerequisites
 
-| Tool | Minimum version | Check |
-| :-- | :-- | :-- |
-| Claude Code | 2.1.314 | `claude --version` |
-| git, on your `PATH` (on Windows, Git for Windows) | — | `git --version` |
-| GitHub CLI (`gh`), signed in | — | `gh auth status` |
-| GitHub MCP server, recommended | — | `claude mcp get github` |
-| Python 3, on your `PATH` as `python3`, only to compare labels when setting up a repository | 3.12 | `python3 --version` |
-| uv, only to check issue forms, discussion forms and Dependabot files when setting up a repository | — | `uv --version` |
+| Tool                                                                                              | Minimum version | Check                   |
+| :------------------------------------------------------------------------------------------------ | :-------------- | :---------------------- |
+| Claude Code                                                                                       | 2.1.314         | `claude --version`      |
+| git, on your `PATH` (on Windows, Git for Windows)                                                 | —               | `git --version`         |
+| GitHub CLI (`gh`), signed in                                                                      | —               | `gh auth status`        |
+| GitHub MCP server, recommended                                                                    | —               | `claude mcp get github` |
+| Python 3, on your `PATH` as `python3`, only to compare labels when setting up a repository        | 3.12            | `python3 --version`     |
+| uv, only to check issue forms, discussion forms and Dependabot files when setting up a repository | —               | `uv --version`          |
 
 Claude Code 2.1.314 or later is required.
 
@@ -294,11 +294,11 @@ Then run this in a session and look for `github` marked as connected:
 
 **Choose what the server offers.** The commands send two optional headers. Change them before you run the command:
 
-| Header | In the commands | What it does | To change it |
-| :-- | :-- | :-- | :-- |
-| `X-MCP-Toolsets` | `all` | Every toolset: pull requests, reviews, issues, Actions, security alerts, projects, discussions, notifications and more, including the tools that create, merge and delete | Put a comma-separated list instead, such as `repos,issues,pull_requests,actions`. Remove the header to get GitHub's default toolsets. The toolset names are in GitHub's [remote server guide](https://github.com/github/github-mcp-server/blob/main/docs/remote-server.md). A misspelled name is ignored, with no error |
-| `X-MCP-Insiders` | `true` | GitHub's early-access mode: new tools and changes before they reach everyone. Optional | Remove the header to use only GitHub's released tools |
-| `X-MCP-Readonly` | not sent | Offers only the tools that read | Add `-H "X-MCP-Readonly: true"` (option B) or `"X-MCP-Readonly":"true"` (option A) |
+| Header           | In the commands | What it does                                                                                                                                                              | To change it                                                                                                                                                                                                                                                                                                            |
+| :--------------- | :-------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `X-MCP-Toolsets` | `all`           | Every toolset: pull requests, reviews, issues, Actions, security alerts, projects, discussions, notifications and more, including the tools that create, merge and delete | Put a comma-separated list instead, such as `repos,issues,pull_requests,actions`. Remove the header to get GitHub's default toolsets. The toolset names are in GitHub's [remote server guide](https://github.com/github/github-mcp-server/blob/main/docs/remote-server.md). A misspelled name is ignored, with no error |
+| `X-MCP-Insiders` | `true`          | GitHub's early-access mode: new tools and changes before they reach everyone. Optional                                                                                    | Remove the header to use only GitHub's released tools                                                                                                                                                                                                                                                                   |
+| `X-MCP-Readonly` | not sent        | Offers only the tools that read                                                                                                                                           | Add `-H "X-MCP-Readonly: true"` (option B) or `"X-MCP-Readonly":"true"` (option A)                                                                                                                                                                                                                                      |
 
 The pull request loop uses the pull request, Actions and security tools when they are there, and `gh` when they are not. To change the token or the headers later, remove the server and add it again. To stop using it, only remove it, and delete the token on GitHub:
 
@@ -316,12 +316,12 @@ Claude, in the desktop app or on claude.ai in your browser, doesn't read `~/.cla
 
 **Step 2. Name it and enter the URL.** Name it `github`, then enter one of these URLs. The part after `/mcp/` chooses the toolsets, so you need no extra headers:
 
-| URL | What you get |
-| :-- | :-- |
-| `https://api.githubcopilot.com/mcp/x/all` | Every toolset, including the tools that create, merge and delete. Recommended for this plugin |
-| `https://api.githubcopilot.com/mcp/x/all/readonly` | Every toolset, only the tools that read |
-| `https://api.githubcopilot.com/mcp/x/all/insiders` | Every toolset, with GitHub's early-access mode |
-| `https://api.githubcopilot.com/mcp/` | GitHub's default toolsets |
+| URL                                                | What you get                                                                                  |
+| :------------------------------------------------- | :-------------------------------------------------------------------------------------------- |
+| `https://api.githubcopilot.com/mcp/x/all`          | Every toolset, including the tools that create, merge and delete. Recommended for this plugin |
+| `https://api.githubcopilot.com/mcp/x/all/readonly` | Every toolset, only the tools that read                                                       |
+| `https://api.githubcopilot.com/mcp/x/all/insiders` | Every toolset, with GitHub's early-access mode                                                |
+| `https://api.githubcopilot.com/mcp/`               | GitHub's default toolsets                                                                     |
 
 One toolset alone has its own path, such as `https://api.githubcopilot.com/mcp/x/pull_requests`; GitHub's [remote server guide](https://github.com/github/github-mcp-server/blob/main/docs/remote-server.md) lists every toolset and URL.
 
@@ -346,11 +346,11 @@ With the commands above, the server offers **every toolset** (`X-MCP-Toolsets: a
 
 #### Reduce what Claude can use
 
-| Way | What it does |
-| :-- | :-- |
-| Limit the token | Fewer repositories or permissions. GitHub enforces it whatever Claude asks for |
+| Way                          | What it does                                                                                                                                                                                                                                        |
+| :--------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Limit the token              | Fewer repositories or permissions. GitHub enforces it whatever Claude asks for                                                                                                                                                                      |
 | Block tools in your settings | A deny rule such as `mcp__github__delete_file` or `mcp__github__delete_repository` removes that tool from Claude's context. Use `mcp__github` for the whole server. These names fit a server named `github`; for another name, use `mcp__<name>__…` |
-| Change the headers | Remove the server and add it again with `X-MCP-Readonly: true` or a shorter `X-MCP-Toolsets` list |
+| Change the headers           | Remove the server and add it again with `X-MCP-Readonly: true` or a shorter `X-MCP-Toolsets` list                                                                                                                                                   |
 
 [GitHub MCP tools](../../docs/github-mcp-tools.md#️-reduce-what-claude-can-use) has the settings to copy. The PR tracker reads job logs and Dependabot alerts through the Actions and security tools; when you remove them, it reads that data through `gh` instead.
 
@@ -525,7 +525,7 @@ You can also ask:
 Why did the Claude review on PR 42 post nothing?
 ```
 
-Or *"Audit our workflows"* or *"CI on main is broken"*. **Result:** Claude reads the run's log and the workflow file at the commit it ran, matches them against the known failure patterns of `anthropics/claude-code-action`, and names the cause with the log lines that prove it. An audit lists each finding with its file and line, what triggers it, its impact and the exact patch. Claude changes a workflow only after you approve the patch, pins every action it writes to a full commit, and lands the change through a pull request. Writing a new workflow from scratch is not covered.
+Or _"Audit our workflows"_ or _"CI on main is broken"_. **Result:** Claude reads the run's log and the workflow file at the commit it ran, matches them against the known failure patterns of `anthropics/claude-code-action`, and names the cause with the log lines that prove it. An audit lists each finding with its file and line, what triggers it, its impact and the exact patch. Claude changes a workflow only after you approve the patch, pins every action it writes to a full commit, and lands the change through a pull request. Writing a new workflow from scratch is not covered.
 
 ## 🔍 What this plugin runs and sends
 
@@ -540,12 +540,12 @@ Or *"Audit our workflows"* or *"CI on main is broken"*. **Result:** Claude reads
 
 Claude Code removes some tools from the agents: none of the four can launch another agent, the tracker and the finalizer have no file-writing tools (Write, Edit, NotebookEdit), and the auditor keeps only Write, for its notes, with no Edit or NotebookEdit. Everything else, such as which shell commands they run or what they write to GitHub, is kept only by each agent's instructions, and Claude checks each report against its evidence before acting on it.
 
-| Agent | May | May not |
-| :-- | :-- | :-- |
-| `pr-lifecycle:pr-tracker` | Read everything and run commands that only read | Change files, commit, push or write anything to GitHub |
-| `pr-lifecycle:pr-fixer` | Edit files, run your validation commands and commit in your clone | Push, write anything to GitHub, change your git configuration, rewrite pushed history or skip your commit hooks |
-| `pr-lifecycle:pr-finalizer` | Reply in review threads and resolve review threads | Edit files, commit, push, submit reviews or approvals, or merge |
-| `repo-hygiene:health-diagnostics` | Read everything and run commands that only read; write notes in a folder outside your repository | Change anything in your repository, on GitHub or on your machine, or launch another agent |
+| Agent                             | May                                                                                              | May not                                                                                                         |
+| :-------------------------------- | :----------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------- |
+| `pr-lifecycle:pr-tracker`         | Read everything and run commands that only read                                                  | Change files, commit, push or write anything to GitHub                                                          |
+| `pr-lifecycle:pr-fixer`           | Edit files, run your validation commands and commit in your clone                                | Push, write anything to GitHub, change your git configuration, rewrite pushed history or skip your commit hooks |
+| `pr-lifecycle:pr-finalizer`       | Reply in review threads and resolve review threads                                               | Edit files, commit, push, submit reviews or approvals, or merge                                                 |
+| `repo-hygiene:health-diagnostics` | Read everything and run commands that only read; write notes in a folder outside your repository | Change anything in your repository, on GitHub or on your machine, or launch another agent                       |
 
 Before running a command from a pull request whose code is another author's, the fixer stops and asks you, because a command such as a test run executes that code. For a hard limit, add the deny rules in [Add hard limits yourself](#add-hard-limits-yourself): they apply to every agent too.
 
@@ -564,7 +564,11 @@ The plugin can't ship permission rules. To block an action for every session and
       "Bash(git push -f*)",
       "Bash(* --no-verify*)"
     ],
-    "ask": ["Bash(git push *)", "Bash(gh pr merge *)", "mcp__*__merge_pull_request"]
+    "ask": [
+      "Bash(git push *)",
+      "Bash(gh pr merge *)",
+      "mcp__*__merge_pull_request"
+    ]
   }
 }
 ```
@@ -620,11 +624,11 @@ claude mcp remove --scope user github
 
 **Works in:** 💻 **Claude Code only**
 
-| Component | Claude Code | Claude |
-| :-- | :--: | :--: |
-| 🎯 Skills | ✅ | ✅ |
-| ⌨️ Commands | ✅ | ✅ you run them by typing their name; where Claude can't run tasks, it applies them as skills |
-| 🤖 Agents | ✅ | ⚠️ only in conversations where Claude can run tasks |
+| Component   | Claude Code |                                            Claude                                             |
+| :---------- | :---------: | :-------------------------------------------------------------------------------------------: |
+| 🎯 Skills   |     ✅      |                                              ✅                                               |
+| ⌨️ Commands |     ✅      | ✅ you run them by typing their name; where Claude can't run tasks, it applies them as skills |
+| 🤖 Agents   |     ✅      |                      ⚠️ only in conversations where Claude can run tasks                      |
 
 <sub>✅ works · ⚠️ partial · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. Claude runs agents, hooks and local MCP servers only in conversations where it can run tasks; anything on your computer needs Claude Desktop open.</sub>
 
@@ -663,14 +667,14 @@ Then, in an open session:
 
 Look at the message, then fix the server. Until you do, the agents have no GitHub tools, so they read GitHub through `gh`.
 
-| What you see | Why | What to do |
-| :-- | :-- | :-- |
-| `github` is missing from `/mcp` | The server isn't added, or was added at local scope in another project | Add it as in [GitHub MCP server](#-github-mcp-server-recommended), with `--scope user` |
-| `claude.ai github` is listed in `/mcp`, and GitHub tools work | Claude Code is using your claude.ai GitHub connector | Nothing to do, or add the server to Claude Code with its own token |
-| The server is marked failed, or `401` | The token is wrong or expired, or `${GITHUB_PAT}` isn't set where Claude Code started | Remove the server and add it again with a new token, or start Claude Code from a shell that sets `GITHUB_PAT` |
-| Some tools work and others don't | The token lacks a permission those tools need | Add the permission to the token |
-| In Claude, the connector dialog has no **Request headers** section | Request headers are a beta not open to your organization | Add the connector with option A, signing in with GitHub, as [In Claude](#in-claude) shows |
-| In Claude, only some GitHub tools appear | The connector's URL has no toolset path, so GitHub serves its default toolsets | Edit the connector's URL to `https://api.githubcopilot.com/mcp/x/all` |
+| What you see                                                       | Why                                                                                   | What to do                                                                                                    |
+| :----------------------------------------------------------------- | :------------------------------------------------------------------------------------ | :------------------------------------------------------------------------------------------------------------ |
+| `github` is missing from `/mcp`                                    | The server isn't added, or was added at local scope in another project                | Add it as in [GitHub MCP server](#-github-mcp-server-recommended), with `--scope user`                        |
+| `claude.ai github` is listed in `/mcp`, and GitHub tools work      | Claude Code is using your claude.ai GitHub connector                                  | Nothing to do, or add the server to Claude Code with its own token                                            |
+| The server is marked failed, or `401`                              | The token is wrong or expired, or `${GITHUB_PAT}` isn't set where Claude Code started | Remove the server and add it again with a new token, or start Claude Code from a shell that sets `GITHUB_PAT` |
+| Some tools work and others don't                                   | The token lacks a permission those tools need                                         | Add the permission to the token                                                                               |
+| In Claude, the connector dialog has no **Request headers** section | Request headers are a beta not open to your organization                              | Add the connector with option A, signing in with GitHub, as [In Claude](#in-claude) shows                     |
+| In Claude, only some GitHub tools appear                           | The connector's URL has no toolset path, so GitHub serves its default toolsets        | Edit the connector's URL to `https://api.githubcopilot.com/mcp/x/all`                                         |
 
 </details>
 

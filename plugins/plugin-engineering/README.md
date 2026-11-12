@@ -39,17 +39,17 @@ Plugin Engineering gives Claude the official documentation for running a public 
 
 ## 🧩 What's inside
 
-| Component     | Name                    | What it does        | How it runs                                             |
-| :------------ | :---------------------- | :------------------ | :------------------------------------------------------ |
-| 🎯 Skill      | `plugin-engineering:public-marketplace-dev` | The official docs for building and maintaining plugins in a public GitHub marketplace: 65 references, with the official images and example manifests, and a procedure for checking facts against the latest release notes | Automatically when you design, build, release or maintain plugins in a public GitHub marketplace, or `/plugin-engineering:public-marketplace-dev` |
-| 🎯 Skill      | `plugin-engineering:cli-commands-guide` | The complete Claude Code plugin CLI reference: plugin commands, marketplace commands, `/plugin` and `/reload-plugins`, and the session-only flags | Automatically when you work with plugins or marketplaces, or `/plugin-engineering:cli-commands-guide` |
+| Component | Name                                        | What it does                                                                                                                                                                                                              | How it runs                                                                                                                                       |
+| :-------- | :------------------------------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 🎯 Skill  | `plugin-engineering:public-marketplace-dev` | The official docs for building and maintaining plugins in a public GitHub marketplace: 65 references, with the official images and example manifests, and a procedure for checking facts against the latest release notes | Automatically when you design, build, release or maintain plugins in a public GitHub marketplace, or `/plugin-engineering:public-marketplace-dev` |
+| 🎯 Skill  | `plugin-engineering:cli-commands-guide`     | The complete Claude Code plugin CLI reference: plugin commands, marketplace commands, `/plugin` and `/reload-plugins`, and the session-only flags                                                                         | Automatically when you work with plugins or marketplaces, or `/plugin-engineering:cli-commands-guide`                                             |
 
 ## 📋 Prerequisites
 
-| Tool | Minimum version | Check |
-| :-- | :-- | :-- |
-| Claude Code | 2.1.295 | `claude --version` |
-| curl | any | `curl --version` |
+| Tool        | Minimum version | Check              |
+| :---------- | :-------------- | :----------------- |
+| Claude Code | 2.1.295         | `claude --version` |
+| curl        | any             | `curl --version`   |
 
 The plugin also has Claude use `mktemp`, `awk`, `grep` and `rm` to read a range of Claude Code releases, which come with macOS and Linux.
 
@@ -265,8 +265,8 @@ Uninstalling from the last scope it's installed at also deletes its saved option
 **Works in:** 💻 Claude Code · 🖥️ Claude
 
 | Component | Claude Code | Claude |
-| :-- | :--: | :--: |
-| 🎯 Skills | ✅ | ✅ |
+| :-------- | :---------: | :----: |
+| 🎯 Skills |     ✅      |   ✅   |
 
 <sub>✅ works · ⚠️ partial · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. Claude runs agents, hooks and local MCP servers only in conversations where it can run tasks; anything on your computer needs Claude Desktop open.</sub>
 

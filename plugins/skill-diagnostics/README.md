@@ -38,21 +38,21 @@ A skill can look finished to the person who wrote it and still fail the model th
 
 ## 🧩 What's inside
 
-| Component | Name | What it does | How it runs |
-| :-- | :-- | :-- | :-- |
-| 🎯 Skill | `skill-diagnostics:skills-best-practices` | Audits a skill, and its evals when it has them, with 5 scripts, 4 reviewers, a cold executor and an adversarial verifier, and gives one report and one verdict | `/skill-diagnostics:skills-best-practices`, automatically when you ask Claude to review or audit a skill, and after Claude creates or changes one |
-| 🤖 Agent | `skill-diagnostics:description-reviewer` | Reviews the description, frontmatter and the surfaces the skill reaches | Launched by the skill during an audit only |
-| 🤖 Agent | `skill-diagnostics:instructions-reviewer` | Reviews the body, structure and workflows passage by passage | Launched by the skill during an audit only |
-| 🤖 Agent | `skill-diagnostics:scripts-runtime-reviewer` | Reviews bundled scripts and Claude Code runtime features | Launched by the skill during an audit only |
-| 🤖 Agent | `skill-diagnostics:security-reviewer` | Reviews network calls, sensitive reads and actions the description doesn't announce | Launched by the skill during an audit only |
-| 🤖 Agent | `skill-diagnostics:cold-executor` | Follows the skill on one realistic task and marks every point where it would have to guess | Launched by the skill during an audit only |
-| 🤖 Agent | `skill-diagnostics:adversarial-verifier` | Tries to refute each finding and rules it upheld, downgraded or withdrawn | Launched by the skill during an audit only |
-| 🪝 Hook | `SessionStart` | Marks the session's start time and clears its own state older than 7 days | Automatically when a session starts |
-| 🪝 Hook | `PostToolUse` | After a `Write` or `Edit` inside a skill folder, records the skill and tells Claude to audit it (or to offer an audit) | Automatically on matching tool calls |
-| 🪝 Hook | `Stop` | Keeps Claude working until every changed skill has an audit verdict newer than the change | Automatically when Claude is about to end its turn |
-| 🪝 Hook | `SubagentStop`, `PostToolUse` on `SubagentHandback` | Saves each audit agent's report unchanged, so the final report can be checked against what every agent found | Automatically when one of this plugin's agents finishes |
-| 🪝 Hook | `PermissionRequest` on `Bash` | Approves the skill's own scripts, run exactly as the skill writes them, when Claude Code would otherwise ask you in a later turn of an audit | Automatically when Claude Code is about to ask for permission |
-| 🔁 Workflow | `skill-diagnostics:evals` | Runs trigger and output-quality evals on one skill and reports the results | `/skill-diagnostics:evals`, on request only |
+| Component   | Name                                                | What it does                                                                                                                                                   | How it runs                                                                                                                                       |
+| :---------- | :-------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 🎯 Skill    | `skill-diagnostics:skills-best-practices`           | Audits a skill, and its evals when it has them, with 5 scripts, 4 reviewers, a cold executor and an adversarial verifier, and gives one report and one verdict | `/skill-diagnostics:skills-best-practices`, automatically when you ask Claude to review or audit a skill, and after Claude creates or changes one |
+| 🤖 Agent    | `skill-diagnostics:description-reviewer`            | Reviews the description, frontmatter and the surfaces the skill reaches                                                                                        | Launched by the skill during an audit only                                                                                                        |
+| 🤖 Agent    | `skill-diagnostics:instructions-reviewer`           | Reviews the body, structure and workflows passage by passage                                                                                                   | Launched by the skill during an audit only                                                                                                        |
+| 🤖 Agent    | `skill-diagnostics:scripts-runtime-reviewer`        | Reviews bundled scripts and Claude Code runtime features                                                                                                       | Launched by the skill during an audit only                                                                                                        |
+| 🤖 Agent    | `skill-diagnostics:security-reviewer`               | Reviews network calls, sensitive reads and actions the description doesn't announce                                                                            | Launched by the skill during an audit only                                                                                                        |
+| 🤖 Agent    | `skill-diagnostics:cold-executor`                   | Follows the skill on one realistic task and marks every point where it would have to guess                                                                     | Launched by the skill during an audit only                                                                                                        |
+| 🤖 Agent    | `skill-diagnostics:adversarial-verifier`            | Tries to refute each finding and rules it upheld, downgraded or withdrawn                                                                                      | Launched by the skill during an audit only                                                                                                        |
+| 🪝 Hook     | `SessionStart`                                      | Marks the session's start time and clears its own state older than 7 days                                                                                      | Automatically when a session starts                                                                                                               |
+| 🪝 Hook     | `PostToolUse`                                       | After a `Write` or `Edit` inside a skill folder, records the skill and tells Claude to audit it (or to offer an audit)                                         | Automatically on matching tool calls                                                                                                              |
+| 🪝 Hook     | `Stop`                                              | Keeps Claude working until every changed skill has an audit verdict newer than the change                                                                      | Automatically when Claude is about to end its turn                                                                                                |
+| 🪝 Hook     | `SubagentStop`, `PostToolUse` on `SubagentHandback` | Saves each audit agent's report unchanged, so the final report can be checked against what every agent found                                                   | Automatically when one of this plugin's agents finishes                                                                                           |
+| 🪝 Hook     | `PermissionRequest` on `Bash`                       | Approves the skill's own scripts, run exactly as the skill writes them, when Claude Code would otherwise ask you in a later turn of an audit                   | Automatically when Claude Code is about to ask for permission                                                                                     |
+| 🔁 Workflow | `skill-diagnostics:evals`                           | Runs trigger and output-quality evals on one skill and reports the results                                                                                     | `/skill-diagnostics:evals`, on request only                                                                                                       |
 
 All six agents are read-only: they have the Read, Glob and Grep tools, and the verifier also WebFetch. None of them can change a file.
 
@@ -60,12 +60,12 @@ Each agent sets its own model and effort level, whatever your session uses: the 
 
 ## 📋 Prerequisites
 
-| Tool | Minimum version | Check |
-| :-- | :-- | :-- |
-| Claude Code | 2.1.271 | `claude --version` |
-| Bash (runs the hooks; on Windows, Git Bash) | 3.2 | `bash --version` |
-| jq (the hooks read and write JSON with it) | — | `jq --version` |
-| Python, as `python3` on your `PATH` (runs the skill's scripts) | 3.12 | `python3 --version` |
+| Tool                                                           | Minimum version | Check               |
+| :------------------------------------------------------------- | :-------------- | :------------------ |
+| Claude Code                                                    | 2.1.271         | `claude --version`  |
+| Bash (runs the hooks; on Windows, Git Bash)                    | 3.2             | `bash --version`    |
+| jq (the hooks read and write JSON with it)                     | —               | `jq --version`      |
+| Python, as `python3` on your `PATH` (runs the skill's scripts) | 3.12            | `python3 --version` |
 
 The plugin also uses `cat`, `find`, `mkdir`, `mv`, `rm`, `rmdir`, `sed`, `touch` and `tr`, which come with macOS and Linux, and with Git Bash on Windows.
 
@@ -277,9 +277,9 @@ Ask Claude to change a skill, for example "tighten the description of my `pdf-fo
 
 ## ⚙️ Configuration
 
-| Option | Type | Default | Description |
-| :-- | :-- | :-- | :-- |
-| `on_skill_write` | string: `gate`, `suggest` or `off` | `gate` | What happens after Claude creates or changes a skill. `gate`: Claude audits the skill before it finishes its turn, and the `Stop` hook keeps it working until the audit's verdict is recorded. `suggest`: once per skill per session, Claude offers you an audit when you've finished with the skill, and runs it only if you ask; nothing keeps Claude working. `off`: the hooks do nothing and write nothing. |
+| Option           | Type                               | Default | Description                                                                                                                                                                                                                                                                                                                                                                                                     |
+| :--------------- | :--------------------------------- | :------ | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `on_skill_write` | string: `gate`, `suggest` or `off` | `gate`  | What happens after Claude creates or changes a skill. `gate`: Claude audits the skill before it finishes its turn, and the `Stop` hook keeps it working until the audit's verdict is recorded. `suggest`: once per skill per session, Claude offers you an audit when you've finished with the skill, and runs it only if you ask; nothing keeps Claude working. `off`: the hooks do nothing and write nothing. |
 
 Set the option when installing:
 
@@ -373,16 +373,16 @@ Or, inside a session:
 
 **Works in:** 💻 Claude Code · 🖥️ Claude
 
-| Component | Claude Code | Claude |
-| :-- | :--: | :--: |
-| 🎯 Skills | ✅ | ✅ |
-| 🤖 Agents | ✅ | ⚠️ only in conversations where Claude can run tasks |
-| 🪝 Hooks | ✅ | ⚠️ only in conversations where Claude can run tasks |
-| 🔁 Workflows | ✅ | ➖ not documented for Claude |
+| Component    | Claude Code |                       Claude                        |
+| :----------- | :---------: | :-------------------------------------------------: |
+| 🎯 Skills    |     ✅      |                         ✅                          |
+| 🤖 Agents    |     ✅      | ⚠️ only in conversations where Claude can run tasks |
+| 🪝 Hooks     |     ✅      | ⚠️ only in conversations where Claude can run tasks |
+| 🔁 Workflows |     ✅      |            ➖ not documented for Claude             |
 
 <sub>✅ works · ⚠️ partial · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. Claude runs agents, hooks and local MCP servers only in conversations where it can run tasks; anything on your computer needs Claude Desktop open.</sub>
 
-Where Claude can't run tasks, agents and hooks don't run, and the skill still audits inline: Claude applies the four reviewers' checks, the cold executor's trace and the verification itself, one after another, and the report says that no independent agents ran. The five scripts need the code execution sandbox; without it they can't run and the verdict is *not determinable*. No gate runs there, so ask for the audit yourself after writing a skill. Where Claude can run tasks, the hooks run where Claude runs them, so they need Bash and `jq` there. The `/skill-diagnostics:evals` workflow runs only in Claude Code, on paid plans and with API access; on Pro, turn on **Dynamic workflows** in `/config` first.
+Where Claude can't run tasks, agents and hooks don't run, and the skill still audits inline: Claude applies the four reviewers' checks, the cold executor's trace and the verification itself, one after another, and the report says that no independent agents ran. The five scripts need the code execution sandbox; without it they can't run and the verdict is _not determinable_. No gate runs there, so ask for the audit yourself after writing a skill. Where Claude can run tasks, the hooks run where Claude runs them, so they need Bash and `jq` there. The `/skill-diagnostics:evals` workflow runs only in Claude Code, on paid plans and with API access; on Pro, turn on **Dynamic workflows** in `/config` first.
 
 **Platforms:** macOS and Linux, and Windows through Git Bash, which comes with [Git for Windows](https://git-scm.com/downloads/win): the hooks run there, so check `bash`, `jq` and `python3` in a Git Bash window.
 

@@ -40,16 +40,16 @@ Turn Meter is a mod that adds one line above Claude Code's prompt and updates it
 
 ## 🧩 What's inside
 
-| Component | Name | What it does | How it runs |
-| :-- | :-- | :-- | :-- |
-| 🧩 Mod | `turn-meter` | Counts each turn's tools and tokens, draws the last-turn band above the prompt, alerts on long turns, and adds the `/turn-meter` command | Automatically in every Claude Code session once installed |
+| Component | Name         | What it does                                                                                                                             | How it runs                                               |
+| :-------- | :----------- | :--------------------------------------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------- |
+| 🧩 Mod    | `turn-meter` | Counts each turn's tools and tokens, draws the last-turn band above the prompt, alerts on long turns, and adds the `/turn-meter` command | Automatically in every Claude Code session once installed |
 
 ## 📋 Prerequisites
 
-| Tool | Minimum version | Check |
-| :-- | :-- | :-- |
-| Claude Code | 2.1.295 | `claude --version` |
-| Notifying terminal (optional): iTerm2, kitty or Ghostty, for native notifications | — | — |
+| Tool                                                                              | Minimum version | Check              |
+| :-------------------------------------------------------------------------------- | :-------------- | :----------------- |
+| Claude Code                                                                       | 2.1.295         | `claude --version` |
+| Notifying terminal (optional): iTerm2, kitty or Ghostty, for native notifications | —               | —                  |
 
 Without a notifying terminal, the terminal bell can still notify; where nothing can, the alert falls back to a toast.
 
@@ -183,12 +183,12 @@ Last turn: 3m 12s · 24 tools (9 in 2 subagents) · 41.2k in / 6.3k out   [ Hide
 
 ### Example: a turn that did not finish
 
-| How the turn ended | The band reads |
-| :-- | :-- |
-| You pressed Esc | `Last turn: interrupted after 1m 05s · 7 tools · 18.4k in / 1.1k out` |
-| An API error ended it | `Last turn: ended by API error after 40s · 3 tools · 9.8k in / 600 out` |
-| The model refused | `Last turn: refused after 12s · 5.1k in / 42 out` |
-| A narrow band (under 60 columns of room) | `3m12s · 24 tools · 48k tok` |
+| How the turn ended                       | The band reads                                                          |
+| :--------------------------------------- | :---------------------------------------------------------------------- |
+| You pressed Esc                          | `Last turn: interrupted after 1m 05s · 7 tools · 18.4k in / 1.1k out`   |
+| An API error ended it                    | `Last turn: ended by API error after 40s · 3 tools · 9.8k in / 600 out` |
+| The model refused                        | `Last turn: refused after 12s · 5.1k in / 42 out`                       |
+| A narrow band (under 60 columns of room) | `3m12s · 24 tools · 48k tok`                                            |
 
 The token figure is left out when `showTokens` is off or the turn spent no tokens.
 
@@ -210,11 +210,11 @@ claude plugin install turn-meter@the-claude-factory --config alert=notify --conf
 
 ## ⚙️ Configuration
 
-| Option | Type | Default | Description |
-| :-- | :-- | :-- | :-- |
-| `alert` | `toast`, `notify` or `off` | `toast` | How a long turn alerts you: a message inside Claude Code, a native notification (a toast when none can be sent), or nothing |
-| `alertAfterSeconds` | number, at least 1 | `120` | A main turn that runs at least this long alerts you |
-| `showTokens` | boolean | `true` | Show the turn's tokens in the band; turn it off to see only time and tools |
+| Option              | Type                       | Default | Description                                                                                                                 |
+| :------------------ | :------------------------- | :------ | :-------------------------------------------------------------------------------------------------------------------------- |
+| `alert`             | `toast`, `notify` or `off` | `toast` | How a long turn alerts you: a message inside Claude Code, a native notification (a toast when none can be sent), or nothing |
+| `alertAfterSeconds` | number, at least 1         | `120`   | A main turn that runs at least this long alerts you                                                                         |
+| `showTokens`        | boolean                    | `true`  | Show the turn's tokens in the band; turn it off to see only time and tools                                                  |
 
 Set an option when you install:
 
@@ -279,9 +279,9 @@ Uninstalling from the last scope it's installed at also deletes its saved option
 
 **Works in:** 💻 **Claude Code only**
 
-| Component | Claude Code | Claude |
-| :-- | :--: | :--: |
-| 🧩 Mods | ✅ v2.1.287+ (Desktop v2.1.286+); hooks run in every session except Desktop on WSL; ⚠️ drawing depends on where: panes in the terminal, Desktop and VS Code (extension v2.1.299+, v2.1.304+ without feature flags), the band above the prompt only in the terminal and Desktop | ⚠️ the plugin directory lists a mod for Claude Code only |
+| Component |                                                                                                                                  Claude Code                                                                                                                                   |                          Claude                          |
+| :-------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :------------------------------------------------------: |
+| 🧩 Mods   | ✅ v2.1.287+ (Desktop v2.1.286+); hooks run in every session except Desktop on WSL; ⚠️ drawing depends on where: panes in the terminal, Desktop and VS Code (extension v2.1.299+, v2.1.304+ without feature flags), the band above the prompt only in the terminal and Desktop | ⚠️ the plugin directory lists a mod for Claude Code only |
 
 <sub>✅ works · ⚠️ partial · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. Claude runs agents, hooks and local MCP servers only in conversations where it can run tasks; anything on your computer needs Claude Desktop open.</sub>
 

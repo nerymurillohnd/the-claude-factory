@@ -40,18 +40,18 @@ A pre-commit hook fails, and the quickest way for an agent to get past it is to 
 
 ## 🧩 What's inside
 
-| Component | Name | What it does | How it runs |
-| :-- | :-- | :-- | :-- |
-| 🪝 Hook | `PreToolUse` on Bash and PowerShell | Reads each command and denies one that runs git so that it skips commit hooks or signing, or that removes or disables the repository's hooks. Every other command passes without a word | Automatically, on every Bash and PowerShell command, in the main conversation and in subagents |
+| Component | Name                                | What it does                                                                                                                                                                            | How it runs                                                                                    |
+| :-------- | :---------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------- |
+| 🪝 Hook   | `PreToolUse` on Bash and PowerShell | Reads each command and denies one that runs git so that it skips commit hooks or signing, or that removes or disables the repository's hooks. Every other command passes without a word | Automatically, on every Bash and PowerShell command, in the main conversation and in subagents |
 
 ## 📋 Prerequisites
 
-| Tool | Minimum version | Check |
-| :-- | :-- | :-- |
-| Claude Code | 2.1.314 | `claude --version` |
-| Bash | 3.2 | `bash --version` |
-| jq | 1.6 | `jq --version` |
-| git (optional), to read your git aliases | — | `git --version` |
+| Tool                                     | Minimum version | Check              |
+| :--------------------------------------- | :-------------- | :----------------- |
+| Claude Code                              | 2.1.314         | `claude --version` |
+| Bash                                     | 3.2             | `bash --version`   |
+| jq                                       | 1.6             | `jq --version`     |
+| git (optional), to read your git aliases | —               | `git --version`    |
 
 Without `jq` the hook cannot read Claude's command: see [Limitations](#-limitations).
 
@@ -337,24 +337,24 @@ Claude Code labels the message `PreToolUse:Bash hook error`. That is how it show
 
 ### What it stops and what it lets through
 
-| Claude runs | Result |
-| :-- | :-- |
-| `git commit --no-verify -m "x"`, `git push --no-verify`, `git merge --no-verify b` | 🚫 Denied |
-| `git commit -n`, `git commit -nm "x"`, `git am -n p.patch` | 🚫 Denied: `-n` is `--no-verify` in `commit` and `am` |
-| `git commit --no-veri -m "x"` | 🚫 Denied: git runs the abbreviation as the full flag |
-| `git commit --no-gpg-sign`, `git -c commit.gpgsign=false commit`, `git -c commit.gpgsign= commit`, `git -c tag.gpgsign=off tag v1` | 🚫 Denied: unsigned commits and tags, with every spelling of false that git reads |
-| `git config commit.gpgsign false`, `git -c core.hooksPath=/dev/null commit`, `HUSKY=0 git commit` | 🚫 Denied: signing or hooks switched off through configuration |
-| `git -c gpg.program=true commit`, `git -c include.path=other.cfg commit`, `HOME=/tmp git commit`, `GIT_CONFIG_GLOBAL=/dev/null git commit` | 🚫 Denied: a replaced signing program, injected configuration or a redirected configuration file |
-| `rm .git/hooks/pre-commit`, `mv .husky/pre-commit /tmp`, `chmod -x .git/hooks/pre-commit`, `pre-commit uninstall`, `lefthook uninstall` | 🚫 Denied: the hooks are removed or switched off |
-| `git commit-tree HEAD^{tree} -m "x"` | 🚫 Denied: it makes a commit without running hooks or signing |
-| `sudo -n git commit --no-verify`, `env git commit --no-verify`, `time git commit --no-verify`, `exec git commit --no-verify` | 🚫 Denied: what stands in front is looked through |
-| `(git commit --no-verify)`, `{ git commit --no-verify; }`, `if true; then git commit --no-verify; fi`, `sleep 1 & git commit --no-verify` | 🚫 Denied: grouping, control flow and background are looked through |
-| `echo "$(git commit --no-verify)"`, `` echo `git commit -n` ``, `git commit $'--no-verify'`, `g"i"t commit --no-verify` | 🚫 Denied: substitutions and quoting are read |
-| `bash -c 'git commit --no-verify'`, `eval "git commit -n"`, a heredoc fed to `bash` | 🚫 Denied: text that a shell runs is checked as commands |
-| `git commit -m "docs: explain --no-verify"`, `echo 'never run git commit --no-verify'` | ✅ Passes: the flag is text |
-| `git push -n`, `git merge -n`, `git pull -n`, `git cherry-pick -n` | ✅ Pass: `-n` means dry run, no diffstat or no commit there |
-| `cat > f <<'EOF' …`, `python3 - <<'EOF' …`, `gh pr create --body "$(cat <<'EOF' …)"`, even with an odd quote or a line that mentions `git commit --no-verify` | ✅ Pass: the heredoc only feeds a reader, so it is text |
-| ``git commit -m "$(cat <<'EOF' … EOF)"`` | ✅ Passes: Claude's usual commit form |
+| Claude runs                                                                                                                                                   | Result                                                                                           |
+| :------------------------------------------------------------------------------------------------------------------------------------------------------------ | :----------------------------------------------------------------------------------------------- |
+| `git commit --no-verify -m "x"`, `git push --no-verify`, `git merge --no-verify b`                                                                            | 🚫 Denied                                                                                        |
+| `git commit -n`, `git commit -nm "x"`, `git am -n p.patch`                                                                                                    | 🚫 Denied: `-n` is `--no-verify` in `commit` and `am`                                            |
+| `git commit --no-veri -m "x"`                                                                                                                                 | 🚫 Denied: git runs the abbreviation as the full flag                                            |
+| `git commit --no-gpg-sign`, `git -c commit.gpgsign=false commit`, `git -c commit.gpgsign= commit`, `git -c tag.gpgsign=off tag v1`                            | 🚫 Denied: unsigned commits and tags, with every spelling of false that git reads                |
+| `git config commit.gpgsign false`, `git -c core.hooksPath=/dev/null commit`, `HUSKY=0 git commit`                                                             | 🚫 Denied: signing or hooks switched off through configuration                                   |
+| `git -c gpg.program=true commit`, `git -c include.path=other.cfg commit`, `HOME=/tmp git commit`, `GIT_CONFIG_GLOBAL=/dev/null git commit`                    | 🚫 Denied: a replaced signing program, injected configuration or a redirected configuration file |
+| `rm .git/hooks/pre-commit`, `mv .husky/pre-commit /tmp`, `chmod -x .git/hooks/pre-commit`, `pre-commit uninstall`, `lefthook uninstall`                       | 🚫 Denied: the hooks are removed or switched off                                                 |
+| `git commit-tree HEAD^{tree} -m "x"`                                                                                                                          | 🚫 Denied: it makes a commit without running hooks or signing                                    |
+| `sudo -n git commit --no-verify`, `env git commit --no-verify`, `time git commit --no-verify`, `exec git commit --no-verify`                                  | 🚫 Denied: what stands in front is looked through                                                |
+| `(git commit --no-verify)`, `{ git commit --no-verify; }`, `if true; then git commit --no-verify; fi`, `sleep 1 & git commit --no-verify`                     | 🚫 Denied: grouping, control flow and background are looked through                              |
+| `echo "$(git commit --no-verify)"`, `` echo `git commit -n` ``, `git commit $'--no-verify'`, `g"i"t commit --no-verify`                                       | 🚫 Denied: substitutions and quoting are read                                                    |
+| `bash -c 'git commit --no-verify'`, `eval "git commit -n"`, a heredoc fed to `bash`                                                                           | 🚫 Denied: text that a shell runs is checked as commands                                         |
+| `git commit -m "docs: explain --no-verify"`, `echo 'never run git commit --no-verify'`                                                                        | ✅ Passes: the flag is text                                                                      |
+| `git push -n`, `git merge -n`, `git pull -n`, `git cherry-pick -n`                                                                                            | ✅ Pass: `-n` means dry run, no diffstat or no commit there                                      |
+| `cat > f <<'EOF' …`, `python3 - <<'EOF' …`, `gh pr create --body "$(cat <<'EOF' …)"`, even with an odd quote or a line that mentions `git commit --no-verify` | ✅ Pass: the heredoc only feeds a reader, so it is text                                          |
+| `git commit -m "$(cat <<'EOF' … EOF)"`                                                                                                                        | ✅ Passes: Claude's usual commit form                                                            |
 
 A command the guard cannot read, such as an unterminated quote, is denied with that reason, so a parse failure never lets a bypass through.
 
@@ -409,9 +409,9 @@ Uninstalling from the last scope it's installed at also deletes its saved option
 
 **Works in:** 💻 Claude Code · 🖥️ Claude
 
-| Component | Claude Code | Claude |
-| :-- | :--: | :--: |
-| 🪝 Hooks | ✅ | ⚠️ only in conversations where Claude can run tasks |
+| Component | Claude Code |                       Claude                        |
+| :-------- | :---------: | :-------------------------------------------------: |
+| 🪝 Hooks  |     ✅      | ⚠️ only in conversations where Claude can run tasks |
 
 <sub>✅ works · ⚠️ partial · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. Claude runs agents, hooks and local MCP servers only in conversations where it can run tasks; anything on your computer needs Claude Desktop open.</sub>
 
@@ -423,16 +423,16 @@ In Claude Code the guard also covers subagents, and it keeps running under `bypa
 
 The guard is a barrier for Claude, not a security boundary. Claude Code's own documentation says to enforce a hard allow or deny through [permissions](https://code.claude.com/docs/en/permissions); use branch protection and CI for what must hold for everyone.
 
-| Limitation | What you see | What to do |
-| :-- | :-- | :-- |
-| It only sees commands Claude runs | A bypass you type in your own terminal runs | Nothing: that is your decision |
-| Some spellings are not read: comma brace lists (`{git,} commit -n`, `git commit --{no-verify,message=x}`), `bash -c -- '…'` and `bash -c -e '…'` with options between `-c` and the script, `xargs git` fed by a heredoc, and `source <(…)` | The command runs | Protect what must hold with CI and branch protection |
-| Values that come from outside the command: functions, earlier exports and scripts run from files | The command runs | Same |
-| Your organization can turn hooks off with `allowManagedHooksOnly`, or you with `disableAllHooks` | The guard does nothing | Check `/plugin` and your settings |
-| No `jq` on `PATH` | A command that could involve git is denied with the message `jq is not installed`; every other command runs | Install `jq` (see [Prerequisites](#-prerequisites)) |
-| A command too large to analyze within the hook's time that mentions a bypass | It is denied with that reason | Run smaller commands |
-| The guard itself fails | Claude Code blocks the command and shows the error | Run `/reload-plugins`; if it keeps failing, [report it](#-found-a-problem) |
-| In a Claude conversation where Claude can't run tasks, hooks do not run | No guard | Use Claude Code, or a conversation where Claude can run tasks |
+| Limitation                                                                                                                                                                                                                                 | What you see                                                                                                | What to do                                                                 |
+| :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------- |
+| It only sees commands Claude runs                                                                                                                                                                                                          | A bypass you type in your own terminal runs                                                                 | Nothing: that is your decision                                             |
+| Some spellings are not read: comma brace lists (`{git,} commit -n`, `git commit --{no-verify,message=x}`), `bash -c -- '…'` and `bash -c -e '…'` with options between `-c` and the script, `xargs git` fed by a heredoc, and `source <(…)` | The command runs                                                                                            | Protect what must hold with CI and branch protection                       |
+| Values that come from outside the command: functions, earlier exports and scripts run from files                                                                                                                                           | The command runs                                                                                            | Same                                                                       |
+| Your organization can turn hooks off with `allowManagedHooksOnly`, or you with `disableAllHooks`                                                                                                                                           | The guard does nothing                                                                                      | Check `/plugin` and your settings                                          |
+| No `jq` on `PATH`                                                                                                                                                                                                                          | A command that could involve git is denied with the message `jq is not installed`; every other command runs | Install `jq` (see [Prerequisites](#-prerequisites))                        |
+| A command too large to analyze within the hook's time that mentions a bypass                                                                                                                                                               | It is denied with that reason                                                                               | Run smaller commands                                                       |
+| The guard itself fails                                                                                                                                                                                                                     | Claude Code blocks the command and shows the error                                                          | Run `/reload-plugins`; if it keeps failing, [report it](#-found-a-problem) |
+| In a Claude conversation where Claude can't run tasks, hooks do not run                                                                                                                                                                    | No guard                                                                                                    | Use Claude Code, or a conversation where Claude can run tasks              |
 
 ## ❓ FAQ & Troubleshooting
 

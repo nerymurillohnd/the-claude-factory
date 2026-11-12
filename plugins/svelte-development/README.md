@@ -39,25 +39,25 @@ Svelte Development teaches Claude current Svelte 5 and SvelteKit 3 practice and 
 
 ## 🧩 What's inside
 
-| Component | Name | What it does | How it runs |
-| :-- | :-- | :-- | :-- |
-| 🎯 Skill | `svelte-development:svelte-best-practices` | The rules for Svelte 5 and SvelteKit 3: runes, snippets, events, routes, `load`, forms and remote functions, hooks, environment variables, config, adapters and security, plus migrations, the Svelte CLI (`sv`), Astro and Tailwind CSS. Decides when the agents take over | Automatically when you write or change Svelte or SvelteKit code, or `/svelte-development:svelte-best-practices` |
-| 🎯 Skill | `svelte-development:svelte-docs-and-autofixer` | Looks up the official Svelte, SvelteKit and Svelte CLI docs, checks Svelte code with the autofixer, including code you paste in the conversation, and makes playground links | Automatically when an exact API matters or you paste Svelte code, or `/svelte-development:svelte-docs-and-autofixer` |
-| 🎯 Skill | `svelte-development:svelte-lsp-intelligence` | Answers where a component, prop, function or type is defined, used or called, and what a change would break, through the Svelte language server and your project check | Automatically for "is X used", "which files break if", renames and "check the project for errors", or `/svelte-development:svelte-lsp-intelligence` |
-| 🤖 Agent | `svelte-development:svelte-component-editor` | Writes and edits components, `.svelte.ts`/`.svelte.js` modules and SvelteKit route files, and proves each change with the docs, the autofixer, the language server and the project check | Delegated by Claude for changes beyond one or two lines, or "use the svelte-component-editor agent" |
-| 🤖 Agent | `svelte-development:svelte-code-auditor` | Audits Svelte and SvelteKit code without changing your source files and reports findings with file, line, severity, evidence and fix | Delegated by Claude for a review or audit, or "use the svelte-code-auditor agent" |
-| 🔌 MCP server | `svelte` | The Svelte team's remote server at `https://mcp.svelte.dev/mcp`: `list-sections`, `get-documentation`, `svelte-autofixer` and `playground-link`, plus the `svelte-task` prompt and a docs resource for every section | Tools appear as `mcp__plugin_svelte-development_svelte__*`. Nothing to install |
-| 🧠 LSP server | `svelte` | Starts your `svelteserver --stdio` for `.svelte` files: diagnostics after each edit, and go to definition, references, hover, implementations, call hierarchy and symbols | Automatically when Claude opens or edits a `.svelte` file |
+| Component     | Name                                           | What it does                                                                                                                                                                                                                                                                | How it runs                                                                                                                                         |
+| :------------ | :--------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 🎯 Skill      | `svelte-development:svelte-best-practices`     | The rules for Svelte 5 and SvelteKit 3: runes, snippets, events, routes, `load`, forms and remote functions, hooks, environment variables, config, adapters and security, plus migrations, the Svelte CLI (`sv`), Astro and Tailwind CSS. Decides when the agents take over | Automatically when you write or change Svelte or SvelteKit code, or `/svelte-development:svelte-best-practices`                                     |
+| 🎯 Skill      | `svelte-development:svelte-docs-and-autofixer` | Looks up the official Svelte, SvelteKit and Svelte CLI docs, checks Svelte code with the autofixer, including code you paste in the conversation, and makes playground links                                                                                                | Automatically when an exact API matters or you paste Svelte code, or `/svelte-development:svelte-docs-and-autofixer`                                |
+| 🎯 Skill      | `svelte-development:svelte-lsp-intelligence`   | Answers where a component, prop, function or type is defined, used or called, and what a change would break, through the Svelte language server and your project check                                                                                                      | Automatically for "is X used", "which files break if", renames and "check the project for errors", or `/svelte-development:svelte-lsp-intelligence` |
+| 🤖 Agent      | `svelte-development:svelte-component-editor`   | Writes and edits components, `.svelte.ts`/`.svelte.js` modules and SvelteKit route files, and proves each change with the docs, the autofixer, the language server and the project check                                                                                    | Delegated by Claude for changes beyond one or two lines, or "use the svelte-component-editor agent"                                                 |
+| 🤖 Agent      | `svelte-development:svelte-code-auditor`       | Audits Svelte and SvelteKit code without changing your source files and reports findings with file, line, severity, evidence and fix                                                                                                                                        | Delegated by Claude for a review or audit, or "use the svelte-code-auditor agent"                                                                   |
+| 🔌 MCP server | `svelte`                                       | The Svelte team's remote server at `https://mcp.svelte.dev/mcp`: `list-sections`, `get-documentation`, `svelte-autofixer` and `playground-link`, plus the `svelte-task` prompt and a docs resource for every section                                                        | Tools appear as `mcp__plugin_svelte-development_svelte__*`. Nothing to install                                                                      |
+| 🧠 LSP server | `svelte`                                       | Starts your `svelteserver --stdio` for `.svelte` files: diagnostics after each edit, and go to definition, references, hover, implementations, call hierarchy and symbols                                                                                                   | Automatically when Claude opens or edits a `.svelte` file                                                                                           |
 
 ## 📋 Prerequisites
 
-| Tool | Minimum version | Check |
-| :-- | :-- | :-- |
-| Claude Code | 2.1.288 | `claude --version` |
-| svelte-language-server | 0.18.5 | `npm ls -g svelte-language-server` |
-| Node.js | 18 | `node --version` |
-| npm (comes with Node.js) | — | `npm --version` |
-| curl (optional: for changelogs, and for the docs when the `svelte` server is unreachable) | — | `curl --version` |
+| Tool                                                                                      | Minimum version | Check                              |
+| :---------------------------------------------------------------------------------------- | :-------------- | :--------------------------------- |
+| Claude Code                                                                               | 2.1.288         | `claude --version`                 |
+| svelte-language-server                                                                    | 0.18.5          | `npm ls -g svelte-language-server` |
+| Node.js                                                                                   | 18              | `node --version`                   |
+| npm (comes with Node.js)                                                                  | —               | `npm --version`                    |
+| curl (optional: for changelogs, and for the docs when the `svelte` server is unreachable) | —               | `curl --version`                   |
 
 Install svelte-language-server globally, with `svelteserver` on the `PATH` of the shell you start `claude` from. It needs Node.js and brings its own TypeScript (5.9 or 6). npm comes with Node.js; Claude uses `npm view` to read the package versions it writes for. Claude reads changelogs and raw docs pages with `curl`, never with WebFetch, which returns a summary; without `curl` it can't read them.
 
@@ -195,7 +195,7 @@ export CLAUDE_CODE_PLUGIN_PREFER_HTTPS=1
 3. Find **Svelte Development** in **Discover** and select **Add**.
 4. On the plugin's **Connectors** tab, connect `svelte` so its docs and autofixer tools are available.
 
-To confirm it works, ask Claude in a Svelte project: *"Where is the Counter component used?"* The answer lists each use with its file and line, found by the language server. To see `svelte` connected, run:
+To confirm it works, ask Claude in a Svelte project: _"Where is the Counter component used?"_ The answer lists each use with its file and line, found by the language server. To see `svelte` connected, run:
 
 ```text
 /mcp
@@ -244,20 +244,28 @@ Is this component correct for Svelte 5? <your code>
 
 The plugin has no options; your project decides what Claude does:
 
-| Your project | What Claude does |
-| :-- | :-- |
+| Your project                                                                               | What Claude does                                                                                                                         |
+| :----------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------- |
 | Installed `svelte` and `@sveltejs/kit` (`npm ls`, `pnpm why`, `yarn why`, or the lockfile) | Writes for those versions, passes the full Svelte version to the autofixer, and uses a feature only from the minor release that added it |
-| Svelte 4 or SvelteKit 2 | Proposes the migration before writing; writes for the old version only when you decline or ask it to proceed |
-| A `check` script in `package.json` | Runs it as the project check; otherwise runs `svelte-kit sync` (SvelteKit only) and then your `svelte-check` |
-| `compilerOptions.experimental.async` enabled | Passes the async option to the autofixer |
-| A `CLAUDE.md` with your conventions | Follows your naming, layout and formatting, but never uses an API your installed version removed |
+| Svelte 4 or SvelteKit 2                                                                    | Proposes the migration before writing; writes for the old version only when you decline or ask it to proceed                             |
+| A `check` script in `package.json`                                                         | Runs it as the project check; otherwise runs `svelte-kit sync` (SvelteKit only) and then your `svelte-check`                             |
+| `compilerOptions.experimental.async` enabled                                               | Passes the async option to the autofixer                                                                                                 |
+| A `CLAUDE.md` with your conventions                                                        | Follows your naming, layout and formatting, but never uses an API your installed version removed                                         |
 
 The plugin never installs a package. When something is missing (the language server, `svelte-check`, the local Svelte CLI), Claude tells you what to install and reports the result as unchecked.
 
 **Using the TypeScript 6 plugin too?** [TypeScript 6 LSP Intelligence](../typescript6-lsp-intelligence/README.md) serves `.ts` and `.js` files while this plugin serves `.svelte` files, so they work side by side. Its post-edit check passes `.svelte.ts` and `+page.ts` files once `svelte-kit sync` has generated SvelteKit's types. For the TypeScript server to find `.svelte` callers of a `.ts` function, install `typescript-svelte-plugin` in your project and list it in your `tsconfig.json`:
 
 ```json
-{ "compilerOptions": { "plugins": [{ "name": "typescript-svelte-plugin" }] } }
+{
+  "compilerOptions": {
+    "plugins": [
+      {
+        "name": "typescript-svelte-plugin"
+      }
+    ]
+  }
+}
 ```
 
 **Editor diagnostics:** when Claude Code is connected to VS Code or a JetBrains IDE, the agents also read the editor's diagnostics for each file they change or audit. Without a connected IDE they rely on the language server and your project check.
@@ -272,7 +280,7 @@ The plugin never installs a package. When something is missing (the language ser
   npm install -g @sveltejs/mcp
   ```
 
-  Then add a line such as *"Never send this project's code to the Svelte MCP server; use the local svelte-mcp command."* to your project's `CLAUDE.md`, so every session and agent follows it. For a hard guarantee, also turn the `svelte` server off in `/mcp`. With `curl`, Claude reads public docs from `svelte.dev`, and changelogs and source files of the Svelte, Astro and Tailwind CSS projects from `raw.githubusercontent.com` and `api.github.com`; with `npm view`, it reads package versions from the npm registry. These requests carry no code. A playground link carries the code in its URL, and Claude makes one only when you ask.
+  Then add a line such as _"Never send this project's code to the Svelte MCP server; use the local svelte-mcp command."_ to your project's `CLAUDE.md`, so every session and agent follows it. For a hard guarantee, also turn the `svelte` server off in `/mcp`. With `curl`, Claude reads public docs from `svelte.dev`, and changelogs and source files of the Svelte, Astro and Tailwind CSS projects from `raw.githubusercontent.com` and `api.github.com`; with `npm view`, it reads package versions from the npm registry. These requests carry no code. A playground link carries the code in its URL, and Claude makes one only when you ask.
 - **Files written:** none by the plugin. Claude and the editor agent change only the files your request covers, and the auditor changes none. In a SvelteKit project the project check can run `svelte-kit sync`, which writes SvelteKit's generated files.
 - **Privacy:** the author collects no data. The marketplace's [privacy policy](https://github.com/nerymurillohnd/the-claude-factory/blob/main/PRIVACY.md) covers this plugin and the outside services it can reach.
 
@@ -319,12 +327,12 @@ Uninstalling from the last scope it's installed at also deletes its saved option
 
 **Works in:** 💻 Claude Code · 🖥️ Claude
 
-| Component | Claude Code | Claude |
-| :-- | :--: | :--: |
-| 🎯 Skills | ✅ | ✅ |
-| 🤖 Agents | ✅ | ⚠️ only in conversations where Claude can run tasks |
-| 🔌 Remote MCP server | ✅ | 🔗 add or connect it on the plugin's **Connectors** tab |
-| 🧠 LSP servers | ✅ | ➖ |
+| Component            | Claude Code |                         Claude                          |
+| :------------------- | :---------: | :-----------------------------------------------------: |
+| 🎯 Skills            |     ✅      |                           ✅                            |
+| 🤖 Agents            |     ✅      |   ⚠️ only in conversations where Claude can run tasks   |
+| 🔌 Remote MCP server |     ✅      | 🔗 add or connect it on the plugin's **Connectors** tab |
+| 🧠 LSP servers       |     ✅      |                           ➖                            |
 
 <sub>✅ works · ⚠️ partial · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. Claude runs agents, hooks and local MCP servers only in conversations where it can run tasks; anything on your computer needs Claude Desktop open.</sub>
 
@@ -362,7 +370,7 @@ If nothing prints, install the server, then run `/reload-plugins`:
 ```bash
 npm install -g svelte-language-server
 ```
- Some IDEs and the Windows desktop app don't read your shell profile, which is where nvm, fnm and Volta add Node.js to the `PATH`: start Claude Code from a terminal, or launch the IDE from one. The macOS desktop app reads your shell profile when you open it from the Dock or Finder, so quit and reopen it after installing. `/plugin` → **Errors** shows `Executable not found in $PATH: "svelteserver"` when the binary is missing. Without the language server the plugin still works: Claude tells you once, navigates by text search and relies on your project check.
+Some IDEs and the Windows desktop app don't read your shell profile, which is where nvm, fnm and Volta add Node.js to the `PATH`: start Claude Code from a terminal, or launch the IDE from one. The macOS desktop app reads your shell profile when you open it from the Dock or Finder, so quit and reopen it after installing. `/plugin` → **Errors** shows `Executable not found in $PATH: "svelteserver"` when the binary is missing. Without the language server the plugin still works: Claude tells you once, navigates by text search and relies on your project check.
 
 </details>
 
