@@ -34,7 +34,7 @@ allowed-tools:
 
 ## Overview
 
-You write the repository's own collaboration files from the models in `assets/`. The models are not files to copy: for each kind, read its models, choose the ones that fit the repository (who contributes, what it ships, how it is tested and released), keep each model's structure and required fields, replace every generic part and every upper-case placeholder such as `<OWNER>` with the repository's facts (components, versions, environments, commands, labels, links), and remove the sections that never apply to the repository. Lower-case text in angle brackets inside a form's `title`, such as `<short summary>`, is a prompt for the person filing the issue: keep it. The `#` comment lines in a YAML model are written for you: follow them, then leave them out of the file you write, and turn a commented-out optional block into real lines only when it applies. Keep the HTML comments in the PR templates: they guide contributors.
+You write the repository's own collaboration files from the models in `assets/`. The models are not files to copy: for each file type, read its models, choose the ones that fit the repository (who contributes, what it ships, how it is tested and released), keep each model's structure and required fields, replace every generic part and every upper-case placeholder such as `<OWNER>` with the repository's facts (components, versions, environments, commands, labels, links), and remove the sections that never apply to the repository. Lower-case text in angle brackets inside a form's `title`, such as `<short summary>`, is a prompt for the person filing the issue: keep it. The `#` comment lines in a YAML model are written for you: follow them, then leave them out of the file you write, and turn a commented-out optional block into real lines only when it applies. Keep the HTML comments in the PR templates: they guide contributors.
 
 The work ends on one branch, committed. With the user's approval it is pushed and opened as one pull request. The user approves the set of files, every label and setting change, and the push.
 
@@ -46,7 +46,7 @@ GitHub reads each file only at its own path and name. Before writing, look in ev
 
 | Model in `assets/` | Written in the repository as | The repository's own copy can be at |
 | :-- | :-- | :-- |
-| `PULL_REQUEST_TEMPLATE/<kind>.md` | `.github/PULL_REQUEST_TEMPLATE/<kind>.md`, and the default one also as `.github/pull_request_template.md` | `pull_request_template.md` or `.txt`, or a `PULL_REQUEST_TEMPLATE/` folder, in `.github/`, the root or `docs/` |
+| `PULL_REQUEST_TEMPLATE/<template>.md` | `.github/PULL_REQUEST_TEMPLATE/<template>.md`, and the default one also as `.github/pull_request_template.md` | `pull_request_template.md` or `.txt`, or a `PULL_REQUEST_TEMPLATE/` folder, in `.github/`, the root or `docs/` |
 | `ISSUE_TEMPLATE/<form>.yml` | `.github/ISSUE_TEMPLATE/<form>.yml` | `.github/ISSUE_TEMPLATE/`, forms or Markdown templates; inherited from `.github/ISSUE_TEMPLATE/` of the owner's `.github` repository |
 | `ISSUE_TEMPLATE/config.yml` | `.github/ISSUE_TEMPLATE/config.yml`, with exactly that name | `.github/ISSUE_TEMPLATE/config.yml`; inherited the same way |
 | `DISCUSSION_TEMPLATE/<category>.yml` | `.github/DISCUSSION_TEMPLATE/<category slug>.yml` | `.github/DISCUSSION_TEMPLATE/`; inherited from `.github/DISCUSSION_TEMPLATE/` of the owner's `.github` repository |
@@ -59,7 +59,7 @@ GitHub reads each file only at its own path and name. Before writing, look in ev
 
 - Never overwrite a file the repository already has. Show the change as a diff and ask.
 - Never work on the default branch. When the user is on another branch, such as a feature branch they chose, work there; otherwise create one setup branch off the default branch.
-- Show the user the files you chose for each kind, and why, before you write them.
+- Show the user the files you chose for each file type, and why, before you write them.
 - Ask before you create or change a label or a repository setting, and before you push. Each approval covers the change it names.
 - Write only facts you read in the repository or on GitHub. Never invent a version, a command, a component or a link; ask when one is missing.
 - Link only to what exists and is on: Discussions, private vulnerability reporting, a security policy, a docs page on the default branch.
@@ -87,7 +87,7 @@ Run each from the repository's root with `python3` and its full path, exactly as
 | `check-forms.py` | Checks issue forms, `config.yml`, discussion forms and `dependabot.yml` against GitHub's schemas and the rules `--help` lists | `python3 ${CLAUDE_SKILL_DIR}/scripts/check-forms.py --kind <kind> <file>...` | After writing or changing any of those files (steps 4 to 6), and again after every fix, until its summary reads `check-forms: pass` |
 | `labels-sync.py` | Compares a label list with the repository's labels, and with `--apply` creates and updates them | `python3 ${CLAUDE_SKILL_DIR}/scripts/labels-sync.py --dry-run --repo <owner>/<repo> --labels <file> [--current <file>]` | Before proposing labels and after creating them (step 8) |
 
-`<kind>` is `issue`, `issue-config`, `discussion` or `dependabot`.
+`<kind>` selects the check: `issue`, `issue-config`, `discussion` or `dependabot`.
 
 `check-forms.py` needs ruamel.yaml 0.19.1 and check-jsonschema 0.39.0 in the Python that runs it. When they are missing it exits 2 with the install command: never install them yourself; tell the user, and check the files by hand against the rules `--help` lists and the reference.
 
@@ -125,7 +125,7 @@ When a check fails, return to the step that wrote the file, fix it, and run the 
    3. Read whether the owner's `.github` repository holds `.github/ISSUE_TEMPLATE/` or `.github/DISCUSSION_TEMPLATE/`.
    4. Read its `README`, `CONTRIBUTING`, `CLAUDE.md` or `AGENTS.md`, its manifests, its CI files and the local commands it runs as checks, its release process, its labels and label file, and its recent issues, pull requests and commit titles.
    5. Check the branch (`git branch --show-current`). On the default branch, create one branch off it for the whole setup, such as `chore/repository-templates`; on any other branch, work there and tell the user which.
-2. **Choose the files.** For each kind the user asked for, look for the repository's own files in every place the table above lists. Where one exists, show the change as a diff and ask. Choose the models by the choosing tables in [references/pr-templates.md](references/pr-templates.md), [references/issue-forms.md](references/issue-forms.md#choose-the-forms) and [references/discussion-forms.md](references/discussion-forms.md), and decide the label names the files will use by [references/labels.md](references/labels.md). Then show the user the models you chose and why, and write nothing before the user agrees.
+2. **Choose the files.** For each file type the user asked for, look for the repository's own files in every place the table above lists. Where one exists, show the change as a diff and ask. Choose the models by the choosing tables in [references/pr-templates.md](references/pr-templates.md), [references/issue-forms.md](references/issue-forms.md#choose-the-forms) and [references/discussion-forms.md](references/discussion-forms.md), and decide the label names the files will use by [references/labels.md](references/labels.md). Then show the user the models you chose and why, and write nothing before the user agrees.
 3. **PR templates.** Follow [references/pr-templates.md](references/pr-templates.md).
 4. **Issue forms.** Follow [references/issue-forms.md](references/issue-forms.md), through its validation loop.
 5. **Discussion forms.** Follow [references/discussion-forms.md](references/discussion-forms.md), through its validation loop.
