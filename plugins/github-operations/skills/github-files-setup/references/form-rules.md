@@ -26,7 +26,7 @@ Sources, read on 12 November 2026: GitHub's [Syntax for issue forms](https://doc
 - Each `id` is unique in the form and uses only letters, digits, `-` and `_`. A `markdown` field has no `id`.
 - Each field that takes input has a `label`, and the labels are unique.
 - Labels must not be too similar. A field without an `id` is referenced by its label made into a slug: accents become plain letters, then lower case, and every run of characters other than letters, digits, `-` and `_` becomes one `-`. Two fields whose references match, or a reference that matches another field's `id`, are refused. Fix it by rewording one label or giving one of the two fields an `id`.
-- Checkbox option labels are unique among the options of their field, and differ from the other fields' labels.
+- Checkbox option labels are unique among the options of their field, and differ from the labels of other fields that have no `id`: an `id` on the clashing field also resolves it.
 - The `label` of an `input` or `textarea` holds no forbidden word, such as "password".
 - `validations` takes only the keys of the field's type:
   - `required` for every type but `markdown`;
@@ -38,7 +38,7 @@ Sources, read on 12 November 2026: GitHub's [Syntax for issue forms](https://doc
 
 GitHub reads forms as YAML 1.1. An unquoted value in this list becomes a boolean, not text: `y`, `Y`, `yes`, `Yes`, `YES`, `n`, `N`, `no`, `No`, `NO`, `true`, `True`, `TRUE`, `false`, `False`, `FALSE`, `on`, `On`, `ON`, `off`, `Off` and `OFF`. An unquoted number, such as `1.3`, becomes a number.
 
-- In every text value (`name`, `description`, `title`, `id`, `label`, `placeholder`, `value`, each option and each label name), quote such a value: `"Yes"`, `"1.3"`.
+- In every text value (`name`, `description`, `title`, `id`, `label`, `placeholder`, `value`, `assignees`, each option and each label name), quote such a value: `"Yes"`, `"1.3"`.
 - `required` and `multiple` are booleans: write `true` or `false`.
 
 ## Options
