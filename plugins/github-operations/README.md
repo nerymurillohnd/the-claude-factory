@@ -60,7 +60,7 @@ GitHub Operations is a set of skills, commands and agents for the GitHub work ar
 | Tool                                                                                  | Minimum version | Check                                              |
 | :------------------------------------------------------------------------------------ | :-------------- | :------------------------------------------------- |
 | Claude Code                                                                           | 2.1.314         | `claude --version`                                 |
-| git, on your `PATH` (on Windows, Git for Windows)                                     | —               | `git --version`                                    |
+| git, on your `PATH`                                                                   | —               | `git --version`                                    |
 | GitHub CLI (`gh`), signed in                                                          | —               | `gh auth status`                                   |
 | GitHub MCP server, recommended                                                        | —               | `claude mcp get github`                            |
 | Python 3, on your `PATH` as `python3`, only to run the repository setup's two scripts | 3.12            | `python3 --version`                                |
@@ -157,14 +157,6 @@ sudo zypper install git
 ```
 
 </details>
-<details>
-<summary>🪟 <b>Git for Windows (winget)</b> — Windows</summary>
-
-```bash
-winget install --id Git.Git -e --source winget
-```
-
-</details>
 
 ### 🐙 GitHub CLI
 
@@ -222,14 +214,6 @@ sudo zypper install gh
 ```
 
 </details>
-<details>
-<summary>🪟 <b>winget</b> — Windows</summary>
-
-```bash
-winget install --id GitHub.cli --source winget
-```
-
-</details>
 
 Then sign in:
 
@@ -243,7 +227,7 @@ The plugin doesn't install an MCP server. With GitHub's official remote MCP serv
 
 **Step 1. Create a token.** Make a [fine-grained personal access token](https://github.com/settings/personal-access-tokens/new) for the repositories you work in, with only the permissions you want Claude to have. GitHub only lets a tool do what this token allows.
 
-**Step 2. Add the server.** Run option A in your terminal, not inside a Claude Code session, with `<your token>` replaced by the token. If it fails, for example with `Invalid input`, which GitHub's guide reports on Windows, run option B instead. Both add the same server, named `github`, for you in every project (`--scope user`). If option A worked, skip option B: Claude Code refuses it with `MCP server github already exists in user config`.
+**Step 2. Add the server.** Run option A in your terminal, not inside a Claude Code session, with `<your token>` replaced by the token. If it fails, run option B instead. Both add the same server, named `github`, for you in every project (`--scope user`). If option A worked, skip option B: Claude Code refuses it with `MCP server github already exists in user config`.
 
 Option A, the form GitHub's [installation guide](https://github.com/github/github-mcp-server/blob/main/docs/installation-guides/install-claude.md) gives for Claude Code:
 
@@ -260,7 +244,7 @@ claude mcp add --scope user --transport http github https://api.githubcopilot.co
   -H "X-MCP-Insiders: true"
 ```
 
-Claude Code saves the server, token included, in `~/.claude.json` (on Windows, `%USERPROFILE%\.claude.json`), its file for your personal MCP servers. Keep that file private and never commit or share it.
+Claude Code saves the server, token included, in `~/.claude.json`, its file for your personal MCP servers. Keep that file private and never commit or share it.
 
 Keep `github` in the server's name: the plugin's agents find the GitHub tools by searching for `github`.
 
