@@ -8,6 +8,7 @@ How each step reads and writes GitHub, in an order that works on the user's comp
 - When GraphQL is blocked
 - Operations
 - What has no API
+- Current behavior
 
 ## Order of routes
 
@@ -22,11 +23,7 @@ Report something as out of reach only after every route failed, with each error.
 
 ## When GraphQL is blocked
 
-Some environments block GitHub's GraphQL API while REST works. Claude Code on the web answers every GraphQL call with `HTTP 403: GitHub GraphQL is not available from Claude Code sessions; use the REST API`. That 403 is a blocked route, not a missing permission: move to the REST route of the same row, or to the user.
-
-Claude Code on the web also binds a session to its repositories: an `orgs/…` or `users/…` path, or another repository's path, returns 403 "sessions are bound to their configured repositories". Read those facts through the MCP server, or ask the user.
-
-Several `gh` commands use GraphQL even though they look like REST: `gh repo view --json`, `gh label list`, `gh label clone`, `gh pr view --json` and `gh issue list --json`. `gh label create`, `gh label edit`, `gh label delete` and `gh api repos/…` use REST.
+When a GraphQL call returns 403 while REST works, the route is blocked, not your permission: move to the REST route of the same row, or to the user. When a path outside the session's repositories, such as `orgs/…`, `users/…` or another repository, returns 403 while the repository's own paths work, the session is bound to its repositories: read those facts through the MCP server, or ask the user. Some `gh` commands use GraphQL even though they look like REST; [Current behavior](#current-behavior-checked-on-2026-11-12-verify-before-relying-on-it) lists them.
 
 ## Operations
 
@@ -47,3 +44,9 @@ Several `gh` commands use GraphQL even though they look like REST: `gh repo view
 
 - No API creates a discussion category: the user creates it in **Settings → Discussions** (up to 25 per repository).
 - No MCP tool changes a repository's merge settings.
+
+## Current behavior (checked on 2026-11-12; verify before relying on it)
+
+- Claude Code on the web answers every GraphQL call with an HTTP 403 whose message begins `GitHub GraphQL is not available from Claude Code sessions`.
+- Claude Code on the web binds a session to its repositories: an `orgs/…` or `users/…` path, or another repository's path, returns 403 "sessions are bound to their configured repositories".
+- `gh repo view --json`, `gh label list`, `gh label clone`, `gh pr view --json` and `gh issue list --json` use GraphQL. `gh label create`, `gh label edit`, `gh label delete` and `gh api repos/…` use REST.

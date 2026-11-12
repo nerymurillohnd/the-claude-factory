@@ -9,6 +9,7 @@
 - Validate
 - After the merge
 - Limits
+- Current behavior
 
 ## Choose the forms
 
@@ -69,7 +70,7 @@ A form applies only the labels in its top-level `labels:`. A dropdown answer, su
 - **A workflow that labels from the form:** a GitHub Actions workflow on `issues: opened` reads the answer under its `### <field label>` heading and adds the label with `gh issue edit "$NUMBER" --add-label "<label>"`. Every label it applies must exist. The workflow runs on untrusted input from any reporter: write it only when the user wants it, and audit it with `github-operations:claude-github-actions` before the pull request.
 - **Triage by Claude:** Claude reads each new issue, body included, and applies the labels that already exist, without commenting. Two ways to run it, both outside this skill:
   - A GitHub Actions workflow with `anthropics/claude-code-action`, modeled on Anthropic's own `claude-issue-triage.yml` and its `/triage-issue` command in the `anthropics/claude-code` repository. It needs a Claude credential in the repository's secrets. Audit it with `github-operations:claude-github-actions` before it lands.
-  - A cloud scheduled task with a GitHub trigger on issue events, which the user creates in Claude Code on the web. It needs the Claude GitHub App on the repository, and no workflow or secret in the repository. It runs as the user, with the user's GitHub identity and the session's tools, on issue text anyone can write, and hourly caps drop events beyond the limit, so some issues may go untriaged. It fits repositories whose issue authors are trusted, or a prompt narrowed to applying labels.
+  - A cloud scheduled task with a GitHub trigger on issue events, which the user creates in Claude Code on the web. It needs the Claude GitHub App on the repository, and no workflow or secret in the repository. It runs as the user, with the user's GitHub identity and the session's tools, on issue text anyone can write, and events beyond its run limits are dropped ([Current behavior](#current-behavior-checked-on-2026-11-12-verify-before-relying-on-it)), so some issues may go untriaged. It fits repositories whose issue authors are trusted, or a prompt narrowed to applying labels.
 
   Either way, create the labels it applies first, by [labels.md](labels.md).
 
@@ -88,3 +89,7 @@ Ask the user to open `https://github.com/<owner>/<repo>/issues/new/choose` signe
 - Forms must be `.yml` files in `.github/ISSUE_TEMPLATE/` on the default branch.
 - `projects:` needs the reporter's write access to the project.
 - Only issues filed on GitHub get a form's layout and labels: tell the user.
+
+## Current behavior (checked on 2026-11-12; verify before relying on it)
+
+- Cloud scheduled tasks with a GitHub trigger have hourly caps, and events beyond the cap are dropped.

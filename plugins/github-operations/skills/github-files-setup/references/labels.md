@@ -9,10 +9,10 @@ The files the setup writes name labels that must exist: the forms' and discussio
 Before any file is written, decide the label names the files will use, so the forms and the label list agree:
 
 1. Use the repository's own label when one has the meaning, in its existing style.
-2. Otherwise use GitHub's default label when one has the meaning: a new repository has `bug`, `documentation`, `duplicate`, `enhancement`, `good first issue`, `help wanted`, `invalid`, `question`, `wontfix` and `accessibility`, and `good first issue` feeds the repository's `/contribute` page.
+2. Otherwise use one of GitHub's default labels when one has the meaning ([Current behavior](#current-behavior-checked-on-2026-11-12-verify-before-relying-on-it) lists them). `good first issue` feeds the repository's `/contribute` page.
 3. Otherwise take the name from `assets/labels.json`, such as `status: triage` or `type: maintenance`.
 4. For a component group (`area: <component>`), take the components from the repository: its packages, plugins or services.
-5. When the repository has or wants an issue triage automation (a workflow, a cloud scheduled task or a stale-issue bot), use the exact lifecycle label names it applies. Anthropic's own triage applies `needs-info` and `needs-repro`; the model's `status: needs-info` and `status: needs-repro` fit a triage written in this repository's own style. A label never closes an issue by itself: closing after a timeout needs a separate closer, such as a stale-issue workflow, so promise it only when the repository has one.
+5. When the repository has or wants an issue triage automation (a workflow, a cloud scheduled task or a stale-issue bot), use the exact lifecycle label names it applies; [Current behavior](#current-behavior-checked-on-2026-11-12-verify-before-relying-on-it) names Anthropic's. The model's `status: needs-info` and `status: needs-repro` fit a triage written in this repository's own style. A label never closes an issue by itself: closing after a timeout needs a separate closer, such as a stale-issue workflow, so promise it only when the repository has one.
 
 ## Create them (step 8)
 
@@ -25,3 +25,8 @@ Before any file is written, decide the label names the files will use, so the fo
    - With `gh`: the same `labels-sync.py` command with `--apply` in place of `--dry-run`. It creates the missing labels and updates the different ones, and never deletes or renames one. It asks for permission, because it writes to GitHub.
    - Without `gh`: the MCP tool `mcp__<server>__label_write`, once per label (`method: create` or `update`).
 7. Run `labels-sync.py --dry-run` again: its summary must read `0 missing, 0 different`. Leave the labels the repository has and the list lacks (`extra_count`) as they are, unless the user asks.
+
+## Current behavior (checked on 2026-11-12; verify before relying on it)
+
+- A new repository has GitHub's default labels: `bug`, `documentation`, `duplicate`, `enhancement`, `good first issue`, `help wanted`, `invalid`, `question`, `wontfix` and `accessibility`.
+- Anthropic's own issue triage applies `needs-info` and `needs-repro`.
