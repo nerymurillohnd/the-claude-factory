@@ -42,7 +42,7 @@ When a GraphQL call returns 403 while REST works, the route is blocked, not your
 
 ## What has no API
 
-- No API creates a discussion category: the user creates it in **Settings → Discussions** (up to 25 per repository).
+- No API creates a discussion category: the user creates it in **Settings → Discussions** (at most 25 per repository).
 - No MCP tool changes a repository's merge settings.
 
 ## Current behavior (checked on 2026-11-12; verify before relying on it)

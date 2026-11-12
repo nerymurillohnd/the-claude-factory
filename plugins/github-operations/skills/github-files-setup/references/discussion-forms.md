@@ -27,7 +27,7 @@ MCP tools are named `mcp__<server>__<tool>`; find `<server>` as [github-access.m
    | Sharing a setup or a result | `assets/DISCUSSION_TEMPLATE/show-and-tell.yml` |
    | Hard-to-reverse decisions to debate | `assets/DISCUSSION_TEMPLATE/rfc.yml` |
 
-4. Write each chosen form to `.github/DISCUSSION_TEMPLATE/<category slug>.yml`, with the slug spelled as the repository spells it:
+4. Write each chosen form to `.github/DISCUSSION_TEMPLATE/<category slug>.yml`, with the slug spelled as the repository spells it. A form whose category does not exist yet, such as `rfc`, needs the user to create the category first ([github-access.md](github-access.md#what-has-no-api)):
    - A discussion form takes only `title`, `labels` and `body`: no `name` or `description`.
    - Keep the model's fields and their order, and replace generic options with the repository's components, versions and environments.
    - For `rfc.yml`, keep the fields for context, proposal, alternatives, consequences and a decide-by date, and name the place where the repository records accepted decisions.
@@ -37,7 +37,4 @@ MCP tools are named `mcp__<server>__<tool>`; find `<server>` as [github-access.m
 5. Run `check-forms.py --kind discussion` on `.github/DISCUSSION_TEMPLATE/*.yml` from the repository's root, with the command in the Scripts table of `SKILL.md`. Fix every finding and run it again; move on only when its summary reads `check-forms: pass`. When it exits 2 for a missing requirement, check the forms by hand as [issue-forms.md](issue-forms.md#validate) says.
 6. After the merge, ask the user to open `https://github.com/<owner>/<repo>/discussions/new/choose` signed in.
 
-Limits:
-
-- Discussion forms have no polls.
-- No API creates a category: a form whose category does not exist, such as `rfc`, needs the user to create it in **Settings → Discussions** first. A repository has at most 25 categories.
+Discussion forms have no polls.

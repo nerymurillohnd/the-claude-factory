@@ -11,7 +11,6 @@ allowed-tools:
 ## Contents
 
 - Before you start
-- When to use
 - When not to use
 - Overview
 - Where each file goes
@@ -24,11 +23,6 @@ allowed-tools:
 
 - When the user started this skill, go ahead.
 - When you loaded it on your own, ask the user first whether to set up this repository's GitHub files, naming the repository. Start only after the user says yes; otherwise answer the request without it.
-
-## When to use
-
-- The user asks to set up or update a repository's PR templates, issue or discussion forms, labels, Dependabot, CODEOWNERS or merge message setting.
-- A new kind of issue, component, label group or package ecosystem needs those files updated.
 
 ## When not to use
 
@@ -82,7 +76,7 @@ GitHub reads each file only at its own path and name. Before writing, look in ev
 - `blank_issues_enabled: false` hides the blank issue from contributors, but people with write access still see it, marked **Maintainers only**.
 - A discussion form's file name must equal its category's slug, and no API creates a category.
 - YAML 1.1 reads unquoted `Yes`, `No`, `On` and `Off` as booleans, so an option written that way breaks the form. `check-forms.py` catches it.
-- Issues and discussions created through the API or `gh` skip the forms.
+- Issues and discussions created through the API or `gh` skip the forms: tell the user.
 
 ## Scripts
 
