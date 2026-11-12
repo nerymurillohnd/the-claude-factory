@@ -58,6 +58,11 @@ Conventions that apply to the whole project. Each section groups the conventions
 - Add a package a maintainer script imports with `uv add --dev <package>`, which updates `pyproject.toml` and `uv.lock` together; commit both, and never edit `uv.lock` by hand.
 - ruff, basedpyright, zizmor and check-jsonschema are uv tools pinned in the `tools:install` npm script and called bare, not project dependencies. Biome and TypeScript are pinned dev dependencies in `package.json`.
 
+## Commands
+
+- `npm run lint:skills`: checks every skill (`plugins/*/skills/*/SKILL.md` and `.claude/skills/*/SKILL.md`) with skill-lint, read-only. It exits 0 with no error, 1 on an error (or on a warning with `--strict`), and 2 on a usage error. Pass options after `--`: `npm run lint:skills -- --only CO,SC`, `-- --strict`, `-- --manifest`, `-- --json`, or one skill folder to check only that skill.
+- `npm run test:scripts`: runs the unittest suite of the maintainer scripts in `scripts/testers/`.
+
 ## Pull requests
 
 - A pull request is opened only at the owner's request. When a change needs one under these rules, Claude asks the owner for permission before opening it.
