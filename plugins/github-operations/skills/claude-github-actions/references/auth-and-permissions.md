@@ -17,7 +17,7 @@ Use the profile the repository already uses. When none is configured, the docume
 - Anthropic workload identity federation: `anthropic_federation_rule_id` and `anthropic_organization_id`, with optional `anthropic_service_account_id`, `anthropic_workspace_id` and `anthropic_oidc_audience` (default `https://api.anthropic.com`). It needs `id-token: write`. The IDs are not credentials and may live in the workflow or in repository variables. Never set `anthropic_api_key` or `claude_code_oauth_token` beside them: a static credential takes precedence. Inline-comment classification is then skipped (SE-16).
 - Amazon Bedrock, Google Vertex AI and Microsoft Foundry through OIDC: `use_bedrock`, `use_vertex`, `use_foundry`, each with `id-token: write`.
 
-Set exactly one profile; a missing or mixed one fails before Claude starts (SE-17). None of these works on fork or Dependabot pull requests (SE-11).
+Set exactly one profile. The action's credential checks fail the step before Claude starts only when the direct Anthropic API has no API key, no OAuth token and not both workload identity IDs, when more than one of Bedrock, Vertex and Foundry is enabled, or when the enabled provider lacks a variable it requires (SE-17). Other mixes pass its checks: an API key beside an OAuth token is not rejected, and a static key or token beside the workload identity IDs, from the inputs or the job's `env:`, only logs a warning and wins, so federation is not used. None of these works on fork or Dependabot pull requests (SE-11).
 
 ## GitHub authentication
 
@@ -55,6 +55,6 @@ Explain each one on its own; none replaces another.
 - Claude Code, GitHub Actions: https://code.claude.com/docs/en/github-actions
 - Claude Code, permission modes: https://code.claude.com/docs/en/permission-modes
 - GitHub, `GITHUB_TOKEN`: https://docs.github.com/en/actions/concepts/security/github_token
-- `anthropics/claude-code-action`, `action.yml`, `docs/setup.md` and `src/github/token.ts`: https://github.com/anthropics/claude-code-action
+- `anthropics/claude-code-action`, `action.yml`, `docs/setup.md`, `src/github/token.ts`, `base-action/src/validate-env.ts` and `base-action/src/workload-identity.ts`: https://github.com/anthropics/claude-code-action
 
 Verified at `anthropics/claude-code-action@4fa93a8` (v1.0.271) and the documentation above on 12 November 2026.

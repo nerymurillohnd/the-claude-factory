@@ -7,4 +7,4 @@
 5. **Hand off what is not a workflow cause.** A cause in the project's code or tests is CI repair (`ci-repair.md`) on the default branch, or `github-operations:auto-pr-lifecycle`'s work on a pull request. Report it and stop.
 6. **Propose the fix.** For a workflow cause, write the exact patch as `workflow-audit.md` says, and apply it only after the user approves.
 
-A green run that logged "No trigger found" is a no-op (SE-04), never a success. Rerun a step only with evidence that its failure was transient, and at most once (SE-09).
+A green run is a no-op, never a success, when it logged "No trigger found" (SE-04) or a workflow-validation skip (SE-15); a green review can also have dropped its inline comments or posted them unfiltered (SE-16). Rerun a step only with evidence that its failure was transient, and at most once (SE-09).
