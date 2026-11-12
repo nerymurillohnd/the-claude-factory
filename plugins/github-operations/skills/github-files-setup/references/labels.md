@@ -17,14 +17,16 @@ Before any file is written, decide the label names the files will use, so the fo
 ## Create them (step 8)
 
 1. Collect every label name the written files use.
-2. Write the label list as a JSON list of `{"name", "color", "description"}` objects: each color as 6 hex digits without `#`, each description in 100 characters or fewer. When the repository keeps a label file (such as `.github/labels.json`), the list is that file, updated. Otherwise write the list outside the repository, in a scratch folder, so it stays out of the pull request.
-3. Compare the list with the repository: `labels-sync.py --dry-run`, with the command in the Scripts section of `SKILL.md`. Its `summary` gives the missing, different and extra counts, and it changes nothing. Without `gh`, read the labels with the MCP tool `mcp__<server>__list_label`, save its output (all pages) and pass it as `--current <file>`.
+2. Write the label list as a JSON list of `{"name", "color", "description"}` objects: each color as 6 hex digits without `#`, each description in 100 characters or fewer. For a label the repository already has, leave out a field to keep its current value. Names are compared without regard to case, as GitHub does: `Bug` and `bug` are one label. When the repository keeps a label file (such as `.github/labels.json`), the list is that file, updated. Otherwise write the list outside the repository, in a scratch folder, so it stays out of the pull request.
+3. Compare the list with the repository: `labels-sync.py --dry-run`, with the command in the Scripts section of `SKILL.md`. Its `summary` gives the missing, different and extra counts, and it changes nothing. Without `gh`, read the labels with the MCP tool `mcp__<server>__list_label`, page after page with `after` until `pageInfo.hasNextPage` is false, save the pages as one JSON list of page objects or one page per line, and pass the file as `--current <file>`. The script refuses a file whose last page says more pages follow.
 4. Show the user the labels to create and to change. Creating or changing a label changes the repository: ask first, and keep only what the user approves in the list.
-5. For each label the user declines that a written file still names: remove it from that file and run the file's check again, or, if the user wants the file as it is, list it under **Left for you** in the report.
+5. For each label the user declines:
+   - A label to create that a written file still names: remove it from that file and run the file's check again, or, if the user wants the file as it is, list it under **Left for you** in the report.
+   - A change to a label the repository already has: drop the changed fields from the list, so the repository's values stay. The label exists, so the files that name it stay as they are.
 6. After approval, apply the approved list:
-   - With `gh`: the same `labels-sync.py` command with `--apply` in place of `--dry-run`. It creates the missing labels and updates the different ones, and never deletes or renames one. It asks for permission, because it writes to GitHub.
+   - With `gh`: the same `labels-sync.py` command with `--apply` in place of `--dry-run`. It creates the missing labels and updates the different ones, a change of case included, and never deletes one. It asks for permission, because it writes to GitHub. When it exits 2, some labels may already be written: read `created` and `updated` in its output and the reason on stderr, fix the cause, then run `--dry-run` and `--apply` again; each run works out what is left.
    - Without `gh`: the MCP tool `mcp__<server>__label_write`, once per label (`method: create` or `update`).
-7. Run `labels-sync.py --dry-run` again: its summary must read `0 missing, 0 different`. Leave the labels the repository has and the list lacks (`extra_count`) as they are, unless the user asks.
+7. Run `labels-sync.py --dry-run` again, without `gh` on a fresh read of `list_label`: its summary must read `0 missing, 0 different`. A label the repository archived counts as present, but nobody can pick it: tell the user to unarchive the ones a file names. Leave the labels the repository has and the list lacks (`extra_count`) as they are, unless the user asks.
 
 ## Current behavior (checked on 2026-11-12; verify before relying on it)
 
