@@ -82,7 +82,7 @@ Run each from the repository's root with its full path, exactly as below. `pytho
 
 `check-forms.py` needs ruamel.yaml 0.19.1 and check-jsonschema 0.39.0 in the Python that runs it. When it exits 2, it checked nothing: never install anything yourself. Tell the user what it printed, check the files by hand against [references/form-rules.md](references/form-rules.md), and record the check as not run, with the reason.
 
-`labels-sync.py --dry-run` changes nothing; the same command with `--apply` creates and updates the approved labels and never deletes one. It needs `gh` signed in; without `gh`, and when `--apply` exits 2, follow [references/labels.md](references/labels.md).
+`labels-sync.py --dry-run` changes nothing; with `--apply` in place of `--dry-run`, and without `--current`, it creates and updates the approved labels and never deletes one. It needs `gh` signed in; without `gh`, and when `--apply` exits 2, follow [references/labels.md](references/labels.md).
 
 ## Workflow
 
@@ -107,7 +107,7 @@ Progress:
 - [ ] 11. Land the setup
 ```
 
-When a check finds something, return to the step that wrote the file, fix it, and run the check again. When a script exits 2, it checked nothing: use the step's fallback instead of running it again.
+When a check finds something, return to the step that wrote the file, fix it, and run the check again. When GitHub's documentation shows a finding is wrong, keep the file, and name the finding and the page in the report. When a script exits 2, it checked nothing: use the step's fallback instead of running it again.
 
 1. **Learn the repository.**
    1. Confirm a git repository (`git rev-parse --show-toplevel`) and read the owner and name from `git remote get-url origin`.
