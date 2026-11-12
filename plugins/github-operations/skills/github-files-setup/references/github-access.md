@@ -39,7 +39,7 @@ Several `gh` commands use GraphQL even though they look like REST: `gh repo view
 | Create or update a label | `label_write` (`method: create` or `update`; color without `#`) | `labels-sync.py --apply`, or `gh label create "<name>" --color <hex> --description "<text>" --force` | Ask the user to create it in **Issues → Labels** |
 | Merge settings, read and change | No MCP tool edits them | `gh api repos/<owner>/<repo>` to read; `gh api --method PATCH repos/<owner>/<repo> -f …` to change ([merge-message-setting.md](merge-message-setting.md)) | **Settings → General → Pull Requests** |
 | Discussion categories and their slugs | `list_discussion_categories` lists names and IDs only, with no slug | No REST endpoint | `gh api graphql` ([discussion-forms.md](discussion-forms.md)), or the slug from each category's URL |
-| Issue types of an organization | — | `gh api orgs/<org>/issue-types --jq '.[].name'` | Ask the user |
+| Issue types the repository can use (organization and personal accounts) | — | `gh api repos/<owner>/<repo>/issue-types --jq '.[].name'` | Ask the user |
 | CODEOWNERS errors after the merge | — | `gh api "repos/<owner>/<repo>/codeowners/errors?ref=<branch>"` | The file's page on GitHub highlights errors |
 | Community profile of a public repository | — | `gh api repos/<owner>/<repo>/community/profile` | **Insights → Community standards** |
 
