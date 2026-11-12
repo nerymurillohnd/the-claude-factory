@@ -3,11 +3,11 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING
 
 from ruamel.yaml import YAML
 from ruamel.yaml.comments import CommentedMap
-from ruamel.yaml.error import MarkedYAMLError, StreamMark as Mark, YAMLError
+from ruamel.yaml.error import MarkedYAMLError, YAMLError
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
@@ -45,16 +45,14 @@ def _find_close(lines: list[str]) -> int | None:
 
 def _error_line(exc: YAMLError) -> int:
     """Return the file line a YAML error points at, or the first YAML line."""
-    if isinstance(exc, MarkedYAMLError):
-        mark = cast("Mark | None", exc.problem_mark)
-        if mark is not None:
-            return mark.line + YAML_START_LINE
+    if isinstance(exc, MarkedYAMLError) and exc.problem_mark is not None:
+        return exc.problem_mark.line + YAML_START_LINE
     return YAML_START_LINE
 
 
 def _error_text(exc: YAMLError) -> str:
     """Return a one-line message for a YAML error, naming duplicate keys as such."""
-    problem = cast("str | None", exc.problem) if isinstance(exc, MarkedYAMLError) else None
+    problem = exc.problem if isinstance(exc, MarkedYAMLError) else None
     return (problem or str(exc)).strip().splitlines()[0]
 
 
@@ -63,7 +61,7 @@ def _load(yaml_text: str) -> Frontmatter:
     yaml = YAML(typ="rt")
     yaml.allow_duplicate_keys = False
     try:
-        loaded = cast("object", yaml.load(yaml_text))  # pyright: ignore[reportUnknownMemberType]
+        loaded = yaml.load(yaml_text)
     except YAMLError as exc:
         return _failure(_error_line(exc), _error_text(exc))
     if not isinstance(loaded, CommentedMap):
@@ -71,12 +69,14 @@ def _load(yaml_text: str) -> Frontmatter:
         return _failure(YAML_START_LINE, f"frontmatter must be a mapping, found {kind}")
     data: dict[str, object] = {}
     key_lines: dict[str, int] = {}
-    mapping = loaded
-    for key in cast("list[object]", list(mapping)):
+    for key, value in loaded.items():
         name = str(key)
-        data[name] = cast("object", mapping[key])
-        line = cast("tuple[int, int]", mapping.lc.key(key))[0]  # pyright: ignore[reportUnknownMemberType]
-        key_lines[name] = line + YAML_START_LINE
+        line = loaded.lc.key(key)[0] + YAML_START_LINE
+        if name in data:
+            message = f"duplicate key `{name}`: Claude Code reads every key as a string"
+            return _failure(line, message)
+        data[name] = value
+        key_lines[name] = line
     return Frontmatter(data, key_lines, 1, None)
 
 

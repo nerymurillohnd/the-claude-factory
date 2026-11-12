@@ -28,6 +28,7 @@ paths:
 
 ## Write the code
 
+- Type ruamel.yaml through the local stubs in `scripts/typings/ruamel/yaml/`: add each new ruamel member a script uses to them, and check them against the installed version when `uv.lock` bumps ruamel.yaml.
 - Import package modules absolutely (`from validators.skill_lint.model import Finding`): `ruff.toml` bans relative imports, and a bare `import skill_lint` fails at runtime.
 - Build every `Finding` from the module's `SOURCES` map, which maps each rule id to the spec's source URL.
 - Read only files inside the skill folder; never write to a skill.

@@ -50,6 +50,14 @@ class ParseFrontmatterTest(unittest.TestCase):
         self.assertIn("duplicate", message)
         self.assertEqual(line, 3)
 
+    def test_keys_equal_as_strings(self) -> None:
+        """Keys 1 and "1" differ in YAML but are one key to Claude Code's parser."""
+        fm = parse_frontmatter('---\nname: x\n1: a\n"1": b\n---\n')
+        line, message = fm.error or (0, "")
+        self.assertEqual(line, 4)
+        self.assertIn("duplicate key `1`", message)
+        self.assertIsNone(fm.data)
+
     def test_list_not_mapping(self) -> None:
         """A YAML list is not a mapping."""
         fm = parse_frontmatter("---\n- a\n- b\n---\n")

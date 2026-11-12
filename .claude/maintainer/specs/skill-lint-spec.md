@@ -80,7 +80,7 @@ Each finding carries a rule id, family, severity, `file:line`, message and sourc
 
 | Rule | Sev | Check |
 | :-- | :-- | :-- |
-| CO-01 | ✗ | Frontmatter opens on line 1, closes, and parses as YAML with no duplicate keys. ruamel.yaml parses YAML 1.2, while Claude Code's parser is JavaScript: a failure that `claude plugin validate` doesn't reproduce is labeled "ruamel-only" in the message |
+| CO-01 | ✗ | Frontmatter opens on line 1, closes, and parses as YAML with no duplicate keys, counting keys that are equal as strings (`1` and `"1"`) as duplicates, since Claude Code's JavaScript parser reads every key as a string. ruamel.yaml parses YAML 1.2, while Claude Code's parser is JavaScript: a failure that `claude plugin validate` doesn't reproduce is labeled "ruamel-only" in the message |
 | CO-02 | ✗ | `name` is present and 1-64 characters of `a-z0-9-`. No leading, trailing or double hyphen. No `<>`, control or zero-width characters. Equal to the folder name |
 | CO-03 | ✗ | `description` is a non-empty string of at most 1,024 characters, with no XML tags |
 | CO-04 | ✗ | `description` + `when_to_use` are at most 1,536 characters. Claude Code truncates beyond that and doesn't reject, so the message says "truncated" |
