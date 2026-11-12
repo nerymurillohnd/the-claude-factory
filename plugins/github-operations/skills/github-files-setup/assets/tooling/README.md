@@ -21,11 +21,11 @@ Two scripts that keep this repository's GitHub files valid. They were copied fro
 From the repository's root:
 
 ```bash
-python3 <SCRIPTS_PATH>/check-forms.py --kind issue <ISSUE_FORMS>
-python3 <SCRIPTS_PATH>/check-forms.py --kind issue-config .github/ISSUE_TEMPLATE/config.yml
-python3 <SCRIPTS_PATH>/check-forms.py --kind discussion .github/DISCUSSION_TEMPLATE/*.yml
-python3 <SCRIPTS_PATH>/check-forms.py --kind dependabot .github/dependabot.yml
-python3 <SCRIPTS_PATH>/labels-sync.py --dry-run --repo <OWNER>/<REPO> --labels <LABEL_FILE>
+<PYTHON> <SCRIPTS_PATH>/check-forms.py --kind issue <ISSUE_FORMS>
+<PYTHON> <SCRIPTS_PATH>/check-forms.py --kind issue-config .github/ISSUE_TEMPLATE/config.yml
+<PYTHON> <SCRIPTS_PATH>/check-forms.py --kind discussion .github/DISCUSSION_TEMPLATE/*.yml
+<PYTHON> <SCRIPTS_PATH>/check-forms.py --kind dependabot .github/dependabot.yml
+<PYTHON> <SCRIPTS_PATH>/labels-sync.py --dry-run --repo <OWNER>/<REPO> --labels <LABEL_FILE>
 ```
 
 Each script lists its options and exit codes with `--help`. Exit 0 means it ran, with its result and a summary; exit 2 means it could not run, with the reason.

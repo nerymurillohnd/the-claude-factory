@@ -25,16 +25,18 @@ Copy the scripts, never retype or edit them: a copy that matches the plugin's fi
 
 ## Dependencies
 
-`check-forms.py` needs Python 3.12 or later with ruamel.yaml 0.19.1 and check-jsonschema 0.39.0; `labels-sync.py` needs only Python 3.12 or later and `gh`. Declare the two packages where the repository already declares development tools, and install nothing without the user's approval:
+`check-forms.py` needs Python 3.12 or later with ruamel.yaml 0.19.1 and check-jsonschema 0.39.0; `labels-sync.py` needs only Python 3.12 or later and `gh`. check-jsonschema 0.39.0 itself requires Python 3.11 or later, so a repository that supports an older Python would fail to resolve or install it: always declare both pins with the marker `; python_version >= "3.12"`, which skips them on older Pythons. Declare them where the repository already declares development tools, and install nothing without the user's approval:
 
 | The repository has | Declare them in |
 | :-- | :-- |
-| `uv.lock` | Its development group: `uv add --dev 'ruamel.yaml==0.19.1' 'check-jsonschema==0.39.0'` |
-| `pyproject.toml` with `[dependency-groups]` | Its `dev` group, with those exact pins |
-| `requirements-dev.txt` | That file, with those exact pins |
-| No Python packaging | A `requirements.txt` next to the scripts, with those exact pins |
+| `uv.lock` | Its development group: `uv add --dev 'ruamel.yaml==0.19.1; python_version >= "3.12"' 'check-jsonschema==0.39.0; python_version >= "3.12"'` |
+| `pyproject.toml` with `[dependency-groups]` | Its `dev` group, both pins with the marker |
+| `requirements-dev.txt` | That file, both pins with the marker |
+| No Python packaging | A `requirements.txt` next to the scripts, both pins with the marker |
 
 The tooling README tells maintainers to install them in a virtual environment, never into the system's Python, which many systems refuse.
+
+Fill the README's placeholders from what you wrote: `<PLUGIN_VERSION>` as step 10 of `SKILL.md` says; `<SCRIPTS_PATH>` and `<LABEL_FILE>` with the paths used; `<DEPENDENCY_FILE>` with the file from the table above; `<PYTHON>` with the command that runs the repository's Python with its development packages (`uv run python` in a uv project, otherwise the `python3` of the virtual environment the README's install command creates); `<INSTALL_COMMAND>` with the matching install command (`uv sync`, or the commands that create that virtual environment and install the file into it); `<OWNER>/<REPO>` with the repository.
 
 ## Limits
 
