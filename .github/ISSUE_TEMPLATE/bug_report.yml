@@ -2,6 +2,7 @@ name: 🐞 Bug report
 description: A plugin doesn't install, load or behave as documented.
 title: "[Bug] <plugin>: <short summary>"
 labels: ["type: bug", "status: triage"]
+type: Bug
 body:
   - type: markdown
     attributes:
@@ -11,12 +12,34 @@ body:
         > **Before you start:** update the plugin (`claude plugin update <plugin>@the-claude-factory`) and check [Troubleshooting](https://github.com/nerymurillohnd/the-claude-factory/blob/main/docs/troubleshooting.md).
         > Found a **security** problem? Please [report it privately](https://github.com/nerymurillohnd/the-claude-factory/security/advisories/new) instead.
 
-  - type: input
+  - type: dropdown
     id: plugin
     attributes:
       label: Plugin
-      description: The install name, as in `<plugin>@the-claude-factory`.
-      placeholder: e.g. project-maintainer
+      description: The plugin this report is about, as in `<plugin>@the-claude-factory`.
+      options:
+        - bash-lsp-intelligence
+        - block-no-verify
+        - file-tree-pane
+        - github-operations
+        - hook-engineering
+        - instruction-engineering
+        - macos-grep-guard
+        - model-trace
+        - mods-engineering
+        - plugin-engineering
+        - plugin-evals
+        - plugin-test-bench
+        - project-maintainer
+        - prompt-writer
+        - python-lsp-intelligence
+        - skill-diagnostics
+        - svelte-development
+        - tailwind-development
+        - tool-ledger
+        - turn-meter
+        - typescript6-lsp-intelligence
+        - typescript7-lsp-intelligence
     validations:
       required: true
 
@@ -60,12 +83,12 @@ body:
     id: os
     attributes:
       label: Operating system
+      description: The plugins support macOS and Linux. Windows is supported only through Git Bash, and only for plugins whose README says so.
       options:
         - macOS
-        - Windows
-        - Windows (WSL)
         - Linux
-        - Other
+        - Windows (Git Bash)
+        - Other (not supported)
     validations:
       required: true
 
@@ -96,6 +119,35 @@ body:
     validations:
       required: true
 
+  - type: dropdown
+    id: regression
+    attributes:
+      label: Did this work in an earlier version?
+      options:
+        - "Yes, it worked in an earlier version"
+        - "No, it never worked"
+        - "I don't know"
+    validations:
+      required: true
+
+  - type: input
+    id: last-working-version
+    attributes:
+      label: Last version that worked
+      description: Only if it worked before. The plugin version, from `claude plugin list`.
+      placeholder: e.g. 1.1.0
+
+  - type: dropdown
+    id: impact
+    attributes:
+      label: Impact
+      options:
+        - Blocks my work, with no workaround
+        - Blocks my work, but a workaround exists
+        - Annoying, but I can work normally
+    validations:
+      required: true
+
   - type: textarea
     id: diagnostics
     attributes:
@@ -103,6 +155,14 @@ body:
       description: |
         Paste the output of `claude plugin details <plugin>` and anything listed in `/plugin` → **Errors**. Remove secrets and personal data first.
       render: text
+
+  - type: upload
+    id: attachments
+    attributes:
+      label: Logs or screenshots
+      description: Optional. Remove tokens, keys and personal data from every file first.
+    validations:
+      accept: ".log,.txt,.json,.png,.jpg,.zip"
 
   - type: checkboxes
     id: checks

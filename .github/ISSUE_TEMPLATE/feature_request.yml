@@ -2,6 +2,7 @@ name: ✨ Feature request
 description: Suggest an improvement to an existing plugin.
 title: "[Feature] <plugin>: <short summary>"
 labels: ["type: enhancement", "status: triage"]
+type: Feature
 body:
   - type: markdown
     attributes:
@@ -9,12 +10,34 @@ body:
         Great ideas start with a real problem. Tell us what slows you down — we'll figure out the best way to solve it. 💡
         Have an idea for a **brand-new plugin**? Use [Plugin idea](https://github.com/nerymurillohnd/the-claude-factory/issues/new?template=plugin_idea.yml) instead.
 
-  - type: input
+  - type: dropdown
     id: plugin
     attributes:
       label: Plugin
-      description: The install name, as in `<plugin>@the-claude-factory`.
-      placeholder: e.g. project-maintainer
+      description: The plugin to improve, as in `<plugin>@the-claude-factory`.
+      options:
+        - bash-lsp-intelligence
+        - block-no-verify
+        - file-tree-pane
+        - github-operations
+        - hook-engineering
+        - instruction-engineering
+        - macos-grep-guard
+        - model-trace
+        - mods-engineering
+        - plugin-engineering
+        - plugin-evals
+        - plugin-test-bench
+        - project-maintainer
+        - prompt-writer
+        - python-lsp-intelligence
+        - skill-diagnostics
+        - svelte-development
+        - tailwind-development
+        - tool-ledger
+        - turn-meter
+        - typescript6-lsp-intelligence
+        - typescript7-lsp-intelligence
     validations:
       required: true
 
