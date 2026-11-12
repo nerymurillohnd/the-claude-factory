@@ -1,6 +1,14 @@
 {
-  "include": ["plugins"],
-  "exclude": ["**/node_modules", "**/__pycache__", ".git", ".github", ".ruff_cache"],
+  "include": [
+    "plugins"
+  ],
+  "exclude": [
+    "**/node_modules",
+    "**/__pycache__",
+    ".git",
+    ".github",
+    ".ruff_cache"
+  ],
   "typeCheckingMode": "all",
   "pythonVersion": "3.12",
   "pythonPlatform": "All",
