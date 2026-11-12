@@ -51,19 +51,17 @@ def _co02(skill: Skill, data: Mapping[str, object]) -> list[Finding]:
     name = data["name"]
     if not isinstance(name, str):
         return [_finding(skill, "CO-02", "name", "`name` must be a string")]
-    problems: list[str] = []
+    findings: list[Finding] = []
     if not 1 <= len(name) <= NAME_MAX:
-        problems.append(f"it has {len(name)} characters, not 1 to {NAME_MAX}")
-    if not NAME_RE.fullmatch(name):
-        problems.append(NAME_RULE_TEXT)
-    if problems:
-        return [
-            _finding(skill, "CO-02", "name", f"`name` {name!r} is invalid: " + "; ".join(problems))
-        ]
+        message = f"`name` has {len(name)} characters, not 1 to {NAME_MAX}"
+        findings.append(_finding(skill, "CO-02", "name", message))
+    if name and not NAME_RE.fullmatch(name):
+        message = f"`name` {name!r} is invalid: {NAME_RULE_TEXT}"
+        findings.append(_finding(skill, "CO-02", "name", message))
     if name != skill.root.name:
         message = f"`name` {name!r} must equal the folder name {skill.root.name!r}"
-        return [_finding(skill, "CO-02", "name", message)]
-    return []
+        findings.append(_finding(skill, "CO-02", "name", message))
+    return findings
 
 
 def _co03(skill: Skill, data: Mapping[str, object]) -> list[Finding]:
@@ -93,10 +91,7 @@ def _co04(skill: Skill, data: Mapping[str, object]) -> list[Finding]:
             total += len(value)
     if total <= LISTING_MAX:
         return []
-    message = (
-        f"`description` and `when_to_use` total {total} characters; Claude Code truncates "
-        f"the skill listing beyond {LISTING_MAX}, so the end is truncated"
-    )
+    message = f"{total} characters of description and `when_to_use` are truncated at {LISTING_MAX}"
     return [_finding(skill, "CO-04", "description", message)]
 
 
@@ -108,8 +103,8 @@ def _all_strings(mapping: Mapping[object, object]) -> bool:
 def _co05(skill: Skill, data: Mapping[str, object]) -> list[Finding]:
     """CO-05: compatibility is at most 500 characters; metadata maps strings to strings."""
     findings: list[Finding] = []
-    compatibility = data.get("compatibility")
     if "compatibility" in data:
+        compatibility = data["compatibility"]
         if not isinstance(compatibility, str):
             message = "`compatibility` must be a string"
             findings.append(_finding(skill, "CO-05", "compatibility", message))

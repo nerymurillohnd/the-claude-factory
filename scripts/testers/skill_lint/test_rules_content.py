@@ -69,9 +69,9 @@ class Co02Test(unittest.TestCase):
         self.assertEqual(findings[0].severity, Severity.ERROR)
 
     def test_co02_bad_chars(self) -> None:
-        """Uppercase and underscore are one CO-02 at the name line."""
+        """Uppercase and underscore give a charset and a folder-mismatch finding."""
         findings = _findings(_skill_md("name: Demo_Skill\ndescription: Ok.\n"))
-        self.assertEqual([f.rule for f in findings], ["CO-02"])
+        self.assertEqual([f.rule for f in findings], ["CO-02", "CO-02"])
         self.assertEqual(findings[0].line, 2)
 
     def test_co02_double_hyphen(self) -> None:
@@ -91,9 +91,27 @@ class Co02Test(unittest.TestCase):
         self.assertEqual(_rules(content), ["CO-02"])
 
     def test_co02_zero_width(self) -> None:
-        """A zero-width space in the name fails once."""
-        content = _skill_md('name: "demo\u200b-skill"\ndescription: Ok.\n')
-        self.assertEqual(_rules(content), ["CO-02"])
+        """A zero-width space in the name fails once when the folder matches."""
+        name = "demo\u200b-skill"
+        content = _skill_md(f'name: "{name}"\ndescription: Ok.\n')
+        self.assertEqual(_rules(content, name), ["CO-02"])
+
+    def test_co02_malformed_and_mismatch(self) -> None:
+        """A malformed name that also differs from its folder gives both findings."""
+        findings = _findings(_skill_md("name: Demo_Skill\ndescription: Ok.\n"))
+        messages = [f.message for f in findings]
+        self.assertEqual(len(findings), 2)
+        self.assertTrue(any("invalid" in m for m in messages))
+        self.assertTrue(any("folder name" in m for m in messages))
+
+    def test_co02_64_ok(self) -> None:
+        """A 64-character name in a matching folder passes."""
+        name = "a" * 64
+        self.assertEqual(_rules(_skill_md(f"name: {name}\ndescription: Ok.\n"), name), [])
+
+    def test_co02_non_string(self) -> None:
+        """A numeric name gives a finding without raising."""
+        self.assertEqual(_rules(_skill_md("name: 123\ndescription: Ok.\n")), ["CO-02"])
 
 
 class Co03Test(unittest.TestCase):
@@ -107,6 +125,16 @@ class Co03Test(unittest.TestCase):
     def test_co03_1025(self) -> None:
         """A 1,025-character description fails."""
         content = _skill_md(f"name: demo-skill\ndescription: {'a' * 1025}\n")
+        self.assertEqual(_rules(content), ["CO-03"])
+
+    def test_co03_1024_ok(self) -> None:
+        """A 1,024-character description passes."""
+        content = _skill_md(f"name: demo-skill\ndescription: {'a' * 1024}\n")
+        self.assertEqual(_rules(content), [])
+
+    def test_co03_non_string(self) -> None:
+        """A list description gives a finding without raising."""
+        content = _skill_md("name: demo-skill\ndescription: [a]\n")
         self.assertEqual(_rules(content), ["CO-03"])
 
     def test_co03_xml(self) -> None:
@@ -141,6 +169,26 @@ class Co05Test(unittest.TestCase):
     def test_co05_compat_501(self) -> None:
         """A 501-character compatibility fails."""
         content = _skill_md(f"name: demo-skill\ndescription: Ok.\ncompatibility: {'a' * 501}\n")
+        self.assertEqual(_rules(content), ["CO-05"])
+
+    def test_co05_compat_499_ok(self) -> None:
+        """A 499-character compatibility passes."""
+        content = _skill_md(f"name: demo-skill\ndescription: Ok.\ncompatibility: {'a' * 499}\n")
+        self.assertEqual(_rules(content), [])
+
+    def test_co05_compat_empty(self) -> None:
+        """An empty compatibility fails."""
+        content = _skill_md('name: demo-skill\ndescription: Ok.\ncompatibility: ""\n')
+        self.assertEqual(_rules(content), ["CO-05"])
+
+    def test_co05_compat_null(self) -> None:
+        """A null compatibility fails."""
+        content = _skill_md("name: demo-skill\ndescription: Ok.\ncompatibility:\n")
+        self.assertEqual(_rules(content), ["CO-05"])
+
+    def test_co05_metadata_null(self) -> None:
+        """A null metadata fails."""
+        content = _skill_md("name: demo-skill\ndescription: Ok.\nmetadata:\n")
         self.assertEqual(_rules(content), ["CO-05"])
 
     def test_co05_metadata_non_string(self) -> None:
