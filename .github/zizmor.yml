@@ -1,0 +1,20 @@
+# Findings this repository accepts on purpose, each with its reason. Every other zizmor finding fails
+# npm run lint:workflows.
+rules:
+  # The owner keeps actions/checkout's default, persist-credentials: true. Since checkout v6 the token
+  # lives in a file under $RUNNER_TEMP, not in the workspace, and post-job cleanup removes it.
+  # claude-code-action removes it and sets its own token before Claude runs.
+  artipacked:
+    ignore:
+      - claude.yml
+      - claude-code-review.yml
+      - release.yml
+      - validate.yml
+  dangerous-triggers:
+    ignore:
+      # issue_comment and review triggers are how @claude is invoked; claude-code-action answers only
+      # users with write access to the repository.
+      - claude.yml
+      # workflow_run runs only after Validate succeeds on a push to main, and checks out that
+      # trusted commit (github.event.workflow_run.head_sha).
+      - release.yml
