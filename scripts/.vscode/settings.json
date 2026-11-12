@@ -1,0 +1,5 @@
+{
+  // Folder settings of "maintainer scripts" in the-claude-factory.code-workspace: the same
+  // uv .venv as the repository root, one level up from scripts/.
+  "python.defaultInterpreterPath": "${workspaceFolder}/../.venv/bin/python"
+}
