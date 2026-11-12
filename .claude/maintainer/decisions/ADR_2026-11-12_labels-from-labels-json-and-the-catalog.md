@@ -47,7 +47,8 @@ Chosen option: **labels.json plus the catalog, synced by script, with unused lab
 | --- | --- | --- | --- |
 | The check catches drift | `npm run lint:github` on a scratch copy with a removed plugin, an unknown plugin, a wrong order and a missing label | Passed on 2026-11-12 (exit 1 with one finding each; exit 2 on invalid JSON) | Each change to the script |
 | The dry run matches GitHub | `npm run labels:sync` | Passed on 2026-11-12: 1 to create (`area: docs`), 43 in sync, 13 not managed | Before each `--apply` |
-| The 9 defaults and the 4 retired labels are archived | `archived_at` in `gh api repos/nerymurillohnd/the-claude-factory/labels` | Pending: runs after the files are verified | After the change |
+| The labels on GitHub match the wanted set | `npm run labels:sync -- --apply`, then `npm run labels:sync` | Passed on 2026-11-12: `area: docs` created; the dry run then exited 0 with 44 in sync | Each change to `labels.json` or the catalog |
+| The 9 defaults and the 4 retired labels are archived | `archived_at` in `gh api repos/nerymurillohnd/the-claude-factory/labels` | Passed on 2026-11-12: 13 archived through `PATCH …/labels/{name}` with `archived=true` (the personal account supports it), 44 active | After the change |
 
 ## More information
 

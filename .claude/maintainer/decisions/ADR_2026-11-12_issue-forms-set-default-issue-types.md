@@ -44,6 +44,7 @@ Chosen option: **default issue types set by the forms, with the type labels kept
 | What must be true | How it is checked | Result | When to re-check |
 | --- | --- | --- | --- |
 | A new issue from a form gets its type | Open an issue from each form after the merge to `main` | Pending: forms apply after PR #104 merges | After the merge |
+| Existing bug reports carry the Bug type | `type` in `gh api repos/nerymurillohnd/the-claude-factory/issues/{87,88}` | Passed on 2026-11-12: both set to Bug through `PATCH …/issues/{n}` with `type=Bug`; both stay closed | Once, done |
 
 ## More information
 

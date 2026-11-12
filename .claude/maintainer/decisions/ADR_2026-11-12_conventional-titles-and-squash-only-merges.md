@@ -44,7 +44,7 @@ Chosen option: **conventional-commit titles with squash-only merges**, because e
 
 | What must be true | How it is checked | Result | When to re-check |
 | --- | --- | --- | --- |
-| GitHub allows only squash, with title `PR_TITLE` and body `COMMIT_MESSAGES` | `gh api repos/nerymurillohnd/the-claude-factory` (`allow_merge_commit`, `allow_rebase_merge`, `squash_merge_commit_title`, `squash_merge_commit_message`) | Pending: the settings change runs after the files are verified | After the change |
+| GitHub allows only squash, with title `PR_TITLE` and body `COMMIT_MESSAGES` | `gh api repos/nerymurillohnd/the-claude-factory` (`allow_merge_commit`, `allow_rebase_merge`, `squash_merge_commit_title`, `squash_merge_commit_message`) | Pending: on 2026-11-12 the cloud session's proxy refused the write (HTTP 403, "Repository settings writes are not permitted through this proxy"); the owner applies it in the repository settings or from a local terminal. Read before the change: all three merge methods allowed, squash title `COMMIT_OR_PR_TITLE`, squash body `COMMIT_MESSAGES` | After the owner's change |
 | The PR templates load | Open the compare page with `?template=bug-fix.md` and `?template=maintenance.md` | Pending: templates apply after the merge to `main` | After PR #104 merges |
 
 ## More information
