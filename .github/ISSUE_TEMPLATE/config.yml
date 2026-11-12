@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 🔐 Report a security vulnerability
+    url: https://github.com/nerymurillohnd/the-claude-factory/security/advisories/new
+    about: Please report vulnerabilities privately — never in a public issue.
+  - name: 🧰 Problem with Claude Code itself
+    url: https://github.com/anthropics/claude-code/issues
+    about: Bugs in Claude Code, /plugin or the desktop app (not in a plugin from this marketplace) belong to Anthropic's tracker.
+  - name: 📖 Official Claude Code plugin docs
+    url: https://code.claude.com/docs/en/plugins/overview
+    about: Anthropic's reference for installing and managing plugins and marketplaces.
