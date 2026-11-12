@@ -1,17 +1,24 @@
 # Labels
 
-Every file written in the earlier steps can name labels that must exist: the forms' and discussion forms' `labels:`, the labels the PR templates ask for, and `dependabot.yml`'s `labels`. GitHub skips a missing label without warning, and Dependabot ignores a missing custom label. The repository's labels win; `<skill-dir>/assets/labels.json` is the model for a group of labels the repository lacks.
+The files the setup writes name labels that must exist: the forms' and discussion forms' `labels:`, the labels the PR templates ask for, and `dependabot.yml`'s `labels`. GitHub skips a missing label without warning, and Dependabot ignores a missing custom label. The repository's labels win; `assets/labels.json` is the model for a group of labels the repository lacks.
+
+## Decide the names (step 2)
+
+Before any file is written, decide the label names the files will use, so the forms and the label list agree:
+
+1. Use the repository's own label when one has the meaning, in its existing style.
+2. Otherwise use GitHub's default label when one has the meaning: a new repository has `bug`, `documentation`, `duplicate`, `enhancement`, `good first issue`, `help wanted`, `invalid`, `question`, `wontfix` and `accessibility`, and `good first issue` feeds the repository's `/contribute` page.
+3. Otherwise take the name from `assets/labels.json`, such as `status: triage` or `type: maintenance`.
+4. For a component group (`area: <component>`), take the components from the repository: its packages, plugins or services.
+
+## Create them (step 8)
 
 1. Collect every label name the written files use.
-2. Build the label list, as a JSON list of `{"name", "color", "description"}` objects:
-   - Start from the repository's own label file when it has one (such as `.github/labels.json`), and keep its style.
-   - Map onto GitHub's default labels before adding a new one. A new repository has `bug`, `documentation`, `duplicate`, `enhancement`, `good first issue`, `help wanted`, `invalid`, `question`, `wontfix` and `accessibility`, and `good first issue` feeds the repository's `/contribute` page.
-   - Add, from the model, only the groups the repository needs and every label the collected names still miss. For a component group (`area: <component>`), take the components from the repository: its packages, plugins or services.
-   - Write each color as 6 hex digits without `#`, and each description in 100 characters or fewer.
-3. Compare the list with the repository: `python3 <skill-dir>/scripts/labels-sync.py --repo <owner>/<repo> --labels <list file>`. It prints `missing`, `different` and `extra` as JSON and changes nothing. Without `gh`, read the labels with the MCP `list_label` tool, save its output (all pages) and pass it as `--current <file>`.
-4. Show the user the labels to create and to change. Creating or changing a label changes the repository: ask first, and keep only what the user approves in the list file.
-5. After approval, apply the approved list:
-   - With `gh`: `python3 <skill-dir>/scripts/labels-sync.py --repo <owner>/<repo> --labels <list file> --apply`. It creates the missing labels and updates the different ones, and never deletes or renames one.
+2. Write the label list as a JSON list of `{"name", "color", "description"}` objects: each color as 6 hex digits without `#`, each description in 100 characters or fewer. When the repository keeps a label file (such as `.github/labels.json`), the list is that file, updated. Otherwise write the list outside the repository, in a scratch folder, so it stays out of the pull request.
+3. Compare the list with the repository: `labels-sync.py --dry-run`, with the command in the Scripts table of `SKILL.md`. Its `summary` gives the missing, different and extra counts, and it changes nothing. Without `gh`, read the labels with the MCP `list_label` tool, save its output (all pages) and pass it as `--current <file>`.
+4. Show the user the labels to create and to change. Creating or changing a label changes the repository: ask first, and keep only what the user approves in the list.
+5. For each label the user declines that a written file still names: remove it from that file and run the file's check again, or, if the user wants the file as it is, list it under **Left for you** in the report.
+6. After approval, apply the approved list:
+   - With `gh`: the same `labels-sync.py` command with `--apply` in place of `--dry-run`. It creates the missing labels and updates the different ones, and never deletes or renames one. It asks for permission, because it writes to GitHub.
    - Without `gh`: the MCP `label_write` tool, once per label (`method: create` or `update`).
-   - When the repository keeps a label file, write the approved list there too, in the same pull request.
-6. Run step 3 again: it must exit 0. Leave labels the repository has and the list lacks (`extra`) as they are, unless the user asks.
+7. Run `labels-sync.py --dry-run` again: its summary must read `0 missing, 0 different`. Leave the labels the repository has and the list lacks (`extra_count`) as they are, unless the user asks.
