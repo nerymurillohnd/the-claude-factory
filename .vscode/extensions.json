@@ -1,0 +1,18 @@
+{
+  // The extensions .vscode/settings.json configures: Biome formats and lints JS, TS, JSON,
+  // Markdown and YAML; EditorConfig applies .editorconfig; Ruff and basedpyright check Python.
+  "recommendations": [
+    "biomejs.biome",
+    "editorconfig.editorconfig",
+    "charliermarsh.ruff",
+    "detachhead.basedpyright"
+  ],
+  // The repository has no ESLint, Prettier or markdownlint configuration, and Biome does their
+  // jobs here. basedpyright replaces Pylance as the Python language server.
+  "unwantedRecommendations": [
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "davidanson.vscode-markdownlint",
+    "ms-python.vscode-pylance"
+  ]
+}
