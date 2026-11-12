@@ -55,10 +55,10 @@
     "biome.suggestInstallingGlobally": false,
     // Auto-imports in Biome's quote style, so saving causes no churn.
     "js/ts.preferences.quoteStyle": "single",
-    // Biome is the formatter of every language it checks here, whatever the user settings say. Each
-    // block repeats the suppression "never"s, since a language block may replace the top-level list.
-    // Biome sorts imports; tsserver removes unused ones on save, because Biome's noUnusedImports fix
-    // is unsafe and source.fixAll.biome applies only safe fixes.
+    // Biome is the formatter of every language it checks here, whatever the user settings say.
+    // Each block repeats the suppression "never"s, since a language block may replace the
+    // top-level list. Biome sorts imports; tsserver removes unused ones on save, because Biome's
+    // noUnusedImports fix is unsafe and source.fixAll.biome applies only safe fixes.
     "[javascript]": {
       "editor.defaultFormatter": "biomejs.biome",
       "editor.codeActionsOnSave": {
@@ -130,15 +130,16 @@
       "source.suppressRule.inline.biome": "never",
       "source.suppressRule.topLevel.biome": "never"
     },
-    // VS Code validates each JSON file against the schema its $schema names, downloaded when it is a
-    // URL. The SchemaStore claude-code-settings schema of .claude/settings.json often lags Claude
+    // VS Code validates each JSON file against the schema its $schema names, downloaded when it is
+    // a URL. The SchemaStore claude-code-settings schema of .claude/settings.json often lags Claude
     // Code: a field it flags as unknown is checked against the official docs, never dropped on its
     // word alone.
     "json.validate.enable": true,
     "json.schemaDownload.enable": true,
     // Outline and folding for large JSON files, such as schemas; the default is 5000.
     "json.maxItemsComputed": 10000,
-    // The repository has no ESLint, Prettier or markdownlint configuration; Biome lints and formats.
+    // The repository has no ESLint, Prettier or markdownlint configuration; Biome lints and
+    // formats.
     "eslint.enable": false,
     "prettier.enable": false,
     "markdownlint.appliesTo": "noFiles",
