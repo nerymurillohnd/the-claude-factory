@@ -1,13 +1,46 @@
-# Dependabot version updates for GitHub Actions. Copy to .github/dependabot.yml.
-# Add one entry per other package ecosystem the repository uses (npm, pip, cargo, ...).
+# Dependabot version updates. Write to .github/dependabot.yml (or .yaml).
+# Keep the GitHub Actions entry when the repository has workflows, and add one entry per
+# package ecosystem its manifests use (references/dependabot.md maps manifests to values).
+# Every custom label named here must exist: the labels step creates them.
 version: 2
 updates:
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: weekly
+    # Wait before proposing a fresh release; security updates never wait.
+    cooldown:
+      default-days: 7
+    # One pull request for all action updates.
+    groups:
+      github-actions:
+        patterns:
+          - "*"
     labels:
       - "type: dependencies"
       - "area: ci"
     commit-message:
       prefix: "ci"
+
+  # Example for an application ecosystem; change the value and folder, or remove it.
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 3
+      semver-major-days: 14
+      semver-minor-days: 7
+      semver-patch-days: 3
+    groups:
+      development-dependencies:
+        dependency-type: development
+        update-types:
+          - minor
+          - patch
+    open-pull-requests-limit: 5
+    labels:
+      - "type: dependencies"
+    commit-message:
+      prefix: "deps"
+      prefix-development: "deps-dev"

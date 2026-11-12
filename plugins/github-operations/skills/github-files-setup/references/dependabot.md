@@ -1,5 +1,56 @@
 # Dependabot
 
-1. When `.github/dependabot.yml` is missing, write one from `<skill-dir>/assets/dependabot.yml`: keep its GitHub Actions entry when the repository has workflows.
-2. Detect the repository's package ecosystems from its manifests and add one entry each, with the directory where each manifest lives, a schedule that fits the repository, and its own labels.
-3. Validate it with `uvx check-jsonschema@0.39.0 --builtin-schema vendor.dependabot .github/dependabot.yml`. Fix every error and run it again; move on only when it passes.
+GitHub reads the configuration from `.github/dependabot.yml` or `.github/dependabot.yaml` on the default branch. Look for both names; when one exists, it is the repository's own, and every change is a diff the user approves.
+
+## Contents
+
+- Write the configuration
+- Keys to offer
+- Validate
+- Limits
+
+## Write the configuration
+
+1. Start from `<skill-dir>/assets/dependabot.yml`. Keep its GitHub Actions entry when the repository has workflows or actions.
+2. Detect the package ecosystems from the repository's manifests and add one entry each, with its `package-ecosystem` value, the folder of each manifest, a schedule that fits the repository and its own labels:
+
+   | Manifest found | `package-ecosystem` |
+   | :-- | :-- |
+   | `.github/workflows/*.yml`, `action.yml` | `github-actions`, with `directory: /` |
+   | `package.json` with npm, pnpm or Yarn lockfile | `npm` |
+   | `bun.lock` | `bun` |
+   | `uv.lock` | `uv` |
+   | `requirements.txt`, `Pipfile`, `pyproject.toml` with Poetry or pip-tools | `pip` |
+   | `Cargo.toml` | `cargo` |
+   | `go.mod` | `gomod` |
+   | `Dockerfile` | `docker` |
+   | `compose.yaml`, `docker-compose.yml` | `docker-compose` |
+   | `.devcontainer/devcontainer.json` | `devcontainers`, with `directory: /` |
+   | `*.tf` | `terraform` |
+   | `.pre-commit-config.yaml` | `pre-commit` |
+
+   Other values GitHub supports: `bundler`, `composer`, `conda`, `deno`, `dotnet-sdk`, `elm`, `gitsubmodule`, `gradle`, `helm`, `julia`, `maven`, `mix`, `nix`, `nuget`, `opentofu`, `pub`, `rust-toolchain`, `sbt`, `swift`, `vcpkg`. Use the value from GitHub's Dependabot options reference; never guess one.
+3. For several folders of the same ecosystem, use `directories` with a list or a glob (`"/packages/*"`); `directory` takes one folder and no glob.
+4. Name only labels that will exist: the labels step creates the custom ones, because Dependabot ignores a missing custom label. Without `labels`, Dependabot applies `dependencies` and an ecosystem label, which it creates itself.
+
+## Keys to offer
+
+Offer each one to the user with what it changes; write only the ones the user wants.
+
+- **`cooldown`:** waits before proposing a release that just came out, so a compromised or broken release has time to be pulled. Version updates already wait 3 days by default since 2026-07-14; security updates never wait. Set `default-days` (1 to 90), and for ecosystems that use semantic versions `semver-major-days`, `semver-minor-days` and `semver-patch-days`. `include` and `exclude` take up to 150 dependency names with `*`; `exclude` wins. `github-actions`, `docker`, `docker-compose`, `terraform`, `helm`, `devcontainers` and `pre-commit` take only `default-days`.
+- **`groups`:** one pull request for several updates of one ecosystem. A group takes `patterns` and `exclude-patterns` (with `*`), `dependency-type` (`development` or `production`, for the ecosystems that support it), `update-types` (`major`, `minor`, `patch`) and `applies-to` (`version-updates`, the default, or `security-updates`). A dependency joins the first group it matches.
+- **`multi-ecosystem-groups`:** one pull request across ecosystems, such as Docker and Terraform. Define the group at the top level with its `schedule`, then set `multi-ecosystem-group: <name>` and `patterns` on each entry that joins it.
+- **`open-pull-requests-limit`:** at most 5 open version-update pull requests per entry by default; 0 turns version updates off for that entry. Security updates have their own limit of 10.
+- **`schedule`:** `interval` is `daily`, `weekly`, `monthly`, `quarterly`, `semiannually`, `yearly` or `cron` with a `cronjob`; `day`, `time` and `timezone` refine it.
+- **`commit-message`:** `prefix` up to 50 characters, to match the repository's commit titles.
+- **`registries`:** private registries need secrets in the repository's Dependabot settings: ask the user before adding one, and never write a secret into the file.
+
+## Validate
+
+Run `python3 <skill-dir>/scripts/check-forms.py --kind dependabot .github/dependabot.yml` (or `.yaml`) from the repository's root. Fix every error and run it again; move on only when it exits 0. When it exits 2 for a missing requirement, read the file against GitHub's Dependabot options reference instead, and say so in the report.
+
+## Limits
+
+- Security updates always target the default branch; `target-branch` applies to version updates only.
+- Dependabot alerts and security updates are turned on in the repository's settings, not in this file. Report their state under "Left for you" when the user asks for security updates.
+- After the merge, ask the user to confirm that Dependabot ran and reported no error in the file.
