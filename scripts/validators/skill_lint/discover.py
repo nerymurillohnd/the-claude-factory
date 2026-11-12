@@ -22,11 +22,24 @@ type ModeReader = Callable[[Path], Mapping[str, str]]
 
 GLOBS = ("plugins/*/skills/*/SKILL.md", ".claude/skills/*/SKILL.md")
 SKIPPED_TEXT = frozenset({"__pycache__", ".DS_Store"})
+PRUNED_DIRS = frozenset({".git", "node_modules", ".venv"})
+"""Folders never listed: git's own data and vendored dependency trees."""
 EXECUTABLE_BITS = 0o111
+MAX_TEXT_BYTES = 1024 * 1024
+"""Files larger than this are listed but not read."""
+NOT_A_REPOSITORY = "not a git repository"
+
+
+class GitError(Exception):
+    """Git failed for a reason other than the folder not being in a repository."""
 
 
 def git_modes(skill_dir: Path) -> dict[str, str]:
-    """Map each tracked file of a folder to its git mode; empty outside git or on failure."""
+    """Map each tracked file of a folder to its git mode.
+
+    Empty when git is not installed or the folder is not in a repository; any other
+    failure raises GitError with git's first error line.
+    """
     git = shutil.which("git")
     if git is None:
         return {}
@@ -35,11 +48,16 @@ def git_modes(skill_dir: Path) -> dict[str, str]:
             [git, "-C", str(skill_dir), "ls-files", "-s", "-z", "--", "."],
             capture_output=True,
             check=False,
+            env={**os.environ, "LC_ALL": "C"},
         )
-    except OSError:
-        return {}
+    except OSError as exc:
+        raise GitError(str(exc)) from exc
     if result.returncode != 0:
-        return {}
+        error = os.fsdecode(result.stderr).strip()
+        if NOT_A_REPOSITORY in error:
+            return {}
+        lines = error.splitlines()
+        raise GitError(lines[-1] if lines else f"git exited with {result.returncode}")
     modes: dict[str, str] = {}
     for entry in result.stdout.split(b"\0"):
         meta, _, path = os.fsdecode(entry).partition("\t")
@@ -58,13 +76,15 @@ class Skill:
     command: str
     plugin_root: Path | None
     files: tuple[str, ...]
-    """Relative POSIX paths, sorted, symlinks included."""
+    """Relative POSIX paths, sorted, symlinks included, PRUNED_DIRS left out."""
     text: Mapping[str, str]
     """The files that decode as UTF-8."""
     modes: Mapping[str, str]
     frontmatter: Frontmatter
     body: MarkdownDoc
     """The SKILL.md body, the lines from frontmatter.body_start on, with file line numbers."""
+    modes_error: str | None = None
+    """Why git could not report modes, when it failed; None when it worked or was absent."""
 
     def is_executable(self, rel: str) -> tuple[bool, bool]:
         """Return (executable, tracked), using the git mode when tracked, else stat."""
@@ -77,45 +97,67 @@ class Skill:
             return False, False
 
 
-def _identify(skill_md: Path) -> tuple[SkillKind, str | None, str, Path | None]:
-    """Derive kind, plugin, command and plugin root from the SKILL.md path."""
-    folder = skill_md.parent
+def _identify(folder: Path) -> tuple[SkillKind, str | None, str, Path | None]:
+    """Derive kind, plugin, command and plugin root from the skill folder's path."""
     name = folder.name
-    parts = folder.parts
-    if len(parts) >= 4 and parts[-2] == "skills":  # noqa: PLR2004
-        if parts[-4] == "plugins":
-            return "plugin", parts[-3], f"{parts[-3]}:{name}", folder.parent.parent
-        if parts[-3] == ".claude":
+    match folder.parts:
+        case (*_, "plugins", plugin, "skills", _):
+            return "plugin", plugin, f"{plugin}:{name}", folder.parent.parent
+        case (*_, ".claude", "skills", _):
             return "project", None, f"project:{name}", None
-    return "standalone", None, name, None
+        case _:
+            return "standalone", None, name, None
 
 
 def _list_files(root: Path) -> tuple[str, ...]:
-    """List every file and symlink under a folder as sorted relative POSIX paths."""
-    found = (p for p in root.rglob("*") if p.is_symlink() or p.is_file())
-    return tuple(sorted(p.relative_to(root).as_posix() for p in found))
+    """List every file and symlink under a folder as sorted relative POSIX paths.
+
+    PRUNED_DIRS are not entered; a symlinked folder is listed, not entered.
+    """
+    found: list[str] = []
+    for current, dirnames, filenames in os.walk(root):
+        folder = Path(current)
+        dirnames[:] = [d for d in dirnames if d not in PRUNED_DIRS]
+        links = [d for d in dirnames if (folder / d).is_symlink()]
+        for name in [*filenames, *links]:
+            path = folder / name
+            if path.is_symlink() or path.is_file():
+                found.append(path.relative_to(root).as_posix())
+    return tuple(sorted(found))
 
 
-def _read_text(root: Path, files: tuple[str, ...]) -> dict[str, str]:
-    """Read the UTF-8 files, skipping caches and OS litter."""
+def _read_text(root: Path, files: tuple[str, ...]) -> tuple[dict[str, str], dict[str, str]]:
+    """Read the UTF-8 files, skipping caches and OS litter.
+
+    Returns (texts, unread), where unread maps each other file to why it was not read.
+    """
     texts: dict[str, str] = {}
+    unread: dict[str, str] = {}
     real_root = root.resolve()
     for rel in files:
         if SKIPPED_TEXT & set(rel.split("/")):
             continue
-        if not (root / rel).resolve().is_relative_to(real_root):
+        path = root / rel
+        if not path.resolve().is_relative_to(real_root):
+            unread[rel] = "links to a path outside the skill folder"
             continue
         try:
-            texts[rel] = (root / rel).read_text(encoding="utf-8")
-        except UnicodeDecodeError, OSError:
-            continue
-    return texts
+            if path.stat().st_size > MAX_TEXT_BYTES:
+                unread[rel] = "is larger than 1 MiB and was not read"
+                continue
+            texts[rel] = path.read_text(encoding="utf-8")
+        except UnicodeDecodeError:
+            unread[rel] = "is not valid UTF-8 text"
+        except OSError as exc:
+            unread[rel] = f"cannot be read: {exc.strerror or exc}"
+    return texts, unread
 
 
-def _frontmatter(text: Mapping[str, str]) -> Frontmatter:
-    """Parse SKILL.md, or report that it cannot be read as UTF-8 text."""
+def _frontmatter(text: Mapping[str, str], unread: Mapping[str, str]) -> Frontmatter:
+    """Parse SKILL.md, or report why it could not be read."""
     if "SKILL.md" not in text:
-        return Frontmatter(None, {}, 1, (1, "SKILL.md is not valid UTF-8 text"))
+        reason = unread.get("SKILL.md", "cannot be read")
+        return Frontmatter(None, {}, 1, (1, f"SKILL.md {reason}"))
     return parse_frontmatter(text["SKILL.md"])
 
 
@@ -127,13 +169,22 @@ def _body(text: Mapping[str, str], frontmatter: Frontmatter) -> MarkdownDoc:
     return parse_markdown(body, first_line=start)
 
 
+def _modes(root: Path, mode_reader: ModeReader) -> tuple[dict[str, str], str | None]:
+    """Read the git modes, or keep why git failed."""
+    try:
+        return dict(mode_reader(root)), None
+    except GitError as exc:
+        return {}, str(exc)
+
+
 def load_skill(skill_md: Path, *, mode_reader: ModeReader = git_modes) -> Skill:
-    """Load the skill whose SKILL.md is given."""
-    root = skill_md.parent
-    kind, plugin, command, plugin_root = _identify(skill_md)
+    """Load the skill whose SKILL.md is given; a relative path is made absolute first."""
+    root = skill_md.absolute().parent
+    kind, plugin, command, plugin_root = _identify(root)
     files = _list_files(root)
-    text = _read_text(root, files)
-    frontmatter = _frontmatter(text)
+    text, unread = _read_text(root, files)
+    frontmatter = _frontmatter(text, unread)
+    modes, modes_error = _modes(root, mode_reader)
     return Skill(
         root=root,
         kind=kind,
@@ -142,9 +193,10 @@ def load_skill(skill_md: Path, *, mode_reader: ModeReader = git_modes) -> Skill:
         plugin_root=plugin_root,
         files=files,
         text=text,
-        modes=dict(mode_reader(root)),
+        modes=modes,
         frontmatter=frontmatter,
         body=_body(text, frontmatter),
+        modes_error=modes_error,
     )
 
 

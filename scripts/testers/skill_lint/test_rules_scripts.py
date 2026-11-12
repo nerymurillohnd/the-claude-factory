@@ -8,7 +8,7 @@ import subprocess
 import tempfile
 import unittest
 
-from validators.skill_lint.discover import git_modes, load_skill
+from validators.skill_lint.discover import GitError, git_modes, load_skill
 from validators.skill_lint.model import Severity
 from validators.skill_lint.rules_scripts import check, entry_points
 
@@ -114,6 +114,23 @@ class EntryPointTest(unittest.TestCase):
             findings = check(load_skill(skill / "SKILL.md", mode_reader=git_modes))
         self.assertEqual([f.rule for f in findings], ["SC-02"])
         self.assertIn("100755", findings[0].message)
+
+    def test_sc02_git_failure_named(self) -> None:
+        """When git failed, SC-02 names the failure instead of calling the file untracked."""
+
+        def failing(_: Path) -> dict[str, str]:
+            message = "fatal: detected dubious ownership"
+            raise GitError(message)
+
+        files = {
+            "SKILL.md": _skill_md(_run_block("python3 scripts/run.py")),
+            "scripts/run.py": RUN_PY,
+        }
+        with tempfile.TemporaryDirectory() as tmp:
+            skill = _build(Path(tmp), files)
+            findings = check(load_skill(skill / "SKILL.md", mode_reader=failing))
+        self.assertEqual([f.rule for f in findings], ["SC-02"])
+        self.assertIn("git failed: fatal: detected dubious ownership", findings[0].message)
 
 
 class InvocationTest(unittest.TestCase):

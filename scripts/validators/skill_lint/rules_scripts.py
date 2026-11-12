@@ -108,7 +108,12 @@ def _sc01_sc02(skill: Skill) -> list[Finding]:
             findings.append(_finding("SC-01", Severity.ERROR, rel, 1, message))
         executable, tracked = skill.is_executable(rel)
         if not executable:
-            where = "git index mode is not 100755" if tracked else "untracked: filesystem mode"
+            failed = skill.modes_error and f"git failed: {skill.modes_error}; filesystem mode"
+            where = (
+                "git index mode is not 100755"
+                if tracked
+                else failed or "untracked: filesystem mode"
+            )
             message = f"an entry point must be executable ({where})"
             findings.append(_finding("SC-02", Severity.ERROR, rel, None, message))
     return findings

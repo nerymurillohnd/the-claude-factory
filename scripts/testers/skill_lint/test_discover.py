@@ -2,13 +2,20 @@
 
 from __future__ import annotations
 
+import contextlib
 from pathlib import Path
 import shutil
 import subprocess
 import tempfile
 import unittest
 
-from validators.skill_lint.discover import discover, git_modes, load_skill
+from validators.skill_lint.discover import (
+    MAX_TEXT_BYTES,
+    GitError,
+    discover,
+    git_modes,
+    load_skill,
+)
 
 from testers.skill_lint.helpers import VALID_SKILL_MD, build_skill
 
@@ -143,3 +150,89 @@ class DiscoverTest(unittest.TestCase):
             modes = git_modes(skill)
         self.assertEqual(modes["run.sh"], "100755")
         self.assertEqual(modes["SKILL.md"], "100644")
+
+
+class CodeReviewTest(unittest.TestCase):
+    """Relative paths, unread SKILL.md reasons, git failures and pruned folders."""
+
+    def test_relative_project_path(self) -> None:
+        """A relative .claude/skills path is a project skill, and discover('.') finds it."""
+        with tempfile.TemporaryDirectory() as tmp, contextlib.chdir(tmp):
+            _ = build_skill(Path(tmp), {"SKILL.md": VALID_SKILL_MD}, layout="project")
+            loaded = load_skill(Path(".claude/skills/demo-skill/SKILL.md"))
+            found = [s.command for s in discover(Path())]
+        self.assertEqual(loaded.command, "project:demo-skill")
+        self.assertTrue(loaded.root.is_absolute())
+        self.assertEqual(found, ["project:demo-skill"])
+
+    def test_relative_plugin_path(self) -> None:
+        """A relative plugins/<p>/skills path is a plugin skill."""
+        with tempfile.TemporaryDirectory() as tmp, contextlib.chdir(tmp):
+            _ = build_skill(Path(tmp), {"SKILL.md": VALID_SKILL_MD})
+            loaded = load_skill(Path("plugins/demo/skills/demo-skill/SKILL.md"))
+        self.assertEqual(loaded.command, "demo:demo-skill")
+
+    def test_skill_md_symlink_outside(self) -> None:
+        """A SKILL.md linking outside the folder is reported as such, not as bad UTF-8."""
+        with tempfile.TemporaryDirectory() as tmp:
+            outside = Path(tmp) / "elsewhere.md"
+            _ = outside.write_text(VALID_SKILL_MD, encoding="utf-8")
+            skill = build_skill(Path(tmp), {"notes.md": "x"})
+            (skill / "SKILL.md").symlink_to(outside)
+            loaded = load_skill(skill / "SKILL.md", mode_reader=lambda _: {})
+        error = loaded.frontmatter.error
+        self.assertIsNotNone(error)
+        self.assertIn("outside the skill folder", error[1] if error else "")
+
+    def test_skill_md_unreadable(self) -> None:
+        """A SKILL.md that cannot be opened is reported with the OS reason."""
+        with tempfile.TemporaryDirectory() as tmp:
+            skill = build_skill(Path(tmp), {"notes.md": "x"})
+            (skill / "SKILL.md").symlink_to(skill / "missing.md")
+            loaded = load_skill(skill / "SKILL.md", mode_reader=lambda _: {})
+        error = loaded.frontmatter.error
+        self.assertIn("cannot be read", error[1] if error else "")
+
+    def test_git_failure_raises(self) -> None:
+        """A git error other than 'not a repository' is raised, not hidden as no modes."""
+        git = shutil.which("git") or "git"
+        with tempfile.TemporaryDirectory() as tmp:
+            skill = build_skill(Path(tmp), {"SKILL.md": VALID_SKILL_MD})
+            _ = subprocess.run([git, "init", "-q", tmp], check=True, capture_output=True)
+            _ = (Path(tmp) / ".git" / "index").write_bytes(b"not an index")
+            with self.assertRaises(GitError):
+                _ = git_modes(skill)
+
+    def test_git_failure_kept_on_skill(self) -> None:
+        """load_skill keeps a git failure as modes_error and reads no modes."""
+
+        def failing(_: Path) -> dict[str, str]:
+            message = "fatal: detected dubious ownership"
+            raise GitError(message)
+
+        with tempfile.TemporaryDirectory() as tmp:
+            skill = build_skill(Path(tmp), {"SKILL.md": VALID_SKILL_MD})
+            loaded = load_skill(skill / "SKILL.md", mode_reader=failing)
+        self.assertEqual(loaded.modes, {})
+        self.assertEqual(loaded.modes_error, "fatal: detected dubious ownership")
+
+    def test_vendored_folders_pruned(self) -> None:
+        """node_modules, .venv and .git are not listed."""
+        files = {
+            "SKILL.md": VALID_SKILL_MD,
+            "node_modules/x/index.js": "x",
+            ".venv/lib/y.py": "y",
+            ".git/HEAD": "ref",
+            "scripts/run.py": "z",
+        }
+        with tempfile.TemporaryDirectory() as tmp:
+            loaded = load_skill(build_skill(Path(tmp), files) / "SKILL.md")
+        self.assertEqual(loaded.files, ("SKILL.md", "scripts/run.py"))
+
+    def test_large_file_listed_not_read(self) -> None:
+        """A file over 1 MiB is listed but not read."""
+        files = {"SKILL.md": VALID_SKILL_MD, "assets/big.txt": "a" * (MAX_TEXT_BYTES + 1)}
+        with tempfile.TemporaryDirectory() as tmp:
+            loaded = load_skill(build_skill(Path(tmp), files) / "SKILL.md")
+        self.assertIn("assets/big.txt", loaded.files)
+        self.assertNotIn("assets/big.txt", loaded.text)

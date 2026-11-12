@@ -91,7 +91,7 @@ Each finding carries a rule id, family, severity, `file:line`, message and sourc
 | CO-09 | ✗ | Depth: a `.md` file that is reached only through another bundled file, never linked from SKILL.md (depth > 1) |
 | CO-10 | ✗ | A reference file over 100 lines has a table of contents: within the first 20 non-blank lines after its first heading, at least 2 list items that link to `#anchors` in the same file |
 | CO-11 | ⚠ | Time-sensitive text outside code, case-insensitive: `\b(before\|after\|until\|since\|as of)\s+(January\|…\|December\|Q[1-4])?\s*(19\|20)\d{2}\b`, `\b(currently\|now\|today\|recently)\b.{0,40}\b(19\|20)\d{2}\b`, `\bin (19\|20)\d{2}\b` |
-| CO-12 | ⚠ | Orphan file: no file of the skill references it at all. Exempt: `evals/`, `__pycache__`, `.DS_Store`, and `__init__.py` |
+| CO-12 | ⚠ | Orphan file: no file of the skill references it at all. Exempt: `evals/`, `__pycache__`, `.DS_Store`, and `__init__.py`; `.git/`, `node_modules/` and `.venv/` are never listed (see Discovery) |
 
 Each file produces at most one of CO-09 (reached, but too deep) and CO-12 (not reached at all).
 
@@ -116,7 +116,7 @@ An **entry point** is a file the skill's Markdown runs (a command line that name
 | Rule | Sev | Check |
 | :-- | :-- | :-- |
 | SC-01 | ✗ | An entry point's first line is `#!/usr/bin/env <interpreter>` |
-| SC-02 | ✗ | An entry point's git index mode is `100755`. A file not in the index is checked by its filesystem exec bit instead, and the message says "untracked: filesystem mode" |
+| SC-02 | ✗ | An entry point's git index mode is `100755`. A file not in the index is checked by its filesystem exec bit instead, and the message says "untracked: filesystem mode"; when git itself failed (anything but "not a git repository"), the message names git's error instead |
 | SC-03 | ✗ | Every script the skill's Markdown runs exists inside the skill folder and is called with its interpreter. The path may take any of three forms: relative to SKILL.md, through `${CLAUDE_SKILL_DIR}`, or through `${CLAUDE_PLUGIN_ROOT}` (plugin skills only). The rule resolves each form to a file and judges only existence and interpreter, never which form the path uses |
 | SC-04 | ✗ | A Python script that imports a module outside the stdlib declares it in a PEP 723 block |
 | SC-05 | ⚠ | An external command in a script (`jq`, `gh`, …) that neither SKILL.md nor `compatibility` mentions |
@@ -182,6 +182,8 @@ scripts/testers/
 - **Globs:** only `plugins/*/skills/*/SKILL.md` and `.claude/skills/*/SKILL.md`. Today they match 26 skills: 25 plugin skills and 1 project skill.
 - **Fixtures:** tests build each fixture skill in a temporary directory, so no broken skill is committed and none can be discovered.
 - **Command names:** each skill's command name is `plugin:skill` or `project:skill`. That name tells apart the two `ts-lifecycle` skills (typescript6 and typescript7).
+- **Files listed:** every file and symlink in the skill folder, except inside `.git/`, `node_modules/` and `.venv/` (owner decision, 2026-11-12: vendored trees would flood CO-12). A file over 1 MiB is listed but not read.
+- **Paths:** a relative SKILL.md path is made absolute before its kind is read, so `.claude/skills/x` is a project skill from any working directory.
 
 ### Testability
 
