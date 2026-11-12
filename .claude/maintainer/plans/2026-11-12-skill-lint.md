@@ -75,6 +75,8 @@ Before code is written, this task settles the spec's open Testability items.
   - `scripts/validators/__init__.py` (empty)
   - `scripts/validators/skill_lint/__init__.py`
   - `scripts/validators/skill_lint/model.py`
+  - `scripts/validators/skill_lint/cli.py` (placeholder)
+  - `scripts/validators/skill-lint.py` (shim)
   - `scripts/testers/__init__.py` (empty)
   - `scripts/testers/skill_lint/__init__.py` (empty)
   - `scripts/testers/skill_lint/helpers.py`
@@ -136,7 +138,9 @@ Before code is written, this task settles the spec's open Testability items.
 
 - [ ] **Step 5: Probe basedpyright and ruff on the layout**
 
-  1. Create a placeholder `scripts/validators/skill-lint.py` with only `from skill_lint import model` and a `main` that returns 0.
+  1. Create two placeholders:
+     - `scripts/validators/skill_lint/cli.py` with `def main(argv: list[str] | None = None) -> int: return 0`.
+     - The shim `scripts/validators/skill-lint.py`: a shebang, a docstring, `from skill_lint.cli import main` and `sys.exit(main())`.
   2. Run `npm run typecheck:python`.
      - Expected: 0 errors.
      - If the entry-script import does not resolve, add `"extraPaths": ["validators"]` to `scripts/pyrightconfig.json`.
@@ -190,8 +194,10 @@ Before code is written, this task settles the spec's open Testability items.
 - Create:
   - `scripts/validators/skill_lint/frontmatter.py`
   - `scripts/validators/skill_lint/discover.py`
+  - `scripts/validators/skill_lint/rules_content.py`
   - `scripts/testers/skill_lint/test_frontmatter.py`
   - `scripts/testers/skill_lint/test_discover.py`
+  - `scripts/testers/skill_lint/test_rules_content.py`
 
 **Interfaces:**
 - **Consumes:** `model.*`.
@@ -672,8 +678,9 @@ Before code is written, this task settles the spec's open Testability items.
   - `scripts/testers/skill_lint/test_report.py`
   - `scripts/testers/skill_lint/test_cli.py`
 - Modify:
-  - `scripts/validators/skill-lint.py`: replace the Task 1 placeholder.
+  - `scripts/validators/skill_lint/cli.py`: replace the Task 1 placeholder.
   - `package.json`: add `lint:skills`.
+- Unchanged: the `scripts/validators/skill-lint.py` shim from Task 1.
 
 **Interfaces:**
 - **Consumes:** `discover`, `load_skill`, the four `check` functions and `inventory`.
@@ -686,7 +693,7 @@ Before code is written, this task settles the spec's open Testability items.
   - `render_manifest(results: Sequence[tuple[Skill, Inventory]]) -> str`
   - `render_json(results: …, inventories: … | None) -> str`
     - The shape is `{"skills": [{"command", "path", "families": {"CO": status, …}}], "findings": [asdict(f) + {"skill": command}], "manifest": {command: …} | null}`.
-- **Produces in `skill-lint.py`:** `main(argv: list[str] | None = None) -> int`
+- **Produces in `skill_lint/cli.py`:** `main(argv: list[str] | None = None) -> int`. `test_cli` imports it as `validators.skill_lint.cli.main`; the hyphenated shim is never imported.
   - **Arguments:**
     - `paths` (zero or more). Each is a skill folder or a SKILL.md file. With none, it runs `discover(ROOT)`.
     - `--only CO,PO,SC,CA`
@@ -718,7 +725,7 @@ Before code is written, this task settles the spec's open Testability items.
 
 - [ ] **Step 3: Implement the report and the CLI, add the npm script**
 
-  Implement `report.py` and `skill-lint.py`, following `scripts/check-github-files.py`: argparse, `main` returns an int, and the script ends with `sys.exit(main())`.
+  Implement `report.py` and `cli.py`, following `scripts/check-github-files.py`: argparse and a `main` that returns an int. The shim already ends with `sys.exit(main())`.
 
   Add to `package.json`:
 
@@ -734,9 +741,11 @@ Before code is written, this task settles the spec's open Testability items.
   - `npm run test:scripts`
   - `npm run lint:python`
   - `npm run typecheck:python`
-  - `npm run lint:js`, scoped to `package.json`
+  - `npx biome check package.json`
 
-  Expected: every test passes, the checks exit 0, and Biome accepts `package.json`.
+  Expected: every test passes and the other checks exit 0.
+
+  Do not use `npm run lint:js` here. It checks the whole repository, which fails today with 10 known Biome errors in `plugins/`, and no file under `plugins/` may change.
 
 - [ ] **Step 5: Commit**
 
@@ -790,28 +799,36 @@ Before code is written, this task settles the spec's open Testability items.
 
   Run `claude plugin validate --strict plugins/<p>` for each plugin. Every CO-01 failure that `claude plugin validate` doesn't report is labeled "ruamel-only".
 
+  `claude plugin validate` only accepts plugins, so `project:docs-maintenance` gets no CO-01 cross-check. Say so in the report.
+
 - [ ] **Step 3: Compare with the oracle**
 
   Run the `skill-diagnostics` check scripts for each skill, with their documented invocation; read their `--help` first.
 
-  Then compare verdicts. This mapping is provisional: the spec names the overlapping ids, not the pairs. Confirm each pair against the oracle rule's message text, and correct this table:
+  Then compare verdicts with these pairs. They were checked on 2026-11-12 against the oracle scripts' own messages:
 
-  | Ours | Oracle |
-  | :-- | :-- |
-  | CO-02 | M-2, M-4, M-5 |
-  | CO-03 | M-6, M-7 |
-  | CO-04 | M-8 |
-  | PO-03 | M-11 |
-  | PO-07 | M-12, M-13 |
-  | CO-05 | M-14 |
-  | SC-01 | S-2 |
-  | SC-02 | S-3 |
-  | SC-03 | S-4, S-6 |
-  | SC-04 | S-8 |
-  | CA-04 | S-10, S-11, S-12 |
-  | CO-06 | Z-1 |
-  | CO-07, CO-08 | R-4, R-5 |
-  | CO-09 | R-10 |
+  | Ours | Oracle | Oracle message |
+  | :-- | :-- | :-- |
+  | CO-01 | M-2 | the frontmatter parses as strict YAML |
+  | CO-02 | M-4, M-5, M-6, M-7 | name length, `a-z0-9-`, no leading, trailing or double hyphen, matches the folder |
+  | PO-07 | M-8 | no reserved word |
+  | CO-03 | M-11, M-12, M-13 | non-empty string, length, no XML tag |
+  | CO-04 | M-14 | description + `when_to_use` length |
+  | CO-07 | S-2, S-3 | every local link resolves; every anchor names a heading |
+  | CO-09 | S-4 | every linked file is linked from SKILL.md |
+  | CO-10 | S-6 | a Markdown file over 100 lines has a table of contents |
+  | PO-02 | S-8 | no backslash in link targets or script paths |
+  | SC-01 | S-10 | every script has a `#!/usr/bin/env` line |
+  | SC-02 | S-11 | every script is executable |
+  | CO-08 | S-12 | no path leaves the skill folder |
+  | CO-06 | Z-1 | SKILL.md line count |
+  | CA-01 | R-4 | no argument placeholder inside a `!` command |
+  | CA-02 | R-5 | an unscoped Bash pre-approves every command |
+
+  These differences are expected, by design:
+  - SC-01 and SC-02 check entry points only; the oracle checks every script.
+  - CO-06 counts only the body.
+  - R-10 ("every `Bash()` pattern matches a command the body runs") has no counterpart in our rules.
 
   Explain every difference with evidence.
 
