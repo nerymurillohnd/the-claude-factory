@@ -9,7 +9,7 @@ Plugins here are relative-path entries, so users receive whatever version is on 
 
 ## Before you start
 
-Status checked on 2026-11-13: on the `claude/repo-refactor-redesign-feqwzk` branch, `release.yml` waits for a `Validate` workflow that doesn't exist, so a merge of that branch tags and releases nothing on its own; only `workflow_dispatch` runs it. Check `.github/workflows/` before step 5, and stop there if `validate.yml` is still missing. Once it exists, delete this section.
+Status checked on 2026-11-13: `release.yml` waits for a `Validate` workflow that doesn't exist yet, so a merge tags and releases nothing on its own; only `workflow_dispatch` runs it. Check `.github/workflows/` before step 5, and stop there if `validate.yml` is still missing. Once it exists, delete this section.
 
 ## Facts (official, unless marked)
 
