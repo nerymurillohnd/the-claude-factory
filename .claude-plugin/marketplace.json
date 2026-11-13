@@ -142,5 +142,6 @@
   "renames": {
     "git-hygiene": "github-operations",
     "session-handoff": "project-maintainer"
-  }
+  },
+  "forceRemoveDeletedPlugins": true
 }
