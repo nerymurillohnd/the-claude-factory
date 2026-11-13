@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.1.5] - 2026-11-13
+
 ### Changed
 
 - The plugin is now listed under the **Monitoring** category instead of **Mods**, with the marketplace's other observability tools. Nothing changes in how the plugin works.
@@ -45,7 +47,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - An optional status line entry with the session's count (`statusLine`, off by default).
 - Requires Claude Code v2.1.299 or later. Tested with Claude Code v2.1.312.
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/model-trace--v0.1.4...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/model-trace--v0.1.5...HEAD
+[0.1.5]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/model-trace--v0.1.5
 [0.1.4]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/model-trace--v0.1.4
 [0.1.3]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/model-trace--v0.1.3
 [0.1.2]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/model-trace--v0.1.2

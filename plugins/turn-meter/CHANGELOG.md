@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.1.6] - 2026-11-13
+
 ### Changed
 
 - The plugin is now listed under the **Monitoring** category instead of **Mods**, with the marketplace's other observability tools. Nothing changes in how the plugin works.
@@ -50,7 +52,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - The `/turn-meter` command and a **Hide** button to hide or show the band.
 - Tested with Claude Code v2.1.308; requires v2.1.295 or later.
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/turn-meter--v0.1.5...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/turn-meter--v0.1.6...HEAD
+[0.1.6]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/turn-meter--v0.1.6
 [0.1.5]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/turn-meter--v0.1.5
 [0.1.4]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/turn-meter--v0.1.4
 [0.1.3]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/turn-meter--v0.1.3
