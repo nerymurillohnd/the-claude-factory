@@ -1,7 +1,7 @@
 # The Claude Factory
 
 ## What it is
-A public marketplace of plugins for Claude, hosted on GitHub at `nerymurillohnd/the-claude-factory`. It designs, builds, tests, releases and maintains plugins for Claude Code and Claude that third parties install on their own machines and use in their own projects.
+A public marketplace of plugins for Claude, hosted on GitHub at `nerymurillohnd/the-claude-factory`. It designs, builds, tests, releases and maintains plugins that third parties install on their own machines and use in their own projects.
 
 ## Overall goal
 Give users plugins that automate and improve their everyday work with Claude, each one solving one problem end to end. The plugins are skills, agents, commands, hooks, MCP and LSP servers, and mods.
@@ -29,6 +29,16 @@ The repository has two scopes that never mix. A rule, tool or file of one scope 
   - Versioning and bumping
   - Plugin documentation: `README.md`, `CHANGELOG.md`, `LICENSE`, `NOTICE.txt`
   - Release, tagging and distribution, carried out with maintainer tools: tags, `release.yml` and the catalog entry
+
+## Pull requests
+- **Outside `plugins/`:** no pull request, unless the owner asks for one.
+- **Inside `plugins/`, documentation only** (`README.md`, `LICENSE`, `CHANGELOG.md`, `NOTICE.txt` and similar files): no pull request.
+- **Inside `plugins/`, anything else** (components, dependencies, manifest, scripts, tests, evals): pull request.
+
+## Platforms
+- **Surfaces:** **Claude Code** and **Claude** (the unified chat and Cowork experience).
+- **Operating systems:** macOS and Linux, through POSIX-compatible interfaces.
+- **Windows:** only through Git Bash, when a plugin supports it.
 
 ## Main stack
 The tools Nery and Claude use to build and maintain the project. Each plugin's own code, in any language, belongs to that plugin, not to this stack. Several of these tools also check files under `plugins/`, but no plugin needs them and users never install them.
