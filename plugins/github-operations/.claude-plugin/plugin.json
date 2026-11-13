@@ -1,7 +1,7 @@
 {
   "name": "github-operations",
   "displayName": "GitHub Operations",
-  "version": "0.7.3",
+  "version": "0.8.0",
   "description": "GitHub automation for Claude Code, with GitHub's MCP server or gh: takes pull requests from branch to merge (CI checks, code review comments, fixes), writes PR and issue templates, discussion forms, labels and Dependabot setup, repairs failing GitHub Actions CI, and runs repository audits and cleanup of branches, worktrees and stashes behind a verified backup.",
   "author": {
     "name": "Nery Murillo",
