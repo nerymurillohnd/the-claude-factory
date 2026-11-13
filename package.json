@@ -13,6 +13,7 @@
   "license": "MIT",
   "scripts": {
     "check": "npm run lint && npm run typecheck && npm run validate",
+    "check:install": "bash scripts/release/check-install.sh",
     "fix": "biome check --write . && ruff check --fix . && ruff format . && shfmt -w .",
     "format": "biome format --write . && ruff format . && shfmt -w .",
     "labels:sync": "uv run python scripts/sync-labels.py",
