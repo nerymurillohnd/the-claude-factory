@@ -13,10 +13,10 @@ paths:
 - Fix every finding before moving on; never leave one as debt.
 - Add `# noqa`, `# type: ignore` or `cast()` only for a proven false positive, with its reason and the owner's approval.
 
-## After each write or edit, run in order
+## Run in this order after each write or edit
 
-1. Lint and apply the safe fixes: `ruff check --fix <file>`.
-2. Format: `ruff format <file>`.
-3. Type-check: `basedpyright -p scripts <file>` for a file under `scripts/`; `basedpyright <file>` for any other.
-4. Fix every finding, then repeat steps 1 to 3 until all pass.
+1. Run `ruff check --fix <file>` to lint it and apply the safe fixes.
+2. Run `ruff format <file>` to format it.
+3. Run `basedpyright -p scripts <file>` to type-check a file under `scripts/`, or `basedpyright <file>` for any other.
+4. Fix every finding, then run steps 1 to 3 again until all pass.
 5. Read the file again before the next edit.

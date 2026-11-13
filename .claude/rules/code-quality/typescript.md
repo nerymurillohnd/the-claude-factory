@@ -13,9 +13,9 @@ paths:
 - Fix every finding before moving on; never leave one as debt.
 - Add a `biome-ignore` comment only for a proven false positive, with its reason and the owner's approval.
 
-## After each write or edit, run in order
+## Run in this order after each write or edit
 
-1. Format, lint and sort imports: `npx biome check --write <file>`.
-2. Type-check, after a `.ts` or `.tsx` change: `npx tsc --noEmit -p tsconfig.json`.
-3. Fix every finding, then repeat steps 1 and 2 until both pass.
+1. Run `npx biome check --write <file>` to format it, lint it and sort its imports.
+2. Run `npx tsc --noEmit -p tsconfig.json` to type-check the project after a `.ts` or `.tsx` change.
+3. Fix every finding, then run steps 1 and 2 again until both pass.
 4. Read the file again before the next edit.
