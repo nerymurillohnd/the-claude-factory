@@ -18,5 +18,5 @@ Format and lint Markdown only with Biome, never with ruff, Prettier or another f
 ## Markdown written for people
 
 - Format and lint READMEs, CHANGELOGs, policy documents and user guides, plugin ones included, with Biome.
-- After editing one of them, run `npx biome check --write <file>`, then read the file again before the next edit.
+- After editing one, format and lint it in one pass: `npx biome check --write <file>`; fix by hand what it could not fix, then read the file again before the next edit.
 - Before a commit, run `npm run lint:js`.

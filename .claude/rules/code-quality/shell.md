@@ -9,11 +9,13 @@ paths:
 
 Use shfmt and ShellCheck; `.editorconfig` holds shfmt's settings and `.shellcheckrc` ShellCheck's, so pass no style flags.
 
-## After editing a shell script
+## Order of work on a shell script
 
-- Format it: `shfmt -w <file>`.
-- Lint it with every optional check: `shellcheck -S style -a <file>`.
-- Read the file again before the next edit: `shfmt -w` rewrites it.
+1. Before renaming or deleting a function, find every use with the LSP tool, as `lsp.md` sets.
+2. Edit the script, then fix the LSP diagnostics Claude Code reports for it.
+3. Format: `shfmt -w <file>`. Run it before linting, so ShellCheck's line numbers match the final file.
+4. Lint with every optional check: `shellcheck -S style -a <file>`. ShellCheck fixes nothing itself: fix each finding by hand, then repeat steps 3 and 4.
+5. Read the file again before the next edit: step 3 rewrites it.
 
 ## Before a commit
 

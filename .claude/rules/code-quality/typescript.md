@@ -10,11 +10,14 @@ paths:
 
 Use Biome to format and lint TypeScript, JavaScript, JSON and YAML, and `tsc` to type-check, never Prettier or ESLint.
 
-## After editing one of these files
+## Order of work on one of these files
 
-- Format and lint it, applying the safe fixes: `npx biome check --write <file>`.
-- Type-check the TypeScript project after a `.ts` or `.tsx` edit: `npx tsc --noEmit -p tsconfig.json`.
-- Read the file again before the next edit: `biome check --write` rewrites it.
+1. Before changing a symbol's name, signature or existence, find every use with the LSP tool, as `lsp.md` sets.
+2. Edit the file, then fix the LSP diagnostics Claude Code reports for it.
+3. Format, lint and sort imports in one pass, applying the safe fixes: `npx biome check --write <file>`. Biome orders those steps itself.
+4. Fix by hand any finding step 3 could not fix, then repeat step 3.
+5. After a `.ts` or `.tsx` edit, type-check last, on the final code: `npx tsc --noEmit -p tsconfig.json`.
+6. Read the file again before the next edit: step 3 rewrites it.
 
 ## Before a commit
 
