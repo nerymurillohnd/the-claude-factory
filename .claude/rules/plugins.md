@@ -31,8 +31,7 @@ Conventions for the plugins this marketplace distributes. The split between the 
 
 ## Portability and prerequisites
 
-- Every plugin created and published here runs on its own on a user's machine. It never depends on the tools, software, configuration or versions installed on the owner's terminal or machine.
-- Code is always written to be portable.
+- Every plugin created and published here runs on its own on a user's machine. It never depends on the tools, software, configuration or versions installed on the owner's terminal or machine, so its code is written to be portable.
 - Every tool, software, integration or dependency a plugin needs to run, and every specific or minimum version it requires, is declared as a prerequisite in the Prerequisites section of that plugin's README.
 - Each plugin's README states its Windows support.
 
