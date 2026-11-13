@@ -67,8 +67,8 @@ This repository:
 
 ## Checks
 
-- Every changed plugin has a new version and a non-empty section for it (no script checks this yet; the `plugin-versioning` skill says how to check it by hand).
-- `claude plugin tag plugins/<plugin> --dry-run`: the tag does not exist yet and the tree is clean.
+- Every changed plugin has a new version and a non-empty section for it (no script checks this yet; the first command in step 2 of the `plugin-releases` skill lists every plugin whose version differs from `origin/main`).
+- `claude plugin tag plugins/<plugin> --dry-run`, after the changelog is committed: it exits 1 while any file under the plugin is uncommitted, and when the tag already exists.
 - `grep -n '{{' plugins/<plugin>/CHANGELOG.md` returns nothing.
 
 ## Never

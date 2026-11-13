@@ -11,7 +11,7 @@ These commands check the files a document is built from, or the document itself.
 | `claude plugin validate . --strict` | After you change `marketplace.json` | The catalog is valid, and each entry's version agrees with its `plugin.json` |
 | `claude plugin validate plugins/<plugin> --strict --profile directory` | After a plugin's README is written or rewritten | Exit `1` when the README is missing or too short for Anthropic's directory. Also read the `Advice` lines: one appears when the README has no install-from-marketplace line, and it never changes the exit code |
 | `claude --plugin-dir plugins/<plugin> plugin details <name>` | Before you write or brief a plugin README for a new or changed plugin | The plugin's real component inventory, to check the README against. A mod's hooks module shows as `Hooks (0)` |
-| `claude plugin tag plugins/<plugin> --dry-run` | Before you write a release's changelog section | The version `plugin.json` and the marketplace entry agree on, and the tag name `<name>--v<version>` the changelog links use. It creates nothing |
+| `claude plugin tag plugins/<plugin> --dry-run` | Before you write a release's changelog section, on a committed tree (it exits `1` while any file under the plugin is uncommitted) | The version `plugin.json` and the marketplace entry agree on, and the tag name `<name>--v<version>` the changelog links use. It creates nothing |
 
 Two things these commands do not do:
 
