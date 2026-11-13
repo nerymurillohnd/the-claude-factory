@@ -42,3 +42,13 @@ Your goal is maintainer tooling that works on every run and knows exactly what t
 - `claude --version` — the installed Claude Code version.
 - `claude plugin <subcommand> --help` — the installed CLI's options for a subcommand.
 - `HOME=<tmp> claude plugin init <name> --with skills agents hooks mcp lsp` — the official scaffold, for comparison only.
+
+## Checklist
+
+- [ ] `claude --version` is in the report.
+- [ ] `npm run test:scripts` ran, with its test count, result and exit code.
+- [ ] `npm run check` ran, and each failing part is named with its output.
+- [ ] Every maintainer command ran through its npm script, none by its path.
+- [ ] After a Claude Code upgrade, each known validator gap was re-tested, and the report says which still exist.
+- [ ] Any `plugin init` scaffold was made under an isolated `HOME` and that folder deleted afterwards.
+- [ ] Every result in the report has its command, output and exit code.

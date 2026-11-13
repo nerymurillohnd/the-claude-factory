@@ -32,3 +32,14 @@ Your goal is that a user reads the same fact about a plugin wherever they look. 
 
 - `git grep -n "<fact>"` — every tracked file that states a fact.
 - `claude plugin validate plugins/<plugin>` — prints `Advice` when a README lacks an install line.
+
+## Checklist
+
+- [ ] Every plugin's name matches across its `plugin.json`, its marketplace entry, its README and the root catalog.
+- [ ] Every plugin's version matches across its `plugin.json`, its latest CHANGELOG section, its README badge and the catalog.
+- [ ] Every plugin's description matches across its `plugin.json`, its marketplace entry and the catalog.
+- [ ] Every README's prerequisites and minimum Claude Code version match the plugin's CHANGELOG and requirements.
+- [ ] Every README's Compatibility cells match `docs/compatibility.md`.
+- [ ] Every install, update and uninstall command names `<plugin>@the-claude-factory`.
+- [ ] The root catalog has one row per plugin, under its category.
+- [ ] Every disagreement lists each file involved, the value it holds and the source of truth.

@@ -38,3 +38,15 @@ Your goal is that every skill loads, triggers and runs as its author intended, o
 - `claude plugin validate .claude --strict` — validates the project's own skills, agents and commands.
 - `claude plugin validate plugins/<plugin> --strict` — validates a plugin's skills, agents and commands.
 - `claude --plugin-dir plugins/<plugin> plugin details <plugin>` — a plugin's components and token cost.
+
+## Checklist
+
+- [ ] `npm run lint:skills` ran on every skill in scope, and its exit code is in the report.
+- [ ] Every error and warning is listed with its rule id, file and line, and source.
+- [ ] Every skill's frontmatter parses as strict YAML, and its `name` equals its folder.
+- [ ] Every link and anchor in a skill resolves, and none leaves the skill folder.
+- [ ] Every script a skill runs exists, has its shebang and mode 100755, and is called with its interpreter.
+- [ ] `claude plugin validate .claude --strict` ran for the project's own skills, agents and commands.
+- [ ] Each plugin directory in scope passed or failed `validate --strict`.
+- [ ] Every command and agent definition in scope was read: frontmatter, body and the files it points to.
+- [ ] Any token figure from `plugin details` states the sign-in state it was taken under.

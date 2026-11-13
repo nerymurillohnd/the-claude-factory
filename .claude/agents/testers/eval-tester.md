@@ -32,3 +32,12 @@ Your goal is evidence of whether a plugin makes Claude better at the tasks it cl
 - `claude plugin eval plugins/<plugin> --case <case> --runs 1 --ablation none` — one quick case.
 - `claude plugin eval plugins/<plugin>` — every case, with and without the plugin.
 - `claude plugin eval plugins/<plugin> --json` — the full run result as JSON.
+
+## Checklist
+
+- [ ] The owner approved this run: the plugin, the cases, the run count and the options.
+- [ ] Only existing cases ran, and none was written or changed.
+- [ ] The target came before `--case`, `--runs`, `--ablation` and `--json`.
+- [ ] Every case loaded, each with its grader.
+- [ ] The report gives the trigger and pass rates with and without the plugin, and their difference.
+- [ ] The report gives the cost of the run.

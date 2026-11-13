@@ -41,3 +41,19 @@ Your goal is that no manifest or plugin layout reaches users broken, inconsisten
 - `claude plugin validate plugins/<plugin> --strict --json` — one plugin's report as JSON.
 - `claude plugin validate . --strict --json` — the marketplace's report as JSON.
 - `claude plugin validate plugins/<plugin> --strict --profile directory` — adds the portability checks.
+
+## Checklist
+
+- [ ] `npm run validate` ran, and its exit code is in the report.
+- [ ] Every plugin directory was validated on its own, not only the marketplace.
+- [ ] Each plugin passed or failed `--profile directory`, with its warnings listed.
+- [ ] Every `marketplace.json` entry's `name` matches its `source` folder and that folder's `plugin.json` `name`.
+- [ ] Every entry has a non-empty `description` and a known `category`.
+- [ ] No `renames` key is still a listed plugin.
+- [ ] `marketplace.json` has no top-level `version` or `metadata.version`.
+- [ ] Every `version` is valid SemVer and appears only in `plugin.json`.
+- [ ] Every `plugin.json` has a valid `author.email`, an SPDX `license`, unique `keywords` and a non-empty `displayName` when present.
+- [ ] No manifest has duplicate JSON keys.
+- [ ] No plugin holds a Windows-invalid or case-colliding name, a symlink, a file over 256 KiB or more than 512 files.
+- [ ] Every plugin has its README, CHANGELOG, LICENSE file and icon.
+- [ ] Every finding names its file, its field or path, the evidence and the rule it breaks.

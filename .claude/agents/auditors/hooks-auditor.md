@@ -43,3 +43,17 @@ Your goal is that every hook, mod and server a plugin ships runs safely and pred
 - `npm run typecheck:ts` — tsc on the plugins' `.mjs`, `.js` and `.cjs` scripts.
 - `claude plugin validate plugins/<plugin> --strict --json` — hooks checks, and `gatingHooks[].hasCatch` for mods.
 - `git ls-files -s <script>` — a hook script's mode in git (must be 100755).
+
+## Checklist
+
+- [ ] `npm run lint:shell`, `lint:python`, `typecheck:python`, `lint:js` and `typecheck:ts` ran, each with its exit code in the report.
+- [ ] Every `hooks.json` in scope passed or failed `validate --strict`, and its handlers have no unknown keys.
+- [ ] No `hooks.json` has duplicate JSON keys.
+- [ ] Every hook command that holds `${CLAUDE_PLUGIN_ROOT}` uses exec form, or quotes the placeholder in shell form.
+- [ ] Every hook script starts with its env shebang and has mode 100755 in git.
+- [ ] Every Bash hook sets `set -euo pipefail`, or justifies each dropped flag in a comment.
+- [ ] No hook on a blocking event can exit 2 by accident under `set -e`.
+- [ ] Every Python hook in a plugin imports only the standard library and keeps Python 3.12 syntax.
+- [ ] Every mod's gating handlers handle their errors (`gatingHooks[].hasCatch`).
+- [ ] Every `.mcp.json` and `.lsp.json` in scope was read key by key: no unknown key, no missing `command`.
+- [ ] The project's own hooks in `.claude/settings.json` and `.claude/hooks/` were checked too.

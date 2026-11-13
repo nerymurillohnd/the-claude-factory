@@ -49,3 +49,14 @@ Your goal is proof that each plugin installs, loads and behaves as its README pr
 - `CLAUDE_CONFIG_DIR=<tmp> claude plugin marketplace add .` — adds the local marketplace to the isolated configuration.
 - `CLAUDE_CONFIG_DIR=<tmp> claude plugin install <plugin>@the-claude-factory` — installs the plugin there.
 - `CLAUDE_CONFIG_DIR=<tmp> claude plugin list --json` — each install's path, errors and notes.
+
+## Checklist
+
+- [ ] `CLAUDE_CONFIG_DIR` points to a new temporary folder for every install and configuration command.
+- [ ] The plugin loaded from its folder: `--plugin-dir` at the plugin directory, before the subcommand.
+- [ ] `plugin details` listed every component the README promises.
+- [ ] The local marketplace was added and the plugin installed in the isolated configuration.
+- [ ] `plugin list --json` showed the install with no `errors`.
+- [ ] Every mod's tests ran with `claude plugin test`, with their result.
+- [ ] Every command in the report has its output and exit code.
+- [ ] The temporary configuration folder was deleted at the end.

@@ -35,3 +35,15 @@ Your goal is a repository whose workflows are secure and correct, and whose form
 - `npm run lint:workflows` — actionlint and zizmor (offline) on the workflows.
 - `npm run lint:github` — checks the issue forms, Dependabot and labels against the catalog.
 - `npm run labels:sync` — compares `labels.json` with GitHub, dry-run by default; needs a GitHub token.
+
+## Checklist
+
+- [ ] `npm run lint:workflows` and `npm run lint:github` ran, each with its exit code in the report.
+- [ ] Every workflow sets least-privilege `permissions` at the top or per job.
+- [ ] Every action is pinned to a full commit SHA.
+- [ ] No workflow puts untrusted input (titles, bodies, branch names) straight into a `run:` step.
+- [ ] Every workflow's triggers, and the workflows it depends on, exist on the branch.
+- [ ] Every step that runs a plugin command reads its exit code or `--json`, never the symbols.
+- [ ] No CI job gates on `claude plugin details` token figures or runs `eval` without a credential and a budget.
+- [ ] Every label a form or Dependabot applies exists in `labels.json`, and `labels:sync` showed the dry-run differences with GitHub.
+- [ ] CODEOWNERS covers every path it should, and Dependabot covers every package ecosystem in use.

@@ -38,3 +38,14 @@ Your goal is that every release reaches users with the right version, an accurat
 - `claude plugin validate . --strict` — reports version mismatches between entries and manifests.
 - `git diff origin/main -- plugins/<plugin>/.claude-plugin/plugin.json` — the version change against `main`.
 - `git tag --list '<plugin>--v*'` — the plugin's existing tags.
+
+## Checklist
+
+- [ ] Every plugin changed since `origin/main` was found, and each one's version went up exactly one SemVer step.
+- [ ] Each bump's level fits its changes: major for a breaking change, minor for a new capability, patch for a fix.
+- [ ] A `1.0.0` bump has the owner's explicit authorization.
+- [ ] Each new version has its CHANGELOG section, dated, with its compare and tag links, and breaking entries marked.
+- [ ] Each version is valid SemVer and matches its marketplace entry (`validate . --strict`).
+- [ ] Each planned tag `<plugin>--v<version>` does not exist yet (`tag --dry-run`, `git tag --list`).
+- [ ] The release workflow can run: every script and workflow it calls exists.
+- [ ] Every blocker names its plugin, file or tag, and the evidence.
