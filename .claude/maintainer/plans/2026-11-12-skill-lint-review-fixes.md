@@ -16,11 +16,9 @@ The previous content of this file (the skill-lint design) is saved in
 - Code changes only with Edit/Write. Checks only through npm: `npm run test:scripts`,
   `npm run lint:python`, `npm run typecheck:python` (project rule wins over the skill's bare
   `ruff`/`basedpyright` commands; same tools, same config).
-- python-lsp-intelligence: before every signature change or deletion, `findReferences` +
-  `hover` (five trust checks), then Grep the blind spots (spec, plan, rule file, tests).
-  **Blocker:** the `LSP` tool is not exposed in this session (the plugin's `.lsp.json` declares
-  `basedpyright-langserver`, which only got onto PATH when the setup script ran mid-session).
-  Impact analysis below was done with Grep; it is repeated with LSP once the tool is available.
+- python-lsp-intelligence: the impact-analysis checklist applies; the `LSP` tool is not
+  available in cloud sessions, so it runs through the owner-approved equivalent (see Owner
+  decisions).
 - Failing test first for each correctness finding; confirm it fails before the fix.
 - No `noqa`, `pyright: ignore` or new `cast()`.
 - `markdown.py` (252 lines) must be split before it grows (rule: ~250); update
@@ -30,15 +28,22 @@ The previous content of this file (the skill-lint design) is saved in
 
 ## Owner decisions (2026-11-12)
 
-- **LSP:** the owner restarts the session so the basedpyright LSP loads. Step 0 of execution:
-  confirm the `LSP` tool exists and `hover` works on `parse_markdown`. If it is still missing,
-  stop and report; do not fall back silently.
+- **LSP:** the owner chose to restart the session so the basedpyright LSP loads. After the
+  worker restart the `LSP` tool is still absent, and the official docs explain why
+  (code.claude.com/docs/en/tools-reference#lsp-tool-behavior, read 2026-11-12): "In cloud
+  sessions, Claude Code doesn't start plugin language servers, so the LSP tool stays inactive
+  there." A restart cannot fix it in this environment. **Owner decision:** use the cloud
+  equivalent. Before each signature change or deletion, Grep every caller and blind spot (spec,
+  plan, rule file, tests), read each calling file, and after the change run
+  `npm run typecheck:python` (basedpyright over all of `scripts/`, so every caller is
+  re-checked). The final report states that the LSP tool was unavailable and this was used
+  instead.
 - **Vendored folders:** prune `node_modules/` and `.venv/` (and `.git/`) from the file
   listing, and add them to the CO-12 exemptions in the spec.
 - **HTML comments:** no links, headings, anchors or fences come from comment content; the
   text stays in prose, so CO-11 still checks it.
 
-## Callers found (Grep; to re-verify with LSP)
+## Callers found (Grep; re-checked by reading each caller before its change)
 
 - `parse_markdown`: discover.py:126, refs.py:170, rules_content_files.py:62,
   rules_portability.py:61, rules_scripts.py:77, rules_capabilities.py:117, test_markdown.py.
