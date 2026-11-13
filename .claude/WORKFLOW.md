@@ -53,6 +53,7 @@ The commands of each lifecycle stage. It lists only Claude Code commands and the
 - `npm run typecheck:python` — basedpyright on plugin Python, then on maintainer Python in `scripts/`.
 - `npm run fix` — rewrites files: Biome fixes, ruff fixes and format, shfmt.
 - `npm run format` — rewrites files: Biome, ruff and shfmt formatting only.
+- `npm run icons:render [-- <plugin>...]` — rewrites each plugin's `.claude-plugin/icon.png` from `scripts/generators/plugin-icons/<plugin>.svg`; needs Playwright's Chromium, ImageMagick and the JetBrains Mono font.
 
 ### 6. Dependencies and relevance
 
@@ -64,7 +65,7 @@ The commands of each lifecycle stage. It lists only Claude Code commands and the
 
 - **Docs:** With the `docs-maintenance` skill, event New plugin: the plugin's catalog row in the root `README.md`.
 - `claude plugin validate .` — flags duplicate names, `..` paths and version mismatches between an entry and its `plugin.json`.
-- `npm run check:consistency` — what `validate` doesn't check across files: names, `renames`, `forceRemoveDeletedPlugins`, changelog headings against tags, README placeholders, length, badge and commands, and the root catalog rows; `-- --offline` skips the tag check.
+- `npm run check:consistency` — what `validate` doesn't check across files: names, `renames`, `forceRemoveDeletedPlugins`, changelog headings against tags, README placeholders, length, badge and commands, the root catalog rows, each plugin's icon and its SVG source, and its listing URLs; `-- --offline` skips the tag check.
 
 ### 8. Validation
 

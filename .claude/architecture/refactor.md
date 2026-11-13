@@ -182,8 +182,8 @@
 - `scripts/validators/lsp-json-schema.py` — **Pending** · Gap: every file-based `.lsp.json` (unknown keys, missing `command`, duplicate keys); native validates only inline `lspServers` (NV-B2, E6)
 - `scripts/validators/hooks-json-schema.py` — **Pending** · Gap: unknown keys in a handler or at top level (native passes, E7) and duplicate keys (caught by nothing, E12). Needs the schemas in `scripts/schemas/`, also **Pending**
 - Hook scripts — **Implemented** as a convention · `.claude/rules/hook-scripts.md` and ADR_2026-11-13_hook-scripts-language-shebang-and-mode: Bash, Python or Node (`.mjs`) by complexity, env shebang, mode 100755, `set -euo pipefail`
-- `scripts/generators/plugin-icons.mjs` — **Pending** · Renders `scripts/generators/plugin-icons/<plugin>.svg` to `icon.png`. No command equivalent
-- `scripts/validators/plugin-icons.py` — **Pending** · Gap: square PNG, 512–2048 px, under 2 MB, fixed path, SVG source present. Native only warns on a missing icon or icon path (E3, NV-B5e)
+- `scripts/generators/plugin-icons.mjs` — **Implemented** as `npm run icons:render` (ADR_2026-11-13_restore-plugin-icon-sources-and-checks) · Renders `scripts/generators/plugin-icons/<plugin>.svg` to `icon.png`. No command equivalent
+- `scripts/validators/plugin-icons.py` — **Replaced by** PC-09 and PC-10 in `check:consistency` (ADR_2026-11-13_restore-plugin-icon-sources-and-checks) · Gap: square PNG, 512–2048 px, under 2 MB, fixed path, SVG source present. Native only warns on a missing icon or icon path (E3, NV-B5e)
 - `scripts/checkers/fetch-github-mod.sh` — **Pending** · Caller: manual · Gap: prints the source tree of another marketplace's plugin for comparison without installing it (the CLI path writes settings and cache, E10)
 
 ### 6. Dependencies & Relevance
