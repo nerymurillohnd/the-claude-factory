@@ -40,6 +40,20 @@ The repository has two scopes that never mix. A rule, tool or file of one scope 
 - **Operating systems:** macOS and Linux, through POSIX-compatible interfaces.
 - **Windows:** only through Git Bash, when a plugin supports it.
 
+## Testing plugins
+- **Working copy:** develop against the plugin's folder with `--plugin-dir`, never an installed copy, and apply each edit with `/reload-plugins`.
+- **Load before behavior:** pass `claude plugin validate --strict`, then confirm in `/plugin` (Installed and Errors tabs) that every component loaded.
+- **Every surface:** test in Claude Code with `--plugin-dir`, and in Claude by uploading the plugin to the owner's own account, for each surface the plugin declares.
+- **What users receive:** install it in an isolated throwaway configuration (`npm run check:install`) before any release.
+- **Evals:** only on plugins the owner chose, as a short local smoke run; the full suite runs in CI.
+
+## Testing mods
+- **Every mod has tests:** `.test.ts` files run with `claude plugin test`, with no session, sign-in or network, and a stub for every `$` call the mod makes.
+- **Validate first:** `claude plugin validate` shows what Claude Code reads from the hooks module and type-checks a TypeScript one; read it before opening a session.
+- **Debug from the skip line:** read the line Claude Code writes when it skips a hook or refuses a mod, in the transcript with `--plugin-dir`, or in `claude --debug` for an installed copy.
+- **Guards fail closed:** every hook at a gating site handles its own failure with `.catch`.
+- **Current CLI:** run mod tests on Claude Code v2.1.299 or later.
+
 ## Main stack
 The tools Nery and Claude use to build and maintain the project. Each plugin's own code, in any language, belongs to that plugin, not to this stack. Several of these tools also check files under `plugins/`, but no plugin needs them and users never install them.
 
