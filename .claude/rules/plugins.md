@@ -1,6 +1,9 @@
 ---
 paths:
   - "plugins/**"
+  - ".claude-plugin/**"
+  - "README.md"
+  - "CHANGELOG.md"
   - ".github/workflows/**"
 ---
 
@@ -19,10 +22,43 @@ Conventions for the plugins this marketplace distributes. The split between the 
 - Every action a plugin takes on a user's machine is treated as high risk, and the least invasive design wins.
 - Any doubt about user safety goes to the owner before anything ships.
 
-## License and version
+## License
 
-- Every plugin is MIT-licensed, versioned on its own and documented in its own README.
-- A plugin's version lives only in its `plugin.json`; its `CHANGELOG.md`, its git tags and its GitHub Releases always agree with that version.
+- Every plugin is MIT-licensed and documented in its own README.
+
+## Names
+
+- `<plugin-name>` in `plugins/<plugin-name>/` is identical in:
+  - `name` in the plugin's `.claude-plugin/plugin.json`
+  - the `./plugins/<plugin-name>` path of its entry in `.claude-plugin/marketplace.json`
+  - the prefix of every git tag and GitHub Release (`<plugin-name>--v…`)
+  - the name in the root README catalog
+- Record every rename in the `renames` map of `.claude-plugin/marketplace.json`, and leave no reference to the old name outside the CHANGELOGs and release notes, which record the rename.
+
+## Versions
+
+- Each plugin is versioned on its own. The source of truth is `version` in `plugins/<plugin-name>/.claude-plugin/plugin.json`; `marketplace.json` stores no version field.
+- `CHANGELOG.md`:
+  - has an empty `## [Unreleased]` section
+  - has one `## [x.y.z]` heading per released version, and that set exactly matches the plugin's git tags
+  - has compare and tag links that point to the right `<plugin-name>--v<x.y.z>` tags
+- The plugin's `README.md` has exactly one version badge, on line 7: a shields.io dynamic badge reading `$.version` from that plugin's `plugin.json` on `main`.
+- The version column of the root README catalog matches each plugin's `version`.
+- The latest git tag of each plugin equals `version` in its `plugin.json` on `main`, and `plugin.json` at the tagged commit holds the same version.
+- Every plugin tag commit is an ancestor of `main`.
+
+### Version bumps
+
+A breaking-change entry in the changelog begins with `**Breaking:**`.
+
+- **Major** (`x.0.0`): any breaking change, such as removing or renaming a skill, agent, command or the plugin itself; changing configuration keys; adding a mandatory dependency; or changing behavior existing users rely on.
+- **Minor** (`x.y.0`): new backward-compatible components, options or capabilities. In the `0.x` series, breaking changes also bump Minor.
+- **Patch** (`x.y.z`): backward-compatible bug fixes, prompt wording improvements, performance improvements, and internal refactors that preserve observable behavior.
+- **No bump**: only for changes confined to a plugin's documentation files or its in-plugin maintainer files (for example tests or the eval suite).
+
+## Category
+
+- Each plugin sets `metadata.category` in its `.claude-plugin/plugin.json`, chosen by its purpose; its entry in `.claude-plugin/marketplace.json` and its row in the root README catalog carry the same category.
 
 ## Target surfaces
 
@@ -31,7 +67,7 @@ Conventions for the plugins this marketplace distributes. The split between the 
 
 ## Portability and prerequisites
 
-- Every plugin created and published here runs on its own on a user's machine. It never depends on the tools, software, configuration or versions installed on the owner's terminal or machine, so its code is written to be portable.
+- Every plugin is self-contained and portable: it depends on no path, configuration, tool, software or version specific to the maintainer's machine, so any user can install and use it.
 - Every tool, software, integration or dependency a plugin needs to run, and every specific or minimum version it requires, is declared as a prerequisite in the Prerequisites section of that plugin's README.
 - Each plugin's README states its Windows support.
 

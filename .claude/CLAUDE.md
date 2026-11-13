@@ -7,7 +7,7 @@ Guidelines for Claude Code (claude.ai/code) when working in this repository.
 - A public marketplace of plugins for Claude by Anthropic, hosted on GitHub at `nerymurillohnd/the-claude-factory` (a personal account, not an organization).
 - Name the two surfaces where plugins run only **Claude Code** and **Claude** (the unified chat and Cowork experience); Claude Code is a separate product, not part of Claude.
 - The project designs, builds, tests, releases and maintains plugins, mods included, for third parties, who install them on their own machines and use them in their own projects and operations.
-- Plugins and this repository target macOS and Linux; a plugin that supports Windows does so only through Git Bash.
+- Plugins and this repository target macOS and Linux through POSIX-compatible interfaces; a plugin that supports Windows does so only through Git Bash.
 
 ## Who works on it
 
@@ -45,6 +45,7 @@ A rule, tool or file of one scope never applies to the other or becomes its requ
 - Use Python 3.15, set in `.python-version` and installed with `uv python install`.
 - Write each npm script that runs maintainer Python as `uv run python scripts/<file>.py`, never bare `python3` (each machine's OS Python) or `.venv/bin/python`: only `uv run` and `uv sync` create `.venv` and keep `uv.lock` current.
 - Add a package a maintainer script imports with `uv add --dev <package>`, which updates `pyproject.toml` and `uv.lock` together; commit both, and never edit `uv.lock` by hand.
+- Biome neither formats nor lints the Markdown Claude reads as instructions: every `CLAUDE.md` and `CLAUDE.local.md`, the `.claude/` folders that `biome.jsonc` lists by name under `files.includes`, and the Markdown in `skills/`, `agents/` and `commands/` (in `.claude/` and in each plugin) and in each plugin's `evals/`. It formats and lints every other Markdown file, plugin READMEs and CHANGELOGs included. When you add a `.claude/` folder of instruction Markdown, add it to that list in `biome.jsonc`.
 - ruff, basedpyright, zizmor and check-jsonschema are uv tools pinned in the `tools:install` npm script and called by name in the npm scripts; they are not project dependencies. Biome and TypeScript are pinned dev dependencies in `package.json`.
 
 #### Models and effort
@@ -60,7 +61,7 @@ A rule, tool or file of one scope never applies to the other or becomes its requ
 
 ### Plugin scope
 
-- Before designing, creating or changing a plugin, or a workflow that runs its evals, read `.claude/rules/plugins.md`. It holds the plugin-scope conventions: design, safety, license and version, target surfaces, Windows support, portability and prerequisites, pull requests inside `plugins/`, and evals. It also loads on its own when a file under `plugins/` or `.github/workflows/` is read or edited.
+- Before designing, creating or changing a plugin, or a workflow that runs its evals, read `.claude/rules/plugins.md`. It holds the plugin-scope conventions: design, safety, license, names, versions and version bumps, category, target surfaces, portability and prerequisites, pull requests inside `plugins/`, and evals. It also loads on its own when a file under `plugins/` or `.claude-plugin/`, the root `README.md` or `CHANGELOG.md`, or a workflow is read or edited.
 - Check each plugin's code and behavior locally, with the plugin's own testing methods, in isolated environments that do not depend on the maintainer's tools or versions. In CI, only the evals run, as the Evals section of `.claude/rules/plugins.md` states.
 
 ## Verification
