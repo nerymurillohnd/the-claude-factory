@@ -1,74 +1,58 @@
 # Governance
 
-The rules you follow on every documentation task, whatever the event. Read this file in full before you launch the first subagent of a task.
+The rules for every documentation task, whatever the document. Read this file in full before you write the first document of a task.
 
-## What stays with you
+## What this skill doesn't decide
 
-These are not documents and no subagent touches them:
-
-- `plugins/<plugin>/.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json`: versions, names, descriptions, catalog entries. Change them yourself, before you launch the subagents that read them.
-- The decisions: which version a release gets, which change type and whether it is breaking, what changed for the user and why.
-- The owner's values in the subagents table of `SKILL.md`. Ask the owner for any that are missing; never invent one and never let a subagent guess it.
+- `plugins/<plugin>/.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json`, the version a release gets, its change types and whether it is breaking: the `plugin-versioning`, `plugin-releases` and `plugin-catalog-changes` skills settle them before a document is written. When a document needs one of these decisions and none was made, stop and run the skill that makes it.
 - Commits, pull requests and releases, under the rules in `.claude/CLAUDE.md`.
 
-## Running subagents in parallel
+## Values only the owner can give
 
-- Never run two subagents on the same file at the same time. Every file has one owner, so this only happens if you launch the same subagent twice for one file.
-- Subagents start in the background. Wait for their completion notices instead of doing their work in the meantime.
+Ask the owner for any of these that the files don't already hold; never invent one.
 
-## How to brief a subagent
+| Document | Owner's values |
+| :-- | :-- |
+| Plugin and root `CHANGELOG.md` | Release date (from the release); marketplace display name |
+| Plugin `README.md` | Plugin emoji; surfaces (`metadata.surfaces`) when not yet set; minimum Claude Code version when neither `engines` nor a changelog entry sets it |
+| Root `README.md` | Marketplace display name and emoji |
+| `LICENSE` | Copyright year and holders |
+| `NOTICE.txt` | Source, exact version and license of each third-party work, when the files don't show them |
+| `CODE_OF_CONDUCT.md` | Private reporting channel; enforcement policy, if not the Covenant's |
+| `CONTRIBUTING.md` | How the owner triages issues, when it changes |
+| `SECURITY.md` | Reporting channel; supported versions policy; response targets and disclosure practice, if any |
+| `SUPPORT.md` | Support channels and any response expectations |
+| `PRIVACY.md` | Effective date; marketplace display name; maintainer; what the author collects |
 
-The subagent starts with no context, so the prompt is its whole picture of the task. Write it like a work order:
+## Launching `plugin-readme-writer`
 
-- **Scenario**: the event in one line, and whether to create, update, release, audit or fix.
-- **Target**: the plugin directory and the file, or "repository root".
-- **What changed and why**: in the user's terms, with the paths of the files that changed.
-- **Decisions**: version, change types, breaking or not, release date.
-- **Owner values**: every value the subagents table of `SKILL.md` lists for this subagent, exactly as the owner gave it.
-- **Scope**: "report only" or "fix" for an audit; any file it must leave alone that it might be tempted to touch.
+Use it only for a plugin README written in full for the first time. It starts with no context, so the brief is its whole picture:
 
-Example:
+- **Scenario**: create the README of a new plugin.
+- **Target**: `plugins/<plugin>/README.md`.
+- **What the plugin does**: in the user's terms, with the paths of its components, and the output of `claude --plugin-dir plugins/<plugin> plugin details <plugin>` so the brief matches the real inventory.
+- **Owner values**: every value the table above lists for the plugin README, exactly as the owner gave it.
 
-```text
-Scenario: a released plugin changed; record the changes under Unreleased.
-Target: plugins/turn-meter/CHANGELOG.md
-What changed: the status line now shows tokens per minute (new, from skills/turn-meter/SKILL.md and
-scripts/rate.sh); the `--compact` option was removed from the /turn-meter command.
-Decisions: the first change is Added; the removal is Removed and breaking: users who pass --compact
-get an error and must drop the flag.
-Owner values: none needed.
-```
+Leave out what it already knows: the template, its rules, how to format the document. When it ends, read its final message, act on its missing values and on the changes it says other files need, and run the checks below.
 
-Leave out what the subagent already knows: its template, its rules, how to format its document.
+## Checks after writing any document
 
-## Check what came back
-
-For every subagent, before you rely on its result:
-
-1. **Read its final message.** Act on each part:
-   - **Missing values**: ask the owner, then launch the subagent again with them.
-   - **Changes other files need**: send each one to that file's owner, or make it yourself when it is `plugin.json` or `marketplace.json`.
-   - **Findings** (audit): take them to the owner before any fix.
-2. **Check what it touched.** `git status --short` must show only the files the subagent owns, plus its memory under `.claude/agent-memory/`. If it changed anything else, restore that file with `git checkout -- <file>` and tell the owner.
-3. **Check for leftovers** in each file it wrote: `grep -n '{{' <file>` and `grep -n '<!--' <file>` should find nothing, except where the subagent's own rules keep them.
-4. **Validate the plugin** when the subagent wrote one of its documents: `claude plugin validate plugins/<plugin> --strict --profile directory`.
-5. **Read the diff.** Make sure it says what the change is, and that it states nothing the plugin's files or the owner did not give.
-
-When a result is wrong, launch the subagent again with what is wrong and what to do. Do not fix the document yourself.
+1. `git status --short` shows only the documents the task touched, plus `.claude/agent-memory/` when `plugin-readme-writer` ran.
+2. `grep -n '{{' <file>` and `grep -n '<!--' <file>` find nothing, except where the document's procedure keeps them.
+3. After a plugin's document changes: `claude plugin validate plugins/<plugin> --strict --profile directory` exits 0.
+4. Read the diff: it says what changed, and states nothing the files, the calling skill or the owner didn't give.
 
 ## When something gets in the way
 
-- **No subagents in this session**, as in a cloud thread of a Claude Project or in Claude chat: leave the documents as they are, and tell the owner which documents the change needs and why.
-- **A subagent stops without finishing** (turn limit or error): resume it with SendMessage and its agent ID, or launch it again with the same brief.
-- **A subagent reports that an official source contradicts its template**: do not work around it. Bring the conflict to the owner; a template changes only with the owner's decision.
-- **The owner asks you to edit a document directly**: say once that its subagent keeps it consistent with the template, and recommend launching it. Do what the owner decides.
+- **An official source contradicts a template**: keep the template, and bring the conflict to the owner; a template changes only with the owner's decision.
+- **The owner asks for a direct edit** that the procedure would write differently: say once what the procedure requires, then do what the owner decides.
 
 ## Conventions that bind every document
 
-They are in `.claude/CLAUDE.md`. The ones that shape briefs most often:
+They are in `.claude/CLAUDE.md`. The ones that shape documents most often:
 
 - Release dates are UTC, `YYYY-MM-DD`, the day the tag and GitHub Release are created.
 - The two surfaces are named **Claude Code** and **Claude**, and no other surface name is used.
 - Prerequisites, tools and minimum versions a plugin needs go in its README's Prerequisites section.
-- Plugin changes that touch components, dependencies or configuration go through a pull request, and only at the owner's request. A change limited to a plugin's documentation needs none.
+- A change limited to a plugin's documentation needs no pull request, unless the owner asks for one.
 - The repository is public: no personal, client or business data in any document or memory.

@@ -45,7 +45,10 @@ These go beyond the docs and stay unless the owner changes them:
      claude plugin details <plugin>
    ```
    `claude plugin list --json` shows the installed version; `claude plugin details` shows the components and the `Always-on` cost. Repeat with `#main` in a second folder, report the new version and the `Always-on` figure against `main`, then delete both folders.
-4. **Date the release** with today's UTC date, the day `release.yml` will tag it. Run the `docs-maintenance` event "A plugin gets a new version": `changelog-writer` turns `## [Unreleased]` into `## [X.Y.Z] - YYYY-MM-DD` with its compare and tag links, then `plugin-readme-writer`, then the root `CHANGELOG.md` and the catalog row.
+4. **Write the release into the documents** with the `docs-maintenance` skill, dated with today's UTC date, the day `release.yml` will tag it:
+   - the plugin's `CHANGELOG.md`: `## [Unreleased]` becomes `## [X.Y.Z] - YYYY-MM-DD` with its compare and tag links, and an empty `## [Unreleased]` stays above it. If `## [Unreleased]` is empty, stop and ask the owner what the version changes.
+   - the plugin's `README.md`, where it depends on the version, such as the minimum Claude Code version
+   - the release line in the root `CHANGELOG.md`, and the catalog row of the root `README.md` when it shows the version.
 5. **Merge** only with the owner's authorization, every check green and every review resolved.
 6. **Release.** `Validate` on `main` starts `release.yml`, which tags each plugin whose version has no tag yet and creates its GitHub Release. Start it by hand with `workflow_dispatch` only when `Validate` passed, no release run exists for the merge, and the owner says so.
 
@@ -57,6 +60,10 @@ These go beyond the docs and stay unless the owner changes them:
    - the GitHub Release has the tag's name and is neither a draft nor a prerelease (`gh api repos/nerymurillohnd/the-claude-factory/releases/tags/<plugin>--v<version>`)
    - step 3 from `#main` now installs the new version.
 8. **If `Validate` fails after the merge**, tell the owner at once: users who update already have the merged version. The fix goes in a new pull request with its own version bump.
+
+## Withdraw a version
+
+Claude Code can't take a published version back: users who updated keep it until a newer one reaches them. To withdraw one, release the fix as a new version through this skill, then mark the withdrawn version `[YANKED]` in the plugin's `CHANGELOG.md` with the `docs-maintenance` skill, with the evidence that it was withdrawn. Never delete its section, its tag or its GitHub Release.
 
 ## What users run
 

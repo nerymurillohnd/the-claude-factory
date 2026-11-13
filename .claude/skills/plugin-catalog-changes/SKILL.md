@@ -48,13 +48,14 @@ From code.claude.com/docs/en/plugins/publish (Rename or remove a plugin) and hos
 2. `git mv plugins/<old> plugins/<new>`, then change `name` in `plugin.json`, the marketplace entry and every live use.
 3. Add `"<old>": "<new>"` to `renames`.
 4. Bump the plugin as a breaking change through the `plugin-versioning` skill (Minor in `0.x`, Major after). Its changelog entry starts with `**Breaking:**`, maps each old command to the new one, and tells users to run `/plugin install <new>@the-claude-factory` once.
-5. With the owner's authorization, run `npm run labels:sync -- --apply` so the `plugin: <new>` label exists; the old label stays.
+5. Update the documents with the `docs-maintenance` skill: every command and name in the plugin's `README.md`, its catalog row in the root `README.md`, and the rename's line in the root `CHANGELOG.md`.
+6. With the owner's authorization, run `npm run labels:sync -- --apply` so the `plugin: <new>` label exists; the old label stays.
 
 ## Removal or deprecation
 
 1. Remove the entry from `plugins` in `marketplace.json`. Whether `plugins/<old>/` is deleted too is the owner's call.
 2. Add `"<old>": null` to `renames`.
-3. Record the removal in the root `CHANGELOG.md` under `### Removed` through `changelog-writer`. The removed plugin gets no version bump and no new tag.
+3. Update the documents with the `docs-maintenance` skill: remove the plugin's row from the root `README.md` catalog and the plugin from `PRIVACY.md`, and record the removal in the root `CHANGELOG.md` under `### Removed`. The removed plugin gets no version bump and no new tag.
 
 ## Merge into another plugin
 
@@ -62,7 +63,8 @@ From code.claude.com/docs/en/plugins/publish (Rename or remove a plugin) and hos
 2. Compare the `userConfig` keys of both plugins: Claude Code moves `<old>`'s saved options to `<target>`, so a key that means something else in `<target>` is a breaking change to resolve first.
 3. Add `"<old>": "<target>"` to `renames`.
 4. Bump `<target>` through the `plugin-versioning` skill (at least Minor). Its changelog maps each old command to the new one and tells users to run `/plugin install <target>@the-claude-factory` once.
-5. On Claude Code 2.1.319, `claude plugin list` left `<target>` out and `claude plugin update` failed until that install; this is unverified on later versions, so check it after the release.
+5. Update the documents with the `docs-maintenance` skill: `<target>`'s `README.md` for the components it gained, `<old>`'s removal from the root `README.md` catalog and from `PRIVACY.md`, and the merge's line in the root `CHANGELOG.md`.
+6. On Claude Code 2.1.319, `claude plugin list` left `<target>` out and `claude plugin update` failed until that install; this is unverified on later versions, so check it after the release.
 
 ## After the release
 

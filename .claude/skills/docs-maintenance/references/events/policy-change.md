@@ -1,16 +1,16 @@
 # The owner changes a policy
 
-This file is part of the docs-maintenance skill. Follow `references/governance.md` for briefing, checking and the rules that apply to every event, and `references/commands.md` for what each command named here tells you. "Stage 1, 2, 3" means order; subagents named in the same stage run in parallel, launched in one message, and a stage starts only when the previous one has returned.
+This file is part of the docs-maintenance skill. Follow `../governance.md` for the owner's values, the checks and the conventions, and write each document from its procedure in `../documents/`. Numbered steps run in order.
 
-Send only the owner of the affected document, with the new value:
+Update only the documents that carry the changed value:
 
-| Change | Subagent |
+| Change | Documents |
 | :-- | :-- |
-| Copyright year or holders | `license-writer`, then `notice-writer` for any notice that repeats the holder |
-| Conduct reporting channel or enforcement policy | `code-of-conduct-writer` |
-| Vulnerability reporting channel, supported versions or response targets | `security-writer` |
-| Issue forms or how users report problems | `contributing-writer`, then `support-writer` |
-| Support channels or guides | `support-writer` |
-| How the marketplace is added or its plugins installed | `marketplace-readme-writer` |
+| Copyright year or holders | Root and plugin `LICENSE`, then each `NOTICE.txt` that repeats the holder |
+| Conduct reporting channel or enforcement policy | `CODE_OF_CONDUCT.md` |
+| Vulnerability reporting channel, supported versions or response targets | `SECURITY.md` |
+| Issue forms or how users report problems | `CONTRIBUTING.md`, then `SUPPORT.md` |
+| Support channels or guides | `SUPPORT.md` |
+| How the marketplace is added or its plugins installed | Root `README.md` |
 
-Then check the root README: if it states the changed policy, add `marketplace-readme-writer`.
+Then check the root README: if it states the changed policy, update it too.
