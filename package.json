@@ -34,7 +34,11 @@
     "typecheck": "npm run typecheck:ts && npm run typecheck:python",
     "typecheck:python": "basedpyright && basedpyright -p scripts",
     "typecheck:ts": "tsc -p tsconfig.json",
-    "validate": "for d in plugins/*/; do claude plugin validate --strict \"$d\" || exit 1; done && claude plugin validate --strict ."
+    "validate": "for d in plugins/*/; do claude plugin validate --strict \"$d\" || exit 1; done && claude plugin validate --strict . && npm run validate:claude && npm run validate:mods",
+    "validate:claude": "claude plugin validate --strict .claude",
+    "validate:hooks-catch": "bash scripts/validators/gating-hooks-catch.sh",
+    "validate:mods": "for d in plugins/*/; do ls \"$d\"tests/*.test.ts* >/dev/null 2>&1 || continue; claude plugin test \"$d\" || exit 1; done",
+    "validate:portable": "for d in plugins/*/; do claude plugin validate --profile directory --strict \"$d\" || exit 1; done"
   },
   "devDependencies": {
     "@biomejs/biome": "2.6.6",
