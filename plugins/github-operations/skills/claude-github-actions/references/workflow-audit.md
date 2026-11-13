@@ -113,7 +113,7 @@ Sometimes a check needs a fact you can't read: the default token permission, an 
 
 - **Look for:** `actions/checkout` without `persist-credentials: false`.
 - **Not a finding when** a later step in the same job pushes with those credentials. A claude-code-action step doesn't count: it pushes with its own token, never checkout's ([Git, branches and credentials](action-contract.md#git-branches-and-credentials)).
-- **Severity:** medium when the job later runs code it didn't write (dependencies, the pull request's code, an agent) or uploads the workspace as an artifact; low otherwise, and low when the job's token is read-only.
+- **Severity:** medium when the job later runs code it didn't write (dependencies, the pull request's code, an agent) or uploads the workspace as an artifact; low otherwise, and low when the job's `GITHUB_TOKEN` has no write scope on the repository (`id-token: write` doesn't count: checkout doesn't store it).
 - **Patch:** `persist-credentials: false`. On a claude-code-action job, state its cost from [Costs of each change](auth-and-permissions.md#costs-of-each-change).
 - **Why:** checkout's token stays readable for every later step: in the local `.git/config` up to checkout v5, and in a separate file that `.git/config` includes from v6 on. claude-code-action doesn't remove the v6 form.
 - **Scanners:** zizmor `artipacked`.
