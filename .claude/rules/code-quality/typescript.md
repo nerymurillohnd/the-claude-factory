@@ -6,29 +6,24 @@ paths:
   - "/biome.jsonc"
 ---
 
-# TypeScript, JavaScript, JSON and YAML quality
+# TypeScript, JavaScript, JSON and YAML
 
-Use Biome to format and lint TypeScript, JavaScript, JSON and YAML, and `tsc` to type-check, never Prettier or ESLint.
+- Load the `typescript6-lsp-intelligence:ts-lifecycle` skill whenever you write, edit or review TypeScript or JavaScript.
+- Fix every issue a check reports before the next step or task; never leave it as debt.
 
-## Order of work on one of these files
+## Gotchas
 
-1. Before changing a symbol's name, signature or existence, find every use with the LSP tool, as `lsp.md` sets.
-2. Edit the file, then fix the LSP diagnostics Claude Code reports for it.
-3. Format, lint and sort imports in one pass, applying the safe fixes: `npx biome check --write <file>`. Biome orders those steps itself.
-4. Fix by hand any finding step 3 could not fix, then repeat step 3.
-5. After a `.ts` or `.tsx` edit, type-check last, on the final code: `npx tsc --noEmit -p tsconfig.json`.
-6. Read the file again before the next edit: step 3 rewrites it.
+- `biome check --write` formats, lints and sorts imports in one pass; never use Prettier or ESLint.
+- `tsc` checks the whole project: there is no per-file type check with the project's configuration.
+- Add a `biome-ignore` comment only for a proven false positive, with its reason and the owner's approval.
+
+## After writing or editing one of these files, in this order
+
+1. Run `npx biome check --write <file>` to format, lint and sort imports; fix the rest by hand and run it again.
+2. Run `npx tsc --noEmit -p tsconfig.json`, after a `.ts` or `.tsx` change, to type-check the final code.
+3. Read the file again before the next edit, because step 1 rewrites it.
 
 ## Before a commit
 
-- Check every file Biome reads: `npm run lint:js`.
-- Type-check the TypeScript project: `npm run typecheck:ts`.
-
-## Findings
-
-- Fix each finding at its cause.
-- When a finding is a false positive, show the evidence and ask the owner before adding a `biome-ignore` comment with its reason.
-
-## LSP
-
-- Load the `typescript6-lsp-intelligence:ts-lifecycle` skill before writing, editing or reviewing TypeScript or JavaScript.
+1. Run `npm run lint:js` to check every file Biome reads.
+2. Run `npm run typecheck:ts` to type-check the TypeScript project.

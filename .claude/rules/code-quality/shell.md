@@ -5,27 +5,25 @@ paths:
   - "/.editorconfig"
 ---
 
-# Shell code quality
+# Shell scripts
 
-Use shfmt and ShellCheck; `.editorconfig` holds shfmt's settings and `.shellcheckrc` ShellCheck's, so pass no style flags.
+- Load the `bash-lsp-intelligence:bash-lsp-intelligence` skill whenever you write, edit or review a shell script.
+- Fix every issue a check reports before the next step or task; never leave it as debt.
 
-## Order of work on a shell script
+## Gotchas
 
-1. Before renaming or deleting a function, find every use with the LSP tool, as `lsp.md` sets.
-2. Edit the script, then fix the LSP diagnostics Claude Code reports for it.
-3. Format: `shfmt -w <file>`. Run it before linting, so ShellCheck's line numbers match the final file.
-4. Lint with every optional check: `shellcheck -S style -a <file>`. ShellCheck fixes nothing itself: fix each finding by hand, then repeat steps 3 and 4.
-5. Read the file again before the next edit: step 3 rewrites it.
+- shfmt reads `.editorconfig` only when you pass no formatting flag; any flag such as `-i` makes it ignore the file.
+- Without an `.editorconfig`, format with `shfmt -w -i 2 -s -bn -ci -sr <file>`.
+- ShellCheck reads `.shellcheckrc` and `SHELLCHECK_OPTS`; pass `-S style -a` anyway, because `.shellcheckrc` cannot set them.
+- Without a `.shellcheckrc`, lint with `shellcheck -o all -S style -a -x -P SCRIPTDIR <file>`.
+- Add a `# shellcheck disable=SC<code>` line only for a proven false positive, with its reason and the owner's approval.
+
+## After writing or editing a shell script, in this order
+
+1. Run `shfmt -w <file>` to format it, before linting, so ShellCheck's line numbers match the final file.
+2. Run `shellcheck -S style -a <file>` to lint it with every optional check; fix each finding by hand, then repeat steps 1 and 2.
+3. Read the file again before the next edit, because step 1 rewrites it.
 
 ## Before a commit
 
-- Check every shell script: `npm run lint:shell`.
-
-## Findings
-
-- Fix each finding at its cause.
-- When a finding is a false positive, show the evidence and ask the owner before adding a `# shellcheck disable=SC<code>` line with its reason.
-
-## LSP
-
-- Load the `bash-lsp-intelligence:bash-lsp-intelligence` skill before renaming or deleting a shell function.
+1. Run `npm run lint:shell` to check every shell script.
