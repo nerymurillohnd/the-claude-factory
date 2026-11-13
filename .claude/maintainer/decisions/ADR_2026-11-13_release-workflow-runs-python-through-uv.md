@@ -62,5 +62,6 @@ The setup step:
 | What must be true | How it is checked | Result | When to re-check |
 | --- | --- | --- | --- |
 | The workflow passes its linters | `npm run lint:workflows` | 2026-11-13: no findings | Every workflow change |
+| The workflow's loop works on every plugin | The loop from `release.yml` run locally over the 22 marketplace plugins, with `uv run`, `gh release create` replaced by `echo` | 2026-11-13: 22 of 22 gave a clean `<plugin>--v<version>` tag and a body, exit 0 | Every change to `release-notes.py` |
 | The release step works on the runner | The first `workflow_dispatch` or `Validate`-triggered run of `release.yml` | pending | The first release after this change |
-| npm still fails `devEngines` on the runner | The npm version in the `setup-node` log, compared with `devEngines` | pending | When `.nvmrc` or `devEngines` changes; switch to `npm run` once they agree |
+| npm 11.20.0 fails `devEngines` on `npm run` | `npx -y npm@11.20.0 run release:notes -- block-no-verify --tag` | 2026-11-13: `npm error code EBADDEVENGINES … Invalid semver version "^12.2.1" does not match "11.20.0"` | When `.nvmrc` or `devEngines` changes; switch to `npm run` once they agree |
