@@ -160,7 +160,7 @@ Sometimes a check needs a fact you can't read: the default token permission, an 
   - `runs-on` labels: compare GitHub-hosted labels with GitHub's current runner table, read live (for example `macos-14`, retired: see [the Snapshot](version-drift.md#snapshot)); compare self-hosted and larger-runner labels with the runners list, which needs admin access.
 - **When it can't be decided:** organization and environment secrets and self-hosted labels may not be readable. Each is a Questions row, not a missing reference.
 - **Severity:** low; medium when the missing piece is a required check's or a deployment's, or when a `runs-on` label matches no runner. Such a job waits in the queue and, for self-hosted routing, ends after 24 hours; GitHub's pages describe that end as failed in one place and cancelled in another, so report whichever the run shows.
-- **Patch:** fix or remove the reference; for a retired label, the current label for the same OS and architecture from GitHub's table.
+- **Patch:** fix or remove the reference; for a retired label, the nearest newer label of the same OS and architecture in GitHub's table, not a `-latest` label, which moves on its own.
 - **Scanners:** none. actionlint checks labels against its own list, which can lag GitHub's.
 
 ### W-11. Actions the repository's policy doesn't allow
