@@ -2,7 +2,6 @@
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "skillListingBudgetFraction": 0.1,
   "skillListingMaxDescChars": 2048,
-  "enableAllProjectMcpServers": true,
   "syncClaudeAiSkills": true,
   "syncClaudeAiPlugins": true,
   "env": {
@@ -38,13 +37,43 @@
       "mcp__Claude_Code_Docs__*",
       "mcp__Context7__*"
     ],
+    "ask": [
+      "Bash(git push*)",
+      "Bash(gh pr create*)",
+      "Bash(gh pr merge*)",
+      "Bash(gh workflow run*)",
+      "Bash(gh api *dispatches*)",
+      "Bash(gh release create*)",
+      "Bash(claude plugin tag * --push*)",
+      "Bash(npm run labels:sync -- --apply*)",
+      "mcp__github__create_pull_request",
+      "mcp__github__merge_pull_request",
+      "mcp__github__push_files",
+      "mcp__github__create_or_update_file",
+      "mcp__github__delete_file",
+      "mcp__github__create_branch",
+      "mcp__github__actions_run_trigger",
+      "mcp__github__enable_pr_auto_merge",
+      "mcp__Github_MCP_Server__create_pull_request",
+      "mcp__Github_MCP_Server__create_pull_request_with_copilot",
+      "mcp__Github_MCP_Server__merge_pull_request",
+      "mcp__Github_MCP_Server__push_files",
+      "mcp__Github_MCP_Server__create_or_update_file",
+      "mcp__Github_MCP_Server__delete_file",
+      "mcp__Github_MCP_Server__create_branch",
+      "mcp__Github_MCP_Server__actions_run_trigger",
+      "mcp__Github_MCP_Server__label_write"
+    ],
     "deny": [
       "Bash(git push --force*)",
       "Bash(gh repo delete*)",
       "Bash(pip *)",
       "Bash(pip3*)",
       "Bash(python* -m pip *)",
-      "Bash(uv pip *)"
+      "Bash(uv pip *)",
+      "Edit(/uv.lock)",
+      "Edit(/package-lock.json)",
+      "mcp__Github_MCP_Server__delete_repository"
     ]
   },
   "deniedMcpServers": [
@@ -71,6 +100,12 @@
     "frontend-design@claude-plugins-official": false,
     "frontend-design@synced": false,
     "frontend-design@inline": false,
+    "superpowers@synced": false,
+    "cloudflare@synced": false,
+    "feature-dev@synced": false,
+    "svelte-development@synced": false,
+    "tailwind-development@synced": false,
+    "pdf-viewer@synced": false,
     "mcp-server-dev@claude-plugins-official": true,
     "skill-diagnostics@the-claude-factory": true,
     "plugin-engineering@the-claude-factory": true
