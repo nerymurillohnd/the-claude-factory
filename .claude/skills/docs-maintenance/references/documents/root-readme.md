@@ -1,6 +1,6 @@
 # Root README
 
-How to edit the root `README.md`, the marketplace's front page, against `.claude/templates/root-readme-template.md`. This procedure replaces the former path-scoped rule `.claude/rules/maintainer/root-readme.md`.
+How to edit the root `README.md`, the marketplace's front page, against `assets/root-readme-template.md`. This procedure replaces the former path-scoped rule `.claude/rules/maintainer/root-readme.md`.
 
 ## Produces
 
@@ -74,7 +74,7 @@ This repository:
 
 ## Change the blueprint
 
-- Change `.claude/templates/root-readme-template.md` only when the front page changes shape: a section added, removed, moved or given a new rule. Bring `README.md` in line in the same change.
+- Change `assets/root-readme-template.md` only when the front page changes shape: a section added, removed, moved or given a new rule. Bring `README.md` in line in the same change.
 
 ## Never
 

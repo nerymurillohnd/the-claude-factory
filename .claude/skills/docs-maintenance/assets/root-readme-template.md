@@ -1,6 +1,6 @@
 # Root README blueprint
 
-<!-- Procedure: .claude/references/root-readme.md -->
+<!-- Procedure: references/documents/root-readme.md -->
 
 Section order, intent and rules of a plugin marketplace's root `README.md`, its front page. The README is written once and then edited section by section against this blueprint, never rebuilt. The blocks a generator writes ({{generatedBlocks}}) are never edited by hand: run `{{generateCommand}}`.
 

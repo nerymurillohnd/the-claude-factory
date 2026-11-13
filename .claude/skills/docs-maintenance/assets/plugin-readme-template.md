@@ -1,5 +1,5 @@
 <!--
-  Procedure: .claude/references/plugin-readme.md
+  Procedure: references/documents/plugin-readme.md
   Values to replace are {{camelCase}}. Instructions are HTML comments: follow each one, then delete it.
   Surface blocks: keep the content between <!- - app:start - -> and <!- - app:end - -> only when the plugin works in Claude,
   and the content between <!- - code-only:start - -> and <!- - code-only:end - -> only when it works in Claude Code alone;

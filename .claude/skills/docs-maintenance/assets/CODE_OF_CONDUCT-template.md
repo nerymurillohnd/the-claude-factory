@@ -1,5 +1,5 @@
 <!--
-  Procedure: .claude/references/code-of-conduct.md
+  Procedure: references/documents/code-of-conduct.md
   The Contributor Covenant 3.0, verbatim from https://www.contributor-covenant.org/version/3/0/ (CC BY-SA 4.0).
   Replace {{reportingMethod}} with how to report a violation, review "Addressing and Repairing Harm", keep the Attribution section, and delete this comment.
 -->

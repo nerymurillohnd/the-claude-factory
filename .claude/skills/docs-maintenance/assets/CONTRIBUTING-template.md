@@ -1,5 +1,5 @@
 <!--
-  Procedure: .claude/references/contributing.md
+  Procedure: references/documents/contributing.md
   Values to replace are {{camelCase}}. Instructions are HTML comments: follow each one, then delete it, this one included.
   GitHub links this file when someone opens an issue or a pull request, and from the repository's Contributing tab.
 -->

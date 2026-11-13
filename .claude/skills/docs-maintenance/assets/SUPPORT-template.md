@@ -1,5 +1,5 @@
 <!--
-  Procedure: .claude/references/support.md
+  Procedure: references/documents/support.md
   Values to replace are {{camelCase}}. Instructions are HTML comments: follow each one, then delete it, this one included.
   GitHub links this file from "Helpful resources" when someone opens an issue. List only channels that exist and are answered.
 -->

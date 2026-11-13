@@ -14,21 +14,14 @@ One fill procedure per template in `.claude/templates/`. Each reference says wha
 
 | Template | Procedure | Produces |
 | :-- | :-- | :-- |
-| `LICENSE-template.md` | [license.md](license.md) | `LICENSE` at the root and in each plugin |
-| `NOTICE-template.md` | [notice.md](notice.md) | `plugins/<plugin>/NOTICE.txt`, only with third-party material |
-| `CHANGELOG-template.md` | [changelog.md](changelog.md) | `plugins/<plugin>/CHANGELOG.md` |
-| `marketplace-changelog-template.md` | [marketplace-changelog.md](marketplace-changelog.md) | Root `CHANGELOG.md` |
 | `plugin-template.md` | [plugin-manifest.md](plugin-manifest.md) | `plugins/<plugin>/.claude-plugin/plugin.json` |
-| `plugin-readme-template.md` | [plugin-readme.md](plugin-readme.md) | `plugins/<plugin>/README.md` |
-| `root-readme-template.md` | [root-readme.md](root-readme.md) | Root `README.md` (edited against the blueprint) |
-| `CODE_OF_CONDUCT-template.md` | [code-of-conduct.md](code-of-conduct.md) | `CODE_OF_CONDUCT.md` |
-| `SECURITY-template.md` | [security.md](security.md) | `SECURITY.md` |
-| `CONTRIBUTING-template.md` | [contributing.md](contributing.md) | `CONTRIBUTING.md` |
-| `SUPPORT-template.md` | [support.md](support.md) | `SUPPORT.md` |
-| `PRIVACY-template.md` | [privacy.md](privacy.md) | `PRIVACY.md` |
 | `skill-template.md` | [skill.md](skill.md) | `plugins/<plugin>/skills/<skill>/SKILL.md` |
 | `agent-template.md` | [agent.md](agent.md) | `plugins/<plugin>/agents/<agent>.md` |
 | `evals-ci-template.md` | [evals-ci.md](evals-ci.md) | `.github/workflows/evals.yml` |
+
+## Document templates
+
+The templates and fill procedures for the repository's documents (READMEs, CHANGELOGs, LICENSE, NOTICE and the root policy files) live in the `docs-maintenance` skill, under its `references/documents/` and `assets/`.
 
 ## Templates that plugins already ship
 

@@ -1,4 +1,4 @@
-<!-- Procedure: .claude/references/marketplace-changelog.md. Delete this comment in the real file. -->
+<!-- Procedure: references/documents/marketplace-changelog.md. Delete this comment in the real file. -->
 # Changelog
 
 All notable changes to **{{marketplaceDisplayName}}** are documented here: plugins added, updated, renamed or retired, and changes to the catalog itself. Each plugin keeps its own detailed changelog in its own `CHANGELOG.md`.

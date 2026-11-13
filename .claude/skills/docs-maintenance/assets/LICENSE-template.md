@@ -1,6 +1,6 @@
 # MIT License template
 
-<!-- Procedure: .claude/references/license.md -->
+<!-- Procedure: references/documents/license.md -->
 
 Template of a `LICENSE` file: the MIT License text exactly as GitHub's license picker (choosealicense.com) publishes it. Only the copyright line changes.
 

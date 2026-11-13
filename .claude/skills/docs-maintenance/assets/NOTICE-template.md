@@ -1,6 +1,6 @@
 # NOTICE template
 
-<!-- Procedure: .claude/references/notice.md -->
+<!-- Procedure: references/documents/notice.md -->
 
 Template of a `NOTICE.txt` file, for a plugin that bundles or derives from third-party material whose license requires its notices to travel with it. A plugin that contains only its own work has no NOTICE file.
 

@@ -1,4 +1,4 @@
-<!-- Procedure: .claude/references/changelog.md. Delete this comment in the real file. -->
+<!-- Procedure: references/documents/changelog.md. Delete this comment in the real file. -->
 # Changelog
 
 All notable changes to **{{displayName}}** are documented here.

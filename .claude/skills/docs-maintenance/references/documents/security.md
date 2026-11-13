@@ -1,6 +1,6 @@
 # Security policy
 
-How to create `SECURITY.md` from `.claude/templates/SECURITY-template.md`.
+How to create `SECURITY.md` from `assets/SECURITY-template.md`.
 
 ## Produces
 

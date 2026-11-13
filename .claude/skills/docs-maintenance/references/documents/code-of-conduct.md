@@ -1,6 +1,6 @@
 # Code of conduct
 
-How to create `CODE_OF_CONDUCT.md` from `.claude/templates/CODE_OF_CONDUCT-template.md`.
+How to create `CODE_OF_CONDUCT.md` from `assets/CODE_OF_CONDUCT-template.md`.
 
 ## Produces
 

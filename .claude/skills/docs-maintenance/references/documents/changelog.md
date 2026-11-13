@@ -1,6 +1,6 @@
 # Plugin changelog
 
-How to create and keep a plugin's `CHANGELOG.md` from `.claude/templates/CHANGELOG-template.md`.
+How to create and keep a plugin's `CHANGELOG.md` from `assets/CHANGELOG-template.md`.
 
 ## Produces
 

@@ -1,5 +1,5 @@
 <!--
-  Procedure: .claude/references/privacy.md
+  Procedure: references/documents/privacy.md
   Values to replace are {{camelCase}}. Instructions are HTML comments: follow each one, then delete it, this one included.
   No official template exists for this file. Anthropic's directory policy requires a privacy policy link, explaining data
   collection, usage and retention, for software that collects user data or connects to a remote service.

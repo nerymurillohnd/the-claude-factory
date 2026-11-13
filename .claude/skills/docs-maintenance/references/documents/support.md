@@ -1,6 +1,6 @@
 # Support resources
 
-How to create `SUPPORT.md` from `.claude/templates/SUPPORT-template.md`.
+How to create `SUPPORT.md` from `assets/SUPPORT-template.md`.
 
 ## Produces
 

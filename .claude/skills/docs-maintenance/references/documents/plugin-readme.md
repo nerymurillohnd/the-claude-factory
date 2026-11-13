@@ -1,6 +1,6 @@
 # Plugin README
 
-How to create and keep `plugins/<plugin>/README.md` from `.claude/templates/plugin-readme-template.md`. This procedure replaces the former path-scoped rule `.claude/rules/plugins/plugin-readme.md`.
+How to create and keep `plugins/<plugin>/README.md` from `assets/plugin-readme-template.md`. This procedure replaces the former path-scoped rule `.claude/rules/plugins/plugin-readme.md`.
 
 ## Produces
 
@@ -111,7 +111,7 @@ This repository:
 
 ## Change the template
 
-- Change `.claude/templates/plugin-readme-template.md` only to change what every plugin README gets, and bring every plugin README in line in the same change.
+- Change `assets/plugin-readme-template.md` only to change what every plugin README gets, and bring every plugin README in line in the same change.
 - Keep its Compatibility table identical to `docs/compatibility.md`.
 - A new value is `{{camelCase}}` and gets a row in Placeholders above.
 - Render the template for a throwaway plugin in a scratch copy of the repository and read the result.

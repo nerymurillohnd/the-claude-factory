@@ -1,6 +1,6 @@
 # Notice
 
-How to create a plugin's `NOTICE.txt` from `.claude/templates/NOTICE-template.md`.
+How to create a plugin's `NOTICE.txt` from `assets/NOTICE-template.md`.
 
 ## Produces
 

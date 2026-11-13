@@ -1,6 +1,6 @@
 # License
 
-How to create a `LICENSE` file from `.claude/templates/LICENSE-template.md`.
+How to create a `LICENSE` file from `assets/LICENSE-template.md`.
 
 ## Produces
 

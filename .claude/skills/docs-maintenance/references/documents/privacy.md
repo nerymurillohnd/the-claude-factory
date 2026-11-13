@@ -1,6 +1,6 @@
 # Privacy policy
 
-How to create `PRIVACY.md` from `.claude/templates/PRIVACY-template.md`.
+How to create `PRIVACY.md` from `assets/PRIVACY-template.md`.
 
 ## Produces
 

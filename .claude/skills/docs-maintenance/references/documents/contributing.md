@@ -1,6 +1,6 @@
 # Contributing guidelines
 
-How to create `CONTRIBUTING.md` from `.claude/templates/CONTRIBUTING-template.md`.
+How to create `CONTRIBUTING.md` from `assets/CONTRIBUTING-template.md`.
 
 ## Produces
 

@@ -1,5 +1,5 @@
 <!--
-  Procedure: .claude/references/security.md
+  Procedure: references/documents/security.md
   Values to replace are {{camelCase}}. Instructions are HTML comments: follow each one, then delete it, this one included.
   GitHub requires two things in a security policy: the supported versions and how to report a vulnerability.
   Every other section is optional: keep it only when it states a real commitment.

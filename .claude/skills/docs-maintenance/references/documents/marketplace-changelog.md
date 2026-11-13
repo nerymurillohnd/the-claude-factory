@@ -1,6 +1,6 @@
 # Marketplace changelog
 
-How to create and keep the root `CHANGELOG.md` of an unversioned marketplace from `.claude/templates/marketplace-changelog-template.md`.
+How to create and keep the root `CHANGELOG.md` of an unversioned marketplace from `assets/marketplace-changelog-template.md`.
 
 ## Produces
 
