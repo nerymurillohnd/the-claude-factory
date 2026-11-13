@@ -26,23 +26,16 @@
 - **Owner (2026-11-13):** assign each script to the skills that run it, update the CLAUDE draft (`.claude/architecture/CLAUDE.draft.md`), and add the CLI commands still missing.
 - **Reading taken, not yet confirmed:**
   - Priority order is 1 → 2 → 3.
-  - Checks that fail today on the 5 mods are built, but stay out of `npm run validate` and `check` until the mods pass. See Q1.
+  - The new validation scripts that fail today stay out of `npm run validate` and `check` until they pass (Task 6).
+- **Scope:** only the 5 scripts and the CLI commands. Fixing plugins, mods included, and rebuilding `validate.yml` are outside this plan.
 
 ### Open questions for the owner (answer before Task 1)
 
-**Q1. Merge preconditions.**
-- `release.yml` triggers on `workflow_run` of `Validate`, and `validate.yml` does not exist. A rebuilt `validate.yml` would run `npm run validate`, which fails today on 5 mods:
-  - TS2741 in `turn-meter` and `tool-ledger`
-  - TS2769 in `model-trace`
-  - TS5097 in `file-tree-pane` and `project-maintainer`
-- So `release-notes.py` alone does **not** unblock the merge. The mod fixes and `validate.yml` sit on the merge's critical path.
-- **Recommendation:** two separate plans, each run before PR #104 merges: (a) fix the 5 mods, which is plugin-scope work with version bumps; (b) rebuild `validate.yml`. This plan does not cover them.
-
-**Q2. `release-notes.py --tag`.**
+**Q1. `release-notes.py --tag`.**
 - `release.yml` installs no `claude`, so it cannot call `claude plugin tag --dry-run`.
 - **Recommendation:** keep `--tag` and derive the tag from `plugin.json` as `<name>--v<version>`. Task 1 adds a test that checks the result equals `tag --dry-run` locally.
 
-**Q3. Eval cost ceiling.**
+**Q2. Eval cost ceiling.**
 - The smoke eval in `plugin-versioning` step 7 will run with `--no-publish --max-cost-usd <N>`.
 - `<N>` is a value only the owner can give. Task 7 stops until the owner gives it.
 
@@ -253,7 +246,7 @@ The checks: each one gets a failing test before its code. All are offline unless
 - `"validate:portable": "for d in plugins/*/; do claude plugin validate --profile directory --strict \"$d\" || exit 1; done"`
 
 - [ ] **Step 1:** Add `validate:claude` and chain it into `validate`. Run `npm run validate:claude`. Expected: exit 0.
-- [ ] **Step 2:** Add `validate:mods`, `validate:hooks-catch` and `validate:portable` as stand-alone scripts. Run each and record the raw output. Expected today: the mods failures (TS2741, TS2769, TS5097) and the 4 hooks without `.catch`. Don't chain these into `validate` or `check` until the mod-fix plan (Q1) lands. Note this in `refactor.md`.
+- [ ] **Step 2:** Add `validate:mods`, `validate:hooks-catch` and `validate:portable` as stand-alone scripts. Run each and record the raw output. Expected today: the mods failures (TS2741, TS2769, TS5097) and the 4 hooks without `.catch`. Don't chain them into `validate` or `check` while they fail; record that in `refactor.md`. Report the failures to the owner, without changing any plugin.
 - [ ] **Step 3: Commit:** `build: add CLI validation scripts for .claude, mods, hook catches and portability`.
 
 ### Task 7: Rewire the skills to the scripts and the missing CLI commands
@@ -272,13 +265,13 @@ The checks: each one gets a failing test before its code. All are offline unless
 | :-- | :-- | :-- |
 | versioning step 6 | Bump by hand from `origin/main` | `npm run release:status -- --next <plugin> --level <level>` |
 | versioning step 7 | The `jq \| grep` semver command, the 5-line `T` block | `npm run release:status` (exit 0), `npm run check:install -- --from local <plugin>` |
-| versioning step 7 | `claude plugin eval … --case <case> --runs 1 --ablation none` | Adds `--no-publish --max-cost-usd <owner value from Q3>` |
+| versioning step 7 | `claude plugin eval … --case <case> --runs 1 --ablation none` | Adds `--no-publish --max-cost-usd <owner value from Q2>` |
 | versioning and releases checks | Only `validate --strict` | Add `claude plugin validate plugins/<plugin> --profile directory --strict` and, for a mod, `claude plugin test plugins/<plugin>` |
 | releases step 2 | The two bash loops | `git fetch origin main && npm run release:status` |
 | releases step 3 | The `<ref>` `T` block | `npm run check:install -- --from <branch> <plugin>`, then `--from main` |
 | releases step 4 / changelog.md step 4 | "No script does this yet; edit the file by hand" | `npm run release:changelog -- <plugin>`; the notes stay written by hand |
 | changelog.md Checks | Points to the `changed:` loop | Points to `npm run release:status` |
-| releases, "Before you start" | Blocker on `release-notes.py` and `Validate` | Drop `release-notes.py` from the blocker. Keep `Validate` and the mod fixes until Q1 lands |
+| releases, "Before you start" | Blocker on `release-notes.py` and `Validate` | Drop `release-notes.py` from the blocker. Keep the `Validate` blocker as it is |
 | catalog-changes, After the release | The `T` block | `npm run check:install -- --from main <old> <new-or-target>` |
 | catalog-changes step 3 and Checks | `jq` for renames still listed | Keep the dependents `jq` (judgment). Replace the renames `jq` with `npm run check:consistency` (PC-02) once Task 4 is green |
 | plugin-readme.md, Uninstall section | Saved data stated by hand | `claude plugin list --json --data-size <plugin>` from an isolated install, to confirm the plugin keeps data |
@@ -291,7 +284,7 @@ The checks: each one gets a failing test before its code. All are offline unless
   ```
 
   Each hit must be in the table above or be added to it.
-- [ ] **Step 2:** Apply the table. Step 7's eval line waits for Q3.
+- [ ] **Step 2:** Apply the table. Step 7's eval line waits for Q2.
 - [ ] **Step 3:** Run `npm run lint:skills` on each of the 4 skills. Expected: 0 errors. Then run Step 1's `grep` again. Expected: no hit outside a script.
 - [ ] **Step 4:** Run one release dry run end to end on a committed branch with `block-no-verify`: `release:status`, `check:install --from local` and `release:notes --tag`. Show the raw output.
 - [ ] **Step 5: Commit:** one commit per skill: `docs(skills): call release scripts from <skill>`.
@@ -305,7 +298,7 @@ The checks: each one gets a failing test before its code. All are offline unless
 - [ ] **Step 1: ADR.** "Five consolidated release and consistency scripts replace the per-check scripts of main", with the alternatives (the ~15 scripts) and the reason: the duplicated pairs in `main` drifted.
 - [ ] **Step 2: `refactor.md`.**
   - Mark these lines **Replaced by** the new script: `bump-version.py`, `check-version-bump.py`, `check-published-install.sh`, `plugin-names-consistency.py`, `plugin-versions-consistency.py`, `readme-catalog-consistency.py`, and the README part of `check-repo.mjs`.
-  - Mark `release-notes.py` **Implemented**, and resolve its `--tag` "decision pending" with the answer to Q2.
+  - Mark `release-notes.py` **Implemented**, and resolve its `--tag` "decision pending" with the answer to Q1.
   - Mark the `claude plugin test` line **Implemented** as `validate:mods`, gated per Task 6.
 - [ ] **Step 3: `WORKFLOW.md`** (load `instruction-engineering:claude-md-and-rules` first).
   - Stage 3: add `validate:claude`, `validate:mods`, `validate:hooks-catch`, `validate:portable`.
@@ -326,7 +319,7 @@ The checks: each one gets a failing test before its code. All are offline unless
 
 ## Out of this plan
 
-- The mod fixes and `validate.yml` (Q1).
+- Any change under `plugins/`, mods included, and `validate.yml`. Without `validate.yml`, `release.yml` still does not trigger on its own; `workflow_dispatch` runs it.
 - The P3 scripts left in `refactor.md`:
   - the schema validators
   - `check-plugin-name.py`
