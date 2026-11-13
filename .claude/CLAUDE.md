@@ -21,7 +21,46 @@ This file defines the guidelines for Claude Code (claude.ai/code) when working i
 
 - What this project pushes, publishes and distributes runs on third parties' machines, in their projects and in their work, where it can help them or damage, break, block or complicate it. The consequences fall on those users, and on Nery, as author and as a person.
 - Nery and Claude are accountable for every push, release and distribution, and are the only check before users install a plugin; outside reviewers' opinions are optional. Every push, release and issue reply is the last gate before public exposure.
-- Anticipate defective work before it ships, and hold everything this project builds to the current best practices and official documentation of Claude and of every tool it uses; the Verification rules below say how.
+- Anticipate defective work before it ships, and hold everything this project builds to the current best practices and official documentation of Claude and of every tool it uses; the Verification section says how.
+
+## How work is done
+
+### Two scopes
+
+- The project has two scopes, which are never mixed:
+  - **Maintainer scope:** the development, creation, publishing and upkeep of the project itself: everything outside `plugins/`. It serves only the owner and Claude, runs only in their environment, and may rely on the owner's tools, accounts and setup.
+  - **Plugin scope:** what each plugin distributes to its users: one self-contained directory per plugin under `plugins/<plugin>/`, mods included. It runs on users' machines and in their projects.
+- A rule, tool or file of one scope does not apply to, or become a requirement of, the other.
+
+### Maintainer scope
+
+- The tools, scripts, configuration and workflows that maintain the project are checked in CI and locally.
+
+#### Tooling
+
+- `package.json` is the single entry point: run every maintainer command through its npm script (`npm run <script>`; `npm run` alone lists them). A new maintainer script, Python included, gets its npm script before it is run.
+- Node 26 (`.nvmrc`) and npm 12, which `devEngines` in `package.json` enforces. Install with `npm ci`.
+- Python is 3.15, set in `.python-version` and installed with `uv python install`.
+- npm scripts run maintainer Python as `uv run python scripts/<file>.py`, never bare `python3` (each machine's OS Python) or `.venv/bin/python`: only `uv run` and `uv sync` create `.venv` and keep `uv.lock` current.
+- Add a package a maintainer script imports with `uv add --dev <package>`, which updates `pyproject.toml` and `uv.lock` together; commit both, and never edit `uv.lock` by hand.
+- ruff, basedpyright, zizmor and check-jsonschema are uv tools pinned in the `tools:install` npm script and called bare, not project dependencies. Biome and TypeScript are pinned dev dependencies in `package.json`.
+
+#### Models and effort
+
+- Executors and simple auditors run on Sonnet.
+- Adversarial reviewers, orchestrators, and reviewers of critical, complex or broad work run on Opus.
+- Effort is set per task, following the official best practices and recommendations for the model.
+
+#### Repository memory
+
+- Feedback, facts, lessons and learnings about this repository are saved in `.claude/memory/`, one file each, and indexed in `.claude/memory/MEMORY.md`.
+- Dated facts, evidence and notes go to memory; instructions and conventions state only the rule, with no dates.
+- The repository is public, so memory holds only project information that is safe to publish, never personal, client or business data, or credentials.
+
+### Plugin scope
+
+- Before designing, creating or changing a plugin, or a workflow that runs its evals, read `.claude/rules/plugins.md`. It holds the plugin-scope conventions: design, safety, license and version, target surfaces, Windows support, portability and prerequisites, pull requests inside `plugins/`, and evals. It also loads on its own when a file under `plugins/` or `.github/workflows/` is read or edited.
+- Each plugin's code and behavior are checked locally, with the plugin's own testing methods, in isolated environments that do not depend on the maintainer's tools or versions. In CI, only the evals run, as the Evals section of `.claude/rules/plugins.md` states.
 
 ## Verification
 
@@ -31,43 +70,6 @@ This file defines the guidelines for Claude Code (claude.ai/code) when working i
 - Nothing is published until it is confirmed to be actionable, executable, not deprecated, aligned with current best practices and the official documentation, and built on the best current Claude features available for its purpose.
 - Work counts as done only when its checks are shown with their raw output.
 - Problems are reported as soon as they are found, including defects in work already published.
-
-## Project scopes
-
-- The project has two scopes, which are never mixed:
-  - **Maintainer scope:** the development, creation, publishing and upkeep of the project itself: everything outside `plugins/`. It serves only the owner and Claude, runs only in their environment, and may rely on the owner's tools, accounts and setup.
-  - **Plugin scope:** what each plugin distributes to its users: one self-contained directory per plugin under `plugins/<plugin>/`, mods included. It runs on users' machines and in their projects.
-- A rule, tool or file of one scope does not apply to, or become a requirement of, the other.
-- Each scope is checked where it belongs:
-  - **Maintainer scope:** the tools, scripts, configuration and workflows that maintain the project are checked in CI and locally.
-  - **Plugin scope:** each plugin's code and behavior are checked locally, with the plugin's own testing methods, in isolated environments that do not depend on the maintainer's tools or versions. In CI, only the evals run, as the Evals section of `.claude/rules/plugins.md` states.
-
-## Plugin scope
-
-- Before designing, creating or changing a plugin, or a workflow that runs its evals, read `.claude/rules/plugins.md`. It holds the plugin-scope conventions: design, safety, license and version, target surfaces, Windows support, portability and prerequisites, pull requests inside `plugins/`, and evals. It also loads on its own when a file under `plugins/` or `.github/workflows/` is read or edited.
-
-## Maintainer scope
-
-### Tooling
-
-- `package.json` is the single entry point: run every maintainer command through its npm script (`npm run <script>`; `npm run` alone lists them). A new maintainer script, Python included, gets its npm script before it is run.
-- Node 26 (`.nvmrc`) and npm 12, which `devEngines` in `package.json` enforces. Install with `npm ci`.
-- Python is 3.15, set in `.python-version` and installed with `uv python install`.
-- npm scripts run maintainer Python as `uv run python scripts/<file>.py`, never bare `python3` (each machine's OS Python) or `.venv/bin/python`: only `uv run` and `uv sync` create `.venv` and keep `uv.lock` current.
-- Add a package a maintainer script imports with `uv add --dev <package>`, which updates `pyproject.toml` and `uv.lock` together; commit both, and never edit `uv.lock` by hand.
-- ruff, basedpyright, zizmor and check-jsonschema are uv tools pinned in the `tools:install` npm script and called bare, not project dependencies. Biome and TypeScript are pinned dev dependencies in `package.json`.
-
-### Models and effort
-
-- Executors and simple auditors run on Sonnet.
-- Adversarial reviewers, orchestrators, and reviewers of critical, complex or broad work run on Opus.
-- Effort is set per task, following the official best practices and recommendations for the model.
-
-### Repository memory
-
-- Feedback, facts, lessons and learnings about this repository are saved in `.claude/memory/`, one file each, and indexed in `.claude/memory/MEMORY.md`.
-- Dated facts, evidence and notes go to memory; instructions and conventions state only the rule, with no dates.
-- The repository is public, so memory holds only project information that is safe to publish, never personal, client or business data, or credentials.
 
 ## Commands
 

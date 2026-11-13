@@ -6,7 +6,7 @@ paths:
 
 # Plugin scope
 
-Conventions for the plugins this marketplace distributes. The split between the maintainer scope and the plugin scope is set in `.claude/CLAUDE.md` (Project scopes).
+Conventions for the plugins this marketplace distributes. The split between the maintainer scope and the plugin scope is set in `.claude/CLAUDE.md` (How work is done › Two scopes).
 
 ## Design
 
