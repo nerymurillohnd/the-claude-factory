@@ -5,26 +5,18 @@ paths:
 
 # Claude's project setup
 
-Claude Code's configuration for this repository and the maintainer records; nothing here ships to users.
-
-## Where a new file goes
-- Put project instructions and the core commands in `CLAUDE.md`, and the commands of each lifecycle stage in `WORKFLOW.md`, which `CLAUDE.md` points to without importing it.
-- Put project settings (permissions, plugins, MCP servers, auto memory) in `settings.json`. Register this project's hooks there, with their scripts in `hooks/`, as `rules/hook-scripts.md` sets out.
-- Put a convention for one area or file type in `rules/<topic>.md`, with a quoted `paths` list so it loads only with those files. Anchor a file at the repository root with a leading `/` (`"/README.md"`): a pattern without a `/` matches that name in every folder.
-- Point to each rule from the `CLAUDE.md` workstream it belongs to, naming the topics it covers, so Claude knows the rule exists before it touches the files that load it.
-- Put a subagent in `agents/<group>/<agent>.md`: `auditors/` for read-only checks, `docs-maintainers/` for `plugin-readme-writer` (a plugin README written in full for the first time), `testers/` for test runs. Set `model` in its frontmatter (Sonnet for executors and simple auditors; Opus for adversarial reviewers, orchestrators, and reviewers of critical, complex or broad work) and `effort` from the official recommendations for that model and task.
-- Leave `agent-memory/<agent>/` to the subagents that set `memory: project`; they write it themselves.
-- Put a project skill in `skills/<skill>/`; `rules/skills.md` sets how to write and check it.
-- Put a document's template in the `docs-maintenance` skill's `assets/<name>-template.md` and its fill procedure in its `references/documents/<name>.md`, and list the pair in that skill's Documents table. Put a template that isn't a document (plugin manifest, skill, agent, evals workflow) in `templates/<name>-template.md` with its procedure in `references/<name>.md`, listed in `references/README.md`.
-- Record decisions and technical debt in `maintainer/` through the `project-maintainer:write-records` skill: one ADR per decision in `decisions/ADR_<YYYY-MM-DD>_<slug>.md`, debt in `technical-debt/pending-debt.md` and `technical-debt/closed-debt.md`.
-- Put design specs in `maintainer/specs/<topic>-spec.md`, implementation plans in `maintainer/plans/<YYYY-MM-DD>-<topic>.md`, and audit reports in `maintainer/audits/<YYYY-MM-DD>-<topic>-audit.md`.
-- Write end-of-session handoffs through the `project-maintainer:write-handoff` skill, which saves them in `session-handoff/`.
-- Put each redesign draft in `architecture/` at the path it will replace (`CLAUDE.draft.md`, `rules/<topic>.md`). Move it to its target once the owner approves it, and delete `architecture/` when it is empty.
-
-## Memory
-- Save feedback, facts, lessons and learnings about this repository in `memory/`, one file each, and add each to the index in `memory/MEMORY.md`, which `CLAUDE.md` imports.
-- Put dated facts, evidence and notes in memory; state instructions and conventions as rules, with no dates.
-- Keep memory publishable: the repository is public, so never save personal, client or business data, or credentials.
-
-## Working here
-- When a write here asks for permission, wait for the owner's answer; `.claude/` is a protected folder, so never write to it through Bash instead.
+- Put each lifecycle stage's commands in `WORKFLOW.md`, which `CLAUDE.md` points to without importing it.
+- Put project settings in `settings.json`, and the scripts of its hooks in `hooks/`.
+- Put a convention for one area or file type in `rules/<topic>.md` with a quoted `paths` list; anchor a root file with a leading `/`, because a pattern without `/` matches that name in every folder.
+- Point to each rule from the `CLAUDE.md` workstream it belongs to.
+- Put a subagent in `agents/auditors/`, `agents/docs-maintainers/` or `agents/testers/`, and set its `model` (Sonnet for executors and simple auditors, Opus for adversarial, critical or broad reviews) and `effort`.
+- Put a project skill in `skills/<skill>/`.
+- Put a document template and its fill procedure in the `docs-maintenance` skill, and any other template in `templates/` with its procedure in `references/`.
+- Record decisions and technical debt in `maintainer/` with the `project-maintainer:write-records` skill.
+- Put specs in `maintainer/specs/`, plans in `maintainer/plans/<YYYY-MM-DD>-<topic>.md` and audit reports in `maintainer/audits/<YYYY-MM-DD>-<topic>-audit.md`.
+- Write session handoffs with the `project-maintainer:write-handoff` skill.
+- Put a redesign draft in `architecture/` at the path it will replace, move it there once the owner approves it, and delete `architecture/` when it is empty.
+- Save each repository fact, lesson or piece of feedback in its own file in `memory/`, and add it to `memory/MEMORY.md`.
+- Put dates and evidence in memory, never in instructions.
+- Never save personal, client or business data, or credentials, in memory: the repository is public.
+- Wait for the owner's answer when a write here asks for permission; never write here through Bash instead.

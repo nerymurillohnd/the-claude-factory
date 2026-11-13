@@ -8,16 +8,11 @@ paths:
 
 # Plugin categories
 
-Users browse the marketplace by category: the root README catalog groups plugins by it.
-
-## Choose the category
-
-- Give each plugin one category, chosen by what users install it for, not by the component types it ships.
-- Classify a mod, hook or MCP plugin by its purpose like any other plugin: the catalog's Includes column already shows its component types.
-- When no category fits, propose a new one to the owner instead of stretching an existing one.
-- Set it in `metadata.category` of `plugin.json`, and give the plugin's `marketplace.json` entry, README badge and root catalog row the same category.
-
-## Categories
+- Give each plugin one category from the table, chosen by what users install it for, not by its component types.
+- Propose a new category to the owner when none fits, instead of stretching one.
+- Use the same category in `metadata.category` of `plugin.json`, the `marketplace.json` entry, the README badge and the root catalog row.
+- Copy each emoji and title exactly: the catalog headings, anchors and badges are built from them.
+- Change a published plugin's category with the `plugin-versioning` skill, because it changes `plugin.json`.
 
 | id | Title | Scope |
 | :-- | :-- | :-- |
@@ -34,10 +29,3 @@ Users browse the marketplace by category: the root README catalog groups plugins
 | `integrations` | 🔌 Integrations | MCP servers and connectors to external services |
 | `language-support` | 🧠 Language Support | LSP servers and code intelligence for specific languages |
 | `learning` | 🎓 Learning | Output styles and skills that teach as they work |
-
-- Copy the emoji and title exactly: the catalog headings, their anchors and the README badges are built from them.
-
-## Use the skills
-
-- When setting or changing a published plugin's category, load the `plugin-versioning` skill: the change edits `plugin.json`, so the plugin needs a new version.
-- When writing a README badge, a catalog row or a new category's catalog section, load the `docs-maintenance` skill; for a new plugin, follow its New plugin event.
