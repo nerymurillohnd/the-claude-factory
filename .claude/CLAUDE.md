@@ -47,7 +47,8 @@ The work divides into three workstreams. The first two never mix: a rule, tool o
 
 ## Verification
 
-- Base every decision, implementation and published change on evidence from current sources, ranked: the installed build first, then the release notes, then the official documentation, which lags the releases. State the argument that ties the evidence to the decision.
+- Base every decision, implementation and published change on the current official documentation and release notes, read before acting, and state the argument that ties them to the decision.
+- When the official sources conflict with memory, training, project files, a tool's heuristics or a third-party guide, follow the official sources.
 - Assuming, taking something for granted, acting on what is believed to be true, or fixing things by trial and error is a serious defect, and is not allowed.
 - Nothing is published until it is confirmed to be actionable, executable, not deprecated, aligned with current best practices and the official documentation, and built on the best current Claude features available for its purpose.
 - Work counts as done only when its checks are shown with their raw output.
