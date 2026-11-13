@@ -17,6 +17,7 @@
     "check:install": "bash scripts/release/check-install.sh",
     "fix": "biome check --write . && ruff check --fix . && ruff format . && shfmt -w .",
     "format": "biome format --write . && ruff format . && shfmt -w .",
+    "icons:render": "node scripts/generators/plugin-icons.mjs",
     "labels:sync": "uv run python scripts/sync-labels.py",
     "lint": "npm run lint:js && npm run lint:python && npm run lint:shell && npm run lint:workflows && npm run lint:github",
     "lint:github": "check-jsonschema --builtin-schema vendor.github-issue-forms .github/ISSUE_TEMPLATE/bug_report.yml .github/ISSUE_TEMPLATE/docs_issue.yml .github/ISSUE_TEMPLATE/feature_request.yml .github/ISSUE_TEMPLATE/plugin_idea.yml .github/ISSUE_TEMPLATE/question.yml .github/VULNERABILITY_REPORT.yml && check-jsonschema --builtin-schema vendor.github-issue-config .github/ISSUE_TEMPLATE/config.yml && check-jsonschema --builtin-schema vendor.dependabot .github/dependabot.yml && uv run python scripts/check-github-files.py",
