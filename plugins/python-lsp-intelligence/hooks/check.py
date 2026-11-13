@@ -5,12 +5,20 @@ Reads one PostToolUse or PostToolUseFailure event on stdin, finds the Python fil
 tool call changed, runs the tools on each one with the user's own configuration (the
 plugin's defaults in hooks/defaults/ only when ruff or basedpyright would find none) and
 reports: exit 0 with a systemMessage when everything passed, stderr and exit 2 when there
-are findings or a tool could not run. Files of other languages are ignored in silence.
+are findings or a tool failed on a file. Files of other languages are ignored in silence.
+
+The hook judges only what the tool call changed and never blocks because it cannot check:
+- A tool that is not installed gives one notice per session and exit 0.
+- Files that a Bash command left under a nested Git work tree count only when Git lists
+  them as modified or untracked there, so a clone, a checkout or a pull is never checked.
+- More than MAX_FILES files found by modification time alone, outside Git, are an arrival
+  (an extracted archive, a generated tree), not an edit: none is checked, and Claude is told.
 Python 3.12 or later, standard library only.
 """
 
 from __future__ import annotations
 
+import contextlib
 import hashlib
 import json
 import os
@@ -58,6 +66,9 @@ ABNORMAL_EXIT = 2
 DEFAULTS_DIR = Path(__file__).resolve().parent / "defaults"
 DEFAULTS_PYRIGHT = DEFAULTS_DIR / "pyrightconfig.json"
 INSTALL_HINTS = {"ruff": "uv tool install ruff", "basedpyright": "uv tool install basedpyright"}
+# The empty files that keep the "not installed" notice to once per session are deleted after this.
+NOTICE_MAX_AGE_S = 7 * 24 * 60 * 60
+SESSION_UNSAFE = re.compile(r"[^A-Za-z0-9_-]")
 
 
 class JsonObject(dict[str, object]):
@@ -87,6 +98,16 @@ class Tools(NamedTuple):
 
     ruff: str
     basedpyright: str
+
+
+class Changed(NamedTuple):
+    """The files a tool call changed, and the folder searched by modification time alone.
+
+    walked is None when the list comes from the tool's input, from Claude Code or from Git.
+    """
+
+    files: list[Path]
+    walked: Path | None
 
 
 def text_at(value: object, *keys: str) -> str:
@@ -147,28 +168,19 @@ def newer_than(path: Path, since_s: float) -> bool:
         return False
 
 
-def changed_since(project: Path, since_s: float) -> list[Path]:
-    """Files under project modified after since_s: git's view in a work tree, else a pruned walk."""
-    git = shutil.which("git")
-    if git is not None:
-        inside = run([git, "-C", str(project), "rev-parse", "--is-inside-work-tree"])
-        if inside.code == 0:
-            listed = run(
-                [
-                    git,
-                    "-C",
-                    str(project),
-                    "ls-files",
-                    "-z",
-                    "--modified",
-                    "--others",
-                    "--exclude-standard",
-                ],
-            )
-            paths = (project / rel for rel in listed.output.split("\0") if rel)
-            return [path for path in paths if newer_than(path, since_s)]
-    if project in (Path.home().resolve(), Path(project.anchor)):
-        return []  # a walk of the whole home directory or disk is never worth a hook's budget
+def git_changed(git: str, tree: Path) -> list[Path] | None:
+    """The files Git lists as modified or untracked in work tree `tree`; None outside one."""
+    inside = run([git, "-C", str(tree), "rev-parse", "--is-inside-work-tree"])
+    if inside.code != 0:
+        return None
+    listed = run(
+        [git, "-C", str(tree), "ls-files", "-z", "--modified", "--others", "--exclude-standard"],
+    )
+    return [tree / rel for rel in listed.output.split("\0") if rel]
+
+
+def walk(project: Path, since_s: float) -> list[Path]:
+    """Files under project modified after since_s, by a pruned walk of at most MAX_WALK_FILES."""
     found: list[Path] = []
     visited = 0
     for directory, subdirs, files in os.walk(project):  # unreadable folders are skipped
@@ -183,6 +195,72 @@ def changed_since(project: Path, since_s: float) -> list[Path]:
     return found
 
 
+def changed_since(project: Path, since_s: float) -> Changed:
+    """Files under project modified after since_s: Git's view in a work tree, else a pruned walk."""
+    git = shutil.which("git")
+    if git is not None:
+        listed = git_changed(git, project)
+        if listed is not None:
+            return Changed([path for path in listed if newer_than(path, since_s)], None)
+    if project in (Path.home().resolve(), Path(project.anchor)):
+        # A walk of the whole home directory or disk is never worth a hook's budget.
+        return Changed([], None)
+    return Changed(walk(project, since_s), project)
+
+
+def nested_tree(path: Path, top: Path, known: dict[Path, Path | None]) -> Path | None:
+    """The nearest folder between path and top that holds a .git entry: a nested work tree.
+
+    known remembers the answer for every folder visited, so each folder is examined once.
+    """
+    trail: list[Path] = []
+    tree: Path | None = None
+    for directory in path.parents:
+        if directory == top or top not in directory.parents:
+            break
+        if directory in known:
+            tree = known[directory]
+            break
+        trail.append(directory)
+        if (directory / ".git").exists():
+            tree = directory
+            break
+    for directory in trail:
+        known[directory] = tree
+    return tree
+
+
+def own_changes(files: list[Path], walked: Path) -> tuple[list[Path], list[Path]]:
+    """Split the files found by modification time under walked into (verified, loose).
+
+    A clone, a checkout or a pull writes files with a new modification time that nobody
+    edited. Inside a nested Git work tree only the files Git lists as modified or untracked
+    are a change: those are verified, and the rest are dropped. Files outside every work
+    tree are loose: nothing tells an edit from an arrival there.
+    """
+    git = shutil.which("git")
+    if git is None:
+        return [], files
+    known: dict[Path, Path | None] = {}
+    listed: dict[Path, frozenset[Path] | None] = {}
+    verified: list[Path] = []
+    loose: list[Path] = []
+    for path in files:
+        tree = nested_tree(path, walked, known)
+        if tree is None:
+            loose.append(path)
+            continue
+        if tree not in listed:
+            changed = git_changed(git, tree)
+            listed[tree] = None if changed is None else frozenset(changed)
+        changed_here = listed[tree]
+        if changed_here is None:
+            loose.append(path)  # a .git entry Git does not accept as a work tree
+        elif path in changed_here:
+            verified.append(path)
+    return verified, loose
+
+
 def as_files(names: Iterable[str]) -> list[Path]:
     """Existing regular files among names, resolved, without duplicates."""
     seen: dict[Path, None] = {}
@@ -195,21 +273,21 @@ def as_files(names: Iterable[str]) -> list[Path]:
     return list(seen)
 
 
-def candidates(event: JsonObject, now_ms: int) -> list[Path]:
+def candidates(event: JsonObject, now_ms: int) -> Changed:
     """The files the tool call may have changed, by tool name."""
     tool = text_at(event, "tool_name")
     if tool in {"Edit", "Write"}:
-        return as_files([text_at(event, "tool_input", "file_path")])
+        return Changed(as_files([text_at(event, "tool_input", "file_path")]), None)
     if tool == "NotebookEdit":
-        return as_files([text_at(event, "tool_input", "notebook_path")])
+        return Changed(as_files([text_at(event, "tool_input", "notebook_path")]), None)
     if tool != "Bash":
-        return []
+        return Changed([], None)
     changed = strings_at(event, "tool_response", "bashEditDiff", "changedFiles")
     if changed is not None:
-        return as_files(changed)
+        return Changed(as_files(changed), None)
     project = project_dir(event)
     if project is None:
-        return []
+        return Changed([], None)
     duration = integer_at(event, "duration_ms")
     window_ms = FALLBACK_WINDOW_MS if duration is None else duration + BASH_SLACK_MS
     return changed_since(project, (now_ms - window_ms) / MS_PER_S)
@@ -342,15 +420,73 @@ def check_file(path: Path, tools: Tools) -> FileResult:
 
 
 def find_tools() -> Tools | str:
-    """Absolute executable paths, or the stderr message for the first missing one."""
+    """Absolute executable paths, or the name of the first tool that is not installed."""
     found: dict[str, str] = {}
-    for name, hint in INSTALL_HINTS.items():
+    for name in INSTALL_HINTS:
         executable = shutil.which(name)
         if executable is None:
-            missing = f"{PLUGIN}: {name} is not installed, so no Python file was checked."
-            return f"{missing} Install it: {hint}\n"
+            return name
         found[name] = executable
     return Tools(found["ruff"], found["basedpyright"])
+
+
+def announced(event: JsonObject, tool: str) -> bool:
+    """True when this session already got the notice about tool; else records it.
+
+    One empty file per session and tool, in ${CLAUDE_PLUGIN_DATA}/notices or, when that
+    variable is unset, in a folder named after the plugin in the temporary directory.
+    """
+    session = SESSION_UNSAFE.sub("_", text_at(event, "session_id") or "unknown")
+    data = os.environ.get("CLAUDE_PLUGIN_DATA", "")
+    folder = (Path(data) if data else Path(tempfile.gettempdir()) / PLUGIN) / "notices"
+    marker = folder / f"{session}.{tool}"
+    if marker.is_file():
+        return True
+    # Without a marker the notice repeats, which beats never telling the user.
+    with contextlib.suppress(OSError):
+        folder.mkdir(parents=True, exist_ok=True)
+        expired = time.time() - NOTICE_MAX_AGE_S
+        for old in folder.iterdir():
+            if old.is_file() and old.stat().st_mtime < expired:
+                old.unlink()
+        marker.touch()
+    return False
+
+
+def context_json(event: JsonObject, context: str, message: str = "") -> str:
+    """One JSON object that adds context for Claude and, with message, a line for the user."""
+    payload: dict[str, object] = {}
+    if message:
+        payload["systemMessage"] = message
+    payload["hookSpecificOutput"] = {
+        "hookEventName": text_at(event, "hook_event_name") or "PostToolUse",
+        "additionalContext": context,
+    }
+    return json.dumps(payload)
+
+
+def missing_notice(event: JsonObject, tool: str) -> str:
+    """The JSON stdout that says tool is not installed, once per session; "" afterwards."""
+    if announced(event, tool):
+        return ""
+    context = (
+        f"{PLUGIN}: {tool} is not installed, so the hook does not check the Python files "
+        f"changed in this session. Do not treat them as checked. {SKILL_HINT}"
+    )
+    message = (
+        f"{PLUGIN}: {tool} is not installed, so Python files are not checked. "
+        f"Install it: {INSTALL_HINTS[tool]}"
+    )
+    return context_json(event, context, message)
+
+
+def arrival_note(count: int) -> str:
+    """What Claude is told when a command left more loose files than the hook checks."""
+    return (
+        f"{PLUGIN}: this command left {count} Python files outside a Git work tree, more than "
+        f"the {MAX_FILES} the hook checks per command, so none of them was checked or "
+        "reformatted. If you edited them, run ruff check, ruff format and basedpyright on them."
+    )
 
 
 def bounded(text: str, reserve: int) -> str:
@@ -406,24 +542,39 @@ def success(
     checked: list[Path],
     results: list[FileResult],
     base: Path | None,
+    arrival: str,
 ) -> str:
-    """The JSON stdout for a clean run: a systemMessage, plus a re-read note after a rewrite."""
+    """The JSON stdout for a clean run: a systemMessage, plus the notes Claude must read.
+
+    The notes are the files ruff rewrote and arrival, the note about loose files left unchecked.
+    """
     names = ", ".join(display(path, base) for path in checked)
     notebooks_only = all(path.suffix == NOTEBOOK_SUFFIX for path in checked)
     tools = "ruff check, ruff format" if notebooks_only else "ruff check, ruff format, basedpyright"
-    payload: dict[str, object] = {"systemMessage": f"{PLUGIN}: {tools} passed · {names}"}
+    message = f"{PLUGIN}: {tools} passed · {names}"
     rewritten = [
         display(path, base) for index, path in enumerate(checked) if results[index].rewrote
     ]
+    notes: list[str] = []
     if rewritten:
-        note = (
-            f"ruff reformatted {', '.join(rewritten)}; re-read before the next edit. {SKILL_HINT}"
-        )
-        payload["hookSpecificOutput"] = {
-            "hookEventName": text_at(event, "hook_event_name") or "PostToolUse",
-            "additionalContext": note,
-        }
-    return json.dumps(payload)
+        notes.append(f"ruff reformatted {', '.join(rewritten)}; re-read before the next edit.")
+    if arrival:
+        notes.append(arrival)
+    if not notes:
+        return json.dumps({"systemMessage": message})
+    return context_json(event, " ".join([*notes, SKILL_HINT]), message)
+
+
+def changed_python(event: JsonObject) -> tuple[list[Path], str]:
+    """The Python files to check, and the note about loose files left unchecked ("" for none)."""
+    changed = candidates(event, int(time.time() * MS_PER_S))
+    files = [path for path in changed.files if not skipped(path) and is_python(path)]
+    if changed.walked is None:
+        return files, ""
+    verified, loose = own_changes(files, changed.walked)
+    if len(loose) > MAX_FILES:
+        return verified, arrival_note(len(loose))
+    return [*verified, *loose], ""
 
 
 def main() -> int:
@@ -431,22 +582,25 @@ def main() -> int:
     event = read_event()
     if event is None:
         return 0
-    now_ms = int(time.time() * MS_PER_S)
-    files = [path for path in candidates(event, now_ms) if not skipped(path) and is_python(path)]
+    files, arrival = changed_python(event)
     if not files:
+        if arrival:
+            _ = sys.stdout.write(context_json(event, f"{arrival} {SKILL_HINT}"))
         return 0
     tools = find_tools()
     if isinstance(tools, str):
-        _ = sys.stderr.write(f"{tools}{SKILL_HINT}\n")
-        return 2
+        _ = sys.stdout.write(missing_notice(event, tools))
+        return 0
     checked, unchecked = files[:MAX_FILES], files[MAX_FILES:]
     results = [check_file(path, tools) for path in checked]
     base = project_dir(event)
     text = report(checked, results, unchecked, base)
     if text:
+        if arrival:
+            text = f"{text}{arrival}\n"
         _ = sys.stderr.write(f"{bounded(text, len(SKILL_HINT) + 1)}{SKILL_HINT}\n")
         return 2
-    _ = sys.stdout.write(success(event, checked, results, base))
+    _ = sys.stdout.write(success(event, checked, results, base, arrival))
     return 0
 
 
