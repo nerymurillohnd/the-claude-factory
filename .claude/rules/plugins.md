@@ -4,7 +4,6 @@ paths:
   - ".claude-plugin/**"
   - "README.md"
   - "CHANGELOG.md"
-  - ".github/workflows/**"
 ---
 
 # Plugin scope
@@ -46,19 +45,7 @@ Conventions for the plugins this marketplace distributes. The split between the 
 - The version column of the root README catalog matches each plugin's `version`.
 - The latest git tag of each plugin equals `version` in its `plugin.json` on `main`, and `plugin.json` at the tagged commit holds the same version.
 - Every plugin tag commit is an ancestor of `main`.
-
-### Version bumps
-
-A breaking-change entry in the changelog begins with `**Breaking:**`.
-
-- **Major** (`x.0.0`): any breaking change, such as removing or renaming a skill, agent, command or the plugin itself; changing configuration keys; adding a mandatory dependency; or changing behavior existing users rely on.
-- **Minor** (`x.y.0`): new backward-compatible components, options or capabilities. In the `0.x` series, breaking changes also bump Minor.
-- **Patch** (`x.y.z`): backward-compatible bug fixes, prompt wording improvements, performance improvements, and internal refactors that preserve observable behavior.
-- **No bump**: only for changes confined to a plugin's documentation files or its in-plugin maintainer files (for example tests or the eval suite).
-
-## Category
-
-- Each plugin sets `metadata.category` in its `.claude-plugin/plugin.json`, chosen by its purpose; its entry in `.claude-plugin/marketplace.json` and its row in the root README catalog carry the same category.
+- When a change under `plugins/<plugin>/` is ready, or a new plugin needs its first version, set the version with the `plugin-versioning` skill: it decides whether the change takes a bump and at which level. When a version is about to be merged or published, release it with the `plugin-releases` skill.
 
 ## Target surfaces
 
@@ -68,17 +55,10 @@ A breaking-change entry in the changelog begins with `**Breaking:**`.
 ## Portability and prerequisites
 
 - Every plugin is self-contained and portable: it depends on no path, configuration, tool, software or version specific to the maintainer's machine, so any user can install and use it.
+- Keep every file and relative link a plugin uses inside `plugins/<plugin>/`: Claude Code copies only that folder into the user's cache, so a link such as `../../docs/` breaks on users' machines. Use real files rather than symlinks that leave the plugin: Claude Code copies such a symlink's target when the marketplace comes from git, but skips it when the marketplace was added from a local path.
 - Every tool, software, integration or dependency a plugin needs to run, and every specific or minimum version it requires, is declared as a prerequisite in the Prerequisites section of that plugin's README.
 - Each plugin's README states its Windows support.
 
-## Pull requests inside `plugins/`
-
-- A change that creates or edits a plugin's components, dependencies or configuration always goes through a pull request. Skill, agent and command files are components, even though they are Markdown.
-- A change limited to a plugin's general documentation, which alters neither the plugin's behavior nor what users have installed on their machines, needs no pull request, unless the owner asks for one.
-
 ## Evals
 
-- Whether a plugin has evals is the owner's decision. Claude may suggest adding them to a plugin, and says when and why.
-- When the owner decides a plugin gets evals, Claude discusses every eval case with the owner before writing it, and never creates cases on its own.
-- A plugin with evals runs a reduced smoke suite locally, through the official testing modes.
-- In CI, the full eval suite of a plugin runs the first time, and afterwards only when a plugin that has evals changes in a way that needs a pull request. Every other run skips the eval workflow.
+- Add evals only to plugins the owner chooses; suggest them when a plugin would benefit, and say why. How cases are written and run is in `.claude/rules/plugins/evals.md`.

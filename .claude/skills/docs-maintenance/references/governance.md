@@ -51,7 +51,7 @@ Leave out what it already knows: the template, its rules, how to format the docu
 
 They are in `.claude/CLAUDE.md`. The ones that shape documents most often:
 
-- Release dates are UTC, `YYYY-MM-DD`, the day the tag and GitHub Release are created.
+- Release dates follow the `changelog.md` procedure (Rules): UTC, on the day the tag and GitHub Release are created.
 - The two surfaces are named **Claude Code** and **Claude**, and no other surface name is used.
 - Prerequisites, tools and minimum versions a plugin needs go in its README's Prerequisites section.
 - A change limited to a plugin's documentation needs no pull request, unless the owner asks for one.

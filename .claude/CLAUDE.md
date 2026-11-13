@@ -48,11 +48,6 @@ A rule, tool or file of one scope never applies to the other or becomes its requ
 - Biome neither formats nor lints the Markdown Claude reads as instructions: every `CLAUDE.md` and `CLAUDE.local.md`, the `.claude/` folders that `biome.jsonc` lists by name under `files.includes`, and the Markdown in `skills/`, `agents/` and `commands/` (in `.claude/` and in each plugin) and in each plugin's `evals/`. It formats and lints every other Markdown file, plugin READMEs and CHANGELOGs included. When you add a `.claude/` folder of instruction Markdown, add it to that list in `biome.jsonc`.
 - ruff, basedpyright, zizmor and check-jsonschema are uv tools pinned in the `tools:install` npm script and called by name in the npm scripts; they are not project dependencies. Biome and TypeScript are pinned dev dependencies in `package.json`.
 
-#### Models and effort
-
-- Set `model` in each agent's frontmatter: Sonnet for executors and simple auditors; Opus for adversarial reviewers, orchestrators, and reviewers of critical, complex or broad work.
-- Set `effort` in each agent's frontmatter from the official recommendations for its model and task.
-
 #### Repository memory
 
 - Feedback, facts, lessons and learnings about this repository are saved in `.claude/memory/`, one file each, and indexed in `.claude/memory/MEMORY.md`.
@@ -61,8 +56,8 @@ A rule, tool or file of one scope never applies to the other or becomes its requ
 
 ### Plugin scope
 
-- Before designing, creating or changing a plugin, or a workflow that runs its evals, read `.claude/rules/plugins.md`. It holds the plugin-scope conventions: design, safety, license, names, versions and version bumps, category, target surfaces, portability and prerequisites, pull requests inside `plugins/`, and evals. It also loads on its own when a file under `plugins/` or `.claude-plugin/`, the root `README.md` or `CHANGELOG.md`, or a workflow is read or edited.
-- Check each plugin's code and behavior locally, with the plugin's own testing methods, in isolated environments that do not depend on the maintainer's tools or versions. In CI, only the evals run, as the Evals section of `.claude/rules/plugins.md` states.
+- Before designing, creating or changing a plugin, read `.claude/rules/plugins.md`. It holds the plugin-scope conventions: design, safety, license, names, versions, target surfaces, portability and prerequisites, and evals. It also loads on its own when a file under `plugins/` or `.claude-plugin/`, or the root `README.md` or `CHANGELOG.md`, is read or edited.
+- Check each plugin's code and behavior locally, with the plugin's own testing methods, in isolated environments that do not depend on the maintainer's tools or versions. In CI, plugins get only `claude plugin validate` and their evals.
 
 ## Verification
 
@@ -80,10 +75,7 @@ A rule, tool or file of one scope never applies to the other or becomes its requ
 
 ### Pull requests
 
-- Open a pull request only with the owner's approval. When a change inside `plugins/` needs one under the pull request rules of `.claude/rules/plugins.md`, ask the owner before opening it.
+- Open a pull request only with the owner's approval.
+- Inside `plugins/`, a change that creates or edits a plugin's components, dependencies or configuration always goes through a pull request; skill, agent and command files are components, even though they are Markdown. Ask the owner before opening it.
+- A change limited to a plugin's general documentation, which alters neither the plugin's behavior nor what users have installed, needs no pull request, unless the owner asks for one.
 - Changes outside `plugins/` need no pull request, unless the owner asks for one.
-
-### Dates
-
-- Release dates are written in UTC, as `YYYY-MM-DD`.
-- A release is dated when it is published: the UTC day its tag and GitHub Release are created, never the day the bump is prepared.

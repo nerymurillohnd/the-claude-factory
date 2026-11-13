@@ -8,10 +8,9 @@ paths:
 
 Every eval case and judge grader is a model call billed to the owner, so evals run only on plugins the owner chose and only when a change can move their score.
 
-## Decide and write
+## Write
 
-- Add evals only to plugins the owner chooses; suggest them when a plugin would benefit, and say why.
-- Discuss every case with the owner before writing it.
+- Discuss every case with the owner before writing it; never create a case on your own.
 
 ## Models and effort
 
