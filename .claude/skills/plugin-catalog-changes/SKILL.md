@@ -17,8 +17,8 @@ From code.claude.com/docs/en/plugins/publish (Rename or remove a plugin) and hos
   - `null`: the key is dropped and `Removed from the "the-claude-factory" marketplace` shows.
   - enabled in managed settings: the notice recurs until an admin updates `enabledPlugins` there.
 - `renames` is append-only history: keep old entries after everyone migrated, and add a second entry for a second rename, because Claude Code follows the chain from the oldest name.
-- With `"forceRemoveDeletedPlugins": true`, Claude Code uninstalls, at each session start, every installed plugin that is neither listed nor renamed, from the user, project and local scopes, and flags it in `/plugin` as `Removed from marketplace`. Plugins installed only by managed settings stay. Without it, a removed plugin stays installed and reports `Plugin "<name>" not found in marketplace`. This marketplace sets it to `true` (owner's decision, 2026-11-13).
-- A user who removes a plugin by hand runs `claude plugin uninstall <plugin> [--scope <scope>] [--keep-data] [--prune]`. Uninstalling from the last scope deletes the plugin's options, secrets and data unless `--keep-data` is passed, and `--prune` also removes dependencies nothing else needs. Say this in the release notes of a removal when the plugin stores options or data.
+- With `"forceRemoveDeletedPlugins": true`, Claude Code uninstalls, at each session start, every installed plugin that is neither listed nor renamed, from the user, project and local scopes, and flags it in `/plugin` as `Removed from marketplace`. Plugins installed only by managed settings stay. Without it, a removed plugin stays installed and reports `Plugin "<name>" not found in marketplace`. This marketplace sets it to `true` in `.claude-plugin/marketplace.json` (owner's decision, 2026-11-13); confirm it is still there with `jq '.forceRemoveDeletedPlugins' .claude-plugin/marketplace.json` before a removal.
+- A user who removes a plugin by hand runs `claude plugin uninstall <plugin> [--scope <scope>] [--keep-data] [--prune]`. Uninstalling from the last scope deletes the plugin's options, secrets and data unless `--keep-data` is passed, and `--prune` also removes dependencies nothing else needs. When a removed plugin stores options or data, say this in the removal's line in the root `CHANGELOG.md`.
 - There is no deprecation state. Deprecating a plugin means removing its entry, mapping its name to `null`, and letting `forceRemoveDeletedPlugins` uninstall it.
 - `claude plugin validate .` rejects a chain that cycles or that ends anywhere but `null` or a listed name, with `renames.<name>: chain does not resolve`. Several former names may point to one plugin (checked on Claude Code 2.1.323).
 
@@ -45,7 +45,7 @@ From code.claude.com/docs/en/plugins/publish (Rename or remove a plugin) and hos
 ## Rename
 
 1. Choose `<new>`: kebab-case, not in `plugins`, not a key of `renames`, and no `plugins/<new>/` folder yet.
-2. `git mv plugins/<old> plugins/<new>`, then change `name` in `plugin.json`, the marketplace entry and every live use.
+2. `git mv plugins/<old> plugins/<new>`, then change `name` in `plugin.json`, the marketplace entry's `name` and `source` (`./plugins/<new>`), any URL in `plugin.json` that contains `<old>`, and every other live use step 2 of Steps for every case found.
 3. Add `"<old>": "<new>"` to `renames`.
 4. Bump the plugin as a breaking change through the `plugin-versioning` skill (Minor in `0.x`, Major after). Its changelog entry starts with `**Breaking:**`, maps each old command to the new one, and tells users to run `/plugin install <new>@the-claude-factory` once.
 5. Update the documents with the `docs-maintenance` skill: every command and name in the plugin's `README.md`, its catalog row in the root `README.md`, and the rename's line in the root `CHANGELOG.md`.
@@ -68,7 +68,17 @@ From code.claude.com/docs/en/plugins/publish (Rename or remove a plugin) and hos
 
 ## After the release
 
-In a throwaway configuration (`env CLAUDE_CONFIG_DIR="$(mktemp -d)" claude …`), add `nerymurillohnd/the-claude-factory#main`:
-- `claude plugin install <old>@the-claude-factory` fails with `not found in marketplace`
-- `<new>` or `<target>` installs at its new version
-- the old name's last tag and GitHub Release still exist.
+Check what users receive in one throwaway configuration, so your own stays untouched:
+
+```bash
+T="$(mktemp -d)"
+env CLAUDE_CONFIG_DIR="${T}/config" CLAUDE_CODE_PLUGIN_CACHE_DIR="${T}/cache" claude plugin marketplace add "nerymurillohnd/the-claude-factory#main"
+env CLAUDE_CONFIG_DIR="${T}/config" CLAUDE_CODE_PLUGIN_CACHE_DIR="${T}/cache" claude plugin install <old>@the-claude-factory
+env CLAUDE_CONFIG_DIR="${T}/config" CLAUDE_CODE_PLUGIN_CACHE_DIR="${T}/cache" claude plugin install <new-or-target>@the-claude-factory
+env CLAUDE_CONFIG_DIR="${T}/config" CLAUDE_CODE_PLUGIN_CACHE_DIR="${T}/cache" claude plugin list --json
+rm -rf "${T}"
+```
+
+- installing `<old>` fails with `not found in marketplace`
+- after a rename or a merge, `<new-or-target>` (the new name, or the merge target) installs, and `claude plugin list --json` shows it at its new version
+- the old name's last tag and GitHub Release still exist: `gh api repos/nerymurillohnd/the-claude-factory/releases/tags/<old>--v<last version>`.
