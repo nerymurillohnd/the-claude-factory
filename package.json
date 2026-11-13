@@ -25,6 +25,7 @@
     "lint:python": "ruff check . && ruff format --check .",
     "lint:shell": "shfmt -f . | xargs shellcheck -S style -a && shfmt -d .",
     "lint:workflows": "actionlint && zizmor --offline .",
+    "release:changelog": "uv run python scripts/release/release-changelog.py",
     "release:notes": "uv run python scripts/release/release-notes.py",
     "release:status": "uv run python scripts/release/release-status.py",
     "setup": "npm ci && uv sync --locked && npm run tools:install",

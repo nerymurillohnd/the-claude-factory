@@ -16,6 +16,10 @@ MARKETPLACE = ".claude-plugin/marketplace.json"
 MARKETPLACE_NAME = "the-claude-factory"
 _HEADING = re.compile(r"^## \[(?P<version>[^\]]+)\]")
 _LINK_REF = re.compile(r"^\[[^\]]+\]: ")
+UNRELEASED = re.compile(
+    r"^## \[Unreleased\][^\n]*\n(?P<body>.*?)(?=^## |^\[[^\]]+\]: |\Z)", re.MULTILINE | re.DOTALL
+)
+VERSION_HEADING = re.compile(r"^## \[([0-9]+\.[0-9]+\.[0-9]+)\]", re.MULTILINE)
 
 
 class GitError(RuntimeError):

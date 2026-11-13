@@ -3,11 +3,12 @@
 
 from __future__ import annotations
 
-import re
 from typing import TYPE_CHECKING, cast
 
 from release.release_tools.repo import (
     MARKETPLACE,
+    UNRELEASED,
+    VERSION_HEADING,
     entries,
     git,
     manifest,
@@ -24,11 +25,6 @@ if TYPE_CHECKING:
     from pathlib import Path
 
 __all__ = ["Finding", "check"]
-
-_VERSION_HEADING = re.compile(r"^## \[([0-9]+\.[0-9]+\.[0-9]+)\]", re.MULTILINE)
-_UNRELEASED = re.compile(
-    r"^## \[Unreleased\][^\n]*\n(?P<body>.*?)(?=^## |^\[[^\]]+\]: |\Z)", re.MULTILINE | re.DOTALL
-)
 
 
 def _names(root: Path) -> Iterator[Finding]:
@@ -81,7 +77,7 @@ def _tags(root: Path, base: str) -> Iterator[Finding]:
         name = str(entry.get("name", ""))
         current = version(manifest(root, name))
         pending = current if current != version(manifest(root, name, base)) else None
-        headings = cast("list[str]", _VERSION_HEADING.findall(_changelog(root, name)))
+        headings = cast("list[str]", VERSION_HEADING.findall(_changelog(root, name)))
         for found in headings:
             if found != pending and f"{name}--v{found}" not in tags:
                 path = f"plugins/{name}/CHANGELOG.md"
@@ -95,7 +91,7 @@ def _unreleased(root: Path) -> Iterator[Finding]:
         return
     for entry in entries(root):
         name = str(entry.get("name", ""))
-        match = _UNRELEASED.search(_changelog(root, name))
+        match = UNRELEASED.search(_changelog(root, name))
         if match and match["body"].strip():
             path = f"plugins/{name}/CHANGELOG.md"
             yield Finding("PC-05", path, "[Unreleased] has notes on main")
