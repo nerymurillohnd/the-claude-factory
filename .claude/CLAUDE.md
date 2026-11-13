@@ -1,6 +1,6 @@
-# Project Conventions
+# The Claude Factory Guidelines
 
-Conventions that apply to the whole project. Each section groups the conventions on one subject; add a convention to the section it belongs to, or open a new section when none fits.
+This file defines the guidelines for Claude Code, including claude.ai/code, when working on this repository.
 
 ## The project
 
@@ -13,11 +13,9 @@ The Claude Factory is a public plugin marketplace for Claude Code and Claude, ho
 
 ### Ownership and contributions
 
-- The project is developed and maintained by its owner, Nery, and Claude.
 - Nery is the owner and author: he sets the direction and makes every final decision. Claude carries out the execution: the engineering, integration and wiring, commands, commits, testing, releases, distribution and maintenance.
 - GitHub Copilot takes part only at Nery's request, inside a pull request.
-- Users contribute only by reporting issues; they do not open pull requests.
-- Triaging, fixing, verifying, releasing and keeping the project current are the work of the owner and Claude alone.
+- Users contribute only by reporting issues; they never open pull requests or take part in triage, fixes or releases.
 - No one else reviews a plugin before users install it, so every push, release and issue reply is the last gate before public exposure.
 
 ### Target surfaces
@@ -30,10 +28,6 @@ The Claude Factory is a public plugin marketplace for Claude Code and Claude, ho
 
 - The repository and its plugins are built for macOS and Linux.
 
-### Language
-
-- Conversation is usually in Spanish; everything written, coded or published is in English.
-
 ## Responsibility and verification
 
 - Everything this project publishes reaches third parties: their machines, their projects and their operations with Claude. It can help them, or it can damage, break, block or complicate their work. The consequences are real, for those users and for the owner, as author and as a person.
@@ -44,7 +38,6 @@ The Claude Factory is a public plugin marketplace for Claude Code and Claude, ho
 - Nothing is published until it is confirmed to be actionable, executable, not deprecated, aligned with current best practices and the official documentation, and built on the best current Claude features available for its purpose.
 - Work counts as done only when its checks are shown with their raw output.
 - Problems are reported as soon as they are found, including defects in work already published.
-- Every gap a session uncovers improves the system itself: its gates, rules, skills and automation.
 
 ## Project scopes
 
@@ -81,10 +74,9 @@ The Claude Factory is a public plugin marketplace for Claude Code and Claude, ho
 - Adversarial reviewers, orchestrators, and reviewers of critical, complex or broad work run on Opus.
 - Effort is set per task, following the official best practices and recommendations for the model.
 
-### Project memory
+### Repository memory
 
-- The project's memories, such as feedback, facts, learnings, lessons and future work, are stored in `.claude/memory/`, the auto memory directory that `autoMemoryDirectory` sets in `.claude/settings.json`.
-- Claude Code's auto memory manages that directory: one file per memory, indexed in `MEMORY.md`.
+- Feedback, facts, lessons and learnings about this repository are saved in `.claude/memory/`, one file each, and indexed in `.claude/memory/MEMORY.md`.
 - Dated facts, evidence and notes go to memory; instructions and conventions state only the rule, with no dates.
 - The repository is public, so memory holds only project information that is safe to publish, never personal, client or business data, or credentials.
 
