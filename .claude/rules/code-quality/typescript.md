@@ -8,15 +8,18 @@ paths:
 
 # TypeScript, JavaScript and data file quality
 
-## Formatting and linting
+Use Biome to format and lint TypeScript, JavaScript, JSON, YAML and the Markdown written for people, and `tsc` to type-check, never Prettier or ESLint.
 
-- Format and lint TypeScript, JavaScript, JSON, YAML and the Markdown written for people with Biome, never Prettier or ESLint.
-- After editing one of these files, run `npx biome check --write <file>`, then read the file again before the next edit.
-- Before a commit, run `npm run lint:js`.
+## After editing one of these files
 
-## Type checking
+- Format and lint it, applying the safe fixes: `npx biome check --write <file>`.
+- Type-check the TypeScript project after a `.ts` or `.tsx` edit: `npx tsc --noEmit -p tsconfig.json`.
+- Read the file again before the next edit: `biome check --write` rewrites it.
 
-- Type-check with `tsc` through `npm run typecheck:ts`.
+## Before a commit
+
+- Check every file Biome reads: `npm run lint:js`.
+- Type-check the TypeScript project: `npm run typecheck:ts`.
 
 ## Findings
 

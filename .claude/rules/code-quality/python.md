@@ -8,16 +8,20 @@ paths:
 
 # Python code quality
 
-## Formatting and linting
+Use ruff and basedpyright only, never black, flake8, mypy or pyright.
 
-- Format and lint Python with ruff, never black or flake8.
-- After editing a Python file, run `ruff format <file>` and `ruff check <file>`, then read the file again before the next edit.
-- Before a commit, run `npm run lint:python`.
+## After editing a Python file
 
-## Type checking
+- Format it: `ruff format <file>`.
+- Lint it and apply the safe fixes: `ruff check --fix <file>`.
+- Type-check a file under `scripts/`: `basedpyright -p scripts <file>`.
+- Type-check any other Python file: `basedpyright <file>`.
+- Read the file again before the next edit: `ruff format` and `ruff check --fix` rewrite it.
 
-- Type-check with basedpyright, never mypy or pyright.
-- Before a commit, run `npm run typecheck:python`, which checks the root and `scripts/` with their own configurations.
+## Before a commit
+
+- Check every Python file: `npm run lint:python`.
+- Type-check every Python file: `npm run typecheck:python`.
 
 ## Findings
 

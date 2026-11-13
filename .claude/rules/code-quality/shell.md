@@ -7,15 +7,17 @@ paths:
 
 # Shell code quality
 
-## Formatting
+Use shfmt and ShellCheck; `.editorconfig` holds shfmt's settings and `.shellcheckrc` ShellCheck's, so pass no style flags.
 
-- Format shell scripts with shfmt, which reads its settings from `.editorconfig`, so pass it no style flags.
-- After editing a script, run `shfmt -w <file>`, then read the file again before the next edit.
+## After editing a shell script
 
-## Linting
+- Format it: `shfmt -w <file>`.
+- Lint it with every optional check: `shellcheck -S style -a <file>`.
+- Read the file again before the next edit: `shfmt -w` rewrites it.
 
-- Lint with ShellCheck: `shellcheck -S style -a <file>`; `.shellcheckrc` turns on every optional check.
-- Before a commit, run `npm run lint:shell`.
+## Before a commit
+
+- Check every shell script: `npm run lint:shell`.
 
 ## Findings
 
