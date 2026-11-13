@@ -44,3 +44,29 @@ The tools Nery and Claude use to build and maintain the project. Each plugin's o
 | **Testing** | Python `unittest` for the maintainer scripts |
 | **CI and hosting** | GitHub Actions; GitHub issue forms, labels and Dependabot |
 | **Git hooks** | None for now; removed until they are redesigned |
+
+## Repository map
+
+```text
+.
+├── .claude-plugin/marketplace.json   # Marketplace catalog: one entry per plugin
+├── plugins/<plugin>/                 # One self-contained plugin (plugin scope)
+│   ├── .claude-plugin/plugin.json    # Plugin manifest
+│   ├── skills/ agents/ commands/ hooks/
+│   └── README.md CHANGELOG.md LICENSE NOTICE.txt
+├── .claude/                          # Claude's project setup (maintainer scope)
+│   ├── CLAUDE.md WORKFLOW.md settings.json
+│   ├── rules/                        # Path-scoped rules
+│   ├── agents/                       # Auditors, docs writers, testers
+│   ├── skills/                       # Project skills
+│   ├── references/ templates/        # Guides and templates for each document type
+│   ├── maintainer/                   # ADRs, technical debt, specs, plans, audits
+│   ├── session-handoff/              # End-of-session handoffs
+│   └── architecture/                 # Redesign drafts
+├── .github/                          # Workflows, issue and PR templates, labels, Dependabot
+├── scripts/                          # Maintainer scripts and their tests
+├── docs/                             # User guides
+├── package.json pyproject.toml       # npm scripts; uv-managed Python
+├── biome.jsonc ruff.toml pyrightconfig.json tsconfig.json
+└── README.md CHANGELOG.md LICENSE    # Marketplace front page, release log, license
+```
