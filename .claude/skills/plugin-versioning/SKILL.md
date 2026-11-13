@@ -36,12 +36,15 @@ From code.claude.com/docs/en/plugins/host-marketplace (Release a new version), l
    Keep the new version inside every range that names this plugin, or change the dependent in the same pull request.
 4. **Set the minimum Claude Code version** when the change relies on a Claude Code feature, through `engines["claude-code"]` in `plugin.json`: outside its range the plugin is not installed, updated or loaded, and install and update pick the newest version that fits (see Version notes). Set it to `">=<lowest version that has the feature>"`, make the README's minimum Claude Code version say the same, and record the change under `### Changed`.
 5. **Write the notes** with the `docs-maintenance` skill, under `## [Unreleased]` in `plugins/<plugin>/CHANGELOG.md`: one entry per user-visible change, its type (Added, Changed, Deprecated, Removed, Fixed or Security) and `**Breaking:**` where it breaks something. When the change alters what the plugin's README describes, such as its components, commands, prerequisites or minimum Claude Code version, update the README with the same skill. For a new plugin, run that skill's "New plugin" event instead.
-6. **Set the new version** in `plugins/<plugin>/.claude-plugin/plugin.json`. A new plugin: `0.1.0`. An existing plugin: exactly one step above the version on `origin/main` (`git show origin/main:plugins/<plugin>/.claude-plugin/plugin.json`).
+6. **Set the new version** in `plugins/<plugin>/.claude-plugin/plugin.json`. A new plugin: `0.1.0`. An existing plugin: take the version on `origin/main` (`git show origin/main:plugins/<plugin>/.claude-plugin/plugin.json`), raise the field of the level chosen in step 2 by one, and reset the fields after it to `0` (Minor: `0.3.2` becomes `0.4.0`).
 7. **Verify**, and show the raw output:
-   - the version matches `^[0-9]+\.[0-9]+\.[0-9]+$` (the validator accepts strings such as `1.0`, so check it yourself)
+   - the version is semver, which the validator doesn't check (it accepts `1.0`). This prints the version and exits 0, or prints nothing and exits 1:
+     ```bash
+     jq -r .version plugins/<plugin>/.claude-plugin/plugin.json | grep -Ex '[0-9]+\.[0-9]+\.[0-9]+'
+     ```
    - `claude plugin validate --strict plugins/<plugin>` exits 0
    - `claude plugin validate --strict .` exits 0
-   - `claude plugin tag plugins/<plugin> --dry-run` prints `<plugin>--v<new version>`
+   - `claude plugin tag plugins/<plugin> --dry-run` prints `<plugin>--v<new version>`. Commit the change first: it exits 1 while any file under the plugin is uncommitted.
    - the plugin installs and loads from a local marketplace, the official pre-release check. Run it in a throwaway configuration, never your own: a user can't have two marketplaces with the same name, so adding this checkout to your real configuration collides with an installed `the-claude-factory`. From the repository root:
      ```bash
      T="$(mktemp -d)"
@@ -52,7 +55,7 @@ From code.claude.com/docs/en/plugins/host-marketplace (Release a new version), l
      rm -rf "${T}"
      ```
      It passes when `claude plugin list --json` shows the plugin at the new version with no `errors`, and `claude plugin details` lists its components.
-   - when the plugin has evals and the owner approves the run, the local smoke run passes: `claude plugin eval plugins/<plugin> --case <case> --runs 1 --ablation none`. `.claude/rules/plugins.md` (Evals) limits local runs to a reduced suite, and every run bills the owner's usage.
+   - when the plugin has evals and the owner approves the run, the local smoke run passes: `claude plugin eval plugins/<plugin> --case <case> --runs 1 --ablation none`, where `<case>` is the case the owner approves, by its name in the plugin's eval suite. `.claude/rules/plugins.md` (Evals) limits local runs to a reduced suite, and every run bills the owner's usage.
 8. **Open the pull request** for the change, with the owner's authorization; component changes inside `plugins/` always go through one. The version heading, its date and the changelog links are written at release time by the `plugin-releases` skill, not here.
 
 ## Conventions this skill adds to the official docs
