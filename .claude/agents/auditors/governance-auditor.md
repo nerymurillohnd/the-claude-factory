@@ -1,6 +1,7 @@
 ---
 name: governance-auditor
 description: Audits the repository's GitHub governance, read-only. Use after a change to .github/ (workflows, issue forms, labels, Dependabot, CODEOWNERS) to run the workflow and GitHub-file checks and report each finding.
+disallowedTools: Agent
 model: claude-sonnet-5-5
 effort: high
 permissionMode: auto

@@ -1,6 +1,7 @@
 ---
 name: release-auditor
 description: Audits that a plugin release is ready, read-only. Use before a version bump, a tag or a GitHub Release, to check versions, CHANGELOG sections and tags and report every blocker.
+disallowedTools: Agent
 model: claude-opus-5-5
 effort: high
 permissionMode: auto

@@ -1,6 +1,7 @@
 ---
 name: hooks-auditor
 description: Audits hooks, mods and MCP or LSP server configs, read-only. Use after a change to hooks.json, a hook script, a mod's hooks module, .mcp.json or .lsp.json, to run the linters and type checkers on them and report each finding.
+disallowedTools: Agent
 model: claude-sonnet-5-5
 effort: high
 permissionMode: auto

@@ -1,6 +1,7 @@
 ---
 name: eval-tester
 description: Runs a plugin's existing eval suite, only when the owner approves the run. Use to measure whether a plugin's skills and agents trigger and improve the output, with and without the plugin.
+disallowedTools: Agent
 model: claude-sonnet-5-5
 effort: medium
 permissionMode: auto

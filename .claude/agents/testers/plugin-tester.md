@@ -1,6 +1,7 @@
 ---
 name: plugin-tester
 description: Tests plugins the way users receive them. Use after a plugin change, or before a release, to load the plugin from its folder, install it from the local marketplace in an isolated config directory, and run its mod tests.
+disallowedTools: Agent
 model: claude-sonnet-5-5
 effort: medium
 permissionMode: auto

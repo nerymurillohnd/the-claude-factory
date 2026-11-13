@@ -1,6 +1,7 @@
 ---
 name: skill-auditor
 description: Audits skills, read-only. Use after a skill's SKILL.md, references or scripts change, in a plugin or in .claude/skills, to run skill-lint and the plugin validator and report each finding.
+disallowedTools: Agent
 model: claude-sonnet-5-5
 effort: high
 permissionMode: auto

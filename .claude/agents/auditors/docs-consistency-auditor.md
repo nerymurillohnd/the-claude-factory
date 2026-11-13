@@ -1,6 +1,7 @@
 ---
 name: docs-consistency-auditor
 description: Audits that the documentation agrees across files, read-only. Use after a change to a plugin's name, version, description, prerequisites or surfaces, to check that every README, CHANGELOG, manifest and the root catalog state the same fact.
+disallowedTools: Agent
 model: claude-sonnet-5-5
 effort: high
 permissionMode: auto

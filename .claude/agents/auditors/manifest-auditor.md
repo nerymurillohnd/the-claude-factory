@@ -1,6 +1,7 @@
 ---
 name: manifest-auditor
 description: Audits plugin and marketplace manifests, read-only. Use after a change to plugin.json, marketplace.json or a plugin's file layout, or before a release, to check them with the plugin validator and report what is wrong.
+disallowedTools: Agent
 model: claude-sonnet-5-5
 effort: high
 permissionMode: auto

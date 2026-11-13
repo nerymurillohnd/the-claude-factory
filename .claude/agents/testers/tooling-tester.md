@@ -1,6 +1,7 @@
 ---
 name: tooling-tester
 description: Tests the maintainer tooling and the Claude Code CLI it relies on. Use after a change under scripts/ or package.json, or after a Claude Code upgrade, to run the maintainer test suite and checks and re-test the validator gaps.
+disallowedTools: Agent
 model: claude-sonnet-5-5
 effort: medium
 permissionMode: auto
