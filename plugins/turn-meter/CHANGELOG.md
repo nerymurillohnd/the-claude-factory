@@ -6,6 +6,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+### Changed
+
+- The plugin is now listed under the **Monitoring** category instead of **Mods**, with the marketplace's other observability tools. Nothing changes in how the plugin works.
+
 ## [0.1.5] - 2026-11-06
 
 ### Changed

@@ -1,7 +1,7 @@
 {
   "name": "tool-ledger",
   "displayName": "Tool Ledger",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Audit and observability panel for every tool call of the session: what ran, on what, whether Claude or a subagent made it, and whether it finished, failed or was denied by permissions or hooks. A Claude Code mod.",
   "author": {
     "name": "Nery Murillo",
@@ -52,7 +52,7 @@
     }
   },
   "metadata": {
-    "category": "mods",
+    "category": "monitoring",
     "surfaces": [
       "claude-code"
     ]

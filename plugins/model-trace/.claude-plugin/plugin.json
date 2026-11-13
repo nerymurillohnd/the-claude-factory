@@ -1,7 +1,7 @@
 {
   "name": "model-trace",
   "displayName": "Model Trace",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Usage observability for Claude Code: shows, as Claude works, each skill, agent, MCP server, plugin, hook and web tool it uses in the session, how many times and at what time, with an export to Markdown or HTML. A Claude Code mod.",
   "author": {
     "name": "Nery Murillo",
@@ -40,7 +40,7 @@
     }
   },
   "metadata": {
-    "category": "mods",
+    "category": "monitoring",
     "surfaces": [
       "claude-code"
     ]

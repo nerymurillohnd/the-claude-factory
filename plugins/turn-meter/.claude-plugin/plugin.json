@@ -1,7 +1,7 @@
 {
   "name": "turn-meter",
   "displayName": "Turn Meter",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Shows how long each turn took (duration), how many tools it used in the main thread and in subagents, and the tokens it spent, in a status band above the prompt, with usage at a glance and a notification when a long turn ends. A Claude Code mod.",
   "author": {
     "name": "Nery Murillo",
@@ -52,7 +52,7 @@
     }
   },
   "metadata": {
-    "category": "mods",
+    "category": "monitoring",
     "surfaces": [
       "claude-code"
     ]
