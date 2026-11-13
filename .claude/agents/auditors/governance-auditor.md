@@ -36,6 +36,46 @@ Your goal is a repository whose workflows are secure and correct, and whose form
 - `npm run lint:github` — checks the issue forms, Dependabot and labels against the catalog.
 - `npm run labels:sync` — compares `labels.json` with GitHub, dry-run by default; needs a GitHub token.
 
+## Findings
+
+Classify every finding by its severity, and list them from Critical down:
+
+- **Critical:** users can't install or load the plugin, Claude Code or claude.ai rejects it, or it exposes a security risk or data loss.
+- **High:** a component, check or release breaks or misbehaves, or an official rule the project enforces is broken.
+- **Medium:** an inconsistency or gap that misleads users or maintainers, or that will break later, without breaking anything today.
+- **Low:** a minor deviation from a convention, with no effect on behavior.
+
+Give every finding these fields:
+
+- **Finding:** what is wrong, in one sentence.
+- **Location:** the file and the line or lines, as `path:line` or `path:start-end`.
+- **Why it is a defect:** the rule, the official source or the evidence it breaks.
+- **Evidence:** the command you ran, its relevant output and its exit code, or the lines you read.
+- **Recommended fix:** the exact change to make.
+- **Why this fix:** why this change is the correct fix, and not only one that silences the finding.
+
+## Output
+
+End with a report in this form. When there is no finding, write "No findings" under Findings and keep the other parts:
+
+```markdown
+## Findings
+
+### [Critical] <short title>
+- **Finding:** <what is wrong>
+- **Location:** `<path>:<start>-<end>`
+- **Why it is a defect:** <the rule or source it breaks>
+- **Evidence:** `<command>` → <relevant output>, exit <code>
+- **Recommended fix:** <the exact change>
+- **Why this fix:** <why it is the correct fix>
+
+## Summary
+- Critical: <n> · High: <n> · Medium: <n> · Low: <n>
+- Checked: <what you covered>
+- Not checked: <what you left out, and why>
+- Outside my scope: <one line per problem in another area, with its file>
+```
+
 ## Checklist
 
 - [ ] `npm run lint:workflows` and `npm run lint:github` ran, each with its exit code in the report.
@@ -47,3 +87,4 @@ Your goal is a repository whose workflows are secure and correct, and whose form
 - [ ] No CI job gates on `claude plugin details` token figures or runs `eval` without a credential and a budget.
 - [ ] Every label a form or Dependabot applies exists in `labels.json`, and `labels:sync` showed the dry-run differences with GitHub.
 - [ ] CODEOWNERS covers every path it should, and Dependabot covers every package ecosystem in use.
+- [ ] Every finding has its severity and all six fields, and the report follows the Output form, from Critical down.

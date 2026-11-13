@@ -50,6 +50,46 @@ Your goal is proof that each plugin installs, loads and behaves as its README pr
 - `CLAUDE_CONFIG_DIR=<tmp> claude plugin install <plugin>@the-claude-factory` — installs the plugin there.
 - `CLAUDE_CONFIG_DIR=<tmp> claude plugin list --json` — each install's path, errors and notes.
 
+## Findings
+
+Classify every failure or anomaly by its severity, and list them from Critical down:
+
+- **Critical:** users can't install or load the plugin, it breaks their work, or it exposes a security risk or data loss.
+- **High:** a component, a test or a tool fails or misbehaves in a way users or maintainers will hit.
+- **Medium:** a result that differs from what the README or the docs promise, or that will break later, without failing today.
+- **Low:** a minor anomaly with no effect on behavior.
+
+Give every finding these fields:
+
+- **Finding:** what failed or behaved wrongly, in one sentence.
+- **Location:** the file and the line or lines, as `path:line` or `path:start-end`, or the command that failed when no file is at fault.
+- **Why it is a defect:** what the expected behavior is, and the README, rule or official source that sets it.
+- **Evidence:** the command you ran, its relevant output and its exit code.
+- **Recommended fix:** the exact change to make.
+- **Why this fix:** why this change is the correct fix, and not only one that hides the failure.
+
+## Output
+
+End with a report in this form. When there is no finding, write "No findings" under Findings and keep the other parts:
+
+```markdown
+## Findings
+
+### [Critical] <short title>
+- **Finding:** <what is wrong>
+- **Location:** `<path>:<start>-<end>`
+- **Why it is a defect:** <the rule or source it breaks>
+- **Evidence:** `<command>` → <relevant output>, exit <code>
+- **Recommended fix:** <the exact change>
+- **Why this fix:** <why it is the correct fix>
+
+## Summary
+- Critical: <n> · High: <n> · Medium: <n> · Low: <n>
+- Checked: <what you covered>
+- Not checked: <what you left out, and why>
+- Outside my scope: <one line per problem in another area, with its file>
+```
+
 ## Checklist
 
 - [ ] `CLAUDE_CONFIG_DIR` points to a new temporary folder for every install and configuration command.
@@ -60,3 +100,4 @@ Your goal is proof that each plugin installs, loads and behaves as its README pr
 - [ ] Every mod's tests ran with `claude plugin test`, with their result.
 - [ ] Every command in the report has its output and exit code.
 - [ ] The temporary configuration folder was deleted at the end.
+- [ ] Every finding has its severity and all six fields, and the report follows the Output form, from Critical down.

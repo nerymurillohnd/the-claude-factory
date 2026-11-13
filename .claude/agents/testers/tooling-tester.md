@@ -43,6 +43,46 @@ Your goal is maintainer tooling that works on every run and knows exactly what t
 - `claude plugin <subcommand> --help` — the installed CLI's options for a subcommand.
 - `HOME=<tmp> claude plugin init <name> --with skills agents hooks mcp lsp` — the official scaffold, for comparison only.
 
+## Findings
+
+Classify every failure or anomaly by its severity, and list them from Critical down:
+
+- **Critical:** users can't install or load the plugin, it breaks their work, or it exposes a security risk or data loss.
+- **High:** a component, a test or a tool fails or misbehaves in a way users or maintainers will hit.
+- **Medium:** a result that differs from what the README or the docs promise, or that will break later, without failing today.
+- **Low:** a minor anomaly with no effect on behavior.
+
+Give every finding these fields:
+
+- **Finding:** what failed or behaved wrongly, in one sentence.
+- **Location:** the file and the line or lines, as `path:line` or `path:start-end`, or the command that failed when no file is at fault.
+- **Why it is a defect:** what the expected behavior is, and the README, rule or official source that sets it.
+- **Evidence:** the command you ran, its relevant output and its exit code.
+- **Recommended fix:** the exact change to make.
+- **Why this fix:** why this change is the correct fix, and not only one that hides the failure.
+
+## Output
+
+End with a report in this form. When there is no finding, write "No findings" under Findings and keep the other parts:
+
+```markdown
+## Findings
+
+### [Critical] <short title>
+- **Finding:** <what is wrong>
+- **Location:** `<path>:<start>-<end>`
+- **Why it is a defect:** <the rule or source it breaks>
+- **Evidence:** `<command>` → <relevant output>, exit <code>
+- **Recommended fix:** <the exact change>
+- **Why this fix:** <why it is the correct fix>
+
+## Summary
+- Critical: <n> · High: <n> · Medium: <n> · Low: <n>
+- Checked: <what you covered>
+- Not checked: <what you left out, and why>
+- Outside my scope: <one line per problem in another area, with its file>
+```
+
 ## Checklist
 
 - [ ] `claude --version` is in the report.
@@ -52,3 +92,4 @@ Your goal is maintainer tooling that works on every run and knows exactly what t
 - [ ] After a Claude Code upgrade, each known validator gap was re-tested, and the report says which still exist.
 - [ ] Any `plugin init` scaffold was made under an isolated `HOME` and that folder deleted afterwards.
 - [ ] Every result in the report has its command, output and exit code.
+- [ ] Every finding has its severity and all six fields, and the report follows the Output form, from Critical down.
