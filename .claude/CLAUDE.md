@@ -17,39 +17,30 @@
 - **Be a strategic partner, not a yes-man.** Anticipate defects before they ship, reject weak ideas with the reason and a better option, and raise conflicts and risks before acting.
 - **Work from current sources, not from what you remember,** as the Verification section sets.
 
-## How work is done
+## Work areas
 
-### Scopes
+The work divides into three areas. The first two never mix: a rule, tool or file of one never becomes a requirement of the other.
 
-The repository has two scopes that never mix. A rule, tool or file of one scope never becomes a requirement of the other.
+1. Maintainer tools and documentation
+2. Plugins and distribution
+3. CI/CD and GitHub
 
-- **Maintainer scope:** everything outside `plugins/`. It serves only Nery and Claude and runs only in their environment.
-  - Working environment, tools, versions and binaries
-  - Maintainer scripts (`scripts/`) and npm scripts
-  - GitHub governance and CI (`.github/`)
-  - The marketplace catalog (`.claude-plugin/marketplace.json`)
-  - ADRs, session handoffs, and pending and closed technical debt (`.claude/`)
-  - Repository documentation: root `README.md`, `CHANGELOG.md`, policies and `docs/`
-- **Plugin scope:** one self-contained directory per plugin under `plugins/<plugin>/`. It runs on users' machines and in their projects.
-  - Design and planning
-  - Scaffolding and development
-  - Testing and debugging, in isolated environments
-  - Versioning and bumping
-  - Plugin documentation: `README.md`, `CHANGELOG.md`, `LICENSE`, `NOTICE.txt`
-  - Release, tagging and distribution, carried out with maintainer tools: tags, `release.yml` and the catalog entry
+### Maintainer tools and documentation
 
-### Pull requests
+- Cover everything outside `plugins/`: tools, scripts, the catalog, records and repository documentation, used only by Nery and Claude.
+- Save repository feedback, facts and lessons in `.claude/memory/`, one file each, indexed in `MEMORY.md`; dates go there, never in instructions.
+- Keep memory publishable: no personal, client or business data, and no credentials.
 
-- Open a pull request only with the owner's approval, and ask before opening it.
-- **Outside `plugins/`:** no pull request, unless the owner asks for one.
-- **Inside `plugins/`, documentation only** (`README.md`, `LICENSE`, `CHANGELOG.md`, `NOTICE.txt` and similar files), when the change alters neither the plugin's behavior nor what users have installed: no pull request, unless the owner asks for one.
-- **Inside `plugins/`, anything else** (components, dependencies, manifest, scripts, tests, evals): pull request. Skill, agent and command files are components, even though they are Markdown.
+### Plugins and distribution
 
-### Repository memory
+- Keep each plugin self-contained in `plugins/<plugin>/`, from design and scaffolding to isolated testing, versioning and its own documentation.
+- Release it with maintainer tools: its tag, `release.yml` and its catalog entry.
 
-- Feedback, facts, lessons and learnings about this repository are saved in `.claude/memory/`, one file each, and indexed in `.claude/memory/MEMORY.md`.
-- Dated facts, evidence and notes go to memory; instructions and conventions state only the rule, with no dates.
-- The repository is public, so memory holds only project information that is safe to publish, never personal, client or business data, or credentials.
+### CI/CD and GitHub
+
+- Open a pull request only with Nery's approval, and ask before opening it.
+- Send every change inside `plugins/` through a pull request, skill, agent and command files included, except documentation-only changes that alter neither behavior nor what users installed.
+- Outside `plugins/`, and for documentation-only plugin changes, open a pull request only when Nery asks for one.
 
 ## Verification
 
