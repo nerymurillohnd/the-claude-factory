@@ -13,7 +13,7 @@ The commands of each lifecycle stage. It lists only Claude Code commands and the
 
 - **Docs:** With the `docs-maintenance` skill, event Repository foundation: the root `README.md`, the root `LICENSE` and `SECURITY.md`.
 - `claude plugin validate .` — validates `marketplace.json` from the marketplace root.
-- `npm run validate` — `claude plugin validate --strict` on every `plugins/*/`, then on the marketplace root.
+- `npm run validate` — `claude plugin validate --strict` on every `plugins/*/`, then on the marketplace root, then `validate:claude` and `validate:mods`.
 
 ### 3. Repository governance
 
@@ -24,7 +24,7 @@ The commands of each lifecycle stage. It lists only Claude Code commands and the
 - `npm run lint:github` — issue forms, the issue config and `dependabot.yml` against their schemas, then the form dropdowns and labels against the catalog.
 - `npm run labels:sync` — syncs the GitHub labels from `.github/labels.json` and the catalog; it changes GitHub.
 - `npm run test:scripts` — the unittest suite of the maintainer scripts in `scripts/testers/`.
-- `npm run check` — `lint`, `typecheck` and `validate` in that order.
+- `npm run check` — `lint`, `typecheck`, `check:consistency` and `validate` in that order.
 - `claude plugin validate <path> --strict --json` — fails on warnings and gives a machine-readable report.
 - `claude plugin test [dir]` — runs a mod's tests; it needs no sign-in or network.
 
@@ -64,6 +64,7 @@ The commands of each lifecycle stage. It lists only Claude Code commands and the
 
 - **Docs:** With the `docs-maintenance` skill, event New plugin: the plugin's catalog row in the root `README.md`.
 - `claude plugin validate .` — flags duplicate names, `..` paths and version mismatches between an entry and its `plugin.json`.
+- `npm run check:consistency` — what `validate` doesn't check across files: names, `renames`, `forceRemoveDeletedPlugins`, changelog headings against tags, README placeholders, length, badge and commands, and the root catalog rows; `-- --offline` skips the tag check.
 
 ### 8. Validation
 
@@ -72,7 +73,11 @@ The commands of each lifecycle stage. It lists only Claude Code commands and the
 - `claude plugin validate <path> --json` — one JSON report, with the same exit codes.
 - `claude plugin validate <plugin-dir> --profile directory` — adds the portability checks for a plugin directory.
 - `/plugin validate <path>` — the same report inside a session.
-- `npm run validate` — `--strict` on every plugin, then on the marketplace root.
+- `npm run validate` — `--strict` on every plugin, then on the marketplace root, `.claude` and each mod's tests.
+- `npm run validate:claude` — `claude plugin validate --strict .claude`: this repository's own skills, agents and commands.
+- `npm run validate:mods` — `claude plugin test` on every plugin with `tests/*.test.ts(x)`.
+- `npm run validate:portable` — `--profile directory --strict` on every plugin; outside `validate` while DEBT-003 is open.
+- `npm run validate:hooks-catch` — lists each mod gating hook without `.catch`, from `validate --json`; outside `validate` while DEBT-003 is open.
 - `npm run check` — every lint, type check and validation.
 
 ### 9. Local testing
@@ -88,12 +93,13 @@ The commands of each lifecycle stage. It lists only Claude Code commands and the
 - `claude plugin list --json` — each install with its path, errors and notes.
 - `/plugin`, `/plugin manage` — the Discover and Installed tabs inside a session.
 - `claude plugin test [dir]` — runs a mod's `*.test.ts(x)` tests.
+- `npm run check:install -- --from local <plugin>...` — adds this checkout as a marketplace in a throwaway configuration, installs each plugin, then runs `list --json`, `details`, `validate --strict` and, for a mod, `test` on the installed copy.
 
 ### 10. Evaluation
 
 - `claude plugin eval init [name]` — interview that writes an eval suite, from the plugin root; only after the owner approves each case.
 - `claude plugin eval <plugin-dir>` — runs every case with and without the plugin; it bills the owner's usage.
-- `claude plugin eval <plugin-dir> --case <case> --runs 1 --ablation none` — one quick case.
+- `claude plugin eval <plugin-dir> --case <case> --runs 1 --ablation none --no-publish` — one quick case. Without `--no-publish`, `eval` publishes its HTML report to claude.ai; `--max-cost-usd <usd>` caps the run's spend.
 
 ### 11. Documentation
 
@@ -105,12 +111,14 @@ The commands of each lifecycle stage. It lists only Claude Code commands and the
 ### 12. CHANGELOG update
 
 - **Docs:** The `plugin-releases` skill (step 4 and Withdraw a version) writes `plugins/<plugin>/CHANGELOG.md` and the root `CHANGELOG.md` with the `docs-maintenance` skill.
-- No command.
+- `npm run release:changelog -- <plugin> [--date YYYY-MM-DD]` — dates `## [Unreleased]` as the version in `plugin.json`, today in UTC by default, and writes the link references; it never writes the notes.
 
 ### 13. Versioning and bumping
 
 - **Docs:** The `plugin-versioning` and `plugin-releases` skills write the version's changelog section, the release line in the root `CHANGELOG.md`, the plugin's `README.md` and the catalog row with the `docs-maintenance` skill.
 - `claude plugin validate .` — reports an entry version that differs from its `plugin.json`.
+- `npm run release:status` — plugins whose version differs from `origin/main`, versions on `origin/main` with no tag, non-semver versions (exit 1) and declared dependencies; run `git fetch origin main` first.
+- `npm run release:status -- --next <plugin> --level major|minor|patch` — the next version from the one on `origin/main`.
 
 ### 14. Tagging
 
@@ -118,12 +126,14 @@ The commands of each lifecycle stage. It lists only Claude Code commands and the
 - `claude plugin tag <plugin-dir>` — creates the annotated tag.
 - `claude plugin tag <plugin-dir> --push` — creates and pushes the tag; only with the owner's authorization.
 - `/plugin tag <plugin-dir> [--dry-run] [--push] [--force]` — the session form.
+- `npm run release:notes -- <plugin> [--tag]` — the GitHub Release body `release.yml` publishes, or with `--tag` the tag name from `plugin.json`.
 
 ### 15. Publishing and distribution
 
 - `claude plugin marketplace add nerymurillohnd/the-claude-factory` — user side: adds the marketplace.
 - `claude plugin install <plugin>@the-claude-factory` — user side: installs a plugin.
 - `claude plugin install <plugin> --marketplace nerymurillohnd/the-claude-factory` — user side: both in one step.
+- `npm run check:install -- --from <ref> <plugin>...` — the same install check as stage 9, from `nerymurillohnd/the-claude-factory#<ref>` on GitHub: what users receive from that branch.
 
 ### 16. Update delivery
 
