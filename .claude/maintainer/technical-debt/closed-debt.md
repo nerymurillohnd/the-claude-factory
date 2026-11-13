@@ -18,6 +18,7 @@
 | Closed on | ID | Outcome | Closure | Superseded by |
 | --- | --- | --- | --- | --- |
 | 2026-11-13 | DEBT-002 | resolved | The cloud setup script pins every tool it installs | none |
+| 2026-11-13 | DEBT-004 | resolved | Changelog versions link to their release pages in the files, the procedure and the script | none |
 
 ## 🏁 Closed items
 
@@ -52,6 +53,43 @@ The image ships its own ShellCheck 0.11.0 in `/nix/var/nix/profiles/default/bin`
 - **Residual risk:** the `~/.bashrc` step was not run against this session's own `~/.bashrc` (a write there was blocked by the permission classifier), so its effect on `PATH` is confirmed only at the first fresh session; the setup script's ShellCheck warning shows it if it fails. Version bumps for these tools are manual, since Dependabot does not read the setup script.
 - **Closed by:** the setup script replacement of 2026-11-13, under ADR_2026-11-13_cloud-dependencies-through-setup-script-and-npm-run-setup.
 - **Related records:** ADR_2026-11-13_cloud-dependencies-through-setup-script-and-npm-run-setup, ADR_2026-11-13_python-3-15-default-and-pinned-in-cloud-setup.
+- **Superseded by:** none
+
+### DEBT-004 — Changelog versions link to their release pages in the files, the procedure and the script
+
+| Field | Value |
+| --- | --- |
+| **Outcome** | resolved |
+| **Closed on** | 2026-11-13 |
+| **Logged on** | 2026-11-13 |
+| **Owner** | unassigned |
+
+#### ❗ The problem
+
+Step 5 of `.claude/skills/docs-maintenance/references/documents/changelog.md` and `npm run release:changelog` linked a new version as a compare with the previous tag. The 22 plugin CHANGELOGs link every version to `releases/tag/<plugin>--v<version>`. The next release would have mixed the two formats in one file.
+
+#### 🔧 The closure
+
+The owner kept the release-page format on 2026-11-13 (ADR_2026-11-13_changelog-versions-link-to-release-pages). Commit d3aef8e changed four places to link the new version to `{repositoryUrl}/releases/tag/<plugin>--v<version>`:
+- the procedure's step 5
+- `plugin-releases` step 4
+- `scripts/release/release_tools/changelog.py`
+- its test
+
+`[Unreleased]` still compares from the newest tag.
+
+#### 🧪 Verification
+
+| Check | Evidence |
+| --- | --- |
+| ✅ **Positive:** the closure holds | `npm run test:scripts`: 236 tests, OK, including `test_links_later_release`, which expects `[0.2.0]: …/releases/tag/demo--v0.2.0`. A trial on a throwaway copy of `block-no-verify` bumped to 0.1.6 wrote `[0.1.6]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/block-no-verify--v0.1.6`. |
+| 🚫 **Negative:** the original failure or condition is gone | The same test failed before the fix (`FAIL: test_links_later_release`), when the script still wrote `compare/demo--v0.1.0...demo--v0.2.0`. `changelog.md` no longer says "each version compares its tag with the previous one". |
+
+#### 🔗 Follow-up
+
+- **Residual risk:** none.
+- **Closed by:** commit d3aef8e, under ADR_2026-11-13_changelog-versions-link-to-release-pages.
+- **Related records:** ADR_2026-11-13_five-scripts-cover-release-and-consistency-checks.
 - **Superseded by:** none
 
 <!--

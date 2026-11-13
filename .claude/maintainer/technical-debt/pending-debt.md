@@ -42,7 +42,6 @@ Add an item only when all of these hold:
 | --- | --- | --- |
 | DEBT-001 | No check keeps the READMEs semantically consistent with the manifests and the catalog | 🟠 Blocked |
 | DEBT-003 | Two CLI checks can't join npm run validate while five mods fail them | 🟠 Blocked |
-| DEBT-004 | Plugin changelogs link every version to its release page, not to a compare | 🟠 Blocked |
 
 ## 📂 Open items
 
@@ -123,32 +122,6 @@ Add an item only when all of these hold:
 - **Why it is not fixed now:** the fixes are plugin-scope work with version bumps. The owner kept them out of the scripts and CLI task on 2026-11-13.
 - **Next action:** the owner schedules the fixes for the five plugins. Once `validate:hooks-catch` and `validate:portable` exit 0, chain both into `npm run validate`.
 - **Review condition:** both scripts exit 0.
-- **Related records:** ADR_2026-11-13_five-scripts-cover-release-and-consistency-checks.
-
-### DEBT-004 — Plugin changelogs link every version to its release page, not to a compare
-
-| Field | Value |
-| --- | --- |
-| **Status** | 🟠 Blocked |
-| **Category** | quality |
-| **Owner** | unassigned |
-| **Logged** | 2026-11-13 |
-
-#### 🔎 Evidence
-
-- **Confirmed facts:**
-  - Step 5 of `.claude/skills/docs-maintenance/references/documents/changelog.md` says "each version compares its tag with the previous one; the oldest version links to `{{repositoryUrl}}/releases/tag/<name>--v<oldest>`".
-  - On 2026-11-13, none of the 22 `plugins/*/CHANGELOG.md` files has a version compare link. Each version links to `releases/tag/<plugin>--v<version>`, for example `[0.1.5]` in `plugins/block-no-verify/CHANGELOG.md`.
-  - `npm run release:changelog` (commit a12c254) writes the link as step 5 says. Its first run on a plugin leaves that file with mixed formats: a compare for the new version, release pages for the older ones. A trial on a copy of `block-no-verify` showed this.
-- **Inferences:** none.
-- **Open questions:** keep step 5 and convert the 22 changelogs, or change step 5, the template and the script to link each version to its release page.
-
-#### 📈 Impact and next step
-
-- **Impact / risk:** the changelogs users read become inconsistent from the next release on, and the procedure doesn't describe the files.
-- **Why it is not fixed now:** it waits on the owner's choice of link format.
-- **Next action:** the owner chooses. Then apply that format to the procedure, `release-changelog.py` and its tests, or to the 22 changelogs.
-- **Review condition:** the owner's decision, or the next plugin release, whichever comes first.
 - **Related records:** ADR_2026-11-13_five-scripts-cover-release-and-consistency-checks.
 
 <!--
