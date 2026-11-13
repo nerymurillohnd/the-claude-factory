@@ -8,7 +8,6 @@ import fnmatch
 import re
 from typing import TYPE_CHECKING, cast
 
-from validators.skill_lint.markdown import parse_markdown
 from validators.skill_lint.model import Finding, Severity
 
 if TYPE_CHECKING:
@@ -113,9 +112,8 @@ def _hooks(value: object) -> tuple[Hook, ...]:
 def inventory(skill: Skill) -> Inventory:
     """List the skill's injected commands, frontmatter hooks and allowed-tools entries."""
     bang: list[tuple[str, BangCommand]] = []
-    for rel, text in sorted(skill.text.items()):
+    for rel, doc in sorted(skill.markdown.items()):
         if rel.endswith(".md"):
-            doc = skill.body if rel == "SKILL.md" else parse_markdown(text)
             bang += [(rel, command) for command in doc.bang_commands]
     data = skill.frontmatter.data or {}
     return Inventory(

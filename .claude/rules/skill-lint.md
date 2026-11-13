@@ -32,6 +32,7 @@ paths:
 - Import package modules absolutely (`from validators.skill_lint.model import Finding`): `ruff.toml` bans relative imports, and a bare `import skill_lint` fails at runtime.
 - Build every `Finding` from the module's `SOURCES` map, which maps each rule id to the spec's source URL.
 - Read only files inside the skill folder; never write to a skill.
+- Read parsed Markdown from `skill.markdown`, never call `parse_markdown` in a rule module, and build one `Resolver` per check, not one per token.
 - Build test skills in a `tempfile.TemporaryDirectory` with `build_skill()` and `load()` from `scripts/testers/skill_lint/helpers.py`; never commit fixture skills.
 - Write the failing test first, then the code; confirm the test fails with the rule disabled.
 - Split a module that grows past about 250 lines by responsibility, as `rules_content_files.py`, `commands.py` and `markdown_model.py` split from their parents, and update this rule in the same commit.

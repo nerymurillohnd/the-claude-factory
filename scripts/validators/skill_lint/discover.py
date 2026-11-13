@@ -28,6 +28,7 @@ EXECUTABLE_BITS = 0o111
 MAX_TEXT_BYTES = 1024 * 1024
 """Files larger than this are listed but not read."""
 NOT_A_REPOSITORY = "not a git repository"
+MARKDOWN = (".md", ".markdown")
 
 
 class GitError(Exception):
@@ -83,6 +84,8 @@ class Skill:
     frontmatter: Frontmatter
     body: MarkdownDoc
     """The SKILL.md body, the lines from frontmatter.body_start on, with file line numbers."""
+    markdown: Mapping[str, MarkdownDoc]
+    """Every readable .md and .markdown file, parsed once; SKILL.md maps to body."""
     modes_error: str | None = None
     """Why git could not report modes, when it failed; None when it worked or was absent."""
 
@@ -185,6 +188,12 @@ def load_skill(skill_md: Path, *, mode_reader: ModeReader = git_modes) -> Skill:
     text, unread = _read_text(root, files)
     frontmatter = _frontmatter(text, unread)
     modes, modes_error = _modes(root, mode_reader)
+    body = _body(text, frontmatter)
+    markdown = {
+        rel: body if rel == "SKILL.md" else parse_markdown(content)
+        for rel, content in text.items()
+        if rel.endswith(MARKDOWN)
+    }
     return Skill(
         root=root,
         kind=kind,
@@ -195,7 +204,8 @@ def load_skill(skill_md: Path, *, mode_reader: ModeReader = git_modes) -> Skill:
         text=text,
         modes=modes,
         frontmatter=frontmatter,
-        body=_body(text, frontmatter),
+        body=body,
+        markdown=markdown,
         modes_error=modes_error,
     )
 

@@ -4,19 +4,28 @@ from __future__ import annotations
 
 from pathlib import Path
 import tempfile
+from typing import TYPE_CHECKING
 import unittest
 import warnings
 
 from validators.skill_lint.discover import load_skill
 from validators.skill_lint.refs import (
+    Resolver,
     depths,
     escapes,
     imported_or_sourced,
     reference_graph,
-    resolve,
 )
 
 from testers.skill_lint.helpers import VALID_SKILL_MD, build_skill
+
+if TYPE_CHECKING:
+    from validators.skill_lint.discover import Skill
+
+
+def resolve(skill: Skill, token: str, from_file: str, *, link: bool = False) -> str | None:
+    """Resolve one token with a fresh Resolver, as a test shorthand."""
+    return Resolver(skill).resolve(token, from_file, link=link)
 
 
 class ResolveTest(unittest.TestCase):

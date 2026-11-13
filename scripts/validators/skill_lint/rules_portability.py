@@ -5,10 +5,11 @@ from __future__ import annotations
 import re
 from typing import TYPE_CHECKING
 
-from validators.skill_lint.markdown import parse_markdown
 from validators.skill_lint.model import Finding, Severity
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
+
     from validators.skill_lint.discover import Skill
     from validators.skill_lint.markdown_model import MarkdownDoc
 
@@ -30,7 +31,6 @@ SPEC_FIELDS = frozenset(
 PLUGIN_VARIABLE = re.compile(r"\$\{?CLAUDE_PLUGIN_(?:ROOT|DATA)\b\}?")
 BACKSLASH_PATH = re.compile(r"(?:scripts|references|assets)\\[\w.\\-]+")
 RESERVED_WORDS = ("anthropic", "claude")
-MARKDOWN = (".md", ".markdown")
 SKILL_MD = "SKILL.md"
 
 
@@ -56,16 +56,7 @@ def _po01(skill: Skill) -> list[Finding]:
     return findings
 
 
-def _docs(skill: Skill) -> dict[str, MarkdownDoc]:
-    """Parse every Markdown file of the skill once."""
-    return {
-        rel: skill.body if rel == SKILL_MD else parse_markdown(text)
-        for rel, text in skill.text.items()
-        if rel.endswith(MARKDOWN)
-    }
-
-
-def _po02(docs: dict[str, MarkdownDoc]) -> list[Finding]:
+def _po02(docs: Mapping[str, MarkdownDoc]) -> list[Finding]:
     """PO-02: a backslash in a link target or a script path."""
     findings: list[Finding] = []
     for rel, doc in sorted(docs.items()):
@@ -108,7 +99,7 @@ def _po03_po06_po07(skill: Skill) -> list[Finding]:
     return findings
 
 
-def _po04(docs: dict[str, MarkdownDoc]) -> list[Finding]:
+def _po04(docs: Mapping[str, MarkdownDoc]) -> list[Finding]:
     """PO-04: injected commands, which run only in Claude Code."""
     findings: list[Finding] = []
     for rel, doc in sorted(docs.items()):
@@ -121,5 +112,5 @@ def _po04(docs: dict[str, MarkdownDoc]) -> list[Finding]:
 
 def check(skill: Skill) -> list[Finding]:
     """Run the portability rules on one skill."""
-    docs = _docs(skill)
+    docs = skill.markdown
     return _po01(skill) + _po02(docs) + _po03_po06_po07(skill) + _po04(docs)

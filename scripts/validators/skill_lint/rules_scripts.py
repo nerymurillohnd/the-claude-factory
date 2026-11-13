@@ -18,9 +18,8 @@ from validators.skill_lint.commands import (
     run_contexts,
     script_commands,
 )
-from validators.skill_lint.markdown import parse_markdown
 from validators.skill_lint.model import Finding, Severity
-from validators.skill_lint.refs import escapes, imported_or_sourced, resolve
+from validators.skill_lint.refs import Resolver, escapes, imported_or_sourced
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
@@ -72,19 +71,19 @@ def _ext(rel: str) -> str:
 def _skill_commands(skill: Skill) -> list[tuple[str, Command]]:
     """Return every command the skill's Markdown runs, with the file it is in."""
     found: list[tuple[str, Command]] = []
-    for rel, text in sorted(skill.text.items()):
+    for rel, doc in sorted(skill.markdown.items()):
         if rel.endswith(".md"):
-            doc = skill.body if rel == "SKILL.md" else parse_markdown(text)
             found += [(rel, command) for command in run_contexts(doc)]
     return found
 
 
 def entry_points(skill: Skill) -> set[str]:
     """Return the skill files that run on their own: run from Markdown, or with a shebang."""
+    resolver = Resolver(skill)
     found: set[str] = set()
     for rel, command in _skill_commands(skill):
         for word in command.words:
-            target = resolve(skill, word, rel)
+            target = resolver.resolve(word, rel)
             if target is not None:
                 found.add(target)
     found |= {rel for rel, text in skill.text.items() if text.startswith("#!")}
@@ -140,6 +139,7 @@ def _invocation(words: tuple[str, ...]) -> tuple[str | None, str] | None:
 
 def _sc03(skill: Skill) -> list[Finding]:
     """SC-03: each script the Markdown runs exists and is called with its interpreter."""
+    resolver = Resolver(skill)
     findings: list[Finding] = []
     for rel, command in _skill_commands(skill):
         found = _invocation(command.words)
@@ -148,7 +148,7 @@ def _sc03(skill: Skill) -> list[Finding]:
         interpreter, script = found
         if not LOCAL_PATH.match(script) or escapes(skill, script, rel):
             continue
-        if resolve(skill, script, rel) is None:
+        if resolver.resolve(script, rel) is None:
             message = f"`{script}` names no file in the skill"
             findings.append(_finding("SC-03", Severity.ERROR, rel, command.line, message))
             continue

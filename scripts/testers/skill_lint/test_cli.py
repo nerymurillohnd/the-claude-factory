@@ -13,7 +13,9 @@ import unittest
 from unittest import mock
 
 from validators.skill_lint.cli import main
+from validators.skill_lint.markdown_model import DocBuilder
 from validators.skill_lint.model import Family, Finding, Severity
+from validators.skill_lint.refs import Resolver
 from validators.skill_lint.report import family_status, render_json, render_text
 
 from testers.skill_lint.helpers import VALID_SKILL_MD, build_skill, load
@@ -131,6 +133,39 @@ class CliTest(unittest.TestCase):
             ):
                 _, out = _main([folder])
         self.assertNotIn("\x1b[", out)
+
+    def test_markdown_parsed_once_per_file(self) -> None:
+        """A full run parses each Markdown file once, however many rules read it."""
+        files = {
+            "SKILL.md": VALID_SKILL_MD + "\nSee [a](references/a.md) and [b](references/b.md).\n",
+            "references/a.md": "# A\n",
+            "references/b.md": "# B\n",
+        }
+        original = DocBuilder.build
+        with tempfile.TemporaryDirectory() as tmp:
+            folder = str(build_skill(Path(tmp), files))
+            with mock.patch.object(
+                DocBuilder, "build", autospec=True, side_effect=original
+            ) as built:
+                code, _ = _main(["--manifest", folder])
+        self.assertEqual(code, 0)
+        self.assertEqual(built.call_count, len(files))
+
+    def test_resolvers_do_not_grow_with_links(self) -> None:
+        """The number of resolvers built does not depend on the number of links."""
+        counts: list[int] = []
+        original = Resolver.__init__
+        for links in (1, 20):
+            body = "".join(f"[r](references/r.md#r-{i})\n" for i in range(links))
+            files = {"SKILL.md": VALID_SKILL_MD + body, "references/r.md": "# R\n"}
+            with tempfile.TemporaryDirectory() as tmp:
+                folder = str(build_skill(Path(tmp), files))
+                with mock.patch.object(
+                    Resolver, "__init__", autospec=True, side_effect=original
+                ) as made:
+                    _ = _main([folder])
+                counts.append(made.call_count)
+        self.assertEqual(counts[0], counts[1])
 
     def test_json_and_manifest(self) -> None:
         """--json --manifest prints JSON with a manifest entry for the skill."""

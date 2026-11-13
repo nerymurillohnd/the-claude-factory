@@ -8,11 +8,13 @@ import re
 from typing import TYPE_CHECKING
 from urllib.parse import unquote
 
-from validators.skill_lint.markdown import parse_markdown
+from validators.skill_lint.discover import MARKDOWN
 from validators.skill_lint.model import Finding, Severity
-from validators.skill_lint.refs import depths, escapes, reference_graph, resolve
+from validators.skill_lint.refs import Resolver, depths, escapes, reference_graph
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
+
     from validators.skill_lint.discover import Skill
     from validators.skill_lint.markdown_model import MarkdownDoc
 
@@ -30,7 +32,6 @@ SOURCES: dict[str, str] = {
 }
 
 SKILL_MD = "SKILL.md"
-MARKDOWN = (".md", ".markdown")
 TOC_MIN_LINES = 101
 TOC_WINDOW = 20
 TOC_MIN_LINKS = 2
@@ -55,15 +56,6 @@ def _finding(rule: str, severity: Severity, path: str, line: int | None, message
     return Finding(rule, severity, path, line, message, SOURCES[rule])
 
 
-def _docs(skill: Skill) -> dict[str, MarkdownDoc]:
-    """Parse every Markdown file of the skill once; SKILL.md uses its parsed body."""
-    docs: dict[str, MarkdownDoc] = {}
-    for rel, text in skill.text.items():
-        if rel.endswith(MARKDOWN):
-            docs[rel] = skill.body if rel == SKILL_MD else parse_markdown(text)
-    return docs
-
-
 def _anchor_ok(fragment: str, doc: MarkdownDoc | None) -> bool:
     """Tell whether a link fragment names an anchor of the target document."""
     if doc is None or not fragment:
@@ -72,8 +64,9 @@ def _anchor_ok(fragment: str, doc: MarkdownDoc | None) -> bool:
     return wanted in {anchor.lower() for anchor in doc.anchors}
 
 
-def _co07_co08_links(skill: Skill, docs: dict[str, MarkdownDoc]) -> list[Finding]:
+def _co07_co08_links(skill: Skill, docs: Mapping[str, MarkdownDoc]) -> list[Finding]:
     """CO-07 and CO-08 for Markdown links: each resolves inside the skill folder."""
+    resolver = Resolver(skill)
     findings: list[Finding] = []
     for rel, doc in sorted(docs.items()):
         for link in doc.links:
@@ -88,7 +81,7 @@ def _co07_co08_links(skill: Skill, docs: dict[str, MarkdownDoc]) -> list[Finding
                 message = f"link `{link.target}` leaves the skill folder"
                 findings.append(_finding("CO-08", Severity.ERROR, rel, link.line, message))
                 continue
-            target = resolve(skill, path, rel, link=True)
+            target = resolver.resolve(path, rel, link=True)
             if target is None:
                 message = f"link `{link.target}` names no file in the skill"
                 findings.append(_finding("CO-07", Severity.ERROR, rel, link.line, message))
@@ -98,7 +91,7 @@ def _co07_co08_links(skill: Skill, docs: dict[str, MarkdownDoc]) -> list[Finding
     return findings
 
 
-def _co08_paths(skill: Skill, docs: dict[str, MarkdownDoc]) -> list[Finding]:
+def _co08_paths(skill: Skill, docs: Mapping[str, MarkdownDoc]) -> list[Finding]:
     """CO-08 for path tokens in code and symlinks: none reaches outside the skill folder."""
     findings: list[Finding] = []
     for rel, doc in sorted(docs.items()):
@@ -163,7 +156,7 @@ def _co10(skill: Skill) -> list[Finding]:
     return findings
 
 
-def _co11(docs: dict[str, MarkdownDoc]) -> list[Finding]:
+def _co11(docs: Mapping[str, MarkdownDoc]) -> list[Finding]:
     """CO-11: time-sensitive text outside code."""
     findings: list[Finding] = []
     for rel, doc in sorted(docs.items()):
@@ -177,7 +170,7 @@ def _co11(docs: dict[str, MarkdownDoc]) -> list[Finding]:
 
 def check(skill: Skill) -> list[Finding]:
     """Run CO-07 to CO-12 on one skill."""
-    docs = _docs(skill)
+    docs = skill.markdown
     return (
         _co07_co08_links(skill, docs)
         + _co08_paths(skill, docs)
