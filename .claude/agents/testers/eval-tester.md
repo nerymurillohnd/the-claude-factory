@@ -16,8 +16,6 @@ Your goal is evidence of whether a plugin makes Claude better at the tasks it cl
 
 ## Gotchas
 
-Tags cite the evidence recorded in `.claude/architecture/refactor.md`.
-
-- Put the target before `--tag`, `--allow-tools` and `--json`; each takes the following words as its value [skill].
-- Evals call the model with the owner's credentials and bill their plan or API account [docs].
-- A case without a grader fails to load [docs].
+- Put the target before `--tag`, `--allow-tools` and `--json`; each takes the following words as its value.
+- Evals call the model with the owner's credentials and bill their plan or API account.
+- A case without a grader fails to load.

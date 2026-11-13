@@ -16,21 +16,19 @@ Your goal is proof that each plugin installs, loads and behaves as its README pr
 
 ## Gotchas
 
-Tags cite the evidence recorded in `.claude/architecture/refactor.md`.
-
-- `--plugin-dir` and `--plugin-url` go before the subcommand: `claude --plugin-dir <p> plugin details <name>` [skill].
-- `--plugin-dir` at a marketplace root loads nothing and shows no error; point it at the plugin directory [skill].
-- A `--plugin-dir` plugin silently replaces a same-named installed plugin for that session, while `list` still shows the installed row as enabled [skill].
-- `/plugin install <path|url|owner/repo>` installs nothing and reports `Marketplace not found`; add the marketplace first or use `--marketplace` [docs].
-- `/plugin install <plugin>` only opens the details pane; nothing installs until a scope is chosen [skill].
-- `configure` accepts only `name@marketplace`, never a bare name [docs].
-- `enable` on an enabled plugin, or `disable` on a disabled one, exits `1`; with `--json`, `alreadyInGoalState: true` [skill].
-- `/plugin` doesn't run in `claude -p`; use `claude plugin` from the shell [docs].
-- `-y` and `--accept-command` have no effect inside a session (Bash tool, hook); without a TTY, an install that shows a marketplace-declared command is refused unless one of them is passed from a terminal [skill].
-- `claude plugin test` runs only mods' `*.test.ts(x)`; no command fires a command hook without a session (NV-A8).
-- A reload that adds or removes a plugin MCP server or the `LSP` tool is not applied without `/reload-plugins --force` [docs]; in sessions without an interactive terminal, `/reload-plugins` doesn't connect or disconnect plugin MCP servers [docs].
-- `claude plugin prune` never removes a plugin the user installed directly, only auto-installed dependencies [docs].
-- `uninstall` from the last scope deletes options, secrets and data unless `--keep-data` is passed, and `uninstall --json` can't be combined with `--prune` [docs].
-- `marketplace remove` uninstalls every plugin from that marketplace and deletes their options, secrets and data; never run it outside the isolated configuration [docs].
-- A clean `list --json` does not prove a component is valid: a defective `.lsp.json` shows no `errors` or `notes` [E6].
-- A synced plugin (`<name>@synced`) appears only in sessions signed in with the claude.ai account [skill].
+- `--plugin-dir` and `--plugin-url` go before the subcommand: `claude --plugin-dir <p> plugin details <name>`.
+- `--plugin-dir` at a marketplace root loads nothing and shows no error; point it at the plugin directory.
+- A `--plugin-dir` plugin silently replaces a same-named installed plugin for that session, while `list` still shows the installed row as enabled.
+- `/plugin install <path|url|owner/repo>` installs nothing and reports `Marketplace not found`; add the marketplace first or use `--marketplace`.
+- `/plugin install <plugin>` only opens the details pane; nothing installs until a scope is chosen.
+- `configure` accepts only `name@marketplace`, never a bare name.
+- `enable` on an enabled plugin, or `disable` on a disabled one, exits `1`; with `--json`, `alreadyInGoalState: true`.
+- `/plugin` doesn't run in `claude -p`; use `claude plugin` from the shell.
+- `-y` and `--accept-command` have no effect inside a session (Bash tool, hook); without a TTY, an install that shows a marketplace-declared command is refused unless one of them is passed from a terminal.
+- `claude plugin test` runs only mods' `*.test.ts(x)`; no command fires a command hook without a session.
+- A reload that adds or removes a plugin MCP server or the `LSP` tool is not applied without `/reload-plugins --force`; in sessions without an interactive terminal, `/reload-plugins` doesn't connect or disconnect plugin MCP servers.
+- `claude plugin prune` never removes a plugin the user installed directly, only auto-installed dependencies.
+- `uninstall` from the last scope deletes options, secrets and data unless `--keep-data` is passed, and `uninstall --json` can't be combined with `--prune`.
+- `marketplace remove` uninstalls every plugin from that marketplace and deletes their options, secrets and data; never run it outside the isolated configuration.
+- A clean `list --json` does not prove a component is valid: a defective `.lsp.json` shows no `errors` or `notes`.
+- A synced plugin (`<name>@synced`) appears only in sessions signed in with the claude.ai account.

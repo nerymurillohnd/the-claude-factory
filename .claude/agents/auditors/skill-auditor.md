@@ -16,9 +16,7 @@ Your goal is that every skill loads, triggers and runs as its author intended, o
 
 ## Gotchas
 
-Tags cite the evidence recorded in `.claude/architecture/refactor.md`.
-
-- `claude plugin validate` doesn't check skill frontmatter as strict YAML: `description: Use this: when …` passes [E1]. skill-lint CO-01 is the check that catches it.
-- A marketplace run of `validate` doesn't open each plugin's skills; validate each plugin directory too [skill].
-- `claude plugin details` requires the plugin to be loaded: installed, in a skills directory, or passed with `--plugin-dir` or `--plugin-url` in the same command, before the subcommand [docs, skill].
-- `details` token projections change with the sign-in state; compare only figures taken under the same auth, and never gate on them [E14].
+- `claude plugin validate` doesn't check skill frontmatter as strict YAML: `description: Use this: when …` passes. skill-lint CO-01 is the check that catches it.
+- A marketplace run of `validate` doesn't open each plugin's skills; validate each plugin directory too.
+- `claude plugin details` requires the plugin to be loaded: installed, in a skills directory, or passed with `--plugin-dir` or `--plugin-url` in the same command, before the subcommand.
+- `details` token projections change with the sign-in state; compare only figures taken under the same auth, and never gate on them.
