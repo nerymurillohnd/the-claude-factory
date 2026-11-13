@@ -74,7 +74,7 @@ claude update
 <summary>🍺 <b>Homebrew</b> — macOS, Linux</summary>
 
 ```bash
-brew upgrade claude-code
+brew upgrade claude-code  # claude-code@latest if you installed that cask
 ```
 
 </details>
