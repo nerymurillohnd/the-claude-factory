@@ -33,7 +33,7 @@ GitHub's code scanning may already analyze the repository's workflows: CodeQL do
 
 ## Layer 2: zizmor and actionlint, when already installed
 
-zizmor and actionlint are free scanners for GitHub Actions. Run each only when it is already installed: check with `command -v zizmor` and `command -v actionlint`. Never install either, and never run any other program; when one is missing, record it as "not run: not installed" and go on. Both only read files when run as below.
+zizmor and actionlint are free scanners for GitHub Actions. Run each only when it is already installed: check with `command -v zizmor` and `command -v actionlint`. Never install either; when one is missing, record it as "not run: not installed" and go on. Both only read files when run as below.
 
 ### zizmor
 

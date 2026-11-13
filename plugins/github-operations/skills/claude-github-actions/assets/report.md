@@ -13,7 +13,7 @@
 
 <!-- Every critical and high finding, most severe first, each linked to its block, then the combined patch for each file it touches. -->
 
-1. **<F-1>** <title> · <severity> · `<file>:<line>` → [Combined patch](#combined-patch), `<file>`
+1. **<F-1>** <title> · <severity> · `<file>:<line>` → [Combined patch](#combined-patch), `<file>`, or → its own block, when it needs its own approval
 
 ## Evidence
 
@@ -31,7 +31,7 @@
 
 ## Findings
 
-<!-- Critical, high and medium findings, by severity, then file, then line. Diagnosis and repair routes: one block per cause. -->
+<!-- Critical, high and medium findings, by severity, then file, then line. Diagnosis and repair routes: one block per cause, whatever its severity; Lower findings holds only findings that are not the diagnosed cause. -->
 
 ### <F-1>: <title>
 
@@ -49,6 +49,14 @@
 
 - **Approval:** <with the rest | its own, because it changes triggers, permissions, secrets or the mode>
 - **Residual risk:** <what the patch leaves>, or `none`
+
+## Hypotheses
+
+<!-- Diagnosis route, when no sharp edge matched and no cause is proved: ranked, most likely first. Otherwise `none`. -->
+
+| Rank | Hypothesis | Log line that supports it | Next check that would confirm it |
+| :-- | :-- | :-- | :-- |
+| 1 | <hypothesis> | "<exact line>" | <check> |
 
 ## Lower findings
 
@@ -70,7 +78,7 @@
 
 ## Combined patch
 
-<!-- One block per file whose findings overlap: every finding's change merged, the mode frozen. -->
+<!-- One block per file the patches touch: every finding's change merged, the mode frozen. A change that needs its own approval stays out, with its patch in its finding block. -->
 
 `<file>` (findings <F-1, F-3…>):
 

@@ -30,7 +30,7 @@ Each entry gives the symptom, the log signal, the cause, the fix, and the action
 
 - Symptom: runs for contributors without write access fail, even with `allowed_non_write_users` set.
 - Signal: "Actor does not have write permissions to the repository".
-- Signal, also: "workflow_run does not say which repository it ran from"; "<bot> acted on a pull request by <author>, who is not allowed to start a run" followed by "A bot acted on this pull request, but its author does not have write access".
+- Signal, also: the `workflow_run` and bot-author lines belong to SE-20; match them there.
 - Cause: issue, pull request and `workflow_run` events check the actor's write access; for `workflow_run` also the upstream run's actor and, for a run from a fork, the fork's owner, failing closed when the run doesn't name its repository. On `pull_request` and `pull_request_target`, a `[bot]` actor also needs a pull request author with write access, in `allowed_bots`, or in `allowed_non_write_users` with `github_token`. `allowed_non_write_users` is honored only when the `github_token` input is provided; otherwise the bypass is skipped. An actor whose login ends in `[bot]` passes the write check without one, and the action's security notes say allowed bots are not checked for repository permissions: an `allowed_bots` entry lets that bot run Claude without write access.
 - Fix: use the bypass only with `github_token: ${{ secrets.GITHUB_TOKEN }}`, minimal permissions and minimal tools, never with a personal access token. On a public repository, treat every `allowed_bots` entry as a grant to an actor without write access. Removing either list changes more than the gate: read its row in [Costs of each change](auth-and-permissions.md#costs-of-each-change) first.
 - Facts: [Actor and text trust](action-contract.md#actor-and-text-trust), [Git, branches and credentials](action-contract.md#git-branches-and-credentials)
@@ -140,6 +140,7 @@ Each entry gives the symptom, the log signal, the cause, the fix, and the action
 - Cause: no credential, a partial workload identity configuration, more than one of Bedrock, Vertex and Foundry, a provider's required variable missing, or no `id-token: write` on a job whose OIDC token the action fetches itself (the default App token, workload identity). Bedrock, Vertex and Foundry take their credentials from the job's environment; when an earlier OIDC login step sets them, a missing `id-token: write` shows in that step's log, not with either message above. After the warning, the run authenticates with the static credential, which can come from the job's `env:` (`ANTHROPIC_API_KEY`, `CLAUDE_CODE_OAUTH_TOKEN`) as well as from the inputs. The credential checks and the workload identity token run only after the trigger check: a run that logged "No trigger found" (SE-04) never reaches them, so a green no-op says nothing about the credentials.
 - Fix: set exactly one profile as `auth-and-permissions.md` describes, with its variables, and grant `id-token: write` when the profile needs it. An empty secret on a fork or Dependabot run is SE-11.
 
+- Facts: [Inference credentials](action-contract.md#inference-credentials)
 ## SE-18. Auto mode by default, and its fallbacks
 
 - Symptom: since v1.0.273 a step edits files or runs commands its `--allowedTools` never listed; or a mention run warns about auto mode; or a prompt run on Foundry, or on an older model, denies every call.
@@ -161,7 +162,7 @@ Each entry gives the symptom, the log signal, the cause, the fix, and the action
 - Symptom: a maintainer labels or assigns an outsider's issue and the slash command in its body doesn't run; editing someone else's comment starts no mention run but does start a prompt run; a bot's pull request event fails; a `workflow_run` from a fork fails.
 - Signal: "Trigger result: false"; "<bot> acted on a pull request by <author>, who is not allowed to start a run" then "A bot acted on this pull request, but its author does not have write access"; "workflow_run does not say which repository it ran from" then "Actor does not have write permissions to the repository".
 - Cause: since v1.0.273 only the actor's own text is the request, tag mode ignores edits and deletions of other people's comments, a bot acting on a pull request needs a qualifying author, and `workflow_run` checks the fork's owner. Agent mode skips the edit check, against the action's own documentation.
-- Fix: the person who wants the run writes the request. Give prompt workflows on comment events a job-level `if:` on `github.event.action` (C-02). A bot's pull requests need an author with write access, or the bot in `allowed_bots`.
+- Fix: the person who wants the run writes the request. Give agent workflows on comment events a job-level `if:` on `github.event.action` (C-02). A bot's pull requests need an author with write access, or the bot in `allowed_bots`.
 - Facts: [Actor and text trust](action-contract.md#actor-and-text-trust)
 
 ## SE-21. Session guard, git wrappers and credentials for later steps
@@ -186,4 +187,3 @@ Each entry gives the symptom, the log signal, the cause, the fix, and the action
 - GitHub, `GITHUB_TOKEN`: https://docs.github.com/en/actions/concepts/security/github_token
 
 The action's version these entries were checked against is in [the Snapshot](version-drift.md#snapshot).
-- Facts: [Inference credentials](action-contract.md#inference-credentials)

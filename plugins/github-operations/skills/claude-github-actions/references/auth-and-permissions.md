@@ -34,7 +34,7 @@ Many fixes change something else in the step. Before writing a patch, find its r
 | Empty or remove `allowed_bots` | Auto may turn on. The credential helper goes unless `allowed_non_write_users` stays | The frozen mode |
 | Remove `bypassPermissions` or `--dangerously-skip-permissions` | The action's default mode returns, which may be auto | The frozen mode, chosen by [Permission mode in patches](#permission-mode-in-patches) |
 | Bump the pinned version | Whatever the releases in between changed ([A version bump is a patch](version-drift.md#a-version-bump-is-a-patch)) | The frozen mode, and every C-check run again on the bumped file |
-| Narrow `--tools` | In tag mode, `Edit` and `Write` disappear unless listed ([Tools the action grants](action-contract.md#tools-the-action-grants-and-the-mcp-servers-it-starts)) | `Edit` and `Write` in the list for mention workflows that change code |
+| Narrow `--tools` | In tag mode, `Edit` and `Write` disappear unless listed ([Tools the action grants](action-contract.md#tools-the-action-grants-and-the-mcp-servers-it-starts)) | `Edit` and `Write` in the list for tag workflows that change code |
 | Set `persist-credentials: false` | Tag mode on a private repository may fail to fetch the pull request ([Git, branches and credentials](action-contract.md#git-branches-and-credentials)) | A line in the finding: confirm on the first run |
 | Set `CLAUDE_CODE_SUBPROCESS_ENV_SCRUB: '1'` | Subprocesses lose `NPM_TOKEN`, `DATABASE_URL` and similar variables; the GitHub token stays. On a pin that bundles Claude Code older than 2.1.323, read-only git can break on Linux | Only on a pin at v1.0.274 or later, or bump the pin in the same patch |
 

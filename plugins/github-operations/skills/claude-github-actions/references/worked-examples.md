@@ -22,7 +22,12 @@ on:
 > | :-- | :-- | :-- | :-- | :-- |
 > | `no run` | — | — | `.github/workflows/claude.yml:3` `types: [edited]` | `none matched` |
 >
-> **F-1: The workflow runs only on edited comments** · **Check:** `none` · **Severity:** medium · **Approval:** its own, because it changes triggers
+> ### F-1: The workflow runs only on edited comments
+> - **Check:** `none` (a diagnosed cause) · **Seen by:** the diagnosis
+> - **Where:** `.github/workflows/claude.yml:3`
+> - **Severity:** medium · **Mode:** auto → auto (the patch doesn't touch the step)
+> - **Approval:** its own, because it changes triggers
+> - **Patch:**
 >
 > ```yaml
 > on:
@@ -69,12 +74,22 @@ jobs:
 **Report excerpt.**
 
 > **Fix first**
-> 1. **F-1** The GitHub MCP server is granted whole · high · `claude.yml:18` (C-11)
-> 2. **F-2** The action follows a moving tag · high · `claude.yml:15` (W-04)
-> 3. **F-3** The agent runs on the Claude App token, which the job's permissions don't limit · high · `claude.yml:15` (auto-mode layer A) · its own approval: it changes the token and the job's permissions
+> 1. **F-1** The GitHub MCP server is granted whole · high · `claude.yml:18` (C-11) → Combined patch
+> 2. **F-2** Nothing denies the network tools · high · `claude.yml:18` (auto-mode layer B) → Combined patch
+> 3. **F-3** The action follows a moving tag · high · `claude.yml:15` (W-04) → Combined patch
+> 4. **F-4** The agent runs on the Claude App token, which the job's permissions don't limit · high · `claude.yml:15` (auto-mode layer A) → its own block, its own approval
+> 5. **F-5** Tag mode checks out pull request heads, whose nested configuration loads · high · `claude.yml:9` (auto-mode layer F) → its own block, its own approval
 >
-> **F-1** · **Mode:** auto → auto · **Patch:** the combined patch below
-> **F-4: No time limit or cancelling** · W-08 · medium
+> ### F-1: The GitHub MCP server is granted whole
+> - **Check:** C-11 · **Seen by:** the audit's checks
+> - **Where:** `.github/workflows/claude.yml:18`
+> - **Severity:** high · **Mode:** auto → auto
+> - **Patch:** in the combined patch below · **Approval:** with the rest
+>
+> **Lower findings:** none. **Medium:** F-6 layer C (no script caps), F-7 W-08 (no time limit or cancelling).
+> **Questions:** which GitHub tools the task uses (C-11); the runner's network (layer D).
+>
+> **Combined patch,** `.github/workflows/claude.yml`:
 >
 > ```yaml
 > jobs:
@@ -94,17 +109,15 @@ jobs:
 >           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
 >           claude_args: |
 >             --permission-mode auto
->             --allowedTools "mcp__github__<each GitHub tool the task reads with>"
 >             --disallowedTools "WebFetch,WebSearch,Monitor,<every approval, merge and branch-write tool of the pinned server, as mcp__github__<name>>"
 > ```
 
 **Why each value.**
 - Mode auto before: a tag run on v1.0.273 or later with no exclusion ([Permission mode](action-contract.md#permission-mode)). `--permission-mode auto` is written to freeze it ([Permission mode in patches](auth-and-permissions.md#permission-mode-in-patches)), so after is auto too, and the check of the patches confirms each layer patch on the patched file.
-- C-11 high: the wildcard starts the server with every tool, and under auto only deny rules stop the rest ([C-11](workflow-audit.md#checks-for-steps-that-run-claude-code-action)). Layer B's network tools join the same `--disallowedTools`: one block per step.
-- W-04 high: a moving tag in a job that holds a secret. W-08 medium: layer E's row for an agent job outsiders reach.
-- Layer A high: no `github_token`, so the App token's write scopes don't follow the job's `permissions:`. Its patch adds `github_token` and the job scopes the task uses, at the costs in its row of [Costs of each change](auth-and-permissions.md#costs-of-each-change) (Claude's pushes then start no CI), so it is its own approval and stays out of the combined patch until the user decides.
-- No `--tools` and no deny on `Edit` or `Write`: a mention workflow that changes code needs them ([Costs of each change](auth-and-permissions.md#costs-of-each-change)).
-- The full report also carries layer D as a Questions row: the runner's network can't be read.
+- C-11 and layer B are two findings with one patch block ([Each finding](workflow-audit.md#each-finding)). The workflow shows no GitHub tool the task uses, so the patch grants none and asks ([C-11](workflow-audit.md#checks-for-steps-that-run-claude-code-action)); the deny list is the hard block under auto.
+- W-04 high: a moving tag in a job that holds a secret. W-08 medium: layer E's row for an agent job outsiders reach. Layer C medium: nothing caps the agent's writes ([the rating table](auto-mode-audit.md#4-rate-and-report)).
+- Layers A and F high, each its own approval: A adds `github_token` and job scopes, at the costs in [Costs of each change](auth-and-permissions.md#costs-of-each-change) (Claude's pushes then start no CI); F adds `if: ${{ !github.event.issue.pull_request }}`, which changes when the job runs. Both stay out of the combined patch until the user decides.
+- No `--tools` and no deny on `Edit` or `Write`: a tag workflow that changes code needs them ([Costs of each change](auth-and-permissions.md#costs-of-each-change)).
 
 ## Repair: a job waiting for a runner that doesn't exist
 
@@ -118,7 +131,11 @@ jobs:
 > | :-- | :-- | :-- | :-- | :-- |
 > | <run id> / 1 | test-macos / — | `<short SHA>` | `build.yml:<line>` `runs-on: macos-14`; queued since <time> | `none matched` |
 >
-> **F-1: A runner label GitHub retired** · **Check:** W-10 · **Severity:** medium
+> ### F-1: A runner label GitHub retired
+> - **Check:** W-10 · **Seen by:** the repair route
+> - **Where:** `.github/workflows/build.yml:<line>`
+> - **Severity:** medium · **Approval:** with the rest
+> - **Patch:**
 >
 > ```yaml
 >     runs-on: macos-15
@@ -129,7 +146,7 @@ jobs:
 > | The next run of `build.yml` on the default branch | not run | waits for the fix to land |
 
 **Why each value.**
-- A hang, not a pass: a queued job past its limits is repaired like a failure ([ci-repair.md](ci-repair.md), section 1, step 3), and a long queue on a GitHub-hosted label sends you to the runner table.
+- A finding, not a wait: GitHub documents no queue limit for GitHub-hosted runners, so a long queue sends you to the runner table ([ci-repair.md](ci-repair.md), section 1, step 3), where the label matches no runner (W-10).
 - W-10 medium: a `runs-on` label that matches no runner ([W-10](workflow-audit.md#checks-every-workflow-gets)); the retirement is a dated fact in [the Snapshot](version-drift.md#snapshot).
 - `macos-15`: the nearest newer label of the same OS and architecture in GitHub's table, so the fewest things change. Not `macos-latest`, which moves on its own.
 - The fix lands through a pull request, and the repair is done only when the next run on the default branch passes.

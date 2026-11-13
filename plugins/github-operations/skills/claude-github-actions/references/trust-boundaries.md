@@ -37,10 +37,7 @@ Which mode a step runs in: [Permission mode](action-contract.md#permission-mode)
 ## Configuration Claude reads
 
 - **Who controls it.** In tag mode on an open pull request the workspace is the pull request's head; in agent mode it is whatever the workflow checked out ([Configuration restored from the base branch](action-contract.md#configuration-restored-from-the-base-branch)). Only the restored root paths come from the base. Nested `CLAUDE.md`, `.claude/rules/` and `.claude/skills/`, package scripts, task runners and formatter configuration stay under the pull request's control.
-- **To keep a pull request's code from running in the agent's job**, do one of these:
-  - take review criteria and agent configuration from the base branch, with nothing of the head in the workspace;
-  - deny Bash, or the commands that run code, explicitly in `--disallowedTools`;
-  - set a strict mode in `claude_args` with an allow list that runs no code.
+- **To keep a pull request's code from running in the agent's job**, take review criteria and agent configuration from the base branch, with nothing of the head in the workspace. When the job must have the head's files in the workspace (tag mode on a pull request event), deny Bash, or the commands that run code, in `--disallowedTools`, or set a strict mode in `claude_args` with an allow list that runs no code; layer F then stays a finding, because the head's nested configuration still loads.
 - **The untrusted-PR deny list helps, but only so far.** It covers authors without write access, not trusted authors, issues or `workflow_run`, and it is not a sandbox ([Untrusted pull requests](action-contract.md#untrusted-pull-requests)). Never build or test the pull request in the agent's job.
 - `--add-dir` on a copy of the head loads its skills, commands, agents and plugins.
 
@@ -63,8 +60,8 @@ Which mode a step runs in: [Permission mode](action-contract.md#permission-mode)
 - **Everything in the step's environment reaches the session** ([Environment variables the action passes](action-contract.md#environment-variables-the-action-passes)). Never put deployment credentials, or secrets the task doesn't need, in a job whose agent untrusted events can start.
 - **Steps after Claude in the same job** run with what the session left: edited workspace files, and the action's token in `origin`'s URL unless it was revoked ([Session guard](action-contract.md#session-guard)). Don't run workspace code with secrets after Claude in the same job.
 - Keep untrusted build and test runs apart from the job that runs the agent, and both apart from publishing.
-- Never `secrets: inherit`, `show_full_output: true`, `--debug` in `claude_args`, `ACTIONS_STEP_DEBUG`, `set -x` beside secrets, a broad Bash grant, or `*` in `allowed_bots` or `allowed_non_write_users`.
-- Run Claude jobs on an egress-controlled runner when the organization has one; otherwise keep network-capable tools to the minimum.
+- In a workflow file or repository variable, never `secrets: inherit`, `ACTIONS_STEP_DEBUG`, `set -x` beside secrets, a broad Bash grant, or `*` in `allowed_bots` or `allowed_non_write_users`. `show_full_output` and `--debug` follow C-14; a one-off debug rerun is step 6 of [the diagnosis](claude-step-diagnosis.md#6-hand-off-or-propose-the-fix), with the user's approval.
+- Run Claude jobs on an egress-controlled runner when the organization has one; otherwise deny the network tools the job doesn't need in `--disallowedTools` (`WebFetch`, `WebSearch`, `Monitor`), as layer B in [auto-mode-audit.md](auto-mode-audit.md#3-check-each-layer) says; Bash can reach the network too.
 - Pin actions, reusable workflows and plugin marketplaces to resolved commits ([Pick the newest release](version-drift.md#pick-the-newest-release)).
 
 ## Approval, merge and branch-write tools

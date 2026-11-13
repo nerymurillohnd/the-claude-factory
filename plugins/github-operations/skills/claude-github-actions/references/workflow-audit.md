@@ -191,7 +191,7 @@ Sometimes a check needs a fact you can't read: the default token permission, an 
 - **Look for:** steps that print text an outsider controls to stdout or stderr: event bodies, files from a pull request, test or tool output on a pull request's code, an agent's answer, a downloaded artifact.
 - **How the runner reads it:** a line that starts with `::` after leading spaces is a workflow command, and `##[command]` is one anywhere in a line, on stdout and stderr alike. Live commands include `add-mask`, `stop-commands`, the annotation commands, `group` and `debug`; `set-output` and `save-state` are deprecated but still processed; `set-env` and `add-path` work only with `ACTIONS_ALLOW_UNSECURE_COMMANDS`.
 - **Severity:** high when a forged output or state can reach a later `run:` or a deciding `if:`, or when `ACTIONS_ALLOW_UNSECURE_COMMANDS` is set; low otherwise (forged annotations or masks).
-- **Patch:** write the text to a file instead of printing it; or print it between `::stop-commands::<random token>` and `::<random token>::`; and never set `ACTIONS_ALLOW_UNSECURE_COMMANDS`.
+- **Patch:** write the text to a file or to the step summary instead of printing it. Only when it must stay visible in the log, print it between `::stop-commands::<random token>` and `::<random token>::`. Never set `ACTIONS_ALLOW_UNSECURE_COMMANDS`.
 - **Why:** the runner can't tell a step's own commands from text it echoes.
 - **Scanners:** none in zizmor; in CodeQL only an experimental query.
 

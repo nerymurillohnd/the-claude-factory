@@ -107,10 +107,12 @@ Do this for the commit from [Find the commit a step runs](#find-the-commit-a-ste
 **With git** (Claude Code with a shell):
 
 ```
-TMP=$(mktemp -d)
+TMP=$(mktemp -d) && echo "$TMP"
 git init -q "$TMP" && git -C "$TMP" fetch -q --filter=blob:none --depth=1 https://github.com/anthropics/claude-code-action <snapshot> <pin>
 git -C "$TMP" diff --name-only <snapshot> <pin> -- action.yml base-action/action.yml base-action/package.json base-action/src src scripts docs/security.md
 ```
+
+Run these three lines in one shell call. A variable doesn't survive between calls, so write the folder it printed, as a literal path, in every later command, the cleanup included.
 
 The fetch downloads trees, not file contents, so it takes about a second. Read the list it prints:
 
@@ -118,7 +120,7 @@ The fetch downloads trees, not file contents, so it takes about a second. Read t
 - **A path in the Source files table:** the topics on its row are unverified. Read `git -C "$TMP" diff <snapshot> <pin> -- <path>`, then apply what the code at the pin says, not what `action-contract.md` says. Name each such topic in Version provenance.
 - **A path not in the table:** an unmapped change. Read its diff and say in Version provenance whether it changes anything the route relies on.
 
-Delete `$TMP` when you're done.
+Delete that folder with `rm -rf <folder>` when you're done.
 
 **With MCP only:** list each directory that holds a Source files path with `get_file_contents` at `sha: <pin>` (for example `src/modes`). Each entry carries its blob `sha`. A blob different from the table makes that row's topics unverified until you read the file at the pin. Unmapped changes can't be seen this way: say in Version provenance that they weren't checked.
 

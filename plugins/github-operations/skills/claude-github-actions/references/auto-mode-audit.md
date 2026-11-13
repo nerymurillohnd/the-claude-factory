@@ -47,7 +47,7 @@ Check every layer, and record for each one the line that proves it, or "missing"
 
 **Costs to state with each patch:**
 - A: adding `github_token` has the costs in its row of [Costs of each change](auth-and-permissions.md#costs-of-each-change), and is never added while `allowed_non_write_users` holds `*`.
-- B: a `--tools` list without `Edit` and `Write` removes code editing from mention runs. Keep them in mention workflows that change code, and use a tight `--tools` list only on prompt workflows that mustn't change files. When you can't tell what the workflow is for, ask: it is a Questions row.
+- B: a `--tools` list without `Edit` and `Write` removes code editing from tag runs. Keep them in tag workflows that change code, and use a tight `--tools` list only on agent workflows that mustn't change files. When you can't tell what the workflow is for, ask: it is a Questions row.
 - C: the scrub removes `NPM_TOKEN`, `DATABASE_URL` and similar variables from Claude's subprocesses, never the GitHub token, and it needs a pin at v1.0.274 or later.
 
 ## 4. Rate and report

@@ -25,7 +25,7 @@ For each failing workflow, read the failed job's log (MCP `get_job_logs` with `f
 
 ## 3. Repair
 
-1. Make the smallest justified change. Never weaken tests or checks, suppress warnings, or broaden permissions without need and the user's approval.
+1. Make the smallest justified change. Never weaken tests or checks or suppress warnings. Broaden a permission only when the job needs it, and only with the user's approval; never to get a green run.
 2. Never rerun hoping for green: rerun only with evidence of a transient failure, or after fixing what stopped it.
 3. Report a cause outside the repository (an expired secret, a revoked app, a runner) to the user, with the unlock it needs.
 
