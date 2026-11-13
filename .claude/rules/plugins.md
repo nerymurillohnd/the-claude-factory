@@ -31,7 +31,6 @@ Conventions for the plugins this marketplace distributes. The split between the 
 
 ## Platform support
 
-- Windows is supported only when a plugin, current or future, is meant to run there, and then only through Git Bash.
 - Each plugin's README states its Windows support.
 
 ## Portability and prerequisites

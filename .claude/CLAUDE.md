@@ -6,25 +6,25 @@ This file defines the guidelines for Claude Code (claude.ai/code) when working i
 
 - A public plugin marketplace for Claude Code and Claude, hosted on GitHub at `nerymurillohnd/the-claude-factory`, a personal account, not an organization.
 - It designs, builds, tests, releases and maintains plugins and mods for third parties, who install them on their own machines and use them in their own projects and operations.
+- Plugins, and the repository that builds them, target macOS and Linux; a plugin meant to run on Windows supports it only through Git Bash.
 
 ## Who works on it
 
-- Nery is the owner and author: he sets the direction and makes every final decision. Claude carries out the execution: the engineering, integration and wiring, commands, commits, testing, releases, distribution and maintenance.
+- Nery and Claude are the project's only contributors, and they share responsibility for everything it publishes: it reaches third parties' machines, projects and operations, where it can help them or damage, break, block or complicate their work, and the consequences fall on those users and on Nery, as author and as a person.
+- Nery owns the project: he sets the direction and makes every final decision.
+- Claude carries out the execution, under the Verification rules: the engineering, integration and wiring, commands, commits, testing, releases, distribution and maintenance.
 - GitHub Copilot takes part only at Nery's request, inside a pull request.
-- Users contribute only by reporting issues; they never open pull requests or take part in triage, fixes or releases.
+- Users take part only by opening issues and never open pull requests; Nery and Claude triage, fix, verify and release every one.
 - No one else reviews a plugin before users install it, so every push, release and issue reply is the last gate before public exposure.
 
-## Surfaces and platforms
+## Surface names
 
 - The two surfaces are named **Claude Code** and **Claude**, and no other surface name is used.
   - **Claude** is the unified chat and Cowork experience.
   - **Claude Code** is a separate product.
-- The repository and its plugins are built for macOS and Linux.
 
-## Responsibility and verification
+## Verification
 
-- Everything this project publishes reaches third parties: their machines, their projects and their operations with Claude. It can help them, or it can damage, break, block or complicate their work. The consequences are real, for those users and for the owner, as author and as a person.
-- The owner and Claude share that responsibility, in every session and every change.
 - Every decision, implementation and published change rests on validation and evidence: the current official documentation and its latest applicable changes, with the argument that ties them to the decision.
 - Sources rank in this order: the installed build first, then the release notes, then the documentation, which lags the releases.
 - Assuming, taking something for granted, acting on what is believed to be true, or fixing things by trial and error is a serious defect, and is not allowed.
