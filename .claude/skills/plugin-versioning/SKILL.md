@@ -30,32 +30,30 @@ From code.claude.com/docs/en/plugins/host-marketplace (Release a new version), l
    - In `0.x`, a breaking change bumps Minor. Moving from `0.x` to `1.0.0` needs the owner's authorization, because it promises users a stable interface.
 3. **Check dependents**, because a plugin that depends on this one through a version range stops resolving if the new version falls outside it:
    ```bash
-   jq -c 'select(.dependencies) | {name, dependencies}' plugins/*/.claude-plugin/plugin.json
-   jq -c '.plugins[] | select(.dependencies) | {name, dependencies}' .claude-plugin/marketplace.json
+   npm run release:status
    ```
-   Keep the new version inside every range that names this plugin, or change the dependent in the same pull request.
+   Each `dependent: <plugin> needs <name> <range>` line is a declared dependency, from `plugin.json` or the marketplace entry, with its range as written (`any` for a bare name). Keep the new version inside every range that names this plugin, or change the dependent in the same pull request.
 4. **Set the minimum Claude Code version** when the change relies on a Claude Code feature, through `engines["claude-code"]` in `plugin.json`: outside its range the plugin is not installed, updated or loaded, and install and update pick the newest version that fits (see Version notes). Set it to `">=<lowest version that has the feature>"`, make the README's minimum Claude Code version say the same, and record the change under `### Changed`.
 5. **Write the notes** with the `docs-maintenance` skill, under `## [Unreleased]` in `plugins/<plugin>/CHANGELOG.md`: one entry per user-visible change, its type (Added, Changed, Deprecated, Removed, Fixed or Security) and `**Breaking:**` where it breaks something. When the change alters what the plugin's README describes, such as its components, commands, prerequisites or minimum Claude Code version, update the README with the same skill. For a new plugin, run that skill's "New plugin" event instead.
-6. **Set the new version** in `plugins/<plugin>/.claude-plugin/plugin.json`. A new plugin: `0.1.0`. An existing plugin: take the version on `origin/main` (`git show origin/main:plugins/<plugin>/.claude-plugin/plugin.json`), raise the field of the level chosen in step 2 by one, and reset the fields after it to `0` (Minor: `0.3.2` becomes `0.4.0`).
+6. **Set the new version** in `plugins/<plugin>/.claude-plugin/plugin.json` to what this prints, after `git fetch origin main`, with `<level>` the one chosen in step 2:
+   ```bash
+   npm run release:status -- --next <plugin> --level <level>
+   ```
+   It raises that field of the version on `origin/main` by one and resets the fields after it to `0` (Minor: `0.3.2` becomes `0.4.0`); a plugin not on `origin/main` yet gets `0.1.0`.
 7. **Verify**, and show the raw output:
-   - the version is semver, which the validator doesn't check (it accepts `1.0`). This prints the version and exits 0, or prints nothing and exits 1:
-     ```bash
-     jq -r .version plugins/<plugin>/.claude-plugin/plugin.json | grep -Ex '[0-9]+\.[0-9]+\.[0-9]+'
-     ```
+   - `npm run release:status` exits 0: it lists the plugin as `changed: <plugin> <old> -> <new>` and exits 1 on a version that is not semver, which the validator doesn't check (it accepts `1.0`)
    - `claude plugin validate --strict plugins/<plugin>` exits 0
    - `claude plugin validate --strict .` exits 0
+   - `claude plugin validate --profile directory --strict plugins/<plugin>` exits 0: the plugin directory's portability checks (README, license, privacy URL, system files)
+   - for a mod, meaning the plugin has `tests/*.test.ts(x)`: `claude plugin test plugins/<plugin>` exits 0
+   - `npm run check:consistency` exits 0: names, changelog, README and catalog agree
    - `claude plugin tag plugins/<plugin> --dry-run` prints `<plugin>--v<new version>`. Commit the change first: it exits 1 while any file under the plugin is uncommitted.
-   - the plugin installs and loads from a local marketplace, the official pre-release check. Run it in a throwaway configuration, never your own: a user can't have two marketplaces with the same name, so adding this checkout to your real configuration collides with an installed `the-claude-factory`. From the repository root:
+   - the plugin installs and loads from a local marketplace, the official pre-release check. The script runs it in a throwaway configuration, never your own: a user can't have two marketplaces with the same name, so adding this checkout to your real configuration collides with an installed `the-claude-factory`. From the repository root:
      ```bash
-     T="$(mktemp -d)"
-     env CLAUDE_CONFIG_DIR="${T}/config" CLAUDE_CODE_PLUGIN_CACHE_DIR="${T}/cache" claude plugin marketplace add ./
-     env CLAUDE_CONFIG_DIR="${T}/config" CLAUDE_CODE_PLUGIN_CACHE_DIR="${T}/cache" claude plugin install <plugin>@the-claude-factory
-     env CLAUDE_CONFIG_DIR="${T}/config" CLAUDE_CODE_PLUGIN_CACHE_DIR="${T}/cache" claude plugin list --json
-     env CLAUDE_CONFIG_DIR="${T}/config" CLAUDE_CODE_PLUGIN_CACHE_DIR="${T}/cache" claude plugin details <plugin>
-     rm -rf "${T}"
+     npm run check:install -- --from local <plugin>
      ```
-     It passes when `claude plugin list --json` shows the plugin at the new version with no `errors`, and `claude plugin details` lists its components.
-   - when the plugin has evals and the owner approves the run, the local smoke run passes: `claude plugin eval plugins/<plugin> --case <case> --runs 1 --ablation none`, where `<case>` is the case the owner approves, by its name in the plugin's eval suite. `.claude/rules/plugins.md` (Evals) limits local runs to a reduced suite, and every run bills the owner's usage.
+     It exits 0 when `claude plugin list --json` shows the plugin with no `errors`, `claude plugin details` lists its components, and `claude plugin validate --strict` (and `claude plugin test` for a mod) pass on the installed copy. Check that the printed version is the new one.
+   - when the plugin has evals and the owner approves the run, the local smoke run passes: `claude plugin eval plugins/<plugin> --case <case> --runs 1 --ablation none --no-publish`, where `<case>` is the case the owner approves, by its name in the plugin's eval suite. `--no-publish` keeps the HTML report local; without it `eval` publishes the report to claude.ai. `.claude/rules/plugins.md` (Evals) limits local runs to a reduced suite, and every run bills the owner's usage.
 8. **Open the pull request** for the change, with the owner's authorization; component changes inside `plugins/` always go through one. The version heading, its date and the changelog links are written at release time by the `plugin-releases` skill, not here.
 
 ## Conventions this skill adds to the official docs
