@@ -40,11 +40,13 @@ Add an item only when all of these hold:
 
 | ID | Title | Status |
 | --- | --- | --- |
-| DEBT-001 | No check keeps the READMEs consistent with the manifests and the catalog | 🟠 Blocked |
+| DEBT-001 | No check keeps the READMEs semantically consistent with the manifests and the catalog | 🟠 Blocked |
+| DEBT-003 | Two CLI checks can't join npm run validate while five mods fail them | 🟠 Blocked |
+| DEBT-004 | Plugin changelogs link every version to its release page, not to a compare | 🟠 Blocked |
 
 ## 📂 Open items
 
-### DEBT-001 — No check keeps the READMEs consistent with the manifests and the catalog
+### DEBT-001 — No check keeps the READMEs semantically consistent with the manifests and the catalog
 
 | Field | Value |
 | --- | --- |
@@ -65,6 +67,18 @@ Add an item only when all of these hold:
     - Trigger: after a change set alters a fact other files repeat, launch a background docs-maintenance audit, report only.
     - Skips: no repeated fact changed, applying an audit's fixes, an audit of the same scope already run, and inside a subagent.
   - Stated by the user on 2026-11-12: if the scripts are built, the rule covers only semantic consistency, and the scripts cover the mechanical checks.
+  - Update, 2026-11-13: the mechanical checks are now built. `npm run check:consistency` runs `scripts/validators/plugin-consistency.py` (commit a1c4c10, ADR_2026-11-13_five-scripts-cover-release-and-consistency-checks) and is part of `npm run check`. It checks:
+    - names across the folder, `plugin.json` and the marketplace entry
+    - `renames`
+    - changelog headings against tags
+    - an empty `[Unreleased]` on `main`
+    - README placeholders, length, badge and install, update and uninstall commands
+    - one catalog row per plugin, at its version and category, with the section counts
+    
+    On the branch it exits 0. Still open:
+    - the semantic part: descriptions, prerequisites and links between plugins
+    - the stale `scripts/generators/catalog.mjs` comment, now on line 105 of the root `README.md`
+    - the catalog generator, still Pending in `refactor.md`
 - **Inferences:**
   - Names, versions and catalog rows are mechanical and suit scripts, run through npm and CI.
   - Descriptions, prerequisites and links between plugins need judgment and suit the audit agents.
@@ -78,10 +92,64 @@ Add an item only when all of these hold:
 #### 📈 Impact and next step
 
 - **Impact / risk:** a name, version, description or catalog row can disagree between `plugin.json`, `marketplace.json`, a plugin README, its CHANGELOG and the root catalog. Nothing catches it before it reaches the people who install these plugins. The stale comment on line 106 of the root README points maintainers to a script that does not exist.
-- **Why it is not fixed now:** it waits on the owner's choice between the rule and the scripts, and on the open questions. The owner asked on 2026-11-12 to log it rather than build it now.
-- **Next action:** the owner answers the open questions. Then either write `.claude/rules/readme-consistency.md` from the 2026-11-12 draft, or build the mechanical checks as maintainer scripts behind an npm script and narrow the rule to semantic consistency.
+- **Why it is not fixed now:** it waits on the owner's decision about the semantic rule and on the open questions. The owner asked on 2026-11-12 to log it rather than build it now; the mechanical scripts were built on 2026-11-13.
+- **Next action:** the owner answers the open questions on the semantic rule. Then write `.claude/rules/readme-consistency.md` from the 2026-11-12 draft, narrowed to semantic consistency, since `check:consistency` covers the mechanical checks.
 - **Review condition:** the owner's decision, or the first README or catalog drift found in review.
-- **Related records:** ADR_2026-11-12_npm-scripts-are-the-single-entry-point, ADR_2026-11-12_maintainer-tools-as-pinned-uv-tools (superseded by ADR_2026-11-12_maintainer-scripts-run-through-uv-run).
+- **Related records:** ADR_2026-11-12_npm-scripts-are-the-single-entry-point, ADR_2026-11-12_maintainer-tools-as-pinned-uv-tools (superseded by ADR_2026-11-12_maintainer-scripts-run-through-uv-run), ADR_2026-11-13_five-scripts-cover-release-and-consistency-checks.
+
+### DEBT-003 — Two CLI checks can't join npm run validate while five mods fail them
+
+| Field | Value |
+| --- | --- |
+| **Status** | 🟠 Blocked |
+| **Category** | quality |
+| **Owner** | unassigned |
+| **Logged** | 2026-11-13 |
+
+#### 🔎 Evidence
+
+- **Confirmed facts:**
+  - `npm run validate:hooks-catch` checks `contents[].gatingHooks[].hasCatch` from `claude plugin validate --json` (commit 79af551, Claude Code 2.1.323). On 2026-11-13 it exits 1 with four hooks:
+    - `plugins/project-maintainer`: `session.compact` and `tool.call{tool=Bash}`, in `./register.ts`
+    - `plugins/turn-meter`: `tool.call` and `command.run{command=turn-meter}`, in `./register.tsx`
+  - `npm run validate:portable` runs `claude plugin validate --profile directory --strict` on each plugin. On 2026-11-13 it fails on `file-tree-pane`, `model-trace`, `project-maintainer`, `tool-ledger` and `turn-meter`. `npm run check:install -- --from local turn-meter` shows the cause for `turn-meter`: `TS2741: Property 'isCollapsed' is missing`.
+  - Both scripts stay out of `validate` and `check`. `validate:claude` and `validate:mods`, which pass, joined `validate`.
+- **Inferences:** the same mods-API type errors make `npm run validate` fail today on those plugins, so the mods may be broken for users on current Claude Code builds.
+- **Open questions:** none.
+
+#### 📈 Impact and next step
+
+- **Impact / risk:** nothing blocks a merge on a gating hook with no `.catch` or on a portability failure. These plugins reach users with the defects the two checks report.
+- **Why it is not fixed now:** the fixes are plugin-scope work with version bumps. The owner kept them out of the scripts and CLI task on 2026-11-13.
+- **Next action:** the owner schedules the fixes for the five plugins. Once `validate:hooks-catch` and `validate:portable` exit 0, chain both into `npm run validate`.
+- **Review condition:** both scripts exit 0.
+- **Related records:** ADR_2026-11-13_five-scripts-cover-release-and-consistency-checks.
+
+### DEBT-004 — Plugin changelogs link every version to its release page, not to a compare
+
+| Field | Value |
+| --- | --- |
+| **Status** | 🟠 Blocked |
+| **Category** | quality |
+| **Owner** | unassigned |
+| **Logged** | 2026-11-13 |
+
+#### 🔎 Evidence
+
+- **Confirmed facts:**
+  - Step 5 of `.claude/skills/docs-maintenance/references/documents/changelog.md` says "each version compares its tag with the previous one; the oldest version links to `{{repositoryUrl}}/releases/tag/<name>--v<oldest>`".
+  - On 2026-11-13, none of the 22 `plugins/*/CHANGELOG.md` files has a version compare link. Each version links to `releases/tag/<plugin>--v<version>`, for example `[0.1.5]` in `plugins/block-no-verify/CHANGELOG.md`.
+  - `npm run release:changelog` (commit a12c254) writes the link as step 5 says. Its first run on a plugin leaves that file with mixed formats: a compare for the new version, release pages for the older ones. A trial on a copy of `block-no-verify` showed this.
+- **Inferences:** none.
+- **Open questions:** keep step 5 and convert the 22 changelogs, or change step 5, the template and the script to link each version to its release page.
+
+#### 📈 Impact and next step
+
+- **Impact / risk:** the changelogs users read become inconsistent from the next release on, and the procedure doesn't describe the files.
+- **Why it is not fixed now:** it waits on the owner's choice of link format.
+- **Next action:** the owner chooses. Then apply that format to the procedure, `release-changelog.py` and its tests, or to the 22 changelogs.
+- **Review condition:** the owner's decision, or the next plugin release, whichever comes first.
+- **Related records:** ADR_2026-11-13_five-scripts-cover-release-and-consistency-checks.
 
 <!--
 Entry format. Copy this block above this comment for each new item and add its row to the Index.
