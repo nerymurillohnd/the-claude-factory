@@ -27,7 +27,6 @@ The blueprint is a section table, not a file to copy. Its values name this repos
 | Value | This repository |
 | :-- | :-- |
 | `{{generatedBlocks}}` | The `<!-- catalog:* -->` and `<!-- plugin-count:* -->` blocks |
-| `{{generateCommand}}` | `npm run generate` |
 | `{{marketplaceDisplayName}}` | The Claude Factory |
 | `{{ciBadges}}` | The `validate.yml` status badge |
 | `{{compatibilityPage}}` | `docs/compatibility.md` |
@@ -40,7 +39,7 @@ The blueprint is a section table, not a file to copy. Its values name this repos
 
 1. Find the blueprint row of each section you touch, and write the section to that row's intent and rules. Trust & safety follows the official "Review a plugin before you install" guidance.
 2. Keep the sections in the blueprint's order, under their emoji headings. A new section goes where its intent fits, and gets its row in the blueprint first.
-3. Never hand-edit the generated blocks: run `npm run generate`. The catalog's version column is the only plugin version the README shows, and no plugin detail goes beyond its catalog row.
+3. The blocks between `<!-- plugin-count:start -->`/`<!-- plugin-count:end -->` and `<!-- catalog:start -->`/`<!-- catalog:end -->` were generated on `main`; no generator exists on this branch yet (DEBT-001), so edit them by hand: keep every marker and `biome-ignore` comment, and take each row's values from `marketplace.json` and the plugin's `plugin.json`. The catalog's version column is the only plugin version the README shows, and no plugin detail goes beyond its catalog row.
 4. Change each pair below together, in the same commit:
    - Where plugins work ↔ `docs/compatibility.md`
    - Quick start and Manage your plugins ↔ `docs/installation.md`, `docs/managing-plugins.md`, `docs/troubleshooting.md`

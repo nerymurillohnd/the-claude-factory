@@ -35,7 +35,7 @@ Read 2026-11-10 (`github/docs` at `f309096`):
 
 ## Procedure
 
-1. Enable private vulnerability reporting on the repository before linking it.
+1. Confirm with the owner that private vulnerability reporting is enabled on the repository; the owner enables it in the repository's settings, which a cloud session can't change. Link it only once it is.
 2. Copy the template to `SECURITY.md` and fill every value; delete each instruction comment.
 3. Delete "What to expect" unless the maintainer commits to its targets.
 4. For each out-of-scope item, give where to report it instead.
@@ -54,7 +54,7 @@ This repository:
 - Write the policy per plugin, never as one marketplace version: each plugin has its own `version` and `<plugin>--v<version>` tags.
 - Only the latest released version of each plugin receives security fixes; the update command is `claude plugin update <plugin>@the-claude-factory`, and the update applies after a restart or `/reload-plugins`.
 - Never say fixes arrive automatically: auto-update is off by default for this marketplace, so users get a fix only when they update.
-- When the prompt doesn't confirm that private vulnerability reporting is enabled, tell the owner to enable it in the repository settings; don't write that path into the file.
+- Never write the settings path for private vulnerability reporting into the file: it is for the owner, not for readers.
 - Out of scope, each with where to report it: Claude Code, Claude and Anthropic's services (Anthropic's security disclosure channel, verified on its site); GitHub's platform (GitHub's security reporting); third-party MCP servers and tools a plugin connects to (their maintainers); flaws that need an attacker who already controls the user's machine or Claude settings; general bugs and questions (`SUPPORT.md`).
 - `SECURITY.md`, `SUPPORT.md` and `.github/ISSUE_TEMPLATE/config.yml` state the same private reporting route.
 - No copy in `.github/`: it would replace the root file silently.

@@ -39,7 +39,7 @@ Read 2026-11-10:
 1. Inventory every destination: search each plugin's hooks, scripts, MCP configurations and README for hosts.
 2. Copy the template to `PRIVACY.md`, fill every value, delete each instruction comment.
 3. Write one row per destination; for an operator with no published policy, say so with the date checked and quote what it states.
-4. Set each plugin's `privacyPolicyUrl` to the policy's `https://` URL on `main`.
+4. Check that each plugin's `privacyPolicyUrl` is the policy's `https://` URL on `main`; set it where it isn't.
 5. Run the checks.
 
 ## Rules

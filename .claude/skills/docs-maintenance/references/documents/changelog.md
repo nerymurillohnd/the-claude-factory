@@ -41,7 +41,7 @@ Leave out formatting-only work, internal refactors with no observable effect, pl
 1. New plugin: copy the template to `plugins/<plugin>/CHANGELOG.md`, delete its instruction comment, and fill the values; the first section keeps `### Added` with "Initial release."
 2. Each later change: write the notes under `## [Unreleased]`, under the type each change belongs to, in user language: what changes for the user, not how.
 3. A breaking change starts its line with `**Breaking:**`, under `### Changed` or `### Removed`, and says what changed, who is affected and the action they must take. A security fix is stated without details that help an attacker.
-4. At release, run `npm run version:bump`: it raises the version and turns `[Unreleased]` into `## [X.Y.Z] - YYYY-MM-DD`, leaving an empty `## [Unreleased]`.
+4. At release, when the `plugin-releases` skill calls for it: rename `## [Unreleased]` to `## [X.Y.Z] - YYYY-MM-DD`, with the version from `plugin.json` and the UTC date the release gives, and add a new empty `## [Unreleased]` above it. No script does this yet; edit the file by hand. If `## [Unreleased]` is empty, stop and ask the owner what the version changes.
 5. Update the link references at the bottom: `[Unreleased]` compares the newest tag with `HEAD`; each version compares its tag with the previous one; the oldest version links to `releases/tag/`.
 6. Run the checks.
 

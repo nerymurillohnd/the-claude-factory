@@ -4,7 +4,7 @@ The rules for every documentation task, whatever the document. Read this file in
 
 ## What this skill doesn't decide
 
-- `plugins/<plugin>/.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json`, the version a release gets, its change types and whether it is breaking: the `plugin-versioning`, `plugin-releases` and `plugin-catalog-changes` skills settle them before a document is written. When a document needs one of these decisions and none was made, stop and run the skill that makes it.
+- `plugins/<plugin>/.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json`, except two fields this skill keeps in line with its documents: `license` (the `license.md` procedure) and `privacyPolicyUrl` (the `privacy.md` procedure). The version a release gets, its change types and whether it is breaking: the `plugin-versioning`, `plugin-releases` and `plugin-catalog-changes` skills settle them before a document is written. When a document needs one of these decisions and none was made, stop and run the skill that makes it.
 - Commits, pull requests and releases, under the rules in `.claude/CLAUDE.md`.
 
 ## Values only the owner can give

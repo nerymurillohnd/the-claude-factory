@@ -54,7 +54,7 @@ This repository:
 ## Checks
 
 - Every issue form link opens a form (`ls .github/ISSUE_TEMPLATE/`).
-- Every label named exists (`gh label list`).
+- Every label named exists: `gh api repos/{owner}/{repo}/labels --paginate --jq '.[].name'` (`gh label list` uses GraphQL, which cloud sessions block).
 - `grep -n '{{\|<!--' CONTRIBUTING.md` returns nothing.
 
 ## Never

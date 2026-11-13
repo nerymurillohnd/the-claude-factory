@@ -48,7 +48,7 @@ The template's values are `{{camelCase}}`; its instructions are HTML comments.
 | `{{marketplaceName}}`, `{{marketplaceDisplayName}}` | The marketplace's `name` (the `@` suffix) and its display name | `.claude-plugin/marketplace.json` |
 | `{{marketplaceCatalogUrl}}` | Link to the catalog | This repository: `../../README.md#-catalog` |
 | `{{surfacesBadge}}`, `{{surfacesText}}` | `Claude%20Code%20%C2%B7%20Claude` or `Claude%20Code%20only`, and the same in words | `plugin.json` `metadata.surfaces` |
-| `{{categoryBadge}}` | The category title, URL-encoded | `scripts/categories.json`, title of `metadata.category` |
+| `{{categoryBadge}}` | The category title, URL-encoded | The category's heading in the root `README.md` catalog, for `metadata.category` (no categories file exists on this branch) |
 | `{{minClaudeCodeVersion}}` | Minimum Claude Code version | Release notes (see Rules) |
 | `{{license}}`, `{{copyrightHolders}}` | License and copyright holders | `plugin.json` `license` and the plugin's `LICENSE` (this repository: `MIT`, `Nery Murillo`) |
 | `{{privacyPolicyUrl}}` | Privacy policy link | `plugin.json` `privacyPolicyUrl` |
@@ -87,7 +87,7 @@ Surface blocks: the content between `<!-- app:start -->` and `<!-- app:end -->` 
 - The badges sit only in the hero, from shields.io in the flat style, in this order:
   - **Version** (`D97757`): a dynamic badge reading `$.version` from this plugin's `plugin.json` on `main`, linked to `./CHANGELOG.md`. Exactly one, on line 7 of the finished README (the line after the hero's description).
   - **Works in** (`2563EB`): `Claude Code · Claude` or `Claude Code only`, matching `metadata.surfaces`; links to `#-compatibility`.
-  - **Category** (`6B7280`): the title in `scripts/categories.json` of `metadata.category`; links to `../../README.md#-catalog`.
+  - **Category** (`6B7280`): the category's title as the root `README.md` catalog heads it, for `metadata.category`; links to `../../README.md#-catalog`.
   - **Claude Code** (`D97757`, `logo=claude&logoColor=white`): the minimum Claude Code version, the same one Prerequisites states; links to `https://code.claude.com/docs/en/plugins/install`.
   - **License** (`22C55E`): links to the plugin's `LICENSE`.
 - Write no plugin version in the README; the Version badge shows it. The only version numbers written by hand are the minimum Claude Code version (badge, Prerequisites, each version-gated feature as "v2.1.292+") and the minimum version of an external tool in Prerequisites.

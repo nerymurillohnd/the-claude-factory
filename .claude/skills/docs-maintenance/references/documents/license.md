@@ -31,7 +31,7 @@ Read 2026-11-10:
 
 1. Copy the content of the template's `text` block, and nothing else, into `LICENSE`.
 2. Replace `{{year}}` and `{{copyrightHolders}}`.
-3. Set `plugin.json` `license` to the same SPDX identifier (`MIT`).
+3. Check that `plugin.json` `license` is the same SPDX identifier (`MIT`); set it if it isn't.
 4. Run the checks.
 
 ## Rules
