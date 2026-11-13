@@ -19,7 +19,7 @@
 
 ## Workstreams
 
-The project's work divides into three workstreams. The first two never mix: a rule, tool or file of one never becomes a requirement of the other. Before a task, find the skill that governs it in `.claude/rules/skills.md` and load it.
+The work divides into three workstreams. The first two never mix: a rule, tool or file of one never becomes a requirement of the other.
 
 1. Maintainer tools and documentation
 2. Plugins and distribution
@@ -27,24 +27,23 @@ The project's work divides into three workstreams. The first two never mix: a ru
 
 ### Maintainer tools and documentation
 
-- Covers what runs and documents the project, for Nery and Claude only: the tools that build and check it, the maintainer scripts (validators, checkers, generators and their tests) and the skills that drive them, audits and reviews, decision records, pending and resolved technical debt, audit reports, and the repository's documentation, such as READMEs, GitHub collaboration files and the user guides.
-- Runs on Node 26 LTS with npm 12, matching `.nvmrc`, and on Python 3.15 through uv; every maintainer command runs through `npm run <script>`. Report a version mismatch to Nery before maintainer work.
-- For all maintainer guidelines, see `.claude/rules/npm-and-uv.md` (runtimes, package managers and tools), `.claude/rules/code-quality/` (formatting, linting and type checking, one rule per language), `.claude/rules/architecture/scripts.md` (scripts and their tests), `.claude/rules/architecture/claude-dir.md` (Claude's setup, records, memory and handoffs) and `.claude/rules/architecture/docs.md` (user guides).
-- Repository memory, which holds this project's dated facts and lessons:
+- Covers what runs and documents the project, for Nery and Claude only: the tools that build and check it, the maintainer scripts and the skills that drive them, audits, decision records, technical debt, and the repository's documentation, such as READMEs, GitHub collaboration files and user guides.
+- Runs on Node 26 LTS with npm 12, matching `.nvmrc`, and on Python 3.15 through uv. Run every maintainer task through its npm script, and report a version mismatch to Nery before maintainer work.
+- For its guidelines, read `.claude/rules/npm-and-uv.md` (runtimes, package managers and tools), `.claude/rules/code-quality/` (formatting, linting and type checking), `.claude/rules/architecture/scripts.md` (maintainer scripts), `.claude/rules/architecture/claude-dir.md` (Claude's setup, records and memory), `.claude/rules/skills.md` (writing skills) and `.claude/rules/architecture/docs.md` (user guides).
 
 @memory/MEMORY.md
 
 ### Plugins and distribution
 
-- Covers each plugin's whole life, self-contained in its own folder: design, scaffolding, development, isolated testing, versioning, its documentation, and its release through the maintainer tools.
-- Tests each plugin as users receive it; its hook and mod tests ship inside it, and evals run only on the plugins Nery chose.
-- For all plugin guidelines, see `.claude/rules/plugins.md` (design, safety, names, versions, surfaces, portability and prerequisites), `.claude/rules/testing.md` (testing, and what runs locally and in CI) and `.claude/rules/hook-scripts.md` (hook scripts).
+- Covers each plugin's whole life, self-contained in its own folder: design, development, testing, versioning, documentation and release.
+- For its guidelines, read `.claude/rules/plugins.md` (design, portability, names, versions and testing), `.claude/rules/testing.md` (hook and mod tests, and the checks before a commit or merge) and `.claude/rules/hook-scripts.md` (hook scripts).
+- For the commands of each lifecycle stage, read `.claude/WORKFLOW.md`.
 
 ### CI/CD and GitHub
 
-- Covers the GitHub Actions workflows, the release workflow included, and the GitHub files: issue forms, pull request templates, labels and Dependabot.
+- Covers the GitHub Actions workflows and the GitHub files: issue forms, pull request templates, labels and Dependabot.
 - Open a pull request only with Nery's approval, and ask before opening it.
-- For all CI and GitHub guidelines, including which changes need a pull request, see `.claude/rules/architecture/github.md`.
+- For its guidelines, including which changes need a pull request, read `.claude/rules/architecture/github.md`.
 
 ## Verification
 
@@ -55,72 +54,18 @@ The project's work divides into three workstreams. The first two never mix: a ru
 - Before each commit, read `.claude/rules/testing.md` (Local and CI), run the local checks it lists, starting with `npm run lint` and `npm run typecheck`, and fix every finding.
 - Problems are reported as soon as they are found, including defects in work already published.
 
-## Repository map
+## Commands
 
-```text
-.
-├── .claude-plugin/marketplace.json   # Marketplace catalog: one entry per plugin
-├── plugins/<plugin>/                 # One self-contained plugin (plugin scope)
-│   ├── .claude-plugin/plugin.json    # Plugin manifest
-│   ├── skills/ agents/ commands/ hooks/
-│   └── README.md CHANGELOG.md LICENSE NOTICE.txt
-├── .claude/                          # Instructions, rules, skills, agents, ADRs, technical debt, handoffs
-├── .github/                          # Workflows, issue and PR templates, labels, Dependabot
-├── scripts/                          # Maintainer scripts and their tests
-├── docs/                             # User guides
-├── package.json pyproject.toml       # npm scripts; uv-managed Python
-├── biome.jsonc ruff.toml pyrightconfig.json tsconfig.json
-└── README.md CHANGELOG.md LICENSE    # Marketplace front page, release log, license
-```
-
-## Main commands
-
-The commands of every lifecycle stage, with the skill that writes each stage's documents, are in `.claude/WORKFLOW.md`: read the stage you are working in.
-
-### Setup
-
-| Command | Does |
-|---|---|
-| `npm run setup` | Prepares a checkout: `npm ci` (node_modules), `uv sync --locked` (.venv) and `tools:install` (the pinned uv tools) |
-
-### Checks
-
-| Command | Does |
-|---|---|
-| `npm run check` | Runs everything: lint, typecheck, check:consistency, validate |
-| `npm run lint` | All linters (JS, Python, shell, workflows, GitHub files) |
-| `npm run typecheck` | Type checks TypeScript and Python |
-| `npm run validate` | `claude plugin validate --strict` on every plugin, the marketplace and `.claude`, then `claude plugin test` on every mod |
-| `npm run check:consistency` | Names, `renames`, changelog tags, READMEs and the root catalog agree across files |
-| `npm run lint:skills` | Checks every skill with skill-lint |
-| `npm run test:scripts` | Tests the maintainer scripts |
-| `npm run fix` | Fixes and formats files automatically |
-
-### Plugins
-
-| Command | Does |
-|---|---|
-| `claude --plugin-dir plugins/<plugin>` | Loads a plugin for one session to try it |
-| `claude plugin validate plugins/<plugin> --strict` | Validates one plugin |
-| `claude plugin tag plugins/<plugin> --dry-run` | Shows the release tag it would create |
-
-### Releases
-
-| Command | Does |
-|---|---|
-| `npm run release:status` | Changed and untagged versions against `origin/main`, bad semver, dependents; `-- --next <plugin> --level <level>` prints the next version |
-| `npm run release:changelog -- <plugin>` | Dates `[Unreleased]` as the new version, in UTC, with its links |
-| `npm run release:notes -- <plugin>` | The GitHub Release body; `--tag` prints the tag |
-| `npm run check:install -- --from local\|<ref> <plugin>` | Installs the plugin in a throwaway configuration and checks the installed copy |
-
-### GitHub
-
-| Command | Does |
-|---|---|
-| `npm run labels:sync` | Shows the label changes (`-- --apply` applies them) |
+| Task | Command |
+| :-- | :-- |
+| Prepare a checkout | `npm run setup` |
+| Run every check | `npm run check` |
+| Lint, type-check | `npm run lint`, `npm run typecheck` |
+| Test the maintainer scripts | `npm run test:scripts` |
+| Validate one plugin | `claude plugin validate --strict plugins/<plugin>` |
+| Load one plugin for a session | `claude --plugin-dir plugins/<plugin>` |
+| List every npm script | `npm run` |
 
 ## Cloud sessions
 
-- The cloud environment's setup script installs uv, Python, Node, npm and the tools, then runs `npm run setup`; later sessions start from its cached snapshot. `CLAUDE_CODE_REMOTE=true` marks a cloud session.
-- Git-ignored files (`node_modules/`, `.venv/`, `CLAUDE.local.md`, `.claude/settings.local.json`) never come with the clone. Run `npm run setup` when `node_modules/` or `.venv/` is missing, or after `package-lock.json` or `uv.lock` changes, since the snapshot keeps the old ones.
-- Keep `.python-version` and the setup script's `uv python pin` on the same version; change both together.
+- Run `npm run setup` when `node_modules/` or `.venv/` is missing, or after `package-lock.json` or `uv.lock` changes: the cloud snapshot keeps the old ones.

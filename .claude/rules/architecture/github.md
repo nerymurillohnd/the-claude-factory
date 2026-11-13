@@ -20,6 +20,5 @@ paths:
 
 ## Pull requests
 
-- Open a pull request only with the owner's approval, and ask before opening it.
 - Send every change inside `plugins/` through a pull request, skill, agent and command files included, except a documentation-only change that alters neither behavior nor what users installed.
 - Open a pull request for a change outside `plugins/`, or a documentation-only plugin change, only when the owner asks for one.
