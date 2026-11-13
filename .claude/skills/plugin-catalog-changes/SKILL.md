@@ -30,7 +30,11 @@ From code.claude.com/docs/en/plugins/publish (Rename or remove a plugin) and hos
    grep -rn '<old>' . --exclude-dir=.git --exclude-dir=node_modules
    ```
 3. Find what depends on the old plugin, and change each dependent first, since a dependency on a missing plugin fails to install:
-   - `dependencies` entries that name `<old>` in `plugins/*/.claude-plugin/plugin.json`
+   - `dependencies` that name `<old>`, in each `plugin.json` and in each marketplace entry. These print every plugin that declares dependencies; any line that names `<old>` is a dependent:
+     ```bash
+     jq -c 'select(.dependencies) | {name, dependencies}' plugins/*/.claude-plugin/plugin.json
+     jq -c '.plugins[] | select(.dependencies) | {name, dependencies}' .claude-plugin/marketplace.json
+     ```
    - symlinks into `plugins/<old>/` (`find plugins -type l`)
    Tell the owner that plugins in other repositories may depend on `<old>` and can't be checked from here.
 4. Make the change for the case (sections below).
@@ -64,7 +68,7 @@ From code.claude.com/docs/en/plugins/publish (Rename or remove a plugin) and hos
 3. Add `"<old>": "<target>"` to `renames`.
 4. Bump `<target>` through the `plugin-versioning` skill (at least Minor). Its changelog maps each old command to the new one and tells users to run `/plugin install <target>@the-claude-factory` once.
 5. Update the documents with the `docs-maintenance` skill: `<target>`'s `README.md` for the components it gained, `<old>`'s removal from the root `README.md` catalog and from `PRIVACY.md`, and the merge's line in the root `CHANGELOG.md`.
-6. On Claude Code 2.1.319, `claude plugin list` left `<target>` out and `claude plugin update` failed until that install; this is unverified on later versions, so check it after the release.
+6. After the release, run After the release and confirm `claude plugin list --json` shows `<target>` (see Version notes).
 
 ## After the release
 
@@ -81,4 +85,8 @@ rm -rf "${T}"
 
 - installing `<old>` fails with `not found in marketplace`
 - after a rename or a merge, `<new-or-target>` (the new name, or the merge target) installs, and `claude plugin list --json` shows it at its new version
-- the old name's last tag and GitHub Release still exist: `gh api repos/nerymurillohnd/the-claude-factory/releases/tags/<old>--v<last version>`.
+- the old name's last tag and GitHub Release still exist: `gh api repos/nerymurillohnd/the-claude-factory/releases/tags/<old>--v<last version>` in a terminal session; in a cloud session, where `gh` is kept for search, the MCP tool `github:get_release_by_tag` (`owner: nerymurillohnd`, `repo: the-claude-factory`, `tag: <old>--v<last version>`).
+
+## Version notes
+
+On Claude Code 2.1.319, after a merge `claude plugin list` left `<target>` out and `claude plugin update` failed until the user ran `/plugin install <target>@the-claude-factory`. Unverified on later versions.
