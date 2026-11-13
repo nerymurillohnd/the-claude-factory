@@ -27,5 +27,4 @@ Claude Code's configuration for this repository and the maintainer records; noth
 - Keep memory publishable: the repository is public, so never save personal, client or business data, or credentials.
 
 ## Working here
-- When you add a folder of instruction Markdown here, add it to the `.claude/` entries under `files.includes` in `biome.jsonc`, so Biome leaves the Markdown Claude reads unformatted.
 - When a write here asks for permission, wait for the owner's answer; `.claude/` is a protected folder, so never write to it through Bash instead.

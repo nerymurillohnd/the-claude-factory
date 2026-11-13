@@ -6,9 +6,9 @@ paths:
   - "/biome.jsonc"
 ---
 
-# TypeScript, JavaScript and data file quality
+# TypeScript, JavaScript, JSON and YAML quality
 
-Use Biome to format and lint TypeScript, JavaScript, JSON, YAML and the Markdown written for people, and `tsc` to type-check, never Prettier or ESLint.
+Use Biome to format and lint TypeScript, JavaScript, JSON and YAML, and `tsc` to type-check, never Prettier or ESLint.
 
 ## After editing one of these files
 
