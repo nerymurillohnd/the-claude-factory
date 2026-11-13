@@ -40,8 +40,8 @@ The tools Nery and Claude use to build and maintain the project. Each plugin's o
 | **Formatting** | Biome (JavaScript, TypeScript, JSON, YAML, and Markdown for people); ruff format (Python); shfmt (shell) |
 | **Linting** | Biome; ruff; ShellCheck; actionlint and zizmor (GitHub Actions workflows); check-jsonschema (issue forms, issue config, Dependabot); skill-lint (skills) |
 | **Type checking** | TypeScript (`tsc`); basedpyright (Python) |
-| **Plugin validation and release** | Claude Code CLI: `claude plugin validate --strict`, `claude plugin eval`, `claude plugin tag` |
-| **Testing** | Python `unittest` for the maintainer scripts |
+| **Plugin validation and release** | Claude Code CLI: `claude plugin validate --strict`, `claude plugin test`, `claude plugin eval`, `claude plugin tag`; maintainer scripts for what the CLI doesn't check (`check:consistency`, the `release:*` scripts, `check:install`) |
+| **Testing** | Python `unittest` for the maintainer scripts; `claude plugin test` for mods |
 | **CI and hosting** | GitHub Actions; GitHub issue forms, labels and Dependabot |
 | **Git hooks** | None for now; removed until they are redesigned |
 
@@ -78,13 +78,22 @@ The tools Nery and Claude use to build and maintain the project. Each plugin's o
 ### Checks
 | Command | Does |
 |---|---|
-| `npm run check` | Runs everything: lint, typecheck, validate |
+| `npm run check` | Runs everything: lint, typecheck, check:consistency, validate |
 | `npm run lint` | All linters (JS, Python, shell, workflows, GitHub files) |
 | `npm run typecheck` | Type checks TypeScript and Python |
-| `npm run validate` | `claude plugin validate --strict` on every plugin and the marketplace |
+| `npm run validate` | `claude plugin validate --strict` on every plugin, the marketplace and `.claude`, then `claude plugin test` on every mod |
+| `npm run check:consistency` | Names, `renames`, changelog tags, READMEs and the root catalog agree across files |
 | `npm run lint:skills` | Checks every skill with skill-lint |
 | `npm run test:scripts` | Tests the maintainer scripts |
 | `npm run fix` | Fixes and formats files automatically |
+
+### Releases
+| Command | Does |
+|---|---|
+| `npm run release:status` | Changed and untagged versions against `origin/main`, bad semver, dependents; `-- --next <plugin> --level <level>` prints the next version |
+| `npm run release:changelog -- <plugin>` | Dates `[Unreleased]` as the new version, in UTC, with its links |
+| `npm run release:notes -- <plugin>` | The GitHub Release body; `--tag` prints the tag |
+| `npm run check:install -- --from local\|<ref> <plugin>` | Installs the plugin in a throwaway configuration and checks the installed copy |
 
 ### Plugins
 | Command | Does |
