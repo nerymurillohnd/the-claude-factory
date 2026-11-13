@@ -38,7 +38,7 @@ Leave out formatting-only work, internal refactors with no observable effect, pl
 1. New plugin: copy the template to `plugins/<plugin>/CHANGELOG.md`, delete its instruction comment, and fill the values. "Initial release." stays under `## [Unreleased]`, with no dated version, until the release dates it (step 4).
 2. Each later change: write the notes under `## [Unreleased]`, under the type each change belongs to, in user language: what changes for the user, not how.
 3. A breaking change starts its line with `**Breaking:**`, under `### Changed` or `### Removed`, and says what changed, who is affected and the action they must take. A security fix is stated without details that help an attacker.
-4. At release, when the `plugin-releases` skill calls for it: rename `## [Unreleased]` to `## [X.Y.Z] - YYYY-MM-DD`, with the version from `plugin.json` and the UTC date the release gives, and add a new empty `## [Unreleased]` above it. No script does this yet; edit the file by hand. If `## [Unreleased]` is empty, stop and ask the owner what the version changes.
+4. At release, when the `plugin-releases` skill calls for it: rename `## [Unreleased]` to `## [X.Y.Z] - YYYY-MM-DD`, with the version from `plugin.json` and the UTC date the release gives, and add a new empty `## [Unreleased]` above it. Run `npm run release:changelog -- <plugin>` (`--date YYYY-MM-DD` when the release day is not today in UTC): it does this step and step 5, and exits 1 without changing the file when `## [Unreleased]` is empty. If `## [Unreleased]` is empty, stop and ask the owner what the version changes.
 5. Update the link references at the bottom: `[Unreleased]` becomes `{{repositoryUrl}}/compare/<name>--v<newest>...HEAD`; each version compares its tag with the previous one; the oldest version links to `{{repositoryUrl}}/releases/tag/<name>--v<oldest>`. Before the first release, `[Unreleased]` links to `{{repositoryUrl}}/commits/main/plugins/<name>`, as the template has it.
 6. Run the checks.
 
@@ -67,7 +67,8 @@ This repository:
 
 ## Checks
 
-- Every changed plugin has a new version and a non-empty section for it (no script checks this yet; the first command in step 2 of the `plugin-releases` skill lists every plugin whose version differs from `origin/main`).
+- Every changed plugin has a new version and a non-empty section for it: `npm run release:status` lists every plugin whose version differs from `origin/main` as a `changed:` line; read each one's section.
+- `npm run check:consistency` exits 0: every dated version has its tag except the one being released (`PC-04`), and `## [Unreleased]` is empty on `main` (`PC-05`).
 - `claude plugin tag plugins/<plugin> --dry-run`, after the changelog is committed: it exits 1 while any file under the plugin is uncommitted, and when the tag already exists.
 - `grep -n '{{' plugins/<plugin>/CHANGELOG.md` returns nothing.
 
