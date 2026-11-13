@@ -3,7 +3,7 @@ paths:
   - "plugins/*/.claude-plugin/plugin.json"
   - "plugins/*/README.md"
   - ".claude-plugin/marketplace.json"
-  - "README.md"
+  - "/README.md"
 ---
 
 # Plugin categories
