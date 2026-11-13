@@ -144,7 +144,7 @@ Both are plugin-scope work and need their own task.
 | `.github/` and `docs/` conventions | `rules/architecture/github.md`, `docs.md` | path | — |
 | Procedures: versioning, releases, catalog changes, icons, documents | the five project skills | on demand | routing table, gate |
 | Procedure: idea → new plugin → change → fix → release, end to end | `skills/plugin-lifecycle/` (new) | on demand | routing table, gate |
-| Release dates (UTC, publish day) | `plugin-releases` step 4, enforced by `npm run release:changelog` | on demand | `docs-maintenance` governance (pointer) |
+| Release dates (UTC, publish day) | `docs-maintenance` `references/documents/changelog.md` (Rules), applied by `plugin-releases` step 4 and `npm run release:changelog` | on demand | `docs-maintenance` governance and `marketplace-changelog.md` (pointers) |
 | Version levels | `plugin-versioning` step 2 | on demand | `rules/plugins.md` (one pointer line) |
 | Document templates | `docs-maintenance/assets/` + `references/documents/` | on demand | — |
 | Non-document templates (manifest, skill, agent, evals workflow) | `plugin-lifecycle/assets/` + `references/` (moved from `.claude/templates/`, `.claude/references/`; **changes `claude-dir.md:12`**) | on demand | `plugin-lifecycle` |
@@ -295,6 +295,14 @@ The gate is a barrier for Claude, not a security boundary: a Bash write bypasses
    - Revert the test edit.
 
 ## 5. Migration plan
+
+**Progress (2026-11-13):**
+- Step 1 done: `fddcae2`, `45023d4`.
+- Step 2 done, with four refinements:
+  - the release dates' single home is the changelog procedure, which already held the rule;
+  - `scripts.md:22` keeps its pointer until step 5b creates the backlog plan;
+  - `plugin-releases` keeps its `validate.yml` warning, minus the stale branch name, because the warning is still true;
+  - D6 was applied in step 2, because removing the Evals section would have left `CLAUDE.md:65` pointing at nothing.
 
 Each step is one short session and ends with one commit per topic on the working branch. Nothing is pushed without the owner's authorization. Undo is `git revert <commit>` unless stated. Before each step, load the skill the gate or the routing table names for the files it touches.
 
