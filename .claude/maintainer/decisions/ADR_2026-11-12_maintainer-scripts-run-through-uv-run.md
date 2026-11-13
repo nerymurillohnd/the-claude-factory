@@ -1,10 +1,10 @@
 ---
-status: accepted
+status: superseded
 date: 2026-11-12
 decision-makers:
   - "Nery (project owner)"
 supersedes: ADR_2026-11-12_maintainer-tools-as-pinned-uv-tools
-superseded-by: none
+superseded-by: ADR_2026-11-13_python-3-15-default-and-pinned-in-cloud-setup
 ---
 
 # Run maintainer Python scripts through uv run, and keep the maintainer tools as pinned uv tools

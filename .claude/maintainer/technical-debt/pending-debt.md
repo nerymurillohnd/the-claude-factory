@@ -41,6 +41,7 @@ Add an item only when all of these hold:
 | ID | Title | Status |
 | --- | --- | --- |
 | DEBT-001 | No check keeps the READMEs consistent with the manifests and the catalog | 🟠 Blocked |
+| DEBT-002 | The cloud setup script installs several tools at unpinned versions | 🟠 Blocked |
 
 ## 📂 Open items
 
@@ -82,6 +83,35 @@ Add an item only when all of these hold:
 - **Next action:** the owner answers the open questions. Then either write `.claude/rules/readme-consistency.md` from the 2026-11-12 draft, or build the mechanical checks as maintainer scripts behind an npm script and narrow the rule to semantic consistency.
 - **Review condition:** the owner's decision, or the first README or catalog drift found in review.
 - **Related records:** ADR_2026-11-12_npm-scripts-are-the-single-entry-point, ADR_2026-11-12_maintainer-tools-as-pinned-uv-tools (superseded by ADR_2026-11-12_maintainer-scripts-run-through-uv-run).
+
+### DEBT-002 — The cloud setup script installs several tools at unpinned versions
+
+| Field | Value |
+| --- | --- |
+| **Status** | 🟠 Blocked |
+| **Category** | reproducibility |
+| **Owner** | unassigned |
+| **Logged** | 2026-11-13 |
+
+#### 🔎 Evidence
+
+- **Confirmed facts:**
+  - The `the-claude-factory` environment's setup script, read through the environment tools on 2026-11-13, installs `typescript-language-server@latest`, `bash-language-server@latest` and `svelte-language-server@latest` with npm, ShellCheck and shfmt from `https://webi.sh/shellcheck` and `https://webi.sh/shfmt` with no version, and actionlint with `go install …/actionlint@latest`.
+  - The same script pins uv (0.13.7), Node (26), npm (12.2.1) and TypeScript (6.0.3); `tools:install` pins ruff, basedpyright, zizmor and check-jsonschema.
+  - Versions in this session on 2026-11-13: typescript-language-server 6.1.0, bash-language-server 5.8.1, ShellCheck 0.11.0, shfmt 3.14.1, actionlint 1.7.12.
+  - `npm run lint:shell` and `npm run lint:workflows` call ShellCheck, shfmt and actionlint by name, so their results depend on whichever version the snapshot holds.
+- **Inferences:**
+  - Two snapshots built on different days can hold different tool versions, so the same commit can pass `lint:shell` or `lint:workflows` in one session and fail in another.
+- **Open questions:**
+  - Pin each tool to an exact version in the script, or accept the latest release on each snapshot rebuild.
+
+#### 📈 Impact and next step
+
+- **Impact / risk:** a new ShellCheck, shfmt or actionlint release can change lint results between cloud sessions without any repository change; a language server release can change editor diagnostics.
+- **Why it is not fixed now:** it waits on the owner's choice between exact pins and latest releases, asked on 2026-11-13.
+- **Next action:** the owner chooses; if pins, set each tool to the version listed above in the setup script and run the script once from the checkout's parent.
+- **Review condition:** the owner's decision, or the first lint result that differs between two sessions on the same commit.
+- **Related records:** ADR_2026-11-13_cloud-dependencies-through-setup-script-and-npm-run-setup.
 
 <!--
 Entry format. Copy this block above this comment for each new item and add its row to the Index.
