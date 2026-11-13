@@ -1,31 +1,24 @@
 # The Claude Factory Guidelines
 
-This file defines the guidelines for Claude Code, including claude.ai/code, when working on this repository.
+This file defines the guidelines for Claude Code (claude.ai/code) when working in this repository.
 
-## The project
+## What this project is
 
-The Claude Factory is a public plugin marketplace for Claude Code and Claude, hosted at github.com/nerymurillohnd/the-claude-factory. This project designs, builds, tests, releases and maintains its plugins and mods.
+- A public plugin marketplace for Claude Code and Claude, hosted on GitHub at `nerymurillohnd/the-claude-factory`, a personal account, not an organization.
+- It designs, builds, tests, releases and maintains plugins and mods for third parties, who install them on their own machines and use them in their own projects and operations.
 
-### Audience and distribution
-
-- The marketplace is public and hosted in a public GitHub repository owned by a personal account, not an organization.
-- Everything the marketplace distributes is built for third parties, to install on their own machines and in their own working environments, where they use Claude and Claude Code for their operations and projects.
-
-### Ownership and contributions
+## Who works on it
 
 - Nery is the owner and author: he sets the direction and makes every final decision. Claude carries out the execution: the engineering, integration and wiring, commands, commits, testing, releases, distribution and maintenance.
 - GitHub Copilot takes part only at Nery's request, inside a pull request.
 - Users contribute only by reporting issues; they never open pull requests or take part in triage, fixes or releases.
 - No one else reviews a plugin before users install it, so every push, release and issue reply is the last gate before public exposure.
 
-### Target surfaces
+## Surfaces and platforms
 
 - The two surfaces are named **Claude Code** and **Claude**, and no other surface name is used.
   - **Claude** is the unified chat and Cowork experience.
   - **Claude Code** is a separate product.
-
-### Platform support
-
 - The repository and its plugins are built for macOS and Linux.
 
 ## Responsibility and verification
