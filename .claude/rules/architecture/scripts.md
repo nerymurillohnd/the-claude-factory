@@ -21,7 +21,7 @@ Scripts that check, generate and release the marketplace. No plugin calls them a
 ## Working here
 - Look up a script in `.claude/architecture/refactor.md` before writing it, and rebuild a planned script to current official practice instead of copying it from `main`.
 - Delete a subfolder's `.gitkeep` in the same commit as its first script.
-- After each change, run `npm run lint:python`, `npm run typecheck:python` and `npm run test:scripts`, and fix each finding instead of suppressing it.
+- After each change, run `npm run test:scripts`.
 - Start every new `.py` file under `validators/` and `testers/` with `#!/usr/bin/env python3` and give it mode 100755 (`chmod +x`, then `git add`), as every existing one has; ruff's EXE rules fail a file whose shebang and mode disagree.
 - Import package modules absolutely (`from validators.skill_lint.model import Finding`): `ruff.toml` bans relative imports, and a bare `import skill_lint` fails at runtime.
 - Type ruamel.yaml through the local stubs in `typings/ruamel/yaml/`: add each new ruamel member a script uses to them, and check them against the installed version when `uv.lock` bumps ruamel.yaml.

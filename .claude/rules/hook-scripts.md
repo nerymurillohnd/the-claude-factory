@@ -29,16 +29,13 @@ Applies to every script a Claude Code `command` hook runs, in a plugin or in thi
 - On an event that can block, remember that under `-e` a command failing with status 2 makes the hook exit 2 and block the action: map unexpected failures to exit 1 with the `trap` from "Keep transient failures retryable in a shell hook" (code.claude.com/docs/en/self-hosted-environments-configuration), and exit 2 only on purpose.
 - Read an environment variable that may be unset, such as `CLAUDE_ENV_FILE`, as `${VAR:-}` under `-u`.
 - Under `pipefail`, end a pipeline that may stop early, such as one into `head` or `grep -q`, with `|| true`, or write it without the pipe.
-- Check Bash hooks with `npm run lint:shell`.
 
 ## Python
 
 - In a plugin, import only the standard library: no PEP 723 block and no package installs. Keep the syntax valid on Python 3.12, which ruff (`per-file-target-version` `py312`) and basedpyright already check for `plugins/`.
 - In `.claude/hooks/`, follow `.claude/rules/npm-and-uv.md`.
-- Check Python hooks with `npm run lint:python` and `npm run typecheck:python`.
 
 ## Wire the hook
 
 - Choose the form for each hook. Use exec form (`"args"` set) when the command holds `${CLAUDE_PLUGIN_ROOT}`, `${CLAUDE_PLUGIN_DATA}` or `${user_config.*}`, since exec form passes each path as one argument and is the only form that substitutes `${user_config.*}`.
 - Use shell form only when the command needs pipes, `&&` or redirects, and wrap each placeholder in double quotes.
-- Test a hook by piping a sample input into it and printing the exit code: `echo '<input JSON>' | ./<script>; echo $?`.

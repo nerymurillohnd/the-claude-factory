@@ -43,7 +43,6 @@ The repository has two scopes that never mix. A rule, tool or file of one scope 
   - Versioning and bumping
   - Plugin documentation: `README.md`, `CHANGELOG.md`, `LICENSE`, `NOTICE.txt`
   - Release, tagging and distribution, carried out with maintainer tools: tags, `release.yml` and the catalog entry
-- Before designing, creating or changing a plugin, read `.claude/rules/plugins.md`. It holds the plugin-scope conventions: design, safety, license, names, versions, target surfaces, portability and prerequisites, and evals. It also loads on its own when a file under `plugins/` or `.claude-plugin/`, or the root `README.md` or `CHANGELOG.md`, is read or edited.
 
 ### Pull requests
 
@@ -66,48 +65,58 @@ The repository has two scopes that never mix. A rule, tool or file of one scope 
 - Work counts as done only when its checks are shown with their raw output.
 - Problems are reported as soon as they are found, including defects in work already published.
 
-## Testing
+## Stack
+
+### Maintenance
+
+- **Runtimes and package managers:** Node 26 LTS with npm 12, and Python 3.15 through uv. Every maintainer command runs through `npm run <script>` in `package.json`.
+- **Formatting, linting and type checking:**
+  - Python: ruff formats and lints; basedpyright type-checks.
+  - Shell (Bash): shfmt formats; ShellCheck lints.
+  - TypeScript and JavaScript: Biome formats and lints, together with JSON, YAML and the Markdown written for people; `tsc` type-checks.
+- Before installing, adding, upgrading or running a maintainer tool, read `.claude/rules/npm-and-uv.md`: it sets the versions, how each tool is installed, and how `.nvmrc` stays in step with the machine's Node.
+- Before changing code, or the configuration of a formatter, linter or type checker, read `.claude/rules/linting.md`: it maps each file type to its checks and says how to handle a finding.
 
 ### Plugins
 
-- **Working copy:** develop against the plugin's folder with `--plugin-dir`, never an installed copy, and apply each edit with `/reload-plugins`.
-- **Load before behavior:** pass `claude plugin validate --strict`, then confirm in `/plugin` (Installed and Errors tabs) that every component loaded.
-- **Every surface:** test in Claude Code with `--plugin-dir`, and in Claude by uploading the plugin to the owner's own account, for each surface the plugin declares.
-- **What users receive:** install it in an isolated throwaway configuration (`npm run check:install`) before any release.
-- **Evals:** only on plugins the owner chose, as a short local smoke run. In CI, plugins get only `claude plugin validate` and their evals, as `.claude/rules/plugins/evals.md` sets.
+- **Runtime:** each plugin's own dependencies, declared in the Prerequisites of its README.
+- **Development:** `claude --plugin-dir plugins/<plugin>` loads a plugin from its folder and `/reload-plugins` applies each edit; `claude plugin validate --strict` checks it, and `npm run check:consistency` keeps names, versions and the catalog in agreement.
+- **Distribution:** the `release:*` npm scripts prepare each version, and `release.yml` publishes it.
+- Before designing, creating or changing a plugin, read `.claude/rules/plugins.md`. It holds the plugin-scope conventions: design, safety, license, names, versions, target surfaces, portability and prerequisites, and evals. It also loads on its own when a file under `plugins/` or `.claude-plugin/`, or the root `README.md` or `CHANGELOG.md`, is read or edited.
 
-### Mods
+### CI/CD and GitHub
 
-- **Every mod has tests:** `.test.ts` files run with `claude plugin test`, with no session, sign-in or network, and a stub for every `$` call the mod makes.
-- **Validate first:** `claude plugin validate` shows what Claude Code reads from the hooks module and type-checks a TypeScript one; read it before opening a session.
-- **Debug from the skip line:** read the line Claude Code writes when it skips a hook or refuses a mod, in the transcript with `--plugin-dir`, or in `claude --debug` for an installed copy.
-- **Guards fail closed:** every hook at a gating site handles its own failure with `.catch`.
-- **Current CLI:** run mod tests on Claude Code v2.1.299 or later.
+- **GitHub Actions:** `release.yml`, the only workflow, tags each new plugin version and creates its GitHub Release; actionlint and zizmor check every workflow.
+- **GitHub files:** issue forms, pull request templates, labels and Dependabot, checked by `npm run lint:github`.
+- Before changing a workflow or any other file under `.github/`, read `.claude/rules/architecture/github.md`.
 
-## Stack
+### Testing
 
-This project has two stacks that never mix: the maintainer's tools, which run on the owner's machine or in the working environment to maintain and develop this repository, and each plugin's own dependencies, which stay portable and self-contained because they run on users' machines.
+- **Maintainer scripts:** Python `unittest`, in `scripts/testers/` (`npm run test:scripts`).
+- **Plugins with command hooks:** tests in `plugins/<plugin>/tests/`, which run each hook as Claude Code does, with its JSON on stdin, using only the standard library.
+- **Mods:** `*.test.ts` and `*.test.tsx` files in `plugins/<plugin>/tests/`, run with `claude plugin test`.
+- **Evals:** `claude plugin eval`, only on the plugins the owner chose.
+- **What users receive:** `npm run check:install` installs a plugin in a throwaway configuration and checks the installed copy.
+- Before writing, changing or running a test, or deciding what runs locally and what in CI, read `.claude/rules/testing.md`.
 
-### Repository maintenance and development
+### Skills
 
-- **Package managers:** npm first (Node 26, npm 12): every maintainer command runs through `npm run <script>` in `package.json`. uv second, for the maintainer Python 3.15.
-- **Formatting and linting:**
-  - Shell (Bash): shfmt formats; ShellCheck lints.
-  - TypeScript and JavaScript: Biome formats and lints, together with JSON, YAML and the Markdown written for people; `tsc` type-checks.
-  - Python: ruff formats and lints; basedpyright type-checks.
-- **CI:** GitHub Actions, its workflows checked by actionlint and zizmor.
-- **Tests:** Python `unittest` for the maintainer scripts (`npm run test:scripts`).
+Load the skill that governs a task before starting it.
 
-### Plugins: development, testing and distribution
-
-- **Runtime:** each plugin's own dependencies, declared in the Prerequisites of its README; no maintainer tool becomes a plugin requirement.
-- **Plugin CLI:** `claude plugin validate`, `test` (mods), `eval` and `tag`, plus maintainer scripts for what it doesn't check (`check:consistency`, `check:install`, the `release:*` scripts).
-- **Project skills,** in `.claude/skills/`:
+- **Plugin lifecycle,** project skills in `.claude/skills/`:
   - versions and bumps: `plugin-versioning`
   - releases, tags and GitHub Releases: `plugin-releases`
   - renames, removals and merges: `plugin-catalog-changes`
   - READMEs, CHANGELOGs, licenses, notices and the policy documents: `docs-maintenance`
   - plugin directory icons: `plugin-icons`
+- **Maintenance,** skills of this marketplace's own plugins:
+  - ADRs and technical debt: `project-maintainer:write-records`
+  - session handoffs: `project-maintainer:write-handoff`
+  - CLAUDE.md and rules: `instruction-engineering:claude-md-and-rules`
+  - hooks: `hook-engineering:hook-development`
+  - the plugin CLI and the official plugin docs: `plugin-engineering:cli-commands-guide` and `plugin-engineering:public-marketplace-dev`
+  - pull requests, workflows and GitHub files: `github-operations:auto-pr-lifecycle`, `github-operations:claude-github-actions` and `github-operations:github-files-setup`
+- Before creating or changing a skill, read `.claude/rules/skills.md`.
 
 ## Repository map
 
