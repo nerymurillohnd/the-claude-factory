@@ -13,8 +13,6 @@ paths:
   - "tsconfig*.json"
 ---
 
-claude/rules/npm-and-uv.md:
-```
 # npm and uv (maintainer scope)
 
 npm and uv run only the maintainer tooling. No plugin needs them, and users never install them.
@@ -29,4 +27,3 @@ npm and uv run only the maintainer tooling. No plugin needs them, and users neve
 - **Environment:** write each npm script that runs maintainer Python as `uv run python scripts/<file>.py`. Never use bare `python3`, which is each machine's OS Python, or `.venv/bin/python`: only `uv run` and `uv sync` create `.venv` and keep `uv.lock` current.
 - **Dependencies:** add a package that a maintainer script imports with `uv add --dev <package>`, which updates `pyproject.toml` and `uv.lock` together. Commit both, and never edit `uv.lock` by hand.
 - **Tools:** ruff, basedpyright, zizmor and check-jsonschema are uv tools pinned to exact versions in the `tools:install` npm script and called by name in the npm scripts. They are not project dependencies.
-```
