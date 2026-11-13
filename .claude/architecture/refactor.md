@@ -1,7 +1,7 @@
 # Claude Code Plugin Marketplace — Lifecycle Map and Maintainer Blueprint
 
-> Status: draft for review, 2026-11-09.  
-> Repository: `nerymurillohnd/the-claude-factory` at `9caaea8` (inventory and audit of 2026-11-09).  
+> Status: draft for review, 2026-11-09; script status updated 2026-11-13 against branch `claude/repo-refactor-redesign-feqwzk`.  
+> Repository: `nerymurillohnd/the-claude-factory`. The plan was drawn from the inventory of `main` at `9caaea8` (2026-11-09); the redesign branch rebuilt `scripts/` from an empty base, so every script line below states what exists on that branch.  
 > Terminology and commands: Claude Code official docs (code.claude.com), checked 2026-11-09.  
 > Command reference: https://code.claude.com/docs/en/plugins/cli-reference  
 > CLI behavior verified on Claude Code 2.1.322 (`claude plugin --help` and tests E1–E14).  
@@ -14,13 +14,13 @@
 
 1. **One source of truth.** Every maintainer script exists once, under `scripts/<subfolder>/`. Skills, Claude Code hooks, Git hooks, gates and CI only call it; none holds its own copy.
 2. **The command governs; the script adds.** A script covers only what no plugin command does or finishes. Where a command covers a check, the script does not repeat it.
-3. **Entry points stay where their tool looks for them**, as thin callers of `scripts/`: `.github/workflows/*.yml`, `.husky/pre-commit` and `pre-push`, hook registrations in `.claude/settings.json` (commands point to `${CLAUDE_PROJECT_DIR}/scripts/...`).
+3. **Entry points stay where their tool looks for them**, as thin callers of `scripts/`: the npm scripts in `package.json` (the single entry point, ADR_2026-11-12_npm-scripts-are-the-single-entry-point), `.github/workflows/*.yml`, and hook registrations in `.claude/settings.json`.
 4. **Maintainer files inside plugins stay inside plugins**, because the CLI finds them only there: mod tests (`plugins/<p>/tests/*.test.ts(x)`) and eval suites (`plugins/<p>/evals/**`).
 5. **Plugin runtime files stay inside their plugin** (hook handlers, skill scripts, MCP/LSP servers): they ship with the install and cannot depend on `scripts/`.
-6. **No scripts under `.claude/skills/` or `.claude/hooks/`.** Project skills describe procedures and call `scripts/`.
+6. **No scripts under `.claude/skills/`.** Project skills describe procedures and call `scripts/`. Maintainer scripts, and the hooks that only maintain the repository, live in `scripts/<subfolder>/`. A Claude Code hook of this project keeps its script in `.claude/hooks/`, beside its registration in `.claude/settings.json`, and calls `scripts/` for any maintainer logic it reuses (owner decision, 2026-11-13; `.claude/rules/hook-scripts.md`).
 
-**Script status:** **Keep** stays where it is · **Move** relocates (from → to) · **New** to be built · **Retire** to be removed (Appendix B).  
-**Callers:** `gate` = `scripts/gates.mjs` (local pre-push and/or CI group) · `CI` = a workflow · `commit` = commit-time hook · `CC hook` = Claude Code hook registration · `skill` = a project skill · `manual` = run by hand.
+**Script status (redesign branch, 2026-11-13):** **Implemented** exists, with its npm script · **Replaced by** another mechanism covers it (npm script, CLI command, skill-lint rule) · **Pending** planned, not built yet: rebuild it to current official practice, never copy it from `main` · **Dropped** no longer planned, with the reason.  
+**Callers:** `npm` = an npm script in `package.json` · `CI` = a workflow · `CC hook` = Claude Code hook registration · `skill` = a project skill · `manual` = run by hand. The `gate`, `commit` and `.husky` callers of the original plan are gone: `scripts/gates.mjs` was not rebuilt, and the repository installs no Git hooks (ADR_2026-11-12_git-hooks-through-tracked-githooks-folder is deprecated).
 
 ---
 
@@ -62,8 +62,9 @@
 - `validate` accepts a top-level `version`, a `metadata.version`, `owner.email: "bad"`, and a `renames` key that is still a listed plugin; only a name with spaces failed [E9]
 
 **Scripts**
-- `scripts/check-repo.mjs` — **Keep** · Callers: gate, CI · Gap: fixed marketplace name and description, no top-level `version` (native passes both, E9). **Absorbs** the `metadata.version` rule from `check-marketplace-unversioned.py`, which nothing runs today (E13)
-- `scripts/validators/marketplace-json-schema.py` — **Keep** · Callers: gate, CI, commit · Gap: duplicate keys (NV-B6). **Extend:** `owner.email` format (caught by nothing, E13)
+- `npm run validate` — **Implemented** · Runs `claude plugin validate --strict` on each `plugins/*/` and on the marketplace root
+- `scripts/check-repo.mjs` — **Pending** · Gap: fixed marketplace name and description, no top-level `version` (native passes both, E9), and the `metadata.version` rule (E13)
+- `scripts/validators/marketplace-json-schema.py` — **Pending** · Gap: duplicate keys (NV-B6) and `owner.email` format (caught by nothing, E13)
 
 ### 3. Repository Governance
 - **Branch protection**
@@ -81,7 +82,7 @@
   - Pull request template (`.github/PULL_REQUEST_TEMPLATE.md`) with a validation checklist
   - CODEOWNERS
   - CONTRIBUTING, CODE_OF_CONDUCT, SECURITY policy
-  - Labels (source `.github/labels.json`; synced by `scripts/sync-labels.mjs`, see Scripts):
+  - Labels (source `.github/labels.json`; synced by `scripts/sync-labels.py`, see Scripts):
     - `type:` bug, enhancement, plugin-idea, documentation, question, security, dependencies
     - `status:` triage, needs-info, confirmed, in-progress, released, duplicate, wontfix, upstream
     - `priority:` high, medium, low
@@ -94,7 +95,7 @@
     - Decisions: ADRs in `.claude/maintainer/decisions/` (`ADR_<YYYY-MM-DD>_<slug>.md`)
     - Technical debt: `.claude/maintainer/technical-debt/` (`pending-debt.md`, `closed-debt.md`, IDs `DEBT-NNN`)
     - Session handoffs: `.claude/session-handoff/` (`YYYY-MM-DD-HHMM.md`), read at the next session start
-  - Commit-time and push-time gates
+  - Maintainer commands run through npm scripts; no commit-time or push-time Git hooks are installed
 
 **Commands (used inside CI jobs)**
 - `claude plugin validate <path> --strict --json` — warnings fail the run; machine-readable report
@@ -109,23 +110,24 @@
 - `details` token projections can change with sign-in state: an unsigned `claude` produced different counts, so do not gate on them in unauthenticated CI or commit hooks [E14]
 
 **Scripts**
-- `scripts/gates.mjs` — **Keep** · Callers: `.husky/pre-push`, CI, commit · The one runner of every gate (local and CI). **New gates** (View 2 of the audit):
-  - `claude-validate-profile:<p>`: `validate --strict --profile directory` per plugin (22 of 22 pass today, E2)
-  - `claude-validate:project`: `validate .claude --strict` for the repository's own skills, agents and commands (E1)
-  - `mod-hooks-catch:<p>`: parse `validate --json` → fail on `gatingHooks[].hasCatch: false` (fails today on `project-maintainer` and `turn-meter`, E2; decision pending)
-  - `mod-test:<p>`: move from group `local` to CI (the command needs no sign-in)
-  - Fold in the missing-summary guard from `check-mod.sh` until anthropics/claude-code#103055 is confirmed closed (E11)
-- `scripts/basedpyright-maintainer.mjs` — **Keep** · Callers: gate, CI · Type-checks maintainer Python per interpreter group. No command equivalent
-- `scripts/lib.mjs`, `scripts/components.mjs` — **Keep** · Libraries used by gates, generators and checks. `components.mjs` counts mods' hook modules, which `details` shows as `Hooks (0)`
-- `scripts/sync-labels.mjs` — **Keep** · Caller: manual · GitHub labels from `.github/labels.json`. No plugin command touches GitHub
-- `scripts/validators/skill-references.py` — **Keep** · Callers: gate, CI, commit · Every path and skill name cited in `.claude/skills/**` and `.claude/CLAUDE.md` exists. Required after every move in this blueprint
-- `scripts/session/checkout.sh` — **Move** from `.claude/hooks/checkout.sh` · Caller: CC hook (SessionStart) · Branch, ahead/behind, tool versions. No command reports git state. *Subfolder `session/` is new: decision pending*
-- `.claude/hooks/validators-gate.sh` — **Retire** · Its CC hook registration on `git commit` calls `scripts/gates.mjs --only <validator gates>` directly, excluding `skill-size` until E14 is fixed
-- `.husky/pre-commit` — **Keep** (entry point) · Biome on staged files, then `npm test`
-- `.husky/pre-push` — **Keep** (entry point) · `npm run gates`
-- `.github/workflows/validate.yml` — **Keep** (entry point) · Add the new gates above to its groups
-- `.github/workflows/claude.yml`, `claude-code-review.yml` — **Keep** (entry points) · Not plugin commands; the review workflow is a recorded no-op with its fix deferred
-- `scripts/testers/run_unittest.py`, `gates.test.mjs`, `scripts.test.mjs`, `reserved-name.test.mjs`, `schemas/test_schemas.py`, `checkers/*`, `validators/*` — **Keep** · Callers: `npm test`, gate `unittest-maintainer`, `node-tests` · Test the maintainer tooling itself
+- `scripts/gates.mjs` — **Replaced by** the npm scripts (`lint`, `typecheck`, `validate`, `check`), ADR_2026-11-12_npm-scripts-are-the-single-entry-point. The checks it was to gain are **Pending** as npm scripts:
+  - `validate --strict --profile directory` per plugin (22 of 22 passed on `main`, E2)
+  - `validate .claude --strict` for the repository's own skills, agents and commands (E1)
+  - Parse `validate --json` and fail on `gatingHooks[].hasCatch: false` (failed on `main` for `project-maintainer` and `turn-meter`, E2; decision pending)
+  - `claude plugin test` on each mod, in CI (the command needs no sign-in)
+  - The missing-summary guard from `check-mod.sh` until anthropics/claude-code#103055 is confirmed closed (E11)
+- `scripts/basedpyright-maintainer.mjs` — **Replaced by** `npm run typecheck:python` (`basedpyright && basedpyright -p scripts`): plugin Python at 3.12, maintainer Python at 3.15 (ADR_2026-11-12_basedpyright-checks-plugins-at-python-3-12, ADR_2026-11-12_ruff-and-basedpyright-each-own-a-check)
+- Linters — **Implemented** · `npm run lint`: Biome (`lint:js`), ruff (`lint:python`), ShellCheck and shfmt (`lint:shell`), actionlint and zizmor (`lint:workflows`, ADR_2026-11-12_actionlint-and-zizmor-check-workflows), check-jsonschema and `scripts/check-github-files.py` (`lint:github`)
+- `scripts/lib.mjs`, `scripts/components.mjs` — **Dropped** · They served `gates.mjs` and the generators; a rebuilt generator brings its own helpers
+- `scripts/sync-labels.py` — **Implemented** (was `sync-labels.mjs`) · Caller: `npm run labels:sync` · GitHub labels from `.github/labels.json` (ADR_2026-11-12_labels-from-labels-json-and-the-catalog). No plugin command touches GitHub
+- `scripts/check-github-files.py` — **Implemented** · Caller: `npm run lint:github` · Every "plugin" dropdown in the issue and vulnerability forms lists exactly the catalog's plugins in order, and every label a form or `dependabot.yml` applies exists
+- `scripts/validators/skill-references.py` — **Pending** · Every path and skill name cited in `.claude/skills/**` and `.claude/CLAUDE.md` exists. skill-lint (stage 5) covers links inside each skill folder only
+- `.claude/hooks/checkout.sh` — **Pending** · Caller: CC hook (SessionStart) · Branch, ahead/behind, tool versions. No command reports git state. Stays in `.claude/hooks/` as a project Claude Code hook (rule 6); `.claude/settings.json` registers no hooks today
+- `.claude/hooks/validators-gate.sh` — **Dropped** · Not on the redesign branch; it duplicated `gates.mjs`
+- `.husky/pre-commit`, `.husky/pre-push` — **Dropped** · husky was rejected and the `.githooks/` replacement is deprecated; no Git hooks are installed
+- `.github/workflows/validate.yml` — **Pending** · CI entry point running the npm scripts. `release.yml` depends on it (it triggers on `workflow_run` of `Validate`)
+- `.github/workflows/claude.yml`, `claude-code-review.yml` — **Dropped** · Not on the redesign branch; ADR_2026-11-12_claude-workflows-run-in-auto-mode-on-opus is deprecated
+- `scripts/testers/` — **Implemented** for skill-lint · Caller: `npm run test:scripts` (`unittest discover -s scripts/testers -t scripts`). The other maintainer tests of `main` (`run_unittest.py`, `gates.test.mjs`, `scripts.test.mjs`, `reserved-name.test.mjs`, `schemas/test_schemas.py`) are **Pending** with the scripts they test
 
 ---
 
@@ -143,9 +145,9 @@
 - `init` produces a skills-directory layout (root `SKILL.md`, `skills: ["./"]`) with no README, CHANGELOG, LICENSE, icon or category [E4]; `scaffold-plugin.py` replaces it here
 
 **Scripts**
-- `scripts/checkers/check-plugin-name.py` — **Move** from `.claude/skills/building-plugins/scripts/` · Callers: skill, manual · Gap: refuses a retired name (a `renames` key) and a similar name (≤ 2 edits, reordered words, word subsets). Native fails only reserved and duplicate names
-- `scripts/generators/scaffold-plugin.py` — **Move** from `.claude/skills/building-plugins/scripts/` · Callers: skill, manual · Gap: creates `plugins/<name>/` (impossible with `init`, E4) with `plugin.json`, `CHANGELOG.md` at 0.1.0, `LICENSE`, `README.md` from the template, category checked against `categories.json` and `renames`
-- `scripts/validators/plugin-required-files.py` — **Keep** · Callers: gate, CI, commit · Gap: `CHANGELOG.md`, a `LICENSE` *file* (native accepts the `license` field), regular files with no broken or escaping symlinks. README and license presence are also covered by `--profile directory`
+- `scripts/checkers/check-plugin-name.py` — **Pending** · Callers: skill, manual · Gap: refuses a retired name (a `renames` key) and a similar name (≤ 2 edits, reordered words, word subsets). Native fails only reserved and duplicate names
+- `scripts/generators/scaffold-plugin.py` — **Pending** · Callers: skill, manual · Gap: creates `plugins/<name>/` (impossible with `init`, E4) with `plugin.json`, `CHANGELOG.md` at 0.1.0, `LICENSE`, `README.md` from the template, category checked against `categories.json` and `renames`
+- `scripts/validators/plugin-required-files.py` — **Pending** · Gap: `CHANGELOG.md`, a `LICENSE` *file* (native accepts the `license` field), regular files with no broken or escaping symlinks. README and license presence are also covered by `--profile directory`
 
 ### 5. Component Authoring
 - Skills: `skills/<name>/SKILL.md` (preferred over the older `commands/`)
@@ -171,16 +173,18 @@
 - Mod hooks modules (JavaScript) are outside `validate`; check gating handlers for error handling (`.catch`) yourself [E2]
 
 **Scripts**
-- `scripts/validators/skill-frontmatter.py` — **Move** from `.claude/hooks/skill-frontmatter.py` · Callers: CC hook (PreToolUse/PostToolUse on `SKILL.md`), gate, CI · Gap: strict YAML 1.2 frontmatter (native accepts `description: Use this: when …` and `description: [unclosed`, E1, NV-A2); blocks the write before the file is saved, which no command can do
-- `scripts/validators/skill-names-consistency.py` — **Keep** · Callers: gate, CI, commit · Gap: flat, unquoted `name` equal to its folder for every `SKILL.md`, plugins and `.claude/skills` (native checks nothing here, NV-B5a)
-- `scripts/validators/skill-argument-placeholders.py` — **Keep** · Callers: gate, CI, commit · Gap: no bare `$N` in a skill or command body that Claude Code would replace (NV-B5b)
-- `scripts/validators/skill-size.py` — **Keep** · Callers: gate (local only) · Gap: fails at 500 lines or 5,000 body tokens against `skill-size-baseline.json`; `details` only reports. **Fix required:** its result depends on `claude` being signed in (E14); stays out of CI and the commit hook until fixed
-- `scripts/validators/mcp-json-schema.py` — **Keep** · Callers: gate, CI, commit · Gap: unknown keys (lost silently at load) and duplicate keys (NV-B1, NV-B6)
-- `scripts/validators/lsp-json-schema.py` — **Keep** · Callers: gate, CI, commit · Gap: every file-based `.lsp.json` (unknown keys, missing `command`, duplicate keys); native validates only inline `lspServers` (NV-B2, E6)
-- `scripts/validators/hooks-json-schema.py` — **New** · Callers: gate, CI, commit · Gap: unknown keys in a handler or at top level (native passes, E7; today only `test_schemas.py` catches them, as a test) and duplicate keys (caught by nothing, E12). Reads `scripts/schemas/`
-- `scripts/generators/plugin-icons.mjs` — **Keep** · Caller: manual · Renders `scripts/generators/plugin-icons/<plugin>.svg` to `icon.png`. No command equivalent
-- `scripts/validators/plugin-icons.py` — **Keep** · Callers: gate, CI, commit · Gap: square PNG, 512–2048 px, under 2 MB, fixed path, SVG source present. Native only warns on a missing icon or icon path (E3, NV-B5e)
-- `scripts/checkers/fetch-github-mod.sh` — **Move** from `.claude/skills/testing-mods/scripts/` · Caller: manual · Gap: prints the source tree of another marketplace's plugin for comparison without installing it (the CLI path writes settings and cache, E10)
+- `scripts/validators/skill-lint.py` — **Implemented** · Caller: `npm run lint:skills`; tests in `npm run test:scripts` · Deterministic checks on every skill folder (ADR_2026-11-13_own-deterministic-skill-linter; spec `.claude/maintainer/specs/skill-lint-spec.md`; rule `.claude/rules/skill-lint.md`). It replaces part of the four skill validators below
+- `scripts/validators/skill-frontmatter.py` — **Replaced by** skill-lint CO-01 (strict YAML 1.2 with ruamel.yaml, no duplicate keys, E1, NV-A2) for the check itself. Still **Pending**: blocking the write before `SKILL.md` is saved, through a PreToolUse hook, which a linter run after the edit cannot do
+- `scripts/validators/skill-names-consistency.py` — **Replaced by** skill-lint CO-02 · `name` equal to its folder for every `SKILL.md`, plugins and `.claude/skills` (NV-B5a)
+- `scripts/validators/skill-argument-placeholders.py` — **Pending** · Gap: no bare `$N` in a skill or command body that Claude Code would replace (NV-B5b). skill-lint CA-01 checks placeholders only inside `!` commands
+- `scripts/validators/skill-size.py` — **Replaced in part by** skill-lint CO-06 (body under 500 lines). The 5,000-token limit with its baseline stays **Pending**, and its dependency on `claude` sign-in (E14) must be fixed first
+- `scripts/validators/mcp-json-schema.py` — **Pending** · Gap: unknown keys (lost silently at load) and duplicate keys (NV-B1, NV-B6)
+- `scripts/validators/lsp-json-schema.py` — **Pending** · Gap: every file-based `.lsp.json` (unknown keys, missing `command`, duplicate keys); native validates only inline `lspServers` (NV-B2, E6)
+- `scripts/validators/hooks-json-schema.py` — **Pending** · Gap: unknown keys in a handler or at top level (native passes, E7) and duplicate keys (caught by nothing, E12). Needs the schemas in `scripts/schemas/`, also **Pending**
+- Hook scripts — **Implemented** as a convention · `.claude/rules/hook-scripts.md` and ADR_2026-11-13_hook-scripts-language-shebang-and-mode: Bash, Python or Node (`.mjs`) by complexity, env shebang, mode 100755, `set -euo pipefail`
+- `scripts/generators/plugin-icons.mjs` — **Pending** · Renders `scripts/generators/plugin-icons/<plugin>.svg` to `icon.png`. No command equivalent
+- `scripts/validators/plugin-icons.py` — **Pending** · Gap: square PNG, 512–2048 px, under 2 MB, fixed path, SVG source present. Native only warns on a missing icon or icon path (E3, NV-B5e)
+- `scripts/checkers/fetch-github-mod.sh` — **Pending** · Caller: manual · Gap: prints the source tree of another marketplace's plugin for comparison without installing it (the CLI path writes settings and cache, E10)
 
 ### 6. Dependencies & Relevance
 - Plugin and cross-marketplace dependencies
@@ -210,8 +214,8 @@
 - An entry without `description`, or with an empty one, passes; so does an unknown entry `category` [E9]
 
 **Scripts**
-- `scripts/generators/marketplace.mjs` — **Keep** · Callers: manual (`npm run generate`), gate and CI (`--check`) · Gap: builds `plugins[]` (name, source, description, category) from each `plugin.json`, so entries never drift; `--check` fails a missing or empty `description` and an unknown `metadata.category` (E13)
-- `scripts/validators/plugin-names-consistency.py` — **Keep** · Callers: gate, CI, commit · Gap: name agrees across entry (name, source, `renames`), folder, `plugin.json` (`name`, `homepage`) and README (badge, install/update/uninstall commands) (NV-B4, NV-B5c, E9)
+- `scripts/generators/marketplace.mjs` — **Pending** · Gap: builds `plugins[]` (name, source, description, category) from each `plugin.json`, so entries never drift; a check mode fails a missing or empty `description` and an unknown `metadata.category` (E13). `package.json` has no `generate` script yet
+- `scripts/validators/plugin-names-consistency.py` — **Pending** (DEBT-001) · Gap: name agrees across entry (name, source, `renames`), folder, `plugin.json` (`name`, `homepage`) and README (badge, install/update/uninstall commands) (NV-B4, NV-B5c, E9)
 
 ### 8. Validation
 - `claude plugin validate` after every edit (locally and in CI)
@@ -235,9 +239,10 @@
 - Full coverage table: Appendix A
 
 **Scripts**
-- `scripts/validators/plugin-json-schema.py` — **Keep** · Callers: gate, CI, commit · Gap: duplicate keys (NV-B6), non-SemVer `version` (E13). **Extend:** `author.email` format and unique `keywords` (caught by nothing, E13)
-- `scripts/check-repo.mjs` — **Keep** · Callers: gate, CI · Gap: Windows-invalid names, trailing dot or space, case collisions, symlinks, files over 256 KiB, more than 512 files (E3); maintainer files that would ship (`tsconfig.json`, extra `.claude-plugin/*`, eval results); `plugin.json` required fields, `license` = MIT, `repository` (E8)
-- Commit-time `claude plugin validate --strict` on changed plugins — **New** (gate selector in the commit hook) · Catches manifest and component errors one step before pre-push
+- `npm run validate` — **Implemented** · `claude plugin validate --strict` on every plugin directory, then the marketplace root
+- `scripts/validators/plugin-json-schema.py` — **Pending** · Gap: duplicate keys (NV-B6), non-SemVer `version` (E13), `author.email` format and unique `keywords` (caught by nothing, E13)
+- `scripts/check-repo.mjs` — **Pending** · Gap: Windows-invalid names, trailing dot or space, case collisions, symlinks, files over 256 KiB, more than 512 files (E3); maintainer files that would ship (`tsconfig.json`, extra `.claude-plugin/*`, eval results); `plugin.json` required fields, `license` = MIT, `repository` (E8)
+- Commit-time `claude plugin validate --strict` on changed plugins — **Dropped** · No Git hooks are installed; run `npm run validate` before committing
 
 ### 9. Local Testing
 - Develop against the directory with `--plugin-dir`, not an installed copy
@@ -271,10 +276,10 @@
 - `claude plugin test` runs only mods' `*.test.ts(x)`; no command fires a command hook without a session (NV-A8)
 
 **Scripts**
-- `plugins/<p>/tests/*.test.ts(x)` — **Keep in plugin** (rule 4) · Callers: gate `mod-test:<p>` (move to CI, see stage 3) · Fully covered by `claude plugin test`
-- `scripts/testers/<plugin>/by_path.sh` (block-no-verify, hook-engineering, project-maintainer, python-lsp-intelligence, skill-diagnostics) — **Keep** · Callers: gate `by-path:<plugin>`, CI · Gap: runs a command hook by path as Claude Code would, with a payload on stdin
-- `scripts/testers/<plugin>/*.test.mjs` and `test_*.py` (bash-lsp-intelligence, github-operations, hook-engineering, instruction-engineering, python-lsp-intelligence, skill-diagnostics, tailwind-development, typescript6-lsp-intelligence) — **Keep** · Callers: `npm test`, gates · Gap: deterministic tests of plugin hook scripts, skill scripts, an MCP server and agent frontmatter
-- `scripts/testers/tailwind-development/fixtures/stub-language-server.mjs`, `scripts/testers/svelte-development/kit3-app/**` — **Keep** (fixtures, not run as tests)
+- `plugins/<p>/tests/*.test.ts(x)` — **Keep in plugin** (rule 4) · Fully covered by `claude plugin test`; no npm script or CI job runs it yet (**Pending**, see stage 3)
+- `scripts/testers/<plugin>/by_path.sh` (block-no-verify, hook-engineering, project-maintainer, python-lsp-intelligence, skill-diagnostics) — **Pending** · Gap: runs a command hook by path as Claude Code would, with a payload on stdin
+- `scripts/testers/<plugin>/*.test.mjs` and `test_*.py` (bash-lsp-intelligence, github-operations, hook-engineering, instruction-engineering, python-lsp-intelligence, skill-diagnostics, tailwind-development, typescript6-lsp-intelligence) — **Pending** · Gap: deterministic tests of plugin hook scripts, skill scripts, an MCP server and agent frontmatter. CLAUDE.md (Project scopes) checks plugin code with each plugin's own testing methods, so decide whether these return under `scripts/testers/` or move into each plugin
+- `scripts/testers/tailwind-development/fixtures/stub-language-server.mjs`, `scripts/testers/svelte-development/kit3-app/**` — **Pending** (fixtures, with the tests that use them)
 
 ### 10. Evaluation
 - Trigger evals: does the skill or agent fire when it should
@@ -292,8 +297,8 @@
 
 **Scripts**
 - `plugins/<p>/evals/**` (including `fixture.sh` scaffolds) — **Keep in plugin** (rule 4) · Caller: `claude plugin eval` only · Fully covered by the command; never run today
-- `scripts/testers/changed-eval-plugins.sh` — **Move** from `.claude/skills/testing-plugins/scripts/` · Caller: the new eval workflow · Gap: selects plugins with evals that changed between BASE and HEAD; `eval` doesn't select by diff
-- `.github/workflows/evals.yml` — **New** (entry point; from the template in `.claude/skills/testing-plugins/assets/evals-ci.yml`) · Runs `claude plugin eval` on the plugins `changed-eval-plugins.sh` selects. Needs a credential secret and a usage budget: *decision pending*
+- `scripts/testers/changed-eval-plugins.sh` — **Pending** · Caller: the eval workflow · Gap: selects plugins with evals that changed between BASE and HEAD; `eval` doesn't select by diff
+- `.github/workflows/evals.yml` — **Pending** (entry point; reference in `.claude/references/evals-ci.md`) · Runs `claude plugin eval` on the plugins `changed-eval-plugins.sh` selects, as CLAUDE.md's Evals section sets. Needs a credential secret and a usage budget: *decision pending*
 
 ### 11. Documentation
 - Plugin README: purpose, installation, tested Claude Code version
@@ -302,11 +307,11 @@
 - `docs/`: reference documentation for users and third parties: `installation.md`, `managing-plugins.md`, `troubleshooting.md`, `faq.md`, `compatibility.md` (see stage 1), `github-mcp-tools.md` (GitHub Operations' MCP tools) and `assets/`
 - README rules:
   - A README describes what exists now; old names, merges, removed features and migration steps go in the CHANGELOG and the release notes
-  - Each kind has its rule and template: root `README.md` → `.claude/rules/maintainer/root-readme.md` and `.claude/templates/root-readme-template.md`; `plugins/<plugin>/README.md` → `.claude/rules/plugins/plugin-readme.md` and `.claude/templates/plugin-readme-template.md`; a maintainer README outside `plugins/` only has to stay accurate
+  - Each kind has its reference and template: root `README.md` → `.claude/references/root-readme.md` and `.claude/templates/root-readme-template.md`; `plugins/<plugin>/README.md` → `.claude/references/plugin-readme.md` and `.claude/templates/plugin-readme-template.md`, applied through the `docs-maintenance` skill; a maintainer README outside `plugins/` only has to stay accurate
   - User READMEs: English, second person, present tense; never mention the repository's maintenance, `.claude/`, scripts, CI or release mechanics; every command, flag, UI path and minimum version checked against the sources first
   - One fact, one value: the marketplace is `nerymurillohnd/the-claude-factory` (`@the-claude-factory`)
   - A plugin's README changes in the same change as its components, prerequisites, surfaces, configuration or minimum Claude Code version
-  - Version shown in READMEs: one badge per plugin README, on line 7, a shields.io dynamic badge reading `$.version` from that plugin's `plugin.json` on `main`; the root catalog's version column is generated by `npm run generate`
+  - Version shown in READMEs: one badge per plugin README, on line 7, a shields.io dynamic badge reading `$.version` from that plugin's `plugin.json` on `main`; the root catalog's version column is to be generated by `catalog.mjs` (Pending, DEBT-001)
 
 **Commands**
 - `claude plugin validate <path>` — prints an `Advice` block when the README has no install-from-marketplace line
@@ -316,11 +321,12 @@
 - `--profile directory` checks only that a README exists and has 40 words (NV-A7)
 
 **Scripts**
-- `scripts/check-repo.mjs` — **Keep** · Callers: gate, CI · Gap: README sections, template placeholders, Compatibility cells against `docs/compatibility.md`, the Platforms line
-- `scripts/generators/catalog.mjs` — **Keep** · Callers: manual (`npm run generate`), gate and CI (`--check`) · Gap: builds the root README catalog from marketplace and manifests (NV-C)
-- `scripts/validators/readme-catalog-consistency.py` — **Keep** · Callers: gate, CI, commit · Gap: one catalog row per plugin under its category, categories match, `mods` holds only mods
-- `scripts/checkers/markdown-urls.py` — **Keep** · Caller: manual · Gap: live check of every http(s) URL and fragment in tracked Markdown
-- `scripts/checkers/reference-pages.py` — **Keep** · Caller: manual · Gap: offline layout (`## Contents`, `## Documentation References`), relative links and anchors
+- `scripts/check-repo.mjs` — **Pending** · Gap: README sections, template placeholders, Compatibility cells against `docs/compatibility.md`, the Platforms line
+- `scripts/generators/catalog.mjs` — **Pending** (DEBT-001) · Gap: builds the root README catalog from marketplace and manifests (NV-C). The root `README.md` still names it as the generator of its catalog
+- `scripts/validators/readme-catalog-consistency.py` — **Pending** (DEBT-001) · Gap: one catalog row per plugin under its category, categories match, `mods` holds only mods
+- `scripts/checkers/markdown-urls.py` — **Pending** · Caller: manual · Gap: live check of every http(s) URL and fragment in tracked Markdown
+- `scripts/checkers/reference-pages.py` — **Pending** · Caller: manual · Gap: offline layout (`## Contents`, `## Documentation References`), relative links and anchors
+- The documentation files themselves are kept by the `docs-maintenance` project skill and its writer agents, from the references in `.claude/references/`
 
 ---
 
@@ -335,8 +341,8 @@
 - No CLI command
 
 **Scripts**
-- `scripts/release/bump-version.py` — **Keep** · Callers: manual (`npm run version:bump`), skill · Gap: turns `[Unreleased]` into the dated section (America/Tegucigalpa) with its links. No command writes a CHANGELOG
-- `scripts/validators/plugin-versions-consistency.py` — **Keep** · Callers: gate, CI, commit · Gap: CHANGELOG sections, order and links agree with `plugin.json`; root CHANGELOG lines, README badge, catalog version
+- `scripts/release/bump-version.py` — **Pending** · Callers: manual, skill · Gap: turns `[Unreleased]` into the dated section with its links. No command writes a CHANGELOG. CLAUDE.md dates releases in UTC on the day they are published, not in America/Tegucigalpa: rebuild it to that rule
+- `scripts/validators/plugin-versions-consistency.py` — **Pending** (DEBT-001) · Gap: CHANGELOG sections, order and links agree with `plugin.json`; root CHANGELOG lines, README badge, catalog version
 
 ### 13. Versioning / Bumping
 - Choose the SemVer bump: major / minor / patch
@@ -356,8 +362,8 @@
 - `validate` accepts non-SemVer versions such as `"1.0"`; enforce SemVer with a script [E8]
 
 **Scripts**
-- `scripts/release/bump-version.py` — **Keep** (see stage 12) · Gap: writes the new version in `plugin.json`. Doesn't regenerate the catalog: run `catalog.mjs` after it
-- `scripts/release/check-version-bump.py` — **Keep** · Callers: gate `version-bump`, CI · Gap: every plugin changed since `<base>` went up exactly one SemVer step and has its CHANGELOG section, with exemptions. `tag --dry-run` only checks entry/manifest agreement (NV-A12)
+- `scripts/release/bump-version.py` — **Pending** (see stage 12) · Gap: writes the new version in `plugin.json`. Doesn't regenerate the catalog: run `catalog.mjs` after it
+- `scripts/release/check-version-bump.py` — **Pending** · Caller: CI · Gap: every plugin changed since `<base>` went up exactly one SemVer step and has its CHANGELOG section, with exemptions. `tag --dry-run` only checks entry/manifest agreement (NV-A12)
 
 ### 14. Tagging
 - `claude plugin tag` → `<plugin>--v<version>`
@@ -378,8 +384,8 @@
 - `release.yml` creates the tag through `gh release create`, so `claude plugin tag` cannot replace that step as written
 
 **Scripts**
-- `scripts/release/release-notes.py` — **Keep** · Caller: `.github/workflows/release.yml` · Gap: the release body (CHANGELOG section plus the update command). Its `--tag` mode duplicates `tag --dry-run` (E5): *reduce or keep, decision pending*
-- `.github/workflows/release.yml` — **Keep** (entry point) · Optional **New** step: `claude plugin tag <p> --dry-run` before `gh release create` (low value: `plugin-versions-consistency.py` already covers the version pair)
+- `scripts/release/release-notes.py` — **Pending** · Caller: `.github/workflows/release.yml` · Gap: the release body (CHANGELOG section plus the update command). Its `--tag` mode duplicates `tag --dry-run` (E5): *reduce or keep, decision pending*
+- `.github/workflows/release.yml` — **Implemented, but cannot run on this branch** (entry point) · It calls `scripts/release/release-notes.py` (`--tag` and the notes), which does not exist here, and it triggers on `workflow_run` of a `Validate` workflow that does not exist either. It needs both before `main` takes this branch. Optional step: `claude plugin tag <p> --dry-run` before `gh release create`
 
 ### 15. Publishing / Distribution
 - Push and merge (with authorization)
@@ -395,7 +401,7 @@
 - Without a TTY, an install that shows a marketplace-declared command is refused unless `-y` or `--accept-command <sha256>` is passed [skill]
 
 **Scripts**
-- `scripts/release/check-published-install.sh` — **New** · Caller: a post-release CI job · Gap: in an isolated `CLAUDE_CONFIG_DIR`, `marketplace add` the GitHub repository, `install` the released plugin, read `installPath` from `list --json`, then `validate --strict` and `test` (mods) on what users actually receive (E10). Each step is a command; the script only orchestrates and isolates
+- `scripts/release/check-published-install.sh` — **Pending** · Caller: a post-release CI job · Gap: in an isolated `CLAUDE_CONFIG_DIR`, `marketplace add` the GitHub repository, `install` the released plugin, read `installPath` from `list --json`, then `validate --strict` and `test` (mods) on what users actually receive (E10). Each step is a command; the script only orchestrates and isolates
 
 ### 16. Update Delivery
 - `claude plugin update` on the user side
@@ -435,7 +441,7 @@
 - `--available` and `--data-size` have no effect without `--json` [docs]
 
 **Scripts**
-- `scripts/validators/skill-size.py` — **Keep** (see stage 5) · Gap: turns the `details` token figure into a limit with a baseline ratchet; `details` reports and never fails
+- `scripts/validators/skill-size.py` — **Pending** for its token limit (see stage 5; skill-lint CO-06 covers the 500-line limit) · Gap: turns the `details` token figure into a limit with a baseline ratchet; `details` reports and never fails
 
 ### 18. Maintenance
 - Update components for Claude Code changes
@@ -453,8 +459,9 @@
 - Never run `init` without an isolated `HOME`: the scaffold would load in every maintainer session [docs]
 
 **Scripts**
-- `scripts/testers/schemas/test_schemas.py` — **Keep** · Caller: `npm test` · Re-run after CLI upgrades: its recorded cases document which gaps still exist
-- `scripts/sync-labels.mjs` — **Keep** (see stage 3) · Run after adding a plugin (one `plugin: <name>` label each)
+- `scripts/testers/schemas/test_schemas.py` — **Pending** · Re-run after CLI upgrades: its recorded cases document which gaps still exist
+- `scripts/sync-labels.py` — **Implemented** (see stage 3) · Run `npm run labels:sync` after adding a plugin (one `plugin: <name>` label each)
+- `npm run lint:skills` — **Implemented** · Re-run after a Claude Code upgrade and after the docs a skill-lint rule cites change; each rule names its source URL
 
 ### 19. Catalog Changes
 - Renaming via the `renames` map
@@ -473,9 +480,9 @@
 - `uninstall --json` can't be combined with `--prune` [docs]
 
 **Scripts**
-- `scripts/validators/plugin-names-consistency.py` — **Keep** (see stage 7) · Gap: a `renames` key that is still listed (only check that catches it, E13)
-- `scripts/checkers/check-plugin-name.py` — **Keep** after its move (see stage 4) · Gap: a retired name cannot be reused
-- `scripts/generators/marketplace.mjs`, `catalog.mjs` — **Keep** · Regenerate entries and catalog after the change
+- `scripts/validators/plugin-names-consistency.py` — **Pending** (see stage 7) · Gap: a `renames` key that is still listed (only check that catches it, E13)
+- `scripts/checkers/check-plugin-name.py` — **Pending** (see stage 4) · Gap: a retired name cannot be reused
+- `scripts/generators/marketplace.mjs`, `catalog.mjs` — **Pending** · Regenerate entries and catalog after the change
 
 ### 20. Troubleshooting
 - Marketplace and plugin validation errors
@@ -506,141 +513,58 @@
 
 # Part 2 — Target structure
 
+Each line says what exists on the redesign branch on 2026-11-13; `(pending)` marks what is planned and not built.
+
 ```text
 .
+├── package.json                 # the single entry point: lint, typecheck, validate, check, test:scripts, lint:skills, labels:sync
 ├── .claude/
-│   ├── settings.json            # CC hook registrations → ${CLAUDE_PROJECT_DIR}/scripts/... (no .claude/hooks/ scripts)
-│   ├── skills/                  # project skills: procedures only, no scripts/ folders
+│   ├── settings.json            # CC hook registrations (none yet)
+│   ├── hooks/                   # (pending) project Claude Code hook scripts, e.g. checkout.sh; maintainer logic stays in scripts/
+│   ├── rules/                   # hook-scripts.md, skill-lint.md (path-scoped)
+│   ├── skills/                  # docs-maintenance: procedures only, no scripts/ folders
 │   └── CLAUDE.md
-├── .husky/
-│   ├── pre-commit               # entry point → biome --staged, npm test
-│   └── pre-push                 # entry point → npm run gates
 ├── .github/
 │   ├── workflows/
-│   │   ├── validate.yml         # gates:ci groups (+ profile, project validate, mod-test, hooks-catch)
-│   │   ├── release.yml          # release-notes.py, gh release create
-│   │   ├── evals.yml            # NEW · changed-eval-plugins.sh → claude plugin eval
-│   │   ├── claude.yml
-│   │   └── claude-code-review.yml
+│   │   ├── validate.yml         # (pending) runs the npm scripts; release.yml triggers on it
+│   │   ├── release.yml          # release-notes.py (pending), gh release create
+│   │   └── evals.yml            # (pending) changed-eval-plugins.sh → claude plugin eval
 │   ├── ISSUE_TEMPLATE/  pull_request_template.md  labels.json  CODEOWNERS  dependabot.yml
 ├── plugins/<p>/
 │   ├── tests/*.test.ts(x)       # mods only — stays (claude plugin test)
 │   └── evals/**                 # stays (claude plugin eval)
 └── scripts/
-    ├── gates.mjs  check-repo.mjs  basedpyright-maintainer.mjs  sync-labels.mjs
-    ├── lib.mjs  components.mjs
-    ├── session/                 # NEW subfolder (pending) · checkout.sh
-    ├── validators/              # plugin-json-schema, marketplace-json-schema, mcp-json-schema,
-    │                            # lsp-json-schema, hooks-json-schema (NEW), plugin-names-consistency,
+    ├── check-github-files.py  sync-labels.py  pyrightconfig.json
+    ├── check-repo.mjs           # (pending)
+    ├── typings/                 # local ruamel.yaml stubs
+    ├── validators/              # skill-lint.py + skill_lint/; (pending) plugin-json-schema, marketplace-json-schema,
+    │                            # mcp-json-schema, lsp-json-schema, hooks-json-schema, plugin-names-consistency,
     │                            # plugin-versions-consistency, plugin-required-files, plugin-icons,
-    │                            # readme-catalog-consistency, skill-names-consistency,
-    │                            # skill-argument-placeholders, skill-references, skill-size,
-    │                            # skill-frontmatter (MOVED)
-    ├── checkers/                # markdown-urls, reference-pages, check-plugin-name (MOVED), fetch-github-mod (MOVED)
-    ├── generators/              # marketplace, catalog, plugin-icons (+ plugin-icons/*.svg), scaffold-plugin (MOVED)
-    ├── release/                 # bump-version, check-version-bump, release-notes, check-published-install (NEW)
-    ├── schemas/                 # one schema per shape
-    └── testers/                 # maintainer tests, per-plugin testers, changed-eval-plugins (MOVED), fixtures
+    │                            # readme-catalog-consistency, skill-argument-placeholders, skill-references, skill-size
+    ├── checkers/                # (pending) markdown-urls, reference-pages, check-plugin-name, fetch-github-mod
+    ├── generators/              # (pending) marketplace, catalog, plugin-icons (+ plugin-icons/*.svg), scaffold-plugin
+    ├── release/                 # (pending) bump-version, check-version-bump, release-notes, check-published-install
+    ├── schemas/                 # (pending) one schema per shape
+    └── testers/                 # skill_lint/; (pending) per-plugin testers, changed-eval-plugins, fixtures
 ```
 
 ---
 
 # Appendix A — Native validator coverage (`validate --strict`, CLI 2.1.322)
 
+The script column names the planned owner of each gap; on the redesign branch only skill-lint exists, and every other script named here is Pending (Part 1).
+
 | File | Caught by the CLI | Not caught by the CLI | Script that covers it |
 |:--|:--|:--|:--|
-| Skill frontmatter | Parse errors (NV-A2) | Non-strict YAML [E1] | `skill-frontmatter.py` |
-| `hooks/hooks.json` | Wrong `type`, missing `command`, unquoted `${CLAUDE_PLUGIN_ROOT}`, misspelled `hooks` [E7] | Unknown keys [E7]; duplicate keys [E12] | `hooks-json-schema.py` (New) |
-| `.mcp.json` | Missing `command`, types, unknown `type`, undeclared `user_config`, `http://` (NV-B1) | Unknown keys, duplicate keys | `mcp-json-schema.py` |
-| `.lsp.json` | Inline `lspServers` only (NV-B2) | Every file-based `.lsp.json` [E6] | `lsp-json-schema.py`, `check-repo.mjs` |
-| Mod hooks module | — | All checks (`incomplete: true`) [E2] | `gates.mjs` `mod-hooks-catch` (New); `claude plugin test` |
-| `plugin.json` | Empty `description` (warning), empty `author.name` (error) [E8] | Non-SemVer `version`, invalid `author.email`, non-SPDX `license`, foreign `repository`, duplicate `keywords`, unknown `metadata.category`, empty `displayName` [E8] | `plugin-json-schema.py` (+ extensions), `check-repo.mjs`, `marketplace.mjs --check`, `catalog.mjs --check` |
-| `marketplace.json` | Name with spaces [E9] | Top-level or `metadata` version, missing/empty entry `description`, invalid `owner.email`, unknown entry `category`, mismatched entry `name`/`source`, `renames` key still listed [E9] | `check-repo.mjs` (+ `metadata.version`), `marketplace-json-schema.py` (+ `owner.email`), `marketplace.mjs --check`, `plugin-names-consistency.py`, `readme-catalog-consistency.py` |
-| Directory (`--profile directory`) | `.DS_Store`, missing `icon` path (warnings) [E3] | Windows-reserved or invalid names, case collisions, symlinks, size or file-count limits [E3] | `check-repo.mjs`, `plugin-icons.py` |
-
-# Appendix B — Retired scripts and why
-
-| Script (current path) | Reason | Replaced by |
-|:--|:--|:--|
-| `.claude/skills/building-plugins/scripts/check-required-files.py` | Duplicate; validator caught every case it caught | `scripts/validators/plugin-required-files.py` |
-| `.claude/skills/building-plugins/scripts/check-manifest-schema.py` | Duplicate, second schema engine | `scripts/validators/plugin-json-schema.py` |
-| `.claude/skills/building-plugins/scripts/check-mcp-schema.py` | Duplicate | `scripts/validators/mcp-json-schema.py` |
-| `.claude/skills/building-plugins/scripts/check-lsp-schema.py` | Duplicate | `scripts/validators/lsp-json-schema.py` |
-| `.claude/skills/building-plugins/scripts/check-skill-names.py` | Duplicate and weaker: missed unparsable frontmatter and a duplicate key | `scripts/validators/skill-names-consistency.py` |
-| `.claude/skills/building-plugins/scripts/check-readme-placeholders.py` | Weaker: passed a placeholder `check-repo` caught | `scripts/check-repo.mjs` |
-| `.claude/skills/plugin-categories/scripts/check-catalog-categories.py` | Duplicate | `scripts/validators/readme-catalog-consistency.py` |
-| `.claude/skills/testing-mods/scripts/check-mod.sh` | Both steps already run as gates; its summary-line guard folds into `gates.mjs` | `gates.mjs` `claude-validate:<p>` and `mod-test:<p>` |
-| `.claude/hooks/validators-gate.sh` | Orchestrator duplicating `gates.mjs`; ran `skill-size.py` despite E14 | CC hook calling `gates.mjs --only` |
-| `scripts/release/check-changelog-entry.py` | Orphan (no caller); every case it caught, `plugin-versions-consistency.py` caught too | `scripts/validators/plugin-versions-consistency.py` |
-| `scripts/release/check-marketplace-unversioned.py` | Orphan; its only unique rule (`metadata.version`) folds into `check-repo.mjs` | `scripts/check-repo.mjs` |
-| `release-notes.py --tag` mode *(reduce, pending)* | Duplicates `claude plugin tag --dry-run` (E5) | `claude plugin tag --dry-run`, or keep |
-
-# Appendix C — Open gaps and pending decisions
-
-| Item | Status |
-|:--|:--|
-| Duplicate keys in `hooks.json` (E12) | Covered by `hooks-json-schema.py` (New) |
-| `author.email`, duplicate `keywords`, `owner.email` (E13) | Covered by schema extensions (New) |
-| Gating mod hooks without `.catch` in `project-maintainer` and `turn-meter` (E2) | Decide whether this is a defect before adding the gate (it fails today) |
-| `skill-size.py` depends on sign-in state (E14) | Fix before it returns to the commit hook or CI |
-| Runtime effect of a bad `.lsp.json` | Untested in a session |
-| Eval workflow: credentials and budget | Decision pending |
-| `scripts/session/` subfolder for `checkout.sh` | Decision pending |
-| anthropics/claude-code#103055 (output loss in `test`) | Not reproduced on 2.1.322 (E11); keep the guard until upstream confirms |
-| `gates.mjs --only` accepts the validator selectors this blueprint uses | Unverified: confirm in the implementation plan |
-| Validators can be scoped to one plugin when a skill calls them | Unverified: confirm in the implementation plan |
-
-# Appendix D — Records this blueprint changes
-
-| Record | Effect |
-|:--|:--|
-| `ADR_2026-10-25_skill-checks-are-separate-from-gates` | Superseded: one copy per check in `scripts/`; skills and gates both call it |
-| `ADR_2026-10-25_skill-scripts-are-stdlib-python` | Superseded: no skill scripts remain |
-| `ADR_2026-11-01_release-scripts-live-in-scripts-release` | Precedent; consistent with this blueprint |
-| `ADR_2026-10-21_maintainer-scripts-at-root` | Consistent; extended to hooks and skill scripts |
-| `plugin-scaffold-belongs-to-building-plugins`, `category-rules-live-in-plugin-categories-skill`, `procedures-live-in-project-skills`, `building-plugins-is-this-repositorys-procedure`, `testing-plugins-owns-live-mcp-checks`, `building-mods-skill-holds-mod-authoring`, `rebuilt-skills-do-not-run-check-repo` | To review (not yet read): likely affected by the skills refactor |
-
-# Appendix E — Project skills catalog (PROPOSAL, reference only)
-
-> **Status: not implementable.** Do not build, scaffold or run any skill in this appendix unless Nery requests it explicitly.  
-> **Prerequisite:** Parts 1–2 of this blueprint implemented and proven (scripts relocated, retirements done, gates and CI green).  
-> **Purpose:** record the intended skill layer so the refactor leaves room for it. Final names, scope and consolidation are decided after the new structure is proven.
-
-## Principles
-
-- **The blueprint says what, where and when; each skill says how** for its stages.
-- **Skills hold procedures only.** They call `scripts/` through `${CLAUDE_PROJECT_DIR}` and pre-approve those exact commands with `allowed-tools: Bash(${CLAUDE_PROJECT_DIR}/scripts/... *)`. No `scripts/` folder inside any skill (rule 6).
-- **Hooks enforce, skills orchestrate.** Anything that must hold every time stays in a hook or gate; a skill adds judgment and multi-step flow.
-- **Side effects are user-invoked.** Skills that write, tag, push or change the catalog set `disable-model-invocation: true`.
-- **Consolidate stages** where one procedure naturally spans them, to keep the skill count small.
-- **Avoid names of bundled skills** (`doctor`, `code-review`, `debug`, `loop`, `run`, `simplify`), except `verify`, which intentionally replaces the bundled one at the repository root.
-
-## Proposed skills
-
-| Skill | Stages | Invocation | Orchestrates (scripts and commands) |
-|:--|:--|:--|:--|
-| `verify` | 8, 9, (10) | Claude-invocable; runs before each commit (Claude Code ≥ 2.1.286, `includeGitInstructions` on) | `gates.mjs --only` on changed plugins; `by_path` testers of those plugins; `claude plugin details`; optional single-case `claude plugin eval` |
-| `scaffold-plugin` | 4, 5 (setup), 6, 7 | User only | `check-plugin-name.py` → `scaffold-plugin.py` → `plugin-icons.mjs` → `marketplace.mjs` → `claude plugin validate --strict [--profile directory]` → `sync-labels.mjs` |
-| `docs-sync` | 11 | User only | `catalog.mjs` → `readme-catalog-consistency.py` → `check-repo.mjs` → `reference-pages.py` → `markdown-urls.py` |
-| `release-plugin` | 12, 13, 14, 15 | User only; push and release need explicit authorization | `bump-version.py` → `catalog.mjs` → `check-version-bump.py` → `plugin-versions-consistency.py` → `claude plugin tag --dry-run` → `release-notes.py`; post-release `check-published-install.sh` |
-| `catalog-change` | 19 | User only | `renames` / `forceRemoveDeletedPlugins` edit → `check-plugin-name.py` → `plugin-names-consistency.py` → `marketplace.mjs` → `catalog.mjs` → release flow |
-| `audit-repo` | 3, 17, 18 | Claude-invocable (read-only) | `gates.mjs` full run; Appendix A gap re-test after a CLI upgrade; `HOME=<tmp> claude plugin init` scaffold comparison; `skill-size.py` report; `skill-references.py` |
-| `troubleshoot-plugin` | 20 | Claude-invocable (read-only) | `claude plugin validate --json`, `list --json`, `marketplace list --json`, `details`; troubleshooting page lookup; hands the fix back to `verify` / `release-plugin` |
-
-## Stages without a skill
-
-| Stage | Why |
-|:--|:--|
-| 1 Planning & Design | Decisions, recorded as ADRs; no executable procedure |
-| 2 Marketplace Scaffolding | One time, already done |
-| 16 Update Delivery | User side; the release body carries the update command |
-
-## Open questions (decide after the refactor is proven)
-
-- Merge `docs-sync` into `release-plugin` and `scaffold-plugin`, since both already regenerate the catalog?
-- Split `catalog-change` into `rename-plugin` and `retire-plugin`, or keep one?
-- Is a project `verify` running before every commit acceptable in time and usage, or should it be user-invoked (which removes the automatic pre-commit run)?
-- Does `audit-repo` absorb `troubleshoot-plugin`?
+| Skill frontmatter | Parse errors (NV-A2) | Non-strict YAML [E1] | skill-lint CO-01 (implemented); a blocking PreToolUse hook (pending) |
+| Skill folder content | — | Name ≠ folder, reserved words, body over 500 lines, broken or escaping links, deep references, missing table of contents, scripts without shebang or exec bit, unscoped `Bash` in `allowed-tools` | skill-lint CO, PO, SC and CA rules (implemented) |
+| `hooks/hooks.json` | Wrong `type`, missing `command`, unquoted `${CLAUDE_PLUGIN_ROOT}`, misspelled `hooks` [E7] | Unknown keys [E7]; duplicate keys [E12] | `hooks-json-schema.py` (pending) |
+| `.mcp.json` | Missing `command`, types, unknown `type`, undeclared `user_config`, `http://` (NV-B1) | Unknown keys, duplicate keys | `mcp-json-schema.py` (pending) |
+| `.lsp.json` | Inline `lspServers` only (NV-B2) | Every file-based `.lsp.json` [E6] | `lsp-json-schema.py`, `check-repo.mjs` (pending) |
+| Mod hooks module | — | All checks (`incomplete: true`) [E2] | A `validate --json` check of `gatingHooks[].hasCatch` (pending); `claude plugin test` |
+| `plugin.json` | Empty `description` (warning), empty `author.name` (error) [E8] | Non-SemVer `version`, invalid `author.email`, non-SPDX `license`, foreign `repository`, duplicate `keywords`, unknown `metadata.category`, empty `displayName` [E8] | `plugin-json-schema.py`, `check-repo.mjs`, `marketplace.mjs`, `catalog.mjs` (pending) |
+| `marketplace.json` | Name with spaces [E9] | Top-level or `metadata` version, missing/empty entry `description`, invalid `owner.email`, unknown entry `category`, mismatched entry `name`/`source`, `renames` key still listed [E9] | `check-repo.mjs`, `marketplace-json-schema.py`, `marketplace.mjs`, `plugin-names-consistency.py`, `readme-catalog-consistency.py` (pending) |
+| Directory (`--profile directory`) | `.DS_Store`, missing `icon` path (warnings) [E3] | Windows-reserved or invalid names, case collisions, symlinks, size or file-count limits [E3] | `check-repo.mjs`, `plugin-icons.py` (pending) |
 
 # Appendix F — Where this blueprint lives once adopted
 
@@ -650,4 +574,4 @@
 |:--|:--|:--|
 | The six blueprint rules and a pointer to the full map | `.claude/CLAUDE.md` | Every session (a few lines) |
 | File-bound rules (e.g. `scripts/validators/**`, `plugins/*/hooks/**`, `.github/workflows/**`) | `.claude/rules/` with `paths` frontmatter | Only when Claude works with matching files |
-| Stage procedures not bound to a path (release, catalog changes, troubleshooting) | The full map as a reference document (e.g. `.claude/maintainer/blueprint.md`), later the skills of Appendix E | When a task or skill needs it |
+| Stage procedures not bound to a path (release, catalog changes, troubleshooting) | The full map as a reference document (e.g. `.claude/maintainer/blueprint.md`), later project skills | When a task or skill needs it |
