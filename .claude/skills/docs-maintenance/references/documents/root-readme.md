@@ -65,11 +65,13 @@ This repository:
 - Tables for comparisons, commands per surface, requirements and options.
 - `<details>` for per-surface instructions and FAQs, with the most common option `open`.
 - **Bold** for UI labels exactly as the app shows them; _italics_ for emphasis or terms.
+- The catalog lists exactly the plugins of `.claude-plugin/marketplace.json`, grouped by category, none missing and none extra. `marketplace.json` and each `plugin.json` are read-only here; report a disagreement and use `plugin.json`.
+- Surfaces come from each plugin's `metadata.surfaces` (`claude-code`, `claude-app`), this project's own convention: the docs define `metadata` as a free-form object Claude Code doesn't read. Write them as **Claude Code** and **Claude**.
+- Manage your plugins: auto-update is off by default for this marketplace and is turned on per user under **Marketplaces** in `/plugin`; an update needs `/reload-plugins` or the next session; `claude plugin marketplace update` refreshes listings only. In Claude, plugins are managed in **Customize > Plugins** (**Disable plugin**, **Remove**, **Check for updates**). Removing a marketplace uninstalls every plugin installed from it: that is the one alert this section may carry.
 
 ## Checks
 
-- `npm run generate:check`: the generated blocks are current.
-- `python3 scripts/validators/readme-catalog-consistency.py`: the catalog matches the manifests.
+- The catalog's plugin names equal `jq -r '.plugins[].name' .claude-plugin/marketplace.json` (no script checks this yet: DEBT-001).
 - Open every relative link and `#anchor` you touched. No script reads the prose.
 
 ## Change the blueprint

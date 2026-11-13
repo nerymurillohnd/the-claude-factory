@@ -55,19 +55,22 @@ Official (Keep a Changelog):
 
 Keep a Changelog sets no time zone. The choice:
 
-- Date each release in UTC, on the day it is released. The release runs in CI, whose clock is UTC, and the readers are everywhere. A local date written when the bump is prepared can differ from the day the tag and Release appear: in America/Tegucigalpa (UTC−6), anything after 18:00 is already the next day in UTC.
-- `scripts/release/bump-version.py` dates in America/Tegucigalpa when the bump is prepared, and `scaffold-plugin.py` dates in UTC. That inconsistency is left for the refactor, where the date should be set in UTC at release time.
+- Date each release in UTC, on the day its tag and GitHub Release are created, never the day the bump is prepared. The release runs in CI, whose clock is UTC, and the readers are everywhere: in America/Tegucigalpa (UTC−6), anything after 18:00 is already the next day in UTC.
 
 This repository:
 
 - `## [Unreleased]` is empty on `main`.
 - The set of version headings equals the set of `<name>--v<x.y.z>` tags: no missing, no extra.
 - Compare and tag links point at the `<name>--v<x.y.z>` tags.
-- Bump levels follow `.claude/CLAUDE.md` → Version bump policy; during `0.x` a breaking change takes a minor bump.
+- Bump levels follow the `plugin-versioning` skill; during `0.x` a breaking change takes a minor bump.
+- Write plain English in short sentences, for users, many of whom aren't native speakers: say what changes for them, not how it was built. When a change alters nothing in how the plugin works, say "Nothing changes in how the plugin works".
+- A `### Security` entry leads with the CVE identifier when there is one, tells users to update to this version, and gives no detail that helps an attacker.
+- A `### Deprecated` entry names the feature, its replacement and the release that removes it, when they are known.
+- A rename's `**Breaking:**` entry tells users to run `/plugin install <new>@the-claude-factory` once: the marketplace's `renames` map migrates existing installs, and the plugin reports "not cached" until that install.
 
 ## Checks
 
-- `python3 scripts/release/check-version-bump.py`: every changed plugin has a new version and its entry.
+- Every changed plugin has a new version and a non-empty section for it (no script checks this yet; the `plugin-versioning` skill says how to check it by hand).
 - `claude plugin tag plugins/<plugin> --dry-run`: the tag does not exist yet and the tree is clean.
 - `grep -n '{{' plugins/<plugin>/CHANGELOG.md` returns nothing.
 

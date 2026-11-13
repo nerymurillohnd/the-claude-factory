@@ -39,8 +39,10 @@ Read 2026-11-10 (`github/docs` at `f309096`):
 
 ## Rules
 
-Official:
+Official (GitHub):
 
+- `https://github.com/<owner>/<repo>/issues/new?template=<file name>` opens the issue form stored under `.github/ISSUE_TEMPLATE/`; the value is the file name with its extension. A link to a form that doesn't exist opens a 404 page, so link only forms that exist.
+- A form's `labels` apply when the issue is created, and a label that doesn't exist in the repository is not added.
 - Link the code of conduct and the documentation contributors need.
 
 This repository:

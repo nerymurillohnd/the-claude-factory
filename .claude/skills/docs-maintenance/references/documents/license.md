@@ -43,7 +43,7 @@ Official:
 
 This repository:
 
-- Every plugin ships its own `LICENSE`, because each plugin is copied alone into the user's cache.
+- Every plugin ships its own `LICENSE`, because each plugin is copied alone into the user's cache. Write it as a real file, never as a symlink to the root `LICENSE`: files outside the plugin's folder are not copied.
 - The copyright holder is the same in the root `LICENSE`, every plugin `LICENSE`, every `NOTICE.txt` and every README License line.
 
 ## Checks

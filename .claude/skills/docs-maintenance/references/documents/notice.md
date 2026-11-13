@@ -47,6 +47,13 @@ Official:
 
 - List only material the plugin actually contains, and only the notices its licenses require.
 - Keep each source's license text verbatim.
+- What each license requires (read the source's own license text every time):
+  - MIT: keep the copyright notice and the permission notice with all copies or substantial portions; copy the source's full MIT text with its own copyright line.
+  - BSD-2-Clause and BSD-3-Clause: keep the copyright notice, the list of conditions and the disclaimer. BSD-3-Clause also forbids using the holder's or contributors' names to endorse or promote the plugin, so never write the source's name as an endorsement.
+  - CC-BY-4.0: keep the creator's identification, the copyright notice, notices referring to the license and to the disclaimer, and a link to the material where practicable; say whether it was modified; state the license with its text or a link.
+  - Another license: apply what its text requires, and report any requirement the template can't carry.
+  - No license: it grants no right to redistribute. Write no entry; report the source so the owner asks its author for permission or removes the material.
+- Material the plugin only reads at run time, downloads, links to or follows as an approach isn't contained in it and has no entry.
 
 This repository:
 

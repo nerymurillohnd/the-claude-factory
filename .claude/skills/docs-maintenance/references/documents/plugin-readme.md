@@ -2,6 +2,20 @@
 
 How to create and keep `plugins/<plugin>/README.md` from `assets/plugin-readme-template.md`. This procedure replaces the former path-scoped rule `.claude/rules/plugins/plugin-readme.md`.
 
+## Contents
+
+- [Produces](#produces)
+- [When](#when)
+- [Sources](#sources)
+- [Placeholders](#placeholders)
+- [Procedure](#procedure)
+- [What it states](#what-it-states)
+- [Badges and version numbers](#badges-and-version-numbers)
+- [Rules](#rules)
+- [Checks](#checks)
+- [Change the template](#change-the-template)
+- [Never](#never)
+
 ## Produces
 
 `plugins/<plugin>/README.md`: the plugin's user guide, and the description Anthropic's plugin directory shows for it. GitHub renders it on the plugin's folder page.
@@ -56,8 +70,8 @@ Surface blocks: the content between `<!-- app:start -->` and `<!-- app:end -->` 
 - **Hero:** the plugin's purpose as a fuller overview for readers. `plugin.json`'s `description` is the compact line `/plugin` shows before install; the hero says the same thing at more length, with the benefits, and never contradicts it.
 - **Compatibility:** one row per component type the plugin ships, each cell copied character for character from `docs/compatibility.md`. A plugin-specific caveat goes in the note under the table, never into a cell.
 - **Platforms**, under Compatibility: "macOS and Linux", plus "Windows through Git Bash" only when every script and tool the plugin runs works there and Prerequisites gives a Windows install method for each. When only one part of the plugin needs something else on Windows, such as WSL2 for sandboxed eval runs, keep "macOS and Linux." and say it in the Compatibility note.
-- **Prerequisites**, before Installation: every tool, runtime, account or service, with step-by-step install methods for each, and for every program its hooks or scripts invoke, a command that verifies it is present. Name the POSIX base tools macOS and Linux ship (`sh`, `sed`, `awk`, `grep`, `tr`, `find` and the like) once, without a check each. Copy each install command and package name from the tool's official docs or a package index such as repology.org, never from memory. Python is stated as 3.12 or later. A dependency a hook installs into `${CLAUDE_PLUGIN_DATA}` is listed here and under What this plugin runs and sends: what it downloads, from where, and where it writes.
-- **Installation, Updating and Uninstalling:** how to add and remove the marketplace, and install, update and uninstall the plugin, with `nerymurillohnd/the-claude-factory` and `@the-claude-factory`. Install includes `export CLAUDE_CODE_PLUGIN_PREFER_HTTPS=1` for users without a GitHub SSH key, because installs from `/plugin` and plugin updates don't fall back to HTTPS. Update says that auto-update is off for this marketplace until the user turns it on. Uninstall says what `${CLAUDE_PLUGIN_DATA}` holds, or that the plugin keeps nothing there (search the plugin's hooks, scripts and modules for it before you write either), and that the last uninstall deletes it unless `--keep-data` is passed.
+- **Prerequisites**, before Installation: every tool, runtime, account or service, with step-by-step install methods for each, and for every program its hooks or scripts invoke, a command that verifies it is present. Name the POSIX base tools macOS and Linux ship (`sh`, `sed`, `awk`, `grep`, `tr`, `find` and the like) once, without a check each. Copy each install command and package name from the tool's official docs or a package index such as repology.org, never from memory. Python is stated as 3.12 or later. A dependency a hook installs into the plugin's data directory (the `CLAUDE_PLUGIN_DATA` variable) is listed here and under What this plugin runs and sends: what it downloads, from where, and where it writes.
+- **Installation, Updating and Uninstalling:** how to add and remove the marketplace, and install, update and uninstall the plugin, with `nerymurillohnd/the-claude-factory` and `@the-claude-factory`. Install includes `export CLAUDE_CODE_PLUGIN_PREFER_HTTPS=1` for users without a GitHub SSH key, because installs from `/plugin` and plugin updates don't fall back to HTTPS. Update says that auto-update is off for this marketplace until the user turns it on. Uninstall says what the plugin's data directory (`CLAUDE_PLUGIN_DATA`) holds, or that the plugin keeps nothing there (search the plugin's hooks, scripts and modules for it before you write either), and that the last uninstall deletes it unless `--keep-data` is passed.
 - **Configuration:** each `userConfig` option and how to set it, with `--config KEY=VALUE` and `/plugin configure` in fenced blocks. A plugin without options but with behavior the user's project decides uses the template's project-settings variant; otherwise the section and its link in the header go.
 - **What this plugin runs and sends:** one line per hook, with its event and matcher copied from `hooks/hooks.json`, what it runs and what it does, and that it runs on its own with your access, without a permission prompt; then every MCP server, monitor and network destination, and the data each one receives. Keep it to the facts of this plugin, with no general explanation of hooks.
 - **Usage:** the skill commands (`/<plugin>:<skill>`) and prompts that trigger the plugin's skills.
@@ -104,8 +118,7 @@ This repository:
 ## Checks
 
 - `claude plugin validate --strict plugins/<plugin>` and `claude plugin details plugins/<plugin>`: the plugin loads with the README beside it.
-- `node scripts/check-repo.mjs`: the sections, leftover `TODO` and `TEMPLATE` comments and unresolved `{{` values, the Works in badge, one Compatibility row per component type with its cells copied from `docs/compatibility.md`, and the Platforms line.
-- `python3 scripts/validators/plugin-versions-consistency.py`: the Version badge. `python3 scripts/validators/plugin-names-consistency.py`: no other plugin's name on a command line.
+- By hand, since no script checks them yet (DEBT-001): the sections, leftover `TODO` and `TEMPLATE` comments, the Works in badge, one Compatibility row per component type with its cells copied from `docs/compatibility.md`, the Platforms line, the Version badge, and no other plugin's name on a command line.
 - `grep -n '{{\|<!--' plugins/<plugin>/README.md` returns nothing.
 - No script reads the prose: compare it with the plugin's files yourself, and open every relative link and `#anchor` you wrote.
 

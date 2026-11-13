@@ -51,7 +51,11 @@ Official:
 
 This repository:
 
-- Only the latest released version of each plugin receives security fixes; the update command is `claude plugin update <plugin>@the-claude-factory`.
+- Write the policy per plugin, never as one marketplace version: each plugin has its own `version` and `<plugin>--v<version>` tags.
+- Only the latest released version of each plugin receives security fixes; the update command is `claude plugin update <plugin>@the-claude-factory`, and the update applies after a restart or `/reload-plugins`.
+- Never say fixes arrive automatically: auto-update is off by default for this marketplace, so users get a fix only when they update.
+- When the prompt doesn't confirm that private vulnerability reporting is enabled, tell the owner to enable it in the repository settings; don't write that path into the file.
+- Out of scope, each with where to report it: Claude Code, Claude and Anthropic's services (Anthropic's security disclosure channel, verified on its site); GitHub's platform (GitHub's security reporting); third-party MCP servers and tools a plugin connects to (their maintainers); flaws that need an attacker who already controls the user's machine or Claude settings; general bugs and questions (`SUPPORT.md`).
 - `SECURITY.md`, `SUPPORT.md` and `.github/ISSUE_TEMPLATE/config.yml` state the same private reporting route.
 - No copy in `.github/`: it would replace the root file silently.
 

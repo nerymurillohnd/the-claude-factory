@@ -46,12 +46,19 @@ Read 2026-11-10:
 
 Official:
 
-- The policy explains collection, usage and retention, and is reachable from `privacyPolicyUrl`.
+- The policy explains collection, usage and retention, and is reachable from `privacyPolicyUrl` (Anthropic Software Directory Policy, section 3.A). Claude Code ignores `privacyPolicyUrl` at load time; Anthropic's directory reads it, and its security scan looks for destinations a plugin does not disclose.
+- Permission rules apply to commands and web requests Claude makes for a plugin, not to a mod's own code.
+- Claude Code's own traffic (model API, telemetry, error reporting, updates) is Anthropic's: point to Anthropic's Privacy Policy for it and don't restate it.
 
 This repository:
 
 - One root policy for all plugins (`ADR_2026-11-05_plugins-share-one-root-privacy-policy`); each README keeps its own list of destinations.
 - The effective date changes with each update.
+- Build the inventory from the plugins' files, not from their READMEs:
+  - destinations: remote MCP servers (`url` in `.mcp.json` or `mcpServers`); local MCP servers and package launchers (`npx`, `uvx`) that reach a registry; hook scripts (search for `curl`, `wget`, `fetch`, `http`, `urllib`, `requests`, `git clone`, `npm`, `npx`, `pip`, `gh`); HTTP hooks (their `url`) and prompt or agent hooks (the model); skills, agents and commands that use `WebFetch`, `WebSearch`, `gh`, `curl` or fixed URLs; dependencies installed from a registry
+  - files kept on the machine: writes to the plugin's data directory (the `CLAUDE_PLUGIN_DATA` variable), `TMPDIR`, `/tmp` or elsewhere in hooks, scripts, mods and MCP servers, with what each holds and when it's deleted
+  - a tool the user supplies and the plugin only drives (the user's `gh` login, language servers, linters) is not a plugin destination unless the plugin directs data to a named service.
+- "The author never sees it and keeps none of it" holds only while no plugin relays data through an author-run server.
 
 ## Checks
 

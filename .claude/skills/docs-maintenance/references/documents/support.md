@@ -46,7 +46,8 @@ Official:
 This repository:
 
 - The issue rows also cover `plugin_idea.yml` and `docs_issue.yml`.
-- `SUPPORT.md`, the README Support section and `.github/ISSUE_TEMPLATE/config.yml` agree.
+- `SUPPORT.md`, the README Support section and `.github/ISSUE_TEMPLATE/config.yml` send readers to the same places. Edit only `SUPPORT.md` here, and report each disagreement in the other two with the change it needs.
+- `SUPPORT.md` holds no policy of its own on security reports or response times; it points to `SECURITY.md`.
 - Platform problems go to `anthropics/claude-code` issues.
 
 ## Checks
