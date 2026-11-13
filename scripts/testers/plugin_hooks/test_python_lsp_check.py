@@ -15,6 +15,7 @@ from testers.plugin_hooks.helpers import (
     age,
     clone,
     field,
+    folders_named,
     logged,
     repository,
     run_hook,
@@ -32,9 +33,18 @@ class PythonHookTest(unittest.TestCase):
     """What the hook checks, what it leaves alone, and that it never blocks without a finding."""
 
     def _run(
-        self, tmp: Path, event: dict[str, object], *, tools: bool = True, **extra: str
+        self,
+        tmp: Path,
+        event: dict[str, object],
+        *,
+        tools: bool = True,
+        data: bool = True,
+        **extra: str,
     ) -> tuple[Outcome, list[str]]:
-        """Run the hook in project tmp/work and return (outcome, stub calls)."""
+        """Run the hook in project tmp/work and return (outcome, stub calls).
+
+        With data False, CLAUDE_PLUGIN_DATA is not in the environment at all.
+        """
         bin_dir = tmp / "bin"
         if not bin_dir.is_dir():
             _ = tool_dir(tmp, ("git", "bash"), ("ruff", "basedpyright") if tools else ())
@@ -48,6 +58,8 @@ class PythonHookTest(unittest.TestCase):
             **GIT_ENV,
             **extra,
         }
+        if not data:
+            del env["CLAUDE_PLUGIN_DATA"]
         return run_hook([sys.executable, str(HOOK)], event, env), logged(log)
 
     @staticmethod
@@ -87,6 +99,31 @@ class PythonHookTest(unittest.TestCase):
         context = field(first.stdout, "hookSpecificOutput", "additionalContext")
         self.assertIn("Do not treat them as checked", context)
         self.assertEqual((second.code, second.stdout, second.stderr), (0, "", ""))
+
+    def test_missing_tool_without_plugin_data_keeps_no_marker(self) -> None:
+        """With no data folder the notice repeats and nothing is created in the temporary folder."""
+        for data in (False, True):
+            with self.subTest(data_set_but_empty=data), tempfile.TemporaryDirectory() as raw:
+                tmp = Path(raw).resolve()
+                write(tmp / "work" / "a.py", "x = 1\n")
+                extra = {"CLAUDE_PLUGIN_DATA": ""} if data else {}
+                runs = [
+                    self._run(
+                        tmp,
+                        self._edit(tmp / "work" / "a.py"),
+                        tools=False,
+                        data=data,
+                        TMPDIR=str(tmp),
+                        **extra,
+                    )[0]
+                    for _ in range(2)
+                ]
+                left = folders_named(tmp, "python-lsp-intelligence")
+                for outcome in runs:
+                    self.assertEqual((outcome.code, outcome.stderr), (0, ""))
+                    self.assertNotEqual(outcome.stdout, "")
+                    self.assertIn("ruff is not installed", field(outcome.stdout, "systemMessage"))
+                self.assertEqual(left, [])
 
     def test_clone_into_a_plain_folder_is_left_alone(self) -> None:
         """Files a clone wrote are unchanged for Git: no tool runs on them and nothing is said."""

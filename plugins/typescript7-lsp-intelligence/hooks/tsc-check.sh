@@ -28,12 +28,13 @@
 # not an edit: none is checked, and Claude is told.
 #
 # Findings reach Claude as {"decision":"block"} JSON. Without a usable compiler the hook does
-# not block: the user is told once per session where it searched, and Claude is told the
-# files were not checked. Any other failure exits non-zero, which hooks.json turns into a
-# block with onFailure. Every message that reaches Claude ends with one line naming the plugin's
-# ts-lifecycle skill, so a hook that checks is never taken for the whole workflow; the
-# user-only systemMessage does not carry it. Bash 3.2 or later; no jq, no Python. This file is
-# byte-identical in typescript6-lsp-intelligence and typescript7-lsp-intelligence.
+# not block: the user is told once per session (on every call without CLAUDE_PLUGIN_DATA, where
+# the hook may keep its marker) where it searched, and Claude is told the files were not checked.
+# Any other failure exits non-zero, which hooks.json turns into a block with onFailure. Every
+# message that reaches Claude ends with one line naming the plugin's ts-lifecycle skill, so a
+# hook that checks is never taken for the whole workflow; the user-only systemMessage does not
+# carry it. Bash 3.2 or later; no jq, no Python. This file is byte-identical in
+# typescript6-lsp-intelligence and typescript7-lsp-intelligence.
 
 set -euo pipefail
 
@@ -1106,20 +1107,27 @@ names_of() {
 }
 
 # Sets NOTICE to the once-per-session message about a missing compiler, empty after the first.
+# The once-per-session marker is one empty file in ${CLAUDE_PLUGIN_DATA}/notices. When that
+# variable is unset or empty the hook keeps no marker and creates, writes and deletes nothing,
+# not even in the temporary folder, which other users can write to: the notice then repeats.
 NOTICE=""
 compiler_notice() {
-  local session marker_dir marker
+  local session marker_dir="" marker=""
   NOTICE=""
-  json_string session_id
-  session="${VALUE:-unknown}"
-  marker_dir="${CLAUDE_PLUGIN_DATA:-${TMPDIR:-/tmp}/${PLUGIN}}/notices"
-  marker="${marker_dir}/${session//[!A-Za-z0-9_-]/_}"
-  [[ -f ${marker} ]] && return 0
+  if [[ -n ${CLAUDE_PLUGIN_DATA:-} ]]; then
+    json_string session_id
+    session="${VALUE:-unknown}"
+    marker_dir="${CLAUDE_PLUGIN_DATA}/notices"
+    marker="${marker_dir}/${session//[!A-Za-z0-9_-]/_}"
+    [[ -f ${marker} ]] && return 0
+  fi
   NOTICE="${PLUGIN}: no usable TypeScript compiler was found, so edited files are not type-checked.${NL}Searched:${NL}${SEARCHED:-(no node or tsc in any known folder)${NL}}"
   [[ -n ${SKIPPED} ]] && NOTICE="${NOTICE}Skipped:${NL}${SKIPPED}"
   NOTICE="${NOTICE}Requirements: ${README_URL}"
-  mkdir -p "${marker_dir}"
-  : > "${marker}"
+  if [[ -n ${marker} ]]; then
+    mkdir -p "${marker_dir}"
+    : > "${marker}"
+  fi
 }
 
 # The count of loose files an arrival left unchecked, from own_changes; empty for none.

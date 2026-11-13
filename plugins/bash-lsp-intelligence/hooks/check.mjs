@@ -8,7 +8,8 @@
 // other languages are ignored in silence.
 //
 // The hook judges only what the tool call changed and never blocks because it cannot check:
-// - A tool that is not installed gives one notice per session and exit 0.
+// - A tool that is not installed gives one notice per session and exit 0; without
+//   CLAUDE_PLUGIN_DATA, where the hook may keep its marker, the notice comes on every call.
 // - Files that a Bash command left under a nested Git work tree count only when Git lists
 //   them as modified or untracked there, so a clone, a checkout or a pull is never checked.
 // - More than MAX_FILES files found by modification time alone, outside Git, are an arrival
@@ -29,7 +30,7 @@ import {
   unlinkSync,
   writeFileSync,
 } from 'node:fs'
-import { homedir, tmpdir } from 'node:os'
+import { homedir } from 'node:os'
 import { dirname, join, parse, relative, resolve, sep } from 'node:path'
 
 /** @typedef {{ code: number | null, output: string }} RunResult */
@@ -567,16 +568,20 @@ function findTools() {
 }
 
 // True when this session already got the notice about tool; else records it. One empty file
-// per session and tool, in ${CLAUDE_PLUGIN_DATA}/notices or, when that variable is unset, in a
-// folder named after the plugin in the temporary directory.
+// per session and tool, in ${CLAUDE_PLUGIN_DATA}/notices. When that variable is unset or empty
+// the hook keeps no marker and creates, writes and deletes nothing, not even in the temporary
+// directory, which other users can write to: the notice then repeats.
 /**
  * @param {Record<string, unknown>} event
  * @param {string} tool
  * @returns {boolean}
  */
 function announced(event, tool) {
+  if (!CLAUDE_PLUGIN_DATA) {
+    return false
+  }
   const session = (textAt(event, 'session_id') || 'unknown').replace(/[^A-Za-z0-9_-]/g, '_')
-  const folder = join(CLAUDE_PLUGIN_DATA || join(tmpdir(), PLUGIN), 'notices')
+  const folder = join(CLAUDE_PLUGIN_DATA, 'notices')
   const marker = join(folder, `${session}.${tool}`)
   if (newerThan(marker, -1)) {
     return true

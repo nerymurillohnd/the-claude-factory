@@ -8,7 +8,8 @@ reports: exit 0 with a systemMessage when everything passed, stderr and exit 2 w
 are findings or a tool failed on a file. Files of other languages are ignored in silence.
 
 The hook judges only what the tool call changed and never blocks because it cannot check:
-- A tool that is not installed gives one notice per session and exit 0.
+- A tool that is not installed gives one notice per session and exit 0; without
+  CLAUDE_PLUGIN_DATA, where the hook may keep its marker, the notice comes on every call.
 - Files that a Bash command left under a nested Git work tree count only when Git lists
   them as modified or untracked there, so a clone, a checkout or a pull is never checked.
 - More than MAX_FILES files found by modification time alone, outside Git, are an arrival
@@ -460,12 +461,15 @@ def find_tools() -> Tools | str:
 def announced(event: JsonObject, tool: str) -> bool:
     """True when this session already got the notice about tool; else records it.
 
-    One empty file per session and tool, in ${CLAUDE_PLUGIN_DATA}/notices or, when that
-    variable is unset, in a folder named after the plugin in the temporary directory.
+    One empty file per session and tool, in ${CLAUDE_PLUGIN_DATA}/notices. When that variable
+    is unset or empty the hook keeps no marker and creates, writes and deletes nothing, not
+    even in the temporary directory, which other users can write to: the notice then repeats.
     """
-    session = SESSION_UNSAFE.sub("_", text_at(event, "session_id") or "unknown")
     data = os.environ.get("CLAUDE_PLUGIN_DATA", "")
-    folder = (Path(data) if data else Path(tempfile.gettempdir()) / PLUGIN) / "notices"
+    if not data:
+        return False
+    session = SESSION_UNSAFE.sub("_", text_at(event, "session_id") or "unknown")
+    folder = Path(data) / "notices"
     marker = folder / f"{session}.{tool}"
     if marker.is_file():
         return True

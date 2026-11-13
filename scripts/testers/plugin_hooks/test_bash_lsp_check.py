@@ -13,6 +13,7 @@ from testers.plugin_hooks.helpers import (
     Outcome,
     clone,
     field,
+    folders_named,
     logged,
     need,
     repository,
@@ -32,9 +33,18 @@ class BashHookTest(unittest.TestCase):
     """What the hook checks, what it leaves alone, and that it never blocks without a finding."""
 
     def _run(
-        self, tmp: Path, event: dict[str, object], *, tools: bool = True, **extra: str
+        self,
+        tmp: Path,
+        event: dict[str, object],
+        *,
+        tools: bool = True,
+        data: bool = True,
+        **extra: str,
     ) -> tuple[Outcome, list[str]]:
-        """Run the hook in project tmp/work and return (outcome, stub calls)."""
+        """Run the hook in project tmp/work and return (outcome, stub calls).
+
+        With data False, CLAUDE_PLUGIN_DATA is not in the environment at all.
+        """
         node = need("node")
         bin_dir = tmp / "bin"
         if not bin_dir.is_dir():
@@ -49,6 +59,8 @@ class BashHookTest(unittest.TestCase):
             **GIT_ENV,
             **extra,
         }
+        if not data:
+            del env["CLAUDE_PLUGIN_DATA"]
         return run_hook([node, str(HOOK)], event, env), logged(log)
 
     @staticmethod
@@ -86,6 +98,31 @@ class BashHookTest(unittest.TestCase):
         context = field(first.stdout, "hookSpecificOutput", "additionalContext")
         self.assertIn("Do not treat them as checked", context)
         self.assertEqual((second.code, second.stdout, second.stderr), (0, "", ""))
+
+    def test_missing_tool_without_plugin_data_keeps_no_marker(self) -> None:
+        """With no data folder the notice repeats and nothing is created in the temporary folder."""
+        for data in (False, True):
+            with self.subTest(data_set_but_empty=data), tempfile.TemporaryDirectory() as raw:
+                tmp = Path(raw).resolve()
+                write(tmp / "work" / "a.sh", SCRIPT)
+                extra = {"CLAUDE_PLUGIN_DATA": ""} if data else {}
+                runs = [
+                    self._run(
+                        tmp,
+                        self._edit(tmp / "work" / "a.sh"),
+                        tools=False,
+                        data=data,
+                        TMPDIR=str(tmp),
+                        **extra,
+                    )[0]
+                    for _ in range(2)
+                ]
+                left = folders_named(tmp, "bash-lsp-intelligence")
+                for outcome in runs:
+                    self.assertEqual((outcome.code, outcome.stderr), (0, ""))
+                    self.assertNotEqual(outcome.stdout, "")
+                    self.assertIn("shfmt is not installed", field(outcome.stdout, "systemMessage"))
+                self.assertEqual(left, [])
 
     def test_clone_into_a_plain_folder_is_left_alone(self) -> None:
         """Files a clone wrote are unchanged for Git: no tool runs on them and nothing is said."""

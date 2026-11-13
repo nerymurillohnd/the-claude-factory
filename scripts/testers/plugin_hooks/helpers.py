@@ -118,6 +118,11 @@ def age(path: Path, seconds: int) -> None:
         os.utime(target, (then, then))
 
 
+def folders_named(root: Path, prefix: str) -> list[str]:
+    """The paths under root whose name starts with prefix: what a hook left behind, if any."""
+    return sorted(str(path) for path in root.rglob(f"{prefix}*"))
+
+
 def logged(log: Path) -> list[str]:
     """The stub calls logged so far, one per line."""
     return log.read_text(encoding="utf-8").splitlines() if log.is_file() else []

@@ -11,6 +11,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - After a Bash command in a folder that isn't a Git repository, the hook no longer type-checks the files of a repository you cloned, a branch you checked out or a pull, which could run until the hook's time limit and stop Claude with an error. Inside a Git repository below your project, it checks only the files Git lists as modified, untracked or staged.
 - When a Bash command leaves more than 20 TypeScript or JavaScript files outside any Git repository, such as an extracted archive, the hook checks none of them and tells Claude.
 - After a Bash command, the hook no longer type-checks the files that command wrote into a place Git ignores, such as a build folder.
+- Where Claude Code gives the plugin no data folder, the hook no longer keeps its once-per-session "no compiler" marker in your system's temporary directory, which other users of the machine can write to; it creates nothing there, and the message repeats instead.
 
 ## [0.3.5] - 2026-11-06
 
