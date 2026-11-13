@@ -1,18 +1,14 @@
 # The Claude Factory
 
-## What it is
+## What this project is
 
-A public marketplace of plugins for Claude, hosted on GitHub at `nerymurillohnd/the-claude-factory`. It designs, builds, tests, releases and maintains plugins that third parties install on their own machines and use in their own projects.
-
-## Overall goal
-
-Give users plugins that automate and improve their everyday work with Claude, each one solving one problem end to end. The plugins are skills, agents, commands, hooks, MCP and LSP servers, and mods.
-
-## Platforms
-
-- **Surfaces:** **Claude Code** and **Claude** (the unified chat and Cowork experience).
-- **Operating systems:** macOS and Linux, through POSIX-compatible interfaces.
-- **Windows:** only through Git Bash, when a plugin supports it.
+- **Product:** a public marketplace of plugins for Claude by Anthropic, hosted on GitHub at `nerymurillohnd/the-claude-factory`, a personal account, not an organization.
+- **Goal:** plugins that automate and improve users' everyday work with Claude, each one solving one problem end to end.
+- **Components:** skills, agents, commands, hooks, MCP and LSP servers, and mods.
+- **Users:** third parties, who install the plugins on their own machines and use them in their own projects and operations.
+- **Work:** the project designs, builds, tests, releases and maintains every plugin it lists.
+- **Surfaces:** **Claude Code** and **Claude** (the unified chat and Cowork experience). Name them only so; Claude Code is a separate product, not part of Claude.
+- **Operating systems:** macOS and Linux, through POSIX-compatible interfaces, for the plugins and for this repository; Windows only through Git Bash, and only for a plugin that supports it.
 
 ## Who runs and builds it
 
