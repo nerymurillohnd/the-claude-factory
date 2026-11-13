@@ -9,7 +9,7 @@ Plugins here are relative-path entries, so users receive whatever version is on 
 
 ## Before you start
 
-Status checked on 2026-11-13: on the `claude/repo-refactor-redesign-feqwzk` branch, `release.yml` waits for a `Validate` workflow and calls `scripts/release/release-notes.py`, and neither exists. Until both are rebuilt, a merge of that branch tags and releases nothing. Check `.github/workflows/` and `scripts/release/` before step 5, and stop there if either is still missing. Once both exist, delete this section.
+Status checked on 2026-11-13: on the `claude/repo-refactor-redesign-feqwzk` branch, `release.yml` waits for a `Validate` workflow that doesn't exist, so a merge of that branch tags and releases nothing on its own; only `workflow_dispatch` runs it. Check `.github/workflows/` before step 5, and stop there if `validate.yml` is still missing. Once it exists, delete this section.
 
 ## Facts (official, unless marked)
 
@@ -32,31 +32,23 @@ These go beyond the docs and stay unless the owner changes them:
 
 1. **Check each released plugin before the merge**, and show the raw output:
    - `claude plugin validate --strict plugins/<plugin>` and `claude plugin validate --strict .`
+   - `claude plugin validate --profile directory --strict plugins/<plugin>`, and for a mod (`tests/*.test.ts(x)`) `claude plugin test plugins/<plugin>`
+   - `npm run check:consistency`: names, `renames`, changelog tags, README and catalog agree
    - `claude plugin tag plugins/<plugin> --dry-run`, on a committed tree: it exits 1 while any file under the plugin is uncommitted
    - `find plugins/<plugin> -type l`: every link resolves inside the plugin, since a link outside it doesn't reach users
    - `README.md`, `CHANGELOG.md` and `plugin.json` agree. Take the components from `claude --plugin-dir plugins/<plugin> plugin details <plugin>` and the version and minimum Claude Code version from `jq '{version, engines}' plugins/<plugin>/.claude-plugin/plugin.json`, and compare them with the README's components, Prerequisites and minimum Claude Code version, and with the `## [Unreleased]` notes.
-2. **List for the owner** and confirm each one is meant to ship. After `git fetch origin main`, run both from the repository root; each prints nothing when there is nothing to report:
+2. **List for the owner** and confirm each one is meant to ship. From the repository root:
    ```bash
-   for d in plugins/*/; do n="$(basename "${d}")"; b="$(jq -r .version "${d}.claude-plugin/plugin.json")"; m="$(git show "origin/main:${d}.claude-plugin/plugin.json" 2>/dev/null | jq -r .version)"; [ "${b}" != "${m}" ] && echo "changed: ${n} ${m:-new} -> ${b}"; done
-   tags="$(git ls-remote --tags origin | sed 's#.*refs/tags/##; /\^{}$/d')"; for d in $(git ls-tree -d --name-only origin/main plugins/); do n="${d#plugins/}"; v="$(git show "origin/main:${d}/.claude-plugin/plugin.json" | jq -r .version)"; grep -qx "${n}--v${v}" <<<"${tags}" || echo "untagged: ${n}--v${v}"; done
+   git fetch origin main && npm run release:status
    ```
-   The first lists every plugin whose version on the branch differs from `origin/main`; the second, every version on `origin/main` with no tag yet, which means an earlier release didn't run.
-3. **Install what users will get**, in a throwaway configuration so the owner's own setup stays untouched. Run the block once with `<ref>` set to the pull request's branch as pushed to GitHub, then once with `<ref>` set to `main`:
+   `changed: <plugin> <old> -> <new>` lines are the plugins whose version on the branch differs from `origin/main` (`new` for a plugin not there yet); `untagged: <plugin>--v<version>` lines are versions on `origin/main` with no tag yet, which means an earlier release didn't run. It prints nothing when there is nothing to report.
+3. **Install what users will get**, in a throwaway configuration so the owner's own setup stays untouched. Run it once with `<ref>` set to the pull request's branch as pushed to GitHub, then once with `<ref>` set to `main`:
    ```bash
-   T="$(mktemp -d)"
-   env CLAUDE_CONFIG_DIR="${T}/config" CLAUDE_CODE_PLUGIN_CACHE_DIR="${T}/cache" \
-     claude plugin marketplace add "nerymurillohnd/the-claude-factory#<ref>"
-   env CLAUDE_CONFIG_DIR="${T}/config" CLAUDE_CODE_PLUGIN_CACHE_DIR="${T}/cache" \
-     claude plugin install <plugin>@the-claude-factory
-   env CLAUDE_CONFIG_DIR="${T}/config" CLAUDE_CODE_PLUGIN_CACHE_DIR="${T}/cache" \
-     claude plugin list --json
-   env CLAUDE_CONFIG_DIR="${T}/config" CLAUDE_CODE_PLUGIN_CACHE_DIR="${T}/cache" \
-     claude plugin details <plugin>
-   rm -rf "${T}"
+   npm run check:install -- --from <ref> <plugin>
    ```
-   `claude plugin list --json` shows the installed version and any `errors`; `claude plugin details` shows the components and the `Always-on` cost. Report the branch's version and `Always-on` figure against `main`'s. A plugin new in this release is not on `main` yet, so its `main` install fails with `not found in marketplace`.
+   It prints `claude plugin list --json`, with the installed version and any `errors`, and `claude plugin details`, with the components and the `Always-on` cost, then validates the installed copy and runs a mod's tests; it exits 1 on the first failure. Report the branch's version and `Always-on` figure against `main`'s. A plugin new in this release is not on `main` yet, so its `main` install fails with `not found in marketplace`.
 4. **Write the release into the documents** with the `docs-maintenance` skill, dated with today's UTC date, the day `release.yml` will tag it:
-   - the plugin's `CHANGELOG.md`: `## [Unreleased]` becomes `## [X.Y.Z] - YYYY-MM-DD` with its compare and tag links, and an empty `## [Unreleased]` stays above it. If `## [Unreleased]` is empty, stop and ask the owner what the version changes.
+   - the plugin's `CHANGELOG.md`: `npm run release:changelog -- <plugin>` turns `## [Unreleased]` into `## [X.Y.Z] - YYYY-MM-DD`, with the version from `plugin.json` and today's UTC date (`--date YYYY-MM-DD` sets another), adds an empty `## [Unreleased]` above it and writes the compare and tag links. It exits 1 and changes nothing when `## [Unreleased]` is empty: stop and ask the owner what the version changes.
    - the plugin's `README.md`, where it depends on the version, such as the minimum Claude Code version
    - the release line in the root `CHANGELOG.md`, and the catalog row of the root `README.md` when it shows the version.
 
@@ -71,7 +63,7 @@ These go beyond the docs and stay unless the owner changes them:
    - the latest tag equals `version` in `plugin.json` on `main`, and `plugin.json` at the tagged commit holds it
    - the tag's commit is an ancestor of `main` (`git merge-base --is-ancestor <tag> origin/main`)
    - the GitHub Release has the tag's name and is neither a draft nor a prerelease: `gh api repos/nerymurillohnd/the-claude-factory/releases/tags/<plugin>--v<version>` in a terminal session; in a cloud session, where `gh` is kept for search, the MCP tool `github:get_release_by_tag` (`owner: nerymurillohnd`, `repo: the-claude-factory`, `tag: <plugin>--v<version>`)
-   - step 3 from `#main` now installs the new version.
+   - step 3 from `main` (`npm run check:install -- --from main <plugin>`) now installs the new version.
 8. **If `Validate` fails after the merge**, tell the owner at once: users who update already have the merged version. The fix goes in a new pull request with its own version bump.
 
 ## Withdraw a version
