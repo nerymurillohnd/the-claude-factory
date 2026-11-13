@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-11-13
+
 ### Added
 
 - A `labels-sync.py` script for the `github-files-setup` skill. It compares the repository's labels with a label list through REST, or through the GitHub MCP server's `list_label` output with `--current`. It needs one mode, `--dry-run` or `--apply`, never both. It compares names without case, as GitHub does. `--apply` creates the missing labels and updates the ones that differ. It keeps a color or description that the list leaves out, and never deletes or renames a label: a label whose name differs only in case is listed under `case_only` and left as it is. A dry run lists a label to create without a color under `missing_color` and exits 0, and `--apply` refuses before it writes anything. It refuses a `--current` page list that is incomplete, reports archived labels on the `gh` route only (the MCP server's list carries no archive flag), and keeps its report when `--apply` stops part way. It prints extra labels as a count unless you pass `--show-extra`. A failed write names the label and keeps the output of `gh`. The skill no longer only reports label differences: it can apply the labels you approve.
@@ -262,7 +264,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 - `git-cleanup` inventory: `--from` with a saved file that is not a JSON object reports a JSON error and exits 0, instead of ending with a traceback.
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/github-operations--v0.7.3...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/github-operations--v0.8.0...HEAD
+[0.8.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/github-operations--v0.8.0
 [0.7.3]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/github-operations--v0.7.3
 [0.7.2]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/github-operations--v0.7.2
 [0.7.1]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/github-operations--v0.7.1

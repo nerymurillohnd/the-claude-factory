@@ -4,6 +4,13 @@ All notable changes to **The Claude Factory** marketplace are documented here: p
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The marketplace has no version of its own: entries are grouped by date, newest first, and every plugin carries its own version, changelog and tag. The versions 0.1.0 and 0.2.0 below are the history from before that change; their tags stay.
 
+## 2026-11-13
+
+### Changed
+
+- **github-operations** 0.8.0 — `claude-github-actions` checks which `claude-code-action` version a workflow runs, audits auto-mode workflows and knows SE-15 to SE-22; `github-files-setup` applies labels with the new `labels-sync.py` and works where GraphQL or `gh` is unavailable. **Breaking:** every patch to a `claude-code-action` step now states the step's permission mode, `check-forms.py` no longer uses uv, and `github-files-setup` no longer pre-approves commands.
+- **skill-diagnostics** 0.4.0 — **Breaking:** the `/skill-diagnostics:evals` workflow is removed; run evals with `claude plugin eval` or `skill-creator`.
+
 ## 2026-11-09
 
 ### Changed
