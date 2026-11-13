@@ -29,7 +29,7 @@ Dated facts other references rely on, checked on 2026-11-13. Re-check one before
 
 ## Source files
 
-Every path that a `Sources:` line in `action-contract.md` names, with its blob at the snapshot. A changed blob makes the topics on its row unverified until you read the change. A path that isn't here holds none of the skill's facts.
+Every path that a `Sources:` line in `action-contract.md` names, with its blob at the snapshot. A changed blob makes the topics on its row unverified until you read the change. A changed path that isn't here is an unmapped change: read its diff.
 
 | Path | Blob at the snapshot | Topics |
 | :-- | :-- | :-- |
@@ -59,6 +59,8 @@ Every path that a `Sources:` line in `action-contract.md` names, with its blob a
 | `src/mcp/install-mcp-server.ts` | `402617e421924e796cba4fa0b83401e91f943d0d` | [Tools the action grants and the MCP servers it starts](action-contract.md#tools-the-action-grants-and-the-mcp-servers-it-starts), [Comments, reviews and structured output](action-contract.md#comments-reviews-and-structured-output) |
 | `src/modes/agent/index.ts` | `d402594e2fd877b45da3f2e592b56a429f2ff9f2` | [Permission mode](action-contract.md#permission-mode), [Tools the action grants and the MCP servers it starts](action-contract.md#tools-the-action-grants-and-the-mcp-servers-it-starts), [Git, branches and credentials](action-contract.md#git-branches-and-credentials) |
 | `src/modes/detector.ts` | `46e1366513359e0df14159dcb99ac818a8040770` | [Modes and triggers](action-contract.md#modes-and-triggers), [Actor and text trust](action-contract.md#actor-and-text-trust) |
+| `src/modes/agent/parse-tools.ts` | `5cccb1c021340f6c34728b9dcf4390c488bb60dc` | [Tools the action grants and the MCP servers it starts](action-contract.md#tools-the-action-grants-and-the-mcp-servers-it-starts), [Untrusted pull requests](action-contract.md#untrusted-pull-requests) |
+| `src/github/operations/comments/create-initial.ts` | `1243035b759cffdab97e609f7fa934955277afe2` | [Comments, reviews and structured output](action-contract.md#comments-reviews-and-structured-output) |
 | `src/modes/permission-mode.ts` | `311101128bfc30e0fa097b4c9db8ea3990a2c7b5` | [Permission mode](action-contract.md#permission-mode) |
 | `src/modes/tag/index.ts` | `accbe801e302e0a1b5aea9dc486e456235a81e38` | [Permission mode](action-contract.md#permission-mode), [Tools the action grants and the MCP servers it starts](action-contract.md#tools-the-action-grants-and-the-mcp-servers-it-starts) |
 | `src/utils/branch-template.ts` | `f9fac933250546edf3d184b07d62b9397aaade1f` | [Git, branches and credentials](action-contract.md#git-branches-and-credentials) |
@@ -71,10 +73,19 @@ Every path that a `Sources:` line in `action-contract.md` names, with its blob a
 
 ## Find the commit a step runs
 
-1. **Find the step.** It is a `uses: anthropics/claude-code-action@<ref>` line. When a workflow calls a composite action (`uses: ./path` or `owner/repo/path@ref`) or a reusable workflow, open that file at the ref the caller pins and find the step there.
+1. **Find the step.** It is a `uses: anthropics/claude-code-action@<ref>` line. When a workflow calls a remote composite action (`owner/repo/path@ref`) or a reusable workflow, open that file at the ref the caller pins and find the step there. A local `uses: ./path` has no ref: GitHub runs the file as the job's workspace holds it when the step runs, so audit that copy; when the job checked out a pull request's head before it, that copy is the head's (W-02 under `pull_request_target`).
 2. **Check the owner and name.** Any `uses:` other than `anthropics/claude-code-action` is not an upstream commit, even when the code looks the same. Report it as "not an upstream commit", count every fact for that step as unverified, and raise W-04 ([workflow-audit.md](workflow-audit.md#checks-every-workflow-gets)).
 3. **Resolve the ref.**
-   - A full 40-character SHA is the commit. Confirm that upstream has it: the fetch in [Compare with the snapshot](#compare-with-the-snapshot) fails with `fatal: remote error: upload-pack: not our ref <sha>` when it doesn't. Treat that answer exactly like step 2.
+   - A full 40-character SHA is the commit. A successful fetch doesn't prove it is upstream's: GitHub also serves the heads of pull requests anyone can open. It is an upstream commit only when it is on the default branch's history or a release tag points to it. In one shell call:
+
+     ```
+     TMP=$(mktemp -d) && echo "$TMP"
+     git init -q "$TMP" && git -C "$TMP" fetch -q --filter=blob:none https://github.com/anthropics/claude-code-action refs/heads/main:refs/remotes/upstream/main
+     git -C "$TMP" merge-base --is-ancestor <sha> upstream/main; echo "on main: $?"
+     git ls-remote --tags https://github.com/anthropics/claude-code-action | awk -v s=<sha> '$1 == s { print "release tag: " $2 }'
+     ```
+
+     `on main: 0` or a `release tag:` line means upstream. Anything else, `fatal: remote error: upload-pack: not our ref <sha>` included, is not an upstream commit: treat it exactly like step 2. Reuse the folder for the comparison, and delete it at the end.
    - A tag or branch, such as `v1` or `v1.0.275`:
 
      ```
@@ -116,8 +127,8 @@ Run these three lines in one shell call. A variable doesn't survive between call
 
 The fetch downloads trees, not file contents, so it takes about a second. Read the list it prints:
 
-- **Nothing printed:** every fact holds at the pin, whatever its version number.
-- **A path in the Source files table:** the topics on its row are unverified. Read `git -C "$TMP" diff <snapshot> <pin> -- <path>`, then apply what the code at the pin says, not what `action-contract.md` says. Name each such topic in Version provenance.
+- **Nothing printed:** every fact holds at the pin, whatever its version number. On GitHub Enterprise Server the Drift result is still `unverified: GHES`: the instance's copy of the action and its behavior weren't checked.
+- **A path in the Source files table:** the topics on its row are unverified. Read `git -C <folder> diff <snapshot> <pin> -- <path>`, then apply what the code at the pin says, not what `action-contract.md` says. Name each such topic in Version provenance.
 - **A path not in the table:** an unmapped change. Read its diff and say in Version provenance whether it changes anything the route relies on.
 
 Delete that folder with `rm -rf <folder>` when you're done.
@@ -153,4 +164,4 @@ When git, MCP and the network are all unavailable, or the pin can't be resolved:
 - Every claude-code-action fact counts as unverified for that step.
 - The checks that depend on them follow [When a check can't be decided](workflow-audit.md#when-a-check-cant-be-decided): one Questions row for the commit the step runs, naming every check it decides.
 - A floating ref that can't be resolved counts as auto mode ([auto-mode-audit.md](auto-mode-audit.md#1-is-auto-mode-the-effective-mode)).
-- On GitHub Enterprise Server, count these facts as unverified too: they were checked against github.com's action and github.com's behavior.
+- On GitHub Enterprise Server, count these facts as unverified too: they were checked against github.com's action and github.com's behavior. Read the instance with `gh` and `GH_HOST` set to its host name.

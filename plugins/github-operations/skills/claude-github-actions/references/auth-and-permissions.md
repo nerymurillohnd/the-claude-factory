@@ -55,7 +55,7 @@ Many fixes change something else in the step. Before writing a patch, find its r
    - When `claude_args` already sets the mode in the space form, it is the effective mode: keep it.
    - When it uses the equals form, rewrite it to the space form with the same value, and say why: the equals form isn't verified to take effect.
    - Put the flag in `claude_args`, never only in the `settings` input, which tag runs ignore.
-3. **When the effective mode can't be known** (the pin can't be resolved, or the mode depends on an `env:` value the audit can't read), don't guess. Add one Questions row for it ([When a check can't be decided](workflow-audit.md#when-a-check-cant-be-decided)), and hold back every patch whose row in [Costs of each change](#costs-of-each-change) says "the frozen mode" until it is answered.
+3. **When the effective mode can't be known** (the pin can't be resolved, or the mode depends on an `env:` value set outside the step, which the action may not see), don't guess. Add one Questions row for it ([When a check can't be decided](workflow-audit.md#when-a-check-cant-be-decided)), and hold back every patch whose row in [Costs of each change](#costs-of-each-change) says "the frozen mode" until it is answered.
 4. **Changing the mode** is a separate finding with its own patch, stating what the agent can do before and after. Never propose `bypassPermissions` or `--dangerously-skip-permissions`.
 5. **Auto is acceptable** when every layer in [auto-mode-audit.md](auto-mode-audit.md) is in place. It is never assumed off, and never refused by default. When a workflow sets `allowed_non_write_users` or `allowed_bots`, say in the report that upstream keeps auto off by default for such workflows, because anyone's text reaches them.
 

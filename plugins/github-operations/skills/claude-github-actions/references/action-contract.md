@@ -90,7 +90,7 @@ Sources: `src/github/validation/permissions.ts`, `src/github/validation/actor.ts
 - **Signals:** the step still succeeds. The log has `The author of pull request #N is not confirmed to have write access, so commands that run code from the checkout are denied.`, `Could not check repository access for pull request author X, treating them as untrusted: HTTP <status>` on a failed lookup, and `N Bash rule(s) in claude_args are not on the deny list and stay allowed.`
 - **Reading CI results on outside pull requests** (the action's documented path): run the tests in a separate `pull_request` workflow with `contents: read`, require approval for outside contributors, give Claude's job `actions: read`, and deny `mcp__github_ci__download_job_log` and `mcp__github_ci__get_workflow_run_details`, because logs and job names are text the pull request controls.
 
-Sources: `src/github/validation/untrusted-pr.ts`, `src/entrypoints/run.ts`, `action.yml`, `docs/security.md`
+Sources: `src/github/validation/untrusted-pr.ts`, `src/entrypoints/run.ts`, `action.yml`, `docs/security.md`, `src/modes/agent/parse-tools.ts`
 
 ## Configuration restored from the base branch
 
@@ -114,7 +114,7 @@ Sources: `src/github/operations/restore-config.ts`, `src/github/operations/branc
 - **The CI server** (`mcp__github_ci__*`) starts only on pull requests: always in tag mode, and in agent mode only when `--allowedTools` names a `mcp__github_ci` tool. It always uses the job's `github.token`, so it needs `actions: read` in the job's `permissions:`; without it the server is skipped with a warning. `additional_permissions` doesn't enable it.
 - **The inline-comment server** starts on a pull request when `--allowedTools` names an inline-comment tool or a GitHub MCP tool.
 
-Sources: `src/modes/tag/index.ts`, `src/modes/agent/index.ts`, `src/mcp/install-mcp-server.ts`, `base-action/src/parse-sdk-options.ts`
+Sources: `src/modes/tag/index.ts`, `src/modes/agent/index.ts`, `src/mcp/install-mcp-server.ts`, `base-action/src/parse-sdk-options.ts`, `src/modes/agent/parse-tools.ts`
 
 ## Git, branches and credentials
 
@@ -170,7 +170,7 @@ Sources: `base-action/src/validate-env.ts`, `base-action/src/workload-identity.t
 - The action's prompt tells Claude not to approve or merge. That is an instruction, not a control.
 - **Structured output:** request it with `--json-schema` in `claude_args`. Every field comes back in one `structured_output` JSON string. Read it with `fromJSON(...)` in `if:` conditions, or pass it through `env:` to a script; never interpolate it into `run:`.
 
-Sources: `src/entrypoints/post-buffered-inline-comments.ts`, `src/mcp/install-mcp-server.ts`, `src/entrypoints/run.ts`, `action.yml`
+Sources: `src/entrypoints/post-buffered-inline-comments.ts`, `src/mcp/install-mcp-server.ts`, `src/entrypoints/run.ts`, `action.yml`, `src/github/operations/comments/create-initial.ts`
 
 ## Plugins and marketplaces
 

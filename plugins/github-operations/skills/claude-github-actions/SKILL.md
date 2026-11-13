@@ -29,7 +29,7 @@ How they connect:
 | Surface | What works |
 | :-- | :-- |
 | Claude Code with `git` and an authenticated `gh` | Every route |
-| Claude Code with `git` but no authenticated `gh` and no GitHub MCP server | The audit of the repository's files, with the drift check through `git`. Runs, the Actions policy, secrets and runners can't be read: each becomes a Questions row |
+| Claude Code with `git` but no authenticated `gh` and no GitHub MCP server | The audit of the repository's files, with the drift check through `git`. Runs, the Actions policy, secrets and runners can't be read: each becomes a Questions row when it decides a rating |
 | A GitHub MCP server only | Diagnose and audit, read-only, with the drift check through MCP. Patches go in the report, unapplied; nothing lands; no zizmor or actionlint |
 | None of `git`, `gh` or a GitHub MCP server | Stop, and name what's missing: the plugin README lists the prerequisites |
 | GitHub Enterprise Server | The routes run, but the action's facts and the drift check describe github.com's action: count them as unverified |
@@ -71,7 +71,7 @@ Without admin rights on the repository, the runners list and some settings can't
 - A filtered run list returns at most 1,000 results: read each workflow's latest run, not its whole history. In a public repository, GitHub disables scheduled workflows after 60 days with no repository activity.
 - A green rerun is not a fix. Rerun only with evidence that the failure was transient, and a Claude step at most once.
 - Fork pull requests get no secrets and a read-only token; Dependabot's get Dependabot secrets, not Actions secrets (SE-11). A credential failure there is configuration, not code.
-- The GitHub MCP tools load on demand, and their full names carry the server's prefix (`mcp__<server>__<tool>`). Before the first call, load the ones the step uses with `ToolSearch`, querying their tool names (for example `list_workflow_runs get_job_logs`); use `gh` when no server answers.
+- The GitHub MCP tools load on demand, and their full names carry the server's prefix (`mcp__<server>__<tool>`). Before the first call, load the ones the step uses with `ToolSearch`, querying their tool names (for example `actions_list get_job_logs`); use `gh` when no server answers.
 
 ## Routes
 

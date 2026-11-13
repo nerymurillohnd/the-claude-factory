@@ -12,7 +12,7 @@ The checks the audit runs in layer 3 of [detection-layers.md](detection-layers.m
 
 Read, and record what you couldn't:
 
-- **Files.** Every file under `.github/workflows/`, every composite action (`action.yml` or `action.yaml` anywhere in the repository) and every reusable workflow the files call, at the ref the caller pins.
+- **Files.** Every file under `.github/workflows/`, every composite action (`action.yml` or `action.yaml` anywhere in the repository) and every reusable workflow the files call: a remote one at the ref the caller pins, a local one as the job's workspace holds it when it runs.
 - **The default branch's copy.** Comment, issue and schedule events run the workflow file on the default branch, so audit that copy too when the working tree is on another branch: `git show origin/<default>:.github/workflows/<file>`, or `get_file_contents` with `ref` set to the default branch.
 - **The Actions policy:** `gh api repos/<owner>/<repo>/actions/permissions` and `gh api repos/<owner>/<repo>/actions/permissions/workflow` (the default token permission).
 - **The rules on the default branch:** `gh api repos/<owner>/<repo>/rules/branches/<default branch>`.
@@ -98,7 +98,7 @@ Sometimes a check needs a fact you can't read: the default token permission, an 
 - **Look for:**
   - `uses:` with a tag or branch instead of a full 40-character commit SHA;
   - a SHA that is an annotated tag's object rather than its commit ([Find the commit a step runs](version-drift.md#find-the-commit-a-step-runs));
-  - a `uses:` whose owner or name isn't the action's upstream, or a SHA upstream doesn't have ("not an upstream commit");
+  - a `uses:` whose owner or name isn't the action's upstream, or a SHA that is neither on upstream's default branch nor a release commit, such as a pull request's head ("not an upstream commit", tested by [Find the commit a step runs](version-drift.md#find-the-commit-a-step-runs));
   - a version comment that doesn't match the SHA;
   - a stale pin: its tag is older than the newest release in its major ([Pick the newest release](version-drift.md#pick-the-newest-release)).
 - **Not a finding when** the `uses:` is a local path (`./...`) or a Docker image pinned by digest. A workflow covered by a workflow dependency lockfile (`.github/workflows/actions.lock`, made with `gh actions-lock`) needs no SHA pins: GitHub says the lockfile supersedes SHA pinning [unverified: whether the lockfile is generally available or a preview]. Reusable workflows called at job level still need pins.
