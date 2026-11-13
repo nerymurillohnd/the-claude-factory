@@ -99,7 +99,7 @@ jobs:
 > ```
 
 **Why each value.**
-- Mode auto before: a tag run on v1.0.273 or later with no exclusion ([Permission mode](action-contract.md#permission-mode)). `--permission-mode auto` is written to freeze it ([Permission mode in patches](auth-and-permissions.md#permission-mode-in-patches)), so after is auto too, and the auto-mode audit runs on the patched file.
+- Mode auto before: a tag run on v1.0.273 or later with no exclusion ([Permission mode](action-contract.md#permission-mode)). `--permission-mode auto` is written to freeze it ([Permission mode in patches](auth-and-permissions.md#permission-mode-in-patches)), so after is auto too, and the check of the patches confirms each layer patch on the patched file.
 - C-11 high: the wildcard starts the server with every tool, and under auto only deny rules stop the rest ([C-11](workflow-audit.md#checks-for-steps-that-run-claude-code-action)). Layer B's network tools join the same `--disallowedTools`: one block per step.
 - W-04 high: a moving tag in a job that holds a secret. W-08 medium: layer E's row for an agent job outsiders reach.
 - Layer A high: no `github_token`, so the App token's write scopes don't follow the job's `permissions:`. Its patch adds `github_token` and the job scopes the task uses, at the costs in its row of [Costs of each change](auth-and-permissions.md#costs-of-each-change) (Claude's pushes then start no CI), so it is its own approval and stays out of the combined patch until the user decides.

@@ -58,8 +58,9 @@ Sometimes a check needs a fact you can't read: the default token permission, an 
 1. **Name the missing fact** and why you couldn't read it.
 2. **Ask only when the answer changes a rating.** If every possible answer gives the same rating, decide the check and say why.
 3. **One Questions row per missing fact**, not per check: the fact, every check it decides, the rating if the answer is the risky one, and the answer that would lower it. An unreadable Actions policy is one row, however many `uses:` lines it decides.
-4. **Count questions apart.** The report's Result line gives findings by severity and questions as their own number. A question is never a finding and never a pass.
-5. When the user is present and one answer settles a row, ask them; otherwise leave the row for the report.
+4. **A certain finding with an uncertain severity** is still a finding: report it at the severity of the risky answer, and add the Questions row with the answer that would lower it. Only a check whose finding itself depends on the missing fact is a question instead.
+5. **Count questions apart.** The report's Result line gives findings by severity and questions as their own number. A question is never a finding and never a pass.
+6. When the user is present and one answer settles a row, ask them; otherwise leave the row for the report.
 
 ## Checks every workflow gets
 
@@ -85,7 +86,7 @@ Sometimes a check needs a fact you can't read: the default token permission, an 
 ### W-03. Token permissions wider than the job uses
 
 - **Look for:** no workflow-level `permissions:`; `write-all` or `read-all`; a job write scope nothing in the job uses; `id-token: write` without OIDC.
-- **How to decide "unused":** a write scope is used when a step pushes (`git push`, an action that commits), writes through `gh` or the API, posts through a tool the agent is granted, or calls an action whose documentation needs that scope. When you can't tell from the file or the action's documentation, it is a Questions row.
+- **How to decide "unused":** a write scope is used when a step pushes (`git push`, an action that commits), writes through `gh` or the API, posts through a tool the agent is granted, or calls an action whose documentation needs that scope. A claude-code-action step without `github_token` runs on the Claude App token, not the job's: a job write scope kept only for it is unused, except `id-token: write`, which the App token's exchange needs. When you can't tell from the file or the action's documentation, it is a Questions row.
 - **Not a finding when** workflow-level `permissions:` is absent but the repository's default token permission is read-only: rate that low, as hygiene.
 - **Severity:** `write-all`, or an absent block under a write default, is high when a trigger outsiders reach runs the job, and medium otherwise. One unused write scope: medium.
 - **Patch:** `permissions: {}` at workflow level, and each job's scopes set to exactly what it uses.
@@ -113,7 +114,10 @@ Sometimes a check needs a fact you can't read: the default token permission, an 
 
 - **Look for:** `actions/checkout` without `persist-credentials: false`.
 - **Not a finding when** a later step in the same job pushes with those credentials. A claude-code-action step doesn't count: it pushes with its own token, never checkout's ([Git, branches and credentials](action-contract.md#git-branches-and-credentials)).
-- **Severity:** medium when the job later runs code it didn't write (dependencies, the pull request's code, an agent) or uploads the workspace as an artifact; low otherwise, and low when the job's `GITHUB_TOKEN` has no write scope on the repository (`id-token: write` doesn't count: checkout doesn't store it).
+- **Severity,** in this order:
+  1. Low when the job's `GITHUB_TOKEN` has no write scope on the repository, whatever runs later (`id-token: write` doesn't count: checkout doesn't store it).
+  2. Otherwise medium when a later step runs code the workflow didn't write (dependencies, the pull request's code, or an agent the credential reaches) or uploads the workspace as an artifact. A claude-code-action step's agent reaches it only with checkout v6 or later: the action removes the credential of earlier versions before Claude starts. Resolve a floating checkout ref to its version first.
+  3. Low otherwise.
 - **Patch:** `persist-credentials: false`. On a claude-code-action job, state its cost from [Costs of each change](auth-and-permissions.md#costs-of-each-change).
 - **Why:** checkout's token stays readable for every later step: in the local `.git/config` up to checkout v5, and in a separate file that `.git/config` includes from v6 on. claude-code-action doesn't remove the v6 form.
 - **Scanners:** zizmor `artipacked`.
@@ -199,8 +203,8 @@ Before these, run [the drift check](version-drift.md#compare-with-the-snapshot) 
 | :-- | :-- | :-- | :-- |
 | C-01 | Inputs the `action.yml` at the pin doesn't declare ([Removed inputs](action-contract.md#removed-inputs); SE-14) | High for a dropped `disallowed_tools` or `experimental_allowed_domains`, because the control is silently gone; low for others, which are ignored | Its replacement in `claude_args` |
 | C-02 | On comment or review events, a `prompt` without a job-level `if:` that matches the trigger phrase, or without the event's action limited to `created`, either by `types: [created]` under `on:` or by `github.event.action == 'created'` in the `if:` (agent mode starts on edited and deleted comments: [Actor and text trust](action-contract.md#actor-and-text-trust)); `issues` triggers without a job-level `if:` (SE-04) | Medium for comment events: every comment, edit or deletion starts the agent and spends credits, and an edit can turn someone else's text into a run. Low for `issues`: every issue event starts a runner | A job-level `if:` on the trigger phrase, the event action and, where it matters, the comment's author |
-| C-03 | `*` in `allowed_bots` or `allowed_non_write_users`; bot events without `allowed_bots` or a bot filter (SE-02) | High for `*`: anyone, or any bot, reaches the agent and its token; low for a missing filter | Name the bots and users. This keeps the lists non-empty, so the mode doesn't change |
-| C-04 | `allowed_non_write_users` without `github_token` (SE-03) | Medium: the bypass does nothing, so the listed users can't start runs; the list still keeps the step out of auto, with the scrub and the credential helper | Ask which was meant. Add `github_token`, never while the list holds `*` (resolve C-03 first); or remove the list, with the frozen mode and the scrub set explicitly. Both rows are in [Costs of each change](auth-and-permissions.md#costs-of-each-change) |
+| C-03 | `*` in `allowed_bots` or `allowed_non_write_users`; bot events without `allowed_bots` or a bot filter (SE-02) | High for `*` in `allowed_bots`, and in `allowed_non_write_users` when `github_token` is set: anyone, or any bot, reaches the agent and its token. Medium for `*` in `allowed_non_write_users` without `github_token`: the bypass is inert, but one patch (C-04) would open it to everyone. Low for a missing filter | Name the bots and users. This keeps the lists non-empty, so the mode doesn't change |
+| C-04 | `allowed_non_write_users` without `github_token` (SE-03) | Medium: the bypass does nothing, so the listed users can't start runs; the list still keeps the step out of auto, with the scrub and the credential helper | The user's choice, so the report shows both options and applies neither until the user picks one: add `github_token`, never while the list holds `*` (resolve C-03 first); or remove the list, with the frozen mode and the scrub set explicitly. Both rows are in [Costs of each change](auth-and-permissions.md#costs-of-each-change) |
 | C-05 | `track_progress` on an event or action it doesn't support (SE-05); `use_sticky_comment` with `github_token` or a custom App (SE-06) | Medium for `track_progress`: the step fails red. Low for the sticky comment, which stops sticking | Remove `track_progress` from those events, or narrow the triggers; for the sticky comment, as SE-06 says |
 | C-06 | CI tools expected without `actions: read` in the job's `permissions:`, or on events that aren't pull requests (SE-07) | Low | Add the scope to the job, or remove the expectation |
 | C-07 | `structured_output` used without `--json-schema` or an empty guard (SE-01); and anywhere in `run:` through `${{ }}` (W-01) | Low for the guard; the interpolation is W-01 | Add the schema and the guard |
@@ -229,18 +233,19 @@ Build one set of patches for all findings, not one patch per finding:
 
 ## Validate the patches
 
-Before you hand the patches over, on the patched files:
+Before you show the patches to the user, check them on the patched files:
 
-1. **Re-derive the effective mode** of every claude-code-action step from [Permission mode](action-contract.md#permission-mode). The mode after must equal the mode before, unless the user approved a change.
-2. **Run every W and C check again.** A patch can raise a finding of its own, for example a bump that crosses a breaking release ([A version bump is a patch](version-drift.md#a-version-bump-is-a-patch)).
-3. **When the mode after is auto**, run [auto-mode-audit.md](auto-mode-audit.md) on the patched file, even if the mode before was auto too.
+1. **Re-derive the effective mode** of every claude-code-action step the patches touch, from [Permission mode](action-contract.md#permission-mode). The mode after must equal the mode before, unless the user approved a change.
+2. **Run the W and C checks again on what the patches change.** A patch can raise a finding of its own, for example a bump that crosses a breaking release ([A version bump is a patch](version-drift.md#a-version-bump-is-a-patch)).
+3. **Auto mode:** when a patch makes a step's mode auto that wasn't auto before, run [auto-mode-audit.md](auto-mode-audit.md) on that step. In the audit route, also confirm that every layer patch is in place.
 4. **Parse the files:** actionlint when installed; otherwise read them again for W-12.
+5. **Stay in the route.** In the diagnosis and repair routes, something this check notices on lines the patches don't touch isn't a finding of that route: put it in Observations and offer the audit route.
 
-Apply the patches only after the user approves them, on a branch, and land the change through `github-operations:auto-pr-lifecycle`.
+Apply the patches only after the user approves them, on a branch, and land the change through `github-operations:auto-pr-lifecycle`. When the applied files differ from the checked patches, check them again.
 
 ## Each finding
 
-- The check ID (W-xx, C-xx, an auto-mode layer, or the scanner's rule ID) and every layer that saw it.
+- The check ID (W-xx, C-xx, an auto-mode layer, or the scanner's rule ID) and every layer that saw it. C-13 isn't a finding of its own: the missing auto-mode layers it leads to are. Two checks that apply to the same lines, such as C-11 and layer B, are two findings; their patches merge into one block.
 - File and line; for a composite action or reusable workflow, both the caller's and the callee's.
 - What an attacker or a failure needs to trigger it.
 - Its impact and severity by the scale above.

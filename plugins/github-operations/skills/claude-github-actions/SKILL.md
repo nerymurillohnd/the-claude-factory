@@ -56,7 +56,7 @@ Without admin rights on the repository, the runners list and some settings can't
 - Fix the cause with the smallest change. Never weaken a test or a check, suppress a warning, or broaden a workflow's permissions to get a green run.
 - Take every claude-code-action fact from [references/action-contract.md](references/action-contract.md), and only after [the drift check](references/version-drift.md#compare-with-the-snapshot) for the commit the step runs; never from memory, documentation or examples.
 - Pin every new or changed `uses:` by [Pick the newest release](references/version-drift.md#pick-the-newest-release): the full commit SHA with the tag in a comment, in the current major unless the user approves a jump. Never a branch or a moving tag.
-- Every patch to a claude-code-action step freezes the step's current effective mode, by [Permission mode in patches](references/auth-and-permissions.md#permission-mode-in-patches). Changing the mode is its own approval. Never `bypassPermissions` or `--dangerously-skip-permissions`; auto is never assumed off, and never refused by default.
+- Every patch to a claude-code-action step freezes the step's current effective mode, by [Permission mode in patches](references/auth-and-permissions.md#permission-mode-in-patches). Changing the mode is its own approval. Never `bypassPermissions` or `--dangerously-skip-permissions`; auto is never assumed off, and never refused by default. A mode that can't be known is a question, not a guess.
 - For a claude-code-action step, pass only inputs the pinned `action.yml` declares; set no `--model` unless the user asks, and then resolve the ID live.
 - Pass `structured_output`, step outputs and any text from an issue, comment or pull request to a shell only through `env:`, never with `${{ }}` inside `run:`.
 - Run only `git` (including the drift check's temporary fetch of claude-code-action, deleted afterwards), `gh`, the GitHub MCP tools, and zizmor and actionlint when they are already installed, run exactly as [references/detection-layers.md](references/detection-layers.md) says. Never install any program, and never run any other.
@@ -92,7 +92,7 @@ Progress:
 2. Read [references/version-drift.md](references/version-drift.md): take the commit from the run's "Set up job" line and compare it with the snapshot. Then read [references/action-contract.md](references/action-contract.md) and follow step 3 of the diagnosis.
 3. Read [references/sharp-edges.md](references/sharp-edges.md) and follow step 4: name the matched ID, or say that none matched.
 4. Follow steps 5 and 6 of the diagnosis.
-5. When the fix touches a workflow, build, approve, validate and land it with steps 6 to 8 of the audit route.
+5. When the fix touches a workflow, build and check it, get it approved and land it with steps 6 to 8 of the audit route.
 
 ### Audit and harden workflow files
 
@@ -105,8 +105,8 @@ Progress:
 - [ ] 3. Layer 1: code scanning alerts
 - [ ] 4. Layer 2: zizmor and actionlint, when installed
 - [ ] 5. Layer 3: every check, and auto mode where it is the effective mode
-- [ ] 6. Merge the layers into findings and questions, and build the patches
-- [ ] 7. Get the user's approval, apply on a branch and validate
+- [ ] 6. Merge the layers into findings and questions, build the patches and check them
+- [ ] 7. Get the user's approval and apply on a branch
 - [ ] 8. Land through `github-operations:auto-pr-lifecycle`
 ```
 
@@ -115,8 +115,8 @@ Progress:
 3. **Layer 1.** Read the code scanning alerts as "Layer 1" in `detection-layers.md` says, and decide from the answer as its table says.
 4. **Layer 2.** Run zizmor and actionlint as "Layer 2" says, each only when it is installed; record a missing one as not run.
 5. **Layer 3.** Read [references/trust-boundaries.md](references/trust-boundaries.md) and run W-01 to W-13 on every file. For each claude-code-action step, read `action-contract.md`, [references/auth-and-permissions.md](references/auth-and-permissions.md) and `sharp-edges.md`, then run C-01 to C-17. For each step whose effective mode is auto (C-13), follow [references/auto-mode-audit.md](references/auto-mode-audit.md) from its first section. A check you can't settle follows [When a check can't be decided](references/workflow-audit.md#when-a-check-cant-be-decided).
-6. **Findings and patches.** Merge the layers as "Merge the layers into findings" in `detection-layers.md` says, rate each finding by the [Severity scale](references/workflow-audit.md#severity-scale), write it as "Each finding" says, and build one set of patches by [Build the patches](references/workflow-audit.md#build-the-patches). On a surface with only a GitHub MCP server, stop here and report.
-7. **Approval and validation.** Show the findings and patches, and apply only what the user approves, each separate approval on its own. Apply them on a branch, then run [Validate the patches](references/workflow-audit.md#validate-the-patches); when anything fails, fix the patch and validate again.
+6. **Findings and patches.** Merge the layers as "Merge the layers into findings" in `detection-layers.md` says, rate each finding by the [Severity scale](references/workflow-audit.md#severity-scale), write it as "Each finding" says, build one set of patches by [Build the patches](references/workflow-audit.md#build-the-patches), and check them by [Validate the patches](references/workflow-audit.md#validate-the-patches). On a surface with only a GitHub MCP server, stop here and report.
+7. **Approval.** Show the findings and the checked patches, and apply only what the user approves, each separate approval on its own, on a branch. When the applied files differ from the checked patches, check them again.
 8. **Land** the patches through `github-operations:auto-pr-lifecycle`, only when every check passes.
 
 ### Repair CI on the default branch
@@ -133,7 +133,7 @@ Progress:
 
 1. **Find them.** Read [references/ci-repair.md](references/ci-repair.md), section 1, and [references/ci-tooling.md](references/ci-tooling.md).
 2. **Diagnose each failure.** Follow section 2 of `ci-repair.md`. For a Claude step, use the diagnosis route instead. Report a cause outside the repository, such as an expired secret, a revoked app or an offline runner, with what unlocks it.
-3. **Repair.** Follow section 3 of `ci-repair.md`. A fix to a workflow file is built and validated with steps 6 and 7 of the audit route. Use the write tools of `ci-tooling.md` only with the user's approval.
+3. **Repair.** Follow section 3 of `ci-repair.md`. A fix to a workflow file is built, checked and approved with steps 6 and 7 of the audit route. Use the write tools of `ci-tooling.md` only with the user's approval.
 4. **Land each fix.** Follow section 4 of `ci-repair.md`: one pull request per cause, through `github-operations:auto-pr-lifecycle`, then confirm the next run passes.
 
 ## Report
