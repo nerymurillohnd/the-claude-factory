@@ -12,7 +12,8 @@
   },
   "license": "MIT",
   "scripts": {
-    "check": "npm run lint && npm run typecheck && npm run validate",
+    "check": "npm run lint && npm run typecheck && npm run check:consistency && npm run validate",
+    "check:consistency": "uv run python scripts/validators/plugin-consistency.py",
     "check:install": "bash scripts/release/check-install.sh",
     "fix": "biome check --write . && ruff check --fix . && ruff format . && shfmt -w .",
     "format": "biome format --write . && ruff format . && shfmt -w .",
