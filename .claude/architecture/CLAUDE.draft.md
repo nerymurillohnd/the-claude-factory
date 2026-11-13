@@ -62,3 +62,35 @@ The tools Nery and Claude use to build and maintain the project. Each plugin's o
 ├── biome.jsonc ruff.toml pyrightconfig.json tsconfig.json
 └── README.md CHANGELOG.md LICENSE    # Marketplace front page, release log, license
 ```
+
+## Main commands
+
+### Setup
+| Command | Does |
+|---|---|
+| `npm ci` | Installs the JS dev tools (Biome, TypeScript) |
+| `uv sync` | Creates `.venv` with the maintainer Python |
+| `npm run tools:install` | Installs ruff, basedpyright, zizmor and check-jsonschema |
+
+### Checks
+| Command | Does |
+|---|---|
+| `npm run check` | Runs everything: lint, typecheck, validate |
+| `npm run lint` | All linters (JS, Python, shell, workflows, GitHub files) |
+| `npm run typecheck` | Type checks TypeScript and Python |
+| `npm run validate` | `claude plugin validate --strict` on every plugin and the marketplace |
+| `npm run lint:skills` | Checks every skill with skill-lint |
+| `npm run test:scripts` | Tests the maintainer scripts |
+| `npm run fix` | Fixes and formats files automatically |
+
+### Plugins
+| Command | Does |
+|---|---|
+| `claude --plugin-dir plugins/<plugin>` | Loads a plugin for one session to try it |
+| `claude plugin validate plugins/<plugin> --strict` | Validates one plugin |
+| `claude plugin tag plugins/<plugin> --dry-run` | Shows the release tag it would create |
+
+### GitHub
+| Command | Does |
+|---|---|
+| `npm run labels:sync` | Shows the label changes (`-- --apply` applies them) |
