@@ -31,4 +31,4 @@ Before any file is written, decide the label names the files will use, so the fo
 ## Current behavior (checked on 2026-11-12; verify before relying on it)
 
 - A new repository has GitHub's default labels: `bug`, `documentation`, `duplicate`, `enhancement`, `good first issue`, `help wanted`, `invalid`, `question`, `wontfix` and `accessibility`.
-- Anthropic's own issue triage applies `needs-info` and `needs-repro`.
+- Anthropic's own issue triage applies `needs-info` and `needs-repro`. Its command applies only labels that already exist (a missing one is skipped, not reported), exactly one of `bug`, `enhancement`, `question`, `invalid` or `duplicate` on a new issue, and, when a person comments, removes `stale` and `autoclose` if the issue has them.
