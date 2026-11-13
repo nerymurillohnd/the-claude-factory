@@ -13,7 +13,7 @@ Users browse the marketplace by category: the root README catalog groups plugins
 ## Choose the category
 
 - Give each plugin one category, chosen by what users install it for, not by the component types it ships.
-- Put a plugin in `mods` only when the mod is its purpose; a mod built for another purpose goes in that purpose's category.
+- Classify a mod, hook or MCP plugin by its purpose like any other plugin: the catalog's Includes column already shows its component types.
 - When no category fits, propose a new one to the owner instead of stretching an existing one.
 - Set it in `metadata.category` of `plugin.json`, and give the plugin's `marketplace.json` entry, README badge and root catalog row the same category.
 
@@ -24,7 +24,7 @@ Users browse the marketplace by category: the root README catalog groups plugins
 | `development` | 🛠️ Development | Write, refactor, review and ship code faster |
 | `productivity` | ⚡ Productivity | Everyday workflows, planning and knowledge work |
 | `automation` | 🤖 Automation | Hooks, agents and pipelines that run work for you |
-| `mods` | 🧩 Mods | Panels, bands and status views that change Claude Code's own interface |
+| `monitoring` | 📈 Monitoring | Observability, usage tracking and audit trails |
 | `testing` | 🧪 Testing & Quality | Tests, audits, linting and quality gates |
 | `security` | 🛡️ Security | Guardrails, secret hygiene and security reviews |
 | `documentation` | 📚 Documentation & Writing | Docs, changelogs, records and written content |
