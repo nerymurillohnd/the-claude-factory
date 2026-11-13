@@ -13,17 +13,17 @@ paths:
   - "tsconfig*.json"
 ---
 
-# npm and uv (maintainer scope)
+# npm and uv
 
-npm and uv run only the maintainer tooling. No plugin needs them, and users never install them.
+npm and uv serve only the maintainer tooling; no plugin needs them and users never install them.
 
 ## npm
-- Every maintainer task runs through its npm script in `package.json` (`npm run` lists them), Python ones included. Give a new maintainer script, Python included, its npm script before its first run.
-- Use Node 26 (`.nvmrc`) and npm 12. `devEngines` in `package.json` enforces both and fails on any other version.
-- Install the JavaScript dev dependencies (Biome, TypeScript) with `npm ci`. They are pinned to exact versions in `package.json`.
+- Run every maintainer task, Python ones included, through its npm script in `package.json` (`npm run` lists them). Add a new maintainer script's npm script before its first run.
+- Use the Node and npm versions that `.nvmrc` and `devEngines` in `package.json` set; `devEngines` fails the install on any other version.
+- Install the JavaScript dev dependencies with `npm ci`; `package.json` pins them to exact versions.
 
 ## uv
-- **Python:** use Python 3.15, set in `.python-version` and installed with `uv python install`.
-- **Environment:** write each npm script that runs maintainer Python as `uv run python scripts/<file>.py`. Never use bare `python3`, which is each machine's OS Python, or `.venv/bin/python`: only `uv run` and `uv sync` create `.venv` and keep `uv.lock` current.
-- **Dependencies:** add a package that a maintainer script imports with `uv add --dev <package>`, which updates `pyproject.toml` and `uv.lock` together. Commit both, and never edit `uv.lock` by hand.
-- **Tools:** ruff, basedpyright, zizmor and check-jsonschema are uv tools pinned to exact versions in the `tools:install` npm script and called by name in the npm scripts. They are not project dependencies.
+- Install the Python version in `.python-version` with `uv python install`.
+- Write each npm script that runs maintainer Python as `uv run python scripts/<file>.py`, not bare `python3` (the machine's OS Python) or `.venv/bin/python`: only `uv run` and `uv sync` create `.venv` and keep `uv.lock` current.
+- Add a package that a maintainer script imports with `uv add --dev <package>`, which updates `pyproject.toml` and `uv.lock` together. Commit both, and never edit `uv.lock` by hand.
+- Call ruff, basedpyright, zizmor and check-jsonschema by name: they are uv tools pinned in the `tools:install` npm script, not project dependencies. Change a tool's version there.

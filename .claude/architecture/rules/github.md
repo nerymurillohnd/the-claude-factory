@@ -3,21 +3,21 @@ paths:
   - ".github/**"
 ---
 
-# GitHub governance (`.github/`)
+# GitHub governance
 
-What GitHub reads from this repository: workflows, forms, templates, labels and Dependabot.
+The files GitHub reads from this repository.
 
-## What each file is for
-- `workflows/`: GitHub Actions. Today only `release.yml`, which tags and publishes plugin releases. Pin every action by commit SHA with a `# vX.Y.Z` comment on the same line; Dependabot updates both.
-- `ISSUE_TEMPLATE/*.yml`: one issue form per issue kind. Each form sets its labels and a default issue type (`type:`). `config.yml` turns blank issues off and holds the contact links.
-- `VULNERABILITY_REPORT.yml`: GitHub's custom form for private vulnerability reports, in issue-form syntax. If GitHub cannot parse it, reporters get the default form.
-- `PULL_REQUEST_TEMPLATE/`: `standard.md`, `bug-fix.md`, `maintenance.md`. `pull_request_template.md` is the default template and stays identical to `standard.md`.
-- `labels.json`: the fixed labels. The `plugin: <name>` labels are generated from `.claude-plugin/marketplace.json` and are not listed here.
-- `dependabot.yml`: updates for GitHub Actions, npm and uv, with a cooldown and grouped minor and patch updates. It does not read the uv tools pinned in the `tools:install` npm script; bump those by hand.
-- `zizmor.yml`: the zizmor findings accepted on purpose, each with its reason. Any other finding fails `npm run lint:workflows`.
-- `CODEOWNERS`: `@nerymurillohnd` owns every path.
+## Where a new file goes
+- Put GitHub Actions workflows in `workflows/`, each action pinned by commit SHA with a `# vX.Y.Z` comment on the same line, which Dependabot updates together.
+- Put one issue form per issue kind in `ISSUE_TEMPLATE/`, with its labels and its default issue type (`type:`). Keep blank issues off and the contact links in `ISSUE_TEMPLATE/config.yml`.
+- Keep the private vulnerability report form in `VULNERABILITY_REPORT.yml`, in issue-form syntax; GitHub shows its default form when it cannot parse this one.
+- Put pull request templates in `PULL_REQUEST_TEMPLATE/`, and keep `pull_request_template.md`, the default template, identical to `PULL_REQUEST_TEMPLATE/standard.md`.
+- Define the fixed labels in `labels.json`. Leave out the `plugin: <name>` labels: `sync-labels.py` generates them from `.claude-plugin/marketplace.json`.
+- Configure updates for GitHub Actions, npm and uv in `dependabot.yml`. Bump the uv tools in the `tools:install` npm script by hand, because Dependabot does not read it.
+- Record each zizmor finding accepted on purpose in `zizmor.yml`, with its reason; any other finding fails `npm run lint:workflows`.
+- Keep code ownership in `CODEOWNERS`.
 
 ## Working here
-- Every "plugin" dropdown, in the issue forms and in `VULNERABILITY_REPORT.yml`, lists exactly the plugins of `marketplace.json` in catalog order. Every label a form or `dependabot.yml` applies exists in `labels.json` or is a generated `plugin: <name>` label.
-- After changing `labels.json` or the catalog, run `npm run labels:sync` (a dry run) and review it. Apply it with `npm run labels:sync -- --apply` only with the owner's approval, because it changes GitHub.
+- Keep every "plugin" dropdown, in the issue forms and in `VULNERABILITY_REPORT.yml`, equal to the plugins of `marketplace.json` in catalog order. Apply only labels that `labels.json` defines or that are generated `plugin: <name>` labels: GitHub skips a missing label silently.
+- After changing `labels.json` or the catalog, run `npm run labels:sync` (a dry run) and review its output. Run `npm run labels:sync -- --apply` only with the owner's approval, because it changes GitHub.
 - Run `npm run lint:github` after changing a form, `config.yml` or `dependabot.yml`, and `npm run lint:workflows` after changing a workflow or `zizmor.yml`.
