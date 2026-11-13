@@ -135,6 +135,22 @@ class PythonHookTest(unittest.TestCase):
         self.assertTrue(any(call.endswith("/new.py") for call in calls), calls)
         self.assertFalse(any(call.endswith("/old.py") for call in calls), calls)
 
+    def test_output_git_ignores_is_left_alone(self) -> None:
+        """Of the files a command changed, the one Git ignores is output and is not checked."""
+        with tempfile.TemporaryDirectory() as raw:
+            tmp = Path(raw).resolve()
+            work = tmp / "work"
+            repository(work, {".gitignore": "generated/\n", "kept.py": "x = 1\n"})
+            write(work / "generated" / "built.py", "y = 2\n")
+            write(work / "kept.py", "x = 3\n")
+            event = self._bash(tmp)
+            changed = [str(work / "generated" / "built.py"), str(work / "kept.py")]
+            event["tool_response"] = {"bashEditDiff": {"changedFiles": changed}}
+            outcome, calls = self._run(tmp, event)
+        self.assertEqual((outcome.code, outcome.stderr), (0, ""))
+        self.assertTrue(any(call.endswith("kept.py") for call in calls), calls)
+        self.assertFalse(any(call.endswith("built.py") for call in calls), calls)
+
     def test_findings_still_block(self) -> None:
         """A finding still reaches Claude through stderr and exit 2."""
         with tempfile.TemporaryDirectory() as raw:

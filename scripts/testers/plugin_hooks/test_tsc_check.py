@@ -37,15 +37,23 @@ TOO_MANY = 21
 class TscHookTest(unittest.TestCase):
     """Which files a Bash command's hook run selects."""
 
-    def _run(self, tmp: Path, hook: Path = HOOKS[0]) -> Outcome:
-        """Run the hook for a Bash command that ran in project tmp/work for a minute."""
+    def _run(
+        self, tmp: Path, hook: Path = HOOKS[0], *, changed: tuple[Path, ...] | None = None
+    ) -> Outcome:
+        """Run the hook for a Bash command that ran in project tmp/work for a minute.
+
+        With changed, the event carries that list as the files Claude Code recorded.
+        """
+        response: dict[str, object] = {"stdout": "", "stderr": "", "interrupted": False}
+        if changed is not None:
+            response["bashEditDiff"] = {"changedFiles": [str(path) for path in changed]}
         event: dict[str, object] = {
             "session_id": "s1",
             "hook_event_name": "PostToolUse",
             "tool_name": "Bash",
             "cwd": str(tmp / "work"),
             "tool_input": {"command": "true"},
-            "tool_response": {"stdout": "", "stderr": "", "interrupted": False, "isImage": False},
+            "tool_response": response,
             "duration_ms": 60000,
         }
         (tmp / "home").mkdir(exist_ok=True)
@@ -83,6 +91,19 @@ class TscHookTest(unittest.TestCase):
         self.assertEqual(outcome.code, 0)
         self.assertIn("clone/a.ts", outcome.stdout)
         self.assertNotIn("b.ts", outcome.stdout)
+
+    def test_output_git_ignores_is_left_alone(self) -> None:
+        """Of the files a command changed, the one Git ignores is output and is not selected."""
+        with tempfile.TemporaryDirectory() as raw:
+            tmp = Path(raw).resolve()
+            work = tmp / "work"
+            repository(work, {".gitignore": "generated/\n", "kept.ts": MODULE})
+            write(work / "generated" / "built.ts", MODULE)
+            write(work / "kept.ts", f"{MODULE}export const more = 1\n")
+            outcome = self._run(tmp, changed=(work / "generated" / "built.ts", work / "kept.ts"))
+        self.assertEqual(outcome.code, 0)
+        self.assertIn("kept.ts", outcome.stdout)
+        self.assertNotIn("built.ts", outcome.stdout)
 
     def test_arrival_outside_git_is_not_checked(self) -> None:
         """More loose files than the hook checks per command: none is selected, Claude is told."""

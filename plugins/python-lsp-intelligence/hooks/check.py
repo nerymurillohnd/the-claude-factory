@@ -179,6 +179,29 @@ def git_changed(git: str, tree: Path) -> list[Path] | None:
     return [tree / rel for rel in listed.output.split("\0") if rel]
 
 
+def not_ignored(files: list[Path]) -> list[Path]:
+    """The files Git does not ignore; a file outside every work tree is kept.
+
+    What a command writes into an ignored place, such as a virtual environment or a build
+    folder, is output, not source the project maintains.
+    """
+    git = shutil.which("git")
+    if git is None:
+        return files
+    by_folder: dict[Path, list[Path]] = {}
+    for path in files:
+        by_folder.setdefault(path.parent, []).append(path)
+    ignored: set[str] = set()
+    for folder, group in by_folder.items():
+        # Exit 0 lists the ignored paths, 1 means none is, 128 that the folder is in no work tree.
+        # NUL-separated both ways, which git accepts only on standard input.
+        names = "".join(f"{path}\0" for path in group)
+        listed = run([git, "-C", str(folder), "check-ignore", "--stdin", "-z"], stdin=names)
+        if listed.code == 0:
+            ignored.update(listed.output.split("\0"))
+    return [path for path in files if str(path) not in ignored]
+
+
 def walk(project: Path, since_s: float) -> list[Path]:
     """Files under project modified after since_s, by a pruned walk of at most MAX_WALK_FILES."""
     found: list[Path] = []
@@ -284,7 +307,7 @@ def candidates(event: JsonObject, now_ms: int) -> Changed:
         return Changed([], None)
     changed = strings_at(event, "tool_response", "bashEditDiff", "changedFiles")
     if changed is not None:
-        return Changed(as_files(changed), None)
+        return Changed(not_ignored(as_files(changed)), None)
     project = project_dir(event)
     if project is None:
         return Changed([], None)
@@ -311,11 +334,15 @@ def skipped(path: Path) -> bool:
     return any(part in SKIPPED_DIRS for part in path.parts)
 
 
-def run(argv: list[str]) -> Run:
-    """Run one command, capturing stdout and stderr together; never raises."""
+def run(argv: list[str], stdin: str | None = None) -> Run:
+    """Run one command, capturing stdout and stderr together; never raises.
+
+    With stdin, the command reads that text as its standard input.
+    """
     try:
         done = subprocess.run(
             argv,
+            input=stdin,
             capture_output=True,
             text=True,
             timeout=TOOL_TIMEOUT_S,

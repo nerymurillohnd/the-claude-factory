@@ -11,6 +11,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - When ruff or basedpyright isn't installed, the hook no longer reports an error after every edit. You get one message per session with the install command, Claude is told once that the files weren't checked, and work goes on.
 - After a Bash command in a folder that isn't a Git repository, the hook no longer checks or reformats the files of a repository you cloned, a branch you checked out or a pull. Inside a Git repository below your project, it checks only the files Git lists as modified or untracked.
 - When a Bash command leaves more than 20 Python files outside any Git repository, such as an extracted archive, the hook checks none of them and tells Claude, instead of reformatting the first 20.
+- After a Bash command, the hook no longer checks or reformats the Python files that command wrote into a place Git ignores, such as a build folder.
 
 ## [0.3.3] - 2026-11-06
 

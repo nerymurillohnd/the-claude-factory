@@ -122,6 +122,22 @@ class BashHookTest(unittest.TestCase):
         self.assertIn(f"left {TOO_MANY} shell files outside a Git work tree", context)
         self.assertEqual(calls, [])
 
+    def test_output_git_ignores_is_left_alone(self) -> None:
+        """Of the files a command changed, the one Git ignores is output and is not checked."""
+        with tempfile.TemporaryDirectory() as raw:
+            tmp = Path(raw).resolve()
+            work = tmp / "work"
+            repository(work, {".gitignore": "generated/\n", "kept.sh": SCRIPT})
+            write(work / "generated" / "hook.sh", SCRIPT)
+            write(work / "kept.sh", f"{SCRIPT}echo more\n")
+            event = self._bash(tmp)
+            changed = [str(work / "generated" / "hook.sh"), str(work / "kept.sh")]
+            event["tool_response"] = {"bashEditDiff": {"changedFiles": changed}}
+            outcome, calls = self._run(tmp, event)
+        self.assertEqual((outcome.code, outcome.stderr), (0, ""))
+        self.assertTrue(any(call.endswith("kept.sh") for call in calls), calls)
+        self.assertFalse(any(call.endswith("hook.sh") for call in calls), calls)
+
     def test_findings_still_block(self) -> None:
         """A finding still reaches Claude through stderr and exit 2."""
         with tempfile.TemporaryDirectory() as raw:

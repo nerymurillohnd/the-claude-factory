@@ -353,6 +353,39 @@ function asFiles(names) {
 }
 
 /**
+ * The files Git does not ignore. What a command writes into an ignored place, such as the
+ * hook scripts a package manager generates on install or a build folder, is output, not
+ * source the project maintains. A file outside every work tree is kept.
+ * @param {string[]} files
+ * @returns {string[]}
+ */
+function notIgnored(files) {
+  /** @type {Map<string, string[]>} */
+  const byFolder = new Map()
+  for (const file of files) {
+    const folder = dirname(file)
+    byFolder.set(folder, [...(byFolder.get(folder) ?? []), file])
+  }
+  /** @type {Set<string>} */
+  const ignored = new Set()
+  for (const [folder, group] of byFolder) {
+    // Exit 0 lists the ignored paths, 1 means none is, 128 that the folder is in no work tree.
+    // NUL-separated both ways, which git accepts only on standard input.
+    const result = spawnSync('git', ['-C', folder, 'check-ignore', '--stdin', '-z'], {
+      input: group.map((file) => `${file}\0`).join(''),
+      encoding: 'utf8',
+      timeout: TOOL_TIMEOUT_MS,
+    })
+    if (result.status === 0) {
+      for (const path of result.stdout.split('\0')) {
+        ignored.add(path)
+      }
+    }
+  }
+  return files.filter((file) => !ignored.has(file))
+}
+
+/**
  * @param {Record<string, unknown>} event
  * @param {number} nowMs
  * @returns {Changed}
@@ -367,7 +400,7 @@ function candidates(event, nowMs) {
   }
   const changed = stringsAt(event, 'tool_response', 'bashEditDiff', 'changedFiles')
   if (changed !== null) {
-    return { files: asFiles(changed), walked: null }
+    return { files: notIgnored(asFiles(changed)), walked: null }
   }
   const project = projectDir(event)
   if (project === null) {

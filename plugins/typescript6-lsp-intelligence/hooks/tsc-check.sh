@@ -1036,7 +1036,12 @@ candidates() {
       rest="${BASH_REMATCH[3]}"
       json_unescape "${item}"
       to_posix "${UNESCAPED}"
-      printf '%s\n' "${POSIX}"
+      # What a command writes into a place Git ignores, such as a build folder, is output, not
+      # source the project maintains. In no work tree, or without git, git fails and the file
+      # is kept.
+      if ! git -C "${POSIX%/*}" check-ignore -q -- "${POSIX}" 2> /dev/null; then
+        printf '%s\n' "${POSIX}"
+      fi
       count=$((count + 1))
     done
     # An incomplete or skipped list is a floor, not the answer: add the recent changes. Claude

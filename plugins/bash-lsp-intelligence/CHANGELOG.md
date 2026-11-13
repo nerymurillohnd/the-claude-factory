@@ -11,6 +11,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - When shfmt or ShellCheck isn't installed, the hook no longer reports an error after every edit. You get one message per session that says where to get the tool, Claude is told once that the scripts weren't checked, and work goes on.
 - After a Bash command in a folder that isn't a Git repository, the hook no longer checks or reformats the scripts of a repository you cloned, a branch you checked out or a pull. Inside a Git repository below your project, it checks only the scripts Git lists as modified or untracked.
 - When a Bash command leaves more than 20 shell scripts outside any Git repository, such as an extracted archive, the hook checks none of them and tells Claude, instead of reformatting the first 20.
+- After a Bash command, the hook no longer checks or reformats the scripts that command wrote into a place Git ignores, such as the hook scripts a package manager generates on install.
 
 ## [0.2.8] - 2026-11-06
 
