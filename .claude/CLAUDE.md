@@ -54,6 +54,30 @@ The work divides into three workstreams. The first two never mix: a rule, tool o
 - Before each commit, read `.claude/rules/testing.md` (Local and CI), run the local checks it lists, starting with `npm run lint` and `npm run typecheck`, and fix every finding.
 - Problems are reported as soon as they are found, including defects in work already published.
 
+## Repository map
+
+```text
+.
+├── .claude-plugin/marketplace.json   # Marketplace catalog: one entry per plugin
+├── plugins/<plugin>/                 # One self-contained plugin
+│   ├── .claude-plugin/plugin.json    # Plugin manifest
+│   ├── skills/ agents/ commands/ hooks/ tests/ evals/
+│   └── README.md CHANGELOG.md LICENSE NOTICE.txt
+├── .claude/
+│   ├── CLAUDE.md WORKFLOW.md settings.json
+│   ├── rules/                        # Path-scoped rules; skill-routing.md loads at launch
+│   ├── skills/ agents/               # Project skills and subagents
+│   ├── maintainer/                   # ADRs, technical debt, specs, plans, audits
+│   ├── memory/ session-handoff/      # Repository memory and session handoffs
+│   └── references/ templates/ architecture/
+├── .github/                          # Workflows, issue forms, PR templates, labels, Dependabot
+├── scripts/                          # validators/ checkers/ generators/ release/ testers/ schemas/ typings/
+├── docs/                             # User guides and assets/
+├── package.json pyproject.toml       # npm scripts; uv-managed Python
+├── biome.jsonc ruff.toml pyrightconfig.json tsconfig.json .editorconfig .shellcheckrc
+└── README.md CHANGELOG.md LICENSE    # Marketplace front page, release log, license
+```
+
 ## Commands
 
 | Task | Command |
