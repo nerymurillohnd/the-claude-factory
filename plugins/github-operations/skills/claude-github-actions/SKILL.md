@@ -34,7 +34,7 @@ How they connect:
 | None of `git`, `gh` or a GitHub MCP server | Stop, and name what's missing: the plugin README lists the prerequisites |
 | GitHub Enterprise Server | The routes run, but the action's facts and the drift check describe github.com's action: count them as unverified |
 
-Without admin rights on the repository, the runners list and some settings can't be read either: they become Questions rows too.
+Without admin rights on the repository, the runners list and some settings can't be read either. Each becomes a Questions row when it decides a rating.
 
 ## Before you start
 
@@ -89,7 +89,7 @@ Progress:
 ```
 
 1. Read [references/claude-step-diagnosis.md](references/claude-step-diagnosis.md) and [references/ci-tooling.md](references/ci-tooling.md). Follow [step 1](references/claude-step-diagnosis.md#1-find-the-run-or-prove-there-is-none), and [step 2](references/claude-step-diagnosis.md#2-when-there-is-no-run) when there is no run.
-2. Read [references/version-drift.md](references/version-drift.md): take the commit from the run's "Set up job" line and compare it with the snapshot. Then read [references/action-contract.md](references/action-contract.md) and follow step 3 of the diagnosis.
+2. Read [references/version-drift.md](references/version-drift.md): take the commit from the run's "Set up job" line, or, when there is no run, from the step's `uses:` in the default branch's copy, and compare it with the snapshot. Then read [references/action-contract.md](references/action-contract.md) and follow step 3 of the diagnosis.
 3. Read [references/sharp-edges.md](references/sharp-edges.md) and follow step 4: name the matched ID, or say that none matched.
 4. Follow steps 5 and 6 of the diagnosis.
 5. When the fix touches a workflow, build and check it, get it approved and land it with steps 6 to 8 of the audit route.
@@ -138,4 +138,4 @@ Progress:
 
 ## Report
 
-Every route closes with the report in [assets/report.md](assets/report.md): read it when the route's work is done, and keep every section in its order, writing `none` where a section is empty. [references/worked-examples.md](references/worked-examples.md) shows one excerpt per route, with the rule behind each value.
+Every route closes with the report in [assets/report.md](assets/report.md): read it when the route's work is done, and keep every section in its order, writing `none` where a section is empty. Read [references/worked-examples.md](references/worked-examples.md) before you write it: one excerpt per route, with the rule behind each value.

@@ -30,7 +30,7 @@ Check these in order, and stop at the first that explains it:
 5. **An event caused by `GITHUB_TOKEN`:** a comment or label made by another workflow with the job's token starts no run.
 6. **A comment edited, not created**, against a trigger that lists only `created`, or the other way round.
 
-When none explains it, say so, with what you checked. A fix that changes what starts the workflow (`on:` or `types:`) is its own approval ([Build the patches](workflow-audit.md#build-the-patches)).
+When none explains it, say so, with what you checked. The fix is the smallest change that makes the event start the run: add the missing action to `types:` and keep the actions already listed. Anything else you notice, such as a missing job-level `if:`, goes to Observations. A fix that changes what starts the workflow (`on:` or `types:`) is its own approval ([Build the patches](workflow-audit.md#build-the-patches)).
 
 ## 3. Read the workflow and the action as the run used them
 

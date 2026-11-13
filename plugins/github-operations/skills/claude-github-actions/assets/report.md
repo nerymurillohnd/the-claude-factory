@@ -1,10 +1,12 @@
 # <Route>: <owner>/<repo>
 
+<!-- When the repository's owner and name can't be read, use the local folder's name followed by "(no remote)". -->
+
 <!-- Keep every section, in this order. A section with nothing to show keeps its heading and says `none`. -->
 
 **Result:** <n> critical · <n> high · <n> medium · <n> low · <n> questions — <one line: what was examined, and the cause or the main finding>
 **Scope:** <workflows, runs or files examined> · checked <YYYY-MM-DD HH:MM UTC>
-**Detection layers** (audit route): code scanning <run: n alerts on workflows | not set up | unavailable: reason | not inspected: reason> · zizmor <version | not installed | not run: reason> · actionlint <version | partial: <file> didn't parse | not installed | not run: reason>; <the repository silences some zizmor findings, when it does>
+**Detection layers** (audit route; in the other routes write `not run: <route> route`): code scanning <run: n alerts on workflows | not set up | unavailable: reason | not inspected: reason> · zizmor <version | not installed | not run: reason> · actionlint <version | partial: <file> didn't parse | not installed | not run: reason>; <the repository silences some zizmor findings, when it does>
 **Left for you:** <each decision or action only the user can take, questions included>, or `none`
 
 ## Fix first
@@ -86,7 +88,8 @@
 
 | Reference | Pinned as | Commit | Snapshot | Drift | Resolved with, when |
 | :-- | :-- | :-- | :-- | :-- | :-- |
-| `anthropics/claude-code-action` | `<ref in the file>` | `<full SHA>` | `<snapshot short SHA>` (<tag>) | <none | topics: …, read at the pin | not an upstream commit | unverified: reason> | <`git ls-remote` | "Set up job" log | MCP>, <YYYY-MM-DD> |
+<!-- One row per distinct `uses:` string, listing every line it appears on. -->
+| `anthropics/claude-code-action` | `<ref in the file>` (lines <n, m>) | `<full SHA>` | `<snapshot short SHA>` (<tag>) | <none | topics: …, read at the pin | not an upstream commit | unverified: reason> | <`git ls-remote` | "Set up job" log | MCP>, <YYYY-MM-DD> |
 | `<owner>/<action>` | `<ref>` | `<full SHA>` | — | — | <how>, <YYYY-MM-DD> |
 
 - **Unmapped changes:** <files changed between the snapshot and the pin that hold none of the skill's facts, and what they change>, or `none`, or `not checked (MCP only)`

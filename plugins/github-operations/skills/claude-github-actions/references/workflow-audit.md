@@ -57,7 +57,7 @@ Sometimes a check needs a fact you can't read: the default token permission, an 
 
 1. **Name the missing fact** and why you couldn't read it.
 2. **Ask only when the answer changes a rating.** If every possible answer gives the same rating, decide the check and say why.
-3. **One Questions row per missing fact**, not per check: the fact, every check it decides, the rating if the answer is the risky one, and the answer that would lower it. An unreadable Actions policy is one row, however many `uses:` lines it decides.
+3. **One Questions row per missing fact**, not per check: the fact, every check it decides, the rating if the answer is the risky one, and the answer that would lower it. An unreadable Actions policy is one row (allowed actions and the default token permission together), however many `uses:` lines it decides. A runner's existence and its network are two facts, so two rows.
 4. **A certain finding with an uncertain severity** is still a finding: report it at the severity of the risky answer, and add the Questions row with the answer that would lower it. Only a check whose finding itself depends on the missing fact is a question instead.
 5. **Count questions apart.** The report's Result line gives findings by severity and questions as their own number. A question is never a finding and never a pass.
 6. When the user is present and one answer settles a row, ask them; otherwise leave the row for the report.
@@ -116,7 +116,7 @@ Sometimes a check needs a fact you can't read: the default token permission, an 
 - **Not a finding when** a later step in the same job pushes with those credentials. A claude-code-action step doesn't count: it pushes with its own token, never checkout's ([Git, branches and credentials](action-contract.md#git-branches-and-credentials)).
 - **Severity,** in this order:
   1. Low when the job's `GITHUB_TOKEN` has no write scope on the repository, whatever runs later (`id-token: write` doesn't count: checkout doesn't store it).
-  2. Otherwise medium when a later step runs code the workflow didn't write (dependencies, the pull request's code, or an agent the credential reaches) or uploads the workspace as an artifact. A claude-code-action step's agent reaches it only with checkout v6 or later: the action removes the credential of earlier versions before Claude starts. Resolve a floating checkout ref to its version first.
+  2. Otherwise medium when a later step runs code the workflow didn't write (dependencies, the pull request's code, a step an injection such as W-01 lets anyone steer, or an agent the credential reaches) or uploads the workspace as an artifact. A claude-code-action step's agent reaches it only with checkout v6 or later: the action removes the credential of earlier versions before Claude starts. Resolve a floating checkout ref to its version first.
   3. Low otherwise.
 - **Patch:** `persist-credentials: false`. On a claude-code-action job, state its cost from [Costs of each change](auth-and-permissions.md#costs-of-each-change).
 - **Why:** checkout's token stays readable for every later step: in the local `.git/config` up to checkout v5, and in a separate file that `.git/config` includes from v6 on. claude-code-action doesn't remove the v6 form.
@@ -142,7 +142,7 @@ Sometimes a check needs a fact you can't read: the default token permission, an 
 
 - **Look for:** jobs without `timeout-minutes` (the default is 360 minutes); workflows that comment, review or label without a `concurrency` group that cancels runs a newer event supersedes.
 - **Severity:** for a job that runs an agent, the rating of layer E in [auto-mode-audit.md](auto-mode-audit.md#4-rate-and-report): medium when outsiders can start it, low when only collaborators can. Low for every other job. Report it once, as W-08, even when layer E applies.
-- **Patch:** `timeout-minutes` sized to the job; `concurrency: { group: <workflow>-<issue or PR number>, cancel-in-progress: true }`.
+- **Patch:** `timeout-minutes` sized to the job: twice its longest recent successful run when runs can be read, otherwise 30 for a job that runs an agent and 15 for any other, saying so; `concurrency: { group: <workflow>-<issue or PR number>, cancel-in-progress: true }`.
 - **Why:** a stuck or looping job burns minutes and can post for hours.
 - **Scanners:** zizmor `concurrency-limits` (pedantic persona only); timeouts none.
 
@@ -182,7 +182,7 @@ Sometimes a check needs a fact you can't read: the default token permission, an 
   3. Reading the file: a plain (unquoted) value containing `: `; tabs in indentation; duplicate keys, compared without case (`my-job` and `MY-JOB` collide); an `if:` value that starts with `!` and isn't quoted or wrapped in `${{ }}`; a `job_id` that doesn't start with a letter or `_` or holds other than letters, digits, `-` and `_`; a file over 500 KB, which starts no runs.
 - **Also look for silent truncation:** ` #` inside an unquoted value starts a comment, so `run: echo a #b` runs `echo a`. Rate it by what the cut text did.
 - **Severity:** medium: the workflow doesn't run, which blocks merges or leaves a job undone.
-- **Patch:** one patch per file that fixes the parse error and carries every other finding in that file, because every one of them becomes live when the file runs again.
+- **Patch:** one patch per file that fixes the parse error and carries every other finding in that file, because every one of them becomes live when the file runs again. Rate those other findings as if the file ran.
 - **Why:** an invalid file runs nothing, and its other checks were never exercised.
 - **Scanners:** actionlint reports the parse error, then stops checking that file; zizmor fails to read it too.
 
@@ -211,7 +211,7 @@ Before these, run [the drift check](version-drift.md#compare-with-the-snapshot) 
 | C-08 | An inline-comment review without the tool in `--allowedTools`, or with only a bare `mcp__github` in tag mode (SE-08); a prompt asking to post with no posting tool in acceptEdits or Manual (SE-13); a review whose profile isn't `anthropic_api_key` (SE-16) | Low: the review posts nothing, or posts unclassified | Grant the named tool; or use an API key input |
 | C-09 | A scheduled Claude workflow last edited by a bot not in `allowed_bots` (SE-02); any `allowed_bots` entry on a public repository (SE-03) | Medium for the public-repository case; low otherwise | As each entry says |
 | C-10 | More than one inference profile, a static key beside the federation IDs, or a profile without its variables or `id-token: write` (SE-17) | Medium: the step fails before Claude starts, or federation is silently unused | One profile, with what it needs ([auth-and-permissions.md](auth-and-permissions.md#inference-credentials-which-profile)) |
-| C-11 | `mcp__github` or `mcp__github__*` in `--allowedTools`; or a step that can start the GitHub MCP server without `--disallowedTools` denying the approval, merge and branch-write class ([trust-boundaries.md](trust-boundaries.md#approval-merge-and-branch-write-tools)) | High: an injected agent could approve, merge or push. Under auto an allow list doesn't stop the other tools; only the deny rules do | Name the tools needed; deny the whole class, read from the pinned server ([Tools the action grants](action-contract.md#tools-the-action-grants-and-the-mcp-servers-it-starts)) |
+| C-11 | `mcp__github` or `mcp__github__*` in `--allowedTools`; or a step that can start the GitHub MCP server without `--disallowedTools` denying the approval, merge and branch-write class ([trust-boundaries.md](trust-boundaries.md#approval-merge-and-branch-write-tools)) | High: an injected agent could approve, merge or push. Under auto an allow list doesn't stop the other tools; only the deny rules do | Grant the tools the prompt or workflow shows the task uses, by name; when nothing shows it, grant none and add a Questions row for the list. Deny the whole class, read from the pinned server ([Tools the action grants](action-contract.md#tools-the-action-grants-and-the-mcp-servers-it-starts)) |
 | C-12 | `bypassPermissions` in the `settings` input or `claude_args` (`--permission-mode bypassPermissions`, or its equals form); `--dangerously-skip-permissions`; `--allow-dangerously-skip-permissions` | Critical when the workflow is open to outsiders as [auto-mode-audit.md](auto-mode-audit.md#2-who-can-start-the-run) defines it; high otherwise: every call no deny rule covers runs unchecked | Remove it, and write explicitly the mode the step gets without it, from [Permission mode](action-contract.md#permission-mode). This finding is the mode change: state the mode before and after |
 | C-13 | Auto is the step's effective mode, derived by [auto-mode-audit.md](auto-mode-audit.md#1-is-auto-mode-the-effective-mode) from the pin and the step's settings. An unresolved floating ref counts as auto | Run auto-mode-audit.md; its table rates each missing layer | Its patches |
 | C-14 | `--model` with an ID not resolved live; `show_full_output: true` or `--debug` on a public repository | High for the output settings, which publish the agent's full transcript in public logs; low for the model | Remove them; resolve the model ID live |
@@ -228,8 +228,9 @@ Build one set of patches for all findings, not one patch per finding:
 3. **Order:** never add `github_token` while `allowed_non_write_users` holds `*`; resolve C-03 first.
 4. **Side effects:** for each change, find its row in [Costs of each change](auth-and-permissions.md#costs-of-each-change) and carry what its last column says.
 5. **Freeze the mode** of every claude-code-action step the patch touches, by [Permission mode in patches](auth-and-permissions.md#permission-mode-in-patches). Hold back the patches that need a frozen mode the audit couldn't determine.
-6. **Separate approvals.** A change to what starts the workflow (`on:` events or `types:`), to its permissions or secrets, or to the permission mode is its own item in the report, approved on its own.
+6. **Separate approvals.** A change to what starts the workflow or its jobs (`on:` events or `types:`, or a job-level `if:` that decides whether the job runs), to its permissions or secrets, or to the permission mode is its own item in the report, approved on its own.
 7. **Pins.** Every new or changed `uses:` is pinned by [Pick the newest release](version-drift.md#pick-the-newest-release).
+8. **Anchors.** A finding points at the line its patch changes; a missing setting points at the line of the job or step that lacks it. A `uses:` that a non-upstream commit replaces waits, like every patch that needs a frozen mode, for its Questions row.
 
 ## Validate the patches
 
@@ -238,7 +239,7 @@ Before you show the patches to the user, check them on the patched files:
 1. **Re-derive the effective mode** of every claude-code-action step the patches touch, from [Permission mode](action-contract.md#permission-mode). The mode after must equal the mode before, unless the user approved a change.
 2. **Run the W and C checks again on what the patches change.** A patch can raise a finding of its own, for example a bump that crosses a breaking release ([A version bump is a patch](version-drift.md#a-version-bump-is-a-patch)).
 3. **Auto mode:** when a patch makes a step's mode auto that wasn't auto before, run [auto-mode-audit.md](auto-mode-audit.md) on that step. In the audit route, also confirm that every layer patch is in place.
-4. **Parse the files:** actionlint when installed; otherwise read them again for W-12.
+4. **Parse the files:** actionlint when installed, run on copies of the patched files outside the repository; otherwise read them again for W-12.
 5. **Stay in the route.** In the diagnosis and repair routes, something this check notices on lines the patches don't touch isn't a finding of that route: put it in Observations and offer the audit route.
 
 Apply the patches only after the user approves them, on a branch, and land the change through `github-operations:auto-pr-lifecycle`. When the applied files differ from the checked patches, check them again.

@@ -122,7 +122,7 @@ Delete `$TMP` when you're done.
 
 **With MCP only:** list each directory that holds a Source files path with `get_file_contents` at `sha: <pin>` (for example `src/modes`). Each entry carries its blob `sha`. A blob different from the table makes that row's topics unverified until you read the file at the pin. Unmapped changes can't be seen this way: say in Version provenance that they weren't checked.
 
-**Release notes, either way.** Read every release between the snapshot and the pin (`get_release_by_tag` or `list_releases`, or the repository's Releases page). Breaking releases are titled `<version> (breaking changes)` and carry a `### ⚠️ Breaking changes` heading, but that label isn't guaranteed: v1.0.275 changed how the git wrappers treat `GIT_SSH_COMMAND` without it, and v1.0.274's notes don't mention its Claude Code bump. The notes are a second signal, never a replacement for the comparison.
+**Release notes, either way.** Read every release between the snapshot and the pin (`get_release_by_tag` or `list_releases`, or the repository's Releases page). Breaking releases are titled `<version> (breaking changes)` and carry a `### ⚠️ Breaking changes` heading, but that label isn't guaranteed: v1.0.275 changed how the git wrappers treat `GIT_SSH_COMMAND` without it, and v1.0.274's notes don't mention its Claude Code bump. The notes are a second signal, never a replacement for the comparison. When no route can read them (no `gh`, MCP or web), say so in Version provenance and let the comparison decide.
 
 ## When the pin is older than the snapshot
 

@@ -27,17 +27,17 @@ on:
 > ```yaml
 > on:
 >   issue_comment:
->     types: [created]
-> jobs:
->   claude:
->     if: contains(github.event.comment.body, '@claude')
+>     types: [created, edited]
 > ```
+>
+> **Observations:** the job has no job-level `if:`, so every comment starts a runner; the audit route covers it.
 
 **Why each value.**
 - "no run" and the cause: [step 2](claude-step-diagnosis.md#2-when-there-is-no-run), check 1, which comes before the workflow's state.
 - `none matched`: [step 4](claude-step-diagnosis.md#4-match-the-catalog) found no sharp edge, so the report says so instead of forcing one.
 - Medium: [the scale](workflow-audit.md#severity-scale), "a misconfiguration blocks merges or runs".
-- Its own approval: a change to what starts the workflow ([Build the patches](workflow-audit.md#build-the-patches), item 6). The job-level `if:` stops every other comment from starting a runner.
+- The patch adds the missing action and keeps `edited`: the smallest change that makes a new comment start the run ([step 2](claude-step-diagnosis.md#2-when-there-is-no-run)). The missing job-level `if:` is an Observation, not part of the fix.
+- Its own approval: a change to what starts the workflow ([Build the patches](workflow-audit.md#build-the-patches), item 6).
 
 ## Audit: an implicit-auto mention workflow
 

@@ -40,7 +40,7 @@ Many fixes change something else in the step. Before writing a patch, find its r
 
 ## Permission mode in patches
 
-**Freeze the mode.** Every patch to a claude-code-action step writes the step's current effective mode explicitly in `claude_args`, in the space form. A fix never changes the mode as a side effect; changing the mode is its own proposal, which the user approves on its own.
+**Freeze the mode.** Every patch that changes a claude-code-action step (its `uses:`, `with:` or `env:`), or a setting its effective mode depends on, writes the step's current effective mode explicitly in `claude_args`, in the space form. A fix never changes the mode as a side effect; changing the mode is its own proposal, which the user approves on its own.
 
 1. **Find the effective mode** from the pin (the drift check) and the table in [Permission mode](action-contract.md#permission-mode). Record it in the finding as "mode before".
 2. **Write it:**
