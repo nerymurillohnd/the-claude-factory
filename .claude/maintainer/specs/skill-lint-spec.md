@@ -86,14 +86,16 @@ Each finding carries a rule id, family, severity, `file:line`, message and sourc
 | CO-04 | ✗ | `description` + `when_to_use` are at most 1,536 characters. Claude Code truncates beyond that and doesn't reject, so the message says "truncated" |
 | CO-05 | ✗ | `compatibility` is at most 500 characters. `metadata` is a map of strings |
 | CO-06 | ✗ | The SKILL.md body (the lines after the closing `---`) has fewer than 500 lines; 500 fails, matching "under 500 lines" |
-| CO-07 | ✗ | Every relative link and `#anchor` resolves (slugs as github-slugger 2.0.0 builds them; links in code and in HTML comments are ignored; a target with a URI scheme of two or more characters, or starting with `//`, is external and not checked) |
+| CO-07 | ✗ | Every relative link and `#anchor` resolves (slugs as github-slugger 2.0.0 builds them; links in code and in HTML comments are ignored; a target with a URI scheme of two or more characters, or starting with `//`, is external and not checked). Output templates are exempt (see below) |
 | CO-08 | ✗ | No link or path leaves the skill folder |
 | CO-09 | ✗ | Depth: a `.md` file that is reached only through another bundled file, never linked from SKILL.md (depth > 1) |
-| CO-10 | ✗ | A reference file over 100 lines has a table of contents: within the first 20 non-blank lines after its first heading, at least 2 list items that link to `#anchors` in the same file |
+| CO-10 | ✗ | A reference file over 100 lines has a table of contents: within the first 20 non-blank lines after its first heading, at least 2 list items that link to `#anchors` in the same file. Output templates are exempt (see below) |
 | CO-11 | ⚠ | Time-sensitive text outside code, case-insensitive: `\b(before\|after\|until\|since\|as of)\s+(January\|…\|December\|Q[1-4])?\s*(19\|20)\d{2}\b`, `\b(currently\|now\|today\|recently)\b.{0,40}\b(19\|20)\d{2}\b`, `\bin (19\|20)\d{2}\b` |
 | CO-12 | ⚠ | Orphan file: no file of the skill references it at all. Exempt: `evals/`, `__pycache__`, `.DS_Store`, and `__init__.py`; `.git/`, `node_modules/` and `.venv/` are never listed (see Discovery) |
 
 Each file produces at most one of CO-09 (reached, but too deep) and CO-12 (not reached at all).
+
+An output template is a file under `assets/` that holds a `{{placeholder}}`. The Agent Skills specification lists `assets/` for static resources such as "Templates (document templates, configuration templates)" (agentskills.io/specification), and the table-of-contents guidance targets "reference files" Claude reads (platform best practices, "Structure longer reference files with a table of contents"). A template's links resolve in the document it produces, and a table of contents in it would be copied into every output, so CO-07 and CO-10 skip it. CO-08 still applies to its links. An `assets/` file with no placeholder, such as examples Claude reads, is checked like any other file.
 
 ### Portability (PO)
 

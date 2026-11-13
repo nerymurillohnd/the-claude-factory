@@ -60,6 +60,30 @@ class LinkRulesTest(unittest.TestCase):
         bad = self._rules({"SKILL.md": _skill_md("See [x](#missing).\n")})
         self.assertEqual((ok, bad), ([], ["CO-07"]))
 
+    def test_co07_assets_template_links_ignored(self) -> None:
+        """Links in an assets/ template point into the document it produces, so CO-07 skips them."""
+        files = {
+            "SKILL.md": _skill_md("Fill [t](assets/t.md).\n"),
+            "assets/t.md": "# {{name}}\n\nSee [log](./CHANGELOG.md) and [x](#nope).\n",
+        }
+        self.assertEqual(self._rules(files), [])
+
+    def test_co07_assets_without_placeholder_checked(self) -> None:
+        """An assets/ file with no placeholder is not a template, so CO-07 still applies."""
+        files = {
+            "SKILL.md": _skill_md("Read [e](assets/e.md).\n"),
+            "assets/e.md": "# E\n\nSee [x](references/none.md).\n",
+        }
+        self.assertEqual(self._rules(files), ["CO-07"])
+
+    def test_co08_assets_template_escape_still_reported(self) -> None:
+        """A link that leaves the skill folder from assets/ is still CO-08."""
+        files = {
+            "SKILL.md": _skill_md("Fill [t](assets/t.md).\n"),
+            "assets/t.md": "# {{name}}\n\nSee [x](../../other.md).\n",
+        }
+        self.assertEqual(self._rules(files), ["CO-08"])
+
     def test_co08_dotdot_link(self) -> None:
         """A link that leaves the skill folder is CO-08, not CO-07."""
         rules = self._rules({"SKILL.md": _skill_md("See [x](../other/SKILL.md).\n")})
@@ -115,6 +139,22 @@ class DepthAndFileRulesTest(unittest.TestCase):
             "references/a.md": toc + _lines(100),
         }
         self.assertEqual(self._findings(files), [])
+
+    def test_co10_assets_template_exempt(self) -> None:
+        """A long assets/ template is output, not a reference to navigate, so CO-10 skips it."""
+        files = {
+            "SKILL.md": _skill_md("Fill [t](assets/t.md).\n"),
+            "assets/t.md": "# {{name}}\n" + _lines(200),
+        }
+        self.assertEqual(self._findings(files), [])
+
+    def test_co10_assets_without_placeholder_checked(self) -> None:
+        """A long assets/ file with no placeholder, such as examples, still needs a TOC."""
+        files = {
+            "SKILL.md": _skill_md("Read [e](assets/e.md).\n"),
+            "assets/e.md": "# E\n" + _lines(200),
+        }
+        self.assertEqual(self._findings(files), [("CO-10", "assets/e.md")])
 
     def test_co10_100_lines_ok(self) -> None:
         """A 100-line reference needs no table of contents."""

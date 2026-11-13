@@ -50,6 +50,8 @@ CO11 = (
 )
 EXEMPT_PARTS = frozenset({"evals", "__pycache__"})
 EXEMPT_NAMES = frozenset({".DS_Store", "__init__.py"})
+TEMPLATES = "assets/"
+PLACEHOLDER = "{{"
 
 
 def _finding(rule: str, severity: Severity, path: str, line: int | None, message: str) -> Finding:
@@ -65,30 +67,59 @@ def _anchor_ok(fragment: str, doc: MarkdownDoc | None) -> bool:
     return wanted in {anchor.lower() for anchor in doc.anchors}
 
 
+def _template(skill: Skill, rel: str) -> bool:
+    """Tell whether a file is an output template, exempt from CO-07 and CO-10.
+
+    An output template is a file under assets/ that holds a `{{placeholder}}`: its links and
+    length belong to the document it produces, not to the skill. Other assets/ files, such as
+    examples Claude reads, are still checked.
+    """
+    return rel.startswith(TEMPLATES) and PLACEHOLDER in skill.text.get(rel, "")
+
+
+def _link_problem(
+    skill: Skill, resolver: Resolver, docs: Mapping[str, MarkdownDoc], rel: str, target: str
+) -> tuple[str, str] | None:
+    """Return the (rule, message) one link in file rel breaks, or None when it is fine."""
+    path = target.partition("#")[0].partition("?")[0]
+    if path and escapes(skill, path, rel):
+        return "CO-08", f"link `{target}` leaves the skill folder"
+    if _template(skill, rel):
+        return None
+    message = _co07_message(resolver, docs, rel, target)
+    return None if message is None else ("CO-07", message)
+
+
+def _co07_message(
+    resolver: Resolver, docs: Mapping[str, MarkdownDoc], rel: str, target: str
+) -> str | None:
+    """Return why a link in file rel names no file or heading in the skill, or None."""
+    path, _, fragment = target.partition("#")
+    path = path.partition("?")[0]
+    if not path:
+        ok = _anchor_ok(fragment, docs.get(rel))
+        return None if ok else f"anchor `#{fragment}` names no heading in this file"
+    resolved = resolver.resolve(path, rel, link=True)
+    if resolved is None:
+        return f"link `{target}` names no file in the skill"
+    if not _anchor_ok(fragment, docs.get(resolved)):
+        return f"anchor `#{fragment}` names no heading in {resolved}"
+    return None
+
+
 def _co07_co08_links(skill: Skill, docs: Mapping[str, MarkdownDoc]) -> list[Finding]:
-    """CO-07 and CO-08 for Markdown links: each resolves inside the skill folder."""
+    """CO-07 and CO-08 for Markdown links: each resolves inside the skill folder.
+
+    Links in assets/ templates are checked only for CO-08.
+    """
     resolver = Resolver(skill)
     findings: list[Finding] = []
     for rel, doc in sorted(docs.items()):
         for link in doc.links:
-            path, _, fragment = link.target.partition("#")
-            path = path.partition("?")[0]
-            if not path:
-                if not _anchor_ok(fragment, doc):
-                    message = f"anchor `#{fragment}` names no heading in this file"
-                    findings.append(_finding("CO-07", Severity.ERROR, rel, link.line, message))
-                continue
-            if escapes(skill, path, rel):
-                message = f"link `{link.target}` leaves the skill folder"
-                findings.append(_finding("CO-08", Severity.ERROR, rel, link.line, message))
-                continue
-            target = resolver.resolve(path, rel, link=True)
-            if target is None:
-                message = f"link `{link.target}` names no file in the skill"
-                findings.append(_finding("CO-07", Severity.ERROR, rel, link.line, message))
-            elif not _anchor_ok(fragment, docs.get(target)):
-                message = f"anchor `#{fragment}` names no heading in {target}"
-                findings.append(_finding("CO-07", Severity.ERROR, rel, link.line, message))
+            problem = _link_problem(skill, resolver, docs, rel, link.target)
+            if problem is not None:
+                rule, message = problem
+                findings.append(_finding(rule, Severity.ERROR, rel, link.line, message))
     return findings
 
 
@@ -143,10 +174,10 @@ def _has_toc(lines: list[str]) -> bool:
 
 
 def _co10(skill: Skill) -> list[Finding]:
-    """CO-10: a reference file over 100 lines has a table of contents."""
+    """CO-10: a reference file over 100 lines has a table of contents (templates exempt)."""
     findings: list[Finding] = []
     for rel, text in sorted(skill.text.items()):
-        if rel == SKILL_MD or not rel.endswith(MARKDOWN):
+        if rel == SKILL_MD or not rel.endswith(MARKDOWN) or _template(skill, rel):
             continue
         lines = text.replace("\r\n", "\n").split("\n")
         if lines and lines[-1] == "":
