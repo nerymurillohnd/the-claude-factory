@@ -11,6 +11,8 @@ Read the latest state of each run, report data you could not read as "not inspec
 | Workflow runs for a commit | `actions_list`, method `list_workflow_runs` with `workflow_runs_filter.branch`; keep the runs whose `head_sha` is the commit | Run list filtered by commit |
 | Jobs | `actions_list`, method `list_workflow_jobs`, `resource_id` = run id, `workflow_jobs_filter.filter` = `latest` | Run view with the jobs JSON field |
 | Failure logs | `get_job_logs` with `run_id`, `failed_only`, `return_content`, `tail_lines` | Run view, failed logs |
+| A workflow file that doesn't parse | `actions_list`, method `list_workflow_runs`, then the run's jobs: zero jobs with conclusion `failure`, or conclusion `startup_failure` | Run view: it prints "This run likely failed because of a workflow file issue." |
+| Self-hosted runners and their labels | — | `gh api repos/<o>/<r>/actions/runners`, which needs admin access; on a 403, record "not inspected". Larger GitHub-hosted runners are listed for the organization (`gh api orgs/<org>/actions/hosted-runners`), standard labels in GitHub's runner table |
 
 The Actions tools exist only when the GitHub MCP server runs with its Actions toolset on. Like every GitHub MCP tool, they load on demand: load them with `ToolSearch` (query `+github`) before the first call, and use `gh` when the server failed to connect.
 
