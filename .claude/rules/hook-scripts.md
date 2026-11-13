@@ -34,7 +34,7 @@ Applies to every script a Claude Code `command` hook runs, in a plugin or in thi
 ## Python
 
 - In a plugin, import only the standard library: no PEP 723 block and no package installs. Keep the syntax valid on Python 3.12, which ruff (`per-file-target-version` `py312`) and basedpyright already check for `plugins/`.
-- In `.claude/hooks/`, follow the Tooling section (How work is done › Maintainer scope) of `.claude/CLAUDE.md`.
+- In `.claude/hooks/`, follow `.claude/rules/npm-and-uv.md`.
 - Check Python hooks with `npm run lint:python` and `npm run typecheck:python`.
 
 ## Wire the hook

@@ -7,6 +7,7 @@ paths:
   - "uv.lock"
   - ".python-version"
   - "scripts/**"
+  - ".claude/hooks/**"
   - "biome.jsonc"
   - "ruff.toml"
   - "pyrightconfig.json"
@@ -18,7 +19,7 @@ paths:
 npm and uv serve only the maintainer tooling; no plugin needs them and users never install them.
 
 ## npm
-- Run every maintainer task, Python ones included, through its npm script in `package.json` (`npm run` lists them). Add a new maintainer script's npm script before its first run.
+- Run every maintainer task, Python ones included, through its npm script in `package.json` (`npm run` lists them). Add a new maintainer script's npm script before its first run. Never run a script as `./<file>.py`: its `#!/usr/bin/env python3` line picks the machine's OS Python instead of the `.venv` one `uv run` uses.
 - Use the Node and npm versions that `.nvmrc` and `devEngines` in `package.json` set; `devEngines` fails the install on any other version.
 - Install with `npm ci`, or `npm run setup` for the whole checkout; it never rewrites `package-lock.json`. Use `npm install -D <package>@<version>` only to add or change a dev dependency, and commit `package.json` and `package-lock.json` together; `.npmrc` saves the exact version.
 - npm skips a dependency's install scripts unless `allowScripts` in `package.json` lists it. Add a package there with `npm approve-scripts <package>` only when it needs its install script to work.
