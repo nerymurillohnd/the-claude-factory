@@ -1,0 +1,150 @@
+#!/usr/bin/env python3
+"""Tests for python-lsp-intelligence's hooks/check.py, run with stub ruff and basedpyright."""
+
+from __future__ import annotations
+
+from pathlib import Path
+import sys
+import tempfile
+import unittest
+
+from testers.plugin_hooks.helpers import (
+    GIT_ENV,
+    PLUGINS,
+    Outcome,
+    age,
+    clone,
+    field,
+    logged,
+    repository,
+    run_hook,
+    tool_dir,
+    write,
+)
+
+HOOK = PLUGINS / "python-lsp-intelligence" / "hooks" / "check.py"
+# One more than the hook's MAX_FILES.
+TOO_MANY = 21
+BLOCKED = 2
+
+
+class PythonHookTest(unittest.TestCase):
+    """What the hook checks, what it leaves alone, and that it never blocks without a finding."""
+
+    def _run(
+        self, tmp: Path, event: dict[str, object], *, tools: bool = True, **extra: str
+    ) -> tuple[Outcome, list[str]]:
+        """Run the hook in project tmp/work and return (outcome, stub calls)."""
+        bin_dir = tmp / "bin"
+        if not bin_dir.is_dir():
+            _ = tool_dir(tmp, ("git", "bash"), ("ruff", "basedpyright") if tools else ())
+        log = tmp / "log.txt"
+        env = {
+            "PATH": str(bin_dir),
+            "HOME": str(tmp / "home"),
+            "CLAUDE_PLUGIN_DATA": str(tmp / "data"),
+            "CLAUDE_PROJECT_DIR": str(tmp / "work"),
+            "STUB_LOG": str(log),
+            **GIT_ENV,
+            **extra,
+        }
+        return run_hook([sys.executable, str(HOOK)], event, env), logged(log)
+
+    @staticmethod
+    def _bash(tmp: Path) -> dict[str, object]:
+        """A PostToolUse event of a Bash command that ran in the project for a minute."""
+        return {
+            "session_id": "s1",
+            "hook_event_name": "PostToolUse",
+            "tool_name": "Bash",
+            "cwd": str(tmp / "work"),
+            "tool_input": {"command": "true"},
+            "tool_response": {"stdout": "", "stderr": "", "interrupted": False, "isImage": False},
+            "duration_ms": 60000,
+        }
+
+    @staticmethod
+    def _edit(path: Path) -> dict[str, object]:
+        """A PostToolUse event of an Edit of path."""
+        return {
+            "session_id": "s1",
+            "hook_event_name": "PostToolUse",
+            "tool_name": "Edit",
+            "tool_input": {"file_path": str(path)},
+        }
+
+    def test_missing_tool_gives_one_notice_and_never_blocks(self) -> None:
+        """Without ruff the hook exits 0, tells the user and Claude once, then stays silent."""
+        with tempfile.TemporaryDirectory() as raw:
+            tmp = Path(raw).resolve()
+            write(tmp / "work" / "a.py", "x = 1\n")
+            first, _ = self._run(tmp, self._edit(tmp / "work" / "a.py"), tools=False)
+            second, _ = self._run(tmp, self._edit(tmp / "work" / "a.py"), tools=False)
+        self.assertEqual((first.code, first.stderr), (0, ""))
+        message = field(first.stdout, "systemMessage")
+        self.assertIn("ruff is not installed", message)
+        self.assertIn("uv tool install ruff", message)
+        context = field(first.stdout, "hookSpecificOutput", "additionalContext")
+        self.assertIn("Do not treat them as checked", context)
+        self.assertEqual((second.code, second.stdout, second.stderr), (0, "", ""))
+
+    def test_clone_into_a_plain_folder_is_left_alone(self) -> None:
+        """Files a clone wrote are unchanged for Git: no tool runs on them and nothing is said."""
+        with tempfile.TemporaryDirectory() as raw:
+            tmp = Path(raw).resolve()
+            repository(tmp / "origin", {"a.py": "x = 1\n", "pkg/b.py": "y = 2\n"})
+            clone(tmp / "origin", tmp / "work" / "clone")
+            outcome, calls = self._run(tmp, self._bash(tmp))
+        self.assertEqual(outcome, Outcome(0, "", ""))
+        self.assertEqual(calls, [])
+
+    def test_edit_inside_a_nested_work_tree_is_checked(self) -> None:
+        """Of a cloned repository's files, only the one the command modified is checked."""
+        with tempfile.TemporaryDirectory() as raw:
+            tmp = Path(raw).resolve()
+            repository(tmp / "origin", {"a.py": "x = 1\n", "b.py": "y = 2\n"})
+            clone(tmp / "origin", tmp / "work" / "clone")
+            write(tmp / "work" / "clone" / "a.py", "x = 3\n")
+            outcome, calls = self._run(tmp, self._bash(tmp))
+        self.assertEqual((outcome.code, outcome.stderr), (0, ""))
+        self.assertIn("passed · clone/a.py", field(outcome.stdout, "systemMessage"))
+        self.assertTrue(any(call.endswith("clone/a.py") for call in calls), calls)
+        self.assertFalse(any(call.endswith("b.py") for call in calls), calls)
+
+    def test_arrival_outside_git_is_not_checked(self) -> None:
+        """More loose files than the hook checks per command: none is touched, Claude is told."""
+        with tempfile.TemporaryDirectory() as raw:
+            tmp = Path(raw).resolve()
+            for number in range(TOO_MANY):
+                write(tmp / "work" / "tree" / f"m{number}.py", "x = 1\n")
+            outcome, calls = self._run(tmp, self._bash(tmp))
+        self.assertEqual((outcome.code, outcome.stderr), (0, ""))
+        context = field(outcome.stdout, "hookSpecificOutput", "additionalContext")
+        self.assertIn(f"left {TOO_MANY} Python files outside a Git work tree", context)
+        self.assertEqual(calls, [])
+
+    def test_a_few_loose_files_are_checked(self) -> None:
+        """Outside Git, a handful of new files is an edit: each is checked, old files are not."""
+        with tempfile.TemporaryDirectory() as raw:
+            tmp = Path(raw).resolve()
+            write(tmp / "work" / "old.py", "x = 1\n")
+            age(tmp / "work" / "old.py", 3600)
+            write(tmp / "work" / "new.py", "x = 1\n")
+            outcome, calls = self._run(tmp, self._bash(tmp))
+        self.assertEqual((outcome.code, outcome.stderr), (0, ""))
+        self.assertTrue(any(call.endswith("/new.py") for call in calls), calls)
+        self.assertFalse(any(call.endswith("/old.py") for call in calls), calls)
+
+    def test_findings_still_block(self) -> None:
+        """A finding still reaches Claude through stderr and exit 2."""
+        with tempfile.TemporaryDirectory() as raw:
+            tmp = Path(raw).resolve()
+            write(tmp / "work" / "a.py", "x = 1\n")
+            outcome, _ = self._run(tmp, self._edit(tmp / "work" / "a.py"), STUB_EXIT_ruff="1")
+        self.assertEqual(outcome.code, BLOCKED)
+        self.assertIn("ruff check", outcome.stderr)
+        self.assertIn("Fix these findings in a.py", outcome.stderr)
+
+
+if __name__ == "__main__":
+    _ = unittest.main()
