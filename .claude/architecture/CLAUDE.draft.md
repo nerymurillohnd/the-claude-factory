@@ -54,15 +54,7 @@ The tools Nery and Claude use to build and maintain the project. Each plugin's o
 │   ├── .claude-plugin/plugin.json    # Plugin manifest
 │   ├── skills/ agents/ commands/ hooks/
 │   └── README.md CHANGELOG.md LICENSE NOTICE.txt
-├── .claude/                          # Claude's project setup (maintainer scope)
-│   ├── CLAUDE.md WORKFLOW.md settings.json
-│   ├── rules/                        # Path-scoped rules
-│   ├── agents/                       # Auditors, docs writers, testers
-│   ├── skills/                       # Project skills
-│   ├── references/ templates/        # Guides and templates for each document type
-│   ├── maintainer/                   # ADRs, technical debt, specs, plans, audits
-│   ├── session-handoff/              # End-of-session handoffs
-│   └── architecture/                 # Redesign drafts
+├── .claude/                          # Instructions, rules, skills, agents, ADRs, technical debt, handoffs
 ├── .github/                          # Workflows, issue and PR templates, labels, Dependabot
 ├── scripts/                          # Maintainer scripts and their tests
 ├── docs/                             # User guides
