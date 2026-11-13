@@ -1,6 +1,6 @@
 # Claude Code Plugin Marketplace — Lifecycle Map and Maintainer Blueprint
 
-> Status: draft for review, 2026-11-09; script status updated 2026-11-13 against branch `claude/repo-refactor-redesign-feqwzk`.  
+> Status: draft for review, 2026-11-09; script status updated 2026-11-13 (release and consistency scripts, ADR_2026-11-13_five-scripts-cover-release-and-consistency-checks) against branch `claude/repo-refactor-redesign-feqwzk`.  
 > Repository: `nerymurillohnd/the-claude-factory`. The plan was drawn from the inventory of `main` at `9caaea8` (2026-11-09); the redesign branch rebuilt `scripts/` from an empty base, so every script line below states what exists on that branch.  
 > Terminology and commands: Claude Code official docs (code.claude.com), checked 2026-11-09.  
 > Command reference: https://code.claude.com/docs/en/plugins/cli-reference  
@@ -110,11 +110,11 @@
 - `details` token projections can change with sign-in state: an unsigned `claude` produced different counts, so do not gate on them in unauthenticated CI or commit hooks [E14]
 
 **Scripts**
-- `scripts/gates.mjs` — **Replaced by** the npm scripts (`lint`, `typecheck`, `validate`, `check`), ADR_2026-11-12_npm-scripts-are-the-single-entry-point. The checks it was to gain are **Pending** as npm scripts:
-  - `validate --strict --profile directory` per plugin (22 of 22 passed on `main`, E2)
-  - `validate .claude --strict` for the repository's own skills, agents and commands (E1)
-  - Parse `validate --json` and fail on `gatingHooks[].hasCatch: false` (failed on `main` for `project-maintainer` and `turn-meter`, E2; decision pending)
-  - `claude plugin test` on each mod, in CI (the command needs no sign-in)
+- `scripts/gates.mjs` — **Replaced by** the npm scripts (`lint`, `typecheck`, `validate`, `check`), ADR_2026-11-12_npm-scripts-are-the-single-entry-point. The checks it was to gain, as npm scripts:
+  - `validate --strict --profile directory` per plugin — **Implemented** as `validate:portable`, outside `validate` while five mods fail it on CLI 2.1.323 (DEBT-003)
+  - `validate .claude --strict` for the repository's own skills, agents and commands (E1) — **Implemented** as `validate:claude`, part of `validate`
+  - Parse `validate --json` and fail on `gatingHooks[].hasCatch: false` — **Implemented** as `validate:hooks-catch` (`scripts/validators/gating-hooks-catch.sh`), outside `validate` while four hooks in `project-maintainer` and `turn-meter` fail it (DEBT-003)
+  - `claude plugin test` on each mod — **Implemented** as `validate:mods`, part of `validate`; no CI job runs it until `validate.yml` exists
   - The missing-summary guard from `check-mod.sh` until anthropics/claude-code#103055 is confirmed closed (E11)
 - `scripts/basedpyright-maintainer.mjs` — **Replaced by** `npm run typecheck:python` (`basedpyright && basedpyright -p scripts`): plugin Python at 3.12, maintainer Python at 3.15 (ADR_2026-11-12_basedpyright-checks-plugins-at-python-3-12, ADR_2026-11-12_ruff-and-basedpyright-each-own-a-check)
 - Linters — **Implemented** · `npm run lint`: Biome (`lint:js`), ruff (`lint:python`), ShellCheck and shfmt (`lint:shell`), actionlint and zizmor (`lint:workflows`, ADR_2026-11-12_actionlint-and-zizmor-check-workflows), check-jsonschema and `scripts/check-github-files.py` (`lint:github`)
@@ -215,7 +215,7 @@
 
 **Scripts**
 - `scripts/generators/marketplace.mjs` — **Pending** · Gap: builds `plugins[]` (name, source, description, category) from each `plugin.json`, so entries never drift; a check mode fails a missing or empty `description` and an unknown `metadata.category` (E13). `package.json` has no `generate` script yet
-- `scripts/validators/plugin-names-consistency.py` — **Pending** (DEBT-001) · Gap: name agrees across entry (name, source, `renames`), folder, `plugin.json` (`name`, `homepage`) and README (badge, install/update/uninstall commands) (NV-B4, NV-B5c, E9)
+- `scripts/validators/plugin-names-consistency.py` — **Replaced by** `scripts/validators/plugin-consistency.py` (`npm run check:consistency`, PC-01, PC-02, PC-07; ADR_2026-11-13_five-scripts-cover-release-and-consistency-checks) · Gap: name agrees across entry (name, source, `renames`), folder, `plugin.json` (`name`, `homepage`) and README (badge, install/update/uninstall commands) (NV-B4, NV-B5c, E9)
 
 ### 8. Validation
 - `claude plugin validate` after every edit (locally and in CI)
@@ -276,7 +276,7 @@
 - `claude plugin test` runs only mods' `*.test.ts(x)`; no command fires a command hook without a session (NV-A8)
 
 **Scripts**
-- `plugins/<p>/tests/*.test.ts(x)` — **Keep in plugin** (rule 4) · Fully covered by `claude plugin test`; no npm script or CI job runs it yet (**Pending**, see stage 3)
+- `plugins/<p>/tests/*.test.ts(x)` — **Keep in plugin** (rule 4) · Fully covered by `claude plugin test`; `npm run validate:mods` runs it inside `validate` (**Implemented**); no CI job yet
 - `scripts/testers/<plugin>/by_path.sh` (block-no-verify, hook-engineering, project-maintainer, python-lsp-intelligence, skill-diagnostics) — **Pending** · Gap: runs a command hook by path as Claude Code would, with a payload on stdin
 - `scripts/testers/<plugin>/*.test.mjs` and `test_*.py` (bash-lsp-intelligence, github-operations, hook-engineering, instruction-engineering, python-lsp-intelligence, skill-diagnostics, tailwind-development, typescript6-lsp-intelligence) — **Pending** · Gap: deterministic tests of plugin hook scripts, skill scripts, an MCP server and agent frontmatter. CLAUDE.md (Project scopes) checks plugin code with each plugin's own testing methods, so decide whether these return under `scripts/testers/` or move into each plugin
 - `scripts/testers/tailwind-development/fixtures/stub-language-server.mjs`, `scripts/testers/svelte-development/kit3-app/**` — **Pending** (fixtures, with the tests that use them)
@@ -321,9 +321,9 @@
 - `--profile directory` checks only that a README exists and has 40 words (NV-A7)
 
 **Scripts**
-- `scripts/check-repo.mjs` — **Pending** · Gap: README sections, template placeholders, Compatibility cells against `docs/compatibility.md`, the Platforms line
+- `scripts/check-repo.mjs` — **Pending**, except template placeholders and README length, now `check:consistency` PC-06 · Gap: README sections, Compatibility cells against `docs/compatibility.md`, the Platforms line
 - `scripts/generators/catalog.mjs` — **Pending** (DEBT-001) · Gap: builds the root README catalog from marketplace and manifests (NV-C). The root `README.md` still names it as the generator of its catalog
-- `scripts/validators/readme-catalog-consistency.py` — **Pending** (DEBT-001) · Gap: one catalog row per plugin under its category, categories match, `mods` holds only mods
+- `scripts/validators/readme-catalog-consistency.py` — **Replaced by** `check:consistency` PC-08 (`mods` holding only mods is not checked) · Gap: one catalog row per plugin under its category, categories match, `mods` holds only mods
 - `scripts/checkers/markdown-urls.py` — **Pending** · Caller: manual · Gap: live check of every http(s) URL and fragment in tracked Markdown
 - `scripts/checkers/reference-pages.py` — **Pending** · Caller: manual · Gap: offline layout (`## Contents`, `## Documentation References`), relative links and anchors
 - The documentation files themselves are kept by the `docs-maintenance` project skill and its writer agents, from the references in `.claude/references/`
@@ -341,8 +341,8 @@
 - No CLI command
 
 **Scripts**
-- `scripts/release/bump-version.py` — **Pending** · Callers: manual, skill · Gap: turns `[Unreleased]` into the dated section with its links. No command writes a CHANGELOG. CLAUDE.md dates releases in UTC on the day they are published, not in America/Tegucigalpa: rebuild it to that rule
-- `scripts/validators/plugin-versions-consistency.py` — **Pending** (DEBT-001) · Gap: CHANGELOG sections, order and links agree with `plugin.json`; root CHANGELOG lines, README badge, catalog version
+- `scripts/release/bump-version.py` — **Replaced by** `scripts/release/release-changelog.py` (`npm run release:changelog`, UTC date) · Callers: skill · Gap: turns `[Unreleased]` into the dated section with its links. No command writes a CHANGELOG. CLAUDE.md dates releases in UTC on the day they are published, not in America/Tegucigalpa: rebuild it to that rule
+- `scripts/validators/plugin-versions-consistency.py` — **Replaced in part by** `check:consistency` (PC-04 headings against tags, PC-05, PC-08 catalog version); root CHANGELOG lines stay **Pending** · Gap: CHANGELOG sections, order and links agree with `plugin.json`; root CHANGELOG lines, README badge, catalog version
 
 ### 13. Versioning / Bumping
 - Choose the SemVer bump: major / minor / patch
@@ -362,8 +362,8 @@
 - `validate` accepts non-SemVer versions such as `"1.0"`; enforce SemVer with a script [E8]
 
 **Scripts**
-- `scripts/release/bump-version.py` — **Pending** (see stage 12) · Gap: writes the new version in `plugin.json`. Doesn't regenerate the catalog: run `catalog.mjs` after it
-- `scripts/release/check-version-bump.py` — **Pending** · Caller: CI · Gap: every plugin changed since `<base>` went up exactly one SemVer step and has its CHANGELOG section, with exemptions. `tag --dry-run` only checks entry/manifest agreement (NV-A12)
+- `scripts/release/bump-version.py` — **Replaced by** `npm run release:status -- --next <plugin> --level <level>`, which prints the version the skill writes · Gap: writes the new version in `plugin.json`. Doesn't regenerate the catalog: run `catalog.mjs` after it
+- `scripts/release/check-version-bump.py` — **Replaced in part by** `scripts/release/release-status.py` (`npm run release:status`: changed and untagged versions, semver, dependents); the CI gate with exemptions stays **Pending** · Caller: CI · Gap: every plugin changed since `<base>` went up exactly one SemVer step and has its CHANGELOG section, with exemptions. `tag --dry-run` only checks entry/manifest agreement (NV-A12)
 
 ### 14. Tagging
 - `claude plugin tag` → `<plugin>--v<version>`
@@ -384,8 +384,8 @@
 - `release.yml` creates the tag through `gh release create`, so `claude plugin tag` cannot replace that step as written
 
 **Scripts**
-- `scripts/release/release-notes.py` — **Pending** · Caller: `.github/workflows/release.yml` · Gap: the release body (CHANGELOG section plus the update command). Its `--tag` mode duplicates `tag --dry-run` (E5): *reduce or keep, decision pending*
-- `.github/workflows/release.yml` — **Implemented, but cannot run on this branch** (entry point) · It calls `scripts/release/release-notes.py` (`--tag` and the notes), which does not exist here, and it triggers on `workflow_run` of a `Validate` workflow that does not exist either. It needs both before `main` takes this branch. Optional step: `claude plugin tag <p> --dry-run` before `gh release create`
+- `scripts/release/release-notes.py` — **Implemented** (`npm run release:notes`) · Caller: `.github/workflows/release.yml`, through `uv run` (ADR_2026-11-13_release-workflow-runs-python-through-uv) · Gap: the release body (CHANGELOG section plus the update command). `--tag` is kept and derives `<plugin>--v<version>` from `plugin.json`, since `release.yml` installs no `claude`
+- `.github/workflows/release.yml` — **Implemented, but cannot run on this branch** (entry point) · It calls `scripts/release/release-notes.py` (`--tag` and the notes) through setup-uv and `uv run`, and it triggers on `workflow_run` of a `Validate` workflow that does not exist yet; until it does, only `workflow_dispatch` runs it. Optional step: `claude plugin tag <p> --dry-run` before `gh release create`
 
 ### 15. Publishing / Distribution
 - Push and merge (with authorization)
@@ -401,7 +401,7 @@
 - Without a TTY, an install that shows a marketplace-declared command is refused unless `-y` or `--accept-command <sha256>` is passed [skill]
 
 **Scripts**
-- `scripts/release/check-published-install.sh` — **Pending** · Caller: a post-release CI job · Gap: in an isolated `CLAUDE_CONFIG_DIR`, `marketplace add` the GitHub repository, `install` the released plugin, read `installPath` from `list --json`, then `validate --strict` and `test` (mods) on what users actually receive (E10). Each step is a command; the script only orchestrates and isolates
+- `scripts/release/check-published-install.sh` — **Replaced by** `scripts/release/check-install.sh` (`npm run check:install -- --from local|<ref> <plugin>...`) · Callers: skill; a post-release CI job stays **Pending** · Gap: in an isolated `CLAUDE_CONFIG_DIR`, `marketplace add` the GitHub repository, `install` the released plugin, read `installPath` from `list --json`, then `validate --strict` and `test` (mods) on what users actually receive (E10). Each step is a command; the script only orchestrates and isolates
 
 ### 16. Update Delivery
 - `claude plugin update` on the user side
@@ -480,7 +480,7 @@
 - `uninstall --json` can't be combined with `--prune` [docs]
 
 **Scripts**
-- `scripts/validators/plugin-names-consistency.py` — **Pending** (see stage 7) · Gap: a `renames` key that is still listed (only check that catches it, E13)
+- `scripts/validators/plugin-names-consistency.py` — **Replaced by** `check:consistency` PC-02 (see stage 7) · Gap: a `renames` key that is still listed (only check that catches it, E13)
 - `scripts/checkers/check-plugin-name.py` — **Pending** (see stage 4) · Gap: a retired name cannot be reused
 - `scripts/generators/marketplace.mjs`, `catalog.mjs` — **Pending** · Regenerate entries and catalog after the change
 
@@ -517,7 +517,8 @@ Each line says what exists on the redesign branch on 2026-11-13; `(pending)` mar
 
 ```text
 .
-├── package.json                 # the single entry point: lint, typecheck, validate, check, test:scripts, lint:skills, labels:sync
+├── package.json                 # the single entry point: lint, typecheck, validate(:*), check, check:consistency, check:install,
+│                                #   release:status, release:changelog, release:notes, test:scripts, lint:skills, labels:sync
 ├── .claude/
 │   ├── settings.json            # CC hook registrations (none yet)
 │   ├── hooks/                   # (pending) project Claude Code hook scripts, e.g. checkout.sh; maintainer logic stays in scripts/
@@ -527,7 +528,7 @@ Each line says what exists on the redesign branch on 2026-11-13; `(pending)` mar
 ├── .github/
 │   ├── workflows/
 │   │   ├── validate.yml         # (pending) runs the npm scripts; release.yml triggers on it
-│   │   ├── release.yml          # release-notes.py (pending), gh release create
+│   │   ├── release.yml          # setup-uv, uv run release-notes.py, gh release create
 │   │   └── evals.yml            # (pending) changed-eval-plugins.sh → claude plugin eval
 │   ├── ISSUE_TEMPLATE/  pull_request_template.md  labels.json  CODEOWNERS  dependabot.yml
 ├── plugins/<p>/
@@ -537,15 +538,17 @@ Each line says what exists on the redesign branch on 2026-11-13; `(pending)` mar
     ├── check-github-files.py  sync-labels.py  pyrightconfig.json
     ├── check-repo.mjs           # (pending)
     ├── typings/                 # local ruamel.yaml stubs
-    ├── validators/              # skill-lint.py + skill_lint/; (pending) plugin-json-schema, marketplace-json-schema,
-    │                            # mcp-json-schema, lsp-json-schema, hooks-json-schema, plugin-names-consistency,
-    │                            # plugin-versions-consistency, plugin-required-files, plugin-icons,
-    │                            # readme-catalog-consistency, skill-argument-placeholders, skill-references, skill-size
+    ├── validators/              # skill-lint.py + skill_lint/; plugin-consistency.py + plugin_consistency/;
+    │                            # gating-hooks-catch.sh; (pending) plugin-json-schema, marketplace-json-schema,
+    │                            # mcp-json-schema, lsp-json-schema, hooks-json-schema, plugin-required-files,
+    │                            # plugin-icons, skill-argument-placeholders, skill-references, skill-size
     ├── checkers/                # (pending) markdown-urls, reference-pages, check-plugin-name, fetch-github-mod
     ├── generators/              # (pending) marketplace, catalog, plugin-icons (+ plugin-icons/*.svg), scaffold-plugin
-    ├── release/                 # (pending) bump-version, check-version-bump, release-notes, check-published-install
+    ├── release/                 # release-notes.py, release-status.py, release-changelog.py + release_tools/;
+    │                            # check-install.sh
     ├── schemas/                 # (pending) one schema per shape
-    └── testers/                 # skill_lint/; (pending) per-plugin testers, changed-eval-plugins, fixtures
+    └── testers/                 # skill_lint/, release/, plugin_consistency/; (pending) per-plugin testers,
+                                 # changed-eval-plugins, fixtures
 ```
 
 ---
