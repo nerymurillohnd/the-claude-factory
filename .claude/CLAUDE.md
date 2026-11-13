@@ -60,10 +60,7 @@ Conventions that apply to the whole project. Each section groups the conventions
 
 ## Commands
 
-- Run `npm run lint:skills` to check every skill (`plugins/*/skills/*/SKILL.md` and `.claude/skills/*/SKILL.md`) with skill-lint; it changes no file and exits 0 with no error, 1 on an error (or on a warning with `--strict`), and 2 on a usage error.
-- Run `npm run lint:skills -- <skill folder>` to check one skill, and pass `--only CO,SC`, `--strict`, `--manifest` or `--json` after `--` to narrow or reshape the report.
-- Report each defect `lint:skills` finds to the owner, one question per rule id, and fix it or record it as debt only after the owner decides.
-- Run `npm run test:scripts` to run the unittest suite of the maintainer scripts in `scripts/testers/`.
+- How to run this project in each lifecycle stage, its Claude Code commands and npm scripts: @WORKFLOW.md
 
 ## Pull requests
 
