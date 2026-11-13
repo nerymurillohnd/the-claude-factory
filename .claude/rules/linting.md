@@ -3,6 +3,7 @@ paths:
   - "**/*.py"
   - "**/*.sh"
   - "**/*.{js,cjs,mjs,ts,cts,mts,tsx}"
+  - "**/*.{json,jsonc,yml,yaml}"
   - "/biome.jsonc"
   - "/ruff.toml"
   - "/pyrightconfig.json"

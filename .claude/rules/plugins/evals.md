@@ -20,7 +20,7 @@ Every eval case and judge grader is a model call billed to the owner, so evals r
 
 ## Run
 
-- Locally, run a reduced smoke suite: `claude plugin eval plugins/<plugin> --case <case> --runs 1 --ablation none --no-publish`.
+- Locally, and only with the owner's approval, run a reduced smoke suite: `claude plugin eval plugins/<plugin> --case <case> --runs 1 --ablation none --no-publish`.
 - In CI:
   1. Run a plugin's full suite once, the first time.
   2. After that, on each pull request, run the full suite only for plugins with evals that the pull request changed.

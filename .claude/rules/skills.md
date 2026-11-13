@@ -8,7 +8,7 @@ paths:
 
 This repository holds two kinds of skills, and they never mix:
 
-- **Project skills,** in `.claude/skills/<skill>/`: maintainer procedures for this marketplace, such as versions, releases, catalog changes, documents and icons. They run only in this repository and never reach users.
+- **Project skills,** in `.claude/skills/<skill>/`: maintainer procedures for this marketplace, listed in `.claude/CLAUDE.md` (Stack › Skills). They run only in this repository and never reach users.
 - **Plugin skills,** in `plugins/<plugin>/skills/<skill>/`: part of a plugin, installed on users' machines and run in their projects.
 
 ## Project skills

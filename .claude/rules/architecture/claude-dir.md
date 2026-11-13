@@ -11,7 +11,7 @@ Claude Code's configuration for this repository and the maintainer records; noth
 - Put project instructions and the core commands in `CLAUDE.md`, and the commands of each lifecycle stage in `WORKFLOW.md`, which `CLAUDE.md` points to without importing it.
 - Put project settings (permissions, plugins, MCP servers, auto memory) in `settings.json`. Register this project's hooks there, with their scripts in `hooks/`, as `rules/hook-scripts.md` sets out.
 - Put a convention for one area or file type in `rules/<topic>.md`, with a quoted `paths` list so it loads only with those files. Anchor a file at the repository root with a leading `/` (`"/README.md"`): a pattern without a `/` matches that name in every folder.
-- Point to each rule from the `CLAUDE.md` section of its area, with the task that should make Claude read it, so Claude knows the rule exists before it touches the files that load it.
+- Point to each rule that holds a Stack area's guidelines from that area of `CLAUDE.md`, with the task that should make Claude read it, so Claude knows the rule exists before it touches the files that load it.
 - Put a subagent in `agents/<group>/<agent>.md`: `auditors/` for read-only checks, `docs-maintainers/` for `plugin-readme-writer` (a plugin README written in full for the first time), `testers/` for test runs. Set `model` in its frontmatter (Sonnet for executors and simple auditors; Opus for adversarial reviewers, orchestrators, and reviewers of critical, complex or broad work) and `effort` from the official recommendations for that model and task.
 - Leave `agent-memory/<agent>/` to the subagents that set `memory: project`; they write it themselves.
 - Put a project skill in `skills/<skill>/`; `rules/skills.md` sets how to write and check it.

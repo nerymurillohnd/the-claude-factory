@@ -26,14 +26,13 @@ Applies to every script a Claude Code `command` hook runs, in a plugin or in thi
 
 - Put `set -euo pipefail` on the line after the shebang.
 - Drop `-e` only when the script sets its exit code on every path itself, such as a guard that may exit only 0 or 2 or a hook that must always exit 0; then check each command's status, and say why in a comment on the `set` line.
-- On an event that can block, remember that under `-e` a command failing with status 2 makes the hook exit 2 and block the action: map unexpected failures to exit 1 with the `trap` from "Keep transient failures retryable in a shell hook" (code.claude.com/docs/en/self-hosted-environments-configuration), and exit 2 only on purpose.
+- On an event that can block, map unexpected failures to exit 1, because under `-e` a command failing with status 2 makes the hook exit 2 and block the action. Use the `trap` from "Keep transient failures retryable in a shell hook" (code.claude.com/docs/en/self-hosted-environments-configuration), and exit 2 only on purpose.
 - Read an environment variable that may be unset, such as `CLAUDE_ENV_FILE`, as `${VAR:-}` under `-u`.
 - Under `pipefail`, end a pipeline that may stop early, such as one into `head` or `grep -q`, with `|| true`, or write it without the pipe.
 
 ## Python
 
 - In a plugin, import only the standard library: no PEP 723 block and no package installs. Keep the syntax valid on Python 3.12, which ruff (`per-file-target-version` `py312`) and basedpyright already check for `plugins/`.
-- In `.claude/hooks/`, follow `.claude/rules/npm-and-uv.md`.
 
 ## Wire the hook
 

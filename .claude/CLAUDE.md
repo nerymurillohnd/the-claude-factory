@@ -74,7 +74,9 @@ The repository has two scopes that never mix. A rule, tool or file of one scope 
   - Python: ruff formats and lints; basedpyright type-checks.
   - Shell (Bash): shfmt formats; ShellCheck lints.
   - TypeScript and JavaScript: Biome formats and lints, together with JSON, YAML and the Markdown written for people; `tsc` type-checks.
-- Before installing, adding, upgrading or running a maintainer tool, read `.claude/rules/npm-and-uv.md`: it sets the versions, how each tool is installed, and how `.nvmrc` stays in step with the machine's Node.
+- Before maintainer work, check that `node --version` matches `.nvmrc` and `npm --version` is 12, and report a mismatch to the owner.
+- Before installing, adding or upgrading a maintainer tool or dependency, read `.claude/rules/npm-and-uv.md`: it sets the versions, how each tool is installed, and how `.nvmrc` stays in step with the machine's Node.
+- Before adding or changing a maintainer script, read `.claude/rules/architecture/scripts.md`.
 - Before changing code, or the configuration of a formatter, linter or type checker, read `.claude/rules/linting.md`: it maps each file type to its checks and says how to handle a finding.
 
 ### Plugins
@@ -82,11 +84,12 @@ The repository has two scopes that never mix. A rule, tool or file of one scope 
 - **Runtime:** each plugin's own dependencies, declared in the Prerequisites of its README.
 - **Development:** `claude --plugin-dir plugins/<plugin>` loads a plugin from its folder and `/reload-plugins` applies each edit; `claude plugin validate --strict` checks it, and `npm run check:consistency` keeps names, versions and the catalog in agreement.
 - **Distribution:** the `release:*` npm scripts prepare each version, and `release.yml` publishes it.
-- Before designing, creating or changing a plugin, read `.claude/rules/plugins.md`. It holds the plugin-scope conventions: design, safety, license, names, versions, target surfaces, portability and prerequisites, and evals. It also loads on its own when a file under `plugins/` or `.claude-plugin/`, or the root `README.md` or `CHANGELOG.md`, is read or edited.
+- Before designing, creating or changing a plugin, read `.claude/rules/plugins.md`. It holds the plugin-scope conventions: design, safety, license, names, versions, target surfaces, portability and prerequisites, and evals.
+- Before writing a hook script, in a plugin or in `.claude/hooks/`, read `.claude/rules/hook-scripts.md`.
 
 ### CI/CD and GitHub
 
-- **GitHub Actions:** `release.yml`, the only workflow, tags each new plugin version and creates its GitHub Release; actionlint and zizmor check every workflow.
+- **GitHub Actions:** `release.yml` tags each untagged plugin version and creates its GitHub Release, but it waits for a `Validate` workflow: check `.github/workflows/` before relying on it, and release with the `plugin-releases` skill. actionlint and zizmor check every workflow.
 - **GitHub files:** issue forms, pull request templates, labels and Dependabot, checked by `npm run lint:github`.
 - Before changing a workflow or any other file under `.github/`, read `.claude/rules/architecture/github.md`.
 

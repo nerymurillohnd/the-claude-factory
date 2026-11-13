@@ -18,8 +18,8 @@ The root `package.json`, `pyproject.toml` and their lockfiles serve only the mai
 ## Node and npm
 
 - Run maintainer work on Node 26 LTS and npm 12. `.nvmrc` holds the exact Node version, and `devEngines` in `package.json` the accepted Node and npm ranges; `devEngines` fails the install on any version outside them.
-- Keep `.nvmrc` equal to the Node version on the machine. Before maintainer work, compare `node --version` with `.nvmrc`; when they differ, tell the owner, and on approval move the older one to the newest Node 26 LTS release (`nvm install` on the machine, an edit to `.nvmrc`). `release.yml` reads `.nvmrc`, so the edit also moves CI.
-- Install npm 12 globally with `npm install -g npm@12`: Node 26 ships npm 11, which `devEngines` rejects.
+- Keep `.nvmrc` equal to the Node version on the machine. When `node --version` and `.nvmrc` differ, tell the owner, and on approval move the older one to the newest Node 26 LTS release: install it on the machine, or edit `.nvmrc`. `release.yml` reads `.nvmrc`, so the edit also moves CI.
+- When `npm --version` is below 12, ask the owner, then install npm 12 globally with `npm install -g npm@12`: Node 26 ships npm 11, which `devEngines` rejects.
 - Run every maintainer task, Python ones included, through its npm script in `package.json` (`npm run` lists them). Add a new maintainer script's npm script before its first run. Never run a script as `./<file>.py`: its `#!/usr/bin/env python3` line picks the machine's OS Python instead of the `.venv` one `uv run` uses.
 - Install with `npm ci`, or `npm run setup` for the whole checkout; it never rewrites `package-lock.json`. Use `npm install -D <package>@<version>` only to add or change a dev dependency, and commit `package.json` and `package-lock.json` together; `.npmrc` saves the exact version.
 - npm skips a dependency's install scripts unless `allowScripts` in `package.json` lists it. Add a package there with `npm approve-scripts <package>` only when it needs its install script to work.
