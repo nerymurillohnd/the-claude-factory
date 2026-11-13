@@ -63,14 +63,17 @@ The tools Nery and Claude use to build and maintain the project. Each plugin's o
 └── README.md CHANGELOG.md LICENSE    # Marketplace front page, release log, license
 ```
 
+## Cloud sessions
+- The cloud environment's setup script installs uv, Python, Node, npm and the tools, then runs `npm run setup`; later sessions start from its cached snapshot. `CLAUDE_CODE_REMOTE=true` marks a cloud session.
+- Git-ignored files (`node_modules/`, `.venv/`, `CLAUDE.local.md`, `.claude/settings.local.json`) never come with the clone. Run `npm run setup` when `node_modules/` or `.venv/` is missing, or after `package-lock.json` or `uv.lock` changes, since the snapshot keeps the old ones.
+- Keep `.python-version` and the setup script's `uv python pin` on the same version; change both together.
+
 ## Main commands
 
 ### Setup
 | Command | Does |
 |---|---|
-| `npm ci` | Installs the JS dev tools (Biome, TypeScript) |
-| `uv sync` | Creates `.venv` with the maintainer Python |
-| `npm run tools:install` | Installs ruff, basedpyright, zizmor and check-jsonschema |
+| `npm run setup` | Prepares a checkout: `npm ci` (node_modules), `uv sync --locked` (.venv) and `tools:install` (the pinned uv tools) |
 
 ### Checks
 | Command | Does |
