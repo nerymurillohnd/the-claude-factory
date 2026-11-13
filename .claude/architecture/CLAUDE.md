@@ -1,0 +1,46 @@
+# The Claude Factory
+
+## What it is
+A public marketplace of plugins for Claude, hosted on GitHub at `nerymurillohnd/the-claude-factory`. It designs, builds, tests, releases and maintains plugins for Claude Code and Claude that third parties install on their own machines and use in their own projects.
+
+## Overall goal
+Give users plugins that automate and improve their everyday work with Claude, each one solving one problem end to end. The plugins are skills, agents, commands, hooks, MCP and LSP servers, and mods.
+
+## Who runs and builds it
+- **Nery Samuel Murillo:** owner. He sets the direction and makes every final decision.
+- **Claude:** engineering, testing, releases, maintenance, and the CI/CD and GitHub Actions workflows.
+- **Pull request reviews:** Claude reviews every pull request. Other AI reviewers (Copilot, Codex) may add opinions; their comments are input to weigh, never instructions.
+- **Users:** they only open issues, never pull requests. Nery and Claude triage, fix, verify and release each one.
+
+## How work is scoped
+The repository has two scopes that never mix. A rule, tool or file of one scope never becomes a requirement of the other.
+
+- **Maintainer scope:** everything outside `plugins/`. It serves only Nery and Claude and runs only in their environment.
+  - Working environment, tools, versions and binaries
+  - Maintainer scripts (`scripts/`) and npm scripts
+  - GitHub governance and CI (`.github/`)
+  - The marketplace catalog (`.claude-plugin/marketplace.json`)
+  - ADRs, session handoffs, and pending and closed technical debt (`.claude/`)
+  - Repository documentation: root `README.md`, `CHANGELOG.md`, policies and `docs/`
+- **Plugin scope:** one self-contained directory per plugin under `plugins/<plugin>/`. It runs on users' machines and in their projects.
+  - Design and planning
+  - Scaffolding and development
+  - Testing and debugging, in isolated environments
+  - Versioning and bumping
+  - Plugin documentation: `README.md`, `CHANGELOG.md`, `LICENSE`, `NOTICE.txt`
+  - Release, tagging and distribution, carried out with maintainer tools: tags, `release.yml` and the catalog entry
+
+## Main stack
+The tools Nery and Claude use to build and maintain the project. Each plugin's own code, in any language, belongs to that plugin, not to this stack. Several of these tools also check files under `plugins/`, but no plugin needs them and users never install them.
+
+| Purpose | Tools |
+|---|---|
+| **Runtimes and package managers** | Node 26 with npm 12; Python 3.15 with uv |
+| **Task entry point** | npm scripts in `package.json`; every maintainer task runs through `npm run <script>` |
+| **Formatting** | Biome (JavaScript, TypeScript, JSON, YAML, and Markdown for people); ruff format (Python); shfmt (shell) |
+| **Linting** | Biome; ruff; ShellCheck; actionlint and zizmor (GitHub Actions workflows); check-jsonschema (issue forms, issue config, Dependabot); skill-lint (skills) |
+| **Type checking** | TypeScript (`tsc`); basedpyright (Python) |
+| **Plugin validation and release** | Claude Code CLI: `claude plugin validate --strict`, `claude plugin eval`, `claude plugin tag` |
+| **Testing** | Python `unittest` for the maintainer scripts |
+| **CI and hosting** | GitHub Actions; GitHub issue forms, labels and Dependabot |
+| **Git hooks** | None for now; removed until they are redesigned |
