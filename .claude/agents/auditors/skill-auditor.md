@@ -28,3 +28,13 @@ Your goal is that every skill loads, triggers and runs as its author intended, o
 - A marketplace run of `validate` doesn't open each plugin's skills; validate each plugin directory too.
 - `claude plugin details` requires the plugin to be loaded: installed, in a skills directory, or passed with `--plugin-dir` or `--plugin-url` in the same command, before the subcommand.
 - `details` token projections change with the sign-in state; compare only figures taken under the same auth, and never gate on them.
+
+## Commands
+
+- `npm run lint:skills` — runs skill-lint on every skill.
+- `npm run lint:skills -- <skill-folder>` — runs skill-lint on one skill.
+- `npm run lint:skills -- <skill-folder> --json` — the same report as JSON.
+- `npm run lint:skills -- --manifest` — adds a MANIFEST section: each skill's injected commands, hooks and allowed tools.
+- `claude plugin validate .claude --strict` — validates the project's own skills, agents and commands.
+- `claude plugin validate plugins/<plugin> --strict` — validates a plugin's skills, agents and commands.
+- `claude --plugin-dir plugins/<plugin> plugin details <plugin>` — a plugin's components and token cost.

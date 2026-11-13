@@ -34,3 +34,10 @@ Your goal is that no manifest or plugin layout reaches users broken, inconsisten
 - Duplicate JSON keys (for example `PostToolUse` twice) pass: the later value silently wins.
 - `--profile directory` caught `.DS_Store` and a missing `icon` path (warnings), but passed Windows-hostile names (`nul.txt`, `a:b.md`), case-colliding names (`Notes.md`/`notes.md`), a symlink, large files and file counts.
 - For mods, `--profile directory` returns `incomplete: true`: none of its checks apply to the hooks module.
+
+## Commands
+
+- `npm run validate` — validates every plugin and the marketplace, with warnings as errors.
+- `claude plugin validate plugins/<plugin> --strict --json` — one plugin's report as JSON.
+- `claude plugin validate . --strict --json` — the marketplace's report as JSON.
+- `claude plugin validate plugins/<plugin> --strict --profile directory` — adds the portability checks.

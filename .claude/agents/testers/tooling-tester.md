@@ -32,3 +32,13 @@ Your goal is maintainer tooling that works on every run and knows exactly what t
 - `details` token projections change with the sign-in state; compare only figures taken under the same auth.
 - `--available` and `--data-size` have no effect without `--json`.
 - `restore-set-aside --discard` deletes the set-aside options and secrets permanently; never pass `--discard`.
+
+## Commands
+
+- `npm run test:scripts` — the maintainer unittest suite.
+- `npm run check` — every lint, type check and plugin validation.
+- `npm run lint:python` — ruff lint and format check.
+- `npm run typecheck:python` — basedpyright on plugin and maintainer Python.
+- `claude --version` — the installed Claude Code version.
+- `claude plugin <subcommand> --help` — the installed CLI's options for a subcommand.
+- `HOME=<tmp> claude plugin init <name> --with skills agents hooks mcp lsp` — the official scaffold, for comparison only.

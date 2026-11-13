@@ -29,3 +29,9 @@ Your goal is a repository whose workflows are secure and correct, and whose form
 - `claude plugin test` needs no sign-in, so it fits CI; `claude plugin eval` calls the model with real credentials and bills usage.
 - `details` token projections change with the sign-in state, so never gate on them in unauthenticated CI.
 - `release.yml` creates the tag through `gh release create`, so `claude plugin tag` cannot replace that step as written.
+
+## Commands
+
+- `npm run lint:workflows` — actionlint and zizmor (offline) on the workflows.
+- `npm run lint:github` — checks the issue forms, Dependabot and labels against the catalog.
+- `npm run labels:sync` — compares `labels.json` with GitHub, dry-run by default; needs a GitHub token.

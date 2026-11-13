@@ -27,3 +27,8 @@ Your goal is that a user reads the same fact about a plugin wherever they look. 
 - `validate` prints an `Advice` block when a README has no install-from-marketplace line, but `Advice` never changes the verdict or the exit code, even with `--strict`.
 - `--profile directory` checks only that a README exists and has 40 words; it says nothing about the README's facts.
 - `validate` accepts an entry without `description`, an unknown entry `category` and a `renames` key that is still a listed plugin, so the catalog can drift from the manifests with a passing validator.
+
+## Commands
+
+- `git grep -n "<fact>"` — every tracked file that states a fact.
+- `claude plugin validate plugins/<plugin>` — prints `Advice` when a README lacks an install line.

@@ -26,3 +26,9 @@ Your goal is evidence of whether a plugin makes Claude better at the tasks it cl
 - Put the target before `--tag`, `--allow-tools` and `--json`; each takes the following words as its value.
 - Evals call the model with the owner's credentials and bill their plan or API account.
 - A case without a grader fails to load.
+
+## Commands
+
+- `claude plugin eval plugins/<plugin> --case <case> --runs 1 --ablation none` — one quick case.
+- `claude plugin eval plugins/<plugin>` — every case, with and without the plugin.
+- `claude plugin eval plugins/<plugin> --json` — the full run result as JSON.

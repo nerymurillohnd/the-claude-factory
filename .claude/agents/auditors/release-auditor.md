@@ -31,3 +31,10 @@ Your goal is that every release reaches users with the right version, an accurat
 - No command updates every plugin at once: `marketplace update` refreshes listings but leaves installed plugins at their versions.
 - Before v2.1.281, `update` without `--scope` assumed `user` and failed for project- or local-scope installs.
 - Users on a pinned `version` receive nothing until the version string changes, so a release without a bump never reaches them.
+
+## Commands
+
+- `claude plugin tag plugins/<plugin> --dry-run` — the planned tag, without creating it.
+- `claude plugin validate . --strict` — reports version mismatches between entries and manifests.
+- `git diff origin/main -- plugins/<plugin>/.claude-plugin/plugin.json` — the version change against `main`.
+- `git tag --list '<plugin>--v*'` — the plugin's existing tags.

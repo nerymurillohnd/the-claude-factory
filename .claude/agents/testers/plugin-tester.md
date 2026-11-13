@@ -40,3 +40,12 @@ Your goal is proof that each plugin installs, loads and behaves as its README pr
 - `marketplace remove` uninstalls every plugin from that marketplace and deletes their options, secrets and data; never run it outside the isolated configuration.
 - A clean `list --json` does not prove a component is valid: a defective `.lsp.json` shows no `errors` or `notes`.
 - A synced plugin (`<name>@synced`) appears only in sessions signed in with the claude.ai account.
+
+## Commands
+
+- `claude --plugin-dir plugins/<plugin> plugin list` — shows the plugin loaded as `<plugin>@inline`.
+- `claude --plugin-dir plugins/<plugin> plugin details <plugin>` — the plugin's components and token cost.
+- `claude plugin test plugins/<plugin>` — runs a mod's tests.
+- `CLAUDE_CONFIG_DIR=<tmp> claude plugin marketplace add .` — adds the local marketplace to the isolated configuration.
+- `CLAUDE_CONFIG_DIR=<tmp> claude plugin install <plugin>@the-claude-factory` — installs the plugin there.
+- `CLAUDE_CONFIG_DIR=<tmp> claude plugin list --json` — each install's path, errors and notes.

@@ -33,3 +33,13 @@ Your goal is that every hook, mod and server a plugin ships runs safely and pred
 - A clean `claude plugin list --json` does not prove a component is valid: a defective `.lsp.json` shows no `errors` or `notes`.
 - `claude plugin test` runs only mods' `*.test.ts(x)`; no command fires a command hook without a session.
 - Read the exit code or `--json`, never the symbols: without a TTY, ✔ ⚠ ✘ become √ ‼ ×.
+
+## Commands
+
+- `npm run lint:shell` — ShellCheck and shfmt on every shell script.
+- `npm run lint:python` — ruff lint and format check on every Python file.
+- `npm run typecheck:python` — basedpyright on plugin and maintainer Python.
+- `npm run lint:js` — Biome on JavaScript, TypeScript and JSON files.
+- `npm run typecheck:ts` — tsc on the plugins' `.mjs`, `.js` and `.cjs` scripts.
+- `claude plugin validate plugins/<plugin> --strict --json` — hooks checks, and `gatingHooks[].hasCatch` for mods.
+- `git ls-files -s <script>` — a hook script's mode in git (must be 100755).
