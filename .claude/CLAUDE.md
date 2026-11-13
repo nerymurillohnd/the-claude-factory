@@ -52,6 +52,7 @@ The project's work divides into three workstreams. The first two never mix: a ru
 - Assuming, taking something for granted, acting on what is believed to be true, or fixing things by trial and error is a serious defect, and is not allowed.
 - Nothing is published until it is confirmed to be actionable, executable, not deprecated, aligned with current best practices and the official documentation, and built on the best current Claude features available for its purpose.
 - Work counts as done only when its checks are shown with their raw output.
+- Before each commit, read `.claude/rules/testing.md` (Local and CI), run the local checks it lists, starting with `npm run lint` and `npm run typecheck`, and fix every finding.
 - Problems are reported as soon as they are found, including defects in work already published.
 
 ## Repository map

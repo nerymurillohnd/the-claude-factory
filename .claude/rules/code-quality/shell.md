@@ -7,23 +7,13 @@ paths:
 
 # Shell scripts
 
-- Load the `bash-lsp-intelligence:bash-lsp-intelligence` skill whenever you write, edit or review a shell script.
-- Fix every issue a check reports before the next step or task; never leave it as debt.
+- Load the `bash-lsp-intelligence:bash-lsp-intelligence` skill.
+- Fix every finding before moving on; never leave one as debt.
+- Disable a ShellCheck code only for a proven false positive, with its reason and the owner's approval.
 
-## Gotchas
+## After each write or edit, run in order
 
-- shfmt reads `.editorconfig` only when you pass no formatting flag; any flag such as `-i` makes it ignore the file.
-- Without an `.editorconfig`, format with `shfmt -w -i 2 -s -bn -ci -sr <file>`.
-- ShellCheck reads `.shellcheckrc` and `SHELLCHECK_OPTS`; pass `-S style -a` anyway, because `.shellcheckrc` cannot set them.
-- Without a `.shellcheckrc`, lint with `shellcheck -o all -S style -a -x -P SCRIPTDIR <file>`.
-- Add a `# shellcheck disable=SC<code>` line only for a proven false positive, with its reason and the owner's approval.
-
-## After writing or editing a shell script, in this order
-
-1. Run `shfmt -w <file>` to format it, before linting, so ShellCheck's line numbers match the final file.
-2. Run `shellcheck -S style -a <file>` to lint it with every optional check; fix each finding by hand, then repeat steps 1 and 2.
-3. Read the file again before the next edit, because step 1 rewrites it.
-
-## Before a commit
-
-1. Run `npm run lint:shell` to check every shell script.
+1. Format: `shfmt -w <file>` when `.editorconfig` exists, with no formatting flags; otherwise `shfmt -w -i 2 -s -bn -ci -sr <file>`.
+2. Lint: `shellcheck -S style -a <file>` when `.shellcheckrc` exists; otherwise `shellcheck -o all -S style -a -x -P SCRIPTDIR <file>`.
+3. Fix every finding, then repeat steps 1 and 2 until both pass.
+4. Read the file again before the next edit.
