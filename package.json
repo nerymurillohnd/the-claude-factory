@@ -35,7 +35,7 @@
     "@biomejs/biome": "2.6.6",
     "@types/node": "26.6.6",
     "typescript": "6.0.3",
-    "typescript-language-server": "6.0.3"
+    "typescript-language-server": "6.1.0"
   },
   "devEngines": {
     "runtime": {
