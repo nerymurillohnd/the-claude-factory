@@ -6,10 +6,6 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
-### Changed
-
-- The plugin is now listed under the **Mods** category instead of **Productivity**, next to the marketplace's other panels and status views. Nothing changes in how the plugin works.
-
 ## [0.1.6] - 2026-11-06
 
 ### Changed
