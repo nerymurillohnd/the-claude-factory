@@ -36,4 +36,4 @@ The root `package.json`, `pyproject.toml` and their lockfiles serve only the mai
 - Call ruff, basedpyright, zizmor and check-jsonschema by name: they are uv tools, installed user-wide and pinned in the `tools:install` npm script, not project dependencies. Change a tool's version there and run `npm run tools:install`. Install a tool with `uv tool install`, never `uv add --dev`, which makes it a project dependency in `.venv`.
 - Get Biome and `tsc` from the npm dev dependencies in `package.json`; the npm scripts run them from `node_modules/.bin`.
 - Expect shfmt, ShellCheck and actionlint as standalone binaries on the `PATH`; this repository does not pin their versions.
-- Use ruff and basedpyright for Python and `unittest` for its tests, not black, flake8, mypy, pyright, pytest or poetry, even when the machine has them.
+- Test maintainer Python with `unittest` and manage its environment with uv, not pytest or poetry, even when the machine has them.

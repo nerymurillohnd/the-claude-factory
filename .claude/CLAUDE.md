@@ -29,7 +29,7 @@ The project's work divides into three workstreams. The first two never mix: a ru
 
 - Covers what runs and documents the project, for Nery and Claude only: the tools that build and check it, the maintainer scripts (validators, checkers, generators and their tests) and the skills that drive them, audits and reviews, decision records, pending and resolved technical debt, audit reports, and the repository's documentation, such as READMEs, GitHub collaboration files and the user guides.
 - Runs on Node 26 LTS with npm 12, matching `.nvmrc`, and on Python 3.15 through uv; every maintainer command runs through `npm run <script>`. Report a version mismatch to Nery before maintainer work.
-- For all maintainer guidelines, see `.claude/rules/npm-and-uv.md` (runtimes, package managers and tools), `.claude/rules/linting.md` (formatting, linting and type checking), `.claude/rules/architecture/scripts.md` (scripts and their tests), `.claude/rules/architecture/claude-dir.md` (Claude's setup, records, memory and handoffs) and `.claude/rules/architecture/docs.md` (user guides).
+- For all maintainer guidelines, see `.claude/rules/npm-and-uv.md` (runtimes, package managers and tools), `.claude/rules/code-quality/` (formatting, linting, type checking, LSP and diagnostics, exploration and navigation, one rule per language), `.claude/rules/architecture/scripts.md` (scripts and their tests), `.claude/rules/architecture/claude-dir.md` (Claude's setup, records, memory and handoffs) and `.claude/rules/architecture/docs.md` (user guides).
 - Repository memory, which holds this project's dated facts and lessons:
 
 @memory/MEMORY.md
