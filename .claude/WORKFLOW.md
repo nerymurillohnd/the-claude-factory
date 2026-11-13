@@ -1,6 +1,6 @@
 # How to run this project, stage by stage
 
-The commands of each lifecycle stage. It lists only Claude Code commands and the npm scripts in `package.json`. Run the mechanical checks yourself. Commands marked "user side" are what users run; they go in READMEs and docs.
+The commands of each lifecycle stage. It lists only Claude Code commands and the npm scripts in `package.json`. Under a stage, the **Docs** line comes first: it names the `docs-maintenance` event and the writer subagent for each document the stage creates or edits; never write those documents yourself. Run the mechanical checks yourself. Commands marked "user side" are what users run; they go in READMEs and docs.
 
 ## Phase A — Marketplace setup (one time)
 
@@ -11,11 +11,13 @@ The commands of each lifecycle stage. It lists only Claude Code commands and the
 
 ### 2. Marketplace scaffolding
 
+- **Docs:** Load the `docs-maintenance` skill, then delegate (event: Repository foundation): the root `README.md` to `marketplace-readme-writer`, the root `LICENSE` to `license-writer`, `SECURITY.md` to `security-writer`.
 - `claude plugin validate .` — validates `marketplace.json` from the marketplace root.
 - `npm run validate` — `claude plugin validate --strict` on every `plugins/*/`, then on the marketplace root.
 
 ### 3. Repository governance
 
+- **Docs:** Load the `docs-maintenance` skill, then delegate (events: Repository foundation, The owner changes a policy): `CONTRIBUTING.md` to `contributing-writer`, `CODE_OF_CONDUCT.md` to `code-of-conduct-writer`, `SECURITY.md` to `security-writer`, `SUPPORT.md` to `support-writer`, `PRIVACY.md` to `privacy-writer`.
 - `npm run tools:install` — installs the pinned uv tools: ruff, basedpyright, zizmor and check-jsonschema.
 - `npm run lint` — every linter: `lint:js`, `lint:python`, `lint:shell`, `lint:workflows` and `lint:github`.
 - `npm run lint:workflows` — actionlint and zizmor on the GitHub Actions workflows.
@@ -28,12 +30,14 @@ The commands of each lifecycle stage. It lists only Claude Code commands and the
 
 ### 4. Plugin scaffolding
 
+- **Docs:** Load the `docs-maintenance` skill, then delegate (event: New plugin): `plugins/<plugin>/README.md` to `plugin-readme-writer`, its `CHANGELOG.md` and, once its first version is dated, the root `CHANGELOG.md` to `changelog-writer`, its `LICENSE` to `license-writer`, its `NOTICE.txt` to `notice-writer` when it bundles third-party material, `PRIVACY.md` to `privacy-writer`, which covers every plugin, and its catalog row in the root `README.md` to `marketplace-readme-writer`.
 - No command. `claude plugin init` writes only to `~/.claude/skills/<name>/`, so it doesn't create a plugin in this repository.
 
 ## Phase B — Plugin development (per plugin)
 
 ### 5. Component authoring
 
+- **Docs:** Load the `docs-maintenance` skill, then delegate (events: A released plugin changes, Third-party material changes, Data handling changes): the plugin's `README.md` to `plugin-readme-writer`, its `CHANGELOG.md` to `changelog-writer`, its `NOTICE.txt` to `notice-writer`, `PRIVACY.md` to `privacy-writer`.
 - `claude --plugin-dir <plugin-dir>` — loads the plugin being edited for one session.
 - `/reload-plugins` — applies on-disk edits in a running session.
 - `/reload-plugins --force` — applies a reload that adds or removes a plugin MCP server or the `LSP` tool.
@@ -58,6 +62,7 @@ The commands of each lifecycle stage. It lists only Claude Code commands and the
 
 ### 7. Marketplace registration
 
+- **Docs:** Load the `docs-maintenance` skill, then delegate (event: New plugin): the plugin's catalog row in the root `README.md` to `marketplace-readme-writer`.
 - `claude plugin validate .` — flags duplicate names, `..` paths and version mismatches between an entry and its `plugin.json`.
 
 ### 8. Validation
@@ -92,16 +97,19 @@ The commands of each lifecycle stage. It lists only Claude Code commands and the
 
 ### 11. Documentation
 
+- **Docs:** Load the `docs-maintenance` skill, then delegate (events: A released plugin changes, A small fix, Audit or review): `plugins/<plugin>/README.md` to `plugin-readme-writer`, the root `README.md` and its catalog to `marketplace-readme-writer`.
 - `claude plugin validate <plugin-dir>` — prints an `Advice` block when the README has no install-from-marketplace line; it never changes the exit code.
 
 ## Phase C — Release cycle (per version)
 
 ### 12. CHANGELOG update
 
+- **Docs:** Load the `docs-maintenance` skill, then delegate (events: A plugin gets a new version, A version is withdrawn): `plugins/<plugin>/CHANGELOG.md` and the root `CHANGELOG.md` to `changelog-writer`.
 - No command.
 
 ### 13. Versioning and bumping
 
+- **Docs:** Load the `docs-maintenance` skill, then delegate (event: A plugin gets a new version): the version's section in the plugin's `CHANGELOG.md` and the release line in the root `CHANGELOG.md` to `changelog-writer`, the plugin's `README.md` to `plugin-readme-writer`, the catalog row to `marketplace-readme-writer` when it shows the version.
 - `claude plugin validate .` — reports an entry version that differs from its `plugin.json`.
 
 ### 14. Tagging
@@ -133,6 +141,7 @@ The commands of each lifecycle stage. It lists only Claude Code commands and the
 
 ### 18. Maintenance
 
+- **Docs:** Load the `docs-maintenance` skill, then delegate (events: Audit or review, The owner changes a policy): each document to the writer that owns it, as the skill's subagents table lists.
 - `claude --version`, `claude plugin <subcommand> --help` — detect CLI changes after an upgrade.
 - `claude plugin validate <path> --strict`, `claude plugin eval <plugin-dir>` — regression checks; the eval bills usage.
 - `HOME=<tmp> claude plugin init <name> --with skills agents hooks mcp lsp` — the official scaffold, for comparison only, in an isolated `HOME`; delete the folder afterwards.
@@ -141,6 +150,7 @@ The commands of each lifecycle stage. It lists only Claude Code commands and the
 
 ### 19. Catalog changes
 
+- **Docs:** Load the `docs-maintenance` skill, then delegate (events: A plugin is renamed, A plugin is retired): the changelogs, the root `CHANGELOG.md` included, to `changelog-writer`, the root catalog to `marketplace-readme-writer`; on a rename, the plugin's `README.md` to `plugin-readme-writer`; on a retirement, `PRIVACY.md` to `privacy-writer`.
 - `claude plugin validate .` — after editing `renames` or entries.
 - `claude plugin uninstall <plugin> [--scope <scope>] [--keep-data] [--prune]` — user side: from the last scope it deletes the plugin's options, secrets and data unless `--keep-data` is passed.
 - `claude plugin marketplace remove <name>` — user side: uninstalls every plugin from that marketplace and deletes their options, secrets and data.
