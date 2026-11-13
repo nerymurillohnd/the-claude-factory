@@ -44,12 +44,12 @@ Inventory pull requests in every state (open, draft, closed and merged), each wi
 ## Actions
 
 - Every workflow, enabled or disabled, with its latest result.
-- Workflows whose last run on the default branch failed, with no success after it. A green run that did nothing, such as a Claude step that logged "No trigger found", is not a success: it does not close an earlier failure.
+- Workflows whose last run on the default branch failed, with no success after it. A green run that did nothing is not a success and does not close an earlier failure: a Claude step that logged "No trigger found", or "Skipping action due to workflow validation: …" and "Exiting due to workflow validation skip".
 - Failed jobs that were never rerun or fixed.
 - Scheduled workflows that stopped running.
 - Runs stuck in queued or in progress.
 - Runs waiting for approval.
-- Workflows that point to deleted branches, files or secrets: branches in `on:` filters, secret names that `gh secret list` does not show, files under `paths:`.
+- Workflows that point to deleted branches, files or secrets: branches in `on:` filters, files under `paths:`, and secret names found at no level the job reads them from (`gh secret list`, `--env <environment>`, `--org <org>` when readable, `--app dependabot` for Dependabot runs). A level that can't be read leaves the name unverified, not missing.
 
 List disabled workflows too: `gh workflow list --all`. A filtered run list returns at most 1,000 results ([GitHub REST: workflow runs][workflow-runs]), so split the runs of the default branch by creation date (`gh run list --branch <default> --created '<from>..<to>' --limit 1000`) until each window returns fewer than 1,000. In a public repository, GitHub disables scheduled workflows after 60 days with no repository activity ([GitHub: disabling workflows][disable-workflows]).
 

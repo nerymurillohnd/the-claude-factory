@@ -1,5 +1,8 @@
-# Dependabot version updates for GitHub Actions. Copy to .github/dependabot.yml.
-# Add one entry per other package ecosystem the repository uses (npm, pip, cargo, ...).
+# Dependabot version updates. Write to .github/dependabot.yml (or .yaml).
+# Keep the GitHub Actions entry when the repository has workflows, and add one entry per
+# package ecosystem its manifests use (references/dependabot.md maps manifests to values).
+# Add cooldown, groups, commit-message and the other optional keys only when the user chose
+# them. Every custom label named here must exist: the labels step creates them.
 version: 2
 updates:
   - package-ecosystem: github-actions
@@ -9,5 +12,3 @@ updates:
     labels:
       - "type: dependencies"
       - "area: ci"
-    commit-message:
-      prefix: "ci"

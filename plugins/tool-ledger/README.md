@@ -40,15 +40,15 @@ Tool Ledger is a mod that adds a live panel to Claude Code and records every too
 
 ## 🧩 What's inside
 
-| Component | Name | What it does | How it runs |
-| :-- | :-- | :-- | :-- |
-| 🧩 Mod | `tool-ledger` | Records each tool call with its status and duration, draws the ledger panel and adds the `/tool-ledger` command | Automatically in every Claude Code session once installed; the panel opens with `/tool-ledger` |
+| Component | Name          | What it does                                                                                                    | How it runs                                                                                    |
+| :-------- | :------------ | :-------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------- |
+| 🧩 Mod    | `tool-ledger` | Records each tool call with its status and duration, draws the ledger panel and adds the `/tool-ledger` command | Automatically in every Claude Code session once installed; the panel opens with `/tool-ledger` |
 
 ## 📋 Prerequisites
 
-| Tool | Minimum version | Check |
-| :-- | :-- | :-- |
-| Claude Code | 2.1.299 | `claude --version` |
+| Tool        | Minimum version | Check              |
+| :---------- | :-------------- | :----------------- |
+| Claude Code | 2.1.299         | `claude --version` |
 
 ### 🤖 Claude Code
 
@@ -66,7 +66,7 @@ claude update
 <summary>🍺 <b>Homebrew</b> — macOS, Linux</summary>
 
 ```bash
-brew upgrade claude-code
+brew upgrade claude-code  # claude-code@latest if you installed that cask
 ```
 
 </details>
@@ -136,14 +136,14 @@ denied Read     .env
 
 Each row shows the status, the tool, what it acted on and how long it took. The panel shows the latest rows that fit.
 
-| Tool | What the row shows |
-| :-- | :-- |
-| Bash | The first 60 characters of the command |
+| Tool              | What the row shows                               |
+| :---------------- | :----------------------------------------------- |
+| Bash              | The first 60 characters of the command           |
 | Read, Edit, Write | The file path, relative to the working directory |
-| Grep, Glob | The pattern |
-| Agent | The task description |
-| MCP tools | `server › tool` |
-| Any other tool | Only its name |
+| Grep, Glob        | The pattern                                      |
+| Agent             | The task description                             |
+| MCP tools         | `server › tool`                                  |
+| Any other tool    | Only its name                                    |
 
 ### Example: see only what went wrong
 
@@ -159,11 +159,11 @@ claude plugin install tool-ledger@the-claude-factory --config autoOpen=sidebar
 
 ## ⚙️ Configuration
 
-| Option | Type | Default | Description |
-| :-- | :-- | :-- | :-- |
-| `autoOpen` | `never` or `sidebar` | `never` | `sidebar` opens the panel by itself, once per session, where it can dock beside the transcript, such as a fullscreen terminal from 144 columns |
-| `showTargets` | boolean | `true` | Turn it off to hide commands, paths, patterns and subagent tasks, for example while you share your screen |
-| `maxRows` | number, 10 to 2000 | `500` | How many of the latest calls the session keeps |
+| Option        | Type                 | Default | Description                                                                                                                                    |
+| :------------ | :------------------- | :------ | :--------------------------------------------------------------------------------------------------------------------------------------------- |
+| `autoOpen`    | `never` or `sidebar` | `never` | `sidebar` opens the panel by itself, once per session, where it can dock beside the transcript, such as a fullscreen terminal from 144 columns |
+| `showTargets` | boolean              | `true`  | Turn it off to hide commands, paths, patterns and subagent tasks, for example while you share your screen                                      |
+| `maxRows`     | number, 10 to 2000   | `500`   | How many of the latest calls the session keeps                                                                                                 |
 
 Set an option when you install:
 
@@ -222,9 +222,9 @@ Uninstalling from the last scope it's installed at also deletes its saved option
 
 **Works in:** 💻 **Claude Code only**
 
-| Component | Claude Code | Claude |
-| :-- | :--: | :--: |
-| 🧩 Mods | ✅ v2.1.287+ (Desktop v2.1.286+); hooks run in every session except Desktop on WSL; ⚠️ drawing depends on where: panes in the terminal, Desktop and VS Code (extension v2.1.299+, v2.1.304+ without feature flags), the band above the prompt only in the terminal and Desktop | ⚠️ the plugin directory lists a mod for Claude Code only |
+| Component |                                                                                                                                  Claude Code                                                                                                                                   |                          Claude                          |
+| :-------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :------------------------------------------------------: |
+| 🧩 Mods   | ✅ v2.1.287+ (Desktop v2.1.286+); hooks run in every session except Desktop on WSL; ⚠️ drawing depends on where: panes in the terminal, Desktop and VS Code (extension v2.1.299+, v2.1.304+ without feature flags), the band above the prompt only in the terminal and Desktop | ⚠️ the plugin directory lists a mod for Claude Code only |
 
 <sub>✅ works · ⚠️ partial · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. Claude runs agents, hooks and local MCP servers only in conversations where it can run tasks; anything on your computer needs Claude Desktop open.</sub>
 

@@ -5,24 +5,27 @@
 - Choose the forms
 - Pair each form with a PR template
 - Write each form
+- Labels by component
 - Validate
 - After the merge
-- Limits
+- Current behavior
 
 ## Choose the forms
 
 Choose from who files issues and what they report. Ask the user when it is unclear who files issues.
 
-| Model in `<skill-dir>/assets/ISSUE_TEMPLATE/` | Public repository (outside users) | Internal repository (one team) |
-| :-- | :-: | :-: |
-| `bug_report.yml` | yes | yes |
-| `feature_request.yml` | yes | yes |
-| `docs_issue.yml` | when it has user docs | when it has docs |
-| `idea.yml` | yes | no |
-| `question.yml` | when Discussions are off | no |
-| `maintenance.yml` | no | yes |
-| `incident.yml` | no | when it runs in production |
-| `config.yml` | yes | yes |
+| Model | Public repository (outside users) | Internal repository (one team) | Issue type |
+| :-- | :-: | :-: | :-- |
+| `assets/ISSUE_TEMPLATE/bug_report.yml` | yes | yes | `Bug` |
+| `assets/ISSUE_TEMPLATE/feature_request.yml` | yes | yes | `Feature` |
+| `assets/ISSUE_TEMPLATE/docs_issue.yml` | when it has user docs | when it has docs | `Bug` |
+| `assets/ISSUE_TEMPLATE/idea.yml` | yes | no | `Feature` |
+| `assets/ISSUE_TEMPLATE/question.yml` | when Discussions are off | no | none |
+| `assets/ISSUE_TEMPLATE/maintenance.yml` | no | yes | `Task` |
+| `assets/ISSUE_TEMPLATE/incident.yml` | no | when it runs in production | `Bug` |
+| `assets/ISSUE_TEMPLATE/config.yml` | yes | yes | — |
+
+When the owner's `.github` repository holds issue templates or a `config.yml`, the repository inherits them until it has one valid template or `config.yml` of its own; from then on none of the inherited ones show. Tell the user before writing the first one, then write it.
 
 ## Pair each form with a PR template
 
@@ -42,33 +45,45 @@ When the repository has no template of a pair, map its forms to a template it ke
 
 ## Write each form
 
-Write each chosen form to `.github/ISSUE_TEMPLATE/`:
+Write each chosen form to `.github/ISSUE_TEMPLATE/`, with the model's file name:
 
-1. Keep the model's `name`, `description`, `title` prefix and the order of its fields, unless the repository's convention differs.
-2. Replace generic options with the repository's own: components or packages as dropdown options, supported versions, operating systems and runtimes it targets, its environments.
-3. Ask for the evidence its maintainers use: the command that reproduces the problem, the log file it writes, the version command it has.
-4. Mark a field `required: true` only when a report is useless without it. Offer `N/A` in the description when a field may not apply.
-5. Set `labels:` to the repository's labels: the type label for the form and its triage label. The labels step creates the missing ones.
-6. Remove fields that do not apply, such as a browser field in a command-line tool.
-7. Write field labels that read well as headings: GitHub writes a submitted form as one `### <field label>` heading per field, in order.
-8. In `config.yml`, keep `blank_issues_enabled: false`, and add contact links only to places the repository really uses, such as its Discussions, docs or security policy.
+1. Keep the model's `name`, `description`, `title` prefix and the order of its fields, unless the repository's convention differs. A `name` of 3 characters or fewer hides the form.
+2. Replace generic options with the repository's own: supported versions, operating systems and runtimes it targets, its environments. When the repository has a fixed list of components (packages, plugins, services), turn the model's free-text `component` input into a `dropdown` with that list; otherwise keep the input. A dropdown takes `multiple: true` for several answers, and `default: <index>` to preselect one; with a default, no option may be "None" or "n/a".
+3. Ask for the evidence its maintainers use: the command that reproduces the problem, the log file it writes, the version command it has. An `upload` field takes files, with `validations.accept` limiting the extensions.
+4. Mark a field `required: true` only when a report is useless without it, and add `min_length` to a text field that needs a real answer. Offer `N/A` in the description when a field may not apply.
+5. Set `labels:` to the label names decided at step 2 ([labels.md](labels.md)): the type label for the form and its triage label.
+6. Set `type:` from the table above when the repository has that issue type (step 1 read them); leave `type:` out when it doesn't, or when the table says none. Keep the type label too: issue types don't exist on pull requests, so the label is what PRs and searches across both share. Add `projects:` (`<owner>/<number>`) only when every reporter can write to that project.
+7. Give each field a stable `id`: links can prefill a field by its id (`issues/new?template=<file>&<id>=<text>`), so renaming an id breaks those links.
+8. Replace every upper-case placeholder, such as `<OWNER>` or `<DEFAULT_BRANCH>`, and keep a link only when its target exists and is on: the private advisory link needs private vulnerability reporting, a Discussions link needs Discussions, a docs link needs that page on the default branch. Keep the lower-case prompts in titles, such as `<short summary>`.
+9. Remove fields that do not apply, such as a browser field in a command-line tool.
+10. Write field labels that read well as headings: GitHub writes a submitted form as one `### <field label>` heading per field, in order.
+11. In `config.yml`, keep `blank_issues_enabled: false`, and add contact links only to places the repository really uses, such as its Discussions, docs or security policy.
+
+The chooser lists forms in alphanumeric order of file name, YAML forms before Markdown templates. Keep the model file names unless the user wants another order; then prefix them (`01-bug_report.yml`, `02-feature_request.yml`) and update every link that names a form file.
+
+## Labels by component
+
+A form applies only the labels in its top-level `labels:`. A dropdown answer, such as the component a reporter picks, goes into the issue's body as text and applies no label. Labeling issues by component defaults to **triage by hand**: the maintainers read the answer and apply the label, and the setup adds nothing. Offer the other ways only when the user asks for component labels applied automatically, or when the repository already runs a triage workflow or task:
+
+- **One form per component:** each form names its component label in `labels:`. Fits two or three components, not more.
+- **A workflow that labels from the form:** a GitHub Actions workflow on `issues: opened` reads the answer under its `### <field label>` heading and adds the label. It is outside this skill, which has no model or rules for workflows, and it runs on text any reporter writes: tell the user it exists, and leave writing and auditing it to them or to a skill that writes workflows.
+- **Triage by Claude:** Claude reads each new issue, body included, and applies the labels that already exist, without commenting. Two ways to run it, both outside this skill:
+  - A GitHub Actions workflow with `anthropics/claude-code-action`, modeled on Anthropic's own `claude-issue-triage.yml` and its `/triage-issue` command in the `anthropics/claude-code` repository. It needs a Claude credential: an API key or OAuth token in the repository's secrets, or workload identity federation, which needs only non-secret IDs in repository variables and `id-token: write`, as Anthropic's model uses. Don't copy the model as it is: its runner label may not exist outside Anthropic's organization, its actions follow moving tags, and it sets `allowed_non_write_users: "*"` with an explicit auto mode. Audit it with `github-operations:claude-github-actions` before it lands.
+  - A cloud scheduled task with a GitHub trigger on issue events, which the user creates in Claude Code on the web, or from the CLI with `/schedule` (Claude Code 2.1.225 or later). It needs the Claude GitHub App on the repository either way, and no workflow or secret in the repository. It runs as the user, with the user's GitHub identity and the session's tools, on issue text anyone can write, and events beyond its run limits are dropped ([Current behavior](#current-behavior-checked-on-2026-11-12-verify-before-relying-on-it)), so some issues may go untriaged. It fits repositories whose issue authors are trusted, or a prompt narrowed to applying labels.
+
+  Either way, create the labels it applies first, by [labels.md](labels.md).
 
 ## Validate
 
-1. Run, from the repository's root:
-   - `<skill-dir>/scripts/check-forms.py --kind issue .github/ISSUE_TEMPLATE/<form>.yml ...` on every form but `config.yml`;
-   - `<skill-dir>/scripts/check-forms.py --kind issue-config .github/ISSUE_TEMPLATE/config.yml`.
-2. Fix every finding and run both again. Move on only when both exit 0.
-3. Check by reading what the script cannot: `name` is unique across the forms, input labels are unique and not near-identical, and no label holds a blocked word such as "Password".
+1. Run `check-forms.py` from the repository's root with the commands in the Scripts section of `SKILL.md`: `--kind issue` on every form in `.github/ISSUE_TEMPLATE/` but `config.yml`, the repository's existing forms included, so form names are compared across all of them; and `--kind issue-config` on `config.yml`.
+2. Fix every finding and run both again. Move on only when both summaries read `check-forms: pass`.
+3. Compare each form's `name` with the names of the repository's Markdown issue templates (their `name:` front matter): the script reads only forms.
+4. When the script exits 2, it checked nothing. Tell the user what it printed, without installing anything yourself, check each form and `config.yml` by hand against [form-rules.md](form-rules.md), and say in the report that the script did not run and why.
 
 ## After the merge
 
-Ask the user to open `https://github.com/<owner>/<repo>/issues/new/choose` signed in and confirm that the forms and contact links appear. When `gh api graphql` works, also check that GitHub read `config.yml`'s contact links: `gh api graphql -f query='query { repository(owner:"<owner>", name:"<repo>") { contactLinks { name url } } }'`. When it is unavailable, the user's check is enough.
+Ask the user to open `https://github.com/<owner>/<repo>/issues/new/choose` signed in and confirm that the forms and contact links appear. A user with write access also sees a blank issue, marked **Maintainers only**: that is expected. Issues created through the API or `gh` skip the forms' layout and labels: tell the user.
 
-## Limits
+## Current behavior (checked on 2026-11-12; verify before relying on it)
 
-- `required: true` is enforced only in public repositories.
-- The GraphQL field `issueTemplates` does not list YAML forms: never use it to verify forms.
-- `isBlankIssuesEnabled` describes the viewer: an admin sees `true` even when `config.yml` disables blank issues.
-- A form's `type:` key needs issue types defined at organization level.
-- Issues opened through the API or `gh` skip the form: only issues filed on GitHub get its layout and labels. Tell the user.
+- Cloud scheduled tasks with a GitHub trigger have hourly caps, and events beyond the cap are dropped.

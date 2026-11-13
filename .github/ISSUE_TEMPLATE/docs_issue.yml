@@ -1,7 +1,8 @@
 name: 📝 Documentation issue
 description: Something in a README or guide is wrong, unclear, outdated or missing.
 title: "[Docs] <page>: <short summary>"
-labels: ["type: documentation", "status: triage"]
+labels: ["type: documentation", "area: docs", "status: triage"]
+type: Bug
 body:
   - type: input
     id: page
@@ -32,3 +33,9 @@ body:
       description: What does it say now, and what should it say?
     validations:
       required: true
+
+  - type: textarea
+    id: suggestion
+    attributes:
+      label: Suggested wording
+      description: Optional. The text you would write instead, if you have it.

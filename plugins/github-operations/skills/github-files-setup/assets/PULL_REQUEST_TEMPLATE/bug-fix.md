@@ -40,7 +40,7 @@ Fixes # · Related #
 
 ## 🚦 Before merge
 - [ ] I read the whole diff
-- [ ] All CI checks pass; none skipped, loosened or suppressed
+- [ ] All checks pass (CI and the project checks above); none skipped, loosened or suppressed
 - [ ] Review comments resolved
 - [ ] Labels applied
 - [ ] Commits are signed if the repository requires it

@@ -60,6 +60,11 @@
     "description": "Waiting on the reporter for details"
   },
   {
+    "name": "status: needs-repro",
+    "color": "FEF2C0",
+    "description": "Bug report needs steps to reproduce"
+  },
+  {
     "name": "status: confirmed",
     "color": "0E8A16",
     "description": "Reproduced or accepted; scheduled"

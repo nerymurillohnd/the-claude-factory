@@ -1,4 +1,4 @@
-# ✨ Change
+# ✨ Standard
 
 <!-- Fill every section. Write "N/A: <reason>" instead of deleting one. Link evidence; never paste secrets or client-identifying data. -->
 
@@ -86,7 +86,7 @@ Closes # · Related # · Blocked by / depends on #
 ## 🚦 Before merge
 - [ ] I read the whole diff
 - [ ] Branch up to date with base; conflicts resolved
-- [ ] All CI checks pass; none skipped, loosened or suppressed
+- [ ] All checks pass (CI and the project checks above); none skipped, loosened or suppressed
 - [ ] Automated review and every comment addressed and resolved
 - [ ] Labels applied
 - [ ] Commits explain what and why, and are signed if the repository requires it

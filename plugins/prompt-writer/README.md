@@ -39,17 +39,17 @@ Prompt Writer is a prompt partner you run in Claude Code or Claude. Most weak pr
 
 ## 🧩 What's inside
 
-| Component | Name | What it does | How it runs |
-| :-- | :-- | :-- | :-- |
-| 🎯 Skill | `prompt-writer:prompt-writer` | Acts as your prompt partner: clarifies the goal, researches what the prompt depends on, and delivers one copy-ready prompt, the text of a system prompt, skill, slash command or agent, or a prompt that has Claude build one, with setup advice. It writes the prompt; you run it in another session | Only when you run `/prompt-writer:prompt-writer`; Claude doesn't start it on its own |
-| 🪝 Hook | `Stop`, in the skill | After a reply that delivers a prompt, an agent hook reads the session transcript and checks that each source the reply cites was read and each checklist item marked verified was checked; it sends Claude back to fix a claim without evidence | Automatically after each reply, once you've run the skill in the session |
+| Component | Name                          | What it does                                                                                                                                                                                                                                                                                          | How it runs                                                                          |
+| :-------- | :---------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------- |
+| 🎯 Skill  | `prompt-writer:prompt-writer` | Acts as your prompt partner: clarifies the goal, researches what the prompt depends on, and delivers one copy-ready prompt, the text of a system prompt, skill, slash command or agent, or a prompt that has Claude build one, with setup advice. It writes the prompt; you run it in another session | Only when you run `/prompt-writer:prompt-writer`; Claude doesn't start it on its own |
+| 🪝 Hook   | `Stop`, in the skill          | After a reply that delivers a prompt, an agent hook reads the session transcript and checks that each source the reply cites was read and each checklist item marked verified was checked; it sends Claude back to fix a claim without evidence                                                       | Automatically after each reply, once you've run the skill in the session             |
 
 ## 📋 Prerequisites
 
-| Tool | Minimum version | Check |
-| :-- | :-- | :-- |
-| Claude Code | 2.1.294 | `claude --version` |
-| curl (optional: without it, Claude reads pages with WebFetch) | any | `curl --version` |
+| Tool                                                          | Minimum version | Check              |
+| :------------------------------------------------------------ | :-------------- | :----------------- |
+| Claude Code                                                   | 2.1.294         | `claude --version` |
+| curl (optional: without it, Claude reads pages with WebFetch) | any             | `curl --version`   |
 
 The skill also has Claude use `awk` and `sed` to trim the pages it reads, which come with macOS and Linux.
 
@@ -69,7 +69,7 @@ claude update
 <summary>🍺 <b>Homebrew</b> — macOS, Linux</summary>
 
 ```bash
-brew upgrade claude-code
+brew upgrade claude-code  # claude-code@latest if you installed that cask
 ```
 
 </details>
@@ -253,10 +253,10 @@ Uninstalling from the last scope it's installed at also deletes its saved option
 
 **Works in:** 💻 Claude Code · 🖥️ Claude
 
-| Component | Claude Code | Claude |
-| :-- | :--: | :--: |
-| 🎯 Skills | ✅ | ✅ |
-| 🪝 Hooks | ✅ | ⚠️ only in conversations where Claude can run tasks |
+| Component | Claude Code |                       Claude                        |
+| :-------- | :---------: | :-------------------------------------------------: |
+| 🎯 Skills |     ✅      |                         ✅                          |
+| 🪝 Hooks  |     ✅      | ⚠️ only in conversations where Claude can run tasks |
 
 <sub>✅ works · ⚠️ partial · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. Claude runs agents, hooks and local MCP servers only in conversations where it can run tasks; anything on your computer needs Claude Desktop open.</sub>
 

@@ -1,0 +1,6 @@
+class LineCol:
+    def key(self, k: object) -> tuple[int, int]: ...
+
+class CommentedMap(dict[object, object]):
+    @property
+    def lc(self) -> LineCol: ...

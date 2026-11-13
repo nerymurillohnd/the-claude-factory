@@ -1,6 +1,6 @@
 # Privacy Policy
 
-**Effective date:** 5 November 2026
+**Effective date:** 13 November 2026
 
 This policy covers every plugin published in The Claude Factory marketplace (`github.com/nerymurillohnd/the-claude-factory`). It explains what data the plugins collect, how that data is used and how long it is kept, and which third-party services a plugin can send data to on your behalf.
 
@@ -43,7 +43,7 @@ Claude itself, and Claude Code, process your session under [Anthropic's Privacy 
 ## Your choices
 
 - Each plugin's README lists every destination it can reach. Read it before you install.
-- Your Claude Code permission rules apply to the commands and web requests Claude makes for a plugin. Use them to block a destination you do not want.
+- Your Claude Code permission rules apply to the tool calls Claude makes for a plugin, such as its commands and web requests, and you can use them to block those. They don't apply to what a plugin's hooks, MCP servers or mods run on their own: to stop those, disable or uninstall the plugin.
 - You can turn off any MCP server in `/mcp`, or uninstall a plugin at any time with `claude plugin uninstall <plugin>@the-claude-factory`.
 
 ## Children

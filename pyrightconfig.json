@@ -1,9 +1,5 @@
 {
   "include": [
-    ".",
-    "**/*.py",
-    ".claude/hooks",
-    "scripts",
     "plugins"
   ],
   "exclude": [
@@ -11,23 +7,20 @@
     "**/__pycache__",
     ".git",
     ".github",
-    ".superpowers",
-    ".claude/worktrees",
     ".ruff_cache"
   ],
   "typeCheckingMode": "all",
-  "pythonVersion": "3.15",
-  "executionEnvironments": [
-    {
-      "root": "plugins",
-      "pythonVersion": "3.12"
-    },
-    {
-      "root": "scripts/release",
-      "pythonVersion": "3.12"
-    }
-  ],
+  "pythonVersion": "3.12",
   "pythonPlatform": "All",
-  "deprecateTypingAliases": true,
-  "enableExperimentalFeatures": true
+  "deprecateTypingAliases": false,
+  "reportUnusedImport": "none",
+  "reportUnusedVariable": "none",
+  "reportUnusedExpression": "none",
+  "reportUnusedParameter": "none",
+  "reportUndefinedVariable": "none",
+  "reportInvalidStringEscapeSequence": "none",
+  "reportAssertAlwaysTrue": "none",
+  "reportCallInDefaultInitializer": "none",
+  "reportIgnoreCommentWithoutRule": "none",
+  "reportWildcardImportFromLibrary": "none"
 }

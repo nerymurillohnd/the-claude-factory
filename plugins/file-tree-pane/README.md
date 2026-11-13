@@ -40,24 +40,24 @@ File Tree Pane is a Claude Code mod that docks a live file explorer beside the t
 
 ## 🧩 What's inside
 
-| Component | Name | What it does | How it runs |
-| :-- | :-- | :-- | :-- |
-| 🧩 Mod | `file-tree-pane` | Draws the file tree pane, highlights Claude's tool calls on it, passes the selected file to Claude, and adds the `/file-tree` command | Automatically in every Claude Code session once installed; the pane opens by itself where it can dock, or with `/file-tree` |
+| Component | Name             | What it does                                                                                                                          | How it runs                                                                                                                 |
+| :-------- | :--------------- | :------------------------------------------------------------------------------------------------------------------------------------ | :-------------------------------------------------------------------------------------------------------------------------- |
+| 🧩 Mod    | `file-tree-pane` | Draws the file tree pane, highlights Claude's tool calls on it, passes the selected file to Claude, and adds the `/file-tree` command | Automatically in every Claude Code session once installed; the pane opens by itself where it can dock, or with `/file-tree` |
 
 ## 📋 Prerequisites
 
-| Tool | Minimum version | Check |
-| :-- | :-- | :-- |
-| Claude Code | 2.1.299 | `claude --version` |
-| git | — | `git --version` |
-| [tmux](https://github.com/tmux/tmux/wiki) (optional): opens a terminal editor or diff tool | — | `tmux -V` |
-| [herdr](https://herdr.dev) (optional): opens a terminal editor or diff tool | 0.9.1 for row clicks | `herdr --version` |
-| [Nerd Font](https://www.nerdfonts.com) (optional): file icons | — | — |
-| [hunk](https://hunk.dev) (optional): your own diff tool | — | `hunk --version` |
-| [lazygit](https://github.com/jesseduffield/lazygit) (optional): your own diff tool | — | `lazygit --version` |
-| xdg-open (optional, Linux): opens a file in its default app | — | `xdg-open --version` |
-| fc-list (optional, Linux): finds your Nerd Font | — | `fc-list --version` |
-| xdg-terminal-exec (optional, Linux): opens **Diff with** in a new terminal window outside tmux and herdr | — | `command -v xdg-terminal-exec` |
+| Tool                                                                                                     | Minimum version      | Check                          |
+| :------------------------------------------------------------------------------------------------------- | :------------------- | :----------------------------- |
+| Claude Code                                                                                              | 2.1.299              | `claude --version`             |
+| git                                                                                                      | —                    | `git --version`                |
+| [tmux](https://github.com/tmux/tmux/wiki) (optional): opens a terminal editor or diff tool               | —                    | `tmux -V`                      |
+| [herdr](https://herdr.dev) (optional): opens a terminal editor or diff tool                              | 0.9.1 for row clicks | `herdr --version`              |
+| [Nerd Font](https://www.nerdfonts.com) (optional): file icons                                            | —                    | —                              |
+| [hunk](https://hunk.dev) (optional): your own diff tool                                                  | —                    | `hunk --version`               |
+| [lazygit](https://github.com/jesseduffield/lazygit) (optional): your own diff tool                       | —                    | `lazygit --version`            |
+| xdg-open (optional, Linux): opens a file in its default app                                              | —                    | `xdg-open --version`           |
+| fc-list (optional, Linux): finds your Nerd Font                                                          | —                    | `fc-list --version`            |
+| xdg-terminal-exec (optional, Linux): opens **Diff with** in a new terminal window outside tmux and herdr | —                    | `command -v xdg-terminal-exec` |
 
 `git` on `PATH` gives the tree its status, line counts and diffs; the tree works without it.
 
@@ -79,7 +79,7 @@ claude update
 <summary>🍺 <b>Homebrew</b> — macOS, Linux</summary>
 
 ```bash
-brew upgrade claude-code
+brew upgrade claude-code  # claude-code@latest if you installed that cask
 ```
 
 </details>
@@ -526,17 +526,17 @@ Select a changed file or folder and press `d`.
 
 Click a row to give the tree the keys; Esc gives them back to the prompt. Ctrl+X Tab focuses the pane, where the shortcut buttons and the header's `p`, `d` and `e` take their keys.
 
-| Key | In the tree | In a preview or diff |
-| :-- | :-- | :-- |
-| `j` / `k`, ↓ / ↑ | Move down / up | Next / previous line; in a diff `j`/`k` jump by file or hunk |
-| `l` / `h`, → / ← | Open a folder / close it, or go to the parent | `h` and ← go back to the tree |
-| `o` or Enter | Open the file with **Open with**, or open and close a folder | — |
-| Space | Quick Look on macOS; opens and closes a folder | Next page |
-| `p` | Preview the file | Back to the tree |
-| `d` | Diff the changed file or folder | In a preview, that file's diff; in a diff, back to the file, or the tree |
-| `e` | Open the file in your editor | Open your editor at the top line shown |
-| `s` | Focus the search field; type, then Enter jumps to the first match | — |
-| `f` / `b`, PgDn / PgUp, Home / End | Page and jump | Page and jump |
+| Key                                | In the tree                                                       | In a preview or diff                                                     |
+| :--------------------------------- | :---------------------------------------------------------------- | :----------------------------------------------------------------------- |
+| `j` / `k`, ↓ / ↑                   | Move down / up                                                    | Next / previous line; in a diff `j`/`k` jump by file or hunk             |
+| `l` / `h`, → / ←                   | Open a folder / close it, or go to the parent                     | `h` and ← go back to the tree                                            |
+| `o` or Enter                       | Open the file with **Open with**, or open and close a folder      | —                                                                        |
+| Space                              | Quick Look on macOS; opens and closes a folder                    | Next page                                                                |
+| `p`                                | Preview the file                                                  | Back to the tree                                                         |
+| `d`                                | Diff the changed file or folder                                   | In a preview, that file's diff; in a diff, back to the file, or the tree |
+| `e`                                | Open the file in your editor                                      | Open your editor at the top line shown                                   |
+| `s`                                | Focus the search field; type, then Enter jumps to the first match | —                                                                        |
+| `f` / `b`, PgDn / PgUp, Home / End | Page and jump                                                     | Page and jump                                                            |
 
 A single click selects a row and previews a file; a double click opens the file with **Open with**. The mouse wheel and the scrollbar scroll the tree to its last row. Hover a header button (`Σ`, `p`, `d`, `e`) to see what it does: `Σ` switches the right column to sizes and back, with each folder's disk usage worked out in the background for the rows on screen. The `j`/`k`/`h`/`l`/open/search buttons under the search field press with their keys once the pane has focus, before you click a row.
 
@@ -544,21 +544,21 @@ Resize the pane by dragging its edge where your terminal reports the mouse, or w
 
 ## ⚙️ Configuration
 
-| Option | Type | Default | Description |
-| :-- | :-- | :-- | :-- |
-| `activity` | string: `reads and writes`, `writes`, `reads`, `none` | `reads and writes` | What shimmers. Git status, line counts and the git footer always show. |
-| `followClaude` | boolean | `true` | Scroll to what Claude reads, writes or commits, opening its folders. Off keeps the view where you put it; the highlights still show, on the closed folder that holds the file. |
-| `openAtStart` | boolean | `true` | Open the pane when a session starts, where it can dock. Off keeps it closed until `/file-tree`. |
-| `rightColumn` | string: `date`, `age`, `size` | `date` | The right column when a session starts. `age` reads `now`, `12m`, `3h`, `5d`, then the day (`Oct 9`) past a week and the year past a year. |
-| `hints` | boolean | `true` | Outside a git repository, a line saying git status starts after `git init`. |
-| `searchSpacing` | boolean | `true` | A blank line above and below the search field. Off gives the tree those two rows. |
-| `shortcutRow` | boolean | `true` | The `j`/`k`/`h`/`l`/open/search buttons. Off hides them; the keys still work in the tree. |
-| `openWith` | string: empty, `editor` or a command | empty | Empty opens files in their default app, except files that app would run, which need a command here: scripts, programs, installers and shortcuts such as `.command`, `.sh`, `.exe` or `.desktop`, any file with its executable bit set on macOS and Linux, a name ending in a dot or a space, and a link whose target is any of these. A link opens the file it leads to, checked by its own name. `editor` opens `$VISUAL`, then `$EDITOR`, then `vi`, in a new tmux window or a herdr pane; in tmux, nvim reuses a running nvim in the same session. A command such as `code -g {path}` runs as is, `{path}` being the file. |
-| `editWith` | string: empty or a command | empty | What `e` opens, at the top line shown: empty is the same editor as `editor` with `+line`; a command takes `{path}` and `{line}`, such as `code -g {path}:{line}` or `zed {path}:{line}`. |
-| `diffWith` | string: empty or a command | empty | Empty shows diffs in the pane. A terminal command such as `hunk diff --`, `lazygit -f`, `git difftool -y --` or `nvim -c Gvdiffsplit` runs on the path, given as `./path`, in a tmux window, a herdr pane or, on Linux, a new terminal window through `xdg-terminal-exec`. |
-| `ignore` | string: names | empty | Names left out of the tree, the search and the highlights, separated by spaces or commas, such as `.cache .tmp`. Exact names at any depth, like the built-in `.git` and `node_modules`. |
-| `palette` | string: `tone=#rrggbb` pairs | empty | Your own colors over the theme's. Tones: `read`, `write`, `commit`, `modified`, `added`, `deleted`, `untracked`, `conflict`, `muted`, `accent`, `selected`, `hovered`. The pane names any pair it ignores. |
-| `glyphs` | string: `auto`, `nerd`, `plain` | `auto` | `auto` uses Nerd Font icons in a terminal when a Nerd Font was installed before the terminal started, and over SSH; plain Unicode in the desktop app and wherever no Nerd Font is found. |
+| Option          | Type                                                  | Default            | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| :-------------- | :---------------------------------------------------- | :----------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `activity`      | string: `reads and writes`, `writes`, `reads`, `none` | `reads and writes` | What shimmers. Git status, line counts and the git footer always show.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| `followClaude`  | boolean                                               | `true`             | Scroll to what Claude reads, writes or commits, opening its folders. Off keeps the view where you put it; the highlights still show, on the closed folder that holds the file.                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| `openAtStart`   | boolean                                               | `true`             | Open the pane when a session starts, where it can dock. Off keeps it closed until `/file-tree`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| `rightColumn`   | string: `date`, `age`, `size`                         | `date`             | The right column when a session starts. `age` reads `now`, `12m`, `3h`, `5d`, then the day (`Oct 9`) past a week and the year past a year.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| `hints`         | boolean                                               | `true`             | Outside a git repository, a line saying git status starts after `git init`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| `searchSpacing` | boolean                                               | `true`             | A blank line above and below the search field. Off gives the tree those two rows.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| `shortcutRow`   | boolean                                               | `true`             | The `j`/`k`/`h`/`l`/open/search buttons. Off hides them; the keys still work in the tree.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| `openWith`      | string: empty, `editor` or a command                  | empty              | Empty opens files in their default app, except files that app would run, which need a command here: scripts, programs, installers and shortcuts such as `.command`, `.sh`, `.exe` or `.desktop`, any file with its executable bit set on macOS and Linux, a name ending in a dot or a space, and a link whose target is any of these. A link opens the file it leads to, checked by its own name. `editor` opens `$VISUAL`, then `$EDITOR`, then `vi`, in a new tmux window or a herdr pane; in tmux, nvim reuses a running nvim in the same session. A command such as `code -g {path}` runs as is, `{path}` being the file. |
+| `editWith`      | string: empty or a command                            | empty              | What `e` opens, at the top line shown: empty is the same editor as `editor` with `+line`; a command takes `{path}` and `{line}`, such as `code -g {path}:{line}` or `zed {path}:{line}`.                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| `diffWith`      | string: empty or a command                            | empty              | Empty shows diffs in the pane. A terminal command such as `hunk diff --`, `lazygit -f`, `git difftool -y --` or `nvim -c Gvdiffsplit` runs on the path, given as `./path`, in a tmux window, a herdr pane or, on Linux, a new terminal window through `xdg-terminal-exec`.                                                                                                                                                                                                                                                                                                                                                    |
+| `ignore`        | string: names                                         | empty              | Names left out of the tree, the search and the highlights, separated by spaces or commas, such as `.cache .tmp`. Exact names at any depth, like the built-in `.git` and `node_modules`.                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| `palette`       | string: `tone=#rrggbb` pairs                          | empty              | Your own colors over the theme's. Tones: `read`, `write`, `commit`, `modified`, `added`, `deleted`, `untracked`, `conflict`, `muted`, `accent`, `selected`, `hovered`. The pane names any pair it ignores.                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| `glyphs`        | string: `auto`, `nerd`, `plain`                       | `auto`             | `auto` uses Nerd Font icons in a terminal when a Nerd Font was installed before the terminal started, and over SSH; plain Unicode in the desktop app and wherever no Nerd Font is found.                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 
 Set an option when you install:
 
@@ -646,9 +646,9 @@ Uninstalling from the last scope it's installed at also deletes its saved option
 
 **Works in:** 💻 **Claude Code only**
 
-| Component | Claude Code | Claude |
-| :-- | :--: | :--: |
-| 🧩 Mods | ✅ v2.1.287+ (Desktop v2.1.286+); hooks run in every session except Desktop on WSL; ⚠️ drawing depends on where: panes in the terminal, Desktop and VS Code (extension v2.1.299+, v2.1.304+ without feature flags), the band above the prompt only in the terminal and Desktop | ⚠️ the plugin directory lists a mod for Claude Code only |
+| Component |                                                                                                                                  Claude Code                                                                                                                                   |                          Claude                          |
+| :-------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :------------------------------------------------------: |
+| 🧩 Mods   | ✅ v2.1.287+ (Desktop v2.1.286+); hooks run in every session except Desktop on WSL; ⚠️ drawing depends on where: panes in the terminal, Desktop and VS Code (extension v2.1.299+, v2.1.304+ without feature flags), the band above the prompt only in the terminal and Desktop | ⚠️ the plugin directory lists a mod for Claude Code only |
 
 <sub>✅ works · ⚠️ partial · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. Claude runs agents, hooks and local MCP servers only in conversations where it can run tasks; anything on your computer needs Claude Desktop open.</sub>
 

@@ -1,29 +1,65 @@
 version: 2
 updates:
+  # Actions are pinned by commit SHA with a "# vX.Y.Z" comment on the same line, which Dependabot
+  # updates together with the SHA. A release waits 7 days before Dependabot proposes it.
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: weekly
+    cooldown:
+      default-days: 7
+    groups:
+      actions:
+        patterns: ["*"]
     labels:
       - "area: ci"
       - "type: dependencies"
     commit-message:
       prefix: "ci"
+      include: "scope"
 
-  # The root package.json holds only maintainer type packages (ADR_2026-10-21_maintainer-only-root-package-json).
-  # A new @types/node major goes with a new Node major in .nvmrc, never on its own.
+  # The root package.json holds only the maintainer tooling, pinned exactly (.npmrc save-exact).
   - package-ecosystem: npm
     directory: /
     schedule:
       interval: weekly
+    cooldown:
+      default-days: 7
+      semver-major-days: 14
     ignore:
+      # A new @types/node major goes with a new Node major in .nvmrc and devEngines, never on its own.
       - dependency-name: "@types/node"
         update-types: ["version-update:semver-major"]
-      # A new TypeScript major moves the global tsc, the editor and CI together, by Nery's decision.
+      # A new TypeScript major moves the editor's language server, tsc and CI together, by the
+      # owner's decision.
       - dependency-name: "typescript"
         update-types: ["version-update:semver-major"]
+    groups:
+      npm-minor-patch:
+        update-types: ["minor", "patch"]
     labels:
       - "area: ci"
       - "type: dependencies"
     commit-message:
       prefix: "chore"
+      include: "scope"
+
+  # The maintainer scripts' Python dependencies (pyproject.toml dev group, uv.lock). The maintainer
+  # tools themselves are uv tools pinned in the tools:install npm script, which Dependabot does not
+  # read: bump those by hand.
+  - package-ecosystem: uv
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+      semver-major-days: 14
+    groups:
+      uv-minor-patch:
+        update-types: ["minor", "patch"]
+    labels:
+      - "area: ci"
+      - "type: dependencies"
+    commit-message:
+      prefix: "chore"
+      include: "scope"

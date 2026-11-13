@@ -14,8 +14,8 @@
     // An unknown file type is an error, never skipped in silence.
     "ignoreUnknown": false,
     "includes": [
-      // Every extension the repository holds that Biome reads, grit for the lint plugins' sources.
-      "**/*.{js,cjs,mjs,jsx,ts,cts,mts,tsx,json,jsonc,md,yml,yaml,grit}",
+      // Every extension the repository holds that Biome reads.
+      "**/*.{js,cjs,mjs,jsx,ts,cts,mts,tsx,json,jsonc,md,yml,yaml}",
       // Build output.
       "!!**/dist",
       "!!**/build",
@@ -23,12 +23,10 @@
       "!!.claude/worktrees",
       // The superpowers plugin's local working folder (git-ignored).
       "!!.superpowers",
-      // .claude/CLAUDE.md keeps .github/ out of the maintainer tools; actionlint checks the workflows.
+      // actionlint and zizmor own the workflow files; the rest of .github/ is not checked yet.
       "!!.github",
       // Personal, git-ignored.
       "!!.claude/settings.local.json",
-      // Its {{…}} placeholders are not JSON until rendered.
-      "!.claude/skills/building-plugins/assets/plugin-template.json",
       // npm writes it.
       "!!**/package-lock.json",
       // The engine's generated types, git-ignored but still indexed by the Scanner, and the largest
@@ -42,34 +40,32 @@
       // so they do not parse as a module or a script. scripts/testers/<plugin>/workflow.test.mjs
       // checks them instead.
       "!!plugins/*/workflows",
-      // Markdown Biome never formats: ADR_2026-10-26_biome-never-formats-plugin-and-skill-markdown.
+      // Markdown Claude reads as instructions: never formatted (table padding costs tokens) and
+      // never linted (agent and skill files open with frontmatter, not a level-1 heading).
+      // A folder pattern drops the whole folder; a *.md pattern keeps the folder's scripts.
       "!**/CLAUDE.md",
+      "!**/CLAUDE.local.md",
+      "!.claude/rules",
       "!.claude/memory",
-      "!.claude/session-handoff",
+      "!.claude/references",
+      "!.claude/templates",
+      "!.claude/architecture",
+      "!.claude/skills/**/*.md",
+      "!.claude/agents/**/*.md",
+      "!.claude/commands/**/*.md",
+      "!plugins/*/skills/**/*.md",
+      "!plugins/*/agents/**/*.md",
+      "!plugins/*/commands/**/*.md",
+      // Eval prompts and graders are instructions Claude reads too (owner to confirm).
+      "!plugins/*/evals/**/*.md",
+      // Maintainer working notes, not human docs (owner to confirm).
       "!.claude/maintainer",
       "!.claude/plans",
+      "!.claude/session-handoff",
       "!.claude/specs",
-      "!.claude/rules",
-      "!.claude/templates",
-      // Scheduled-task folders hold copies of official docs and their notes: neither formatted nor linted.
-      "!.claude/scheduled-tasks",
-      "!.claude/skills/**/*.md",
-      "!plugins/**/*.md"
+      "!.claude/scheduled-tasks"
     ]
   },
-  // GritQL lint plugins, for repository conventions no built-in rule covers. Each finding is an
-  // error, so it fails the gates; a suppression is // biome-ignore lint/plugin: <reason>.
-  "plugins": [
-    {
-      // Entry points detect themselves with isMain() from scripts/lib.mjs, never an inline
-      // comparison with process.argv[1]. The plugins under plugins/ never import scripts/lib.mjs.
-      "path": "./scripts/biome-plugins/main-module.grit",
-      "includes": [
-        "scripts/**",
-        "!scripts/lib.mjs"
-      ]
-    }
-  ],
   "assist": {
     // Assist is on and runs its recommended actions (organizeImports) by default, and biome ci
     // fails when one has a change to make. Each action added here gets its
@@ -94,11 +90,6 @@
   "linter": {
     // The preset plus Nery's rule set: each entry raises a severity, turns on a rule the preset
     // leaves off, or turns one off. The gates fail on warnings (--error-on-warnings).
-    // The tests run on node:test, which Biome does not detect, so the test domain's recommended
-    // rules are turned on by hand.
-    "domains": {
-      "test": "recommended"
-    },
     // The project and types domains' recommended sets catch neither an import cycle nor a floating
     // promise here, so the rules that do are listed one by one below. Any of them starts the
     // Scanner across the whole repository, for every run and every editor session.
@@ -211,20 +202,18 @@
         "noDuplicateDependencies": "error",
         "noEmptySource": "error",
         "noEmptyObjectKeys": "error",
-        // Every maintenance command is an npm run script (.claude/CLAUDE.md). The rule takes exact
-        // names, so the check:* family stays outside it.
+        // Every maintenance command is an npm run script. The rule takes exact names, so the
+        // lint:* and typecheck:* families stay outside it.
         "useRequiredScripts": {
           "level": "error",
           "options": {
             "requiredScripts": [
-              "test",
-              "typecheck",
+              "check",
               "lint",
               "format",
               "fix",
-              "validate",
-              "gates",
-              "generate"
+              "typecheck",
+              "validate"
             ]
           }
         }
@@ -251,7 +240,7 @@
         // new require(…) is always a mistake. Its sibling noUnsafeReturn stays off: in .mjs it ignores
         // JSDoc types and type guards, so it flags JSON that is already validated.
         "noNewRequire": "error",
-        // The other nursery rules `biome explain` marks as recommended on 2.6.3. Nursery rules are
+        // The other nursery rules `biome explain` marks as recommended on 2.6.6. Nursery rules are
         // outside semver: each Biome upgrade rechecks this list (the version is pinned, and
         // Dependabot proposes each upgrade as its own pull request).
         "noAccidentalBitwiseOperators": "error",
@@ -259,7 +248,7 @@
         "noArraySortForMinMax": "error",
         "noBooleanSortComparator": "error",
         "noDoubleComparison": "error",
-        // The only YAML rule: without it, the YAML linter runs no rule.
+        // YAML: a key repeated in one mapping (noYamlBooleanKeys below is the other YAML rule).
         "noDuplicateMapKeys": "error",
         "noEagerArrayMethodsInLoops": "error",
         "noImpliedEval": "error",
@@ -288,7 +277,32 @@
         "usePackageJsonValidCpu": "error",
         "usePackageJsonValidEngines": "error",
         "useSimplifiedBooleanReturn": "error",
-        "useUnaryMinus": "error"
+        "useUnaryMinus": "error",
+        // Recommended nursery rules added in 2.6.4 to 2.6.6 (biome explain on 2.6.6).
+        "noArrayForEach": "error",
+        "noArrayMethodsOnArguments": "error",
+        "noAwaitInPromiseMethods": "error",
+        "noChainedComparison": "error",
+        "noConsoleSpaces": "error",
+        "noConstantComparisons": "error",
+        "noErasingOperation": "error",
+        "noInvalidRemoveEventListener": "error",
+        "noLateEventControl": "error",
+        "noMagicArrayFlatDepth": "error",
+        "noMissingThrow": "error",
+        "noNegatedArrayPredicate": "error",
+        "noNumberArgumentOutOfRange": "error",
+        "noObjectLiteralComparison": "error",
+        "noReturnArrayPush": "error",
+        "noSinglePromiseInPromiseMethods": "error",
+        "noSubtractionComparison": "error",
+        "noUninvokedArrayCallback": "error",
+        "noUnnecessaryStringTrim": "error",
+        "noUselessLengthCheck": "error",
+        "noYamlBooleanKeys": "error",
+        "useObjectFromEntries": "error",
+        "useSetSize": "error",
+        "useWhileLoopCondition": "error"
       }
     }
   },
@@ -323,9 +337,15 @@
       // beside its assertion, where it runs once.
       "includes": [
         "**/tests/**",
+        "**/*.test.*",
         "scripts/testers/**"
       ],
       "linter": {
+        // Biome does not detect node:test, so the test domain is on here, for test files only:
+        // its globals (describe, it, expect...) stay out of every other file.
+        "domains": {
+          "test": "recommended"
+        },
         "rules": {
           "suspicious": {
             "noConsole": "off"

@@ -35,8 +35,19 @@ Rules:
 
 ## Gotchas
 
+- A green Claude step can be a no-op: "No trigger found" in its log; or the log lines "Skipping action due to workflow validation: …" and "Exiting due to workflow validation skip", which happen only on runs that pass no `github_token`, are normal on the pull request that adds or edits the Claude workflow, and mean the review never ran. Either one makes the verdict `BLOCKED`, with "not reviewed" as the reason, never a pass.
+- A Claude review can drop inline comments: "classified as test/probe — NOT posted" and "confirmed=false — not posting" in the log mean findings that never reached the pull request; read them in the log.
+- Anthropic's managed Code Review reports a check named "Claude Code Review" that never concludes as a failure and never approves or blocks: read its comments for findings, and its title for what happened. A title saying the review failed, timed out or was declined makes the verdict `BLOCKED`, with "not reviewed" as the reason.
+- A green Claude review whose log says "The author of pull request #N is not confirmed to have write access, so commands that run code from the checkout are denied." ran none of the repository's tests or scripts: say so in the verdict.
 - The GitHub MCP tools load on demand: before the first call, load them with `ToolSearch` (query `+github`). Its result also names a GitHub server that failed to connect; then use `gh`. Their full names depend on the server (`mcp__github__…` for a server the user added as `github`, another prefix for a server with another name or a claude.ai connector), so match them by the tool name.
-- Whether a thread's author is a bot comes from `author.__typename` (`Bot`), not from the name. The MCP review threads never carry it, nor a comment's numeric ID: read threads with the review-threads query in Tools before you reply or resolve anything. An AI that posts from a person's account counts as a person.
+- Some environments block GitHub's GraphQL API while REST works: in Claude Code on the web, every GraphQL call gets HTTP 403 with a message that begins "GitHub GraphQL is not available from Claude Code sessions". That 403 is a blocked route, not a missing permission. These `gh` commands use GraphQL, with or without `--json`, and fail there: `gh pr view`, `gh pr checks`, `gh pr list`, `gh pr create`, `gh pr merge`, `gh repo view`, `gh issue list`, `gh label list` and `gh api graphql`. `gh pr diff`, `gh run list` and `gh api repos/…` use REST and work there. Read the same facts through REST instead: `gh api repos/<owner>/<repo>/pulls/<n>` (head and base, SHAs, `requested_reviewers` and `requested_teams`), `gh api repos/<owner>/<repo>/pulls/<n>/reviews`, `gh api repos/<owner>/<repo>/commits/<SHA>/check-runs` and `.../commits/<SHA>/status`. A fact with no REST route, such as the review decision, is out of reach there: report it so, with both errors.
+- Review threads where GraphQL is blocked:
+  - Read them with the MCP `pull_request_read`, method `get_review_comments`, every page. It returns each thread's node ID (`PRRT_…`), but each author as a login only; a comment's numeric ID is the number after `#discussion_r` in its `html_url`.
+  - Classify each thread's author by joining the numeric ID of its first comment to the review comments REST returns: `gh api repos/<owner>/<repo>/pulls/<n>/comments --paginate --jq '.[] | {id, type: .user.type}'`. `Bot` marks a bot; a thread whose first comment is missing from that list stays unclassified.
+  - Resolve with the MCP `resolve_review_thread`, `threadId` set to the thread's node ID.
+  - Current behavior of Claude Code sessions, not GitHub's API: the 403 message also names routes that the session serves on api.github.com. When the MCP tools fail, use the routes that 403 message names, such as `gh api repos/<owner>/<repo>/pulls/<n>/ccr/review_threads`, which returns each thread's `resolved`, `outdated`, `path`, `line` and `comment_ids` (the first is the first comment's numeric ID), with no author and no node ID; and `gh api --method POST repos/<owner>/<repo>/pulls/<n>/ccr/comments/<first comment id>/resolve`.
+  - Resolve only a thread whose author this join confirmed as a bot.
+- Whether a thread's author is a bot comes from its first comment's author type, not from the name: `author.__typename` (`Bot`) in the review-threads query in Tools, or `user.type` (`Bot`) in the REST review comments where GraphQL is blocked. The MCP review threads carry neither: classify every thread one of these two ways before you reply or resolve anything. An AI that posts from a person's account counts as a person.
 - The author of a thread's first comment is the one who opened it.
 - An outdated thread may have moved, not been fixed.
 - AI reviewers can comment after their check ends, and may not review again after a push.
@@ -48,7 +59,7 @@ Rules:
 
 ## Tools
 
-Use the MCP tool first: it answers in one call. Review threads are the exception: read them with the `gh` query first, because only it returns each comment's numeric ID and its author's `__typename`. When it fails (the tool is missing, it errors, it returns 403 or 404, or it returns nothing where data must exist), run the `gh` command of the same row before you report anything as not inspected or not done. Report a fact as out of reach only after both failed, with both errors.
+Use the MCP tool first: it answers in one call. Review threads are the exception: read them with the `gh` query first, because only it returns each comment's numeric ID and its author's `__typename` in one call; where GraphQL is blocked, read, classify and resolve them as the Gotchas say. When it fails (the tool is missing, it errors, it returns 403 or 404, or it returns nothing where data must exist), run the `gh` command of the same row before you report anything as not inspected or not done. Report a fact as out of reach only after both failed, with both errors.
 
 | Task | MCP, first | gh, when MCP fails |
 | :-- | :-- | :-- |
@@ -61,12 +72,12 @@ Use the MCP tool first: it answers in one call. Review threads are the exception
 | A run's workflow file and its jobs | `actions_get`, method `get_workflow_run` (`path`, `conclusion`); `actions_list`, method `list_workflow_jobs` | `gh run view <run id> -R <owner>/<repo> --json conclusion,jobs` |
 | Checks and statuses at the head | `pull_request_read`, methods `get_check_runs` and `get_status` | `gh pr checks <n> -R <owner>/<repo> --json name,state,bucket,link` |
 | Which checks are required | — (MCP does not read the branch rules) | `gh pr checks <n> -R <owner>/<repo> --required` |
-| Review threads, with each thread's node ID, resolved and outdated flags, path, line and comments | Fallback only: `pull_request_read`, method `get_review_comments`, every page through its `after` cursor. It has no author type, so resolve nothing from it; a comment's numeric ID is the number after `#discussion_r` in its `html_url` | First: `gh api graphql --paginate -F owner=<owner> -F name=<repo> -F number=<n> -f query='query($owner:String!,$name:String!,$number:Int!,$endCursor:String){repository(owner:$owner,name:$name){pullRequest(number:$number){reviewThreads(first:50,after:$endCursor){pageInfo{hasNextPage endCursor} nodes{id isResolved isOutdated path line comments(first:50){nodes{databaseId author{login __typename} body url}}}}}}}'` |
+| Review threads, with each thread's node ID, resolved and outdated flags, path, line and comments | Fallback only: `pull_request_read`, method `get_review_comments`, every page through its `after` cursor. It has no author type: classify each thread's author by joining its first comment's numeric ID to `user.type` in `gh api repos/<owner>/<repo>/pulls/<n>/comments --paginate`; a comment's numeric ID is the number after `#discussion_r` in its `html_url` | First: `gh api graphql --paginate -F owner=<owner> -F name=<repo> -F number=<n> -f query='query($owner:String!,$name:String!,$number:Int!,$endCursor:String){repository(owner:$owner,name:$name){pullRequest(number:$number){reviewThreads(first:50,after:$endCursor){pageInfo{hasNextPage endCursor} nodes{id isResolved isOutdated path line comments(first:50){nodes{databaseId author{login __typename} body url}}}}}}}'`; where GraphQL is blocked, the session route in the review-threads Gotcha |
 | Reviews and the review decision | `pull_request_read`, method `get_reviews` | `gh pr view <n> -R <owner>/<repo> --json reviews,reviewDecision`; the decision always comes from here |
 | The diff at the head | `pull_request_read`, method `get_diff` | `gh pr diff <n> -R <owner>/<repo>` |
-| Reply in a thread | `add_reply_to_pull_request_comment`, with `commentId` the numeric ID of the thread's first comment (`databaseId` in the review-threads query), not the thread's node ID | `gh api -X POST repos/<owner>/<repo>/pulls/<n>/comments/<comment id>/replies -f body='<reply>'` |
-| Resolve a thread | `resolve_review_thread` with the thread's node ID (`PRRT_…`), or `pull_request_review_write`, method `resolve_thread`, where the server names it that way | `gh api graphql -f query='mutation{resolveReviewThread(input:{threadId:"<node id>"}){thread{isResolved}}}'` |
-| Read a resolution back | `pull_request_read`, method `get_review_comments` | the review-threads query above |
+| Reply in a thread | `add_reply_to_pull_request_comment`, with `commentId` the numeric ID of the thread's first comment (`databaseId` in the review-threads query, the number after `#discussion_r` in the MCP `html_url`, or the first of `comment_ids` in the session route), not the thread's node ID | `gh api -X POST repos/<owner>/<repo>/pulls/<n>/comments/<comment id>/replies -f body='<reply>'` |
+| Resolve a thread | `resolve_review_thread` with the thread's node ID (`PRRT_…`), or `pull_request_review_write`, method `resolve_thread`, where the server names it that way | `gh api graphql -f query='mutation{resolveReviewThread(input:{threadId:"<node id>"}){thread{isResolved}}}'`; where GraphQL is blocked, the session route in the review-threads Gotcha, with the thread's first comment ID |
+| Read a resolution back | `pull_request_read`, method `get_review_comments` | the review-threads query above; where GraphQL is blocked, the session route in the review-threads Gotcha (`resolved`) |
 
 ## Workflow
 
@@ -88,7 +99,7 @@ Use the MCP tool first: it answers in one call. Review threads are the exception
 3. [Threads] Collect every review thread and review.
    - Collect every review thread, on every page.
    - Record each thread's id, its resolved and outdated flags, and its path and line.
-   - Identify who opened each thread, the author of its first comment, and whether it is a bot or a person from that author's `__typename`, read with the review-threads query in Tools.
+   - Identify who opened each thread, the author of its first comment, and whether it is a bot or a person from that author's `__typename`, read with the review-threads query in Tools, or, where GraphQL is blocked, from its `user.type` in the REST review comments, as the Gotchas say.
    - Collect the reviews with their state, and the top-level comments.
 4. [Verify] Verify each unresolved thread's finding against the diff at the head.
    - Match each unresolved thread to a finding in the ledger.
@@ -127,7 +138,7 @@ Return exactly one verdict:
 | :-- | :-- |
 | `READY_TO_MERGE` | The head merges into the current base without conflict, verified against that base's SHA; every workflow run at the head passed by its own conclusion, with every job its file defines accounted for; every check at the head passes, required or not; every bot thread is resolved; every finding is addressed; and the required approvals are in place. Threads people opened may stay open for their reviewer: list them |
 | `NEW_FEEDBACK` | New feedback arrived, or a thread is `unverified`: list each item for `github-operations:pr-lifecycle:pr-fixer` |
-| `BLOCKED` | The head conflicts with the current base or the merge stays unverified, the head is behind a base that requires branches to be up to date, a workflow run failed or a job never started, a check fails, a required approval is missing, a change request stands, or a finding needs the user |
+| `BLOCKED` | The head conflicts with the current base or the merge stays unverified, the head is behind a base that requires branches to be up to date, a workflow run failed or a job never started, a check fails, a required approval is missing, a change request stands, a Claude review step was a no-op (not reviewed), or a finding needs the user |
 | `STALE` | The head moved since the brief |
 
 Template:

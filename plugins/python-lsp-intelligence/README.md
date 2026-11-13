@@ -40,22 +40,22 @@ Python LSP Intelligence connects the basedpyright language server you install to
 
 ## 🧩 What's inside
 
-| Component | Name | What it does | How it runs |
-| :-- | :-- | :-- | :-- |
-| 🧠 LSP server | `basedpyright` | Connects `basedpyright-langserver` for `.py`, `.pyi` and `.pyw` files | Automatically when Claude opens or edits a Python file |
-| 🪝 Hook | `PostToolUse` · `PostToolUseFailure` | Runs `ruff check --fix`, `ruff format` and `basedpyright` on the Python files an Edit, Write, NotebookEdit or Bash call changed | Automatically after each Edit, Write, NotebookEdit or Bash call, and after a Bash call that fails |
-| 🎯 Skill | `python-lsp-intelligence:python-lsp-intelligence` | Teaches Claude to navigate with the language server first, trust its results only after five checks, and work with ruff and basedpyright the way your project configures them | Automatically when you work on Python code, or `/python-lsp-intelligence:python-lsp-intelligence` |
+| Component     | Name                                              | What it does                                                                                                                                                                  | How it runs                                                                                       |
+| :------------ | :------------------------------------------------ | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------ |
+| 🧠 LSP server | `basedpyright`                                    | Connects `basedpyright-langserver` for `.py`, `.pyi` and `.pyw` files                                                                                                         | Automatically when Claude opens or edits a Python file                                            |
+| 🪝 Hook       | `PostToolUse` · `PostToolUseFailure`              | Runs `ruff check --fix`, `ruff format` and `basedpyright` on the Python files an Edit, Write, NotebookEdit or Bash call changed                                               | Automatically after each Edit, Write, NotebookEdit or Bash call, and after a Bash call that fails |
+| 🎯 Skill      | `python-lsp-intelligence:python-lsp-intelligence` | Teaches Claude to navigate with the language server first, trust its results only after five checks, and work with ruff and basedpyright the way your project configures them | Automatically when you work on Python code, or `/python-lsp-intelligence:python-lsp-intelligence` |
 
 ## 📋 Prerequisites
 
-| Tool | Minimum version | Check |
-| :-- | :-- | :-- |
-| Claude Code | 2.1.288 | `claude --version` |
-| Bash | — | `bash --version` |
-| Python (`python3`) | 3.12 | `python3 --version` |
-| Ruff | — | `ruff --version` |
-| basedpyright | — | `basedpyright --version` |
-| Git (optional) | — | `git --version` |
+| Tool               | Minimum version | Check                    |
+| :----------------- | :-------------- | :----------------------- |
+| Claude Code        | 2.1.288         | `claude --version`       |
+| Bash               | —               | `bash --version`         |
+| Python (`python3`) | 3.12            | `python3 --version`      |
+| Ruff               | —               | `ruff --version`         |
+| basedpyright       | —               | `basedpyright --version` |
+| Git (optional)     | —               | `git --version`          |
 
 Install them on the `PATH` of the shell you start `claude` from. The plugin doesn't install them: Claude Code starts `basedpyright-langserver`, which comes with basedpyright, by name, and the hook starts `ruff` and `basedpyright` by name. `python3` runs the hook, and Claude Code starts it with `bash`. Git is optional: in a Git repository the hook asks Git which files a Bash command changed, and without it the hook compares modification times. On Windows, run Claude Code from Git Bash with the same tools on its `PATH`, and run the Python check from the table there.
 
@@ -75,7 +75,7 @@ claude update
 <summary>🍺 <b>Homebrew</b> — macOS, Linux</summary>
 
 ```bash
-brew upgrade claude-code
+brew upgrade claude-code  # claude-code@latest if you installed that cask
 ```
 
 </details>
@@ -331,9 +331,9 @@ basedpyright says reportReturnType in parse_config. Fix it.
 
 The hook runs the tools the way you would from a terminal, so **your configuration wins**:
 
-| Tool | What it reads | When you have none |
-| :-- | :-- | :-- |
-| ruff | The closest `ruff.toml`, `.ruff.toml` or `pyproject.toml` with `[tool.ruff]` above the file, then your user-level `~/.config/ruff/ruff.toml` | The plugin's `hooks/defaults/ruff.toml`: `select = ["ALL"]` with the formatter- and basedpyright-owned rules ignored, 100-column lines |
+| Tool         | What it reads                                                                                                                                                                                                             | When you have none                                                                                                                                                                                                                                                                                                                                                                                  |
+| :----------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ruff         | The closest `ruff.toml`, `.ruff.toml` or `pyproject.toml` with `[tool.ruff]` above the file, then your user-level `~/.config/ruff/ruff.toml`                                                                              | The plugin's `hooks/defaults/ruff.toml`: `select = ["ALL"]` with the formatter- and basedpyright-owned rules ignored, 100-column lines                                                                                                                                                                                                                                                              |
 | basedpyright | The nearest `pyrightconfig.json`, or `pyproject.toml` with `[tool.basedpyright]` or `[tool.pyright]`, above the file (passed with `-p`, since basedpyright's own lookup starts at the current directory, not at the file) | The plugin's `hooks/defaults/pyrightconfig.json` (`recommended` mode with `failOnWarnings`, strict inference and the `report*` rules that complement the ruff ignores), bound to your project for that run: its root (the nearest `pyproject.toml`, `setup.py`, `setup.cfg`, `requirements.txt` or `.git` above the file) and `src/` are the import roots, and a `.venv` there is used when present |
 
 Any configuration file of your own replaces the corresponding default entirely; the plugin never creates or edits one in your project.
@@ -397,11 +397,11 @@ Uninstalling from the last scope it's installed at also deletes its saved option
 
 **Works in:** 💻 **Claude Code only**
 
-| Component | Claude Code | Claude |
-| :-- | :--: | :--: |
-| 🎯 Skills | ✅ | ✅ |
-| 🪝 Hooks | ✅ | ⚠️ only in conversations where Claude can run tasks |
-| 🧠 LSP servers | ✅ | ➖ |
+| Component      | Claude Code |                       Claude                        |
+| :------------- | :---------: | :-------------------------------------------------: |
+| 🎯 Skills      |     ✅      |                         ✅                          |
+| 🪝 Hooks       |     ✅      | ⚠️ only in conversations where Claude can run tasks |
+| 🧠 LSP servers |     ✅      |                         ➖                          |
 
 <sub>✅ works · ⚠️ partial · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. Claude runs agents, hooks and local MCP servers only in conversations where it can run tasks; anything on your computer needs Claude Desktop open.</sub>
 

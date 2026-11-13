@@ -39,7 +39,7 @@ Rules:
 
 - A plain `git status` writes the index; without `GIT_OPTIONAL_LOCKS=0` it is not read-only.
 - `git merge-tree --write-tree` writes tree objects: point it at the temporary object store the brief names.
-- A 403 or 404 from GitHub usually means missing permission, not an empty result.
+- A 403 or 404 from GitHub usually means missing permission, not an empty result. A 403 that says GitHub GraphQL is not available is a blocked route instead: retry the read through REST (`gh api repos/<owner>/<repo>/...`) or the GitHub MCP server before recording it.
 - A failed call never makes its domain empty.
 - A command whose result says it was moved to the background has not finished: wait for its completion notice, then read its output file, before you record its result or report.
 

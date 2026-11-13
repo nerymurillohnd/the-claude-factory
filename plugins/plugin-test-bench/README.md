@@ -39,21 +39,21 @@ A plugin that works with `claude --plugin-dir` on your machine can still break f
 
 ## 🧩 What's inside
 
-| Component | Name | What it does | How it runs |
-| :-- | :-- | :-- | :-- |
-| 🎯 Skill | `plugin-test-bench:test-install` | Installs your plugin as a copy in a throwaway configuration, compares the copy with your folder, checks it loads, runs your eval suite on the copy, optionally runs real requests, then cleans up | `/plugin-test-bench:test-install [plugin folder]`, or ask Claude to test your plugin the way users install it |
-| 🎯 Skill | `plugin-test-bench:review-evals` | Reviews every case of your eval suite and reports what to keep, fix, rewrite or remove, with the exact fix, before you pay for runs | `/plugin-test-bench:review-evals [plugin folder]`, or ask Claude to review your plugin's eval cases |
+| Component | Name                             | What it does                                                                                                                                                                                      | How it runs                                                                                                   |
+| :-------- | :------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | :------------------------------------------------------------------------------------------------------------ |
+| 🎯 Skill  | `plugin-test-bench:test-install` | Installs your plugin as a copy in a throwaway configuration, compares the copy with your folder, checks it loads, runs your eval suite on the copy, optionally runs real requests, then cleans up | `/plugin-test-bench:test-install [plugin folder]`, or ask Claude to test your plugin the way users install it |
+| 🎯 Skill  | `plugin-test-bench:review-evals` | Reviews every case of your eval suite and reports what to keep, fix, rewrite or remove, with the exact fix, before you pay for runs                                                               | `/plugin-test-bench:review-evals [plugin folder]`, or ask Claude to review your plugin's eval cases           |
 
 ## 📋 Prerequisites
 
-| Tool | Minimum version | Check |
-| :-- | :-- | :-- |
-| Claude Code | 2.1.299 | `claude --version` |
-| git, with your plugin committed in a repository | 2.31 to run eval suites | `git --version` |
-| Bash | — | `bash --version` |
-| bubblewrap (Linux, for eval cases that grant Bash) | — | `bwrap --version` |
-| socat (Linux, for eval cases that grant Bash) | — | `socat -V` |
-| Claude sign-in for the test configuration | — | — |
+| Tool                                               | Minimum version         | Check              |
+| :------------------------------------------------- | :---------------------- | :----------------- |
+| Claude Code                                        | 2.1.299                 | `claude --version` |
+| git, with your plugin committed in a repository    | 2.31 to run eval suites | `git --version`    |
+| Bash                                               | —                       | `bash --version`   |
+| bubblewrap (Linux, for eval cases that grant Bash) | —                       | `bwrap --version`  |
+| socat (Linux, for eval cases that grant Bash)      | —                       | `socat -V`         |
+| Claude sign-in for the test configuration          | —                       | —                  |
 
 The plugin also uses `mktemp`, `chmod` and `rm`, which come with macOS and Linux.
 
@@ -75,7 +75,7 @@ claude update
 <summary>🍺 <b>Homebrew</b> — macOS, Linux</summary>
 
 ```bash
-brew upgrade claude-code
+brew upgrade claude-code  # claude-code@latest if you installed that cask
 ```
 
 </details>
@@ -313,8 +313,8 @@ Uninstalling from the last scope it's installed at also deletes its saved option
 **Works in:** 💻 **Claude Code only**
 
 | Component | Claude Code | Claude |
-| :-- | :--: | :--: |
-| 🎯 Skills | ✅ | ✅ |
+| :-------- | :---------: | :----: |
+| 🎯 Skills |     ✅      |   ✅   |
 
 <sub>✅ works · ⚠️ partial · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. Claude runs agents, hooks and local MCP servers only in conversations where it can run tasks; anything on your computer needs Claude Desktop open.</sub>
 

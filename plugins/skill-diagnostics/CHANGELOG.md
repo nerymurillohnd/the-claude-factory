@@ -6,6 +6,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+### Removed
+
+- **Breaking:** the `/skill-diagnostics:evals` workflow is gone. If you ran `/skill-diagnostics:evals <skill folder>` to measure a skill's trigger rates and output quality with and without the skill, that command no longer exists after you update. The plugin no longer ships its own eval runner. To run evals, use Claude Code's `claude plugin eval` or a skill-writing skill such as `skill-creator`. The audit still checks a skill's evals, and the plugin's README says where to run them.
+
 ## [0.3.0] - 2026-11-09
 
 ### Added

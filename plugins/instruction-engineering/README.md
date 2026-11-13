@@ -36,18 +36,18 @@ Instruction files are easy to write and hard to get right: a rule with the wrong
 
 ## 🧩 What's inside
 
-| Component     | Name                    | What it does        | How it runs                                             |
-| :------------ | :---------------------- | :------------------ | :------------------------------------------------------ |
-| 🎯 Skill      | `instruction-engineering:claude-md-and-rules` | Method and references for writing, editing, reviewing, auditing, debugging and refactoring instruction files at user and project scope: placement, wording, layout, loading rules, cross-file analysis, and when a procedure belongs in a skill or a rule in a hook. Includes a read-only checker, `scripts/check_instructions.py`, that the skill, the agent or you run: inventory of what loads, rule frontmatter, glob matches, `--match` scope tests, imports, missing package scripts, duplicates, size limits, `AGENTS.md` shadowing, plus heuristic leads such as near-duplicates and procedures | `/instruction-engineering:claude-md-and-rules` or automatically when your request is about instruction files |
-| 🤖 Agent      | `instruction-engineering:reviewer` | Independent, read-only review of instruction changes in a fresh context, including a check that a refactor lost no requirement | Delegated by Claude, or "use the instruction-engineering reviewer agent" |
+| Component | Name                                          | What it does                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | How it runs                                                                                                  |
+| :-------- | :-------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | :----------------------------------------------------------------------------------------------------------- |
+| 🎯 Skill  | `instruction-engineering:claude-md-and-rules` | Method and references for writing, editing, reviewing, auditing, debugging and refactoring instruction files at user and project scope: placement, wording, layout, loading rules, cross-file analysis, and when a procedure belongs in a skill or a rule in a hook. Includes a read-only checker, `scripts/check_instructions.py`, that the skill, the agent or you run: inventory of what loads, rule frontmatter, glob matches, `--match` scope tests, imports, missing package scripts, duplicates, size limits, `AGENTS.md` shadowing, plus heuristic leads such as near-duplicates and procedures | `/instruction-engineering:claude-md-and-rules` or automatically when your request is about instruction files |
+| 🤖 Agent  | `instruction-engineering:reviewer`            | Independent, read-only review of instruction changes in a fresh context, including a check that a refactor lost no requirement                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | Delegated by Claude, or "use the instruction-engineering reviewer agent"                                     |
 
 ## 📋 Prerequisites
 
-| Tool | Minimum version | Check |
-| :-- | :-- | :-- |
-| Claude Code | 2.1.271 | `claude --version` |
-| Python, as `python3` on your `PATH` | 3.12 | `python3 --version` |
-| git (optional: checks whether `CLAUDE.local.md` is ignored) | — | `git --version` |
+| Tool                                                        | Minimum version | Check               |
+| :---------------------------------------------------------- | :-------------- | :------------------ |
+| Claude Code                                                 | 2.1.271         | `claude --version`  |
+| Python, as `python3` on your `PATH`                         | 3.12            | `python3 --version` |
+| git (optional: checks whether `CLAUDE.local.md` is ignored) | —               | `git --version`     |
 
 Python runs the checker. The Claude Code features the skill points you to have their own minimums: `AGENTS.md` support v2.1.277+, `/doctor prompt-audit` v2.1.283+.
 
@@ -67,7 +67,7 @@ claude update
 <summary>🍺 <b>Homebrew</b> — macOS, Linux</summary>
 
 ```bash
-brew upgrade claude-code
+brew upgrade claude-code  # claude-code@latest if you installed that cask
 ```
 
 </details>
@@ -317,10 +317,10 @@ Uninstalling from the last scope it's installed at also deletes its saved option
 
 **Works in:** 💻 Claude Code · 🖥️ Claude
 
-| Component | Claude Code | Claude |
-| :-- | :--: | :--: |
-| 🎯 Skills | ✅ | ✅ |
-| 🤖 Agents | ✅ | ⚠️ only in conversations where Claude can run tasks |
+| Component | Claude Code |                       Claude                        |
+| :-------- | :---------: | :-------------------------------------------------: |
+| 🎯 Skills |     ✅      |                         ✅                          |
+| 🤖 Agents |     ✅      | ⚠️ only in conversations where Claude can run tasks |
 
 <sub>✅ works · ⚠️ partial · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. Claude runs agents, hooks and local MCP servers only in conversations where it can run tasks; anything on your computer needs Claude Desktop open.</sub>
 
@@ -347,7 +347,7 @@ The skill loads and guides the work in every conversation. The `instruction-engi
 <details>
 <summary><b>The checker says a rule matches, but Claude doesn't seem to follow it.</b></summary>
 
-Discovery is not proof of loading. The checker's glob matcher approximates Claude Code's, and a match says the rule *should* load. Confirm it in a session, with the `Loaded` line shown for subdirectory files or an `InstructionsLoaded` hook, or with this command:
+Discovery is not proof of loading. The checker's glob matcher approximates Claude Code's, and a match says the rule _should_ load. Confirm it in a session, with the `Loaded` line shown for subdirectory files or an `InstructionsLoaded` hook, or with this command:
 
 ```text
 /context

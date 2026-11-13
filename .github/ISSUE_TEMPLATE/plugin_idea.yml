@@ -2,6 +2,7 @@ name: 💡 Plugin idea
 description: Propose a new plugin for The Claude Factory.
 title: "[Plugin idea] <short name>"
 labels: ["type: plugin-idea", "status: triage"]
+type: Feature
 body:
   - type: markdown
     attributes:

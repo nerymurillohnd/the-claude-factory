@@ -1,15 +1,13 @@
 {
+  "$schema": "https://www.schemastore.org/tsconfig",
+  "extends": "./tsconfig.base.json",
   "compilerOptions": {
-    "module": "ESNext",
-    "moduleResolution": "Bundler",
-    "target": "ES2024",
-    "jsx": "react-jsx",
+    "allowJs": true,
     "checkJs": true,
-    "experimentalDecorators": false,
-    "strictNullChecks": true,
-    "strictFunctionTypes": true,
-    "strict": true,
-    "sourceMap": true
+    "module": "nodenext",
+    "target": "es2023",
+    "types": ["node"]
   },
-  "exclude": ["node_modules", "**/node_modules/*"]
+  "include": ["scripts/**/*", "plugins/*/**/*.mjs", "plugins/*/**/*.cjs", "plugins/*/**/*.js"],
+  "exclude": ["**/node_modules", "plugins/*/workflows"]
 }

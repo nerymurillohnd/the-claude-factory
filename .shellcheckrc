@@ -1,6 +1,4 @@
-# ==============================================================================
-# STRICT CONFIGURATION for this repository — ShellCheck >= 0.10.0
-# ==============================================================================
+
 # Valid rc keys (Parser.hs): disable, enable, source, source-path, shell,
 # extended-analysis, external-sources. Unknown keys are silently ignored.
 # -S style and -a have NO rc equivalent: CI and the verify gates pass them on the command line.

@@ -37,15 +37,15 @@ Mods Engineering is a skill for anyone who writes Claude Code mods: panes, bands
 
 ## 🧩 What's inside
 
-| Component | Name | What it does | How it runs |
-| :-- | :-- | :-- | :-- |
-| 🎯 Skill | `mods-engineering:cc-mods-guidance` | An engineering workflow for mods: scope, evidence, the right official page for each question, design, implementation within the engine's static-analysis rules, validation, tests, debugging and sharing | `/mods-engineering:cc-mods-guidance` or automatically when you work on a mod |
+| Component | Name                                | What it does                                                                                                                                                                                             | How it runs                                                                  |
+| :-------- | :---------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------- |
+| 🎯 Skill  | `mods-engineering:cc-mods-guidance` | An engineering workflow for mods: scope, evidence, the right official page for each question, design, implementation within the engine's static-analysis rules, validation, tests, debugging and sharing | `/mods-engineering:cc-mods-guidance` or automatically when you work on a mod |
 
 ## 📋 Prerequisites
 
-| Tool | Minimum version | Check |
-| :-- | :-- | :-- |
-| Claude Code | 2.1.295 | `claude --version` |
+| Tool        | Minimum version | Check              |
+| :---------- | :-------------- | :----------------- |
+| Claude Code | 2.1.295         | `claude --version` |
 
 ### 🤖 Claude Code
 
@@ -63,7 +63,7 @@ claude update
 <summary>🍺 <b>Homebrew</b> — macOS, Linux</summary>
 
 ```bash
-brew upgrade claude-code
+brew upgrade claude-code  # claude-code@latest if you installed that cask
 ```
 
 </details>
@@ -199,8 +199,8 @@ Uninstalling from the last scope it's installed at also deletes its saved option
 **Works in:** 💻 Claude Code · 🖥️ Claude
 
 | Component | Claude Code | Claude |
-| :-- | :--: | :--: |
-| 🎯 Skills | ✅ | ✅ |
+| :-------- | :---------: | :----: |
+| 🎯 Skills |     ✅      |   ✅   |
 
 <sub>✅ works · ⚠️ partial · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. Claude runs agents, hooks and local MCP servers only in conversations where it can run tasks; anything on your computer needs Claude Desktop open.</sub>
 

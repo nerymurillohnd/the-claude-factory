@@ -11,7 +11,7 @@ body:
     attributes:
       label: Page
       description: Link to the page or section.
-      placeholder: https://github.com/<OWNER>/<REPO>/blob/main/docs/installation.md
+      placeholder: https://github.com/<OWNER>/<REPO>/blob/<DEFAULT_BRANCH>/<DOCS_PAGE>
     validations:
       required: true
 

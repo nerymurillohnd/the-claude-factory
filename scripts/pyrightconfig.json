@@ -1,0 +1,9 @@
+{
+  "extends": "../pyrightconfig.json",
+  "include": [
+    "."
+  ],
+  "pythonVersion": "3.15",
+  "venvPath": "..",
+  "venv": ".venv"
+}

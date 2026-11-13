@@ -1,41 +1,40 @@
-# OS
+# What this repository never tracks. Each group names the tool that writes it.
+# .claude/memory/ is tracked on purpose: the project keeps its auto memory in the repository.
+
+# Operating system
 .DS_Store
 Thumbs.db
 
-# Node
+# Node and npm (the root package holds the maintainer tooling)
 node_modules/
 npm-debug.log*
 
-# Local Claude Code state (personal, never committed)
+# Python: bytecode and the ruff cache, at any depth
+__pycache__/
+*.pyc
+.ruff_cache/
+
+# Claude Code: personal and machine-local state
 .claude/settings.local.json
 .claude/worktrees/
 .claude/plans/
 CLAUDE.local.md
 
-# Agent scratch workspaces (superpowers plans and ledgers)
+# Superpowers plugin: its local plans and ledgers
 .superpowers/
+
+# Plugin mods: what Claude Code writes into a mod for the editor and the installed build;
+# none of it ships to users
+plugins/*/.claude-plugin/types/
+plugins/*/tsconfig.json
+
+# Plugin evals: claude plugin eval reports, and the copies CI writes
+**/evals/results/
+eval-results/
+
+# CI: the actionlint binary validate.yml downloads to the repository root
+actionlint
 
 # Scratch
 tmp/
 *.log
-actionlint
-
-# Plugin eval results
-**/evals/results/
-
-# The tsconfig.json Claude Code writes at a mod's root for the editor, beside the git-ignored
-# .claude-plugin/types/ it extends; it would ship to users for nothing
-plugins/*/tsconfig.json
-
-# Python
-__pycache__/
-*.pyc
-.ruff_cache/
-.mypy_cache/
-eval-results/
-
-# Claude Code auto memory (machine-local)
-.claude/memory/
-
-# The declarations Claude Code writes into a mod for the installed build; never shipped to users
-plugins/*/.claude-plugin/types/

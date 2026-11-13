@@ -8,12 +8,35 @@ body:
       value: |
         Happy to help! 👋 The [docs](https://github.com/nerymurillohnd/the-claude-factory/tree/main/docs) and the [FAQ](https://github.com/nerymurillohnd/the-claude-factory/blob/main/docs/faq.md) answer the most common questions.
 
-  - type: input
+  - type: dropdown
     id: plugin
     attributes:
-      label: Plugin (if any)
-      description: The install name, or leave blank for a marketplace question.
-      placeholder: e.g. project-maintainer
+      label: Plugin
+      description: The plugin your question is about, if any.
+      options:
+        - None (marketplace question)
+        - bash-lsp-intelligence
+        - block-no-verify
+        - file-tree-pane
+        - github-operations
+        - hook-engineering
+        - instruction-engineering
+        - macos-grep-guard
+        - model-trace
+        - mods-engineering
+        - plugin-engineering
+        - plugin-evals
+        - plugin-test-bench
+        - project-maintainer
+        - prompt-writer
+        - python-lsp-intelligence
+        - skill-diagnostics
+        - svelte-development
+        - tailwind-development
+        - tool-ledger
+        - turn-meter
+        - typescript6-lsp-intelligence
+        - typescript7-lsp-intelligence
 
   - type: textarea
     id: question

@@ -8,14 +8,12 @@
   "env": {
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
     "CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR": "1",
-    "CLAUDE_CODE_SUBAGENT_MODEL": "sonnet",
-    "CLAUDE_CODE_ENABLE_TASKS": "1"
+    "CLAUDE_CODE_ENABLE_TASKS": "1",
+    "CLAUDE_CODE_ENABLE_TODO_TOOLS": "1"
   },
   "permissions": {
     "allow": [
-      "Bash(node scripts/*)",
       "Bash(node --test *)",
-      "Bash(npm run gates)",
       "Bash(claude plugin validate *)",
       "Bash(claude plugin details *)",
       "Bash(claude plugin list*)",
@@ -36,7 +34,9 @@
       "Bash(rg *)",
       "Bash(tree *)",
       "Bash(kill *)",
-      "Bash(git commit *)"
+      "Bash(git commit *)",
+      "mcp__Claude_Code_Docs__*",
+      "mcp__Context7__*"
     ],
     "deny": [
       "Bash(git push --force*)",
@@ -55,81 +55,6 @@
       "serverName": "claude.ai Google Calendar"
     }
   ],
-  "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/validators-gate.sh",
-            "args": [],
-            "if": "Bash(git commit*)",
-            "timeout": 120,
-            "onFailure": "block",
-            "statusMessage": "Running the maintainer validators before the commit…"
-          }
-        ]
-      },
-      {
-        "matcher": "Edit|Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/skill-frontmatter.py",
-            "args": [],
-            "if": "Write(**/SKILL.md)",
-            "timeout": 60,
-            "statusMessage": "Checking the SKILL.md frontmatter as strict YAML…"
-          },
-          {
-            "type": "command",
-            "command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/skill-frontmatter.py",
-            "args": [],
-            "if": "Edit(**/SKILL.md)",
-            "timeout": 60,
-            "statusMessage": "Checking the SKILL.md frontmatter as strict YAML…"
-          }
-        ]
-      }
-    ],
-    "SessionStart": [
-      {
-        "matcher": "startup|resume|clear|compact|fork",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/checkout.sh",
-            "timeout": 180,
-            "statusMessage": "Reporting the checkout and toolchain state…"
-          }
-        ]
-      }
-    ],
-    "PostToolUse": [
-      {
-        "matcher": "Edit|Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/skill-frontmatter.py",
-            "args": [],
-            "if": "Write(**/SKILL.md)",
-            "timeout": 60,
-            "statusMessage": "Re-checking the saved SKILL.md frontmatter…"
-          },
-          {
-            "type": "command",
-            "command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/skill-frontmatter.py",
-            "args": [],
-            "if": "Edit(**/SKILL.md)",
-            "timeout": 60,
-            "statusMessage": "Re-checking the saved SKILL.md frontmatter…"
-          }
-        ]
-      }
-    ]
-  },
   "enableWorkflows": true,
   "enabledPlugins": {
     "plugin-evals@the-claude-factory": true,
@@ -146,7 +71,25 @@
     "frontend-design@claude-plugins-official": false,
     "frontend-design@synced": false,
     "frontend-design@inline": false,
-    "mcp-server-dev@claude-plugins-official": true
+    "mcp-server-dev@claude-plugins-official": true,
+    "skill-diagnostics@the-claude-factory": true,
+    "plugin-engineering@the-claude-factory": true
   },
-  "autoMemoryDirectory": "~/Claude/repositories/the-claude-factory/.claude/memory"
+  "autoMemoryDirectory": "~/Claude/repositories/the-claude-factory/.claude/memory",
+  "autoMemoryEnabled": true,
+  "extraKnownMarketplaces": {
+    "claude-plugins-official": {
+      "source": {
+        "source": "github",
+        "repo": "anthropics/claude-plugins-official"
+      }
+    },
+    "the-claude-factory": {
+      "source": {
+        "source": "github",
+        "repo": "nerymurillohnd/the-claude-factory"
+      },
+      "autoUpdate": true
+    }
+  }
 }

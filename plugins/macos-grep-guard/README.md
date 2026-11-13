@@ -37,17 +37,17 @@ On macOS, the `grep` in Claude's shell skips gitignored and binary files during 
 
 ## 🧩 What's inside
 
-| Component | Name                                  | What it does                                                                                                                                     | How it runs                                                       |
-| :-------- | :------------------------------------ | :----------------------------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------- |
+| Component | Name                                     | What it does                                                                                                                                  | How it runs                                                            |
+| :-------- | :--------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------- |
 | 🧩 Mod    | [`hooks/register.ts`](hooks/register.ts) | Stops a recursive `grep` that would skip files and an `awk` program that relies on `IGNORECASE`; adds the macOS form after a BSD or zsh error | Automatically on every Bash call, in the main session and in subagents |
 
 ## 📋 Prerequisites
 
-| Tool | Minimum version | Check |
-| :-- | :-- | :-- |
-| Claude Code | 2.1.292 | `claude --version` |
-| macOS, Apple Silicon or Intel | 13.0 | `sw_vers -productVersion` |
-| git, to list the gitignored files under a search folder | — | `git --version` |
+| Tool                                                    | Minimum version | Check                     |
+| :------------------------------------------------------ | :-------------- | :------------------------ |
+| Claude Code                                             | 2.1.292         | `claude --version`        |
+| macOS, Apple Silicon or Intel                           | 13.0            | `sw_vers -productVersion` |
+| git, to list the gitignored files under a search folder | —               | `git --version`           |
 
 The plugin also uses `uname`, `awk` and `find`, which come with macOS and Linux. On any system other than macOS the guard does nothing.
 
@@ -67,7 +67,7 @@ claude update
 <summary>🍺 <b>Homebrew</b> — macOS, Linux</summary>
 
 ```bash
-brew upgrade claude-code
+brew upgrade claude-code  # claude-code@latest if you installed that cask
 ```
 
 </details>
@@ -214,9 +214,9 @@ Uninstalling from the last scope it's installed at also deletes its saved option
 
 **Works in:** 💻 **Claude Code only**
 
-| Component | Claude Code | Claude |
-| :-- | :--: | :--: |
-| 🧩 Mods | ✅ v2.1.287+ (Desktop v2.1.286+); hooks run in every session except Desktop on WSL; ⚠️ drawing depends on where: panes in the terminal, Desktop and VS Code (extension v2.1.299+, v2.1.304+ without feature flags), the band above the prompt only in the terminal and Desktop | ⚠️ the plugin directory lists a mod for Claude Code only |
+| Component |                                                                                                                                  Claude Code                                                                                                                                   |                          Claude                          |
+| :-------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :------------------------------------------------------: |
+| 🧩 Mods   | ✅ v2.1.287+ (Desktop v2.1.286+); hooks run in every session except Desktop on WSL; ⚠️ drawing depends on where: panes in the terminal, Desktop and VS Code (extension v2.1.299+, v2.1.304+ without feature flags), the band above the prompt only in the terminal and Desktop | ⚠️ the plugin directory lists a mod for Claude Code only |
 
 <sub>✅ works · ⚠️ partial · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. Claude runs agents, hooks and local MCP servers only in conversations where it can run tasks; anything on your computer needs Claude Desktop open.</sub>
 
@@ -231,15 +231,15 @@ The guard needs Claude Code 2.1.292 or later and draws nothing. It acts in every
 - **The permission prompt:** the mod cannot restyle it or change what it shows. It only allows a command or stops it with a message for Claude.
 - **Diagnosis:** `/plugin` shows `1 mod active · macos-grep-guard` under the tabs when the mod loaded. Only Claude Code's debug log shows why a mod was refused or a hook skipped (see [FAQ](#-faq--troubleshooting)).
 
-| Limitation | What you see | Safe recovery |
-| :--------- | :----------- | :------------ |
-| Every recursive `grep` without a binary choice is stopped, whether or not the folder holds a binary file: no cheap check tells | Claude retries with the flags | None needed: the retry costs one step and never returns incomplete data |
-| A search started below a `.gitignore` that also has patterns in a parent folder can be stopped when nothing would be skipped | Same as above | Same as above |
-| A search folder that holds a nested repository or submodule is stopped whenever it has a `.gitignore` | Same as above | Same as above |
-| In a subagent, a recursive `grep` on a relative path is stopped, because a subagent's Bash folder does not follow the session's | Claude retries with the flags or an absolute path | Same as above |
-| A command run in the background returns no error output | No hint after a background command fails | Read the background task's output |
-| Calls to the Grep and Glob tools, `Monitor` commands, and `length()` on accented text are not checked | Nothing from this plugin | Use Bash for searches; use perl for multibyte text |
-| The mods API can change between Claude Code releases | The guard may stop working after an update; a failed hook lets the command run, except a recursive `grep`, which is stopped | Update the plugin, as below |
+| Limitation                                                                                                                      | What you see                                                                                                                | Safe recovery                                                           |
+| :------------------------------------------------------------------------------------------------------------------------------ | :-------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------- |
+| Every recursive `grep` without a binary choice is stopped, whether or not the folder holds a binary file: no cheap check tells  | Claude retries with the flags                                                                                               | None needed: the retry costs one step and never returns incomplete data |
+| A search started below a `.gitignore` that also has patterns in a parent folder can be stopped when nothing would be skipped    | Same as above                                                                                                               | Same as above                                                           |
+| A search folder that holds a nested repository or submodule is stopped whenever it has a `.gitignore`                           | Same as above                                                                                                               | Same as above                                                           |
+| In a subagent, a recursive `grep` on a relative path is stopped, because a subagent's Bash folder does not follow the session's | Claude retries with the flags or an absolute path                                                                           | Same as above                                                           |
+| A command run in the background returns no error output                                                                         | No hint after a background command fails                                                                                    | Read the background task's output                                       |
+| Calls to the Grep and Glob tools, `Monitor` commands, and `length()` on accented text are not checked                           | Nothing from this plugin                                                                                                    | Use Bash for searches; use perl for multibyte text                      |
+| The mods API can change between Claude Code releases                                                                            | The guard may stop working after an update; a failed hook lets the command run, except a recursive `grep`, which is stopped | Update the plugin, as below                                             |
 
 ```bash
 claude plugin update macos-grep-guard@the-claude-factory

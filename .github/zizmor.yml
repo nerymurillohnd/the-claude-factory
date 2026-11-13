@@ -1,0 +1,13 @@
+# Findings this repository accepts on purpose, each with its reason. Every other zizmor finding fails
+# npm run lint:workflows.
+rules:
+  # The owner keeps actions/checkout's default, persist-credentials: true. Since checkout v6 the token
+  # lives in a file under $RUNNER_TEMP, not in the workspace, and post-job cleanup removes it.
+  artipacked:
+    ignore:
+      - release.yml
+  dangerous-triggers:
+    ignore:
+      # workflow_run runs only after a workflow named Validate succeeds on a push to main, and
+      # checks out that trusted commit (github.event.workflow_run.head_sha).
+      - release.yml

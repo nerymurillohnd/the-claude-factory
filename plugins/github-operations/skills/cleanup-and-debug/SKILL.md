@@ -53,7 +53,7 @@ The work runs in three stages: audit (read-only), planning (two gates), and debu
 - A stash's untracked files live in its third parent (`stash@{N}^3`), which `git stash show` does not show by default.
 - `git fsck --no-reflogs` lists commits that a reflog still holds as unreachable. Its list is a set of candidates, not proof of lost work.
 - Nothing unreachable is safe for long: `gc` prunes it after two weeks, and reflog entries expire after 90 days (30 when unreachable).
-- A 403 or 404 from GitHub usually means the identity lacks permission, not that nothing exists. Record it as `BLOCKED`.
+- A 403 or 404 from GitHub usually means the identity lacks permission, not that nothing exists. Record it as `BLOCKED`. A 403 that says GitHub GraphQL is not available is a blocked route instead: several `gh` commands use GraphQL (`gh pr view --json`, `gh repo view --json`, `gh issue list --json`, `gh label list`), so retry through REST (`gh api repos/<owner>/<repo>/...`) or the GitHub MCP server before recording it.
 - GitHub code search sees only default branches and files under 384 KB. A search that finds nothing proves nothing outside that.
 - Rewriting history does not remove a secret from clones, forks, cached views or pull requests. Rotate the secret first.
 - `git clean` with a second `-f` also deletes untracked nested repositories.
