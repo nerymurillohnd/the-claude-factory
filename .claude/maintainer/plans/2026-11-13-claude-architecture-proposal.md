@@ -303,6 +303,11 @@ The gate is a barrier for Claude, not a security boundary: a Bash write bypasses
   - `scripts.md:22` keeps its pointer until step 5b creates the backlog plan;
   - `plugin-releases` keeps its `validate.yml` warning, minus the stale branch name, because the warning is still true;
   - D6 was applied in step 2, because removing the Evals section would have left `CLAUDE.md:65` pointing at nothing.
+- Step 5a changed and done early. The owner's CLAUDE.md draft was promoted as `.claude/CLAUDE.md`, not a new file of about 100 lines composed as section 2.2 describes. ADR_2026-11-13_claude-configuration-architecture-on-the-owners-claude-md records it and supersedes the earlier architecture ADR.
+  - The draft received the old Commitment, Repository memory and Verification sections, and seven fixes from an independent review.
+  - `rules/npm-and-uv.md` was adopted.
+  - The CLAUDE and plugins drafts were deleted.
+  - `WORKFLOW.md` is now reached through a pointer until step 4.
 
 Each step is one short session and ends with one commit per topic on the working branch. Nothing is pushed without the owner's authorization. Undo is `git revert <commit>` unless stated. Before each step, load the skill the gate or the routing table names for the files it touches.
 

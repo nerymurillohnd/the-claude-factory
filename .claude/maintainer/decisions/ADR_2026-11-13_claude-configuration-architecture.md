@@ -1,10 +1,10 @@
 ---
-status: accepted
+status: superseded
 date: 2026-11-13
 decision-makers:
   - "Nery (project owner)"
 supersedes: none
-superseded-by: none
+superseded-by: ADR_2026-11-13_claude-configuration-architecture-on-the-owners-claude-md
 ---
 
 # One home per kind of Claude configuration, with a lifecycle skill, a skill gate and owner-only permission rules
