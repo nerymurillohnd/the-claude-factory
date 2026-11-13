@@ -30,20 +30,16 @@ From code.claude.com/docs/en/plugins/publish (Rename or remove a plugin) and hos
    grep -rn '<old>' . --exclude-dir=.git --exclude-dir=node_modules
    ```
 3. Find what depends on the old plugin, and change each dependent first, since a dependency on a missing plugin fails to install:
-   - `dependencies` that name `<old>`, in each `plugin.json` and in each marketplace entry. These print every plugin that declares dependencies; any line that names `<old>` is a dependent:
+   - `dependencies` that name `<old>`, in each `plugin.json` and in each marketplace entry. This prints one `dependent: <plugin> needs <name> <range>` line per declared dependency; any line whose `<name>` is `<old>` is a dependent:
      ```bash
-     jq -c 'select(.dependencies) | {name, dependencies}' plugins/*/.claude-plugin/plugin.json
-     jq -c '.plugins[] | select(.dependencies) | {name, dependencies}' .claude-plugin/marketplace.json
+     npm run release:status
      ```
    - symlinks into `plugins/<old>/` (`find plugins -type l`)
    Tell the owner that plugins in other repositories may depend on `<old>` and can't be checked from here.
 4. Make the change for the case (sections below).
 5. Check the map, and show the raw output:
    - `claude plugin validate --strict .` exits 0
-   - no `renames` key is still listed in `plugins`, which the validator doesn't catch. This prints each offending name, so it must print nothing:
-     ```bash
-     jq -r '((.renames // {}) | keys) as $r | .plugins[].name | select(IN($r[]))' .claude-plugin/marketplace.json
-     ```
+   - `npm run check:consistency` exits 0. Its `PC-02` finding is a `renames` key still listed in `plugins`, which the validator doesn't catch; `PC-01` and `PC-08` catch a name, source or catalog row left behind.
 6. Never reuse a retired name, and never delete the old tags or GitHub Releases: they are the history users and dependents resolve against.
 
 ## Rename
@@ -72,19 +68,18 @@ From code.claude.com/docs/en/plugins/publish (Rename or remove a plugin) and hos
 
 ## After the release
 
-Check what users receive in one throwaway configuration, so your own stays untouched:
+Check what users receive in throwaway configurations, so your own stays untouched:
 
 ```bash
 T="$(mktemp -d)"
 env CLAUDE_CONFIG_DIR="${T}/config" CLAUDE_CODE_PLUGIN_CACHE_DIR="${T}/cache" claude plugin marketplace add "nerymurillohnd/the-claude-factory#main"
 env CLAUDE_CONFIG_DIR="${T}/config" CLAUDE_CODE_PLUGIN_CACHE_DIR="${T}/cache" claude plugin install <old>@the-claude-factory
-env CLAUDE_CONFIG_DIR="${T}/config" CLAUDE_CODE_PLUGIN_CACHE_DIR="${T}/cache" claude plugin install <new-or-target>@the-claude-factory
-env CLAUDE_CONFIG_DIR="${T}/config" CLAUDE_CODE_PLUGIN_CACHE_DIR="${T}/cache" claude plugin list --json
 rm -rf "${T}"
+npm run check:install -- --from main <new-or-target>
 ```
 
 - installing `<old>` fails with `not found in marketplace`
-- after a rename or a merge, `<new-or-target>` (the new name, or the merge target) installs, and `claude plugin list --json` shows it at its new version
+- after a rename or a merge, `check:install` exits 0 for `<new-or-target>` (the new name, or the merge target): `claude plugin list --json` shows it at its new version with no `errors`, and the installed copy validates
 - the old name's last tag and GitHub Release still exist: `gh api repos/nerymurillohnd/the-claude-factory/releases/tags/<old>--v<last version>` in a terminal session; in a cloud session, where `gh` is kept for search, the MCP tool `github:get_release_by_tag` (`owner: nerymurillohnd`, `repo: the-claude-factory`, `tag: <old>--v<last version>`).
 
 ## Version notes
