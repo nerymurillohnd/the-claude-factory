@@ -8,6 +8,22 @@ paths:
 
 Conventions for the plugins this marketplace distributes. The split between the maintainer scope and the plugin scope is set in `.claude/CLAUDE.md` (Project scopes).
 
+## Design
+
+- Each plugin covers its purpose completely, end to end, so users find everything that goal needs in one place.
+- A plugin earns its place by being more complete and more reliable for its purpose than the official and public alternatives.
+- Each plugin is designed only from what it must do and solve for its users, never by copying another plugin.
+
+## Safety
+
+- Every action a plugin takes on a user's machine is treated as high risk, and the least invasive design wins.
+- Any doubt about user safety goes to the owner before anything ships.
+
+## License and version
+
+- Every plugin is MIT-licensed, versioned on its own and documented in its own README.
+- A plugin's version lives only in its `plugin.json`; its `CHANGELOG.md`, its git tags and its GitHub Releases always agree with that version.
+
 ## Target surfaces
 
 - Every plugin in this marketplace is built exclusively for Claude Code, for Claude, or for both.
@@ -16,6 +32,7 @@ Conventions for the plugins this marketplace distributes. The split between the 
 ## Platform support
 
 - Windows is supported only when a plugin, current or future, is meant to run there, and then only through Git Bash.
+- Each plugin's README states its Windows support.
 
 ## Portability and prerequisites
 

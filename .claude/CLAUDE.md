@@ -4,6 +4,8 @@ Conventions that apply to the whole project. Each section groups the conventions
 
 ## The project
 
+The Claude Factory is a public plugin marketplace for Claude Code and Claude, hosted at github.com/nerymurillohnd/the-claude-factory. This project designs, builds, tests, releases and maintains its plugins and mods.
+
 ### Audience and distribution
 
 - The marketplace is public and hosted in a public GitHub repository owned by a personal account, not an organization.
@@ -12,8 +14,11 @@ Conventions that apply to the whole project. Each section groups the conventions
 ### Ownership and contributions
 
 - The project is developed and maintained by its owner, Nery, and Claude.
+- Nery is the owner and author: he sets the direction and makes every final decision. Claude carries out the execution: the engineering, integration and wiring, commands, commits, testing, releases, distribution and maintenance.
+- GitHub Copilot takes part only at Nery's request, inside a pull request.
 - Users contribute only by reporting issues; they do not open pull requests.
 - Triaging, fixing, verifying, releasing and keeping the project current are the work of the owner and Claude alone.
+- No one else reviews a plugin before users install it, so every push, release and issue reply is the last gate before public exposure.
 
 ### Target surfaces
 
@@ -25,19 +30,27 @@ Conventions that apply to the whole project. Each section groups the conventions
 
 - The repository and its plugins are built for macOS and Linux.
 
+### Language
+
+- Conversation is usually in Spanish; everything written, coded or published is in English.
+
 ## Responsibility and verification
 
 - Everything this project publishes reaches third parties: their machines, their projects and their operations with Claude. It can help them, or it can damage, break, block or complicate their work. The consequences are real, for those users and for the owner, as author and as a person.
 - The owner and Claude share that responsibility, in every session and every change.
 - Every decision, implementation and published change rests on validation and evidence: the current official documentation and its latest applicable changes, with the argument that ties them to the decision.
+- Sources rank in this order: the installed build first, then the release notes, then the documentation, which lags the releases.
 - Assuming, taking something for granted, acting on what is believed to be true, or fixing things by trial and error is a serious defect, and is not allowed.
 - Nothing is published until it is confirmed to be actionable, executable, not deprecated, aligned with current best practices and the official documentation, and built on the best current Claude features available for its purpose.
+- Work counts as done only when its checks are shown with their raw output.
+- Problems are reported as soon as they are found, including defects in work already published.
+- Every gap a session uncovers improves the system itself: its gates, rules, skills and automation.
 
 ## Project scopes
 
 - The project has two scopes, which are never mixed:
-  - **Maintainer scope:** the development, creation, publishing and upkeep of the project itself.
-  - **Plugin scope:** what each plugin distributes to its users.
+  - **Maintainer scope:** the development, creation, publishing and upkeep of the project itself: everything outside `plugins/`. It serves only the owner and Claude, runs only in their environment, and may rely on the owner's tools, accounts and setup.
+  - **Plugin scope:** what each plugin distributes to its users: one self-contained directory per plugin under `plugins/<plugin>/`, mods included. It runs on users' machines and in their projects.
 - A rule, tool or file of one scope does not apply to, or become a requirement of, the other.
 - Each scope is checked where it belongs:
   - **Maintainer scope:** the tools, scripts, configuration and workflows that maintain the project are checked in CI and locally.
@@ -45,7 +58,7 @@ Conventions that apply to the whole project. Each section groups the conventions
 
 ## Plugin scope
 
-- Before designing, creating or changing a plugin, or a workflow that runs its evals, read `.claude/rules/plugins.md`. It holds the plugin-scope conventions: target surfaces, Windows support, portability and prerequisites, pull requests inside `plugins/`, and evals. It also loads on its own when a file under `plugins/` or `.github/workflows/` is read or edited.
+- Before designing, creating or changing a plugin, or a workflow that runs its evals, read `.claude/rules/plugins.md`. It holds the plugin-scope conventions: design, safety, license and version, target surfaces, Windows support, portability and prerequisites, pull requests inside `plugins/`, and evals. It also loads on its own when a file under `plugins/` or `.github/workflows/` is read or edited.
 
 ## Maintainer scope
 
