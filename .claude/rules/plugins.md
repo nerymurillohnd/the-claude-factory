@@ -13,6 +13,7 @@ paths:
 - Design each plugin to solve its purpose end to end, so users find everything that goal needs in one place.
 - Add a plugin only when it is more complete and more reliable than the official and public alternatives.
 - Design each plugin from what its users need, never by copying another plugin.
+- Create a new plugin's folder in `plugins/<plugin>/` yourself: `claude plugin init` scaffolds only in `~/.claude/skills/<name>/`.
 - Choose the least invasive design for every action a plugin takes on a user's machine, and take any safety doubt to the owner before it ships.
 - License every plugin under MIT.
 - Build every plugin for Claude Code, for Claude, or for both, and state in its compatibility notes where a component does not work.

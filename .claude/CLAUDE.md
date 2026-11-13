@@ -37,7 +37,6 @@ The work divides into three workstreams. The first two never mix: a rule, tool o
 
 - Covers each plugin's whole life, self-contained in its own folder: design, development, testing, versioning, documentation and release.
 - For its guidelines, read `.claude/rules/plugins.md` (design, portability, names, versions and testing), `.claude/rules/testing.md` (hook and mod tests, and the checks before a commit or merge) and `.claude/rules/hook-scripts.md` (hook scripts).
-- For the commands of each lifecycle stage, read `.claude/WORKFLOW.md`.
 
 ### CI/CD and GitHub
 
@@ -65,7 +64,7 @@ The work divides into three workstreams. The first two never mix: a rule, tool o
 │   ├── skills/ agents/ commands/ hooks/ tests/ evals/
 │   └── README.md CHANGELOG.md LICENSE NOTICE.txt
 ├── .claude/
-│   ├── CLAUDE.md WORKFLOW.md settings.json
+│   ├── CLAUDE.md settings.json
 │   ├── rules/                        # Path-scoped rules; skill-routing.md loads at launch
 │   ├── skills/ agents/               # Project skills and subagents
 │   ├── maintainer/                   # ADRs, technical debt, specs, plans, audits

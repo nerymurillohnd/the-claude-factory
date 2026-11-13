@@ -5,7 +5,6 @@ paths:
 
 # Claude's project setup
 
-- Put each lifecycle stage's commands in `WORKFLOW.md`, which `CLAUDE.md` points to without importing it.
 - Put project settings in `settings.json`, and the scripts of its hooks in `hooks/`.
 - Put a convention for one area or file type in `rules/<topic>.md` with a quoted `paths` list; anchor a root file with a leading `/`, because a pattern without `/` matches that name in every folder.
 - Point to each rule from the `CLAUDE.md` workstream it belongs to.
