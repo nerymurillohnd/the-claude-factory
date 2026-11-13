@@ -19,7 +19,7 @@ class ChangelogError(Exception):
 
 
 def date_release(text: str, plugin: str, new: str, day: str, repo_url: str) -> str:
-    """Turn [Unreleased] into `## [new] - day`, add an empty [Unreleased], and fix the links."""
+    """Turn [Unreleased] into `## [new] - day`, add an empty [Unreleased], and add the links."""
     match = UNRELEASED.search(text)
     if match is None:
         msg = "no ## [Unreleased] section"
@@ -35,11 +35,9 @@ def date_release(text: str, plugin: str, new: str, day: str, repo_url: str) -> s
     section = f"## [Unreleased]\n\n## [{new}] - {day}\n\n{notes}\n\n"
     text = text[: match.start()] + section + text[match.end() :]
     tag = f"{plugin}--v{new}"
-    link = (
-        f"{repo_url}/compare/{plugin}--v{older[0]}...{tag}"
-        if older
-        else f"{repo_url}/releases/tag/{tag}"
-    )
+    # Each version links to its own release page, as every plugin CHANGELOG does
+    # (ADR_2026-11-13_changelog-versions-link-to-release-pages).
+    link = f"{repo_url}/releases/tag/{tag}"
     unreleased = f"[Unreleased]: {repo_url}/compare/{tag}...HEAD\n[{new}]: {link}"
     if _UNRELEASED_LINK.search(text) is None:
         return text.rstrip("\n") + f"\n\n{unreleased}\n"

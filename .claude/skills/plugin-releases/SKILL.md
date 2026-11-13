@@ -48,7 +48,7 @@ These go beyond the docs and stay unless the owner changes them:
    ```
    It prints `claude plugin list --json`, with the installed version and any `errors`, and `claude plugin details`, with the components and the `Always-on` cost, then validates the installed copy and runs a mod's tests; it exits 1 on the first failure. Report the branch's version and `Always-on` figure against `main`'s. A plugin new in this release is not on `main` yet, so its `main` install fails with `not found in marketplace`.
 4. **Write the release into the documents** with the `docs-maintenance` skill, dated with today's UTC date, the day `release.yml` will tag it:
-   - the plugin's `CHANGELOG.md`: `npm run release:changelog -- <plugin>` turns `## [Unreleased]` into `## [X.Y.Z] - YYYY-MM-DD`, with the version from `plugin.json` and today's UTC date (`--date YYYY-MM-DD` sets another), adds an empty `## [Unreleased]` above it and writes the compare and tag links. It exits 1 and changes nothing when `## [Unreleased]` is empty: stop and ask the owner what the version changes.
+   - the plugin's `CHANGELOG.md`: `npm run release:changelog -- <plugin>` turns `## [Unreleased]` into `## [X.Y.Z] - YYYY-MM-DD`, with the version from `plugin.json` and today's UTC date (`--date YYYY-MM-DD` sets another), adds an empty `## [Unreleased]` above it and points `[Unreleased]` at a compare from the new tag and links the version to its release page. It exits 1 and changes nothing when `## [Unreleased]` is empty: stop and ask the owner what the version changes.
    - the plugin's `README.md`, where it depends on the version, such as the minimum Claude Code version
    - the release line in the root `CHANGELOG.md`, and the catalog row of the root `README.md` when it shows the version.
 

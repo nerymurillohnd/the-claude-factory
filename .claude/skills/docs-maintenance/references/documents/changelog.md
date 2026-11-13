@@ -39,7 +39,7 @@ Leave out formatting-only work, internal refactors with no observable effect, pl
 2. Each later change: write the notes under `## [Unreleased]`, under the type each change belongs to, in user language: what changes for the user, not how.
 3. A breaking change starts its line with `**Breaking:**`, under `### Changed` or `### Removed`, and says what changed, who is affected and the action they must take. A security fix is stated without details that help an attacker.
 4. At release, when the `plugin-releases` skill calls for it: rename `## [Unreleased]` to `## [X.Y.Z] - YYYY-MM-DD`, with the version from `plugin.json` and the UTC date the release gives, and add a new empty `## [Unreleased]` above it. Run `npm run release:changelog -- <plugin>` (`--date YYYY-MM-DD` when the release day is not today in UTC): it does this step and step 5, and exits 1 without changing the file when `## [Unreleased]` is empty. If `## [Unreleased]` is empty, stop and ask the owner what the version changes.
-5. Update the link references at the bottom: `[Unreleased]` becomes `{{repositoryUrl}}/compare/<name>--v<newest>...HEAD`; each version compares its tag with the previous one; the oldest version links to `{{repositoryUrl}}/releases/tag/<name>--v<oldest>`. Before the first release, `[Unreleased]` links to `{{repositoryUrl}}/commits/main/plugins/<name>`, as the template has it.
+5. Update the link references at the bottom: `[Unreleased]` becomes `{{repositoryUrl}}/compare/<name>--v<newest>...HEAD`; each version links to its own release page, `{{repositoryUrl}}/releases/tag/<name>--v<version>`. Before the first release, `[Unreleased]` links to `{{repositoryUrl}}/commits/main/plugins/<name>`, as the template has it.
 6. Run the checks.
 
 ## Rules

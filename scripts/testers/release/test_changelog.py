@@ -69,14 +69,14 @@ class DateReleaseTest(unittest.TestCase):
         )
 
     def test_links_later_release(self) -> None:
-        """A later release compares its tag with the previous one; older links stay."""
+        """A later release links to its own release page, like every older version."""
         out = date_release(LATER, "demo", "0.2.0", "2026-11-13", REPO_URL)
         self.assertTrue(
             out.endswith(
                 "".join(
                     [
                         f"[Unreleased]: {REPO_URL}/compare/demo--v0.2.0...HEAD\n",
-                        f"[0.2.0]: {REPO_URL}/compare/demo--v0.1.0...demo--v0.2.0\n",
+                        f"[0.2.0]: {REPO_URL}/releases/tag/demo--v0.2.0\n",
                         f"[0.1.0]: {REPO_URL}/releases/tag/demo--v0.1.0\n",
                     ]
                 )
