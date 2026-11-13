@@ -8,7 +8,7 @@ paths:
 Claude Code's configuration for this repository and the maintainer records; nothing here ships to users.
 
 ## Where a new file goes
-- Put project instructions in `CLAUDE.md`, and the commands of each lifecycle stage in `WORKFLOW.md`.
+- Put project instructions and the core commands in `CLAUDE.md`, and the commands of each lifecycle stage in `WORKFLOW.md`, which `CLAUDE.md` points to without importing it.
 - Put project settings (permissions, plugins, MCP servers, auto memory) in `settings.json`. Register this project's hooks there, with their scripts in `hooks/`, as `rules/hook-scripts.md` sets out.
 - Put a convention for one area or file type in `rules/<topic>.md`, with a quoted `paths` list so it loads only with those files.
 - Put a subagent in `agents/<group>/<agent>.md`: `auditors/` for read-only checks, `docs-maintainers/` for `plugin-readme-writer` (a plugin README written in full for the first time), `testers/` for test runs. Set `model` in its frontmatter (Sonnet for executors and simple auditors; Opus for adversarial reviewers, orchestrators, and reviewers of critical, complex or broad work) and `effort` from the official recommendations for that model and task.
@@ -23,4 +23,4 @@ Claude Code's configuration for this repository and the maintainer records; noth
 ## Working here
 - When you add a folder of instruction Markdown here, add it to the `.claude/` entries under `files.includes` in `biome.jsonc`, so Biome leaves the Markdown Claude reads unformatted.
 - When a write here asks for permission, wait for the owner's answer; `.claude/` is a protected folder, so never write to it through Bash instead.
-- After changing a skill, run `npm run lint:skills -- .claude/skills/<skill>`.
+- After changing a skill, run `npm run lint:skills -- .claude/skills/<skill>`. Report each defect it finds to the owner, one question per rule id, and fix it or record it as debt only after the owner decides.
