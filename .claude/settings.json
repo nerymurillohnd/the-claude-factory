@@ -34,7 +34,9 @@
       "Bash(rg *)",
       "Bash(tree *)",
       "Bash(kill *)",
-      "Bash(git commit *)"
+      "Bash(git commit *)",
+      "mcp__Claude_Code_Docs__*",
+      "mcp__Context7__*"
     ],
     "deny": [
       "Bash(git push --force*)",
