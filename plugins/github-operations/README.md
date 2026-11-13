@@ -36,7 +36,7 @@ GitHub Operations is a set of skills, commands and agents for the GitHub work ar
 - **Reports you can act on** — failed jobs with the failing step, the first error and its root cause, whether the same job fails on the base branch, workflow runs that failed or whose jobs never started, whether the branch still merges into your base branch as it is now, required checks, warnings, review threads with their links, breaking changes and secrets in the diff, and Dependabot alerts.
 - **Templates written for your repository** — PR templates, issue and discussion forms, labels, Dependabot and `CODEOWNERS` are written from reference models but with your components, versions, environments, commands and labels. Your own files always win: Claude proposes changes to them and never overwrites them.
 - **Nothing valuable gets lost in a cleanup** — the audit compares your clone with GitHub branch by branch and commit by commit, and covers worktrees, stashes, history, lost commits, pull requests, workflows, Dependabot, forks and every link outside the repository. You approve the recommendations, then the exact actions. A backup comes first, and Claude proves it restores before it changes anything.
-- **Workflows that run Claude, checked against the action's real behavior** — Claude matches a failed or silent claude-code-action step against seventeen known failure patterns, repairs failing CI on the default branch, including runs that hang past their `timeout-minutes` or GitHub's runner limits, and audits workflow files for shell injection, excess permissions, unpinned actions, unsafe `pull_request_target` designs and claude-code-action misconfiguration, with the exact patch for each finding. Action versions and model IDs are looked up when they are written, never copied from examples, which lag behind.
+- **Workflows that run Claude, checked against the action's real behavior** — Claude matches a failed or silent claude-code-action step against known failure patterns, after comparing the action version your workflow runs with the version its knowledge was verified at and saying which facts it couldn't confirm for yours. It repairs failing CI on the default branch, including runs that hang past their `timeout-minutes` or GitHub's runner limits, and audits workflow files for shell injection, excess permissions, unpinned actions, unsafe `pull_request_target` designs and claude-code-action misconfiguration, with the exact patch for each finding. Action versions and model IDs are looked up when they are written, never copied from examples, which lag behind.
 - **Each skill knows its place** — the PR lifecycle, the repository setup, the cleanup and the Actions work are separate skills. When you ask one for another's job, it hands you to the right one.
 - **Works with GitHub's own MCP server** — add GitHub's official remote MCP server once, to Claude Code as [Prerequisites](#-github-mcp-server-recommended) shows or to Claude as a [custom connector](#in-claude), and Claude reads GitHub through its structured tools; without it, Claude Code does the same work through `gh`. `git` and `gh` handle what touches your clone.
 
@@ -60,17 +60,35 @@ GitHub Operations is a set of skills, commands and agents for the GitHub work ar
 | Tool                                                                                  | Minimum version | Check                                              |
 | :------------------------------------------------------------------------------------ | :-------------- | :------------------------------------------------- |
 | Claude Code                                                                           | 2.1.314         | `claude --version`                                 |
-| git, on your `PATH`                                                                   | —               | `git --version`                                    |
+| git, on your `PATH`                                                                   | 2.18            | `git --version`                                    |
 | GitHub CLI (`gh`), signed in                                                          | —               | `gh auth status`                                   |
 | GitHub MCP server, recommended                                                        | —               | `claude mcp get github`                            |
 | Python 3, on your `PATH` as `python3`, only to run the repository setup's two scripts | 3.12            | `python3 --version`                                |
 | `ruamel.yaml` and `check-jsonschema`, optional, only for the setup's form check, in a virtual environment | 0.19.1, 0.39.0  | `<dir>/bin/python3 -m pip show ruamel.yaml check-jsonschema` |
+| zizmor, optional, only for the Actions skill's audit, when already installed          | —               | `zizmor --version`                                 |
+| actionlint, optional, only for the Actions skill's audit, when already installed      | —               | `actionlint -version`                              |
+
+The plugin also uses `awk`, `mktemp` and `rm`, which come with macOS and Linux.
 
 Claude Code 2.1.314 or later is required.
 
 `gh` reads run logs, creates and updates labels, changes merge settings and is the fallback when a GitHub MCP tool is missing. The GitHub MCP server is optional: the plugin doesn't install it, and works through `gh` without it. Without `gh`, the repository setup reads GitHub and creates labels through the GitHub MCP server, but changing merge settings needs `gh` or your own change in GitHub's settings. Where GitHub's GraphQL API is blocked, such as Claude Code on the web, the PR lifecycle merges through the GitHub MCP server or GitHub's REST API instead of `gh pr merge`.
 
 `python3` runs the repository setup's two scripts: `labels-sync.py`, the label comparison, which needs Python 3.12 or later and `gh`, and `check-forms.py`, the check of forms and the Dependabot file. The two Python packages are needed only for the form check, in the Python that runs it. Without them, or with an older Python, Claude checks the files by hand against the plugin's [form rules](./skills/github-files-setup/references/form-rules.md) and the setup continues.
+
+`git` 2.18 or later is needed by the Actions skill's version checks: it sorts a repository's tags with `git ls-remote --sort`, which git added in 2.18, to pick the newest release of an action. `awk` reads that list, and `mktemp` and `rm` make and delete the temporary folder of the version comparison.
+
+The Actions skill (`claude-github-actions`) works where Claude has these tools:
+
+| Setup | What the Actions skill does |
+| :-- | :-- |
+| Claude Code with `git` and a signed-in `gh` | Every route: diagnose, audit and repair |
+| Claude Code with `git`, no signed-in `gh` and no GitHub MCP server | Audits the repository's files and checks the action's version through `git`. It can't read runs, the repository's Actions policy, secrets or runners, so it lists each as a question for you |
+| GitHub MCP server only | Diagnoses and audits read-only. It reports the patches and applies none, so nothing lands, and it runs no zizmor or actionlint |
+| No `git`, no `gh` and no GitHub MCP server | Stops and names what is missing |
+| GitHub Enterprise Server | Runs, but its facts about claude-code-action describe github.com's action, so it counts them as unverified |
+
+zizmor and actionlint are free scanners for GitHub Actions workflows. The audit uses each only when it is already installed on your machine: the skill never installs either, and runs both read-only (zizmor with `--offline`, never with `--fix`). When one is missing, the report lists it as not run, and the audit's own checks still run in full.
 
 ### 🤖 Claude Code
 
@@ -403,6 +421,92 @@ Check it:
 ~/.venvs/github-files-setup/bin/python3 -m pip show ruamel.yaml check-jsonschema
 ```
 
+### 🛡️ zizmor
+
+Optional, and only for the Actions skill's audit. Install it any way you like, or not at all: the plugin never installs it.
+
+<details>
+<summary>🍺 <b>Homebrew</b> — macOS, Linux</summary>
+
+```bash
+brew install zizmor
+```
+
+</details>
+<details>
+<summary>🐍 <b>pipx</b> — macOS, Linux</summary>
+
+```bash
+pipx install zizmor
+```
+
+</details>
+<details>
+<summary>🐍 <b>uv</b> — macOS, Linux</summary>
+
+```bash
+uv tool install zizmor
+```
+
+</details>
+<details>
+<summary>🦀 <b>cargo</b> — macOS, Linux</summary>
+
+```bash
+cargo install --locked zizmor
+```
+
+</details>
+
+Check it:
+
+```bash
+zizmor --version
+```
+
+### ✅ actionlint
+
+Optional, and only for the Actions skill's audit. The plugin never installs it.
+
+<details>
+<summary>🍺 <b>Homebrew</b> — macOS</summary>
+
+```bash
+brew install actionlint
+```
+
+</details>
+<details>
+<summary>📥 <b>Download script</b> — macOS, Linux</summary>
+
+```bash
+bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
+```
+
+</details>
+<details>
+<summary>🐹 <b>go install</b> — macOS, Linux, with Go</summary>
+
+```bash
+go install github.com/rhysd/actionlint/cmd/actionlint@latest
+```
+
+</details>
+<details>
+<summary>📦 <b>pacman</b> — Arch Linux</summary>
+
+```bash
+pacman -S actionlint
+```
+
+</details>
+
+The download script puts `actionlint` in your current folder: move it to a folder on your `PATH`. Check it:
+
+```bash
+actionlint -version
+```
+
 ## 📥 Installation
 
 ### 💻 Terminal
@@ -516,13 +620,17 @@ Why did the Claude review on PR 42 post nothing?
 
 Or _"Audit our workflows"_ or _"CI on main is broken"_. **Result:** Claude reads the run's log and the workflow file at the commit it ran, matches them against the known failure patterns of `anthropics/claude-code-action`, and names the cause with the log lines that prove it. An audit lists each finding with its file and line, what triggers it, its impact and the exact patch. Claude changes a workflow only after you approve the patch, pins every action it writes to a full commit, and lands the change through a pull request. Writing a new workflow from scratch is not covered.
 
+Before it relies on a fact about the action, Claude finds the commit your workflow runs and compares it with the version its knowledge was verified at, which the skill records in one table, [version-drift.md](./skills/claude-github-actions/references/version-drift.md). When your workflow runs a different version, Claude says which facts it couldn't confirm for it and reads the action's code at that version instead. For a workflow on GitHub Enterprise Server, it counts the action's facts as unverified. Where Claude can run the skill, and what each setup allows, is in [Prerequisites](#-prerequisites).
+
+A claude-code-action step that sets no permission mode can run Claude in auto mode, depending on the action version it runs. Every patch to a claude-code-action step therefore states the step's current permission mode explicitly, so a patch never changes it as a side effect. Changing the mode is a separate approval, which you give on its own, as for a change to a workflow's triggers, permissions or secrets.
+
 ## 🔍 What this plugin runs and sends
 
 - **Hooks:** none.
 - **MCP servers:** none. When you add GitHub's remote server yourself, as [GitHub MCP server](#-github-mcp-server-recommended) shows, the skills and agents use its tools.
-- **Commands it runs:** `git` and `gh` in your repository, through Claude Code's Bash tool, so your permission settings and prompts apply. The repository setup also runs two scripts with `python3` (or the Python of your virtual environment, when you name it), and Claude Code asks permission for them like any command: you can allow them for the session. `labels-sync.py` takes `--dry-run` or `--apply`, never both. `--dry-run` compares your labels with a list through `gh api` (REST), or from a saved GitHub MCP `list_label` output, and changes nothing. It lists labels to create that have no color and still exits 0. `--apply` creates the missing labels and updates the color and description of the different ones through `gh api`, for the labels you approved, and refuses before any write while a label to create has no color. It never deletes or renames a label, and uses only Python's standard library. `check-forms.py` checks issue forms, discussion forms and `dependabot.yml` with `ruamel.yaml` and `check-jsonschema`, which must be installed in your Python; it installs nothing and, when they are missing, stops with the `pip` command. Both scripts exit 0 when they ran, with a summary, and 2 when they couldn't run. When you accept the repository tooling, the setup also runs one `mkdir -p` and `cp` to copy the two scripts into your repository; it declares the two packages with the tool your repository already uses (for a `uv.lock` repository, `uv add --dev`) only with your approval. For merging, the PR lifecycle uses the GitHub MCP server's `merge_pull_request` or `gh api` REST at the approved head SHA first, and `gh pr merge` last.
-- **Network:** `git` and `gh` reach GitHub and your remotes. The GitHub MCP server you add yourself sends your requests and token to `api.githubcopilot.com`. `labels-sync.py` calls GitHub's REST API through `gh`; it sends nothing else. `check-forms.py` sends nothing. `pip` (or `uv`) contacts PyPI only when you install `ruamel.yaml` and `check-jsonschema` yourself or approve the setup declaring them.
-- **Files written:** the PR lifecycle writes only your own commits, in your clone. The repository setup writes its files on the branch you are on when it isn't the default branch, and on a new branch when you are on the default branch; it never writes on the default branch. The cleanup writes a backup bundle and its working notes to folders outside your repository; it tells you where the backup is and asks whether to keep it. Only if you accept the repository tooling, the setup also writes into your repository the two scripts (`.github/scripts/` or your tooling folder), `.github/labels.json` (or your existing label file), a README next to the scripts, and the two pinned packages, each with the marker `python_version >= "3.12"`, in the file where your repository declares development tools (a new `requirements.txt` next to the scripts when it has none).
+- **Commands it runs:** `git` and `gh` in your repository, through Claude Code's Bash tool, so your permission settings and prompts apply. The repository setup also runs two scripts with `python3` (or the Python of your virtual environment, when you name it), and Claude Code asks permission for them like any command: you can allow them for the session. `labels-sync.py` takes `--dry-run` or `--apply`, never both. `--dry-run` compares your labels with a list through `gh api` (REST), or from a saved GitHub MCP `list_label` output, and changes nothing. It lists labels to create that have no color and still exits 0. `--apply` creates the missing labels and updates the color and description of the different ones through `gh api`, for the labels you approved, and refuses before any write while a label to create has no color. It never deletes or renames a label, and uses only Python's standard library. `check-forms.py` checks issue forms, discussion forms and `dependabot.yml` with `ruamel.yaml` and `check-jsonschema`, which must be installed in your Python; it installs nothing and, when they are missing, stops with the `pip` command. Both scripts exit 0 when they ran, with a summary, and 2 when they couldn't run. When you accept the repository tooling, the setup also runs one `mkdir -p` and `cp` to copy the two scripts into your repository; it declares the two packages with the tool your repository already uses (for a `uv.lock` repository, `uv add --dev`) only with your approval. For merging, the PR lifecycle uses the GitHub MCP server's `merge_pull_request` or `gh api` REST at the approved head SHA first, and `gh pr merge` last. The Actions skill also runs `git ls-remote` and one partial `git fetch` of `anthropics/claude-code-action` into a temporary folder it makes with `mktemp -d` and deletes with `rm -rf` afterwards, `awk` to pick the newest release from a tag list, and `command -v` to look for zizmor and actionlint. It runs zizmor and actionlint only when they are already installed, zizmor as `zizmor --offline --collect=workflows,actions --format=json-v1 --no-progress .` and actionlint with JSON output and its shellcheck and pyflakes add-ons turned off, so no other program runs. Both only read your workflow files. It never installs a program and never passes `--fix` to zizmor.
+- **Network:** `git` and `gh` reach GitHub and your remotes. The GitHub MCP server you add yourself sends your requests and token to `api.githubcopilot.com`. `labels-sync.py` calls GitHub's REST API through `gh`; it sends nothing else. `check-forms.py` sends nothing. The Actions skill's version checks send git requests to `https://github.com/anthropics/claude-code-action`: the tag or commit names they look up, and a partial fetch of the commits they compare. zizmor runs with `--offline` and actionlint makes no request. `pip` (or `uv`) contacts PyPI only when you install `ruamel.yaml` and `check-jsonschema` yourself or approve the setup declaring them.
+- **Files written:** the PR lifecycle writes only your own commits, in your clone. The repository setup writes its files on the branch you are on when it isn't the default branch, and on a new branch when you are on the default branch; it never writes on the default branch. The cleanup writes a backup bundle and its working notes to folders outside your repository; it tells you where the backup is and asks whether to keep it. Only if you accept the repository tooling, the setup also writes into your repository the two scripts (`.github/scripts/` or your tooling folder), `.github/labels.json` (or your existing label file), a README next to the scripts, and the two pinned packages, each with the marker `python_version >= "3.12"`, in the file where your repository declares development tools (a new `requirements.txt` next to the scripts when it has none). The Actions skill writes a workflow change only after you approve the patch, on a branch it then lands through a pull request, and uses a temporary folder for the version comparison, deleted when it finishes.
 - **Privacy:** the author collects no data. The marketplace's [privacy policy](https://github.com/nerymurillohnd/the-claude-factory/blob/main/PRIVACY.md) covers this plugin and the outside services it can reach.
 
 ### The agents' limits
@@ -579,10 +687,10 @@ Then, in an open session:
 > [!TIP]
 > Auto-update is off for this marketplace until you turn it on: `/plugin` → **Marketplaces** → **the-claude-factory** → **Enable auto-update**.
 
-Update git, `gh` and Python the way you installed them, for example with Homebrew:
+Update git, `gh`, Python and, if you installed them, zizmor and actionlint the way you installed them, for example with Homebrew:
 
 ```bash
-brew upgrade git gh python
+brew upgrade git gh python zizmor actionlint
 ```
 
 The form check's packages are pinned to the versions the Prerequisites table lists. When an update changes them, run the `pip install` command from [ruamel.yaml and check-jsonschema](#-ruamelyaml-and-check-jsonschema) again with your virtual environment's Python.
@@ -601,7 +709,7 @@ Installed with `--scope project`:
 claude plugin uninstall github-operations@the-claude-factory --scope project
 ```
 
-Uninstalling from the last scope it's installed at also deletes its saved options and data directory, unless you add `--keep-data`. The plugin keeps nothing in its data directory. A cleanup backup you chose to keep stays where Claude told you it is, and git, `gh`, Python and the form check's packages stay installed. Files the repository setup wrote into your repositories, including the copies of the checks, stay there; delete them yourself. The GitHub MCP server you added stays too; remove it, then delete the token on GitHub:
+Uninstalling from the last scope it's installed at also deletes its saved options and data directory, unless you add `--keep-data`. The plugin keeps nothing in its data directory. A cleanup backup you chose to keep stays where Claude told you it is, and git, `gh`, Python, zizmor, actionlint and the form check's packages stay installed. Files the repository setup wrote into your repositories, including the copies of the checks, stay there; delete them yourself. The GitHub MCP server you added stays too; remove it, then delete the token on GitHub:
 
 ```bash
 claude mcp remove --scope user github
@@ -770,7 +878,7 @@ See [CHANGELOG.md](./CHANGELOG.md) for every release.
 
 This plugin ships none of GitHub's software. Its skills and agents use the hosted remote server of the official [GitHub MCP Server](https://github.com/github/github-mcp-server) (MIT license, © GitHub). The URL forms, toolsets and tool names come from GitHub's documentation: the [remote server guide](https://github.com/github/github-mcp-server/blob/main/docs/remote-server.md) and the guide to [installing it in Claude applications](https://github.com/github/github-mcp-server/blob/main/docs/installation-guides/install-claude.md). If GitHub changes them, GitHub's documentation is the reference.
 
-The Actions skill's knowledge of [`anthropics/claude-code-action`](https://github.com/anthropics/claude-code-action) (MIT license, © Anthropic) was read from its source code and documentation, and of GitHub Actions from [GitHub's documentation](https://docs.github.com/en/actions), and rewritten in this plugin's own words; no upstream text or example is copied. Each reference file names the claude-code-action version it describes.
+The Actions skill's knowledge of [`anthropics/claude-code-action`](https://github.com/anthropics/claude-code-action) (MIT license, © Anthropic) was read from its source code and documentation, and of GitHub Actions from [GitHub's documentation](https://docs.github.com/en/actions), and rewritten in this plugin's own words; no upstream text or example is copied. The version of claude-code-action it describes is recorded in one table, in [version-drift.md](./skills/claude-github-actions/references/version-drift.md), and checked against the version a workflow runs.
 
 GitHub also publishes its own [agent plugin](https://github.com/github/github-mcp-server/tree/main/agent-plugin) for the same server, which declares only the server connection. This plugin adds the skills and agents around that server (the pull request lifecycle, the repository setup, and the audit and cleanup), and leaves the server connection to you.
 
