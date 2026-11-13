@@ -11,7 +11,7 @@
 // - A tool that is not installed gives one notice per session and exit 0; without
 //   CLAUDE_PLUGIN_DATA, where the hook may keep its marker, the notice comes on every call.
 // - Files that a Bash command left under a nested Git work tree count only when Git lists
-//   them as modified or untracked there, so a clone, a checkout or a pull is never checked.
+//   them as modified, untracked or staged there, so a clone, a checkout or a pull is never checked.
 // - More than MAX_FILES files found by modification time alone, outside Git, are an arrival
 //   (an extracted archive, a generated tree), not an edit: none is checked, and Claude is told.
 // Node 18 or later, no dependencies.
@@ -223,8 +223,9 @@ function walk(dir, sinceMs, found, budget) {
   }
 }
 
-// The files Git lists as modified or untracked in work tree `tree`; null outside one, or
-// without git.
+// The files Git lists as modified, untracked or staged in work tree `tree`; null outside one,
+// or without git. Staged files count too: a command that runs `git add` leaves nothing
+// `--modified`.
 /**
  * @param {string} tree
  * @returns {string[] | null}
@@ -234,11 +235,12 @@ function gitChanged(tree) {
   if (inside.code !== 0) {
     return null
   }
-  const args = ['-C', tree, 'ls-files', '-z', '--modified', '--others', '--exclude-standard']
-  return run(['git', ...args])
-    .output.split('\0')
-    .filter(Boolean)
-    .map((rel) => join(tree, rel))
+  const listArgs = ['-C', tree, 'ls-files', '-z', '--modified', '--others', '--exclude-standard']
+  const stagedArgs = ['-C', tree, 'diff', '-z', '--cached', '--name-only', '--relative']
+  const listed = run(['git', ...listArgs]).output.split('\0')
+  const staged = run(['git', ...stagedArgs])
+  const names = staged.code === 0 ? [...listed, ...staged.output.split('\0')] : listed
+  return [...new Set(names)].filter(Boolean).map((rel) => join(tree, rel))
 }
 
 // Files under project modified after sinceMs: Git's view in a work tree, else a pruned walk.
@@ -297,8 +299,9 @@ function nestedTree(path, top, known) {
 
 // Splits the files found by modification time under walked. A clone, a checkout or a pull
 // writes files with a new modification time that nobody edited: inside a nested Git work tree
-// only the files Git lists as modified or untracked are a change (verified), and the rest are
-// dropped. Files outside every work tree are loose: nothing tells an edit from an arrival there.
+// only the files Git lists as modified, untracked or staged are a change (verified), and the
+// rest are dropped. Files outside every work tree are loose: nothing tells an edit from an
+// arrival there.
 /**
  * @param {readonly string[]} files
  * @param {string} walked

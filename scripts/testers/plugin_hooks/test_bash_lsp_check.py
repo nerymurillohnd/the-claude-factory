@@ -14,6 +14,7 @@ from testers.plugin_hooks.helpers import (
     clone,
     field,
     folders_named,
+    git,
     logged,
     need,
     repository,
@@ -146,6 +147,32 @@ class BashHookTest(unittest.TestCase):
         self.assertIn("passed · clone/a.sh", field(outcome.stdout, "systemMessage"))
         self.assertTrue(any(call.endswith("clone/a.sh") for call in calls), calls)
         self.assertFalse(any(call.endswith("b.sh") for call in calls), calls)
+
+    def test_staged_edit_in_a_work_tree_is_checked(self) -> None:
+        """A command that edits files and runs `git add` leaves none of them `--modified`."""
+        for nested in (True, False):
+            with self.subTest(nested=nested), tempfile.TemporaryDirectory() as raw:
+                tmp = Path(raw).resolve()
+                if nested:
+                    repository(tmp / "origin", {"a.sh": SCRIPT, "b.sh": SCRIPT})
+                    clone(tmp / "origin", tmp / "work" / "clone")
+                    tree = tmp / "work" / "clone"
+                else:
+                    tree = tmp / "work"
+                    repository(tree, {"a.sh": SCRIPT, "b.sh": SCRIPT})
+                write(tree / "a.sh", f"{SCRIPT}echo more\n")
+                write(tree / "c.sh", SCRIPT)
+                git(tree, "add", "a.sh", "c.sh")
+                # Modified again after staging, so Git lists a under both.
+                write(tree / "a.sh", f"{SCRIPT}echo again\n")
+                outcome, calls = self._run(tmp, self._bash(tmp))
+                self.assertEqual((outcome.code, outcome.stderr), (0, ""))
+                self.assertTrue(any(call.endswith("/a.sh") for call in calls), calls)
+                self.assertTrue(any(call.endswith("/c.sh") for call in calls), calls)
+                self.assertFalse(any(call.endswith("/b.sh") for call in calls), calls)
+                # a is listed twice and c once; each is still checked once.
+                once = [sum(call.endswith(f"/{name}.sh") for call in calls) for name in "ac"]
+                self.assertEqual(once[0], once[1], calls)
 
     def test_arrival_outside_git_is_not_checked(self) -> None:
         """More loose files than the hook checks per command: none is touched, Claude is told."""

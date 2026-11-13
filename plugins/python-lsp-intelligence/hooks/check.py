@@ -11,7 +11,7 @@ The hook judges only what the tool call changed and never blocks because it cann
 - A tool that is not installed gives one notice per session and exit 0; without
   CLAUDE_PLUGIN_DATA, where the hook may keep its marker, the notice comes on every call.
 - Files that a Bash command left under a nested Git work tree count only when Git lists
-  them as modified or untracked there, so a clone, a checkout or a pull is never checked.
+  them as modified, untracked or staged there, so a clone, a checkout or a pull is never checked.
 - More than MAX_FILES files found by modification time alone, outside Git, are an arrival
   (an extracted archive, a generated tree), not an edit: none is checked, and Claude is told.
 Python 3.12 or later, standard library only.
@@ -170,14 +170,21 @@ def newer_than(path: Path, since_s: float) -> bool:
 
 
 def git_changed(git: str, tree: Path) -> list[Path] | None:
-    """The files Git lists as modified or untracked in work tree `tree`; None outside one."""
+    """The files Git lists as modified, untracked or staged in work tree `tree`; None outside one.
+
+    Staged files count too: a command that runs `git add` leaves nothing `--modified`.
+    """
     inside = run([git, "-C", str(tree), "rev-parse", "--is-inside-work-tree"])
     if inside.code != 0:
         return None
     listed = run(
         [git, "-C", str(tree), "ls-files", "-z", "--modified", "--others", "--exclude-standard"],
     )
-    return [tree / rel for rel in listed.output.split("\0") if rel]
+    staged = run([git, "-C", str(tree), "diff", "-z", "--cached", "--name-only", "--relative"])
+    names = listed.output.split("\0")
+    if staged.code == 0:
+        names += staged.output.split("\0")
+    return [tree / rel for rel in dict.fromkeys(names) if rel]
 
 
 def not_ignored(files: list[Path]) -> list[Path]:
@@ -258,9 +265,9 @@ def own_changes(files: list[Path], walked: Path) -> tuple[list[Path], list[Path]
     """Split the files found by modification time under walked into (verified, loose).
 
     A clone, a checkout or a pull writes files with a new modification time that nobody
-    edited. Inside a nested Git work tree only the files Git lists as modified or untracked
-    are a change: those are verified, and the rest are dropped. Files outside every work
-    tree are loose: nothing tells an edit from an arrival there.
+    edited. Inside a nested Git work tree only the files Git lists as modified, untracked or
+    staged are a change: those are verified, and the rest are dropped. Files outside every
+    work tree are loose: nothing tells an edit from an arrival there.
     """
     git = shutil.which("git")
     if git is None:
