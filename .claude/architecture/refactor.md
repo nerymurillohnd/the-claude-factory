@@ -307,7 +307,7 @@
 - `docs/`: reference documentation for users and third parties: `installation.md`, `managing-plugins.md`, `troubleshooting.md`, `faq.md`, `compatibility.md` (see stage 1), `github-mcp-tools.md` (GitHub Operations' MCP tools) and `assets/`
 - README rules:
   - A README describes what exists now; old names, merges, removed features and migration steps go in the CHANGELOG and the release notes
-  - Each kind has its reference and template: root `README.md` → `.claude/references/root-readme.md` and `.claude/templates/root-readme-template.md`; `plugins/<plugin>/README.md` → `.claude/references/plugin-readme.md` and `.claude/templates/plugin-readme-template.md`, applied through the `docs-maintenance` skill; a maintainer README outside `plugins/` only has to stay accurate
+  - Each kind has its reference and template: root `README.md` and `plugins/<plugin>/README.md` → their procedures and templates in the `docs-maintenance` skill (`references/documents/`, `assets/`); a maintainer README outside `plugins/` only has to stay accurate
   - User READMEs: English, second person, present tense; never mention the repository's maintenance, `.claude/`, scripts, CI or release mechanics; every command, flag, UI path and minimum version checked against the sources first
   - One fact, one value: the marketplace is `nerymurillohnd/the-claude-factory` (`@the-claude-factory`)
   - A plugin's README changes in the same change as its components, prerequisites, surfaces, configuration or minimum Claude Code version
