@@ -8,8 +8,8 @@ How to create and keep a plugin's `CHANGELOG.md` from `assets/CHANGELOG-template
 
 ## When
 
-- When the plugin is created, with its first version.
-- In every change that needs a version bump, under `## [Unreleased]` until the bump dates it.
+- When the plugin is created, with "Initial release." under `## [Unreleased]`.
+- In every change that needs a version bump, under `## [Unreleased]` until the release dates it (step 4).
 
 ## Sources
 

@@ -1,6 +1,6 @@
 # Root README
 
-How to edit the root `README.md`, the marketplace's front page, against `assets/root-readme-template.md`. This procedure replaces the former path-scoped rule `.claude/rules/maintainer/root-readme.md`.
+How to edit the root `README.md`, the marketplace's front page, against `assets/root-readme-template.md`.
 
 ## Produces
 
@@ -9,7 +9,7 @@ How to edit the root `README.md`, the marketplace's front page, against `assets/
 ## When
 
 - The README already exists and is never rebuilt: every edit follows the blueprint.
-- When a section's facts change: a plugin added, renamed or removed (through the generator), a change in `docs/`, `SUPPORT.md`, `CONTRIBUTING.md`, the issue forms or the compatibility matrix.
+- When a section's facts change: a plugin added, renamed or removed, a change in `docs/`, `SUPPORT.md`, `CONTRIBUTING.md`, the issue forms or the compatibility matrix.
 
 ## Sources
 
@@ -27,8 +27,10 @@ The blueprint is a section table, not a file to copy. Its values name this repos
 | Value | This repository |
 | :-- | :-- |
 | `{{generatedBlocks}}` | The `<!-- catalog:* -->` and `<!-- plugin-count:* -->` blocks |
+| `{{generateCommand}}` | None on this branch (DEBT-001): edit the blocks by hand, as step 3 says |
+| `{{emoji}}` | The emoji of section 1's heading, as the README has it |
 | `{{marketplaceDisplayName}}` | The Claude Factory |
-| `{{ciBadges}}` | The `validate.yml` status badge |
+| `{{ciBadges}}` | The `validate.yml` status badge. `validate.yml` is missing on this branch until the `Validate` workflow is rebuilt: leave the badge as it is and report it |
 | `{{compatibilityPage}}` | `docs/compatibility.md` |
 | `{{securityPolicy}}` | `SECURITY.md` |
 | `{{contributionPolicy}}` | No pull requests; issues welcome |
@@ -80,4 +82,4 @@ This repository:
 ## Never
 
 - Never rebuild the README from the blueprint; edit the section you change.
-- Never hand-edit a generated block.
+- Never hand-edit a generated block while a generator exists for it; until then, step 3 says how to edit it.

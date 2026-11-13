@@ -23,6 +23,8 @@
 | :-- | :-- |
 | Report a bug | [🐞 Bug report](https://github.com/{{owner}}/{{repo}}/issues/new?template={{bugReportForm}}) |
 | Suggest an improvement | [✨ Feature request](https://github.com/{{owner}}/{{repo}}/issues/new?template={{featureRequestForm}}) |
+| Propose something new | [💡 Plugin idea](https://github.com/{{owner}}/{{repo}}/issues/new?template={{pluginIdeaForm}}) |
+| Fix the docs | [📝 Documentation issue](https://github.com/{{owner}}/{{repo}}/issues/new?template={{docsIssueForm}}) |
 | Ask something | [❔ Question](https://github.com/{{owner}}/{{repo}}/issues/new?template={{questionForm}}) |
 
 <!-- One row per issue form the repository has, with its exact file name; delete rows without a form. -->

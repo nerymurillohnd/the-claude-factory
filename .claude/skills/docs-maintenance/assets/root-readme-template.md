@@ -2,9 +2,9 @@
 
 <!-- Procedure: references/documents/root-readme.md -->
 
-Section order, intent and rules of a plugin marketplace's root `README.md`, its front page. The README is written once and then edited section by section against this blueprint, never rebuilt. The blocks a generator writes ({{generatedBlocks}}) are never edited by hand: run `{{generateCommand}}`.
+Section order, intent and rules of a plugin marketplace's root `README.md`, its front page. The README is written once and then edited section by section against this blueprint, never rebuilt. The blocks a generator writes ({{generatedBlocks}}) are rewritten by `{{generateCommand}}`; where no generator exists, the procedure says how to edit them by hand, keeping every marker.
 
-- **Placeholders:** `{{generatedBlocks}}` (the HTML comment markers that fence the generated blocks), `{{generateCommand}}` (the command that rewrites them), `{{marketplaceDisplayName}}`, `{{ciBadges}}` (the status badges of the workflows that validate the marketplace), `{{compatibilityPage}}` (the page that holds the component × surface matrix), `{{securityPolicy}}` (the `SECURITY.md` path), `{{contributionPolicy}}` (whether pull requests are accepted or only issues) and `{{license}}`.
+- **Placeholders:** `{{generatedBlocks}}` (the HTML comment markers that fence the generated blocks), `{{generateCommand}}` (the command that rewrites them), `{{emoji}}` (section 1's heading emoji), `{{marketplaceDisplayName}}`, `{{ciBadges}}` (the status badges of the workflows that validate the marketplace), `{{compatibilityPage}}` (the page that holds the component × surface matrix), `{{securityPolicy}}` (the `SECURITY.md` path), `{{contributionPolicy}}` (whether pull requests are accepted or only issues) and `{{license}}`.
 
 | #   | Section                        | Intent                                                      | Rules                                                                                                                                                                 |
 | :-- | :----------------------------- | :---------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

@@ -16,5 +16,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The
   (### Added, ### Changed, ### Deprecated, ### Removed, ### Fixed, ### Security):
   - Launch or version bump:  - **{{pluginName}}** {{pluginVersion}} — {{summary}}
   - Breaking bump:           - **{{pluginName}}** {{pluginVersion}} — **Breaking:** {{summary}}
+  - Rename (### Changed):    - **<old>** is now **{{pluginName}}** {{pluginVersion}} — **Breaking:** {{summary}}
+  - Merge (### Changed):     - **<old>** is merged into **{{pluginName}}** {{pluginVersion}} — **Breaking:** {{summary}}
+  - Removal (### Removed):   - **{{pluginName}}** — {{summary}}
   - Marketplace-level change: - {{summary}}
 -->

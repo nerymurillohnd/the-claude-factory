@@ -37,7 +37,7 @@ Read 2026-11-10:
 1. Confirm the plugin contains third-party material; if it does not, stop.
 2. Copy the template's `text` block into `plugins/<plugin>/NOTICE.txt`.
 3. Fill the plugin's own copyright line from its `LICENSE`.
-4. For each source, fill one block, from "This plugin contains material derived from" through the license text. For a source with no license, state that, quote what its owner states, and list exactly what the plugin takes from it.
+4. For each source, fill one block, from "This plugin contains material derived from" through the license text. A source with no license gets no block: stop and report it to the owner, as Rules says.
 5. Add the README License line's NOTICE sentence ("Parts are derived from … ; see NOTICE.txt") and a Credits entry.
 6. Run the checks.
 

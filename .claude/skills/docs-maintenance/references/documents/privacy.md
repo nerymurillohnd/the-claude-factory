@@ -18,14 +18,14 @@ Read 2026-11-10:
 - No official template exists: GitHub defines no privacy file among community health files.
 - Anthropic Software Directory Policy, section 3.A (quoted in `ADR_2026-11-05_plugins-share-one-root-privacy-policy`): "Developers of Software that collects user data or connects to a remote service must provide a clear, accessible privacy policy link explaining data collection, usage, and retention."
 - Claude Code docs `plugins/manifest-reference`: `privacyPolicyUrl` is a directory listing field, an `https://` URL.
-- The live `PRIVACY.md` for the structure.
 
 ## Placeholders
 
 | Value | Meaning | True value from |
 | :-- | :-- | :-- |
 | `{{effectiveDate}}` | Date of this version, written out | The day of the change |
-| `{{marketplaceDisplayName}}`, `{{repositoryHost}}`, `{{marketplaceName}}` | Marketplace | `marketplace.json` and the repository |
+| `{{marketplaceDisplayName}}` | Marketplace display name | The owner (`governance.md`), as the root README and CHANGELOG state it |
+| `{{repositoryHost}}`, `{{marketplaceName}}` | The repository host path and the marketplace `name` | The repository and `marketplace.json` |
 | `{{maintainerName}}`, `{{maintainerProfileHost}}`, `{{maintainerProfileUrl}}` | Who is responsible | The maintainer |
 | `{{authorCollection}}` | What the author receives, how it is used and kept | The plugins' code |
 | `{{disclosureSection}}` | The README section that lists destinations | `What this plugin runs and sends` |
@@ -47,7 +47,7 @@ Read 2026-11-10:
 Official:
 
 - The policy explains collection, usage and retention, and is reachable from `privacyPolicyUrl` (Anthropic Software Directory Policy, section 3.A). Claude Code ignores `privacyPolicyUrl` at load time; Anthropic's directory reads it, and its security scan looks for destinations a plugin does not disclose.
-- Permission rules apply to commands and web requests Claude makes for a plugin, not to a mod's own code.
+- Permission rules apply to the tool calls Claude makes for a plugin, not to what its hooks, MCP servers or mods run on their own: a `Read(.env)` deny doesn't stop a mod's `$.fs.read`, and a `WebFetch` deny doesn't stop its `$.http.fetch` (code.claude.com/docs/en/plugins/mods/admin).
 - Claude Code's own traffic (model API, telemetry, error reporting, updates) is Anthropic's: point to Anthropic's Privacy Policy for it and don't restate it.
 
 This repository:

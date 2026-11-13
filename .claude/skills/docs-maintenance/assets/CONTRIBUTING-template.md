@@ -21,6 +21,7 @@ Thank you for wanting to make **{{projectDisplayName}}** better!
 | :------------------------ | :-- |
 | 🐞 Report bugs            | [Bug report](https://github.com/{{owner}}/{{repo}}/issues/new?template={{bugReportForm}}), with versions and steps to reproduce |
 | ✨ Request improvements   | [Feature request](https://github.com/{{owner}}/{{repo}}/issues/new?template={{featureRequestForm}}) |
+| 💡 Suggest something new  | [Plugin idea](https://github.com/{{owner}}/{{repo}}/issues/new?template={{pluginIdeaForm}}), describing the workflow |
 | 📝 Improve the docs       | [Documentation issue](https://github.com/{{owner}}/{{repo}}/issues/new?template={{docsIssueForm}}), pointing to the page and the fix |
 | 👍 Signal priority        | React with 👍 on issues you care about |
 | 🔐 Keep users safe        | Report vulnerabilities privately per the [Security policy](./SECURITY.md) |

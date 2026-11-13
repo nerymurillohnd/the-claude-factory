@@ -1,6 +1,6 @@
 # Plugin README
 
-How to create and keep `plugins/<plugin>/README.md` from `assets/plugin-readme-template.md`. This procedure replaces the former path-scoped rule `.claude/rules/plugins/plugin-readme.md`.
+How to create and keep `plugins/<plugin>/README.md` from `assets/plugin-readme-template.md`.
 
 ## Contents
 
@@ -32,7 +32,7 @@ Read 2026-11-10:
 
 - GitHub Docs, "About the repository README file" and "Basic writing and formatting syntax" (`github/docs` at `f309096`): relative links resolve inside the repository; alerts (`> [!NOTE]`, `[!TIP]`, `[!IMPORTANT]`, `[!WARNING]`, `[!CAUTION]`); content past 500 KiB is truncated.
 - Claude Code docs `plugins/manifest-reference` (`description`, the directory listing fields) and `plugins/install`.
-- claude.com `/docs/plugins/pre-submission-checklist` (checked 2026-10-25 by `building-plugins/references/public-readiness.md`): the directory blocks a README under 40 words, code blocks excluded.
+- claude.com `/docs/plugins/pre-submission-checklist`: "Put a README of at least 40 words in the plugin folder, preferably named `README.md`. Words inside code blocks don't count." A shorter one blocks the submission.
 - claude.com `/docs/plugins/platform-support`, through `docs/compatibility.md`.
 
 ## Placeholders
@@ -68,14 +68,14 @@ Surface blocks: the content between `<!-- app:start -->` and `<!-- app:end -->` 
 ## What it states
 
 - **Hero:** the plugin's purpose as a fuller overview for readers. `plugin.json`'s `description` is the compact line `/plugin` shows before install; the hero says the same thing at more length, with the benefits, and never contradicts it.
-- **Compatibility:** one row per component type the plugin ships, each cell copied character for character from `docs/compatibility.md`. A plugin-specific caveat goes in the note under the table, never into a cell.
+- **Compatibility:** one row per component type the plugin ships, its Claude Code and Claude cells copied character for character from `docs/compatibility.md`; the Component column keeps the template's short names. A plugin-specific caveat goes in the note under the table, never into a cell.
 - **Platforms**, under Compatibility: "macOS and Linux", plus "Windows through Git Bash" only when every script and tool the plugin runs works there and Prerequisites gives a Windows install method for each. When only one part of the plugin needs something else on Windows, such as WSL2 for sandboxed eval runs, keep "macOS and Linux." and say it in the Compatibility note.
 - **Prerequisites**, before Installation: every tool, runtime, account or service, with step-by-step install methods for each, and for every program its hooks or scripts invoke, a command that verifies it is present. Name the POSIX base tools macOS and Linux ship (`sh`, `sed`, `awk`, `grep`, `tr`, `find` and the like) once, without a check each. Copy each install command and package name from the tool's official docs or a package index such as repology.org, never from memory. Python is stated as 3.12 or later. A dependency a hook installs into the plugin's data directory (the `CLAUDE_PLUGIN_DATA` variable) is listed here and under What this plugin runs and sends: what it downloads, from where, and where it writes.
 - **Installation, Updating and Uninstalling:** how to add and remove the marketplace, and install, update and uninstall the plugin, with `nerymurillohnd/the-claude-factory` and `@the-claude-factory`. Install includes `export CLAUDE_CODE_PLUGIN_PREFER_HTTPS=1` for users without a GitHub SSH key, because installs from `/plugin` and plugin updates don't fall back to HTTPS. Update says that auto-update is off for this marketplace until the user turns it on. Uninstall says what the plugin's data directory (`CLAUDE_PLUGIN_DATA`) holds, or that the plugin keeps nothing there (search the plugin's hooks, scripts and modules for it before you write either), and that the last uninstall deletes it unless `--keep-data` is passed.
 - **Configuration:** each `userConfig` option and how to set it, with `--config KEY=VALUE` and `/plugin configure` in fenced blocks. A plugin without options but with behavior the user's project decides uses the template's project-settings variant; otherwise the section and its link in the header go.
 - **What this plugin runs and sends:** one line per hook, with its event and matcher copied from `hooks/hooks.json`, what it runs and what it does, and that it runs on its own with your access, without a permission prompt; then every MCP server, monitor and network destination, and the data each one receives. Keep it to the facts of this plugin, with no general explanation of hooks.
 - **Usage:** the skill commands (`/<plugin>:<skill>`) and prompts that trigger the plugin's skills.
-- **Mods:** for a plugin that is a mod or contains one, also what `building-mods` section 5 lists, in the template's slots. Build its Mod line from the module's code: every `$.fs`, `$.env`, `$.process` and `$.http` call, including an environment read such as `HOME`, so the README never claims the mod reads nothing it does read.
+- **Mods:** for a plugin that is a mod or contains one, fill the template's Mod line, its Before you install bullet and the mod limits in Limitations. Build the Mod line from the module's code and from the `hooks:`, `calls:` and `env reads:` lines of `claude plugin validate plugins/<plugin>`, which are cut at about 1,000 characters, so read the module too: every `$.fs`, `$.env`, `$.process` and `$.http` call, including an environment read such as `HOME`, so the README never claims the mod reads nothing it does read. Say that permission rules don't cover the mod's own calls: a `Read(.env)` deny doesn't stop `$.fs.read`, and a `WebFetch` deny doesn't stop `$.http.fetch` (code.claude.com/docs/en/plugins/mods/admin). Each release's CHANGELOG entry names the Claude Code version the mod was tested with; the README states only the minimum.
 - **License line:** the license and `© {{copyrightHolders}}`, then the template's NOTICE sentence when the plugin has `NOTICE.txt`, and a non-affiliation and trademark sentence for each third-party product it names, always including Anthropic for _Claude_ and _Claude Code_.
 - **Only the current state:** no "yet", "for now" or "until a newer release", no testing or checking dates, and no "we tested" or "built and tested on". Say what works today and what doesn't. Old names, merges, removed features and migration steps go in the CHANGELOG and the release notes.
 - **Length:** at least 40 words outside code blocks, because Anthropic's directory blocks a shorter README.
@@ -92,7 +92,7 @@ Surface blocks: the content between `<!-- app:start -->` and `<!-- app:end -->` 
   - **License** (`22C55E`): links to the plugin's `LICENSE`.
 - Write no plugin version in the README; the Version badge shows it. The only version numbers written by hand are the minimum Claude Code version (badge, Prerequisites, each version-gated feature as "v2.1.292+") and the minimum version of an external tool in Prerequisites.
 - Set the minimum Claude Code version to the highest of the releases that added each feature the plugin uses or fixed each bug it would hit, from the release notes, and record that feature in the CHANGELOG entry that sets the minimum. The README states the minimum, never why: Prerequisites says what the user needs, not the reasoning. When the component behind the minimum is removed, recompute it from the release notes. Raise it only when a later release breaks the plugin.
-- When the surfaces, the category or the minimum version change, change the badge and the text that states it together, then regenerate the catalog.
+- When the surfaces, the category or the minimum version change, change the badge and the text that states it together, then update the plugin's row in the root `README.md` catalog (`root-readme.md`, step 3).
 
 ## Rules
 
@@ -108,7 +108,7 @@ This repository:
 - Name the two surfaces **Claude Code** (the terminal, the IDE extensions, the desktop app's **Code** tab and cloud sessions) and **Claude** (web, desktop and mobile), never "the Claude app", "chat conversation" or "Cowork" as a surface name. Where a component loads in only some Claude conversations, say "where Claude can run tasks".
 - Check every command, flag, UI path and minimum version against the installed binary, then the release notes, then the docs, before you write it.
 - Lead with the outcome and why to install, in an outcome-first TL;DR, then teach.
-- `##` headings with one emoji each: 📋 prerequisites, 📥 install, ⚙️ configuration, 🔍 what it runs and sends, 🔄 update, 🗑️ uninstall, 🧭 compatibility, 🚧 limitations, ❓ FAQ, 🔗 related, 🙏 credits, 📝 changelog, 📄 license.
+- `##` headings with one emoji each: ✨ why use it, 🧩 what's inside, 📋 prerequisites, 📥 install, ⚙️ configuration, 🔍 what it runs and sends, 🚀 usage, 🔄 update, 🗑️ uninstall, 🧭 compatibility, 🚧 limitations, ❓ FAQ, 🔗 related, 🐞 found a problem, 🙏 credits, 📝 changelog, 📄 license.
 - Tables for comparisons, the Prerequisites summary and options.
 - Name only this plugin on an install or command line; to point at another plugin, give its README link or a `/plugin` → **Installed** path. A table of example commands the plugin acts on, such as the commands a hook blocks, describes behavior and stays a table.
 - Every command the user runs in a fenced code block, never inside a sentence or a table cell, so GitHub gives it a copy button. The Check column of the Prerequisites table is the one exception.
@@ -117,15 +117,15 @@ This repository:
 
 ## Checks
 
-- `claude plugin validate --strict plugins/<plugin>` and `claude plugin details plugins/<plugin>`: the plugin loads with the README beside it.
-- By hand, since no script checks them yet (DEBT-001): the sections, leftover `TODO` and `TEMPLATE` comments, the Works in badge, one Compatibility row per component type with its cells copied from `docs/compatibility.md`, the Platforms line, the Version badge, and no other plugin's name on a command line.
+- `claude plugin validate --strict plugins/<plugin>` and `claude --plugin-dir plugins/<plugin> plugin details <plugin>`: the plugin loads with the README beside it.
+- By hand, since no script checks them yet (DEBT-001): the sections, leftover `TODO` and `TEMPLATE` comments, the Works in badge, one Compatibility row per component type with its Claude Code and Claude cells copied from `docs/compatibility.md`, the Platforms line, the Version badge, and no other plugin's name on a command line.
 - `grep -n '{{\|<!--' plugins/<plugin>/README.md` returns nothing.
 - No script reads the prose: compare it with the plugin's files yourself, and open every relative link and `#anchor` you wrote.
 
 ## Change the template
 
 - Change `assets/plugin-readme-template.md` only to change what every plugin README gets, and bring every plugin README in line in the same change.
-- Keep its Compatibility table identical to `docs/compatibility.md`.
+- Keep its Compatibility table's Claude Code and Claude cells identical to `docs/compatibility.md`.
 - A new value is `{{camelCase}}` and gets a row in Placeholders above.
 - Render the template for a throwaway plugin in a scratch copy of the repository and read the result.
 

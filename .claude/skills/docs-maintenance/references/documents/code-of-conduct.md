@@ -50,7 +50,10 @@ This repository:
 ## Checks
 
 - The repository's community profile (Insights → Community standards) shows "Code of conduct" as added after the push.
-- `diff` against the official 3.0 text, with the two adaptation points restored, shows no difference.
+- The template matches the official 3.0 text except its two adaptation points. This shows exactly two changes, the reporting line and the enforcement note, and nothing else:
+  ```bash
+  diff <(sed '1,5d' .claude/skills/docs-maintenance/assets/CODE_OF_CONDUCT-template.md) <(curl -sS https://raw.githubusercontent.com/EthicalSource/contributor_covenant/release/content/version/3/0/code_of_conduct.md | sed '1,/^+++$/d')
+  ```
 
 ## Never
 

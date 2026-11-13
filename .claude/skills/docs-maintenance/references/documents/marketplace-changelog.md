@@ -8,7 +8,7 @@ How to create and keep the root `CHANGELOG.md` of an unversioned marketplace fro
 
 ## When
 
-- With every plugin version bump, launch, rename or removal.
+- At the release of every new plugin and plugin version (the `plugin-releases` skill), and with every rename, merge or removal (the `plugin-catalog-changes` skill).
 - With every marketplace-level change users notice (a catalog, category or documentation change).
 
 ## Sources
@@ -23,17 +23,20 @@ Read 2026-11-10:
 | Value | Meaning | True value from |
 | :-- | :-- | :-- |
 | `{{marketplaceDisplayName}}` | Marketplace display name | The root README hero |
-| `{{date}}` | The date heading, `YYYY-MM-DD` | The date the plugin's changelog section uses |
+| `{{date}}` | The date heading, `YYYY-MM-DD` | A launch or a version: the date of the plugin's changelog section. A rename, merge or removal: the UTC day it merges into `main` |
 | `{{pluginName}}`, `{{pluginVersion}}` | The plugin and its new version | Its `plugin.json` |
 | `{{summary}}` | One-line summary of the change, for users | The plugin's changelog section |
 
 ## Procedure
 
-1. Find or create the `## {{date}}` heading of the date the plugin's changelog section uses, keeping dates newest first.
+1. Find or create the `## {{date}}` heading, keeping dates newest first.
 2. Find or create the change type heading under it.
 3. Add one line in the shape of its case:
    - Launch or bump: `- **<plugin>** X.Y.Z — summary.` A launch goes under `### Added`.
    - Breaking bump: `- **<plugin>** X.Y.Z — **Breaking:** summary.`
+   - Rename, under `### Changed`: `- **<old>** is now **<new>** X.Y.Z — **Breaking:** summary.`
+   - Merge, under `### Changed`: `- **<old>** is merged into **<target>** X.Y.Z — **Breaking:** summary.`
+   - Removal, under `### Removed`: `- **<plugin>** — summary.`, with no version; say whether uninstalling deletes its saved options and data.
    - Marketplace-level change: `- summary.`, with no plugin name or version.
 4. Run the checks.
 
@@ -45,14 +48,14 @@ Official (Keep a Changelog):
 
 This repository:
 
-- The marketplace carries no version: headings are dates, never `## [X.Y.Z]`. The versions 0.1.0 and 0.2.0 in the history predate that rule; their tags stay.
+- The marketplace carries no version: headings are dates, never `## [X.Y.Z]`. The `## [0.1.0]` and `## [0.2.0]` sections at the end of the file predate that rule; keep them as they are. No `marketplace--v*` tag exists for them, so their two link references don't resolve.
 - A line is a summary, never a copy of the plugin's changelog.
 - The date is the plugin changelog's date: the UTC release day (see `changelog.md` → Rules).
 
 ## Checks
 
 - The line's version equals the plugin's `plugin.json` `version`.
-- The date equals the date of that version's section in the plugin's `CHANGELOG.md`.
+- A launch's or version's date equals the date of that version's section in the plugin's `CHANGELOG.md`; a rename's, merge's or removal's date is the UTC day it merges.
 
 ## Never
 

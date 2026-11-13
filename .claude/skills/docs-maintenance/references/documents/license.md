@@ -49,7 +49,10 @@ This repository:
 ## Checks
 
 - The repository's sidebar names "MIT license" after the push.
-- `diff` against the choosealicense text after reverting the copyright line shows no difference.
+- The text matches the template's, apart from the copyright line. From the repository root, for `LICENSE` or `plugins/<plugin>/LICENSE`, this prints nothing and exits 0:
+  ```bash
+  diff <(sed '3d' LICENSE) <(sed -n '/^```text$/,/^```$/{/^```/d;p;}' .claude/skills/docs-maintenance/assets/LICENSE-template.md | sed '3d')
+  ```
 - `claude plugin validate --strict plugins/<plugin>`: the manifest's `license` is accepted.
 
 ## Never

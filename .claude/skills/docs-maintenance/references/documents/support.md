@@ -16,7 +16,6 @@ How to create `SUPPORT.md` from `assets/SUPPORT-template.md`.
 Read 2026-11-10 (`github/docs` at `f309096`):
 
 - "Adding support resources to your project": type `SUPPORT.md` (with all caps) and "add information about how people can get support for your project"; link it from other places, such as the README.
-- The live `SUPPORT.md` for the structure.
 
 ## Placeholders
 
@@ -25,7 +24,7 @@ Read 2026-11-10 (`github/docs` at `f309096`):
 | `{{guideTitle}}`, `{{guideFile}}`, `{{guideSummary}}` | One row per user guide | `docs/` |
 | `{{perComponentDocs}}` | Where the rest of the docs live | For example, each plugin's README |
 | `{{owner}}`, `{{repo}}` | Repository | The repository |
-| `{{bugReportForm}}`, `{{featureRequestForm}}`, `{{questionForm}}` | Issue form file names | `.github/ISSUE_TEMPLATE/` |
+| `{{bugReportForm}}`, `{{featureRequestForm}}`, `{{pluginIdeaForm}}`, `{{docsIssueForm}}`, `{{questionForm}}` | Issue form file names | `.github/ISSUE_TEMPLATE/` |
 | `{{responseExpectations}}` | What gets the fastest answer | The information the issue forms ask for |
 | `{{upstreamSupport}}` | Where platform problems go | The platform's own tracker |
 
@@ -45,7 +44,6 @@ Official:
 
 This repository:
 
-- The issue rows also cover `plugin_idea.yml` and `docs_issue.yml`.
 - `SUPPORT.md`, the README Support section and `.github/ISSUE_TEMPLATE/config.yml` send readers to the same places. Edit only `SUPPORT.md` here, and report each disagreement in the other two with the change it needs.
 - `SUPPORT.md` holds no policy of its own on security reports or response times; it points to `SECURITY.md`.
 - Platform problems go to `anthropics/claude-code` issues.

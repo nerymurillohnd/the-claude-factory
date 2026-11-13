@@ -38,6 +38,8 @@ Plugins run inside your own Claude Code session, with your permissions. What a p
 
 Some plugins connect to services that their own operators run. When they do, the data goes straight from your machine to that service, under that service's own policy. The author never sees it and keeps none of it.
 
+<!-- Keep "The author never sees it and keeps none of it." only while no plugin relays data through a server the author runs. -->
+
 | Service | Plugins | What it receives | Its policy |
 | :-- | :-- | :-- | :-- |
 | {{serviceName}} (`{{serviceHost}}`) | {{servicePlugins}} | {{serviceData}} | [{{servicePolicyTitle}}]({{servicePolicyUrl}}) |
@@ -49,7 +51,7 @@ Claude itself, and Claude Code, process your session under [Anthropic's Privacy 
 ## Your choices
 
 - Each plugin's README lists every destination it can reach. Read it before you install.
-- Your Claude Code permission rules apply to the commands and web requests Claude makes for a plugin. Use them to block a destination you do not want.
+- Your Claude Code permission rules apply to the tool calls Claude makes for a plugin, such as its commands and web requests, and you can use them to block those. They don't apply to what a plugin's hooks, MCP servers or mods run on their own: to stop those, disable or uninstall the plugin.
 - You can turn off any MCP server in `/mcp`, or uninstall a plugin at any time with `claude plugin uninstall <plugin>@{{marketplaceName}}`.
 
 ## Children
