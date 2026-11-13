@@ -41,6 +41,8 @@ From code.claude.com/docs/en/plugins/host-marketplace (Release a new version), l
    - `claude plugin validate --strict plugins/<plugin>` exits 0
    - `claude plugin validate --strict .` exits 0
    - `claude plugin tag plugins/<plugin> --dry-run` prints `<plugin>--v<new version>`
+   - the plugin installs and loads from a local marketplace, the official pre-release check: `claude plugin marketplace add ./`, then `claude plugin install <plugin>@the-claude-factory`, then start a session and confirm it loads
+   - when the plugin has an eval suite, `claude plugin eval plugins/<plugin>` passes, which catches regressions the validator can't see
 8. **Open the pull request** for the change, with the owner's authorization; component changes inside `plugins/` always go through one. The version heading, its date and the changelog links are written at release time by the `plugin-releases` skill, not here.
 
 ## Conventions this skill adds to the official docs
