@@ -84,21 +84,30 @@ The repository has two scopes that never mix. A rule, tool or file of one scope 
 - **Guards fail closed:** every hook at a gating site handles its own failure with `.catch`.
 - **Current CLI:** run mod tests on Claude Code v2.1.299 or later.
 
-## Main stack
+## Stack
 
-The tools Nery and Claude use to build and maintain the project. Each plugin's own code, in any language, belongs to that plugin, not to this stack. Several of these tools also check files under `plugins/`, but no plugin needs them and users never install them.
+This project has two stacks that never mix: the maintainer's tools, which run on the owner's machine or in the working environment to maintain and develop this repository, and each plugin's own dependencies, which stay portable and self-contained because they run on users' machines.
 
-| Purpose | Tools |
-|---|---|
-| **Runtimes and package managers** | Node 26 with npm 12; Python 3.15 with uv |
-| **Task entry point** | npm scripts in `package.json`; every maintainer task runs through `npm run <script>` |
-| **Formatting** | Biome (JavaScript, TypeScript, JSON, YAML, and Markdown for people); ruff format (Python); shfmt (shell) |
-| **Linting** | Biome; ruff; ShellCheck; actionlint and zizmor (GitHub Actions workflows); check-jsonschema (issue forms, issue config, Dependabot); skill-lint (skills) |
-| **Type checking** | TypeScript (`tsc`); basedpyright (Python) |
-| **Plugin validation and release** | Claude Code CLI: `claude plugin validate --strict`, `claude plugin test`, `claude plugin eval`, `claude plugin tag`; maintainer scripts for what the CLI doesn't check (`check:consistency`, the `release:*` scripts, `check:install`) |
-| **Testing** | Python `unittest` for the maintainer scripts; `claude plugin test` for mods |
-| **CI and hosting** | GitHub Actions; GitHub issue forms, labels and Dependabot |
-| **Git hooks** | None for now; removed until they are redesigned |
+### Repository maintenance and development
+
+- **Package managers:** npm first (Node 26, npm 12): every maintainer command runs through `npm run <script>` in `package.json`. uv second, for the maintainer Python 3.15.
+- **Formatting and linting:**
+  - Shell (Bash): shfmt formats; ShellCheck lints.
+  - TypeScript and JavaScript: Biome formats and lints, together with JSON, YAML and the Markdown written for people; `tsc` type-checks.
+  - Python: ruff formats and lints; basedpyright type-checks.
+- **CI:** GitHub Actions, its workflows checked by actionlint and zizmor.
+- **Tests:** Python `unittest` for the maintainer scripts (`npm run test:scripts`).
+
+### Plugins: development, testing and distribution
+
+- **Runtime:** each plugin's own dependencies, declared in the Prerequisites of its README; no maintainer tool becomes a plugin requirement.
+- **Plugin CLI:** `claude plugin validate`, `test` (mods), `eval` and `tag`, plus maintainer scripts for what it doesn't check (`check:consistency`, `check:install`, the `release:*` scripts).
+- **Project skills,** in `.claude/skills/`:
+  - versions and bumps: `plugin-versioning`
+  - releases, tags and GitHub Releases: `plugin-releases`
+  - renames, removals and merges: `plugin-catalog-changes`
+  - READMEs, CHANGELOGs, licenses, notices and the policy documents: `docs-maintenance`
+  - plugin directory icons: `plugin-icons`
 
 ## Repository map
 
