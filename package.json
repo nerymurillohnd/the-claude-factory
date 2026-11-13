@@ -23,6 +23,7 @@
     "lint:python": "ruff check . && ruff format --check .",
     "lint:shell": "shfmt -f . | xargs shellcheck -S style -a && shfmt -d .",
     "lint:workflows": "actionlint && zizmor --offline .",
+    "release:notes": "uv run python scripts/release/release-notes.py",
     "setup": "npm ci && uv sync --locked && npm run tools:install",
     "test:scripts": "uv run python -m unittest discover -s scripts/testers -t scripts -p 'test_*.py'",
     "tools:install": "uv tool install ruff==0.17.4 && uv tool install basedpyright==1.40.2 && uv tool install zizmor==1.32.0 && uv tool install check-jsonschema==0.39.0",
