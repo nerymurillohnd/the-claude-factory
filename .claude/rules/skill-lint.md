@@ -1,21 +1,21 @@
 ---
 paths:
   - "scripts/**/*.py"
+  - "scripts/**/*.pyi"
 ---
 # skill-lint (maintainer scripts)
 
 ## Run
 
-- Run `npm run lint:skills` to check every skill; it runs `uv run python scripts/validators/skill-lint.py` on Python 3.15 from `.venv`.
-- Run `npm run lint:skills -- <skill folder>` to check one skill, and add `--only CO,SC`, `--strict`, `--manifest` or `--json` after `--` as needed.
+- Launch skill-lint only through `npm run lint:skills`, which runs `uv run python scripts/validators/skill-lint.py` on Python 3.15 from `.venv`; never run `./scripts/validators/skill-lint.py`, whose `#!/usr/bin/env python3` line would pick the machine's OS Python.
 - Run `npm run test:scripts` after every change under `scripts/validators/` or `scripts/testers/`; it runs `unittest discover` on `scripts/testers/` with `-t scripts`.
 - Run `npm run lint:python` and `npm run typecheck:python` before each commit, and fix every finding without suppressing it.
-- Launch skill-lint only through `npm run lint:skills`, never as `./scripts/validators/skill-lint.py`: its `#!/usr/bin/env python3` line would pick the machine's OS Python.
 
 ## Edit
 
 - Edit `skill_lint/cli.py` to change arguments, the order of the checks or the exit codes; keep `scripts/validators/skill-lint.py` a shim that only puts `scripts/` on the import path and runs `validators.skill_lint.cli` with `runpy`.
 - Edit `discover.py` to change which skills are found or what a `Skill` loads; keep the two globs `plugins/*/skills/*/SKILL.md` and `.claude/skills/*/SKILL.md`.
+- Keep `PRUNED_DIRS` in `discover.py` equal to the folders the spec's Discovery section lists, and let `git_modes` return no modes only when git is missing or the folder is not in a repository; raise `GitError` for any other git failure, so SC-02 names it.
 - Edit `frontmatter.py` for YAML parsing, `markdown.py` for the line scan (fences, indented code, HTML comments, headings), `markdown_model.py` for the `MarkdownDoc` parts, slugs, links, inline code and `!` commands, `refs.py` for path resolution and the reference graph, `script_refs.py` for Python imports and shell `source` lines, and `commands.py` for the commands Markdown runs and scripts call.
 - Add or change a rule in its family's module:
   - CO-01 to CO-06: `rules_content.py`.
