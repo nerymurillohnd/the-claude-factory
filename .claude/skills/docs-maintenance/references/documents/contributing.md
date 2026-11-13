@@ -17,7 +17,7 @@ Read 2026-11-10 (`github/docs` at `f309096`):
 
 - "Setting guidelines for repository contributors": guidelines "could include: steps for creating good issues or pull requests; links to external documentation, mailing lists, or a code of conduct; community and behavioral expectations."
 - "Creating a default community health file": precedence and the account-wide default.
-- Former repositories `claude-essentials-deprecated` (`docs/contributing/issues.md`: every issue starts from a form, each form names the labels it applies, questions, vulnerabilities and platform bugs each have their own place) and the live `CONTRIBUTING.md` for the structure (ways to contribute, what happens after an issue).
+- The live `CONTRIBUTING.md` for the structure (ways to contribute, what happens after an issue). Every issue starts from a form, each form names the labels it applies, and questions, vulnerabilities and platform bugs each have their own place.
 
 ## Placeholders
 

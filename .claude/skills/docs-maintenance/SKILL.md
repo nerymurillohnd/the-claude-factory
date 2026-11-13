@@ -32,7 +32,7 @@ Everything these documents say reaches third parties: a plugin's README tells a 
 ## How to write a document
 
 1. Read [governance.md](references/governance.md) in full: the values only the owner can give, the checks, and the conventions every document follows.
-2. Read the document's procedure in full, then its template. Each procedure says what the document produces, its sources, what each placeholder means and where its true value comes from, its rules and its checks.
+2. Read the document's procedure in full, then its template. Each procedure says what the document produces, its sources, what each placeholder means and where its true value comes from, its rules and its checks. When another skill called you for one task, apply the procedure step that matches it (for example, a release: `changelog.md` step 4) and say which step you applied.
 3. Take every value from the repository's files, the calling skill's decisions or the owner. Ask the owner for a value only the owner can give; never invent one.
 4. Write the document, then run the checks in its procedure and in governance.md, and show their raw output.
 

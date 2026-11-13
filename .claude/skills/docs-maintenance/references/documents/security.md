@@ -18,7 +18,7 @@ Read 2026-11-10 (`github/docs` at `f309096`):
 - "Adding a security policy to your repository": "add information about supported versions of your project and how to report a vulnerability."
 - "Configuring private vulnerability reporting for a repository": owners of public repositories enable it in Settings, on the security page of the sidebar, with **Enable** next to "Private vulnerability reporting" (the page label varies by plan, so it is not quoted here); the default form asks for a summary, details, proof of concept and impact; a `.github/VULNERABILITY_REPORT.yml` (or `.yaml`) customizes it with issue-form syntax, and GitHub shows the default form when it cannot parse it; maintainers can require a CWE and set report limits.
 - "Creating a default community health file": file precedence and the account-wide `.github` repository.
-- Former template `claude-essentials-deprecated` `templates/SECURITY-reusable-template.md`: never invent a reporting mechanism; keep only sections that state a real commitment; give out-of-scope reporters somewhere to go.
+- Never invent a reporting mechanism; keep only sections that state a real commitment; give out-of-scope reporters somewhere to go.
 - Claude Code docs `plugins/security`: what a plugin can run on a user's machine (for the intro and scope).
 
 ## Placeholders

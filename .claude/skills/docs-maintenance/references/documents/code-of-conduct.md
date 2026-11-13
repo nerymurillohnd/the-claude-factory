@@ -18,7 +18,7 @@ Read 2026-11-10:
 - Contributor Covenant 3.0 (`https://www.contributor-covenant.org/version/3/0/`), licensed CC BY-SA 4.0: the text marks its two adaptation points with `[NOTE: …]`; the Attribution section must stay.
 - GitHub Docs, "Adding a code of conduct to your project" (`github/docs` at `f309096`): research codes of conduct and "consider carefully whether you are willing and able to enforce it"; the community profile marks it added "if the file is not empty and does not state that the project has no code of conduct"; follow the source's attribution guidelines.
 
-Former template `claude-essentials-deprecated` `templates/CODE_OF_CONDUCT-reusable-template.md` (Covenant 2.1): its rules, confirm the contact reaches someone who acts and never weaken the Covenant's terms, carry over; its 2.1 text is replaced by 3.0.
+Confirm that the reporting contact reaches someone who acts on it, and never weaken the Covenant's terms.
 
 ## Placeholders
 

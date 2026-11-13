@@ -17,7 +17,6 @@ Read 2026-11-10:
 
 - Keep a Changelog 2.0.0 (`https://keepachangelog.com/en/2.0.0/`): an `Unreleased` section at the top; one `## [X.Y.Z] - YYYY-MM-DD` section per release, newest first; the six types `Added`, `Changed`, `Deprecated`, `Removed`, `Fixed`, `Security`; breaking changes marked `**Breaking:**`; yanked releases as `## [X.Y.Z] - YYYY-MM-DD [YANKED]`; link references at the bottom.
 - Semantic Versioning 2.0.0.
-- Former procedures consolidated and corrected: `codex-essentials-legacy` `doc-keeper` → `references/changelog-maintenance.md` (it cites Keep a Changelog 1.1.0; corrected here to 2.0.0) and `claude-essentials-deprecated` `templates/CHANGELOG-reusable-template.md`.
 - Claude Code docs `plugins/cli-reference` → `claude plugin tag`: release tags are `<name>--v<version>`.
 
 ## Placeholders
@@ -25,8 +24,6 @@ Read 2026-11-10:
 | Value | Meaning | True value from |
 | :-- | :-- | :-- |
 | `{{displayName}}` | Plugin display name | `plugin.json` `displayName` |
-| `{{version}}` | First version | `plugin.json` `version` (`0.1.0` for a new plugin) |
-| `{{date}}` | Release date, `YYYY-MM-DD` | The UTC day the version is released, meaning the day its tag and GitHub Release are created (see Rules) |
 | `{{repositoryUrl}}` | Repository URL, no trailing slash | `plugin.json` `repository` |
 | `{{name}}` | Plugin name, the tag prefix | `plugin.json` `name` |
 
@@ -38,11 +35,11 @@ Leave out formatting-only work, internal refactors with no observable effect, pl
 
 ## Procedure
 
-1. New plugin: copy the template to `plugins/<plugin>/CHANGELOG.md`, delete its instruction comment, and fill the values; the first section keeps `### Added` with "Initial release."
+1. New plugin: copy the template to `plugins/<plugin>/CHANGELOG.md`, delete its instruction comment, and fill the values. "Initial release." stays under `## [Unreleased]`, with no dated version, until the release dates it (step 4).
 2. Each later change: write the notes under `## [Unreleased]`, under the type each change belongs to, in user language: what changes for the user, not how.
 3. A breaking change starts its line with `**Breaking:**`, under `### Changed` or `### Removed`, and says what changed, who is affected and the action they must take. A security fix is stated without details that help an attacker.
 4. At release, when the `plugin-releases` skill calls for it: rename `## [Unreleased]` to `## [X.Y.Z] - YYYY-MM-DD`, with the version from `plugin.json` and the UTC date the release gives, and add a new empty `## [Unreleased]` above it. No script does this yet; edit the file by hand. If `## [Unreleased]` is empty, stop and ask the owner what the version changes.
-5. Update the link references at the bottom: `[Unreleased]` compares the newest tag with `HEAD`; each version compares its tag with the previous one; the oldest version links to `releases/tag/`.
+5. Update the link references at the bottom: `[Unreleased]` becomes `{{repositoryUrl}}/compare/<name>--v<newest>...HEAD`; each version compares its tag with the previous one; the oldest version links to `{{repositoryUrl}}/releases/tag/<name>--v<oldest>`. Before the first release, `[Unreleased]` links to `{{repositoryUrl}}/commits/main/plugins/<name>`, as the template has it.
 6. Run the checks.
 
 ## Rules

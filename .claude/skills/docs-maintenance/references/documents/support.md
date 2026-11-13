@@ -16,7 +16,7 @@ How to create `SUPPORT.md` from `assets/SUPPORT-template.md`.
 Read 2026-11-10 (`github/docs` at `f309096`):
 
 - "Adding support resources to your project": type `SUPPORT.md` (with all caps) and "add information about how people can get support for your project"; link it from other places, such as the README.
-- Former repository `claude-essentials-deprecated` (support policy table) and the live `SUPPORT.md` for the structure.
+- The live `SUPPORT.md` for the structure.
 
 ## Placeholders
 

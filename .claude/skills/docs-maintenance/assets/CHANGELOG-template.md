@@ -7,11 +7,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
-## [{{version}}] - {{date}}
-
 ### Added
 
 - Initial release.
 
-[Unreleased]: {{repositoryUrl}}/compare/{{name}}--v{{version}}...HEAD
-[{{version}}]: {{repositoryUrl}}/releases/tag/{{name}}--v{{version}}
+[Unreleased]: {{repositoryUrl}}/commits/main/plugins/{{name}}
