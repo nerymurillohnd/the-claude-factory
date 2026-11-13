@@ -6,7 +6,7 @@
 
 **Production-grade plugins that automate, accelerate and harden the way you work with Claude.**
 
-_Skills · Agents · Hooks · MCP servers · LSP servers · Output styles — packaged, versioned and ready to install._
+_Skills · Agents · Hooks · Mods · MCP servers · LSP servers — packaged, versioned and ready to install._
 
 <br>
 
@@ -36,7 +36,7 @@ _Skills · Agents · Hooks · MCP servers · LSP servers · Output styles — pa
 |                   |                                                                                                 |
 | :---------------- | :---------------------------------------------------------------------------------------------- |
 | 🎯 **Focused**    | One plugin, one job, done well. No kitchen-sink bundles.                                        |
-| 🧪 **Validated**  | Every release passes the official `claude plugin validate --strict` plus our own quality gates. |
+| 🧪 **Validated**  | Every release passes the official `claude plugin validate --strict`.                            |
 | 🔖 **Versioned**  | Semantic versioning and a changelog for every plugin, so you always know what changed.          |
 | 📖 **Documented** | Every plugin ships a README with requirements, usage, configuration and compatibility.          |
 | 🔓 **Open**       | MIT-licensed. Read the source of anything before you install it.                                |
