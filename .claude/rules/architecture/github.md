@@ -17,7 +17,13 @@ The files GitHub reads from this repository.
 - Record each zizmor finding accepted on purpose in `zizmor.yml`, with its reason; any other finding fails `npm run lint:workflows`.
 - Keep code ownership in `CODEOWNERS`.
 
+## Pull requests
+- Open a pull request only with the owner's approval, and ask before opening it.
+- Send every change inside `plugins/` through a pull request, skill, agent and command files included, except documentation-only changes (`README.md`, `LICENSE`, `CHANGELOG.md`, `NOTICE.txt` and similar files) that alter neither behavior nor what users installed.
+- Outside `plugins/`, and for documentation-only plugin changes, open a pull request only when the owner asks for one.
+
 ## Working here
+- Before relying on `release.yml`, check that the `Validate` workflow it waits for exists in `workflows/`; release with the `plugin-releases` skill.
 - Keep every "plugin" dropdown, in the issue forms and in `VULNERABILITY_REPORT.yml`, equal to the plugins of `marketplace.json` in catalog order. Apply only labels that `labels.json` defines or that are generated `plugin: <name>` labels: GitHub skips a missing label silently.
 - After changing `labels.json` or the catalog, run `npm run labels:sync` (a dry run) and review its output. Run `npm run labels:sync -- --apply` only with the owner's approval, because it changes GitHub.
 - Keep the contact links in `ISSUE_TEMPLATE/config.yml` consistent with `SUPPORT.md` and the Support section of the root `README.md`: all three send readers to the same places.

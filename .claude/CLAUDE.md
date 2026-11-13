@@ -17,9 +17,9 @@
 - **Be a strategic partner, not a yes-man.** Anticipate defects before they ship, reject weak ideas with the reason and a better option, and raise conflicts and risks before acting.
 - **Work from current sources, not from what you remember,** as the Verification section sets.
 
-## Work areas
+## Workstreams
 
-The work divides into three areas. The first two never mix: a rule, tool or file of one never becomes a requirement of the other.
+The project's work divides into three workstreams. The first two never mix: a rule, tool or file of one never becomes a requirement of the other. Before a task, find the skill that governs it in `.claude/rules/skills.md` and load it.
 
 1. Maintainer tools and documentation
 2. Plugins and distribution
@@ -27,20 +27,24 @@ The work divides into three areas. The first two never mix: a rule, tool or file
 
 ### Maintainer tools and documentation
 
-- Cover everything outside `plugins/`: tools, scripts, the catalog, records and repository documentation, used only by Nery and Claude.
-- Save repository feedback, facts and lessons in `.claude/memory/`, one file each, indexed in `MEMORY.md`; dates go there, never in instructions.
-- Keep memory publishable: no personal, client or business data, and no credentials.
+- Covers what runs and documents the project, for Nery and Claude only: the tools that build and check it, the maintainer scripts (validators, checkers, generators and their tests) and the skills that drive them, audits and reviews, decision records, pending and resolved technical debt, audit reports, and the repository's documentation, such as READMEs, GitHub collaboration files and the user guides.
+- Runs on Node 26 LTS with npm 12, matching `.nvmrc`, and on Python 3.15 through uv; every maintainer command runs through `npm run <script>`. Report a version mismatch to Nery before maintainer work.
+- For all maintainer guidelines, see `.claude/rules/npm-and-uv.md` (runtimes, package managers and tools), `.claude/rules/linting.md` (formatting, linting and type checking), `.claude/rules/architecture/scripts.md` (scripts and their tests), `.claude/rules/architecture/claude-dir.md` (Claude's setup, records, memory and handoffs) and `.claude/rules/architecture/docs.md` (user guides).
+- Repository memory, which holds this project's dated facts and lessons:
+
+@memory/MEMORY.md
 
 ### Plugins and distribution
 
-- Keep each plugin self-contained in `plugins/<plugin>/`, from design and scaffolding to isolated testing, versioning and its own documentation.
-- Release it with maintainer tools: its tag, `release.yml` and its catalog entry.
+- Covers each plugin's whole life, self-contained in its own folder: design, scaffolding, development, isolated testing, versioning, its documentation, and its release through the maintainer tools.
+- Tests each plugin as users receive it; its hook and mod tests ship inside it, and evals run only on the plugins Nery chose.
+- For all plugin guidelines, see `.claude/rules/plugins.md` (design, safety, names, versions, surfaces, portability and prerequisites), `.claude/rules/testing.md` (testing, and what runs locally and in CI) and `.claude/rules/hook-scripts.md` (hook scripts).
 
 ### CI/CD and GitHub
 
+- Covers the GitHub Actions workflows, the release workflow included, and the GitHub files: issue forms, pull request templates, labels and Dependabot.
 - Open a pull request only with Nery's approval, and ask before opening it.
-- Send every change inside `plugins/` through a pull request, skill, agent and command files included, except documentation-only changes that alter neither behavior nor what users installed.
-- Outside `plugins/`, and for documentation-only plugin changes, open a pull request only when Nery asks for one.
+- For all CI and GitHub guidelines, including which changes need a pull request, see `.claude/rules/architecture/github.md`.
 
 ## Verification
 
@@ -49,62 +53,6 @@ The work divides into three areas. The first two never mix: a rule, tool or file
 - Nothing is published until it is confirmed to be actionable, executable, not deprecated, aligned with current best practices and the official documentation, and built on the best current Claude features available for its purpose.
 - Work counts as done only when its checks are shown with their raw output.
 - Problems are reported as soon as they are found, including defects in work already published.
-
-## Stack
-
-### Maintenance
-
-- **Runtimes and package managers:** Node 26 LTS with npm 12, and Python 3.15 through uv. Every maintainer command runs through `npm run <script>` in `package.json`.
-- **Formatting, linting and type checking:**
-  - Python: ruff formats and lints; basedpyright type-checks.
-  - Shell (Bash): shfmt formats; ShellCheck lints.
-  - TypeScript and JavaScript: Biome formats and lints, together with JSON, YAML and the Markdown written for people; `tsc` type-checks.
-- Before maintainer work, check that `node --version` matches `.nvmrc` and `npm --version` is 12, and report a mismatch to the owner.
-- Before installing, adding or upgrading a maintainer tool or dependency, read `.claude/rules/npm-and-uv.md`: it sets the versions, how each tool is installed, and how `.nvmrc` stays in step with the machine's Node.
-- Before adding or changing a maintainer script, read `.claude/rules/architecture/scripts.md`.
-- Before changing code, or the configuration of a formatter, linter or type checker, read `.claude/rules/linting.md`: it maps each file type to its checks and says how to handle a finding.
-
-### Plugins
-
-- **Runtime:** each plugin's own dependencies, declared in the Prerequisites of its README.
-- **Development:** `claude --plugin-dir plugins/<plugin>` loads a plugin from its folder and `/reload-plugins` applies each edit; `claude plugin validate --strict` checks it, and `npm run check:consistency` keeps names, versions and the catalog in agreement.
-- **Distribution:** the `release:*` npm scripts prepare each version, and `release.yml` publishes it.
-- Before designing, creating or changing a plugin, read `.claude/rules/plugins.md`. It holds the plugin-scope conventions: design, safety, license, names, versions, target surfaces, portability and prerequisites, and evals.
-- Before writing a hook script, in a plugin or in `.claude/hooks/`, read `.claude/rules/hook-scripts.md`.
-
-### CI/CD and GitHub
-
-- **GitHub Actions:** `release.yml` tags each untagged plugin version and creates its GitHub Release, but it waits for a `Validate` workflow: check `.github/workflows/` before relying on it, and release with the `plugin-releases` skill. actionlint and zizmor check every workflow.
-- **GitHub files:** issue forms, pull request templates, labels and Dependabot, checked by `npm run lint:github`.
-- Before changing a workflow or any other file under `.github/`, read `.claude/rules/architecture/github.md`.
-
-### Testing
-
-- **Maintainer scripts:** Python `unittest`, in `scripts/testers/` (`npm run test:scripts`).
-- **Plugins with command hooks:** tests in `plugins/<plugin>/tests/`, which run each hook as Claude Code does, with its JSON on stdin, using only the standard library.
-- **Mods:** `*.test.ts` and `*.test.tsx` files in `plugins/<plugin>/tests/`, run with `claude plugin test`.
-- **Evals:** `claude plugin eval`, only on the plugins the owner chose.
-- **What users receive:** `npm run check:install` installs a plugin in a throwaway configuration and checks the installed copy.
-- Before writing, changing or running a test, or deciding what runs locally and what in CI, read `.claude/rules/testing.md`.
-
-### Skills
-
-Load the skill that governs a task before starting it.
-
-- **Plugin lifecycle,** project skills in `.claude/skills/`:
-  - versions and bumps: `plugin-versioning`
-  - releases, tags and GitHub Releases: `plugin-releases`
-  - renames, removals and merges: `plugin-catalog-changes`
-  - READMEs, CHANGELOGs, licenses, notices and the policy documents: `docs-maintenance`
-  - plugin directory icons: `plugin-icons`
-- **Maintenance,** skills of this marketplace's own plugins:
-  - ADRs and technical debt: `project-maintainer:write-records`
-  - session handoffs: `project-maintainer:write-handoff`
-  - CLAUDE.md and rules: `instruction-engineering:claude-md-and-rules`
-  - hooks: `hook-engineering:hook-development`
-  - the plugin CLI and the official plugin docs: `plugin-engineering:cli-commands-guide` and `plugin-engineering:public-marketplace-dev`
-  - pull requests, workflows and GitHub files: `github-operations:auto-pr-lifecycle`, `github-operations:claude-github-actions` and `github-operations:github-files-setup`
-- Before creating or changing a skill, read `.claude/rules/skills.md`.
 
 ## Repository map
 

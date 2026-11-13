@@ -8,8 +8,26 @@ paths:
 
 This repository holds two kinds of skills, and they never mix:
 
-- **Project skills,** in `.claude/skills/<skill>/`: maintainer procedures for this marketplace, listed in `.claude/CLAUDE.md` (Stack › Skills). They run only in this repository and never reach users.
+- **Project skills,** in `.claude/skills/<skill>/`: maintainer procedures for this marketplace. They run only in this repository and never reach users.
 - **Plugin skills,** in `plugins/<plugin>/skills/<skill>/`: part of a plugin, installed on users' machines and run in their projects.
+
+## Which skill governs each task
+
+Load the skill before starting the task.
+
+- Plugin lifecycle, with the project skills:
+  - versions and bumps: `plugin-versioning`
+  - releases, tags and GitHub Releases: `plugin-releases`
+  - renames, removals and merges: `plugin-catalog-changes`
+  - READMEs, CHANGELOGs, licenses, notices and the policy documents: `docs-maintenance`
+  - plugin directory icons: `plugin-icons`
+- Maintenance, with the skills of this marketplace's own plugins:
+  - ADRs and technical debt: `project-maintainer:write-records`
+  - session handoffs: `project-maintainer:write-handoff`
+  - CLAUDE.md and rules: `instruction-engineering:claude-md-and-rules`
+  - hooks: `hook-engineering:hook-development`
+  - the plugin CLI and the official plugin docs: `plugin-engineering:cli-commands-guide` and `plugin-engineering:public-marketplace-dev`
+  - pull requests, workflows and GitHub files: `github-operations:auto-pr-lifecycle`, `github-operations:claude-github-actions` and `github-operations:github-files-setup`
 
 ## Project skills
 
