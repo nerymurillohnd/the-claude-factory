@@ -1,76 +1,78 @@
 # Audit a workflow that runs Claude in auto mode
 
-In auto mode Claude Code runs a tool call without asking when its safety review passes it. In a workflow nobody can answer a prompt, so auto mode decides most of what the agent does. It is a review, not a boundary: what limits an injected or mistaken agent is what the job lets it reach. This reference tells you how to find auto mode, how exposed the workflow is, which protective layers it needs, and how severe each missing layer is.
+In auto mode Claude Code runs a tool call no rule covers when its safety review passes it. In a workflow nobody can answer a prompt, so auto mode decides most of what the agent does. It is a review, not a boundary: what limits an injected or mistaken agent is what the job lets it reach. Since claude-code-action v1.0.273 auto is the default, so most workflows that run Claude are in scope here, whether or not they ask for it.
 
-## Contents
+**Contents**
+- [1. Is auto mode the effective mode?](#1-is-auto-mode-the-effective-mode)
+- [2. Who can start the run?](#2-who-can-start-the-run)
+- [3. Check each layer](#3-check-each-layer)
+- [4. Rate and report](#4-rate-and-report)
+- [What auto mode can't be relied on for](#what-auto-mode-cant-be-relied-on-for)
 
-- 1. Is auto mode on?
-- 2. Who can start the run?
-- 3. Check each layer
-- 4. Rate and report
-- What auto mode can't be relied on for
-- Verify against
+## 1. Is auto mode the effective mode?
 
-## 1. Is auto mode on?
+1. Take the commit the step runs from [the drift check](version-drift.md#find-the-commit-a-step-runs).
+2. Read the step's inputs, its `env:`, its `claude_args` and its `settings` input, and find its row in the effective-mode table in [Permission mode](action-contract.md#permission-mode). A `--permission-mode` in `claude_args`, in the space form, decides it.
+3. Decide:
+   - **auto:** run this reference.
+   - **A floating ref that can't be resolved** (`v1`, `main`, with no way to read upstream): count it as auto and say why.
+   - **acceptEdits or Manual:** this reference doesn't apply, unless a patch would turn auto on; then [Validate the patches](workflow-audit.md#validate-the-patches) runs it on the patched file.
+4. Record the effective mode and the row that decided it. It is the "mode before" of every finding on the step.
 
-Auto mode is on for a claude-code-action step when any of these holds:
-
-- `claude_args` holds `--permission-mode auto`. In tag mode the action passes `--permission-mode acceptEdits` first and the user's `claude_args` after it, so the user's flag wins.
-- The action's `settings` input sets `permissions.defaultMode: "auto"`. That input becomes Claude's user settings, so it applies with no flag.
-
-A `defaultMode` of `auto` in the repository's `.claude/settings.json` does not turn it on. When neither of the two holds, this reference doesn't apply; go back to `workflow-audit.md`.
-
-Auto mode needs a model that supports it: on the Anthropic API, Claude Opus 4.6 or later, Sonnet 4.6 or later, Haiku 5.5 or a Fable model; on Bedrock, Vertex and Foundry, Sonnet 5 or later, Opus 4.7 or later, Haiku 5.5 or a Fable model. Read `--model`, `--fallback-model` and the `settings` input's `model`. When the model doesn't support it, Claude Code starts in Manual mode instead, and a run nobody can answer then denies every call that no rule allows: the workflow fails closed, which is a functional finding, not a security one. An organization can also turn auto mode off in managed settings, with the same result.
+A `defaultMode` in the repository's own `.claude/settings.json` doesn't change what the action decides.
 
 ## 2. Who can start the run?
 
 The severity of every missing layer depends on who can reach the agent. Classify the workflow before checking the layers:
 
-- **Open to outsiders** when any GitHub user can start it or put text in front of Claude: triggers `issues`, `issue_comment`, `discussion`, `discussion_comment`, `pull_request_review`, `pull_request_review_comment` or `pull_request_target`; any `allowed_non_write_users`; `allowed_bots: "*"`; or a public repository where the job reads issue, comment or pull request text.
-- **Collaborators only** when only people with write access can start it, as with the action's default actor check in tag mode on a private repository, or `workflow_dispatch` and `schedule` with no outside text in the prompt.
+- **Open to outsiders** when any GitHub user can start it or put text in front of Claude: triggers `issues`, `issue_comment`, `discussion`, `discussion_comment`, `pull_request_review`, `pull_request_review_comment` or `pull_request_target`; any `allowed_non_write_users`; `allowed_bots: "*"`; a public repository where the job reads issue, comment or pull request text; or a `workflow_run` whose prompt reads a pull request run's artifacts or logs.
+- **Collaborators only** when only people with write access can start it and no outside text reaches the prompt, as with tag mode's actor check on a private repository, or `workflow_dispatch` and `schedule` with no outside text in the prompt.
 
 When you can't tell, treat the workflow as open to outsiders and say why.
 
 ## 3. Check each layer
 
-Check every layer, and record for each one the line that proves it, or "missing".
+Check every layer, and record for each one the line that proves it, or "missing". The patch for a missing layer comes from the "What proves it" column; its costs are in [Costs of each change](auth-and-permissions.md#costs-of-each-change), and every patch freezes the mode ([Permission mode in patches](auth-and-permissions.md#permission-mode-in-patches)).
 
 | Layer | What proves it in the workflow | When it is missing |
 | :-- | :-- | :-- |
-| A. Token and permissions | `github_token: ${{ secrets.GITHUB_TOKEN }}` on the step, so the agent's token expires with the job and has only the job's permissions; workflow-level `permissions: {}`; job write scopes only where a tool uses them; `id-token: write` only for workload identity federation | The action's GitHub App token is used (no `github_token`), whose scope the job's `permissions:` don't limit; or the job has write scopes nothing uses |
-| B. Tools really limited | `--tools` listing only the built-in tools the job needs, such as `Bash,Read,Grep,Glob`; `--disallowedTools` naming `WebFetch`, `WebSearch` and `Monitor`, which reach the network, and `Edit`, `Write` and `NotebookEdit` when the job shouldn't change files, each as a bare name; the GitHub MCP approval and merge tools denied as `trust-boundaries.md` says | Only `--allowedTools` is set. In auto mode an allowed tool is approved in advance, not the only tool allowed: any other call goes to the safety review, and a broad grant such as `Bash(*)` is dropped. Raw `gh` with the job's token stays reachable unless the token's scope stops it |
-| C. Script caps | `CLAUDE_CODE_SCRIPT_CAPS` as JSON giving each script that writes a call limit, such as `{"edit-issue-labels.sh": 2}`, **and** `CLAUDE_CODE_SUBPROCESS_ENV_SCRUB: '1'` in `env:` or a non-empty `allowed_non_write_users` (which makes the action turn the scrub on) | Caps without the scrub do nothing; check that the JSON parses and that every writing script has a key. Caps are defense in depth: fan-out through `xargs` or `find -exec` is not counted |
-| D. Network out of the runner | Evidence that the runner can reach only the hosts the job needs: a runner group whose network configuration restricts egress (GitHub's private networking for larger runners), a self-hosted runner behind a firewall, or a first step of the third-party `step-security/harden-runner` with `egress-policy: block` | A `runs-on` label alone proves nothing, whatever its name. Ask the user how the runner's network is restricted; until they confirm, report the layer as unverified. A self-hosted runner on a public repository is a finding by itself |
-| E. Time and repetition | `timeout-minutes` on the job (the default is 360 minutes); a `concurrency` group with `cancel-in-progress: true` for runs that a new event supersedes | No timeout, or no concurrency group on a workflow that comments or labels |
-| F. Configuration Claude reads | The agent's `CLAUDE.md`, settings and skills come from the base branch, as `trust-boundaries.md` says | The job checks out a pull request's head in the workspace: its `CLAUDE.md` reaches the safety review, which reads it, and steers what auto mode lets through |
-| G. A model that supports auto mode | The model rule in section 1 | An unsupported model: the run falls back to Manual and fails closed |
+| A. Token and permissions | The agent's token is limited to what the job uses: `github_token: ${{ github.token }}` on the step with workflow-level `permissions: {}` and job write scopes only where a tool uses them, or the Claude App token with no `additional_permissions` beyond the task. `id-token: write` only for an OIDC profile or the App token | The Claude App token holds `contents`, `pull_requests` and `issues` write whatever the job's `permissions:` say ([GitHub token and the Claude App token](action-contract.md#github-token-and-the-claude-app-token)), and the task doesn't need them; or the job has write scopes nothing uses |
+| B. Tools really limited | Deny rules for what the job mustn't do: `WebFetch`, `WebSearch` and `Monitor`, which reach the network; `Edit`, `Write` and `NotebookEdit` when the job mustn't change files; the approval, merge and branch-write class from [trust-boundaries.md](trust-boundaries.md#approval-merge-and-branch-write-tools). On pull requests from outside authors, the untrusted-PR deny list in force ([Untrusted pull requests](action-contract.md#untrusted-pull-requests)) | Only `--allowedTools` is set: under auto it pre-approves, it doesn't limit. Or `restrict_untrusted_prs: false` on a workflow outside authors reach (C-17). Raw `gh` with the job's token stays reachable unless the token's scope stops it |
+| C. Script caps | The script-caps variable named in [Environment variables the action passes](action-contract.md#environment-variables-the-action-passes), as JSON giving every script that writes a call limit, **and** the subprocess scrub on (`CLAUDE_CODE_SUBPROCESS_ENV_SCRUB: '1'`, or a non-empty `allowed_non_write_users`) | Missing when the agent can write through anything other than a capped script, when the JSON doesn't parse, or when a cap names a script that doesn't exist (W-10). Caps without the scrub do nothing. Caps are documented only by the action, so count them as defense in depth |
+| D. Network out of the runner | Evidence that the runner reaches only the hosts the job needs: a runner group whose network configuration restricts egress, a self-hosted runner behind a firewall, or a first step of `step-security/harden-runner` with `egress-policy: block` | A `runs-on` label alone proves nothing, whatever its name. Ask the user how the runner's network is restricted; until they confirm, it is a Questions row. A self-hosted runner on a public repository is a finding by itself |
+| E. Time and repetition | `timeout-minutes` on the job (the default is 360 minutes); a `concurrency` group with `cancel-in-progress: true` for runs a new event supersedes | No timeout, or no concurrency group on a workflow that comments or labels. This is W-08's finding: report it once, as W-08 |
+| F. Configuration Claude reads | Nothing of the pull request's head that Claude can load: no tag-mode run on pull request events, no head checkout in the workspace, and no `--add-dir` on a head copy that keeps its `.claude/` ([trust-boundaries.md](trust-boundaries.md#configuration-claude-reads)) | Tag mode on a pull request event checks out the head itself, and nested `CLAUDE.md`, `.claude/rules/` and `.claude/skills/` load from it; or the job checks out the head; or `--add-dir` loads it. Its `CLAUDE.md` reaches the safety review, which reads it |
+| G. A model that supports auto | The model the step really runs supports auto ([Claude Code version, models and auto availability](action-contract.md#claude-code-version-models-and-auto-availability)). With no `--model`, it is Claude Code's default for the profile | An unsupported model: tag runs fall back to acceptEdits with a warning, agent runs stay in Manual and deny what no rule covers. A functional finding, not a security one |
+
+**Costs to state with each patch:**
+- A: adding `github_token` has the costs in its row of [Costs of each change](auth-and-permissions.md#costs-of-each-change), and is never added while `allowed_non_write_users` holds `*`.
+- B: a `--tools` list without `Edit` and `Write` removes code editing from mention runs. Keep them in mention workflows that change code, and use a tight `--tools` list only on prompt workflows that mustn't change files. When you can't tell what the workflow is for, ask: it is a Questions row.
+- C: the scrub removes `NPM_TOKEN`, `DATABASE_URL` and similar variables from Claude's subprocesses, never the GitHub token, and it needs a pin at v1.0.274 or later.
 
 ## 4. Rate and report
 
-Rate each missing layer with this table, then follow the severity scale in `workflow-audit.md` for the report:
+This table applies [the severity scale](workflow-audit.md#severity-scale) to auto mode's layers. Rate each missing layer with it:
 
 | Missing layer | Open to outsiders | Collaborators only |
 | :-- | :-- | :-- |
 | A, B or F | high | medium |
 | C or D | medium | low |
-| E or G | low | low |
+| E (reported as W-08) | medium | low |
+| G | low | low |
 
-For each missing layer, write the patch from the "What proves it" column, adapted to the workflow, and name what it costs: a narrower tool list can break a prompt that relied on a tool, so read the prompt and keep the tools it uses.
-
-Every workflow in auto mode also gets this residual risk in its report, whatever its layers: auto mode is a review, not a boundary; and on a runner without managed settings, a Claude Code mod can approve a call that a deny rule refuses, and in auto mode the mods Claude writes turn on without asking. Don't recommend a setting to close this until it has been tested in the action.
+- A layer you can't decide is a Questions row, not a finding ([When a check can't be decided](workflow-audit.md#when-a-check-cant-be-decided)).
+- For each missing layer, write its patch adapted to the workflow, with its costs. A narrower tool list can break a prompt that relied on a tool: read the prompt and keep the tools it uses.
+- Every workflow in auto mode also gets this residual risk in its report, whatever its layers: auto mode is a review, not a boundary; and on a runner without managed settings, a Claude Code mod that handles `tool.check` can approve a call that a deny rule refuses.
 
 ## What auto mode can't be relied on for
 
-- It blocks nothing it can't see: tool results are stripped from what the safety review reads, and a run with no prompt tool keeps working after a call is refused.
+- It blocks nothing it can't see: tool results are stripped from what the safety review reads, and a run with no one to ask keeps working after a call is refused.
 - It doesn't replace any layer above. It lowers how often a mistake becomes an action; the layers decide what a mistake can reach.
 
 ## Verify against
 
 - Claude Code, permission modes and auto mode: https://code.claude.com/docs/en/permission-modes
-- Claude Code, permissions and rule precedence: https://code.claude.com/docs/en/permissions
-- Claude Code, environment variables (`CLAUDE_CODE_SCRIPT_CAPS`, `CLAUDE_CODE_SUBPROCESS_ENV_SCRUB`): https://code.claude.com/docs/en/env-vars
+- Claude Code, permissions, rule precedence and mods: https://code.claude.com/docs/en/permissions
+- Claude Code, environment variables: https://code.claude.com/docs/en/env-vars
 - Claude Code, CLI reference (`--tools`, `--disallowedTools`): https://code.claude.com/docs/en/cli-reference
-- `anthropics/claude-code-action`, `action.yml`, `src/modes/tag/index.ts`, `base-action/src/setup-claude-code-settings.ts` and `docs/security.md`: https://github.com/anthropics/claude-code-action
 - GitHub, private networking for GitHub-hosted runners: https://docs.github.com/en/actions/concepts/runners/private-networking
-
-Checked on 12 November 2026 against `anthropics/claude-code-action@4fa93a8` (v1.0.271), which runs Claude Code 2.1.322.
