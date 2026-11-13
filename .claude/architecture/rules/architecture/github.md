@@ -20,4 +20,5 @@ The files GitHub reads from this repository.
 ## Working here
 - Keep every "plugin" dropdown, in the issue forms and in `VULNERABILITY_REPORT.yml`, equal to the plugins of `marketplace.json` in catalog order. Apply only labels that `labels.json` defines or that are generated `plugin: <name>` labels: GitHub skips a missing label silently.
 - After changing `labels.json` or the catalog, run `npm run labels:sync` (a dry run) and review its output. Run `npm run labels:sync -- --apply` only with the owner's approval, because it changes GitHub.
+- Keep the contact links in `ISSUE_TEMPLATE/config.yml` consistent with `SUPPORT.md` and the Support section of the root `README.md`: all three send readers to the same places.
 - Run `npm run lint:github` after changing a form, `config.yml` or `dependabot.yml`, and `npm run lint:workflows` after changing a workflow or `zizmor.yml`.
