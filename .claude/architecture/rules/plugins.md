@@ -68,7 +68,7 @@ A breaking-change entry in the changelog begins with `**Breaking:**`.
 ## Portability and prerequisites
 
 - Every plugin is self-contained and portable: it depends on no path, configuration, tool, software or version specific to the maintainer's machine, so any user can install and use it.
-- Keep every file, link and symlink a plugin uses inside `plugins/<plugin>/`: Claude Code copies only that folder into the user's cache, so anything outside it, such as `../../docs/`, is missing on users' machines.
+- Keep every file and relative link a plugin uses inside `plugins/<plugin>/`: Claude Code copies only that folder into the user's cache, so a link such as `../../docs/` breaks on users' machines. Use real files rather than symlinks that leave the plugin: Claude Code copies such a symlink's target when the marketplace comes from git, but skips it when the marketplace was added from a local path.
 - Every tool, software, integration or dependency a plugin needs to run, and every specific or minimum version it requires, is declared as a prerequisite in the Prerequisites section of that plugin's README.
 - Each plugin's README states its Windows support.
 

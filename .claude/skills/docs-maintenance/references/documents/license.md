@@ -43,7 +43,7 @@ Official:
 
 This repository:
 
-- Every plugin ships its own `LICENSE`, because each plugin is copied alone into the user's cache. Write it as a real file, never as a symlink to the root `LICENSE`: files outside the plugin's folder are not copied.
+- Every plugin ships its own `LICENSE`, because each plugin is copied alone into the user's cache. Write it as a real file, never as a symlink to the root `LICENSE`: a symlink that leaves the plugin's folder is skipped when the marketplace was added from a local path (code.claude.com/docs/en/plugins/host-marketplace, Share files within a marketplace with symlinks).
 - The copyright holder is the same in the root `LICENSE`, every plugin `LICENSE`, every `NOTICE.txt` and every README License line.
 
 ## Checks
