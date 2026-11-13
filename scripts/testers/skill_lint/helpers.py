@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Shared helpers for the skill-lint tests."""
 
 from __future__ import annotations

@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """What a skill's scripts load: Python sibling imports and shell source lines."""
 
 from __future__ import annotations

@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Command line of skill-lint: discover or load skills, run the rules, print the report."""
 
 from __future__ import annotations

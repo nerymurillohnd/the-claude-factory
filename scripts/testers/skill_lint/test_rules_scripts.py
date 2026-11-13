@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Tests for the script rules (SC)."""
 
 from __future__ import annotations

@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """The parts of a skill's Markdown and how one line is read: links, slugs, inline code, prose."""
 
 from __future__ import annotations

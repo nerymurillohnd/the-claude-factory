@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Tests for the skill-lint report and command line."""
 
 from __future__ import annotations

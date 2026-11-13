@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Tests for path resolution and the skill reference graph."""
 
 from __future__ import annotations

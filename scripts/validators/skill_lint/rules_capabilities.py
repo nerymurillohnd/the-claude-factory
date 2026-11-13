@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Capability rules (CA) for a skill: its inventory of injected commands, hooks and tools."""
 
 from __future__ import annotations

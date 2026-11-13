@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Resolving the paths a skill's files mention, and the graph of which file references which."""
 
 from __future__ import annotations

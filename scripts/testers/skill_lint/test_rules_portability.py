@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Tests for the portability rules (PO)."""
 
 from __future__ import annotations

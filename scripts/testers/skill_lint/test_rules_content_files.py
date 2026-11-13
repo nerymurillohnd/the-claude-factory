@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Tests for the content rules on links, reference depth and files (CO-07 to CO-12)."""
 
 from __future__ import annotations

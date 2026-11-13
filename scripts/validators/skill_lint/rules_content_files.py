@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Content rules (CO-07 to CO-12) for a skill's links, reference depth and files."""
 
 from __future__ import annotations

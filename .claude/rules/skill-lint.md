@@ -7,7 +7,7 @@ paths:
 
 ## Run
 
-- Launch skill-lint only through `npm run lint:skills`, which runs `uv run python scripts/validators/skill-lint.py` on Python 3.15 from `.venv`; never run `./scripts/validators/skill-lint.py`, whose `#!/usr/bin/env python3` line would pick the machine's OS Python.
+- Launch skill-lint only through `npm run lint:skills`, which runs `uv run python scripts/validators/skill-lint.py` on Python 3.15 from `.venv`, and its tests only through `npm run test:scripts`; never run a file under `scripts/validators/` or `scripts/testers/` as `./<file>.py`, because its `#!/usr/bin/env python3` line would pick the machine's OS Python.
 - Run `npm run test:scripts` after every change under `scripts/validators/` or `scripts/testers/`; it runs `unittest discover` on `scripts/testers/` with `-t scripts`.
 - Run `npm run lint:python` and `npm run typecheck:python` before each commit, and fix every finding without suppressing it.
 
@@ -29,6 +29,7 @@ paths:
 ## Write the code
 
 - Type ruamel.yaml through the local stubs in `scripts/typings/ruamel/yaml/`: add each new ruamel member a script uses to them, and check them against the installed version when `uv.lock` bumps ruamel.yaml.
+- Start every new `.py` file under `scripts/validators/` and `scripts/testers/` with `#!/usr/bin/env python3` and give it mode 100755 (`chmod +x`, then `git add`), as every existing one has; ruff's EXE rules fail a file whose shebang and mode disagree.
 - Import package modules absolutely (`from validators.skill_lint.model import Finding`): `ruff.toml` bans relative imports, and a bare `import skill_lint` fails at runtime.
 - Build every `Finding` from the module's `SOURCES` map, which maps each rule id to the spec's source URL.
 - Read only files inside the skill folder; never write to a skill.

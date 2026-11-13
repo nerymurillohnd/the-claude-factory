@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Tests for the skill-lint finding model."""
 
 from __future__ import annotations

@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Content rules (CO) for a skill's SKILL.md."""
 
 from __future__ import annotations

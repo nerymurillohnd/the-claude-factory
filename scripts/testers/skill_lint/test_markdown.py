@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Tests for the skill Markdown model."""
 
 from __future__ import annotations

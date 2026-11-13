@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Strict parsing of the YAML frontmatter at the top of a SKILL.md."""
 
 from __future__ import annotations

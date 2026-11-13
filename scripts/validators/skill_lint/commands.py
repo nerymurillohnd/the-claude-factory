@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Command extraction: what a skill's Markdown runs and what its scripts call."""
 
 from __future__ import annotations

@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Script rules (SC) for a skill: entry points, invocation and dependencies."""
 
 from __future__ import annotations

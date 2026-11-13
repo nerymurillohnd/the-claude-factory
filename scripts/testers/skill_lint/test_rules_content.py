@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Tests for the content rules."""
 
 from __future__ import annotations

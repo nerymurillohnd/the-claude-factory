@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """A line-based scan of a skill's Markdown into a MarkdownDoc: blocks, comments, headings."""
 
 from __future__ import annotations

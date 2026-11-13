@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Finding skills in a repository and loading their files, text and git modes."""
 
 from __future__ import annotations

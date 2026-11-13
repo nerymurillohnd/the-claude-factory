@@ -1,4 +1,5 @@
-"""Portability rules (PO) for a skill: what works only on some Claude surfaces."""
+#!/usr/bin/env python3
+"""Portability rules (PO) for a skill: what works only on some Claudesurfaces."""
 
 from __future__ import annotations
 

@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Tests for strict frontmatter parsing."""
 
 from __future__ import annotations

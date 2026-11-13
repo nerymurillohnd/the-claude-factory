@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Tests for the capability rules (CA) and the inventory."""
 
 from __future__ import annotations

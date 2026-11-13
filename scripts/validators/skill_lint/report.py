@@ -1,4 +1,5 @@
-"""Rendering of skill-lint results: summary, table, details, manifest and JSON."""
+#!/usr/bin/env python3
+"""Rendering of skill-lint results: summary, table, details, manifestand JSON."""
 
 from __future__ import annotations
 

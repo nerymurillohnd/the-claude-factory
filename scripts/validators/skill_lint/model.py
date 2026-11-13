@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """The data model shared by the skill-lint rules: findings, severities and families."""
 
 from __future__ import annotations

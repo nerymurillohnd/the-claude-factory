@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Tests for what a skill's scripts load: shell source lines and the shell check."""
 
 from __future__ import annotations
