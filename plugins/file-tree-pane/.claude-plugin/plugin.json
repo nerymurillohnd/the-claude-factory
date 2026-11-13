@@ -1,7 +1,7 @@
 {
   "name": "file-tree-pane",
   "displayName": "File Tree Pane",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "A live file explorer panel beside the chat: your project's file tree with git status, diffs and line counts, what Claude reads, writes and commits, search, file previews and your editor one key away. A Claude Code mod for productivity.",
   "author": {
     "name": "Nery Murillo",
@@ -122,7 +122,7 @@
     }
   },
   "metadata": {
-    "category": "productivity",
+    "category": "mods",
     "surfaces": [
       "claude-code"
     ]
