@@ -110,7 +110,6 @@
     "skill-diagnostics@the-claude-factory": true,
     "plugin-engineering@the-claude-factory": true
   },
-  "autoMemoryDirectory": "~/Claude/repositories/the-claude-factory/.claude/memory",
   "autoMemoryEnabled": true,
   "extraKnownMarketplaces": {
     "claude-plugins-official": {
