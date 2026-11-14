@@ -47,7 +47,8 @@ Official:
 
 This repository:
 
-- The description is written from the skill's own files, imperative, with no quoted trigger phrases and no colon followed by a space (strict YAML, checked by `.claude/hooks/skill-frontmatter.py`).
+- The description is written from the skill's own files, imperative, with no quoted trigger phrases.
+- A colon goes only after a field name. No value holds a colon or is wrapped in quotes: reword the sentence instead, so every value stays plain text that strict YAML parsers read.
 - `name` equals the directory name.
 - Never take another plugin's skill as a model.
 

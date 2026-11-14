@@ -29,12 +29,15 @@ jobs:
         with:
           ref: ${{ env.TARGET_SHA }}
           fetch-depth: 0
+      # setup-node turns npm caching on by default when devEngines.packageManager names npm, and its
+      # `npm config get cache` fails devEngines on the npm that ships with Node 26.13 (11.20.0, not
+      # ^12.2.1). This job runs no npm, and no cache belongs in a job that publishes releases.
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version-file: .nvmrc
+          package-manager-cache: false
       # release-notes.py runs through uv on the Python 3.15 that .python-version pins. It is called
-      # with uv run, not npm run: the npm that ships with Node 26.13 (11.20.0) fails devEngines
-      # (npm ^12.2.1). No cache in a job that publishes releases.
+      # with uv run, not npm run, for the same devEngines failure.
       - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
         with:
           enable-cache: false

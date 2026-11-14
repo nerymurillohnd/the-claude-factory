@@ -20,9 +20,9 @@ From code.claude.com/docs/en/plugins/host-marketplace (Release a new version), l
 
 1. **Identify the case.**
    - New plugin: its first version is `0.1.0`. Go to step 4.
-   - Only the plugin's `README.md`, `LICENSE`, `NOTICE.txt`, `tests/`, `*.test.ts(x)` or `evals/` changed: no bump. Stop.
+   - Only the plugin's `README.md`, `CHANGELOG.md`, `LICENSE`, `NOTICE.txt`, `tests/`, `*.test.ts(x)` or `evals/` changed: no bump. Stop.
    - Only `.claude-plugin/marketplace.json` changed: no plugin bump. Stop; a rename or removal goes through the `plugin-catalog-changes` skill.
-   - Anything else in `plugins/<plugin>/` changed, `CHANGELOG.md` included: bump. Continue.
+   - Anything else in `plugins/<plugin>/` changed: bump. Continue.
 2. **Choose the level** from the diff against `origin/main`; when a change mixes levels, take the highest.
    - Major: a removed or renamed skill, agent, command or plugin; changed configuration keys; a new mandatory dependency; changed behavior users rely on.
    - Minor: a new backward-compatible component, option or capability, or a higher `engines["claude-code"]` floor.
@@ -53,7 +53,7 @@ From code.claude.com/docs/en/plugins/host-marketplace (Release a new version), l
      npm run check:install -- --from local <plugin>
      ```
      It exits 0 when `claude plugin list --json` shows the plugin with no `errors`, `claude plugin details` lists its components, and `claude plugin validate --strict` (and `claude plugin test` for a mod) pass on the installed copy. Check that the printed version is the new one.
-   - when the plugin has evals and the owner approves the run, the local smoke run passes: `claude plugin eval plugins/<plugin> --case <case> --runs 1 --ablation none --no-publish`, where `<case>` is the case the owner approves, by its name in the plugin's eval suite. `--no-publish` keeps the HTML report local; without it `eval` publishes the report to claude.ai. `.claude/rules/plugins.md` (Evals) limits local runs to a reduced suite, and every run bills the owner's usage.
+   - when the plugin has evals and the owner approves the run, the local smoke run passes: `claude plugin eval plugins/<plugin> --case <case> --runs 1 --ablation none --no-publish`, where `<case>` is the case the owner approves, by its name in the plugin's eval suite. `--no-publish` keeps the HTML report local; without it `eval` publishes the report to claude.ai. `.claude/rules/plugins/evals.md` (Run) limits local runs to a reduced suite, and every run bills the owner's usage.
 8. **Open the pull request** for the change, with the owner's authorization; component changes inside `plugins/` always go through one. The version heading, its date and the changelog links are written at release time by the `plugin-releases` skill, not here.
 
 ## Conventions this skill adds to the official docs

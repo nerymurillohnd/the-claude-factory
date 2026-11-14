@@ -4,7 +4,7 @@ All notable changes to **The Claude Factory** marketplace are documented here: p
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The marketplace has no version of its own: entries are grouped by date, newest first, and every plugin carries its own version, changelog and tag. The versions 0.1.0 and 0.2.0 below are the history from before that change; their tags stay.
 
-## 2026-11-13
+## 2026-11-14
 
 ### Changed
 
@@ -13,6 +13,19 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The
 - **model-trace** 0.1.5 — listed under the new Monitoring category instead of Mods.
 - **tool-ledger** 0.1.6 — listed under the new Monitoring category instead of Mods.
 - **turn-meter** 0.1.6 — listed under the new Monitoring category instead of Mods.
+
+### Fixed
+
+- **bash-lsp-intelligence** 0.2.9 — the hook checks only the shell scripts a command or Git shows you changed, no longer reformats cloned, checked-out or ignored files, and reports a missing shfmt or ShellCheck once per session.
+- **python-lsp-intelligence** 0.3.4 — the hook checks only the Python files a command or Git shows you changed, no longer reformats cloned, checked-out or ignored files, and reports a missing ruff or basedpyright once per session.
+- **typescript6-lsp-intelligence** 0.3.6 — the hook type-checks only the files a command or Git shows you changed, so a clone, checkout or pull no longer runs it into its time limit.
+- **typescript7-lsp-intelligence** 0.4.6 — the hook type-checks only the files a command or Git shows you changed, so a clone, checkout or pull no longer runs it into its time limit.
+- **skill-diagnostics** 0.4.1 — the gate asks for an audit only of skills that Git or a commit in the session shows changed, and an unexpected failure no longer keeps Claude from stopping.
+
+## 2026-11-13
+
+### Changed
+
 - The catalog's Mods category is replaced by Monitoring: plugins are grouped by what they're for, and the Includes column still shows which ones are mods.
 
 ## 2026-11-09

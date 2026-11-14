@@ -9,7 +9,7 @@ Plugins here are relative-path entries, so users receive whatever version is on 
 
 ## Before you start
 
-Status checked on 2026-11-13: on the `claude/repo-refactor-redesign-feqwzk` branch, `release.yml` waits for a `Validate` workflow that doesn't exist, so a merge of that branch tags and releases nothing on its own; only `workflow_dispatch` runs it. Check `.github/workflows/` before step 5, and stop there if `validate.yml` is still missing. Once it exists, delete this section.
+Status checked on 2026-11-13: `release.yml` waits for a `Validate` workflow that doesn't exist yet, so a merge tags and releases nothing on its own; only `workflow_dispatch` runs it. Check `.github/workflows/` before step 5, and stop there if `validate.yml` is still missing. Once it exists, delete this section.
 
 ## Facts (official, unless marked)
 
@@ -36,6 +36,7 @@ These go beyond the docs and stay unless the owner changes them:
    - `npm run check:consistency`: names, `renames`, changelog tags, README and catalog agree
    - `claude plugin tag plugins/<plugin> --dry-run`, on a committed tree: it exits 1 while any file under the plugin is uncommitted
    - `find plugins/<plugin> -type l`: every link resolves inside the plugin, since a link outside it doesn't reach users
+   - `npm run release:notes -- <plugin> --tag` for every plugin in the catalog, as `release.yml` runs it before it checks for the tag, then `npm run release:notes -- <plugin>` for every plugin whose version has no tag yet: the tag names and the GitHub Release bodies `release.yml` will publish. Stop on a failure, because `release.yml` stops at the first one and releases none after it
    - `README.md`, `CHANGELOG.md` and `plugin.json` agree. Take the components from `claude --plugin-dir plugins/<plugin> plugin details <plugin>` and the version and minimum Claude Code version from `jq '{version, engines}' plugins/<plugin>/.claude-plugin/plugin.json`, and compare them with the README's components, Prerequisites and minimum Claude Code version, and with the `## [Unreleased]` notes.
 2. **List for the owner** and confirm each one is meant to ship. From the repository root:
    ```bash

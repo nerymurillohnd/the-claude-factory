@@ -6,13 +6,15 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.4.1] - 2026-11-14
+
 ### Fixed
 
 - The gate no longer asks Claude to audit skills nobody changed. After you cloned a repository, checked out a branch or pulled during a session, every skill in it had new file times and the gate asked for an audit of each one. Inside a Git repository, a skill now counts as changed only when Git lists a file in it as modified, untracked or staged, or when a commit made in the session touches it. Outside Git, file times decide as before.
 - A pending skill that Git shows unchanged, such as one whose edit you reverted, is dropped instead of being asked for again.
 - When a command inside the gate failed with status 2, the gate could exit with 2 and keep Claude from stopping. Every failure now exits 1, as the README states.
 
-## [0.4.0] - 2026-11-13
+## [0.4.0] - 2026-11-14
 
 ### Removed
 
@@ -100,7 +102,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - Verification gate: before the verdict, every finding is checked against the skill's files, the live official documentation and the Claude Code changelog from the user's version on (the five releases before it and every newer one); findings that don't hold up go back to their lens once; the verdict is marked provisional only when an official page or the changelog could not be reached.
 - Hook that offers an audit after a `SKILL.md` is created or changed, configurable with `on_skill_write` (`suggest`, `run`, `off`); it needs Python 3.9+ as `python3`.
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/skill-diagnostics--v0.4.0...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/skill-diagnostics--v0.4.1...HEAD
+[0.4.1]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/skill-diagnostics--v0.4.1
 [0.4.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/skill-diagnostics--v0.4.0
 [0.3.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/skill-diagnostics--v0.3.0
 [0.2.2]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/skill-diagnostics--v0.2.2
