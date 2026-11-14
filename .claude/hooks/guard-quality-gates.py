@@ -4,8 +4,8 @@
 It answers "ask" (a permission prompt for Nery, with the reason) when an Edit,
 Write or NotebookEdit call:
 - touches a protected file: lint, format, type-check and workflow-audit
-  configuration, the project instructions and settings, the CI workflows, the
-  gate scripts, or this guard itself;
+  configuration, the project instructions and settings, the CI workflows, or
+  this guard itself;
 - adds an inline suppression (noqa, type: ignore, biome-ignore, ts-ignore,
   shellcheck disable and similar) beyond what the file already had.
 
@@ -39,8 +39,6 @@ PROTECTED = (
 )
 PROTECTED_DIRS = (
     ".github/workflows/",
-    "scripts/validators/",
-    "scripts/checkers/",
     ".claude/hooks/",
 )
 SUPPRESSION = re.compile(

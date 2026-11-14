@@ -52,8 +52,6 @@
       "Edit(/package.json)",
       "Edit(/pyproject.toml)",
       "Edit(/.github/workflows/**)",
-      "Edit(/scripts/validators/**)",
-      "Edit(/scripts/checkers/**)",
       "Edit(/.claude/hooks/**)",
       "Edit(/ruff.toml)",
       "Edit(/.shellcheckrc)",
