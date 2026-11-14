@@ -1,10 +1,10 @@
 ---
-status: accepted
+status: superseded
 date: 2026-11-12
 decision-makers:
   - "Nery (project owner)"
 supersedes: none
-superseded-by: none
+superseded-by: ADR_2026-11-14_biome-lints-all-markdown-and-skips-only-formatting-instructions
 ---
 
 # Biome formats Markdown people read, never Markdown Claude reads as instructions

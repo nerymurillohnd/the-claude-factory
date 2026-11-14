@@ -43,6 +43,7 @@ Add an item only when all of these hold:
 | DEBT-001 | No check keeps the READMEs semantically consistent with the manifests and the catalog | 🟠 Blocked |
 | DEBT-003 | Two CLI checks can't join npm run validate while five mods fail them | 🟠 Blocked |
 | DEBT-005 | frontmatter-lint can't join npm run lint while five plugins break the no-colon, no-quotes rule | 🟠 Blocked |
+| DEBT-006 | npm run lint:js fails on 26 Biome findings in plugin files | 🟠 Blocked |
 
 ## 📂 Open items
 
@@ -155,6 +156,33 @@ Add an item only when all of these hold:
 - **Next action:** the owner schedules the fixes; each plugin rewords its values without colons, quotes or leading brackets in its own pull request with a patch bump. Then chain `npm run lint:frontmatter` into `npm run lint`.
 - **Review condition:** `npm run lint:frontmatter` exits 0.
 - **Related records:** ADR_2026-11-14_frontmatter-lint-forbids-colons-and-quotes-in-values.
+
+### DEBT-006 — npm run lint:js fails on 26 Biome findings in plugin files
+
+| Field | Value |
+| --- | --- |
+| **Status** | 🟠 Blocked |
+| **Category** | quality |
+| **Owner** | unassigned |
+| **Logged** | 2026-11-14 |
+
+#### 🔎 Evidence
+
+- **Confirmed facts:**
+  - `npx biome check --error-on-warnings --max-diagnostics=none .` (Biome 2.6.6) on 2026-11-14, on branch `ccr-7fcd6ef3-rku7l1`, checks 654 files and finds 26 errors, all under `plugins/`:
+    - Markdown, found once instruction Markdown is linted: `useFencedCodeLanguage` ×13 (github-operations `claude-github-actions/references/claude-step-diagnosis.md` and `version-drift.md`; plugin-engineering `public-marketplace-dev/SKILL.md`, `references/03-feature-references/mcp.md` and `skills.md`; skill-diagnostics `skills-best-practices/SKILL.md`; svelte-development `svelte-docs-and-autofixer/SKILL.md` and `svelte-lsp-intelligence/SKILL.md`), `useSingleTopLevelHeading` ×1 (skill-diagnostics `assets/brief-template.md`), `useTopLevelHeading` ×1 (skill-diagnostics `assets/reviewer-report.md`), `useConsistentHeadingLevel` ×1 (github-operations `cleanup-and-debug/assets/cleanup-plan.md`).
+    - Code, already failing before this change: `noArrayForEach` ×4 (file-tree-pane `hooks/diff.ts`, model-trace `hooks/names.ts` ×2, tailwind-development `mcp/format.mjs`), `noNegatedArrayPredicate` ×4 (file-tree-pane `hooks/register.tsx`, project-maintainer `hooks/debt.ts` ×2, tailwind-development `mcp/config.mjs`), `noUselessLengthCheck` ×1 (project-maintainer `hooks/guard.ts`), and the format of `plugins/github-operations/README.md`.
+  - No maintainer file has a Biome finding.
+- **Inferences:** none.
+- **Open questions:** none.
+
+#### 📈 Impact and next step
+
+- **Impact / risk:** `npm run lint` and `npm run check` fail, so they cannot gate a change until these are fixed, and a new finding hides among the old ones.
+- **Why it is not fixed now:** each fix is a plugin change in its own pull request, with a version bump for any component file; the owner schedules plugin fixes, and github-operations waits on its 0.8.0 release.
+- **Next action:** the owner schedules the fixes per plugin: file-tree-pane, model-trace, project-maintainer, tailwind-development, github-operations, plugin-engineering, skill-diagnostics and svelte-development.
+- **Review condition:** `npm run lint:js` exits 0.
+- **Related records:** ADR_2026-11-14_biome-lints-all-markdown-and-skips-only-formatting-instructions.
 
 <!--
 Entry format. Copy this block above this comment for each new item and add its row to the Index.
