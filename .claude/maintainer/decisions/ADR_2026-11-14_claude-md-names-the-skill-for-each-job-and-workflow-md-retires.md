@@ -68,4 +68,4 @@ Every other term of ADR_2026-11-13_claude-configuration-architecture-on-the-owne
 ## More information
 
 - The owner decided on 2026-11-14, in this session, and approved the plan `.claude/maintainer/plans/2026-11-14-merge-config-branch-and-retire-workflow.md`.
-- Open for the owner: whether a `plugin-lifecycle` skill is still wanted for anything besides the stage catalog, such as the orphaned templates.
+- The owner dropped the `plugin-lifecycle` skill entirely on 2026-11-14: the non-document templates stay in `.claude/templates/` and `.claude/references/`, where `claude-dir.md` places them, and `plugin-engineering:public-marketplace-dev` covers building a plugin end to end.
