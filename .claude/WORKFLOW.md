@@ -45,6 +45,7 @@ The commands of each lifecycle stage. It lists only Claude Code commands and the
 - `npm run lint:skills` — checks every skill (`plugins/*/skills/*/SKILL.md` and `.claude/skills/*/SKILL.md`) with skill-lint. It changes no file and exits 0 with no error, 1 on an error (or on a warning with `--strict`), and 2 on a usage error.
 - `npm run lint:skills -- <skill folder>` — checks one skill; pass `--only CO,SC`, `--strict`, `--manifest` or `--json` after `--` to narrow or reshape the report.
 - Report each defect `lint:skills` finds to the owner, one question per rule id, and fix it or record it as debt only after the owner decides.
+- `npm run lint:frontmatter` — checks the frontmatter of every skill, agent and command in `plugins/` and `.claude/`: strict YAML (FM-01), no colon in a value (FM-02), no quoted value (FM-03); only a `<plugin>:<skill>` item of `skills` keeps its colon. Pass files or folders after `--` to check those, or `--json`. It changes no file and exits 0 with no finding, 1 on a finding, 2 on a usage error; outside `lint` while DEBT-005 is open.
 - `npm run lint:js` — Biome on the JavaScript, TypeScript, JSON, Markdown and YAML files.
 - `npm run lint:python` — ruff lint and format check.
 - `npm run lint:shell` — ShellCheck and the shfmt check on every shell script.
