@@ -6,6 +6,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The
 
 ## 2026-11-14
 
+### Changed
+
+- **github-operations** 0.8.0 — `claude-github-actions` checks which `claude-code-action` version a workflow runs, audits auto-mode workflows and knows SE-15 to SE-22; `github-files-setup` applies labels with the new `labels-sync.py` and works where GraphQL or `gh` is unavailable. **Breaking:** every patch to a `claude-code-action` step now states the step's permission mode, `check-forms.py` no longer uses uv, and `github-files-setup` no longer pre-approves commands.
+- **skill-diagnostics** 0.4.0 — **Breaking:** the `/skill-diagnostics:evals` workflow is removed; run evals with `claude plugin eval` or `skill-creator`.
+- **model-trace** 0.1.5 — listed under the new Monitoring category instead of Mods.
+- **tool-ledger** 0.1.6 — listed under the new Monitoring category instead of Mods.
+- **turn-meter** 0.1.6 — listed under the new Monitoring category instead of Mods.
+
 ### Fixed
 
 - **bash-lsp-intelligence** 0.2.9 — the hook checks only the shell scripts a command or Git shows you changed, no longer reformats cloned, checked-out or ignored files, and reports a missing shfmt or ShellCheck once per session.
@@ -18,11 +26,6 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The
 
 ### Changed
 
-- **github-operations** 0.8.0 — `claude-github-actions` checks which `claude-code-action` version a workflow runs, audits auto-mode workflows and knows SE-15 to SE-22; `github-files-setup` applies labels with the new `labels-sync.py` and works where GraphQL or `gh` is unavailable. **Breaking:** every patch to a `claude-code-action` step now states the step's permission mode, `check-forms.py` no longer uses uv, and `github-files-setup` no longer pre-approves commands.
-- **skill-diagnostics** 0.4.0 — **Breaking:** the `/skill-diagnostics:evals` workflow is removed; run evals with `claude plugin eval` or `skill-creator`.
-- **model-trace** 0.1.5 — listed under the new Monitoring category instead of Mods.
-- **tool-ledger** 0.1.6 — listed under the new Monitoring category instead of Mods.
-- **turn-meter** 0.1.6 — listed under the new Monitoring category instead of Mods.
 - The catalog's Mods category is replaced by Monitoring: plugins are grouped by what they're for, and the Includes column still shows which ones are mods.
 
 ## 2026-11-09

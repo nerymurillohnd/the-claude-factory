@@ -14,7 +14,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - A pending skill that Git shows unchanged, such as one whose edit you reverted, is dropped instead of being asked for again.
 - When a command inside the gate failed with status 2, the gate could exit with 2 and keep Claude from stopping. Every failure now exits 1, as the README states.
 
-## [0.4.0] - 2026-11-13
+## [0.4.0] - 2026-11-14
 
 ### Removed
 
