@@ -42,6 +42,7 @@ Add an item only when all of these hold:
 | --- | --- | --- |
 | DEBT-001 | No check keeps the READMEs semantically consistent with the manifests and the catalog | 🟠 Blocked |
 | DEBT-003 | Two CLI checks can't join npm run validate while five mods fail them | 🟠 Blocked |
+| DEBT-005 | frontmatter-lint can't join npm run lint while five plugins break the no-colon, no-quotes rule | 🟠 Blocked |
 
 ## 📂 Open items
 
@@ -113,7 +114,8 @@ Add an item only when all of these hold:
     - `plugins/turn-meter`: `tool.call` and `command.run{command=turn-meter}`, in `./register.tsx`
   - `npm run validate:portable` runs `claude plugin validate --profile directory --strict` on each plugin. On 2026-11-13 it fails on `file-tree-pane`, `model-trace`, `project-maintainer`, `tool-ledger` and `turn-meter`. `npm run check:install -- --from local turn-meter` shows the cause for `turn-meter`: `TS2741: Property 'isCollapsed' is missing`.
   - Both scripts stay out of `validate` and `check`. `validate:claude` and `validate:mods`, which pass, joined `validate`.
-- **Inferences:** the same mods-API type errors make `npm run validate` fail today on those plugins, so the mods may be broken for users on current Claude Code builds.
+  - On 2026-11-14, with Claude Code 2.1.325, plain `claude plugin validate --strict` also exits 1 on `model-trace`, `tool-ledger` and `turn-meter`, at `main` (39b0110): `error TS2769: No overload matches this call … 'mode' does not exist in type … ToolInputOf<"WebSearch", …>` (model-trace lines 230 and 351). So `npm run validate` fails on them too.
+- **Inferences:** the same mods-API type errors may mean the mods are broken for users on current Claude Code builds; whether 2.1.325 changed the WebSearch input type is not checked against the release notes.
 - **Open questions:** none.
 
 #### 📈 Impact and next step
@@ -123,6 +125,36 @@ Add an item only when all of these hold:
 - **Next action:** the owner schedules the fixes for the five plugins. Once `validate:hooks-catch` and `validate:portable` exit 0, chain both into `npm run validate`.
 - **Review condition:** both scripts exit 0.
 - **Related records:** ADR_2026-11-13_five-scripts-cover-release-and-consistency-checks.
+
+### DEBT-005 — frontmatter-lint can't join npm run lint while five plugins break the no-colon, no-quotes rule
+
+| Field | Value |
+| --- | --- |
+| **Status** | 🟠 Blocked |
+| **Category** | quality |
+| **Owner** | unassigned |
+| **Logged** | 2026-11-14 |
+
+#### 🔎 Evidence
+
+- **Confirmed facts:**
+  - `npm run lint:frontmatter` on 2026-11-14, on branch `ccr-7fcd6ef3-rku7l1` after 50662ee, reports 53 files checked and 16 findings, exit 1:
+    - `plugins/github-operations`: FM-01 in the `description` of `agents/pr-lifecycle/pr-fixer.md`, `agents/pr-lifecycle/pr-tracker.md` and `agents/repo-hygiene/health-diagnostics.md`; FM-03 in the `argument-hint` of `commands/init-cleanup-and-debug.md`, `commands/init-pr-lifecycle.md` and the `auto-pr-lifecycle`, `claude-github-actions` and `cleanup-and-debug` skills.
+    - `plugins/instruction-engineering`: FM-02 in the block-scalar `description` of `agents/reviewer.md`.
+    - `plugins/plugin-test-bench`: FM-03 in the `argument-hint` of the `review-evals` and `test-install` skills.
+    - `plugins/prompt-writer`: FM-02 in the hook `prompt` of the `prompt-writer` skill.
+    - `plugins/svelte-development`: FM-03 in `metadata.upstream` and `metadata.base` of the `svelte-best-practices` and `svelte-docs-and-autofixer` skills.
+  - `claude plugin validate --strict plugins/github-operations` exits 0 on the same files (Claude Code 2.1.325).
+- **Inferences:** none.
+- **Open questions:** github-operations 0.8.1 must wait until 0.8.0 has its tag, or `release.yml` never tags 0.8.0.
+
+#### 📈 Impact and next step
+
+- **Impact / risk:** the 16 values break the owner's frontmatter rule, and the three FM-01 agents fail strict YAML parsers other than Claude Code's. Until they are fixed, `lint:frontmatter` stays out of `npm run lint` and `npm run check`, so nothing stops a new violation.
+- **Why it is not fixed now:** the fixes are plugin-scope changes with version bumps in five plugins, and the github-operations one waits on the 0.8.0 release. The owner schedules plugin fixes.
+- **Next action:** the owner schedules the fixes; each plugin rewords its values without colons, quotes or leading brackets in its own pull request with a patch bump. Then chain `npm run lint:frontmatter` into `npm run lint`.
+- **Review condition:** `npm run lint:frontmatter` exits 0.
+- **Related records:** ADR_2026-11-14_frontmatter-lint-forbids-colons-and-quotes-in-values.
 
 <!--
 Entry format. Copy this block above this comment for each new item and add its row to the Index.
