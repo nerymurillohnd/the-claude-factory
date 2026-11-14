@@ -20,7 +20,7 @@
 ## Stack
 
 - **Runtimes:** Node 26 LTS with npm 12, and Python 3.15 managed with uv.
-- **Formatting and linting:** Biome for TypeScript, JavaScript, JSON, YAML and the Markdown written for people; ruff for Python; shfmt and ShellCheck for shell.
+- **Formatting and linting:** Biome for TypeScript, JavaScript, JSON, YAML and Markdown, formatting all but the Markdown Claude reads as instructions; ruff for Python; shfmt and ShellCheck for shell.
 - **Type checking:** `tsc` for TypeScript and basedpyright for Python.
 - **Tests:** `unittest` for the maintainer scripts, `claude plugin test` for mods, and standard-library tests for hooks.
 - **Plugins:** the Claude Code plugin CLI: `validate`, `test`, `eval`, `tag` and `--plugin-dir`.
