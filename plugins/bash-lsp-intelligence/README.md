@@ -363,10 +363,10 @@ An `.editorconfig`, a `.shellcheckrc` or `SHELLCHECK_OPTS` of your own replaces 
   - `PostToolUse` on `Edit|Write|Bash` runs `node hooks/check.mjs` through `bash` (60-second limit), which runs `shfmt -w` (it rewrites the file in place) and then `shellcheck` on each shell script the call changed and tells Claude to fix what they find.
   - `PostToolUseFailure` on `Bash` runs the same script after a command that fails, so scripts a failed command changed are checked too.
 
-  To find the changed scripts of a Bash call, the script uses the list Claude Code passes, or else `git rev-parse --is-inside-work-tree` and `git ls-files --modified --others --exclude-standard` in a Git repository, or a walk of at most 20,000 files of the project otherwise (never your home folder or the disk root). It finds `shfmt` and `shellcheck` with `sh -c 'command -v …'`, then runs them on at most 20 scripts per call, each with a 50-second limit. It skips `node_modules`, `.venv`, `venv` and `site-packages`. Hooks run on their own, with your access and without a permission prompt.
+  To find the changed scripts of a Bash call, the script uses the list Claude Code passes, or else `git rev-parse --is-inside-work-tree` and `git ls-files --modified --others --exclude-standard` plus `git diff --cached --name-only --relative` (the staged files) in a Git repository, or a walk of at most 20,000 files of the project otherwise (never your home folder or the disk root). After that walk, a script inside a Git repository below your project counts only when those Git commands list it there, so a repository you clone, a branch you check out or a pull is never checked or reformatted. When the walk finds more than 20 shell scripts outside any Git repository, the hook checks none of them and tells Claude. From the list Claude Code passes, it drops the scripts Git ignores, which it finds with `git check-ignore --stdin -z`: what a command writes into an ignored folder, such as the hook scripts a package manager generates on install, is not checked or reformatted. It finds `shfmt` and `shellcheck` with `sh -c 'command -v …'`, then runs them on at most 20 scripts per call, each with a 50-second limit. It skips `node_modules`, `.venv`, `venv` and `site-packages`. Hooks run on their own, with your access and without a permission prompt.
 - **MCP servers:** none.
 - **Network:** none.
-- **Files written:** `shfmt -w` rewrites the shell scripts it formats, in place. The plugin writes nothing else.
+- **Files written:** `shfmt -w` rewrites the shell scripts it formats, in place. When shfmt or ShellCheck isn't installed, the hook writes one empty marker file per session and tool to `${CLAUDE_PLUGIN_DATA}/notices/`, so you get that notice once per session; it deletes markers older than 7 days. When that variable is unset or empty, the hook keeps no marker, in your system's temporary directory or anywhere else, so the notice repeats on every call. The plugin writes nothing else.
 - **Privacy:** the author collects no data. The marketplace's [privacy policy](https://github.com/nerymurillohnd/the-claude-factory/blob/main/PRIVACY.md) covers this plugin and the outside services it can reach.
 
 ## 🔄 Updating
@@ -403,7 +403,7 @@ Installed with `--scope project`:
 claude plugin uninstall bash-lsp-intelligence@the-claude-factory --scope project
 ```
 
-Uninstalling from the last scope it's installed at also deletes its saved options and data directory, unless you add `--keep-data`. The plugin keeps nothing in its data directory. bash-language-server, shfmt and ShellCheck stay installed; remove them with the tool you installed them with.
+Uninstalling from the last scope it's installed at also deletes its saved options and data directory, unless you add `--keep-data`. The data directory holds only the empty marker files under `notices/` that keep the missing-tool notice to once per session. bash-language-server, shfmt and ShellCheck stay installed; remove them with the tool you installed them with.
 
 ## 🧭 Compatibility
 
@@ -446,13 +446,13 @@ ShellCheck must be on the same `PATH` for the server to report its findings.
 <details>
 <summary><b>The hook says a tool is not installed.</b></summary>
 
-The message names the tool and where to get it, for example:
+The hook didn't find the tool, so it didn't check the script. It doesn't block Claude: you get one message per session that names the tool and where to get it, for example:
 
 ```text
-shfmt is not installed, so no shell file was checked. Install it: brew install shfmt (macOS) or your distribution package, see the README
+bash-lsp-intelligence: shfmt is not installed, so shell files are not checked. Install it: brew install shfmt (macOS) or your distribution package, see the README
 ```
 
-Install it on the `PATH` of the shell that starts `claude`; the next edit is checked.
+Claude is told once that the scripts weren't checked. Install the tool on the `PATH` of the shell that starts `claude`; the next edit is checked.
 
 </details>
 

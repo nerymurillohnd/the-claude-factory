@@ -6,6 +6,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+### Fixed
+
+- The gate no longer asks Claude to audit skills nobody changed. After you cloned a repository, checked out a branch or pulled during a session, every skill in it had new file times and the gate asked for an audit of each one. Inside a Git repository, a skill now counts as changed only when Git lists a file in it as modified, untracked or staged, or when a commit made in the session touches it. Outside Git, file times decide as before.
+- A pending skill that Git shows unchanged, such as one whose edit you reverted, is dropped instead of being asked for again.
+- When a command inside the gate failed with status 2, the gate could exit with 2 and keep Claude from stopping. Every failure now exits 1, as the README states.
+
 ## [0.4.0] - 2026-11-13
 
 ### Removed

@@ -21,13 +21,20 @@
 # load the user's shell profile. Nothing is installed. typescript7-lsp-intelligence runs the
 # native compiler directly; typescript6-lsp-intelligence runs tsc on Node.
 #
+# The hook judges only what the tool call changed. Files that a Bash command left under a nested
+# Git work tree count only when Git lists them as modified, untracked or staged there, so a
+# clone, a checkout or a pull is never checked. More than MAX_LOOSE_FILES files found by
+# modification time alone, outside Git, are an arrival (an extracted archive, a generated tree),
+# not an edit: none is checked, and Claude is told.
+#
 # Findings reach Claude as {"decision":"block"} JSON. Without a usable compiler the hook does
-# not block: the user is told once per session where it searched, and Claude is told the
-# files were not checked. Any other failure exits non-zero, which hooks.json turns into a
-# block with onFailure. Every message that reaches Claude ends with one line naming the plugin's
-# ts-lifecycle skill, so a hook that checks is never taken for the whole workflow; the
-# user-only systemMessage does not carry it. Bash 3.2 or later; no jq, no Python. This file is
-# byte-identical in typescript6-lsp-intelligence and typescript7-lsp-intelligence.
+# not block: the user is told once per session (on every call without CLAUDE_PLUGIN_DATA, where
+# the hook may keep its marker) where it searched, and Claude is told the files were not checked.
+# Any other failure exits non-zero, which hooks.json turns into a block with onFailure. Every
+# message that reaches Claude ends with one line naming the plugin's ts-lifecycle skill, so a
+# hook that checks is never taken for the whole workflow; the user-only systemMessage does not
+# carry it. Bash 3.2 or later; no jq, no Python. This file is byte-identical in
+# typescript6-lsp-intelligence and typescript7-lsp-intelligence.
 
 set -euo pipefail
 
@@ -37,6 +44,8 @@ readonly FALLBACK_WINDOW_S=30
 readonly MAX_WALK_FILES=20000
 # The cap on tool_response.bashEditDiff.changedFiles in the hooks reference.
 readonly MAX_CHANGED_FILES=200
+# More loose files than this, found by modification time alone outside Git, are an arrival.
+readonly MAX_LOOSE_FILES=20
 readonly TS_FILE_PATTERN='\.(ts|tsx|mts|cts|js|jsx|mjs|cjs)$'
 readonly NL=$'\n'
 
@@ -905,6 +914,81 @@ check_group() {
 
 # ── Changed files ───────────────────────────────────────────────────────────────────────
 
+# Writes to file $2 the files Git lists as modified, untracked or staged in work tree $1,
+# relative to it. NUL-separated: without -z git quotes names with non-ASCII bytes
+# ("caf\303\251.ts"), and the quoted form is no file. Staged files count too: a command that
+# runs git add leaves nothing --modified.
+git_listed() {
+  {
+    git -C "$1" ls-files -z --modified --others --exclude-standard || true
+    git -C "$1" diff -z --cached --name-only --relative 2> /dev/null || true
+  } > "$2"
+}
+
+# Reads the files found by modification time under folder $1, one per line, and prints the
+# TypeScript and JavaScript files among them that are a change. A clone, a checkout or a pull
+# writes files with a new modification time that nobody edited: inside a nested Git work tree
+# only the files Git lists as changed count, and the rest are dropped. Files outside every work
+# tree are loose, since nothing tells an edit from an arrival there: up to MAX_LOOSE_FILES are
+# printed, and beyond that none is and their count goes to ${WORK}/arrival for emit.
+own_changes() {
+  local top="$1" path dir rel last_dir="" tree="" loose="" count=0 index=0
+  local -a trees=() valid=()
+  while IFS= read -r path; do
+    [[ ${path} =~ ${TS_FILE_PATTERN} ]] || continue
+    dir="${path%/*}"
+    if [[ ${dir} != "${last_dir}" ]]; then
+      last_dir="${dir}"
+      tree=""
+      while [[ ${dir} != "${top}" && ${dir} == "${top}"/* ]]; do
+        if [[ -e ${dir}/.git ]]; then
+          tree="${dir}"
+          break
+        fi
+        dir="${dir%/*}"
+      done
+      if [[ -n ${tree} ]]; then
+        index=0
+        while ((index < ${#trees[@]})) && [[ ${trees[index]} != "${tree}" ]]; do
+          index=$((index + 1))
+        done
+        if ((index == ${#trees[@]})); then
+          trees[index]="${tree}"
+          # 1 for a work tree, 0 for a .git entry Git does not accept as one.
+          valid[index]=0
+          git -C "${tree}" rev-parse --is-inside-work-tree > /dev/null 2>&1 && valid[index]=1
+        fi
+        ((valid[index] == 1)) || tree=""
+      fi
+    fi
+    if [[ -z ${tree} ]]; then
+      loose="${loose}${path}${NL}"
+      count=$((count + 1))
+      continue
+    fi
+    printf '%s\n' "${path}" >> "${WORK}/found-${index}"
+  done
+  index=0
+  while ((index < ${#trees[@]})); do
+    if ((valid[index] == 1)); then
+      git_listed "${trees[index]}" "${WORK}/listed-${index}"
+      while IFS= read -r -d '' rel; do
+        [[ -n ${rel} ]] && printf '%s\n' "${trees[index]}/${rel}"
+      done < "${WORK}/listed-${index}" > "${WORK}/changed-${index}"
+      # An empty pattern file would match every line on some greps.
+      if [[ -s ${WORK}/changed-${index} ]]; then
+        grep -xFf "${WORK}/changed-${index}" "${WORK}/found-${index}" || true
+      fi
+    fi
+    index=$((index + 1))
+  done
+  if ((count > MAX_LOOSE_FILES)); then
+    printf '%s\n' "${count}" > "${WORK}/arrival"
+  else
+    printf '%s' "${loose}"
+  fi
+}
+
 # Prints the files a Bash command changed inside project $1 in the last $2 seconds.
 changed_since() {
   local project="$1" window="$2" ref="${WORK}/since" now when stamp home_real rel
@@ -913,13 +997,7 @@ changed_since() {
   stamp="$(date -u -r "${when}" +%Y%m%d%H%M.%S 2> /dev/null || date -u -d "@${when}" +%Y%m%d%H%M.%S)"
   TZ=UTC touch -t "${stamp}" "${ref}"
   if git -C "${project}" rev-parse --is-inside-work-tree > /dev/null 2>&1; then
-    # NUL-separated: without -z git quotes names with non-ASCII bytes ("caf\303\251.ts"),
-    # and the quoted form is no file. Staged files count too: a command that runs git add
-    # leaves nothing --modified.
-    {
-      git -C "${project}" ls-files -z --modified --others --exclude-standard || true
-      git -C "${project}" diff -z --cached --name-only --relative 2> /dev/null || true
-    } > "${WORK}/listed"
+    git_listed "${project}" "${WORK}/listed"
     while IFS= read -r -d '' rel; do
       [[ -n ${rel} && -f "${project}/${rel}" && "${project}/${rel}" -nt ${ref} ]] && printf '%s\n' "${project}/${rel}"
     done < "${WORK}/listed"
@@ -928,9 +1006,10 @@ changed_since() {
   home_real="$(cd "${HOME}" 2> /dev/null && pwd -P || printf '%s' "${HOME}")"
   # A walk of the whole home folder or disk is never worth a hook's budget.
   [[ ${project} == "${home_real}" || ${project} == / ]] && return 0
+  # The walk prunes .git folders, so a nested work tree's files arrive here like any others.
   find "${project}" \( -name node_modules -o -name .git -o -name dist -o -name build -o -name .cache \
     -o -name .next -o -name .venv -o -name venv -o -name coverage \) -prune -o \
-    -type f -newer "${ref}" -print 2> /dev/null | head -n "${MAX_WALK_FILES}"
+    -type f -newer "${ref}" -print 2> /dev/null | head -n "${MAX_WALK_FILES}" | own_changes "${project}"
   return 0
 }
 
@@ -958,7 +1037,12 @@ candidates() {
       rest="${BASH_REMATCH[3]}"
       json_unescape "${item}"
       to_posix "${UNESCAPED}"
-      printf '%s\n' "${POSIX}"
+      # What a command writes into a place Git ignores, such as a build folder, is output, not
+      # source the project maintains. In no work tree, or without git, git fails and the file
+      # is kept.
+      if ! git -C "${POSIX%/*}" check-ignore -q -- "${POSIX}" 2> /dev/null; then
+        printf '%s\n' "${POSIX}"
+      fi
       count=$((count + 1))
     done
     # An incomplete or skipped list is a floor, not the answer: add the recent changes. Claude
@@ -1023,21 +1107,31 @@ names_of() {
 }
 
 # Sets NOTICE to the once-per-session message about a missing compiler, empty after the first.
+# The once-per-session marker is one empty file in ${CLAUDE_PLUGIN_DATA}/notices. When that
+# variable is unset or empty the hook keeps no marker and creates, writes and deletes nothing,
+# not even in the temporary folder, which other users can write to: the notice then repeats.
 NOTICE=""
 compiler_notice() {
-  local session marker_dir marker
+  local session marker_dir="" marker=""
   NOTICE=""
-  json_string session_id
-  session="${VALUE:-unknown}"
-  marker_dir="${CLAUDE_PLUGIN_DATA:-${TMPDIR:-/tmp}/${PLUGIN}}/notices"
-  marker="${marker_dir}/${session//[!A-Za-z0-9_-]/_}"
-  [[ -f ${marker} ]] && return 0
+  if [[ -n ${CLAUDE_PLUGIN_DATA:-} ]]; then
+    json_string session_id
+    session="${VALUE:-unknown}"
+    marker_dir="${CLAUDE_PLUGIN_DATA}/notices"
+    marker="${marker_dir}/${session//[!A-Za-z0-9_-]/_}"
+    [[ -f ${marker} ]] && return 0
+  fi
   NOTICE="${PLUGIN}: no usable TypeScript compiler was found, so edited files are not type-checked.${NL}Searched:${NL}${SEARCHED:-(no node or tsc in any known folder)${NL}}"
   [[ -n ${SKIPPED} ]] && NOTICE="${NOTICE}Skipped:${NL}${SKIPPED}"
   NOTICE="${NOTICE}Requirements: ${README_URL}"
-  mkdir -p "${marker_dir}"
-  : > "${marker}"
+  if [[ -n ${marker} ]]; then
+    mkdir -p "${marker_dir}"
+    : > "${marker}"
+  fi
 }
+
+# The count of loose files an arrival left unchecked, from own_changes; empty for none.
+ARRIVAL=""
 
 # Prints the one JSON object of this run. $1 is the passed files, $2 the files without a
 # compiler, $3 the edited files left out (with the reason on each line), $4 the compilers used.
@@ -1055,6 +1149,9 @@ emit() {
   fi
   if [[ -n ${left_out} ]]; then
     context="${context}${PLUGIN}: these edited files were not type-checked:${NL}${left_out}"
+  fi
+  if [[ -n ${ARRIVAL} ]]; then
+    context="${context}${PLUGIN}: this command left ${ARRIVAL} TypeScript or JavaScript files outside a Git work tree, more than the ${MAX_LOOSE_FILES} the hook checks per command there, so none of them was type-checked. If you edited them, run tsc on them.${NL}"
   fi
   if [[ -n ${NOT_APPLIED} ]]; then
     context="${context}${PLUGIN}: these strictest options were not applied, because this tsc is too old to know them:${NL}${NOT_APPLIED}"
@@ -1103,6 +1200,8 @@ main() {
     return 1
   fi
   raw="$(candidates)"
+  # candidates runs in a subshell, so own_changes leaves its count in a file.
+  [[ -f ${WORK}/arrival ]] && ARRIVAL="$(cat "${WORK}/arrival")"
   while IFS= read -r path; do
     [[ -n ${path} && ${path} =~ ${TS_FILE_PATTERN} ]] || continue
     case "${path}" in
