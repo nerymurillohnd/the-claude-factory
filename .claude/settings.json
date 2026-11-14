@@ -46,14 +46,24 @@
       "Bash(gh release create*)",
       "Bash(claude plugin tag * --push*)",
       "Bash(npm run labels:sync -- --apply*)",
-    "Edit(/.claude/CLAUDE.md)",
-    "Edit(/.claude/settings.json)",
-    "Edit(/.claude/settings.local.json)",
-    "Edit(/package.json)",
-    "Edit(/pyproject.toml)",
-    "Edit(/.github/workflows/**)",
-    "Edit(/scripts/validators/**)",
-    "Edit(/scripts/checkers/**)",
+      "Edit(/.claude/CLAUDE.md)",
+      "Edit(/.claude/settings.json)",
+      "Edit(/.claude/settings.local.json)",
+      "Edit(/package.json)",
+      "Edit(/pyproject.toml)",
+      "Edit(/.github/workflows/**)",
+      "Edit(/scripts/validators/**)",
+      "Edit(/scripts/checkers/**)",
+      "Edit(/.claude/hooks/**)",
+      "Edit(/ruff.toml)",
+      "Edit(/.shellcheckrc)",
+      "Edit(/biome.jsonc)",
+      "Edit(/pyrightconfig.json)",
+      "Edit(/scripts/pyrightconfig.json)",
+      "Edit(/tsconfig.json)",
+      "Edit(/tsconfig.base.json)",
+      "Edit(/.editorconfig)",
+      "Edit(/.github/zizmor.yml)",
       "mcp__github__create_pull_request",
       "mcp__github__merge_pull_request",
       "mcp__github__push_files",
@@ -81,15 +91,6 @@
       "Bash(uv pip *)",
       "Edit(/uv.lock)",
       "Edit(/package-lock.json)",
-    "Edit(/ruff.toml)",
-    "Edit(/.shellcheckrc)",
-    "Edit(/biome.jsonc)",
-    "Edit(/pyrightconfig.json)",
-    "Edit(/scripts/pyrightconfig.json)",
-    "Edit(/tsconfig.json)",
-    "Edit(/tsconfig.base.json)",
-    "Edit(/.editorconfig)",
-    "Edit(/.github/zizmor.yml)",
       "mcp__Github_MCP_Server__delete_repository"
     ]
   },
@@ -142,5 +143,21 @@
       },
       "autoUpdate": true
     }
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "^(Edit|Write|NotebookEdit)$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard-quality-gates.py\"",
+            "timeout": 10,
+            "onFailure": "block",
+            "statusMessage": "Checking quality gates"
+          }
+        ]
+      }
+    ]
   }
 }
