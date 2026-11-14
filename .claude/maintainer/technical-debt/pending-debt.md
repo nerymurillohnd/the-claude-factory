@@ -43,7 +43,7 @@ Add an item only when all of these hold:
 | DEBT-001 | No check keeps the READMEs semantically consistent with the manifests and the catalog | 🟠 Blocked |
 | DEBT-003 | Two CLI checks can't join npm run validate while five mods fail them | 🟠 Blocked |
 | DEBT-005 | frontmatter-lint can't join npm run lint while five plugins break the no-colon, no-quotes rule | 🟠 Blocked |
-| DEBT-006 | npm run lint:js fails on 26 Biome findings in plugin files | 🟠 Blocked |
+| DEBT-006 | npm run lint:js fails on 31 Biome findings in plugin files | 🟠 Blocked |
 
 ## 📂 Open items
 
@@ -157,7 +157,7 @@ Add an item only when all of these hold:
 - **Review condition:** `npm run lint:frontmatter` exits 0.
 - **Related records:** ADR_2026-11-14_frontmatter-lint-forbids-colons-and-quotes-in-values.
 
-### DEBT-006 — npm run lint:js fails on 26 Biome findings in plugin files
+### DEBT-006 — npm run lint:js fails on 31 Biome findings in plugin files
 
 | Field | Value |
 | --- | --- |
@@ -173,6 +173,7 @@ Add an item only when all of these hold:
     - Markdown, found once instruction Markdown is linted: `useFencedCodeLanguage` ×13 (github-operations `claude-github-actions/references/claude-step-diagnosis.md` and `version-drift.md`; plugin-engineering `public-marketplace-dev/SKILL.md`, `references/03-feature-references/mcp.md` and `skills.md`; skill-diagnostics `skills-best-practices/SKILL.md`; svelte-development `svelte-docs-and-autofixer/SKILL.md` and `svelte-lsp-intelligence/SKILL.md`), `useSingleTopLevelHeading` ×1 (skill-diagnostics `assets/brief-template.md`), `useTopLevelHeading` ×1 (skill-diagnostics `assets/reviewer-report.md`), `useConsistentHeadingLevel` ×1 (github-operations `cleanup-and-debug/assets/cleanup-plan.md`).
     - Code, already failing before this change: `noArrayForEach` ×4 (file-tree-pane `hooks/diff.ts`, model-trace `hooks/names.ts` ×2, tailwind-development `mcp/format.mjs`), `noNegatedArrayPredicate` ×4 (file-tree-pane `hooks/register.tsx`, project-maintainer `hooks/debt.ts` ×2, tailwind-development `mcp/config.mjs`), `noUselessLengthCheck` ×1 (project-maintainer `hooks/guard.ts`), and the format of `plugins/github-operations/README.md`.
   - No maintainer file has a Biome finding.
+  - After merging `ccr-60dfcba3-fsbz16` on 2026-11-14, Biome checks 702 files and finds 31 errors: the 26 above plus `useTopLevelHeading` ×5 in plugin-engineering's new `plugin-testing-and-debugging/assets/` (`eval-case/prompt.md`, `eval-case/graders/result.md`, `eval-negative-case/prompt.md`, `eval-negative-case/graders/answered.md`, `mock-tool.md`). They are eval prompt templates, prompts rather than documents, so the owner chooses between adding the folder to the `useTopLevelHeading` override and adding a heading.
 - **Inferences:** none.
 - **Open questions:** none.
 

@@ -1,6 +1,6 @@
 ---
 name: plugin-icons
-description: Designs, draws, renders, reviews and checks the directory listing icon of every plugin in this marketplace, on the owner-approved shared frame. Use whenever a new plugin needs its icon, an icon should be redesigned, re-rendered or reviewed, a plugin is renamed or removed and its icon source must follow, check:consistency reports PC-09, or plugins are being prepared for Anthropic's directory, even if the request only says "make it a logo" or "it needs a picture".
+description: Designs, draws, renders, reviews and checks the directory listing icon of every plugin in this marketplace, on the owner-approved shared frame. Use whenever a new plugin needs its icon, an icon should be redesigned, re-rendered or reviewed, a plugin is renamed or removed and its icon source must follow, the consistency check reports PC-09, or plugins are being prepared for Anthropic's directory, even if the request only says "make it a logo" or "it needs a picture".
 ---
 
 # Plugin icons
