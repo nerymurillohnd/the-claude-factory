@@ -352,10 +352,10 @@ Any configuration file of your own replaces the corresponding default entirely; 
   - `PostToolUse` on `Edit|Write|NotebookEdit|Bash` runs `python3 hooks/check.py` through `bash` (60-second limit), which runs `ruff check --fix`, `ruff format` and, except on notebooks, `basedpyright` on each Python file the call changed and tells Claude to fix what they find.
   - `PostToolUseFailure` on `Bash` runs the same script after a command that fails, so files a failed command changed are checked too.
 
-  To find the changed files of a Bash call, the script uses the list Claude Code passes, or else `git rev-parse --is-inside-work-tree` and `git ls-files --modified --others --exclude-standard` in a Git repository, or a walk of at most 20,000 files of the project otherwise (never your home folder or the disk root). It checks at most 20 files per call. For each one it runs `ruff check --show-settings` to see whether you have a ruff configuration, then `ruff check --fix`, `ruff format` and `basedpyright -p <config>`, each with a 50-second limit. It skips `node_modules`, `.venv`, `venv` and `site-packages`. Hooks run on their own, with your access and without a permission prompt.
+  To find the changed files of a Bash call, the script uses the list Claude Code passes, or else `git rev-parse --is-inside-work-tree` and `git ls-files --modified --others --exclude-standard` plus `git diff --cached --name-only --relative` (the staged files) in a Git repository, or a walk of at most 20,000 files of the project otherwise (never your home folder or the disk root). After that walk, a file inside a Git repository below your project counts only when those Git commands list it there, so a repository you clone, a branch you check out or a pull is never checked or reformatted. When the walk finds more than 20 Python files outside any Git repository, the hook checks none of them and tells Claude. From the list Claude Code passes, it drops the files Git ignores, which it finds with `git check-ignore --stdin -z`: what a command writes into an ignored folder, such as a build folder, is not checked or reformatted. It checks at most 20 files per call. For each one it runs `ruff check --show-settings` to see whether you have a ruff configuration, then `ruff check --fix`, `ruff format` and `basedpyright -p <config>`, each with a 50-second limit. It skips `node_modules`, `.venv`, `venv` and `site-packages`. Hooks run on their own, with your access and without a permission prompt.
 - **MCP servers:** none.
 - **Network:** none.
-- **Files written:** `ruff check --fix` and `ruff format` rewrite the Python files they fix or format, in place. When you have no basedpyright configuration, the hook writes a `pyrightconfig.json` bound to your project into a temporary folder (`python-lsp-intelligence-*` under your system's temporary directory) and deletes it after the check. Nothing is written to your project's configuration.
+- **Files written:** `ruff check --fix` and `ruff format` rewrite the Python files they fix or format, in place. When you have no basedpyright configuration, the hook writes a `pyrightconfig.json` bound to your project into a temporary folder (`python-lsp-intelligence-*` under your system's temporary directory) and deletes it after the check. When ruff or basedpyright isn't installed, the hook writes one empty marker file per session and tool to `${CLAUDE_PLUGIN_DATA}/notices/`, so you get that notice once per session; it deletes markers older than 7 days. When that variable is unset or empty, the hook keeps no marker, in your system's temporary directory or anywhere else, so the notice repeats on every call. Nothing is written to your project's configuration.
 - **Privacy:** the author collects no data. The marketplace's [privacy policy](https://github.com/nerymurillohnd/the-claude-factory/blob/main/PRIVACY.md) covers this plugin and the outside services it can reach.
 
 ## 🔄 Updating
@@ -391,7 +391,7 @@ Installed with `--scope project`:
 claude plugin uninstall python-lsp-intelligence@the-claude-factory --scope project
 ```
 
-Uninstalling from the last scope it's installed at also deletes its saved options and data directory, unless you add `--keep-data`. The plugin keeps nothing in its data directory. Ruff and basedpyright stay installed; remove them with the tool you installed them with.
+Uninstalling from the last scope it's installed at also deletes its saved options and data directory, unless you add `--keep-data`. The data directory holds only the empty marker files under `notices/` that keep the missing-tool notice to once per session. Ruff and basedpyright stay installed; remove them with the tool you installed them with.
 
 ## 🧭 Compatibility
 
@@ -432,13 +432,13 @@ which basedpyright-langserver
 <details>
 <summary><b>The hook says a tool is not installed.</b></summary>
 
-The message names the tool and its install command, for example:
+The hook didn't find the tool, so it didn't check the file. It doesn't block Claude: you get one message per session that names the tool and its install command, for example:
 
 ```text
-ruff is not installed, so no Python file was checked. Install it: uv tool install ruff
+python-lsp-intelligence: ruff is not installed, so Python files are not checked. Install it: uv tool install ruff
 ```
 
-Install it on the `PATH` of the shell that starts `claude`; the next edit is checked.
+Claude is told once that the files weren't checked. Install the tool on the `PATH` of the shell that starts `claude`; the next edit is checked.
 
 </details>
 

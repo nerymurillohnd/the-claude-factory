@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 # skill-diagnostics SessionStart hook. Writes the session marker
 # ${CLAUDE_PLUGIN_DATA}/sessions/<session_id>, whose time is the session start: the Stop hook
-# gates every skill folder changed after it. Deletes the plugin's session state and audit files
-# older than 7 days.
+# gates every skill folder changed after it. The marker holds the same instant in seconds since
+# the epoch, which the Stop hook compares with the times in Git's reflog. Deletes the plugin's
+# session state and audit files older than 7 days.
 # Prints nothing. In "off" mode it only deletes old audit files (see prune_audits).
 # Needs bash 3.2+ and jq. When a command fails it writes the error to stderr and exits 1.
 set -euo pipefail
@@ -69,6 +70,6 @@ prune_audits "${data}"
 mkdir -p "${data}/sessions"
 marker="${data}/sessions/${session_id}"
 if [[ ${source_event} != compact ]] || [[ ! -f ${marker} ]]; then
-  touch "${marker}"
+  date +%s > "${marker}"
 fi
 exit 0

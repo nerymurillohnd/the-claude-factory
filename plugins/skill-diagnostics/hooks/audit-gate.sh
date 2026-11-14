@@ -3,7 +3,10 @@
 # 1. Adds to ${CLAUDE_PLUGIN_DATA}/pending/<session_id> every skill folder under the project and
 #    under ~/.claude/skills that changed after the session marker, which catches skills written
 #    by Bash or an outside process; heavy folders (.git, node_modules, ...) are not searched.
-# 2. Drops pending skills that are gone, or whose verdict file is newer than every file in them.
+#    Inside a Git work tree a new file time is not enough, since a clone, a checkout or a pull
+#    writes files nobody edited: the skill must also be changed for Git (see session_change).
+# 2. Drops pending skills that are gone, that Git shows the session did not change, or whose
+#    verdict file is newer than every file in them.
 # 3. For the rest, asks Claude to audit them (additionalContext) up to 2 times per skill without
 #    a new change; the third time it lets Claude stop and warns the user (systemMessage).
 # Prints one JSON object or nothing.
@@ -100,6 +103,71 @@ skipped() {
   under "$1" "${own}"
 }
 
+# session_change SKILL: sets verdict to "yes" when the session changed SKILL for Git, to "no"
+# when it did not, and to "unknown" when Git cannot tell (no git, SKILL outside a work tree or
+# ignored by it, or a marker without a start time), in which case the file times alone decide.
+# The session changed a skill when
+#   - Git lists a file in it as modified, untracked or staged, or
+#   - a commit made in this session touches it: a HEAD reflog entry at or after the session
+#     start whose action is a commit. A clone, checkout, pull, merge, reset or rebase is not.
+# The list of such files is built once per work tree, in ${work}.git.<n>.
+session_change() {
+  local skill=$1 top prefix index state line when rest sha
+  verdict=unknown
+  [[ -n ${start} ]] || return 0
+  command -v git > /dev/null 2>&1 || return 0
+  top=$(git -C "${skill}" rev-parse --show-toplevel 2> /dev/null) || return 0
+  [[ -n ${top} ]] || return 0
+  if git -C "${skill}" check-ignore -q SKILL.md 2> /dev/null; then
+    return 0
+  fi
+  prefix=$(git -C "${skill}" rev-parse --show-prefix 2> /dev/null) || return 0
+  index=0
+  while [[ ${index} -lt ${#tops[@]} ]] && [[ ${tops[index]} != "${top}" ]]; do
+    index=$((index + 1))
+  done
+  state="${work}.git.${index}"
+  if [[ ${index} -eq ${#tops[@]} ]]; then
+    tops[index]=${top}
+    {
+      git -C "${top}" ls-files -z --modified --others --exclude-standard \
+        && git -C "${top}" diff -z --cached --name-only
+    } > "${state}.raw" 2> /dev/null || return 0
+    while IFS= read -r line; do
+      when=${line#*\{}
+      when=${when%%\}*}
+      case "${when}" in
+        '' | *[!0-9]*) continue ;;
+        *) ;;
+      esac
+      # The reflog is newest first: nothing older than the session start can follow.
+      [[ ${when} -ge ${start} ]] || break
+      rest=${line#* }
+      sha=${rest%% *}
+      case "${rest#* }" in
+        commit:* | 'commit ('*)
+          git -C "${top}" diff-tree -z --no-commit-id --name-only -r --root "${sha}" \
+            >> "${state}.raw" 2> /dev/null || true
+          ;;
+        *) ;;
+      esac
+    done < <(git -C "${top}" reflog show --format='%gd %H %gs' --date=unix HEAD 2> /dev/null || true)
+    # One path per line, relative to the work tree; generated folders do not count.
+    tr '\0' '\n' < "${state}.raw" \
+      | { grep -v -E '(^|/)(\.git|node_modules|\.venv|venv|__pycache__)/' || true; } > "${state}"
+  fi
+  # A work tree whose state could not be read stays unknown.
+  [[ -f ${state} ]] || return 0
+  verdict=no
+  if [[ -z ${prefix} ]]; then
+    if [[ -s ${state} ]]; then
+      verdict=yes
+    fi
+  elif PREFIX="${prefix}" awk 'index($0, ENVIRON["PREFIX"]) == 1 { hit = 1; exit } END { exit !hit }' "${state}"; then
+    verdict=yes
+  fi
+}
+
 # newer FOLDER FILE: sets changed=1 when FOLDER or a file in it is newer than FILE. Generated
 # folders (.git, node_modules, .venv, venv, __pycache__) do not count.
 newer() {
@@ -145,12 +213,35 @@ fi
 marker="${data}/sessions/${session_id}"
 pending="${data}/pending/${session_id}"
 guards="${data}/guard/${session_id}"
-all="${pending}.$$.all"
-keep="${pending}.$$.keep"
+work="${pending}.$$"
+all="${work}.all"
+keep="${work}.keep"
 mkdir -p "${data}/pending"
-trap 'rm -f "${all}" "${keep}"; [[ $? -eq 0 ]] || { echo "skill-diagnostics: audit-gate.sh failed" >&2; exit 1; }' EXIT
+# finish: removes the work files, then turns any failure into exit 1. The status is read before
+# the cleanup, whose own status would replace it.
+finish() {
+  local status=$?
+  rm -f "${work}".*
+  if [[ ${status} -ne 0 ]]; then
+    echo "skill-diagnostics: audit-gate.sh failed" >&2
+    exit 1
+  fi
+}
+trap finish EXIT
 : > "${all}"
 : > "${keep}"
+# The session start in seconds since the epoch, which session-start.sh writes in the marker; a
+# marker from a version before 0.4.1 is empty, and the file times alone decide.
+start=''
+if [[ -f ${marker} ]]; then
+  IFS= read -r start < "${marker}" || true
+  case "${start}" in
+    '' | *[!0-9]*) start='' ;;
+    *) ;;
+  esac
+fi
+# The Git work trees session_change has listed, by position.
+tops=()
 if [[ -f ${pending} ]]; then
   cat "${pending}" > "${all}"
 fi
@@ -160,7 +251,7 @@ fi
 scan() {
   local root=$1 rel skill key list
   [[ -d ${root} ]] || return 0
-  list="${pending}.$$.scan"
+  list="${work}.scan"
   (cd -- "${root}" && find . \( -type d \( -name .git -o -name node_modules -o -name .venv \
     -o -name venv -o -name __pycache__ -o -name dist -o -name build -o -name target \) \) \
     -prune -o -type f -name SKILL.md -print0) > "${list}" || die "cannot search ${root} for skills"
@@ -175,6 +266,8 @@ scan() {
     [[ ${hit} == 0 ]] || continue
     newer "${skill}" "${marker}"
     [[ ${changed} == 1 ]] || continue
+    session_change "${skill}"
+    [[ ${verdict} != no ]] || continue
     key=$(skill_key "${skill}")
     if [[ -f "${data}/verdicts/${key}" ]]; then
       newer "${skill}" "${data}/verdicts/${key}"
@@ -210,6 +303,8 @@ while IFS= read -r skill || [[ -n ${skill} ]]; do
   listed "${keep}" "${skill}"
   [[ ${hit} == 0 ]] || continue
   [[ -d ${skill} ]] && [[ -f "${skill}/SKILL.md" ]] || continue
+  session_change "${skill}"
+  [[ ${verdict} != no ]] || continue
   key=$(skill_key "${skill}")
   if [[ -f "${data}/verdicts/${key}" ]]; then
     newer "${skill}" "${data}/verdicts/${key}"
