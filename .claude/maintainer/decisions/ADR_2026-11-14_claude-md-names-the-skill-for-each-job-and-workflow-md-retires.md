@@ -17,7 +17,7 @@ superseded-by: none
 
 `WORKFLOW.md` has gone back and forth:
 - It was created as a stage map (ed180b8).
-- It was folded into a Workflow section of `CLAUDE.md` that named each stage's skill (30eb294).
+- It was removed into `rules/workflow.md` (e081941), then moved into a Workflow section of `CLAUDE.md` that named each stage's skill (47401ae).
 - It was re-created as a command catalog by the redesign of #104 (ced195b).
 - On branch `ccr-60dfcba3-fsbz16`, it was retired (ff28e21), then restored without any instruction pointing to it, because the deletion had not been authorized (f9153a2).
 
@@ -48,9 +48,10 @@ What moved before the deletion:
 - `claude plugin marketplace remove`, with the data loss the official reference warns of, went into `plugin-catalog-changes`.
 - A line for evals went into "How to run this project", with its billing note.
 
-Every other term of ADR_2026-11-13_claude-configuration-architecture-on-the-owners-claude-md carries over unchanged, except two:
+Every other term of ADR_2026-11-13_claude-configuration-architecture-on-the-owners-claude-md carries over unchanged, except these:
 - the pointer to `WORKFLOW.md`;
-- the `plugin-lifecycle` skill's role as the stage catalog.
+- the `plugin-lifecycle` skill, dropped entirely (see More information);
+- the Commitment, Repository memory and Verification sections it copied into `CLAUDE.md`, which the owner's rebuild on branch `ccr-60dfcba3-fsbz16` removed at the owner's request (c5c05c9).
 
 ### Consequences
 

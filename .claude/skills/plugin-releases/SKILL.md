@@ -36,7 +36,7 @@ These go beyond the docs and stay unless the owner changes them:
    - `npm run check:consistency`: names, `renames`, changelog tags, README and catalog agree
    - `claude plugin tag plugins/<plugin> --dry-run`, on a committed tree: it exits 1 while any file under the plugin is uncommitted
    - `find plugins/<plugin> -type l`: every link resolves inside the plugin, since a link outside it doesn't reach users
-   - `npm run release:notes -- <plugin> --tag` and `npm run release:notes -- <plugin>`, for every plugin whose version has no tag yet: the tag name and the GitHub Release body `release.yml` will publish. Stop on a failure, because `release.yml` stops at the first one and releases none after it
+   - `npm run release:notes -- <plugin> --tag` for every plugin in the catalog, as `release.yml` runs it before it checks for the tag, then `npm run release:notes -- <plugin>` for every plugin whose version has no tag yet: the tag names and the GitHub Release bodies `release.yml` will publish. Stop on a failure, because `release.yml` stops at the first one and releases none after it
    - `README.md`, `CHANGELOG.md` and `plugin.json` agree. Take the components from `claude --plugin-dir plugins/<plugin> plugin details <plugin>` and the version and minimum Claude Code version from `jq '{version, engines}' plugins/<plugin>/.claude-plugin/plugin.json`, and compare them with the README's components, Prerequisites and minimum Claude Code version, and with the `## [Unreleased]` notes.
 2. **List for the owner** and confirm each one is meant to ship. From the repository root:
    ```bash

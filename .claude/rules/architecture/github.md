@@ -1,6 +1,7 @@
 ---
 paths:
   - ".github/**"
+  - "/.claude-plugin/marketplace.json"
 ---
 
 # GitHub
