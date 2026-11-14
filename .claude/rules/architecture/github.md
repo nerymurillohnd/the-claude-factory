@@ -23,3 +23,13 @@ paths:
 
 - Send every change inside `plugins/` through a pull request, skill, agent and command files included, except a documentation-only change that alters neither behavior nor what users installed.
 - Open a pull request for a change outside `plugins/`, or a documentation-only plugin change, only when the owner asks for one.
+
+## Checks before a commit and a merge
+
+| When | Run |
+| :-- | :-- |
+| Locally, before each commit | `npm run lint` and `npm run typecheck`; `npm run test:scripts` when `scripts/` changed; the plugin checks of `.claude/rules/plugins.md` and `.claude/rules/plugins/testing.md` for each changed plugin; `npm run check:consistency -- --offline` |
+| Before each merge: in the pull-request workflow, or locally while there is none | `npm run check`; `npm run check:install` for each changed plugin; evals as `.claude/rules/plugins/evals.md` sets |
+
+- Run a merge-only check locally only when no pull-request workflow exists, or to reproduce a CI failure.
+- Merge only when the merge checks pass.

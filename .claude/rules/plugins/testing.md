@@ -3,11 +3,9 @@ paths:
   - "plugins/*/tests/**"
   - "plugins/*/hooks/**"
   - "plugins/*/.claude-plugin/plugin.json"
-  - ".claude/hooks/**"
-  - ".github/workflows/**"
 ---
 
-# Testing
+# Plugin and mod testing
 
 ## Command hooks
 
@@ -24,12 +22,6 @@ paths:
 - Read the skip line in the transcript with `--plugin-dir`, or in `claude --debug` for an installed copy, when Claude Code skips a hook or refuses a mod.
 - Give every hook at a gating site its own `.catch`, and run `npm run validate:hooks-catch` to confirm it.
 
-## Local and CI
+## Before a commit
 
-| When | Run |
-| :-- | :-- |
-| Locally, before each commit | `npm run lint` and `npm run typecheck`; `npm run test:scripts` when `scripts/` changed; for each changed plugin, `claude plugin validate --strict plugins/<plugin>` and its mod and hook tests; `npm run check:consistency -- --offline` |
-| Before each merge: in the pull-request workflow, or locally while there is none | `npm run check`; `npm run check:install` for each changed plugin; evals as `.claude/rules/plugins/evals.md` sets |
-
-- Run a merge-only check locally only when no pull-request workflow exists, or to reproduce a CI failure.
-- Merge only when the merge checks pass.
+- Run the mod and hook tests of each changed plugin before each commit.
