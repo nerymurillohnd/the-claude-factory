@@ -57,33 +57,40 @@
 
 Run everything to do with plugins mainly through Claude Code CLI commands.
 
-- For building a plugin, load and use `plugin-engineering:public-marketplace-dev`.
-- For plugin CLI commands, load and use `plugin-engineering:cli-commands-guide`.
-- For creating or changing a mod, load and use `plugin-authoring`.
-- For hooks, load and use `hook-engineering:hook-development`.
-- For a Workflow script, load and use `workflow-authoring`.
-- For auditing a skill, load and use `skill-diagnostics:skills-best-practices`.
-- For versioning and bumping a plugin's version, load and use `plugin-versioning`.
+- When building a plugin, load and use `plugin-engineering:public-marketplace-dev`.
+- When running or scripting a plugin CLI command, load and use `plugin-engineering:cli-commands-guide`.
+- When testing or debugging a plugin, or reviewing it before publishing, load and use `plugin-engineering:plugin-testing-and-debugging`.
+- When creating or changing a mod, load and use `plugin-authoring`.
+- When writing, changing or debugging a hook, load and use `hook-engineering:hook-development`.
+- When writing a Workflow script, load and use `workflow-authoring`.
+- When auditing a skill, load and use `skill-diagnostics:skills-best-practices`.
+- When setting or bumping a plugin's version, load and use `plugin-versioning`.
 - When releasing and tagging a plugin, load and use `plugin-releases`.
-- For renaming, removing or merging a plugin, load and use `plugin-catalog-changes`.
-- For a plugin's icon, load and use `plugin-icons`.
-- For a plugin's evals, load and use `plugin-evals:plugin-evals`, and follow `.claude/rules/plugins/evals.md`: every case bills the owner.
+- When renaming, removing or merging a plugin, load and use `plugin-catalog-changes`.
+- When drawing or changing a plugin's icon, load and use `plugin-icons`.
+- When writing or running a plugin's evals, load and use `plugin-evals:plugin-evals`, and follow `.claude/rules/plugins/evals.md`: every case bills the owner.
+
+### Code
+
+- When writing, editing or diagnosing Python, load and use `python-lsp-intelligence:python-lsp-intelligence`.
+- When writing, editing or diagnosing shell scripts, load and use `bash-lsp-intelligence:bash-lsp-intelligence`.
+- When writing, editing or diagnosing TypeScript or JavaScript, load and use `typescript6-lsp-intelligence:ts-lifecycle`.
 
 ### Maintenance
 
-- For READMEs, CHANGELOGs, licenses and policy documents, load and use `docs-maintenance`.
-- For CLAUDE.md and rules, load and use `instruction-engineering:claude-md-and-rules`.
-- For settings, permissions and hook registration, load and use `update-config`.
-- For ADRs and technical debt, load and use `project-maintainer:write-records`.
-- For a session handoff, load and use `project-maintainer:write-handoff`.
+- When writing a README, CHANGELOG, license or policy document, load and use `docs-maintenance`.
+- When writing or changing CLAUDE.md or a rule, load and use `instruction-engineering:claude-md-and-rules`.
+- When changing settings, permissions or hook registration, load and use `update-config`.
+- When recording a decision or technical debt, load and use `project-maintainer:write-records`.
+- When ending a session with a handoff, load and use `project-maintainer:write-handoff`.
 
 ### GitHub and CI
 
-- For a pull request, load and use `github-operations:auto-pr-lifecycle`.
-- For reviewing a diff or a pull request, load and use `code-review`.
-- For a security review of pending changes, load and use `security-review`.
-- For GitHub Actions workflows, load and use `github-operations:claude-github-actions`.
-- For issue forms, templates, labels and Dependabot, load and use `github-operations:github-files-setup`.
+- When opening or driving a pull request, load and use `github-operations:auto-pr-lifecycle`.
+- When reviewing a diff or a pull request, load and use `code-review`.
+- When reviewing pending changes for security, load and use `security-review`.
+- When auditing or fixing a GitHub Actions workflow, load and use `github-operations:claude-github-actions`.
+- When writing issue forms, templates, labels or Dependabot, load and use `github-operations:github-files-setup`.
 
 ## Working environments
 
