@@ -19,4 +19,3 @@ paths:
 - Save each repository fact, lesson or piece of feedback in its own file in `memory/`, and add it to `memory/MEMORY.md`.
 - Put dates and evidence in memory, never in instructions.
 - Never save personal, client or business data, or credentials, in memory: the repository is public.
-- Wait for the owner's answer when a write here asks for permission; never write here through Bash instead.
