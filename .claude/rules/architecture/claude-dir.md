@@ -7,6 +7,7 @@ paths:
 
 - Put project settings in `settings.json`, and the scripts of its hooks in `hooks/`.
 - Put a convention for one area or file type in `rules/<topic>.md` with a quoted `paths` list; anchor a root file with a leading `/`, because a pattern without `/` matches that name in every folder.
+- Keep every rule file at 50 lines or fewer, frontmatter included; split a longer one by topic into its own rules.
 - Point to each rule from the `CLAUDE.md` workstream it belongs to.
 - Put a subagent in `agents/auditors/`, `agents/docs-maintainers/` or `agents/testers/`, and set its `model` (Sonnet for executors and simple auditors, Opus for adversarial, critical or broad reviews) and `effort`.
 - Put a project skill in `skills/<skill>/`.
