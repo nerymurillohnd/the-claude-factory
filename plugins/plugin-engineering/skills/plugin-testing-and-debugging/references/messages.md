@@ -16,6 +16,7 @@ Read this file when the user has an exact message, an Errors-tab entry or a fail
   - MCP servers
   - Language servers
 - B5. Build a plugin
+- Read the debug log
 - B6. Host a marketplace
 - B7. Blocked by the organization
 - Related pages
@@ -200,6 +201,18 @@ While developing with `--plugin-dir` or a local marketplace. Hooks that do not f
 - **`claude plugin tag [path]` exits 1** with the reason when it cannot tag safely: no `version` in `plugin.json` or the marketplace entry, the tag already exists, or the working tree is dirty. It checks that `plugin.json` and the marketplace entry agree on the version before creating `<name>--v<version>`. Preview with `--dry-run`. If `--push` fails, the tag is still created locally and the command exits with an error.
 - **`Plugin <name> has conflicting manifests: both plugin.json and marketplace entry specify components.`**: the entry sets `strict: false` and declares `commands`, `agents`, `skills`, `hooks`, `outputStyles` or `themes`. Remove those from the entry, or set `strict: true` so they are appended to `plugin.json`.
 - **`Warning: No commands found in plugin <name> custom directory: <path>. Expected .md files or SKILL.md in subdirectories.`** (debug log only, nothing in the session or Errors tab): the `commands` path exists but holds no `.md` or `SKILL.md`. Add files or remove the path.
+
+## Read the debug log
+
+Many plugin causes are recorded only in the debug log: a `--plugin-dir` copy overriding an installed one, which hooks matched and their exit codes, an MCP or LSP server's startup error, a `.mcp.json` entry dropped for failing the schema, a commands path with no files. Sources: "CLI reference" (`--debug`, `--debug-file`), "Commands" (`/debug`), "Environment variables" (`DEBUG`, `CLAUDE_CODE_DEBUG_LOGS_DIR`, `CLAUDE_CODE_DEBUG_LOG_LEVEL`), "Hooks reference" and "Debug your configuration".
+
+- `claude --debug` turns debug mode on and writes the log to `~/.claude/debug/<session-id>.txt`. It prints nothing to the terminal: open the file.
+- `claude --debug='mcp,startup'` keeps only those categories; `--debug='!mcp'` excludes one. The filter applies only in the `=` form; `--debug mcp` with a space turns debug on without filtering. For an MCP server that starts but lists no tools, `claude --debug=mcp`, then read the server's stderr in the log.
+- `claude --debug-file <path>` writes the log to a path you choose and turns debug mode on by itself. It takes precedence over `CLAUDE_CODE_DEBUG_LOGS_DIR`. Use it when you need to know where the file is, for example `claude --debug-file /tmp/claude-debug.log`, then search that file.
+- `/debug [description]` inside a running session turns debug logging on from that point and has Claude read the log; anything before it was not captured.
+- `DEBUG=1` in the environment is the same as `--debug`. `CLAUDE_CODE_DEBUG_LOGS_DIR` sets the log file path (a file, despite the name) and does not turn debug on by itself.
+- `CLAUDE_CODE_DEBUG_LOG_LEVEL=verbose` adds high-volume lines, such as hook matcher counts; `info`, `warn` or `error` reduce noise. Default `debug`.
+- For a hook: start with `--debug` or `--debug-file`, trigger the event on purpose, and read which matchers matched and each hook's exit code. To check Setup and SessionStart hooks without a session, `claude --debug-file <path> --init-only`, then read the log.
 
 ## B6. Host a marketplace
 

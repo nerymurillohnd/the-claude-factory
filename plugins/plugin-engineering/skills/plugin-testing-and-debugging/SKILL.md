@@ -29,6 +29,7 @@ These are the facts that most often turn a reasonable guess into a wrong answer.
 - A `--plugin-dir` plugin with the same manifest name replaces an installed one silently: `claude plugin list` still shows the installed row as enabled, and only the `--debug` log records the override.
 - `enabledPlugins` merges key by key across six sources; a higher source wins. A project `true` overrides the user's `false`. To turn a project-enabled plugin off for one person, set it `false` in `.claude/settings.local.json`, not in the committed file.
 - A plugin under `.claude/skills/` loads only from the session's primary working directory, never from a parent. Started in a subdirectory, it is simply absent. Managed settings can also skip such folders with no error at all.
+- Many causes appear only in the debug log, which `claude --debug` writes to `~/.claude/debug/<session-id>.txt` without printing anything to the terminal. `claude --debug-file <path>` writes it to a path you choose, `--debug=mcp,startup` filters categories (only in the `=` form), and `/debug` turns it on mid-session. `references/messages.md`, "Read the debug log", has the details.
 - Skills load from `skills/` at the plugin root. A `skills/` inside `.claude-plugin/` is not scanned. Hook event names are case-sensitive (`PostToolUse`). A shell-form hook with an unquoted `${CLAUDE_PLUGIN_ROOT}` breaks when the path has a space.
 
 **Validation**
