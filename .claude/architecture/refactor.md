@@ -90,10 +90,6 @@
     - Apply only labels that already exist in the repository
 - **Maintainer environment**
   - Session context for the maintainer (branch, sync state, tool versions)
-  - Project records, written with the `project-maintainer` plugin:
-    - Decisions: ADRs in `.claude/maintainer/decisions/` (`ADR_<YYYY-MM-DD>_<slug>.md`)
-    - Technical debt: `.claude/maintainer/technical-debt/` (`pending-debt.md`, `closed-debt.md`, IDs `DEBT-NNN`)
-    - Session handoffs: `.claude/session-handoff/` (`YYYY-MM-DD-HHMM.md`), read at the next session start
   - Maintainer commands run through npm scripts; no commit-time or push-time Git hooks are installed
 
 **Commands (used inside CI jobs)**
