@@ -78,6 +78,8 @@ Run everything to do with plugins mainly through Claude Code CLI commands.
 
 ### Maintenance
 
+- When starting a session, load and use `extended-memory:extended-memory`.
+- When researching Claude Code, load and use `anthropic-skills:cc-docs-research`.
 - When writing a README, CHANGELOG, license or policy document, load and use `docs-maintenance`.
 - When writing or changing CLAUDE.md or a rule, load and use `instruction-engineering:claude-md-and-rules`.
 - When changing settings, permissions or hook registration, load and use `update-config`.
