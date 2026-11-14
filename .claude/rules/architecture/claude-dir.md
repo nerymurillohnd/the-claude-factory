@@ -21,6 +21,6 @@ Claude Code's configuration for this repository and the maintainer records; noth
 - Put each redesign draft in `architecture/` at the path it will replace (`CLAUDE.draft.md`, `rules/<topic>.md`). Move it to its target once the owner approves it, and delete `architecture/` when it is empty.
 
 ## Working here
-- When you add a folder of instruction Markdown here, add it to the `.claude/` entries under `files.includes` in `biome.jsonc`, so Biome leaves the Markdown Claude reads unformatted.
+- When you add a folder of instruction Markdown here, add its `*.md` pattern to the first `overrides` entry of `biome.jsonc`, so Biome leaves the Markdown Claude reads unformatted and still lints it.
 - When a write here asks for permission, wait for the owner's answer; `.claude/` is a protected folder, so never write to it through Bash instead.
 - After changing a skill, run `npm run lint:skills -- .claude/skills/<skill>`.
