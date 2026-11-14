@@ -18,11 +18,11 @@ The commands of each lifecycle stage. It lists only Claude Code commands and the
 ### 3. Repository governance
 
 - **Docs:** With the `docs-maintenance` skill, events Repository foundation and The owner changes a policy: `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, `SECURITY.md`, `SUPPORT.md` and `PRIVACY.md`.
-- `npm run tools:install` — installs the pinned uv tools: ruff, basedpyright, zizmor and check-jsonschema.
+- `npm run tools:install` — installs the pinned uv tools.
 - `npm run lint` — every linter: `lint:js`, `lint:python`, `lint:shell`, `lint:workflows` and `lint:github`.
 - `npm run lint:workflows` — actionlint and zizmor on the GitHub Actions workflows.
 - `npm run lint:github` — issue forms, the issue config and `dependabot.yml` against their schemas, then the form dropdowns and labels against the catalog.
-- `npm run labels:sync` — syncs the GitHub labels from `.github/labels.json` and the catalog; it changes GitHub.
+- `npm run labels:sync` — compares the GitHub labels with `.github/labels.json` and the catalog.
 - `npm run test:scripts` — the unittest suite of the maintainer scripts in `scripts/testers/`.
 - `npm run check` — `lint`, `typecheck`, `check:consistency` and `validate` in that order.
 - `claude plugin validate <path> --strict --json` — fails on warnings and gives a machine-readable report.
