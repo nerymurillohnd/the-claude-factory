@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Tests for the changed-file selection of the TypeScript plugins' hooks/tsc-check.sh.
+"""Tests for the changed-file selection of typescript6-lsp-intelligence's hooks/tsc-check.sh.
 
 They hold with or without a TypeScript compiler on the machine: a file the hook selects is
 named in its output either as checked or as not type-checked, and a file it leaves alone is
@@ -8,28 +8,110 @@ never named.
 
 from __future__ import annotations
 
+import json
 import os
 from pathlib import Path
+import shutil
+import subprocess
 import tempfile
+from typing import TYPE_CHECKING, NamedTuple, cast
 import unittest
 
-from testers.plugin_hooks.helpers import (
-    GIT_ENV,
-    PLUGINS,
-    Outcome,
-    clone,
-    field,
-    folders_named,
-    need,
-    repository,
-    run_hook,
-    write,
-)
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
-HOOKS = (
-    PLUGINS / "typescript6-lsp-intelligence" / "hooks" / "tsc-check.sh",
-    PLUGINS / "typescript7-lsp-intelligence" / "hooks" / "tsc-check.sh",
-)
+_decode: Callable[[str], object] = json.JSONDecoder().decode
+
+
+# A neutral Git identity and configuration, so the machine's own settings never apply.
+GIT_ENV = {
+    "GIT_CONFIG_GLOBAL": os.devnull,
+    "GIT_CONFIG_NOSYSTEM": "1",
+    "GIT_AUTHOR_NAME": "Test",
+    "GIT_AUTHOR_EMAIL": "test@example.invalid",
+    "GIT_COMMITTER_NAME": "Test",
+    "GIT_COMMITTER_EMAIL": "test@example.invalid",
+}
+
+
+# A commit date long before any test session, for the commits a repository already had.
+LONG_AGO = "2026-01-01T00:00:00Z"
+
+
+class Outcome(NamedTuple):
+    """What a hook run returned."""
+
+    code: int
+    stdout: str
+    stderr: str
+
+
+def need(name: str) -> str:
+    """The path of tool `name`; the test is skipped when it is not installed."""
+    found = shutil.which(name)
+    if found is None:
+        message = f"{name} is not installed"
+        raise unittest.SkipTest(message)
+    return found
+
+
+def run_hook(argv: list[str], event: dict[str, object], env: dict[str, str]) -> Outcome:
+    """Run a hook command with event on stdin and exactly env as its environment."""
+    done = subprocess.run(
+        argv, input=json.dumps(event), env=env, capture_output=True, text=True, check=False
+    )
+    return Outcome(done.returncode, done.stdout, done.stderr)
+
+
+def git(folder: Path, *args: str, when: str = "") -> None:
+    """Run git in folder with the neutral configuration; `when` dates a commit it creates."""
+    env = {**os.environ, **GIT_ENV}
+    if when:
+        env["GIT_AUTHOR_DATE"] = when
+        env["GIT_COMMITTER_DATE"] = when
+    _ = subprocess.run(
+        [need("git"), "-C", str(folder), *args], env=env, check=True, capture_output=True
+    )
+
+
+def write(path: Path, text: str) -> None:
+    """Write text to path, creating its folders."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    _ = path.write_text(text, encoding="utf-8")
+
+
+def repository(folder: Path, files: dict[str, str]) -> None:
+    """Create folder as a Git repository whose only commit, made long ago, holds files."""
+    folder.mkdir(parents=True)
+    git(folder, "init", "-q", "-b", "main")
+    for name, text in files.items():
+        write(folder / name, text)
+    git(folder, "add", "-A")
+    git(folder, "commit", "-q", "-m", "first", when=LONG_AGO)
+
+
+def clone(origin: Path, target: Path) -> None:
+    """Clone origin into target, as a session's `git clone` does."""
+    target.parent.mkdir(parents=True, exist_ok=True)
+    git(target.parent, "clone", "-q", str(origin), str(target))
+
+
+def folders_named(root: Path, prefix: str) -> list[str]:
+    """The paths under root whose name starts with prefix: what a hook left behind, if any."""
+    return sorted(str(path) for path in root.rglob(f"{prefix}*"))
+
+
+def field(stdout: str, *keys: str) -> str:
+    """The string under keys in the JSON object a hook printed; "" when absent or not text."""
+    value = _decode(stdout)
+    for key in keys:
+        if not isinstance(value, dict):
+            return ""
+        value = cast("dict[str, object]", value).get(key)
+    return value if isinstance(value, str) else ""
+
+
+HOOK = Path(__file__).resolve().parents[1] / "hooks" / "tsc-check.sh"
 MODULE = "export const answer: number = 42\n"
 # Folders the hook searches for a compiler on top of PATH and the Node version managers' folders.
 FIXED_FOLDERS = ("/opt/homebrew/bin", "/usr/local/bin", "/home/linuxbrew/.linuxbrew/bin")
@@ -63,7 +145,6 @@ class TscHookTest(unittest.TestCase):
     def _run(
         self,
         tmp: Path,
-        hook: Path = HOOKS[0],
         *,
         changed: tuple[Path, ...] | None = None,
         path: str | None = None,
@@ -100,33 +181,28 @@ class TscHookTest(unittest.TestCase):
                 _ = env.pop(name, None)
             else:
                 env[name] = value
-        return run_hook([need("bash"), str(hook)], event, env)
-
-    def test_both_plugins_ship_the_same_hook(self) -> None:
-        """The hook is byte-identical in typescript6 and typescript7, as its header says."""
-        self.assertEqual(HOOKS[0].read_bytes(), HOOKS[1].read_bytes())
+        return run_hook([need("bash"), str(HOOK)], event, env)
 
     def test_missing_compiler_without_plugin_data_keeps_no_marker(self) -> None:
         """With no data folder the notice repeats and nothing is created in the temporary folder."""
         path = path_without_compiler()
-        for hook in HOOKS:
-            plugin = hook.parents[1].name
-            for data in (None, ""):
-                with (
-                    self.subTest(plugin=plugin, plugin_data=data),
-                    tempfile.TemporaryDirectory() as raw,
-                ):
-                    tmp = Path(raw).resolve()
-                    write(tmp / "work" / "new.ts", MODULE)
-                    extra = {"CLAUDE_PLUGIN_DATA": data}
-                    runs = [self._run(tmp, hook, path=path, extra=extra) for _ in range(2)]
-                    left = folders_named(tmp, plugin)
-                    for outcome in runs:
-                        self.assertEqual((outcome.code, outcome.stderr), (0, ""))
-                        self.assertNotEqual(outcome.stdout, "")
-                        message = field(outcome.stdout, "systemMessage")
-                        self.assertIn("no usable TypeScript compiler was found", message)
-                    self.assertEqual(left, [])
+        plugin = HOOK.parents[1].name
+        for data in (None, ""):
+            with (
+                self.subTest(plugin_data=data),
+                tempfile.TemporaryDirectory() as raw,
+            ):
+                tmp = Path(raw).resolve()
+                write(tmp / "work" / "new.ts", MODULE)
+                extra = {"CLAUDE_PLUGIN_DATA": data}
+                runs = [self._run(tmp, path=path, extra=extra) for _ in range(2)]
+                left = folders_named(tmp, plugin)
+                for outcome in runs:
+                    self.assertEqual((outcome.code, outcome.stderr), (0, ""))
+                    self.assertNotEqual(outcome.stdout, "")
+                    message = field(outcome.stdout, "systemMessage")
+                    self.assertIn("no usable TypeScript compiler was found", message)
+                self.assertEqual(left, [])
 
     def test_clone_into_a_plain_folder_is_left_alone(self) -> None:
         """Files a clone wrote are unchanged for Git: the hook prints nothing."""
