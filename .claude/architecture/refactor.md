@@ -29,7 +29,6 @@
 ### Phase A — Marketplace Setup (one time)
 
 #### 1. Planning & Design
-- Scope and audience: plugins built for third parties and their machines
 - Naming convention for marketplace and plugins (kebab-case, no names reserved by Anthropic)
 - Versioning policy: explicit bumps vs. omitting `version` so users track commits (rules: stages 12–14)
 - Catalog policy: never rename (use `displayName`), `renames`, `forceRemoveDeletedPlugins`
@@ -292,7 +291,6 @@
 
 **Gotchas**
 - Put the target before `--tag`, `--allow-tools` and `--json`; each takes the following words as its value [skill]
-- Evals call the model with your credentials and bill your plan or API account [docs]
 - A case without a grader fails to load [docs]
 
 **Scripts**
@@ -326,8 +324,6 @@
 - `scripts/validators/readme-catalog-consistency.py` — **Replaced by** `check:consistency` PC-08 (`mods` holding only mods is not checked) · Gap: one catalog row per plugin under its category, categories match, `mods` holds only mods
 - `scripts/checkers/markdown-urls.py` — **Pending** · Caller: manual · Gap: live check of every http(s) URL and fragment in tracked Markdown
 - `scripts/checkers/reference-pages.py` — **Pending** · Caller: manual · Gap: offline layout (`## Contents`, `## Documentation References`), relative links and anchors
-- The documentation files themselves are kept by the `docs-maintenance` project skill and its writer agents, from the references in `.claude/references/`
-
 ---
 
 ### Phase C — Release Cycle (per version)
@@ -375,7 +371,7 @@
 **Commands**
 - `claude plugin tag [path] --dry-run` — show the plan without creating anything
 - `claude plugin tag [path]` — create the annotated tag
-- `claude plugin tag [path] --push` — create and push (requires authorization)
+- `claude plugin tag [path] --push` — create and push
 - `/plugin tag [path] [--push] [--dry-run] [--force]` — session form; accepts only these flags
 
 **Gotchas**
@@ -520,11 +516,7 @@ Each line says what exists on the redesign branch on 2026-11-13; `(pending)` mar
 ├── package.json                 # the single entry point: lint, typecheck, validate(:*), check, check:consistency, check:install,
 │                                #   release:status, release:changelog, release:notes, test:scripts, lint:skills, labels:sync
 ├── .claude/
-│   ├── settings.json            # CC hook registrations (none yet)
-│   ├── hooks/                   # (pending) project Claude Code hook scripts, e.g. checkout.sh; maintainer logic stays in scripts/
-│   ├── rules/                   # hook-scripts.md, skill-lint.md (path-scoped)
-│   ├── skills/                  # docs-maintenance: procedures only, no scripts/ folders
-│   └── CLAUDE.md
+│   └── hooks/                   # (pending) project Claude Code hook scripts, e.g. checkout.sh; maintainer logic stays in scripts/
 ├── .github/
 │   ├── workflows/
 │   │   ├── validate.yml         # (pending) runs the npm scripts; release.yml triggers on it
