@@ -6,6 +6,7 @@ from __future__ import annotations
 import contextlib
 import io
 from pathlib import Path
+import struct
 import tempfile
 import unittest
 
@@ -15,6 +16,27 @@ from validators.plugin_consistency.checks import Finding, check
 from testers.release.helpers import Marketplace, changelog
 
 WORDS = " ".join(["word"] * 40)
+LISTING: dict[str, object] = {
+    "icon": "./.claude-plugin/icon.png",
+    "documentationUrl": "https://example.com/docs",
+    "supportUrl": "https://example.com/support",
+    "privacyPolicyUrl": "https://example.com/privacy",
+}
+
+
+def png(width: int, height: int) -> bytes:
+    """Return the first bytes of a PNG with the given size: enough for its IHDR chunk."""
+    return b"\x89PNG\r\n\x1a\n" + b"\x00\x00\x00\x0dIHDR" + struct.pack(">II", width, height)
+
+
+def write_icon(root: Path, name: str, width: int = 1024, height: int = 1024) -> None:
+    """Write a plugin's icon.png and its SVG source."""
+    icon = root / "plugins" / name / ".claude-plugin" / "icon.png"
+    icon.parent.mkdir(parents=True, exist_ok=True)
+    _ = icon.write_bytes(png(width, height))
+    source = root / "scripts" / "generators" / "plugin-icons" / f"{name}.svg"
+    source.parent.mkdir(parents=True, exist_ok=True)
+    _ = source.write_text("<svg/>\n", encoding="utf-8")
 
 
 def plugin_readme(name: str) -> str:
@@ -62,8 +84,10 @@ class Fixture:
             "demo",
             "0.1.0",
             changelog_text=changelog("demo", {"0.1.0": "- First."}),
+            manifest=LISTING,
             entry={"category": "development"},
         )
+        write_icon(self.m.root, "demo")
         self.m.write("plugins/demo/README.md", plugin_readme("demo"))
         self.m.write("README.md", root_readme({"🛠️ Development": [catalog_row("demo", "0.1.0")]}))
         self.m.commit()
@@ -76,7 +100,7 @@ class Fixture:
 
 
 class ChecksTest(unittest.TestCase):
-    """PC-01 to PC-08."""
+    """PC-01 to PC-10."""
 
     def test_consistent_fixture_passes(self) -> None:
         """The fixture as built has no finding, online or offline."""
@@ -127,7 +151,13 @@ class ChecksTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             f = Fixture(Path(tmp))
             text = changelog("demo", {"0.2.0": "- New.", "0.1.0": "- First."})
-            f.m.add_plugin("demo", "0.2.0", changelog_text=text, entry={"category": "development"})
+            f.m.add_plugin(
+                "demo",
+                "0.2.0",
+                changelog_text=text,
+                manifest=LISTING,
+                entry={"category": "development"},
+            )
             f.m.write("README.md", root_readme({"🛠️ Development": [catalog_row("demo", "0.2.0")]}))
             self.assertEqual(f.ids(), [])
 
@@ -174,6 +204,59 @@ class ChecksTest(unittest.TestCase):
             rows = {"🛠️ Development": [catalog_row("demo", "0.1.0")]}
             f.m.write("README.md", root_readme(rows, {"🛠️ Development": 2}))
             self.assertEqual(f.ids(offline=True), ["PC-08"])
+
+    def test_pc09_icon_missing_undeclared_or_wrong_shape(self) -> None:
+        """An undeclared, missing, non-PNG, non-square or undersized icon is reported."""
+        with tempfile.TemporaryDirectory() as tmp:
+            f = Fixture(Path(tmp))
+            icon = f.m.root / "plugins/demo/.claude-plugin/icon.png"
+            _ = icon.write_bytes(png(1024, 512))
+            self.assertEqual(f.ids(offline=True), ["PC-09"])
+            _ = icon.write_bytes(png(256, 256))
+            self.assertEqual(f.ids(offline=True), ["PC-09"])
+            _ = icon.write_bytes(b"not a png, just some bytes")
+            self.assertEqual(f.ids(offline=True), ["PC-09"])
+            icon.unlink()
+            self.assertEqual(f.ids(offline=True), ["PC-09"])
+            write_icon(f.m.root, "demo")
+            f.m.add_plugin(
+                "demo",
+                "0.1.0",
+                changelog_text=changelog("demo", {"0.1.0": "- First."}),
+                manifest={**LISTING, "icon": "./logo.png"},
+                entry={"category": "development"},
+            )
+            self.assertEqual(f.ids(offline=True), ["PC-09"])
+
+    def test_pc09_missing_and_stray_svg_source(self) -> None:
+        """A listed plugin without its SVG source, and a source without a plugin, are reported."""
+        with tempfile.TemporaryDirectory() as tmp:
+            f = Fixture(Path(tmp))
+            sources = f.m.root / "scripts/generators/plugin-icons"
+            _ = (sources / "demo.svg").rename(sources / "gone.svg")
+            self.assertEqual(f.ids(offline=True), ["PC-09", "PC-09"])
+
+    def test_pc10_listing_url_missing_or_not_https(self) -> None:
+        """Each listing URL field is set to an https:// URL."""
+        with tempfile.TemporaryDirectory() as tmp:
+            f = Fixture(Path(tmp))
+            f.m.add_plugin(
+                "demo",
+                "0.1.0",
+                changelog_text=changelog("demo", {"0.1.0": "- First."}),
+                manifest={**LISTING, "supportUrl": "http://example.com"},
+                entry={"category": "development"},
+            )
+            self.assertEqual(f.ids(offline=True), ["PC-10"])
+            manifest = {k: v for k, v in LISTING.items() if k != "privacyPolicyUrl"}
+            f.m.add_plugin(
+                "demo",
+                "0.1.0",
+                changelog_text=changelog("demo", {"0.1.0": "- First."}),
+                manifest=manifest,
+                entry={"category": "development"},
+            )
+            self.assertEqual(f.ids(offline=True), ["PC-10"])
 
 
 class CliTest(unittest.TestCase):

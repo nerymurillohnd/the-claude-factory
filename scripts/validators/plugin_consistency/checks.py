@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Marketplace, manifest and changelog checks (PC-01 to PC-05), and the full check run."""
+"""Marketplace, manifest and changelog checks (PC-01 to PC-05), and the run of PC-01 to PC-10."""
 
 from __future__ import annotations
 
@@ -17,6 +17,7 @@ from release.release_tools.repo import (
     version,
 )
 
+from validators.plugin_consistency.listing import icon_findings, url_findings
 from validators.plugin_consistency.model import Finding
 from validators.plugin_consistency.readme import catalog_findings, readme_findings
 
@@ -105,4 +106,6 @@ def check(root: Path, *, offline: bool = False, base: str = "origin/main") -> li
     findings += _unreleased(root)
     findings += readme_findings(root)
     findings += catalog_findings(root)
+    findings += icon_findings(root)
+    findings += url_findings(root)
     return findings

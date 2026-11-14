@@ -20,9 +20,7 @@ The commands of each lifecycle stage. It lists only Claude Code commands and the
 - **Docs:** With the `docs-maintenance` skill, events Repository foundation and The owner changes a policy: `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, `SECURITY.md`, `SUPPORT.md` and `PRIVACY.md`.
 - `npm run tools:install` — installs the pinned uv tools.
 - `npm run lint` — every linter: `lint:js`, `lint:python`, `lint:shell`, `lint:workflows` and `lint:github`.
-- `npm run lint:workflows` — actionlint and zizmor on the GitHub Actions workflows.
 - `npm run lint:github` — issue forms, the issue config and `dependabot.yml` against their schemas, then the form dropdowns and labels against the catalog.
-- `npm run labels:sync` — compares the GitHub labels with `.github/labels.json` and the catalog.
 - `npm run test:scripts` — the unittest suite of the maintainer scripts in `scripts/testers/`.
 - `npm run check` — `lint`, `typecheck`, `check:consistency` and `validate` in that order.
 - `claude plugin validate <path> --strict --json` — fails on warnings and gives a machine-readable report.
@@ -54,6 +52,7 @@ The commands of each lifecycle stage. It lists only Claude Code commands and the
 - `npm run typecheck:python` — basedpyright on plugin Python, then on maintainer Python in `scripts/`.
 - `npm run fix` — rewrites files: Biome fixes, ruff fixes and format, shfmt.
 - `npm run format` — rewrites files: Biome, ruff and shfmt formatting only.
+- `npm run icons:render [-- <plugin>...]` — rewrites each plugin's `.claude-plugin/icon.png` from `scripts/generators/plugin-icons/<plugin>.svg`; needs Playwright's Chromium, ImageMagick and the JetBrains Mono font.
 
 ### 6. Dependencies and relevance
 
@@ -65,7 +64,7 @@ The commands of each lifecycle stage. It lists only Claude Code commands and the
 
 - **Docs:** With the `docs-maintenance` skill, event New plugin: the plugin's catalog row in the root `README.md`.
 - `claude plugin validate .` — flags duplicate names, `..` paths and version mismatches between an entry and its `plugin.json`.
-- `npm run check:consistency` — what `validate` doesn't check across files: names, `renames`, `forceRemoveDeletedPlugins`, changelog headings against tags, README placeholders, length, badge and commands, and the root catalog rows; `-- --offline` skips the tag check.
+- `npm run check:consistency` — what `validate` doesn't check across files: names, `renames`, `forceRemoveDeletedPlugins`, changelog headings against tags, README placeholders, length, badge and commands, the root catalog rows, each plugin's icon and its SVG source, and its listing URLs; `-- --offline` skips the tag check.
 
 ### 8. Validation
 

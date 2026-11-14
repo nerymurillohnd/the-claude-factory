@@ -1,0 +1,6 @@
+# Optional. Keep only when the case needs a seeded workspace, a transcript or extra read-only directories.
+schema_version: "1.1"
+name: <case-directory-name>
+context:
+  scaffold_script: fixture.sh
+  add_dirs: [resources]

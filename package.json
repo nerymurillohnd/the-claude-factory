@@ -17,6 +17,7 @@
     "check:install": "bash scripts/release/check-install.sh",
     "fix": "biome check --write . && ruff check --fix . && ruff format . && shfmt -w .",
     "format": "biome format --write . && ruff format . && shfmt -w .",
+    "icons:render": "node scripts/generators/plugin-icons.mjs",
     "labels:sync": "uv run python scripts/sync-labels.py",
     "lint": "npm run lint:js && npm run lint:python && npm run lint:shell && npm run lint:workflows && npm run lint:github",
     "lint:frontmatter": "uv run python scripts/validators/frontmatter-lint.py",
