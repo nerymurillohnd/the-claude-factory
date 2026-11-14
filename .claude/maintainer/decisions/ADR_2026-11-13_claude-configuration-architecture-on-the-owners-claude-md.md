@@ -1,10 +1,10 @@
 ---
-status: accepted
+status: superseded
 date: 2026-11-13
 decision-makers:
   - "Nery (project owner)"
 supersedes: ADR_2026-11-13_claude-configuration-architecture
-superseded-by: none
+superseded-by: ADR_2026-11-14_claude-md-names-the-skill-for-each-job-and-workflow-md-retires
 ---
 
 # The Claude configuration architecture, with the owner's CLAUDE.md draft as the project CLAUDE.md
