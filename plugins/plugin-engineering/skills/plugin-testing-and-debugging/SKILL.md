@@ -1,6 +1,6 @@
 ---
 name: plugin-testing-and-debugging
-description: Tests, troubleshoots and debugs Claude Code plugins with the official CLI - claude plugin validate, list, details, eval and eval init, /plugin, /reload-plugins and --plugin-dir - and the documented loading rules. Use when a plugin, marketplace or skills-directory plugin will not install, load, enable, update or run its skills, hooks, MCP or LSP servers; when a copy behaves differently installed than with --plugin-dir; when a plugin keeps loading after being turned off; when reading a plugin error, Errors-tab entry or exit code; when reviewing a plugin or marketplace before publishing; and when writing, running, reading or gating CI on plugin evals and graders. Also use it in cloud sessions and project threads, where plugins load differently. Use it even when the user only pastes an error or says "my plugin doesn't work".
+description: Tests, troubleshoots and debugs Claude Code plugins with the official CLI - claude plugin validate, list, details, eval and eval init, /plugin, /reload-plugins and --plugin-dir - and the documented loading rules. Use when a plugin, marketplace or skills-directory plugin will not install, load, enable, update or run its skills, hooks, MCP or LSP servers; when a copy behaves differently installed than with --plugin-dir; when a plugin keeps loading after being turned off; when reading a plugin error, Errors-tab entry or exit code; when reviewing a plugin or marketplace before publishing; and when writing, running, reading or gating CI on plugin evals and graders. Also use it in cloud sessions, project threads, Claude on the web, desktop and mobile, and the Agent SDK, where plugins load differently. Use it even when the user only pastes an error or says "my plugin doesn't work".
 ---
 
 # Test, troubleshoot and debug Claude Code plugins
@@ -20,6 +20,7 @@ These are the facts that most often turn a reasonable guess into a wrong answer.
 **Where the session runs**
 
 - In a cloud session (`CLAUDE_CODE_REMOTE=true`) the repository's `enabledPlugins` and `extraKnownMarketplaces` are not loaded, nothing from the user's own `~/.claude/` is there, and `/plugin` does not exist. A project's cloud threads load even less: only the repositories' root `CLAUDE.md` files and rules, not their skills, agents, hooks, settings or `.mcp.json`. Plugins reach cloud sessions through the claude.ai account, and threads through **Project settings > Plugins**. `claude plugin` commands run there act on the session's VM, not on the user's machine.
+- Claude on the web, desktop and mobile uses plugins from the claude.ai account, added from the **Plugins** page in a browser or the desktop app; they also sync to Claude Code. Chat ignores agents and hooks; on an account where chat and Cowork are merged, task work was observed (2026-11-13) to load them, and any binary a hook calls must be installed in that environment. LSP servers are documented as Claude Code only. A top-level `bin/` blocks the install, and installing never connects a bundled connector. Check which experience the account has before debugging: `references/environments.md`, section 7. For an Agent SDK application, section 8.
 
 **Loading and copies**
 
@@ -94,8 +95,15 @@ Run this before a plugin or marketplace goes to other people.
 
 1. `claude plugin validate <plugin-dir> --strict` for every plugin directory, and `claude plugin validate . --strict` from the marketplace root. Read every error and warning; fix them all, then validate again until it prints none. On 2.1.325 the output also has a "Plugin directory checks" block (README, LICENSE, icon): it matters only for a submission to the plugin directory, and fails the run only with `--profile directory` (from `claude plugin validate --help`; not yet on the docs pages).
 2. Check what validation does not read: a `SKILL.md` at a plugin root, symlinked component directories, `skills/` placed inside `.claude-plugin/`, hook matchers, files a script reads outside the plugin (`require('../shared')`), hook scripts that do nothing, and `disable-model-invocation: true` left on a skill Claude should invoke.
-3. Load it the way users will: install from the marketplace (a local-path marketplace works for this), start a new session, and check `claude plugin details <name>` lists every skill, agent, hook and server. A `--plugin-dir` test alone does not prove the installed copy works.
-4. Measure behavior with evals: at least one case per skill on natural phrasing, one negative case, graders on the result and on the steps (`references/evals.md`).
+3. Review what a policy reviewer would reject. Among the checks in the policy review prompt of Anthropic's official marketplace (source: `anthropics/claude-plugins-official`, `.github/policy/prompt.md`, commit b5b01ac), beyond malware, deception, prompt injection and safety circumvention, a plugin fails when:
+   - a `UserPromptSubmit`, `PreToolUse` or `PostToolUse` hook runs in every session, with no gate to projects that match the plugin's purpose;
+   - a hook reads user data beyond the plugin's stated purpose;
+   - a hook or shipped code calls a host other than the plugin's declared MCP servers, unless the `plugin.json` description or the top-level README explicitly discloses the call and documents an opt-out;
+   - the `plugin.json` description would not lead a user to expect the hooks, telemetry or data access the plugin performs;
+   - shipped code reads one service's credential and sends it to another.
+   Review the whole published payload, including `.claude/`, `scripts/`, `examples/` and `tests/`, not only the components that load. `claude plugin validate` checks files and schema, so it does not cover these. Recommended: apply the same bar to a public marketplace of your own.
+4. Load it the way users will: install from the marketplace (a local-path marketplace works for this), start a new session, and check `claude plugin details <name>` lists every skill, agent, hook and server. A `--plugin-dir` test alone does not prove the installed copy works.
+5. Measure behavior with evals: at least one case per skill on natural phrasing, one negative case, graders on the result and on the steps (`references/evals.md`).
 
 ## Evals in brief
 
@@ -113,7 +121,7 @@ Read `references/evals.md` before writing or running a suite; it holds every fie
 - `references/messages.md`: every documented message, by the stage that produces it (where `/plugin` runs, add a marketplace, install, enable and update, installed but not working, build, host, organization policy), plus the conventions all `claude plugin` commands share (exit codes, scopes, `--json` result lines). Read it when there is a message to look up.
 - `references/loading.md`: the three stages, origins, `enabledPlugins` precedence, the files under `~/.claude/plugins/`, in-place and copied plugins, versions and updates, name conflicts. Read it when something loaded wrong or not at all with no message, or to explain why.
 - `references/evals.md`: running, writing, grading, mocking, CI and reading results for `claude plugin eval`. Read it for any eval work.
-- `references/environments.md`: what loads in a cloud session and in a project's cloud thread, how to test and debug there, and where each fix goes. Read it whenever the session is not the user's own terminal.
+- `references/environments.md`: what loads in a cloud session, in a project's cloud thread, in Claude on the web, desktop and mobile, and in the Agent SDK, how to test and debug there, and where each fix goes. Read it whenever the session is not the user's own terminal.
 - `scripts/gate_eval_result.py`: `python3 scripts/gate_eval_result.py results.json --min-mean-delta 0.2` exits 0 when the gate passes, 1 when it fails, 2 when the result is not comparable (partial, or judge graders skipped by the cost ceiling). Standard library only.
 - `assets/`: eval case and mock templates, and a CI step.
 
