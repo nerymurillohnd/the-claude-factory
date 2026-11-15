@@ -129,7 +129,14 @@ jobs:
           fi
           OUT="${RUNNER_TEMP}/eval"
           mkdir -p "${OUT}"
-          jq -r --arg p "${PLUGIN}" '.[$p] // [] | .[]' .github/evals.json >"${RUNNER_TEMP}/eval-flags"
+          # Fail closed: never run a suite without the flags .github/evals.json gives it.
+          flags=0
+          jq -r --arg p "${PLUGIN}" '(.[$p] // []) | if type == "array" then .[] else error("not a list") end' \
+            .github/evals.json >"${RUNNER_TEMP}/eval-flags" || flags=$?
+          if ((flags != 0)); then
+            echo "::error::.github/evals.json can't be read for ${PLUGIN} (jq exit ${flags})"
+            exit 1
+          fi
           mapfile -t extra <"${RUNNER_TEMP}/eval-flags"
           # The target first: --tag takes a list, so a target after it is read as a tag.
           status=0
