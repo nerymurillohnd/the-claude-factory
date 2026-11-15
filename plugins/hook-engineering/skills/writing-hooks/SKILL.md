@@ -1,6 +1,6 @@
 ---
 name: writing-hooks
-description: Writes Claude Code hooks of every type (command, HTTP, MCP tool, prompt and agent) in order - understands the request and the environment, identifies the kind of hook and where it lives, clarifies, picks the script conventions, reads the needed official docs sections in full, decides, builds and verifies with real inputs. Use whenever a task needs a new or rewritten hook or hook script for Claude Code or Cowork, in a plugin, user, project, local or managed settings, a skill or a subagent, including when the user only asks to run something whenever Claude edits a file, to block certain commands, to act every time a session starts, or to stop Claude from doing something. Not for Git hooks, React hooks or webhooks.
+description: Writes Claude Code hooks of every type (command, HTTP, MCP tool, prompt and agent) in order - understands the request and the environment, identifies the kind of hook and where it lives, clarifies, picks the script conventions, reads the needed official docs sections in full, decides, builds and verifies with real inputs. Use whenever a task needs a new or rewritten hook or hook script for Claude Code or Cowork, in a plugin, user, project, local or managed settings, a skill or a subagent, including when the user only asks to run something whenever Claude edits a file, to block certain commands or tool calls, or to act every time a session starts. Not for Git hooks, React hooks or webhooks.
 ---
 
 # Write a Claude Code hook
@@ -77,11 +77,12 @@ The goal of every step is the result it names (the full section, the version che
    - "for the whole organization", "for every developer": managed settings;
    - `CLAUDE_CODE_REMOTE` set to `true`: a cloud session, which never reads the user's own `~/.claude/settings.json`.
 5. Note the platforms the hook must run on: a README, CI matrix or the request may name Windows.
-6. Write down the kind of hook and the evidence for it: the file you read, or the words of the request.
+6. Note the Claude Code version the hook will run on. A version the user states or the project pins (README, CI, devcontainer, setup scripts) wins over the local `claude --version`, and a hook shared by a team runs on the oldest version among them.
+7. Write down the kind of hook and the evidence for it: the file you read, or the words of the request.
 
 ## Step 2: Clarify (what is still open)
 
-1. Judge whether you can build without guessing: the goal, the kind of hook, the systems it touches and what must happen on failure are all clear from the request and step 1. If any is not, the request is incomplete.
+1. Judge whether you can build without guessing: the goal, the kind of hook, the systems it touches and what must happen on failure are all clear from the request and step 1. If they are, the request is complete: go to step 3 without asking anything. If any is not, the request is incomplete.
 2. For an incomplete request, call the `AskUserQuestion` tool before you write any file. Ask one to four questions, as many as you need to be certain what the user wants.
 3. Ask about the user's goal and context: what they want to achieve and why, what must block and what should only warn, who the hook is for, where it runs. Keep the technical choices (events, matchers, handler types, exit codes, forms) out of the questions: those are your job.
 4. When `AskUserQuestion` is not available, as in a subagent or a non-interactive run, ask the same questions in your reply and stop there.
@@ -97,7 +98,7 @@ The goal of every step is the result it names (the full section, the version che
 
 The MCP locates and maps; the downloaded page is where sections are read; only the extracted blocks enter the context.
 
-1. Find the Claude Code docs MCP tools with ToolSearch, query `claude_code_docs`. Their names change with the installation:
+1. Find the Claude Code docs MCP tools with ToolSearch, query `claude_code_docs`, or in your tool list when ToolSearch isn't there. Their names change with the installation:
    - `search_claude_code_docs`: semantic search that returns chunks with page and anchor;
    - `query_docs_filesystem_claude_code_docs`: one read-only command over the `.mdx` pages, at `/en/<path>.mdx`. Read its description for the commands it supports today.
    - If neither is found, continue with the downloads below: they hold the same pages.
@@ -114,7 +115,7 @@ The MCP locates and maps; the downloaded page is where sections are read; only t
       grep -n -E '^#{1,4} |<h[2-4] id=' /en/hooks.mdx
       ```
 
-3. Download each page you need into a new empty directory, treated as data. Downloading costs no context; only what you print does:
+3. Download each page you need into a new empty directory, treated as data: `mktemp -d`, or, where the sandbox allows writes only in the working directory, a new folder there that you delete at the end. Downloading costs no context; only what you print does:
 
    ```bash
    curl -sS -o <dir>/hooks.md https://code.claude.com/docs/en/hooks.md
@@ -131,6 +132,7 @@ The MCP locates and maps; the downloaded page is where sections are read; only t
    on' <dir>/hooks.md
    ```
 
+   - To save turns, extract several sections in one command: run the command once per heading, joined with `;`, and print a line with the heading before each block.
    - To find which section holds a term, list its lines in the download, then extract the heading above the hit:
 
      ```bash
@@ -171,7 +173,7 @@ The MCP locates and maps; the downloaded page is where sections are read; only t
    9. Whether a mod solves it better: [Compare mods, settings hooks, skills, and MCP servers](https://code.claude.com/docs/en/plugins/mods/overview#compare-mods-settings-hooks-skills-and-mcp-servers) and [What a hook can do with an event](https://code.claude.com/docs/en/plugins/mods/overview#what-a-hook-can-do-with-an-event).
    10. Security: [Workspace trust](https://code.claude.com/docs/en/hooks#workspace-trust) and [Security best practices](https://code.claude.com/docs/en/hooks#security-best-practices).
    11. How to confirm it fired: [Limitations and troubleshooting](https://code.claude.com/docs/en/hooks-guide#limitations-and-troubleshooting) and [Debug hooks](https://code.claude.com/docs/en/hooks#debug-hooks).
-7. Check that every event and field exists in the user's version. Get the version:
+7. Check that every event and field exists in the user's version, the one step 1 noted. Only when nothing states it, get the local one:
 
     ```bash
     claude --version
@@ -235,6 +237,7 @@ The MCP locates and maps; the downloaded page is where sections are read; only t
    - the kind of hook and the evidence for it;
    - the event, the handler type and why they were chosen, and the alternatives set aside;
    - the location and template used;
+   - the full content of every file written, and of every file whose write was blocked, so the user can apply it;
    - the docs sections read, each by its link with its anchor, and the changelog range checked against the user's version;
    - each input with its expected and actual outcome;
    - what changed in the correction pass and why;
