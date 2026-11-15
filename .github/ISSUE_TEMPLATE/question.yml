@@ -37,6 +37,7 @@ body:
         - turn-meter
         - typescript6-lsp-intelligence
         - typescript7-lsp-intelligence
+        - work-lifecycle
 
   - type: textarea
     id: question

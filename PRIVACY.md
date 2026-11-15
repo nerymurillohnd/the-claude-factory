@@ -22,7 +22,7 @@ The author receives only what you choose to post in a [GitHub issue](https://git
 
 Plugins run inside your own Claude Code session, with your permissions. What a plugin reads or writes on your machine stays there. Each plugin's README lists the files it reads and writes, the commands it runs and how long anything it keeps lasts, in its **What this plugin runs and sends** section.
 
-Some plugins keep small files in their own data folder or in a temporary folder, such as a marker that a notice was already shown, and delete them as their README describes. None of them sends those files anywhere.
+Some plugins keep small files in their own data folder or in a temporary folder, such as a marker that a notice was already shown, and delete them as their README describes. work-lifecycle keeps its plan state files in a `.work-lifecycle/` folder inside your project, which it creates with its own `.gitignore` so nothing in it reaches your repository. None of them sends those files anywhere.
 
 ## Third-party services
 

@@ -11,7 +11,7 @@ _Skills · Agents · Hooks · Mods · MCP servers · LSP servers — packaged, v
 <br>
 
 <!-- plugin-count:start -->
-[![Plugins](https://img.shields.io/badge/plugins-22-D97757?style=for-the-badge)](#-catalog)
+[![Plugins](https://img.shields.io/badge/plugins-23-D97757?style=for-the-badge)](#-catalog)
 <!-- plugin-count:end -->
 [![Validate](https://img.shields.io/github/actions/workflow/status/nerymurillohnd/the-claude-factory/validate.yml?branch=main&label=validate&style=for-the-badge)](https://github.com/nerymurillohnd/the-claude-factory/actions/workflows/validate.yml)
 [![Checked with Biome](https://img.shields.io/badge/Checked_with-Biome-60a5fa?style=for-the-badge&logo=biome)](https://biomejs.dev)
@@ -107,7 +107,7 @@ Plugin skills are namespaced, so they never collide with yours: type `/<plugin>:
 | Category | Plugins |
 | :-- | :--: |
 | [🛠️ Development](#️-development) | 6 |
-| [⚡ Productivity](#-productivity) | 2 |
+| [⚡ Productivity](#-productivity) | 3 |
 | [🤖 Automation](#-automation) | 1 |
 | [📈 Monitoring](#-monitoring) | 3 |
 | [🧪 Testing & Quality](#-testing--quality) | 3 |
@@ -138,6 +138,7 @@ _Everyday workflows, planning and knowledge work._
 | :-- | :-- | :-- | :--: | :-- |
 | [**File Tree Pane**](./plugins/file-tree-pane#readme)<br>`file-tree-pane@the-claude-factory` | A live file explorer panel beside the chat: your project's file tree with git status, diffs and line counts, what Claude reads, writes and commits, search, file previews and your editor one key away. A Claude Code mod for productivity. | 💻 Code only | `0.1.6` | 🧩 Mods |
 | [**Prompt Writer**](./plugins/prompt-writer#readme)<br>`prompt-writer@the-claude-factory` | Prompt engineering for Claude: turns a goal, idea or draft into one copy-ready prompt or system prompt tuned to the target Claude model and effort, clarifies intent, checks current official facts, helps with model migration and recommends the setup to run it with. | 💻 Code · 🖥️ Claude | `0.2.5` | 🎯 Skills · 🪝 Hooks |
+| [**Work Lifecycle**](./plugins/work-lifecycle#readme)<br>`work-lifecycle@the-claude-factory` | Plans and builds work in stages, from goal to verified result: researches current official sources and the code, writes a self-contained, verifiable plan before anything changes, blocks Claude from finishing while a task lacks recorded evidence, and implements code test-first with each red and green run recorded and checked against a baseline. Work you can verify. | 💻 Code · 🖥️ Claude | `0.1.0` | 🎯 Skills · 🤖 Agents · 🪝 Hooks |
 
 ### 🤖 Automation
 

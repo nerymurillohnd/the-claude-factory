@@ -137,6 +137,12 @@
       "source": "./plugins/typescript7-lsp-intelligence",
       "description": "TypeScript and JavaScript code intelligence for Claude Code: connects the native TypeScript 7 language server (LSP), type-checks every file Claude edits with your own native TypeScript 7 compiler (tsc) under a strictest policy, and teaches Claude to find the program that owns a file and fix compiler diagnostics without unsafe assertions or suppressions.",
       "category": "language-support"
+    },
+    {
+      "name": "work-lifecycle",
+      "source": "./plugins/work-lifecycle",
+      "description": "Plans and builds work in stages, from goal to verified result: researches current official sources and the code, writes a self-contained, verifiable plan before anything changes, blocks Claude from finishing while a task lacks recorded evidence, and implements code test-first with each red and green run recorded and checked against a baseline. Work you can verify.",
+      "category": "productivity"
     }
   ],
   "renames": {
