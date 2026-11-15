@@ -18,7 +18,7 @@
 - Push, open a pull request or run a workflow only with Nery's explicit authorization.
 - Work from current official sources, not from memory: the official documentation wins over ADRs, rules and these instructions, so say so each time they conflict.
 
-## Stack
+## Tools and commands
 
 **Runtimes**
 
@@ -59,7 +59,7 @@
 | `scripts/` | Maintainer validators, checkers, generators, release and test scripts, schemas and typings |
 | `docs/` | User guides and their assets |
 
-## How to run this project
+## Skills by task
 
 Load `extended-memory:extended-memory` at the start of every session.
 
@@ -71,7 +71,7 @@ Use `plugin-engineering:cli-commands-guide`, which governs plugins and their com
 
 - Use `plugin-engineering:public-marketplace-dev` to build a plugin.
 - Use `plugin-authoring` to create or change a mod.
-- Use `hook-engineering:writing-hooks` to write or rewrite a Claude Code hook, and wire it with `update-config`.
+- Use `hook-engineering:writing-hooks` to write or rewrite a Claude Code hook.
 - Use `hook-engineering:hook-development` to debug or audit a hook.
 - Use `plugin-engineering:plugin-testing-and-debugging` to test, debug or review a plugin before publishing it.
 - Use `plugin-evals:plugin-evals` to write or run a plugin's evals; every run bills the owner.
@@ -91,21 +91,17 @@ Use these skills to write code in each language, keep its style, and explore and
 
 ### Maintenance
 
-Use these skills for the project's upkeep: research, documents, instructions, settings, records and handoffs.
+Use these skills for the project's upkeep: memory, research, documents, records and handoffs.
 
 - Use `anthropic-skills:cc-docs-research` to research Claude Code.
 - Use `docs-maintenance` to write a README, CHANGELOG, license or policy document.
-- Use `instruction-engineering:claude-md-and-rules` to write or change CLAUDE.md or a rule.
-- Use `update-config` to change settings, permissions or hook registration.
 - Use `project-maintainer:write-records` to record a decision or technical debt.
 - Use `project-maintainer:write-handoff` to end a session with a handoff.
 
 ### GitHub and CI
 
-Use these skills for pull requests, reviews, workflows and the repository's GitHub files.
+Use these skills for pull requests, workflows and the repository's GitHub files.
 
 - Use `github-operations:auto-pr-lifecycle` to open or drive a pull request.
-- Use `code-review` to review a diff or a pull request.
-- Use `security-review` to review pending changes for security.
 - Use `github-operations:claude-github-actions` to audit or fix a GitHub Actions workflow.
 - Use `github-operations:github-files-setup` to write issue forms, discussion forms, PR templates, labels, CODEOWNERS or Dependabot configuration.
