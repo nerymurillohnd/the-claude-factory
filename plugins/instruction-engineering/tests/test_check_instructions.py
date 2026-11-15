@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -74,16 +75,14 @@ class PathPatternTest(unittest.TestCase):
     """The patterns of the docs' table, matched as Claude Code documents them."""
 
     def __init__(self, method_name: str = "runTest") -> None:
-        """Hold the throwaway project each test builds."""
+        """Hold the throwaway project each test builds; setUp fills it, tearDown removes it."""
         super().__init__(method_name)
-        self._tmp: tempfile.TemporaryDirectory[str] = tempfile.TemporaryDirectory()
-        self.project: Path = Path(self._tmp.name)
+        self.project: Path = Path()
 
     @override
     def setUp(self) -> None:
         """A root package.json, a nested one, and Markdown at two depths."""
-        self._tmp = tempfile.TemporaryDirectory()
-        self.project = Path(self._tmp.name)
+        self.project = Path(tempfile.mkdtemp())
         for rel in ("package.json", "sub/package.json", "README.md", "docs/guide.md"):
             path = self.project / rel
             path.parent.mkdir(parents=True, exist_ok=True)
@@ -92,7 +91,7 @@ class PathPatternTest(unittest.TestCase):
     @override
     def tearDown(self) -> None:
         """Remove the throwaway project."""
-        self._tmp.cleanup()
+        shutil.rmtree(self.project)
 
     def test_leading_slash_anchors_the_pattern_to_the_base(self) -> None:
         """'/package.json' loads for the root file only, with no no-match or prefix finding."""
