@@ -40,7 +40,7 @@ Chosen option: **the official example on the subscription token**:
 
 - Good, because mentions bill the owner's subscription.
 - Bad, because the token comes from `claude setup-token` in a terminal, so the workflow stays inert until the owner creates it.
-- Bad, because zizmor flags comment triggers as dangerous, and `.github/zizmor.yml` accepts that for `claude.yml` (ADR_2026-11-15_zizmor-accepts-three-findings-with-their-reasons).
+- Bad, because zizmor flags comment triggers as dangerous, and `.github/zizmor.yml` accepts that for `claude.yml`.
 
 ## More information
 

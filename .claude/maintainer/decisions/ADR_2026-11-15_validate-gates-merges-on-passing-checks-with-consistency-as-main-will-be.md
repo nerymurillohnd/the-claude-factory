@@ -15,7 +15,7 @@ superseded-by: none
 
 ## Context and problem statement
 
-`validate.yml` was deleted in `ced195b` (2026-11-13) because it still ran the removed `scripts/gates.mjs`. Since then no pull request had CI, and `release.yml`, which ran on `workflows: [Validate]`, had nothing to wait for. ADR_2026-11-13_checks-run-fast-locally-and-in-full-in-ci made CI the single gate and pointed to `.claude/rules/testing.md`, which no longer exists.
+`validate.yml` was deleted in `ced195b` (2026-11-13) because it still ran the removed `scripts/gates.mjs`. Since then no pull request had CI, and `release.yml`, which ran on `workflows: [Validate]`, had nothing to wait for.
 
 `npm run check` failed on logged debt: DEBT-003 (`claude plugin validate --strict` on five plugins, `validate:portable`, `validate:hooks-catch`), DEBT-005 (`lint:frontmatter`) and DEBT-006 (`lint:js`). All three are still open in `.claude/maintainer/technical-debt/pending-debt.md`. The baseline is `.claude/maintainer/plans/2026-11-15-release-pipeline-baseline.md`. How should the new gate treat them?
 
@@ -70,7 +70,7 @@ Chosen option: **gate on what passes, report the rest**, because it restores a r
 ## More information
 
 - The core decision was made by the owner on 2026-11-15 ("Gate what passes"). The owner then decided to supersede the record, after a review of pull request 107 found its `check:consistency` bullet out of date.
-- Replaces ADR_2026-11-15_validate-gates-merges-on-passing-checks-and-reports-debt, which stays as written and points here through its `superseded-by`. That record had itself replaced ADR_2026-11-13_checks-run-fast-locally-and-in-full-in-ci, which keeps pointing to it; the chain reads: that record, then the gates record, then this one.
+- Replaces ADR_2026-11-15_validate-gates-merges-on-passing-checks-and-reports-debt, which stays as written and points here through its `superseded-by`.
 - The removal of `--date-check` is recorded in ADR_2026-11-15_changelog-date-is-the-day-a-version-is-prepared-and-validate-passes-main, which names the old bullet. This record carries the corrected bullet.
 - Not carried over from the replaced record: its statement that `validate` behavior changed in Claude Code 2.1.323 and 2.1.325, which no file of the repository supports, and its claim that no tag had been created since 2026-11-10.
 - Related: DEBT-003, DEBT-005, DEBT-006, ADR_2026-11-12_actionlint-and-zizmor-check-workflows.

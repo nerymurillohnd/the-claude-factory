@@ -89,5 +89,4 @@ What changed:
   - [Best practices: Keep CLAUDE.md short](https://code.claude.com/docs/en/best-practices#keep-claude-md-short).
 - Related:
   - ADR_2026-11-13_claude-configuration-architecture-on-the-owners-claude-md, whose CLAUDE.md this changes;
-  - ADR_2026-11-13_plugin-command-hook-tests-ship-in-the-plugin;
-  - ADR_2026-11-13_checks-run-fast-locally-and-in-full-in-ci.
+  - ADR_2026-11-13_plugin-command-hook-tests-ship-in-the-plugin.

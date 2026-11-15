@@ -3,7 +3,7 @@ status: superseded
 date: 2026-11-15
 decision-makers:
   - "Nery Samuel Murillo"
-supersedes: ADR_2026-11-13_checks-run-fast-locally-and-in-full-in-ci
+supersedes: none
 superseded-by: ADR_2026-11-15_validate-gates-merges-on-passing-checks-with-consistency-as-main-will-be
 ---
 
@@ -15,7 +15,7 @@ superseded-by: ADR_2026-11-15_validate-gates-merges-on-passing-checks-with-consi
 
 ## Context and problem statement
 
-`validate.yml` was deleted in `ced195b` (2026-11-13) because it still ran the removed `scripts/gates.mjs`. Since then no pull request had CI. `release.yml` waited on a workflow named `Validate`, so no tag has been created since 2026-11-10. ADR_2026-11-13_checks-run-fast-locally-and-in-full-in-ci made CI the single gate and pointed to `.claude/rules/testing.md`, which no longer exists.
+`validate.yml` was deleted in `ced195b` (2026-11-13) because it still ran the removed `scripts/gates.mjs`. Since then no pull request had CI. `release.yml` waited on a workflow named `Validate`, so no tag has been created since 2026-11-10.
 
 `npm run check` fails today on logged debt: DEBT-003 (`validate --strict` on five mods, `validate:portable`, `validate:hooks-catch`), DEBT-005 (`lint:frontmatter`) and DEBT-006 (`lint:js`). The baseline is `.claude/maintainer/plans/2026-11-15-release-pipeline-baseline.md`. How should the new gate treat them?
 

@@ -1,10 +1,10 @@
 ---
-status: superseded
+status: accepted
 date: 2026-11-12
 decision-makers:
   - "Nery (project owner)"
 supersedes: none
-superseded-by: ADR_2026-11-15_zizmor-accepts-three-findings-with-their-reasons
+superseded-by: none
 ---
 
 # Check workflows with actionlint for correctness and zizmor for security
