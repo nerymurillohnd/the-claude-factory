@@ -57,6 +57,7 @@
       "Bash(gh api *dispatches*)",
       "Bash(gh release create*)",
       "Bash(claude plugin tag * --push*)",
+      "Bash(claude plugin eval*)",
       "Bash(npm run labels:sync -- --apply*)",
       "Edit(/.claude/CLAUDE.md)",
       "Edit(/.claude/settings.json)",
