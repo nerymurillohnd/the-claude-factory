@@ -6,8 +6,10 @@ Maintainer tooling: run it through `npm run evals:gate`, which uses the project'
 `claude plugin eval` never fails on the with-minus-without delta, so the evals workflow reads
 `aggregates.meanDelta` from the result and fails when the plugin stops helping. Exit codes:
 0 the gate passed, 1 it failed, 2 the result is not comparable (partial, judge graders skipped
-by the cost ceiling, or a run that errored or a mock aborted, which scores 0 and skews the delta),
-3 the file is not an eval result.
+by the cost ceiling, or a run a mock aborted, which scores 0 and skews the delta), 3 the file is
+not a schemaVersion 1 eval result. A run error such as a timeout is printed as a warning only:
+the docs say such runs are still graded on what they produced, and a run that ended on an API
+error already makes `claude plugin eval` exit 1.
 """
 
 from __future__ import annotations
@@ -60,8 +62,9 @@ def number(value: object) -> float | None:
     return result if math.isfinite(result) else None
 
 
-def run_problems(cases: list[object]) -> tuple[list[str], bool]:
-    """List each run's error and mock abort, and report whether judge graders were skipped."""
+def run_problems(cases: list[object]) -> tuple[list[str], list[str], bool]:
+    """List run errors (warnings) and mock aborts, and report whether judge graders were skipped."""
+    warnings: list[str] = []
     problems: list[str] = []
     skipped = False
     for case in cases:
@@ -70,7 +73,7 @@ def run_problems(cases: list[object]) -> tuple[list[str], bool]:
             for index, run in enumerate(items(field(field(case, "arms"), arm)), start=1):
                 error = field(run, "error")
                 if error:
-                    problems.append(f"{name} [{arm} run {index}] error: {error}")
+                    warnings.append(f"warning: {name} [{arm} run {index}] error: {error}")
                 aborted = field(run, "aborted")
                 if aborted:
                     where = f"{field(aborted, 'server')}/{field(aborted, 'tool')}"
@@ -78,7 +81,7 @@ def run_problems(cases: list[object]) -> tuple[list[str], bool]:
                     problems.append(f"{name} [{arm} run {index}] aborted by mock {where}: {reason}")
                 if field(run, "skippedPaidGraders"):
                     skipped = True
-    return problems, skipped
+    return warnings, problems, skipped
 
 
 class Args(argparse.Namespace):
@@ -101,6 +104,10 @@ def load(path: Path) -> JsonObject | None:
     if not isinstance(doc, JsonObject):
         _ = sys.stderr.write(f"eval-gate: {path} is not a JSON object\n")
         return None
+    version = field(doc, "schemaVersion")
+    if version != 1:
+        _ = sys.stderr.write(f"eval-gate: {path} has schemaVersion {version}, not 1\n")
+        return None
     return doc
 
 
@@ -109,13 +116,13 @@ def verdict(doc: JsonObject, min_mean_delta: float | None) -> int:
     if field(doc, "partial"):
         _ = sys.stdout.write(f"not comparable: partial result ({field(doc, 'partialReason')})\n")
         return EXIT_NOT_COMPARABLE
-    problems, skipped = run_problems(items(field(doc, "cases")))
-    _ = sys.stdout.write("".join(f"{line}\n" for line in problems))
+    warnings, problems, skipped = run_problems(items(field(doc, "cases")))
+    _ = sys.stdout.write("".join(f"{line}\n" for line in [*warnings, *problems]))
     if skipped:
         _ = sys.stdout.write("not comparable: the cost ceiling skipped judge graders\n")
         return EXIT_NOT_COMPARABLE
     if problems:
-        _ = sys.stdout.write("not comparable: a run errored or a mock aborted it\n")
+        _ = sys.stdout.write("not comparable: a mock aborted a run\n")
         return EXIT_NOT_COMPARABLE
     aggregates = field(doc, "aggregates")
     mean = number(field(aggregates, "meanDelta"))

@@ -62,9 +62,13 @@ class EvalGateTest(unittest.TestCase):
         self.assertIn("no meanDelta", out)
 
     def test_partial_result_is_not_comparable(self) -> None:
-        """A run stopped by the cost ceiling is left out of the gate."""
-        doc = _result(partial=True, partialReason="cost ceiling")
-        self.assertEqual(self._run(doc, "--min-mean-delta", "0.2")[0], 2)
+        """Each documented partialReason leaves the result out of the gate."""
+        for reason in ("cost_ceiling", "interrupted", "auth_failed"):
+            with self.subTest(reason=reason):
+                doc = _result(partial=True, partialReason=reason)
+                code, out = self._run(doc, "--min-mean-delta", "0.2")
+                self.assertEqual(code, 2)
+                self.assertIn(reason, out)
 
     def test_skipped_paid_graders_are_not_comparable(self) -> None:
         """A run whose judge graders were skipped is left out of the gate."""
@@ -78,12 +82,19 @@ class EvalGateTest(unittest.TestCase):
         self.assertEqual(code, 1)
         self.assertIn("no meanDelta", out)
 
-    def test_run_error_is_not_comparable(self) -> None:
-        """A run that ended on an API error is printed, and the result is left out of the gate."""
-        case = {"name": "demo", "arms": {"with": [{"error": "429"}], "without": []}}
+    def test_run_error_is_a_warning_and_still_gates(self) -> None:
+        """A run that timed out is still graded, so it is printed and the gate still applies."""
+        case = {
+            "name": "demo",
+            "arms": {"with": [{"error": "timed out after 300s"}], "without": []},
+        }
         code, out = self._run(_result(cases=[case]), "--min-mean-delta", "0.2")
-        self.assertEqual(code, 2)
-        self.assertIn("demo [with run 1] error: 429", out)
+        self.assertEqual(code, 0)
+        self.assertIn("warning: demo [with run 1] error: timed out after 300s", out)
+
+    def test_unknown_schema_version_exits_3(self) -> None:
+        """Only schemaVersion 1 is a result this gate knows how to read."""
+        self.assertEqual(self._run(_result(schemaVersion=2), "--min-mean-delta", "0.2")[0], 3)
 
     def test_mock_abort_is_not_comparable(self) -> None:
         """An aborted run scores 0 and can inflate meanDelta, so the result is left out."""
