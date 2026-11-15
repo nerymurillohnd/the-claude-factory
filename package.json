@@ -29,6 +29,7 @@
     "lint:workflows": "actionlint && zizmor --offline .",
     "release:changelog": "uv run python scripts/release/release-changelog.py",
     "release:notes": "uv run python scripts/release/release-notes.py",
+    "release:publish": "bash scripts/release/publish-releases.sh",
     "release:status": "uv run python scripts/release/release-status.py",
     "setup": "npm ci && uv sync --locked && npm run tools:install",
     "test:plugins": "for d in plugins/*/tests/; do if ls \"$d\"test_*.py >/dev/null 2>&1; then python3 -m unittest discover -s \"$d\" -p 'test_*.py' || exit 1; fi; if ls \"$d\"*.test.mjs >/dev/null 2>&1; then node --test \"$d\"*.test.mjs || exit 1; fi; done",
