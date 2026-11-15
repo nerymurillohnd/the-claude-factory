@@ -1,5 +1,5 @@
 ---
 type: regex
 target: trace
-pattern: '"type":"tool_use","id":"[^"]+","name":"(Bash|WebFetch|mcp__[^"]*claude-code-docs__\w+)","input":\{.{0,600}?changelog'
+pattern: '"type":\s*"tool_use",\s*"id":\s*"[^"]+",\s*"name":\s*"(Bash|WebFetch|mcp__[^"]*claude-code-docs__\w+)",\s*"input":\s*\{.{0,600}?changelog'
 ---
