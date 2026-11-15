@@ -12,8 +12,9 @@ Usage:
 Exit codes:
   0  every requested gate passed
   1  a gate failed, or a delta gate was requested on a one-arm result
-  2  the result is not comparable (partial run, or judge graders skipped by
-     the cost ceiling); leave it out of trends
+  2  the result is not comparable (partial run, judge graders skipped by the
+     cost ceiling, or a run that errored or a mock aborted, which scores 0 and
+     skews the delta); leave it out of trends
   3  the file could not be read as an eval result
 
 Standard library only. Unknown fields are ignored, as the result format adds
@@ -24,6 +25,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import pathlib
 import sys
 from typing import cast
@@ -61,10 +63,11 @@ def as_list(value: object) -> list[object]:
 
 
 def as_number(value: object) -> float | None:
-    """Return value as a float when it is a JSON number."""
+    """Return value as a float when it is a finite JSON number; NaN compares as nothing."""
     if isinstance(value, bool) or not isinstance(value, (int, float)):
         return None
-    return float(value)
+    number = float(value)
+    return number if math.isfinite(number) else None
 
 
 def run_problems(cases: list[object]) -> tuple[list[str], bool]:
@@ -139,6 +142,20 @@ def parse_args() -> argparse.Namespace:
     return p.parse_args()
 
 
+def not_comparable(doc: dict[str, object], cases: list[object]) -> str | None:
+    """Print each run problem, and return why the result can't be gated, or None."""
+    if doc.get("partial"):
+        return f"partial result ({doc.get('partialReason')})"
+    problems, skipped_paid = run_problems(cases)
+    for line in problems:
+        out(line)
+    if skipped_paid:
+        return "the cost ceiling skipped judge graders in at least one run"
+    if problems:
+        return "a run errored or a mock aborted it"
+    return None
+
+
 def main() -> int:
     """Read the result, refuse non-comparable runs, apply the gates."""
     args = parse_args()
@@ -156,16 +173,10 @@ def main() -> int:
 
     if doc.get("schemaVersion") != 1:
         err(f"warning: schemaVersion is {doc.get('schemaVersion')!r}; written for 1")
-    if doc.get("partial"):
-        out(f"not comparable: partial result ({doc.get('partialReason')})")
-        return EXIT_NOT_COMPARABLE
-
     cases = as_list(doc.get("cases"))
-    problems, skipped_paid = run_problems(cases)
-    for line in problems:
-        out(line)
-    if skipped_paid:
-        out("not comparable: the cost ceiling skipped judge graders in at least one run")
+    reason = not_comparable(doc, cases)
+    if reason:
+        out(f"not comparable: {reason}")
         return EXIT_NOT_COMPARABLE
 
     agg = as_dict(doc.get("aggregates"))

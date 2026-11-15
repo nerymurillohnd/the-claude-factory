@@ -122,7 +122,7 @@ Read `references/evals.md` before writing or running a suite; it holds every fie
 - `references/loading.md`: the three stages, origins, `enabledPlugins` precedence, the files under `~/.claude/plugins/`, in-place and copied plugins, versions and updates, name conflicts. Read it when something loaded wrong or not at all with no message, or to explain why.
 - `references/evals.md`: running, writing, grading, mocking, CI and reading results for `claude plugin eval`. Read it for any eval work.
 - `references/environments.md`: what loads in a cloud session, in a project's cloud thread, in Claude on the web, desktop and mobile, and in the Agent SDK, how to test and debug there, and where each fix goes. Read it whenever the session is not the user's own terminal.
-- `scripts/gate_eval_result.py`: `python3 scripts/gate_eval_result.py results.json --min-mean-delta 0.2` exits 0 when the gate passes, 1 when it fails, 2 when the result is not comparable (partial, or judge graders skipped by the cost ceiling). Standard library only.
+- `scripts/gate_eval_result.py`: `python3 scripts/gate_eval_result.py results.json --min-mean-delta 0.2` exits 0 when the gate passes, 1 when it fails, 2 when the result is not comparable (partial, judge graders skipped by the cost ceiling, or a run that errored or a mock aborted). Standard library only.
 - `assets/`: eval case and mock templates, and a CI step.
 
 ## Version and source check
