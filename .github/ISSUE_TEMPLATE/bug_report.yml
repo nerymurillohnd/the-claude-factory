@@ -40,6 +40,7 @@ body:
         - turn-meter
         - typescript6-lsp-intelligence
         - typescript7-lsp-intelligence
+        - work-lifecycle
     validations:
       required: true
 
