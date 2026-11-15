@@ -43,9 +43,10 @@ Mods Engineering is a skill for anyone who writes Claude Code mods: panes, bands
 
 ## 📋 Prerequisites
 
-| Tool        | Minimum version | Check              |
-| :---------- | :-------------- | :----------------- |
-| Claude Code | 2.1.295         | `claude --version` |
+| Tool                                      | Minimum version | Check              |
+| :---------------------------------------- | :-------------- | :----------------- |
+| Claude Code                               | 2.1.295         | `claude --version` |
+| Claude Code docs MCP server (recommended) | —               | `claude mcp list`  |
 
 ### 🤖 Claude Code
 
@@ -75,6 +76,35 @@ npm install -g @anthropic-ai/claude-code@latest
 ```
 
 </details>
+
+### 📖 Claude Code docs server
+
+Recommended: with it, Claude reads the current Claude Code docs pages instead of recalling them. Run this once in your terminal, not inside a session. `--scope user` makes it available in every project:
+
+<details>
+<summary>💻 <b>Claude Code</b> — any platform</summary>
+
+```bash
+claude mcp add --transport http --scope user claude-code-docs https://code.claude.com/docs/mcp
+```
+
+</details>
+
+Check it; `claude-code-docs` should show `✔ Connected`. It needs no sign-in and no credentials.
+
+```bash
+claude mcp list
+```
+
+Use the name `claude-code-docs`, the one the [official MCP quickstart](https://code.claude.com/docs/en/mcp-quickstart) uses.
+
+In Claude, add it as a custom connector instead:
+
+1. On a Pro or Max plan: **Customize** → **Connectors** → **+ Add** → **Add custom connector**.
+2. Enter a name such as `Claude Code Docs` and the URL `https://code.claude.com/docs/mcp`, select **Continue**, check the detected settings and select **Continue** again.
+3. Choose **No sign in** under **Authentication**, then select **Add**.
+
+On a Team or Enterprise plan, an Owner adds it under **Organization settings** → **Connectors** → **Add** → **Custom** → **Web**, and you select **Connect** on it in **Customize** → **Connectors**. A Free plan allows one custom connector. Source: [Get started with custom connectors using remote MCP](https://support.claude.com/en/articles/11175166-get-started-with-custom-connectors-using-remote-mcp).
 
 ## 📥 Installation
 
@@ -157,7 +187,7 @@ Should blocking `rm -rf` outside the project be a mod or a settings hook?
 - **Hooks:** none.
 - **Commands:** to validate and test a mod, Claude runs the `claude` CLI (`claude plugin validate`, `claude plugin test`).
 - **MCP servers:** none.
-- **Network:** none of its own. The skill tells Claude to read the official mod pages on `code.claude.com`, which it does with your session's web fetch tool when that tool is available.
+- **Network:** none of its own. The skill tells Claude to read the official mod pages on `code.claude.com`, which it does with your session's web fetch tool when that tool is available. If you added the recommended Claude Code docs server, Claude can read those pages through it instead; it queries `code.claude.com` and sends only the search terms.
 - **Files written:** none of its own.
 - **Privacy:** the author collects no data. The marketplace's [privacy policy](https://github.com/nerymurillohnd/the-claude-factory/blob/main/PRIVACY.md) covers this plugin and the outside services it can reach.
 
