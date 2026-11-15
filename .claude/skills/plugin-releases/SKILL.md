@@ -15,7 +15,6 @@ Every plugin here is a relative-path entry (`./plugins/<plugin>`) in a git-hoste
 - **`untagged:` is not the backfill list.** `npm run release:status` prints `untagged:` only for each plugin's current version on `main`, which the next merge's release tags on its own. A version that will never be tagged that way, an older heading with no tag, shows only as a PC-04 finding of `npm run check:consistency`: those are the versions to backfill.
 - **A rename computes the next version from the old name.** `npm run release:status -- --next <new name>` finds nothing on `origin/main` and prints `0.1.0`; pass the old name, and treat the rename as breaking.
 - **Cloud sessions never tag.** The cloud proxy refuses tag pushes and answers 403 to `POST …/git/refs` and `POST …/releases`. Only `release.yml` creates tags and Releases; a cloud session only dispatches it, with the owner's authorization.
-- **The Claude review skips its own first pull request.** `claude-code-action` ends green without running when the workflow file differs from the default branch's copy, so a pull request that adds or changes `claude-code-review.yml` gets no Claude review until after it merges.
 - **Auto-fix stays off.** Claude's Auto-fix for pull requests pushes fixes without asking, which this project doesn't allow; CI failures and review findings go through `github-operations:auto-pr-lifecycle`, which asks before every push.
 
 ## How Claude Code reads the version (official)
@@ -59,7 +58,7 @@ These go beyond the docs and stay unless the owner changes them:
    - For a mod (`tests/*.test.ts(x)`), `claude plugin test plugins/<plugin>` exits 0; for hook tests, `npm run test:plugins` exits 0.
    - `npm run check:consistency -- --offline` exits 0.
    - `npm run check:install -- --from local <plugin>` exits 0 and prints the new version. It runs in a throwaway configuration, because this checkout and an installed `the-claude-factory` can't both be added under the same marketplace name.
-   - With the owner's approval of the spend, a local smoke eval: `claude plugin eval plugins/<plugin> --case <case> --runs 1 --ablation none --no-publish`, as `.claude/rules/plugins/evals.md` sets.
+   - With the owner's approval of the spend, a local smoke eval: `claude plugin eval plugins/<plugin> --case <case> --runs 1 --ablation none --no-publish`.
 
 ## Phase B: Before the merge
 
@@ -75,8 +74,6 @@ These go beyond the docs and stay unless the owner changes them:
 4. **List for the owner** what will ship: `git fetch origin main && npm run release:status`. `changed:` lines are the new versions, and `untagged:` lines are current versions on `main` that this merge's release will also tag. The PC-04 findings of `npm run check:consistency` are versions that need a backfill (Backfill below) before Validate's `Checks` can pass.
 5. **Ask the owner to authorize the push**, then drive the pull request with `github-operations:auto-pr-lifecycle`. On the pull request:
    - Validate's `Checks` job must pass. Its `Debt` job reports the checks DEBT items hold back and never blocks.
-   - `claude-code-review.yml` posts Claude's review on every push, as inline comments and one summary per push, when the owner has enabled it; `auto-pr-lifecycle` answers and resolves its findings.
-   - `evals.yml` runs the suite of each changed plugin that has one, when the owner has enabled it, at the pass bar `.claude/rules/plugins/evals.md` sets.
    - `npm run check:install -- --from <pull request branch> <plugin>` installs what users will get from the branch.
 
 ## Phase C: Merge and release
@@ -113,10 +110,3 @@ From code.claude.com/docs/en/plugins/publish (Ship updates to users) and host-ma
 - `claude plugin marketplace update the-claude-factory` refreshes the listings only; installed plugins keep their versions.
 - `/reload-plugins` loads the new version into a running session.
 - Auto-update is off by default for this marketplace; each user turns it on under **Marketplaces** in `/plugin`.
-
-## The owner's one-time setup
-
-The Claude workflows stay inert until the owner sets these in the repository's GitHub settings; tell the owner when one is missing, never ask for a value:
-
-- an environment named `claude`, holding the secrets `ANTHROPIC_API_KEY` (for `claude-code-review.yml`) and `CLAUDE_CODE_OAUTH_TOKEN` (for `claude.yml` and `evals.yml`, created with `claude setup-token`);
-- the repository variables `CLAUDE_CODE_REVIEW` and `CLAUDE_EVALS`, each set to `enabled`, under **Secrets and variables → Actions → Variables**, not in the `claude` environment: a job-level `if:` reads them before the job enters the environment, so an environment variable reads as empty there and the workflow skips without an error.

@@ -6,6 +6,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.1.7] - 2026-11-15
+
+### Fixed
+
+- The skill now treats the official plugin-evals docs, then the Claude Code changelog, as the authority, and uses `claude plugin eval --help` only to confirm that a flag exists.
+- It corrects what it taught about `claude plugin eval init` (it calls the model; in CI, run `init --bare <name>`), the default judge model, run limits (default 10 turns and 300 seconds, set them generously), `--trust-plugin`, when a case runs without the baseline arm, errors in baseline runs, when a report is published, sandboxing for Bash or PowerShell, and the cost estimate, which multiplies by the number of cases.
+- Every other fact now cites the official page it comes from, and the sources are re-checked against Claude Code 2.1.325.
+
 ## [0.1.6] - 2026-11-06
 
 ### Changed
@@ -51,7 +59,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - A method for suites whose score means something: cases that prove a difference, an outcome and a process grader per case, triggering measured as a rate, tools that match the graders, a one-run pilot, and a cost check before every paid run. CI commands always carry pinned agent and judge models, a cost ceiling, the threshold and trust inside the command.
 - References for the case format and graders, fixtures and MCP mocks, running and CI (targets, options, tool grants and the OS sandbox, trust, credentials, exit codes), reading results and troubleshooting, and other eval formats (skill-creator's `evals.json`, `/claude-api build-eval`), written against Claude Code v2.1.299.
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/plugin-evals--v0.1.6...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/plugin-evals--v0.1.7...HEAD
+[0.1.7]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/plugin-evals--v0.1.7
 [0.1.6]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/plugin-evals--v0.1.6
 [0.1.5]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/plugin-evals--v0.1.5
 [0.1.4]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/plugin-evals--v0.1.4

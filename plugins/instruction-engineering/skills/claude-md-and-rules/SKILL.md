@@ -75,7 +75,7 @@ Run the checker for a deterministic inventory and findings (read-only; python3 3
 python3 "${CLAUDE_SKILL_DIR}/scripts/check_instructions.py" --project <repo root>
 ```
 
-`${CLAUDE_SKILL_DIR}` is the directory that contains this SKILL.md. `--match <file> ...` lists which scoped rules would load for given files (positive and negative scope tests); `--json` gives structured output; `--no-user` skips `~/.claude`; `--user-dir <dir>` points at another configuration directory. Errors are loader facts; warnings and the heuristic findings (near-duplicates, conflicting choices, procedures, scope candidates, generic lines, layout trees, style lines a formatter config already enforces, prohibitions without an alternative) are leads to confirm by reading. The checker cannot judge meaning: the cross-file analysis is yours.
+The script's path starts at the directory that contains this SKILL.md. `--match <file> ...` lists which scoped rules would load for given files (positive and negative scope tests); `--json` gives structured output; `--no-user` skips `~/.claude`; `--user-dir <dir>` points at another configuration directory. Errors are loader facts; warnings and the heuristic findings (near-duplicates, conflicting choices, procedures, scope candidates, generic lines, layout trees, style lines a formatter config already enforces, prohibitions without an alternative) are leads to confirm by reading. The checker cannot judge meaning: the cross-file analysis is yours.
 
 ### 3. Decide placement before wording
 

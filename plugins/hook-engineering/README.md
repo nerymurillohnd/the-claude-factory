@@ -23,7 +23,7 @@
 ---
 
 > [!TIP]
-> **TL;DR** — Describe the hook you want, or the hook that misbehaves, and get a working configuration, an audit or a root cause, each checked against the official hooks docs and the changelog for your Claude Code version. Type `/hook-engineering:hook-development` followed by your request, or ask for the `hook-engineer` agent.
+> **TL;DR** — Describe the hook you want, or the hook that misbehaves, and get a working configuration, an audit or a root cause, each checked against the official hooks docs and the changelog for your Claude Code version. To write a new hook, type `/hook-engineering:writing-hooks` followed by what it should do; to audit or debug one, type `/hook-engineering:hook-development`, or ask for the `hook-engineer` agent.
 
 A hook looks simple until it never fires, fires on the wrong calls, or returns a block that Claude Code quietly ignores: whether it works depends on the event, the matcher and the handler lining up, and its effect depends on the exit code, the shape of stdout and the event it runs on. Hooks also change in most Claude Code releases, and the docs lag behind. Hook Engineering gives you a skill and an agent that design, write, audit and debug your hooks against the current docs and changelog, so you get a hook that works for your version instead of one recalled from memory.
 
@@ -38,10 +38,11 @@ A hook looks simple until it never fires, fires on the wrong calls, or returns a
 
 ## 🧩 What's inside
 
-| Component | Name                                | What it does                                                                                                                                                        | How it runs                                                                             |
-| :-------- | :---------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------ | :-------------------------------------------------------------------------------------- |
-| 🎯 Skill  | `hook-engineering:hook-development` | Workflows to design, write, audit and debug hooks, with condensed references for every event and handler type, a config linter, a hook probe and a changelog script | `/hook-engineering:hook-development <request>` or automatically when you work on a hook |
-| 🤖 Agent  | `hook-engineering:hook-engineer`    | A hooks specialist that works from your task message in one of four modes (design, write, audit, debug) and reports what it changed, checked and could not verify   | Delegated by Claude, or "use the hook-engineer agent to audit my hooks"                 |
+| Component | Name                                | What it does                                                                                                                                                                                                                                                          | How it runs                                                                              |
+| :-------- | :---------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+| 🎯 Skill  | `hook-engineering:writing-hooks`    | Writes a new hook of any type and in any location step by step: reads your project, asks about your goal when it is unclear, reads the official docs and the changelog for your version, then builds the configuration and the script and tests them with real inputs | `/hook-engineering:writing-hooks <request>` or automatically when you ask for a new hook |
+| 🎯 Skill  | `hook-engineering:hook-development` | Workflows to design, write, audit and debug hooks, with condensed references for every event and handler type, a config linter, a hook probe and a changelog script                                                                                                   | `/hook-engineering:hook-development <request>` or automatically when you work on a hook  |
+| 🤖 Agent  | `hook-engineering:hook-engineer`    | A hooks specialist that works from your task message in one of four modes (design, write, audit, debug) and reports what it changed, checked and could not verify                                                                                                     | Delegated by Claude, or "use the hook-engineer agent to audit my hooks"                  |
 
 ## 📋 Prerequisites
 
@@ -286,10 +287,10 @@ export CLAUDE_CODE_PLUGIN_PREFER_HTTPS=1
 ### Example: design a hook
 
 ```text
-/hook-engineering:hook-development I want a hook that blocks any Bash command that reads a .env file, and tells Claude to try another way
+/hook-engineering:writing-hooks I want a hook that blocks any Bash command that reads a .env file, and tells Claude to try another way
 ```
 
-**Result:** Claude picks the event and the mechanism, writes the complete `hooks` block and the script, lints and probes them with an input that must be blocked, one that must pass and one it cannot read, and hands back the test plan with the debug-log line that proves the hook ran.
+**Result:** Claude reads your project to find where the hook belongs, reads the official sections for the event it picks, writes the configuration and the script, runs the script with an input that must be blocked, one that must pass and one it cannot read, and reports each result with the docs sections and changelog range it checked.
 
 ### Example: audit your hooks
 
@@ -313,10 +314,10 @@ My SessionEnd hook uploads the session log to S3. It works by hand, but when I e
 - **MCP servers:** none of its own. The Claude Code docs server is one you add yourself (see [Claude Code docs server](#-claude-code-docs-server)).
 - **Network:** these calls and no others; the linter and the probe make none:
   - `https://code.claude.com/docs/mcp`, the docs server once you add it, whenever Claude reads the official docs for a hook question. It gets the search terms and page paths Claude asks for, with no credentials. From Claude, the call goes through Anthropic's servers.
-  - `https://code.claude.com/docs/en/<page>.md`, a plain `GET` with `curl` or WebFetch when the docs server is not connected or a heading is missing from its copy, and `https://code.claude.com/docs/en/changelog` for a version-gated rule.
+  - `https://code.claude.com/docs/en/<page>.md`, a plain `GET` with `curl` or WebFetch when the docs server is not connected or a heading is missing from its copy, and `https://code.claude.com/docs/en/changelog` for a version-gated rule. `writing-hooks` downloads every page it reads this way, `https://code.claude.com/docs/en/changelog.md` included. For a plugin hook it also reads `https://claude.com/docs/plugins/platform-support.md`, which says where plugin components load.
   - `https://raw.githubusercontent.com/anthropics/claude-code/main/CHANGELOG.md`, a plain `GET` when the skill or the agent runs `hook-changes.sh` to compare your installed version with the changelog.
   - `https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md`, a plain `GET` with WebFetch when the docs changelog doesn't list your installed version yet.
-- **Files written:** none by the plugin; `hook-changes.sh` keeps nothing and prints only the hook-related entries. Claude writes hooks only at your request, as [Will it change my hooks or my settings?](#-faq--troubleshooting) explains.
+- **Files written:** none by the plugin; `hook-changes.sh` keeps nothing and prints only the hook-related entries. `writing-hooks` saves the docs pages it downloads in a new temporary folder. Claude writes hooks only at your request, as [Will it change my hooks or my settings?](#-faq--troubleshooting) explains.
 - **Privacy:** the author collects no data. The marketplace's [privacy policy](https://github.com/nerymurillohnd/the-claude-factory/blob/main/PRIVACY.md) covers this plugin and the outside services it can reach.
 
 ## 🔄 Updating

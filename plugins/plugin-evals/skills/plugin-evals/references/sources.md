@@ -1,6 +1,8 @@
 # Sources and freshness
 
-**Snapshot:** written from the official sources below on 2026-10-14, against Claude Code **v2.1.299**, and checked again against v2.1.300 (no `plugin eval` changes). Anything newer than v2.1.300 is outside this skill's references: check the installed CLI, the live pages and the changelog (step 1 of the skill).
+**Snapshot:** checked against the official sources below on 2026-11-15, at Claude Code **v2.1.325**. Anything newer than v2.1.325 is outside this skill's references: check the live pages, the changelog and the installed CLI (step 1 of the skill).
+
+**Authority:** the plugin evals page wins over these references; where the changelog and the page disagree, the changelog wins. `claude plugin eval --help` only confirms that a flag exists in the installed build.
 
 ## Read these live
 
@@ -32,20 +34,23 @@ Every page has a raw Markdown version at the same address ending in `.md`. Read 
 | Hooks and subagents, when cases exercise them | <https://code.claude.com/docs/en/hooks.md>, <https://code.claude.com/docs/en/sub-agents.md> |
 | MCP servers in plugins | <https://code.claude.com/docs/en/mcp.md> |
 | Errors | <https://code.claude.com/docs/en/errors.md> |
+| Publishing reports as artifacts, who can publish | <https://code.claude.com/docs/en/artifacts.md> |
+| Installing a pinned Claude Code version | <https://code.claude.com/docs/en/setup.md> |
+| `/claude-api` subcommands and their versions | <https://code.claude.com/docs/en/skills.md> |
 | Success criteria and evaluations for Claude API apps | <https://platform.claude.com/docs/en/test-and-evaluate/develop-tests.md> |
 | Skill authoring best practices | <https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices.md> |
 | Evaluating skills, optimizing descriptions | <https://agentskills.io/skill-creation/evaluating-skills>, <https://agentskills.io/skill-creation/optimizing-descriptions> |
 | skill-creator plugin | <https://github.com/anthropics/claude-plugins-official/tree/main/plugins/skill-creator> |
 
-## Known gaps between the CLI and the docs at the snapshot
+## Known gaps at the snapshot
 
-These are the reasons the skill checks `--help` first.
-
-- **`--disallow-tools` and the `disallowed_tools` case field** shipped in v2.1.299 and appear in `claude plugin eval --help`. The plugin-evals page didn't list them yet.
-- **The default judge.** `--help` named `haiku`; the docs say "the model for background tasks".
-- **`--keep-temp`.** `--help` says it preserves scaffold directories; the docs say it keeps every run's sandbox directory.
+- **`--disallow-tools` and the `disallowed_tools` case field** are in the changelog for v2.1.299 ("Added `--disallow-tools` and a `disallowed_tools` case field to `claude plugin eval`") and in `--help`, but the plugin evals page omits them. The changelog wins: they are valid.
+- **The default judge.** The page says "the model Claude Code uses for background tasks"; `--help` names `haiku`. State the page's wording.
+- **`--keep-temp`.** The page says it keeps every run's sandbox directory and prints its path; `--help` says it preserves scaffold directories. Follow the page.
 
 ## Version milestones
+
+From the changelog:
 
 | Version | Change |
 | :-- | :-- |
@@ -54,3 +59,5 @@ These are the reasons the skill checks `--help` first.
 | v2.1.289 | A plugin installed from a local folder marketplace no longer shows a stale copy in `plugin eval` |
 | v2.1.293 | Bash-granting runs on Macs with Docker Desktop are no longer refused |
 | v2.1.299 | `--disallow-tools` and `disallowed_tools` added; a run that ends on an API error scores 0 ungraded and makes the suite exit 1 |
+| v2.1.319 | Warnings no longer suggest `max: 0` for a tool that must not be called |
+| v2.1.325 | `--output-dir ''` exits with an error instead of writing the report into the current folder |

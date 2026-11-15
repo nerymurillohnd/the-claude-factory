@@ -28,7 +28,7 @@ Official page: <https://code.claude.com/docs/en/plugins/cli-reference#flags-that
 
 - Its id is `<name>@inline`, where `<name>` is the `name` in the plugin's manifest.
 - `claude plugin list` shows it only when the same flag precedes the subcommand: `claude --plugin-dir ./my-plugin plugin list`. It appears under `Session-only plugins (--plugin-dir / --plugin-url):` (verified on 2.1.319), and `--json` reports `"scope": "session"` with `id` `<name>@inline`.
-- `claude plugin details <name>` and `claude plugin eval` need the plugin loaded: pass the flag before the subcommand in the same command. After the subcommand, `plugin details` rejects it with `error: unknown option '--plugin-dir'` (verified on 2.1.319).
+- `claude plugin details <name>` needs the plugin loaded: pass the flag before the subcommand in the same command. After the subcommand, `plugin details` rejects it with `error: unknown option '--plugin-dir'` (verified on 2.1.319). `claude plugin eval` does not need `--plugin-dir`: it loads the plugin from its target, a plugin directory, a case file or an installed plugin's name.
 - Enabled for the session unless the manifest sets `defaultEnabled: false` or a settings file sets `"<name>@inline": false`.
 
 ## Name conflicts and precedence

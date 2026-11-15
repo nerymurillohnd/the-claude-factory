@@ -13,6 +13,7 @@ from validators.skill_lint import (
     rules_content,
     rules_portability,
     rules_scripts,
+    rules_substitutions,
 )
 from validators.skill_lint.discover import Skill, discover, load_skill
 from validators.skill_lint.model import Family, Finding, Severity
@@ -25,6 +26,7 @@ CHECKS = (
     rules_portability.check,
     rules_scripts.check,
     rules_capabilities.check,
+    rules_substitutions.check,
 )
 EPILOG = """\
 exit codes: 0 no error, 1 at least one error (or a warning with --strict), 2 usage error

@@ -24,7 +24,7 @@ paths:
 ## Pull requests
 
 - Send every change inside `plugins/` through a pull request, skill, agent and command files included, except a documentation-only change that alters neither behavior nor what users installed.
-- Open a pull request for a change outside `plugins/`, or a documentation-only plugin change, only when the owner asks for one.
+- Commit a change outside `plugins/`, or a documentation-only plugin change, without a pull request unless the owner asks for one.
 - Reproduce a review finding, from any reviewer, before changing code for it, and answer it with the result: fix what holds, and say with the evidence what doesn't. Reply on the finding's own thread; when it has none on GitHub, ask the owner where to answer.
 
 ## Checks before a commit and a merge
@@ -32,7 +32,7 @@ paths:
 | When | Run |
 | :-- | :-- |
 | Locally, before each commit | `npm run lint` and `npm run typecheck`; `npm run test:scripts` when `scripts/` changed; the plugin checks of `.claude/rules/plugins.md` and `.claude/rules/plugins/testing.md` for each changed plugin; `npm run check:consistency -- --offline` |
-| Before each merge, in Validate (`.github/workflows/validate.yml`) | its `Checks` job, which includes `npm run check:install -- --from local <plugin>` for each changed plugin, with `--no-strict` for a DEBT-003 plugin; evals as `.claude/rules/plugins/evals.md` sets |
+| Before each merge, in Validate (`.github/workflows/validate.yml`) | its `Checks` job, which includes `npm run check:install -- --from local <plugin>` for each changed plugin, with `--no-strict` for a DEBT-003 plugin |
 
 - Run a merge-only check locally only when no pull-request workflow exists, or to reproduce a CI failure.
 - Merge only when the merge checks pass.

@@ -48,6 +48,7 @@ Instruction files are easy to write and hard to get right: a rule with the wrong
 | Claude Code                                                 | 2.1.271         | `claude --version`  |
 | Python, as `python3` on your `PATH`                         | 3.12            | `python3 --version` |
 | git (optional: checks whether `CLAUDE.local.md` is ignored) | —               | `git --version`     |
+| Claude Code docs MCP server (recommended)                   | —               | `claude mcp list`   |
 
 Python runs the checker. The Claude Code features the skill points you to have their own minimums: `AGENTS.md` support v2.1.277+, `/doctor prompt-audit` v2.1.283+.
 
@@ -168,6 +169,35 @@ sudo zypper install git
 
 </details>
 
+### 📖 Claude Code docs server
+
+Recommended: with it, Claude reads the current Claude Code docs pages instead of recalling them. Run this once in your terminal, not inside a session. `--scope user` makes it available in every project:
+
+<details>
+<summary>💻 <b>Claude Code</b> — any platform</summary>
+
+```bash
+claude mcp add --transport http --scope user claude-code-docs https://code.claude.com/docs/mcp
+```
+
+</details>
+
+Check it; `claude-code-docs` should show `✔ Connected`. It needs no sign-in and no credentials.
+
+```bash
+claude mcp list
+```
+
+Use the name `claude-code-docs`, the one the [official MCP quickstart](https://code.claude.com/docs/en/mcp-quickstart) uses.
+
+In Claude, add it as a custom connector instead:
+
+1. On a Pro or Max plan: **Customize** → **Connectors** → **+ Add** → **Add custom connector**.
+2. Enter a name such as `Claude Code Docs` and the URL `https://code.claude.com/docs/mcp`, select **Continue**, check the detected settings and select **Continue** again.
+3. Choose **No sign in** under **Authentication**, then select **Add**.
+
+On a Team or Enterprise plan, an Owner adds it under **Organization settings** → **Connectors** → **Add** → **Custom** → **Web**, and you select **Connect** on it in **Customize** → **Connectors**. A Free plan allows one custom connector. Source: [Get started with custom connectors using remote MCP](https://support.claude.com/en/articles/11175166-get-started-with-custom-connectors-using-remote-mcp).
+
 ## 📥 Installation
 
 ### 💻 Terminal
@@ -270,7 +300,7 @@ Exit code `0` means no error-level finding, `1` at least one, `2` bad arguments.
 - **The checker** only reads. It reads the instruction files (`CLAUDE.md`, `CLAUDE.local.md`, `.claude/CLAUDE.md`, `AGENTS.md`, `.claude/rules/**/*.md`) of the project you pass, of every directory above it up to the filesystem root, and of `~/.claude` (or `$CLAUDE_CONFIG_DIR`; skip it with `--no-user`). It reads files those instruction files `@import` when they sit inside the project or the user configuration directory; imports anywhere else are only checked for existence. It reads `package.json` files to verify script names and lists file names under the project to test globs (skipping `.git`, `node_modules` and `.claude/worktrees`). It runs `git check-ignore -q CLAUDE.local.md` when that file exists. It writes nothing, runs nothing from the files it reads, and its report shows paths, counts and findings, not file contents.
 - **The skill** edits instruction files only when you ask for a write, edit or refactor. Audits stay read-only until you approve an edit set. It asks before running any project command (tests, linters) and before changing user-scope files, which affect every project. It never changes settings, hooks, permissions or source code on its own; it proposes them with exact snippets.
 - **The agent** is told to stay read-only. It has Read, Grep, Glob and Bash; its Bash calls go through your normal permission settings, since a plugin agent can't set its own permission mode, and it is told to run only the checker and read-only commands (`ls`, `cat`, `wc`, `git status --short`, `git diff`, `git show`). It starts without your user, project and local `CLAUDE.md` files (`omitClaudeMd`); managed policy files still load, and a subdirectory's `CLAUDE.md` or matching rules still load when it reads files there.
-- **Network:** none from the plugin. When your Claude Code is newer than the version the skill's loader facts were checked against, the skill asks Claude to read the official changelog, which uses your session's web access if you allow it.
+- **Network:** none from the plugin. When your Claude Code is newer than the version the skill's loader facts were checked against, the skill asks Claude to read the official changelog, which uses your session's web access if you allow it. If you added the recommended Claude Code docs server, Claude can read those pages through it instead; it queries `code.claude.com` and sends only the search terms.
 - **Files written:** only the instruction files you ask Claude to change.
 - **Privacy:** the author collects no data. The marketplace's [privacy policy](https://github.com/nerymurillohnd/the-claude-factory/blob/main/PRIVACY.md) covers this plugin and the outside services it can reach.
 

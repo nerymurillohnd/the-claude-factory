@@ -6,6 +6,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.1.4] - 2026-11-15
+
+### Fixed
+
+- `test-install` accepts a plugin whose manifest is `plugin.json` at its root or a skills-directory plugin, and says where the results of an installed plugin's eval land, as the docs state. Its Claude Code floor of 2.1.299 now gives its changelog reasons.
+- `review-evals` asks for a result grader on every case that checks whether a skill loads, and no longer suggests tight turn limits.
+- Details the docs don't cover, such as files inside a kept eval folder, are labeled as observed.
+
 ## [0.1.3] - 2026-11-06
 
 ### Changed
@@ -31,7 +39,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - `test-install` skill: installs the plugin from a commit into a throwaway Claude Code configuration, as a marketplace install copies it; reports files the copy lacks; checks the load in Claude Code's startup report; runs the eval suite against the installed copy; optionally runs real requests and packages a zip for the Claude app; removes everything it created, including its sign-in.
 - `review-evals` skill: reviews every eval case for what it proves, how its graders score with and without the plugin, triggering measured as a rate, run isolation and fixtures, and reports a verdict and exact fix per case; dry-runs fixture scripts for free and applies fixes, each only after you approve.
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/plugin-test-bench--v0.1.3...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/plugin-test-bench--v0.1.4...HEAD
+[0.1.4]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/plugin-test-bench--v0.1.4
 [0.1.3]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/plugin-test-bench--v0.1.3
 [0.1.2]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/plugin-test-bench--v0.1.2
 [0.1.1]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/plugin-test-bench--v0.1.1

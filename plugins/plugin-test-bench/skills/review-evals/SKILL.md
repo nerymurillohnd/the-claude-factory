@@ -47,7 +47,7 @@ Each case should prove one of these, named in its `description` with the hypothe
 
 - In a run with both arms, three kinds of grader don't count toward the score: `tool_used` on `Skill`; `regex` on `target: mock_calls` and `llm` with `focus: mock_calls`, when every mocked server in the case is the plugin's own; and graders marked `arm: with-only`. When every grader in a case is one of those, they all count.
 - A check that must count in both arms and is one of those needs `arm: both`, such as a "must not trigger" grader (`min: 0`, `max: 0`). Under `--ablation none` nothing is excluded, so a smoke test and a full run score the same suite differently.
-- Each case grades the result (final message or produced file) and the steps (`tool_used`, `tool_order`). A Trigger case needs only its `tool_used: Skill` grader.
+- Each case grades the result (final message or produced file) and the steps (`tool_used`, `tool_order`). A Trigger case needs a result grader too: when its only grader is `tool_used: Skill`, that grader is scored in both arms, the without-arm always fails it, and Δ shows the plugin helping whatever the answer was.
 - Prefer free graders (`regex`, `tool_used`, `tool_order`, `file_exists`). Every `llm` or `baseline` grader is three judge calls per run; keep it for short output that needs judgment, with concrete PASS and FAIL conditions. For a long file, grade its contents with `regex` and `target: { source: file, path: … }`.
 - Grade content, not layout: a regex that requires a heading on the same line, or a fixed list format, fails correct answers.
 - Common silent failures: `target: files` is the list of created paths, not their contents. `file_exists` sees only files created during the run, not ones the scaffold made or Claude edited. `trace` is JSON with escaped quotes. Regex flags go in `flags`, not `(?i)`.
@@ -58,8 +58,8 @@ Each case should prove one of these, named in its `description` with the hypothe
 
 - Each run starts in an empty workspace, with a fresh home and configuration and only the plugin loaded. No `CLAUDE.md`, settings, other plugins or MCP servers, and project files a scaffold writes under `.claude/` aren't loaded. Only `EVAL_*` and an allowlist of environment variables reach the run.
 - Tools beyond the read-only set need `--allow-tools` on the command line. A case's `allowed_tools` and a skill's `allowed-tools` can't widen them. Granting `Bash` runs commands in the OS sandbox, which needs `bubblewrap` and `socat` on Linux and is unavailable on native Windows.
-- Writes to protected folders such as `.claude/` and `.git` are denied in a run that can't prompt: a case that expects the plugin to write there fails in every run.
-- `max_turns` (default 10) and `timeout_seconds` (default 300) fit the task. A case that only checks triggering needs few turns.
+- Observed, not documented: writes to protected folders such as `.claude/` and `.git` are denied in a run, which can't prompt, so a case that expects the plugin to write there fails in every run. Mark such a finding `(observed)`.
+- `max_turns` (default 10) and `timeout_seconds` (default 300) fit the task. Set them generously: hitting the turn cap is a run error and usually lowers the score. Cap spend with `--max-cost-usd`, not with tight per-run limits.
 
 ### Is triggering measured as a rate?
 
@@ -91,4 +91,4 @@ Each case gets the first verdict that matches:
 `claude plugin eval <plugin folder> --case "<glob of the changed cases>" --runs 1 --ablation none` <plus `--allow-tools` with the grants the cases need, and `--scaffold` when a matching case has a `scaffold_script` the user trusts> — <n> runs, one per matching case, plus three judge calls per `llm` or `baseline` grader. <One command per glob when one glob can't match them all; "none needed" when every case is keep. The user runs it in a terminal: the first run in a folder asks to trust it.>
 ```
 
-After a run, read the results with the user: a case with Δ about 0 that isn't a Guardrail measures nothing; a case that fails in both arms points at the grader or the task before the plugin. A full comparison runs each case twice per run, three runs by default or the case's own `runs`. Never change a case after a run just to make it pass: fix the plugin, or record why the case was wrong.
+After a run, read the results with the user: a case with Δ about 0 that isn't a Guardrail measures nothing; a case that fails in both arms points at the grader or the task before the plugin. The arms are decided per case: by default a case runs with and without the plugin, three runs each or the case's own `runs`, and it runs one arm under `--ablation none`, when it resumes a `context.history_file` and the target is a folder, or when no plugin was found for it. Never change a case after a run just to make it pass: fix the plugin, or record why the case was wrong.

@@ -6,6 +6,24 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-11-15
+
+### Removed
+
+- The eval gate script `gate_eval_result.py` and the CI template `ci-evals.sh`. The skill now teaches the CI command the official docs give, which fails the job on its own exit code.
+
+### Changed
+
+- `plugin-testing-and-debugging` now has Claude run every eval check that costs nothing before any run that spends your usage: validating the plugin, running each fixture by hand, testing each grader against a trace, checking the skill's own commands and templates, and loading every suite with `--max-cost-usd 0`, which on Claude Code 2.1.325 stopped before the first run (observed; the docs don't describe it).
+- It also warns that real MCP servers start only with `--allow-real-servers` or `--mocks off`, and that granting Bash or PowerShell needs the OS sandbox (`bubblewrap` and `socat` on Linux), or every run is refused.
+- The testing and CLI skills now teach evals as the official docs state them: every exit code and its causes, which graders a two-arm run leaves unscored, how the arms are decided per case, the judge default, and the `plugins` field, which defaults to the enclosing plugin. Facts that come only from `--help` or from an observed run are labeled as such.
+- The README lists git 2.31 or later for evals, `bubblewrap` and `socat` for suites that grant Bash on Linux, and the Claude Code docs MCP server as a recommended prerequisite.
+
+### Fixed
+
+- The skill no longer shows the wrong text when you call it with arguments: one sentence used a placeholder that Claude Code replaced with your first argument.
+- Two gotchas about quoting the plugin root no longer show the plugin's own install path where they mean the placeholder's name.
+
 ## [0.3.0] - 2026-11-15
 
 ### Added
@@ -58,7 +76,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - Gotchas Claude keeps in view, such as `/plugin install` with a path installing nothing, `marketplace remove` uninstalling that marketplace's plugins, and reloads that change MCP tools needing `--force`.
 - Before relying on a version-gated flag, Claude checks `--help` on your Claude Code version and the live docs, and tells you what differs.
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/plugin-engineering--v0.3.0...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/plugin-engineering--v0.3.1...HEAD
+[0.3.1]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/plugin-engineering--v0.3.1
 [0.3.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/plugin-engineering--v0.3.0
 [0.2.3]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/plugin-engineering--v0.2.3
 [0.2.2]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/plugin-engineering--v0.2.2

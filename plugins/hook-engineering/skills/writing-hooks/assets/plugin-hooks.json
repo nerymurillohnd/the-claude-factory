@@ -1,0 +1,16 @@
+{
+  "description": "<what these hooks do>",
+  "hooks": {
+    "<Event>": [
+      {
+        "matcher": "<matcher>",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"${CLAUDE_PLUGIN_ROOT}/hooks/<script>\""
+          }
+        ]
+      }
+    ]
+  }
+}

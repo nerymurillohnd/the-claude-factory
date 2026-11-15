@@ -27,7 +27,7 @@ context:
 
 ### `scaffold_script`
 
-The script runs **only with `--scaffold`**, as the user and outside the agent's sandbox, so pass that flag only for suites you or your organization wrote. `--no-scaffold` skips it explicitly.
+The script runs **only with `--scaffold`**, as the user and outside the agent's sandbox, so pass that flag only for suites you or your organization wrote.
 
 - **Environment.** It starts in the empty workspace with a small fixed environment: your `PATH`, `HOME` set to the run's temporary home, `TMPDIR`, and constants such as `TERM=dumb`. The case's `EVAL_*` variables don't reach it, and nothing else from your shell does.
 - **Failure.** A non-zero exit, or more than 120 seconds, scores that run 0 with `scaffold failed`.
@@ -46,8 +46,8 @@ Grants read access only. Nothing in those folders is loaded as configuration.
 
 A run never starts the plugin's real MCP servers unless you opt in.
 
-- **Substitute servers.** Claude Code registers a substitute under each server's own name: the key in the plugin's `.mcp.json` or `mcpServers`.
-- **Mocked tools.** A tool with a mock file answers from that file and needs no `--allow-tools` grant, so don't add it to `allowed_tools` either.
+- **Substitute servers.** Claude Code registers a substitute under each server's own name, its name in the plugin's MCP configuration (plugin components page).
+- **Mocked tools.** A tool with a mock file answers from that file and is allowed without an `--allow-tools` grant.
 - **Unmocked tools.** A tool with no mock file isn't available. A server with no mocks at all appears in the progress line as `plugin_<plugin>_<server>[not started: no mock]`.
 - **Where mocks go.** Suite-wide mocks live in `evals/mocks/<server>/<tool>.md`. A case's own `mocks/` directory overrides them file by file. Use the bare tool name, not the `mcp__…` form.
 
@@ -77,7 +77,6 @@ A call that violates `expect:` aborts the run with score 0. The JSON records it 
 - **Substitutions in the body.** `{{input.<field>}}` inserts a field of the call. `{{file:fixtures/{input.<field>}.json}}` inserts a file from `fixtures/` next to the mock.
 - **`_server.md`.** One `type: agent` mock that answers several tools, listed in its `tools:` key. A `<tool>.md` for the same tool takes precedence. An `expect:` here is a load error unless `tools:` names a single tool, so put guards on the individual `<tool>.md`.
 - **`_tools.json`.** A saved `tools/list` response from the real server, so mocked tools carry their real descriptions and input schemas.
-- **Stubs.** A stub body still reading `TODO: replace with the canned result this tool should return` blocks the run until you fill it.
 
 ## `expect` patterns
 
@@ -96,7 +95,7 @@ A `/regex/` value uses a small dialect that is checked when the suite loads:
 - **Recordings.** After a run that completes without an error or an abort, the agent-mock answers are saved under `results/<timestamp>/mock-recordings/`. `ADOPT.txt` there says which `.replay/<server>/` directory to copy each one into.
 - **Replay.** Commit `mocks/.replay/` so CI is repeatable: later runs answer an identical call from `mocks/.replay/<server>/` with no model call.
 - **Check recordings.** Check them for secrets and private data, and remove any, before you commit: they ship in every user's copy of the plugin.
-- **Call budget.** All agent-mock calls in a run share one budget of 4 × `max_turns`, which is 40 at the default. Replayed calls count too. A call past the budget aborts the run with score 0 and `mock call budget exceeded`. Raise `max_turns` for flows that call a lot.
+- **Call budget.** All agent-mock calls in a run share one budget of 4 × `max_turns`, which is 40 at the default. Replayed calls count too, and the case's `mock budget` progress line prints the budget. A call past the budget aborts the run with score 0 and `mock call budget exceeded`. Raise `max_turns` for flows that call a lot.
 
 ## Running against real servers
 

@@ -15,7 +15,7 @@
 1. **One source of truth.** Every maintainer script exists once, under `scripts/<subfolder>/`. Skills, Claude Code hooks, Git hooks, gates and CI only call it; none holds its own copy.
 2. **The command governs; the script adds.** A script covers only what no plugin command does or finishes. Where a command covers a check, the script does not repeat it.
 3. **Entry points stay where their tool looks for them**, as thin callers of `scripts/`: the npm scripts in `package.json` (the single entry point), `.github/workflows/*.yml`, and hook registrations in `.claude/settings.json`.
-4. **Maintainer files inside plugins stay inside plugins**, because the CLI finds them only there: mod tests (`plugins/<p>/tests/*.test.ts(x)`) and eval suites (`plugins/<p>/evals/**`).
+4. **Maintainer files inside plugins stay inside plugins**, because the CLI finds them only there: mod tests (`plugins/<p>/tests/*.test.ts(x)`) and eval suites (`plugins/<p>/evals/**` by default, or another eval directory passed with `--eval-dir` or named in `experimental.evals`).
 5. **Plugin runtime files stay inside their plugin** (hook handlers, skill scripts, MCP/LSP servers): they ship with the install and cannot depend on `scripts/`.
 6. **No scripts under `.claude/skills/`.** Project skills describe procedures and call `scripts/`. Maintainer scripts, and the hooks that only maintain the repository, live in `scripts/<subfolder>/`. A Claude Code hook of this project keeps its script in `.claude/hooks/`, beside its registration in `.claude/settings.json`, and calls `scripts/` for any maintainer logic it reuses (owner decision, 2026-11-13).
 
@@ -286,13 +286,11 @@
 - `claude plugin eval . --case <case-name> --runs 1 --ablation none` — fast single-case iteration
 
 **Gotchas**
-- Put the target before `--tag`, `--allow-tools` and `--json`; each takes the following words as its value [skill]
+- Put the target before `--tag`, `--allow-tools` and `--json`: the first two take a list and `--json` takes an optional path [docs]
 - A case without a grader fails to load [docs]
 
 **Scripts**
-- `plugins/<p>/evals/**` (including `fixture.sh` scaffolds) — **Keep in plugin** (rule 4) · Caller: `claude plugin eval` only · Fully covered by the command; never run today
-- `scripts/testers/changed-eval-plugins.sh` — **Pending** · Caller: the eval workflow · Gap: selects plugins with evals that changed between BASE and HEAD; `eval` doesn't select by diff
-- `.github/workflows/evals.yml` — **Pending** (entry point; reference in `.claude/references/evals-ci.md`) · Runs `claude plugin eval` on the plugins `changed-eval-plugins.sh` selects, as CLAUDE.md's Evals section sets. Needs a credential secret and a usage budget: *decision pending*
+- `plugins/<p>/evals/**` and `plugins/<p>/evals-*/**` (including `fixture.sh` scaffolds) — **Keep in plugin** (rule 4) · Caller: `claude plugin eval` only · Fully covered by the command
 
 #### 11. Documentation
 - Plugin README: purpose, installation, tested Claude Code version

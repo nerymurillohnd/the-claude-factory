@@ -17,7 +17,6 @@ One fill procedure per template in `.claude/templates/`. Each reference says wha
 | `plugin-template.md` | [plugin-manifest.md](plugin-manifest.md) | `plugins/<plugin>/.claude-plugin/plugin.json` |
 | `skill-template.md` | [skill.md](skill.md) | `plugins/<plugin>/skills/<skill>/SKILL.md` |
 | `agent-template.md` | [agent.md](agent.md) | `plugins/<plugin>/agents/<agent>.md` |
-| `evals-ci-template.md` | [evals-ci.md](evals-ci.md) | `.github/workflows/evals.yml` |
 
 ## Document templates
 

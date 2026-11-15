@@ -1,0 +1,4 @@
+{
+  "type": "agent",
+  "prompt": "<what to verify, with which files, and how to decide>. Input: $ARGUMENTS"
+}

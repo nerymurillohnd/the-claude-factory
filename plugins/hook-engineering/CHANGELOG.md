@@ -6,6 +6,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-11-15
+
+### Added
+
+- A new `writing-hooks` skill writes a new hook of any type (command, HTTP, MCP tool, prompt or agent) in any place a hook can live: a plugin, your user, project, local or managed settings, a skill or a subagent. It reads what you ask and your project first, asks you only about your goal when something is unclear, reads the current official hooks docs and changelog for your Claude Code version, and tests the hook with real inputs before it hands it over.
+
 ## [0.2.6] - 2026-11-15
 
 ### Changed
@@ -64,7 +70,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - Helper scripts: a linter for hooks configuration files, a probe that predicts how Claude Code reads a command hook's result, and a changelog script that lists the hook-related entries newer than your installed version.
 - The `claude-code-docs` MCP server (`https://code.claude.com/docs/mcp`), so Claude reads the official hooks pages instead of recalling them.
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/hook-engineering--v0.2.6...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/hook-engineering--v0.3.0...HEAD
+[0.3.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/hook-engineering--v0.3.0
 [0.2.6]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/hook-engineering--v0.2.6
 [0.2.5]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/hook-engineering--v0.2.5
 [0.2.4]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/hook-engineering--v0.2.4

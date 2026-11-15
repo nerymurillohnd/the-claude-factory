@@ -45,7 +45,7 @@ Never write version checks or fallback paths into a script for the user. When a 
 - No command updates every plugin at once. `claude plugin marketplace update` with no name refreshes listings but leaves installed plugins at their versions.
 - `claude plugin validate` doesn't follow symlinks in the directory you name. A marketplace run doesn't open the listed plugins' skill, agent, command, hook or MCP files: validate each plugin directory too.
 - `claude plugin validate` output symbols change when output isn't a TTY (✔ ⚠ ✘ become √ ‼ ×). Scripts read the exit code or `--json`, not the symbols.
-- `claude plugin eval`: put the target before `--tag`, `--allow-tools` and `--json`. Each of these takes the following words as its value.
+- `claude plugin eval`: put the target before `--tag`, `--allow-tools` and `--json`. The first two take a list and `--json` takes an optional path, so a target after them is read as their value.
 - `-y` and `--accept-command` have no effect inside a Claude Code session (Bash tool, hook). The user runs those commands from their own terminal.
 - Without a TTY, an install or update that shows a marketplace-declared command is refused unless `-y` or `--accept-command <sha256>` is passed.
 - `claude plugin tag` needs a `version` in `plugin.json` or the marketplace entry, a clean working tree, a tag that doesn't exist yet, and a git repository. `/plugin tag` accepts only `--push`, `--dry-run` and `--force`/`-f`.

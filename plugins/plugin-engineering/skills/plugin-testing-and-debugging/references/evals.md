@@ -63,7 +63,7 @@ Check these requirements first:
 
 A reported cost is a list-price estimate of the model calls.
 
-`claude plugin eval` and `claude plugin eval init` are shell commands. They have no `/plugin` form inside a session. Run them from the shell, or have Claude run them through its Bash tool.
+`claude plugin eval` and `claude plugin eval init` are shell commands. They have no `/plugin` form inside a session (Plugin commands reference, "/plugin in a session": the shell subcommands `eval` and `eval init` "have no session form"). Run them from the shell, or have Claude run them through its Bash tool.
 
 ## 3. How a run works
 
@@ -86,8 +86,8 @@ Do this from the plugin root, the directory that holds `plugin.json` or `.claude
    - When Claude says the suite is ready, exit with `/exit` or Ctrl+D.
    - In an open session at the plugin root, you can run `claude plugin eval init` yourself. Run from inside a Claude Code session, the command prints the interview instructions for that session to follow instead of writing a template; follow them and ask the user the same questions in the conversation.
    - The interview, in order: Claude reads the plugin; asks what it should do well; proposes cases and graders; writes the case files; runs the cases and reviews the grades with the user to check that the graders score the way the user would.
-   - Run it from the plugin's root folder, the directory that holds `.claude-plugin/plugin.json` or the skill's `SKILL.md`. To write the suite into another directory on purpose, pass `--eval-dir <dir>` (default: the manifest's `experimental.evals`, else `evals`).
-   - `-i`, `--interactive` requires the interview: the command fails without a terminal instead of writing a template.
+   - From the Plugin commands reference, `plugin eval init`: run it from the plugin's root folder, the directory that holds `.claude-plugin/plugin.json` or the skill's `SKILL.md`. To write the suite into another directory on purpose, pass `--eval-dir <dir>` (default: the manifest's `experimental.evals`, else `evals`).
+   - From the Plugin commands reference, `plugin eval init`: `-i`, `--interactive` requires the interview; the command fails without a terminal instead of writing a template.
 2. Run the suite: `claude plugin eval .` from the plugin root. Each case runs three times with the plugin and three without, so one case is six runs. A progress line prints as each run finishes, with its score and each grader's verdict.
 3. Read the summary:
 
@@ -318,7 +318,7 @@ Filter with `--case <glob>` by name and `--tag <tag>` by tag. Put the target bef
 Syntax: `claude plugin eval [target] [options]`. `claude plugin eval --help` has the complete list for the installed build, including `--case`, `--tag`, `--output-dir`, `--eval-dir`, `--no-scaffold`, `--report`, `--allow-real-servers`, `--keep-temp` and `--verbose`. The main options:
 
 - `--runs <n>`: runs per case per arm. Default: each case's `runs`, else 3.
-- `-j`, `--concurrency <n>`: up to 1 to 8 runs at once. Default 1. They share the account's rate limit, so this shortens wall-clock time, not throughput. Results keep case order.
+- `-j`, `--concurrency <n>`: up to 1 to 8 runs at once. Default 1. They share the account's rate limit, so this shortens wall-clock time rather than raising throughput past that limit. Results keep case order.
 - `--model <model>`: model for the agent under test. Default: the case's `model`, else `ANTHROPIC_MODEL`, else Claude Code's default. Pin it in CI.
 - `--judge-model <model>`: model for `llm` and `baseline` graders. Default: the background-task model.
 - `--ablation none|with-without`: one arm, or add the no-plugin baseline. Default: decided per case.
@@ -371,7 +371,7 @@ The CI runner also needs:
 - trust: without `--trust-plugin`, a checkout directory Claude Code does not trust needs the first-run prompt, and a run that cannot ask is refused with exit 1;
 - for writing cases in CI: `claude plugin eval init` needs a terminal for its questions, so use `claude plugin eval init --bare <name>` for the blank template.
 
-`aggregates.meanDelta` and `cases[].aggregates.delta` exist only in a two-arm run. A job that gates on `Δ` keeps the baseline arm; `--ablation none` there leaves the gate with nothing to read.
+`aggregates.meanDelta` and `cases[].aggregates.delta` exist only in a two-arm run, and a case's `delta` is also omitted when its arms aren't comparable. A job that gates on `Δ` keeps the baseline arm; `--ablation none` there leaves the gate with nothing to read.
 
 To keep costs predictable: give quick every-change suites only graders that call no judge, use `--ablation none` where `Δ` is not needed, and leave `partial: true` documents and runs with `skippedPaidGraders` out of any trend.
 
@@ -425,7 +425,7 @@ Each run gets a temporary home, working directory and Claude Code configuration,
 - Nothing personal or project-level loads: no user settings, hooks, `CLAUDE.md`, MCP servers, other plugins, memory or skills. No `.claude/`, `CLAUDE.md` or `.mcp.json` loads from above or inside the workspace, even one a scaffold wrote, and `add_dirs` grant read access only. Most of the shell environment is withheld; only an allowlist and `EVAL_*` variables reach the run. Ship every skill, agent, hook or MCP server a case depends on inside the plugin under test.
 - Managed settings deployed to the machine still apply, so results on a managed machine can differ.
 - The Artifact tool is off. A skill that publishes an artifact is graded only on what it produces before that step.
-- The agent cannot read the eval directory, so it cannot see the prompt's case, its graders or sibling cases.
+- The case definitions are hidden from the agent: a run cannot read the eval directory, so Claude cannot see the case's prompt, its graders or sibling cases.
 - No network sandbox outside shell commands: a `WebFetch(domain:…)` grant reaches that domain directly, and the plugin's hooks and real MCP servers can reach any host.
 
 ## 12. Eval suite reference

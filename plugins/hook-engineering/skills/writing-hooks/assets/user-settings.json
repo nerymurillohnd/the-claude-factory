@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "<Event>": [
+      {
+        "matcher": "<matcher>",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$HOME/.claude/hooks/<script>\""
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -21,7 +21,7 @@ Official page: <https://code.claude.com/docs/en/plugins/install#install-a-plugin
 - JetBrains: the plugin runs Claude Code in the IDE's terminal, so the terminal forms apply.
 - Cloud session (including claude.ai/code): no plugin browser. It doesn't load plugins installed on your own machine or the ones the repository's `.claude/settings.json` turns on. Plugins turned on for the claude.ai account arrive as `<name>@synced` (verified in a 2.1.319 cloud session with `claude plugin list`).
 - Agent SDK: load plugins through the SDK's `plugins` option.
-- The shell subcommands `init`, `update`, `details`, `prune`, `eval`, `eval init` and `test` have no session form. In a session, update a plugin from the Installed tab (Update now).
+- The shell subcommands `init`, `update`, `details`, `prune`, `eval`, `eval init` and `test` have no session form (Plugin commands reference, "/plugin in a session"). In a session, update a plugin from the Installed tab (Update now).
 - `/plugin tag` takes only `--push`, `--dry-run` and `--force`/`-f`: for `-m`/`--message` and `--remote`, use `claude plugin tag`.
 
 ## Every `/plugin` form

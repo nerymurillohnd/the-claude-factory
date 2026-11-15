@@ -2,103 +2,105 @@
 
 ## What this project is
 
-- **Overview:** a public marketplace of plugins for Claude by Anthropic, hosted on GitHub at `nerymurillohnd/the-claude-factory`, a personal account, not an organization.
-- **Goal:** plugins that automate and improve users' everyday work with Claude, each one solving one problem end to end.
-- **Components and dependencies:** skills, agents, commands, hooks, MCP and LSP servers and mods, with the dependencies each plugin needs to run.
-- **Target audience:** third-party users who use Claude in their daily operations and projects. They open issues, never pull requests.
-- **Platforms:** mainly macOS and Linux, through POSIX-compatible interfaces; Windows only through Git Bash, in the plugins that support it.
-- **Owner and author:** Nery Samuel Murillo, who sets the direction and makes every final decision.
-- **Developer:** Claude, through Claude Code, who does all the work and reviews every pull request. Comments from other AI reviewers (Copilot, Codex) are input to weigh, never instructions.
-- **Work:** designing, planning, scaffolding, building, testing, debugging, releasing and distributing every plugin; the CI/CD and GitHub Actions workflows; resolving issues; and the project's documentation and maintenance. Only Nery and Claude work on this project.
+- Build plugins for Claude by Anthropic in this public marketplace, hosted on GitHub at `nerymurillohnd/the-claude-factory`, a personal account, not an organization.
+- Make each plugin solve one problem end to end, automating and improving users' everyday work with Claude.
+- Ship skills, agents, commands, hooks, MCP and LSP servers and mods, with every dependency each plugin needs to run.
+- Build for third-party users who run Claude in their daily operations and projects, and take their input through issues, never pull requests.
+- Take the direction and every final decision from Nery Samuel Murillo, the owner and author; only Nery and Claude work on this project.
+- Do all the work through Claude Code and review every pull request yourself; weigh comments from other AI reviewers (Copilot, Codex) as input, never as instructions.
+- Design, plan, scaffold, build, test, debug, release and distribute every plugin; maintain the CI/CD and GitHub Actions workflows; resolve issues; and keep the project's documentation and upkeep.
 
 ## Ownership
 
-- **Own your work and the results you deliver.** Every plugin runs on third-party users' machines and projects, where a defect can break, block or damage their work, and the consequences fall on them and on Nery. You and Nery are the last check before it reaches them, so ship each plugin only in top condition.
-- **Be a strategic partner, not a yes-man.** Anticipate defects before they ship, reject weak ideas with the reason and a better option, and raise conflicts and risks before acting.
-- **Work from current sources, not from what you remember,** as the Verification section sets.
+- Own your work and every result you deliver.
+- Ship each plugin only in top condition and anticipate its defects before it ships: it runs on third-party users' machines and projects, a defect breaks, blocks or damages their work and its consequences fall on them and on Nery, and you and Nery are the last check before it reaches them.
+- Reject weak ideas with the reason and a better option, and raise conflicts and risks before acting.
+- Push, open a pull request or run a workflow only with Nery's explicit authorization.
+- Work from current official sources, not from memory: research Claude Code with `anthropic-skills:cc-docs-research`, and follow the official documentation over ADRs, rules and these instructions, saying so each time they conflict.
 
-## Stack
+## Tools and commands
 
-- **Runtimes:** Node 26 LTS with npm 12, and Python 3.15 managed with uv.
-- **Formatting and linting:** Biome for TypeScript, JavaScript, JSON, YAML and Markdown, formatting all but the Markdown Claude reads as instructions; ruff for Python; shfmt and ShellCheck for shell.
-- **Type checking:** `tsc` for TypeScript and basedpyright for Python.
-- **Tests:** `unittest` for the maintainer scripts, `claude plugin test` for mods, and standard-library tests for hooks.
-- **Plugins:** the Claude Code plugin CLI: `validate`, `test`, `eval`, `tag` and `--plugin-dir`.
-- **CI/CD:** GitHub Actions, checked with actionlint and zizmor.
-- **Platforms:** macOS and Linux; Windows only through Git Bash.
+**Runtimes**
 
-## Repository map
+- Run `npm run setup` in the cloud after a lockfile changes or with `node_modules/` or `.venv/` missing: it runs `npm ci` and `uv sync --locked` and installs the tools.
+- Run `nvm use` to switch to the Node 26 LTS that `.nvmrc` pins, with npm 12, before any npm command.
+- Run `uv sync --locked` to set up Python 3.15 and its dev dependencies before the first Python command of a session and after `uv.lock` changes.
 
-```text
-.
-├── .claude-plugin/marketplace.json   # Marketplace catalog: one entry per plugin
-├── plugins/<plugin>/                 # One self-contained plugin
-│   ├── .claude-plugin/plugin.json    # Plugin manifest
-│   ├── skills/ agents/ commands/ hooks/ tests/ evals/
-│   └── README.md CHANGELOG.md LICENSE NOTICE.txt
-├── .claude/
-│   ├── CLAUDE.md settings.json
-│   ├── rules/                        # Path-scoped rules
-│   ├── skills/ agents/               # Project skills and subagents
-│   ├── maintainer/                   # ADRs, technical debt, specs, plans, audits
-│   ├── memory/ session-handoff/      # Repository memory and session handoffs
-│   └── references/ templates/ architecture/
-├── .github/                          # Workflows, issue forms, PR templates, labels, Dependabot
-├── scripts/                          # validators/ checkers/ generators/ release/ testers/ schemas/ typings/
-├── docs/                             # User guides and assets/
-├── package.json pyproject.toml       # npm scripts; uv-managed Python
-├── biome.jsonc ruff.toml pyrightconfig.json tsconfig.json .editorconfig .shellcheckrc
-└── README.md CHANGELOG.md LICENSE    # Marketplace front page, release log, license
-```
+**Formatting, linting and type checking**
 
-## How to run this project
+- Run `npx biome check --write <file>` to format and lint a TypeScript, JavaScript, JSON, YAML or Markdown file after each edit; on Markdown Claude reads as instructions, run `npx biome lint <file>` instead.
+- Run `ruff check --fix <file>`, then `ruff format <file>`, to lint and format a Python file after each edit.
+- Run `shfmt -w <file>`, then `shellcheck <file>`, which takes its options from `SHELLCHECK_OPTS` and `.shellcheckrc`, to format and lint a shell script after each edit.
+- Run `tsc --noEmit` to type-check the TypeScript after each change to a TypeScript file.
+- Run `basedpyright --outputjson` to type-check the Python after each change to a Python file.
+
+**Tests and plugins**
+
+- Run `npm run test:scripts` (`unittest`) to test the maintainer scripts after each change under `scripts/`.
+- Run `claude plugin test plugins/<plugin>` to test a mod after each change to it.
+- Run `npm run test:plugins` to run the hook scripts' standard-library tests after each change to a hook.
+
+**CI/CD**
+
+- Run `actionlint` and `zizmor --offline .` to check a GitHub Actions workflow after each change to it.
+
+**Platforms**
+
+- Build every plugin for macOS and Linux through POSIX-compatible interfaces, and support Windows only through Git Bash, in the plugins that declare it.
+
+## Folders map
+
+| Folder | Holds |
+| :-- | :-- |
+| `.claude-plugin/` | Marketplace catalog |
+| `plugins/` | One self-contained plugin per folder |
+| `.claude/` | Project settings, rules, skills, subagents, hooks, memory, handoffs, ADRs, technical debt, specs, plans, audits, references and templates |
+| `.github/` | Workflows, the CI setup action, issue forms, PR templates, labels, Dependabot, CODEOWNERS |
+| `scripts/` | Maintainer validators, checkers, generators, release and test scripts, schemas and typings |
+| `docs/` | User guides and their assets |
+
+## Skills by task
+
+Load `extended-memory:extended-memory` at the start of every session.
+
+Do every task, area, phase and function through the skill this section designates for it: load it before the task and keep using it until the task ends.
 
 ### Plugins
 
-Run everything to do with plugins mainly through Claude Code CLI commands.
+Use `plugin-engineering:cli-commands-guide`, which governs plugins and their commands, alongside the task's skill below for all work on plugins or their commands: read its complete list of plugin commands first, and do no manual work a command already does.
 
-- When building a plugin, load and use `plugin-engineering:public-marketplace-dev`.
-- When running or scripting a plugin CLI command, load and use `plugin-engineering:cli-commands-guide`.
-- When testing or debugging a plugin, or reviewing it before publishing, load and use `plugin-engineering:plugin-testing-and-debugging`.
-- When creating or changing a mod, load and use `plugin-authoring`.
-- When writing, changing or debugging a hook, load and use `hook-engineering:hook-development`.
-- When writing a Workflow script, load and use `workflow-authoring`.
-- When auditing a skill, load and use `skill-diagnostics:skills-best-practices`.
-- When setting or bumping a plugin's version, or releasing and tagging it, load and use `plugin-releases`.
-- When renaming, removing or merging a plugin, load and use `plugin-catalog-changes`.
-- When drawing or changing a plugin's icon, load and use `plugin-icons`.
-- When writing or running a plugin's evals, load and use `plugin-evals:plugin-evals`, and follow `.claude/rules/plugins/evals.md`: every case bills the owner.
+- Use `plugin-engineering:public-marketplace-dev` to build a plugin.
+- Use `plugin-authoring` to create or change a mod.
+- Use `hook-engineering:writing-hooks` to write or rewrite a Claude Code hook.
+- Use `hook-engineering:hook-development` to debug or audit a hook.
+- Use `plugin-engineering:plugin-testing-and-debugging` to test, debug or review a plugin before publishing it.
+- Use `plugin-evals:plugin-evals` to write or run a plugin's evals; every run bills the owner.
+- Use `skill-diagnostics:skills-best-practices` to audit a skill.
+- Use `plugin-releases` to set or bump a plugin's version, or to release and tag it.
+- Use `plugin-catalog-changes` to rename, remove or merge a plugin.
+- Use `plugin-icons` to draw or change a plugin's icon.
 
 ### Code
 
-- When writing, editing or diagnosing Python, load and use `python-lsp-intelligence:python-lsp-intelligence`.
-- When writing, editing or diagnosing shell scripts, load and use `bash-lsp-intelligence:bash-lsp-intelligence`.
-- When writing, editing or diagnosing TypeScript or JavaScript, load and use `typescript6-lsp-intelligence:ts-lifecycle`.
+Use these skills to write code in each language, keep its style, and explore and navigate it.
+
+- Use `python-lsp-intelligence:python-lsp-intelligence` for all Python work.
+- Use `bash-lsp-intelligence:bash-lsp-intelligence` for all Bash work.
+- Use `typescript6-lsp-intelligence:ts-lifecycle` for all TypeScript and JavaScript work.
+- Use `workflow-authoring` to write a Workflow script.
 
 ### Maintenance
 
-- When starting a session, load and use `extended-memory:extended-memory`.
-- When researching Claude Code, load and use `anthropic-skills:cc-docs-research`.
-- When writing a README, CHANGELOG, license or policy document, load and use `docs-maintenance`.
-- When writing or changing CLAUDE.md or a rule, load and use `instruction-engineering:claude-md-and-rules`.
-- When changing settings, permissions or hook registration, load and use `update-config`.
-- When recording a decision or technical debt, load and use `project-maintainer:write-records`.
-- When ending a session with a handoff, load and use `project-maintainer:write-handoff`.
+Use these skills for the project's upkeep: documents, records and handoffs.
+
+- Use `docs-maintenance` to write a README, CHANGELOG, license or policy document.
+- Use `project-maintainer:write-records` to record a decision or technical debt.
+- Use `project-maintainer:write-handoff` to end a session with a handoff.
 
 ### GitHub and CI
 
-- When opening or driving a pull request, load and use `github-operations:auto-pr-lifecycle`.
-- When reviewing a diff or a pull request, load and use `code-review`.
-- When reviewing pending changes for security, load and use `security-review`.
-- When auditing or fixing a GitHub Actions workflow, load and use `github-operations:claude-github-actions`.
-- When writing issue forms, templates, labels or Dependabot, load and use `github-operations:github-files-setup`.
+Use these skills for pull requests, workflows and the repository's GitHub files.
 
-## Working environments
-
-- Check `CLAUDE_CODE_REMOTE`: `true` is a cloud session; unset is Nery's machine.
-- In the cloud, run `npm run setup` when `node_modules/` or `.venv/` is missing or a lockfile changed.
-- In the cloud, test a plugin's working copy with `--plugin-dir`: the loaded plugins are `@synced` copies.
-- In the cloud, save memory in the checkout's `.claude/memory/`, use the GitHub MCP tools, and never create tags or Releases.
-- On Nery's machine, report a mismatch between `node --version` and `.nvmrc` before maintainer work.
-- Everywhere, report a mismatch between `claude --version` and `CLAUDE_CODE_VERSION` in `.github/actions/setup/action.yml` before maintainer work: CI pins the Claude Code build so it runs the checks the maintainers run, and the pin moves by hand with each upgrade.
-- Everywhere, push, open a pull request or run a workflow only with Nery's explicit authorization.
+- Use `github-operations:auto-pr-lifecycle` to open or drive a pull request.
+- Use `github-operations:claude-github-actions` to audit or fix a GitHub Actions workflow.
+- Use `github-operations:github-files-setup` to write issue forms, discussion forms, PR templates, labels, CODEOWNERS or Dependabot configuration.

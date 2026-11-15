@@ -8,14 +8,22 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The
 
 ### Added
 
+- **hook-engineering** 0.3.0 — the new `writing-hooks` skill writes a hook of any type, in a plugin, settings, a skill or a subagent, from the current official docs and changelog for your Claude Code version, and tests it with real inputs before handing it over.
 - **plugin-engineering** 0.3.0 — the new `plugin-testing-and-debugging` skill tests, troubleshoots and debugs plugins with the official CLI: it finds the cause behind a plugin that doesn't install, load or run, checks a plugin before you publish it, and writes, runs and gates plugin evals.
 
 ### Changed
 
+- **plugin-engineering** 0.3.1 — `plugin-testing-and-debugging` runs every no-cost eval check before a run that spends your usage, teaches evals and their CI command as the official docs state them, drops its own gate script and CI template, and no longer shows a placeholder replaced by your first argument.
 - **hook-engineering** 0.2.6 — `hook-development` warns that `set -e` makes a Bash hook exit with the failing command's own code, which can block when `grep` or `jq` exits 2, and shows how to map every unexpected failure to the exit code the hook means.
 
 ### Fixed
 
+- **plugin-evals** 0.1.7 — the skill takes the official plugin-evals docs and the changelog as its authority over `--help`, and corrects what it taught about `init`, the judge, run limits, baseline arms, publishing and cost.
+- **plugin-test-bench** 0.1.4 — `test-install` accepts a root `plugin.json` and says where an installed plugin's eval results land; `review-evals` asks for a result grader on every loading case.
+- **github-operations** 0.8.1 — `github-files-setup` shows its scripts' full path where it tells Claude how to run them, instead of a sentence that read as a bare folder path.
+- **instruction-engineering** 0.1.5 — `claude-md-and-rules` says where its checker script lives in words that stay correct once Claude Code fills in the skill's folder.
+- **skill-diagnostics** 0.4.2 — `skills-best-practices` names the placeholders Claude Code fills in without filling them in itself, so its note reads as intended, and its eval checker finds root manifests and counts only scored graders.
+- **tailwind-development** 0.3.4 — `tailwind-official-docs` says when to run the link checker from the skill's folder in words that stay correct once Claude Code fills in its placeholders.
 - **instruction-engineering** 0.1.4 — the checker matches a rule's `paths` the way Claude Code documents them: a leading `/` anchors a pattern to the folder that holds `.claude/`, and a pattern with no `/`, such as `*.md`, matches at any depth.
 
 ## 2026-11-14

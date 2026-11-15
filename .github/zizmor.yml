@@ -7,20 +7,8 @@ rules:
   self-repository:
     ignore:
       - validate.yml
-      - evals.yml
   # npm 12.2.1 is installed by its exact version because devEngines requires npm ^12.2.1 and Node 26
   # ships npm 11; no lockfile can hold the npm that installs the lockfile.
   adhoc-packages:
     ignore:
       - action.yml
-  # claude.yml answers @claude mentions, which arrive only as issue_comment and review events.
-  # claude-code-action (docs/security.md at the pinned v1.0.276):
-  #   - refuses bots and users without write access before Claude starts;
-  #   - checks out the pull request's head on a pull request;
-  #   - restores .claude/, CLAUDE.md, CLAUDE.local.md and .mcp.json from the base branch first, so a
-  #     fork's settings, hooks and instructions never load;
-  #   - denies package managers, test runners, interpreters and shells when the pull request's author
-  #     has no write access (restrict_untrusted_prs, on by default).
-  dangerous-triggers:
-    ignore:
-      - claude.yml

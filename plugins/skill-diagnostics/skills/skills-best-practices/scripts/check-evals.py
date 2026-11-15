@@ -21,20 +21,28 @@ Check ids and the checklist item each one serves (references/checklist.md); all 
   V-5 TE-5  a case's assertions, when present, is a list of non-empty strings
   V-6 TE-9  every plugin eval case for the skill has at least one grader, and its grader files
             and case.yaml can be read
-  V-7 TE-9  no grader of those cases puts an inline flag group such as (?i) in a regex
+  V-7 TE-9  no regex of those cases (a regex grader's pattern, an input_match) uses an inline
+            flag group such as (?i); llm and baseline rubrics aren't regexes and aren't checked
   V-8 TE-9  a must-not-invoke grader (tool_used on Skill, min 0, max 0) sets arm: both when its
-            case has another grader
+            case has a grader that a two-arm run scores: one other than tool_used on Skill,
+            arm: with-only, or a mock_calls grader when every mocked server is the plugin's own
 
 How the evals are found:
 - The skill's name is the frontmatter name of SKILL.md, or its folder's name without one.
 - evals/evals.json is the open standard's format (agentskills.io), which skill-creator uses.
-- The plugin root is the nearest folder, from the skill's own upwards, that holds
-  .claude-plugin/plugin.json. Its eval directory is plugin.json's experimental.evals when that
+- The plugin root is the nearest folder, from the skill's own upwards, that holds a manifest:
+  .claude-plugin/plugin.json, or plugin.json at the root (the first wins when both exist). Its
+  eval directory is the manifest's experimental.evals, the first entry of an array, when that
   is a relative path of plain names, or evals/ otherwise, as claude plugin eval reads it.
-- A case is a folder under the eval directory with prompt.md or case.yaml; results/, mocks/ and
-  hidden folders are skipped, and a case's own folders aren't searched for more cases. A case is
-  for this skill when its case.yaml or one of its graders/*.md names the skill as a whole word.
-- Grader fields are read from each grader file's frontmatter, one "key: value" per line.
+- A case is a folder under the eval directory with prompt.md or case.yaml, at any depth below
+  group folders; results/, mocks/ and hidden folders are skipped, and a case's own folders
+  aren't searched for more cases. A case is for this skill when its case.yaml or one of its
+  graders/*.md names the skill as a whole word.
+- Grader fields are read from each grader file's frontmatter, one "key: value" per line. A
+  regex grader's pattern is its pattern field, or the file's body.
+- The plugin's own MCP servers are the keys of mcpServers in the manifest (inline, or in the
+  .json file it names) and in .mcp.json at the plugin root. A case's mocked servers are the
+  folders of the suite's mocks/ and of the case's own mocks/.
 --output FILE also writes the same JSON object to FILE (UTF-8, overwritten, parent folders
 created). stdout is unchanged. If FILE can't be written, the script prints nothing on stdout,
 names FILE on stderr and exits 1. Standard library only.
@@ -71,6 +79,8 @@ SKIP_DIRS = frozenset({"results", "mocks"})
 NAME_RE = re.compile(r"^name\s*:\s*['\"]?([^'\"#\s]+)", re.MULTILINE)
 FIELD_RE = re.compile(r"^\s*([A-Za-z_]+)\s*:\s*(.*?)\s*$")
 INLINE_FLAGS_RE = re.compile(r"\(\?[a-zA-Z]+\)")
+PATTERN_LINE_RE = re.compile(r"^\s*(?:-\s*)?(?:pattern|input_match)\s*:(.*)$", re.MULTILINE)
+MANIFESTS = (Path(".claude-plugin") / "plugin.json", Path("plugin.json"))
 PLAIN_DIR_RE = re.compile(r"[\w.-]+(?:/[\w.-]+)*")
 
 
@@ -148,15 +158,20 @@ def read_text(path: Path) -> str | None:
         return None
 
 
-def frontmatter(text: str) -> str:
-    """The text between a leading --- line and the next --- line, or empty."""
+def split_frontmatter(text: str) -> tuple[str, str]:
+    """The text between a leading --- line and the next --- line, and the text after it."""
     lines = text.splitlines()
     if not lines or lines[0].strip() != "---":
-        return ""
+        return "", text
     for index in range(1, len(lines)):
         if lines[index].strip() == "---":
-            return "\n".join(lines[1:index])
-    return ""
+            return "\n".join(lines[1:index]), "\n".join(lines[index + 1 :])
+    return "", text
+
+
+def frontmatter(text: str) -> str:
+    """The text between a leading --- line and the next --- line, or empty."""
+    return split_frontmatter(text)[0]
 
 
 def skill_name(root: Path, skill_md: str) -> str:
@@ -265,26 +280,80 @@ def check_evals_json(root: Path, name: str, report: Report) -> int:
 # ---------------------------------------------------------------------------
 
 
+def manifest_path(folder: Path) -> Path | None:
+    """The folder's plugin manifest: .claude-plugin/plugin.json, else a root plugin.json."""
+    for relative in MANIFESTS:
+        if (folder / relative).is_file():
+            return folder / relative
+    return None
+
+
 def plugin_root(root: Path) -> Path | None:
-    """The nearest folder, from the skill's own upwards, that holds .claude-plugin/plugin.json."""
+    """The nearest folder, from the skill's own upwards, that holds a plugin manifest."""
     for folder in (root, *root.parents):
-        if (folder / ".claude-plugin" / "plugin.json").is_file():
+        if manifest_path(folder) is not None:
             return folder
     return None
 
 
-def eval_dir(plugin: Path) -> Path:
-    """plugin.json's experimental.evals when it is a plain relative path, or evals/."""
-    text = read_text(plugin / ".claude-plugin" / "plugin.json")
+def read_json_object(path: Path) -> JsonObject | None:
+    """A file's JSON object, or None when it can't be read or isn't one object."""
+    text = read_text(path) if path.is_file() else None
     try:
         data = decode(text) if text is not None else None
     except json.JSONDecodeError:
-        data = None
-    experimental = data.get("experimental") if isinstance(data, JsonObject) else None
+        return None
+    return data if isinstance(data, JsonObject) else None
+
+
+def manifest(plugin: Path) -> JsonObject | None:
+    """The plugin's manifest as a JSON object, or None."""
+    path = manifest_path(plugin)
+    return read_json_object(path) if path is not None else None
+
+
+def eval_dir(plugin: Path) -> Path:
+    """The manifest's experimental.evals (an array's first entry) when plain, or evals/."""
+    data = manifest(plugin)
+    experimental = data.get("experimental") if data is not None else None
     value = experimental.get("evals") if isinstance(experimental, JsonObject) else None
+    listed = as_list(value)
+    if listed:
+        value = listed[0]
     if isinstance(value, str) and PLAIN_DIR_RE.fullmatch(value) and ".." not in value:
         return plugin / value
     return plugin / "evals"
+
+
+def server_names(config: JsonObject | None) -> set[str]:
+    """The server names of an MCP configuration: its mcpServers keys, else its own keys."""
+    if config is None:
+        return set()
+    servers = config.get("mcpServers")
+    return set(servers) if isinstance(servers, JsonObject) else set(config)
+
+
+def plugin_servers(plugin: Path) -> set[str]:
+    """The MCP servers the plugin declares in its manifest and in its .mcp.json."""
+    names = server_names(read_json_object(plugin / ".mcp.json"))
+    data = manifest(plugin)
+    servers = data.get("mcpServers") if data is not None else None
+    if isinstance(servers, JsonObject):
+        names |= set(servers)
+    elif isinstance(servers, str) and servers.endswith(".json"):
+        target = (plugin / servers).resolve()
+        if target.is_relative_to(plugin.resolve()):
+            names |= server_names(read_json_object(target))
+    return names
+
+
+def mocked_servers(base: Path, case: Path) -> set[str]:
+    """The servers mocked for a case: folders of the suite's and the case's mocks/."""
+    names: set[str] = set()
+    for mocks in (base / "mocks", case / "mocks"):
+        if mocks.is_dir():
+            names |= {d.name for d in mocks.iterdir() if d.is_dir() and not d.name.startswith(".")}
+    return names
 
 
 def find_cases(base: Path) -> list[Path]:
@@ -350,6 +419,30 @@ def graders_of(case: Path, plugin: Path) -> CaseFiles:
     return CaseFiles(graders, case_yaml, unreadable)
 
 
+def inline_flags(text: str, *, body: bool) -> bool:
+    """Whether a pattern or input_match line, or the body when it is a pattern, has (?i)."""
+    head, rest = split_frontmatter(text)
+    values = [m.group(1) for m in PATTERN_LINE_RE.finditer(head)]
+    if body:
+        values.append(rest)
+    return any(INLINE_FLAGS_RE.search(value) for value in values)
+
+
+def excluded(grader: Grader, *, own_mocks: bool) -> bool:
+    """Whether a two-arm run leaves the grader out of the score."""
+    f = grader.fields
+    if f.get("arm") == "both":
+        return False
+    if f.get("arm") == "with-only":
+        return True
+    if f.get("type") == "tool_used" and f.get("tool") == "Skill":
+        return True
+    on_calls = (f.get("type") == "regex" and f.get("target") == "mock_calls") or (
+        f.get("type") == "llm" and f.get("focus") == "mock_calls"
+    )
+    return on_calls and own_mocks
+
+
 def must_not_invoke(grader: Grader) -> bool:
     """A tool_used grader on Skill with min 0 and max 0."""
     f = grader.fields
@@ -361,25 +454,45 @@ def must_not_invoke(grader: Grader) -> bool:
     )
 
 
-def check_case_graders(case: Path, plugin: Path, report: Report) -> None:
+def check_case_graders(case: Path, plugin: Path, base: Path, report: Report) -> None:
     """V-6, V-7 and V-8 for one case."""
     where = case.relative_to(plugin).as_posix()
     files = graders_of(case, plugin)
-    graders, case_yaml = files.graders, files.case_yaml
     for location in files.unreadable:
         report.fail("V-6", location, "can't be read as UTF-8 text, so its graders weren't checked")
-    inline = re.search(r"^graders\s*:", case_yaml, re.MULTILINE) is not None
-    if not graders and not inline:
+    if not files.graders and not has_inline_graders(files):
         report.fail("V-6", where, "the case has no grader, so it fails to load")
-    for grader in graders:
-        if INLINE_FLAGS_RE.search(grader.text):
-            detail = "inline (?i)-style flags aren't supported; use flags"
+    check_regex_flags(where, files, report)
+    mocked = mocked_servers(base, case)
+    own_mocks = bool(mocked) and mocked <= plugin_servers(plugin)
+    check_must_not_invoke(files, report, own_mocks=own_mocks)
+
+
+def has_inline_graders(files: CaseFiles) -> bool:
+    """Whether the case's case.yaml lists graders."""
+    return re.search(r"^graders\s*:", files.case_yaml, re.MULTILINE) is not None
+
+
+def check_regex_flags(where: str, files: CaseFiles, report: Report) -> None:
+    """V-7 for one case: no inline flag group in a regex pattern or input_match."""
+    for grader in files.graders:
+        kind = grader.fields.get("type")
+        if kind not in ("llm", "baseline") and inline_flags(grader.text, body=kind == "regex"):
+            detail = "inline (?i)-style flags aren't supported in a regex; use flags"
             report.fail("V-7", grader.location, detail)
-    if inline and INLINE_FLAGS_RE.search(case_yaml):
+    patterns = [m.group(1) for m in PATTERN_LINE_RE.finditer(files.case_yaml)]
+    if any(INLINE_FLAGS_RE.search(value) for value in patterns):
         report.fail("V-7", f"{where}/case.yaml", "inline (?i)-style flags aren't supported")
-    others = [g for g in graders if g.fields.get("tool") != "Skill"]
-    for grader in graders:
-        if must_not_invoke(grader) and grader.fields.get("arm") != "both" and (others or inline):
+
+
+def check_must_not_invoke(files: CaseFiles, report: Report, *, own_mocks: bool) -> None:
+    """V-8 for one case: arm: both on a must-not-invoke grader beside a scored grader."""
+    inline = has_inline_graders(files)
+    for grader in files.graders:
+        if not must_not_invoke(grader) or grader.fields.get("arm") == "both":
+            continue
+        others = [g for g in files.graders if g is not grader]
+        if inline or any(not excluded(g, own_mocks=own_mocks) for g in others):
             detail = "a must-not-invoke Skill grader needs arm: both, or it isn't scored"
             report.fail("V-8", grader.location, detail)
 
@@ -406,7 +519,7 @@ def check_plugin_cases(root: Path, name: str, report: Report) -> tuple[dict[str,
     for cid in ("V-6", "V-7", "V-8"):
         report.ran(cid, f"{len(mine)} plugin eval case(s) for the skill load and score as meant")
     for case in mine:
-        check_case_graders(case, plugin, report)
+        check_case_graders(case, plugin, base, report)
     listed = [c.relative_to(plugin).as_posix() for c in mine]
     info["plugin_cases"] = listed[:MAX_CASES]
     info["plugin_cases_truncated"] = max(0, len(listed) - MAX_CASES)

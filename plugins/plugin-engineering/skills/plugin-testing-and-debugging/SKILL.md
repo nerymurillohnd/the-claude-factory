@@ -31,22 +31,24 @@ These are the facts that most often turn a reasonable guess into a wrong answer.
 - `enabledPlugins` merges key by key across six sources; a higher source wins. A project `true` overrides the user's `false`. To turn a project-enabled plugin off for one person, set it `false` in `.claude/settings.local.json`, not in the committed file.
 - A plugin under `.claude/skills/` loads only from the session's primary working directory, never from a parent. Started in a subdirectory, it is simply absent. Managed settings can also skip such folders with no error at all.
 - Many causes appear only in the debug log, which `claude --debug` writes to `~/.claude/debug/<session-id>.txt` without printing anything to the terminal. `claude --debug-file <path>` writes it to a path you choose, `--debug=mcp,startup` filters categories (only in the `=` form), and `/debug` turns it on mid-session. `references/messages.md`, "Read the debug log", has the details.
-- Skills load from `skills/` at the plugin root. A `skills/` inside `.claude-plugin/` is not scanned. Hook event names are case-sensitive (`PostToolUse`). A shell-form hook with an unquoted `${CLAUDE_PLUGIN_ROOT}` breaks when the path has a space.
+- Skills load from `skills/` at the plugin root. A `skills/` inside `.claude-plugin/` is not scanned. Hook event names are case-sensitive (`PostToolUse`). A shell-form hook with an unquoted `CLAUDE_PLUGIN_ROOT` placeholder breaks when the path has a space.
 
 **Validation**
 
 - `claude plugin validate` checks files and schema, not behavior. It does not read a `SKILL.md` at the plugin root, does not follow symlinks, and from a marketplace directory does not read the component files of plugins listed in other directories: validate each plugin directory too. Unknown fields and missing frontmatter fail only with `--strict`.
-- Validate again after every round of fixes: a warning can hide another. On 2.1.325 a hook under a misspelled event prints `unknown hook event; entry ignored at runtime`, and the unquoted-`${CLAUDE_PLUGIN_ROOT}` warning for that hook appears only once the event name is fixed.
+- Validate again after every round of fixes: a warning can hide another. On 2.1.325 a hook under a misspelled event prints `unknown hook event; entry ignored at runtime`, and the warning about that hook's unquoted `CLAUDE_PLUGIN_ROOT` placeholder appears only once the event name is fixed.
 - `engines["claude-code"]` in `plugin.json` (v2.1.323) is a valid field: a plugin outside its stated range is not installed, updated or loaded, and install and update pick the newest version that fits. Check it when a plugin silently refuses to install, update or load on one machine.
 
 **Evals**
 
-- `claude plugin eval` runs real model calls on the user's account. Agree scope and cost before the first run. It is a shell command only; there is no `/plugin` form.
+- `claude plugin eval` runs real model calls on the user's account. Agree scope and cost before the first run. It is a shell command only; the Plugin commands reference lists no `/plugin` form for `eval` or `eval init`.
 - The default `--threshold` is `1.0`, so any case below perfect exits 1. A run that ends on an API error scores 0 without grading and makes the command exit non-zero, in either arm, even when every case passes.
-- `Δ` never changes the exit code. To fail a build when the plugin stops helping, read `aggregates.meanDelta` from the JSON result (`scripts/gate_eval_result.py` does this and refuses partial results). `meanDelta` exists only in a two-arm run, so a CI job that gates on it cannot use `--ablation none`; keep `--ablation none` for quick grader iteration and for suites that gate on score alone.
+- `Δ` never changes the exit code; it is reported in the summary table and as `aggregates.meanDelta` in the JSON result, only in a two-arm run.
 - Put the target first: `--tag`, `--allow-tools` and `--json` take values, so a target after them is read as their value. Under `--json` or without a terminal an untrusted directory is refused with exit 1 unless `--trust-plugin` is passed.
-- In a two-arm run every `tool_used` grader on `Skill` is excluded from the score (`scored: false`). A "must not invoke the skill" check needs `min: 0`, `max: 0` and `arm: both`. Regex graders are JavaScript: use `flags: i`, never `(?i)`. A `files` target lists created paths, not contents. Each run is isolated: no user settings, CLAUDE.md, personal MCP servers or other plugins.
-- Real plugin MCP servers do not start in a run. Mock them under `evals/mocks/<server>/<tool>.md`, with `<server>` as named in the plugin's MCP configuration.
+- In a two-arm run these graders are excluded from the score (`scored: false`) and shown as indicators only: every `tool_used` grader on `Skill`, every `regex` grader with `target: mock_calls` and `llm` grader with `focus: mock_calls` when each mocked server in the case is one the plugin declares, and any grader marked `arm: with-only`. If every grader in a case is excluded, they are all scored normally instead, so a case whose only grader is `tool_used: Skill` scores 0 without the plugin and gets a `Δ` of +1 whatever the answer's quality: give each case a grader on the result too. Under `--ablation none` nothing is excluded. A "must not invoke the skill" check needs `min: 0`, `max: 0` and `arm: both`. Regex graders are JavaScript: use `flags: i`, never `(?i)`. A `files` target lists created paths, not contents. Each run is isolated: no user settings, CLAUDE.md, personal MCP servers or other plugins.
+- Real plugin MCP servers do not start in a run unless `--allow-real-servers` or `--mocks off` starts them and `--allow-tools "mcp__plugin_<plugin>_<server>__*"` grants their tools. Otherwise mock them under `evals/mocks/<server>/<tool>.md`, with `<server>` as named in the plugin's MCP configuration.
+- A case's `plugins` list defaults to the nearest enclosing plugin. When auto-detection doesn't find the plugin (no `W/OUT` column, or "ablation requested but no plugin resolved"), set `plugins` to the relative path from the case directory up to the plugin directory: two levels up for a case directly under `evals/`. A refusal to name the plugin under test there (`a plugins entry names the case directory ... or a directory covering them`) was observed on 2.1.325 and is unconfirmed against the docs. Ship every skill, agent, hook or MCP server a case depends on in the plugin under test.
+- Granting `Bash` or `PowerShell` runs every command in Claude Code's sandbox. On Linux it needs `bubblewrap` and `socat`; on a machine with no sandbox backend Claude Code refuses each run rather than running it unconfined, so the case shows a run error and usually scores 0. Native Windows has no backend: run shell-granting suites under WSL2.
 
 ## Pick the job
 
@@ -112,9 +114,15 @@ Read `references/evals.md` before writing or running a suite; it holds every fie
 1. Agree scope and cost with the user, and check `claude --version` (2.1.269 or later) and `git --version` (2.31 or later when git is installed).
 2. Create cases with `claude plugin eval init` (interview) or `claude plugin eval init --bare <case>` (blank template, no terminal needed). The templates in `assets/eval-case/`, `assets/eval-negative-case/` and `assets/mock-tool.md` follow the documented format.
 3. Give each case a grader on the result (regex over a produced file, or a short `llm` rubric with concrete PASS and FAIL conditions) and one on the steps (`tool_used` or `tool_order`). Add a negative case so the suite does not reward a skill that fires on everything.
-4. Iterate graders cheaply with one arm: `claude plugin eval . --case <name> --runs 1 --ablation none`. Confirm any change at the default three runs, with the baseline, before trusting it.
-5. Read the report from the top: verdict and tiles, then each case card, then the failed graders' explanations. A `Δ` near zero with the `tool_used: Skill` grader failing means the skill's description does not trigger on the prompt's phrasing: change the description once, based on what the report shows, then run the same suite again.
-6. For CI, start from `assets/ci-evals.sh` and gate on the delta with `scripts/gate_eval_result.py`. A suite's files can be checked before any spend: on 2.1.325, a run with no credential still loads every case, prints `N case file(s) failed to load` for broken ones, and stops as partial at $0 (observed behavior, not on the docs pages).
+4. Check everything that costs nothing before any run that spends, and fix what it finds first:
+   - `claude plugin validate <plugin-dir> --strict` and the plugin's own linters;
+   - each `scaffold_script` run by hand in a new empty folder, and the files it leaves;
+   - each `regex`, `tool_used` and `tool_order` grader tested against a real or hand-written trace. In a with-plugin trace the skill's own text appears in tool results, so a `regex` over `trace` that should prove an action matches only inside a tool call's input (`"type":"tool_use",...,"name":"<tool>","input":{...}`);
+   - the commands and templates the skill under test teaches, run or validated directly;
+   - every suite loaded with `--max-cost-usd 0`, with the same flags the real run will take: on 2.1.325 it reads every case and stops as partial before the first run, at no cost (observed, not documented; it follows from the page's "Checked before each run starts"), and prints `N case file(s) failed to load` for broken ones.
+5. Iterate graders cheaply with one arm: `claude plugin eval . --case <name> --runs 1 --ablation none`. Confirm any change at the default three runs, with the baseline, before trusting it.
+6. Read the report from the top: verdict and tiles, then each case card, then the failed graders' explanations. A `Δ` near zero with the `tool_used: Skill` grader failing means the skill's description does not trigger on the prompt's phrasing: change the description once, based on what the report shows, then run the same suite again.
+7. For CI, run the command the page's "Run evals in CI" section gives and fail the job on its exit code.
 
 ## Where the answers are
 
@@ -122,14 +130,12 @@ Read `references/evals.md` before writing or running a suite; it holds every fie
 - `references/loading.md`: the three stages, origins, `enabledPlugins` precedence, the files under `~/.claude/plugins/`, in-place and copied plugins, versions and updates, name conflicts. Read it when something loaded wrong or not at all with no message, or to explain why.
 - `references/evals.md`: running, writing, grading, mocking, CI and reading results for `claude plugin eval`. Read it for any eval work.
 - `references/environments.md`: what loads in a cloud session, in a project's cloud thread, in Claude on the web, desktop and mobile, and in the Agent SDK, how to test and debug there, and where each fix goes. Read it whenever the session is not the user's own terminal.
-- `scripts/gate_eval_result.py`: `python3 scripts/gate_eval_result.py results.json --min-mean-delta 0.2` exits 0 when the gate passes, 1 when it fails, 2 when the result is not comparable (partial, judge graders skipped by the cost ceiling, or a run that errored or a mock aborted). Standard library only.
-- `assets/`: templates to copy into a plugin's `evals/` folder or its CI, each with `<...>` placeholders to fill:
+- `assets/`: templates to copy into a plugin's `evals/` folder, each with `<...>` placeholders to fill:
   - `assets/eval-case/prompt.md`: a case's prompt and its frontmatter.
   - `assets/eval-case/case.yaml`: optional, for a seeded workspace; `assets/eval-case/fixture.sh` is its scaffold script, which runs only with `--scaffold`.
   - `assets/eval-case/graders/result.md`: an `llm` rubric on the answer; `assets/eval-case/graders/skill-fired.md`: a `tool_used` grader that the skill fired.
   - `assets/eval-negative-case/prompt.md`, with `assets/eval-negative-case/graders/answered.md` and `assets/eval-negative-case/graders/skill-not-fired.md`: a request near the skill's domain that it must leave alone.
   - `assets/mock-tool.md`: a mock for a tool the case must not call for real.
-  - `assets/ci-evals.sh`: the CI step; it runs the suite and then `scripts/gate_eval_result.py`.
 
 ## Version and source check
 

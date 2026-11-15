@@ -32,9 +32,9 @@ my-plugin/
 ```
 
 - A case with no grader fails to load, with an `invalid case.yaml` error that names `graders`.
-- Another eval directory: set `"experimental": { "evals": "quality/evals" }` in `plugin.json`, or pass `--eval-dir quality/evals` to both `claude plugin eval` and `init`. The flag wins over the manifest. Use plain relative directory names only. An absolute path or `..` is an error as a flag; as a manifest value it prints a `Warning:` and the run falls back to `evals/`. With an array in the manifest, only the first entry is used.
-- Case names, including `init` names, start with a letter or digit and use only letters, digits, `.`, `_` and `-`. Names Windows can't store, such as `con`, are refused.
-- Each run starts in an empty working directory, and the run can't read the eval directory. Put what the task needs in the prompt, or seed it with `case.yaml` (see [fixtures-and-mocks.md](fixtures-and-mocks.md)). Don't use absolute paths or `~/` in prompts or graders.
+- Another eval directory: set `"experimental": { "evals": "quality/evals" }` in `plugin.json`, or pass `--eval-dir quality/evals` to both `claude plugin eval` and `init`. The flag wins over the manifest. Use plain relative directory names only. An absolute path or `..` is an error as a flag; as a manifest value it prints a `Warning:` and the run falls back to `evals/`. With an array in the manifest, only the first entry is used (manifest reference).
+- Case names, including `init` names, start with a letter or digit and use only letters, digits, `.`, `_` and `-`. `init` refuses names Windows can't store, such as `con`, on every platform (plugin commands reference).
+- Each run starts in an empty working directory, and the run can't read the eval directory. Put what the task needs in the prompt, or seed it with `case.yaml` (see [fixtures-and-mocks.md](fixtures-and-mocks.md)). Each run also gets its own temporary home directory, so don't use absolute paths or `~/` in prompts or graders.
 
 ## `prompt.md`
 
@@ -54,11 +54,11 @@ The body is sent exactly as written. `@path` mentions are not expanded, so to ha
 | `timeout_seconds` | `300` | Up to 3600 |
 | `allowed_tools` | `[]` | Read-only tools listed here are granted. Everything else needs `--allow-tools` (see [running-and-ci.md](running-and-ci.md)) |
 | `append_system_prompt` | — | Appended to the child session's system prompt |
-| `env` | `{}` | Keys must match `EVAL_[A-Z0-9_]*`; any other key fails the run |
+| `env` | `{}` | Extra variables for the run. Keys must match `EVAL_[A-Z0-9_]*`; any other key fails the run. The run inherits only an allowlist from your shell (basics such as `PATH` and locale, proxy and certificate settings, provider selection and authentication, most `ANTHROPIC_*` and `CLAUDE_CODE_*`) plus every `EVAL_*` variable, so export anything else the plugin needs as `EVAL_*` |
 
 The read-only set that `allowed_tools` can grant on its own is `Read`, `Glob`, `Grep`, `NotebookRead`, `Skill`, `AskUserQuestion`, `Agent`, `TodoWrite`, `TaskCreate`, `TaskGet`, `TaskList`, `TaskUpdate` and `TaskStop`.
 
-**`disallowed_tools`** (since v2.1.299) removes built-in tools from Claude in that case, even when they are granted, for example `Agent`. The run-wide flag is `--disallow-tools`. When this snapshot was taken, the docs page didn't list the field yet. Confirm where it goes with the live page before you rely on it. An unknown `prompt.md` key fails the case, so when you can't confirm the field, use the run-wide flag on that case alone: `claude plugin eval . --case <case> --disallow-tools Agent`, and run the other cases without it.
+**`disallowed_tools`** keeps specific built-in tools, such as `Agent`, out of that case's runs; the run-wide flag is `--disallow-tools`. Both come from the changelog for v2.1.299 ("Added `--disallow-tools` and a `disallowed_tools` case field to `claude plugin eval`"). The plugin evals page omits both, so it doesn't say where the field goes; check the live page before you rely on it. An unknown `prompt.md` key fails the case, so when you can't confirm the field, use the run-wide flag on that case alone: `claude plugin eval . --case <case> --disallow-tools Agent`, and run the other cases without it.
 
 ## `case.yaml`
 
@@ -101,18 +101,18 @@ The read-only set that `allowed_tools` can grant on its own is `Read`, `Glob`, `
 | `llm` | `criteria` (the file body in `.md` form), `focus` | A judge votes PASS in at least 2 of 3 votes |
 | `baseline` | `baseline_file`, `criteria` | A judge finds the run meets the criteria at least as well as the reference transcript at `baseline_file`, a `.jsonl` in the case directory |
 
-- The default judge for `llm` and `baseline` comes from the CLI: run `claude plugin eval --help` to see it. Set it with `--judge-model`. Use a Sonnet-tier or larger judge that is not the agent's own model, because a small judge can mark a correct but differently formatted answer wrong.
+- The default judge for `llm` and `baseline` is the model Claude Code uses for background tasks. Set it with `--judge-model`, and pin it in CI (the docs' CI example pins `claude-haiku-4-5`). A small judge can mark a correct but differently formatted answer wrong: when you suspect the judge, re-run with `--judge-model sonnet` and tighten the rubric.
 - Write `llm` rubrics as concrete `PASS if …` / `FAIL if …` claims. Keep them for short outputs, and grade long files with `regex`, which reads the whole file the same way every time.
 - **Tool names to match:**
-  - Skill calls: `tool: Skill` with `input_match: '"skill"\s*:\s*"(?:[\w-]+:)?<skill-name>"'`. The skill name is its directory name, or its frontmatter `name`, and the pattern also matches the `plugin:skill` form.
-  - Plugin MCP tools: `mcp__plugin_<plugin>_<server>__<tool>`. Any character outside `A-Za-z0-9_-` becomes `_`.
-  - Plugin agents: `<plugin>:<agent>`. Subfolders add segments, as in `<plugin>:review:security`.
-  - The subagent tool is `Agent`, formerly `Task`.
+  - Skill calls: `tool: Skill` with `input_match: '"skill"\s*:\s*"(?:[\w-]+:)?<skill-name>"'`. The skill name is its directory name under `skills/`, which is the name Claude invokes it by, and the pattern also matches the `plugin:skill` form.
+  - Plugin MCP tools: `mcp__plugin_<plugin>_<server>__<tool>`. Characters such as `.` or spaces in a server name become `_` (permissions page).
+  - Plugin agents: `<plugin>:<agent>`. A case dispatches one in the with-arm only when it lists `Agent` in `allowed_tools`. Subfolders of `agents/` add segments, as in `<plugin>:review:security` (plugin components page).
+  - The subagent tool is `Agent`; it was named `Task` before v2.1.63 (subagents page).
 
 ## Scoring and the no-plugin baseline
 
 - **Scores.** A run's score is the weighted fraction of its graders that passed. A case's score is the mean of its with-arm runs. A case passes when its score is at least `--threshold`, `1.0` by default.
-- **Arms.** When a plugin resolves, each case also runs with no plugin loaded. Δ is the with-arm score minus the without-arm score.
+- **Arms.** Decided per case: by default each case also runs with no plugin loaded. Δ is the with-arm score minus the without-arm score.
 - **One arm only.** A case runs a single arm under `--ablation none`, when the case resumes a `history_file` and the target is a path (pass `--ablation with-without` to compare), or when no plugin was found for it.
 - **Excluded graders.** In a two-arm run these are reported with `scored: false` and count in neither arm:
   - every `tool_used` grader whose `tool` is `Skill`;

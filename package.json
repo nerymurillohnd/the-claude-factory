@@ -15,7 +15,6 @@
     "check": "npm run lint && npm run typecheck && npm run check:consistency && npm run validate",
     "check:consistency": "uv run python scripts/validators/plugin-consistency.py",
     "check:install": "bash scripts/release/check-install.sh",
-    "evals:gate": "uv run python scripts/checkers/eval_gate.py",
     "fix": "biome check --write . && ruff check --fix . && ruff format . && shfmt -w .",
     "format": "biome format --write . && ruff format . && shfmt -w .",
     "icons:render": "node scripts/generators/plugin-icons.mjs",

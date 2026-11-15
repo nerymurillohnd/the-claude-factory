@@ -43,13 +43,15 @@
 
 ## 📋 Prerequisites
 
-| Tool                                                                 | Minimum version | Check              |
-| :------------------------------------------------------------------- | :-------------- | :----------------- |
-| Claude Code, in a terminal to run suites                             | 2.1.299         | `claude --version` |
-| git (optional; if installed, eval runs need this version)            | 2.31            | `git --version`    |
-| bubblewrap (Linux, for suites that grant Bash)                       | —               | `bwrap --version`  |
-| socat (Linux, for suites that grant Bash)                            | —               | `socat -V`         |
-| curl (optional; Claude reads the live docs with it or with WebFetch) | —               | `curl --version`   |
+| Tool                                                                 | Minimum version               | Check              |
+| :------------------------------------------------------------------- | :---------------------------- | :----------------- |
+| Claude Code, in a terminal to run suites                             | 2.1.299 (this plugin's floor) | `claude --version` |
+| git (optional; if installed, eval runs need this version)            | 2.31                          | `git --version`    |
+| bubblewrap (Linux, for suites that grant Bash)                       | —                             | `bwrap --version`  |
+| socat (Linux, for suites that grant Bash)                            | —                             | `socat -V`         |
+| curl (optional; Claude reads the live docs with it or with WebFetch) | —                             | `curl --version`   |
+
+2.1.299 is this plugin's own floor: its references teach the `--disallow-tools` flag and `disallowed_tools` case field, and how a run that ends on an API error is scored, all from Claude Code 2.1.299 ([changelog](https://code.claude.com/docs/en/changelog)). `claude plugin eval` itself needs 2.1.269 or later ([requirements](https://code.claude.com/docs/en/plugin-evals#requirements)).
 
 Suites that grant Bash need the OS sandbox: macOS has it built in, and Linux needs `bubblewrap` and `socat`.
 
@@ -249,7 +251,7 @@ You don't need a command: describe what you want, and the skill loads when your 
 I want evals for my plugin in ./plugins/changelog-writer. Where do I start?
 ```
 
-**Result:** Claude checks your Claude Code version, runs `claude plugin eval init` from the plugin root and conducts the interview it prints. It asks what a good and a bad result look like, then proposes cases that prove a difference, including prompts that must not trigger the skill. It writes each case's `prompt.md` and graders with the tools they need, and tells you how many runs the one-run pilot needs before running anything.
+**Result:** Claude checks your Claude Code version, runs `claude plugin eval init` from the plugin root and asks you its questions in the conversation. It asks what a good and a bad result look like, then proposes cases that prove a difference, including prompts that must not trigger the skill. It writes each case's `prompt.md` and graders with the tools they need, and tells you how many runs the one-run pilot needs before running anything.
 
 ### Fix a case that never fails
 
@@ -279,7 +281,7 @@ Here's my aggregate-result.json. Why is the delta zero on half the cases?
 
 - **Hooks:** none.
 - **MCP servers:** none.
-- **Network:** the plugin itself makes no calls. Its skill has Claude read the live docs and the changelog on `code.claude.com` with `curl -sL` or WebFetch, a plain `GET` with nothing of yours in it, and it may open the related pages it cites on `platform.claude.com`, `agentskills.io` and `github.com`. To check your CLI, Claude runs `claude --version` and `claude plugin eval --help`, which stay on your computer. The eval runs, judged graders and agent mocks that Claude starts only after your go-ahead call the model on the account your Claude Code uses. On a claude.ai subscription, a run you start in a terminal also publishes its report as a private artifact unless the command has `--no-publish`; a run started from a Claude Code session keeps it local unless the command has `--publish-report`.
+- **Network:** the plugin itself makes no calls. Its skill has Claude read the live docs and the changelog on `code.claude.com` with `curl -sL` or WebFetch, a plain `GET` with nothing of yours in it, and it may open the related pages it cites on `platform.claude.com`, `agentskills.io` and `github.com`. To check your CLI, Claude runs `claude --version` and `claude plugin eval --help`, which stay on your computer. The eval runs, judged graders and agent mocks that Claude starts only after your go-ahead call the model on the account your Claude Code uses. When you're signed in with a claude.ai subscription and artifacts are available for your account, a run you start in a terminal also publishes its report as a private artifact unless the command has `--no-publish`; a run started from a Claude Code session keeps it local unless the command has `--publish-report`.
 - **Files written:** none by the plugin. At your request, Claude writes the suite in your plugin's eval directory (`evals/` unless you choose another), and each `claude plugin eval` run writes `results/<timestamp>/` there, with `aggregate-result.json` and `report.html`; a plugin evaluated by name writes to `./evals/results/` in your current folder.
 - **Privacy:** the author collects no data. The marketplace's [privacy policy](https://github.com/nerymurillohnd/the-claude-factory/blob/main/PRIVACY.md) covers this plugin and the outside services it can reach.
 
@@ -352,14 +354,14 @@ Run `/reload-plugins`, then type `/plugin-evals:` to list its skills. If it stil
 <details>
 <summary><b>Does it replace <code>claude plugin eval init</code>?</b></summary>
 
-No. Claude runs `init` and follows the interview it prints, so the authoring rules always match your Claude Code version. The plugin adds what the interview leaves out: exact formats, fixtures and mocks, CI, cost control and reading the results.
+No. Claude runs `init` and asks you its questions in the conversation, following the instructions the command gives that session, so the authoring rules always match your Claude Code version. The plugin adds what the interview leaves out: exact formats, fixtures and mocks, CI, cost control and reading the results.
 
 </details>
 
 <details>
 <summary><b>What if the docs changed after this plugin was released?</b></summary>
 
-Claude checks your installed CLI with `claude plugin eval --help`, the live docs and the changelog before it relies on anything that changes between releases. When they disagree with what the plugin knew, Claude follows the live source and tells you what changed. Web access is optional: without it, Claude answers from the plugin's references and says what it could not verify.
+Claude checks the live docs and the changelog before it relies on anything that changes between releases, and your installed CLI with `claude plugin eval --help` to confirm a flag exists in your build. When they disagree with what the plugin knew, Claude follows the live docs, or the changelog where the two disagree, and tells you what changed. Web access is optional: without it, Claude answers from the plugin's references and says what it could not verify.
 
 </details>
 
