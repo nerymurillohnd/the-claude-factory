@@ -11,6 +11,7 @@ paths:
 - Tag each case `effort-low`, `effort-medium` or `effort-high`, and run each group with `CLAUDE_CODE_EFFORT_LEVEL=<level> claude plugin eval <plugin-dir> --tag effort-<level>`.
 - Judge every `llm` and `baseline` grader with `--judge-model claude-opus-5-5`.
 - Run a local smoke suite only with the owner's approval: `claude plugin eval plugins/<plugin> --case <case> --runs 1 --ablation none --no-publish`.
-- Run a plugin's full suite in CI once, the first time, by dispatching `.github/workflows/evals.yml` with the plugin's name; after that, `evals.yml` runs it on each pull request that changes the plugin.
+- Run the full suites in CI and keep local runs to the smoke run above: `.github/workflows/evals.yml` starts only for a pull request that adds a suite or changes a plugin that has one, and any other pull request skips it.
+- When a plugin gets its first suite, add `plugins/<plugin>/**` to the `paths` of `evals.yml` in the same change; `npm run check:consistency` (PC-12) fails until it is there. Dispatch `evals.yml` with the plugin's name to rerun a whole suite by hand.
 - Gate a CI run with `--threshold 0.8` and `npm run evals:gate -- <result> --min-mean-delta 0.2`, and cap each effort group with `--max-cost-usd 10`; a partial run fails the job.
 - Authenticate eval runs with the owner's subscription token, `CLAUDE_CODE_OAUTH_TOKEN`, never `ANTHROPIC_API_KEY`, which bills the API account instead.

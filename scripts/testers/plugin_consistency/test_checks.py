@@ -74,6 +74,15 @@ def root_readme(rows: dict[str, list[str]], counts: dict[str, int] | None = None
     return "\n".join([*head, *sections, "", "## 🤝 Contributing", ""]) + "\n"
 
 
+EVALS_WORKFLOW = """name: Evals
+on:
+  pull_request:
+    paths:
+      - plugins/*/evals/**
+{paths}  workflow_dispatch:
+"""
+
+
 class Fixture:
     """A consistent marketplace with demo 0.1.0 (category development), released and tagged."""
 
@@ -220,6 +229,29 @@ class ChecksTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             f = Fixture(Path(tmp))
             self.assertEqual(check(f.m.root, date_check=True, today="2026-11-15"), [])
+
+    def test_pc12_suite_missing_from_the_evals_workflow_paths(self) -> None:
+        """A plugin with an evals/ suite must be a path that triggers evals.yml."""
+        with tempfile.TemporaryDirectory() as tmp:
+            f = Fixture(Path(tmp))
+            f.m.write("plugins/demo/evals/case/prompt.md", "---\ntags: [effort-low]\n---\n\nHi.\n")
+            f.m.write(".github/workflows/evals.yml", EVALS_WORKFLOW.format(paths=""))
+            missing = [str(x) for x in check(f.m.root, offline=True)]
+            f.m.write(
+                ".github/workflows/evals.yml",
+                EVALS_WORKFLOW.format(paths="      - plugins/demo/**\n"),
+            )
+            expected = "PC-12 .github/workflows/evals.yml: plugins/demo has an eval suite but no"
+            self.assertEqual(
+                (missing, f.ids(offline=True)), ([f"{expected} `plugins/demo/**` path"], [])
+            )
+
+    def test_pc12_skips_a_repository_without_the_evals_workflow(self) -> None:
+        """Without evals.yml there is nothing to keep in step."""
+        with tempfile.TemporaryDirectory() as tmp:
+            f = Fixture(Path(tmp))
+            f.m.write("plugins/demo/evals/case/prompt.md", "---\ntags: [effort-low]\n---\n\nHi.\n")
+            self.assertEqual(f.ids(offline=True), [])
 
     def test_pc05_unreleased_notes_on_main(self) -> None:
         """On main, [Unreleased] holds no notes."""

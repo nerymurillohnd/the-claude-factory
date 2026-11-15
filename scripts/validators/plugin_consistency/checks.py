@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Marketplace, manifest and changelog checks (PC-01 to PC-05, PC-11), and the run of all checks."""
+"""Marketplace, manifest, changelog and evals-path checks (PC-01 to PC-05, PC-11, PC-12)."""
 
 from __future__ import annotations
 
@@ -116,6 +116,25 @@ def _unreleased(root: Path, *, main: bool) -> Iterator[Finding]:
             yield Finding("PC-05", path, "[Unreleased] has notes on main")
 
 
+EVALS_WORKFLOW = ".github/workflows/evals.yml"
+PATH_LINE = re.compile(r"^\s*-\s*['\"]?(?P<path>[^'\"\s#]+)", re.MULTILINE)
+
+
+def _eval_paths(root: Path) -> Iterator[Finding]:
+    """PC-12: each listed plugin with an evals/ suite is a `paths` entry that triggers evals.yml."""
+    workflow = root / EVALS_WORKFLOW
+    if not workflow.is_file():
+        return
+    listed = {m["path"] for m in PATH_LINE.finditer(workflow.read_text(encoding="utf-8"))}
+    for entry in entries(root):
+        name = str(entry.get("name", ""))
+        suite = root / "plugins" / name / "evals"
+        has_cases = any(suite.glob("*/prompt.md")) or any(suite.glob("*/case.yaml"))
+        if has_cases and f"plugins/{name}/**" not in listed:
+            message = f"plugins/{name} has an eval suite but no `plugins/{name}/**` path"
+            yield Finding("PC-12", EVALS_WORKFLOW, message)
+
+
 def check(
     root: Path,
     *,
@@ -133,6 +152,7 @@ def check(
             day = today or datetime.now(UTC).date().isoformat()
             findings += _release_date(root, tags, day)
     findings += _unreleased(root, main=main)
+    findings += _eval_paths(root)
     findings += readme_findings(root)
     findings += catalog_findings(root)
     findings += icon_findings(root)

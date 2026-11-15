@@ -1,18 +1,23 @@
 name: Evals
 
-# Runs a plugin's eval suite, as .claude/rules/plugins/evals.md sets: on each pull request that
-# changes a plugin with an evals/ suite, and by hand (workflow_dispatch) for a suite's first full
-# run. Each effort group runs on its own: the cases on claude-sonnet-5-5, the judge on
-# claude-opus-5-5, a case passing at 0.8, at most USD 10 per group, and the suite failing when the
-# plugin's mean contribution over no plugin is below 0.2. Every run bills the owner's Claude
-# subscription through the CLAUDE_CODE_OAUTH_TOKEN secret of the `claude` environment, never an API
-# key. It runs only when the repository variable CLAUDE_EVALS is `enabled`.
+# Runs a plugin's eval suite, as .claude/rules/plugins/evals.md sets. Only the plugins the owner
+# chose have a suite (plugins/<plugin>/evals/). A pull request triggers this workflow only when it
+# changes one of them, or adds a suite: `paths` lists `plugins/*/evals/**` and each plugin with a
+# suite, which `npm run check:consistency` (PC-12) keeps in step. Any other pull request doesn't
+# start it. workflow_dispatch runs one plugin's whole suite by hand.
+# Each effort group runs on its own: the cases on claude-sonnet-5-5, the judge on claude-opus-5-5,
+# a case passing at 0.8, at most USD 10 per group, and the suite failing when the plugin's mean
+# contribution over no plugin is below 0.2. Every run bills the owner's Claude subscription
+# through the CLAUDE_CODE_OAUTH_TOKEN secret of the `claude` environment, never an API key. It
+# runs only when the repository variable CLAUDE_EVALS is `enabled`.
 
 on:
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
     paths:
-      - plugins/**
+      - plugins/*/evals/**
+      - plugins/plugin-engineering/**
+      - plugins/project-maintainer/**
   workflow_dispatch:
     inputs:
       plugin:
