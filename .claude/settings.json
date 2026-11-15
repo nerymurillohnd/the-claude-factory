@@ -35,7 +35,19 @@
       "Bash(kill *)",
       "Bash(git commit *)",
       "mcp__Claude_Code_Docs__*",
-      "mcp__Context7__*"
+      "mcp__Context7__*",
+      "Skill(*)",
+      "EnterPlanMode",
+      "TaskCreate",
+      "Update",
+      "Bash(agent:*)",
+      "Bash(plugin:*)",
+      "Bash(claude plugin*)",
+      "Bash(claude agents*)",
+      "ToolSearch",
+      "WebSearch(*)",
+      "WebFetch(*)",
+      "Agent(*)"
     ],
     "ask": [
       "Bash(git push*)",
