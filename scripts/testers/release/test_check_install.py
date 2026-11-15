@@ -94,6 +94,22 @@ class CheckInstallTest(unittest.TestCase):
         self.assertTrue(commands[4].startswith("plugin validate --strict "))
         self.assertEqual(len(commands), 5)
 
+    def test_no_strict_validates_without_strict(self) -> None:
+        """--no-strict runs every other check, but validates without --strict."""
+        with tempfile.TemporaryDirectory() as tmp:
+            code, calls = self._run(Path(tmp), ["--from", "local", "--no-strict", "demo"], mod=True)
+        self.assertEqual(code, 0)
+        commands = [c.split("|")[2] for c in calls]
+        self.assertEqual(commands[1], "plugin install demo@the-claude-factory")
+        self.assertTrue(commands[4].startswith("plugin validate "))
+        self.assertNotIn("--strict", commands[4])
+        self.assertTrue(commands[5].startswith("plugin test "))
+
+    def test_no_strict_needs_a_plugin(self) -> None:
+        """--no-strict with no plugin after it is a usage error."""
+        with tempfile.TemporaryDirectory() as tmp:
+            self.assertEqual(self._run(Path(tmp), ["--from", "local", "--no-strict"])[0], 2)
+
     def test_ref_source_string(self) -> None:
         """A ref adds the GitHub marketplace at that ref."""
         with tempfile.TemporaryDirectory() as tmp:

@@ -21,8 +21,8 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:
-  # The plugins that fail plain `claude plugin validate --strict` today (DEBT-003), and so the strict
-  # validation inside `check:install`; `debt` checks them.
+  # The plugins that fail plain `claude plugin validate --strict` today (DEBT-003); `debt` checks them
+  # strictly, and `checks` installs them with `check:install --no-strict`.
   DEBT_003_PLUGINS: file-tree-pane model-trace project-maintainer tool-ledger turn-meter
 
 jobs:
@@ -97,23 +97,31 @@ jobs:
           for name in ${names}; do
             npm run --silent release:notes -- "${name}" "${mode[@]}" >/dev/null
           done
-      - name: Install check for each changed plugin outside DEBT-003
+      # A DEBT-003 plugin is still installed, loaded and tested here; only its strict validation
+      # waits in `debt`.
+      - name: Install check for each changed plugin
         if: ${{ !cancelled() && steps.setup.outcome == 'success' && github.event_name == 'pull_request' }}
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
         run: |
           set -euo pipefail
           changed="$(git diff --name-only "${BASE_SHA}...HEAD" -- plugins/ | cut -d/ -f2 | sort -u)"
-          listed=()
+          strict=()
+          debt=()
           for name in ${changed}; do
-            if [[ " ${DEBT_003_PLUGINS} " == *" ${name} "* ]]; then continue; fi
-            if [[ -f plugins/${name}/.claude-plugin/plugin.json ]]; then listed+=("${name}"); fi
+            if [[ ! -f plugins/${name}/.claude-plugin/plugin.json ]]; then continue; fi
+            if [[ " ${DEBT_003_PLUGINS} " == *" ${name} "* ]]; then
+              debt+=("${name}")
+            else
+              strict+=("${name}")
+            fi
           done
-          if ((${#listed[@]} == 0)); then
-            echo "No plugin outside DEBT-003 changed."
+          if ((${#strict[@]} + ${#debt[@]} == 0)); then
+            echo "No plugin changed."
             exit 0
           fi
-          npm run check:install -- --from local "${listed[@]}"
+          if ((${#strict[@]} > 0)); then npm run check:install -- --from local "${strict[@]}"; fi
+          if ((${#debt[@]} > 0)); then npm run check:install -- --from local --no-strict "${debt[@]}"; fi
 
   debt:
     name: Debt (non-blocking)
@@ -125,7 +133,6 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          fetch-depth: 0
           persist-credentials: false
       - uses: ./.github/actions/setup
       - name: DEBT-006 — npm run lint:js
@@ -141,27 +148,6 @@ jobs:
           status=0
           for name in ${DEBT_003_PLUGINS}; do
             claude plugin validate --strict "plugins/${name}/" || status=1
-          done
-          exit "${status}"
-      - name: DEBT-003 — install check for each changed plugin of the five
-        if: github.event_name == 'pull_request'
-        continue-on-error: true
-        env:
-          BASE_SHA: ${{ github.event.pull_request.base.sha }}
-        run: |
-          set -euo pipefail
-          changed="$(git diff --name-only "${BASE_SHA}...HEAD" -- plugins/ | cut -d/ -f2 | sort -u)"
-          listed=()
-          for name in ${changed}; do
-            if [[ " ${DEBT_003_PLUGINS} " == *" ${name} "* ]]; then listed+=("${name}"); fi
-          done
-          if ((${#listed[@]} == 0)); then
-            echo "No DEBT-003 plugin changed."
-            exit 0
-          fi
-          status=0
-          for name in "${listed[@]}"; do
-            npm run check:install -- --from local "${name}" || status=1
           done
           exit "${status}"
       - name: DEBT-003 — npm run validate:portable

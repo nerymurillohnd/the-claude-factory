@@ -3,16 +3,17 @@ set -euo pipefail
 
 # Install plugins of this marketplace into a throwaway Claude Code configuration and check what
 # users receive: the install, its load errors, its components, a strict validation and, for a
-# mod, its tests. Run it through `npm run check:install -- --from local|<ref> <plugin>...`.
+# mod, its tests. Run it through `npm run check:install -- --from local|<ref> [--no-strict] <plugin>...`.
 #   --from local  adds the marketplace from the working tree (./)
 #   --from <ref>  adds nerymurillohnd/the-claude-factory#<ref> from GitHub
+#   --no-strict   validates without --strict, for plugins whose warnings are logged debt
 # Plugins install in the order given. Exit 1 on the first failed check, 2 on a usage error.
 
 readonly MARKETPLACE="the-claude-factory"
 readonly REPOSITORY="nerymurillohnd/the-claude-factory"
 
 usage() {
-  printf 'usage: check-install.sh --from local|<ref> <plugin>...\n' >&2
+  printf 'usage: check-install.sh --from local|<ref> [--no-strict] <plugin>...\n' >&2
   exit 2
 }
 
@@ -34,6 +35,12 @@ case "${from}" in
   "" | -*) usage ;;
   *) source_arg="${REPOSITORY}#${from}" ;;
 esac
+validate=(plugin validate --strict)
+if [[ ${1:-} == --no-strict ]]; then
+  validate=(plugin validate)
+  shift
+fi
+[[ $# -ge 1 ]] || usage
 for plugin in "$@"; do
   [[ ${plugin} != -* ]] || usage
 done
@@ -64,7 +71,7 @@ for plugin in "$@"; do
   path="$(jq -r '.installPath // .readFromFolder // empty' <<< "${entry}")"
   [[ -d ${path} ]] || fail "${plugin} has no install folder"
   run plugin details "${plugin}"
-  run plugin validate --strict "${path}"
+  run "${validate[@]}" "${path}"
   if compgen -G "${path}/tests/*.test.ts" > /dev/null || compgen -G "${path}/tests/*.test.tsx" > /dev/null; then
     run plugin test "${path}"
   fi

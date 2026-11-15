@@ -130,7 +130,7 @@ Add an item only when all of these hold:
     - `project-maintainer`: 14× TS5097;
     - `tool-ledger` and `turn-meter`: TS2741 (`isCollapsed` missing).
 
-    Validate's blocking install check now skips the five, and the `Debt` job runs `check:install` on those a pull request changes.
+    Validate's blocking install check runs `check:install --no-strict` on those a pull request changes: it still installs, loads and tests them, and their strict validation stays in the `Debt` job.
 - **Inferences:** the same mods-API type errors may mean the mods are broken for users on current Claude Code builds; whether 2.1.325 changed the WebSearch input type is not checked against the release notes.
 - **Open questions:** none.
 
