@@ -19,13 +19,32 @@
 
 ## Stack
 
-- **Runtimes:** Node 26 LTS with npm 12, and Python 3.15 managed with uv.
-- **Formatting and linting:** Biome for TypeScript, JavaScript, JSON, YAML and Markdown, formatting all but the Markdown Claude reads as instructions; ruff for Python; shfmt and ShellCheck for shell.
-- **Type checking:** `tsc` for TypeScript and basedpyright for Python.
-- **Tests:** `unittest` for the maintainer scripts, `claude plugin test` for mods, and standard-library tests for hooks.
-- **Plugins:** the Claude Code plugin CLI: `validate`, `test`, `eval`, `tag` and `--plugin-dir`.
-- **CI/CD:** GitHub Actions, checked with actionlint and zizmor.
-- **Platforms:** macOS and Linux; Windows only through Git Bash.
+**Runtimes**
+
+- Manage Node 26 LTS with nvm, as `.nvmrc` pins it, and npm 12.
+- Manage Python 3.15 with uv.
+
+**Formatting, linting and type checking**
+
+- Use Biome to format and lint TypeScript, JavaScript, JSON, YAML and Markdown; it lints the Markdown Claude reads as instructions but never formats it.
+- Use ruff to lint and format every Python file.
+- Use shfmt to format and ShellCheck to lint every shell script.
+- Run `tsc` to type-check every TypeScript file, and basedpyright to type-check every Python file.
+
+**Tests and plugins**
+
+- Use `unittest` when writing tests for the maintainer scripts.
+- Use `claude plugin test` for mods, and standard-library tests for hook scripts.
+- Use the plugin commands (`claude plugin`, `/plugin`, `/reload-plugins`) for every work involving plugins, as `plugin-engineering:cli-commands-guide` sets.
+
+**CI/CD**
+
+- Run CI/CD on GitHub Actions, and check every workflow with actionlint and zizmor.
+
+**Platforms**
+
+- Build every plugin for macOS and Linux.
+- When a plugin must also run on Windows, support it only through Git Bash.
 
 ## Repository map
 
