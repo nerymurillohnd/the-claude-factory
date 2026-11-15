@@ -326,6 +326,7 @@
         "plugins/*/agents/**/*.md",
         "plugins/*/commands/**/*.md",
         "plugins/*/evals/**/*.md",
+        "plugins/*/evals-*/**/*.md",
         ".claude/maintainer/**/*.md",
         ".claude/plans/**/*.md",
         ".claude/session-handoff/**/*.md",
@@ -347,7 +348,8 @@
         ".claude/templates/agent-template.md",
         "plugins/*/agents/**/*.md",
         "plugins/*/commands/**/*.md",
-        "plugins/*/evals/**/*.md"
+        "plugins/*/evals/**/*.md",
+        "plugins/*/evals-*/**/*.md"
       ],
       "linter": {
         "rules": {
