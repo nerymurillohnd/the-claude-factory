@@ -97,7 +97,7 @@ Exit code 2 blocks the action on the events that can block (`#### Exit code 2 be
   trap 'exit 1' ERR
   ```
 
-- **A gate** (it must block what it cannot judge): keep the default opening lines, exit 2 with the reason on stderr on any input it cannot read, and set `onFailure: "block"` on its handler where the docs allow it and the user's version has it (Claude Code 2.1.295 or later, from the changelog). On an older version, a hook that times out, can't start or crashes before its own checks lets the action through: say so to the user.
+- **A gate** (it must block what it cannot judge): keep the default opening lines, exit 2 with the reason on stderr on any input it cannot read, and set `onFailure: "block"` on its handler where the docs allow it. Check in step 4.7 that the user's version has `onFailure`: without it, a hook that times out, can't start or crashes before its own checks lets the action through, so make the script fail closed on everything it controls and tell the user what still passes.
 - **Any other hook**: the default opening lines.
 
 Exit codes to recognize when you verify:

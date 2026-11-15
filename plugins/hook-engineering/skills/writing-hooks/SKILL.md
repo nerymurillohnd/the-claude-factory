@@ -158,7 +158,10 @@ The MCP locates and maps; the downloaded page is where sections are read; only t
    - A link to another page: download that page and repeat steps 4.4 and 4.5 on it.
    - Stop when the last two reads added no new fact.
 6. Read these sections, in this order, and cite each one in the report by its link. Page `hooks` unless another page is named.
-   1. Events: [Hook events](https://code.claude.com/docs/en/hooks#hook-events). The full, current list is its `###` headings; read the chosen event's `### <EventName>` section in full.
+   1. Events, as a panorama before any choice:
+      - [How hooks work](https://code.claude.com/docs/en/hooks-guide#how-hooks-work) gives one line per current event on when it fires; [Hook events](https://code.claude.com/docs/en/hooks#hook-events) lists the same events as its `###` headings, and [Prompt-based hooks](https://code.claude.com/docs/en/hooks#prompt-based-hooks) says which handler types each event takes.
+      - [What you can automate](https://code.claude.com/docs/en/hooks-guide#what-you-can-automate) holds the documented recipes for common goals: when one matches, use it as the starting design and adapt it to the script conventions.
+      - From these, list every event that could serve the goal, then read each candidate's `### <EventName>` section in full before step 5 compares them.
    2. Lifecycle: [Hook lifecycle](https://code.claude.com/docs/en/hooks#hook-lifecycle), including [How a hook resolves](https://code.claude.com/docs/en/hooks#how-a-hook-resolves).
    3. Matcher: [Matcher patterns](https://code.claude.com/docs/en/hooks#matcher-patterns), including [Match MCP tools](https://code.claude.com/docs/en/hooks#match-mcp-tools) for MCP actions.
    4. Input: [Common input fields](https://code.claude.com/docs/en/hooks#common-input-fields), plus the input in the event's section.
@@ -173,7 +176,11 @@ The MCP locates and maps; the downloaded page is where sections are read; only t
    9. Whether a mod solves it better: [Compare mods, settings hooks, skills, and MCP servers](https://code.claude.com/docs/en/plugins/mods/overview#compare-mods-settings-hooks-skills-and-mcp-servers) and [What a hook can do with an event](https://code.claude.com/docs/en/plugins/mods/overview#what-a-hook-can-do-with-an-event).
    10. Security: [Workspace trust](https://code.claude.com/docs/en/hooks#workspace-trust) and [Security best practices](https://code.claude.com/docs/en/hooks#security-best-practices).
    11. How to confirm it fired: [Limitations and troubleshooting](https://code.claude.com/docs/en/hooks-guide#limitations-and-troubleshooting) and [Debug hooks](https://code.claude.com/docs/en/hooks#debug-hooks).
-7. Check that every event and field exists in the user's version, the one step 1 noted. Only when nothing states it, get the local one:
+7. Check that the user's version, the one step 1 noted, has every event and field the design relies on. A hook that relies on one the version lacks doesn't do what it promises there, and a gate fails open. Check only what the design uses:
+    - First the minimum the docs write beside a field or event, such as "Requires Claude Code v<version> or later".
+    - Then the changelog, for each event and field the docs give no minimum for, with the commands below.
+    - When the version lacks one, pick a mechanism that version has, or tell the user what an upgrade would add, and say which.
+    - Only when nothing states the user's version, get the local one:
 
     ```bash
     claude --version
@@ -194,12 +201,11 @@ The MCP locates and maps; the downloaded page is where sections are read; only t
 
     - Read each hit's whole entry, from its version line to the next.
     - If no hit has a version line above it, the page no longer writes versions as `**X.Y.Z**`: map its headings with the map command of step 4.4, change the version pattern to match, and run the search again.
-    - A field the docs mark with a minimum version ("Requires Claude Code v2.1.295 or later") is checked against that version too.
     - If neither has a hit, say the version check could not be done for that term.
 
 ## Step 5: Decide (the optimal hook, not the first that works)
 
-1. List every event and mechanism that could do the job, from the current event list read in step 4: each handler type (`command`, `http`, `mcp_tool`, `prompt`, `agent`), a mod, a permission rule.
+1. Compare the candidate events read in step 4.6.1, and every other mechanism that could do the job: each handler type (`command`, `http`, `mcp_tool`, `prompt`, `agent`), a mod, a permission rule.
 2. Weigh them by when and how often each fires, what each can see and decide, and what each costs to run and maintain.
 3. Pick the optimal one. A way that works can still carry more complexity than a newer event or field that does the job directly.
 4. For a command hook, pick exec form or shell form from what the command needs and the platforms noted in step 1, as the gotcha on exec form and shell form says: shell form for a script, exec form for a real executable.
