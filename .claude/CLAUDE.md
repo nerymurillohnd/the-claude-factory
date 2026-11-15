@@ -48,29 +48,16 @@
 
 - Build every plugin for macOS and Linux through POSIX-compatible interfaces, and support Windows only through Git Bash, in the plugins that declare it.
 
-## Repository map
+## Folders map
 
-```text
-.
-├── .claude-plugin/marketplace.json   # Marketplace catalog: one entry per plugin
-├── plugins/<plugin>/                 # One self-contained plugin
-│   ├── .claude-plugin/plugin.json    # Plugin manifest
-│   ├── skills/ agents/ commands/ hooks/ tests/ evals/
-│   └── README.md CHANGELOG.md LICENSE NOTICE.txt
-├── .claude/
-│   ├── CLAUDE.md settings.json
-│   ├── rules/                        # Path-scoped rules
-│   ├── skills/ agents/               # Project skills and subagents
-│   ├── maintainer/                   # ADRs, technical debt, specs, plans, audits
-│   ├── memory/ session-handoff/      # Repository memory and session handoffs
-│   └── references/ templates/ architecture/
-├── .github/                          # Workflows, issue forms, PR templates, labels, Dependabot
-├── scripts/                          # validators/ checkers/ generators/ release/ testers/ schemas/ typings/
-├── docs/                             # User guides and assets/
-├── package.json pyproject.toml       # npm scripts; uv-managed Python
-├── biome.jsonc ruff.toml pyrightconfig.json tsconfig.json .editorconfig .shellcheckrc
-└── README.md CHANGELOG.md LICENSE    # Marketplace front page, release log, license
-```
+| Folder | Holds |
+| :-- | :-- |
+| `.claude-plugin/` | Marketplace catalog |
+| `plugins/` | One self-contained plugin per folder |
+| `.claude/` | Project settings, rules, skills, subagents, hooks, memory, handoffs, ADRs, technical debt, specs, plans, audits, references and templates |
+| `.github/` | Workflows, the CI setup action, issue forms, PR templates, labels, Dependabot, CODEOWNERS |
+| `scripts/` | Maintainer validators, checkers, generators, release and test scripts, schemas and typings |
+| `docs/` | User guides and their assets |
 
 ## How to run this project
 
