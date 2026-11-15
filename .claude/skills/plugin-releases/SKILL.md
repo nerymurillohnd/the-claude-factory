@@ -119,4 +119,4 @@ From code.claude.com/docs/en/plugins/publish (Ship updates to users) and host-ma
 The Claude workflows stay inert until the owner sets these in the repository's GitHub settings; tell the owner when one is missing, never ask for a value:
 
 - an environment named `claude`, holding the secrets `ANTHROPIC_API_KEY` (for `claude-code-review.yml`) and `CLAUDE_CODE_OAUTH_TOKEN` (for `claude.yml` and `evals.yml`, created with `claude setup-token`);
-- the repository variables `CLAUDE_CODE_REVIEW` and `CLAUDE_EVALS`, each set to `enabled`.
+- the repository variables `CLAUDE_CODE_REVIEW` and `CLAUDE_EVALS`, each set to `enabled`, under **Secrets and variables → Actions → Variables**, not in the `claude` environment: a job-level `if:` reads them before the job enters the environment, so an environment variable reads as empty there and the workflow skips without an error.
