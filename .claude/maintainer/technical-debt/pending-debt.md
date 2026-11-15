@@ -132,6 +132,7 @@ Add an item only when all of these hold:
     - `tool-ledger` and `turn-meter`: TS2741 (`isCollapsed` missing).
 
     Validate's blocking install check runs `check:install --no-strict` on those a pull request changes: it still installs, loads and tests them, and their strict validation stays in the `Debt` job.
+  - Rechecked 2026-11-15 on `main` at ceecd50 with Claude Code 2.1.325: `npm run validate:hooks-catch` still lists the same four hooks, and plain `--strict` and `--profile directory --strict` both still fail on the same five plugins.
 - **Inferences:** the same mods-API type errors may mean the mods are broken for users on current Claude Code builds; whether 2.1.325 changed the WebSearch input type is not checked against the release notes.
 - **Open questions:** none.
 
@@ -162,13 +163,14 @@ Add an item only when all of these hold:
     - `plugins/prompt-writer`: FM-02 in the hook `prompt` of the `prompt-writer` skill.
     - `plugins/svelte-development`: FM-03 in `metadata.upstream` and `metadata.base` of the `svelte-best-practices` and `svelte-docs-and-autofixer` skills.
   - `claude plugin validate --strict plugins/github-operations` exits 0 on the same files (Claude Code 2.1.325).
+  - Rechecked 2026-11-15 on `main` at ceecd50: `npm run lint:frontmatter` reports 54 files checked and 16 findings, exit 1. The tag `github-operations--v0.8.0` now exists on the remote, so the github-operations fix no longer waits on that release.
 - **Inferences:** none.
-- **Open questions:** github-operations 0.8.1 must wait until 0.8.0 has its tag, or `release.yml` never tags 0.8.0.
+- **Open questions:** none.
 
 #### 📈 Impact and next step
 
 - **Impact / risk:** the 16 values break the owner's frontmatter rule, and the three FM-01 agents fail strict YAML parsers other than Claude Code's. Until they are fixed, `lint:frontmatter` stays out of `npm run lint` and `npm run check`, so nothing stops a new violation.
-- **Why it is not fixed now:** the fixes are plugin-scope changes with version bumps in five plugins, and the github-operations one waits on the 0.8.0 release. The owner schedules plugin fixes.
+- **Why it is not fixed now:** the fixes are plugin-scope changes with version bumps in five plugins. The owner schedules plugin fixes.
 - **Next action:** the owner schedules the fixes; each plugin rewords its values without colons, quotes or leading brackets in its own pull request with a patch bump. Then chain `npm run lint:frontmatter` into `npm run lint`, and move its `DEBT-005` step from Validate's `Debt` job into `Checks`.
 - **Review condition:** `npm run lint:frontmatter` exits 0.
 - **Related records:** ADR_2026-11-14_frontmatter-lint-forbids-colons-and-quotes-in-values.
@@ -190,13 +192,14 @@ Add an item only when all of these hold:
     - Code, already failing before this change: `noArrayForEach` ×4 (file-tree-pane `hooks/diff.ts`, model-trace `hooks/names.ts` ×2, tailwind-development `mcp/format.mjs`), `noNegatedArrayPredicate` ×4 (file-tree-pane `hooks/register.tsx`, project-maintainer `hooks/debt.ts` ×2, tailwind-development `mcp/config.mjs`), `noUselessLengthCheck` ×1 (project-maintainer `hooks/guard.ts`), and the format of `plugins/github-operations/README.md`.
   - No maintainer file has a Biome finding.
   - After merging `ccr-60dfcba3-fsbz16` on 2026-11-14, Biome checks 702 files and finds 31 errors: the 26 above plus `useTopLevelHeading` ×5 in plugin-engineering's new `plugin-testing-and-debugging/assets/` (`eval-case/prompt.md`, `eval-case/graders/result.md`, `eval-negative-case/prompt.md`, `eval-negative-case/graders/answered.md`, `mock-tool.md`). They are eval prompt templates, prompts rather than documents, so the owner chooses between adding the folder to the `useTopLevelHeading` override and adding a heading.
+  - Rechecked 2026-11-15 on `main` at ceecd50: Biome checks 721 files and finds 31 errors. The tag `github-operations--v0.8.0` now exists on the remote, so the github-operations fix no longer waits on that release.
 - **Inferences:** none.
 - **Open questions:** none.
 
 #### 📈 Impact and next step
 
 - **Impact / risk:** `npm run lint` and `npm run check` fail, so they cannot gate a change until these are fixed, and a new finding hides among the old ones.
-- **Why it is not fixed now:** each fix is a plugin change in its own pull request, with a version bump for any component file; the owner schedules plugin fixes, and github-operations waits on its 0.8.0 release.
+- **Why it is not fixed now:** each fix is a plugin change in its own pull request, with a version bump for any component file; the owner schedules plugin fixes.
 - **Next action:** the owner schedules the fixes per plugin: file-tree-pane, model-trace, project-maintainer, tailwind-development, github-operations, plugin-engineering, skill-diagnostics and svelte-development. Then move the `DEBT-006` step from Validate's `Debt` job into `Checks`.
 - **Review condition:** `npm run lint:js` exits 0.
 - **Related records:** ADR_2026-11-14_biome-lints-all-markdown-and-skips-only-formatting-instructions.
