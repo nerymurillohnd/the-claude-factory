@@ -66,6 +66,10 @@ jobs:
           fi
           selected=()
           for name in ${candidates}; do
+            # A changed file directly under plugins/ (a README) or a removed plugin is not a suite.
+            if [[ ${EVENT} != workflow_dispatch && ! -f plugins/${name}/.claude-plugin/plugin.json ]]; then
+              continue
+            fi
             if [[ ! ${name} =~ ^[a-z0-9-]+$ ]]; then
               echo "::error::not a plugin name: ${name}"
               exit 1
