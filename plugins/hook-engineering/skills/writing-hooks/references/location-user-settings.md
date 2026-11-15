@@ -29,4 +29,4 @@ You write a personal hook that follows one person into every project on one mach
 ## Structure
 
 - File: `~/.claude/settings.json`, under `"hooks"`.
-- Template: [../assets/user-settings.json](../assets/user-settings.json). `$HOME` is ordinary shell expansion in shell form; the docs don't state it for hooks (not verified).
+- Template: `assets/user-settings.json`. `$HOME` is ordinary shell expansion in shell form; the docs don't state it for hooks (not verified).

@@ -18,7 +18,7 @@ You write a policy hook for an administrator: it must hold on every managed mach
 
 ## Gotchas
 
-- A script the managed hook calls must already be on every machine: managed settings carry configuration, not files. To ship scripts with the policy, use a plugin the managed settings force-enable ([location-plugin.md](location-plugin.md)).
+- A script the managed hook calls must already be on every machine: managed settings carry configuration, not files. To ship scripts with the policy, use a plugin the managed settings force-enable (`references/location-plugin.md`).
 - `/status` shows `Enterprise managed settings` in its `Setting sources` line only when a managed source is in force: check it before you debug a hook that seems ignored.
 
 ## Rules
@@ -30,4 +30,4 @@ You write a policy hook for an administrator: it must hold on every managed mach
 ## Structure
 
 - File: `managed-settings.json` in the system directory above, or the administrator's delivery mechanism.
-- Template: [../assets/project-settings.json](../assets/project-settings.json), with `command` changed to the absolute script path.
+- Template: `assets/project-settings.json`, with `command` changed to the absolute script path.

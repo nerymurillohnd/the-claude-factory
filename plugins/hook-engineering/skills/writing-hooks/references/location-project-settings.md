@@ -25,9 +25,9 @@ You write a team hook that runs for everyone who clones the repository, on their
 
 - Commit the script under `.claude/hooks/` with mode 100755, and reference it through `${CLAUDE_PROJECT_DIR}`.
 - Check which platforms the team uses (README, CI matrix) and pick the form that runs on all of them.
-- Keep the hook to what the whole team agreed on; a personal preference belongs in [location-local-settings.md](location-local-settings.md).
+- Keep the hook to what the whole team agreed on; a personal preference belongs in `references/location-local-settings.md`.
 
 ## Structure
 
 - File: `.claude/settings.json`, under `"hooks"`.
-- Template: [../assets/project-settings.json](../assets/project-settings.json), shell form.
+- Template: `assets/project-settings.json`, shell form.

@@ -18,7 +18,7 @@ You write hooks that live and die with one subagent, scoped to what it does.
 
 ## Gotchas
 
-- A plugin agent ignores `hooks` in its frontmatter: use [location-subagent-events.md](location-subagent-events.md) or the plugin's `hooks/hooks.json` instead.
+- A plugin agent ignores `hooks` in its frontmatter: use `references/location-subagent-events.md` or the plugin's `hooks/hooks.json` instead.
 - Managed `allowManagedHooksOnly` blocks hooks declared in agent frontmatter.
 - A hook tested in a `-p` run in an untrusted project never fires, which looks like a broken hook.
 
@@ -30,4 +30,4 @@ You write hooks that live and die with one subagent, scoped to what it does.
 ## Structure
 
 - File: the agent's Markdown file in `.claude/agents/` or `~/.claude/agents/`, under `hooks` in the frontmatter.
-- Template: [../assets/subagent-frontmatter.md](../assets/subagent-frontmatter.md).
+- Template: `assets/subagent-frontmatter.md`.

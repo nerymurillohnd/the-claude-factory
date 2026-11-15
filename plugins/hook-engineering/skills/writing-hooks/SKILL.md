@@ -233,13 +233,13 @@ The MCP locates and maps; the downloaded page is where sections are read; only t
 
 ## Where the hook lives
 
-Read the one reference for the hook's location in step 5, before writing its configuration. Each gives the role to take, what that location changes (scope, lifetime, registration, trust, placeholders), its gotchas, its rules and its template.
+Read the one reference for the hook's location in step 5, before writing its configuration, and copy its template in step 6. Each reference gives the role to take, what that location changes (scope, lifetime, registration, trust, placeholders), its gotchas, its rules and its template.
 
-- [references/location-plugin.md](references/location-plugin.md): a plugin's `hooks/hooks.json` or the `hooks` key of `plugin.json`, for Claude Code and Cowork.
-- [references/location-user-settings.md](references/location-user-settings.md): `~/.claude/settings.json`, every project on one machine.
-- [references/location-project-settings.md](references/location-project-settings.md): `.claude/settings.json`, committed and shared with everyone who clones the repository.
-- [references/location-local-settings.md](references/location-local-settings.md): `.claude/settings.local.json`, one person in one project.
-- [references/location-managed-settings.md](references/location-managed-settings.md): managed policy settings, deployed by an organization's administrator.
-- [references/location-skill-frontmatter.md](references/location-skill-frontmatter.md): `hooks` in a skill's frontmatter, registered when the skill is invoked.
-- [references/location-subagent-frontmatter.md](references/location-subagent-frontmatter.md): `hooks` in a subagent's frontmatter, active only while it runs.
-- [references/location-subagent-events.md](references/location-subagent-events.md): `SubagentStart` and `SubagentStop` in settings or `hooks/hooks.json`, the only way to hook a plugin's own agents.
+- [references/location-plugin.md](references/location-plugin.md): a plugin's `hooks/hooks.json` or the `hooks` key of `plugin.json`, for Claude Code and Cowork. Template: [assets/plugin-hooks.json](assets/plugin-hooks.json).
+- [references/location-user-settings.md](references/location-user-settings.md): `~/.claude/settings.json`, every project on one machine. Template: [assets/user-settings.json](assets/user-settings.json).
+- [references/location-project-settings.md](references/location-project-settings.md): `.claude/settings.json`, committed and shared with everyone who clones the repository. Template: [assets/project-settings.json](assets/project-settings.json).
+- [references/location-local-settings.md](references/location-local-settings.md): `.claude/settings.local.json`, one person in one project. Template: [assets/project-settings.json](assets/project-settings.json).
+- [references/location-managed-settings.md](references/location-managed-settings.md): managed policy settings, deployed by an organization's administrator. Template: [assets/project-settings.json](assets/project-settings.json).
+- [references/location-skill-frontmatter.md](references/location-skill-frontmatter.md): `hooks` in a skill's frontmatter, registered when the skill is invoked. Template: [assets/skill-frontmatter.md](assets/skill-frontmatter.md).
+- [references/location-subagent-frontmatter.md](references/location-subagent-frontmatter.md): `hooks` in a subagent's frontmatter, active only while it runs. Template: [assets/subagent-frontmatter.md](assets/subagent-frontmatter.md).
+- [references/location-subagent-events.md](references/location-subagent-events.md): `SubagentStart` and `SubagentStop` in settings or `hooks/hooks.json`, the only way to hook a plugin's own agents. Template: [assets/subagent-events-settings.json](assets/subagent-events-settings.json).

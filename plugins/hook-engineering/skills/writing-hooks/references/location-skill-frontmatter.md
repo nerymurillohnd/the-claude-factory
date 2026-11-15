@@ -31,4 +31,4 @@ You write a hook that belongs to one skill: dormant until the skill is used, the
 ## Structure
 
 - File: the skill's `SKILL.md`, under `hooks` in the frontmatter.
-- Template: [../assets/skill-frontmatter.md](../assets/skill-frontmatter.md).
+- Template: `assets/skill-frontmatter.md`.

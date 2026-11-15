@@ -51,7 +51,7 @@ set -eu
 **Node**, when the project already runs on Node or the hook benefits from it:
 
 - Save the script as `.mjs`, never `.ts`.
-- Run it as `"command": "node"` with the script path in `args` ([../assets/node-exec-handler.json](../assets/node-exec-handler.json)): exec form with `node` works on every system, Windows included.
+- Run it as `"command": "node"` with the script path in `args` (`assets/node-exec-handler.json`): exec form with `node` works on every system, Windows included.
 - `NODE_PATH` reached `require` but not `import` in an ES module (reported with Node 26, not verified): test how the script resolves its dependencies in step 7.
 
 ```js

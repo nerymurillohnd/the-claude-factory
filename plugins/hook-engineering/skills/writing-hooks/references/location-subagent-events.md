@@ -27,4 +27,4 @@ You write hooks in the main session that wrap a subagent's run from outside it: 
 ## Structure
 
 - File: `hooks/hooks.json` in a plugin, or the settings file of the chosen scope.
-- Template: [../assets/subagent-events-settings.json](../assets/subagent-events-settings.json). In a plugin, replace `${CLAUDE_PROJECT_DIR}/.claude/hooks/` with `${CLAUDE_PLUGIN_ROOT}/hooks/` and keep the `"hooks"` wrapper of [../assets/plugin-hooks.json](../assets/plugin-hooks.json).
+- Template: `assets/subagent-events-settings.json`. In a plugin, replace `${CLAUDE_PROJECT_DIR}/.claude/hooks/` with `${CLAUDE_PLUGIN_ROOT}/hooks/` and keep the `"hooks"` wrapper of `assets/plugin-hooks.json`.

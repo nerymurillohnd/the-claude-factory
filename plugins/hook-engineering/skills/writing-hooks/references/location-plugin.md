@@ -21,7 +21,7 @@ You write hooks that run on other people's machines, in projects you will never 
 
 ## Gotchas
 
-- A plugin agent ignores `hooks` in its frontmatter, as it ignores `mcpServers` and `permissionMode`: hook a plugin's agents through `SubagentStart` and `SubagentStop` here ([location-subagent-events.md](location-subagent-events.md)).
+- A plugin agent ignores `hooks` in its frontmatter, as it ignores `mcpServers` and `permissionMode`: hook a plugin's agents through `SubagentStart` and `SubagentStop` here (`references/location-subagent-events.md`).
 - A matcher on the server name alone never matches a plugin's MCP tool.
 - A hook file that holds only the event map, without the `"hooks"` wrapper, fails to load; an inline map in `plugin.json` is the reverse.
 - When another enabled plugin has the same name, only one of the two registers its `hooks/hooks.json` hooks.
@@ -40,4 +40,4 @@ You write hooks that run on other people's machines, in projects you will never 
 ## Structure
 
 - File: `hooks/hooks.json` at the plugin root, or the `hooks` key of `.claude-plugin/plugin.json`.
-- Template: [../assets/plugin-hooks.json](../assets/plugin-hooks.json), shell form. For a Node script, put [../assets/node-exec-handler.json](../assets/node-exec-handler.json) in its inner `hooks` array.
+- Template: `assets/plugin-hooks.json`, shell form. For a Node script, put `assets/node-exec-handler.json` in its inner `hooks` array.
