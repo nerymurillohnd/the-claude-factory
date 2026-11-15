@@ -1,5 +1,5 @@
 ---
-type: tool_used
-tool: Write
-input_match: 'settings\.local\.json'
+type: regex
+target: last_message
+pattern: 'settings\.local\.json'
 ---
