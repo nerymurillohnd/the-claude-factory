@@ -95,9 +95,11 @@ Before anything else, read the complete list of plugin commands and what each on
 
 ### Code
 
-- When writing, editing or diagnosing Python, load and use `python-lsp-intelligence:python-lsp-intelligence`.
-- When writing, editing or diagnosing shell scripts, load and use `bash-lsp-intelligence:bash-lsp-intelligence`.
-- When writing, editing or diagnosing TypeScript or JavaScript, load and use `typescript6-lsp-intelligence:ts-lifecycle`.
+These three skills govern writing code in their language, its style, and exploring and navigating it. Load each one before and keep using it throughout any work in its language.
+
+- Use `python-lsp-intelligence:python-lsp-intelligence` for all Python work and every Python file.
+- Use `bash-lsp-intelligence:bash-lsp-intelligence` for all Bash work and every shell script.
+- Use `typescript6-lsp-intelligence:ts-lifecycle` for all TypeScript and JavaScript work and every TypeScript or JavaScript file.
 
 ### Maintenance
 
