@@ -2,6 +2,13 @@
 
 Read this in step 3. It sets only three things for a hook script: its shebang, its opening lines and its permissions. Everything inside the script comes from the docs for that hook.
 
+## Contents
+
+- [Rules](#rules)
+- [Pick the interpreter](#pick-the-interpreter)
+- [Bash opening lines by the hook's role](#bash-opening-lines-by-the-hooks-role)
+- [Permissions](#permissions)
+
 ## Rules
 
 - Start every shebang with `/usr/bin/env`, unless a documented deployment requirement names a fixed path.
