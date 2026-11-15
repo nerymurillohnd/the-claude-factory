@@ -46,14 +46,16 @@ A plugin that works with `claude --plugin-dir` on your machine can still break f
 
 ## 📋 Prerequisites
 
-| Tool                                               | Minimum version         | Check              |
-| :------------------------------------------------- | :---------------------- | :----------------- |
-| Claude Code                                        | 2.1.299                 | `claude --version` |
-| git, with your plugin committed in a repository    | 2.31 to run eval suites | `git --version`    |
-| Bash                                               | —                       | `bash --version`   |
-| bubblewrap (Linux, for eval cases that grant Bash) | —                       | `bwrap --version`  |
-| socat (Linux, for eval cases that grant Bash)      | —                       | `socat -V`         |
-| Claude sign-in for the test configuration          | —                       | —                  |
+| Tool                                               | Minimum version               | Check              |
+| :------------------------------------------------- | :---------------------------- | :----------------- |
+| Claude Code                                        | 2.1.299 (this plugin's floor) | `claude --version` |
+| git, with your plugin committed in a repository    | 2.31 to run eval suites       | `git --version`    |
+| Bash                                               | —                             | `bash --version`   |
+| bubblewrap (Linux, for eval cases that grant Bash) | —                             | `bwrap --version`  |
+| socat (Linux, for eval cases that grant Bash)      | —                             | `socat -V`         |
+| Claude sign-in for the test configuration          | —                             | —                  |
+
+2.1.299 is this plugin's own floor, from the [changelog](https://code.claude.com/docs/en/changelog): 2.1.293 stopped refusing every eval run that grants Bash on Macs with Docker Desktop, and 2.1.299 made an eval run that ends on an API error score 0 instead of passing. `claude plugin eval` itself needs 2.1.269 or later ([requirements](https://code.claude.com/docs/en/plugin-evals#requirements)).
 
 The plugin also uses `mktemp`, `chmod` and `rm`, which come with macOS and Linux.
 

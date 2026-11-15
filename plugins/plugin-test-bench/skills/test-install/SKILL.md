@@ -6,7 +6,7 @@ argument-hint: "[plugin folder or name]"
 
 # Test the installed plugin
 
-Plugin: `$ARGUMENTS` (a folder, or a plugin name to find in the current repository; if empty, the plugin in the current directory). When a name matches more than one `.claude-plugin/plugin.json`, list their paths and ask which one.
+Plugin: `$ARGUMENTS` (a folder, or a plugin name to find in the current repository; if empty, the plugin in the current directory). When a name matches more than one manifest, list their paths and ask which one.
 
 This skill runs `claude` and `git` in a terminal. In a conversation with no shell, such as one in the Claude app, say so and stop.
 
@@ -22,8 +22,8 @@ The copy comes from a commit. If `git status --porcelain -- <plugin folder>` pri
 
 ## Steps
 
-1. **Check the tools.** Report what is missing and stop when `claude --version` is older than 2.1.293 (older releases refuse eval runs that grant Bash on Macs with Docker Desktop), when `git` is missing, or when the plugin has an eval suite (`evals/`, or the `experimental.evals` path in its `plugin.json`) and `git --version` is older than 2.31 (`claude plugin eval` refuses older git). If `CLAUDE_CODE_PLUGIN_CACHE_DIR` or `CLAUDE_CODE_PLUGIN_SEED_DIR` is set, start every `claude` command below with `env -u CLAUDE_CODE_PLUGIN_CACHE_DIR -u CLAUDE_CODE_PLUGIN_SEED_DIR`: the first moves the plugins folder out of `<cfg>`, the second brings other plugins into the test.
-2. **Find the plugin.** It has `.claude-plugin/plugin.json`. Record its `name` and `version` ("none" when absent), the repository root (`git rev-parse --show-toplevel`), the plugin's path from that root (`.` when it is the root), and `git rev-parse HEAD`.
+1. **Check the tools.** Report what is missing and stop when `claude --version` is older than 2.1.299. That is this plugin's own floor, from the changelog: 2.1.293 stopped refusing every Bash-granting eval run on Macs with Docker Desktop, and 2.1.299 made a run that ends on an API error score 0 instead of passing. `claude plugin eval` itself needs 2.1.269 or later (docs: <https://code.claude.com/docs/en/plugin-evals#requirements>). Also stop when `git` is missing, or when the plugin has an eval suite (`evals/`, or the `experimental.evals` path in its `plugin.json`) and `git --version` is older than 2.31 (`claude plugin eval` refuses older git). If `CLAUDE_CODE_PLUGIN_CACHE_DIR` or `CLAUDE_CODE_PLUGIN_SEED_DIR` is set, start every `claude` command below with `env -u CLAUDE_CODE_PLUGIN_CACHE_DIR -u CLAUDE_CODE_PLUGIN_SEED_DIR`: the first moves the plugins folder out of `<cfg>`, the second brings other plugins into the test.
+2. **Find the plugin.** Its manifest is `.claude-plugin/plugin.json`, or a `plugin.json` at its root, which `claude plugin eval` also accepts; a skills-directory plugin under `~/.claude/skills/` or `.claude/skills/` has `.claude-plugin/plugin.json` (docs: <https://code.claude.com/docs/en/plugins/loading>). Record its `name` and `version` ("none" when absent), the repository root (`git rev-parse --show-toplevel`), the plugin's path from that root (`.` when it is the root), and `git rev-parse HEAD`.
 3. **Throwaway folders.** Run `mktemp -d` three times: `<cfg>` (configuration), `<mkt>` (marketplace), `<target>` (project). Before any `claude` command, write `<cfg>/settings.json` so a claude.ai sign-in brings none of the user's synced plugins, skills or connectors into the test (docs: <https://code.claude.com/docs/en/settings-reference>):
 
    ```json
@@ -75,12 +75,12 @@ The copy comes from a commit. If `git status --porcelain -- <plugin folder>` pri
 9. **Eval suite on the installed copy**, when agreed in step 7. The suite is `evals/`, or the `experimental.evals` path in `plugin.json`.
    - `cd <target> && CLAUDE_CONFIG_DIR=<cfg> claude plugin eval <name>@test-bench-local --runs 1 --ablation none --no-publish --keep-temp --allow-tools <grants>`. The target comes before `--allow-tools`; each grant is its own argument, quoted when it holds parentheses or `*`, as in `--allow-tools Write "Bash(npm test *)" "WebFetch(domain:example.com)"`. With no grants, leave out `--allow-tools`.
    - Add `--scaffold` when the user said yes in step 7. Without it, cases with a `scaffold_script` run without their fixtures: leave them out of the passed count and list them under Not tested. An installed plugin named as the target needs no trust prompt.
-   - Results land in `<target>/<eval dir>/results/` (`evals/` unless `experimental.evals` names another). Report each case's score and failing graders; a case passes when its score meets the threshold, 1.0 by default. When a case fails, read `out/trace.jsonl` in the kept folder the eval printed: it is readable as is. Don't run git inside a kept folder: the eval's own notice warns against it.
+   - For an installed plugin named as the target, results land under the current directory: `<target>/evals/results/`, or `<target>/<dir>/results/` with `--eval-dir <dir>` (docs: <https://code.claude.com/docs/en/plugin-evals#choose-what-to-evaluate>). Report each case's score and failing graders; a case passes when its score meets the threshold, 1.0 by default. When a case fails, read the transcript in the sandbox directory `--keep-temp` printed for that run (observed, not documented: `out/trace.jsonl`, readable as is). Don't run git inside a kept folder: the eval's own notice warns against it.
    - A full run (both arms) is twice the sum of each case's `runs` (3 by default) plus three judge calls per `llm` or `baseline` grader per run; offer it only as a follow-up.
 10. **Real requests**, when agreed in step 7: read `references/manual-session.md`.
 11. **Clean up**, even after a failure. First, if the plugin's README says it works in the Claude app, ask whether to build a zip to try it there; on a yes, read `references/claude-app.md`. Then, in this order:
     - `CLAUDE_CONFIG_DIR=<cfg> claude auth logout`, when step 8 signed in: on macOS the login is a Keychain entry keyed to `<cfg>`, which deleting the folder leaves behind.
-    - Each kept eval folder `<kept>` is read-only, with a `sealed/` folder at mode 000: `chmod 700 <kept> <kept>/sealed && chmod -R u+rwX <kept> && rm -rf <kept>`.
+    - Each kept eval folder `<kept>` has been observed, not documented, to be read-only, with a `sealed/` folder at mode 000. Restore write access before deleting it: `chmod 700 <kept> && { [ ! -d <kept>/sealed ] || chmod 700 <kept>/sealed; } && chmod -R u+rwX <kept> && rm -rf <kept>`.
     - Delete `<cfg>`, `<mkt>` and `<target>`, and the snapshot folder from `references/not-in-git.md` if there is one.
 
 ## Report
