@@ -1,6 +1,7 @@
 ---
 description: "The optimal event: PostToolBatch with no matcher and hookSpecificOutput built from tool_calls, not PostToolUse, with the version check done and the alternative named."
 tags: [quality, event-choice, effort-high]
+plugins: ["../..", "../_support/docs-mcp"]
 max_turns: 40
 model: claude-sonnet-5-5
 timeout_seconds: 1200

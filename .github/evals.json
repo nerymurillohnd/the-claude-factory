@@ -1,13 +1,15 @@
 {
   "hook-engineering": [
     "--scaffold",
+    "--allow-real-servers",
     "--allow-tools",
     "Write",
     "Edit",
     "Bash",
     "WebSearch",
     "WebFetch",
-    "WebFetch(domain:code.claude.com)"
+    "WebFetch(domain:code.claude.com)",
+    "mcp__plugin_eval-docs-mcp_claude-code-docs__*"
   ],
   "project-maintainer": [
     "--scaffold"
