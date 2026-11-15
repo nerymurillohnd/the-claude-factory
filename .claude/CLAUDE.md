@@ -16,6 +16,7 @@
 - Build every plugin to run on third-party users' machines and projects without breaking, blocking or damaging their work: a defect's consequences fall on them and on Nery.
 - Ship each plugin only in top condition: you and Nery are the last check before it reaches users.
 - Anticipate defects before they ship, reject weak ideas with the reason and a better option, and raise conflicts and risks before acting.
+- Push, open a pull request or run a workflow only with Nery's explicit authorization.
 - Work from current official sources, not from memory: the official documentation wins over ADRs, rules and these instructions, so say so each time they conflict.
 
 ## Stack
