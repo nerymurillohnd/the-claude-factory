@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Tests for work-lifecycle's hooks/plan-gate.py, run as Claude Code runs it: fed JSON on stdin."""
+"""Tests for the plan gate hook and the planning skill's state file validator."""
 
 from __future__ import annotations
 
@@ -14,7 +14,7 @@ from typing import TYPE_CHECKING, NamedTuple, final
 import unittest
 
 if TYPE_CHECKING:
-    from collections.abc import Callable, Generator
+    from collections.abc import Callable, Generator, Sequence
 
 
 class JsonObject(dict[str, object]):
@@ -28,7 +28,9 @@ def _pairs(items: list[tuple[str, object]]) -> JsonObject:
 
 _decode: Callable[[str], object] = json.JSONDecoder(object_pairs_hook=_pairs).decode
 
-SCRIPT = Path(__file__).resolve().parent.parent / "hooks" / "plan-gate.py"
+PLUGIN = Path(__file__).resolve().parent.parent
+GATE = PLUGIN / "hooks" / "plan-gate.py"
+VALIDATOR = PLUGIN / "skills" / "planning-before-execution" / "scripts" / "validate-state.py"
 SESSION = "3e13ae09-6c1d-4ce6-b55c-237353734d93"
 
 
@@ -77,9 +79,9 @@ def task(
 DONE = frozenset({"evidence"})
 
 
-def state(status: str, tasks: list[dict[str, object]]) -> dict[str, object]:
+def state(status: str, tasks: Sequence[object]) -> dict[str, object]:
     """A whole state file."""
-    return {"schema": 1, "plan": "docs/plans/example.md", "status": status, "tasks": tasks}
+    return {"schema": 1, "plan": "docs/plans/example.md", "status": status, "tasks": list(tasks)}
 
 
 def as_object(text: str) -> dict[str, object]:
@@ -128,12 +130,12 @@ class Project:
         env = {k: v for k, v in os.environ.items() if k != "CLAUDE_PROJECT_DIR"}
         if project_env:
             env["CLAUDE_PROJECT_DIR"] = str(self.root)
-        return run([sys.executable, str(SCRIPT)], json.dumps(payload), env)
+        return run([sys.executable, str(GATE)], json.dumps(payload), env)
 
     @staticmethod
     def validate(path: Path) -> Outcome:
-        """Run the validation mode on one file."""
-        return run([sys.executable, str(SCRIPT), "--validate", str(path)], "", dict(os.environ))
+        """Run the state file validator on one file."""
+        return run([sys.executable, str(VALIDATOR), str(path)], "", dict(os.environ))
 
 
 @contextmanager
@@ -221,7 +223,7 @@ class PlanGateTest(unittest.TestCase):
         """A file the gate cannot read blocks, telling Claude how to revalidate it."""
         with project() as box:
             _ = box.write_state("{not json")
-            _ = self.assert_blocks(box.stop(), "--validate")
+            _ = self.assert_blocks(box.stop(), "validate-state.py")
 
     def test_unreadable_state_after_a_block_warns_and_allows(self) -> None:
         """Still unreadable on the continuation: hand control back with a warning."""
@@ -265,7 +267,9 @@ class PlanGateTest(unittest.TestCase):
             self.assertEqual(outcome.stdout, "")
             self.assertIn("session_id", outcome.stderr)
 
-    # Validation mode
+
+class ValidateStateTest(unittest.TestCase):
+    """The state file validator Claude runs before execution starts."""
 
     def test_validate_accepts_a_valid_file(self) -> None:
         """A well-formed state file passes."""
@@ -319,6 +323,34 @@ class PlanGateTest(unittest.TestCase):
             self.assertEqual(outcome.code, 1)
             self.assertIn("JSON", outcome.stdout)
             self.assertNotIn("Traceback", outcome.stderr)
+
+    def test_gate_reads_every_file_the_validator_accepts(self) -> None:
+        """A file the validator accepts never reaches the gate's unreadable branch."""
+        files = [
+            state("executing", [task("1"), task("2", test_first=True)]),
+            state("executing", [task("1", recorded=DONE)]),
+            state("awaiting-authorization", [task("1")]),
+        ]
+        for content in files:
+            with self.subTest(content=content), project() as box:
+                path = box.write_state(content)
+                self.assertEqual(box.validate(path).code, 0)
+                self.assertNotIn("not valid", box.stop().stdout)
+
+    def test_validator_rejects_every_file_the_gate_rejects(self) -> None:
+        """A file the gate can't use is never reported valid."""
+        broken: list[dict[str, object] | str] = [
+            "{not json",
+            state("running", [task("1")]),
+            {"schema": 1, "plan": "reply", "status": "executing", "tasks": "none"},
+            state("executing", ["not an object"]),
+        ]
+        for content in broken:
+            with self.subTest(content=content), project() as box:
+                path = box.write_state(content)
+                gate: Outcome = box.stop()
+                self.assertEqual(as_object(gate.stdout).get("decision"), "block")
+                self.assertEqual(box.validate(path).code, 1)
 
 
 if __name__ == "__main__":

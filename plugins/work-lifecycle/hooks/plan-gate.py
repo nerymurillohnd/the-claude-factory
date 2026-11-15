@@ -1,12 +1,10 @@
 #!/usr/bin/env python3
-"""Plan gate for work-lifecycle: a Stop hook and the validator of its state file.
+"""Plan gate for work-lifecycle: the Stop hook that holds an executing plan open.
 
-Gate mode, with no arguments: Claude Code runs it as a Stop hook registered by a skill and
-writes the hook input on stdin. While the session's plan is executing, it blocks Claude from
-ending its turn as long as any task lacks recorded evidence.
-
-Validate mode, `plan-gate.py --validate <state file>`: Claude runs it after writing or
-editing the state file. It prints each problem and exits 1, or prints that the file is valid.
+Claude Code runs it as a Stop hook registered by a skill's frontmatter, with the hook input on
+stdin; Claude never runs it. While the session's plan is executing, it blocks Claude from ending
+its turn as long as any task lacks recorded evidence. It checks only what it reads; the planning
+skill's validate-state.py checks the whole schema.
 
 The state file lives at `<project>/.work-lifecycle/<session_id>.json`. Standard library only.
 """
@@ -27,8 +25,7 @@ FOLDER = ".work-lifecycle"
 STATUSES = ("planning", "executing", "awaiting-authorization", "done")
 RUNS = ("evidence", "red", "green")
 SESSION_ID = re.compile(r"[A-Za-z0-9_-]{1,128}")
-SCRIPT = Path(__file__).resolve()
-VALIDATE_ARGC = 2
+VALIDATE = "the validate-state.py command of the planning-before-execution skill"
 
 
 class JsonObject(dict[str, object]):
@@ -48,58 +45,11 @@ def _is_list(value: object) -> TypeGuard[list[object]]:
     return isinstance(value, list)
 
 
-def _text(value: object) -> bool:
-    """Whether a value is a non-empty string."""
-    return isinstance(value, str) and value.strip() != ""
-
-
-def _run_problems(name: str, label: str, value: object) -> list[str]:
-    """Problems of one recorded run: absent, or a command with its real output."""
-    if value is None:
-        return []
-    if not isinstance(value, JsonObject):
-        return [f"{label}: {name} must be null or an object with command and output"]
-    return [
-        f"{label}: {name}.{field} must be a non-empty string"
-        for field in ("command", "output")
-        if not _text(value.get(field))
-    ]
-
-
-def _task_problems(index: int, item: object, seen: set[str]) -> list[str]:
-    """Problems of one task."""
-    if not isinstance(item, JsonObject):
-        return [f"task at position {index}: must be an object"]
-    task_id = item.get("id")
-    label = f"task {task_id}" if _text(task_id) else f"task at position {index}"
-    found: list[str] = []
-    if not isinstance(task_id, str) or not _text(task_id):
-        found.append(f"{label}: id must be a non-empty string")
-    elif task_id in seen:
-        found.append(f"{label}: duplicate id")
-    else:
-        seen.add(task_id)
-    found.extend(
-        f"{label}: {field} is missing or empty"
-        for field in ("title", "check")
-        if not _text(item.get(field))
-    )
-    if not isinstance(item.get("test_first"), bool):
-        found.append(f"{label}: test_first must be true or false")
-    for name in RUNS:
-        found.extend(_run_problems(name, label, item.get(name)))
-    return found
-
-
 def problems(data: object) -> list[str]:
-    """Every way a decoded state file breaks the schema; empty when it is valid."""
+    """What keeps the gate from reading a state file; the skill's validator checks the rest."""
     if not isinstance(data, JsonObject):
         return ["the state file must hold one JSON object"]
     found: list[str] = []
-    if data.get("schema") != 1:
-        found.append("schema must be 1")
-    if not _text(data.get("plan")):
-        found.append("plan must name the plan file's path, or reply when the plan is in the reply")
     status = data.get("status")
     if status not in STATUSES:
         found.append(f"status {status!r} is not one of {', '.join(STATUSES)}")
@@ -107,9 +57,15 @@ def problems(data: object) -> list[str]:
     if not _is_list(tasks) or not tasks:
         found.append("tasks must be a non-empty list")
         return found
-    seen: set[str] = set()
     for index, item in enumerate(tasks, start=1):
-        found.extend(_task_problems(index, item, seen))
+        if not isinstance(item, JsonObject):
+            found.append(f"task at position {index}: must be an object")
+            continue
+        found.extend(
+            f"task at position {index}: {name} must be null or an object"
+            for name in RUNS
+            if item.get(name) is not None and not isinstance(item.get(name), JsonObject)
+        )
     return found
 
 
@@ -199,7 +155,7 @@ def unreadable(event: StopEvent, found: list[str]) -> int:
             {
                 "systemMessage": (
                     f"work-lifecycle plan gate could not read {event.path} ({detail}), so it let "
-                    f"Claude stop. Fix the file, then run python3 {SCRIPT} --validate {event.path}"
+                    f"Claude stop. Fix the file, then check it with {VALIDATE}."
                 )
             }
         )
@@ -208,8 +164,7 @@ def unreadable(event: StopEvent, found: list[str]) -> int:
             "decision": "block",
             "reason": (
                 f"The plan state file {event.path} is not valid: {detail}. Fix it, run "
-                f"`python3 {SCRIPT} --validate {event.path}` until it reports the file valid, "
-                "then continue the plan."
+                f"{VALIDATE} until it reports the file valid, then continue the plan."
             ),
         }
     )
@@ -264,23 +219,10 @@ def gate(raw: str) -> int:
     return decide(event, data)
 
 
-def validate(target: str) -> int:
-    """Report whether one state file is valid."""
-    path = Path(target)
-    _, found = load(path)
-    if found:
-        _ = sys.stdout.write("".join(f"{path}: {problem}\n" for problem in found))
-        return 1
-    _ = sys.stdout.write(f"{path}: valid\n")
-    return 0
-
-
 def main(argv: list[str]) -> int:
-    """Run the gate, or the validator with --validate."""
-    if len(argv) == VALIDATE_ARGC and argv[0] == "--validate":
-        return validate(argv[1])
+    """Run the gate on the hook input from stdin."""
     if argv:
-        return fail("usage: plan-gate.py [--validate <state file>]")
+        return fail("takes no arguments; Claude Code writes the hook input on stdin")
     return gate(sys.stdin.read())
 
 
