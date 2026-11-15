@@ -8,9 +8,9 @@ Read this when the user mentions skill-creator, `evals/evals.json`, trigger-quer
 | :-- | :-- | :-- |
 | Score a plugin, with or without the plugin, repeatably, and gate CI | `claude plugin eval` | `evals/<case>/prompt.md`, `graders/*.md`, optional `case.yaml` |
 | Iterate on one skill inside a conversation: blind A/B between versions, description tuning, an HTML review viewer | The skill-creator plugin from Anthropic's official marketplace | `evals/evals.json` inside the skill directory |
-| Evaluate an application built on the Claude API | Claude Code's bundled `/claude-api build-eval`, and `/claude-api hillclimb` to improve against it (both v2.1.259+), following Claude Platform's guide to success criteria and evaluations | Its own runner, with code-based graders (exact or string match, similarity, ROUGE) and LLM graders |
+| Evaluate an application built on the Claude API | Claude Code's bundled `/claude-api build-eval`, and `/claude-api hillclimb` to improve against it (both v2.1.259+, per the skills page), following Claude Platform's guide to success criteria and evaluations | Its own runner, with code-based graders (exact or string match, similarity, ROUGE) and LLM graders |
 
-`claude plugin eval` and skill-creator read neither each other's case files nor each other's results. skill-creator keeps `evals/evals.json` inside the skill directory, and `claude plugin eval` uses `evals/` under the plugin root, so they collide only when a skill's folder is the plugin root. Then move one aside. For the plugin suite, set `"experimental": { "evals": "<dir>" }` in `plugin.json` or pass `--eval-dir <dir>`.
+The plugin evals page says "neither tool reads the other's case files". skill-creator keeps `evals/evals.json` inside the skill directory, and `claude plugin eval` uses `evals/` under the plugin root, so they collide only when a skill's folder is the plugin root. Then move one aside. For the plugin suite, set `"experimental": { "evals": "<dir>" }` in `plugin.json` or pass `--eval-dir <dir>`.
 
 ## skill-creator's `evals/evals.json`
 
@@ -29,16 +29,16 @@ Read this when the user mentions skill-creator, `evals/evals.json`, trigger-quer
 }
 ```
 
-- **The field name differs by source.** The official schema reference calls the checks `expectations`. The skill-creator instructions and agentskills.io call them `assertions`. Read the user's file and the plugin version they have before converting.
+- **The field name differs by source.** skill-creator's schema reference (`references/schemas.md` in its repository) calls the checks `expectations`. Its `SKILL.md` and agentskills.io call them `assertions`. Read the user's file and the plugin version they have before converting.
 - **The loop:**
   - Each test case runs in a subagent with the skill and in one without it, or with the old version.
-  - Grading writes `grading.json`, whose entries use exactly the fields `text`, `passed` and `evidence`.
+  - Grading writes `grading.json`, whose entries use exactly the fields `text`, `passed` and `evidence` (skill-creator's schema reference).
   - `benchmark.json` aggregates pass rate, time and tokens per configuration.
 - **Description tuning** uses a separate list of `{ "query", "should_trigger" }` items:
   - It runs each query several times.
   - It splits the list into a training set and a held-out set, so the description doesn't overfit.
   - It picks the best description by the held-out pass rate.
-- **What this means for a plugin skill.** Skill-creator triggers a copy of the skill that it installs as a project command. A plugin's real trigger rate is measured instead with `tool_used: Skill` cases in `claude plugin eval`.
+- **What this means for a plugin skill.** Skill-creator's trigger test (`scripts/run_eval.py` in its repository) triggers a copy of the skill that it writes as a project command under `.claude/commands/`. A plugin's real trigger rate is measured instead with `tool_used: Skill` cases in `claude plugin eval`.
 
 ## Converting `evals.json` to `claude plugin eval` cases
 
