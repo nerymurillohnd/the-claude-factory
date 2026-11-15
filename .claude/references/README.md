@@ -18,10 +18,6 @@ One fill procedure per template in `.claude/templates/`. Each reference says wha
 | `skill-template.md` | [skill.md](skill.md) | `plugins/<plugin>/skills/<skill>/SKILL.md` |
 | `agent-template.md` | [agent.md](agent.md) | `plugins/<plugin>/agents/<agent>.md` |
 
-## Audit references
-
-- [evals-ci.md](evals-ci.md): the audit checklist for `.github/workflows/evals.yml`, which already exists; it has no template.
-
 ## Document templates
 
 The templates and fill procedures for the repository's documents (READMEs, CHANGELOGs, LICENSE, NOTICE and the root policy files) live in the `docs-maintenance` skill, under its `references/documents/` and `assets/`.

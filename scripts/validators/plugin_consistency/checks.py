@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
-"""Marketplace, manifest, changelog and workflow checks (PC-01 to PC-05, PC-12 to PC-14)."""
+"""Marketplace, manifest and changelog checks (PC-01 to PC-05)."""
 
 from __future__ import annotations
 
-import re
 from typing import TYPE_CHECKING, cast
 
 from release.release_tools.repo import (
@@ -18,7 +17,6 @@ from release.release_tools.repo import (
     version,
 )
 
-from validators.plugin_consistency.evals import eval_findings
 from validators.plugin_consistency.listing import icon_findings, url_findings
 from validators.plugin_consistency.model import Finding
 from validators.plugin_consistency.readme import catalog_findings, readme_findings
@@ -98,33 +96,6 @@ def _unreleased(root: Path, *, main: bool) -> Iterator[Finding]:
             yield Finding("PC-05", path, "[Unreleased] has notes on main")
 
 
-WORKFLOWS = ".github/workflows"
-# Each Claude credential secret and the only workflows that may read it. The OAuth token bills the
-# owner's subscription; no workflow reads the API key, which would take precedence over the token.
-SECRET_OWNERS: dict[str, tuple[str, ...]] = {
-    "ANTHROPIC_API_KEY": (),
-    "CLAUDE_CODE_OAUTH_TOKEN": ("evals.yml",),
-}
-
-
-def _secret_owners(root: Path) -> Iterator[Finding]:
-    """PC-13: a Claude credential secret is read only by the workflows that own it."""
-    folder = root / WORKFLOWS
-    if not folder.is_dir():
-        return
-    workflows = sorted([*folder.glob("*.yml"), *folder.glob("*.yaml")])
-    for workflow in workflows:
-        text = workflow.read_text(encoding="utf-8")
-        for name, owners in SECRET_OWNERS.items():
-            # GitHub reads secret names case-insensitively, so `secrets.anthropic_api_key` counts.
-            pattern = rf"secrets\s*(?:\.\s*{name}\b|\[\s*['\"]{name}['\"]\s*\])"
-            read = re.search(pattern, text, re.IGNORECASE)
-            if read and workflow.name not in owners:
-                allowed = f"only {', '.join(owners)} may read" if owners else "no workflow may read"
-                message = f"reads secrets.{name}, which {allowed}"
-                yield Finding("PC-13", f"{WORKFLOWS}/{workflow.name}", message)
-
-
 def check(
     root: Path,
     *,
@@ -136,8 +107,6 @@ def check(
     if not offline:
         findings += _tags(root, remote_tags(root))
     findings += _unreleased(root, main=main)
-    findings += eval_findings(root)
-    findings += _secret_owners(root)
     findings += readme_findings(root)
     findings += catalog_findings(root)
     findings += icon_findings(root)

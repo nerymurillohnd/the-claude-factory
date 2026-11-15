@@ -67,7 +67,7 @@ Run everything to do with plugins mainly through Claude Code CLI commands.
 - When setting or bumping a plugin's version, or releasing and tagging it, load and use `plugin-releases`.
 - When renaming, removing or merging a plugin, load and use `plugin-catalog-changes`.
 - When drawing or changing a plugin's icon, load and use `plugin-icons`.
-- When writing or running a plugin's evals, load and use `plugin-evals:plugin-evals`, and follow `.claude/rules/plugins/evals.md`: every case bills the owner.
+- When writing or running a plugin's evals, load and use `plugin-evals:plugin-evals`: every run bills the owner.
 
 ### Code
 

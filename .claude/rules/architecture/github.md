@@ -33,7 +33,6 @@ paths:
 | :-- | :-- |
 | Locally, before each commit | `npm run lint` and `npm run typecheck`; `npm run test:scripts` when `scripts/` changed; the plugin checks of `.claude/rules/plugins.md` and `.claude/rules/plugins/testing.md` for each changed plugin; `npm run check:consistency -- --offline` |
 | Before each merge, in Validate (`.github/workflows/validate.yml`) | its `Checks` job, which includes `npm run check:install -- --from local <plugin>` for each changed plugin, with `--no-strict` for a DEBT-003 plugin |
-| Before each merge, in Evals (`.github/workflows/evals.yml`) | the eval suites of each changed plugin that has one, as `.claude/rules/plugins/evals.md` sets |
 
 - Run a merge-only check locally only when no pull-request workflow exists, or to reproduce a CI failure.
 - Merge only when the merge checks pass.

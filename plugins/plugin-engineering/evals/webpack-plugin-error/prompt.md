@@ -1,6 +1,6 @@
 ---
 description: "Wrong-domain plugin error"
-tags: [trigger, should-not-trigger, effort-low]
+tags: [trigger, should-not-trigger]
 max_turns: 10
 model: claude-sonnet-5-5
 timeout_seconds: 180

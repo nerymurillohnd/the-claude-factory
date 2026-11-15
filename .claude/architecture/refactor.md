@@ -291,7 +291,6 @@
 
 **Scripts**
 - `plugins/<p>/evals/**` and `plugins/<p>/evals-*/**` (including `fixture.sh` scaffolds) — **Keep in plugin** (rule 4) · Caller: `claude plugin eval` only · Fully covered by the command
-- `.github/workflows/evals.yml` — **Done** (entry point; audit checklist in `.claude/references/evals-ci.md`) · Selects the changed plugins with a suite in its own `select` job and runs `claude plugin eval` per effort group, gated by `scripts/checkers/eval_gate.py`
 
 #### 11. Documentation
 - Plugin README: purpose, installation, tested Claude Code version

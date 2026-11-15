@@ -37,4 +37,4 @@ paths:
 - Run `claude plugin validate --strict plugins/<plugin>`, then `claude --plugin-dir plugins/<plugin> plugin details <plugin>` to confirm every component loaded.
 - Test each surface the plugin declares: Claude Code with `--plugin-dir`, and Claude by asking the owner to upload it to their account.
 - Run `npm run check:install -- --from local <plugin>` before any release to test what users receive.
-- Add evals only to plugins the owner chooses, as `.claude/rules/plugins/evals.md` sets.
+- Add evals only to plugins the owner chooses.

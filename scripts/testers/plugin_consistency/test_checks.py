@@ -74,24 +74,6 @@ def root_readme(rows: dict[str, list[str]], counts: dict[str, int] | None = None
     return "\n".join([*head, *sections, "", "## 🤝 Contributing", ""]) + "\n"
 
 
-EVALS_WORKFLOW = """name: Evals
-on:
-  pull_request:
-    paths:
-      - plugins/*/evals/**
-{paths}  workflow_dispatch:
-"""
-
-
-PC14 = "PC-14 plugins/demo/evals/{case}: needs one effort tag (low, medium, high); has {found}"
-PC13 = "PC-13 .github/workflows/{path}: reads secrets.{name}, which {allowed}"
-EVALS_WITH_GUARD = """\
-env:
-  CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-run: if [[ -n ${ANTHROPIC_API_KEY:-} ]]; then exit 1; fi
-"""
-
-
 class Fixture:
     """A consistent marketplace with demo 0.1.0 (category development), released and tagged."""
 
@@ -129,7 +111,7 @@ class Fixture:
 
 
 class ChecksTest(unittest.TestCase):
-    """PC-01 to PC-05 and PC-12."""
+    """PC-01 to PC-05."""
 
     def test_consistent_fixture_passes(self) -> None:
         """The fixture as built has no finding, online or offline."""
@@ -222,147 +204,6 @@ class ChecksTest(unittest.TestCase):
             _ = git(f.m.root, "checkout", "-q", "--detach")
             ids = [x.check_id for x in check(f.m.root, offline=True, main=True)]
             self.assertEqual((f.ids(offline=True), ids), ([], ["PC-05"]))
-
-    def test_pc12_suite_missing_from_the_evals_workflow_paths(self) -> None:
-        """A plugin with an evals/ suite must be a path that triggers evals.yml."""
-        with tempfile.TemporaryDirectory() as tmp:
-            f = Fixture(Path(tmp))
-            f.m.write("plugins/demo/evals/case/prompt.md", "---\ntags: [effort-low]\n---\n\nHi.\n")
-            f.m.write(".github/workflows/evals.yml", EVALS_WORKFLOW.format(paths=""))
-            missing = [str(x) for x in check(f.m.root, offline=True)]
-            f.m.write(
-                ".github/workflows/evals.yml",
-                EVALS_WORKFLOW.format(paths="      - plugins/demo/**\n"),
-            )
-            expected = "PC-12 .github/workflows/evals.yml: plugins/demo has an eval suite but no"
-            self.assertEqual(
-                (missing, f.ids(offline=True)), ([f"{expected} `plugins/demo/**` path"], [])
-            )
-
-    def test_pc13_secret_read_by_the_wrong_workflow(self) -> None:
-        """Each Claude credential secret may be read only by the workflows that own it."""
-        with tempfile.TemporaryDirectory() as tmp:
-            f = Fixture(Path(tmp))
-            f.m.write(
-                ".github/workflows/claude.yml",
-                "with:\n  anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}\n",
-            )
-            f.m.write(
-                ".github/workflows/validate.yaml",
-                "env:\n  T: ${{ secrets['CLAUDE_CODE_OAUTH_TOKEN'] }}\n",
-            )
-            found = sorted(str(x) for x in check(f.m.root, offline=True))
-        self.assertEqual(
-            found,
-            [
-                PC13.format(
-                    path="claude.yml", name="ANTHROPIC_API_KEY", allowed="no workflow may read"
-                ),
-                PC13.format(
-                    path="validate.yaml",
-                    name="CLAUDE_CODE_OAUTH_TOKEN",
-                    allowed="only evals.yml may read",
-                ),
-            ],
-        )
-
-    def test_pc13_each_secret_in_its_own_workflow(self) -> None:
-        """The owning workflow passes, and a shell guard on the variable is not a read."""
-        with tempfile.TemporaryDirectory() as tmp:
-            f = Fixture(Path(tmp))
-            f.m.write(
-                ".github/workflows/evals.yml",
-                EVALS_WITH_GUARD,
-            )
-            self.assertNotIn("PC-13", f.ids(offline=True))
-
-    def test_pc12_reads_only_the_pull_request_paths(self) -> None:
-        """A plugin listed under paths-ignore, not paths, doesn't trigger evals.yml."""
-        with tempfile.TemporaryDirectory() as tmp:
-            f = Fixture(Path(tmp))
-            f.m.write("plugins/demo/evals/case/prompt.md", "---\ntags: [effort-low]\n---\n\nHi.\n")
-            ignored = "    paths-ignore:\n      - plugins/demo/**\n"
-            f.m.write(".github/workflows/evals.yml", EVALS_WORKFLOW.format(paths=ignored))
-            self.assertEqual(f.ids(offline=True), ["PC-12"])
-
-    def test_pc13_matches_secret_names_in_any_case(self) -> None:
-        """GitHub reads secret names case-insensitively, so a lowercase read is still a read."""
-        with tempfile.TemporaryDirectory() as tmp:
-            f = Fixture(Path(tmp))
-            f.m.write(
-                ".github/workflows/claude.yml", "with:\n  k: ${{ secrets.anthropic_api_key }}\n"
-            )
-            found = [str(x) for x in check(f.m.root, offline=True)]
-        expected = PC13.format(
-            path="claude.yml", name="ANTHROPIC_API_KEY", allowed="no workflow may read"
-        )
-        self.assertEqual(found, [expected])
-
-    def test_pc12_flags_a_suite_when_the_evals_workflow_is_missing(self) -> None:
-        """Without evals.yml no suite ever runs, so a plugin with a suite is a finding."""
-        with tempfile.TemporaryDirectory() as tmp:
-            f = Fixture(Path(tmp))
-            f.m.write("plugins/demo/evals/case/prompt.md", "---\ntags: [effort-low]\n---\n\nHi.\n")
-            found = [str(x) for x in check(f.m.root, offline=True)]
-        expected = "PC-12 .github/workflows/evals.yml: plugins/demo has an eval suite but no"
-        self.assertEqual(found, [f"{expected} `plugins/demo/**` path"])
-
-    def test_pc14_each_case_has_one_valid_effort_tag(self) -> None:
-        """A case with no effort tag, a misspelled one or two runs in no CI group, unseen."""
-        with tempfile.TemporaryDirectory() as tmp:
-            f = Fixture(Path(tmp))
-            f.m.write(
-                ".github/workflows/evals.yml",
-                EVALS_WORKFLOW.format(paths="      - plugins/demo/**\n"),
-            )
-            cases = {
-                "none/prompt.md": "---\ntags: [trigger]\n---\n\nHi.\n",
-                "typo/prompt.md": "---\ntags: [effort-hgh]\n---\n\nHi.\n",
-                "two/prompt.md": "---\ntags: [effort-low, effort-high]\n---\n\nHi.\n",
-                "block/prompt.md": "---\ntags:\n  - trigger\n  - effort-low\n---\n\nHi.\n",
-                "yaml/case.yaml": 'schema_version: "1.1"\nname: yaml\ntags: [effort-medium]\n',
-            }
-            for path, text in cases.items():
-                f.m.write(f"plugins/demo/evals/{path}", text)
-            found = sorted(str(x) for x in check(f.m.root, offline=True))
-        self.assertEqual(
-            found,
-            [
-                PC14.format(case="none", found="none"),
-                PC14.format(case="two", found="effort-low, effort-high"),
-                PC14.format(case="typo", found="effort-hgh"),
-            ],
-        )
-
-    def test_pc14_covers_extra_eval_directories(self) -> None:
-        """A case in an extra suite such as evals-loading/ needs its effort tag too."""
-        with tempfile.TemporaryDirectory() as tmp:
-            f = Fixture(Path(tmp))
-            f.m.write(
-                ".github/workflows/evals.yml",
-                EVALS_WORKFLOW.format(paths="      - plugins/demo/**\n"),
-            )
-            f.m.write("plugins/demo/evals/ok/prompt.md", "---\ntags: [effort-low]\n---\n\nHi.\n")
-            f.m.write("plugins/demo/evals-loading/none/prompt.md", "---\ntags: [x]\n---\n\nHi.\n")
-            f.m.write(
-                "plugins/demo/evals-loading/good/prompt.md", "---\ntags: [effort-low]\n---\n\nHi.\n"
-            )
-            found = sorted(str(x) for x in check(f.m.root, offline=True))
-        expected = PC14.replace("plugins/demo/evals/", "plugins/demo/evals-loading/")
-        self.assertEqual(found, [expected.format(case="none", found="none")])
-
-    def test_pc14_finds_cases_nested_in_groups(self) -> None:
-        """Cases grouped under a folder that is not a case still need an effort tag."""
-        with tempfile.TemporaryDirectory() as tmp:
-            f = Fixture(Path(tmp))
-            f.m.write(
-                ".github/workflows/evals.yml",
-                EVALS_WORKFLOW.format(paths="      - plugins/demo/**\n"),
-            )
-            f.m.write("plugins/demo/evals/group/inner/prompt.md", "---\ntags: [x]\n---\n\nHi.\n")
-            f.m.write("plugins/demo/evals/results/old/prompt.md", "---\ntags: [x]\n---\n\nHi.\n")
-            found = sorted(str(x) for x in check(f.m.root, offline=True))
-        self.assertEqual(found, [PC14.format(case="group/inner", found="none")])
 
     def test_pc05_unreleased_notes_on_main(self) -> None:
         """On main, [Unreleased] holds no notes."""

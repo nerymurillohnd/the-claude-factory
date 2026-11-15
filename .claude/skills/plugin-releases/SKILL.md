@@ -58,7 +58,7 @@ These go beyond the docs and stay unless the owner changes them:
    - For a mod (`tests/*.test.ts(x)`), `claude plugin test plugins/<plugin>` exits 0; for hook tests, `npm run test:plugins` exits 0.
    - `npm run check:consistency -- --offline` exits 0.
    - `npm run check:install -- --from local <plugin>` exits 0 and prints the new version. It runs in a throwaway configuration, because this checkout and an installed `the-claude-factory` can't both be added under the same marketplace name.
-   - With the owner's approval of the spend, a local smoke eval: `claude plugin eval plugins/<plugin> --case <case> --runs 1 --ablation none --no-publish`, as `.claude/rules/plugins/evals.md` sets.
+   - With the owner's approval of the spend, a local smoke eval: `claude plugin eval plugins/<plugin> --case <case> --runs 1 --ablation none --no-publish`.
 
 ## Phase B: Before the merge
 
@@ -74,7 +74,6 @@ These go beyond the docs and stay unless the owner changes them:
 4. **List for the owner** what will ship: `git fetch origin main && npm run release:status`. `changed:` lines are the new versions, and `untagged:` lines are current versions on `main` that this merge's release will also tag. The PC-04 findings of `npm run check:consistency` are versions that need a backfill (Backfill below) before Validate's `Checks` can pass.
 5. **Ask the owner to authorize the push**, then drive the pull request with `github-operations:auto-pr-lifecycle`. On the pull request:
    - Validate's `Checks` job must pass. Its `Debt` job reports the checks DEBT items hold back and never blocks.
-   - `evals.yml` runs the suite of each changed plugin that has one, when the owner has enabled it, at the pass bar `.claude/rules/plugins/evals.md` sets.
    - `npm run check:install -- --from <pull request branch> <plugin>` installs what users will get from the branch.
 
 ## Phase C: Merge and release
@@ -111,9 +110,3 @@ From code.claude.com/docs/en/plugins/publish (Ship updates to users) and host-ma
 - `claude plugin marketplace update the-claude-factory` refreshes the listings only; installed plugins keep their versions.
 - `/reload-plugins` loads the new version into a running session.
 - Auto-update is off by default for this marketplace; each user turns it on under **Marketplaces** in `/plugin`.
-
-## The owner's one-time setup
-
-The evals workflow needs this in the repository's GitHub settings; tell the owner when it is missing, never ask for a value:
-
-- the repository secret `CLAUDE_CODE_OAUTH_TOKEN` for `evals.yml`, created with `claude setup-token`;

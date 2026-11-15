@@ -1,6 +1,6 @@
 ---
 description: "Test: a plugin hook inside a project thread"
-tags: [trigger, should-trigger, effort-low]
+tags: [trigger, should-trigger]
 max_turns: 10
 model: claude-sonnet-5-5
 timeout_seconds: 180

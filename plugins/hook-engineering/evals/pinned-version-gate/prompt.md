@@ -1,6 +1,6 @@
 ---
 description: "A team gate on a pinned Claude Code 2.1.290: no onFailure (added in 2.1.295), a script that fails closed by itself, the limit on timeouts stated, the team settings file, and the script run on real inputs."
-tags: [quality, version, gate, effort-high]
+tags: [quality, version, gate]
 max_turns: 100
 model: claude-sonnet-5-5
 timeout_seconds: 2400

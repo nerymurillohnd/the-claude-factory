@@ -1,6 +1,6 @@
 ---
 description: "Debug: a repository-enabled plugin missing in a cloud session"
-tags: [trigger, should-trigger, effort-low]
+tags: [trigger, should-trigger]
 max_turns: 10
 model: claude-sonnet-5-5
 timeout_seconds: 180

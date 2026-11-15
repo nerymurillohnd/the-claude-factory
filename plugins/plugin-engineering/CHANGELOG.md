@@ -8,6 +8,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [0.3.1] - 2026-11-15
 
+### Removed
+
+- The eval gate script `gate_eval_result.py` and the CI template `ci-evals.sh`. The skill now teaches the CI command the official docs give, which fails the job on its own exit code.
+
 ### Changed
 
 - `plugin-testing-and-debugging` now has Claude run every eval check that costs nothing before any run that spends your usage: validating the plugin, running each fixture by hand, testing each grader against a trace, checking the skill's own commands and templates, and loading every suite with `--max-cost-usd 0`, which on Claude Code 2.1.325 stopped before the first run (observed; the docs don't describe it).
@@ -17,7 +21,6 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ### Fixed
 
-- The CI gate script no longer fails a suite on a run that timed out or hit its turn limit. The docs say such runs are still graded, so it now prints them as warnings and refuses only partial results, mock aborts and runs whose judge graders the cost ceiling skipped. The CI script also reports every documented exit code.
 - The skill no longer shows the wrong text when you call it with arguments: one sentence used a placeholder that Claude Code replaced with your first argument.
 - Two gotchas about quoting the plugin root no longer show the plugin's own install path where they mean the placeholder's name.
 

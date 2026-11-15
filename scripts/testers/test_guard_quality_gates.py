@@ -133,7 +133,7 @@ class GuardQualityGatesTest(unittest.TestCase):
             "git diff -- .github/workflows/validate.yml",
             "grep -n include pyrightconfig.json",
             "sed -i 's/a/b/' plugins/demo/package.json",
-            "ruff check --fix scripts/checkers/eval_gate.py",
+            "ruff check --fix scripts/validators/skill-lint.py",
             "echo hi > /dev/null",
             "npm run test:scripts",
         )
