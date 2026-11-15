@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 from contextlib import contextmanager
+import importlib.util
 import json
 import os
 from pathlib import Path
@@ -14,7 +15,7 @@ from typing import TYPE_CHECKING, NamedTuple, final
 import unittest
 
 if TYPE_CHECKING:
-    from collections.abc import Callable, Generator, Sequence
+    from collections.abc import Callable, Generator, Mapping, Sequence
 
 
 class JsonObject(dict[str, object]):
@@ -32,6 +33,7 @@ PLUGIN = Path(__file__).resolve().parent.parent
 GATE = PLUGIN / "hooks" / "plan-gate.py"
 VALIDATOR = PLUGIN / "skills" / "planning-before-execution" / "scripts" / "validate-state.py"
 SESSION = "3e13ae09-6c1d-4ce6-b55c-237353734d93"
+UNREADABLE_BLOCK = '{"decision": "block", "reason": "The plan state file'
 
 
 class Outcome(NamedTuple):
@@ -115,22 +117,31 @@ class Project:
         *,
         active: bool = False,
         background: list[dict[str, str]] | None = None,
-        session: str = SESSION,
+        changes: Mapping[str, object] | None = None,
         project_env: bool = True,
     ) -> Outcome:
-        """Run the gate on one Stop input."""
-        payload = {
-            "session_id": session,
+        """Run the gate on one Stop input; `changes` replaces input fields, None removes one."""
+        payload: dict[str, object] = {
+            "session_id": SESSION,
             "cwd": str(self.root),
             "hook_event_name": "Stop",
             "stop_hook_active": active,
             "background_tasks": background or [],
             "session_crons": [],
         }
+        for key, value in (changes or {}).items():
+            if value is None:
+                _ = payload.pop(key, None)
+            else:
+                payload[key] = value
         env = {k: v for k, v in os.environ.items() if k != "CLAUDE_PROJECT_DIR"}
         if project_env:
             env["CLAUDE_PROJECT_DIR"] = str(self.root)
         return run([sys.executable, str(GATE)], json.dumps(payload), env)
+
+    def memo(self) -> Path:
+        """The gate's record of its last block for this session."""
+        return self.folder / f"{SESSION}.gate"
 
     @staticmethod
     def validate(path: Path) -> Outcome:
@@ -145,8 +156,8 @@ def project() -> Generator[Project, None, None]:
         yield Project(Path(tmp))
 
 
-class PlanGateTest(unittest.TestCase):
-    """The Stop gate and its validation mode."""
+class GateCase(unittest.TestCase):
+    """Assertions on what one gate run returned."""
 
     def assert_silent(self, outcome: Outcome) -> None:
         """The gate allowed stopping and said nothing."""
@@ -170,6 +181,10 @@ class PlanGateTest(unittest.TestCase):
         self.assertNotIn("decision", result)
         self.assertIn(needle, str(result.get("systemMessage")))
 
+
+class PlanGateTest(GateCase):
+    """The Stop gate's decisions."""
+
     # Gate
 
     def test_no_state_file_is_silent(self) -> None:
@@ -192,11 +207,21 @@ class PlanGateTest(unittest.TestCase):
             self.assert_silent(box.stop())
 
     def test_status_other_than_executing_is_silent(self) -> None:
-        """Planning, authorization waits and finished plans are not gated."""
-        for status in ("planning", "awaiting-authorization", "done"):
+        """Planning, authorization waits and finished plans with all evidence are not gated."""
+        for status in ("planning", "awaiting-authorization"):
             with self.subTest(status=status), project() as box:
                 _ = box.write_state(state(status, [task("1")]))
                 self.assert_silent(box.stop())
+        with project() as box:
+            _ = box.write_state(state("done", [task("1", recorded=DONE)]))
+            self.assert_silent(box.stop())
+
+    def test_done_with_pending_tasks_warns_only_once(self) -> None:
+        """The warning about a plan left unfinished is shown once, not on every later stop."""
+        with project() as box:
+            _ = box.write_state(state("done", [task("1")]))
+            self.assert_warns(box.stop(), "Task 1")
+            self.assert_silent(box.stop())
 
     def test_test_first_task_needs_red_and_green(self) -> None:
         """A test-first task without its red run is still pending."""
@@ -292,10 +317,146 @@ class PlanGateTest(unittest.TestCase):
     def test_session_id_cannot_escape_the_folder(self) -> None:
         """A session id with path parts is refused, never followed."""
         with project() as box:
-            outcome = box.stop(session="../outside")
+            outcome = box.stop(changes={"session_id": "../outside"})
             self.assertEqual(outcome.code, 1)
             self.assertEqual(outcome.stdout, "")
             self.assertIn("session_id", outcome.stderr)
+
+
+class GateRobustnessTest(GateCase):
+    """The gate never crashes into a silent stop, and never lets weak evidence through."""
+
+    def assert_no_crash(self, outcome: Outcome) -> None:
+        """The gate finished normally, with no traceback."""
+        self.assertNotIn("Traceback", outcome.stderr)
+        self.assertEqual(outcome.code, 0, outcome.stderr)
+
+    def test_corrupt_memo_counts_as_no_previous_block(self) -> None:
+        """A memo that isn't UTF-8 or holds a non-ASCII digit is ignored, never a crash."""
+        for content in (b"\xff\xfe\n", "\u00b2\ntask 1 (Task 1): no evidence".encode()):
+            with self.subTest(content=content), project() as box:
+                _ = box.write_state(state("executing", [task("1")]))
+                _ = box.memo().write_bytes(content)
+                _ = self.assert_blocks(box.stop(active=True), "Task 1")
+
+    def test_memo_that_cannot_be_written_still_blocks(self) -> None:
+        """A failed memo write leaves the gate closed, never open."""
+        with project() as box:
+            _ = box.write_state(state("executing", [task("1")]))
+            box.memo().mkdir()
+            for active in (False, True):
+                with self.subTest(active=active):
+                    outcome = box.stop(active=active)
+                    self.assert_no_crash(outcome)
+                    self.assertEqual(as_object(outcome.stdout).get("decision"), "block")
+
+    def test_memo_that_cannot_be_removed_never_crashes(self) -> None:
+        """Forgetting the memo is best effort on every path."""
+        with project() as box:
+            _ = box.write_state(state("done", [task("1", recorded=DONE)]))
+            box.memo().mkdir()
+            self.assert_silent(box.stop())
+
+    def test_deeply_nested_state_blocks_as_unreadable(self) -> None:
+        """JSON too deep to decode is an unreadable state file, not a crash."""
+        with project() as box:
+            _ = box.write_state("[" * 100000)
+            _ = self.assert_blocks(box.stop(), "validate-state.py")
+
+    def test_dangling_symlink_state_blocks_as_unreadable(self) -> None:
+        """A state file that is a broken link is not mistaken for no plan."""
+        with project() as box:
+            box.folder.mkdir()
+            (box.folder / f"{SESSION}.json").symlink_to(box.root / "missing.json")
+            _ = self.assert_blocks(box.stop(), "validate-state.py")
+
+    def test_empty_evidence_is_still_pending(self) -> None:
+        """Evidence counts only with a command and its output."""
+        for weak in ({}, {"command": "npm test", "output": ""}, "ok"):
+            with self.subTest(weak=weak), project() as box:
+                item = task("1")
+                item["evidence"] = weak
+                _ = box.write_state(state("executing", [item]))
+                outcome = box.stop()
+                self.assertEqual(as_object(outcome.stdout).get("decision"), "block")
+
+    def test_string_test_first_is_rejected(self) -> None:
+        """A test_first that isn't true or false can't drop the red and green runs."""
+        with project() as box:
+            item = task("1", recorded=DONE)
+            item["test_first"] = "true"
+            _ = box.write_state(state("executing", [item]))
+            _ = self.assert_blocks(box.stop(), "test_first")
+
+    def test_done_with_pending_tasks_warns(self) -> None:
+        """Stopping a plan with tasks left is allowed but never silent."""
+        with project() as box:
+            _ = box.write_state(state("done", [task("1", recorded=DONE), task("2")]))
+            outcome = box.stop()
+            self.assert_warns(outcome, "Task 2")
+            self.assertNotIn("Task 1", str(as_object(outcome.stdout).get("systemMessage")))
+
+    def test_task_without_id_or_title_is_named_by_position(self) -> None:
+        """A block reason never says None."""
+        with project() as box:
+            item = task("1")
+            del item["id"]
+            del item["title"]
+            _ = box.write_state(state("executing", [item]))
+            reason = self.assert_blocks(box.stop(), "task at position 1")
+            self.assertNotIn("None", reason)
+
+    def test_project_dir_wins_over_cwd(self) -> None:
+        """After Claude cds into a subfolder, the gate still finds the project's state."""
+        with project() as box:
+            _ = box.write_state(state("executing", [task("1")]))
+            sub = box.root / "src"
+            sub.mkdir()
+            _ = self.assert_blocks(box.stop(changes={"cwd": str(sub)}), "Task 1")
+
+    def test_missing_background_tasks_still_blocks(self) -> None:
+        """An input without background_tasks is not treated as busy."""
+        with project() as box:
+            _ = box.write_state(state("executing", [task("1")]))
+            _ = self.assert_blocks(box.stop(changes={"background_tasks": None}), "Task 1")
+
+    def test_pausing_for_the_user_clears_the_count(self) -> None:
+        """Back to executing after a pause starts counting again."""
+        with project() as box:
+            _ = box.write_state(state("executing", [task("1")]))
+            for round_ in range(3):
+                _ = self.assert_blocks(box.stop(active=round_ > 0), "Task 1")
+            _ = box.write_state(state("awaiting-authorization", [task("1")]))
+            self.assert_silent(box.stop(active=True))
+            _ = box.write_state(state("executing", [task("1")]))
+            _ = self.assert_blocks(box.stop(active=True), "Task 1")
+
+    def test_non_ascii_titles_round_trip_through_the_memo(self) -> None:
+        """A multibyte title blocks, and its memo reads back equal."""
+        with project() as box:
+            item = task("1")
+            item["title"] = "T\u00e2che \u2713 \u65e5\u672c"
+            _ = box.write_state(state("executing", [item]))
+            for round_ in range(3):
+                _ = self.assert_blocks(box.stop(active=round_ > 0), "T\u00e2che")
+            self.assert_warns(box.stop(active=True), "T\u00e2che")
+
+    def test_broken_hook_input_is_a_non_blocking_error(self) -> None:
+        """Input the gate can't use is reported on stderr with exit 1, never a block."""
+        env = {k: v for k, v in os.environ.items() if k != "CLAUDE_PROJECT_DIR"}
+        cases: list[tuple[str, list[str], str]] = [
+            ("nope", [], "not JSON"),
+            ("[]", [], "JSON object"),
+            ('{"session_id": "a"}', [], "cwd"),
+            ("{}", ["x"], "no arguments"),
+            ("[" * 100000, [], "JSON"),
+        ]
+        for stdin, args, needle in cases:
+            with self.subTest(needle=needle, args=args):
+                outcome = run([sys.executable, str(GATE), *args], stdin, env)
+                self.assertEqual((outcome.code, outcome.stdout), (1, ""))
+                self.assertIn(needle, outcome.stderr)
+                self.assertNotIn("Traceback", outcome.stderr)
 
 
 class ValidateStateTest(unittest.TestCase):
@@ -354,6 +515,56 @@ class ValidateStateTest(unittest.TestCase):
             self.assertIn("JSON", outcome.stdout)
             self.assertNotIn("Traceback", outcome.stderr)
 
+    def test_validate_rejects_a_non_integer_schema(self) -> None:
+        """Schema is the integer 1, not true, 1.0 or "1"."""
+        for schema in (True, 1.0, "1"):
+            with self.subTest(schema=schema), project() as box:
+                content = state("executing", [task("1")])
+                content["schema"] = schema
+                self.assertEqual(box.validate(box.write_state(content)).code, 1)
+
+    def test_validate_reports_deep_json_as_a_problem(self) -> None:
+        """Exit 1 always comes with the problems listed."""
+        with project() as box:
+            outcome = box.validate(box.write_state("[" * 100000))
+            self.assertEqual(outcome.code, 1)
+            self.assertIn("JSON", outcome.stdout)
+            self.assertNotIn("Traceback", outcome.stderr)
+
+    def test_validate_usage_and_missing_file(self) -> None:
+        """No argument is a usage error; a missing file is a problem."""
+        env = dict(os.environ)
+        usage = run([sys.executable, str(VALIDATOR)], "", env)
+        self.assertEqual(usage.code, 2)
+        self.assertIn("usage", usage.stderr)
+        with project() as box:
+            missing = box.validate(box.folder / "absent.json")
+            self.assertEqual(missing.code, 1)
+            self.assertIn("cannot read", missing.stdout)
+
+    def test_validate_notes_done_with_pending_tasks(self) -> None:
+        """A finished plan with tasks left is valid, with a note naming them."""
+        with project() as box:
+            outcome = box.validate(box.write_state(state("done", [task("1")])))
+            self.assertEqual(outcome.code, 0, outcome.stdout)
+            self.assertIn("task 1", outcome.stdout)
+            self.assertIn("no evidence", outcome.stdout)
+
+    def test_both_scripts_share_their_constants(self) -> None:
+        """The gate and the validator name the same statuses and runs."""
+        values: list[tuple[object, object]] = []
+        for path in (GATE, VALIDATOR):
+            spec = importlib.util.spec_from_file_location(path.stem.replace("-", "_"), path)
+            if spec is None or spec.loader is None:
+                message = f"cannot load {path}"
+                raise ImportError(message)
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            statuses: object = getattr(module, "STATUSES", None)
+            runs: object = getattr(module, "RUNS", None)
+            values.append((statuses, runs))
+        self.assertEqual(values[0], values[1])
+
     def test_gate_reads_every_file_the_validator_accepts(self) -> None:
         """A file the validator accepts never reaches the gate's unreadable branch."""
         files = [
@@ -365,7 +576,7 @@ class ValidateStateTest(unittest.TestCase):
             with self.subTest(content=content), project() as box:
                 path = box.write_state(content)
                 self.assertEqual(box.validate(path).code, 0)
-                self.assertNotIn("not valid", box.stop().stdout)
+                self.assertFalse(box.stop().stdout.startswith(UNREADABLE_BLOCK))
 
     def test_validator_rejects_every_file_the_gate_rejects(self) -> None:
         """A file the gate can't use is never reported valid."""
@@ -374,6 +585,9 @@ class ValidateStateTest(unittest.TestCase):
             state("running", [task("1")]),
             {"schema": 1, "plan": "reply", "status": "executing", "tasks": "none"},
             state("executing", ["not an object"]),
+            {"schema": 1, "plan": "reply", "status": "executing", "tasks": []},
+            {"schema": 1, "plan": "reply", "status": "executing"},
+            state("executing", [{**task("1"), "red": "x"}]),
         ]
         for content in broken:
             with self.subTest(content=content), project() as box:

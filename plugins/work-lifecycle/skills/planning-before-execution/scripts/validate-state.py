@@ -85,8 +85,9 @@ def problems(data: object) -> list[str]:
     if not isinstance(data, JsonObject):
         return ["the state file must hold one JSON object"]
     found: list[str] = []
-    if data.get("schema") != 1:
-        found.append("schema must be 1")
+    schema = data.get("schema")
+    if not isinstance(schema, int) or isinstance(schema, bool) or schema != 1:
+        found.append("schema must be the integer 1")
     if not _text(data.get("plan")):
         found.append("plan must name the plan file's path, or reply when the plan is in the reply")
     status = data.get("status")
@@ -108,25 +109,45 @@ def load(path: Path) -> tuple[JsonObject | None, list[str]]:
         data = _decode(path.read_text(encoding="utf-8"))
     except OSError as error:
         return None, [f"cannot read the file: {error.strerror}"]
+    except UnicodeDecodeError:
+        return None, ["the file is not UTF-8 text"]
     except ValueError as error:
         return None, [f"not valid JSON: {error}"]
+    except RecursionError:
+        return None, ["not valid JSON: nested too deeply"]
     found = problems(data)
     if found or not isinstance(data, JsonObject):
         return None, found
     return data, []
 
 
+def unfinished(data: JsonObject) -> list[str]:
+    """Tasks of a plan marked done that still lack evidence, each named once."""
+    tasks = data.get("tasks")
+    if data.get("status") != "done" or not _is_list(tasks):
+        return []
+    lines: list[str] = []
+    for item in tasks:
+        if not isinstance(item, JsonObject):
+            continue
+        wanted = RUNS if item.get("test_first") is True else RUNS[:1]
+        if any(item.get(name) is None for name in wanted):
+            lines.append(f"task {item.get('id')} has no evidence")
+    return lines
+
+
 def main(argv: list[str]) -> int:
-    """Report whether one state file is valid."""
+    """Report whether one state file is valid: exit 0 valid, 1 problems listed, 2 usage."""
     if len(argv) != ARGC:
         _ = sys.stderr.write("usage: validate-state.py <state file>\n")
         return 2
     path = Path(argv[0])
-    _, found = load(path)
-    if found:
+    data, found = load(path)
+    if found or data is None:
         _ = sys.stdout.write("".join(f"{path}: {problem}\n" for problem in found))
         return 1
-    _ = sys.stdout.write(f"{path}: valid\n")
+    notes = "".join(f"{path}: note, the plan is done but {line}\n" for line in unfinished(data))
+    _ = sys.stdout.write(f"{path}: valid\n{notes}")
     return 0
 
 

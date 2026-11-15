@@ -6,7 +6,9 @@ stdin; Claude never runs it. While the session's plan is executing, it blocks Cl
 its turn as long as any task lacks recorded evidence. It checks only what it reads; the planning
 skill's validate-state.py checks the whole schema.
 
-The state file lives at `<project>/.work-lifecycle/<session_id>.json`. Standard library only.
+The state file lives at `<project>/.work-lifecycle/<session_id>.json`, and the gate keeps its
+own memo next to it as `<session_id>.gate`. The memo is best effort: when it can't be read or
+written, the gate still blocks, so a failure never opens it. Standard library only.
 """
 
 from __future__ import annotations
@@ -26,6 +28,7 @@ STATUSES = ("planning", "executing", "awaiting-authorization", "done")
 RUNS = ("evidence", "red", "green")
 SESSION_ID = re.compile(r"[A-Za-z0-9_-]{1,128}")
 RELEASE_AFTER = 3
+DONE_MARK = "done"
 VALIDATE = "the validate-state.py command of the planning-before-execution skill"
 
 
@@ -46,6 +49,16 @@ def _is_list(value: object) -> TypeGuard[list[object]]:
     return isinstance(value, list)
 
 
+def _text(value: object) -> bool:
+    """Whether a value is a non-empty string."""
+    return isinstance(value, str) and value.strip() != ""
+
+
+def note(message: str) -> None:
+    """Tell the user something on stderr without changing the gate's decision."""
+    _ = sys.stderr.write(f"work-lifecycle plan gate: {message}\n")
+
+
 def problems(data: object) -> list[str]:
     """What keeps the gate from reading a state file; the skill's validator checks the rest."""
     if not isinstance(data, JsonObject):
@@ -62,6 +75,8 @@ def problems(data: object) -> list[str]:
         if not isinstance(item, JsonObject):
             found.append(f"task at position {index}: must be an object")
             continue
+        if not isinstance(item.get("test_first"), bool):
+            found.append(f"task at position {index}: test_first must be true or false")
         found.extend(
             f"task at position {index}: {name} must be null or an object"
             for name in RUNS
@@ -70,19 +85,32 @@ def problems(data: object) -> list[str]:
     return found
 
 
+def recorded(run: object) -> bool:
+    """Whether a run holds real evidence: its command and its output."""
+    return isinstance(run, JsonObject) and _text(run.get("command")) and _text(run.get("output"))
+
+
+def label(index: int, item: JsonObject) -> str:
+    """How a task is named in messages: its id and title, or its position."""
+    task_id, title = item.get("id"), item.get("title")
+    if _text(task_id) and _text(title):
+        return f"task {task_id} ({title})"
+    return f"task at position {index}"
+
+
 def pending(data: JsonObject) -> list[str]:
     """One line per task that still lacks evidence, in plan order."""
     lines: list[str] = []
     tasks = data.get("tasks")
     if not _is_list(tasks):
         return lines
-    for item in tasks:
+    for index, item in enumerate(tasks, start=1):
         if not isinstance(item, JsonObject):
             continue
-        wanted = ["evidence", "red", "green"] if item.get("test_first") is True else ["evidence"]
-        missing = [name for name in wanted if item.get(name) is None]
+        wanted = RUNS if item.get("test_first") is True else RUNS[:1]
+        missing = [name for name in wanted if not recorded(item.get(name))]
         if missing:
-            lines.append(f"task {item.get('id')} ({item.get('title')}): no {', '.join(missing)}")
+            lines.append(f"{label(index, item)}: no {', '.join(missing)}")
     return lines
 
 
@@ -92,8 +120,12 @@ def load(path: Path) -> tuple[JsonObject | None, list[str]]:
         data = _decode(path.read_text(encoding="utf-8"))
     except OSError as error:
         return None, [f"cannot read the file: {error.strerror}"]
+    except UnicodeDecodeError:
+        return None, ["the file is not UTF-8 text"]
     except ValueError as error:
         return None, [f"not valid JSON: {error}"]
+    except RecursionError:
+        return None, ["not valid JSON: nested too deeply"]
     found = problems(data)
     if found or not isinstance(data, JsonObject):
         return None, found
@@ -108,13 +140,36 @@ def emit(output: dict[str, str]) -> int:
 
 def fail(message: str) -> int:
     """Report a broken hook input: a non-blocking hook error."""
-    _ = sys.stderr.write(f"work-lifecycle plan gate: {message}\n")
+    note(message)
     return 1
 
 
+def read_memo(memo: Path) -> tuple[str, str]:
+    """The memo's first line and the pending tasks it recorded; empty when absent or unreadable."""
+    try:
+        first, _, signature = memo.read_text(encoding="utf-8").partition("\n")
+    except FileNotFoundError:
+        return "", ""
+    except (OSError, UnicodeDecodeError) as error:
+        note(f"ignoring an unreadable memo {memo}: {error}")
+        return "", ""
+    return first, signature
+
+
+def write_memo(memo: Path, first: str, signature: str) -> None:
+    """Record the gate's state; a failure is noted, never fatal."""
+    try:
+        _ = memo.write_text(f"{first}\n{signature}", encoding="utf-8")
+    except OSError as error:
+        note(f"cannot record its state in {memo}: {error.strerror}")
+
+
 def forget(memo: Path) -> None:
-    """Drop the record of the last block."""
-    memo.unlink(missing_ok=True)
+    """Drop the memo; a failure is noted, never fatal."""
+    try:
+        memo.unlink(missing_ok=True)
+    except OSError as error:
+        note(f"cannot remove {memo}: {error.strerror}")
 
 
 class StopEvent(NamedTuple):
@@ -124,12 +179,17 @@ class StopEvent(NamedTuple):
     continuing: bool
     busy: bool
 
+    @property
+    def memo(self) -> Path:
+        """The gate's memo for this session."""
+        return self.path.with_suffix(".gate")
+
 
 def read_event(raw: str) -> StopEvent | str:
     """Parse the hook input into a StopEvent, or say why it can't be used."""
     try:
         payload = _decode(raw)
-    except ValueError:
+    except (ValueError, RecursionError):
         return "the hook input is not JSON"
     if not isinstance(payload, JsonObject):
         return "the hook input is not a JSON object"
@@ -151,7 +211,7 @@ def unreadable(event: StopEvent, found: list[str]) -> int:
     """Block once on a state file the gate can't use; on the continuation, warn and allow."""
     detail = "; ".join(found)
     if event.continuing:
-        forget(event.path.with_suffix(".gate"))
+        forget(event.memo)
         return emit(
             {
                 "systemMessage": (
@@ -171,30 +231,46 @@ def unreadable(event: StopEvent, found: list[str]) -> int:
     )
 
 
-def previous_blocks(memo: Path, signature: str) -> int:
-    """How many blocks in a row named exactly these pending tasks; 0 when none or unreadable."""
-    try:
-        count, _, recorded = memo.read_text(encoding="utf-8").partition("\n")
-    except OSError:
+def finished(event: StopEvent, lines: list[str]) -> int:
+    """A plan marked done: allow stopping, and say once which tasks were left without evidence."""
+    if not lines:
+        forget(event.memo)
         return 0
-    if recorded != signature or not count.isdigit():
+    signature = "\n".join(lines)
+    if read_memo(event.memo) == (DONE_MARK, signature):
+        return 0
+    write_memo(event.memo, DONE_MARK, signature)
+    return emit(
+        {
+            "systemMessage": (
+                "work-lifecycle plan gate: the plan was marked done with tasks that have no "
+                f"recorded evidence: {'; '.join(lines)}"
+            )
+        }
+    )
+
+
+def previous_blocks(event: StopEvent, signature: str) -> int:
+    """How many blocks in a row named exactly these pending tasks; 0 when none or unreadable."""
+    if not event.continuing:
+        return 0
+    count, recorded_signature = read_memo(event.memo)
+    if recorded_signature != signature or not count.isdecimal() or not count.isascii():
         return 0
     return int(count)
 
 
-def decide(event: StopEvent, data: JsonObject) -> int:
-    """Allow stopping, or block while executing tasks lack evidence."""
-    memo = event.path.with_suffix(".gate")
-    lines = pending(data) if data.get("status") == "executing" else []
+def executing(event: StopEvent, lines: list[str]) -> int:
+    """An executing plan: block while tasks lack evidence, until Claude is plainly stuck."""
     if not lines:
-        forget(memo)
+        forget(event.memo)
         return 0
     if event.busy:
         return 0
     signature = "\n".join(lines)
-    blocks = previous_blocks(memo, signature) if event.continuing else 0
+    blocks = previous_blocks(event, signature)
     if blocks >= RELEASE_AFTER:
-        forget(memo)
+        forget(event.memo)
         return emit(
             {
                 "systemMessage": (
@@ -203,7 +279,7 @@ def decide(event: StopEvent, data: JsonObject) -> int:
                 )
             }
         )
-    _ = memo.write_text(f"{blocks + 1}\n{signature}", encoding="utf-8")
+    write_memo(event.memo, str(blocks + 1), signature)
     listing = "\n".join(f"- {line}" for line in lines)
     return emit(
         {
@@ -219,17 +295,39 @@ def decide(event: StopEvent, data: JsonObject) -> int:
     )
 
 
+def state_exists(path: Path) -> bool | str:
+    """Whether a state file is there, a dangling link included; a reason when that can't be told."""
+    try:
+        return os.path.lexists(path)
+    except OSError as error:
+        return f"cannot check the file: {error.strerror}"
+
+
 def gate(raw: str) -> int:
     """Decide one Stop event."""
     event = read_event(raw)
     if isinstance(event, str):
         return fail(event)
-    if not event.path.exists():
+    present = state_exists(event.path)
+    if isinstance(present, str):
+        return unreadable(event, [present])
+    if not present:
         return 0
     data, found = load(event.path)
     if data is None:
         return unreadable(event, found)
     return decide(event, data)
+
+
+def decide(event: StopEvent, data: JsonObject) -> int:
+    """Act on a readable state file by its status."""
+    status = data.get("status")
+    if status == "executing":
+        return executing(event, pending(data))
+    if status == "done":
+        return finished(event, pending(data))
+    forget(event.memo)
+    return 0
 
 
 def main(argv: list[str]) -> int:
