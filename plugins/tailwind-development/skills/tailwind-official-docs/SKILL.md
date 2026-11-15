@@ -268,7 +268,7 @@ Before the first delegation of the session, run the link check yourself, never i
 
 `python3 "${CLAUDE_SKILL_DIR}/scripts/check-links.py"`
 
-Where `${CLAUDE_SKILL_DIR}` is not replaced, run [scripts/check-links.py](scripts/check-links.py) from this skill's folder.
+Where Claude Code leaves the `CLAUDE_SKILL_DIR` placeholder unreplaced, run [scripts/check-links.py](scripts/check-links.py) from this skill's folder.
 It checks every URL in this skill's references and prints only the problems, each with its file and line.
 
 - **Exit 0**: delegate.

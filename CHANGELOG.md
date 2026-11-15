@@ -18,6 +18,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The
 
 ### Fixed
 
+- **github-operations** 0.8.1 — `github-files-setup` shows its scripts' full path where it tells Claude how to run them, instead of a sentence that read as a bare folder path.
+- **instruction-engineering** 0.1.5 — `claude-md-and-rules` says where its checker script lives in words that stay correct once Claude Code fills in the skill's folder.
+- **skill-diagnostics** 0.4.2 — `skills-best-practices` names the placeholders Claude Code fills in without filling them in itself, so its note reads as intended.
+- **tailwind-development** 0.3.4 — `tailwind-official-docs` says when to run the link checker from the skill's folder in words that stay correct once Claude Code fills in its placeholders.
 - **instruction-engineering** 0.1.4 — the checker matches a rule's `paths` the way Claude Code documents them: a leading `/` anchors a pattern to the folder that holds `.claude/`, and a pattern with no `/`, such as `*.md`, matches at any depth.
 
 ## 2026-11-14

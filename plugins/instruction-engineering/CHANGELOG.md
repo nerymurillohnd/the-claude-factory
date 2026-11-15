@@ -6,6 +6,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.1.5] - 2026-11-15
+
+### Fixed
+
+- `claude-md-and-rules` now explains where the checker script lives in plain words; the sentence that named the skill's folder placeholder read as a bare folder path once Claude Code filled it in.
+
 ## [0.1.4] - 2026-11-15
 
 ### Fixed
@@ -43,7 +49,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - A read-only checker, `check_instructions.py`, that the skill runs with `python3` 3.12 or later: it inventories the instruction files at project and user scope and reports frontmatter problems, path globs that match nothing, imports that do not resolve, duplicate lines and size limits. It never edits, runs or uploads anything.
 - `instruction-engineering:reviewer` agent: an independent, read-only reviewer that audits a large instruction set, a refactor or proposed changes in its own context, without loading your `CLAUDE.md` files.
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/instruction-engineering--v0.1.4...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/instruction-engineering--v0.1.5...HEAD
+[0.1.5]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/instruction-engineering--v0.1.5
 [0.1.4]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/instruction-engineering--v0.1.4
 [0.1.3]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/instruction-engineering--v0.1.3
 [0.1.2]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/instruction-engineering--v0.1.2

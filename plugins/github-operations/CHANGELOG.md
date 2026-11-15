@@ -6,6 +6,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.8.1] - 2026-11-15
+
+### Fixed
+
+- `github-files-setup` now shows its scripts' full path where it tells Claude how to run them, instead of a sentence that read as a bare folder path once Claude Code filled it in.
+
 ## [0.8.0] - 2026-11-13
 
 ### Added
@@ -264,7 +270,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 - `git-cleanup` inventory: `--from` with a saved file that is not a JSON object reports a JSON error and exits 0, instead of ending with a traceback.
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/github-operations--v0.8.0...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/github-operations--v0.8.1...HEAD
+[0.8.1]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/github-operations--v0.8.1
 [0.8.0]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/github-operations--v0.8.0
 [0.7.3]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/github-operations--v0.7.3
 [0.7.2]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/github-operations--v0.7.2

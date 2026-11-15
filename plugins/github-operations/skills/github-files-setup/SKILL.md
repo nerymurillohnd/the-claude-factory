@@ -35,7 +35,7 @@ You write the repository's own collaboration files from the models in `assets/`.
 
 The work ends on one branch, committed. With the user's approval it is pushed and opened as one pull request. The user approves the set of files, every label and setting change, and the push.
 
-Run the scripts with `${CLAUDE_SKILL_DIR}` in front of `scripts/`, exactly as the Scripts section writes them, because they run from the repository's root. The references name models and scripts by their path from this skill's folder, such as `assets/ISSUE_TEMPLATE/bug_report.yml`. Read and write GitHub by the routes in [references/github-access.md](references/github-access.md): the GitHub MCP server first, then `gh api` REST, so the skill works where `gh` is missing or GraphQL is blocked.
+Run each script by the full path the Scripts section gives it, `${CLAUDE_SKILL_DIR}/scripts/<script>`, because the scripts run from the repository's root. The references name models and scripts by their path from this skill's folder, such as `assets/ISSUE_TEMPLATE/bug_report.yml`. Read and write GitHub by the routes in [references/github-access.md](references/github-access.md): the GitHub MCP server first, then `gh api` REST, so the skill works where `gh` is missing or GraphQL is blocked.
 
 ## Where each file goes
 
