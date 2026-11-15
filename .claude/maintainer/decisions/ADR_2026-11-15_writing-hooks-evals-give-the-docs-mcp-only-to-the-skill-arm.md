@@ -1,10 +1,10 @@
 ---
-status: accepted
+status: superseded
 date: 2026-11-15
 decision-makers:
   - "Nery Samuel Murillo"
 supersedes: none
-superseded-by: none
+superseded-by: ADR_2026-11-15_eval-overlays-add-files-to-the-with-plugin-arm-only
 ---
 
 # writing-hooks quality evals give the docs MCP only to the with-skill arm, through a support plugin
@@ -50,4 +50,4 @@ Chosen option: **a support plugin listed only in the cases**, because the docs s
 | --- | --- | --- | --- |
 | The support plugin declares the docs server | `claude --plugin-dir plugins/hook-engineering/evals/_support/docs-mcp plugin details eval-docs-mcp` | 2026-11-15: `MCP servers (1) claude-code-docs` | After the support plugin changes |
 | The support plugin and hook-engineering validate | `claude plugin validate --strict` on both | 2026-11-15: passed | After either changes |
-| A case with two `plugins` loads both in the with-arm, starts the docs server and leaves the baseline without it | The first run, from its progress lines and each arm's tool list | pending: not stated on the docs pages; needs the owner's approval to spend | Before the full suite runs |
+| A case with two `plugins` loads both in the with-arm, starts the docs server and leaves the baseline without it | Probe runs, from each arm's trace | 2026-11-15: failed; `../..` is refused and the support plugin alone replaces the plugin under test | Superseded |

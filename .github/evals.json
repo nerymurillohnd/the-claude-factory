@@ -9,7 +9,7 @@
     "WebSearch",
     "WebFetch",
     "WebFetch(domain:code.claude.com)",
-    "mcp__plugin_eval-docs-mcp_claude-code-docs__*"
+    "mcp__plugin_hook-engineering_claude-code-docs__*"
   ],
   "project-maintainer": [
     "--scaffold"

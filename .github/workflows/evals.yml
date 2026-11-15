@@ -145,9 +145,23 @@ jobs:
             exit 1
           fi
           mapfile -t extra <"${RUNNER_TEMP}/eval-flags"
+          # A suite can add files to the with-plugin arm only, such as an MCP server the plugin doesn't
+          # ship: evals/_overlay/ is copied over a temporary copy of the plugin, and the suite runs on
+          # that copy. The no-plugin arm never sees it.
+          target="plugins/${PLUGIN}"
+          if [[ -d ${target}/evals/_overlay ]]; then
+            stage="${RUNNER_TEMP}/eval-target"
+            if ! { rm -rf "${stage}" && mkdir -p "${stage}" &&
+              cp -R "${target}" "${stage}/" &&
+              cp -R "${target}/evals/_overlay/." "${stage}/${PLUGIN}/"; }; then
+              echo "::error::can't stage ${target} with its evals/_overlay"
+              exit 1
+            fi
+            target="${stage}/${PLUGIN}"
+          fi
           # The target first: --tag takes a list, so a target after it is read as a tag.
           status=0
-          CLAUDE_CODE_EFFORT_LEVEL="${EFFORT}" claude plugin eval "plugins/${PLUGIN}" \
+          CLAUDE_CODE_EFFORT_LEVEL="${EFFORT}" claude plugin eval "${target}" \
             --tag "effort-${EFFORT}" \
             --model claude-sonnet-5-5 \
             --judge-model claude-opus-5-5 \

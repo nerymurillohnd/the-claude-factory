@@ -17,4 +17,5 @@ paths:
 - When a plugin gets its first suite, add `plugins/<plugin>/**` to the `paths` of `evals.yml` in the same change; `npm run check:consistency` (PC-12) fails until it is there. Dispatch `evals.yml` with the plugin's name to rerun a whole suite by hand.
 - Gate a CI run with `--threshold 0.8` and `npm run evals:gate -- <result> --min-mean-delta 0.2`, or the plugin's stricter floor in `.github/eval-gates.json`, and cap each effort group with `--max-cost-usd 10`; a partial run fails the job.
 - Give each plugin's tool grants and `--scaffold` in `.github/evals.json`; they apply to both arms of every case.
+- Put files only the with-plugin arm may have, such as an MCP server the plugin doesn't ship, in `plugins/<plugin>/evals/_overlay/`: `evals.yml` runs the suite on a temporary copy of the plugin with the overlay copied over it, and a local run stages the same copy first.
 - Authenticate eval runs as `.claude/rules/architecture/claude-workflows.md` sets.

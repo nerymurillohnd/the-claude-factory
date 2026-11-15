@@ -1,7 +1,6 @@
 ---
 description: "A plugin agent's start and stop hooks: hooks/hooks.json, not the agent's frontmatter, on SubagentStart and SubagentStop with the anchored scoped name, scripts through the plugin root, verified with real inputs."
 tags: [quality, location-plugin, subagent-events, effort-high]
-plugins: ["../..", "../_support/docs-mcp"]
 max_turns: 100
 model: claude-sonnet-5-5
 timeout_seconds: 2400
