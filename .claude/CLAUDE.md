@@ -53,11 +53,13 @@
 
 ## How to run this project
 
+Do every task, area, phase and function through the skill this section designates for it.
+
+Whenever the work involves plugins or their commands, also use `plugin-engineering:cli-commands-guide`, which governs them, alongside that skill.
+
+Before anything else, read the complete list of plugin commands and what each one does, and do no manual work a command already does.
+
 ### Plugins
-
-All work in this repository, including building and preparing plugins, puts the complete list of plugin commands first.
-
-Use `plugin-engineering:cli-commands-guide` at all times, and follow its procedure: do each task through the skill designated for it below.
 
 - When building a plugin, load and use `plugin-engineering:public-marketplace-dev`.
 - When running or scripting a plugin CLI command, load and use `plugin-engineering:cli-commands-guide`.
