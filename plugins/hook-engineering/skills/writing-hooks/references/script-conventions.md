@@ -64,7 +64,7 @@ set -eu
 **Python that needs third-party packages**, when the working directory is not a Python project with its own `.venv` or `uv.lock`:
 
 - Keep `dependencies` even when empty.
-- Not for minimal containers: BusyBox's `env` has no `-S` (reported, not verified).
+- Not for minimal containers: BusyBox installs its `env` as `/usr/bin/env` without `-S`, so `#!/usr/bin/env sh` works there and this shebang doesn't (reported, not re-tested here).
 
 ```python
 #!/usr/bin/env -S uv run --script
@@ -77,7 +77,7 @@ set -eu
 
 - Save the script as `.mjs`, never `.ts`.
 - Run it as `"command": "node"` with the script path in `args` (`assets/node-exec-handler.json`): exec form with `node` works on every system, Windows included.
-- `NODE_PATH` reached `require` but not `import` in an ES module (reported with Node 26, not verified): test how the script resolves its dependencies in step 7.
+- `NODE_PATH` reaches `require` but not `import` in an ES module: `import` fails with `ERR_MODULE_NOT_FOUND` (tested with Node 26.13.1). Import a dependency outside the script's own `node_modules` by absolute path, or load it with `createRequire`, and test it in step 7.
 
 ```js
 #!/usr/bin/env node

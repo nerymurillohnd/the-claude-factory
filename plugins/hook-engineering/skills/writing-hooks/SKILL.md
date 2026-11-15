@@ -18,7 +18,7 @@ This skill owns the order of work. For any specific part of it, check whether th
 Copy this checklist into your task list. The work is not finished while any item is unchecked; tick each one only with its evidence.
 
 - [ ] 1. Understand the request and the environment, and identify the kind of hook.
-- [ ] 2. Clarify with the user whatever is still open.
+- [ ] 2. Clarify with the user, through `AskUserQuestion`, whatever is still open.
 - [ ] 3. Choose the script conventions.
 - [ ] 4. Read the official docs the hook depends on, and check the user's version.
 - [ ] 5. Decide the event, the handler type, the mechanism and the location.
@@ -33,17 +33,19 @@ Copy this checklist into your task list. The work is not finished while any item
 - When the changelog disagrees with a page, the changelog wins. Pages lag the releases.
 - The docs' own example scripts start with `#!/bin/bash` and no strict mode. Take the shebang and opening lines from [references/script-conventions.md](references/script-conventions.md), never from an example.
 - A command that fails with exit code 2 inside a script blocks the action on events that can block, even when the script never meant to block: `grep` exits 2 on an error. The script conventions say how to prevent it.
-- `Edit|Write` sees only the `Edit` and `Write` tools: files changed through `Bash`, `PowerShell` or `NotebookEdit` don't fire it. `FileChanged` fires for any change on disk, but it can't block, and its `systemMessage` reaches only the user's terminal, never Claude.
-- A command hook has two forms, and neither is always right: choose one for each hook in step 5, as `##### Exec form and shell form` sets.
-  - Exec form (`args` set, even `"args": []`) runs `command` with no shell, so a path placeholder needs no quoting. It is the only form that substitutes a plugin's `${user_config.*}`. It expands no shell variable such as `$HOME`, and on Windows `command` must be a real executable: `"command": "node"` with the script in `args` works, a `.sh`, `.py`, `.cmd` or `.bat` path does not.
-  - Shell form (no `args`) passes `command` to `sh -c`, or to Git Bash on Windows. Use it for pipes, `&&`, redirects, globs and shell variables, and for a `.sh` or `.py` script that must also run on Windows. Wrap each placeholder in double quotes.
+- `Edit|Write` sees only the `Edit` and `Write` tools: files changed through `Bash`, `PowerShell` or `NotebookEdit` don't fire it. `FileChanged` fires for any change on disk, but it can't block, and its `systemMessage` and stderr reach only the user, never Claude. To tell Claude about a change, set `asyncRewake` on the handler and exit 2: its stderr reaches Claude as a system reminder.
+- A command hook runs in exec form when `args` is set (even `"args": []`) and in shell form when it is not. Run a script (`.sh`, `.py` and the like) in shell form with its whole path in double quotes, as the templates in `assets/` write it: it runs on macOS, Linux and Windows through Git Bash. Use exec form only when `command` is a real executable, such as `"command": "node"` with the script in `args`: on Windows exec form can't start a `.sh`, `.py`, `.cmd` or `.bat` path. The docs prefer exec form for path placeholders because it needs no quoting; the double quotes do that job in shell form.
+- `"command": "bash"` in exec form fails on a default Git for Windows install, which puts only its `cmd` folder on the PATH (from the installer's code, not the docs).
+- A shell-form plugin hook that references `${user_config.<key>}` fails instead of running: read the option from `$CLAUDE_PLUGIN_OPTION_<KEY>` in the script, or run it with `node` in exec form.
 - Not every event takes every handler type: `## Prompt-based hooks` lists which events take `prompt` and `agent`, and `SessionStart` and `Setup` take only `command` and `mcp_tool`. Check the event takes the type before you write the handler.
 - When several hooks match one event, they all run in parallel to the end: one hook's `deny` doesn't stop a sibling's side effects. For `PreToolUse` the most restrictive decision wins (`deny`, `defer`, `ask`, `allow`), and two hooks that both return `updatedInput` for the same tool are not merged.
+- `onFailure` has no effect on `Stop`, `SubagentStop`, `TaskCompleted` and `TeammateIdle` hooks, or on `async` and `asyncRewake` hooks: a gate there must fail closed by itself.
 - A hook's `allow` never overrides a deny rule from settings, and its `deny` holds in every permission mode, `bypassPermissions` included. To enforce a hard allow or deny, prefer a permission rule; the `if` filter is best effort.
 - A `Stop` hook that blocks must read `stop_hook_active` and exit 0 when it is `true`: Claude Code overrides a `Stop` hook after it blocks eight times in a row.
 - JSON output takes effect only when stdout starts with `{`. A shell profile that prints on start (Git Bash, or `BASH_ENV` pointing at `~/.bashrc`) silently turns the JSON into plain text, and a field placed at the wrong level, such as `permissionDecision` outside `hookSpecificOutput`, is ignored without an error. Build the JSON with an encoder (`jq`, Python `json`, `JSON.stringify`), never by concatenating strings.
 - Fix in batches, never by trial and error: collect every failure, find each cause in the docs, apply all fixes at once, check what else they touch, then rerun.
 - The docs MCP filesystem is emulated: each call is stateless, output is capped, and its command set changes between sessions. Read the tool's own description for the commands it supports before writing one. Use it to locate and map pages; read sections from the download.
+- In the MCP's heading map, a `#` comment inside a code block looks like a heading (`# Run the test suite` in `/en/hooks.mdx`): trust the `<h2 id=` lines there, or map the download, which skips code blocks.
 - The hooks page is many times larger than the MCP's output cap: read it from the download, never in one MCP call.
 - A command with a heavy alternation can return 504 Gateway Time-out: retry once with a simpler command.
 - Output that ends in "limit exceeded", a timeout or an error is incomplete, never zero results.
@@ -79,10 +81,11 @@ The goal of every step is the result it names (the full section, the version che
 
 ## Step 2: Clarify (what is still open)
 
-1. If the goal, the kind of hook, the target systems or the failure behavior is still unclear, ask with `AskUserQuestion` before building anything.
-2. Ask one to four questions, about the user's goal and context: what they want to achieve, what must block and what only warn, who the hook is for, where it runs.
-3. Keep the technical choices (events, matchers, exit codes, forms) out of the questions: those are your job.
-4. Build nothing while anything is ambiguous.
+1. Judge whether you can build without guessing: the goal, the kind of hook, the systems it touches and what must happen on failure are all clear from the request and step 1. If any is not, the request is incomplete.
+2. For an incomplete request, call the `AskUserQuestion` tool before you write any file. Ask one to four questions, as many as you need to be certain what the user wants.
+3. Ask about the user's goal and context: what they want to achieve and why, what must block and what should only warn, who the hook is for, where it runs. Keep the technical choices (events, matchers, handler types, exit codes, forms) out of the questions: those are your job.
+4. When `AskUserQuestion` is not available, as in a subagent or a non-interactive run, ask the same questions in your reply and stop there.
+5. Build nothing until the answers remove the ambiguity; ask again if they don't.
 
 ## Step 3: Choose the script conventions
 
@@ -128,6 +131,12 @@ The MCP locates and maps; the downloaded page is where sections are read; only t
    on' <dir>/hooks.md
    ```
 
+   - To find which section holds a term, list its lines in the download, then extract the heading above the hit:
+
+     ```bash
+     grep -n '<term>' <dir>/hooks.md
+     ```
+
    - Empty output means the heading or anchor did not match. Map the download, skipping code fences, and check the spelling:
 
      ```bash
@@ -146,23 +155,22 @@ The MCP locates and maps; the downloaded page is where sections are read; only t
    - A link that is only `#anchor` points to the same page.
    - A link to another page: download that page and repeat steps 4.4 and 4.5 on it.
    - Stop when the last two reads added no new fact.
-6. Read these sections, in order. Page `hooks` unless another page is named.
-   1. `## Hook events`: the full, current list is its `###` headings. Read the chosen event's `### <EventName>` section in full.
-   2. `## Hook lifecycle`, including `### How a hook resolves`.
-   3. `## Configuration`, including `### Hook locations`, then the location reference listed under "Where the hook lives" below.
-   4. `### Matcher patterns`, including `#### Match MCP tools` for MCP actions.
-   5. `### Common input fields`, plus the input in the event's section.
-   6. Output:
-      - `### Exit code output`, including `#### Exit code 2 behavior per event`;
-      - `### JSON output`, including `#### Decision control`;
-      - `### HTTP response handling` for an HTTP hook;
-      - for a hook that must guarantee an outcome, `#### Block the action when a hook fails` and `#### Timeouts`.
-   7. `### Hook handler fields`: `#### Common fields`, and the fields of the chosen handler type: `#### Command hook fields` with `##### Exec form and shell form`, `#### HTTP hook fields`, `#### MCP tool hook fields` or `#### Prompt and agent hook fields`. Then `### Reference scripts by path`.
-   8. Which events take which handler types, and when a model's judgment or background work fits better: `## Prompt-based hooks`, including `### Response schema`, `## Agent-based hooks`, `## Run hooks in the background`.
-   9. For Windows: `#### Failed hooks on Windows without Git Bash`, `#### PowerShell started no program` and `## Windows PowerShell tool`.
-   10. Whether a mod solves it better: `## Compare mods, settings hooks, skills, and MCP servers` and `### What a hook can do with an event` in `plugins/mods/overview`.
-   11. Security: `### Workspace trust` and `### Security best practices`.
-   12. `## Limitations and troubleshooting` in `hooks-guide`, and `## Debug hooks`: how to confirm the hook fired.
+6. Read these sections, in this order, and cite each one in the report by its link. Page `hooks` unless another page is named.
+   1. Events: [Hook events](https://code.claude.com/docs/en/hooks#hook-events). The full, current list is its `###` headings; read the chosen event's `### <EventName>` section in full.
+   2. Lifecycle: [Hook lifecycle](https://code.claude.com/docs/en/hooks#hook-lifecycle), including [How a hook resolves](https://code.claude.com/docs/en/hooks#how-a-hook-resolves).
+   3. Matcher: [Matcher patterns](https://code.claude.com/docs/en/hooks#matcher-patterns), including [Match MCP tools](https://code.claude.com/docs/en/hooks#match-mcp-tools) for MCP actions.
+   4. Input: [Common input fields](https://code.claude.com/docs/en/hooks#common-input-fields), plus the input in the event's section.
+   5. Output:
+      - [Exit code output](https://code.claude.com/docs/en/hooks#exit-code-output), including [Exit code 2 behavior per event](https://code.claude.com/docs/en/hooks#exit-code-2-behavior-per-event);
+      - [JSON output](https://code.claude.com/docs/en/hooks#json-output), including [Decision control](https://code.claude.com/docs/en/hooks#decision-control);
+      - [HTTP response handling](https://code.claude.com/docs/en/hooks#http-response-handling) for an HTTP hook;
+      - for a hook that must guarantee an outcome, [Block the action when a hook fails](https://code.claude.com/docs/en/hooks#block-the-action-when-a-hook-fails) and [Timeouts](https://code.claude.com/docs/en/hooks#timeouts).
+   6. Handler fields and how the handler runs: [Hook handler fields](https://code.claude.com/docs/en/hooks#hook-handler-fields), with [Common fields](https://code.claude.com/docs/en/hooks#common-fields) and the chosen type's fields: [Command hook fields](https://code.claude.com/docs/en/hooks#command-hook-fields) with [Exec form and shell form](https://code.claude.com/docs/en/hooks#exec-form-and-shell-form), [HTTP hook fields](https://code.claude.com/docs/en/hooks#http-hook-fields), [MCP tool hook fields](https://code.claude.com/docs/en/hooks#mcp-tool-hook-fields) or [Prompt and agent hook fields](https://code.claude.com/docs/en/hooks#prompt-and-agent-hook-fields). Which events take which types, and when a model's judgment or background work fits better: [Prompt-based hooks](https://code.claude.com/docs/en/hooks#prompt-based-hooks), [Agent-based hooks](https://code.claude.com/docs/en/hooks#agent-based-hooks), [Run hooks in the background](https://code.claude.com/docs/en/hooks#run-hooks-in-the-background).
+   7. Where the hook lives: [Configuration](https://code.claude.com/docs/en/hooks#configuration), [Hook locations](https://code.claude.com/docs/en/hooks#hook-locations), [Reference scripts by path](https://code.claude.com/docs/en/hooks#reference-scripts-by-path) and [Hooks in skills and agents](https://code.claude.com/docs/en/hooks#hooks-in-skills-and-agents); for a plugin, [Hooks](https://code.claude.com/docs/en/plugins/components#hooks) in `plugins/components`; for a subagent, [Define hooks for subagents](https://code.claude.com/docs/en/sub-agents#define-hooks-for-subagents). Then the location reference listed under "Where the hook lives" below.
+   8. The operating system: [Failed hooks on Windows without Git Bash](https://code.claude.com/docs/en/hooks#failed-hooks-on-windows-without-git-bash), [PowerShell started no program](https://code.claude.com/docs/en/hooks#powershell-started-no-program) and [Windows PowerShell tool](https://code.claude.com/docs/en/hooks#windows-powershell-tool).
+   9. Whether a mod solves it better: [Compare mods, settings hooks, skills, and MCP servers](https://code.claude.com/docs/en/plugins/mods/overview#compare-mods-settings-hooks-skills-and-mcp-servers) and [What a hook can do with an event](https://code.claude.com/docs/en/plugins/mods/overview#what-a-hook-can-do-with-an-event).
+   10. Security: [Workspace trust](https://code.claude.com/docs/en/hooks#workspace-trust) and [Security best practices](https://code.claude.com/docs/en/hooks#security-best-practices).
+   11. How to confirm it fired: [Limitations and troubleshooting](https://code.claude.com/docs/en/hooks-guide#limitations-and-troubleshooting) and [Debug hooks](https://code.claude.com/docs/en/hooks#debug-hooks).
 7. Check that every event and field exists in the user's version. Get the version:
 
     ```bash
@@ -192,7 +200,7 @@ The MCP locates and maps; the downloaded page is where sections are read; only t
 1. List every event and mechanism that could do the job, from the current event list read in step 4: each handler type (`command`, `http`, `mcp_tool`, `prompt`, `agent`), a mod, a permission rule.
 2. Weigh them by when and how often each fires, what each can see and decide, and what each costs to run and maintain.
 3. Pick the optimal one. A way that works can still carry more complexity than a newer event or field that does the job directly.
-4. For a command hook, pick exec form or shell form from what the command needs and the platforms noted in step 1, as the gotcha on the two forms says.
+4. For a command hook, pick exec form or shell form from what the command needs and the platforms noted in step 1, as the gotcha on exec form and shell form says: shell form for a script, exec form for a real executable.
 5. Pick the location from step 1, and read its reference under "Where the hook lives".
 6. Write down the alternatives set aside, and why.
 
@@ -227,7 +235,7 @@ The MCP locates and maps; the downloaded page is where sections are read; only t
    - the kind of hook and the evidence for it;
    - the event, the handler type and why they were chosen, and the alternatives set aside;
    - the location and template used;
-   - the docs sections read, and the changelog range checked against the user's version;
+   - the docs sections read, each by its link with its anchor, and the changelog range checked against the user's version;
    - each input with its expected and actual outcome;
    - what changed in the correction pass and why;
    - what could not be verified.

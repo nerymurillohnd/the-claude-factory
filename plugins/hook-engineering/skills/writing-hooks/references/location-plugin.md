@@ -26,14 +26,15 @@ You write hooks that run on other people's machines, in projects you will never 
 - A hook file that holds only the event map, without the `"hooks"` wrapper, fails to load; an inline map in `plugin.json` is the reverse.
 - When another enabled plugin has the same name, only one of the two registers its `hooks/hooks.json` hooks.
 - A hook that runs in every session with no gate to the projects it is for (a `UserPromptSubmit`, `PreToolUse` or `PostToolUse` hook with no matcher, `if` or early exit) fails the policy review of Anthropic's official marketplace, as does a call to a host the plugin's description and README don't disclose.
-- The default Git for Windows install was reported not to put `bash.exe` on the PATH (not verified): exec form with `"command": "bash"` may not start there.
+- A default Git for Windows install puts only its `cmd` folder on the PATH, so exec form with `"command": "bash"` doesn't start there (from the installer's code).
+- `NODE_PATH`, which the docs suggest for a plugin's MCP server, doesn't reach `import` in an ES module: see the Node section of `references/script-conventions.md`.
 
 ## Rules
 
 - Gate every hook to what the plugin is for: a narrow `matcher`, an `if` rule, or an early `exit 0` when the project is not one the plugin serves.
 - Ship each script inside the plugin, under `hooks/` or `scripts/`, and reference it through `${CLAUDE_PLUGIN_ROOT}`: users receive only the plugin's folder.
 - Keep state, caches and installed dependencies in `${CLAUDE_PLUGIN_DATA}`.
-- Use exec form for a hook that reads `${user_config.*}`; otherwise choose the form as the gotcha in `SKILL.md` says.
+- Run a script in shell form with its whole path in double quotes, and a Node script as `"command": "node"` with the path in `args`. In a shell-form hook, read a user option from `$CLAUDE_PLUGIN_OPTION_<KEY>`: `${user_config.*}` works only in exec form.
 - State in the plugin's README every program a hook needs (`jq`, `node`, `python3`) and the platforms it runs on.
 - Run `claude plugin validate <plugin-dir>` after each change: it warns about an unquoted placeholder in a shell-form hook.
 
