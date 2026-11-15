@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Marketplace, manifest, changelog and evals-path checks (PC-01 to PC-05, PC-12)."""
+"""Marketplace, manifest, changelog and workflow checks (PC-01 to PC-05, PC-12, PC-13)."""
 
 from __future__ import annotations
 
@@ -116,6 +116,30 @@ def _eval_paths(root: Path) -> Iterator[Finding]:
             yield Finding("PC-12", EVALS_WORKFLOW, message)
 
 
+WORKFLOWS = ".github/workflows"
+# Each Claude credential secret and the only workflows that may read it: the API key bills the
+# Claude Console account, the OAuth token the owner's subscription.
+SECRET_OWNERS = {
+    "ANTHROPIC_API_KEY": ("claude-code-review.yml",),
+    "CLAUDE_CODE_OAUTH_TOKEN": ("claude.yml", "evals.yml"),
+}
+
+
+def _secret_owners(root: Path) -> Iterator[Finding]:
+    """PC-13: a Claude credential secret is read only by the workflows that own it."""
+    folder = root / WORKFLOWS
+    if not folder.is_dir():
+        return
+    workflows = sorted([*folder.glob("*.yml"), *folder.glob("*.yaml")])
+    for workflow in workflows:
+        text = workflow.read_text(encoding="utf-8")
+        for name, owners in SECRET_OWNERS.items():
+            read = re.search(rf"secrets\s*(?:\.\s*{name}\b|\[\s*['\"]{name}['\"]\s*\])", text)
+            if read and workflow.name not in owners:
+                message = f"reads secrets.{name}, which only {', '.join(owners)} may read"
+                yield Finding("PC-13", f"{WORKFLOWS}/{workflow.name}", message)
+
+
 def check(
     root: Path,
     *,
@@ -128,6 +152,7 @@ def check(
         findings += _tags(root, remote_tags(root))
     findings += _unreleased(root, main=main)
     findings += _eval_paths(root)
+    findings += _secret_owners(root)
     findings += readme_findings(root)
     findings += catalog_findings(root)
     findings += icon_findings(root)

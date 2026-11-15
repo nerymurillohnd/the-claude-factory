@@ -83,6 +83,14 @@ on:
 """
 
 
+PC13 = "PC-13 .github/workflows/{path}: reads secrets.{name}, which only {owners} may read"
+EVALS_WITH_GUARD = """\
+env:
+  CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+run: if [[ -n ${ANTHROPIC_API_KEY:-} ]]; then exit 1; fi
+"""
+
+
 class Fixture:
     """A consistent marketplace with demo 0.1.0 (category development), released and tagged."""
 
@@ -229,6 +237,51 @@ class ChecksTest(unittest.TestCase):
             self.assertEqual(
                 (missing, f.ids(offline=True)), ([f"{expected} `plugins/demo/**` path"], [])
             )
+
+    def test_pc13_secret_read_by_the_wrong_workflow(self) -> None:
+        """Each Claude credential secret may be read only by the workflows that own it."""
+        with tempfile.TemporaryDirectory() as tmp:
+            f = Fixture(Path(tmp))
+            f.m.write(
+                ".github/workflows/claude.yml",
+                "with:\n  anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}\n",
+            )
+            f.m.write(
+                ".github/workflows/validate.yaml",
+                "env:\n  T: ${{ secrets['CLAUDE_CODE_OAUTH_TOKEN'] }}\n",
+            )
+            found = sorted(str(x) for x in check(f.m.root, offline=True))
+        self.assertEqual(
+            found,
+            [
+                PC13.format(
+                    path="claude.yml", name="ANTHROPIC_API_KEY", owners="claude-code-review.yml"
+                ),
+                PC13.format(
+                    path="validate.yaml",
+                    name="CLAUDE_CODE_OAUTH_TOKEN",
+                    owners="claude.yml, evals.yml",
+                ),
+            ],
+        )
+
+    def test_pc13_each_secret_in_its_own_workflow(self) -> None:
+        """The owning workflows pass, and a shell guard on the variable is not a read."""
+        with tempfile.TemporaryDirectory() as tmp:
+            f = Fixture(Path(tmp))
+            f.m.write(
+                ".github/workflows/claude-code-review.yml",
+                "with:\n  anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}\n",
+            )
+            f.m.write(
+                ".github/workflows/claude.yml",
+                "with:\n  claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}\n",
+            )
+            f.m.write(
+                ".github/workflows/evals.yml",
+                EVALS_WITH_GUARD,
+            )
+            self.assertNotIn("PC-13", f.ids(offline=True))
 
     def test_pc12_skips_a_repository_without_the_evals_workflow(self) -> None:
         """Without evals.yml there is nothing to keep in step."""
