@@ -53,3 +53,5 @@ Guardrail: <plan mode on | off, and why: chat, subagent, tool unavailable, unatt
 ## Handoff
 
 <Completion: the plan gate records each task's evidence. For more than one task in Claude Code, the /goal condition from references/goal-handoff.md, with its length in characters.>
+
+Before Task 1, and after any resume or context clear, invoke the work-lifecycle:planning-before-execution skill and follow its Execution section.

@@ -105,6 +105,8 @@ Main session for phases 1 and 2, three parallel worktree subagents for Task 4, t
 ## Handoff
 
 Plan gate on, with `status` set to `awaiting-authorization` at each checkpoint. `/goal` condition referencing this plan, 731 characters, Done when phase 3's acceptance criteria print.
+
+Before Task 1, and after any resume or context clear, invoke the work-lifecycle:planning-before-execution skill and follow its Execution section.
 </plan>
 </example>
 

@@ -75,14 +75,16 @@ Main session: two small dependent tasks.
 
 ## Handoff
 
-Plan gate on. `/goal` condition (433 characters):
+Plan gate on. `/goal` condition (531 characters):
 
-/goal Execute the approved plan at ~/.claude/plans/ledgerctl-json.md, task by task, passing each task's check before the next.
+/goal Execute the approved plan at ~/.claude/plans/ledgerctl-json.md, task by task, passing each task's check before the next. First invoke the work-lifecycle:planning-before-execution skill and follow its Execution section.
 Task: add a --json flag to ledgerctl report.
 Done when: `go test ./... && go vet ./...` prints ok for every package and a final report lists each task's check result.
 Solves: scripts can't parse the table output.
 Why it matters: scripts break on table changes.
 Constraints: table output unchanged; no push.
+
+Before Task 1, and after any resume or context clear, invoke the work-lifecycle:planning-before-execution skill and follow its Execution section.
 </plan>
 </example>
 

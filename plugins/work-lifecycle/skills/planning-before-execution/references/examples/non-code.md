@@ -75,6 +75,8 @@ Main session; the work is sequential and the conversion needs consistent judgmen
 ## Handoff
 
 Plan gate on. No `/goal`: completion includes two decisions only the user makes (the email and the switch), so it has no single measurable end state Claude can reach alone.
+
+Before Task 1, and after any resume or context clear, invoke the work-lifecycle:planning-before-execution skill and follow its Execution section.
 </plan>
 </example>
 

@@ -1,5 +1,13 @@
 # Example: a feature with interfaces between tasks and a Task 0 spike
 
+## Contents
+
+- [Goal](#goal) and [Acceptance criteria](#acceptance-criteria)
+- [Assumptions and open questions](#assumptions-and-open-questions), where the spike comes from
+- [Tasks](#tasks), starting with the Task 0 spike
+- [Risks](#risks) and [Handoff](#handoff)
+- [Why each section holds what it does here](#why-each-section-holds-what-it-does-here)
+
 Judgment to copy: when a critical assumption can't be checked read-only, it becomes Task 0 with a go or no-go gate; Consumes and Produces make the hand-offs between tasks explicit. Don't copy the language, names or commands.
 
 <example>
@@ -90,6 +98,8 @@ Main session for Tasks 1 to 3; a worktree subagent for Task 0 only.
 ## Handoff
 
 Plan gate on; Task 0's result is recorded before Task 1 starts. `/goal` condition referencing this plan, 498 characters.
+
+Before Task 1, and after any resume or context clear, invoke the work-lifecycle:planning-before-execution skill and follow its Execution section.
 </plan>
 </example>
 

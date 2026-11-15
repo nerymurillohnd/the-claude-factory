@@ -23,7 +23,7 @@ In those cases the plan gate and the final report prove completion on their own.
 Write the plan first; the condition points to it. It never carries the plan, because it holds at most 4,000 characters. Fill every line and keep the whole condition well under the limit:
 
 ```text
-/goal Execute the approved plan at <plan file path>, task by task, passing each task's check before the next.
+/goal Execute the approved plan at <plan file path>, task by task, passing each task's check before the next. First invoke the work-lifecycle:planning-before-execution skill and follow its Execution section.
 Task: <one line: what gets built or changed>
 Done when: <one measurable end state, proven by output printed in this conversation, such as `npm test` exits 0 and a final report listing each task's check command and result>
 Solves: <the problem this resolves>
