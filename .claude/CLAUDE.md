@@ -75,7 +75,7 @@
 
 Do every task, area, phase and function through the skill this section designates for it.
 
-Whenever the work involves plugins or their commands, also use `plugin-engineering:cli-commands-guide`, which governs them, alongside that skill.
+Use `plugin-engineering:cli-commands-guide`, which governs plugins and their commands, alongside that skill for all work on plugins or their commands.
 
 Before anything else, read the complete list of plugin commands and what each one does, and do no manual work a command already does.
 
