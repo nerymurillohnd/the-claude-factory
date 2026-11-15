@@ -165,12 +165,17 @@ def _frontmatter(text: Mapping[str, str], unread: Mapping[str, str]) -> Frontmat
     return parse_frontmatter(text["SKILL.md"])
 
 
-def _body(text: Mapping[str, str], frontmatter: Frontmatter) -> MarkdownDoc:
-    """Parse the SKILL.md lines from body_start on, split as parse_frontmatter splits them."""
+def body_lines(text: Mapping[str, str], frontmatter: Frontmatter) -> tuple[int, list[str]]:
+    """Return SKILL.md's first body line number and its body lines, split as parse_frontmatter."""
     source = text.get("SKILL.md", "").removeprefix(BOM).replace("\r\n", "\n")
     start = max(frontmatter.body_start, 1)
-    body = "\n".join(source.split("\n")[start - 1 :])
-    return parse_markdown(body, first_line=start)
+    return start, source.split("\n")[start - 1 :]
+
+
+def _body(text: Mapping[str, str], frontmatter: Frontmatter) -> MarkdownDoc:
+    """Parse the SKILL.md lines from body_start on."""
+    start, lines = body_lines(text, frontmatter)
+    return parse_markdown("\n".join(lines), first_line=start)
 
 
 def _modes(root: Path, mode_reader: ModeReader) -> tuple[dict[str, str], str | None]:

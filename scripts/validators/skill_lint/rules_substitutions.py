@@ -11,6 +11,7 @@ from __future__ import annotations
 import re
 from typing import TYPE_CHECKING
 
+from validators.skill_lint.discover import body_lines
 from validators.skill_lint.model import Finding, Severity
 
 if TYPE_CHECKING:
@@ -22,7 +23,6 @@ SOURCES: dict[str, str] = {
     "CA-06": SUBSTITUTIONS_DOC,
 }
 
-BOM = "﻿"
 ARGUMENT = re.compile(r"\$ARGUMENTS(?:\[\d+\])?|\$\d")
 PATH_VARIABLE = re.compile(r"\$\{(CLAUDE_[A-Z_]+)\}")
 PATH_USE = re.compile(r"[\"']?/")
@@ -47,16 +47,15 @@ def _body_lines(skill: Skill) -> list[tuple[int, str]]:
     Injected commands are CA-01's: an inline one is cut from its line, and a block one drops
     the lines between its fences.
     """
-    source = skill.text.get("SKILL.md", "").removeprefix(BOM).replace("\r\n", "\n")
-    start = max(skill.frontmatter.body_start, 1)
-    lines = dict(enumerate(source.split("\n"), start=1))
+    start, body = body_lines(skill.text, skill.frontmatter)
+    lines = dict(enumerate(body, start=start))
     for command in skill.body.bang_commands:
         if command.block:
             for number in range(command.line + 1, command.line + 1 + command.command.count("\n")):
                 lines[number] = ""
         else:
             lines[command.line] = lines.get(command.line, "").replace(f"!`{command.command}`", "")
-    return [(number, text) for number, text in sorted(lines.items()) if number >= start]
+    return sorted(lines.items())
 
 
 def _declares_arguments(skill: Skill) -> bool:
