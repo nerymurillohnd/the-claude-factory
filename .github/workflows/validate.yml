@@ -20,11 +20,6 @@ concurrency:
   group: validate-${{ github.event_name == 'pull_request' && github.ref || github.sha }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
-env:
-  # The plugins that fail plain `claude plugin validate --strict` today (DEBT-003); `debt` checks them
-  # strictly, and `checks` installs them with `check:install --no-strict`.
-  DEBT_003_PLUGINS: file-tree-pane model-trace project-maintainer tool-ledger turn-meter
-
 jobs:
   checks:
     name: Checks
@@ -39,83 +34,50 @@ jobs:
           persist-credentials: false
       - id: setup
         uses: ./.github/actions/setup
-      # Every check runs once the toolchain is in place, so one run reports each failing check.
+      # Every check runs once the toolchain is in place, so one run reports each failing check. Each
+      # step runs its pr-checks.sh step, the source `npm run check:pr` and the pre-push hook share.
       - name: Lint (Python, shell, workflows, GitHub files)
         if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
-        run: |
-          set -euo pipefail
-          npm run lint:python
-          npm run lint:shell
-          npm run lint:workflows
-          npm run lint:github
+        run: bash scripts/validators/pr-checks.sh lint
+      # lint:js is held back by DEBT-006 in `debt`; this gates the files the pull request changed.
+      - name: Biome on changed files
+        if: ${{ !cancelled() && steps.setup.outcome == 'success' && github.event_name == 'pull_request' }}
+        env:
+          CHECKS_BASE: ${{ github.event.pull_request.base.sha }}
+        run: bash scripts/validators/pr-checks.sh biome-changed
       - name: Type check
         if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
-        run: npm run typecheck
+        run: bash scripts/validators/pr-checks.sh typecheck
       - name: Maintainer script tests
         if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
-        run: npm run test:scripts
+        run: bash scripts/validators/pr-checks.sh test-scripts
       - name: Plugin hook tests
         if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
-        run: npm run test:plugins
+        run: bash scripts/validators/pr-checks.sh test-plugins
       - name: claude plugin validate --strict (plugins outside DEBT-003, the marketplace, .claude)
         if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
-        run: |
-          set -euo pipefail
-          status=0
-          for dir in plugins/*/; do
-            name="$(basename "${dir}")"
-            if [[ " ${DEBT_003_PLUGINS} " == *" ${name} "* ]]; then continue; fi
-            claude plugin validate --strict "${dir}" || status=1
-          done
-          claude plugin validate --strict . || status=1
-          npm run validate:claude || status=1
-          exit "${status}"
+        run: bash scripts/validators/pr-checks.sh validate
       - name: Mod tests
         if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
-        run: npm run validate:mods
+        run: bash scripts/validators/pr-checks.sh mods
       # A pull request is checked as main will be after the merge: an empty [Unreleased] (PC-05,
       # --main) and a dated section for every current version. Otherwise the push to main fails
       # Checks and its Release job never runs.
       - name: Consistency
         if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
-        run: npm run check:consistency -- --main
+        run: bash scripts/validators/pr-checks.sh consistency
       # Each plugin's Release body must build: release.yml stops at the first plugin whose notes
       # are missing. Every plugin is checked, and every failure is reported.
       - name: Release notes for every plugin
         if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
-        run: |
-          set -euo pipefail
-          names="$(node -e 'console.log(require("./.claude-plugin/marketplace.json").plugins.map((p) => p.name).join(" "))')"
-          status=0
-          for name in ${names}; do
-            npm run --silent release:notes -- "${name}" >/dev/null || status=1
-          done
-          exit "${status}"
+        run: bash scripts/validators/pr-checks.sh release-notes
       # A DEBT-003 plugin is still installed, loaded and tested here; only its strict validation
       # waits in `debt`.
       - name: Install check for each changed plugin
         if: ${{ !cancelled() && steps.setup.outcome == 'success' && github.event_name == 'pull_request' }}
         env:
-          BASE_SHA: ${{ github.event.pull_request.base.sha }}
-        run: |
-          set -euo pipefail
-          changed="$(git diff --name-only "${BASE_SHA}...HEAD" -- plugins/ | cut -d/ -f2 | sort -u)"
-          strict=()
-          debt=()
-          for name in ${changed}; do
-            if [[ ! -f plugins/${name}/.claude-plugin/plugin.json ]]; then continue; fi
-            if [[ " ${DEBT_003_PLUGINS} " == *" ${name} "* ]]; then
-              debt+=("${name}")
-            else
-              strict+=("${name}")
-            fi
-          done
-          if ((${#strict[@]} + ${#debt[@]} == 0)); then
-            echo "No plugin changed."
-            exit 0
-          fi
-          if ((${#strict[@]} > 0)); then npm run check:install -- --from local "${strict[@]}"; fi
-          if ((${#debt[@]} > 0)); then npm run check:install -- --from local --no-strict "${debt[@]}"; fi
+          CHECKS_BASE: ${{ github.event.pull_request.base.sha }}
+        run: bash scripts/validators/pr-checks.sh install
 
   debt:
     name: Debt (non-blocking)
@@ -137,13 +99,7 @@ jobs:
         run: npm run lint:frontmatter
       - name: DEBT-003 — claude plugin validate --strict on the five plugins
         continue-on-error: true
-        run: |
-          set -euo pipefail
-          status=0
-          for name in ${DEBT_003_PLUGINS}; do
-            claude plugin validate --strict "plugins/${name}/" || status=1
-          done
-          exit "${status}"
+        run: bash scripts/validators/pr-checks.sh debt-validate
       - name: DEBT-003 — npm run validate:portable
         continue-on-error: true
         run: npm run validate:portable
