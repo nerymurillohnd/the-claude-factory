@@ -45,4 +45,4 @@ Chosen option: **one-arm extra suites in CI**, as part of the owner's instructio
 | --- | --- | --- | --- |
 | Nested cases need effort tags | `scripts/testers/plugin_consistency/test_checks.py` (`test_pc14_finds_cases_nested_in_groups`) | 2026-11-15: 44 tests OK | After `evals.py` changes |
 | Extra results are ignored | `git check-ignore -v plugins/hook-engineering/evals-loading/results/x` | 2026-11-15: matched `.gitignore:33` | After `.gitignore` changes |
-| The loading suite runs in CI | The first CI run of hook-engineering's suites | pending | After the owner enables `CLAUDE_EVALS` |
+| The loading suite runs in CI | The first CI run of hook-engineering's suites | pending | On the next pull request that changes hook-engineering |
