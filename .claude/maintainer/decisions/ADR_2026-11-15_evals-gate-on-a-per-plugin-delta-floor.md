@@ -1,10 +1,10 @@
 ---
-status: accepted
+status: superseded
 date: 2026-11-15
 decision-makers:
   - "Nery Samuel Murillo"
 supersedes: ADR_2026-11-15_evals-ci-gates-on-score-and-delta-with-the-owners-subscription
-superseded-by: none
+superseded-by: ADR_2026-11-15_eval-gates-set-a-plugins-delta-floor-and-cost-cap
 ---
 
 # Evals gate on a per-plugin delta floor, never below 0.2

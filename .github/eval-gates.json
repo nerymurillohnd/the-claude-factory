@@ -1,3 +1,6 @@
 {
-  "hook-engineering": 0.25
+  "hook-engineering": {
+    "min_mean_delta": 0.25,
+    "max_cost_usd": 20
+  }
 }

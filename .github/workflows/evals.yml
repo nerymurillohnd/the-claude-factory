@@ -7,7 +7,8 @@ name: Evals
 # start it. workflow_dispatch runs one plugin's whole suite by hand.
 # Each effort group runs on its own: the cases on claude-sonnet-5-5, the judge on claude-opus-5-5,
 # a case passing at 0.8, at most USD 10 per group, and the suite failing when the plugin's mean
-# contribution over no plugin is below 0.2, or below the plugin's own floor in .github/eval-gates.json. Every run bills the owner's Claude subscription
+# contribution over no plugin is below 0.2. .github/eval-gates.json can set a plugin's own stricter
+# floor and its own cost cap per group. Every run bills the owner's Claude subscription
 # through the CLAUDE_CODE_OAUTH_TOKEN secret of the `claude` environment, never an API key. It
 # runs only when the repository variable CLAUDE_EVALS is `enabled`.
 
@@ -170,6 +171,21 @@ jobs:
             fi
             target="${stage}/${PLUGIN}"
           fi
+          # The plugin's gates: a mean-delta floor of at least 0.2 (default 0.2) and a cost cap per
+          # effort group (default USD 10), from .github/eval-gates.json. Fail closed on a bad entry.
+          gate=0
+          gates="$(jq -r --arg p "${PLUGIN}" '(if has($p) then .[$p] else {} end) as $g
+            | if ($g | type) != "object" then error("not an object") else . end
+            | [(if ($g | has("min_mean_delta")) then $g.min_mean_delta else 0.2 end),
+               (if ($g | has("max_cost_usd")) then $g.max_cost_usd else 10 end)]
+            | if (.[0] | type) == "number" and .[0] >= 0.2 and (.[1] | type) == "number" and .[1] > 0
+              then "\(.[0]) \(.[1])" else error("min_mean_delta must be at least 0.2, max_cost_usd above 0") end' \
+            .github/eval-gates.json)" || gate=$?
+          if ((gate != 0)); then
+            echo "::error::.github/eval-gates.json can't be read for ${PLUGIN} (jq exit ${gate})"
+            exit 1
+          fi
+          read -r min_delta max_cost <<<"${gates}"
           # The target first: --tag takes a list, so a target after it is read as a tag.
           status=0
           CLAUDE_CODE_EFFORT_LEVEL="${EFFORT}" claude plugin eval "${target}" \
@@ -177,7 +193,7 @@ jobs:
             --model claude-sonnet-5-5 \
             --judge-model claude-opus-5-5 \
             --threshold 0.8 \
-            --max-cost-usd 10 \
+            --max-cost-usd "${max_cost}" \
             --trust-plugin \
             --no-publish \
             --output-dir "${OUT}/report" \
@@ -186,18 +202,10 @@ jobs:
           case "${status}" in
             0) ;;
             1) echo "::error::a case scored below 0.8, a case failed to load, or a run ended on an API error"; exit 1 ;;
-            2) echo "::error::partial run: the USD 10 ceiling was hit or the token was rejected"; exit 2 ;;
+            2) echo "::error::partial run: the USD ${max_cost} ceiling was hit or the token was rejected"; exit 2 ;;
             *) echo "::error::claude plugin eval ended with exit ${status}"; exit "${status}" ;;
           esac
-          # The delta never changes the exit code above, so gate on it from the result, at 0.2 or the
-          # stricter floor .github/eval-gates.json sets for this plugin. Fail closed on a bad entry.
-          gate=0
-          min_delta="$(jq -r --arg p "${PLUGIN}" '(if has($p) then .[$p] else 0.2 end) | if type == "number" and . >= 0.2 then . else error("not a number of at least 0.2") end' \
-            .github/eval-gates.json)" || gate=$?
-          if ((gate != 0)); then
-            echo "::error::.github/eval-gates.json can't be read for ${PLUGIN} (jq exit ${gate})"
-            exit 1
-          fi
+          # The delta never changes the exit code above, so gate on it from the result.
           uv run python scripts/checkers/eval_gate.py "${OUT}/result.json" --min-mean-delta "${min_delta}"
       - if: always() && steps.cases.outputs.count != '0'
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
