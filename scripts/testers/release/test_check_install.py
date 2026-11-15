@@ -30,7 +30,13 @@ class CheckInstallTest(unittest.TestCase):
     """The order of the commands, their isolation, failures and cleanup."""
 
     def _run(
-        self, tmp: Path, args: list[str], *, fail: str = "", errors: bool = False, mod: bool = False
+        self,
+        tmp: Path,
+        args: list[str],
+        *,
+        fail: str = "",
+        errors: object = None,
+        mod: bool = False,
     ) -> tuple[int, list[str]]:
         """Run the script with the stub and return (exit code, logged calls)."""
         bin_dir, work = tmp / "bin", tmp / "work"
@@ -50,8 +56,8 @@ class CheckInstallTest(unittest.TestCase):
                 "version": "1.0.0",
                 "installPath": str(path),
             }
-            if errors:
-                item["errors"] = ["boom"]
+            if errors is not None:
+                item["errors"] = errors
             installs.append(item)
         listing = tmp / "list.json"
         _ = listing.write_text(json.dumps(installs), encoding="utf-8")
@@ -127,6 +133,12 @@ class CheckInstallTest(unittest.TestCase):
 
     def test_load_errors_fail(self) -> None:
         """A plugin that lists load errors fails the run."""
+        with tempfile.TemporaryDirectory() as tmp:
+            code, _ = self._run(Path(tmp), ["--from", "local", "demo"], errors=["boom"])
+        self.assertEqual(code, 1)
+
+    def test_unreadable_load_errors_fail(self) -> None:
+        """When jq can't read the errors field, the plugin is not reported as loading cleanly."""
         with tempfile.TemporaryDirectory() as tmp:
             code, _ = self._run(Path(tmp), ["--from", "local", "demo"], errors=True)
         self.assertEqual(code, 1)

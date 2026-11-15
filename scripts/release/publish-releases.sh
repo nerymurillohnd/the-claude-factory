@@ -1,11 +1,14 @@
 #!/usr/bin/env bash
 # Tag and publish a GitHub Release for each plugin whose current version has no tag on origin,
-# at TARGET_SHA (default HEAD). release.yml runs it from the repository root.
+# at TARGET_SHA (default HEAD), and publish the missing Release of a tag that has none.
+# release.yml runs it from the repository root.
 #
 # PLUGIN limits the run to one marketplace plugin (exit 2 if it isn't listed).
 # BACKFILL_TARGET, with PLUGIN, releases the version that was current at that commit instead,
 # with its notes from today's CHANGELOG. Every tag goes on a commit of origin/main: a target or
 # backfill commit that main doesn't have is refused (exit 1), whatever branch was dispatched.
+# A hand dispatch (GITHUB_EVENT_NAME=workflow_dispatch) that isn't a backfill also needs Validate's
+# Checks passed on the target commit; a backfill targets commits older than Validate.
 # Needs git, node, uv and gh; gh reads GH_TOKEN.
 set -Eeuo pipefail
 trap 'exit 1' ERR
@@ -21,25 +24,42 @@ notes=(uv run --no-project python "${root}/scripts/release/release-notes.py" --r
 
 git fetch -q origin main
 
+# The tags of the repository's GitHub Releases, read once, before the first one is needed.
+releases=""
+releases_read=0
+read_releases() {
+  if ((releases_read == 0)); then
+    releases="$(gh release list --limit 10000 --json tagName --jq '.[].tagName')"
+    releases_read=1
+  fi
+}
+
 publish() {
   local name="$1" at="$2" tag file found
   shift 2
   tag="$("${notes[@]}" "${name}" --tag "$@")"
   found=0
   git ls-remote --exit-code --tags origin "refs/tags/${tag}" > /dev/null || found=$?
-  if ((found == 0)); then
-    echo "✔ ${tag} already released"
-    return 0
-  fi
-  if ((found != 2)); then
+  if ((found != 0 && found != 2)); then
     echo "publish-releases: git ls-remote origin failed (${found})" >&2
     exit 1
   fi
+  read_releases
+  if ((found == 0)) && grep -qxF -- "${tag}" <<< "${releases}"; then
+    echo "✔ ${tag} already released"
+    return 0
+  fi
   file="$(mktemp)"
   "${notes[@]}" "${name}" "$@" > "${file}"
-  gh release create "${tag}" --target "${at}" --title "${tag}" --notes-file "${file}"
+  if ((found == 0)); then
+    # A tag never moves: its missing Release is published on the tag as it stands.
+    gh release create "${tag}" --verify-tag --title "${tag}" --notes-file "${file}"
+    echo "🚀 Published the missing Release of ${tag}"
+  else
+    gh release create "${tag}" --target "${at}" --title "${tag}" --notes-file "${file}"
+    echo "🚀 Released ${tag} at ${at}"
+  fi
   rm -f "${file}"
-  echo "🚀 Released ${tag} at ${at}"
 }
 
 if [[ -n ${plugin} ]]; then
@@ -71,6 +91,15 @@ git merge-base --is-ancestor "${target}" origin/main || status=$?
 if ((status != 0)); then
   echo "publish-releases: ${target} is not on main; release only from a commit main has" >&2
   exit 1
+fi
+
+if [[ ${GITHUB_EVENT_NAME:-} == workflow_dispatch ]]; then
+  conclusions="$(gh api "repos/${GITHUB_REPOSITORY:?}/commits/${target}/check-runs?check_name=Checks" \
+    --jq '.check_runs[].conclusion')"
+  if ! grep -qx success <<< "${conclusions}"; then
+    echo "publish-releases: Validate's Checks hasn't passed on ${target}; release after it does" >&2
+    exit 1
+  fi
 fi
 
 if [[ -n ${plugin} ]]; then

@@ -64,9 +64,15 @@ printf '%s\n' "${list}"
 for plugin in "$@"; do
   entry="$(jq -c --arg id "${plugin}@${MARKETPLACE}" '.[] | select(.id == $id)' <<< "${list}")"
   [[ -n ${entry} ]] || fail "${plugin} is not listed as ${plugin}@${MARKETPLACE}"
-  if jq -e '(.errors // []) | length > 0' <<< "${entry}" > /dev/null; then
-    fail "${plugin} has load errors"
-  fi
+  # jq -e exits 0 when errors are listed and 1 when none are; any other code means it couldn't
+  # read them, which must never pass as a clean load.
+  loaded=0
+  jq -e '(.errors // []) | length > 0' <<< "${entry}" > /dev/null || loaded=$?
+  case "${loaded}" in
+    0) fail "${plugin} has load errors" ;;
+    1) ;;
+    *) fail "${plugin}: jq could not read its load errors (exit ${loaded})" ;;
+  esac
   # A plugin loaded in place from a local marketplace reports readFromFolder, not installPath.
   path="$(jq -r '.installPath // .readFromFolder // empty' <<< "${entry}")"
   [[ -d ${path} ]] || fail "${plugin} has no install folder"

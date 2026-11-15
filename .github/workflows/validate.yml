@@ -157,4 +157,5 @@ jobs:
     needs: checks
     permissions:
       contents: write # release.yml creates the tags and the Releases
+      checks: read # release.yml reads Checks when it is dispatched by hand
     uses: ./.github/workflows/release.yml

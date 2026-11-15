@@ -16,7 +16,7 @@ on:
         required: false
         default: ""
       backfill_target:
-        description: With plugin, a commit in this branch's history whose plugin version never got its tag.
+        description: With plugin, a commit on main where that plugin's version never got its tag; its notes come from this branch's changelog.
         type: string
         required: false
         default: ""
@@ -34,6 +34,7 @@ jobs:
     timeout-minutes: 15
     permissions:
       contents: write # gh release create makes the tag and the Release
+      checks: read # a hand dispatch confirms Validate's Checks passed on the commit
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
