@@ -1,6 +1,6 @@
 # Script conventions for hook scripts
 
-Read this in step 3. It sets only three things for a hook script: its shebang, its opening lines and its permissions. Everything inside the script comes from the docs for that hook.
+Read this in step 5. It sets only three things for a hook script: its shebang, its opening lines and its permissions. Everything inside the script comes from the docs for that hook.
 
 ## Contents
 
@@ -12,7 +12,7 @@ Read this in step 3. It sets only three things for a hook script: its shebang, i
 ## Rules
 
 - Start every shebang with `/usr/bin/env`, unless a documented deployment requirement names a fixed path.
-- Set no minimum interpreter version: the shebang takes the first interpreter on the user's PATH.
+- Name the interpreter without a version (`python3`, not `python3.12`): the shebang takes the first one on the user's PATH.
 - Bash, Python and Node are the preferred languages, not the only ones: use another when the hook needs it, with the same rules.
 - When an official docs example uses another shebang (they use `#!/bin/bash`), keep these conventions.
 
@@ -29,8 +29,7 @@ set -euo pipefail
 
 **Where Bash may be missing**, such as minimal containers:
 
-- Use no Bash features: no arrays, `[[ ]]` or `${var,,}`.
-- Leave out `pipefail`: Ubuntu's `dash` 0.5.12 rejects `set -o pipefail` (observed).
+- Leave out `pipefail`: Ubuntu's `dash` rejects `set -o pipefail` (observed).
 
 ```sh
 #!/usr/bin/env sh
@@ -77,7 +76,7 @@ set -eu
 
 - Save the script as `.mjs`, never `.ts`.
 - Run it as `"command": "node"` with the script path in `args` (`assets/node-exec-handler.json`): exec form with `node` works on every system, Windows included.
-- `NODE_PATH` reaches `require` but not `import` in an ES module: `import` fails with `ERR_MODULE_NOT_FOUND` (tested with Node 26.13.1). Import a dependency outside the script's own `node_modules` by absolute path, or load it with `createRequire`, and test it in step 7.
+- `NODE_PATH` reaches `require` but not `import` in an ES module: `import` fails with `ERR_MODULE_NOT_FOUND` (observed; not in the docs). Import a dependency outside the script's own `node_modules` by absolute path, or load it with `createRequire`, and test it in step 7.
 
 ```js
 #!/usr/bin/env node
@@ -97,7 +96,7 @@ Exit code 2 blocks the action on the events that can block (`#### Exit code 2 be
   trap 'exit 1' ERR
   ```
 
-- **A gate** (it must block what it cannot judge): keep the default opening lines, exit 2 with the reason on stderr on any input it cannot read, and set `onFailure: "block"` on its handler where the docs allow it. Check in step 4.7 that the user's version has `onFailure`: without it, a hook that times out, can't start or crashes before its own checks lets the action through, so make the script fail closed on everything it controls and tell the user what still passes.
+- **A gate** (it must block what it cannot judge): keep the default opening lines, exit 2 with the reason on stderr on any input it cannot read, and set `onFailure: "block"` on its handler where the docs allow it. Check in step 3.3 that the user's version has `onFailure`: without it, a hook that times out, can't start or crashes before its own checks lets the action through, so make the script fail closed on everything it controls and tell the user what still passes.
 - **Any other hook**: the default opening lines.
 
 Exit codes to recognize when you verify:
@@ -115,16 +114,4 @@ To limit a script's run time, set `timeout` on its handler instead of calling th
 
 ## Permissions
 
-1. Before `git add`, set the executable bit so git records mode 100755:
-
-   ```bash
-   chmod +x <script>
-   ```
-
-2. If git already tracks the file, set the mode in the index:
-
-   ```bash
-   git update-index --chmod=+x <script>
-   ```
-
-3. In the hook handler, run the script by its path, so the shebang picks the interpreter.
+Make the script executable so git records mode 100755: `chmod +x <script>` before `git add`, or `git update-index --chmod=+x <script>` when git already tracks it. Run it by its path in the handler, so the shebang picks the interpreter.

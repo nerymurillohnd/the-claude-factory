@@ -4,6 +4,5 @@
   "tool": "<tool>",
   "input": {
     "<argument>": "${tool_input.<field>}"
-  },
-  "timeout": 30
+  }
 }

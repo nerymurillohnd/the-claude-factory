@@ -1,6 +1,6 @@
 # Skill frontmatter hooks
 
-Read this in step 5 when the hook belongs to a skill and must start only once that skill is invoked.
+Read this in step 4 when the hook belongs to a skill and must start only once that skill is invoked.
 
 ## Role
 
@@ -14,7 +14,7 @@ You write a hook that belongs to one skill: dormant until the skill is used, the
 - Trust: a project skill's frontmatter hooks follow the settings-file rule; they register even in a `-p` run in an untrusted folder.
 - Limits: the skills of one source (a project, the personal skills folder, each plugin) can register at most 1,024 hooks and 16,384 matcher characters per session; a skill past the limit registers none of its hooks and the debug log says `registers none of its hooks`.
 - Policy: under managed `strictPluginOnlyCustomization` with `hooks`, only plugin skills, bundled skills and managed-directory skills keep their frontmatter hooks.
-- Placeholders: the docs' example uses `${CLAUDE_PROJECT_DIR}`, and Claude Code rewrites the three path placeholders in a skill's PowerShell hooks. In a plugin skill's frontmatter hooks, `${CLAUDE_PLUGIN_ROOT}` resolves, `${CLAUDE_SKILL_DIR}` stays literal and `${CLAUDE_PLUGIN_DATA}` fails (observed on Claude Code 2.1.325; not in the docs). `${CLAUDE_SKILL_DIR}` is documented only for the skill's Markdown and `allowed-tools`.
+- Placeholders: the docs' example uses `${CLAUDE_PROJECT_DIR}`, and Claude Code rewrites the three path placeholders in a skill's PowerShell hooks. In a plugin skill's frontmatter hooks, `${CLAUDE_PLUGIN_ROOT}` resolves, `${CLAUDE_SKILL_DIR}` stays literal and `${CLAUDE_PLUGIN_DATA}` fails (observed; not in the docs). `${CLAUDE_SKILL_DIR}` is documented only for the skill's Markdown and `allowed-tools`.
 - Docs: `### Hooks in skills and agents` and `#### Limits on skill hooks` in `hooks`, and the `hooks` field in `skills`.
 
 ## Gotchas

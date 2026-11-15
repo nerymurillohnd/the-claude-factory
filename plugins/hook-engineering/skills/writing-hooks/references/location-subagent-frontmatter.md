@@ -1,6 +1,6 @@
 # Subagent frontmatter hooks
 
-Read this in step 5 when the hook belongs to one project or user subagent and must run only while it works.
+Read this in step 4 when the hook belongs to one project or user subagent and must run only while it works.
 
 ## Role
 

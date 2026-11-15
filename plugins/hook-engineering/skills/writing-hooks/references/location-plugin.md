@@ -1,6 +1,6 @@
 # Plugin hooks
 
-Read this in step 5 when the hook ships in a plugin: `hooks/hooks.json`, or the `hooks` key of `.claude-plugin/plugin.json`.
+Read this in step 4 when the hook ships in a plugin: `hooks/hooks.json`, or the `hooks` key of `.claude-plugin/plugin.json`.
 
 ## Role
 
@@ -26,7 +26,6 @@ You write hooks that run on other people's machines, in projects you will never 
 - A hook file that holds only the event map, without the `"hooks"` wrapper, fails to load; an inline map in `plugin.json` is the reverse.
 - When another enabled plugin has the same name, only one of the two registers its `hooks/hooks.json` hooks.
 - A hook that runs in every session with no gate to the projects it is for (a `UserPromptSubmit`, `PreToolUse` or `PostToolUse` hook with no matcher, `if` or early exit) fails the policy review of Anthropic's official marketplace, as does a call to a host the plugin's description and README don't disclose.
-- A default Git for Windows install puts only its `cmd` folder on the PATH, so exec form with `"command": "bash"` doesn't start there (from the installer's code).
 - `NODE_PATH`, which the docs suggest for a plugin's MCP server, doesn't reach `import` in an ES module: see the Node section of `references/script-conventions.md`.
 
 ## Rules
@@ -34,7 +33,7 @@ You write hooks that run on other people's machines, in projects you will never 
 - Gate every hook to what the plugin is for: a narrow `matcher`, an `if` rule, or an early `exit 0` when the project is not one the plugin serves.
 - Ship each script inside the plugin, under `hooks/` or `scripts/`, and reference it through `${CLAUDE_PLUGIN_ROOT}`: users receive only the plugin's folder.
 - Keep state, caches and installed dependencies in `${CLAUDE_PLUGIN_DATA}`.
-- Run a script in shell form with its whole path in double quotes, and a Node script as `"command": "node"` with the path in `args`. In a shell-form hook, read a user option from `$CLAUDE_PLUGIN_OPTION_<KEY>`: `${user_config.*}` works only in exec form.
+- In a shell-form hook, read a user option from `$CLAUDE_PLUGIN_OPTION_<KEY>`: `${user_config.<key>}` works only in exec form, and a shell-form hook that references it fails instead of running.
 - State in the plugin's README every program a hook needs (`jq`, `node`, `python3`) and the platforms it runs on.
 - Run `claude plugin validate <plugin-dir>` after each change: it warns about an unquoted placeholder in a shell-form hook.
 

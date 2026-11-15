@@ -3,6 +3,5 @@
   "command": "node",
   "args": [
     "${CLAUDE_PLUGIN_ROOT}/hooks/<script>.mjs"
-  ],
-  "timeout": 30
+  ]
 }

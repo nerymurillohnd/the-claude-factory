@@ -1,6 +1,6 @@
 # User settings hooks
 
-Read this in step 5 when the hook goes in `~/.claude/settings.json`.
+Read this in step 4 when the hook goes in `~/.claude/settings.json`.
 
 ## Role
 
@@ -29,4 +29,4 @@ You write a personal hook that follows one person into every project on one mach
 ## Structure
 
 - File: `~/.claude/settings.json`, under `"hooks"`.
-- Template: `assets/user-settings.json`. `$HOME` is ordinary shell expansion in shell form; the docs don't state it for hooks (not verified).
+- Template: `assets/user-settings.json`.

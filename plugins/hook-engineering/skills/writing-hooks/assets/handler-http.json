@@ -6,6 +6,5 @@
   },
   "allowedEnvVars": [
     "<TOKEN_VAR>"
-  ],
-  "timeout": 30
+  ]
 }

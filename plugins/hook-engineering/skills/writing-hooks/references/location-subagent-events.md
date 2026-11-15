@@ -1,6 +1,6 @@
 # Hooks on subagent events
 
-Read this in step 5 when the main session must act when a subagent starts or stops: `SubagentStart` and `SubagentStop` in a settings file or a plugin's `hooks/hooks.json`.
+Read this in step 4 when the main session must act when a subagent starts or stops: `SubagentStart` and `SubagentStop` in a settings file or a plugin's `hooks/hooks.json`.
 
 ## Role
 

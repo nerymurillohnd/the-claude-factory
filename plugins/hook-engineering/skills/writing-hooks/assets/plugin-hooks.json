@@ -7,8 +7,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "\"${CLAUDE_PLUGIN_ROOT}/hooks/<script>\"",
-            "timeout": 30
+            "command": "\"${CLAUDE_PLUGIN_ROOT}/hooks/<script>\""
           }
         ]
       }

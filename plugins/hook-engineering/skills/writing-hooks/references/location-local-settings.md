@@ -1,6 +1,6 @@
 # Local settings hooks
 
-Read this in step 5 when the hook goes in `.claude/settings.local.json`: one person, one project, never committed.
+Read this in step 4 when the hook goes in `.claude/settings.local.json`: one person, one project, never committed.
 
 ## Role
 
@@ -10,7 +10,8 @@ You write a personal hook for one project that must leave what the team shares u
 
 - Scope: one person in one project. Claude Code applies it over the committed `.claude/settings.json`, and hook entries from both run.
 - Git: Claude Code adds the file to the user's global git excludes the first time it writes it. A file created by hand is not ignored until it is added to `.gitignore`.
-- Trust and placeholders: the same as project settings (`references/location-project-settings.md`).
+- Trust: in an interactive session the hooks wait for the workspace trust dialog; a `-p` or SDK run treats the folder as trusted.
+- Placeholders: `${CLAUDE_PROJECT_DIR}` is the project root where the session started, and stays there when Claude enters a worktree, while the input's `cwd` follows Claude.
 - Docs: `### Hook locations` in `hooks`, and `### Keep personal settings out of a repository` in `settings`.
 
 ## Gotchas

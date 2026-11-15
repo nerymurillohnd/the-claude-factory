@@ -1,6 +1,6 @@
 # Managed settings hooks
 
-Read this in step 5 when an organization's administrator deploys the hook through managed policy settings.
+Read this in step 4 when an organization's administrator deploys the hook through managed policy settings.
 
 ## Role
 

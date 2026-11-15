@@ -1,6 +1,6 @@
 # Project settings hooks
 
-Read this in step 5 when the hook goes in `.claude/settings.json`, committed with the repository.
+Read this in step 4 when the hook goes in `.claude/settings.json`, committed with the repository.
 
 ## Role
 
