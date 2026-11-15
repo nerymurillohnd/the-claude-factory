@@ -9,3 +9,6 @@ Before step 1, run `claude plugin validate plugins/<plugin> --strict` and `claud
 1. The plugin's `LICENSE`, its `CHANGELOG.md` with "Initial release." under `## [Unreleased]` and no dated version, and its `NOTICE.txt` only if it contains third-party material.
 2. The plugin's `README.md`, written in full by the `plugin-readme-writer` subagent (see `../governance.md`). It states the license and links the changelog. Then run `claude plugin validate plugins/<plugin> --strict --profile directory`.
 3. The plugin's row in the root `README.md` catalog, and the plugin in `PRIVACY.md`, the single policy for every plugin. Its line in the root `CHANGELOG.md` waits for its release (`plugin-releases` skill).
+4. The plugin in every "plugin" dropdown of `.github/ISSUE_TEMPLATE/*.yml` and `.github/VULNERABILITY_REPORT.yml`, at its place in catalog order. With the owner's authorization, `npm run labels:sync -- --apply` creates its `plugin: <plugin>` label.
+
+Then run `npx biome check --write` on each Markdown document written here, and `npm run check:pr` once they are committed: it fails on a dropdown left behind and on a changed file Biome would reformat.
