@@ -7,6 +7,7 @@ rules:
   self-repository:
     ignore:
       - validate.yml
+      - evals.yml
   # npm 12.2.1 is installed by its exact version because devEngines requires npm ^12.2.1 and Node 26
   # ships npm 11; no lockfile can hold the npm that installs the lockfile.
   adhoc-packages:

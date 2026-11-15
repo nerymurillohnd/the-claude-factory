@@ -2,14 +2,23 @@ name: Maintainer toolchain
 description: >-
   Installs what the maintainer npm scripts need, at the versions the maintainers run: Node from
   .nvmrc with npm 12, Python from .python-version through uv, the npm and uv locks, the pinned uv
-  tools, ShellCheck, shfmt, actionlint and Claude Code.
+  tools, ShellCheck, shfmt, actionlint and Claude Code. With `toolchain: evals`, only what an eval
+  run needs: Python through uv, Claude Code, and the bubblewrap and socat that Claude Code's Bash
+  sandbox needs on Linux.
+
+inputs:
+  toolchain:
+    description: "`full` for the maintainer checks, `evals` for claude plugin eval runs."
+    required: false
+    default: full
 
 runs:
   using: composite
   steps:
     # No npm cache: setup-node's `npm config get cache` fails devEngines on the npm 11 that Node 26
     # ships, before npm 12 is installed.
-    - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+    - if: inputs.toolchain == 'full'
+      uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
       with:
         node-version-file: .nvmrc
         package-manager-cache: false
@@ -17,6 +26,7 @@ runs:
       with:
         enable-cache: false
     - name: npm 12, the locks and the uv tools
+      if: inputs.toolchain == 'full'
       shell: bash
       run: |
         set -euo pipefail
@@ -37,6 +47,7 @@ runs:
         done
     # The same releases the maintainers run, each checked against its SHA-256.
     - name: ShellCheck, shfmt and actionlint
+      if: inputs.toolchain == 'full'
       shell: bash
       run: |
         set -euo pipefail
@@ -54,6 +65,16 @@ runs:
           8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8
         tar -xzf actionlint.tar.gz actionlint
         sudo install -m 755 actionlint "${bin}/actionlint"
+    # An eval run's Bash sandbox needs bubblewrap and socat on Linux; without them every run that
+    # grants Bash is refused (plugin-testing-and-debugging, references/evals.md, section 8).
+    - name: Python and the Bash sandbox for eval runs
+      if: inputs.toolchain == 'evals'
+      shell: bash
+      run: |
+        set -euo pipefail
+        uv python install
+        sudo apt-get update -qq
+        sudo apt-get install -y -qq bubblewrap socat
     # Claude Code from Anthropic's signed apt repository, pinned to the build the maintainers run, so
     # CI and the local checks see the same CLI; bump CLAUDE_CODE_VERSION by hand with the local
     # upgrade. apt verifies the package against the repository key, and the key is checked against
