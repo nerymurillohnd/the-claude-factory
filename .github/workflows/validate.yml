@@ -71,14 +71,19 @@ jobs:
             push) npm run check:consistency -- --main ;;
             *) npm run check:consistency ;;
           esac
-      # Each plugin's Release body must build before the merge: release.yml stops at the first
-      # plugin whose notes are missing.
+      # Each plugin's Release body must build: release.yml stops at the first plugin whose notes
+      # are missing. On a pull request, a version not dated until merge day may still have its
+      # notes under [Unreleased] (--pending); on main, every version needs its dated section.
       - name: Release notes for every plugin
+        env:
+          EVENT: ${{ github.event_name }}
         run: |
           set -euo pipefail
+          mode=()
+          if [[ ${EVENT} == pull_request ]]; then mode=(--pending); fi
           names="$(node -e 'console.log(require("./.claude-plugin/marketplace.json").plugins.map((p) => p.name).join(" "))')"
           for name in ${names}; do
-            npm run --silent release:notes -- "${name}" >/dev/null
+            npm run --silent release:notes -- "${name}" "${mode[@]}" >/dev/null
           done
       - name: Install check for each changed plugin
         if: github.event_name == 'pull_request'

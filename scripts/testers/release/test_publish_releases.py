@@ -125,6 +125,17 @@ class PublishReleasesTest(unittest.TestCase):
         self.assertEqual((code, calls), (2, []))
         self.assertIn("PLUGIN", err)
 
+    def test_a_target_outside_main_is_refused(self) -> None:
+        """A dispatch on a branch never tags a commit that main doesn't have."""
+        _ = git(self.m.root, "checkout", "-q", "-b", "feature")
+        text = changelog("demo", {"0.2.0": NEW, "0.1.0": FIRST})
+        self.m.add_plugin("demo", "0.2.0", changelog_text=text)
+        self.m.commit()
+        head = git(self.m.root, "rev-parse", "HEAD").strip()
+        code, calls, _, err = self._run(TARGET_SHA=head)
+        self.assertEqual((code, calls), (1, []))
+        self.assertIn("not on main", err)
+
     def test_backfill_target_must_be_an_ancestor(self) -> None:
         """A commit outside the checked-out history is refused."""
         _ = git(self.m.root, "checkout", "-q", "-b", "side")

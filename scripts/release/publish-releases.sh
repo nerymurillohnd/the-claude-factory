@@ -4,7 +4,8 @@
 #
 # PLUGIN limits the run to one marketplace plugin (exit 2 if it isn't listed).
 # BACKFILL_TARGET, with PLUGIN, releases the version that was current at that commit instead,
-# with its notes from today's CHANGELOG; the commit must be in HEAD's history (exit 1 if not).
+# with its notes from today's CHANGELOG. Every tag goes on a commit of origin/main: a target or
+# backfill commit that main doesn't have is refused (exit 1), whatever branch was dispatched.
 # Needs git, node, uv and gh; gh reads GH_TOKEN.
 set -Eeuo pipefail
 trap 'exit 1' ERR
@@ -14,7 +15,11 @@ plugin="${PLUGIN:-}"
 backfill="${BACKFILL_TARGET:-}"
 target="${TARGET_SHA:-$(git rev-parse HEAD)}"
 
-notes=(uv run --project "${root}" python "${root}/scripts/release/release-notes.py" --root .)
+# release-notes needs only the standard library, so no project dependencies are installed in the
+# step that holds the write token.
+notes=(uv run --no-project python "${root}/scripts/release/release-notes.py" --root .)
+
+git fetch -q origin main
 
 publish() {
   local name="$1" at="$2" tag file found
@@ -48,8 +53,10 @@ if [[ -n ${backfill} ]]; then
     echo "publish-releases: BACKFILL_TARGET needs PLUGIN" >&2
     exit 2
   fi
-  if ! git merge-base --is-ancestor "${backfill}" HEAD; then
-    echo "publish-releases: ${backfill} is not in the history of HEAD" >&2
+  status=0
+  git merge-base --is-ancestor "${backfill}" origin/main || status=$?
+  if ((status != 0)); then
+    echo "publish-releases: ${backfill} is not on main" >&2
     exit 1
   fi
   commit="$(git rev-parse "${backfill}^{commit}")"
@@ -57,6 +64,13 @@ if [[ -n ${backfill} ]]; then
     | node -e 'let s = ""; process.stdin.on("data", (d) => (s += d)).on("end", () => console.log(JSON.parse(s).version))')"
   publish "${plugin}" "${commit}" --version "${version}"
   exit 0
+fi
+
+status=0
+git merge-base --is-ancestor "${target}" origin/main || status=$?
+if ((status != 0)); then
+  echo "publish-releases: ${target} is not on main; release only from a commit main has" >&2
+  exit 1
 fi
 
 if [[ -n ${plugin} ]]; then

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Date a plugin's [Unreleased] changelog section as its release and update the links."""
+"""Date a plugin's [Unreleased] changelog section as its release, or re-date it, and its links."""
 
 from __future__ import annotations
 
@@ -44,6 +44,17 @@ def date_release(text: str, plugin: str, new: str, day: str, repo_url: str) -> s
     return _UNRELEASED_LINK.sub(lambda _: unreleased, text, count=1)
 
 
+def redate_release(text: str, current: str, day: str) -> str:
+    """Change the date of the current version's heading to day, leaving its notes unchanged."""
+    heading = re.compile(
+        rf"^## \[{re.escape(current)}\] - [0-9]{{4}}-[0-9]{{2}}-[0-9]{{2}}", re.MULTILINE
+    )
+    if heading.search(text) is None:
+        msg = f"no dated ## [{current}] section to re-date"
+        raise ChangelogError(msg)
+    return heading.sub(f"## [{current}] - {day}", text, count=1)
+
+
 def _day(value: str) -> str:
     """Accept only a YYYY-MM-DD date."""
     try:
@@ -60,6 +71,7 @@ class Args(argparse.Namespace):
         super().__init__()
         self.plugin: str = ""
         self.date: str = ""
+        self.redate: bool = False
         self.root: Path = Path()
 
 
@@ -71,6 +83,9 @@ def main(argv: list[str] | None = None) -> int:
         "--date", default="", help="release day, YYYY-MM-DD; default today in UTC"
     )
     _ = parser.add_argument("--root", type=Path, default=Path(), help="repository root")
+    _ = parser.add_argument(
+        "--redate", action="store_true", help="move the dated current version to the release day"
+    )
     args = parser.parse_args(argv, namespace=Args())
     day = _day(args.date) if args.date else datetime.now(UTC).date().isoformat()
     if not day:
@@ -85,7 +100,11 @@ def main(argv: list[str] | None = None) -> int:
         )
         return 2
     try:
-        text = date_release(path.read_text(encoding="utf-8"), args.plugin, current, day, repo_url)
+        old = path.read_text(encoding="utf-8")
+        if args.redate:
+            text = redate_release(old, current, day)
+        else:
+            text = date_release(old, args.plugin, current, day, repo_url)
     except ChangelogError as error:
         _ = sys.stderr.write(f"release-changelog: {args.plugin}: {error}\n")
         return 1
