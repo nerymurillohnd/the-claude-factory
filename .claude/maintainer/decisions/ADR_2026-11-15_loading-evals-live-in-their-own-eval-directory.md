@@ -46,5 +46,6 @@ Chosen option: **a second eval directory**, because `--eval-dir` is the document
 | What must be true | How it is checked | Result | When to re-check |
 | --- | --- | --- | --- |
 | Both directories hold valid cases | Frontmatter and grader fields checked against the eval reference, regexes compiled | 2026-11-15: 13 cases, 40 graders, 0 problems | After a case changes |
+| The loading suite is the owner's three situations: loads unnamed, skips a request unrelated to Claude Code hooks, skips an ambiguous one | `ls plugins/hook-engineering/evals-loading` and each case's grader | 2026-11-15: 3 cases, 8 cases and 37 graders across both directories, 0 problems | After a case changes |
 | Biome treats `evals-loading/` like `evals/` | `npx biome check plugins/hook-engineering/evals-loading` | 2026-11-15: no findings | After `biome.jsonc` changes |
 | The loading suite runs | A first run with the owner's approval | pending | Before each release of the plugin |

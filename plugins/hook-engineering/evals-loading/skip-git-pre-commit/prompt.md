@@ -1,5 +1,5 @@
 ---
-description: "Must not load writing-hooks: another kind of hook."
+description: "Must not load writing-hooks: a Git hook, which has nothing to do with Claude Code hooks."
 tags: [loading, should-not-trigger, effort-low]
 max_turns: 4
 model: claude-sonnet-5-5
