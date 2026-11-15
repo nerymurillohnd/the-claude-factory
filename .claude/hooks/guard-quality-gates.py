@@ -33,6 +33,11 @@ from pathlib import Path, PurePosixPath
 import re
 import shlex
 import sys
+from typing import TYPE_CHECKING, NoReturn
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
+    from typing import TypeGuard
 
 # relative() folds case, so these are compared folded too.
 PROTECTED_NAMES = (
@@ -41,6 +46,7 @@ PROTECTED_NAMES = (
     "biome.jsonc",
     "pyrightconfig.json",
     "scripts/pyrightconfig.json",
+    ".claude/pyrightconfig.json",
     "tsconfig.json",
     "tsconfig.base.json",
     ".editorconfig",
@@ -53,13 +59,24 @@ PROTECTED_NAMES = (
 )
 PROTECTED = frozenset(name.casefold() for name in PROTECTED_NAMES)
 PROTECTED_DIRS = tuple(name.casefold() for name in (".github/workflows/", ".claude/hooks/"))
-SUPPRESSION = re.compile(
-    r"#\s*noqa\b|#\s*ruff\s*:\s*noqa|#\s*type\s*:\s*ignore|#\s*pyright\s*:\s*(ignore|basic)"
-    r"|#\s*mypy\s*:\s*ignore|#\s*nosec\b|#\s*pragma\s*:\s*no\s*cover|#\s*fmt\s*:\s*(off|skip)"
-    r"|biome-ignore|@ts-ignore|@ts-expect-error|@ts-nocheck|eslint-disable|prettier-ignore"
-    r"|shellcheck\s+disable\s*=",
-    re.IGNORECASE,
+SUPPRESSION_PATTERNS = (
+    r"#\s*noqa\b",
+    r"#\s*ruff\s*:\s*noqa",
+    r"#\s*type\s*:\s*ignore",
+    r"#\s*pyright\s*:\s*(ignore|basic)",
+    r"#\s*mypy\s*:\s*ignore",
+    r"#\s*nosec\b",
+    r"#\s*pragma\s*:\s*no\s*cover",
+    r"#\s*fmt\s*:\s*(off|skip)",
+    r"biome-ignore",
+    r"@ts-ignore",
+    r"@ts-expect-error",
+    r"@ts-nocheck",
+    r"eslint-disable",
+    r"prettier-ignore",
+    r"shellcheck\s+disable\s*=",
 )
+SUPPRESSION = re.compile("|".join(SUPPRESSION_PATTERNS), re.IGNORECASE)
 
 # Bash words that write the files they name.
 WRITE_COMMANDS = frozenset(
@@ -67,8 +84,9 @@ WRITE_COMMANDS = frozenset(
     | {"patch", "rsync", "unlink"}
 )
 # Interpreters run inline code, which can write any file the command names.
-INTERPRETERS = frozenset({"python", "python3", "node", "perl", "ruby", "deno", "bash", "sh", "zsh"})
-INTERPRETERS |= {"awk", "gawk"}
+INTERPRETERS = frozenset(
+    {"python", "python3", "node", "perl", "ruby", "deno", "bash", "sh", "zsh", "awk", "gawk"}
+)
 REDIRECTS = frozenset({">", ">>", ">|", "&>", "&>>"})
 GIT_WRITES = frozenset(
     {"checkout", "restore", "apply", "rm", "mv", "reset", "stash", "revert", "merge", "pull"}
@@ -81,15 +99,35 @@ FORMATTERS = frozenset({"ruff", "biome", "prettier", "dprint", "shfmt"})
 WHOLE_TREE = frozenset({".", "./", "*"})
 BOUNDARY_BEFORE = r"(?:^|(?<=[\s'\"`=(;|&<>]))"
 BOUNDARY_AFTER = r"(?=$|[\s'\"`;|&)<>,])"
+GATES = "quality gates, instructions, settings, CI or this guard"
+KINDS = "noqa, type: ignore, biome-ignore, ts-ignore, shellcheck disable or similar"
 
 
-def block(reason: str) -> None:
+class JsonObject(dict[str, object]):
+    """A decoded JSON object: the decoder builds every object as this type."""
+
+
+# Decodes JSON with every object built as JsonObject, so isinstance() narrows it cleanly.
+parse_json: Callable[[str], object] = json.JSONDecoder(object_hook=JsonObject).decode
+
+
+def is_list(value: object) -> TypeGuard[list[object]]:
+    """Narrow a decoded JSON value to an array."""
+    return isinstance(value, list)
+
+
+def field(value: object, key: str) -> object:
+    """Return value[key] when value is a JSON object, else None."""
+    return value.get(key) if isinstance(value, JsonObject) else None
+
+
+def block(reason: str) -> NoReturn:
     """Fail closed: exit 2 blocks the call and shows the reason to Claude."""
     _ = sys.stderr.write(f"guard-quality-gates: {reason}\n")
     sys.exit(2)
 
 
-def ask(reason: str) -> None:
+def ask(reason: str) -> NoReturn:
     """Send the call to Nery's permission prompt with the reason."""
     out = {
         "hookSpecificOutput": {
@@ -130,20 +168,20 @@ def added(after: object, before: object) -> int:
 def cell_source(path: str, cell_id: object) -> str:
     """Return the current source of a notebook cell, or '' when it can't be read."""
     try:
-        notebook: object = json.loads(Path(path).read_text(encoding="utf-8"))
+        notebook = parse_json(Path(path).read_text(encoding="utf-8"))
     except (OSError, ValueError):
         return ""
-    cells = notebook.get("cells") if isinstance(notebook, dict) else None
-    for cell in cells if isinstance(cells, list) else []:
-        if isinstance(cell, dict) and cell.get("id") == cell_id:
-            source = cell.get("source")
-            if isinstance(source, list):
+    cells = field(notebook, "cells")
+    for cell in cells if is_list(cells) else []:
+        if field(cell, "id") == cell_id:
+            source = field(cell, "source")
+            if is_list(source):
                 return "".join(part for part in source if isinstance(part, str))
             return source if isinstance(source, str) else ""
     return ""
 
 
-def added_suppressions(tool: str, tool_input: dict[str, object], path: str) -> int:
+def added_suppressions(tool: str, tool_input: JsonObject, path: str) -> int:
     """Return how many suppression lines the call adds."""
     if tool == "Edit":
         return added(tool_input.get("new_string"), tool_input.get("old_string"))
@@ -212,7 +250,7 @@ def bash_rewrites_tree(tokens: list[str]) -> bool:
     return writes and any(t in WHOLE_TREE for t in tokens)
 
 
-def check_bash(tool_input: dict[str, object], root: str) -> None:
+def check_bash(tool_input: JsonObject, root: str) -> NoReturn:
     """Ask before a Bash command writes a protected file; stay silent otherwise."""
     command = tool_input.get("command")
     if not isinstance(command, str) or not command.strip():
@@ -220,29 +258,23 @@ def check_bash(tool_input: dict[str, object], root: str) -> None:
     tokens = words(command)
     target = protected_named(command, root)
     if target is not None and bash_writes(tokens):
-        ask(
-            f"This Bash command can write {target}, a protected file (quality gates, "
-            "instructions, settings, CI or this guard). Nery decides every change to it."
-        )
+        ask(f"This Bash command can write {target}, a protected file ({GATES}). Nery decides.")
     if bash_rewrites_tree(tokens):
-        ask(
-            "This Bash command can rewrite every file in the tree, protected files included "
-            "(quality gates, instructions, settings, CI or this guard). Nery decides."
-        )
+        ask(f"This Bash command can rewrite every file, protected ones included ({GATES}).")
     sys.exit(0)
 
 
-def main() -> None:
+def main() -> NoReturn:
     """Read the hook input and decide."""
     try:
-        data = json.load(sys.stdin)
+        data = parse_json(sys.stdin.read())
     except (ValueError, OSError):
         block("could not read the hook input as JSON, so the call is blocked.")
-    if not isinstance(data, dict):
+    if not isinstance(data, JsonObject):
         block("the hook input is not a JSON object, so the call is blocked.")
     tool = data.get("tool_name")
     tool_input = data.get("tool_input")
-    if not isinstance(tool, str) or not isinstance(tool_input, dict):
+    if not isinstance(tool, str) or not isinstance(tool_input, JsonObject):
         block("the hook input has no tool_name or tool_input, so the call is blocked.")
     root = os.environ.get("CLAUDE_PROJECT_DIR") or str(data.get("cwd") or "")
     if tool == "Bash":
@@ -253,17 +285,10 @@ def main() -> None:
     rel = relative(path, root) if root else None
 
     if rel is not None and (rel in PROTECTED or rel.startswith(PROTECTED_DIRS)):
-        ask(
-            f"{rel} is a protected file (quality gates, instructions, settings, CI or this guard). "
-            "Nery decides every change to it."
-        )
+        ask(f"{rel} is a protected file ({GATES}). Nery decides every change to it.")
     count = added_suppressions(tool, tool_input, path)
     if count > 0:
-        ask(
-            f"This edit adds {count} inline suppression(s) (noqa, type: ignore, biome-ignore, "
-            f"ts-ignore, shellcheck disable or similar) to {rel or path}. "
-            "Nery decides every suppression."
-        )
+        ask(f"This edit adds {count} suppression(s) ({KINDS}) to {rel or path}. Nery decides.")
     sys.exit(0)
 
 
