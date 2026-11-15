@@ -1,0 +1,25 @@
+{
+  "hooks": {
+    "SubagentStart": [
+      {
+        "matcher": "<agent-name>",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"${CLAUDE_PROJECT_DIR}/.claude/hooks/<script>\""
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"${CLAUDE_PROJECT_DIR}/.claude/hooks/<script>\""
+          }
+        ]
+      }
+    ]
+  }
+}
