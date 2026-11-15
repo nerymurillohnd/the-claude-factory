@@ -13,6 +13,7 @@
     ],
     "SubagentStop": [
       {
+        "matcher": "<agent-name>",
         "hooks": [
           {
             "type": "command",

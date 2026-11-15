@@ -37,6 +37,24 @@ set -euo pipefail
 set -eu
 ```
 
+- On an event that can block, a hook that is not a gate must not exit 2 by accident, and `sh` has no `ERR` trap: `dash` exits 2 both on a failing `grep` under `set -e` and on an unset variable under `set -u` (observed). Run the logic in a subshell and map 2 to 1:
+
+  ```sh
+  #!/usr/bin/env sh
+  set -eu
+  main() {
+    : # the hook's logic
+  }
+  set +e
+  (
+    set -e
+    main "$@"
+  )
+  status=$?
+  [ "${status}" -eq 2 ] && status=1
+  exit "${status}"
+  ```
+
 **Complex or deterministic logic**: many checks, branching, state. Import only the standard library.
 
 ```python

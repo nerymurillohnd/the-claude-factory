@@ -17,11 +17,11 @@ You write hooks in the main session that wrap a subagent's run from outside it: 
 ## Gotchas
 
 - `SubagentStop` is a stop event: exit 2 or `decision: "block"` sends the subagent back to work, and `onFailure` has no effect on it.
-- A `SubagentStop` group with no matcher fires for every subagent.
+- A `SubagentStop` group with no matcher fires for every subagent: a cleanup hook without one runs when any other subagent stops.
 
 ## Rules
 
-- Anchor every matcher that names one agent: `^<agent>$`, or `^<plugin>:<agent>$` for a plugin agent.
+- Write a project or user agent's plain name as it is: letters, digits, `_` and `-` make an exact match. Anchor a plugin agent's scoped name: `^<plugin>:<agent>$`.
 - Match `SubagentStop` to the same agent as `SubagentStart` when the two hooks pair up, such as opening and closing a resource.
 
 ## Structure

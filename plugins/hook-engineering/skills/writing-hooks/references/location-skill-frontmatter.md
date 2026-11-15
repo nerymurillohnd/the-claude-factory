@@ -24,6 +24,7 @@ You write a hook that belongs to one skill: dormant until the skill is used, the
 
 ## Rules
 
+- Add `once: true` only to a hook that must run a single time, such as a one-time setup; without it the hook keeps running for the rest of the session.
 - Put a hook here only when it must start with the skill; a hook that must run in every session belongs in settings or `hooks/hooks.json`.
 - In a plugin skill, verify in step 7 that the script path resolves (`/hooks`, then the debug log) before you rely on a placeholder.
 - Quote the YAML value of a shell-form command in single quotes, so the inner double quotes reach the shell.

@@ -7,5 +7,4 @@ hooks:
       hooks:
         - type: command
           command: '"${CLAUDE_PROJECT_DIR}/<path>/<script>"'
-          once: true
 ---

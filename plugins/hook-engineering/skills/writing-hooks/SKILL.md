@@ -183,6 +183,7 @@ The MCP locates and maps; the downloaded page is where sections are read; only t
       ```
 
     - Read each hit's whole entry, from its version line to the next.
+    - If no hit has a version line above it, the page no longer writes versions as `**X.Y.Z**`: map its headings with the map command of step 4.4, change the version pattern to match, and run the search again.
     - A field the docs mark with a minimum version ("Requires Claude Code v2.1.295 or later") is checked against that version too.
     - If neither has a hit, say the version check could not be done for that term.
 
