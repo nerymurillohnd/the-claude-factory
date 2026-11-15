@@ -24,4 +24,4 @@ paths:
 
 ## Before a commit
 
-- Run the mod and hook tests of each changed plugin before each commit.
+- Run the mod and hook tests of each changed plugin before each commit: `npm run test:plugins` runs every plugin's hook tests with the plain `python3` and `node` users have, and `npm run validate:mods` runs the mods' tests.

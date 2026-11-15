@@ -100,4 +100,5 @@ Run everything to do with plugins mainly through Claude Code CLI commands.
 - In the cloud, test a plugin's working copy with `--plugin-dir`: the loaded plugins are `@synced` copies.
 - In the cloud, save memory in the checkout's `.claude/memory/`, use the GitHub MCP tools, and never create tags or Releases.
 - On Nery's machine, report a mismatch between `node --version` and `.nvmrc` before maintainer work.
+- Everywhere, report a mismatch between `claude --version` and `CLAUDE_CODE_VERSION` in `.github/actions/setup/action.yml` before maintainer work: CI pins the Claude Code build so it runs the checks the maintainers run, and the pin moves by hand with each upgrade.
 - Everywhere, push, open a pull request or run a workflow only with Nery's explicit authorization.
