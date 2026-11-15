@@ -1,6 +1,7 @@
 {
   "include": [
-    "plugins"
+    "plugins",
+    ".claude/hooks"
   ],
   "exclude": [
     "**/node_modules",

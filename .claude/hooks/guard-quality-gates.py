@@ -7,7 +7,8 @@ Write or NotebookEdit call:
   configuration, the project instructions and settings, the CI workflows, or
   this guard itself;
 - adds an inline suppression (noqa, type: ignore, biome-ignore, ts-ignore,
-  shellcheck disable and similar) beyond what the file already had.
+  shellcheck disable and similar): a line holding one that the text it
+  replaces didn't have, so swapping one suppression for another counts too.
 
 It stays silent otherwise, so the normal permission flow decides. Input it
 cannot read blocks the call (exit 2), because a guard must fail closed.
@@ -15,13 +16,15 @@ cannot read blocks the call (exit 2), because a guard must fail closed.
 
 from __future__ import annotations
 
+from collections import Counter
 import json
 import os
 from pathlib import Path, PurePosixPath
 import re
 import sys
 
-PROTECTED = (
+# relative() folds case, so these are compared folded too.
+PROTECTED_NAMES = (
     "ruff.toml",
     ".shellcheckrc",
     "biome.jsonc",
@@ -37,10 +40,8 @@ PROTECTED = (
     ".claude/settings.json",
     ".claude/settings.local.json",
 )
-PROTECTED_DIRS = (
-    ".github/workflows/",
-    ".claude/hooks/",
-)
+PROTECTED = frozenset(name.casefold() for name in PROTECTED_NAMES)
+PROTECTED_DIRS = tuple(name.casefold() for name in (".github/workflows/", ".claude/hooks/"))
 SUPPRESSION = re.compile(
     r"#\s*noqa\b|#\s*ruff\s*:\s*noqa|#\s*type\s*:\s*ignore|#\s*pyright\s*:\s*(ignore|basic)"
     r"|#\s*mypy\s*:\s*ignore|#\s*nosec\b|#\s*pragma\s*:\s*no\s*cover|#\s*fmt\s*:\s*(off|skip)"
@@ -82,24 +83,50 @@ def relative(file_path: str, root: str) -> str | None:
     return rel.as_posix().casefold()
 
 
-def count(text: object) -> int:
-    """Count suppression markers in a string."""
-    return len(SUPPRESSION.findall(text)) if isinstance(text, str) else 0
+def markers(text: object) -> Counter[str]:
+    """Return each line that holds a suppression marker, stripped, with how often it occurs."""
+    if not isinstance(text, str):
+        return Counter()
+    return Counter(line.strip() for line in text.splitlines() if SUPPRESSION.search(line))
+
+
+def added(after: object, before: object) -> int:
+    """Count the suppression lines in after that before didn't have."""
+    return sum((markers(after) - markers(before)).values())
+
+
+def cell_source(path: str, cell_id: object) -> str:
+    """Return the current source of a notebook cell, or '' when it can't be read."""
+    try:
+        notebook: object = json.loads(Path(path).read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return ""
+    cells = notebook.get("cells") if isinstance(notebook, dict) else None
+    for cell in cells if isinstance(cells, list) else []:
+        if isinstance(cell, dict) and cell.get("id") == cell_id:
+            source = cell.get("source")
+            if isinstance(source, list):
+                return "".join(part for part in source if isinstance(part, str))
+            return source if isinstance(source, str) else ""
+    return ""
 
 
 def added_suppressions(tool: str, tool_input: dict[str, object], path: str) -> int:
-    """Return how many suppression markers the call adds."""
+    """Return how many suppression lines the call adds."""
     if tool == "Edit":
-        return count(tool_input.get("new_string")) - count(tool_input.get("old_string"))
+        return added(tool_input.get("new_string"), tool_input.get("old_string"))
     if tool == "Write":
         before = ""
         try:
             before = Path(path).read_text(encoding="utf-8", errors="replace")
         except OSError:
             before = ""
-        return count(tool_input.get("content")) - count(before)
+        return added(tool_input.get("content"), before)
     if tool == "NotebookEdit":
-        return count(tool_input.get("new_source"))
+        # A new cell has no previous source; an edited cell is compared with its own.
+        inserting = tool_input.get("edit_mode") == "insert"
+        before = "" if inserting else cell_source(path, tool_input.get("cell_id"))
+        return added(tool_input.get("new_source"), before)
     return 0
 
 
