@@ -8,6 +8,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The
 
 ### Added
 
+- **work-lifecycle** 0.1.0 — a new plugin that plans multi-step work before anything changes and implements code test-first: `planning-before-execution` researches, asks about goal and context, writes a self-contained, verifiable plan for your approval and keeps Claude from finishing while a task lacks recorded evidence; `testing-before-implementation` records each failing and passing run against your project's own baseline.
 - **hook-engineering** 0.3.0 — the new `writing-hooks` skill writes a hook of any type, in a plugin, settings, a skill or a subagent, from the current official docs and changelog for your Claude Code version, and tests it with real inputs before handing it over.
 - **plugin-engineering** 0.3.0 — the new `plugin-testing-and-debugging` skill tests, troubleshoots and debugs plugins with the official CLI: it finds the cause behind a plugin that doesn't install, load or run, checks a plugin before you publish it, and writes, runs and gates plugin evals.
 
