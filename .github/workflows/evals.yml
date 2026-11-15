@@ -150,6 +150,17 @@ jobs:
           # that copy. The no-plugin arm never sees it.
           target="plugins/${PLUGIN}"
           if [[ -d ${target}/evals/_overlay ]]; then
+            # An overlay adds files and never replaces one the plugin ships, such as its .mcp.json.
+            overlay_files="$(find "${target}/evals/_overlay" -type f)" || {
+              echo "::error::can't list ${target}/evals/_overlay"
+              exit 1
+            }
+            while IFS= read -r file; do
+              if [[ -n ${file} && -e ${target}/${file#"${target}/evals/_overlay/"} ]]; then
+                echo "::error::${file} would replace a file the plugin ships"
+                exit 1
+              fi
+            done <<<"${overlay_files}"
             stage="${RUNNER_TEMP}/eval-target"
             if ! { rm -rf "${stage}" && mkdir -p "${stage}" &&
               cp -R "${target}" "${stage}/" &&
