@@ -75,23 +75,21 @@
 
 Do every task, area, phase and function through the skill this section designates for it.
 
-Use `plugin-engineering:cli-commands-guide`, which governs plugins and their commands, alongside that skill for all work on plugins or their commands.
-
-Before anything else, read the complete list of plugin commands and what each one does, and do no manual work a command already does.
-
 ### Plugins
 
-- When building a plugin, load and use `plugin-engineering:public-marketplace-dev`.
-- When running or scripting a plugin CLI command, load and use `plugin-engineering:cli-commands-guide`.
-- When testing or debugging a plugin, or reviewing it before publishing, load and use `plugin-engineering:plugin-testing-and-debugging`.
-- When creating or changing a mod, load and use `plugin-authoring`.
-- When writing, changing or debugging a hook, load and use `hook-engineering:hook-development`.
-- When writing a Workflow script, load and use `workflow-authoring`.
-- When auditing a skill, load and use `skill-diagnostics:skills-best-practices`.
-- When setting or bumping a plugin's version, or releasing and tagging it, load and use `plugin-releases`.
-- When renaming, removing or merging a plugin, load and use `plugin-catalog-changes`.
-- When drawing or changing a plugin's icon, load and use `plugin-icons`.
-- When writing or running a plugin's evals, load and use `plugin-evals:plugin-evals`: every run bills the owner.
+Use `plugin-engineering:cli-commands-guide`, which governs plugins and their commands, alongside the skill below for all work on plugins or their commands: read its complete list of plugin commands first, and do no manual work a command already does.
+
+- Use `plugin-engineering:public-marketplace-dev` to build a plugin.
+- Use `plugin-engineering:plugin-testing-and-debugging` to test, debug or review a plugin before publishing it.
+- Use `plugin-authoring` to create or change a mod.
+- Use `hook-engineering:writing-hooks` to write, rewrite or wire a Claude Code hook.
+- Use `hook-engineering:hook-development` to debug or audit a hook.
+- Use `workflow-authoring` to write a Workflow script.
+- Use `skill-diagnostics:skills-best-practices` to audit a skill.
+- Use `plugin-releases` to set or bump a plugin's version, or to release and tag it.
+- Use `plugin-catalog-changes` to rename, remove or merge a plugin.
+- Use `plugin-icons` to draw or change a plugin's icon.
+- Use `plugin-evals:plugin-evals` to write or run a plugin's evals; every run bills the owner.
 
 ### Code
 
@@ -103,21 +101,25 @@ These three skills govern writing code in their language, its style, and explori
 
 ### Maintenance
 
-- When starting a session, load and use `extended-memory:extended-memory`.
-- When researching Claude Code, load and use `anthropic-skills:cc-docs-research`.
-- When writing a README, CHANGELOG, license or policy document, load and use `docs-maintenance`.
-- When writing or changing CLAUDE.md or a rule, load and use `instruction-engineering:claude-md-and-rules`.
-- When changing settings, permissions or hook registration, load and use `update-config`.
-- When recording a decision or technical debt, load and use `project-maintainer:write-records`.
-- When ending a session with a handoff, load and use `project-maintainer:write-handoff`.
+These skills govern the project's upkeep: memory, research, documents, instructions, settings, records and handoffs. Load each one before its task and keep using it until the task ends.
+
+- Use `extended-memory:extended-memory` at the start of every session.
+- Use `anthropic-skills:cc-docs-research` to research Claude Code.
+- Use `docs-maintenance` to write a README, CHANGELOG, license or policy document.
+- Use `instruction-engineering:claude-md-and-rules` to write or change CLAUDE.md or a rule.
+- Use `update-config` to change settings, permissions or hook registration.
+- Use `project-maintainer:write-records` to record a decision or technical debt.
+- Use `project-maintainer:write-handoff` to end a session with a handoff.
 
 ### GitHub and CI
 
-- When opening or driving a pull request, load and use `github-operations:auto-pr-lifecycle`.
-- When reviewing a diff or a pull request, load and use `code-review`.
-- When reviewing pending changes for security, load and use `security-review`.
-- When auditing or fixing a GitHub Actions workflow, load and use `github-operations:claude-github-actions`.
-- When writing issue forms, templates, labels or Dependabot, load and use `github-operations:github-files-setup`.
+These skills govern pull requests, reviews, workflows and the repository's GitHub files. Load each one before its task and keep using it until the task ends.
+
+- Use `github-operations:auto-pr-lifecycle` to open or drive a pull request.
+- Use `code-review` to review a diff or a pull request.
+- Use `security-review` to review pending changes for security.
+- Use `github-operations:claude-github-actions` to audit or fix a GitHub Actions workflow.
+- Use `github-operations:github-files-setup` to write issue forms, templates, labels or Dependabot configuration.
 
 ## Working environments
 
