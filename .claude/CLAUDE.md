@@ -24,6 +24,7 @@
 
 - Run `nvm use` to switch to the Node 26 LTS that `.nvmrc` pins, with npm 12, before any npm command.
 - Run `uv sync --locked` to set up Python 3.15 and its dev dependencies before any Python script.
+- Run `npm run setup` in the cloud after a lockfile changes or with `node_modules/` or `.venv/` missing.
 
 **Formatting, linting and type checking**
 
@@ -108,13 +109,3 @@ Load each skill below before its task and keep using it until the task ends: tog
 - Use `security-review` to review pending changes for security.
 - Use `github-operations:claude-github-actions` to audit or fix a GitHub Actions workflow.
 - Use `github-operations:github-files-setup` to write issue forms, templates, labels or Dependabot configuration.
-
-## Working environments
-
-- Check `CLAUDE_CODE_REMOTE`: `true` is a cloud session; unset is Nery's machine.
-- Run `npm run setup` in the cloud after a lockfile changes or with `node_modules/` or `.venv/` missing.
-- Test a plugin's working copy in the cloud with `--plugin-dir`: the loaded plugins are `@synced` copies.
-- Save memory in the checkout's `.claude/memory/` in the cloud, use the GitHub MCP tools there, and never create tags or Releases from it.
-- Report a mismatch between `node --version` and `.nvmrc` on Nery's machine before maintainer work.
-- Report a mismatch between `claude --version` and `CLAUDE_CODE_VERSION` in `.github/actions/setup/action.yml` in every environment before maintainer work: CI pins the Claude Code build so it runs the checks the maintainers run, and the pin moves by hand with each upgrade.
-- Push, open a pull request or run a workflow only with Nery's explicit authorization.
