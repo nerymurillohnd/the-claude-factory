@@ -1,10 +1,10 @@
 ---
-status: accepted
+status: superseded
 date: 2026-11-15
 decision-makers:
   - "Nery Samuel Murillo"
 supersedes: none
-superseded-by: none
+superseded-by: ADR_2026-11-15_ci-runs-extra-eval-suites-with-one-arm
 ---
 
 # A plugin's loading evals live in their own eval directory, outside the quality suite

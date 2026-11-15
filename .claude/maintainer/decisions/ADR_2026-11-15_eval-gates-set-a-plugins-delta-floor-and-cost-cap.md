@@ -1,10 +1,10 @@
 ---
-status: accepted
+status: superseded
 date: 2026-11-15
 decision-makers:
   - "Nery Samuel Murillo"
 supersedes: ADR_2026-11-15_evals-gate-on-a-per-plugin-delta-floor
-superseded-by: none
+superseded-by: ADR_2026-11-15_eval-gates-add-concurrency-and-a-sized-job-timeout
 ---
 
 # Eval gates set a plugin's own delta floor and cost cap
