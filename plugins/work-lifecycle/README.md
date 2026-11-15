@@ -85,8 +85,24 @@ npm install -g @anthropic-ai/claude-code@latest
 
 ### 🐍 python3
 
-The plan gate and the state file validator are Python scripts that use only the standard library. Your system may already have Python 3.12 or later. If `python3` is missing or older, the gate can't start and lets Claude stop, with only a hook error notice; the planning skill checks `python3 --version` first and tells you.
+The plan gate and the state file validator are Python scripts written for Python 3.12 or later, using only the standard library. Claude Code runs them as `python3`, so they use the first `python3` on your `PATH`. Install Python any way you like; just make sure that `python3 --version` prints 3.12 or later. If `python3` is missing or older, the gate can't start and lets Claude stop, with only a hook error notice; the planning skill checks `python3 --version` first and tells you.
 
+<details>
+<summary>🐍 <b>Official installer</b> — macOS</summary>
+
+Download the macOS installer for Python 3.12 or later from [python.org/downloads](https://www.python.org/downloads/) and run it.
+
+</details>
+<details>
+<summary>⚡ <b>uv</b> — macOS, Linux</summary>
+
+```bash
+uv python install 3.12 --default
+```
+
+`--default` also installs the `python3` and `python` commands; uv marks it experimental. Run `uv python dir --bin` to see the folder it installs them in, which must be on your `PATH`.
+
+</details>
 <details>
 <summary>🍺 <b>Homebrew</b> — macOS, Linux</summary>
 
@@ -112,7 +128,7 @@ sudo dnf install python3
 
 </details>
 
-An older release's package manager can install a version below 3.12; then use the [official installers](https://www.python.org/downloads/).
+An older release's package manager can install a version below 3.12; then use another method above, or build it from [python.org/downloads](https://www.python.org/downloads/).
 
 ### 🌿 git
 
@@ -266,7 +282,11 @@ Installed from Claude? In Claude Code (v2.1.273+, signed in with that claude.ai 
 > [!TIP]
 > Auto-update is off for this marketplace until you turn it on: `/plugin` → **Marketplaces** → **the-claude-factory** → **Enable auto-update**.
 
-Update python3 the way you installed it, for example with Homebrew, apt or dnf:
+Update python3 the way you installed it, for example with uv, Homebrew, apt or dnf:
+
+```bash
+uv python upgrade 3.12
+```
 
 ```bash
 brew upgrade python@3.12
@@ -386,10 +406,6 @@ No. It writes `.work-lifecycle/` with its own `.gitignore` that holds `*`, so gi
 
 See [CHANGELOG.md](./CHANGELOG.md) for every release.
 
-## 🙏 Credits
-
-Inspired by the _writing-plans_ and _test-driven-development_ skills of [Superpowers](https://github.com/obra/superpowers) by Jesse Vincent (MIT License, Copyright (c) 2025 Jesse Vincent). The ideas are adapted and rewritten from scratch; this plugin includes no Superpowers text.
-
 ## 📄 License
 
-[MIT](./LICENSE) © Nery Murillo. Not affiliated with or endorsed by Jesse Vincent, the author of _Superpowers_. Not affiliated with or endorsed by Anthropic. _Claude_ and _Claude Code_ are trademarks of Anthropic.
+[MIT](./LICENSE) © Nery Murillo. Not affiliated with or endorsed by Anthropic. _Claude_ and _Claude Code_ are trademarks of Anthropic.
