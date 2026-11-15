@@ -8,6 +8,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ### Added
 
+- `plugin-testing-and-debugging`, a new skill that tests, troubleshoots and debugs Claude Code plugins with the official CLI. It finds the stage and the documented cause behind a plugin error, or behind a plugin that doesn't install, load or run, and checks every place the same cause reaches. It runs a check before you publish, and writes, runs and gates plugin evals, with eval case templates and a script that fails a CI job when the plugin stops helping. It also says what loads in cloud sessions, project threads, Claude on the web, desktop and mobile, and the Agent SDK.
 - Links to this README, the issue forms and the marketplace's privacy policy, which Anthropic's plugin directory shows on the plugin's page. Claude Code ignores these fields when it loads the plugin, so nothing changes in how it works.
 
 ## [0.2.3] - 2026-11-09
