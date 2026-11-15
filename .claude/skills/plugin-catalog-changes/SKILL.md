@@ -48,7 +48,7 @@ From code.claude.com/docs/en/plugins/publish (Rename or remove a plugin) and hos
 1. Choose `<new>`: kebab-case, not in `plugins`, not a key of `renames`, and no `plugins/<new>/` folder yet.
 2. `git mv plugins/<old> plugins/<new>`, then change `name` in `plugin.json`, the marketplace entry's `name` and `source` (`./plugins/<new>`), any URL in `plugin.json` that contains `<old>`, and every other live use step 2 of Steps for every case found.
 3. Add `"<old>": "<new>"` to `renames`.
-4. Bump the plugin as a breaking change through the `plugin-versioning` skill (Minor in `0.x`, Major after). Its changelog entry starts with `**Breaking:**`, maps each old command to the new one, and tells users to run `/plugin install <new>@the-claude-factory` once.
+4. Bump the plugin as a breaking change through the `plugin-releases` skill (Minor in `0.x`, Major after). Its changelog entry starts with `**Breaking:**`, maps each old command to the new one, and tells users to run `/plugin install <new>@the-claude-factory` once.
 5. Update the documents with the `docs-maintenance` skill: every command and name in the plugin's `README.md`, its catalog row in the root `README.md`, and the rename's line in the root `CHANGELOG.md`.
 6. With the owner's authorization, run `npm run labels:sync -- --apply` so the `plugin: <new>` label exists; the old label stays.
 
@@ -63,7 +63,7 @@ From code.claude.com/docs/en/plugins/publish (Rename or remove a plugin) and hos
 1. Move the components into `plugins/<target>/`, check every moved symlink, then remove `<old>`'s entry and folder.
 2. Compare the `userConfig` keys of both plugins: Claude Code moves `<old>`'s saved options to `<target>`, so a key that means something else in `<target>` is a breaking change to resolve first.
 3. Add `"<old>": "<target>"` to `renames`.
-4. Bump `<target>` through the `plugin-versioning` skill (at least Minor). Its changelog maps each old command to the new one and tells users to run `/plugin install <target>@the-claude-factory` once.
+4. Bump `<target>` through the `plugin-releases` skill (at least Minor). Its changelog maps each old command to the new one and tells users to run `/plugin install <target>@the-claude-factory` once.
 5. Update the documents with the `docs-maintenance` skill: `<target>`'s `README.md` for the components it gained, `<old>`'s removal from the root `README.md` catalog and from `PRIVACY.md`, and the merge's line in the root `CHANGELOG.md`.
 6. After the release, run After the release and confirm `claude plugin list --json` shows `<target>` (see Version notes).
 

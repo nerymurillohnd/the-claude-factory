@@ -50,7 +50,7 @@ Never use an AI image generator or a raster file as a source: the icon could not
    Read the images yourself before sending them, and fix a glyph that blurs at 32 px or looks like a sibling at 48 px.
 5. **Declare it** in `plugin.json` as `"icon": "./.claude-plugin/icon.png"`, with the three listing URLs in the same order as the other manifests.
 6. **Check it**: `npm run check:consistency -- --offline` reports no PC-09 or PC-10 for the plugin, and `claude plugin validate --strict --profile directory plugins/<plugin>` passes.
-7. **Commit** the source (maintainer scope, no pull request) and the plugin's files separately. The icon and the declaration are part of the plugin's next version: version it with the `plugin-versioning` skill; for a new plugin they ship in its `0.1.0`.
+7. **Commit** the source (maintainer scope, no pull request) and the plugin's files separately. The icon and the declaration are part of the plugin's next version: version it with the `plugin-releases` skill; for a new plugin they ship in its `0.1.0`.
 
 ## Other icon tasks
 

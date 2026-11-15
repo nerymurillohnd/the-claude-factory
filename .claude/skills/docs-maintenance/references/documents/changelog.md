@@ -59,7 +59,7 @@ This repository:
 - `## [Unreleased]` is empty on `main`.
 - The set of version headings equals the set of `<name>--v<x.y.z>` tags: no missing, no extra.
 - Compare and tag links point at the `<name>--v<x.y.z>` tags.
-- Bump levels follow the `plugin-versioning` skill; during `0.x` a breaking change takes a minor bump.
+- Bump levels follow the `plugin-releases` skill; during `0.x` a breaking change takes a minor bump.
 - Write plain English in short sentences, for users, many of whom aren't native speakers: say what changes for them, not how it was built. When a change alters nothing in how the plugin works, say "Nothing changes in how the plugin works".
 - A `### Security` entry leads with the CVE identifier when there is one, tells users to update to this version, and gives no detail that helps an attacker.
 - A `### Deprecated` entry names the feature, its replacement and the release that removes it, when they are known.

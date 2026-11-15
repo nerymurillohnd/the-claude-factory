@@ -12,7 +12,7 @@ paths:
 - Propose a new category to the owner when none fits, instead of stretching one.
 - Use the same category in `metadata.category` of `plugin.json`, the `marketplace.json` entry, the README badge and the root catalog row.
 - Copy each emoji and title exactly: the catalog headings, anchors and badges are built from them.
-- Change a published plugin's category with the `plugin-versioning` skill, because it changes `plugin.json`.
+- Change a published plugin's category with the `plugin-releases` skill, because it changes `plugin.json`.
 
 | id | Title | Scope |
 | :-- | :-- | :-- |

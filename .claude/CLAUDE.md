@@ -64,8 +64,7 @@ Run everything to do with plugins mainly through Claude Code CLI commands.
 - When writing, changing or debugging a hook, load and use `hook-engineering:hook-development`.
 - When writing a Workflow script, load and use `workflow-authoring`.
 - When auditing a skill, load and use `skill-diagnostics:skills-best-practices`.
-- When setting or bumping a plugin's version, load and use `plugin-versioning`.
-- When releasing and tagging a plugin, load and use `plugin-releases`.
+- When setting or bumping a plugin's version, or releasing and tagging it, load and use `plugin-releases`.
 - When renaming, removing or merging a plugin, load and use `plugin-catalog-changes`.
 - When drawing or changing a plugin's icon, load and use `plugin-icons`.
 - When writing or running a plugin's evals, load and use `plugin-evals:plugin-evals`, and follow `.claude/rules/plugins/evals.md`: every case bills the owner.

@@ -2,7 +2,7 @@
 
 This file is part of the docs-maintenance skill. Follow `../governance.md` for the owner's values, the checks and the conventions, and write each document from its procedure in `../documents/`. Numbered steps run in order.
 
-A directory appears under `plugins/` with its `plugin.json`, and is listed in `marketplace.json`. Its first version is set by the `plugin-versioning` skill.
+A directory appears under `plugins/` with its `plugin.json`, and is listed in `marketplace.json`. Its first version is set by the `plugin-releases` skill.
 
 Before step 1, run `claude plugin validate plugins/<plugin> --strict` and `claude plugin validate . --strict`, and fix what they report.
 
