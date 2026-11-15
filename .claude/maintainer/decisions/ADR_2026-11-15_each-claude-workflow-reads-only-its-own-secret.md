@@ -1,10 +1,10 @@
 ---
-status: accepted
+status: superseded
 date: 2026-11-15
 decision-makers:
   - "Nery Samuel Murillo"
 supersedes: none
-superseded-by: none
+superseded-by: ADR_2026-11-15_remove-the-claude-code-action-workflows
 ---
 
 # Each Claude workflow reads only its own credential secret, and check:consistency enforces it
