@@ -83,6 +83,7 @@ on:
 """
 
 
+PC14 = "PC-14 plugins/demo/evals/{case}: needs one effort tag (low, medium, high); has {found}"
 PC13 = "PC-13 .github/workflows/{path}: reads secrets.{name}, which only {owners} may read"
 EVALS_WITH_GUARD = """\
 env:
@@ -305,12 +306,41 @@ class ChecksTest(unittest.TestCase):
         )
         self.assertEqual(found, [expected])
 
-    def test_pc12_skips_a_repository_without_the_evals_workflow(self) -> None:
-        """Without evals.yml there is nothing to keep in step."""
+    def test_pc12_flags_a_suite_when_the_evals_workflow_is_missing(self) -> None:
+        """Without evals.yml no suite ever runs, so a plugin with a suite is a finding."""
         with tempfile.TemporaryDirectory() as tmp:
             f = Fixture(Path(tmp))
             f.m.write("plugins/demo/evals/case/prompt.md", "---\ntags: [effort-low]\n---\n\nHi.\n")
-            self.assertEqual(f.ids(offline=True), [])
+            found = [str(x) for x in check(f.m.root, offline=True)]
+        expected = "PC-12 .github/workflows/evals.yml: plugins/demo has an eval suite but no"
+        self.assertEqual(found, [f"{expected} `plugins/demo/**` path"])
+
+    def test_pc14_each_case_has_one_valid_effort_tag(self) -> None:
+        """A case with no effort tag, a misspelled one or two runs in no CI group, unseen."""
+        with tempfile.TemporaryDirectory() as tmp:
+            f = Fixture(Path(tmp))
+            f.m.write(
+                ".github/workflows/evals.yml",
+                EVALS_WORKFLOW.format(paths="      - plugins/demo/**\n"),
+            )
+            cases = {
+                "none/prompt.md": "---\ntags: [trigger]\n---\n\nHi.\n",
+                "typo/prompt.md": "---\ntags: [effort-hgh]\n---\n\nHi.\n",
+                "two/prompt.md": "---\ntags: [effort-low, effort-high]\n---\n\nHi.\n",
+                "block/prompt.md": "---\ntags:\n  - trigger\n  - effort-low\n---\n\nHi.\n",
+                "yaml/case.yaml": 'schema_version: "1.1"\nname: yaml\ntags: [effort-medium]\n',
+            }
+            for path, text in cases.items():
+                f.m.write(f"plugins/demo/evals/{path}", text)
+            found = sorted(str(x) for x in check(f.m.root, offline=True))
+        self.assertEqual(
+            found,
+            [
+                PC14.format(case="none", found="none"),
+                PC14.format(case="two", found="effort-low, effort-high"),
+                PC14.format(case="typo", found="effort-hgh"),
+            ],
+        )
 
     def test_pc05_unreleased_notes_on_main(self) -> None:
         """On main, [Unreleased] holds no notes."""

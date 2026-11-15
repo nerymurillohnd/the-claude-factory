@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 from pathlib import Path
 import sys
 from typing import TYPE_CHECKING, TypeGuard
@@ -52,10 +53,11 @@ def items(value: object) -> list[object]:
 
 
 def number(value: object) -> float | None:
-    """Return value as a float when it is a JSON number."""
+    """Return value as a float when it is a finite JSON number; NaN compares as nothing."""
     if isinstance(value, bool) or not isinstance(value, int | float):
         return None
-    return float(value)
+    result = float(value)
+    return result if math.isfinite(result) else None
 
 
 def run_problems(cases: list[object]) -> tuple[list[str], bool]:

@@ -54,6 +54,13 @@ class EvalGateTest(unittest.TestCase):
         self.assertEqual(code, 1)
         self.assertIn("meanDelta 0.1 is below 0.2", out)
 
+    def test_nan_mean_delta_fails(self) -> None:
+        """NaN compares false against any minimum, so it counts as no meanDelta."""
+        doc = _result(aggregates={"overallScore": 1.0, "meanDelta": float("nan")})
+        code, out = self._run(doc, "--min-mean-delta", "0.2")
+        self.assertEqual(code, 1)
+        self.assertIn("no meanDelta", out)
+
     def test_partial_result_is_not_comparable(self) -> None:
         """A run stopped by the cost ceiling is left out of the gate."""
         doc = _result(partial=True, partialReason="cost ceiling")

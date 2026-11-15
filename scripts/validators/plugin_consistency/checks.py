@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Marketplace, manifest, changelog and workflow checks (PC-01 to PC-05, PC-12, PC-13)."""
+"""Marketplace, manifest, changelog and workflow checks (PC-01 to PC-05, PC-12 to PC-14)."""
 
 from __future__ import annotations
 
@@ -17,10 +17,8 @@ from release.release_tools.repo import (
     remote_tags,
     version,
 )
-from ruamel.yaml import YAML
-from ruamel.yaml.comments import CommentedMap, CommentedSeq
-from ruamel.yaml.error import YAMLError
 
+from validators.plugin_consistency.evals import eval_findings
 from validators.plugin_consistency.listing import icon_findings, url_findings
 from validators.plugin_consistency.model import Finding
 from validators.plugin_consistency.readme import catalog_findings, readme_findings
@@ -100,41 +98,6 @@ def _unreleased(root: Path, *, main: bool) -> Iterator[Finding]:
             yield Finding("PC-05", path, "[Unreleased] has notes on main")
 
 
-EVALS_WORKFLOW = ".github/workflows/evals.yml"
-
-
-def _pull_request_paths(text: str) -> set[str]:
-    """Return the `paths` filter of evals.yml's pull_request trigger; never paths-ignore."""
-    try:
-        workflow = YAML(typ="rt").load(text)
-    except YAMLError:
-        return set()
-    if not isinstance(workflow, CommentedMap):
-        return set()
-    # YAML 1.1 parsers read the bare key `on` as true.
-    triggers = workflow.get("on", workflow.get(True))
-    pull_request = triggers.get("pull_request") if isinstance(triggers, CommentedMap) else None
-    paths = pull_request.get("paths") if isinstance(pull_request, CommentedMap) else None
-    if not isinstance(paths, CommentedSeq):
-        return set()
-    return {path for path in paths if isinstance(path, str)}
-
-
-def _eval_paths(root: Path) -> Iterator[Finding]:
-    """PC-12: each listed plugin with an evals/ suite is a `paths` entry that triggers evals.yml."""
-    workflow = root / EVALS_WORKFLOW
-    if not workflow.is_file():
-        return
-    listed = _pull_request_paths(workflow.read_text(encoding="utf-8"))
-    for entry in entries(root):
-        name = str(entry.get("name", ""))
-        suite = root / "plugins" / name / "evals"
-        has_cases = any(suite.glob("*/prompt.md")) or any(suite.glob("*/case.yaml"))
-        if has_cases and f"plugins/{name}/**" not in listed:
-            message = f"plugins/{name} has an eval suite but no `plugins/{name}/**` path"
-            yield Finding("PC-12", EVALS_WORKFLOW, message)
-
-
 WORKFLOWS = ".github/workflows"
 # Each Claude credential secret and the only workflows that may read it: the API key bills the
 # Claude Console account, the OAuth token the owner's subscription.
@@ -172,7 +135,7 @@ def check(
     if not offline:
         findings += _tags(root, remote_tags(root))
     findings += _unreleased(root, main=main)
-    findings += _eval_paths(root)
+    findings += eval_findings(root)
     findings += _secret_owners(root)
     findings += readme_findings(root)
     findings += catalog_findings(root)

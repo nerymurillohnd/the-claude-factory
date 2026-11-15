@@ -108,12 +108,14 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      # A group with no case tagged for it would end with "No eval cases found" (exit 1).
+      # A group with no case tagged for it would end with "No eval cases found" (exit 1). Tags may
+      # be a flow list (`tags: [a, effort-low]`) or a block list (`- effort-low`); Validate's PC-14
+      # makes every case carry exactly one known effort tag, so no case falls outside every group.
       - id: cases
         name: Cases tagged effort-${{ matrix.effort }}
         run: |
           set -euo pipefail
-          count="$(grep -lE "^tags:.*\beffort-${EFFORT}\b" plugins/"${PLUGIN}"/evals/*/prompt.md plugins/"${PLUGIN}"/evals/*/case.yaml 2>/dev/null | wc -l || true)"
+          count="$(grep -lE "^tags:.*\beffort-${EFFORT}\b|^[[:space:]]*-[[:space:]]*['\"]?effort-${EFFORT}['\"]?[[:space:]]*$" plugins/"${PLUGIN}"/evals/*/prompt.md plugins/"${PLUGIN}"/evals/*/case.yaml 2>/dev/null | wc -l || true)"
           echo "${count} case(s) tagged effort-${EFFORT}"
           echo "count=${count}" >>"${GITHUB_OUTPUT}"
       - if: steps.cases.outputs.count != '0'
