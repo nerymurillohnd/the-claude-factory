@@ -1,10 +1,10 @@
 ---
-status: accepted
+status: superseded
 date: 2026-11-15
 decision-makers:
   - "Nery Samuel Murillo"
 supersedes: ADR_2026-11-13_checks-run-fast-locally-and-in-full-in-ci
-superseded-by: none
+superseded-by: ADR_2026-11-15_validate-gates-merges-on-passing-checks-with-consistency-as-main-will-be
 ---
 
 # Validate gates every merge on the checks that pass today, and reports the checks the debt holds back
