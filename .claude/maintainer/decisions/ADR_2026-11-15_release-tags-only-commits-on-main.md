@@ -1,10 +1,10 @@
 ---
-status: accepted
+status: superseded
 date: 2026-11-15
 decision-makers:
   - "Nery Samuel Murillo"
 supersedes: ADR_2026-11-15_validate-calls-the-reusable-release-workflow
-superseded-by: none
+superseded-by: ADR_2026-11-15_validate-checks-a-pull-request-as-main-will-be
 ---
 
 # Validate calls the reusable release.yml, which tags only commits on main
