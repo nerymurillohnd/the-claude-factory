@@ -24,7 +24,7 @@ These are the facts that most often turn a reasonable guess into a wrong answer.
 
 **Loading and copies**
 
-- `--plugin-dir` loads the plugin in place. An install from a marketplace loads a copy under `~/.claude/plugins/cache/<marketplace>/<plugin>/<version>/`, and nothing outside the plugin directory is copied. "Works with `--plugin-dir`, breaks after install" is almost always a path that reaches outside the plugin (`../shared`) or a source-only file. Paths that escape the plugin root are rejected with `path escapes plugin directory`.
+- `--plugin-dir` loads the plugin in place. An install from a marketplace loads a copy under `~/.claude/plugins/cache/<marketplace>/<plugin>/<version>/`, and nothing outside the plugin directory is copied. "Works with `--plugin-dir`, breaks after install" is almost always a path that reaches outside the plugin, such as a parent-folder reference, or a source-only file. Paths that escape the plugin root are rejected with `path escapes plugin directory`.
 - The manifest `version` wins over the marketplace entry's `version`, and both win over the commit SHA. A pinned `"version": "1.0.0"` keeps every user on the cached copy however many commits follow, and `claude plugin update` prints `<name> is already at the latest version`. Bump it, or leave `version` out of both the manifest and the entry to track commits.
 - Nothing on disk or in settings reaches a running session until `/reload-plugins` or a new session. A reload that adds or removes a plugin MCP server or the LSP tool is not applied until `/reload-plugins --force`.
 - A `--plugin-dir` plugin with the same manifest name replaces an installed one silently: `claude plugin list` still shows the installed row as enabled, and only the `--debug` log records the override.
@@ -94,7 +94,7 @@ The commands to run once all fixes are in, and what each prints when it worked.
 Run this before a plugin or marketplace goes to other people.
 
 1. `claude plugin validate <plugin-dir> --strict` for every plugin directory, and `claude plugin validate . --strict` from the marketplace root. Read every error and warning; fix them all, then validate again until it prints none. On 2.1.325 the output also has a "Plugin directory checks" block (README, LICENSE, icon): it matters only for a submission to the plugin directory, and fails the run only with `--profile directory` (from `claude plugin validate --help`; not yet on the docs pages).
-2. Check what validation does not read: a `SKILL.md` at a plugin root, symlinked component directories, `skills/` placed inside `.claude-plugin/`, hook matchers, files a script reads outside the plugin (`require('../shared')`), hook scripts that do nothing, and `disable-model-invocation: true` left on a skill Claude should invoke.
+2. Check what validation does not read: a `SKILL.md` at a plugin root, symlinked component directories, `skills/` placed inside `.claude-plugin/`, hook matchers, files a script reads outside the plugin, such as a `require` of a parent folder, hook scripts that do nothing, and `disable-model-invocation: true` left on a skill Claude should invoke.
 3. Review what a policy reviewer would reject. Among the checks in the policy review prompt of Anthropic's official marketplace (source: `anthropics/claude-plugins-official`, `.github/policy/prompt.md`, commit b5b01ac), beyond malware, deception, prompt injection and safety circumvention, a plugin fails when:
    - a `UserPromptSubmit`, `PreToolUse` or `PostToolUse` hook runs in every session, with no gate to projects that match the plugin's purpose;
    - a hook reads user data beyond the plugin's stated purpose;
@@ -123,7 +123,13 @@ Read `references/evals.md` before writing or running a suite; it holds every fie
 - `references/evals.md`: running, writing, grading, mocking, CI and reading results for `claude plugin eval`. Read it for any eval work.
 - `references/environments.md`: what loads in a cloud session, in a project's cloud thread, in Claude on the web, desktop and mobile, and in the Agent SDK, how to test and debug there, and where each fix goes. Read it whenever the session is not the user's own terminal.
 - `scripts/gate_eval_result.py`: `python3 scripts/gate_eval_result.py results.json --min-mean-delta 0.2` exits 0 when the gate passes, 1 when it fails, 2 when the result is not comparable (partial, judge graders skipped by the cost ceiling, or a run that errored or a mock aborted). Standard library only.
-- `assets/`: eval case and mock templates, and a CI step.
+- `assets/`: templates to copy into a plugin's `evals/` folder or its CI, each with `<...>` placeholders to fill:
+  - `assets/eval-case/prompt.md`: a case's prompt and its frontmatter.
+  - `assets/eval-case/case.yaml`: optional, for a seeded workspace; `assets/eval-case/fixture.sh` is its scaffold script, which runs only with `--scaffold`.
+  - `assets/eval-case/graders/result.md`: an `llm` rubric on the answer; `assets/eval-case/graders/skill-fired.md`: a `tool_used` grader that the skill fired.
+  - `assets/eval-negative-case/prompt.md`, with `assets/eval-negative-case/graders/answered.md` and `assets/eval-negative-case/graders/skill-not-fired.md`: a request near the skill's domain that it must leave alone.
+  - `assets/mock-tool.md`: a mock for a tool the case must not call for real.
+  - `assets/ci-evals.sh`: the CI step; it runs the suite and then `scripts/gate_eval_result.py`.
 
 ## Version and source check
 

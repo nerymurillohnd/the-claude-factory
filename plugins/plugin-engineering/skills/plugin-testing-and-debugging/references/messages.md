@@ -4,22 +4,22 @@ Read this file when the user has an exact message, an Errors-tab entry or a fail
 
 ## Contents
 
-- Command conventions
-- B1. Where `/plugin` runs
-- B2. Add a marketplace
-- B3. Install a plugin
-- B3b. Enable, disable, update, uninstall, configure
-- B4. Installed but not working
-  - Plugin does not appear or its skills do not show up
-  - Messages
-  - Hooks that do not load, fail, block or never fire
-  - MCP servers
-  - Language servers
-- B5. Build a plugin
-- Read the debug log
-- B6. Host a marketplace
-- B7. Blocked by the organization
-- Related pages
+- [Command conventions](#command-conventions)
+- [B1. Where `/plugin` runs](#b1-where-plugin-runs)
+- [B2. Add a marketplace](#b2-add-a-marketplace)
+- [B3. Install a plugin](#b3-install-a-plugin)
+- [B3b. Enable, disable, update, uninstall, configure](#b3b-enable-disable-update-uninstall-configure)
+- [B4. Installed but not working](#b4-installed-but-not-working)
+  - [Plugin does not appear or its skills do not show up](#plugin-does-not-appear-or-its-skills-do-not-show-up)
+  - [Messages](#messages)
+  - [Hooks that do not load, fail, block or never fire](#hooks-that-do-not-load-fail-block-or-never-fire)
+  - [MCP servers](#mcp-servers)
+  - [Language servers](#language-servers)
+- [B5. Build a plugin](#b5-build-a-plugin)
+- [Read the debug log](#read-the-debug-log)
+- [B6. Host a marketplace](#b6-host-a-marketplace)
+- [B7. Blocked by the organization](#b7-blocked-by-the-organization)
+- [Related pages](#related-pages)
 
 ## Command conventions
 
@@ -220,7 +220,7 @@ Many plugin causes are recorded only in the debug log: a `--plugin-dir` copy ove
 For the marketplace owner.
 
 - **Relative-path plugins fail in URL-based marketplaces**: installs fail with `its marketplace entry path does not stay inside the marketplace directory` and installed ones with `Plugin source path refused`, because a URL marketplace downloads only `marketplace.json`. Give each entry a fetchable source, e.g. `{ "name": "my-plugin", "source": { "source": "github", "repo": "owner/repo" } }`, or host the marketplace in a git repository so relative paths resolve.
-- **A root plugin's git submodule is empty after install**: since v2.1.295 only submodules that hold plugin files are fetched, judged from paths written in the plugin's configuration and files (not paths a script builds at runtime). Write the path out, such as `${CLAUDE_PLUGIN_ROOT}/vendor/tool/run.sh` in a hook command; then every submodule is fetched for that plugin.
+- **A root plugin's git submodule is empty after install**: since v2.1.295 only submodules that hold plugin files are fetched, judged from paths written in the plugin's configuration and files (not paths a script builds at runtime). Write the submodule's path out in full, starting with `${CLAUDE_PLUGIN_ROOT}`, in a hook command or another configuration file; then every submodule is fetched for that plugin.
 - **Marketplace validation errors** from `claude plugin validate .` in the marketplace folder (it also validates local-path entries and warns when an entry's `version` disagrees with the plugin's manifest; entry messages are prefixed `plugins[N] plugin.json →`):
   - Errors: `Duplicate plugin name "<name>" found in marketplace` (unique names); `Path contains "..": <path>` under `plugins[N].source` (no `..`); `Marketplace name cannot contain control or bidirectional-formatting characters` and the same for `Plugin name` (remove the character); `Claude Code cannot install plugins from marketplace "<name>". ...` and `Claude Code cannot install plugin "<name>". ...` (rename to the stated rule).
   - Warnings: `Marketplace has no plugins defined`; `No marketplace description provided`; `Plugin name "<name>" is not kebab-case` (the claude.ai sync requires lowercase, digits and hyphens); `Entry declares version "<a>" but <path>/plugin.json says "<b>"` (match `plugin.json`, which is authoritative at install); `Marketplace name "<name>" is reserved in Claude Desktop` (`org`, `org-provisioned`, `unknown` in any case); `Marketplace name "<name>" is not accepted by Claude Desktop` or the same for a plugin (at most 128 characters of letters, digits, `.`, `_`, `-`, starting with a letter or digit).

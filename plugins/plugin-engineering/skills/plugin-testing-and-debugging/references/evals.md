@@ -4,44 +4,44 @@ Read this file before writing, running, reading or gating on `claude plugin eval
 
 ## Contents
 
-- 1. What evals are for, and what they are not
-- 2. Before anything runs: cost and requirements
-- 3. How a run works
-  - The no-plugin baseline
-- 4. Create the first suite
-  - Read the first finding before changing anything
-- 5. Write and refine cases
-  - Write a case by hand
-  - prompt.md rules
-- 6. Choose graders
-  - Graders that give a stable signal
-  - Scoring against the baseline
-  - Another eval directory
-- 7. Fixtures and mocks
-  - Seed the workspace or the conversation
-  - Mock MCP servers
-  - Replay agent-mock answers
-- 8. Run evals
-  - Choose the target
-  - Grant tools
-  - Command options
-- 9. Run evals in CI
-- 10. Read the results
-  - HTML report
-  - JSON result
-- 11. What a run can reach
-  - Trust
-  - Isolation
-- 12. Eval suite reference
-  - prompt.md frontmatter
-  - case.yaml fields
-  - Grader frontmatter
-  - What a grader can look at
-  - Grader types
-  - Mock files
-  - Regex in `expect`
-- 13. Troubleshooting
-- 14. Related pages
+- [1. What evals are for, and what they are not](#1-what-evals-are-for-and-what-they-are-not)
+- [2. Before anything runs: cost and requirements](#2-before-anything-runs-cost-and-requirements)
+- [3. How a run works](#3-how-a-run-works)
+  - [The no-plugin baseline](#the-no-plugin-baseline)
+- [4. Create the first suite](#4-create-the-first-suite)
+  - [Read the first finding before changing anything](#read-the-first-finding-before-changing-anything)
+- [5. Write and refine cases](#5-write-and-refine-cases)
+  - [Write a case by hand](#write-a-case-by-hand)
+  - [prompt.md rules](#promptmd-rules)
+- [6. Choose graders](#6-choose-graders)
+  - [Graders that give a stable signal](#graders-that-give-a-stable-signal)
+  - [Scoring against the baseline](#scoring-against-the-baseline)
+  - [Another eval directory](#another-eval-directory)
+- [7. Fixtures and mocks](#7-fixtures-and-mocks)
+  - [Seed the workspace or the conversation](#seed-the-workspace-or-the-conversation)
+  - [Mock MCP servers](#mock-mcp-servers)
+  - [Replay agent-mock answers](#replay-agent-mock-answers)
+- [8. Run evals](#8-run-evals)
+  - [Choose the target](#choose-the-target)
+  - [Grant tools](#grant-tools)
+  - [Command options](#command-options)
+- [9. Run evals in CI](#9-run-evals-in-ci)
+- [10. Read the results](#10-read-the-results)
+  - [HTML report](#html-report)
+  - [JSON result](#json-result)
+- [11. What a run can reach](#11-what-a-run-can-reach)
+  - [Trust](#trust)
+  - [Isolation](#isolation)
+- [12. Eval suite reference](#12-eval-suite-reference)
+  - [prompt.md frontmatter](#promptmd-frontmatter)
+  - [case.yaml fields](#caseyaml-fields)
+  - [Grader frontmatter](#grader-frontmatter)
+  - [What a grader can look at](#what-a-grader-can-look-at)
+  - [Grader types](#grader-types)
+  - [Mock files](#mock-files)
+  - [Regex in `expect`](#regex-in-expect)
+- [13. Troubleshooting](#13-troubleshooting)
+- [14. Related pages](#14-related-pages)
 
 ## 1. What evals are for, and what they are not
 

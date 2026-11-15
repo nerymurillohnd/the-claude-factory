@@ -4,33 +4,33 @@ Read this file when a plugin did not load, loaded a different copy than expected
 
 ## Contents
 
-- A1. Find the stage the plugin reached
-  - Plugins and marketplaces not on disk at session start
-  - Read each stage with the commands
-  - Apply changes to the running session: `/reload-plugins`
-- A2. Find where a plugin came from
-  - Entry name and manifest name
-  - Plugins shared through a repository
-  - Skills-directory plugins blocked by managed settings
-  - Plugins synced from claude.ai
-- A3. Find where a plugin is enabled
-  - Disabled in user settings but still loads
-  - Enabled in an `--add-dir` directory but not loaded
-  - Enabled in project settings but not installed
-- A4. Find plugins on disk
-  - In-place and copied plugins
-  - Paths that escape the plugin directory
-  - Cleanup of previous versions
-  - Node.js package dependencies
-- A5. Versions and updates
-  - Version range: `engines["claude-code"]`
-  - How the version is computed
-  - Refresh before an install
-  - Auto-update
-  - When a command source re-runs
-- A6. Name conflicts
-  - Hooks when two enabled plugins share a name
-  - Keep a session-only plugin from loading
+- [A1. Find the stage the plugin reached](#a1-find-the-stage-the-plugin-reached)
+  - [Plugins and marketplaces not on disk at session start](#plugins-and-marketplaces-not-on-disk-at-session-start)
+  - [Read each stage with the commands](#read-each-stage-with-the-commands)
+  - [Apply changes to the running session: `/reload-plugins`](#apply-changes-to-the-running-session-reload-plugins)
+- [A2. Find where a plugin came from](#a2-find-where-a-plugin-came-from)
+  - [Entry name and manifest name](#entry-name-and-manifest-name)
+  - [Plugins shared through a repository](#plugins-shared-through-a-repository)
+  - [Skills-directory plugins blocked by managed settings](#skills-directory-plugins-blocked-by-managed-settings)
+  - [Plugins synced from claude.ai](#plugins-synced-from-claudeai)
+- [A3. Find where a plugin is enabled](#a3-find-where-a-plugin-is-enabled)
+  - [Disabled in user settings but still loads](#disabled-in-user-settings-but-still-loads)
+  - [Enabled in an `--add-dir` directory but not loaded](#enabled-in-an---add-dir-directory-but-not-loaded)
+  - [Enabled in project settings but not installed](#enabled-in-project-settings-but-not-installed)
+- [A4. Find plugins on disk](#a4-find-plugins-on-disk)
+  - [In-place and copied plugins](#in-place-and-copied-plugins)
+  - [Paths that escape the plugin directory](#paths-that-escape-the-plugin-directory)
+  - [Cleanup of previous versions](#cleanup-of-previous-versions)
+  - [Node.js package dependencies](#nodejs-package-dependencies)
+- [A5. Versions and updates](#a5-versions-and-updates)
+  - [Version range: `engines["claude-code"]`](#version-range-enginesclaude-code)
+  - [How the version is computed](#how-the-version-is-computed)
+  - [Refresh before an install](#refresh-before-an-install)
+  - [Auto-update](#auto-update)
+  - [When a command source re-runs](#when-a-command-source-re-runs)
+- [A6. Name conflicts](#a6-name-conflicts)
+  - [Hooks when two enabled plugins share a name](#hooks-when-two-enabled-plugins-share-a-name)
+  - [Keep a session-only plugin from loading](#keep-a-session-only-plugin-from-loading)
 
 Use this file when a plugin did not load, loaded a different copy than expected, or did not pick up an update. These are the rules Claude Code applies at session start and each time `/reload-plugins` runs.
 

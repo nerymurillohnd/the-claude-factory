@@ -4,14 +4,14 @@ Read this file before testing or debugging a plugin when the session may not be 
 
 ## Contents
 
-- 1. Find where you are
-- 2. Cloud session: what loads
-- 3. Project cloud thread: what loads
-- 4. Testing in a cloud session or thread
-- 5. Debugging in a cloud session or thread
-- 6. Where each fix goes
-- 7. Claude on the web, desktop and mobile
-- 8. Agent SDK
+- [1. Find where you are](#1-find-where-you-are)
+- [2. Cloud session: what loads](#2-cloud-session-what-loads)
+- [3. Project cloud thread: what loads](#3-project-cloud-thread-what-loads)
+- [4. Testing in a cloud session or thread](#4-testing-in-a-cloud-session-or-thread)
+- [5. Debugging in a cloud session or thread](#5-debugging-in-a-cloud-session-or-thread)
+- [6. Where each fix goes](#6-where-each-fix-goes)
+- [7. Claude on the web, desktop and mobile](#7-claude-on-the-web-desktop-and-mobile)
+- [8. Agent SDK](#8-agent-sdk)
 
 ## 1. Find where you are
 
