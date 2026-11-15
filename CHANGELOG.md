@@ -13,6 +13,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The
 
 ### Changed
 
+- **plugin-engineering** 0.3.1 — `plugin-testing-and-debugging` runs every no-cost eval check before a run that spends your usage, warns about `plugins` lists, real MCP servers and the Bash sandbox, and no longer shows a placeholder replaced by your first argument.
 - **hook-engineering** 0.2.6 — `hook-development` warns that `set -e` makes a Bash hook exit with the failing command's own code, which can block when `grep` or `jq` exits 2, and shows how to map every unexpected failure to the exit code the hook means.
 
 ### Fixed
