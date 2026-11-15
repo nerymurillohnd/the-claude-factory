@@ -12,3 +12,9 @@ rules:
   adhoc-packages:
     ignore:
       - action.yml
+  # claude.yml answers @claude mentions, which arrive only as issue_comment and review events. It
+  # checks out the default branch, never the pull request's head, and claude-code-action refuses
+  # bots and users without write access before Claude starts.
+  dangerous-triggers:
+    ignore:
+      - claude.yml

@@ -1,0 +1,60 @@
+name: Claude Code Review
+
+# Claude reviews each pull request with Anthropic's code-review plugin, following the "Run a skill"
+# example in https://code.claude.com/docs/en/github-actions. The plugin looks for bugs in the diff and
+# for breaches of CLAUDE.md and the rules, and leaves out what a linter or Validate already catches.
+# It posts inline comments on the pull request and skips drafts and pull requests it has already
+# reviewed. It authenticates with an API key through the ANTHROPIC_API_KEY secret of the `claude`
+# environment, and runs only when
+# the repository variable CLAUDE_CODE_REVIEW is `enabled`, so it stays off until that secret exists.
+
+on:
+  pull_request:
+    types: [opened, reopened, ready_for_review]
+
+permissions: {}
+
+concurrency:
+  group: claude-code-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+env:
+  # anthropics/claude-plugins-official publishes no tags, so the marketplace is pinned by commit.
+  MARKETPLACE_SHA: b5b01ac4f889fec0c4c6bb89f27ca7c8574473f6
+
+jobs:
+  review:
+    name: Review
+    # Dependabot's pull requests get no secrets, and the action refuses bots.
+    if: vars.CLAUDE_CODE_REVIEW == 'enabled' && github.event.pull_request.user.login != 'dependabot[bot]'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    # The secret lives in the `claude` environment, so only jobs that name it can read it.
+    environment: claude
+    # Read is enough for the job's own token: without a github_token input, the action trades the
+    # OIDC token for the Claude App token, which can write pull requests, issues and contents, and
+    # posts the review as claude[bot].
+    permissions:
+      contents: read # Claude reads the checked-out code
+      pull-requests: read # Claude reads the pull request and its diff
+      issues: read # Claude reads the pull request's conversation
+      id-token: write # the action's default GitHub App authentication, which posts the comments
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Official plugin marketplace at its pinned commit
+        run: |
+          set -euo pipefail
+          dir="${RUNNER_TEMP}/claude-plugins-official"
+          git clone -q --filter=blob:none https://github.com/anthropics/claude-plugins-official.git "${dir}"
+          git -C "${dir}" checkout -q "${MARKETPLACE_SHA}"
+      - uses: anthropics/claude-code-action@f3b070c88125d33dbae5653df5f143101d4ea9dc # v1.0.276
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          plugin_marketplaces: ${{ runner.temp }}/claude-plugins-official
+          plugins: code-review@claude-plugins-official
+          prompt: /code-review:code-review --comment ${{ github.repository }}/pull/${{ github.event.pull_request.number }}
+          # The action starts the inline-comment MCP server only when --allowedTools names it.
+          claude_args: --allowedTools "mcp__github_inline_comment__create_inline_comment"
