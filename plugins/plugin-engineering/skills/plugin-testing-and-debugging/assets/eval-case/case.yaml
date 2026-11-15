@@ -3,4 +3,4 @@ schema_version: "1.1"
 name: <case-directory-name>
 context:
   scaffold_script: fixture.sh
-  add_dirs: [resources]
+  # add_dirs: [resources]  # read-only folders inside this case directory; create each one before you list it
