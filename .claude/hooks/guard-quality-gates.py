@@ -107,7 +107,7 @@ def main() -> None:
     """Read the hook input and decide."""
     try:
         data = json.load(sys.stdin)
-    except ValueError, OSError:
+    except (ValueError, OSError):
         block("could not read the hook input as JSON, so the edit is blocked.")
     if not isinstance(data, dict):
         block("the hook input is not a JSON object, so the edit is blocked.")

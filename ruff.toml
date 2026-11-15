@@ -5,9 +5,10 @@ line-length = 100
 indent-width = 4
 
 # Maintainer Python, the release scripts included, runs on 3.15 through uv run, in release.yml too.
-# Plugin Python runs on any python3 from the floor up (3.12).
+# Plugin Python and this project's hook scripts run on any python3 from the floor up (3.12):
+# the hooks start through a bare `python3`, not uv.
 target-version = "py315"
-per-file-target-version = { "plugins/**/*.py" = "py312", ".claude/skills/**/*.py" = "py312" }
+per-file-target-version = { "plugins/**/*.py" = "py312", ".claude/skills/**/*.py" = "py312", ".claude/hooks/**/*.py" = "py312" }
 
 respect-gitignore = true
 force-exclude = true
