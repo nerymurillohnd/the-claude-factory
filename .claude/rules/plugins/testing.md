@@ -17,11 +17,11 @@ paths:
 ## Mods
 
 - Write tests for every mod in `plugins/<plugin>/tests/*.test.ts` or `*.test.tsx`, with a stub for every `$` call and no session, sign-in or network.
-- Run `claude plugin test plugins/<plugin>` on Claude Code v2.1.299 or later to run them.
+- Require Claude Code v2.1.299 or later for `claude plugin test`.
 - Run `claude plugin validate plugins/<plugin>` before opening a session to see what Claude Code reads from the hooks module.
 - Read the skip line in the transcript with `--plugin-dir`, or in `claude --debug` for an installed copy, when Claude Code skips a hook or refuses a mod.
 - Give every hook at a gating site its own `.catch`, and run `npm run validate:hooks-catch` to confirm it.
 
 ## Before a commit
 
-- Run the mod and hook tests of each changed plugin before each commit: `npm run test:plugins` runs every plugin's hook tests with the plain `python3` and `node` users have, and `npm run validate:mods` runs the mods' tests.
+- Run `npm run validate:mods` for the mods' tests and `npm run test:plugins`, which uses the plain `python3` and `node` users have, for every plugin's hook tests before each commit.
