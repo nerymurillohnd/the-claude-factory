@@ -8,6 +8,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The
 
 ### Added
 
+- **hook-engineering** 0.3.0 — the new `writing-hooks` skill writes a hook of any type, in a plugin, settings, a skill or a subagent, from the current official docs and changelog for your Claude Code version, and tests it with real inputs before handing it over.
 - **plugin-engineering** 0.3.0 — the new `plugin-testing-and-debugging` skill tests, troubleshoots and debugs plugins with the official CLI: it finds the cause behind a plugin that doesn't install, load or run, checks a plugin before you publish it, and writes, runs and gates plugin evals.
 
 ### Changed
