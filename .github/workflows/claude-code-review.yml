@@ -5,8 +5,8 @@ name: Claude Code Review
 # code-review plugin is not used here: it stops on a pull request Claude has already commented on, so
 # it can't review the later pushes. The review covers only what Validate's scripts can't see; the
 # prompt below sets that scope. It authenticates with the ANTHROPIC_API_KEY secret of the `claude`
-# environment, and runs only when the repository variable CLAUDE_CODE_REVIEW is `enabled`, so it
-# stays off until that secret exists.
+# environment. It runs only when the repository variable CLAUDE_CODE_REVIEW is `enabled`: the
+# variable, not the secret, turns it on and off.
 
 on:
   pull_request:

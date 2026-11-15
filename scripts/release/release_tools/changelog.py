@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Date a plugin's [Unreleased] changelog section as its release, or re-date it, and its links."""
+"""Date a plugin's [Unreleased] changelog section as its new version, and write its links."""
 
 from __future__ import annotations
 

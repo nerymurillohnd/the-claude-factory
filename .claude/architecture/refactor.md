@@ -168,7 +168,7 @@
 - Mod hooks modules (JavaScript) are outside `validate`; check gating handlers for error handling (`.catch`) yourself [E2]
 
 **Scripts**
-- `scripts/validators/skill-lint.py` — **Implemented** · Caller: `npm run lint:skills`; tests in `npm run test:scripts` · Deterministic checks on every skill folder (spec `.claude/maintainer/specs/skill-lint-spec.md`; rule `.claude/rules/skill-lint.md`). It replaces part of the four skill validators below
+- `scripts/validators/skill-lint.py` — **Implemented** · Caller: `npm run lint:skills`; tests in `npm run test:scripts` · Deterministic checks on every skill folder (spec `.claude/maintainer/specs/skill-lint-spec.md`; rule `.claude/rules/code-quality/skill-lint.md`). It replaces part of the four skill validators below
 - `scripts/validators/skill-frontmatter.py` — **Replaced by** skill-lint CO-01 (strict YAML 1.2 with ruamel.yaml, no duplicate keys, E1, NV-A2) for the check itself. Still **Pending**: blocking the write before `SKILL.md` is saved, through a PreToolUse hook, which a linter run after the edit cannot do
 - `scripts/validators/skill-names-consistency.py` — **Replaced by** skill-lint CO-02 · `name` equal to its folder for every `SKILL.md`, plugins and `.claude/skills` (NV-B5a)
 - `scripts/validators/skill-argument-placeholders.py` — **Pending** · Gap: no bare `$N` in a skill or command body that Claude Code would replace (NV-B5b). skill-lint CA-01 checks placeholders only inside `!` commands
@@ -176,7 +176,7 @@
 - `scripts/validators/mcp-json-schema.py` — **Pending** · Gap: unknown keys (lost silently at load) and duplicate keys (NV-B1, NV-B6)
 - `scripts/validators/lsp-json-schema.py` — **Pending** · Gap: every file-based `.lsp.json` (unknown keys, missing `command`, duplicate keys); native validates only inline `lspServers` (NV-B2, E6)
 - `scripts/validators/hooks-json-schema.py` — **Pending** · Gap: unknown keys in a handler or at top level (native passes, E7) and duplicate keys (caught by nothing, E12). Needs the schemas in `scripts/schemas/`, also **Pending**
-- Hook scripts — **Implemented** as a convention · `.claude/rules/hook-scripts.md`: Bash, Python or Node (`.mjs`) by complexity, env shebang, mode 100755, `set -euo pipefail`
+- Hook scripts — **Implemented** as a convention · `.claude/rules/code-quality/shell.md`: env shebang, `set -euo pipefail`, every unexpected failure mapped to the exit code the hook means (ADR_2026-11-15_bash-scripts-run-strict-and-map-hook-failures)
 - `scripts/generators/plugin-icons.mjs` — **Implemented** as `npm run icons:render` · Renders `scripts/generators/plugin-icons/<plugin>.svg` to `icon.png`. No command equivalent
 - `scripts/validators/plugin-icons.py` — **Replaced by** PC-09 and PC-10 in `check:consistency` · Gap: square PNG, 512–2048 px, under 2 MB, fixed path, SVG source present. Native only warns on a missing icon or icon path (E3, NV-B5e)
 - `scripts/checkers/fetch-github-mod.sh` — **Pending** · Caller: manual · Gap: prints the source tree of another marketplace's plugin for comparison without installing it (the CLI path writes settings and cache, E10)

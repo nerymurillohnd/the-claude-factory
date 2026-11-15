@@ -5,7 +5,7 @@ The rules for every documentation task, whatever the document. Read this file in
 ## What this skill doesn't decide
 
 - `plugins/<plugin>/.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json`, except two fields this skill keeps in line with its documents: `license` (the `license.md` procedure) and `privacyPolicyUrl` (the `privacy.md` procedure). The version a release gets, its change types and whether it is breaking: the `plugin-releases` and `plugin-catalog-changes` skills settle them before a document is written. When a document needs one of these decisions and none was made, stop and run the skill that makes it.
-- Commits, pull requests and releases, under the rules in `.claude/CLAUDE.md`.
+- Commits, pull requests and releases, under `.claude/CLAUDE.md`, the rules in `.claude/rules/` and the `plugin-releases` skill.
 
 ## Values only the owner can give
 
@@ -49,9 +49,9 @@ Leave out what it already knows: the template, its rules, how to format the docu
 
 ## Conventions that bind every document
 
-They are in `.claude/CLAUDE.md`. The ones that shape documents most often:
+They are in `.claude/CLAUDE.md` and the rules in `.claude/rules/`. The ones that shape documents most often:
 
-- Release dates follow the `changelog.md` procedure (Rules): UTC, on the day the tag and GitHub Release are created.
+- Release dates follow the `changelog.md` procedure (Rules): UTC, on the day the version is prepared, never changed afterwards.
 - The two surfaces are named **Claude Code** and **Claude**, and no other surface name is used.
 - Prerequisites, tools and minimum versions a plugin needs go in its README's Prerequisites section.
 - A change limited to a plugin's documentation needs no pull request, unless the owner asks for one.

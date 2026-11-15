@@ -38,7 +38,7 @@ Leave out formatting-only work, internal refactors with no observable effect, pl
 1. New plugin: copy the template to `plugins/<plugin>/CHANGELOG.md`, delete its instruction comment, and fill the values. "Initial release." stays under `## [Unreleased]`, with no dated version, until the release dates it (step 4).
 2. Each later change: write the notes under `## [Unreleased]`, under the type each change belongs to, in user language: what changes for the user, not how.
 3. A breaking change starts its line with `**Breaking:**`, under `### Changed` or `### Removed`, and says what changed, who is affected and the action they must take. A security fix is stated without details that help an attacker.
-4. At release, when the `plugin-releases` skill calls for it: rename `## [Unreleased]` to `## [X.Y.Z] - YYYY-MM-DD`, with the version from `plugin.json` and the UTC date the release gives, and add a new empty `## [Unreleased]` above it. Run `npm run release:changelog -- <plugin>` (`--date YYYY-MM-DD` when the release day is not today in UTC): it does this step and step 5, and exits 1 without changing the file when `## [Unreleased]` is empty. If `## [Unreleased]` is empty, stop and ask the owner what the version changes.
+4. Before the pull request is pushed for review, when the `plugin-releases` skill calls for it: rename `## [Unreleased]` to `## [X.Y.Z] - YYYY-MM-DD`, with the version from `plugin.json` and today's UTC date, and add a new empty `## [Unreleased]` above it. Run `npm run release:changelog -- <plugin>` (`--date YYYY-MM-DD` only to set another day): it does this step and step 5, and exits 1 without changing the file when `## [Unreleased]` is empty. If `## [Unreleased]` is empty, stop and ask the owner what the version changes.
 5. Update the link references at the bottom: `[Unreleased]` becomes `{{repositoryUrl}}/compare/<name>--v<newest>...HEAD`; each version links to its own release page, `{{repositoryUrl}}/releases/tag/<name>--v<version>`. Before the first release, `[Unreleased]` links to `{{repositoryUrl}}/commits/main/plugins/<name>`, as the template has it.
 6. Run the checks.
 
@@ -52,7 +52,7 @@ Official (Keep a Changelog):
 
 Keep a Changelog sets no time zone. The choice:
 
-- Date each release in UTC, on the day its tag and GitHub Release are created, never the day the bump is prepared. The release runs in CI, whose clock is UTC, and the readers are everywhere: in America/Tegucigalpa (UTC−6), anything after 18:00 is already the next day in UTC.
+- Date each version in UTC, on the day it is prepared, before its pull request is pushed, and never change that date afterwards. Its GitHub Release records the day it was published. Validate checks a pull request as `main` will be after the merge, so a version still under `## [Unreleased]` fails it. UTC because the readers are everywhere: in America/Tegucigalpa (UTC−6), anything after 18:00 is already the next day in UTC.
 
 This repository:
 
