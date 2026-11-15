@@ -28,7 +28,7 @@
 
 - Run `npx biome check --write <file>` to format and lint a TypeScript, JavaScript, JSON, YAML or Markdown file after each edit; on Markdown Claude reads as instructions, run `npx biome lint <file>` instead.
 - Run `ruff check --fix <file>`, then `ruff format <file>`, to lint and format a Python file after each edit.
-- Run `shfmt -w <file>`, then `shellcheck -a <file>`, to format and lint a shell script after each edit.
+- Run `shfmt -w <file>`, then `shellcheck <file>`, which takes its options from `SHELLCHECK_OPTS` and `.shellcheckrc`, to format and lint a shell script after each edit.
 - Run `tsc --noEmit` to type-check every TypeScript file.
 - Run `basedpyright --outputjson` to type-check every Python file.
 
