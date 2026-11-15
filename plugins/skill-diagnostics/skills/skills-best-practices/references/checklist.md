@@ -86,7 +86,7 @@ Area file: [claude-code-features.md](claude-code-features.md).
 
 Area file: [evaluation.md](evaluation.md).
 
-- `TE-1` · The skill has at least three evals: cases in `evals/evals.json` or plugin eval cases that invoke it · \[PL\]\[AS\]\[CC\] · `rec` · check-evals
+- `TE-1` · The skill has at least three evals: cases in `evals/evals.json` or plugin eval cases that invoke it · \[PL\]\[AS\] · `rec` · check-evals
 - `TE-2` · Trigger queries, when the skill can be invoked by Claude: about 20, both classes, realistic, non-obvious positives and no trivial ones, near-miss negatives, a fixed train/validation split with both classes · \[AS\] · `rec` · description-reviewer
 - `TE-3` · Tested with every model the skill will run on · \[PL\] · `rec` · evals
 - `TE-4` · Tested on real usage in a fresh session; feedback incorporated · \[PL\]\[CC\] · `rec` · evals

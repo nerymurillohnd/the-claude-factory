@@ -22,7 +22,7 @@ Test two things separately: whether the skill triggers on the right prompts, and
 ## Where evals live
 
 - **`evals/evals.json` in the skill folder.** The open standard's format, which the `skill-creator` plugin also uses: one object, `{"skill_name": "<name>", "evals": [{"id": 1, "prompt": "...", "expected_output": "...", "files": ["evals/files/<input>"], "assertions": ["..."]}]}`; `files` and `assertions` are optional \[AS\]. The baseline isn't stored there: it is the same prompt run without the skill \[AS\].
-- **A `claude plugin eval` suite.** For a plugin skill, cases live in the plugin's eval directory, `evals/` at the plugin root unless `plugin.json` sets `"experimental": { "evals": "<dir>" }`. A case is a folder with `prompt.md` or `case.yaml` and its `graders/` \[CC\]. The two formats "aren't interchangeable" and neither tool reads the other's files \[CC\].
+- **A `claude plugin eval` suite.** For a plugin skill, cases live in the plugin's eval directory, `evals/` at the plugin root unless `plugin.json` sets `"experimental": { "evals": "<dir>" }`. A case is a folder with `prompt.md` or `case.yaml`, and its graders are `graders/<name>.md` files or a `graders:` list in `case.yaml` \[CC\]. skill-creator "runs a similar comparison with its own `evals/evals.json` format, and neither tool reads the other's case files" \[CC\].
 - **Trigger query sets.** Labeled queries, `{"query": "...", "should_trigger": true}`, often split into a train file and a validation file \[AS\].
 - **Not evals.** `claude plugin test` runs the `*.test.ts` files of a mod, "a plugin whose code registers event handlers"; it doesn't test skills \[CC\].
 
@@ -93,7 +93,7 @@ Owned by `evals` (`TE-3`, `TE-4`): only running the evals shows them.
 \[CC\]:
 
 - **Built-in runners in Claude Code.** `claude plugin eval` and the skill-creator plugin run evaluations in Claude Code \[CC\], and the open standard gives the full method \[AS\]. The Platform's sentence "There is not currently a built-in way to run these evaluations" \[PL\] doesn't hold for Claude Code, which has `claude plugin eval`.
-- **`claude plugin eval`** runs each prompt with and without the plugin, grades it, and exits non-zero below a threshold, so CI can gate on it. A `tool_used: Skill` grader measures triggering. Use it for skills shipped in plugins.
+- **`claude plugin eval`** runs each prompt with and without the plugin, grades it, and exits non-zero below a threshold, so CI can gate on it. A `tool_used: Skill` grader shows whether the skill fired: in a two-arm run it is a plugin-fired indicator, reported but not scored, unless every grader in its case is excluded \[CC\]. Use it for skills shipped in plugins.
 - **What `claude plugin eval` loads.** It "loads the target plugin's skills, hooks, and agents", so a case can exercise a hook end to end; treat its scores as advisory outside an isolated environment when the hooks can modify the files the graders read \[CC\].
 - **The `skill-creator` plugin** (`/plugin install skill-creator@claude-plugins-official`) runs the same loop inside a conversation: isolated subagent runs, grading, benchmark, blind A/B between versions, description tuning and an HTML review viewer. Its `evals/evals.json` format is not interchangeable with `claude plugin eval`.
 - **Baseline without the skill.** To disable a personal or project skill for the baseline run, set it to `"off"` in `skillOverrides`, which doesn't apply to plugin skills. `/skill-doctor` reports each skill's context cost and usage.

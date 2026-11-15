@@ -37,7 +37,7 @@ The official pages the rules rest on, grouped by source tag. Verify a rule again
 - [Plugin manifest reference](https://code.claude.com/docs/en/plugins/manifest-reference): where each variable resolves, fixed options for a `userConfig` field
 - [Plugin loading](https://code.claude.com/docs/en/plugins/loading): in-place and copied plugins
 - [Publish](https://code.claude.com/docs/en/plugins/publish): preparing a plugin for release
-- [Plugin evals](https://code.claude.com/docs/en/plugin-evals): what `claude plugin eval` loads
+- [Plugin evals](https://code.claude.com/docs/en/plugin-evals): what `claude plugin eval` loads, the case and grader format, scoring against the no-plugin baseline and which graders it excludes, run isolation, results, and its relation to skill-creator's `evals/evals.json`
 
 ## PL: Claude Platform docs
 
