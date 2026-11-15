@@ -9,7 +9,6 @@ import sys
 
 from release.release_tools.repo import (
     MARKETPLACE_NAME,
-    UNRELEASED,
     changelog_section,
     manifest,
     plugin_names,
@@ -38,20 +37,12 @@ def tag_name(root: Path, plugin: str, release: str | None = None) -> str:
     return f"{plugin}--v{release or _version(root, plugin)}"
 
 
-def release_body(
-    root: Path, plugin: str, release: str | None = None, *, pending: bool = False
-) -> str:
-    """Return the version's CHANGELOG section, a rule, then the update command.
-
-    pending lets the [Unreleased] notes stand for a version not dated yet, as on a pull request.
-    """
+def release_body(root: Path, plugin: str, release: str | None = None) -> str:
+    """Return the version's CHANGELOG section, a rule, then the update command."""
     current = release or _version(root, plugin)
     path = root / "plugins" / plugin / "CHANGELOG.md"
     text = path.read_text(encoding="utf-8") if path.is_file() else ""
     section = changelog_section(text, current)
-    if not section and pending:
-        match = UNRELEASED.search(text)
-        section = match["body"].strip() if match else None
     if not section:
         msg = f"{plugin}: CHANGELOG.md has no ## [{current}] section with notes"
         raise ReleaseError(msg)
@@ -68,7 +59,6 @@ class Args(argparse.Namespace):
         self.plugin: str = ""
         self.tag: bool = False
         self.version: str | None = None
-        self.pending: bool = False
         self.root: Path = Path()
 
 
@@ -81,11 +71,6 @@ def main(argv: list[str] | None = None) -> int:
     _ = parser.add_argument(
         "--version", help="an older version to backfill, instead of plugin.json's"
     )
-    _ = parser.add_argument(
-        "--pending",
-        action="store_true",
-        help="accept the [Unreleased] notes for a version not dated yet",
-    )
     args = parser.parse_args(argv, namespace=Args())
     if args.plugin not in plugin_names(args.root):
         _ = sys.stderr.write(f"release-notes: {args.plugin} is not in marketplace.json\n")
@@ -94,9 +79,7 @@ def main(argv: list[str] | None = None) -> int:
         if args.tag:
             _ = sys.stdout.write(tag_name(args.root, args.plugin, args.version) + "\n")
         else:
-            _ = sys.stdout.write(
-                release_body(args.root, args.plugin, args.version, pending=args.pending)
-            )
+            _ = sys.stdout.write(release_body(args.root, args.plugin, args.version))
     except ReleaseError as error:
         _ = sys.stderr.write(f"release-notes: {error}\n")
         return 1

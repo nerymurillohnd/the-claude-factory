@@ -61,41 +61,36 @@ jobs:
         if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
         run: |
           set -euo pipefail
+          status=0
           for dir in plugins/*/; do
             name="$(basename "${dir}")"
             if [[ " ${DEBT_003_PLUGINS} " == *" ${name} "* ]]; then continue; fi
-            claude plugin validate --strict "${dir}"
+            claude plugin validate --strict "${dir}" || status=1
           done
-          claude plugin validate --strict .
-          npm run validate:claude
+          claude plugin validate --strict . || status=1
+          npm run validate:claude || status=1
+          exit "${status}"
       - name: Mod tests
         if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
         run: npm run validate:mods
+      # A pull request is checked as main will be after the merge: an empty [Unreleased] (PC-05,
+      # --main) and a dated section for every current version. Otherwise the push to main fails
+      # Checks and its Release job never runs.
       - name: Consistency
         if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
-        env:
-          EVENT: ${{ github.event_name }}
-        run: |
-          set -euo pipefail
-          case "${EVENT}" in
-            push) npm run check:consistency -- --main ;;
-            *) npm run check:consistency ;;
-          esac
+        run: npm run check:consistency -- --main
       # Each plugin's Release body must build: release.yml stops at the first plugin whose notes
-      # are missing. On a pull request, a version not dated yet may still have its
-      # notes under [Unreleased] (--pending); on main, every version needs its dated section.
+      # are missing. Every plugin is checked, and every failure is reported.
       - name: Release notes for every plugin
         if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
-        env:
-          EVENT: ${{ github.event_name }}
         run: |
           set -euo pipefail
-          mode=()
-          if [[ ${EVENT} == pull_request ]]; then mode=(--pending); fi
           names="$(node -e 'console.log(require("./.claude-plugin/marketplace.json").plugins.map((p) => p.name).join(" "))')"
+          status=0
           for name in ${names}; do
-            npm run --silent release:notes -- "${name}" "${mode[@]}" >/dev/null
+            npm run --silent release:notes -- "${name}" >/dev/null || status=1
           done
+          exit "${status}"
       # A DEBT-003 plugin is still installed, loaded and tested here; only its strict validation
       # waits in `debt`.
       - name: Install check for each changed plugin

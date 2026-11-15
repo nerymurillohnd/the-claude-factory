@@ -74,18 +74,18 @@ class NotesTest(unittest.TestCase):
         """--version on a version the changelog doesn't hold builds no body."""
         self.assertEqual(self._main("demo", "--version", "0.9.0")[0], 1)
 
-    def test_pending_accepts_unreleased_notes_for_an_undated_version(self) -> None:
-        """--pending: on a pull request, the [Unreleased] notes stand for an undated version."""
+    def test_undated_version_builds_no_body(self) -> None:
+        """A version whose notes are still under [Unreleased] has no body: date it first."""
         text = changelog("demo", {"1.2.0": BODY}, unreleased="### Added\n\n- New.")
         self.m.add_plugin("demo", "1.3.0", changelog_text=text)
-        code, out, _ = self._main("demo", "--pending")
-        self.assertEqual((code, out.startswith("### Added\n\n- New.")), (0, True))
         self.assertEqual(self._main("demo")[0], 1)
 
-    def test_pending_still_fails_without_any_notes(self) -> None:
-        """--pending with an empty [Unreleased] and no section still builds no body."""
-        self.m.add_plugin("demo", "1.3.0", changelog_text=changelog("demo", {"1.2.0": BODY}))
-        self.assertEqual(self._main("demo", "--pending")[0], 1)
+    def test_pending_flag_is_gone(self) -> None:
+        """--pending no longer exists: a pull request is checked as main will be."""
+        self.m.add_plugin("demo", "1.2.0", changelog_text=changelog("demo", {"1.2.0": BODY}))
+        with contextlib.redirect_stderr(io.StringIO()), self.assertRaises(SystemExit) as raised:
+            _ = self._main("demo", "--pending")
+        self.assertEqual(raised.exception.code, 2)
 
     def test_unknown_plugin_exits_2(self) -> None:
         """A plugin the marketplace doesn't list is a usage error."""

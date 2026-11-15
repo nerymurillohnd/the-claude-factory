@@ -64,12 +64,12 @@ These go beyond the docs and stay unless the owner changes them:
 ## Phase B: Before the merge
 
 1. **Review the diff yourself** before you ask to push: run `/code-review` on the branch with the `code-review` skill. For changed scripts and hooks, also launch the `pr-review-toolkit:silent-failure-hunter` and `pr-review-toolkit:pr-test-analyzer` agents when the `pr-review-toolkit` plugin (marketplace `claude-plugins-official`) is installed; when it isn't, say so instead of skipping the step silently. Fix what the reviews find, or report it to the owner when it needs a decision.
-2. **Date the release** with the `docs-maintenance` skill, for every plugin `npm run release:status` lists as changed or untagged:
+2. **Date the release before you push**, with the `docs-maintenance` skill, for every plugin `npm run release:status` lists as changed. Validate checks a pull request as `main` will be after the merge, so a version still under `## [Unreleased]` fails it (PC-05 and the release notes):
    - `npm run release:changelog -- <plugin>` turns `## [Unreleased]` into `## [X.Y.Z] - <today in UTC>`, adds an empty `## [Unreleased]` above it and writes the compare and release links. It exits 1 and changes nothing when `## [Unreleased]` is empty: stop and ask the owner what the version changes.
    - Write the release line in the root `CHANGELOG.md`, with the same date.
    - A version already dated keeps its date.
 3. **Check what `release.yml` will publish**, on a committed tree:
-   - `npm run release:notes -- <plugin>` for every plugin builds the Release body `release.yml` will publish; it exits 1 when a version has no dated section with notes, and a failure there would stop the release loop at that plugin. On a pull request, Validate runs it with `--pending`, which lets the `[Unreleased]` notes stand for a version not dated yet; on `main` it runs without it.
+   - `npm run release:notes -- <plugin>` for every plugin builds the Release body `release.yml` will publish; it exits 1 when a version has no dated section with notes, and a failure there would stop the release loop at that plugin. Validate runs it the same way on pull requests and on `main`.
    - `claude plugin tag plugins/<plugin> --dry-run` prints `<plugin>--v<version>`; it exits 1 while any file under the plugin is uncommitted.
    - `find plugins/<plugin> -type l` lists no link out of the plugin.
 4. **List for the owner** what will ship: `git fetch origin main && npm run release:status`. `changed:` lines are the new versions, and `untagged:` lines are current versions on `main` that this merge's release will also tag. The PC-04 findings of `npm run check:consistency` are versions that need a backfill (Backfill below) before Validate's `Checks` can pass.
