@@ -99,11 +99,11 @@ def _unreleased(root: Path, *, main: bool) -> Iterator[Finding]:
 
 
 WORKFLOWS = ".github/workflows"
-# Each Claude credential secret and the only workflows that may read it: the API key bills the
-# Claude Console account, the OAuth token the owner's subscription.
-SECRET_OWNERS = {
-    "ANTHROPIC_API_KEY": ("claude-code-review.yml",),
-    "CLAUDE_CODE_OAUTH_TOKEN": ("claude.yml", "evals.yml"),
+# Each Claude credential secret and the only workflows that may read it. The OAuth token bills the
+# owner's subscription; no workflow reads the API key, which would take precedence over the token.
+SECRET_OWNERS: dict[str, tuple[str, ...]] = {
+    "ANTHROPIC_API_KEY": (),
+    "CLAUDE_CODE_OAUTH_TOKEN": ("evals.yml",),
 }
 
 
@@ -120,7 +120,8 @@ def _secret_owners(root: Path) -> Iterator[Finding]:
             pattern = rf"secrets\s*(?:\.\s*{name}\b|\[\s*['\"]{name}['\"]\s*\])"
             read = re.search(pattern, text, re.IGNORECASE)
             if read and workflow.name not in owners:
-                message = f"reads secrets.{name}, which only {', '.join(owners)} may read"
+                allowed = f"only {', '.join(owners)} may read" if owners else "no workflow may read"
+                message = f"reads secrets.{name}, which {allowed}"
                 yield Finding("PC-13", f"{WORKFLOWS}/{workflow.name}", message)
 
 

@@ -84,7 +84,7 @@ on:
 
 
 PC14 = "PC-14 plugins/demo/evals/{case}: needs one effort tag (low, medium, high); has {found}"
-PC13 = "PC-13 .github/workflows/{path}: reads secrets.{name}, which only {owners} may read"
+PC13 = "PC-13 .github/workflows/{path}: reads secrets.{name}, which {allowed}"
 EVALS_WITH_GUARD = """\
 env:
   CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
@@ -256,28 +256,20 @@ class ChecksTest(unittest.TestCase):
             found,
             [
                 PC13.format(
-                    path="claude.yml", name="ANTHROPIC_API_KEY", owners="claude-code-review.yml"
+                    path="claude.yml", name="ANTHROPIC_API_KEY", allowed="no workflow may read"
                 ),
                 PC13.format(
                     path="validate.yaml",
                     name="CLAUDE_CODE_OAUTH_TOKEN",
-                    owners="claude.yml, evals.yml",
+                    allowed="only evals.yml may read",
                 ),
             ],
         )
 
     def test_pc13_each_secret_in_its_own_workflow(self) -> None:
-        """The owning workflows pass, and a shell guard on the variable is not a read."""
+        """The owning workflow passes, and a shell guard on the variable is not a read."""
         with tempfile.TemporaryDirectory() as tmp:
             f = Fixture(Path(tmp))
-            f.m.write(
-                ".github/workflows/claude-code-review.yml",
-                "with:\n  anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}\n",
-            )
-            f.m.write(
-                ".github/workflows/claude.yml",
-                "with:\n  claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}\n",
-            )
             f.m.write(
                 ".github/workflows/evals.yml",
                 EVALS_WITH_GUARD,
@@ -302,7 +294,7 @@ class ChecksTest(unittest.TestCase):
             )
             found = [str(x) for x in check(f.m.root, offline=True)]
         expected = PC13.format(
-            path="claude.yml", name="ANTHROPIC_API_KEY", owners="claude-code-review.yml"
+            path="claude.yml", name="ANTHROPIC_API_KEY", allowed="no workflow may read"
         )
         self.assertEqual(found, [expected])
 
