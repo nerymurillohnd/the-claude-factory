@@ -12,6 +12,10 @@
     "mcp__plugin_hook-engineering_claude-code-docs__*"
   ],
   "project-maintainer": [
-    "--scaffold"
+    "--scaffold",
+    "--allow-tools",
+    "Write",
+    "Edit",
+    "Bash"
   ]
 }

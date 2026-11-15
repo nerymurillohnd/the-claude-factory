@@ -351,6 +351,19 @@ class ChecksTest(unittest.TestCase):
         expected = PC14.replace("plugins/demo/evals/", "plugins/demo/evals-loading/")
         self.assertEqual(found, [expected.format(case="none", found="none")])
 
+    def test_pc14_finds_cases_nested_in_groups(self) -> None:
+        """Cases grouped under a folder that is not a case still need an effort tag."""
+        with tempfile.TemporaryDirectory() as tmp:
+            f = Fixture(Path(tmp))
+            f.m.write(
+                ".github/workflows/evals.yml",
+                EVALS_WORKFLOW.format(paths="      - plugins/demo/**\n"),
+            )
+            f.m.write("plugins/demo/evals/group/inner/prompt.md", "---\ntags: [x]\n---\n\nHi.\n")
+            f.m.write("plugins/demo/evals/results/old/prompt.md", "---\ntags: [x]\n---\n\nHi.\n")
+            found = sorted(str(x) for x in check(f.m.root, offline=True))
+        self.assertEqual(found, [PC14.format(case="group/inner", found="none")])
+
     def test_pc05_unreleased_notes_on_main(self) -> None:
         """On main, [Unreleased] holds no notes."""
         with tempfile.TemporaryDirectory() as tmp:

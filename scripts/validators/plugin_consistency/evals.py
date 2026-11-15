@@ -49,9 +49,20 @@ def _pull_request_paths(text: str) -> set[str]:
 
 
 def _cases_in(suite: Path) -> list[Path]:
-    """Return the case folders of one eval directory: each holds prompt.md or case.yaml."""
-    folders = {p.parent for p in [*suite.glob("*/prompt.md"), *suite.glob("*/case.yaml")]}
-    return sorted(folders)
+    """Return the case folders of one eval directory: each holds prompt.md or case.yaml.
+
+    Cases may be grouped under folders that aren't cases, at any depth; everything inside a case
+    belongs to it, and results/ and mocks/ hold no cases.
+    """
+    found: list[Path] = []
+    pending = sorted(p for p in suite.iterdir() if p.is_dir()) if suite.is_dir() else []
+    while pending:
+        folder = pending.pop()
+        if (folder / "prompt.md").is_file() or (folder / "case.yaml").is_file():
+            found.append(folder)
+        elif folder.name not in {"results", "mocks"}:
+            pending.extend(p for p in folder.iterdir() if p.is_dir())
+    return sorted(found)
 
 
 def _suite_cases(root: Path, name: str) -> list[Path]:

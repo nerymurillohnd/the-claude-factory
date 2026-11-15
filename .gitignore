@@ -28,9 +28,9 @@ CLAUDE.local.md
 plugins/*/.claude-plugin/types/
 plugins/*/tsconfig.json
 
-# Plugin evals: claude plugin eval reports, and the copies CI writes
+# Plugin evals: claude plugin eval writes results/ inside each eval directory (evals/ or evals-*/)
 **/evals/results/
-eval-results/
+plugins/*/evals-*/results/
 
 # CI: the actionlint binary validate.yml downloads to the repository root
 actionlint
