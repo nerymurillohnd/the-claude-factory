@@ -1,10 +1,10 @@
 ---
-status: accepted
+status: superseded
 date: 2026-11-13
 decision-makers:
   - "Nery (project owner)"
 supersedes: none
-superseded-by: none
+superseded-by: ADR_2026-11-15_validate-gates-merges-on-passing-checks-and-reports-debt
 ---
 
 # Each check is defined once; it runs fast and only on what changed locally, and in full in CI

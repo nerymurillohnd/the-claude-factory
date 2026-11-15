@@ -44,6 +44,7 @@ Add an item only when all of these hold:
 | DEBT-003 | Two CLI checks can't join npm run validate while five mods fail them | 🟠 Blocked |
 | DEBT-005 | frontmatter-lint can't join npm run lint while five plugins break the no-colon, no-quotes rule | 🟠 Blocked |
 | DEBT-006 | npm run lint:js fails on 31 Biome findings in plugin files | 🟠 Blocked |
+| DEBT-007 | The workflows' actions can't move to a GitHub lockfile from a cloud session | 🟠 Blocked |
 
 ## 📂 Open items
 
@@ -116,6 +117,8 @@ Add an item only when all of these hold:
   - `npm run validate:portable` runs `claude plugin validate --profile directory --strict` on each plugin. On 2026-11-13 it fails on `file-tree-pane`, `model-trace`, `project-maintainer`, `tool-ledger` and `turn-meter`. `npm run check:install -- --from local turn-meter` shows the cause for `turn-meter`: `TS2741: Property 'isCollapsed' is missing`.
   - Both scripts stay out of `validate` and `check`. `validate:claude` and `validate:mods`, which pass, joined `validate`.
   - On 2026-11-14, with Claude Code 2.1.325, plain `claude plugin validate --strict` also exits 1 on `model-trace`, `tool-ledger` and `turn-meter`, at `main` (39b0110): `error TS2769: No overload matches this call … 'mode' does not exist in type … ToolInputOf<"WebSearch", …>` (model-trace lines 230 and 351). So `npm run validate` fails on them too.
+  - On 2026-11-15, on `ccr-7fcd6ef3-rku7l1` at 005f47d with Claude Code 2.1.325, plain `--strict` also exits 1 on `file-tree-pane` and `project-maintainer`, with `error TS5097: An import path can only end with a '.ts' extension when 'allowImportingTsExtensions' is enabled`. `tool-ledger` and `turn-meter` exit 1 with `TS2741: Property 'isCollapsed' is missing`. All five fail plain `--strict` and `--profile directory --strict` alike (`.claude/maintainer/plans/2026-11-15-release-pipeline-baseline.md`). The type check of a TypeScript hooks module joined `claude plugin validate` in 2.1.323, per the changelog.
+  - Validate's blocking `Checks` job runs `claude plugin validate --strict` on every other plugin. Its non-blocking `Debt` job runs these five, `validate:portable` and `validate:hooks-catch`, each step named `DEBT-003`.
 - **Inferences:** the same mods-API type errors may mean the mods are broken for users on current Claude Code builds; whether 2.1.325 changed the WebSearch input type is not checked against the release notes.
 - **Open questions:** none.
 
@@ -123,7 +126,7 @@ Add an item only when all of these hold:
 
 - **Impact / risk:** nothing blocks a merge on a gating hook with no `.catch` or on a portability failure. These plugins reach users with the defects the two checks report.
 - **Why it is not fixed now:** the fixes are plugin-scope work with version bumps. The owner kept them out of the scripts and CLI task on 2026-11-13.
-- **Next action:** the owner schedules the fixes for the five plugins. Once `validate:hooks-catch` and `validate:portable` exit 0, chain both into `npm run validate`.
+- **Next action:** the owner schedules the fixes for the five plugins. Once `validate:hooks-catch` and `validate:portable` exit 0, chain both into `npm run validate`, and move the `DEBT-003` steps from Validate's `Debt` job into `Checks`.
 - **Review condition:** both scripts exit 0.
 - **Related records:** ADR_2026-11-13_five-scripts-cover-release-and-consistency-checks.
 
@@ -153,7 +156,7 @@ Add an item only when all of these hold:
 
 - **Impact / risk:** the 16 values break the owner's frontmatter rule, and the three FM-01 agents fail strict YAML parsers other than Claude Code's. Until they are fixed, `lint:frontmatter` stays out of `npm run lint` and `npm run check`, so nothing stops a new violation.
 - **Why it is not fixed now:** the fixes are plugin-scope changes with version bumps in five plugins, and the github-operations one waits on the 0.8.0 release. The owner schedules plugin fixes.
-- **Next action:** the owner schedules the fixes; each plugin rewords its values without colons, quotes or leading brackets in its own pull request with a patch bump. Then chain `npm run lint:frontmatter` into `npm run lint`.
+- **Next action:** the owner schedules the fixes; each plugin rewords its values without colons, quotes or leading brackets in its own pull request with a patch bump. Then chain `npm run lint:frontmatter` into `npm run lint`, and move its `DEBT-005` step from Validate's `Debt` job into `Checks`.
 - **Review condition:** `npm run lint:frontmatter` exits 0.
 - **Related records:** ADR_2026-11-14_frontmatter-lint-forbids-colons-and-quotes-in-values.
 
@@ -181,9 +184,37 @@ Add an item only when all of these hold:
 
 - **Impact / risk:** `npm run lint` and `npm run check` fail, so they cannot gate a change until these are fixed, and a new finding hides among the old ones.
 - **Why it is not fixed now:** each fix is a plugin change in its own pull request, with a version bump for any component file; the owner schedules plugin fixes, and github-operations waits on its 0.8.0 release.
-- **Next action:** the owner schedules the fixes per plugin: file-tree-pane, model-trace, project-maintainer, tailwind-development, github-operations, plugin-engineering, skill-diagnostics and svelte-development.
+- **Next action:** the owner schedules the fixes per plugin: file-tree-pane, model-trace, project-maintainer, tailwind-development, github-operations, plugin-engineering, skill-diagnostics and svelte-development. Then move the `DEBT-006` step from Validate's `Debt` job into `Checks`.
 - **Review condition:** `npm run lint:js` exits 0.
 - **Related records:** ADR_2026-11-14_biome-lints-all-markdown-and-skips-only-formatting-instructions.
+
+### DEBT-007 — The workflows' actions can't move to a GitHub lockfile from a cloud session
+
+| Field | Value |
+| --- | --- |
+| **Status** | 🟠 Blocked |
+| **Category** | security |
+| **Owner** | Nery Samuel Murillo |
+| **Logged** | 2026-11-15 |
+
+#### 🔎 Evidence
+
+- **Confirmed facts:**
+  - GitHub's "Secure use reference" (docs.github.com/en/actions/reference/security/secure-use, read 2026-11-15) says a workflow dependency lockfile "supersedes SHA pinning for repositories that adopt it". "Workflow dependency lockfiles" says `.github/workflows/actions.lock` is generated by `gh actions-lock`, records each action's commit and repository identity, and doesn't pin reusable-workflow calls.
+  - `github/gh-actions-lock` (HEAD 90ae563, 2026-11-04) "Requires an authenticated `gh`" and reads the action repositories through the REST and GraphQL API (`internal/ghapi/`).
+  - In this cloud session, `api.github.com` answers 403 "GitHub access to this repository is not enabled for this session" for repositories not attached to it, with the session token and with `GITHUB_PAT`. `add_repo` with `access: read` gives git reads only for a public repository. The cloud proxy also refuses GraphQL.
+  - The workflows (`validate.yml`, `release.yml`, `claude.yml`, `claude-code-review.yml`, `evals.yml`, `.github/actions/setup`) pin every action by commit SHA with a `# vX.Y.Z` comment, as `.claude/rules/architecture/github.md` requires.
+  - actionlint 1.7.12, the latest release on 2026-11-15, rejects the `$/` self-repository form that `gh actions-lock --migrate-local-actions` writes.
+- **Inferences:** a lockfile run from the owner's machine should work, since `gh` is authenticated there; not tested.
+- **Open questions:** whether zizmor 1.32.0 reads the lockfile, or flags version-tag references as unpinned.
+
+#### 📈 Impact and next step
+
+- **Impact / risk:** the workflows rely on SHA pins, GitHub's fallback, which don't cover the actions' own transitive dependencies or record the source repository's identity.
+- **Why it is not fixed now:** generating the lockfile needs an authenticated `gh` with API access to the action repositories, which a cloud session doesn't have.
+- **Next action:** on the owner's machine, run `gh extension install github/gh-actions-lock`, rewrite each `uses:` as its full version tag, run `gh actions-lock --ignore-local-actions` (keeping `./` while actionlint rejects `$/`), check `npm run lint:workflows`, add `gh actions-lock --verify` to Validate, and update the pin rule in `.claude/rules/architecture/github.md`.
+- **Review condition:** a session with an authenticated `gh` on github.com, or an actionlint release that accepts `$/`.
+- **Related records:** none.
 
 <!--
 Entry format. Copy this block above this comment for each new item and add its row to the Index.
