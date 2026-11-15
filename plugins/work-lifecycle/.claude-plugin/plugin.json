@@ -2,6 +2,9 @@
   "name": "work-lifecycle",
   "displayName": "Work Lifecycle",
   "version": "0.1.0",
+  "engines": {
+    "claude-code": ">=2.1.325"
+  },
   "description": "Plans and builds work in stages, from goal to verified result: researches current official sources and the code, writes a self-contained, verifiable plan before anything changes, blocks Claude from finishing while a task lacks recorded evidence, and implements code test-first with each red and green run recorded and checked against a baseline. Work you can verify.",
   "author": {
     "name": "Nery Murillo",
