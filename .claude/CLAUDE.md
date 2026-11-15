@@ -21,31 +21,31 @@
 
 **Runtimes**
 
-- Manage Node 26 LTS with nvm, as `.nvmrc` pins it, and npm 12.
-- Manage Python 3.15 with uv.
+- Run `nvm use` to switch to the Node 26 LTS that `.nvmrc` pins, with npm 12, before any npm command.
+- Run `uv sync --locked` to set up Python 3.15 and its dev dependencies before any Python script.
 
 **Formatting, linting and type checking**
 
-- Use Biome to format and lint TypeScript, JavaScript, JSON, YAML and Markdown; it lints the Markdown Claude reads as instructions but never formats it.
-- Use ruff to lint and format every Python file.
-- Use shfmt to format and ShellCheck to lint every shell script.
+- Run `npx biome check --write <file>` to format and lint a TypeScript, JavaScript, JSON, YAML or Markdown file after each edit; on Markdown Claude reads as instructions, run `npx biome lint <file>` instead.
+- Run `ruff check --fix <file>`, then `ruff format <file>`, to lint and format a Python file after each edit.
+- Run `shfmt -w <file>`, then `shellcheck -S style -a <file>`, to format and lint a shell script after each edit.
 - Run `tsc --noEmit` to type-check every TypeScript file.
 - Run `basedpyright --outputjson` to type-check every Python file.
 
 **Tests and plugins**
 
-- Use `unittest` when writing tests for the maintainer scripts.
-- Use `claude plugin test` for mods, and standard-library tests for hook scripts.
-- Use the plugin commands (`claude plugin`, `/plugin`, `/reload-plugins`) for every work involving plugins, as `plugin-engineering:cli-commands-guide` sets.
+- Run `npm run test:scripts` (`unittest`) to test the maintainer scripts after each change under `scripts/`.
+- Run `claude plugin test plugins/<plugin>` to test a mod after each change to it.
+- Run `npm run test:plugins` to run the hook scripts' standard-library tests after each change to a hook.
+- Use the plugin commands (`claude plugin`, `/plugin`, `/reload-plugins`) for all plugin work, as `plugin-engineering:cli-commands-guide` sets.
 
 **CI/CD**
 
-- Run CI/CD on GitHub Actions, and check every workflow with actionlint and zizmor.
+- Run `actionlint` and `zizmor --offline .` to check a GitHub Actions workflow after each change to it.
 
 **Platforms**
 
-- Build every plugin for macOS and Linux.
-- When a plugin must also run on Windows, support it only through Git Bash.
+- Build every plugin for macOS and Linux; when it must also run on Windows, support it only through Git Bash.
 
 ## Repository map
 
