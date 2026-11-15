@@ -1,7 +1,8 @@
 ---
 description: "A decision made in the conversation is written as an accepted ADR, with the Write tool and not the shell, under .claude/maintainer/decisions, with the chosen option, the rejected option and the user's reasons. Claude Code runs an eval session in dontAsk mode, where a write under .claude/ is denied, so the case grades what Claude attempts and what it tells the user."
-tags: [records, adr]
+tags: [records, adr, effort-medium]
 max_turns: 25
+model: claude-sonnet-5-5
 timeout_seconds: 600
 allowed_tools: [Read, Glob, Grep, Skill]
 ---

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Run release-status: a thin entry script around release.release_tools.status.
 
-Maintainer tooling: run it through `npm run release:notes`, which uses the project's .venv
+Maintainer tooling: run it through `npm run release:status`, which uses the project's .venv
 Python. It puts scripts/ on the import path so the package has one name, release.release_tools.
 """
 

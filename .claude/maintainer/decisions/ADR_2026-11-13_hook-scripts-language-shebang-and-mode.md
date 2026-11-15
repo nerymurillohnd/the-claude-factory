@@ -1,10 +1,10 @@
 ---
-status: accepted
+status: superseded
 date: 2026-11-13
 decision-makers:
   - "Nery (project owner)"
 supersedes: none
-superseded-by: none
+superseded-by: ADR_2026-11-15_bash-scripts-run-strict-and-map-hook-failures
 ---
 
 # Hook scripts pick Bash, Python or Node by complexity, start with an env shebang and are executable

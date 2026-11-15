@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.4.6] - 2026-11-14
+
 ### Fixed
 
 - After a Bash command in a folder that isn't a Git repository, the hook no longer type-checks the files of a repository you cloned, a branch you checked out or a pull, which could run until the hook's time limit and stop Claude with an error. Inside a Git repository below your project, it checks only the files Git lists as modified, untracked or staged.
@@ -119,7 +121,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - `typescript7-lsp-intelligence` skill: navigates TypeScript and JavaScript with the language server; checks program membership and effective configuration before trusting a diagnostic; tells TypeScript 6 `tsserver` tooling apart from the TypeScript 7 native server; fixes compiler findings by narrowing `unknown` instead of using assertions, `any` or suppressions; and reports each check's status, the programs covered and what stayed unverified.
 - Optional controls: a bundled runner compiles known control files with the compiler you choose, in a temporary folder, without running them or installing anything.
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/typescript7-lsp-intelligence--v0.4.5...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/typescript7-lsp-intelligence--v0.4.6...HEAD
+[0.4.6]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/typescript7-lsp-intelligence--v0.4.6
 [0.4.5]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/typescript7-lsp-intelligence--v0.4.5
 [0.4.4]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/typescript7-lsp-intelligence--v0.4.4
 [0.4.3]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/typescript7-lsp-intelligence--v0.4.3

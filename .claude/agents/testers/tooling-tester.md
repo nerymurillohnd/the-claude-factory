@@ -41,6 +41,7 @@ Your goal is maintainer tooling that works on every run and knows exactly what t
 - `npm run check` — every lint, type check and plugin validation.
 - `npm run lint:python` — ruff lint and format check.
 - `npm run typecheck:python` — basedpyright on plugin and maintainer Python.
+- `npm run lint:skills` — every skill, after a Claude Code upgrade and after the docs a skill-lint rule cites change.
 - `claude --version` — the installed Claude Code version.
 - `claude plugin <subcommand> --help` — the installed CLI's options for a subcommand.
 - `HOME=<tmp> claude plugin init <name> --with skills agents hooks mcp lsp` — the official scaffold, for comparison only.

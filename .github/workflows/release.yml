@@ -1,18 +1,27 @@
 name: Release
 
-# After Validate succeeds on main, tag and publish a GitHub Release for every plugin whose current
-# version has no tag yet. The marketplace itself has no version and no tag. Tags follow
-# `claude plugin tag`: {name}--v{version}, so plugin dependency ranges resolve against them.
+# Tag and publish a GitHub Release for every plugin whose current version has no tag yet, through
+# scripts/release/publish-releases.sh. Validate calls it on each push to main once its checks pass;
+# the owner dispatches it by hand only to retry a failed release or to backfill one version. The
+# marketplace itself has no version and no tag. Tags are {name}--v{version}, the name
+# `claude plugin tag` gives, so plugin dependency ranges resolve against them.
 
 on:
-  workflow_run:
-    workflows: [Validate]
-    types: [completed]
-    branches: [main]
+  workflow_call:
   workflow_dispatch:
+    inputs:
+      plugin:
+        description: Release only this plugin (a marketplace name); empty releases every plugin.
+        type: string
+        required: false
+        default: ""
+      backfill_target:
+        description: With plugin, a commit on main where that plugin's version never got its tag; its notes come from this branch's changelog.
+        type: string
+        required: false
+        default: ""
 
-permissions:
-  contents: write
+permissions: {}
 
 concurrency:
   group: release
@@ -20,37 +29,33 @@ concurrency:
 
 jobs:
   release:
-    if: github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
+    name: Tag and release
     runs-on: ubuntu-24.04
-    env:
-      TARGET_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+    timeout-minutes: 15
+    permissions:
+      contents: write # gh release create makes the tag and the Release
+      checks: read # a hand dispatch confirms Validate's Checks passed on the commit
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: ${{ env.TARGET_SHA }}
           fetch-depth: 0
+          persist-credentials: false
+      # setup-node turns npm caching on by default when devEngines.packageManager names npm, and its
+      # `npm config get cache` fails devEngines on the npm that ships with Node 26.13 (11.20.0, not
+      # ^12.2.1). This job runs no npm, and no cache belongs in a job that publishes releases.
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version-file: .nvmrc
+          package-manager-cache: false
       # release-notes.py runs through uv on the Python 3.15 that .python-version pins. It is called
-      # with uv run, not npm run: the npm that ships with Node 26.13 (11.20.0) fails devEngines
-      # (npm ^12.2.1). No cache in a job that publishes releases.
+      # with uv run, not npm run, for the same devEngines failure.
       - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
         with:
           enable-cache: false
       - name: Tag and release new versions
         env:
           GH_TOKEN: ${{ github.token }}
-        run: |
-          set -euo pipefail
-          targets="$(node -e 'console.log(require("./.claude-plugin/marketplace.json").plugins.map(p => p.name).join(" "))')"
-          for target in ${targets}; do
-            tag="$(uv run python scripts/release/release-notes.py "${target}" --tag)"
-            if git rev-parse -q --verify "refs/tags/${tag}" >/dev/null; then
-              echo "✔ ${tag} already released"
-              continue
-            fi
-            uv run python scripts/release/release-notes.py "${target}" > notes.md
-            gh release create "${tag}" --target "${TARGET_SHA}" --title "${tag}" --notes-file notes.md
-            echo "🚀 Released ${tag}"
-          done
+          TARGET_SHA: ${{ github.sha }}
+          PLUGIN: ${{ inputs.plugin }}
+          BACKFILL_TARGET: ${{ inputs.backfill_target }}
+        run: bash scripts/release/publish-releases.sh

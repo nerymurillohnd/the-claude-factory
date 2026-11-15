@@ -48,9 +48,9 @@ Official (Keep a Changelog):
 
 This repository:
 
-- The marketplace carries no version: headings are dates, never `## [X.Y.Z]`. The `## [0.1.0]` and `## [0.2.0]` sections at the end of the file predate that rule; keep them as they are. No `marketplace--v*` tag exists for them, so their two link references don't resolve.
+- The marketplace carries no version: headings are dates, never `## [X.Y.Z]`. The `## [0.1.0]` and `## [0.2.0]` sections at the end of the file predate that rule; keep them as they are, with their `marketplace--v0.1.0` and `marketplace--v0.2.0` tags.
 - A line is a summary, never a copy of the plugin's changelog.
-- The date is the plugin changelog's date: the UTC release day (see `changelog.md` → Rules).
+- The date is the plugin changelog's date: the UTC day the version was prepared (see `changelog.md` → Rules).
 
 ## Checks
 

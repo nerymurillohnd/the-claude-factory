@@ -49,6 +49,7 @@ Official:
 
 This repository:
 
+- A colon goes only after a field name. No value holds a colon or is wrapped in quotes: reword the sentence instead, so `description` stays one plain line that strict YAML parsers read.
 - Every agent sets `color`.
 - Agents load only where Claude can run tasks (`docs/compatibility.md`); the plugin README says so.
 

@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.2.9] - 2026-11-14
+
 ### Fixed
 
 - When shfmt or ShellCheck isn't installed, the hook no longer reports an error after every edit. You get one message per session that says where to get the tool, Claude is told once that the scripts weren't checked, and work goes on. The plugin keeps that once-per-session marker only in its own data folder; where Claude Code gives it none, the message repeats instead of the hook creating or deleting files in your system's temporary directory, which other users of the machine can write to.
@@ -102,7 +104,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - `bash-lsp-intelligence` skill: navigates shell code with the language server; traces direct and transitive `source` chains before trusting same-named functions; respects the script's real dialect; fixes ShellCheck and shfmt findings without changing quoting, globbing or exit-status behavior; and reports each check's status, the scripts covered and what stayed unverified.
 - Optional controls: a bundled runner checks ShellCheck and shfmt against known control files in a temporary folder, without running them or installing anything.
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/bash-lsp-intelligence--v0.2.8...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/bash-lsp-intelligence--v0.2.9...HEAD
+[0.2.9]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/bash-lsp-intelligence--v0.2.9
 [0.2.8]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/bash-lsp-intelligence--v0.2.8
 [0.2.7]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/bash-lsp-intelligence--v0.2.7
 [0.2.6]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/bash-lsp-intelligence--v0.2.6

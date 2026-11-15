@@ -39,31 +39,7 @@
       // top-level return and the injected globals agent, parallel, pipeline, phase, log and args,
       // so they do not parse as a module or a script. scripts/testers/<plugin>/workflow.test.mjs
       // checks them instead.
-      "!!plugins/*/workflows",
-      // Markdown Claude reads as instructions: never formatted (table padding costs tokens) and
-      // never linted (agent and skill files open with frontmatter, not a level-1 heading).
-      // A folder pattern drops the whole folder; a *.md pattern keeps the folder's scripts.
-      "!**/CLAUDE.md",
-      "!**/CLAUDE.local.md",
-      "!.claude/rules",
-      "!.claude/memory",
-      "!.claude/references",
-      "!.claude/templates",
-      "!.claude/architecture",
-      "!.claude/skills/**/*.md",
-      "!.claude/agents/**/*.md",
-      "!.claude/commands/**/*.md",
-      "!plugins/*/skills/**/*.md",
-      "!plugins/*/agents/**/*.md",
-      "!plugins/*/commands/**/*.md",
-      // Eval prompts and graders are instructions Claude reads too (owner to confirm).
-      "!plugins/*/evals/**/*.md",
-      // Maintainer working notes, not human docs (owner to confirm).
-      "!.claude/maintainer",
-      "!.claude/plans",
-      "!.claude/session-handoff",
-      "!.claude/specs",
-      "!.claude/scheduled-tasks"
+      "!!plugins/*/workflows"
     ]
   },
   "assist": {
@@ -331,6 +307,56 @@
     }
   },
   "overrides": [
+    {
+      // Markdown Claude reads as instructions is never formatted: table padding costs tokens on
+      // every session. Biome still lints it, and every other file in these folders is formatted
+      // and linted as usual.
+      "includes": [
+        "**/CLAUDE.md",
+        "**/CLAUDE.local.md",
+        ".claude/rules/**/*.md",
+        ".claude/memory/**/*.md",
+        ".claude/references/**/*.md",
+        ".claude/templates/**/*.md",
+        ".claude/architecture/**/*.md",
+        ".claude/skills/**/*.md",
+        ".claude/agents/**/*.md",
+        ".claude/commands/**/*.md",
+        "plugins/*/skills/**/*.md",
+        "plugins/*/agents/**/*.md",
+        "plugins/*/commands/**/*.md",
+        "plugins/*/evals/**/*.md",
+        ".claude/maintainer/**/*.md",
+        ".claude/plans/**/*.md",
+        ".claude/session-handoff/**/*.md",
+        ".claude/specs/**/*.md",
+        ".claude/scheduled-tasks/**/*.md"
+      ],
+      "formatter": {
+        "enabled": false
+      }
+    },
+    {
+      // The body of an agent, a command, a memory or an eval prompt or grader is a prompt, not a
+      // document: a level-1 heading there costs tokens and tells Claude nothing. Every other
+      // Markdown rule still applies to them.
+      "includes": [
+        ".claude/agents/**/*.md",
+        ".claude/commands/**/*.md",
+        ".claude/memory/**/*.md",
+        ".claude/templates/agent-template.md",
+        "plugins/*/agents/**/*.md",
+        "plugins/*/commands/**/*.md",
+        "plugins/*/evals/**/*.md"
+      ],
+      "linter": {
+        "rules": {
+          "nursery": {
+            "useTopLevelHeading": "off"
+          }
+        }
+      }
+    },
     {
       // Tests print, test booleans directly, and use the hook protocol's snake_case keys. They
       // await events one after another on purpose, and a one-off assertion pattern reads best

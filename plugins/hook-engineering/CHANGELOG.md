@@ -6,6 +6,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ## [Unreleased]
 
+## [0.2.6] - 2026-11-15
+
+### Changed
+
+- `hook-development` now warns that `set -e` makes a Bash hook exit with the failing command's own code. `grep` and `jq` can exit 2, which blocks on events such as `PreToolUse` and `Stop`. The skill shows how to map every unexpected failure to the exit code the hook means.
+
 ## [0.2.5] - 2026-11-06
 
 ### Changed
@@ -58,7 +64,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 - Helper scripts: a linter for hooks configuration files, a probe that predicts how Claude Code reads a command hook's result, and a changelog script that lists the hook-related entries newer than your installed version.
 - The `claude-code-docs` MCP server (`https://code.claude.com/docs/mcp`), so Claude reads the official hooks pages instead of recalling them.
 
-[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/hook-engineering--v0.2.5...HEAD
+[Unreleased]: https://github.com/nerymurillohnd/the-claude-factory/compare/hook-engineering--v0.2.6...HEAD
+[0.2.6]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/hook-engineering--v0.2.6
 [0.2.5]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/hook-engineering--v0.2.5
 [0.2.4]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/hook-engineering--v0.2.4
 [0.2.3]: https://github.com/nerymurillohnd/the-claude-factory/releases/tag/hook-engineering--v0.2.3

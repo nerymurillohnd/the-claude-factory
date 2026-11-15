@@ -65,5 +65,5 @@ Brace expansion and separate list entries are equivalent for loading: the rule l
 - **Separate entries** for locations that are related only by the rule's topic or that you may remove independently (`"db/migrations/**"` and `"scripts/migrate.ts"`).
 - Keep brace groups few and flat. Each group multiplies the expanded patterns (`{a,b}/{c,d}/*.{ts,tsx}` is eight), a rule's whole list shares a budget of 1,000 expanded patterns, and an over-budget pattern matches nothing. A one-option group (`*.{ts}`) adds nothing.
 - Quote every glob. An unquoted value starting with `{` is a YAML flow mapping and one starting with `*` is an alias: either breaks the frontmatter, and the rule then loads in every session.
-- Match the base: project rule patterns are relative to the directory holding `.claude/`; `*.ts` is root-only; use `**/` to recurse.
+- Match the base: project rule patterns are relative to the directory holding `.claude/`; `*.ts` matches at any depth; write `/*.ts` for the base's own files only.
 - Test each rule with `--match` on a file that should load it and one that should not.

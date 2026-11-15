@@ -58,6 +58,35 @@ class NotesTest(unittest.TestCase):
         self.assertIn("demo", err)
         self.assertIn("1.3.0", err)
 
+    def test_version_flag_names_an_older_version(self) -> None:
+        """--version backfills an older version: its tag and its own section."""
+        older = "### Added\n\n- The first."
+        text = changelog("demo", {"1.2.0": BODY, "1.1.0": older})
+        self.m.add_plugin("demo", "1.2.0", changelog_text=text)
+        code, out, _ = self._main("demo", "--version", "1.1.0")
+        self.assertEqual(
+            self._main("demo", "--tag", "--version", "1.1.0")[:2], (0, "demo--v1.1.0\n")
+        )
+        self.assertEqual(code, 0)
+        self.assertTrue(out.startswith(older + "\n\n---\n"))
+
+    def test_version_flag_without_section_exits_1(self) -> None:
+        """--version on a version the changelog doesn't hold builds no body."""
+        self.assertEqual(self._main("demo", "--version", "0.9.0")[0], 1)
+
+    def test_undated_version_builds_no_body(self) -> None:
+        """A version whose notes are still under [Unreleased] has no body: date it first."""
+        text = changelog("demo", {"1.2.0": BODY}, unreleased="### Added\n\n- New.")
+        self.m.add_plugin("demo", "1.3.0", changelog_text=text)
+        self.assertEqual(self._main("demo")[0], 1)
+
+    def test_pending_flag_is_gone(self) -> None:
+        """--pending no longer exists: a pull request is checked as main will be."""
+        self.m.add_plugin("demo", "1.2.0", changelog_text=changelog("demo", {"1.2.0": BODY}))
+        with contextlib.redirect_stderr(io.StringIO()), self.assertRaises(SystemExit) as raised:
+            _ = self._main("demo", "--pending")
+        self.assertEqual(raised.exception.code, 2)
+
     def test_unknown_plugin_exits_2(self) -> None:
         """A plugin the marketplace doesn't list is a usage error."""
         self.assertEqual(self._main("nope")[0], 2)

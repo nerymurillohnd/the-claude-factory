@@ -11,7 +11,7 @@ Everything these documents say reaches third parties: a plugin's README tells a 
 
 - You write the documents, following the procedure and the template in the table below.
 - The one exception is a plugin README written in full for the first time, such as a new plugin's: launch the `plugin-readme-writer` subagent for it, because the README is long, has many rules, and benefits from its own context. Brief it as [governance.md](references/governance.md) says. Where no subagent is available, as in a cloud thread of a Claude Project, write it yourself from the same procedure.
-- Versions, change types, renames, removals and releases are decided by the `plugin-versioning`, `plugin-releases` and `plugin-catalog-changes` skills. They call this skill for the documents they need; take their decisions as given.
+- Versions, change types, renames, removals and releases are decided by the `plugin-releases` and `plugin-catalog-changes` skills. They call this skill for the documents they need; take their decisions as given.
 
 ## Documents
 

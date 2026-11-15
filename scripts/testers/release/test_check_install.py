@@ -30,7 +30,13 @@ class CheckInstallTest(unittest.TestCase):
     """The order of the commands, their isolation, failures and cleanup."""
 
     def _run(
-        self, tmp: Path, args: list[str], *, fail: str = "", errors: bool = False, mod: bool = False
+        self,
+        tmp: Path,
+        args: list[str],
+        *,
+        fail: str = "",
+        errors: object = None,
+        mod: bool = False,
     ) -> tuple[int, list[str]]:
         """Run the script with the stub and return (exit code, logged calls)."""
         bin_dir, work = tmp / "bin", tmp / "work"
@@ -50,8 +56,8 @@ class CheckInstallTest(unittest.TestCase):
                 "version": "1.0.0",
                 "installPath": str(path),
             }
-            if errors:
-                item["errors"] = ["boom"]
+            if errors is not None:
+                item["errors"] = errors
             installs.append(item)
         listing = tmp / "list.json"
         _ = listing.write_text(json.dumps(installs), encoding="utf-8")
@@ -94,6 +100,22 @@ class CheckInstallTest(unittest.TestCase):
         self.assertTrue(commands[4].startswith("plugin validate --strict "))
         self.assertEqual(len(commands), 5)
 
+    def test_no_strict_validates_without_strict(self) -> None:
+        """--no-strict runs every other check, but validates without --strict."""
+        with tempfile.TemporaryDirectory() as tmp:
+            code, calls = self._run(Path(tmp), ["--from", "local", "--no-strict", "demo"], mod=True)
+        self.assertEqual(code, 0)
+        commands = [c.split("|")[2] for c in calls]
+        self.assertEqual(commands[1], "plugin install demo@the-claude-factory")
+        self.assertTrue(commands[4].startswith("plugin validate "))
+        self.assertNotIn("--strict", commands[4])
+        self.assertTrue(commands[5].startswith("plugin test "))
+
+    def test_no_strict_needs_a_plugin(self) -> None:
+        """--no-strict with no plugin after it is a usage error."""
+        with tempfile.TemporaryDirectory() as tmp:
+            self.assertEqual(self._run(Path(tmp), ["--from", "local", "--no-strict"])[0], 2)
+
     def test_ref_source_string(self) -> None:
         """A ref adds the GitHub marketplace at that ref."""
         with tempfile.TemporaryDirectory() as tmp:
@@ -111,6 +133,12 @@ class CheckInstallTest(unittest.TestCase):
 
     def test_load_errors_fail(self) -> None:
         """A plugin that lists load errors fails the run."""
+        with tempfile.TemporaryDirectory() as tmp:
+            code, _ = self._run(Path(tmp), ["--from", "local", "demo"], errors=["boom"])
+        self.assertEqual(code, 1)
+
+    def test_unreadable_load_errors_fail(self) -> None:
+        """When jq can't read the errors field, the plugin is not reported as loading cleanly."""
         with tempfile.TemporaryDirectory() as tmp:
             code, _ = self._run(Path(tmp), ["--from", "local", "demo"], errors=True)
         self.assertEqual(code, 1)

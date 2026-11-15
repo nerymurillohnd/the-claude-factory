@@ -1,24 +1,38 @@
 ---
 paths:
   - ".github/**"
+  - "/.claude-plugin/marketplace.json"
 ---
 
-# GitHub governance
+# GitHub
 
-The files GitHub reads from this repository.
+## Files
 
-## Where a new file goes
-- Put GitHub Actions workflows in `workflows/`, each action pinned by commit SHA with a `# vX.Y.Z` comment on the same line, which Dependabot updates together.
-- Put one issue form per issue kind in `ISSUE_TEMPLATE/`, with its labels and its default issue type (`type:`). Keep blank issues off and the contact links in `ISSUE_TEMPLATE/config.yml`.
-- Keep the private vulnerability report form in `VULNERABILITY_REPORT.yml`, in issue-form syntax; GitHub shows its default form when it cannot parse this one.
-- Put pull request templates in `PULL_REQUEST_TEMPLATE/`, and keep `pull_request_template.md`, the default template, identical to `PULL_REQUEST_TEMPLATE/standard.md`.
-- Define the fixed labels in `labels.json`. Leave out the `plugin: <name>` labels: `sync-labels.py` generates them from `.claude-plugin/marketplace.json`.
-- Configure updates for GitHub Actions, npm and uv in `dependabot.yml`. Bump the uv tools in the `tools:install` npm script by hand, because Dependabot does not read it.
-- Record each zizmor finding accepted on purpose in `zizmor.yml`, with its reason; any other finding fails `npm run lint:workflows`.
-- Keep code ownership in `CODEOWNERS`.
-
-## Working here
-- Keep every "plugin" dropdown, in the issue forms and in `VULNERABILITY_REPORT.yml`, equal to the plugins of `marketplace.json` in catalog order. Apply only labels that `labels.json` defines or that are generated `plugin: <name>` labels: GitHub skips a missing label silently.
-- After changing `labels.json` or the catalog, run `npm run labels:sync` (a dry run) and review its output. Run `npm run labels:sync -- --apply` only with the owner's approval, because it changes GitHub.
-- Keep the contact links in `ISSUE_TEMPLATE/config.yml` consistent with `SUPPORT.md` and the Support section of the root `README.md`: all three send readers to the same places.
+- Pin each action in a workflow by commit SHA, with a `# vX.Y.Z` comment on the same line, until `.github/workflows/actions.lock` replaces the pins (DEBT-007). `gh actions-lock` needs an authenticated `gh` with API access to the action repositories, which a cloud session doesn't have, so generate the lockfile only on Nery's machine.
+- Start every `run:` script that runs more than one command with `set -euo pipefail`: a step with no `shell:` runs as `bash -e {0}`, without `pipefail`, and `shell: bash` as `bash --noprofile --norc -eo pipefail {0}`, without `-u`.
+- Bump `CLAUDE_CODE_VERSION` in `.github/actions/setup/action.yml` to the `claude --version` the maintainers run, as an exact build of Anthropic's signed apt repository.
+- Give each issue form its labels and default issue type (`type:`), and keep blank issues off.
+- Keep `pull_request_template.md` identical to `PULL_REQUEST_TEMPLATE/standard.md`.
+- Define the fixed labels in `labels.json`, never the `plugin: <name>` labels, which `sync-labels.py` generates.
+- Bump the uv tools in the `tools:install` npm script by hand: Dependabot does not read it.
+- Record each zizmor finding accepted on purpose in `zizmor.yml`, with its reason.
+- Keep every "plugin" dropdown equal to the plugins of `marketplace.json`, in catalog order.
+- Keep the contact links in `ISSUE_TEMPLATE/config.yml`, `SUPPORT.md` and the root README's Support section the same.
 - Run `npm run lint:github` after changing a form, `config.yml` or `dependabot.yml`, and `npm run lint:workflows` after changing a workflow or `zizmor.yml`.
+- Run `npm run labels:sync` after changing `labels.json` or the catalog, and add `-- --apply` only with the owner's approval.
+
+## Pull requests
+
+- Send every change inside `plugins/` through a pull request, skill, agent and command files included, except a documentation-only change that alters neither behavior nor what users installed.
+- Open a pull request for a change outside `plugins/`, or a documentation-only plugin change, only when the owner asks for one.
+- Reproduce a review finding, from any reviewer, before changing code for it, and answer it with the result: fix what holds, and say with the evidence what doesn't. Reply on the finding's own thread; when it has none on GitHub, ask the owner where to answer.
+
+## Checks before a commit and a merge
+
+| When | Run |
+| :-- | :-- |
+| Locally, before each commit | `npm run lint` and `npm run typecheck`; `npm run test:scripts` when `scripts/` changed; the plugin checks of `.claude/rules/plugins.md` and `.claude/rules/plugins/testing.md` for each changed plugin; `npm run check:consistency -- --offline` |
+| Before each merge, in Validate (`.github/workflows/validate.yml`) | its `Checks` job, which includes `npm run check:install -- --from local <plugin>` for each changed plugin, with `--no-strict` for a DEBT-003 plugin; evals as `.claude/rules/plugins/evals.md` sets |
+
+- Run a merge-only check locally only when no pull-request workflow exists, or to reproduce a CI failure.
+- Merge only when the merge checks pass.

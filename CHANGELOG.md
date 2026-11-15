@@ -4,6 +4,30 @@ All notable changes to **The Claude Factory** marketplace are documented here: p
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/). The marketplace has no version of its own: entries are grouped by date, newest first, and every plugin carries its own version, changelog and tag. The versions 0.1.0 and 0.2.0 below are the history from before that change; their tags stay.
 
+## 2026-11-15
+
+### Added
+
+- **plugin-engineering** 0.3.0 — the new `plugin-testing-and-debugging` skill tests, troubleshoots and debugs plugins with the official CLI: it finds the cause behind a plugin that doesn't install, load or run, checks a plugin before you publish it, and writes, runs and gates plugin evals.
+
+### Changed
+
+- **hook-engineering** 0.2.6 — `hook-development` warns that `set -e` makes a Bash hook exit with the failing command's own code, which can block when `grep` or `jq` exits 2, and shows how to map every unexpected failure to the exit code the hook means.
+
+### Fixed
+
+- **instruction-engineering** 0.1.4 — the checker matches a rule's `paths` the way Claude Code documents them: a leading `/` anchors a pattern to the folder that holds `.claude/`, and a pattern with no `/`, such as `*.md`, matches at any depth.
+
+## 2026-11-14
+
+### Fixed
+
+- **bash-lsp-intelligence** 0.2.9 — the hook checks only the shell scripts a command or Git shows you changed, no longer reformats cloned, checked-out or ignored files, and reports a missing shfmt or ShellCheck once per session.
+- **python-lsp-intelligence** 0.3.4 — the hook checks only the Python files a command or Git shows you changed, no longer reformats cloned, checked-out or ignored files, and reports a missing ruff or basedpyright once per session.
+- **typescript6-lsp-intelligence** 0.3.6 — the hook type-checks only the files a command or Git shows you changed, so a clone, checkout or pull no longer runs it into its time limit.
+- **typescript7-lsp-intelligence** 0.4.6 — the hook type-checks only the files a command or Git shows you changed, so a clone, checkout or pull no longer runs it into its time limit.
+- **skill-diagnostics** 0.4.1 — the gate asks for an audit only of skills that Git or a commit in the session shows changed, and an unexpected failure no longer keeps Claude from stopping.
+
 ## 2026-11-13
 
 ### Changed

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Date a plugin's [Unreleased] changelog section as its release and update the links."""
+"""Date a plugin's [Unreleased] changelog section as its new version, and write its links."""
 
 from __future__ import annotations
 
@@ -85,7 +85,8 @@ def main(argv: list[str] | None = None) -> int:
         )
         return 2
     try:
-        text = date_release(path.read_text(encoding="utf-8"), args.plugin, current, day, repo_url)
+        old = path.read_text(encoding="utf-8")
+        text = date_release(old, args.plugin, current, day, repo_url)
     except ChangelogError as error:
         _ = sys.stderr.write(f"release-changelog: {args.plugin}: {error}\n")
         return 1

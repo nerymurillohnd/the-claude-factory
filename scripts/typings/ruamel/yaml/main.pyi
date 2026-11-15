@@ -3,6 +3,7 @@ from typing import IO
 
 class YAML:
     allow_duplicate_keys: bool
+    preserve_quotes: bool
     def __init__(
         self,
         *,

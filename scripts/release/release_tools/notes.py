@@ -29,14 +29,17 @@ def _version(root: Path, plugin: str) -> str:
     return found
 
 
-def tag_name(root: Path, plugin: str) -> str:
-    """Return the tag `claude plugin tag` would create: <plugin>--v<version>."""
-    return f"{plugin}--v{_version(root, plugin)}"
+def tag_name(root: Path, plugin: str, release: str | None = None) -> str:
+    """Return the tag `claude plugin tag` would create: <plugin>--v<version>.
+
+    release names an older version to backfill; by default it is plugin.json's.
+    """
+    return f"{plugin}--v{release or _version(root, plugin)}"
 
 
-def release_body(root: Path, plugin: str) -> str:
+def release_body(root: Path, plugin: str, release: str | None = None) -> str:
     """Return the version's CHANGELOG section, a rule, then the update command."""
-    current = _version(root, plugin)
+    current = release or _version(root, plugin)
     path = root / "plugins" / plugin / "CHANGELOG.md"
     text = path.read_text(encoding="utf-8") if path.is_file() else ""
     section = changelog_section(text, current)
@@ -55,6 +58,7 @@ class Args(argparse.Namespace):
         super().__init__()
         self.plugin: str = ""
         self.tag: bool = False
+        self.version: str | None = None
         self.root: Path = Path()
 
 
@@ -64,15 +68,18 @@ def main(argv: list[str] | None = None) -> int:
     _ = parser.add_argument("plugin", help="plugin name, as listed in marketplace.json")
     _ = parser.add_argument("--tag", action="store_true", help="print only the tag name")
     _ = parser.add_argument("--root", type=Path, default=Path(), help="repository root")
+    _ = parser.add_argument(
+        "--version", help="an older version to backfill, instead of plugin.json's"
+    )
     args = parser.parse_args(argv, namespace=Args())
     if args.plugin not in plugin_names(args.root):
         _ = sys.stderr.write(f"release-notes: {args.plugin} is not in marketplace.json\n")
         return 2
     try:
         if args.tag:
-            _ = sys.stdout.write(tag_name(args.root, args.plugin) + "\n")
+            _ = sys.stdout.write(tag_name(args.root, args.plugin, args.version) + "\n")
         else:
-            _ = sys.stdout.write(release_body(args.root, args.plugin))
+            _ = sys.stdout.write(release_body(args.root, args.plugin, args.version))
     except ReleaseError as error:
         _ = sys.stderr.write(f"release-notes: {error}\n")
         return 1

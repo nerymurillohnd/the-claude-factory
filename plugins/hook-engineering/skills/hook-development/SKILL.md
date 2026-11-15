@@ -204,6 +204,7 @@ Stdout and exit codes:
 - `additionalContext`, `systemMessage`, `initialUserMessage` and plain stdout are each capped at 10,000 characters; over the cap Claude gets a file path and a 2,000-character preview.
 - Exit 1 is not a block. With plain stdout it is a non-blocking error; with a valid JSON object the fields decide; only `onFailure: "block"` (or Windows without Git Bash) turns it into a block. A policy hook blocks with exit 2 or a JSON deny.
 - A guard that cannot read its input must block, not pass: exit 2 with the reason on stderr works even when `jq` is missing. Filter commands on parsed words, not raw text: `g"i"t commit` contains no `git` ([security-and-trust.md](references/security-and-trust.md) § Guards).
+- `set -e` hands the hook the failing command's own exit code, and `grep` (an unreadable file) and `jq` (a usage or system error) exit 2: on an event that can block, an unexpected failure then blocks. Map every unexpected failure to the code the hook means, with `set -Eeuo pipefail` and `trap 'exit 1' ERR`, or an `EXIT` trap that turns any non-zero status into 1; a guard that fails closed maps it to 2.
 - The outcome for every stdout shape and exit code is the outcome matrix in [exit-codes.md](references/exit-codes.md).
 
 ## Example

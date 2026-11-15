@@ -119,6 +119,12 @@ class CliTest(unittest.TestCase):
         empty = FIRST.replace("### Added\n\n- Initial release.\n\n", "")
         self.assertEqual(self._run(empty, "--date", "2026-11-13"), (1, empty))
 
+    def test_redate_flag_is_gone(self) -> None:
+        """--redate no longer exists: a version keeps the date it was prepared on."""
+        with contextlib.redirect_stderr(io.StringIO()), self.assertRaises(SystemExit) as raised:
+            _ = self._run(FIRST, "--redate", "--date", "2026-11-15")
+        self.assertEqual(raised.exception.code, 2)
+
     def test_bad_date_exits_2(self) -> None:
         """A date that is not YYYY-MM-DD is a usage error."""
         with contextlib.redirect_stderr(io.StringIO()), self.assertRaises(SystemExit) as raised:

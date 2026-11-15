@@ -21,6 +21,7 @@ class Args(argparse.Namespace):
         super().__init__()
         self.root: Path = Path()
         self.offline: bool = False
+        self.main: bool = False
         self.json: bool = False
 
 
@@ -30,9 +31,12 @@ def main(argv: list[str] | None = None) -> int:
     _ = parser.add_argument("--root", type=Path, default=Path(), help="repository root")
     _ = parser.add_argument("--offline", action="store_true", help="skip PC-04 (remote tags)")
     _ = parser.add_argument("--json", action="store_true", help="print the findings as JSON")
+    _ = parser.add_argument(
+        "--main", action="store_true", help="enforce PC-05 as on main, even on a detached commit"
+    )
     args = parser.parse_args(argv, namespace=Args())
     try:
-        findings = check(args.root, offline=args.offline)
+        findings = check(args.root, offline=args.offline, main=args.main)
     except GitError as error:
         _ = sys.stderr.write(f"plugin-consistency: {error}\n")
         return 1

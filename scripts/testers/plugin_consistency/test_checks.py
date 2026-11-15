@@ -6,15 +6,37 @@ from __future__ import annotations
 import contextlib
 import io
 from pathlib import Path
+import struct
 import tempfile
 import unittest
 
 from validators.plugin_consistency import cli
 from validators.plugin_consistency.checks import Finding, check
 
-from testers.release.helpers import Marketplace, changelog
+from testers.release.helpers import Marketplace, changelog, git
 
 WORDS = " ".join(["word"] * 40)
+LISTING: dict[str, object] = {
+    "icon": "./.claude-plugin/icon.png",
+    "documentationUrl": "https://example.com/docs",
+    "supportUrl": "https://example.com/support",
+    "privacyPolicyUrl": "https://example.com/privacy",
+}
+
+
+def png(width: int, height: int) -> bytes:
+    """Return the first bytes of a PNG with the given size: enough for its IHDR chunk."""
+    return b"\x89PNG\r\n\x1a\n" + b"\x00\x00\x00\x0dIHDR" + struct.pack(">II", width, height)
+
+
+def write_icon(root: Path, name: str, width: int = 1024, height: int = 1024) -> None:
+    """Write a plugin's icon.png and its SVG source."""
+    icon = root / "plugins" / name / ".claude-plugin" / "icon.png"
+    icon.parent.mkdir(parents=True, exist_ok=True)
+    _ = icon.write_bytes(png(width, height))
+    source = root / "scripts" / "generators" / "plugin-icons" / f"{name}.svg"
+    source.parent.mkdir(parents=True, exist_ok=True)
+    _ = source.write_text("<svg/>\n", encoding="utf-8")
 
 
 def plugin_readme(name: str) -> str:
@@ -52,6 +74,24 @@ def root_readme(rows: dict[str, list[str]], counts: dict[str, int] | None = None
     return "\n".join([*head, *sections, "", "## 🤝 Contributing", ""]) + "\n"
 
 
+EVALS_WORKFLOW = """name: Evals
+on:
+  pull_request:
+    paths:
+      - plugins/*/evals/**
+{paths}  workflow_dispatch:
+"""
+
+
+PC14 = "PC-14 plugins/demo/evals/{case}: needs one effort tag (low, medium, high); has {found}"
+PC13 = "PC-13 .github/workflows/{path}: reads secrets.{name}, which only {owners} may read"
+EVALS_WITH_GUARD = """\
+env:
+  CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+run: if [[ -n ${ANTHROPIC_API_KEY:-} ]]; then exit 1; fi
+"""
+
+
 class Fixture:
     """A consistent marketplace with demo 0.1.0 (category development), released and tagged."""
 
@@ -62,13 +102,26 @@ class Fixture:
             "demo",
             "0.1.0",
             changelog_text=changelog("demo", {"0.1.0": "- First."}),
+            manifest=LISTING,
             entry={"category": "development"},
         )
+        write_icon(self.m.root, "demo")
         self.m.write("plugins/demo/README.md", plugin_readme("demo"))
         self.m.write("README.md", root_readme({"🛠️ Development": [catalog_row("demo", "0.1.0")]}))
         self.m.commit()
         self.m.push()
         self.m.tag("demo--v0.1.0")
+
+    def bump(self, new: str, sections: dict[str, str]) -> None:
+        """Set demo to a new version with these changelog sections and its catalog row."""
+        self.m.add_plugin(
+            "demo",
+            new,
+            changelog_text=changelog("demo", sections),
+            manifest=LISTING,
+            entry={"category": "development"},
+        )
+        self.m.write("README.md", root_readme({"🛠️ Development": [catalog_row("demo", new)]}))
 
     def ids(self, *, offline: bool = False) -> list[str]:
         """Return the check ids the fixture reports."""
@@ -76,7 +129,7 @@ class Fixture:
 
 
 class ChecksTest(unittest.TestCase):
-    """PC-01 to PC-08."""
+    """PC-01 to PC-05 and PC-12."""
 
     def test_consistent_fixture_passes(self) -> None:
         """The fixture as built has no finding, online or offline."""
@@ -127,9 +180,167 @@ class ChecksTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             f = Fixture(Path(tmp))
             text = changelog("demo", {"0.2.0": "- New.", "0.1.0": "- First."})
-            f.m.add_plugin("demo", "0.2.0", changelog_text=text, entry={"category": "development"})
+            f.m.add_plugin(
+                "demo",
+                "0.2.0",
+                changelog_text=text,
+                manifest=LISTING,
+                entry={"category": "development"},
+            )
             f.m.write("README.md", root_readme({"🛠️ Development": [catalog_row("demo", "0.2.0")]}))
             self.assertEqual(f.ids(), [])
+
+    def test_pc04_current_version_untagged_after_merge_passes(self) -> None:
+        """On main, before release.yml tags it, the current version needs no tag."""
+        with tempfile.TemporaryDirectory() as tmp:
+            f = Fixture(Path(tmp))
+            f.bump("0.2.0", {"0.2.0": "- New.", "0.1.0": "- First."})
+            f.m.commit()
+            f.m.push()
+            self.assertEqual(f.ids(), [])
+
+    def test_pc04_older_heading_untagged_after_merge_fails(self) -> None:
+        """An older version that never got its tag stays reported once a newer one is current."""
+        with tempfile.TemporaryDirectory() as tmp:
+            f = Fixture(Path(tmp))
+            f.bump("0.2.1", {"0.2.1": "- Fix.", "0.2.0": "- New.", "0.1.0": "- First."})
+            f.m.commit()
+            f.m.push()
+            messages = [str(x) for x in check(f.m.root)]
+            self.assertEqual(
+                messages,
+                ["PC-04 plugins/demo/CHANGELOG.md: [0.2.0] has no tag demo--v0.2.0"],
+            )
+
+    def test_pc05_runs_with_main_flag_on_detached_head(self) -> None:
+        """CI checks out a commit, not a branch; main=True still enforces PC-05."""
+        with tempfile.TemporaryDirectory() as tmp:
+            f = Fixture(Path(tmp))
+            text = changelog("demo", {"0.1.0": "- First."}, unreleased="- Pending.")
+            f.m.write("plugins/demo/CHANGELOG.md", text)
+            f.m.commit()
+            _ = git(f.m.root, "checkout", "-q", "--detach")
+            ids = [x.check_id for x in check(f.m.root, offline=True, main=True)]
+            self.assertEqual((f.ids(offline=True), ids), ([], ["PC-05"]))
+
+    def test_pc12_suite_missing_from_the_evals_workflow_paths(self) -> None:
+        """A plugin with an evals/ suite must be a path that triggers evals.yml."""
+        with tempfile.TemporaryDirectory() as tmp:
+            f = Fixture(Path(tmp))
+            f.m.write("plugins/demo/evals/case/prompt.md", "---\ntags: [effort-low]\n---\n\nHi.\n")
+            f.m.write(".github/workflows/evals.yml", EVALS_WORKFLOW.format(paths=""))
+            missing = [str(x) for x in check(f.m.root, offline=True)]
+            f.m.write(
+                ".github/workflows/evals.yml",
+                EVALS_WORKFLOW.format(paths="      - plugins/demo/**\n"),
+            )
+            expected = "PC-12 .github/workflows/evals.yml: plugins/demo has an eval suite but no"
+            self.assertEqual(
+                (missing, f.ids(offline=True)), ([f"{expected} `plugins/demo/**` path"], [])
+            )
+
+    def test_pc13_secret_read_by_the_wrong_workflow(self) -> None:
+        """Each Claude credential secret may be read only by the workflows that own it."""
+        with tempfile.TemporaryDirectory() as tmp:
+            f = Fixture(Path(tmp))
+            f.m.write(
+                ".github/workflows/claude.yml",
+                "with:\n  anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}\n",
+            )
+            f.m.write(
+                ".github/workflows/validate.yaml",
+                "env:\n  T: ${{ secrets['CLAUDE_CODE_OAUTH_TOKEN'] }}\n",
+            )
+            found = sorted(str(x) for x in check(f.m.root, offline=True))
+        self.assertEqual(
+            found,
+            [
+                PC13.format(
+                    path="claude.yml", name="ANTHROPIC_API_KEY", owners="claude-code-review.yml"
+                ),
+                PC13.format(
+                    path="validate.yaml",
+                    name="CLAUDE_CODE_OAUTH_TOKEN",
+                    owners="claude.yml, evals.yml",
+                ),
+            ],
+        )
+
+    def test_pc13_each_secret_in_its_own_workflow(self) -> None:
+        """The owning workflows pass, and a shell guard on the variable is not a read."""
+        with tempfile.TemporaryDirectory() as tmp:
+            f = Fixture(Path(tmp))
+            f.m.write(
+                ".github/workflows/claude-code-review.yml",
+                "with:\n  anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}\n",
+            )
+            f.m.write(
+                ".github/workflows/claude.yml",
+                "with:\n  claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}\n",
+            )
+            f.m.write(
+                ".github/workflows/evals.yml",
+                EVALS_WITH_GUARD,
+            )
+            self.assertNotIn("PC-13", f.ids(offline=True))
+
+    def test_pc12_reads_only_the_pull_request_paths(self) -> None:
+        """A plugin listed under paths-ignore, not paths, doesn't trigger evals.yml."""
+        with tempfile.TemporaryDirectory() as tmp:
+            f = Fixture(Path(tmp))
+            f.m.write("plugins/demo/evals/case/prompt.md", "---\ntags: [effort-low]\n---\n\nHi.\n")
+            ignored = "    paths-ignore:\n      - plugins/demo/**\n"
+            f.m.write(".github/workflows/evals.yml", EVALS_WORKFLOW.format(paths=ignored))
+            self.assertEqual(f.ids(offline=True), ["PC-12"])
+
+    def test_pc13_matches_secret_names_in_any_case(self) -> None:
+        """GitHub reads secret names case-insensitively, so a lowercase read is still a read."""
+        with tempfile.TemporaryDirectory() as tmp:
+            f = Fixture(Path(tmp))
+            f.m.write(
+                ".github/workflows/claude.yml", "with:\n  k: ${{ secrets.anthropic_api_key }}\n"
+            )
+            found = [str(x) for x in check(f.m.root, offline=True)]
+        expected = PC13.format(
+            path="claude.yml", name="ANTHROPIC_API_KEY", owners="claude-code-review.yml"
+        )
+        self.assertEqual(found, [expected])
+
+    def test_pc12_flags_a_suite_when_the_evals_workflow_is_missing(self) -> None:
+        """Without evals.yml no suite ever runs, so a plugin with a suite is a finding."""
+        with tempfile.TemporaryDirectory() as tmp:
+            f = Fixture(Path(tmp))
+            f.m.write("plugins/demo/evals/case/prompt.md", "---\ntags: [effort-low]\n---\n\nHi.\n")
+            found = [str(x) for x in check(f.m.root, offline=True)]
+        expected = "PC-12 .github/workflows/evals.yml: plugins/demo has an eval suite but no"
+        self.assertEqual(found, [f"{expected} `plugins/demo/**` path"])
+
+    def test_pc14_each_case_has_one_valid_effort_tag(self) -> None:
+        """A case with no effort tag, a misspelled one or two runs in no CI group, unseen."""
+        with tempfile.TemporaryDirectory() as tmp:
+            f = Fixture(Path(tmp))
+            f.m.write(
+                ".github/workflows/evals.yml",
+                EVALS_WORKFLOW.format(paths="      - plugins/demo/**\n"),
+            )
+            cases = {
+                "none/prompt.md": "---\ntags: [trigger]\n---\n\nHi.\n",
+                "typo/prompt.md": "---\ntags: [effort-hgh]\n---\n\nHi.\n",
+                "two/prompt.md": "---\ntags: [effort-low, effort-high]\n---\n\nHi.\n",
+                "block/prompt.md": "---\ntags:\n  - trigger\n  - effort-low\n---\n\nHi.\n",
+                "yaml/case.yaml": 'schema_version: "1.1"\nname: yaml\ntags: [effort-medium]\n',
+            }
+            for path, text in cases.items():
+                f.m.write(f"plugins/demo/evals/{path}", text)
+            found = sorted(str(x) for x in check(f.m.root, offline=True))
+        self.assertEqual(
+            found,
+            [
+                PC14.format(case="none", found="none"),
+                PC14.format(case="two", found="effort-low, effort-high"),
+                PC14.format(case="typo", found="effort-hgh"),
+            ],
+        )
 
     def test_pc05_unreleased_notes_on_main(self) -> None:
         """On main, [Unreleased] holds no notes."""
@@ -175,6 +386,59 @@ class ChecksTest(unittest.TestCase):
             f.m.write("README.md", root_readme(rows, {"🛠️ Development": 2}))
             self.assertEqual(f.ids(offline=True), ["PC-08"])
 
+    def test_pc09_icon_missing_undeclared_or_wrong_shape(self) -> None:
+        """An undeclared, missing, non-PNG, non-square or undersized icon is reported."""
+        with tempfile.TemporaryDirectory() as tmp:
+            f = Fixture(Path(tmp))
+            icon = f.m.root / "plugins/demo/.claude-plugin/icon.png"
+            _ = icon.write_bytes(png(1024, 512))
+            self.assertEqual(f.ids(offline=True), ["PC-09"])
+            _ = icon.write_bytes(png(256, 256))
+            self.assertEqual(f.ids(offline=True), ["PC-09"])
+            _ = icon.write_bytes(b"not a png, just some bytes")
+            self.assertEqual(f.ids(offline=True), ["PC-09"])
+            icon.unlink()
+            self.assertEqual(f.ids(offline=True), ["PC-09"])
+            write_icon(f.m.root, "demo")
+            f.m.add_plugin(
+                "demo",
+                "0.1.0",
+                changelog_text=changelog("demo", {"0.1.0": "- First."}),
+                manifest={**LISTING, "icon": "./logo.png"},
+                entry={"category": "development"},
+            )
+            self.assertEqual(f.ids(offline=True), ["PC-09"])
+
+    def test_pc09_missing_and_stray_svg_source(self) -> None:
+        """A listed plugin without its SVG source, and a source without a plugin, are reported."""
+        with tempfile.TemporaryDirectory() as tmp:
+            f = Fixture(Path(tmp))
+            sources = f.m.root / "scripts/generators/plugin-icons"
+            _ = (sources / "demo.svg").rename(sources / "gone.svg")
+            self.assertEqual(f.ids(offline=True), ["PC-09", "PC-09"])
+
+    def test_pc10_listing_url_missing_or_not_https(self) -> None:
+        """Each listing URL field is set to an https:// URL."""
+        with tempfile.TemporaryDirectory() as tmp:
+            f = Fixture(Path(tmp))
+            f.m.add_plugin(
+                "demo",
+                "0.1.0",
+                changelog_text=changelog("demo", {"0.1.0": "- First."}),
+                manifest={**LISTING, "supportUrl": "http://example.com"},
+                entry={"category": "development"},
+            )
+            self.assertEqual(f.ids(offline=True), ["PC-10"])
+            manifest = {k: v for k, v in LISTING.items() if k != "privacyPolicyUrl"}
+            f.m.add_plugin(
+                "demo",
+                "0.1.0",
+                changelog_text=changelog("demo", {"0.1.0": "- First."}),
+                manifest=manifest,
+                entry={"category": "development"},
+            )
+            self.assertEqual(f.ids(offline=True), ["PC-10"])
+
 
 class CliTest(unittest.TestCase):
     """The command line's output and exit codes."""
@@ -193,6 +457,31 @@ class CliTest(unittest.TestCase):
         self.assertEqual((clean, out.getvalue()), (0, ""))
         self.assertEqual(bad, 1)
         self.assertTrue(out_bad.getvalue().startswith("PC-03 .claude-plugin/marketplace.json: "))
+
+    def test_main_flag(self) -> None:
+        """--main enforces PC-05 on a detached commit; a changelog date is never a finding."""
+        with tempfile.TemporaryDirectory() as tmp:
+            f = Fixture(Path(tmp))
+            f.bump("0.2.0", {"0.2.0": "- New.", "0.1.0": "- First."})
+            text = changelog("demo", {"0.2.0": "- New.", "0.1.0": "- First."}, unreleased="- P.")
+            f.m.write("plugins/demo/CHANGELOG.md", text)
+            f.m.commit()
+            _ = git(f.m.root, "checkout", "-q", "--detach")
+            out = io.StringIO()
+            with contextlib.redirect_stdout(out):
+                codes = (
+                    cli.main(["--root", str(f.m.root)]),
+                    cli.main(["--root", str(f.m.root), "--main"]),
+                )
+        lines = out.getvalue().splitlines()
+        self.assertEqual(codes, (0, 1))
+        self.assertEqual([line.split()[0] for line in lines], ["PC-05"])
+
+    def test_date_check_flag_is_gone(self) -> None:
+        """--date-check, and PC-11 with it, no longer exist: the flag is a usage error."""
+        with contextlib.redirect_stderr(io.StringIO()), self.assertRaises(SystemExit) as raised:
+            _ = cli.main(["--offline", "--date-check"])
+        self.assertEqual(raised.exception.code, 2)
 
     def test_finding_text(self) -> None:
         """A finding prints as `<id> <path>: <message>`."""
