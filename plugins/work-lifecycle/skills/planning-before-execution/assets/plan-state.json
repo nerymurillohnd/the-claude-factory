@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "plan": "path to the approved plan file, or reply when the plan is only in the conversation",
+  "status": "executing",
+  "tasks": [
+    {
+      "id": "0",
+      "title": "Task 0 spike, only when the plan has one",
+      "check": "the command or acceptance test that proves the go or no-go result",
+      "test_first": false,
+      "evidence": null,
+      "red": null,
+      "green": null
+    },
+    {
+      "id": "1",
+      "title": "One task per plan task, in plan order",
+      "check": "the exact verification command from the plan",
+      "test_first": true,
+      "evidence": null,
+      "red": null,
+      "green": null
+    }
+  ]
+}
