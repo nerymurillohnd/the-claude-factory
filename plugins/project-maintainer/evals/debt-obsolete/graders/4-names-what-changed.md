@@ -1,7 +1,5 @@
 ---
-type: llm
-focus: trace
+type: tool_used
+tool: Write
+input_match: '^(?=.*"file_path"\s*:\s*"[^"]*\.claude/maintainer/technical-debt/closed-debt\.md")(?=.*### DEBT-001\b)(?=.*hosted sync)(?=.*(?:export job[^|]{0,80}?(?:delet|remov|replac)|(?:delet|remov|replac)[^|]{0,80}?export job))'
 ---
-
-PASS if the closed entry that was written or drafted says why the problem no longer applies (the export job was deleted and replaced by the vendor's hosted sync).
-FAIL if it claims a fix was made and verified, or gives no reason.
