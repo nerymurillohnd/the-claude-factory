@@ -1,10 +1,10 @@
 ---
-status: accepted
+status: superseded
 date: 2026-11-15
 decision-makers:
   - "Nery Samuel Murillo"
 supersedes: none
-superseded-by: none
+superseded-by: ADR_2026-11-15_claude-review-posts-one-summary-per-push
 ---
 
 # Claude reviews every push to a pull request, only for what CI's scripts can't check

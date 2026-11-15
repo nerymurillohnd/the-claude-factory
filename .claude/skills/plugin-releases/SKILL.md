@@ -11,7 +11,8 @@ Every plugin here is a relative-path entry (`./plugins/<plugin>`) in a git-hoste
 
 - **One version per release.** `release.yml` tags only each plugin's current `plugin.json` version. Never bump a plugin again while its previous version has no tag: that version can then only get its tag through a backfill (Backfill below).
 - **The catalog row moves with the version.** `npm run check:consistency` (PC-08) fails as soon as `plugin.json` and the root `README.md` catalog cell disagree, so set both in the same change (Phase A), not at release time.
-- **The date is the merge day, in UTC.** A release is dated the day its tag is created, and `release.yml` tags it minutes after the merge. On a pull request, `check:consistency -- --date-check` (PC-11, run by Validate) fails while an untagged current version is dated any other day, so a merge that slips past midnight UTC needs the date changed first.
+- **The date is the merge day, in UTC.** A release is dated the day its tag is created, and `release.yml` tags it minutes after the merge. On a pull request, `check:consistency -- --date-check` (PC-11, run by Validate) fails while an untagged current version is dated any other day. PC-11 is evaluated only when Validate runs, so a green run from an earlier UTC day proves nothing: re-run the pull request's Validate on merge day, right before merging.
+- **`untagged:` is not the backfill list.** `npm run release:status` prints `untagged:` only for each plugin's current version on `main`, which the next merge's release tags on its own. A version that will never be tagged that way, an older heading with no tag, shows only as a PC-04 finding of `npm run check:consistency`: those are the versions to backfill.
 - **A rename computes the next version from the old name.** `npm run release:status -- --next <new name>` finds nothing on `origin/main` and prints `0.1.0`; pass the old name, and treat the rename as breaking.
 - **Cloud sessions never tag.** The cloud proxy refuses tag pushes and answers 403 to `POST …/git/refs` and `POST …/releases`. Only `release.yml` creates tags and Releases; a cloud session only dispatches it, with the owner's authorization.
 - **The Claude review skips its own first pull request.** `claude-code-action` ends green without running when the workflow file differs from the default branch's copy, so a pull request that adds or changes `claude-code-review.yml` gets no Claude review until after it merges.
@@ -66,23 +67,23 @@ These go beyond the docs and stay unless the owner changes them:
 2. **Date the release** with the `docs-maintenance` skill, for every plugin `npm run release:status` lists as changed or untagged:
    - `npm run release:changelog -- <plugin>` turns `## [Unreleased]` into `## [X.Y.Z] - <today in UTC>`, adds an empty `## [Unreleased]` above it and writes the compare and release links. It exits 1 and changes nothing when `## [Unreleased]` is empty: stop and ask the owner what the version changes.
    - Write the release line in the root `CHANGELOG.md`.
-   - If the merge slips to a later UTC day, change both dates to that day before merging; PC-11 fails the pull request until you do.
+   - For a version already dated on an earlier day, `npm run release:changelog -- <plugin> --redate` moves its heading to today in UTC and leaves its notes as they are; change the root `CHANGELOG.md` line's date to match. PC-11 fails the pull request until both say the merge day.
 3. **Check what `release.yml` will publish**, on a committed tree:
-   - `npm run release:notes -- <plugin> --tag` for every plugin, then `npm run release:notes -- <plugin>` for every plugin whose version has no tag. Validate runs both; a failure there would stop the release loop at that plugin.
+   - `npm run release:notes -- <plugin>` for every plugin builds the Release body `release.yml` will publish; it exits 1 when a version has no dated section with notes, and a failure there would stop the release loop at that plugin. Until merge day, Validate runs it with `--pending`, which lets the `[Unreleased]` notes stand for a version not dated yet; on `main` it runs without it.
    - `claude plugin tag plugins/<plugin> --dry-run` prints `<plugin>--v<version>`; it exits 1 while any file under the plugin is uncommitted.
    - `find plugins/<plugin> -type l` lists no link out of the plugin.
-4. **List for the owner** what will ship: `git fetch origin main && npm run release:status`. `changed:` lines are the new versions; an `untagged:` line is a version on `main` that never got its tag, which needs a backfill first.
+4. **List for the owner** what will ship: `git fetch origin main && npm run release:status`. `changed:` lines are the new versions, and `untagged:` lines are current versions on `main` that this merge's release will also tag. The PC-04 findings of `npm run check:consistency` are versions that need a backfill (Backfill below) before Validate's `Checks` can pass.
 5. **Ask the owner to authorize the push**, then drive the pull request with `github-operations:auto-pr-lifecycle`. On the pull request:
    - Validate's `Checks` job must pass. Its `Debt` job reports the checks DEBT items hold back and never blocks.
-   - `claude-code-review.yml` posts Claude's review on every push, when the owner has enabled it; `auto-pr-lifecycle` answers and resolves its findings.
+   - `claude-code-review.yml` posts Claude's review on every push, as inline comments and one summary per push, when the owner has enabled it; `auto-pr-lifecycle` answers and resolves its findings.
    - `evals.yml` runs the suite of each changed plugin that has one, when the owner has enabled it, at the pass bar `.claude/rules/plugins/evals.md` sets.
    - `npm run check:install -- --from <pull request branch> <plugin>` installs what users will get from the branch.
 
 ## Phase C: Merge and release
 
-1. **Merge** only with the owner's authorization, Validate's `Checks` green and every review resolved.
+1. **Merge** only with the owner's authorization, Validate's `Checks` green on a run from today in UTC, and every review resolved.
 2. **The release runs on its own.** The push to `main` runs Validate; when `Checks` passes, its `Release` job calls `release.yml`, which tags and publishes each plugin whose current version has no tag, at the merged commit. A plugin whose tag exists is skipped.
-3. **If the `Release` job fails**, tell the owner at once: users who update already have the merged version. Fix the cause in a new commit on `main` through a pull request, then, with the owner's authorization, run `release.yml` by hand (Backfill below, without `backfill_target`). Never move or reuse a tag.
+3. **If the `Release` job fails or is cancelled**, tell the owner at once: users who update already have the merged version. `release.yml` keeps one release running and one waiting, so a third merge in quick succession cancels the waiting one; the next release then tags that version at its later commit. Fix a failure's cause in a new commit on `main` through a pull request, then, with the owner's authorization, dispatch `release.yml` on `main` (Backfill below, without `backfill_target`). Never move or reuse a tag.
 
 ## Phase D: Verify, and show the raw output
 
@@ -94,11 +95,11 @@ These go beyond the docs and stay unless the owner changes them:
 
 ## Backfill a version that never got its tag
 
-`release.yml` also runs through `workflow_dispatch`, with two inputs: `plugin`, to release only that plugin, and `backfill_target`, a commit in the dispatched branch's history where the plugin's `plugin.json` held the version to release. The tag goes on that commit and the Release body comes from today's changelog, so the version's section must exist and be dated there.
+`release.yml` also runs through `workflow_dispatch`, with two inputs: `plugin`, to release only that plugin, and `backfill_target`, a commit on `main` where the plugin's `plugin.json` held the version to release. The tag goes on that commit and the Release body comes from the dispatched branch's changelog, so the version's section must exist and be dated there. Every tag lands on a commit `main` has: the script refuses a target that isn't on `origin/main`, whichever branch was dispatched.
 
 1. Find the last commit on `main` where `plugin.json` held the version: `git log --format=%h origin/main -- plugins/<plugin>/.claude-plugin/plugin.json`, then `git show <commit>:plugins/<plugin>/.claude-plugin/plugin.json`.
 2. With the owner's authorization, dispatch it from a cloud session with the GitHub MCP tool `actions_run_trigger` (`method: run_workflow`, `owner: nerymurillohnd`, `repo: the-claude-factory`, `workflow_id: release.yml`, `ref: <branch>`, `inputs: {"plugin": "<plugin>", "backfill_target": "<commit>"}`). The run uses the `release.yml` of the branch it is dispatched on.
-3. Verify as in Phase D. A dispatch with an unknown plugin exits 2, and one whose commit is outside the branch's history exits 1; neither creates anything.
+3. Verify as in Phase D. A dispatch with an unknown plugin exits 2, and one whose commit isn't on `main` exits 1; neither creates anything.
 
 ## Withdraw a version
 
