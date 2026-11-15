@@ -1,14 +1,16 @@
 {
   "include": [
-    "plugins",
-    ".claude/hooks"
+    ".",
+    ".claude",
+    ".github"
   ],
   "exclude": [
     "**/node_modules",
     "**/__pycache__",
     ".git",
-    ".github",
-    ".ruff_cache"
+    ".venv",
+    ".ruff_cache",
+    "scripts"
   ],
   "typeCheckingMode": "all",
   "pythonVersion": "3.12",

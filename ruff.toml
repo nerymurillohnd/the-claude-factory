@@ -12,8 +12,8 @@ per-file-target-version = { "plugins/**/*.py" = "py312", ".claude/skills/**/*.py
 
 respect-gitignore = true
 force-exclude = true
-# This repository: .github/ is never linted or formatted (node_modules is git-ignored).
-extend-exclude = [".github"]
+# Every Python file in the repository is linted and formatted, .github/ included; git-ignored
+# folders such as node_modules and .venv stay out through respect-gitignore.
 
 # Explicit, not implicit: preview rules, fixes and formatter style change between patch
 # releases and are not a quality gate. `ruff check --preview` still opts in per run.
