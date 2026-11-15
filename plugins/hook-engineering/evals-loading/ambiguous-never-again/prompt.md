@@ -1,6 +1,6 @@
 ---
-description: "Must not load writing-hooks: the request is ambiguous and may end in a rule, a skill, a permission or a hook."
-tags: [loading, should-not-trigger, ambiguous, effort-low]
+description: "Ambiguous: nothing says what this is, so Claude asks for context before choosing any mechanism and builds nothing."
+tags: [loading, ambiguous, effort-low]
 max_turns: 4
 model: claude-sonnet-5-5
 timeout_seconds: 180
