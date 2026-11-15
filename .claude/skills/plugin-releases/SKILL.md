@@ -116,5 +116,5 @@ From code.claude.com/docs/en/plugins/publish (Ship updates to users) and host-ma
 
 The evals workflow stays inert until the owner sets these in the repository's GitHub settings; tell the owner when one is missing, never ask for a value:
 
-- an environment named `claude`, holding the secret `CLAUDE_CODE_OAUTH_TOKEN` for `evals.yml`, created with `claude setup-token`;
-- the repository variable `CLAUDE_EVALS`, set to `enabled`, under **Secrets and variables → Actions → Variables**, not in the `claude` environment: a job-level `if:` reads it before the job enters the environment, so an environment variable reads as empty there and the workflow skips without an error.
+- the repository secret `CLAUDE_CODE_OAUTH_TOKEN` for `evals.yml`, created with `claude setup-token`;
+- the repository variable `CLAUDE_EVALS`, set to `enabled`, under **Secrets and variables → Actions → Variables**, not as an environment variable: a job-level `if:` reads it, and it sees only repository variables.
