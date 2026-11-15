@@ -45,6 +45,7 @@ Add an item only when all of these hold:
 | DEBT-005 | frontmatter-lint can't join npm run lint while five plugins break the no-colon, no-quotes rule | 🟠 Blocked |
 | DEBT-006 | npm run lint:js fails on 31 Biome findings in plugin files | 🟠 Blocked |
 | DEBT-007 | The workflows' actions can't move to a GitHub lockfile from a cloud session | 🟠 Blocked |
+| DEBT-008 | python-lsp-intelligence reports "basedpyright passed" for a file basedpyright never analyzed | 🟡 Pending |
 
 ## 📂 Open items
 
@@ -226,6 +227,34 @@ Add an item only when all of these hold:
 - **Why it is not fixed now:** generating the lockfile needs an authenticated `gh` with API access to the action repositories, which a cloud session doesn't have.
 - **Next action:** on the owner's machine, run `gh extension install github/gh-actions-lock`, rewrite each `uses:` as its full version tag, run `gh actions-lock --ignore-local-actions` (keeping `./` while actionlint rejects `$/`), check `npm run lint:workflows`, add `gh actions-lock --verify` to Validate, and update the pin rule in `.claude/rules/architecture/github.md`.
 - **Review condition:** a session with an authenticated `gh` on github.com, or an actionlint release that accepts `$/`.
+- **Related records:** none.
+
+### DEBT-008 — python-lsp-intelligence reports "basedpyright passed" for a file basedpyright never analyzed
+
+| Field | Value |
+| --- | --- |
+| **Status** | 🟡 Pending |
+| **Category** | quality |
+| **Owner** | Nery Samuel Murillo |
+| **Logged** | 2026-11-15 |
+
+#### 🔎 Evidence
+
+- **Confirmed facts:**
+  - `plugins/python-lsp-intelligence/hooks/check.py` 0.3.4, `check_file`, runs `basedpyright -p <nearest config> <file>` and reads only the exit code: 0 is recorded as a pass. It never checks how many files basedpyright analyzed.
+  - basedpyright 1.40.2 excludes `**/.*` (hidden folders) by default, and the docs ("Config files", `exclude`) say the defaults take precedence over `include`. A file under a hidden folder, below the folder that holds the config, is skipped even when passed by name: basedpyright prints "0 errors" and exits 0.
+  - Reproduced on 2026-11-15 in an isolated copy of `HEAD` (commit `6a75534`): with a deliberate `return "not an int"` in a function typed `-> int` in `.claude/hooks/guard-quality-gates.py`, the hook printed `"python-lsp-intelligence: ruff check, ruff format, basedpyright passed"` and exited 0. With a `.claude/pyrightconfig.json` present, the same input exited 2 and listed 38 errors.
+  - The guard committed at `HEAD` carries those 38 basedpyright errors under `typeCheckingMode` "all"; the hook never reported them.
+  - The plugin's tests (`plugins/python-lsp-intelligence/tests/test_check.py`) have no case for a file basedpyright skips.
+- **Inferences:** the same false pass hits any user's Python file under a hidden folder (`.github/`, `.devcontainer/`, `.claude/hooks/`) or under an `exclude` entry, so the plugin's promise to type-check every Python file Claude edits fails silently there.
+- **Open questions:** whether `bash-lsp-intelligence` and the TypeScript plugins also read "nothing checked" as a pass.
+
+#### 📈 Impact and next step
+
+- **Impact / risk:** type errors in those files ship unreported, both in this repository and on third-party users' machines, while the hook tells Claude the file passed.
+- **Why it is not fixed now:** the owner chose on 2026-11-15 to record it and fix it in a later change, after the current Python configuration work.
+- **Next action:** in `plugins/python-lsp-intelligence`, write a failing test first (a file with a type error under a hidden folder must give exit 2), then run basedpyright with `--outputjson` in `check_file`, and report a file whose `summary.filesAnalyzed` is 0 as not checked (exit 2), with the fix to apply (give that folder its own configuration). Update the README and CHANGELOG, and release it as 0.3.5 through `plugin-releases`. Then check the sibling LSP plugins for the same pattern.
+- **Review condition:** the 0.3.5 release, or any change to `check_file`.
 - **Related records:** none.
 
 <!--
