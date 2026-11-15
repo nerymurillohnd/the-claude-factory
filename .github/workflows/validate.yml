@@ -21,7 +21,8 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:
-  # The plugins that fail plain `claude plugin validate --strict` today (DEBT-003); `debt` checks them.
+  # The plugins that fail plain `claude plugin validate --strict` today (DEBT-003), and so the strict
+  # validation inside `check:install`; `debt` checks them.
   DEBT_003_PLUGINS: file-tree-pane model-trace project-maintainer tool-ledger turn-meter
 
 jobs:
@@ -36,20 +37,28 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
-      - uses: ./.github/actions/setup
+      - id: setup
+        uses: ./.github/actions/setup
+      # Every check runs once the toolchain is in place, so one run reports each failing check.
       - name: Lint (Python, shell, workflows, GitHub files)
+        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
         run: |
+          set -euo pipefail
           npm run lint:python
           npm run lint:shell
           npm run lint:workflows
           npm run lint:github
       - name: Type check
+        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
         run: npm run typecheck
       - name: Maintainer script tests
+        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
         run: npm run test:scripts
       - name: Plugin hook tests
+        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
         run: npm run test:plugins
       - name: claude plugin validate --strict (plugins outside DEBT-003, the marketplace, .claude)
+        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
         run: |
           set -euo pipefail
           for dir in plugins/*/; do
@@ -60,8 +69,10 @@ jobs:
           claude plugin validate --strict .
           npm run validate:claude
       - name: Mod tests
+        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
         run: npm run validate:mods
       - name: Consistency
+        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
         env:
           EVENT: ${{ github.event_name }}
         run: |
@@ -75,6 +86,7 @@ jobs:
       # are missing. On a pull request, a version not dated until merge day may still have its
       # notes under [Unreleased] (--pending); on main, every version needs its dated section.
       - name: Release notes for every plugin
+        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
         env:
           EVENT: ${{ github.event_name }}
         run: |
@@ -85,8 +97,8 @@ jobs:
           for name in ${names}; do
             npm run --silent release:notes -- "${name}" "${mode[@]}" >/dev/null
           done
-      - name: Install check for each changed plugin
-        if: github.event_name == 'pull_request'
+      - name: Install check for each changed plugin outside DEBT-003
+        if: ${{ !cancelled() && steps.setup.outcome == 'success' && github.event_name == 'pull_request' }}
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
         run: |
@@ -94,10 +106,11 @@ jobs:
           changed="$(git diff --name-only "${BASE_SHA}...HEAD" -- plugins/ | cut -d/ -f2 | sort -u)"
           listed=()
           for name in ${changed}; do
-            [[ -f plugins/${name}/.claude-plugin/plugin.json ]] && listed+=("${name}")
+            if [[ " ${DEBT_003_PLUGINS} " == *" ${name} "* ]]; then continue; fi
+            if [[ -f plugins/${name}/.claude-plugin/plugin.json ]]; then listed+=("${name}"); fi
           done
           if ((${#listed[@]} == 0)); then
-            echo "No plugin changed."
+            echo "No plugin outside DEBT-003 changed."
             exit 0
           fi
           npm run check:install -- --from local "${listed[@]}"
@@ -112,6 +125,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          fetch-depth: 0
           persist-credentials: false
       - uses: ./.github/actions/setup
       - name: DEBT-006 — npm run lint:js
@@ -123,9 +137,31 @@ jobs:
       - name: DEBT-003 — claude plugin validate --strict on the five plugins
         continue-on-error: true
         run: |
+          set -euo pipefail
           status=0
           for name in ${DEBT_003_PLUGINS}; do
             claude plugin validate --strict "plugins/${name}/" || status=1
+          done
+          exit "${status}"
+      - name: DEBT-003 — install check for each changed plugin of the five
+        if: github.event_name == 'pull_request'
+        continue-on-error: true
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          set -euo pipefail
+          changed="$(git diff --name-only "${BASE_SHA}...HEAD" -- plugins/ | cut -d/ -f2 | sort -u)"
+          listed=()
+          for name in ${changed}; do
+            if [[ " ${DEBT_003_PLUGINS} " == *" ${name} "* ]]; then listed+=("${name}"); fi
+          done
+          if ((${#listed[@]} == 0)); then
+            echo "No DEBT-003 plugin changed."
+            exit 0
+          fi
+          status=0
+          for name in "${listed[@]}"; do
+            npm run check:install -- --from local "${name}" || status=1
           done
           exit "${status}"
       - name: DEBT-003 — npm run validate:portable

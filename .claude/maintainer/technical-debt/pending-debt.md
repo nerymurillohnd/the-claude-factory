@@ -125,6 +125,12 @@ Add an item only when all of these hold:
   - On 2026-11-14, with Claude Code 2.1.325, plain `claude plugin validate --strict` also exits 1 on `model-trace`, `tool-ledger` and `turn-meter`, at `main` (39b0110): `error TS2769: No overload matches this call … 'mode' does not exist in type … ToolInputOf<"WebSearch", …>` (model-trace lines 230 and 351). So `npm run validate` fails on them too.
   - On 2026-11-15, on `ccr-7fcd6ef3-rku7l1` at 005f47d with Claude Code 2.1.325, plain `--strict` also exits 1 on `file-tree-pane` and `project-maintainer`, with `error TS5097: An import path can only end with a '.ts' extension when 'allowImportingTsExtensions' is enabled`. `tool-ledger` and `turn-meter` exit 1 with `TS2741: Property 'isCollapsed' is missing`. All five fail plain `--strict` and `--profile directory --strict` alike (`.claude/maintainer/plans/2026-11-15-release-pipeline-baseline.md`). The type check of a TypeScript hooks module joined `claude plugin validate` in 2.1.323, per the changelog.
   - Validate's blocking `Checks` job runs `claude plugin validate --strict` on every other plugin. Its non-blocking `Debt` job runs these five, `validate:portable` and `validate:hooks-catch`, each step named `DEBT-003`.
+  - On 2026-11-15, at 6a58b1a with Claude Code 2.1.325, `npm run check:install -- --from local` also exits 1 on four of the five, at its strict validation:
+    - `model-trace`: TS2769 (`mode` on `WebSearch`);
+    - `project-maintainer`: 14× TS5097;
+    - `tool-ledger` and `turn-meter`: TS2741 (`isCollapsed` missing).
+
+    Validate's blocking install check now skips the five, and the `Debt` job runs `check:install` on those a pull request changes.
 - **Inferences:** the same mods-API type errors may mean the mods are broken for users on current Claude Code builds; whether 2.1.325 changed the WebSearch input type is not checked against the release notes.
 - **Open questions:** none.
 
