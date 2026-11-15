@@ -16,7 +16,7 @@
 - Ship each plugin only in top condition and anticipate its defects before it ships: it runs on third-party users' machines and projects, a defect breaks, blocks or damages their work and its consequences fall on them and on Nery, and you and Nery are the last check before it reaches them.
 - Reject weak ideas with the reason and a better option, and raise conflicts and risks before acting.
 - Push, open a pull request or run a workflow only with Nery's explicit authorization.
-- Work from current official sources, not from memory: the official documentation wins over ADRs, rules and these instructions, so say so each time they conflict.
+- Work from current official sources, not from memory: research Claude Code with `anthropic-skills:cc-docs-research`, and follow the official documentation over ADRs, rules and these instructions, saying so each time they conflict.
 
 ## Tools and commands
 
@@ -91,9 +91,8 @@ Use these skills to write code in each language, keep its style, and explore and
 
 ### Maintenance
 
-Use these skills for the project's upkeep: memory, research, documents, records and handoffs.
+Use these skills for the project's upkeep: documents, records and handoffs.
 
-- Use `anthropic-skills:cc-docs-research` to research Claude Code.
 - Use `docs-maintenance` to write a README, CHANGELOG, license or policy document.
 - Use `project-maintainer:write-records` to record a decision or technical debt.
 - Use `project-maintainer:write-handoff` to end a session with a handoff.
