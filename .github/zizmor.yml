@@ -13,9 +13,14 @@ rules:
   adhoc-packages:
     ignore:
       - action.yml
-  # claude.yml answers @claude mentions, which arrive only as issue_comment and review events. It
-  # checks out the default branch, never the pull request's head, and claude-code-action refuses
-  # bots and users without write access before Claude starts.
+  # claude.yml answers @claude mentions, which arrive only as issue_comment and review events.
+  # claude-code-action (docs/security.md at the pinned v1.0.276):
+  #   - refuses bots and users without write access before Claude starts;
+  #   - checks out the pull request's head on a pull request;
+  #   - restores .claude/, CLAUDE.md, CLAUDE.local.md and .mcp.json from the base branch first, so a
+  #     fork's settings, hooks and instructions never load;
+  #   - denies package managers, test runners, interpreters and shells when the pull request's author
+  #     has no write access (restrict_untrusted_prs, on by default).
   dangerous-triggers:
     ignore:
       - claude.yml
