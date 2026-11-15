@@ -1,10 +1,10 @@
 ---
-status: accepted
+status: superseded
 date: 2026-11-15
 decision-makers:
   - "Nery Samuel Murillo"
 supersedes: none
-superseded-by: none
+superseded-by: ADR_2026-11-15_changelog-date-is-the-day-a-version-is-prepared
 ---
 
 # check:consistency exempts only the current version from PC-04, runs PC-05 on demand, and checks the release date

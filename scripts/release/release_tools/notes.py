@@ -43,8 +43,7 @@ def release_body(
 ) -> str:
     """Return the version's CHANGELOG section, a rule, then the update command.
 
-    pending lets the [Unreleased] notes stand for a version not dated yet, as on a pull request
-    before merge day.
+    pending lets the [Unreleased] notes stand for a version not dated yet, as on a pull request.
     """
     current = release or _version(root, plugin)
     path = root / "plugins" / plugin / "CHANGELOG.md"

@@ -78,12 +78,11 @@ jobs:
         run: |
           set -euo pipefail
           case "${EVENT}" in
-            pull_request) npm run check:consistency -- --date-check ;;
             push) npm run check:consistency -- --main ;;
             *) npm run check:consistency ;;
           esac
       # Each plugin's Release body must build: release.yml stops at the first plugin whose notes
-      # are missing. On a pull request, a version not dated until merge day may still have its
+      # are missing. On a pull request, a version not dated yet may still have its
       # notes under [Unreleased] (--pending); on main, every version needs its dated section.
       - name: Release notes for every plugin
         if: ${{ !cancelled() && steps.setup.outcome == 'success' }}

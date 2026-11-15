@@ -120,7 +120,7 @@ class Fixture:
 
 
 class ChecksTest(unittest.TestCase):
-    """PC-01 to PC-11."""
+    """PC-01 to PC-05 and PC-12."""
 
     def test_consistent_fixture_passes(self) -> None:
         """The fixture as built has no finding, online or offline."""
@@ -213,22 +213,6 @@ class ChecksTest(unittest.TestCase):
             _ = git(f.m.root, "checkout", "-q", "--detach")
             ids = [x.check_id for x in check(f.m.root, offline=True, main=True)]
             self.assertEqual((f.ids(offline=True), ids), ([], ["PC-05"]))
-
-    def test_pc11_untagged_current_version_not_dated_today(self) -> None:
-        """With date_check, the untagged current version must be dated today (UTC)."""
-        with tempfile.TemporaryDirectory() as tmp:
-            f = Fixture(Path(tmp))
-            f.bump("0.2.0", {"0.2.0": "- New.", "0.1.0": "- First."})
-            stale = [str(x) for x in check(f.m.root, date_check=True, today="2026-11-15")]
-            dated = check(f.m.root, date_check=True, today="2026-11-01")
-            expected = "PC-11 plugins/demo/CHANGELOG.md: [0.2.0] is dated 2026-11-01, not today"
-            self.assertEqual((stale, dated), ([f"{expected} (2026-11-15)"], []))
-
-    def test_pc11_skips_a_tagged_current_version(self) -> None:
-        """A released version keeps its date; date_check ignores it."""
-        with tempfile.TemporaryDirectory() as tmp:
-            f = Fixture(Path(tmp))
-            self.assertEqual(check(f.m.root, date_check=True, today="2026-11-15"), [])
 
     def test_pc12_suite_missing_from_the_evals_workflow_paths(self) -> None:
         """A plugin with an evals/ suite must be a path that triggers evals.yml."""
@@ -369,8 +353,8 @@ class CliTest(unittest.TestCase):
         self.assertEqual(bad, 1)
         self.assertTrue(out_bad.getvalue().startswith("PC-03 .claude-plugin/marketplace.json: "))
 
-    def test_main_and_date_check_flags(self) -> None:
-        """--main enforces PC-05 on a detached commit; --date-check adds PC-11."""
+    def test_main_flag(self) -> None:
+        """--main enforces PC-05 on a detached commit; a changelog date is never a finding."""
         with tempfile.TemporaryDirectory() as tmp:
             f = Fixture(Path(tmp))
             f.bump("0.2.0", {"0.2.0": "- New.", "0.1.0": "- First."})
@@ -382,11 +366,17 @@ class CliTest(unittest.TestCase):
             with contextlib.redirect_stdout(out):
                 codes = (
                     cli.main(["--root", str(f.m.root)]),
-                    cli.main(["--root", str(f.m.root), "--main", "--date-check"]),
+                    cli.main(["--root", str(f.m.root), "--main"]),
                 )
         lines = out.getvalue().splitlines()
         self.assertEqual(codes, (0, 1))
-        self.assertEqual([line.split()[0] for line in lines], ["PC-11", "PC-05"])
+        self.assertEqual([line.split()[0] for line in lines], ["PC-05"])
+
+    def test_date_check_flag_is_gone(self) -> None:
+        """--date-check, and PC-11 with it, no longer exist: the flag is a usage error."""
+        with contextlib.redirect_stderr(io.StringIO()), self.assertRaises(SystemExit) as raised:
+            _ = cli.main(["--offline", "--date-check"])
+        self.assertEqual(raised.exception.code, 2)
 
     def test_finding_text(self) -> None:
         """A finding prints as `<id> <path>: <message>`."""

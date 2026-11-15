@@ -75,7 +75,7 @@ class NotesTest(unittest.TestCase):
         self.assertEqual(self._main("demo", "--version", "0.9.0")[0], 1)
 
     def test_pending_accepts_unreleased_notes_for_an_undated_version(self) -> None:
-        """--pending: before merge day, the [Unreleased] notes stand for the version."""
+        """--pending: on a pull request, the [Unreleased] notes stand for an undated version."""
         text = changelog("demo", {"1.2.0": BODY}, unreleased="### Added\n\n- New.")
         self.m.add_plugin("demo", "1.3.0", changelog_text=text)
         code, out, _ = self._main("demo", "--pending")

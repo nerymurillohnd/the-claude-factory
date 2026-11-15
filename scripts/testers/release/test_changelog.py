@@ -119,19 +119,11 @@ class CliTest(unittest.TestCase):
         empty = FIRST.replace("### Added\n\n- Initial release.\n\n", "")
         self.assertEqual(self._run(empty, "--date", "2026-11-13"), (1, empty))
 
-    def test_redate_moves_the_current_version_to_the_new_day(self) -> None:
-        """--redate changes only the current version's date; the notes stay as they are."""
-        dated = FIRST.replace(
-            "## [Unreleased]\n\n### Added",
-            "## [Unreleased]\n\n## [0.1.0] - 2026-11-14\n\n### Added",
-        )
-        code, text = self._run(dated, "--redate", "--date", "2026-11-15")
-        self.assertEqual(code, 0)
-        self.assertEqual(text, dated.replace("2026-11-14", "2026-11-15"))
-
-    def test_redate_without_a_dated_current_version_exits_1(self) -> None:
-        """--redate on a version still under [Unreleased] changes nothing."""
-        self.assertEqual(self._run(FIRST, "--redate", "--date", "2026-11-15"), (1, FIRST))
+    def test_redate_flag_is_gone(self) -> None:
+        """--redate no longer exists: a version keeps the date it was prepared on."""
+        with contextlib.redirect_stderr(io.StringIO()), self.assertRaises(SystemExit) as raised:
+            _ = self._run(FIRST, "--redate", "--date", "2026-11-15")
+        self.assertEqual(raised.exception.code, 2)
 
     def test_bad_date_exits_2(self) -> None:
         """A date that is not YYYY-MM-DD is a usage error."""
