@@ -29,7 +29,8 @@
 - Use Biome to format and lint TypeScript, JavaScript, JSON, YAML and Markdown; it lints the Markdown Claude reads as instructions but never formats it.
 - Use ruff to lint and format every Python file.
 - Use shfmt to format and ShellCheck to lint every shell script.
-- Run `tsc` to type-check every TypeScript file, and basedpyright to type-check every Python file.
+- Run `tsc --noEmit` to type-check every TypeScript file.
+- Run `basedpyright --outputjson` to type-check every Python file.
 
 **Tests and plugins**
 
