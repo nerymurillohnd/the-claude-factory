@@ -13,7 +13,7 @@ import unittest
 from validators.plugin_consistency import cli
 from validators.plugin_consistency.checks import Finding, check
 
-from testers.release.helpers import Marketplace, changelog
+from testers.release.helpers import Marketplace, changelog, git
 
 WORDS = " ".join(["word"] * 40)
 LISTING: dict[str, object] = {
@@ -94,13 +94,24 @@ class Fixture:
         self.m.push()
         self.m.tag("demo--v0.1.0")
 
+    def bump(self, new: str, sections: dict[str, str]) -> None:
+        """Set demo to a new version with these changelog sections and its catalog row."""
+        self.m.add_plugin(
+            "demo",
+            new,
+            changelog_text=changelog("demo", sections),
+            manifest=LISTING,
+            entry={"category": "development"},
+        )
+        self.m.write("README.md", root_readme({"🛠️ Development": [catalog_row("demo", new)]}))
+
     def ids(self, *, offline: bool = False) -> list[str]:
         """Return the check ids the fixture reports."""
         return [f.check_id for f in check(self.m.root, offline=offline)]
 
 
 class ChecksTest(unittest.TestCase):
-    """PC-01 to PC-10."""
+    """PC-01 to PC-11."""
 
     def test_consistent_fixture_passes(self) -> None:
         """The fixture as built has no finding, online or offline."""
@@ -160,6 +171,55 @@ class ChecksTest(unittest.TestCase):
             )
             f.m.write("README.md", root_readme({"🛠️ Development": [catalog_row("demo", "0.2.0")]}))
             self.assertEqual(f.ids(), [])
+
+    def test_pc04_current_version_untagged_after_merge_passes(self) -> None:
+        """On main, before release.yml tags it, the current version needs no tag."""
+        with tempfile.TemporaryDirectory() as tmp:
+            f = Fixture(Path(tmp))
+            f.bump("0.2.0", {"0.2.0": "- New.", "0.1.0": "- First."})
+            f.m.commit()
+            f.m.push()
+            self.assertEqual(f.ids(), [])
+
+    def test_pc04_older_heading_untagged_after_merge_fails(self) -> None:
+        """An older version that never got its tag stays reported once a newer one is current."""
+        with tempfile.TemporaryDirectory() as tmp:
+            f = Fixture(Path(tmp))
+            f.bump("0.2.1", {"0.2.1": "- Fix.", "0.2.0": "- New.", "0.1.0": "- First."})
+            f.m.commit()
+            f.m.push()
+            messages = [str(x) for x in check(f.m.root)]
+            self.assertEqual(
+                messages,
+                ["PC-04 plugins/demo/CHANGELOG.md: [0.2.0] has no tag demo--v0.2.0"],
+            )
+
+    def test_pc05_runs_with_main_flag_on_detached_head(self) -> None:
+        """CI checks out a commit, not a branch; main=True still enforces PC-05."""
+        with tempfile.TemporaryDirectory() as tmp:
+            f = Fixture(Path(tmp))
+            text = changelog("demo", {"0.1.0": "- First."}, unreleased="- Pending.")
+            f.m.write("plugins/demo/CHANGELOG.md", text)
+            f.m.commit()
+            _ = git(f.m.root, "checkout", "-q", "--detach")
+            ids = [x.check_id for x in check(f.m.root, offline=True, main=True)]
+            self.assertEqual((f.ids(offline=True), ids), ([], ["PC-05"]))
+
+    def test_pc11_untagged_current_version_not_dated_today(self) -> None:
+        """With date_check, the untagged current version must be dated today (UTC)."""
+        with tempfile.TemporaryDirectory() as tmp:
+            f = Fixture(Path(tmp))
+            f.bump("0.2.0", {"0.2.0": "- New.", "0.1.0": "- First."})
+            stale = [str(x) for x in check(f.m.root, date_check=True, today="2026-11-15")]
+            dated = check(f.m.root, date_check=True, today="2026-11-01")
+            expected = "PC-11 plugins/demo/CHANGELOG.md: [0.2.0] is dated 2026-11-01, not today"
+            self.assertEqual((stale, dated), ([f"{expected} (2026-11-15)"], []))
+
+    def test_pc11_skips_a_tagged_current_version(self) -> None:
+        """A released version keeps its date; date_check ignores it."""
+        with tempfile.TemporaryDirectory() as tmp:
+            f = Fixture(Path(tmp))
+            self.assertEqual(check(f.m.root, date_check=True, today="2026-11-15"), [])
 
     def test_pc05_unreleased_notes_on_main(self) -> None:
         """On main, [Unreleased] holds no notes."""
@@ -276,6 +336,25 @@ class CliTest(unittest.TestCase):
         self.assertEqual((clean, out.getvalue()), (0, ""))
         self.assertEqual(bad, 1)
         self.assertTrue(out_bad.getvalue().startswith("PC-03 .claude-plugin/marketplace.json: "))
+
+    def test_main_and_date_check_flags(self) -> None:
+        """--main enforces PC-05 on a detached commit; --date-check adds PC-11."""
+        with tempfile.TemporaryDirectory() as tmp:
+            f = Fixture(Path(tmp))
+            f.bump("0.2.0", {"0.2.0": "- New.", "0.1.0": "- First."})
+            text = changelog("demo", {"0.2.0": "- New.", "0.1.0": "- First."}, unreleased="- P.")
+            f.m.write("plugins/demo/CHANGELOG.md", text)
+            f.m.commit()
+            _ = git(f.m.root, "checkout", "-q", "--detach")
+            out = io.StringIO()
+            with contextlib.redirect_stdout(out):
+                codes = (
+                    cli.main(["--root", str(f.m.root)]),
+                    cli.main(["--root", str(f.m.root), "--main", "--date-check"]),
+                )
+        lines = out.getvalue().splitlines()
+        self.assertEqual(codes, (0, 1))
+        self.assertEqual([line.split()[0] for line in lines], ["PC-11", "PC-05"])
 
     def test_finding_text(self) -> None:
         """A finding prints as `<id> <path>: <message>`."""

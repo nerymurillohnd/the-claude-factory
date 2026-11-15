@@ -68,7 +68,7 @@ This repository:
 ## Checks
 
 - Every changed plugin has a new version and a non-empty section for it: `npm run release:status` lists every plugin whose version differs from `origin/main` as a `changed:` line; read each one's section.
-- `npm run check:consistency` exits 0: every dated version has its tag except the one being released (`PC-04`), and `## [Unreleased]` is empty on `main` (`PC-05`).
+- `npm run check:consistency` exits 0: every dated version has its tag except the plugin's current version, which `release.yml` tags (`PC-04`), and `## [Unreleased]` is empty on `main` (`PC-05`, also on a detached commit with `--main`). With `--date-check`, an untagged current version must be dated today in UTC (`PC-11`).
 - `claude plugin tag plugins/<plugin> --dry-run`, after the changelog is committed: it exits 1 while any file under the plugin is uncommitted, and when the tag already exists.
 - `grep -n '{{' plugins/<plugin>/CHANGELOG.md` returns nothing.
 

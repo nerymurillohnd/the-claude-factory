@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
-"""Marketplace, manifest and changelog checks (PC-01 to PC-05), and the run of PC-01 to PC-10."""
+"""Marketplace, manifest and changelog checks (PC-01 to PC-05, PC-11), and the run of all checks."""
 
 from __future__ import annotations
 
+from datetime import UTC, datetime
+import re
 from typing import TYPE_CHECKING, cast
 
 from release.release_tools.repo import (
@@ -71,24 +73,40 @@ def _changelog(root: Path, name: str) -> str:
     return path.read_text(encoding="utf-8") if path.is_file() else ""
 
 
-def _tags(root: Path, base: str) -> Iterator[Finding]:
-    """PC-04: every dated changelog version has its tag, except the version being released."""
-    tags = remote_tags(root)
+def _tags(root: Path, tags: set[str]) -> Iterator[Finding]:
+    """PC-04: every dated changelog version has its tag, except the current one release.yml tags."""
     for entry in entries(root):
         name = str(entry.get("name", ""))
         current = version(manifest(root, name))
-        pending = current if current != version(manifest(root, name, base)) else None
         headings = cast("list[str]", VERSION_HEADING.findall(_changelog(root, name)))
         for found in headings:
-            if found != pending and f"{name}--v{found}" not in tags:
+            if found != current and f"{name}--v{found}" not in tags:
                 path = f"plugins/{name}/CHANGELOG.md"
                 yield Finding("PC-04", path, f"[{found}] has no tag {name}--v{found}")
 
 
-def _unreleased(root: Path) -> Iterator[Finding]:
-    """PC-05: on main, every [Unreleased] section is empty."""
+def _release_date(root: Path, tags: set[str], today: str) -> Iterator[Finding]:
+    """PC-11: an untagged current version is dated today, the day release.yml will tag it."""
+    for entry in entries(root):
+        name = str(entry.get("name", ""))
+        current = version(manifest(root, name))
+        if current is None or f"{name}--v{current}" in tags:
+            continue
+        heading = re.search(
+            rf"^## \[{re.escape(current)}\] - ([0-9]{{4}}-[0-9]{{2}}-[0-9]{{2}})",
+            _changelog(root, name),
+            re.MULTILINE,
+        )
+        if heading and heading[1] != today:
+            path = f"plugins/{name}/CHANGELOG.md"
+            message = f"[{current}] is dated {heading[1]}, not today ({today})"
+            yield Finding("PC-11", path, message)
+
+
+def _unreleased(root: Path, *, main: bool) -> Iterator[Finding]:
+    """PC-05: on main, or with main=True (CI on a detached commit), every [Unreleased] is empty."""
     branch = git(root, "rev-parse", "--abbrev-ref", "HEAD").stdout.strip()
-    if branch != "main":
+    if branch != "main" and not main:
         return
     for entry in entries(root):
         name = str(entry.get("name", ""))
@@ -98,12 +116,23 @@ def _unreleased(root: Path) -> Iterator[Finding]:
             yield Finding("PC-05", path, "[Unreleased] has notes on main")
 
 
-def check(root: Path, *, offline: bool = False, base: str = "origin/main") -> list[Finding]:
-    """Run every check; offline skips PC-04, which reads the remote's tags."""
+def check(
+    root: Path,
+    *,
+    offline: bool = False,
+    main: bool = False,
+    date_check: bool = False,
+    today: str | None = None,
+) -> list[Finding]:
+    """Run every check; offline skips PC-04 and PC-11, which read the remote's tags."""
     findings = [*_names(root), *_renames(root), *_force_remove(root)]
     if not offline:
-        findings += _tags(root, base)
-    findings += _unreleased(root)
+        tags = remote_tags(root)
+        findings += _tags(root, tags)
+        if date_check:
+            day = today or datetime.now(UTC).date().isoformat()
+            findings += _release_date(root, tags, day)
+    findings += _unreleased(root, main=main)
     findings += readme_findings(root)
     findings += catalog_findings(root)
     findings += icon_findings(root)
