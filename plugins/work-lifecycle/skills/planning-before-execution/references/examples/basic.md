@@ -75,7 +75,7 @@ Main session: two small dependent tasks.
 
 ## Handoff
 
-Plan gate on. `/goal` condition (531 characters):
+Plan gate on. `/goal` condition, about 550 characters, well under the 4,000 limit:
 
 /goal Execute the approved plan at ~/.claude/plans/ledgerctl-json.md, task by task, passing each task's check before the next. First invoke the work-lifecycle:planning-before-execution skill and follow its Execution section.
 Task: add a --json flag to ledgerctl report.

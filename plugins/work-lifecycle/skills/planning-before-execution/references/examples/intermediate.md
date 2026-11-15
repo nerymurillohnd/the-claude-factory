@@ -97,7 +97,7 @@ Main session for Tasks 1 to 3; a worktree subagent for Task 0 only.
 
 ## Handoff
 
-Plan gate on; Task 0's result is recorded before Task 1 starts. `/goal` condition referencing this plan, 498 characters.
+Plan gate on; Task 0's result is recorded before Task 1 starts. `/goal` condition referencing this plan, about 500 characters.
 
 Before Task 1, and after any resume or context clear, invoke the work-lifecycle:planning-before-execution skill and follow its Execution section.
 </plan>

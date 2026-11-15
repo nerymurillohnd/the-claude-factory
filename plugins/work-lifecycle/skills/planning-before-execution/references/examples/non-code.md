@@ -1,5 +1,12 @@
 # Example: operations or content work
 
+## Contents
+
+- [Goal](#goal) and [Acceptance criteria](#acceptance-criteria)
+- [Tasks](#tasks), with acceptance checks instead of tests
+- [Risks](#risks) and [Handoff](#handoff)
+- [Why each section holds what it does here](#why-each-section-holds-what-it-does-here)
+
 Judgment to copy: work that isn't code still gets tasks with checks that come back pass or fail, and every message to a third party is an authorization checkpoint. Don't copy the tools, names or numbers.
 
 <example>
@@ -44,16 +51,31 @@ Every help article lives on the docs site, every old link lands on its new page,
 
 ### Task 1: convert the articles
 
+- Files: `content/help/*.md`
+- Produces: one Markdown file per published article
+- Test first: no; content work, acceptance checks instead.
+- Steps:
+  1. Convert each of the 118 published articles in `exports/wiki-articles.csv` into `content/help/<slug>.md`; leave the drafts out.
 - Check: `ls content/help/*.md | wc -l` → `118`, and the site build reports no broken internal links.
+- Done when: the check passes and its evidence is recorded.
 
 ### Task 2: URL map and redirects
 
+- Files: `exports/url-map.csv`, `redirects.yaml`
 - Consumes: the file names from Task 1
+- Steps:
+  1. Write `url-map.csv` (old URL, new URL, title), then add one redirect per row.
 - Check: a script reads `exports/url-map.csv` and requests each old URL against the preview deploy; it prints `118 redirected, 0 missing`.
+- Done when: the check passes and its evidence is recorded.
 
 ### Task 3: announcement draft
 
+- Files: the email draft in the email tool
+- Consumes: the URL map from Task 2 and the switch date
+- Steps:
+  1. Draft the email with the switch date and links to three of the most-visited articles at their new URLs; save it unsent.
 - Check: the draft names the switch date, links three of the most-visited articles at their new URLs, and is saved unsent; the user reviews it.
+- Done when: the check passes and its evidence is recorded.
 
 Authorization checkpoint: send the email. Stop and ask.
 
@@ -61,7 +83,11 @@ Authorization checkpoint: switch production traffic to the docs site. Stop and a
 
 ### Task 4: post-switch check
 
+- Consumes: the production switch, after its authorization checkpoint
+- Steps:
+  1. Run the Task 2 script against production and pull the first hour's 404 report.
 - Check: the Task 2 script run against production prints `118 redirected, 0 missing`, and the 404 report for the first hour lists no help article.
+- Done when: the check passes and its evidence is recorded.
 
 ## Risks
 

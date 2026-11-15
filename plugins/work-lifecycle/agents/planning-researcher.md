@@ -43,6 +43,8 @@ Before reporting, confirm that:
 
 ## Output format
 
+Use this exact structure. Keep every heading, and write `None` under an empty one:
+
 ```markdown
 ## Research report: <question>
 

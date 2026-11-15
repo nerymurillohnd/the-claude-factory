@@ -36,4 +36,4 @@ Constraints: <what must not change; stop and ask before push, deploy, publishing
 - Why it matters: explaining the motivation helps Claude generalize to the cases the plan doesn't cover.
 - Constraints: repeat the plan's authorization checkpoints.
 
-After the condition, state its length in characters, and tell the user that typing it is their go-ahead to execute.
+After the condition, say that it is well under the 4,000-character limit, with its approximate length to the nearest 50 characters, and tell the user that typing it is their go-ahead to execute.

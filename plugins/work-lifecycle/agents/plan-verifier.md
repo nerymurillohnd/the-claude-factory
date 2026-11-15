@@ -52,6 +52,8 @@ Before reporting, confirm that:
 
 ## Output format
 
+Use this exact structure. Keep every heading, write `None` under an empty one, and make each severity one of blocking, should fix or minor, because the caller resolves the blocking findings:
+
 ```markdown
 ## Verification report: <plan or work>, <plan mode | work mode>
 
