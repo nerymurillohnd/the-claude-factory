@@ -34,5 +34,11 @@ case "${status}" in
     ;;
 esac
 
-# The delta never changes the exit code above, so gate on it from the JSON result.
-python3 "${GATE_SCRIPT:-./gate_eval_result.py}" "${RESULT}" --min-mean-delta "<minimum mean delta>"
+# The delta never changes the exit code above, so gate on it from the JSON result. A missing gate
+# script is a setup error (1), never the "not comparable" 2 the gate itself returns.
+gate="${GATE_SCRIPT:-./gate_eval_result.py}"
+if [[ ! -f ${gate} ]]; then
+  echo "gate script not found: ${gate}; copy the skill's scripts/gate_eval_result.py there or set GATE_SCRIPT" >&2
+  exit 1
+fi
+python3 "${gate}" "${RESULT}" --min-mean-delta "<minimum mean delta>"
