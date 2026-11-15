@@ -114,7 +114,6 @@ From code.claude.com/docs/en/plugins/publish (Ship updates to users) and host-ma
 
 ## The owner's one-time setup
 
-The evals workflow stays inert until the owner sets these in the repository's GitHub settings; tell the owner when one is missing, never ask for a value:
+The evals workflow needs this in the repository's GitHub settings; tell the owner when it is missing, never ask for a value:
 
 - the repository secret `CLAUDE_CODE_OAUTH_TOKEN` for `evals.yml`, created with `claude setup-token`;
-- the repository variable `CLAUDE_EVALS`, set to `enabled`, under **Secrets and variables → Actions → Variables**, not as an environment variable: a job-level `if:` reads it, and it sees only repository variables.

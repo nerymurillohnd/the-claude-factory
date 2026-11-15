@@ -11,8 +11,7 @@ name: Evals
 # a case passing at 0.8, at most USD 10 per group, 4 runs at a time, and the two-arm suite failing
 # when the plugin's mean contribution over no plugin is below 0.2. .github/eval-gates.json can set a
 # plugin's own stricter floor, cost cap and concurrency. Every run bills the owner's Claude
-# subscription through the CLAUDE_CODE_OAUTH_TOKEN repository secret, never an API key. It runs only
-# when the repository variable CLAUDE_EVALS is `enabled`.
+# subscription through the CLAUDE_CODE_OAUTH_TOKEN repository secret, never an API key.
 
 on:
   pull_request:
@@ -42,7 +41,7 @@ jobs:
     name: Fork pull request
     # GitHub gives no secrets to a pull request from a fork, so its evals can't run here.
     if: >-
-      vars.CLAUDE_EVALS == 'enabled' && github.event_name == 'pull_request' &&
+      github.event_name == 'pull_request' &&
       github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-24.04
     timeout-minutes: 2
@@ -54,7 +53,6 @@ jobs:
     name: Select suites
     # Pull requests from forks get no secrets; drafts wait until they are ready.
     if: >-
-      vars.CLAUDE_EVALS == 'enabled' &&
       (github.event_name == 'workflow_dispatch' ||
        (!github.event.pull_request.draft &&
         github.event.pull_request.head.repo.full_name == github.repository))
