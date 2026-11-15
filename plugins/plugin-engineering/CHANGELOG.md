@@ -10,11 +10,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 
 ### Changed
 
-- `plugin-testing-and-debugging` now has Claude run every eval check that costs nothing before any run that spends your usage: validating the plugin, running each fixture by hand, testing each grader against a trace, checking the skill's own commands and templates, and loading every suite with `--max-cost-usd 0`, which reads all cases and stops before the first run.
-- It also warns that a case's `plugins` list replaces the plugin under test, that real MCP servers start only with `--allow-real-servers` or `--mocks off`, and that granting Bash on Linux needs `bubblewrap` and `socat`, or every run is refused.
+- `plugin-testing-and-debugging` now has Claude run every eval check that costs nothing before any run that spends your usage: validating the plugin, running each fixture by hand, testing each grader against a trace, checking the skill's own commands and templates, and loading every suite with `--max-cost-usd 0`, which on Claude Code 2.1.325 stopped before the first run (observed; the docs don't describe it).
+- It also warns that real MCP servers start only with `--allow-real-servers` or `--mocks off`, and that granting Bash or PowerShell needs the OS sandbox (`bubblewrap` and `socat` on Linux), or every run is refused.
+- The testing and CLI skills now teach evals as the official docs state them: every exit code and its causes, which graders a two-arm run leaves unscored, how the arms are decided per case, the judge default, and the `plugins` field, which defaults to the enclosing plugin. Facts that come only from `--help` or from an observed run are labeled as such.
+- The README lists git 2.31 or later for evals, `bubblewrap` and `socat` for suites that grant Bash on Linux, and the Claude Code docs MCP server as a recommended prerequisite.
 
 ### Fixed
 
+- The CI gate script no longer fails a suite on a run that timed out or hit its turn limit. The docs say such runs are still graded, so it now prints them as warnings and refuses only partial results, mock aborts and runs whose judge graders the cost ceiling skipped. The CI script also reports every documented exit code.
 - The skill no longer shows the wrong text when you call it with arguments: one sentence used a placeholder that Claude Code replaced with your first argument.
 - Two gotchas about quoting the plugin root no longer show the plugin's own install path where they mean the placeholder's name.
 

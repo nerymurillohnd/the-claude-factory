@@ -11,6 +11,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 ### Fixed
 
 - `skills-best-practices` now names the placeholders Claude Code fills in without filling them in itself, so its note about them reads as intended instead of as a list of folder paths.
+- `check-evals.py` now finds a plugin whose manifest is `plugin.json` at its root, flags inline `(?i)` only in regex patterns rather than in judge rubrics, and counts only the graders a two-arm run scores when it checks a must-not-invoke Skill grader.
 
 ## [0.4.1] - 2026-11-14
 
