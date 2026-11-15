@@ -31,12 +31,12 @@ These are the facts that most often turn a reasonable guess into a wrong answer.
 - `enabledPlugins` merges key by key across six sources; a higher source wins. A project `true` overrides the user's `false`. To turn a project-enabled plugin off for one person, set it `false` in `.claude/settings.local.json`, not in the committed file.
 - A plugin under `.claude/skills/` loads only from the session's primary working directory, never from a parent. Started in a subdirectory, it is simply absent. Managed settings can also skip such folders with no error at all.
 - Many causes appear only in the debug log, which `claude --debug` writes to `~/.claude/debug/<session-id>.txt` without printing anything to the terminal. `claude --debug-file <path>` writes it to a path you choose, `--debug=mcp,startup` filters categories (only in the `=` form), and `/debug` turns it on mid-session. `references/messages.md`, "Read the debug log", has the details.
-- Skills load from `skills/` at the plugin root. A `skills/` inside `.claude-plugin/` is not scanned. Hook event names are case-sensitive (`PostToolUse`). A shell-form hook with an unquoted `${CLAUDE_PLUGIN_ROOT}` breaks when the path has a space.
+- Skills load from `skills/` at the plugin root. A `skills/` inside `.claude-plugin/` is not scanned. Hook event names are case-sensitive (`PostToolUse`). A shell-form hook with an unquoted `CLAUDE_PLUGIN_ROOT` placeholder breaks when the path has a space.
 
 **Validation**
 
 - `claude plugin validate` checks files and schema, not behavior. It does not read a `SKILL.md` at the plugin root, does not follow symlinks, and from a marketplace directory does not read the component files of plugins listed in other directories: validate each plugin directory too. Unknown fields and missing frontmatter fail only with `--strict`.
-- Validate again after every round of fixes: a warning can hide another. On 2.1.325 a hook under a misspelled event prints `unknown hook event; entry ignored at runtime`, and the unquoted-`${CLAUDE_PLUGIN_ROOT}` warning for that hook appears only once the event name is fixed.
+- Validate again after every round of fixes: a warning can hide another. On 2.1.325 a hook under a misspelled event prints `unknown hook event; entry ignored at runtime`, and the warning about that hook's unquoted `CLAUDE_PLUGIN_ROOT` placeholder appears only once the event name is fixed.
 - `engines["claude-code"]` in `plugin.json` (v2.1.323) is a valid field: a plugin outside its stated range is not installed, updated or loaded, and install and update pick the newest version that fits. Check it when a plugin silently refuses to install, update or load on one machine.
 
 **Evals**

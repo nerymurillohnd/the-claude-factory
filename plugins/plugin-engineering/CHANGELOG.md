@@ -16,6 +16,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and
 ### Fixed
 
 - The skill no longer shows the wrong text when you call it with arguments: one sentence used a placeholder that Claude Code replaced with your first argument.
+- Two gotchas about quoting the plugin root no longer show the plugin's own install path where they mean the placeholder's name.
 
 ## [0.3.0] - 2026-11-15
 
