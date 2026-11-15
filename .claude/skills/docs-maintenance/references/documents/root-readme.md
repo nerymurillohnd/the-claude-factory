@@ -72,7 +72,7 @@ This repository:
 
 ## Checks
 
-- The catalog's plugin names equal `jq -r '.plugins[].name' .claude-plugin/marketplace.json` (no script checks this yet: DEBT-001).
+- The catalog's plugin names equal `jq -r '.plugins[].name' .claude-plugin/marketplace.json`; `npm run check:consistency` (PC-08) checks one catalog row per plugin.
 - Open every relative link and `#anchor` you touched. No script reads the prose.
 
 ## Change the blueprint

@@ -17,7 +17,7 @@
 3. **Entry points stay where their tool looks for them**, as thin callers of `scripts/`: the npm scripts in `package.json` (the single entry point), `.github/workflows/*.yml`, and hook registrations in `.claude/settings.json`.
 4. **Maintainer files inside plugins stay inside plugins**, because the CLI finds them only there: mod tests (`plugins/<p>/tests/*.test.ts(x)`) and eval suites (`plugins/<p>/evals/**`).
 5. **Plugin runtime files stay inside their plugin** (hook handlers, skill scripts, MCP/LSP servers): they ship with the install and cannot depend on `scripts/`.
-6. **No scripts under `.claude/skills/`.** Project skills describe procedures and call `scripts/`. Maintainer scripts, and the hooks that only maintain the repository, live in `scripts/<subfolder>/`. A Claude Code hook of this project keeps its script in `.claude/hooks/`, beside its registration in `.claude/settings.json`, and calls `scripts/` for any maintainer logic it reuses (owner decision, 2026-11-13; `.claude/rules/hook-scripts.md`).
+6. **No scripts under `.claude/skills/`.** Project skills describe procedures and call `scripts/`. Maintainer scripts, and the hooks that only maintain the repository, live in `scripts/<subfolder>/`. A Claude Code hook of this project keeps its script in `.claude/hooks/`, beside its registration in `.claude/settings.json`, and calls `scripts/` for any maintainer logic it reuses (owner decision, 2026-11-13).
 
 **Script status (redesign branch, 2026-11-13):** **Implemented** exists, with its npm script · **Replaced by** another mechanism covers it (npm script, CLI command, skill-lint rule) · **Pending** planned, not built yet: rebuild it to current official practice, never copy it from `main` · **Dropped** no longer planned, with the reason.  
 **Callers:** `npm` = an npm script in `package.json` · `CI` = a workflow · `CC hook` = Claude Code hook registration · `skill` = a project skill · `manual` = run by hand. The `gate`, `commit` and `.husky` callers of the original plan are gone: `scripts/gates.mjs` was not rebuilt, and the repository installs no Git hooks.
@@ -30,7 +30,7 @@
 
 #### 1. Planning & Design
 - Naming convention for marketplace and plugins (kebab-case, no names reserved by Anthropic)
-- Versioning policy: explicit bumps vs. omitting `version` so users track commits (rules: stages 12–14)
+- Versioning policy: decided, an explicit semver bump in `plugin.json`, through the `plugin-releases` skill
 - Catalog policy: never rename (use `displayName`), `renames`, `forceRemoveDeletedPlugins`
 - Cross-surface compatibility: Claude Code, claude.ai, Cowork (a top-level `bin/` blocks install on claude.ai and Cowork). `docs/compatibility.md` is the only source of the component × surface matrix; every plugin README's Compatibility cells copy it. In user docs and READMEs the two surfaces are named **Claude Code** and **Claude**
 - Validation strategy: native CLI checks plus scripts for what the CLI doesn't catch (Appendix A)

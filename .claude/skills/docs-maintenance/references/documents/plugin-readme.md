@@ -48,7 +48,7 @@ The template's values are `{{camelCase}}`; its instructions are HTML comments.
 | `{{marketplaceName}}`, `{{marketplaceDisplayName}}` | The marketplace's `name` (the `@` suffix) and its display name | `.claude-plugin/marketplace.json` |
 | `{{marketplaceCatalogUrl}}` | Link to the catalog | This repository: `../../README.md#-catalog` |
 | `{{surfacesBadge}}`, `{{surfacesText}}` | `Claude%20Code%20%C2%B7%20Claude` or `Claude%20Code%20only`, and the same in words | `plugin.json` `metadata.surfaces` |
-| `{{categoryBadge}}` | The category title, URL-encoded | The category's heading in the root `README.md` catalog, for `metadata.category` (no categories file exists on this branch) |
+| `{{categoryBadge}}` | The category title, URL-encoded | The category's heading in the root `README.md` catalog, for `metadata.category`; the categories are listed in `.claude/rules/plugins/categories.md` |
 | `{{minClaudeCodeVersion}}` | Minimum Claude Code version | Release notes (see Rules) |
 | `{{license}}`, `{{copyrightHolders}}` | License and copyright holders | `plugin.json` `license` and the plugin's `LICENSE` (this repository: `MIT`, `Nery Murillo`) |
 | `{{privacyPolicyUrl}}` | Privacy policy link | `plugin.json` `privacyPolicyUrl` |
@@ -118,7 +118,7 @@ This repository:
 ## Checks
 
 - `claude plugin validate --strict plugins/<plugin>` and `claude --plugin-dir plugins/<plugin> plugin details <plugin>`: the plugin loads with the README beside it.
-- By hand, since no script checks them yet (DEBT-001): the sections, leftover `TODO` and `TEMPLATE` comments, the Works in badge, one Compatibility row per component type with its Claude Code and Claude cells copied from `docs/compatibility.md`, the Platforms line, the Version badge, and no other plugin's name on a command line.
+- By hand, since no script checks them yet (DEBT-001): the sections, leftover `TODO` and `TEMPLATE` comments, the Works in badge, one Compatibility row per component type with its Claude Code and Claude cells copied from `docs/compatibility.md`, the Platforms line, and no other plugin's name on a command line. `npm run check:consistency` (PC-07) checks the Version badge.
 - `grep -n '{{\|<!--' plugins/<plugin>/README.md` returns nothing.
 - No script reads the prose: compare it with the plugin's files yourself, and open every relative link and `#anchor` you wrote.
 
