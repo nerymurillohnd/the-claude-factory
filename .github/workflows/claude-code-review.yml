@@ -22,11 +22,12 @@ concurrency:
 jobs:
   review:
     name: Review
-    # Drafts wait until they are ready. Dependabot's pull requests get no secrets, and the action
-    # refuses bots.
+    # Drafts wait until they are ready. Pull requests from forks and from Dependabot get no
+    # secrets, and the action refuses bots.
     if: >-
       vars.CLAUDE_CODE_REVIEW == 'enabled' &&
       !github.event.pull_request.draft &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
       github.event.pull_request.user.login != 'dependabot[bot]'
     runs-on: ubuntu-24.04
     timeout-minutes: 30
@@ -70,9 +71,10 @@ jobs:
             nothing qualifies, say so in the summary.
 
             Post each finding with `mcp__github_inline_comment__create_inline_comment` (with
-            `confirmed: true`) on its line. Then post one summary with
-            `gh pr comment ${{ github.event.pull_request.number }} --edit-last --create-if-none --body "..."`,
-            which updates your earlier summary instead of adding a new one. Only post GitHub comments;
-            don't return the review as a message.
+            `confirmed: true`) on its line. Then post one summary for this push with
+            `gh pr comment ${{ github.event.pull_request.number }} --body "..."`, starting with
+            "Claude review of <the head commit's short SHA>". Never edit an earlier comment: replies to
+            @claude mentions come from the same account. Only post GitHub comments; don't return the
+            review as a message.
           claude_args: |
             --allowedTools "mcp__github_inline_comment__create_inline_comment,Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*)"

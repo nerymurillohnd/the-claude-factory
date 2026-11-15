@@ -132,6 +132,7 @@ jobs:
           jq -r --arg p "${PLUGIN}" '.[$p] // [] | .[]' .github/evals.json >"${RUNNER_TEMP}/eval-flags"
           mapfile -t extra <"${RUNNER_TEMP}/eval-flags"
           # The target first: --tag takes a list, so a target after it is read as a tag.
+          status=0
           CLAUDE_CODE_EFFORT_LEVEL="${EFFORT}" claude plugin eval "plugins/${PLUGIN}" \
             --tag "effort-${EFFORT}" \
             --model claude-sonnet-5-5 \
@@ -142,8 +143,7 @@ jobs:
             --no-publish \
             --output-dir "${OUT}/report" \
             --json "${OUT}/result.json" \
-            "${extra[@]}"
-          status=$?
+            "${extra[@]}" || status=$?
           case "${status}" in
             0) ;;
             1) echo "::error::a case scored below 0.8, a case failed to load, or a run ended on an API error"; exit 1 ;;
