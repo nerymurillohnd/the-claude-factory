@@ -17,6 +17,9 @@ from release.release_tools.repo import (
     remote_tags,
     version,
 )
+from ruamel.yaml import YAML
+from ruamel.yaml.comments import CommentedMap, CommentedSeq
+from ruamel.yaml.error import YAMLError
 
 from validators.plugin_consistency.listing import icon_findings, url_findings
 from validators.plugin_consistency.model import Finding
@@ -98,7 +101,23 @@ def _unreleased(root: Path, *, main: bool) -> Iterator[Finding]:
 
 
 EVALS_WORKFLOW = ".github/workflows/evals.yml"
-PATH_LINE = re.compile(r"^\s*-\s*['\"]?(?P<path>[^'\"\s#]+)", re.MULTILINE)
+
+
+def _pull_request_paths(text: str) -> set[str]:
+    """Return the `paths` filter of evals.yml's pull_request trigger; never paths-ignore."""
+    try:
+        workflow = YAML(typ="rt").load(text)
+    except YAMLError:
+        return set()
+    if not isinstance(workflow, CommentedMap):
+        return set()
+    # YAML 1.1 parsers read the bare key `on` as true.
+    triggers = workflow.get("on", workflow.get(True))
+    pull_request = triggers.get("pull_request") if isinstance(triggers, CommentedMap) else None
+    paths = pull_request.get("paths") if isinstance(pull_request, CommentedMap) else None
+    if not isinstance(paths, CommentedSeq):
+        return set()
+    return {path for path in paths if isinstance(path, str)}
 
 
 def _eval_paths(root: Path) -> Iterator[Finding]:
@@ -106,7 +125,7 @@ def _eval_paths(root: Path) -> Iterator[Finding]:
     workflow = root / EVALS_WORKFLOW
     if not workflow.is_file():
         return
-    listed = {m["path"] for m in PATH_LINE.finditer(workflow.read_text(encoding="utf-8"))}
+    listed = _pull_request_paths(workflow.read_text(encoding="utf-8"))
     for entry in entries(root):
         name = str(entry.get("name", ""))
         suite = root / "plugins" / name / "evals"
@@ -134,7 +153,9 @@ def _secret_owners(root: Path) -> Iterator[Finding]:
     for workflow in workflows:
         text = workflow.read_text(encoding="utf-8")
         for name, owners in SECRET_OWNERS.items():
-            read = re.search(rf"secrets\s*(?:\.\s*{name}\b|\[\s*['\"]{name}['\"]\s*\])", text)
+            # GitHub reads secret names case-insensitively, so `secrets.anthropic_api_key` counts.
+            pattern = rf"secrets\s*(?:\.\s*{name}\b|\[\s*['\"]{name}['\"]\s*\])"
+            read = re.search(pattern, text, re.IGNORECASE)
             if read and workflow.name not in owners:
                 message = f"reads secrets.{name}, which only {', '.join(owners)} may read"
                 yield Finding("PC-13", f"{WORKFLOWS}/{workflow.name}", message)

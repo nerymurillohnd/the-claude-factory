@@ -283,6 +283,28 @@ class ChecksTest(unittest.TestCase):
             )
             self.assertNotIn("PC-13", f.ids(offline=True))
 
+    def test_pc12_reads_only_the_pull_request_paths(self) -> None:
+        """A plugin listed under paths-ignore, not paths, doesn't trigger evals.yml."""
+        with tempfile.TemporaryDirectory() as tmp:
+            f = Fixture(Path(tmp))
+            f.m.write("plugins/demo/evals/case/prompt.md", "---\ntags: [effort-low]\n---\n\nHi.\n")
+            ignored = "    paths-ignore:\n      - plugins/demo/**\n"
+            f.m.write(".github/workflows/evals.yml", EVALS_WORKFLOW.format(paths=ignored))
+            self.assertEqual(f.ids(offline=True), ["PC-12"])
+
+    def test_pc13_matches_secret_names_in_any_case(self) -> None:
+        """GitHub reads secret names case-insensitively, so a lowercase read is still a read."""
+        with tempfile.TemporaryDirectory() as tmp:
+            f = Fixture(Path(tmp))
+            f.m.write(
+                ".github/workflows/claude.yml", "with:\n  k: ${{ secrets.anthropic_api_key }}\n"
+            )
+            found = [str(x) for x in check(f.m.root, offline=True)]
+        expected = PC13.format(
+            path="claude.yml", name="ANTHROPIC_API_KEY", owners="claude-code-review.yml"
+        )
+        self.assertEqual(found, [expected])
+
     def test_pc12_skips_a_repository_without_the_evals_workflow(self) -> None:
         """Without evals.yml there is nothing to keep in step."""
         with tempfile.TemporaryDirectory() as tmp:
