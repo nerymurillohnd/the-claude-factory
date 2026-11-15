@@ -23,7 +23,7 @@ set -euo pipefail
 **Where Bash may be missing**, such as minimal containers:
 
 - Use no Bash features: no arrays, `[[ ]]` or `${var,,}`.
-- Leave out `pipefail`: Ubuntu's `dash` 0.5.12 rejects `set -o pipefail` (observed 2026-11-14).
+- Leave out `pipefail`: Ubuntu's `dash` 0.5.12 rejects `set -o pipefail` (observed).
 
 ```sh
 #!/usr/bin/env sh
@@ -39,7 +39,7 @@ set -eu
 **Python that needs third-party packages**, when the working directory is not a Python project with its own `.venv` or `uv.lock`:
 
 - Keep `dependencies` even when empty.
-- Not for minimal containers: BusyBox's `env` has no `-S` (reported on 2026-11-14, not verified here).
+- Not for minimal containers: BusyBox's `env` has no `-S` (reported, not verified).
 
 ```python
 #!/usr/bin/env -S uv run --script
@@ -51,8 +51,8 @@ set -eu
 **Node**, when the project already runs on Node or the hook benefits from it:
 
 - Save the script as `.mjs`, never `.ts`.
-- In a plugin, run it with `node` in exec form ([../assets/node-exec-handler.json](../assets/node-exec-handler.json)), which works on every system.
-- `NODE_PATH` reached `require` but not `import` in an ES module (reported on 2026-11-14 with Node 26, not verified here): test how the script resolves its dependencies in step 7.
+- Run it as `"command": "node"` with the script path in `args` ([../assets/node-exec-handler.json](../assets/node-exec-handler.json)): exec form with `node` works on every system, Windows included.
+- `NODE_PATH` reached `require` but not `import` in an ES module (reported with Node 26, not verified): test how the script resolves its dependencies in step 7.
 
 ```js
 #!/usr/bin/env node
@@ -64,7 +64,7 @@ set -eu
 
 Exit code 2 blocks the action on the events that can block (`#### Exit code 2 behavior per event` in the docs), and a failing command inside the script passes its own exit code on: `grep` exits 2 on an error. Choose the opening lines by what the hook is for:
 
-- **A hook on an event that can block, that is not a gate** (it advises, logs or adds context): turn any unexpected failure into exit 1, a non-blocking error. `-E` makes the trap apply inside functions too; without it a function's failure still exits 2 (both observed 2026-11-14).
+- **A hook on an event that can block, that is not a gate** (it advises, logs or adds context): turn any unexpected failure into exit 1, a non-blocking error. `-E` makes the trap apply inside functions too; without it a function's failure still exits 2 (both observed).
 
   ```bash
   #!/usr/bin/env bash
@@ -86,7 +86,7 @@ To drop a `set` flag the script cannot work with, write the reason on that line:
 set -eo pipefail  # no -u: <reason>
 ```
 
-To limit a script's run time, set `timeout` on its handler instead of calling the `timeout` command, which macOS doesn't ship (reported on 2026-11-14).
+To limit a script's run time, set `timeout` on its handler instead of calling the `timeout` command, which macOS doesn't ship (reported, not verified).
 
 ## Permissions
 

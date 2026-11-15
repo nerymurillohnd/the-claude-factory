@@ -1,17 +1,17 @@
 ---
 name: writing-hooks
-description: Writes Claude Code hooks in order - understands the request and the environment, identifies the kind of hook, clarifies, picks the script conventions, reads the needed official docs sections in full, decides, builds and verifies. Use when designing, writing, creating or rewriting a Claude Code hook or hook script in a plugin, a project, user settings, a skill, a subagent or anywhere else. Not for Git hooks.
+description: Writes Claude Code hooks of every type (command, HTTP, MCP tool, prompt and agent) in order - understands the request and the environment, identifies the kind of hook and where it lives, clarifies, picks the script conventions, reads the needed official docs sections in full, decides, builds and verifies with real inputs. Use whenever a task needs a new or rewritten hook or hook script for Claude Code or Cowork, in a plugin, user, project, local or managed settings, a skill or a subagent, including when the user only asks to run something whenever Claude edits a file, to block certain commands, to act every time a session starts, or to stop Claude from doing something. Not for Git hooks, React hooks or webhooks.
 ---
 
 # Write a Claude Code hook
 
 This skill creates Claude Code hooks: each one is built from the official docs, read in full blocks, never from memory, and verified with real inputs before it is handed over.
 
-This skill owns the order of work. For any specific part of it, when the session has a skill, plugin, agent or tool specialized in that part, load it and use it together with this skill. For example:
+This skill owns the order of work. For any specific part of it, check whether the session has a skill, plugin, agent or tool built for that part. If it has one, load it and use it together with this skill; if not, look for another skill or tool for the same job, built in or not; if there is none, continue with this skill's own steps. For example:
 
-- to write the hook's evals or tests, load the session's eval or plugin-testing skill and build them with it;
-- to debug a plugin or a hook that doesn't fire, use the session's plugin-debugging or hook-debugging tool;
-- to edit or check a shell, Python or TypeScript script, use the session's skill or language server for that language.
+- for the hook's evals, tests and plugin debugging, `plugin-engineering:plugin-testing-and-debugging`;
+- for a mod's hooks module (JavaScript that Claude Code runs in its own process, listed under `modules` in `hooks/hooks.json`), the built-in `plugin-authoring` skill, which covers the mods API;
+- to edit or check a shell, Python or TypeScript script, the session's skill or language server for that language.
 
 ## Workflow
 
@@ -21,7 +21,7 @@ Copy this checklist into your task list. The work is not finished while any item
 - [ ] 2. Clarify with the user whatever is still open.
 - [ ] 3. Choose the script conventions.
 - [ ] 4. Read the official docs the hook depends on, and check the user's version.
-- [ ] 5. Decide the event, the mechanism and the location.
+- [ ] 5. Decide the event, the handler type, the mechanism and the location.
 - [ ] 6. Build the script and its configuration.
 - [ ] 7. Verify, correct in one pass, and report.
 
@@ -34,14 +34,17 @@ Copy this checklist into your task list. The work is not finished while any item
 - The docs' own example scripts start with `#!/bin/bash` and no strict mode. Take the shebang and opening lines from [references/script-conventions.md](references/script-conventions.md), never from an example.
 - A command that fails with exit code 2 inside a script blocks the action on events that can block, even when the script never meant to block: `grep` exits 2 on an error. The script conventions say how to prevent it.
 - `Edit|Write` sees only the `Edit` and `Write` tools: files changed through `Bash`, `PowerShell` or `NotebookEdit` don't fire it. `FileChanged` fires for any change on disk, but it can't block, and its `systemMessage` reaches only the user's terminal, never Claude.
-- Run a script in shell form, with the whole path in double quotes. Exec form (`args`) needs a real executable such as `node.exe` on Windows, so a `.sh` or `.py` path in `command` fails there, and so does `"command": "bash"`, because the default Git for Windows install doesn't put `bash.exe` on the PATH.
-- A plugin agent ignores `hooks` in its frontmatter: put a plugin's hooks in `hooks/hooks.json`.
-- Cloud sessions don't read `~/.claude/settings.json`: a user-scope hook never runs there.
-- A project subagent's frontmatter hooks run only after the user accepts the workspace trust dialog for that folder; a `-p` session doesn't count.
-- `once: true` works only in skill frontmatter; settings files and agent frontmatter ignore it.
+- A command hook has two forms, and neither is always right: choose one for each hook in step 5, as `##### Exec form and shell form` sets.
+  - Exec form (`args` set, even `"args": []`) runs `command` with no shell, so a path placeholder needs no quoting. It is the only form that substitutes a plugin's `${user_config.*}`. It expands no shell variable such as `$HOME`, and on Windows `command` must be a real executable: `"command": "node"` with the script in `args` works, a `.sh`, `.py`, `.cmd` or `.bat` path does not.
+  - Shell form (no `args`) passes `command` to `sh -c`, or to Git Bash on Windows. Use it for pipes, `&&`, redirects, globs and shell variables, and for a `.sh` or `.py` script that must also run on Windows. Wrap each placeholder in double quotes.
+- Not every event takes every handler type: `## Prompt-based hooks` lists which events take `prompt` and `agent`, and `SessionStart` and `Setup` take only `command` and `mcp_tool`. Check the event takes the type before you write the handler.
+- When several hooks match one event, they all run in parallel to the end: one hook's `deny` doesn't stop a sibling's side effects. For `PreToolUse` the most restrictive decision wins (`deny`, `defer`, `ask`, `allow`), and two hooks that both return `updatedInput` for the same tool are not merged.
+- A hook's `allow` never overrides a deny rule from settings, and its `deny` holds in every permission mode, `bypassPermissions` included. To enforce a hard allow or deny, prefer a permission rule; the `if` filter is best effort.
+- A `Stop` hook that blocks must read `stop_hook_active` and exit 0 when it is `true`: Claude Code overrides a `Stop` hook after it blocks eight times in a row.
+- JSON output takes effect only when stdout starts with `{`. A shell profile that prints on start (Git Bash, or `BASH_ENV` pointing at `~/.bashrc`) silently turns the JSON into plain text, and a field placed at the wrong level, such as `permissionDecision` outside `hookSpecificOutput`, is ignored without an error. Build the JSON with an encoder (`jq`, Python `json`, `JSON.stringify`), never by concatenating strings.
 - Fix in batches, never by trial and error: collect every failure, find each cause in the docs, apply all fixes at once, check what else they touch, then rerun.
-- The docs MCP filesystem is emulated: each call is stateless, output stops at 30 KB, and its command set changes between sessions (on 2026-11-14 it had no `awk`). Use it to locate and map pages; read sections from the download.
-- On 2026-11-14 the hooks page was 293 KB as `.md`, ten times the MCP's output cap: read it from the download, never in one MCP call.
+- The docs MCP filesystem is emulated: each call is stateless, output is capped, and its command set changes between sessions. Read the tool's own description for the commands it supports before writing one. Use it to locate and map pages; read sections from the download.
+- The hooks page is many times larger than the MCP's output cap: read it from the download, never in one MCP call.
 - A command with a heavy alternation can return 504 Gateway Time-out: retry once with a simpler command.
 - Output that ends in "limit exceeded", a timeout or an error is incomplete, never zero results.
 - Pages change within a session: when two reads contradict each other, re-read before concluding.
@@ -68,8 +71,11 @@ The goal of every step is the result it names (the full section, the version che
    - a skill named in the request: skill frontmatter;
    - "only for me", "don't commit it": `.claude/settings.local.json`;
    - a project with `.claude/` and nothing above: `.claude/settings.json`;
-   - "every project", "on this machine": `~/.claude/settings.json`.
-5. Write down the kind of hook and the evidence for it: the file you read, or the words of the request.
+   - "every project", "on this machine": `~/.claude/settings.json`;
+   - "for the whole organization", "for every developer": managed settings;
+   - `CLAUDE_CODE_REMOTE` set to `true`: a cloud session, which never reads the user's own `~/.claude/settings.json`.
+5. Note the platforms the hook must run on: a README, CI matrix or the request may name Windows.
+6. Write down the kind of hook and the evidence for it: the file you read, or the words of the request.
 
 ## Step 2: Clarify (what is still open)
 
@@ -82,6 +88,7 @@ The goal of every step is the result it names (the full section, the version che
 
 1. Read [references/script-conventions.md](references/script-conventions.md).
 2. Pick the interpreter for the hook's logic, and note the opening lines and permissions it sets.
+3. Skip this step when the handler is `http`, `mcp_tool`, `prompt` or `agent` and runs no script.
 
 ## Step 4: Source (what the docs allow)
 
@@ -90,6 +97,7 @@ The MCP locates and maps; the downloaded page is where sections are read; only t
 1. Find the Claude Code docs MCP tools with ToolSearch, query `claude_code_docs`. Their names change with the installation:
    - `search_claude_code_docs`: semantic search that returns chunks with page and anchor;
    - `query_docs_filesystem_claude_code_docs`: one read-only command over the `.mdx` pages, at `/en/<path>.mdx`. Read its description for the commands it supports today.
+   - If neither is found, continue with the downloads below: they hold the same pages.
 2. Locate and map each page in the MCP:
    1. To find a term whose page you don't know, run one semantic search, or list the pages that hold it:
 
@@ -141,23 +149,20 @@ The MCP locates and maps; the downloaded page is where sections are read; only t
 6. Read these sections, in order. Page `hooks` unless another page is named.
    1. `## Hook events`: the full, current list is its `###` headings. Read the chosen event's `### <EventName>` section in full.
    2. `## Hook lifecycle`, including `### How a hook resolves`.
-   3. `## Configuration`, including `### Hook locations`: settings, plugin, skill or subagent.
+   3. `## Configuration`, including `### Hook locations`, then the location reference listed under "Where the hook lives" below.
    4. `### Matcher patterns`, including `#### Match MCP tools` for MCP actions.
    5. `### Common input fields`, plus the input in the event's section.
    6. Output:
       - `### Exit code output`, including `#### Exit code 2 behavior per event`;
-      - `### JSON output`;
+      - `### JSON output`, including `#### Decision control`;
       - `### HTTP response handling` for an HTTP hook;
-      - for a hook that must guarantee an outcome, how failures, timeouts and `onFailure` behave.
-   7. `### Hook handler fields` (type, exec or shell form, `args`, `timeout`, `shell`, `async`, `onFailure`), including `##### Exec form and shell form`, and `### Reference scripts by path`.
-   8. When a model's judgment or background work fits better: `## Prompt-based hooks`, `## Agent-based hooks`, `## Run hooks in the background`.
-   9. By location:
-      - plugin: `### Hooks` in `plugins/components`;
-      - skill or subagent: `### Hooks in skills and agents`, and `### Define hooks for subagents` in `sub-agents`.
-   10. For Windows: `## Windows PowerShell tool`.
-   11. Whether a mod solves it better: `## Compare mods, settings hooks, skills, and MCP servers` and `### What a hook can do with an event` in `plugins/mods/overview`.
-   12. Security: `### Workspace trust` and `### Security best practices`.
-   13. `## Debug hooks`: how to confirm the hook fired.
+      - for a hook that must guarantee an outcome, `#### Block the action when a hook fails` and `#### Timeouts`.
+   7. `### Hook handler fields`: `#### Common fields`, and the fields of the chosen handler type: `#### Command hook fields` with `##### Exec form and shell form`, `#### HTTP hook fields`, `#### MCP tool hook fields` or `#### Prompt and agent hook fields`. Then `### Reference scripts by path`.
+   8. Which events take which handler types, and when a model's judgment or background work fits better: `## Prompt-based hooks`, including `### Response schema`, `## Agent-based hooks`, `## Run hooks in the background`.
+   9. For Windows: `#### Failed hooks on Windows without Git Bash`, `#### PowerShell started no program` and `## Windows PowerShell tool`.
+   10. Whether a mod solves it better: `## Compare mods, settings hooks, skills, and MCP servers` and `### What a hook can do with an event` in `plugins/mods/overview`.
+   11. Security: `### Workspace trust` and `### Security best practices`.
+   12. `## Limitations and troubleshooting` in `hooks-guide`, and `## Debug hooks`: how to confirm the hook fired.
 7. Check that every event and field exists in the user's version. Get the version:
 
     ```bash
@@ -178,27 +183,29 @@ The MCP locates and maps; the downloaded page is where sections are read; only t
       ```
 
     - Read each hit's whole entry, from its version line to the next.
+    - A field the docs mark with a minimum version ("Requires Claude Code v2.1.295 or later") is checked against that version too.
     - If neither has a hit, say the version check could not be done for that term.
 
 ## Step 5: Decide (the optimal hook, not the first that works)
 
-1. List every event and mechanism that could do the job, from the current event list read in step 4.
+1. List every event and mechanism that could do the job, from the current event list read in step 4: each handler type (`command`, `http`, `mcp_tool`, `prompt`, `agent`), a mod, a permission rule.
 2. Weigh them by when and how often each fires, what each can see and decide, and what each costs to run and maintain.
 3. Pick the optimal one. A way that works can still carry more complexity than a newer event or field that does the job directly.
-4. Write down the alternatives set aside, and why.
+4. For a command hook, pick exec form or shell form from what the command needs and the platforms noted in step 1, as the gotcha on the two forms says.
+5. Pick the location from step 1, and read its reference under "Where the hook lives".
+6. Write down the alternatives set aside, and why.
 
 ## Step 6: Build (how it is written)
 
 1. Write the script from what step 4 read, starting with the opening lines from step 3.
-2. Write the configuration from the template for its location. Copy the asset, replace every `<placeholder>`, keep each handler's fields to what step 4 confirmed, and leave `matcher` out on events that don't support one:
-   - [assets/plugin-hooks.json](assets/plugin-hooks.json): a plugin's `hooks/hooks.json`. The hooks register when the plugin loads, not when one of its skills runs. To match the plugin's own MCP tools, use `mcp__plugin_<plugin>_<server>__<tool>`.
-   - [assets/node-exec-handler.json](assets/node-exec-handler.json): one handler that runs a Node script in exec form, which works on every system because `node` is a real executable.
-   - [assets/project-settings.json](assets/project-settings.json): `.claude/settings.json` to share it through the repository, or `.claude/settings.local.json` to keep it to one machine.
-   - [assets/user-settings.json](assets/user-settings.json): `~/.claude/settings.json`, for every project on the machine.
-   - [assets/skill-frontmatter.md](assets/skill-frontmatter.md): hooks in a skill. They register when the skill is invoked and run for the rest of the session.
-   - [assets/subagent-frontmatter.md](assets/subagent-frontmatter.md): hooks in a subagent. They run only while it runs, and its `Stop` runs as `SubagentStop`. Not for plugin agents.
-   - [assets/subagent-events-settings.json](assets/subagent-events-settings.json): `SubagentStart` and `SubagentStop` in a settings file or `hooks/hooks.json`. For a plugin agent, anchor the scoped name, as in `^<plugin>:<agent>$`.
-3. Set the script's permissions as the script conventions say.
+2. Write the configuration from the location's template (its reference names it). Copy the asset, replace every `<placeholder>`, keep each handler's fields to what step 4 confirmed, and leave `matcher` out on events that don't support one.
+3. For a handler that is not a command, put one of these objects in the template's inner `hooks` array instead of the command handler:
+   - [assets/handler-http.json](assets/handler-http.json): an HTTP hook. Every header variable must be listed in `allowedEnvVars`, and `allowedHttpHookUrls` in any settings level can block the URL.
+   - [assets/handler-mcp-tool.json](assets/handler-mcp-tool.json): an MCP tool hook. A plugin's own server is named `plugin:<plugin>:<server>`. `SessionStart` at launch and `Setup` skip it, because MCP servers are not connected yet.
+   - [assets/handler-prompt.json](assets/handler-prompt.json): a prompt hook. `$ARGUMENTS` is replaced with the hook input JSON.
+   - [assets/handler-agent.json](assets/handler-agent.json): an agent hook, which the docs mark experimental.
+   - [assets/node-exec-handler.json](assets/node-exec-handler.json): a command handler that runs a Node script in exec form, which works on every system because `node` is a real executable.
+4. Set the script's permissions as the script conventions say.
 
 ## Step 7: Verify and correct (one pass)
 
@@ -212,13 +219,27 @@ The MCP locates and maps; the downloaded page is where sections are read; only t
    printf '%s' '<input-json>' | ./<script>; echo "exit=$?"
    ```
 
-3. Compare stdout, stderr and the exit code with the expected outcome. Collect every mismatch, find each cause in the docs, apply all fixes at once, check what else they touch, then rerun only the affected inputs.
-4. Confirm in a live session that the hook fires, with the method `## Debug hooks` describes.
-5. Report, with explicit evidence for each claim: the raw output, the file and line, or the docs section. Verify everything within reach instead of assuming it.
+3. Compare stdout, stderr and the exit code with the expected outcome. Check that JSON output parses (`jq -e .`) and that each field sits where `### JSON output` puts it. Collect every mismatch, find each cause in the docs, apply all fixes at once, check what else they touch, then rerun only the affected inputs.
+4. Check the configuration file itself: `jq -e .` for JSON, and `claude plugin validate <plugin-dir>` for a plugin, which warns about an unquoted placeholder in shell form.
+5. Confirm in a live session that the hook fires, with the method `## Debug hooks` describes: `/hooks` lists it under its event, and `claude --debug-file <path>` records a `Hooks:` line for its run. A skill's hooks appear in `/hooks` only after the skill is invoked.
+6. Report, with explicit evidence for each claim: the raw output, the file and line, or the docs section. Verify everything within reach instead of assuming it.
    - the kind of hook and the evidence for it;
-   - the event and why it was chosen, and the alternatives set aside;
+   - the event, the handler type and why they were chosen, and the alternatives set aside;
    - the location and template used;
    - the docs sections read, and the changelog range checked against the user's version;
    - each input with its expected and actual outcome;
    - what changed in the correction pass and why;
    - what could not be verified.
+
+## Where the hook lives
+
+Read the one reference for the hook's location in step 5, before writing its configuration. Each gives the role to take, what that location changes (scope, lifetime, registration, trust, placeholders), its gotchas, its rules and its template.
+
+- [references/location-plugin.md](references/location-plugin.md): a plugin's `hooks/hooks.json` or the `hooks` key of `plugin.json`, for Claude Code and Cowork.
+- [references/location-user-settings.md](references/location-user-settings.md): `~/.claude/settings.json`, every project on one machine.
+- [references/location-project-settings.md](references/location-project-settings.md): `.claude/settings.json`, committed and shared with everyone who clones the repository.
+- [references/location-local-settings.md](references/location-local-settings.md): `.claude/settings.local.json`, one person in one project.
+- [references/location-managed-settings.md](references/location-managed-settings.md): managed policy settings, deployed by an organization's administrator.
+- [references/location-skill-frontmatter.md](references/location-skill-frontmatter.md): `hooks` in a skill's frontmatter, registered when the skill is invoked.
+- [references/location-subagent-frontmatter.md](references/location-subagent-frontmatter.md): `hooks` in a subagent's frontmatter, active only while it runs.
+- [references/location-subagent-events.md](references/location-subagent-events.md): `SubagentStart` and `SubagentStop` in settings or `hooks/hooks.json`, the only way to hook a plugin's own agents.

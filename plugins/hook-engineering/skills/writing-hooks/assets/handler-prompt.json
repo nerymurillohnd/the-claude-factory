@@ -1,0 +1,5 @@
+{
+  "type": "prompt",
+  "prompt": "<what to evaluate and how to decide>. Input: $ARGUMENTS",
+  "timeout": 30
+}

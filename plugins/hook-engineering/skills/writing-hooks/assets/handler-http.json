@@ -1,0 +1,11 @@
+{
+  "type": "http",
+  "url": "<https-url>",
+  "headers": {
+    "Authorization": "Bearer $<TOKEN_VAR>"
+  },
+  "allowedEnvVars": [
+    "<TOKEN_VAR>"
+  ],
+  "timeout": 30
+}
