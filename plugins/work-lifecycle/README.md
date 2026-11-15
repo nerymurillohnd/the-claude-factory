@@ -36,21 +36,21 @@ Work Lifecycle makes Claude plan multi-step work before it changes anything, and
 
 ## 🧩 What's inside
 
-| Component | Name | What it does | How it runs |
-| :-- | :-- | :-- | :-- |
-| 🎯 Skill | `work-lifecycle:planning-before-execution` | Plans multi-step work with research, a self-review and your approval, then executes it task by task and records each task's evidence. | `/work-lifecycle:planning-before-execution` or automatically when relevant |
-| 🎯 Skill | `work-lifecycle:testing-before-implementation` | Implements code test-first: baseline, a named break, a recorded red run, minimal code, a recorded green run and a comparison with the baseline. | `/work-lifecycle:testing-before-implementation` or automatically when relevant |
-| 🤖 Agent | `work-lifecycle:planning-researcher` | Read-only research that reports each claim with its evidence and what it could not verify. | Delegated by Claude, or "use the planning-researcher agent" |
-| 🤖 Agent | `work-lifecycle:plan-verifier` | Read-only, adversarial review of a plan against its requirements, or of finished work against the plan and its state file; also checks test quality. | Delegated by Claude, or "use the plan-verifier agent" |
-| 🪝 Hook | `Stop` (the plan gate) | Blocks Claude from finishing while a task of an executing plan lacks evidence. | Automatically, in the session where you invoked the planning skill |
+| Component | Name                                           | What it does                                                                                                                                         | How it runs                                                                    |
+| :-------- | :--------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------- |
+| 🎯 Skill  | `work-lifecycle:planning-before-execution`     | Plans multi-step work with research, a self-review and your approval, then executes it task by task and records each task's evidence.                | `/work-lifecycle:planning-before-execution` or automatically when relevant     |
+| 🎯 Skill  | `work-lifecycle:testing-before-implementation` | Implements code test-first: baseline, a named break, a recorded red run, minimal code, a recorded green run and a comparison with the baseline.      | `/work-lifecycle:testing-before-implementation` or automatically when relevant |
+| 🤖 Agent  | `work-lifecycle:planning-researcher`           | Read-only research that reports each claim with its evidence and what it could not verify.                                                           | Delegated by Claude, or "use the planning-researcher agent"                    |
+| 🤖 Agent  | `work-lifecycle:plan-verifier`                 | Read-only, adversarial review of a plan against its requirements, or of finished work against the plan and its state file; also checks test quality. | Delegated by Claude, or "use the plan-verifier agent"                          |
+| 🪝 Hook   | `Stop` (the plan gate)                         | Blocks Claude from finishing while a task of an executing plan lacks evidence.                                                                       | Automatically, in the session where you invoked the planning skill             |
 
 ## 📋 Prerequisites
 
-| Tool | Minimum version | Check |
-| :-- | :-- | :-- |
-| Claude Code | 2.1.325 | `claude --version` |
-| python3 | 3.12 | `python3 --version` |
-| git, optional | — | `git --version` |
+| Tool          | Minimum version | Check               |
+| :------------ | :-------------- | :------------------ |
+| Claude Code   | 2.1.325         | `claude --version`  |
+| python3       | 3.12            | `python3 --version` |
+| git, optional | —               | `git --version`     |
 
 Your project's own test, lint and type-check commands are also needed for test-first work; the testing skill finds them in your project's files.
 
@@ -225,20 +225,20 @@ After a plan with more than one task and one measurable end state, Claude can gi
 
 The plugin has no options to set. Its behavior depends on what it finds in your project:
 
-| What it reads in your project | What it does then |
-| :-- | :-- |
-| `.work-lifecycle/<session id>.json` | The plan gate blocks Claude from finishing while the plan is executing and a task lacks evidence. With no file, or a status other than `executing`, the gate does nothing. |
-| `CLAUDE.md`, the project manifest (`package.json`, `pyproject.toml`, `Makefile`, `Cargo.toml`, `go.mod`) and the CI configuration | The testing skill takes your test, lint and type-check commands from them, and prefers the exact command CI runs. |
-| Your existing tests | The testing skill matches their framework, layout, naming and style, and keeps them unchanged. |
+| What it reads in your project                                                                                                     | What it does then                                                                                                                                                          |
+| :-------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `.work-lifecycle/<session id>.json`                                                                                               | The plan gate blocks Claude from finishing while the plan is executing and a task lacks evidence. With no file, or a status other than `executing`, the gate does nothing. |
+| `CLAUDE.md`, the project manifest (`package.json`, `pyproject.toml`, `Makefile`, `Cargo.toml`, `go.mod`) and the CI configuration | The testing skill takes your test, lint and type-check commands from them, and prefers the exact command CI runs.                                                          |
+| Your existing tests                                                                                                               | The testing skill matches their framework, layout, naming and style, and keeps them unchanged.                                                                             |
 
 These optional settings of your own strengthen it. The plugin sets none of them.
 
-| Setting | Effect |
-| :-- | :-- |
-| `plansDirectory` | Set it inside your repository to keep plans under version control. |
+| Setting                        | Effect                                                                           |
+| :----------------------------- | :------------------------------------------------------------------------------- |
+| `plansDirectory`               | Set it inside your repository to keep plans under version control.               |
 | `showClearContextOnPlanAccept` | Set it to `true` to offer clearing the planning context when you approve a plan. |
-| `permissions.defaultMode` | Set it to `"plan"` for sensitive projects, so every session starts in plan mode. |
-| `permissions.ask` | Add rules for `git push` and your deploy commands, so auto mode can't skip them. |
+| `permissions.defaultMode`      | Set it to `"plan"` for sensitive projects, so every session starts in plan mode. |
+| `permissions.ask`              | Add rules for `git push` and your deploy commands, so auto mode can't skip them. |
 
 ## 🔍 What this plugin runs and sends
 
@@ -300,11 +300,11 @@ Uninstalling from the last scope it's installed at also deletes its saved option
 
 **Works in:** 💻 Claude Code · 🖥️ Claude
 
-| Component | Claude Code | Claude |
-| :-- | :--: | :--: |
-| 🎯 Skills | ✅ | ✅ |
-| 🤖 Agents | ✅ | ⚠️ only in conversations where Claude can run tasks |
-| 🪝 Hooks | ✅ | ⚠️ only in conversations where Claude can run tasks |
+| Component | Claude Code |                       Claude                        |
+| :-------- | :---------: | :-------------------------------------------------: |
+| 🎯 Skills |     ✅      |                         ✅                          |
+| 🤖 Agents |     ✅      | ⚠️ only in conversations where Claude can run tasks |
+| 🪝 Hooks  |     ✅      | ⚠️ only in conversations where Claude can run tasks |
 
 <sub>✅ works · ⚠️ partial · 🔗 manual step · ➖ ignored · ❌ the plugin can't be installed there. Claude runs agents, hooks and local MCP servers only in conversations where it can run tasks; anything on your computer needs Claude Desktop open.</sub>
 
